@@ -6,6 +6,7 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.HasClickHandlers;
 import com.google.gwt.user.client.ui.UIObject;
+import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.xml.client.Element;
 
@@ -41,6 +42,7 @@ import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.InputBoolean;
+import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
@@ -261,6 +263,9 @@ public class CompanyForm extends AbstractFormInterceptor {
   @Override
   public void afterRefresh(FormView form, IsRow row) {
     refreshCreditInfo();
+    if (!DataUtils.isNewRow(row)) {
+      createQrButton(form, row);
+    }
   }
 
   @Override
@@ -385,6 +390,23 @@ public class CompanyForm extends AbstractFormInterceptor {
         }
       }
     };
+  }
+
+  private static void createQrButton(final FormView form, final IsRow row) {
+    FlowPanel qrFlowPanel = (FlowPanel) Assert.notNull(form.getWidgetByName(QR_FLOW_PANEL));
+    qrFlowPanel.clear();
+    FaLabel qrCodeLabel = new FaLabel(FontAwesome.QRCODE);
+    qrCodeLabel.setTitle(Localized.getConstants().qrCode());
+    qrCodeLabel.addStyleName("bee-FontSize-x-large");
+    qrFlowPanel.add(qrCodeLabel);
+    qrCodeLabel.addClickHandler(new ClickHandler() {
+
+      @Override
+      public void onClick(ClickEvent arg0) {
+        ClassifierKeeper.generateQrCode(form, row);
+      }
+    });
+
   }
 
   private void refreshCreditInfo() {

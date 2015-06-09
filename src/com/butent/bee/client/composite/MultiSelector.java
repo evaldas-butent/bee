@@ -191,7 +191,7 @@ public class MultiSelector extends DataSelector implements HandlesRendering, Han
   public static final String ATTR_SEPARATORS = "separators";
 
   private static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "MultiSelector-";
-  private static final String STYLE_CONTAINER = STYLE_PREFIX + "container";
+  public static final String STYLE_CONTAINER = STYLE_PREFIX + "container";
   private static final String STYLE_CONTAINER_ACTIVE = STYLE_CONTAINER + "-active";
 
   private static final String STYLE_CHOICE = STYLE_PREFIX + "choice";
@@ -607,7 +607,7 @@ public class MultiSelector extends DataSelector implements HandlesRendering, Han
     container.add(inputWidget);
 
     if (isNewRowEnabled()) {
-      FaLabel plusWidget = new FaLabel(FontAwesome.PLUS_SQUARE_O, STYLE_PLUS);
+      FaLabel plusWidget = new FaLabel(FontAwesome.PLUS_CIRCLE, STYLE_PLUS);
       plusWidget.setTitle(BeeUtils.buildLines(Localized.getConstants().actionCreate(),
           BeeUtils.bracket(getLabel())));
 

@@ -1416,6 +1416,10 @@ public final class BeeUtils {
     return (isPrefix(src, ch) || isSuffix(src, ch)) && !containsOnly(src, ch);
   }
 
+  public static boolean isQuoted(String s) {
+    return isDelimited(s, BeeConst.CHAR_QUOT) || isDelimited(s, BeeConst.CHAR_APOS);
+  }
+
   /**
    * Checks if the last character in a CharSequence is a suffix.
    * 
@@ -2503,22 +2507,10 @@ public final class BeeUtils {
     return result;
   }
 
-  /**
-   * Checks if {@code x} is a Boolean value.
-   * 
-   * @param x value to check
-   * @return true if the value is Boolean, otherwise false.
-   */
   public static boolean toBoolean(int x) {
     return x == BeeConst.INT_TRUE;
   }
 
-  /**
-   * Checks if {@code s} is a Boolean value.
-   * 
-   * @param s value to check
-   * @return true if the value is Boolean, otherwise false.
-   */
   public static boolean toBoolean(String s) {
     if (isEmpty(s)) {
       return false;
@@ -2962,7 +2954,11 @@ public final class BeeUtils {
   }
 
   public static String unquote(String s) {
-    return removePrefixAndSuffix(s, BeeConst.CHAR_QUOT);
+    if (isQuoted(s)) {
+      return s.substring(1, s.length() - 1);
+    } else {
+      return s;
+    }
   }
 
   /**

@@ -14,9 +14,8 @@ import com.butent.bee.client.composite.FileCollector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.IdCallback;
 import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.data.Queries.IntCallback;
 import com.butent.bee.client.data.RowCallback;
-import com.butent.bee.client.data.RowEditor;
-import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.modules.trade.TradeUtils;
 import com.butent.bee.client.presenter.GridPresenter;
@@ -25,10 +24,8 @@ import com.butent.bee.client.render.FileLinkRenderer;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
-import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.view.ViewHelper;
-import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
@@ -46,6 +43,7 @@ import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
@@ -74,6 +72,10 @@ public final class DocumentsHandler {
       if (collector != null && !collector.isEmpty()) {
         sendFiles(result.getId(), collector.getFiles(), null);
         collector.clear();
+      }
+
+      if (result.getString(Data.getColumnIndex(VIEW_DOCUMENTS, COL_DOCUMENT_COMPANY)) != null) {
+        insertCompanyInfo(result, null);
       }
     }
 
@@ -214,70 +216,6 @@ public final class DocumentsHandler {
     }
   }
 
-  private static final class RelatedDocumentsHandler extends AbstractGridInterceptor {
-
-    private int documentIndex = BeeConst.UNDEF;
-
-    private RelatedDocumentsHandler() {
-    }
-
-    @Override
-    public void afterCreate(GridView gridView) {
-      documentIndex = gridView.getDataIndex(COL_DOCUMENT);
-      super.afterCreate(gridView);
-    }
-
-    @Override
-    public boolean beforeAddRow(final GridPresenter presenter, boolean copy) {
-      RowFactory.createRow(VIEW_DOCUMENTS, new RowCallback() {
-        @Override
-        public void onSuccess(BeeRow result) {
-          final long docId = result.getId();
-
-          presenter.getGridView().ensureRelId(new IdCallback() {
-            @Override
-            public void onSuccess(Long relId) {
-              Queries.insert(AdministrationConstants.VIEW_RELATIONS,
-                  Data.getColumns(AdministrationConstants.VIEW_RELATIONS,
-                      Lists.newArrayList(COL_DOCUMENT, presenter.getGridView().getRelColumn())),
-                  Queries.asList(docId, relId), null, new RowCallback() {
-                    @Override
-                    public void onSuccess(BeeRow row) {
-                      presenter.handleAction(Action.REFRESH);
-                    }
-                  });
-            }
-          });
-        }
-      });
-
-      return false;
-    }
-
-    @Override
-    public GridInterceptor getInstance() {
-      return new RelatedDocumentsHandler();
-    }
-
-    @Override
-    public void onEditStart(EditStartEvent event) {
-      event.consume();
-
-      if (!BeeConst.isUndef(documentIndex) && event.getRowValue() != null) {
-        Long docId = event.getRowValue().getLong(documentIndex);
-
-        if (DataUtils.isId(docId)) {
-          RowEditor.open(VIEW_DOCUMENTS, docId, Opener.MODAL, new RowCallback() {
-            @Override
-            public void onSuccess(BeeRow result) {
-              getGridPresenter().handleAction(Action.REFRESH);
-            }
-          });
-        }
-      }
-    }
-  }
-
   public static void register() {
     GridFactory.registerGridInterceptor(VIEW_DOCUMENT_TEMPLATES, new DocumentTemplatesGrid());
 
@@ -363,5 +301,38 @@ public final class DocumentsHandler {
   }
 
   private DocumentsHandler() {
+  }
+
+  public static void insertCompanyInfo(IsRow row, String oldValue) {
+
+    if (row == null) {
+      return;
+    }
+
+    final Long rowId = row.getId();
+    final String company = row.getString(Data.getColumnIndex(VIEW_DOCUMENTS,
+        COL_DOCUMENT_COMPANY));
+
+    if (!BeeUtils.isEmpty(company)) {
+
+      Filter filter =
+          Filter.and(Filter.equals(COL_DOCUMENT, rowId), Filter
+              .equals(COL_DOCUMENT_COMPANY, oldValue));
+
+      Queries.update(AdministrationConstants.VIEW_RELATIONS, filter, COL_DOCUMENT_COMPANY, company,
+          new IntCallback() {
+
+            @Override
+            public void onSuccess(Integer result) {
+              if (result == 0) {
+                Queries.insert(AdministrationConstants.VIEW_RELATIONS, Data.getColumns(
+                    AdministrationConstants.VIEW_RELATIONS,
+                    Lists.newArrayList(COL_DOCUMENT_COMPANY,
+                        COL_DOCUMENT)), Lists.newArrayList(company, BeeUtils
+                    .toString(rowId)));
+              }
+            }
+          });
+    }
   }
 }

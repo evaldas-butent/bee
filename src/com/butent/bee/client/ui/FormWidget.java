@@ -1023,6 +1023,8 @@ public enum FormWidget {
 
   private static final String ATTR_SUMMARIZE = "summarize";
 
+  private static final String ATTR_RESIZABLE = "resizable";
+
   private static final String TAG_CSS = "css";
 
   private static final String TAG_HANDLER = "handler";
@@ -1731,6 +1733,9 @@ public enum FormWidget {
       case TABBED_PAGES:
         stylePrefix = attributes.get(ATTR_STYLE_PREFIX);
         widget = BeeUtils.isEmpty(stylePrefix) ? new TabbedPages() : new TabbedPages(stylePrefix);
+        if (attributes.containsKey(ATTR_RESIZABLE)) {
+          ((TabbedPages) widget).setResizable(BeeUtils.toBoolean(attributes.get(ATTR_RESIZABLE)));
+        }
         break;
 
       case TABLE:

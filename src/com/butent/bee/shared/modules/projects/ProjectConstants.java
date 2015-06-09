@@ -41,6 +41,7 @@ public final class ProjectConstants {
 
   public static final String ALS_PROJECT_START_DATE = "ProjectStartDate";
   public static final String ALS_PROJECT_END_DATE = "ProjectEndDate";
+  public static final String ALS_PROJECT_COMPANY_NAME = "CompanyName";
   public static final String ALS_STAGE_NAME = "StageName";
   public static final String ALS_STAGE_START = "StageStart";
   public static final String ALS_STAGE_END = "StageEnd";
@@ -51,6 +52,9 @@ public final class ProjectConstants {
   public static final String ALS_OWNER_LAST_NAME = "OwnerLastName";
   public static final String ALS_TERM = "Term";
   public static final String ALS_PROFIT = "Profit";
+  public static final String ALS_STAGES_COUNT = "StagesCount";
+  public static final String ALS_PROJECT_OWNER = "ProjectOwner";
+  public static final String ALS_PROJECT_STATUS = "ProjectStatus";
 
   public static final String ALS_CHART_START = "ChartStart";
   public static final String ALS_CHART_END = "ChartEnd";
@@ -60,8 +64,12 @@ public final class ProjectConstants {
   public static final String ALS_PUBLISHER_FIRST_NAME = "PublisherFirstName";
   public static final String ALS_PUBLISHER_LAST_NAME = "PublisherLastName";
   public static final String ALS_FILTERED_PROJECT_USER = "FilteredProjectUser";
+  public static final String ALS_FILTERED_OWNER_USER = "FilteredOwnerUser";
+  public static final String ALS_FILTERED_VISITED_USER = "FilteredVisitedUser";
   public static final String ALS_ACTUAL_TIME_DIFFERENCE = "ActualTimeDifference";
   public static final String ALS_CATEGORY_NAME = "CategoryName";
+  public static final String ALS_EXPECTED_TASKS_EXPENSES = "ExpectedTasksExpenses";
+  public static final String ALS_ACTUAL_TASKS_EXPENSES = "ActualExpenses";
 
   public static final String ALS_ROW_ID = "RowID";
   public static final String ALS_TASK_COUNT = "TaskCount";
@@ -86,6 +94,7 @@ public final class ProjectConstants {
   public static final String COL_PROJECT_PRICE = "Price";
   public static final String COL_PROJECT_ITEM_PRICE = "Price";
   public static final String COL_PROJECT_CURENCY = "Currency";
+  public static final String COL_PROJECT_INCOME_CURENCY = "Currency";
 
   public static final String COL_INCOME_NOTE = "Note";
   public static final String COL_INCOME_DATE = "Date";
@@ -98,6 +107,7 @@ public final class ProjectConstants {
   public static final String COL_PROJECT_TYPE = "Type";
   public static final String COL_PROGRESS = "Progress";
   public static final String COL_COMMENT = "Comment";
+  public static final String COL_EXPENSES = "Expenses";
   public static final String COL_EVENT = "Event";
   public static final String COL_EVENT_PROPERTIES = "Properties";
   public static final String COL_CAPTION = "Caption";
@@ -105,6 +115,7 @@ public final class ProjectConstants {
   public static final String COL_EXPECTED_DURATION = "ExpectedDuration";
   public static final String COL_CONTRACT_PRICE = "ContractPrice";
   public static final String COL_PROJECT_TIME_UNIT = "TimeUnit";
+  public static final String COL_DESCRIPTION = "Description";
 
   public static final String COL_PSC_FOOTER_HEIGHT = "PSCFooterHeight";
   public static final String COL_PSC_HEADER_HEIGHT = "PSCHeaderHeight";
@@ -151,6 +162,7 @@ public final class ProjectConstants {
   public static final String PROP_TIME_UNTIS = "TimeUnits";
   public static final String PROP_ITEM_PRICES = "ItemPrices";
   public static final String PROP_SELECT = "Select";
+  public static final String PROP_RS = "RowSet";
 
   public static final String PRM_PROJECT_COMMON_RATE = "ProjectCommonRate";
   public static final String PRM_PROJECT_HOUR_UNIT = "ProjectHourUnit";

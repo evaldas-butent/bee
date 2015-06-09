@@ -260,6 +260,7 @@ public final class TaskConstants {
   public static final String COL_SUMMARY = "Summary";
   public static final String COL_DESCRIPTION = "Description";
   public static final String COL_CAPTION = "Caption";
+  public static final String COL_TASK_COMPANY = "Company";
 
   public static final String COL_PARENT = "Parent";
   public static final String COL_ORDER = "Order";
@@ -435,6 +436,8 @@ public final class TaskConstants {
 
   public static final String FILTER_TASKS_NEW = "tasks_new";
   public static final String FILTER_TASKS_UPDATED = "tasks_updated";
+
+  public static final String PRM_END_OF_WORK_DAY = "EndOfWorkDay";
 
   private TaskConstants() {
   }

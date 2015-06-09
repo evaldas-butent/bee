@@ -26,7 +26,6 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
-import com.butent.bee.client.composite.Thermometer;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.ChoiceCallback;
@@ -64,7 +63,6 @@ import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.websocket.Endpoint;
 import com.butent.bee.client.widget.DateTimeLabel;
 import com.butent.bee.client.widget.FaLabel;
-import com.butent.bee.client.widget.InlineLabel;
 import com.butent.bee.client.widget.InputBoolean;
 import com.butent.bee.client.widget.InputText;
 import com.butent.bee.client.widget.Label;
@@ -94,8 +92,6 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.mail.AccountInfo;
-import com.butent.bee.shared.modules.mail.MailConstants.MessageFlag;
-import com.butent.bee.shared.modules.mail.MailConstants.RuleCondition;
 import com.butent.bee.shared.modules.mail.MailFolder;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
@@ -164,7 +160,7 @@ public class MailPanel extends AbstractFormInterceptor {
       } else {
         address = BeeUtils.notEmpty(row.getString(senderLabel), row.getString(senderEmail));
       }
-      sender.setHtml(address);
+      sender.setText(address);
       fp.add(sender);
 
       Integer att = row.getInteger(attachmentCount);
@@ -177,7 +173,7 @@ public class MailPanel extends AbstractFormInterceptor {
         if (att > 1) {
           TextLabel attachments = new TextLabel(false);
           attachments.setStyleName(BeeConst.CSS_CLASS_PREFIX + "mail-AttachmentCount");
-          attachments.setHtml(BeeUtils.toString(att));
+          attachments.setText(BeeUtils.toString(att));
           fp.add(attachments);
         }
       }
@@ -190,7 +186,7 @@ public class MailPanel extends AbstractFormInterceptor {
 
       TextLabel subject = new TextLabel(false);
       subject.setStyleName(BeeConst.CSS_CLASS_PREFIX + "mail-HeaderSubject");
-      subject.setHtml(row.getString(subjectIdx));
+      subject.setText(row.getString(subjectIdx));
       fp.add(subject);
 
       return fp.toString();
@@ -501,8 +497,9 @@ public class MailPanel extends AbstractFormInterceptor {
           Popup popup = new Popup(OutsideClick.CLOSE, CSS_SEARCH_PREFIX + "Popup");
           popup.setWidget(SearchPanel.this);
           popup.setHideOnEscape(true);
+
+          popup.focusOnOpen(SearchPanel.this);
           popup.showRelativeTo(widget.asWidget().getParent().getElement());
-          UiHelper.focus(SearchPanel.this);
         }
       });
     }
@@ -700,52 +697,24 @@ public class MailPanel extends AbstractFormInterceptor {
   }
 
   void checkFolder(final Long folderId) {
-    final AccountInfo account = getCurrentAccount();
     final ParameterList params = MailKeeper.createArgs(SVC_CHECK_MAIL);
-    params.addDataItem(COL_ACCOUNT, account.getAccountId());
+    params.addDataItem(COL_ACCOUNT, getCurrentAccount().getAccountId());
     params.addDataItem(COL_FOLDER, folderId);
 
-    final String progressId;
-
-    if (Endpoint.isOpen()) {
-      String cap = getFolderCaption(folderId);
-      InlineLabel close = new InlineLabel(String.valueOf(BeeConst.CHAR_TIMES));
-      Thermometer th = new Thermometer(cap, BeeConst.DOUBLE_ONE, close);
-
-      progressId = BeeKeeper.getScreen().addProgress(th);
-
-      if (progressId != null) {
-        close.addClickHandler(new ClickHandler() {
+    Endpoint.initProgress(getFolderCaption(folderId), new Consumer<String>() {
+      @Override
+      public void accept(String progress) {
+        if (!BeeUtils.isEmpty(progress)) {
+          params.addDataItem(Service.VAR_PROGRESS, progress);
+        }
+        BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
           @Override
-          public void onClick(ClickEvent event) {
-            Endpoint.cancelProgress(progressId);
+          public void onResponse(ResponseObject response) {
+            response.notify(getFormView());
           }
         });
       }
-    } else {
-      progressId = null;
-    }
-    final ResponseCallback callback = new ResponseCallback() {
-      @Override
-      public void onResponse(ResponseObject response) {
-        response.notify(getFormView());
-      }
-    };
-    if (progressId == null) {
-      BeeKeeper.getRpc().makePostRequest(params, callback);
-    } else {
-      Endpoint.enqueuePropgress(progressId, new Consumer<String>() {
-        @Override
-        public void accept(String input) {
-          if (!BeeUtils.isEmpty(input)) {
-            params.addDataItem(Service.VAR_PROGRESS, input);
-          } else {
-            Endpoint.cancelProgress(progressId);
-          }
-          BeeKeeper.getRpc().makePostRequest(params, callback);
-        }
-      });
-    }
+    });
   }
 
   List<AccountInfo> getAccounts() {
@@ -919,7 +888,7 @@ public class MailPanel extends AbstractFormInterceptor {
 
   private void removeMessages() {
     List<String> options = new ArrayList<>();
-    GridPresenter grid = messages.getGridPresenter();
+    final GridPresenter grid = messages.getGridPresenter();
     final IsRow activeRow = grid.getActiveRow();
 
     if (activeRow != null) {
@@ -942,7 +911,7 @@ public class MailPanel extends AbstractFormInterceptor {
         new ChoiceCallback() {
           @Override
           public void onSuccess(int value) {
-            List<Long> ids = new ArrayList<>();
+            final List<Long> ids = new ArrayList<>();
 
             if (value == 0 && activeRow != null) {
               ids.add(activeRow.getId());
@@ -961,6 +930,9 @@ public class MailPanel extends AbstractFormInterceptor {
                 response.notify(getFormView());
 
                 if (!response.hasErrors()) {
+                  for (Long rowId : ids) {
+                    grid.getGridView().getGrid().removeRowById(rowId);
+                  }
                   String msg = response.getResponseAsString();
                   LocalizableMessages loc = Localized.getMessages();
 

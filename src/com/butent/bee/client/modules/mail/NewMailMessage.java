@@ -28,6 +28,7 @@ import com.butent.bee.client.dialog.DialogConstants;
 import com.butent.bee.client.dialog.InputBoxes;
 import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.dialog.Popup;
+import com.butent.bee.client.event.Previewer;
 import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.FormFactory.FormViewCallback;
@@ -44,10 +45,12 @@ import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BiConsumer;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.html.builder.elements.Div;
@@ -116,6 +119,9 @@ public final class NewMailMessage extends AbstractFormInterceptor
     }
   }
 
+  private static final String STYLE_WAITING_FOR_USER_EMAILS = BeeConst.CSS_CLASS_PREFIX
+      + "mail-WaitingForUserEmails";
+
   public static void create(final Set<String> to, final Set<String> cc, final Set<String> bcc,
       final String subject, final String content, final Collection<FileInfo> attachments,
       final Long relatedId, final boolean isDraft) {
@@ -147,8 +153,18 @@ public final class NewMailMessage extends AbstractFormInterceptor
             if (formView != null) {
               formView.start(null);
 
-              DialogBox dialog = Global.inputWidget(formView.getCaption(), formView,
+              final DialogBox dialog = Global.inputWidget(formView.getCaption(), formView,
                   newMessage.new DialogCallback(), RowFactory.DIALOG_STYLE);
+              dialog.addStyleName(STYLE_WAITING_FOR_USER_EMAILS);
+
+              Queries.getRowSet(VIEW_USER_EMAILS, null, null, null, CachingPolicy.WRITE,
+                  new RowSetCallback() {
+                    @Override
+                    public void onSuccess(BeeRowSet result) {
+                      dialog.removeStyleName(STYLE_WAITING_FOR_USER_EMAILS);
+                      Previewer.ensureUnregistered(dialog);
+                    }
+                  });
 
               newMessage.initHeader(dialog);
             }

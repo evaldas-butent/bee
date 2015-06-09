@@ -9,6 +9,7 @@ import com.butent.bee.client.screen.Domain;
 import com.butent.bee.client.screen.Workspace;
 import com.butent.bee.client.ui.HasProgress;
 import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.shared.HasExtendedInfo;
 import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.data.UserData;
@@ -91,7 +92,17 @@ public interface Screen extends NotificationListener, HasExtendedInfo {
 
   void updateMenu(IdentifiableWidget widget);
 
+  void updateNewsSize(int size);
+
   boolean updateProgress(String id, String label, double value);
 
   void updateUserData(UserData userData);
+
+  FaLabel getOnlineUserLabel();
+
+  Flow getOnlineUserSize();
+
+  Flow getOnlineEmailSize();
+
+  FaLabel getOnlineEmailLabel();
 }

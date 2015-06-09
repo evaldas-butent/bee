@@ -1,103 +1,53 @@
 package com.butent.bee.client.output;
 
-import com.google.gwt.dom.client.OptionElement;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.Global;
+import com.butent.bee.client.dialog.ChoiceCallback;
 import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.widget.Button;
-import com.butent.bee.client.widget.InlineLabel;
 import com.butent.bee.client.widget.InputDate;
+import com.butent.bee.client.widget.InputSpinner;
+import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
-import com.butent.bee.shared.i18n.LocalizableConstants;
+import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.report.DateTimeFunction;
 import com.butent.bee.shared.time.HasDateValue;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
-import com.butent.bee.shared.ui.HasLocalizedCaption;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
+import java.util.Objects;
 
 public class ReportDateItem extends ReportItem {
 
-  private Map<DateTimeFunction, Editor> format = new LinkedHashMap<>();
+  private static final String FORMAT = "FORMAT";
+
+  private DateTimeFunction format = DateTimeFunction.DATE;
   private ListBox formatWidget;
-  private InputDate filterFrom;
-  private InputDate filterTo;
 
-  public enum DateTimeFunction implements HasLocalizedCaption {
-    YEAR() {
-      @Override
-      public String getCaption(LocalizableConstants constants) {
-        return constants.year();
-      }
-    },
-    QUATER() {
-      @Override
-      public String getCaption(LocalizableConstants constants) {
-        return constants.quater();
-      }
-    },
-    MONTH() {
-      @Override
-      public String getCaption(LocalizableConstants constants) {
-        return constants.month();
-      }
-    },
-    DAY() {
-      @Override
-      public String getCaption(LocalizableConstants constants) {
-        return constants.day();
-      }
-    },
-    DAY_OF_WEEK() {
-      @Override
-      public String getCaption(LocalizableConstants constants) {
-        return constants.dayOfWeek();
-      }
-    },
-    HOUR() {
-      @Override
-      public String getCaption(LocalizableConstants constants) {
-        return constants.hour();
-      }
-    },
-    MINUTE() {
-      @Override
-      public String getCaption(LocalizableConstants constants) {
-        return constants.minute();
-      }
-    },
-    DATE() {
-      @Override
-      public String getCaption(LocalizableConstants constants) {
-        return constants.date();
-      }
-    };
-
-    @Override
-    public String getCaption() {
-      return getCaption(Localized.getConstants());
-    }
-  }
+  private Operator filterOperator;
+  private Long filter;
+  private Editor filterWidget;
 
   public ReportDateItem(String name, String caption) {
     super(name, caption);
@@ -105,28 +55,10 @@ public class ReportDateItem extends ReportItem {
 
   @Override
   public void clearFilter() {
-    if (getFilterFrom() != null) {
-      getFilterFrom().clearValue();
-      getFilterTo().clearValue();
+    if (filterWidget != null) {
+      filterWidget.clearValue();
     }
-    for (Editor editor : getFormat().values()) {
-      if (editor != null) {
-        editor.clearValue();
-      }
-    }
-  }
-
-  @Override
-  public String getFormatedCaption() {
-    if (BeeUtils.isEmpty(getFormat())) {
-      return getCaption();
-    }
-    List<String> captions = new ArrayList<>();
-
-    for (DateTimeFunction fnc : getFormat().keySet()) {
-      captions.add(fnc.getCaption());
-    }
-    return BeeUtils.joinWords(getCaption(), BeeUtils.parenthesize(BeeUtils.joinItems(captions)));
+    filter = null;
   }
 
   @Override
@@ -134,60 +66,71 @@ public class ReportDateItem extends ReportItem {
     Map<String, String> map = Codec.deserializeMap(data);
 
     if (!BeeUtils.isEmpty(map)) {
-      format.clear();
+      setFormat(EnumUtils.getEnumByName(DateTimeFunction.class, map.get(FORMAT)));
 
-      for (Entry<String, String> entry : Codec.deserializeMap(map.get(Service.VAR_DATA))
-          .entrySet()) {
-        DateTimeFunction fnc = EnumUtils.getEnumByName(DateTimeFunction.class, entry.getKey());
-        Editor editor = null;
-
-        if (!BeeUtils.isEmpty(entry.getValue())) {
-          editor = createFilterEditor(fnc);
-          editor.setValue(entry.getValue());
-        }
-        format.put(fnc, editor);
-      }
-      if (map.containsKey(Service.VAR_FROM)) {
-        filterFrom = (InputDate) createFilterEditor(null);
-        filterFrom.setValue(map.get(Service.VAR_FROM));
-      }
-      if (map.containsKey(Service.VAR_TO)) {
-        filterTo = (InputDate) createFilterEditor(null);
-        filterTo.setValue(map.get(Service.VAR_TO));
+      if (map.containsKey(Service.VAR_DATA)) {
+        Pair<String, String> pair = Pair.restore(map.get(Service.VAR_DATA));
+        filterOperator = EnumUtils.getEnumByName(Operator.class, pair.getA());
+        filter = BeeUtils.toLongOrNull(pair.getB());
       }
     }
   }
 
   @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (obj == null) {
+      return false;
+    }
+    if (!(obj instanceof ReportDateItem)) {
+      return false;
+    }
+    return super.equals(obj) && Objects.equals(getFormat(), ((ReportDateItem) obj).getFormat());
+  }
+
+  @Override
   public ReportValue evaluate(SimpleRow row) {
+    ReportValue value;
     JustDate date = row.getDate(getName());
 
     if (date != null) {
-      if (BeeUtils.isEmpty(getFormat())) {
-        return evaluate(date, null);
-      }
-      List<String> values = new ArrayList<>();
-      List<ReportValue> displays = new ArrayList<>();
-
-      for (DateTimeFunction fnc : getFormat().keySet()) {
-        ReportValue value = evaluate(date, fnc);
-        values.add(value.getValue());
-        displays.add(value);
-      }
-      return ReportValue.of(BeeUtils.joinItems(values), BeeUtils.joinItems(displays));
+      value = evaluate(date);
+    } else {
+      value = ReportValue.empty();
     }
-    return ReportValue.empty();
+    return value;
+  }
+
+  @Override
+  public Long getFilter() {
+    return filter;
+  }
+
+  public Operator getFilterOperator() {
+    return filterOperator;
   }
 
   @Override
   public Widget getFilterWidget() {
     Flow container = new Flow(getStyle() + "-filter");
-    render(container);
+    renderFilter(container);
     return container;
   }
 
-  public Map<DateTimeFunction, Editor> getFormat() {
+  public DateTimeFunction getFormat() {
     return format;
+  }
+
+  @Override
+  public String getFormatedCaption() {
+    String cap = getCaption();
+
+    if (getFormat() != DateTimeFunction.DATE) {
+      cap = BeeUtils.joinWords(cap, BeeUtils.parenthesize(getFormat().getCaption()));
+    }
+    return cap;
   }
 
   @Override
@@ -198,18 +141,13 @@ public class ReportDateItem extends ReportItem {
   @Override
   public ListBox getOptionsWidget() {
     if (formatWidget == null) {
-      formatWidget = new ListBox(true);
+      formatWidget = new ListBox();
 
       for (DateTimeFunction fnc : getSupportedFunctions()) {
         formatWidget.addItem(fnc.getCaption(), fnc.name());
       }
-      formatWidget.setVisibleItemCount(getSupportedFunctions().size());
     }
-    for (int i = 0; i < formatWidget.getItemCount(); i++) {
-      OptionElement option = formatWidget.getOptionElement(i);
-      option.setSelected(getFormat().keySet()
-          .contains(EnumUtils.getEnumByName(DateTimeFunction.class, option.getValue())));
-    }
+    formatWidget.setValue(getFormat().name());
     return formatWidget;
   }
 
@@ -219,91 +157,72 @@ public class ReportDateItem extends ReportItem {
   }
 
   @Override
-  public ReportDateItem saveOptions() {
+  public int hashCode() {
+    return Objects.hash(getName(), getFormat());
+  }
+
+  @Override
+  public String saveOptions() {
     if (formatWidget != null) {
-      List<DateTimeFunction> formats = new ArrayList<>();
-
-      for (int i = 0; i < formatWidget.getItemCount(); i++) {
-        OptionElement optionElement = formatWidget.getOptionElement(i);
-
-        if (optionElement.isSelected()) {
-          formats.add(EnumUtils.getEnumByName(DateTimeFunction.class, optionElement.getValue()));
-        }
-      }
-      setFormat(formats);
+      setFormat(EnumUtils.getEnumByName(DateTimeFunction.class, formatWidget.getValue()));
+      filter = null;
+      filterWidget = null;
     }
-    return this;
+    return super.saveOptions();
   }
 
   @Override
   public String serialize() {
-    return super.serialize(serializeFilter());
-  }
-
-  @Override
-  public String serializeFilter() {
     Map<String, Object> map = new HashMap<>();
-    Map<DateTimeFunction, String> values = new LinkedHashMap<>();
+    map.put(FORMAT, getFormat());
 
-    for (Entry<DateTimeFunction, Editor> entry : getFormat().entrySet()) {
-      values.put(entry.getKey(), entry.getValue() != null ? entry.getValue().getValue() : null);
-    }
-    map.put(Service.VAR_DATA, values);
+    saveFilter();
 
-    if (getFilterFrom() != null) {
-      map.put(Service.VAR_FROM, getFilterFrom().getNormalizedValue());
-      map.put(Service.VAR_TO, getFilterTo().getNormalizedValue());
+    if (filterOperator != null) {
+      map.put(Service.VAR_DATA, Pair.of(filterOperator, filter));
     }
-    return Codec.beeSerialize(map);
+    return serialize(Codec.beeSerialize(map));
   }
 
   @Override
   public ReportItem setFilter(String value) {
     if (!BeeUtils.isEmpty(value)) {
-      getFilterWidget();
-
-      if (BeeUtils.isEmpty(getFormat())) {
-        setFilter(value, null);
-      } else {
-        String[] parts = BeeUtils.split(value, ',');
-        int x = 0;
-
-        for (DateTimeFunction fnc : getFormat().keySet()) {
-          setFilter(parts[x++], fnc);
-        }
-      }
+      filterOperator = Operator.EQ;
+      filter = BeeUtils.toLongOrNull(value);
+    } else {
+      filter = null;
+    }
+    if (filterWidget != null) {
+      filterWidget.setValue(filter == null ? null : BeeUtils.toString(filter));
     }
     return this;
   }
 
-  public ReportDateItem setFormat(List<DateTimeFunction> dateFormat) {
-    format.clear();
-
-    if (!BeeUtils.isEmpty(dateFormat)) {
-      for (DateTimeFunction fnc : dateFormat) {
-        format.put(fnc, null);
-      }
-    }
+  public ReportDateItem setFormat(DateTimeFunction dateFormat) {
+    this.format = Assert.notNull(dateFormat);
     return this;
   }
 
   @Override
   public boolean validate(SimpleRow row) {
-    return getFilterFrom() == null || !row.getRowSet().hasColumn(getName())
-        || validate(getFilterFrom().getDate(), getFilterTo().getDate(), row.getDate(getName()));
+    if (!row.getRowSet().hasColumn(getName())) {
+      return true;
+    }
+    return validate(row.getDate(getName()));
   }
 
-  protected Editor createFilterEditor(DateTimeFunction fnc) {
-    if (fnc == null) {
-      return new InputDate();
-    }
+  protected Editor createFilterEditor() {
     ListBox editor = new ListBox();
     editor.addItem("");
 
-    switch (fnc) {
+    switch (getFormat()) {
+      case DATE:
+        return new InputDate();
+      case YEAR:
+        return new InputSpinner();
       case DAY:
         for (int i = 1; i <= 31; i++) {
-          editor.addItem(BeeUtils.toString(i), TimeUtils.padTwo(i));
+          editor.addItem(BeeUtils.toString(i), BeeUtils.toString(i));
         }
         break;
       case DAY_OF_WEEK:
@@ -313,7 +232,7 @@ public class ReportDateItem extends ReportItem {
         break;
       case MONTH:
         for (int i = 1; i <= 12; i++) {
-          editor.addItem(Format.renderMonthFullStandalone(i), TimeUtils.padTwo(i));
+          editor.addItem(Format.renderMonthFullStandalone(i), BeeUtils.toString(i));
         }
         break;
       case QUATER:
@@ -345,15 +264,16 @@ public class ReportDateItem extends ReportItem {
     return editor;
   }
 
-  protected ReportValue evaluate(HasDateValue date, DateTimeFunction fnc) {
-    if (fnc == null) {
-      return ReportValue.of(date.toString());
-    }
-    int val = getValue(date, fnc);
+  protected ReportValue evaluate(HasDateValue date) {
     String value = null;
     String display = null;
+    int val = BeeUtils.toInt(getValue(date));
 
-    switch (fnc) {
+    switch (getFormat()) {
+      case DATE:
+        value = BeeUtils.padLeft(BeeUtils.toString(val), 10, BeeConst.CHAR_ZERO);
+        display = date.toString();
+        break;
       case DAY:
         value = TimeUtils.padTwo(val);
         display = BeeUtils.toString(val);
@@ -394,21 +314,15 @@ public class ReportDateItem extends ReportItem {
     return ReportValue.of(value, display);
   }
 
-  protected InputDate getFilterFrom() {
-    return filterFrom;
-  }
-
-  protected InputDate getFilterTo() {
-    return filterTo;
-  }
-
   protected EnumSet<DateTimeFunction> getSupportedFunctions() {
-    return EnumSet.of(DateTimeFunction.YEAR, DateTimeFunction.QUATER,
-        DateTimeFunction.MONTH, DateTimeFunction.DAY, DateTimeFunction.DAY_OF_WEEK);
+    return EnumSet.complementOf(EnumSet.of(DateTimeFunction.DATETIME, DateTimeFunction.HOUR,
+        DateTimeFunction.MINUTE));
   }
 
-  protected int getValue(HasDateValue date, DateTimeFunction fnc) {
-    switch (fnc) {
+  protected long getValue(HasDateValue date) {
+    switch (getFormat()) {
+      case DATE:
+        return date.getDate().getDays();
       case DAY:
         return date.getDom();
       case DAY_OF_WEEK:
@@ -420,93 +334,89 @@ public class ReportDateItem extends ReportItem {
       case YEAR:
         return date.getYear();
       default:
-        Assert.untouchable();
+        Assert.unsupported();
     }
     return BeeConst.UNDEF;
   }
 
-  protected void setFilter(String part, DateTimeFunction fnc) {
-    JustDate from = null;
-    JustDate to = null;
+  protected boolean validate(HasDateValue date) {
+    saveFilter();
 
-    if (fnc == null) {
-      from = TimeUtils.parseDate(part);
-      to = TimeUtils.nextDay(from, 1);
-    } else {
-      switch (fnc) {
-        case DAY:
-        case QUATER:
-        case DAY_OF_WEEK:
-        case MONTH:
-          getFormat().get(fnc).setValue(part);
-          break;
-        case YEAR:
-          from = new JustDate(BeeUtils.toInt(part), 1, 1);
-          to = new JustDate(from.getYear() + 1, 1, 1);
-          break;
-        default:
-          Assert.untouchable();
-          break;
-      }
+    if (filter == null) {
+      return true;
     }
-    if (from != null) {
-      getFilterFrom().setDate(TimeUtils.max(getFilterFrom().getDate(), from));
-      getFilterTo().setDate(getFilterTo().getDate() != null
-          ? TimeUtils.min(getFilterTo().getDate(), to) : to);
+    if (date == null) {
+      return filterOperator == Operator.LT;
+    }
+    long value = getValue(date);
+
+    switch (filterOperator) {
+      case EQ:
+        return value == filter;
+      case GE:
+        return value >= filter;
+      case GT:
+        return value > filter;
+      case LE:
+        return value <= filter;
+      case LT:
+        return value < filter;
+      default:
+        return false;
     }
   }
 
-  protected boolean validate(HasDateValue from, HasDateValue to, HasDateValue date) {
-    if (from != null && to != null && TimeUtils.isMeq(from, to)) {
-      return false;
-    }
-    for (Entry<DateTimeFunction, Editor> entry : getFormat().entrySet()) {
-      Editor editor = entry.getValue();
-
-      if (editor != null && !BeeUtils.isEmpty(editor.getValue())) {
-        if (date == null || BeeUtils.toInt(editor.getValue()) != getValue(date, entry.getKey())) {
-          return false;
-        }
-      }
-    }
-    return TimeUtils.isBetweenExclusiveNotRequired(date, from, to);
-  }
-
-  private void render(final Flow container) {
+  private void renderFilter(final Flow container) {
     container.clear();
 
-    container.add(new Button(Localized.getConstants().period(), new ClickHandler() {
+    container.add(new Button(getFormat().getCaption(), new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
         Global.inputWidget(getOptionsCaption(), getOptionsWidget(), new InputCallback() {
           @Override
           public void onSuccess() {
             saveOptions();
-            render(container);
+            renderFilter(container);
           }
         });
       }
     }));
-    if (getFilterFrom() == null) {
-      filterFrom = (InputDate) createFilterEditor(null);
-      filterTo = (InputDate) createFilterEditor(null);
+    if (filterOperator == null) {
+      filterOperator = Operator.EQ;
     }
-    container.add(getFilterFrom());
-    container.add(new InlineLabel("-"));
-    container.add(getFilterTo());
+    final Label operator = new Label(filterOperator.toTextString());
+    operator.addStyleName(getStyle() + "-operator");
+    operator.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        final List<Operator> operators = Arrays.asList(Operator.LT, Operator.LE, Operator.EQ,
+            Operator.GE, Operator.GT);
+        List<String> options = new ArrayList<>();
 
-    for (Entry<DateTimeFunction, Editor> entry : getFormat().entrySet()) {
-      DateTimeFunction fnc = entry.getKey();
+        for (Operator o : operators) {
+          options.add(o.toTextString());
+        }
+        Global.choice(Localized.getConstants().operator(), null, options, new ChoiceCallback() {
+          @Override
+          public void onSuccess(int value) {
+            filterOperator = operators.get(value);
+            operator.setText(filterOperator.toTextString());
+          }
+        });
+      }
+    });
+    container.add(operator);
 
-      if (entry.getValue() == null) {
-        entry.setValue(createFilterEditor(fnc));
-      }
-      if (entry.getValue() != null) {
-        Flow flow = new Flow();
-        flow.add(new InlineLabel(fnc.getCaption()));
-        flow.add(entry.getValue());
-        container.add(flow);
-      }
+    if (filterWidget == null) {
+      filterWidget = createFilterEditor();
+    }
+    filterWidget.setValue(filter == null ? null : BeeUtils.toString(filter));
+    container.add(filterWidget);
+  }
+
+  private void saveFilter() {
+    if (filterWidget != null) {
+      filter = BeeUtils.toLongOrNull(filterWidget.getNormalizedValue());
     }
   }
 }

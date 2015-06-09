@@ -141,7 +141,10 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
     @Override
     protected void onComplete() {
       setState(AnimationState.FINISHED);
-      if (!popup.isShowing()) {
+
+      if (popup.isShowing()) {
+        OpenEvent.fire(popup);
+      } else {
         BodyPanel.get().remove(popup);
       }
     }
@@ -273,7 +276,7 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
     return addHandler(handler, OpenEvent.getType());
   }
 
-  public void attachAmendDetach(final Scheduler.ScheduledCommand command) {
+  public void attachAmendDetach(final Scheduler.ScheduledCommand command, final Runnable callback) {
     Assert.notNull(command);
 
     Assert.state(!isShowing());
@@ -289,6 +292,10 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
 
         BodyPanel.get().remove(Popup.this);
         getElement().getStyle().clearVisibility();
+
+        if (callback != null) {
+          callback.run();
+        }
       }
     });
   }
@@ -323,6 +330,15 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
 
   public void close() {
     hide(true);
+  }
+
+  public void focusOnOpen(final Widget target) {
+    addOpenHandler(new OpenEvent.Handler() {
+      @Override
+      public void onOpen(OpenEvent event) {
+        UiHelper.focus(target);
+      }
+    });
   }
 
   public Animation getAnimation() {
@@ -502,7 +518,6 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
 
   public void setPopupPositionAndShow(PositionCallback callback) {
     show(callback);
-    OpenEvent.fire(this);
   }
 
   public void showAt(final int x, final int y) {
@@ -738,6 +753,7 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
 
           if (!maybeAnimate()) {
             getElement().getStyle().clearVisibility();
+            OpenEvent.fire(Popup.this);
           }
         }
       });

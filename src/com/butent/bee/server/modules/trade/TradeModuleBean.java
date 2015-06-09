@@ -7,11 +7,120 @@ import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
 import com.google.common.eventbus.Subscribe;
 
-import static com.butent.bee.shared.html.builder.Factory.*;
-import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
-import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
-import static com.butent.bee.shared.modules.trade.TradeConstants.*;
-import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
+import static com.butent.bee.shared.html.builder.Factory.b;
+import static com.butent.bee.shared.html.builder.Factory.br;
+import static com.butent.bee.shared.html.builder.Factory.caption;
+import static com.butent.bee.shared.html.builder.Factory.meta;
+import static com.butent.bee.shared.html.builder.Factory.p;
+import static com.butent.bee.shared.html.builder.Factory.pre;
+import static com.butent.bee.shared.html.builder.Factory.table;
+import static com.butent.bee.shared.html.builder.Factory.td;
+import static com.butent.bee.shared.html.builder.Factory.th;
+import static com.butent.bee.shared.html.builder.Factory.title;
+import static com.butent.bee.shared.html.builder.Factory.tr;
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.ALS_CURRENCY_NAME;
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.COL_CURRENCY;
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.COL_CURRENCY_NAME;
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.COL_CURRENCY_RATE;
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.PRM_ERP_ADDRESS;
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.PRM_ERP_LOGIN;
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.PRM_ERP_NAMESPACE;
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.PRM_ERP_OPERATION;
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.PRM_ERP_PASSWORD;
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.PRM_ERP_PURCHASE_OPERATION;
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.PRM_ERP_WAREHOUSE;
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.TBL_CURRENCIES;
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.VIEW_CURRENCIES;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.COL_ADDRESS;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.COL_CITY;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.COL_CITY_NAME;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.COL_COMPANY;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.COL_COMPANY_CODE;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.COL_COMPANY_CREDIT_DAYS;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.COL_COMPANY_CREDIT_LIMIT;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.COL_COMPANY_LIMIT_CURRENCY;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.COL_COMPANY_NAME;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.COL_COMPANY_TYPE;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.COL_COMPANY_TYPE_NAME;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.COL_COMPANY_VAT_CODE;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.COL_CONTACT;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.COL_COUNTRY;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.COL_COUNTRY_NAME;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.COL_ITEM;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.COL_ITEM_BARCODE;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.COL_ITEM_EXTERNAL_CODE;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.COL_ITEM_NAME;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.COL_POST_INDEX;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.COL_UNIT;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.COL_UNIT_NAME;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.COL_WAREHOUSE_CODE;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.TBL_CITIES;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.TBL_COMPANIES;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.TBL_COMPANY_TYPES;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.TBL_CONTACTS;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.TBL_COUNTRIES;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.TBL_ITEMS;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.TBL_UNITS;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.TBL_WAREHOUSES;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.VIEW_COMPANIES;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.VIEW_COMPANY_BANK_ACCOUNTS;
+import static com.butent.bee.shared.modules.trade.TradeConstants.ALS_CUSTOMER_NAME;
+import static com.butent.bee.shared.modules.trade.TradeConstants.ALS_OVERDUE_COUNT;
+import static com.butent.bee.shared.modules.trade.TradeConstants.ALS_OVERDUE_SUM;
+import static com.butent.bee.shared.modules.trade.TradeConstants.ALS_SALES_COUNT;
+import static com.butent.bee.shared.modules.trade.TradeConstants.ALS_SALES_SUM;
+import static com.butent.bee.shared.modules.trade.TradeConstants.COL_PURCHASE;
+import static com.butent.bee.shared.modules.trade.TradeConstants.COL_PURCHASE_WAREHOUSE_TO;
+import static com.butent.bee.shared.modules.trade.TradeConstants.COL_SALE;
+import static com.butent.bee.shared.modules.trade.TradeConstants.COL_SALE_PAYER;
+import static com.butent.bee.shared.modules.trade.TradeConstants.COL_TRADE_AMOUNT;
+import static com.butent.bee.shared.modules.trade.TradeConstants.COL_TRADE_CONTACT;
+import static com.butent.bee.shared.modules.trade.TradeConstants.COL_TRADE_CURRENCY;
+import static com.butent.bee.shared.modules.trade.TradeConstants.COL_TRADE_CUSTOMER;
+import static com.butent.bee.shared.modules.trade.TradeConstants.COL_TRADE_DATE;
+import static com.butent.bee.shared.modules.trade.TradeConstants.COL_TRADE_DEBT;
+import static com.butent.bee.shared.modules.trade.TradeConstants.COL_TRADE_EXPORTED;
+import static com.butent.bee.shared.modules.trade.TradeConstants.COL_TRADE_INVOICE_NO;
+import static com.butent.bee.shared.modules.trade.TradeConstants.COL_TRADE_INVOICE_PREFIX;
+import static com.butent.bee.shared.modules.trade.TradeConstants.COL_TRADE_ITEM_ARTICLE;
+import static com.butent.bee.shared.modules.trade.TradeConstants.COL_TRADE_ITEM_NOTE;
+import static com.butent.bee.shared.modules.trade.TradeConstants.COL_TRADE_ITEM_ORDINAL;
+import static com.butent.bee.shared.modules.trade.TradeConstants.COL_TRADE_ITEM_PRICE;
+import static com.butent.bee.shared.modules.trade.TradeConstants.COL_TRADE_ITEM_QUANTITY;
+import static com.butent.bee.shared.modules.trade.TradeConstants.COL_TRADE_NUMBER;
+import static com.butent.bee.shared.modules.trade.TradeConstants.COL_TRADE_PAID;
+import static com.butent.bee.shared.modules.trade.TradeConstants.COL_TRADE_PAYMENT_TIME;
+import static com.butent.bee.shared.modules.trade.TradeConstants.COL_TRADE_SUPPLIER;
+import static com.butent.bee.shared.modules.trade.TradeConstants.COL_TRADE_TERM;
+import static com.butent.bee.shared.modules.trade.TradeConstants.COL_TRADE_TIME_UNIT;
+import static com.butent.bee.shared.modules.trade.TradeConstants.COL_TRADE_VAT;
+import static com.butent.bee.shared.modules.trade.TradeConstants.COL_TRADE_VAT_PERC;
+import static com.butent.bee.shared.modules.trade.TradeConstants.COL_TRADE_VAT_PLUS;
+import static com.butent.bee.shared.modules.trade.TradeConstants.COL_TRADE_WAREHOUSE_FROM;
+import static com.butent.bee.shared.modules.trade.TradeConstants.COL_TRADE_WEIGHT;
+import static com.butent.bee.shared.modules.trade.TradeConstants.PROP_AVERAGE_OVERDUE;
+import static com.butent.bee.shared.modules.trade.TradeConstants.PROP_REMIND_EMAIL;
+import static com.butent.bee.shared.modules.trade.TradeConstants.SVC_CREDIT_INFO;
+import static com.butent.bee.shared.modules.trade.TradeConstants.SVC_GET_DOCUMENT_DATA;
+import static com.butent.bee.shared.modules.trade.TradeConstants.SVC_ITEMS_INFO;
+import static com.butent.bee.shared.modules.trade.TradeConstants.SVC_REMIND_DEBTS_EMAIL;
+import static com.butent.bee.shared.modules.trade.TradeConstants.SVC_SEND_TO_ERP;
+import static com.butent.bee.shared.modules.trade.TradeConstants.TBL_PURCHASES;
+import static com.butent.bee.shared.modules.trade.TradeConstants.TBL_PURCHASE_ITEMS;
+import static com.butent.bee.shared.modules.trade.TradeConstants.TBL_SALES;
+import static com.butent.bee.shared.modules.trade.TradeConstants.TBL_SALE_ITEMS;
+import static com.butent.bee.shared.modules.trade.TradeConstants.VAR_DEBT;
+import static com.butent.bee.shared.modules.trade.TradeConstants.VAR_FOOTER;
+import static com.butent.bee.shared.modules.trade.TradeConstants.VAR_HEADER;
+import static com.butent.bee.shared.modules.trade.TradeConstants.VAR_ID_LIST;
+import static com.butent.bee.shared.modules.trade.TradeConstants.VAR_OVERDUE;
+import static com.butent.bee.shared.modules.trade.TradeConstants.VAR_SUBJECT;
+import static com.butent.bee.shared.modules.trade.TradeConstants.VAR_VIEW_NAME;
+import static com.butent.bee.shared.modules.trade.TradeConstants.VIEW_DEBTS;
+import static com.butent.bee.shared.modules.trade.TradeConstants.VIEW_DEBT_REPORTS;
+import static com.butent.bee.shared.modules.trade.TradeConstants.VIEW_SALES;
+import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.COL_TRADE_ACT;
+import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.TBL_TRADE_ACTS;
 
 import com.butent.bee.server.data.DataEvent.ViewInsertEvent;
 import com.butent.bee.server.data.DataEvent.ViewModifyEvent;
@@ -302,8 +411,7 @@ public class TradeModuleBean implements BeeModule {
 
   public static IsExpression getTotalExpression(String tblName, IsExpression amount) {
     return SqlUtils.plus(amount,
-        SqlUtils.sqlIf(SqlUtils.or(SqlUtils.isNull(tblName, COL_TRADE_VAT_PLUS),
-            SqlUtils.isNull(tblName, COL_TRADE_VAT)), 0,
+        SqlUtils.sqlIf(SqlUtils.isNull(tblName, COL_TRADE_VAT_PLUS), 0,
             getVatExpression(tblName, amount)));
   }
 
@@ -317,9 +425,19 @@ public class TradeModuleBean implements BeeModule {
         SqlUtils.isNull(tblName, COL_TRADE_VAT_PERC), SqlUtils.field(tblName, COL_TRADE_VAT),
         SqlUtils.notNull(tblName, COL_TRADE_VAT_PLUS), SqlUtils.multiply(SqlUtils
             .divide(amount, 100), SqlUtils.field(tblName, COL_TRADE_VAT)),
-        SqlUtils.multiply(SqlUtils.divide(amount,
-            SqlUtils.plus(100, SqlUtils.field(tblName, COL_TRADE_VAT))),
+        SqlUtils.multiply(
+            SqlUtils.divide(amount, SqlUtils.plus(100, SqlUtils.field(tblName, COL_TRADE_VAT))),
             SqlUtils.field(tblName, COL_TRADE_VAT)));
+  }
+
+  public static IsExpression getWithoutVatExpression(String tblName) {
+    return getWithoutVatExpression(tblName, getAmountExpression(tblName));
+  }
+
+  public static IsExpression getWithoutVatExpression(String tblName, IsExpression amount) {
+    return SqlUtils.minus(amount,
+        SqlUtils.sqlIf(SqlUtils.notNull(tblName, COL_TRADE_VAT_PLUS), 0,
+            getVatExpression(tblName, amount)));
   }
 
   @Override
@@ -548,7 +666,7 @@ public class TradeModuleBean implements BeeModule {
         .addFromInner(TBL_UNITS, sys.joinTables(TBL_UNITS, TBL_ITEMS, COL_UNIT))
         .addFromInner(TBL_CURRENCIES, sys.joinTables(TBL_CURRENCIES, trade, COL_CURRENCY))
         .setWhere(SqlUtils.equals(tradeItems, itemsRelation, id))
-        .addOrder(tradeItems, sys.getIdName(tradeItems));
+        .addOrder(tradeItems, COL_TRADE_ITEM_ORDINAL, sys.getIdName(tradeItems));
 
     if (BeeUtils.same(trade, TBL_TRADE_ACTS)) {
       query.addFields(TBL_ITEMS, COL_TRADE_WEIGHT);
@@ -560,9 +678,8 @@ public class TradeModuleBean implements BeeModule {
     if (!BeeUtils.isEmpty(currencyTo)) {
       String currAlias = SqlUtils.uniqueName();
 
-      IsExpression xpr = ExchangeUtils.exchangeFieldTo(query
-          .addFromLeft(TBL_CURRENCIES, currAlias,
-              SqlUtils.equals(currAlias, COL_CURRENCY_NAME, currencyTo)),
+      IsExpression xpr = ExchangeUtils.exchangeFieldTo(query.addFromLeft(TBL_CURRENCIES, currAlias,
+          SqlUtils.equals(currAlias, COL_CURRENCY_NAME, currencyTo)),
           SqlUtils.constant(1),
           SqlUtils.field(trade, COL_CURRENCY),
           SqlUtils.field(trade, COL_TRADE_DATE),
@@ -741,8 +858,8 @@ public class TradeModuleBean implements BeeModule {
 
     BeeRowSet rs = qs.getViewData(VIEW_DEBTS, filter, null,
         Lists.newArrayList(COL_TRADE_INVOICE_NO, COL_TRADE_DATE,
-            COL_TRADE_TERM, COL_TRADE_AMOUNT, COL_TRADE_DEBT, ALS_CURRENCY_NAME
-            , ALS_CUSTOMER_NAME, COL_TRADE_INVOICE_PREFIX));
+            COL_TRADE_TERM, COL_TRADE_AMOUNT, COL_TRADE_DEBT, ALS_CURRENCY_NAME,
+            ALS_CUSTOMER_NAME, COL_TRADE_INVOICE_PREFIX));
 
     if (rs.isEmpty()) {
       return null;
@@ -944,8 +1061,8 @@ public class TradeModuleBean implements BeeModule {
             , br().build());
 
         if (i > 5) {
-          message = BeeUtils.joinWords(message, br().build()
-              , BeeUtils.bracket(BeeConst.ELLIPSIS), errorMails.keySet().size() - i);
+          message = BeeUtils.joinWords(message, br().build(),
+              BeeUtils.bracket(BeeConst.ELLIPSIS), errorMails.keySet().size() - i);
           break;
         }
         i++;
