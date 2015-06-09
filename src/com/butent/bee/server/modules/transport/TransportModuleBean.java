@@ -2423,6 +2423,8 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
   }
 
   private void importCars() {
+    long historyId = sys.eventStart(PRM_SYNC_ERP_VEHICLES);
+
     String remoteNamespace = prm.getText(PRM_ERP_NAMESPACE);
     String remoteAddress = prm.getText(PRM_ERP_ADDRESS);
     String remoteLogin = prm.getText(PRM_ERP_LOGIN);
@@ -2430,10 +2432,14 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
     SimpleRowSet rs = null;
 
     try {
-      rs = ButentWS.connect(remoteNamespace, remoteAddress, remoteLogin,
-          remotePassword).getCars();
+      rs = ButentWS.connect(remoteNamespace, remoteAddress, remoteLogin, remotePassword)
+          .getCars(qs.getDateTime(new SqlSelect()
+              .addMax(TBL_EVENT_HISTORY, COL_EVENT_STARTED)
+              .addFrom(TBL_EVENT_HISTORY)
+              .setWhere(SqlUtils.equals(TBL_EVENT_HISTORY, COL_EVENT, PRM_SYNC_ERP_VEHICLES))));
     } catch (BeeException e) {
       logger.error(e);
+      sys.eventEnd(historyId, "ERROR", e.getMessage());
       return;
     }
     Map<String, String> mappings = new HashMap<>();
@@ -2450,9 +2456,13 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
     mappings.put("GALIA", "Power");
     mappings.put("NETO", "Netto");
     mappings.put("BRUTO", "Brutto");
+    int tp = 0;
+    int md = 0;
+    int vhNew = 0;
+    int vhUpd = 0;
 
-    Map<String, Long> vehicleNumbers = getReferences(TBL_VEHICLE_TYPES, COL_VEHICLE_NUMBER);
-    Map<String, Long> vehicles = getReferences(TBL_VEHICLE_TYPES, COL_ITEM_EXTERNAL_CODE);
+    Map<String, Long> vehicleNumbers = getReferences(TBL_VEHICLES, COL_VEHICLE_NUMBER);
+    Map<String, Long> vehicles = getReferences(TBL_VEHICLES, COL_ITEM_EXTERNAL_CODE);
     Map<String, Long> types = getReferences(TBL_VEHICLE_TYPES, COL_TYPE_NAME);
     Map<String, Long> models = getReferences(TBL_VEHICLE_MODELS, COL_MODEL_NAME);
 
@@ -2462,12 +2472,14 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
       if (!types.containsKey(type)) {
         types.put(type, qs.insertData(new SqlInsert(TBL_VEHICLE_TYPES)
             .addConstant(COL_TYPE_NAME, type)));
+        tp++;
       }
       String model = row.getValue("MODELIS");
 
       if (!models.containsKey(model)) {
         models.put(model, qs.insertData(new SqlInsert(TBL_VEHICLE_MODELS)
             .addConstant(COL_MODEL_NAME, model)));
+        md++;
       }
       String code = row.getValue("CAR_ID");
 
@@ -2516,14 +2528,25 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
         }
       }
       if (insert != null) {
-        qs.updateData(update);
-      } else {
         vehicles.put(code, qs.insertData(insert));
+        vhNew++;
+      } else {
+        qs.updateData(update);
+        vhUpd++;
       }
     }
+
+    sys.eventEnd(historyId, "OK", tp > 0 ? TBL_VEHICLE_TYPES + ": +" + tp : null,
+        md > 0 ? TBL_VEHICLE_MODELS + ": +" + md : null,
+        (vhNew + vhUpd) > 0 ? TBL_VEHICLES + ":" + (vhNew > 0 ? " +" + vhNew : "")
+            + (vhUpd > 0 ? " " + vhUpd : "") : null);
   }
 
   private void importERPPayments() {
+    long historyId = sys.eventStart(PRM_ERP_REFRESH_INTERVAL);
+    int c = 0;
+    String error = null;
+
     SimpleRowSet debts = qs.getData(new SqlSelect()
         .addField(TBL_SALES, sys.getIdName(TBL_SALES), COL_SALE)
         .addFields(TBL_SALES, COL_TRADE_PAID)

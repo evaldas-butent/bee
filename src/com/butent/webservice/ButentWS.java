@@ -7,6 +7,7 @@ import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.exceptions.BeeException;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import org.w3c.dom.Node;
@@ -109,13 +110,12 @@ public final class ButentWS {
     }
   }
 
-  public SimpleRowSet getCars() throws BeeException {
-    logger.debug("GetCars:");
-
+  public SimpleRowSet getCars(DateTime getChangesFrom) throws BeeException {
+    logger.debug("GetCars:", getChangesFrom);
     String answer;
 
     try {
-      answer = process("GetCars", null);
+      answer = process("GetCars", XmlUtils.tag("time", getChangesFrom));
     } catch (Exception e) {
       throw new BeeException(e);
     }

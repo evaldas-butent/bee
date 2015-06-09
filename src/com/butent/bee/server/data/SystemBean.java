@@ -67,6 +67,7 @@ import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.administration.SysObject;
 import com.butent.bee.shared.rights.RightsState;
 import com.butent.bee.shared.rights.RightsUtils;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
@@ -207,10 +208,10 @@ public class SystemBean {
     }
   }
 
-  public void eventEnd(long historyId, Object result) {
+  public void eventEnd(long historyId, Object... result) {
     qs.updateData(new SqlUpdate(TBL_EVENT_HISTORY)
         .addConstant(COL_EVENT_ENDED, System.currentTimeMillis())
-        .addConstant(COL_EVENT_RESULT, result != null ? result.toString() : null)
+        .addConstant(COL_EVENT_RESULT, ArrayUtils.join("\n", result))
         .setWhere(idEquals(TBL_EVENT_HISTORY, historyId)));
   }
 
