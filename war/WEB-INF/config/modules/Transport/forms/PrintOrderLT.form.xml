@@ -19,7 +19,7 @@
   <FlowPanel class="bee-PrintableForm bee-tr-Order-Print" style="padding: 10px; background-color: white;">
     <css id="&form;">
       .&form;-table {border-collapse:collapse; width:100%; font-family: Tahoma; font-size: 8.5pt; line-height: 1;}
-      .&form;-table td {border:1px solid black; padding:2px; min-width: 100px;}
+      .&form;-table td {border:1px solid black; padding:2px; width: 1%;}
       .&form;-forwarder .bee-co-companyInfo-mobile {display:none;}
     </css>
     <HorizontalPanel>
