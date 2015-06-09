@@ -8,7 +8,7 @@
     <DataColumn name="Event" visible="true" />
 
     <DataColumn name="Started" visible="true" format="yyyy-MM-dd HH:mm:ss" />
-    <DataColumn name="Ended" visible="true" format="yyyy-MM-dd HH:mm:ss" />
+    <DataColumn name="Ended" visible="false" format="yyyy-MM-dd HH:mm:ss" />
     <CalcColumn name="Duration" visible="true" type="string"
                 autoFit="true" caption="=duration">
       <render>

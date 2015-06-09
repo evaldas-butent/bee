@@ -2597,8 +2597,11 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
         error = e.getMessage();
       }
     }
-    sys.eventEnd(historyId, BeeUtils.isEmpty(error) ? "OK\nUpdated " + c + " records"
-        : "ERROR\n" + error);
+    if (BeeUtils.isEmpty(error)) {
+      sys.eventEnd(historyId, "OK", BeeUtils.joinWords("Updated", c, "records"));
+    } else {
+      sys.eventEnd(historyId, "ERROR", error);
+    }
   }
 
   private ResponseObject sendMessage(String message, String[] recipients) {

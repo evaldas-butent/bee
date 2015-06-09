@@ -211,7 +211,7 @@ public class SystemBean {
   public void eventEnd(long historyId, Object... result) {
     qs.updateData(new SqlUpdate(TBL_EVENT_HISTORY)
         .addConstant(COL_EVENT_ENDED, System.currentTimeMillis())
-        .addConstant(COL_EVENT_RESULT, ArrayUtils.join("\n", result))
+        .addConstant(COL_EVENT_RESULT, ArrayUtils.join(BeeConst.STRING_EOL, result))
         .setWhere(idEquals(TBL_EVENT_HISTORY, historyId)));
   }
 
