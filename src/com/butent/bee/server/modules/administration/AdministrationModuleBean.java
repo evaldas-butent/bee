@@ -55,7 +55,6 @@ import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.UserInterface;
-import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 import com.ibm.icu.text.RuleBasedNumberFormat;
@@ -74,7 +73,6 @@ import java.util.Set;
 
 import javax.annotation.Resource;
 import javax.ejb.EJB;
-import javax.ejb.EJBContext;
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
 import javax.ejb.Timeout;
@@ -799,7 +797,7 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
     String daysOfToday = BeeUtils.toString(TimeUtils.today().getDays());
     ResponseObject response = updateExchangeRates(daysOfToday, daysOfToday);
 
-    sys.eventEnd(historyId, response.getMessages());
+    sys.eventEnd(historyId, response.getMessages().toArray());
   }
 
   private ResponseObject updateExchangeRates(String low, String high) {
