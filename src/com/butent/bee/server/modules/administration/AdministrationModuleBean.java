@@ -55,6 +55,7 @@ import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.UserInterface;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 import com.ibm.icu.text.RuleBasedNumberFormat;
@@ -103,8 +104,6 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
   @EJB
   ConcurrencyBean cb;
 
-  @Resource
-  EJBContext ctx;
   @Resource
   TimerService timerService;
 
@@ -795,16 +794,12 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
     if (!cb.isParameterTimer(timer, PRM_REFRESH_CURRENCY_HOURS)) {
       return;
     }
-    long started = System.currentTimeMillis();
+    long historyId = sys.eventStart(PRM_REFRESH_CURRENCY_HOURS);
 
     String daysOfToday = BeeUtils.toString(TimeUtils.today().getDays());
     ResponseObject response = updateExchangeRates(daysOfToday, daysOfToday);
 
-    qs.insertData(new SqlInsert(TBL_EVENT_HISTORY)
-        .addConstant(COL_EVENT, PRM_REFRESH_CURRENCY_HOURS)
-        .addConstant(COL_EVENT_STARTED, started)
-        .addConstant(COL_EVENT_ENDED, System.currentTimeMillis())
-        .addConstant(COL_EVENT_RESULT, response.getMessages()));
+    sys.eventEnd(historyId, response.getMessages());
   }
 
   private ResponseObject updateExchangeRates(String low, String high) {

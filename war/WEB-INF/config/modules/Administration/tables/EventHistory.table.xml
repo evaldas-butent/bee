@@ -7,7 +7,7 @@
   <Fields>
     <String name="Event" notNull="true" precision="30" label="=event" />
     <DateTime name="Started" notNull="true" label="=startingDate" />
-    <DateTime name="Ended" notNull="true" label="=endingDate" />
+    <DateTime name="Ended" label="=endingDate" />
     <Text name="Result" label="=result" />
   </Fields>
 </Table>
