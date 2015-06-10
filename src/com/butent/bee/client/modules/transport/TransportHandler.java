@@ -220,9 +220,13 @@ public final class TransportHandler {
     }
   }
 
-  public static boolean bindExpensesToIncomes;
+  private static boolean bindExpensesToIncomes;
 
   private TransportHandler() {
+  }
+
+  public static boolean bindExpensesToIncomes() {
+    return bindExpensesToIncomes;
   }
 
   public static ParameterList createArgs(String method) {
