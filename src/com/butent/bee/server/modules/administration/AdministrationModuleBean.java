@@ -73,7 +73,6 @@ import java.util.Set;
 
 import javax.annotation.Resource;
 import javax.ejb.EJB;
-import javax.ejb.EJBContext;
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
 import javax.ejb.Timeout;
@@ -103,8 +102,6 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
   @EJB
   ConcurrencyBean cb;
 
-  @Resource
-  EJBContext ctx;
   @Resource
   TimerService timerService;
 
@@ -795,16 +792,12 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
     if (!cb.isParameterTimer(timer, PRM_REFRESH_CURRENCY_HOURS)) {
       return;
     }
-    long started = System.currentTimeMillis();
+    long historyId = sys.eventStart(PRM_REFRESH_CURRENCY_HOURS);
 
     String daysOfToday = BeeUtils.toString(TimeUtils.today().getDays());
     ResponseObject response = updateExchangeRates(daysOfToday, daysOfToday);
 
-    qs.insertData(new SqlInsert(TBL_EVENT_HISTORY)
-        .addConstant(COL_EVENT, PRM_REFRESH_CURRENCY_HOURS)
-        .addConstant(COL_EVENT_STARTED, started)
-        .addConstant(COL_EVENT_ENDED, System.currentTimeMillis())
-        .addConstant(COL_EVENT_RESULT, response.getMessages()));
+    sys.eventEnd(historyId, response.getMessages().toArray());
   }
 
   private ResponseObject updateExchangeRates(String low, String high) {
