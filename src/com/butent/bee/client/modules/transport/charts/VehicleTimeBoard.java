@@ -400,19 +400,35 @@ abstract class VehicleTimeBoard extends ChartBase {
         Long tripId = row.getLong(COL_TRIP_ID);
 
         Collection<Driver> tripDrivers = BeeUtils.getIfContains(drivers, tripId);
-        int cargoCount = 0;
 
         if (freights.containsKey(tripId)) {
           JustDate minDate = null;
           JustDate maxDate = null;
 
+          int cargoCount = 0;
+
+          Collection<String> tripCustomers = new ArrayList<>();
+          Collection<String> tripManagers = new ArrayList<>();
+
           for (Freight freight : freights.get(tripId)) {
             minDate = BeeUtils.min(minDate, freight.getMinDate());
             maxDate = BeeUtils.max(maxDate, freight.getMaxDate());
+
             cargoCount++;
+
+            String customerName = freight.getCustomerName();
+            if (!BeeUtils.isEmpty(customerName) && !tripCustomers.contains(customerName)) {
+              tripCustomers.add(customerName);
+            }
+
+            String managerName = freight.getManagerName();
+            if (!BeeUtils.isEmpty(managerName) && !tripManagers.contains(managerName)) {
+              tripManagers.add(managerName);
+            }
           }
 
-          Trip trip = new Trip(row, minDate, maxDate, tripDrivers, cargoCount);
+          Trip trip = new Trip(row, tripDrivers, minDate, maxDate, cargoCount,
+              tripCustomers, tripManagers);
           trips.put(row.getLong(index), trip);
 
           for (Freight freight : freights.get(tripId)) {
@@ -423,7 +439,7 @@ abstract class VehicleTimeBoard extends ChartBase {
           }
 
         } else {
-          trips.put(row.getLong(index), new Trip(row, tripDrivers, cargoCount));
+          trips.put(row.getLong(index), new Trip(row, tripDrivers));
         }
       }
     }
