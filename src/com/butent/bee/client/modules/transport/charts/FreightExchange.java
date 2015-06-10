@@ -68,7 +68,8 @@ final class FreightExchange extends ChartBase {
   private static final String STYLE_ORDER_PREFIX = STYLE_PREFIX + "Order-";
   private static final String STYLE_ORDER_ROW_SEPARATOR = STYLE_ORDER_PREFIX + "row-sep";
   private static final String STYLE_ORDER_PANEL = STYLE_ORDER_PREFIX + "panel";
-  private static final String STYLE_ORDER_LABEL = STYLE_ORDER_PREFIX + "label";
+  private static final String STYLE_ORDER_NUMBER = STYLE_ORDER_PREFIX + "number";
+  private static final String STYLE_ORDER_MANAGER = STYLE_ORDER_PREFIX + "manager";
 
   private static final String STYLE_ITEM_PREFIX = STYLE_PREFIX + "Item-";
   private static final String STYLE_ITEM_PANEL = STYLE_ITEM_PREFIX + "panel";
@@ -269,7 +270,7 @@ final class FreightExchange extends ChartBase {
   protected void prepareChart(Size canvasSize) {
     setCustomerWidth(TimeBoardHelper.getPixels(getSettings(), COL_FX_PIXELS_PER_CUSTOMER, 100,
         TimeBoardHelper.DEFAULT_MOVER_WIDTH + 1, canvasSize.getWidth() / 3));
-    setOrderWidth(TimeBoardHelper.getPixels(getSettings(), COL_FX_PIXELS_PER_ORDER, 60,
+    setOrderWidth(TimeBoardHelper.getPixels(getSettings(), COL_FX_PIXELS_PER_ORDER, 160,
         TimeBoardHelper.DEFAULT_MOVER_WIDTH + 1, canvasSize.getWidth() / 3));
 
     setChartLeft(getCustomerWidth() + getOrderWidth());
@@ -562,15 +563,22 @@ final class FreightExchange extends ChartBase {
   }
 
   private IdentifiableWidget createOrderWidget(OrderCargo item) {
-    Label widget = new Label(item.getOrderNo());
-    widget.addStyleName(STYLE_ORDER_LABEL);
+    Flow panel = new Flow(STYLE_ORDER_PANEL);
+    panel.setTitle(item.getOrderTitle());
 
-    widget.setTitle(item.getOrderTitle());
+    Label numberWidget = new Label(item.getOrderNo());
+    numberWidget.addStyleName(STYLE_ORDER_NUMBER);
 
-    bindOpener(widget, VIEW_ORDERS, item.getOrderId());
+    bindOpener(numberWidget, VIEW_ORDERS, item.getOrderId());
+    panel.add(numberWidget);
 
-    Simple panel = new Simple(widget);
-    panel.addStyleName(STYLE_ORDER_PANEL);
+    String managerName = item.getManagerName();
+    if (!BeeUtils.isEmpty(managerName)) {
+      Label managerWidget = new Label(managerName);
+      managerWidget.addStyleName(STYLE_ORDER_MANAGER);
+
+      panel.add(managerWidget);
+    }
 
     return panel;
   }

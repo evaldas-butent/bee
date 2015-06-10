@@ -5,6 +5,7 @@ import com.google.common.collect.Range;
 
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
+import com.butent.bee.client.Global;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
@@ -33,6 +34,7 @@ class OrderCargo extends Filterable implements HasDateRange, HasColorSource, Has
       Data.getColumnLabel(VIEW_ORDER_CARGO, COL_CARGO_DESCRIPTION);
 
   private static final String customerLabel = Data.getColumnLabel(VIEW_ORDERS, COL_CUSTOMER);
+  private static final String managerLabel = Data.getColumnLabel(VIEW_ORDERS, COL_ORDER_MANAGER);
   private static final String notesLabel = Data.getColumnLabel(VIEW_ORDER_CARGO, COL_CARGO_NOTES);
 
   private static final String orderDateLabel = Data.getColumnLabel(VIEW_ORDERS, COL_ORDER_DATE);
@@ -115,6 +117,7 @@ class OrderCargo extends Filterable implements HasDateRange, HasColorSource, Has
       Long loadingCity, String loadingNumber,
       JustDate unloadingDate, Long unloadingCountry, String unloadingPlace,
       String unloadingPostIndex, Long unloadingCity, String unloadingNumber) {
+
     super();
 
     this.orderId = orderId;
@@ -275,6 +278,14 @@ class OrderCargo extends Filterable implements HasDateRange, HasColorSource, Has
     return manager;
   }
 
+  String getManagerName() {
+    if (manager == null) {
+      return null;
+    } else {
+      return Global.getUsers().getSignature(manager);
+    }
+  }
+
   JustDate getMaxDate() {
     return BeeUtils.max(loadingDate, unloadingDate);
   }
@@ -313,7 +324,9 @@ class OrderCargo extends Filterable implements HasDateRange, HasColorSource, Has
         Localized.getConstants().cargoLoading(), Places.getLoadingInfo(this),
         Localized.getConstants().cargoUnloading(), Places.getUnloadingInfo(this),
         Localized.getConstants().trOrder(), orderNo,
-        customerLabel, customerName, notesLabel, notes);
+        customerLabel, customerName,
+        managerLabel, getManagerName(),
+        notesLabel, notes);
   }
 
   private void setRange(Range<JustDate> range) {
