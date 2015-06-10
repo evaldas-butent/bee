@@ -516,6 +516,8 @@ public interface LocalizableTransportConstants {
 
   String vehicleProductionDate();
 
+  String vehicleRepairs();
+
   String vehicleSpeedometer();
 
   String vehicleTankCapacity();

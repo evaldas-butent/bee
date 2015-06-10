@@ -246,6 +246,7 @@ public final class TransportConstants {
   public static final String SVC_GET_ASSESSMENT_TURNOVER_REPORT = "GetAssessmentTurnoverReport";
   public static final String SVC_CREATE_INVOICE_ITEMS = "CreateInvoiceItems";
   public static final String SVC_GET_CREDIT_INFO = "GetCreditInfo";
+  public static final String SVC_GET_REPAIRS = "GetRepairs";
 
   public static final String SVC_SEND_MESSAGE = "SendMessage";
 
@@ -723,6 +724,7 @@ public final class TransportConstants {
 
   public static final String COL_TRANSPORTATION_ORDER = "TransportationOrder";
 
+  public static final String FORM_VEHICLE = "Vehicle";
   public static final String FORM_NEW_VEHICLE = "NewVehicle";
   public static final String FORM_ORDER = "TransportationOrder";
   public static final String FORM_TRIP = "Trip";

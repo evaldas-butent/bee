@@ -121,7 +121,7 @@ public final class ButentWS {
     }
     SimpleRowSet data = xmlToSimpleRowSet(answer, "CAR_ID", "VALST_NR", "TIPAS", "MODELIS",
         "PAG_METAI", "KUBATURA", "KEBUL_NR", "VARIKL_NR", "NOTES", "BAKAS", "SKALE", "GALIA",
-        "NETO", "BRUTO");
+        "NETO", "BRUTO", "SAVININKAS", "KODAS");
     logger.debug("GetCars cols:", data.getNumberOfColumns(), "rows:", data.getNumberOfRows());
     return data;
   }
@@ -268,7 +268,11 @@ public final class ButentWS {
         String[] cells = new String[data.getNumberOfColumns()];
 
         for (int j = 0; j < c; j++) {
-          cells[data.getColumnIndex(row.item(j).getLocalName())] = row.item(j).getTextContent();
+          String col = row.item(j).getLocalName();
+
+          if (data.hasColumn(col)) {
+            cells[data.getColumnIndex(col)] = row.item(j).getTextContent();
+          }
         }
         data.addRow(cells);
       }

@@ -89,15 +89,18 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Function;
 
 import javax.annotation.Resource;
 import javax.ejb.EJB;
@@ -299,6 +302,9 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
 
     } else if (BeeUtils.same(svc, SVC_TRIP_PROFIT_REPORT)) {
       response = rep.getTripProfitReport(reqInfo);
+
+    } else if (BeeUtils.same(svc, SVC_GET_REPAIRS)) {
+      response = getVehicleRepairs(reqInfo.getParameter(COL_ITEM_EXTERNAL_CODE));
 
     } else {
       String msg = BeeUtils.joinWords("Transport service not recognized:", svc);
@@ -1223,7 +1229,7 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
     if (cb.isParameterTimer(timer, PRM_ERP_REFRESH_INTERVAL)) {
       importERPPayments();
     } else if (cb.isParameterTimer(timer, PRM_SYNC_ERP_VEHICLES)) {
-      importCars();
+      importVehicles();
     }
   }
 
@@ -2324,6 +2330,75 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
     return ResponseObject.response(qs.getColumn(query));
   }
 
+  private ResponseObject getVehicleRepairs(String externalId) {
+    Map<String, String> cols = new LinkedHashMap<>();
+    cols.put("data", "data");
+    cols.put("preke", "pavad");
+    cols.put("artikulas", "tr_remon.artikulas");
+    cols.put("kiekis", "kiekis");
+    cols.put("mato_vnt", "tr_remon.mato_vien");
+    cols.put("kaina", "kaina");
+    cols.put("valiuta", "valiuta");
+    cols.put("pvm_plus", "pvm_stat");
+    cols.put("pvm", "pvm");
+    cols.put("pvm_proc", "pvm_p_md");
+    cols.put("pastaba", "pastaba");
+
+    StringBuilder sql = new StringBuilder("SELECT ");
+    int c = 0;
+
+    for (Entry<String, String> entry : cols.entrySet()) {
+      if (c++ > 0) {
+        sql.append(", ");
+      }
+      sql.append(entry.getValue()).append(" AS ").append(entry.getKey());
+    }
+    sql.append(" FROM tr_remon INNER JOIN prekes ON tr_remon.preke=prekes.preke")
+        .append(" WHERE car_id=" + externalId);
+
+    cols.put("artikulas", "apyv_gr.artikulas");
+    cols.put("mato_vnt", "apyv_gr.mato_vien");
+
+    for (int i = 0; i < 2; i++) {
+      String wh;
+
+      if (i > 0) {
+        wh = " WHERE apyv_gr.car_id=" + externalId;
+      } else {
+        wh = " WHERE apyv_gr.car_id IS NULL AND apyvarta.car_id=" + externalId;
+      }
+      sql.append(" UNION ALL SELECT ");
+      c = 0;
+
+      for (Entry<String, String> entry : cols.entrySet()) {
+        if (c++ > 0) {
+          sql.append(", ");
+        }
+        sql.append(entry.getValue()).append(" AS ").append(entry.getKey());
+      }
+      sql.append(" FROM apyvarta INNER JOIN apyv_gr ON apyvarta.apyv_id = apyv_gr.apyv_id")
+          .append(" INNER JOIN prekes ON apyv_gr.preke=prekes.preke")
+          .append(wh);
+    }
+    sql.append(" ORDER BY data DESC");
+
+    String remoteNamespace = prm.getText(PRM_ERP_NAMESPACE);
+    String remoteAddress = prm.getText(PRM_ERP_ADDRESS);
+    String remoteLogin = prm.getText(PRM_ERP_LOGIN);
+    String remotePassword = prm.getText(PRM_ERP_PASSWORD);
+    SimpleRowSet rs = null;
+
+    try {
+      rs = ButentWS.connect(remoteNamespace, remoteAddress, remoteLogin, remotePassword)
+          .getSQLData(sql.toString(), cols.keySet().toArray(new String[0]));
+
+    } catch (BeeException e) {
+      logger.error(e);
+      return ResponseObject.error(e);
+    }
+    return ResponseObject.response(rs);
+  }
+
   private SimpleRowSet getVehicleServices(IsCondition condition) {
     SqlSelect query = new SqlSelect()
         .addFrom(TBL_VEHICLE_SERVICES)
@@ -2422,126 +2497,6 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
     return ResponseObject.response(settings);
   }
 
-  private void importCars() {
-    long historyId = sys.eventStart(PRM_SYNC_ERP_VEHICLES);
-
-    String remoteNamespace = prm.getText(PRM_ERP_NAMESPACE);
-    String remoteAddress = prm.getText(PRM_ERP_ADDRESS);
-    String remoteLogin = prm.getText(PRM_ERP_LOGIN);
-    String remotePassword = prm.getText(PRM_ERP_PASSWORD);
-    SimpleRowSet rs = null;
-
-    try {
-      rs = ButentWS.connect(remoteNamespace, remoteAddress, remoteLogin, remotePassword)
-          .getCars(qs.getDateTime(new SqlSelect()
-              .addMax(TBL_EVENT_HISTORY, COL_EVENT_STARTED)
-              .addFrom(TBL_EVENT_HISTORY)
-              .setWhere(SqlUtils.equals(TBL_EVENT_HISTORY, COL_EVENT, PRM_SYNC_ERP_VEHICLES))));
-    } catch (BeeException e) {
-      logger.error(e);
-      sys.eventEnd(historyId, "ERROR", e.getMessage());
-      return;
-    }
-    Map<String, String> mappings = new HashMap<>();
-    mappings.put("VALST_NR", COL_VEHICLE_NUMBER);
-    mappings.put("TIPAS", COL_VEHICLE_TYPE);
-    mappings.put("MODELIS", COL_MODEL);
-    mappings.put("PAG_METAI", "ProductionDate");
-    mappings.put("KUBATURA", "EngineVolume");
-    mappings.put("KEBUL_NR", "BodyNumber");
-    mappings.put("VARIKL_NR", "EngineNumber");
-    mappings.put("NOTES", COL_NOTES);
-    mappings.put("BAKAS", "TankCapacity");
-    mappings.put("SKALE", "Speedometer");
-    mappings.put("GALIA", "Power");
-    mappings.put("NETO", "Netto");
-    mappings.put("BRUTO", "Brutto");
-    int tp = 0;
-    int md = 0;
-    int vhNew = 0;
-    int vhUpd = 0;
-
-    Map<String, Long> vehicleNumbers = getReferences(TBL_VEHICLES, COL_VEHICLE_NUMBER);
-    Map<String, Long> vehicles = getReferences(TBL_VEHICLES, COL_ITEM_EXTERNAL_CODE);
-    Map<String, Long> types = getReferences(TBL_VEHICLE_TYPES, COL_TYPE_NAME);
-    Map<String, Long> models = getReferences(TBL_VEHICLE_MODELS, COL_MODEL_NAME);
-
-    for (SimpleRow row : rs) {
-      String type = row.getValue("TIPAS");
-
-      if (!types.containsKey(type)) {
-        types.put(type, qs.insertData(new SqlInsert(TBL_VEHICLE_TYPES)
-            .addConstant(COL_TYPE_NAME, type)));
-        tp++;
-      }
-      String model = row.getValue("MODELIS");
-
-      if (!models.containsKey(model)) {
-        models.put(model, qs.insertData(new SqlInsert(TBL_VEHICLE_MODELS)
-            .addConstant(COL_MODEL_NAME, model)));
-        md++;
-      }
-      String code = row.getValue("CAR_ID");
-
-      if (!vehicles.containsKey(code)) {
-        Long id = vehicleNumbers.get(row.getValue("VALST_NR"));
-
-        if (DataUtils.isId(id)) {
-          qs.updateData(new SqlUpdate(TBL_VEHICLES)
-              .addConstant(COL_ITEM_EXTERNAL_CODE, code)
-              .setWhere(sys.idEquals(TBL_VEHICLES, id)));
-
-          vehicles.put(code, id);
-        }
-      }
-      SqlInsert insert = null;
-      SqlUpdate update = null;
-
-      if (vehicles.containsKey(code)) {
-        update = new SqlUpdate(TBL_VEHICLES)
-            .setWhere(sys.idEquals(TBL_VEHICLES, vehicles.get(code)));
-      } else {
-        insert = new SqlInsert(TBL_VEHICLES)
-            .addConstant(COL_ITEM_EXTERNAL_CODE, code);
-      }
-      for (String key : mappings.keySet()) {
-        Object value;
-
-        switch (key) {
-          case COL_VEHICLE_TYPE:
-            value = types.get(type);
-            break;
-          case COL_MODEL:
-            value = models.get(model);
-            break;
-          case "ProductionDate":
-            value = TimeUtils.parseDate(row.getValue(mappings.get(key)));
-            break;
-          default:
-            value = row.getValue(mappings.get(key));
-            break;
-        }
-        if (insert != null) {
-          insert.addNotNull(key, value);
-        } else {
-          update.addConstant(key, value);
-        }
-      }
-      if (insert != null) {
-        vehicles.put(code, qs.insertData(insert));
-        vhNew++;
-      } else {
-        qs.updateData(update);
-        vhUpd++;
-      }
-    }
-
-    sys.eventEnd(historyId, "OK", tp > 0 ? TBL_VEHICLE_TYPES + ": +" + tp : null,
-        md > 0 ? TBL_VEHICLE_MODELS + ": +" + md : null,
-        (vhNew + vhUpd) > 0 ? TBL_VEHICLES + ":" + (vhNew > 0 ? " +" + vhNew : "")
-            + (vhUpd > 0 ? " " + vhUpd : "") : null);
-  }
-
   private void importERPPayments() {
     long historyId = sys.eventStart(PRM_ERP_REFRESH_INTERVAL);
     int c = 0;
@@ -2601,6 +2556,184 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
       sys.eventEnd(historyId, "OK", BeeUtils.joinWords("Updated", c, "records"));
     } else {
       sys.eventEnd(historyId, "ERROR", error);
+    }
+  }
+
+  private void importVehicles() {
+    long historyId = sys.eventStart(PRM_SYNC_ERP_VEHICLES);
+
+    String remoteNamespace = prm.getText(PRM_ERP_NAMESPACE);
+    String remoteAddress = prm.getText(PRM_ERP_ADDRESS);
+    String remoteLogin = prm.getText(PRM_ERP_LOGIN);
+    String remotePassword = prm.getText(PRM_ERP_PASSWORD);
+    SimpleRowSet rs = null;
+
+    try {
+      rs = ButentWS.connect(remoteNamespace, remoteAddress, remoteLogin, remotePassword)
+          .getCars(qs.getDateTime(new SqlSelect()
+              .addMax(TBL_EVENT_HISTORY, COL_EVENT_STARTED)
+              .addFrom(TBL_EVENT_HISTORY)
+              .setWhere(SqlUtils.equals(TBL_EVENT_HISTORY, COL_EVENT, PRM_SYNC_ERP_VEHICLES))));
+    } catch (BeeException e) {
+      logger.error(e);
+      sys.eventEnd(historyId, "ERROR", e.getMessage());
+      return;
+    }
+    Map<String, String> mappings = new HashMap<>();
+    mappings.put(COL_VEHICLE_NUMBER, "VALST_NR");
+    mappings.put(COL_VEHICLE_TYPE, "TIPAS");
+    mappings.put(COL_MODEL, "MODELIS");
+    mappings.put("ProductionDate", "PAG_METAI");
+    mappings.put("EngineVolume", "KUBATURA");
+    mappings.put("BodyNumber", "KEBUL_NR");
+    mappings.put("EngineNumber", "VARIKL_NR");
+    mappings.put(COL_NOTES, "NOTES");
+    mappings.put("TankCapacity", "BAKAS");
+    mappings.put("Speedometer", "SKALE");
+    mappings.put("Power", "GALIA");
+    mappings.put("Netto", "NETO");
+    mappings.put("Brutto", "BRUTO");
+    mappings.put(COL_OWNER, "SAVININKAS");
+    int tp = 0;
+    int md = 0;
+    int vhNew = 0;
+    int vhUpd = 0;
+    String error = null;
+
+    Function<SQLException, ResponseObject> errorHandler =
+        new Function<SQLException, ResponseObject>() {
+          @Override
+          public ResponseObject apply(SQLException e) {
+            return ResponseObject.error(e);
+          }
+        };
+    String name = "Name";
+
+    Map<String, Long> vehicleNumbers = getReferences(TBL_VEHICLES, COL_VEHICLE_NUMBER);
+    Map<String, Long> vehicles = getReferences(TBL_VEHICLES, COL_ITEM_EXTERNAL_CODE);
+    Map<String, Long> types = getReferences(TBL_VEHICLE_TYPES, name);
+    Map<String, Long> models = getReferences(TBL_VEHICLE_MODELS, name);
+    Map<String, Long> companyCodes = getReferences(TBL_COMPANIES, COL_COMPANY_CODE);
+    Map<String, Long> companies = getReferences(TBL_COMPANIES, COL_COMPANY_NAME);
+
+    for (SimpleRow row : rs) {
+      String type = row.getValue("TIPAS");
+
+      if (!types.containsKey(type)) {
+        types.put(type, qs.insertData(new SqlInsert(TBL_VEHICLE_TYPES)
+            .addConstant(name, type)));
+        tp++;
+      }
+      String model = row.getValue("MODELIS");
+
+      if (!models.containsKey(model)) {
+        models.put(model, qs.insertData(new SqlInsert(TBL_VEHICLE_MODELS)
+            .addConstant(name, model)));
+        md++;
+      }
+      String externalId = row.getValue("CAR_ID");
+
+      if (!vehicles.containsKey(externalId)) {
+        Long id = vehicleNumbers.get(row.getValue("VALST_NR"));
+
+        if (DataUtils.isId(id)) {
+          qs.updateData(new SqlUpdate(TBL_VEHICLES)
+              .addConstant(COL_ITEM_EXTERNAL_CODE, externalId)
+              .setWhere(sys.idEquals(TBL_VEHICLES, id)));
+
+          vehicles.put(externalId, id);
+        }
+      }
+      String owner = row.getValue("SAVININKAS");
+
+      if (!BeeUtils.isEmpty(owner)) {
+        String companyCode = row.getValue("KODAS");
+        Long id = companyCodes.get(companyCode);
+
+        if (DataUtils.isId(id)) {
+          companies.put(owner, id);
+        } else {
+          id = companies.get(owner);
+        }
+        if (!DataUtils.isId(id)) {
+          id = qs.insertData(new SqlInsert(TBL_COMPANIES)
+              .addConstant(COL_COMPANY_NAME, owner)
+              .addNotEmpty(COL_COMPANY_CODE, companyCode));
+
+          if (!BeeUtils.isEmpty(companyCode)) {
+            companyCodes.put(companyCode, id);
+          }
+          companies.put(owner, id);
+        }
+      }
+      SqlInsert insert = null;
+      SqlUpdate update = null;
+
+      if (vehicles.containsKey(externalId)) {
+        update = new SqlUpdate(TBL_VEHICLES)
+            .setWhere(sys.idEquals(TBL_VEHICLES, vehicles.get(externalId)));
+      } else {
+        insert = new SqlInsert(TBL_VEHICLES)
+            .addConstant(COL_ITEM_EXTERNAL_CODE, externalId);
+      }
+      for (String key : mappings.keySet()) {
+        Object value;
+
+        switch (key) {
+          case COL_VEHICLE_TYPE:
+            value = types.get(type);
+            break;
+          case COL_MODEL:
+            value = models.get(model);
+            break;
+          case "ProductionDate":
+            Integer year = row.getInt(mappings.get(key));
+
+            if (BeeUtils.isPositive(year)) {
+              value = TimeUtils.startOfYear(year);
+            } else {
+              value = null;
+            }
+            break;
+          case COL_OWNER:
+            value = companies.get(owner);
+            break;
+          default:
+            value = row.getValue(mappings.get(key));
+
+            if (BeeUtils.isEmpty((String) value)) {
+              value = null;
+            }
+            break;
+        }
+        if (insert != null) {
+          insert.addNotNull(key, value);
+        } else {
+          update.addConstant(key, value);
+        }
+      }
+      ResponseObject response;
+
+      if (insert != null) {
+        response = qs.insertDataWithResponse(insert, errorHandler);
+        vhNew++;
+      } else {
+        response = qs.updateDataWithResponse(update, errorHandler);
+        vhUpd++;
+      }
+      if (response.hasErrors()) {
+        error = ArrayUtils.join(BeeConst.STRING_EOL, response.getErrors());
+        logger.severe(error);
+        break;
+      }
+    }
+    if (!BeeUtils.isEmpty(error)) {
+      sys.eventEnd(historyId, "ERROR", error);
+    } else {
+      sys.eventEnd(historyId, "OK", tp > 0 ? TBL_VEHICLE_TYPES + ": +" + tp : null,
+          md > 0 ? TBL_VEHICLE_MODELS + ": +" + md : null,
+          (vhNew + vhUpd) > 0 ? TBL_VEHICLES + ":" + (vhNew > 0 ? " +" + vhNew : "")
+              + (vhUpd > 0 ? " " + vhUpd : "") : null);
     }
   }
 
