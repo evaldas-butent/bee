@@ -170,12 +170,12 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
 
     List<SearchResult> orderCargoResult = qs.getSearchResults(VIEW_ORDER_CARGO,
         Filter.anyContains(Sets.newHashSet(COL_CARGO_DESCRIPTION,
-            COL_NUMBER, ALS_CARGO_CMR_NUMBER, COL_CARGO_NOTES, COL_CARGO_DIRECTIONS,
-            ALS_LOADING_NUMBER, ALS_LOADING_CONTACT, ALS_LOADING_COMPANY, ALS_LOADING_ADDRESS,
-            ALS_LOADING_POST_INDEX, ALS_LOADING_CITY_NAME, ALS_LOADING_COUNTRY_NAME,
-            ALS_LOADING_COUNTRY_CODE, ALS_UNLOADING_NUMBER, ALS_UNLOADING_CONTACT,
-            ALS_UNLOADING_COMPANY, ALS_UNLOADING_ADDRESS, ALS_UNLOADING_POST_INDEX,
-            ALS_UNLOADING_CITY_NAME, ALS_UNLOADING_COUNTRY_NAME, ALS_UNLOADING_COUNTRY_CODE),
+                COL_NUMBER, ALS_CARGO_CMR_NUMBER, COL_CARGO_NOTES, COL_CARGO_DIRECTIONS,
+                ALS_LOADING_NUMBER, ALS_LOADING_CONTACT, ALS_LOADING_COMPANY, ALS_LOADING_ADDRESS,
+                ALS_LOADING_POST_INDEX, ALS_LOADING_CITY_NAME, ALS_LOADING_COUNTRY_NAME,
+                ALS_LOADING_COUNTRY_CODE, ALS_UNLOADING_NUMBER, ALS_UNLOADING_CONTACT,
+                ALS_UNLOADING_COMPANY, ALS_UNLOADING_ADDRESS, ALS_UNLOADING_POST_INDEX,
+                ALS_UNLOADING_CITY_NAME, ALS_UNLOADING_COUNTRY_NAME, ALS_UNLOADING_COUNTRY_CODE),
             query));
 
     result.addAll(vehiclesResult);
@@ -502,7 +502,7 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
             }
             String crs =
                 rep.getTripIncomes(event.getQuery().resetFields().resetOrder().resetGroup()
-                    .addFields(VIEW_CARGO_TRIPS, COL_TRIP).addGroup(VIEW_CARGO_TRIPS, COL_TRIP),
+                        .addFields(VIEW_CARGO_TRIPS, COL_TRIP).addGroup(VIEW_CARGO_TRIPS, COL_TRIP),
                     null, false);
 
             SimpleRowSet rs = qs.getData(new SqlSelect().addAllFields(crs).addFrom(crs));
@@ -1107,7 +1107,7 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
       if (BeeUtils.unbox(row.getBoolean(COL_TRANSPORTATION))) {
         String value = BeeUtils.join("\n", row.getValue(COL_ORDER_NOTES),
             BeeUtils.join("-", row.getValue(loadCountry)
-                + " (" + row.getValue(loadCountry + "Name") + ")",
+                    + " (" + row.getValue(loadCountry + "Name") + ")",
                 row.getValue(unloadCountry)
                     + " (" + row.getValue(unloadCountry + "Name") + ")"));
 
@@ -1821,8 +1821,8 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
           .addFromInner(TBL_CARGO_INCOMES,
               sys.joinTables(TBL_ORDER_CARGO, TBL_CARGO_INCOMES, COL_CARGO))
           .setWhere(SqlUtils.and(SqlUtils.or(SqlUtils.equals(TBL_ORDERS, COL_PAYER, company),
-              SqlUtils.and(SqlUtils.isNull(TBL_ORDERS, COL_PAYER),
-                  SqlUtils.equals(TBL_ORDERS, COL_CUSTOMER, company))),
+                  SqlUtils.and(SqlUtils.isNull(TBL_ORDERS, COL_PAYER),
+                      SqlUtils.equals(TBL_ORDERS, COL_CUSTOMER, company))),
               SqlUtils.isNull(TBL_CARGO_INCOMES, COL_SALE)));
 
       IsExpression cargoIncome;
@@ -2226,9 +2226,9 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
               .setWhere(SqlUtils.equals(fuels, COL_TRIP, rs.getLong(cnt, tripId))));
 
           SimpleRow row = qs.getRow(rep.getFuelConsumptionsQuery(new SqlSelect()
-              .addFields(TBL_TRIP_ROUTES, sys.getIdName(TBL_TRIP_ROUTES))
-              .addFrom(TBL_TRIP_ROUTES)
-              .setWhere(SqlUtils.equals(TBL_TRIP_ROUTES, COL_TRIP, rs.getLong(cnt, tripId))),
+                  .addFields(TBL_TRIP_ROUTES, sys.getIdName(TBL_TRIP_ROUTES))
+                  .addFrom(TBL_TRIP_ROUTES)
+                  .setWhere(SqlUtils.equals(TBL_TRIP_ROUTES, COL_TRIP, rs.getLong(cnt, tripId))),
               false));
 
           Double consume = row == null ? null : row.getDouble("Quantity");
@@ -2402,7 +2402,7 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
     if (!cb.isParameterTimer(timer, PRM_ERP_REFRESH_INTERVAL)) {
       return;
     }
-    long started = System.currentTimeMillis();
+    long historyId = sys.eventStart(PRM_ERP_REFRESH_INTERVAL);
     int c = 0;
     String error = null;
 
@@ -2415,54 +2415,52 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
                 SqlUtils.less(TBL_SALES, COL_TRADE_PAID,
                     SqlUtils.field(TBL_SALES, COL_TRADE_AMOUNT))))));
 
-    if (debts.isEmpty()) {
-      return;
-    }
-    StringBuilder ids = new StringBuilder();
+    if (!debts.isEmpty()) {
+      StringBuilder ids = new StringBuilder();
 
-    for (SimpleRow row : debts) {
-      if (ids.length() > 0) {
-        ids.append(",");
-      }
-      ids.append("'").append(TradeModuleBean.encodeId(TBL_SALES, row.getLong(COL_SALE)))
-          .append("'");
-    }
-    String remoteNamespace = prm.getText(PRM_ERP_NAMESPACE);
-    String remoteAddress = prm.getText(PRM_ERP_ADDRESS);
-    String remoteLogin = prm.getText(PRM_ERP_LOGIN);
-    String remotePassword = prm.getText(PRM_ERP_PASSWORD);
-
-    try {
-      SimpleRowSet payments = ButentWS.connect(remoteNamespace, remoteAddress, remoteLogin,
-          remotePassword)
-          .getSQLData("SELECT extern_id AS id, apm_data AS data, apm_suma AS suma"
-                  + " FROM apyvarta WHERE pajamos=0 AND extern_id IN(" + ids.toString() + ")",
-              "id", "data", "suma");
-
-      for (SimpleRow payment : payments) {
-        String id = TradeModuleBean.decodeId(TBL_SALES, payment.getLong("id"));
-        Double paid = payment.getDouble("suma");
-
-        if (!Objects.equals(paid,
-            BeeUtils.toDoubleOrNull(debts.getValueByKey(COL_SALE, id, COL_TRADE_PAID)))) {
-
-          c += qs.updateData(new SqlUpdate(TBL_SALES)
-              .addConstant(COL_TRADE_PAID, paid)
-              .addConstant(COL_TRADE_PAYMENT_TIME,
-                  TimeUtils.parseDateTime(payment.getValue("data")))
-              .setWhere(sys.idEquals(TBL_SALES, BeeUtils.toLong(id))));
+      for (SimpleRow row : debts) {
+        if (ids.length() > 0) {
+          ids.append(",");
         }
+        ids.append("'").append(TradeModuleBean.encodeId(TBL_SALES, row.getLong(COL_SALE)))
+            .append("'");
       }
-    } catch (BeeException e) {
-      logger.error(e);
-      error = e.getMessage();
+      String remoteNamespace = prm.getText(PRM_ERP_NAMESPACE);
+      String remoteAddress = prm.getText(PRM_ERP_ADDRESS);
+      String remoteLogin = prm.getText(PRM_ERP_LOGIN);
+      String remotePassword = prm.getText(PRM_ERP_PASSWORD);
+
+      try {
+        SimpleRowSet payments = ButentWS.connect(remoteNamespace, remoteAddress, remoteLogin,
+            remotePassword)
+            .getSQLData("SELECT extern_id AS id, apm_data AS data, apm_suma AS suma"
+                    + " FROM apyvarta WHERE pajamos=0 AND extern_id IN(" + ids.toString() + ")",
+                "id", "data", "suma");
+
+        for (SimpleRow payment : payments) {
+          String id = TradeModuleBean.decodeId(TBL_SALES, payment.getLong("id"));
+          Double paid = payment.getDouble("suma");
+
+          if (!Objects.equals(paid,
+              BeeUtils.toDoubleOrNull(debts.getValueByKey(COL_SALE, id, COL_TRADE_PAID)))) {
+
+            c += qs.updateData(new SqlUpdate(TBL_SALES)
+                .addConstant(COL_TRADE_PAID, paid)
+                .addConstant(COL_TRADE_PAYMENT_TIME,
+                    TimeUtils.parseDateTime(payment.getValue("data")))
+                .setWhere(sys.idEquals(TBL_SALES, BeeUtils.toLong(id))));
+          }
+        }
+      } catch (BeeException e) {
+        logger.error(e);
+        error = e.getMessage();
+      }
     }
-    qs.insertData(new SqlInsert(TBL_EVENT_HISTORY)
-        .addConstant(COL_EVENT, PRM_ERP_REFRESH_INTERVAL)
-        .addConstant(COL_EVENT_STARTED, started)
-        .addConstant(COL_EVENT_ENDED, System.currentTimeMillis())
-        .addConstant(COL_EVENT_RESULT, BeeUtils.isEmpty(error)
-            ? "OK\nUpdated " + c + " records" : "ERROR\n" + error));
+    if (BeeUtils.isEmpty(error)) {
+      sys.eventEnd(historyId, "OK", BeeUtils.joinWords("Updated", c, "records"));
+    } else {
+      sys.eventEnd(historyId, "ERROR", error);
+    }
   }
 
   private ResponseObject sendMessage(String message, String[] recipients) {
