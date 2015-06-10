@@ -5,6 +5,7 @@ import com.google.gwt.dom.client.StyleElement;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 
+import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasInfo;
@@ -13,6 +14,7 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -40,9 +42,6 @@ public class UserInfo implements HasInfo {
 
   private boolean openInNewTab;
 
-  private int applianceHeaderHeight;
-  private int viewHeaderHeight;
-
   private int clickSensitivityMillis;
   private int clickSensitivityDistance;
 
@@ -62,10 +61,6 @@ public class UserInfo implements HasInfo {
 
   public boolean canEditData(String object) {
     return isLoggedIn() && userData.canEditData(object);
-  }
-
-  public int getApplianceHeaderHeight() {
-    return applianceHeaderHeight;
   }
 
   public int getClickSensitivityDistance() {
@@ -164,10 +159,6 @@ public class UserInfo implements HasInfo {
     return userData.getUserSign();
   }
 
-  public int getViewHeaderHeight() {
-    return viewHeaderHeight;
-  }
-
   public boolean is(Long id) {
     return id != null && id.equals(getUserId());
   }
@@ -209,6 +200,10 @@ public class UserInfo implements HasInfo {
     return userData != null;
   }
 
+  public boolean isMenuVisible() {
+    return !getBooleanSetting(COL_MENU_HIDE);
+  }
+
   public boolean isMenuVisible(String object) {
     return isLoggedIn() && userData.isMenuVisible(object);
   }
@@ -240,6 +235,21 @@ public class UserInfo implements HasInfo {
 
   public void setSessionId(String sessionId) {
     this.sessionId = sessionId;
+  }
+
+  public void setMenuVisible(boolean visible) {
+    if (isMenuVisible() != visible && !DataUtils.isEmpty(settings)) {
+      int index = getSettingsIndex(COL_MENU_HIDE);
+
+      if (!BeeConst.isUndef(index)) {
+        boolean hide = !visible;
+
+        BeeRow row = getSettingsRow();
+        row.setValue(index, hide);
+
+        Queries.update(settings.getViewName(), row.getId(), COL_MENU_HIDE, BooleanValue.of(hide));
+      }
+    }
   }
 
   public void setUserData(UserData userData) {
@@ -342,10 +352,6 @@ public class UserInfo implements HasInfo {
     return styleId;
   }
 
-  private void setApplianceHeaderHeight(int applianceHeaderHeight) {
-    this.applianceHeaderHeight = applianceHeaderHeight;
-  }
-
   private void setClickSensitivityDistance(int clickSensitivityDistance) {
     this.clickSensitivityDistance = clickSensitivityDistance;
   }
@@ -362,15 +368,8 @@ public class UserInfo implements HasInfo {
     this.styleId = styleId;
   }
 
-  private void setViewHeaderHeight(int viewHeaderHeight) {
-    this.viewHeaderHeight = viewHeaderHeight;
-  }
-
   private void updateFields() {
     setOpenInNewTab(getBooleanSetting(COL_OPEN_IN_NEW_TAB));
-
-    setApplianceHeaderHeight(getIntSetting(COL_APPLIANCE_HEADER_HEIGHT));
-    setViewHeaderHeight(getIntSetting(COL_VIEW_HEADER_HEIGHT));
 
     setClickSensitivityMillis(getIntSetting(COL_CLICK_SENSITIVITY_MILLIS));
     setClickSensitivityDistance(getIntSetting(COL_CLICK_SENSITIVITY_DISTANCE));

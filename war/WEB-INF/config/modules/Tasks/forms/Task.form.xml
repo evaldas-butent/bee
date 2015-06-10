@@ -8,7 +8,7 @@
 
   <!ENTITY lbl1 "&inline; width: 100px; padding-top: 1px;">
   <!ENTITY top1 "float: left; width: 100px; padding-top: 1px;">
-  <!ENTITY inp2 "&inline; width: 140px;">
+  <!ENTITY inp2 "&inline; width: 180px;">
   <!ENTITY inp2x "&inline; width: 424px;">
   <!ENTITY lbl3 "&inline; width: 128px; padding-top: 1px; margin-left: 16px;">
   <!ENTITY inp4 "&inline; width: 140px;">
@@ -21,12 +21,12 @@
   width="900" height="560"
   >
 
-<TabbedPages>
+<TabbedPages resizable="false">
     <page>
       <text>=mainInformation</text>
       
       <FlowPanel class="flexBox-horizontal bee-crm-taskEdit-form">
-      <FlowPanel style="margin-left: 5px;">
+      <FlowPanel style="margin-left: 5px; overflow:scroll">
         <FlowPanel style="&section;">
           <Label for="Type" style="&lbl1;" />
           <DataSelector source="Type" renderColumns="TypeName" newRowEnabled="false" style="&inp2;"
@@ -114,7 +114,7 @@
           <InputArea source="Description" style="width: 424px; height: 60px;" readOnly="true" />
         </FlowPanel>
   
-        <FileGroup name="Files" data="TaskFiles"/>
+        <FileGroup name="Files" data="TaskFiles" visibleColumns="icon name size createdoc"/>
       
         &separator;
         <FlowPanel style="&section;" data="TaskUsers">
@@ -149,20 +149,20 @@
         <FlowPanel style="margin-left: 5px;">
            <FlowPanel style="&section;" data="Relations" for="Company" module="Classifiers.Contacts">
                 <Label text="=companies" style="&top1;" />
-              <MultiSelector viewName="Companies" property="Companies" renderColumns="Name"
-                      newRowEnabled="false" style="&inp2x;" disablable="true" summarize="true"/>
+              <MultiSelector viewName="Companies" property="Companies" renderColumns="Name TypeName"
+                      newRowEnabled="true" style="&inp2x;" disablable="true" summarize="true"/>
             </FlowPanel>
   
           <FlowPanel style="&section;" data="Relations" for="Person" module="Classifiers.Contacts">
             <Label text="=persons" style="&top1;" />
             <MultiSelector viewName="Persons" property="Persons" renderColumns="FirstName LastName"
-              newRowEnabled="false" style="&inp2x;" disablable="true" summarize="true"/>
+              newRowEnabled="true" style="&inp2x;" disablable="true" summarize="true"/>
           </FlowPanel>
   
           <FlowPanel style="&section;" data="Relations" for="Document" module="Documents">
             <Label text="=documents" style="&top1;" />
-            <MultiSelector viewName="Documents" property="Documents" renderColumns="Name"
-              newRowEnabled="false" style="&inp2x;" disablable="true" summarize="true"/>
+            <MultiSelector viewName="Documents" property="Documents" renderColumns="Name Number RegistrationNumber DocumentDate"
+              newRowEnabled="true" style="&inp2x;" disablable="true" summarize="true"/>
           </FlowPanel>
           
           <FlowPanel style="&section;" data="Relations" for="Appointment" module="Calendar">
@@ -195,8 +195,8 @@
           <FlowPanel style="&section;" data="Relations" for="Relation">
             <Label text="=crmTasks" style="&top1;" />
             <MultiSelector viewName="Tasks" property="Tasks"
-              renderColumns="Summary ExecutorFirstName ExecutorLastName"
-              choiceColumns="Summary ExecutorFirstName ExecutorLastName StartTime FinishTime"
+              renderColumns="Id Summary ExecutorFirstName ExecutorLastName"
+              choiceColumns="Id Summary ExecutorFirstName ExecutorLastName StartTime FinishTime"
               newRowEnabled="false" style="&inp2x;" disablable="true" summarize="true"/>
           </FlowPanel>
         </FlowPanel>

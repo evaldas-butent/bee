@@ -14,12 +14,12 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.modules.classifiers.ClassifierUtils;
-import com.butent.bee.client.output.PrintFormInterceptor;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
+import com.butent.bee.client.view.form.interceptor.PrintFormInterceptor;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.BeeRow;
@@ -69,9 +69,8 @@ public class AssessmentTransportationForm extends PrintFormInterceptor {
     if (!BeeUtils.anyNotNull(totals, cargo)) {
       return;
     }
-    Queries.getRowSet(TBL_ORDER_CARGO, null,
-        Filter.in(Data.getIdColumn(TBL_ORDER_CARGO), TBL_CARGO_TRIPS, COL_CARGO,
-            Filter.equals(COL_TRIP, row.getId())),
+    Queries.getRowSet(TBL_ASSESSMENTS, null,
+        Filter.in(COL_CARGO, TBL_CARGO_TRIPS, COL_CARGO, Filter.equals(COL_TRIP, row.getId())),
         new RowSetCallback() {
           @Override
           public void onSuccess(BeeRowSet result) {
@@ -265,7 +264,7 @@ public class AssessmentTransportationForm extends PrintFormInterceptor {
                 forwarderCompanySignature + BeeConst.STRING_COMMA,
                 BeeUtils.join(BeeConst.STRING_SPACE, PARAGRAPH_TEXT.subList(2, PARAGRAPH_TEXT
                     .size()))
-                );
+            );
 
             widget.getElement().setInnerText(pText);
           }

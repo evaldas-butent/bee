@@ -137,6 +137,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String cancel();
 
+  String canceled();
+
   String captionId();
 
   String captionPid();
@@ -163,6 +165,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String clientStatus();
 
+  String columns();
+
   String columnResults();
 
   String comment();
@@ -181,6 +185,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String companyVATCode();
 
+  String constant();
+
   String contact();
 
   String contacts();
@@ -188,6 +194,10 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
   String content();
 
   String continueQuestion();
+
+  String create();
+
+  String createNew();
 
   String createNewRow();
 
@@ -260,6 +270,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
   String errors();
 
   String exchangeCode();
+
+  String expenses();
 
   String exportToMsExcel();
 
@@ -385,11 +397,19 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String firstName();
 
+  String formula();
+
   String greatest();
 
   String groupBy();
 
+  String groupResults();
+
   String height();
+
+  String help();
+
+  String hideOrShowMenu();
 
   String holidays();
 
@@ -397,7 +417,11 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String imported();
 
+  String importing();
+
   String imageUploadFailed();
+
+  String incomes();
 
   String initialFilter();
 
@@ -423,6 +447,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String kilogramShort();
 
+  String kilometers();
+
   String languageTag();
 
   String lastName();
@@ -440,6 +466,10 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
   String loginCommandRegister();
 
   String loginFailed();
+
+  String loginInfoLabel();
+
+  String loginInfoHelp();
 
   String loginPassword();
 
@@ -476,6 +506,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
   String month();
 
   String name();
+
+  String myEnvironment();
 
   String newCompanyPerson();
 
@@ -539,6 +571,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String oldPasswordIsRequired();
 
+  String operator();
+
   String ordinal();
 
   String outsized();
@@ -566,6 +600,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
   String persons();
 
   String phone();
+
+  String plan();
 
   String postIndex();
 
@@ -629,6 +665,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String roleAddUsers();
 
+  String rows();
+
   String rowResults();
 
   String roomDeleteQuestion();
@@ -669,7 +707,11 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String selectAll();
 
+  String search();
+
   String selectAtLeastOneRow();
+
+  String selectImport();
 
   String selectionColumnLabel();
 
@@ -678,6 +720,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
   String send();
 
   String sendReminder();
+
+  String separator();
 
   String setAsPrimary();
 

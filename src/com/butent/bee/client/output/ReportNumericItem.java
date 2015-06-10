@@ -4,6 +4,7 @@ import com.butent.bee.client.widget.InputSpinner;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.report.ReportFunction;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -24,11 +25,11 @@ public class ReportNumericItem extends ReportItem {
   }
 
   @Override
-  public Object calculate(Object total, ReportValue value) {
-    BigDecimal val = value != null ? BeeUtils.toDecimalOrNull(value.getValue()) : null;
+  public Object calculate(Object total, ReportValue value, ReportFunction function) {
+    BigDecimal val = BeeUtils.toDecimalOrNull(value.getValue());
 
     if (val != null) {
-      switch (getFunction()) {
+      switch (function) {
         case MAX:
           if (total == null) {
             return val;
@@ -45,7 +46,7 @@ public class ReportNumericItem extends ReportItem {
           }
           return val.add((BigDecimal) total);
         default:
-          return super.calculate(total, value);
+          return super.calculate(total, value, function);
       }
     }
     return total;
@@ -61,24 +62,14 @@ public class ReportNumericItem extends ReportItem {
   }
 
   @Override
-  public ReportNumericItem enableCalculation() {
-    if (getFunction() == null) {
-      setFunction(Function.SUM);
-      setRowSummary(true);
-      setColSummary(true);
-    }
-    return this;
-  }
-
-  @Override
   public ReportValue evaluate(SimpleRow row) {
     return ReportValue.of(BeeUtils.round(row.getValue(getName()), getPrecision()));
   }
 
   @Override
-  public EnumSet<Function> getAvailableFunctions() {
-    EnumSet<Function> functions = super.getAvailableFunctions();
-    functions.add(Function.SUM);
+  public EnumSet<ReportFunction> getAvailableFunctions() {
+    EnumSet<ReportFunction> functions = super.getAvailableFunctions();
+    functions.add(ReportFunction.SUM);
     return functions;
   }
 
@@ -106,16 +97,16 @@ public class ReportNumericItem extends ReportItem {
   }
 
   @Override
-  public ReportNumericItem saveOptions() {
+  public String saveOptions() {
     if (precisionWidget != null) {
       setPrecision(precisionWidget.getIntValue());
     }
-    return this;
+    return super.saveOptions();
   }
 
   @Override
   public String serialize() {
-    return super.serialize(Codec.beeSerialize(Collections.singletonMap(PRECISION, precision)));
+    return serialize(Codec.beeSerialize(Collections.singletonMap(PRECISION, precision)));
   }
 
   public ReportNumericItem setPrecision(int prec) {
@@ -124,12 +115,12 @@ public class ReportNumericItem extends ReportItem {
   }
 
   @Override
-  public Object summarize(Object total, Object value) {
+  public Object summarize(Object total, Object value, ReportFunction function) {
     if (value != null) {
       if (total == null) {
-        return super.summarize(total, value);
+        return super.summarize(total, value, function);
       }
-      switch (getFunction()) {
+      switch (function) {
         case MAX:
           return ((BigDecimal) value).max((BigDecimal) total);
         case MIN:
@@ -137,7 +128,7 @@ public class ReportNumericItem extends ReportItem {
         case SUM:
           return ((BigDecimal) value).add((BigDecimal) total);
         default:
-          return super.summarize(total, value);
+          return super.summarize(total, value, function);
       }
     }
     return total;

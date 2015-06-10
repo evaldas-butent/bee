@@ -32,7 +32,8 @@ public class ReportEnumItem extends ReportItem implements ClickHandler {
   private static final String ENUM = "ENUM";
 
   private String enumKey;
-  private Label filter;
+  private Label filterWidget;
+  private Set<Integer> filter;
 
   public ReportEnumItem(String name, String caption,
       Class<? extends Enum<? extends HasCaption>> en) {
@@ -47,9 +48,8 @@ public class ReportEnumItem extends ReportItem implements ClickHandler {
 
   @Override
   public void clearFilter() {
-    if (filter != null) {
-      setFilterValues(null);
-    }
+    filter = null;
+    renderFilter();
   }
 
   @Override
@@ -59,33 +59,39 @@ public class ReportEnumItem extends ReportItem implements ClickHandler {
     if (!BeeUtils.isEmpty(map)) {
       enumKey = map.get(ENUM);
 
-      Set<Integer> idxs = new HashSet<>();
       String[] arr = Codec.beeDeserializeCollection(map.get(Service.VAR_DATA));
 
       if (!ArrayUtils.isEmpty(arr)) {
+        filter = new HashSet<>();
+
         for (String idx : arr) {
-          idxs.add(BeeUtils.toInt(idx));
+          filter.add(BeeUtils.toInt(idx));
         }
       }
-      setFilterValues(idxs);
     }
   }
 
   @Override
   public ReportValue evaluate(SimpleRow row) {
     Integer value = row.getInt(getName());
-    return ReportValue.of(TimeUtils.padTwo(value), EnumUtils.getCaption(enumKey, value));
+    return value == null ? ReportValue.empty()
+        : ReportValue.of(TimeUtils.padTwo(value), EnumUtils.getCaption(enumKey, value));
+  }
+
+  @Override
+  public Set<Integer> getFilter() {
+    return filter;
   }
 
   @Override
   public Label getFilterWidget() {
-    if (filter == null) {
-      filter = new Label();
-      filter.addStyleName(getStyle() + "-filter");
-      filter.addClickHandler(this);
-      clearFilter();
+    if (filterWidget == null) {
+      filterWidget = new Label();
+      filterWidget.addStyleName(getStyle() + "-filter");
+      filterWidget.addClickHandler(this);
+      renderFilter();
     }
-    return filter;
+    return filterWidget;
   }
 
   @Override
@@ -96,12 +102,11 @@ public class ReportEnumItem extends ReportItem implements ClickHandler {
   @Override
   public void onClick(ClickEvent event) {
     final ListBox list = new ListBox(true);
-    Set<Integer> old = getFilterValues();
     int x = 0;
 
     for (String caption : EnumUtils.getCaptions(enumKey)) {
       list.addItem(caption);
-      list.getOptionElement(x).setSelected(old.contains(x));
+      list.getOptionElement(x).setSelected(filter != null && filter.contains(x));
       x++;
     }
     list.setAllVisible();
@@ -109,14 +114,14 @@ public class ReportEnumItem extends ReportItem implements ClickHandler {
     Global.inputWidget(Localized.getConstants().values(), list, new InputCallback() {
       @Override
       public void onSuccess() {
-        Set<Integer> idxs = new HashSet<>();
+        filter = new HashSet<>();
 
         for (int i = 0; i < list.getItemCount(); i++) {
           if (list.getOptionElement(i).isSelected()) {
-            idxs.add(i);
+            filter.add(i);
           }
         }
-        setFilterValues(idxs);
+        renderFilter();
       }
     });
   }
@@ -126,60 +131,41 @@ public class ReportEnumItem extends ReportItem implements ClickHandler {
     Map<String, Object> map = new HashMap<>();
     map.put(ENUM, enumKey);
 
-    String data = serializeFilter();
-
-    if (!BeeUtils.isEmpty(data)) {
-      map.put(Service.VAR_DATA, data);
+    if (!BeeUtils.isEmpty(filter)) {
+      map.put(Service.VAR_DATA, filter);
     }
-    return super.serialize(Codec.beeSerialize(map));
-  }
-
-  @Override
-  public String serializeFilter() {
-    if (filter == null) {
-      return null;
-    }
-    return Codec.beeSerialize(getFilterValues());
+    return serialize(Codec.beeSerialize(map));
   }
 
   @Override
   public ReportItem setFilter(String value) {
     if (!BeeUtils.isEmpty(value)) {
-      setFilterValues(Collections.singleton(BeeUtils.toInt(value)));
+      filter = Collections.singleton(BeeUtils.toInt(value));
+    } else {
+      filter = null;
     }
     return this;
   }
 
   @Override
   public boolean validate(SimpleRow row) {
-    Set<Integer> values = getFilterValues();
-
-    if (BeeUtils.isEmpty(values) || !row.getRowSet().hasColumn(getName())) {
+    if (BeeUtils.isEmpty(filter) || !row.getRowSet().hasColumn(getName())) {
       return true;
     }
-    return values.contains(row.getInt(getName()));
+    return filter.contains(row.getInt(getName()));
   }
 
-  private Set<Integer> getFilterValues() {
-    Set<Integer> values = new HashSet<>();
+  private void renderFilter() {
+    if (filterWidget != null) {
+      List<String> caps = new ArrayList<>();
 
-    if (filter != null) {
-      values.addAll(BeeUtils.toInts(filter.getTitle()));
-    }
-    return values;
-  }
-
-  private void setFilterValues(Set<Integer> idxs) {
-    List<String> caps = new ArrayList<>();
-
-    if (!BeeUtils.isEmpty(idxs)) {
-      for (Integer idx : idxs) {
-        caps.add(EnumUtils.getCaption(enumKey, idx));
+      if (!BeeUtils.isEmpty(filter)) {
+        for (Integer idx : filter) {
+          caps.add(EnumUtils.getCaption(enumKey, idx));
+        }
       }
+      filterWidget.setText(BeeUtils.joinItems(caps));
+      filterWidget.setStyleName(getStyle() + "-filter-empty", caps.isEmpty());
     }
-    Label widget = getFilterWidget();
-    widget.setTitle(BeeUtils.joinInts(idxs));
-    widget.setText(BeeUtils.joinItems(caps));
-    widget.setStyleName(getStyle() + "-filter-empty", BeeUtils.isEmpty(widget.getTitle()));
   }
 }

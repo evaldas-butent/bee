@@ -159,7 +159,7 @@ public class ChildGrid extends EmbeddedGrid implements Launchable {
     }
 
     final GridView gridView = GridFactory.createGridView(getGridDescription(), getGridKey(),
-        dataInfo.getColumns(), getRelSource(), getGridInterceptor(), order);
+        dataInfo.getColumns(), getRelSource(), uiOptions, getGridInterceptor(), order);
 
     afterCreateGrid(gridView);
 

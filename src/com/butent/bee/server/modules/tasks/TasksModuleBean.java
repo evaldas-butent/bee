@@ -7,9 +7,51 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import com.google.common.eventbus.Subscribe;
 
-import static com.butent.bee.shared.html.builder.Factory.*;
-import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
-import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
+import static com.butent.bee.shared.html.builder.Factory.div;
+import static com.butent.bee.shared.html.builder.Factory.h3;
+import static com.butent.bee.shared.html.builder.Factory.meta;
+import static com.butent.bee.shared.html.builder.Factory.table;
+import static com.butent.bee.shared.html.builder.Factory.tbody;
+import static com.butent.bee.shared.html.builder.Factory.td;
+import static com.butent.bee.shared.html.builder.Factory.title;
+import static com.butent.bee.shared.html.builder.Factory.tr;
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.ALS_FILE_NAME;
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.ALS_FILE_SIZE;
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.ALS_FILE_TYPE;
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.COL_FILE;
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.COL_FILE_CAPTION;
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.COL_FILE_NAME;
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.COL_FILE_SIZE;
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.COL_FILE_TYPE;
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.COL_REMINDER_HOURS;
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.COL_REMINDER_METHOD;
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.COL_REMINDER_MINUTES;
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.COL_UG_GROUP;
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.COL_UG_USER;
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.COL_USER;
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.PROP_ICON;
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.TBL_FILES;
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.TBL_RELATIONS;
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.TBL_REMINDER_TYPES;
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.TBL_USERS;
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.TBL_USER_GROUPS;
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.TBL_USER_SETTINGS;
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.VIEW_USERS;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.ALS_COMPANY_NAME;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.ALS_COMPANY_TYPE;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.COL_COMPANY;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.COL_COMPANY_NAME;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.COL_COMPANY_PERSON;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.COL_COMPANY_TYPE;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.COL_COMPANY_TYPE_NAME;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.COL_CONTACT;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.COL_FIRST_NAME;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.COL_LAST_NAME;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.COL_PERSON;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.TBL_COMPANIES;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.TBL_COMPANY_PERSONS;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.TBL_COMPANY_TYPES;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.TBL_PERSONS;
 import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
 
 import com.butent.bee.server.Config;
@@ -205,7 +247,11 @@ public class TasksModuleBean implements BeeModule {
 
   @Override
   public Collection<BeeParameter> getDefaultParameters() {
-    return null;
+    String module = getModule().getName();
+    List<BeeParameter> params = Lists.newArrayList(
+        BeeParameter.createText(module, PRM_END_OF_WORK_DAY)
+        );
+    return params;
   }
 
   @Override
@@ -1999,7 +2045,7 @@ public class TasksModuleBean implements BeeModule {
         .addConstant(COL_TASK, taskId)
         .addConstant(COL_PUBLISHER, userId)
         .addConstant(COL_PUBLISH_TIME, millis)
-        .addConstant(COL_EVENT, event.ordinal());
+        .addConstant(TaskConstants.COL_EVENT, event.ordinal());
 
     if (!BeeUtils.isEmpty(comment)) {
       si.addConstant(COL_COMMENT, comment);

@@ -53,11 +53,6 @@ import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.mail.MailConstants;
-import com.butent.bee.shared.modules.mail.MailConstants.AddressType;
-import com.butent.bee.shared.modules.mail.MailConstants.MessageFlag;
-import com.butent.bee.shared.modules.mail.MailConstants.RuleAction;
-import com.butent.bee.shared.modules.mail.MailConstants.RuleCondition;
-import com.butent.bee.shared.modules.mail.MailConstants.SystemFolder;
 import com.butent.bee.shared.modules.mail.MailFolder;
 import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.rights.Module;
@@ -151,7 +146,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
       cb.asynchronousCall(new AsynchronousRunnable() {
         @Override
         public String getId() {
-          return BeeUtils.joinWords(MailModuleBean.class.getName(), localFolder.getId());
+          return BeeUtils.join("-", MailModuleBean.class.getName(), localFolder.getId());
         }
 
         @Override
@@ -405,6 +400,18 @@ public class MailModuleBean implements BeeModule, HasTimerService {
         response = ResponseObject
             .response(HtmlUtils.stripHtml(reqInfo.getParameter(COL_HTML_CONTENT)));
 
+      } else if (BeeUtils.same(svc, SVC_GET_UNREAD_COUNT)) {
+
+        response = ResponseObject.response(qs.getData(new SqlSelect()
+            .addCount("UnreadEmailCount")
+            .addFrom(TBL_PLACES)
+            .addFromInner(TBL_FOLDERS, sys.joinTables(TBL_FOLDERS, TBL_PLACES, COL_FOLDER))
+            .addFromInner(TBL_ACCOUNTS, sys.joinTables(TBL_ACCOUNTS, TBL_FOLDERS, COL_ACCOUNT))
+            .setWhere(SqlUtils.and(SqlUtils.equals(TBL_ACCOUNTS, COL_USER, usr.getCurrentUserId()),
+                SqlUtils.or(SqlUtils.isNull(TBL_PLACES, COL_FLAGS),
+                    SqlUtils.equals(SqlUtils.bitAnd(TBL_PLACES, COL_FLAGS,
+                        MessageFlag.SEEN.getMask()), 0))))).getIntColumn("UnreadEmailCount"));
+
       } else {
         String msg = BeeUtils.joinWords("Mail service not recognized:", svc);
         logger.warning(msg);
@@ -425,12 +432,6 @@ public class MailModuleBean implements BeeModule, HasTimerService {
     List<BeeParameter> params = Lists.newArrayList(
         BeeParameter.createRelation(module, PRM_DEFAULT_ACCOUNT, false,
             TBL_ACCOUNTS, COL_ACCOUNT_DESCRIPTION),
-        BeeParameter.createText(module, "POP3Server", false, null),
-        BeeParameter.createNumber(module, "POP3ServerPort", false, null),
-        BeeParameter.createNumber(module, "POP3BindPort", false, null),
-        BeeParameter.createText(module, "SMTPServer", false, null),
-        BeeParameter.createNumber(module, "SMTPServerPort", false, null),
-        BeeParameter.createNumber(module, "SMTPBindPort", false, null),
         BeeParameter.createNumber(module, PRM_MAIL_CHECK_INTERVAL, false, null));
 
     return params;
@@ -638,54 +639,54 @@ public class MailModuleBean implements BeeModule, HasTimerService {
       @Override
       public BeeRowSet getViewData(BeeView view, SqlSelect query, Filter filter) {
         return qs.getViewData(new SqlSelect().setUnionAllMode(true)
-            .addFields(TBL_EMAILS, COL_EMAIL_ADDRESS)
-            .addFields(TBL_ADDRESSBOOK, COL_ADDRESSBOOK_LABEL)
-            .addFrom(TBL_EMAILS)
-            .addFromInner(TBL_ADDRESSBOOK,
-                SqlUtils.and(sys.joinTables(TBL_EMAILS, TBL_ADDRESSBOOK, COL_EMAIL),
-                    SqlUtils.equals(TBL_ADDRESSBOOK, COL_USER, usr.getCurrentUserId())))
-            .addUnion(new SqlSelect()
                 .addFields(TBL_EMAILS, COL_EMAIL_ADDRESS)
-                .addField(TBL_COMPANIES, COL_COMPANY_NAME, COL_ADDRESSBOOK_LABEL)
+                .addFields(TBL_ADDRESSBOOK, COL_ADDRESSBOOK_LABEL)
                 .addFrom(TBL_EMAILS)
-                .addFromInner(TBL_CONTACTS, sys.joinTables(TBL_EMAILS, TBL_CONTACTS, COL_EMAIL))
-                .addFromInner(TBL_COMPANIES,
-                    sys.joinTables(TBL_CONTACTS, TBL_COMPANIES, COL_CONTACT)))
-            .addUnion(new SqlSelect()
-                .addFields(TBL_EMAILS, COL_EMAIL_ADDRESS)
-                .addExpr(SqlUtils.concat(SqlUtils.field(TBL_COMPANIES, COL_COMPANY_NAME), "' '",
-                    SqlUtils.nvl(SqlUtils.field(TBL_CONTACTS, COL_NOTES), "''")),
-                    COL_ADDRESSBOOK_LABEL)
-                .addFrom(TBL_EMAILS)
-                .addFromInner(TBL_CONTACTS, sys.joinTables(TBL_EMAILS, TBL_CONTACTS, COL_EMAIL))
-                .addFromInner(TBL_COMPANY_CONTACTS,
-                    sys.joinTables(TBL_CONTACTS, TBL_COMPANY_CONTACTS, COL_CONTACT))
-                .addFromInner(TBL_COMPANIES,
-                    sys.joinTables(TBL_COMPANIES, TBL_COMPANY_CONTACTS, COL_COMPANY)))
-            .addUnion(new SqlSelect()
-                .addFields(TBL_EMAILS, COL_EMAIL_ADDRESS)
-                .addExpr(SqlUtils.concat(SqlUtils.field(TBL_PERSONS, COL_FIRST_NAME), "' '",
-                    SqlUtils.nvl(SqlUtils.field(TBL_PERSONS, COL_LAST_NAME), "''")),
-                    COL_ADDRESSBOOK_LABEL)
-                .addFrom(TBL_EMAILS)
-                .addFromInner(TBL_CONTACTS, sys.joinTables(TBL_EMAILS, TBL_CONTACTS, COL_EMAIL))
-                .addFromInner(TBL_PERSONS,
-                    sys.joinTables(TBL_CONTACTS, TBL_PERSONS, COL_CONTACT)))
-            .addUnion(new SqlSelect()
-                .addFields(TBL_EMAILS, COL_EMAIL_ADDRESS)
-                .addExpr(SqlUtils.concat(SqlUtils.field(TBL_PERSONS, COL_FIRST_NAME), "' '",
-                    SqlUtils.nvl(SqlUtils.field(TBL_PERSONS, COL_LAST_NAME), "''"), "' '",
-                    SqlUtils.nvl(SqlUtils.field(TBL_POSITIONS, COL_POSITION_NAME), "''")),
-                    COL_ADDRESSBOOK_LABEL)
-                .addFrom(TBL_EMAILS)
-                .addFromInner(TBL_CONTACTS, sys.joinTables(TBL_EMAILS, TBL_CONTACTS, COL_EMAIL))
-                .addFromInner(TBL_COMPANY_PERSONS,
-                    sys.joinTables(TBL_CONTACTS, TBL_COMPANY_PERSONS, COL_CONTACT))
-                .addFromInner(TBL_PERSONS,
-                    sys.joinTables(TBL_PERSONS, TBL_COMPANY_PERSONS, COL_PERSON))
-                .addFromLeft(TBL_POSITIONS,
-                    sys.joinTables(TBL_POSITIONS, TBL_COMPANY_PERSONS, COL_POSITION)))
-            .addOrder(null, COL_EMAIL_ADDRESS),
+                .addFromInner(TBL_ADDRESSBOOK,
+                    SqlUtils.and(sys.joinTables(TBL_EMAILS, TBL_ADDRESSBOOK, COL_EMAIL),
+                        SqlUtils.equals(TBL_ADDRESSBOOK, COL_USER, usr.getCurrentUserId())))
+                .addUnion(new SqlSelect()
+                    .addFields(TBL_EMAILS, COL_EMAIL_ADDRESS)
+                    .addField(TBL_COMPANIES, COL_COMPANY_NAME, COL_ADDRESSBOOK_LABEL)
+                    .addFrom(TBL_EMAILS)
+                    .addFromInner(TBL_CONTACTS, sys.joinTables(TBL_EMAILS, TBL_CONTACTS, COL_EMAIL))
+                    .addFromInner(TBL_COMPANIES,
+                        sys.joinTables(TBL_CONTACTS, TBL_COMPANIES, COL_CONTACT)))
+                .addUnion(new SqlSelect()
+                    .addFields(TBL_EMAILS, COL_EMAIL_ADDRESS)
+                    .addExpr(SqlUtils.concat(SqlUtils.field(TBL_COMPANIES, COL_COMPANY_NAME), "' '",
+                            SqlUtils.nvl(SqlUtils.field(TBL_CONTACTS, COL_NOTES), "''")),
+                        COL_ADDRESSBOOK_LABEL)
+                    .addFrom(TBL_EMAILS)
+                    .addFromInner(TBL_CONTACTS, sys.joinTables(TBL_EMAILS, TBL_CONTACTS, COL_EMAIL))
+                    .addFromInner(TBL_COMPANY_CONTACTS,
+                        sys.joinTables(TBL_CONTACTS, TBL_COMPANY_CONTACTS, COL_CONTACT))
+                    .addFromInner(TBL_COMPANIES,
+                        sys.joinTables(TBL_COMPANIES, TBL_COMPANY_CONTACTS, COL_COMPANY)))
+                .addUnion(new SqlSelect()
+                    .addFields(TBL_EMAILS, COL_EMAIL_ADDRESS)
+                    .addExpr(SqlUtils.concat(SqlUtils.field(TBL_PERSONS, COL_FIRST_NAME), "' '",
+                            SqlUtils.nvl(SqlUtils.field(TBL_PERSONS, COL_LAST_NAME), "''")),
+                        COL_ADDRESSBOOK_LABEL)
+                    .addFrom(TBL_EMAILS)
+                    .addFromInner(TBL_CONTACTS, sys.joinTables(TBL_EMAILS, TBL_CONTACTS, COL_EMAIL))
+                    .addFromInner(TBL_PERSONS,
+                        sys.joinTables(TBL_CONTACTS, TBL_PERSONS, COL_CONTACT)))
+                .addUnion(new SqlSelect()
+                    .addFields(TBL_EMAILS, COL_EMAIL_ADDRESS)
+                    .addExpr(SqlUtils.concat(SqlUtils.field(TBL_PERSONS, COL_FIRST_NAME), "' '",
+                            SqlUtils.nvl(SqlUtils.field(TBL_PERSONS, COL_LAST_NAME), "''"), "' '",
+                            SqlUtils.nvl(SqlUtils.field(TBL_POSITIONS, COL_POSITION_NAME), "''")),
+                        COL_ADDRESSBOOK_LABEL)
+                    .addFrom(TBL_EMAILS)
+                    .addFromInner(TBL_CONTACTS, sys.joinTables(TBL_EMAILS, TBL_CONTACTS, COL_EMAIL))
+                    .addFromInner(TBL_COMPANY_PERSONS,
+                        sys.joinTables(TBL_CONTACTS, TBL_COMPANY_PERSONS, COL_CONTACT))
+                    .addFromInner(TBL_PERSONS,
+                        sys.joinTables(TBL_PERSONS, TBL_COMPANY_PERSONS, COL_PERSON))
+                    .addFromLeft(TBL_POSITIONS,
+                        sys.joinTables(TBL_POSITIONS, TBL_COMPANY_PERSONS, COL_POSITION)))
+                .addOrder(null, COL_EMAIL_ADDRESS),
             sys.getView(VIEW_USER_EMAILS));
       }
 
@@ -722,11 +723,10 @@ public class MailModuleBean implements BeeModule, HasTimerService {
   }
 
   public Long getSenderAccountId(String logLabel) {
-    Long account = prm.getRelation(MailConstants.PRM_DEFAULT_ACCOUNT);
+    Long account = prm.getRelation(PRM_DEFAULT_ACCOUNT);
 
     if (!DataUtils.isId(account)) {
-      logger.info(logLabel, "sender account not specified",
-          BeeUtils.bracket(MailConstants.PRM_DEFAULT_ACCOUNT));
+      logger.info(logLabel, "sender account not specified", BeeUtils.bracket(PRM_DEFAULT_ACCOUNT));
     }
     return account;
   }
@@ -881,18 +881,17 @@ public class MailModuleBean implements BeeModule, HasTimerService {
           LocalizableConstants loc = Localized.getConstants();
 
           String content = BeeUtils.join("<br>", "---------- "
-              + loc.mailForwardedMessage() + " ----------",
+                  + loc.mailForwardedMessage() + " ----------",
               loc.mailFrom() + ": " + sender,
               loc.date() + ": " + envelope.getDate(),
               loc.mailSubject() + ": " + envelope.getSubject(),
               loc.mailTo() + ": " + account.getAddress());
 
           for (SimpleRow part : rs) {
-            String text = part.getValue(COL_HTML_CONTENT);
+            String text = BeeUtils.notEmpty(part.getValue(COL_HTML_CONTENT),
+                part.getValue(COL_CONTENT));
 
-            if (BeeUtils.isEmpty(text)) {
-              text = part.getValue(COL_CONTENT);
-            } else {
+            if (!BeeUtils.isEmpty(text)) {
               content += "<br><br>" + text;
             }
           }
@@ -1290,6 +1289,12 @@ public class MailModuleBean implements BeeModule, HasTimerService {
 
       MailAccount account = mail.getAccount(BeeUtils.toLongOrNull(accountId));
       checkMail(true, account, account.getInboxFolder(), null);
+
+      try {
+        Thread.sleep(TimeUtils.MILLIS_PER_SECOND);
+      } catch (InterruptedException e) {
+        logger.warning(e.getMessage());
+      }
     }
   }
 
@@ -1503,7 +1508,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
         c += syncFolders(account, subFolder, localSubFolder);
       }
     }
-    for (Iterator<MailFolder> iter = localFolder.getSubFolders().iterator(); iter.hasNext();) {
+    for (Iterator<MailFolder> iter = localFolder.getSubFolders().iterator(); iter.hasNext(); ) {
       MailFolder subFolder = iter.next();
 
       if (!visitedFolders.contains(subFolder.getName()) && subFolder.isConnected()

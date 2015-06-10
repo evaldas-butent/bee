@@ -25,11 +25,13 @@
       </style>
     </CalcColumn>
 
-    <RelColumn name="Supplier" />
+    <RelColumn name="Supplier" renderColumns="SupplierName SupplierTypeName" choiceColumns="Name TypeName"/>
     <DataColumn name="Number" />
     <DataColumn name="Note" />
     <RelColumn name="Purchase" caption="=trdPurchaseId" readOnly="true" renderColumns="Purchase"
       editEnabled="true" editForm="CargoPurchaseInvoice" editViewName="CargoPurchaseInvoices" />
+
+    <RelColumn name="Income" newRowEnabled="false" required="true" />
   </g:columns>
 
   <g:rowEditable>

@@ -23,6 +23,7 @@ import com.butent.bee.client.dialog.TabulationHandler;
 import com.butent.bee.client.dom.Dimensions;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.ElementSize;
+import com.butent.bee.client.dom.Stacking;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.PreviewHandler;
 import com.butent.bee.client.event.Previewer;
@@ -321,7 +322,6 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
 
   private static final BeeLogger logger = LogUtils.getLogger(FormImpl.class);
 
-  private static final String STYLE_FORM = BeeConst.CSS_CLASS_PREFIX + "Form";
   private static final String STYLE_FORM_DISABLED = BeeConst.CSS_CLASS_PREFIX + "Form-"
       + StyleUtils.SUFFIX_DISABLED;
 
@@ -576,7 +576,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
 
     if (addStyle) {
       StyleUtils.makeAbsolute(root.asWidget());
-      root.asWidget().addStyleName(STYLE_FORM);
+      root.asWidget().addStyleName(StyleUtils.NAME_FORM);
     }
     setRootWidget(root);
 
@@ -2252,7 +2252,9 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   }
 
   private void showNote(LogLevel level, String... messages) {
+    Stacking.ensureParentContext(getNotification());
     StyleUtils.setZIndex(getNotification(), StyleUtils.getZIndex(getRootWidget().asWidget()) + 1);
+
     getNotification().show(level, messages);
   }
 

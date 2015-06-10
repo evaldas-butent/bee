@@ -29,10 +29,6 @@ public final class Settings {
     return checkSettings() && settings.containsKey(key);
   }
 
-  public static int getApplianceHeaderHeight() {
-    return getInt("applianceHeaderHeight");
-  }
-
   public static String getAppName() {
     return getString("appName");
   }
@@ -138,12 +134,12 @@ public final class Settings {
     return getList("styleSheets");
   }
 
-  public static String getVersion() {
-    return getString("version");
+  public static JSONObject getTheme() {
+    return getObject("theme");
   }
 
-  public static int getViewHeaderHeight() {
-    return getInt("viewHeaderHeight");
+  public static String getVersion() {
+    return getString("version");
   }
 
   public static String getWebSocketUrl() {

@@ -12,15 +12,18 @@ import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.widget.Button;
-import com.butent.bee.client.widget.Image;
-import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.DateTimeLabel;
+import com.butent.bee.client.widget.FaLabel;
+import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.client.widget.InputDateTime;
 import com.butent.bee.client.widget.InputText;
+import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.Link;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.HasOptions;
+import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.time.DateTime;
@@ -265,7 +268,7 @@ public class FileGroup extends HtmlTable implements HasOptions {
     EDIT("edit", Localized.getConstants().actionEdit(), false, true) {
       @Override
       Widget createDisplay() {
-        Image widget = new Image(Global.getImages().silverEdit());
+        FaLabel widget = new FaLabel(FontAwesome.EDIT);
         widget.setTitle(getCaption().toLowerCase());
         return widget;
       }
@@ -288,7 +291,29 @@ public class FileGroup extends HtmlTable implements HasOptions {
     DELETE("delete", Localized.getConstants().actionRemove(), false, true) {
       @Override
       Widget createDisplay() {
-        Image widget = new Image(Global.getImages().silverMinus());
+        FaLabel widget = new FaLabel(FontAwesome.MINUS);
+        widget.setTitle(getCaption().toLowerCase());
+        return widget;
+      }
+
+      @Override
+      Widget createEditor(FileInfo sf) {
+        return null;
+      }
+
+      @Override
+      void refresh(Widget widget, FileInfo sf) {
+      }
+
+      @Override
+      boolean update(Widget widget, FileInfo sf) {
+        return false;
+      }
+    },
+    CREATEDOC("createdoc", Localized.getConstants().documentNew(), false, true) {
+      @Override
+      Widget createDisplay() {
+        FaLabel widget = new FaLabel(FontAwesome.FILE_O);
         widget.setTitle(getCaption().toLowerCase());
         return widget;
       }
@@ -399,6 +424,8 @@ public class FileGroup extends HtmlTable implements HasOptions {
   private final List<Column> columns = new ArrayList<>();
   private final List<Column> editable = new ArrayList<>();
 
+  private Consumer<FileInfo> docCreator;
+
   public FileGroup() {
     this(DEFAULT_VISIBLE_COLUMNS);
   }
@@ -456,6 +483,18 @@ public class FileGroup extends HtmlTable implements HasOptions {
           });
           break;
 
+        case CREATEDOC:
+          ((HasClickHandlers) widget).addClickHandler(new ClickHandler() {
+            @Override
+            public void onClick(ClickEvent event) {
+              int index = getIndex(sf.getId());
+              if (index >= 0) {
+                docCreator.accept(getFiles().get(index));
+              }
+            }
+          });
+          break;
+
         default:
           column.refresh(widget, sf);
       }
@@ -505,6 +544,10 @@ public class FileGroup extends HtmlTable implements HasOptions {
       clear();
     }
     addFiles(FileInfo.restoreCollection(serialized));
+  }
+
+  public void setDocCreator(Consumer<FileInfo> docCreator) {
+    this.docCreator = docCreator;
   }
 
   @Override
@@ -633,5 +676,9 @@ public class FileGroup extends HtmlTable implements HasOptions {
         column.refresh(getWidget(row, col), sf);
       }
     }
+  }
+
+  public Consumer<FileInfo> getDocCreator() {
+    return docCreator;
   }
 }

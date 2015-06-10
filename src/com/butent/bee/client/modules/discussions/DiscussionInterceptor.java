@@ -15,7 +15,6 @@ import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HasHandlers;
-import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -43,7 +42,6 @@ import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.event.logical.SelectorEvent.Handler;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.i18n.Format;
-import com.butent.bee.client.images.Images;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.render.PhotoRenderer;
@@ -51,7 +49,6 @@ import com.butent.bee.client.richtext.RichTextEditor;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
-import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.edit.Editor;
@@ -61,6 +58,7 @@ import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.CustomDiv;
+import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.client.widget.InputBoolean;
@@ -77,6 +75,7 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
+import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
@@ -85,6 +84,7 @@ import com.butent.bee.shared.modules.discussions.DiscussionsConstants.Discussion
 import com.butent.bee.shared.modules.discussions.DiscussionsUtils;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
+import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -112,17 +112,25 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
       setWidget(container);
     }
 
-    private void addAction(String caption, ScheduledCommand command) {
+    private void addSaveAction(final ScheduledCommand command) {
       String styleName = STYLE_DIALOG + "-action";
 
-      Button button = new Button(caption, command);
-      button.addStyleName(styleName);
+      FaLabel faSave = new FaLabel(FontAwesome.SAVE);
+      faSave.addClickHandler(new ClickHandler() {
+
+        @Override
+        public void onClick(ClickEvent arg0) {
+          command.execute();
+        }
+      });
 
       HtmlTable table = getContainer();
       int row = table.getRowCount();
       int col = 0;
 
-      table.setWidget(row, col, button);
+      faSave.setTitle(Action.SAVE.getCaption());
+
+      insertAction(BeeConst.INT_TRUE, faSave);
 
       table.getCellFormatter().addStyleName(row, col, styleName + STYLE_CELL);
       table.getCellFormatter().setHorizontalAlignment(row, col, TextAlign.CENTER);
@@ -216,15 +224,9 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
       return collector.getId();
     }
 
-    private void dispaly() {
+    private void display() {
+      focusOnOpen(getContent());
       center();
-      UiHelper.focus(getContent());
-    }
-
-    @SuppressWarnings("unused")
-    private void display(String focusId) {
-      center();
-      UiHelper.focus(getChild(focusId));
     }
 
     private Widget getChild(String id) {
@@ -662,18 +664,18 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
 
   private Widget createEventButton(final FormView form, final IsRow row,
       final DiscussionEvent event, final String adminLogin) {
-    ImageResource imageResource = !BeeUtils.isEmpty(event.getImageResource())
-        ? Images.get(event.getImageResource()) : null;
+
+    FontAwesome icon = event.getCommandIcon();
     String label = event.getCommandLabel();
 
     Widget cmd = null;
 
-    if (imageResource != null) {
-      cmd = new Image(imageResource);
-      ((Image) cmd).setAlt(label);
-      ((Image) cmd).setTitle(label);
+    if (icon != null) {
+      cmd = new FaLabel(icon);
+      cmd.setTitle(label);
     } else {
       cmd = new Button(label);
+      cmd.setTitle(label);
     }
 
     if (cmd instanceof HasClickHandlers) {
@@ -901,27 +903,21 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
 
     container.add(colPublisher);
 
-    Flow colComment = new Flow();
-    colComment.addStyleName(STYLE_COMMENT_COL + COL_COMMENT_TEXT);
-
     String text = deleted ? commentRow.getString(DataUtils.getColumnIndex(COL_REASON, columns))
         : commentRow.getString(DataUtils.getColumnIndex(COL_COMMENT_TEXT, columns));
 
     if (!BeeUtils.isEmpty(text)) {
-      colComment.add(createCommentCell(COL_COMMENT, text));
+      colPublisher.add(createCommentCell(COL_COMMENT, text));
     }
 
     if (!files.isEmpty()) {
-      renderFiles(files, colComment);
+      renderFiles(files, colPublisher);
     }
 
     Flow colMarks = new Flow();
     colMarks.addStyleName(STYLE_COMMENT_COL + COL_MARK);
     createMarkPanel(colMarks, getFormView(), formRow, commentRow.getId());
-
-    colComment.add(colMarks);
-
-    container.add(colComment);
+    container.add(colMarks);
 
     Flow colActions = new Flow();
     colActions.addStyleName(STYLE_COMMENT_COL + STYLE_ACTIONS);
@@ -1086,7 +1082,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
           marked, markCount, i++);
     }
 
-    Image imgStats = new Image(Images.get("silverBarChart"));
+    FaLabel imgStats = new FaLabel(FontAwesome.BAR_CHART);
     imgStats.addStyleName(DISCUSSIONS_STYLE_PREFIX + STYLE_ACTIONS);
     imgStats.addStyleName(DISCUSSIONS_STYLE_PREFIX + STYLE_ACTIONS + STYLE_STATS);
     imgStats.setTitle(Localized.getConstants().discussMarkStats());
@@ -1208,7 +1204,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
     final String cid = dialog.addComment(true);
     final String fid = dialog.addFileCollector(formRow);
 
-    dialog.addAction(Localized.getConstants().actionSave(), new ScheduledCommand() {
+    dialog.addSaveAction(new ScheduledCommand() {
 
       @Override
       public void execute() {
@@ -1262,7 +1258,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
       }
     });
 
-    dialog.dispaly();
+    dialog.display();
   }
 
   private void doCommentDelete(final long commentId) {
@@ -1483,14 +1479,14 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
 
     boolean hasImageRes = false;
     if (!BeeUtils.isEmpty(markRes)) {
-      if (Images.get(markRes) != null) {
+      if (FontAwesome.parse(markRes) != null) {
         hasImageRes = true;
       }
     }
 
     Widget imgMark =
-        !hasImageRes ? new Button(Localized.maybeTranslate(markName)) : new Image(
-            Images.get(markRes));
+        !hasImageRes ? new FaLabel(FontAwesome.THUMBS_O_UP) : new FaLabel(FontAwesome
+            .parse(markRes));
 
     imgMark.addStyleName(DISCUSSIONS_STYLE_PREFIX + STYLE_ACTIONS);
 
@@ -1544,15 +1540,16 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
 
   private void renderReply(final IsRow formRow, IsRow commentRow, Flow container) {
     String label = DiscussionEvent.REPLY.getCommandLabel();
-    ImageResource res = !BeeUtils.isEmpty(DiscussionEvent.REPLY.getImageResource())
-        ? Images.get(DiscussionEvent.REPLY.getImageResource()) : null;
+    FontAwesome icon = DiscussionEvent.REPLY.getCommandIcon();
 
     Widget widgetReply;
 
-    if (res != null) {
-      widgetReply = new Image(res);
+    if (icon != null) {
+      widgetReply = new FaLabel(icon);
+      widgetReply.setTitle(label);
     } else {
       widgetReply = new Button(label);
+      widgetReply.setTitle(label);
     }
     widgetReply.addStyleName(DISCUSSIONS_STYLE_PREFIX + STYLE_ACTIONS);
     widgetReply.addStyleName(STYLE_COMMENT_COL + STYLE_ACTIONS + STYLE_REPLY);
@@ -1576,15 +1573,16 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
 
   private void renderTrash(IsRow commentRow, Flow container) {
     String label = DiscussionEvent.COMMENT_DELETE.getCommandLabel();
-    ImageResource res = !BeeUtils.isEmpty(DiscussionEvent.COMMENT_DELETE.getImageResource())
-        ? Images.get(DiscussionEvent.COMMENT_DELETE.getImageResource()) : null;
+    FontAwesome icon = DiscussionEvent.COMMENT_DELETE.getCommandIcon();
 
     Widget widgetTrash;
 
-    if (res != null) {
-      widgetTrash = new Image(res);
+    if (icon != null) {
+      widgetTrash = new FaLabel(icon);
+      widgetTrash.setTitle(label);
     } else {
       widgetTrash = new Button(label);
+      widgetTrash.setTitle(label);
     }
 
     widgetTrash.addStyleName(DISCUSSIONS_STYLE_PREFIX + STYLE_ACTIONS);

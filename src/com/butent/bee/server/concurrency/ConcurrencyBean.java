@@ -10,7 +10,6 @@ import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.modules.ParameterEvent;
 import com.butent.bee.server.modules.ParameterEventHandler;
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.time.TimeUtils;
@@ -20,9 +19,11 @@ import com.butent.bee.shared.utils.NameUtils;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.Future;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.FutureTask;
 
 import javax.annotation.Resource;
+import javax.ejb.AccessTimeout;
 import javax.ejb.EJB;
 import javax.ejb.ScheduleExpression;
 import javax.ejb.Singleton;
@@ -34,6 +35,7 @@ import javax.ejb.TransactionAttributeType;
 import javax.enterprise.concurrent.ManagedExecutorService;
 
 @Singleton
+@AccessTimeout(value = TimeUtils.MILLIS_PER_MINUTE)
 public class ConcurrencyBean {
 
   public interface HasTimerService {
@@ -41,6 +43,7 @@ public class ConcurrencyBean {
   }
 
   public abstract static class AsynchronousRunnable implements Runnable {
+
     public abstract String getId();
 
     public long getTimeout() {
@@ -51,9 +54,59 @@ public class ConcurrencyBean {
     }
   }
 
+  private static class Worker extends FutureTask<Void> {
+
+    private long start;
+    private final AsynchronousRunnable runnable;
+
+    public Worker(AsynchronousRunnable runnable) {
+      super(runnable, null);
+      this.runnable = runnable;
+    }
+
+    public String getId() {
+      return BeeUtils.joinWords(runnable.getId(), Integer.toHexString(hashCode()));
+    }
+
+    @Override
+    public void run() {
+      start = System.currentTimeMillis();
+      logger.info("Started:", getId());
+      super.run();
+    }
+
+    @Override
+    protected void done() {
+      boolean ok = true;
+
+      try {
+        get();
+      } catch (Exception e) {
+        if (!(e instanceof CancellationException)) {
+          logger.error(e, getId());
+        }
+        ok = false;
+      }
+      if (ok) {
+        logger.info("Ended:", getId(), TimeUtils.elapsedSeconds(started()));
+      } else {
+        if (started() > 0) {
+          logger.info("Canceled:", getId(), TimeUtils.elapsedSeconds(started()));
+        } else {
+          logger.info("Rejected:", getId());
+        }
+        runnable.onError();
+      }
+    }
+
+    private long started() {
+      return start;
+    }
+  }
+
   private static final BeeLogger logger = LogUtils.getLogger(ConcurrencyBean.class);
 
-  private final Map<String, Pair<Future<?>, Long>> asyncThreads = new HashMap<>();
+  private final Map<String, Worker> asyncThreads = new HashMap<>();
 
   private Multimap<String, Class<? extends HasTimerService>> calendarRegistry;
   private Multimap<String, Class<? extends HasTimerService>> intervalRegistry;
@@ -66,19 +119,29 @@ public class ConcurrencyBean {
   public void asynchronousCall(AsynchronousRunnable runnable) {
     Assert.notNull(runnable);
     String id = Assert.notEmpty(runnable.getId());
-    Pair<Future<?>, Long> pair = asyncThreads.get(id);
+    Worker worker = asyncThreads.get(id);
 
-    if (pair != null) {
-      Future<?> future = pair.getA();
-      boolean isTimedOut = BeeUtils.isMore(System.currentTimeMillis() - pair.getB(),
-          runnable.getTimeout());
-
-      if (!future.isDone() && (!isTimedOut || !future.cancel(true))) {
-        runnable.onError();
-        return;
+    if (worker != null) {
+      if (!worker.isDone()) {
+        if (BeeUtils.isMore(System.currentTimeMillis() - worker.started(), runnable.getTimeout())) {
+          worker.cancel(true);
+        } else {
+          logger.info("Running:", worker.getId(), TimeUtils.elapsedSeconds(worker.started()));
+          runnable.onError();
+          return;
+        }
       }
+      asyncThreads.remove(id);
     }
-    asyncThreads.put(id, Pair.of(executor.submit(runnable), System.currentTimeMillis()));
+    Worker newWorker = new Worker(runnable);
+
+    try {
+      executor.execute(newWorker);
+      asyncThreads.put(id, newWorker);
+    } catch (Exception e) {
+      logger.error(e);
+      newWorker.cancel(true);
+    }
   }
 
   public <T extends HasTimerService> void createCalendarTimer(Class<T> handler, String parameter) {
@@ -109,11 +172,15 @@ public class ConcurrencyBean {
     String hours = prm.getText(parameter);
 
     if (!BeeUtils.isEmpty(hours)) {
-      Timer timer = timerService.createCalendarTimer(new ScheduleExpression().hour(hours),
-          new TimerConfig(parameter, false));
+      try {
+        Timer timer = timerService.createCalendarTimer(new ScheduleExpression().hour(hours),
+            new TimerConfig(parameter, false));
 
-      logger.info("Created", NameUtils.getClassName(handler), parameter, "timer on hours [", hours,
-          "] starting at", timer.getNextTimeout());
+        logger.info("Created", NameUtils.getClassName(handler), parameter, "timer on hours [",
+            hours, "] starting at", timer.getNextTimeout());
+      } catch (IllegalArgumentException ex) {
+        logger.error(ex);
+      }
     }
   }
 
@@ -145,11 +212,15 @@ public class ConcurrencyBean {
     Integer minutes = prm.getInteger(parameter);
 
     if (BeeUtils.isPositive(minutes)) {
-      Timer timer = timerService.createIntervalTimer(minutes * TimeUtils.MILLIS_PER_MINUTE,
-          minutes * TimeUtils.MILLIS_PER_MINUTE, new TimerConfig(parameter, false));
+      try {
+        Timer timer = timerService.createIntervalTimer(minutes * TimeUtils.MILLIS_PER_MINUTE,
+            minutes * TimeUtils.MILLIS_PER_MINUTE, new TimerConfig(parameter, false));
 
-      logger.info("Created", NameUtils.getClassName(handler), parameter, "timer every", minutes,
-          "minutes starting at", timer.getNextTimeout());
+        logger.info("Created", NameUtils.getClassName(handler), parameter, "timer every", minutes,
+            "minutes starting at", timer.getNextTimeout());
+      } catch (IllegalArgumentException ex) {
+        logger.error(ex);
+      }
     }
   }
 

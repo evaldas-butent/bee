@@ -18,6 +18,7 @@
            choiceColumns="Name TypeName " renderColumns="CompanyName CompanyTypeName"/>
         <Label name="PersonLabel" for="Person" />
         <DataSelector name="Person" source="Person" style="width: 200px" />
+        <FlowPanel name="qrFlowPanel" style="margin-left: 10px" />
       </row>
       <row>
         <Label for="Department" />

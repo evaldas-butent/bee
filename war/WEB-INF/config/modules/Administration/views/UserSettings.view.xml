@@ -39,14 +39,18 @@
     <SimpleColumn name="WorkspaceContinue" />
     <SimpleColumn name="LastWorkspace" />
 
-    <SimpleColumn name="ApplianceHeaderHeight" />
-    <SimpleColumn name="ViewHeaderHeight" />
-
     <SimpleColumn name="ClickSensitivityMillis" />
     <SimpleColumn name="ClickSensitivityDistance" />
+
     <SimpleColumn name="CompanyActionRemindBefore" />
 
+    <SimpleColumn name="UiTheme" />
+    <SimpleJoin name="UiTheme" joinType="LEFT">
+      <SimpleColumn name="Name" alias="UiThemeName" />
+    </SimpleJoin>
+
     <SimpleColumn name="Style" />
+    <SimpleColumn name="MenuHide" />
   </Columns>
   
   <Order>
