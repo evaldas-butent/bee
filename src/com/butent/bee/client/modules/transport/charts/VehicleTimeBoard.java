@@ -479,8 +479,8 @@ abstract class VehicleTimeBoard extends ChartBase {
     setChartLeft(getNumberWidth() + getInfoWidth());
     setChartWidth(canvasSize.getWidth() - getChartLeft() - getChartRight());
 
-    setDayColumnWidth(TimeBoardHelper.getPixels(getSettings(), getDayWidthColumnName(), 20,
-        1, getChartWidth()));
+    setDayColumnWidth(TimeBoardHelper.getPixels(getSettings(), getDayWidthColumnName(),
+        getDefaultDayColumnWidth(getChartWidth()), 1, getChartWidth()));
 
     boolean sc = TimeBoardHelper.getBoolean(getSettings(), getSeparateCargoColumnName());
     if (separateCargo() != sc) {

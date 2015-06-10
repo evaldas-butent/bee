@@ -549,8 +549,8 @@ final class DriverTimeBoard extends ChartBase {
     setChartLeft(getDriverWidth());
     setChartWidth(canvasSize.getWidth() - getChartLeft() - getChartRight());
 
-    setDayColumnWidth(TimeBoardHelper.getPixels(getSettings(), COL_DTB_PIXELS_PER_DAY, 20,
-        1, getChartWidth()));
+    setDayColumnWidth(TimeBoardHelper.getPixels(getSettings(), COL_DTB_PIXELS_PER_DAY,
+        getDefaultDayColumnWidth(getChartWidth()), 1, getChartWidth()));
 
     Long colorId = TimeBoardHelper.getLong(getSettings(), COL_DTB_COLOR);
     setItemColor((colorId == null) ? null : findColor(colorId));

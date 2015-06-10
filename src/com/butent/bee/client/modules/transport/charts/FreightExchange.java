@@ -276,8 +276,8 @@ final class FreightExchange extends ChartBase {
     setChartLeft(getCustomerWidth() + getOrderWidth());
     setChartWidth(canvasSize.getWidth() - getChartLeft() - getChartRight());
 
-    setDayColumnWidth(TimeBoardHelper.getPixels(getSettings(), COL_FX_PIXELS_PER_DAY, 20,
-        1, getChartWidth()));
+    setDayColumnWidth(TimeBoardHelper.getPixels(getSettings(), COL_FX_PIXELS_PER_DAY,
+        getDefaultDayColumnWidth(getChartWidth()), 1, getChartWidth()));
   }
 
   @Override
