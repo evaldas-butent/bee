@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
 
-  name="CargoRequests" viewName="CargoRequests" caption="=trRequests"
+  name="LogisticsCargoRequests" viewName="CargoRequests" caption="=trRequests"
   enableCopy="- *Date, *Time, Status, Cargo, Order*"
-  filter="Interface = 4 OR !(Interface)"
+  filter="Interface = 6 OR !(Interface)"
   >
   <g:columns>
     <DataColumn name="Date" visible="true" />
