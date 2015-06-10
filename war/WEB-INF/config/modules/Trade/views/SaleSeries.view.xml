@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-  name="TradeSeries" source="TradeSeries"
-  caption="=taSeriesPlural" newRowCaption="=trdNewSeries"
-  editForm="TradeSeries" newRowForm="TradeSeries"
+  name="SaleSeries" source="SaleSeries"
+  caption="=trdSaleSeries" newRowCaption="=trdNewSeries"
+  editForm="SaleSeries" newRowForm="SaleSeries"
   >
   <Columns>
     <SimpleColumn name="SeriesName" />
