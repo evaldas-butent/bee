@@ -207,6 +207,7 @@
       <xs:enumeration value="Transport.Logistics" />
       <xs:enumeration value="Transport.SelfService" />
       <xs:enumeration value="Transport.Administration" />
+      <xs:enumeration value="Transport.LogisticsSelfService" />
       <xs:enumeration value="Service" />
       <xs:enumeration value="Administration" />
     </xs:restriction>
@@ -369,6 +370,7 @@
       <xs:enumeration value="Objects" />
       <xs:enumeration value="OrderCargo" />
       <xs:enumeration value="Parameters" />
+      <xs:enumeration value="PaymentTypes" />
       <xs:enumeration value="Persons" />
       <xs:enumeration value="PersonFamily" />
       <xs:enumeration value="Places" />
@@ -381,7 +383,7 @@
       <xs:enumeration value="ProjectEvents" />
       <xs:enumeration value="ProjectFiles" />
       <xs:enumeration value="ProjectIncomes" />
-       <xs:enumeration value="ProjectInvoices" />
+      <xs:enumeration value="ProjectInvoices" />
       <xs:enumeration value="ProjectReasons" />
       <xs:enumeration value="ProjectStages" />
       <xs:enumeration value="ProjectTree"/>
@@ -415,6 +417,7 @@
       <xs:enumeration value="Rules" />
       <xs:enumeration value="SaleItems" />
       <xs:enumeration value="Sales" />
+      <xs:enumeration value="SaleSeries" />
       <xs:enumeration value="SeriesManagers" />
       <xs:enumeration value="ServiceCriteria" />
       <xs:enumeration value="ServiceCritGroups" />

@@ -256,7 +256,7 @@ public final class ButentWS {
     return invoke(createMessage("Process", ImmutableMap.of("mthd", method, "prm", param)));
   }
 
-  private SimpleRowSet xmlToSimpleRowSet(String xml, String... columns) throws BeeException {
+  private static SimpleRowSet xmlToSimpleRowSet(String xml, String... columns) throws BeeException {
     SimpleRowSet data = new SimpleRowSet(columns);
     Node node = getNode(xml);
 

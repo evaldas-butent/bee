@@ -313,6 +313,10 @@ public abstract class ChartBase extends TimeBoard {
 
   protected abstract String getDataService();
 
+  protected int getDefaultDayColumnWidth(int chartWidth) {
+    return Math.max(chartWidth / 10, 1);
+  }
+
   @Override
   protected Set<Action> getEnabledActions() {
     return EnumSet.of(Action.FILTER, Action.REFRESH, Action.ADD, Action.CONFIGURE, Action.PRINT);

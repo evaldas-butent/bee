@@ -59,6 +59,8 @@ class Trip extends Filterable implements HasColorSource, HasDateRange, HasItemNa
 
   private static final String driversLabel = Data.getViewCaption(VIEW_DRIVERS);
   private static final String cargosLabel = Data.getViewCaption(VIEW_CARGO_TRIPS);
+  private static final String customersLabel = Data.getColumnLabel(VIEW_ORDERS, COL_CUSTOMER);
+  private static final String managersLabel = Data.getColumnLabel(VIEW_ORDERS, COL_ORDER_MANAGER);
 
   private static final Set<String> acceptsDropTypes =
       ImmutableSet.of(DATA_TYPE_TRUCK, DATA_TYPE_TRAILER, DATA_TYPE_FREIGHT, DATA_TYPE_ORDER_CARGO,
@@ -218,12 +220,14 @@ class Trip extends Filterable implements HasColorSource, HasDateRange, HasItemNa
 
   private final String itemName;
 
-  Trip(SimpleRow row, Collection<Driver> drivers, int cargoCount) {
-    this(row, null, null, drivers, cargoCount);
+  Trip(SimpleRow row, Collection<Driver> drivers) {
+    this(row, drivers, null, null, 0,
+        BeeConst.EMPTY_IMMUTABLE_STRING_SET, BeeConst.EMPTY_IMMUTABLE_STRING_SET);
   }
 
-  Trip(SimpleRow row, JustDate minDate, JustDate maxDate, Collection<Driver> drivers,
-      int cargoCount) {
+  Trip(SimpleRow row, Collection<Driver> drivers, JustDate minDate, JustDate maxDate,
+      int cargoCount, Collection<String> customers, Collection<String> managers) {
+
     this.tripId = row.getLong(COL_TRIP_ID);
     this.tripVersion = row.getLong(ALS_TRIP_VERSION);
     this.tripNo = row.getValue(COL_TRIP_NO);
@@ -259,6 +263,8 @@ class Trip extends Filterable implements HasColorSource, HasDateRange, HasItemNa
         trailerLabel, this.trailerNumber,
         driversLabel, Driver.getNames(BeeConst.DEFAULT_LIST_SEPARATOR, drivers),
         cargosLabel, cargoCount,
+        customersLabel, BeeUtils.joinItems(customers),
+        managersLabel, BeeUtils.joinItems(managers),
         notesLabel, this.notes);
 
     this.itemName = BeeUtils.joinWords(rangeLabel, this.tripNo);
