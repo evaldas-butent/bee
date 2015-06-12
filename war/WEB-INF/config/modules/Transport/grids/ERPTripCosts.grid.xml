@@ -15,7 +15,7 @@
     <DataColumn name="UnitName" />
     <DataColumn name="Quantity" />
     <DataColumn name="Price" format="0.00" />
-    <DataColumn name="Currency" />
+    <RelColumn name="Currency" />
     <DataColumn name="VatPlus" width="20" sortable="false" horizontalAlignment="center" caption="+">
       <render>
         <ui:expression>row.VatPlus ? '+' : ''</ui:expression>
@@ -39,7 +39,7 @@
     <DataColumn name="Number" />
     <RelColumn name="Supplier" />
     <RelColumn name="Country" />
-    <RelColumn name="Payment" />
+    <RelColumn name="PaymentType" />
     <DataColumn name="Note" />
     <DataColumn name="Exported" />
   </g:columns>
