@@ -187,6 +187,20 @@ public final class ButentWS {
     }
   }
 
+  public SimpleRowSet importFin(String request) throws BeeException {
+    logger.debug("ImportFin:", request);
+    String answer;
+
+    try {
+      answer = process("ImportFin", request);
+    } catch (Exception e) {
+      throw new BeeException(e);
+    }
+    SimpleRowSet data = xmlToSimpleRowSet(answer, "ID", "RESULT");
+    logger.debug("ImportFin cols:", data.getNumberOfColumns(), "rows:", data.getNumberOfRows());
+    return data;
+  }
+
   public String importItem(String itemName, String brandName, String brandCode)
       throws BeeException {
 

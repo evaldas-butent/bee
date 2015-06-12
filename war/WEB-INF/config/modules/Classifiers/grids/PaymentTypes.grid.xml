@@ -5,5 +5,6 @@
     >
   <g:columns>
     <DataColumn name="PaymentName" visible="true" />
+    <DataColumn name="SendToERP" />
   </g:columns>
 </g:Grid>

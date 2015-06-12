@@ -306,6 +306,9 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
     } else if (BeeUtils.same(svc, SVC_GET_REPAIRS)) {
       response = getVehicleRepairs(reqInfo.getParameter(COL_ITEM_EXTERNAL_CODE));
 
+    } else if (BeeUtils.same(svc, SVC_COSTS_TO_ERP)) {
+      response = costsToERP(DataUtils.parseIdSet(reqInfo.getParameter(VAR_ID_LIST)));
+
     } else {
       String msg = BeeUtils.joinWords("Transport service not recognized:", svc);
       logger.warning(msg);
@@ -867,6 +870,98 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
         return select;
       }
     });
+  }
+
+  private ResponseObject costsToERP(Set<Long> ids) {
+    SimpleRowSet rs = qs.getData(new SqlSelect()
+        .addEmptyText("KLAIDA")
+        .addField(TBL_TRIPS, COL_TRIP_NO, "reisas")
+        .addField(TBL_TRIP_COSTS, sys.getIdName(TBL_TRIP_COSTS), "id")
+        .addField(TBL_TRIP_COSTS, COL_COSTS_DATE, "data")
+        .addField(TBL_TRIP_COSTS, COL_NUMBER, "numeris")
+        .addField(TBL_TRIP_COSTS, COL_COSTS_NOTE, "pastaba")
+        .addField(TBL_ITEMS, COL_ITEM_EXTERNAL_CODE, "preke")
+        .addField(TBL_CURRENCIES, COL_CURRENCY_NAME, "valiuta")
+        .addField(TBL_COMPANIES, COL_COMPANY_NAME, "tiekejas")
+        .addField(TBL_COUNTRIES, COL_COUNTRY_NAME, "salis")
+        .addField(TBL_PAYMENT_TYPES, "PaymentName", "atsiskaitymas")
+        .addExpr(TradeModuleBean.getVatExpression(TBL_TRIP_COSTS), "pvm_suma")
+        .addExpr(TradeModuleBean.getWithoutVatExpression(TBL_TRIP_COSTS), "suma_be_pvm")
+        .addFrom(TBL_TRIP_COSTS)
+        .addFromInner(TBL_TRIPS, sys.joinTables(TBL_TRIPS, TBL_TRIP_COSTS, COL_TRIP))
+        .addFromInner(TBL_ITEMS, sys.joinTables(TBL_ITEMS, TBL_TRIP_COSTS, COL_COSTS_ITEM))
+        .addFromInner(TBL_CURRENCIES,
+            sys.joinTables(TBL_CURRENCIES, TBL_TRIP_COSTS, COL_COSTS_CURRENCY))
+        .addFromLeft(TBL_COMPANIES,
+            sys.joinTables(TBL_COMPANIES, TBL_TRIP_COSTS, COL_COSTS_SUPPLIER))
+        .addFromLeft(TBL_COUNTRIES,
+            sys.joinTables(TBL_COUNTRIES, TBL_TRIP_COSTS, COL_COSTS_COUNTRY))
+        .addFromLeft(TBL_PAYMENT_TYPES,
+            sys.joinTables(TBL_PAYMENT_TYPES, TBL_TRIP_COSTS, "PaymentType"))
+        .setWhere(sys.idInList(TBL_TRIP_COSTS, ids)));
+
+    StringBuilder sb = new StringBuilder("<table>");
+
+    for (SimpleRow row : rs) {
+      sb.append("<row>");
+
+      for (String col : rs.getColumnNames()) {
+        Object value;
+
+        switch (col) {
+          case "id":
+            value = TBL_TRIP_COSTS + row.getValue(col);
+            break;
+          case "data":
+            value = row.getDateTime(col);
+            break;
+          default:
+            value = row.getValue(col);
+            break;
+        }
+        sb.append(XmlUtils.tag(col, value));
+      }
+      sb.append("</row>");
+    }
+    sb.append("</table>");
+
+    String remoteNamespace = prm.getText(PRM_ERP_NAMESPACE);
+    String remoteAddress = prm.getText(PRM_ERP_ADDRESS);
+    String remoteLogin = prm.getText(PRM_ERP_LOGIN);
+    String remotePassword = prm.getText(PRM_ERP_PASSWORD);
+    SimpleRowSet res = null;
+
+    try {
+      res = ButentWS.connect(remoteNamespace, remoteAddress, remoteLogin, remotePassword)
+          .importFin(sb.toString());
+    } catch (BeeException e) {
+      logger.error(e);
+      return ResponseObject.error(e);
+    }
+    SimpleRowSet answer = new SimpleRowSet(rs.getColumnNames());
+    List<Long> exported = new ArrayList<>();
+
+    for (SimpleRow row : res) {
+      String id = BeeUtils.removePrefix(row.getValue("id"), TBL_TRIP_COSTS);
+      String result = row.getValue("result");
+
+      if (BeeUtils.same(result, "OK")) {
+        exported.add(BeeUtils.toLong(id));
+      } else {
+        SimpleRow r = rs.getRowByKey("id", id);
+
+        if (r != null) {
+          r.setValue("KLAIDA", result);
+          answer.addRow(r.getValues());
+        }
+      }
+    }
+    if (!exported.isEmpty()) {
+      qs.updateData(new SqlUpdate(TBL_TRIP_COSTS)
+          .addConstant("Exported", TimeUtils.nowSeconds())
+          .setWhere(sys.idInList(TBL_TRIP_COSTS, exported)));
+    }
+    return ResponseObject.response(answer);
   }
 
   private ResponseObject createCreditInvoiceItems(Long purchaseId, Long currency, Set<Long> idList,

@@ -22,6 +22,8 @@
     <Relation name="PaymentType" relation="PaymentTypes" label="=paymentType" />
     <String name="Note" precision="50" label="=note" />
     <String name="ExternalID" precision="40" label="=externalId" />
+
+    <DateTime name="Exported" />
   </Fields>
   <Indexes>
     <Index fields="ExternalID" />

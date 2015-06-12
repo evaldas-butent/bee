@@ -247,6 +247,7 @@ public final class TransportConstants {
   public static final String SVC_CREATE_INVOICE_ITEMS = "CreateInvoiceItems";
   public static final String SVC_GET_CREDIT_INFO = "GetCreditInfo";
   public static final String SVC_GET_REPAIRS = "GetRepairs";
+  public static final String SVC_COSTS_TO_ERP = "CostsToERP";
 
   public static final String SVC_SEND_MESSAGE = "SendMessage";
 
@@ -347,6 +348,8 @@ public final class TransportConstants {
   public static final String VIEW_TRIP_DRIVERS = "TripDrivers";
   public static final String VIEW_TRIP_COSTS = "TripCosts";
   public static final String VIEW_TRIP_FUEL_COSTS = "TripFuelCosts";
+
+  public static final String VIEW_ERP_TRIP_COSTS = "ERPTripCosts";
 
   public static final String VIEW_VEHICLES = "Vehicles";
   public static final String VIEW_VEHICLE_SERVICES = "VehicleServices";

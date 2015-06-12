@@ -1,12 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-      name="TripCosts"
+      name="ERPTripCosts"
       source="TripCosts"
-      caption="=trTripCosts"
+      caption="Reisų išlaidos apskaitai"
+      readOnly="true"
     >
   <Columns>
     <SimpleColumn name="Trip" />
+    <SimpleJoin joinType="LEFT" name="Trip">
+      <SimpleColumn name="TripNo" />
+    </SimpleJoin>
     <SimpleColumn name="Date" />
 
     <SimpleColumn name="Item" />
@@ -18,7 +22,6 @@
     </SimpleJoin>
     <SimpleColumn name="Quantity" />
     <SimpleColumn name="Price" />
-    <SimpleColumn name="Currency" />
     <SimpleJoin joinType="LEFT" name="Currency">
       <SimpleColumn name="Name" alias="CurrencyName" />
     </SimpleJoin>
@@ -27,24 +30,26 @@
     <SimpleColumn name="VatPercent" />
 
     <SimpleColumn name="Number" />
+
     <SimpleColumn name="Supplier" />
     <SimpleJoin name="Supplier" joinType="LEFT">
       <SimpleColumn name="Name" alias="SupplierName" />
     </SimpleJoin>
+
     <SimpleColumn name="Country" />
     <SimpleJoin name="Country" joinType="LEFT">
       <SimpleColumn name="Name" alias="CountryName" />
     </SimpleJoin>
+
     <SimpleColumn name="PaymentType" />
-    <SimpleJoin name="PaymentType" joinType="LEFT">
+    <SimpleJoin name="PaymentType" joinType="INNER" filter="SendToERP">
       <SimpleColumn name="PaymentName" />
+      <HiddenColumn name="SendToERP" />
     </SimpleJoin>
     <SimpleColumn name="Note" />
-    <SimpleColumn name="ExternalID" />
-
     <SimpleColumn name="Exported" />
   </Columns>
   <Order>
-    <OrderBy column="Date" />
+    <OrderBy column="Date" descending="true" />
   </Order>
 </View>

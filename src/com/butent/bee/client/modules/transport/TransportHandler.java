@@ -305,6 +305,7 @@ public final class TransportHandler {
     TradeUtils.registerTotalRenderer(VIEW_CARGO_PURCHASES, VAR_TOTAL);
     TradeUtils.registerTotalRenderer("UnassignedTripCosts", VAR_TOTAL);
     TradeUtils.registerTotalRenderer("UnassignedFuelCosts", VAR_TOTAL);
+    TradeUtils.registerTotalRenderer(VIEW_ERP_TRIP_COSTS, VAR_TOTAL);
 
     GridFactory.registerGridInterceptor(VIEW_CARGO_SALES, new CargoSalesGrid());
     GridFactory.registerGridInterceptor(VIEW_CARGO_CREDIT_SALES, new CargoCreditSalesGrid());
@@ -312,6 +313,7 @@ public final class TransportHandler {
     GridFactory.registerGridInterceptor(VIEW_CARGO_INVOICES, new InvoicesGrid());
     GridFactory.registerGridInterceptor(VIEW_CARGO_CREDIT_INVOICES, new InvoicesGrid());
     GridFactory.registerGridInterceptor(VIEW_CARGO_PURCHASE_INVOICES, new InvoicesGrid());
+    GridFactory.registerGridInterceptor(VIEW_ERP_TRIP_COSTS, new ERPTripCostsGrid());
 
     GridFactory.registerGridInterceptor(VIEW_CARGO_REQUESTS, new CargoRequestsGrid());
     GridFactory.registerGridInterceptor(VIEW_CARGO_REQUEST_FILES,
