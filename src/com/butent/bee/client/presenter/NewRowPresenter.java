@@ -29,7 +29,6 @@ import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.HandlesActions;
 import com.butent.bee.shared.ui.HasCaption;
-import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -229,13 +228,9 @@ public class NewRowPresenter extends AbstractPresenter implements ParentRowCreat
 
     for (int i = 0; i < dataInfo.getColumnCount(); i++) {
       BeeColumn column = dataInfo.getColumns().get(i);
-
       String value = row.getString(i);
-      if (BeeUtils.isEmpty(value)) {
-        continue;
-      }
 
-      if (column.isEditable()) {
+      if (column.isInsertable(value)) {
         columns.add(column);
         values.add(value);
       }
