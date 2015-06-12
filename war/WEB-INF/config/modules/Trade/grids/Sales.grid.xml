@@ -8,7 +8,7 @@
   caption="=trdInvoices"
   >
   <g:columns>
-    <SelectionColumn name="Select" width="20" />
+    <SelectionColumn name="Select" width="20"  />
 
     <IdColumn name="ID" label="=trdInvoiceId" />
     <DataColumn name="Date" visible="true" />
