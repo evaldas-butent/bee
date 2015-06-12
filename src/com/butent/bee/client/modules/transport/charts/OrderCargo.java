@@ -5,6 +5,7 @@ import com.google.common.collect.Range;
 
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
+import com.butent.bee.client.Global;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
@@ -25,13 +26,15 @@ import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.List;
 
-class OrderCargo extends Filterable implements HasDateRange, HasColorSource, HasShipmentInfo {
+class OrderCargo extends Filterable implements HasDateRange, HasColorSource, HasShipmentInfo,
+    HasCargoType {
 
   @SuppressWarnings("unused")
   private static final String cargoLabel =
       Data.getColumnLabel(VIEW_ORDER_CARGO, COL_CARGO_DESCRIPTION);
 
   private static final String customerLabel = Data.getColumnLabel(VIEW_ORDERS, COL_CUSTOMER);
+  private static final String managerLabel = Data.getColumnLabel(VIEW_ORDERS, COL_ORDER_MANAGER);
   private static final String notesLabel = Data.getColumnLabel(VIEW_ORDER_CARGO, COL_CARGO_NOTES);
 
   private static final String orderDateLabel = Data.getColumnLabel(VIEW_ORDERS, COL_ORDER_DATE);
@@ -43,8 +46,9 @@ class OrderCargo extends Filterable implements HasDateRange, HasColorSource, Has
             EnumUtils.getEnumByIndex(OrderStatus.class, row.getInt(COL_STATUS)),
             row.getDateTime(COL_ORDER_DATE), row.getValue(COL_ORDER_NO),
             row.getLong(COL_CUSTOMER), row.getValue(COL_CUSTOMER_NAME),
-            row.getLong(COL_CARGO_ID), row.getValue(COL_CARGO_DESCRIPTION),
-            row.getValue(COL_CARGO_NOTES),
+            row.getLong(COL_ORDER_MANAGER),
+            row.getLong(COL_CARGO_ID), row.getLong(COL_CARGO_TYPE),
+            row.getValue(COL_CARGO_DESCRIPTION), row.getValue(COL_CARGO_NOTES),
             BeeUtils.nvl(Places.getLoadingDate(row, loadingColumnAlias(COL_PLACE_DATE)), minLoad),
             row.getLong(loadingColumnAlias(COL_PLACE_COUNTRY)),
             row.getValue(loadingColumnAlias(COL_PLACE_ADDRESS)),
@@ -75,11 +79,15 @@ class OrderCargo extends Filterable implements HasDateRange, HasColorSource, Has
   private final DateTime orderDate;
 
   private final String orderNo;
-  private final Long customerId;
 
+  private final Long customerId;
   private final String customerName;
+
+  private final Long manager;
+
   private final Long cargoId;
 
+  private final Long cargoType;
   private final String cargoDescription;
 
   private final String notes;
@@ -103,11 +111,13 @@ class OrderCargo extends Filterable implements HasDateRange, HasColorSource, Has
   private Range<JustDate> range;
 
   protected OrderCargo(Long orderId, OrderStatus orderStatus, DateTime orderDate, String orderNo,
-      Long customerId, String customerName, Long cargoId, String cargoDescription, String notes,
+      Long customerId, String customerName, Long manager,
+      Long cargoId, Long cargoType, String cargoDescription, String notes,
       JustDate loadingDate, Long loadingCountry, String loadingPlace, String loadingPostIndex,
       Long loadingCity, String loadingNumber,
       JustDate unloadingDate, Long unloadingCountry, String unloadingPlace,
       String unloadingPostIndex, Long unloadingCity, String unloadingNumber) {
+
     super();
 
     this.orderId = orderId;
@@ -117,8 +127,10 @@ class OrderCargo extends Filterable implements HasDateRange, HasColorSource, Has
 
     this.customerId = customerId;
     this.customerName = customerName;
+    this.manager = manager;
 
     this.cargoId = cargoId;
+    this.cargoType = cargoType;
     this.cargoDescription = cargoDescription;
 
     this.notes = notes;
@@ -140,6 +152,11 @@ class OrderCargo extends Filterable implements HasDateRange, HasColorSource, Has
     this.orderName = BeeUtils.joinWords(TimeUtils.renderCompact(this.orderDate), this.orderNo);
 
     this.range = TimeBoardHelper.getActivity(loadingDate, unloadingDate);
+  }
+
+  @Override
+  public Long getCargoType() {
+    return cargoType;
   }
 
   @Override
@@ -257,6 +274,18 @@ class OrderCargo extends Filterable implements HasDateRange, HasColorSource, Has
     return customerName;
   }
 
+  Long getManager() {
+    return manager;
+  }
+
+  String getManagerName() {
+    if (manager == null) {
+      return null;
+    } else {
+      return Global.getUsers().getSignature(manager);
+    }
+  }
+
   JustDate getMaxDate() {
     return BeeUtils.max(loadingDate, unloadingDate);
   }
@@ -295,7 +324,9 @@ class OrderCargo extends Filterable implements HasDateRange, HasColorSource, Has
         Localized.getConstants().cargoLoading(), Places.getLoadingInfo(this),
         Localized.getConstants().cargoUnloading(), Places.getUnloadingInfo(this),
         Localized.getConstants().trOrder(), orderNo,
-        customerLabel, customerName, notesLabel, notes);
+        customerLabel, customerName,
+        managerLabel, getManagerName(),
+        notesLabel, notes);
   }
 
   private void setRange(Range<JustDate> range) {

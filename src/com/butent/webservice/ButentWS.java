@@ -28,8 +28,6 @@ import javax.xml.ws.soap.SOAPBinding;
 
 public final class ButentWS {
 
-  private static final String DEFAULT_NAMESPACE = "http://localhost/ButentWS/";
-
   private static BeeLogger logger = LogUtils.getLogger(ButentWS.class);
 
   public static ButentWS connect(String namespace, String address, String login, String password)
@@ -40,7 +38,7 @@ public final class ButentWS {
     }
     logger.info("Connecting to webservice:", address);
 
-    ButentWS butentWS = new ButentWS(address, BeeUtils.notEmpty(namespace, DEFAULT_NAMESPACE));
+    ButentWS butentWS = new ButentWS(address, namespace);
 
     String answer = null;
     String error = "Unknown login response";
@@ -111,9 +109,8 @@ public final class ButentWS {
     }
   }
 
-  public SimpleRowSet getSQLData(String query, String[] columns) throws BeeException {
+  public SimpleRowSet getSQLData(String query, String... columns) throws BeeException {
     logger.debug("GetSQLData:", query);
-
     String answer;
 
     try {
@@ -121,24 +118,8 @@ public final class ButentWS {
     } catch (Exception e) {
       throw new BeeException(e);
     }
-    SimpleRowSet data = new SimpleRowSet(columns);
-    Node node = getNode(answer);
-
-    if (node.hasChildNodes()) {
-      for (int i = 0; i < node.getChildNodes().getLength(); i++) {
-        NodeList row = node.getChildNodes().item(i).getChildNodes();
-        int c = row.getLength();
-
-        String[] cells = new String[data.getNumberOfColumns()];
-
-        for (int j = 0; j < c; j++) {
-          cells[data.getColumnIndex(row.item(j).getLocalName())] = row.item(j).getTextContent();
-        }
-        data.addRow(cells);
-      }
-    }
+    SimpleRowSet data = xmlToSimpleRowSet(answer, columns);
     logger.debug("GetSQLData cols:", data.getNumberOfColumns(), "rows:", data.getNumberOfRows());
-
     return data;
   }
 
@@ -256,5 +237,29 @@ public final class ButentWS {
 
   private String process(String method, String param) throws SOAPException {
     return invoke(createMessage("Process", ImmutableMap.of("mthd", method, "prm", param)));
+  }
+
+  private static SimpleRowSet xmlToSimpleRowSet(String xml, String... columns) throws BeeException {
+    SimpleRowSet data = new SimpleRowSet(columns);
+    Node node = getNode(xml);
+
+    if (node.hasChildNodes()) {
+      for (int i = 0; i < node.getChildNodes().getLength(); i++) {
+        NodeList row = node.getChildNodes().item(i).getChildNodes();
+        int c = row.getLength();
+
+        String[] cells = new String[data.getNumberOfColumns()];
+
+        for (int j = 0; j < c; j++) {
+          String col = row.item(j).getLocalName();
+
+          if (data.hasColumn(col)) {
+            cells[data.getColumnIndex(col)] = row.item(j).getTextContent();
+          }
+        }
+        data.addRow(cells);
+      }
+    }
+    return data;
   }
 }

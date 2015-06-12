@@ -400,19 +400,35 @@ abstract class VehicleTimeBoard extends ChartBase {
         Long tripId = row.getLong(COL_TRIP_ID);
 
         Collection<Driver> tripDrivers = BeeUtils.getIfContains(drivers, tripId);
-        int cargoCount = 0;
 
         if (freights.containsKey(tripId)) {
           JustDate minDate = null;
           JustDate maxDate = null;
 
+          int cargoCount = 0;
+
+          Collection<String> tripCustomers = new ArrayList<>();
+          Collection<String> tripManagers = new ArrayList<>();
+
           for (Freight freight : freights.get(tripId)) {
             minDate = BeeUtils.min(minDate, freight.getMinDate());
             maxDate = BeeUtils.max(maxDate, freight.getMaxDate());
+
             cargoCount++;
+
+            String customerName = freight.getCustomerName();
+            if (!BeeUtils.isEmpty(customerName) && !tripCustomers.contains(customerName)) {
+              tripCustomers.add(customerName);
+            }
+
+            String managerName = freight.getManagerName();
+            if (!BeeUtils.isEmpty(managerName) && !tripManagers.contains(managerName)) {
+              tripManagers.add(managerName);
+            }
           }
 
-          Trip trip = new Trip(row, minDate, maxDate, tripDrivers, cargoCount);
+          Trip trip = new Trip(row, tripDrivers, minDate, maxDate, cargoCount,
+              tripCustomers, tripManagers);
           trips.put(row.getLong(index), trip);
 
           for (Freight freight : freights.get(tripId)) {
@@ -423,7 +439,7 @@ abstract class VehicleTimeBoard extends ChartBase {
           }
 
         } else {
-          trips.put(row.getLong(index), new Trip(row, tripDrivers, cargoCount));
+          trips.put(row.getLong(index), new Trip(row, tripDrivers));
         }
       }
     }
@@ -479,8 +495,8 @@ abstract class VehicleTimeBoard extends ChartBase {
     setChartLeft(getNumberWidth() + getInfoWidth());
     setChartWidth(canvasSize.getWidth() - getChartLeft() - getChartRight());
 
-    setDayColumnWidth(TimeBoardHelper.getPixels(getSettings(), getDayWidthColumnName(), 20,
-        1, getChartWidth()));
+    setDayColumnWidth(TimeBoardHelper.getPixels(getSettings(), getDayWidthColumnName(),
+        getDefaultDayColumnWidth(getChartWidth()), 1, getChartWidth()));
 
     boolean sc = TimeBoardHelper.getBoolean(getSettings(), getSeparateCargoColumnName());
     if (separateCargo() != sc) {
@@ -503,6 +519,8 @@ abstract class VehicleTimeBoard extends ChartBase {
     ChartData typeData = new ChartData(ChartData.Type.VEHICLE_TYPE);
 
     ChartData customerData = new ChartData(ChartData.Type.CUSTOMER);
+    ChartData managerData = new ChartData(ChartData.Type.MANAGER);
+
     ChartData orderData = new ChartData(ChartData.Type.ORDER);
     ChartData statusData = new ChartData(ChartData.Type.ORDER_STATUS);
 
@@ -567,6 +585,8 @@ abstract class VehicleTimeBoard extends ChartBase {
           }
 
           customerData.add(freight.getCustomerName(), freight.getCustomerId());
+          managerData.addUser(freight.getManager());
+
           orderData.add(freight.getOrderName(), freight.getOrderId());
           statusData.addNotNull(freight.getOrderStatus());
 
@@ -608,6 +628,8 @@ abstract class VehicleTimeBoard extends ChartBase {
     data.add(typeData);
 
     data.add(customerData);
+    data.add(managerData);
+
     data.add(orderData);
     data.add(statusData);
 

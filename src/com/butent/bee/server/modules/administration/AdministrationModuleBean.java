@@ -73,7 +73,6 @@ import java.util.Set;
 
 import javax.annotation.Resource;
 import javax.ejb.EJB;
-import javax.ejb.EJBContext;
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
 import javax.ejb.Timeout;
@@ -103,8 +102,6 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
   @EJB
   ConcurrencyBean cb;
 
-  @Resource
-  EJBContext ctx;
   @Resource
   TimerService timerService;
 
@@ -173,7 +170,7 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
         BeeParameter.createRelation(module, PRM_CURRENCY, TBL_CURRENCIES, COL_CURRENCY_NAME),
         BeeParameter.createNumber(module, PRM_VAT_PERCENT, false, 21),
         BeeParameter.createText(module, PRM_REFRESH_CURRENCY_HOURS),
-        BeeParameter.createText(module, PRM_ERP_NAMESPACE),
+        BeeParameter.createText(module, PRM_ERP_NAMESPACE, false, "http://localhost/ButentWS/"),
         BeeParameter.createText(module, PRM_ERP_ADDRESS),
         BeeParameter.createText(module, PRM_ERP_LOGIN),
         BeeParameter.createText(module, PRM_ERP_PASSWORD),
@@ -447,9 +444,14 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
     cpRow.setValue(DataUtils.getColumnIndex(COL_PERSON, cpColumns), person);
 
     if (!BeeUtils.isEmpty(email)) {
+      response = qs.insertDataWithResponse(new SqlInsert(TBL_EMAILS)
+          .addConstant(COL_EMAIL_ADDRESS, email));
+
+      if (response.hasErrors()) {
+        return response;
+      }
       cpRow.setValue(DataUtils.getColumnIndex(ALS_EMAIL_ID, cpColumns),
-          qs.insertData(new SqlInsert(TBL_EMAILS)
-              .addConstant(COL_EMAIL_ADDRESS, address)));
+          response.getResponseAsLong());
     }
 
     if (!BeeUtils.isEmpty(positionName)) {
@@ -790,8 +792,12 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
     if (!cb.isParameterTimer(timer, PRM_REFRESH_CURRENCY_HOURS)) {
       return;
     }
+    long historyId = sys.eventStart(PRM_REFRESH_CURRENCY_HOURS);
+
     String daysOfToday = BeeUtils.toString(TimeUtils.today().getDays());
-    updateExchangeRates(daysOfToday, daysOfToday);
+    ResponseObject response = updateExchangeRates(daysOfToday, daysOfToday);
+
+    sys.eventEnd(historyId, response.getMessages().toArray());
   }
 
   private ResponseObject updateExchangeRates(String low, String high) {
