@@ -7,5 +7,6 @@
   <Fields>
     <String name="SeriesName" precision="10" notNull="true" unique="true" label="=trdSeries" />
     <Text name="Notes" label="=notes" />
+    <Boolean name="SentERP" label="=trSendToERP"/>
   </Fields>
 </Table>

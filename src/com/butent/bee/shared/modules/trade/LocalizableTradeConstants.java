@@ -90,7 +90,11 @@ public interface LocalizableTradeConstants {
 
   String trdRemainders();
 
+  String trdSelectedRowsNotSentERP();
+
   String trdSeries();
+
+  String trdSomeSelectedRowsNotSentQuestion();
 
   String trdStatuses();
 
