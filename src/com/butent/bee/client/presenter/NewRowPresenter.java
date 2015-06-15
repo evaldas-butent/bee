@@ -35,7 +35,8 @@ import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
 
-public class NewRowPresenter extends AbstractPresenter implements ParentRowCreator {
+public class NewRowPresenter extends AbstractPresenter implements ParentRowCreator,
+    ReadyForInsertEvent.Handler {
 
   public static final String STYLE_CONTAINER = BeeConst.CSS_CLASS_PREFIX + "NewRowContainer";
   public static final String STYLE_HEADER = BeeConst.CSS_CLASS_PREFIX + "NewRowHeader";
@@ -69,6 +70,8 @@ public class NewRowPresenter extends AbstractPresenter implements ParentRowCreat
     this.container = createContainer(header);
 
     container.setViewPresenter(this);
+
+    formView.addReadyForInsertHandler(this);
   }
 
   @Override
@@ -131,6 +134,35 @@ public class NewRowPresenter extends AbstractPresenter implements ParentRowCreat
     }
   }
 
+  @Override
+  public void onReadyForInsert(final ReadyForInsertEvent event) {
+    Queries.insert(dataInfo.getViewName(), event.getColumns(), event.getValues(),
+        event.getChildren(), new RowCallback() {
+          @Override
+          public void onFailure(String... reason) {
+            if (event.getCallback() == null) {
+              formView.notifySevere(reason);
+            } else {
+              event.getCallback().onFailure(reason);
+            }
+          }
+
+          @Override
+          public void onSuccess(BeeRow result) {
+            RowInsertEvent.fire(BeeKeeper.getBus(), dataInfo.getViewName(), result,
+                event.getSourceId());
+
+            if (formView.getFormInterceptor() != null) {
+              formView.getFormInterceptor().afterInsertRow(result, event.isForced());
+            }
+
+            if (event.getCallback() != null) {
+              event.getCallback().onSuccess(result);
+            }
+          }
+        });
+  }
+
   public void save(final RowCallback callback) {
     if (!formView.validate(formView, true)) {
       return;
@@ -190,34 +222,6 @@ public class NewRowPresenter extends AbstractPresenter implements ParentRowCreat
     return formContainer;
   }
 
-  private void doInsert(final ReadyForInsertEvent event, final boolean forced) {
-    Queries.insert(dataInfo.getViewName(), event.getColumns(), event.getValues(),
-        event.getChildren(), new RowCallback() {
-          @Override
-          public void onFailure(String... reason) {
-            if (event.getCallback() == null) {
-              formView.notifySevere(reason);
-            } else {
-              event.getCallback().onFailure(reason);
-            }
-          }
-
-          @Override
-          public void onSuccess(BeeRow result) {
-            RowInsertEvent.fire(BeeKeeper.getBus(), dataInfo.getViewName(), result,
-                event.getSourceId());
-
-            if (formView.getFormInterceptor() != null) {
-              formView.getFormInterceptor().afterInsertRow(result, forced);
-            }
-
-            if (event.getCallback() != null) {
-              event.getCallback().onSuccess(result);
-            }
-          }
-        });
-  }
-
   private HandlesActions getActionDelegate() {
     return actionDelegate;
   }
@@ -246,6 +250,7 @@ public class NewRowPresenter extends AbstractPresenter implements ParentRowCreat
     Collection<RowChildren> children = formView.getChildrenForInsert();
     ReadyForInsertEvent event = new ReadyForInsertEvent(columns, values, children, callback,
         formView.getId());
+    event.setForced(forced);
 
     if (formView.getFormInterceptor() != null) {
       formView.getFormInterceptor().onReadyForInsert(formView, event);
@@ -253,6 +258,7 @@ public class NewRowPresenter extends AbstractPresenter implements ParentRowCreat
         return;
       }
     }
-    doInsert(event, forced);
+
+    formView.fireEvent(event);
   }
 }
