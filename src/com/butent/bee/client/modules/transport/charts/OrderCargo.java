@@ -243,19 +243,16 @@ class OrderCargo extends Filterable implements HasDateRange, HasColorSource, Has
     setRange(TimeBoardHelper.getActivity(lower, upper));
   }
 
-  void assignToTrip(Long tripId, boolean fire) {
-    if (!DataUtils.isId(tripId)) {
-      return;
+  void assignToTrip(Long tripId, RowCallback callback) {
+    if (DataUtils.isId(tripId)) {
+      String viewName = VIEW_CARGO_TRIPS;
+
+      List<BeeColumn> columns = Data.getColumns(viewName, Lists.newArrayList(COL_CARGO, COL_TRIP));
+      List<String> values = Queries.asList(getCargoId(), tripId);
+
+      Queries.insert(viewName, columns, values, null, new RowInsertCallback(viewName, null,
+          callback));
     }
-
-    String viewName = VIEW_CARGO_TRIPS;
-
-    List<BeeColumn> columns = Data.getColumns(viewName, Lists.newArrayList(COL_CARGO, COL_TRIP));
-    List<String> values = Queries.asList(getCargoId(), tripId);
-
-    RowCallback callback = fire ? new RowInsertCallback(viewName, null) : null;
-
-    Queries.insert(viewName, columns, values, null, callback);
   }
 
   String getCargoDescription() {

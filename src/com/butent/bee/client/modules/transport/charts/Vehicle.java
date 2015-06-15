@@ -8,10 +8,12 @@ import com.google.gwt.event.dom.client.DropEvent;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.data.Data;
-import com.butent.bee.client.data.IdCallback;
+import com.butent.bee.client.data.RowCallback;
+import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.event.DndHelper;
 import com.butent.bee.client.event.DndTarget;
 import com.butent.bee.client.timeboard.TimeBoardHelper;
+import com.butent.bee.client.ui.Opener;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BiConsumer;
 import com.butent.bee.shared.data.BeeRow;
@@ -155,10 +157,15 @@ class Vehicle extends Filterable implements HasDateRange, HasItemName {
       final Freight freight = (Freight) data;
       String title = freight.getCargoAndTripTitle();
 
-      Trip.createForCargo(this, freight, title, false, new IdCallback() {
+      Trip.createForCargo(this, freight, title, new RowCallback() {
         @Override
-        public void onSuccess(Long result) {
-          freight.updateTrip(result, true);
+        public void onSuccess(final BeeRow tripRow) {
+          freight.updateTrip(tripRow.getId(), new RowCallback() {
+            @Override
+            public void onSuccess(BeeRow ct) {
+              RowEditor.open(VIEW_TRIPS, tripRow, Opener.MODAL);
+            }
+          });
         }
       });
 
@@ -166,10 +173,15 @@ class Vehicle extends Filterable implements HasDateRange, HasItemName {
       final OrderCargo orderCargo = (OrderCargo) data;
       String title = orderCargo.getTitle();
 
-      Trip.createForCargo(this, orderCargo, title, false, new IdCallback() {
+      Trip.createForCargo(this, orderCargo, title, new RowCallback() {
         @Override
-        public void onSuccess(Long result) {
-          orderCargo.assignToTrip(result, true);
+        public void onSuccess(final BeeRow tripRow) {
+          orderCargo.assignToTrip(tripRow.getId(), new RowCallback() {
+            @Override
+            public void onSuccess(BeeRow ct) {
+              RowEditor.open(VIEW_TRIPS, tripRow, Opener.MODAL);
+            }
+          });
         }
       });
     }
