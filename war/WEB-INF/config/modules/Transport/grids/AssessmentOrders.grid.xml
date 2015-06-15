@@ -15,7 +15,7 @@
     <RelColumn name="Assessment" width="40" editEnabled="true"
       editViewName="Assessments" editSource="Assessment" module="Transport.Logistics"/>
     <DataColumn name="Date" width="110" readOnly="true">
-        <footer aggregate="count" /> 
+        <footer aggregate="count" />
     </DataColumn>
     <RelColumn name="Manager" />
     <DataColumn name="OrderStatus" width="70" />
@@ -23,7 +23,7 @@
 
     <DataColumn name="LoadingDate" caption="=trLoadingDate" width="70" format="DATE_SHORT" />
     <DataColumn name="UnloadingDate" caption="=trUnloadingDate" width="70" format="DATE_SHORT" />
-    
+
     <DataColumn name="CustomerName" />
 
     <RelColumn name="LoadingCountry" visible="false" readOnly="true"/>
@@ -59,16 +59,16 @@
       label="=trdPurchaseId" searchBy="Expenses" filterOptions="empty">
       <render><ui:expression>row.ExpensesCommited ? true : false</ui:expression></render>
     </CalcColumn>
-    
+
     <CalcColumn type="string" name="Vehicle" label="=trCarrierVehicle" searchBy="ForwarderVehicle">
       <render>
         <ui:function>
           if (!row.MinVehicle) {
             return row.MaxVehicle;
-          
+
           } else if(!row.MaxVehicle || row.MinVehicle == row.MaxVehicle) {
             return row.MinVehicle;
-          
+
           } else {
             return row.MinVehicle + ", " + row.MaxVehicle + (row.CntVehicle > 2 ? ", ...": "");
           }
@@ -77,11 +77,11 @@
     </CalcColumn>
 
     <PropColumn name="Income" type="decimal" caption="=income" format="0.00">
-      <footer aggregate="sum" /> 
+      <footer aggregate="sum" />
     </PropColumn>
-    
+
     <PropColumn name="Expense" type="decimal" caption="=trExpenses" format="0.00">
-       <footer aggregate="sum" /> 
+       <footer aggregate="sum" />
     </PropColumn>
     <CalcColumn name="Profit" type="decimal" caption="=profit" format="0.00">
       <render>
@@ -107,7 +107,7 @@
   </g:rowStyle>
   <g:rowStyle>
     <ui:inline>="color:purple"</ui:inline>
-    <ui:expression>row.OrderStatus == 3 &amp;&amp; row.ExpensesCount &amp;&amp; !row.ExpensesCommited</ui:expression>
+    <ui:expression>row.OrderStatus == 3 &amp;&amp; row.ExpensesCount &gt; 0 &amp;&amp; !row.ExpensesCommited</ui:expression>
   </g:rowStyle>
   <g:rowStyle>
     <ui:inline>="color:green"</ui:inline>
@@ -127,5 +127,5 @@
   <g:predefinedFilter name="gold" label="Nesuvestos išlaidos">
     <g:column name="OrderStatus" value="3" />
     <g:column name="ExpensesCommited" emptyValues="true" />
-  </g:predefinedFilter>  
+  </g:predefinedFilter>
 </g:Grid>
