@@ -95,6 +95,9 @@ public class TripForm extends AbstractFormInterceptor {
       if (BeeUtils.same(name, VIEW_TRIP_CARGO)) {
         ((ChildGrid) widget).setGridInterceptor(new TripCargoGrid(getFormView()));
 
+      } else if (BeeUtils.same(name, TBL_TRIP_COSTS)) {
+        ((ChildGrid) widget).setGridInterceptor(new TripCostsGrid());
+
       } else if (BeeUtils.same(name, TBL_TRIP_ROUTES)) {
         ((ChildGrid) widget).setGridInterceptor(new TripRoutesGrid());
       }

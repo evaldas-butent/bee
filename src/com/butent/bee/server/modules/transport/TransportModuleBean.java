@@ -93,6 +93,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -210,6 +211,9 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
           .addFrom(tmp)));
 
       qs.sqlDropTemp(tmp);
+
+    } else if (BeeUtils.same(svc, SVC_GENERATE_DAILY_COSTS)) {
+      response = generateDailyCosts(BeeUtils.toLong(reqInfo.getParameter(COL_TRIP)));
 
     } else if (BeeUtils.same(svc, SVC_GENERATE_ROUTE)) {
       response = generateTripRoute(BeeUtils.toLong(reqInfo.getParameter(COL_TRIP)));
@@ -1214,6 +1218,81 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
     return response.addErrorsFrom(qs.updateDataWithResponse(new SqlUpdate(TBL_CARGO_EXPENSES)
         .addConstant(COL_PURCHASE, purchaseId)
         .setWhere(wh)));
+  }
+
+  private ResponseObject generateDailyCosts(long tripId) {
+    SimpleRowSet rs = qs.getData(new SqlSelect()
+        .addFields(TBL_COUNTRY_NORMS, COL_COUNTRY, COL_DAILY_COSTS_ITEM)
+        .addFields(TBL_COUNTRY_DAILY_COSTS, COL_AMOUNT, COL_CURRENCY)
+        .addExpr(SqlUtils.sqlIf(SqlUtils.or(
+                SqlUtils.isNull(TBL_COUNTRY_DAILY_COSTS, COL_TRIP_DATE_FROM),
+                SqlUtils.joinLess(TBL_COUNTRY_DAILY_COSTS, COL_TRIP_DATE_FROM,
+                    TBL_TRIP_ROUTES, COL_ROUTE_DEPARTURE_DATE)),
+            SqlUtils.field(TBL_TRIP_ROUTES, COL_ROUTE_DEPARTURE_DATE),
+            SqlUtils.field(TBL_COUNTRY_DAILY_COSTS, COL_TRIP_DATE_FROM)), COL_ROUTE_DEPARTURE_DATE)
+        .addExpr(SqlUtils.sqlIf(
+            SqlUtils.or(SqlUtils.isNull(TBL_COUNTRY_DAILY_COSTS, COL_TRIP_DATE_TO),
+                SqlUtils.joinMore(TBL_COUNTRY_DAILY_COSTS, COL_TRIP_DATE_TO,
+                    TBL_TRIP_ROUTES, COL_ROUTE_ARRIVAL_DATE)),
+            SqlUtils.field(TBL_TRIP_ROUTES, COL_ROUTE_ARRIVAL_DATE),
+            SqlUtils.field(TBL_COUNTRY_DAILY_COSTS, COL_TRIP_DATE_TO)), COL_ROUTE_ARRIVAL_DATE)
+        .addFrom(TBL_TRIP_ROUTES)
+        .addFromInner(TBL_COUNTRY_NORMS, SqlUtils.join(TBL_TRIP_ROUTES, COL_ROUTE_ARRIVAL_COUNTRY,
+            TBL_COUNTRY_NORMS, COL_COUNTRY))
+        .addFromInner(TBL_COUNTRY_DAILY_COSTS, SqlUtils.and(
+            sys.joinTables(TBL_COUNTRY_NORMS, TBL_COUNTRY_DAILY_COSTS, COL_COUNTRY_NORM),
+            SqlUtils.notNull(TBL_TRIP_ROUTES, COL_ROUTE_ARRIVAL_DATE),
+            SqlUtils.joinMore(TBL_TRIP_ROUTES, COL_ROUTE_ARRIVAL_DATE, TBL_TRIP_ROUTES,
+                COL_ROUTE_DEPARTURE_DATE),
+            SqlUtils.or(SqlUtils.isNull(TBL_COUNTRY_DAILY_COSTS, COL_TRIP_DATE_FROM),
+                SqlUtils.joinLess(TBL_COUNTRY_DAILY_COSTS, COL_TRIP_DATE_FROM,
+                    TBL_TRIP_ROUTES, COL_ROUTE_ARRIVAL_DATE)),
+            SqlUtils.or(SqlUtils.isNull(TBL_COUNTRY_DAILY_COSTS, COL_TRIP_DATE_TO),
+                SqlUtils.joinMore(TBL_COUNTRY_DAILY_COSTS, COL_TRIP_DATE_TO,
+                    TBL_TRIP_ROUTES, COL_ROUTE_DEPARTURE_DATE))))
+        .setWhere(SqlUtils.equals(TBL_TRIP_ROUTES, COL_TRIP, tripId)));
+
+    qs.updateData(new SqlDelete(TBL_TRIP_COSTS)
+        .setWhere(SqlUtils.and(SqlUtils.equals(TBL_TRIP_COSTS, COL_TRIP, tripId),
+            SqlUtils.in(TBL_TRIP_COSTS, COL_COSTS_ITEM, TBL_COUNTRY_NORMS, COL_DAILY_COSTS_ITEM))));
+
+    Map<String, Map<String, String>> map = new HashMap<>();
+
+    for (SimpleRow row : rs) {
+      Map<String, String> values = new LinkedHashMap<>();
+      values.put(COL_COSTS_COUNTRY, row.getValue(COL_COUNTRY));
+      values.put(COL_COSTS_ITEM, row.getValue(COL_DAILY_COSTS_ITEM));
+      values.put(COL_COSTS_PRICE, row.getValue(COL_AMOUNT));
+      values.put(COL_COSTS_CURRENCY, row.getValue(COL_CURRENCY));
+
+      String key = Codec.md5(BeeUtils.joinItems(values.values()));
+
+      if (!map.containsKey(key)) {
+        map.put(key, values);
+      }
+      values = map.get(key);
+
+      values.put(COL_COSTS_QUANTITY,
+          BeeUtils.toString(BeeUtils.toInt(values.get(COL_COSTS_QUANTITY))
+              + TimeUtils.dayDiff(row.getDateTime(COL_ROUTE_DEPARTURE_DATE),
+              row.getDateTime(COL_ROUTE_ARRIVAL_DATE)) + 1));
+    }
+    DateTime date = qs.getDateTime(new SqlSelect()
+        .addFields(TBL_TRIPS, COL_TRIP_DATE)
+        .addFrom(TBL_TRIPS)
+        .setWhere(sys.idEquals(TBL_TRIPS, tripId)));
+
+    for (Map<String, String> values : map.values()) {
+      SqlInsert insert = new SqlInsert(TBL_TRIP_COSTS)
+          .addConstant(COL_TRIP, tripId)
+          .addConstant(COL_COSTS_DATE, date);
+
+      for (Entry<String, String> entry : values.entrySet()) {
+        insert.addConstant(entry.getKey(), entry.getValue());
+      }
+      qs.insertData(insert);
+    }
+    return ResponseObject.info(Localized.getMessages().createdRows(map.size()));
   }
 
   private ResponseObject generateTripRoute(long tripId) {

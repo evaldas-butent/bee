@@ -232,6 +232,8 @@ public interface LocalizableTransportConstants {
 
   String trFuelCosts();
 
+  String trGenerateDailyCosts();
+
   String trGenerateRoute();
 
   String tripDuration();

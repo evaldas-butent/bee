@@ -233,6 +233,7 @@ public final class TransportConstants {
   public static final String SVC_GET_PROFIT = "GetProfit";
   public static final String SVC_GET_ROUTE = "GetTripRoute";
   public static final String SVC_GENERATE_ROUTE = "GenerateTripRoute";
+  public static final String SVC_GENERATE_DAILY_COSTS = "GenerateDailyCosts";
   public static final String SVC_GET_FX_DATA = "GetFxData";
   public static final String SVC_GET_SS_DATA = "GetSsData";
   public static final String SVC_GET_DTB_DATA = "GetDtbData";
@@ -315,6 +316,7 @@ public final class TransportConstants {
   public static final String TBL_CARGO_REQUESTS = "CargoRequests";
 
   public static final String TBL_COUNTRY_NORMS = "CountryNorms";
+  public static final String TBL_COUNTRY_DAILY_COSTS = "CountryDailyCosts";
 
   public static final String VIEW_ORDERS = "TransportationOrders";
 
@@ -419,6 +421,7 @@ public final class TransportConstants {
 
   public static final String COL_DAILY_COSTS_ITEM = "DailyCostsItem";
   public static final String COL_ROAD_COSTS_ITEM = "RoadCostsItem";
+  public static final String COL_COUNTRY_NORM = "CountryNorm";
 
   public static final String COL_ASSESSMENT = "Assessment";
   public static final String COL_ASSESSMENT_ID = "AssessmentID";
