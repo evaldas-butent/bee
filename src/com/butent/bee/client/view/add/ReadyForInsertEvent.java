@@ -40,10 +40,13 @@ public class ReadyForInsertEvent extends GwtEvent<ReadyForInsertEvent.Handler> i
   private final String sourceId;
 
   private boolean consumed;
+  private boolean forced;
 
   public ReadyForInsertEvent(List<BeeColumn> columns, List<String> values,
       Collection<RowChildren> children, RowCallback callback, String sourceId) {
+
     super();
+
     this.columns = columns;
     this.values = values;
     this.children = children;
@@ -86,9 +89,17 @@ public class ReadyForInsertEvent extends GwtEvent<ReadyForInsertEvent.Handler> i
     return consumed;
   }
 
+  public boolean isForced() {
+    return forced;
+  }
+
   @Override
   public void setConsumed(boolean consumed) {
     this.consumed = consumed;
+  }
+
+  public void setForced(boolean forced) {
+    this.forced = forced;
   }
 
   @Override
