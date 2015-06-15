@@ -17,8 +17,12 @@ import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
+
+import java.util.Collection;
 
 public class TripCostsGrid extends AbstractGridInterceptor implements ClickHandler {
 
@@ -34,6 +38,19 @@ public class TripCostsGrid extends AbstractGridInterceptor implements ClickHandl
     dailyCosts.setVisible(DataUtils.isId(trip));
 
     super.afterCreatePresenter(presenter);
+  }
+
+  @Override
+  public DeleteMode getDeleteMode(GridPresenter presenter,
+      IsRow activeRow, Collection<RowInfo> selectedRows, DeleteMode defMode) {
+
+    if (activeRow.getDateTime(DataUtils.getColumnIndex("Exported",
+        presenter.getDataColumns())) != null) {
+
+      presenter.getGridView().notifyWarning(Localized.getConstants().rowIsNotRemovable());
+      return DeleteMode.CANCEL;
+    }
+    return DeleteMode.SINGLE;
   }
 
   @Override

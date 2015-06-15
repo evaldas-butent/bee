@@ -15,7 +15,6 @@ import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.grid.ChildGrid;
 import com.butent.bee.client.modules.transport.TransportHandler.Profit;
-import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.validation.CellValidateEvent;
@@ -25,19 +24,14 @@ import com.butent.bee.client.view.edit.EditableWidget;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
-import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
-import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
-import java.util.Collection;
-import java.util.List;
 import java.util.Objects;
 
 public class TripForm extends AbstractFormInterceptor {
@@ -106,31 +100,6 @@ public class TripForm extends AbstractFormInterceptor {
 
       } else if (BeeUtils.same(name, TBL_TRIP_ROUTES)) {
         ((ChildGrid) widget).setGridInterceptor(new TripRoutesGrid());
-
-      } else if (BeeUtils.same(name, TBL_TRIP_COSTS)) {
-        ((ChildGrid) widget).setGridInterceptor(new AbstractGridInterceptor() {
-          @Override
-          public DeleteMode beforeDeleteRow(GridPresenter presenter, IsRow row) {
-            if (row.getDateTime(DataUtils.getColumnIndex("Exported",
-                presenter.getDataColumns())) != null) {
-
-              presenter.getGridView().notifyWarning(Localized.getConstants().rowIsNotRemovable());
-              return DeleteMode.CANCEL;
-            }
-            return super.beforeDeleteRow(presenter, row);
-          }
-
-          @Override
-          public DeleteMode getDeleteMode(GridPresenter presenter,
-              IsRow activeRow, Collection<RowInfo> selectedRows, DeleteMode defMode) {
-            return DeleteMode.SINGLE;
-          }
-
-          @Override
-          public GridInterceptor getInstance() {
-            return null;
-          }
-        });
       }
     } else if (BeeUtils.same(name, COL_TRIP_ROUTE) && widget instanceof HasClickHandlers) {
       ((HasClickHandlers) widget).addClickHandler(new ClickHandler() {
