@@ -45,7 +45,7 @@ public class TripCostsGrid extends AbstractGridInterceptor implements ClickHandl
       IsRow activeRow, Collection<RowInfo> selectedRows, DeleteMode defMode) {
 
     if (activeRow.getDateTime(DataUtils.getColumnIndex("Exported",
-        presenter.getDataColumns())) != null) {
+        presenter.getDataColumns())) != null && !BeeKeeper.getUser().isAdministrator()) {
 
       presenter.getGridView().notifyWarning(Localized.getConstants().rowIsNotRemovable());
       return DeleteMode.CANCEL;
