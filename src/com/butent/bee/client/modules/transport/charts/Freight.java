@@ -200,18 +200,15 @@ final class Freight extends OrderCargo {
     this.tripTitle = tripTitle;
   }
 
-  void updateTrip(Long newTripId, boolean fire) {
-    if (!DataUtils.isId(newTripId) || Objects.equals(getTripId(), newTripId)) {
-      return;
+  void updateTrip(Long newTripId, RowCallback callback) {
+    if (DataUtils.isId(newTripId) && !Objects.equals(getTripId(), newTripId)) {
+      String viewName = VIEW_CARGO_TRIPS;
+      List<BeeColumn> columns = Data.getColumns(viewName, Lists.newArrayList(COL_TRIP));
+
+      Queries.update(viewName, getCargoTripId(), getCargoTripVersion(), columns,
+          Queries.asList(getTripId()), Queries.asList(newTripId), null,
+          new RowUpdateCallback(viewName, callback));
     }
-
-    String viewName = VIEW_CARGO_TRIPS;
-    List<BeeColumn> columns = Data.getColumns(viewName, Lists.newArrayList(COL_TRIP));
-
-    RowCallback callback = fire ? new RowUpdateCallback(viewName) : null;
-
-    Queries.update(viewName, getCargoTripId(), getCargoTripVersion(), columns,
-        Queries.asList(getTripId()), Queries.asList(newTripId), null, callback);
   }
 
   private void acceptDrop(Object data) {
@@ -222,7 +219,7 @@ final class Freight extends OrderCargo {
       Trip.maybeAssignCargo(title, getTripTitle(), new ConfirmationCallback() {
         @Override
         public void onConfirm() {
-          freight.updateTrip(Freight.this.getTripId(), true);
+          freight.updateTrip(Freight.this.getTripId(), null);
         }
       });
 
@@ -233,7 +230,7 @@ final class Freight extends OrderCargo {
       Trip.maybeAssignCargo(title, getTripTitle(), new ConfirmationCallback() {
         @Override
         public void onConfirm() {
-          orderCargo.assignToTrip(Freight.this.getTripId(), true);
+          orderCargo.assignToTrip(Freight.this.getTripId(), null);
         }
       });
     }

@@ -8,10 +8,8 @@ import com.google.gwt.event.dom.client.DropEvent;
 
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
-import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.data.Data;
-import com.butent.bee.client.data.IdCallback;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
@@ -29,7 +27,6 @@ import com.butent.bee.shared.BiConsumer;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
-import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.transport.TransportConstants.VehicleType;
@@ -67,7 +64,7 @@ class Trip extends Filterable implements HasColorSource, HasDateRange, HasItemNa
           DATA_TYPE_DRIVER);
 
   static void createForCargo(final Vehicle truck, final HasShipmentInfo cargo, String cargoTitle,
-      final boolean fire, final IdCallback callback) {
+      final RowCallback callback) {
 
     if (truck == null || BeeUtils.isEmpty(cargoTitle) || callback == null) {
       return;
@@ -95,11 +92,7 @@ class Trip extends Filterable implements HasColorSource, HasDateRange, HasItemNa
             Queries.insert(VIEW_NAME, dataInfo.getColumns(), newRow, new RowCallback() {
               @Override
               public void onSuccess(BeeRow result) {
-                if (fire) {
-                  RowInsertEvent.fire(BeeKeeper.getBus(), VIEW_NAME, result, null);
-                }
-
-                callback.onSuccess(result.getId());
+                callback.onSuccess(result);
               }
             });
           }
@@ -481,7 +474,7 @@ class Trip extends Filterable implements HasColorSource, HasDateRange, HasItemNa
       Trip.maybeAssignCargo(freightTitle, getTitle(), new ConfirmationCallback() {
         @Override
         public void onConfirm() {
-          freight.updateTrip(Trip.this.getTripId(), true);
+          freight.updateTrip(Trip.this.getTripId(), null);
         }
       });
 
@@ -492,7 +485,7 @@ class Trip extends Filterable implements HasColorSource, HasDateRange, HasItemNa
       Trip.maybeAssignCargo(cargoTitle, getTitle(), new ConfirmationCallback() {
         @Override
         public void onConfirm() {
-          orderCargo.assignToTrip(Trip.this.getTripId(), true);
+          orderCargo.assignToTrip(Trip.this.getTripId(), null);
         }
       });
 
