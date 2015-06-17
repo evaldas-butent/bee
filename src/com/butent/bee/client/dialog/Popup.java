@@ -58,6 +58,9 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
     private int startX;
     private int startY;
 
+    private int maxX;
+    private int maxY;
+
     private MouseHandler() {
     }
 
@@ -69,8 +72,19 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
 
         setDragging(true);
 
-        startX = event.getX();
-        startY = event.getY();
+        this.startX = event.getX();
+        this.startY = event.getY();
+
+        this.maxX = DomUtils.getClientWidth() - getOffsetWidth();
+
+        int clientHeight = DomUtils.getClientHeight();
+        int headerHeight = getHeaderHeight();
+
+        if (headerHeight > 0) {
+          this.maxY = clientHeight - headerHeight;
+        } else {
+          this.maxY = clientHeight - getOffsetHeight();
+        }
       }
     }
 
@@ -80,8 +94,8 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
         int x = getAbsoluteLeft() + event.getX() - startX;
         int y = getAbsoluteTop() + event.getY() - startY;
 
-        x = BeeUtils.clamp(x, 0, DomUtils.getClientWidth() - getOffsetWidth());
-        y = BeeUtils.clamp(y, 0, DomUtils.getClientHeight() - getOffsetHeight());
+        x = BeeUtils.clamp(x, 0, maxX);
+        y = BeeUtils.clamp(y, 0, maxY);
 
         setPopupPosition(x, y);
       }
@@ -219,15 +233,15 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
   }
 
   private static int clampLeft(int left, int width) {
-    int windowLeft = Window.getScrollLeft();
-    int windowRight = Window.getClientWidth() + Window.getScrollLeft();
+    int windowLeft = 0;
+    int windowRight = Window.getClientWidth();
 
     return Math.max(Math.min(left, windowRight - width), windowLeft);
   }
 
   private static int clampTop(int top, int height) {
-    int windowTop = Window.getScrollTop();
-    int windowBottom = Window.getScrollTop() + Window.getClientHeight();
+    int windowTop = 0;
+    int windowBottom = Window.getClientHeight();
 
     return Math.max(Math.min(top, windowBottom - height), windowTop);
   }
@@ -322,8 +336,7 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
         int left = (Window.getClientWidth() - offsetWidth) >> 1;
         int top = (Window.getClientHeight() - offsetHeight) >> 1;
 
-        setPopupPosition(Math.max(Window.getScrollLeft() + left, 0),
-            Math.max(Window.getScrollTop() + top, 0));
+        setPopupPosition(Math.max(left, 0), Math.max(top, 0));
       }
     });
   }
@@ -578,6 +591,10 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
     }
   }
 
+  protected int getHeaderHeight() {
+    return 0;
+  }
+
   protected void hide(CloseEvent.Cause cause, Node target, boolean fireEvent) {
     if (isShowing()) {
       setShowing(false);
@@ -688,11 +705,11 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
 
     int offsetWidthDiff = offsetWidth - objectWidth;
     if (offsetWidthDiff > 0) {
-      int windowRight = Window.getClientWidth() + Window.getScrollLeft();
-      int windowLeft = Window.getScrollLeft();
+      int windowLeft = 0;
+      int windowRight = Window.getClientWidth();
 
-      int distanceToWindowRight = windowRight - left;
       int distanceFromWindowLeft = left - windowLeft;
+      int distanceToWindowRight = windowRight - left;
 
       if (distanceToWindowRight < offsetWidth && distanceFromWindowLeft >= offsetWidthDiff) {
         left -= offsetWidthDiff;
@@ -701,8 +718,8 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
       left -= offsetWidthDiff;
     }
 
-    int windowTop = Window.getScrollTop();
-    int windowBottom = Window.getScrollTop() + Window.getClientHeight();
+    int windowTop = 0;
+    int windowBottom = Window.getClientHeight();
 
     int distanceFromWindowTop = top - windowTop;
     int distanceToWindowBottom = windowBottom - (top + objectHeight);
