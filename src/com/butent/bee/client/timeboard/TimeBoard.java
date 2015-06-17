@@ -51,8 +51,8 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
 import com.butent.bee.shared.data.event.DataChangeEvent;
-import com.butent.bee.shared.data.event.DataEvent;
 import com.butent.bee.shared.data.event.HandlesAllDataEvents;
+import com.butent.bee.shared.data.event.ModificationEvent;
 import com.butent.bee.shared.data.event.MultiDeleteEvent;
 import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.event.RowInsertEvent;
@@ -953,7 +953,7 @@ public abstract class TimeBoard extends Flow implements Presenter, View, Printab
     }
   }
 
-  protected abstract boolean isDataEventRelevant(DataEvent event);
+  protected abstract boolean isDataEventRelevant(ModificationEvent<?> event);
 
   protected boolean isFiltered() {
     return filtered;
