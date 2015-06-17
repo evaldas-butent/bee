@@ -7,6 +7,7 @@ import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.exceptions.BeeException;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import org.w3c.dom.Node;
@@ -107,6 +108,31 @@ public final class ButentWS {
     } catch (Exception e) {
       logger.error(e);
     }
+  }
+
+  public SimpleRowSet getDebts(JustDate fromDate, JustDate toDate, String companyName)
+      throws BeeException {
+    logger.debug("GetDebts: ", companyName, fromDate, toDate);
+
+    String answer;
+
+    StringBuilder data = new StringBuilder("<row>")
+        .append(XmlUtils.tag("data_nuo", fromDate.toString()))
+        .append(XmlUtils.tag("data_iki", toDate.toString()))
+        .append(XmlUtils.tag("klientas", companyName))
+        .append("</row>");
+
+    try {
+      answer = process("GetDebts", data.toString());
+      logger.info("answer:", answer);
+    } catch (Exception e) {
+      throw new BeeException(e);
+    }
+
+    SimpleRowSet resp =
+        xmlToSimpleRowSet(answer, "data", "dokumentas", "dok_serija", "kitas_dok", "gavejas",
+            "terminas", "viso", "viso_val", "skola_w");
+    return resp;
   }
 
   public SimpleRowSet getSQLData(String query, String... columns) throws BeeException {

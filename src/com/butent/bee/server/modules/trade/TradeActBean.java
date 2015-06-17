@@ -225,6 +225,7 @@ public class TradeActBean implements HasTimerService {
     cb.createCalendarTimer(this.getClass(), PRM_SYNC_ERP_DATA);
 
     sys.registerDataEventHandler(new DataEventHandler() {
+
       @Subscribe
       public void fillActNumber(ViewInsertEvent event) {
         if (event.isBefore()
@@ -3229,6 +3230,82 @@ public class TradeActBean implements HasTimerService {
               .setWhere(sys.idEquals(TBL_ITEMS, entry.getValue())));
         }
       }
+    }
+
+    // Debts
+    try {
+      JustDate from = new JustDate();
+      JustDate to = new JustDate();
+
+      from.setDom(1);
+
+      BeeRowSet comp = qs.getViewData(VIEW_COMPANIES);
+
+      for (int i = 0; i < comp.getNumberOfRows(); i++) {
+        rs =
+            ButentWS.connect(remoteNamespace, remoteAddress, remoteLogin, remotePassword)
+                .getDebts(
+                    from,
+                    to,
+                    BeeUtils.join(BeeConst.DEFAULT_LIST_SEPARATOR, comp.getString(i,
+                        COL_COMPANY_NAME), comp.getString(i,
+                        ALS_COMPANY_TYPE_NAME)));
+
+        if (rs.isEmpty()) {
+          continue;
+        }
+
+        for (int j = 0; j < rs.getNumberOfRows(); j++) {
+
+          BeeRowSet currencies =
+              qs.getViewData(VIEW_CURRENCIES, Filter.equals(COL_CURRENCY_NAME, rs.getValue(j,
+                  "viso_val")));
+          if (currencies.isEmpty()) {
+            logger.warning("Currency", rs.getValue(j, "viso_val"), "not found for invoice", rs
+                .getValue(j,
+                    "dok_serija"), rs.getValue(j,
+                "kitas_dok"));
+            continue;
+          }
+
+          Long currencyId = currencies.getRow(0).getId();
+
+          BeeRowSet series =
+              qs.getViewData(TBL_SALE_SERIES, Filter.equals(COL_SERIES_NAME, rs.getValue(j,
+                  "dok_serija")));
+          Long serId;
+          if (series.isEmpty()) {
+            serId =
+                qs.insertDataWithResponse(
+                    new SqlInsert(TBL_SALE_SERIES).addConstant(COL_SERIES_NAME, rs.getValue(j,
+                        "dok_serija"))).getResponseAsLong();
+          } else {
+            serId = series.getRow(0).getId();
+          }
+
+          if (qs.getViewData(VIEW_SALES,
+              Filter.and(Filter.equals(COL_SERIES_NAME, rs.getValue(j, "dok_serija")),
+                  Filter.equals(COL_TRADE_INVOICE_NO, rs.getValue(j, "kitas_dok")))).isEmpty()) {
+            SqlInsert si =
+                new SqlInsert(TBL_SALES)
+                    .addConstant(COL_TRADE_DATE, TimeUtils.parseDate(rs.getValue(j, "data")))
+                    .addConstant(COL_TRADE_CUSTOMER, comp.getRow(i).getId())
+                    .addConstant(COL_TRADE_AMOUNT, rs.getDouble(j, "viso"))
+                    .addConstant(COL_TRADE_SALE_SERIES, serId)
+                    .addConstant(COL_TRADE_INVOICE_NO, rs.getValue(j, "kitas_dok"))
+                    .addConstant(COL_TRADE_CURRENCY, currencyId)
+                    .addConstant(
+                        COL_TRADE_PAID,
+                        BeeUtils.unbox(rs.getDouble(j, "viso"))
+                            - BeeUtils.unbox(rs.getDouble(j, "skola_w")))
+                    .addConstant(COL_TRADE_TERM, rs.getDate(j, "terminas"));
+            qs.insertData(si);
+          }
+        }
+      }
+    } catch (BeeException e) {
+      logger.error(e);
+      return;
     }
   }
 
