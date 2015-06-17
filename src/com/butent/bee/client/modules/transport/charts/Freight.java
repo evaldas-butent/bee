@@ -10,7 +10,6 @@ import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
-import com.butent.bee.client.data.RowUpdateCallback;
 import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.event.DndHelper;
 import com.butent.bee.client.event.DndTarget;
@@ -206,8 +205,7 @@ final class Freight extends OrderCargo {
       List<BeeColumn> columns = Data.getColumns(viewName, Lists.newArrayList(COL_TRIP));
 
       Queries.update(viewName, getCargoTripId(), getCargoTripVersion(), columns,
-          Queries.asList(getTripId()), Queries.asList(newTripId), null,
-          new RowUpdateCallback(viewName, callback));
+          Queries.asList(getTripId()), Queries.asList(newTripId), null, callback);
     }
   }
 
@@ -219,7 +217,7 @@ final class Freight extends OrderCargo {
       Trip.maybeAssignCargo(title, getTripTitle(), new ConfirmationCallback() {
         @Override
         public void onConfirm() {
-          freight.updateTrip(Freight.this.getTripId(), null);
+          freight.updateTrip(Freight.this.getTripId(), RowCallback.refreshView(VIEW_CARGO_TRIPS));
         }
       });
 
@@ -230,7 +228,8 @@ final class Freight extends OrderCargo {
       Trip.maybeAssignCargo(title, getTripTitle(), new ConfirmationCallback() {
         @Override
         public void onConfirm() {
-          orderCargo.assignToTrip(Freight.this.getTripId(), null);
+          orderCargo.assignToTrip(Freight.this.getTripId(),
+              RowCallback.refreshView(VIEW_CARGO_TRIPS));
         }
       });
     }

@@ -92,8 +92,8 @@ public class DataChangeEvent extends ModificationEvent<DataChangeEvent.Handler> 
     this.effects = effects;
   }
 
-  private DataChangeEvent(Collection<String> viewNames, EnumSet<Effect> effects) {
-    viewNames.addAll(viewNames);
+  private DataChangeEvent(Collection<String> views, EnumSet<Effect> effects) {
+    viewNames.addAll(views);
     this.effects = effects;
   }
 

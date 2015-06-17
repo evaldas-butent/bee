@@ -29,6 +29,7 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.modules.transport.TransportConstants.TripStatus;
 import com.butent.bee.shared.modules.transport.TransportConstants.VehicleType;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.HasDateRange;
@@ -474,7 +475,7 @@ class Trip extends Filterable implements HasColorSource, HasDateRange, HasItemNa
       Trip.maybeAssignCargo(freightTitle, getTitle(), new ConfirmationCallback() {
         @Override
         public void onConfirm() {
-          freight.updateTrip(Trip.this.getTripId(), null);
+          freight.updateTrip(Trip.this.getTripId(), RowCallback.refreshView(VIEW_CARGO_TRIPS));
         }
       });
 
@@ -485,7 +486,8 @@ class Trip extends Filterable implements HasColorSource, HasDateRange, HasItemNa
       Trip.maybeAssignCargo(cargoTitle, getTitle(), new ConfirmationCallback() {
         @Override
         public void onConfirm() {
-          orderCargo.assignToTrip(Trip.this.getTripId(), null);
+          orderCargo.assignToTrip(Trip.this.getTripId(),
+              RowCallback.refreshView(VIEW_CARGO_TRIPS));
         }
       });
 
