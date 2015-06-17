@@ -35,9 +35,11 @@ import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dialog.Popup.OutsideClick;
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.event.DndHelper;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.HtmlTable;
+import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
@@ -71,14 +73,14 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.documents.DocumentConstants;
-import com.butent.bee.shared.modules.mail.MailConstants.AddressType;
-import com.butent.bee.shared.modules.mail.MailConstants.SystemFolder;
+import com.butent.bee.shared.modules.mail.MailConstants.*;
 import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.Orientation;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
+import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -241,9 +243,13 @@ public class MailMessage extends AbstractFormInterceptor {
         }
       });
       for (FileInfo file : attachments) {
-        bar.addItem(new Link(BeeUtils.joinWords(file.getName(),
+        Simple simple = new Simple();
+        DndHelper.makeSource(simple, NameUtils.getClassName(FileInfo.class), file, null);
+        simple.setWidget(new Link(BeeUtils.joinWords(file.getName(),
             BeeUtils.parenthesize(FileUtils.sizeToText(file.getSize()))),
             FileUtils.getUrl(file.getName(), file.getId())));
+
+        bar.addItem(simple);
       }
       popup.setWidget(bar);
       popup.setHideOnEscape(true);
@@ -602,10 +608,14 @@ public class MailMessage extends AbstractFormInterceptor {
               table.addClickHandler(attachmentsHandler);
             } else {
               FileInfo file = BeeUtils.peek(attachments);
-              table.setWidget(0, 0, new FaLabel(FontAwesome.PAPERCLIP));
-              table.setWidget(0, 1, new Link(BeeUtils.joinWords(file.getName(),
+              Simple simple = new Simple();
+              DndHelper.makeSource(simple, NameUtils.getClassName(FileInfo.class), file, null);
+              simple.setWidget(new Link(BeeUtils.joinWords(file.getName(),
                   BeeUtils.parenthesize(FileUtils.sizeToText(file.getSize()))),
                   FileUtils.getUrl(file.getName(), file.getId())));
+
+              table.setWidget(0, 0, new FaLabel(FontAwesome.PAPERCLIP));
+              table.setWidget(0, 1, simple);
             }
             ((HasWidgets) widget).add(table);
           }
@@ -740,7 +750,7 @@ public class MailMessage extends AbstractFormInterceptor {
                 "border-left:1px solid #039; margin:0; padding:10px; color:#039;");
             bq.setInnerHTML(getContent());
             content = BeeUtils.join("<br>", "<br>", getDate() + ", "
-                + Codec.escapeHtml(getSender() + " " + loc.mailTextWrote().toLowerCase() + ":"),
+                    + Codec.escapeHtml(getSender() + " " + loc.mailTextWrote().toLowerCase() + ":"),
                 bq.getString());
 
             if (!BeeUtils.isPrefix(subject, loc.mailReplayPrefix())) {
@@ -758,7 +768,7 @@ public class MailMessage extends AbstractFormInterceptor {
               content = getContent();
             } else {
               content = BeeUtils.join("<br>", "<br>", "---------- "
-                  + loc.mailForwardedMessage() + " ----------",
+                      + loc.mailForwardedMessage() + " ----------",
                   loc.mailFrom() + ": " + Codec.escapeHtml(getSender()),
                   loc.date() + ": " + getDate(),
                   loc.mailSubject() + ": " + Codec.escapeHtml(getSubject()),
