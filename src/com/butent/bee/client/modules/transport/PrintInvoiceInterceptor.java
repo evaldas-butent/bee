@@ -22,6 +22,7 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
+import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 
@@ -40,7 +41,9 @@ public class PrintInvoiceInterceptor extends AbstractFormInterceptor {
   public void afterCreateWidget(String name, IdentifiableWidget widget,
       WidgetDescriptionCallback callback) {
 
-    if (BeeUtils.inListSame(name, COL_TRADE_SUPPLIER, COL_TRADE_CUSTOMER, COL_SALE_PAYER)) {
+    if (BeeUtils
+        .inListSame(name, COL_TRADE_SUPPLIER, COL_TRADE_CUSTOMER, COL_SALE_PAYER,
+            ClassifierConstants.COL_COMPANY)) {
       companies.put(name, widget.asWidget());
 
     } else if (BeeUtils.startsSame(name, "InvoiceDetails") && widget instanceof HtmlTable) {
