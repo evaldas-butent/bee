@@ -556,14 +556,15 @@ public class TradeModuleBean implements BeeModule {
         .addFromInner(TBL_ITEMS, sys.joinTables(TBL_ITEMS, tradeItems, COL_ITEM))
         .addFromInner(TBL_UNITS, sys.joinTables(TBL_UNITS, TBL_ITEMS, COL_UNIT))
         .addFromInner(TBL_CURRENCIES, sys.joinTables(TBL_CURRENCIES, trade, COL_CURRENCY))
-        .setWhere(SqlUtils.equals(tradeItems, itemsRelation, id))
-        .addOrder(tradeItems, COL_TRADE_ITEM_ORDINAL, sys.getIdName(tradeItems));
+        .setWhere(SqlUtils.equals(tradeItems, itemsRelation, id));
 
     if (BeeUtils.same(trade, TBL_TRADE_ACTS)) {
       query.addFields(TBL_ITEMS, COL_TRADE_WEIGHT);
       query.addFields(TBL_TRADE_ACTS, COL_TRADE_NUMBER);
       query.addFields(TBL_TRADE_ACTS, COL_TRADE_CONTACT);
       query.addFields(TBL_ITEMS, COL_TRADE_TIME_UNIT);
+    } else {
+      query.addOrder(tradeItems, COL_TRADE_ITEM_ORDINAL, sys.getIdName(tradeItems));
     }
 
     if (!BeeUtils.isEmpty(currencyTo)) {

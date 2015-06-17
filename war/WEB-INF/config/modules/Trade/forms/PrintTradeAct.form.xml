@@ -6,19 +6,19 @@
   <!ENTITY form "PrintTradeAct">
 ]>
 <f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form"
-	xmlns:ui="http://www.butent.com/ui" name="&form;" caption="=tradeAct"
-	disabledActions="save" width="70" widthUnit="%" height="90" heightUnit="%">
-	<FlowPanel style="padding: 10px; background-color: white;" contentEditable="true">
-		<FlowPanel style="border-bottom: 2px solid grey;">
-			<Image url="images/logo.png"
-				style="position: relative; left: 50%; margin-left: -150px;" />
-		</FlowPanel>
+  xmlns:ui="http://www.butent.com/ui" name="&form;" caption="Komercinis pasiūlymas"
+  disabledActions="save" width="70" widthUnit="%" height="90" heightUnit="%">
+  <FlowPanel style="padding: 10px; background-color: white;" contentEditable="true">
+    <FlowPanel style="border-bottom: 2px solid grey;">
+      <Image url="images/logo.png"
+        style="position: relative; left: 50%; margin-left: -150px;" />
+    </FlowPanel>
 
-		<Label text="Statybinė įranga, pastoliai, klojiniai, konteineriai"
-			style="text-align: center; font-weight: bold;" />
+    <Label text="Statybinė įranga, pastoliai, klojiniai, konteineriai"
+      style="text-align: center; font-weight: bold;" />
 
-		<DateTimeLabel source="Date" format="DATE_LONG"
-			horizontalAlignment="right" />
+    <DateTimeLabel source="Date" format="DATE_LONG"
+      horizontalAlignment="right" />
 
     <TextLabel source="Contact" style="text-align: left;">
       <renderToken source="ContactFirstName" />
@@ -33,41 +33,41 @@
     </TextLabel>
    
           
-		<Table name="InvoiceDetails1" style="&section; width:100%">
-		  <properties content="TradeActItems" />
-			<row>
-				<Label text="Artikulas">
-					<properties name="Article" />
-				</Label>
-				<Label text="Pavadinimas">
-					<properties name="Name" />
-				</Label>
-				<Label text="Mato VNT.">
-					<properties name="Unit" />
-				</Label>
-				<Label text="Kiekis">
-					<properties name="Quantity" />
-				</Label>
-				<Label text="Svoris Kg" style="text-align: right;">
-					<properties name="Weight" />
-				</Label>
-				<Label text="Viso Kg" style="text-align: right;">
-					<properties name="sv" />
-				</Label>
-				<Label text="Kaina">
-					<properties name="Price" />
-				</Label>
-				<Label text="Suma">
-					<properties name="Amount" />
-				</Label>
-				<Label text="=trdVat" horizontalAlignment="right">
-					<properties name="Vat" />
-				</Label>
-			</row>
-			<row>
-				<cell colSpan="5"  style="text-align: right; vertical-align:top">
+    <Table name="InvoiceDetails1" style="&section; width:100%; padding-top: 0;">
+      <properties content="TradeActItems" />
+      <row>
+        <Label text="Artikulas">
+          <properties name="Article" />
+        </Label>
+        <Label text="Pavadinimas">
+          <properties name="Name" />
+        </Label>
+        <Label text="Mato VNT.">
+          <properties name="Unit" />
+        </Label>
+        <Label text="Kiekis">
+          <properties name="Quantity" />
+        </Label>
+        <Label text="Svoris Kg" style="text-align: right;">
+          <properties name="Weight" />
+        </Label>
+        <Label text="Viso Kg" style="text-align: right;">
+          <properties name="sv" />
+        </Label>
+        <Label text="Kaina">
+          <properties name="Price" />
+        </Label>
+        <Label text="Suma">
+          <properties name="Amount" />
+        </Label>
+        <Label text="=trdVat" horizontalAlignment="right">
+          <properties name="Vat" />
+        </Label>
+      </row>
+      <row>
+        <cell colSpan="5"  style="text-align: right; vertical-align:top">
           <Label text="Bendras svoris:" />
-				</cell>
+        </cell>
         <cell style="text-align: right; vertical-align:top;">
           <FlowPanel style="display: inline-flex;">
             <Label name="TotalWeight" />
@@ -79,30 +79,30 @@
           <Label text="PVM suma:" />
           <Label text="VISO:" style="&bold;" />
         </FlowPanel>
-				<FlowPanel style="text-align:right;">
-					<Label>
-						<properties name="AmountTotal" />
-					</Label>
-					<Label>
-						<properties name="VatTotal" />
-					</Label>
-					<Label style="&bold;">
-						<properties name="Total" />
-					</Label>
-				</FlowPanel>
-				<FlowPanel>
-					<Label>
-						<properties name="Currency" />
-					</Label>
-					<Label>
-						<properties name="Currency" />
-					</Label>
-					<Label style="&bold;">
-						<properties name="Currency" />
-					</Label>
-				</FlowPanel>
-			</row>
-		</Table>
+        <FlowPanel style="text-align:right;">
+          <Label>
+            <properties name="AmountTotal" />
+          </Label>
+          <Label>
+            <properties name="VatTotal" />
+          </Label>
+          <Label style="&bold;">
+            <properties name="Total" />
+          </Label>
+        </FlowPanel>
+        <FlowPanel>
+          <Label>
+            <properties name="Currency" />
+          </Label>
+          <Label>
+            <properties name="Currency" />
+          </Label>
+          <Label style="&bold;">
+            <properties name="Currency" />
+          </Label>
+        </FlowPanel>
+      </row>
+    </Table>
      
     <Label text="Teikiamos Paslaugos" style="text-align: center; font-weight: bold;" />
     
@@ -132,24 +132,24 @@
         </Label>
       </row>
     </Table>
-		<HtmlPanel style="&section;">
-      <span
-        style="font-size:small; display:block; white-space:pre-wrap;">
-        Minimalus nuomos terminas 2 sav. (14 kalendorinių dienų).
-        Grąžinama įranga turi būti nuvalyta ir išardyta taip, kaip buvo išduota. Įranga transporto priemonėje turi būti
-        sukrauta taip, kad būtų galima iškrauti šakiniais krautuvais. Už iškrovimą rankomis apmokama papildomai.
-      </span>
+    <HtmlPanel style="&section;">
+      <span style="font-size:small; display:block; white-space:pre-wrap; border:1px solid silver;">Minimalus nuomos terminas 2 sav. (14 kalendorinių dienų).
+Grąžinama įranga turi būti nuvalyta ir išardyta taip, kaip buvo išduota. Įranga transporto priemonėje turi būti
+sukrauta taip, kad būtų galima iškrauti šakiniais krautuvais. Už iškrovimą rankomis apmokama papildomai.</span>
       <span style="font-size:small; display:block; white-space:pre-wrap;">
         Būtų malonu, kad šis pasiūlymas virstu sandoriu!
       </span>
     </HtmlPanel>
 
-		<Table style="width:100%; margin-top:10px;">
-			<row>
-				<TextLabel source="Manager" style="margin-top:5px;">
-					<renderToken source="ManagerFirstName" />
-					<renderToken source="ManagerLastName" />
-				</TextLabel>
+    <Table style="width:100%; margin-top:10px;">
+      <row>
+      <Label text="Pagarbiai:" style="margin-top:5px;" />
+      </row>
+      <row>
+        <TextLabel source="Manager">
+          <renderToken source="ManagerFirstName" />
+          <renderToken source="ManagerLastName" />
+        </TextLabel>
       </row>
       <row>
         <Label text="=manager"/>
@@ -158,7 +158,7 @@
         <TextLabel>
           <renderToken source="ManagerPhone" prefix="Tel.: "/>
         </TextLabel>
-			</row>
-		</Table>
-	</FlowPanel>
+      </row>
+    </Table>
+  </FlowPanel>
 </f:Form>

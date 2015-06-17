@@ -13,7 +13,7 @@
   caption="=tradeAct" showRowId="true"
   width="800" height="600"
   >
-  <f:properties reports="PrintTradeAct"/>
+  <f:properties reports="PrintTradeActSalePhysical, PrintTradeActSale, PrintTradeAct, PrintTradeActExtra"/>
   
   <FlowPanel>
     <br/>
@@ -75,7 +75,7 @@
 
       <row>
         <Label for="Company" visible="true" />
-        <DataSelector source="Company" style="&inpw;" visible="true" choiceColumns="Name TypeName" 
+        <DataSelector source="Company" name="Company" style="&inpw;" visible="true" choiceColumns="Name TypeName" 
           renderColumns="CompanyName TypeName"/>
 
         <Label for="Object" />
