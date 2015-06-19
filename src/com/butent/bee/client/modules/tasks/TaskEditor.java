@@ -521,7 +521,7 @@ class TaskEditor extends AbstractFormInterceptor {
       Scheduler.get().scheduleDeferred(new ScheduledCommand() {
         @Override
         public void execute() {
-          last.getElement().scrollIntoView();
+          DomUtils.scrollIntoView(last.getElement());
         }
       });
     }
