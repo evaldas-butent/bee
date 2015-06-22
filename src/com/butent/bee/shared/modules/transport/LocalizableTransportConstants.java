@@ -102,6 +102,10 @@ public interface LocalizableTransportConstants {
 
   String refNumber();
 
+  String removeCargoFromTripCaption();
+
+  String removeCargoFromTripQuestion();
+
   String route();
 
   String shipper();
