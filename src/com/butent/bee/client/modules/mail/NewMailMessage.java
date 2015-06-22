@@ -153,6 +153,8 @@ public final class NewMailMessage extends AbstractFormInterceptor
             if (formView != null) {
               formView.start(null);
 
+              final boolean modal = Popup.getActivePopup() != null;
+
               final DialogBox dialog = Global.inputWidget(formView.getCaption(), formView,
                   newMessage.new DialogCallback(), RowFactory.DIALOG_STYLE);
               dialog.addStyleName(STYLE_WAITING_FOR_USER_EMAILS);
@@ -162,7 +164,9 @@ public final class NewMailMessage extends AbstractFormInterceptor
                     @Override
                     public void onSuccess(BeeRowSet result) {
                       dialog.removeStyleName(STYLE_WAITING_FOR_USER_EMAILS);
-                      Previewer.ensureUnregistered(dialog);
+                      if (!modal) {
+                        Previewer.ensureUnregistered(dialog);
+                      }
                     }
                   });
 
