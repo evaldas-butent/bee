@@ -214,6 +214,8 @@ class Trip extends Filterable implements HasColorSource, HasDateRange, HasItemNa
 
   private final String itemName;
 
+  private final int cargoCount;
+
   Trip(SimpleRow row, Collection<Driver> drivers) {
     this(row, drivers, null, null, 0,
         BeeConst.EMPTY_IMMUTABLE_STRING_SET, BeeConst.EMPTY_IMMUTABLE_STRING_SET);
@@ -262,6 +264,8 @@ class Trip extends Filterable implements HasColorSource, HasDateRange, HasItemNa
         notesLabel, this.notes);
 
     this.itemName = BeeUtils.joinWords(rangeLabel, this.tripNo);
+
+    this.cargoCount = cargoCount;
   }
 
   @Override
@@ -335,6 +339,10 @@ class Trip extends Filterable implements HasColorSource, HasDateRange, HasItemNa
       default:
         return null;
     }
+  }
+
+  boolean hasCargo() {
+    return cargoCount > 0;
   }
 
   boolean hasDriver(Long driverId) {

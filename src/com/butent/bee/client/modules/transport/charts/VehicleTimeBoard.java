@@ -317,7 +317,18 @@ abstract class VehicleTimeBoard extends ChartBase {
       return result;
 
     } else if (separateCargo()) {
-      return freights.values();
+      List<HasDateRange> result = new ArrayList<>();
+      if (!freights.isEmpty()) {
+        result.addAll(freights.values());
+      }
+
+      for (Trip trip : trips.values()) {
+        if (!trip.hasCargo()) {
+          result.add(trip);
+        }
+      }
+
+      return result;
 
     } else {
       return trips.values();
@@ -941,11 +952,10 @@ abstract class VehicleTimeBoard extends ChartBase {
         Long vehicleId = vehicle.getId();
         TimeBoardRowLayout layout = new TimeBoardRowLayout(vehicleIndex);
 
-        Collection<Trip> vehicleTrips = getTripsForLayout(vehicleId,
-            separateCargo() ? null : range);
+        Collection<Trip> vehicleTrips = getTripsForLayout(vehicleId, range);
 
         for (Trip trip : vehicleTrips) {
-          if (separateCargo()) {
+          if (separateCargo() && trip.hasCargo()) {
             List<Freight> tripFreights = getFreightsForLayout(trip.getTripId(), range);
             if (!tripFreights.isEmpty()) {
               layout.addItems(getGroupIdForFreightLayout(trip), tripFreights, range,
@@ -990,13 +1000,22 @@ abstract class VehicleTimeBoard extends ChartBase {
 
   private List<Trip> getTripsForLayout(Long vehicleId, Range<JustDate> range) {
     List<Trip> result = new ArrayList<>();
-    if (!trips.containsKey(vehicleId)) {
-      return result;
-    }
 
-    for (Trip trip : trips.get(vehicleId)) {
-      if (isItemVisible(trip) && TimeBoardHelper.hasRangeAndIsActive(trip, range)) {
-        result.add(trip);
+    if (range != null && trips.containsKey(vehicleId)) {
+      for (Trip trip : trips.get(vehicleId)) {
+        boolean ok = isItemVisible(trip) && trip.getRange() != null;
+
+        if (ok) {
+          if (separateCargo()) {
+            ok = trip.hasCargo() || range.isConnected(trip.getRange());
+          } else {
+            ok = range.isConnected(trip.getRange());
+          }
+
+          if (ok) {
+            result.add(trip);
+          }
+        }
       }
     }
 
