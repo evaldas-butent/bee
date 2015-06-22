@@ -153,18 +153,18 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
       @Override
       void refresh(Widget widget, FileInfo fileInfo) {
         if (widget instanceof Simple) {
-          Widget label = ((Simple) widget).getWidget();
+          Widget w = ((Simple) widget).getWidget();
 
-          if (label == null) {
+          if (w == null) {
             if (DataUtils.isId(fileInfo.getId())) {
-              label = new Link(null, FileUtils.getUrl(fileInfo.getId()));
+              w = new Link(null, FileUtils.getUrl(fileInfo.getId()));
             } else {
-              label = new Label();
+              w = new Label();
             }
-            ((Simple) widget).setWidget(label);
+            ((Simple) widget).setWidget(w);
           }
-          if (label instanceof HasHtml) {
-            ((HasHtml) label).setHtml(BeeUtils.notEmpty(fileInfo.getCaption(), fileInfo.getName()));
+          if (w instanceof HasHtml) {
+            ((HasHtml) w).setHtml(BeeUtils.notEmpty(fileInfo.getCaption(), fileInfo.getName()));
           }
         }
       }
