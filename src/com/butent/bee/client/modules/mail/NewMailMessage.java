@@ -58,7 +58,7 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.mail.AccountInfo;
-import com.butent.bee.shared.modules.mail.MailConstants.AddressType;
+import com.butent.bee.shared.modules.mail.MailConstants.*;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
@@ -360,16 +360,14 @@ public final class NewMailMessage extends AbstractFormInterceptor
               signaturesWidget.addItem(result.getString(i, COL_SIGNATURE_NAME),
                   BeeUtils.toString(signatureId));
             }
-            signaturesWidget.setEnabled(signaturesWidget.getItemCount() > 1);
+            signaturesWidget.setEnabled(signaturesWidget.getItemCount() > 0);
             signaturesWidget.addChangeHandler(new ChangeHandler() {
               @Override
               public void onChange(ChangeEvent event) {
                 applySignature(BeeUtils.toLongOrNull(signaturesWidget.getValue()));
               }
             });
-            if (!isDraft) {
-              applySignature(account.getSignatureId());
-            }
+            applySignature(isDraft ? null : account.getSignatureId());
           }
         });
     dialog.insertAction(1, signaturesWidget);
