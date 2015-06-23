@@ -73,7 +73,6 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.documents.DocumentConstants;
-import com.butent.bee.shared.modules.mail.MailConstants.*;
 import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.Orientation;
@@ -268,6 +267,7 @@ public class MailMessage extends AbstractFormInterceptor {
 
   private final MailPanel mailPanel;
   private Long placeId;
+  private Long folderId;
   private Long repliedFrom;
   private boolean isSent;
   private boolean isDraft;
@@ -471,6 +471,10 @@ public class MailMessage extends AbstractFormInterceptor {
     return super.beforeAction(action, presenter);
   }
 
+  public Long getFolder() {
+    return folderId;
+  }
+
   @Override
   public FormInterceptor getInstance() {
     return new MailMessage();
@@ -484,6 +488,7 @@ public class MailMessage extends AbstractFormInterceptor {
     }
     sender = Pair.of(null, null);
     placeId = null;
+    folderId = null;
     repliedFrom = null;
     isSent = false;
     isDraft = false;
@@ -555,6 +560,7 @@ public class MailMessage extends AbstractFormInterceptor {
           relations.requery(row.getLong(COL_MESSAGE));
         }
         placeId = row.getLong(COL_PLACE);
+        folderId = row.getLong(COL_FOLDER);
         repliedFrom = row.getLong(COL_REPLIED);
         isSent = BeeUtils.unbox(row.getBoolean(SystemFolder.Sent.name()));
         isDraft = BeeUtils.unbox(row.getBoolean(SystemFolder.Drafts.name()));
