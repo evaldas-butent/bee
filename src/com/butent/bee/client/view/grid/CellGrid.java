@@ -3728,6 +3728,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
 
     if (activeCell != null) {
       boolean resizable = getColumnInfo(getActiveColumnIndex()).isCellResizable();
+      Element activeElement = DomUtils.getActiveElement();
 
       if (activate) {
         setCellZIndex(activeCell);
@@ -3737,7 +3738,6 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
           activeCell.addClassName(StyleUtils.NAME_RESIZABLE);
         }
 
-        Element activeElement = DomUtils.getActiveElement();
         if (activeElement == null || !activeCell.isOrHasChild(activeElement)) {
           activeCell.focus();
         }
@@ -3746,6 +3746,10 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
         activeCell.removeClassName(STYLE_ACTIVE_CELL);
         if (resizable) {
           activeCell.removeClassName(StyleUtils.NAME_RESIZABLE);
+        }
+
+        if (activeElement != null && activeCell.isOrHasChild(activeElement)) {
+          activeElement.blur();
         }
       }
     }
