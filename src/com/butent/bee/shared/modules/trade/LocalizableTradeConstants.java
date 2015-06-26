@@ -99,4 +99,6 @@ public interface LocalizableTradeConstants {
   String trdStatuses();
 
   String trdTotal();
+
+  String trdSynchronizeWithERP();
 }

@@ -15,7 +15,7 @@
       </SimpleJoin>
     </SimpleJoin>
         
-    <ExternalJoin name="Customer" source="Sales" joinType="INNER" filter="(Amount > Paid OR !(Paid))" >
+    <ExternalJoin name="Customer" source="ERPSales" joinType="INNER" filter="(Amount > Paid OR !(Paid))" >
       <AggregateColumn name="Customer" aggregate="COUNT" alias="DebtCount"  label="=trInvoices" />
       <AggregateColumn name="Amount" aggregate="SUM" alias="AmountSum" />
       <AggregateColumn name="Paid" aggregate="SUM" alias="PaidSum" />

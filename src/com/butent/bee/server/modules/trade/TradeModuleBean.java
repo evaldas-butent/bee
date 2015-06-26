@@ -751,7 +751,7 @@ public class TradeModuleBean implements BeeModule {
     BeeRowSet rs = qs.getViewData(VIEW_DEBTS, filter, null,
         Lists.newArrayList(COL_TRADE_INVOICE_NO, COL_TRADE_DATE,
             COL_TRADE_TERM, COL_TRADE_AMOUNT, COL_TRADE_DEBT, ALS_CURRENCY_NAME,
-            ALS_CUSTOMER_NAME, COL_TRADE_INVOICE_PREFIX));
+            ALS_CUSTOMER_NAME, COL_SERIES_NAME));
 
     if (rs.isEmpty()) {
       return null;

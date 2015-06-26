@@ -53,6 +53,7 @@ import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.exceptions.BeeException;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
@@ -172,6 +173,26 @@ public class TradeActBean implements HasTimerService {
 
       case SVC_CREATE_ACT_INVOICE:
         response = createInvoice(reqInfo);
+        break;
+
+      case SVC_SYNCHRONIZE_ERP_DATA:
+        Collection<Timer> timers = timerService.getTimers();
+
+        for (Timer t1 : timers) {
+          if (cb.isParameterTimer(t1, PRM_SYNC_ERP_DATA)) {
+            try {
+              syncERPData(t1);
+              return ResponseObject.info(Localized.getConstants().imported());
+            } catch (Exception err) {
+              return ResponseObject.error(err);
+            }
+          }
+        }
+
+        response =
+            ResponseObject.error(Localized.getMessages().allValuesEmpty(SVC_SYNCHRONIZE_ERP_DATA,
+                PRM_SYNC_ERP_DATA));
+
         break;
 
       case SVC_ALTER_ACT_KIND:
@@ -3238,6 +3259,8 @@ public class TradeActBean implements HasTimerService {
       JustDate to = new JustDate();
 
       from.setDom(1);
+      from.setMonth(0);
+      from.setYear(2005);
 
       BeeRowSet comp = qs.getViewData(VIEW_COMPANIES);
 
@@ -3247,9 +3270,9 @@ public class TradeActBean implements HasTimerService {
                 .getDebts(
                     from,
                     to,
-                    BeeUtils.join(BeeConst.DEFAULT_LIST_SEPARATOR, comp.getString(i,
-                        COL_COMPANY_NAME), comp.getString(i,
-                        ALS_COMPANY_TYPE_NAME)));
+                    BeeUtils.join(BeeConst.DEFAULT_LIST_SEPARATOR, BeeUtils.nvl(comp.getString(i,
+                        COL_COMPANY_NAME), BeeConst.STRING_EMPTY), BeeUtils.nvl(comp.getString(i,
+                        ALS_COMPANY_TYPE_NAME), BeeConst.STRING_EMPTY)));
 
         if (rs.isEmpty()) {
           continue;
@@ -3283,11 +3306,17 @@ public class TradeActBean implements HasTimerService {
             serId = series.getRow(0).getId();
           }
 
-          if (qs.getViewData(VIEW_SALES,
+          SqlDelete del =
+              new SqlDelete(TBL_ERP_SALES).setWhere(SqlUtils.and(SqlUtils.moreEqual(TBL_ERP_SALES,
+                  COL_TRADE_DATE, from), SqlUtils.lessEqual(TBL_ERP_SALES, COL_TRADE_DATE, to)));
+
+          qs.updateData(del);
+
+          if (qs.getViewData(TBL_ERP_SALES,
               Filter.and(Filter.equals(COL_SERIES_NAME, rs.getValue(j, "dok_serija")),
                   Filter.equals(COL_TRADE_INVOICE_NO, rs.getValue(j, "kitas_dok")))).isEmpty()) {
             SqlInsert si =
-                new SqlInsert(TBL_SALES)
+                new SqlInsert(TBL_ERP_SALES)
                     .addConstant(COL_TRADE_DATE, TimeUtils.parseDate(rs.getValue(j, "data")))
                     .addConstant(COL_TRADE_CUSTOMER, comp.getRow(i).getId())
                     .addConstant(COL_TRADE_AMOUNT, rs.getDouble(j, "viso"))
