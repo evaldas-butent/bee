@@ -12,6 +12,7 @@ public final class TradeConstants {
   public static final String TBL_PURCHASE_USAGE = "PurchaseUsage";
   public static final String TBL_PURCHASE_ITEMS = "PurchaseItems";
   public static final String TBL_SALES = "Sales";
+  public static final String TBL_SALES_SERIES = "SaleSeries";
   public static final String TBL_SALE_ITEMS = "SaleItems";
 
   public static final String TBL_TRADE_OPERATIONS = "TradeOperations";
@@ -43,6 +44,7 @@ public final class TradeConstants {
   public static final String COL_TRADE_DATE = "Date";
   public static final String COL_TRADE_NUMBER = "Number";
   public static final String COL_TRADE_INVOICE_PREFIX = "InvoicePrefix";
+  public static final String COL_TRADE_SALE_SERIES = "SaleSeries";
   public static final String COL_TRADE_INVOICE_NO = "InvoiceNo";
   public static final String COL_TRADE_AMOUNT = "Amount";
   public static final String COL_TRADE_CURRENCY = "Currency";

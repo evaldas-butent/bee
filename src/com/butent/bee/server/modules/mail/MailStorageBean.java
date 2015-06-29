@@ -51,6 +51,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Function;
 
 import javax.ejb.EJB;
@@ -91,6 +92,7 @@ public class MailStorageBean {
   ConcurrencyBean cb;
 
   private final Table<Long, String, Long> repliedStack = HashBasedTable.create();
+  private final ReentrantLock repliedStackLock = new ReentrantLock();
 
   public void attachMessages(Long folderId, Map<Long, Integer> messages) {
     for (Entry<Long, Integer> message : messages.entrySet()) {
@@ -435,9 +437,10 @@ public class MailStorageBean {
     }
   }
 
-  @Lock(LockType.WRITE)
   public void waitForReplied(Long folderId, String uniqueId, Long repliedFrom) {
+    repliedStackLock.lock();
     repliedStack.put(folderId, uniqueId, repliedFrom);
+    repliedStackLock.unlock();
   }
 
   private MailFolder createFolder(Long accountId, MailFolder parent, String name, Long folderUID) {
@@ -755,7 +758,9 @@ public class MailStorageBean {
           .addFrom(TBL_MESSAGES)
           .setWhere(sys.idEquals(TBL_MESSAGES, messageId)));
 
+      repliedStackLock.lock();
       Long repliedFrom = repliedStack.remove(folderId, uniqueId);
+      repliedStackLock.unlock();
 
       if (DataUtils.isId(repliedFrom)) {
         qs.updateData(new SqlUpdate(TBL_PLACES)

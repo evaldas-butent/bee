@@ -485,7 +485,7 @@ public class TradeModuleBean implements BeeModule {
     String itemsRelation;
 
     SqlSelect query = new SqlSelect()
-        .addFields(trade, COL_TRADE_DATE, COL_TRADE_INVOICE_PREFIX, COL_TRADE_INVOICE_NO,
+        .addFields(trade, COL_TRADE_DATE, COL_TRADE_INVOICE_NO,
             COL_TRADE_NUMBER, COL_TRADE_TERM, COL_TRADE_SUPPLIER, COL_TRADE_CUSTOMER)
         .addField(TBL_CURRENCIES, COL_CURRENCY_NAME, COL_CURRENCY)
         .addField(COL_TRADE_WAREHOUSE_FROM, COL_WAREHOUSE_CODE, COL_TRADE_WAREHOUSE_FROM)
@@ -498,20 +498,30 @@ public class TradeModuleBean implements BeeModule {
         .addFromLeft(TBL_USERS, sys.joinTables(TBL_USERS, trade, COL_TRADE_MANAGER))
         .setWhere(sys.idInList(trade, ids));
 
-    if (BeeUtils.same(trade, TBL_SALES)) {
-      tradeItems = TBL_SALE_ITEMS;
-      itemsRelation = COL_SALE;
-      query.addFields(trade, COL_SALE_PAYER);
+    switch (trade) {
+      case TBL_SALES:
+        tradeItems = TBL_SALE_ITEMS;
+        itemsRelation = COL_SALE;
 
-    } else if (BeeUtils.same(trade, TBL_PURCHASES)) {
-      tradeItems = TBL_PURCHASE_ITEMS;
-      itemsRelation = COL_PURCHASE;
-      query.addField(COL_PURCHASE_WAREHOUSE_TO, COL_WAREHOUSE_CODE, COL_PURCHASE_WAREHOUSE_TO)
-          .addFromLeft(TBL_WAREHOUSES, COL_PURCHASE_WAREHOUSE_TO,
-              sys.joinTables(TBL_WAREHOUSES, COL_PURCHASE_WAREHOUSE_TO, trade,
-                  COL_PURCHASE_WAREHOUSE_TO));
-    } else {
-      return ResponseObject.error("View source not supported:", trade);
+        query.addField(TBL_SALES_SERIES, COL_SERIES_NAME, COL_TRADE_INVOICE_PREFIX)
+            .addFields(trade, COL_SALE_PAYER)
+            .addFromLeft(TBL_SALES_SERIES,
+                sys.joinTables(TBL_SALES_SERIES, trade, COL_TRADE_SALE_SERIES));
+        break;
+
+      case TBL_PURCHASES:
+        tradeItems = TBL_PURCHASE_ITEMS;
+        itemsRelation = COL_PURCHASE;
+
+        query.addFields(trade, COL_TRADE_INVOICE_PREFIX)
+            .addField(COL_PURCHASE_WAREHOUSE_TO, COL_WAREHOUSE_CODE, COL_PURCHASE_WAREHOUSE_TO)
+            .addFromLeft(TBL_WAREHOUSES, COL_PURCHASE_WAREHOUSE_TO,
+                sys.joinTables(TBL_WAREHOUSES, COL_PURCHASE_WAREHOUSE_TO, trade,
+                    COL_PURCHASE_WAREHOUSE_TO));
+        break;
+
+      default:
+        return ResponseObject.error("View source not supported:", trade);
     }
     String remoteNamespace = prm.getText(PRM_ERP_NAMESPACE);
     String remoteAddress = prm.getText(PRM_ERP_ADDRESS);

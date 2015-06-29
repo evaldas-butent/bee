@@ -86,6 +86,7 @@
       <SimpleColumn name="Name" alias="LimitCurrencyName" />
     </SimpleJoin>
     <SimpleColumn name="CreditDays" />
+    <SimpleColumn name="SupplierCreditDays" />
 
     <SimpleColumn name="FinancialState" />
     <SimpleJoin joinType="LEFT" name="FinancialState">
@@ -103,8 +104,6 @@
       </SimpleJoin>
      </SimpleJoin>
     </SimpleJoin>
-    <SimpleColumn name="DaysAsBuyer" />
-    <SimpleColumn name="DaysAsSupplier" />
 
     <SimpleColumn name="Offshore" />
 

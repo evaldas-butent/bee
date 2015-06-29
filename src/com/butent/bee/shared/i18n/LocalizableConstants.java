@@ -443,6 +443,10 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String ipBlocked();
 
+  String is();
+
+  String isNot();
+
   String keywords();
 
   String kilogramShort();

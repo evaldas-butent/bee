@@ -1,4 +1,4 @@
-package com.butent.bee.client.modules.transport;
+package com.butent.bee.client.modules.trade;
 
 import com.google.common.base.Function;
 import com.google.common.base.Splitter;

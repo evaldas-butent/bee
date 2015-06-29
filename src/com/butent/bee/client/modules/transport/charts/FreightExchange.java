@@ -2,6 +2,7 @@ package com.butent.bee.client.modules.transport.charts;
 
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.event.dom.client.DropEvent;
 import com.google.gwt.user.client.ui.ComplexPanel;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Widget;
@@ -11,6 +12,7 @@ import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
+import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Edges;
@@ -28,6 +30,7 @@ import com.butent.bee.client.view.ViewCallback;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.Mover;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.BiConsumer;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Size;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -35,6 +38,7 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
+import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
@@ -46,6 +50,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -68,12 +73,17 @@ final class FreightExchange extends ChartBase {
   private static final String STYLE_ORDER_PREFIX = STYLE_PREFIX + "Order-";
   private static final String STYLE_ORDER_ROW_SEPARATOR = STYLE_ORDER_PREFIX + "row-sep";
   private static final String STYLE_ORDER_PANEL = STYLE_ORDER_PREFIX + "panel";
-  private static final String STYLE_ORDER_LABEL = STYLE_ORDER_PREFIX + "label";
+  private static final String STYLE_ORDER_NUMBER = STYLE_ORDER_PREFIX + "number";
+  private static final String STYLE_ORDER_MANAGER = STYLE_ORDER_PREFIX + "manager";
 
   private static final String STYLE_ITEM_PREFIX = STYLE_PREFIX + "Item-";
   private static final String STYLE_ITEM_PANEL = STYLE_ITEM_PREFIX + "panel";
 
   private static final String STYLE_ITEM_DRAG = STYLE_ITEM_PREFIX + "drag";
+
+  private static final String STYLE_DRAG_OVER = STYLE_PREFIX + "dragOver";
+
+  private static final Set<String> acceptsDropTypes = Collections.singleton(DATA_TYPE_FREIGHT);
 
   static void open(final ViewCallback callback) {
     BeeKeeper.getRpc().makePostRequest(TransportHandler.createArgs(DATA_SERVICE),
@@ -102,6 +112,25 @@ final class FreightExchange extends ChartBase {
     addStyleName(STYLE_PREFIX + "View");
 
     addRelevantDataViews(VIEW_ORDERS);
+
+    DndHelper.makeTarget(this, acceptsDropTypes, STYLE_DRAG_OVER, DndHelper.ALWAYS_TARGET,
+        new BiConsumer<DropEvent, Object>() {
+          @Override
+          public void accept(DropEvent t, Object u) {
+            removeStyleName(STYLE_DRAG_OVER);
+
+            if (DndHelper.isDataType(DATA_TYPE_FREIGHT) && u instanceof Freight) {
+              ((Freight) u).maybeRemoveFromTrip(new Queries.IntCallback() {
+                @Override
+                public void onSuccess(Integer result) {
+                  if (BeeUtils.isPositive(result)) {
+                    DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_CARGO_TRIPS);
+                  }
+                }
+              });
+            }
+          }
+        });
   }
 
   @Override
@@ -269,14 +298,14 @@ final class FreightExchange extends ChartBase {
   protected void prepareChart(Size canvasSize) {
     setCustomerWidth(TimeBoardHelper.getPixels(getSettings(), COL_FX_PIXELS_PER_CUSTOMER, 100,
         TimeBoardHelper.DEFAULT_MOVER_WIDTH + 1, canvasSize.getWidth() / 3));
-    setOrderWidth(TimeBoardHelper.getPixels(getSettings(), COL_FX_PIXELS_PER_ORDER, 60,
+    setOrderWidth(TimeBoardHelper.getPixels(getSettings(), COL_FX_PIXELS_PER_ORDER, 160,
         TimeBoardHelper.DEFAULT_MOVER_WIDTH + 1, canvasSize.getWidth() / 3));
 
     setChartLeft(getCustomerWidth() + getOrderWidth());
     setChartWidth(canvasSize.getWidth() - getChartLeft() - getChartRight());
 
-    setDayColumnWidth(TimeBoardHelper.getPixels(getSettings(), COL_FX_PIXELS_PER_DAY, 20,
-        1, getChartWidth()));
+    setDayColumnWidth(TimeBoardHelper.getPixels(getSettings(), COL_FX_PIXELS_PER_DAY,
+        getDefaultDayColumnWidth(getChartWidth()), 1, getChartWidth()));
   }
 
   @Override
@@ -562,15 +591,22 @@ final class FreightExchange extends ChartBase {
   }
 
   private IdentifiableWidget createOrderWidget(OrderCargo item) {
-    Label widget = new Label(item.getOrderNo());
-    widget.addStyleName(STYLE_ORDER_LABEL);
+    Flow panel = new Flow(STYLE_ORDER_PANEL);
+    panel.setTitle(item.getOrderTitle());
 
-    widget.setTitle(item.getOrderTitle());
+    Label numberWidget = new Label(item.getOrderNo());
+    numberWidget.addStyleName(STYLE_ORDER_NUMBER);
 
-    bindOpener(widget, VIEW_ORDERS, item.getOrderId());
+    bindOpener(numberWidget, VIEW_ORDERS, item.getOrderId());
+    panel.add(numberWidget);
 
-    Simple panel = new Simple(widget);
-    panel.addStyleName(STYLE_ORDER_PANEL);
+    String managerName = item.getManagerName();
+    if (!BeeUtils.isEmpty(managerName)) {
+      Label managerWidget = new Label(managerName);
+      managerWidget.addStyleName(STYLE_ORDER_MANAGER);
+
+      panel.add(managerWidget);
+    }
 
     return panel;
   }

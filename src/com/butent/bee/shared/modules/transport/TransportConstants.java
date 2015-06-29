@@ -233,6 +233,7 @@ public final class TransportConstants {
   public static final String SVC_GET_PROFIT = "GetProfit";
   public static final String SVC_GET_ROUTE = "GetTripRoute";
   public static final String SVC_GENERATE_ROUTE = "GenerateTripRoute";
+  public static final String SVC_GENERATE_DAILY_COSTS = "GenerateDailyCosts";
   public static final String SVC_GET_FX_DATA = "GetFxData";
   public static final String SVC_GET_SS_DATA = "GetSsData";
   public static final String SVC_GET_DTB_DATA = "GetDtbData";
@@ -316,6 +317,7 @@ public final class TransportConstants {
   public static final String TBL_CARGO_REQUESTS = "CargoRequests";
 
   public static final String TBL_COUNTRY_NORMS = "CountryNorms";
+  public static final String TBL_COUNTRY_DAILY_COSTS = "CountryDailyCosts";
 
   public static final String VIEW_ORDERS = "TransportationOrders";
 
@@ -336,6 +338,8 @@ public final class TransportConstants {
   public static final String VIEW_CARGO_TYPES = "CargoTypes";
   public static final String VIEW_CARGO_GROUPS = "CargoGroups";
 
+  public static final String VIEW_TRANSPORT_GROUPS = "TransportGroups";
+
   public static final String VIEW_TRIPS = TBL_TRIPS;
   public static final String VIEW_EXPEDITION_TRIPS = "ExpeditionTrips";
   public static final String VIEW_ACTIVE_TRIPS = "ActiveTrips";
@@ -344,6 +348,8 @@ public final class TransportConstants {
   public static final String VIEW_TRIP_DRIVERS = "TripDrivers";
   public static final String VIEW_TRIP_COSTS = "TripCosts";
   public static final String VIEW_TRIP_FUEL_COSTS = "TripFuelCosts";
+  public static final String VIEW_TRIP_PURCHASES = "TripPurchases";
+  public static final String VIEW_TRIP_PURCHASE_INVOICES = "TripPurchaseInvoices";
 
   public static final String VIEW_VEHICLES = "Vehicles";
   public static final String VIEW_VEHICLE_SERVICES = "VehicleServices";
@@ -372,6 +378,7 @@ public final class TransportConstants {
   public static final String VIEW_SHIPPING_TERMS = "ShippingTerms";
 
   public static final String COL_GROUP = "Group";
+  public static final String COL_GROUP_MANAGER = "Manager";
 
   public static final String COL_TRIP = "Trip";
   public static final String COL_TRIP_ID = "TripID";
@@ -420,6 +427,7 @@ public final class TransportConstants {
 
   public static final String COL_DAILY_COSTS_ITEM = "DailyCostsItem";
   public static final String COL_ROAD_COSTS_ITEM = "RoadCostsItem";
+  public static final String COL_COUNTRY_NORM = "CountryNorm";
 
   public static final String COL_ASSESSMENT = "Assessment";
   public static final String COL_ASSESSMENT_ID = "AssessmentID";
@@ -483,7 +491,6 @@ public final class TransportConstants {
 
   public static final String COL_LOADED_KILOMETERS = "LoadedKilometers";
   public static final String COL_EMPTY_KILOMETERS = "EmptyKilometers";
-
   public static final String COL_DESCRIPTION = "Description";
   public static final String COL_CARGO_DIRECTIONS = "Directions";
 
@@ -737,6 +744,7 @@ public final class TransportConstants {
   public static final String FORM_NEW_CARGO_CREDIT_INVOICE = "NewCargoCreditInvoice";
   public static final String FORM_CARGO_INVOICE = "CargoInvoice";
   public static final String FORM_CARGO_PURCHASE_INVOICE = "CargoPurchaseInvoice";
+  public static final String FORM_TRIP_PURCHASE_INVOICE = "TripPurchaseInvoice";
 
   public static final String FORM_FX_SETTINGS = "TrFxSettings";
   public static final String FORM_SS_SETTINGS = "TrSsSettings";
@@ -751,6 +759,10 @@ public final class TransportConstants {
 
   public static final String GRID_ASSESSMENT_REQUESTS = "AssessmentRequests";
   public static final String GRID_ASSESSMENT_ORDERS = "AssessmentOrders";
+  public static final String GRID_CARGO_REQUESTS = "CargoRequests";
+  public static final String GRID_LOGISTICS_CARGO_REQUESTS = "LogisticsCargoRequests";
+  public static final String GRID_SHIPMENT_REQUESTS = "ShipmentRequests";
+  public static final String GRID_LOGISTICS_SHIPMENT_REQUESTS = "LogisitcsShipmentRequests";
 
   public static final String PROP_COLORS = "Colors";
   public static final String PROP_COUNTRIES = "Countries";
@@ -765,6 +777,7 @@ public final class TransportConstants {
   public static final String PROP_FREIGHTS = "Freights";
   public static final String PROP_CARGO_HANDLING = "CargoHandling";
   public static final String PROP_CARGO_TYPES = "CargoTypes";
+  public static final String PROP_VEHICLE_MANAGER = "VehicleManager";
 
   public static final String ALS_TRIP_DATE = "TripDate";
   public static final String ALS_ORDER_DATE = "OrderDate";
@@ -784,6 +797,7 @@ public final class TransportConstants {
   public static final String ALS_ABSENCE_NAME = "AbsenceName";
   public static final String ALS_ABSENCE_LABEL = "AbsenceLabel";
   public static final String ALS_CUSTOMER_NAME = "CustomerName";
+  public static final String ALS_CUSTOMER_TYPE_NAME = "CustomerTypeName";
 
   public static final String ALS_CARGO_DESCRIPTION = "CargoDescription";
 

@@ -30,10 +30,13 @@
 
     <DataColumn name="Number" />
     <RelColumn name="Supplier" />
-    <RelColumn name="Country">
-      <carry><ui:expression>row.Country</ui:expression></carry>
-    </RelColumn>
+    <RelColumn name="Country" />
+    <RelColumn name="PaymentType" visible="false" />
     <DataColumn name="Note" />
+
     <DataColumn name="ExternalID" visible="false" />
+
+    <RelColumn name="Purchase" caption="=trdPurchaseId" readOnly="true" editEnabled="true"
+               editViewName="TripPurchaseInvoices" />
   </g:columns>
 </g:Grid>
