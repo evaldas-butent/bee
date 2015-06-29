@@ -22,7 +22,7 @@
           <SimpleJoin joinType="LEFT" name="CompanyType">
             <SimpleColumn name="Name" alias="ForwarderTypeName" />
           </SimpleJoin>
-          <SimpleColumn name="DaysAsSupplier" />
+          <SimpleColumn name="SupplierCreditDays" />
         </SimpleJoin>
 
         <SimpleColumn name="ForwarderVehicle" editable="true" />

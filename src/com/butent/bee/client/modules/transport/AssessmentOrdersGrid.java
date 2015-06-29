@@ -29,6 +29,7 @@ import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
@@ -69,7 +70,7 @@ public class AssessmentOrdersGrid extends AbstractGridInterceptor implements Cli
     }
     Queries.getRowSet(TBL_ASSESSMENT_FORWARDERS,
         Lists.newArrayList(COL_CARGO, COL_FORWARDER, COL_EXPEDITION, COL_FORWARDER + "Name",
-            COL_FORWARDER + COL_VEHICLE, "DaysAsSupplier"),
+            COL_FORWARDER + COL_VEHICLE, ClassifierConstants.COL_COMPANY_SUPPLIER_DAYS),
         Filter.any(COL_ASSESSMENT, ids), new RowSetCallback() {
           @Override
           public void onSuccess(final BeeRowSet result) {
@@ -78,7 +79,7 @@ public class AssessmentOrdersGrid extends AbstractGridInterceptor implements Cli
             int expCol = result.getColumnIndex(COL_EXPEDITION);
             int nameCol = result.getColumnIndex(COL_FORWARDER + "Name");
             int vehicleCol = result.getColumnIndex(COL_FORWARDER + COL_VEHICLE);
-            int daysCol = result.getColumnIndex("DaysAsSupplier");
+            int daysCol = result.getColumnIndex(ClassifierConstants.COL_COMPANY_SUPPLIER_DAYS);
 
             final Multimap<String, String> cargo = HashMultimap.create();
             final Map<String, String[]> forwarders = new LinkedHashMap<>();
