@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-  name="CargoPurchaseInvoices" source="Purchases"
-  editForm="CargoPurchaseInvoice"
-  >
+      name="TripPurchaseInvoices" source="Purchases" caption="=trTripPurchaseInvoices"
+      editForm="TripPurchaseInvoice" newRowForm="NewPurchase"
+    >
   <Columns>
     <SimpleColumn name="Date" />
     <SimpleColumn name="Number" />
@@ -16,29 +16,33 @@
 
     <SimpleColumn name="Amount" />
     <SimpleColumn name="Currency" />
-    <SimpleJoin joinType="LEFT" name="Currency">
+    <SimpleJoin name="Currency" joinType="INNER">
       <SimpleColumn name="Name" alias="CurrencyName" />
-      <SimpleColumn name="MinorName" />
+    </SimpleJoin>
+
+    <SimpleColumn name="WarehouseFrom" />
+    <SimpleJoin name="WarehouseFrom" joinType="LEFT">
+      <SimpleColumn name="Code" alias="WarehouseFromCode" />
     </SimpleJoin>
 
     <SimpleColumn name="WarehouseTo" />
-    <SimpleJoin joinType="LEFT" name="WarehouseTo">
-      <SimpleColumn name="Code" alias="WarehouseCode" />
+    <SimpleJoin name="WarehouseTo" joinType="INNER">
+      <SimpleColumn name="Code" alias="WarehouseToCode" />
     </SimpleJoin>
 
     <SimpleColumn name="Supplier" />
-    <SimpleJoin joinType="LEFT" name="Supplier">
-      <SimpleColumn name="Name" alias="SupplierName" label="=trdSupplier" />
+    <SimpleJoin name="Supplier" joinType="LEFT">
+      <SimpleColumn name="Name" alias="SupplierName" />
       <SimpleJoin joinType="LEFT" name="CompanyType">
-        <SimpleColumn name="Name" alias="SupplierTypeName" />
+        <SimpleColumn name="Name" alias="SupplierType" />
       </SimpleJoin>
     </SimpleJoin>
 
     <SimpleColumn name="Customer" />
-    <SimpleJoin joinType="LEFT" name="Customer">
-      <SimpleColumn name="Name" alias="CustomerName" label="=trdCustomer" />
+    <SimpleJoin name="Customer" joinType="LEFT">
+      <SimpleColumn name="Name" alias="CustomerName" />
       <SimpleJoin joinType="LEFT" name="CompanyType">
-        <SimpleColumn name="Name" alias="CustomerTypeName" />
+        <SimpleColumn name="Name" alias="CustomerType" />
       </SimpleJoin>
     </SimpleJoin>
 
@@ -53,11 +57,8 @@
       </SimpleJoin>
     </SimpleJoin>
 
-    <ExternalJoin name="Purchase" source="CargoExpenses" joinType="LEFT">
+    <ExternalJoin name="Purchase" source="TripCosts" joinType="LEFT">
       <AggregateColumn name="Purchase" aggregate="MAX" />
-    </ExternalJoin>
-    <ExternalJoin name="Purchase" source="CargoIncomes" joinType="LEFT">
-      <AggregateColumn name="Purchase" alias="Sale" aggregate="MAX" />
     </ExternalJoin>
   </Columns>
   <Order>

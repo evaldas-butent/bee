@@ -1,12 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-      name="TripCosts"
-      source="TripCosts"
-      caption="=trTripCosts"
+      name="TripPurchases" source="TripCosts" caption="=trTripCosts"
+      readOnly="true"
     >
   <Columns>
     <SimpleColumn name="Trip" />
+    <SimpleJoin name="Trip" joinType="INNER">
+      <SimpleColumn name="Status" />
+      <SimpleColumn name="Date" alias="TripDate" />
+      <SimpleColumn name="TripNo" />
+      <SimpleJoin joinType="LEFT" name="Expedition">
+        <SimpleColumn name="Name" alias="ExpeditionType" />
+      </SimpleJoin>
+    </SimpleJoin>
+
     <SimpleColumn name="Date" />
 
     <SimpleColumn name="Item" />
@@ -41,10 +49,10 @@
     </SimpleJoin>
     <SimpleColumn name="Note" />
 
-    <SimpleColumn name="ExternalID" />
-    <SimpleColumn name="Purchase" />
+    <HiddenColumn name="Purchase" />
   </Columns>
   <Order>
-    <OrderBy column="Date" />
+    <OrderBy column="TripDate" />
+    <OrderBy column="TripNo" />
   </Order>
 </View>

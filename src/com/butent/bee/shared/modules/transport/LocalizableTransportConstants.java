@@ -118,6 +118,8 @@ public interface LocalizableTransportConstants {
 
   String transport();
 
+  String transportMainItemCaption();
+
   String transportationCustomers();
 
   String trAssessment();

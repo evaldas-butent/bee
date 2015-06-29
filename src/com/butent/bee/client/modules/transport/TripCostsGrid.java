@@ -9,29 +9,34 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.data.Data;
 import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.event.logical.ParentRowEvent;
+import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 
 public class TripCostsGrid extends AbstractGridInterceptor implements ClickHandler {
 
   Long trip;
-  FaLabel dailyCosts;
+
+  final Flow invoice = new Flow();
+  final FaLabel dailyCosts = new FaLabel(FontAwesome.MONEY);
 
   @Override
   public void afterCreatePresenter(GridPresenter presenter) {
-    dailyCosts = new FaLabel(FontAwesome.MONEY);
+    presenter.getHeader().addCommandItem(invoice);
+
     dailyCosts.setTitle(Localized.getConstants().trGenerateDailyCosts());
     dailyCosts.addClickHandler(this);
     presenter.getHeader().addCommandItem(dailyCosts);
-    dailyCosts.setVisible(DataUtils.isId(trip));
 
     super.afterCreatePresenter(presenter);
   }
@@ -68,9 +73,13 @@ public class TripCostsGrid extends AbstractGridInterceptor implements ClickHandl
   public void onParentRow(ParentRowEvent event) {
     trip = event.getRowId();
 
-    if (dailyCosts != null) {
-      dailyCosts.setVisible(DataUtils.isId(trip));
+    invoice.clear();
+
+    if (DataUtils.isId(trip) && Data.isViewEditable(VIEW_TRIP_PURCHASE_INVOICES)) {
+      invoice.add(new InvoiceCreator(VIEW_TRIP_PURCHASES, Filter.equals(COL_TRIP, trip)));
     }
+    dailyCosts.setVisible(DataUtils.isId(trip));
+
     super.onParentRow(event);
   }
 }

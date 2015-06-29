@@ -494,6 +494,8 @@
       <xs:enumeration value="TripDrivers" />
       <xs:enumeration value="TripFuelConsumptions" />
       <xs:enumeration value="TripFuelCosts" />
+      <xs:enumeration value="TripPurchaseInvoices" />
+      <xs:enumeration value="TripPurchases" />
       <xs:enumeration value="TripRoutes" />
       <xs:enumeration value="Trips" />
       <xs:enumeration value="Turnovers" />

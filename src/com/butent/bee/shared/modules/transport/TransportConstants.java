@@ -347,6 +347,8 @@ public final class TransportConstants {
   public static final String VIEW_TRIP_DRIVERS = "TripDrivers";
   public static final String VIEW_TRIP_COSTS = "TripCosts";
   public static final String VIEW_TRIP_FUEL_COSTS = "TripFuelCosts";
+  public static final String VIEW_TRIP_PURCHASES = "TripPurchases";
+  public static final String VIEW_TRIP_PURCHASE_INVOICES = "TripPurchaseInvoices";
 
   public static final String VIEW_VEHICLES = "Vehicles";
   public static final String VIEW_VEHICLE_SERVICES = "VehicleServices";
@@ -738,6 +740,7 @@ public final class TransportConstants {
   public static final String FORM_NEW_CARGO_CREDIT_INVOICE = "NewCargoCreditInvoice";
   public static final String FORM_CARGO_INVOICE = "CargoInvoice";
   public static final String FORM_CARGO_PURCHASE_INVOICE = "CargoPurchaseInvoice";
+  public static final String FORM_TRIP_PURCHASE_INVOICE = "TripPurchaseInvoice";
 
   public static final String FORM_FX_SETTINGS = "TrFxSettings";
   public static final String FORM_SS_SETTINGS = "TrSsSettings";
