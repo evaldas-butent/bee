@@ -2039,7 +2039,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     int oldRow = getActiveRowIndex();
 
     if (oldRow >= 0 && oldRow < getDataSize()) {
-      int newRow = 0;
+      int newRow = BeeConst.UNDEF;
       long id = getRowData().get(oldRow).getId();
       for (int i = 0; i < rows.size(); i++) {
         if (rows.get(i).getId() == id) {
@@ -2047,7 +2047,8 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
           break;
         }
       }
-      this.activeRowIndex = newRow;
+
+      setActiveRowIndex(newRow, false);
     }
   }
 
