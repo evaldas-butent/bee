@@ -78,6 +78,7 @@ public class TripInvoiceBuilder extends InvoiceBuilder {
     return values;
   }
 
+  @Override
   public String getRelationColumn() {
     return COL_PURCHASE;
   }
@@ -89,6 +90,7 @@ public class TripInvoiceBuilder extends InvoiceBuilder {
     return args;
   }
 
+  @Override
   public String getTargetView() {
     return VIEW_TRIP_PURCHASE_INVOICES;
   }
