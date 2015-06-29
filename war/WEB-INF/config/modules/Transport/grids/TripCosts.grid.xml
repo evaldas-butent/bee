@@ -37,6 +37,10 @@
       </editable>
     </RelColumn>
     <DataColumn name="Note" />
+
     <DataColumn name="ExternalID" visible="false" />
+
+    <RelColumn name="Purchase" caption="=trdPurchaseId" readOnly="true" editEnabled="true"
+               editViewName="TripPurchaseInvoices" />
   </g:columns>
 </g:Grid>

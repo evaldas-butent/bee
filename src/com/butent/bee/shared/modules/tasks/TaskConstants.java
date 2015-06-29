@@ -12,7 +12,8 @@ import com.butent.bee.shared.utils.EnumUtils;
 public final class TaskConstants {
 
   public enum TaskEvent implements HasCaption {
-    CREATE(Localized.getConstants().crmTaskEventCreated(), null, null),
+    CREATE(Localized.getConstants().crmTaskEventCreated(), Localized.getConstants().crmNewTask(),
+        FontAwesome.CODE_FORK),
     VISIT(Localized.getConstants().crmTaskEventVisited(), null, null),
     ACTIVATE(Localized.getConstants().crmTaskForwardedForExecution(), Localized.getConstants()
         .crmTaskForwardForExecution(), FontAwesome.ARROW_CIRCLE_RIGHT),

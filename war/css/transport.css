@@ -105,6 +105,9 @@
   color: black;
 }
 
+.bee-tr-fx-dragOver {
+  background-color: lightpink;
+}
 .bee-tr-ss-trip-Group-dragOver,
 .bee-tr-vtb-Vehicle-dragOver,
 .bee-tr-vtb-Trip-dragOver,

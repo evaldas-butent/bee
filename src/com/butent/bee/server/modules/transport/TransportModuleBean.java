@@ -56,6 +56,7 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
+import com.butent.bee.shared.data.SqlConstants.SqlFunction;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.exceptions.BeeException;
@@ -289,6 +290,9 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
         response = createInvoiceItems(saleId, currency, ids, item);
       } else if (BeeUtils.isPositive(creditAmount)) {
         response = createCreditInvoiceItems(purchaseId, currency, ids, item, creditAmount);
+
+      } else if (BeeUtils.same(reqInfo.getParameter(Service.VAR_TABLE), TBL_TRIP_COSTS)) {
+        response = createTripInvoiceItems(purchaseId, currency, ids, item);
       } else {
         response = createPurchaseInvoiceItems(purchaseId, currency, ids, item);
       }
@@ -1320,6 +1324,57 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
       qs.insertData(insert);
     }
     return response.addErrorsFrom(qs.updateDataWithResponse(new SqlUpdate(TBL_CARGO_EXPENSES)
+        .addConstant(COL_PURCHASE, purchaseId)
+        .setWhere(wh)));
+  }
+
+  private ResponseObject createTripInvoiceItems(Long purchaseId, Long currency, Set<Long> idList,
+      Long mainItem) {
+
+    IsCondition wh = sys.idInList(TBL_TRIP_COSTS, idList);
+
+    SqlSelect ss = new SqlSelect()
+        .addConstant(purchaseId, COL_PURCHASE)
+        .addFields(TBL_TRIP_COSTS, COL_TRADE_VAT_PLUS, COL_TRADE_VAT_PERC)
+        .addField(TBL_TRIP_COSTS, COL_COSTS_NOTE, COL_TRADE_ITEM_NOTE)
+        .addFrom(TBL_TRIP_COSTS)
+        .setWhere(wh)
+        .addGroup(TBL_TRIP_COSTS, COL_TRADE_VAT_PLUS, COL_COSTS_VAT, COL_TRADE_VAT_PERC,
+            COL_COSTS_NOTE);
+
+    if (DataUtils.isId(mainItem)) {
+      IsExpression xpr = ExchangeUtils.exchangeFieldTo(ss,
+          TradeModuleBean.getAmountExpression(TBL_TRIP_COSTS),
+          SqlUtils.field(TBL_TRIP_COSTS, COL_COSTS_CURRENCY),
+          SqlUtils.field(TBL_TRIP_COSTS, COL_DATE), SqlUtils.constant(currency));
+
+      ss.addConstant(mainItem, COL_ITEM)
+          .addConstant(1, COL_TRADE_ITEM_QUANTITY)
+          .addSum(xpr, COL_TRADE_ITEM_PRICE);
+    } else {
+      IsExpression xpr = ExchangeUtils.exchangeFieldTo(ss,
+          SqlUtils.field(TBL_TRIP_COSTS, COL_COSTS_PRICE),
+          SqlUtils.field(TBL_TRIP_COSTS, COL_COSTS_CURRENCY),
+          SqlUtils.field(TBL_TRIP_COSTS, COL_DATE), SqlUtils.constant(currency));
+
+      ss.addFields(TBL_TRIP_COSTS, COL_ITEM)
+          .addSum(TBL_TRIP_COSTS, COL_COSTS_QUANTITY, COL_TRADE_ITEM_QUANTITY)
+          .addMax(xpr, COL_TRADE_ITEM_PRICE)
+          .addGroup(TBL_TRIP_COSTS, COL_ITEM, COL_COSTS_PRICE);
+    }
+    IsExpression xpr = ExchangeUtils.exchangeFieldTo(ss,
+        SqlUtils.field(TBL_TRIP_COSTS, COL_TRADE_VAT),
+        SqlUtils.field(TBL_TRIP_COSTS, COL_COSTS_CURRENCY),
+        SqlUtils.field(TBL_TRIP_COSTS, COL_DATE), SqlUtils.constant(currency));
+
+    ss.addMax(SqlUtils.sqlIf(SqlUtils.isNull(TBL_TRIP_COSTS, COL_TRADE_VAT_PERC), xpr,
+        SqlUtils.field(TBL_TRIP_COSTS, COL_COSTS_VAT)), COL_TRADE_VAT);
+
+    qs.loadData(TBL_PURCHASE_ITEMS, ss);
+
+    ResponseObject response = new ResponseObject();
+
+    return response.addErrorsFrom(qs.updateDataWithResponse(new SqlUpdate(TBL_TRIP_COSTS)
         .addConstant(COL_PURCHASE, purchaseId)
         .setWhere(wh)));
   }
@@ -2505,6 +2560,31 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
     return ResponseObject.response(qs.getColumn(query));
   }
 
+  private Map<Long, Long> getVehicleManagers(IsCondition condition) {
+    SqlSelect query = new SqlSelect()
+        .addFrom(TBL_VEHICLE_GROUPS)
+        .addFromInner(TBL_TRANSPORT_GROUPS,
+            sys.joinTables(TBL_TRANSPORT_GROUPS, TBL_VEHICLE_GROUPS, COL_GROUP))
+        .addFields(TBL_VEHICLE_GROUPS, COL_VEHICLE)
+        .addMax(TBL_TRANSPORT_GROUPS, COL_GROUP_MANAGER)
+        .setWhere(SqlUtils.and(SqlUtils.notNull(TBL_TRANSPORT_GROUPS, COL_GROUP_MANAGER),
+            condition))
+        .addGroup(TBL_VEHICLE_GROUPS, COL_VEHICLE)
+        .setHaving(SqlUtils.equals(SqlUtils.aggregate(SqlFunction.COUNT_DISTINCT,
+            SqlUtils.field(TBL_TRANSPORT_GROUPS, COL_GROUP_MANAGER)), 1));
+
+    SimpleRowSet data = qs.getData(query);
+
+    Map<Long, Long> result = new HashMap<>();
+    if (!DataUtils.isEmpty(data)) {
+      for (SimpleRow row : data) {
+        result.put(row.getLong(COL_VEHICLE), row.getLong(COL_GROUP_MANAGER));
+      }
+    }
+
+    return result;
+  }
+
   private ResponseObject getVehicleRepairs(String externalId) {
     Map<String, String> cols = new LinkedHashMap<>();
     cols.put("data", "data");
@@ -2626,9 +2706,21 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
       logger.warning(svc, "vehicles not available");
       return ResponseObject.response(settings);
     }
-    settings.setTableProperty(PROP_VEHICLES, vehicles.serialize());
 
     List<Long> vehicleIds = DataUtils.getRowIds(vehicles);
+
+    Map<Long, Long> vehicleManagers = getVehicleManagers(SqlUtils.inList(TBL_VEHICLE_GROUPS,
+        COL_VEHICLE, vehicleIds));
+    if (!BeeUtils.isEmpty(vehicleManagers)) {
+      for (BeeRow row : vehicles) {
+        Long manager = vehicleManagers.get(row.getId());
+        if (manager != null) {
+          row.setProperty(PROP_VEHICLE_MANAGER, BeeUtils.toString(manager));
+        }
+      }
+    }
+
+    settings.setTableProperty(PROP_VEHICLES, vehicles.serialize());
 
     SimpleRowSet vehicleServices = getVehicleServices(SqlUtils.inList(TBL_VEHICLE_SERVICES,
         COL_VEHICLE, vehicleIds));

@@ -342,6 +342,8 @@ public final class TransportConstants {
   public static final String VIEW_CARGO_TYPES = "CargoTypes";
   public static final String VIEW_CARGO_GROUPS = "CargoGroups";
 
+  public static final String VIEW_TRANSPORT_GROUPS = "TransportGroups";
+
   public static final String VIEW_TRIPS = TBL_TRIPS;
   public static final String VIEW_EXPEDITION_TRIPS = "ExpeditionTrips";
   public static final String VIEW_ACTIVE_TRIPS = "ActiveTrips";
@@ -350,6 +352,8 @@ public final class TransportConstants {
   public static final String VIEW_TRIP_DRIVERS = "TripDrivers";
   public static final String VIEW_TRIP_COSTS = "TripCosts";
   public static final String VIEW_TRIP_FUEL_COSTS = "TripFuelCosts";
+  public static final String VIEW_TRIP_PURCHASES = "TripPurchases";
+  public static final String VIEW_TRIP_PURCHASE_INVOICES = "TripPurchaseInvoices";
 
   public static final String VIEW_ERP_TRIP_COSTS = "ERPTripCosts";
 
@@ -380,6 +384,7 @@ public final class TransportConstants {
   public static final String VIEW_SHIPPING_TERMS = "ShippingTerms";
 
   public static final String COL_GROUP = "Group";
+  public static final String COL_GROUP_MANAGER = "Manager";
 
   public static final String COL_TRIP = "Trip";
   public static final String COL_TRIP_ID = "TripID";
@@ -744,6 +749,7 @@ public final class TransportConstants {
   public static final String FORM_NEW_CARGO_CREDIT_INVOICE = "NewCargoCreditInvoice";
   public static final String FORM_CARGO_INVOICE = "CargoInvoice";
   public static final String FORM_CARGO_PURCHASE_INVOICE = "CargoPurchaseInvoice";
+  public static final String FORM_TRIP_PURCHASE_INVOICE = "TripPurchaseInvoice";
 
   public static final String FORM_FX_SETTINGS = "TrFxSettings";
   public static final String FORM_SS_SETTINGS = "TrSsSettings";
@@ -776,6 +782,7 @@ public final class TransportConstants {
   public static final String PROP_FREIGHTS = "Freights";
   public static final String PROP_CARGO_HANDLING = "CargoHandling";
   public static final String PROP_CARGO_TYPES = "CargoTypes";
+  public static final String PROP_VEHICLE_MANAGER = "VehicleManager";
 
   public static final String ALS_TRIP_DATE = "TripDate";
   public static final String ALS_ORDER_DATE = "OrderDate";

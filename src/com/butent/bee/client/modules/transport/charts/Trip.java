@@ -29,6 +29,7 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.modules.transport.TransportConstants.TripStatus;
 import com.butent.bee.shared.modules.transport.TransportConstants.VehicleType;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.HasDateRange;
@@ -213,6 +214,8 @@ class Trip extends Filterable implements HasColorSource, HasDateRange, HasItemNa
 
   private final String itemName;
 
+  private final int cargoCount;
+
   Trip(SimpleRow row, Collection<Driver> drivers) {
     this(row, drivers, null, null, 0,
         BeeConst.EMPTY_IMMUTABLE_STRING_SET, BeeConst.EMPTY_IMMUTABLE_STRING_SET);
@@ -261,6 +264,8 @@ class Trip extends Filterable implements HasColorSource, HasDateRange, HasItemNa
         notesLabel, this.notes);
 
     this.itemName = BeeUtils.joinWords(rangeLabel, this.tripNo);
+
+    this.cargoCount = cargoCount;
   }
 
   @Override
@@ -334,6 +339,10 @@ class Trip extends Filterable implements HasColorSource, HasDateRange, HasItemNa
       default:
         return null;
     }
+  }
+
+  boolean hasCargo() {
+    return cargoCount > 0;
   }
 
   boolean hasDriver(Long driverId) {
@@ -474,7 +483,7 @@ class Trip extends Filterable implements HasColorSource, HasDateRange, HasItemNa
       Trip.maybeAssignCargo(freightTitle, getTitle(), new ConfirmationCallback() {
         @Override
         public void onConfirm() {
-          freight.updateTrip(Trip.this.getTripId(), null);
+          freight.updateTrip(Trip.this.getTripId(), RowCallback.refreshView(VIEW_CARGO_TRIPS));
         }
       });
 
@@ -485,7 +494,8 @@ class Trip extends Filterable implements HasColorSource, HasDateRange, HasItemNa
       Trip.maybeAssignCargo(cargoTitle, getTitle(), new ConfirmationCallback() {
         @Override
         public void onConfirm() {
-          orderCargo.assignToTrip(Trip.this.getTripId(), null);
+          orderCargo.assignToTrip(Trip.this.getTripId(),
+              RowCallback.refreshView(VIEW_CARGO_TRIPS));
         }
       });
 

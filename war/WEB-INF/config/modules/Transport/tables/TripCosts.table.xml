@@ -21,7 +21,9 @@
     <Relation name="Country" relation="Countries" label="=country" />
     <Relation name="PaymentType" relation="PaymentTypes" label="=paymentType" />
     <String name="Note" precision="50" label="=note" />
+
     <String name="ExternalID" precision="40" label="=externalId" />
+    <Relation name="Purchase" relation="Purchases" cascade="SET_NULL" label="=trdPurchaseId" />
 
     <DateTime name="Exported" />
   </Fields>

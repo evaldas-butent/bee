@@ -40,7 +40,9 @@
       <SimpleColumn name="PaymentName" />
     </SimpleJoin>
     <SimpleColumn name="Note" />
+
     <SimpleColumn name="ExternalID" />
+    <SimpleColumn name="Purchase" />
 
     <SimpleColumn name="Exported" />
   </Columns>

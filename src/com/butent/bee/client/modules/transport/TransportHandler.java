@@ -9,7 +9,7 @@ import com.google.gwt.event.logical.shared.SelectionHandler;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.COL_COMPANY_PERSON;
-import static com.butent.bee.shared.modules.trade.TradeConstants.VAR_TOTAL;
+import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
@@ -22,6 +22,7 @@ import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.GridFactory.GridOptions;
+import com.butent.bee.client.modules.trade.InvoiceForm;
 import com.butent.bee.client.modules.trade.InvoicesGrid;
 import com.butent.bee.client.modules.trade.TradeUtils;
 import com.butent.bee.client.modules.transport.charts.ChartBase;
@@ -303,6 +304,7 @@ public final class TransportHandler {
     TradeUtils.registerTotalRenderer(VIEW_CARGO_SALES, VAR_TOTAL);
     TradeUtils.registerTotalRenderer(VIEW_CARGO_CREDIT_SALES, VAR_TOTAL);
     TradeUtils.registerTotalRenderer(VIEW_CARGO_PURCHASES, VAR_TOTAL);
+    TradeUtils.registerTotalRenderer(VIEW_TRIP_PURCHASES, VAR_TOTAL);
     TradeUtils.registerTotalRenderer("UnassignedTripCosts", VAR_TOTAL);
     TradeUtils.registerTotalRenderer("UnassignedFuelCosts", VAR_TOTAL);
     TradeUtils.registerTotalRenderer(VIEW_ERP_TRIP_COSTS, VAR_TOTAL);
@@ -310,9 +312,12 @@ public final class TransportHandler {
     GridFactory.registerGridInterceptor(VIEW_CARGO_SALES, new CargoSalesGrid());
     GridFactory.registerGridInterceptor(VIEW_CARGO_CREDIT_SALES, new CargoCreditSalesGrid());
     GridFactory.registerGridInterceptor(VIEW_CARGO_PURCHASES, new CargoPurchasesGrid());
+    GridFactory.registerGridInterceptor(VIEW_TRIP_PURCHASES, new TripInvoiceBuilder());
+
     GridFactory.registerGridInterceptor(VIEW_CARGO_INVOICES, new InvoicesGrid());
     GridFactory.registerGridInterceptor(VIEW_CARGO_CREDIT_INVOICES, new InvoicesGrid());
     GridFactory.registerGridInterceptor(VIEW_CARGO_PURCHASE_INVOICES, new InvoicesGrid());
+    GridFactory.registerGridInterceptor(VIEW_TRIP_PURCHASE_INVOICES, new InvoicesGrid());
     GridFactory.registerGridInterceptor(VIEW_ERP_TRIP_COSTS, new ERPTripCostsGrid());
 
     GridFactory.registerGridInterceptor(VIEW_CARGO_REQUESTS, new CargoRequestsGrid());
@@ -368,6 +373,8 @@ public final class TransportHandler {
     FormFactory.registerFormInterceptor(FORM_CARGO_INVOICE, new CargoInvoiceForm());
     FormFactory.registerFormInterceptor(FORM_CARGO_PURCHASE_INVOICE,
         new CargoPurchaseInvoiceForm());
+
+    FormFactory.registerFormInterceptor(FORM_TRIP_PURCHASE_INVOICE, new InvoiceForm(null));
 
     FormFactory.registerFormInterceptor(FORM_REGISTRATION, new TransportRegistrationForm());
     FormFactory.registerFormInterceptor(FORM_SHIPMENT_REQUEST, new ShipmentRequestForm());
