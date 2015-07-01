@@ -326,7 +326,8 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
     String module = getModule().getName();
 
     return Lists.newArrayList(
-        BeeParameter.createText(module, PRM_INVOICE_PREFIX, true, null),
+        BeeParameter.createRelation(module, PRM_INVOICE_PREFIX, true, TBL_SALES_SERIES,
+            COL_SERIES_NAME),
         BeeParameter.createCollection(module, PRM_MESSAGE_TEMPLATE, true, null),
         BeeParameter.createNumber(module, PRM_ERP_REFRESH_INTERVAL),
         BeeParameter.createText(module, "SmsServiceAddress"),
@@ -893,19 +894,23 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
 
     SqlSelect ss = new SqlSelect()
         .addFields(TBL_ORDERS, COL_ORDER_NO)
-        .addFields(TBL_SALES, COL_TRADE_INVOICE_PREFIX, COL_TRADE_INVOICE_NO)
+        .addFields(TBL_SALES_SERIES, COL_SERIES_NAME)
+        .addFields(TBL_SALES, COL_TRADE_INVOICE_NO)
         .addFields(TBL_CARGO_INCOMES, COL_TRADE_VAT_PLUS, COL_TRADE_VAT, COL_TRADE_VAT_PERC)
         .addFrom(TBL_CARGO_INCOMES)
         .addFromInner(TBL_SERVICES,
             sys.joinTables(TBL_SERVICES, TBL_CARGO_INCOMES, COL_SERVICE))
         .addFromInner(TBL_SALES,
             sys.joinTables(TBL_SALES, TBL_CARGO_INCOMES, COL_SALE))
+        .addFromLeft(TBL_SALES_SERIES,
+            sys.joinTables(TBL_SALES_SERIES, TBL_SALES, COL_TRADE_SALE_SERIES))
         .addFromInner(TBL_ORDER_CARGO,
             sys.joinTables(TBL_ORDER_CARGO, TBL_CARGO_INCOMES, COL_CARGO))
         .addFromInner(TBL_ORDERS, sys.joinTables(TBL_ORDERS, TBL_ORDER_CARGO, COL_ORDER))
         .setWhere(SqlUtils.and(wh, SqlUtils.positive(TBL_CARGO_INCOMES, COL_AMOUNT)))
         .addGroup(TBL_ORDERS, COL_ORDER_NO)
-        .addGroup(TBL_SALES, COL_TRADE_INVOICE_PREFIX, COL_TRADE_INVOICE_NO)
+        .addGroup(TBL_SALES_SERIES, COL_SERIES_NAME)
+        .addGroup(TBL_SALES, COL_TRADE_INVOICE_NO)
         .addGroup(TBL_CARGO_INCOMES, COL_TRADE_VAT_PLUS, COL_TRADE_VAT, COL_TRADE_VAT_PERC);
 
     if (DataUtils.isId(mainItem)) {
@@ -931,7 +936,7 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
     for (SimpleRow row : rs) {
       String xml = XmlUtils.createString("CreditInfo",
           COL_ORDER_NO, row.getValue(COL_ORDER_NO),
-          COL_TRADE_INVOICE_NO, BeeUtils.joinWords(row.getValue(COL_TRADE_INVOICE_PREFIX),
+          COL_TRADE_INVOICE_NO, BeeUtils.joinWords(row.getValue(COL_SERIES_NAME),
               row.getValue(COL_TRADE_INVOICE_NO)));
 
       SqlInsert insert = new SqlInsert(TBL_PURCHASE_ITEMS)
@@ -2765,10 +2770,11 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
       } else {
         in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
         StringBuilder sb = new StringBuilder();
-        String input;
+        String input = in.readLine();
 
-        while ((input = in.readLine()) != null) {
+        while (input != null) {
           sb.append(input);
+          input = in.readLine();
         }
         in.close();
         input = sb.toString();

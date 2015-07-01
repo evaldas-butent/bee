@@ -41,7 +41,6 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.trade.TradeDocumentData;
-import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.rights.ModuleAndSub;
 import com.butent.bee.shared.rights.SubModule;
@@ -296,8 +295,8 @@ public class TradeModuleBean implements BeeModule {
     sys.registerDataEventHandler(new DataEventHandler() {
       @Subscribe
       public void fillInvoiceNumber(ViewModifyEvent event) {
-        if (BeeUtils.inListSame(event.getTargetName(), TBL_SALES,
-            TransportConstants.VIEW_CARGO_INVOICES) && event.isBefore()) {
+        if (BeeUtils.same(sys.getViewSource(event.getTargetName()), TBL_SALES)
+            && event.isBefore()) {
           List<BeeColumn> cols = null;
           IsRow row = null;
           String prefix = null;
@@ -311,16 +310,16 @@ public class TradeModuleBean implements BeeModule {
           } else {
             return;
           }
-          int idx = DataUtils.getColumnIndex(COL_TRADE_INVOICE_PREFIX, cols);
+          int idx = DataUtils.getColumnIndex(COL_TRADE_SALE_SERIES, cols);
 
-          if (idx != BeeConst.UNDEF) {
+          if (!BeeConst.isUndef(idx)) {
             prefix = row.getString(idx);
           }
           if (!BeeUtils.isEmpty(prefix)
-              && DataUtils.getColumnIndex(COL_TRADE_INVOICE_NO, cols) == BeeConst.UNDEF) {
+              && BeeConst.isUndef(DataUtils.getColumnIndex(COL_TRADE_INVOICE_NO, cols))) {
             cols.add(new BeeColumn(COL_TRADE_INVOICE_NO));
             row.addValue(Value.getValue(qs.getNextNumber(TBL_SALES, COL_TRADE_INVOICE_NO, prefix,
-                COL_TRADE_INVOICE_PREFIX)));
+                COL_TRADE_SALE_SERIES)));
           }
         }
       }
