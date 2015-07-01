@@ -309,6 +309,7 @@ public final class TaskConstants {
 
   public static final String COL_EVENT = "Event";
   public static final String COL_EVENT_NOTE = "EventNote";
+  public static final String COL_EVENT_DATA = "EventData";
   public static final String COL_EVENT_DURATION = "EventDuration";
 
   public static final String COL_LAST_ACCESS = "LastAccess";

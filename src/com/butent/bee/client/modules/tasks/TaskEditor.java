@@ -33,6 +33,7 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.Queries.IntCallback;
 import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.data.RowCallback;
+import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.grid.HtmlTable;
@@ -42,6 +43,7 @@ import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.render.PhotoRenderer;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
@@ -52,6 +54,7 @@ import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Image;
+import com.butent.bee.client.widget.InternalLink;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -125,9 +128,42 @@ class TaskEditor extends AbstractFormInterceptor {
   }
 
   private static Widget createEventCell(String colName, String value) {
-    Widget widget = new CustomDiv(STYLE_EVENT + colName);
-    if (!BeeUtils.isEmpty(value)) {
+    return createEventCell(colName, value, false);
+  }
+
+  private static Widget createEventCell(String colName, String value, boolean serializable) {
+    Widget widget = new Flow(STYLE_EVENT + colName);
+    if (!BeeUtils.isEmpty(value) && !serializable) {
       widget.getElement().setInnerText(value);
+    } else if (!BeeUtils.isEmpty(value) && serializable) {
+      Map<String, String> data = Codec.deserializeMap(value);
+
+      if (data == null) {
+        return widget;
+      }
+
+      if (!data.containsKey(BeeUtils.toString(TaskEvent.CREATE.ordinal()))) {
+        return widget;
+      }
+
+      List<Long> extTasks =
+          DataUtils.parseIdList(data.get(BeeUtils.toString(TaskEvent.CREATE.ordinal())));
+
+      widget.getElement().setInnerHTML(Localized.getConstants().crmTasksDelegatedTasks());
+
+      for (final Long extTaskId : extTasks) {
+        InternalLink url = new InternalLink(BeeUtils.toString(extTaskId));
+        url.addClickHandler(new ClickHandler() {
+
+          @Override
+          public void onClick(ClickEvent arg0) {
+            RowEditor.open(VIEW_TASKS, extTaskId, Opener.NEW_TAB);
+          }
+        });
+
+        ((Flow) widget).add(url);
+      }
+
     }
     return widget;
   }
@@ -427,6 +463,12 @@ class TaskEditor extends AbstractFormInterceptor {
     String note = row.getString(DataUtils.getColumnIndex(COL_EVENT_NOTE, columns));
     if (!BeeUtils.isEmpty(note)) {
       col1.add(createEventCell(COL_EVENT_NOTE, note));
+    }
+
+    String eventData = row.getString(DataUtils.getColumnIndex(COL_EVENT_DATA, columns));
+
+    if (!BeeUtils.isEmpty(eventData)) {
+      col1.add(createEventCell(COL_EVENT_NOTE, eventData, true));
     }
 
     String comment = row.getString(DataUtils.getColumnIndex(COL_COMMENT, columns));
@@ -1044,23 +1086,45 @@ class TaskEditor extends AbstractFormInterceptor {
         consumeCount--;
 
         if (consumeCount == 0) {
+          Map<String, String> data = Maps.newLinkedHashMap();
+          data.put(BeeUtils.toString(TaskEvent.CREATE.ordinal()), taskIds);
+
           ParameterList params =
-              createParams(TaskEvent.EDIT, BeeUtils.joinWords(Localized.getConstants()
-                  .crmTasksDelegatedTasks() + BeeConst.STRING_COLON, taskIds));
+              createParams(TaskEvent.EDIT, BeeConst.STRING_EMPTY);
+
+          params.addDataItem(COL_EVENT_DATA, Codec.beeSerialize(data));
+
           sendRequest(params, TaskEvent.EDIT);
         }
       }
     };
 
     if (DataUtils.isId(eventId)) {
-      Queries.getValue(VIEW_TASK_EVENTS, eventId, COL_EVENT_NOTE, new RpcCallback<String>() {
+      Queries.getValue(VIEW_TASK_EVENTS, eventId, COL_EVENT_DATA, new RpcCallback<String>() {
 
         @Override
         public void onSuccess(String result) {
-          Queries.update(VIEW_TASK_EVENTS, eventId, COL_EVENT_NOTE, Value.getValue(Data.clamp(
-              VIEW_TASK_EVENTS, COL_EVENT_NOTE, BeeUtils.join(
-                  BeeConst.STRING_EOL, result, BeeUtils.joinWords(Localized.getConstants()
-                      .crmTasksDelegatedTasks() + BeeConst.STRING_COLON, taskIds)))),
+          Map<String, String> data;
+
+          if (BeeUtils.isEmpty(result)) {
+            data = Maps.newLinkedHashMap();
+          } else {
+            data = Codec.deserializeMap(result);
+          }
+
+          if (data.containsKey(BeeUtils.toString(TaskEvent.CREATE.ordinal()))) {
+            List<Long> lTaskIds =
+                DataUtils.parseIdList(data.get(BeeUtils.toString(TaskEvent.CREATE.ordinal())));
+            lTaskIds.addAll(DataUtils.parseIdList(taskIds));
+
+            data.put(BeeUtils.toString(TaskEvent.CREATE.ordinal()), DataUtils
+                .buildIdList(lTaskIds));
+          } else {
+            data.put(BeeUtils.toString(TaskEvent.CREATE.ordinal()), taskIds);
+          }
+
+          Queries.update(VIEW_TASK_EVENTS, eventId, COL_EVENT_DATA, Value.getValue(Codec
+              .beeSerialize(data)),
               new IntCallback() {
 
                 @Override

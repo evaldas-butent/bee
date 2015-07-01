@@ -47,6 +47,10 @@
 .bee-crm-taskEvent-Comment {
   white-space: pre-wrap;
 }
+.bee-crm-taskEvent-EventNote > .bee-InternalLink {
+  display: inline-block;
+  padding: 0 2px;
+}
 
 .bee-crm-taskDialog-container td {
   padding: 8px;
