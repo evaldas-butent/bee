@@ -13,7 +13,7 @@
     <IdColumn name="ID" caption="=trdInvoiceId" />
     <DataColumn name="Date" />
     <DataColumn name="Number" label="Užsakymų ID" />
-    <DataColumn name="InvoiceNo" renderColumns="SeriesName InvoiceNo" searchBy="SeriesName InvoiceNo" />
+    <DataColumn name="InvoiceNo" renderColumns="InvoicePrefix InvoiceNo" searchBy="InvoicePrefix InvoiceNo" />
     <DataColumn name="CustomerName" />
     <DataColumn name="PayerName" />
     <DataColumn name="Amount" />

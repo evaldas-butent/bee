@@ -35,7 +35,7 @@ import com.butent.bee.client.view.grid.GridView.SelectedRows;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.Button;
-import com.butent.bee.shared.Consumer;
+import com.butent.bee.shared.BiConsumer;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
@@ -209,9 +209,10 @@ public class CargoSalesGrid extends AbstractGridInterceptor implements ClickHand
                 entry.getValue());
           }
         }
-        Global.getParameter(PRM_INVOICE_PREFIX, new Consumer<String>() {
+        Global.getRelationParameter(PRM_INVOICE_PREFIX, new BiConsumer<Long, String>() {
           @Override
-          public void accept(String prefix) {
+          public void accept(Long prefixId, String prefix) {
+            newRow.setValue(saleInfo.getColumnIndex(COL_TRADE_SALE_SERIES), prefixId);
             newRow.setValue(saleInfo.getColumnIndex(COL_TRADE_INVOICE_PREFIX), prefix);
 
             RowFactory.createRow(FORM_NEW_CARGO_INVOICE, null, saleInfo, newRow, null,

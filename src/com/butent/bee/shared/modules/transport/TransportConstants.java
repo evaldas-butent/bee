@@ -247,6 +247,7 @@ public final class TransportConstants {
   public static final String SVC_GET_ASSESSMENT_TURNOVER_REPORT = "GetAssessmentTurnoverReport";
   public static final String SVC_CREATE_INVOICE_ITEMS = "CreateInvoiceItems";
   public static final String SVC_GET_CREDIT_INFO = "GetCreditInfo";
+  public static final String SVC_GET_VEHICLE_BUSY_DATES = "GetVehicleBusyDates";
 
   public static final String SVC_SEND_MESSAGE = "SendMessage";
 
@@ -255,7 +256,7 @@ public final class TransportConstants {
 
   public static final String PRM_ERP_REFRESH_INTERVAL = "ERPRefreshIntervalInMinutes";
   public static final String PRM_MESSAGE_TEMPLATE = "MessageTemplate";
-  public static final String PRM_INVOICE_PREFIX = "InvoicePrefix";
+  public static final String PRM_INVOICE_PREFIX = "DefaultInvoicePrefix";
   public static final String PRM_CARGO_TYPE = "CargoType";
   public static final String PRM_BIND_EXPENSES_TO_INCOMES = "BindExpensesToIncomes";
 
