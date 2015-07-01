@@ -14,7 +14,7 @@
   <row>
     <Label for="Company" visible="true" />
     <cell colSpan="3">
-      <DataSelector source="Company" style="width: 100%;" choiceColumns="Name TypeName" 
+      <DataSelector source="Company" style="width: 100%;" choiceColumns="Name TypeName"
             renderColumns="CompanyName CompanyTypeName" />
     </cell>
   </row>
@@ -27,8 +27,8 @@
   </row>
 
   <row>
-    <Label for="Number" class="bee-required" />
-    <InputText source="Number" required="true" />
+    <Label for="Number" />
+    <InputText source="Number" />
     <Label text="=documentRegistrationNumberShort" for="RegistrationNumber" />
     <InputText source="RegistrationNumber" />
   </row>
@@ -61,4 +61,3 @@
     </cell>
   </row>
 </Table>
-  

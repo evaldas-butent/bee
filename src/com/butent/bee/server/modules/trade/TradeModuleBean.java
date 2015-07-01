@@ -41,6 +41,7 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.trade.TradeDocumentData;
+import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.rights.ModuleAndSub;
 import com.butent.bee.shared.rights.SubModule;
@@ -635,10 +636,13 @@ public class TradeModuleBean implements BeeModule {
                     invoice.getValue(COL_TRADE_INVOICE_NO)), incomeId);
           } else {
             SimpleRow row = qs.getRow(new SqlSelect()
-                .addFields(TBL_SALES, COL_TRADE_INVOICE_PREFIX, COL_TRADE_INVOICE_NO)
+                .addField(TBL_SALES_SERIES, COL_SERIES_NAME, COL_TRADE_INVOICE_PREFIX)
+                .addFields(TBL_SALES, COL_TRADE_INVOICE_NO)
                 .addFrom(TransportConstants.TBL_CARGO_INCOMES)
                 .addFromInner(TBL_SALES,
                     sys.joinTables(TBL_SALES, TransportConstants.TBL_CARGO_INCOMES, COL_SALE))
+                .addFromLeft(TBL_SALES_SERIES,
+                    sys.joinTables(TBL_SALES_SERIES, TBL_SALES, COL_TRADE_SALE_SERIES))
                 .setWhere(sys.idEquals(TransportConstants.TBL_CARGO_INCOMES, incomeId)));
 
             if (row != null) {
