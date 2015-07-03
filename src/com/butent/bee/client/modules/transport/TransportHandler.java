@@ -332,6 +332,7 @@ public final class TransportHandler {
     }
 
     FormFactory.registerFormInterceptor(FORM_ORDER, new TransportationOrderForm());
+    FormFactory.registerFormInterceptor(FORM_NEW_SIMPLE_ORDER, new NewSimpleTransportationOrder());
     FormFactory.registerFormInterceptor(FORM_TRIP, new TripForm());
     FormFactory.registerFormInterceptor(FORM_EXPEDITION_TRIP, new TripForm());
 

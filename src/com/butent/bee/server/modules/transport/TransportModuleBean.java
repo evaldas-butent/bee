@@ -337,6 +337,8 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
         BeeParameter.createText(module, "SmsDisplayText"),
         BeeParameter.createRelation(module, PRM_CARGO_TYPE, true, TBL_CARGO_TYPES,
             COL_CARGO_TYPE_NAME),
+        BeeParameter.createRelation(module, PRM_CARGO_SERVICE, false, TBL_SERVICES,
+            COL_SERVICE_NAME),
         BeeParameter.createBoolean(module, PRM_BIND_EXPENSES_TO_INCOMES, false, true));
   }
 

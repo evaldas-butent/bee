@@ -257,6 +257,7 @@ public final class TransportConstants {
   public static final String PRM_MESSAGE_TEMPLATE = "MessageTemplate";
   public static final String PRM_INVOICE_PREFIX = "DefaultInvoicePrefix";
   public static final String PRM_CARGO_TYPE = "CargoType";
+  public static final String PRM_CARGO_SERVICE = "CargoService";
   public static final String PRM_BIND_EXPENSES_TO_INCOMES = "BindExpensesToIncomes";
 
   public static final String VAR_INCOME = "Income";
@@ -469,7 +470,7 @@ public final class TransportConstants {
   public static final String COL_PAYER_NAME = "PayerName";
 
   public static final String COL_SERVICE = "Service";
-  public static final String COL_SERVICE_NAME = "ServiceName";
+  public static final String COL_SERVICE_NAME = "Name";
   public static final String COL_TRANSPORTATION = "Transportation";
   public static final String COL_DATE = "Date";
   public static final String COL_AMOUNT = "Amount";
@@ -730,6 +731,7 @@ public final class TransportConstants {
 
   public static final String FORM_NEW_VEHICLE = "NewVehicle";
   public static final String FORM_ORDER = "TransportationOrder";
+  public static final String FORM_NEW_SIMPLE_ORDER = "NewSimpleTransportationOrder";
   public static final String FORM_TRIP = "Trip";
   public static final String FORM_EXPEDITION_TRIP = "ExpeditionTrip";
   public static final String FORM_CARGO = "OrderCargo";
@@ -826,6 +828,8 @@ public final class TransportConstants {
   public static final String ALS_REQUEST_CUSTOMER_COMPANY = "CustomerCompany";
 
   public static final String ALS_CARGO_CMR_NUMBER = "CmrNumber";
+
+  public static final String ALS_SERVICE_NAME = "ServiceName";
 
   public static final String DATA_TYPE_ORDER_CARGO = "OrderCargo";
   public static final String DATA_TYPE_TRIP = "Trip";

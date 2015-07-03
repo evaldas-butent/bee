@@ -1,5 +1,6 @@
 package com.butent.bee.client.modules.transport.charts;
 
+import com.google.common.collect.Lists;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.DropEvent;
@@ -10,10 +11,12 @@ import com.google.gwt.user.client.ui.Widget;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowFactory;
+import com.butent.bee.client.dialog.ChoiceCallback;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Edges;
 import com.butent.bee.client.dom.Rectangle;
@@ -151,7 +154,27 @@ final class FreightExchange extends ChartBase {
   @Override
   public void handleAction(Action action) {
     if (Action.ADD.equals(action)) {
-      RowFactory.createRow(VIEW_ORDERS);
+      Global.choiceWithCancel(Localized.getConstants().newTransportationOrder(), null,
+          Lists.newArrayList(Localized.getConstants().inputFull(),
+              Localized.getConstants().inputSimple()), new ChoiceCallback() {
+
+            @Override
+            public void onSuccess(int value) {
+              switch (value) {
+                case 0:
+                  RowFactory.createRow(VIEW_ORDERS);
+                  break;
+
+                case 1:
+                  DataInfo dataInfo = Data.getDataInfo(VIEW_ORDER_CARGO);
+                  BeeRow row = RowFactory.createEmptyRow(dataInfo, true);
+                  RowFactory.createRow(FORM_NEW_SIMPLE_ORDER,
+                      Localized.getConstants().newTransportationOrder(), dataInfo, row, null);
+                  break;
+              }
+            }
+          });
+
     } else {
       super.handleAction(action);
     }
