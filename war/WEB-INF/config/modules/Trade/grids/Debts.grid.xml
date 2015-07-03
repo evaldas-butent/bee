@@ -13,7 +13,7 @@
 		<RelColumn name="CustomerCode" caption="=companyCode" label="=companyCode"  />
 		<RelColumn name="Customer" renderColumns="CustomerName" caption="=company" label="=company" />
 		<RelColumn name="FinancialState" renderColumns="FinancialStateName" caption="=financialState" label="=financialState" />
-		<DataColumn name="InvoicePrefix" />
+		<RelColumn name="SaleSeries" />
 		<DataColumn name="InvoiceNo" />
 		<RelColumn name="Manager" />
 		<DataColumn name="Date" />

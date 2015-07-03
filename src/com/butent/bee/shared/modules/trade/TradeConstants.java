@@ -12,6 +12,7 @@ public final class TradeConstants {
   public static final String TBL_PURCHASE_USAGE = "PurchaseUsage";
   public static final String TBL_PURCHASE_ITEMS = "PurchaseItems";
   public static final String TBL_SALES = "Sales";
+  public static final String TBL_ERP_SALES = "ERPSales";
   public static final String TBL_SALE_ITEMS = "SaleItems";
   public static final String TBL_SALE_SERIES = "SaleSeries";
 
@@ -135,6 +136,7 @@ public final class TradeConstants {
   public static final String GRID_DEBTS = "Debts";
   public static final String GRID_DEBT_REPORTS = "DebtReports";
   public static final String GRID_SALES = "Sales";
+  public static final String GRID_ERP_SALES = "ERPSales";
 
   public static final String FORM_DEBT_REPORT_TEMPLATE = "DebtReportTemplate";
 

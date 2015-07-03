@@ -2,20 +2,22 @@
 <View xmlns="http://www.butent.com/view"
       xmlns:x="http://www.butent.com/expression"
 
-  name="Debts" source="ERPSales" caption="=trdDebts"
+  name="ERPSales" source="ERPSales" caption="=trdSales"
   >
   <Columns>
     <SimpleColumn name="Date" />
 
     <SimpleColumn name="Number" />
-    <SimpleColumn name="SaleSeries" />
+    <SimpleColumn name="SaleSeries" label="=trdInvoicePrefix" />
     <SimpleJoin name="SaleSeries" joinType="LEFT">
       <SimpleColumn name="SeriesName" />
     </SimpleJoin>
     <SimpleColumn name="InvoiceNo" />
 
     <SimpleColumn name="Term" />
-   
+    <SimpleColumn name="Proforma" />
+
+    <SimpleColumn name="Notes" />
     <SimpleColumn name="Amount" />
     <SimpleColumn name="Currency" />
     <SimpleJoin joinType="LEFT" name="Currency">
@@ -35,50 +37,23 @@
         </x:nvl>
       </x:minus>
     </SimpleColumn>
+
     
-    <SimpleColumn name="DaysForPayment" label="=trdDaysForPayment">
-      <x:cast type="LONG">
-        <x:divide>
-		      <x:minus>
-		        <x:nvl type="LONG">
-		          <x:number>"Term"</x:number>
-		          <x:number>"Date"</x:number>
-		        </x:nvl>
-		        <x:number>"Date"</x:number>
-		      </x:minus>
-		      <x:number>86400000</x:number>
-	     </x:divide>
-      </x:cast>
-    </SimpleColumn>
-                          
+    <SimpleColumn name="Supplier" />
+    <SimpleJoin joinType="LEFT" name="Supplier">
+      <SimpleColumn name="Name" alias="SupplierName" />
+    </SimpleJoin>
+
     <SimpleColumn name="Customer" />
     <SimpleJoin joinType="LEFT" name="Customer">
       <SimpleColumn name="Name" alias="CustomerName" />
-      <SimpleColumn name="Code" alias="CustomerCode" />
-      <SimpleColumn name="FinancialState" />
-      <SimpleJoin name="FinancialState" joinType="LEFT">
-        <SimpleColumn name="Name" alias="FinancialStateName" /> 
-      </SimpleJoin>
-      <SimpleColumn name="BankruptcyRisk" />
-      <SimpleJoin name="BankruptcyRisk" joinType="LEFT">
-        <SimpleColumn name="Name" alias="BankruptcyRiskName" />
-      </SimpleJoin>
-      <SimpleColumn name="DelayedPaymentRisk" />
-      <SimpleJoin name="DelayedPaymentRisk" joinType="LEFT">
-        <SimpleColumn name="Name" alias="DelayedPaymentRiskName" />
-      </SimpleJoin>
-      
-      <ExternalJoin name="Company" source="Appointments" joinType="LEFT">
-        <AggregateColumn name="Created" alias="AppointmentsCount" aggregate="COUNT_DISTINCT" />
-        <AggregateColumn name="Created" alias="LastAppointment" aggregate="MAX" />
-      </ExternalJoin>
-      
-      <ExternalJoin name="Customer" source="Sales" joinType="LEFT">
-	      <AggregateColumn name="PaymentTime" alias="LastestPayment" aggregate="MAX" 
-	      label="=trdLatestSalePayment"/>
-      </ExternalJoin>
     </SimpleJoin>
-        
+
+    <SimpleColumn name="Payer" />
+    <SimpleJoin joinType="LEFT" name="Payer">
+      <SimpleColumn name="Name" alias="PayerName" />
+    </SimpleJoin>
+    
     <SimpleColumn name="Manager" />
     <SimpleJoin name="Manager" joinType="LEFT">
       <SimpleColumn name="CompanyPerson" alias="ManagerPerson" />

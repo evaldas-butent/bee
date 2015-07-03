@@ -82,6 +82,10 @@ public final class TradeActKeeper {
 
   private static Pair<String, String> tradeActStatus;
 
+  public static ParameterList createArgs(String method) {
+    return BeeKeeper.getRpc().createParameters(Module.TRADE, SubModule.ACTS, method);
+  }
+
   public static void register() {
     BeeKeeper.getBus().registerDataHandler(cache, false);
 
@@ -177,10 +181,6 @@ public final class TradeActKeeper {
 
   static void addCommandStyle(Widget command, String suffix) {
     command.addStyleName(STYLE_COMMAND_PREFIX + suffix);
-  }
-
-  static ParameterList createArgs(String method) {
-    return BeeKeeper.getRpc().createParameters(Module.TRADE, SubModule.ACTS, method);
   }
 
   static void ensureChache(final ScheduledCommand command) {
