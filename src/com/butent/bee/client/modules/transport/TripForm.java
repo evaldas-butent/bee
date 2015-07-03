@@ -106,7 +106,10 @@ public class TripForm extends AbstractFormInterceptor implements SelectorEvent.H
       WidgetDescriptionCallback callback) {
 
     if (widget instanceof ChildGrid) {
-      if (BeeUtils.same(name, VIEW_TRIP_CARGO)) {
+      if (BeeUtils.same(name, TBL_TRIP_DRIVERS)) {
+        ((ChildGrid) widget).setGridInterceptor(new TripDriversGrid());
+
+      } else if (BeeUtils.same(name, VIEW_TRIP_CARGO)) {
         ((ChildGrid) widget).setGridInterceptor(new TripCargoGrid(getFormView()));
 
       } else if (BeeUtils.same(name, TBL_TRIP_COSTS)) {

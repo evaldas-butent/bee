@@ -522,6 +522,7 @@ public final class TransportConstants {
   public static final String COL_DRIVER_END_DATE = "EndDate";
   public static final String COL_DRIVER_EXPERIENCE = "Experience";
   public static final String COL_DRIVER_NOTES = "Notes";
+  public static final String COL_MAIN_DRIVER = "MainDriver";
 
   public static final String COL_TRIP_DRIVER_FROM = "DateFrom";
   public static final String COL_TRIP_DRIVER_TO = "DateTo";
