@@ -232,6 +232,16 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
     return popups;
   }
 
+  public static boolean hasEventPreview() {
+    for (Widget child : BodyPanel.get()) {
+      if (child instanceof Popup && ((Popup) child).isPreviewEnabled()) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
   private static int clampLeft(int left, int width) {
     int windowLeft = 0;
     int windowRight = Window.getClientWidth();
@@ -264,6 +274,7 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
   private MouseHandler mouseHandler;
 
   private Element keyboardPartner;
+  private boolean previewEnabled = true;
 
   public Popup(OutsideClick onOutsideClick) {
     this(onOutsideClick, STYLE_POPUP);
@@ -409,13 +420,17 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
     return OutsideClick.IGNORE.equals(onOutsideClick);
   }
 
+  public boolean isPreviewEnabled() {
+    return previewEnabled;
+  }
+
   public boolean isShowing() {
     return showing;
   }
 
   @Override
   public void onEventPreview(NativePreviewEvent event, Node targetNode) {
-    if (!isShowing() || DOM.getCaptureElement() != null) {
+    if (!isPreviewEnabled() || !isShowing() || DOM.getCaptureElement() != null) {
       return;
     }
 
@@ -531,6 +546,10 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
 
   public void setPopupPositionAndShow(PositionCallback callback) {
     show(callback);
+  }
+
+  public void setPreviewEnabled(boolean previewEnabled) {
+    this.previewEnabled = previewEnabled;
   }
 
   public void showAt(final int x, final int y) {
