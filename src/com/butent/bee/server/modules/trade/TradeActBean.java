@@ -3255,81 +3255,104 @@ public class TradeActBean implements HasTimerService {
 
     // Debts
     try {
-      JustDate from = new JustDate();
-      JustDate to = new JustDate();
+      SimpleRowSet butentCompanies =
+          ButentWS.connect(remoteNamespace, remoteAddress, remoteLogin, remotePassword)
+              .getClients();
 
-      from.setDom(1);
-      from.setMonth(0);
-      from.setYear(2005);
+      if (butentCompanies.isEmpty()) {
+        logger.info("Finish import Debts. Clients set from ERP is empty");
+        return;
+      }
 
-      BeeRowSet comp = qs.getViewData(VIEW_COMPANIES);
+      SimpleRowSet butentDebts =
+          ButentWS.connect(remoteNamespace, remoteAddress, remoteLogin, remotePassword).getDebts(
+              null, null, BeeConst.STRING_EMPTY);
 
-      for (int i = 0; i < comp.getNumberOfRows(); i++) {
-        rs =
-            ButentWS.connect(remoteNamespace, remoteAddress, remoteLogin, remotePassword)
-                .getDebts(
-                    from,
-                    to,
-                    BeeUtils.join(BeeConst.DEFAULT_LIST_SEPARATOR, BeeUtils.nvl(comp.getString(i,
-                        COL_COMPANY_NAME), BeeConst.STRING_EMPTY), BeeUtils.nvl(comp.getString(i,
-                        ALS_COMPANY_TYPE_NAME), BeeConst.STRING_EMPTY)));
+      if (butentDebts.isEmpty()) {
+        logger.info("Finish import Debts. Debts set from ERP is empty");
+        return;
+      }
 
-        if (rs.isEmpty()) {
-          continue;
-        }
+      List<String> butentNames = Lists.newArrayList(butentCompanies.getColumn("klientas"));
 
-        for (int j = 0; j < rs.getNumberOfRows(); j++) {
+      SqlDelete del =
+          new SqlDelete(TBL_ERP_SALES).setWhere(SqlUtils.sqlTrue());
 
-          BeeRowSet currencies =
-              qs.getViewData(VIEW_CURRENCIES, Filter.equals(COL_CURRENCY_NAME, rs.getValue(j,
-                  "viso_val")));
-          if (currencies.isEmpty()) {
-            logger.warning("Currency", rs.getValue(j, "viso_val"), "not found for invoice", rs
-                .getValue(j,
-                    "dok_serija"), rs.getValue(j,
-                "kitas_dok"));
+      qs.updateData(del);
+
+      for (int i = 0; i < butentDebts.getNumberOfRows(); i++) {
+
+        if (qs.getViewData(TBL_ERP_SALES,
+            Filter.and(Filter.equals(COL_SERIES_NAME, butentDebts.getValue(i, "dok_serija")),
+                Filter.equals(COL_TRADE_INVOICE_NO, butentDebts.getValue(i, "kitas_dok"))))
+            .isEmpty()) {
+
+          int idxCompanyName = butentNames.indexOf(butentDebts.getValue(i, "gavejas"));
+
+          if (BeeUtils.isEmpty(butentCompanies.getValue(idxCompanyName, "kodas"))) {
+            logger.warning("Debt row was skipped. Company", butentDebts.getValue(i, "klientas"),
+                "has not code. Row data: ", butentDebts.getRow(i).getValues());
             continue;
           }
 
-          Long currencyId = currencies.getRow(0).getId();
+          BeeRowSet company =
+              qs.getViewData(VIEW_COMPANIES, Filter.contains(COL_COMPANY_CODE, butentCompanies
+                  .getValue(idxCompanyName, "kodas")));
 
-          BeeRowSet series =
-              qs.getViewData(TBL_SALE_SERIES, Filter.equals(COL_SERIES_NAME, rs.getValue(j,
-                  "dok_serija")));
-          Long serId;
-          if (series.isEmpty()) {
-            serId =
-                qs.insertDataWithResponse(
-                    new SqlInsert(TBL_SALE_SERIES).addConstant(COL_SERIES_NAME, rs.getValue(j,
-                        "dok_serija"))).getResponseAsLong();
-          } else {
-            serId = series.getRow(0).getId();
+          if (company.isEmpty()) {
+            logger.warning("Debt row was skipped. Company", butentDebts.getValue(i, "klientas"),
+                "code", butentCompanies
+                    .getValue(idxCompanyName, "kodas"),
+                "not found in B-NOVO. Row data: ", butentDebts.getRow(i).getValues());
+            continue;
           }
 
-          SqlDelete del =
-              new SqlDelete(TBL_ERP_SALES).setWhere(SqlUtils.and(SqlUtils.moreEqual(TBL_ERP_SALES,
-                  COL_TRADE_DATE, from), SqlUtils.lessEqual(TBL_ERP_SALES, COL_TRADE_DATE, to)));
+          Long serId = null;
 
-          qs.updateData(del);
+          if (!BeeUtils.isEmpty(butentDebts.getValue(i, "dok_serija"))) {
+            BeeRowSet series =
+                qs.getViewData(TBL_SALE_SERIES, Filter.equals(COL_SERIES_NAME, butentDebts
+                    .getValue(
+                        i,
+                        "dok_serija")));
 
-          if (qs.getViewData(TBL_ERP_SALES,
-              Filter.and(Filter.equals(COL_SERIES_NAME, rs.getValue(j, "dok_serija")),
-                  Filter.equals(COL_TRADE_INVOICE_NO, rs.getValue(j, "kitas_dok")))).isEmpty()) {
-            SqlInsert si =
-                new SqlInsert(TBL_ERP_SALES)
-                    .addConstant(COL_TRADE_DATE, TimeUtils.parseDate(rs.getValue(j, "data")))
-                    .addConstant(COL_TRADE_CUSTOMER, comp.getRow(i).getId())
-                    .addConstant(COL_TRADE_AMOUNT, rs.getDouble(j, "viso"))
-                    .addConstant(COL_TRADE_SALE_SERIES, serId)
-                    .addConstant(COL_TRADE_INVOICE_NO, rs.getValue(j, "kitas_dok"))
-                    .addConstant(COL_TRADE_CURRENCY, currencyId)
-                    .addConstant(
-                        COL_TRADE_PAID,
-                        BeeUtils.unbox(rs.getDouble(j, "viso"))
-                            - BeeUtils.unbox(rs.getDouble(j, "skola_w")))
-                    .addConstant(COL_TRADE_TERM, rs.getDate(j, "terminas"));
-            qs.insertData(si);
+            if (series.isEmpty()) {
+              serId =
+                  qs.insertDataWithResponse(
+                      new SqlInsert(TBL_SALE_SERIES).addConstant(COL_SERIES_NAME, butentDebts
+                          .getValue(i,
+                              "dok_serija"))).getResponseAsLong();
+            } else {
+              serId = series.getRow(0).getId();
+            }
           }
+
+          BeeRowSet currencies =
+              qs.getViewData(VIEW_CURRENCIES, Filter.equals(COL_CURRENCY_NAME, butentDebts
+                  .getValue(i, "viso_val")));
+          if (currencies.isEmpty()) {
+            logger.warning("Debt row was skipped. Company", butentDebts.getValue(i, "klientas"),
+                "code", butentCompanies
+                    .getValue(idxCompanyName, "kodas"), "currency", butentDebts
+                    .getValue(i, "viso_val"),
+                "not found in B-NOVO. Row data:", butentDebts.getRow(i).getValues());
+            continue;
+          }
+
+          SqlInsert si =
+              new SqlInsert(TBL_ERP_SALES)
+                  .addConstant(COL_TRADE_DATE, TimeUtils.parseDate(butentDebts.getValue(i, "data")))
+                  .addConstant(COL_TRADE_CUSTOMER, company.getRowIds().get(0))
+                  .addConstant(COL_TRADE_AMOUNT, butentDebts.getValue(i, "viso"))
+                  .addConstant(COL_TRADE_SALE_SERIES, serId)
+                  .addConstant(COL_TRADE_INVOICE_NO, butentDebts.getValue(i, "dokumentas"))
+                  .addConstant(COL_TRADE_CURRENCY, currencies.getRowIds().get(0))
+                  .addConstant(
+                      COL_TRADE_PAID,
+                      BeeUtils.unbox(butentDebts.getDouble(i, "viso"))
+                          - BeeUtils.unbox(butentDebts.getDouble(i, "skola_w")))
+                  .addConstant(COL_TRADE_TERM, butentDebts.getDate(i, "terminas"));
+          qs.insertData(si);
         }
       }
     } catch (BeeException e) {

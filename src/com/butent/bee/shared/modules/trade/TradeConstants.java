@@ -12,7 +12,7 @@ public final class TradeConstants {
   public static final String TBL_PURCHASE_USAGE = "PurchaseUsage";
   public static final String TBL_PURCHASE_ITEMS = "PurchaseItems";
   public static final String TBL_SALES = "Sales";
-  public static final String TBL_ERP_SALES = "Sales";
+  public static final String TBL_ERP_SALES = "ERPSales";
   public static final String TBL_SALE_ITEMS = "SaleItems";
   public static final String TBL_SALE_SERIES = "SaleSeries";
 

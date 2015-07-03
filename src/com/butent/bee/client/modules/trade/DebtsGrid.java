@@ -55,8 +55,8 @@ class DebtsGrid extends AbstractGridInterceptor {
       GridOptions options = GridOptions.forFilter(Filter.equals(
           TradeConstants.COL_TRADE_CUSTOMER, activeRow.getLong(idxCustomer)));
 
-      GridFactory.openGrid(TradeConstants.GRID_SALES,
-          GridFactory.getGridInterceptor(TradeConstants.GRID_SALES),
+      GridFactory.openGrid(TradeConstants.GRID_ERP_SALES,
+          GridFactory.getGridInterceptor(TradeConstants.GRID_ERP_SALES),
           options, PresenterCallback.SHOW_IN_NEW_TAB);
     }
 

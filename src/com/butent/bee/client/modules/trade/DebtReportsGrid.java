@@ -155,7 +155,6 @@ class DebtReportsGrid extends AbstractGridInterceptor implements ClickHandler {
 
   private final Button action = new Button(Localized.getConstants().sendReminder(), this);
 
-
   @Override
   public void afterCreatePresenter(GridPresenter presenter) {
     presenter.getHeader().clearCommandPanel();
@@ -199,8 +198,8 @@ class DebtReportsGrid extends AbstractGridInterceptor implements ClickHandler {
           Filter.equals(AdministrationConstants.COL_CURRENCY, activeRow.getLong(idxCurrency)),
           Filter.isPositive(TradeConstants.COL_TRADE_DEBT)));
 
-      GridFactory.openGrid(TradeConstants.GRID_SALES,
-          GridFactory.getGridInterceptor(TradeConstants.GRID_SALES),
+      GridFactory.openGrid(TradeConstants.GRID_ERP_SALES,
+          GridFactory.getGridInterceptor(TradeConstants.GRID_ERP_SALES),
           options, PresenterCallback.SHOW_IN_NEW_TAB);
     }
   }
@@ -248,7 +247,6 @@ class DebtReportsGrid extends AbstractGridInterceptor implements ClickHandler {
         }
       }
     });
-
 
   }
 
