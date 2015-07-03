@@ -208,6 +208,9 @@ public class TripForm extends AbstractFormInterceptor implements SelectorEvent.H
     HeaderView header = form.getViewPresenter().getHeader();
     header.clearCommandPanel();
     header.addCommandItem(new Profit(COL_TRIP, row.getId()));
+
+    vehicleBusy.clear();
+
     return true;
   }
 
