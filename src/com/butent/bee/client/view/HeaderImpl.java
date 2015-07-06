@@ -126,6 +126,7 @@ public class HeaderImpl extends Flow implements HeaderView {
     StyleUtils.setHeight(this, getHeight());
 
     captionWidget.addStyleName(STYLE_CAPTION);
+    StyleUtils.setFontSize(captionWidget, BeeUtils.resize(getHeight(), 30, 45, 16, 24));
     if (Captions.isCaption(caption)) {
       setCaption(caption);
     }

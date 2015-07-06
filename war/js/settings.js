@@ -15,8 +15,8 @@ var BeeSettings = {
   "clickSensitivityDistance": 10,
   "theme" : {
     "WorkspaceMarginRight": 25,
-    "ViewHeaderHeight": 52,
-    "ChildViewHeaderHeight": 52,
+    "ViewHeaderHeight": "600, 30, 1200, 52",
+    "ChildViewHeaderHeight": "30",
     "ViewActionCreateNew": true,
     "GridActionCreateNew": true,
     "ChildActionCreateNew": true,

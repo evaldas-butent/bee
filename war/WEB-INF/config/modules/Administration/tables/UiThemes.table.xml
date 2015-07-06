@@ -10,8 +10,8 @@
 
     <Integer name="WorkspaceMarginRight" />
 
-    <Integer name="ViewHeaderHeight" label="=heightOfViewHeader" />
-    <Integer name="ChildViewHeaderHeight" />
+    <String name="ViewHeaderHeight" precision="50" label="=heightOfViewHeader" />
+    <String name="ChildViewHeaderHeight" precision="50" />
 
     <Boolean name="ViewActionCreateNew" />
     <Boolean name="GridActionCreateNew" />
