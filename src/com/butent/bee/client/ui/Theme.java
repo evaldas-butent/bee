@@ -93,15 +93,15 @@ public final class Theme {
   }
 
   public static int getGridHeaderRowHeight() {
-    return getInteger("GridHeaderRowHeight");
+    return getHeight("GridHeaderRowHeight");
   }
 
   public static int getGridBodyRowHeight() {
-    return getInteger("GridBodyRowHeight");
+    return getHeight("GridBodyRowHeight");
   }
 
   public static int getGridFooterRowHeight() {
-    return getInteger("GridFooterRowHeight");
+    return getHeight("GridFooterRowHeight");
   }
 
   public static int getGridMarginLeft() {
@@ -121,15 +121,15 @@ public final class Theme {
   }
 
   public static int getChildGridHeaderRowHeight() {
-    return getInteger("ChildGridHeaderRowHeight");
+    return getHeight("ChildGridHeaderRowHeight");
   }
 
   public static int getChildGridBodyRowHeight() {
-    return getInteger("ChildGridBodyRowHeight");
+    return getHeight("ChildGridBodyRowHeight");
   }
 
   public static int getChildGridFooterRowHeight() {
-    return getInteger("ChildGridFooterRowHeight");
+    return getHeight("ChildGridFooterRowHeight");
   }
 
   public static int getChildGridMarginLeft() {
