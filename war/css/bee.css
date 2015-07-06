@@ -1291,7 +1291,6 @@
   position: absolute;
   left: 2px;
   right: 2px;
-  top: 36px;
   bottom: 0px;
   overflow: auto;
 }
@@ -2132,7 +2131,6 @@
 
 .bee-HtmlEditor-canvas {
   position: absolute;
-  top: 30px;
   bottom: 0;
   left: 0;
   right: 0;
@@ -2160,7 +2158,6 @@
 
 .bee-ResourceEditor-wrapper {
   position: absolute;
-  top: 30px;
   bottom: 0;
   left: 0;
   right: 0;
@@ -2535,7 +2532,6 @@
 
 .bee-Chat-messages {
   position: absolute;
-  top: 30px;
   bottom: 16%;
   left: 0;
   right: 0;
@@ -2698,7 +2694,6 @@
 
 .bee-MapContainer .bee-Map {
   position: absolute;
-  top: 30px;
   bottom: 0;
   left: 0;
   right: 0;
