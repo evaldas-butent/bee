@@ -138,7 +138,8 @@ public final class ButentWS {
 
     SimpleRowSet resp =
         xmlToSimpleRowSet(answer, "data", "dokumentas", "dok_serija", "kitas_dok", "gavejas",
-            "terminas", "viso", "viso_val", "skola_w");
+            "manager",
+            "terminas", "viso", "viso_val", "apm_suma", "apm_val", "apm_data", "skola_w");
     return resp;
   }
 
@@ -149,15 +150,16 @@ public final class ButentWS {
 
     try {
       answer = process("GetClients", BeeConst.STRING_EMPTY);
+      // logger.info("GetClients", answer);
     } catch (Exception e) {
       throw new BeeException(e);
     }
 
     SimpleRowSet resp =
-        xmlToSimpleRowSet(answer, "klient_id", "klientas", "kodas", "pvm_kodas", "kl_tipas",
+        xmlToSimpleRowSet(answer, "id", "klientas", "kodas", "pvm", "type",
             "nuol_proc",
-            "indeksas",
-            "adresas", "miestas", "salis", "telefonai", "e_mail");
+            "postcode",
+            "adresas", "miestas", "salis", "telefonai", "email");
     return resp;
   }
 
@@ -263,6 +265,7 @@ public final class ButentWS {
         bodyElement.addChildElement(attribute).addTextNode(attributes.get(attribute));
       }
     }
+    logger.debug(body.getTextContent());
     return message;
   }
 

@@ -3290,7 +3290,7 @@ public class TradeActBean implements HasTimerService {
           int idxCompanyName = butentNames.indexOf(butentDebts.getValue(i, "gavejas"));
 
           if (BeeUtils.isEmpty(butentCompanies.getValue(idxCompanyName, "kodas"))) {
-            logger.warning("Debt row was skipped. Company", butentDebts.getValue(i, "klientas"),
+            logger.warning("Debt row was skipped. Company", butentDebts.getValue(i, "gavejas"),
                 "has not code. Row data: ", butentDebts.getRow(i).getValues());
             continue;
           }
@@ -3300,7 +3300,7 @@ public class TradeActBean implements HasTimerService {
                   .getValue(idxCompanyName, "kodas")));
 
           if (company.isEmpty()) {
-            logger.warning("Debt row was skipped. Company", butentDebts.getValue(i, "klientas"),
+            logger.warning("Debt row was skipped. Company", butentDebts.getValue(i, "gavejas"),
                 "code", butentCompanies
                     .getValue(idxCompanyName, "kodas"),
                 "not found in B-NOVO. Row data: ", butentDebts.getRow(i).getValues());
@@ -3331,7 +3331,7 @@ public class TradeActBean implements HasTimerService {
               qs.getViewData(VIEW_CURRENCIES, Filter.equals(COL_CURRENCY_NAME, butentDebts
                   .getValue(i, "viso_val")));
           if (currencies.isEmpty()) {
-            logger.warning("Debt row was skipped. Company", butentDebts.getValue(i, "klientas"),
+            logger.warning("Debt row was skipped. Company", butentDebts.getValue(i, "gavejas"),
                 "code", butentCompanies
                     .getValue(idxCompanyName, "kodas"), "currency", butentDebts
                     .getValue(i, "viso_val"),
