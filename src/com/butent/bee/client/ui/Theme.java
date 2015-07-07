@@ -8,7 +8,6 @@ import com.google.gwt.json.client.JSONObject;
 
 import com.butent.bee.client.Settings;
 import com.butent.bee.client.composite.DataSelector;
-import com.butent.bee.client.composite.Disclosure;
 import com.butent.bee.client.composite.MultiSelector;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Selectors;
@@ -159,10 +158,6 @@ public final class Theme {
     return getInteger("WorkspaceTabHeight");
   }
 
-  public static int getDisclosureClosedHeight() {
-    return getInteger("DisclosureClosedHeight");
-  }
-
   public static int getInputLineHeight() {
     return getInteger("InputLineHeight");
   }
@@ -223,14 +218,7 @@ public final class Theme {
   private static List<String> getRules() {
     List<String> rules = new ArrayList<>();
 
-    int px = getDisclosureClosedHeight();
-    if (px > 0) {
-      String dch = Selectors.descendantCombinator(Selectors.classSelector(Disclosure.STYLE_CLOSED),
-          Selectors.classSelector(Disclosure.STYLE_HEADER));
-      rules.add(StyleUtils.buildRule(dch, StyleUtils.buildHeight(px)));
-    }
-
-    px = getInputLineHeight();
+    int px = getInputLineHeight();
     if (px > 0) {
       String inp = Selectors.buildSelectors(
           Selectors.classSelector(StyleUtils.NAME_TEXT_BOX),
