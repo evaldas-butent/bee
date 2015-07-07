@@ -11,17 +11,14 @@ import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.composite.MultiSelector;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Selectors;
-import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.utils.JsonUtils;
 import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.css.CssProperties;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.html.Attributes;
-import com.butent.bee.shared.html.Tags;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -170,10 +167,6 @@ public final class Theme {
     return getString("ListSize1Padding");
   }
 
-  public static int getFormCellPaddingTop() {
-    return getInteger("FormCellPaddingTop");
-  }
-
   public static JSONObject getValues() {
     return values;
   }
@@ -241,22 +234,6 @@ public final class Theme {
       String ls1 = Selectors.conjunction(Selectors.classSelector(ListBox.STYLE_NAME),
           Selectors.attributeEquals(Attributes.SIZE, 1));
       rules.add(StyleUtils.buildRule(ls1, StyleUtils.buildPadding(padding)));
-    }
-
-    px = getFormCellPaddingTop();
-    if (px > 0) {
-      String ftc = Selectors.descendantCombinator(
-          Selectors.classSelector(StyleUtils.NAME_FORM),
-          Selectors.classSelector(HtmlTable.STYLE_NAME),
-          Tags.TD);
-      rules.add(StyleUtils.buildRule(ftc, StyleUtils.buildStyle(CssProperties.PADDING_TOP, px)));
-
-      String fctc = Selectors.descendantCombinator(
-          Selectors.classSelector(StyleUtils.NAME_FORM),
-          Selectors.classSelector(HtmlTable.STYLE_NAME),
-          Tags.TD, Tags.TABLE, Tags.TD);
-      rules.add(StyleUtils.buildRule(fctc,
-          StyleUtils.buildStyle(CssProperties.PADDING_TOP, StyleUtils.VALUE_INITIAL)));
     }
 
     return rules;

@@ -44,7 +44,6 @@
     <SimpleColumn name="InputLineHeight" />
     <SimpleColumn name="InputPadding" />
     <SimpleColumn name="ListSize1Padding" />
-    <SimpleColumn name="FormCellPaddingTop" />
 
     <SimpleColumn name="Css" />
   </Columns>

@@ -99,9 +99,6 @@
     <DataColumn name="ListSize1Padding">
       <carry><ui:expression>$wnd.BeeSettings.theme[colName]</ui:expression></carry>
     </DataColumn>
-    <DataColumn name="FormCellPaddingTop">
-      <carry><ui:expression>$wnd.BeeSettings.theme[colName]</ui:expression></carry>
-    </DataColumn>
 
     <DataColumn name="Css" minWidth="200" carry="true">
       <editor type="area" minWidth="200" visibleLines="5" />
