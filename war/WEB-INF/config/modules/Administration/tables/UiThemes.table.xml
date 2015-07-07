@@ -40,7 +40,6 @@
     <Integer name="ApplianceHeaderHeight" label="=heightOfApplianceHeader" />
     <Integer name="SubMenuLineHeight" />
     <Integer name="WorkspaceTabHeight" />
-    <Integer name="TabbedPagesTabHeight" />
     <Integer name="DisclosureClosedHeight" />
 
     <Integer name="InputLineHeight" />

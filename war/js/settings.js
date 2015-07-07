@@ -31,7 +31,6 @@ var BeeSettings = {
     "ApplianceHeaderHeight": 35,
     "SubMenuLineHeight": 30,
     "WorkspaceTabHeight": 36,
-    "TabbedPagesTabHeight": 60,
     "DisclosureClosedHeight": 55,
     "InputLineHeight": 25,
     "InputPadding": "1px 10px",
