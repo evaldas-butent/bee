@@ -313,6 +313,9 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
     } else if (BeeUtils.same(svc, SVC_GET_VEHICLE_BUSY_DATES)) {
       response = getVehicleBusyDates();
 
+    } else if (BeeUtils.same(svc, SVC_GET_TRIP_INFO)) {
+      response = rep.getTripInfo(reqInfo);
+
     } else {
       String msg = BeeUtils.joinWords("Transport service not recognized:", svc);
       logger.warning(msg);

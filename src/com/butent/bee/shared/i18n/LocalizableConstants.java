@@ -127,6 +127,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String administration();
 
+  String advance();
+
   String allowPhotoSize();
 
   String amount();
