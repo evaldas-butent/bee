@@ -41,19 +41,23 @@
       <Label text="=trTbSettingsCountryFlags" style="&lbl;" />
       <CheckBox source="TrailerCountryFlags" html="-" style="&cb_inp;" />
     </FlowPanel>
+
     <FlowPanel style="&cb_row;">
       <Label text="=trTbSettingsPlaceInfo" style="&lbl;" />
       <CheckBox source="TrailerPlaceInfo" html="-" style="&cb_inp;" />
     </FlowPanel>
-
-     <FlowPanel style="&cb_row;">
+    <FlowPanel style="&cb_row;">
       <Label text="=trTbSettingsPlaceCities" style="&lbl;" />
       <CheckBox source="TrailerPlaceCities" html="-" style="&cb_inp;" />
     </FlowPanel>
-    
     <FlowPanel style="&cb_row;">
       <Label text="=trTbSettingsPlaceCodes" style="&lbl;" />
       <CheckBox source="TrailerPlaceCodes" html="-" style="&cb_inp;" />
+    </FlowPanel>
+
+    <FlowPanel style="&cb_row;">
+      <Label text="=trTbSettingsAdditionalInfo" style="&lbl;" />
+      <CheckBox source="TrailerAdditionalInfo" html="-" style="&cb_inp;" />
     </FlowPanel>
 
     &separator;

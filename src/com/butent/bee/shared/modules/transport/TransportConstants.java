@@ -578,6 +578,8 @@ public final class TransportConstants {
   public static final String COL_SS_PLACE_CITIES = "SsPlaceCities";
   public static final String COL_SS_PLACE_CODES = "SsPlaceCodes";
 
+  public static final String COL_SS_ADDITIONAL_INFO = "SsAdditionalInfo";
+
   public static final String COL_SS_PIXELS_PER_DAY = "SsPixelsPerDay";
   public static final String COL_SS_PIXELS_PER_ROW = "SsPixelsPerRow";
 
@@ -596,6 +598,8 @@ public final class TransportConstants {
 
   public static final String COL_DTB_PLACE_CITIES = "DtbPlaceCities";
   public static final String COL_DTB_PLACE_CODES = "DtbPlaceCodes";
+
+  public static final String COL_DTB_ADDITIONAL_INFO = "DtbAdditionalInfo";
 
   public static final String COL_DTB_PIXELS_PER_DAY = "DtbPixelsPerDay";
   public static final String COL_DTB_PIXELS_PER_ROW = "DtbPixelsPerRow";
@@ -618,6 +622,8 @@ public final class TransportConstants {
   public static final String COL_TRUCK_PLACE_CITIES = "TruckPlaceCities";
   public static final String COL_TRUCK_PLACE_CODES = "TruckPlaceCodes";
 
+  public static final String COL_TRUCK_ADDITIONAL_INFO = "TruckAdditionalInfo";
+
   public static final String COL_TRUCK_PIXELS_PER_DAY = "TruckPixelsPerDay";
   public static final String COL_TRUCK_PIXELS_PER_ROW = "TruckPixelsPerRow";
 
@@ -637,6 +643,8 @@ public final class TransportConstants {
   public static final String COL_TRAILER_PLACE_INFO = "TrailerPlaceInfo";
   public static final String COL_TRAILER_PLACE_CITIES = "TrailerPlaceCities";
   public static final String COL_TRAILER_PLACE_CODES = "TrailerPlaceCodes";
+
+  public static final String COL_TRAILER_ADDITIONAL_INFO = "TrailerAdditionalInfo";
 
   public static final String COL_TRAILER_PIXELS_PER_DAY = "TrailerPixelsPerDay";
   public static final String COL_TRAILER_PIXELS_PER_ROW = "TrailerPixelsPerRow";
