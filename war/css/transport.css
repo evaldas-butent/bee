@@ -105,6 +105,9 @@
   color: black;
 }
 
+.bee-tr-fx-dragOver {
+  background-color: lightpink;
+}
 .bee-tr-ss-trip-Group-dragOver,
 .bee-tr-vtb-Vehicle-dragOver,
 .bee-tr-vtb-Trip-dragOver,
@@ -141,6 +144,14 @@
   top: 0;
   bottom: 0;
   background-image: repeating-linear-gradient(330deg, rgba(211,211,211,1) 10px, rgba(211,211,211,0) 20px);
+  pointer-events: none;
+}
+
+.bee-tr-dtb-Trip-info,
+.bee-tr-vtb-Trip-info {
+  position: absolute;
+  left: 2%;
+  top: 0;
   pointer-events: none;
 }
 

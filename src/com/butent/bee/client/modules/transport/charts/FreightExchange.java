@@ -1,7 +1,9 @@
 package com.butent.bee.client.modules.transport.charts;
 
+import com.google.common.collect.Lists;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.event.dom.client.DropEvent;
 import com.google.gwt.user.client.ui.ComplexPanel;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Widget;
@@ -9,9 +11,12 @@ import com.google.gwt.user.client.ui.Widget;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
+import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowFactory;
+import com.butent.bee.client.dialog.ChoiceCallback;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Edges;
 import com.butent.bee.client.dom.Rectangle;
@@ -28,6 +33,7 @@ import com.butent.bee.client.view.ViewCallback;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.Mover;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.BiConsumer;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Size;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -35,6 +41,7 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
+import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
@@ -46,6 +53,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -76,6 +84,10 @@ final class FreightExchange extends ChartBase {
 
   private static final String STYLE_ITEM_DRAG = STYLE_ITEM_PREFIX + "drag";
 
+  private static final String STYLE_DRAG_OVER = STYLE_PREFIX + "dragOver";
+
+  private static final Set<String> acceptsDropTypes = Collections.singleton(DATA_TYPE_FREIGHT);
+
   static void open(final ViewCallback callback) {
     BeeKeeper.getRpc().makePostRequest(TransportHandler.createArgs(DATA_SERVICE),
         new ResponseCallback() {
@@ -103,6 +115,25 @@ final class FreightExchange extends ChartBase {
     addStyleName(STYLE_PREFIX + "View");
 
     addRelevantDataViews(VIEW_ORDERS);
+
+    DndHelper.makeTarget(this, acceptsDropTypes, STYLE_DRAG_OVER, DndHelper.ALWAYS_TARGET,
+        new BiConsumer<DropEvent, Object>() {
+          @Override
+          public void accept(DropEvent t, Object u) {
+            removeStyleName(STYLE_DRAG_OVER);
+
+            if (DndHelper.isDataType(DATA_TYPE_FREIGHT) && u instanceof Freight) {
+              ((Freight) u).maybeRemoveFromTrip(new Queries.IntCallback() {
+                @Override
+                public void onSuccess(Integer result) {
+                  if (BeeUtils.isPositive(result)) {
+                    DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_CARGO_TRIPS);
+                  }
+                }
+              });
+            }
+          }
+        });
   }
 
   @Override
@@ -123,7 +154,27 @@ final class FreightExchange extends ChartBase {
   @Override
   public void handleAction(Action action) {
     if (Action.ADD.equals(action)) {
-      RowFactory.createRow(VIEW_ORDERS);
+      Global.choiceWithCancel(Localized.getConstants().newTransportationOrder(), null,
+          Lists.newArrayList(Localized.getConstants().inputFull(),
+              Localized.getConstants().inputSimple()), new ChoiceCallback() {
+
+            @Override
+            public void onSuccess(int value) {
+              switch (value) {
+                case 0:
+                  RowFactory.createRow(VIEW_ORDERS);
+                  break;
+
+                case 1:
+                  DataInfo dataInfo = Data.getDataInfo(VIEW_ORDER_CARGO);
+                  BeeRow row = RowFactory.createEmptyRow(dataInfo, true);
+                  RowFactory.createRow(FORM_NEW_SIMPLE_ORDER,
+                      Localized.getConstants().newTransportationOrder(), dataInfo, row, null);
+                  break;
+              }
+            }
+          });
+
     } else {
       super.handleAction(action);
     }
@@ -197,6 +248,11 @@ final class FreightExchange extends ChartBase {
   @Override
   protected String getSettingsFormName() {
     return FORM_FX_SETTINGS;
+  }
+
+  @Override
+  protected String getShowAdditionalInfoColumnName() {
+    return null;
   }
 
   @Override

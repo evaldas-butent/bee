@@ -777,7 +777,7 @@ public class Tree extends Panel implements HasTreeItems, Focusable, HasAnimation
       return;
     }
     StyleUtils.setRectangle(focusable, left, top, width, height);
-    focusable.scrollIntoView();
+    DomUtils.scrollIntoView(focusable);
 
     setFocus(true);
   }
@@ -858,7 +858,7 @@ public class Tree extends Panel implements HasTreeItems, Focusable, HasAnimation
     Focusable focusableWidget = getSelectedItem().getFocusable();
     if (focusableWidget != null) {
       focusableWidget.setFocus(true);
-      ((Widget) focusableWidget).getElement().scrollIntoView();
+      DomUtils.scrollIntoView(((Widget) focusableWidget).getElement());
     } else {
       focus(getSelectedItem().getContentElem());
     }
