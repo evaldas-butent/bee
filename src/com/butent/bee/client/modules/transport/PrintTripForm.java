@@ -125,11 +125,10 @@ public class PrintTripForm extends AbstractFormInterceptor {
             Map<String, Double> otherInfo = new HashMap<>();
 
             for (SimpleRowSet.SimpleRow cost : SimpleRowSet.restore(pack.get(TBL_TRIP_COSTS))) {
-              boolean daily = dailyCostsItems.contains(cost.getLong(COL_COSTS_ITEM));
               String itemName = cost.getValue(COL_ITEM_NAME);
               double amount = BeeUtils.round(BeeUtils.unbox(cost.getDouble(COL_AMOUNT)), 2);
 
-              if (!BeeUtils.unbox(cost.getBoolean(COL_PAYMENT_CASH)) && !daily) {
+              if (!BeeUtils.unbox(cost.getBoolean(COL_PAYMENT_CASH))) {
                 otherInfo.put(itemName, BeeUtils.unbox(otherInfo.get(itemName)) + amount);
                 continue;
               }
@@ -142,7 +141,8 @@ public class PrintTripForm extends AbstractFormInterceptor {
               driverCosts.setText(r, index.get(COL_COSTS_DATE),
                   TimeUtils.dateToString(cost.getDateTime(COL_COSTS_DATE)));
               driverCosts.setText(r, index.get(COL_COSTS_ITEM), BeeUtils.joinWords(itemName,
-                  daily ? BeeUtils.parenthesize(cost.getValue(COL_COSTS_COUNTRY)) : null));
+                  dailyCostsItems.contains(cost.getLong(COL_COSTS_ITEM))
+                      ? BeeUtils.parenthesize(cost.getValue(COL_COSTS_COUNTRY)) : null));
               driverCosts.setText(r, index.get(COL_DRIVER), drivers.get(driver));
               driverCosts.setText(r, index.get(COL_COSTS_QUANTITY), BeeUtils.toString(quantity));
               driverCosts.setText(r, index.get(COL_UNIT), cost.getValue(COL_UNIT));
