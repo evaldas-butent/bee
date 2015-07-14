@@ -418,7 +418,6 @@
 }
 
 .bee-Header-caption {
-  font-size: 24px;
   color: #414142;
   margin-left: 30px;
 }
@@ -1123,6 +1122,7 @@
   -webkit-flex-wrap: wrap;
   -ms-flex-wrap: wrap;
 }
+
 .bee-TabbedPages-tab {
   display: flex;
   display: -webkit-flex;
@@ -1133,6 +1133,17 @@
   cursor: pointer;
   background-color: white;
 }
+@media (min-height: 600px) and (max-height: 1200px) {
+  .bee-TabbedPages-tab {
+    height: 5vh;
+  }
+}
+@media (min-height: 1200px) {
+  .bee-TabbedPages-tab {
+    height: 60px;
+  }
+}
+
 .bee-TabbedPages-tabWrapper {
   display: flex;
   display: -webkit-flex;
@@ -1290,7 +1301,6 @@
   position: absolute;
   left: 2px;
   right: 2px;
-  top: 36px;
   bottom: 0px;
   overflow: auto;
 }
@@ -2131,7 +2141,6 @@
 
 .bee-HtmlEditor-canvas {
   position: absolute;
-  top: 30px;
   bottom: 0;
   left: 0;
   right: 0;
@@ -2159,7 +2168,6 @@
 
 .bee-ResourceEditor-wrapper {
   position: absolute;
-  top: 30px;
   bottom: 0;
   left: 0;
   right: 0;
@@ -2534,7 +2542,6 @@
 
 .bee-Chat-messages {
   position: absolute;
-  top: 30px;
   bottom: 16%;
   left: 0;
   right: 0;
@@ -2697,7 +2704,6 @@
 
 .bee-MapContainer .bee-Map {
   position: absolute;
-  top: 30px;
   bottom: 0;
   left: 0;
   right: 0;
@@ -3299,6 +3305,27 @@ textarea,
 .bee-Form .bee-Horizontal {
   border-collapse: collapse;
 }
+
+@media (max-height: 600px) {
+  .bee-Form .bee-HtmlTable td {
+    padding-top: 1vh;
+  }
+}
+@media (min-height: 600px) and (max-height: 1300px) {
+  .bee-Form .bee-HtmlTable td {
+    padding-top: calc(2vh - 6px);
+  }
+}
+@media (min-height: 1300px) {
+  .bee-Form .bee-HtmlTable td {
+    padding-top: 20px;
+  }
+}
+
+.bee-Form .bee-HtmlTable td table td {
+  padding-top: 0;
+}
+
 .bee-LabelCell {
   text-align: right;
   vertical-align: top;
@@ -3408,6 +3435,9 @@ textarea,
 }
 
 .bee-Disclosure-closed .bee-Disclosure-header {
+  height: 5vh;
+  min-height: 30px;
+  max-height: 55px;
   background-color: #fafafa;
 }
 .bee-Disclosure-closed .bee-Disclosure-content {

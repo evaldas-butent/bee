@@ -56,6 +56,7 @@ import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
+import com.butent.bee.client.view.grid.CellGrid;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.GridView.SelectedRows;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
@@ -552,13 +553,14 @@ public class MailPanel extends AbstractFormInterceptor {
   private final MailMessage message = new MailMessage(this);
   private final SearchPanel searchPanel = new SearchPanel();
 
-  private final List<AccountInfo> accounts;
+  private final List<AccountInfo> accounts = new ArrayList<>();
 
   private Widget messageWidget;
   private Widget emptySelectionWidget;
 
   MailPanel(List<AccountInfo> availableAccounts, AccountInfo defaultAccount) {
-    this.accounts = availableAccounts;
+    Assert.notNull(availableAccounts);
+    accounts.addAll(availableAccounts);
     this.currentAccount = defaultAccount;
   }
 
@@ -775,6 +777,17 @@ public class MailPanel extends AbstractFormInterceptor {
     }
   }
 
+  void removeRows(List<Long> ids) {
+    if (ids != null) {
+      CellGrid grid = messages.getGridView().getGrid();
+
+      for (Long id : ids) {
+        grid.removeRowById(id);
+      }
+      grid.refresh();
+    }
+  }
+
   void requeryFolders() {
     requeryFolders(null);
   }
@@ -889,13 +902,13 @@ public class MailPanel extends AbstractFormInterceptor {
 
   private void removeMessages() {
     List<String> options = new ArrayList<>();
-    final GridPresenter grid = messages.getGridPresenter();
+    GridView grid = messages.getGridView();
     final IsRow activeRow = grid.getActiveRow();
 
     if (activeRow != null) {
       options.add(Localized.getConstants().mailCurrentMessage());
     }
-    final Collection<RowInfo> rows = grid.getGridView().getSelectedRows(SelectedRows.ALL);
+    final Collection<RowInfo> rows = grid.getSelectedRows(SelectedRows.ALL);
 
     if (!BeeUtils.isEmpty(rows)) {
       options.add(Localized.getMessages().mailSelectedMessages(rows.size()));
@@ -912,7 +925,7 @@ public class MailPanel extends AbstractFormInterceptor {
         new ChoiceCallback() {
           @Override
           public void onSuccess(int value) {
-            final List<Long> ids = new ArrayList<>();
+            List<Long> ids = new ArrayList<>();
 
             if (value == 0 && activeRow != null) {
               ids.add(activeRow.getId());
@@ -931,9 +944,6 @@ public class MailPanel extends AbstractFormInterceptor {
                 response.notify(getFormView());
 
                 if (!response.hasErrors()) {
-                  for (Long rowId : ids) {
-                    grid.getGridView().getGrid().removeRowById(rowId);
-                  }
                   String msg = response.getResponseAsString();
                   LocalizableMessages loc = Localized.getMessages();
 
@@ -942,6 +952,7 @@ public class MailPanel extends AbstractFormInterceptor {
                 }
               }
             });
+            removeRows(ids);
           }
         });
   }

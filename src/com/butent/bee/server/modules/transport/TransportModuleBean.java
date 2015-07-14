@@ -316,6 +316,9 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
     } else if (BeeUtils.same(svc, SVC_GET_VEHICLE_BUSY_DATES)) {
       response = getVehicleBusyDates();
 
+    } else if (BeeUtils.same(svc, SVC_GET_TRIP_INFO)) {
+      response = rep.getTripInfo(reqInfo);
+
     } else {
       String msg = BeeUtils.joinWords("Transport service not recognized:", svc);
       logger.warning(msg);
@@ -340,6 +343,8 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
         BeeParameter.createText(module, "SmsDisplayText"),
         BeeParameter.createRelation(module, PRM_CARGO_TYPE, true, TBL_CARGO_TYPES,
             COL_CARGO_TYPE_NAME),
+        BeeParameter.createRelation(module, PRM_CARGO_SERVICE, false, TBL_SERVICES,
+            COL_SERVICE_NAME),
         BeeParameter.createBoolean(module, PRM_BIND_EXPENSES_TO_INCOMES, false, true));
   }
 

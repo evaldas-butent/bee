@@ -177,6 +177,9 @@ public final class MailKeeper {
         }
       }
     });
+    if (move) {
+      panel.removeRows(DataUtils.parseIdList(places));
+    }
   }
 
   static ParameterList createArgs(String method) {

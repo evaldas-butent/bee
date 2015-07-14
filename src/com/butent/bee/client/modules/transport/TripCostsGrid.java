@@ -9,11 +9,14 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.event.logical.ParentRowEvent;
+import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.presenter.GridPresenter;
+import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.FaLabel;
@@ -22,13 +25,23 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.utils.BeeUtils;
 
-public class TripCostsGrid extends AbstractGridInterceptor implements ClickHandler {
+public class TripCostsGrid extends AbstractGridInterceptor
+    implements ClickHandler, SelectorEvent.Handler {
 
   Long trip;
 
   final Flow invoice = new Flow();
   final FaLabel dailyCosts = new FaLabel(FontAwesome.MONEY);
+
+  @Override
+  public void afterCreateEditor(String source, Editor editor, boolean embedded) {
+    if (BeeUtils.same(source, COL_DRIVER) && editor instanceof DataSelector) {
+      ((DataSelector) editor).addSelectorHandler(this);
+    }
+    super.afterCreateEditor(source, editor, embedded);
+  }
 
   @Override
   public void afterCreatePresenter(GridPresenter presenter) {
@@ -67,6 +80,13 @@ public class TripCostsGrid extends AbstractGridInterceptor implements ClickHandl
         });
       }
     });
+  }
+
+  @Override
+  public void onDataSelector(SelectorEvent event) {
+    if (BeeUtils.same(event.getRelatedViewName(), TBL_TRIP_DRIVERS) && event.isOpened()) {
+      event.getSelector().setAdditionalFilter(Filter.equals(COL_TRIP, trip));
+    }
   }
 
   @Override

@@ -26,8 +26,8 @@ import com.butent.bee.client.validation.CellValidation;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.edit.EditableWidget;
 import com.butent.bee.client.view.form.FormView;
-import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
+import com.butent.bee.client.view.form.interceptor.PrintFormInterceptor;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -44,7 +44,7 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
-public class TripForm extends AbstractFormInterceptor implements SelectorEvent.Handler {
+public class TripForm extends PrintFormInterceptor implements SelectorEvent.Handler {
 
   private static final Multimap<Long, DateRange> vehicleBusy = HashMultimap.create();
 
@@ -106,7 +106,10 @@ public class TripForm extends AbstractFormInterceptor implements SelectorEvent.H
       WidgetDescriptionCallback callback) {
 
     if (widget instanceof ChildGrid) {
-      if (BeeUtils.same(name, VIEW_TRIP_CARGO)) {
+      if (BeeUtils.same(name, TBL_TRIP_DRIVERS)) {
+        ((ChildGrid) widget).setGridInterceptor(new TripDriversGrid());
+
+      } else if (BeeUtils.same(name, VIEW_TRIP_CARGO)) {
         ((ChildGrid) widget).setGridInterceptor(new TripCargoGrid(getFormView()));
 
       } else if (BeeUtils.same(name, TBL_TRIP_COSTS)) {
@@ -164,6 +167,11 @@ public class TripForm extends AbstractFormInterceptor implements SelectorEvent.H
   }
 
   @Override
+  public FormInterceptor getPrintFormInterceptor() {
+    return new PrintTripForm();
+  }
+
+  @Override
   public void onDataSelector(SelectorEvent event) {
     if (event.isOpened() && event.hasRelatedView(VIEW_VEHICLES)) {
       Set<Long> exclusions = new HashSet<>();
@@ -205,6 +213,9 @@ public class TripForm extends AbstractFormInterceptor implements SelectorEvent.H
     HeaderView header = form.getViewPresenter().getHeader();
     header.clearCommandPanel();
     header.addCommandItem(new Profit(COL_TRIP, row.getId()));
+
+    vehicleBusy.clear();
+
     return true;
   }
 

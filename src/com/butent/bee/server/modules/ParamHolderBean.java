@@ -333,9 +333,7 @@ public class ParamHolderBean {
                 break;
               }
             }
-          } else if (filter instanceof ColumnValueFilter
-              && ((ColumnValueFilter) filter).involvesColumn(column)) {
-
+          } else if (filter instanceof ColumnValueFilter && filter.involvesColumn(column)) {
             value = BeeUtils.peek(((ColumnValueFilter) filter).getValue()).getString();
 
           } else if (filter instanceof CustomFilter

@@ -7,6 +7,7 @@ import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.shared.Consumable;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.RowChildren;
+import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
 import java.util.List;
@@ -52,6 +53,15 @@ public class ReadyForInsertEvent extends GwtEvent<ReadyForInsertEvent.Handler> i
     this.children = children;
     this.callback = callback;
     this.sourceId = sourceId;
+  }
+
+  public void add(BeeColumn column, long value) {
+    add(column, BeeUtils.toString(value));
+  }
+
+  public void add(BeeColumn column, String value) {
+    columns.add(column);
+    values.add(value);
   }
 
   @Override
