@@ -31,6 +31,7 @@
       <row for="Code">
         <Label text="=companyCode" style="&lbl2;"/>
         <InputText source="Code" visible="true" style="&inp1;"/>
+        <CheckBox source="Physical" style="margin-left:-60px;" />
       </row>
 
       <row for="VATCode">
