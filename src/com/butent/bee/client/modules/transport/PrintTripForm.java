@@ -7,8 +7,10 @@ import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.dialog.ChoiceCallback;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
@@ -24,8 +26,10 @@ import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -51,10 +55,10 @@ public class PrintTripForm extends AbstractFormInterceptor {
             if (response.hasErrors()) {
               return;
             }
-            Map<String, String> pack = Codec.deserializeMap(response.getResponseAsString());
+            final Map<String, String> pack = Codec.deserializeMap(response.getResponseAsString());
 
             // DRIVERS
-            Map<Long, String> drivers = new HashMap<>();
+            final Map<Long, String> drivers = new LinkedHashMap<>();
             Long mainDriver = null;
 
             for (SimpleRowSet.SimpleRow driver : SimpleRowSet.restore(pack.get(TBL_TRIP_DRIVERS))) {
@@ -84,7 +88,8 @@ public class PrintTripForm extends AbstractFormInterceptor {
               double before = BeeUtils.unbox(form.getDoubleValue("FuelBefore"));
               double after = BeeUtils.unbox(form.getDoubleValue("FuelAfter"));
               double fuel = before + BeeUtils.toDouble(pack.get(COL_FUEL)) - after;
-              fuelWidget.getElement().setInnerText(BeeUtils.toString(fuel));
+              fuelWidget.getElement()
+                  .setInnerText(BeeUtils.toString(BeeUtils.round(fuel, 2)));
 
               fuelWidget = form.getWidgetByName(TBL_TRIP_FUEL_CONSUMPTIONS);
 
@@ -102,7 +107,7 @@ public class PrintTripForm extends AbstractFormInterceptor {
                   .setInnerText(BeeUtils.round(pack.get(TBL_TRIP_FUEL_COSTS), 2));
             }
             // COSTS
-            Set<Long> dailyCostsItems = new HashSet<>();
+            final Set<Long> dailyCostsItems = new HashSet<>();
 
             for (String item : Codec.beeDeserializeCollection(pack.get(COL_DAILY_COSTS_ITEM))) {
               dailyCostsItems.add(BeeUtils.toLong(item));
@@ -121,7 +126,7 @@ public class PrintTripForm extends AbstractFormInterceptor {
               driverCosts.setWidget(0, c, new Label());
               c++;
             }
-            HashMultimap<Long, SimpleRowSet.SimpleRow> driverInfo = HashMultimap.create();
+            final HashMultimap<Long, SimpleRowSet.SimpleRow> driverInfo = HashMultimap.create();
             Map<String, Double> otherInfo = new HashMap<>();
 
             for (SimpleRowSet.SimpleRow cost : SimpleRowSet.restore(pack.get(TBL_TRIP_COSTS))) {
@@ -155,7 +160,7 @@ public class PrintTripForm extends AbstractFormInterceptor {
             Widget driverCostsWidget = form.getWidgetByName("DriverCosts");
 
             if (driverCostsWidget != null) {
-              if (driverInfo.size() > 1) {
+              if (driverInfo.size() > 0) {
                 int r = driverCosts.getRowCount();
 
                 for (Long driver : driverInfo.keySet()) {
@@ -171,6 +176,7 @@ public class PrintTripForm extends AbstractFormInterceptor {
                   r++;
                   driverTotal += total;
                 }
+                driverTotal = BeeUtils.round(driverTotal, 2);
                 driverCosts.getRowFormatter().addStyleName(r, "footer");
                 driverCosts.setText(r, index.get(COL_COSTS_ITEM),
                     BeeUtils.joinWords(Localized.getConstants().totalOf(),
@@ -187,23 +193,24 @@ public class PrintTripForm extends AbstractFormInterceptor {
             Widget otherCostsWidget = form.getWidgetByName("OtherCosts");
 
             if (otherCostsWidget != null) {
-              int r = 0;
               HtmlTable otherCosts = new HtmlTable();
               otherCosts.getRowFormatter().addStyleName(0, "header");
               otherCosts.setColumnCellClasses(0, COL_COSTS_ITEM);
               otherCosts.setColumnCellClasses(1, COL_AMOUNT);
-              otherCosts.setWidget(r, 0, new Label());
-              otherCosts.setWidget(r, 1, new Label());
+              otherCosts.setWidget(0, 0, new Label());
+              otherCosts.setWidget(0, 1, new Label());
 
               if (otherInfo.size() > 0) {
+                int r = otherCosts.getRowCount();
+
                 for (Map.Entry<String, Double> entry : otherInfo.entrySet()) {
-                  r++;
                   double amount = entry.getValue();
                   otherCosts.setText(r, 0, entry.getKey());
                   otherCosts.setText(r, 1, BeeUtils.toString(amount));
                   otherTotal += amount;
+                  r++;
                 }
-                r++;
+                otherTotal = BeeUtils.round(otherTotal, 2);
                 otherCosts.getRowFormatter().addStyleName(r, "footer");
                 otherCosts.setText(r, 0, BeeUtils.joinWords(Localized.getConstants().totalOf(),
                     BeeUtils.parenthesize(pack.get(AdministrationConstants.COL_CURRENCY))));
@@ -266,7 +273,8 @@ public class PrintTripForm extends AbstractFormInterceptor {
                   driverAdvances.setText(r, index.get(COL_DATE),
                       TimeUtils.dateToString(advance.getDate(COL_DATE)));
                   driverAdvances.setText(r, index.get(COL_AMOUNT), BeeUtils.toString(amount));
-                  driverAdvances.setText(r, index.get(remainder), BeeUtils.toString(total));
+                  driverAdvances.setText(r, index.get(remainder),
+                      BeeUtils.toString(BeeUtils.round(total, 2)));
                   r++;
                 }
                 double daily = 0;
@@ -284,23 +292,77 @@ public class PrintTripForm extends AbstractFormInterceptor {
                 total += daily;
                 driverAdvances.setText(r, index.get(COL_COSTS_ITEM),
                     Localized.getConstants().trDailyCosts());
-                driverAdvances.setText(r, index.get(COL_AMOUNT), BeeUtils.toString(daily * (-1)));
-                driverAdvances.setText(r, index.get(remainder), BeeUtils.toString(total));
+                driverAdvances.setText(r, index.get(COL_AMOUNT),
+                    BeeUtils.toString(BeeUtils.round(daily * (-1), 2)));
+                driverAdvances.setText(r, index.get(remainder),
+                    BeeUtils.toString(BeeUtils.round(total, 2)));
                 r++;
                 total += other;
                 driverAdvances.setText(r, index.get(COL_COSTS_ITEM),
                     Localized.getConstants().trOtherCosts());
-                driverAdvances.setText(r, index.get(COL_AMOUNT), BeeUtils.toString(other * (-1)));
-                driverAdvances.setText(r, index.get(remainder), BeeUtils.toString(total));
+                driverAdvances.setText(r, index.get(COL_AMOUNT),
+                    BeeUtils.toString(BeeUtils.round(other * (-1), 2)));
+                driverAdvances.setText(r, index.get(remainder),
+                    BeeUtils.toString(BeeUtils.round(total, 2)));
                 r++;
                 driverAdvances.getRowFormatter().addStyleName(r, "footer");
                 driverAdvances.setText(r, index.get(COL_COSTS_ITEM),
                     BeeUtils.joinWords(Localized.getConstants().total(),
                         BeeUtils.parenthesize(pack.get(AdministrationConstants.COL_CURRENCY))));
-                driverAdvances.setText(r, index.get(remainder), BeeUtils.toString(total));
+                driverAdvances.setText(r, index.get(remainder),
+                    BeeUtils.toString(BeeUtils.round(total, 2)));
                 r++;
               }
               advancesWidget.getElement().setInnerHTML(driverAdvances.toString());
+            }
+            // DAILY COSTS
+            final Widget currentDriverWidget = form.getWidgetByName("CurrentDriver");
+
+            if (currentDriverWidget != null) {
+              ChoiceCallback choice = new ChoiceCallback() {
+                @Override
+                public void onSuccess(int value) {
+                  Long driver = BeeUtils.getQuietly(new ArrayList<>(drivers.keySet()), value);
+
+                  if (!DataUtils.isId(driver)) {
+                    return;
+                  }
+                  currentDriverWidget.getElement().setInnerText(drivers.get(driver));
+                  double daily = 0;
+                  HtmlTable dailyCosts = new HtmlTable();
+                  int r = 0;
+
+                  for (SimpleRowSet.SimpleRow cost : driverInfo.get(driver)) {
+                    if (dailyCostsItems.contains(cost.getLong(COL_COSTS_ITEM))) {
+                      dailyCosts.setText(r, 0, BeeUtils.joinWords(cost.getValue(COL_ITEM_NAME),
+                          BeeUtils.parenthesize(cost.getValue(COL_COSTS_COUNTRY))));
+                      dailyCosts.setText(r, 1, BeeUtils.joinWords(cost.getValue(COL_COSTS_QUANTITY),
+                          cost.getValue(COL_UNIT)));
+                      daily += BeeUtils.round(BeeUtils.unbox(cost.getDouble(COL_AMOUNT)), 2);
+                      r++;
+                    }
+                  }
+                  Widget dailyWidget = form.getWidgetByName("DailyCosts");
+
+                  if (dailyWidget != null) {
+                    dailyWidget.getElement().setInnerHTML(dailyCosts.toString());
+                  }
+                  Widget dailyTotal = form.getWidgetByName("DailyCostsTotal");
+
+                  if (dailyTotal != null) {
+                    dailyTotal.getElement().setInnerText(BeeUtils
+                        .joinWords(BeeUtils.toString(BeeUtils.round(daily, 2)),
+                            pack.get(AdministrationConstants.COL_CURRENCY)));
+                  }
+
+                }
+              };
+              if (drivers.size() > 1) {
+                Global.choice(Localized.getConstants().drivers(), null,
+                    new ArrayList<>(drivers.values()), choice);
+              } else {
+                choice.onSuccess(0);
+              }
             }
             // USER
             Widget userWidget = form.getWidgetByName(AdministrationConstants.COL_USER);

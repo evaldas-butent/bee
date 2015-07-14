@@ -17,26 +17,18 @@
     <Label html="DĖL TARNYBINĖS KOMANDIRUOTĖS Į UŽSIENĮ"
            style="text-align:center; font-weight:bold;" />
     <br />
-    <br />
 
     <FlowPanel class="flexBox-horizontal-center">
-      <Table style="text-align:center;">
-        <row>
-          <TextLabel>
-            <render>
-              <ui:expression>new Date().toISOString().substring(0, 10)</ui:expression>
-            </render>
-          </TextLabel>
-          <cell rowSpan="2">
-            <Label text="Nr." style="margin:0 1em 0 1em;" />
-          </cell>
-          <TextLabel source="TripNo" />
-        </row>
-        <row style="border-top:1px solid black; font-size:x-small;">
-          <Label text="(data)" />
-          <Label text="(reiso nr.)" />
-        </row>
-      </Table>
+      <HorizontalPanel>
+        <TextLabel>
+          <render>
+            <ui:expression>new Date().toLocaleDateString()</ui:expression>
+          </render>
+        </TextLabel>
+        <TextLabel>
+          <renderToken source="TripNo" prefix="Nr. " />
+        </TextLabel>
+      </HorizontalPanel>
     </FlowPanel>
 
     <br />
