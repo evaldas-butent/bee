@@ -166,8 +166,7 @@ public class TradeActServicesGrid extends AbstractGridInterceptor {
         updatePrice(row.getId(), row.getVersion(), row.getString(priceIndex), price);
 
         count++;
-      } else {
-
+      } else if (row.getDateTime(toIndex) != null) {
         double t = row.getDouble(priceIndex) * 100 / total;
         updateTariff(row.getId(), row.getVersion(), row.getString(tariffIndex), t);
         count++;
