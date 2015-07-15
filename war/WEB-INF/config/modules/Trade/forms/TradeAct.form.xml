@@ -11,7 +11,7 @@
   
   name="TradeAct" viewName="TradeActs"
   caption="=tradeAct" showRowId="true"
-  width="800" height="600"
+  width="1050" height="700"
   >
   <f:properties reports="PrintTradeActSalePhysical, PrintTradeActSale, PrintTradeAct, PrintTradeActExtra"/>
   
