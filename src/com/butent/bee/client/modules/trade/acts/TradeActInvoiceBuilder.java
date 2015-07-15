@@ -31,6 +31,8 @@ import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.data.ClientDefaults;
 import com.butent.bee.client.data.Data;
+import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dom.DomUtils;
@@ -516,22 +518,7 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
   @Override
   public void onLoad(final FormView form) {
     Widget widget;
-
-    JustDate from = BeeKeeper.getStorage().getDate(storageKey(COL_TA_SERVICE_FROM));
-    if (from != null) {
-      widget = form.getWidgetByName(COL_TA_SERVICE_FROM);
-      if (widget instanceof InputDate) {
-        ((InputDate) widget).setDate(from);
-      }
-    }
-
-    JustDate to = BeeKeeper.getStorage().getDate(storageKey(COL_TA_SERVICE_TO));
-    if (to != null) {
-      widget = form.getWidgetByName(COL_TA_SERVICE_TO);
-      if (widget instanceof InputDate) {
-        ((InputDate) widget).setDate(to);
-      }
-    }
+    final Widget dateWidget;
 
     Long seriesId =
         BeeUtils.toLongOrNull(BeeKeeper.getStorage().get(storageKey(COL_TRADE_SALE_SERIES)));
@@ -560,6 +547,36 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
     } else {
       ((UnboundSelector) widget).clearValue();
       ((UnboundSelector) widget).setEnabled(true);
+    }
+
+    JustDate from = BeeKeeper.getStorage().getDate(storageKey(COL_TA_SERVICE_FROM));
+    if (from != null) {
+      dateWidget = form.getWidgetByName(COL_TA_SERVICE_FROM);
+      if (dateWidget instanceof InputDate
+          && ((UnboundSelector) form.getWidgetByName(COL_TA_COMPANY)).isEnabled()) {
+        ((InputDate) dateWidget).setDate(from);
+      } else {
+        Queries.getRow(VIEW_TRADE_ACTS, actId, new RowCallback() {
+
+          @Override
+          public void onSuccess(BeeRow result) {
+            ((InputDate) dateWidget).setDate(result.getDateTime(Data
+                .getColumnIndex(VIEW_TRADE_ACTS,
+                    COL_TA_DATE)));
+          }
+        });
+      }
+    }
+
+    JustDate to = BeeKeeper.getStorage().getDate(storageKey(COL_TA_SERVICE_TO));
+    if (to != null) {
+      widget = form.getWidgetByName(COL_TA_SERVICE_TO);
+      if (widget instanceof InputDate
+          && ((UnboundSelector) form.getWidgetByName(COL_TA_COMPANY)).isEnabled()) {
+        ((InputDate) widget).setDate(to);
+      } else {
+        ((InputDate) widget).setDate(new JustDate().getDate());
+      }
     }
   }
 
