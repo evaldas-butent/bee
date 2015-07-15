@@ -3,7 +3,6 @@ package com.butent.bee.client.modules.trade.acts;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.ALS_CONTACT_PHYSICAL;
 import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.COL_TA_COMPANY;
@@ -37,6 +36,7 @@ import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.form.interceptor.PrintFormInterceptor;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.State;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
@@ -70,6 +70,7 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
 
   private boolean hasInvoicesOrSecondaryActs;
   private DataSelector contractSelector;
+  private DataSelector objectSelector;
 
   TradeActForm() {
   }
@@ -90,6 +91,12 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
 
     if (widget instanceof DataSelector && BeeUtils.same(name, WIDGET_TA_CONTRACT)) {
       contractSelector = (DataSelector) widget;
+      contractSelector.addSelectorHandler(this);
+    }
+
+    if (widget instanceof DataSelector && BeeUtils.same(name, TradeActConstants.COL_TA_OBJECT)) {
+      objectSelector = (DataSelector) widget;
+      objectSelector.addSelectorHandler(this);
     }
     super.afterCreateWidget(name, widget, callback);
   }
@@ -99,13 +106,6 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
     TradeActKind kind = TradeActKeeper.getKind(row, getDataIndex(COL_TA_KIND));
     Button commandCompose = null;
     String caption;
-    DataSelector ds;
-    Widget widget = form.getWidgetBySource(TradeActConstants.COL_TA_OBJECT);
-
-    if (widget instanceof DataSelector) {
-      ds = (DataSelector) widget;
-      ds.addSelectorHandler(this);
-    }
 
     if (DataUtils.isNewRow(row)) {
       form.removeStyleName(STYLE_EDIT);
@@ -153,14 +153,6 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
         }
       }
     }
-
-    Filter relDocFilter =
-        Filter.in(Data.getIdColumn(DocumentConstants.VIEW_DOCUMENTS),
-            DocumentConstants.VIEW_RELATED_DOCUMENTS, DocumentConstants.COL_DOCUMENT, Filter
-                .equals(ClassifierConstants.COL_COMPANY, row
-                    .getString(getDataIndex(COL_TA_COMPANY))));
-
-    contractSelector.getOracle().setAdditionalFilter(relDocFilter, true);
 
     HeaderView header = form.getViewPresenter().getHeader();
     header.clearCommandPanel();
@@ -289,7 +281,8 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
 
   @Override
   public void onDataSelector(SelectorEvent event) {
-    if (event.isNewRow()) {
+    if (event.isNewRow()
+        && BeeUtils.same(event.getRelatedViewName(), ClassifierConstants.VIEW_COMPANY_OBJECTS)) {
 
       final BeeRow row = event.getNewRow();
       Data.setColumnReadOnly(ClassifierConstants.VIEW_COMPANY_OBJECTS,
@@ -306,5 +299,17 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
       Data.setColumnReadOnly(ClassifierConstants.VIEW_COMPANY_OBJECTS,
           ClassifierConstants.COL_COMPANY);
     }
+
+    if (event.getState() == State.OPEN && BeeUtils.same(event.getRelatedViewName(),
+        DocumentConstants.VIEW_DOCUMENTS)) {
+      Filter relDocFilter =
+          Filter.in(Data.getIdColumn(DocumentConstants.VIEW_DOCUMENTS),
+              DocumentConstants.VIEW_RELATED_DOCUMENTS, DocumentConstants.COL_DOCUMENT, Filter
+                  .equals(ClassifierConstants.COL_COMPANY, getActiveRow()
+                      .getString(getDataIndex(COL_TA_COMPANY))));
+
+      contractSelector.getOracle().setAdditionalFilter(relDocFilter, true);
+    }
+
   }
 }

@@ -90,7 +90,6 @@
               <InputText source="Code" style="width: 280px;"/>
               <Label text="=companyVATCode" style="&lbl;" for="VATCode" />
               <InputText source="VATCode" style="width: 280px;" upperCase="true" />
-              <CheckBox source="Physical" />
             </row>
           </Table>
         </FlowPanel>
