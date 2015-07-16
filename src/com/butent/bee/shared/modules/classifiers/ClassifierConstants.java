@@ -191,6 +191,7 @@ public final class ClassifierConstants {
   public static final String COL_BRANCH_CODE = "Code";
   public static final String COL_BRANCH_PRIMARY_WAREHOUSE = "PrimaryWarehouse";
 
+  public static final String COL_DATE_UNTIL = "DateUntil";
   public static final String COL_DEFAULT_BANK_ACCOUNT = "DefaultBankAccount";
   public static final String COL_DEFAULT_COMPANY_USER = "DefaultCompanyUser";
 
