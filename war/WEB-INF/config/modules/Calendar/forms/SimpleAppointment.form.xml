@@ -26,9 +26,11 @@
       renderColumns="Name" choiceColumns="Name TypeName" newRowEnabled="false"
       style="&absolute; left: 80px; top: 40px; width: 240px; max-height: 100px; overflow: auto;" />
 
-    <Label for="CompanyPerson" style="&absolute; left: 0px; top: 80px;"/>
-    <DataSelector source="CompanyPerson" renderColumns="PersonFirstName PersonLastName"
-      choiceColumns="FirstName LastName CompanyName" options="Company" 
+    <Label text="=responsiblePersons" style="&absolute; left: 0px; top: 80px;" />
+
+    <MultiSelector name="Owners" property="AppointmentOwners" viewName="Users"
+      newRowEnabled="false" renderColumns="FirstName LastName"
+      choiceColumns="FirstName LastName CompanyName PositionName"
       style="&absolute; left: 80px; top: 80px; width: 240px;" />
 
     <InputArea source="Description" placeholder="=description" visibleLines="5"
@@ -67,11 +69,9 @@
     <DataSelector source="CompanyName" choiceColumns="Name Phone Email"
       style="&absolute; left: 460px; top: 280px; width: 300px;" />
 
-    <Label text="=responsiblePersons" style="&absolute; left: 380px; top: 320px; width: 76px;" />
-
-    <MultiSelector name="Owners" property="AppointmentOwners" viewName="Users"
-      newRowEnabled="false" renderColumns="FirstName LastName"
-      choiceColumns="FirstName LastName CompanyName PositionName"
+    <Label for="CompanyPerson" style="&absolute; left: 380px; top: 320px; width: 76px;" />
+    <DataSelector source="CompanyPerson" renderColumns="PersonFirstName PersonLastName"
+      choiceColumns="FirstName LastName CompanyName" options="Company" 
       style="&absolute; left: 460px; top: 320px; width: 300px;" />
       
     <Label text="=creator" style="&absolute; left: 380px; top: 360px; width: 76px;" />
