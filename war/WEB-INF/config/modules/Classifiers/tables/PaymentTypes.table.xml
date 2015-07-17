@@ -7,6 +7,5 @@
   <Fields>
     <String name="PaymentName" precision="20" notNull="true" unique="true" label="=paymentType" />
     <Boolean name="PaymentCash" label="=cash" />
-    <Boolean name="SendToERP" label="Siųsti į apskaitą" />
   </Fields>
 </Table>

@@ -43,9 +43,9 @@
     </SimpleJoin>
 
     <SimpleColumn name="PaymentType" />
-    <SimpleJoin name="PaymentType" joinType="INNER" filter="SendToERP">
+    <SimpleJoin name="PaymentType" joinType="INNER" filter="PaymentCash">
       <SimpleColumn name="PaymentName" />
-      <HiddenColumn name="SendToERP" />
+      <HiddenColumn name="PaymentCash" />
     </SimpleJoin>
     <SimpleColumn name="Note" />
     <SimpleColumn name="Exported" />

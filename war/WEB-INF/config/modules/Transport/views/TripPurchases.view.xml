@@ -3,7 +3,7 @@
 
       name="TripPurchases" source="TripCosts" caption="=trTripCosts"
       readOnly="true"
-      filter="!(SendToERP)"
+      filter="!(PaymentCash)"
     >
   <Columns>
     <SimpleColumn name="Trip" />
@@ -47,7 +47,7 @@
     <SimpleColumn name="PaymentType" />
     <SimpleJoin name="PaymentType" joinType="LEFT">
       <SimpleColumn name="PaymentName" />
-      <HiddenColumn name="SendToERP" />
+      <HiddenColumn name="PaymentCash" />
     </SimpleJoin>
     <SimpleColumn name="Note" />
 
