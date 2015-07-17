@@ -33,7 +33,9 @@
     <SimpleColumn name="Sale" />
     <SimpleJoin name="Sale" joinType="LEFT">
       <SimpleColumn name="Date" alias="SaleDate" />
-      <SimpleColumn name="InvoicePrefix" alias="SalePrefix" />
+      <SimpleJoin name="SaleSeries" joinType="LEFT">
+        <SimpleColumn name="SeriesName" alias="SalePrefix" />
+      </SimpleJoin>
       <SimpleColumn name="InvoiceNo" alias="SaleNo" />
     </SimpleJoin>
     <SimpleColumn name="Purchase" />
@@ -43,6 +45,6 @@
     </SimpleJoin>
 
     <SimpleColumn name="AdditionalRoute" />
-    <SimpleColumn name="ShowAdditionalRoute" />    
+    <SimpleColumn name="ShowAdditionalRoute" />
   </Columns>
 </View>

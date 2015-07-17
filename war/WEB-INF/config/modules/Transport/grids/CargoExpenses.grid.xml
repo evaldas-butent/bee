@@ -41,7 +41,7 @@
                editViewName="CargoPurchaseInvoices">
       <render>
         <ui:expression>row.PurchaseDate ? (row.PurchaseDate.toISOString().substring(0, 10)
-          + " &lt;strong&gt;" + (row.PurchasePrefix ? row.PurchasePrefix : "") + row.PurchaseNo + "&lt;/strong&gt;")
+          + " &lt;strong&gt;" + (row.PurchasePrefix ? row.PurchasePrefix : " ") + row.PurchaseNo + "&lt;/strong&gt;")
           : ""
         </ui:expression>
       </render>

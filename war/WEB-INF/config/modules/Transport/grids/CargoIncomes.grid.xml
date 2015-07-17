@@ -51,7 +51,7 @@
                editEnabled="true" editForm="CargoInvoice" editViewName="CargoInvoices">
       <render>
         <ui:expression>row.SaleDate ? (row.SaleDate.toISOString().substring(0, 10)
-          + " &lt;strong&gt;" + (row.SalePrefix ? row.SalePrefix : "") + row.SaleNo + "&lt;/strong&gt;")
+          + " &lt;strong&gt;" + (row.SalePrefix ? row.SalePrefix : " ") + row.SaleNo + "&lt;/strong&gt;")
           : ""
         </ui:expression>
       </render>
