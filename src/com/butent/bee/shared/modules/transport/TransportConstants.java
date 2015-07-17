@@ -249,6 +249,8 @@ public final class TransportConstants {
   public static final String SVC_GET_CREDIT_INFO = "GetCreditInfo";
   public static final String SVC_GET_REPAIRS = "GetRepairs";
   public static final String SVC_COSTS_TO_ERP = "CostsToERP";
+  public static final String SVC_GET_TRIP_INFO = "GetTripInfo";
+  public static final String SVC_GET_VEHICLE_BUSY_DATES = "GetVehicleBusyDates";
 
   public static final String SVC_SEND_MESSAGE = "SendMessage";
 
@@ -256,8 +258,9 @@ public final class TransportConstants {
 
   public static final String PRM_ERP_REFRESH_INTERVAL = "ERPRefreshIntervalInMinutes";
   public static final String PRM_MESSAGE_TEMPLATE = "MessageTemplate";
-  public static final String PRM_INVOICE_PREFIX = "InvoicePrefix";
+  public static final String PRM_INVOICE_PREFIX = "DefaultInvoicePrefix";
   public static final String PRM_CARGO_TYPE = "CargoType";
+  public static final String PRM_CARGO_SERVICE = "CargoService";
   public static final String PRM_BIND_EXPENSES_TO_INCOMES = "BindExpensesToIncomes";
   public static final String PRM_SYNC_ERP_VEHICLES = "ERPSyncVehiclesOnHours";
 
@@ -281,6 +284,7 @@ public final class TransportConstants {
 
   public static final String TBL_TRIPS = "Trips";
   public static final String TBL_TRIP_DRIVERS = "TripDrivers";
+  public static final String TBL_DRIVER_ADVANCES = "DriverAdvances";
   public static final String TBL_TRIP_COSTS = "TripCosts";
   public static final String TBL_TRIP_FUEL_COSTS = "TripFuelCosts";
   public static final String TBL_TRIP_ROUTES = "TripRoutes";
@@ -476,7 +480,7 @@ public final class TransportConstants {
   public static final String COL_PAYER_NAME = "PayerName";
 
   public static final String COL_SERVICE = "Service";
-  public static final String COL_SERVICE_NAME = "ServiceName";
+  public static final String COL_SERVICE_NAME = "Name";
   public static final String COL_TRANSPORTATION = "Transportation";
   public static final String COL_DATE = "Date";
   public static final String COL_AMOUNT = "Amount";
@@ -529,6 +533,7 @@ public final class TransportConstants {
   public static final String COL_DRIVER_END_DATE = "EndDate";
   public static final String COL_DRIVER_EXPERIENCE = "Experience";
   public static final String COL_DRIVER_NOTES = "Notes";
+  public static final String COL_MAIN_DRIVER = "MainDriver";
 
   public static final String COL_TRIP_DRIVER_FROM = "DateFrom";
   public static final String COL_TRIP_DRIVER_TO = "DateTo";
@@ -583,6 +588,8 @@ public final class TransportConstants {
   public static final String COL_SS_PLACE_CITIES = "SsPlaceCities";
   public static final String COL_SS_PLACE_CODES = "SsPlaceCodes";
 
+  public static final String COL_SS_ADDITIONAL_INFO = "SsAdditionalInfo";
+
   public static final String COL_SS_PIXELS_PER_DAY = "SsPixelsPerDay";
   public static final String COL_SS_PIXELS_PER_ROW = "SsPixelsPerRow";
 
@@ -601,6 +608,8 @@ public final class TransportConstants {
 
   public static final String COL_DTB_PLACE_CITIES = "DtbPlaceCities";
   public static final String COL_DTB_PLACE_CODES = "DtbPlaceCodes";
+
+  public static final String COL_DTB_ADDITIONAL_INFO = "DtbAdditionalInfo";
 
   public static final String COL_DTB_PIXELS_PER_DAY = "DtbPixelsPerDay";
   public static final String COL_DTB_PIXELS_PER_ROW = "DtbPixelsPerRow";
@@ -623,6 +632,8 @@ public final class TransportConstants {
   public static final String COL_TRUCK_PLACE_CITIES = "TruckPlaceCities";
   public static final String COL_TRUCK_PLACE_CODES = "TruckPlaceCodes";
 
+  public static final String COL_TRUCK_ADDITIONAL_INFO = "TruckAdditionalInfo";
+
   public static final String COL_TRUCK_PIXELS_PER_DAY = "TruckPixelsPerDay";
   public static final String COL_TRUCK_PIXELS_PER_ROW = "TruckPixelsPerRow";
 
@@ -642,6 +653,8 @@ public final class TransportConstants {
   public static final String COL_TRAILER_PLACE_INFO = "TrailerPlaceInfo";
   public static final String COL_TRAILER_PLACE_CITIES = "TrailerPlaceCities";
   public static final String COL_TRAILER_PLACE_CODES = "TrailerPlaceCodes";
+
+  public static final String COL_TRAILER_ADDITIONAL_INFO = "TrailerAdditionalInfo";
 
   public static final String COL_TRAILER_PIXELS_PER_DAY = "TrailerPixelsPerDay";
   public static final String COL_TRAILER_PIXELS_PER_ROW = "TrailerPixelsPerRow";
@@ -737,6 +750,7 @@ public final class TransportConstants {
   public static final String FORM_VEHICLE = "Vehicle";
   public static final String FORM_NEW_VEHICLE = "NewVehicle";
   public static final String FORM_ORDER = "TransportationOrder";
+  public static final String FORM_NEW_SIMPLE_ORDER = "NewSimpleTransportationOrder";
   public static final String FORM_TRIP = "Trip";
   public static final String FORM_EXPEDITION_TRIP = "ExpeditionTrip";
   public static final String FORM_CARGO = "OrderCargo";
@@ -833,6 +847,8 @@ public final class TransportConstants {
   public static final String ALS_REQUEST_CUSTOMER_COMPANY = "CustomerCompany";
 
   public static final String ALS_CARGO_CMR_NUMBER = "CmrNumber";
+
+  public static final String ALS_SERVICE_NAME = "ServiceName";
 
   public static final String DATA_TYPE_ORDER_CARGO = "OrderCargo";
   public static final String DATA_TYPE_TRIP = "Trip";

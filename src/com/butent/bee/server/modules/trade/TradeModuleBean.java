@@ -34,14 +34,12 @@ import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.filter.Filter;
-import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.exceptions.BeeException;
 import com.butent.bee.shared.exceptions.BeeRuntimeException;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.trade.TradeDocumentData;
-import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.rights.ModuleAndSub;
 import com.butent.bee.shared.rights.SubModule;
@@ -296,8 +294,8 @@ public class TradeModuleBean implements BeeModule {
     sys.registerDataEventHandler(new DataEventHandler() {
       @Subscribe
       public void fillInvoiceNumber(ViewModifyEvent event) {
-        if (BeeUtils.inListSame(event.getTargetName(), TBL_SALES,
-            TransportConstants.VIEW_CARGO_INVOICES) && event.isBefore()) {
+        if (BeeUtils.same(sys.getViewSource(event.getTargetName()), TBL_SALES)
+            && event.isBefore()) {
           List<BeeColumn> cols = null;
           IsRow row = null;
           String prefix = null;
@@ -311,16 +309,24 @@ public class TradeModuleBean implements BeeModule {
           } else {
             return;
           }
-          int idx = DataUtils.getColumnIndex(COL_TRADE_INVOICE_PREFIX, cols);
+          int prefixIdx = DataUtils.getColumnIndex(COL_TRADE_SALE_SERIES, cols);
 
-          if (idx != BeeConst.UNDEF) {
-            prefix = row.getString(idx);
+          if (!BeeConst.isUndef(prefixIdx)) {
+            prefix = row.getString(prefixIdx);
           }
-          if (!BeeUtils.isEmpty(prefix)
-              && DataUtils.getColumnIndex(COL_TRADE_INVOICE_NO, cols) == BeeConst.UNDEF) {
-            cols.add(new BeeColumn(COL_TRADE_INVOICE_NO));
-            row.addValue(Value.getValue(qs.getNextNumber(TBL_SALES, COL_TRADE_INVOICE_NO, prefix,
-                COL_TRADE_INVOICE_PREFIX)));
+          if (!BeeUtils.isEmpty(prefix)) {
+            int numberIdx = DataUtils.getColumnIndex(COL_TRADE_INVOICE_NO, cols);
+
+            if (BeeConst.isUndef(numberIdx)) {
+              cols.add(new BeeColumn(COL_TRADE_INVOICE_NO));
+              row.addValue(null);
+              numberIdx = row.getNumberOfCells() - 1;
+
+            } else if (!BeeUtils.isEmpty(row.getString(numberIdx))) {
+              return;
+            }
+            row.setValue(numberIdx, qs.getNextNumber(TBL_SALES, COL_TRADE_INVOICE_NO, prefix,
+                COL_TRADE_SALE_SERIES));
           }
         }
       }

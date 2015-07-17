@@ -5,6 +5,7 @@
     >
   <Columns>
     <SimpleColumn name="PaymentName" />
+    <SimpleColumn name="PaymentCash" />
     <SimpleColumn name="SendToERP" />
   </Columns>
   <Order>

@@ -73,7 +73,9 @@ import com.butent.bee.shared.news.NewsConstants;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.rights.ModuleAndSub;
 import com.butent.bee.shared.rights.SubModule;
+import com.butent.bee.shared.time.DateRange;
 import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Color;
 import com.butent.bee.shared.utils.ArrayUtils;
@@ -174,12 +176,12 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
 
     List<SearchResult> orderCargoResult = qs.getSearchResults(VIEW_ORDER_CARGO,
         Filter.anyContains(Sets.newHashSet(COL_CARGO_DESCRIPTION,
-                COL_NUMBER, ALS_CARGO_CMR_NUMBER, COL_CARGO_NOTES, COL_CARGO_DIRECTIONS,
-                ALS_LOADING_NUMBER, ALS_LOADING_CONTACT, ALS_LOADING_COMPANY, ALS_LOADING_ADDRESS,
-                ALS_LOADING_POST_INDEX, ALS_LOADING_CITY_NAME, ALS_LOADING_COUNTRY_NAME,
-                ALS_LOADING_COUNTRY_CODE, ALS_UNLOADING_NUMBER, ALS_UNLOADING_CONTACT,
-                ALS_UNLOADING_COMPANY, ALS_UNLOADING_ADDRESS, ALS_UNLOADING_POST_INDEX,
-                ALS_UNLOADING_CITY_NAME, ALS_UNLOADING_COUNTRY_NAME, ALS_UNLOADING_COUNTRY_CODE),
+            COL_NUMBER, ALS_CARGO_CMR_NUMBER, COL_CARGO_NOTES, COL_CARGO_DIRECTIONS,
+            ALS_LOADING_NUMBER, ALS_LOADING_CONTACT, ALS_LOADING_COMPANY, ALS_LOADING_ADDRESS,
+            ALS_LOADING_POST_INDEX, ALS_LOADING_CITY_NAME, ALS_LOADING_COUNTRY_NAME,
+            ALS_LOADING_COUNTRY_CODE, ALS_UNLOADING_NUMBER, ALS_UNLOADING_CONTACT,
+            ALS_UNLOADING_COMPANY, ALS_UNLOADING_ADDRESS, ALS_UNLOADING_POST_INDEX,
+            ALS_UNLOADING_CITY_NAME, ALS_UNLOADING_COUNTRY_NAME, ALS_UNLOADING_COUNTRY_CODE),
             query));
 
     result.addAll(vehiclesResult);
@@ -316,6 +318,12 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
     } else if (BeeUtils.same(svc, SVC_COSTS_TO_ERP)) {
       response = costsToERP(DataUtils.parseIdSet(reqInfo.getParameter(VAR_ID_LIST)));
 
+    } else if (BeeUtils.same(svc, SVC_GET_VEHICLE_BUSY_DATES)) {
+      response = getVehicleBusyDates();
+
+    } else if (BeeUtils.same(svc, SVC_GET_TRIP_INFO)) {
+      response = rep.getTripInfo(reqInfo);
+
     } else {
       String msg = BeeUtils.joinWords("Transport service not recognized:", svc);
       logger.warning(msg);
@@ -329,7 +337,8 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
     String module = getModule().getName();
 
     return Lists.newArrayList(
-        BeeParameter.createText(module, PRM_INVOICE_PREFIX, true, null),
+        BeeParameter.createRelation(module, PRM_INVOICE_PREFIX, true, TBL_SALES_SERIES,
+            COL_SERIES_NAME),
         BeeParameter.createCollection(module, PRM_MESSAGE_TEMPLATE, true, null),
         BeeParameter.createNumber(module, PRM_ERP_REFRESH_INTERVAL),
         BeeParameter.createText(module, "SmsServiceAddress"),
@@ -339,8 +348,10 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
         BeeParameter.createText(module, "SmsDisplayText"),
         BeeParameter.createRelation(module, PRM_CARGO_TYPE, true, TBL_CARGO_TYPES,
             COL_CARGO_TYPE_NAME),
-        BeeParameter.createBoolean(module, PRM_BIND_EXPENSES_TO_INCOMES, false, true),
-        BeeParameter.createText(module, PRM_SYNC_ERP_VEHICLES));
+        BeeParameter.createRelation(module, PRM_CARGO_SERVICE, false, TBL_SERVICES,
+            COL_SERVICE_NAME),
+        BeeParameter.createText(module, PRM_SYNC_ERP_VEHICLES),
+        BeeParameter.createBoolean(module, PRM_BIND_EXPENSES_TO_INCOMES, false, true));
   }
 
   @Override
@@ -520,7 +531,7 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
             }
             String crs =
                 rep.getTripIncomes(event.getQuery().resetFields().resetOrder().resetGroup()
-                        .addFields(VIEW_CARGO_TRIPS, COL_TRIP).addGroup(VIEW_CARGO_TRIPS, COL_TRIP),
+                    .addFields(VIEW_CARGO_TRIPS, COL_TRIP).addGroup(VIEW_CARGO_TRIPS, COL_TRIP),
                     null, false);
 
             SimpleRowSet rs = qs.getData(new SqlSelect().addAllFields(crs).addFrom(crs));
@@ -992,19 +1003,23 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
 
     SqlSelect ss = new SqlSelect()
         .addFields(TBL_ORDERS, COL_ORDER_NO)
-        .addFields(TBL_SALES, COL_TRADE_INVOICE_PREFIX, COL_TRADE_INVOICE_NO)
+        .addFields(TBL_SALES_SERIES, COL_SERIES_NAME)
+        .addFields(TBL_SALES, COL_TRADE_INVOICE_NO)
         .addFields(TBL_CARGO_INCOMES, COL_TRADE_VAT_PLUS, COL_TRADE_VAT, COL_TRADE_VAT_PERC)
         .addFrom(TBL_CARGO_INCOMES)
         .addFromInner(TBL_SERVICES,
             sys.joinTables(TBL_SERVICES, TBL_CARGO_INCOMES, COL_SERVICE))
         .addFromInner(TBL_SALES,
             sys.joinTables(TBL_SALES, TBL_CARGO_INCOMES, COL_SALE))
+        .addFromLeft(TBL_SALES_SERIES,
+            sys.joinTables(TBL_SALES_SERIES, TBL_SALES, COL_TRADE_SALE_SERIES))
         .addFromInner(TBL_ORDER_CARGO,
             sys.joinTables(TBL_ORDER_CARGO, TBL_CARGO_INCOMES, COL_CARGO))
         .addFromInner(TBL_ORDERS, sys.joinTables(TBL_ORDERS, TBL_ORDER_CARGO, COL_ORDER))
         .setWhere(SqlUtils.and(wh, SqlUtils.positive(TBL_CARGO_INCOMES, COL_AMOUNT)))
         .addGroup(TBL_ORDERS, COL_ORDER_NO)
-        .addGroup(TBL_SALES, COL_TRADE_INVOICE_PREFIX, COL_TRADE_INVOICE_NO)
+        .addGroup(TBL_SALES_SERIES, COL_SERIES_NAME)
+        .addGroup(TBL_SALES, COL_TRADE_INVOICE_NO)
         .addGroup(TBL_CARGO_INCOMES, COL_TRADE_VAT_PLUS, COL_TRADE_VAT, COL_TRADE_VAT_PERC);
 
     if (DataUtils.isId(mainItem)) {
@@ -1030,7 +1045,7 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
     for (SimpleRow row : rs) {
       String xml = XmlUtils.createString("CreditInfo",
           COL_ORDER_NO, row.getValue(COL_ORDER_NO),
-          COL_TRADE_INVOICE_NO, BeeUtils.joinWords(row.getValue(COL_TRADE_INVOICE_PREFIX),
+          COL_TRADE_INVOICE_NO, BeeUtils.joinWords(row.getValue(COL_SERIES_NAME),
               row.getValue(COL_TRADE_INVOICE_NO)));
 
       SqlInsert insert = new SqlInsert(TBL_PURCHASE_ITEMS)
@@ -1219,7 +1234,7 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
       if (BeeUtils.unbox(row.getBoolean(COL_TRANSPORTATION))) {
         String value = BeeUtils.join("\n", row.getValue(COL_ORDER_NOTES),
             BeeUtils.join("-", row.getValue(loadCountry)
-                    + " (" + row.getValue(loadCountry + "Name") + ")",
+                + " (" + row.getValue(loadCountry + "Name") + ")",
                 row.getValue(unloadCountry)
                     + " (" + row.getValue(unloadCountry + "Name") + ")"));
 
@@ -1384,9 +1399,9 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
         .addFields(TBL_COUNTRY_NORMS, COL_COUNTRY, COL_DAILY_COSTS_ITEM)
         .addFields(TBL_COUNTRY_DAILY_COSTS, COL_AMOUNT, COL_CURRENCY)
         .addExpr(SqlUtils.sqlIf(SqlUtils.or(
-                SqlUtils.isNull(TBL_COUNTRY_DAILY_COSTS, COL_TRIP_DATE_FROM),
-                SqlUtils.joinLess(TBL_COUNTRY_DAILY_COSTS, COL_TRIP_DATE_FROM,
-                    TBL_TRIP_ROUTES, COL_ROUTE_DEPARTURE_DATE)),
+            SqlUtils.isNull(TBL_COUNTRY_DAILY_COSTS, COL_TRIP_DATE_FROM),
+            SqlUtils.joinLess(TBL_COUNTRY_DAILY_COSTS, COL_TRIP_DATE_FROM,
+                TBL_TRIP_ROUTES, COL_ROUTE_DEPARTURE_DATE)),
             SqlUtils.field(TBL_TRIP_ROUTES, COL_ROUTE_DEPARTURE_DATE),
             SqlUtils.field(TBL_COUNTRY_DAILY_COSTS, COL_TRIP_DATE_FROM)), COL_ROUTE_DEPARTURE_DATE)
         .addExpr(SqlUtils.sqlIf(
@@ -1434,7 +1449,7 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
       values.put(COL_COSTS_QUANTITY,
           BeeUtils.toString(BeeUtils.toInt(values.get(COL_COSTS_QUANTITY))
               + TimeUtils.dayDiff(row.getDateTime(COL_ROUTE_DEPARTURE_DATE),
-              row.getDateTime(COL_ROUTE_ARRIVAL_DATE)) + 1));
+                  row.getDateTime(COL_ROUTE_ARRIVAL_DATE)) + 1));
     }
     DateTime date = qs.getDateTime(new SqlSelect()
         .addFields(TBL_TRIPS, COL_TRIP_DATE)
@@ -2068,8 +2083,8 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
           .addFromInner(TBL_CARGO_INCOMES,
               sys.joinTables(TBL_ORDER_CARGO, TBL_CARGO_INCOMES, COL_CARGO))
           .setWhere(SqlUtils.and(SqlUtils.or(SqlUtils.equals(TBL_ORDERS, COL_PAYER, company),
-                  SqlUtils.and(SqlUtils.isNull(TBL_ORDERS, COL_PAYER),
-                      SqlUtils.equals(TBL_ORDERS, COL_CUSTOMER, company))),
+              SqlUtils.and(SqlUtils.isNull(TBL_ORDERS, COL_PAYER),
+                  SqlUtils.equals(TBL_ORDERS, COL_CUSTOMER, company))),
               SqlUtils.isNull(TBL_CARGO_INCOMES, COL_SALE)));
 
       IsExpression cargoIncome;
@@ -2487,9 +2502,9 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
               .setWhere(SqlUtils.equals(fuels, COL_TRIP, rs.getLong(cnt, tripId))));
 
           SimpleRow row = qs.getRow(rep.getFuelConsumptionsQuery(new SqlSelect()
-                  .addFields(TBL_TRIP_ROUTES, sys.getIdName(TBL_TRIP_ROUTES))
-                  .addFrom(TBL_TRIP_ROUTES)
-                  .setWhere(SqlUtils.equals(TBL_TRIP_ROUTES, COL_TRIP, rs.getLong(cnt, tripId))),
+              .addFields(TBL_TRIP_ROUTES, sys.getIdName(TBL_TRIP_ROUTES))
+              .addFrom(TBL_TRIP_ROUTES)
+              .setWhere(SqlUtils.equals(TBL_TRIP_ROUTES, COL_TRIP, rs.getLong(cnt, tripId))),
               false));
 
           Double consume = row == null ? null : row.getDouble("Quantity");
@@ -2558,6 +2573,80 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
             SqlUtils.isNull(TBL_CARGO_TRIPS, COL_CARGO)));
 
     return ResponseObject.response(qs.getColumn(query));
+  }
+
+  private ResponseObject getVehicleBusyDates() {
+    Set<Pair<Long, DateRange>> result = new HashSet<>();
+
+    SqlSelect tripQuery = new SqlSelect()
+        .addFrom(TBL_TRIPS)
+        .addFields(TBL_TRIPS, COL_VEHICLE, COL_TRAILER,
+            COL_TRIP_DATE, COL_TRIP_PLANNED_END_DATE, COL_TRIP_DATE_FROM, COL_TRIP_DATE_TO);
+
+    SimpleRowSet tripData = qs.getData(tripQuery);
+
+    if (!DataUtils.isEmpty(tripData)) {
+      for (SimpleRow row : tripData) {
+        JustDate start = row.getDate(COL_TRIP_DATE_FROM);
+        if (start == null) {
+          DateTime dt = row.getDateTime(COL_TRIP_DATE);
+          if (dt != null) {
+            start = dt.getDate();
+          } else {
+            continue;
+          }
+        }
+
+        JustDate end = row.getDate(COL_TRIP_DATE_TO);
+        if (end == null) {
+          end = row.getDate(COL_TRIP_PLANNED_END_DATE);
+        }
+        if (end == null || BeeUtils.isLess(end, start)) {
+          end = start;
+        }
+
+        DateRange range = DateRange.closed(start, end);
+
+        Long vehicle = row.getLong(COL_VEHICLE);
+        if (DataUtils.isId(vehicle)) {
+          result.add(Pair.of(vehicle, range));
+        }
+
+        Long trailer = row.getLong(COL_TRAILER);
+        if (DataUtils.isId(trailer)) {
+          result.add(Pair.of(trailer, range));
+        }
+      }
+    }
+
+    SqlSelect serviceQuery = new SqlSelect()
+        .addFrom(TBL_VEHICLE_SERVICES)
+        .addFields(TBL_VEHICLE_SERVICES, COL_VEHICLE, COL_VEHICLE_SERVICE_DATE,
+            COL_VEHICLE_SERVICE_DATE_TO);
+
+    SimpleRowSet serviceData = qs.getData(serviceQuery);
+
+    if (!DataUtils.isEmpty(serviceData)) {
+      for (SimpleRow row : serviceData) {
+        Long vehicle = row.getLong(COL_VEHICLE);
+        JustDate start = row.getDate(COL_VEHICLE_SERVICE_DATE);
+
+        if (DataUtils.isId(vehicle) && start != null) {
+          JustDate end = row.getDate(COL_VEHICLE_SERVICE_DATE_TO);
+          if (end == null || BeeUtils.isLess(end, start)) {
+            end = start;
+          }
+
+          result.add(Pair.of(vehicle, DateRange.closed(start, end)));
+        }
+      }
+    }
+
+    if (result.isEmpty()) {
+      return ResponseObject.emptyResponse();
+    } else {
+      return ResponseObject.response(result);
+    }
   }
 
   private Map<Long, Long> getVehicleManagers(IsCondition condition) {
@@ -2797,7 +2886,7 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
         SimpleRowSet payments = ButentWS.connect(remoteNamespace, remoteAddress, remoteLogin,
             remotePassword)
             .getSQLData("SELECT extern_id AS id, apm_data AS data, apm_suma AS suma"
-                    + " FROM apyvarta WHERE pajamos=0 AND extern_id IN(" + ids.toString() + ")",
+                + " FROM apyvarta WHERE pajamos=0 AND extern_id IN(" + ids.toString() + ")",
                 "id", "data", "suma");
 
         for (SimpleRow payment : payments) {
@@ -3056,10 +3145,11 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
       } else {
         in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
         StringBuilder sb = new StringBuilder();
-        String input;
+        String input = in.readLine();
 
-        while ((input = in.readLine()) != null) {
+        while (input != null) {
           sb.append(input);
+          input = in.readLine();
         }
         in.close();
         input = sb.toString();

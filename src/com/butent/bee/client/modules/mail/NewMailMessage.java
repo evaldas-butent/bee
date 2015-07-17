@@ -28,7 +28,6 @@ import com.butent.bee.client.dialog.DialogConstants;
 import com.butent.bee.client.dialog.InputBoxes;
 import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.dialog.Popup;
-import com.butent.bee.client.event.Previewer;
 import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.FormFactory.FormViewCallback;
@@ -152,7 +151,7 @@ public final class NewMailMessage extends AbstractFormInterceptor
             if (formView != null) {
               formView.start(null);
 
-              final boolean modal = Popup.getActivePopup() != null;
+              final boolean modal = Popup.hasEventPreview();
 
               final DialogBox dialog = Global.inputWidget(formView.getCaption(), formView,
                   newMessage.new DialogCallback(), RowFactory.DIALOG_STYLE);
@@ -164,7 +163,7 @@ public final class NewMailMessage extends AbstractFormInterceptor
                     public void onSuccess(BeeRowSet result) {
                       dialog.removeStyleName(STYLE_WAITING_FOR_USER_EMAILS);
                       if (!modal) {
-                        Previewer.ensureUnregistered(dialog);
+                        dialog.setPreviewEnabled(false);
                       }
                     }
                   });

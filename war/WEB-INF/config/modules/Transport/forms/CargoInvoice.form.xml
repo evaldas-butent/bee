@@ -4,7 +4,7 @@
 ]>
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
-  
+
   name="CargoInvoice" viewName="CargoInvoices"
   width="800" height="600"
   >
@@ -29,7 +29,8 @@
 
         <Label text="=trdInvoicePrefix" style="&lbl;" />
         <FlowPanel>
-          <DataSelector source="SaleSeries" upperCase="true" style="width:11em;" />
+          <DataSelector source="SaleSeries" upperCase="true" style="width:11em;"
+                        editEnabled="false" />
           <InlineLabel text="=trdInvoiceNo" style="margin-left:5px;" />
           <InputText source="InvoiceNo" />
         </FlowPanel>
@@ -39,14 +40,14 @@
         <DataSelector source="Supplier" renderColumns="SupplierName SupplierTypeName"
             choiceColumns="Name TypeName" />
         <Label text="=trdCustomer" class="bee-required" style="&lbl;" />
-        <DataSelector source="Customer" renderColumns="CustomerName CustomerTypeName" 
+        <DataSelector source="Customer" renderColumns="CustomerName CustomerTypeName"
             choiceColumns="Name TypeName" required="true" />
       </row>
       <row>
         <Label text="=trdManager" style="&lbl;" />
         <DataSelector source="Manager" editSource="ManagerPerson" />
         <Label text="=trdPayer" style="&lbl;" />
-        <DataSelector source="Payer" renderColumns="PayerName PayerTypeName" 
+        <DataSelector source="Payer" renderColumns="PayerName PayerTypeName"
             choiceColumns="Name TypeName" />
       </row>
       <row>
