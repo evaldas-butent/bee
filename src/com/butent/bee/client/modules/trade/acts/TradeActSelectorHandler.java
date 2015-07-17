@@ -28,10 +28,12 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.value.DateTimeValue;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
+import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.classifiers.ItemPrice;
 import com.butent.bee.shared.modules.trade.acts.TradeActKind;
 import com.butent.bee.shared.time.DateTime;
@@ -573,9 +575,20 @@ class TradeActSelectorHandler implements SelectorEvent.Handler {
 
           if (isActOrTemplate(form)) {
             Long company = form.getLongValue(COL_TA_COMPANY);
-            Filter filter = DataUtils.isId(company) ? Filter.equals(COL_COMPANY, company) : null;
+            DateTime timeUntil = form.getDateTimeValue(COL_TA_UNTIL);
+            Filter filter;
 
-            event.getSelector().setAdditionalFilter(filter);
+            if (timeUntil != null) {
+              filter =
+                  DataUtils.isId(company) ? Filter.and(Filter.equals(COL_COMPANY, company),
+                      Filter.or(Filter.isLess(ClassifierConstants.COL_DATE_UNTIL,
+                          new DateTimeValue(timeUntil)),
+                          Filter.isNull(ClassifierConstants.COL_DATE_UNTIL))) : null;
+            } else {
+              filter = DataUtils.isId(company) ? Filter.equals(COL_COMPANY, company) : null;
+            }
+
+            event.getSelector().setAdditionalFilter(filter, true);
           }
 
         } else if (event.isChanged() && event.getRelatedRow() != null) {
