@@ -374,8 +374,6 @@ public class PrintTripForm extends AbstractFormInterceptor {
         }
 
     );
-    super.
-
-        onSetActiveRow(row);
+    super.onSetActiveRow(row);
   }
 }
