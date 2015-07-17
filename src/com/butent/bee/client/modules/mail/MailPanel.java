@@ -692,7 +692,6 @@ public class MailPanel extends AbstractFormInterceptor {
         IsRow row = grid.getActiveRow();
 
         if (row != null) {
-          grid.getGridView().getGrid().reset();
           flagMessage(row.getId(), MessageFlag.SEEN, false);
         }
       }
