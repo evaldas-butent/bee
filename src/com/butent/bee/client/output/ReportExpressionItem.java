@@ -54,12 +54,12 @@ public class ReportExpressionItem extends ReportItem {
 
   @Override
   public ReportValue evaluate(SimpleRow row) {
-    List<String> values = new ArrayList<>();
+    List<ReportValue> values = new ArrayList<>();
     StringBuilder display = new StringBuilder();
 
     for (Pair<String, ReportItem> pair : expression) {
       ReportValue val = pair.getB().evaluate(row);
-      values.add(val.getValue());
+      values.add(val);
 
       if (!BeeUtils.isEmpty(val.toString())) {
         if (display.length() > 0) {
@@ -68,7 +68,7 @@ public class ReportExpressionItem extends ReportItem {
         display.append(val);
       }
     }
-    return ReportValue.of(values.toString(), display.toString());
+    return ReportValue.of(values.toArray(new ReportValue[0])).setDisplay(display.toString());
   }
 
   @Override

@@ -172,7 +172,8 @@ public class PrintTripForm extends AbstractFormInterceptor {
                   driverCosts.setText(r, index.get(COL_COSTS_ITEM),
                       Localized.getConstants().total());
                   driverCosts.setText(r, index.get(COL_DRIVER), drivers.get(driver));
-                  driverCosts.setText(r, index.get(COL_AMOUNT), BeeUtils.toString(total));
+                  driverCosts.setText(r, index.get(COL_AMOUNT),
+                      BeeUtils.toString(BeeUtils.round(total, 2)));
                   r++;
                   driverTotal += total;
                 }
