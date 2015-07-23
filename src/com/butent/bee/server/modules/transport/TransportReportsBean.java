@@ -885,11 +885,11 @@ public class TransportReportsBean {
           .addFields(tmpTripCargo, COL_CARGO)
           .addFields(TBL_ORDER_CARGO, COL_CARGO_PARTIAL)
           .addFrom(tmp)
-          .addFromInner(tmpTripCargo, SqlUtils.joinUsing(tmp, tmpTripCargo, COL_TRIP))
-          .addFromInner(TBL_ORDER_CARGO,
+          .addFromLeft(tmpTripCargo, SqlUtils.joinUsing(tmp, tmpTripCargo, COL_TRIP))
+          .addFromLeft(TBL_ORDER_CARGO,
               sys.joinTables(TBL_ORDER_CARGO, tmpTripCargo, COL_CARGO))
-          .addFromInner(TBL_ORDERS, sys.joinTables(TBL_ORDERS, TBL_ORDER_CARGO, COL_ORDER))
-          .addFromInner(TBL_COMPANIES, sys.joinTables(TBL_COMPANIES, TBL_ORDERS, COL_CUSTOMER))
+          .addFromLeft(TBL_ORDERS, sys.joinTables(TBL_ORDERS, TBL_ORDER_CARGO, COL_ORDER))
+          .addFromLeft(TBL_COMPANIES, sys.joinTables(TBL_COMPANIES, TBL_ORDERS, COL_CUSTOMER))
           .addFromLeft(TBL_USERS, sys.joinTables(TBL_USERS, TBL_ORDERS, COL_ORDER_MANAGER))
           .addFromLeft(TBL_COMPANY_PERSONS,
               sys.joinTables(TBL_COMPANY_PERSONS, TBL_USERS, COL_COMPANY_PERSON))
@@ -905,7 +905,7 @@ public class TransportReportsBean {
             otherCosts, plannedKilometers, plannedFuelCosts, plannedDailyCosts, plannedRoadCosts)) {
 
           query.addExpr(SqlUtils.multiply(SqlUtils.divide(SqlUtils.field(tmp, column), 100),
-              SqlUtils.field(tmpTripCargo, COL_CARGO_PERCENT)), column);
+              SqlUtils.nvl(SqlUtils.field(tmpTripCargo, COL_CARGO_PERCENT), 100)), column);
         } else {
           query.addFields(tmp, column);
         }
