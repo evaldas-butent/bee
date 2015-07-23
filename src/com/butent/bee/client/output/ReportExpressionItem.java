@@ -60,12 +60,13 @@ public class ReportExpressionItem extends ReportItem {
     for (Pair<String, ReportItem> pair : expression) {
       ReportValue val = pair.getB().evaluate(row);
       values.add(val);
+      String text = val.toString();
 
-      if (!BeeUtils.isEmpty(val.toString())) {
+      if (!BeeUtils.isEmpty(text)) {
         if (display.length() > 0) {
           display.append(pair.getA());
         }
-        display.append(val);
+        display.append(text);
       }
     }
     return ReportValue.of(values.toArray(new ReportValue[0])).setDisplay(display.toString());
