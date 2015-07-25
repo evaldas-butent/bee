@@ -660,8 +660,9 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
             Filter.isNull(COL_RS_CAPTION)), new RowSetCallback() {
           @Override
           public void onSuccess(BeeRowSet result) {
-            reports.addAll(getReport().getReports());
-
+            for (ReportInfo rep : getReport().getReports()) {
+              reports.add(ReportInfo.restore(rep.serialize()));
+            }
             for (int i = 0; i < result.getNumberOfRows(); i++) {
               ReportInfo rep = ReportInfo.restore(result.getString(i, COL_RS_PARAMETERS));
               rep.setId(result.getRow(i).getId());

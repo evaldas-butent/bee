@@ -1,6 +1,41 @@
 package com.butent.bee.shared.modules.trade;
 
+import com.butent.bee.shared.i18n.LocalizableConstants;
+import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.ui.HasLocalizedCaption;
+import com.butent.bee.shared.utils.EnumUtils;
+
 public final class TradeConstants {
+
+  public enum OperationType implements HasLocalizedCaption {
+    PURCHASE {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.trdTypePurchase();
+      }
+    },
+    SALE {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.trdTypeSale();
+      }
+    },
+    TRANSFER {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.trdTypeTransfer();
+      }
+    };
+
+    @Override
+    public String getCaption() {
+      return getCaption(Localized.getConstants());
+    }
+  }
+
+  public static void register() {
+    EnumUtils.register(OperationType.class);
+  }
 
   public static final String SVC_ITEMS_INFO = "ItemsInfo";
   public static final String SVC_CREDIT_INFO = "CreditInfo";
@@ -42,6 +77,7 @@ public final class TradeConstants {
 
   public static final String COL_TRADE_DATE = "Date";
   public static final String COL_TRADE_NUMBER = "Number";
+  public static final String COL_TRADE_OPERATION = "Operation";
   public static final String COL_TRADE_INVOICE_PREFIX = "InvoicePrefix";
   public static final String COL_TRADE_SALE_SERIES = "SaleSeries";
   public static final String COL_TRADE_INVOICE_NO = "InvoiceNo";
@@ -76,6 +112,7 @@ public final class TradeConstants {
   public static final String COL_SERIES_DEFAULT = "IsDefault";
 
   public static final String COL_OPERATION_NAME = "OperationName";
+  public static final String COL_OPERATION_TYPE = "OperationType";
   public static final String COL_OPERATION_KIND = "Kind";
   public static final String COL_OPERATION_PRICE = "Price";
   public static final String COL_OPERATION_WAREHOUSE_FROM = "WarehouseFrom";
