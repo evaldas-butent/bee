@@ -328,15 +328,6 @@ public class MailPanel extends AbstractFormInterceptor {
         message.requery(COL_PLACE, row.getId());
         messageWidget.setVisible(true);
         emptySelectionWidget.setVisible(false);
-
-        int flagIdx = Data.getColumnIndex(getGridPresenter().getViewName(), COL_FLAGS);
-        int value = BeeUtils.unbox(row.getInteger(flagIdx));
-
-        if (!MessageFlag.SEEN.isSet(value)) {
-          value = MessageFlag.SEEN.set(value);
-          row.setValue(flagIdx, value);
-          getGridView().refreshCell(row.getId(), COL_MESSAGE);
-        }
       } else if (getGridView().isEmpty()
           || !Objects.equals(message.getFolder(), getCurrentFolder())) {
         message.reset();
@@ -693,6 +684,10 @@ public class MailPanel extends AbstractFormInterceptor {
 
         if (row != null) {
           flagMessage(row.getId(), MessageFlag.SEEN, false);
+
+          int flagIdx = Data.getColumnIndex(grid.getViewName(), COL_FLAGS);
+          row.setValue(flagIdx, MessageFlag.SEEN.clear(BeeUtils.unbox(row.getInteger(flagIdx))));
+          grid.getGridView().refreshCell(row.getId(), COL_MESSAGE);
         }
       }
     });
