@@ -284,7 +284,7 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
       Long saleId = BeeUtils.toLongOrNull(reqInfo.getParameter(COL_SALE));
       Long purchaseId = BeeUtils.toLongOrNull(reqInfo.getParameter(COL_PURCHASE));
       Long currency = BeeUtils.toLongOrNull(reqInfo.getParameter(COL_CURRENCY));
-      Set<Long> ids = DataUtils.parseIdSet(reqInfo.getParameter(Service.VAR_ID));
+      Set<Long> ids = DataUtils.parseIdSet(reqInfo.getParameter(Service.VAR_DATA));
       Long item = BeeUtils.toLongOrNull(reqInfo.getParameter(COL_ITEM));
       Double creditAmount = BeeUtils.toDoubleOrNull(reqInfo.getParameter(COL_TRADE_AMOUNT));
 
