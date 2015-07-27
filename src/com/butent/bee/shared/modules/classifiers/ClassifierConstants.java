@@ -48,6 +48,8 @@ public final class ClassifierConstants {
 
   public static final String TBL_HOLIDAYS = "Holidays";
 
+  public static final String TBL_PAYMENT_TYPES = "PaymentTypes";
+
   public static final String FORM_COMPANY = "Company";
   public static final String FORM_COMPANY_ACTION = "CompanyAction";
   public static final String FORM_PERSON = "Person";
@@ -107,6 +109,7 @@ public final class ClassifierConstants {
   public static final String COL_COMPANY_CREDIT_LIMIT = "CreditLimit";
   public static final String COL_COMPANY_LIMIT_CURRENCY = "LimitCurrency";
   public static final String COL_COMPANY_CREDIT_DAYS = "CreditDays";
+  public static final String COL_COMPANY_SUPPLIER_DAYS = "SupplierCreditDays";
   public static final String COL_COMPANY_RELATION_TYPE_STATE = "CompanyRelationTypeState";
   public static final String COL_COMPANY_FINANCIAL_STATE = "FinancialState";
   public static final String COL_COMPANY_SIZE = "CompanySize";
@@ -210,6 +213,10 @@ public final class ClassifierConstants {
 
   public static final String COL_HOLY_COUNTRY = "Country";
   public static final String COL_HOLY_DAY = "Date";
+
+  public static final String COL_PAYMENT_TYPE = "PaymentType";
+  public static final String COL_PAYMENT_NAME = "PaymentName";
+  public static final String COL_PAYMENT_CASH = "PaymentCash";
 
   public static final String ALS_COMPANY_NAME = "CompanyName";
   public static final String ALS_COMPANY_CODE = "CompanyCode";

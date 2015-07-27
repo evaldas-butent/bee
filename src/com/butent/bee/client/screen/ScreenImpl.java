@@ -102,7 +102,7 @@ public class ScreenImpl implements Screen {
   private static Flow flowOnlineUserSize = new Flow();
   private static Flow flowOnlineEmailSize = new Flow();
 
-  private static final String DEFAULT_PHOTO_IMAGE = "images/silver/person_profile.png";
+  private static final String DEFAULT_PHOTO_IMAGE = "images/defaultUser.png";
   public static final HtmlTable NOTIFICATION_CONTENT = new HtmlTable(BeeConst.CSS_CLASS_PREFIX
       + "NotificationBar-Content");
 
@@ -1151,7 +1151,12 @@ public class ScreenImpl implements Screen {
         if (sessions.size() > 0) {
           for (String session : sessions) {
             UserData user = users.getUserData(users.getUserIdBySession(session));
-            Image img = new Image(PHOTO_URL + user.getPhotoFileName());
+            Image img;
+            if (user.getPhotoFileName() != null) {
+              img = new Image(PHOTO_URL + user.getPhotoFileName());
+            } else {
+              img = new Image(DEFAULT_PHOTO_IMAGE);
+            }
             img.setStyleName(BeeConst.CSS_CLASS_PREFIX + "OnlineUsersPhoto");
             table.setWidget(r, 0, img);
             table.setText(r, 1, user.getFirstName() + " " + user.getLastName());
@@ -1300,6 +1305,10 @@ public class ScreenImpl implements Screen {
     sett.addStyleName(BeeConst.CSS_CLASS_PREFIX + "UserControlIcon");
     help.addStyleName(BeeConst.CSS_CLASS_PREFIX + "UserControlIcon");
 
+    sett.setTitle(Localized.getConstants().settings());
+    help.setTitle(Localized.getConstants().help());
+    menuHide.setTitle(Localized.getConstants().hideOrShowMenu());
+
     styleMenuToggle(menuHide, BeeKeeper.getUser().isMenuVisible());
 
     sett.addClickHandler(new ClickHandler() {
@@ -1362,6 +1371,14 @@ public class ScreenImpl implements Screen {
 
     image.setAlt(BeeKeeper.getUser().getLogin());
     image.addStyleName(BeeConst.CSS_CLASS_PREFIX + "UserPhoto");
+
+    image.addClickHandler(new ClickHandler() {
+
+      @Override
+      public void onClick(ClickEvent arg3) {
+        UiHelper.closeDialog((Widget) arg3.getSource());
+      }
+    });
 
     userPanel.add(settingsCnt);
     userContainer.add(exitContainer);

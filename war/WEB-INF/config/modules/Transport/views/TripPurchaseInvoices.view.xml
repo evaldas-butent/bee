@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+      name="TripPurchaseInvoices" source="Purchases" caption="=trTripPurchaseInvoices"
+      editForm="TripPurchaseInvoice"
+      newRowForm="NewPurchase" newRowCaption="=trNewCargoPurchaseInvoice"
+    >
+  <Columns>
+    <SimpleColumn name="Date" />
+    <SimpleColumn name="Number" />
+
+    <SimpleColumn name="Operation" />
+    <SimpleJoin name="Operation" joinType="LEFT">
+      <SimpleColumn name="OperationName" />
+    </SimpleJoin>
+
+    <SimpleColumn name="InvoicePrefix" />
+    <SimpleColumn name="InvoiceNo" />
+    <SimpleColumn name="Term" />
+
+    <SimpleColumn name="Notes" />
+    <SimpleColumn name="Exported" />
+
+    <SimpleColumn name="Amount" />
+    <SimpleColumn name="Currency" />
+    <SimpleJoin name="Currency" joinType="INNER">
+      <SimpleColumn name="Name" alias="CurrencyName" />
+    </SimpleJoin>
+
+    <SimpleColumn name="Supplier" />
+    <SimpleJoin name="Supplier" joinType="LEFT">
+      <SimpleColumn name="Name" alias="SupplierName" />
+      <SimpleJoin joinType="LEFT" name="CompanyType">
+        <SimpleColumn name="Name" alias="SupplierType" />
+      </SimpleJoin>
+    </SimpleJoin>
+
+    <SimpleColumn name="WarehouseTo" />
+    <SimpleJoin name="WarehouseTo" joinType="LEFT">
+      <SimpleColumn name="Code" alias="WarehouseToCode" />
+    </SimpleJoin>
+
+    <SimpleColumn name="Manager" />
+    <SimpleJoin name="Manager" joinType="LEFT">
+      <SimpleColumn name="CompanyPerson" alias="ManagerPerson" />
+      <SimpleJoin name="CompanyPerson" joinType="LEFT">
+        <SimpleJoin name="Person" joinType="LEFT">
+          <SimpleColumn name="FirstName" alias="ManagerFirstName" />
+          <SimpleColumn name="LastName" alias="ManagerLastName" />
+        </SimpleJoin>
+      </SimpleJoin>
+    </SimpleJoin>
+
+    <ExternalJoin name="Purchase" source="TripCosts" joinType="LEFT">
+      <AggregateColumn name="Purchase" aggregate="MAX" />
+    </ExternalJoin>
+  </Columns>
+  <Order>
+    <OrderBy column="Date" descending="true" />
+  </Order>
+</View>

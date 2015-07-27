@@ -53,6 +53,8 @@
     <Text name="Description" label="=description" />
     <Text name="Notes" label="=notes" />
     <String name="ExternalCustomerCode" precision="10" label="ERPCustomerCode" />
+    
+    <Text name="Link" label="=link" />
   </Fields>
 
   <Indexes>

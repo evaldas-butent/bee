@@ -170,6 +170,8 @@ public final class AdministrationConstants {
 
   public static final String TBL_CUSTOM_CONFIG = "CustomConfig";
 
+  public static final String TBL_EVENT_HISTORY = "EventHistory";
+
   public static final String VIEW_USERS = "Users";
   public static final String VIEW_USER_SETTINGS = "UserSettings";
   public static final String VIEW_USER_GROUP_SETTINGS = "UserGroupSettings";
@@ -330,6 +332,11 @@ public final class AdministrationConstants {
 
   public static final String COL_MENU_HIDE = "MenuHide";
 
+  public static final String COL_EVENT = "Event";
+  public static final String COL_EVENT_STARTED = "Started";
+  public static final String COL_EVENT_ENDED = "Ended";
+  public static final String COL_EVENT_RESULT = "Result";
+
   public static final String ALS_FILE_NAME = "FileName";
   public static final String ALS_FILE_SIZE = "FileSize";
   public static final String ALS_FILE_TYPE = "FileType";
@@ -369,10 +376,6 @@ public final class AdministrationConstants {
   public static final String PRM_ERP_ADDRESS = "ERPAddress";
   public static final String PRM_ERP_LOGIN = "ERPLogin";
   public static final String PRM_ERP_PASSWORD = "ERPPassword";
-
-  public static final String PRM_ERP_PURCHASE_OPERATION = "ERPPurchaseOperation";
-  public static final String PRM_ERP_OPERATION = "ERPOperation";
-  public static final String PRM_ERP_WAREHOUSE = "ERPWarehouse";
 
   public static final String PRM_WS_LB_EXCHANGE_RATES_ADDRESS = "WSLBExchangeRates";
 

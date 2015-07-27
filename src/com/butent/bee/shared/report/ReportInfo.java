@@ -181,12 +181,18 @@ public class ReportInfo implements BeeSerializable {
           List<String> options = ((ReportTextItem) filterItem).getFilter();
 
           if (!BeeUtils.isEmpty(options)) {
-            HasConditions or = SqlUtils.or();
+            HasConditions conditions = ((ReportTextItem) filterItem).isNegationFilter()
+                ? SqlUtils.and() : SqlUtils.or();
 
             for (String opt : ((ReportTextItem) filterItem).getFilter()) {
-              or.add(SqlUtils.contains(expr, opt));
+              IsCondition condition = SqlUtils.contains(expr, opt);
+
+              if (((ReportTextItem) filterItem).isNegationFilter()) {
+                condition = SqlUtils.not(condition);
+              }
+              conditions.add(condition);
             }
-            and.add(or);
+            and.add(conditions);
           }
         } else if (filterItem instanceof ReportEnumItem) {
           Set<Integer> options = ((ReportEnumItem) filterItem).getFilter();
@@ -274,7 +280,7 @@ public class ReportInfo implements BeeSerializable {
   }
 
   public boolean isEmpty() {
-    return BeeUtils.isEmpty(getRowItems()) && BeeUtils.isEmpty(getColItems());
+    return BeeUtils.isEmpty(getColItems());
   }
 
   public boolean requiresField(String field) {
@@ -312,7 +318,7 @@ public class ReportInfo implements BeeSerializable {
             && item.getFilter() != null
             && item instanceof ReportDateItem
             && !EnumUtils.in(((ReportDateItem) item).getFormat(), DateTimeFunction.YEAR,
-                DateTimeFunction.DATE, DateTimeFunction.DATETIME)) {
+            DateTimeFunction.DATE, DateTimeFunction.DATETIME)) {
           return true;
         }
       }

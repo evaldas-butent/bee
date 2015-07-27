@@ -10,6 +10,7 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.event.logical.ParentRowEvent;
 import com.butent.bee.client.event.logical.RenderingEvent;
 import com.butent.bee.client.presenter.GridPresenter;
+import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.ViewHelper;
@@ -31,6 +32,7 @@ import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.Collection;
 import java.util.Map;
 
 public class ObjectInvoicesGrid extends AbstractGridInterceptor {
@@ -101,7 +103,7 @@ public class ObjectInvoicesGrid extends AbstractGridInterceptor {
   }
 
   @Override
-  public Map<String, Filter> getInitialParentFilters() {
+  public Map<String, Filter> getInitialParentFilters(Collection<UiOption> uiOptions) {
     return ImmutableMap.of(FILTER_KEY, getFilter(getPendingId()));
   }
 

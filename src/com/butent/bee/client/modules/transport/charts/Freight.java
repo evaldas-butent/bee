@@ -7,11 +7,12 @@ import com.google.gwt.event.dom.client.DropEvent;
 
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
+import com.butent.bee.client.Global;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
-import com.butent.bee.client.data.RowUpdateCallback;
 import com.butent.bee.client.dialog.ConfirmationCallback;
+import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.event.DndHelper;
 import com.butent.bee.client.event.DndTarget;
 import com.butent.bee.client.timeboard.Blender;
@@ -20,6 +21,8 @@ import com.butent.bee.shared.BiConsumer;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
+import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.transport.TransportConstants.OrderStatus;
 import com.butent.bee.shared.modules.transport.TransportConstants.VehicleType;
 import com.butent.bee.shared.time.DateTime;
@@ -53,6 +56,7 @@ final class Freight extends OrderCargo {
         EnumUtils.getEnumByIndex(OrderStatus.class, row.getInt(COL_STATUS)),
         row.getDateTime(ALS_ORDER_DATE), row.getValue(COL_ORDER_NO),
         row.getLong(COL_CUSTOMER), row.getValue(COL_CUSTOMER_NAME),
+        row.getLong(COL_ORDER_MANAGER),
         row.getLong(COL_CARGO), row.getLong(COL_CARGO_TYPE),
         row.getValue(COL_CARGO_DESCRIPTION), row.getValue(COL_CARGO_NOTES),
         BeeUtils.nvl(Places.getLoadingDate(row, loadingColumnAlias(COL_PLACE_DATE)),
@@ -100,7 +104,7 @@ final class Freight extends OrderCargo {
   private boolean editable;
 
   private Freight(Long orderId, OrderStatus orderStatus, DateTime orderDate, String orderNo,
-      Long customerId, String customerName,
+      Long customerId, String customerName, Long manager,
       Long cargoId, Long cargoType, String cargoDescription, String notes,
       JustDate loadingDate, Long loadingCountry, String loadingPlace, String loadingPostIndex,
       Long loadingCity, String loadingNumber,
@@ -109,7 +113,7 @@ final class Freight extends OrderCargo {
       String unloadingNumber, Long tripId, Long truckId, Long trailerId, Long cargoTripId,
       Long cargoTripVersion) {
 
-    super(orderId, orderStatus, orderDate, orderNo, customerId, customerName,
+    super(orderId, orderStatus, orderDate, orderNo, customerId, customerName, manager,
         cargoId, cargoType, cargoDescription, notes,
         loadingDate, loadingCountry, loadingPlace, loadingPostIndex, loadingCity, loadingNumber,
         unloadingDate, unloadingCountry, unloadingPlace, unloadingPostIndex, unloadingCity,
@@ -191,6 +195,19 @@ final class Freight extends OrderCargo {
         });
   }
 
+  void maybeRemoveFromTrip(final Queries.IntCallback callback) {
+    Global.confirm(Localized.getConstants().removeCargoFromTripCaption(), Icon.QUESTION,
+        Lists.newArrayList(getCargoAndTripTitle(),
+            Localized.getConstants().removeCargoFromTripQuestion()),
+        new ConfirmationCallback() {
+          @Override
+          public void onConfirm() {
+            Queries.delete(VIEW_CARGO_TRIPS, Filter.and(Filter.equals(COL_CARGO, getCargoId()),
+                Filter.equals(COL_TRIP, getTripId())), callback);
+          }
+        });
+  }
+
   void setEditable(boolean editable) {
     this.editable = editable;
   }
@@ -199,18 +216,14 @@ final class Freight extends OrderCargo {
     this.tripTitle = tripTitle;
   }
 
-  void updateTrip(Long newTripId, boolean fire) {
-    if (!DataUtils.isId(newTripId) || Objects.equals(getTripId(), newTripId)) {
-      return;
+  void updateTrip(Long newTripId, RowCallback callback) {
+    if (DataUtils.isId(newTripId) && !Objects.equals(getTripId(), newTripId)) {
+      String viewName = VIEW_CARGO_TRIPS;
+      List<BeeColumn> columns = Data.getColumns(viewName, Lists.newArrayList(COL_TRIP));
+
+      Queries.update(viewName, getCargoTripId(), getCargoTripVersion(), columns,
+          Queries.asList(getTripId()), Queries.asList(newTripId), null, callback);
     }
-
-    String viewName = VIEW_CARGO_TRIPS;
-    List<BeeColumn> columns = Data.getColumns(viewName, Lists.newArrayList(COL_TRIP));
-
-    RowCallback callback = fire ? new RowUpdateCallback(viewName) : null;
-
-    Queries.update(viewName, getCargoTripId(), getCargoTripVersion(), columns,
-        Queries.asList(getTripId()), Queries.asList(newTripId), null, callback);
   }
 
   private void acceptDrop(Object data) {
@@ -221,7 +234,7 @@ final class Freight extends OrderCargo {
       Trip.maybeAssignCargo(title, getTripTitle(), new ConfirmationCallback() {
         @Override
         public void onConfirm() {
-          freight.updateTrip(Freight.this.getTripId(), true);
+          freight.updateTrip(Freight.this.getTripId(), RowCallback.refreshView(VIEW_CARGO_TRIPS));
         }
       });
 
@@ -232,7 +245,8 @@ final class Freight extends OrderCargo {
       Trip.maybeAssignCargo(title, getTripTitle(), new ConfirmationCallback() {
         @Override
         public void onConfirm() {
-          orderCargo.assignToTrip(Freight.this.getTripId(), true);
+          orderCargo.assignToTrip(Freight.this.getTripId(),
+              RowCallback.refreshView(VIEW_CARGO_TRIPS));
         }
       });
     }

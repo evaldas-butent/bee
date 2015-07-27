@@ -34,14 +34,12 @@ import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.filter.Filter;
-import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.exceptions.BeeException;
 import com.butent.bee.shared.exceptions.BeeRuntimeException;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.trade.TradeDocumentData;
-import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.rights.ModuleAndSub;
 import com.butent.bee.shared.rights.SubModule;
@@ -297,8 +295,8 @@ public class TradeModuleBean implements BeeModule {
     sys.registerDataEventHandler(new DataEventHandler() {
       @Subscribe
       public void fillInvoiceNumber(ViewModifyEvent event) {
-        if (BeeUtils.inListSame(event.getTargetName(), TBL_SALES,
-            TransportConstants.VIEW_CARGO_INVOICES) && event.isBefore()) {
+        if (BeeUtils.same(sys.getViewSource(event.getTargetName()), TBL_SALES)
+            && event.isBefore()) {
           List<BeeColumn> cols = null;
           IsRow row = null;
           String prefix = null;
@@ -312,16 +310,24 @@ public class TradeModuleBean implements BeeModule {
           } else {
             return;
           }
-          int idx = DataUtils.getColumnIndex(COL_TRADE_INVOICE_PREFIX, cols);
+          int prefixIdx = DataUtils.getColumnIndex(COL_TRADE_SALE_SERIES, cols);
 
-          if (idx != BeeConst.UNDEF) {
-            prefix = row.getString(idx);
+          if (!BeeConst.isUndef(prefixIdx)) {
+            prefix = row.getString(prefixIdx);
           }
-          if (!BeeUtils.isEmpty(prefix)
-              && DataUtils.getColumnIndex(COL_TRADE_INVOICE_NO, cols) == BeeConst.UNDEF) {
-            cols.add(new BeeColumn(COL_TRADE_INVOICE_NO));
-            row.addValue(Value.getValue(qs.getNextNumber(TBL_SALES, COL_TRADE_INVOICE_NO, prefix,
-                COL_TRADE_INVOICE_PREFIX)));
+          if (!BeeUtils.isEmpty(prefix)) {
+            int numberIdx = DataUtils.getColumnIndex(COL_TRADE_INVOICE_NO, cols);
+
+            if (BeeConst.isUndef(numberIdx)) {
+              cols.add(new BeeColumn(COL_TRADE_INVOICE_NO));
+              row.addValue(null);
+              numberIdx = row.getNumberOfCells() - 1;
+
+            } else if (!BeeUtils.isEmpty(row.getString(numberIdx))) {
+              return;
+            }
+            row.setValue(numberIdx, qs.getNextNumber(TBL_SALES, COL_TRADE_INVOICE_NO, prefix,
+                COL_TRADE_SALE_SERIES));
           }
         }
       }
@@ -436,31 +442,44 @@ public class TradeModuleBean implements BeeModule {
     String itemsRelation;
 
     SqlSelect query = new SqlSelect()
-        .addFields(trade, COL_TRADE_DATE, COL_TRADE_INVOICE_PREFIX, COL_TRADE_INVOICE_NO,
+        .addFields(trade, COL_TRADE_DATE, COL_TRADE_INVOICE_NO,
             COL_TRADE_NUMBER, COL_TRADE_TERM, COL_TRADE_SUPPLIER, COL_TRADE_CUSTOMER)
+        .addFields(TBL_TRADE_OPERATIONS, COL_OPERATION_NAME)
         .addField(TBL_CURRENCIES, COL_CURRENCY_NAME, COL_CURRENCY)
         .addField(COL_TRADE_WAREHOUSE_FROM, COL_WAREHOUSE_CODE, COL_TRADE_WAREHOUSE_FROM)
         .addFrom(trade)
+        .addFromLeft(TBL_TRADE_OPERATIONS,
+            sys.joinTables(TBL_TRADE_OPERATIONS, trade, COL_TRADE_OPERATION))
         .addFromLeft(TBL_CURRENCIES, sys.joinTables(TBL_CURRENCIES, trade, COL_CURRENCY))
         .addFromLeft(TBL_WAREHOUSES, COL_TRADE_WAREHOUSE_FROM,
             sys.joinTables(TBL_WAREHOUSES, COL_TRADE_WAREHOUSE_FROM, trade,
                 COL_TRADE_WAREHOUSE_FROM))
         .setWhere(sys.idInList(trade, ids));
 
-    if (BeeUtils.same(trade, TBL_SALES)) {
-      tradeItems = TBL_SALE_ITEMS;
-      itemsRelation = COL_SALE;
-      query.addFields(trade, COL_SALE_PAYER);
+    switch (trade) {
+      case TBL_SALES:
+        tradeItems = TBL_SALE_ITEMS;
+        itemsRelation = COL_SALE;
 
-    } else if (BeeUtils.same(trade, TBL_PURCHASES)) {
-      tradeItems = TBL_PURCHASE_ITEMS;
-      itemsRelation = COL_PURCHASE;
-      query.addField(COL_PURCHASE_WAREHOUSE_TO, COL_WAREHOUSE_CODE, COL_PURCHASE_WAREHOUSE_TO)
-          .addFromLeft(TBL_WAREHOUSES, COL_PURCHASE_WAREHOUSE_TO,
-              sys.joinTables(TBL_WAREHOUSES, COL_PURCHASE_WAREHOUSE_TO, trade,
-                  COL_PURCHASE_WAREHOUSE_TO));
-    } else {
-      return ResponseObject.error("View source not supported:", trade);
+        query.addField(TBL_SALES_SERIES, COL_SERIES_NAME, COL_TRADE_INVOICE_PREFIX)
+            .addFields(trade, COL_SALE_PAYER)
+            .addFromLeft(TBL_SALES_SERIES,
+                sys.joinTables(TBL_SALES_SERIES, trade, COL_TRADE_SALE_SERIES));
+        break;
+
+      case TBL_PURCHASES:
+        tradeItems = TBL_PURCHASE_ITEMS;
+        itemsRelation = COL_PURCHASE;
+
+        query.addFields(trade, COL_TRADE_INVOICE_PREFIX)
+            .addField(COL_PURCHASE_WAREHOUSE_TO, COL_WAREHOUSE_CODE, COL_PURCHASE_WAREHOUSE_TO)
+            .addFromLeft(TBL_WAREHOUSES, COL_PURCHASE_WAREHOUSE_TO,
+                sys.joinTables(TBL_WAREHOUSES, COL_PURCHASE_WAREHOUSE_TO, trade,
+                    COL_PURCHASE_WAREHOUSE_TO));
+        break;
+
+      default:
+        return ResponseObject.error("View source not supported:", trade);
     }
     String remoteNamespace = prm.getText(PRM_ERP_NAMESPACE);
     String remoteAddress = prm.getText(PRM_ERP_ADDRESS);
@@ -531,24 +550,19 @@ public class TradeModuleBean implements BeeModule {
       if (response.hasErrors()) {
         break;
       }
-      String operation;
       String warehouse;
       String client;
 
       if (invoices.hasColumn(COL_PURCHASE_WAREHOUSE_TO)) {
-        operation = prm.getText(PRM_ERP_PURCHASE_OPERATION);
         warehouse = invoice.getValue(COL_PURCHASE_WAREHOUSE_TO);
         client = companies.get(invoice.getLong(COL_TRADE_SUPPLIER));
       } else {
-        operation = prm.getText(PRM_ERP_OPERATION);
         warehouse = invoice.getValue(COL_TRADE_WAREHOUSE_FROM);
         client = companies.get(invoice.getLong(COL_TRADE_CUSTOMER));
       }
-      if (BeeUtils.isEmpty(warehouse)) {
-        warehouse = prm.getRelationInfo(PRM_ERP_WAREHOUSE).getB();
-      }
       WSDocument doc = new WSDocument(encodeId(trade, invoice.getLong(itemsRelation)),
-          invoice.getDateTime(COL_TRADE_DATE), operation, client, warehouse);
+          invoice.getDateTime(COL_TRADE_DATE), invoice.getValue(COL_OPERATION_NAME), client,
+          warehouse);
 
       if (invoices.hasColumn(COL_SALE_PAYER)) {
         doc.setPayer(companies.get(invoice.getLong(COL_SALE_PAYER)));

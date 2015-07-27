@@ -1041,7 +1041,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
       Scheduler.get().scheduleDeferred(new ScheduledCommand() {
         @Override
         public void execute() {
-          last.getElement().scrollIntoView();
+          DomUtils.scrollIntoView(last.getElement());
         }
       });
     }
@@ -1485,7 +1485,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
     }
 
     Widget imgMark =
-        !hasImageRes ? new FaLabel(FontAwesome.THUMBS_O_UP) : new FaLabel(FontAwesome
+        !hasImageRes ? new Button(markName) : new FaLabel(FontAwesome
             .parse(markRes));
 
     imgMark.addStyleName(DISCUSSIONS_STYLE_PREFIX + STYLE_ACTIONS);

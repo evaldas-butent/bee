@@ -35,7 +35,6 @@ import com.butent.bee.shared.menu.MenuHandler;
 import com.butent.bee.shared.menu.MenuService;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.mail.AccountInfo;
-import com.butent.bee.shared.modules.mail.MailConstants.MessageFlag;
 import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -62,7 +61,7 @@ public final class MailKeeper {
         refreshMessages = new ScheduledCommand() {
           @Override
           public void execute() {
-            if (activePanel != null && Objects.equals(activePanel.getCurrentFolderId(), folderId)) {
+            if (activePanel != null && Objects.equals(activePanel.getCurrentFolder(), folderId)) {
               activePanel.refreshMessages(true);
             }
           }
@@ -127,8 +126,8 @@ public final class MailKeeper {
           event.consume();
 
           NewMailMessage.create(Collections
-              .singleton(Data.getString(ClassifierConstants.TBL_EMAILS,
-                  event.getRow(), ClassifierConstants.COL_EMAIL_ADDRESS)),
+                  .singleton(Data.getString(ClassifierConstants.TBL_EMAILS,
+                      event.getRow(), ClassifierConstants.COL_EMAIL_ADDRESS)),
               null, null, null, null, null, null, false);
         }
       }
@@ -172,12 +171,15 @@ public final class MailKeeper {
           LocalizableMessages loc = Localized.getMessages();
 
           panel.getFormView().notifyInfo(move
-              ? loc.mailMovedMessagesToFolder(response.getResponseAsString())
-              : loc.mailCopiedMessagesToFolder(response.getResponseAsString()),
+                  ? loc.mailMovedMessagesToFolder(response.getResponseAsString())
+                  : loc.mailCopiedMessagesToFolder(response.getResponseAsString()),
               BeeUtils.bracket(panel.getCurrentAccount().findFolder(folderTo).getName()));
         }
       }
     });
+    if (move) {
+      panel.removeRows(DataUtils.parseIdList(places));
+    }
   }
 
   static ParameterList createArgs(String method) {
@@ -187,7 +189,7 @@ public final class MailKeeper {
   static void createFolder(String title) {
     final MailPanel panel = activePanel;
     final AccountInfo account = panel.getCurrentAccount();
-    final Long parentId = panel.getCurrentFolderId();
+    final Long parentId = panel.getCurrentFolder();
     final boolean isParent = DataUtils.isId(parentId) && !account.isSystemFolder(parentId);
     String caption = null;
 
@@ -272,7 +274,7 @@ public final class MailKeeper {
   }
 
   static void refreshController() {
-    controller.refresh(activePanel.getCurrentFolderId());
+    controller.refresh(activePanel.getCurrentFolder());
   }
 
   static void removeFolder(final AccountInfo account, final Long folderId) {
@@ -290,7 +292,7 @@ public final class MailKeeper {
           panel.requeryFolders(new ScheduledCommand() {
             @Override
             public void execute() {
-              if (Objects.equals(folderId, panel.getCurrentFolderId())) {
+              if (Objects.equals(folderId, panel.getCurrentFolder())) {
                 panel.refreshFolder(account.getInboxId());
               }
             }
