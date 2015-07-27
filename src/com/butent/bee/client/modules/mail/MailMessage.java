@@ -87,6 +87,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 
 public class MailMessage extends AbstractFormInterceptor {
@@ -266,6 +267,7 @@ public class MailMessage extends AbstractFormInterceptor {
   private static final String SUBJECT = "Subject";
 
   private final MailPanel mailPanel;
+  private Integer rpcId;
   private Long placeId;
   private Long folderId;
   private Long repliedFrom;
@@ -499,6 +501,7 @@ public class MailMessage extends AbstractFormInterceptor {
     if (relations != null) {
       relations.reset();
     }
+    rpcId = null;
   }
 
   @Override
@@ -536,9 +539,13 @@ public class MailMessage extends AbstractFormInterceptor {
     ParameterList params = MailKeeper.createArgs(SVC_GET_MESSAGE);
     params.addDataItem(column, columnId);
 
-    BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
+    rpcId = BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
       @Override
       public void onResponse(ResponseObject response) {
+        if (!Objects.equals(getRpcId(), rpcId)) {
+          return;
+        }
+        getRpcId();
         response.notify(getFormView());
 
         if (response.hasErrors()) {

@@ -494,10 +494,13 @@ public class TradeModuleBean implements BeeModule {
     SqlSelect query = new SqlSelect()
         .addFields(trade, COL_TRADE_DATE, COL_TRADE_INVOICE_NO,
             COL_TRADE_NUMBER, COL_TRADE_TERM, COL_TRADE_SUPPLIER, COL_TRADE_CUSTOMER)
+        .addFields(TBL_TRADE_OPERATIONS, COL_OPERATION_NAME)
         .addField(TBL_CURRENCIES, COL_CURRENCY_NAME, COL_CURRENCY)
         .addField(COL_TRADE_WAREHOUSE_FROM, COL_WAREHOUSE_CODE, COL_TRADE_WAREHOUSE_FROM)
         .addField(TBL_USERS, "EmployerId", COL_TRADE_MANAGER)
         .addFrom(trade)
+        .addFromLeft(TBL_TRADE_OPERATIONS,
+            sys.joinTables(TBL_TRADE_OPERATIONS, trade, COL_TRADE_OPERATION))
         .addFromLeft(TBL_CURRENCIES, sys.joinTables(TBL_CURRENCIES, trade, COL_CURRENCY))
         .addFromLeft(TBL_WAREHOUSES, COL_TRADE_WAREHOUSE_FROM,
             sys.joinTables(TBL_WAREHOUSES, COL_TRADE_WAREHOUSE_FROM, trade,
@@ -580,24 +583,19 @@ public class TradeModuleBean implements BeeModule {
       if (response.hasErrors()) {
         break;
       }
-      String operation;
       String warehouse;
       String client;
 
       if (invoices.hasColumn(COL_PURCHASE_WAREHOUSE_TO)) {
-        operation = prm.getText(PRM_ERP_PURCHASE_OPERATION);
         warehouse = invoice.getValue(COL_PURCHASE_WAREHOUSE_TO);
         client = companies.get(invoice.getLong(COL_TRADE_SUPPLIER));
       } else {
-        operation = prm.getText(PRM_ERP_OPERATION);
         warehouse = invoice.getValue(COL_TRADE_WAREHOUSE_FROM);
         client = companies.get(invoice.getLong(COL_TRADE_CUSTOMER));
       }
-      if (BeeUtils.isEmpty(warehouse)) {
-        warehouse = prm.getRelationInfo(PRM_ERP_WAREHOUSE).getB();
-      }
       WSDocument doc = new WSDocument(encodeId(trade, invoice.getLong(itemsRelation)),
-          TimeUtils.startOfDay(invoice.getDateTime(COL_TRADE_DATE)), operation, client, warehouse);
+          TimeUtils.startOfDay(invoice.getDateTime(COL_TRADE_DATE)),
+          invoice.getValue(COL_OPERATION_NAME), client, warehouse);
 
       if (invoices.hasColumn(COL_SALE_PAYER)) {
         doc.setPayer(companies.get(invoice.getLong(COL_SALE_PAYER)));

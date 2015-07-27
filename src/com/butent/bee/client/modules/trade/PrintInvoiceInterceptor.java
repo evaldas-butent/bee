@@ -252,8 +252,7 @@ public class PrintInvoiceInterceptor extends AbstractFormInterceptor {
     }
     for (Widget total : totals) {
       TradeUtils.getTotalInWords(form.getDoubleValue(COL_TRADE_AMOUNT),
-          form.getStringValue(ALS_CURRENCY_NAME),
-          form.getStringValue("MinorName"), total);
+          form.getLongValue(COL_TRADE_CURRENCY), total);
     }
   }
 
