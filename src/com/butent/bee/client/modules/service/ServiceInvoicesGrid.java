@@ -1,5 +1,6 @@
 package com.butent.bee.client.modules.service;
 
+import com.butent.bee.client.ui.UiOption;
 import com.google.common.collect.Maps;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -33,6 +34,7 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.ui.Action;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -85,8 +87,8 @@ public class ServiceInvoicesGrid extends AbstractGridInterceptor implements Clic
   }
 
   @Override
-  public Map<String, Filter> getInitialParentFilters() {
-    Map<String, Filter> defaultFilters = super.getInitialParentFilters();
+  public Map<String, Filter> getInitialParentFilters(Collection<UiOption> uiOptions) {
+    Map<String, Filter> defaultFilters = super.getInitialParentFilters(uiOptions);
 
     if (defaultFilter != null) {
       if (defaultFilters == null) {
