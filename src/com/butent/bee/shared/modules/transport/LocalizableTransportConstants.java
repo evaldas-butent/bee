@@ -102,6 +102,10 @@ public interface LocalizableTransportConstants {
 
   String refNumber();
 
+  String removeCargoFromTripCaption();
+
+  String removeCargoFromTripQuestion();
+
   String route();
 
   String shipper();
@@ -113,6 +117,8 @@ public interface LocalizableTransportConstants {
   String trailerTimeBoard();
 
   String transport();
+
+  String transportMainItemCaption();
 
   String transportationCustomers();
 
@@ -232,6 +238,8 @@ public interface LocalizableTransportConstants {
 
   String trFuelCosts();
 
+  String trGenerateDailyCosts();
+
   String trGenerateRoute();
 
   String tripDuration();
@@ -249,6 +257,8 @@ public interface LocalizableTransportConstants {
   String trLoadingNumber();
 
   String trLogistics();
+
+  String trLogisticsSelfService();
 
   String trNewAssessment();
 

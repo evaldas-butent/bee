@@ -5,15 +5,17 @@ import com.google.common.collect.Range;
 
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
+import com.butent.bee.client.Global;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
-import com.butent.bee.client.data.RowInsertCallback;
 import com.butent.bee.client.timeboard.HasColorSource;
 import com.butent.bee.client.timeboard.TimeBoardHelper;
+import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
+import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.transport.TransportConstants.OrderStatus;
 import com.butent.bee.shared.time.DateTime;
@@ -24,6 +26,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.List;
+import java.util.Objects;
 
 class OrderCargo extends Filterable implements HasDateRange, HasColorSource, HasShipmentInfo,
     HasCargoType {
@@ -33,6 +36,7 @@ class OrderCargo extends Filterable implements HasDateRange, HasColorSource, Has
       Data.getColumnLabel(VIEW_ORDER_CARGO, COL_CARGO_DESCRIPTION);
 
   private static final String customerLabel = Data.getColumnLabel(VIEW_ORDERS, COL_CUSTOMER);
+  private static final String managerLabel = Data.getColumnLabel(VIEW_ORDERS, COL_ORDER_MANAGER);
   private static final String notesLabel = Data.getColumnLabel(VIEW_ORDER_CARGO, COL_CARGO_NOTES);
 
   private static final String orderDateLabel = Data.getColumnLabel(VIEW_ORDERS, COL_ORDER_DATE);
@@ -44,6 +48,7 @@ class OrderCargo extends Filterable implements HasDateRange, HasColorSource, Has
             EnumUtils.getEnumByIndex(OrderStatus.class, row.getInt(COL_STATUS)),
             row.getDateTime(COL_ORDER_DATE), row.getValue(COL_ORDER_NO),
             row.getLong(COL_CUSTOMER), row.getValue(COL_CUSTOMER_NAME),
+            row.getLong(COL_ORDER_MANAGER),
             row.getLong(COL_CARGO_ID), row.getLong(COL_CARGO_TYPE),
             row.getValue(COL_CARGO_DESCRIPTION), row.getValue(COL_CARGO_NOTES),
             BeeUtils.nvl(Places.getLoadingDate(row, loadingColumnAlias(COL_PLACE_DATE)), minLoad),
@@ -76,9 +81,12 @@ class OrderCargo extends Filterable implements HasDateRange, HasColorSource, Has
   private final DateTime orderDate;
 
   private final String orderNo;
-  private final Long customerId;
 
+  private final Long customerId;
   private final String customerName;
+
+  private final Long manager;
+
   private final Long cargoId;
 
   private final Long cargoType;
@@ -105,12 +113,13 @@ class OrderCargo extends Filterable implements HasDateRange, HasColorSource, Has
   private Range<JustDate> range;
 
   protected OrderCargo(Long orderId, OrderStatus orderStatus, DateTime orderDate, String orderNo,
-      Long customerId, String customerName,
+      Long customerId, String customerName, Long manager,
       Long cargoId, Long cargoType, String cargoDescription, String notes,
       JustDate loadingDate, Long loadingCountry, String loadingPlace, String loadingPostIndex,
       Long loadingCity, String loadingNumber,
       JustDate unloadingDate, Long unloadingCountry, String unloadingPlace,
       String unloadingPostIndex, Long unloadingCity, String unloadingNumber) {
+
     super();
 
     this.orderId = orderId;
@@ -120,6 +129,7 @@ class OrderCargo extends Filterable implements HasDateRange, HasColorSource, Has
 
     this.customerId = customerId;
     this.customerName = customerName;
+    this.manager = manager;
 
     this.cargoId = cargoId;
     this.cargoType = cargoType;
@@ -235,19 +245,15 @@ class OrderCargo extends Filterable implements HasDateRange, HasColorSource, Has
     setRange(TimeBoardHelper.getActivity(lower, upper));
   }
 
-  void assignToTrip(Long tripId, boolean fire) {
-    if (!DataUtils.isId(tripId)) {
-      return;
+  void assignToTrip(Long tripId, RowCallback callback) {
+    if (DataUtils.isId(tripId)) {
+      String viewName = VIEW_CARGO_TRIPS;
+
+      List<BeeColumn> columns = Data.getColumns(viewName, Lists.newArrayList(COL_CARGO, COL_TRIP));
+      List<String> values = Queries.asList(getCargoId(), tripId);
+
+      Queries.insert(viewName, columns, values, null, callback);
     }
-
-    String viewName = VIEW_CARGO_TRIPS;
-
-    List<BeeColumn> columns = Data.getColumns(viewName, Lists.newArrayList(COL_CARGO, COL_TRIP));
-    List<String> values = Queries.asList(getCargoId(), tripId);
-
-    RowCallback callback = fire ? new RowInsertCallback(viewName, null) : null;
-
-    Queries.insert(viewName, columns, values, null, callback);
   }
 
   String getCargoDescription() {
@@ -264,6 +270,18 @@ class OrderCargo extends Filterable implements HasDateRange, HasColorSource, Has
 
   String getCustomerName() {
     return customerName;
+  }
+
+  Long getManager() {
+    return manager;
+  }
+
+  String getManagerName() {
+    if (manager == null) {
+      return null;
+    } else {
+      return Global.getUsers().getSignature(manager);
+    }
   }
 
   JustDate getMaxDate() {
@@ -304,7 +322,24 @@ class OrderCargo extends Filterable implements HasDateRange, HasColorSource, Has
         Localized.getConstants().cargoLoading(), Places.getLoadingInfo(this),
         Localized.getConstants().cargoUnloading(), Places.getUnloadingInfo(this),
         Localized.getConstants().trOrder(), orderNo,
-        customerLabel, customerName, notesLabel, notes);
+        customerLabel, customerName,
+        managerLabel, getManagerName(),
+        notesLabel, notes);
+  }
+
+  void maybeUpdateManager(Long newManager, final Consumer<Boolean> callback) {
+    if (DataUtils.isId(newManager) && !Objects.equals(newManager, getManager())) {
+      Queries.update(VIEW_ORDERS, getOrderId(), COL_ORDER_MANAGER, new LongValue(newManager),
+          new Queries.IntCallback() {
+            @Override
+            public void onSuccess(Integer result) {
+              callback.accept(BeeUtils.isPositive(result));
+            }
+          });
+
+    } else {
+      callback.accept(false);
+    }
   }
 
   private void setRange(Range<JustDate> range) {

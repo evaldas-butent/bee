@@ -5,7 +5,7 @@ import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.ui.Widget;
 
-import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.COL_CURRENCY;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
@@ -19,6 +19,7 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.event.logical.MutationEvent;
 import com.butent.bee.client.event.logical.ReadyEvent;
+import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.ChildGrid;
 import com.butent.bee.client.modules.transport.TransportHandler.Profit;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
@@ -27,6 +28,7 @@ import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.edit.EditEndEvent;
 import com.butent.bee.client.view.edit.EditStopEvent;
+import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
@@ -44,11 +46,13 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RelationUtils;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.modules.documents.DocumentConstants;
+import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
+import java.util.Objects;
 
-class OrderCargoForm extends AbstractFormInterceptor {
+class OrderCargoForm extends AbstractFormInterceptor implements SelectorEvent.Handler {
 
   static void preload(final ScheduledCommand command) {
     Global.getParameter(PRM_CARGO_TYPE, new Consumer<String>() {
@@ -125,6 +129,32 @@ class OrderCargoForm extends AbstractFormInterceptor {
         }
       });
 
+    } else if (widget instanceof ChildGrid && BeeUtils.same(name, TBL_CARGO_EXPENSES)) {
+      ((ChildGrid) widget).setGridInterceptor(new AbstractGridInterceptor() {
+
+        @Override
+        public void afterCreateEditor(String source, Editor editor, boolean embedded) {
+          if (BeeUtils.same(source, COL_CARGO_INCOME) && editor instanceof DataSelector) {
+            ((DataSelector) editor).addSelectorHandler(OrderCargoForm.this);
+          }
+          super.afterCreateEditor(source, editor, embedded);
+        }
+
+        @Override
+        public ColumnDescription beforeCreateColumn(GridView gridView, ColumnDescription descr) {
+          if (!TransportHandler.bindExpensesToIncomes()
+              && Objects.equals(descr.getId(), COL_CARGO_INCOME)) {
+            return null;
+          }
+          return super.beforeCreateColumn(gridView, descr);
+        }
+
+        @Override
+        public GridInterceptor getInstance() {
+          return null;
+        }
+      });
+
     } else if (widget instanceof ChildGrid && VIEW_CARGO_HANDLING.equals(name)) {
       ((ChildGrid) widget).addReadyHandler(new ReadyEvent.Handler() {
         @Override
@@ -182,6 +212,13 @@ class OrderCargoForm extends AbstractFormInterceptor {
   }
 
   @Override
+  public void onDataSelector(SelectorEvent event) {
+    if (BeeUtils.same(event.getRelatedViewName(), TBL_CARGO_INCOMES) && event.isOpened()) {
+      event.getSelector().setAdditionalFilter(Filter.equals(COL_CARGO, getActiveRowId()));
+    }
+  }
+
+  @Override
   public void onEditEnd(EditEndEvent event, Object source) {
     String colId = event.getColumn().getId();
     if ((COL_EMPTY_KILOMETERS.equals(colId) || COL_LOADED_KILOMETERS.equals(colId))
@@ -196,7 +233,8 @@ class OrderCargoForm extends AbstractFormInterceptor {
     header.clearCommandPanel();
 
     if (Data.isViewEditable(VIEW_CARGO_INVOICES)) {
-      header.addCommandItem(new InvoiceCreator(Filter.equals(COL_CARGO, row.getId())));
+      header.addCommandItem(new InvoiceCreator(VIEW_CARGO_SALES,
+          Filter.equals(COL_CARGO, row.getId())));
     }
     header.addCommandItem(new Profit(COL_CARGO, row.getId()));
 

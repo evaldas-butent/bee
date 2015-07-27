@@ -124,6 +124,13 @@ public enum Report implements HasWidgetSupplier {
           new ReportEnumItem(COL_TRIP_STATUS, Data.getColumnLabel(TBL_TRIPS, COL_TRIP_STATUS),
               TripStatus.class),
 
+          new ReportTextItem(COL_ORDER_NO, loc.orderNumber()),
+          new ReportDateTimeItem(COL_ORDER + COL_ORDER_DATE, loc.orderDate()),
+          new ReportTextItem(COL_CUSTOMER, loc.customer()),
+          new ReportTextItem(COL_ORDER_MANAGER, loc.manager()),
+          new ReportTextItem(COL_CARGO, loc.cargo()),
+          new ReportBooleanItem(COL_CARGO_PARTIAL, loc.partial()),
+
           new ReportNumericItem(COL_ROUTE_KILOMETERS, loc.kilometers()),
           new ReportNumericItem("TripIncome", loc.incomes()).setPrecision(2),
           new ReportNumericItem("FuelCosts", loc.trFuelCosts()).setPrecision(2),
@@ -166,7 +173,7 @@ public enum Report implements HasWidgetSupplier {
       report.addColItem(items.get("Planned" + COL_ROUTE_KILOMETERS));
 
       ReportItem income = items.get("TripIncome");
-      report.addColItem(income.copy());
+      report.addColItem(income);
 
       ReportFormulaItem costs = new ReportFormulaItem(Localized.getConstants().expenses());
       costs.setPrecision(2);
@@ -174,7 +181,7 @@ public enum Report implements HasWidgetSupplier {
       for (String item : new String[] {"FuelCosts", "DailyCosts", "RoadCosts", "OtherCosts"}) {
         costs.plus(items.get(item));
       }
-      report.addColItem(costs.copy());
+      report.addColItem(costs);
 
       ReportFormulaItem plannedCosts = new ReportFormulaItem(
           BeeUtils.joinWords(Localized.getConstants().expenses(),
@@ -184,10 +191,10 @@ public enum Report implements HasWidgetSupplier {
       for (String item : new String[] {"FuelCosts", "DailyCosts", "RoadCosts", "OtherCosts"}) {
         plannedCosts.plus(items.get("Planned" + item));
       }
-      report.addColItem(plannedCosts.copy());
+      report.addColItem(plannedCosts);
 
       ReportItem constantCosts = items.get("ConstantCosts");
-      report.addColItem(constantCosts.copy());
+      report.addColItem(constantCosts);
 
       report.addColItem(new ReportFormulaItem(Localized.getConstants().profit())
           .plus(income).minus(costs).minus(constantCosts).setPrecision(2));

@@ -22,6 +22,7 @@ import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.GridFactory.GridOptions;
+import com.butent.bee.client.modules.trade.InvoiceForm;
 import com.butent.bee.client.modules.trade.InvoicesGrid;
 import com.butent.bee.client.modules.trade.TradeUtils;
 import com.butent.bee.client.modules.transport.charts.ChartBase;
@@ -220,6 +221,15 @@ public final class TransportHandler {
     }
   }
 
+  private static boolean bindExpensesToIncomes;
+
+  private TransportHandler() {
+  }
+
+  public static boolean bindExpensesToIncomes() {
+    return bindExpensesToIncomes;
+  }
+
   public static ParameterList createArgs(String method) {
     return BeeKeeper.getRpc().createParameters(Module.TRANSPORT, method);
   }
@@ -258,6 +268,15 @@ public final class TransportHandler {
 
     GridFactory.registerGridInterceptor(VIEW_ORDER_CARGO, new CargoGridHandler());
 
+    GridFactory.registerGridInterceptor("CargoDocuments", new TransportDocumentsGrid(COL_CARGO));
+    GridFactory.registerGridInterceptor("TranspOrderDocuments",
+        new TransportDocumentsGrid(COL_TRANSPORTATION_ORDER));
+    GridFactory.registerGridInterceptor("TripDocuments", new TransportDocumentsGrid(COL_TRIP));
+
+    GridFactory.registerGridInterceptor(GRID_SHIPMENT_REQUESTS, new ShipmentRequestsGrid());
+    GridFactory.registerGridInterceptor(GRID_LOGISTICS_CARGO_REQUESTS,
+        new LogisticsShipmentRequestsGrid());
+
     ProvidesGridColumnRenderer provider = new CargoPlaceRenderer.Provider();
     String loading = "Loading";
     String unloading = "Unloading";
@@ -285,15 +304,19 @@ public final class TransportHandler {
     TradeUtils.registerTotalRenderer(VIEW_CARGO_SALES, VAR_TOTAL);
     TradeUtils.registerTotalRenderer(VIEW_CARGO_CREDIT_SALES, VAR_TOTAL);
     TradeUtils.registerTotalRenderer(VIEW_CARGO_PURCHASES, VAR_TOTAL);
+    TradeUtils.registerTotalRenderer(VIEW_TRIP_PURCHASES, VAR_TOTAL);
     TradeUtils.registerTotalRenderer("UnassignedTripCosts", VAR_TOTAL);
     TradeUtils.registerTotalRenderer("UnassignedFuelCosts", VAR_TOTAL);
 
     GridFactory.registerGridInterceptor(VIEW_CARGO_SALES, new CargoSalesGrid());
     GridFactory.registerGridInterceptor(VIEW_CARGO_CREDIT_SALES, new CargoCreditSalesGrid());
     GridFactory.registerGridInterceptor(VIEW_CARGO_PURCHASES, new CargoPurchasesGrid());
+    GridFactory.registerGridInterceptor(VIEW_TRIP_PURCHASES, new TripPurchasesGrid());
+
     GridFactory.registerGridInterceptor(VIEW_CARGO_INVOICES, new InvoicesGrid());
     GridFactory.registerGridInterceptor(VIEW_CARGO_CREDIT_INVOICES, new InvoicesGrid());
     GridFactory.registerGridInterceptor(VIEW_CARGO_PURCHASE_INVOICES, new InvoicesGrid());
+    GridFactory.registerGridInterceptor(VIEW_TRIP_PURCHASE_INVOICES, new InvoicesGrid());
 
     GridFactory.registerGridInterceptor(VIEW_CARGO_REQUESTS, new CargoRequestsGrid());
     GridFactory.registerGridInterceptor(VIEW_CARGO_REQUEST_FILES,
@@ -309,16 +332,37 @@ public final class TransportHandler {
     }
 
     FormFactory.registerFormInterceptor(FORM_ORDER, new TransportationOrderForm());
+    FormFactory.registerFormInterceptor(FORM_NEW_SIMPLE_ORDER, new NewSimpleTransportationOrder());
     FormFactory.registerFormInterceptor(FORM_TRIP, new TripForm());
     FormFactory.registerFormInterceptor(FORM_EXPEDITION_TRIP, new TripForm());
 
     FormFactory.registerFormInterceptor(FORM_CARGO, new OrderCargoForm());
+
+    final Consumer<ScheduledCommand> assessmentConsumer = new Consumer<ScheduledCommand>() {
+      @Override
+      public void accept(final ScheduledCommand command) {
+        Global.getParameter(PRM_BIND_EXPENSES_TO_INCOMES, new Consumer<String>() {
+          @Override
+          public void accept(String prm) {
+            bindExpensesToIncomes = BeeUtils.unbox(BeeUtils.toBoolean(prm));
+            command.execute();
+          }
+        });
+      }
+    };
     FormFactory.registerPreloader(FORM_CARGO, new Consumer<ScheduledCommand>() {
       @Override
-      public void accept(ScheduledCommand command) {
-        OrderCargoForm.preload(command);
+      public void accept(final ScheduledCommand command) {
+        OrderCargoForm.preload(new ScheduledCommand() {
+          @Override
+          public void execute() {
+            assessmentConsumer.accept(command);
+          }
+        });
       }
     });
+    FormFactory.registerPreloader(FORM_ASSESSMENT, assessmentConsumer);
+    FormFactory.registerPreloader(FORM_ASSESSMENT_FORWARDER, assessmentConsumer);
 
     FormFactory.registerFormInterceptor(FORM_ASSESSMENT, new AssessmentForm());
     FormFactory.registerFormInterceptor(FORM_ASSESSMENT_FORWARDER, new AssessmentForwarderForm());
@@ -328,6 +372,7 @@ public final class TransportHandler {
     FormFactory.registerFormInterceptor(FORM_CARGO_INVOICE, new CargoInvoiceForm());
     FormFactory.registerFormInterceptor(FORM_CARGO_PURCHASE_INVOICE,
         new CargoPurchaseInvoiceForm());
+    FormFactory.registerFormInterceptor(FORM_TRIP_PURCHASE_INVOICE, new InvoiceForm(null));
 
     FormFactory.registerFormInterceptor(FORM_REGISTRATION, new TransportRegistrationForm());
     FormFactory.registerFormInterceptor(FORM_SHIPMENT_REQUEST, new ShipmentRequestForm());
@@ -379,8 +424,5 @@ public final class TransportHandler {
                 callback);
           }
         });
-  }
-
-  private TransportHandler() {
   }
 }

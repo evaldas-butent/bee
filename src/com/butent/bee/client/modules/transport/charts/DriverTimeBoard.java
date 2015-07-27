@@ -155,6 +155,7 @@ final class DriverTimeBoard extends ChartBase {
   private static final String STYLE_TRIP_PREFIX = STYLE_PREFIX + "Trip-";
   private static final String STYLE_TRIP_PANEL = STYLE_TRIP_PREFIX + "panel";
   private static final String STYLE_TRIP_VOID = STYLE_TRIP_PREFIX + "void";
+  private static final String STYLE_TRIP_INFO = STYLE_TRIP_PREFIX + "info";
 
   private static final String STYLE_ABSENCE_PREFIX = STYLE_PREFIX + "Absence-";
   private static final String STYLE_ABSENCE_PANEL = STYLE_ABSENCE_PREFIX + "panel";
@@ -367,6 +368,11 @@ final class DriverTimeBoard extends ChartBase {
   }
 
   @Override
+  protected String getShowAdditionalInfoColumnName() {
+    return COL_DTB_ADDITIONAL_INFO;
+  }
+
+  @Override
   protected String getShowCountryFlagsColumnName() {
     return COL_DTB_COUNTRY_FLAGS;
   }
@@ -498,19 +504,34 @@ final class DriverTimeBoard extends ChartBase {
         Long tripId = row.getLong(COL_TRIP_ID);
 
         Collection<Driver> td = BeeUtils.getIfContains(tripDrivers, tripId);
-        int cargoCount = 0;
 
         if (freights.containsKey(tripId)) {
           JustDate minDate = null;
           JustDate maxDate = null;
 
+          int cargoCount = 0;
+
+          Collection<String> tripCustomers = new ArrayList<>();
+          Collection<String> tripManagers = new ArrayList<>();
+
           for (Freight freight : freights.get(tripId)) {
             minDate = BeeUtils.min(minDate, freight.getMinDate());
             maxDate = BeeUtils.max(maxDate, freight.getMaxDate());
+
             cargoCount++;
+
+            String customerName = freight.getCustomerName();
+            if (!BeeUtils.isEmpty(customerName) && !tripCustomers.contains(customerName)) {
+              tripCustomers.add(customerName);
+            }
+
+            String managerName = freight.getManagerName();
+            if (!BeeUtils.isEmpty(managerName) && !tripManagers.contains(managerName)) {
+              tripManagers.add(managerName);
+            }
           }
 
-          Trip trip = new Trip(row, minDate, maxDate, td, cargoCount);
+          Trip trip = new Trip(row, td, minDate, maxDate, cargoCount, tripCustomers, tripManagers);
           trips.put(tripId, trip);
 
           for (Freight freight : freights.get(tripId)) {
@@ -521,7 +542,7 @@ final class DriverTimeBoard extends ChartBase {
           }
 
         } else {
-          trips.put(tripId, new Trip(row, td, cargoCount));
+          trips.put(tripId, new Trip(row, td));
         }
       }
     }
@@ -549,8 +570,8 @@ final class DriverTimeBoard extends ChartBase {
     setChartLeft(getDriverWidth());
     setChartWidth(canvasSize.getWidth() - getChartLeft() - getChartRight());
 
-    setDayColumnWidth(TimeBoardHelper.getPixels(getSettings(), COL_DTB_PIXELS_PER_DAY, 20,
-        1, getChartWidth()));
+    setDayColumnWidth(TimeBoardHelper.getPixels(getSettings(), COL_DTB_PIXELS_PER_DAY,
+        getDefaultDayColumnWidth(getChartWidth()), 1, getChartWidth()));
 
     Long colorId = TimeBoardHelper.getLong(getSettings(), COL_DTB_COLOR);
     setItemColor((colorId == null) ? null : findColor(colorId));
@@ -570,6 +591,8 @@ final class DriverTimeBoard extends ChartBase {
     ChartData tripData = new ChartData(ChartData.Type.TRIP);
 
     ChartData customerData = new ChartData(ChartData.Type.CUSTOMER);
+    ChartData managerData = new ChartData(ChartData.Type.MANAGER);
+
     ChartData orderData = new ChartData(ChartData.Type.ORDER);
     ChartData statusData = new ChartData(ChartData.Type.ORDER_STATUS);
 
@@ -626,6 +649,8 @@ final class DriverTimeBoard extends ChartBase {
           }
 
           customerData.add(freight.getCustomerName(), freight.getCustomerId());
+          managerData.addUser(freight.getManager());
+
           orderData.add(freight.getOrderName(), freight.getOrderId());
           statusData.addNotNull(freight.getOrderStatus());
 
@@ -669,6 +694,8 @@ final class DriverTimeBoard extends ChartBase {
     data.add(tripData);
 
     data.add(customerData);
+    data.add(managerData);
+
     data.add(orderData);
     data.add(statusData);
 
@@ -906,8 +933,11 @@ final class DriverTimeBoard extends ChartBase {
     Trip trip = trips.get(tripId);
 
     List<String> titleLines = new ArrayList<>();
+    String tripInfo = null;
     if (trip != null) {
       titleLines.add(trip.getTitle());
+      tripInfo = BeeUtils.joinItems(trip.getTruckNumber(), trip.getTrailerNumber(),
+          trip.getCustomerNames());
     }
 
     if (!BeeUtils.isEmpty(item.title)) {
@@ -927,7 +957,8 @@ final class DriverTimeBoard extends ChartBase {
       return panel;
     }
 
-    renderTrip(panel, title, BeeUtils.getIfContains(freights, tripId), range, STYLE_TRIP_VOID);
+    renderTrip(panel, title, tripInfo, BeeUtils.getIfContains(freights, tripId), range,
+        STYLE_TRIP_VOID, STYLE_TRIP_INFO);
 
     return panel;
   }

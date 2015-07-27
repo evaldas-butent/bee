@@ -1,5 +1,6 @@
 package com.butent.bee.client.modules.service;
 
+import com.butent.bee.client.ui.UiOption;
 import com.google.common.collect.Maps;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
@@ -18,6 +19,7 @@ import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.Action;
 
+import java.util.Collection;
 import java.util.Map;
 
 public class ServiceDefectsGrid extends AbstractGridInterceptor {
@@ -69,8 +71,8 @@ public class ServiceDefectsGrid extends AbstractGridInterceptor {
   }
 
   @Override
-  public Map<String, Filter> getInitialParentFilters() {
-    Map<String, Filter> defaultFilters = super.getInitialParentFilters();
+  public Map<String, Filter> getInitialParentFilters(Collection<UiOption> uiOptions) {
+    Map<String, Filter> defaultFilters = super.getInitialParentFilters(uiOptions);
 
     if (defaultFilter != null) {
       if (defaultFilters == null) {

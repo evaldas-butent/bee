@@ -56,7 +56,7 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
-import com.butent.bee.shared.data.event.DataEvent;
+import com.butent.bee.shared.data.event.ModificationEvent;
 import com.butent.bee.shared.export.XCell;
 import com.butent.bee.shared.export.XFont;
 import com.butent.bee.shared.export.XPicture;
@@ -417,8 +417,8 @@ final class ServiceCalendar extends TimeBoard {
   }
 
   @Override
-  protected boolean isDataEventRelevant(DataEvent event) {
-    return event != null && relevantDataViews.contains(event.getViewName());
+  protected boolean isDataEventRelevant(ModificationEvent<?> event) {
+    return event != null && event.containsAny(relevantDataViews);
   }
 
   @Override
@@ -1248,9 +1248,9 @@ final class ServiceCalendar extends TimeBoard {
         if (!BeeUtils.isEmpty(taskRow.getValue(AdministrationConstants.COL_RELATION))) {
           for (Long objId : DataUtils.parseIdList(taskRow
               .getValue(AdministrationConstants.COL_RELATION))) {
-              if (DataUtils.isId(objId)) {
-                tasks.put(objId, wrapper);
-              }
+            if (DataUtils.isId(objId)) {
+              tasks.put(objId, wrapper);
+            }
           }
         }
       }
@@ -1277,8 +1277,8 @@ final class ServiceCalendar extends TimeBoard {
             for (Long objId : DataUtils.parseIdList(rtRow
                 .getValue(AdministrationConstants.COL_RELATION))) {
 
-                if (DataUtils.isId(objId)) {
-                  recurringTasks.putAll(objId, rts);
+              if (DataUtils.isId(objId)) {
+                recurringTasks.putAll(objId, rts);
               }
             }
           }
