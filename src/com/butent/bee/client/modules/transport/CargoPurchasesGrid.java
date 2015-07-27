@@ -6,8 +6,11 @@ import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.data.Data;
+import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.modules.trade.InvoiceBuilder;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
@@ -18,6 +21,7 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -26,16 +30,16 @@ import java.util.TreeSet;
 public class CargoPurchasesGrid extends InvoiceBuilder {
 
   @Override
-  protected void createInvoice(BeeRowSet data, BiConsumer<BeeRowSet, BeeRow> consumer) {
-    DataInfo targetInfo = Data.getDataInfo(getTargetView());
-    BeeRow newRow = RowFactory.createEmptyRow(targetInfo, true);
+  protected void createInvoice(final BeeRowSet data, final BiConsumer<BeeRowSet, BeeRow> consumer) {
+    final DataInfo targetInfo = Data.getDataInfo(getTargetView());
+    final BeeRow newRow = RowFactory.createEmptyRow(targetInfo, true);
 
     Set<String> orders = new TreeSet<>();
     Map<Long, String> suppliers = new HashMap<>();
     Map<Long, String> currencies = new HashMap<>();
 
     DataInfo info = Data.getDataInfo(getViewName());
-    int order = info.getColumnIndex(COL_ORDER_NO);
+    int order = info.getColumnIndex(COL_ASSESSMENT);
     int suplId = info.getColumnIndex(COL_TRADE_SUPPLIER);
     int suplName = info.getColumnIndex(COL_TRADE_SUPPLIER + "Name");
     int currId = info.getColumnIndex(COL_CURRENCY);
@@ -53,7 +57,7 @@ public class CargoPurchasesGrid extends InvoiceBuilder {
         currencies.put(id, row.getString(currName));
       }
     }
-    newRow.setValue(targetInfo.getColumnIndex(COL_TRADE_NOTES), BeeUtils.joinItems(orders));
+    newRow.setValue(targetInfo.getColumnIndex(COL_TRADE_NUMBER), BeeUtils.joinItems(orders));
     newRow.setValue(targetInfo.getColumnIndex(COL_TRADE_MANAGER), BeeKeeper.getUser().getUserId());
     newRow.setValue(targetInfo.getColumnIndex(COL_TRADE_MANAGER + COL_PERSON),
         BeeKeeper.getUser().getUserData().getCompanyPerson());
@@ -72,7 +76,32 @@ public class CargoPurchasesGrid extends InvoiceBuilder {
       newRow.setValue(targetInfo.getColumnIndex(COL_CURRENCY), entry.getKey());
       newRow.setValue(targetInfo.getColumnIndex(ALS_CURRENCY_NAME), entry.getValue());
     }
-    consumer.accept(data, newRow);
+    Global.getRelationParameter(PRM_PURCHASE_OPERATION, new BiConsumer<Long, String>() {
+      @Override
+      public void accept(Long opId, String op) {
+        if (DataUtils.isId(opId)) {
+          newRow.setValue(targetInfo.getColumnIndex(COL_TRADE_OPERATION), opId);
+          newRow.setValue(targetInfo.getColumnIndex(COL_OPERATION_NAME), op);
+
+          Queries.getRow(TBL_TRADE_OPERATIONS, opId,
+              Arrays.asList(COL_OPERATION_WAREHOUSE_TO, COL_OPERATION_WAREHOUSE_TO + "Code"),
+              new RowCallback() {
+                @Override
+                public void onSuccess(BeeRow result) {
+                  if (result != null) {
+                    newRow.setValue(targetInfo.getColumnIndex(COL_PURCHASE_WAREHOUSE_TO),
+                        result.getLong(0));
+                    newRow.setValue(targetInfo.getColumnIndex(COL_PURCHASE_WAREHOUSE_TO + "Code"),
+                        result.getString(1));
+                  }
+                  consumer.accept(data, newRow);
+                }
+              });
+        } else {
+          consumer.accept(data, newRow);
+        }
+      }
+    });
   }
 
   @Override

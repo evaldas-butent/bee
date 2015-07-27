@@ -13,13 +13,18 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.event.logical.SelectorEvent;
+import com.butent.bee.client.grid.ChildGrid;
+import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.EditEndEvent;
+import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.edit.EditableWidget;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.form.interceptor.PrintFormInterceptor;
+import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
+import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.data.DataUtils;
@@ -53,6 +58,32 @@ public class InvoiceForm extends PrintFormInterceptor implements SelectorEvent.H
         && widget instanceof DataSelector) {
       ((DataSelector) widget).addSelectorHandler(this);
     }
+  }
+
+  @Override
+  public void afterCreateWidget(String name, IdentifiableWidget widget,
+      FormFactory.WidgetDescriptionCallback callback) {
+
+    if (widget instanceof ChildGrid
+        && BeeUtils.inListSame(name, TBL_PURCHASE_ITEMS, TBL_SALE_ITEMS)) {
+
+      ((ChildGrid) widget).setGridInterceptor(new AbstractGridInterceptor() {
+        @Override
+        public void onEditStart(EditStartEvent event) {
+          if (!BeeUtils.same(event.getColumnId(), COL_TRADE_ITEM_ORDINAL)) {
+            event.consume();
+          } else {
+            super.onEditStart(event);
+          }
+        }
+
+        @Override
+        public GridInterceptor getInstance() {
+          return null;
+        }
+      });
+    }
+    super.afterCreateWidget(name, widget, callback);
   }
 
   @Override

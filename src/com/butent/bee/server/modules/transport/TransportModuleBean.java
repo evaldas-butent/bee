@@ -334,6 +334,10 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
     return Lists.newArrayList(
         BeeParameter.createRelation(module, PRM_INVOICE_PREFIX, true, TBL_SALES_SERIES,
             COL_SERIES_NAME),
+        BeeParameter.createRelation(module, PRM_PURCHASE_OPERATION, true, TBL_TRADE_OPERATIONS,
+            COL_OPERATION_NAME),
+        BeeParameter.createRelation(module, PRM_SALE_OPERATION, true, TBL_TRADE_OPERATIONS,
+            COL_OPERATION_NAME),
         BeeParameter.createCollection(module, PRM_MESSAGE_TEMPLATE, true, null),
         BeeParameter.createNumber(module, PRM_ERP_REFRESH_INTERVAL),
         BeeParameter.createText(module, "SmsServiceAddress"),

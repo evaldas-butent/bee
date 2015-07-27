@@ -258,6 +258,8 @@ public final class TransportConstants {
   public static final String PRM_ERP_REFRESH_INTERVAL = "ERPRefreshIntervalInMinutes";
   public static final String PRM_MESSAGE_TEMPLATE = "MessageTemplate";
   public static final String PRM_INVOICE_PREFIX = "DefaultInvoicePrefix";
+  public static final String PRM_PURCHASE_OPERATION = "DefaultPurchaseOperation";
+  public static final String PRM_SALE_OPERATION = "DefaultSaleOperation";
   public static final String PRM_CARGO_TYPE = "CargoType";
   public static final String PRM_CARGO_SERVICE = "CargoService";
   public static final String PRM_BIND_EXPENSES_TO_INCOMES = "BindExpensesToIncomes";
