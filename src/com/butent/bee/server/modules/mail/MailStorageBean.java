@@ -227,13 +227,6 @@ public class MailStorageBean {
         .setWhere(sys.idEquals(TBL_PLACES, placeId)));
   }
 
-  public void setFolder(Long folderId, IsCondition clause) {
-    qs.updateData(new SqlUpdate(TBL_PLACES)
-        .addConstant(COL_FOLDER, folderId)
-        .addConstant(COL_MESSAGE_UID, null)
-        .setWhere(clause));
-  }
-
   public Long storeMail(MailAccount account, Message message, Long folderId, Long messageUID)
       throws MessagingException {
 
@@ -277,7 +270,7 @@ public class MailStorageBean {
         try {
           senderId.set(storeAddress(account.getUserId(), sender));
         } catch (AddressException e) {
-          logger.warning("( MessageID =", messageId.get(), ") Error storing address:", e);
+          logger.warning("(MessageID=", messageId.get(), ") Error storing address:", e);
         }
       }
       Long fileId;
@@ -289,8 +282,10 @@ public class MailStorageBean {
         bos.close();
         is = new SharedByteArrayInputStream(bos.toByteArray());
         fileId = fs.storeFile(is, "mail@" + envelope.getUniqueId(), "text/plain");
-      } catch (IOException e) {
-        throw new MessagingException("(MessageID =" + messageId.get() + ") Error getting content",
+      } catch (IOException | MessagingException e) {
+        qs.updateData(new SqlDelete(TBL_MESSAGES)
+            .setWhere(sys.idEquals(TBL_MESSAGES, messageId.get())));
+        throw new MessagingException("(MessageID=" + messageId.get() + ") Error getting content",
             e);
       }
       cb.synchronizedCall(new Runnable() {
@@ -317,7 +312,7 @@ public class MailStorageBean {
                   .addConstant(COL_ADDRESS_TYPE, entry.getKey().name()));
             }
           } catch (AddressException e) {
-            logger.warning("(MessageID =", messageId.get(), ") Error storing address:", e);
+            logger.warning("(MessageID=", messageId.get(), ") Error storing address:", e);
           }
         }
         try {
@@ -352,7 +347,7 @@ public class MailStorageBean {
             }
           }
         } catch (MessagingException | IOException e) {
-          logger.error(e, "(MessageID =", messageId.get(), ") Error parsing content");
+          logger.error(e, "(MessageID=", messageId.get(), ") Error parsing content");
         }
         if (!ArrayUtils.contains(new Long[] {
             account.getDraftsFolder().getId(), account.getTrashFolder().getId()}, folderId)) {
@@ -558,14 +553,14 @@ public class MailStorageBean {
       try {
         contentType = new ContentType(part.getContentType()).getBaseType();
       } catch (ParseException e) {
-        logger.warning("( MessageID =", messageId, ") Error getting part content type:", e);
+        logger.warning("(MessageID=", messageId, ") Error getting part content type:", e);
       }
       String disposition = null;
 
       try {
         disposition = part.getDisposition();
       } catch (ParseException e) {
-        logger.warning("( MessageID =", messageId, ") Error getting part disposition:", e);
+        logger.warning("(MessageID=", messageId, ") Error getting part disposition:", e);
       }
       String fileName = null;
 
@@ -576,7 +571,7 @@ public class MailStorageBean {
           fileName = MimeUtility.decodeText(fileName);
         }
       } catch (ParseException e) {
-        logger.warning("( MessageID =", messageId, ") Error getting part file name:", e);
+        logger.warning("(MessageID=", messageId, ") Error getting part file name:", e);
       }
       if (BeeUtils.same(disposition, Part.ATTACHMENT)
           || !BeeUtils.isEmpty(fileName)

@@ -280,7 +280,7 @@ public class ReportInfo implements BeeSerializable {
   }
 
   public boolean isEmpty() {
-    return BeeUtils.isEmpty(getRowItems()) && BeeUtils.isEmpty(getColItems());
+    return BeeUtils.isEmpty(getColItems());
   }
 
   public boolean requiresField(String field) {

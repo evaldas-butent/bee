@@ -1268,11 +1268,16 @@ public class MailModuleBean implements BeeModule, HasTimerService {
         .addOrder(TBL_ATTACHMENTS, sys.getIdName(TBL_ATTACHMENTS))));
 
     if (DataUtils.isId(placeId) && !MessageFlag.SEEN.isSet(msg.getInt(COL_FLAGS))) {
-      try {
-        setMessageFlag(placeId, MessageFlag.SEEN, true);
-      } catch (MessagingException e) {
-        logger.error(e);
-      }
+      cb.asynchronousCall(new AsynchronousRunnable() {
+        @Override
+        public void run() {
+          try {
+            setMessageFlag(placeId, MessageFlag.SEEN, true);
+          } catch (MessagingException e) {
+            logger.error(e);
+          }
+        }
+      });
     }
     return ResponseObject.response(packet);
   }
