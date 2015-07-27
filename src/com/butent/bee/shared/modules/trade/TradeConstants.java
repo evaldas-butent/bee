@@ -57,6 +57,9 @@ public final class TradeConstants {
   public static final String VAR_VIEW_NAME = "view_name";
   public static final String VAR_ID_LIST = "IdList";
 
+  public static final String VIEW_PURCHASE_OPERATIONS = "PurchaseOperations";
+  public static final String VIEW_SALE_OPERATIONS = "SaleOperations";
+
   public static final String VIEW_PURCHASES = "Purchases";
   public static final String VIEW_PURCHASE_ITEMS = "PurchaseItems";
   public static final String VIEW_SALES = "Sales";

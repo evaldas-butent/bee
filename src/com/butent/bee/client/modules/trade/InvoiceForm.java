@@ -130,7 +130,8 @@ public class InvoiceForm extends PrintFormInterceptor implements SelectorEvent.H
     String viewName = event.getRelatedViewName();
     IsRow relatedRow = event.getRelatedRow();
 
-    if (BeeUtils.same(viewName, TBL_TRADE_OPERATIONS) && event.isChanged() && relatedRow != null) {
+    if (relatedRow != null && event.isChanged()
+        && BeeUtils.same(Data.getViewTable(viewName), TBL_TRADE_OPERATIONS)) {
       OperationType type = EnumUtils.getEnumByIndex(OperationType.class,
           Data.getInteger(viewName, relatedRow, COL_OPERATION_TYPE));
 
