@@ -46,5 +46,6 @@
     <RelColumn name="Manager"/>
     <DataColumn name="Number" />
     <DataColumn name="Note" />
+    <DataColumn name="Sale" visible="false" filterSupplier="value" filterOptions="empty" />
   </g:columns>
 </g:Grid>

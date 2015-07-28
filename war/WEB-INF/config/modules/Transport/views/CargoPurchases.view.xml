@@ -73,6 +73,9 @@
     <SimpleColumn name="Number" />
     <SimpleColumn name="Note" />
     <HiddenColumn name="Purchase" />
+    <SimpleJoin name="Income" joinType="LEFT">
+      <SimpleColumn name="Sale" />
+    </SimpleJoin>
   </Columns>
   <Order>
     <OrderBy column="OrderDate" />

@@ -14,6 +14,7 @@
     <DataColumn name="Quantity" />
     <DataColumn name="UnitName" flexGrow="0" caption="=unitShort" />
     <DataColumn name="Price" />
+    <DataColumn name="OldPrice" readOnly="true" visible="false" />
 
     <DataColumn name="VatPlus" width="20" sortable="false" horizontalAlignment="center" caption="+">
       <render>

@@ -76,7 +76,25 @@ public class CargoPurchasesGrid extends InvoiceBuilder {
       newRow.setValue(targetInfo.getColumnIndex(COL_CURRENCY), entry.getKey());
       newRow.setValue(targetInfo.getColumnIndex(ALS_CURRENCY_NAME), entry.getValue());
     }
-    Global.getRelationParameter(PRM_PURCHASE_OPERATION, new BiConsumer<Long, String>() {
+    int sale = info.getColumnIndex(COL_SALE);
+    String operation = null;
+
+    for (BeeRow row : data.getRows()) {
+      String op = DataUtils.isId(row.getLong(sale)) ? PRM_ACCUMULATION_OPERATION
+          : PRM_PURCHASE_OPERATION;
+
+      if (BeeUtils.isEmpty(operation)) {
+        operation = op;
+      } else if (!BeeUtils.same(operation, op)) {
+        operation = null;
+        break;
+      }
+    }
+    if (BeeUtils.isEmpty(operation)) {
+      consumer.accept(data, newRow);
+      return;
+    }
+    Global.getRelationParameter(operation, new BiConsumer<Long, String>() {
       @Override
       public void accept(Long opId, String op) {
         if (DataUtils.isId(opId)) {
