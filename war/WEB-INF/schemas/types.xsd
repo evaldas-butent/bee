@@ -387,6 +387,7 @@
       <xs:enumeration value="ProjectInvoices" />
       <xs:enumeration value="ProjectReasons" />
       <xs:enumeration value="ProjectStages" />
+      <xs:enumeration value="ProjectTemplates" />
       <xs:enumeration value="ProjectTree"/>
       <xs:enumeration value="ProjectTypes" />
       <xs:enumeration value="ProjectUsers" />
