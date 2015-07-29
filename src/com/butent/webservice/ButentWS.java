@@ -143,6 +143,38 @@ public final class ButentWS {
     return resp;
   }
 
+  public SimpleRowSet getTurnovers(JustDate fromDate, JustDate toDate, String companyName)
+      throws BeeException {
+    logger.debug("GetTurnovers: ", companyName, fromDate, toDate);
+
+    String answer;
+
+    StringBuilder data =
+        new StringBuilder("<VFPData><row>")
+            .append(
+                XmlUtils.tag("data_nuo",
+                    fromDate != null ? fromDate.toString() : BeeConst.STRING_EMPTY))
+            .append(
+                XmlUtils.tag("data_iki", toDate != null ? toDate.toString()
+                    : BeeConst.STRING_EMPTY))
+            .append(XmlUtils.tag("klientas", companyName))
+            .append("</row></VFPData>");
+
+    try {
+      answer = process("GetTurnovers", data.toString());
+      // logger.info("input", data.toString());
+      // logger.info("answer", answer);
+    } catch (Exception e) {
+      throw new BeeException(e);
+    }
+
+    SimpleRowSet resp =
+        xmlToSimpleRowSet(answer, "data", "dokumentas", "dok_serija", "kitas_dok", "gavejas",
+            "manager",
+            "terminas", "viso", "viso_val", "apm_suma", "apm_val", "apm_data");
+    return resp;
+  }
+
   public SimpleRowSet getClients()
       throws BeeException {
 

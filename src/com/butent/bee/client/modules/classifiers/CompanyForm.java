@@ -292,6 +292,8 @@ public class CompanyForm extends AbstractFormInterceptor {
   @Override
   public void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow) {
     createCellValidationHandlers(form, newRow);
+    newRow.setValue(form.getDataIndex(COL_REMIND_EMAIL), Boolean.TRUE);
+    newRow.setValue(form.getDataIndex(COL_EMAIL_INVOICES), Boolean.TRUE);
     super.onStartNewRow(form, oldRow, newRow);
   }
 

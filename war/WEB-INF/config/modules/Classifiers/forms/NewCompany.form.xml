@@ -72,7 +72,13 @@
 
       <row>
         <Label for="EmailId" style="&lbl2;"/>
-        <DataSelector source="EmailId" maxLength="50" style="&inp1;"/>
+        <cell>
+          <FlowPanel>
+            <DataSelector source="EmailId" maxLength="50" style="&inp1;"/>
+            <CheckBox html="-" name="RemindEmail" source="RemindEmail" />
+            <CheckBox html="-" name="EmailInvoices" source="EmailInvoices" />
+          </FlowPanel>
+        </cell>
       </row>
 
       <row>

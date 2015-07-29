@@ -1,5 +1,8 @@
 package com.butent.bee.client.modules.trade;
 
+import com.butent.bee.client.data.RowEditor;
+import com.butent.bee.client.ui.Opener;
+import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 
@@ -52,8 +55,8 @@ class DebtReportsGrid extends AbstractGridInterceptor implements ClickHandler {
     private static final String NAME_TEMPLATE = "Template";
     private static final String NAME_SEND = "Send";
     private static final String NAME_SUBJECT = "Subject";
-    private static final String NAME_FIRST_PARAGRAPHAR = "FirstParagraph";
-    private static final String NAME_LAST_PARAGRAPHAR = "LastParagraph";
+    private static final String NAME_FIRST_PARAGRAPH = "FirstParagraph";
+    private static final String NAME_LAST_PARAGRAPH = "LastParagraph";
 
     private final Set<Long> ids;
 
@@ -106,11 +109,11 @@ class DebtReportsGrid extends AbstractGridInterceptor implements ClickHandler {
         subject = (InputText) widget;
       }
 
-      if (BeeUtils.same(name, NAME_FIRST_PARAGRAPHAR) && widget instanceof InputArea) {
+      if (BeeUtils.same(name, NAME_FIRST_PARAGRAPH) && widget instanceof InputArea) {
         firstParagraph = (InputArea) widget;
       }
 
-      if (BeeUtils.same(name, NAME_LAST_PARAGRAPHAR) && widget instanceof InputArea) {
+      if (BeeUtils.same(name, NAME_LAST_PARAGRAPH) && widget instanceof InputArea) {
         lastParagraph = (InputArea) widget;
       }
 
@@ -201,6 +204,9 @@ class DebtReportsGrid extends AbstractGridInterceptor implements ClickHandler {
       GridFactory.openGrid(TradeConstants.GRID_ERP_SALES,
           GridFactory.getGridInterceptor(TradeConstants.GRID_ERP_SALES),
           options, PresenterCallback.SHOW_IN_NEW_TAB);
+    } else if (ClassifierConstants.COL_COMPANY_NAME.equals(event.getColumnId())) {
+      RowEditor.open(ClassifierConstants.VIEW_COMPANIES, activeRow.getId(),
+          Opener.NEW_TAB);
     }
   }
 

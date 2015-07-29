@@ -3253,7 +3253,7 @@ public class TradeActBean implements HasTimerService {
       }
     }
 
-    // Debts
+    // Turnovers
     try {
       SimpleRowSet butentCompanies =
           ButentWS.connect(remoteNamespace, remoteAddress, remoteLogin, remotePassword)
@@ -3265,11 +3265,11 @@ public class TradeActBean implements HasTimerService {
       }
 
       SimpleRowSet butentDebts =
-          ButentWS.connect(remoteNamespace, remoteAddress, remoteLogin, remotePassword).getDebts(
+          ButentWS.connect(remoteNamespace, remoteAddress, remoteLogin, remotePassword).getTurnovers(
               null, null, BeeConst.STRING_EMPTY);
 
       if (butentDebts.isEmpty()) {
-        logger.info("Finish import Debts. Debts set from ERP is empty");
+        logger.info("Finish import Turnovers. Turnovers set from ERP is empty");
         return;
       }
 
@@ -3290,7 +3290,7 @@ public class TradeActBean implements HasTimerService {
           int idxCompanyName = butentNames.indexOf(butentDebts.getValue(i, "gavejas"));
 
           if (BeeUtils.isEmpty(butentCompanies.getValue(idxCompanyName, "kodas"))) {
-            logger.warning("Debt row was skipped. Company", butentDebts.getValue(i, "gavejas"),
+            logger.warning("Turnover row was skipped. Company", butentDebts.getValue(i, "gavejas"),
                 "has not code. Row data: ", butentDebts.getRow(i).getValues());
             continue;
           }
@@ -3300,7 +3300,7 @@ public class TradeActBean implements HasTimerService {
                   .getValue(idxCompanyName, "kodas")));
 
           if (company.isEmpty()) {
-            logger.warning("Debt row was skipped. Company", butentDebts.getValue(i, "gavejas"),
+            logger.warning("Turnover row was skipped. Company", butentDebts.getValue(i, "gavejas"),
                 "code", butentCompanies
                     .getValue(idxCompanyName, "kodas"),
                 "not found in B-NOVO. Row data: ", butentDebts.getRow(i).getValues());
@@ -3331,12 +3331,20 @@ public class TradeActBean implements HasTimerService {
               qs.getViewData(VIEW_CURRENCIES, Filter.equals(COL_CURRENCY_NAME, butentDebts
                   .getValue(i, "viso_val")));
           if (currencies.isEmpty()) {
-            logger.warning("Debt row was skipped. Company", butentDebts.getValue(i, "gavejas"),
+            logger.warning("Turnover row was skipped. Company", butentDebts.getValue(i, "gavejas"),
                 "code", butentCompanies
                     .getValue(idxCompanyName, "kodas"), "currency", butentDebts
                     .getValue(i, "viso_val"),
                 "not found in B-NOVO. Row data:", butentDebts.getRow(i).getValues());
             continue;
+          }
+
+          BeeRowSet users = qs.getViewData(VIEW_USERS, Filter.equals(COL_EMPLOYER_ID, butentDebts.getValue(i, "manager")));
+
+          Long userId = null;
+
+          if (!users.isEmpty()) {
+            userId = users.getRow(0).getId();
           }
 
           SqlInsert si =
@@ -3347,10 +3355,10 @@ public class TradeActBean implements HasTimerService {
                   .addConstant(COL_TRADE_SALE_SERIES, serId)
                   .addConstant(COL_TRADE_INVOICE_NO, butentDebts.getValue(i, "dokumentas"))
                   .addConstant(COL_TRADE_CURRENCY, currencies.getRowIds().get(0))
+                  .addConstant(COL_TRADE_MANAGER, userId)
                   .addConstant(
                       COL_TRADE_PAID,
-                      BeeUtils.unbox(butentDebts.getDouble(i, "viso"))
-                          - BeeUtils.unbox(butentDebts.getDouble(i, "skola_w")))
+                      BeeUtils.unbox(butentDebts.getDouble(i, "apn_suma")))
                   .addConstant(COL_TRADE_TERM, butentDebts.getDate(i, "terminas"));
           qs.insertData(si);
         }
