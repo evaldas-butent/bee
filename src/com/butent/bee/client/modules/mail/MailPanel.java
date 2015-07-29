@@ -801,6 +801,9 @@ public class MailPanel extends AbstractFormInterceptor {
 
       if (!preserveActiveRow) {
         grid.getGridView().getGrid().reset();
+        message.reset();
+        messageWidget.setVisible(false);
+        emptySelectionWidget.setVisible(true);
       }
       grid.refresh(preserveActiveRow);
     }
