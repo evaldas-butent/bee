@@ -46,6 +46,11 @@
       </x:minus>
     </SimpleColumn>
 
+    <SimpleColumn name="Supplier" />
+    <SimpleJoin joinType="LEFT" name="Supplier">
+      <SimpleColumn name="Name" alias="SupplierName" />
+    </SimpleJoin>
+
     <SimpleColumn name="Customer" />
     <SimpleJoin joinType="LEFT" name="Customer">
       <SimpleColumn name="Name" alias="CustomerName" label="=trdCustomer" />
@@ -80,7 +85,7 @@
 
     <ExternalJoin name="Sale" source="CargoIncomes" joinType="LEFT">
       <AggregateColumn name="Sale" aggregate="MAX" />
-      
+
       <SimpleJoin name="Cargo" joinType="LEFT">
         <AggregateColumn name="Number" aggregate="MIN" alias="MinRef" />
         <AggregateColumn name="Number" aggregate="MAX" alias="MaxRef" />
@@ -90,7 +95,7 @@
           <AggregateColumn name="Date" aggregate="MIN" alias="MinLoadingDate" />
           <AggregateColumn name="Date" aggregate="MAX" alias="MaxLoadingDate" />
           <AggregateColumn name="Date" aggregate="COUNT" alias="CntLoadingDate" />
-          
+
           <SimpleJoin joinType="LEFT" name="Country">
             <AggregateColumn name="Name" aggregate="MIN" alias="MinLoadingCountry" />
             <AggregateColumn name="Name" aggregate="MAX" alias="MaxLoadingCountry" />
@@ -102,7 +107,7 @@
           <AggregateColumn name="Date" aggregate="MIN" alias="MinUnloadingDate" />
           <AggregateColumn name="Date" aggregate="MAX" alias="MaxUnloadingDate" />
           <AggregateColumn name="Date" aggregate="COUNT" alias="CntUnloadingDate" />
-          
+
           <SimpleJoin joinType="LEFT" name="Country">
             <AggregateColumn name="Name" aggregate="MIN" alias="MinUnloadingCountry" />
             <AggregateColumn name="Name" aggregate="MAX" alias="MaxUnloadingCountry" />
