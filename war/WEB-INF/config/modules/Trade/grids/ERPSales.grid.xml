@@ -5,7 +5,7 @@
   name="ERPSales" viewName="ERPSales"
   editShowId="true" flexGrow="1"
   disabledActions="add delete audit"
-  caption="=trdERPDebts"
+  caption="=trdERPSales"
   readOnly="true"
   >
   <g:columns>

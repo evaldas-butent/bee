@@ -6,5 +6,5 @@ name="TradeDebts" label="=trdDebts" parent="Contacts" order="30" separator="true
    <Item name="Debts" label="=trdDebts" service="grid" parameters="Debts" module="Trade" separator="true"/>
    <Item name="DebtReports" label="=trdDebtReports" service="grid" parameters="DebtReports" module="Trade" />
    <Item name="ReminderTemplates" label="=trdReminderTemplates" service="grid" parameters="DebtReminderTemplates" module="Trade" />
-   <Item name="ERPSales" label="=trdERPDebts" service="grid" parameters="ERPSales" />
+   <Item name="ERPSales" label="=trdERPSales" service="grid" parameters="ERPSales" />
 </Entry>

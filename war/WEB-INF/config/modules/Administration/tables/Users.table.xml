@@ -14,6 +14,8 @@
     
     <DateTime name="BlockAfter" label="=blockAfter" />
     <DateTime name="BlockBefore" label="=blockBefore" />
+
+    <Long name="EmployerId" label="Tab.Nr." />
   </Fields>
 
   <Indexes>

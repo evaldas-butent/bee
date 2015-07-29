@@ -10,7 +10,7 @@
 
 	<g:columns xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid">
 	  <SelectionColumn name="Select" width="20" />
-		<DataColumn name="Name" caption="=company" label="=company" />
+		<DataColumn name="Name" caption="=company" label="=company"/>
 		<PropColumn name="RemindEmail" type="string" caption="=email" label="=email"/>
 		<DataColumn name="DebtCount" >
 		  <style>

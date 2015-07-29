@@ -239,6 +239,11 @@
           <ChildGrid name="CompanyProjects" relColumn="Company" />
         </page>
 
+        <page data="ERPSales">
+          <text>=trdERPSales</text>
+          <ChildGrid name="ERPSales" relColumn="Customer" />
+        </page>
+
         <page for="Notes">
           <text>=notes</text>
           <SimplePanel>
