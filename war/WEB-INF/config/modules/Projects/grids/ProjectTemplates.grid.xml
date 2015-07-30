@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+	name="ProjectTemplates" viewName="ProjectTemplates" caption="=prjTemplates">
+
+  <g:columns>
+    <DataColumn name="Name" visible="true" />
+    <RelColumn name="Type" />
+    <RelColumn name="Company" label="=client" />
+    <RelColumn name="Owner" />
+    <DataColumn name="StartDate" />
+    <DataColumn name="EndDate" />
+    <RelColumn name="Category" visible="false" />
+  </g:columns>
+
+</g:Grid>

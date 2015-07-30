@@ -41,6 +41,12 @@
     <SimpleJoin name="Reminder" joinType="LEFT">
       <SimpleColumn alias="ReminderName" name="Name" />
     </SimpleJoin>
+
+    <SimpleColumn name="ProjectTemplate" />
+    <SimpleColumn name="ProjectTMLStage" />
+    <SimpleJoin name="ProjectTMLStage" joinType="LEFT">
+      <SimpleColumn name="Name" alias="TMLStageName" />
+    </SimpleJoin>
   </Columns>
   
   <Order>

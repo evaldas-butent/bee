@@ -388,6 +388,10 @@
       <xs:enumeration value="ProjectReasons" />
       <xs:enumeration value="ProjectStages" />
       <xs:enumeration value="ProjectTemplates" />
+      <xs:enumeration value="ProjectTMLContacts" />
+      <xs:enumeration value="ProjectTMLDates" />
+      <xs:enumeration value="ProjectTMLStages" />
+      <xs:enumeration value="ProjectTMLUsers" />
       <xs:enumeration value="ProjectTree"/>
       <xs:enumeration value="ProjectTypes" />
       <xs:enumeration value="ProjectUsers" />

@@ -6,17 +6,7 @@
 		
 	<g:columns>
 		<DataColumn name="StartDate" />
-		<DataColumn name="Color" width="100" visible="true">
-      <dynStyle>
-        <ui:inline>background-color: [row.Color];</ui:inline>
-        <ui:expression>row.Color</ui:expression>
-      </dynStyle>
-      <editor type="color" />
-    </DataColumn>
-		<DataColumn name="Note" />
+    <xi:include href="columns/Dates.columns.xml" />
 	</g:columns>
-	<g:rowStyle>
-   
-  </g:rowStyle>	
- 
+
 </g:Grid>

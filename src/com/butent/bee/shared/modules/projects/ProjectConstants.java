@@ -89,12 +89,13 @@ public final class ProjectConstants {
   public static final String COL_PROJECT_STATUS = "Status";
   public static final String COL_PROJECT_PRIORITY = "Priority";
   public static final String COL_PROJECT_OWNER = "Owner";
-  public static final String COL_PROJECT_CONTACT = "Contact";
   public static final String COL_PROJECT_CATEGORY = "Category";
   public static final String COL_PROJECT_PRICE = "Price";
   public static final String COL_PROJECT_ITEM_PRICE = "Price";
   public static final String COL_PROJECT_CURENCY = "Currency";
   public static final String COL_PROJECT_INCOME_CURENCY = "Currency";
+
+  public static final String COL_DEFAULT_PROJECT_TEMPLATE_STAGE = "DefaultTMLStage";
 
   public static final String COL_INCOME_NOTE = "Note";
   public static final String COL_INCOME_DATE = "Date";
@@ -143,12 +144,16 @@ public final class ProjectConstants {
   public static final String FORM_NEW_PROJECT_REASON_COMMENT = "NewProjectReasonComment";
   public static final String FORM_NEW_PROJECT_INVOICE = "NewProjectInvoice";
 
+  public static final String FORM_PROJECT_TEMPLATE = "ProjectTemplate";
+
   public static final String GRID_ALL_PROJECTS = "AllProjects";
   public static final String GRID_PROJECTS = "Projects";
   public static final String GRID_PROJECT_USERS = "ProjectUsers";
   public static final String GRID_PROJECT_STAGES = "ProjectStages";
   public static final String GRID_PROJECT_INCOMES = "ProjectIncomes";
   public static final String GRID_PROJECT_INVOICES = "ProjectInvoices";
+
+  public static final String GRID_PROJECT_TEMPLATE_STAGES = "ProjectTMLStages";
 
   public static final String NAME_EXPECTED_TASKS_DURATION = "CalcExpectedTasksDuration";
   public static final String NAME_ACTUAL_TASKS_DURATION = "CalcActualTasksDuration";
@@ -184,6 +189,8 @@ public final class ProjectConstants {
   public static final String VIEW_PROJECT_INCOMES = "ProjectIncomes";
   public static final String VIEW_PROJECT_INVOICES = "ProjectInvoices";
   public static final String VIEW_PROJECT_TREE = "ProjectTree";
+
+  public static final String VIEW_PROJECT_TEMPLATES = "ProjectTemplates";
 
   public static final String TBL_PROJECT_USAGE = "ProjectUsage";
   public static final String TBL_PROJECTS = "Projects";
