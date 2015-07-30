@@ -518,7 +518,8 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
   @Override
   public void onLoad(final FormView form) {
     Widget widget;
-    final Widget dateWidget;
+    final Widget dateFrom;
+    Widget dateTo;
 
     Long seriesId =
         BeeUtils.toLongOrNull(BeeKeeper.getStorage().get(storageKey(COL_TRADE_SALE_SERIES)));
@@ -550,33 +551,27 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
     }
 
     JustDate from = BeeKeeper.getStorage().getDate(storageKey(COL_TA_SERVICE_FROM));
-    if (from != null) {
-      dateWidget = form.getWidgetByName(COL_TA_SERVICE_FROM);
-      if (dateWidget instanceof InputDate
-          && ((UnboundSelector) form.getWidgetByName(COL_TA_COMPANY)).isEnabled()) {
-        ((InputDate) dateWidget).setDate(from);
-      } else {
-        Queries.getRow(VIEW_TRADE_ACTS, actId, new RowCallback() {
+    dateFrom = form.getWidgetByName(COL_TA_SERVICE_FROM);
+    if (from != null && ((UnboundSelector) widget).isEnabled() && dateFrom instanceof InputDate) {
+      ((InputDate) dateFrom).setDate(from);
+    } else if (!((UnboundSelector) widget).isEnabled()) {
+      Queries.getRow(VIEW_TRADE_ACTS, actId, new RowCallback() {
 
-          @Override
-          public void onSuccess(BeeRow result) {
-            ((InputDate) dateWidget).setDate(result.getDateTime(Data
-                .getColumnIndex(VIEW_TRADE_ACTS,
-                    COL_TA_DATE)));
-          }
-        });
-      }
+        @Override
+        public void onSuccess(BeeRow result) {
+          ((InputDate) dateFrom).setDate(result.getDateTime(Data
+              .getColumnIndex(VIEW_TRADE_ACTS,
+                  COL_TA_DATE)));
+        }
+      });
     }
 
     JustDate to = BeeKeeper.getStorage().getDate(storageKey(COL_TA_SERVICE_TO));
-    if (to != null) {
-      widget = form.getWidgetByName(COL_TA_SERVICE_TO);
-      if (widget instanceof InputDate
-          && ((UnboundSelector) form.getWidgetByName(COL_TA_COMPANY)).isEnabled()) {
-        ((InputDate) widget).setDate(to);
-      } else {
-        ((InputDate) widget).setDate(new JustDate().getDate());
-      }
+    dateTo = form.getWidgetByName(COL_TA_SERVICE_TO);
+    if (to != null && ((UnboundSelector) widget).isEnabled() && dateTo instanceof InputDate) {
+      ((InputDate) dateTo).setDate(to);
+    } else if (!((UnboundSelector) widget).isEnabled()) {
+      ((InputDate) dateTo).setDate(new JustDate().getDate());
     }
   }
 
