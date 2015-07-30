@@ -382,6 +382,14 @@ public class ReportInfo implements BeeSerializable {
     }
   }
 
+  public void setDescending(int colIndex, Boolean descending) {
+    ReportInfoItem item = BeeUtils.getQuietly(getColItems(), colIndex);
+
+    if (item != null) {
+      item.descending = descending;
+    }
+  }
+
   public void setFunction(int colIndex, ReportFunction function) {
     ReportInfoItem item = BeeUtils.getQuietly(getColItems(), colIndex);
 
