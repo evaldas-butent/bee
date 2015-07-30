@@ -19,7 +19,7 @@
     <Numeric name="DaysPerWeek" precision="1" label="=taDaysPerWeek" />
     <Numeric name="MinTerm" precision="3" label="=taMinTerm" />
 
-    <Numeric name="Quantity" precision="12" scale="3" label="=quantity" />
+    <Numeric name="Quantity" precision="12" scale="3" label="=quantity" notNull="true" />
     <Numeric name="Price" precision="12" scale="2" label="=price" />
 
     <Boolean name="VatPlus" label="=vatPlus" defValue="true" />

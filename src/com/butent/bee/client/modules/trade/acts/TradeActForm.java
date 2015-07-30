@@ -3,6 +3,7 @@ package com.butent.bee.client.modules.trade.acts;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.ALS_CONTACT_PHYSICAL;
 import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.COL_TA_COMPANY;
@@ -50,6 +51,7 @@ import com.butent.bee.shared.modules.trade.acts.TradeActKind;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.Relation.Caching;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.Collection;
 
@@ -170,6 +172,7 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
           });
       header.addCommandItem(commandCompose);
     }
+    createReqLabels(form);
     super.afterRefresh(form, row);
   }
 
@@ -204,21 +207,26 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
         if (!value && contact == null) {
           form.notifySevere(Localized.getConstants().contact() + " "
               + Localized.getConstants().valueRequired());
-          return false;
+          valid = false;
         } else {
-          return true;
+          valid = true;
         }
       }
 
       if (TradeActKind.RETURN.ordinal() == BeeUtils.unbox(row.getInteger(idxKind))) {
         if (!BeeUtils.isEmpty(regNo)) {
-          return true;
+          valid = true;
         } else {
           form.notifySevere(Localized.getConstants().taRegistrationNo() + " "
               + Localized.getConstants().valueRequired());
-          return false;
+          valid = false;
         }
       }
+
+      if (valid) {
+        valid = createReqFields(form);
+      }
+
       return valid;
     }
     return super.beforeAction(action, presenter);
@@ -310,6 +318,54 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
 
       contractSelector.getOracle().setAdditionalFilter(relDocFilter, true);
     }
+  }
 
+  private static boolean createReqFields(FormView form) {
+
+    IsRow row = form.getActiveRow();
+    boolean valid = true;
+
+    if (row == null) {
+      return false;
+    }
+
+    int kind = row.getInteger(Data.getColumnIndex(VIEW_TRADE_ACTS, COL_TA_KIND));
+
+    String[] fields = EnumUtils.getEnumByIndex(TradeActKind.class, kind).getReqFields();
+
+    if (fields != null) {
+      for (String field : fields) {
+        String value = row.getString(Data.getColumnIndex(VIEW_TRADE_ACTS, field));
+
+        if (BeeUtils.isEmpty(value)) {
+          form.notifySevere(Data.getColumnLabel(VIEW_TRADE_ACTS, field) + " "
+              + Localized.getConstants().valueRequired());
+          valid = false;
+          break;
+
+        }
+      }
+    }
+    return valid;
+  }
+
+  private static void createReqLabels(FormView form) {
+    IsRow row = form.getActiveRow();
+    Widget wid;
+
+    if (row == null) {
+      return;
+    }
+
+    int kind = row.getInteger(Data.getColumnIndex(VIEW_TRADE_ACTS, COL_TA_KIND));
+
+    String[] fields = EnumUtils.getEnumByIndex(TradeActKind.class, kind).getReqFields();
+
+    if (fields != null) {
+      for (String field : fields) {
+        wid = form.getWidgetByName("label" + field);
+        wid.addStyleName("bee-required");
+      }
+    }
   }
 }

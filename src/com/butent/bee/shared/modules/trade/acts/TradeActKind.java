@@ -1,5 +1,7 @@
 package com.butent.bee.shared.modules.trade.acts;
 
+import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
+
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
@@ -10,7 +12,10 @@ import com.butent.bee.shared.ui.HasLocalizedCaption;
 import java.util.EnumSet;
 
 public enum TradeActKind implements HasLocalizedCaption {
-  SALE(Option.ALTER_TO, Option.AUTO_NUMBER, Option.BUILD_INVOICES, Option.ENABLE_COPY,
+  SALE(new String[] {COL_TA_UNTIL, COL_TA_DRIVER, COL_TA_VEHICLE, COL_TA_OBJECT, COL_TA_STATUS},
+      Option.ALTER_TO,
+      Option.AUTO_NUMBER, Option.BUILD_INVOICES,
+      Option.ENABLE_COPY,
       Option.ENABLE_RETURN, Option.ENABLE_SUPPLEMENT, Option.HAS_SERVICES, Option.SAVE_AS_TEMPLATE,
       Option.SHOW_STOCK) {
     @Override
@@ -24,7 +29,10 @@ public enum TradeActKind implements HasLocalizedCaption {
     }
   },
 
-  SUPPLEMENT(Option.BUILD_INVOICES, Option.ENABLE_RETURN, Option.HAS_SERVICES, Option.SHOW_STOCK) {
+  SUPPLEMENT(new String[] {
+      COL_TA_UNTIL, COL_TA_DRIVER, COL_TA_VEHICLE, COL_TA_OBJECT, COL_TA_STATUS},
+      Option.BUILD_INVOICES, Option.ENABLE_RETURN, Option.HAS_SERVICES,
+      Option.SHOW_STOCK) {
     @Override
     public String getCaption(LocalizableConstants constants) {
       return constants.taKindSupplement();
@@ -36,7 +44,8 @@ public enum TradeActKind implements HasLocalizedCaption {
     }
   },
 
-  RETURN(Option.AUTO_NUMBER) {
+  RETURN(new String[] {COL_TA_DRIVER, COL_TA_VEHICLE, COL_TA_OBJECT, COL_TA_STATUS},
+      Option.AUTO_NUMBER) {
     @Override
     public String getCaption(LocalizableConstants constants) {
       return constants.taKindReturn();
@@ -48,7 +57,8 @@ public enum TradeActKind implements HasLocalizedCaption {
     }
   },
 
-  TENDER(Option.ALTER_TO, Option.ALTER_FROM, Option.ENABLE_COPY, Option.HAS_SERVICES,
+  TENDER(new String[] {COL_TA_UNTIL}, Option.ALTER_TO, Option.ALTER_FROM, Option.ENABLE_COPY,
+      Option.HAS_SERVICES,
       Option.SAVE_AS_TEMPLATE, Option.SHOW_STOCK) {
     @Override
     public String getCaption(LocalizableConstants constants) {
@@ -56,14 +66,15 @@ public enum TradeActKind implements HasLocalizedCaption {
     }
   },
 
-  PURCHASE(Option.ALTER_TO, Option.AUTO_NUMBER, Option.ENABLE_COPY, Option.SAVE_AS_TEMPLATE) {
+  PURCHASE(new String[] {}, Option.ALTER_TO, Option.AUTO_NUMBER, Option.ENABLE_COPY,
+      Option.SAVE_AS_TEMPLATE) {
     @Override
     public String getCaption(LocalizableConstants constants) {
       return constants.taKindPurchase();
     }
   },
 
-  WRITE_OFF(Option.ALTER_TO, Option.AUTO_NUMBER, Option.SHOW_STOCK) {
+  WRITE_OFF(null, Option.ALTER_TO, Option.AUTO_NUMBER, Option.SHOW_STOCK) {
     @Override
     public String getCaption(LocalizableConstants constants) {
       return constants.taKindWriteOff();
@@ -75,7 +86,8 @@ public enum TradeActKind implements HasLocalizedCaption {
     }
   },
 
-  RESERVE(Option.ALTER_TO, Option.ALTER_FROM, Option.HAS_SERVICES, Option.SHOW_STOCK) {
+  RESERVE(new String[] {COL_TA_UNTIL}, Option.ALTER_TO, Option.ALTER_FROM, Option.HAS_SERVICES,
+      Option.SHOW_STOCK) {
     @Override
     public String getCaption(LocalizableConstants constants) {
       return constants.taKindReserve();
@@ -107,17 +119,23 @@ public enum TradeActKind implements HasLocalizedCaption {
   }
 
   private final EnumSet<Option> options;
+  private String[] reqFields;
 
   private TradeActKind(EnumSet<Option> options) {
     this.options = options;
   }
 
-  private TradeActKind(Option first, Option... rest) {
+  private TradeActKind(String[] reqFields, Option first, Option... rest) {
+    this.reqFields = reqFields;
     if (rest == null) {
       this.options = EnumSet.of(first);
     } else {
       this.options = EnumSet.of(first, rest);
     }
+  }
+
+  public String[] getReqFields() {
+    return reqFields;
   }
 
   public boolean autoNumber() {
