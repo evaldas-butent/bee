@@ -28,8 +28,8 @@
       </row>
 
       <row>
-        <Label for="Name" visible="true" />
-        <DataSelector source="Name" style="&inpw;" visible="true" />
+        <Label for="Name" visible="true" class="bee-required" />
+        <DataSelector source="Name" style="&inpw;" visible="true" required="true" />
 
         <Label for="Parent">
           &forparent;
@@ -40,45 +40,45 @@
       </row>
       
       <row>
-       <Label text="=trdContract" />
+       <Label text="=trdContract" class="bee-required" />
        <DataSelector name="Contract" source="Contract" style="&inpw;"
           renderColumns="ContractName ContractNumber" 
           choiceColumns="Name Number DocumentDate Expires" viewName="Documents" 
-          caching="none" module="Documents" newRowEnabled="false" />
+          caching="none" module="Documents" newRowEnabled="false" required="true" />
       </row>
       
       <row>
         <Label for="Date" visible="true" />
         <InputDateTime source="Date" style="&inpdt;" visible="true" />
 
-        <Label for="Until" class="bee-ta-until-label" />
-        <InputDateTime source="Until" class="bee-ta-until-input" style="&inpdt;" />
+        <Label for="Until" class="bee-ta-until-label" name="labelUntil" />
+        <InputDateTime source="Until" name="Until" class="bee-ta-until-input" style="&inpdt;" />
       </row>
 
       <row>
-        <Label for="Series" />
-        <DataSelector source="Series" newRowEnabled="false" style="width: &inpdt;" />
+        <Label for="Series" class="bee-required" />
+        <DataSelector source="Series" newRowEnabled="false" style="width: &inpdt;" required="true" />
 
         <Label for="Number" visible="true" />
         <InputText source="Number" style="&inpw;" visible="true" />
       </row>
 
       <row>
-        <Label for="Operation" />
+        <Label for="Operation" class="bee-required" />
         <DataSelector source="Operation" renderColumns="OperationName" newRowEnabled="false"
-          style="&inpw;" />
+          style="&inpw;" required="true" />
 
-        <Label for="Status" />
+        <Label for="Status" name="labelStatus" />
         <DataSelector source="Status" renderColumns="StatusName" newRowEnabled="false"
           style="&inpw;" />
       </row>
 
       <row>
-        <Label for="Company" visible="true" />
+        <Label for="Company" visible="true" class="bee-required" />
         <DataSelector source="Company" name="Company" style="&inpw;" visible="true" choiceColumns="Name TypeName" 
-          renderColumns="CompanyName TypeName"/>
+          renderColumns="CompanyName TypeName" required="true" />
 
-        <Label for="Object" />
+        <Label for="Object" name="labelObject" />
         <DataSelector source="Object" name="Object" renderColumns="ObjectName" 
           choiceColumns="CompanyName ObjectName ObjectAddress" newRowEnabled="true" newRowForm="CompanyObject"
           style="&inpw;" />
@@ -96,12 +96,12 @@
       </row>
 
       <row>
-        <Label for="Vehicle" />
+        <Label for="Vehicle" name="labelVehicle" />
         <DataSelector source="Vehicle" 
           renderColumns="VehicleParentModel VehicleModel VehicleNumber" newRowEnabled="true"
           style="&inpw;" />
         
-        <Label for="Driver" />
+        <Label for="Driver" name="labelDriver" />
         <DataSelector source="Driver" renderColumns="DriverFirstName DriverLastName"
           newRowEnabled="true" style="&inpw;" />
       </row>
