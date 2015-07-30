@@ -152,6 +152,7 @@ public class TradeActServicesGrid extends AbstractGridInterceptor {
     }
 
     int toIndex = getDataIndex(COL_TA_SERVICE_TO);
+    int timeUnitIdx = getDataIndex(COL_TRADE_TIME_UNIT);
     int tariffIndex = getDataIndex(COL_TA_SERVICE_TARIFF);
     int priceIndex = getDataIndex(COL_TRADE_ITEM_PRICE);
 
@@ -166,7 +167,7 @@ public class TradeActServicesGrid extends AbstractGridInterceptor {
         updatePrice(row.getId(), row.getVersion(), row.getString(priceIndex), price);
 
         count++;
-      } else if (row.getDateTime(toIndex) != null) {
+      } else if (row.getInteger(timeUnitIdx) != null) {
         double t = row.getDouble(priceIndex) * 100 / total;
         updateTariff(row.getId(), row.getVersion(), row.getString(tariffIndex), t);
         count++;
