@@ -742,6 +742,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String sorry();
 
+  String sort();
+
   String specifyCondition();
 
   String startRow();
