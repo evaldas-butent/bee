@@ -39,7 +39,7 @@
 
     <DataColumn name="Term" />
 
-    <RelColumn name="Manager" renderColumns="ManagerFirstName ManagerLastName" />
+    <RelColumn name="Manager" renderColumns="ManagerFirstName ManagerLastName" filterSupplier="value" />
 
     <DataColumn name="Exported" />
   </g:columns>
