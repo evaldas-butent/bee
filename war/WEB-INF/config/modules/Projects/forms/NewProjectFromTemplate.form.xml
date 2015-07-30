@@ -10,8 +10,8 @@
 ]>
 
 <f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form"
-  name="Project" viewName="Projects"
-  caption="=project" width="950" widthUnit="px" height="95" heightUnit="%" >
+  name="NewProjectFromTemplate" viewName="Projects"
+  caption="=project" width="460" widthUnit="px" height="300" heightUnit="px" >
   <FlowPanel>
     <Table class="bee-ProjectTable">
       <!--
@@ -25,9 +25,6 @@
       <row>
         <Label for="Name" text="=name" style="&lbl;" class="bee-required" />
         <InputText source="Name" style="width:100%" />
-        <Label for="Status" text="=status" style="&lbl;" />
-        <ListBox source="Status" name="Status"
-          style="display: inline-block; width: 100%; height:30px;" />
       </row>
       
       <row>
@@ -37,12 +34,29 @@
         <Label for="EndDate" text="=prjTerm" style="&lbl2;" class="bee-required" />
         <InputDate source="EndDate" required="true" style="&inp3;" /> 
         </FlowPanel>
+      </row>
+      <row>
         <Label for="Company" text="=client" style="&lbl;" class="bee-required" />
-        <DataSelector source="Company" style="&inp2;" required="true" choiceColumns="Name TypeName" 
-          renderColumns="CompanyName CompanyTypeName"/> 
+        <DataSelector source="Company" style="&inp2;" required="true" choiceColumns="Name TypeName"
+                      renderColumns="CompanyName CompanyTypeName"/>
+      </row>
+      <row>
+        <Label for="Owner" text="=prjManager" style=" &lbl;" class="bee-required" />
+        <DataSelector source="Owner" name="Owner" style="&inp2;" />
+      </row>
+      <row>
+        <Label for="Category" text="=category" style="&lbl;" class="bee-required" />
+        <DataSelector name="Category" source="Category" style="&inp2;" />
+      </row>
+
+      <row>
+        <Label text="=prjDefaultStage"  style="&lbl;"/>
+        <UnboundSelector viewName="ProjectTMLStages"  renderColumns="Name" choiceColumns="Name"
+                      name="DefaultTMLStage" property="DefaultTMLStage"/>
       </row>
     </Table>
 
+    <!--
     <Disclosure open="true" name="RelatedInfo">
       <Label text="=relatedInformation" style="text-transform: uppercase; " />
       <Table>
@@ -192,6 +206,6 @@
         <text>=prjSchedule</text>
         <FlowPanel name="ChartData" />
       </page>
-   </TabbedPages>
+   </TabbedPages> -->
    </FlowPanel>
 </f:Form> 

@@ -6,7 +6,6 @@
   >
   <Relation renderColumns="Name" />
   <Columns>
-    <IdColumn name="ID"/>
     <SimpleColumn name="Priority" />
     <SimpleColumn name="Name" />
     

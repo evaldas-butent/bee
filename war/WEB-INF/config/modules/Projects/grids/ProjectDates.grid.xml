@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
-	xmlns:ui="http://www.butent.com/ui" xmlns:w="http://www.butent.com/widget"
-
+        xmlns:xi="http://www.w3.org/2001/XInclude"
 	name="ProjectDates" viewName="ProjectDates" caption="=prjDates">
-		
-	<g:columns>
-		<DataColumn name="StartDate" />
-    <xi:include href="columns/Dates.columns.xml" />
-	</g:columns>
 
+  <g:columns>
+    <DataColumn name="StartDate" />
+  </g:columns>
+
+  <xi:include href="columns/Dates.columns.xml" />
 </g:Grid>

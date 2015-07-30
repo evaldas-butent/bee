@@ -411,7 +411,7 @@ class TasksGrid extends AbstractGridInterceptor {
     int idxPrjCompany = prjDataInfo.getColumnIndex(ClassifierConstants.COL_COMPANY);
     int idxPrjCompanyName = prjDataInfo.getColumnIndex(ClassifierConstants.ALS_COMPANY_NAME);
     int idxPrjCompanyTypeName =
-        prjDataInfo.getColumnIndex(ClassifierConstants.ALS_COMPANY_TYPE_NAME);
+        prjDataInfo.getColumnIndex(ProjectConstants.ALS_COMPANY_TYPE_NAME);
     int idxPrjContact = prjDataInfo.getColumnIndex(ClassifierConstants.COL_CONTACT);
     int idxPrjContactPerson = prjDataInfo.getColumnIndex(ClassifierConstants.ALS_CONTACT_PERSON);
     int idxPrjContactFirstName =

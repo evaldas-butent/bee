@@ -1,5 +1,7 @@
 package com.butent.bee.client.modules.projects;
 
+import com.butent.bee.client.event.logical.SelectorEvent;
+import com.butent.bee.client.view.edit.EditableWidget;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -106,8 +108,20 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
   private Disclosure relatedInfo;
   private ChildGrid documents;
   private DataSelector owner;
+//  private DataSelector projectTemplate;
 
   private BeeRowSet timeUnits;
+
+  @Override public void afterCreateEditableWidget(EditableWidget editableWidget,
+      IdentifiableWidget widget) {
+
+//    if (widget instanceof DataSelector && BeeUtils.same(editableWidget.getColumnId(),
+//        COL_PROJECT_TEMPLATE)){
+//      projectTemplate = (DataSelector) widget;
+//    }
+
+    super.afterCreateEditableWidget(editableWidget, widget);
+  }
 
   @Override
   public void afterCreateWidget(String name, IdentifiableWidget widget,
@@ -193,7 +207,7 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
       }
     }
 
-    if (DataUtils.isId(row.getId())) {
+    if (!DataUtils.isNewRow(row)) {
       form.setEnabled(isOwner(form, row) && !isProjectApproved(form, row));
 
       if (status != null) {
@@ -206,6 +220,10 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
       if (status != null) {
         status.setEnabled(true);
       }
+
+//      if (projectTemplate != null) {
+//        projectTemplate.addSelectorHandler(getProjectTemplateHandler());
+//      }
     }
 
     if (isProjectUser(form, row) || BeeKeeper.getUser().isMenuVisible("Projects.AllProjects")
@@ -651,6 +669,10 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
         });
   }
 
+//  private void doCreateProjectFromTemplate(SelectorEvent event){
+//    getFormView().notifyInfo("Possible soon");
+//  }
+
   private void drawChart(IsRow row) {
     if (row == null) {
       return;
@@ -752,6 +774,17 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
 
     };
   }
+
+//  private SelectorEvent.Handler getProjectTemplateHandler() {
+//    return new SelectorEvent.Handler() {
+//      @Override public void onDataSelector(SelectorEvent event) {
+//        if (event.getRelatedRow() != null) {
+//          doCreateProjectFromTemplate(event);
+//        }
+//      }
+//    };
+//  }
+
 
   private BeeRowSet getTimeUnits() {
     return timeUnits;

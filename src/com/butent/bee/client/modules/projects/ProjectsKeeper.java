@@ -106,6 +106,8 @@ public final class ProjectsKeeper {
 
     });
 
+    GridFactory.registerGridInterceptor(GRID_PROJECT_TEMPLATES, new ProjectTemplatesGrid());
+
     /* Register form handlers */
     FormFactory.registerFormInterceptor(FORM_PROJECT, new ProjectForm());
     FormFactory.registerFormInterceptor(FORM_PROJECT_STAGE, new ProjectStageForm());
