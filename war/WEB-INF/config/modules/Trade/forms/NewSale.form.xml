@@ -28,8 +28,8 @@
         </cell>
       </row>
       <row>
-        <Label for="SaleSeries" />
-        <DataSelector source="SaleSeries" editEnabled="false" newRowEnabled="false"
+        <Label for="SaleSeries" class="bee-required" />
+        <DataSelector source="SaleSeries" editEnabled="false" newRowEnabled="false" required="true"
                       style="width:7em;" />
         <InlineLabel for="InvoiceNo" />
         <InputText source="InvoiceNo" />

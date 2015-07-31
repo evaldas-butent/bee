@@ -23,10 +23,10 @@
         </cell>
       </row>
       <row>
-        <Label for="InvoicePrefix" />
-        <InputText source="InvoicePrefix" upperCase="true" style="width:7em" />
-        <InlineLabel for="InvoiceNo" />
-        <InputText source="InvoiceNo" />
+        <Label for="InvoicePrefix" class="bee-required" />
+        <InputText source="InvoicePrefix" upperCase="true" style="width:7em" required="true" />
+        <InlineLabel for="InvoiceNo" class="bee-required" />
+        <InputText source="InvoiceNo" required="true" />
       </row>
       <row>
         <Label for="Supplier" class="bee-required" />
