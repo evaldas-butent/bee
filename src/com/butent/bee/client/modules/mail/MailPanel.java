@@ -63,6 +63,7 @@ import com.butent.bee.client.view.grid.GridView.SelectedRows;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.websocket.Endpoint;
+import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.DateTimeLabel;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.InputBoolean;
@@ -76,8 +77,6 @@ import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.communication.ResponseObject;
-import com.butent.bee.shared.css.CssProperties;
-import com.butent.bee.shared.css.values.Cursor;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.CellSource;
@@ -125,8 +124,8 @@ public class MailPanel extends AbstractFormInterceptor {
     private final int flagsIdx;
     private final int attachmentCount;
 
-    public EnvelopeRenderer(List<? extends IsColumn> dataColumns) {
-      super(null);
+    public EnvelopeRenderer(CellSource cellSource, List<? extends IsColumn> dataColumns) {
+      super(cellSource);
 
       folderIdx = DataUtils.getColumnIndex(COL_FOLDER, dataColumns);
       senderEmail = DataUtils.getColumnIndex("SenderEmail", dataColumns);
@@ -147,6 +146,9 @@ public class MailPanel extends AbstractFormInterceptor {
       if (!MessageFlag.SEEN.isSet(row.getInteger(flagsIdx))) {
         fp.addStyleName(BeeConst.CSS_CLASS_PREFIX + "mail-HeaderUnread");
       }
+      Flow f1 = new Flow();
+      fp.add(f1);
+
       TextLabel sender = new TextLabel(false);
       sender.setStyleName(BeeConst.CSS_CLASS_PREFIX + "mail-HeaderAddress");
       String address;
@@ -164,52 +166,44 @@ public class MailPanel extends AbstractFormInterceptor {
         address = BeeUtils.notEmpty(row.getString(senderLabel), row.getString(senderEmail));
       }
       sender.setText(address);
-      fp.add(sender);
+      f1.add(sender);
 
-      Integer att = row.getInteger(attachmentCount);
-
-      if (BeeUtils.isPositive(att)) {
-        Widget image = new FaLabel(FontAwesome.PAPERCLIP);
-        image.setStyleName(BeeConst.CSS_CLASS_PREFIX + "mail-AttachmentImage");
-        fp.add(image);
-
-        if (att > 1) {
-          TextLabel attachments = new TextLabel(false);
-          attachments.setStyleName(BeeConst.CSS_CLASS_PREFIX + "mail-AttachmentCount");
-          attachments.setText(BeeUtils.toString(att));
-          fp.add(attachments);
-        }
-      }
       DateTime date = row.getDateTime(dateIdx);
-      DateTimeLabel dt = TimeUtils.isToday(date)
-          ? new DateTimeLabel("TIME_SHORT", false) : new DateTimeLabel("DATE_SHORT", false);
+      DateTimeLabel dt = new DateTimeLabel(TimeUtils.isToday(date) ? "TIME_SHORT" : "DATE_SHORT",
+          false);
       dt.setStyleName(BeeConst.CSS_CLASS_PREFIX + "mail-HeaderDate");
       dt.setValue(date);
-      fp.add(dt);
+      f1.add(dt);
+
+      Flow f2 = new Flow();
+      fp.add(f2);
 
       TextLabel subject = new TextLabel(false);
       subject.setStyleName(BeeConst.CSS_CLASS_PREFIX + "mail-HeaderSubject");
       subject.setText(row.getString(subjectIdx));
-      fp.add(subject);
+      f2.add(subject);
 
+      Integer att = row.getInteger(attachmentCount);
+
+      if (BeeUtils.isPositive(att)) {
+        TextLabel attachments = new TextLabel(false);
+        attachments.setStyleName(BeeConst.CSS_CLASS_PREFIX + "mail-HeaderAttachment");
+
+        if (att > 1) {
+          attachments.setText(BeeUtils.toString(att));
+        }
+        f2.add(attachments);
+      }
       return fp.toString();
     }
   }
 
   private static class FlagRenderer extends AbstractCellRenderer {
 
-    private static final FaLabel REPLY = new FaLabel(FontAwesome.REPLY);
-    private static final FaLabel CHAIN = new FaLabel(FontAwesome.CHAIN);
-
-    static {
-      StyleUtils.setProperty(REPLY, CssProperties.CURSOR, Cursor.DEFAULT);
-      StyleUtils.setProperty(CHAIN, CssProperties.CURSOR, Cursor.DEFAULT);
-    }
-
     private final int flags;
 
-    public FlagRenderer(List<? extends IsColumn> dataColumns) {
-      super(null);
+    public FlagRenderer(CellSource cellSource, List<? extends IsColumn> dataColumns) {
+      super(cellSource);
       flags = DataUtils.getColumnIndex(COL_FLAGS, dataColumns);
     }
 
@@ -219,11 +213,16 @@ public class MailPanel extends AbstractFormInterceptor {
           ? Stars.getHtml(0) : Stars.getDefaultHeader();
 
       if (MessageFlag.ANSWERED.isSet(row.getInteger(flags))) {
-        star += REPLY.getElement().getString();
+        star += new CustomDiv(BeeConst.CSS_CLASS_PREFIX + "mail-FlagAnswered");
 
-      } else if (!BeeUtils.isEmpty(row.getProperty(AdministrationConstants.COL_RELATION))) {
-        CHAIN.setTitle(row.getProperty(AdministrationConstants.COL_RELATION));
-        star += CHAIN.getElement().getString();
+      }
+      if (MessageFlag.FORWARDED.isSet(row.getInteger(flags))) {
+        star += new CustomDiv(BeeConst.CSS_CLASS_PREFIX + "mail-FlagForwarded");
+      }
+      if (!BeeUtils.isEmpty(row.getProperty(AdministrationConstants.COL_RELATION))) {
+        CustomDiv chain = new CustomDiv(BeeConst.CSS_CLASS_PREFIX + "mail-FlagChained");
+        chain.setTitle(row.getProperty(AdministrationConstants.COL_RELATION));
+        star += chain;
       }
       return star;
     }
@@ -313,9 +312,9 @@ public class MailPanel extends AbstractFormInterceptor {
         CellSource cellSource) {
 
       if (BeeUtils.same(columnName, COL_FLAGS)) {
-        return new FlagRenderer(dataColumns);
+        return new FlagRenderer(cellSource, dataColumns);
       } else if (BeeUtils.same(columnName, COL_MESSAGE)) {
-        return new EnvelopeRenderer(dataColumns);
+        return new EnvelopeRenderer(cellSource, dataColumns);
       }
       return super.getRenderer(columnName, dataColumns, columnDescription, cellSource);
     }
