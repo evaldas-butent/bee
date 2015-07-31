@@ -497,8 +497,14 @@ public class MailStorageBean {
       Multimap<String, String> related = LinkedListMultimap.create();
 
       for (int i = 0; i < multiPart.getCount(); i++) {
-        Multimap<String, String> parsed = parsePart(messageId, multiPart.getBodyPart(i));
+        Multimap<String, String> parsed;
 
+        try {
+          parsed = parsePart(messageId, multiPart.getBodyPart(i));
+        } catch (MessagingException e) {
+          logger.warning("(MessageID=", messageId, ") Error parsing multipart/* part:", e);
+          continue;
+        }
         if (part.isMimeType("multipart/alternative")) {
           if (parsed.containsKey(COL_HTML_CONTENT)) {
             parsedPart.clear();
@@ -545,8 +551,11 @@ public class MailStorageBean {
         parsedPart.putAll(COL_FILE, orphans);
       }
     } else if (part.isMimeType("message/rfc822")) {
-      parsedPart.putAll(parsePart(messageId, (Message) part.getContent()));
-
+      try {
+        parsedPart.putAll(parsePart(messageId, (Message) part.getContent()));
+      } catch (MessagingException e) {
+        logger.warning("(MessageID=", messageId, ") Error parsing message/rfc822 part:", e);
+      }
     } else {
       String contentType = null;
 
@@ -672,7 +681,6 @@ public class MailStorageBean {
     Assert.notEmpty(email);
 
     Holder<Long> emailId = Holder.absent();
-    Holder<Long> bookId = Holder.absent();
 
     cb.synchronizedCall(new Runnable() {
       @Override
@@ -688,34 +696,33 @@ public class MailStorageBean {
           emailId.set(queryBean.insertData(new SqlInsert(TBL_EMAILS)
               .addConstant(COL_EMAIL_ADDRESS, email)));
 
-          bookId.set(queryBean.insertData(new SqlInsert(TBL_ADDRESSBOOK)
+          queryBean.insertData(new SqlInsert(TBL_ADDRESSBOOK)
               .addConstant(MailConstants.COL_USER, userId)
               .addConstant(COL_EMAIL, emailId.get())
-              .addNotEmpty(COL_EMAIL_LABEL, label)));
+              .addNotEmpty(COL_EMAIL_LABEL, label));
+        } else {
+          String bookIdName = sys.getIdName(TBL_ADDRESSBOOK);
+
+          SimpleRow row = qs.getRow(new SqlSelect()
+              .addFields(TBL_ADDRESSBOOK, bookIdName, COL_EMAIL_LABEL)
+              .addFrom(TBL_ADDRESSBOOK)
+              .setWhere(SqlUtils.equals(TBL_ADDRESSBOOK, MailConstants.COL_USER, userId,
+                  COL_EMAIL, emailId.get())));
+
+          if (row == null) {
+            qs.insertData(new SqlInsert(TBL_ADDRESSBOOK)
+                .addConstant(MailConstants.COL_USER, userId)
+                .addConstant(COL_EMAIL, emailId.get())
+                .addNotEmpty(COL_EMAIL_LABEL, label));
+
+          } else if (BeeUtils.isEmpty(row.getValue(COL_EMAIL_LABEL)) && !BeeUtils.isEmpty(label)) {
+            qs.updateData(new SqlUpdate(TBL_ADDRESSBOOK)
+                .addConstant(COL_EMAIL_LABEL, label)
+                .setWhere(sys.idEquals(TBL_ADDRESSBOOK, row.getLong(bookIdName))));
+          }
         }
       }
     });
-    if (bookId.isNull()) {
-      String bookIdName = sys.getIdName(TBL_ADDRESSBOOK);
-
-      SimpleRow row = qs.getRow(new SqlSelect()
-          .addFields(TBL_ADDRESSBOOK, bookIdName, COL_EMAIL_LABEL)
-          .addFrom(TBL_ADDRESSBOOK)
-          .setWhere(SqlUtils.equals(TBL_ADDRESSBOOK, MailConstants.COL_USER, userId,
-              COL_EMAIL, emailId.get())));
-
-      if (row == null) {
-        qs.insertData(new SqlInsert(TBL_ADDRESSBOOK)
-            .addConstant(MailConstants.COL_USER, userId)
-            .addConstant(COL_EMAIL, emailId.get())
-            .addNotEmpty(COL_EMAIL_LABEL, label));
-
-      } else if (BeeUtils.isEmpty(row.getValue(COL_EMAIL_LABEL)) && !BeeUtils.isEmpty(label)) {
-        qs.updateData(new SqlUpdate(TBL_ADDRESSBOOK)
-            .addConstant(COL_EMAIL_LABEL, label)
-            .setWhere(sys.idEquals(TBL_ADDRESSBOOK, row.getLong(bookIdName))));
-      }
-    }
     return emailId.get();
   }
 

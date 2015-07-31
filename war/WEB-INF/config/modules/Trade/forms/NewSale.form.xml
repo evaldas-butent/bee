@@ -23,13 +23,14 @@
       <row>
         <Label for="Operation" class="bee-required" />
         <cell colSpan="2">
-          <DataSelector source="Operation" editEnabled="false" newRowEnabled="false"
-                        required="true" filter="OperationType=1" style="width:100%;" />
+          <DataSelector source="Operation" viewName="SaleOperations" required="true"
+                        editEnabled="false" newRowEnabled="false" style="width:100%;" />
         </cell>
       </row>
       <row>
-        <Label for="InvoicePrefix" />
-        <InputText source="InvoicePrefix" upperCase="true" style="width:7em" />
+        <Label for="SaleSeries" />
+        <DataSelector source="SaleSeries" editEnabled="false" newRowEnabled="false"
+                      style="width:7em;" />
         <InlineLabel for="InvoiceNo" />
         <InputText source="InvoiceNo" />
       </row>
