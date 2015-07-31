@@ -95,6 +95,7 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.mail.Address;
 import javax.mail.FetchProfile;
+import javax.mail.Flags;
 import javax.mail.Flags.Flag;
 import javax.mail.Folder;
 import javax.mail.Message;
@@ -1353,10 +1354,21 @@ public class MailModuleBean implements BeeModule, HasTimerService {
               file = new File(fileInfo.getPath());
               is = new BufferedInputStream(new FileInputStream(file));
               MimeMessage message = new MimeMessage(null, is);
+              Flags on = new Flags();
+              Flags off = new Flags();
 
-              for (MessageFlag flag : MessageFlag.values()) {
-                message.setFlag(MailEnvelope.getFlag(flag), flag.isSet(mask));
+              for (MessageFlag messageFlag : MessageFlag.values()) {
+                Flags flags = messageFlag.isSet(mask) ? on : off;
+                Flag flag = MailEnvelope.getFlag(messageFlag);
+
+                if (flag != null) {
+                  flags.add(flag);
+                } else {
+                  flags.add(messageFlag.name());
+                }
               }
+              message.setFlags(on, true);
+              message.setFlags(off, false);
               storeMail(account, message, target);
 
             } catch (IOException e) {
@@ -1451,8 +1463,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
     MailAccount account = mail.getAccount(row.getLong(COL_ACCOUNT));
     MailFolder folder = account.findFolder(row.getLong(COL_FOLDER));
 
-    account.setFlag(folder, new long[] {BeeUtils.unbox(row.getLong(COL_MESSAGE_UID))},
-        MailEnvelope.getFlag(flag), on);
+    account.setFlag(folder, new long[] {BeeUtils.unbox(row.getLong(COL_MESSAGE_UID))}, flag, on);
 
     mail.setFlags(placeId, value);
 
