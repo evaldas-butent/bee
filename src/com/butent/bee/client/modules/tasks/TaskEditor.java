@@ -1726,12 +1726,15 @@ class TaskEditor extends AbstractFormInterceptor {
             TaskStatus.SCHEDULED) && isOwner();
 
       case SUSPEND:
+        return TaskStatus.in(status, TaskStatus.NOT_VISITED, TaskStatus.ACTIVE,
+            TaskStatus.SCHEDULED) && isOwner();
       case COMPLETE:
-        return TaskStatus.in(status, TaskStatus.NOT_VISITED, TaskStatus.ACTIVE) && isOwner();
+        return TaskStatus.in(status, TaskStatus.NOT_VISITED, TaskStatus.ACTIVE,
+            TaskStatus.SCHEDULED) && (isOwner() || isExecutor());
 
       case CANCEL:
         return TaskStatus.in(status, TaskStatus.NOT_VISITED, TaskStatus.ACTIVE,
-            TaskStatus.SUSPENDED, TaskStatus.SCHEDULED) && isOwner();
+            TaskStatus.SCHEDULED) && isOwner();
 
       case APPROVE:
         return TaskStatus.in(status, TaskStatus.COMPLETED) && isOwner();
@@ -1739,7 +1742,8 @@ class TaskEditor extends AbstractFormInterceptor {
       case ACTIVATE:
         return false;
       case CREATE:
-        return isOwner();
+        return isOwner() || (TaskStatus.in(status, TaskStatus.NOT_VISITED, TaskStatus.SCHEDULED,
+            TaskStatus.SUSPENDED, TaskStatus.CANCELED) && isExecutor());
 
       case OUT_OF_OBSERVERS:
         return TaskStatus.in(status, TaskStatus.ACTIVE, TaskStatus.NOT_VISITED,
