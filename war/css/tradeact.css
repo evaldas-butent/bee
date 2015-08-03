@@ -131,6 +131,12 @@
   padding: 2px 5px;
 }
 
+.bee-ta-return-items-qty-lastInput {
+  font-size: smaller;
+  display: none;
+}
+
+
 .bee-ta-invoice-service-row.bee-ta-invoice-service-row-missed {
   background-color: #F5DA81;
 }
@@ -328,3 +334,4 @@
   width: calc(100% - 2px);
   height: calc(100% - 3px);
 }
+
