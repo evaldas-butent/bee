@@ -74,6 +74,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -117,7 +118,7 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
       }
       putValue(key, item, calc);
 
-      if (infoItem.isRowSummary()) {
+      if (infoItem.isRowSummary() || infoItem.isSorted()) {
         key = getKey(ROW, rowGroup, rowValue);
         putValue(key, item, item.calculate(getValue(key, item), value, infoItem.getFunction()));
       }
@@ -130,7 +131,7 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
         putValue(key, item, item.calculate(getValue(key, item), value, infoItem.getFunction()));
       }
       if (infoItem.isGroupSummary()) {
-        if (infoItem.isRowSummary()) {
+        if (infoItem.isRowSummary() || infoItem.isSorted()) {
           key = getKey(GROUP, rowGroup);
           putValue(key, item, item.calculate(getValue(key, item), value, infoItem.getFunction()));
         }
@@ -139,7 +140,7 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
       }
     }
 
-    private ReportValue getKey(String id, ReportValue... prm) {
+    private static ReportValue getKey(String id, ReportValue... prm) {
       int l = ArrayUtils.length(prm);
       ReportValue[] params = new ReportValue[l + 1];
       params[0] = ReportValue.of(id);
@@ -171,17 +172,37 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
       return getValue(getKey(GROUP_COL, rowGroup, colGroup), item);
     }
 
-    public Collection<ReportValue> getRowGroups() {
-      return rowGroups.keySet();
+    public Collection<ReportValue> getRowGroups(ReportInfoItem sortedItem) {
+      List<ReportValue> result = new ArrayList<>(rowGroups.keySet());
+
+      if (sortedItem != null) {
+        Map<ReportValue, Object> items = new HashMap<>();
+
+        for (ReportValue rowGroup : result) {
+          items.put(rowGroup, getGroupTotal(rowGroup, sortedItem.getItem()));
+        }
+        sort(result, items, sortedItem.getDescending());
+      }
+      return result;
     }
 
-    public Collection<ReportValue[]> getRows(ReportValue rowGroup) {
-      List<ReportValue[]> rows = new ArrayList<>();
+    public Collection<ReportValue[]> getRows(ReportValue rowGroup, ReportInfoItem sortedItem) {
+      List<ReportValue> rows = new ArrayList<>(rowGroups.get(rowGroup));
 
-      for (ReportValue row : rowGroups.get(rowGroup)) {
-        rows.add(row.getValues());
+      if (sortedItem != null) {
+        Map<ReportValue, Object> items = new HashMap<>();
+
+        for (ReportValue row : rows) {
+          items.put(row, getRowTotal(rowGroup, row.getValues(), sortedItem.getItem()));
+        }
+        sort(rows, items, sortedItem.getDescending());
       }
-      return rows;
+      List<ReportValue[]> result = new ArrayList<>();
+
+      for (ReportValue row : rows) {
+        result.add(row.getValues());
+      }
+      return result;
     }
 
     public Object getRowTotal(ReportValue rowGroup, ReportValue[] row, ReportItem item) {
@@ -200,6 +221,41 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
       if (value != null) {
         values.put(row, col, value);
       }
+    }
+
+    private static void sort(List<ReportValue> result, final Map<ReportValue, Object> items,
+        final boolean descending) {
+
+      Collections.sort(result, new Comparator<ReportValue>() {
+        @SuppressWarnings("unchecked")
+        @Override
+        public int compare(ReportValue value1, ReportValue value2) {
+          Object item1;
+          Object item2;
+
+          if (descending) {
+            item1 = items.get(value2);
+            item2 = items.get(value1);
+          } else {
+            item1 = items.get(value1);
+            item2 = items.get(value2);
+          }
+
+          if (item1 == null) {
+            if (item2 == null) {
+              return BeeConst.COMPARE_EQUAL;
+            } else {
+              return BeeConst.COMPARE_LESS;
+            }
+          } else if (item2 == null) {
+            return BeeConst.COMPARE_MORE;
+          } else if (item1 instanceof Comparable) {
+            return ((Comparable<Object>) item1).compareTo(item2);
+          } else {
+            return BeeConst.COMPARE_EQUAL;
+          }
+        }
+      });
     }
   }
 
@@ -309,6 +365,10 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
 
   private static final String STYLE_SUMMARY_ON = STYLE_PREFIX + "-summary-on";
   private static final String STYLE_SUMMARY_OFF = STYLE_PREFIX + "-summary-off";
+
+  private static final String STYLE_SORT = STYLE_PREFIX + "-sort";
+  private static final String STYLE_SORT_ASC = STYLE_SORT + "-asc";
+  private static final String STYLE_SORT_DESC = STYLE_SORT + "-desc";
 
   private static final String STYLE_FUNCTION = STYLE_PREFIX + "-function";
 
@@ -819,7 +879,15 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
         result.addValues(rowGroup, details, colGroup, row, colItem);
       }
     }
-    Collection<ReportValue> rowGroups = result.getRowGroups();
+    ReportInfoItem sortedItem = null;
+
+    for (ReportInfoItem colItem : colItems) {
+      if (colItem.isSorted()) {
+        sortedItem = colItem;
+        break;
+      }
+    }
+    Collection<ReportValue> rowGroups = result.getRowGroups(sortedItem);
     Collection<ReportValue> colGroups = result.getColGroups();
 
     if (BeeUtils.isEmpty(rowGroups)) {
@@ -962,7 +1030,7 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
         }
         r++;
       }
-      for (ReportValue[] row : result.getRows(rowGroup)) {
+      for (ReportValue[] row : result.getRows(rowGroup, sortedItem)) {
         c = 0;
 
         for (ReportValue detail : row) {
@@ -1153,6 +1221,8 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
         final int idx = cCnt;
 
         Flow caption = new Flow();
+        Flow flow = new Flow();
+
         InlineLabel agg = new InlineLabel(infoItem.getFunction().getCaption());
         agg.addStyleName(STYLE_FUNCTION);
         agg.addClickHandler(new ClickHandler() {
@@ -1174,7 +1244,38 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
             });
           }
         });
-        caption.add(agg);
+        flow.add(agg);
+
+        if (infoItem.getFunction() == ReportFunction.LIST) {
+          activeReport.setDescending(idx, null);
+        } else {
+          CustomSpan sort = new CustomSpan(infoItem.isSorted()
+              ? (infoItem.getDescending() ? STYLE_SORT_DESC : STYLE_SORT_ASC)
+              : STYLE_SORT);
+          sort.setTitle(Localized.getConstants().sort());
+
+          sort.addClickHandler(new ClickHandler() {
+            @Override
+            public void onClick(ClickEvent event) {
+              Boolean descending;
+
+              if (!infoItem.isSorted()) {
+                descending = false;
+              } else if (infoItem.getDescending()) {
+                descending = null;
+              } else {
+                descending = true;
+              }
+              for (int i = 0; i < activeReport.getColItems().size(); i++) {
+                activeReport.setDescending(i, null);
+              }
+              activeReport.setDescending(idx, descending);
+              refresh.run();
+            }
+          });
+          flow.add(sort);
+        }
+        caption.add(flow);
         caption.add(buildCaption(infoItem, refresh));
         table.setWidget(0, rCnt + cCnt, caption, STYLE_COL_HEADER);
         table.setWidget(rIdx, rCnt + cCnt, ReportItem.renderDnd(item, activeReport.getColItems(),
@@ -1399,7 +1500,7 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
       activateReport(rep);
     } else {
       Queries.insert(VIEW_REPORT_SETTINGS, Data.getColumns(VIEW_REPORT_SETTINGS,
-              Arrays.asList(COL_RS_USER, COL_RS_REPORT, COL_RS_PARAMETERS)),
+          Arrays.asList(COL_RS_USER, COL_RS_REPORT, COL_RS_PARAMETERS)),
           Arrays.asList(BeeUtils.toString(BeeKeeper.getUser().getUserId()),
               getReport().getReportName(), rep.serialize()), null,
           new RowCallback() {
