@@ -95,6 +95,7 @@ public final class ProjectConstants {
   public static final String COL_PROJECT_ITEM_PRICE = "Price";
   public static final String COL_PROJECT_CURENCY = "Currency";
   public static final String COL_PROJECT_INCOME_CURENCY = "Currency";
+  public static final String COL_NOTES = "Notes";
 
   public static final String COL_DEFAULT_PROJECT_TEMPLATE_STAGE = "DefaultTMLStage";
 
@@ -129,6 +130,7 @@ public final class ProjectConstants {
   public static final String COL_STAGE_NAME = "Name";
   public static final String COL_STAGE_START_DATE = "StartDate";
   public static final String COL_STAGE_END_DATE = "EndDate";
+  public static final String COL_STAGE_TEMPLATE = "StageTemplate";
 
   public static final String COL_DATES_START_DATE = "StartDate";
   public static final String COL_DATES_END_DATE = "EndDate";
@@ -187,15 +189,19 @@ public final class ProjectConstants {
 
   public static final String VIEW_PROJECTS = "Projects";
   public static final String VIEW_PROJECT_USERS = "ProjectUsers";
+  public static final String VIEW_PROJECT_TEMPLATE_USERS = "ProjectTMLUsers";
+  public static final String VIEW_PROJECT_TEMPLATE_CONTACTS = "ProjectTMLContacts";
   public static final String VIEW_PROJECT_STAGES = "ProjectStages";
   public static final String VIEW_PROJECT_DATES = "ProjectDates";
   public static final String VIEW_PROJECT_FILES = "ProjectFiles";
+  public static final String VIEW_PROJECT_CONTACTS = "ProjectContacts";
   public static final String VIEW_PROJECT_EVENTS = "ProjectEvents";
   public static final String VIEW_PROJECT_INCOMES = "ProjectIncomes";
   public static final String VIEW_PROJECT_INVOICES = "ProjectInvoices";
   public static final String VIEW_PROJECT_TREE = "ProjectTree";
 
   public static final String VIEW_PROJECT_TEMPLATES = "ProjectTemplates";
+  public static final String VIEW_PROJECT_TEMPLATE_STAGES = "ProjectTMLStages";
 
   public static final String TBL_PROJECT_USAGE = "ProjectUsage";
   public static final String TBL_PROJECTS = "Projects";

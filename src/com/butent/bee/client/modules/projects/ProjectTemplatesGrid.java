@@ -1,15 +1,15 @@
 package com.butent.bee.client.modules.projects;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.communication.RpcCallback;
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.composite.UnboundSelector;
-import com.butent.bee.client.data.Data;
-import com.butent.bee.client.data.RowCallback;
-import com.butent.bee.client.data.RowFactory;
+import com.butent.bee.client.data.*;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.edit.EditableWidget;
 import com.butent.bee.client.view.form.FormView;
@@ -19,20 +19,26 @@ import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.FaLabel;
-import com.butent.bee.shared.data.BeeRow;
-import com.butent.bee.shared.data.DataUtils;
-import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.*;
+import com.butent.bee.shared.data.event.DataChangeEvent;
+import com.butent.bee.shared.data.event.RowInsertEvent;
+import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.view.DataInfo;
+import com.butent.bee.shared.data.view.RowInfoList;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.projects.ProjectConstants;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.google.common.collect.Lists;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+
+import java.util.List;
 
 public class ProjectTemplatesGrid extends AbstractGridInterceptor {
 
@@ -141,7 +147,144 @@ public class ProjectTemplatesGrid extends AbstractGridInterceptor {
     new RowCallback() {
           @Override
           public void onSuccess(BeeRow result) {
+            createInitialStage(result, selectedRow);
+          }
+        });
+  }
 
+  private void createInitialStage(final BeeRow prjRow, final IsRow tmlRow) {
+
+    if (BeeUtils.isEmpty(prjRow.getProperty(ProjectConstants.COL_DEFAULT_PROJECT_TEMPLATE_STAGE))) {
+      createProjectUsers(prjRow, tmlRow);
+      return;
+    }
+
+    final List<BeeColumn> stageCols =
+        Lists.newArrayList(Data.getColumns(ProjectConstants.VIEW_PROJECT_STAGES,
+            Lists.newArrayList(ProjectConstants.COL_PROJECT,
+                ProjectConstants.COL_STAGE_NAME, ProjectConstants.COL_EXPECTED_DURATION,
+                ProjectConstants.COL_EXPENSES, ProjectConstants.COL_PROJECT_CURENCY,
+                ProjectConstants.COL_STAGE_TEMPLATE)));
+
+    final List<String> stageValues = Lists.newArrayList(BeeUtils.toString(prjRow.getId()));
+
+    Queries.getRowSet(ProjectConstants.VIEW_PROJECT_TEMPLATE_STAGES, Lists.newArrayList(
+            ProjectConstants.COL_STAGE_NAME, ProjectConstants.COL_EXPECTED_DURATION,
+            ProjectConstants.COL_EXPENSES, ProjectConstants.COL_PROJECT_CURENCY),
+        Filter.compareId(BeeUtils.toLong(prjRow.getProperty(
+            ProjectConstants.COL_DEFAULT_PROJECT_TEMPLATE_STAGE))),
+        new Queries.RowSetCallback() {
+
+          @Override
+          public void onSuccess(BeeRowSet stageTml) {
+            if (stageTml.isEmpty()) {
+              createProjectUsers(prjRow, tmlRow);
+              return;
+            }
+
+            stageValues.add(stageTml.getString(0, ProjectConstants.COL_STAGE_NAME));
+            stageValues.add(stageTml.getString(0, ProjectConstants.COL_EXPECTED_DURATION));
+            stageValues.add(stageTml.getString(0, ProjectConstants.COL_EXPENSES));
+            stageValues.add(stageTml.getString(0, ProjectConstants.COL_PROJECT_CURENCY));
+            stageValues.add(prjRow.getProperty(
+                ProjectConstants.COL_DEFAULT_PROJECT_TEMPLATE_STAGE));
+
+            Queries.insert(ProjectConstants.VIEW_PROJECT_STAGES, stageCols, stageValues, null,
+                new RowCallback() {
+                  @Override
+                  public void onSuccess(BeeRow result) {
+                    createProjectUsers(prjRow, tmlRow);
+                  }
+                });
+
+          }
+        }
+    );
+  }
+
+  private void createProjectContacts(final BeeRow prjRow, IsRow tmlRow) {
+
+    final List<BeeColumn> personCols =
+        Lists.newArrayList(Data.getColumns(ProjectConstants.VIEW_PROJECT_CONTACTS,
+            Lists.newArrayList(ProjectConstants.COL_PROJECT,
+                ClassifierConstants.COL_COMPANY_PERSON)));
+
+    final BeeRowSet persons = new BeeRowSet(ProjectConstants.VIEW_PROJECT_CONTACTS, personCols);
+
+
+    Queries.getRowSet(ProjectConstants.VIEW_PROJECT_TEMPLATE_CONTACTS, Lists.newArrayList(
+        ClassifierConstants.COL_COMPANY_PERSON),
+        Filter.equals(ProjectConstants.COL_PROJECT_TEMPLATE, BeeUtils.toString(tmlRow.getId())),
+        new Queries.RowSetCallback() {
+
+          @Override
+          public void onSuccess(BeeRowSet tmlPersons) {
+            if (tmlPersons.isEmpty()) {
+              openProjectFullForm(prjRow.getId());
+              return;
+            }
+
+            for (int i = 0 ; i < tmlPersons.getNumberOfRows(); i++) {
+              BeeRow row = persons.addEmptyRow();
+              row.setValue(persons.getColumnIndex(ProjectConstants.COL_PROJECT), prjRow.getId());
+              row.setValue(persons.getColumnIndex(ClassifierConstants.COL_COMPANY_PERSON),
+                  tmlPersons.getLong(i, ClassifierConstants.COL_COMPANY_PERSON));
+            }
+
+            Queries.insertRows(persons, new RpcCallback<RowInfoList>() {
+              @Override
+              public void onSuccess(RowInfoList result) {
+                openProjectFullForm(prjRow.getId());
+              }
+            });
+          }
+        });
+  }
+
+  private void createProjectUsers(final BeeRow prjRow, final IsRow tmlRow) {
+
+    final List<BeeColumn> usersCols =
+        Lists.newArrayList(Data.getColumns(ProjectConstants.VIEW_PROJECT_USERS,
+            Lists.newArrayList(ProjectConstants.COL_PROJECT,
+                AdministrationConstants.COL_USER, ProjectConstants.COL_NOTES,
+                ProjectConstants.COL_RATE, ProjectConstants.COL_PROJECT_CURENCY)));
+
+    final BeeRowSet users = new BeeRowSet(ProjectConstants.VIEW_PROJECT_USERS, usersCols);
+
+
+    Queries.getRowSet(ProjectConstants.VIEW_PROJECT_TEMPLATE_USERS, Lists.newArrayList(
+            AdministrationConstants.COL_USER, ProjectConstants.COL_NOTES,
+            ProjectConstants.COL_RATE, ProjectConstants.COL_PROJECT_CURENCY),
+        Filter.equals(ProjectConstants.COL_PROJECT_TEMPLATE, BeeUtils.toString(tmlRow.getId())),
+        new Queries.RowSetCallback() {
+
+          @Override
+          public void onSuccess(BeeRowSet tmlUsers) {
+            if (tmlUsers.isEmpty()) {
+              createProjectContacts(prjRow, tmlRow);
+              return;
+            }
+
+            for (int i = 0 ; i < tmlUsers.getNumberOfRows(); i++) {
+              BeeRow row = users.addEmptyRow();
+              row.setValue(users.getColumnIndex(ProjectConstants.COL_PROJECT), prjRow.getId());
+              row.setValue(users.getColumnIndex(AdministrationConstants.COL_USER),
+                  tmlUsers.getLong(i, AdministrationConstants.COL_USER));
+              row.setValue(users.getColumnIndex(ProjectConstants.COL_NOTES),
+                  tmlUsers.getLong(i, ProjectConstants.COL_NOTES));
+              row.setValue(users.getColumnIndex(ProjectConstants.COL_RATE),
+                  tmlUsers.getLong(i, ProjectConstants.COL_RATE));
+              row.setValue(users.getColumnIndex(ProjectConstants.COL_PROJECT_CURENCY),
+                  tmlUsers.getLong(i, ProjectConstants.COL_PROJECT_CURENCY));
+            }
+
+            Queries.insertRows(users, new RpcCallback<RowInfoList>() {
+              @Override
+              public void onSuccess(RowInfoList result) {
+                createProjectContacts(prjRow, tmlRow);
+                return;
+              }
+            });
           }
         });
   }
@@ -187,6 +330,11 @@ public class ProjectTemplatesGrid extends AbstractGridInterceptor {
         return this;
       }
     };
+  }
+
+  private void openProjectFullForm(long projectId) {
+    RowEditor.openForm(ProjectConstants.FORM_PROJECT,
+        Data.getDataInfo(ProjectConstants.VIEW_PROJECTS), projectId, Opener.NEW_TAB);
   }
 
 }
