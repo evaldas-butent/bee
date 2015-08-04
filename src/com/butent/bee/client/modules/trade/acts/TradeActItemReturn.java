@@ -1,5 +1,9 @@
 package com.butent.bee.client.modules.trade.acts;
 
+import com.butent.bee.client.layout.Flow;
+import com.butent.bee.client.style.StyleUtils;
+import com.butent.bee.client.widget.CustomDiv;
+import com.butent.bee.shared.css.values.Display;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.InputElement;
 import com.google.gwt.dom.client.TableCellElement;
@@ -89,6 +93,7 @@ final class TradeActItemReturn {
 
   private static final String STYLE_HEADER_CELL_SUFFIX = "label";
   private static final String STYLE_CELL_SUFFIX = "cell";
+  private static final String PROP_LAST_INPUT = "lastInput";
 
   private static NumberFormat priceFormat;
 
@@ -182,8 +187,15 @@ final class TradeActItemReturn {
           .setText(r, c++, p.getProperty(PROP_OVERALL_TOTAL), STYLE_QTY_PREFIX + STYLE_CELL_SUFFIX,
               STYLE_QTY_PREFIX + PROP_OVERALL_TOTAL);
       Widget w = renderInput(qtyColumn);
+      CustomDiv d = new CustomDiv(STYLE_QTY_PREFIX + STYLE_CELL_SUFFIX);
+      d.addStyleName(STYLE_QTY_PREFIX + PROP_LAST_INPUT);
+      d.getElement().setInnerText("-");
 
-      table.setWidget(r, c++, w, STYLE_INPUT_PREFIX + STYLE_CELL_SUFFIX);
+      Flow a = new Flow();
+      a.add(d);
+      a.add(w);
+
+      table.setWidget(r, c++, a, STYLE_INPUT_PREFIX + STYLE_CELL_SUFFIX);
 
       if (showActInfo) {
         table.setText(r, c++,
@@ -456,6 +468,11 @@ final class TradeActItemReturn {
     if (isOverallCell && BeeUtils.isPositive(qty)) {
 
       TableRowElement currentRow = DomUtils.getParentRow(qtyCell, false);
+      Element lastInput = Selectors.getElement(currentRow,
+          Selectors.classSelector(STYLE_QTY_PREFIX + PROP_LAST_INPUT));
+      lastInput.setInnerText(text);
+      StyleUtils.setDisplay(lastInput, Display.BLOCK);
+
 
       while (qty > 0 && currentRow != null) {
         Element source = Selectors.getElement(currentRow,
