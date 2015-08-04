@@ -575,14 +575,14 @@ class TradeActSelectorHandler implements SelectorEvent.Handler {
 
           if (isActOrTemplate(form)) {
             Long company = form.getLongValue(COL_TA_COMPANY);
-            DateTime timeUntil = form.getDateTimeValue(COL_TA_UNTIL);
+            DateTime timeFrom = form.getDateTimeValue(COL_TA_DATE);
             Filter filter;
 
-            if (timeUntil != null) {
+            if (timeFrom != null) {
               filter =
                   DataUtils.isId(company) ? Filter.and(Filter.equals(COL_COMPANY, company),
                       Filter.or(Filter.isLess(ClassifierConstants.COL_DATE_UNTIL,
-                          new DateTimeValue(timeUntil)),
+                          new DateTimeValue(timeFrom)),
                           Filter.isNull(ClassifierConstants.COL_DATE_UNTIL))) : null;
             } else {
               filter = DataUtils.isId(company) ? Filter.equals(COL_COMPANY, company) : null;
