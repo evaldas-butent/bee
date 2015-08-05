@@ -44,6 +44,8 @@ public interface LocalizableProjectConstants {
 
   String prjStatusSuspended();
 
+  String prjTemplate();
+
   String prjTerm();
 
   String prjUserCanDeleteManager();

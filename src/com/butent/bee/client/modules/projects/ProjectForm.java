@@ -1,12 +1,24 @@
 package com.butent.bee.client.modules.projects;
 
-import com.butent.bee.client.event.logical.SelectorEvent;
+import com.butent.bee.client.grid.GridFactory;
+import com.butent.bee.client.grid.GridPanel;
+import com.butent.bee.client.layout.TabbedPages;
+import com.butent.bee.client.screen.Domain;
+import com.butent.bee.client.style.StyleUtils;
+import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.edit.EditableWidget;
+import com.butent.bee.shared.Pair;
+import com.butent.bee.shared.css.values.Display;
+import com.butent.bee.shared.ui.GridDescription;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
+import com.google.gwt.event.logical.shared.SelectionEvent;
+import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.shared.HasHandlers;
+import com.google.gwt.user.client.ui.FlowPanel;
+import com.google.gwt.user.client.ui.Widget;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 
 import static com.butent.bee.shared.modules.projects.ProjectConstants.*;
@@ -108,6 +120,7 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
   private Disclosure relatedInfo;
   private ChildGrid documents;
   private DataSelector owner;
+  private ProjectTemplateController templateController;
 //  private DataSelector projectTemplate;
 
   private BeeRowSet timeUnits;
@@ -166,6 +179,21 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
 
     if (widget instanceof DataSelector && BeeUtils.same(name, WIDGET_OWNER)) {
       owner = (DataSelector) widget;
+    }
+
+    if (widget instanceof TabbedPages && BeeUtils.same(name, "ChildTabs")) {
+      final TabbedPages pages = (TabbedPages) widget;
+
+      pages.addSelectionHandler(new SelectionHandler<Pair<Integer, TabbedPages.SelectionOrigin>>() {
+        @Override
+        public void onSelection(
+            SelectionEvent<Pair<Integer, TabbedPages.SelectionOrigin>> event) {
+          if (event.getSelectedItem().getB() == TabbedPages.SelectionOrigin.CLICK) {
+            onTabbedPageSelected(pages);
+          }
+        }
+
+      });
     }
   }
 
@@ -251,6 +279,7 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
     drawComments(form, row);
     drawChart(row);
     setCategory(form, row);
+    createTemplateController(form, row);
   }
 
   @Override
@@ -669,6 +698,23 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
         });
   }
 
+  private void createTemplateController(FormView form, IsRow row) {
+    if (templateController == null) {
+      templateController = new ProjectTemplateController();
+      BeeKeeper.getScreen().addDomainEntry(Domain.PROJECT_TEMPLATE, templateController, null,
+          Localized.getConstants().prjTemplate());
+    }
+
+    ChildGrid panel =  new ChildGrid(GRID_PROJECT_TEMPLATE_STAGES, null,
+        form.getDataIndex(COL_PROJECT_TEMPLATE), COL_PROJECT_TEMPLATE, false);
+    panel.launch();
+    panel.getGridView().getGrid().refresh();
+    templateController.setStages(panel);
+    LogUtils.getRootLogger().debug("PANEL INSERT ");
+
+
+
+  }
 //  private void doCreateProjectFromTemplate(SelectorEvent event){
 //    getFormView().notifyInfo("Possible soon");
 //  }
@@ -786,6 +832,9 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
 //  }
 
 
+  private ProjectTemplateController getTeplateController() {
+    return templateController;
+  }
   private BeeRowSet getTimeUnits() {
     return timeUnits;
   }
@@ -848,6 +897,31 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
       } else {
         unitSelector.setEnabled(false);
       }
+    }
+  }
+
+  private void onTabbedPageSelected(TabbedPages pages) {
+    Widget pg = pages.getSelectedWidget();
+
+    FormView form = getFormView();
+
+    if (pg instanceof ChildGrid) {
+      ChildGrid grid = (ChildGrid) pg;
+
+      switch (grid.getGridView().getViewName()) {
+        case VIEW_PROJECT_STAGES:
+          if (getTeplateController() != null) {
+            getTeplateController().showStages();
+          }
+          break;
+        default:
+          if (getTeplateController() != null) {
+            getTeplateController().clearContent();
+          }
+          break;
+      }
+    } else {
+      getTeplateController().clearContent();
     }
   }
 

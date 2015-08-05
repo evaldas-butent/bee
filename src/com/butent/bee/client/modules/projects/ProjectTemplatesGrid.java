@@ -11,7 +11,6 @@ import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.HeaderView;
-import com.butent.bee.client.view.edit.EditableWidget;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
@@ -20,9 +19,6 @@ import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.shared.data.*;
-import com.butent.bee.shared.data.event.DataChangeEvent;
-import com.butent.bee.shared.data.event.RowInsertEvent;
-import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.view.DataInfo;
@@ -41,6 +37,8 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import java.util.List;
 
 public class ProjectTemplatesGrid extends AbstractGridInterceptor {
+
+  private Long selectedDefaultStage;
 
   @Override
   public void afterCreatePresenter(GridPresenter presenter) {
@@ -141,6 +139,7 @@ public class ProjectTemplatesGrid extends AbstractGridInterceptor {
     prjRow.setProperty(ProjectConstants.COL_DEFAULT_PROJECT_TEMPLATE_STAGE,
         selectedRow.getString(idxTMLDefaultStage));
 
+    resetSelectedDefaultStage();
 
     RowFactory.createRow(ProjectConstants.FORM_NEW_PROJECT_FROM_TEMPLATE,
         prjDataInfo.getNewRowCaption(), prjDataInfo, prjRow, null, getNewProjectInterceptor(gridView, selectedRow),
@@ -154,7 +153,7 @@ public class ProjectTemplatesGrid extends AbstractGridInterceptor {
 
   private void createInitialStage(final BeeRow prjRow, final IsRow tmlRow) {
 
-    if (BeeUtils.isEmpty(prjRow.getProperty(ProjectConstants.COL_DEFAULT_PROJECT_TEMPLATE_STAGE))) {
+    if (!DataUtils.isId(getSelectedDefaultStage())) {
       createProjectUsers(prjRow, tmlRow);
       return;
     }
@@ -171,8 +170,7 @@ public class ProjectTemplatesGrid extends AbstractGridInterceptor {
     Queries.getRowSet(ProjectConstants.VIEW_PROJECT_TEMPLATE_STAGES, Lists.newArrayList(
             ProjectConstants.COL_STAGE_NAME, ProjectConstants.COL_EXPECTED_DURATION,
             ProjectConstants.COL_EXPENSES, ProjectConstants.COL_PROJECT_CURENCY),
-        Filter.compareId(BeeUtils.toLong(prjRow.getProperty(
-            ProjectConstants.COL_DEFAULT_PROJECT_TEMPLATE_STAGE))),
+        Filter.compareId(getSelectedDefaultStage()),
         new Queries.RowSetCallback() {
 
           @Override
@@ -186,13 +184,13 @@ public class ProjectTemplatesGrid extends AbstractGridInterceptor {
             stageValues.add(stageTml.getString(0, ProjectConstants.COL_EXPECTED_DURATION));
             stageValues.add(stageTml.getString(0, ProjectConstants.COL_EXPENSES));
             stageValues.add(stageTml.getString(0, ProjectConstants.COL_PROJECT_CURENCY));
-            stageValues.add(prjRow.getProperty(
-                ProjectConstants.COL_DEFAULT_PROJECT_TEMPLATE_STAGE));
+            stageValues.add(BeeUtils.toString(getSelectedDefaultStage()));
 
             Queries.insert(ProjectConstants.VIEW_PROJECT_STAGES, stageCols, stageValues, null,
                 new RowCallback() {
                   @Override
                   public void onSuccess(BeeRow result) {
+                    resetSelectedDefaultStage();
                     createProjectUsers(prjRow, tmlRow);
                   }
                 });
@@ -289,6 +287,10 @@ public class ProjectTemplatesGrid extends AbstractGridInterceptor {
         });
   }
 
+  public Long getSelectedDefaultStage() {
+    return selectedDefaultStage;
+  }
+
   private AbstractFormInterceptor getNewProjectInterceptor(final GridView gridView,
       final IsRow selectedRow) {
     return new AbstractFormInterceptor() {
@@ -313,17 +315,18 @@ public class ProjectTemplatesGrid extends AbstractGridInterceptor {
                   Value.getValue(selectedRow.getId())), true);
           stageSelector.setValue(BeeUtils.toLong(row.getProperty
               (ProjectConstants.COL_DEFAULT_PROJECT_TEMPLATE_STAGE)), true);
+          resetSelectedDefaultStage();
         }
       }
 
       @Override
       public boolean beforeAction(Action action, Presenter presenter) {
         if (stageSelector != null && action.equals(Action.SAVE)) {
-          getActiveRow().setProperty(ProjectConstants.COL_DEFAULT_PROJECT_TEMPLATE_STAGE,
-              stageSelector.getValue());
+         setSelectedDefaultStage(BeeUtils.toLong(stageSelector.getValue()));
         }
         return super.beforeAction(action, presenter);
       }
+
 
       @Override
       public FormInterceptor getInstance() {
@@ -335,6 +338,14 @@ public class ProjectTemplatesGrid extends AbstractGridInterceptor {
   private void openProjectFullForm(long projectId) {
     RowEditor.openForm(ProjectConstants.FORM_PROJECT,
         Data.getDataInfo(ProjectConstants.VIEW_PROJECTS), projectId, Opener.NEW_TAB);
+  }
+
+  public void setSelectedDefaultStage(Long selectedDefaultStage) {
+    this.selectedDefaultStage = selectedDefaultStage;
+  }
+
+  private void resetSelectedDefaultStage() {
+    setSelectedDefaultStage(null);
   }
 
 }

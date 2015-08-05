@@ -13,7 +13,9 @@ public enum Domain implements HasCaption {
   MAIL(FontAwesome.ENVELOPE_O, null, true, true, 200),
   ONLINE(FontAwesome.USERS, Localized.getConstants().domainOnline(), false, false, 100),
   ROOMS(FontAwesome.COMMENTS_O, Localized.getConstants().domainRooms(), false, false, 100),
-  ADMIN(FontAwesome.MAGIC, "Admin", false, true, 300);
+  ADMIN(FontAwesome.MAGIC, "Admin", false, true, 300),
+  PROJECT_TEMPLATE(FontAwesome.ROCKET, Localized.getConstants().prjTemplate(), false, false, 100);
+
 
   private final FontAwesome icon;
   private final String caption;

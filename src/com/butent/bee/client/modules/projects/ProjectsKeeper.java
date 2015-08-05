@@ -30,7 +30,7 @@ public final class ProjectsKeeper {
 
   /**
    * Creates rpc parameters of projects module.
-   * 
+   *
    * @param method name of method.
    * @return rpc parameters to call queries of server-side.
    */
@@ -48,6 +48,8 @@ public final class ProjectsKeeper {
     GridFactory.registerGridInterceptor(GRID_PROJECT_USERS, new ProjectUsersGrid());
     GridFactory.registerGridInterceptor(GRID_PROJECT_STAGES, new ProjectStagesGrid());
     GridFactory.registerGridInterceptor(GRID_PROJECT_INCOMES, new ProjectIncomesGrid());
+    GridFactory.registerGridInterceptor(GRID_PROJECT_TEMPLATE_STAGES,
+        new ProjectTemplateStagesGrid());
     GridFactory.registerGridInterceptor(GRID_PROJECT_INVOICES, new InvoicesGrid() {
 
       private boolean erpConnectionActive;

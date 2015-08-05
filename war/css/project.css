@@ -45,7 +45,7 @@
 }
 
 .bee-prj-chart-data-row-separator {
-	
+
 }
 
 .bee-prj-chart-stage-flow-Tasks-Late {
@@ -77,4 +77,10 @@
 
 .bee-prj-Events-Properties {
     width: calc(100% - 2em);
+}
+
+.bee-prj-Template-Controller {
+ margin: 10px;
+ border: 1px solid black;
+ height: auto;
 }

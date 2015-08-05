@@ -12,6 +12,7 @@
       <ExternalJoin name="Project" source="ProjectStages" joinType="LEFT" >
         <IdColumn  name="StagesCount" aggregate="COUNT"></IdColumn>
       </ExternalJoin>
+      <SimpleColumn name="ProjectTemplate" />
     </SimpleJoin>
 
     <ExternalJoin name="ProjectStage" source="Tasks" joinType="LEFT">
