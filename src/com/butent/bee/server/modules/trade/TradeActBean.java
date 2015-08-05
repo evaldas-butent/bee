@@ -251,8 +251,7 @@ public class TradeActBean implements HasTimerService {
       public void fillActNumber(ViewInsertEvent event) {
         if (event.isBefore()
             && event.isTarget(VIEW_TRADE_ACTS)
-            && (!DataUtils.contains(event.getColumns(), COL_TA_NUMBER) || !DataUtils.contains(event
-                .getColumns(), COL_TA_REGISTRATION_NO))) {
+            && (!DataUtils.contains(event.getColumns(), COL_TA_NUMBER))) {
 
           TradeActKind kind = null;
           Long series = null;
@@ -272,14 +271,6 @@ public class TradeActBean implements HasTimerService {
             BeeColumn column = sys.getView(VIEW_TRADE_ACTS).getBeeColumn(COL_TA_NUMBER);
             String number = getNextActNumber(series, column.getPrecision(), COL_TA_NUMBER);
 
-            if (!BeeUtils.isEmpty(number)) {
-              event.addValue(column, new TextValue(number));
-            }
-          }
-
-          if (TradeActKind.RETURN.equals(kind) && DataUtils.isId(series)) {
-            BeeColumn column = sys.getView(VIEW_TRADE_ACTS).getBeeColumn(COL_TA_REGISTRATION_NO);
-            String number = getNextActNumber(series, column.getPrecision(), COL_TA_REGISTRATION_NO);
             if (!BeeUtils.isEmpty(number)) {
               event.addValue(column, new TextValue(number));
             }
@@ -1159,8 +1150,6 @@ public class TradeActBean implements HasTimerService {
 
     Long retStatus = prm.getRelation(PRM_RETURNED_ACT_STATUS);
     int statusIndex = parentActs.getColumnIndex(COL_TA_STATUS);
-    int seriesIndex = parentActs.getColumnIndex(COL_TA_SERIES);
-    int regNoIndex = parentActs.getColumnIndex(COL_TA_REGISTRATION_NO);
 
     for (BeeRow parentAct : parentActs) {
       long parentId = parentAct.getId();
@@ -1170,11 +1159,7 @@ public class TradeActBean implements HasTimerService {
               .addConstant(COL_TA_KIND, TradeActKind.RETURN.ordinal())
               .addConstant(COL_TA_PARENT, parentId)
               .addConstant(COL_TA_DATE, date)
-              .addConstant(COL_TA_MANAGER, usr.getCurrentUserId())
-              .addConstant(
-                  COL_TA_REGISTRATION_NO,
-                  getNextActNumber(BeeUtils.unbox(parentAct.getLong(seriesIndex)), parentActs
-                      .getColumn(regNoIndex).getPrecision(), COL_TA_REGISTRATION_NO));
+              .addConstant(COL_TA_MANAGER, usr.getCurrentUserId());
 
       if (operation != null) {
         actInsert.addConstant(COL_TA_OPERATION, operation);
