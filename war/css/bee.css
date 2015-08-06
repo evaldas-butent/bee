@@ -568,7 +568,7 @@
 .bee-CellGridBody {
   overflow: hidden;
   text-overflow: ellipsis;
-  color: #414142;
+  color: black;
 }
 
 .bee-CellGridFooter {
