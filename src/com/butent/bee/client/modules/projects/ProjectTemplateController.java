@@ -1,7 +1,9 @@
 package com.butent.bee.client.modules.projects;
 
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.grid.ChildGrid;
 import com.butent.bee.client.layout.Flow;
@@ -16,6 +18,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.html.builder.Style;
@@ -55,10 +58,11 @@ public class ProjectTemplateController extends Flow implements HasDomain {
 
   public void addTemplateEntry(String viewTemplate, final String viewDest,
       final List<String> templateColumns, final List<String> destColumns,
-      final List<String> nameCols, Filter relFilter, long id, String relIdColumn) {
+      final List<String> nameCols, Filter relFilter, final long id, final String relIdColumn) {
 
-    Assert.isFalse(templateColumns.size() == destColumns.size(),
-        "templateColumns mus be same as destColumns");
+    Assert.isTrue(templateColumns.size() == destColumns.size(),
+        viewTemplate + " templateColumns " + templateColumns.size() + " mus be same as destColumns "
+            + destColumns.size());
 
     DataInfo viewData = Data.getDataInfo(viewTemplate);
 
@@ -75,7 +79,7 @@ public class ProjectTemplateController extends Flow implements HasDomain {
     Queries.getRowSet(viewTemplate, viewData.getColumnNames(false), relFilter,
         new Queries.RowSetCallback() {
           @Override
-          public void onSuccess(BeeRowSet result) {
+          public void onSuccess(final BeeRowSet result) {
             for (int i = 0; i < result.getNumberOfRows(); i++) {
               Flow fRow = new Flow(STYLE_TEMPLATE_RECORD);
               fRow.addStyleName(BeeUtils.join(BeeConst.STRING_MINUS, STYLE_TEMPLATE_RECORD, i));
@@ -90,7 +94,8 @@ public class ProjectTemplateController extends Flow implements HasDomain {
                 fRow.add(item);
               }
 
-              fRow.addClickHandler(getTemplateClickHandler(viewDest));
+              fRow.addClickHandler(getTemplateClickHandler(result, i, viewDest, templateColumns,
+                  destColumns, id, relIdColumn));
 
               templ.add(fRow);
             }
@@ -102,12 +107,29 @@ public class ProjectTemplateController extends Flow implements HasDomain {
     hideContent();
   }
 
-  private ClickHandler getTemplateClickHandler(final String destView) {
+  private ClickHandler getTemplateClickHandler(final BeeRowSet templRowSet, final int rowIndex,
+      final String destView, final List<String> templCols, final List<String> destCols,
+      final long relId, final String relColumn) {
     return new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
         DataInfo destDataInfo = Data.getDataInfo(destView);
         BeeRow destRow = RowFactory.createEmptyRow(destDataInfo, true);
+
+        destRow.setValue(destDataInfo.getColumnIndex(relColumn), relId);
+
+        for(int i = 0; i < destCols.size(); i++) {
+          destRow.setValue(destDataInfo.getColumnIndex(destCols.get(i)),
+              templRowSet.getString(rowIndex, templCols.get(i)));
+        }
+
+        RowFactory.createRow(destDataInfo, destRow, new RowCallback() {
+          @Override
+          public void onSuccess(BeeRow result) {
+            DataChangeEvent.fireRefresh(BeeKeeper.getBus(), destView);
+          }
+        });
+
       }
     };
   }
@@ -117,6 +139,7 @@ public class ProjectTemplateController extends Flow implements HasDomain {
     if (templates.containsKey(viewName)) {
       StyleUtils.setVisible(templates.get(viewName), true);
     }
+    setVisible(true);
   }
 
 

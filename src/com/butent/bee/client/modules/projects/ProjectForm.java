@@ -188,12 +188,13 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
         @Override
         public void onSelection(
             SelectionEvent<Pair<Integer, TabbedPages.SelectionOrigin>> event) {
-          if (event.getSelectedItem().getB() == TabbedPages.SelectionOrigin.CLICK) {
+//          if (event.getSelectedItem().getB() == TabbedPages.SelectionOrigin.CLICK ) {
             onTabbedPageSelected(pages);
-          }
+//          }
         }
-
       });
+
+//      TabbedPages.SelectionOrigin.
     }
   }
 
@@ -715,11 +716,21 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
       return;
     }
 
+    if(!isOwner(form, row)) {
+      return;
+    }
+
+    if(DataUtils.isNewRow(row)) {
+      return;
+    }
+
     if (templateController == null) {
       templateController = new ProjectTemplateController(form, row);
       BeeKeeper.getScreen().addDomainEntry(Domain.PROJECT_TEMPLATE, templateController, null,
           Localized.getConstants().prjTemplate());
     };
+
+    templateController.setVisible(true);
 
     templateController.addTemplateEntry(VIEW_PROJECT_TEMPLATE_STAGES, VIEW_PROJECT_STAGES,
         Lists.newArrayList(COL_STAGE_NAME, COL_EXPECTED_DURATION, COL_EXPENSES, COL_PROJECT_CURENCY),
