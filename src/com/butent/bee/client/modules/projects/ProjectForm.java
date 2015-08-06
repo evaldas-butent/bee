@@ -289,6 +289,12 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
     if (relatedInfo != null) {
       relatedInfo.setOpen(true);
     }
+
+    if (templateController != null) {
+      BeeKeeper.getScreen().removeDomainEntry(Domain.PROJECT_TEMPLATE, null);
+      templateController.clear();
+      templateController = null;
+    }
   }
 
   @Override
@@ -400,6 +406,12 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
   @Override
   public void onUnload(FormView form) {
     EventUtils.clearRegistry(registry);
+
+    if (templateController != null) {
+      BeeKeeper.getScreen().removeDomainEntry(Domain.PROJECT_TEMPLATE, null);
+      templateController.clear();
+      templateController = null;
+    }
   }
 
   @Override
@@ -699,25 +711,44 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
   }
 
   private void createTemplateController(FormView form, IsRow row) {
-    if (templateController == null) {
-      templateController = new ProjectTemplateController();
-      BeeKeeper.getScreen().addDomainEntry(Domain.PROJECT_TEMPLATE, templateController, null,
-          Localized.getConstants().prjTemplate());
+    if (!DataUtils.isId(row.getLong(form.getDataIndex(COL_PROJECT_TEMPLATE)))) {
+      return;
     }
 
-    ChildGrid panel =  new ChildGrid(GRID_PROJECT_TEMPLATE_STAGES, null,
-        form.getDataIndex(COL_PROJECT_TEMPLATE), COL_PROJECT_TEMPLATE, false);
-    panel.launch();
-    panel.getGridView().getGrid().refresh();
-    templateController.setStages(panel);
-    LogUtils.getRootLogger().debug("PANEL INSERT ");
+    if (templateController == null) {
+      templateController = new ProjectTemplateController(form, row);
+      BeeKeeper.getScreen().addDomainEntry(Domain.PROJECT_TEMPLATE, templateController, null,
+          Localized.getConstants().prjTemplate());
+    };
 
+    templateController.addTemplateEntry(VIEW_PROJECT_TEMPLATE_STAGES, VIEW_PROJECT_STAGES,
+        Lists.newArrayList(COL_STAGE_NAME, COL_EXPECTED_DURATION, COL_EXPENSES, COL_PROJECT_CURENCY),
+        Lists.newArrayList(COL_STAGE_NAME, COL_EXPECTED_DURATION, COL_EXPENSES, COL_PROJECT_CURENCY),
+        Lists.newArrayList(COL_STAGE_NAME, COL_EXPECTED_DURATION, COL_EXPENSES, COL_PROJECT_CURENCY),
+        Filter.equals(COL_PROJECT_TEMPLATE, row.getLong(form.getDataIndex(COL_PROJECT_TEMPLATE))),
+        row.getId(), COL_PROJECT);
 
+    templateController.addTemplateEntry(TaskConstants.VIEW_TASK_TEMPLATES, TaskConstants.VIEW_TASKS,
+        Lists.newArrayList(TaskConstants.COL_SUMMARY, TaskConstants.COL_DESCRIPTION,
+            TaskConstants.COL_PRIORITY, TaskConstants.COL_TASK_TYPE,
+            TaskConstants.COL_EXPECTED_DURATION, COL_COMAPNY, ClassifierConstants.COL_CONTACT,
+            TaskConstants.COL_REMINDER),
+        Lists.newArrayList(TaskConstants.COL_SUMMARY, TaskConstants.COL_DESCRIPTION,
+            TaskConstants.COL_PRIORITY, TaskConstants.COL_TASK_TYPE,
+            TaskConstants.COL_EXPECTED_DURATION, COL_COMAPNY, ClassifierConstants.COL_CONTACT,
+            TaskConstants.COL_REMINDER),
+        Lists.newArrayList(TaskConstants.COL_TASK_TEMPLATE_NAME, TaskConstants.COL_SUMMARY),
+        Filter.equals(COL_PROJECT_TEMPLATE, row.getLong(form.getDataIndex(COL_PROJECT_TEMPLATE))),
+        row.getId(), COL_PROJECT);
+
+    templateController.addTemplateEntry(VIEW_PROJECT_TEMPLATE_DATES, VIEW_PROJECT_DATES,
+        Lists.newArrayList(COL_DATES_COLOR, COL_DATES_NOTE),
+        Lists.newArrayList(COL_DATES_COLOR, COL_DATES_NOTE),
+        Lists.newArrayList(COL_DATES_NOTE),
+        Filter.equals(COL_PROJECT_TEMPLATE, row.getLong(form.getDataIndex(COL_PROJECT_TEMPLATE))),
+        row.getId(), COL_PROJECT);
 
   }
-//  private void doCreateProjectFromTemplate(SelectorEvent event){
-//    getFormView().notifyInfo("Possible soon");
-//  }
 
   private void drawChart(IsRow row) {
     if (row == null) {
@@ -904,24 +935,30 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
     Widget pg = pages.getSelectedWidget();
 
     FormView form = getFormView();
+    if (getTeplateController() == null) {
+      return;
+    }
 
     if (pg instanceof ChildGrid) {
       ChildGrid grid = (ChildGrid) pg;
 
       switch (grid.getGridView().getViewName()) {
         case VIEW_PROJECT_STAGES:
-          if (getTeplateController() != null) {
-            getTeplateController().showStages();
-          }
+          getTeplateController().showTemplateContent(VIEW_PROJECT_TEMPLATE_STAGES);
           break;
+        case TaskConstants.VIEW_TASKS:
+          getTeplateController().showTemplateContent(TaskConstants.VIEW_TASK_TEMPLATES);
+          break;
+        case VIEW_PROJECT_DATES:
+          getTeplateController().showTemplateContent(VIEW_PROJECT_TEMPLATE_DATES);
         default:
           if (getTeplateController() != null) {
-            getTeplateController().clearContent();
+            getTeplateController().hideContent();
           }
           break;
       }
     } else {
-      getTeplateController().clearContent();
+      getTeplateController().hideContent();
     }
   }
 

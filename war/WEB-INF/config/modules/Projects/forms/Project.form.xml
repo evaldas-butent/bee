@@ -127,10 +127,6 @@
         <text>=prjStages</text>
         <ChildGrid name="ProjectStages" relColumn="Project" />
       </page>
-       <page style="display: none">
-         <text>=prjStages</text>
-         <ChildGrid name="ProjectTMLStages"  source="ProjectTemplate" relColumn="ProjectTemplate" />
-       </page>
       <page>
         <text>=personContacts</text>
         <ChildGrid name="ProjectContacts" relColumn="Project"  />
