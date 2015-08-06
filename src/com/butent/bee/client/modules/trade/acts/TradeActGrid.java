@@ -430,7 +430,6 @@ public class TradeActGrid extends AbstractGridInterceptor {
               newRow.setValue(i, parent.getId());
               break;
 
-            case COL_TA_NOTES:
             case COL_TA_NUMBER:
               newRow.setValue(i, parent.getString(i) + "-"
                   + response.getResponseAsString());

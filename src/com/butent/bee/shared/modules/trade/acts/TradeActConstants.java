@@ -73,6 +73,7 @@ public final class TradeActConstants {
   public static final String COL_TA_NOTES = "Notes";
   public static final String COL_TA_PARENT = "Parent";
   public static final String COL_TA_REGISTRATION_NO = "RegistrationNo";
+  public static final String COL_TA_RETURNED_QTY = "ReturnedQty";
 
   public static final String COL_TA_TEMPLATE_NAME = "Template";
 

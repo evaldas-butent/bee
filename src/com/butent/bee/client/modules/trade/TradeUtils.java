@@ -12,6 +12,7 @@ import com.google.gwt.xml.client.impl.DOMParseException;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
+import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ParameterList;
@@ -24,11 +25,14 @@ import com.butent.bee.client.render.ProvidesGridColumnRenderer;
 import com.butent.bee.client.render.RendererFactory;
 import com.butent.bee.client.utils.XmlUtils;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
+import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 public final class TradeUtils {
@@ -97,6 +101,9 @@ public final class TradeUtils {
         double qtyTotal = 0;
         double vatTotal = 0;
         double sumTotal = 0;
+        double totPrice = BeeConst.DOUBLE_ZERO;
+        double totDiscount = BeeConst.DOUBLE_ZERO;
+        double mainQty = BeeConst.DOUBLE_ZERO;
         String rateCurrency = null;
         double rate = 0;
         double currVatTotal = 0;
@@ -115,8 +122,24 @@ public final class TradeUtils {
           }
 
           double qty = BeeUtils.unbox(row.getDouble(COL_TRADE_ITEM_QUANTITY));
-          qtyTotal += qty;
-          double sum = qty * BeeUtils.unbox(row.getDouble(COL_TRADE_ITEM_PRICE));
+          double price = BeeUtils.unbox(row.getDouble(COL_TRADE_ITEM_PRICE));
+          double disc = BeeUtils.unbox(row.getDouble(COL_TRADE_DISCOUNT));
+
+          double sum;
+          if (ArrayUtils.containsSame(row.getColumnNames(), COL_TA_RETURNED_QTY)
+              && BeeUtils.isDouble(row.getDouble(COL_TA_RETURNED_QTY))) {
+            mainQty = (qty - row.getDouble(COL_TA_RETURNED_QTY));
+          } else {
+            mainQty = qty;
+          }
+          sum = mainQty * price;
+          totPrice += price * mainQty;
+          totDiscount += price * mainQty * disc / 100;
+          qtyTotal += mainQty;
+
+          if (disc > 0) {
+            sum = sum - (sum * disc / 100);
+          }
           double currSum = 0;
           double vat = BeeUtils.unbox(row.getDouble(COL_TRADE_VAT));
           boolean vatInPercents = BeeUtils.unbox(row.getBoolean(COL_TRADE_VAT_PERC));
@@ -162,7 +185,7 @@ public final class TradeUtils {
                   value = BeeUtils.toString(qty);
 
                 } else if (BeeUtils.same(fld, COL_TRADE_ITEM_PRICE)) {
-                  value = formater.format(sum / qty);
+                  value = row.getValue(COL_TRADE_ITEM_PRICE);
 
                 } else if (BeeUtils.same(fld, COL_TRADE_VAT)) {
                   value = row.getValue(fld);
@@ -187,6 +210,16 @@ public final class TradeUtils {
 
                 } else if (BeeUtils.same(fld, COL_CURRENCY_RATE)) {
                   value = BeeUtils.toString(rate, 7);
+
+                } else if (BeeUtils.same(fld, COL_TA_SERVICE_FROM)
+                    && BeeUtils.isPositive(row.getLong(COL_TA_SERVICE_FROM))) {
+                  DateTime dateFrom = new DateTime(row.getLong(COL_TA_SERVICE_FROM));
+                  value = dateFrom.toDateString();
+
+                } else if (BeeUtils.same(fld, COL_TA_SERVICE_TO)
+                    && BeeUtils.isPositive(row.getLong(COL_TA_SERVICE_TO))) {
+                  DateTime dateTo = new DateTime(row.getLong(COL_TA_SERVICE_TO));
+                  value = dateTo.toDateString();
 
                 } else if (!rs.hasColumn(fld)) {
                   if (xml == null) {
@@ -268,6 +301,12 @@ public final class TradeUtils {
 
               } else if (BeeUtils.same(fld, COL_CURRENCY_RATE)) {
                 value = BeeUtils.toString(rate, 7);
+
+              } else if (BeeUtils.same(fld, COL_TRADE_TOTAL_PRICE)) {
+                value = formater.format(totPrice);
+
+              } else if (BeeUtils.same(fld, COL_TRADE_TOTAL_DISCOUNT)) {
+                value = formater.format(totDiscount);
 
               } else {
                 value = null;

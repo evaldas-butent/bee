@@ -84,6 +84,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -543,26 +544,39 @@ public class TradeModuleBean implements BeeModule {
     } else {
       return ResponseObject.error("View source not supported:", trade);
     }
-    SqlSelect query = new SqlSelect()
-        .addFields(TBL_ITEMS,
-            COL_ITEM_NAME, COL_ITEM_NAME + "2", COL_ITEM_NAME + "3", COL_ITEM_BARCODE)
-        .addField(TBL_UNITS, COL_UNIT_NAME, COL_UNIT)
-        .addFields(tradeItems, COL_TRADE_ITEM_QUANTITY, COL_TRADE_ITEM_PRICE,
-            COL_TRADE_VAT_PLUS, COL_TRADE_VAT, COL_TRADE_VAT_PERC, COL_TRADE_ITEM_NOTE)
-        .addFields(articleSource, COL_TRADE_ITEM_ARTICLE)
-        .addField(TBL_CURRENCIES, COL_CURRENCY_NAME, COL_CURRENCY)
-        .addFrom(tradeItems)
-        .addFromInner(trade, sys.joinTables(trade, tradeItems, itemsRelation))
-        .addFromInner(TBL_ITEMS, sys.joinTables(TBL_ITEMS, tradeItems, COL_ITEM))
-        .addFromInner(TBL_UNITS, sys.joinTables(TBL_UNITS, TBL_ITEMS, COL_UNIT))
-        .addFromInner(TBL_CURRENCIES, sys.joinTables(TBL_CURRENCIES, trade, COL_CURRENCY))
-        .setWhere(SqlUtils.equals(tradeItems, itemsRelation, id));
+    SqlSelect query =
+        new SqlSelect()
+            .addFields(TBL_ITEMS,
+                COL_ITEM_NAME, COL_ITEM_NAME + "2", COL_ITEM_NAME + "3", COL_ITEM_BARCODE)
+            .addField(TBL_UNITS, COL_UNIT_NAME, COL_UNIT)
+            .addFields(tradeItems, COL_TRADE_ITEM_QUANTITY, COL_TRADE_ITEM_PRICE,
+                COL_TRADE_VAT_PLUS, COL_TRADE_VAT, COL_TRADE_VAT_PERC, COL_TRADE_DISCOUNT,
+                COL_TRADE_ITEM_NOTE)
+            .addFields(articleSource, COL_TRADE_ITEM_ARTICLE)
+            .addField(TBL_CURRENCIES, COL_CURRENCY_NAME, COL_CURRENCY)
+            .addFrom(tradeItems)
+            .addFromInner(trade, sys.joinTables(trade, tradeItems, itemsRelation))
+            .addFromInner(TBL_ITEMS, sys.joinTables(TBL_ITEMS, tradeItems, COL_ITEM))
+            .addFromInner(TBL_UNITS, sys.joinTables(TBL_UNITS, TBL_ITEMS, COL_UNIT))
+            .addFromInner(TBL_CURRENCIES, sys.joinTables(TBL_CURRENCIES, trade, COL_CURRENCY))
+            .setWhere(SqlUtils.equals(tradeItems, itemsRelation, id));
+
+    if (BeeUtils.same(tradeItems, TBL_TRADE_ACT_SERVICES)) {
+      query.addFields(TBL_TRADE_ACT_SERVICES, COL_TA_SERVICE_FROM);
+      query.addFields(TBL_TRADE_ACT_SERVICES, COL_TA_SERVICE_TO);
+      query.addFields(TBL_TRADE_ACT_SERVICES, COL_TA_SERVICE_TARIFF);
+    }
 
     if (BeeUtils.same(trade, TBL_TRADE_ACTS)) {
       query.addFields(TBL_ITEMS, COL_TRADE_WEIGHT);
+      query.addFields(TBL_ITEMS, COL_ITEM_AREA);
       query.addFields(TBL_TRADE_ACTS, COL_TRADE_NUMBER);
       query.addFields(TBL_TRADE_ACTS, COL_TRADE_CONTACT);
       query.addFields(TBL_ITEMS, COL_TRADE_TIME_UNIT);
+
+      if (BeeUtils.same(tradeItems, TBL_TRADE_ACT_ITEMS)) {
+        query.addFields(TBL_TRADE_ACT_ITEMS, sys.getIdName(tradeItems));
+      }
     } else {
       query.addOrder(tradeItems, COL_TRADE_ITEM_ORDINAL, sys.getIdName(tradeItems));
     }
@@ -580,7 +594,41 @@ public class TradeModuleBean implements BeeModule {
       query.addExpr(xpr, COL_CURRENCY_RATE)
           .addField(currAlias, COL_CURRENCY_NAME, COL_CURRENCY_RATE + COL_CURRENCY);
     }
-    return ResponseObject.response(qs.getData(query));
+
+    SimpleRowSet simpleRowSet = qs.getData(query);
+
+    if (simpleRowSet.hasColumn("TradeActItemID")) {
+      BeeRowSet beeRowSet =
+          qs.getViewData(VIEW_TRADE_ACT_ITEMS, Filter.equals(COL_TRADE_ACT, id));
+
+      Map<Long, String> itemsRetQty = new LinkedHashMap<>();
+      int colListLength = simpleRowSet.getColumnNames().length;
+      String[] colList = new String[colListLength + 1];
+
+      for (int i = 0; i < colListLength; i++) {
+        colList[i] = simpleRowSet.getColumnName(i);
+      }
+      colList[colListLength] = COL_TA_RETURNED_QTY;
+
+      SimpleRowSet resultRowSet = new SimpleRowSet(colList);
+
+      for (int i = 0; i < simpleRowSet.getNumberOfRows(); i++) {
+        resultRowSet.addEmptyRow();
+        for (int j = 0; j < colListLength; j++) {
+          resultRowSet.getRow(i).setValue(j, simpleRowSet.getRow(i).getValue(j));
+        }
+        BeeRow row = beeRowSet.getRow(i);
+        itemsRetQty.put(row.getId(), row.getProperty(PRP_RETURNED_QTY));
+      }
+
+      for (SimpleRow sr : resultRowSet) {
+        sr.setValue(COL_TA_RETURNED_QTY,
+            itemsRetQty.get(sr.getLong("TradeActItemID")));
+      }
+      return ResponseObject.response(resultRowSet);
+    } else {
+      return ResponseObject.response(simpleRowSet);
+    }
   }
 
   private SimpleRowSet getDebtsOverdueCount(List<Long> companyIds) {

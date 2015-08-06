@@ -6,27 +6,22 @@
   <!ENTITY form "PrintTradeActSalePhysical">
 ]>
 <f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form" xmlns:ui="http://www.butent.com/ui"
-  name="&form;" caption="Perdavimo aktas (Fiziniams asmenims)" disabledActions="save" width="70" widthUnit="%" height="90"
-  heightUnit="%">
+  name="&form;" caption="Perdavimo aktas" disabledActions="save" width="70" widthUnit="%" height="90" heightUnit="%">
   <FlowPanel style="padding: 10px; background-color: white;" contentEditable="true">
     <FlowPanel>
       <Image url="images/logo.png" style="position: relative;" />
       <FlowPanel style="margin-top:-35px;">
-        <TextLabel style="text-align:right; &bold;">
+        <TextLabel style="text-align:center; &bold;">
           <render>
-            <ui:expression>'NUOMOS SUTARTIS Nr. ' + row.ContractName + '-' + (row.ContractNumber ? row.ContractNumber :
+            <ui:expression>'Įrenginių perdavimo aktas Nr. ' + row.ContractName + '-' + (row.ContractNumber ?
+              row.ContractNumber :
               rowId)</ui:expression>
           </render>
         </TextLabel>
-        <DateTimeLabel source="Date" format="DATE_LONG" style="text-align: right;" />
+        <DateTimeLabel source="Date" format="DATE_LONG" style="text-align: center;" />
       </FlowPanel>
     </FlowPanel>
 
-    <HtmlPanel>
-      <span style="&bold; display:block; white-space:pre-wrap;">1. Sutarties šalys
-ŠALIŲ REKVIZITAI IR PARAŠAI:
-      </span>
-    </HtmlPanel>
     <FlowPanel>
       <Table style="width:100%;">
         <row>
@@ -46,40 +41,26 @@
           </cell>
         </row>
         <row>
-          <Label text="Atstovauja vadybininkas" />
-          <Label text="Atstovauja:" />
+          <TextLabel />
+          <TextLabel source="Object">
+            <renderToken source="ObjectName" prefix="Objektas: " />
+            <renderToken source="ObjectAddress" />
+          </TextLabel>
         </row>
         <row>
-         <TextLabel source="Manager">
-          <renderToken source="ManagerFirstName" />
-          <renderToken source="ManagerLastName" />
-         </TextLabel>
-         <TextLabel source="Contact">
-          <renderToken source="ContactFirstName" />
-          <renderToken source="ContactLastName" />
-         </TextLabel>
-        </row>
-        <row>
-          <cell colSpan="2" style="text-align: right;">
-            <Label html="Su šios sutarties sąlygomis susipažinau ir sutinku." />
-          </cell>
-        </row>
-        <row style="text-align: center;">
-          <Label html="(vardas, pavardė, pareigos ir parašas)" style="padding:20px;" />
-          <Label html="(vardas, pavardė, pareigos ir parašas)" style="padding:20px;" />
+          <TextLabel source="Manager">
+            <renderToken source="ManagerFirstName" prefix="Atsakingas asmuo: " />
+            <renderToken source="ManagerLastName" />
+            <renderToken source="ManagerPhone" />
+          </TextLabel>
+          <TextLabel source="Contact">
+            <renderToken source="ContactFirstName" prefix="Atsakingas asmuo: " />
+            <renderToken source="ContactLastName" />
+            <renderToken source="ContactPhone" />
+          </TextLabel>
         </row>
       </Table>
     </FlowPanel>
-
-    <HtmlPanel style="&section;">
-      <span style="font-weight: bold; display:block; text-align: left;">
-        2. Sutarties objektas ir pagrindinės sąlygos
-      </span>
-      <span style="font-size:smaller; display:block; white-space:pre-wrap;">Pagal šią sutartį NUOMOTOJAS perduoda NUOMININKUI laikinai už nuomos mokestį naudotis šiuo NUOMOTOJUI
-nuosavybės teise priklausančiu turtu (toliau ­ ĮRANGA), o NUOMININKAS priima ĮRANGĄ ir nuomos mokestį šiomis
-sąlygomis:
-      </span>
-    </HtmlPanel>
 
     <Table name="InvoiceDetails1" style="&section; width:100%; padding-top: 0;">
       <properties content="TradeActItems" />
@@ -87,39 +68,67 @@ sąlygomis:
         <Label text="Artikulas">
           <properties name="Article" />
         </Label>
-        <Label text="Pavadinimas">
+        <Label text="Nuomojama įranga">
           <properties name="Name" />
-        </Label>
-        <Label text="Mato VNT.">
-          <properties name="Unit" />
         </Label>
         <Label text="Kiekis">
           <properties name="Quantity" />
         </Label>
-        <Label text="Svoris Kg" style="text-align: right;">
+        <Label text="Mato VNT.">
+          <properties name="Unit" />
+        </Label>
+        <Label text="Grąžinta">
+          <properties name="ReturnedQty" />
+        </Label>
+        <Label text="Liko">
+          <properties name="rem" />
+        </Label>
+        <Label text="Svoris">
           <properties name="Weight" />
         </Label>
-        <Label text="Viso Kg" style="text-align: right;">
-          <properties name="sv" />
+        <Label text="Plotas">
+          <properties name="Area" />
         </Label>
-        <Label text="Kaina Eur">
+        <Label text="Kaina">
           <properties name="Price" />
         </Label>
-        <Label text="Viso Eur be PVM">
+        <Label text="Nuolaida, %">
+          <properties name="Discount" />
+        </Label>
+        <Label text="Suma">
           <properties name="Amount" />
         </Label>
       </row>
       <row>
-        <cell colSpan="5" style="text-align: right; vertical-align:top">
-          <Label text="Bendras svoris:" />
-        </cell>
-        <cell style="text-align: right; vertical-align:top;">
-          <FlowPanel style="display: inline-flex;">
-            <Label name="TotalWeight" style="&bold;" />
+        <Label text="Iš viso" style="&bold;" />
+        <cell colSpan="2">
+          <FlowPanel style="text-align:right;">
+            <Label name="TotalItemsQuantity" style="&bold;" />
           </FlowPanel>
         </cell>
-        <FlowPanel style="text-align: right;">
-          <Label text="Bendra suma:" />
+        <cell colSpan="2">
+          <Label></Label>
+        </cell>
+        <cell>
+          <FlowPanel style="text-align:left;">
+            <Label name="TotalRemaining" style="&bold;" />
+          </FlowPanel>
+        </cell>
+        <FlowPanel style="text-align:left;">
+          <Label name="TotalWeight" style="&bold;" />
+        </FlowPanel>
+        <FlowPanel style="text-align:left;">
+          <Label name="TotalArea" style="&bold;" />
+        </FlowPanel>
+        <FlowPanel style="text-align:right;">
+          <Label style="&bold;">
+            <properties name="TotalPrice" />
+          </Label>
+        </FlowPanel>
+        <FlowPanel style="text-align:left;">
+          <Label style="&bold;">
+            <properties name="TotalDiscount" />
+          </Label>
         </FlowPanel>
         <FlowPanel style="text-align:right;">
           <Label style="&bold;">
@@ -129,16 +138,23 @@ sąlygomis:
       </row>
     </Table>
 
-    <Label text="Teikiamos Paslaugos" style="text-align: center; font-weight: bold;" />
-
     <Table name="InvoiceDetails2" style="&section; width:100%">
       <properties content="TradeActServices" />
       <row>
         <Label text="Artikulas">
           <properties name="Article" />
         </Label>
-        <Label text="Pavadinimas">
+        <Label text="Teikiamos paslaugos/prekės">
           <properties name="Name" />
+        </Label>
+        <Label text="Data nuo">
+          <properties name="DateFrom" />
+        </Label>
+        <Label text="Data iki">
+          <properties name="DateTo" />
+        </Label>
+        <Label text="Kiekis">
+          <properties name="Quantity" />
         </Label>
         <Label text="Mato VNT.">
           <properties name="Unit" />
@@ -146,40 +162,53 @@ sąlygomis:
         <Label text="Laiko VNT.">
           <properties name="tu" />
         </Label>
-        <Label text="Kiekis">
-          <properties name="Quantity" />
+        <Label text="Tarifas">
+          <properties name="Tariff" />
         </Label>
-        <Label text="Kaina Eur">
+        <Label text="Kaina">
           <properties name="Price" />
         </Label>
-        <Label text="Suma Eur be PVM">
+        <Label text="Nuolaida, %">
+          <properties name="Discount" />
+        </Label>
+        <Label text="Suma už min. term.">
           <properties name="Amount" />
         </Label>
       </row>
+      <row>
+        <Label text="Iš viso" style="&bold;" />
+        <cell colSpan="4">
+          <FlowPanel style="text-align:right;">
+            <Label style="&bold;">
+              <properties name="QuantityTotal" />
+            </Label>
+          </FlowPanel>
+        </cell>
+        <cell colSpan="4">
+          <FlowPanel style="text-align:right;">
+            <Label style="&bold;">
+              <properties name="TotalPrice" />
+            </Label>
+          </FlowPanel>
+        </cell>
+        <FlowPanel style="text-align:left;">
+          <Label style="&bold;">
+            <properties name="TotalDiscount" />
+          </Label>
+        </FlowPanel>
+        <FlowPanel style="text-align:right;">
+          <Label style="&bold;">
+            <properties name="AmountTotal" />
+          </Label>
+        </FlowPanel>
+      </row>
     </Table>
     <HtmlPanel style="&section;">
-      <span style="font-weight: bold; display:block; text-align: center;">
-        Visos kainos nurodytos be 21% PVM
-      </span>
-
-      <span style="font-size:small; display:block; white-space:pre-wrap; border:1px solid silver; margin-top: 20px;">Minimalus nuomos terminas 2 sav. (14 kalendorinių dienų).
-Grąžinama įranga turi būti nuvalyta ir išardyta taip, kaip buvo išduota. Įranga transporto priemonėje turi būti
-sukrauta taip, kad būtų galima iškrauti šakiniais krautuvais. Už iškrovimą rankomis apmokama papildomai.
-</span>
+      <span style="font-size:small; display:block; white-space:pre-wrap; border:1px solid silver; margin-top: 20px;">Patabos: Grąžinama įranga turi būti nuvalyta ir išardyta taip, kaip buvo išduota. Įranga transporto priemonėje turi būti
+sukrauta taip, kad būtų galima iškrauti šakiniais krautuvais. Už iškrovimą rankomis apmokama papildomai.</span>
     </HtmlPanel>
 
     <Table style="width:100%; margin-top:10px;">
-      <row>
-        <TextLabel source="Object">
-          <renderToken source="ObjectName" prefix="Objektas: " />
-        </TextLabel>
-        <TextLabel source="Object">
-          <renderToken source="ObjectAddress" prefix="Adresas: " />
-        </TextLabel>
-      </row>
-      <row>
-        <Label text="Pagarbiai:" style="margin-top:15px;" />
-      </row>
       <row>
         <TextLabel source="Manager">
           <renderToken source="ManagerFirstName" />
@@ -188,12 +217,7 @@ sukrauta taip, kad būtų galima iškrauti šakiniais krautuvais. Už iškrovim�
         <TextLabel source="Vehicle">
           <renderToken source="VehicleParentModel" prefix="Transporto priemonė: " />
           <renderToken source="VehicleModel" />
-        </TextLabel>
-      </row>
-      <row>
-        <Label text="=manager" />
-        <TextLabel source="Vehicle">
-          <renderToken source="VehicleNumber" prefix="Valst nr: " />
+          <renderToken source="VehicleNumber" />
         </TextLabel>
       </row>
       <row>
@@ -206,9 +230,7 @@ sukrauta taip, kad būtų galima iškrauti šakiniais krautuvais. Už iškrovim�
         </TextLabel>
       </row>
       <row>
-        <cell colSpan="2">
-          <Label text="Priėmė ir suskaičiavo:" style="margin-top: 15px; border-top:2px solid black;" />
-        </cell>
+        <Label text="Priėmė ir suskaičiavo:" />
       </row>
     </Table>
   </FlowPanel>
