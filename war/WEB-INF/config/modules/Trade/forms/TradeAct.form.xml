@@ -136,6 +136,11 @@
         <text>=trdInvoices</text>
         <ChildGrid name="TradeActInvoices" relColumn="TradeAct" />
       </page>
+      
+      <page>
+        <text>=files</text>
+        <ChildGrid name="TradeActFiles" relColumn="TradeAct" />
+      </page>
 
       <page>
         <text>=notes</text>
