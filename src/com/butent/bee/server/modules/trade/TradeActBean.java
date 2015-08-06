@@ -167,6 +167,10 @@ public class TradeActBean implements HasTimerService {
         response = getNextActNumber(reqInfo);
         break;
 
+      case SVC_GET_NEXT_RETURN_ACT_NUMBER:
+        response = getNextReturnActNumber(reqInfo);
+        break;
+
       case SVC_GET_SERVICES_FOR_INVOICE:
         response = getServicesForInvoice(reqInfo);
         break;
@@ -267,7 +271,8 @@ public class TradeActBean implements HasTimerService {
             }
           }
 
-          if (kind != null && kind.autoNumber() && DataUtils.isId(series)) {
+          if (kind != null && kind.autoNumber() && DataUtils.isId(series)
+              && kind != TradeActKind.RETURN) {
             BeeColumn column = sys.getView(VIEW_TRADE_ACTS).getBeeColumn(COL_TA_NUMBER);
             String number = getNextActNumber(series, column.getPrecision(), COL_TA_NUMBER);
 
@@ -634,6 +639,76 @@ public class TradeActBean implements HasTimerService {
     }
 
     return number;
+  }
+
+  private ResponseObject getNextReturnActNumber(RequestInfo reqInfo) {
+    Long seriesId = reqInfo.getParameterLong(COL_TA_SERIES);
+    String columnName = reqInfo.getParameter(Service.VAR_COLUMN);
+    String viewName = reqInfo.getParameter(VAR_VIEW_NAME);
+    Long parentId = reqInfo.getParameterLong(COL_TA_PARENT);
+
+    if (!DataUtils.isId(seriesId) || BeeUtils.isEmpty(columnName) || BeeUtils.isEmpty(viewName)
+        || !DataUtils.isId(parentId)) {
+      logger.warning("Missing one of parameter (seriesId, columnName, viewname, parentId)",
+          seriesId,
+          columnName, viewName, parentId);
+      return ResponseObject.emptyResponse();
+    }
+
+    DataInfo viewData = sys.getDataInfo(viewName);
+
+    if (viewData == null) {
+      return ResponseObject.emptyResponse();
+    }
+
+    BeeColumn col = viewData.getColumn(columnName);
+
+    if (col == null) {
+      return ResponseObject.emptyResponse();
+    }
+
+    IsCondition where =
+        SqlUtils.and(SqlUtils.equals(TBL_TRADE_ACTS, COL_TA_SERIES, seriesId),
+            SqlUtils.notNull(TBL_TRADE_ACTS, columnName), SqlUtils.equals(TBL_TRADE_ACTS,
+                COL_TA_KIND, TradeActKind.RETURN.ordinal()), SqlUtils.equals(TBL_TRADE_ACTS,
+                COL_TA_PARENT, parentId));
+
+    SqlSelect query = new SqlSelect()
+        .addFields(TBL_TRADE_ACTS, columnName)
+        .addFrom(TBL_TRADE_ACTS)
+        .setWhere(where);
+
+    String[] values = qs.getColumn(query);
+
+    long max = 0;
+    BigInteger bigMax = null;
+
+    if (!ArrayUtils.isEmpty(values)) {
+      for (String value : values) {
+        value = value.substring(value.indexOf("-") + 1);
+        if (BeeUtils.isDigit(value)) {
+          if (BeeUtils.isLong(value)) {
+            max = Math.max(max, BeeUtils.toLong(value));
+
+          } else {
+            BigInteger big = new BigInteger(value);
+
+            if (bigMax == null || BeeUtils.isLess(bigMax, big)) {
+              bigMax = big;
+            }
+          }
+        }
+      }
+    }
+
+    BigInteger big = new BigInteger(BeeUtils.toString(max));
+    if (bigMax != null) {
+      big = big.max(bigMax);
+    }
+
+    String number = big.add(BigInteger.ONE).toString();
+
+    return ResponseObject.response(number);
   }
 
   private ResponseObject getActsForInvoice(RequestInfo reqInfo) {
