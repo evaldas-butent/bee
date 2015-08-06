@@ -27,6 +27,7 @@ import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.view.ViewCallback;
 import com.butent.bee.client.view.ViewFactory;
 import com.butent.bee.client.view.ViewSupplier;
+import com.butent.bee.client.view.grid.interceptor.FileGridInterceptor;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Pair;
@@ -158,6 +159,9 @@ public final class TradeActKeeper {
 
     GridFactory.registerGridInterceptor(GRID_TRADE_ACT_ITEMS, new TradeActItemsGrid());
     GridFactory.registerGridInterceptor(GRID_TRADE_ACT_SERVICES, new TradeActServicesGrid());
+    GridFactory.registerGridInterceptor(VIEW_TRADE_ACT_FILES,
+        new FileGridInterceptor(COL_TRADE_ACT, AdministrationConstants.COL_FILE,
+            AdministrationConstants.COL_FILE_CAPTION, AdministrationConstants.ALS_FILE_NAME));
 
     SelectorEvent.register(new TradeActSelectorHandler());
 

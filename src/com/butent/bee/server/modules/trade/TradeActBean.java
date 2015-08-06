@@ -26,6 +26,7 @@ import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.modules.administration.AdministrationModuleBean;
+import com.butent.bee.server.modules.administration.ExtensionIcons;
 import com.butent.bee.server.sql.HasConditions;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.IsExpression;
@@ -246,6 +247,17 @@ public class TradeActBean implements HasTimerService {
     cb.createCalendarTimer(this.getClass(), PRM_SYNC_ERP_DATA);
 
     sys.registerDataEventHandler(new DataEventHandler() {
+
+      @Subscribe
+      public void setRowProperties(ViewQueryEvent event) {
+        if (event.isBefore()) {
+          return;
+        }
+
+        if (BeeUtils.same(event.getTargetName(), VIEW_TRADE_ACT_FILES)) {
+          ExtensionIcons.setIcons(event.getRowset(), ALS_FILE_NAME, PROP_ICON);
+        }
+      }
 
       @Subscribe
       public void fillActNumber(ViewInsertEvent event) {
