@@ -17,6 +17,7 @@ public final class TradeActConstants {
   public static final String SVC_GET_ACTS_FOR_INVOICE = "GetActsForInvoice";
   public static final String SVC_GET_SERVICES_FOR_INVOICE = "GetServicesForInvoice";
   public static final String SVC_GET_NEXT_ACT_NUMBER = "GetNextActNumber";
+  public static final String SVC_GET_NEXT_RETURN_ACT_NUMBER = "GetNextReturnActNumber";
   public static final String SVC_CREATE_ACT_INVOICE = "CreateActInvoice";
   public static final String SVC_SYNCHRONIZE_ERP_DATA = "SyncErpData";
 
