@@ -212,7 +212,12 @@
             </InputInteger>
           </row>
         </Table>
-      </page>  
+      </page>
+
+      <page module="Orders">
+        <text>=discounts</text>
+        <ChildGrid name="ItemDiscounts" relColumn="Item" />
+      </page>
 
       <page>
         <text>=pictures</text>
