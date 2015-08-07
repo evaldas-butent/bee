@@ -37,9 +37,9 @@
       </row>
 
       <row>
-        <Label for="Type" />
+        <Label for="Type" class="bee-required" />
         <DataSelector source="Type" renderColumns="TypeName" newRowEnabled="true" style="&inp2;"
-          disablable="true" />
+          disablable="true" required="true" />
         <Label for="Priority" />
         <Radio source="Priority" />
       </row>
@@ -64,9 +64,9 @@
           <InputDate name="End_Date" style="&dateStyle;" />
           <InputTimeOfDay name="End_Time" step="&timeStep;" style="&timeStyle;" />
         </FlowPanel>
-        <Label for="Company" />
+        <Label for="Company" class="bee-required" />
         <DataSelector source="Company" editPopup="true" newRowEnabled="true" choiceColumns="Name TypeName" 
-            renderColumns="CompanyName CompanyTypeName" style="width: 200px;" />
+            renderColumns="CompanyName CompanyTypeName" style="width: 200px;" required="true" />
       </row>
 
       <row>

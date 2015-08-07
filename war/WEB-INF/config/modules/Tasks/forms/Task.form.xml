@@ -27,9 +27,9 @@
       <FlowPanel class="flexBox-horizontal bee-crm-taskEdit-form">
       <FlowPanel style="margin-left: 5px; overflow:scroll">
         <FlowPanel style="&section;">
-          <Label for="Type" style="&lbl1;" />
+          <Label for="Type" style="&lbl1;" class="bee-required" />
           <DataSelector source="Type" renderColumns="TypeName" newRowEnabled="false" style="&inp2;"
-            disablable="true" />
+            disablable="true" required="true" />
           <Label for="Priority" style="&inline; margin-left: 16px;" />
           <Radio source="Priority" style="&inline; font-size: 12px; margin-left: 8px;"
             disablable="true" />
@@ -47,10 +47,10 @@
         <FlowPanel style="&section;">
           <Label for="Owner" style="&lbl1;" />
           <DataSelector source="Owner" editSource="OwnerPerson" style="&inp2;" readOnly="true" />
-          <Label for="Company" style="&lbl3;" module="Classifiers.Contacts" />
+          <Label for="Company" style="&lbl3;" module="Classifiers.Contacts" class="bee-required" />
           <DataSelector source="Company" newRowEnabled="false" style="&inp4;" disablable="true"
               choiceColumns="Name TypeName " renderColumns="CompanyName CompanyTypeName"
-            module="Classifiers.Contacts" />
+            module="Classifiers.Contacts" required="true" />
         </FlowPanel>
 
         <FlowPanel style="&section;">
