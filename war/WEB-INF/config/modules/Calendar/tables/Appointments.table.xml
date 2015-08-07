@@ -27,7 +27,7 @@
     <DateTime name="StartDateTime" notNull="true" label="=calAppointmentStart" />
     <DateTime name="EndDateTime" notNull="true" label="=calAppointmentEnd" />
 
-    <Enum name="Visibility" key="CalendarVisibility" label="=calVisibility" />
+    <Enum name="Visibility" key="CalendarVisibility" label="=calVisibility" defValue="0" />
 
     <Relation name="Company" relation="Companies" label="=company" />
     <Relation name="CompanyPerson" relation="CompanyPersons" label="=contact" />
