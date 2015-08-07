@@ -2,10 +2,10 @@
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   xmlns:xi="http://www.w3.org/2001/XInclude"
 
-  name="CategoryDiscounts" viewName="Discounts"
+  name="CategoryDiscounts" viewName="Discounts" caption="=discounts"
   >
   <g:columns>
-    <RelColumn name="Company" />
+    <RelColumn name="Company" editPopup="true" />
   </g:columns>
 
   <xi:include href="columns/Discount.columns.xml" />
