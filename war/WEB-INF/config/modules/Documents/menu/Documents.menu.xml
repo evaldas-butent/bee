@@ -4,6 +4,8 @@
 name="Documents" label="=documents" order="40" module="Documents"
 >
   <Item name="DocumentList" label="=documents" service="grid" parameters="Documents" />
+  <Item name="DocumentReceived" label="=documentFilterReceived" service="grid" parameters="ReceivedDocuments" separator="true"/>
+  <Item name="DocumentSent" label="=documentFilterSent" service="grid" parameters="SentDocuments" />
 
   <Item name="DocumentCategories" label="=documentTree" service="form" parameters="DocumentTree"
     separator="true" data="DocumentTree" />

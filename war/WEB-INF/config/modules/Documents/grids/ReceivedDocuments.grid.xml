@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+        xmlns:ui="http://www.butent.com/ui"
+        xmlns:w="http://www.butent.com/widget"
+
+        name="ReceivedDocuments" viewName="Documents" caption="=documentFilterReceived"
+        newRowForm="NewDocument" editForm="Document" filter="Received" parent="Tree" favorite="Name"
+        flexGrow="1" order="Received desc"
+    >
+
+  <g:west size="200" splitterSize="2">
+    <w:DataTree class="bee-documents-parentWiget" name="Tree" caption="=documentCategories"
+                viewName="DocumentTree" parentColumn="Parent" favorite="CategoryName">
+      <w:calc>
+        <ui:expression>row.CategoryName + (row.DocumentCount != 0 ? ' [' + row.DocumentCount + ']' : '')</ui:expression>
+      </w:calc>
+    </w:DataTree>
+  </g:west>
+
+  <g:columns>
+    <DataColumn name="Received" visible="true" />
+    <DataColumn name="Name" visible="true" />
+    <RelColumn name="Company" filterSupplier="value" />
+    <RelColumn name="Category" />
+    <DataColumn name="DocumentDate" />
+    <DataColumn name="Expires" />
+    <DataColumn name="Number" />
+    <RelColumn name="Type" carry="true" />
+    <RelColumn name="Place" carry="true" />
+    <DataColumn name="StatusName" />
+
+    <IdColumn name="Id" visible="false" />
+    <DataColumn name="RegistrationNumber" visible="false" />
+    <DataColumn name="Sent" visible="false" />
+    <DataColumn name="Description" visible="false" />
+  </g:columns>
+
+</g:Grid>
