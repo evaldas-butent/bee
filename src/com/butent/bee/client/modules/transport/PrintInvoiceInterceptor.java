@@ -3,6 +3,7 @@ package com.butent.bee.client.modules.transport;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
+import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.dom.DomUtils;
@@ -78,22 +79,44 @@ public class PrintInvoiceInterceptor extends AbstractFormInterceptor {
                 case "TradeActItems":
 
                   double totSvor = BeeConst.DOUBLE_ZERO;
+                  double totArea = BeeConst.DOUBLE_ZERO;
+                  double totRem = BeeConst.DOUBLE_ZERO;
+                  double qtyTotal = BeeConst.DOUBLE_ZERO;
 
                   for (SimpleRow simpleRow : data) {
                     double qty = BeeUtils.unbox(simpleRow.getDouble(COL_TRADE_ITEM_QUANTITY));
+                    double ret = BeeUtils.unbox(simpleRow.getDouble(COL_TA_RETURNED_QTY));
+                    double rem = qty - ret;
+                    simpleRow.setValue(COL_TRADE_ITEM_NOTE, "<root><rem>"
+                        + rem + "</rem></root>");
                     double sv = BeeUtils.unbox(simpleRow.getDouble(COL_TRADE_WEIGHT));
-                    double rowSv = BeeUtils.round(qty * sv, 3);
+                    double area =
+                        BeeUtils.unbox(simpleRow.getDouble(ClassifierConstants.COL_ITEM_AREA));
+                    double rowSv = BeeUtils.round(rem * sv, 3);
+                    double rowArea = BeeUtils.round(rem * area, 3);
 
-                    simpleRow.setValue(COL_TRADE_ITEM_NOTE, "<root><sv>"
-                        + rowSv + "</sv></root>");
-
+                    totArea += rowArea;
                     totSvor += rowSv;
+                    totRem += rem;
+                    qtyTotal += qty;
                   }
 
                   Widget ww = form.getWidgetByName(COL_TRADE_TOTAL_WEIGHT);
+                  Widget wa = form.getWidgetByName(COL_TRADE_TOTAL_AREA);
+                  Widget wRem = form.getWidgetByName(COL_TRADE_TOTAL_REMAINING);
+                  Widget wQty = form.getWidgetByName(COL_TRADE_TOTAL_ITEMS_QUANTITY);
 
                   if (ww instanceof Label) {
                     ww.getElement().setInnerText(BeeUtils.toString(totSvor, 3));
+                  }
+                  if (wa instanceof Label) {
+                    wa.getElement().setInnerText(BeeUtils.toString(totArea, 3));
+                  }
+                  if (wRem instanceof Label) {
+                    wRem.getElement().setInnerText(BeeUtils.toString(totRem, 3));
+                  }
+                  if (wQty instanceof Label) {
+                    wQty.getElement().setInnerText(BeeUtils.toString(qtyTotal, 3));
                   }
 
                   break;

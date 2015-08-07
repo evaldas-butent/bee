@@ -581,7 +581,7 @@ class TradeActSelectorHandler implements SelectorEvent.Handler {
             if (timeFrom != null) {
               filter =
                   DataUtils.isId(company) ? Filter.and(Filter.equals(COL_COMPANY, company),
-                      Filter.or(Filter.isLess(ClassifierConstants.COL_DATE_UNTIL,
+                      Filter.or(Filter.isMore(ClassifierConstants.COL_DATE_UNTIL,
                           new DateTimeValue(timeFrom)),
                           Filter.isNull(ClassifierConstants.COL_DATE_UNTIL))) : null;
             } else {
