@@ -53,5 +53,22 @@
           newRowEnabled="false" style="&inpw;" />
       </row>
     </Table>
+    <br />
+    <TabbedPages style="height: 400px;">
+      <page>
+        <text>=goods</text>
+        <ChildGrid name="OrderItems" relColumn="Order" />
+      </page>
+
+      <page>
+        <text>=notes</text>
+        <FlowPanel class="flexBox-vertical">
+          <br />
+          <SimplePanel class="flexible" style="position: relative;">
+            <InputArea source="Notes" class="occupy-1" summarize="true" />
+          </SimplePanel>
+        </FlowPanel>
+      </page>
+    </TabbedPages>
   </FlowPanel>
 </f:Form>
