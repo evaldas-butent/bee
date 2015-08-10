@@ -1,0 +1,51 @@
+package com.butent.bee.shared.modules.orders;
+
+import com.butent.bee.shared.i18n.LocalizableConstants;
+import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.ui.HasLocalizedCaption;
+import com.butent.bee.shared.utils.EnumUtils;
+
+public final class OrdersConstants {
+  public enum OrdersStatus implements HasLocalizedCaption {
+    APPROVED {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.ordApproved();
+      }
+    },
+    CANCELED {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.ordCanceled();
+      }
+    },
+    PREPARED {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.ordPrepared();
+      }
+    },
+    SENT {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.ordSent();
+      }
+    };
+
+    @Override
+    public String getCaption() {
+      return getCaption(Localized.getConstants());
+    }
+
+    public boolean is(Integer status) {
+      return status != null && ordinal() == status;
+    }
+  }
+
+  public static void register() {
+    EnumUtils.register(OrdersStatus.class);
+  }
+
+  private OrdersConstants() {
+  }
+}
