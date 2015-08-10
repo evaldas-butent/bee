@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-  name="TradeSeries" source="TradeSeries"
+  name="OrderSeries" source="OrderSeries"
   caption="=seriesPlural" newRowCaption="=trdNewSeries"
-  editForm="TradeSeries" newRowForm="TradeSeries"
+  editForm="OrderSeries" newRowForm="OrderSeries"
   >
   <Columns>
     <SimpleColumn name="SeriesName" />
@@ -14,4 +14,3 @@
     <OrderBy column="SeriesName" />
   </Order>
 </View>
- 
