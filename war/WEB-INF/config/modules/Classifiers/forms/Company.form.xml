@@ -194,21 +194,21 @@
         </FlowPanel>
       </page>
 
-      <page>
+      <page module="Orders">
         <text>=discounts</text>
         <FlowPanel class="flexBox-vertical">
-          <HorizontalPanel>
+          <HorizontalPanel style="margin-bottom: 1em;">
             <Label for="DiscountPercent" style="&lbl;" />
             <InputDecimal source="DiscountPercent" style="width: 80px;" summarize="true" />
 
             <Label for="DiscountParent" style="&lbl;" />
             <DataSelector source="DiscountParent" newRowEnabled="false" summarize="true" />
 
-            <Label for="PriceKey" style="&lbl;" />
-            <ListBox source="PriceKey" summarize="true" />
+            <Label for="PriceName" style="&lbl;" />
+            <ListBox source="PriceName" summarize="true" />
           </HorizontalPanel>
 
-<!--           <ChildGrid name="Discounts" relColumn="Company" class="flexible" /> -->
+          <ChildGrid name="CompanyDiscounts" relColumn="Company" class="flexible" />
         </FlowPanel>
       </page>
 

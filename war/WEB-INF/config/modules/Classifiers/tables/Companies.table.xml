@@ -39,7 +39,7 @@
 
     <Numeric name="DiscountPercent" precision="7" scale="3" label="=discountPercent" />
     <Relation name="DiscountParent" relation="Companies" label="=discountParent" />
-    <Enum name="PriceKey" key="ItemPrice" label="=salePrice" />
+    <Enum name="PriceName" key="ItemPrice" label="=priceName" />
 
     <Text name="Notes" label="=notes" />
   </Fields>

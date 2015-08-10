@@ -110,7 +110,7 @@
       <SimpleColumn name="Name" alias="DiscountParentName" />
     </SimpleJoin>
     
-    <SimpleColumn name="PriceKey" />
+    <SimpleColumn name="PriceName" />
 
     <SimpleColumn name="Notes" />
    </Columns>
