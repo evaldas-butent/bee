@@ -1,4 +1,7 @@
 package com.butent.bee.client.modules.projects;
+import com.butent.bee.client.view.grid.GridView;
+import com.butent.bee.shared.data.view.Order;
+import com.butent.bee.shared.utils.Codec;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -106,6 +109,7 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
   private ChildGrid documents;
   private DataSelector owner;
   private ChildGrid tasks;
+  private ChildGrid dates;
 //  private DataSelector projectTemplate;
 
   private BeeRowSet timeUnits;
@@ -157,6 +161,10 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
 
     if (widget instanceof ChildGrid && BeeUtils.same(name, TaskConstants.GRID_CHILD_TASKS)) {
       tasks = (ChildGrid) widget;
+    }
+
+    if (widget instanceof ChildGrid && BeeUtils.same(name,GRID_PROJECT_DATES)) {
+      dates = (ChildGrid) widget;
     }
   }
 
@@ -241,6 +249,7 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
     setCategory(form, row);
     if (isOwner(form, row)) {
       ProjectsKeeper.createTemplateTasks(form, row, COL_PROJECT_TEMPLATE, tasks);
+      createTemplateDates(form, row, COL_PROJECT_TEMPLATE, dates);
     }
   }
 
@@ -525,6 +534,48 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
     }
 
     return null;
+  }
+
+  private static void createTemplateDates(FormView form, final IsRow row, String relTmlColumn,
+      ChildGrid childGrid) {
+    if (form == null || row == null) {
+      return;
+    }
+
+    if (!DataUtils.isId(row.getLong(form.getDataIndex(relTmlColumn)))) {
+      return;
+    }
+
+
+    if(DataUtils.isNewRow(row)) {
+      return;
+    }
+
+    if (childGrid == null) {
+      return;
+    }
+
+
+    final GridView tasksGrid = childGrid.getGridView();
+
+    Queries.getRowSet(VIEW_PROJECT_TEMPLATE_DATES,
+        Data.getDataInfo(VIEW_PROJECT_TEMPLATE_DATES).getColumnNames(false),
+        Filter.equals(relTmlColumn,
+            row.getString(form.getDataIndex(relTmlColumn))),
+        new Order(Data.getIdColumn(VIEW_PROJECT_TEMPLATE_DATES), false),
+        new Queries.RowSetCallback() {
+          @Override
+          public void onSuccess(BeeRowSet result) {
+            if (result.isEmpty()) {
+              return;
+            }
+            row.setProperty(VIEW_PROJECT_TEMPLATE_DATES, Codec.beeSerialize(result));
+
+            if (tasksGrid != null) {
+              tasksGrid.refresh(true, false);
+            }
+          }
+        });
   }
 
   private static boolean isProjectScheduled(FormView form, IsRow row) {

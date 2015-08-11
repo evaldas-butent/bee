@@ -3,7 +3,7 @@
   <!ENTITY inline "display: inline-block;">
   <!ENTITY lbl "margin-right: 1em; text-align: right; padding-left: 30px">
   <!ENTITY lbl2 "margin-left: 1em; margin-right: 1em; text-align: left">
-  <!ENTITY inp1 "&inline; width: 350px;"> 
+  <!ENTITY inp1 "&inline; width: 350px;">
   <!ENTITY inp2 "&inline; width: 200px;">
   <!ENTITY inp3 "&inline; width: 100px;">
   <!ENTITY inp4 "&inline; width: 575px; height:100px; max-height: 200px; max-width: 795px;">
@@ -26,13 +26,13 @@
         <Label for="Name" text="=name" style="&lbl;" class="bee-required" />
         <InputText source="Name" style="width:100%" />
       </row>
-      
+
       <row>
         <Label for="StartDate" text="=crmStartDate" style="&lbl;" class="bee-required" />
         <FlowPanel class="flexBox-horizontal" >
         <InputDate source="StartDate" required="true" style="&inp3;" />
         <Label for="EndDate" text="=prjTerm" style="&lbl2;" class="bee-required" />
-        <InputDate source="EndDate" required="true" style="&inp3;" /> 
+        <InputDate source="EndDate" required="true" style="&inp3;" />
         </FlowPanel>
       </row>
       <row>
@@ -67,7 +67,7 @@
             <Label for="Priority" text="=priority" style="width: 120px; &lbl;" />
             <Radio source="Priority" style="width: 200px" />
           </row>
-          
+
           <row>
             <Label for="ContactPerson" text="=personContact"
               style="&lbl;" />
@@ -92,22 +92,22 @@
           <row>
             <Label for="ExpectedDuration" text="=expectedDuration" style="&lbl;" />
             <InputDecimal source="ExpectedDuration" style="&inp3;" />
-            <DataSelector name="TimeUnit" source="TimeUnit" renderColumns="UnitName" style="width: 5em;" /> 
+            <DataSelector name="TimeUnit" source="TimeUnit" renderColumns="UnitName" style="width: 5em;" />
             <Label for="ExpectedTasksDuration" text="=prjExpectedTaskDuration" style="width: 250px; &lbl;" />
-            <InputText name="ExpectedTasksDuration"  readOnly="true" style="&inp3;" />            
+            <InputText name="ExpectedTasksDuration"  readOnly="true" style="&inp3;" />
           </row>
-            
+
           <row>
             <Label for="Price" text="=prjPrice" style="&lbl;" />
             <InputDecimal source="Price" scale="2" style="&inp3;" />
             <DataSelector source="Currency" for="Price" newRowEnabled="false" editEnabled="false"
               style="width: 5em;" readOnly="true" />
             <Label for="ActualTasksDuration" text="=prjActualTaskDuration" style="&lbl;" />
-            <InputText name="ActualTasksDuration" readOnly="true" style="&inp3;" />       
+            <InputText name="ActualTasksDuration" readOnly="true" style="&inp3;" />
           </row>
 
           <row>
-            
+
             <Label for="ContractPrice" text="=salePrice" style="&lbl;" />
             <InputDecimal source="ContractPrice" scale="2" style="&inp3;" />
             <DataSelector source="Currency" for="ContractPrice" newRowEnabled="false" editEnabled="false"
@@ -115,7 +115,7 @@
             <Label for="Progress" text="=progress" style="&lbl;" />
             <InputDecimal source="Progress" style="&inp3;" minValue="0" maxValue="100" />
           </row>
-          
+
         </Table>
 
         <Table>
@@ -164,8 +164,8 @@
             <row>
               <Label text="=contract" style="margin-right: 1em; text-align: left;" />
               <DataSelector name="Contract" source="Contract"
-                renderColumns="ContractName ContractNumber" 
-                choiceColumns="Name Number DocumentDate Expires" viewName="Documents" 
+                renderColumns="ContractName ContractNumber"
+                choiceColumns="Name Number DocumentDate Expires" viewName="Documents"
                 caching="none" module="Documents"
                 newRowEnabled="false" style="&inp2;" />
               <Label text="=salePrice" style="&lbl;" />
@@ -192,7 +192,7 @@
       </page>
       <page>
         <text>=prjDates</text>
-        <ChildGrid name="ProjectDates" relColumn="Project" />
+        <ChildGrid name="ProjectDatesGrid" relColumn="Project" />
       </page>
       <page>
         <text>=prjIncomePlan</text>
@@ -208,4 +208,4 @@
       </page>
    </TabbedPages> -->
    </FlowPanel>
-</f:Form> 
+</f:Form>

@@ -2,6 +2,8 @@
 <View xmlns="http://www.butent.com/view"
 
   name="ProjectDates" source="ProjectDates" caption="=prjDates"
+      newRowForm="ProjectDate" editForm="ProjectDate"
+      newRowCaption="=prjDates"
   >
   <Columns>
     <SimpleColumn name="Project" />
@@ -9,9 +11,8 @@
     <SimpleColumn name="EndDate" />
     <SimpleColumn name="Color" />
     <SimpleColumn name="Note" />
-  </Columns>  
+  </Columns>
   <Order>
 	  <OrderBy column="StartDate"/>
   </Order>
 </View>
- 
