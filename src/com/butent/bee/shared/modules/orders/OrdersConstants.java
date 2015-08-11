@@ -46,6 +46,12 @@ public final class OrdersConstants {
     EnumUtils.register(OrdersStatus.class);
   }
 
+  public static final String TBL_ORDER_ITEMS = "OrderItems";
+
+  public static final String VIEW_ORDERS = "Orders";
+
+  public static final String COL_ORDER = "Order";
+
   private OrdersConstants() {
   }
 }

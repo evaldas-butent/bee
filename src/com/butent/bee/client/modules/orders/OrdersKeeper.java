@@ -1,7 +1,10 @@
 package com.butent.bee.client.modules.orders;
 
+import static com.butent.bee.shared.modules.orders.OrdersConstants.*;
+
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ParameterList;
+import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.shared.rights.Module;
 
 /**
@@ -23,7 +26,7 @@ public final class OrdersKeeper {
    * Register orders client-side module handler.
    */
   public static void register() {
-
+    FormFactory.registerFormInterceptor(COL_ORDER, new OrderForm());
   }
 
   private OrdersKeeper() {

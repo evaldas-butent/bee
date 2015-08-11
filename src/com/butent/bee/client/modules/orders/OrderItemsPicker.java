@@ -1,12 +1,15 @@
-package com.butent.bee.client.modules.trade.acts;
+package com.butent.bee.client.modules.orders;
 
+import static com.butent.bee.shared.modules.orders.OrdersConstants.*;
 import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.modules.classifiers.ItemsPicker;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -15,25 +18,15 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
-import com.butent.bee.shared.modules.trade.acts.TradeActKind;
 
-class TradeActItemPicker extends ItemsPicker {
+class OrderItemsPicker extends ItemsPicker {
 
   @Override
   public void getItems(Filter filter, final RowSetCallback callback) {
-    ParameterList params = TradeActKeeper.createArgs(SVC_GET_ITEMS_FOR_SELECTION);
+    ParameterList params = OrdersKeeper.createSvcArgs(SVC_GET_ITEMS_FOR_SELECTION);
 
     if (DataUtils.hasId(lastRow)) {
-      params.addDataItem(COL_TRADE_ACT, lastRow.getId());
-    }
-
-    TradeActKind kind = TradeActKeeper.getKind(VIEW_TRADE_ACTS, lastRow);
-    if (kind != null) {
-      params.addDataItem(COL_TA_KIND, kind.ordinal());
-    }
-
-    if (DataUtils.isId(warehouseFrom)) {
-      params.addDataItem(ClassifierConstants.COL_WAREHOUSE, warehouseFrom);
+      params.addDataItem(COL_ORDER, lastRow.getId());
     }
 
     if (filter != null) {
@@ -41,11 +34,9 @@ class TradeActItemPicker extends ItemsPicker {
     }
 
     BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
-
       @Override
       public void onResponse(ResponseObject response) {
-        if
-        (response.hasResponse(BeeRowSet.class)) {
+        if (response.hasResponse(BeeRowSet.class)) {
           callback.onSuccess(BeeRowSet.restore(response.getResponseAsString()));
         } else {
           BeeKeeper.getScreen().notifyWarning(Localized.getConstants().nothingFound());
@@ -56,6 +47,11 @@ class TradeActItemPicker extends ItemsPicker {
 
   @Override
   public Long getWarehouseFrom(IsRow row) {
-    return TradeActKeeper.getWarehouseFrom(VIEW_TRADE_ACTS, row);
+    int warehouseIdx = Data.getColumnIndex(VIEW_ORDERS, ClassifierConstants.COL_WAREHOUSE);
+    if (row == null || BeeConst.isUndef(warehouseIdx)) {
+      return null;
+    }
+
+    return row.getLong(warehouseIdx);
   }
 }
