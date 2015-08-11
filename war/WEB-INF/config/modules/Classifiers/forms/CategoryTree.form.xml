@@ -40,7 +40,7 @@
           </row>
         </Table>
 
-        <ChildGrid name="CategoryDiscounts" relColumn="Category" style="height: 120px;" 
+        <ChildGrid name="CategoryDiscounts" relColumn="Category" style="height: 150px;" 
           module="Orders" />
       </FlowPanel>
     </form>

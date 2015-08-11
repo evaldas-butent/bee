@@ -370,6 +370,10 @@
       <xs:enumeration value="Maintenance" />
       <xs:enumeration value="Messages" />
       <xs:enumeration value="Objects" />
+      <xs:enumeration value="Orders" />
+      <xs:enumeration value="OrderItems" />
+      <xs:enumeration value="OrderSeries" />
+      <xs:enumeration value="OrderTypes" />
       <xs:enumeration value="OrderCargo" />
       <xs:enumeration value="Parameters" />
       <xs:enumeration value="PaymentTypes" />

@@ -6,7 +6,7 @@
   >
   <Fields>
     <Relation name="Company" relation="Companies" cascade="DELETE" label="=company" />
-    <Relation name="Category" relation="CategoryTree" cascade="DELETE" label="=category" />
+    <Relation name="Category" relation="CategoryTree" cascade="DELETE" label="=itemCategory" />
     <Relation name="Item" relation="Items" cascade="DELETE" label="=item" />
     
     <Relation name="Operation" relation="TradeOperations" label="=trdOperation" />
