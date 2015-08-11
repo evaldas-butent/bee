@@ -75,6 +75,7 @@ import com.butent.bee.client.validation.CellValidation;
 import com.butent.bee.client.validation.EditorValidation;
 import com.butent.bee.client.validation.ValidationHelper;
 import com.butent.bee.client.validation.ValidationOrigin;
+import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.add.AddEndEvent;
 import com.butent.bee.client.view.add.AddStartEvent;
@@ -189,29 +190,6 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
   private static final BeeLogger logger = LogUtils.getLogger(GridImpl.class);
 
   private static final String STYLE_NAME = BeeConst.CSS_CLASS_PREFIX + "GridView";
-
-  private static void amendGeneratedSizeAndShow(final ModalForm popup, final FormView form,
-      final int x, final int y) {
-
-    popup.attachAmendDetach(new ScheduledCommand() {
-      @Override
-      public void execute() {
-        int width = DomUtils.getOuterWidth(form.getRootWidget().asWidget().getElement());
-        int height = DomUtils.getOuterHeight(form.getRootWidget().asWidget().getElement())
-            + form.getViewPresenter().getHeader().getHeight() + 1;
-
-        if (width > BeeUtils.toInt(form.getWidthValue())) {
-          StyleUtils.setWidth(popup, width + 10);
-        }
-        StyleUtils.setHeight(popup, height);
-      }
-    }, new Runnable() {
-      @Override
-      public void run() {
-        popup.showAt(x, y);
-      }
-    });
-  }
 
   private static boolean isColumnReadOnly(String viewName, String source,
       ColumnDescription columnDescription) {
@@ -1998,13 +1976,6 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
 
     form.setCaption(Localized.getConstants().actionNew());
 
-    double initialWidth = RowFactory.GENERATED_FORM_WIDTH;
-    double initialHeight = RowFactory.GENERATED_HEADER_HEIGHT + RowFactory.GENERATED_HEIGHT_MARGIN
-        + columnNames.size() * RowFactory.GENERATED_ROW_HEIGHT;
-
-    form.setWidthValue(initialWidth);
-    form.setHeightValue(initialHeight);
-
     embraceNewRowForm(form);
   }
 
@@ -2888,15 +2859,31 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
 
     if (show) {
       if (modal) {
+        if (isNewRowFormGenerated() && !newRowFormState.contains(State.INITIALIZED)) {
+          Widget w = form.getRootWidget().asWidget();
+          while (w != null && !DomUtils.sameId(w, popup)) {
+            StyleUtils.makeRelative(w);
+            StyleUtils.setTop(w, 0);
+
+            w = w.getParent();
+          }
+
+          if (form.getViewPresenter() != null) {
+            HeaderView hv = form.getViewPresenter().getHeader();
+            if (hv != null) {
+              StyleUtils.makeRelative(hv.asWidget());
+            }
+          }
+
+          StyleUtils.clearWidth(popup);
+          StyleUtils.clearHeight(popup);
+        }
+
         if (isChild() && isNewRowFormGenerated()) {
           int x = getAbsoluteLeft();
           int y = getAbsoluteTop();
 
-          if (!newRowFormState.contains(State.INITIALIZED)) {
-            amendGeneratedSizeAndShow(popup, form, x, y);
-          } else {
-            popup.showAt(x, y);
-          }
+          popup.showAt(x, y);
 
         } else {
           popup.center();
