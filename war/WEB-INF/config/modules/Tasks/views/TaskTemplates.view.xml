@@ -23,6 +23,9 @@
     <SimpleColumn name="Company" />
     <SimpleJoin name="Company" joinType="LEFT">
       <SimpleColumn alias="CompanyName" name="Name" />
+       <SimpleJoin name="CompanyType" joinType="LEFT">
+         <SimpleColumn name="Name" alias="CompanyTypeName" />
+      </SimpleJoin>
     </SimpleJoin>
 
     <SimpleColumn name="Contact" />
@@ -34,6 +37,9 @@
       </SimpleJoin>
       <SimpleJoin name="Company" joinType="LEFT">
         <SimpleColumn alias="ContactCompanyName" name="Name" />
+        <SimpleJoin name="CompanyType" joinType="LEFT">
+          <SimpleColumn name="Name" alias="ContactCompanyTypeName" />
+        </SimpleJoin>
       </SimpleJoin>
     </SimpleJoin>
 
@@ -43,14 +49,13 @@
     </SimpleJoin>
 
     <SimpleColumn name="ProjectTemplate" />
-    <SimpleColumn name="ProjectTMLStage" />
-    <SimpleJoin name="ProjectTMLStage" joinType="LEFT">
+    <SimpleColumn name="StageTemplate" />
+    <SimpleJoin name="StageTemplate" joinType="LEFT">
       <SimpleColumn name="Name" alias="TMLStageName" />
     </SimpleJoin>
   </Columns>
-  
+
   <Order>
     <OrderBy column="Name" />
   </Order>
 </View>
- 

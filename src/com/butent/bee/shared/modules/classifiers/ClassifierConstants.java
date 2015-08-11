@@ -227,6 +227,7 @@ public final class ClassifierConstants {
   public static final String ALS_CONTACT_LAST_NAME = "ContactLastName";
   public static final String ALS_CONTACT_PERSON = "ContactPerson";
   public static final String ALS_CONTACT_COMPANY_NAME = "ContactCompanyName";
+  public static final String ALS_CONTACT_COMPANY_TYPE_NAME = "ContactCompanyTypeName";
 
   public static final String ALS_CITY_NAME = "CityName";
   public static final String ALS_COUNTRY_NAME = "CountryName";

@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
         xmlns:xi="http://www.w3.org/2001/XInclude"
-  
+
   name="ChildTaskTemplates" viewName="TaskTemplates" caption="=crmTaskTemplates"
   flexGrow="1" newRowPopup="true"
   >
   <xi:include href="columns/TaskTemplate.columns.xml" />
   <g:columns>
-    <RelColumn name="ProjectTMLStage" readOnly="true" />
+    <RelColumn name="StageTemplate" readOnly="true" />
   </g:columns>
 </g:Grid>

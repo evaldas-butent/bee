@@ -76,9 +76,6 @@
 
     <SimpleJoin name="Project" joinType="LEFT">
       <SimpleColumn name="Name" alias="ProjectName" />
-    </SimpleJoin>
-
-    <SimpleJoin name="Project" joinType="LEFT">
       <SimpleColumn alias="ProjectOwner" name="Owner"/>
       <SimpleColumn alias="ProjectStatus" name="Status"/>
     </SimpleJoin>

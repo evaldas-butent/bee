@@ -61,7 +61,6 @@ public class ProjectTemplatesGrid extends AbstractGridInterceptor {
       presenter.getHeader().addCommandItem(createProject);
     }
 
-
     super.afterCreatePresenter(presenter);
   }
 
@@ -85,7 +84,7 @@ public class ProjectTemplatesGrid extends AbstractGridInterceptor {
     int idxTMLType = gridView.getDataIndex(ProjectConstants.COL_PROJECT_TYPE);
     int idxTMLCompany = gridView.getDataIndex(ClassifierConstants.COL_COMPANY);
     int idxTMLCompanyName = gridView.getDataIndex(ClassifierConstants.ALS_COMPANY_NAME);
-//    int idxTMLCompanyType = gridView.getDataIndex(ClassifierConstants.ALS_COMPANY_TYPE);
+    //    int idxTMLCompanyType = gridView.getDataIndex(ClassifierConstants.ALS_COMPANY_TYPE);
     int idxTMLCompanyTypeName = gridView.getDataIndex(ProjectConstants.ALS_COMPANY_TYPE_NAME);
     int idxTMLCategory = gridView.getDataIndex(ProjectConstants.COL_PROJECT_CATEGORY);
     int idxTMLCategoryName = gridView.getDataIndex(ProjectConstants.ALS_CATEGORY_NAME);
@@ -106,7 +105,7 @@ public class ProjectTemplatesGrid extends AbstractGridInterceptor {
     int idxPrjType = prjDataInfo.getColumnIndex(ProjectConstants.COL_PROJECT_TYPE);
     int idxPrjCompany = prjDataInfo.getColumnIndex(ClassifierConstants.COL_COMPANY);
     int idxPrjCompanyName = prjDataInfo.getColumnIndex(ClassifierConstants.ALS_COMPANY_NAME);
-//    int idxPrjCompanyType = prjDataInfo.getColumnIndex(ClassifierConstants.ALS_COMPANY_TYPE);
+    //    int idxPrjCompanyType = prjDataInfo.getColumnIndex(ClassifierConstants.ALS_COMPANY_TYPE);
     int idxPrjCompanyTypeName = prjDataInfo.getColumnIndex(ProjectConstants.ALS_COMPANY_TYPE_NAME);
     int idxPrjCategory = prjDataInfo.getColumnIndex(ProjectConstants.COL_PROJECT_CATEGORY);
     int idxPrjCategoryName = prjDataInfo.getColumnIndex(ProjectConstants.ALS_CATEGORY_NAME);
@@ -124,7 +123,7 @@ public class ProjectTemplatesGrid extends AbstractGridInterceptor {
     prjRow.setValue(idxPrjType, selectedRow.getValue(idxTMLType));
     prjRow.setValue(idxPrjCompany, selectedRow.getValue(idxTMLCompany));
     prjRow.setValue(idxPrjCompanyName, selectedRow.getValue(idxTMLCompanyName));
-//    prjRow.setValue(idxPrjCompanyType, selectedRow.getValue(idxTMLCompanyType));
+    //    prjRow.setValue(idxPrjCompanyType, selectedRow.getValue(idxTMLCompanyType));
     prjRow.setValue(idxPrjCompanyTypeName, selectedRow.getValue(idxTMLCompanyTypeName));
     prjRow.setValue(idxPrjCategory, selectedRow.getValue(idxTMLCategory));
     prjRow.setValue(idxPrjCategoryName, selectedRow.getValue(idxTMLCategoryName));
@@ -142,8 +141,9 @@ public class ProjectTemplatesGrid extends AbstractGridInterceptor {
     resetSelectedDefaultStage();
 
     RowFactory.createRow(ProjectConstants.FORM_NEW_PROJECT_FROM_TEMPLATE,
-        prjDataInfo.getNewRowCaption(), prjDataInfo, prjRow, null, getNewProjectInterceptor(gridView, selectedRow),
-    new RowCallback() {
+        prjDataInfo.getNewRowCaption(), prjDataInfo, prjRow, null,
+        getNewProjectInterceptor(gridView, selectedRow),
+        new RowCallback() {
           @Override
           public void onSuccess(BeeRow result) {
             createInitialStage(result, selectedRow);
@@ -153,24 +153,26 @@ public class ProjectTemplatesGrid extends AbstractGridInterceptor {
 
   private void createInitialStage(final BeeRow prjRow, final IsRow tmlRow) {
 
-    if (!DataUtils.isId(getSelectedDefaultStage())) {
-      createProjectUsers(prjRow, tmlRow);
-      return;
-    }
+//    if (!DataUtils.isId(getSelectedDefaultStage())) {
+//      createProjectUsers(prjRow, tmlRow);
+//      return;
+//    }
+
+    final List<String> copyCols = Lists.newArrayList(ProjectConstants.COL_PROJECT,
+        ProjectConstants.COL_STAGE_NAME, ProjectConstants.COL_EXPECTED_DURATION,
+        ProjectConstants.COL_EXPENSES, ProjectConstants.COL_PROJECT_CURENCY,
+        ProjectConstants.COL_STAGE_TEMPLATE);
 
     final List<BeeColumn> stageCols =
-        Lists.newArrayList(Data.getColumns(ProjectConstants.VIEW_PROJECT_STAGES,
-            Lists.newArrayList(ProjectConstants.COL_PROJECT,
-                ProjectConstants.COL_STAGE_NAME, ProjectConstants.COL_EXPECTED_DURATION,
-                ProjectConstants.COL_EXPENSES, ProjectConstants.COL_PROJECT_CURENCY,
-                ProjectConstants.COL_STAGE_TEMPLATE)));
+        Lists.newArrayList(Data.getColumns(ProjectConstants.VIEW_PROJECT_STAGES, copyCols
+        ));
 
-    final List<String> stageValues = Lists.newArrayList(BeeUtils.toString(prjRow.getId()));
+    final BeeRowSet stages = new BeeRowSet(ProjectConstants.VIEW_PROJECT_STAGES, stageCols);
 
     Queries.getRowSet(ProjectConstants.VIEW_PROJECT_TEMPLATE_STAGES, Lists.newArrayList(
             ProjectConstants.COL_STAGE_NAME, ProjectConstants.COL_EXPECTED_DURATION,
             ProjectConstants.COL_EXPENSES, ProjectConstants.COL_PROJECT_CURENCY),
-        Filter.compareId(getSelectedDefaultStage()),
+        Filter.equals(ProjectConstants.COL_PROJECT_TEMPLATE, BeeUtils.toString(tmlRow.getId())),
         new Queries.RowSetCallback() {
 
           @Override
@@ -180,20 +182,30 @@ public class ProjectTemplatesGrid extends AbstractGridInterceptor {
               return;
             }
 
-            stageValues.add(stageTml.getString(0, ProjectConstants.COL_STAGE_NAME));
-            stageValues.add(stageTml.getString(0, ProjectConstants.COL_EXPECTED_DURATION));
-            stageValues.add(stageTml.getString(0, ProjectConstants.COL_EXPENSES));
-            stageValues.add(stageTml.getString(0, ProjectConstants.COL_PROJECT_CURENCY));
-            stageValues.add(BeeUtils.toString(getSelectedDefaultStage()));
+            for (int i = 0; i < stageTml.getNumberOfRows(); i++) {
+              BeeRow row = stages.addEmptyRow();
+              for (String col : copyCols) {
+                switch (col) {
+                  case ProjectConstants.COL_STAGE_TEMPLATE:
+                    row.setValue(stages.getColumnIndex(col), stageTml.getRow(i).getId());
+                    break;
+                  case ProjectConstants.COL_PROJECT:
+                    row.setValue(stages.getColumnIndex(col), prjRow.getId());
+                    break;
+                  default:
+                    row.setValue(stages.getColumnIndex(col), stageTml.getString(i, col));
+                    break;
+                }
+              }
+            }
 
-            Queries.insert(ProjectConstants.VIEW_PROJECT_STAGES, stageCols, stageValues, null,
-                new RowCallback() {
-                  @Override
-                  public void onSuccess(BeeRow result) {
-                    resetSelectedDefaultStage();
-                    createProjectUsers(prjRow, tmlRow);
-                  }
-                });
+            Queries.insertRows(stages, new RpcCallback<RowInfoList>() {
+              @Override
+              public void onSuccess(RowInfoList result) {
+                resetSelectedDefaultStage();
+                createProjectUsers(prjRow, tmlRow);
+              }
+            });
 
           }
         }
@@ -209,9 +221,8 @@ public class ProjectTemplatesGrid extends AbstractGridInterceptor {
 
     final BeeRowSet persons = new BeeRowSet(ProjectConstants.VIEW_PROJECT_CONTACTS, personCols);
 
-
     Queries.getRowSet(ProjectConstants.VIEW_PROJECT_TEMPLATE_CONTACTS, Lists.newArrayList(
-        ClassifierConstants.COL_COMPANY_PERSON),
+            ClassifierConstants.COL_COMPANY_PERSON),
         Filter.equals(ProjectConstants.COL_PROJECT_TEMPLATE, BeeUtils.toString(tmlRow.getId())),
         new Queries.RowSetCallback() {
 
@@ -222,7 +233,7 @@ public class ProjectTemplatesGrid extends AbstractGridInterceptor {
               return;
             }
 
-            for (int i = 0 ; i < tmlPersons.getNumberOfRows(); i++) {
+            for (int i = 0; i < tmlPersons.getNumberOfRows(); i++) {
               BeeRow row = persons.addEmptyRow();
               row.setValue(persons.getColumnIndex(ProjectConstants.COL_PROJECT), prjRow.getId());
               row.setValue(persons.getColumnIndex(ClassifierConstants.COL_COMPANY_PERSON),
@@ -249,7 +260,6 @@ public class ProjectTemplatesGrid extends AbstractGridInterceptor {
 
     final BeeRowSet users = new BeeRowSet(ProjectConstants.VIEW_PROJECT_USERS, usersCols);
 
-
     Queries.getRowSet(ProjectConstants.VIEW_PROJECT_TEMPLATE_USERS, Lists.newArrayList(
             AdministrationConstants.COL_USER, ProjectConstants.COL_NOTES,
             ProjectConstants.COL_RATE, ProjectConstants.COL_PROJECT_CURENCY),
@@ -263,7 +273,7 @@ public class ProjectTemplatesGrid extends AbstractGridInterceptor {
               return;
             }
 
-            for (int i = 0 ; i < tmlUsers.getNumberOfRows(); i++) {
+            for (int i = 0; i < tmlUsers.getNumberOfRows(); i++) {
               BeeRow row = users.addEmptyRow();
               row.setValue(users.getColumnIndex(ProjectConstants.COL_PROJECT), prjRow.getId());
               row.setValue(users.getColumnIndex(AdministrationConstants.COL_USER),
@@ -309,7 +319,7 @@ public class ProjectTemplatesGrid extends AbstractGridInterceptor {
 
       @Override
       public void afterRefresh(FormView form, IsRow row) {
-        if(stageSelector != null) {
+        if (stageSelector != null) {
           stageSelector.getOracle().setAdditionalFilter(
               Filter.isEqual(ProjectConstants.COL_PROJECT_TEMPLATE,
                   Value.getValue(selectedRow.getId())), true);
@@ -322,11 +332,10 @@ public class ProjectTemplatesGrid extends AbstractGridInterceptor {
       @Override
       public boolean beforeAction(Action action, Presenter presenter) {
         if (stageSelector != null && action.equals(Action.SAVE)) {
-         setSelectedDefaultStage(BeeUtils.toLong(stageSelector.getValue()));
+          setSelectedDefaultStage(BeeUtils.toLong(stageSelector.getValue()));
         }
         return super.beforeAction(action, presenter);
       }
-
 
       @Override
       public FormInterceptor getInstance() {

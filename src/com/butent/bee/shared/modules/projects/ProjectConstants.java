@@ -166,6 +166,7 @@ public final class ProjectConstants {
   public static final String NAME_ACTUAL_TASKS_DURATION = "CalcActualTasksDuration";
 
   public static final String PROP_USERS = "Users";
+  public static final String PROP_TEMPLATE = "Template";
   public static final String PROP_REASON = "Reason";
   public static final String PROP_DOCUMENT = "Document";
   public static final String PROP_DOCUMENT_LINK = "DocumentLink";

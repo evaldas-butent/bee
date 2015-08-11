@@ -1,24 +1,9 @@
 package com.butent.bee.client.modules.projects;
-
-import com.butent.bee.client.grid.GridFactory;
-import com.butent.bee.client.grid.GridPanel;
-import com.butent.bee.client.layout.TabbedPages;
-import com.butent.bee.client.screen.Domain;
-import com.butent.bee.client.style.StyleUtils;
-import com.butent.bee.client.view.ViewHelper;
-import com.butent.bee.client.view.edit.EditableWidget;
-import com.butent.bee.shared.Pair;
-import com.butent.bee.shared.css.values.Display;
-import com.butent.bee.shared.ui.GridDescription;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
-import com.google.gwt.event.logical.shared.SelectionEvent;
-import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.shared.HasHandlers;
-import com.google.gwt.user.client.ui.FlowPanel;
-import com.google.gwt.user.client.ui.Widget;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 
 import static com.butent.bee.shared.modules.projects.ProjectConstants.*;
@@ -120,20 +105,10 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
   private Disclosure relatedInfo;
   private ChildGrid documents;
   private DataSelector owner;
+  private ChildGrid tasks;
 //  private DataSelector projectTemplate;
 
   private BeeRowSet timeUnits;
-
-  @Override public void afterCreateEditableWidget(EditableWidget editableWidget,
-      IdentifiableWidget widget) {
-
-//    if (widget instanceof DataSelector && BeeUtils.same(editableWidget.getColumnId(),
-//        COL_PROJECT_TEMPLATE)){
-//      projectTemplate = (DataSelector) widget;
-//    }
-
-    super.afterCreateEditableWidget(editableWidget, widget);
-  }
 
   @Override
   public void afterCreateWidget(String name, IdentifiableWidget widget,
@@ -178,6 +153,10 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
 
     if (widget instanceof DataSelector && BeeUtils.same(name, WIDGET_OWNER)) {
       owner = (DataSelector) widget;
+    }
+
+    if (widget instanceof ChildGrid && BeeUtils.same(name, TaskConstants.GRID_CHILD_TASKS)) {
+      tasks = (ChildGrid) widget;
     }
   }
 
@@ -233,9 +212,6 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
         status.setEnabled(true);
       }
 
-//      if (projectTemplate != null) {
-//        projectTemplate.addSelectorHandler(getProjectTemplateHandler());
-//      }
     }
 
     if (isProjectUser(form, row) || BeeKeeper.getUser().isMenuVisible("Projects.AllProjects")
@@ -263,7 +239,9 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
     drawComments(form, row);
     drawChart(row);
     setCategory(form, row);
-    createTemplateController(form, row);
+    if (isOwner(form, row)) {
+      ProjectsKeeper.createTemplateTasks(form, row, COL_PROJECT_TEMPLATE, tasks);
+    }
   }
 
   @Override
@@ -378,7 +356,6 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
     }
 
     return super.onStartEdit(form, row, focusCommand);
-
   }
 
   @Override
@@ -682,20 +659,6 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
         });
   }
 
-  private void createTemplateController(FormView form, IsRow row) {
-    if (!DataUtils.isId(row.getLong(form.getDataIndex(COL_PROJECT_TEMPLATE)))) {
-      return;
-    }
-
-    if(!isOwner(form, row)) {
-      return;
-    }
-
-    if(DataUtils.isNewRow(row)) {
-      return;
-    }
-  }
-
   private void drawChart(IsRow row) {
     if (row == null) {
       return;
@@ -797,16 +760,6 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
 
     };
   }
-
-//  private SelectorEvent.Handler getProjectTemplateHandler() {
-//    return new SelectorEvent.Handler() {
-//      @Override public void onDataSelector(SelectorEvent event) {
-//        if (event.getRelatedRow() != null) {
-//          doCreateProjectFromTemplate(event);
-//        }
-//      }
-//    };
-//  }
 
   private BeeRowSet getTimeUnits() {
     return timeUnits;
