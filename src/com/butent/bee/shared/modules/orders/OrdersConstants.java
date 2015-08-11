@@ -51,6 +51,7 @@ public final class OrdersConstants {
   public static final String VIEW_ORDERS = "Orders";
 
   public static final String COL_ORDER = "Order";
+  public static final String COL_ORDERS_STATUS = "Status";
 
   private OrdersConstants() {
   }
