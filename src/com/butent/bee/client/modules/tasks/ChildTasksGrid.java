@@ -171,11 +171,10 @@ class ChildTasksGrid extends TasksGrid {
                     fillProjectStageData(viewTasks, row,
                         Data.getDataInfo(parentForm.getViewName()),
                         parentForm.getActiveRow());
+                    fillProjectData(viewTasks, row, Data.getDataInfo(parentForm.getViewName()),
+                        parentForm.getActiveRow());
                     break;
                   case ProjectConstants.VIEW_PROJECTS:
-                    fillProjectStageData(viewTasks, row,
-                        Data.getDataInfo(parentForm.getViewName()),
-                        parentForm.getActiveRow());
                     fillProjectData(viewTasks, row, Data.getDataInfo(parentForm.getViewName()),
                         parentForm.getActiveRow());
                     break;
