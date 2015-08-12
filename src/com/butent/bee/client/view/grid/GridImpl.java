@@ -2684,7 +2684,8 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     }
 
     if (columns.isEmpty()) {
-      callback.onFailure(getViewName(), "New Row", "all columns cannot be empty");
+      callback.onFailure(getViewName(), Localized.getConstants().newRow(),
+          Localized.getConstants().allValuesCannotBeEmpty());
       return;
     }
 
