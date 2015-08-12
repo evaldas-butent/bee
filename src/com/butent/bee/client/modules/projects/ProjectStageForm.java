@@ -94,7 +94,9 @@ class ProjectStageForm extends AbstractFormInterceptor implements DataChangeEven
       showComputedTimes(form, row, false);
     }
 
-    ProjectsKeeper.createTemplateTasks(form, row, COL_STAGE_TEMPLATE, wTasksGrid);
+    if (form.isEnabled()) {
+      ProjectsKeeper.createTemplateTasks(form, row, COL_STAGE_TEMPLATE, wTasksGrid);
+    }
 
   }
 

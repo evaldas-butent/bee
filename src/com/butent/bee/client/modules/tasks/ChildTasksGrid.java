@@ -13,6 +13,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.*;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.view.DataInfo;
+import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.projects.ProjectConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
@@ -21,6 +22,7 @@ import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.google.common.collect.Lists;
 
+import java.util.Collection;
 import java.util.List;
 
 class ChildTasksGrid extends TasksGrid {
@@ -176,7 +178,6 @@ class ChildTasksGrid extends TasksGrid {
             RowFactory.createRow(viewTasks, row, new RowCallback() {
               @Override
               public void onSuccess(BeeRow result) {
-                //          RowUpdateEvent.fire(BeeKeeper.getBus(), TaskConstants.VIEW_TASKS, result);
                 getGridPresenter().handleAction(Action.REFRESH);
               }
             });
@@ -217,6 +218,17 @@ class ChildTasksGrid extends TasksGrid {
     if (!BeeUtils.isNegative(idxTaskCompanyName) && !BeeUtils.isNegative(idxProjectCompanyName)) {
       taskRow.setValue(idxTaskCompanyName, parentRowData.getValue(idxProjectCompanyName));
     }
+  }
+
+  @Override
+  public DeleteMode getDeleteMode(GridPresenter presenter,
+      IsRow activeRow, Collection<RowInfo> selectedRows, DeleteMode defMode) {
+
+    if(!BeeUtils.isEmpty(activeRow.getProperty(ProjectConstants.PROP_TEMPLATE))) {
+      return  DeleteMode.CANCEL;
+    }
+
+    return super.getDeleteMode(presenter, activeRow, selectedRows, defMode);
   }
 
   private static void fillProjectStageData(DataInfo taskData, IsRow taskRow,

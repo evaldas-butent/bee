@@ -5,6 +5,7 @@ import com.butent.bee.client.data.IdCallback;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.event.logical.RenderingEvent;
+import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.edit.EditStartEvent;
@@ -18,11 +19,13 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RelationUtils;
 import com.butent.bee.shared.data.view.DataInfo;
+import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.modules.projects.ProjectConstants;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.google.common.collect.Lists;
 
+import java.util.Collection;
 import java.util.List;
 
 class ProjectDatesGrid extends AbstractGridInterceptor{
@@ -122,5 +125,16 @@ class ProjectDatesGrid extends AbstractGridInterceptor{
   @Override
   public GridInterceptor getInstance() {
     return new ProjectDatesGrid();
+  }
+
+  @Override
+  public DeleteMode getDeleteMode(GridPresenter presenter,
+      IsRow activeRow, Collection<RowInfo> selectedRows, DeleteMode defMode) {
+
+    if (BeeUtils.isEmpty(activeRow.getProperty(ProjectConstants.PROP_TEMPLATE))) {
+      return DeleteMode.SINGLE;
+    } else {
+      return  DeleteMode.CANCEL;
+    }
   }
 }
