@@ -46,12 +46,17 @@ public final class OrdersConstants {
     EnumUtils.register(OrdersStatus.class);
   }
 
+  public static final String SVC_GET_TEMPLATE_ITEMS = "GetTemplateItems";
+
   public static final String TBL_ORDER_ITEMS = "OrderItems";
 
   public static final String VIEW_ORDERS = "Orders";
+  public static final String VIEW_ORDERS_TEMPLATES = "OrdersTemplates";
+  public static final String VIEW_ORDER_TMPL_ITEMS = "OrderTmplItems";
 
   public static final String COL_ORDER = "Order";
   public static final String COL_ORDERS_STATUS = "Status";
+  public static final String COL_TEMPLATE = "Template";
 
   private OrdersConstants() {
   }

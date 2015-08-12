@@ -25,7 +25,9 @@ import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -61,6 +63,10 @@ public class OrdersModuleBean implements BeeModule {
     switch (svc) {
       case SVC_GET_ITEMS_FOR_SELECTION:
         response = getItemsForSelection(reqInfo);
+        break;
+
+      case SVC_GET_TEMPLATE_ITEMS:
+        response = getTemplateItems(reqInfo);
         break;
 
       default:
@@ -127,6 +133,52 @@ public class OrdersModuleBean implements BeeModule {
           .setWhere(SqlUtils.equals(TBL_ORDER_ITEMS, COL_ORDER, orderId)));
     } else {
       return BeeConst.EMPTY_IMMUTABLE_LONG_SET;
+    }
+  }
+
+  private ResponseObject getTemplateItems(RequestInfo reqInfo) {
+    Long templateId = reqInfo.getParameterLong(COL_TEMPLATE);
+    if (!DataUtils.isId(templateId)) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), COL_TEMPLATE);
+    }
+
+    Long orderId = reqInfo.getParameterLong(COL_ORDER);
+
+    List<BeeRowSet> result = new ArrayList<>();
+
+    Set<Long> itemIds = new HashSet<>();
+
+    Set<Long> ordItems = getOrderItems(orderId);
+    Filter filter = getTemplateChildrenFilter(templateId, ordItems);
+
+    BeeRowSet templateItems = qs.getViewData(VIEW_ORDER_TMPL_ITEMS, filter);
+    if (!DataUtils.isEmpty(templateItems)) {
+      result.add(templateItems);
+
+      int index = templateItems.getColumnIndex(COL_ITEM);
+      itemIds.addAll(templateItems.getDistinctLongs(index));
+    }
+
+    if (!itemIds.isEmpty()) {
+      BeeRowSet items = qs.getViewData(VIEW_ITEMS, Filter.idIn(itemIds));
+      if (!DataUtils.isEmpty(items)) {
+        result.add(items);
+      }
+    }
+
+    if (result.isEmpty()) {
+      return ResponseObject.emptyResponse();
+    } else {
+      return ResponseObject.response(result).setSize(result.size());
+    }
+  }
+
+  private static Filter getTemplateChildrenFilter(Long templateId, Collection<Long> excludeItems) {
+    if (BeeUtils.isEmpty(excludeItems)) {
+      return Filter.equals(COL_TEMPLATE, templateId);
+    } else {
+      return Filter.and(Filter.equals(COL_TEMPLATE, templateId),
+          Filter.exclude(COL_ITEM, excludeItems));
     }
   }
 }
