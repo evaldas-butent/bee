@@ -1,9 +1,10 @@
 package com.butent.bee.client.modules.orders;
 
-import static com.butent.bee.shared.modules.orders.OrdersConstants.*;
+import static com.butent.bee.shared.modules.orders.OrdersConstants.COL_ORDER;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ParameterList;
+import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.shared.rights.Module;
 
@@ -27,6 +28,8 @@ public final class OrdersKeeper {
    */
   public static void register() {
     FormFactory.registerFormInterceptor(COL_ORDER, new OrderForm());
+
+    SelectorEvent.register(new OrdersSelectorHandler());
   }
 
   private OrdersKeeper() {
