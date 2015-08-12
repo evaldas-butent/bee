@@ -50,6 +50,8 @@ public final class ClassifierConstants {
 
   public static final String TBL_PAYMENT_TYPES = "PaymentTypes";
 
+  public static final String TBL_DISCOUNTS = "EcDiscounts";
+
   public static final String FORM_COMPANY = "Company";
   public static final String FORM_COMPANY_ACTION = "CompanyAction";
   public static final String FORM_PERSON = "Person";
@@ -217,6 +219,22 @@ public final class ClassifierConstants {
   public static final String COL_PAYMENT_TYPE = "PaymentType";
   public static final String COL_PAYMENT_NAME = "PaymentName";
   public static final String COL_PAYMENT_CASH = "PaymentCash";
+
+  public static final String COL_DISCOUNT_PARENT = "DiscountParent";
+  public static final String COL_DISCOUNT_COMPANY = "Company";
+  public static final String COL_DISCOUNT_CATEGORY = "Category";
+  public static final String COL_DISCOUNT_ITEM = "Item";
+  public static final String COL_DISCOUNT_OPERATION = "Operation";
+  public static final String COL_DISCOUNT_WAREHOUSE = "Warehouse";
+  public static final String COL_DISCOUNT_DATE_FROM = "DateFrom";
+  public static final String COL_DISCOUNT_DATE_TO = "DateTo";
+  public static final String COL_DISCOUNT_QUANTITY_FROM = "QuantityFrom";
+  public static final String COL_DISCOUNT_QUANTITY_TO = "QuantityTo";
+  public static final String COL_DISCOUNT_UNIT = "Unit";
+  public static final String COL_DISCOUNT_PRICE_NAME = "PriceName";
+  public static final String COL_DISCOUNT_PERCENT = "DiscountPercent";
+  public static final String COL_DISCOUNT_PRICE = "Price";
+  public static final String COL_DISCOUNT_CURRENCY = "Currency";
 
   public static final String ALS_COMPANY_NAME = "CompanyName";
   public static final String ALS_COMPANY_CODE = "CompanyCode";
