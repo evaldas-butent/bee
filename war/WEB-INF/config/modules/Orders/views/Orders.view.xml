@@ -3,6 +3,7 @@
   newRowForm="Order">
   <Columns>
     <SimpleColumn name="Status" />
+    <SimpleColumn name="Source" />
 
     <SimpleColumn name="Type" />
     <SimpleJoin joinType="LEFT" name="Type">
