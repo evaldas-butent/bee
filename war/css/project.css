@@ -78,26 +78,3 @@
 .bee-prj-Events-Properties {
     width: calc(100% - 2em);
 }
-
-.bee-prj-Template-Controller {
- margin: 10px;
- height: auto;
-}
-
-.bee-prj-Template-Template {
-}
-
-.bee-prj-Template-TemplateName {
-}
-
-.bee-prj-Template-TemplateRecord {
-}
-
-.bee-prj-Template-TemplateRecordItem {
-  display: inline-block;
-  padding: 0.5ex;
-}
-
-.bee-prj-Template-TemplateRecord:hover {
-  background-color: #f2f2f2;
-}
