@@ -6,6 +6,7 @@
   >
   <Fields>
     <Relation name="Type" relation="OrderTypes" label="=type" />
+    <String name="Source" precision="10" />
     <Enum name="Status" key="OrdersStatus" label="=status" defValue="2" />
     <DateTime name="StartDate" notNull="true" defExpr="CURRENT_TIME" label="=startingDate" />
     <DateTime name="EndDate" label="=endingDate" />

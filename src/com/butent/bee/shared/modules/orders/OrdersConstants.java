@@ -30,6 +30,12 @@ public final class OrdersConstants {
       public String getCaption(LocalizableConstants constants) {
         return constants.ordSent();
       }
+    },
+    FINISH {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.prjStatusApproved();
+      }
     };
 
     @Override
@@ -54,9 +60,13 @@ public final class OrdersConstants {
   public static final String VIEW_ORDERS_TEMPLATES = "OrdersTemplates";
   public static final String VIEW_ORDER_TMPL_ITEMS = "OrderTmplItems";
 
+  public static final String ALS_COMPANY_EMAIL = "CompanyEmail";
+  public static final String ALS_CONTACT_EMAIL = "ContactEmail";
+
   public static final String COL_ORDER = "Order";
   public static final String COL_ORDERS_STATUS = "Status";
   public static final String COL_TEMPLATE = "Template";
+  public static final String COL_SOURCE = "Source";
 
   private OrdersConstants() {
   }

@@ -6,6 +6,7 @@
   >
   <Columns>
     <SimpleColumn name="Template" />
+    <SimpleColumn name="Date" />
 
     <SimpleColumn name="Item" />
     <SimpleJoin joinType="INNER" name="Item">
@@ -28,6 +29,11 @@
     <SimpleColumn name="VatPlus" />
     <SimpleColumn name="Vat" />
     <SimpleColumn name="VatPercent" />
+    
+    <SimpleColumn name="Currency" />
+    <SimpleJoin name="Currency" joinType="LEFT">
+      <SimpleColumn name="Name" alias="CurrencyName" />
+    </SimpleJoin>
     
     <SimpleColumn name="Discount" />
     <SimpleColumn name="Sale" />
