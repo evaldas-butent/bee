@@ -2,7 +2,7 @@
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   xmlns:xi="http://www.w3.org/2001/XInclude"
 
-  name="ProjectContacts" viewName="ProjectContacts" caption="=personContacts"  >
+  name="ProjectTMLContacts" viewName="ProjectTMLContacts" caption="=personContacts"  >
 
   <xi:include href="columns/Contacts.columns.xml" />
 </g:Grid>

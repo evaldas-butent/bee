@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form[
+  <!ENTITY inline "display: inline-block;">
+  <!ENTITY lbl "margin-right: 1em; text-align: right; padding-left: 30px">
+]>
+
+<f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form"
+  name="ProjectDate" viewName="ProjectDates"
+  caption="=prjDates" width="460" widthUnit="px" height="300" heightUnit="px" >
+  <FlowPanel>
+    <Table>
+
+      <row>
+        <Label for="Note" style="&lbl;"  />
+        <InputText source="Note" style="width:100%" />
+      </row>
+
+      <row>
+        <Label for="StartDate" style="&lbl;" class="bee-required" />
+        <InputDateTime source="StartDate"  />
+      </row>
+
+      <row>
+        <Label for="Color" style="&lbl;" />
+        <ColorEditor source="Color"  />
+      </row>
+
+     </Table>
+   </FlowPanel>
+</f:Form>

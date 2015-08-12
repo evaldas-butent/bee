@@ -70,6 +70,7 @@ public final class ProjectConstants {
   public static final String ALS_CATEGORY_NAME = "CategoryName";
   public static final String ALS_EXPECTED_TASKS_EXPENSES = "ExpectedTasksExpenses";
   public static final String ALS_ACTUAL_TASKS_EXPENSES = "ActualExpenses";
+  public static final String ALS_COMPANY_TYPE_NAME = "CompanyTypeName";
 
   public static final String ALS_ROW_ID = "RowID";
   public static final String ALS_TASK_COUNT = "TaskCount";
@@ -89,12 +90,14 @@ public final class ProjectConstants {
   public static final String COL_PROJECT_STATUS = "Status";
   public static final String COL_PROJECT_PRIORITY = "Priority";
   public static final String COL_PROJECT_OWNER = "Owner";
-  public static final String COL_PROJECT_CONTACT = "Contact";
   public static final String COL_PROJECT_CATEGORY = "Category";
   public static final String COL_PROJECT_PRICE = "Price";
   public static final String COL_PROJECT_ITEM_PRICE = "Price";
   public static final String COL_PROJECT_CURENCY = "Currency";
   public static final String COL_PROJECT_INCOME_CURENCY = "Currency";
+  public static final String COL_NOTES = "Notes";
+
+  public static final String COL_DEFAULT_PROJECT_TEMPLATE_STAGE = "DefaultTMLStage";
 
   public static final String COL_INCOME_NOTE = "Note";
   public static final String COL_INCOME_DATE = "Date";
@@ -117,6 +120,8 @@ public final class ProjectConstants {
   public static final String COL_PROJECT_TIME_UNIT = "TimeUnit";
   public static final String COL_DESCRIPTION = "Description";
 
+  public static final String COL_PROJECT_TEMPLATE = "ProjectTemplate";
+
   public static final String COL_PSC_FOOTER_HEIGHT = "PSCFooterHeight";
   public static final String COL_PSC_HEADER_HEIGHT = "PSCHeaderHeight";
   public static final String COL_PSC_ROW_HEIGHT = "PSCRowHeight";
@@ -125,6 +130,7 @@ public final class ProjectConstants {
   public static final String COL_STAGE_NAME = "Name";
   public static final String COL_STAGE_START_DATE = "StartDate";
   public static final String COL_STAGE_END_DATE = "EndDate";
+  public static final String COL_STAGE_TEMPLATE = "StageTemplate";
 
   public static final String COL_DATES_START_DATE = "StartDate";
   public static final String COL_DATES_END_DATE = "EndDate";
@@ -143,17 +149,25 @@ public final class ProjectConstants {
   public static final String FORM_NEW_PROJECT_REASON_COMMENT = "NewProjectReasonComment";
   public static final String FORM_NEW_PROJECT_INVOICE = "NewProjectInvoice";
 
+  public static final String FORM_PROJECT_TEMPLATE = "ProjectTemplate";
+  public static final String FORM_NEW_PROJECT_FROM_TEMPLATE = "NewProjectFromTemplate";
+
   public static final String GRID_ALL_PROJECTS = "AllProjects";
   public static final String GRID_PROJECTS = "Projects";
   public static final String GRID_PROJECT_USERS = "ProjectUsers";
   public static final String GRID_PROJECT_STAGES = "ProjectStages";
   public static final String GRID_PROJECT_INCOMES = "ProjectIncomes";
   public static final String GRID_PROJECT_INVOICES = "ProjectInvoices";
+  public static final String GRID_PROJECT_DATES = "ProjectDates";
+
+  public static final String GRID_PROJECT_TEMPLATE_STAGES = "ProjectTMLStages";
+  public static final String GRID_PROJECT_TEMPLATES = "ProjectTemplates";
 
   public static final String NAME_EXPECTED_TASKS_DURATION = "CalcExpectedTasksDuration";
   public static final String NAME_ACTUAL_TASKS_DURATION = "CalcActualTasksDuration";
 
   public static final String PROP_USERS = "Users";
+  public static final String PROP_TEMPLATE = "Template";
   public static final String PROP_REASON = "Reason";
   public static final String PROP_DOCUMENT = "Document";
   public static final String PROP_DOCUMENT_LINK = "DocumentLink";
@@ -177,13 +191,20 @@ public final class ProjectConstants {
 
   public static final String VIEW_PROJECTS = "Projects";
   public static final String VIEW_PROJECT_USERS = "ProjectUsers";
+  public static final String VIEW_PROJECT_TEMPLATE_USERS = "ProjectTMLUsers";
+  public static final String VIEW_PROJECT_TEMPLATE_CONTACTS = "ProjectTMLContacts";
   public static final String VIEW_PROJECT_STAGES = "ProjectStages";
   public static final String VIEW_PROJECT_DATES = "ProjectDates";
   public static final String VIEW_PROJECT_FILES = "ProjectFiles";
+  public static final String VIEW_PROJECT_CONTACTS = "ProjectContacts";
   public static final String VIEW_PROJECT_EVENTS = "ProjectEvents";
   public static final String VIEW_PROJECT_INCOMES = "ProjectIncomes";
   public static final String VIEW_PROJECT_INVOICES = "ProjectInvoices";
   public static final String VIEW_PROJECT_TREE = "ProjectTree";
+
+  public static final String VIEW_PROJECT_TEMPLATES = "ProjectTemplates";
+  public static final String VIEW_PROJECT_TEMPLATE_STAGES = "ProjectTMLStages";
+  public static final String VIEW_PROJECT_TEMPLATE_DATES = "ProjectTMLDates";
 
   public static final String TBL_PROJECT_USAGE = "ProjectUsage";
   public static final String TBL_PROJECTS = "Projects";

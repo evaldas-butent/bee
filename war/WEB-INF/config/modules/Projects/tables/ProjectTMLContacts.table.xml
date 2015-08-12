@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Table xmlns="http://www.butent.com/table"
   
-  name="ProjectContacts"
-  idName="ProjectContactID"
+  name="ProjectTMLContacts"
+  idName="ProjectTMLContactID"
   >
   <Fields>
-    <Relation name="Project" notNull="true" relation="Projects" cascade="DELETE" label="=project"/>
+    <Relation name="ProjectTemplate" notNull="true" relation="ProjectTemplates" cascade="DELETE" label="=prjTemplate"/>
     <Relation name="CompanyPerson" notNull="true" relation="CompanyPersons" cascade="DELETE" label="=companyPerson" />
   </Fields>
 </Table>

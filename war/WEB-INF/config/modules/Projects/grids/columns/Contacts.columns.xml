@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:columns xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid">
+  <RelColumn name="CompanyPerson" editEnabled="true" editForm="CompanyPerson" editViewName="CompanyPersons"
+             renderColumns="FirstName LastName CompanyName CompanyType Phone" >
+    <renderToken source="FirstName" suffix=" " />
+    <renderToken source="LastName" />
+  </RelColumn>
+  <DataColumn name="Phone" />
+  <DataColumn name="Mobile" />
+  <DataColumn name="Fax" visible="false"/>
+  <DataColumn name="Email"/>
+  <DataColumn name="PositionName" />
+  <DataColumn name="DepartmentName" />
+</g:columns>

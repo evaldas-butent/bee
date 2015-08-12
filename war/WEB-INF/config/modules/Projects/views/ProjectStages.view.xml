@@ -12,15 +12,16 @@
       <ExternalJoin name="Project" source="ProjectStages" joinType="LEFT" >
         <IdColumn  name="StagesCount" aggregate="COUNT"></IdColumn>
       </ExternalJoin>
+      <SimpleColumn name="ProjectTemplate" />
     </SimpleJoin>
-    
-    <ExternalJoin name="ProjectStage" source="Tasks" joinType="LEFT">     
+
+    <ExternalJoin name="ProjectStage" source="Tasks" joinType="LEFT">
       <IdColumn  name="TaskCount" aggregate="COUNT_DISTINCT"></IdColumn>
       <AggregateColumn alias="ExpectedTasksExpenses" name="ExpectedExpenses" aggregate="SUM" />
       <AggregateColumn alias="LowTasksDate" name="StartTime" aggregate="MIN" />
       <AggregateColumn alias="HighTasksDate" name="FinishTime" aggregate="MAX" />
     </ExternalJoin>
-    
+
     <SimpleJoin name="Project" joinType="LEFT">
       <SimpleColumn name="Company" />
       <SimpleJoin name="Company" joinType="LEFT">
@@ -39,52 +40,50 @@
     <SimpleColumn name="StartDate" />
     <SimpleColumn name="EndDate" />
     <SimpleColumn name="ExpectedDuration" />
-        
+
     <SimpleColumn name="ExpectedTasksDuration" label="=prjExpectedTaskDuration">
-       <x:number>0</x:number> 
-      <!-- 
-      Data handling in system module bean  
-      com.butent.bee.server.modules.projects.ProjectsModuleBean.init().new DataEventHandler() 
+       <x:number>0</x:number>
+      <!--
+      Data handling in system module bean
+      com.butent.bee.server.modules.projects.ProjectsModuleBean.init().new DataEventHandler()
       {...}.fillProjectsTimeData(ViewQueryEvent event)
       -->
     </SimpleColumn>
-        
+
     <SimpleColumn name="ActualTasksDuration" label="=prjActualTaskDuration">
-      <x:number>0</x:number> 
-      <!-- 
-      Data handling in system module bean  
-      com.butent.bee.server.modules.projects.ProjectsModuleBean.init().new DataEventHandler() 
+      <x:number>0</x:number>
+      <!--
+      Data handling in system module bean
+      com.butent.bee.server.modules.projects.ProjectsModuleBean.init().new DataEventHandler()
       {...}.fillProjectsTimeData(ViewQueryEvent event)
       -->
     </SimpleColumn>
-    
+
     <SimpleColumn name="Expenses" />
     <SimpleColumn name="Currency" />
     <SimpleJoin name="Currency" joinType="LEFT">
       <SimpleColumn name="Name" alias="CurrencyName" />
     </SimpleJoin>
-    
+
     <SimpleColumn name="ActualExpenses" label="=prjActualExpenses">
-       <x:number>0</x:number> 
-      <!-- 
-      Data handling in system module bean  
-      com.butent.bee.server.modules.projects.ProjectsModuleBean.init().new DataEventHandler() 
+       <x:number>0</x:number>
+      <!--
+      Data handling in system module bean
+      com.butent.bee.server.modules.projects.ProjectsModuleBean.init().new DataEventHandler()
       {...}.fillProjectsTimeData(ViewQueryEvent event)
       -->
-    </SimpleColumn> 
-    
+    </SimpleColumn>
+
     <SimpleJoin name="Project" joinType="LEFT">
       <SimpleColumn name="Name" alias="ProjectName" />
-    </SimpleJoin>
-    
-    <SimpleJoin name="Project" joinType="LEFT">
       <SimpleColumn alias="ProjectOwner" name="Owner"/>
       <SimpleColumn alias="ProjectStatus" name="Status"/>
     </SimpleJoin>
-      
-  </Columns>  
+
+    <SimpleColumn name="StageTemplate" />
+
+  </Columns>
   <Order>
 	  <OrderBy column="StartDate"/>
   </Order>
 </View>
- 
