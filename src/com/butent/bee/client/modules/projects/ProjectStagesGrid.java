@@ -6,7 +6,6 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.data.Provider;
 import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.ColumnHeader;
-import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.column.AbstractColumn;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.render.AbstractCellRenderer;

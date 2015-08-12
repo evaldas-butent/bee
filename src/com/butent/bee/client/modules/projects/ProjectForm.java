@@ -1,7 +1,5 @@
 package com.butent.bee.client.modules.projects;
-import com.butent.bee.client.view.grid.GridView;
-import com.butent.bee.shared.data.view.Order;
-import com.butent.bee.shared.utils.Codec;
+
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -34,6 +32,7 @@ import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
+import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.InputText;
 import com.butent.bee.client.widget.ListBox;
@@ -52,6 +51,7 @@ import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.DataInfo;
+import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.ViewColumn;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -65,6 +65,7 @@ import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -110,7 +111,7 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
   private DataSelector owner;
   private ChildGrid tasks;
   private ChildGrid dates;
-//  private DataSelector projectTemplate;
+  // private DataSelector projectTemplate;
 
   private BeeRowSet timeUnits;
 
@@ -163,7 +164,7 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
       tasks = (ChildGrid) widget;
     }
 
-    if (widget instanceof ChildGrid && BeeUtils.same(name,GRID_PROJECT_DATES)) {
+    if (widget instanceof ChildGrid && BeeUtils.same(name, GRID_PROJECT_DATES)) {
       dates = (ChildGrid) widget;
     }
   }
@@ -546,15 +547,13 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
       return;
     }
 
-
-    if(DataUtils.isNewRow(row)) {
+    if (DataUtils.isNewRow(row)) {
       return;
     }
 
     if (childGrid == null) {
       return;
     }
-
 
     final GridView tasksGrid = childGrid.getGridView();
 

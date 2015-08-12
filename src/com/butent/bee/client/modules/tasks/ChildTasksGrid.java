@@ -1,7 +1,11 @@
 package com.butent.bee.client.modules.tasks;
 
-import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.data.*;
+import com.google.common.collect.Lists;
+
+import com.butent.bee.client.data.Data;
+import com.butent.bee.client.data.IdCallback;
+import com.butent.bee.client.data.RowCallback;
+import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.event.logical.RenderingEvent;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.view.ViewHelper;
@@ -10,8 +14,10 @@ import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.data.*;
-import com.butent.bee.shared.data.event.RowUpdateEvent;
+import com.butent.bee.shared.data.BeeRow;
+import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.RelationUtils;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
@@ -20,7 +26,6 @@ import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.modules.tasks.TaskType;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.google.common.collect.Lists;
 
 import java.util.Collection;
 import java.util.List;
@@ -94,7 +99,7 @@ class ChildTasksGrid extends TasksGrid {
       }
     }
 
-    FormView form =  ViewHelper.getForm(gridView.asWidget());
+    FormView form = ViewHelper.getForm(gridView.asWidget());
 
     if (form == null) {
       return;
@@ -163,9 +168,14 @@ class ChildTasksGrid extends TasksGrid {
 
                 switch (parentForm.getViewName()) {
                   case ProjectConstants.VIEW_PROJECT_STAGES:
-                    fillProjectStageData(viewTasks, row, Data.getDataInfo(parentForm.getViewName()),
+                    fillProjectStageData(viewTasks, row,
+                        Data.getDataInfo(parentForm.getViewName()),
                         parentForm.getActiveRow());
+                    break;
                   case ProjectConstants.VIEW_PROJECTS:
+                    fillProjectStageData(viewTasks, row,
+                        Data.getDataInfo(parentForm.getViewName()),
+                        parentForm.getActiveRow());
                     fillProjectData(viewTasks, row, Data.getDataInfo(parentForm.getViewName()),
                         parentForm.getActiveRow());
                     break;
@@ -177,7 +187,7 @@ class ChildTasksGrid extends TasksGrid {
 
             RowFactory.createRow(viewTasks, row, new RowCallback() {
               @Override
-              public void onSuccess(BeeRow result) {
+              public void onSuccess(BeeRow createdTask) {
                 getGridPresenter().handleAction(Action.REFRESH);
               }
             });
@@ -224,8 +234,8 @@ class ChildTasksGrid extends TasksGrid {
   public DeleteMode getDeleteMode(GridPresenter presenter,
       IsRow activeRow, Collection<RowInfo> selectedRows, DeleteMode defMode) {
 
-    if(!BeeUtils.isEmpty(activeRow.getProperty(ProjectConstants.PROP_TEMPLATE))) {
-      return  DeleteMode.CANCEL;
+    if (!BeeUtils.isEmpty(activeRow.getProperty(ProjectConstants.PROP_TEMPLATE))) {
+      return DeleteMode.CANCEL;
     }
 
     return super.getDeleteMode(presenter, activeRow, selectedRows, defMode);

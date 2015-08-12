@@ -1,12 +1,13 @@
 package com.butent.bee.client.modules.projects;
 
+import com.google.common.collect.Lists;
+
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.IdCallback;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.event.logical.RenderingEvent;
 import com.butent.bee.client.presenter.GridPresenter;
-import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.form.FormView;
@@ -23,14 +24,14 @@ import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.modules.projects.ProjectConstants;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.google.common.collect.Lists;
 
 import java.util.Collection;
 import java.util.List;
 
-class ProjectDatesGrid extends AbstractGridInterceptor{
+class ProjectDatesGrid extends AbstractGridInterceptor {
 
-  private static final List<String> COPY_COLUMNS = Lists.newArrayList(ProjectConstants.COL_DATES_COLOR,
+  private static final List<String> COPY_COLUMNS = Lists.newArrayList(
+      ProjectConstants.COL_DATES_COLOR,
       ProjectConstants.COL_DATES_NOTE);
 
   @Override
@@ -41,7 +42,7 @@ class ProjectDatesGrid extends AbstractGridInterceptor{
       }
     }
 
-    FormView form =  ViewHelper.getForm(gridView.asWidget());
+    FormView form = ViewHelper.getForm(gridView.asWidget());
 
     if (form == null) {
       return;
@@ -63,7 +64,7 @@ class ProjectDatesGrid extends AbstractGridInterceptor{
     DataInfo viewProjectDates = Data.getDataInfo(ProjectConstants.VIEW_PROJECT_DATES);
 
     for (IsRow templRow : templates) {
-      BeeRow row = RowFactory.createEmptyRow(viewProjectDates,true);
+      BeeRow row = RowFactory.createEmptyRow(viewProjectDates, true);
       for (String col : COPY_COLUMNS) {
         row.setValue(viewProjectDates.getColumnIndex(col),
             templRow.getValue(templates.getColumnIndex(col)));
@@ -107,16 +108,16 @@ class ProjectDatesGrid extends AbstractGridInterceptor{
 
             RowFactory.createRow(viewProjectDates, row, new RowCallback() {
               @Override
-              public void onSuccess(BeeRow result) {
+              public void onSuccess(BeeRow createdDate) {
                 getGridPresenter().handleAction(Action.REFRESH);
               }
             });
           }
         });
 
-        }
+      }
 
-        return;
+      return;
     }
 
     super.onEditStart(event);
@@ -134,7 +135,7 @@ class ProjectDatesGrid extends AbstractGridInterceptor{
     if (BeeUtils.isEmpty(activeRow.getProperty(ProjectConstants.PROP_TEMPLATE))) {
       return DeleteMode.SINGLE;
     } else {
-      return  DeleteMode.CANCEL;
+      return DeleteMode.CANCEL;
     }
   }
 }

@@ -1,7 +1,5 @@
 package com.butent.bee.client.modules.classifiers;
 
-import com.butent.bee.client.data.Data;
-import com.butent.bee.shared.data.view.DataInfo;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;

@@ -1,6 +1,5 @@
 package com.butent.bee.client.modules.tasks;
 
-import com.butent.bee.shared.logging.LogUtils;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;

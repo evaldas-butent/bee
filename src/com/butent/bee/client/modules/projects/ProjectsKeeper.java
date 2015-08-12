@@ -59,15 +59,13 @@ public final class ProjectsKeeper {
       return;
     }
 
-
-    if(DataUtils.isNewRow(row)) {
+    if (DataUtils.isNewRow(row)) {
       return;
     }
 
     if (childGrid == null) {
       return;
     }
-
 
     final GridView tasksGrid = childGrid.getGridView();
 
