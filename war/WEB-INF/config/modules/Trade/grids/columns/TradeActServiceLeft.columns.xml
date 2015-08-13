@@ -13,7 +13,7 @@
   <DataColumn name="DateFrom" width="80" />
   <DataColumn name="DateTo" width="80">
     <editable>
-      <ui:expression>row.TimeUnit == null</ui:expression>
+      <ui:expression>row.TimeUnit != null</ui:expression>
     </editable>
   </DataColumn>
 

@@ -5,8 +5,8 @@ import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.HasClickHandlers;
-import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.FlowPanel;
+import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.xml.client.Element;
 
@@ -42,7 +42,6 @@ import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.InputBoolean;
-import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
@@ -395,7 +394,11 @@ public class CompanyForm extends AbstractFormInterceptor {
   }
 
   private static void createQrButton(final FormView form, final IsRow row) {
-    FlowPanel qrFlowPanel = (FlowPanel) Assert.notNull(form.getWidgetByName(QR_FLOW_PANEL));
+    FlowPanel qrFlowPanel = (FlowPanel) form.getWidgetByName(QR_FLOW_PANEL);
+    if (qrFlowPanel == null) {
+      return;
+    }
+
     qrFlowPanel.clear();
     FaLabel qrCodeLabel = new FaLabel(FontAwesome.QRCODE);
     qrCodeLabel.setTitle(Localized.getConstants().qrCode());

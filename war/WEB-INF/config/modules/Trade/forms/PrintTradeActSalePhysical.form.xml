@@ -7,7 +7,7 @@
 ]>
 <f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form" xmlns:ui="http://www.butent.com/ui"
   name="&form;" caption="Perdavimo aktas" disabledActions="save" width="70" widthUnit="%" height="90" heightUnit="%">
-  <FlowPanel style="padding: 10px; background-color: white;" contentEditable="true">
+  <FlowPanel style="padding: 10px; background-color: white; font-size:10px;" contentEditable="true" class="bee-form-TradeActPrint" >
     <FlowPanel>
       <Image url="images/logo.png" style="position: relative;" />
       <FlowPanel style="margin-top:-35px;">
@@ -23,7 +23,7 @@
     </FlowPanel>
 
     <FlowPanel>
-      <Table style="width:100%;">
+      <Table style="width:100%;" >
         <row>
           <cell style="vertical-align:top;">
             <Label html="Nuomotojas" style="font-weight: bold;" />
@@ -33,10 +33,10 @@
           </cell>
         </row>
         <row>
-          <cell style="vertical-align:top;">
+          <cell style="vertical-align:top;border: 1px solid black;">
             <FlowPanel name="Supplier" />
           </cell>
-          <cell style="vertical-align:top;">
+          <cell style="vertical-align:top;border: 1px solid black;">
             <FlowPanel name="Company" />
           </cell>
         </row>
@@ -62,7 +62,7 @@
       </Table>
     </FlowPanel>
 
-    <Table name="InvoiceDetails1" style="&section; width:100%; padding-top: 0;">
+    <Table name="InvoiceDetails1" style="&section; width:100%;" >
       <properties content="TradeActItems" />
       <row>
         <Label text="Artikulas">
@@ -138,7 +138,7 @@
       </row>
     </Table>
 
-    <Table name="InvoiceDetails2" style="&section; width:100%">
+    <Table name="InvoiceDetails2" style="&section; width:100%" >
       <properties content="TradeActServices" />
       <row>
         <Label text="Artikulas">
@@ -204,11 +204,11 @@
       </row>
     </Table>
     <HtmlPanel style="&section;">
-      <span style="font-size:small; display:block; white-space:pre-wrap; border:1px solid silver; margin-top: 20px;">Patabos: Grąžinama įranga turi būti nuvalyta ir išardyta taip, kaip buvo išduota. Įranga transporto priemonėje turi būti
+      <span style="display:block; white-space:pre-wrap; border:1px solid silver; margin-top: 20px;">Patabos: Grąžinama įranga turi būti nuvalyta ir išardyta taip, kaip buvo išduota. Įranga transporto priemonėje turi būti
 sukrauta taip, kad būtų galima iškrauti šakiniais krautuvais. Už iškrovimą rankomis apmokama papildomai.</span>
     </HtmlPanel>
 
-    <Table style="width:100%; margin-top:10px;">
+    <Table style="width:100%; margin-top:10px;" >
       <row>
         <TextLabel source="Manager">
           <renderToken source="ManagerFirstName" />
