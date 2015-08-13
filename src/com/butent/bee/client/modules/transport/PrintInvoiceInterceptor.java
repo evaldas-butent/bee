@@ -84,6 +84,7 @@ public class PrintInvoiceInterceptor extends AbstractFormInterceptor {
                   double qtyTotal = BeeConst.DOUBLE_ZERO;
 
                   for (SimpleRow simpleRow : data) {
+                    String note = simpleRow.getValue(COL_TRADE_ITEM_NOTE);
                     double qty = BeeUtils.unbox(simpleRow.getDouble(COL_TRADE_ITEM_QUANTITY));
                     double ret = BeeUtils.unbox(simpleRow.getDouble(COL_TA_RETURNED_QTY));
                     double rem = qty - ret;
@@ -99,6 +100,15 @@ public class PrintInvoiceInterceptor extends AbstractFormInterceptor {
                     totSvor += rowSv;
                     totRem += rem;
                     qtyTotal += qty;
+
+                    String name = simpleRow.getValue(ClassifierConstants.COL_ITEM_NAME);
+
+                    if (!BeeUtils.isEmpty(note)) {
+                      name =
+                          name + "/" + note;
+                      simpleRow.setValue(ClassifierConstants.COL_ITEM_NAME, name);
+                    }
+
                   }
 
                   Widget ww = form.getWidgetByName(COL_TRADE_TOTAL_WEIGHT);
@@ -125,8 +135,26 @@ public class PrintInvoiceInterceptor extends AbstractFormInterceptor {
 
                   for (SimpleRow simpleRow : data) {
                     int ind = BeeUtils.unbox(simpleRow.getInt(COL_TRADE_TIME_UNIT));
+                    String note = simpleRow.getValue(COL_TRADE_ITEM_NOTE);
                     simpleRow.setValue(COL_TRADE_ITEM_NOTE, "<root><tu>"
                         + EnumUtils.getCaption("TradeActTimeUnit", ind) + "</tu></root>");
+
+                    String name = simpleRow.getValue(ClassifierConstants.COL_ITEM_NAME);
+                    String daysPerWeek = simpleRow.getValue(COL_TA_SERVICE_DAYS);
+                    String minTerm = simpleRow.getValue(COL_TA_SERVICE_MIN);
+                    String tu = EnumUtils.getCaption("TradeActTimeUnit", ind);
+
+                    if (!BeeUtils.isEmpty(note)) {
+                      name = name + "/" + note;
+                    }
+                    if (!BeeUtils.isEmpty(minTerm)) {
+                      name = name + "/" + "Minimalus nuomos terminas " + minTerm + " " + tu;
+                    }
+                    if (!BeeUtils.isEmpty(daysPerWeek)) {
+                      name = name + "/" + daysPerWeek + "d.per Sav.";
+                    }
+
+                    simpleRow.setValue(ClassifierConstants.COL_ITEM_NAME, name);
                   }
               }
             }

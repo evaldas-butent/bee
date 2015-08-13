@@ -577,6 +577,9 @@ public class TradeModuleBean implements BeeModule {
       if (BeeUtils.same(tradeItems, TBL_TRADE_ACT_ITEMS)) {
         query.addFields(TBL_TRADE_ACT_ITEMS, sys.getIdName(tradeItems));
       }
+      if (BeeUtils.same(tradeItems, TBL_TRADE_ACT_SERVICES)) {
+        query.addFields(TBL_TRADE_ACT_SERVICES, COL_TA_SERVICE_MIN, COL_TA_SERVICE_DAYS);
+      }
     } else {
       query.addOrder(tradeItems, COL_TRADE_ITEM_ORDINAL, sys.getIdName(tradeItems));
     }
