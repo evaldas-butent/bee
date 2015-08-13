@@ -7,6 +7,7 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.grid.ChildGrid;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.modules.trade.InvoicesGrid;
@@ -88,6 +89,12 @@ public final class ProjectsKeeper {
           }
         });
   }
+
+  public static void createProjectFromTemplate(IsRow templateRow, RowCallback callback) {
+    ProjectTemplatesGrid.createProject(Data.getDataInfo(VIEW_PROJECT_TEMPLATES),
+        templateRow, callback);
+  }
+
 
   /**
    * Register projects client-side module handler.
