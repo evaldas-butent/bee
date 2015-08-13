@@ -5,17 +5,7 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Widget;
 
-import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.ALS_CONTACT_PHYSICAL;
-import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.COL_TA_COMPANY;
-import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.COL_TA_CONTACT;
-import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.COL_TA_KIND;
-import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.COL_TA_REGISTRATION_NO;
-import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.COL_TRADE_ACT;
-import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.FORM_INVOICE_BUILDER;
-import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.SVC_HAS_INVOICES_OR_SECONDARY_ACTS;
-import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.VIEW_TRADE_ACTS;
-import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.VIEW_TRADE_ACT_TEMPLATES;
-import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.WIDGET_TA_CONTRACT;
+import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ParameterList;
@@ -170,7 +160,10 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
                       .getColumnIndex(VIEW_TRADE_ACTS, COL_TA_COMPANY)), row.getId()));
             }
           });
-      header.addCommandItem(commandCompose);
+
+      if (kind != TradeActKind.RETURN) {
+        header.addCommandItem(commandCompose);
+      }
     }
     createReqLabels(form);
     super.afterRefresh(form, row);

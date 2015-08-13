@@ -74,7 +74,7 @@ public enum TradeActKind implements HasLocalizedCaption {
     }
   },
 
-  WRITE_OFF(new String[] {COL_TA_UNTIL}, Option.ALTER_TO, Option.AUTO_NUMBER, Option.SHOW_STOCK) {
+  WRITE_OFF(null, Option.ALTER_TO, Option.AUTO_NUMBER, Option.SHOW_STOCK) {
     @Override
     public String getCaption(LocalizableConstants constants) {
       return constants.taKindWriteOff();
