@@ -1,15 +1,5 @@
 package com.butent.bee.client.modules.tasks;
 
-import com.butent.bee.client.composite.UnboundSelector;
-import com.butent.bee.client.dialog.Popup;
-import com.butent.bee.client.modules.projects.ProjectsKeeper;
-import com.butent.bee.client.ui.FormDescription;
-import com.butent.bee.client.ui.FormFactory;
-import com.butent.bee.client.ui.IdentifiableWidget;
-import com.butent.bee.client.view.form.FormView;
-import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
-import com.butent.bee.client.view.form.interceptor.FormInterceptor;
-import com.butent.bee.client.widget.Button;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
@@ -22,6 +12,7 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Provider;
 import com.butent.bee.client.data.Queries;
@@ -32,25 +23,34 @@ import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.ChoiceCallback;
 import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.Icon;
+import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.ColumnHeader;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.GridFactory.GridOptions;
 import com.butent.bee.client.grid.column.AbstractColumn;
 import com.butent.bee.client.images.star.Stars;
+import com.butent.bee.client.modules.projects.ProjectsKeeper;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.presenter.PresenterCallback;
 import com.butent.bee.client.render.HasCellRenderer;
+import com.butent.bee.client.ui.FormDescription;
+import com.butent.bee.client.ui.FormFactory;
+import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.validation.ValidationHelper;
 import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.edit.EditableColumn;
 import com.butent.bee.client.view.edit.EditorAssistant;
+import com.butent.bee.client.view.form.FormView;
+import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
+import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.grid.GridSettings;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.GridView.SelectedRows;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.view.search.AbstractFilterSupplier;
+import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -78,6 +78,7 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.projects.ProjectConstants;
+import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
 import com.butent.bee.shared.modules.tasks.TaskType;
 import com.butent.bee.shared.modules.tasks.TaskUtils;
 import com.butent.bee.shared.news.Feed;
@@ -487,7 +488,8 @@ class TasksGrid extends AbstractGridInterceptor {
           @Override
           public void onSuccess(Integer result) {
             if (getGridView() != null) {
-              getGridView().notifyInfo(Localized.getMessages().newProjectCreated(projectRow.getId()));
+              getGridView().notifyInfo(
+                  Localized.getMessages().newProjectCreated(projectRow.getId()));
             }
           }
         });
@@ -499,10 +501,10 @@ class TasksGrid extends AbstractGridInterceptor {
     List<String> copyCols = Lists.newArrayList(ClassifierConstants.COL_COMPANY,
         ClassifierConstants.ALS_COMPANY_NAME, ProjectConstants.ALS_COMPANY_TYPE_NAME);
 
-    for(String col : copyCols) {
+    for (String col : copyCols) {
 
-        Data.setValue(ProjectConstants.VIEW_PROJECT_TEMPLATES, templateRow, col,
-            selectedRow.getString(Data.getColumnIndex(VIEW_TASKS, col)));
+      Data.setValue(ProjectConstants.VIEW_PROJECT_TEMPLATES, templateRow, col,
+          selectedRow.getString(Data.getColumnIndex(VIEW_TASKS, col)));
     }
 
     ProjectsKeeper.createProjectFromTemplate(templateRow, new RowCallback() {
@@ -894,7 +896,7 @@ class TasksGrid extends AbstractGridInterceptor {
 
   private static void addProjectUsers(final List<Long> userIds, final BeeRow projectRow) {
     Queries.getRowSet(ProjectConstants.VIEW_PROJECT_USERS, Lists
-            .newArrayList(AdministrationConstants.COL_USER),
+        .newArrayList(AdministrationConstants.COL_USER),
         Filter.equals(ProjectConstants.COL_PROJECT, projectRow.getId()), new RowSetCallback() {
 
           @Override
@@ -906,8 +908,8 @@ class TasksGrid extends AbstractGridInterceptor {
 
             for (Long user : userIds) {
               Queries.insert(ProjectConstants.VIEW_PROJECT_USERS, Data.getColumns(
-                      ProjectConstants.VIEW_PROJECT_USERS, Lists.newArrayList(
-                          ProjectConstants.COL_PROJECT, AdministrationConstants.COL_USER)),
+                  ProjectConstants.VIEW_PROJECT_USERS, Lists.newArrayList(
+                      ProjectConstants.COL_PROJECT, AdministrationConstants.COL_USER)),
                   Lists.newArrayList(BeeUtils.toString(projectRow.getId()), BeeUtils
                       .toString(user)));
             }

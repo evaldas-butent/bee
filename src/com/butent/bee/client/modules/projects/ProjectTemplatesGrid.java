@@ -6,22 +6,14 @@ import com.google.gwt.event.dom.client.ClickHandler;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.RpcCallback;
-import com.butent.bee.client.composite.DataSelector;
-import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.presenter.GridPresenter;
-import com.butent.bee.client.presenter.Presenter;
-import com.butent.bee.client.ui.FormFactory;
-import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.HeaderView;
-import com.butent.bee.client.view.form.FormView;
-import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
-import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
@@ -31,7 +23,6 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
-import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.RowInfoList;
 import com.butent.bee.shared.font.FontAwesome;
@@ -39,7 +30,6 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.projects.ProjectConstants;
-import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
@@ -132,7 +122,7 @@ public class ProjectTemplatesGrid extends AbstractGridInterceptor {
     prjRow.setValue(idxPrjType, templateRow.getValue(idxTMLType));
     prjRow.setValue(idxPrjCompany, templateRow.getValue(idxTMLCompany));
     prjRow.setValue(idxPrjCompanyName, templateRow.getValue(idxTMLCompanyName));
-     prjRow.setValue(idxPrjCompanyTypeName, templateRow.getValue(idxTMLCompanyTypeName));
+    prjRow.setValue(idxPrjCompanyTypeName, templateRow.getValue(idxTMLCompanyTypeName));
     prjRow.setValue(idxPrjCategory, templateRow.getValue(idxTMLCategory));
     prjRow.setValue(idxPrjCategoryName, templateRow.getValue(idxTMLCategoryName));
 
@@ -147,8 +137,7 @@ public class ProjectTemplatesGrid extends AbstractGridInterceptor {
         templateRow.getString(idxTMLDefaultStage));
 
     RowFactory.createRow(ProjectConstants.FORM_NEW_PROJECT_FROM_TEMPLATE,
-        prjDataInfo.getNewRowCaption(), prjDataInfo, prjRow, null,
-        getNewProjectInterceptor(templateRow),
+        prjDataInfo.getNewRowCaption(), prjDataInfo, prjRow, null, null,
         new RowCallback() {
           @Override
           public void onSuccess(BeeRow result) {
@@ -168,7 +157,7 @@ public class ProjectTemplatesGrid extends AbstractGridInterceptor {
     final BeeRowSet persons = new BeeRowSet(ProjectConstants.VIEW_PROJECT_CONTACTS, personCols);
 
     Queries.getRowSet(ProjectConstants.VIEW_PROJECT_TEMPLATE_CONTACTS, Lists.newArrayList(
-            ClassifierConstants.COL_COMPANY_PERSON),
+        ClassifierConstants.COL_COMPANY_PERSON),
         Filter.equals(ProjectConstants.COL_PROJECT_TEMPLATE, BeeUtils.toString(tmlRow.getId())),
         new Queries.RowSetCallback() {
 
@@ -306,22 +295,6 @@ public class ProjectTemplatesGrid extends AbstractGridInterceptor {
           }
         }
         );
-  }
-
-  private static AbstractFormInterceptor getNewProjectInterceptor(final IsRow selectedRow) {
-    return new AbstractFormInterceptor() {
-
-      @Override
-      public boolean beforeAction(Action action, Presenter presenter) {
-
-        return super.beforeAction(action, presenter);
-      }
-
-      @Override
-      public FormInterceptor getInstance() {
-        return this;
-      }
-    };
   }
 
   private static void openProjectFullForm(long projectId) {
