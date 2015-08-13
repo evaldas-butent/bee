@@ -371,7 +371,9 @@
       <xs:enumeration value="Messages" />
       <xs:enumeration value="Objects" />
       <xs:enumeration value="Orders" />
+      <xs:enumeration value="OrdersInvoices" />
       <xs:enumeration value="OrderItems" />
+      <xs:enumeration value="OrderSales" />
       <xs:enumeration value="OrderSeries" />
       <xs:enumeration value="OrdersTemplates" />
       <xs:enumeration value="OrderTypes" />

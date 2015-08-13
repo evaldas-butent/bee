@@ -13,7 +13,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.i18n.Localized;
 
-class InvoiceCreator extends Image implements ClickHandler {
+public class InvoiceCreator extends Image implements ClickHandler {
 
   private final String viewName;
   private final Filter filter;
