@@ -2,7 +2,7 @@
 <View xmlns="http://www.butent.com/view"
 
   name="TradeSeries" source="TradeSeries"
-  caption="=taSeriesPlural" newRowCaption="=trdNewSeries"
+  caption="=seriesPlural" newRowCaption="=trdNewSeries"
   editForm="TradeSeries" newRowForm="TradeSeries"
   >
   <Columns>

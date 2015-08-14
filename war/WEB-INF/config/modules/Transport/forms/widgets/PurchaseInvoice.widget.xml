@@ -13,8 +13,8 @@
   <row>
     <Label for="Operation" class="bee-required" />
     <cell colSpan="2">
-      <DataSelector source="Operation" editEnabled="false" newRowEnabled="false"
-                    required="true" filter="OperationType=0" style="width:100%;" />
+      <DataSelector source="Operation" viewName="PurchaseOperations" required="true"
+                    editEnabled="false" newRowEnabled="false" style="width:100%;" />
     </cell>
   </row>
   <row>

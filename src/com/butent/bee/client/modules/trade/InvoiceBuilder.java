@@ -77,7 +77,7 @@ public abstract class InvoiceBuilder extends AbstractGridInterceptor
             ParameterList args = getRequestArgs();
 
             if (args != null) {
-              Map<String, String> params = new HashMap<String, String>();
+              Map<String, String> params = new HashMap<>();
 
               params.put(Service.VAR_TABLE, Data.getViewTable(getViewName()));
               params.put(getRelationColumn(), BeeUtils.toString(row.getId()));

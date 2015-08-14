@@ -122,6 +122,11 @@
     <ExternalJoin name="Project" source="ProjectStages" joinType="LEFT">
       <AggregateColumn aggregate="COUNT" name="Name" alias="StagesCount" />
     </ExternalJoin>
+
+    <SimpleColumn name="ProjectTemplate" />
+    <SimpleJoin name="ProjectTemplate" joinType="LEFT">
+      <SimpleColumn name="Name" alias="ProjectTMLName" />
+    </SimpleJoin>
   </Columns>
   
   <Order>
