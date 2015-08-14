@@ -43,6 +43,8 @@ public final class DocumentConstants {
   public static final String COL_DOCUMENT_RETURNED = "Returned";
   public static final String COL_DOCUMENT_RETURNED_USER = "ReturnedUser";
   public static final String COL_DOCUMENT_RETURNED_DATE = "ReturnedDate";
+  public static final String COL_DOCUMENT_RECEIVED = "Received";
+  public static final String COL_DOCUMENT_SENT = "Sent";
 
   public static final String COL_DOCUMENT_STATUS = "Status";
 
