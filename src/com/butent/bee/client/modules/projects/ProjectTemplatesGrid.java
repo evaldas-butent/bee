@@ -1,5 +1,6 @@
 package com.butent.bee.client.modules.projects;
 
+import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.google.common.collect.Lists;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -78,6 +79,31 @@ public class ProjectTemplatesGrid extends AbstractGridInterceptor {
     createProject(Data.getDataInfo(gridView.getViewName()), selectedRow, null);
   }
 
+  private static void copyTasks(IsRow prjRow, IsRow tmlRow, RowCallback callback) {
+
+    DataInfo stagesView = Data.getDataInfo(ProjectConstants.VIEW_PROJECT_STAGES);
+    DataInfo taskTemplatesView = Data.getDataInfo(TaskConstants.VIEW_TASK_TEMPLATES);
+
+    Queries.getRowSet(TaskConstants.VIEW_TASK_TEMPLATES, taskTemplatesView.getColumnNames(false),
+        Filter.equals(ProjectConstants.COL_PROJECT_TEMPLATE, tmlRow.getId()),
+        new Queries.RowSetCallback() {
+          @Override
+          public void onSuccess(BeeRowSet taskTemplates) {
+
+          }
+        });
+
+    Queries.getRowSet(TaskConstants.VIEW_TASK_TEMPLATES, taskTemplatesView.getColumnNames(false),
+        Filter.equals(ProjectConstants.COL_PROJECT_TEMPLATE, tmlRow.getId()),
+        new Queries.RowSetCallback() {
+          @Override
+          public void onSuccess(BeeRowSet taskTemplates) {
+
+          }
+        });
+
+  }
+
   public static void createProject(DataInfo teplateData, final IsRow templateRow,
       final RowCallback callback) {
     int idxTMLName = teplateData.getColumnIndex(ProjectConstants.COL_PROJECT_NAME);
@@ -141,7 +167,7 @@ public class ProjectTemplatesGrid extends AbstractGridInterceptor {
         new RowCallback() {
           @Override
           public void onSuccess(BeeRow result) {
-            createInitialStage(result, templateRow, callback);
+            createStages(result, templateRow, callback);
           }
         });
   }
@@ -241,7 +267,7 @@ public class ProjectTemplatesGrid extends AbstractGridInterceptor {
         });
   }
 
-  private static void createInitialStage(final BeeRow prjRow, final IsRow tmlRow,
+  private static void createStages(final BeeRow prjRow, final IsRow tmlRow,
       final RowCallback callback) {
 
     final List<String> copyCols = Lists.newArrayList(ProjectConstants.COL_PROJECT,
@@ -256,8 +282,8 @@ public class ProjectTemplatesGrid extends AbstractGridInterceptor {
     final BeeRowSet stages = new BeeRowSet(ProjectConstants.VIEW_PROJECT_STAGES, stageCols);
 
     Queries.getRowSet(ProjectConstants.VIEW_PROJECT_TEMPLATE_STAGES, Lists.newArrayList(
-        ProjectConstants.COL_STAGE_NAME, ProjectConstants.COL_EXPECTED_DURATION,
-        ProjectConstants.COL_EXPENSES, ProjectConstants.COL_PROJECT_CURENCY),
+            ProjectConstants.COL_STAGE_NAME, ProjectConstants.COL_EXPECTED_DURATION,
+            ProjectConstants.COL_EXPENSES, ProjectConstants.COL_PROJECT_CURENCY),
         Filter.equals(ProjectConstants.COL_PROJECT_TEMPLATE, BeeUtils.toString(tmlRow.getId())),
         new Queries.RowSetCallback() {
 
@@ -288,13 +314,15 @@ public class ProjectTemplatesGrid extends AbstractGridInterceptor {
             Queries.insertRows(stages, new RpcCallback<RowInfoList>() {
               @Override
               public void onSuccess(RowInfoList result) {
-                createProjectUsers(prjRow, tmlRow, callback);
+//               createProjectUsers(prjRow, tmlRow, callback);
+
+                copyTasks(prjRow, tmlRow,callback);
               }
             });
 
           }
         }
-        );
+    );
   }
 
   private static void openProjectFullForm(long projectId) {
