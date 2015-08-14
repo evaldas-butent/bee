@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form[
+    <!ENTITY inline "display: inline-block;">
+    <!ENTITY lbl "margin-right: 1em; text-align: right; padding-left: 30px">
+    <!ENTITY lbl2 "margin-left: 1em; margin-right: 1em; text-align: left">
+    <!ENTITY inp1 "&inline; width: 350px;">
+    <!ENTITY inp2 "&inline; width: 200px;">
+    <!ENTITY inp3 "&inline; width: 100px;">
+    <!ENTITY inp4 "&inline; width: 575px; height:100px; max-height: 200px; max-width: 795px;">
+    ]>
+
+<f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form"
+        name="ProjectTemplate"
+        viewName="ProjectTemplates"
+        caption="=prjTemplate" width="950" widthUnit="px" height="95" heightUnit="%">
+  <FlowPanel>
+    <Table class="bee-ProjectTable">
+      <row>
+        <Label for="Name" text="=name" style="&lbl;" class="bee-required"/>
+        <InputText source="Name" style="width:100%"/>
+      </row>
+
+      <row>
+        <FlowPanel class="flexBox-horizontal">
+          <Label for="Term" text="=prjTerm" style="&lbl2;" />
+          <InputDecimal source="Term" style="&inp3;"/>
+        </FlowPanel>
+        <Label for="Company" text="=client" style="&lbl;" />
+        <DataSelector source="Company" style="&inp2;" choiceColumns="Name TypeName"
+                      renderColumns="CompanyName CompanyTypeName"/>
+      </row>
+    </Table>
+
+    <Disclosure open="true" name="RelatedInfo">
+      <Label text="=relatedInformation" style="text-transform: uppercase; "/>
+      <Table>
+        <Table>
+          <row>
+            <Label for="Priority" text="=priority" style="width: 120px; &lbl;"/>
+            <Radio source="Priority" style="width: 200px"/>
+          </row>
+
+          <row>
+            <Label for="ContactPerson" text="=personContact"
+                   style="&lbl;"/>
+            <DataSelector source="ContactPerson"
+                          style="&inp2;"
+                          renderColumns="ContactFirstName ContactLastName"
+                          choiceColumns="FirstName LastName CompanyName"
+                          options="Company" module="Classifiers.Contacts"/>
+          </row>
+
+          <row>
+            <Label for="Category" text="=category" style="&lbl;" class="bee-required"/>
+            <DataSelector name="Category" source="Category" style="&inp2;"/>
+            <Label for="Type" text="=type" style="&lbl;"/>
+            <DataSelector source="Type" style="&inp2;"/>
+          </row>
+        </Table>
+
+        <Table>
+          <row>
+            <Label for="ExpectedDuration" text="=expectedDuration" style="&lbl;"/>
+            <InputDecimal source="ExpectedDuration" style="&inp3;"/>
+            <DataSelector name="TimeUnit" source="TimeUnit" renderColumns="UnitName"
+                          style="width: 5em;"/>
+            <Label for="ExpectedTasksDuration" text="=prjExpectedTaskDuration"
+                   style="width: 250px; &lbl;"/>
+            <InputText name="ExpectedTasksDuration" readOnly="true" style="&inp3;"/>
+          </row>
+
+          <row>
+            <Label for="Price" text="=prjPrice" style="&lbl;"/>
+            <InputDecimal source="Price" scale="2" style="&inp3;"/>
+            <DataSelector source="Currency" for="Price" newRowEnabled="false" editEnabled="false"
+                          style="width: 5em;" readOnly="true"/>
+            <Label for="ActualTasksDuration" text="=prjActualTaskDuration" style="&lbl;"/>
+            <InputText name="ActualTasksDuration" readOnly="true" style="&inp3;"/>
+          </row>
+
+          <row>
+
+            <Label for="ContractPrice" text="=salePrice" style="&lbl;"/>
+            <InputDecimal source="ContractPrice" scale="2" style="&inp3;"/>
+            <DataSelector source="Currency" for="ContractPrice" newRowEnabled="false"
+                          editEnabled="false"
+                          style="width: 5em;" readOnly="true"/>
+          </row>
+
+        </Table>
+
+        <Table>
+          <row>
+            <Label for="Description" text="=description" style="width: 115px; &lbl;"/>
+            <InputArea source="Description" placeholder="=prjDescriptionContent" style="&inp4;"/>
+          </row>
+        </Table>
+
+      </Table>
+    </Disclosure>
+
+    <TabbedPages style="height: 580px;">
+      <page>
+        <text>=prjTeam</text>
+        <ChildGrid name="ProjectTMLUsers" relColumn="ProjectTemplate"/>
+      </page>
+      <page>
+        <text>=prjStages</text>
+        <ChildGrid name="ProjectTMLStages" relColumn="ProjectTemplate"/>
+      </page>
+      <page>
+        <text>=personContacts</text>
+        <ChildGrid name="ProjectTMLContacts" relColumn="ProjectTemplate"/>
+      </page>
+      <page module="Tasks">
+        <text>=crmTasks</text>
+        <ChildGrid name="ChildTaskTemplates" relColumn="ProjectTemplate"/>
+      </page>
+      <page>
+        <text>=prjTemplateDateMark</text>
+        <ChildGrid name="ProjectTMLDates" relColumn="ProjectTemplate"/>
+      </page>
+    </TabbedPages>
+  </FlowPanel>
+</f:Form> 

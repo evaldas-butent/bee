@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form[
+  <!ENTITY inpw "width: 200px;">
+  <!ENTITY inpdt "width: 10em;">
+  <!ENTITY lbl "margin-right: 1em; text-align: right; padding-left: 30px">
+]>
+<f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form" xmlns:ui="http://www.butent.com/ui"
+
+  name="Order" viewName="Orders" width="800" height="600">
+  <FlowPanel>
+    <Table>
+      <row data="OrdersTemplates" class="bee-ta-template-selection">
+        <Label style="margin-right: 1em; text-align: right; padding-left: 30px" text="=template" />
+        <UnboundSelector viewName="OrdersTemplates" name="Template" style="width: 200px;" newRowEnabled="false"
+          choiceColumns="Template" />
+      </row>
+      
+      <row>
+        <Label for="Type" visible="true" style="&lbl;" />
+        <DataSelector source="Type" style="&inpw;" visible="true" newRowEnabled="true" />
+
+        <Label for="Status" style="&lbl;" />
+        <ListBox source="Status" style="font-weight:bold;" readOnly="true" />
+      </row>
+
+      <row>
+        <Label for="StartDate" visible="true" style="&lbl;" />
+        <InputDateTime source="StartDate" style="&inpdt;" visible="true" />
+
+        <Label for="EndDate" style="&lbl;" />
+        <InputDateTime source="EndDate" style="&inpdt;" />
+      </row>
+
+      <row>
+        <Label for="Series" style="&lbl;" />
+        <DataSelector source="Series" newRowEnabled="true" style="width: &inpw;" />
+
+        <Label for="Number" visible="true" style="&lbl;" />
+        <InputText source="Number" style="&inpw;" visible="true" />
+      </row>
+
+      <row>
+        <Label for="Warehouse" visible="true" style="&lbl;" />
+        <DataSelector source="Warehouse" style="&inpw;" visible="true" />
+
+        <Label for="Company" visible="true" style="&lbl;" />
+        <DataSelector source="Company" style="&inpw;" visible="true" choiceColumns="Name TypeName"
+          renderColumns="CompanyName TypeName" />
+      </row>
+
+      <row>
+        <Label for="Contact" style="&lbl;" />
+        <DataSelector source="Contact" newRowEnabled="false" style="&inpw;" renderColumns="ContactFirstName ContactLastName"
+          choiceColumns="FirstName LastName CompanyName" options="Company" />
+
+        <Label for="Manager" style="&lbl;" />
+        <DataSelector source="Manager" editSource="ManagerPerson" renderColumns="ManagerFirstName ManagerLastName"
+          newRowEnabled="false" style="&inpw;" />
+      </row>
+    </Table>
+    <br />
+    <TabbedPages style="height: 400px;">
+      <page>
+        <text>=goods</text>
+        <ChildGrid name="OrderItems" relColumn="Order" />
+      </page>
+
+      <page>
+        <text>=notes</text>
+        <FlowPanel class="flexBox-vertical">
+          <br />
+          <SimplePanel class="flexible" style="position: relative;">
+            <InputArea source="Notes" class="occupy-1" summarize="true" />
+          </SimplePanel>
+        </FlowPanel>
+      </page>
+    </TabbedPages>
+  </FlowPanel>
+</f:Form>

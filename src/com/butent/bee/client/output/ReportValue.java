@@ -6,7 +6,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Objects;
 
-public class ReportValue implements Comparable<ReportValue> {
+public final class ReportValue implements Comparable<ReportValue> {
 
   private ReportValue[] values;
   private String value;
@@ -87,8 +87,8 @@ public class ReportValue implements Comparable<ReportValue> {
     return reportValue;
   }
 
-  public ReportValue setDisplay(String display) {
-    this.display = display;
+  public ReportValue setDisplay(String displ) {
+    this.display = displ;
     return this;
   }
 

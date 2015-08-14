@@ -4,6 +4,8 @@
   <!ENTITY forservice "<dynStyle><ui:inline>display: none;</ui:inline><ui:expression>!row.IsService</ui:expression></dynStyle>">
   <!ENTITY pricescale "2">
   <!ENTITY costscale "2">
+  <!ENTITY pricestyle "width: 120px;">
+  <!ENTITY currencystyle "width: 50px;">
 ]>
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
@@ -74,50 +76,52 @@
     <TabbedPages class="flexible">
       <page>
         <text>=prices</text>
-        <Table style="margin-top: 1ex;">
-          <col index="0" kind="label" />
-          <col index="2" cellStyle="padding-left: 6px;" />
+        <FlowPanel class="flexBox-vertical">
+          <Table style="margin-top: 1ex; margin-bottom: 1em;">
+            <col index="0" kind="label" />
+            <col index="2" cellStyle="padding-left: 6px;" />
+            <col index="3" kind="label" />
+            <col index="5" cellStyle="padding-left: 6px;" />
 
-          <row>
-            <Label for="Price" />
-            <InputDecimal source="Price" currencySource="Currency" scale="&pricescale;"
-              summarize="true" />
-            <DataSelector source="Currency" for="Price" newRowEnabled="false" editEnabled="false"
-              style="width: 50px;" />
-          </row>
+            <row>
+              <Label for="Price" />
+              <InputDecimal source="Price" currencySource="Currency" scale="&pricescale;"
+                style="&pricestyle;" summarize="true" />
+              <DataSelector source="Currency" for="Price" newRowEnabled="false" editEnabled="false"
+                style="&currencystyle;" />
 
-          <row>
-            <Label for="Cost" />
-            <InputDecimal source="Cost" currencySource="CostCurrency" scale="&costscale;"
-              summarize="true" />
-            <DataSelector source="CostCurrency" for="Cost" newRowEnabled="false" editEnabled="false"
-              style="width: 50px;" />
-          </row>
+              <Label for="Cost" />
+              <InputDecimal source="Cost" currencySource="CostCurrency" scale="&costscale;"
+                style="&pricestyle;" summarize="true" />
+              <DataSelector source="CostCurrency" for="Cost" newRowEnabled="false"
+                editEnabled="false" style="&currencystyle;" />
+            </row>
 
-          <row>
-            <Label for="Price1" />
-            <InputDecimal source="Price1" currencySource="Currency1" scale="&pricescale;"
-              summarize="true" />
-            <DataSelector source="Currency1" for="Price1" newRowEnabled="false" editEnabled="false"
-              style="width: 50px;" />
-          </row>
+            <row>
+              <Label for="Price1" />
+              <InputDecimal source="Price1" currencySource="Currency1" scale="&pricescale;"
+                style="&pricestyle;" summarize="true" />
+              <DataSelector source="Currency1" for="Price1" newRowEnabled="false"
+                editEnabled="false" style="&currencystyle;" />
 
-          <row>
-            <Label for="Price2" />
-            <InputDecimal source="Price2" currencySource="Currency2" scale="&pricescale;"
-              summarize="true" />
-            <DataSelector source="Currency2" for="Price2" newRowEnabled="false" editEnabled="false"
-              style="width: 50px;" />
-          </row>
+              <Label for="Price2" />
+              <InputDecimal source="Price2" currencySource="Currency2" scale="&pricescale;"
+                style="&pricestyle;" summarize="true" />
+              <DataSelector source="Currency2" for="Price2" newRowEnabled="false"
+                editEnabled="false" style="&currencystyle;" />
+            </row>
 
-          <row>
-            <Label for="Price3" />
-            <InputDecimal source="Price3" currencySource="Currency3" scale="&pricescale;"
-              summarize="true" />
-            <DataSelector source="Currency3" for="Price3" newRowEnabled="false" editEnabled="false"
-              style="width: 50px;" />
-          </row>
-        </Table>
+            <row>
+              <Label for="Price3" />
+              <InputDecimal source="Price3" currencySource="Currency3" scale="&pricescale;"
+                style="&pricestyle;" summarize="true" />
+              <DataSelector source="Currency3" for="Price3" newRowEnabled="false"
+                editEnabled="false" style="&currencystyle;" />
+            </row>
+          </Table>
+          
+          <ChildGrid name="ItemDiscounts" relColumn="Item" class="flexible" />
+        </FlowPanel>
       </page>
 
       <page>
@@ -212,7 +216,7 @@
             </InputInteger>
           </row>
         </Table>
-      </page>  
+      </page>
 
       <page>
         <text>=pictures</text>

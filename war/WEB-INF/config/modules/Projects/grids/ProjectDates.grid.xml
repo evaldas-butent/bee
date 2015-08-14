@@ -1,22 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
-	xmlns:ui="http://www.butent.com/ui" xmlns:w="http://www.butent.com/widget"
-
+        xmlns:xi="http://www.w3.org/2001/XInclude"
+        xmlns:ui="http://www.butent.com/ui"
 	name="ProjectDates" viewName="ProjectDates" caption="=prjDates">
-		
-	<g:columns>
-		<DataColumn name="StartDate" />
-		<DataColumn name="Color" width="100" visible="true">
-      <dynStyle>
-        <ui:inline>background-color: [row.Color];</ui:inline>
-        <ui:expression>row.Color</ui:expression>
-      </dynStyle>
-      <editor type="color" />
-    </DataColumn>
-		<DataColumn name="Note" />
-	</g:columns>
-	<g:rowStyle>
-   
-  </g:rowStyle>	
- 
+
+  <g:columns>
+    <DataColumn name="StartDate" />
+  </g:columns>
+
+  <xi:include href="columns/Dates.columns.xml" />
+
+  <g:rowStyle>
+    <ui:inline>="font-style: italic;"</ui:inline>
+    <ui:expression>row.StartDate == null</ui:expression>
+  </g:rowStyle>
 </g:Grid>
