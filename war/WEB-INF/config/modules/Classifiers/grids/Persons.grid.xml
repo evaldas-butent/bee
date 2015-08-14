@@ -4,32 +4,26 @@
   name="Persons" viewName="Persons" caption="=persons"
   editForm="Person" flexGrow="1"
   >
-
   <g:columns>
     <DataColumn name="Photo" caption="-" readOnly="true" cellType="html" sortable="false"
       width="30" horizontalAlignment="center" filterOptions="-" autoFit="false">
       <renderer type="photo" />
     </DataColumn>
-
     <DataColumn name="FirstName" visible="true" />
     <DataColumn name="LastName" visible="true" />
-
+    <RelColumn name="EmailId" editEnabled="true" filterSupplier="value" />
     <DataColumn name="Phone" />
     <DataColumn name="Mobile" />
-
-    <RelColumn name="EmailId" editEnabled="true" filterSupplier="value" />
-
-    <DataColumn name="Address" />
-
-    <DataColumn name="CityName" caption="=city" />
     <DataColumn name="CountryName" caption="=country" />
+    
 
+    <DataColumn name="Address" visible="false" />
+    <DataColumn name="CityName" caption="=city" visible="false" />
     <CalcColumn type="string" name="Flag" source="CountryCode" cellType="html" width="30"
       caption="-" label="=countryFlag" sortable="false" horizontalAlignment="center"
-      filterOptions="-" exportWidthFactor="0.5">
+      filterOptions="-" exportWidthFactor="0.5" visible="false" >
       <renderer type="flag" />
     </CalcColumn>
-
     <DataColumn name="DateOfBirth" visible="false" />
     <PropColumn type="string" name="CompanyNames" label="=company" visible="false" />
   </g:columns>

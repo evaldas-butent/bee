@@ -4,27 +4,27 @@
   name="Companies" viewName="Companies" caption="=clients" favorite="Name" flexGrow="1"
   >
   <g:columns>
-    <DataColumn name="Name" visible="true" />
     <RelColumn name="CompanyType" />
+    <DataColumn name="Name" visible="true" />
+    <DataColumn name="Code" />
     <RelColumn name="CompanyGroup" filterSupplier="value" />
     <RelColumn name="CompanyPriority" />
-    <DataColumn name="Code" />
-    <DataColumn name="VATCode" visible="false" />
-    <DataColumn name="Phone" />
-    <DataColumn name="Mobile" />
-    <DataColumn name="Fax" visible="false" />
-    <RelColumn name="EmailId" editEnabled="true" filterSupplier="value" />
-
-    <DataColumn name="Address" />
-    <DataColumn name="PostIndex" />
-
-    <DataColumn name="CityName" />
     <DataColumn name="CountryName" />
     <CalcColumn type="string" name="Flag" source="CountryCode" cellType="html" width="30"
       caption="-" label="=countryFlag" sortable="false" horizontalAlignment="center"
-      filterOptions="-" exportWidthFactor="0.5" visible="false">
+      filterOptions="-" exportWidthFactor="0.5" visible="true" >
       <renderer type="flag" />
     </CalcColumn>
+    
+    <DataColumn name="VATCode" visible="false" />
+    <DataColumn name="Phone" visible="false" />
+    <DataColumn name="Mobile" visible="false" />
+    <DataColumn name="Fax" visible="false" />
+    <RelColumn name="EmailId" editEnabled="true" filterSupplier="value" visible="false" />
+
+    <DataColumn name="Address" visible="false" />
+    <DataColumn name="PostIndex" visible="false" />
+    <DataColumn name="CityName" visible="false" />
     <RelColumn name="DefaultCompanyUser" visible="false" filterSupplier="value" />
 
     <DataColumn name="CreditLimit" visible="false" />

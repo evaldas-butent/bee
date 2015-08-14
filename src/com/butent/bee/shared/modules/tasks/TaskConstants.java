@@ -260,6 +260,8 @@ public final class TaskConstants {
   public static final String VIEW_RELATED_TASKS = "RelatedTasks";
   public static final String VIEW_RELATED_RECURRING_TASKS = "RelatedRecurringTasks";
 
+  public static final String VIEW_REQUESTS = "Requests";
+
   public static final String VIEW_TODO_LIST = "TodoList";
 
   public static final String COL_START_TIME = "StartTime";

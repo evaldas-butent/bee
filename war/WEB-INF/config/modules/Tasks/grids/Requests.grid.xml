@@ -8,17 +8,16 @@
 
   <g:columns>
     <IdColumn name="ID" width="50" />
-    <DataColumn name="Date" caption="=date" width="100" visible="true" />
-    <DataColumn name="Finished" caption="=crmRequestFinish" width="100" format="DATE_TIME_SHORT" />
-    <RelColumn name="Customer" caption="=client" minWidth="100" visible="true" />
-
+    <DataColumn name="Date" caption="=date" width="100" />
+    <RelColumn name="Customer" caption="=client" minWidth="100" />
     <DataColumn name="Content" caption="=crmRequest" minWidth="100" flexShrink="1" 
-      whiteSpace="nowrap" visible="true" />
-
+      whiteSpace="nowrap" />
     <RelColumn name="Manager" caption="=responsiblePerson" minWidth="100" />
-    <DataColumn name="Result" visible="false" />
-    <RelColumn name="RequestType" visible="true" />
-    <RelColumn name="RequestForm" visible="true" />
+    <RelColumn name="RequestType" />
+    <DataColumn name="Finished" caption="=crmRequestFinish" width="100" format="DATE_TIME_SHORT" />
+    <DataColumn name="Result" />
+
+    <RelColumn name="RequestForm" visible="false" />
   </g:columns>
   
   <g:predefinedFilter name="request_registred" label="=requestShowRegistered" initial="true" >
