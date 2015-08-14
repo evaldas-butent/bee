@@ -32,11 +32,13 @@
     <DateTime name="ReminderSent" label="=crmReminderSent" />
 
     <Enum name="Status" key="TaskStatus" notNull="true" defValue="0" label="=crmTaskStatus" />
-    
+
     <Relation name="RecurringTask" relation="RecurringTasks" cascade="SET_NULL"
       label="=crmRecurringTask" />
 
     <Relation name="Project" relation="Projects" cascade="SET_NULL" label="=project" />
     <Relation name="ProjectStage" relation="ProjectStages" cascade="SET_NULL" label="=prjStage" />
+    <!-- @deprecates due quick fix-->
+    <Relation name="TaskTemplate" relation="TaskTemplates" cascade="SET_NULL" />
   </Fields>
 </Table>

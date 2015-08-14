@@ -1,5 +1,6 @@
 package com.butent.bee.client.modules.tasks;
 
+import com.butent.bee.shared.data.*;
 import com.google.common.collect.Lists;
 
 import com.butent.bee.client.data.Data;
@@ -14,10 +15,6 @@ import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.data.BeeRow;
-import com.butent.bee.shared.data.BeeRowSet;
-import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.data.RelationUtils;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
@@ -26,9 +23,11 @@ import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.modules.tasks.TaskType;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.google.common.collect.Sets;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 class ChildTasksGrid extends TasksGrid {
 
@@ -119,8 +118,21 @@ class ChildTasksGrid extends TasksGrid {
 
     BeeRowSet templates = BeeRowSet.restore(prop);
     DataInfo viewTasks = Data.getDataInfo(TaskConstants.VIEW_TASKS);
+    Set<Long> createdTasks = Sets.newConcurrentHashSet();
+
+    for (IsRow taskRow : gridView.getRowData()) {
+      Long value = taskRow.getLong(viewTasks.getColumnIndex("TaskTemplate"));
+
+      if (DataUtils.isId(value)) {
+        createdTasks.add(value);
+      }
+    }
 
     for (IsRow templRow : templates) {
+
+      if (createdTasks.contains(templRow.getId())) {
+        continue;
+      }
 
       BeeRow row = RowFactory.createEmptyRow(viewTasks, true);
 
@@ -132,7 +144,7 @@ class ChildTasksGrid extends TasksGrid {
       row.setValue(viewTasks.getColumnIndex(TaskConstants.COL_STATUS),
           TaskConstants.TaskStatus.SCHEDULED.ordinal());
 
-      row.setProperty(ProjectConstants.PROP_TEMPLATE, BeeConst.STRING_TRUE);
+      row.setProperty(ProjectConstants.PROP_TEMPLATE, BeeUtils.toString(templRow.getId()));
 
       gridView.getGrid().getRowData().add(0, row);
     }
@@ -152,6 +164,10 @@ class ChildTasksGrid extends TasksGrid {
         row.setValue(viewTasks.getColumnIndex(col),
             templRow.getValue(viewTasks.getColumnIndex(col)));
       }
+
+     // @Deprecated
+      row.setValue(viewTasks.getColumnIndex("TaskTemplate"),
+          templRow.getProperty(ProjectConstants.PROP_TEMPLATE));
 
       if (getGridView() != null) {
 
