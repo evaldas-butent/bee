@@ -572,7 +572,7 @@ public class MailAccount {
         remoteSource.copyMessages(messages.toArray(new Message[0]), remoteTarget);
       }
       if (move) {
-        for (Iterator<Message> iterator = messages.iterator(); iterator.hasNext(); ) {
+        for (Iterator<Message> iterator = messages.iterator(); iterator.hasNext();) {
           Message message = iterator.next();
 
           if (message.isExpunged()) {

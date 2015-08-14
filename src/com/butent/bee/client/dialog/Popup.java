@@ -35,7 +35,6 @@ import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.screen.BodyPanel;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.UiHelper;
-import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -299,30 +298,6 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
   @Override
   public HandlerRegistration addOpenHandler(OpenEvent.Handler handler) {
     return addHandler(handler, OpenEvent.getType());
-  }
-
-  public void attachAmendDetach(final Scheduler.ScheduledCommand command, final Runnable callback) {
-    Assert.notNull(command);
-
-    Assert.state(!isShowing());
-    Assert.state(!isAttached());
-
-    getElement().getStyle().setVisibility(Visibility.HIDDEN);
-    BodyPanel.get().add(this);
-
-    Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
-      @Override
-      public void execute() {
-        command.execute();
-
-        BodyPanel.get().remove(Popup.this);
-        getElement().getStyle().clearVisibility();
-
-        if (callback != null) {
-          callback.run();
-        }
-      }
-    });
   }
 
   public void cascade() {

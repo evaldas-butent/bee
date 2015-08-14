@@ -64,7 +64,7 @@ import java.util.TreeMap;
 
 public final class TradeActKeeper {
 
-  static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "ta-";
+  public static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "ta-";
 
   private static final String STYLE_COMMAND_PREFIX = STYLE_PREFIX + "command-";
   private static final String STYLE_COMMAND_DISABLED = STYLE_COMMAND_PREFIX + "disabled";
@@ -220,7 +220,7 @@ public final class TradeActKeeper {
     }
   }
 
-  static Collection<Long> extractWarehouses(BeeRowSet rowSet) {
+  public static Collection<Long> extractWarehouses(BeeRowSet rowSet) {
     if (DataUtils.isEmpty(rowSet)) {
       return new HashSet<>();
     } else {
@@ -349,7 +349,7 @@ public final class TradeActKeeper {
     }
   }
 
-  static ItemPrice getItemPrice(String viewName, IsRow row) {
+  public static ItemPrice getItemPrice(String viewName, IsRow row) {
     return getItemPrice(Data.getLong(viewName, row, COL_TA_OPERATION));
   }
 
@@ -441,7 +441,7 @@ public final class TradeActKeeper {
     }
   }
 
-  static Map<Long, String> getWarehouses(Collection<Long> ids) {
+  public static Map<Long, String> getWarehouses(Collection<Long> ids) {
     Map<Long, String> result = new LinkedHashMap<>();
 
     if (!BeeUtils.isEmpty(ids)) {

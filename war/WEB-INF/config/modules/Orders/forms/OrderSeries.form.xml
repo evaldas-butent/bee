@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<f:Form xmlns="http://www.butent.com/widget"
+  xmlns:f="http://www.butent.com/form"
+  
+  name="OrderSeries" viewName="OrderSeries" caption="=trdSeries"
+  width="500" height="300"
+  >
+  <FlowPanel>
+    <Table>
+      <row>
+        <Label for="SeriesName" />
+        <InputText source="SeriesName" upperCase="true" style="width: 100px;" visible="true" />
+      </row>
+      <row>
+        <Label for="Notes" />
+        <InputArea source="Notes" visibleLines="5" style="width: 350px;" />
+      </row>
+    </Table>
+  </FlowPanel>
+</f:Form>

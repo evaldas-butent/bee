@@ -140,7 +140,7 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
       }
     }
 
-    private ReportValue getKey(String id, ReportValue... prm) {
+    private static ReportValue getKey(String id, ReportValue... prm) {
       int l = ArrayUtils.length(prm);
       ReportValue[] params = new ReportValue[l + 1];
       params[0] = ReportValue.of(id);
@@ -223,23 +223,37 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
       }
     }
 
-    private void sort(List<ReportValue> result, final Map<ReportValue, Object> items,
+    private static void sort(List<ReportValue> result, final Map<ReportValue, Object> items,
         final boolean descending) {
 
       Collections.sort(result, new Comparator<ReportValue>() {
+        @SuppressWarnings("unchecked")
         @Override
         public int compare(ReportValue value1, ReportValue value2) {
-          Comparable item1;
-          Comparable item2;
+          Object item1;
+          Object item2;
 
           if (descending) {
-            item1 = (Comparable) items.get(value2);
-            item2 = (Comparable) items.get(value1);
+            item1 = items.get(value2);
+            item2 = items.get(value1);
           } else {
-            item1 = (Comparable) items.get(value1);
-            item2 = (Comparable) items.get(value2);
+            item1 = items.get(value1);
+            item2 = items.get(value2);
           }
-          return BeeUtils.compareNullsFirst(item1, item2);
+
+          if (item1 == null) {
+            if (item2 == null) {
+              return BeeConst.COMPARE_EQUAL;
+            } else {
+              return BeeConst.COMPARE_LESS;
+            }
+          } else if (item2 == null) {
+            return BeeConst.COMPARE_MORE;
+          } else if (item1 instanceof Comparable) {
+            return ((Comparable<Object>) item1).compareTo(item2);
+          } else {
+            return BeeConst.COMPARE_EQUAL;
+          }
         }
       });
     }
@@ -1486,7 +1500,7 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
       activateReport(rep);
     } else {
       Queries.insert(VIEW_REPORT_SETTINGS, Data.getColumns(VIEW_REPORT_SETTINGS,
-              Arrays.asList(COL_RS_USER, COL_RS_REPORT, COL_RS_PARAMETERS)),
+          Arrays.asList(COL_RS_USER, COL_RS_REPORT, COL_RS_PARAMETERS)),
           Arrays.asList(BeeUtils.toString(BeeKeeper.getUser().getUserId()),
               getReport().getReportName(), rep.serialize()), null,
           new RowCallback() {

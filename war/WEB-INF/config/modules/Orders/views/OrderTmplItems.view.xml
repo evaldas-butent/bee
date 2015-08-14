@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="OrderTmplItems" source="OrderTmplItems" module="Orders"
+  caption="=feedGoods"
+  >
+  <Columns>
+    <SimpleColumn name="Template" />
+    <SimpleColumn name="Date" />
+
+    <SimpleColumn name="Item" />
+    <SimpleJoin joinType="INNER" name="Item">
+      <SimpleColumn name="Name" alias="ItemName" />
+      <SimpleColumn name="Article" />
+
+      <SimpleJoin joinType="INNER" name="Unit">
+        <SimpleColumn name="Name" alias="UnitName" />
+      </SimpleJoin>
+
+      <SimpleColumn name="Price" alias="ItemPrice" />
+      <SimpleColumn name="Currency" alias="ItemCurrency" />
+      <SimpleJoin name="Currency" joinType="LEFT">
+        <SimpleColumn name="Name" alias="ItemCurrencyName" />
+      </SimpleJoin>
+    </SimpleJoin>
+
+    <SimpleColumn name="Quantity" />
+    <SimpleColumn name="Price" />
+    <SimpleColumn name="VatPlus" />
+    <SimpleColumn name="Vat" />
+    <SimpleColumn name="VatPercent" />
+    
+    <SimpleColumn name="Currency" />
+    <SimpleJoin name="Currency" joinType="LEFT">
+      <SimpleColumn name="Name" alias="CurrencyName" />
+    </SimpleJoin>
+    
+    <SimpleColumn name="Discount" />
+    <SimpleColumn name="Sale" />
+  </Columns>
+</View>
