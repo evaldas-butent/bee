@@ -7,6 +7,7 @@ import com.google.gwt.event.logical.shared.SelectionHandler;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
+import static com.butent.bee.shared.modules.orders.OrdersConstants.*;
 
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.IdCallback;
@@ -36,8 +37,6 @@ import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.modules.classifiers.ItemPrice;
-import com.butent.bee.shared.modules.orders.OrdersConstants;
-import com.butent.bee.shared.modules.orders.OrdersConstants.OrdersStatus;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 
@@ -110,12 +109,11 @@ public class OrderItemsGrid extends AbstractGridInterceptor implements Selection
 
     if (DataUtils.isId(orderForm)) {
       boolean isOrder =
-          (Data.getInteger(event.getViewName(), event.getRow(), COL_ORDERS_STATUS) == OrdersStatus.APPROVED
+          (Data.getInteger(event.getViewName(), event.getRow(), COL_ORDERS_STATUS)
+          == OrdersStatus.APPROVED
               .ordinal()) ? true : false;
       if (isOrder) {
-        invoice.add(new InvoiceCreator(VIEW_ORDER_SALES, Filter.equals(
-            OrdersConstants.COL_ORDER,
-            orderForm)));
+        invoice.add(new InvoiceCreator(VIEW_ORDER_SALES, Filter.equals(COL_ORDER, orderForm)));
       }
     }
 
@@ -174,11 +172,11 @@ public class OrderItemsGrid extends AbstractGridInterceptor implements Selection
   private void addItems(IsRow parentRow, ItemPrice defPrice,
       Double discount, BeeRowSet items) {
 
-    List<String> colNames = Lists.newArrayList(OrdersConstants.COL_ORDER, COL_TA_ITEM,
+    List<String> colNames = Lists.newArrayList(COL_ORDER, COL_TA_ITEM,
         COL_TRADE_ITEM_QUANTITY, COL_TRADE_ITEM_PRICE, COL_TRADE_DISCOUNT);
     BeeRowSet rowSet = new BeeRowSet(getViewName(), Data.getColumns(getViewName(), colNames));
 
-    int ordIndex = rowSet.getColumnIndex(OrdersConstants.COL_ORDER);
+    int ordIndex = rowSet.getColumnIndex(COL_ORDER);
     int itemIndex = rowSet.getColumnIndex(COL_TA_ITEM);
     int qtyIndex = rowSet.getColumnIndex(COL_TRADE_ITEM_QUANTITY);
     int priceIndex = rowSet.getColumnIndex(COL_TRADE_ITEM_PRICE);
