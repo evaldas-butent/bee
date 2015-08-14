@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Table xmlns="http://www.butent.com/table"
+  
+  name="TaskRequestUsage"
+  idName="TaskRequestUsageID"
+  >
+  <Fields>
+    <Relation name="Request" notNull="true" relation="Requests" cascade="DELETE" />
+    <Relation name="User" notNull="true" relation="Users" cascade="DELETE" />
+
+    <Long name="Access" />
+    <Long name="Update" />
+
+    <Integer name="Star" />
+  </Fields>
+
+  <Constraints>
+    <Unique fields="Request User" />
+  </Constraints>
+</Table>
