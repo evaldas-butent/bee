@@ -15,32 +15,41 @@
       <renderer type="star" />
     </PropColumn>
 
-    <DataColumn name="Subject" minWidth="450"  visible="true" />
-
+    <DataColumn name="Status" minWidth="70"
+      autoFit="true" />
+    <DataColumn name="Subject" minWidth="450" />
+    <PropColumn name="MarkCount" type="decimal"  format="#" horizontalAlignment="center"
+      maxWidth="90" autoFit="true" caption="=discussTotalMarks">
+    </PropColumn>
+    <CalcColumn name="CommentCount" type="integer"
+      maxWidth="90" autoFit="true" caption="=discussTotalComments">
+        <render>
+          <ui:expression>row.CommentCount</ui:expression>
+        </render>
+    </CalcColumn>
     <RelColumn name="Owner" renderColumns="OwnerFirstName OwnerLastName"
       sortBy="OwnerLastName OwnerFirstName" autoFit="true" />
 
-    <DataColumn name="Status" visible="true" minWidth="70"
-      autoFit="true" />
 
-    <DataColumn name="Created" visible="true" minWidth="120"
+
+    <DataColumn name="Created" visible="false" minWidth="120"
       autoFit="true" />
       
     <PropColumn name="FilesCount" type="integer" cellType="html"
       horizontalAlignment="center" width="20" maxWidth="100" autoFit="true"
-      label="=discussHasFiles">
+      label="=discussHasFiles" visible="false">
       <renderer type="attachment" />
     </PropColumn>
-    
+
     <PropColumn name="RelationsCount" type="string" cellType="html"
       horizontalAlignment="center" width="20" maxWidth="20"
-      label="=discussHasRelations">
+      label="=discussHasRelations" visible="false" >
       <renderer type="image" />
     </PropColumn>
     
     <CalcColumn name="Announcement" type="boolean"
       width="20" maxWidth="20" autoFit="true" searchBy="TopicName" filterOptions="empty"
-      caption="=announcement">
+      caption="=announcement" visible="false" >
         <render>
           <ui:function>
             var topic = row.Topic;
@@ -55,20 +64,8 @@
     
     <PropColumn name="LastCommentData" type="string" cellType="html"
       caption="=discussLastComment" label="=discussLastComment" width="180"
-      sortBy="LastCommentPublishTime">      
+      sortBy="LastCommentPublishTime" visible="false" >      
     </PropColumn>
-    
-    <CalcColumn name="CommentCount" type="integer"
-      maxWidth="90" autoFit="true" caption="=discussTotalComments">
-        <render>
-          <ui:expression>row.CommentCount</ui:expression>
-        </render>
-    </CalcColumn>
-    
-    <PropColumn name="MarkCount" type="decimal"  format="#" horizontalAlignment="center"
-      maxWidth="90" autoFit="true" caption="=discussTotalMarks">
-    </PropColumn>      
-    
   <DataColumn name="Accessibility" caption="=discussPublic" maxWidth="20"  visible="false" />
     
   </g:columns>

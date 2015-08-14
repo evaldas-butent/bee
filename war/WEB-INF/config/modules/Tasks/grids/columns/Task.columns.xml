@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:columns xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
 xmlns:ui="http://www.butent.com/ui" >
-  <DataColumn name="RecurringTask" readOnly="true" visible="false" />
 
   <RelColumn name="Type" renderColumns="TypeName" />
   <DataColumn name="Priority" >
@@ -14,31 +13,25 @@ xmlns:ui="http://www.butent.com/ui" >
        <ui:expression>row.Priority == 2</ui:expression>
      </dynStyle>
   </DataColumn>
-
-  <DataColumn name="Summary" visible="true" minWidth="150" maxWidth="500"/>
-  <DataColumn name="Description" visible="false" />
-
-  <RelColumn name="Company" />
-  <RelColumn name="Contact" visible="false" />
-
-  <DataColumn name="Status" visible="true" />
   <CalcColumn name="Slack" type="string" cellType="html" width="60"
     caption="=crmTaskDelayPlannedShort" />
-
-  <RelColumn name="Owner" renderColumns="OwnerFirstName OwnerLastName"
-    sortBy="OwnerLastName OwnerFirstName" minWidth="100" />
+  <DataColumn name="Status" />
+  <DataColumn name="Summary" minWidth="150" maxWidth="500"/>
+  <RelColumn name="Company" />
   <RelColumn name="Executor" renderColumns="ExecutorFirstName ExecutorLastName"
-    sortBy="ExecutorLastName ExecutorFirstName" minWidth="100" />
-
-  <DataColumn name="StartTime" visible="true" readOnly="true" width="120" />
+    sortBy="ExecutorLastName ExecutorFirstName" minWidth="100" visible="true" />
+  <RelColumn name="Owner" renderColumns="OwnerFirstName OwnerLastName"
+    sortBy="OwnerLastName OwnerFirstName" minWidth="100"  visible="true" />
+  <DataColumn name="StartTime" readOnly="true" width="120" />
   <DataColumn name="FinishTime" width="120" />
-
+  <DataColumn name="Completed" />
+  
+  <DataColumn name="RecurringTask" readOnly="true" visible="false" />
+  <RelColumn name="Contact" visible="false" />
+  <DataColumn name="Description" visible="false" />
   <DataColumn name="ExpectedDuration" visible="false" />
-
   <DataColumn name="Created" visible="false" />
-  <DataColumn name="Completed" visible="false" />
   <DataColumn name="Approved" visible="false" />
-    
   <RelColumn name="Reminder" visible="false" />
   <DataColumn name="ReminderTime" visible="false" />
   <DataColumn name="ReminderSent" visible="false" />

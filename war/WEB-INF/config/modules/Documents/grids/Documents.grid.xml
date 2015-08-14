@@ -18,17 +18,17 @@
   </g:west>
 
   <g:columns>
-    <DataColumn name="Name" visible="true" />
-    <RelColumn name="Company" filterSupplier="value" />
-    <RelColumn name="Category" />
-    <DataColumn name="DocumentDate" />
-    <DataColumn name="Expires" />
+    <IdColumn name="Id" />
     <DataColumn name="Number" />
+    <DataColumn name="DocumentDate" />
+    <DataColumn name="Name" />
+    <RelColumn name="Company" filterSupplier="value" />
     <RelColumn name="Type" carry="true" />
     <RelColumn name="Place" carry="true" />
     <DataColumn name="StatusName" />
-
-    <IdColumn name="Id" visible="false" />
+    
+    <RelColumn name="Category" visible="false" />
+    <DataColumn name="Expires" visible="false" />
     <DataColumn name="RegistrationNumber" visible="false" />
     <DataColumn name="Received" visible="false" />
     <DataColumn name="Sent" visible="false" />
