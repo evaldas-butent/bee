@@ -36,6 +36,9 @@
 
     <DataColumn name="VatPercent" width="20" sortable="false" caption="%" format="%" carry="true" visible="false" />
 
+    <RelColumn name="Sale" caption="=trdInvoiceId" readOnly="true" renderColumns="Sale" editEnabled="true"
+      editForm="OrderInvoice" editViewName="OrdersInvoices" />
+
     <CalcColumn name="Total" type="decimal" caption="=trdAmount" scale="2">
       <style>
         <bodyStyle>
