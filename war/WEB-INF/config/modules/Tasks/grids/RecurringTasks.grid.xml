@@ -7,9 +7,10 @@
   >
   <g:columns>
     <IdColumn name="Id" />
-    <RelColumn name="Owner" renderColumns="OwnerFirstName OwnerLastName"
-      sortBy="OwnerLastName OwnerFirstName" visible="false" />
   </g:columns>
-
   <xi:include href="columns/RecurringTask.columns.xml" />
+  <g:columns>
+    <RelColumn name="Owner" renderColumns="OwnerFirstName OwnerLastName"
+      sortBy="OwnerLastName OwnerFirstName" />
+  </g:columns>
 </g:Grid>

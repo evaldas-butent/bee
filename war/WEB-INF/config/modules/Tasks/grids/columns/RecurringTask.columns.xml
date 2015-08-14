@@ -3,33 +3,25 @@
 
   <RelColumn name="Type" renderColumns="TypeName" />
   <DataColumn name="Priority" />
-
   <DataColumn name="Summary" visible="true" />
-  <DataColumn name="Description" visible="false" />
-
   <RelColumn name="Company" />
-  <RelColumn name="Contact" renderColumns="ContactFirstName ContactLastName"
-    sortBy="ContactLastName ContactFirstName" visible="false" />
-
   <DataColumn name="ScheduleFrom" />
   <DataColumn name="ScheduleUntil" />
-
-  <DataColumn name="ScheduleDays" />
-
+  
+  <RelColumn name="Contact" renderColumns="ContactFirstName ContactLastName"
+    sortBy="ContactLastName ContactFirstName" visible="false" />
+  <DataColumn name="Description" visible="false" />
+  <DataColumn name="ScheduleDays" visible="false" />
   <DataColumn name="WorkdayTransition" visible="false" />
-
-  <DataColumn name="DayOfMonth" />
-  <DataColumn name="Month" />
-  <DataColumn name="DayOfWeek" />
+  <DataColumn name="DayOfMonth" visible="false" />
+  <DataColumn name="Month" visible="false" />
+  <DataColumn name="DayOfWeek" visible="false" />
   <DataColumn name="Year" visible="false" />
-
   <DataColumn name="StartAt" visible="false" />
   <DataColumn name="DurationDays" visible="false" />
   <DataColumn name="DurationTime" visible="false" />
-    
-  <RelColumn name="Reminder" />
+  <RelColumn name="Reminder" visible="false" />
   <DataColumn name="RemindBefore" visible="false" />
   <DataColumn name="RemindAt" visible="false" />
-
   <DataColumn name="CopyByMail" visible="false" />
 </g:columns>
