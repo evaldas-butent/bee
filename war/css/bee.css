@@ -1009,6 +1009,10 @@
   -ms-flex-align: center;
 }
 
+.bee-NewRow-tree .bee-ChildGrid {
+  display: none;
+}
+
 .bee-DatePicker {
   background-color: white;
   border-collapse: collapse;

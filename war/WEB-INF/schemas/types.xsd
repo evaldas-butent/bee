@@ -299,6 +299,7 @@
       <xs:enumeration value="Departments" />
       <xs:enumeration value="DepartmentEmployees" />
       <xs:enumeration value="DepartmentPositions" />
+      <xs:enumeration value="Discounts" />
       <xs:enumeration value="Discussions" />
       <xs:enumeration value="DiscussionsComments" />
       <xs:enumeration value="DiscussionsFiles" />
@@ -369,6 +370,14 @@
       <xs:enumeration value="Maintenance" />
       <xs:enumeration value="Messages" />
       <xs:enumeration value="Objects" />
+      <xs:enumeration value="Orders" />
+      <xs:enumeration value="OrdersInvoices" />
+      <xs:enumeration value="OrderItems" />
+      <xs:enumeration value="OrderSales" />
+      <xs:enumeration value="OrderSeries" />
+      <xs:enumeration value="OrdersTemplates" />
+      <xs:enumeration value="OrderTypes" />
+      <xs:enumeration value="OrderTmplItems" />
       <xs:enumeration value="OrderCargo" />
       <xs:enumeration value="Parameters" />
       <xs:enumeration value="PaymentTypes" />
@@ -387,6 +396,11 @@
       <xs:enumeration value="ProjectInvoices" />
       <xs:enumeration value="ProjectReasons" />
       <xs:enumeration value="ProjectStages" />
+      <xs:enumeration value="ProjectTemplates" />
+      <xs:enumeration value="ProjectTMLContacts" />
+      <xs:enumeration value="ProjectTMLDates" />
+      <xs:enumeration value="ProjectTMLStages" />
+      <xs:enumeration value="ProjectTMLUsers" />
       <xs:enumeration value="ProjectTree"/>
       <xs:enumeration value="ProjectTypes" />
       <xs:enumeration value="ProjectUsers" />

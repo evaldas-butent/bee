@@ -18,6 +18,7 @@ import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.discussions.DiscussionsConstants;
 import com.butent.bee.shared.modules.ec.EcConstants;
 import com.butent.bee.shared.modules.mail.MailConstants;
+import com.butent.bee.shared.modules.orders.OrdersConstants;
 import com.butent.bee.shared.modules.projects.ProjectConstants;
 import com.butent.bee.shared.modules.service.ServiceConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
@@ -67,6 +68,7 @@ public final class EnumUtils {
     MailConstants.register();
     TradeActConstants.register();
     TradeConstants.register();
+    OrdersConstants.register();
   }
 
   public static String buildIndexList(Collection<? extends Enum<?>> values) {
@@ -266,7 +268,7 @@ public final class EnumUtils {
 
   /**
    * @param clazz the class to check for Enum constants
-   * @param idx   the index to check
+   * @param idx the index to check
    * @return true if an Enum with the specified index {@code idx} exists, otherwise false.
    */
   public static <E extends Enum<?>> boolean isOrdinal(Class<E> clazz, Integer idx) {

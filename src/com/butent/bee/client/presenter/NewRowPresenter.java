@@ -26,6 +26,7 @@ import com.butent.bee.shared.data.RowChildren;
 import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.view.DataInfo;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.HandlesActions;
 import com.butent.bee.shared.ui.HasCaption;
@@ -241,7 +242,8 @@ public class NewRowPresenter extends AbstractPresenter implements ParentRowCreat
     }
 
     if (columns.isEmpty()) {
-      callback.onFailure("New Row", "all columns cannot be empty");
+      callback.onFailure(Localized.getConstants().newRow(),
+          Localized.getConstants().allValuesCannotBeEmpty());
       return;
     }
 

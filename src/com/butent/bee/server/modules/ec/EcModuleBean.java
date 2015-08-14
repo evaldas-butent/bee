@@ -89,6 +89,7 @@ import com.butent.bee.shared.modules.ec.DeliveryMethod;
 import com.butent.bee.shared.modules.ec.EcBrand;
 import com.butent.bee.shared.modules.ec.EcCarModel;
 import com.butent.bee.shared.modules.ec.EcCarType;
+import com.butent.bee.shared.modules.ec.EcConstants;
 import com.butent.bee.shared.modules.ec.EcConstants.EcDisplayedPrice;
 import com.butent.bee.shared.modules.ec.EcConstants.EcOrderStatus;
 import com.butent.bee.shared.modules.ec.EcConstants.EcSupplier;
@@ -1491,12 +1492,13 @@ public class EcModuleBean implements BeeModule {
     Long parent = currentClientInfo.getLong(COL_CLIENT_DISCOUNT_PARENT);
 
     SqlSelect discountQuery = new SqlSelect();
-    discountQuery.addFields(TBL_DISCOUNTS, COL_DISCOUNT_DATE_FROM, COL_DISCOUNT_DATE_TO,
-        COL_DISCOUNT_CATEGORY, COL_DISCOUNT_BRAND, COL_DISCOUNT_SUPPLIER, COL_DISCOUNT_ARTICLE,
-        COL_DISCOUNT_PERCENT, COL_DISCOUNT_PRICE);
-    discountQuery.addFrom(TBL_DISCOUNTS);
+    discountQuery.addFields(EcConstants.TBL_DISCOUNTS,
+        EcConstants.COL_DISCOUNT_DATE_FROM, EcConstants.COL_DISCOUNT_DATE_TO,
+        EcConstants.COL_DISCOUNT_CATEGORY, COL_DISCOUNT_BRAND, COL_DISCOUNT_SUPPLIER,
+        COL_DISCOUNT_ARTICLE, EcConstants.COL_DISCOUNT_PERCENT, EcConstants.COL_DISCOUNT_PRICE);
+    discountQuery.addFrom(EcConstants.TBL_DISCOUNTS);
 
-    discountQuery.setWhere(SqlUtils.equals(TBL_DISCOUNTS, COL_DISCOUNT_CLIENT, client));
+    discountQuery.setWhere(SqlUtils.equals(EcConstants.TBL_DISCOUNTS, COL_DISCOUNT_CLIENT, client));
 
     SimpleRowSet discountData = qs.getData(discountQuery);
     if (!DataUtils.isEmpty(discountData)) {
@@ -1511,7 +1513,8 @@ public class EcModuleBean implements BeeModule {
       clientQuery.addFrom(TBL_CLIENTS);
 
       while (DataUtils.isId(parent) && !traversed.contains(parent)) {
-        discountQuery.setWhere(SqlUtils.equals(TBL_DISCOUNTS, COL_DISCOUNT_CLIENT, parent));
+        discountQuery.setWhere(SqlUtils.equals(EcConstants.TBL_DISCOUNTS, COL_DISCOUNT_CLIENT,
+            parent));
 
         discountData = qs.getData(discountQuery);
         if (!DataUtils.isEmpty(discountData)) {

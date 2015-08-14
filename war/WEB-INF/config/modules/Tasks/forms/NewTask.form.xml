@@ -21,11 +21,11 @@
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
   xmlns:xi="http://www.w3.org/2001/XInclude"
-  
+
   name="NewTask" viewName="Tasks" caption="=crmNewTask" width="725" height="700">
 
   <FlowPanel style="padding: 10px 2px 2px 10px;">
-  
+
     <Table style="&tbl;" cellStyle="&cell;">
       <col index="0" cellStyle="&col1;" />
       <col index="2" cellStyle="&col3;" />
@@ -65,7 +65,7 @@
           <InputTimeOfDay name="End_Time" step="&timeStep;" style="&timeStyle;" />
         </FlowPanel>
         <Label for="Company" class="bee-required" />
-        <DataSelector source="Company" editPopup="true" newRowEnabled="true" choiceColumns="Name TypeName" 
+        <DataSelector source="Company" editPopup="true" newRowEnabled="true" choiceColumns="Name TypeName"
             renderColumns="CompanyName CompanyTypeName" style="width: 200px;" required="true" />
       </row>
 
@@ -94,7 +94,7 @@
     &separator;
     <Table style="&tbl;" cellStyle="&cell;">
       <col index="0" cellStyle="&col1;" />
-      
+
       <row>
         <Label for="Summary" />
         <InputText source="Summary" style="&inp2x;" autocomplete="true" visible="true" />
@@ -147,15 +147,15 @@
           editPopup="true" newRowEnabled="false" style="&inp2y;" label="=crmTaskObserverGroups"
           filter="Owner {u} or Visibility 1" />
       </row>
-      
+
       <row module="Projects" data="Projects" >
         <Label text="=project" name="ProjectLabel"/>
-        <DataSelector source="Project" style="&inp2x;" disablable="true" readOnly="true" 
+        <DataSelector source="Project" renderColumns="ProjectName" style="&inp2x;" disablable="true" readOnly="true"
         editPopup="false" />
-      </row>         
+      </row>
       <row  module="Projects" data="ProjectStages">
         <Label text="=prjStage" name="ProjectStageLabel"/>
-        <DataSelector source="ProjectStage" style="&inp2x;" />
+        <DataSelector source="ProjectStage" renderColumns="StageName" style="&inp2x;" />
       </row>
     </Table>
 
@@ -164,7 +164,7 @@
 
     <Table style="&tbl;" cellStyle="&cell;" data="Relations" for="Task">
       <col index="0" cellStyle="&col1;" />
-  
+
       <row data="Relations" for="Company" module="Classifiers.Contacts">
         <Label text="=companies" />
         <MultiSelector viewName="Companies" property="Companies" renderColumns="Name TypeName"
@@ -212,7 +212,7 @@
 
       <row data="Relations" for="Relation">
         <Label text="=crmTasks" />
-        <MultiSelector viewName="Tasks" property="Tasks" 
+        <MultiSelector viewName="Tasks" property="Tasks"
           renderColumns="Id Summary ExecutorFirstName ExecutorLastName"
           choiceColumns="Id Summary ExecutorFirstName ExecutorLastName StartTime FinishTime"
           newRowEnabled="false" editPopup="true" style="&inp2x;" />

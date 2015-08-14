@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+  xmlns:ui="http://www.butent.com/ui" xmlns:xi="http://www.w3.org/2001/XInclude"
+
+  name="ItemDiscounts" viewName="Discounts" caption="=discounts"
+  >
+  <g:columns>
+    <RelColumn name="Company" editPopup="true" />
+  </g:columns>
+
+  <xi:include href="columns/Discount.columns.xml" />
+
+  <g:rowValidation>
+    <ui:function>
+      if (!(row.PriceName || row.Percent || row.Price > 0)) {
+        return $wnd.Bee_maybeTranslate("=priceName+, +=discountPercent+, +=discountPrice+: +=allValuesCannotBeEmpty");
+      }
+      return null;
+    </ui:function>
+  </g:rowValidation>
+</g:Grid>

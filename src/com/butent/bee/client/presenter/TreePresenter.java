@@ -2,19 +2,26 @@ package com.butent.bee.client.presenter;
 
 import com.google.common.collect.Lists;
 import com.google.gwt.event.shared.HandlerRegistration;
+import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.xml.client.Element;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.data.RowEditor;
+import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.data.Queries.IntCallback;
 import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.dialog.ConfirmationCallback;
+import com.butent.bee.client.dialog.DialogConstants;
 import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dialog.InputCallback;
+import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.event.logical.CatchEvent;
+import com.butent.bee.client.event.logical.OpenEvent;
 import com.butent.bee.client.ui.FormDescription;
+import com.butent.bee.client.ui.WidgetInitializer;
 import com.butent.bee.client.utils.Evaluator;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.TreeView;
@@ -92,7 +99,6 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
   private CustomProperties properties;
   private Evaluator evaluator;
   private final Element editor;
-  private FormView formView;
 
   private final HandlerRegistration catchHandler;
 
@@ -278,20 +284,21 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
     } else {
       row = DataUtils.cloneRow(item);
     }
-    if (formView == null) {
-      formView = new FormImpl(FormDescription.getName(editor));
-      formView.create(new FormDescription(editor), getViewName(), getDataColumns(), false, null);
-      formView.setEditing(true);
-      formView.start(null);
-    }
-    formView.updateRow(row, false);
-    String caption;
 
+    final FormView formView = new FormImpl(FormDescription.getName(editor));
+    formView.create(new FormDescription(editor), getViewName(), getDataColumns(), false, null);
+    formView.setEditing(true);
+    formView.start(null);
+
+    String caption;
     if (addMode) {
       caption = evaluate(getView().getSelectedItem());
     } else {
       caption = evaluate(getView().getParentItem(item));
     }
+
+    String styleName = (addMode ? RowFactory.DIALOG_STYLE : RowEditor.DIALOG_STYLE) + "-tree";
+
     Global.inputWidget(caption, formView, new InputCallback() {
       final List<BeeColumn> columns = new ArrayList<>();
       final List<String> oldValues = new ArrayList<>();
@@ -353,6 +360,19 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
           Queries.update(getViewName(), row.getId(), row.getVersion(), columns, oldValues, values,
               formView.getChildrenForUpdate(), new CommitCallback(false));
         }
+      }
+    }, styleName, null, Action.NO_ACTIONS, new WidgetInitializer() {
+      @Override
+      public Widget initialize(Widget widget, String name) {
+        if (DialogConstants.WIDGET_DIALOG.equals(name) && widget instanceof Popup) {
+          ((Popup) widget).addOpenHandler(new OpenEvent.Handler() {
+            @Override
+            public void onOpen(OpenEvent event) {
+              formView.updateRow(row, true);
+            }
+          });
+        }
+        return widget;
       }
     });
   }
