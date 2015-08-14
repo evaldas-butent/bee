@@ -11,6 +11,9 @@ public final class DocumentConstants {
   public static final String PRM_PRINT_FOOTER = "PrintPageFooter";
   public static final String PRM_PRINT_MARGINS = "PrintPageMargins";
 
+  public static final String PRM_DOCUMENT_SENT_PREFIX = "DocumentSentPrefix";
+  public static final String PRM_DOCUMENT_RECEIVED_PREFIX = "DocumentReceivedPrefix";
+
   public static final String TBL_DOCUMENT_TREE = "DocumentTree";
   public static final String TBL_DOCUMENTS = "Documents";
   public static final String TBL_DOCUMENT_DATA = "DocumentData";

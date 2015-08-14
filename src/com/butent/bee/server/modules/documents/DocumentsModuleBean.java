@@ -2,6 +2,7 @@ package com.butent.bee.server.modules.documents;
 
 import com.butent.bee.server.data.*;
 import com.butent.bee.server.sql.*;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.value.TextValue;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.google.common.collect.Lists;
@@ -127,7 +128,9 @@ public class DocumentsModuleBean implements BeeModule {
             COL_EDITOR_TEMPLATE_NAME),
         BeeParameter.createRelation(module, PRM_PRINT_FOOTER, true, TBL_EDITOR_TEMPLATES,
             COL_EDITOR_TEMPLATE_NAME),
-        BeeParameter.createText(module, PRM_PRINT_MARGINS, true, null));
+        BeeParameter.createText(module, PRM_PRINT_MARGINS, true, null),
+        BeeParameter.createText(module, PRM_DOCUMENT_RECEIVED_PREFIX, false, null),
+        BeeParameter.createText(module, PRM_DOCUMENT_SENT_PREFIX, false, null));
   }
 
   @Override
@@ -224,7 +227,7 @@ public class DocumentsModuleBean implements BeeModule {
             return;
           }
 
-          boolean received = false;
+          Boolean received = null;
 
           for (int i = 0; i < event.getColumns().size(); i++) {
             switch (event.getColumns().get(i).getId()) {
@@ -235,16 +238,22 @@ public class DocumentsModuleBean implements BeeModule {
               case COL_DOCUMENT_SENT:
                 received = false;
                 break;
-              default: return;
             }
           }
 
+          if(received == null) {
+            return;
+          }
+
+          String prefix = received ? prm.getText(PRM_DOCUMENT_RECEIVED_PREFIX)
+              : prm.getText(PRM_DOCUMENT_SENT_PREFIX);
+
           BeeColumn column = sys.getView(VIEW_DOCUMENTS).getBeeColumn(COL_REGISTRATION_NUMBER);
           String number = getNextRegNumber(received, column.getPrecision(),
-              COL_REGISTRATION_NUMBER);
+              COL_REGISTRATION_NUMBER, prefix);
 
           if (!BeeUtils.isEmpty(number)) {
-            event.addValue(column, new TextValue(number));
+            event.addValue(column, new TextValue(prefix + number));
           }
         }
       }
@@ -262,28 +271,37 @@ public class DocumentsModuleBean implements BeeModule {
             return;
           }
 
-          boolean received = false;
+          Boolean received = null;
+          String value = null;
 
           for (int i = 0; i < event.getColumns().size(); i++) {
             switch (event.getColumns().get(i).getId()) {
 
               case COL_DOCUMENT_RECEIVED:
                 received = true;
+                value = event.getRow().getString(i);
                 break;
               case COL_DOCUMENT_SENT:
                 received = false;
+                value = event.getRow().getString(i);
                 break;
-              default: return;
             }
           }
 
+          if(received == null || BeeUtils.isEmpty(value)) {
+            return;
+          }
+
+          String prefix = received ? prm.getText(PRM_DOCUMENT_RECEIVED_PREFIX)
+              : prm.getText(PRM_DOCUMENT_SENT_PREFIX);
+
           BeeColumn column = sys.getView(VIEW_DOCUMENTS).getBeeColumn(COL_REGISTRATION_NUMBER);
           String number = getNextRegNumber(received, column.getPrecision(),
-              COL_REGISTRATION_NUMBER);
+              COL_REGISTRATION_NUMBER, prefix);
 
           if (!BeeUtils.isEmpty(number)) {
             event.getColumns().add(column);
-            event.getRow().addValue(new TextValue(number));
+            event.getRow().addValue(new TextValue(prefix + number));
           }
         }
       }
@@ -515,13 +533,17 @@ public class DocumentsModuleBean implements BeeModule {
     return ResponseObject.response(dataId);
   }
 
-  private String getNextRegNumber(boolean received, int maxLength, String column) {
+  private String getNextRegNumber(boolean received, int maxLength, String column, String prefix) {
     IsCondition where;
 
     if (received) {
       where = SqlUtils.notNull(TBL_DOCUMENTS, COL_DOCUMENT_RECEIVED);
     } else {
       where = SqlUtils.notNull(TBL_DOCUMENTS, COL_DOCUMENT_SENT);
+    }
+
+    if (!BeeUtils.isEmpty(prefix)) {
+      SqlUtils.and(where, SqlUtils.startsWith(TBL_DOCUMENTS, COL_REGISTRATION_NUMBER, prefix));
     }
 
     SqlSelect query = new SqlSelect()
@@ -533,13 +555,20 @@ public class DocumentsModuleBean implements BeeModule {
 
     long max = 0;
     BigInteger bigMax = null;
+    int paternSize = 0;
 
     if (!ArrayUtils.isEmpty(values)) {
       for (String value : values) {
+        if (!BeeUtils.isEmpty(prefix)) {
+          value = BeeUtils.getSuffix(value, prefix);
+        }
         if (BeeUtils.isDigit(value)) {
           if (BeeUtils.isLong(value)) {
+            long oldMax = max;
             max = Math.max(max, BeeUtils.toLong(value));
-
+            if (max != oldMax) {
+              paternSize = Math.max(paternSize, value.length());
+            }
           } else {
             BigInteger big = new BigInteger(value);
 
@@ -557,6 +586,7 @@ public class DocumentsModuleBean implements BeeModule {
     }
 
     String number = big.add(BigInteger.ONE).toString();
+    number = BeeUtils.padLeft(number, paternSize, BeeConst.CHAR_ZERO);
 
     if (maxLength > 0 && number.length() > maxLength) {
       number = number.substring(number.length() - maxLength);
