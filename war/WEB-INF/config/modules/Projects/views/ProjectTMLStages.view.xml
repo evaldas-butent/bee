@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="ProjectTMLStages" source="ProjectTMLStages" caption="=prjStages"
+      editForm="ProjectTMLStage" newRowForm="ProjectTMLStage"
+  newRowCaption="=prjNewStage"
+  >
+  <Columns>
+    <SimpleColumn name="ProjectTemplate" />
+
+    <SimpleColumn name="Name" />
+    <SimpleColumn name="ExpectedDuration" />
+
+
+    <SimpleColumn name="Expenses" />
+    <SimpleColumn name="Currency" />
+    <SimpleJoin name="Currency" joinType="LEFT">
+      <SimpleColumn name="Name" alias="CurrencyName" />
+    </SimpleJoin>
+
+    <ExternalJoin source="ProjectTemplates" joinType="LEFT" name="DefaultTMLStage">
+      <SimpleColumn name="DefaultTMLStage" />
+    </ExternalJoin>
+
+  </Columns>
+</View>
+ 

@@ -132,6 +132,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String allowPhotoSize();
 
+  String allValuesCannotBeEmpty();
+
   String amount();
 
   String autoFit();
@@ -536,6 +538,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String newRelation();
 
+  String newRow();
+
   String newTab();
 
   String newUser();
@@ -741,6 +745,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
   String signOut();
 
   String sorry();
+
+  String sort();
 
   String specifyCondition();
 

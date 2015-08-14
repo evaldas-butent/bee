@@ -95,6 +95,7 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.mail.Address;
 import javax.mail.FetchProfile;
+import javax.mail.Flags;
 import javax.mail.Flags.Flag;
 import javax.mail.Folder;
 import javax.mail.Message;
@@ -638,54 +639,54 @@ public class MailModuleBean implements BeeModule, HasTimerService {
       @Override
       public BeeRowSet getViewData(BeeView view, SqlSelect query, Filter filter) {
         return qs.getViewData(new SqlSelect().setUnionAllMode(true)
+            .addFields(TBL_EMAILS, COL_EMAIL_ADDRESS)
+            .addFields(TBL_ADDRESSBOOK, COL_ADDRESSBOOK_LABEL)
+            .addFrom(TBL_EMAILS)
+            .addFromInner(TBL_ADDRESSBOOK,
+                SqlUtils.and(sys.joinTables(TBL_EMAILS, TBL_ADDRESSBOOK, COL_EMAIL),
+                    SqlUtils.equals(TBL_ADDRESSBOOK, COL_USER, usr.getCurrentUserId())))
+            .addUnion(new SqlSelect()
                 .addFields(TBL_EMAILS, COL_EMAIL_ADDRESS)
-                .addFields(TBL_ADDRESSBOOK, COL_ADDRESSBOOK_LABEL)
+                .addField(TBL_COMPANIES, COL_COMPANY_NAME, COL_ADDRESSBOOK_LABEL)
                 .addFrom(TBL_EMAILS)
-                .addFromInner(TBL_ADDRESSBOOK,
-                    SqlUtils.and(sys.joinTables(TBL_EMAILS, TBL_ADDRESSBOOK, COL_EMAIL),
-                        SqlUtils.equals(TBL_ADDRESSBOOK, COL_USER, usr.getCurrentUserId())))
-                .addUnion(new SqlSelect()
-                    .addFields(TBL_EMAILS, COL_EMAIL_ADDRESS)
-                    .addField(TBL_COMPANIES, COL_COMPANY_NAME, COL_ADDRESSBOOK_LABEL)
-                    .addFrom(TBL_EMAILS)
-                    .addFromInner(TBL_CONTACTS, sys.joinTables(TBL_EMAILS, TBL_CONTACTS, COL_EMAIL))
-                    .addFromInner(TBL_COMPANIES,
-                        sys.joinTables(TBL_CONTACTS, TBL_COMPANIES, COL_CONTACT)))
-                .addUnion(new SqlSelect()
-                    .addFields(TBL_EMAILS, COL_EMAIL_ADDRESS)
-                    .addExpr(SqlUtils.concat(SqlUtils.field(TBL_COMPANIES, COL_COMPANY_NAME), "' '",
-                            SqlUtils.nvl(SqlUtils.field(TBL_CONTACTS, COL_NOTES), "''")),
-                        COL_ADDRESSBOOK_LABEL)
-                    .addFrom(TBL_EMAILS)
-                    .addFromInner(TBL_CONTACTS, sys.joinTables(TBL_EMAILS, TBL_CONTACTS, COL_EMAIL))
-                    .addFromInner(TBL_COMPANY_CONTACTS,
-                        sys.joinTables(TBL_CONTACTS, TBL_COMPANY_CONTACTS, COL_CONTACT))
-                    .addFromInner(TBL_COMPANIES,
-                        sys.joinTables(TBL_COMPANIES, TBL_COMPANY_CONTACTS, COL_COMPANY)))
-                .addUnion(new SqlSelect()
-                    .addFields(TBL_EMAILS, COL_EMAIL_ADDRESS)
-                    .addExpr(SqlUtils.concat(SqlUtils.field(TBL_PERSONS, COL_FIRST_NAME), "' '",
-                            SqlUtils.nvl(SqlUtils.field(TBL_PERSONS, COL_LAST_NAME), "''")),
-                        COL_ADDRESSBOOK_LABEL)
-                    .addFrom(TBL_EMAILS)
-                    .addFromInner(TBL_CONTACTS, sys.joinTables(TBL_EMAILS, TBL_CONTACTS, COL_EMAIL))
-                    .addFromInner(TBL_PERSONS,
-                        sys.joinTables(TBL_CONTACTS, TBL_PERSONS, COL_CONTACT)))
-                .addUnion(new SqlSelect()
-                    .addFields(TBL_EMAILS, COL_EMAIL_ADDRESS)
-                    .addExpr(SqlUtils.concat(SqlUtils.field(TBL_PERSONS, COL_FIRST_NAME), "' '",
-                            SqlUtils.nvl(SqlUtils.field(TBL_PERSONS, COL_LAST_NAME), "''"), "' '",
-                            SqlUtils.nvl(SqlUtils.field(TBL_POSITIONS, COL_POSITION_NAME), "''")),
-                        COL_ADDRESSBOOK_LABEL)
-                    .addFrom(TBL_EMAILS)
-                    .addFromInner(TBL_CONTACTS, sys.joinTables(TBL_EMAILS, TBL_CONTACTS, COL_EMAIL))
-                    .addFromInner(TBL_COMPANY_PERSONS,
-                        sys.joinTables(TBL_CONTACTS, TBL_COMPANY_PERSONS, COL_CONTACT))
-                    .addFromInner(TBL_PERSONS,
-                        sys.joinTables(TBL_PERSONS, TBL_COMPANY_PERSONS, COL_PERSON))
-                    .addFromLeft(TBL_POSITIONS,
-                        sys.joinTables(TBL_POSITIONS, TBL_COMPANY_PERSONS, COL_POSITION)))
-                .addOrder(null, COL_EMAIL_ADDRESS),
+                .addFromInner(TBL_CONTACTS, sys.joinTables(TBL_EMAILS, TBL_CONTACTS, COL_EMAIL))
+                .addFromInner(TBL_COMPANIES,
+                    sys.joinTables(TBL_CONTACTS, TBL_COMPANIES, COL_CONTACT)))
+            .addUnion(new SqlSelect()
+                .addFields(TBL_EMAILS, COL_EMAIL_ADDRESS)
+                .addExpr(SqlUtils.concat(SqlUtils.field(TBL_COMPANIES, COL_COMPANY_NAME), "' '",
+                    SqlUtils.nvl(SqlUtils.field(TBL_CONTACTS, COL_NOTES), "''")),
+                    COL_ADDRESSBOOK_LABEL)
+                .addFrom(TBL_EMAILS)
+                .addFromInner(TBL_CONTACTS, sys.joinTables(TBL_EMAILS, TBL_CONTACTS, COL_EMAIL))
+                .addFromInner(TBL_COMPANY_CONTACTS,
+                    sys.joinTables(TBL_CONTACTS, TBL_COMPANY_CONTACTS, COL_CONTACT))
+                .addFromInner(TBL_COMPANIES,
+                    sys.joinTables(TBL_COMPANIES, TBL_COMPANY_CONTACTS, COL_COMPANY)))
+            .addUnion(new SqlSelect()
+                .addFields(TBL_EMAILS, COL_EMAIL_ADDRESS)
+                .addExpr(SqlUtils.concat(SqlUtils.field(TBL_PERSONS, COL_FIRST_NAME), "' '",
+                    SqlUtils.nvl(SqlUtils.field(TBL_PERSONS, COL_LAST_NAME), "''")),
+                    COL_ADDRESSBOOK_LABEL)
+                .addFrom(TBL_EMAILS)
+                .addFromInner(TBL_CONTACTS, sys.joinTables(TBL_EMAILS, TBL_CONTACTS, COL_EMAIL))
+                .addFromInner(TBL_PERSONS,
+                    sys.joinTables(TBL_CONTACTS, TBL_PERSONS, COL_CONTACT)))
+            .addUnion(new SqlSelect()
+                .addFields(TBL_EMAILS, COL_EMAIL_ADDRESS)
+                .addExpr(SqlUtils.concat(SqlUtils.field(TBL_PERSONS, COL_FIRST_NAME), "' '",
+                    SqlUtils.nvl(SqlUtils.field(TBL_PERSONS, COL_LAST_NAME), "''"), "' '",
+                    SqlUtils.nvl(SqlUtils.field(TBL_POSITIONS, COL_POSITION_NAME), "''")),
+                    COL_ADDRESSBOOK_LABEL)
+                .addFrom(TBL_EMAILS)
+                .addFromInner(TBL_CONTACTS, sys.joinTables(TBL_EMAILS, TBL_CONTACTS, COL_EMAIL))
+                .addFromInner(TBL_COMPANY_PERSONS,
+                    sys.joinTables(TBL_CONTACTS, TBL_COMPANY_PERSONS, COL_CONTACT))
+                .addFromInner(TBL_PERSONS,
+                    sys.joinTables(TBL_PERSONS, TBL_COMPANY_PERSONS, COL_PERSON))
+                .addFromLeft(TBL_POSITIONS,
+                    sys.joinTables(TBL_POSITIONS, TBL_COMPANY_PERSONS, COL_POSITION)))
+            .addOrder(null, COL_EMAIL_ADDRESS),
             sys.getView(VIEW_USER_EMAILS));
       }
 
@@ -880,7 +881,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
           LocalizableConstants loc = Localized.getConstants();
 
           String content = BeeUtils.join("<br>", "---------- "
-                  + loc.mailForwardedMessage() + " ----------",
+              + loc.mailForwardedMessage() + " ----------",
               loc.mailFrom() + ": " + sender,
               loc.date() + ": " + envelope.getDate(),
               loc.mailSubject() + ": " + envelope.getSubject(),
@@ -1353,10 +1354,21 @@ public class MailModuleBean implements BeeModule, HasTimerService {
               file = new File(fileInfo.getPath());
               is = new BufferedInputStream(new FileInputStream(file));
               MimeMessage message = new MimeMessage(null, is);
+              Flags on = new Flags();
+              Flags off = new Flags();
 
-              for (MessageFlag flag : MessageFlag.values()) {
-                message.setFlag(MailEnvelope.getFlag(flag), flag.isSet(mask));
+              for (MessageFlag messageFlag : MessageFlag.values()) {
+                Flags flags = messageFlag.isSet(mask) ? on : off;
+                Flag flag = MailEnvelope.getFlag(messageFlag);
+
+                if (flag != null) {
+                  flags.add(flag);
+                } else {
+                  flags.add(messageFlag.name());
+                }
               }
+              message.setFlags(on, true);
+              message.setFlags(off, false);
               storeMail(account, message, target);
 
             } catch (IOException e) {
@@ -1451,8 +1463,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
     MailAccount account = mail.getAccount(row.getLong(COL_ACCOUNT));
     MailFolder folder = account.findFolder(row.getLong(COL_FOLDER));
 
-    account.setFlag(folder, new long[] {BeeUtils.unbox(row.getLong(COL_MESSAGE_UID))},
-        MailEnvelope.getFlag(flag), on);
+    account.setFlag(folder, new long[] {BeeUtils.unbox(row.getLong(COL_MESSAGE_UID))}, flag, on);
 
     mail.setFlags(placeId, value);
 
@@ -1513,7 +1524,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
         c += syncFolders(account, subFolder, localSubFolder);
       }
     }
-    for (Iterator<MailFolder> iter = localFolder.getSubFolders().iterator(); iter.hasNext(); ) {
+    for (Iterator<MailFolder> iter = localFolder.getSubFolders().iterator(); iter.hasNext();) {
       MailFolder subFolder = iter.next();
 
       if (!visitedFolders.contains(subFolder.getName()) && subFolder.isConnected()

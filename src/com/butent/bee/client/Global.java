@@ -221,10 +221,6 @@ public final class Global {
     return images;
   }
 
-  public static InputBoxes getInpBoxen() {
-    return inpBoxen;
-  }
-
   public static MessageBoxes getMsgBoxen() {
     return msgBoxen;
   }
@@ -369,8 +365,14 @@ public final class Global {
 
   public static DialogBox inputWidget(String caption, IsWidget input, InputCallback callback,
       String dialogStyle, Element target, Set<Action> enabledActions) {
+    return inputWidget(caption, input, callback, dialogStyle, target, enabledActions, null);
+  }
+
+  public static DialogBox inputWidget(String caption, IsWidget input, InputCallback callback,
+      String dialogStyle, Element target, Set<Action> enabledActions,
+      WidgetInitializer initializer) {
     return inpBoxen.inputWidget(caption, input, callback, dialogStyle, target, enabledActions,
-        null);
+        initializer);
   }
 
   public static boolean isDebug() {

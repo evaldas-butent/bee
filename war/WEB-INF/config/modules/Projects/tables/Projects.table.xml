@@ -13,7 +13,8 @@
     <Relation name="Contact" relation="CompanyPersons"  label="=personContact" />
     <Relation name="Owner" relation="Users" notNull="true"  label="=prjManager" />    
     <Relation name="Category" relation="ProjectTree" notNull="true" label="=category" />
-    
+    <Relation name="ProjectTemplate" relation="ProjectTemplates" label="=prjTemplate" />
+
     <Date name="StartDate"  label="=crmStartDate" />
     <Date name="EndDate" label="=crmFinishDate" />
     <Numeric name="ExpectedDuration" precision="10" label="=expectedDuration" />

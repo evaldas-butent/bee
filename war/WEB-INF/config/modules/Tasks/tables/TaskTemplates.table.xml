@@ -19,5 +19,7 @@
     <Relation name="Contact" relation="CompanyPersons" label="=personContact" />
 
     <Relation name="Reminder" relation="ReminderTypes" cascade="SET_NULL" label="=crmReminder" />
+    <Relation name="ProjectTemplate" relation="ProjectTemplates" cascade="SET_NULL" label="=prjTemplate" />
+    <Relation name="StageTemplate" relation="ProjectTMLStages" cascade="SET_NULL" label="=prjStage" />
   </Fields>
 </Table>
