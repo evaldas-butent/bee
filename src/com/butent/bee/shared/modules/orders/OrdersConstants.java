@@ -53,12 +53,15 @@ public final class OrdersConstants {
   }
 
   public static final String SVC_GET_TEMPLATE_ITEMS = "GetTemplateItems";
+  public static final String SVC_CREATE_INVOICE_ITEMS = "CreateInvoiceItems";
 
   public static final String TBL_ORDER_ITEMS = "OrderItems";
 
   public static final String VIEW_ORDERS = "Orders";
+  public static final String VIEW_ORDERS_INVOICES = "OrdersInvoices";
   public static final String VIEW_ORDERS_TEMPLATES = "OrdersTemplates";
   public static final String VIEW_ORDER_TMPL_ITEMS = "OrderTmplItems";
+  public static final String VIEW_ORDER_SALES = "OrderSales";
 
   public static final String ALS_COMPANY_EMAIL = "CompanyEmail";
   public static final String ALS_CONTACT_EMAIL = "ContactEmail";

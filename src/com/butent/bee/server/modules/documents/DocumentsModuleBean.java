@@ -1,5 +1,10 @@
 package com.butent.bee.server.modules.documents;
 
+import com.butent.bee.server.data.*;
+import com.butent.bee.server.sql.*;
+import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.data.value.TextValue;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.common.eventbus.Subscribe;
@@ -7,25 +12,13 @@ import com.google.common.eventbus.Subscribe;
 import static com.butent.bee.shared.modules.documents.DocumentConstants.*;
 
 import com.butent.bee.server.Config;
-import com.butent.bee.server.data.BeeTable;
-import com.butent.bee.server.data.BeeView;
-import com.butent.bee.server.data.DataEditorBean;
 import com.butent.bee.server.data.DataEvent.ViewInsertEvent;
 import com.butent.bee.server.data.DataEvent.ViewQueryEvent;
-import com.butent.bee.server.data.DataEventHandler;
-import com.butent.bee.server.data.QueryServiceBean;
-import com.butent.bee.server.data.SystemBean;
-import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.modules.administration.ExtensionIcons;
 import com.butent.bee.server.modules.administration.FileStorageBean;
-import com.butent.bee.server.sql.IsExpression;
-import com.butent.bee.server.sql.IsFrom;
-import com.butent.bee.server.sql.SqlInsert;
-import com.butent.bee.server.sql.SqlSelect;
-import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.server.utils.HtmlUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -58,6 +51,7 @@ import org.xhtmlrenderer.pdf.ITextRenderer;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -134,7 +128,9 @@ public class DocumentsModuleBean implements BeeModule {
             COL_EDITOR_TEMPLATE_NAME),
         BeeParameter.createRelation(module, PRM_PRINT_FOOTER, true, TBL_EDITOR_TEMPLATES,
             COL_EDITOR_TEMPLATE_NAME),
-        BeeParameter.createText(module, PRM_PRINT_MARGINS, true, null));
+        BeeParameter.createText(module, PRM_PRINT_MARGINS, true, null),
+        BeeParameter.createText(module, PRM_DOCUMENT_RECEIVED_PREFIX, false, null),
+        BeeParameter.createText(module, PRM_DOCUMENT_SENT_PREFIX, false, null));
   }
 
   @Override
@@ -214,6 +210,98 @@ public class DocumentsModuleBean implements BeeModule {
             cols.add(new BeeColumn(COL_DOCUMENT_NUMBER));
             row.addValue(Value.getValue(qs.getNextNumber(event.getTargetName(),
                 COL_DOCUMENT_NUMBER, prefix, null)));
+          }
+        }
+      }
+
+      @Subscribe
+      public void fillDocumentRegistrationNumber(ViewInsertEvent event) {
+        if (BeeUtils.same(event.getTargetName(), TBL_DOCUMENTS) && event.isBefore()) {
+
+          List<BeeColumn> cols = event.getColumns();
+
+          if (DataUtils.contains(cols, COL_REGISTRATION_NUMBER)
+              && ((DataUtils.contains(cols, COL_DOCUMENT_RECEIVED)
+              && !DataUtils.contains(cols, COL_DOCUMENT_SENT) ||
+              DataUtils.contains(cols, COL_DOCUMENT_RECEIVED)))) {
+            return;
+          }
+
+          Boolean received = null;
+
+          for (int i = 0; i < event.getColumns().size(); i++) {
+            switch (event.getColumns().get(i).getId()) {
+
+              case COL_DOCUMENT_RECEIVED:
+                received = true;
+                break;
+              case COL_DOCUMENT_SENT:
+                received = false;
+                break;
+            }
+          }
+
+          if(received == null) {
+            return;
+          }
+
+          String prefix = received ? prm.getText(PRM_DOCUMENT_RECEIVED_PREFIX)
+              : prm.getText(PRM_DOCUMENT_SENT_PREFIX);
+
+          BeeColumn column = sys.getView(VIEW_DOCUMENTS).getBeeColumn(COL_REGISTRATION_NUMBER);
+          String number = getNextRegNumber(received, column.getPrecision(),
+              COL_REGISTRATION_NUMBER, prefix);
+
+          if (!BeeUtils.isEmpty(number)) {
+            event.addValue(column, new TextValue(prefix + number));
+          }
+        }
+      }
+
+      @Subscribe
+      public void updateDocumentRegistrationNumber(DataEvent.ViewUpdateEvent event) {
+        if (BeeUtils.same(event.getTargetName(), TBL_DOCUMENTS) && event.isBefore()) {
+
+          List<BeeColumn> cols = event.getColumns();
+
+          if (DataUtils.contains(cols, COL_REGISTRATION_NUMBER)
+              && ((DataUtils.contains(cols, COL_DOCUMENT_RECEIVED)
+              && !DataUtils.contains(cols, COL_DOCUMENT_SENT) ||
+              DataUtils.contains(cols, COL_DOCUMENT_RECEIVED)))) {
+            return;
+          }
+
+          Boolean received = null;
+          String value = null;
+
+          for (int i = 0; i < event.getColumns().size(); i++) {
+            switch (event.getColumns().get(i).getId()) {
+
+              case COL_DOCUMENT_RECEIVED:
+                received = true;
+                value = event.getRow().getString(i);
+                break;
+              case COL_DOCUMENT_SENT:
+                received = false;
+                value = event.getRow().getString(i);
+                break;
+            }
+          }
+
+          if(received == null || BeeUtils.isEmpty(value)) {
+            return;
+          }
+
+          String prefix = received ? prm.getText(PRM_DOCUMENT_RECEIVED_PREFIX)
+              : prm.getText(PRM_DOCUMENT_SENT_PREFIX);
+
+          BeeColumn column = sys.getView(VIEW_DOCUMENTS).getBeeColumn(COL_REGISTRATION_NUMBER);
+          String number = getNextRegNumber(received, column.getPrecision(),
+              COL_REGISTRATION_NUMBER, prefix);
+
+          if (!BeeUtils.isEmpty(number)) {
+            event.getColumns().add(column);
+            event.getRow().addValue(new TextValue(prefix + number));
           }
         }
       }
@@ -443,6 +531,68 @@ public class DocumentsModuleBean implements BeeModule {
       }
     }
     return ResponseObject.response(dataId);
+  }
+
+  private String getNextRegNumber(boolean received, int maxLength, String column, String prefix) {
+    IsCondition where;
+
+    if (received) {
+      where = SqlUtils.notNull(TBL_DOCUMENTS, COL_DOCUMENT_RECEIVED);
+    } else {
+      where = SqlUtils.notNull(TBL_DOCUMENTS, COL_DOCUMENT_SENT);
+    }
+
+    if (!BeeUtils.isEmpty(prefix)) {
+      SqlUtils.and(where, SqlUtils.startsWith(TBL_DOCUMENTS, COL_REGISTRATION_NUMBER, prefix));
+    }
+
+    SqlSelect query = new SqlSelect()
+        .addFields(TBL_DOCUMENTS, column)
+        .addFrom(TBL_DOCUMENTS)
+        .setWhere(where);
+
+    String[] values = qs.getColumn(query);
+
+    long max = 0;
+    BigInteger bigMax = null;
+    int paternSize = 0;
+
+    if (!ArrayUtils.isEmpty(values)) {
+      for (String value : values) {
+        if (!BeeUtils.isEmpty(prefix)) {
+          value = BeeUtils.getSuffix(value, prefix);
+        }
+        if (BeeUtils.isDigit(value)) {
+          if (BeeUtils.isLong(value)) {
+            long oldMax = max;
+            max = Math.max(max, BeeUtils.toLong(value));
+            if (max != oldMax) {
+              paternSize = Math.max(paternSize, value.length());
+            }
+          } else {
+            BigInteger big = new BigInteger(value);
+
+            if (bigMax == null || BeeUtils.isLess(bigMax, big)) {
+              bigMax = big;
+            }
+          }
+        }
+      }
+    }
+
+    BigInteger big = new BigInteger(BeeUtils.toString(max));
+    if (bigMax != null) {
+      big = big.max(bigMax);
+    }
+
+    String number = big.add(BigInteger.ONE).toString();
+    number = BeeUtils.padLeft(number, paternSize, BeeConst.CHAR_ZERO);
+
+    if (maxLength > 0 && number.length() > maxLength) {
+      number = number.substring(number.length() - maxLength);
+    }
+
+    return number;
   }
 
   private ResponseObject setCategoryState(Long id, Long roleId, RightsState state, boolean on) {
