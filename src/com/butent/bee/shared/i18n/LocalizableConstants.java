@@ -162,6 +162,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String clearFilter();
 
+  String clearNews();
+
   String client();
 
   String clients();
