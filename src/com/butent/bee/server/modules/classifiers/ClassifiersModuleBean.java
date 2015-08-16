@@ -77,6 +77,7 @@ import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.calendar.CalendarConstants;
 import com.butent.bee.shared.modules.calendar.CalendarConstants.AppointmentStatus;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
+import com.butent.bee.shared.modules.classifiers.PriceInfo;
 import com.butent.bee.shared.modules.documents.DocumentConstants;
 import com.butent.bee.shared.modules.service.ServiceConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
@@ -101,6 +102,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Locale;
@@ -198,6 +200,10 @@ public class ClassifiersModuleBean implements BeeModule {
         response = ResponseObject.error(e);
         e.printStackTrace();
       }
+
+    } else if (BeeUtils.same(svc, SVC_GET_PRICE_AND_DISCOUNT)) {
+      response = getPriceAndDiscount(reqInfo);
+
     } else {
       String msg = BeeUtils.joinWords("Commons service not recognized:", svc);
       logger.warning(msg);
@@ -848,7 +854,7 @@ public class ClassifiersModuleBean implements BeeModule {
     String email = reqInfo.getParameter(COL_EMAIL);
     if (!BeeUtils.isEmpty(email) && qs.sqlExists(TBL_EMAILS, COL_EMAIL_ADDRESS, email)) {
       logger.warning(usr.getLocalizableMesssages()
-              .valueExists(BeeUtils.joinWords(usr.getLocalizableConstants().email(), email)),
+          .valueExists(BeeUtils.joinWords(usr.getLocalizableConstants().email(), email)),
           "ignored");
       email = null;
     }
@@ -1115,6 +1121,246 @@ public class ClassifiersModuleBean implements BeeModule {
     } else {
       return ResponseObject.response(result);
     }
+  }
+
+  private ResponseObject getPriceAndDiscount(RequestInfo reqInfo) {
+    Long company = reqInfo.getParameterLong(COL_DISCOUNT_COMPANY);
+    if (!DataUtils.isId(company)) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), COL_DISCOUNT_COMPANY);
+    }
+
+    Long item = reqInfo.getParameterLong(COL_DISCOUNT_ITEM);
+    if (!DataUtils.isId(item)) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), COL_DISCOUNT_ITEM);
+    }
+
+    Long operation = reqInfo.getParameterLong(COL_DISCOUNT_OPERATION);
+    Long warehouse = reqInfo.getParameterLong(COL_DISCOUNT_WAREHOUSE);
+
+    Long time = reqInfo.getParameterLong(Service.VAR_TIME);
+    if (!BeeUtils.isPositive(time)) {
+      time = System.currentTimeMillis();
+    }
+
+    Double qty = reqInfo.getParameterDouble(Service.VAR_QTY);
+    Long unit = reqInfo.getParameterLong(COL_DISCOUNT_UNIT);
+
+    Long currency = reqInfo.getParameterLong(COL_DISCOUNT_CURRENCY);
+
+    List<Long> companyParents = getDiscountParents(company);
+    Map<Long, Long> categories = getItemCategories(item);
+
+    HasConditions discountWhere = SqlUtils.and();
+
+    HasConditions companyWhere = SqlUtils.or(
+        SqlUtils.isNull(TBL_DISCOUNTS, COL_DISCOUNT_COMPANY),
+        SqlUtils.equals(TBL_DISCOUNTS, COL_DISCOUNT_COMPANY, company));
+    if (!BeeUtils.isEmpty(companyParents)) {
+      companyWhere.add(SqlUtils.inList(TBL_DISCOUNTS, COL_DISCOUNT_COMPANY, companyParents));
+    }
+
+    discountWhere.add(companyWhere);
+
+    HasConditions categoryWhere = SqlUtils.or(
+        SqlUtils.isNull(TBL_DISCOUNTS, COL_DISCOUNT_CATEGORY));
+    if (!BeeUtils.isEmpty(categories)) {
+      companyWhere.add(SqlUtils.inList(TBL_DISCOUNTS, COL_DISCOUNT_CATEGORY, categories.keySet()));
+    }
+
+    discountWhere.add(SqlUtils.or(
+        SqlUtils.equals(TBL_DISCOUNTS, COL_DISCOUNT_ITEM, item),
+        SqlUtils.and(SqlUtils.isNull(TBL_DISCOUNTS, COL_DISCOUNT_ITEM), categoryWhere)));
+
+    HasConditions operationWhere = SqlUtils.or(
+        SqlUtils.isNull(TBL_DISCOUNTS, COL_DISCOUNT_OPERATION));
+    if (DataUtils.isId(operation)) {
+      operationWhere.add(SqlUtils.equals(TBL_DISCOUNTS, COL_DISCOUNT_OPERATION, operation));
+    }
+
+    discountWhere.add(operationWhere);
+
+    HasConditions warehouseWhere = SqlUtils.or(
+        SqlUtils.isNull(TBL_DISCOUNTS, COL_DISCOUNT_WAREHOUSE));
+    if (DataUtils.isId(warehouse)) {
+      warehouseWhere.add(SqlUtils.equals(TBL_DISCOUNTS, COL_DISCOUNT_WAREHOUSE, warehouse));
+    }
+
+    discountWhere.add(warehouseWhere);
+
+    HasConditions timeWhere = SqlUtils.and(
+        SqlUtils.or(
+            SqlUtils.isNull(TBL_DISCOUNTS, COL_DISCOUNT_DATE_FROM),
+            SqlUtils.lessEqual(TBL_DISCOUNTS, COL_DISCOUNT_DATE_FROM, time)),
+        SqlUtils.or(
+            SqlUtils.isNull(TBL_DISCOUNTS, COL_DISCOUNT_DATE_TO),
+            SqlUtils.more(TBL_DISCOUNTS, COL_DISCOUNT_DATE_TO, time)));
+
+    discountWhere.add(timeWhere);
+
+    HasConditions qtyWhere;
+    if (qty == null) {
+      qtyWhere = SqlUtils.or(SqlUtils.isNull(TBL_DISCOUNTS, COL_DISCOUNT_QUANTITY_FROM),
+          SqlUtils.nonPositive(TBL_DISCOUNTS, COL_DISCOUNT_QUANTITY_FROM));
+    } else {
+      qtyWhere = SqlUtils.and(
+          SqlUtils.or(
+              SqlUtils.isNull(TBL_DISCOUNTS, COL_DISCOUNT_QUANTITY_FROM),
+              SqlUtils.lessEqual(TBL_DISCOUNTS, COL_DISCOUNT_QUANTITY_FROM, qty)),
+          SqlUtils.or(
+              SqlUtils.isNull(TBL_DISCOUNTS, COL_DISCOUNT_QUANTITY_TO),
+              SqlUtils.more(TBL_DISCOUNTS, COL_DISCOUNT_QUANTITY_TO, qty)));
+
+      if (DataUtils.isId(unit)) {
+        qtyWhere = SqlUtils.and(
+            SqlUtils.or(
+                SqlUtils.and(
+                    SqlUtils.isNull(TBL_DISCOUNTS, COL_DISCOUNT_QUANTITY_FROM),
+                    SqlUtils.isNull(TBL_DISCOUNTS, COL_DISCOUNT_QUANTITY_TO)),
+                SqlUtils.isNull(TBL_DISCOUNTS, COL_DISCOUNT_UNIT),
+                SqlUtils.equals(TBL_DISCOUNTS, COL_DISCOUNT_UNIT, unit)));
+      }
+    }
+
+    discountWhere.add(qtyWhere);
+
+    discountWhere.add(SqlUtils.or(
+        SqlUtils.notNull(TBL_DISCOUNTS, COL_DISCOUNT_PRICE_NAME),
+        SqlUtils.notNull(TBL_DISCOUNTS, COL_DISCOUNT_PERCENT),
+        SqlUtils.positive(TBL_DISCOUNTS, COL_DISCOUNT_PRICE)));
+
+    SqlSelect discountQuery = new SqlSelect()
+        .addFields(TBL_DISCOUNTS, COL_DISCOUNT_COMPANY, COL_DISCOUNT_CATEGORY, COL_DISCOUNT_ITEM,
+            COL_DISCOUNT_PRICE_NAME, COL_DISCOUNT_PERCENT,
+            COL_DISCOUNT_PRICE, COL_DISCOUNT_CURRENCY)
+        .addFrom(TBL_DISCOUNTS)
+        .setWhere(discountWhere);
+
+    SimpleRowSet discountData = qs.getData(discountQuery);
+
+    List<PriceInfo> discounts = new ArrayList<>();
+
+    if (!DataUtils.isEmpty(discountData)) {
+      for (SimpleRow row : discountData) {
+        discounts.add(PriceInfo.fromDiscount(row));
+      }
+    }
+
+    String companyIdName = sys.getIdName(TBL_COMPANIES);
+
+    HasConditions cw = SqlUtils.or(SqlUtils.equals(TBL_COMPANIES, companyIdName, company));
+    if (!BeeUtils.isEmpty(companyParents)) {
+      cw.add(SqlUtils.inList(TBL_COMPANIES, companyIdName, companyParents));
+    }
+
+    SqlSelect companyQuery = new SqlSelect()
+        .addFields(TBL_COMPANIES, companyIdName,
+            COL_COMPANY_PRICE_NAME, COL_COMPANY_DISCOUNT_PERCENT)
+        .addFrom(TBL_COMPANIES)
+        .setWhere(SqlUtils.and(cw,
+            SqlUtils.or(
+                SqlUtils.notNull(TBL_COMPANIES, COL_COMPANY_PRICE_NAME),
+                SqlUtils.notNull(TBL_COMPANIES, COL_COMPANY_DISCOUNT_PERCENT))));
+
+    SimpleRowSet companyData = qs.getData(companyQuery);
+
+    if (!DataUtils.isEmpty(companyData)) {
+      for (SimpleRow row : companyData) {
+        discounts.add(PriceInfo.fromCompany(row.getLong(companyIdName), row));
+      }
+    }
+
+    if (discounts.isEmpty()) {
+      return ResponseObject.emptyResponse();
+    } else {
+      return null;
+    }
+  }
+
+  private List<Long> getDiscountParents(Long company) {
+    List<Long> result = new ArrayList<>();
+
+    Long child = company;
+    String idName = sys.getIdName(TBL_COMPANIES);
+
+    SqlSelect query = new SqlSelect()
+        .addFields(TBL_COMPANIES, COL_DISCOUNT_PARENT)
+        .addFrom(TBL_COMPANIES);
+
+    while (DataUtils.isId(child)) {
+      query.setWhere(SqlUtils.equals(TBL_COMPANIES, idName, child));
+      Long parent = qs.getLong(query);
+
+      if (DataUtils.isId(parent) && !Objects.equals(company, parent) && !result.contains(parent)) {
+        result.add(parent);
+        child = parent;
+      } else {
+        child = null;
+        break;
+      }
+    }
+
+    return result;
+  }
+
+  private Map<Long, Long> getItemCategories(long item) {
+    Map<Long, Long> result = new HashMap<>();
+
+    Set<Long> categories = new HashSet<>();
+
+    SqlSelect itemQuery = new SqlSelect()
+        .addFields(TBL_ITEMS, COL_ITEM_TYPE, COL_ITEM_GROUP)
+        .addFrom(TBL_ITEMS)
+        .setWhere(sys.idEquals(TBL_ITEMS, item));
+
+    SimpleRowSet itemData = qs.getData(itemQuery);
+    if (!DataUtils.isEmpty(itemData)) {
+      Long type = itemData.getLong(0, COL_ITEM_TYPE);
+      if (DataUtils.isId(type)) {
+        categories.add(type);
+      }
+
+      Long group = itemData.getLong(0, COL_ITEM_GROUP);
+      if (DataUtils.isId(group)) {
+        categories.add(group);
+      }
+    }
+
+    SqlSelect icQuery = new SqlSelect()
+        .addFields(TBL_ITEM_CATEGORIES, COL_CATEGORY)
+        .addFrom(TBL_ITEM_CATEGORIES)
+        .setWhere(SqlUtils.equals(TBL_ITEM_CATEGORIES, COL_ITEM, item));
+
+    categories.addAll(qs.getLongSet(icQuery));
+
+    if (!categories.isEmpty()) {
+      Map<Long, Long> parents = new HashMap<>();
+
+      String idName = sys.getIdName(TBL_ITEM_CATEGORY_TREE);
+      SqlSelect treeQuery = new SqlSelect()
+          .addFields(TBL_ITEM_CATEGORY_TREE, idName, COL_CATEGORY_PARENT)
+          .addFrom(TBL_ITEM_CATEGORY_TREE)
+          .setWhere(SqlUtils.notNull(TBL_ITEM_CATEGORY_TREE, COL_CATEGORY_PARENT));
+
+      SimpleRowSet treeData = qs.getData(treeQuery);
+      if (!DataUtils.isEmpty(treeData)) {
+        for (SimpleRow row : treeData) {
+          parents.put(row.getLong(idName), row.getLong(COL_CATEGORY_PARENT));
+        }
+      }
+
+      for (Long category : categories) {
+        Long c = category;
+
+        while (c != null && !result.containsKey(c)) {
+          Long p = parents.get(c);
+          result.put(c, p);
+
+          c = p;
+        }
+      }
+    }
+
+    return result;
   }
 
   private Map<Long, Integer> getRemindActionsUserSettings() {
