@@ -32,6 +32,8 @@ import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.i18n.I18nUtils;
 import com.butent.bee.server.i18n.Localizations;
 import com.butent.bee.server.modules.BeeModule;
+import com.butent.bee.server.modules.ParamHolderBean;
+import com.butent.bee.server.modules.administration.AdministrationModuleBean;
 import com.butent.bee.server.modules.mail.MailModuleBean;
 import com.butent.bee.server.news.NewsBean;
 import com.butent.bee.server.news.NewsHelper;
@@ -77,6 +79,7 @@ import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.calendar.CalendarConstants;
 import com.butent.bee.shared.modules.calendar.CalendarConstants.AppointmentStatus;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
+import com.butent.bee.shared.modules.classifiers.ItemPrice;
 import com.butent.bee.shared.modules.classifiers.PriceInfo;
 import com.butent.bee.shared.modules.documents.DocumentConstants;
 import com.butent.bee.shared.modules.service.ServiceConstants;
@@ -95,12 +98,16 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
 
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -140,6 +147,10 @@ public class ClassifiersModuleBean implements BeeModule {
   NewsBean news;
   @EJB
   MailModuleBean mail;
+  @EJB
+  AdministrationModuleBean adm;
+  @EJB
+  ParamHolderBean prm;
 
   @Resource
   TimerService timerService;
@@ -1146,6 +1157,15 @@ public class ClassifiersModuleBean implements BeeModule {
     Long unit = reqInfo.getParameterLong(COL_DISCOUNT_UNIT);
 
     Long currency = reqInfo.getParameterLong(COL_DISCOUNT_CURRENCY);
+    if (!DataUtils.isId(currency)) {
+      currency = prm.getRelation(PRM_CURRENCY);
+    }
+
+    ItemPrice defPrice = EnumUtils.getEnumByIndex(ItemPrice.class,
+        reqInfo.getParameterInt(COL_DISCOUNT_PRICE_NAME));
+    if (defPrice == null) {
+      defPrice = ItemPrice.SALE;
+    }
 
     List<Long> companyParents = getDiscountParents(company);
     Map<Long, Long> categories = getItemCategories(item);
@@ -1271,9 +1291,131 @@ public class ClassifiersModuleBean implements BeeModule {
 
     if (discounts.isEmpty()) {
       return ResponseObject.emptyResponse();
-    } else {
-      return null;
     }
+
+    double toRate = adm.getRate(currency, time);
+    for (PriceInfo pi : discounts) {
+      if (BeeUtils.isPositive(pi.getPrice()) && !Objects.equals(currency, pi.getCurrency())) {
+        double fromRate = DataUtils.isId(pi.getCurrency())
+            ? adm.getRate(pi.getCurrency(), time) : BeeConst.DOUBLE_ONE;
+
+        pi.setPrice(pi.getPrice() / fromRate * toRate);
+        pi.setCurrency(currency);
+      }
+    }
+
+    EnumMap<ItemPrice, Double> itemPrices = getItemPrices(item, currency, time);
+    for (PriceInfo pi : discounts) {
+      if (!BeeUtils.isPositive(pi.getPrice()) && pi.getPriceName() != null
+          && itemPrices.containsKey(pi.getPriceName())) {
+
+        pi.setPrice(itemPrices.get(pi.getPriceName()));
+        pi.setCurrency(currency);
+      }
+    }
+
+    Pair<Double, Double> result = getPriceAndDiscount(discounts, company, companyParents,
+        categories);
+    if (!BeeUtils.isPositive(result.getA()) && itemPrices.containsKey(defPrice)) {
+      result.setA(itemPrices.get(defPrice));
+    }
+
+    if (!BeeUtils.isPositive(result.getA()) && !BeeUtils.isDouble(result.getB())) {
+      return ResponseObject.emptyResponse();
+    } else {
+      return ResponseObject.response(result);
+    }
+  }
+
+  private static Pair<Double, Double> getPriceAndDiscount(List<PriceInfo> discounts,
+      Long company, List<Long> companyParents, Map<Long, Long> categories) {
+
+    if (discounts.size() == 1) {
+      PriceInfo pi = discounts.get(0);
+      return Pair.of(pi.getPrice(), pi.getDiscountPercent());
+    }
+
+    final List<Long> companies = new ArrayList<>();
+    if (DataUtils.isId(company)) {
+      companies.add(company);
+    }
+    if (!BeeUtils.isEmpty(companyParents)) {
+      companies.addAll(companyParents);
+    }
+
+    Map<Long, Integer> categoryLevels = new HashMap<>();
+    for (Long category : categories.keySet()) {
+      int level = 0;
+      Long parent = categories.get(category);
+
+      while (parent != null) {
+        level++;
+        parent = categories.get(parent);
+      }
+
+      categoryLevels.put(category, level);
+    }
+
+    List<PriceInfo> input = new ArrayList<>();
+    input.addAll(discounts);
+
+    Collections.sort(input, new Comparator<PriceInfo>() {
+      @Override
+      public int compare(PriceInfo o1, PriceInfo o2) {
+        boolean it1 = DataUtils.isId(o1.getItem());
+        boolean it2 = DataUtils.isId(o2.getItem());
+
+        if (it1 != it2) {
+          return Boolean.compare(it2, it1);
+        }
+
+        Integer comp1 = companies.contains(o1.getCompany())
+            ? companies.indexOf(o1.getCompany()) : null;
+        Integer comp2 = companies.contains(o2.getCompany())
+            ? companies.indexOf(o2.getCompany()) : null;
+
+        if (!Objects.equals(comp1, comp2)) {
+          return BeeUtils.compareNullsLast(comp1, comp2);
+        }
+
+        Integer cat1 = (!it1 && DataUtils.isId(o1.getCategory()))
+            ? categoryLevels.get(o1.getCategory()) : null;
+        Integer cat2 = (!it2 && DataUtils.isId(o2.getCategory()))
+            ? categoryLevels.get(o2.getCategory()) : null;
+
+        if (!Objects.equals(cat1, cat2)) {
+          return BeeUtils.compareNullsLast(cat1, cat2);
+        }
+
+        Double p1 = BeeUtils.minusPercent(o1.getPrice(), o1.getDiscountPercent());
+        Double p2 = BeeUtils.minusPercent(o2.getPrice(), o2.getDiscountPercent());
+
+        if (BeeUtils.isDouble(p1) || BeeUtils.isDouble(p2)) {
+          return BeeUtils.compareNullsLast(p1, p2);
+        }
+
+        return BeeUtils.compareNullsLast(o2.getDiscountPercent(), o1.getDiscountPercent());
+      }
+    });
+
+    Double price = null;
+    Double percent = null;
+
+    for (PriceInfo pi : input) {
+      if (price == null && BeeUtils.isPositive(pi.getPrice())) {
+        price = pi.getPrice();
+      }
+
+      if (percent == null && BeeUtils.isDouble(pi.getDiscountPercent())) {
+        percent = pi.getDiscountPercent();
+      }
+
+      if (price != null && percent != null) {
+        break;
+      }
+    }
+
+    return Pair.of(price, percent);
   }
 
   private List<Long> getDiscountParents(Long company) {
@@ -1361,6 +1503,37 @@ public class ClassifiersModuleBean implements BeeModule {
     }
 
     return result;
+  }
+
+  private EnumMap<ItemPrice, Double> getItemPrices(long item, Long currency, long time) {
+    EnumMap<ItemPrice, Double> prices = new EnumMap<>(ItemPrice.class);
+
+    SqlSelect query = new SqlSelect();
+    for (ItemPrice ip : ItemPrice.values()) {
+      query.addFields(TBL_ITEMS, ip.getPriceColumn(), ip.getCurrencyColumn());
+    }
+    query.addFrom(TBL_ITEMS).setWhere(sys.idEquals(TBL_ITEMS, item));
+
+    SimpleRow row = qs.getRow(query);
+    if (row != null) {
+      double toRate = DataUtils.isId(currency) ? adm.getRate(currency, time) : BeeConst.DOUBLE_ONE;
+
+      for (ItemPrice ip : ItemPrice.values()) {
+        Double price = row.getDouble(ip.getPriceColumn());
+
+        if (BeeUtils.isPositive(price)) {
+          Long c = row.getLong(ip.getCurrencyColumn());
+          if (!Objects.equals(currency, c)) {
+            double fromRate = DataUtils.isId(c) ? adm.getRate(c, time) : BeeConst.DOUBLE_ONE;
+            price = price / fromRate * toRate;
+          }
+
+          prices.put(ip, price);
+        }
+      }
+    }
+
+    return prices;
   }
 
   private Map<Long, Integer> getRemindActionsUserSettings() {
