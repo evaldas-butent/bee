@@ -25,7 +25,6 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.projects.ProjectConstants;
-import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.ui.ColumnDescription;
@@ -100,7 +99,6 @@ public final class ProjectsKeeper {
     ProjectTemplatesGrid.createProject(Data.getDataInfo(VIEW_PROJECT_TEMPLATES),
         templateRow, callback);
   }
-
 
   /**
    * Register projects client-side module handler.

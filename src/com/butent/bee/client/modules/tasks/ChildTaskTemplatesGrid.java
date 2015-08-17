@@ -43,14 +43,16 @@ class ChildTaskTemplatesGrid extends AbstractGridInterceptor {
               parentFormDataInfo, parentFormRow, true);
 
           if (BeeUtils.same(parentForm.getViewName(), ProjectConstants.VIEW_PROJECT_TEMPLATES)) {
-            fillProjectData(childTaskDataInfo, childTemplateTask, parentFormDataInfo, parentFormRow);
+            fillProjectData(childTaskDataInfo, childTemplateTask, parentFormDataInfo,
+                parentFormRow);
           }
 
           if (BeeUtils.same(parentForm.getViewName(),
               ProjectConstants.VIEW_PROJECT_TEMPLATE_STAGES)) {
             fillProjectStageData(childTaskDataInfo, childTemplateTask, parentFormDataInfo,
                 parentFormRow);
-            fillProjectData(childTaskDataInfo, childTemplateTask, parentFormDataInfo, parentFormRow);
+            fillProjectData(childTaskDataInfo, childTemplateTask, parentFormDataInfo,
+                parentFormRow);
           }
         }
 
@@ -72,8 +74,9 @@ class ChildTaskTemplatesGrid extends AbstractGridInterceptor {
   }
 
   private static void fillProjectData(DataInfo taskTemplateData, IsRow templateRow,
-      DataInfo parentFormData,IsRow parentRowData) {
-    if (taskTemplateData == null && templateRow == null && parentFormData == null && parentRowData == null) {
+      DataInfo parentFormData, IsRow parentRowData) {
+    if (taskTemplateData == null && templateRow == null && parentFormData == null
+        && parentRowData == null) {
       return;
     }
 
@@ -97,7 +100,8 @@ class ChildTaskTemplatesGrid extends AbstractGridInterceptor {
 
   private static void fillProjectStageData(DataInfo taskTemplateData, IsRow templateRow,
       DataInfo parentFormData, IsRow parentRowData) {
-    if (taskTemplateData == null && templateRow == null && parentFormData == null && parentRowData == null) {
+    if (taskTemplateData == null && templateRow == null && parentFormData == null
+        && parentRowData == null) {
       return;
     }
 

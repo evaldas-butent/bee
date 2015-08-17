@@ -1,12 +1,13 @@
 package com.butent.bee.client.modules.tasks;
 
-import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.data.*;
-import com.butent.bee.shared.data.*;
-import com.butent.bee.shared.data.event.DataChangeEvent;
-import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.google.common.collect.Lists;
 
+import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.data.Data;
+import com.butent.bee.client.data.IdCallback;
+import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.data.RowCallback;
+import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.event.logical.RenderingEvent;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.view.ViewHelper;
@@ -14,7 +15,12 @@ import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
-import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.data.BeeRow;
+import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.RelationUtils;
+import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
@@ -192,7 +198,7 @@ class ChildTasksGrid extends TasksGrid {
                 Queries.deleteRow(ProjectConstants.VIEW_PROJECT_TEMPLATE_TASK_COPY, templateId,
                     new Queries.IntCallback() {
                       @Override
-                      public void onSuccess(Integer result) {
+                      public void onSuccess(Integer templateTask) {
                         getGridPresenter().handleAction(Action.REFRESH);
                       }
                     });
@@ -271,8 +277,6 @@ class ChildTasksGrid extends TasksGrid {
 
     return super.beforeDeleteRow(presenter, row);
   }
-
-
 
   private static void fillProjectStageData(DataInfo taskData, IsRow taskRow,
       DataInfo parentFormData, IsRow parentRowData) {
