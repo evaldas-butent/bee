@@ -7,6 +7,7 @@
   <!ENTITY inp2 "&inline; width: 200px;">
   <!ENTITY inp3 "&inline; width: 100px;">
   <!ENTITY inp4 "&inline; width: 575px; height:100px; max-height: 200px; max-width: 795px;">
+  <!ENTITY inp5 "&inline; width: 575px; max-width: 795px;">
 ]>
 
 <f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form"
@@ -105,6 +106,10 @@
         </Table>
 
         <Table>
+          <row>
+            <Label for="WorkPlace" style="&lbl;" />
+            <InputText source="WorkPlace" style="&inp5;" />
+          </row>
           <row>
             <Label for="Description" text="=description" style="width: 115px; &lbl;" />
             <InputArea source="Description" placeholder="=prjDescriptionContent" style="&inp4;" />

@@ -8,6 +8,8 @@ public interface LocalizableProjectConstants {
 
   String highPriority();
 
+  String signatureAgreement();
+
   String project();
 
   String projects();
