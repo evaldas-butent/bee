@@ -201,4 +201,10 @@ public final class PriceInfo implements BeeSerializable {
 
     return Codec.beeSerialize(arr);
   }
+
+  @Override
+  public String toString() {
+    return BeeUtils.joinOptions("company", company, "category", category, "item", item,
+        "priceName", priceName, "percent", discountPercent, "price", price, "currency", currency);
+  }
 }

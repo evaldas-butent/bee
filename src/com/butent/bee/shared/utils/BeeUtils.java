@@ -1536,7 +1536,7 @@ public final class BeeUtils {
     return doJoin(false, sep, first, second, rest);
   }
 
-  public static String joinOptions(String... options) {
+  public static String joinOptions(Object... options) {
     Assert.notNull(options);
     int c = options.length;
     Assert.parameterCount(c, 2);
@@ -1545,7 +1545,7 @@ public final class BeeUtils {
     String el;
 
     for (int i = 0; i < c - 1; i += 2) {
-      el = NameUtils.addName(options[i], options[i + 1]);
+      el = NameUtils.addName(transform(options[i]), transform(options[i + 1]));
       if (!isEmpty(el)) {
         if (sb.length() > 0) {
           sb.append(BeeConst.DEFAULT_OPTION_SEPARATOR);
