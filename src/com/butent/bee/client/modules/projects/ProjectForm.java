@@ -249,7 +249,8 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
     drawChart(row);
     setCategory(form, row);
     if (isOwner(form, row)) {
-      ProjectsKeeper.createTemplateTasks(form, row, COL_PROJECT_TEMPLATE, tasks);
+      ProjectsKeeper.createTemplateTasks(form, row, COL_PROJECT, tasks,
+          Filter.isNull(COL_PROJECT_STAGE));
       createTemplateDates(form, row, COL_PROJECT_TEMPLATE, dates);
     }
   }

@@ -199,6 +199,10 @@ public final class Service {
   public static final String VAR_OPERATOR = RPC_VAR_PREFIX + "operator";
 
   public static final String VAR_DATA = RPC_VAR_PREFIX + "data";
+  public static final String VAR_EXPLAIN = RPC_VAR_PREFIX + "explain";
+
+  public static final String VAR_TIME = RPC_VAR_PREFIX + "time";
+  public static final String VAR_QTY = RPC_VAR_PREFIX + " qty";
 
   public static final String VIEW_COLUMN_SEPARATOR = " ";
 

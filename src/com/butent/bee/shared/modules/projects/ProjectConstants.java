@@ -206,6 +206,7 @@ public final class ProjectConstants {
   public static final String VIEW_PROJECT_TEMPLATES = "ProjectTemplates";
   public static final String VIEW_PROJECT_TEMPLATE_STAGES = "ProjectTMLStages";
   public static final String VIEW_PROJECT_TEMPLATE_DATES = "ProjectTMLDates";
+  public static final String VIEW_PROJECT_TEMPLATE_TASK_COPY = "ProjectTMLTaskCopy";
 
   public static final String TBL_PROJECT_USAGE = "ProjectUsage";
   public static final String TBL_PROJECTS = "Projects";

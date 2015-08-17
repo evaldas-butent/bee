@@ -38,7 +38,5 @@
 
     <Relation name="Project" relation="Projects" cascade="SET_NULL" label="=project" />
     <Relation name="ProjectStage" relation="ProjectStages" cascade="SET_NULL" label="=prjStage" />
-    <!-- @deprecates due quick fix-->
-    <Relation name="TaskTemplate" relation="TaskTemplates" cascade="SET_NULL" />
   </Fields>
 </Table>
