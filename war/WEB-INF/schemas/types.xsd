@@ -400,6 +400,7 @@
       <xs:enumeration value="ProjectTMLContacts" />
       <xs:enumeration value="ProjectTMLDates" />
       <xs:enumeration value="ProjectTMLStages" />
+      <xs:enumeration value="ProjectTMLTaskCopy" />
       <xs:enumeration value="ProjectTMLUsers" />
       <xs:enumeration value="ProjectTree"/>
       <xs:enumeration value="ProjectTypes" />

@@ -7,6 +7,15 @@
   >
   <Columns>
     <SimpleColumn name="ProjectTemplate" />
+    <SimpleJoin name="ProjectTemplate" joinType="LEFT">
+      <SimpleColumn name="Company" />
+      <SimpleJoin name="Company" joinType="LEFT">
+        <SimpleColumn alias="CompanyName" name="Name" />
+        <SimpleJoin joinType="LEFT" name="CompanyType">
+          <SimpleColumn name="Name" alias="CompanyTypeName" />
+        </SimpleJoin>
+      </SimpleJoin>
+    </SimpleJoin>
 
     <SimpleColumn name="Name" />
     <SimpleColumn name="ExpectedDuration" />
@@ -24,4 +33,3 @@
 
   </Columns>
 </View>
- 
