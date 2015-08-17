@@ -124,7 +124,6 @@
     <SimpleJoin name="Currency" joinType="LEFT">
       <SimpleColumn name="Name" alias="CurrencyName" />
     </SimpleJoin>
-    <SimpleColumn name="TaskTemplate"/>
   </Columns>
 
   <Order>
