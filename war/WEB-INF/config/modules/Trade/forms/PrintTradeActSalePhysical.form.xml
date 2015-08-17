@@ -14,8 +14,8 @@
       <FlowPanel style="margin-top:-35px;">
         <TextLabel style="text-align:center; &bold;">
           <render>
-            <ui:expression>'Įrenginių perdavimo aktas Nr. ' + row.ContractName + '-' + (row.ContractNumber ?
-              row.ContractNumber :
+            <ui:expression>'Įrenginių perdavimo aktas Nr. ' + row.SeriesName + '-' + (row.Number ?
+              row.Number :
               rowId)</ui:expression>
           </render>
         </TextLabel>
