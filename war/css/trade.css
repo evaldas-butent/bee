@@ -11,6 +11,9 @@
   border: 1px solid black;
   background-color: #dedada;
 }
+.bee-trade-itemsInfo-footer {
+  background-color: #dedada;
+}
 
 .bee-trade-itemsInfo-data {
   border-bottom: 1px solid silver;
