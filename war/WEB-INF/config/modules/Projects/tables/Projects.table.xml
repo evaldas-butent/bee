@@ -11,7 +11,7 @@
     <Relation name="Type" relation="ProjectTypes"  label="=type" />
     <Relation name="Company" relation="Companies"  label="=company" />
     <Relation name="Contact" relation="CompanyPersons"  label="=personContact" />
-    <Relation name="Owner" relation="Users" notNull="true"  label="=prjManager" />    
+    <Relation name="Owner" relation="Users" notNull="true"  label="=prjManager" />
     <Relation name="Category" relation="ProjectTree" notNull="true" label="=category" />
     <Relation name="ProjectTemplate" relation="ProjectTemplates" label="=prjTemplate" />
 
@@ -28,5 +28,6 @@
     <Numeric name="ContractPrice" precision="15" scale="5" label="=salePrice" />
     <Date name="ContractSigned" label="=signDate"/>
     <DateTime name="Created"  defExpr="CURRENT_TIME"/>
+    <String name="WorkPlace" precision="255" label="=prjWorkPlace"/>
   </Fields>
 </Table>
