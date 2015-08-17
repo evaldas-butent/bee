@@ -1,10 +1,11 @@
 package com.butent.bee.client.modules.tasks;
 
-import com.butent.bee.shared.data.*;
 import com.google.common.collect.Lists;
 
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.IdCallback;
+import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.event.logical.RenderingEvent;
@@ -14,7 +15,12 @@ import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
-import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.data.BeeRow;
+import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.RelationUtils;
+import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
@@ -23,11 +29,9 @@ import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.modules.tasks.TaskType;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.google.common.collect.Sets;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 class ChildTasksGrid extends TasksGrid {
 
@@ -110,7 +114,7 @@ class ChildTasksGrid extends TasksGrid {
       return;
     }
 
-    String prop = formRow.getProperty(TaskConstants.VIEW_TASK_TEMPLATES);
+    String prop = formRow.getProperty(ProjectConstants.VIEW_PROJECT_TEMPLATE_TASK_COPY);
 
     if (BeeUtils.isEmpty(prop)) {
       return;
@@ -118,21 +122,8 @@ class ChildTasksGrid extends TasksGrid {
 
     BeeRowSet templates = BeeRowSet.restore(prop);
     DataInfo viewTasks = Data.getDataInfo(TaskConstants.VIEW_TASKS);
-    Set<Long> createdTasks = Sets.newConcurrentHashSet();
-
-    for (IsRow taskRow : gridView.getRowData()) {
-      Long value = taskRow.getLong(viewTasks.getColumnIndex("TaskTemplate"));
-
-      if (DataUtils.isId(value)) {
-        createdTasks.add(value);
-      }
-    }
 
     for (IsRow templRow : templates) {
-
-      if (createdTasks.contains(templRow.getId())) {
-        continue;
-      }
 
       BeeRow row = RowFactory.createEmptyRow(viewTasks, true);
 
@@ -156,6 +147,11 @@ class ChildTasksGrid extends TasksGrid {
       event.consume();
 
       IsRow templRow = event.getRowValue();
+      final Long templateId = BeeUtils.toLong(templRow.getProperty(ProjectConstants.PROP_TEMPLATE));
+
+      if (!DataUtils.isId(templateId)) {
+        return;
+      }
 
       final DataInfo viewTasks = Data.getDataInfo(TaskConstants.VIEW_TASKS);
       final BeeRow row = RowFactory.createEmptyRow(viewTasks, true);
@@ -164,10 +160,6 @@ class ChildTasksGrid extends TasksGrid {
         row.setValue(viewTasks.getColumnIndex(col),
             templRow.getValue(viewTasks.getColumnIndex(col)));
       }
-
-     // @Deprecated
-      row.setValue(viewTasks.getColumnIndex("TaskTemplate"),
-          templRow.getProperty(ProjectConstants.PROP_TEMPLATE));
 
       if (getGridView() != null) {
 
@@ -203,7 +195,13 @@ class ChildTasksGrid extends TasksGrid {
             RowFactory.createRow(viewTasks, row, new RowCallback() {
               @Override
               public void onSuccess(BeeRow createdTask) {
-                getGridPresenter().handleAction(Action.REFRESH);
+                Queries.deleteRow(ProjectConstants.VIEW_PROJECT_TEMPLATE_TASK_COPY, templateId,
+                    new Queries.IntCallback() {
+                      @Override
+                      public void onSuccess(Integer templateTask) {
+                        getGridPresenter().handleAction(Action.REFRESH);
+                      }
+                    });
               }
             });
           }
@@ -250,10 +248,34 @@ class ChildTasksGrid extends TasksGrid {
       IsRow activeRow, Collection<RowInfo> selectedRows, DeleteMode defMode) {
 
     if (!BeeUtils.isEmpty(activeRow.getProperty(ProjectConstants.PROP_TEMPLATE))) {
-      return DeleteMode.CANCEL;
+      return DeleteMode.SINGLE;
     }
 
     return super.getDeleteMode(presenter, activeRow, selectedRows, defMode);
+  }
+
+  @Override
+  public DeleteMode beforeDeleteRow(final GridPresenter presenter, IsRow row) {
+    if (!BeeUtils.isEmpty(row.getProperty(ProjectConstants.PROP_TEMPLATE))) {
+
+      final Long templateId = BeeUtils.toLong(row.getProperty(ProjectConstants.PROP_TEMPLATE));
+
+      if (!DataUtils.isId(templateId)) {
+        return DeleteMode.CANCEL;
+      }
+
+      Queries.deleteRow(ProjectConstants.VIEW_PROJECT_TEMPLATE_TASK_COPY, templateId,
+          new Queries.IntCallback() {
+            @Override
+            public void onSuccess(Integer result) {
+              DataChangeEvent.fireRefresh(BeeKeeper.getBus(), getViewName());
+              presenter.handleAction(Action.REFRESH);
+            }
+          });
+      return DeleteMode.CANCEL;
+    }
+
+    return super.beforeDeleteRow(presenter, row);
   }
 
   private static void fillProjectStageData(DataInfo taskData, IsRow taskRow,

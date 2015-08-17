@@ -1,6 +1,7 @@
 package com.butent.bee.client.modules.projects;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 
@@ -21,6 +22,7 @@ import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.DataInfo;
@@ -30,9 +32,11 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.projects.ProjectConstants;
+import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
+import java.util.Map;
 
 public class ProjectTemplatesGrid extends AbstractGridInterceptor {
 
@@ -76,6 +80,89 @@ public class ProjectTemplatesGrid extends AbstractGridInterceptor {
     }
 
     createProject(Data.getDataInfo(gridView.getViewName()), selectedRow, null);
+  }
+
+  private static void copyTasks(final BeeRow prjRow, final IsRow tmlRow,
+      final RowCallback callback) {
+
+    final DataInfo stagesView = Data.getDataInfo(ProjectConstants.VIEW_PROJECT_STAGES);
+    final DataInfo taskTemplatesView = Data.getDataInfo(TaskConstants.VIEW_TASK_TEMPLATES);
+
+    final List<String> copyCols = Lists.newArrayList(TaskConstants.COL_SUMMARY,
+        TaskConstants.COL_DESCRIPTION, TaskConstants.COL_PRIORITY, TaskConstants.COL_TASK_TYPE,
+        TaskConstants.COL_EXPECTED_DURATION, ClassifierConstants.COL_COMPANY,
+        ClassifierConstants.COL_CONTACT, TaskConstants.COL_REMINDER, ProjectConstants.COL_PROJECT,
+        ProjectConstants.COL_PROJECT_STAGE);
+
+    final List<BeeColumn> tascCopyCols =
+        Lists.newArrayList(Data.getColumns(ProjectConstants.VIEW_PROJECT_TEMPLATE_TASK_COPY,
+            copyCols));
+
+    final BeeRowSet taskCopy = new BeeRowSet(ProjectConstants.VIEW_PROJECT_TEMPLATE_TASK_COPY,
+        tascCopyCols);
+
+    Queries.getRowSet(ProjectConstants.VIEW_PROJECT_STAGES, stagesView.getColumnNames(false),
+        Filter.equals(ProjectConstants.COL_PROJECT, prjRow.getId()),
+        new Queries.RowSetCallback() {
+          @Override
+          public void onSuccess(final BeeRowSet stages) {
+
+            Queries.getRowSet(TaskConstants.VIEW_TASK_TEMPLATES,
+                taskTemplatesView.getColumnNames(false),
+                Filter.equals(ProjectConstants.COL_PROJECT_TEMPLATE, tmlRow.getId()),
+                new Queries.RowSetCallback() {
+                  @Override
+                  public void onSuccess(BeeRowSet taskTemplates) {
+                    if (taskTemplates.isEmpty()) {
+                      createProjectUsers(prjRow, tmlRow, callback);
+                      return;
+                    }
+
+                    Map<Long, Long> stageCache = Maps.newConcurrentMap();
+
+                    for (int i = 0; i < stages.getNumberOfRows(); i++) {
+                      Long tmlId = stages.getLong(i, stagesView.getColumnIndex(
+                          ProjectConstants.COL_STAGE_TEMPLATE));
+                      if (DataUtils.isId(tmlId)) {
+                        stageCache.put(tmlId, stages.getRow(i).getId());
+                      }
+                    }
+
+                    for (int i = 0; i < taskTemplates.getNumberOfRows(); i++) {
+                      BeeRow row = taskCopy.addEmptyRow();
+                      for (String col : copyCols) {
+                        switch (col) {
+                          case ProjectConstants.COL_PROJECT_STAGE:
+                            Long id = taskTemplates.getLong(i, taskTemplatesView.getColumnIndex(
+                                ProjectConstants.COL_STAGE_TEMPLATE));
+
+                            if (DataUtils.isId(id)) {
+                              row.setValue(taskCopy.getColumnIndex(col),
+                                  stageCache.get(id));
+                            }
+                            break;
+                          case ProjectConstants.COL_PROJECT:
+                            row.setValue(taskCopy.getColumnIndex(col), prjRow.getId());
+                            break;
+                          default:
+                            row.setValue(taskCopy.getColumnIndex(col),
+                                taskTemplates.getString(i, col));
+                            break;
+                        }
+                      }
+                    }
+
+                    Queries.insertRows(taskCopy, new RpcCallback<RowInfoList>() {
+                      @Override
+                      public void onSuccess(RowInfoList result) {
+                        createProjectUsers(prjRow, tmlRow, callback);
+                      }
+                    });
+                  }
+                });
+
+          }
+        });
   }
 
   public static void createProject(DataInfo teplateData, final IsRow templateRow,
@@ -141,7 +228,7 @@ public class ProjectTemplatesGrid extends AbstractGridInterceptor {
         new RowCallback() {
           @Override
           public void onSuccess(BeeRow result) {
-            createInitialStage(result, templateRow, callback);
+            createStages(result, templateRow, callback);
           }
         });
   }
@@ -241,7 +328,7 @@ public class ProjectTemplatesGrid extends AbstractGridInterceptor {
         });
   }
 
-  private static void createInitialStage(final BeeRow prjRow, final IsRow tmlRow,
+  private static void createStages(final BeeRow prjRow, final IsRow tmlRow,
       final RowCallback callback) {
 
     final List<String> copyCols = Lists.newArrayList(ProjectConstants.COL_PROJECT,
@@ -288,7 +375,9 @@ public class ProjectTemplatesGrid extends AbstractGridInterceptor {
             Queries.insertRows(stages, new RpcCallback<RowInfoList>() {
               @Override
               public void onSuccess(RowInfoList result) {
-                createProjectUsers(prjRow, tmlRow, callback);
+                // createProjectUsers(prjRow, tmlRow, callback);
+
+                copyTasks(prjRow, tmlRow, callback);
               }
             });
 

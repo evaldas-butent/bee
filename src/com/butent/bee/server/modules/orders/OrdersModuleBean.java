@@ -1,7 +1,10 @@
 package com.butent.bee.server.modules.orders;
 
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.orders.OrdersConstants.*;
+import static com.butent.bee.shared.modules.projects.ProjectConstants.*;
+import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
 
 import com.butent.bee.server.data.QueryServiceBean;
@@ -9,7 +12,12 @@ import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.modules.ParamHolderBean;
+import com.butent.bee.server.modules.administration.ExchangeUtils;
+import com.butent.bee.server.sql.IsCondition;
+import com.butent.bee.server.sql.IsExpression;
+import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
+import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
@@ -17,11 +25,15 @@ import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SearchResult;
+import com.butent.bee.shared.data.SimpleRowSet;
+import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
+import com.butent.bee.shared.modules.orders.OrdersConstants;
+import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -68,7 +80,11 @@ public class OrdersModuleBean implements BeeModule {
       case SVC_GET_TEMPLATE_ITEMS:
         response = getTemplateItems(reqInfo);
         break;
-
+        
+      case OrdersConstants.SVC_CREATE_INVOICE_ITEMS:
+        response = createInvoiceItems(reqInfo);
+        break;
+        
       default:
         String msg = BeeUtils.joinWords("service not recognized:", svc);
         logger.warning(msg);
@@ -125,6 +141,111 @@ public class OrdersModuleBean implements BeeModule {
     return ResponseObject.response(items);
   }
 
+  private ResponseObject createInvoiceItems(RequestInfo reqInfo) {
+    Long saleId = BeeUtils.toLongOrNull(reqInfo.getParameter(COL_SALE));
+    Long currency = BeeUtils.toLongOrNull(reqInfo.getParameter(COL_CURRENCY));
+    Set<Long> ids = DataUtils.parseIdSet(reqInfo.getParameter(Service.VAR_DATA));
+
+    if (!DataUtils.isId(saleId)) {
+      return ResponseObject.error("Wrong account ID");
+    }
+    if (!DataUtils.isId(currency)) {
+      return ResponseObject.error("Wrong currency ID");
+    }
+    if (BeeUtils.isEmpty(ids)) {
+      return ResponseObject.error("Empty ID list");
+    }
+
+    IsCondition where = sys.idInList(TBL_ORDER_ITEMS, ids);
+
+    SqlSelect query = new SqlSelect();
+    query.addFields(TBL_ORDER_ITEMS, COL_TRADE_VAT_PLUS,
+        TradeConstants.COL_TRADE_VAT, COL_TRADE_VAT_PERC, COL_INCOME_ITEM,
+        TradeConstants.COL_TRADE_ITEM_QUANTITY)
+        .addFrom(TBL_ORDER_ITEMS)
+        .setWhere(where);
+
+    IsExpression vatExch =
+        ExchangeUtils.exchangeFieldTo(query, TBL_ORDER_ITEMS, COL_TRADE_VAT,
+            COL_TRADE_CURRENCY, COL_INCOME_DATE, currency);
+
+    String vatAlias = "Vat_" + SqlUtils.uniqueName();
+
+    String priceAlias = "Price_" + SqlUtils.uniqueName();
+    IsExpression priceExch =
+        ExchangeUtils.exchangeFieldTo(query, TBL_ORDER_ITEMS,
+            COL_TRADE_ITEM_PRICE, COL_TRADE_CURRENCY,
+            COL_INCOME_DATE, currency);
+
+    query.addExpr(priceExch, priceAlias)
+        .addExpr(vatExch, vatAlias)
+        .addOrder(TBL_ORDER_ITEMS, sys.getIdName(TBL_ORDER_ITEMS));
+
+    LogUtils.getRootLogger().info(query.getQuery());
+
+    SimpleRowSet data = qs.getData(query);
+    if (DataUtils.isEmpty(data)) {
+      return ResponseObject.error(TBL_ORDER_ITEMS, ids, "not found");
+    }
+
+    ResponseObject response = new ResponseObject();
+
+    for (SimpleRow row : data) {
+      Long item = row.getLong(COL_INCOME_ITEM);
+
+      SqlInsert insert = new SqlInsert(TBL_SALE_ITEMS)
+          .addConstant(COL_SALE, saleId)
+          .addConstant(COL_ITEM, item);
+
+      Boolean vatPerc = row.getBoolean(COL_TRADE_VAT_PERC);
+      Double vat;
+      if (BeeUtils.isTrue(vatPerc)) {
+        insert.addConstant(COL_TRADE_VAT_PERC, vatPerc);
+        vat = row.getDouble(COL_TRADE_VAT);
+      } else {
+        vat = row.getDouble(vatAlias);
+      }
+
+      if (BeeUtils.nonZero(vat)) {
+        insert.addConstant(COL_TRADE_VAT, vat);
+      }
+
+      Boolean vatPlus = row.getBoolean(COL_TRADE_VAT_PLUS);
+
+      if (BeeUtils.isTrue(vatPlus)) {
+        insert.addConstant(COL_TRADE_VAT_PLUS, vatPlus);
+      }
+
+      Double quantity = row.getDouble(TradeConstants.COL_TRADE_ITEM_QUANTITY);
+      Double price = row.getDouble(priceAlias);
+
+      insert.addConstant(COL_TRADE_ITEM_QUANTITY, BeeUtils.unbox(quantity));
+
+      if (price != null) {
+        insert.addConstant(COL_TRADE_ITEM_PRICE, price);
+      }
+
+      ResponseObject insResponse = qs.insertDataWithResponse(insert);
+      if (insResponse.hasErrors()) {
+        response.addMessagesFrom(insResponse);
+        break;
+      }
+    }
+
+    if (!response.hasErrors()) {
+      SqlUpdate update = new SqlUpdate(TBL_ORDER_ITEMS)
+          .addConstant(COL_INCOME_SALE, saleId)
+          .setWhere(where);
+
+      ResponseObject updResponse = qs.updateDataWithResponse(update);
+      if (updResponse.hasErrors()) {
+        response.addMessagesFrom(updResponse);
+      }
+    }
+
+    return response;
+  }
+  
   private Set<Long> getOrderItems(Long orderId) {
     if (DataUtils.isId(orderId)) {
       return qs.getLongSet(new SqlSelect()
