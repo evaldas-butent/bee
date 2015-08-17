@@ -320,18 +320,22 @@ public class CompanyForm extends AbstractFormInterceptor {
         int idxRemindEmail = form.getDataIndex(COL_REMIND_EMAIL);
         int idxEmailInvoices = form.getDataIndex(COL_EMAIL_INVOICES);
 
-        if (idxRemindEmail < 0 && idxEmailInvoices < 0) {
-          return Boolean.TRUE;
-        }
-
-        if (idxRemindEmail > -1) {
+        if (idxRemindEmail < 0) {
           row.setValue(idxRemindEmail, (Boolean) null);
           form.refreshBySource(COL_REMIND_EMAIL);
         }
 
-        if (idxEmailInvoices > -1) {
+        if (idxEmailInvoices < 0) {
           row.setValue(idxEmailInvoices, (Boolean) null);
           form.refreshBySource(COL_EMAIL_INVOICES);
+        }
+
+        if (idxRemindEmail > -1) {
+          return Boolean.TRUE;
+        }
+
+        if (idxEmailInvoices > -1) {
+          return Boolean.TRUE;
         }
         return Boolean.TRUE;
       }
@@ -398,7 +402,6 @@ public class CompanyForm extends AbstractFormInterceptor {
     if (qrFlowPanel == null) {
       return;
     }
-
     qrFlowPanel.clear();
     FaLabel qrCodeLabel = new FaLabel(FontAwesome.QRCODE);
     qrCodeLabel.setTitle(Localized.getConstants().qrCode());
