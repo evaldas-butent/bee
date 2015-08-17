@@ -46,10 +46,10 @@
       <SimpleColumn alias="ReminderName" name="Name" />
     </SimpleJoin>
 
-    <SimpleColumn name="ProjectTemplate" />
-    <SimpleColumn name="StageTemplate" />
-    <SimpleJoin name="StageTemplate" joinType="LEFT">
-      <SimpleColumn name="Name" alias="TMLStageName" />
+    <SimpleColumn name="Project" />
+    <SimpleColumn name="ProjectStage" />
+    <SimpleJoin name="ProjectStage" joinType="LEFT">
+      <SimpleColumn name="Name" alias="StageName" />
     </SimpleJoin>
   </Columns>
 

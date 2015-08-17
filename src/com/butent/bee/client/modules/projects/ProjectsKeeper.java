@@ -24,6 +24,7 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
+import com.butent.bee.shared.modules.projects.ProjectConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.rights.Module;
@@ -51,12 +52,12 @@ public final class ProjectsKeeper {
   }
 
   public static void createTemplateTasks(FormView form, final IsRow row, String relTmlColumn,
-      ChildGrid childGrid) {
+      ChildGrid childGrid, Filter filter) {
     if (form == null || row == null) {
       return;
     }
 
-    if (!DataUtils.isId(row.getLong(form.getDataIndex(relTmlColumn)))) {
+    if (!DataUtils.isId(row.getId())) {
       return;
     }
 
@@ -69,19 +70,24 @@ public final class ProjectsKeeper {
     }
 
     final GridView tasksGrid = childGrid.getGridView();
+    Filter listFilter = Filter.equals(relTmlColumn, row.getId());
 
-    Queries.getRowSet(TaskConstants.VIEW_TASK_TEMPLATES,
-        Data.getDataInfo(TaskConstants.VIEW_TASK_TEMPLATES).getColumnNames(false),
-        Filter.equals(relTmlColumn,
-            row.getString(form.getDataIndex(relTmlColumn))),
-        new Order(Data.getIdColumn(TaskConstants.VIEW_TASK_TEMPLATES), false),
+    if (filter != null) {
+      listFilter = Filter.and(listFilter, filter);
+    }
+
+    Queries.getRowSet(ProjectConstants.VIEW_PROJECT_TEMPLATE_TASK_COPY,
+        Data.getDataInfo(ProjectConstants.VIEW_PROJECT_TEMPLATE_TASK_COPY).getColumnNames(false),
+        listFilter, new Order(Data.getIdColumn(ProjectConstants.VIEW_PROJECT_TEMPLATE_TASK_COPY),
+            false),
         new Queries.RowSetCallback() {
           @Override
           public void onSuccess(BeeRowSet result) {
             if (result.isEmpty()) {
               return;
             }
-            row.setProperty(TaskConstants.VIEW_TASK_TEMPLATES, Codec.beeSerialize(result));
+            row.setProperty(ProjectConstants.VIEW_PROJECT_TEMPLATE_TASK_COPY,
+                Codec.beeSerialize(result));
 
             if (tasksGrid != null) {
               tasksGrid.refresh(true, false);
