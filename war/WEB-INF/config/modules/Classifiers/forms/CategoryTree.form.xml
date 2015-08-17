@@ -7,7 +7,7 @@
   
   <DataTree caption="=itemCategories" viewName="CategoryTree" parentColumn="Parent">
     <calc>
-      <ui:expression>row.Name</ui:expression>
+      <ui:expression>row.Name + ' [' + rowId + ']'</ui:expression>
     </calc>
 
     <form>
