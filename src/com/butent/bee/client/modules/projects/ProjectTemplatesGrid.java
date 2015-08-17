@@ -1,7 +1,5 @@
 package com.butent.bee.client.modules.projects;
 
-import com.butent.bee.shared.data.*;
-import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -21,6 +19,11 @@ import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.FaLabel;
+import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.data.BeeRow;
+import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.RowInfoList;
@@ -29,6 +32,7 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.projects.ProjectConstants;
+import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
@@ -83,8 +87,6 @@ public class ProjectTemplatesGrid extends AbstractGridInterceptor {
 
     final DataInfo stagesView = Data.getDataInfo(ProjectConstants.VIEW_PROJECT_STAGES);
     final DataInfo taskTemplatesView = Data.getDataInfo(TaskConstants.VIEW_TASK_TEMPLATES);
-    final DataInfo projectTMLTaskCopyView =
-        Data.getDataInfo(ProjectConstants.VIEW_PROJECT_TEMPLATE_TASK_COPY);
 
     final List<String> copyCols = Lists.newArrayList(TaskConstants.COL_SUMMARY,
         TaskConstants.COL_DESCRIPTION, TaskConstants.COL_PRIORITY, TaskConstants.COL_TASK_TYPE,
@@ -130,7 +132,7 @@ public class ProjectTemplatesGrid extends AbstractGridInterceptor {
                       BeeRow row = taskCopy.addEmptyRow();
                       for (String col : copyCols) {
                         switch (col) {
-                          case ProjectConstants.COL_PROJECT_STAGE :
+                          case ProjectConstants.COL_PROJECT_STAGE:
                             Long id = taskTemplates.getLong(i, taskTemplatesView.getColumnIndex(
                                 ProjectConstants.COL_STAGE_TEMPLATE));
 
@@ -242,7 +244,7 @@ public class ProjectTemplatesGrid extends AbstractGridInterceptor {
     final BeeRowSet persons = new BeeRowSet(ProjectConstants.VIEW_PROJECT_CONTACTS, personCols);
 
     Queries.getRowSet(ProjectConstants.VIEW_PROJECT_TEMPLATE_CONTACTS, Lists.newArrayList(
-            ClassifierConstants.COL_COMPANY_PERSON),
+        ClassifierConstants.COL_COMPANY_PERSON),
         Filter.equals(ProjectConstants.COL_PROJECT_TEMPLATE, BeeUtils.toString(tmlRow.getId())),
         new Queries.RowSetCallback() {
 
@@ -290,8 +292,8 @@ public class ProjectTemplatesGrid extends AbstractGridInterceptor {
     final BeeRowSet users = new BeeRowSet(ProjectConstants.VIEW_PROJECT_USERS, usersCols);
 
     Queries.getRowSet(ProjectConstants.VIEW_PROJECT_TEMPLATE_USERS, Lists.newArrayList(
-            AdministrationConstants.COL_USER, ProjectConstants.COL_NOTES,
-            ProjectConstants.COL_RATE, ProjectConstants.COL_PROJECT_CURENCY),
+        AdministrationConstants.COL_USER, ProjectConstants.COL_NOTES,
+        ProjectConstants.COL_RATE, ProjectConstants.COL_PROJECT_CURENCY),
         Filter.equals(ProjectConstants.COL_PROJECT_TEMPLATE, BeeUtils.toString(tmlRow.getId())),
         new Queries.RowSetCallback() {
 
@@ -336,13 +338,13 @@ public class ProjectTemplatesGrid extends AbstractGridInterceptor {
 
     final List<BeeColumn> stageCols =
         Lists.newArrayList(Data.getColumns(ProjectConstants.VIEW_PROJECT_STAGES, copyCols
-        ));
+            ));
 
     final BeeRowSet stages = new BeeRowSet(ProjectConstants.VIEW_PROJECT_STAGES, stageCols);
 
     Queries.getRowSet(ProjectConstants.VIEW_PROJECT_TEMPLATE_STAGES, Lists.newArrayList(
-            ProjectConstants.COL_STAGE_NAME, ProjectConstants.COL_EXPECTED_DURATION,
-            ProjectConstants.COL_EXPENSES, ProjectConstants.COL_PROJECT_CURENCY),
+        ProjectConstants.COL_STAGE_NAME, ProjectConstants.COL_EXPECTED_DURATION,
+        ProjectConstants.COL_EXPENSES, ProjectConstants.COL_PROJECT_CURENCY),
         Filter.equals(ProjectConstants.COL_PROJECT_TEMPLATE, BeeUtils.toString(tmlRow.getId())),
         new Queries.RowSetCallback() {
 
@@ -373,7 +375,7 @@ public class ProjectTemplatesGrid extends AbstractGridInterceptor {
             Queries.insertRows(stages, new RpcCallback<RowInfoList>() {
               @Override
               public void onSuccess(RowInfoList result) {
-                //               createProjectUsers(prjRow, tmlRow, callback);
+                // createProjectUsers(prjRow, tmlRow, callback);
 
                 copyTasks(prjRow, tmlRow, callback);
               }
@@ -381,7 +383,7 @@ public class ProjectTemplatesGrid extends AbstractGridInterceptor {
 
           }
         }
-    );
+        );
   }
 
   private static void openProjectFullForm(long projectId) {
