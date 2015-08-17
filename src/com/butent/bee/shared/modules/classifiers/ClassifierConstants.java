@@ -51,7 +51,7 @@ public final class ClassifierConstants {
 
   public static final String TBL_PAYMENT_TYPES = "PaymentTypes";
 
-  public static final String TBL_DISCOUNTS = "EcDiscounts";
+  public static final String TBL_DISCOUNTS = "Discounts";
 
   public static final String FORM_COMPANY = "Company";
   public static final String FORM_COMPANY_ACTION = "CompanyAction";

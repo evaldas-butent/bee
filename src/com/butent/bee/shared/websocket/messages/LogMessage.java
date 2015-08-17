@@ -47,6 +47,11 @@ public class LogMessage extends Message {
   }
 
   @Override
+  public boolean isLoggable() {
+    return false;
+  }
+
+  @Override
   public boolean isValid() {
     return getLevel() != null;
   }

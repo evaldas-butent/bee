@@ -1150,12 +1150,12 @@ public class ClassifiersModuleBean implements BeeModule {
   private ResponseObject getPriceAndDiscount(RequestInfo reqInfo) {
     Long company = reqInfo.getParameterLong(COL_DISCOUNT_COMPANY);
     if (!DataUtils.isId(company)) {
-      return ResponseObject.parameterNotFound(reqInfo.getService(), COL_DISCOUNT_COMPANY);
+      return ResponseObject.parameterNotFound(SVC_GET_PRICE_AND_DISCOUNT, COL_DISCOUNT_COMPANY);
     }
 
     Long item = reqInfo.getParameterLong(COL_DISCOUNT_ITEM);
     if (!DataUtils.isId(item)) {
-      return ResponseObject.parameterNotFound(reqInfo.getService(), COL_DISCOUNT_ITEM);
+      return ResponseObject.parameterNotFound(SVC_GET_PRICE_AND_DISCOUNT, COL_DISCOUNT_ITEM);
     }
 
     Long operation = reqInfo.getParameterLong(COL_DISCOUNT_OPERATION);
@@ -1180,9 +1180,9 @@ public class ClassifiersModuleBean implements BeeModule {
       defPrice = ItemPrice.SALE;
     }
 
-    boolean explain = reqInfo.hasParameter(Service.VAR_EXPLAIN);
-    if (explain) {
-      explain(reqInfo.getService(),
+    int explain = BeeUtils.unbox(reqInfo.getParameterInt(Service.VAR_EXPLAIN));
+    if (explain > 0) {
+      explain(SVC_GET_PRICE_AND_DISCOUNT,
           BeeUtils.joinOptions(COL_DISCOUNT_COMPANY, company, COL_DISCOUNT_ITEM, item,
               COL_DISCOUNT_OPERATION, operation, COL_DISCOUNT_WAREHOUSE, warehouse,
               Service.VAR_TIME, time, Service.VAR_QTY, qty, COL_DISCOUNT_UNIT, unit,
@@ -1190,13 +1190,13 @@ public class ClassifiersModuleBean implements BeeModule {
     }
 
     List<Long> companyParents = getDiscountParents(company);
-    if (explain) {
+    if (explain > 0) {
       explain(COL_DISCOUNT_PARENT, companyParents.size(),
           companyParents.isEmpty() ? BeeConst.STRING_EMPTY : companyParents.toString());
     }
 
     Map<Long, Long> categories = getItemCategories(item);
-    if (explain) {
+    if (explain > 0) {
       explain(TBL_ITEM_CATEGORIES, categories.size(),
           categories.isEmpty() ? BeeConst.STRING_EMPTY : categories.keySet().toString());
     }
@@ -1215,7 +1215,7 @@ public class ClassifiersModuleBean implements BeeModule {
     HasConditions categoryWhere = SqlUtils.or(
         SqlUtils.isNull(TBL_DISCOUNTS, COL_DISCOUNT_CATEGORY));
     if (!BeeUtils.isEmpty(categories)) {
-      companyWhere.add(SqlUtils.inList(TBL_DISCOUNTS, COL_DISCOUNT_CATEGORY, categories.keySet()));
+      categoryWhere.add(SqlUtils.inList(TBL_DISCOUNTS, COL_DISCOUNT_CATEGORY, categories.keySet()));
     }
 
     discountWhere.add(SqlUtils.or(
@@ -1286,12 +1286,12 @@ public class ClassifiersModuleBean implements BeeModule {
         .addFrom(TBL_DISCOUNTS)
         .setWhere(discountWhere);
 
-    if (explain) {
+    if (explain > 1) {
       explain(discountQuery);
     }
 
     SimpleRowSet discountData = qs.getData(discountQuery);
-    if (explain) {
+    if (explain > 0) {
       explain(TBL_DISCOUNTS, (discountData == null) ? 0 : discountData.getNumberOfRows());
     }
 
@@ -1302,7 +1302,7 @@ public class ClassifiersModuleBean implements BeeModule {
         PriceInfo pi = PriceInfo.fromDiscount(row);
         discounts.add(pi);
 
-        if (explain) {
+        if (explain > 0) {
           explain(pi);
         }
       }
@@ -1324,12 +1324,12 @@ public class ClassifiersModuleBean implements BeeModule {
                 SqlUtils.notNull(TBL_COMPANIES, COL_COMPANY_PRICE_NAME),
                 SqlUtils.notNull(TBL_COMPANIES, COL_COMPANY_DISCOUNT_PERCENT))));
 
-    if (explain) {
+    if (explain > 1) {
       explain(companyQuery);
     }
 
     SimpleRowSet companyData = qs.getData(companyQuery);
-    if (explain) {
+    if (explain > 0) {
       explain(TBL_COMPANIES, (companyData == null) ? 0 : companyData.getNumberOfRows());
     }
 
@@ -1338,14 +1338,14 @@ public class ClassifiersModuleBean implements BeeModule {
         PriceInfo pi = PriceInfo.fromCompany(row.getLong(companyIdName), row);
         discounts.add(pi);
 
-        if (explain) {
+        if (explain > 0) {
           explain(pi);
         }
       }
     }
 
     if (discounts.isEmpty()) {
-      if (explain) {
+      if (explain > 0) {
         explain(BeeConst.NO, TBL_DISCOUNTS);
       }
       return ResponseObject.emptyResponse();
@@ -1357,14 +1357,14 @@ public class ClassifiersModuleBean implements BeeModule {
         double fromRate = DataUtils.isId(pi.getCurrency())
             ? adm.getRate(pi.getCurrency(), time) : BeeConst.DOUBLE_ONE;
 
-        if (explain) {
+        if (explain > 0) {
           explain(pi);
         }
 
-        pi.setPrice(pi.getPrice() / fromRate * toRate);
+        pi.setPrice(pi.getPrice() / toRate * fromRate);
         pi.setCurrency(currency);
 
-        if (explain) {
+        if (explain > 0) {
           explain(BeeUtils.joinOptions("fromRate", fromRate, "toRate", toRate,
               COL_DISCOUNT_PRICE, pi.getPrice(), COL_DISCOUNT_CURRENCY, pi.getCurrency()));
         }
@@ -1372,7 +1372,7 @@ public class ClassifiersModuleBean implements BeeModule {
     }
 
     EnumMap<ItemPrice, Double> itemPrices = getItemPrices(item, currency, time);
-    if (explain) {
+    if (explain > 0) {
       explain(NameUtils.getClassName(ItemPrice.class), itemPrices.size(),
           itemPrices.isEmpty() ? BeeConst.STRING_EMPTY : itemPrices.toString());
     }
@@ -1381,14 +1381,14 @@ public class ClassifiersModuleBean implements BeeModule {
       if (!BeeUtils.isPositive(pi.getPrice()) && pi.getPriceName() != null
           && itemPrices.containsKey(pi.getPriceName())) {
 
-        if (explain) {
+        if (explain > 0) {
           explain(pi);
         }
 
         pi.setPrice(itemPrices.get(pi.getPriceName()));
         pi.setCurrency(currency);
 
-        if (explain) {
+        if (explain > 0) {
           explain(BeeUtils.joinOptions(COL_DISCOUNT_PRICE_NAME, pi.getPriceName(),
               COL_DISCOUNT_PRICE, pi.getPrice(), COL_DISCOUNT_CURRENCY, pi.getCurrency()));
         }
@@ -1400,23 +1400,23 @@ public class ClassifiersModuleBean implements BeeModule {
 
     if (!BeeUtils.isPositive(result.getA()) && itemPrices.containsKey(defPrice)) {
       result.setA(itemPrices.get(defPrice));
-      if (explain) {
+      if (explain > 0) {
         explain(COL_DISCOUNT_PRICE_NAME, "default", defPrice, result.getA());
       }
     }
 
-    if (explain) {
+    if (explain > 0) {
       if (result.isNull()) {
-        explain(reqInfo.getService(), "result is null");
+        explain(SVC_GET_PRICE_AND_DISCOUNT, "result is null");
       } else {
-        explain(reqInfo.getService(), "result:",
+        explain(SVC_GET_PRICE_AND_DISCOUNT, "result:",
             COL_DISCOUNT_PRICE, result.getA(), COL_DISCOUNT_PERCENT, result.getB());
       }
     }
 
     if (!BeeUtils.isPositive(result.getA()) && !BeeUtils.isDouble(result.getB())) {
-      if (explain) {
-        explain(reqInfo.getService(), "response is empty");
+      if (explain > 0) {
+        explain(SVC_GET_PRICE_AND_DISCOUNT, "response is empty");
       }
       return ResponseObject.emptyResponse();
     } else {
@@ -1425,11 +1425,11 @@ public class ClassifiersModuleBean implements BeeModule {
   }
 
   private Pair<Double, Double> getPriceAndDiscount(List<PriceInfo> discounts,
-      Long company, List<Long> companyParents, Map<Long, Long> categories, boolean explain) {
+      Long company, List<Long> companyParents, Map<Long, Long> categories, int explain) {
 
     if (discounts.size() == 1) {
       PriceInfo pi = discounts.get(0);
-      if (explain) {
+      if (explain > 0) {
         explain("found 1 discount:", pi);
       }
       return Pair.of(pi.getPrice(), pi.getDiscountPercent());
@@ -1443,7 +1443,7 @@ public class ClassifiersModuleBean implements BeeModule {
       companies.addAll(companyParents);
     }
 
-    if (explain) {
+    if (explain > 0) {
       explain(TBL_COMPANIES, companies);
     }
 
@@ -1460,7 +1460,7 @@ public class ClassifiersModuleBean implements BeeModule {
       categoryLevels.put(category, level);
     }
 
-    if (explain) {
+    if (explain > 0) {
       explain("Category levels", categoryLevels);
     }
 
@@ -1492,7 +1492,7 @@ public class ClassifiersModuleBean implements BeeModule {
             ? categoryLevels.get(o2.getCategory()) : null;
 
         if (!Objects.equals(cat1, cat2)) {
-          return BeeUtils.compareNullsLast(cat1, cat2);
+          return BeeUtils.compareNullsLast(cat2, cat1);
         }
 
         Double p1 = BeeUtils.minusPercent(o1.getPrice(), o1.getDiscountPercent());
@@ -1506,7 +1506,7 @@ public class ClassifiersModuleBean implements BeeModule {
       }
     });
 
-    if (explain) {
+    if (explain > 0) {
       explain("ordered discounts", BeeUtils.bracket(input.size()));
       for (PriceInfo pi : input) {
         explain(pi);
@@ -1519,14 +1519,14 @@ public class ClassifiersModuleBean implements BeeModule {
     for (PriceInfo pi : input) {
       if (price == null && BeeUtils.isPositive(pi.getPrice())) {
         price = pi.getPrice();
-        if (explain) {
+        if (explain > 0) {
           explain(COL_DISCOUNT_PRICE, price, "from", pi);
         }
       }
 
       if (percent == null && BeeUtils.isDouble(pi.getDiscountPercent())) {
         percent = pi.getDiscountPercent();
-        if (explain) {
+        if (explain > 0) {
           explain(COL_DISCOUNT_PERCENT, percent, "from", pi);
         }
       }
@@ -1646,7 +1646,7 @@ public class ClassifiersModuleBean implements BeeModule {
           Long c = row.getLong(ip.getCurrencyColumn());
           if (!Objects.equals(currency, c)) {
             double fromRate = DataUtils.isId(c) ? adm.getRate(c, time) : BeeConst.DOUBLE_ONE;
-            price = price / fromRate * toRate;
+            price = price / toRate * fromRate;
           }
 
           prices.put(ip, price);

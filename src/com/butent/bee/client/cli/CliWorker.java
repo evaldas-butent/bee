@@ -347,6 +347,12 @@ public final class CliWorker {
     } else if ("exit".equals(z)) {
       Bee.exit();
 
+    } else if ("explain".equals(z)) {
+      if (BeeUtils.isInt(args)) {
+        Global.setExplain(BeeUtils.toInt(args));
+      }
+      logger.debug(z, Global.getExplain());
+
     } else if (BeeUtils.inList(z, "f", "func")) {
       showFunctions(v, arr, errorPopup);
 
