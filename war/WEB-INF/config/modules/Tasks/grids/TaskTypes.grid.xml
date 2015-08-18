@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
-  
+
   name="TaskTypes" viewName="TaskTypes" caption="=crmTaskTypes"
   minColumnWidth="120"
   >
@@ -13,5 +13,6 @@
     <DataColumn name="Foreground" updateMode="row">
       <editor type="color" />
     </DataColumn>
+    <DataColumn name="SignContract" />
   </g:columns>
 </g:Grid>

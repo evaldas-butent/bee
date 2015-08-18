@@ -300,6 +300,8 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
 
       showComputedTimes(getFormView(), getActiveRow(), true);
     }
+
+    getFormView().refreshBySource(COL_PROJECT_STATUS);
   }
 
   @Override
@@ -410,6 +412,23 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
 
       showComputedTimes(getFormView(), getActiveRow(), true);
     }
+
+    if (event.hasView(VIEW_PROJECTS)) {
+      IsRow newRow = event.getRow();
+
+      if (newRow.getId() == getActiveRow().getId()) {
+        if (newRow.getInteger(getFormView().getDataIndex(COL_PROJECT_STATUS))
+            != getActiveRow().getInteger(getFormView().getDataIndex(COL_PROJECT_STATUS))) {
+
+          IsRow  oldRow = DataUtils.cloneRow(getActiveRow());
+          getActiveRow().setValue(getFormView().getDataIndex(COL_PROJECT_STATUS),
+              newRow.getValue(getFormView().getDataIndex(COL_PROJECT_STATUS)));
+          getFormView().refreshBySource(COL_PROJECT_STATUS);
+          logChanges(oldRow, getActiveRow(), getActiveRowId());
+        }
+      }
+    }
+
   }
 
   @Override
@@ -417,66 +436,7 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
 
     IsRow oldData = event.getOldRow();
     IsRow newData = event.getNewRow();
-
-    if (oldData == null) {
-      return;
-    }
-
-    if (auditSilentFields.isEmpty()) {
-      return;
-    }
-
-    DataInfo data = Data.getDataInfo(VIEW_PROJECTS);
-    List<BeeColumn> cols = data.getColumns();
-
-    Map<String, String> oldDataMap = Maps.newHashMap();
-    Map<String, String> newDataMap = Maps.newHashMap();
-    List<String> visitedCols = Lists.newArrayList();
-
-    for (int i = 0; i < cols.size(); i++) {
-      if (!auditSilentFields.contains(cols.get(i).getId())
-          || visitedCols.contains(cols.get(i).getId())) {
-        continue;
-      }
-
-      if (BeeUtils.same(oldData.getString(i), newData.getString(i))) {
-        continue;
-      }
-
-      String oldValue = BeeConst.STRING_EMPTY;
-      String newValue = BeeConst.STRING_EMPTY;
-
-      if (data.hasRelation(cols.get(i).getId())) {
-        for (ViewColumn vCol : data.getDescendants(cols.get(i).getId(), false)) {
-          oldValue =
-              BeeUtils.join(BeeConst.STRING_COMMA, oldValue, oldData.getString(data
-                  .getColumnIndex(vCol.getName())));
-          newValue =
-              BeeUtils.join(BeeConst.STRING_COMMA, newValue, newData.getString(data
-                  .getColumnIndex(vCol.getName())));
-          visitedCols.add(vCol.getName());
-        }
-
-      } else {
-        oldValue = oldData.getString(i);
-        newValue = newData.getString(i);
-      }
-      oldDataMap.put(cols.get(i).getId(), oldValue);
-      newDataMap.put(cols.get(i).getId(), newValue);
-    }
-
-    if (oldDataMap.isEmpty() && newDataMap.isEmpty()) {
-      return;
-    }
-
-    Map<String, Map<String, String>> oldDataSent = Maps.newHashMap();
-    Map<String, Map<String, String>> newDataSent = Maps.newHashMap();
-
-    oldDataSent.put(VIEW_PROJECTS, oldDataMap);
-    newDataSent.put(VIEW_PROJECTS, newDataMap);
-
-    ProjectsHelper.registerProjectEvent(VIEW_PROJECT_EVENTS, ProjectEvent.EDIT,
-        event.getRowId(), null, newDataSent, oldDataSent);
+    logChanges(oldData, newData, event.getRowId());
   }
 
   @Override
@@ -846,6 +806,69 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
 
   private boolean isLockedValidationEvent(String column) {
     return BeeUtils.unbox(lockedValidations.get(column));
+  }
+
+  private void logChanges(IsRow oldData, IsRow newData, long rowId) {
+    if (oldData == null) {
+      return;
+    }
+
+    if (auditSilentFields.isEmpty()) {
+      return;
+    }
+
+    DataInfo data = Data.getDataInfo(VIEW_PROJECTS);
+    List<BeeColumn> cols = data.getColumns();
+
+    Map<String, String> oldDataMap = Maps.newHashMap();
+    Map<String, String> newDataMap = Maps.newHashMap();
+    List<String> visitedCols = Lists.newArrayList();
+
+    for (int i = 0; i < cols.size(); i++) {
+      if (!auditSilentFields.contains(cols.get(i).getId())
+          || visitedCols.contains(cols.get(i).getId())) {
+        continue;
+      }
+
+      if (BeeUtils.same(oldData.getString(i), newData.getString(i))) {
+        continue;
+      }
+
+      String oldValue = BeeConst.STRING_EMPTY;
+      String newValue = BeeConst.STRING_EMPTY;
+
+      if (data.hasRelation(cols.get(i).getId())) {
+        for (ViewColumn vCol : data.getDescendants(cols.get(i).getId(), false)) {
+          oldValue =
+              BeeUtils.join(BeeConst.STRING_COMMA, oldValue, oldData.getString(data
+                  .getColumnIndex(vCol.getName())));
+          newValue =
+              BeeUtils.join(BeeConst.STRING_COMMA, newValue, newData.getString(data
+                  .getColumnIndex(vCol.getName())));
+          visitedCols.add(vCol.getName());
+        }
+
+      } else {
+        oldValue = oldData.getString(i);
+        newValue = newData.getString(i);
+      }
+      oldDataMap.put(cols.get(i).getId(), oldValue);
+      newDataMap.put(cols.get(i).getId(), newValue);
+    }
+
+    if (oldDataMap.isEmpty() && newDataMap.isEmpty()) {
+      return;
+    }
+
+    Map<String, Map<String, String>> oldDataSent = Maps.newHashMap();
+    Map<String, Map<String, String>> newDataSent = Maps.newHashMap();
+
+    oldDataSent.put(VIEW_PROJECTS, oldDataMap);
+    newDataSent.put(VIEW_PROJECTS, newDataMap);
+
+    ProjectsHelper.registerProjectEvent(VIEW_PROJECT_EVENTS, ProjectEvent.EDIT,
+        rowId, null, newDataSent, oldDataSent);
+
   }
 
   private void setLockedValidationEvent(String column) {
