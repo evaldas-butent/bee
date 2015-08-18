@@ -1195,8 +1195,8 @@ class TaskEditor extends AbstractFormInterceptor {
     final boolean isProjectActive = EnumUtils.in(getProjectStatus(), ProjectStatus.ACTIVE,
         ProjectStatus.SCHEDULED);
 
-    if (BeeUtils.unbox(getBoolean(COL_SIGN_CONTRACT)) &&
-        DataUtils.isId(getLong(ProjectConstants.COL_PROJECT)) && isProjectActive) {
+    if (BeeUtils.unbox(getBoolean(COL_SIGN_CONTRACT))
+        && DataUtils.isId(getLong(ProjectConstants.COL_PROJECT)) && isProjectActive) {
       dialog.addWarning(Localized.getConstants().prjWilBeCanceled());
     }
 
@@ -1210,22 +1210,21 @@ class TaskEditor extends AbstractFormInterceptor {
           return;
         }
 
-
         BeeRow newRow = getNewRow(TaskStatus.CANCELED);
 
-        if (BeeUtils.unbox(getBoolean(COL_SIGN_CONTRACT)) &&
-            DataUtils.isId(getLong(ProjectConstants.COL_PROJECT)) && isProjectActive) {
+        if (BeeUtils.unbox(getBoolean(COL_SIGN_CONTRACT))
+            && DataUtils.isId(getLong(ProjectConstants.COL_PROJECT)) && isProjectActive) {
           newRow.setProperty(ProjectConstants.ALS_PROJECT_STATUS,
               BeeUtils.toString(ProjectStatus.SUSPENDED.ordinal()));
         }
 
-      ParameterList params = createParams(TaskEvent.CANCEL, newRow,
-          comment);
+        ParameterList params = createParams(TaskEvent.CANCEL, newRow,
+            comment);
 
-      sendRequest(params, TaskEvent.CANCEL);
-      dialog.close();
-    }
-  });
+        sendRequest(params, TaskEvent.CANCEL);
+        dialog.close();
+      }
+    });
 
     dialog.display();
   }
@@ -1273,8 +1272,8 @@ class TaskEditor extends AbstractFormInterceptor {
         ProjectStatus.SCHEDULED);
 
     final String cid = dialog.addComment(false);
-    final String rbtn = dialog.addRadioButtons(BeeUtils.unbox(getBoolean(COL_SIGN_CONTRACT)) &&
-        DataUtils.isId(getLong(ProjectConstants.COL_PROJECT)) && isProjectActive);
+    final String rbtn = dialog.addRadioButtons(BeeUtils.unbox(getBoolean(COL_SIGN_CONTRACT))
+        && DataUtils.isId(getLong(ProjectConstants.COL_PROJECT)) && isProjectActive);
 
     final String fid = dialog.addFileCollector();
 
@@ -1295,11 +1294,11 @@ class TaskEditor extends AbstractFormInterceptor {
         BeeRow newRow = getNewRow(TaskStatus.COMPLETED);
         newRow.setValue(getFormView().getDataIndex(COL_COMPLETED), completed);
 
-        if (!BeeUtils.isEmpty(rbtn) && BeeUtils.unbox(getBoolean(COL_SIGN_CONTRACT)) &&
-            DataUtils.isId(getLong(ProjectConstants.COL_PROJECT)) && isProjectActive) {
+        if (!BeeUtils.isEmpty(rbtn) && BeeUtils.unbox(getBoolean(COL_SIGN_CONTRACT))
+            && DataUtils.isId(getLong(ProjectConstants.COL_PROJECT)) && isProjectActive) {
           int desc = dialog.getSelectedRadioItem(rbtn);
 
-          switch (desc)  {
+          switch (desc) {
             case 0:
               newRow.setProperty(ProjectConstants.ALS_PROJECT_STATUS,
                   BeeUtils.toString(ProjectStatus.ACTIVE.ordinal()));
@@ -1309,8 +1308,8 @@ class TaskEditor extends AbstractFormInterceptor {
                   BeeUtils.toString(ProjectStatus.SUSPENDED.ordinal()));
               break;
             default:
-            showError(Localized.getConstants().selectContractState());
-            return;
+              showError(Localized.getConstants().selectContractState());
+              return;
           }
         }
 
@@ -1678,8 +1677,8 @@ class TaskEditor extends AbstractFormInterceptor {
     final boolean isProjectActive = EnumUtils.in(getProjectStatus(), ProjectStatus.ACTIVE,
         ProjectStatus.SCHEDULED);
 
-    if (BeeUtils.unbox(getBoolean(COL_SIGN_CONTRACT)) &&
-        DataUtils.isId(getLong(ProjectConstants.COL_PROJECT)) && isProjectActive) {
+    if (BeeUtils.unbox(getBoolean(COL_SIGN_CONTRACT))
+        && DataUtils.isId(getLong(ProjectConstants.COL_PROJECT)) && isProjectActive) {
       dialog.addWarning(Localized.getConstants().prjWilBeCanceled());
     }
 
@@ -1695,8 +1694,8 @@ class TaskEditor extends AbstractFormInterceptor {
 
         BeeRow newRow = getNewRow(TaskStatus.SUSPENDED);
 
-        if (BeeUtils.unbox(getBoolean(COL_SIGN_CONTRACT)) &&
-            DataUtils.isId(getLong(ProjectConstants.COL_PROJECT)) && isProjectActive) {
+        if (BeeUtils.unbox(getBoolean(COL_SIGN_CONTRACT))
+            && DataUtils.isId(getLong(ProjectConstants.COL_PROJECT)) && isProjectActive) {
           newRow.setProperty(ProjectConstants.ALS_PROJECT_STATUS,
               BeeUtils.toString(ProjectStatus.SUSPENDED.ordinal()));
         }
@@ -1937,7 +1936,7 @@ class TaskEditor extends AbstractFormInterceptor {
           Long prjId = data.getLong(getDataIndex(ProjectConstants.COL_PROJECT));
 
           if (DataUtils.isId(prjId)) {
-            Queries.getRow(ProjectConstants.VIEW_PROJECTS, prjId ,
+            Queries.getRow(ProjectConstants.VIEW_PROJECTS, prjId,
                 new RowCallback() {
                   @Override
                   public void onSuccess(BeeRow projectRow) {
