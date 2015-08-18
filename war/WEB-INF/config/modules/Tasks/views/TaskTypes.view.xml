@@ -9,10 +9,10 @@
 
     <SimpleColumn name="Background" />
     <SimpleColumn name="Foreground" />
+    <SimpleColumn name="SignContract" />
   </Columns>
-  
+
   <Order>
     <OrderBy column="Name" />
   </Order>
 </View>
- 
