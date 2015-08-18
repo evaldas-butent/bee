@@ -53,5 +53,7 @@ public interface LocalizableProjectConstants {
   String prjUserCanDeleteManager();
 
   String prjUserHasSameTasks();
+
+  String prjWilBeCanceled();
 }
 

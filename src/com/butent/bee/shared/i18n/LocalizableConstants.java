@@ -198,6 +198,10 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String content();
 
+  String contractNotSign();
+
+  String contractSign();
+
   String continueQuestion();
 
   String create();
@@ -725,6 +729,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
   String search();
 
   String selectAtLeastOneRow();
+
+  String selectContractState();
 
   String selectImport();
 

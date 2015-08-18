@@ -1,5 +1,8 @@
 package com.butent.bee.server.modules.tasks;
 
+import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.shared.data.event.DataChangeEvent;
+import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.google.common.base.Joiner;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
@@ -999,6 +1002,19 @@ public class TasksModuleBean implements BeeModule {
         if (response.hasResponse(Long.class)) {
           eventId = (Long) response.getResponse();
         }
+
+        if(!response.hasErrors() &&
+            !BeeUtils.isEmpty(taskRow.getProperty(ProjectConstants.ALS_PROJECT_STATUS))) {
+          SqlUpdate update = new SqlUpdate(ProjectConstants.TBL_PROJECTS);
+          update.addConstant(ProjectConstants.COL_PROJECT_STATUS,
+              taskRow.getProperty(ProjectConstants.ALS_PROJECT_STATUS));
+          update.setWhere(SqlUtils.equals(ProjectConstants.TBL_PROJECTS,
+                  sys.getIdName(ProjectConstants.TBL_PROJECTS),
+          taskRow.getLong(taskData.getColumnIndex(ProjectConstants.COL_PROJECT))));
+
+          response = qs.updateDataWithResponse(update);
+        }
+
         if (!response.hasErrors()) {
           response = registerTaskVisit(taskId, currentUser, now);
         }

@@ -9,6 +9,6 @@
 
     <String name="Background" precision="100" label="=backgroundColor" />
     <String name="Foreground" precision="100" label="=foregroundColor" />
-    <Boolean name="ContractSign" defValue="null" label="=signContract" />
+    <Boolean name="SignContract" defValue="null" label="=signatureAgreement" />
   </Fields>
 </Table>
