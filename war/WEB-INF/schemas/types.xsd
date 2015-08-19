@@ -409,6 +409,8 @@
       <xs:enumeration value="PurchaseItems" />
       <xs:enumeration value="PurchaseOperations" />
       <xs:enumeration value="Purchases" />
+      <xs:enumeration value="RecipientsGroups" />
+      <xs:enumeration value="RcpsGroupsContacts" />
       <xs:enumeration value="RecurringTasks" />
       <xs:enumeration value="RejectionReasons" />
       <xs:enumeration value="RelatedDocuments" />
