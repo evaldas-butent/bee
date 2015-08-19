@@ -12,7 +12,7 @@
     <SimpleJoin joinType="LEFT" name="Category">
       <SimpleColumn name="Name" alias="CategoryName" />
     </SimpleJoin>
-    
+
     <SimpleColumn name="Status" />
     <SimpleColumn name="Address" />
 
@@ -32,5 +32,6 @@
         <SimpleColumn name="Name" alias="ContractorTypeName" />
       </SimpleJoin>
     </SimpleJoin>
+    <SimpleColumn name="Project" />
   </Columns>
 </View>
