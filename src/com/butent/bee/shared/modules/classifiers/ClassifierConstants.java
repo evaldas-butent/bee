@@ -67,6 +67,7 @@ public final class ClassifierConstants {
   public static final String VIEW_ITEMS = "Items";
   public static final String VIEW_ITEM_CATEGORY_TREE = "CategoryTree";
   public static final String VIEW_ITEM_CATEGORIES = "ItemCategories";
+  public static final String VIEW_ITEM_REMAINDERS = "ItemRemainders";
 
   public static final String VIEW_COUNTRIES = "Countries";
   public static final String VIEW_CITIES = "Cities";
@@ -199,6 +200,7 @@ public final class ClassifierConstants {
   public static final String COL_WAREHOUSE_NAME = "Name";
   public static final String COL_WAREHOUSE_SUPPLIER_CODE = "SupplierCode";
   public static final String COL_WAREHOUSE_BRANCH = "Branch";
+  public static final String COL_WAREHOUSE_REMAINDER = "Remainder";
 
   public static final String COL_RELATION_TYPE = "RelationType";
   public static final String COL_RELATION_TYPE_NAME = "Name";

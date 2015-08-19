@@ -29,6 +29,10 @@ class OrderItemsPicker extends ItemsPicker {
       params.addDataItem(COL_ORDER, lastRow.getId());
     }
 
+    if (DataUtils.isId(warehouseFrom)) {
+      params.addDataItem(ClassifierConstants.COL_WAREHOUSE, warehouseFrom);
+    }
+
     if (filter != null) {
       params.addDataItem(Service.VAR_VIEW_WHERE, filter.serialize());
     }
@@ -53,5 +57,10 @@ class OrderItemsPicker extends ItemsPicker {
     }
 
     return row.getLong(warehouseIdx);
+  }
+
+  @Override
+  public boolean setIsOrder() {
+    return true;
   }
 }
