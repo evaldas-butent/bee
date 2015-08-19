@@ -264,6 +264,11 @@ class TasksGrid extends AbstractGridInterceptor {
     Long owner = activeRow.getLong(provider.getColumnIndex(COL_OWNER));
 
     if (Objects.equals(owner, userId)) {
+      if (BeeUtils.unbox(activeRow.getBoolean(getDataIndex(COL_SIGN_CONTRACT)))
+          && DataUtils.isId(activeRow.getLong(getDataIndex(ProjectConstants.COL_PROJECT)))) {
+        presenter.getGridView().notifyWarning(Localized.getConstants().rowIsNotRemovable());
+        return GridInterceptor.DeleteMode.CANCEL;
+      }
       return GridInterceptor.DeleteMode.SINGLE;
     } else {
       presenter.getGridView().notifyWarning(

@@ -370,6 +370,7 @@ public final class TaskConstants {
   public static final String COL_RTOB_USER = "User";
   public static final String COL_RTOBGR_RECURRING_TASK = "RecurringTask";
   public static final String COL_RTOBGR_GROUP = "Group";
+  public static final String COL_SIGN_CONTRACT = "SignContract";
 
   public static final String COL_MAIL_ASSIGNED_TASKS = "MailAssignedTasks";
 

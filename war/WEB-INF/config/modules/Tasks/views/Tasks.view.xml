@@ -19,6 +19,7 @@
       <SimpleColumn name="Name" alias="TypeName" />
       <SimpleColumn name="Background" alias="TypeBackground" />
       <SimpleColumn name="Foreground" alias="TypeForeground" />
+      <SimpleColumn name="SignContract" />
     </SimpleJoin>
 
     <SimpleColumn name="Created" />

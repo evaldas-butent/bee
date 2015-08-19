@@ -13,7 +13,7 @@
 .bee-crm-taskEvent-row-new {
   border-left-width: 3px;
   border-left-color: #1ca5c7;
-  border-left-style: solid; 
+  border-left-style: solid;
 }
 
 .bee-crm-taskEvent-col-0,
@@ -160,7 +160,7 @@
   background-image: linear-gradient(to bottom, #DD4B39, #D14836);
 }
 .bee-crm-FilterSupplier-Slack-scheduled {
-  background-image: linear-gradient(to bottom, #4D90FE, #4787ED);  
+  background-image: linear-gradient(to bottom, #4D90FE, #4787ED);
 }
 
 .bee-crm-Mode-new,
@@ -370,4 +370,8 @@
 .bee-crm-request-prop-data {
   margin-left: 1ex;
   font-weight: bolder;
+}
+
+.bee-crm-taskDialog-warningLabel {
+ color : blueviolet;
 }
