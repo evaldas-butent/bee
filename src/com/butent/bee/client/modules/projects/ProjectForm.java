@@ -232,6 +232,10 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
       owner.setEnabled(true);
     }
 
+    if((isProjectUser(form, row) || isOwner(form, row)) && tasks!= null) {
+      tasks.setEnabled(true);
+    }
+
     lockedValidations.clear();
     auditSilentFields.clear();
     EventUtils.clearRegistry(reasonRegistry);
