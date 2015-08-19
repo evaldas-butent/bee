@@ -1,5 +1,8 @@
 package com.butent.bee.server.modules.tasks;
 
+import com.butent.bee.server.modules.projects.ProjectsModuleBean;
+import com.butent.bee.server.modules.service.ServiceModuleBean;
+import com.butent.bee.shared.modules.projects.ProjectStatus;
 import com.google.common.base.Joiner;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
@@ -128,6 +131,11 @@ public class TasksModuleBean implements BeeModule {
   ParamHolderBean prm;
   @EJB
   MailModuleBean mail;
+
+  @EJB
+  ProjectsModuleBean projects;
+  @EJB
+  ServiceModuleBean serviceObjects;
 
   @Resource
   EJBContext ctx;
@@ -1001,15 +1009,44 @@ public class TasksModuleBean implements BeeModule {
         }
 
         if (!response.hasErrors()
-            && !BeeUtils.isEmpty(taskRow.getProperty(ProjectConstants.ALS_PROJECT_STATUS))) {
-          SqlUpdate update = new SqlUpdate(ProjectConstants.TBL_PROJECTS);
-          update.addConstant(ProjectConstants.COL_PROJECT_STATUS,
-              taskRow.getProperty(ProjectConstants.ALS_PROJECT_STATUS));
-          update.setWhere(SqlUtils.equals(ProjectConstants.TBL_PROJECTS,
-              sys.getIdName(ProjectConstants.TBL_PROJECTS),
-              taskRow.getLong(taskData.getColumnIndex(ProjectConstants.COL_PROJECT))));
+            && !BeeUtils.isEmpty(taskRow.getProperty(ProjectConstants.ALS_PROJECT_STATUS))
+            && DataUtils.isId(taskRow.getLong(
+            taskData.getColumnIndex(ProjectConstants.COL_PROJECT)))) {
 
-          response = qs.updateDataWithResponse(update);
+          Integer status =
+              BeeUtils.toIntOrNull(taskRow.getProperty(ProjectConstants.ALS_PROJECT_STATUS));
+
+          if (status != null) {
+
+            if (status == ProjectStatus.SUSPENDED.ordinal()) {
+              SqlUpdate update = new SqlUpdate(TBL_TASKS)
+                  .addConstant(COL_STATUS, TaskStatus.CANCELED.ordinal())
+                  .setWhere(SqlUtils.and(
+                      SqlUtils.notEqual(TBL_TASKS, sys.getIdName(TBL_TASKS), taskRow.getId()),
+                      SqlUtils.or(SqlUtils.equals(TBL_TASKS, COL_STATUS, TaskStatus.ACTIVE.ordinal()),
+                          SqlUtils.equals(TBL_TASKS, COL_STATUS, TaskStatus.SCHEDULED.ordinal()),
+                          SqlUtils.equals(TBL_TASKS, COL_STATUS, TaskStatus.NOT_VISITED.ordinal())),
+                      SqlUtils.equals(TBL_TASKS, ProjectConstants.COL_PROJECT, taskRow.getLong(
+                          taskData.getColumnIndex(ProjectConstants.COL_PROJECT)))
+                  ));
+
+              response = qs.updateDataWithResponse(update);
+            }
+
+            if (!response.hasErrors()) {
+
+              response = projects.setProjectStatus(
+                  taskRow.getLong(taskData.getColumnIndex(ProjectConstants.COL_PROJECT)),
+                  BeeUtils.toInt(taskRow.getProperty(ProjectConstants.ALS_PROJECT_STATUS)));
+            }
+
+            if (!response.hasErrors() && status == ProjectStatus.SUSPENDED.ordinal()) {
+              response = serviceObjects
+                  .setProjectServiceLostStatus(taskRow.getLong(
+                      taskData.getColumnIndex(ProjectConstants.COL_PROJECT)));
+
+            }
+          }
         }
 
         if (!response.hasErrors()) {

@@ -106,6 +106,7 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.ejb.EJB;
+import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
 
 import com.butent.bee.server.data.BeeView;
@@ -139,6 +140,7 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.documents.DocumentConstants;
+import com.butent.bee.shared.modules.projects.ProjectConstants;
 import com.butent.bee.shared.modules.service.ServiceConstants.ObjectStatus;
 import com.butent.bee.shared.modules.service.ServiceConstants.ServiceFilterDataType;
 import com.butent.bee.shared.rights.Module;
@@ -156,6 +158,7 @@ import com.google.common.collect.Sets;
 import com.google.common.eventbus.Subscribe;
 
 @Stateless
+@LocalBean
 public class ServiceModuleBean implements BeeModule {
 
   private static BeeLogger logger = LogUtils.getLogger(ServiceModuleBean.class);
@@ -266,6 +269,16 @@ public class ServiceModuleBean implements BeeModule {
         }
       }
     });
+  }
+
+  public ResponseObject setProjectServiceLostStatus(Long projectId) {
+    SqlUpdate update = new SqlUpdate(TBL_SERVICE_OBJECTS);
+    update.addConstant(COL_OBJECT_STATUS, ObjectStatus.LOST_OBJECT.ordinal())
+        .setWhere(SqlUtils.and(
+            SqlUtils.equals(TBL_SERVICE_OBJECTS, COL_OBJECT_STATUS,
+                ObjectStatus.POTENTIAL_OBJECT.ordinal()),
+            SqlUtils.equals(TBL_SERVICE_OBJECTS, ProjectConstants.COL_PROJECT, projectId)));
+    return qs.updateDataWithResponse(update);
   }
 
   private ResponseObject copyDocumentCriteria(RequestInfo reqInfo) {

@@ -255,6 +255,16 @@ public class ProjectsModuleBean implements BeeModule {
     news.registerUsageQueryProvider(Feed.PROJECT, new ProjectsUsageQueryProvider());
   }
 
+  public ResponseObject setProjectStatus(Long projectId, int status) {
+    SqlUpdate update = new SqlUpdate(ProjectConstants.TBL_PROJECTS);
+    update.addConstant(ProjectConstants.COL_PROJECT_STATUS,
+        status);
+    update.setWhere(SqlUtils.equals(ProjectConstants.TBL_PROJECTS,
+        sys.getIdName(ProjectConstants.TBL_PROJECTS), projectId
+        ));
+    return qs.updateDataWithResponse(update);
+  }
+
   private static void fillUnitProperties(BeeRowSet units, long defUnit) {
     for (BeeRow row : units) {
       row.setProperty(PROP_REAL_FACTOR, getUnitRealFactor(units, row.getId(), defUnit));
