@@ -22,6 +22,8 @@ public interface LocalizableOrderConstants {
 
   String ordCanceled();
 
+  String ordQtyIsTooBig();
+
   String ordPrepare();
 
   String ordPrepared();

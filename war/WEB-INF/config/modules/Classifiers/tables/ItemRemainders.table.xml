@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Table xmlns="http://www.butent.com/table" name="ItemRemainders" idName="RemainderID">
+  <Fields>
+    <Relation name="Item" relation="Items" notNull="true" cascade="DELETE" />
+    <Relation name="Warehouse" relation="Warehouses" notNull="true" label="=warehouse" />
+    <Numeric name="Remainder" precision="12" scale="3" label="=ecRemainder" />
+  </Fields>
+</Table>

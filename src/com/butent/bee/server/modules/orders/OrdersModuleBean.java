@@ -7,6 +7,7 @@ import static com.butent.bee.shared.modules.projects.ProjectConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
 
+import com.butent.bee.server.data.BeeView;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.http.RequestInfo;
@@ -22,6 +23,7 @@ import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SearchResult;
@@ -32,6 +34,7 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
+import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.orders.OrdersConstants;
 import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.rights.Module;
@@ -80,11 +83,11 @@ public class OrdersModuleBean implements BeeModule {
       case SVC_GET_TEMPLATE_ITEMS:
         response = getTemplateItems(reqInfo);
         break;
-        
+
       case OrdersConstants.SVC_CREATE_INVOICE_ITEMS:
         response = createInvoiceItems(reqInfo);
         break;
-        
+
       default:
         String msg = BeeUtils.joinWords("service not recognized:", svc);
         logger.warning(msg);
@@ -119,6 +122,7 @@ public class OrdersModuleBean implements BeeModule {
 
     Long orderId = reqInfo.getParameterLong(COL_ORDER);
     String where = reqInfo.getParameter(Service.VAR_VIEW_WHERE);
+    Long warehouse = reqInfo.getParameterLong(ClassifierConstants.COL_WAREHOUSE);
 
     CompoundFilter filter = Filter.and();
     filter.add(Filter.isNull(COL_ITEM_IS_SERVICE));
@@ -132,12 +136,47 @@ public class OrdersModuleBean implements BeeModule {
       filter.add(Filter.restore(where));
     }
 
+    filter.add(Filter.in(sys.getIdName(TBL_ITEMS), VIEW_ITEM_REMAINDERS, COL_ITEM, Filter.equals(
+        ClassifierConstants.COL_WAREHOUSE, warehouse)));
+
     BeeRowSet items = qs.getViewData(VIEW_ITEMS, filter);
+
     if (DataUtils.isEmpty(items)) {
       logger.debug(reqInfo.getService(), "no items found", filter);
       return ResponseObject.emptyResponse();
     }
 
+    SqlSelect query =
+        new SqlSelect()
+            .addAllFields(VIEW_ITEM_REMAINDERS)
+            .addFields(TBL_WAREHOUSES, COL_WAREHOUSE_CODE)
+            .addFrom(VIEW_ITEM_REMAINDERS)
+            .addFromInner(TBL_WAREHOUSES,
+                SqlUtils.join(TBL_WAREHOUSES, sys.getIdName(TBL_WAREHOUSES), VIEW_ITEM_REMAINDERS,
+                    ClassifierConstants.COL_WAREHOUSE))
+            .setWhere(
+                SqlUtils.equals(VIEW_ITEM_REMAINDERS, ClassifierConstants.COL_WAREHOUSE, warehouse));
+
+    SimpleRowSet srs = qs.getData(query);
+
+    if (!DataUtils.isEmpty(srs)) {
+      BeeView remView = sys.getView(VIEW_ITEM_REMAINDERS);
+      items.addColumn(remView.getBeeColumn(ALS_WAREHOUSE_CODE));
+      items.addColumn(remView.getBeeColumn(COL_WAREHOUSE_REMAINDER));
+
+      for (BeeRow row : items) {
+        Long itemId = row.getId();
+
+        for (SimpleRow sr : srs) {
+          if (itemId == sr.getLong(COL_ITEM)) {
+            String name = sr.getValue(COL_WAREHOUSE_CODE);
+            Double rem = sr.getDouble(COL_WAREHOUSE_REMAINDER);
+            row.setValue(row.getNumberOfCells() - 2, name);
+            row.setValue(row.getNumberOfCells() - 1, rem);
+          }
+        }
+      }
+    }
     return ResponseObject.response(items);
   }
 
@@ -245,7 +284,7 @@ public class OrdersModuleBean implements BeeModule {
 
     return response;
   }
-  
+
   private Set<Long> getOrderItems(Long orderId) {
     if (DataUtils.isId(orderId)) {
       return qs.getLongSet(new SqlSelect()

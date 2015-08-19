@@ -58,4 +58,9 @@ class TradeActItemPicker extends ItemsPicker {
   public Long getWarehouseFrom(IsRow row) {
     return TradeActKeeper.getWarehouseFrom(VIEW_TRADE_ACTS, row);
   }
+
+  @Override
+  public boolean setIsOrder() {
+    return false;
+  }
 }
