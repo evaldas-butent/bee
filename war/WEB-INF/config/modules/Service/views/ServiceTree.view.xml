@@ -45,7 +45,7 @@
              </x:else>
           </x:switch>
       </AggregateColumn>
-        
+
       <HiddenColumn name="Status" alias="PotObjects" />
       <AggregateColumn name="Status" alias="PotObjectsCount" aggregate="COUNT">
           <x:switch  type="INTEGER">
@@ -60,6 +60,22 @@
               <x:number>null</x:number>
              </x:else>
           </x:switch>
+      </AggregateColumn>
+
+      <HiddenColumn name="Status" alias="LostObjects" />
+      <AggregateColumn name="Status" alias="LostObjectsCount" aggregate="COUNT">
+        <x:switch  type="INTEGER">
+          <x:number>"LostObjects"</x:number>
+          <x:case>
+            <x:number>3</x:number>
+            <x:then>
+              <x:number>1</x:number>
+            </x:then>
+          </x:case>
+          <x:else>
+            <x:number>null</x:number>
+          </x:else>
+        </x:switch>
       </AggregateColumn>
     </ExternalJoin>
   </Columns>

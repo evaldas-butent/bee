@@ -1,15 +1,5 @@
 package com.butent.bee.client.modules.service;
 
-import static com.butent.bee.shared.modules.service.ServiceConstants.COL_SERVICE_OBJECT;
-import static com.butent.bee.shared.modules.service.ServiceConstants.GRID_OBJECT_DEFECTS;
-import static com.butent.bee.shared.modules.service.ServiceConstants.GRID_OBJECT_INVOICES;
-import static com.butent.bee.shared.modules.service.ServiceConstants.GRID_SERVICE_DEFECTS;
-import static com.butent.bee.shared.modules.service.ServiceConstants.GRID_SERVICE_INVOICES;
-import static com.butent.bee.shared.modules.service.ServiceConstants.GRID_SERVICE_OBJECTS;
-import static com.butent.bee.shared.modules.service.ServiceConstants.GRID_SVC_PROJECT_INVOICES;
-import static com.butent.bee.shared.modules.service.ServiceConstants.VIEW_MAINTENANCE;
-import static com.butent.bee.shared.modules.service.ServiceConstants.VIEW_SERVICE_FILES;
-
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
@@ -32,6 +22,8 @@ import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.utils.EnumUtils;
 import com.google.common.collect.Lists;
 
+import static com.butent.bee.shared.modules.service.ServiceConstants.*;
+
 public final class ServiceKeeper {
 
   public static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "svc-";
@@ -52,6 +44,7 @@ public final class ServiceKeeper {
     GridFactory.registerGridInterceptor(GRID_SERVICE_DEFECTS, new ServiceDefectsGrid());
     GridFactory.registerGridInterceptor(GRID_SERVICE_INVOICES, new ServiceInvoicesGrid());
     GridFactory.registerGridInterceptor(GRID_SVC_PROJECT_INVOICES, new SvcProjectInvoicesGrid());
+    GridFactory.registerGridInterceptor(GRID_CHILD_SERVICE_OBJECTS, new ChildServiceObjectsGrid());
 
     FormFactory.registerFormInterceptor("ServiceObject", new ServiceObjectForm());
     FormFactory.registerFormInterceptor("ServiceInvoice", new ServiceInvoiceForm());

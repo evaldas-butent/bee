@@ -3,7 +3,7 @@
   <!ENTITY clbl "text-align: right; padding-left: 1em; padding-right: 1em;">
   <!ENTITY inp "width: 200px;">
 ]>
-<Table xmlns="http://www.butent.com/widget" 
+<Table xmlns="http://www.butent.com/widget"
     style="border-collapse: collapse;" cellStyle="padding-top: 8px;">
 
   <col index="0" cellStyle="&clbl;" />
@@ -21,8 +21,10 @@
 
   <row>
     <Label for="Customer" />
-    <DataSelector source="Customer" renderColumns="CustomerName" style="&inp;" />
+    <DataSelector source="Customer" renderColumns="CustomerName CustomerTypeName" style="&inp;" />
     <Label for="Contractor" />
     <DataSelector source="Contractor" style="&inp;" />
+    <Label for="Project" />
+    <DataSelector source="Project" style="&inp;"  readOnly="true"/>
   </row>
 </Table>

@@ -356,6 +356,14 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
           }
         });
         break;
+      case LOST_OBJECT:
+        ((HasClickHandlers) widget).addClickHandler(new ClickHandler() {
+          @Override
+          public void onClick(ClickEvent event) {
+            setAsLostObject(formView, row);
+          }
+        });
+        break;
       default:
         break;
     }
@@ -380,12 +388,13 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
 
     boolean actionIsServiceObj = actionStatus == ObjectStatus.SERVICE_OBJECT.ordinal();
     boolean actionIsProjectObj = actionStatus == ObjectStatus.PROJECT_OBJECT.ordinal();
+    boolean actionIsLostObj = actionStatus == ObjectStatus.LOST_OBJECT.ordinal();
 
     boolean result =
         (currIsUnknown && (actionIsServiceObj || actionIsProjectObj))
             // || (currIsServiceObj && actionIsProjectObj) /* Deprecated action*/
         || (currIsProjectObj && actionIsServiceObj)
-            || (currIsPotentialObj && actionIsProjectObj);
+            || (currIsPotentialObj && (actionIsProjectObj || actionIsLostObj));
 
     return result;
   }
@@ -633,6 +642,17 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
 
     return true;
   }
+
+  private static void setAsLostObject(final FormView formView, final IsRow row) {
+
+    DecisionCallback decisionCallback = getObjectStatusDecisionCallback(formView, row,
+        ObjectStatus.LOST_OBJECT);
+
+    Global.getMsgBoxen().decide(Localized.getConstants().svcActionToLostObjects(),
+        Lists.newArrayList(Localized.getConstants().svcSendToLostObjectQuestion()),
+        decisionCallback, 0, null, null, null, null);
+  }
+
 
   private static void setAsProjectObject(final FormView formView, final IsRow row) {
 

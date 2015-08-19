@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+
+  name="ChildServiceObjects" viewName="ServiceObjects"
+  caption="=svcProjectObjects" editShowId="true"
+  autoFit="true" filter="Status &gt; 0"
+  >
+
+  <g:columns>
+    <IdColumn name="Id" />
+    <DataColumn name="CategoryName" visible="false" />
+    <DataColumn name="Address" visible="true" />
+    <DataColumn name="Status" />
+
+    <RelColumn name="Customer" renderColumns="CustomerName" visible="true" />
+    <RelColumn name="Contractor" />
+
+    <PropColumn name="Criterion" type="string" dynamic="true" />
+  </g:columns>
+</g:Grid>

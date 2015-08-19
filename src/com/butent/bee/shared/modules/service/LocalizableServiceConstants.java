@@ -2,6 +2,8 @@ package com.butent.bee.shared.modules.service;
 
 public interface LocalizableServiceConstants {
 
+  String svcActionToLostObjects();
+
   String svcActionShowFromProjects();
 
   String svcActionToProjectObjects();
@@ -26,6 +28,10 @@ public interface LocalizableServiceConstants {
 
   String svcObjects();
 
+  String svcObjectLost();
+
+  String svcObjectsLost();
+
   String svcObjectPotential();
 
   String svcObjectsPotential();
@@ -35,6 +41,8 @@ public interface LocalizableServiceConstants {
   String svcProjectObject();
 
   String svcProjectObjects();
+
+  String svcSendToLostObjectQuestion();
 
   String svcSendToProjectObjectQuestion();
 

@@ -78,6 +78,15 @@ public final class ServiceConstants {
       public String getCaption(LocalizableConstants constants) {
         return constants.svcObjectPotential();
       }
+    },
+    LOST_OBJECT(Localized.getConstants().svcObjectsLost(),
+        Localized.getConstants().svcActionToLostObjects(),
+        Localized.getConstants().svcObjectCalendar()) {
+
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.svcObjectLost();
+      }
     };
 
     private final String listCaption;
@@ -199,6 +208,7 @@ public final class ServiceConstants {
   public static final String ALS_SERVICE_CATEGORY_NAME = "CategoryName";
   public static final String ALS_SERVICE_CUSTOMER_NAME = "CustomerName";
   public static final String ALS_SERVICE_CONTRACTOR_NAME = "ContractorName";
+  public static final String ALS_SERVICE_CUSTOMER_TYPE_NAME = "CustomerTypeName";
 
   public static final String ALS_MAINTENANCE_ITEM_NAME = "ItemName";
 
@@ -213,6 +223,7 @@ public final class ServiceConstants {
 
   public static final String GRID_SERVICE_OBJECTS = "ServiceObjects";
   public static final String GRID_SERVICE_DEFECTS = "ServiceDefects";
+  public static final String GRID_CHILD_SERVICE_OBJECTS = "ChildServiceObjects";
 
   public static final String PROP_MAIN_ITEM = "MainItem";
   public static final String PROP_CRITERIA = "Criteria";

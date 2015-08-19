@@ -11,5 +11,6 @@
 
     <Relation name="Customer" relation="Companies" label="=customer" />
     <Relation name="Contractor" relation="Companies" label="=svcContractor" />
+    <Relation name="Project" relation="Projects" label="=project" />
   </Fields>
 </Table>
