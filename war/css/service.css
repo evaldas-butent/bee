@@ -112,12 +112,12 @@
 
 .bee-svc-calendar-filter-data-selected.bee-svc-calendar-filter-data-controls {
   top: calc(50% + 48px);
-  bottom: 0; 
+  bottom: 0;
 }
 
 .bee-svc-calendar-filter-data-selected.bee-svc-calendar-filter-data-itemContainer {
   top: calc(50% + 70px);
-  bottom: 0; 
+  bottom: 0;
 }
 
 .bee-svc-calendar-filter-data-size {
@@ -127,12 +127,12 @@
 
 .bee-svc-calendar-filter-data-unselected.bee-svc-calendar-filter-data-itemContainer {
   top: 36px;
-  bottom: 50%; 
+  bottom: 50%;
 }
 
 .bee-svc-calendar-filter-data-unselected.bee-svc-calendar-filter-data-controls {
   top: calc(50% + 4px);
-  bottom: 0; 
+  bottom: 0;
 }
 
 .bee-svc-calendar-filter-data-wrapper {
@@ -189,7 +189,7 @@
   border: 1px solid #aaa;
   padding-left: 8px;
   padding-right: 8px;
-}  
+}
 .bee-svc-print-defect-items-header {
   text-align: center;
   padding-top: 8px;
@@ -332,29 +332,34 @@
   text-decoration: underline;
 }
 
-.bee-svc-tree-service .bee-svc-tree-expr-projects-count, 
+.bee-svc-tree-service .bee-svc-tree-expr-projects-count,
 .bee-svc-tree-service .bee-svc-tree-expr-potential-count {
   display: none;
 }
 
-.bee-svc-tree-project .bee-svc-tree-expr-service-count, 
+.bee-svc-tree-project .bee-svc-tree-expr-service-count,
 .bee-svc-tree-project .bee-svc-tree-expr-potential-count  {
   display: none;
 }
 
-.bee-svc-tree-potential .bee-svc-tree-expr-service-count, 
+.bee-svc-tree-potential .bee-svc-tree-expr-service-count,
 .bee-svc-tree-potential .bee-svc-tree-expr-projects-count{
   display: none;
 }
 
+.bee-svc-tree-potential .bee-svc-tree-expr-service-count,
+.bee-svc-tree-potential .bee-svc-tree-expr-lost-count{
+  display: none;
+}
+
 .bee-svc-tree-expr-service-count {
-  
+
 }
 
 .bee-svc-tree-expr-projects-count {
-  
+
 }
 
 .bee-svc-tree-expr-potential-count {
-  
+
 }

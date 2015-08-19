@@ -142,6 +142,7 @@ public final class ProjectConstants {
 
   public static final String COL_USER_TYPE = "UserType";
   public static final String COL_RATE = "Rate";
+  public static final String COL_WORK_PLACE = "WorkPlace";
 
   public static final String FORM_PROJECT = "Project";
   public static final String FORM_PROJECT_STAGE = "ProjectStage";

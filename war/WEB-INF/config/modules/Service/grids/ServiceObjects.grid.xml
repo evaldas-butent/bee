@@ -2,20 +2,21 @@
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui"
   xmlns:w="http://www.butent.com/widget"
-  
+
   name="ServiceObjects" viewName="ServiceObjects"
   caption="=svcObjects" editShowId="true"
   autoFit="true"
   >
-  
+
   <g:west size="200" splitterSize="2">
     <w:DataTree name="ServiceTree" caption="=categories" viewName="ServiceTree"
         parentColumn="Parent">
       <w:calc>
         <ui:expression>row.Name
           + '&lt;span class="bee-svc-tree-expr-service-count" &gt;' + (row.SvcObjectsCount > 0 ? ' [' + row.SvcObjectsCount + ']' : '') + '&lt;&#47;span&gt;'
-          + '&lt;span class="bee-svc-tree-expr-projects-count" &gt;' + (row.ProjObjectsCount > 0 ? ' [' + row.ProjObjectsCount + ']' : '') + '&lt;&#47;span&gt;' 
+          + '&lt;span class="bee-svc-tree-expr-projects-count" &gt;' + (row.ProjObjectsCount > 0 ? ' [' + row.ProjObjectsCount + ']' : '') + '&lt;&#47;span&gt;'
           + '&lt;span class="bee-svc-tree-expr-potential-count" &gt;' + (row.PotObjectsCount > 0 ? ' [' + row.PotObjectsCount + ']' : '') + '&lt;&#47;span&gt;'
+          + '&lt;span class="bee-svc-tree-expr-lost-count" &gt;' + (row.LostObjectsCount > 0 ? ' [' + row.LostObjectsCount + ']' : '') + '&lt;&#47;span&gt;'
         </ui:expression>
       </w:calc>
       <w:form>
@@ -26,7 +27,7 @@
       </w:form>
     </w:DataTree>
   </g:west>
-  
+
   <g:columns>
     <IdColumn name="Id" />
     <DataColumn name="CategoryName" visible="false" />
