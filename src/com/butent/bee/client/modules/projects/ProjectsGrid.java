@@ -1,13 +1,14 @@
 package com.butent.bee.client.modules.projects;
 
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
+
 import static com.butent.bee.shared.modules.projects.ProjectConstants.*;
-import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.data.Data;
-import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.Popup;
@@ -23,15 +24,12 @@ import com.butent.bee.client.widget.Button;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
-import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.projects.ProjectConstants;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 
 class ProjectsGrid extends AllProjectsGrid {
 
@@ -77,7 +75,7 @@ class ProjectsGrid extends AllProjectsGrid {
     return Filter.or(isOwner, isProjectUser);
   }
 
-  private  AbstractFormInterceptor getNewProjectFormInterceptor() {
+  private AbstractFormInterceptor getNewProjectFormInterceptor() {
     return new AbstractFormInterceptor() {
 
       private static final String NAME_PROJECT_TEMPLATE = "ProjectTemplate";
