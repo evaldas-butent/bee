@@ -2,6 +2,7 @@ package com.butent.bee.server.modules.tasks;
 
 import com.butent.bee.server.modules.projects.ProjectsModuleBean;
 import com.butent.bee.server.modules.service.ServiceModuleBean;
+import com.butent.bee.shared.modules.documents.DocumentConstants;
 import com.butent.bee.shared.modules.projects.ProjectStatus;
 import com.google.common.base.Joiner;
 import com.google.common.collect.HashMultimap;
@@ -2642,6 +2643,10 @@ public class TasksModuleBean implements BeeModule {
       BeeRow row) {
     ResponseObject response = new ResponseObject();
     List<RowChildren> children = new ArrayList<>();
+    List<RowChildren> prjChildren =  new ArrayList<>();
+
+    Long projectId = row.getLong(
+        sys.getDataInfo(VIEW_TASKS).getColumnIndex(ProjectConstants.COL_PROJECT));
 
     for (String property : updatedRelations) {
       String relation = TaskUtils.translateTaskPropertyToRelation(property);
@@ -2649,9 +2654,21 @@ public class TasksModuleBean implements BeeModule {
       if (!BeeUtils.isEmpty(relation)) {
         children.add(RowChildren.create(TBL_RELATIONS, COL_TASK, taskId,
             relation, row.getProperty(property)));
+
+        if (BeeUtils.same(relation, DocumentConstants.COL_DOCUMENT) &&
+            DataUtils.isId(projectId)){
+
+            prjChildren.add(RowChildren.create(TBL_RELATIONS, ProjectConstants.COL_PROJECT,
+                projectId, relation, row.getProperty(property)));
+        }
+
       }
     }
     int count = 0;
+
+    if (!BeeUtils.isEmpty(prjChildren)) {
+      deb.commitChildren(projectId, prjChildren, response);
+    }
 
     if (!BeeUtils.isEmpty(children)) {
       count = deb.commitChildren(taskId, children, response);
