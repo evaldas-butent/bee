@@ -128,6 +128,9 @@
       <SimpleColumn name="Name" alias="ProjectTMLName" />
     </SimpleJoin>
     <SimpleColumn name="WorkPlace" />
+    <SimpleColumn name="Advance" />
+    <SimpleColumn name="SecondPayment" />
+    <SimpleColumn name="FinalPayment" />
   </Columns>
 
   <Order>

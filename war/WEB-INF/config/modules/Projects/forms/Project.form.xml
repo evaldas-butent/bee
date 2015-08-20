@@ -112,11 +112,17 @@
         <Table>
           <row>
             <Label for="WorkPlace" style="&lbl;"/>
-            <InputText source="WorkPlace" style="&inp5;"/>
+            <InputText source="WorkPlace" style="&inp5;" disablable="false"/>
           </row>
           <row>
             <Label for="Description" text="=description" style="width: 115px; &lbl;"/>
             <InputArea source="Description" placeholder="=prjDescriptionContent" style="&inp4;"/>
+          </row>
+
+          <row>
+            <CheckBox for="Advance" source="Advance" disablable="false" style="&lbl;" />
+            <CheckBox for="SecondPayment" source="SecondPayment" disablable="false" style="&lbl;" />
+            <CheckBox for="FinalPayment" source="FinalPayment" disablable="false" style="&lbl;"/>
           </row>
         </Table>
 

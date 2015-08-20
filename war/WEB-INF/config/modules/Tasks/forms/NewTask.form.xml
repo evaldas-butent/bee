@@ -37,9 +37,9 @@
       </row>
 
       <row>
-        <Label for="Type" />
+        <Label for="Type" class="bee-required"/>
         <DataSelector source="Type" renderColumns="TypeName" newRowEnabled="true" style="&inp2;"
-          disablable="true" />
+          disablable="true" required="true"/>
         <Label for="Priority" />
         <Radio source="Priority" />
       </row>
