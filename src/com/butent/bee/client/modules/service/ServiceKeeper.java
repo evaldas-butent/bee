@@ -1,5 +1,9 @@
 package com.butent.bee.client.modules.service;
 
+import com.google.common.collect.Lists;
+
+import static com.butent.bee.shared.modules.service.ServiceConstants.*;
+
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
@@ -20,9 +24,6 @@ import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.service.ServiceConstants.ObjectStatus;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.utils.EnumUtils;
-import com.google.common.collect.Lists;
-
-import static com.butent.bee.shared.modules.service.ServiceConstants.*;
 
 public final class ServiceKeeper {
 

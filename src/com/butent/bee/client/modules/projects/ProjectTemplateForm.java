@@ -97,7 +97,8 @@ class ProjectTemplateForm extends AbstractFormInterceptor {
 
           if (canChange) {
             Queries.update(getFormView().getViewName(), Filter.compareId(projectRow.getId()),
-                ProjectConstants.COL_DEFAULT_PROJECT_TEMPLATE_STAGE, Value.getValue(companyBankAccount),
+                ProjectConstants.COL_DEFAULT_PROJECT_TEMPLATE_STAGE,
+                Value.getValue(companyBankAccount),
                 new Queries.IntCallback() {
 
                   @Override

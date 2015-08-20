@@ -908,6 +908,7 @@ class TaskEditor extends AbstractFormInterceptor {
 
     if (docRow != null) {
 
+      final int idxProject = Data.getColumnIndex(VIEW_TASKS, ProjectConstants.COL_PROJECT);
       int idxCompanyName = Data.getColumnIndex(VIEW_TASKS, ALS_COMPANY_NAME);
       int idxCompany = Data.getColumnIndex(VIEW_TASKS, COL_TASK_COMPANY);
 
@@ -955,6 +956,12 @@ class TaskEditor extends AbstractFormInterceptor {
                     Lists.newArrayList(COL_TASK, DocumentConstants.COL_DOCUMENT)),
                     Lists.newArrayList(String.valueOf(row.getId()), String
                         .valueOf(br.getId())));
+
+                Queries.insert(VIEW_RELATIONS, Data.getColumns(VIEW_RELATIONS,
+                        Lists.newArrayList(DocumentConstants.COL_DOCUMENT,
+                            ProjectConstants.COL_PROJECT)),
+                    Lists.newArrayList(String.valueOf(br.getId()),
+                        String.valueOf(row.getString(idxProject))));
               }
             });
           }
