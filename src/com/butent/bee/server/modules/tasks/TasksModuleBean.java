@@ -1,9 +1,5 @@
 package com.butent.bee.server.modules.tasks;
 
-import com.butent.bee.server.modules.projects.ProjectsModuleBean;
-import com.butent.bee.server.modules.service.ServiceModuleBean;
-import com.butent.bee.shared.modules.documents.DocumentConstants;
-import com.butent.bee.shared.modules.projects.ProjectStatus;
 import com.google.common.base.Joiner;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
@@ -30,6 +26,8 @@ import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.modules.administration.ExtensionIcons;
 import com.butent.bee.server.modules.administration.FileStorageBean;
 import com.butent.bee.server.modules.mail.MailModuleBean;
+import com.butent.bee.server.modules.projects.ProjectsModuleBean;
+import com.butent.bee.server.modules.service.ServiceModuleBean;
 import com.butent.bee.server.news.NewsBean;
 import com.butent.bee.server.sql.HasConditions;
 import com.butent.bee.server.sql.IsCondition;
@@ -71,7 +69,9 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.administration.AdministrationConstants.ReminderMethod;
+import com.butent.bee.shared.modules.documents.DocumentConstants;
 import com.butent.bee.shared.modules.projects.ProjectConstants;
+import com.butent.bee.shared.modules.projects.ProjectStatus;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants.TaskEvent;
 import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
@@ -1012,7 +1012,7 @@ public class TasksModuleBean implements BeeModule {
         if (!response.hasErrors()
             && !BeeUtils.isEmpty(taskRow.getProperty(ProjectConstants.ALS_PROJECT_STATUS))
             && DataUtils.isId(taskRow.getLong(
-            taskData.getColumnIndex(ProjectConstants.COL_PROJECT)))) {
+                taskData.getColumnIndex(ProjectConstants.COL_PROJECT)))) {
 
           Integer status =
               BeeUtils.toIntOrNull(taskRow.getProperty(ProjectConstants.ALS_PROJECT_STATUS));
@@ -1020,16 +1020,23 @@ public class TasksModuleBean implements BeeModule {
           if (status != null) {
 
             if (status == ProjectStatus.SUSPENDED.ordinal()) {
-              SqlUpdate update = new SqlUpdate(TBL_TASKS)
-                  .addConstant(COL_STATUS, TaskStatus.CANCELED.ordinal())
-                  .setWhere(SqlUtils.and(
-                      SqlUtils.notEqual(TBL_TASKS, sys.getIdName(TBL_TASKS), taskRow.getId()),
-                      SqlUtils.or(SqlUtils.equals(TBL_TASKS, COL_STATUS, TaskStatus.ACTIVE.ordinal()),
-                          SqlUtils.equals(TBL_TASKS, COL_STATUS, TaskStatus.SCHEDULED.ordinal()),
-                          SqlUtils.equals(TBL_TASKS, COL_STATUS, TaskStatus.NOT_VISITED.ordinal())),
-                      SqlUtils.equals(TBL_TASKS, ProjectConstants.COL_PROJECT, taskRow.getLong(
-                          taskData.getColumnIndex(ProjectConstants.COL_PROJECT)))
-                  ));
+              SqlUpdate update =
+                  new SqlUpdate(TBL_TASKS)
+                      .addConstant(COL_STATUS, TaskStatus.CANCELED.ordinal())
+                      .setWhere(
+                          SqlUtils.and(
+                              SqlUtils.notEqual(TBL_TASKS, sys.getIdName(TBL_TASKS), taskRow
+                                  .getId()),
+                              SqlUtils.or(SqlUtils.equals(TBL_TASKS, COL_STATUS, TaskStatus.ACTIVE
+                                  .ordinal()),
+                                  SqlUtils.equals(TBL_TASKS, COL_STATUS, TaskStatus.SCHEDULED
+                                      .ordinal()),
+                                  SqlUtils.equals(TBL_TASKS, COL_STATUS, TaskStatus.NOT_VISITED
+                                      .ordinal())),
+                              SqlUtils.equals(TBL_TASKS, ProjectConstants.COL_PROJECT, taskRow
+                                  .getLong(
+                                  taskData.getColumnIndex(ProjectConstants.COL_PROJECT)))
+                              ));
 
               response = qs.updateDataWithResponse(update);
             }
@@ -2643,7 +2650,7 @@ public class TasksModuleBean implements BeeModule {
       BeeRow row) {
     ResponseObject response = new ResponseObject();
     List<RowChildren> children = new ArrayList<>();
-    List<RowChildren> prjChildren =  new ArrayList<>();
+    List<RowChildren> prjChildren = new ArrayList<>();
 
     Long projectId = row.getLong(
         sys.getDataInfo(VIEW_TASKS).getColumnIndex(ProjectConstants.COL_PROJECT));
@@ -2655,11 +2662,11 @@ public class TasksModuleBean implements BeeModule {
         children.add(RowChildren.create(TBL_RELATIONS, COL_TASK, taskId,
             relation, row.getProperty(property)));
 
-        if (BeeUtils.same(relation, DocumentConstants.COL_DOCUMENT) &&
-            DataUtils.isId(projectId)){
+        if (BeeUtils.same(relation, DocumentConstants.COL_DOCUMENT)
+            && DataUtils.isId(projectId)) {
 
-            prjChildren.add(RowChildren.create(TBL_RELATIONS, ProjectConstants.COL_PROJECT,
-                projectId, relation, row.getProperty(property)));
+          prjChildren.add(RowChildren.create(TBL_RELATIONS, ProjectConstants.COL_PROJECT,
+              projectId, relation, row.getProperty(property)));
         }
 
       }

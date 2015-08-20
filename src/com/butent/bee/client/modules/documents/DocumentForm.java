@@ -1,38 +1,18 @@
 package com.butent.bee.client.modules.documents;
 
-import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.COL_COMPANY;
-import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.COL_CONTACT;
-import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.COL_PERSON;
-import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.TBL_COMPANIES;
-import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.VIEW_COMPANIES;
-import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.VIEW_COMPANY_PERSONS;
-import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.VIEW_PERSONS;
-import static com.butent.bee.shared.modules.documents.DocumentConstants.COL_DESCRIPTION;
-import static com.butent.bee.shared.modules.documents.DocumentConstants.COL_DOCUMENT;
-import static com.butent.bee.shared.modules.documents.DocumentConstants.COL_DOCUMENT_CATEGORY;
-import static com.butent.bee.shared.modules.documents.DocumentConstants.COL_DOCUMENT_COMPANY;
-import static com.butent.bee.shared.modules.documents.DocumentConstants.COL_DOCUMENT_CONTENT;
-import static com.butent.bee.shared.modules.documents.DocumentConstants.COL_DOCUMENT_DATA;
-import static com.butent.bee.shared.modules.documents.DocumentConstants.COL_DOCUMENT_NAME;
-import static com.butent.bee.shared.modules.documents.DocumentConstants.VIEW_DOCUMENTS;
-import static com.butent.bee.shared.modules.documents.DocumentConstants.VIEW_DOCUMENT_DATA;
-import static com.butent.bee.shared.modules.documents.DocumentConstants.VIEW_DOCUMENT_ITEMS;
-import static com.butent.bee.shared.modules.documents.DocumentConstants.VIEW_DOCUMENT_TEMPLATES;
-import static com.butent.bee.shared.modules.trade.TradeConstants.COL_TRADE_AMOUNT;
-import static com.butent.bee.shared.modules.trade.TradeConstants.COL_TRADE_ITEM_ORDINAL;
-import static com.butent.bee.shared.modules.trade.TradeConstants.COL_TRADE_ITEM_PRICE;
-import static com.butent.bee.shared.modules.trade.TradeConstants.COL_TRADE_ITEM_QUANTITY;
-import static com.butent.bee.shared.modules.trade.TradeConstants.COL_TRADE_VAT;
-import static com.butent.bee.shared.modules.trade.TradeConstants.COL_TRADE_VAT_PERC;
-import static com.butent.bee.shared.modules.trade.TradeConstants.COL_TRADE_VAT_PLUS;
-import static com.butent.bee.shared.modules.trade.TradeConstants.VAR_TOTAL;
+import com.google.common.base.Splitter;
+import com.google.common.collect.LinkedListMultimap;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Multimap;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.shared.HasHandlers;
+import com.google.gwt.user.client.ui.HasEnabled;
+import com.google.gwt.user.client.ui.Widget;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
+import static com.butent.bee.shared.modules.documents.DocumentConstants.*;
+import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
@@ -88,15 +68,13 @@ import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
-import com.google.common.base.Splitter;
-import com.google.common.collect.LinkedListMultimap;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Multimap;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.shared.HasHandlers;
-import com.google.gwt.user.client.ui.HasEnabled;
-import com.google.gwt.user.client.ui.Widget;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 public class DocumentForm extends DocumentDataForm {
 

@@ -1,35 +1,23 @@
 package com.butent.bee.client.modules.documents;
 
-import static com.butent.bee.shared.modules.documents.DocumentConstants.ALS_DOCUMENT_COMPANY_NAME;
-import static com.butent.bee.shared.modules.documents.DocumentConstants.COL_DESCRIPTION;
-import static com.butent.bee.shared.modules.documents.DocumentConstants.COL_DOCUMENT;
-import static com.butent.bee.shared.modules.documents.DocumentConstants.COL_DOCUMENT_COMPANY;
-import static com.butent.bee.shared.modules.documents.DocumentConstants.COL_DOCUMENT_DATA;
-import static com.butent.bee.shared.modules.documents.DocumentConstants.COL_FILE_CAPTION;
-import static com.butent.bee.shared.modules.documents.DocumentConstants.COL_FILE_DATE;
-import static com.butent.bee.shared.modules.documents.DocumentConstants.COL_FILE_VERSION;
-import static com.butent.bee.shared.modules.documents.DocumentConstants.FORM_DOCUMENT;
-import static com.butent.bee.shared.modules.documents.DocumentConstants.SVC_COPY_DOCUMENT_DATA;
-import static com.butent.bee.shared.modules.documents.DocumentConstants.TBL_DOCUMENT_TREE;
-import static com.butent.bee.shared.modules.documents.DocumentConstants.VIEW_DOCUMENTS;
-import static com.butent.bee.shared.modules.documents.DocumentConstants.VIEW_DOCUMENT_FILES;
-import static com.butent.bee.shared.modules.documents.DocumentConstants.VIEW_DOCUMENT_ITEMS;
-import static com.butent.bee.shared.modules.documents.DocumentConstants.VIEW_DOCUMENT_TEMPLATES;
-import static com.butent.bee.shared.modules.trade.TradeConstants.VAR_TOTAL;
+import com.google.common.collect.Lists;
+import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import static com.butent.bee.shared.modules.documents.DocumentConstants.*;
+import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.FileCollector;
-import com.butent.bee.client.data.*;
+import com.butent.bee.client.data.Data;
+import com.butent.bee.client.data.IdCallback;
+import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.Queries.IntCallback;
+import com.butent.bee.client.data.RowCallback;
+import com.butent.bee.client.data.RowEditor;
+import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.modules.trade.TradeUtils;
 import com.butent.bee.client.presenter.GridPresenter;
@@ -72,8 +60,12 @@ import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.google.common.collect.Lists;
-import com.google.gwt.core.client.Scheduler.ScheduledCommand;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public final class DocumentsHandler {
 
