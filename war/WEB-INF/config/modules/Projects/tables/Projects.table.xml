@@ -29,5 +29,8 @@
     <Date name="ContractSigned" label="=signDate"/>
     <DateTime name="Created"  defExpr="CURRENT_TIME"/>
     <String name="WorkPlace" precision="255" label="=prjWorkPlace"/>
+    <Boolean name="Advance" defValue="null" label="=svcAdvanceReturned"/>
+    <Boolean name="SecondPayment" defValue="null" label="=svcSecondPaymentReturned" />
+    <Boolean name="FinalPayment" defValue="null" label="=svcFinalPaymentReturned"/>
   </Fields>
 </Table>

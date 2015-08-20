@@ -89,7 +89,8 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
 
   private static final Set<String> AUDIT_FIELDS = Sets.newHashSet(COL_PROJECT_START_DATE,
       COL_PROJECT_END_DATE, COL_COMAPNY, COL_PROJECT_STATUS, COL_PROJECT_OWNER,
-      COL_EXPECTED_DURATION, COL_PROJECT_TIME_UNIT, COL_PROJECT_PRICE, COL_CONTRACT_PRICE);
+      COL_EXPECTED_DURATION, COL_PROJECT_TIME_UNIT, COL_PROJECT_PRICE, COL_CONTRACT_PRICE,
+      "Advance", "SecondPayment", "FinalPayment");
 
   private static final BeeLogger logger = LogUtils.getLogger(ProjectForm.class);
 
