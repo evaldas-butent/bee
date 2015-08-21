@@ -2,6 +2,7 @@ package com.butent.bee.server.modules.classifiers;
 
 import com.google.common.base.CharMatcher;
 import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
@@ -1362,12 +1363,12 @@ public class ClassifiersModuleBean implements BeeModule {
       if (explain > 0) {
         explain(BeeConst.NO, TBL_DISCOUNTS);
       }
-      result = Pair.of((Double) null, (Double) null);
+      result = Pair.empty();
 
     } else {
       double toRate = getRate(currency, time);
       for (PriceInfo pi : discounts) {
-        if (BeeUtils.isPositive(pi.getPrice()) && !Objects.equals(currency, pi.getCurrency())) {
+        if (pi.hasPrice() && !Objects.equals(currency, pi.getCurrency())) {
           if (explain > 0) {
             explain("exchange", pi);
           }
@@ -1384,7 +1385,7 @@ public class ClassifiersModuleBean implements BeeModule {
       }
 
       for (PriceInfo pi : discounts) {
-        if (!BeeUtils.isPositive(pi.getPrice()) && pi.getPriceName() != null
+        if (!pi.hasPrice() && pi.getPriceName() != null
             && itemPrices.containsKey(pi.getPriceName())) {
 
           if (explain > 0) {
@@ -1433,7 +1434,7 @@ public class ClassifiersModuleBean implements BeeModule {
 
   private Pair<Double, Double> getPriceAndDiscount(List<PriceInfo> discounts,
       Long company, List<Long> companyParents, Map<Long, Long> categories,
-      final Double defPrice, int explain) {
+      Double defPrice, int explain) {
 
     if (discounts.size() == 1) {
       PriceInfo pi = discounts.get(0);
@@ -1443,7 +1444,7 @@ public class ClassifiersModuleBean implements BeeModule {
       return Pair.of(pi.getPrice(), pi.getDiscountPercent());
     }
 
-    final List<Long> companies = new ArrayList<>();
+    List<Long> companies = new ArrayList<>();
     if (DataUtils.isId(company)) {
       companies.add(company);
     }
@@ -1455,107 +1456,232 @@ public class ClassifiersModuleBean implements BeeModule {
       explain(TBL_COMPANIES, companies);
     }
 
-    Map<Long, Integer> categoryLevels = new HashMap<>();
-    Map<Long, Long> categoryRoots = new HashMap<>();
-
-    for (Long category : categories.keySet()) {
-      int level = 0;
-      Long root = category;
-
-      Long parent = categories.get(category);
-      while (parent != null) {
-        level++;
-        root = parent;
-
-        parent = categories.get(parent);
-      }
-
-      categoryLevels.put(category, level);
-      categoryRoots.put(category, root);
-    }
-
-    if (explain > 0) {
-      explain("category levels", categoryLevels);
-      explain("category roots", categoryRoots);
-    }
-
-    List<PriceInfo> input = new ArrayList<>();
-    input.addAll(discounts);
-
+    List<PriceInfo> input = new ArrayList<>(discounts);
     Collections.sort(input, new Comparator<PriceInfo>() {
       @Override
       public int compare(PriceInfo o1, PriceInfo o2) {
-        Integer comp1 = companies.contains(o1.getCompany())
-            ? companies.indexOf(o1.getCompany()) : null;
-        Integer comp2 = companies.contains(o2.getCompany())
-            ? companies.indexOf(o2.getCompany()) : null;
+        boolean x1 = o1.hasPrice() && o1.hasPercent();
+        boolean x2 = o2.hasPrice() && o2.hasPercent();
 
-        boolean it1 = DataUtils.isId(o1.getItem());
-        boolean it2 = DataUtils.isId(o2.getItem());
+        if (x1 && x2) {
+          return BeeUtils.compareNullsLast(
+              BeeUtils.minusPercent(o1.getPrice(), o1.getDiscountPercent()),
+              BeeUtils.minusPercent(o2.getPrice(), o2.getDiscountPercent()));
 
-        Integer cat1 = (!it1 && DataUtils.isId(o1.getCategory()))
-            ? categoryLevels.get(o1.getCategory()) : null;
-        Integer cat2 = (!it2 && DataUtils.isId(o2.getCategory()))
-            ? categoryLevels.get(o2.getCategory()) : null;
+        } else if (x1 || x2) {
+          return Boolean.compare(x2, x1);
 
-        Double p1 = BeeUtils.minusPercent(o1.getPrice(), o1.getDiscountPercent());
-        Double p2 = BeeUtils.minusPercent(o2.getPrice(), o2.getDiscountPercent());
+        } else if (o1.hasPrice() || o2.hasPrice()) {
+          return BeeUtils.compareNullsLast(o1.getPrice(), o2.getPrice());
 
-        if (it1 != it2) {
-          return Boolean.compare(it2, it1);
+        } else if (o1.hasPercent() || o2.hasPercent()) {
+          return BeeUtils.compareNullsLast(o2.getDiscountPercent(), o1.getDiscountPercent());
+
+        } else {
+          return BeeConst.COMPARE_EQUAL;
         }
-
-        if (!Objects.equals(comp1, comp2)) {
-          return BeeUtils.compareNullsLast(comp1, comp2);
-        }
-
-        if (!Objects.equals(cat1, cat2)) {
-          return BeeUtils.compareNullsLast(cat2, cat1);
-        }
-
-        if (BeeUtils.isDouble(p1) || BeeUtils.isDouble(p2)) {
-          return BeeUtils.compareNullsLast(p1, p2);
-        }
-
-        return BeeUtils.compareNullsLast(o2.getDiscountPercent(), o1.getDiscountPercent());
       }
     });
 
-    if (explain > 0) {
-      explain("ordered discounts", BeeUtils.bracket(input.size()));
+    Pair<Double, Double> result = Pair.empty();
+
+    for (Long co : companies) {
       for (PriceInfo pi : input) {
-        explain(pi);
+        if (co.equals(pi.getCompany()) && DataUtils.isId(pi.getItem())) {
+          acceptDiscount(result, pi, explain);
+
+          if (result.noNulls()) {
+            return result;
+          }
+        }
       }
     }
 
-    Double price = null;
-    Double percent = null;
+    Set<Long> discountCategories = new HashSet<>();
+    List<List<Long>> categoryBranches = new ArrayList<>();
 
-    for (PriceInfo pi : input) {
-      if (price == null && BeeUtils.isPositive(pi.getPrice())) {
-        price = pi.getPrice();
-        if (explain > 0) {
-          explain(COL_DISCOUNT_PRICE, price, "from", pi);
+    if (!BeeUtils.isEmpty(categories)) {
+      for (PriceInfo pi : input) {
+        Long cat = pi.getCategory();
+        if (DataUtils.isId(cat) && categories.containsKey(cat) && !DataUtils.isId(pi.getItem())) {
+          discountCategories.add(cat);
         }
-
-        if (percent != null && BeeUtils.isDouble(pi.getDiscountPercent())) {
-          percent = null;
-        }
-      }
-
-      if (percent == null && BeeUtils.isDouble(pi.getDiscountPercent())) {
-        percent = pi.getDiscountPercent();
-        if (explain > 0) {
-          explain(COL_DISCOUNT_PERCENT, percent, "from", pi);
-        }
-      }
-
-      if (price != null && percent != null) {
-        break;
       }
     }
 
-    return Pair.of(price, percent);
+    if (!discountCategories.isEmpty()) {
+      Map<Long, Integer> categoryLevels = new HashMap<>();
+      ListMultimap<Long, Long> roots = ArrayListMultimap.create();
+
+      for (Long category : discountCategories) {
+        int level = 0;
+        Long root = category;
+
+        Long parent = categories.get(category);
+        while (parent != null) {
+          level++;
+          root = parent;
+
+          parent = categories.get(parent);
+        }
+
+        categoryLevels.put(category, level);
+        roots.put(root, category);
+      }
+
+      for (Long root : roots.keySet()) {
+        List<Long> branch = new ArrayList<>(roots.get(root));
+
+        if (branch.size() > 1) {
+          Collections.sort(branch, new Comparator<Long>() {
+            @Override
+            public int compare(Long o1, Long o2) {
+              return BeeUtils.compareNullsLast(categoryLevels.get(o1), categoryLevels.get(o2));
+            }
+          });
+        }
+
+        categoryBranches.add(branch);
+      }
+
+      if (explain > 0) {
+        explain("category branches", categoryBranches);
+      }
+    }
+
+    List<Pair<Double, Double>> candidates = new ArrayList<>();
+    Pair<Double, Double> pp;
+
+    for (List<Long> branch : categoryBranches) {
+      pp = getBranchPriceAndDiscount(input, branch, companies, explain);
+      if (!pp.isNull()) {
+        candidates.add(pp);
+      }
+    }
+
+    pp = getCompanyLevelPriceAndDiscount(input, companies, explain);
+    if (!pp.isNull()) {
+      candidates.add(pp);
+    }
+
+    pp = getItemPriceAndDiscount(input, explain);
+    if (!pp.isNull()) {
+      candidates.add(pp);
+    }
+
+    for (List<Long> branch : categoryBranches) {
+      pp = getBranchPriceAndDiscount(input, branch, explain);
+      if (!pp.isNull()) {
+        candidates.add(pp);
+      }
+    }
+
+    // if (!candidates.isEmpty()) {
+    // if (BeeUtils.isPositive(result.getA())) {
+    // candidates.stream().filter(c -> c.getA() == null && c.getB() != null);
+    // }
+    // }
+
+    return result;
+  }
+
+  private Pair<Double, Double> getCompanyLevelPriceAndDiscount(List<PriceInfo> discounts,
+      List<Long> companies, int explain) {
+
+    Pair<Double, Double> result = Pair.empty();
+
+    for (Long co : companies) {
+      for (PriceInfo pi : discounts) {
+        if (co.equals(pi.getCompany()) && !DataUtils.isId(pi.getItem())
+            && !DataUtils.isId(pi.getCategory())) {
+
+          acceptDiscount(result, pi, explain);
+          if (result.noNulls()) {
+            return result;
+          }
+        }
+      }
+    }
+
+    return result;
+  }
+
+  private Pair<Double, Double> getItemPriceAndDiscount(List<PriceInfo> discounts, int explain) {
+    Pair<Double, Double> result = Pair.empty();
+
+    for (PriceInfo pi : discounts) {
+      if (!DataUtils.isId(pi.getCompany()) && DataUtils.isId(pi.getItem())) {
+        acceptDiscount(result, pi, explain);
+        if (result.noNulls()) {
+          return result;
+        }
+      }
+    }
+
+    return result;
+  }
+
+  private Pair<Double, Double> getBranchPriceAndDiscount(List<PriceInfo> discounts,
+      List<Long> branch, int explain) {
+
+    Pair<Double, Double> result = Pair.empty();
+
+    for (Long cat : branch) {
+      for (PriceInfo pi : discounts) {
+        if (!DataUtils.isId(pi.getCompany()) && cat.equals(pi.getCategory())
+            && !DataUtils.isId(pi.getItem())) {
+
+          acceptDiscount(result, pi, explain);
+          if (result.noNulls()) {
+            return result;
+          }
+        }
+      }
+    }
+
+    return result;
+  }
+
+  private Pair<Double, Double> getBranchPriceAndDiscount(List<PriceInfo> discounts,
+      List<Long> branch, List<Long> companies, int explain) {
+
+    Pair<Double, Double> result = Pair.empty();
+
+    for (Long cat : branch) {
+      for (Long co : companies) {
+        for (PriceInfo pi : discounts) {
+          if (co.equals(pi.getCompany()) && cat.equals(pi.getCategory())
+              && !DataUtils.isId(pi.getItem())) {
+
+            acceptDiscount(result, pi, explain);
+            if (result.noNulls()) {
+              return result;
+            }
+          }
+        }
+      }
+    }
+
+    return result;
+  }
+
+  private void acceptDiscount(Pair<Double, Double> priceAndPercent, PriceInfo priceInfo,
+      int explain) {
+
+    boolean updatePrice = priceAndPercent.getA() == null && priceInfo.hasPrice();
+    if (updatePrice) {
+      priceAndPercent.setA(priceInfo.getPrice());
+      if (explain > 0) {
+        explain(COL_DISCOUNT_PRICE, priceAndPercent.getA(), "from", priceInfo);
+      }
+    }
+
+    if ((priceAndPercent.getB() == null || updatePrice) && priceInfo.hasPercent()) {
+      priceAndPercent.setB(priceInfo.getDiscountPercent());
+      if (explain > 0) {
+        explain(COL_DISCOUNT_PERCENT, priceAndPercent.getB(), "from", priceInfo);
+      }
+    }
   }
 
   private List<Long> getDiscountParents(Long company) {
