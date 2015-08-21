@@ -1,17 +1,11 @@
 package com.butent.bee.client.modules.documents;
 
-import com.butent.bee.client.view.edit.EditableWidget;
-import com.butent.bee.client.widget.InputDateTime;
-import com.butent.bee.client.widget.InputText;
-import com.butent.bee.client.widget.Label;
 import com.google.common.base.Splitter;
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.logical.shared.ValueChangeEvent;
-import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HasHandlers;
 import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.Widget;
@@ -77,10 +71,6 @@ import java.util.Map;
 import java.util.Objects;
 
 public class DocumentForm extends DocumentDataForm {
-  private InputDateTime sent;
-  private InputDateTime received;
-  private Label regNoLabel;
-  private InputText regNo;
 
   @Override
   public void onSaveChanges(HasHandlers listener, SaveChangesEvent event) {
@@ -159,67 +149,6 @@ public class DocumentForm extends DocumentDataForm {
   private final Map<String, ChildSelector> childSelectors = new HashMap<>();
 
   @Override
-  public void afterCreateEditableWidget(EditableWidget editableWidget,
-      IdentifiableWidget widget) {
-
-    switch (editableWidget.getColumnId()) {
-      case COL_DOCUMENT_RECEIVED:
-        if (widget instanceof InputDateTime) {
-          received = (InputDateTime) widget;
-
-          received.addValueChangeHandler(new ValueChangeHandler<String>() {
-            @Override
-            public void onValueChange(ValueChangeEvent<String> event) {
-
-             if (regNoLabel == null || regNo == null) {
-               return;
-             }
-
-              if (!BeeUtils.isEmpty(regNo.getValue())) {
-                return;
-              }
-
-              if (BeeUtils.isEmpty(event.getValue())) {
-                return;
-              }
-              regNoLabel.addStyleName("bee-NewRowContainer bee-hasDefaults");
-            }
-          });
-        }
-        break;
-      case COL_DOCUMENT_SENT:
-        if (widget instanceof InputDateTime) {
-          sent = (InputDateTime) widget;
-
-          sent.addValueChangeHandler(new ValueChangeHandler<String>() {
-            @Override
-            public void onValueChange(ValueChangeEvent<String> event) {
-
-              if (regNoLabel == null || regNo == null) {
-                return;
-              }
-
-              if (!BeeUtils.isEmpty(regNo.getValue())) {
-                return;
-              }
-
-              if (BeeUtils.isEmpty(event.getValue())) {
-                return;
-              }
-              regNoLabel.addStyleName("bee-NewRowContainer bee-hasDefaults");
-            }
-          });
-        }
-      case COL_REGISTRATION_NUMBER:
-        if (widget instanceof InputText) {
-          regNo = (InputText) widget;
-        }
-        break;
-    }
-
-  }
-
-  @Override
   public void afterCreateWidget(String name, IdentifiableWidget widget,
       WidgetDescriptionCallback callback) {
 
@@ -231,8 +160,6 @@ public class DocumentForm extends DocumentDataForm {
 
     } else if (BeeUtils.same(name, VIEW_DOCUMENT_ITEMS) && widget instanceof ChildGrid) {
       itemsGrid = (ChildGrid) widget;
-    } else if (BeeUtils.same(name, COL_REGISTRATION_NUMBER) && widget instanceof Label) {
-      regNoLabel = (Label) widget;
     }
   }
 
