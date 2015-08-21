@@ -18,6 +18,10 @@
 
     <DataColumn name="UnitName" caption="=unitShort" flexGrow="0" />
 
+    <PropColumn name="FreeRemainder" type="double" label="=ordFreeRemainder" visible="true" />
+
+    <DataColumn name="ResRemainder" />
+
     <DataColumn name="Price" visible="true">
       <footer expression="row.Quantity * row.Price" />
     </DataColumn>

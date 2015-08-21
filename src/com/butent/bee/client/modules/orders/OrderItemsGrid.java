@@ -26,6 +26,8 @@ import com.butent.bee.client.modules.transport.InvoiceCreator;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.render.HasCellRenderer;
+import com.butent.bee.client.validation.CellValidateEvent;
+import com.butent.bee.client.validation.CellValidation;
 import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.edit.EditableColumn;
 import com.butent.bee.client.view.form.FormView;
@@ -77,7 +79,34 @@ public class OrderItemsGrid extends AbstractGridInterceptor implements Selection
       AbstractColumn<?> column, ColumnHeader header, ColumnFooter footer,
       EditableColumn editableColumn) {
 
-    if (column instanceof CalculatedColumn) {
+    if (BeeUtils.same(columnName, COL_RESERVED_REMAINDER)) {
+      editableColumn.addCellValidationHandler(new CellValidateEvent.Handler() {
+
+        @Override
+        public Boolean validateCell(CellValidateEvent event) {
+          if (event.isCellValidation() && event.isPostValidation()) {
+            CellValidation cv = event.getCellValidation();
+            IsRow row = cv.getRow();
+            Double freeRem = BeeUtils.toDouble(row.getProperty(PRP_FREE_REMAINDER));
+            Double qty =
+                row.getDouble(Data.getColumnIndex(VIEW_ORDER_ITEMS, COL_TRADE_ITEM_QUANTITY));
+            Double newResRem = BeeUtils.toDouble(cv.getNewValue());
+            Double oldResRem = BeeUtils.toDouble(cv.getOldValue());
+
+            if (freeRem == 0) {
+              if (newResRem > oldResRem) {
+                getGridPresenter().getGridView().notifySevere("Error");
+                return false;
+              }
+            } else if (newResRem > qty) {
+              getGridPresenter().getGridView().notifySevere("Error");
+              return false;
+            }
+          }
+          return true;
+        }
+      });
+    } else if (column instanceof CalculatedColumn) {
       if ("ItemPrices".equals(columnName)) {
 
         int index = DataUtils.getColumnIndex(COL_TRADE_ITEM_PRICE, dataColumns);
@@ -184,12 +213,13 @@ public class OrderItemsGrid extends AbstractGridInterceptor implements Selection
       Double discount, BeeRowSet items) {
 
     List<String> colNames = Lists.newArrayList(COL_ORDER, COL_TA_ITEM,
-        COL_TRADE_ITEM_QUANTITY, COL_TRADE_ITEM_PRICE, COL_TRADE_DISCOUNT);
+        COL_TRADE_ITEM_QUANTITY, COL_TRADE_ITEM_PRICE, COL_TRADE_DISCOUNT, COL_RESERVED_REMAINDER);
     final BeeRowSet rowSet = new BeeRowSet(getViewName(), Data.getColumns(getViewName(), colNames));
 
     final int ordIndex = rowSet.getColumnIndex(COL_ORDER);
     final int itemIndex = rowSet.getColumnIndex(COL_TA_ITEM);
     final int qtyIndex = rowSet.getColumnIndex(COL_TRADE_ITEM_QUANTITY);
+    final int resRemIndex = rowSet.getColumnIndex(COL_RESERVED_REMAINDER);
     final int priceIndex = rowSet.getColumnIndex(COL_TRADE_ITEM_PRICE);
     final int discountIndex = rowSet.getColumnIndex(COL_TRADE_DISCOUNT);
 
@@ -206,6 +236,8 @@ public class OrderItemsGrid extends AbstractGridInterceptor implements Selection
         row.setValue(itemIndex, item.getId());
 
         row.setValue(qtyIndex, qty);
+        row.setValue(resRemIndex, qty);
+
         quantities.put(item.getId(), qty);
 
         ItemPrice itemPrice = defPrice;

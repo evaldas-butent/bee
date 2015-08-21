@@ -56,9 +56,11 @@ public final class OrdersConstants {
   public static final String SVC_CREATE_INVOICE_ITEMS = "CreateInvoiceItems";
 
   public static final String TBL_ORDER_ITEMS = "OrderItems";
+  public static final String TBL_ORDERS = "Orders";
 
   public static final String VIEW_ORDERS = "Orders";
   public static final String VIEW_ORDERS_INVOICES = "OrdersInvoices";
+  public static final String VIEW_ORDER_ITEMS = "OrderItems";
   public static final String VIEW_ORDERS_TEMPLATES = "OrdersTemplates";
   public static final String VIEW_ORDER_TMPL_ITEMS = "OrderTmplItems";
   public static final String VIEW_ORDER_SALES = "OrderSales";
@@ -68,8 +70,11 @@ public final class OrdersConstants {
 
   public static final String COL_ORDER = "Order";
   public static final String COL_ORDERS_STATUS = "Status";
+  public static final String COL_RESERVED_REMAINDER = "ResRemainder";
   public static final String COL_TEMPLATE = "Template";
   public static final String COL_SOURCE = "Source";
+
+  public static final String PRP_FREE_REMAINDER = "FreeRemainder";
 
   private OrdersConstants() {
   }
