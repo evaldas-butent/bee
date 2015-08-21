@@ -1,5 +1,6 @@
 package com.butent.bee.client.modules.tasks;
 
+import com.butent.bee.shared.BeeConst;
 import com.google.common.collect.Lists;
 
 import com.butent.bee.client.BeeKeeper;
@@ -146,7 +147,7 @@ class ChildTasksGrid extends TasksGrid {
     if (!BeeUtils.isEmpty(event.getRowValue().getProperty(ProjectConstants.PROP_TEMPLATE))) {
       event.consume();
 
-      IsRow templRow = event.getRowValue();
+      final IsRow templRow = event.getRowValue();
       final Long templateId = BeeUtils.toLong(templRow.getProperty(ProjectConstants.PROP_TEMPLATE));
 
       if (!DataUtils.isId(templateId)) {
@@ -195,13 +196,8 @@ class ChildTasksGrid extends TasksGrid {
             RowFactory.createRow(viewTasks, row, new RowCallback() {
               @Override
               public void onSuccess(BeeRow createdTask) {
-                Queries.deleteRow(ProjectConstants.VIEW_PROJECT_TEMPLATE_TASK_COPY, templateId,
-                    new Queries.IntCallback() {
-                      @Override
-                      public void onSuccess(Integer templateTask) {
-                        getGridPresenter().handleAction(Action.REFRESH);
-                      }
-                    });
+                Queries.deleteRowAndFire(ProjectConstants.VIEW_PROJECT_TEMPLATE_TASK_COPY,
+                    templateId);
               }
             });
           }
