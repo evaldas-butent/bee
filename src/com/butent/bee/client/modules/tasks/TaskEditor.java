@@ -1710,7 +1710,8 @@ class TaskEditor extends AbstractFormInterceptor {
 
     switch (event) {
       case COMMENT:
-        return true;
+        return TaskStatus.in(status, TaskStatus.NOT_VISITED, TaskStatus.ACTIVE,
+            TaskStatus.SCHEDULED) && (isOwner() || isExecutor());
 
       case RENEW:
         return TaskStatus.in(status, TaskStatus.SUSPENDED, TaskStatus.CANCELED,
