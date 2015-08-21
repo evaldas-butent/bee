@@ -22,6 +22,8 @@
 
     <DateTime name="Received" label="=documentReceived" />
     <DateTime name="Sent" label="=documentSent" />
+    <String name="ReceivedNumber" precision="30" label="=documentReceivedNumber" />
+    <String name="SentNumber" precision="30" label="=documentSentNumber" />
 
     <Text name="Description" label="=documentDescription" />
 

@@ -49,6 +49,9 @@ public final class DocumentConstants {
   public static final String COL_DOCUMENT_RECEIVED = "Received";
   public static final String COL_DOCUMENT_SENT = "Sent";
 
+  public static final String COL_DOCUMENT_SENT_NUMBER = "SentNumber";
+  public static final String COL_DOCUMENT_RECEIVED_NUMBER = "ReceivedNumber";
+
   public static final String COL_DOCUMENT_STATUS = "Status";
 
   public static final String COL_DOCUMENT_TEMPLATE = "Template";

@@ -215,42 +215,35 @@ public class DocumentsModuleBean implements BeeModule {
       }
 
       @Subscribe
-      public void fillDocumentRegistrationNumber(ViewInsertEvent event) {
+      public void fillDocumentSentNumber(ViewInsertEvent event) {
         if (BeeUtils.same(event.getTargetName(), TBL_DOCUMENTS) && event.isBefore()) {
 
           List<BeeColumn> cols = event.getColumns();
 
-          if (DataUtils.contains(cols, COL_REGISTRATION_NUMBER)
-              && ((DataUtils.contains(cols, COL_DOCUMENT_RECEIVED)
-              && !DataUtils.contains(cols, COL_DOCUMENT_SENT) ||
-              DataUtils.contains(cols, COL_DOCUMENT_RECEIVED)))) {
+          if (DataUtils.contains(cols, COL_DOCUMENT_SENT_NUMBER)
+              && !DataUtils.contains(cols, COL_DOCUMENT_SENT)) {
             return;
           }
 
-          Boolean received = null;
+          Boolean sent = null;
 
           for (int i = 0; i < event.getColumns().size(); i++) {
             switch (event.getColumns().get(i).getId()) {
-
-              case COL_DOCUMENT_RECEIVED:
-                received = true;
-                break;
               case COL_DOCUMENT_SENT:
-                received = false;
+                sent = true;
                 break;
             }
           }
 
-          if(received == null) {
+          if(sent == null) {
             return;
           }
 
-          String prefix = received ? prm.getText(PRM_DOCUMENT_RECEIVED_PREFIX)
-              : prm.getText(PRM_DOCUMENT_SENT_PREFIX);
+          String prefix = prm.getText(PRM_DOCUMENT_SENT_PREFIX);
 
-          BeeColumn column = sys.getView(VIEW_DOCUMENTS).getBeeColumn(COL_REGISTRATION_NUMBER);
-          String number = getNextRegNumber(received, column.getPrecision(),
-              COL_REGISTRATION_NUMBER, prefix);
+          BeeColumn column = sys.getView(VIEW_DOCUMENTS).getBeeColumn(COL_DOCUMENT_SENT_NUMBER);
+          String number = getNextRegNumber(COL_DOCUMENT_SENT,
+              column.getPrecision(), COL_DOCUMENT_SENT_NUMBER, prefix);
 
           if (!BeeUtils.isEmpty(number)) {
             event.addValue(column, new TextValue(prefix + number));
@@ -259,15 +252,90 @@ public class DocumentsModuleBean implements BeeModule {
       }
 
       @Subscribe
-      public void updateDocumentRegistrationNumber(DataEvent.ViewUpdateEvent event) {
+      public void updateDocumentSentNumber(DataEvent.ViewUpdateEvent event) {
         if (BeeUtils.same(event.getTargetName(), TBL_DOCUMENTS) && event.isBefore()) {
 
           List<BeeColumn> cols = event.getColumns();
 
-          if (DataUtils.contains(cols, COL_REGISTRATION_NUMBER)
-              && ((DataUtils.contains(cols, COL_DOCUMENT_RECEIVED)
-              && !DataUtils.contains(cols, COL_DOCUMENT_SENT) ||
-              DataUtils.contains(cols, COL_DOCUMENT_RECEIVED)))) {
+          if (DataUtils.contains(cols, COL_DOCUMENT_SENT_NUMBER)
+              && !DataUtils.contains(cols, COL_DOCUMENT_SENT)) {
+            return;
+          }
+
+          Boolean sent = null;
+          String value = null;
+
+          for (int i = 0; i < event.getColumns().size(); i++) {
+            switch (event.getColumns().get(i).getId()) {
+              case COL_DOCUMENT_SENT:
+                sent = true;
+                value = event.getRow().getString(i);
+                break;
+            }
+          }
+
+          if(sent == null || BeeUtils.isEmpty(value)) {
+            return;
+          }
+
+          String prefix = prm.getText(PRM_DOCUMENT_SENT_PREFIX);
+
+          BeeColumn column = sys.getView(VIEW_DOCUMENTS).getBeeColumn(COL_DOCUMENT_SENT_NUMBER);
+          String number = getNextRegNumber(COL_DOCUMENT_SENT, column.getPrecision(),
+              COL_DOCUMENT_SENT_NUMBER, prefix);
+
+          if (!BeeUtils.isEmpty(number)) {
+            event.getColumns().add(column);
+            event.getRow().addValue(new TextValue(prefix + number));
+          }
+        }
+      }
+
+      @Subscribe
+      public void fillDocumentReceivedNumber(ViewInsertEvent event) {
+        if (BeeUtils.same(event.getTargetName(), TBL_DOCUMENTS) && event.isBefore()) {
+
+          List<BeeColumn> cols = event.getColumns();
+
+          if (DataUtils.contains(cols, COL_DOCUMENT_RECEIVED_NUMBER)
+              && !DataUtils.contains(cols, COL_DOCUMENT_RECEIVED)) {
+            return;
+          }
+
+          Boolean received = null;
+
+          for (int i = 0; i < event.getColumns().size(); i++) {
+            switch (event.getColumns().get(i).getId()) {
+              case COL_DOCUMENT_RECEIVED:
+                received = true;
+                break;
+            }
+          }
+
+          if(received == null) {
+            return;
+          }
+
+          String prefix = prm.getText(PRM_DOCUMENT_RECEIVED_PREFIX);
+
+          BeeColumn column = sys.getView(VIEW_DOCUMENTS).getBeeColumn(COL_DOCUMENT_RECEIVED_NUMBER);
+          String number = getNextRegNumber(COL_DOCUMENT_RECEIVED,
+              column.getPrecision(), COL_DOCUMENT_RECEIVED_NUMBER, prefix);
+
+          if (!BeeUtils.isEmpty(number)) {
+            event.addValue(column, new TextValue(prefix + number));
+          }
+        }
+      }
+
+      @Subscribe
+      public void updateDocumentReceivedNumber(DataEvent.ViewUpdateEvent event) {
+        if (BeeUtils.same(event.getTargetName(), TBL_DOCUMENTS) && event.isBefore()) {
+
+          List<BeeColumn> cols = event.getColumns();
+
+          if (DataUtils.contains(cols, COL_DOCUMENT_RECEIVED_NUMBER)
+              && !DataUtils.contains(cols, COL_DOCUMENT_RECEIVED)) {
             return;
           }
 
@@ -276,13 +344,8 @@ public class DocumentsModuleBean implements BeeModule {
 
           for (int i = 0; i < event.getColumns().size(); i++) {
             switch (event.getColumns().get(i).getId()) {
-
               case COL_DOCUMENT_RECEIVED:
                 received = true;
-                value = event.getRow().getString(i);
-                break;
-              case COL_DOCUMENT_SENT:
-                received = false;
                 value = event.getRow().getString(i);
                 break;
             }
@@ -292,12 +355,11 @@ public class DocumentsModuleBean implements BeeModule {
             return;
           }
 
-          String prefix = received ? prm.getText(PRM_DOCUMENT_RECEIVED_PREFIX)
-              : prm.getText(PRM_DOCUMENT_SENT_PREFIX);
+          String prefix = prm.getText(PRM_DOCUMENT_RECEIVED_PREFIX);
 
-          BeeColumn column = sys.getView(VIEW_DOCUMENTS).getBeeColumn(COL_REGISTRATION_NUMBER);
-          String number = getNextRegNumber(received, column.getPrecision(),
-              COL_REGISTRATION_NUMBER, prefix);
+          BeeColumn column = sys.getView(VIEW_DOCUMENTS).getBeeColumn(COL_DOCUMENT_RECEIVED_NUMBER);
+          String number = getNextRegNumber(COL_DOCUMENT_RECEIVED, column.getPrecision(),
+              COL_DOCUMENT_RECEIVED_NUMBER, prefix);
 
           if (!BeeUtils.isEmpty(number)) {
             event.getColumns().add(column);
@@ -533,17 +595,13 @@ public class DocumentsModuleBean implements BeeModule {
     return ResponseObject.response(dataId);
   }
 
-  private String getNextRegNumber(boolean received, int maxLength, String column, String prefix) {
-    IsCondition where;
+  private String getNextRegNumber(String columnFilter,
+      int maxLength, String column, String prefix) {
+    IsCondition where = SqlUtils.notNull(TBL_DOCUMENTS, columnFilter);
 
-    if (received) {
-      where = SqlUtils.notNull(TBL_DOCUMENTS, COL_DOCUMENT_RECEIVED);
-    } else {
-      where = SqlUtils.notNull(TBL_DOCUMENTS, COL_DOCUMENT_SENT);
-    }
 
     if (!BeeUtils.isEmpty(prefix)) {
-      SqlUtils.and(where, SqlUtils.startsWith(TBL_DOCUMENTS, COL_REGISTRATION_NUMBER, prefix));
+      SqlUtils.and(where, SqlUtils.startsWith(TBL_DOCUMENTS, column, prefix));
     }
 
     SqlSelect query = new SqlSelect()

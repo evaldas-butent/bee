@@ -132,8 +132,8 @@ public class Relations extends Flow implements Editor, ClickHandler, SelectorEve
       add(face);
       table.setWidth("600px");
     }
-    table.setColumnCellStyles(0, "text-align:right; white-space:nowrap;");
-    table.setColumnCellStyles(1, "width:100%");
+    table.setColumnCellStyles(0, "text-align:right; white-space:nowrap; padding-right:1ex");
+    table.setColumnCellStyles(1, "width:100%; padding-left:1ex");
 
     Map<String, String> viewMap = new HashMap<>();
 

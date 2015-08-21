@@ -46,6 +46,8 @@
 
     <SimpleColumn name="Received" />
     <SimpleColumn name="Sent" />
+    <SimpleColumn name="ReceivedNumber" />
+    <SimpleColumn name="SentNumber" />
 
     <SimpleColumn name="Description" />
 
