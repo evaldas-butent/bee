@@ -120,6 +120,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.OptionalDouble;
 import java.util.Set;
 
 import javax.annotation.Resource;
@@ -1402,8 +1404,7 @@ public class ClassifiersModuleBean implements BeeModule {
         }
       }
 
-      result = getPriceAndDiscount(discounts, company, companyParents, categories, defPrice,
-          explain);
+      result = getPriceAndDiscount(discounts, company, companyParents, categories, explain);
     }
 
     if (!BeeUtils.isPositive(result.getA()) && BeeUtils.isPositive(defPrice)) {
@@ -1433,8 +1434,7 @@ public class ClassifiersModuleBean implements BeeModule {
   }
 
   private Pair<Double, Double> getPriceAndDiscount(List<PriceInfo> discounts,
-      Long company, List<Long> companyParents, Map<Long, Long> categories,
-      Double defPrice, int explain) {
+      Long company, List<Long> companyParents, Map<Long, Long> categories, int explain) {
 
     if (discounts.size() == 1) {
       PriceInfo pi = discounts.get(0);
@@ -1483,12 +1483,17 @@ public class ClassifiersModuleBean implements BeeModule {
       }
     });
 
+    if (explain > 0) {
+      explain("ordered input", BeeUtils.bracket(input.size()));
+      input.stream().forEach(e -> explain(e));
+    }
+
     Pair<Double, Double> result = Pair.empty();
 
     for (Long co : companies) {
       for (PriceInfo pi : input) {
         if (co.equals(pi.getCompany()) && DataUtils.isId(pi.getItem())) {
-          acceptDiscount(result, pi, explain);
+          acceptDiscount(result, pi, (explain > 0) ? "company + item" : null);
 
           if (result.noNulls()) {
             return result;
@@ -1556,33 +1561,111 @@ public class ClassifiersModuleBean implements BeeModule {
       pp = getBranchPriceAndDiscount(input, branch, companies, explain);
       if (!pp.isNull()) {
         candidates.add(pp);
+
+        if (explain > 0) {
+          explain("candidate company + category", branch, format(pp));
+        }
       }
     }
 
     pp = getCompanyLevelPriceAndDiscount(input, companies, explain);
     if (!pp.isNull()) {
       candidates.add(pp);
+
+      if (explain > 0) {
+        explain("candidate company", format(pp));
+      }
     }
 
     pp = getItemPriceAndDiscount(input, explain);
     if (!pp.isNull()) {
       candidates.add(pp);
+
+      if (explain > 0) {
+        explain("candidate item", format(pp));
+      }
     }
 
     for (List<Long> branch : categoryBranches) {
       pp = getBranchPriceAndDiscount(input, branch, explain);
       if (!pp.isNull()) {
         candidates.add(pp);
+
+        if (explain > 0) {
+          explain("candidate category", branch, format(pp));
+        }
       }
     }
 
-    // if (!candidates.isEmpty()) {
-    // if (BeeUtils.isPositive(result.getA())) {
-    // candidates.stream().filter(c -> c.getA() == null && c.getB() != null);
-    // }
-    // }
+    if (!candidates.isEmpty()) {
+      if (result.getA() != null) {
+        OptionalDouble maxPercent = candidates
+            .stream()
+            .filter(e -> e.getA() == null && e.getB() != null)
+            .mapToDouble(e -> e.getB())
+            .max();
+
+        if (maxPercent.isPresent()) {
+          result.setB(maxPercent.getAsDouble());
+
+          if (explain > 0) {
+            explain("max candidate percent", result.getB());
+          }
+        }
+
+      } else if (result.getB() != null) {
+        OptionalDouble minPrice = candidates
+            .stream()
+            .filter(e -> e.getA() != null && e.getB() == null)
+            .mapToDouble(e -> e.getA())
+            .min();
+
+        if (minPrice.isPresent()) {
+          result.setB(minPrice.getAsDouble());
+
+          if (explain > 0) {
+            explain("min candidate price", result.getB());
+          }
+        }
+
+      } else if (candidates.stream().anyMatch(e -> e.getA() != null)) {
+        Optional<Pair<Double, Double>> best = candidates
+            .stream()
+            .filter(e -> e.getA() != null)
+            .min((e1, e2) -> BeeUtils.compareNullsLast(BeeUtils.minusPercent(e1.getA(), e1.getB()),
+                BeeUtils.minusPercent(e2.getA(), e2.getB())));
+
+        if (best.isPresent()) {
+          result.setA(best.get().getA());
+          result.setB(best.get().getB());
+
+          if (explain > 0) {
+            explain("best candidate", format(result));
+          }
+        }
+
+      } else {
+        OptionalDouble maxPercent = candidates
+            .stream()
+            .filter(e -> e.getB() != null)
+            .mapToDouble(e -> e.getB())
+            .max();
+
+        if (maxPercent.isPresent()) {
+          result.setB(maxPercent.getAsDouble());
+
+          if (explain > 0) {
+            explain("max candidate percent", result.getB());
+          }
+        }
+      }
+    }
 
     return result;
+  }
+
+  private static String format(Pair<Double, Double> pp) {
+    return BeeUtils.joinOptions(COL_DISCOUNT_PRICE, pp.getA(), COL_DISCOUNT_PERCENT, pp.getB());
   }
 
   private Pair<Double, Double> getCompanyLevelPriceAndDiscount(List<PriceInfo> discounts,
@@ -1595,7 +1678,7 @@ public class ClassifiersModuleBean implements BeeModule {
         if (co.equals(pi.getCompany()) && !DataUtils.isId(pi.getItem())
             && !DataUtils.isId(pi.getCategory())) {
 
-          acceptDiscount(result, pi, explain);
+          acceptDiscount(result, pi, (explain > 0) ? "company" : null);
           if (result.noNulls()) {
             return result;
           }
@@ -1611,7 +1694,7 @@ public class ClassifiersModuleBean implements BeeModule {
 
     for (PriceInfo pi : discounts) {
       if (!DataUtils.isId(pi.getCompany()) && DataUtils.isId(pi.getItem())) {
-        acceptDiscount(result, pi, explain);
+        acceptDiscount(result, pi, (explain > 0) ? "item" : null);
         if (result.noNulls()) {
           return result;
         }
@@ -1631,7 +1714,7 @@ public class ClassifiersModuleBean implements BeeModule {
         if (!DataUtils.isId(pi.getCompany()) && cat.equals(pi.getCategory())
             && !DataUtils.isId(pi.getItem())) {
 
-          acceptDiscount(result, pi, explain);
+          acceptDiscount(result, pi, (explain > 0) ? "category" : null);
           if (result.noNulls()) {
             return result;
           }
@@ -1653,7 +1736,7 @@ public class ClassifiersModuleBean implements BeeModule {
           if (co.equals(pi.getCompany()) && cat.equals(pi.getCategory())
               && !DataUtils.isId(pi.getItem())) {
 
-            acceptDiscount(result, pi, explain);
+            acceptDiscount(result, pi, (explain > 0) ? "company + category" : null);
             if (result.noNulls()) {
               return result;
             }
@@ -1666,20 +1749,20 @@ public class ClassifiersModuleBean implements BeeModule {
   }
 
   private void acceptDiscount(Pair<Double, Double> priceAndPercent, PriceInfo priceInfo,
-      int explain) {
+      String source) {
 
     boolean updatePrice = priceAndPercent.getA() == null && priceInfo.hasPrice();
     if (updatePrice) {
       priceAndPercent.setA(priceInfo.getPrice());
-      if (explain > 0) {
-        explain(COL_DISCOUNT_PRICE, priceAndPercent.getA(), "from", priceInfo);
+      if (source != null) {
+        explain(source, COL_DISCOUNT_PRICE, priceAndPercent.getA(), "from", priceInfo);
       }
     }
 
     if ((priceAndPercent.getB() == null || updatePrice) && priceInfo.hasPercent()) {
       priceAndPercent.setB(priceInfo.getDiscountPercent());
-      if (explain > 0) {
-        explain(COL_DISCOUNT_PERCENT, priceAndPercent.getB(), "from", priceInfo);
+      if (source != null) {
+        explain(source, COL_DISCOUNT_PERCENT, priceAndPercent.getB(), "from", priceInfo);
       }
     }
   }
