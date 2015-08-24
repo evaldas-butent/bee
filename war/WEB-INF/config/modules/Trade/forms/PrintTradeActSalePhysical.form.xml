@@ -23,13 +23,13 @@
       </FlowPanel>
     </FlowPanel>
 
-    <FlowPanel style="margin-top:12px;" >
+    <FlowPanel style="margin-top:12px;">
       <Table style="width:100%; border:1px solid black;">
         <row>
           <cell>
             <Label html="Nuomotojas" style="font-weight: bold;" />
           </cell>
-          <cell style="vertical-align:top;" >
+          <cell style="vertical-align:top;">
             <Label html="Nuomininkas" style="font-weight: bold; border-left: 1px solid black;" />
           </cell>
         </row>
@@ -43,28 +43,28 @@
         </row>
         <row>
           <TextLabel />
-          <TextLabel source="Contract" style="border-left: 1px solid black;" > 
+          <TextLabel source="Contract" style="border-left: 1px solid black;">
             <renderToken source="ContractName" prefix="Sutarties Nr. " />
             <renderToken source="ContractNumber" />
           </TextLabel>
         </row>
         <row>
           <TextLabel />
-          <TextLabel source="Object" style="border-left: 1px solid black;" > 
+          <TextLabel source="Object" style="border-left: 1px solid black;">
             <renderToken source="ObjectName" prefix="Objektas: " />
             <renderToken source="ObjectAddress" />
           </TextLabel>
         </row>
         <row>
-          <TextLabel source="Manager" >
+          <TextLabel source="Manager">
             <renderToken source="ManagerFirstName" prefix="Atsakingas asmuo: " />
             <renderToken source="ManagerLastName" />
-            <renderToken source="ManagerPhone" />
+            <renderToken source="ManagerPhone" prefix=" Tel.: " />
           </TextLabel>
-          <TextLabel source="Contact" style="border-left: 1px solid black;" >
+          <TextLabel source="Contact" style="border-left: 1px solid black;">
             <renderToken source="ContactFirstName" prefix="Atsakingas asmuo: " />
             <renderToken source="ContactLastName" />
-            <renderToken source="ContactPhone" />
+            <renderToken source="ContactPhone" prefix=" Tel.: " />
           </TextLabel>
         </row>
       </Table>
@@ -219,26 +219,20 @@ sukrauta taip, kad būtų galima iškrauti šakiniais krautuvais. Už iškrovim�
     <Table style="width:100%; margin-top:10px;">
       <row>
         <TextLabel source="Manager">
-          <renderToken source="ManagerFirstName" />
+          <renderToken source="ManagerFirstName" prefix="Perdavė: " />
           <renderToken source="ManagerLastName" />
         </TextLabel>
         <TextLabel source="Vehicle">
-          <renderToken source="VehicleParentModel" prefix="Transporto priemonė: " />
-          <renderToken source="VehicleModel" />
+          <renderToken source="VehicleModel" prefix="Transporto priemonė: " />
           <renderToken source="VehicleNumber" />
         </TextLabel>
       </row>
       <row>
-        <TextLabel>
-          <renderToken source="ManagerPhone" prefix="Tel.: " />
-        </TextLabel>
+        <Label text="Priėmė ir suskaičiavo:" />
         <TextLabel source="Driver">
           <renderToken source="DriverFirstName" prefix="Vairuotojas: " />
           <renderToken source="DriverLastName" />
         </TextLabel>
-      </row>
-      <row>
-        <Label text="Priėmė ir suskaičiavo:" />
       </row>
     </Table>
   </FlowPanel>

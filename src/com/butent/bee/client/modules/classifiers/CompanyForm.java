@@ -63,6 +63,8 @@ import java.util.Map;
 
 public class CompanyForm extends AbstractFormInterceptor {
 
+  private static boolean hasEmail = false;
+
   private static final String WIDGET_FINANCIAL_STATE_AUDIT_NAME = COL_COMPANY_FINANCIAL_STATE
       + "Audit";
 
@@ -302,9 +304,9 @@ public class CompanyForm extends AbstractFormInterceptor {
     }
 
     form.addCellValidationHandler(ClassifierConstants.COL_REMIND_EMAIL,
-        getRemindEmailValidationHandler(form, row));
+        getRemindEmailValidationHandler(form));
     form.addCellValidationHandler(ClassifierConstants.COL_EMAIL_INVOICES,
-        getRemindEmailValidationHandler(form, row));
+        getRemindEmailValidationHandler(form));
     form.addCellValidationHandler(COL_EMAIL_ID, getEmailIdValidationHandler(form, row));
   }
 
@@ -314,7 +316,10 @@ public class CompanyForm extends AbstractFormInterceptor {
       @Override
       public Boolean validateCell(CellValidateEvent event) {
         if (DataUtils.isId(BeeUtils.toLongOrNull(event.getNewValue()))) {
+          hasEmail = true;
           return Boolean.TRUE;
+        } else {
+          hasEmail = false;
         }
 
         int idxRemindEmail = form.getDataIndex(COL_REMIND_EMAIL);
@@ -367,7 +372,7 @@ public class CompanyForm extends AbstractFormInterceptor {
     };
   }
 
-  private static Handler getRemindEmailValidationHandler(final FormView form, final IsRow row) {
+  private static Handler getRemindEmailValidationHandler(final FormView form) {
     return new Handler() {
 
       @Override
@@ -384,9 +389,7 @@ public class CompanyForm extends AbstractFormInterceptor {
           return Boolean.FALSE;
         }
 
-        Long emailId = BeeUtils.unbox(row.getLong(idxEmailId));
-
-        if (DataUtils.isId(emailId)) {
+        if (hasEmail) {
           return Boolean.TRUE;
         } else {
           form.notifySevere(Localized.getConstants().email(), Localized.getConstants()
