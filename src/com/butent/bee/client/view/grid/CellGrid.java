@@ -60,6 +60,7 @@ import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.EnablableWidget;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.Theme;
+import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.edit.HasEditStartHandlers;
@@ -3941,7 +3942,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
 
           if (cellElement != null) {
             setCellZIndex(cellElement);
-            if (DomUtils.isVisible(cellElement)) {
+            if (UiHelper.isInteractive(CellGrid.this)) {
               cellElement.focus();
             }
           }
