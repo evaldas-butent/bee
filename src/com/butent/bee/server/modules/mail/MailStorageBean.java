@@ -673,7 +673,7 @@ public class MailStorageBean {
   private Long storeAddress(Long userId, InternetAddress address) throws AddressException {
     Assert.notNull(address);
 
-    address.validate();
+    new InternetAddress(address.getAddress(), true).validate();
 
     String label = address.getPersonal();
     String email = BeeUtils.normalize(address.getAddress());

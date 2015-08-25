@@ -655,7 +655,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
             .addUnion(new SqlSelect()
                 .addFields(TBL_EMAILS, COL_EMAIL_ADDRESS)
                 .addExpr(SqlUtils.concat(SqlUtils.field(TBL_COMPANIES, COL_COMPANY_NAME), "' '",
-                    SqlUtils.nvl(SqlUtils.field(TBL_CONTACTS, COL_NOTES), "''")),
+                        SqlUtils.nvl(SqlUtils.field(TBL_CONTACTS, COL_NOTES), "''")),
                     COL_ADDRESSBOOK_LABEL)
                 .addFrom(TBL_EMAILS)
                 .addFromInner(TBL_CONTACTS, sys.joinTables(TBL_EMAILS, TBL_CONTACTS, COL_EMAIL))
@@ -666,7 +666,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
             .addUnion(new SqlSelect()
                 .addFields(TBL_EMAILS, COL_EMAIL_ADDRESS)
                 .addExpr(SqlUtils.concat(SqlUtils.field(TBL_PERSONS, COL_FIRST_NAME), "' '",
-                    SqlUtils.nvl(SqlUtils.field(TBL_PERSONS, COL_LAST_NAME), "''")),
+                        SqlUtils.nvl(SqlUtils.field(TBL_PERSONS, COL_LAST_NAME), "''")),
                     COL_ADDRESSBOOK_LABEL)
                 .addFrom(TBL_EMAILS)
                 .addFromInner(TBL_CONTACTS, sys.joinTables(TBL_EMAILS, TBL_CONTACTS, COL_EMAIL))
@@ -675,8 +675,8 @@ public class MailModuleBean implements BeeModule, HasTimerService {
             .addUnion(new SqlSelect()
                 .addFields(TBL_EMAILS, COL_EMAIL_ADDRESS)
                 .addExpr(SqlUtils.concat(SqlUtils.field(TBL_PERSONS, COL_FIRST_NAME), "' '",
-                    SqlUtils.nvl(SqlUtils.field(TBL_PERSONS, COL_LAST_NAME), "''"), "' '",
-                    SqlUtils.nvl(SqlUtils.field(TBL_POSITIONS, COL_POSITION_NAME), "''")),
+                        SqlUtils.nvl(SqlUtils.field(TBL_PERSONS, COL_LAST_NAME), "''"), "' '",
+                        SqlUtils.nvl(SqlUtils.field(TBL_POSITIONS, COL_POSITION_NAME), "''")),
                     COL_ADDRESSBOOK_LABEL)
                 .addFrom(TBL_EMAILS)
                 .addFromInner(TBL_CONTACTS, sys.joinTables(TBL_EMAILS, TBL_CONTACTS, COL_EMAIL))
@@ -1080,6 +1080,8 @@ public class MailModuleBean implements BeeModule, HasTimerService {
       mail.validateFolder(localFolder, uidValidity);
 
       try {
+        remoteFolder.open(Folder.READ_WRITE); // Courier-IMAP server bug workaround
+        remoteFolder.close(false);
         remoteFolder.open(Folder.READ_ONLY);
         Message[] newMessages;
         Long lastUid = null;
