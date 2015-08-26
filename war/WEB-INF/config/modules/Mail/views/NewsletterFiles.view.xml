@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="NewsletterFiles" source="NewsletterFiles" module="Mail"
+  caption="=files"
+  >
+  <Columns>
+    <SimpleColumn name="Newsletter" />
+
+    <SimpleColumn name="File" />
+    <SimpleJoin name="File" joinType="LEFT">
+      <SimpleColumn alias="FileName" name="Name" />
+      <SimpleColumn alias="FileSize" name="Size" />
+      <SimpleColumn alias="FileType" name="Type" />
+    </SimpleJoin>
+    
+    <SimpleColumn name="Caption" />
+  </Columns>
+  <Order>
+    <OrderBy column="File" />
+  </Order>
+</View>
+ 
