@@ -188,6 +188,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String companyStatus();
 
+  String companyStructure();
+
   String companyVATCode();
 
   String constant();

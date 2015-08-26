@@ -3761,3 +3761,9 @@ textarea,
 .bee-AddBookmark .bee-Dialog-action {
   margin-right: 15px;
 }
+
+.bee-CompanyStructure-command {
+  color: white;
+  font-size: 17px;
+  margin-right: 27px;
+}
