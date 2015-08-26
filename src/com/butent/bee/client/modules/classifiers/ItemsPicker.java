@@ -59,6 +59,7 @@ import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.html.builder.elements.Div;
 import com.butent.bee.shared.html.builder.elements.Span;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.classifiers.ItemPrice;
 import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.ui.Action;
@@ -106,6 +107,8 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
 
   private static final String STYLE_PRICE_PREFIX = STYLE_PREFIX + "price-";
   private static final String STYLE_REMAINDER_PREFIX = STYLE_PREFIX + "remainder-";
+  private static final String STYLE_FREE_PREFIX = STYLE_PREFIX + "free-";
+  private static final String STYLE_RESERVED_PREFIX = STYLE_PREFIX + "reserved-";
   private static final String STYLE_PRICE_WRAPPER = STYLE_PRICE_PREFIX + "wrapper";
   private static final String STYLE_PRICE_VALUE = STYLE_PRICE_PREFIX + "value";
   private static final String STYLE_PRICE_CURRENCY = STYLE_PRICE_PREFIX + "currency";
@@ -649,8 +652,13 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
     }
 
     if (isOrder) {
-      table.setText(r, c++, items.getRow(0).getString(items.getNumberOfColumns() - 2),
+      table.setText(r, c++, items.getRow(0).getString(
+          DataUtils.getColumnIndex(ALS_WAREHOUSE_CODE, items.getColumns())),
           STYLE_FROM_PREFIX + STYLE_HEADER_CELL_SUFFIX);
+      table.setText(r, c++, Localized.getConstants().ordFreeRemainder(),
+          STYLE_FREE_PREFIX + STYLE_HEADER_CELL_SUFFIX);
+      table.setText(r, c++, Localized.getConstants().ordResRemainder(),
+          STYLE_RESERVED_PREFIX + STYLE_HEADER_CELL_SUFFIX);
     }
 
     table.setText(r, c++, Localized.getConstants().quantity(),
@@ -731,11 +739,24 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
       c += warehouseIds.size();
 
       if (isOrder) {
-        Double rem = item.getDouble(item.getNumberOfCells() - 1);
-        remainders.put(item.getId(), rem);
 
-        table.setText(r, c++, rem.toString(),
-            STYLE_REMAINDER_PREFIX + STYLE_CELL_SUFFIX);
+        for (BeeColumn col : items.getColumns()) {
+          LogUtils.getRootLogger().info(col.getId());
+        }
+
+        Double rem =
+            item.getDouble(DataUtils.getColumnIndex(COL_WAREHOUSE_REMAINDER, items.getColumns()));
+
+        table.setText(r, c++, rem.toString(), STYLE_REMAINDER_PREFIX + STYLE_CELL_SUFFIX);
+
+        table.setText(r, c++, item.getDouble(items.getNumberOfColumns() - 2).toString(),
+            STYLE_FREE_PREFIX + STYLE_CELL_SUFFIX);
+
+        table.setText(r, c++, item.getDouble(items.getNumberOfColumns() - 1).toString(),
+            STYLE_RESERVED_PREFIX + STYLE_CELL_SUFFIX);
+
+        remainders.put(item.getId(), item.getDouble(items.getNumberOfColumns() - 2));
+
       }
 
       Double qty = quantities.get(item.getId());

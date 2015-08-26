@@ -22,11 +22,19 @@ public interface LocalizableOrderConstants {
 
   String ordCanceled();
 
+  String ordFreeRemainder();
+
   String ordQtyIsTooBig();
 
   String ordPrepare();
 
   String ordPrepared();
+
+  String ordResRemainder();
+
+  String ordResQtyIsTooBig();
+
+  String ordResNotIncrease();
 
   String ordSend();
 

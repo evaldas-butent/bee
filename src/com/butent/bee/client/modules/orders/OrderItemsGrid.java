@@ -12,6 +12,7 @@ import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.IdCallback;
 import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.data.RowUpdateCallback;
 import com.butent.bee.client.event.logical.ParentRowEvent;
 import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.ColumnHeader;
@@ -26,6 +27,8 @@ import com.butent.bee.client.modules.transport.InvoiceCreator;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.render.HasCellRenderer;
+import com.butent.bee.client.validation.CellValidateEvent;
+import com.butent.bee.client.validation.CellValidation;
 import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.edit.EditableColumn;
 import com.butent.bee.client.view.form.FormView;
@@ -42,6 +45,7 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.classifiers.ItemPrice;
 import com.butent.bee.shared.modules.orders.OrdersConstants.OrdersStatus;
 import com.butent.bee.shared.time.DateTime;
@@ -77,7 +81,86 @@ public class OrderItemsGrid extends AbstractGridInterceptor implements Selection
       AbstractColumn<?> column, ColumnHeader header, ColumnFooter footer,
       EditableColumn editableColumn) {
 
-    if (column instanceof CalculatedColumn) {
+    if (BeeUtils.inList(columnName, COL_RESERVED_REMAINDER, COL_TRADE_ITEM_QUANTITY)
+        && editableColumn != null) {
+      editableColumn.addCellValidationHandler(new CellValidateEvent.Handler() {
+
+        @Override
+        public Boolean validateCell(CellValidateEvent event) {
+          if (event.isCellValidation() && event.isPostValidation()) {
+            CellValidation cv = event.getCellValidation();
+            IsRow row = cv.getRow();
+            Double freeRem = BeeUtils.toDouble(row.getProperty(PRP_FREE_REMAINDER));
+            Double qty =
+                row.getDouble(Data.getColumnIndex(VIEW_ORDER_ITEMS, COL_TRADE_ITEM_QUANTITY));
+            Double newValue = BeeUtils.toDouble(cv.getNewValue());
+            Double oldValue = BeeUtils.toDouble(cv.getOldValue());
+
+            switch (event.getColumnId()) {
+              case COL_RESERVED_REMAINDER:
+
+                if (freeRem == 0) {
+                  if (newValue > oldValue) {
+                    getGridPresenter().getGridView().notifySevere(
+                        Localized.getConstants().ordResNotIncrease());
+                    return false;
+                  }
+
+                } else if (newValue < 0) {
+                  getGridPresenter().getGridView().notifySevere(
+                      Localized.getConstants().minValue() + " 0");
+                  return false;
+
+                } else if (newValue > qty || newValue > freeRem) {
+                  getGridPresenter().getGridView().notifySevere(
+                      Localized.getConstants().ordResQtyIsTooBig());
+                  return false;
+                }
+
+                break;
+
+              case COL_TRADE_ITEM_QUANTITY:
+
+                if (newValue < 1) {
+                  getGridPresenter().getGridView().notifySevere(
+                      Localized.getConstants().minValue() + " 1");
+                  return false;
+                }
+
+                int updIndex = Data.getColumnIndex(VIEW_ORDER_ITEMS, COL_RESERVED_REMAINDER);
+                Double updValue =
+                    row.getDouble(updIndex);
+                BeeColumn updColumn = Data.getColumn(VIEW_ORDER_ITEMS, COL_RESERVED_REMAINDER);
+
+                if (newValue - oldValue <= freeRem && freeRem != 0) {
+                  updValue += newValue - oldValue;
+                } else if (newValue < updValue) {
+                  updValue = newValue;
+                } else {
+                  updValue += freeRem;
+                }
+
+                if (updValue < 0) {
+                  updValue = newValue;
+                }
+
+                List<BeeColumn> cols = Lists.newArrayList(cv.getColumn(), updColumn);
+                List<String> oldValues = Lists.newArrayList(cv.getOldValue(),
+                    row.getString(updIndex));
+                List<String> newValues = Lists.newArrayList(cv.getNewValue(),
+                    BeeUtils.toString(updValue));
+
+                Queries.update(getViewName(), row.getId(), row.getVersion(), cols, oldValues,
+                    newValues,
+                    null, new RowUpdateCallback(getViewName()));
+                return null;
+            }
+
+          }
+          return true;
+        }
+      });
+    } else if (column instanceof CalculatedColumn) {
       if ("ItemPrices".equals(columnName)) {
 
         int index = DataUtils.getColumnIndex(COL_TRADE_ITEM_PRICE, dataColumns);
@@ -184,12 +267,13 @@ public class OrderItemsGrid extends AbstractGridInterceptor implements Selection
       Double discount, BeeRowSet items) {
 
     List<String> colNames = Lists.newArrayList(COL_ORDER, COL_TA_ITEM,
-        COL_TRADE_ITEM_QUANTITY, COL_TRADE_ITEM_PRICE, COL_TRADE_DISCOUNT);
+        COL_TRADE_ITEM_QUANTITY, COL_TRADE_ITEM_PRICE, COL_TRADE_DISCOUNT, COL_RESERVED_REMAINDER);
     final BeeRowSet rowSet = new BeeRowSet(getViewName(), Data.getColumns(getViewName(), colNames));
 
     final int ordIndex = rowSet.getColumnIndex(COL_ORDER);
     final int itemIndex = rowSet.getColumnIndex(COL_TA_ITEM);
     final int qtyIndex = rowSet.getColumnIndex(COL_TRADE_ITEM_QUANTITY);
+    final int resRemIndex = rowSet.getColumnIndex(COL_RESERVED_REMAINDER);
     final int priceIndex = rowSet.getColumnIndex(COL_TRADE_ITEM_PRICE);
     final int discountIndex = rowSet.getColumnIndex(COL_TRADE_DISCOUNT);
 
@@ -206,6 +290,8 @@ public class OrderItemsGrid extends AbstractGridInterceptor implements Selection
         row.setValue(itemIndex, item.getId());
 
         row.setValue(qtyIndex, qty);
+        row.setValue(resRemIndex, qty);
+
         quantities.put(item.getId(), qty);
 
         ItemPrice itemPrice = defPrice;
