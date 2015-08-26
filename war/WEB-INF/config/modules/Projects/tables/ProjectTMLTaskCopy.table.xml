@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+  name="ProjectTMLTaskCopy"
+  idName="ProjectTMLTaskCopyID"
+  >
+  <Fields>
+    <String name="Summary" precision="100" label="=crmTaskSubject" />
+    <Text name="Description" label="=crmTaskDescription" />
+
+    <Enum name="Priority" key="TaskPriority" label="=crmTaskPriority" />
+    <Relation name="Type" relation="TaskTypes" label="=crmTaskType" />
+
+    <String name="ExpectedDuration" precision="10" label="=crmTaskExpectedDuration" />
+
+    <Relation name="Company" relation="Companies" label="=company" />
+    <Relation name="Contact" relation="CompanyPersons" label="=personContact" />
+
+    <Relation name="Reminder" relation="ReminderTypes" cascade="SET_NULL" label="=crmReminder" />
+    <Relation name="Project" relation="Projects" notNull="true" cascade="DELETE" label="=prjTemplate" />
+    <Relation name="ProjectStage" relation="ProjectStages" cascade="SET_NULL" label="=prjStage" />
+  </Fields>
+</Table>

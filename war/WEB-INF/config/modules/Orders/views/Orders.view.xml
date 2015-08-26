@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view" name="Orders" source="Orders" module="Orders" editForm="Order" newRowForm="Order">
+  <Columns>
+    <SimpleColumn name="Status" />
+    <SimpleColumn name="Source" />
+
+    <SimpleColumn name="Type" />
+    <SimpleJoin joinType="LEFT" name="Type">
+      <SimpleColumn name="TypeName" alias="OrderTypeName" />
+    </SimpleJoin>
+
+    <SimpleColumn name="StartDate" />
+    <SimpleColumn name="EndDate" />
+
+    <SimpleColumn name="Warehouse" />
+    <SimpleJoin name="Warehouse" joinType="LEFT">
+      <SimpleColumn name="Code" alias="WarehouseCode" />
+      <SimpleColumn name="Name" alias="WarehouseName" />
+    </SimpleJoin>
+
+    <SimpleColumn name="Series" />
+    <SimpleJoin joinType="LEFT" name="Series">
+      <SimpleColumn name="SeriesName" />
+    </SimpleJoin>
+
+    <SimpleColumn name="Number" />
+
+    <SimpleColumn name="Company" />
+    <SimpleJoin name="Company" joinType="LEFT">
+      <SimpleColumn alias="CompanyName" name="Name" />
+      <SimpleJoin joinType="LEFT" name="CompanyType">
+        <SimpleColumn name="Name" alias="CompanyTypeName" />
+      </SimpleJoin>
+      <SimpleJoin joinType="LEFT" name="Contact">
+        <SimpleJoin joinType="LEFT" name="Email">
+          <SimpleColumn name="Email" alias="CompanyEmail" />
+        </SimpleJoin>
+      </SimpleJoin>
+    </SimpleJoin>
+
+    <SimpleColumn name="Contact" />
+    <SimpleJoin name="Contact" joinType="LEFT">
+      <SimpleColumn alias="ContactPerson" name="Person" />
+      <SimpleJoin name="Person" joinType="LEFT">
+        <SimpleColumn alias="ContactFirstName" name="FirstName" />
+        <SimpleColumn alias="ContactLastName" name="LastName" />
+      </SimpleJoin>
+      <SimpleJoin joinType="LEFT" name="Contact">
+        <SimpleJoin joinType="LEFT" name="Email">
+          <SimpleColumn name="Email" alias="ContactEmail" />
+        </SimpleJoin>
+      </SimpleJoin>
+      <SimpleJoin name="Company" joinType="LEFT">
+        <SimpleColumn alias="ContactCompanyName" name="Name" />
+      </SimpleJoin>
+
+    </SimpleJoin>
+
+    <SimpleColumn name="Manager" />
+    <SimpleJoin name="Manager" joinType="LEFT">
+      <SimpleColumn name="CompanyPerson" alias="ManagerPerson" />
+      <SimpleJoin name="CompanyPerson" joinType="LEFT">
+        <SimpleJoin name="Person" joinType="LEFT">
+          <SimpleColumn name="FirstName" alias="ManagerFirstName" />
+          <SimpleColumn name="LastName" alias="ManagerLastName" />
+        </SimpleJoin>
+      </SimpleJoin>
+    </SimpleJoin>
+
+    <SimpleColumn name="Notes" />
+
+  </Columns>
+</View>

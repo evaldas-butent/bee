@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:columns xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid">
+  <RelColumn name="Operation" visible="false" />
+  <RelColumn name="Warehouse" visible="false" />
+
+  <DataColumn name="DateFrom" carry="true" />
+  <DataColumn name="DateTo" carry="true" />
+
+  <DataColumn name="QuantityFrom" />
+  <DataColumn name="QuantityTo" />
+  <RelColumn name="Unit" visible="false" />
+
+  <DataColumn name="PriceName" carry="true" />
+
+  <DataColumn name="Percent" visible="true" carry="true" />
+  <DataColumn name="Price" visible="true" />
+  <RelColumn name="Currency" />
+
+  <DataColumn name="Note" visible="false" />
+</g:columns>

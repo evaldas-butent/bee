@@ -1392,7 +1392,8 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
     }
 
     if (columns.isEmpty()) {
-      notifySevere("New Row", "all columns cannot be empty");
+      notifySevere(Localized.getConstants().newRow(),
+          Localized.getConstants().allValuesCannotBeEmpty());
       return;
     }
 

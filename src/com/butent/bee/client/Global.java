@@ -104,6 +104,7 @@ public final class Global {
   private static final ReportSettings reportSettings = new ReportSettings();
 
   private static boolean debug;
+  private static int explain;
 
   public static void addStyleSheet(String name, String text) {
     if (BeeUtils.isEmpty(name)) {
@@ -209,6 +210,10 @@ public final class Global {
     return defaults;
   }
 
+  public static int getExplain() {
+    return explain;
+  }
+
   public static Favorites getFavorites() {
     return favorites;
   }
@@ -219,10 +224,6 @@ public final class Global {
 
   public static Images.Resources getImages() {
     return images;
-  }
-
-  public static InputBoxes getInpBoxen() {
-    return inpBoxen;
   }
 
   public static MessageBoxes getMsgBoxen() {
@@ -369,8 +370,14 @@ public final class Global {
 
   public static DialogBox inputWidget(String caption, IsWidget input, InputCallback callback,
       String dialogStyle, Element target, Set<Action> enabledActions) {
+    return inputWidget(caption, input, callback, dialogStyle, target, enabledActions, null);
+  }
+
+  public static DialogBox inputWidget(String caption, IsWidget input, InputCallback callback,
+      String dialogStyle, Element target, Set<Action> enabledActions,
+      WidgetInitializer initializer) {
     return inpBoxen.inputWidget(caption, input, callback, dialogStyle, target, enabledActions,
-        null);
+        initializer);
   }
 
   public static boolean isDebug() {
@@ -458,6 +465,10 @@ public final class Global {
 
   public static void setDebug(boolean debug) {
     Global.debug = debug;
+  }
+
+  public static void setExplain(int explain) {
+    Global.explain = explain;
   }
 
   public static void setParameter(String prm, String value) {

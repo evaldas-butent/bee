@@ -1,10 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
 
-  name="Companies" viewName="Companies" caption="=clients" favorite="Name" flexGrow="1"
+  name="Companies" viewName="Companies" caption="=clients" editShowId="true"
+  favorite="Name" flexGrow="1"
   >
   <g:columns>
+    <IdColumn name="Id" visible="false" />
     <DataColumn name="Name" visible="true" />
+
     <RelColumn name="CompanyType" />
     <RelColumn name="CompanyGroup" filterSupplier="value" />
     <RelColumn name="CompanyPriority" />
@@ -36,5 +39,11 @@
     <RelColumn name="Turnover" visible="false" />
     <RelColumn name="InformationSource" visible="false" />
     <RelColumn name="CompanySize" visible="false" />
+
+    <DataColumn name="DiscountPercent" visible="false" />
+    <DataColumn name="DiscountParent" renderColumns="DiscountParentName" visible="false" />
+    <DataColumn name="PriceName" visible="false" />
+
+    <DataColumn name="Notes" visible="false" />
   </g:columns>
 </g:Grid>

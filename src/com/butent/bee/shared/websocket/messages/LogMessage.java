@@ -11,6 +11,10 @@ import java.util.List;
 
 public class LogMessage extends Message {
 
+  public static LogMessage debug(String text) {
+    return log(LogLevel.DEBUG, text);
+  }
+
   public static LogMessage level(LogLevel level) {
     return new LogMessage(level);
   }
@@ -40,6 +44,11 @@ public class LogMessage extends Message {
 
   public LogLevel getLevel() {
     return level;
+  }
+
+  @Override
+  public boolean isLoggable() {
+    return false;
   }
 
   @Override

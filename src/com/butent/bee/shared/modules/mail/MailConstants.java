@@ -56,6 +56,26 @@ public final class MailConstants {
     }
   }
 
+  public enum RecipientsGroupsVisibility implements HasLocalizedCaption {
+    PUBLIC {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.mailPublic();
+      }
+    },
+    PRIVATE {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.mailPrivate();
+      }
+    };
+
+    @Override
+    public String getCaption() {
+      return getCaption(Localized.getConstants());
+    }
+  }
+
   public enum RuleCondition implements HasLocalizedCaption {
     SENDER {
       @Override
@@ -244,6 +264,7 @@ public final class MailConstants {
   public static void register() {
     EnumUtils.register(RuleCondition.class);
     EnumUtils.register(RuleAction.class);
+    EnumUtils.register(RecipientsGroupsVisibility.class);
   }
 
   private MailConstants() {
