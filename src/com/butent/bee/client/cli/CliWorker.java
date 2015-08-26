@@ -2725,6 +2725,8 @@ public final class CliWorker {
         range = Range.closed(FontAwesome.SOCCER_BALL_O.getCode(), FontAwesome.MEANPATH.getCode());
       } else if (args.startsWith("4.3")) {
         range = Range.closed(FontAwesome.BUYSELLADS.getCode(), FontAwesome.MEDIUM.getCode());
+      } else if (args.startsWith("4.4")) {
+        range = Range.closed(FontAwesome.YC.getCode(), FontAwesome.FONTICONS.getCode());
       }
 
       styles.addAll(StyleUtils.parseStyles(args));
