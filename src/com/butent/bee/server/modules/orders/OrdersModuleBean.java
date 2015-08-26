@@ -1,5 +1,6 @@
 package com.butent.bee.server.modules.orders;
 
+import com.google.common.collect.Lists;
 import com.google.common.eventbus.Subscribe;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
@@ -9,6 +10,8 @@ import static com.butent.bee.shared.modules.projects.ProjectConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
 
+import com.butent.bee.server.concurrency.ConcurrencyBean;
+import com.butent.bee.server.concurrency.ConcurrencyBean.HasTimerService;
 import com.butent.bee.server.data.BeeView;
 import com.butent.bee.server.data.DataEvent.ViewQueryEvent;
 import com.butent.bee.server.data.DataEventHandler;
@@ -35,6 +38,7 @@ import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
@@ -52,15 +56,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
+import javax.ejb.Timeout;
+import javax.ejb.Timer;
+import javax.ejb.TimerService;
 
 @Stateless
 @LocalBean
-public class OrdersModuleBean implements BeeModule {
+public class OrdersModuleBean implements BeeModule, HasTimerService {
 
   private static BeeLogger logger = LogUtils.getLogger(OrdersModuleBean.class);
+  Map<Long, Double> itemsRemainders;
 
   @EJB
   QueryServiceBean qs;
@@ -68,6 +77,11 @@ public class OrdersModuleBean implements BeeModule {
   SystemBean sys;
   @EJB
   ParamHolderBean prm;
+  @EJB
+  ConcurrencyBean cb;
+
+  @Resource
+  TimerService timerService;
 
   @Override
   public List<SearchResult> doSearch(String query) {
@@ -105,8 +119,12 @@ public class OrdersModuleBean implements BeeModule {
 
   @Override
   public Collection<BeeParameter> getDefaultParameters() {
-    // TODO Auto-generated method stub
-    return null;
+    String module = getModule().getName();
+
+    List<BeeParameter> params = Lists.newArrayList(
+        BeeParameter.createNumber(module, PRM_CHECK_RESERVATION_TIME, false, null));
+
+    return params;
   }
 
   @Override
@@ -120,7 +138,14 @@ public class OrdersModuleBean implements BeeModule {
   }
 
   @Override
+  public TimerService getTimerService() {
+    return timerService;
+  }
+
+  @Override
   public void init() {
+    cb.createIntervalTimer(this.getClass(), PRM_CHECK_RESERVATION_TIME);
+
     sys.registerDataEventHandler(new DataEventHandler() {
 
       @Subscribe
@@ -146,6 +171,15 @@ public class OrdersModuleBean implements BeeModule {
         }
       }
     });
+  }
+
+  @Timeout
+  private void orderReservationChecker(Timer timer) {
+    if (!cb.isParameterTimer(timer, PRM_CHECK_RESERVATION_TIME)) {
+      return;
+    }
+
+    clearReservations();
   }
 
   private ResponseObject getItemsForSelection(RequestInfo reqInfo) {
@@ -190,14 +224,19 @@ public class OrdersModuleBean implements BeeModule {
     BeeView remView = sys.getView(VIEW_ITEM_REMAINDERS);
     items.addColumn(remView.getBeeColumn(ALS_WAREHOUSE_CODE));
     items.addColumn(remView.getBeeColumn(COL_WAREHOUSE_REMAINDER));
+    items.addColumn(ValueType.NUMBER, PRP_FREE_REMAINDER);
+    items.addColumn(ValueType.NUMBER, COL_RESERVED_REMAINDER);
 
     for (BeeRow row : items) {
       Long itemId = row.getId();
 
-      Double rem = totRemainders.get(itemId);
-      row.setValue(row.getNumberOfCells() - 2, code);
-      row.setValue(row.getNumberOfCells() - 1, rem);
+      Double res = totRemainders.get(itemId);
+      row.setValue(row.getNumberOfCells() - 4, code);
+      row.setValue(row.getNumberOfCells() - 3, itemsRemainders.get(itemId));
+      row.setValue(row.getNumberOfCells() - 2, res);
+      row.setValue(row.getNumberOfCells() - 1, itemsRemainders.get(itemId) - res);
     }
+
     return ResponseObject.response(items);
   }
 
@@ -240,8 +279,6 @@ public class OrdersModuleBean implements BeeModule {
     query.addExpr(priceExch, priceAlias)
         .addExpr(vatExch, vatAlias)
         .addOrder(TBL_ORDER_ITEMS, sys.getIdName(TBL_ORDER_ITEMS));
-
-    LogUtils.getRootLogger().info(query.getQuery());
 
     SimpleRowSet data = qs.getData(query);
     if (DataUtils.isEmpty(data)) {
@@ -304,6 +341,13 @@ public class OrdersModuleBean implements BeeModule {
     }
 
     return response;
+  }
+
+  private void clearReservations() {
+    SqlUpdate update = new SqlUpdate(TBL_ORDER_ITEMS)
+        .addConstant(COL_RESERVED_REMAINDER, BeeConst.DOUBLE_ZERO);
+
+    qs.updateData(update);
   }
 
   private Set<Long> getOrderItems(Long orderId) {
@@ -377,6 +421,7 @@ public class OrdersModuleBean implements BeeModule {
     }
 
     Map<Long, Double> totRemainders = new HashMap<>();
+    itemsRemainders = new HashMap<>();
 
     for (Long itemId : itemIds) {
       SqlSelect qry =
@@ -391,12 +436,11 @@ public class OrdersModuleBean implements BeeModule {
                   SqlUtils.and(SqlUtils.equals(TBL_ORDERS, COL_WAREHOUSE, warehouseId),
                       SqlUtils.equals(TBL_ORDER_ITEMS, COL_ITEM, itemId)));
 
-      LogUtils.getRootLogger().info(qry.getQuery().toString());
       SimpleRowSet srs = qs.getData(qry);
       Double totRes = BeeConst.DOUBLE_ZERO;
 
       for (SimpleRow sr : srs) {
-        if (BeeUtils.isPositive(sr.getDouble(COL_RESERVED_REMAINDER))) {
+        if (BeeUtils.isDouble(sr.getDouble(COL_RESERVED_REMAINDER))) {
           totRes += sr.getDouble(COL_RESERVED_REMAINDER);
         }
       }
@@ -407,8 +451,15 @@ public class OrdersModuleBean implements BeeModule {
           .setWhere(
               SqlUtils.and(SqlUtils.equals(VIEW_ITEM_REMAINDERS, COL_ITEM, itemId), SqlUtils
                   .equals(VIEW_ITEM_REMAINDERS, COL_WAREHOUSE, warehouseId)));
-      Double rem = qs.getDouble(q);
-      totRemainders.put(itemId, rem - totRes);
+
+      if (BeeUtils.isDouble(qs.getDouble(q))) {
+        Double rem = qs.getDouble(q);
+        totRemainders.put(itemId, rem - totRes);
+        itemsRemainders.put(itemId, rem);
+      } else {
+        totRemainders.put(itemId, BeeConst.DOUBLE_ZERO);
+        itemsRemainders.put(itemId, BeeConst.DOUBLE_ZERO);
+      }
     }
 
     return totRemainders;

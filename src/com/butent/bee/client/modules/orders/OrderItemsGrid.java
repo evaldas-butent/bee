@@ -12,6 +12,7 @@ import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.IdCallback;
 import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.data.RowUpdateCallback;
 import com.butent.bee.client.event.logical.ParentRowEvent;
 import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.ColumnHeader;
@@ -44,6 +45,7 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.classifiers.ItemPrice;
 import com.butent.bee.shared.modules.orders.OrdersConstants.OrdersStatus;
 import com.butent.bee.shared.time.DateTime;
@@ -79,7 +81,8 @@ public class OrderItemsGrid extends AbstractGridInterceptor implements Selection
       AbstractColumn<?> column, ColumnHeader header, ColumnFooter footer,
       EditableColumn editableColumn) {
 
-    if (BeeUtils.same(columnName, COL_RESERVED_REMAINDER)) {
+    if (BeeUtils.inList(columnName, COL_RESERVED_REMAINDER, COL_TRADE_ITEM_QUANTITY)
+        && editableColumn != null) {
       editableColumn.addCellValidationHandler(new CellValidateEvent.Handler() {
 
         @Override
@@ -90,18 +93,69 @@ public class OrderItemsGrid extends AbstractGridInterceptor implements Selection
             Double freeRem = BeeUtils.toDouble(row.getProperty(PRP_FREE_REMAINDER));
             Double qty =
                 row.getDouble(Data.getColumnIndex(VIEW_ORDER_ITEMS, COL_TRADE_ITEM_QUANTITY));
-            Double newResRem = BeeUtils.toDouble(cv.getNewValue());
-            Double oldResRem = BeeUtils.toDouble(cv.getOldValue());
+            Double newValue = BeeUtils.toDouble(cv.getNewValue());
+            Double oldValue = BeeUtils.toDouble(cv.getOldValue());
 
-            if (freeRem == 0) {
-              if (newResRem > oldResRem) {
-                getGridPresenter().getGridView().notifySevere("Error");
-                return false;
-              }
-            } else if (newResRem > qty) {
-              getGridPresenter().getGridView().notifySevere("Error");
-              return false;
+            switch (event.getColumnId()) {
+              case COL_RESERVED_REMAINDER:
+
+                if (freeRem == 0) {
+                  if (newValue > oldValue) {
+                    getGridPresenter().getGridView().notifySevere(
+                        Localized.getConstants().ordResNotIncrease());
+                    return false;
+                  }
+
+                } else if (newValue < 0) {
+                  getGridPresenter().getGridView().notifySevere(
+                      Localized.getConstants().minValue() + " 0");
+                  return false;
+
+                } else if (newValue > qty || newValue > freeRem) {
+                  getGridPresenter().getGridView().notifySevere(
+                      Localized.getConstants().ordResQtyIsTooBig());
+                  return false;
+                }
+
+                break;
+
+              case COL_TRADE_ITEM_QUANTITY:
+
+                if (newValue < 1) {
+                  getGridPresenter().getGridView().notifySevere(
+                      Localized.getConstants().minValue() + " 1");
+                  return false;
+                }
+
+                int updIndex = Data.getColumnIndex(VIEW_ORDER_ITEMS, COL_RESERVED_REMAINDER);
+                Double updValue =
+                    row.getDouble(updIndex);
+                BeeColumn updColumn = Data.getColumn(VIEW_ORDER_ITEMS, COL_RESERVED_REMAINDER);
+
+                if (newValue - oldValue <= freeRem && freeRem != 0) {
+                  updValue += newValue - oldValue;
+                } else if (newValue < updValue) {
+                  updValue = newValue;
+                } else {
+                  updValue += freeRem;
+                }
+
+                if (updValue < 0) {
+                  updValue = newValue;
+                }
+
+                List<BeeColumn> cols = Lists.newArrayList(cv.getColumn(), updColumn);
+                List<String> oldValues = Lists.newArrayList(cv.getOldValue(),
+                    row.getString(updIndex));
+                List<String> newValues = Lists.newArrayList(cv.getNewValue(),
+                    BeeUtils.toString(updValue));
+
+                Queries.update(getViewName(), row.getId(), row.getVersion(), cols, oldValues,
+                    newValues,
+                    null, new RowUpdateCallback(getViewName()));
+                return null;
             }
+
           }
           return true;
         }

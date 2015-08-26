@@ -76,6 +76,8 @@ public final class OrdersConstants {
 
   public static final String PRP_FREE_REMAINDER = "FreeRemainder";
 
+  public static final String PRM_CHECK_RESERVATION_TIME = "CheckReservationTime";
+
   private OrdersConstants() {
   }
 }
