@@ -28,7 +28,7 @@
       </row>
       
       <row>
-        <Label text="=trdInvoicePrefix" />
+        <Label text="=trdInvoicePrefix" class="bee-required" />
         <UnboundSelector name="SaleSeries" viewName="SaleSeries"  renderColumns="SeriesName" upperCase="true" style="width: 100px;" />
 
         <Label text="=currency" />

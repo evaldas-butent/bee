@@ -826,6 +826,11 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
     }
 
     Long seriesId = getSeriesId();
+    if (!DataUtils.isId(seriesId)) {
+      getFormView().notifySevere(
+          Localized.getConstants().trdSeries() + " " + Localized.getConstants().valueRequired());
+      return;
+    }
     Long currency = getCurrency();
 
     Multimap<Long, Integer> ss = getSelectedServices(STYLE_SVC_SELECTED);
