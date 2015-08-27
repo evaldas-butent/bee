@@ -19,7 +19,6 @@ import com.butent.bee.client.dialog.ChoiceCallback;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.grid.GridView.SelectedRows;
-import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.shared.Holder;
@@ -41,14 +40,14 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-public class AssessmentOrdersGrid extends AbstractGridInterceptor implements ClickHandler {
+public class AssessmentOrdersGrid extends AssessmentRequestsGrid implements ClickHandler {
 
   private final Button action = new Button(Localized.getConstants().trCreateTransportation(), this);
 
   @Override
   public void afterCreatePresenter(GridPresenter presenter) {
-    presenter.getHeader().addCommandItem(action);
     super.afterCreatePresenter(presenter);
+    presenter.getHeader().addCommandItem(action);
   }
 
   @Override
@@ -88,7 +87,8 @@ public class AssessmentOrdersGrid extends AbstractGridInterceptor implements Cli
             for (BeeRow row : result.getRows()) {
               String id = row.getString(idCol);
               cargo.put(id, row.getString(cargoCol));
-              forwarders.put(id, new String[] {row.getString(nameCol), row.getString(expCol),
+              forwarders.put(id, new String[] {
+                  row.getString(nameCol), row.getString(expCol),
                   row.getString(daysCol)});
               vehicles.put(id, row.getString(vehicleCol));
             }
@@ -107,8 +107,8 @@ public class AssessmentOrdersGrid extends AbstractGridInterceptor implements Cli
                       final String id = forwarders.keySet().toArray(new String[0])[value];
 
                       Queries.insert(VIEW_EXPEDITION_TRIPS, Data.getColumns(VIEW_EXPEDITION_TRIPS,
-                          Lists.newArrayList(COL_FORWARDER, COL_EXPEDITION, "PaymentDays",
-                              COL_FORWARDER + COL_VEHICLE)),
+                              Lists.newArrayList(COL_FORWARDER, COL_EXPEDITION, "PaymentDays",
+                                  COL_FORWARDER + COL_VEHICLE)),
                           Lists.newArrayList(id, forwarders.get(id)[1], forwarders.get(id)[2],
                               BeeUtils.joinItems(vehicles.get(id))), null, new RowCallback() {
                             @Override
@@ -119,7 +119,7 @@ public class AssessmentOrdersGrid extends AbstractGridInterceptor implements Cli
 
                               for (String cargoId : cargoIds) {
                                 Queries.insert(TBL_CARGO_TRIPS, Data.getColumns(TBL_CARGO_TRIPS,
-                                    Lists.newArrayList(COL_CARGO, COL_TRIP)),
+                                        Lists.newArrayList(COL_CARGO, COL_TRIP)),
                                     Lists.newArrayList(cargoId, BeeUtils.toString(tripId)), null,
                                     new RowCallback() {
                                       @Override

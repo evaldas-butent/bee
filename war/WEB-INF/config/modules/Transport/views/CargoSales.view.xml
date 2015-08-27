@@ -3,6 +3,7 @@
       xmlns:xpr="http://www.butent.com/expression"
 
       name="CargoSales" source="CargoIncomes" caption="=trCargoIncomes"
+      filter="Status!=0"
     >
   <Columns>
     <SimpleColumn name="Cargo" />

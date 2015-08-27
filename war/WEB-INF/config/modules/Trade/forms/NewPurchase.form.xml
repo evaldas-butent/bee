@@ -23,8 +23,8 @@
         </cell>
       </row>
       <row>
-        <Label for="InvoicePrefix" class="bee-required" />
-        <InputText source="InvoicePrefix" upperCase="true" style="width:7em" required="true" />
+        <Label for="InvoicePrefix" />
+        <InputText source="InvoicePrefix" upperCase="true" style="width:7em" />
         <InlineLabel for="InvoiceNo" class="bee-required" />
         <InputText source="InvoiceNo" required="true" />
       </row>

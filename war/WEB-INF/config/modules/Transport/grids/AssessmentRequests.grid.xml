@@ -7,16 +7,11 @@
   enableCopy="- Assessment Cargo *Status *Date Number Manager ExpensesRegistered, Log*, Finished*"
   filter="Status"
   >
-  <g:properties paging="false" />
   <g:columns>
-    <IdColumn name="ID" width="40">
-        <footer text="=totalOf" horizontalAlignment="right" />
-    </IdColumn>
+    <IdColumn name="ID" width="40" />
     <RelColumn name="Assessment" width="40" editEnabled="true"
       editViewName="Assessments" editSource="Assessment" module="Transport.Logistics"/>
-    <DataColumn name="Date" width="110">
-        <footer aggregate="count" />
-    </DataColumn>
+    <DataColumn name="Date" width="110" />
     <RelColumn name="Manager" />
     <DataColumn name="Number" width="70" />
     <DataColumn name="Status" width="70" />
@@ -64,18 +59,12 @@
       </render>
     </CalcColumn>
 
-     <PropColumn name="Income" type="decimal" caption="=income" format="0.00">
-      <footer aggregate="sum" />
-    </PropColumn>
-
-    <PropColumn name="Expense" type="decimal" caption="=trExpenses" format="0.00">
-       <footer aggregate="sum" />
-    </PropColumn>
+    <PropColumn name="Income" type="decimal" caption="=income" format="0.00" />
+    <PropColumn name="Expense" type="decimal" caption="=trExpenses" format="0.00" />
     <CalcColumn name="Profit" type="decimal" caption="=profit" format="0.00">
       <render>
         <ui:expression>row.Income - row.Expense</ui:expression>
       </render>
-      <footer aggregate="sum" />
     </CalcColumn>
   </g:columns>
 

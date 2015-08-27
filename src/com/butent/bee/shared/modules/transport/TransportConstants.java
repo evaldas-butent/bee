@@ -243,6 +243,7 @@ public final class TransportConstants {
   public static final String SVC_GET_CARGO_USAGE = "GetCargoUsage";
   public static final String SVC_GET_CARGO_TOTAL = "GetCargoTotal";
   public static final String SVC_GET_ASSESSMENT_TOTALS = "GetAssessmentTotals";
+  public static final String SVC_GET_ASSESSMENT_AMOUNTS = "GetAssessmentAmounts";
   public static final String SVC_GET_ASSESSMENT_QUANTITY_REPORT = "GetAssessmentQuantityReport";
   public static final String SVC_GET_ASSESSMENT_TURNOVER_REPORT = "GetAssessmentTurnoverReport";
   public static final String SVC_CREATE_INVOICE_ITEMS = "CreateInvoiceItems";

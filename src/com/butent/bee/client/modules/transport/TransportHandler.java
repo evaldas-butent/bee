@@ -392,7 +392,7 @@ public final class TransportHandler {
 
     switch (gridName) {
       case GRID_ASSESSMENT_REQUESTS:
-        interceptor = null;
+        interceptor = new AssessmentRequestsGrid();
         break;
 
       case GRID_ASSESSMENT_ORDERS:

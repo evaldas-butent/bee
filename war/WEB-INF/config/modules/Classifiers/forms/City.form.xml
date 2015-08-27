@@ -2,7 +2,7 @@
 <!DOCTYPE Form>
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
-  
+
   name="City" viewName="Cities" caption="=newCity" height="200"  width="300"
   >
   <Table style="margin-left: 1em; margin-top: 1ex;">
@@ -11,10 +11,19 @@
       <Label for="Name" />
       <InputText source="Name" />
     </row>
-   
+
     <row>
       <Label for="Country" />
       <DataSelector source="Country" />
+    </row>
+
+    <row>
+      <Label for="Name2" />
+      <InputText source="Name2" />
+    </row>
+    <row>
+      <Label for="Name3" />
+      <InputText source="Name3" />
     </row>
   </Table>
 </f:Form>

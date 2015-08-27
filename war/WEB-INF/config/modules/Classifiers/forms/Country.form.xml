@@ -4,7 +4,7 @@
 ]>
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
-  
+
   name="Country" viewName="Countries" caption="=country" height="275" width="300"
   >
   <FlowPanel class="flexBox-vertical" style="padding: 15px 1em 45px 1em;">
@@ -20,6 +20,14 @@
 		<row>
 		<CheckBox name="EU" text="=countryEUMemberShort"  source="EUMember" horizontalAlignment="right" style="padding-right: 0px; margin-left: 35px; margin-right: 9px"/>
 		</row>
+			<row>
+				<Label for="Name2" horizontalAlignment="right" />
+				<InputText source="Name2" />
+			</row>
+			<row>
+				<Label for="Name3" horizontalAlignment="right" />
+				<InputText source="Name3" />
+			</row>
 	</Table>
-</FlowPanel>	
-</f:Form> 
+</FlowPanel>
+</f:Form>
