@@ -332,6 +332,7 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
     if (!response.hasErrors()) {
       SqlUpdate update = new SqlUpdate(TBL_ORDER_ITEMS)
           .addConstant(COL_INCOME_SALE, saleId)
+          .addConstant(COL_RESERVED_REMAINDER, null)
           .setWhere(where);
 
       ResponseObject updResponse = qs.updateDataWithResponse(update);
