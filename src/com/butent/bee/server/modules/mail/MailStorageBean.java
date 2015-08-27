@@ -29,6 +29,7 @@ import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
+import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.mail.MailConstants;
@@ -37,7 +38,16 @@ import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
+import net.fortuna.ical4j.data.CalendarBuilder;
+import net.fortuna.ical4j.data.ParserException;
+import net.fortuna.ical4j.model.Calendar;
+import net.fortuna.ical4j.model.Component;
+import net.fortuna.ical4j.model.Property;
+import net.fortuna.ical4j.model.component.CalendarComponent;
+
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -506,13 +516,9 @@ public class MailStorageBean {
           continue;
         }
         if (part.isMimeType("multipart/alternative")) {
-          if (parsed.containsKey(COL_HTML_CONTENT)) {
+          if (parsed != null && !parsed.isEmpty()) {
             parsedPart.clear();
             parsedPart.putAll(parsed);
-            break;
-
-          } else if (parsed.containsKey(COL_CONTENT) && !parsedPart.containsKey(COL_CONTENT)) {
-            parsedPart.put(COL_CONTENT, BeeUtils.peek(parsed.get(COL_CONTENT)));
           }
         } else if (part.isMimeType("multipart/related")) {
           related.putAll(parsed);
@@ -599,6 +605,45 @@ public class MailStorageBean {
         }
         parsedPart.put(COL_FILE, Codec.beeSerialize(fileInfo));
 
+      } else if (part.isMimeType("text/calendar")) {
+        Long fileId = fs.storeFile(part.getInputStream(), fileName, contentType);
+
+        StringBuilder sb = new StringBuilder("<table>");
+        FileInfo file = fs.getFile(fileId);
+
+        if (file != null) {
+          try {
+            Calendar calendar = new CalendarBuilder().build(new FileInputStream(file.getPath()));
+            fileName = calendar.getMethod().getValue() + ".ics";
+
+            for (CalendarComponent component : calendar.getComponents()) {
+              sb.append("<tr><td colspan=\"2\" style=\"font-weight:bold\">")
+                  .append(component.getName()).append("</td></tr>");
+
+              for (Property property : component.getProperties()) {
+                if (!BeeUtils.same(property.getName(), Property.UID)
+                    && !BeeUtils.startsWith(property.getName(), Component.EXPERIMENTAL_PREFIX)) {
+
+                  sb.append("<tr><td>").append(property.getName()).append("</td><td>")
+                      .append(property.getValue()).append("</td></tr>");
+                }
+              }
+            }
+            sb.append("</table>");
+            parsedPart.put(COL_HTML_CONTENT, sb.toString());
+
+          } catch (ParserException e) {
+            logger.warning("(MessageID=", messageId, ") Error parsing calendar:", e);
+          }
+          if (file.isTemporary()) {
+            new File(file.getPath()).delete();
+          }
+          List<String> fileInfo = new ArrayList<>();
+          fileInfo.add(BeeUtils.toString(fileId));
+          fileInfo.add(fileName);
+
+          parsedPart.put(COL_FILE, Codec.beeSerialize(fileInfo));
+        }
       } else {
         String content = getStringContent(part.getContent());
 
@@ -673,7 +718,7 @@ public class MailStorageBean {
   private Long storeAddress(Long userId, InternetAddress address) throws AddressException {
     Assert.notNull(address);
 
-    address.validate();
+    new InternetAddress(address.getAddress(), true).validate();
 
     String label = address.getPersonal();
     String email = BeeUtils.normalize(address.getAddress());

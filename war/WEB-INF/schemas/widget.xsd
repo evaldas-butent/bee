@@ -1011,7 +1011,7 @@
     <xs:complexType>
       <xs:complexContent>
         <xs:extension base="labelType">
-          <xs:attribute name="char" type="ui:fontAwesome" use="required" />
+          <xs:attribute name="char" type="xs:normalizedString" use="required" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>

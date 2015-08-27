@@ -395,6 +395,7 @@ public final class TaskConstants {
   public static final String ALS_TASK_TYPE_FOREGROUND = "TypeForeground";
   public static final String ALS_PROJECT_OWNER = "ProjectOwner";
   public static final String ALS_PROJECT_STATUS = "ProjectStatus";
+  public static final String ALS_REMINDER_NAME = "ReminderName";
 
   public static final String ALS_LAST_SPAWN = "LastSpawn";
 
@@ -436,6 +437,7 @@ public final class TaskConstants {
 
   public static final String GRID_RELATED_TASKS = "RelatedTasks";
   public static final String GRID_CHILD_TASKS = "ChildTasks";
+  public static final String GRID_CHILD_TASK_TEMPLATES = "ChildTaskTemplates";
   public static final String GRID_CHILD_REQUESTS = "ChildRequests";
   public static final String GRID_RELATED_RECURRING_TASKS = "RelatedRecurringTasks";
 

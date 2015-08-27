@@ -64,9 +64,11 @@ import com.butent.bee.shared.data.event.CellUpdateEvent;
 import com.butent.bee.shared.data.event.MultiDeleteEvent;
 import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.event.RowInsertEvent;
+import com.butent.bee.shared.data.event.RowTransformEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.FilterComponent;
+import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
@@ -80,6 +82,7 @@ import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
+import com.butent.bee.shared.utils.StringList;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -491,6 +494,10 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
         menu.open(this);
         break;
 
+      case MERGE:
+        onMerge();
+        break;
+
       case PRINT:
         if (getGridView().getGrid().getRowCount() > 0) {
           Printer.print(gridContainer);
@@ -855,6 +862,130 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
   private Element getHeaderElement() {
     HeaderView header = getHeader();
     return (header == null) ? null : header.getElement();
+  }
+
+  private void onMerge() {
+    Collection<RowInfo> selectedRows = getGridView().getSelectedRows(SelectedRows.MERGEABLE);
+    if (BeeUtils.size(selectedRows) != 2) {
+      getGridView().notifyWarning("Select two visible rows");
+      return;
+    }
+
+    Set<Long> ids = new HashSet<>();
+    for (RowInfo ri : selectedRows) {
+      ids.add(ri.getId());
+    }
+
+    final List<IsRow> rows = new ArrayList<>();
+
+    for (IsRow row : getGridView().getRowData()) {
+      if (ids.contains(row.getId())) {
+        rows.add(row);
+      }
+    }
+
+    if (rows.size() != selectedRows.size()) {
+      getGridView().notifyWarning("Selected rows not found");
+      return;
+    }
+
+    final List<String> labels = renderRows(rows);
+    if (labels.size() != selectedRows.size()) {
+      getGridView().notifyWarning("Cannot render selected rows");
+      return;
+    }
+
+    Global.choiceWithCancel(getCaption(), Localized.getConstants().mergeInto(), labels,
+        new ChoiceCallback() {
+          @Override
+          public void onSuccess(final int index) {
+            if (BeeUtils.isIndex(rows, index)) {
+              List<String> messages = new ArrayList<>(labels);
+              messages.add(BeeConst.STRING_EMPTY);
+              messages.add(Localized.getConstants().mergeInto());
+              messages.add(BeeConst.STRING_EMPTY);
+              messages.add(labels.get(index));
+
+              List<String> options = new ArrayList<>();
+              options.add(Localized.getConstants().actionMerge());
+              options.add(Localized.getConstants().cancel());
+
+              Global.getMsgBoxen().display(getCaption(), Icon.ALARM, messages, options, 1,
+                  new ChoiceCallback() {
+                    @Override
+                    public void onSuccess(int value) {
+                      if (value == 0) {
+                        logger.debug("merge");
+                      }
+                    }
+                  }, BeeConst.UNDEF, null, StyleUtils.className(FontSize.MEDIUM),
+                  StyleUtils.className(FontSize.MEDIUM), null, null);
+
+            }
+          }
+        });
+  }
+
+  private List<String> renderRows(Collection<IsRow> rows) {
+    List<String> result = StringList.uniqueCaseInsensitive();
+
+    for (IsRow row : rows) {
+      if (row instanceof BeeRow) {
+        RowTransformEvent event = new RowTransformEvent(getViewName(), (BeeRow) row);
+        BeeKeeper.getBus().fireEvent(event);
+
+        if (!BeeUtils.isEmpty(event.getResult())) {
+          result.add(event.getResult());
+        }
+      }
+    }
+
+    if (result.size() == rows.size()) {
+      return result;
+    }
+    if (!result.isEmpty()) {
+      result.clear();
+    }
+
+    List<BeeColumn> columns = getDataColumns();
+    if (BeeUtils.isEmpty(columns)) {
+      return result;
+    }
+
+    List<Integer> indexes = new ArrayList<>();
+    for (int i = 0; i < columns.size(); i++) {
+      BeeColumn column = columns.get(i);
+
+      if (!column.isNullable() && column.isCharacter() && column.isEditable()) {
+        indexes.add(i);
+      }
+    }
+
+    if (indexes.isEmpty()) {
+      for (int i = 0; i < columns.size(); i++) {
+        BeeColumn column = columns.get(i);
+
+        if ((column.isCharacter() || ValueType.isDateOrDateTime(column.getType()))
+            && column.isEditable()) {
+
+          indexes.add(i);
+          if (indexes.size() > 5) {
+            break;
+          }
+        }
+      }
+    }
+
+    if (!indexes.isEmpty()) {
+      for (IsRow row : rows) {
+        result.add(DataUtils.join(columns, row, indexes, BeeConst.DEFAULT_LIST_SEPARATOR));
+      }
+    }
+
+    if (result.size() != rows.size()) {
+      result.clear();
+    }
+    return result;
   }
 
   private void reset() {

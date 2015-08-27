@@ -24,7 +24,12 @@ import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.widget.Image;
+import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Consumer;
+import com.butent.bee.shared.Latch;
+import com.butent.bee.shared.Pair;
+import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.DataUtils;
@@ -38,10 +43,14 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.menu.MenuHandler;
 import com.butent.bee.shared.menu.MenuService;
+import com.butent.bee.shared.modules.classifiers.ItemPrice;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public final class ClassifierKeeper {
 
@@ -144,6 +153,61 @@ public final class ClassifierKeeper {
 
     private void setSelectedModel(IsRow selectedModel) {
       this.selectedModel = selectedModel;
+    }
+  }
+
+  public static void getPricesAndDiscounts(Map<String, Long> options,
+      Set<Long> items, Map<Long, Double> quantities, Map<Long, ItemPrice> priceNames,
+      final Consumer<Map<Long, Pair<Double, Double>>> consumer) {
+
+    Assert.notEmpty(options);
+    Assert.notEmpty(items);
+    Assert.notNull(consumer);
+
+    final Map<Long, Pair<Double, Double>> result = new HashMap<>();
+    final Latch latch = new Latch(items.size());
+
+    for (final Long item : items) {
+      ParameterList params = createArgs(SVC_GET_PRICE_AND_DISCOUNT);
+      for (Map.Entry<String, Long> entry : options.entrySet()) {
+        if (!BeeUtils.isEmpty(entry.getKey()) && entry.getValue() != null) {
+          params.addQueryItem(entry.getKey(), entry.getValue());
+        }
+      }
+
+      params.addQueryItem(COL_DISCOUNT_ITEM, item);
+      if (quantities.containsKey(item)) {
+        params.addQueryItem(Service.VAR_QTY, BeeUtils.toString(quantities.get(item), 6));
+      }
+      if (priceNames.containsKey(item)) {
+        ItemPrice ip = priceNames.get(item);
+        if (ip != null) {
+          params.addQueryItem(COL_DISCOUNT_PRICE_NAME, ip.ordinal());
+        }
+      }
+
+      if (Global.getExplain() > 0) {
+        params.addQueryItem(Service.VAR_EXPLAIN, Global.getExplain());
+      }
+
+      BeeKeeper.getRpc().makeGetRequest(params, new ResponseCallback() {
+        @Override
+        public void onResponse(ResponseObject response) {
+          if (response.hasResponse()) {
+            Pair<String, String> pair = Pair.restore(response.getResponseAsString());
+
+            Double price = BeeUtils.toDoubleOrNull(pair.getA());
+            Double percent = BeeUtils.toDoubleOrNull(pair.getB());
+
+            result.put(item, Pair.of(price, percent));
+          }
+
+          latch.decrement();
+          if (latch.isOpen()) {
+            consumer.accept(result);
+          }
+        }
+      });
     }
   }
 

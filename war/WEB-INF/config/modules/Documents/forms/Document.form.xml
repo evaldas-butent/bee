@@ -13,9 +13,9 @@
       <FlowPanel>
         <FlowPanel class="flexBox-horizontal">
           <xi:include href="widgets/DocumentFields.widget.xml" />
-          <FlowPanel style="display: table;">
+          <FlowPanel style="max-width: 40%;" >
             <Relations relColumn="Document" inline="true"
-              defaultRelations="Companies Persons Requests Tasks" style="margin-left: 15px;" />
+              defaultRelations="Companies Persons Requests Tasks" style="margin-left: 15px; min-width:300px;" />
           </FlowPanel>
         </FlowPanel>
         <ChildGrid name="DocumentFiles" relColumn="Document" style="margin-top: 1ex; height: 400px;" />
@@ -35,4 +35,4 @@
       <ChildGrid name="DocumentItems" relColumn="Document" />
     </page>
   </TabbedPages>
-</f:Form>  
+</f:Form>

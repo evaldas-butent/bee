@@ -12,6 +12,7 @@ import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dialog.Popup.OutsideClick;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.logical.CloseEvent;
+import com.butent.bee.client.event.logical.OpenEvent;
 import com.butent.bee.client.i18n.DateTimeFormat;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.i18n.HasDateTimeFormat;
@@ -464,7 +465,7 @@ public class InputDate extends InputText implements HasDateTimeFormat, HasIntSte
     JustDate min = JustDate.get(getMinBound());
     JustDate max = JustDate.get(getMaxBound());
 
-    DatePicker picker = new DatePicker(TimeUtils.clamp(date, min, max), min, max);
+    final DatePicker picker = new DatePicker(TimeUtils.clamp(date, min, max), min, max);
 
     picker.addValueChangeHandler(new ValueChangeHandler<JustDate>() {
       @Override
@@ -477,6 +478,13 @@ public class InputDate extends InputText implements HasDateTimeFormat, HasIntSte
     });
 
     popup.setHideOnEscape(true);
+
+    popup.addOpenHandler(new OpenEvent.Handler() {
+      @Override
+      public void onOpen(OpenEvent event) {
+        picker.setFocus(true);
+      }
+    });
 
     popup.addCloseHandler(new CloseEvent.Handler() {
       @Override
@@ -507,8 +515,6 @@ public class InputDate extends InputText implements HasDateTimeFormat, HasIntSte
 
     popup.setWidget(picker);
     popup.showRelativeTo(getElement());
-
-    picker.setFocus(true);
   }
 
   protected boolean willParse(String text) {

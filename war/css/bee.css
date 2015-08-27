@@ -1,6 +1,6 @@
 ﻿@font-face {
   font-family: FontAwesome;
-  src: url(../fonts/fontawesome-webfont.woff?v=4.3.0);
+  src: url(../fonts/fontawesome-webfont.woff?v=4.4.0);
   font-weight: normal;
   font-style: normal;
 }
@@ -1007,6 +1007,10 @@
   align-items: center;
   -webkit-align-items: center;
   -ms-flex-align: center;
+}
+
+.bee-NewRow-tree .bee-ChildGrid {
+  display: none;
 }
 
 .bee-DatePicker {
@@ -3756,4 +3760,10 @@ textarea,
 
 .bee-AddBookmark .bee-Dialog-action {
   margin-right: 15px;
+}
+
+.bee-CompanyStructure-command {
+  color: white;
+  font-size: 17px;
+  margin-right: 27px;
 }
