@@ -53,7 +53,7 @@ public final class TradeUtils {
 
   private static ProvidesGridColumnRenderer totalRenderer;
 
-  public static void getDocumentItems(String viewName, long tradeId, String currencyName,
+  public static void getDocumentItems(final String viewName, long tradeId, String currencyName,
       final HtmlTable table, final Consumer<SimpleRowSet> callback) {
     Assert.notNull(table);
 
@@ -123,7 +123,10 @@ public final class TradeUtils {
 
           double qty = BeeUtils.unbox(row.getDouble(COL_TRADE_ITEM_QUANTITY));
           double price = BeeUtils.unbox(row.getDouble(COL_TRADE_ITEM_PRICE));
-          double disc = BeeUtils.unbox(row.getDouble(COL_TRADE_DISCOUNT));
+          double disc = 0;
+          if (viewName == VIEW_TRADE_ACTS) {
+            disc = BeeUtils.unbox(row.getDouble(COL_TRADE_DISCOUNT));
+          }
 
           double sum;
           if (ArrayUtils.containsSame(row.getColumnNames(), COL_TA_RETURNED_QTY)
