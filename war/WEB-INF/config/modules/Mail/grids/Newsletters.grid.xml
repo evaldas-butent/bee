@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid" name="Newsletters" viewName="Newsletters"
+  caption="=mailNewsletters">
+  <g:columns>
+    <IdColumn name="Id" />
+    <DataColumn name="Subject" visible="true" />
+    <DataColumn name="Finished" />
+  </g:columns>
+</g:Grid>
