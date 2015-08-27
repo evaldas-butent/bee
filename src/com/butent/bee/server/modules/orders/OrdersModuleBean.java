@@ -149,7 +149,7 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
     sys.registerDataEventHandler(new DataEventHandler() {
 
       @Subscribe
-      public void SetFreeRemainder(ViewQueryEvent event) {
+      public void setFreeRemainder(ViewQueryEvent event) {
         if (event.isAfter() && event.isTarget(VIEW_ORDER_ITEMS) && event.hasData()
             && event.getColumnCount() >= sys.getView(event.getTargetName()).getColumnCount()) {
 

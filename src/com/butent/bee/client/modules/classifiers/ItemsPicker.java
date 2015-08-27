@@ -214,10 +214,10 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
     }
   }
 
-  protected IsRow lastRow;
+  private IsRow lastRow;
 
   private ItemPrice itemPrice;
-  public Long warehouseFrom;
+  private Long warehouseFrom;
 
   private BeeRowSet items;
 
@@ -866,6 +866,14 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
       }
     }
     return valid;
+  }
+
+  protected IsRow getLastRow() {
+    return lastRow;
+  }
+
+  protected Long getWarehouseFrom() {
+    return warehouseFrom;
   }
 
   public abstract void getItems(Filter filter, RowSetCallback callback);
