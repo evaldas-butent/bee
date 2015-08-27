@@ -550,8 +550,7 @@ public class TradeModuleBean implements BeeModule {
                 COL_ITEM_NAME, COL_ITEM_NAME + "2", COL_ITEM_NAME + "3", COL_ITEM_BARCODE)
             .addField(TBL_UNITS, COL_UNIT_NAME, COL_UNIT)
             .addFields(tradeItems, COL_TRADE_ITEM_QUANTITY, COL_TRADE_ITEM_PRICE,
-                COL_TRADE_VAT_PLUS, COL_TRADE_VAT, COL_TRADE_VAT_PERC, COL_TRADE_DISCOUNT,
-                COL_TRADE_ITEM_NOTE)
+                COL_TRADE_VAT_PLUS, COL_TRADE_VAT, COL_TRADE_VAT_PERC, COL_TRADE_ITEM_NOTE)
             .addFields(articleSource, COL_TRADE_ITEM_ARTICLE)
             .addField(TBL_CURRENCIES, COL_CURRENCY_NAME, COL_CURRENCY)
             .addFrom(tradeItems)
@@ -561,13 +560,8 @@ public class TradeModuleBean implements BeeModule {
             .addFromInner(TBL_CURRENCIES, sys.joinTables(TBL_CURRENCIES, trade, COL_CURRENCY))
             .setWhere(SqlUtils.equals(tradeItems, itemsRelation, id));
 
-    if (BeeUtils.same(tradeItems, TBL_TRADE_ACT_SERVICES)) {
-      query.addFields(TBL_TRADE_ACT_SERVICES, COL_TA_SERVICE_FROM);
-      query.addFields(TBL_TRADE_ACT_SERVICES, COL_TA_SERVICE_TO);
-      query.addFields(TBL_TRADE_ACT_SERVICES, COL_TA_SERVICE_TARIFF);
-    }
-
     if (BeeUtils.same(trade, TBL_TRADE_ACTS)) {
+      query.addFields(tradeItems, COL_TRADE_DISCOUNT);
       query.addFields(TBL_ITEMS, COL_TRADE_WEIGHT);
       query.addFields(TBL_ITEMS, COL_ITEM_AREA);
       query.addFields(TBL_TRADE_ACTS, COL_TRADE_NUMBER);
@@ -577,7 +571,11 @@ public class TradeModuleBean implements BeeModule {
       if (BeeUtils.same(tradeItems, TBL_TRADE_ACT_ITEMS)) {
         query.addFields(TBL_TRADE_ACT_ITEMS, sys.getIdName(tradeItems));
       }
+
       if (BeeUtils.same(tradeItems, TBL_TRADE_ACT_SERVICES)) {
+        query.addFields(TBL_TRADE_ACT_SERVICES, COL_TA_SERVICE_FROM);
+        query.addFields(TBL_TRADE_ACT_SERVICES, COL_TA_SERVICE_TO);
+        query.addFields(TBL_TRADE_ACT_SERVICES, COL_TA_SERVICE_TARIFF);
         query.addFields(TBL_TRADE_ACT_SERVICES, COL_TA_SERVICE_MIN, COL_TA_SERVICE_DAYS);
       }
     } else {

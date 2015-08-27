@@ -63,8 +63,6 @@ import java.util.Map;
 
 public class CompanyForm extends AbstractFormInterceptor {
 
-  private static boolean hasEmail = false;
-
   private static final String WIDGET_FINANCIAL_STATE_AUDIT_NAME = COL_COMPANY_FINANCIAL_STATE
       + "Audit";
 
@@ -316,10 +314,7 @@ public class CompanyForm extends AbstractFormInterceptor {
       @Override
       public Boolean validateCell(CellValidateEvent event) {
         if (DataUtils.isId(BeeUtils.toLongOrNull(event.getNewValue()))) {
-          hasEmail = true;
           return Boolean.TRUE;
-        } else {
-          hasEmail = false;
         }
 
         int idxRemindEmail = form.getDataIndex(COL_REMIND_EMAIL);
@@ -389,7 +384,7 @@ public class CompanyForm extends AbstractFormInterceptor {
           return Boolean.FALSE;
         }
 
-        if (hasEmail) {
+        if (DataUtils.isId(form.getActiveRow().getLong(form.getDataIndex(COL_EMAIL_ID)))) {
           return Boolean.TRUE;
         } else {
           form.notifySevere(Localized.getConstants().email(), Localized.getConstants()
