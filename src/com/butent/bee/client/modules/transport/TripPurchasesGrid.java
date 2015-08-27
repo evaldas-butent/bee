@@ -86,9 +86,10 @@ public class TripPurchasesGrid extends InvoiceBuilder {
       newRow.setValue(targetInfo.getColumnIndex(COL_CURRENCY), entry.getKey());
       newRow.setValue(targetInfo.getColumnIndex(ALS_CURRENCY_NAME), entry.getValue());
     }
+    String prefix = null;
+
     if (!BeeUtils.isEmpty(number)) {
       number = BeeUtils.trim(number);
-      String prefix = null;
       int sep = number.indexOf(BeeConst.CHAR_SPACE);
 
       if (BeeUtils.isNonNegative(sep)) {
@@ -97,6 +98,10 @@ public class TripPurchasesGrid extends InvoiceBuilder {
       }
       newRow.setValue(targetInfo.getColumnIndex(COL_TRADE_INVOICE_PREFIX), prefix);
       newRow.setValue(targetInfo.getColumnIndex(COL_TRADE_INVOICE_NO), number);
+    }
+    if (BeeUtils.isEmpty(prefix)) {
+      getGridView().notifySevere("Nenurodytas/neunikalus/neteisingas sąskaitos numeris");
+      return;
     }
     consumer.accept(data, newRow);
   }
