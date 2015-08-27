@@ -3,6 +3,8 @@ package com.butent.bee.server.data;
 import com.google.common.collect.Lists;
 
 import com.butent.bee.server.DataSourceBean;
+import com.butent.bee.server.data.BeeTable.BeeField;
+import com.butent.bee.server.data.BeeTable.BeeRelation;
 import com.butent.bee.server.data.DataEvent.TableModifyEvent;
 import com.butent.bee.server.data.DataEvent.ViewQueryEvent;
 import com.butent.bee.server.jdbc.JdbcUtils;
@@ -13,6 +15,7 @@ import com.butent.bee.server.sql.IsExpression;
 import com.butent.bee.server.sql.IsQuery;
 import com.butent.bee.server.sql.SqlBuilderFactory;
 import com.butent.bee.server.sql.SqlCreate;
+import com.butent.bee.server.sql.SqlDelete;
 import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
@@ -984,6 +987,75 @@ public class QueryServiceBean {
     } while (chunk > 0 && data.getNumberOfRows() == chunk);
 
     return tot;
+  }
+
+  @TransactionAttribute(TransactionAttributeType.MANDATORY)
+  public ResponseObject mergeData(String tableName, long from, long into) {
+    Set<String> updatedTables = new HashSet<>();
+
+    SimpleRow fromRow = getRow(tableName, from);
+    if (fromRow == null) {
+      return ResponseObject.error(tableName, "row", from, "not found");
+    }
+
+    SimpleRow intoRow = getRow(tableName, into);
+    if (intoRow == null) {
+      return ResponseObject.error(tableName, "row", into, "not found");
+    }
+
+    for (BeeTable table : sys.getTables()) {
+      for (BeeField field : table.getFields()) {
+        if (field instanceof BeeRelation
+            && tableName.equals(((BeeRelation) field).getRelation())) {
+
+          SqlUpdate su = new SqlUpdate(table.getName())
+              .addConstant(field.getName(), into)
+              .setWhere(SqlUtils.equals(table.getName(), field.getName(), from));
+
+          ResponseObject ro = updateDataWithResponse(su);
+          if (ro.hasErrors()) {
+            return ro;
+          }
+
+          if ((int) ro.getResponse() > 0) {
+            updatedTables.add(table.getName());
+
+            if (tableName.equals(table.getName())) {
+              fromRow = getRow(tableName, from);
+              intoRow = getRow(tableName, into);
+            }
+          }
+        }
+      }
+    }
+
+    SqlUpdate update = new SqlUpdate(tableName);
+    for (String colName : fromRow.getColumnNames()) {
+      if (!BeeUtils.isEmpty(fromRow.getValue(colName))
+          && BeeUtils.isEmpty(intoRow.getValue(colName))) {
+
+        update.addConstant(colName, fromRow.getValue(colName));
+      }
+    }
+
+    if (!update.isEmpty()) {
+      update.setWhere(sys.idEquals(tableName, into));
+
+      ResponseObject updRo = updateDataWithResponse(update);
+      if (updRo.hasErrors()) {
+        return updRo;
+      }
+    }
+
+    SqlDelete delete = new SqlDelete(tableName).setWhere(sys.idEquals(tableName, from));
+    ResponseObject delRo = updateDataWithResponse(delete);
+    if (delRo.hasErrors()) {
+      return delRo;
+    }
+
+    updatedTables.add(tableName);
+
+    return ResponseObject.response(updatedTables).setSize(updatedTables.size());
   }
 
   @TransactionAttribute(TransactionAttributeType.MANDATORY)
