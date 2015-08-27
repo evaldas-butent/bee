@@ -86,7 +86,7 @@ public class GridMenu {
     MERGE(Action.MERGE) {
       @Override
       boolean isEnabled(GridDescription gridDescription, Collection<UiOption> uiOptions) {
-        return false;
+        return BeeKeeper.getUser().isWidgetVisible(RegulatedWidget.MERGE);
       }
 
       @Override

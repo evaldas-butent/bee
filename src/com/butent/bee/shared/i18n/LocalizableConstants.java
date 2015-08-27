@@ -510,6 +510,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String menu();
 
+  String mergeInto();
+
   String message();
 
   String messageSent();
