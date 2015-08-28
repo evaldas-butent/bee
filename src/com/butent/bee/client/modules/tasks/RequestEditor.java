@@ -24,7 +24,6 @@ import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.data.RowUpdateCallback;
 import com.butent.bee.client.dialog.ConfirmationCallback;
-import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.Opener;
@@ -38,7 +37,6 @@ import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.InternalLink;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
-import com.butent.bee.shared.css.CssUnit;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
@@ -51,10 +49,14 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
+import com.butent.bee.shared.modules.tasks.TaskConstants.TaskEvent;
+import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
 import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -89,7 +91,7 @@ public class RequestEditor extends AbstractFormInterceptor {
     }
   }
 
-  FlowPanel resultProperties;
+  static FlowPanel resultProperties;
 
   @Override
   public void afterCreateWidget(String name, IdentifiableWidget widget,
@@ -217,27 +219,68 @@ public class RequestEditor extends AbstractFormInterceptor {
       oldValue = row.getString(idxResult);
     }
 
-    Global.inputString(Localized.getConstants().requestFinishing(), Localized.getConstants()
-        .specifyResult(), new StringCallback(true) {
+    final TaskDialog dialog =
+        new TaskDialog(Localized.getConstants().requestFinishing());
+
+    final String cid = dialog.addComment(true);
+
+    final Map<String, String> durIds = dialog.addDuration();
+
+    dialog.addAction(Localized.getConstants().actionSave(), new ScheduledCommand() {
       @Override
-      public void onSuccess(String value) {
-        List<BeeColumn> columns = Lists.newArrayList(DataUtils
-            .getColumn(TaskConstants.COL_REQUEST_FINISHED, form.getDataColumns()));
+      public void execute() {
 
-        List<String> oldValues = Lists.newArrayList(row
-            .getString(form.getDataIndex(TaskConstants.COL_REQUEST_FINISHED)));
-        List<String> newValues = Lists.newArrayList(BeeUtils.toString(new DateTime().getTime()));
+        String comment = dialog.getComment(cid);
+        String time = dialog.getTime(durIds.get(COL_DURATION));
 
-        columns.add(DataUtils.getColumn(TaskConstants.COL_REQUEST_RESULT, form.getDataColumns()));
+        if (BeeUtils.isEmpty(comment)) {
+          Global.showError(Localized.getConstants().error(), Collections.singletonList(Localized
+              .getConstants().crmEnterComment()));
+          return;
+        }
 
-        oldValues.add(row.getString(form.getDataIndex(TaskConstants.COL_REQUEST_RESULT)));
-        newValues.add(value);
+        if (!BeeUtils.isEmpty(time)) {
+          Long type = dialog.getSelector(durIds.get(COL_DURATION_TYPE)).getRelatedId();
+          if (!DataUtils.isId(type)) {
+            Global.showError(Localized.getConstants().crmEnterDurationType());
+            return;
+          }
 
-        Queries.update(form.getViewName(), row.getId(), row.getVersion(),
-            columns, oldValues, newValues, form.getChildrenForUpdate(),
-            new FinishSaveCallback(form));
+          DateTime date = dialog.getDateTime(durIds.get(COL_DURATION_DATE));
+          if (date == null) {
+            Global.showError(Localized.getConstants().crmEnterDueDate());
+            return;
+          }
+
+          List<BeeColumn> columns =
+              Lists.newArrayList(DataUtils.getColumn(TaskConstants.COL_REQUEST_FINISHED, form
+                  .getDataColumns()));
+
+          List<String> oldValues = Lists.newArrayList(row
+              .getString(form.getDataIndex(TaskConstants.COL_REQUEST_FINISHED)));
+          List<String> newValues =
+              Lists.newArrayList(BeeUtils.toString(new DateTime().getTime()));
+
+          columns.add(DataUtils.getColumn(TaskConstants.COL_REQUEST_RESULT, form.getDataColumns()));
+
+          oldValues.add(row.getString(form.getDataIndex(TaskConstants.COL_REQUEST_RESULT)));
+          newValues.add(comment);
+
+          finishRequestWithTask(form, row, time, type, date);
+
+          Queries.update(form.getViewName(), row.getId(), row.getVersion(), columns, oldValues,
+              newValues, form.getChildrenForUpdate(), new FinishSaveCallback(form));
+
+          dialog.close();
+        } else {
+          Global.showError(Localized.getConstants().crmSpentTime() + " "
+              + Localized.getConstants().valueRequired());
+          return;
+        }
       }
-    }, null, oldValue, BeeConst.UNDEF, null, 300, CssUnit.PX);
+    });
+
+    dialog.display();
   }
 
   private static void toTaskAndFinish(final FormView form, final IsRow reqRow) {
@@ -421,5 +464,112 @@ public class RequestEditor extends AbstractFormInterceptor {
         resultProperties.add(link);
       }
     }
+  }
+
+  private static void finishRequestWithTask(FormView form, IsRow reqRow, final String time,
+      final Long type, final DateTime date) {
+    boolean edited = (reqRow != null) && form.isEditing();
+
+    if (!edited) {
+      Global.showError(Localized.getConstants().actionCanNotBeExecuted());
+      return;
+    }
+
+    final DataInfo taskDataInfo = Data.getDataInfo(TaskConstants.VIEW_TASKS);
+    final BeeRow taskRow = RowFactory.createEmptyRow(taskDataInfo, true);
+
+    taskRow.setValue(taskDataInfo.getColumnIndex(ClassifierConstants.COL_COMPANY),
+        reqRow.getLong(form.getDataIndex(COL_REQUEST_CUSTOMER)));
+
+    taskRow.setValue(taskDataInfo.getColumnIndex(ClassifierConstants.ALS_COMPANY_NAME),
+        reqRow.getString(form.getDataIndex(COL_REQUEST_CUSTOMER_NAME)));
+
+    taskRow.setValue(taskDataInfo.getColumnIndex(ClassifierConstants.COL_CONTACT), reqRow
+        .getLong(form.getDataIndex(COL_REQUEST_CUSTOMER_PERSON)));
+
+    taskRow.setValue(taskDataInfo.getColumnIndex(ClassifierConstants.ALS_CONTACT_FIRST_NAME),
+        reqRow
+            .getString(form.getDataIndex(ALS_PERSON_FIRST_NAME)));
+
+    taskRow.setValue(taskDataInfo.getColumnIndex(ClassifierConstants.ALS_CONTACT_LAST_NAME), reqRow
+        .getString(form.getDataIndex(ALS_PERSON_LAST_NAME)));
+
+    taskRow.setValue(taskDataInfo.getColumnIndex(ALS_OWNER_FIRST_NAME),
+        reqRow.getString(form.getDataIndex(ClassifierConstants.COL_FIRST_NAME)));
+
+    taskRow.setValue(taskDataInfo.getColumnIndex(ALS_OWNER_LAST_NAME), reqRow
+        .getString(form.getDataIndex(ClassifierConstants.COL_LAST_NAME)));
+
+    taskRow.setValue(taskDataInfo.getColumnIndex(COL_DESCRIPTION), reqRow
+        .getString(form.getDataIndex(COL_REQUEST_CONTENT)));
+
+    taskRow.setValue(taskDataInfo.getColumnIndex(COL_SUMMARY), Localized
+        .getConstants().trAssessmentRequest()
+        + " " + reqRow.getId());
+
+    taskRow.setValue(taskDataInfo.getColumnIndex(COL_START_TIME), TimeUtils
+        .nowMillis());
+
+    taskRow.setValue(taskDataInfo.getColumnIndex(COL_FINISH_TIME), TimeUtils
+        .nowMillis());
+
+    taskRow.setValue(taskDataInfo.getColumnIndex(COL_EXECUTOR), BeeKeeper.getUser()
+        .getUserId());
+
+    taskRow.setValue(taskDataInfo.getColumnIndex(COL_STATUS), TaskStatus.APPROVED.ordinal());
+
+    Queries.insert(VIEW_TASKS, Data.getColumns(VIEW_TASKS), taskRow, new RowCallback() {
+
+      @Override
+      public void onSuccess(final BeeRow taskResult) {
+        DataInfo durDataInfo = Data.getDataInfo(TBL_EVENT_DURATIONS);
+        BeeRow durRow = RowFactory.createEmptyRow(durDataInfo, true);
+
+        durRow.setValue(durDataInfo.getColumnIndex(COL_DURATION_TYPE), type);
+        durRow.setValue(durDataInfo.getColumnIndex(COL_DURATION_DATE), date);
+        durRow.setValue(durDataInfo.getColumnIndex(COL_DURATION), time);
+
+        Queries.insert(TBL_EVENT_DURATIONS, Data.getColumns(TBL_EVENT_DURATIONS), durRow,
+            new RowCallback() {
+
+              @Override
+              public void onSuccess(BeeRow durResult) {
+                DataInfo eventDataInfo = Data.getDataInfo(VIEW_TASK_EVENTS);
+                BeeRow eventRow = RowFactory.createEmptyRow(eventDataInfo, true);
+
+                eventRow.setValue(eventDataInfo.getColumnIndex(COL_TASK), taskResult.getId());
+                eventRow.setValue(eventDataInfo.getColumnIndex(COL_PUBLISHER), BeeKeeper.getUser()
+                    .getUserId());
+
+                eventRow.setValue(eventDataInfo.getColumnIndex(COL_PUBLISH_TIME), TimeUtils
+                    .nowMillis());
+                eventRow.setValue(eventDataInfo.getColumnIndex(COL_EVENT_DURATION), durResult
+                    .getId());
+                eventRow.setValue(eventDataInfo.getColumnIndex(COL_EVENT), TaskEvent.COMMENT
+                    .ordinal());
+
+                Queries.insert(VIEW_TASK_EVENTS, Data.getColumns(VIEW_TASK_EVENTS), eventRow,
+                    new RowCallback() {
+
+                      @Override
+                      public void onSuccess(BeeRow result) {
+                        InternalLink link = new InternalLink(BeeUtils.toString(taskResult.getId())
+                            + BeeConst.DEFAULT_ROW_SEPARATOR);
+                        link.addStyleName(STYLE_PROPERTY_DATA);
+                        link.addClickHandler(new ClickHandler() {
+
+                          @Override
+                          public void onClick(ClickEvent arg0) {
+                            RowEditor.openForm(FORM_TASK, taskDataInfo, taskResult, Opener.NEW_TAB,
+                                null, null);
+                          }
+                        });
+                        resultProperties.add(link);
+                      }
+                    });
+              }
+            });
+      }
+    });
   }
 }
