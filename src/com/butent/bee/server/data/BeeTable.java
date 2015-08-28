@@ -46,6 +46,7 @@ import com.butent.bee.shared.utils.PropertyUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -1242,6 +1243,26 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
     List<BeeUniqueKey> keys = Lists.newArrayList(primaryKey);
     keys.addAll(uniqueKeys.values());
     return keys;
+  }
+
+  public Set<Set<String>> getUniqueness() {
+    Set<Set<String>> result = new HashSet<>();
+
+    fields.values().stream()
+        .filter(BeeField::isUnique)
+        .map(BeeField::getName)
+        .forEach(e -> result.add(Collections.singleton(e)));
+
+    uniqueKeys.values().stream()
+        .map(BeeUniqueKey::getFields)
+        .forEach(e -> result.add(new HashSet<>(e)));
+
+    indexes.values().stream()
+        .filter(e -> e.isUnique() && !BeeUtils.isEmpty(e.getFields()))
+        .map(BeeIndex::getFields)
+        .forEach(e -> result.add(new HashSet<>(e)));
+
+    return result;
   }
 
   public String getVersionName() {
