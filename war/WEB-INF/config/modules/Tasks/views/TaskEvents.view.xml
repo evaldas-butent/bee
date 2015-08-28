@@ -6,6 +6,7 @@
   >
   <Columns>
     <SimpleColumn name="Task" />
+    <SimpleColumn name="Publisher" />
     <SimpleJoin name="Publisher" joinType="LEFT">
       <SimpleJoin name="CompanyPerson" joinType="LEFT">
         <SimpleJoin name="Person" joinType="LEFT">
@@ -20,6 +21,7 @@
     <SimpleColumn name="Event" />
     <SimpleColumn name="EventNote" />
     <SimpleColumn name="EventData" />
+    <SimpleColumn name="EventDuration" />
     <SimpleJoin name="EventDuration" joinType="LEFT">
       <SimpleColumn name="Duration" />
       <SimpleColumn name="DurationDate" />
