@@ -39,4 +39,9 @@ class CargoTripsGrid extends AbstractGridInterceptor {
   public GridInterceptor getInstance() {
     return new CargoTripsGrid();
   }
+
+  @Override
+  public void onLoad(GridView gridView) {
+    gridView.getViewPresenter().getHeader().addCommandItem(new MessageBuilder(gridView));
+  }
 }

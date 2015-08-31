@@ -64,7 +64,7 @@ public class TripPurchasesGrid extends InvoiceBuilder {
       if (number != null && !BeeUtils.same(row.getString(numberIdx), number)) {
         number = "";
       } else {
-        number = row.getString(numberIdx);
+        number = BeeUtils.nvl(row.getString(numberIdx), "");
       }
     }
     newRow.setValue(targetInfo.getColumnIndex(COL_TRADE_NOTES), BeeUtils.joinItems(trips));
