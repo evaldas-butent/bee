@@ -56,6 +56,7 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.ui.Orientation;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -130,13 +131,17 @@ public class MessageBuilder extends FaLabel implements ClickHandler {
       Global.getParameter(PRM_MESSAGE_TEMPLATE, new Consumer<String>() {
         @Override
         public void accept(String parameter) {
-          try {
-            for (Map.Entry<String, String> entry : Codec.deserializeMap(parameter).entrySet()) {
-              templates.put(entry.getKey(),
-                  Arrays.asList(Codec.beeDeserializeCollection(entry.getValue())));
+          for (Map.Entry<String, String> entry : Codec.deserializeMap(parameter).entrySet()) {
+            String[] items;
+
+            try {
+              items = Codec.beeDeserializeCollection(entry.getValue());
+            } catch (Exception e) {
+              items = null;
             }
-          } catch (Exception e) {
-            templates.clear();
+            if (!ArrayUtils.isEmpty(items)) {
+              templates.put(entry.getKey(), Arrays.asList(items));
+            }
           }
           renderTemplates(null);
         }
