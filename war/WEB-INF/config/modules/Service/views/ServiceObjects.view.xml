@@ -2,7 +2,7 @@
 <View xmlns="http://www.butent.com/view"
 
   name="ServiceObjects" source="ServiceObjects"
-  caption="=svcObjects" newRowCaption="=svcNewObject"
+  caption="=svcObjects" newRowCaption="=svcNewProjectObject"
   editForm="ServiceObject" newRowForm="ServiceObject"
   rowCaption="CategoryName Address CustomerName"
   >

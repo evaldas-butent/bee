@@ -180,8 +180,8 @@
           </FlowPanel>
 
           <FlowPanel style="&section;" data="Relations" for="ServiceObject" module="Service">
-            <Label text="=svcObjects" style="&top1;" />
-            <MultiSelector viewName="ServiceObjects" property="ServiceObjects"
+            <Label text="=svcProjectObjects" style="&top1;" />
+            <MultiSelector name="ServiceObjects" viewName="ServiceObjects" property="ServiceObjects"
               renderColumns="Address" choiceColumns="Address CustomerName"
               newRowEnabled="false" style="&inp2x;" disablable="true" summarize="true"/>
           </FlowPanel>
