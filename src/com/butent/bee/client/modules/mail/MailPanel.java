@@ -327,6 +327,14 @@ public class MailPanel extends AbstractFormInterceptor {
         message.requery(COL_PLACE, row.getId());
         messageWidget.setVisible(true);
         emptySelectionWidget.setVisible(false);
+
+        int flagIdx = Data.getColumnIndex(getGridPresenter().getViewName(), COL_FLAGS);
+        int value = BeeUtils.unbox(row.getInteger(flagIdx));
+
+        if (!MessageFlag.SEEN.isSet(value)) {
+          row.setValue(flagIdx, MessageFlag.SEEN.set(value));
+          getGridView().refreshCell(row.getId(), COL_MESSAGE);
+        }
       } else if (getGridView().isEmpty()
           || !Objects.equals(message.getFolder(), getCurrentFolder())) {
         message.reset();
@@ -783,18 +791,17 @@ public class MailPanel extends AbstractFormInterceptor {
       if (!BeeUtils.isEmpty(criteria)) {
         if (searchPanel.searchInCurrentFolder()) {
           criteria.put(COL_FOLDER, BeeUtils.toString(getCurrentFolder()));
-        } else {
-          setCurrentFolder(null);
-          MailKeeper.refreshController();
         }
+        setCurrentFolder(null);
+        MailKeeper.refreshController();
+
         criteria.put(COL_ACCOUNT, BeeUtils.toString(getCurrentAccount().getAccountId()));
         clause = Filter.custom(TBL_PLACES, Codec.beeSerialize(criteria));
       }
       if (DataUtils.isId(getCurrentFolder())) {
         clause = Filter.and(Filter.equals(COL_FOLDER, getCurrentFolder()), clause);
       } else {
-        clause = Filter.and(Filter.equals(COL_ACCOUNT, getCurrentAccount().getAccountId()),
-            Filter.notEquals(COL_FOLDER, getCurrentAccount().getTrashId()), clause);
+        clause = Filter.and(Filter.equals(COL_ACCOUNT, getCurrentAccount().getAccountId()), clause);
       }
       grid.getDataProvider().setUserFilter(clause);
 
