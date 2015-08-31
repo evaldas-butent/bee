@@ -1,7 +1,5 @@
 package com.butent.bee.client.modules.tasks;
 
-import com.butent.bee.shared.*;
-import com.butent.bee.shared.modules.service.ServiceConstants;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.gwt.event.dom.client.KeyDownEvent;
@@ -39,6 +37,10 @@ import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.widget.InputDate;
 import com.butent.bee.client.widget.InputTime;
 import com.butent.bee.client.widget.Label;
+import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Consumer;
+import com.butent.bee.shared.State;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
@@ -53,6 +55,7 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.projects.ProjectConstants;
+import com.butent.bee.shared.modules.service.ServiceConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants.TaskEvent;
 import com.butent.bee.shared.time.DateTime;
@@ -599,7 +602,7 @@ class TaskBuilder extends AbstractFormInterceptor {
               return;
             }
 
-            if(serviceObjects == null) {
+            if (serviceObjects == null) {
               return;
             }
 

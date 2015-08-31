@@ -1,6 +1,5 @@
 package com.butent.bee.client.modules.tasks;
 
-import com.butent.bee.shared.modules.service.ServiceConstants;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Table;
@@ -80,6 +79,7 @@ import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.modules.documents.DocumentConstants;
 import com.butent.bee.shared.modules.projects.ProjectConstants;
 import com.butent.bee.shared.modules.projects.ProjectStatus;
+import com.butent.bee.shared.modules.service.ServiceConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants.TaskEvent;
 import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
@@ -640,7 +640,7 @@ class TaskEditor extends AbstractFormInterceptor {
 
     if (BeeUtils.same(name, NAME_OBSERVERS) && widget instanceof MultiSelector) {
       observers = (MultiSelector) widget;
-    } else if(BeeUtils.same(name, NAME_SERVICE_OBJECT) && widget instanceof MultiSelector) {
+    } else if (BeeUtils.same(name, NAME_SERVICE_OBJECT) && widget instanceof MultiSelector) {
       serviceObjects = (MultiSelector) widget;
     }
   }
@@ -964,8 +964,8 @@ class TaskEditor extends AbstractFormInterceptor {
                         .valueOf(br.getId())));
 
                 Queries.insert(VIEW_RELATIONS, Data.getColumns(VIEW_RELATIONS,
-                        Lists.newArrayList(DocumentConstants.COL_DOCUMENT,
-                            ProjectConstants.COL_PROJECT)),
+                    Lists.newArrayList(DocumentConstants.COL_DOCUMENT,
+                        ProjectConstants.COL_PROJECT)),
                     Lists.newArrayList(String.valueOf(br.getId()),
                         String.valueOf(row.getString(idxProject))));
               }
