@@ -1553,8 +1553,8 @@ public class MailModuleBean implements BeeModule, HasTimerService {
     for (Iterator<MailFolder> iter = localFolder.getSubFolders().iterator(); iter.hasNext(); ) {
       MailFolder subFolder = iter.next();
 
-      if (!visitedFolders.contains(subFolder.getName()) && subFolder.isConnected()
-          && !account.isSystemFolder(subFolder)) {
+      if (!visitedFolders.contains(subFolder.getName())
+          && subFolder.isConnected() && !account.isSystemFolder(subFolder)) {
         c++;
         mail.dropFolder(subFolder);
         iter.remove();
