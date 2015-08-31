@@ -49,7 +49,7 @@ final class DataRightsHandler extends MultiStateForm {
   @Override
   protected List<RightsState> getRightsStates() {
     return Lists.newArrayList(RightsState.CREATE, RightsState.VIEW, RightsState.EDIT,
-        RightsState.DELETE);
+        RightsState.DELETE, RightsState.MERGE);
   }
 
   @Override

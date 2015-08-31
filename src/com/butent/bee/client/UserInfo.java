@@ -63,6 +63,10 @@ public class UserInfo implements HasInfo {
     return isLoggedIn() && userData.canEditData(object);
   }
 
+  public boolean canMergeData(String object) {
+    return isLoggedIn() && userData.canMergeData(object);
+  }
+
   public int getClickSensitivityDistance() {
     return clickSensitivityDistance;
   }
