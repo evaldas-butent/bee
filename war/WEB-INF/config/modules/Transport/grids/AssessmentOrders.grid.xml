@@ -82,6 +82,8 @@
     <DataColumn name="Log" visible="false" />
     <DataColumn name="LogCount" />
     <DataColumn name="FinishedCount" />
+
+    <RelColumn name="Author" />
   </g:columns>
 
   <g:rowStyle>

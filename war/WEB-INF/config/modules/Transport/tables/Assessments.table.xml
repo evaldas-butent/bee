@@ -18,8 +18,10 @@
     <Boolean name="ShowAdditionalRoute" label="Šalys maršrute" />
     <Boolean name="ExpensesRegistered" label="=trExpensesRegistered" />
     <Text name="Documents" label="Dokumentai" />
-    
+
     <Relation name="Order" unique="true" relation="TransportationOrders" editable="true" />
+
+    <Relation name="Author" relation="Users" defExpr="CURRENT_USER" label="=author" />
   </Fields>
   <Indexes>
     <Index fields="Status" />

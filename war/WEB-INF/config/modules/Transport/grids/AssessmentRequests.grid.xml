@@ -66,6 +66,8 @@
         <ui:expression>row.Income - row.Expense</ui:expression>
       </render>
     </CalcColumn>
+
+    <RelColumn name="Author" />
   </g:columns>
 
   <g:predefinedFilter name="new_answered" label="Nauji ir atsakyti" initial="true">
