@@ -27,5 +27,6 @@
     <DataColumn name="DateTo" caption="=trReturned" />
     <DataColumn name="PlannedEndDate" caption="=trPlannedEndDate" />
     <RelColumn name="Manager" />
+    <DataColumn name="Created" />
   </g:columns>
 </g:Grid>

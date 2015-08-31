@@ -55,6 +55,8 @@
       <row>
         <Label for="Manager" class="bee-required bee-hasDefaults" />
         <DataSelector source="Manager" editSource="ManagerPerson" newRowEnabled="false" />
+        <Label for="Created" horizontalAlignment="right" />
+        <DateTimeLabel source="Created" />
       </row>
     </Table>
 

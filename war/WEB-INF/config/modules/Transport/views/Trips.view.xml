@@ -63,6 +63,8 @@
         </SimpleJoin>
       </SimpleJoin>
     </SimpleJoin>
+
+    <SimpleColumn name="Created" />
   </Columns>
   <Order>
     <OrderBy column="Date" />

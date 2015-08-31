@@ -29,6 +29,7 @@
     <String name="ForwarderDriver" precision="50" label="=trCarrierDriver" />
     <String name="Route" precision="200" label="=route" />
     <Relation name="Manager" relation="Users" defExpr="CURRENT_USER" label="=manager" />
+    <DateTime name="Created" defExpr="CURRENT_TIME" label="=createdOn" />
     <Text name="Notes" label="=notes" />
   </Fields>
 </Table>
