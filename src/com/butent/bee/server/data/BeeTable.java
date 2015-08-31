@@ -972,6 +972,7 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
   private final String idName;
   private final String versionName;
   private final boolean auditable;
+  private final boolean mergeable;
   private final BeeUniqueKey primaryKey;
 
   private final Map<String, BeeField> fields = new LinkedHashMap<>();
@@ -999,6 +1000,7 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
     this.idName = xmlTable.idName;
     this.versionName = xmlTable.versionName;
     this.auditable = noAudit ? false : xmlTable.audit;
+    this.mergeable = xmlTable.mergeable;
 
     this.extSource = new ExtSingleTable();
     this.stateSource = new StateSingleTable();
@@ -1057,7 +1059,7 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
     List<ExtendedProperty> info = new ArrayList<>();
     PropertyUtils.addProperties(info, false, "Module", getModule(), "Name", getName(),
         "Id Chunk", getIdChunk(), "Id Name", getIdName(), "Version Name", getVersionName(),
-        "Active", isActive(), "Auditable", isAuditable());
+        "Active", isActive(), "Auditable", isAuditable(), "Mergeable", isMergeable());
 
     info.add(new ExtendedProperty("Fields", BeeUtils.toString(fields.size())));
     int i = 0;
@@ -1315,6 +1317,10 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
 
   public boolean isEmpty() {
     return fields.isEmpty();
+  }
+
+  public boolean isMergeable() {
+    return mergeable;
   }
 
   @Override
