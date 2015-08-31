@@ -1201,6 +1201,10 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
         case REMOVABLE:
           ok = rowInfo.isEditable() && rowInfo.isRemovable();
           break;
+        case MERGEABLE:
+          ok = rowInfo.isEditable() && rowInfo.isRemovable()
+              && getGrid().containsRow(rowInfo.getId());
+          break;
         case ALL:
           ok = true;
           break;

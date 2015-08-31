@@ -29,6 +29,10 @@
         <ListBox source="Status" style="height: 29px; width: 152px;" />
       </row>
       <row>
+        <Label for="Manager" class="bee-required bee-hasDefaults" />
+        <DataSelector source="Manager" editSource="ManagerPerson" newRowEnabled="false" />
+      </row>
+      <row>
         <FlowPanel class="flexBox-horizontal-center">
           <Label for="Route" class="flexible" />
           <FaLabel name="Route" char="magic" title="=trGenerateRoute" style="margin-left:1em;" />

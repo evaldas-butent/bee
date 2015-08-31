@@ -348,6 +348,7 @@
       <xs:enumeration value="edit" />
       <xs:enumeration value="export" />
       <xs:enumeration value="filter" />
+      <xs:enumeration value="merge" />
       <xs:enumeration value="print" />
       <xs:enumeration value="refresh" />
       <xs:enumeration value="remove_filter" />

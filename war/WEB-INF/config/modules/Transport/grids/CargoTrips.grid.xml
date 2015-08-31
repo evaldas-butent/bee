@@ -11,7 +11,7 @@
     <ActionColumn element="link" name="TripNo" caption="=trTripNo" />
     <DataColumn name="ExpeditionType" caption="=trExpeditionType" />
     <DataColumn name="ForwarderName" caption="=carrier" />
-    <CalcColumn name="Vehicle" type="string" caption="=transport" flexBasis="120">
+    <CalcColumn name="Vehicle" type="string" caption="=transport">
       <render>
         <ui:function>
           var vehicle = row.ForwarderVehicle;
@@ -26,6 +26,13 @@
           }
           return vehicle;
         </ui:function>
+      </render>
+    </CalcColumn>
+    <CalcColumn name="Driver" type="string" caption="=vehicleDriver">
+      <render>
+        <ui:expression>
+          row.ForwarderDriver ? row.ForwarderDriver : row.Driver;
+        </ui:expression>
       </render>
     </CalcColumn>
     <DataColumn name="DateFrom" caption="=trDeparted" />

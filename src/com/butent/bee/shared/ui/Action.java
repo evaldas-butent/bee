@@ -29,6 +29,7 @@ public enum Action implements BeeSerializable, HasCaption {
   EXPORT(FontAwesome.FILE_EXCEL_O, Localized.getConstants().actionExport(), "export"),
   FILTER(FontAwesome.FILTER, Localized.getConstants().actionFilter(), "filter"),
   MENU(FontAwesome.NAVICON, Localized.getConstants().menu(), "menu"),
+  MERGE(FontAwesome.OBJECT_GROUP, Localized.getConstants().actionMerge(), "merge"),
   PRINT(FontAwesome.PRINT, Localized.getConstants().actionPrint(), "print"),
   REFRESH(FontAwesome.REFRESH, Localized.getConstants().actionRefresh(), "refresh"),
   REMOVE_FILTER(FontAwesome.REMOVE, Localized.getConstants().actionRemoveFilter(), "removeFilter"),

@@ -68,6 +68,7 @@ public final class OrdersConstants {
   public static final String ALS_COMPANY_EMAIL = "CompanyEmail";
   public static final String ALS_CONTACT_EMAIL = "ContactEmail";
 
+  public static final String COL_END_DATE = "EndDate";
   public static final String COL_ORDER = "Order";
   public static final String COL_ORDERS_STATUS = "Status";
   public static final String COL_RESERVED_REMAINDER = "ResRemainder";

@@ -46,6 +46,7 @@ import com.butent.bee.shared.utils.PropertyUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -971,6 +972,7 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
   private final String idName;
   private final String versionName;
   private final boolean auditable;
+  private final boolean mergeable;
   private final BeeUniqueKey primaryKey;
 
   private final Map<String, BeeField> fields = new LinkedHashMap<>();
@@ -998,6 +1000,7 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
     this.idName = xmlTable.idName;
     this.versionName = xmlTable.versionName;
     this.auditable = noAudit ? false : xmlTable.audit;
+    this.mergeable = xmlTable.mergeable;
 
     this.extSource = new ExtSingleTable();
     this.stateSource = new StateSingleTable();
@@ -1056,7 +1059,7 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
     List<ExtendedProperty> info = new ArrayList<>();
     PropertyUtils.addProperties(info, false, "Module", getModule(), "Name", getName(),
         "Id Chunk", getIdChunk(), "Id Name", getIdName(), "Version Name", getVersionName(),
-        "Active", isActive(), "Auditable", isAuditable());
+        "Active", isActive(), "Auditable", isAuditable(), "Mergeable", isMergeable());
 
     info.add(new ExtendedProperty("Fields", BeeUtils.toString(fields.size())));
     int i = 0;
@@ -1244,6 +1247,26 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
     return keys;
   }
 
+  public Set<Set<String>> getUniqueness() {
+    Set<Set<String>> result = new HashSet<>();
+
+    fields.values().stream()
+        .filter(BeeField::isUnique)
+        .map(BeeField::getName)
+        .forEach(e -> result.add(Collections.singleton(e)));
+
+    uniqueKeys.values().stream()
+        .map(BeeUniqueKey::getFields)
+        .forEach(e -> result.add(new HashSet<>(e)));
+
+    indexes.values().stream()
+        .filter(e -> e.isUnique() && !BeeUtils.isEmpty(e.getFields()))
+        .map(BeeIndex::getFields)
+        .forEach(e -> result.add(new HashSet<>(e)));
+
+    return result;
+  }
+
   public String getVersionName() {
     return versionName;
   }
@@ -1294,6 +1317,10 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
 
   public boolean isEmpty() {
     return fields.isEmpty();
+  }
+
+  public boolean isMergeable() {
+    return mergeable;
   }
 
   @Override

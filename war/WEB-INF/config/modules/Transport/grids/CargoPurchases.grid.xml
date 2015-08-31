@@ -14,6 +14,7 @@
     <RelColumn name="OrderNo" editEnabled="true" editSource="Order" visible="false" />
     <DataColumn name="Status" />
     <DataColumn name="SupplierName" />
+    <DataColumn name="Number" />
 
     <RelColumn name="LoadingCountry" visible="false" readOnly="true"/>
     <CalcColumn type="string" name="From" source="LoadingCountryCode" cellType="html" width="20"

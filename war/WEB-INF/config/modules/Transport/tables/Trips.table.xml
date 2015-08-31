@@ -28,6 +28,7 @@
     <String name="ForwarderVehicle" precision="50" label="=trCarrierVehicle" />
     <String name="ForwarderDriver" precision="50" label="=trCarrierDriver" />
     <String name="Route" precision="200" label="=route" />
+    <Relation name="Manager" relation="Users" defExpr="CURRENT_USER" label="=manager" />
     <Text name="Notes" label="=notes" />
     <Numeric name="TransportationPrice" precision="15" scale="2" label="=trTransportationPrice" />
     <Relation name="TransportationCurrency" relation="Currencies" label="=currencyShort" defExpr="MAIN_CURRENCY" />

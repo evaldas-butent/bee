@@ -188,6 +188,8 @@ public final class MailConstants {
   public static final String TBL_RECIPIENTS = "Recipients";
   public static final String TBL_PLACES = "Places";
 
+  public static final String VIEW_NEWSLETTER_CONTACTS = "NewsletterContacts";
+  public static final String VIEW_NEWSLETTER_FILES = "NewsletterFiles";
   public static final String VIEW_USER_EMAILS = "UserEmails";
 
   public static final String COL_MESSAGE = "Message";
@@ -247,6 +249,8 @@ public final class MailConstants {
   public static final String COL_RULE_ACTION_OPTIONS = "ActionOptions";
 
   public static final String COL_ADDRESSBOOK_LABEL = "Label";
+
+  public static final String COL_NEWSLETTER = "Newsletter";
 
   public static final String FORM_ACCOUNT = "Account";
   public static final String FORM_NEW_ACCOUNT = "NewAccount";

@@ -83,6 +83,24 @@ public class GridMenu {
       }
     },
 
+    MERGE(Action.MERGE) {
+      @Override
+      boolean isEnabled(GridDescription gridDescription, Collection<UiOption> uiOptions) {
+        return isEditable(gridDescription)
+            && BeeKeeper.getUser().canMergeData(gridDescription.getViewName());
+      }
+
+      @Override
+      boolean isVisible(GridPresenter presenter) {
+        return presenter.getGridView().getSelectedRows(SelectedRows.MERGEABLE).size() == 2;
+      }
+
+      @Override
+      void select(GridPresenter presenter) {
+        presenter.handleAction(Action.MERGE);
+      }
+    },
+
     EXPORT(Action.EXPORT) {
       @Override
       boolean isEnabled(GridDescription gridDescription, Collection<UiOption> uiOptions) {

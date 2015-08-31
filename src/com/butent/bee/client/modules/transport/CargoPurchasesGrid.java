@@ -14,6 +14,7 @@ import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.modules.trade.InvoiceBuilder;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BiConsumer;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -37,6 +38,7 @@ public class CargoPurchasesGrid extends InvoiceBuilder {
     Set<String> orders = new TreeSet<>();
     Map<Long, String> suppliers = new HashMap<>();
     Map<Long, String> currencies = new HashMap<>();
+    String number = null;
 
     DataInfo info = Data.getDataInfo(getViewName());
     int order = info.getColumnIndex(COL_ASSESSMENT);
@@ -44,6 +46,7 @@ public class CargoPurchasesGrid extends InvoiceBuilder {
     int suplName = info.getColumnIndex(COL_TRADE_SUPPLIER + "Name");
     int currId = info.getColumnIndex(COL_CURRENCY);
     int currName = info.getColumnIndex(ALS_CURRENCY_NAME);
+    int numberIdx = info.getColumnIndex(COL_NUMBER);
 
     for (BeeRow row : data.getRows()) {
       orders.add(row.getString(order));
@@ -55,6 +58,11 @@ public class CargoPurchasesGrid extends InvoiceBuilder {
       id = row.getLong(currId);
       if (DataUtils.isId(id)) {
         currencies.put(id, row.getString(currName));
+      }
+      if (number != null && !BeeUtils.same(row.getString(numberIdx), number)) {
+        number = "";
+      } else {
+        number = BeeUtils.nvl(row.getString(numberIdx), "");
       }
     }
     newRow.setValue(targetInfo.getColumnIndex(COL_TRADE_NUMBER), BeeUtils.joinItems(orders));
@@ -75,6 +83,18 @@ public class CargoPurchasesGrid extends InvoiceBuilder {
       Map.Entry<Long, String> entry = BeeUtils.peek(currencies.entrySet());
       newRow.setValue(targetInfo.getColumnIndex(COL_CURRENCY), entry.getKey());
       newRow.setValue(targetInfo.getColumnIndex(ALS_CURRENCY_NAME), entry.getValue());
+    }
+    if (!BeeUtils.isEmpty(number)) {
+      number = BeeUtils.trim(number);
+      String prefix = null;
+      int sep = number.indexOf(BeeConst.CHAR_SPACE);
+
+      if (BeeUtils.isNonNegative(sep)) {
+        prefix = number.substring(0, sep);
+        number = number.substring(sep + 1);
+      }
+      newRow.setValue(targetInfo.getColumnIndex(COL_TRADE_INVOICE_PREFIX), prefix);
+      newRow.setValue(targetInfo.getColumnIndex(COL_TRADE_INVOICE_NO), number);
     }
     int sale = info.getColumnIndex(COL_SALE);
     String operation = null;

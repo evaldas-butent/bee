@@ -60,6 +60,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String actionImport();
 
+  String actionMerge();
+
   String actionNew();
 
   String actionNew1();
@@ -508,6 +510,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String menu();
 
+  String mergeInto();
+
   String message();
 
   String messageSent();
@@ -677,6 +681,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
   String rightStateDelete();
 
   String rightStateEdit();
+
+  String rightStateMerge();
 
   String rightStateView();
 

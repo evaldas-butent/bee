@@ -149,7 +149,7 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
     sys.registerDataEventHandler(new DataEventHandler() {
 
       @Subscribe
-      public void SetFreeRemainder(ViewQueryEvent event) {
+      public void setFreeRemainder(ViewQueryEvent event) {
         if (event.isAfter() && event.isTarget(VIEW_ORDER_ITEMS) && event.hasData()
             && event.getColumnCount() >= sys.getView(event.getTargetName()).getColumnCount()) {
 
@@ -332,6 +332,7 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
     if (!response.hasErrors()) {
       SqlUpdate update = new SqlUpdate(TBL_ORDER_ITEMS)
           .addConstant(COL_INCOME_SALE, saleId)
+          .addConstant(COL_RESERVED_REMAINDER, null)
           .setWhere(where);
 
       ResponseObject updResponse = qs.updateDataWithResponse(update);
