@@ -1,5 +1,6 @@
 package com.butent.bee.client.modules.tasks;
 
+import com.butent.bee.shared.modules.service.ServiceConstants;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Table;
@@ -113,6 +114,7 @@ class TaskEditor extends AbstractFormInterceptor {
 
   private static final String STYLE_EXTENSION = CRM_STYLE_PREFIX + "taskExtension";
   private static final String NAME_OBSERVERS = "Observers";
+  private static final String NAME_SERVICE_OBJECT = "ServiceObjects";
 
   private static final List<String> relations = Lists.newArrayList(PROP_COMPANIES, PROP_PERSONS,
       PROP_DOCUMENTS, PROP_APPOINTMENTS, PROP_DISCUSSIONS, PROP_SERVICE_OBJECTS, PROP_TASKS);
@@ -625,6 +627,7 @@ class TaskEditor extends AbstractFormInterceptor {
   private final long userId;
   private MultiSelector observers;
   private List<Long> projectUsers;
+  private MultiSelector serviceObjects;
 
   TaskEditor() {
     super();
@@ -637,6 +640,8 @@ class TaskEditor extends AbstractFormInterceptor {
 
     if (BeeUtils.same(name, NAME_OBSERVERS) && widget instanceof MultiSelector) {
       observers = (MultiSelector) widget;
+    } else if(BeeUtils.same(name, NAME_SERVICE_OBJECT) && widget instanceof MultiSelector) {
+      serviceObjects = (MultiSelector) widget;
     }
   }
 
@@ -675,6 +680,7 @@ class TaskEditor extends AbstractFormInterceptor {
 
     setProjectStagesFilter(form, row);
     setProjectUsersFilter(form, row);
+    setObjectFilter(form, row);
   }
 
   @Override
@@ -1965,6 +1971,42 @@ class TaskEditor extends AbstractFormInterceptor {
     };
 
     sendRequest(params, callback);
+  }
+
+  private void setObjectFilter(final FormView form, IsRow row) {
+    int idxProject = form.getDataIndex(ProjectConstants.COL_PROJECT);
+
+    if (BeeConst.isUndef(idxProject)) {
+      return;
+    }
+
+    long projectId = BeeUtils.unbox(row.getLong(idxProject));
+
+    if (!DataUtils.isId(projectId)) {
+      return;
+    }
+
+    if (serviceObjects == null) {
+      return;
+    }
+
+    Queries.getRowSet(ServiceConstants.VIEW_SERVICE_OBJECTS,
+        Lists.newArrayList(ServiceConstants.COL_SERVICE_ADDRESS),
+        Filter.isEqual(
+            ProjectConstants.COL_PROJECT, Value.getValue(projectId)), new RowSetCallback() {
+          @Override
+          public void onSuccess(BeeRowSet result) {
+            if (result.isEmpty()) {
+              return;
+            }
+
+            if (serviceObjects == null) {
+              return;
+            }
+
+            serviceObjects.getOracle().setAdditionalFilter(Filter.idIn(result.getRowIds()), true);
+          }
+        });
   }
 
   private void setProjectUsers(List<Long> projectUsers) {

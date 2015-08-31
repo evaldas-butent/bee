@@ -1,5 +1,7 @@
 package com.butent.bee.client.modules.tasks;
 
+import com.butent.bee.shared.*;
+import com.butent.bee.shared.modules.service.ServiceConstants;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.gwt.event.dom.client.KeyDownEvent;
@@ -37,10 +39,6 @@ import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.widget.InputDate;
 import com.butent.bee.client.widget.InputTime;
 import com.butent.bee.client.widget.Label;
-import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Consumer;
-import com.butent.bee.shared.State;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
@@ -81,6 +79,7 @@ class TaskBuilder extends AbstractFormInterceptor {
   private static final String NAME_EXECUTORS = "Executors";
   private static final String NAME_OBSERVERS = "Observers";
   private static final String NAME_OBSERVER_GROUPS = "ObserverGroups";
+  private static final String NAME_SERVICE_OBJECTS = "ServiceObjects";
 
   private static final String NAME_REMINDER_DATE = "Reminder_Date";
   private static final String NAME_REMINDER_TIME = "Reminder_Time";
@@ -97,6 +96,7 @@ class TaskBuilder extends AbstractFormInterceptor {
   private MultiSelector executorGroups;
   private MultiSelector observers;
   private MultiSelector observerGroups;
+  private MultiSelector serviceObjects;
 
   private final Map<Long, FileInfo> filesToUpload = new HashMap<>();
   private Long executor;
@@ -225,6 +225,8 @@ class TaskBuilder extends AbstractFormInterceptor {
       observers = (MultiSelector) widget;
     } else if (BeeUtils.same(NAME_OBSERVER_GROUPS, name) && (widget instanceof MultiSelector)) {
       observerGroups = (MultiSelector) widget;
+    } else if (BeeUtils.same(NAME_SERVICE_OBJECTS, name) && (widget instanceof MultiSelector)) {
+      serviceObjects = (MultiSelector) widget;
     }
   }
 
@@ -232,6 +234,7 @@ class TaskBuilder extends AbstractFormInterceptor {
   public void afterRefresh(FormView form, IsRow row) {
     setProjectStagesFilter(form, row);
     setProjectUsersFilter(form, row);
+    setObjectFilter(form, row);
   }
 
   @Override
@@ -567,6 +570,42 @@ class TaskBuilder extends AbstractFormInterceptor {
     } else {
       return TimeUtils.combine(datePart, getMillis(NAME_START_TIME));
     }
+  }
+
+  private void setObjectFilter(final FormView form, IsRow row) {
+    int idxProject = form.getDataIndex(ProjectConstants.COL_PROJECT);
+
+    if (BeeConst.isUndef(idxProject)) {
+      return;
+    }
+
+    long projectId = BeeUtils.unbox(row.getLong(idxProject));
+
+    if (!DataUtils.isId(projectId)) {
+      return;
+    }
+
+    if (serviceObjects == null) {
+      return;
+    }
+
+    Queries.getRowSet(ServiceConstants.VIEW_SERVICE_OBJECTS,
+        Lists.newArrayList(ServiceConstants.COL_SERVICE_ADDRESS),
+        Filter.isEqual(
+            ProjectConstants.COL_PROJECT, Value.getValue(projectId)), new RowSetCallback() {
+          @Override
+          public void onSuccess(BeeRowSet result) {
+            if (result.isEmpty()) {
+              return;
+            }
+
+            if(serviceObjects == null) {
+              return;
+            }
+
+            serviceObjects.getOracle().setAdditionalFilter(Filter.idIn(result.getRowIds()), true);
+          }
+        });
   }
 
   private void setProjectUsersFilter(final FormView form, IsRow row) {
