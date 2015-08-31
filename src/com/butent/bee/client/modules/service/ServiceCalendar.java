@@ -457,6 +457,10 @@ final class ServiceCalendar extends TimeBoard {
       setFiltered(true);
     }
 
+    if (currentStatus != null) {
+      params.addDataItem(VAR_SERVICE_OBJECT_STATUS, currentStatus.ordinal());
+    }
+
     loadingImage.setVisible(true);
     BeeKeeper.getRpc().makeRequest(params,
         new ResponseCallback() {
