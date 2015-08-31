@@ -17,6 +17,7 @@
 
     <SimpleColumn name="Warehouse" />
     <SimpleJoin name="Warehouse" joinType="LEFT">
+      <SimpleColumn name="Code" alias="WarehouseCode" />
       <SimpleColumn name="Name" alias="WarehouseName" />
     </SimpleJoin>
     

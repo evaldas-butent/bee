@@ -985,7 +985,7 @@ public class SystemBean {
     return new BeeView(getTable(tblName).getModule(), xmlView, tableCache);
   }
 
-  private Collection<BeeTable> getTables() {
+  public Collection<BeeTable> getTables() {
     return ImmutableList.copyOf(tableCache.values());
   }
 

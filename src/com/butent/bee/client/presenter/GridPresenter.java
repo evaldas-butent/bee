@@ -2,6 +2,7 @@ package com.butent.bee.client.presenter;
 
 import com.google.common.collect.Lists;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
@@ -17,6 +18,7 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.dialog.ChoiceCallback;
 import com.butent.bee.client.dialog.ConfirmationCallback;
+import com.butent.bee.client.dialog.DialogConstants;
 import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.modules.administration.HistoryHandler;
@@ -24,6 +26,7 @@ import com.butent.bee.client.output.Exporter;
 import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.UiOption;
+import com.butent.bee.client.ui.WidgetInitializer;
 import com.butent.bee.client.view.GridContainerImpl;
 import com.butent.bee.client.view.GridContainerView;
 import com.butent.bee.client.view.HasGridView;
@@ -915,12 +918,27 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
                     @Override
                     public void onSuccess(int value) {
                       if (value == 0) {
-                        logger.debug("merge");
+                        long from = rows.get(1 - index).getId();
+                        long into = rows.get(index).getId();
+
+                        Queries.mergeRows(getViewName(), from, into, new Queries.IntCallback() {
+                          @Override
+                          public void onSuccess(Integer result) {
+                            getGridView().getGrid().clearSelection();
+                          }
+                        });
                       }
                     }
-                  }, BeeConst.UNDEF, null, StyleUtils.className(FontSize.MEDIUM),
-                  StyleUtils.className(FontSize.MEDIUM), null, null);
-
+                  }, BeeConst.UNDEF, null, null, null, null,
+                  new WidgetInitializer() {
+                    @Override
+                    public Widget initialize(Widget widget, String name) {
+                      if (DialogConstants.WIDGET_DIALOG.equals(name)) {
+                        widget.addStyleName(BeeConst.CSS_CLASS_PREFIX + "MergeConfirm");
+                      }
+                      return widget;
+                    }
+                  });
             }
           }
         });
@@ -965,9 +983,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
       for (int i = 0; i < columns.size(); i++) {
         BeeColumn column = columns.get(i);
 
-        if ((column.isCharacter() || ValueType.isDateOrDateTime(column.getType()))
-            && column.isEditable()) {
-
+        if (column.isCharacter() || ValueType.isDateOrDateTime(column.getType())) {
           indexes.add(i);
           if (indexes.size() > 5) {
             break;
@@ -984,7 +1000,19 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
 
     if (result.size() != rows.size()) {
       result.clear();
+
+      for (IsRow row : rows) {
+        String idLabel = BeeUtils.joinWords(Localized.getConstants().captionId(), row.getId());
+
+        if (indexes.isEmpty()) {
+          result.add(idLabel);
+        } else {
+          result.add(BeeUtils.joinItems(idLabel,
+              DataUtils.join(columns, row, indexes, BeeConst.DEFAULT_LIST_SEPARATOR)));
+        }
+      }
     }
+
     return result;
   }
 

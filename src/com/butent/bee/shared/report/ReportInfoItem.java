@@ -130,7 +130,7 @@ public final class ReportInfoItem implements BeeSerializable {
           value = isColSummary();
           break;
         case DESCENDING:
-          value = getDescending();
+          value = descending;
           break;
         case FUNCTION:
           value = getFunction();

@@ -82,7 +82,8 @@ public class OrderForm extends AbstractFormInterceptor {
     }
 
     boolean isOrder =
-        (status == OrdersStatus.APPROVED.ordinal() || status == OrdersStatus.FINISH
+        (row.getInteger(idxStatus) == OrdersStatus.APPROVED.ordinal() ||
+        row.getInteger(idxStatus) == OrdersStatus.FINISH
             .ordinal()) ? true : false;
     String caption;
 

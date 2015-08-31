@@ -37,12 +37,6 @@ public enum RegulatedWidget implements HasLocalizedCaption {
       return constants.actionAudit();
     }
   },
-  MERGE {
-    @Override
-    public String getCaption(LocalizableConstants constants) {
-      return constants.actionMerge();
-    }
-  },
   DOCUMENT_TREE {
     @Override
     public String getCaption(LocalizableConstants constants) {

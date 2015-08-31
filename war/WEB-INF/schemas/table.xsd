@@ -44,6 +44,7 @@
     <xs:attribute name="idName" type="tp:fieldNameType" default="ID" />
     <xs:attribute name="versionName" type="tp:fieldNameType" default="VERSION" />
     <xs:attribute name="audit" type="xs:boolean" default="true" />
+    <xs:attribute name="mergeable" type="xs:boolean" default="true" />
   </xs:complexType>
 
   <xs:complexType name="fields">

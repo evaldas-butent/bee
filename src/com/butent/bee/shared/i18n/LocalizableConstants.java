@@ -682,6 +682,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String rightStateEdit();
 
+  String rightStateMerge();
+
   String rightStateView();
 
   String roleAddUsers();

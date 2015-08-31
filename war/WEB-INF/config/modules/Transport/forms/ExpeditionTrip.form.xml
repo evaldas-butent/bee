@@ -3,9 +3,8 @@
   <!ENTITY ROW_STYLE "margin-bottom: 1ex;">
 ]>
 <f:Form xmlns="http://www.butent.com/widget"
-  xmlns:f="http://www.butent.com/form" 
-  xmlns:d="http://www.butent.com/decorator" 
-  
+  xmlns:f="http://www.butent.com/form"
+
   name="ExpeditionTrip" viewName="ExpeditionTrips" caption="=transportExpeditionTrip"
   width="900" height="600"
   >
@@ -52,9 +51,13 @@
       <row>
         <Label text="=transport" />
         <InputText source="ForwarderVehicle" />
-      </row>  
-    </Table>         
-    
+      </row>
+      <row>
+        <Label for="Manager" class="bee-required bee-hasDefaults" />
+        <DataSelector source="Manager" editSource="ManagerPerson" newRowEnabled="false" />
+      </row>
+    </Table>
+
     <TabbedPages class="flexible" style="margin-top: 1ex;">
       <page>
         <text>=cargos</text>

@@ -99,79 +99,87 @@ class OrderCargoForm extends AbstractFormInterceptor implements SelectorEvent.Ha
           }
         }
       });
+    } else if (widget instanceof ChildGrid) {
+      switch (name) {
+        case TBL_CARGO_INCOMES:
+          final String viewName = getViewName();
 
-    } else if (widget instanceof ChildGrid && BeeUtils.same(name, TBL_CARGO_INCOMES)) {
-      final String viewName = getViewName();
+          ((ChildGrid) widget).setGridInterceptor(new AbstractGridInterceptor() {
+            @Override
+            public void afterDeleteRow(long rowId) {
+              refresh(Data.getLong(viewName, getActiveRow(), COL_CURRENCY));
+            }
 
-      ((ChildGrid) widget).setGridInterceptor(new AbstractGridInterceptor() {
-        @Override
-        public void afterDeleteRow(long rowId) {
-          refresh(Data.getLong(viewName, getActiveRow(), COL_CURRENCY));
-        }
+            @Override
+            public void afterInsertRow(IsRow result) {
+              refresh(Data.getLong(viewName, getActiveRow(), COL_CURRENCY));
+            }
 
-        @Override
-        public void afterInsertRow(IsRow result) {
-          refresh(Data.getLong(viewName, getActiveRow(), COL_CURRENCY));
-        }
-
-        @Override
-        public void afterUpdateCell(IsColumn column, String oldValue, String newValue,
-            IsRow result, boolean rowMode) {
-          if (BeeUtils.inListSame(column.getId(), COL_DATE, COL_AMOUNT, COL_CURRENCY,
-              COL_TRADE_VAT_PLUS, COL_TRADE_VAT, COL_TRADE_VAT_PERC)) {
-            refresh(Data.getLong(viewName, getActiveRow(), COL_CURRENCY));
-          }
-        }
-
-        @Override
-        public GridInterceptor getInstance() {
-          return null;
-        }
-      });
-
-    } else if (widget instanceof ChildGrid && BeeUtils.same(name, TBL_CARGO_EXPENSES)) {
-      ((ChildGrid) widget).setGridInterceptor(new AbstractGridInterceptor() {
-
-        @Override
-        public void afterCreateEditor(String source, Editor editor, boolean embedded) {
-          if (BeeUtils.same(source, COL_CARGO_INCOME) && editor instanceof DataSelector) {
-            ((DataSelector) editor).addSelectorHandler(OrderCargoForm.this);
-          }
-          super.afterCreateEditor(source, editor, embedded);
-        }
-
-        @Override
-        public ColumnDescription beforeCreateColumn(GridView gridView, ColumnDescription descr) {
-          if (!TransportHandler.bindExpensesToIncomes()
-              && Objects.equals(descr.getId(), COL_CARGO_INCOME)) {
-            return null;
-          }
-          return super.beforeCreateColumn(gridView, descr);
-        }
-
-        @Override
-        public GridInterceptor getInstance() {
-          return null;
-        }
-      });
-
-    } else if (widget instanceof ChildGrid && VIEW_CARGO_HANDLING.equals(name)) {
-      ((ChildGrid) widget).addReadyHandler(new ReadyEvent.Handler() {
-        @Override
-        public void onReady(ReadyEvent re) {
-          GridView gridView = ViewHelper.getChildGrid(getFormView(), VIEW_CARGO_HANDLING);
-
-          if (gridView != null) {
-            gridView.getGrid().addMutationHandler(new MutationEvent.Handler() {
-              @Override
-              public void onMutation(MutationEvent mu) {
-                refreshKilometers(getActiveRow(), null, null);
+            @Override
+            public void afterUpdateCell(IsColumn column, String oldValue, String newValue,
+                IsRow result, boolean rowMode) {
+              if (BeeUtils.inListSame(column.getId(), COL_DATE, COL_AMOUNT, COL_CURRENCY,
+                  COL_TRADE_VAT_PLUS, COL_TRADE_VAT, COL_TRADE_VAT_PERC)) {
+                refresh(Data.getLong(viewName, getActiveRow(), COL_CURRENCY));
               }
-            });
-          }
-        }
-      });
+            }
 
+            @Override
+            public GridInterceptor getInstance() {
+              return null;
+            }
+          });
+          break;
+
+        case TBL_CARGO_EXPENSES:
+          ((ChildGrid) widget).setGridInterceptor(new AbstractGridInterceptor() {
+            @Override
+            public void afterCreateEditor(String source, Editor editor, boolean embedded) {
+              if (BeeUtils.same(source, COL_CARGO_INCOME) && editor instanceof DataSelector) {
+                ((DataSelector) editor).addSelectorHandler(OrderCargoForm.this);
+              }
+              super.afterCreateEditor(source, editor, embedded);
+            }
+
+            @Override
+            public ColumnDescription beforeCreateColumn(GridView gridView,
+                ColumnDescription descr) {
+              if (!TransportHandler.bindExpensesToIncomes()
+                  && Objects.equals(descr.getId(), COL_CARGO_INCOME)) {
+                return null;
+              }
+              return super.beforeCreateColumn(gridView, descr);
+            }
+
+            @Override
+            public GridInterceptor getInstance() {
+              return null;
+            }
+          });
+          break;
+
+        case VIEW_CARGO_HANDLING:
+          ((ChildGrid) widget).addReadyHandler(new ReadyEvent.Handler() {
+            @Override
+            public void onReady(ReadyEvent re) {
+              GridView gridView = ViewHelper.getChildGrid(getFormView(), VIEW_CARGO_HANDLING);
+
+              if (gridView != null) {
+                gridView.getGrid().addMutationHandler(new MutationEvent.Handler() {
+                  @Override
+                  public void onMutation(MutationEvent mu) {
+                    refreshKilometers(getActiveRow(), null, null);
+                  }
+                });
+              }
+            }
+          });
+          break;
+
+        case VIEW_CARGO_TRIPS:
+          ((ChildGrid) widget).setGridInterceptor(new CargoTripsGrid());
+          break;
+      }
     } else if (widget instanceof InputBoolean
         && (BeeUtils.inListSame(name, "Partial", "Outsized"))) {
       ((InputBoolean) widget).addValueChangeHandler(new ValueChangeHandler<String>() {
@@ -259,13 +267,13 @@ class OrderCargoForm extends AbstractFormInterceptor implements SelectorEvent.Ha
 
     if (ib1 != null) {
       if (BeeUtils.unbox(BeeUtils.toBooleanOrNull(ib1.getValue()))) {
-        checkBoxObserved = checkBoxObserved + 1;
+        checkBoxObserved += checkBoxObserved;
       }
     }
 
     if (ib2 != null) {
       if (BeeUtils.unbox(BeeUtils.toBooleanOrNull(ib2.getValue()))) {
-        checkBoxObserved = checkBoxObserved + 1;
+        checkBoxObserved += checkBoxObserved;
       }
     }
 

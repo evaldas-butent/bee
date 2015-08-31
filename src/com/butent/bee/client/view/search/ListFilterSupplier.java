@@ -98,7 +98,7 @@ public class ListFilterSupplier extends AbstractFilterSupplier {
       this.countIndex = this.valueIndex + 1;
     }
 
-    this.renderCount = this.renderColumns.size();
+    this.renderCount = Math.max(this.renderColumns.size(), 1);
   }
 
   @Override

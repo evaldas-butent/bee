@@ -1176,6 +1176,13 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     }
   }
 
+  public void clearSelection() {
+    if (!getSelectedRows().isEmpty()) {
+      getSelectedRows().clear();
+      fireSelectionCountChange();
+    }
+  }
+
   public boolean containsRow(long rowId) {
     for (IsRow row : getRowData()) {
       if (row.getId() == rowId) {
@@ -2169,10 +2176,8 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     getResizedRows().clear();
     getResizedCells().clear();
 
-    if (!getSelectedRows().isEmpty()) {
-      getSelectedRows().clear();
-      fireSelectionCountChange();
-    }
+    clearSelection();
+
     onActivateCell(false);
     onActivateRow(false, false);
 
