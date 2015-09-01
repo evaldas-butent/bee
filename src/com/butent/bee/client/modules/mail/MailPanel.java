@@ -789,19 +789,23 @@ public class MailPanel extends AbstractFormInterceptor {
       Map<String, String> criteria = searchPanel.getSearchCriteria();
 
       if (!BeeUtils.isEmpty(criteria)) {
+        if (preserveActiveRow) {
+          return;
+        }
         if (searchPanel.searchInCurrentFolder()) {
           criteria.put(COL_FOLDER, BeeUtils.toString(getCurrentFolder()));
+        } else {
+          setCurrentFolder(null);
+          MailKeeper.refreshController();
         }
-        setCurrentFolder(null);
-        MailKeeper.refreshController();
-
         criteria.put(COL_ACCOUNT, BeeUtils.toString(getCurrentAccount().getAccountId()));
         clause = Filter.custom(TBL_PLACES, Codec.beeSerialize(criteria));
       }
       if (DataUtils.isId(getCurrentFolder())) {
         clause = Filter.and(Filter.equals(COL_FOLDER, getCurrentFolder()), clause);
       } else {
-        clause = Filter.and(Filter.equals(COL_ACCOUNT, getCurrentAccount().getAccountId()), clause);
+        clause = Filter.and(Filter.equals(COL_ACCOUNT, getCurrentAccount().getAccountId()),
+            Filter.notEquals(COL_FOLDER, getCurrentAccount().getTrashId()), clause);
       }
       grid.getDataProvider().setUserFilter(clause);
 

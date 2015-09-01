@@ -461,6 +461,8 @@ public class MailModuleBean implements BeeModule, HasTimerService {
   public void init() {
     System.setProperty("mail.mime.decodetext.strict", "false");
     System.setProperty("mail.mime.parameters.strict", "false");
+
+    System.setProperty("mail.mime.base64.ignoreerrors", "true");
     System.setProperty("mail.mime.ignoreunknownencoding", "true");
     System.setProperty("mail.mime.uudecode.ignoreerrors", "true");
     System.setProperty("mail.mime.uudecode.ignoremissingbeginend", "true");
@@ -493,16 +495,14 @@ public class MailModuleBean implements BeeModule, HasTimerService {
       @Subscribe
       public void getRecipients(ViewQueryEvent event) {
         if (event.isTarget(TBL_PLACES) && event.isAfter()) {
-          Set<Long> messages = new HashSet<>();
-
           BeeRowSet rowSet = event.getRowset();
           int idx = DataUtils.getColumnIndex(COL_MESSAGE, rowSet.getColumns(), false);
 
-          if (!DataUtils.isEmpty(rowSet) && !BeeConst.isUndef(idx)) {
-            for (BeeRow row : rowSet) {
-              messages.add(row.getLong(idx));
-            }
+          if (BeeConst.isUndef(idx)) {
+            return;
           }
+          Set<Long> messages = rowSet.getDistinctLongs(idx);
+
           if (!BeeUtils.isEmpty(messages)) {
             SimpleRowSet result = qs.getData(new SqlSelect()
                 .addFields(TBL_RECIPIENTS, COL_MESSAGE, COL_ADDRESS_TYPE)
