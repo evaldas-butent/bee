@@ -181,7 +181,7 @@ public class TradeActBean implements HasTimerService {
         break;
 
       case SVC_SYNCHRONIZE_ERP_DATA:
-        Collection<Timer> timers = timerService.getTimers();
+        Collection<Timer> timers = getTimerService().getTimers();
 
         for (Timer t1 : timers) {
           if (cb.isParameterTimer(t1, PRM_SYNC_ERP_DATA)) {
@@ -3430,8 +3430,12 @@ public class TradeActBean implements HasTimerService {
                   .addConstant(COL_TRADE_MANAGER, userId)
                   .addConstant(
                       COL_TRADE_PAID,
-                      BeeUtils.unbox(butentDebts.getDouble(i, "apn_suma")))
-                  .addConstant(COL_TRADE_TERM, butentDebts.getDate(i, "terminas"));
+                      BeeUtils.unbox(butentDebts.getDouble(i, "apm_suma")))
+                  .addConstant(
+                      COL_TRADE_PAYMENT_TIME,
+                      TimeUtils.parseDate(butentDebts.getValue(i, "apm_data")))
+                  .addConstant(COL_TRADE_TERM,
+                      TimeUtils.parseDate(butentDebts.getValue(i, "terminas")));
           qs.insertData(si);
         }
       }
