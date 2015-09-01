@@ -43,8 +43,8 @@
       <row>
         <Label for="WarehouseFrom" />
         <DataSelector source="WarehouseFrom" newRowEnabled="false" editEnabled="false" />
-        <Label for="Term" />
-        <InputDate source="Term" style="width:10em;" />
+        <Label for="Term" class="bee-required" />
+        <InputDate source="Term" style="width:10em;" required="true" />
       </row>
       <row>
         <Label for="Manager" />

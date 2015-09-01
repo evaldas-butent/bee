@@ -31,8 +31,8 @@
       <row>
         <Label for="Supplier" class="bee-required" />
         <DataSelector source="Supplier" required="true" />
-        <Label for="Term" />
-        <InputDate source="Term" style="width:10em;" />
+        <Label for="Term" class="bee-required" />
+        <InputDate source="Term" style="width:10em;" required="true" />
       </row>
       <row>
         <cell colSpan="3">
