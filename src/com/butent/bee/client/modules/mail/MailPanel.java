@@ -327,6 +327,14 @@ public class MailPanel extends AbstractFormInterceptor {
         message.requery(COL_PLACE, row.getId());
         messageWidget.setVisible(true);
         emptySelectionWidget.setVisible(false);
+
+        int flagIdx = Data.getColumnIndex(getGridPresenter().getViewName(), COL_FLAGS);
+        int value = BeeUtils.unbox(row.getInteger(flagIdx));
+
+        if (!MessageFlag.SEEN.isSet(value)) {
+          row.setValue(flagIdx, MessageFlag.SEEN.set(value));
+          getGridView().refreshCell(row.getId(), COL_MESSAGE);
+        }
       } else if (getGridView().isEmpty()
           || !Objects.equals(message.getFolder(), getCurrentFolder())) {
         message.reset();
@@ -781,6 +789,9 @@ public class MailPanel extends AbstractFormInterceptor {
       Map<String, String> criteria = searchPanel.getSearchCriteria();
 
       if (!BeeUtils.isEmpty(criteria)) {
+        if (preserveActiveRow) {
+          return;
+        }
         if (searchPanel.searchInCurrentFolder()) {
           criteria.put(COL_FOLDER, BeeUtils.toString(getCurrentFolder()));
         } else {
