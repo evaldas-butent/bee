@@ -42,13 +42,12 @@ import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * Contains methods for getting {@code RowSets} and making POST requests.
@@ -668,30 +667,45 @@ public final class Queries {
             String[] tables = Codec.beeDeserializeCollection(response.getResponseAsString());
 
             if (!ArrayUtils.isEmpty(tables)) {
-              List<String> tableNames = Arrays.asList(tables);
-              Set<String> viewNames = new HashSet<>();
+              String mainTable = Data.getViewTable(viewName);
+
+              Set<String> otherTables = new TreeSet<>();
+              for (String table : tables) {
+                if (!Objects.equals(table, mainTable)) {
+                  otherTables.add(table);
+                }
+              }
+
+              Set<String> viewNames = new TreeSet<>();
 
               for (DataInfo dataInfo : Data.getDataInfoProvider().getViews()) {
-                boolean ok = tableNames.contains(dataInfo.getTableName());
-
-                if (!ok) {
-                  for (ViewColumn vc : dataInfo.getViewColumns()) {
-                    if (!BeeUtils.isEmpty(vc.getRelation())
-                        && tableNames.contains(vc.getRelation())) {
-
-                      ok = true;
-                      break;
-                    }
-                  }
-                }
-
-                if (ok) {
+                if (Objects.equals(mainTable, dataInfo.getTableName())) {
                   viewNames.add(dataInfo.getViewName());
                 }
               }
 
-              logger.debug(tableNames);
-              logger.debug(viewNames);
+              if (!otherTables.isEmpty()) {
+                for (DataInfo dataInfo : Data.getDataInfoProvider().getViews()) {
+                  boolean ok = dataInfo.getTableName() != null
+                      && otherTables.contains(dataInfo.getTableName());
+
+                  if (!ok) {
+                    for (ViewColumn vc : dataInfo.getViewColumns()) {
+                      if (vc.getTable() != null && otherTables.contains(vc.getTable())) {
+                        ok = true;
+                        break;
+                      }
+                    }
+                  }
+
+                  if (ok) {
+                    viewNames.add(dataInfo.getViewName());
+                  }
+                }
+              }
+
+              logger.info(Service.MERGE_ROWS, "tables", mainTable, otherTables);
+              logger.info(Service.MERGE_ROWS, "views", viewNames);
 
               if (!viewNames.isEmpty()) {
                 DataChangeEvent.fireRefresh(BeeKeeper.getBus(), viewNames);

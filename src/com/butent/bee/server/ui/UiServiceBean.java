@@ -932,7 +932,12 @@ public class UiServiceBean {
       return ResponseObject.error(reqInfo.getService(), viewName, "source not available");
     }
 
-    return qs.mergeData(tableName, from, into);
+    ResponseObject response = qs.mergeData(tableName, from, into, true);
+    if (response.hasErrors() || response.isEmpty()) {
+      return response;
+    }
+
+    return qs.mergeData(tableName, from, into, false);
   }
 
   private ResponseObject rebuildData(RequestInfo reqInfo) {
