@@ -1,5 +1,7 @@
 package com.butent.bee.client.modules.tasks;
 
+import com.google.common.collect.Lists;
+
 import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
@@ -32,7 +34,6 @@ import com.butent.bee.shared.modules.tasks.TaskUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.google.common.collect.Lists;
 
 import java.util.List;
 
@@ -139,7 +140,7 @@ class RelatedTasksGrid extends TasksGrid {
     return (row == null) ? null : row.getLong(getDataIndex(COL_TASK));
   }
 
-  private void fillFormData(FormView parentForm, DataInfo gridData, BeeRow gridRow) {
+  private static void fillFormData(FormView parentForm, DataInfo gridData, BeeRow gridRow) {
     IsRow formRow = parentForm.getActiveRow();
 
     if (formRow == null) {
@@ -150,6 +151,7 @@ class RelatedTasksGrid extends TasksGrid {
       return;
     }
 
+    @SuppressWarnings("unchecked")
     List<Pair<String, String>> copyCols = Lists.newArrayList(
         Pair.of(ClassifierConstants.COL_COMPANY, ServiceConstants.COL_SERVICE_CUSTOMER),
         Pair.of(ClassifierConstants.ALS_COMPANY_NAME, ServiceConstants.ALS_SERVICE_CUSTOMER_NAME),
@@ -158,10 +160,10 @@ class RelatedTasksGrid extends TasksGrid {
         Pair.of(ProjectConstants.COL_PROJECT, ProjectConstants.COL_PROJECT),
         Pair.of(ProjectConstants.ALS_PROJECT_NAME, ProjectConstants.ALS_PROJECT_NAME)
 
-    );
+        );
 
     for (Pair<String, String> col : copyCols) {
-      if (BeeConst.isUndef(parentForm.getDataIndex(col.getB()))){
+      if (BeeConst.isUndef(parentForm.getDataIndex(col.getB()))) {
         continue;
       }
 
