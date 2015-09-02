@@ -2864,7 +2864,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
 
     if (show) {
       if (modal) {
-        if (isNewRowFormGenerated() && !newRowFormState.contains(State.INITIALIZED)) {
+        if (!edit && isNewRowFormGenerated() && !newRowFormState.contains(State.INITIALIZED)) {
           Widget w = form.getRootWidget().asWidget();
           while (w != null && !DomUtils.sameId(w, popup)) {
             StyleUtils.makeRelative(w);
@@ -2884,7 +2884,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
           StyleUtils.clearHeight(popup);
         }
 
-        if (isChild() && isNewRowFormGenerated()) {
+        if (!edit && isChild() && isNewRowFormGenerated()) {
           int x = getAbsoluteLeft();
           int y = getAbsoluteTop();
 
