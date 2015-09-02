@@ -197,7 +197,7 @@
       </row>
 
       <row data="Relations" for="ServiceObject" module="Service">
-        <Label text="=svcObjects" />
+        <Label text="=svcProjectObjects" />
         <MultiSelector name="ServiceObjects" viewName="ServiceObjects" property="ServiceObjects"
           renderColumns="Address" choiceColumns="Address CustomerName"
           newRowEnabled="false" editPopup="true" style="&inp2x;" />
