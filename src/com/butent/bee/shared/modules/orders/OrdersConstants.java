@@ -54,6 +54,7 @@ public final class OrdersConstants {
 
   public static final String SVC_GET_TEMPLATE_ITEMS = "GetTemplateItems";
   public static final String SVC_CREATE_INVOICE_ITEMS = "CreateInvoiceItems";
+  public static final String SVC_GET_NEXT_NUMBER = "GetNextNumber";
 
   public static final String TBL_ORDER_ITEMS = "OrderItems";
   public static final String TBL_ORDERS = "Orders";
