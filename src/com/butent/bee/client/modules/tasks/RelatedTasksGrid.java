@@ -1,5 +1,7 @@
 package com.butent.bee.client.modules.tasks;
 
+import com.google.common.collect.Lists;
+
 import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
@@ -12,20 +14,28 @@ import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.event.logical.RowActionEvent;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.ui.Opener;
+import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.edit.EditStartEvent;
+import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.view.DataInfo;
+import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
+import com.butent.bee.shared.modules.projects.ProjectConstants;
+import com.butent.bee.shared.modules.service.ServiceConstants;
 import com.butent.bee.shared.modules.tasks.TaskType;
 import com.butent.bee.shared.modules.tasks.TaskUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.BeeUtils;
+
+import java.util.List;
 
 class RelatedTasksGrid extends TasksGrid {
 
@@ -54,6 +64,12 @@ class RelatedTasksGrid extends TasksGrid {
 
         if (!BeeUtils.isEmpty(property) && BeeUtils.isEmpty(row.getProperty(property))) {
           row.setProperty(property, relId.toString());
+        }
+
+        FormView parentForm = ViewHelper.getForm(presenter.getMainView());
+
+        if (parentForm != null) {
+          fillFormData(parentForm, dataInfo, row);
         }
 
         RowFactory.createRow(dataInfo, row, new RowCallback() {
@@ -123,4 +139,37 @@ class RelatedTasksGrid extends TasksGrid {
   protected Long getTaskId(IsRow row) {
     return (row == null) ? null : row.getLong(getDataIndex(COL_TASK));
   }
+
+  private static void fillFormData(FormView parentForm, DataInfo gridData, BeeRow gridRow) {
+    IsRow formRow = parentForm.getActiveRow();
+
+    if (formRow == null) {
+      return;
+    }
+
+    if (!BeeUtils.same(parentForm.getViewName(), ServiceConstants.VIEW_SERVICE_OBJECTS)) {
+      return;
+    }
+
+    @SuppressWarnings("unchecked")
+    List<Pair<String, String>> copyCols = Lists.newArrayList(
+        Pair.of(ClassifierConstants.COL_COMPANY, ServiceConstants.COL_SERVICE_CUSTOMER),
+        Pair.of(ClassifierConstants.ALS_COMPANY_NAME, ServiceConstants.ALS_SERVICE_CUSTOMER_NAME),
+        Pair.of(ProjectConstants.ALS_COMPANY_TYPE_NAME,
+            ServiceConstants.ALS_SERVICE_CUSTOMER_TYPE_NAME),
+        Pair.of(ProjectConstants.COL_PROJECT, ProjectConstants.COL_PROJECT),
+        Pair.of(ProjectConstants.ALS_PROJECT_NAME, ProjectConstants.ALS_PROJECT_NAME)
+
+        );
+
+    for (Pair<String, String> col : copyCols) {
+      if (BeeConst.isUndef(parentForm.getDataIndex(col.getB()))) {
+        continue;
+      }
+
+      gridRow.setValue(gridData.getColumnIndex(col.getA()),
+          formRow.getValue(parentForm.getDataIndex(col.getB())));
+    }
+  }
+
 }

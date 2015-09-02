@@ -1,6 +1,5 @@
 package com.butent.bee.client.modules.tasks;
 
-import com.butent.bee.shared.BeeConst;
 import com.google.common.collect.Lists;
 
 import com.butent.bee.client.BeeKeeper;
