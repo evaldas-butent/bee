@@ -3745,7 +3745,18 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
           activeCell.addClassName(StyleUtils.NAME_RESIZABLE);
         }
 
-        if (activeElement == null || !activeCell.isOrHasChild(activeElement)) {
+        boolean focus;
+        if (activeElement == null) {
+          focus = true;
+        } else if (activeCell.isOrHasChild(activeElement)) {
+          focus = false;
+        } else if (getElement().isOrHasChild(activeElement)) {
+          focus = true;
+        } else {
+          focus = UiHelper.isInteractive(this);
+        }
+
+        if (focus) {
           activeCell.focus();
         }
 
