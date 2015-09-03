@@ -183,9 +183,11 @@ public class ServiceModuleBean implements BeeModule {
   public ResponseObject setProjectServiceLostStatus(Long projectId) {
     SqlUpdate update = new SqlUpdate(TBL_SERVICE_OBJECTS);
     update.addConstant(COL_OBJECT_STATUS, ObjectStatus.LOST_OBJECT.ordinal())
-        .setWhere(SqlUtils.and(
+        .setWhere(SqlUtils.and(SqlUtils.or(
             SqlUtils.equals(TBL_SERVICE_OBJECTS, COL_OBJECT_STATUS,
                 ObjectStatus.POTENTIAL_OBJECT.ordinal()),
+                SqlUtils.equals(TBL_SERVICE_OBJECTS, COL_OBJECT_STATUS,
+                    ObjectStatus.PROJECT_OBJECT.ordinal())),
             SqlUtils.equals(TBL_SERVICE_OBJECTS, ProjectConstants.COL_PROJECT, projectId)));
     return qs.updateDataWithResponse(update);
   }

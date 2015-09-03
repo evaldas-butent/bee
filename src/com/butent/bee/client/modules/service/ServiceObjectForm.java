@@ -393,7 +393,7 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
     boolean result =
         (currIsUnknown && (actionIsServiceObj || actionIsProjectObj))
             // || (currIsServiceObj && actionIsProjectObj) /* Deprecated action*/
-        || (currIsProjectObj && actionIsServiceObj)
+            || (currIsProjectObj && (actionIsServiceObj || actionIsLostObj))
             || (currIsPotentialObj && (actionIsProjectObj || actionIsLostObj));
 
     return result;
@@ -652,7 +652,6 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
         Lists.newArrayList(Localized.getConstants().svcSendToLostObjectQuestion()),
         decisionCallback, 0, null, null, null, null);
   }
-
 
   private static void setAsProjectObject(final FormView formView, final IsRow row) {
 
