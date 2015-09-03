@@ -60,6 +60,7 @@ import com.butent.bee.shared.data.SqlConstants.SqlFunction;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.exceptions.BeeException;
+import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -1626,11 +1627,13 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
 
       result.put(tbl, qs.getDouble(query.addSum(xpr, VAR_TOTAL)));
     }
-    return ResponseObject.info(BeeUtils.joinWords(Localized.getConstants().incomes(),
+    LocalizableConstants loc = usr.getLocalizableConstants();
+
+    return ResponseObject.info(BeeUtils.joinWords(loc.incomes(),
             BeeUtils.round(BeeUtils.unbox(result.get(TBL_CARGO_INCOMES)), 2)),
-        BeeUtils.joinWords(Localized.getConstants().expenses(),
+        BeeUtils.joinWords(loc.expenses(),
             BeeUtils.round(BeeUtils.unbox(result.get(TBL_CARGO_EXPENSES)), 2)),
-        BeeUtils.joinWords(Localized.getConstants().profit(),
+        BeeUtils.joinWords(loc.profit(),
             BeeUtils.round(BeeUtils.round(BeeUtils.unbox(result.get(TBL_CARGO_INCOMES)), 2)
                 - BeeUtils.round(BeeUtils.unbox(result.get(TBL_CARGO_EXPENSES)), 2), 2)));
   }
