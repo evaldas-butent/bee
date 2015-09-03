@@ -2875,11 +2875,10 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
     ResponseObject response = ResponseObject.info(Localized.getConstants().messageSent());
     BufferedWriter wr = null;
     BufferedReader in = null;
+    HttpURLConnection conn = null;
 
     try {
-      URL url = new URL(address);
-      HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-
+      conn = (HttpURLConnection) new URL(address).openConnection();
       conn.setRequestMethod("POST");
       conn.setDoOutput(true);
 
@@ -2920,6 +2919,10 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
         logger.error(ex);
       }
       response = ResponseObject.error(e);
+    } finally {
+      if (conn != null) {
+        conn.disconnect();
+      }
     }
     return response;
   }
