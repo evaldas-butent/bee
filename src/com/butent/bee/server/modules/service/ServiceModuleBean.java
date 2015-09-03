@@ -170,7 +170,7 @@ public class ServiceModuleBean implements BeeModule {
 
               if (r != null) {
                 r.setProperty(COL_SERVICE_CRITERION_NAME
-                    + row.getValue(COL_SERVICE_CRITERION_NAME),
+                        + row.getValue(COL_SERVICE_CRITERION_NAME),
                     row.getValue(COL_SERVICE_CRITERION_VALUE));
               }
             }
@@ -645,9 +645,19 @@ public class ServiceModuleBean implements BeeModule {
         SqlUtils.in(TBL_SERVICE_OBJECTS, idName, TBL_SERVICE_DATES, COL_SERVICE_OBJECT));
 
     if (EnumUtils.isOrdinal(ObjectStatus.class, svcObjStatus)) {
+      IsCondition objFilter = SqlUtils.equals(TBL_SERVICE_OBJECTS, COL_OBJECT_STATUS, svcObjStatus);
+
+      if (ObjectStatus.PROJECT_OBJECT.ordinal() == svcObjStatus) {
+        objFilter = SqlUtils.or(objFilter,
+            SqlUtils.equals(TBL_SERVICE_OBJECTS, COL_OBJECT_STATUS,
+                ObjectStatus.POTENTIAL_OBJECT.ordinal()));
+      }
+
       where =
           SqlUtils
-              .and(where, SqlUtils.equals(TBL_SERVICE_OBJECTS, COL_OBJECT_STATUS, svcObjStatus));
+              .and(where, objFilter);
+
+
     }
 
     for (String key : filterData.keySet()) {
