@@ -167,8 +167,8 @@
       </ExternalJoin>
     </SimpleJoin>
 
+    <SimpleColumn name="Author" />
     <SimpleJoin name="Author" joinType="LEFT">
-      <SimpleColumn name="CompanyPerson" />
       <SimpleJoin name="CompanyPerson" joinType="LEFT">
         <SimpleJoin name="Person" joinType="LEFT">
           <SimpleColumn name="FirstName" alias="AuthorFirstName" />

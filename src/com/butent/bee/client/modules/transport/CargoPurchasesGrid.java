@@ -20,6 +20,9 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.view.DataInfo;
+import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.JustDate;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Arrays;
@@ -97,11 +100,16 @@ public class CargoPurchasesGrid extends InvoiceBuilder {
       newRow.setValue(targetInfo.getColumnIndex(COL_TRADE_INVOICE_NO), number);
     }
     int sale = info.getColumnIndex(COL_SALE);
+    int saleDateIdx = info.getColumnIndex(COL_SALE + COL_DATE);
     String operation = null;
+    JustDate date = TimeUtils.goMonth(new JustDate(), -1);
 
     for (BeeRow row : data.getRows()) {
-      String op = DataUtils.isId(row.getLong(sale)) ? PRM_ACCUMULATION_OPERATION
-          : PRM_PURCHASE_OPERATION;
+      DateTime saleDate = row.getDateTime(saleDateIdx);
+
+      String op = DataUtils.isId(row.getLong(sale)) ? (date.getMonth() == saleDate.getMonth()
+          || TimeUtils.isMore(date, saleDate)
+          ? PRM_ACCUMULATION2_OPERATION : PRM_ACCUMULATION_OPERATION) : PRM_PURCHASE_OPERATION;
 
       if (BeeUtils.isEmpty(operation)) {
         operation = op;

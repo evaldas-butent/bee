@@ -345,6 +345,8 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
             VIEW_SALE_OPERATIONS, COL_OPERATION_NAME),
         BeeParameter.createRelation(module, PRM_ACCUMULATION_OPERATION, false,
             VIEW_PURCHASE_OPERATIONS, COL_OPERATION_NAME),
+        BeeParameter.createRelation(module, PRM_ACCUMULATION2_OPERATION, false,
+            VIEW_PURCHASE_OPERATIONS, COL_OPERATION_NAME),
         BeeParameter.createMap(module, PRM_MESSAGE_TEMPLATE, true, null),
         BeeParameter.createNumber(module, PRM_ERP_REFRESH_INTERVAL),
         BeeParameter.createText(module, "SmsServiceAddress"),

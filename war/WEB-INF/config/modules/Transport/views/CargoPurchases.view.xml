@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-  name="CargoPurchases" source="CargoExpenses" caption="=transportTripCosts"
+      name="CargoPurchases" source="CargoExpenses"
+      caption="=transportTripCosts"
       filter="Status!=0"
-  >
+    >
   <Columns>
     <SimpleColumn name="Cargo" />
     <SimpleJoin name="Cargo" joinType="INNER">
@@ -13,8 +14,8 @@
 
       <SimpleColumn name="Cmr" />
       <SimpleJoin name="Cmr" joinType="LEFT">
-        <SimpleColumn name="Name" alias="CmrName"/>
-        <SimpleColumn name="Number" alias="CmrNumber"/>
+        <SimpleColumn name="Name" alias="CmrName" />
+        <SimpleColumn name="Number" alias="CmrNumber" />
       </SimpleJoin>
 
       <SimpleColumn name="Order" />
@@ -76,6 +77,9 @@
     <HiddenColumn name="Purchase" />
     <SimpleJoin name="Income" joinType="LEFT">
       <SimpleColumn name="Sale" />
+      <SimpleJoin name="Sale" joinType="LEFT">
+        <SimpleColumn name="Date" alias="SaleDate" />
+      </SimpleJoin>
     </SimpleJoin>
   </Columns>
   <Order>

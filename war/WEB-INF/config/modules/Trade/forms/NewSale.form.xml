@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <f:Form xmlns="http://www.butent.com/widget"
         xmlns:f="http://www.butent.com/form"
+        xmlns:ui="http://www.butent.com/ui"
 
         name="NewSale" caption="=trdNewInvoice"
         width="600" height="550"
@@ -16,7 +17,16 @@
       </row>
       <row>
         <Label for="Date" />
-        <InputDateTime source="Date" style="width:10em;" />
+        <InputDateTime source="Date" style="width:10em;">
+          <validation>
+            <ui:function>
+              if (cell.newValue &lt;= new Date()) {
+              return null;
+              }
+              return $wnd.Bee_maybeTranslate("=invalidDate");
+            </ui:function>
+          </validation>
+        </InputDateTime>
         <Label for="Number" />
         <InputText source="Number" />
       </row>
