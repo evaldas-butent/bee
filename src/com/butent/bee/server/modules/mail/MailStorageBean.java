@@ -511,7 +511,7 @@ public class MailStorageBean {
 
         try {
           parsed = parsePart(messageId, multiPart.getBodyPart(i));
-        } catch (MessagingException e) {
+        } catch (MessagingException | IOException e) {
           logger.warning("(MessageID=", messageId, ") Error parsing multipart/* part:", e);
           continue;
         }
@@ -559,7 +559,7 @@ public class MailStorageBean {
     } else if (part.isMimeType("message/rfc822")) {
       try {
         parsedPart.putAll(parsePart(messageId, (Message) part.getContent()));
-      } catch (MessagingException e) {
+      } catch (MessagingException | IOException e) {
         logger.warning("(MessageID=", messageId, ") Error parsing message/rfc822 part:", e);
       }
     } else {

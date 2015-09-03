@@ -411,6 +411,11 @@ public class SystemBean {
     return !BeeUtils.isEmpty(tblName) && tableCache.containsKey(BeeUtils.normalize(tblName));
   }
 
+  public boolean isUnique(String tblName, String fldName) {
+    return isTable(tblName) && getTable(tblName).hasField(fldName)
+        && getTable(tblName).getField(fldName).isUnique();
+  }
+
   public boolean isView(String viewName) {
     return !BeeUtils.isEmpty(viewName)
         && (viewCache.containsKey(BeeUtils.normalize(viewName)) || isTable(viewName));
@@ -431,8 +436,8 @@ public class SystemBean {
   /**
    * Creates SQL joins between tables.
    *
-   * @param tblName  First table with represented own column Id name, where called
-   *                 {@link SystemBean#getIdName(String)}
+   * @param tblName First table with represented own column Id name, where called
+   *          {@link SystemBean#getIdName(String)}
    * @param dstTable Second table
    * @param dstField Reference field name of second table
    * @return
@@ -1249,7 +1254,7 @@ public class SystemBean {
                       BeeUtils.joinWords("Unrecognized foreign key field:", tbl, fld));
                 }
                 Assert.state(BeeUtils.isEmpty(refFields)
-                        ? fields.size() == 1 : fields.size() == refFields.size(),
+                    ? fields.size() == 1 : fields.size() == refFields.size(),
                     "Field count doesn't match");
 
                 table.addForeignKey(tableName, fields, ((XmlReference) constraint).refTable,
