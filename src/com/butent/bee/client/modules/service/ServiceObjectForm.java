@@ -393,8 +393,8 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
     boolean result =
         (currIsUnknown && (actionIsServiceObj || actionIsProjectObj))
             // || (currIsServiceObj && actionIsProjectObj) /* Deprecated action*/
-        || (currIsProjectObj && actionIsServiceObj)
-            || (currIsPotentialObj && (actionIsProjectObj || actionIsLostObj));
+        || (currIsProjectObj && (actionIsServiceObj || actionIsLostObj))
+            || ((currIsPotentialObj) && (actionIsProjectObj || actionIsLostObj));
 
     return result;
   }
