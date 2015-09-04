@@ -13,6 +13,7 @@ import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
 import com.butent.bee.server.concurrency.ConcurrencyBean;
 import com.butent.bee.server.concurrency.ConcurrencyBean.HasTimerService;
 import com.butent.bee.server.data.BeeView;
+import com.butent.bee.server.data.DataEvent.ViewInsertEvent;
 import com.butent.bee.server.data.DataEvent.ViewQueryEvent;
 import com.butent.bee.server.data.DataEventHandler;
 import com.butent.bee.server.data.QueryServiceBean;
@@ -30,6 +31,7 @@ import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
@@ -38,7 +40,9 @@ import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.value.TextValue;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
@@ -46,8 +50,10 @@ import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.orders.OrdersConstants;
 import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.rights.Module;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -108,6 +114,10 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
         response = createInvoiceItems(reqInfo);
         break;
 
+      case SVC_GET_NEXT_NUMBER:
+        response = getNextNumber(reqInfo);
+        break;
+
       default:
         String msg = BeeUtils.joinWords("service not recognized:", svc);
         logger.warning(msg);
@@ -166,6 +176,33 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
             for (BeeRow row : rowSet) {
               row.setProperty(PRP_FREE_REMAINDER, BeeUtils.toString(freeRemainders.get(row
                   .getLong(itemIndex))));
+            }
+          }
+        }
+      }
+
+      @Subscribe
+      public void fillOrderNumber(ViewInsertEvent event) {
+        if (event.isBefore() && event.isTarget(TBL_ORDERS)
+            && !DataUtils.contains(event.getColumns(), COL_TA_NUMBER)) {
+
+          BeeView view = sys.getView(VIEW_ORDERS);
+          Long series = null;
+
+          for (int i = 0; i < event.getColumns().size(); i++) {
+            switch (event.getColumns().get(i).getId()) {
+              case COL_TA_SERIES:
+                series = event.getRow().getLong(i);
+                break;
+            }
+          }
+
+          if (DataUtils.isId(series)) {
+            BeeColumn column = view.getBeeColumn(COL_TA_NUMBER);
+            String number = getNextNumber(series, column.getPrecision(), COL_TA_NUMBER);
+
+            if (!BeeUtils.isEmpty(number)) {
+              event.addValue(column, new TextValue(number));
             }
           }
         }
@@ -360,6 +397,82 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
     } else {
       return BeeConst.EMPTY_IMMUTABLE_LONG_SET;
     }
+  }
+
+  private ResponseObject getNextNumber(RequestInfo reqInfo) {
+    Long seriesId = reqInfo.getParameterLong(COL_SERIES);
+    String columnName = reqInfo.getParameter(Service.VAR_COLUMN);
+    String viewName = reqInfo.getParameter(VAR_VIEW_NAME);
+
+    if (!DataUtils.isId(seriesId) || BeeUtils.isEmpty(columnName) || BeeUtils.isEmpty(viewName)) {
+      logger.warning("Missing one of parameter (seriesId, columnName, viewname)", seriesId,
+          columnName, viewName);
+      return ResponseObject.emptyResponse();
+    }
+
+    DataInfo viewData = sys.getDataInfo(viewName);
+
+    if (viewData == null) {
+      return ResponseObject.emptyResponse();
+    }
+
+    BeeColumn col = viewData.getColumn(columnName);
+
+    if (col == null) {
+      return ResponseObject.emptyResponse();
+    }
+
+    return ResponseObject.response(getNextNumber(seriesId, col.getPrecision(), columnName));
+  }
+
+  private String getNextNumber(long series, int maxLength, String column) {
+    IsCondition where = SqlUtils.and(SqlUtils.equals(TBL_ORDERS, COL_SERIES, series),
+        SqlUtils.notNull(TBL_ORDERS, column));
+
+    SqlSelect query = new SqlSelect()
+        .addFields(TBL_ORDERS, column)
+        .addFrom(TBL_ORDERS)
+        .setWhere(where);
+
+    String[] values = qs.getColumn(query);
+
+    long max = 0;
+    BigInteger bigMax = null;
+
+    if (!ArrayUtils.isEmpty(values)) {
+      for (String value : values) {
+        if (BeeUtils.isDigit(value)) {
+          if (BeeUtils.isLong(value)) {
+            max = Math.max(max, BeeUtils.toLong(value));
+
+          } else {
+            BigInteger big = new BigInteger(value);
+
+            if (bigMax == null || BeeUtils.isLess(bigMax, big)) {
+              bigMax = big;
+            }
+          }
+        }
+      }
+    }
+
+    BigInteger big = new BigInteger(BeeUtils.toString(max));
+    if (bigMax != null) {
+      big = big.max(bigMax);
+    }
+
+    String number = big.add(BigInteger.ONE).toString();
+
+    Integer length = prm.getInteger(PRM_TA_NUMBER_LENGTH);
+    if (BeeUtils.isPositive(length) && length > number.length()) {
+      number = BeeUtils.padLeft(number, length, BeeConst.CHAR_ZERO);
+    }
+
+    if (maxLength > 0 && number.length() > maxLength) {
+      number = number.substring(number.length() - maxLength);
+    }
+
+    return number;
   }
 
   private ResponseObject getTemplateItems(RequestInfo reqInfo) {
