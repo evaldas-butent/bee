@@ -240,6 +240,7 @@ public class DocumentsModuleBean implements BeeModule {
           }
 
           String prefix = prm.getText(PRM_DOCUMENT_SENT_PREFIX);
+          prefix = BeeUtils.isEmpty(prefix) ? BeeConst.STRING_EMPTY : prefix;
 
           BeeColumn column = sys.getView(VIEW_DOCUMENTS).getBeeColumn(COL_DOCUMENT_SENT_NUMBER);
           String number = getNextRegNumber(COL_DOCUMENT_SENT,
@@ -279,6 +280,7 @@ public class DocumentsModuleBean implements BeeModule {
           }
 
           String prefix = prm.getText(PRM_DOCUMENT_SENT_PREFIX);
+          prefix = BeeUtils.isEmpty(prefix) ? BeeConst.STRING_EMPTY : prefix;
 
           BeeColumn column = sys.getView(VIEW_DOCUMENTS).getBeeColumn(COL_DOCUMENT_SENT_NUMBER);
           String number = getNextRegNumber(COL_DOCUMENT_SENT, column.getPrecision(),
@@ -317,6 +319,7 @@ public class DocumentsModuleBean implements BeeModule {
           }
 
           String prefix = prm.getText(PRM_DOCUMENT_RECEIVED_PREFIX);
+          prefix = BeeUtils.isEmpty(prefix) ? BeeConst.STRING_EMPTY : prefix;
 
           BeeColumn column = sys.getView(VIEW_DOCUMENTS).getBeeColumn(COL_DOCUMENT_RECEIVED_NUMBER);
           String number = getNextRegNumber(COL_DOCUMENT_RECEIVED,
@@ -356,6 +359,7 @@ public class DocumentsModuleBean implements BeeModule {
           }
 
           String prefix = prm.getText(PRM_DOCUMENT_RECEIVED_PREFIX);
+          prefix = BeeUtils.isEmpty(prefix) ? BeeConst.STRING_EMPTY : prefix;
 
           BeeColumn column = sys.getView(VIEW_DOCUMENTS).getBeeColumn(COL_DOCUMENT_RECEIVED_NUMBER);
           String number = getNextRegNumber(COL_DOCUMENT_RECEIVED, column.getPrecision(),

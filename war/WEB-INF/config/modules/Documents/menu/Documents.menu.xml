@@ -14,6 +14,6 @@ name="Documents" label="=documents" order="40" module="Documents"
     separator="true" module="Documents.Templates" />
   <Item name="EditorTemplates" label="=editorTemplates" service="grid" parameters="EditorTemplates"
     module="Documents.Templates" />
-  <Item name="Parameters" label="=printParameters" service="parameters" parameters="Documents"
-    module="Documents.Templates" separator="true" />
+  <Item name="Parameters" label="=documentParameters" service="parameters" parameters="Documents"
+    module="Documents" separator="true" />
 </Entry>
