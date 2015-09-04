@@ -79,6 +79,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -139,7 +140,6 @@ public class SystemBean {
     } else {
       tables = new ArrayList<>(tbls);
     }
-
     int size = tables.size();
 
     for (int i = 0; i < size; i++) {
@@ -151,10 +151,8 @@ public class SystemBean {
           break;
         }
       }
-
       createTable(getTable(tables.get(i)), diff);
     }
-
     return diff;
   }
 
@@ -436,8 +434,8 @@ public class SystemBean {
   /**
    * Creates SQL joins between tables.
    *
-   * @param tblName First table with represented own column Id name, where called
-   *          {@link SystemBean#getIdName(String)}
+   * @param tblName  First table with represented own column Id name, where called
+   *                 {@link SystemBean#getIdName(String)}
    * @param dstTable Second table
    * @param dstField Reference field name of second table
    * @return
@@ -645,7 +643,7 @@ public class SystemBean {
             } else {
               String msg = BeeUtils.joinWords("INDEX", index.getName(), index.getFields(),
                   "NOT IN", indexes);
-              logger.warning(msg);
+              logger.warning(tblName, msg);
 
               if (diff != null) {
                 PropertyUtils.addProperty(diff, tblName, msg);
@@ -658,7 +656,7 @@ public class SystemBean {
         }
         if (!update && indexes.size() > c) {
           String msg = "TOO MANY INDEXES";
-          logger.warning(msg);
+          logger.warning(tblName, msg);
 
           if (diff != null) {
             PropertyUtils.addProperty(diff, tblName, msg);
@@ -687,7 +685,7 @@ public class SystemBean {
             } else {
               String msg = BeeUtils.joinWords("KEY", key.getName(), key.getFields(), "NOT IN",
                   keys);
-              logger.warning(msg);
+              logger.warning(tblName, msg);
 
               if (diff != null) {
                 PropertyUtils.addProperty(diff, tblName, msg);
@@ -700,7 +698,7 @@ public class SystemBean {
         }
         if (!update && keys.size() > c) {
           String msg = "TOO MANY UNIQUE KEYS";
-          logger.warning(msg);
+          logger.warning(tblName, msg);
 
           if (diff != null) {
             PropertyUtils.addProperty(diff, tblName, msg);
@@ -733,7 +731,7 @@ public class SystemBean {
                   BeeUtils.parenthesize(BeeUtils.join(" ON DELETE ",
                       fKey.getFields() + "->" + fKey.getRefTable(), fKey.getCascade())),
                   "NOT IN", fKeys);
-              logger.warning(msg);
+              logger.warning(tblName, msg);
 
               if (diff != null) {
                 PropertyUtils.addProperty(diff, tblName, msg);
@@ -746,7 +744,7 @@ public class SystemBean {
         }
         if (!update && fKeys.size() > c) {
           String msg = "TOO MANY FOREIGN KEYS";
-          logger.warning(msg);
+          logger.warning(tblName, msg);
 
           if (diff != null) {
             PropertyUtils.addProperty(diff, tblName, msg);
@@ -773,7 +771,7 @@ public class SystemBean {
               c++;
             } else {
               String msg = BeeUtils.joinWords("CHECK", check.getName(), "NOT IN", checks);
-              logger.warning(msg);
+              logger.warning(tblName, msg);
 
               if (diff != null) {
                 PropertyUtils.addProperty(diff, tblName, msg);
@@ -786,7 +784,7 @@ public class SystemBean {
         }
         if (!update && checks.size() > c) {
           String msg = "TOO MANY CHECK CONSTRAINTS";
-          logger.warning(msg);
+          logger.warning(tblName, msg);
 
           if (diff != null) {
             PropertyUtils.addProperty(diff, tblName, msg);
@@ -814,20 +812,17 @@ public class SystemBean {
             } else {
               String msg = BeeUtils.joinWords("TRIGGER", trigger.getName(), "NOT IN",
                   BeeUtils.parenthesize(triggers));
-              logger.warning(msg);
+              logger.warning(tblName, msg);
 
               if (diff != null) {
                 PropertyUtils.addProperty(diff, tblName, msg);
-              } else {
-                update = true;
-                break;
               }
             }
           }
         }
-        if (!update && triggers.size() > c) {
+        if (triggers.size() > c) {
           String msg = "TOO MANY TRIGGERS";
-          logger.warning(msg);
+          logger.warning(tblName, msg);
 
           if (diff != null) {
             PropertyUtils.addProperty(diff, tblName, msg);
@@ -843,12 +838,10 @@ public class SystemBean {
         if (!qs.dbTableExists(dbName, dbAuditSchema, auditName)) {
           String msg = BeeUtils.joinWords("AUDIT TABLE",
               BeeUtils.join(".", dbAuditSchema, auditName), "DOES NOT EXIST");
-          logger.warning(msg);
+          logger.warning(tblName, msg);
 
           if (diff != null) {
             PropertyUtils.addProperty(diff, tblName, msg);
-          } else {
-            update = true;
           }
         }
       }
@@ -883,7 +876,7 @@ public class SystemBean {
 
                   String msg = BeeUtils.joinWords("FIELD", fldName + ":",
                       info, oldFieldInfo.getValue(info), "!=", newFieldInfo.getValue(info));
-                  logger.warning(msg);
+                  logger.warning(tblName, msg);
 
                   if (diff != null) {
                     PropertyUtils.addProperty(diff, tblName, msg);
@@ -898,7 +891,7 @@ public class SystemBean {
               }
             } else {
               String msg = BeeUtils.joinWords("FIELD", fldName, "DOES NOT EXIST");
-              logger.warning(msg);
+              logger.warning(tblName, msg);
 
               if (diff != null) {
                 PropertyUtils.addProperty(diff, tblName, msg);
@@ -910,7 +903,7 @@ public class SystemBean {
           }
           if (!update && oldFields.getNumberOfRows() > c) {
             String msg = "TOO MANY FIELDS";
-            logger.warning(msg);
+            logger.warning(tblName, msg);
 
             if (diff != null) {
               PropertyUtils.addProperty(diff, tblName, msg);
@@ -952,10 +945,24 @@ public class SystemBean {
   }
 
   private void createTriggers(Collection<BeeTrigger> triggers) {
+    Multimap<String, String> dbTriggers = HashMultimap.create();
+
     for (BeeTrigger trigger : triggers) {
-      makeStructureChanges(SqlUtils.createTrigger(trigger.getName(), trigger.getTable(),
-          trigger.getType(), trigger.getParameters(), trigger.getTiming(), trigger.getEvents(),
-          trigger.getScope()));
+      String tblName = trigger.getTable();
+      String trgName = trigger.getName();
+
+      if (!dbTriggers.containsKey(tblName)) {
+        for (String triggerName : qs.dbTriggers(getDbName(), getDbSchema(), tblName)
+            .getColumn(SqlConstants.TRIGGER_NAME)) {
+          dbTriggers.put(tblName, triggerName);
+        }
+      }
+      if (!dbTriggers.containsEntry(tblName, trgName)) {
+        dbTriggers.put(tblName, trgName);
+
+        makeStructureChanges(SqlUtils.createTrigger(trgName, tblName, trigger.getType(),
+            trigger.getParameters(), trigger.getTiming(), trigger.getEvents(), trigger.getScope()));
+      }
     }
   }
 
@@ -1050,6 +1057,11 @@ public class SystemBean {
 
   private void initDbTriggers() {
     for (BeeTable table : getTables()) {
+      table.addTrigger(table.getName(), SqlTriggerType.VERSION,
+          Collections.singletonMap("versionName", table.getVersionName()),
+          SqlTriggerTiming.BEFORE, EnumSet.of(SqlTriggerEvent.INSERT, SqlTriggerEvent.UPDATE),
+          SqlTriggerScope.ROW);
+
       Map<String, List<Map<String, String>>> tr = new HashMap<>();
 
       for (BeeField field : table.getFields()) {
@@ -1254,7 +1266,7 @@ public class SystemBean {
                       BeeUtils.joinWords("Unrecognized foreign key field:", tbl, fld));
                 }
                 Assert.state(BeeUtils.isEmpty(refFields)
-                    ? fields.size() == 1 : fields.size() == refFields.size(),
+                        ? fields.size() == 1 : fields.size() == refFields.size(),
                     "Field count doesn't match");
 
                 table.addForeignKey(tableName, fields, ((XmlReference) constraint).refTable,
@@ -1387,13 +1399,6 @@ public class SystemBean {
           checks.add(check);
         }
       }
-      Collection<BeeTrigger> triggers = new ArrayList<>();
-
-      for (BeeTrigger trigger : table.getTriggers()) {
-        if (BeeUtils.same(trigger.getTable(), tblMain)) {
-          triggers.add(trigger);
-        }
-      }
       String tblBackup = rebuilds.get(tblMain);
 
       if (!BeeUtils.isEmpty(tblBackup)) {
@@ -1409,7 +1414,6 @@ public class SystemBean {
       createIndexes(indexes);
       createUniqueKeys(uniqueKeys);
       createChecks(checks);
-      createTriggers(triggers);
       createForeignKeys(foreignKeys);
     }
 
@@ -1447,13 +1451,6 @@ public class SystemBean {
             checks.add(check);
           }
         }
-        Collection<BeeTrigger> triggers = new ArrayList<>();
-
-        for (BeeTrigger trigger : table.getTriggers()) {
-          if (BeeUtils.same(trigger.getTable(), tbl)) {
-            triggers.add(trigger);
-          }
-        }
         String tblBackup = rebuilds.get(tbl);
 
         if (!BeeUtils.isEmpty(tblBackup)) {
@@ -1462,11 +1459,11 @@ public class SystemBean {
         createIndexes(indexes);
         createUniqueKeys(uniqueKeys);
         createChecks(checks);
-        createTriggers(triggers);
         createForeignKeys(foreignKeys);
       }
     }
     createAuditTables(table);
+    createTriggers(table.getTriggers());
 
     table.setActive(true);
   }

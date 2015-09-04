@@ -555,9 +555,9 @@ public class UserServiceBean {
       for (RightsState state : type.getRegisteredStates()) {
         stateIds.add(state.ordinal());
       }
-      SimpleRowSet res = qs.getData(ss.setWhere(SqlUtils.and(SqlUtils
-          .equals(TBL_OBJECTS, COL_OBJECT_TYPE, type.ordinal()),
-          SqlUtils.inList(TBL_RIGHTS, COL_STATE, stateIds))));
+      SimpleRowSet res = qs.getData(ss
+          .setWhere(SqlUtils.and(SqlUtils.equals(TBL_OBJECTS, COL_OBJECT_TYPE, type.ordinal()),
+              SqlUtils.inList(TBL_RIGHTS, COL_STATE, stateIds))));
 
       if (res.getNumberOfRows() > 0) {
         for (SimpleRow row : res) {
@@ -703,7 +703,9 @@ public class UserServiceBean {
           .addConstant(COL_USER, userId)
           .addConstant(COL_LOGGED_IN, System.currentTimeMillis())
           .addConstant(COL_REMOTE_HOST, host)
-          .addConstant(COL_USER_AGENT, agent));
+          .addConstant(COL_USER_AGENT, agent)
+          .addConstant(sys.getVersionName(TBL_USER_HISTORY),  //TODO backward compatibility
+              System.currentTimeMillis()));
 
       UserInfo info = getUserInfo(userId);
       info.addSession(historyId);
@@ -990,8 +992,7 @@ public class UserServiceBean {
       Long id = BeeUtils.toLongOrNull(rs.getValueByKey(COL_OBJECT_NAME, object, COL_OBJECT));
 
       if (DataUtils.isId(id)) {
-        wh.add(SqlUtils.and(SqlUtils.equals(TBL_RIGHTS,
-            COL_OBJECT, id, keyName, key),
+        wh.add(SqlUtils.and(SqlUtils.equals(TBL_RIGHTS, COL_OBJECT, id, keyName, key),
             SqlUtils.inList(TBL_RIGHTS, valueName, minus.get(object))));
       }
     }
