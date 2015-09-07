@@ -11,20 +11,24 @@ import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.data.Data;
+import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.dialog.ConfirmationCallback;
+import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.event.logical.ParentRowEvent;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.presenter.GridPresenter;
+import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.FaLabel;
+import com.butent.bee.client.widget.InputNumber;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -118,5 +122,37 @@ public class TripCostsGrid extends AbstractGridInterceptor
     dailyCosts.setVisible(DataUtils.isId(trip));
 
     super.onParentRow(event);
+  }
+
+  @Override
+  public void onEditStart(EditStartEvent event) {
+    if (BeeUtils.same(event.getColumnId(), "Ratio") && BeeUtils.isPositive(event.getRowValue()
+        .getDouble(getDataIndex("Old" + COL_COSTS_PRICE)))) {
+
+      final IsRow row = event.getRowValue();
+      final Double qty = row.getDouble(getDataIndex(COL_COSTS_QUANTITY));
+
+      if (BeeUtils.isPositive(qty)) {
+        final InputNumber amount = new InputNumber();
+
+        Global.inputWidget(Localized.getConstants().amount(), amount, new InputCallback() {
+          @Override
+          public String getErrorMessage() {
+            if (!BeeUtils.isPositive(amount.getNumber())) {
+              return Localized.getConstants().valueRequired();
+            }
+            return super.getErrorMessage();
+          }
+
+          @Override
+          public void onSuccess() {
+            Queries.updateCellAndFire(getViewName(), row.getId(), row.getVersion(), COL_COSTS_PRICE,
+                row.getString(getDataIndex(COL_COSTS_PRICE)),
+                BeeUtils.toString(BeeUtils.round(amount.getNumber() / qty, 2)));
+          }
+        });
+      }
+    }
+    super.onEditStart(event);
   }
 }

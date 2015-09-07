@@ -49,6 +49,7 @@ public class TripPurchasesGrid extends InvoiceBuilder {
     int currId = info.getColumnIndex(COL_CURRENCY);
     int currName = info.getColumnIndex(ALS_CURRENCY_NAME);
     int numberIdx = info.getColumnIndex(COL_NUMBER);
+    int prefixIdx = info.getColumnIndex("Prefix");
 
     for (BeeRow row : data.getRows()) {
       trips.add(row.getString(trip));
@@ -61,10 +62,12 @@ public class TripPurchasesGrid extends InvoiceBuilder {
       if (DataUtils.isId(id)) {
         currencies.put(id, row.getString(currName));
       }
-      if (number != null && !BeeUtils.same(row.getString(numberIdx), number)) {
+      String currentNumber = BeeUtils.joinWords(row.getString(prefixIdx), row.getString(numberIdx));
+
+      if (number != null && !BeeUtils.same(currentNumber, number)) {
         number = "";
       } else {
-        number = BeeUtils.nvl(row.getString(numberIdx), "");
+        number = currentNumber;
       }
     }
     newRow.setValue(targetInfo.getColumnIndex(COL_TRADE_NOTES), BeeUtils.joinItems(trips));

@@ -1439,6 +1439,7 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
       values.put(COL_COSTS_ITEM, row.getValue(COL_DAILY_COSTS_ITEM));
       values.put(COL_COSTS_PRICE, row.getValue(COL_AMOUNT));
       values.put(COL_COSTS_CURRENCY, row.getValue(COL_CURRENCY));
+      values.put("Old" + COL_COSTS_PRICE, row.getValue(COL_AMOUNT));
 
       String key = Codec.md5(BeeUtils.joinItems(values.values()));
 
@@ -2677,6 +2678,7 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
 
   private ResponseObject getVehicleRepairs(String externalId) {
     Map<String, String> cols = new LinkedHashMap<>();
+    cols.put("tipas", "tipai.tipas");
     cols.put("data", "data");
     cols.put("preke", "pavad");
     cols.put("artikulas", "tr_remon.artikulas");
@@ -2698,7 +2700,9 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
       }
       sql.append(entry.getValue()).append(" AS ").append(entry.getKey());
     }
-    sql.append(" FROM tr_remon INNER JOIN prekes ON tr_remon.preke=prekes.preke")
+    sql.append(" FROM tr_remon")
+        .append(" INNER JOIN prekes ON tr_remon.preke=prekes.preke")
+        .append(" INNER JOIN tipai ON prekes.tipas=tipai.tipas AND tipai.tip_kod IS NOT NULL")
         .append(" WHERE car_id=" + externalId);
 
     cols.put("artikulas", "apyv_gr.artikulas");
@@ -2721,11 +2725,13 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
         }
         sql.append(entry.getValue()).append(" AS ").append(entry.getKey());
       }
-      sql.append(" FROM apyvarta INNER JOIN apyv_gr ON apyvarta.apyv_id = apyv_gr.apyv_id")
+      sql.append(" FROM apyvarta")
+          .append(" INNER JOIN apyv_gr ON apyvarta.apyv_id=apyv_gr.apyv_id")
           .append(" INNER JOIN prekes ON apyv_gr.preke=prekes.preke")
+          .append(" INNER JOIN tipai ON prekes.tipas=tipai.tipas AND tipai.tip_kod IS NOT NULL")
           .append(wh);
     }
-    sql.append(" ORDER BY data DESC");
+    sql.append(" ORDER BY tipas, data DESC");
 
     String remoteNamespace = prm.getText(PRM_ERP_NAMESPACE);
     String remoteAddress = prm.getText(PRM_ERP_ADDRESS);

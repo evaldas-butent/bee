@@ -27,7 +27,16 @@
         <bodyStyle><ui:font>bold</ui:font></bodyStyle>
       </style>
     </CalcColumn>
+    <CalcColumn name="Ratio" type="string" caption="Pokytis" horizontalAlignment="right">
+      <render>
+        <ui:expression>
+          row.OldPrice &amp;&amp; row.Price
+            ? (Math.round(row.Price / row.OldPrice * 10000) / 100) + '%' : null
+        </ui:expression>
+      </render>
+    </CalcColumn>
 
+    <DataColumn name="Prefix" />
     <DataColumn name="Number" />
     <RelColumn name="Supplier" />
     <RelColumn name="Country" />

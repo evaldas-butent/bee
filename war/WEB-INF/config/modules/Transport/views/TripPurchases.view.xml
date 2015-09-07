@@ -3,7 +3,7 @@
 
       name="TripPurchases" source="TripCosts" caption="=trTripCosts"
       readOnly="true"
-      filter="!(PaymentCash)"
+      filter="!(PaymentCash) AND Prefix AND Number"
     >
   <Columns>
     <SimpleColumn name="Trip" />
@@ -35,6 +35,7 @@
     <SimpleColumn name="Vat" />
     <SimpleColumn name="VatPercent" />
 
+    <SimpleColumn name="Prefix" />
     <SimpleColumn name="Number" />
     <SimpleColumn name="Supplier" />
     <SimpleJoin name="Supplier" joinType="LEFT">
