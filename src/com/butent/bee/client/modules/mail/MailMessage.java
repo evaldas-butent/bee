@@ -652,6 +652,10 @@ public class MailMessage extends AbstractFormInterceptor {
     });
   }
 
+  boolean samePlace(Long place) {
+    return DataUtils.isId(place) && Objects.equals(place, placeId);
+  }
+
   private Set<String> getBcc() {
     return getRecipients(AddressType.BCC.name());
   }
