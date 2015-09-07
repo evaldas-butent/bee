@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
-  xmlns:xpr="http://www.butent.com/expression"
 
-  name="AllVehicles" source="Vehicles"
-  >
+      name="AllVehicles" source="Vehicles"
+    >
   <Columns>
     <SimpleJoin name="Type" joinType="LEFT">
       <SimpleColumn name="Name" alias="TypeName" />
@@ -15,4 +14,3 @@
     <OrderBy column="Number" />
   </Order>
 </View>
- 

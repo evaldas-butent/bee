@@ -16,7 +16,6 @@ import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 import com.butent.bee.server.concurrency.ConcurrencyBean;
 import com.butent.bee.server.concurrency.ConcurrencyBean.HasTimerService;
 import com.butent.bee.server.data.BeeView;
-import com.butent.bee.server.data.BeeView.ConditionProvider;
 import com.butent.bee.server.data.DataEditorBean;
 import com.butent.bee.server.data.DataEvent.ViewDeleteEvent;
 import com.butent.bee.server.data.DataEvent.ViewInsertEvent;
@@ -364,13 +363,6 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
   public void init() {
     cb.createIntervalTimer(this.getClass(), PRM_ERP_REFRESH_INTERVAL);
 
-    BeeView.registerConditionProvider(TBL_IMPORT_MAPPINGS, new ConditionProvider() {
-      @Override
-      public IsCondition getCondition(BeeView view, List<String> args) {
-        return null;
-      }
-    });
-
     sys.registerDataEventHandler(new DataEventHandler() {
       @Subscribe
       public void calcAssessmentAmounts(ViewQueryEvent event) {
@@ -543,38 +535,47 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
       }
 
       @Subscribe
-      public void getVisibleDrivers(ViewQueryEvent event) {
-        if (BeeUtils.same(event.getTargetName(), TBL_DRIVERS) && event.isBefore()) {
-          BeeView view = sys.getView(event.getTargetName());
+      public void getVisibleVehiclesAndDrivers(ViewQueryEvent event) {
+        if (event.isBefore()) {
+          String target = event.getTargetName();
+          String groupTable;
+          String groupField;
 
-          SqlSelect query = new SqlSelect().setDistinctMode(true)
-              .addFields(TBL_DRIVER_GROUPS, COL_DRIVER)
-              .addFrom(TBL_DRIVER_GROUPS)
+          switch (target) {
+            case TBL_VEHICLES:
+              groupTable = TBL_VEHICLE_GROUPS;
+              groupField = COL_VEHICLE;
+              break;
+            case TBL_DRIVERS:
+              groupTable = TBL_DRIVER_GROUPS;
+              groupField = COL_DRIVER;
+              break;
+            default:
+              return;
+          }
+          BeeView view = sys.getView(target);
+
+          SqlSelect query = new SqlSelect().setUnionAllMode(false)
+              .addFields(groupTable, groupField)
+              .addFrom(groupTable)
               .addFromInner(TBL_TRANSPORT_GROUPS,
-                  sys.joinTables(TBL_TRANSPORT_GROUPS, TBL_DRIVER_GROUPS, COL_GROUP));
+                  SqlUtils.and(sys.joinTables(TBL_TRANSPORT_GROUPS, groupTable, COL_GROUP),
+                      SqlUtils.isNull(TBL_TRANSPORT_GROUPS, COL_GROUP_MANAGER)))
+              .addUnion(new SqlSelect()
+                  .addField(target, sys.getIdName(target), groupField)
+                  .addFrom(target)
+                  .addFromLeft(groupTable, sys.joinTables(target, groupTable, groupField))
+                  .addFromLeft(TBL_TRANSPORT_GROUPS,
+                      sys.joinTables(TBL_TRANSPORT_GROUPS, groupTable, COL_GROUP))
+                  .setWhere(SqlUtils.or(SqlUtils.isNull(groupTable, groupField),
+                      SqlUtils.equals(TBL_TRANSPORT_GROUPS, COL_GROUP_MANAGER,
+                          usr.getCurrentUserId()))));
 
           sys.filterVisibleState(query, TBL_TRANSPORT_GROUPS);
 
-          event.getQuery().addFromInner(query, "subq",
-              SqlUtils.join(view.getSourceAlias(), view.getSourceIdName(), "subq", COL_DRIVER));
-        }
-      }
-
-      @Subscribe
-      public void getVisibleVehicles(ViewQueryEvent event) {
-        if (BeeUtils.same(event.getTargetName(), TBL_VEHICLES) && event.isBefore()) {
-          BeeView view = sys.getView(event.getTargetName());
-
-          SqlSelect query = new SqlSelect().setDistinctMode(true)
-              .addFields(TBL_VEHICLE_GROUPS, COL_VEHICLE)
-              .addFrom(TBL_VEHICLE_GROUPS)
-              .addFromInner(TBL_TRANSPORT_GROUPS,
-                  sys.joinTables(TBL_TRANSPORT_GROUPS, TBL_VEHICLE_GROUPS, COL_GROUP));
-
-          sys.filterVisibleState(query, TBL_TRANSPORT_GROUPS);
-
-          event.getQuery().addFromInner(query, "subq",
-              SqlUtils.join(view.getSourceAlias(), view.getSourceIdName(), "subq", COL_VEHICLE));
+          event.getQuery()
+              .setWhere(SqlUtils.and(event.getQuery().getWhere(),
+                  SqlUtils.in(view.getSourceAlias(), view.getSourceIdName(), query)));
         }
       }
 
