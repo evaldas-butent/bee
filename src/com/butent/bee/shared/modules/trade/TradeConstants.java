@@ -7,6 +7,7 @@ public final class TradeConstants {
   public static final String SVC_GET_DOCUMENT_DATA = "getTradeDocumentData";
   public static final String SVC_SEND_TO_ERP = "SendToERP";
   public static final String SVC_REMIND_DEBTS_EMAIL = "RemindDebtsEmail";
+  public static final String SVC_GET_SALE_AMOUNTS = "GetSaleAmounts";
 
   public static final String TBL_PURCHASES = "Purchases";
   public static final String TBL_PURCHASE_USAGE = "PurchaseUsage";

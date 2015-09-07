@@ -62,6 +62,8 @@ public interface LocalizableTradeConstants {
 
   String trdInvoice();
 
+  String trdInvoices();
+
   String trdInvoiceId();
 
   String trdInvoiceNo();
@@ -83,6 +85,8 @@ public interface LocalizableTradeConstants {
   String trdOverdue();
 
   String trdOverdueInDays();
+
+  String trdPaid();
 
   String trdPrice();
 

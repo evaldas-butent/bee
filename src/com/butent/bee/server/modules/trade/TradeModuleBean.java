@@ -13,6 +13,7 @@ import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
 
+import com.butent.bee.server.data.BeeView;
 import com.butent.bee.server.data.DataEvent.ViewInsertEvent;
 import com.butent.bee.server.data.DataEvent.ViewModifyEvent;
 import com.butent.bee.server.data.DataEvent.ViewQueryEvent;
@@ -62,10 +63,12 @@ import com.butent.bee.shared.html.builder.elements.Table;
 import com.butent.bee.shared.html.builder.elements.Td;
 import com.butent.bee.shared.html.builder.elements.Th;
 import com.butent.bee.shared.html.builder.elements.Tr;
+import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
+import com.butent.bee.shared.modules.ec.EcConstants;
 import com.butent.bee.shared.modules.trade.TradeDocumentData;
 import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.rights.Module;
@@ -181,6 +184,11 @@ public class TradeModuleBean implements BeeModule {
 
     } else if (BeeUtils.same(svc, SVC_REMIND_DEBTS_EMAIL)) {
       response = sendDebtsRemindEmail(reqInfo);
+
+    } else if (BeeUtils.same(svc, SVC_GET_SALE_AMOUNTS)) {
+      response = getSaleAmounts(reqInfo.getParameter(VAR_VIEW_NAME),
+          reqInfo.getParameter(Service.VAR_COLUMN),
+          Filter.restore(reqInfo.getParameter(EcConstants.VAR_FILTER)));
 
     } else {
       String msg = BeeUtils.joinWords("Trade service not recognized:", svc);
@@ -644,9 +652,11 @@ public class TradeModuleBean implements BeeModule {
             SqlUtils.and(SqlUtils.isNull(TBL_ERP_SALES, COL_SALE_PAYER),
                 SqlUtils.inList(TBL_ERP_SALES, COL_TRADE_CUSTOMER, companyIds)
                 )),
-        SqlUtils.or(SqlUtils.less(TBL_ERP_SALES, COL_TRADE_TERM, (new JustDate()).getTime()), SqlUtils
-            .isNull(TBL_ERP_SALES, COL_TRADE_TERM)),
-        SqlUtils.less(SqlUtils.minus(SqlUtils.nvl(SqlUtils.field(TBL_ERP_SALES, COL_TRADE_PAID), 0),
+        SqlUtils.or(SqlUtils.less(TBL_ERP_SALES, COL_TRADE_TERM, (new JustDate()).getTime()),
+            SqlUtils
+                .isNull(TBL_ERP_SALES, COL_TRADE_TERM)),
+        SqlUtils.less(SqlUtils.minus(
+            SqlUtils.nvl(SqlUtils.field(TBL_ERP_SALES, COL_TRADE_PAID), 0),
             SqlUtils.field(TBL_ERP_SALES, COL_TRADE_AMOUNT)), 0)
         ));
 
@@ -699,7 +709,8 @@ public class TradeModuleBean implements BeeModule {
             SqlUtils.and(SqlUtils.isNull(TBL_ERP_SALES, COL_SALE_PAYER),
                 SqlUtils.inList(TBL_ERP_SALES, COL_TRADE_CUSTOMER, companyIds)
                 )),
-        SqlUtils.equals(TBL_ERP_SALES, COL_TRADE_PAID, SqlUtils.field(TBL_ERP_SALES, COL_TRADE_AMOUNT)),
+        SqlUtils.equals(TBL_ERP_SALES, COL_TRADE_PAID, SqlUtils.field(TBL_ERP_SALES,
+            COL_TRADE_AMOUNT)),
         SqlUtils.notNull(TBL_ERP_SALES, COL_TRADE_TERM),
         SqlUtils.notNull(TBL_ERP_SALES, COL_TRADE_PAYMENT_TIME)));
     select.addGroup(SqlUtils.field(TBL_ERP_SALES, COL_TRADE_CUSTOMER));
@@ -721,12 +732,67 @@ public class TradeModuleBean implements BeeModule {
                 )),
         SqlUtils.less(SqlUtils.field(TBL_ERP_SALES, COL_TRADE_TERM), SqlUtils
             .field(TBL_ERP_SALES, COL_TRADE_PAYMENT_TIME)),
-        SqlUtils.equals(TBL_ERP_SALES, COL_TRADE_AMOUNT, SqlUtils.field(TBL_ERP_SALES, COL_TRADE_PAID)),
+        SqlUtils.equals(TBL_ERP_SALES, COL_TRADE_AMOUNT, SqlUtils.field(TBL_ERP_SALES,
+            COL_TRADE_PAID)),
         SqlUtils.notNull(TBL_ERP_SALES, COL_TRADE_PAYMENT_TIME),
         SqlUtils.notNull(TBL_ERP_SALES, COL_TRADE_TERM)));
     select.addGroup(SqlUtils.field(TBL_ERP_SALES, COL_TRADE_CUSTOMER));
 
     return qs.getData(select);
+  }
+
+  private ResponseObject getSaleAmounts(String viewName, String relColumn, Filter filter) {
+    Assert.notEmpty(viewName);
+    Assert.notEmpty(relColumn);
+
+    BeeView view = sys.getView(viewName);
+
+    SqlSelect select = view.getQuery(usr.getCurrentUserId(), filter)
+        .resetFields().resetOrder();
+
+    if (BeeUtils.same(view.getSourceName(), TBL_COMPANIES)) {
+      select.addFields(view.getSourceAlias(), sys.getIdName(view.getSourceName()));
+    } else {
+      select.addFields(view.getSourceAlias(), relColumn);
+    }
+
+    SqlSelect query = new SqlSelect()
+        .addFrom(TBL_ERP_SALES);
+
+    if (BeeUtils.same(view.getSourceName(), TBL_COMPANIES)) {
+      query.setWhere(SqlUtils.in(TBL_ERP_SALES, COL_TRADE_CUSTOMER, select));
+    } else {
+      query.setWhere(SqlUtils.in(TBL_ERP_SALES, sys.getIdName(TBL_ERP_SALES), select));
+    }
+
+    IsExpression amountXpr = ExchangeUtils.exchangeField(query,
+        SqlUtils.field(TBL_ERP_SALES, COL_TRADE_AMOUNT),
+        SqlUtils.field(TBL_ERP_SALES, COL_CURRENCY), SqlUtils.field(TBL_ERP_SALES, COL_TRADE_DATE));
+
+    IsExpression paidXpr = ExchangeUtils.exchangeField(query,
+        SqlUtils.field(TBL_ERP_SALES, COL_TRADE_PAID),
+        SqlUtils.field(TBL_ERP_SALES, COL_CURRENCY), SqlUtils.field(TBL_ERP_SALES, COL_TRADE_DATE));
+
+    query.addSum(amountXpr, VAR_AMOUNT);
+    query.addSum(paidXpr, VAR_TOTAL);
+    query.addCount(VAR_DEBT);
+
+    logger.warning(query.getQuery());
+
+    SimpleRowSet rs = qs.getData(query);
+
+    LocalizableConstants loc = usr.getLocalizableConstants();
+
+    return ResponseObject.info(BeeUtils.joinWords(loc.trdAmount(),
+        BeeUtils.round(BeeUtils.unbox(rs.getDouble(0, VAR_AMOUNT)), 2),
+        loc.trdPaid(),
+        BeeUtils.round(BeeUtils.unbox(rs.getDouble(0, VAR_TOTAL)), 2),
+        loc.trdDebt(),
+        BeeUtils.round(BeeUtils.unbox(rs.getDouble(0, VAR_TOTAL))
+            - BeeUtils.unbox(rs.getDouble(0, VAR_AMOUNT)), 2),
+        loc.trdInvoices(),
+        BeeUtils.unbox(rs.getInt(0, VAR_DEBT))));
+
   }
 
   private ResponseObject getTradeDocumentData(RequestInfo reqInfo) {
@@ -970,7 +1036,7 @@ public class TradeModuleBean implements BeeModule {
       }
 
       try {
-//        logger.info(mailDocument.buildLines());
+        // logger.info(mailDocument.buildLines());
         MailAccount account = mailStore.getAccount(senderMailAccountId);
         MimeMessage message = mail.sendMail(account,
             ArrayUtils.toArray(
