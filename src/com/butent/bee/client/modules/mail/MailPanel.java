@@ -324,16 +324,18 @@ public class MailPanel extends AbstractFormInterceptor {
       IsRow row = event.getRowValue();
 
       if (row != null) {
-        message.requery(COL_PLACE, row.getId());
-        messageWidget.setVisible(true);
-        emptySelectionWidget.setVisible(false);
+        if (!message.samePlace(row.getId())) {
+          message.requery(COL_PLACE, row.getId());
+          messageWidget.setVisible(true);
+          emptySelectionWidget.setVisible(false);
 
-        int flagIdx = Data.getColumnIndex(getGridPresenter().getViewName(), COL_FLAGS);
-        int value = BeeUtils.unbox(row.getInteger(flagIdx));
+          int flagIdx = Data.getColumnIndex(getGridPresenter().getViewName(), COL_FLAGS);
+          int value = BeeUtils.unbox(row.getInteger(flagIdx));
 
-        if (!MessageFlag.SEEN.isSet(value)) {
-          row.setValue(flagIdx, MessageFlag.SEEN.set(value));
-          getGridView().refreshCell(row.getId(), COL_MESSAGE);
+          if (!MessageFlag.SEEN.isSet(value)) {
+            row.setValue(flagIdx, MessageFlag.SEEN.set(value));
+            getGridView().refreshCell(row.getId(), COL_MESSAGE);
+          }
         }
       } else if (getGridView().isEmpty()
           || !Objects.equals(message.getFolder(), getCurrentFolder())) {

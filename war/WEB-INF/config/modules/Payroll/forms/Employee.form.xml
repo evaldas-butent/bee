@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form [
+  <!ENTITY w1 "width: 18em;">
+  <!ENTITY w2 "width: 8em;">
+]>
+<f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form" 
+
+  name="Employee" viewName="Employees" caption="=employee">
+  <FlowPanel class="flexBox-vertical">
+    <Table cellStyle="vertical-align: top;">
+      <col index="0" kind="label" />
+      <col index="2" kind="label" />
+
+      <row>
+        <Label text="=personFullName" class="bee-required" />
+        <DataSelector source="CompanyPerson" style="&w1;" renderColumns="FirstName LastName"
+          choiceColumns="FirstName LastName CompanyName" />
+
+        <Label for="TabNumber" />
+        <InputInteger source="TabNumber" style="&w2;" />
+      </row>
+
+      <row>
+        <Label text="=company" />
+        <TextLabel source="CompanyName" class="bee-output" style="&w1;" />
+
+        <Label for="Salary" />
+        <InputDecimal source="Salary" currencySource="Currency" style="&w2;" />
+        <cell style="padding-left: 6px;">
+          <DataSelector source="Currency" for="Salary" newRowEnabled="false" editEnabled="false"
+            style="width: 5em;" />
+        </cell>
+      </row>
+
+      <row>
+        <Label text="=department" />
+        <TextLabel source="DepartmentName" class="bee-output" style="&w1;" />
+
+        <Label for="PartTime" />
+        <InputDecimal source="PartTime" style="&w2;" />
+      </row>
+
+      <row>
+        <Label text="=personPosition" />
+        <TextLabel source="PositionName" class="bee-output" style="&w1;" />
+
+        <Label for="DateOfEmployment" />
+        <DateLabel source="DateOfEmployment" class="bee-output" />
+      </row>
+
+      <row>
+        <Label for="Mobile" />
+        <TextLabel source="Mobile" class="bee-output" style="&w1;" />
+
+        <Label for="DateOfDismissal" />
+        <DateLabel source="DateOfDismissal" class="bee-output" style="color: red;" />
+      </row>
+
+      <row>
+        <Label text="=email" />
+        <TextLabel source="Email" class="bee-output" style="&w1;" textOnly="true" />
+      </row>
+    </Table>
+    <br/>
+
+    <TabbedPages class="flexible">
+      <page>
+        <text>=notes</text>
+        <SimplePanel>
+          <InputArea source="Notes" class="occupy-1" summarize="true" />
+        </SimplePanel>
+      </page>
+    </TabbedPages>
+  </FlowPanel>
+</f:Form>

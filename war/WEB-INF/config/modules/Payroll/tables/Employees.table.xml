@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+  name="Employees"
+  idName="EmployeeID"
+  >
+  <Fields>
+    <Relation name="CompanyPerson" notNull="true" relation="CompanyPersons"
+      label="=companyAndPerson" />
+    <Integer name="TabNumber" notNull="true" label="=personTabNo" />
+    
+    <Numeric name="Salary" precision="12" scale="2" label="=salary" />
+    <Relation name="Currency" relation="Currencies" label="=currency" />
+
+    <Numeric name="PartTime" precision="5" scale="3" label="=partTime" />
+
+    <Text name="Notes" label="=notes" />
+  </Fields>
+
+  <Constraints>
+    <Unique fields="CompanyPerson TabNumber" />
+  </Constraints>
+</Table>
