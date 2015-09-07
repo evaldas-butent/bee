@@ -390,11 +390,11 @@ public class HeaderImpl extends Flow implements HeaderView {
       return;
     }
 
-    Element controlElement = DomUtils.getElement(widgetId);
-    if (visible) {
-      controlElement.removeClassName(STYLE_CONTROL_HIDDEN);
+    Widget widget = DomUtils.getChildQuietly(this, widgetId);
+    if (widget == null) {
+      logger.warning("showAction", action.name(), visible, widgetId, "widget not found");
     } else {
-      controlElement.addClassName(STYLE_CONTROL_HIDDEN);
+      widget.setStyleName(STYLE_CONTROL_HIDDEN, !visible);
     }
   }
 

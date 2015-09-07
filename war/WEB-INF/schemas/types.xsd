@@ -211,6 +211,7 @@
       <xs:enumeration value="Service" />
       <xs:enumeration value="Administration" />
       <xs:enumeration value="Orders" />
+      <xs:enumeration value="Payroll" />
     </xs:restriction>
   </xs:simpleType>
 

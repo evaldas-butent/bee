@@ -60,12 +60,8 @@ import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
-import com.butent.bee.shared.modules.administration.AdministrationConstants.ReminderMethod;
-import com.butent.bee.shared.modules.calendar.CalendarConstants.AppointmentStatus;
-import com.butent.bee.shared.modules.calendar.CalendarConstants.CalendarVisibility;
-import com.butent.bee.shared.modules.calendar.CalendarConstants.ItemType;
-import com.butent.bee.shared.modules.calendar.CalendarConstants.Report;
-import com.butent.bee.shared.modules.calendar.CalendarConstants.ViewType;
+import com.butent.bee.shared.modules.administration.AdministrationConstants.*;
+import com.butent.bee.shared.modules.calendar.CalendarConstants.*;
 import com.butent.bee.shared.modules.calendar.CalendarSettings;
 import com.butent.bee.shared.modules.calendar.CalendarTask;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
@@ -706,7 +702,6 @@ public class CalendarModuleBean implements BeeModule {
     String attList = DataUtils.getString(rowSet, row, COL_ATTENDEES);
 
     SqlUpdate update = new SqlUpdate(TBL_REPORT_OPTIONS)
-        .addConstant(sys.getVersionName(TBL_REPORT_OPTIONS), System.currentTimeMillis())
         .addConstant(COL_CAPTION, DataUtils.getString(rowSet, row, COL_CAPTION))
         .addConstant(COL_LOWER_DATE, lowerDate)
         .addConstant(COL_UPPER_DATE, upperDate)

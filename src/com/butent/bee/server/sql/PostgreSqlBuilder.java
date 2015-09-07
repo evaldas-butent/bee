@@ -150,6 +150,14 @@ class PostgreSqlBuilder extends SqlBuilder {
   }
 
   @Override
+  protected String getVersionTrigger(String versionName) {
+    return new StringBuilder("BEGIN ")
+        .append("NEW.").append(versionName)
+        .append(":=floor(extract(epoch from current_timestamp)*1000);")
+        .append("RETURN NEW; END;").toString();
+  }
+
+  @Override
   protected String sqlCondition(Operator operator, Map<String, String> params) {
     switch (operator) {
       case FULL_TEXT:

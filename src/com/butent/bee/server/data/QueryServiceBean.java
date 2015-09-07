@@ -913,11 +913,6 @@ public class QueryServiceBean {
     Assert.state(requiresId || !si.isEmpty());
 
     if (requiresId) {
-      String versionFld = sys.getVersionName(target);
-
-      if (!si.hasField(versionFld)) {
-        si.addConstant(versionFld, System.currentTimeMillis());
-      }
       String idFld = sys.getIdName(target);
 
       if (si.hasField(idFld)) {
@@ -962,16 +957,15 @@ public class QueryServiceBean {
 
       if (insert == null) {
         insert = new SqlInsert(target)
-            .addFields(sys.getIdName(target), sys.getVersionName(target))
+            .addFields(sys.getIdName(target))
             .addFields(data.getColumnNames());
       }
       boolean isDebugEnabled = debugOff();
 
       for (String[] row : data.getRows()) {
-        Object[] values = new Object[row.length + 2];
+        Object[] values = new Object[row.length + 1];
         values[0] = ig.getId(target);
-        values[1] = System.currentTimeMillis();
-        System.arraycopy(row, 0, values, 2, row.length);
+        System.arraycopy(row, 0, values, 1, row.length);
         insert.addValues(values);
 
         if (++tot % 1e4 == 0) {
@@ -1391,7 +1385,7 @@ public class QueryServiceBean {
       }
 
       @Override
-      public ResponseObject processResultSet(ResultSet rs) throws SQLException {
+      public ResponseObject processResultSet(ResultSet rs) {
         throw new BeeRuntimeException("Data modification query must not return a ResultSet");
       }
 
