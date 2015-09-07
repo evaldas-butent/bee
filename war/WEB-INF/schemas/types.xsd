@@ -341,6 +341,7 @@
       <xs:enumeration value="EcRegistrations" />
       <xs:enumeration value="EditorTemplates" />
       <xs:enumeration value="Emails" />
+      <xs:enumeration value="Employees" />
       <xs:enumeration value="EventHistory" />
       <xs:enumeration value="ExpeditionTypes" />
       <xs:enumeration value="ExpeditionTrips" />
