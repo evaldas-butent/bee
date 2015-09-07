@@ -42,7 +42,14 @@ public enum RegulatedWidget implements HasLocalizedCaption {
     public String getCaption(LocalizableConstants constants) {
       return constants.documentTree();
     }
+  },
+  COMPANY_STRUCTURE {
+    @Override
+    public String getCaption(LocalizableConstants constants) {
+      return constants.companyStructure();
+    }
   };
+
   private final ModuleAndSub moduleAndSub;
 
   private RegulatedWidget() {

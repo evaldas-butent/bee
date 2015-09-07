@@ -9,8 +9,9 @@ public final class ClassifierConstants {
   public static final String SVC_COMPANY_INFO = "GetCompanyInfo";
   public static final String SVC_GENERATE_QR_CODE = "GenerateQrCode";
   public static final String SVC_GENERATE_QR_CODE_PERSON = "GenerateQrCodePerson";
-
   public static final String SVC_GET_COMPANY_TYPE_REPORT = "get_company_type_report";
+  public static final String SVC_GET_PRICE_AND_DISCOUNT = "GetPriceAndDiscount";
+
   public static final String TIMER_REMIND_COMPANY_ACTIONS = "timer_remind_company_actions";
 
   public static final String TBL_ITEMS = "Items";
@@ -50,7 +51,7 @@ public final class ClassifierConstants {
 
   public static final String TBL_PAYMENT_TYPES = "PaymentTypes";
 
-  public static final String TBL_DISCOUNTS = "EcDiscounts";
+  public static final String TBL_DISCOUNTS = "Discounts";
 
   public static final String FORM_COMPANY = "Company";
   public static final String FORM_COMPANY_ACTION = "CompanyAction";
@@ -66,6 +67,7 @@ public final class ClassifierConstants {
   public static final String VIEW_ITEMS = "Items";
   public static final String VIEW_ITEM_CATEGORY_TREE = "CategoryTree";
   public static final String VIEW_ITEM_CATEGORIES = "ItemCategories";
+  public static final String VIEW_ITEM_REMAINDERS = "ItemRemainders";
 
   public static final String VIEW_COUNTRIES = "Countries";
   public static final String VIEW_CITIES = "Cities";
@@ -116,6 +118,8 @@ public final class ClassifierConstants {
   public static final String COL_COMPANY_FINANCIAL_STATE = "FinancialState";
   public static final String COL_COMPANY_SIZE = "CompanySize";
   public static final String COL_COMPANY_INFORMATION_SOURCE = "InformationSource";
+  public static final String COL_COMPANY_PRICE_NAME = "PriceName";
+  public static final String COL_COMPANY_DISCOUNT_PERCENT = "DiscountPercent";
 
   public static final String COL_PERSON = "Person";
   public static final String COL_FIRST_NAME = "FirstName";
@@ -125,6 +129,7 @@ public final class ClassifierConstants {
 
   public static final String COL_CATEGORY = "Category";
   public static final String COL_CATEGORY_NAME = "Name";
+  public static final String COL_CATEGORY_PARENT = "Parent";
 
   public static final String COL_ITEM = "Item";
   public static final String COL_ITEM_NAME = "Name";
@@ -195,6 +200,7 @@ public final class ClassifierConstants {
   public static final String COL_WAREHOUSE_NAME = "Name";
   public static final String COL_WAREHOUSE_SUPPLIER_CODE = "SupplierCode";
   public static final String COL_WAREHOUSE_BRANCH = "Branch";
+  public static final String COL_WAREHOUSE_REMAINDER = "Remainder";
 
   public static final String COL_RELATION_TYPE = "RelationType";
   public static final String COL_RELATION_TYPE_NAME = "Name";
@@ -232,7 +238,7 @@ public final class ClassifierConstants {
   public static final String COL_DISCOUNT_QUANTITY_TO = "QuantityTo";
   public static final String COL_DISCOUNT_UNIT = "Unit";
   public static final String COL_DISCOUNT_PRICE_NAME = "PriceName";
-  public static final String COL_DISCOUNT_PERCENT = "DiscountPercent";
+  public static final String COL_DISCOUNT_PERCENT = "Percent";
   public static final String COL_DISCOUNT_PRICE = "Price";
   public static final String COL_DISCOUNT_CURRENCY = "Currency";
 

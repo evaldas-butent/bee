@@ -59,6 +59,7 @@
       <SimpleColumn name="Name" alias="SupplierName" label="=supplier" />
     </SimpleJoin>
 
+    <SimpleColumn name="Number" />
     <SimpleColumn name="Note" />
     <HiddenColumn name="Purchase" />
   </Columns>

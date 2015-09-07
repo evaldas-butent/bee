@@ -10,6 +10,8 @@ import static com.butent.bee.shared.modules.orders.OrdersConstants.*;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.data.Data;
+import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.grid.ChildGrid;
 import com.butent.bee.client.modules.mail.NewMailMessage;
@@ -23,11 +25,15 @@ import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.orders.OrdersConstants.OrdersStatus;
+import com.butent.bee.shared.modules.trade.TradeConstants;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -76,7 +82,8 @@ public class OrderForm extends AbstractFormInterceptor {
     }
 
     boolean isOrder =
-        (status == OrdersStatus.APPROVED.ordinal() || status == OrdersStatus.FINISH
+        (row.getInteger(idxStatus) == OrdersStatus.APPROVED.ordinal() ||
+        row.getInteger(idxStatus) == OrdersStatus.FINISH
             .ordinal()) ? true : false;
     String caption;
 
@@ -146,6 +153,7 @@ public class OrderForm extends AbstractFormInterceptor {
       header.addCommandItem(new Button(loc.crmActionFinish(), new ClickHandler() {
         @Override
         public void onClick(ClickEvent event5) {
+          checkIsFinish(form);
         }
       }));
     }
@@ -194,5 +202,31 @@ public class OrderForm extends AbstractFormInterceptor {
       to = Sets.newHashSet(addr);
     }
     NewMailMessage.create(to, null, null, null, null, null, null, false);
+  }
+
+  private static void checkIsFinish(final FormView form) {
+
+    Filter filter = Filter.equals(COL_ORDER, form.getActiveRowId());
+    Queries.getRowSet(VIEW_ORDER_ITEMS, null, filter, new RowSetCallback() {
+
+      @Override
+      public void onSuccess(BeeRowSet result) {
+        int invcIdx = Data.getColumnIndex(VIEW_ORDER_ITEMS, TradeConstants.COL_SALE);
+
+        if (result != null) {
+          for (IsRow row : result) {
+            Long value = row.getLong(invcIdx);
+            if (BeeUtils.unbox(value) <= 0) {
+              form.notifySevere(Localized.getConstants().ordEmptyInvoice());
+              return;
+            }
+          }
+          updateStatus(form, OrdersStatus.FINISH);
+          int dateIdx = Data.getColumnIndex(VIEW_ORDERS, COL_END_DATE);
+          form.getActiveRow().setValue(dateIdx, TimeUtils.nowMinutes());
+          form.refreshBySource(COL_END_DATE);
+        }
+      }
+    });
   }
 }

@@ -211,6 +211,7 @@
       <xs:enumeration value="Service" />
       <xs:enumeration value="Administration" />
       <xs:enumeration value="Orders" />
+      <xs:enumeration value="Payroll" />
     </xs:restriction>
   </xs:simpleType>
 
@@ -367,9 +368,13 @@
       <xs:enumeration value="IpFilters" />
       <xs:enumeration value="ItemCategories" />
       <xs:enumeration value="ItemGraphics" />
+      <xs:enumeration value="ItemRemainders" />
       <xs:enumeration value="Items" />
       <xs:enumeration value="Maintenance" />
       <xs:enumeration value="Messages" />
+      <xs:enumeration value="Newsletters" />
+      <xs:enumeration value="NewsletterContacts" />
+      <xs:enumeration value="NewsletterFiles" />
       <xs:enumeration value="Objects" />
       <xs:enumeration value="Orders" />
       <xs:enumeration value="OrdersInvoices" />
@@ -401,6 +406,7 @@
       <xs:enumeration value="ProjectTMLContacts" />
       <xs:enumeration value="ProjectTMLDates" />
       <xs:enumeration value="ProjectTMLStages" />
+      <xs:enumeration value="ProjectTMLTaskCopy" />
       <xs:enumeration value="ProjectTMLUsers" />
       <xs:enumeration value="ProjectTree"/>
       <xs:enumeration value="ProjectTypes" />
@@ -409,6 +415,8 @@
       <xs:enumeration value="PurchaseItems" />
       <xs:enumeration value="PurchaseOperations" />
       <xs:enumeration value="Purchases" />
+      <xs:enumeration value="RecipientsGroups" />
+      <xs:enumeration value="RcpsGroupsContacts" />
       <xs:enumeration value="RecurringTasks" />
       <xs:enumeration value="RejectionReasons" />
       <xs:enumeration value="RelatedDocuments" />

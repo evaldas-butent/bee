@@ -30,6 +30,8 @@
       <SimpleColumn name="Currency3" alias="ItemCurrency3" />
     </SimpleJoin>
 
+    <SimpleColumn name="ResRemainder" />
+
     <SimpleColumn name="Quantity" />
     <SimpleColumn name="Price" />
     <SimpleColumn name="VatPlus" />

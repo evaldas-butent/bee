@@ -187,7 +187,7 @@ public class OrdersSelectorHandler implements SelectorEvent.Handler {
     }
 
     switch (relatedViewName) {
-      case (VIEW_ORDERS_TEMPLATES):
+      case VIEW_ORDERS_TEMPLATES:
         if (event.isChanged()) {
           IsRow relatedRow = event.getRelatedRow();
           FormView form = ViewHelper.getForm(event.getSelector());

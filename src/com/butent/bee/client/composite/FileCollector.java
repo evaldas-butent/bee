@@ -572,7 +572,7 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
   @Override
   public void onDragOver(DragOverEvent event) {
     if (isRelevant(event)) {
-      EventUtils.setDropEffect(event, EventUtils.EFFECT_COPY);
+      EventUtils.selectDropCopy(event);
     }
   }
 

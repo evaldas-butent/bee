@@ -452,6 +452,22 @@ public final class UiHelper {
         && event.getKeyCode() == KeyCodes.KEY_C && (event.getCtrlKey() || event.getMetaKey());
   }
 
+  public static boolean isInteractive(Widget widget) {
+    Assert.notNull(widget);
+
+    if (!widget.isAttached() || !DomUtils.isVisible(widget)) {
+      return false;
+    }
+
+    Popup activePopup = Popup.getActivePopup();
+    if (activePopup == null) {
+      return true;
+    }
+
+    Popup parentPopup = getParentPopup(widget);
+    return parentPopup != null && DomUtils.sameId(activePopup, parentPopup);
+  }
+
   public static boolean isModal(Widget widget) {
     return getParentPopup(widget) != null;
   }

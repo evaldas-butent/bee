@@ -76,6 +76,7 @@ public final class Service {
   public static final String HISTOGRAM = DATA_SERVICE_PREFIX + "histogram";
   public static final String GET_RELATED_VALUES = DATA_SERVICE_PREFIX + "get_related_values";
   public static final String UPDATE_RELATED_VALUES = DATA_SERVICE_PREFIX + "update_related_values";
+  public static final String MERGE_ROWS = DATA_SERVICE_PREFIX + "merge_rows";
 
   public static final String GET_DSNS = DATA_SERVICE_PREFIX + "get_dsns";
   public static final String SWITCH_DSN = DATA_SERVICE_PREFIX + "switch_dsn";
@@ -199,6 +200,10 @@ public final class Service {
   public static final String VAR_OPERATOR = RPC_VAR_PREFIX + "operator";
 
   public static final String VAR_DATA = RPC_VAR_PREFIX + "data";
+  public static final String VAR_EXPLAIN = RPC_VAR_PREFIX + "explain";
+
+  public static final String VAR_TIME = RPC_VAR_PREFIX + "time";
+  public static final String VAR_QTY = RPC_VAR_PREFIX + " qty";
 
   public static final String VIEW_COLUMN_SEPARATOR = " ";
 

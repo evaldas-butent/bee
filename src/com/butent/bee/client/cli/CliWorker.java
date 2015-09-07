@@ -347,6 +347,12 @@ public final class CliWorker {
     } else if ("exit".equals(z)) {
       Bee.exit();
 
+    } else if ("explain".equals(z)) {
+      if (BeeUtils.isInt(args)) {
+        Global.setExplain(BeeUtils.toInt(args));
+      }
+      logger.debug(z, Global.getExplain());
+
     } else if (BeeUtils.inList(z, "f", "func")) {
       showFunctions(v, arr, errorPopup);
 
@@ -2719,6 +2725,8 @@ public final class CliWorker {
         range = Range.closed(FontAwesome.SOCCER_BALL_O.getCode(), FontAwesome.MEANPATH.getCode());
       } else if (args.startsWith("4.3")) {
         range = Range.closed(FontAwesome.BUYSELLADS.getCode(), FontAwesome.MEDIUM.getCode());
+      } else if (args.startsWith("4.4")) {
+        range = Range.closed(FontAwesome.YC.getCode(), FontAwesome.FONTICONS.getCode());
       }
 
       styles.addAll(StyleUtils.parseStyles(args));

@@ -260,7 +260,6 @@ public final class TransportHandler {
     SelectorEvent.register(new TransportSelectorHandler());
 
     GridFactory.registerGridInterceptor(VIEW_SPARE_PARTS, new SparePartsGridHandler());
-    GridFactory.registerGridInterceptor(VIEW_CARGO_TRIPS, new CargoTripsGrid());
 
     GridFactory.registerGridInterceptor(VIEW_ORDERS, new CargoTripChecker());
     GridFactory.registerGridInterceptor(VIEW_TRIPS, new CargoTripChecker());

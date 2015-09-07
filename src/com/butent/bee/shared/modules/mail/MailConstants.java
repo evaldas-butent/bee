@@ -56,6 +56,26 @@ public final class MailConstants {
     }
   }
 
+  public enum RecipientsGroupsVisibility implements HasLocalizedCaption {
+    PUBLIC {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.mailPublic();
+      }
+    },
+    PRIVATE {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.mailPrivate();
+      }
+    };
+
+    @Override
+    public String getCaption() {
+      return getCaption(Localized.getConstants());
+    }
+  }
+
   public enum RuleCondition implements HasLocalizedCaption {
     SENDER {
       @Override
@@ -168,6 +188,8 @@ public final class MailConstants {
   public static final String TBL_RECIPIENTS = "Recipients";
   public static final String TBL_PLACES = "Places";
 
+  public static final String VIEW_NEWSLETTER_CONTACTS = "NewsletterContacts";
+  public static final String VIEW_NEWSLETTER_FILES = "NewsletterFiles";
   public static final String VIEW_USER_EMAILS = "UserEmails";
 
   public static final String COL_MESSAGE = "Message";
@@ -228,6 +250,8 @@ public final class MailConstants {
 
   public static final String COL_ADDRESSBOOK_LABEL = "Label";
 
+  public static final String COL_NEWSLETTER = "Newsletter";
+
   public static final String FORM_ACCOUNT = "Account";
   public static final String FORM_NEW_ACCOUNT = "NewAccount";
   public static final String FORM_RULE = "Rule";
@@ -244,6 +268,7 @@ public final class MailConstants {
   public static void register() {
     EnumUtils.register(RuleCondition.class);
     EnumUtils.register(RuleAction.class);
+    EnumUtils.register(RecipientsGroupsVisibility.class);
   }
 
   private MailConstants() {

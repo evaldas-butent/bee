@@ -60,6 +60,7 @@ import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.EnablableWidget;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.Theme;
+import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.edit.HasEditStartHandlers;
@@ -1175,6 +1176,13 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     }
   }
 
+  public void clearSelection() {
+    if (!getSelectedRows().isEmpty()) {
+      getSelectedRows().clear();
+      fireSelectionCountChange();
+    }
+  }
+
   public boolean containsRow(long rowId) {
     for (IsRow row : getRowData()) {
       if (row.getId() == rowId) {
@@ -2168,10 +2176,8 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     getResizedRows().clear();
     getResizedCells().clear();
 
-    if (!getSelectedRows().isEmpty()) {
-      getSelectedRows().clear();
-      fireSelectionCountChange();
-    }
+    clearSelection();
+
     onActivateCell(false);
     onActivateRow(false, false);
 
@@ -3739,7 +3745,18 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
           activeCell.addClassName(StyleUtils.NAME_RESIZABLE);
         }
 
-        if (activeElement == null || !activeCell.isOrHasChild(activeElement)) {
+        boolean focus;
+        if (activeElement == null) {
+          focus = true;
+        } else if (activeCell.isOrHasChild(activeElement)) {
+          focus = false;
+        } else if (getElement().isOrHasChild(activeElement)) {
+          focus = true;
+        } else {
+          focus = UiHelper.isInteractive(this);
+        }
+
+        if (focus) {
           activeCell.focus();
         }
 
@@ -3941,7 +3958,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
 
           if (cellElement != null) {
             setCellZIndex(cellElement);
-            if (DomUtils.isVisible(cellElement)) {
+            if (UiHelper.isInteractive(CellGrid.this)) {
               cellElement.focus();
             }
           }

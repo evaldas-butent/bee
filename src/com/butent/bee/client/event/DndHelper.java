@@ -193,7 +193,7 @@ public final class DndHelper {
           widget.asWidget().addStyleName(dragStyle);
         }
 
-        EventUtils.allowMove(event);
+        EventUtils.allowCopyMove(event);
         if (contentId != null) {
           EventUtils.setDndData(event, contentId);
         } else {

@@ -25,9 +25,11 @@ import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.Value;
+import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.data.view.RowInfoList;
+import com.butent.bee.shared.data.view.ViewColumn;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.time.DateTime;
@@ -43,6 +45,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * Contains methods for getting {@code RowSets} and making POST requests.
@@ -637,6 +642,83 @@ public final class Queries {
 
   public static boolean isResponseFromCache(int id) {
     return id == RESPONSE_FROM_CACHE;
+  }
+
+  public static void mergeRows(final String viewName, long from, long into,
+      final IntCallback callback) {
+
+    Assert.notEmpty(viewName);
+    Assert.isTrue(DataUtils.isId(from));
+    Assert.isTrue(DataUtils.isId(into));
+    Assert.isTrue(!Objects.equals(from, into));
+
+    ParameterList params = new ParameterList(Service.MERGE_ROWS);
+    params.addQueryItem(Service.VAR_VIEW_NAME, viewName);
+    params.addQueryItem(Service.VAR_FROM, from);
+    params.addQueryItem(Service.VAR_TO, into);
+
+    BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+        if (checkResponse(Service.MERGE_ROWS, getRpcId(), viewName, response, null, callback)) {
+          int size = response.getSize();
+
+          if (size > 0) {
+            String[] tables = Codec.beeDeserializeCollection(response.getResponseAsString());
+
+            if (!ArrayUtils.isEmpty(tables)) {
+              String mainTable = Data.getViewTable(viewName);
+
+              Set<String> otherTables = new TreeSet<>();
+              for (String table : tables) {
+                if (!Objects.equals(table, mainTable)) {
+                  otherTables.add(table);
+                }
+              }
+
+              Set<String> viewNames = new TreeSet<>();
+
+              for (DataInfo dataInfo : Data.getDataInfoProvider().getViews()) {
+                if (Objects.equals(mainTable, dataInfo.getTableName())) {
+                  viewNames.add(dataInfo.getViewName());
+                }
+              }
+
+              if (!otherTables.isEmpty()) {
+                for (DataInfo dataInfo : Data.getDataInfoProvider().getViews()) {
+                  boolean ok = dataInfo.getTableName() != null
+                      && otherTables.contains(dataInfo.getTableName());
+
+                  if (!ok) {
+                    for (ViewColumn vc : dataInfo.getViewColumns()) {
+                      if (vc.getTable() != null && otherTables.contains(vc.getTable())) {
+                        ok = true;
+                        break;
+                      }
+                    }
+                  }
+
+                  if (ok) {
+                    viewNames.add(dataInfo.getViewName());
+                  }
+                }
+              }
+
+              logger.info(Service.MERGE_ROWS, "tables", mainTable, otherTables);
+              logger.info(Service.MERGE_ROWS, "views", viewNames);
+
+              if (!viewNames.isEmpty()) {
+                DataChangeEvent.fireRefresh(BeeKeeper.getBus(), viewNames);
+              }
+            }
+          }
+
+          if (callback != null) {
+            callback.onSuccess(size);
+          }
+        }
+      }
+    });
   }
 
   public static void update(String viewName, long rowId, String column, Value value) {

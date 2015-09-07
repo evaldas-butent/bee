@@ -25,8 +25,12 @@ class OrderItemsPicker extends ItemsPicker {
   public void getItems(Filter filter, final RowSetCallback callback) {
     ParameterList params = OrdersKeeper.createSvcArgs(SVC_GET_ITEMS_FOR_SELECTION);
 
-    if (DataUtils.hasId(lastRow)) {
-      params.addDataItem(COL_ORDER, lastRow.getId());
+    if (DataUtils.hasId(getLastRow())) {
+      params.addDataItem(COL_ORDER, getLastRow().getId());
+    }
+
+    if (DataUtils.isId(getWarehouseFrom())) {
+      params.addDataItem(ClassifierConstants.COL_WAREHOUSE, getWarehouseFrom());
     }
 
     if (filter != null) {
@@ -53,5 +57,10 @@ class OrderItemsPicker extends ItemsPicker {
     }
 
     return row.getLong(warehouseIdx);
+  }
+
+  @Override
+  public boolean setIsOrder() {
+    return true;
   }
 }

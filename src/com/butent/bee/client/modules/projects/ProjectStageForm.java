@@ -1,6 +1,5 @@
 package com.butent.bee.client.modules.projects;
 
-import com.butent.bee.client.grid.ChildGrid;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 
 import static com.butent.bee.shared.modules.projects.ProjectConstants.*;
@@ -9,6 +8,7 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.event.EventUtils;
+import com.butent.bee.client.grid.ChildGrid;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
@@ -95,7 +95,7 @@ class ProjectStageForm extends AbstractFormInterceptor implements DataChangeEven
     }
 
     if (form.isEnabled()) {
-      ProjectsKeeper.createTemplateTasks(form, row, COL_STAGE_TEMPLATE, wTasksGrid);
+      ProjectsKeeper.createTemplateTasks(form, row, COL_PROJECT_STAGE, wTasksGrid, null);
     }
 
   }

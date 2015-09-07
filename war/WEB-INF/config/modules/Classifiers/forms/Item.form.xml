@@ -231,6 +231,13 @@
         </SimplePanel>
       </page>
 
+      <page>
+        <text>=tcdRemainders</text>
+        <SimplePanel>
+           <ChildGrid name="ItemRemainders" relColumn="Item" class="occupy-1" summarize="true" />
+        </SimplePanel>
+      </page> 
+      
       <page for="Notes">
         <text>=notes</text>
         <SimplePanel>

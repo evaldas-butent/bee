@@ -3,6 +3,8 @@ package com.butent.bee.server.data;
 import com.google.common.collect.Lists;
 
 import com.butent.bee.server.DataSourceBean;
+import com.butent.bee.server.data.BeeTable.BeeField;
+import com.butent.bee.server.data.BeeTable.BeeRelation;
 import com.butent.bee.server.data.DataEvent.TableModifyEvent;
 import com.butent.bee.server.data.DataEvent.ViewQueryEvent;
 import com.butent.bee.server.jdbc.JdbcUtils;
@@ -13,6 +15,7 @@ import com.butent.bee.server.sql.IsExpression;
 import com.butent.bee.server.sql.IsQuery;
 import com.butent.bee.server.sql.SqlBuilderFactory;
 import com.butent.bee.server.sql.SqlCreate;
+import com.butent.bee.server.sql.SqlDelete;
 import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
@@ -59,7 +62,9 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -908,11 +913,6 @@ public class QueryServiceBean {
     Assert.state(requiresId || !si.isEmpty());
 
     if (requiresId) {
-      String versionFld = sys.getVersionName(target);
-
-      if (!si.hasField(versionFld)) {
-        si.addConstant(versionFld, System.currentTimeMillis());
-      }
       String idFld = sys.getIdName(target);
 
       if (si.hasField(idFld)) {
@@ -957,16 +957,15 @@ public class QueryServiceBean {
 
       if (insert == null) {
         insert = new SqlInsert(target)
-            .addFields(sys.getIdName(target), sys.getVersionName(target))
+            .addFields(sys.getIdName(target))
             .addFields(data.getColumnNames());
       }
       boolean isDebugEnabled = debugOff();
 
       for (String[] row : data.getRows()) {
-        Object[] values = new Object[row.length + 2];
+        Object[] values = new Object[row.length + 1];
         values[0] = ig.getId(target);
-        values[1] = System.currentTimeMillis();
-        System.arraycopy(row, 0, values, 2, row.length);
+        System.arraycopy(row, 0, values, 1, row.length);
         insert.addValues(values);
 
         if (++tot % 1e4 == 0) {
@@ -984,6 +983,194 @@ public class QueryServiceBean {
     } while (chunk > 0 && data.getNumberOfRows() == chunk);
 
     return tot;
+  }
+
+  @TransactionAttribute(TransactionAttributeType.MANDATORY)
+  public ResponseObject mergeData(String tableName, long from, long into, boolean mock) {
+    Set<String> updatedTables = new HashSet<>();
+
+    if (!sys.isTable(tableName)) {
+      return ResponseObject.error(tableName, "not a base table");
+    }
+    if (!sys.getTable(tableName).isMergeable()) {
+      return ResponseObject.error(tableName, "table is not mergeable", from, into);
+    }
+
+    SimpleRow fromRow = getRow(tableName, from);
+    if (fromRow == null) {
+      return ResponseObject.error(tableName, "row", from, "not found");
+    }
+
+    SimpleRow intoRow = getRow(tableName, into);
+    if (intoRow == null) {
+      return ResponseObject.error(tableName, "row", into, "not found");
+    }
+
+    for (BeeTable table : sys.getTables()) {
+      for (BeeField field : table.getFields()) {
+        if (field instanceof BeeRelation
+            && tableName.equals(((BeeRelation) field).getRelation())) {
+
+          ResponseObject ro = mergeCheckUniqueness(table, field.getName(), from, into, mock);
+          if (ro.hasErrors()) {
+            return ro;
+          }
+          if (ro.hasResponse()) {
+            updatedTables.addAll(ro.getResponseAsStringCollection());
+          }
+
+          IsCondition where = SqlUtils.equals(table.getName(), field.getName(), from);
+
+          if (mock) {
+            if (sqlExists(table.getName(), where)) {
+              updatedTables.add(table.getName());
+            }
+
+          } else {
+            SqlUpdate su = new SqlUpdate(table.getName())
+                .addConstant(field.getName(), into)
+                .setWhere(where);
+
+            ro = updateDataWithResponse(su);
+            if (ro.hasErrors()) {
+              return ro;
+            }
+            if ((int) ro.getResponse() > 0) {
+              updatedTables.add(table.getName());
+            }
+          }
+        }
+      }
+    }
+
+    if (!mock) {
+      if (updatedTables.contains(tableName)) {
+        fromRow = getRow(tableName, from);
+        intoRow = getRow(tableName, into);
+      }
+
+      IsCondition fromWhere = sys.idEquals(tableName, from);
+
+      SqlUpdate update = new SqlUpdate(tableName);
+      SqlUpdate clear = new SqlUpdate(tableName);
+
+      for (String colName : fromRow.getColumnNames()) {
+        if (!BeeUtils.isEmpty(fromRow.getValue(colName))
+            && BeeUtils.isEmpty(intoRow.getValue(colName))) {
+
+          update.addConstant(colName, fromRow.getValue(colName));
+
+          if (sys.isUnique(tableName, colName)) {
+            clear.addConstant(colName, null);
+          }
+        }
+      }
+
+      if (!clear.isEmpty()) {
+        clear.setWhere(fromWhere);
+
+        ResponseObject clrRo = updateDataWithResponse(clear);
+        if (clrRo.hasErrors()) {
+          return clrRo;
+        }
+      }
+
+      SqlDelete delete = new SqlDelete(tableName).setWhere(fromWhere);
+      ResponseObject delRo = updateDataWithResponse(delete);
+      if (delRo.hasErrors()) {
+        return delRo;
+      }
+
+      if (!update.isEmpty()) {
+        update.setWhere(sys.idEquals(tableName, into));
+
+        ResponseObject updRo = updateDataWithResponse(update);
+        if (updRo.hasErrors()) {
+          return updRo;
+        }
+      }
+    }
+
+    updatedTables.add(tableName);
+
+    return ResponseObject.response(updatedTables).setSize(updatedTables.size());
+  }
+
+  private ResponseObject mergeCheckUniqueness(BeeTable table, String fieldName,
+      long from, long into, boolean mock) {
+
+    Set<Set<String>> uniqueness = table.getUniqueness();
+
+    if (uniqueness.contains(Collections.singleton(fieldName))) {
+      Long fromId = getId(table.getName(), fieldName, from);
+
+      if (DataUtils.isId(fromId)) {
+        Long intoId = getId(table.getName(), fieldName, into);
+
+        if (DataUtils.isId(intoId)) {
+          return mergeData(table.getName(), fromId, intoId, mock);
+        }
+      }
+
+    } else if (uniqueness.stream().anyMatch(e -> e.contains(fieldName))) {
+      Set<String> updatedTables = new HashSet<>();
+
+      String tableName = table.getName();
+      String idName = table.getIdName();
+
+      for (Set<String> uniqueFields : uniqueness) {
+        if (uniqueFields.contains(fieldName) && uniqueFields.size() > 1) {
+          List<String> otherFields = new ArrayList<>(uniqueFields);
+          otherFields.remove(fieldName);
+
+          SqlSelect fromQuery = new SqlSelect()
+              .addFields(tableName, idName)
+              .addFields(tableName, otherFields)
+              .addFrom(tableName)
+              .setWhere(SqlUtils.equals(tableName, fieldName, from));
+
+          SimpleRowSet fromData = getData(fromQuery);
+
+          if (!DataUtils.isEmpty(fromData)) {
+            SqlSelect intoQuery = new SqlSelect()
+                .addFields(tableName, idName)
+                .addFields(tableName, otherFields)
+                .addFrom(tableName)
+                .setWhere(SqlUtils.equals(tableName, fieldName, into));
+
+            SimpleRowSet intoData = getData(intoQuery);
+
+            if (!DataUtils.isEmpty(intoData)) {
+              Map<List<String>, Long> intoValues = new HashMap<>();
+              for (SimpleRow row : intoData) {
+                intoValues.put(row.getList(otherFields), row.getLong(idName));
+              }
+
+              for (SimpleRow row : fromData) {
+                Long intoId = intoValues.get(row.getList(otherFields));
+
+                if (DataUtils.isId(intoId)) {
+                  ResponseObject ro = mergeData(tableName, row.getLong(idName), intoId, mock);
+                  if (ro.hasErrors()) {
+                    return ro;
+                  }
+
+                  if (ro.hasResponse()) {
+                    updatedTables.addAll(ro.getResponseAsStringCollection());
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+
+      if (!updatedTables.isEmpty()) {
+        return ResponseObject.response(updatedTables).setSize(updatedTables.size());
+      }
+    }
+
+    return ResponseObject.emptyResponse();
   }
 
   @TransactionAttribute(TransactionAttributeType.MANDATORY)
@@ -1198,7 +1385,7 @@ public class QueryServiceBean {
       }
 
       @Override
-      public ResponseObject processResultSet(ResultSet rs) throws SQLException {
+      public ResponseObject processResultSet(ResultSet rs) {
         throw new BeeRuntimeException("Data modification query must not return a ResultSet");
       }
 

@@ -44,6 +44,12 @@ class GenericSqlBuilder extends SqlBuilder {
   }
 
   @Override
+  protected String getVersionTrigger(String versionName) {
+    // TODO implementation required
+    return null;
+  }
+
+  @Override
   protected String sqlQuote(String value) {
     return value;
   }

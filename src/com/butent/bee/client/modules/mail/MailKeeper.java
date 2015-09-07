@@ -24,6 +24,7 @@ import com.butent.bee.client.view.ViewCallback;
 import com.butent.bee.client.view.ViewFactory;
 import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.ViewSupplier;
+import com.butent.bee.client.view.grid.interceptor.FileGridInterceptor;
 import com.butent.bee.shared.BiConsumer;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.DataUtils;
@@ -33,6 +34,7 @@ import com.butent.bee.shared.i18n.LocalizableMessages;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.menu.MenuHandler;
 import com.butent.bee.shared.menu.MenuService;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.mail.AccountInfo;
 import com.butent.bee.shared.news.Feed;
@@ -96,6 +98,10 @@ public final class MailKeeper {
     FormFactory.registerFormInterceptor(FORM_MAIL_MESSAGE, new MailMessage());
     FormFactory.registerFormInterceptor(FORM_RULE, new RuleForm());
 
+    GridFactory.registerGridInterceptor(VIEW_NEWSLETTER_FILES,
+        new FileGridInterceptor(COL_NEWSLETTER, AdministrationConstants.COL_FILE,
+            AdministrationConstants.COL_FILE_CAPTION, AdministrationConstants.ALS_FILE_NAME));
+
     Global.getNewsAggregator().registerFilterHandler(Feed.MAIL,
         new BiConsumer<GridFactory.GridOptions, PresenterCallback>() {
           @Override
@@ -126,8 +132,8 @@ public final class MailKeeper {
           event.consume();
 
           NewMailMessage.create(Collections
-                  .singleton(Data.getString(ClassifierConstants.TBL_EMAILS,
-                      event.getRow(), ClassifierConstants.COL_EMAIL_ADDRESS)),
+              .singleton(Data.getString(ClassifierConstants.TBL_EMAILS,
+                  event.getRow(), ClassifierConstants.COL_EMAIL_ADDRESS)),
               null, null, null, null, null, null, false);
         }
       }
@@ -171,8 +177,8 @@ public final class MailKeeper {
           LocalizableMessages loc = Localized.getMessages();
 
           panel.getFormView().notifyInfo(move
-                  ? loc.mailMovedMessagesToFolder(response.getResponseAsString())
-                  : loc.mailCopiedMessagesToFolder(response.getResponseAsString()),
+              ? loc.mailMovedMessagesToFolder(response.getResponseAsString())
+              : loc.mailCopiedMessagesToFolder(response.getResponseAsString()),
               BeeUtils.bracket(panel.getCurrentAccount().findFolder(folderTo).getName()));
         }
       }

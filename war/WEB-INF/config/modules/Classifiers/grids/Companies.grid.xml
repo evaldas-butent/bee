@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
 
-  name="Companies" viewName="Companies" caption="=clients" favorite="Name" flexGrow="1"
+  name="Companies" viewName="Companies" caption="=clients" editShowId="true"
+  favorite="Name" flexGrow="1"
   >
   <g:columns>
     <RelColumn name="CompanyType" />
@@ -15,7 +16,7 @@
       filterOptions="-" exportWidthFactor="0.5" visible="true" >
       <renderer type="flag" />
     </CalcColumn>
-    
+
     <DataColumn name="VATCode" visible="false" />
     <DataColumn name="Phone" visible="false" />
     <DataColumn name="Mobile" visible="false" />
