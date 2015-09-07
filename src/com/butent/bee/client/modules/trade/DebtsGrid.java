@@ -3,7 +3,9 @@ package com.butent.bee.client.modules.trade;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.GridFactory.GridOptions;
+import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.presenter.PresenterCallback;
+import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
@@ -16,12 +18,23 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.calendar.CalendarConstants;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.trade.TradeConstants;
+import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 
 class DebtsGrid extends AbstractGridInterceptor {
 
   private static final LocalizableConstants localizedConstants = Localized.getConstants();
+
+  @Override
+  public void afterCreatePresenter(GridPresenter presenter) {
+    HeaderView header = presenter.getHeader();
+
+    header.clearCommandPanel();
+    header.addCommandItem(TradeKeeper.createAmountAction(presenter.getViewName(),
+        presenter.getDataProvider().getFilter(), Data.getIdColumn(presenter.getViewName()),
+        presenter.getGridView()));
+  }
 
   @Override
   public AbstractFilterSupplier getFilterSupplier(String columnName,

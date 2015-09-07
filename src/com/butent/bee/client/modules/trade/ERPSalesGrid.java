@@ -1,5 +1,6 @@
 package com.butent.bee.client.modules.trade;
 
+import com.butent.bee.client.data.Data;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 
@@ -37,6 +38,9 @@ class ERPSalesGrid extends AbstractGridInterceptor {
     });
 
     header.addCommandItem(action);
+    header.addCommandItem(TradeKeeper.createAmountAction(presenter.getViewName(),
+        presenter.getDataProvider().getFilter(),  Data.getIdColumn(presenter.getViewName()),
+        presenter.getGridView()));
   }
 
   @Override

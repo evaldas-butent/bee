@@ -1,5 +1,8 @@
 package com.butent.bee.server.modules.trade;
 
+import com.butent.bee.server.data.*;
+import com.butent.bee.shared.i18n.LocalizableConstants;
+import com.butent.bee.shared.modules.ec.EcConstants;
 import com.google.common.base.CharMatcher;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -17,10 +20,6 @@ import com.butent.bee.server.data.DataEvent.ViewInsertEvent;
 import com.butent.bee.server.data.DataEvent.ViewModifyEvent;
 import com.butent.bee.server.data.DataEvent.ViewQueryEvent;
 import com.butent.bee.server.data.DataEvent.ViewUpdateEvent;
-import com.butent.bee.server.data.DataEventHandler;
-import com.butent.bee.server.data.QueryServiceBean;
-import com.butent.bee.server.data.SystemBean;
-import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.modules.ParamHolderBean;
@@ -79,6 +78,7 @@ import com.butent.bee.shared.utils.Codec;
 import com.butent.webservice.ButentWS;
 import com.butent.webservice.WSDocument;
 import com.butent.webservice.WSDocument.WSDocumentItem;
+import com.google.gwt.i18n.client.Localizable;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -182,10 +182,15 @@ public class TradeModuleBean implements BeeModule {
     } else if (BeeUtils.same(svc, SVC_REMIND_DEBTS_EMAIL)) {
       response = sendDebtsRemindEmail(reqInfo);
 
+    } else if (BeeUtils.same(svc, SVC_GET_SALE_AMOUNTS)) {
+      response = getSaleAmounts(reqInfo.getParameter(VAR_VIEW_NAME),
+          reqInfo.getParameter(Service.VAR_COLUMN),
+          Filter.restore(reqInfo.getParameter(EcConstants.VAR_FILTER)));
+
     } else {
-      String msg = BeeUtils.joinWords("Trade service not recognized:", svc);
-      logger.warning(msg);
-      response = ResponseObject.error(msg);
+        String msg = BeeUtils.joinWords("Trade service not recognized:", svc);
+        logger.warning(msg);
+        response = ResponseObject.error(msg);
     }
 
     return response;
@@ -728,6 +733,61 @@ public class TradeModuleBean implements BeeModule {
 
     return qs.getData(select);
   }
+
+  private ResponseObject getSaleAmounts(String viewName, String relColumn, Filter filter) {
+    Assert.notEmpty(viewName);
+    Assert.notEmpty(relColumn);
+
+    BeeView view = sys.getView(viewName);
+
+    SqlSelect select = view.getQuery(usr.getCurrentUserId(), filter)
+        .resetFields().resetOrder();
+
+    if (BeeUtils.same(view.getSourceName(), TBL_COMPANIES)) {
+      select.addFields(view.getSourceAlias(), sys.getIdName(view.getSourceName()));
+    } else {
+      select.addFields(view.getSourceAlias(), relColumn);
+    }
+
+    SqlSelect query = new SqlSelect()
+        .addFrom(TBL_ERP_SALES);
+
+    if (BeeUtils.same(view.getSourceName(), TBL_COMPANIES)) {
+      query.setWhere(SqlUtils.in(TBL_ERP_SALES, COL_TRADE_CUSTOMER, select));
+    } else {
+      query.setWhere(SqlUtils.in(TBL_ERP_SALES, sys.getIdName(TBL_ERP_SALES), select));
+    }
+
+    IsExpression amountXpr = ExchangeUtils.exchangeField(query,
+            SqlUtils.field(TBL_ERP_SALES, COL_TRADE_AMOUNT),
+        SqlUtils.field(TBL_ERP_SALES, COL_CURRENCY), SqlUtils.field(TBL_ERP_SALES, COL_TRADE_DATE));
+
+    IsExpression paidXpr = ExchangeUtils.exchangeField(query,
+        SqlUtils.field(TBL_ERP_SALES, COL_TRADE_PAID),
+        SqlUtils.field(TBL_ERP_SALES, COL_CURRENCY), SqlUtils.field(TBL_ERP_SALES, COL_TRADE_DATE));
+
+    query.addSum(amountXpr, VAR_AMOUNT);
+    query.addSum(paidXpr, VAR_TOTAL);
+    query.addCount(VAR_DEBT);
+
+    logger.warning(query.getQuery());
+
+    SimpleRowSet rs =  qs.getData(query);
+
+    LocalizableConstants loc = usr.getLocalizableConstants();
+
+    return ResponseObject.info(BeeUtils.joinWords(loc.trdAmount(),
+        BeeUtils.round(BeeUtils.unbox(rs.getDouble(0, VAR_AMOUNT)), 2),
+        loc.trdPaid(),
+        BeeUtils.round(BeeUtils.unbox(rs.getDouble(0, VAR_TOTAL)), 2),
+        loc.trdDebt(),
+        BeeUtils.round(BeeUtils.unbox(rs.getDouble(0, VAR_TOTAL))
+            - BeeUtils.unbox(rs.getDouble(0, VAR_AMOUNT)), 2),
+        loc.trdInvoices(),
+        BeeUtils.unbox(rs.getInt(0, VAR_DEBT))));
+
+  }
+
 
   private ResponseObject getTradeDocumentData(RequestInfo reqInfo) {
     Long docId = reqInfo.getParameterLong(Service.VAR_ID);

@@ -162,6 +162,8 @@ class DebtReportsGrid extends AbstractGridInterceptor implements ClickHandler {
   public void afterCreatePresenter(GridPresenter presenter) {
     presenter.getHeader().clearCommandPanel();
     presenter.getHeader().addCommandItem(action);
+    presenter.getHeader().addCommandItem(TradeKeeper.createAmountAction(presenter.getViewName(),
+        presenter.getDataProvider().getFilter(), TradeConstants.COL_SALE, presenter.getGridView()));
   }
 
   @Override
