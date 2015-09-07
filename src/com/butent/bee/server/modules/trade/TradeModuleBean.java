@@ -1,8 +1,5 @@
 package com.butent.bee.server.modules.trade;
 
-import com.butent.bee.server.data.*;
-import com.butent.bee.shared.i18n.LocalizableConstants;
-import com.butent.bee.shared.modules.ec.EcConstants;
 import com.google.common.base.CharMatcher;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -16,10 +13,15 @@ import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
 
+import com.butent.bee.server.data.BeeView;
 import com.butent.bee.server.data.DataEvent.ViewInsertEvent;
 import com.butent.bee.server.data.DataEvent.ViewModifyEvent;
 import com.butent.bee.server.data.DataEvent.ViewQueryEvent;
 import com.butent.bee.server.data.DataEvent.ViewUpdateEvent;
+import com.butent.bee.server.data.DataEventHandler;
+import com.butent.bee.server.data.QueryServiceBean;
+import com.butent.bee.server.data.SystemBean;
+import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.modules.ParamHolderBean;
@@ -61,10 +63,12 @@ import com.butent.bee.shared.html.builder.elements.Table;
 import com.butent.bee.shared.html.builder.elements.Td;
 import com.butent.bee.shared.html.builder.elements.Th;
 import com.butent.bee.shared.html.builder.elements.Tr;
+import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
+import com.butent.bee.shared.modules.ec.EcConstants;
 import com.butent.bee.shared.modules.trade.TradeDocumentData;
 import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.rights.Module;
@@ -78,7 +82,6 @@ import com.butent.bee.shared.utils.Codec;
 import com.butent.webservice.ButentWS;
 import com.butent.webservice.WSDocument;
 import com.butent.webservice.WSDocument.WSDocumentItem;
-import com.google.gwt.i18n.client.Localizable;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -188,9 +191,9 @@ public class TradeModuleBean implements BeeModule {
           Filter.restore(reqInfo.getParameter(EcConstants.VAR_FILTER)));
 
     } else {
-        String msg = BeeUtils.joinWords("Trade service not recognized:", svc);
-        logger.warning(msg);
-        response = ResponseObject.error(msg);
+      String msg = BeeUtils.joinWords("Trade service not recognized:", svc);
+      logger.warning(msg);
+      response = ResponseObject.error(msg);
     }
 
     return response;
@@ -649,9 +652,11 @@ public class TradeModuleBean implements BeeModule {
             SqlUtils.and(SqlUtils.isNull(TBL_ERP_SALES, COL_SALE_PAYER),
                 SqlUtils.inList(TBL_ERP_SALES, COL_TRADE_CUSTOMER, companyIds)
                 )),
-        SqlUtils.or(SqlUtils.less(TBL_ERP_SALES, COL_TRADE_TERM, (new JustDate()).getTime()), SqlUtils
-            .isNull(TBL_ERP_SALES, COL_TRADE_TERM)),
-        SqlUtils.less(SqlUtils.minus(SqlUtils.nvl(SqlUtils.field(TBL_ERP_SALES, COL_TRADE_PAID), 0),
+        SqlUtils.or(SqlUtils.less(TBL_ERP_SALES, COL_TRADE_TERM, (new JustDate()).getTime()),
+            SqlUtils
+                .isNull(TBL_ERP_SALES, COL_TRADE_TERM)),
+        SqlUtils.less(SqlUtils.minus(
+            SqlUtils.nvl(SqlUtils.field(TBL_ERP_SALES, COL_TRADE_PAID), 0),
             SqlUtils.field(TBL_ERP_SALES, COL_TRADE_AMOUNT)), 0)
         ));
 
@@ -704,7 +709,8 @@ public class TradeModuleBean implements BeeModule {
             SqlUtils.and(SqlUtils.isNull(TBL_ERP_SALES, COL_SALE_PAYER),
                 SqlUtils.inList(TBL_ERP_SALES, COL_TRADE_CUSTOMER, companyIds)
                 )),
-        SqlUtils.equals(TBL_ERP_SALES, COL_TRADE_PAID, SqlUtils.field(TBL_ERP_SALES, COL_TRADE_AMOUNT)),
+        SqlUtils.equals(TBL_ERP_SALES, COL_TRADE_PAID, SqlUtils.field(TBL_ERP_SALES,
+            COL_TRADE_AMOUNT)),
         SqlUtils.notNull(TBL_ERP_SALES, COL_TRADE_TERM),
         SqlUtils.notNull(TBL_ERP_SALES, COL_TRADE_PAYMENT_TIME)));
     select.addGroup(SqlUtils.field(TBL_ERP_SALES, COL_TRADE_CUSTOMER));
@@ -726,7 +732,8 @@ public class TradeModuleBean implements BeeModule {
                 )),
         SqlUtils.less(SqlUtils.field(TBL_ERP_SALES, COL_TRADE_TERM), SqlUtils
             .field(TBL_ERP_SALES, COL_TRADE_PAYMENT_TIME)),
-        SqlUtils.equals(TBL_ERP_SALES, COL_TRADE_AMOUNT, SqlUtils.field(TBL_ERP_SALES, COL_TRADE_PAID)),
+        SqlUtils.equals(TBL_ERP_SALES, COL_TRADE_AMOUNT, SqlUtils.field(TBL_ERP_SALES,
+            COL_TRADE_PAID)),
         SqlUtils.notNull(TBL_ERP_SALES, COL_TRADE_PAYMENT_TIME),
         SqlUtils.notNull(TBL_ERP_SALES, COL_TRADE_TERM)));
     select.addGroup(SqlUtils.field(TBL_ERP_SALES, COL_TRADE_CUSTOMER));
@@ -759,7 +766,7 @@ public class TradeModuleBean implements BeeModule {
     }
 
     IsExpression amountXpr = ExchangeUtils.exchangeField(query,
-            SqlUtils.field(TBL_ERP_SALES, COL_TRADE_AMOUNT),
+        SqlUtils.field(TBL_ERP_SALES, COL_TRADE_AMOUNT),
         SqlUtils.field(TBL_ERP_SALES, COL_CURRENCY), SqlUtils.field(TBL_ERP_SALES, COL_TRADE_DATE));
 
     IsExpression paidXpr = ExchangeUtils.exchangeField(query,
@@ -772,7 +779,7 @@ public class TradeModuleBean implements BeeModule {
 
     logger.warning(query.getQuery());
 
-    SimpleRowSet rs =  qs.getData(query);
+    SimpleRowSet rs = qs.getData(query);
 
     LocalizableConstants loc = usr.getLocalizableConstants();
 
@@ -787,7 +794,6 @@ public class TradeModuleBean implements BeeModule {
         BeeUtils.unbox(rs.getInt(0, VAR_DEBT))));
 
   }
-
 
   private ResponseObject getTradeDocumentData(RequestInfo reqInfo) {
     Long docId = reqInfo.getParameterLong(Service.VAR_ID);
@@ -1030,7 +1036,7 @@ public class TradeModuleBean implements BeeModule {
       }
 
       try {
-//        logger.info(mailDocument.buildLines());
+        // logger.info(mailDocument.buildLines());
         MailAccount account = mailStore.getAccount(senderMailAccountId);
         MimeMessage message = mail.sendMail(account,
             ArrayUtils.toArray(
