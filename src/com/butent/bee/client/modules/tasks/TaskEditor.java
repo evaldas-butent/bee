@@ -1,5 +1,6 @@
 package com.butent.bee.client.modules.tasks;
 
+import com.butent.bee.client.view.edit.EditableWidget;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Table;
@@ -628,6 +629,7 @@ class TaskEditor extends AbstractFormInterceptor {
   private MultiSelector observers;
   private List<Long> projectUsers;
   private MultiSelector serviceObjects;
+  private DataSelector taskOwner;
 
   TaskEditor() {
     super();
@@ -643,6 +645,17 @@ class TaskEditor extends AbstractFormInterceptor {
     } else if (BeeUtils.same(name, NAME_SERVICE_OBJECT) && widget instanceof MultiSelector) {
       serviceObjects = (MultiSelector) widget;
     }
+  }
+
+  @Override
+  public void afterCreateEditableWidget(EditableWidget editableWidget,
+      IdentifiableWidget widget) {
+
+    if (widget instanceof  DataSelector  && BeeUtils.same(editableWidget.getColumnId(),
+        COL_OWNER)) {
+      taskOwner = (DataSelector) widget;
+    }
+    super.afterCreateEditableWidget(editableWidget, widget);
   }
 
   @Override
@@ -676,6 +689,10 @@ class TaskEditor extends AbstractFormInterceptor {
       if (!BeeUtils.isEmpty(label) && isEventEnabled(event, status)) {
         header.addCommandItem(button);
       }
+    }
+
+    if (taskOwner != null) {
+      taskOwner.setEnabled(BeeKeeper.getUser().isAdministrator());
     }
 
     setProjectStagesFilter(form, row);
@@ -741,6 +758,10 @@ class TaskEditor extends AbstractFormInterceptor {
     DateTime start = row.getDateTime(form.getDataIndex(COL_START_TIME));
 
     form.setEnabled(Objects.equals(owner, userId));
+
+    if (taskOwner != null) {
+      taskOwner.setEnabled(BeeKeeper.getUser().isAdministrator());
+    }
 
     TaskStatus newStatus = null;
 
