@@ -6,8 +6,8 @@
 ]>
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
-  xmlns:ui="http://www.butent.com/ui" 
-  
+  xmlns:ui="http://www.butent.com/ui"
+
   name="&form;" caption="Sąskaita LT/EN" disabledActions="save"
   width="70" widthUnit="%" height="90" heightUnit="%" viewName="PrintLogisticsInvoice"
   >
@@ -21,8 +21,8 @@
         <FlowPanel>
           <TextLabel inline="true" style="margin-right: 2px;">
             <render>
-              <ui:expression>row.Proforma 
-                ? 'Sąskaita išankstiniam apmokėjimui Nr. / Proforma invoice No.:' 
+              <ui:expression>row.Proforma
+                ? 'Sąskaita išankstiniam apmokėjimui Nr. / Proforma invoice No.:'
                 : 'PVM Sąskaita faktūra Nr. / Invoice No.:'</ui:expression>
             </render>
           </TextLabel>
@@ -120,7 +120,6 @@
               <FlowPanel>
                 <InlineLabel html="Transporto valst.nr./Vechicle State No.: " />
                 <InlineLabel name="Vehicle" />
-                <TextLabel source="Vehicle" style="display:inline; margin-left:5px;" />
               </FlowPanel>
               <FlowPanel>
                 <InlineLabel html="Pakrovimo data/Date load: " />
@@ -145,7 +144,7 @@
       <Label html="Data / date:" style="&bold;" />
       <DateTimeLabel source="Date" format="DATE_SHORT" />
     </HorizontalPanel>
- 
+
     <Table name="InvoiceDetails" style="&section; width:100%">
       <properties rateCurrency="EUR" />
       <row>
@@ -278,7 +277,7 @@
         <ui:function>
 if (row.Term) {
   var dt = new Date(row.Term);
-  
+
   return "Sąskaitą apmokėti iki / Pay due date: " + dt.getFullYear()
   + "." + (dt.getMonth() &lt; 9 ? "0" : "") + (dt.getMonth() + 1)
   + "." + (dt.getDate() &lt; 10 ? "0" : "") + dt.getDate()
@@ -303,7 +302,7 @@ return null;
     <HtmlPanel style="&section;">
       <span style="font-size:smaller; &bold; display:block; white-space:pre-wrap;">
 Pastaba:
-Šios nuorodos negalioja sąskaitoms su 21 % PVM 
+Šios nuorodos negalioja sąskaitoms su 21 % PVM
 0 % PVM tarifas: pagal PVM 1 sr. 45 str.
 Be PVM: Pagal PVM įst. 13 (1) str.
 Without VAT: "Reverse charge" - according Directive 2006/112/EB
@@ -318,7 +317,7 @@ documents after the transaction will be made.
 
     <Label html="Kiti dokumentai/Other documents:" style="&section; &bold;" />
     <TextLabel name="Documents" style="white-space:pre-wrap;" />
-    
+
     <Table style="width:100%; margin-top:10px;">
       <row style="&bold;">
         <Label html="Išdavė / Dispenser:" />
