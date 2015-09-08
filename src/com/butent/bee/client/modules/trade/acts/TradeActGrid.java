@@ -3,6 +3,7 @@ package com.butent.bee.client.modules.trade.acts;
 import com.google.common.collect.Lists;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.shared.GwtEvent;
 
 import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
 
@@ -23,7 +24,9 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.logical.ActiveRowChangeEvent;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.ui.Opener;
+import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.EditStartEvent;
+import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
@@ -96,6 +99,22 @@ public class TradeActGrid extends AbstractGridInterceptor {
     }
 
     super.afterCreatePresenter(presenter);
+  }
+
+  @Override
+  public void onReadyForInsert(final GridView gridView, final ReadyForInsertEvent event) {
+    IsRow row = gridView.getActiveForm().getActiveRow();
+    checkContract(row, event, gridView);
+  }
+
+  @Override
+  public void onSaveChanges(GridView gridView, SaveChangesEvent event) {
+    if (event.isEmpty()) {
+      return;
+    }
+
+    IsRow row = event.getNewRow();
+    checkContract(row, event, gridView);
   }
 
   @Override
@@ -643,6 +662,34 @@ public class TradeActGrid extends AbstractGridInterceptor {
           }
         }
       });
+    }
+  }
+
+  private static void checkContract(final IsRow row, final GwtEvent<?> event,
+      final GridView gridView) {
+    int idxKind = Data.getColumnIndex(VIEW_TRADE_ACTS, COL_TA_KIND);
+    if (TradeActKind.SALE.ordinal() == BeeUtils.unbox(row.getInteger(idxKind))
+        || TradeActKind.SUPPLEMENT.ordinal() == BeeUtils.unbox(row.getInteger(idxKind))) {
+
+      int contractIdx = Data.getColumnIndex(VIEW_TRADE_ACTS, WIDGET_TA_CONTRACT);
+      if (!BeeUtils.isPositive(row.getInteger(contractIdx))) {
+
+        if (event instanceof ReadyForInsertEvent) {
+          ((ReadyForInsertEvent) event).consume();
+        }
+        if (event instanceof SaveChangesEvent) {
+          ((SaveChangesEvent) event).consume();
+        }
+
+        Global.confirm(Localized.getConstants().taEmptyContract()
+            + Localized.getConstants().saveChanges(), new ConfirmationCallback() {
+
+          @Override
+          public void onConfirm() {
+            gridView.fireEvent(event);
+          }
+        });
+      }
     }
   }
 }

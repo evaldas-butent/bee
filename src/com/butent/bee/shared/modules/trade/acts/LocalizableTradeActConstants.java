@@ -8,6 +8,8 @@ public interface LocalizableTradeActConstants {
 
   String taDaysPerWeekShort();
 
+  String taEmptyContract();
+
   String taFactorShort();
 
   String taInvoiceCompose();

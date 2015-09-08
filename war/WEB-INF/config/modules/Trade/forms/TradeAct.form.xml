@@ -40,11 +40,11 @@
       </row>
       
       <row>
-       <Label text="=trdContract" class="bee-required" />
+       <Label text="=trdContract" />
        <DataSelector name="Contract" source="Contract" style="&inpw;"
           renderColumns="ContractName ContractNumber" 
           choiceColumns="Name Number DocumentDate Expires" viewName="Documents" 
-          caching="none" module="Documents" newRowEnabled="false" required="true" />
+          caching="none" module="Documents" newRowEnabled="false" />
       </row>
       
       <row>
