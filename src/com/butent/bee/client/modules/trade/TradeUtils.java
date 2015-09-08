@@ -110,6 +110,10 @@ public final class TradeUtils {
         double currSumTotal = 0;
 
         SimpleRowSet rs = SimpleRowSet.restore((String) response.getResponse());
+        if (rs.isEmpty()) {
+          table.clear();
+          return;
+        }
         int ordinal = 0;
 
         if (callback != null) {

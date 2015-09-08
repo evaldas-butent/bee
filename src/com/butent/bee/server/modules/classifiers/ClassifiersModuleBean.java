@@ -1003,6 +1003,7 @@ public class ClassifiersModuleBean implements BeeModule {
     }
     SimpleRow row = qs.getRow(new SqlSelect()
         .addFields(TBL_COMPANIES, COL_COMPANY_NAME, COL_COMPANY_CODE, COL_COMPANY_VAT_CODE)
+        .addField(TBL_COMPANY_TYPES, COL_COMPANY_TYPE_NAME, ALS_COMPANY_TYPE)
         .addFields(TBL_CONTACTS, COL_ADDRESS, COL_POST_INDEX, COL_PHONE, COL_MOBILE, COL_FAX)
         .addFields(TBL_EMAILS, COL_EMAIL_ADDRESS)
         .addField(TBL_CITIES, COL_CITY_NAME, COL_CITY)
@@ -1012,6 +1013,7 @@ public class ClassifiersModuleBean implements BeeModule {
         .addFields(TBL_BANKS, COL_BANK_CODE, COL_SWIFT_CODE)
         .addFrom(TBL_COMPANIES)
         .addFromLeft(TBL_CONTACTS, sys.joinTables(TBL_CONTACTS, TBL_COMPANIES, COL_CONTACT))
+        .addFromLeft(TBL_COMPANY_TYPES, sys.joinTables(TBL_COMPANY_TYPES, TBL_COMPANIES, COL_COMPANY_TYPE))
         .addFromLeft(TBL_EMAILS, sys.joinTables(TBL_EMAILS, TBL_CONTACTS, COL_EMAIL))
         .addFromLeft(TBL_CITIES, sys.joinTables(TBL_CITIES, TBL_CONTACTS, COL_CITY))
         .addFromLeft(TBL_COUNTRIES, sys.joinTables(TBL_COUNTRIES, TBL_CONTACTS, COL_COUNTRY))
@@ -1026,6 +1028,7 @@ public class ClassifiersModuleBean implements BeeModule {
 
     Map<String, String> translations = new HashMap<>();
     translations.put(COL_COMPANY_NAME, constants.company());
+    translations.put(ALS_COMPANY_TYPE, constants.companyStatus());
     translations.put(COL_COMPANY_CODE, constants.companyCode());
     translations.put(COL_COMPANY_VAT_CODE, constants.companyVATCode());
     translations.put(COL_ADDRESS, constants.address());
