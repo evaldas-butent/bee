@@ -53,6 +53,10 @@ public final class RightsUtils {
     return Codec.beeSerialize(VIEW_MODULES);
   }
 
+  public static boolean isStateRoleAlias(String alias) {
+    return BeeUtils.isPrefix(alias, STATE_ROLE_ALIAS_PREFIX + STATE_ROLE_ALIAS_SEPARATOR);
+  }
+
   public static String normalizeName(String name) {
     return BeeUtils.trim(name);
   }
