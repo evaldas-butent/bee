@@ -12,7 +12,7 @@ import com.butent.bee.shared.ui.HasLocalizedCaption;
 import java.util.EnumSet;
 
 public enum TradeActKind implements HasLocalizedCaption {
-  SALE(new String[] {COL_TA_UNTIL, COL_TA_DRIVER, COL_TA_VEHICLE, COL_TA_OBJECT, COL_TA_STATUS},
+  SALE(new String[] {COL_TA_DRIVER, COL_TA_VEHICLE, COL_TA_OBJECT, COL_TA_STATUS},
       Option.ALTER_TO,
       Option.AUTO_NUMBER, Option.BUILD_INVOICES,
       Option.ENABLE_COPY,
@@ -29,8 +29,7 @@ public enum TradeActKind implements HasLocalizedCaption {
     }
   },
 
-  SUPPLEMENT(new String[] {
-      COL_TA_UNTIL, COL_TA_DRIVER, COL_TA_VEHICLE, COL_TA_OBJECT, COL_TA_STATUS},
+  SUPPLEMENT(new String[] {COL_TA_DRIVER, COL_TA_VEHICLE, COL_TA_OBJECT, COL_TA_STATUS},
       Option.BUILD_INVOICES, Option.ENABLE_RETURN, Option.HAS_SERVICES,
       Option.SHOW_STOCK) {
     @Override
@@ -57,7 +56,7 @@ public enum TradeActKind implements HasLocalizedCaption {
     }
   },
 
-  TENDER(new String[] {COL_TA_UNTIL}, Option.ALTER_TO, Option.ALTER_FROM, Option.ENABLE_COPY,
+  TENDER(null, Option.ALTER_TO, Option.ALTER_FROM, Option.ENABLE_COPY,
       Option.HAS_SERVICES,
       Option.SAVE_AS_TEMPLATE, Option.SHOW_STOCK) {
     @Override
@@ -66,7 +65,7 @@ public enum TradeActKind implements HasLocalizedCaption {
     }
   },
 
-  PURCHASE(new String[] {}, Option.ALTER_TO, Option.AUTO_NUMBER, Option.ENABLE_COPY,
+  PURCHASE(null, Option.ALTER_TO, Option.AUTO_NUMBER, Option.ENABLE_COPY,
       Option.SAVE_AS_TEMPLATE) {
     @Override
     public String getCaption(LocalizableConstants constants) {
@@ -86,7 +85,7 @@ public enum TradeActKind implements HasLocalizedCaption {
     }
   },
 
-  RESERVE(new String[] {COL_TA_UNTIL}, Option.ALTER_TO, Option.ALTER_FROM, Option.HAS_SERVICES,
+  RESERVE(null, Option.ALTER_TO, Option.ALTER_FROM, Option.HAS_SERVICES,
       Option.SHOW_STOCK) {
     @Override
     public String getCaption(LocalizableConstants constants) {
