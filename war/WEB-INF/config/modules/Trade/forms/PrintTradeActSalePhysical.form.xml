@@ -7,7 +7,7 @@
 ]>
 <f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form" xmlns:ui="http://www.butent.com/ui"
   name="&form;" caption="Perdavimo aktas" disabledActions="save" width="70" widthUnit="%" height="90" heightUnit="%">
-  <FlowPanel style="padding: 10px; background-color: white; font-size:10px;" contentEditable="true"
+  <FlowPanel style="padding: 10px; background-color: white; font-size:12px;" contentEditable="true"
     class="bee-form-TradeActPrint">
     <FlowPanel>
       <Image url="images/logo.png" style="position: relative;" />
@@ -19,7 +19,7 @@
               rowId)</ui:expression>
           </render>
         </TextLabel>
-        <DateTimeLabel source="Date" format="DATE_LONG" style="text-align: center;" />
+        <DateTimeLabel source="Date" format="DATE_TIME_SHORT" style="text-align: center;" />
       </FlowPanel>
     </FlowPanel>
 
@@ -27,18 +27,18 @@
       <Table style="width:100%; border:1px solid black;">
         <row>
           <cell>
-            <Label html="Nuomotojas" style="font-weight: bold;" />
+            <Label html="Nuomotojas" style="font-weight: bold; margin-left:10px;" />
           </cell>
           <cell style="vertical-align:top;">
-            <Label html="Nuomininkas" style="font-weight: bold; border-left: 1px solid black;" />
+            <Label html="Nuomininkas" style="font-weight: bold;" />
           </cell>
         </row>
         <row>
           <cell>
-            <FlowPanel name="Supplier" style="vertical-align:top;" />
+            <FlowPanel name="Supplier" style="vertical-align:top;margin-left:10px;" />
           </cell>
           <cell>
-            <FlowPanel name="Company" style="vertical-align:top; border-left: 1px solid black;" />
+            <FlowPanel name="Company" style="vertical-align:top;" />
           </cell>
         </row>
         <row>
@@ -50,21 +50,21 @@
         </row>
         <row>
           <TextLabel />
-          <TextLabel source="Object" style="border-left: 1px solid black;">
+          <TextLabel source="Object">
             <renderToken source="ObjectName" prefix="Objektas: " />
             <renderToken source="ObjectAddress" />
           </TextLabel>
         </row>
         <row>
-          <TextLabel source="Manager">
+          <TextLabel source="Manager" style="margin-left:10px;">
             <renderToken source="ManagerFirstName" prefix="Atsakingas asmuo: " />
             <renderToken source="ManagerLastName" />
-            <renderToken source="ManagerPhone" prefix=" Tel.: " />
+            <renderToken source="ManagerMobile" prefix=" Mob.: " />
           </TextLabel>
-          <TextLabel source="Contact" style="border-left: 1px solid black;">
+          <TextLabel source="Contact">
             <renderToken source="ContactFirstName" prefix="Atsakingas asmuo: " />
             <renderToken source="ContactLastName" />
-            <renderToken source="ContactPhone" prefix=" Tel.: " />
+            <renderToken source="ContactMobile" prefix=" Mob.: " />
           </TextLabel>
         </row>
       </Table>
@@ -179,6 +179,7 @@
         <Label text="Nuolaida, %">
           <properties name="Discount" />
         </Label>
+        <Label />
         <Label text="Suma už min. term.">
           <properties name="Amount" />
         </Label>
@@ -204,9 +205,20 @@
             <properties name="TotalDiscount" />
           </Label>
         </FlowPanel>
+        <FlowPanel style="text-align: right;">
+          <Label text="Bendra suma:" />
+          <Label text="PVM suma:" />
+          <Label text="VISO:" style="&bold;" />
+        </FlowPanel>
         <FlowPanel style="text-align:right;">
-          <Label style="&bold;">
+          <Label>
             <properties name="AmountTotal" />
+          </Label>
+          <Label>
+            <properties name="VatTotal" />
+          </Label>
+          <Label style="&bold;">
+            <properties name="Total" />
           </Label>
         </FlowPanel>
       </row>
