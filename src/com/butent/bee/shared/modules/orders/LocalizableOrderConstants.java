@@ -6,6 +6,8 @@ public interface LocalizableOrderConstants {
 
   String ordAskCancel();
 
+  String ordAskChangeWarehouse();
+
   String offer();
 
   String offers();

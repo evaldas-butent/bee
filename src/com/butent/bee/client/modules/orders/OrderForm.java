@@ -1,23 +1,31 @@
 package com.butent.bee.client.modules.orders;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.orders.OrdersConstants.*;
 
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.data.Queries.IntCallback;
 import com.butent.bee.client.data.Queries.RowSetCallback;
+import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.grid.ChildGrid;
 import com.butent.bee.client.modules.mail.NewMailMessage;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.client.validation.CellValidateEvent;
+import com.butent.bee.client.validation.CellValidateEvent.Handler;
+import com.butent.bee.client.validation.CellValidation;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
@@ -25,10 +33,14 @@ import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.value.NumberValue;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.orders.OrdersConstants.OrdersStatus;
@@ -37,9 +49,12 @@ import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.List;
 import java.util.Set;
 
 public class OrderForm extends AbstractFormInterceptor {
+
+  ChildGrid orderItems;
 
   private final LocalizableConstants loc = Localized.getConstants();
 
@@ -52,7 +67,8 @@ public class OrderForm extends AbstractFormInterceptor {
   public void afterCreateWidget(String name, IdentifiableWidget widget,
       WidgetDescriptionCallback callback) {
     if (BeeUtils.same(name, TBL_ORDER_ITEMS)) {
-      ((ChildGrid) widget).setGridInterceptor(new OrderItemsGrid());
+      orderItems = (ChildGrid) widget;
+      orderItems.setGridInterceptor(new OrderItemsGrid());
     }
   }
 
@@ -106,14 +122,14 @@ public class OrderForm extends AbstractFormInterceptor {
 
       status = row.getInteger(idxStatus);
 
-      if (status == 1) {
+      if (status == OrdersStatus.CANCELED.ordinal()) {
         header.addCommandItem(new Button(loc.ordPrepare(), new ClickHandler() {
           @Override
           public void onClick(ClickEvent event1) {
             updateStatus(form, OrdersStatus.PREPARED);
           }
         }));
-      } else if (status == 2) {
+      } else if (status == OrdersStatus.PREPARED.ordinal()) {
         header.addCommandItem(new Button(loc.ordCancel(), new ClickHandler() {
           @Override
           public void onClick(ClickEvent event2) {
@@ -157,6 +173,10 @@ public class OrderForm extends AbstractFormInterceptor {
         }
       }));
     }
+
+    if (form.getIntegerValue(COL_ORDERS_STATUS).intValue() == OrdersStatus.FINISH.ordinal()) {
+      orderItems.setEnabled(false);
+    }
   }
 
   @Override
@@ -171,6 +191,61 @@ public class OrderForm extends AbstractFormInterceptor {
       }
     }
     return super.beforeAction(action, presenter);
+  }
+
+  @Override
+  public void onLoad(final FormView form) {
+    form.addCellValidationHandler(COL_WAREHOUSE, new Handler() {
+
+      @Override
+      public Boolean validateCell(CellValidateEvent event) {
+        CellValidation cv = event.getCellValidation();
+        final String newValue = cv.getNewValue();
+        String oldValue = cv.getOldValue();
+
+        if (newValue != oldValue && oldValue != null) {
+          Global.confirm(Localized.getConstants().ordAskChangeWarehouse() + " "
+              + Localized.getConstants().saveChanges(), new ConfirmationCallback() {
+
+            @Override
+            public void onConfirm() {
+              if (DataUtils.isId(newValue)) {
+
+                Filter filter =
+                    Filter.equals(COL_ORDER, getActiveRowId());
+                Queries.update(VIEW_ORDER_ITEMS, filter, COL_RESERVED_REMAINDER,
+                    new NumberValue(BeeConst.DOUBLE_ZERO), new IntCallback() {
+
+                      @Override
+                      public void onSuccess(Integer result) {
+                        if (BeeUtils.isPositive(result)) {
+                          int idxColId = form.getDataIndex(COL_WAREHOUSE);
+                          List<BeeColumn> cols =
+                              Data.getColumns(form.getViewName(), Lists.newArrayList(COL_WAREHOUSE));
+                          List<String> newValues = Lists.newArrayList(newValue);
+                          List<String> oldValues =
+                              Lists.newArrayList(form.getOldRow().getString(idxColId));
+
+                          Queries.update(VIEW_ORDERS, getActiveRowId(), form.getOldRow()
+                              .getVersion(), cols, oldValues, newValues, null, new RowCallback() {
+
+                            @Override
+                            public void onSuccess(BeeRow row) {
+                              RowUpdateEvent.fire(BeeKeeper.getBus(), form.getViewName(), row);
+                              form.refresh();
+                            }
+                          });
+                        }
+                      }
+                    });
+              }
+            }
+          });
+          return false;
+        }
+        return true;
+      }
+    });
   }
 
   private static void updateStatus(FormView form, OrdersStatus status) {
