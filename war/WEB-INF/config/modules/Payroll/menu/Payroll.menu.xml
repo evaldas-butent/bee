@@ -4,4 +4,5 @@
 name="Payroll" label="=payroll" order="120" module="Payroll"
 >
   <Item name="Employees" label="=employees" service="grid" parameters="Employees" />
+  <Item name="Locations" label="=objects" service="grid" parameters="Locations" separator="true" />
 </Entry>

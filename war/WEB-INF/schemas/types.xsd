@@ -370,6 +370,7 @@
       <xs:enumeration value="ItemGraphics" />
       <xs:enumeration value="ItemRemainders" />
       <xs:enumeration value="Items" />
+      <xs:enumeration value="Locations" />
       <xs:enumeration value="Maintenance" />
       <xs:enumeration value="Messages" />
       <xs:enumeration value="Newsletters" />
