@@ -3,6 +3,7 @@
 
   name="TaskTypes" source="TaskTypes"
   caption="=crmTaskTypes" newRowCaption="=crmNewTaskType"
+  editForm="TaskType" newRowForm="TaskType"
   >
   <Columns>
     <SimpleColumn name="Name" />

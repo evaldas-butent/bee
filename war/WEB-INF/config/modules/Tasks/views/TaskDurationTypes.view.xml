@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view" name="TaskDurationTypes" source="TaskDurationTypes" caption="=crmTaskDurations">
+  <Columns>
+    <SimpleColumn name="Type" />
+    <SimpleJoin name="Type" joinType="LEFT">
+      <SimpleColumn name="Name" alias="TypeName" />
+    </SimpleJoin>
+
+    <SimpleColumn name="DurationType" />
+    <SimpleJoin name="DurationType" joinType="LEFT">
+      <SimpleColumn name="Name" alias="DurationTypeName" />
+    </SimpleJoin>
+
+  </Columns>
+</View>
+ 
