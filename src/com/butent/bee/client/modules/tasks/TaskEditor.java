@@ -36,11 +36,15 @@ import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.event.logical.SelectorEvent;
+import com.butent.bee.client.event.logical.SelectorEvent.Handler;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
+import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.render.PhotoRenderer;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.Opener;
@@ -85,6 +89,7 @@ import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
 import com.butent.bee.shared.modules.tasks.TaskUtils;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
+import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
@@ -113,6 +118,8 @@ class TaskEditor extends AbstractFormInterceptor {
 
   private static final String STYLE_EXTENSION = CRM_STYLE_PREFIX + "taskExtension";
   private static final String NAME_OBSERVERS = "Observers";
+
+  private Label productLabel;
 
   private static final List<String> relations = Lists.newArrayList(PROP_COMPANIES, PROP_PERSONS,
       PROP_DOCUMENTS, PROP_APPOINTMENTS, PROP_DISCUSSIONS, PROP_SERVICE_OBJECTS, PROP_TASKS);
@@ -637,6 +644,20 @@ class TaskEditor extends AbstractFormInterceptor {
 
     if (BeeUtils.same(name, NAME_OBSERVERS) && widget instanceof MultiSelector) {
       observers = (MultiSelector) widget;
+    } else if (BeeUtils.same(COL_PRODUCT, name) && (widget instanceof Label)) {
+      productLabel = (Label) widget;
+      productLabel.setStyleName(StyleUtils.NAME_REQUIRED, false);
+
+    } else if (BeeUtils.same(COL_TASK_TYPE, name) && (widget instanceof DataSelector)) {
+      ((DataSelector) widget).addSelectorHandler(new Handler() {
+
+        @Override
+        public void onDataSelector(SelectorEvent event) {
+
+          TasksKeeper.getProductRequired(getActiveRow(), productLabel);
+          getFormView().refresh();
+        }
+      });
     }
   }
 
@@ -675,6 +696,25 @@ class TaskEditor extends AbstractFormInterceptor {
 
     setProjectStagesFilter(form, row);
     setProjectUsersFilter(form, row);
+  }
+
+  @Override
+  public boolean beforeAction(Action action, Presenter presenter) {
+    if (action == Action.SAVE) {
+      if (TasksKeeper.getProductRequired(getActiveRow(), productLabel)) {
+        if (Data.isNull(VIEW_TASKS, getActiveRow(), COL_PRODUCT)) {
+          getFormView().notifySevere(Localized.getConstants().crmTaskProduct() + " "
+              + Localized.getConstants().valueRequired());
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
+  @Override
+  public void beforeRefresh(FormView form, IsRow row) {
+    TasksKeeper.getProductRequired(row, productLabel);
   }
 
   @Override

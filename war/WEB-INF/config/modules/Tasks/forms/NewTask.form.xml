@@ -34,11 +34,13 @@
         <Label text="=crmTaskTemplate" data="TaskTemplates" />
         <DataSelector viewName="TaskTemplates" choiceColumns="Name" property="Template"
           newRowEnabled="false" style="&inp2;" data="TaskTemplates" />
+        <Label for="Product" name="Product" />
+        <DataSelector source="Product" renderColumns="ProductName" newRowEnabled="true" style="&inp2;" />
       </row>
 
       <row>
         <Label for="Type" class="bee-required" />
-        <DataSelector source="Type" renderColumns="TypeName" newRowEnabled="true" style="&inp2;"
+        <DataSelector source="Type" name="Type" renderColumns="TypeName" newRowEnabled="true" style="&inp2;"
           disablable="true" required="true" />
         <Label for="Priority" />
         <Radio source="Priority" />

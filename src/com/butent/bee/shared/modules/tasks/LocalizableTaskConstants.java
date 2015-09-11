@@ -192,6 +192,8 @@ public interface LocalizableTaskConstants {
 
   String crmTaskPriorityMedium();
 
+  String crmTaskProduct();
+
   String crmTaskReminder();
 
   String crmTaskReturnExecution();

@@ -18,14 +18,17 @@ import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.modules.tasks.TasksReportsInterceptor.ReportType;
 import com.butent.bee.client.style.ColorStyleProvider;
 import com.butent.bee.client.style.ConditionalStyle;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.view.ViewFactory;
 import com.butent.bee.client.view.grid.interceptor.FileGridInterceptor;
+import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.event.RowTransformEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
@@ -318,6 +321,15 @@ public final class TasksKeeper {
         }
       }
     });
+  }
+
+  public static boolean getProductRequired(IsRow row, Label productLabel) {
+    boolean valueRequired =
+        BeeUtils.toBoolean(row.getString(Data.getColumnIndex(VIEW_TASKS,
+            COL_TASK_PRODUCT_REQUIRED)));
+    productLabel.setStyleName(StyleUtils.NAME_REQUIRED, valueRequired);
+
+    return valueRequired;
   }
 
   static ParameterList createArgs(String method) {

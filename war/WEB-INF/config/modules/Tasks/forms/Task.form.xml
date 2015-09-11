@@ -28,7 +28,7 @@
       <FlowPanel style="margin-left: 5px; overflow:scroll">
         <FlowPanel style="&section;">
           <Label for="Type" style="&lbl1;" class="bee-required" />
-          <DataSelector source="Type" renderColumns="TypeName" newRowEnabled="false" style="&inp2;"
+          <DataSelector source="Type" name="Type" renderColumns="TypeName" newRowEnabled="false" style="&inp2;"
             disablable="true" required="true" />
           <Label for="Priority" style="&inline; margin-left: 16px;" />
           <Radio source="Priority" style="&inline; font-size: 12px; margin-left: 8px;"
@@ -38,12 +38,17 @@
         <FlowPanel style="&section;">
           <Label for="Status" style="&lbl1;" />
           <ListBox source="Status" style="&inp2;" readOnly="true" visible="true" />
-          <Label for="ExpectedExpenses" text="=crmTaskExpectedExpenses" style="&lbl3;" />
-          <InputDecimal source="ExpectedExpenses" style="&inp4;" disablable="true" scale="2"/>
+          <Label for="Product" name="Product" style="&lbl3;"/>
+          <DataSelector source="Product" renderColumns="ProductName" newRowEnabled="true" style="&inp4;" />
+        </FlowPanel>
+
+        <FlowPanel>
+          <Label for="ExpectedExpenses" text="=crmTaskExpectedExpenses" style="&lbl1;" />
+          <InputDecimal source="ExpectedExpenses" style="&inp2;" disablable="true" scale="2"/>
           <DataSelector source="Currency" for="ExpectedExpenses" newRowEnabled="false" editEnabled="false"
               style="width: 50px;" readOnly="true" />
         </FlowPanel>
-
+        
         <FlowPanel style="&section;">
           <Label for="Owner" style="&lbl1;" />
           <DataSelector source="Owner" editSource="OwnerPerson" style="&inp2;" readOnly="true" />

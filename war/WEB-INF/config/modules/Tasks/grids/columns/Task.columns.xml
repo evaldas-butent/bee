@@ -35,4 +35,5 @@ xmlns:ui="http://www.butent.com/ui" >
   <RelColumn name="Reminder" visible="false" />
   <DataColumn name="ReminderTime" visible="false" />
   <DataColumn name="ReminderSent" visible="false" />
+  <DataColumn name="Product" visible="false" />
 </g:columns>
