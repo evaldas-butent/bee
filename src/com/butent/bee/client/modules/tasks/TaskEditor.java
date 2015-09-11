@@ -1263,6 +1263,14 @@ class TaskEditor extends AbstractFormInterceptor {
 
     final Map<String, String> durIds = dialog.addDuration();
 
+    Filter filter =
+        Filter.in(Data.getIdColumn(VIEW_DURATION_TYPES), "TaskDurationTypes", COL_DURATION_TYPE,
+            Filter.equals(COL_TASK_TYPE, getActiveRow().getLong(
+                Data.getColumnIndex(VIEW_TASKS, COL_TASK_TYPE))));
+
+    dialog.getSelector(durIds.get(COL_DURATION_TYPE)).getOracle()
+        .setAdditionalFilter(filter, true);
+
     dialog.addAction(Localized.getConstants().actionSave(), new ScheduledCommand() {
       @Override
       public void execute() {
