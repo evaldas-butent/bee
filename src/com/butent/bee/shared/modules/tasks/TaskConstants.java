@@ -279,6 +279,7 @@ public final class TaskConstants {
 
   public static final String COL_TASK_TEMPLATE_NAME = "Name";
   public static final String COL_TASK_TYPE_NAME = "Name";
+  public static final String COL_TASK_PRODUCT_REQUIRED = "ProductRequired";
 
   public static final String COL_SUMMARY = "Summary";
   public static final String COL_DESCRIPTION = "Description";
@@ -301,6 +302,7 @@ public final class TaskConstants {
 
   public static final String COL_PUBLISH_TIME = "PublishTime";
   public static final String COL_PUBLISHER = "Publisher";
+  public static final String COL_PRODUCT = "Product";
 
   public static final String COL_COMMENT = "Comment";
 

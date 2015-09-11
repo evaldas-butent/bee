@@ -13,5 +13,7 @@
     <DataColumn name="Foreground" updateMode="row">
       <editor type="color" />
     </DataColumn>
+    
+    <DataColumn name="ProductRequired" />
   </g:columns>
 </g:Grid>

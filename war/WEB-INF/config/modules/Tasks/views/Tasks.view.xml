@@ -19,6 +19,7 @@
       <SimpleColumn name="Name" alias="TypeName" />
       <SimpleColumn name="Background" alias="TypeBackground" />
       <SimpleColumn name="Foreground" alias="TypeForeground" />
+      <SimpleColumn name="ProductRequired" />
     </SimpleJoin>
 
     <SimpleColumn name="Created" />
@@ -124,6 +125,12 @@
     <SimpleJoin name="Currency" joinType="LEFT">
       <SimpleColumn name="Name" alias="CurrencyName" />
     </SimpleJoin>
+    
+    <SimpleColumn name="Product" />
+    <SimpleJoin name="Product" joinType="LEFT">
+      <SimpleColumn name="Name" alias="ProductName"/>
+    </SimpleJoin>
+    
   </Columns>
 
   <Order>

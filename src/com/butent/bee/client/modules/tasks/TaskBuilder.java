@@ -22,6 +22,8 @@ import com.butent.bee.client.composite.MultiSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.Queries.RowSetCallback;
+import com.butent.bee.client.event.logical.SelectorEvent;
+import com.butent.bee.client.event.logical.SelectorEvent.Handler;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
@@ -92,6 +94,7 @@ class TaskBuilder extends AbstractFormInterceptor {
   private InputTime expectedDurationInput;
   private Label endDateInputLabel;
   private Label executorsLabel;
+  private Label productLabel;
 
   private MultiSelector executors;
   private MultiSelector executorGroups;
@@ -225,6 +228,20 @@ class TaskBuilder extends AbstractFormInterceptor {
       observers = (MultiSelector) widget;
     } else if (BeeUtils.same(NAME_OBSERVER_GROUPS, name) && (widget instanceof MultiSelector)) {
       observerGroups = (MultiSelector) widget;
+    } else if (BeeUtils.same(COL_PRODUCT, name) && (widget instanceof Label)) {
+      productLabel = (Label) widget;
+      productLabel.setStyleName(StyleUtils.NAME_REQUIRED, false);
+
+    } else if (BeeUtils.same(COL_TASK_TYPE, name) && (widget instanceof DataSelector)) {
+      ((DataSelector) widget).addSelectorHandler(new Handler() {
+
+        @Override
+        public void onDataSelector(SelectorEvent event) {
+
+          TasksKeeper.getProductRequired(getActiveRow(), productLabel);
+          getFormView().refresh();
+        }
+      });
     }
   }
 
@@ -341,6 +358,14 @@ class TaskBuilder extends AbstractFormInterceptor {
         activeRow.getProperty(PROP_EXECUTOR_GROUPS))) {
       event.getCallback().onFailure(Localized.getConstants().crmSelectExecutor());
       return;
+    }
+
+    if (TasksKeeper.getProductRequired(activeRow, productLabel)) {
+      if (Data.isNull(VIEW_TASKS, activeRow, COL_PRODUCT)) {
+        event.getCallback().onFailure(Localized.getConstants().crmTaskProduct() + " "
+            + Localized.getConstants().valueRequired());
+        return;
+      }
     }
 
     BeeRow newRow = DataUtils.cloneRow(activeRow);

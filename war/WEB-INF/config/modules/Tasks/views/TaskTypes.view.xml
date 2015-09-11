@@ -9,6 +9,8 @@
 
     <SimpleColumn name="Background" />
     <SimpleColumn name="Foreground" />
+    
+    <SimpleColumn name="ProductRequired" />
   </Columns>
   
   <Order>
