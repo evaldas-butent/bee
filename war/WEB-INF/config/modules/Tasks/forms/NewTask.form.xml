@@ -2,8 +2,6 @@
 <!DOCTYPE Form [
   <!ENTITY inline "display: inline-block;">
 
-  <!ENTITY separator "<hr/>">
-
   <!ENTITY tbl "border-collapse: collapse;">
   <!ENTITY cell "vertical-align: top; padding-bottom: 2px;">
   <!ENTITY col1 "text-align: right; padding-right: 8px; width: 128px;">
@@ -26,7 +24,69 @@
 
   <FlowPanel style="padding: 10px 2px 2px 10px;">
 
-    <Table style="&tbl;" cellStyle="&cell;">
+    <Table style="&tbl; border-bottom: 1px solid #e8e8e8;" cellStyle="&cell;">
+      <col index="0" cellStyle="&col1;" />
+
+      <row>
+        <Label for="Summary" />
+        <InputText source="Summary" style="&inp2x;" autocomplete="true" visible="true" />
+      </row>
+
+      <row for="Description">
+        <Label for="Description" />
+        <InputArea source="Description" style="&inp2x; height: 60px;" />
+      </row>
+    </Table>
+
+    <FlowPanel class="flexBox-horizontal-top" data="TaskFiles">
+      <Label text="=files" style="&col1; margin-top: 4px;" />
+      <FileCollector name="Files" editableColumns="name">
+        <face resource="attachment" />
+      </FileCollector>
+    </FlowPanel>
+
+    <Table style="&tbl; border-top: 1px solid #e8e8e8;" cellStyle="&cell;">
+      <col index="0" cellStyle="&col1;" />
+
+      <row>
+        <Label name="ExecutorsLabel" class="bee-required" text="=crmTaskExecutors" />
+        <MultiSelector name="Executors" viewName="Users" property="Executors" renderColumns="FirstName LastName"
+          editPopup="true" newRowEnabled="false" editSource="CompanyPerson" style="&inp2x;" label="=crmTaskExecutors" />
+      </row>
+
+      <row>
+        <Label text="=crmTaskExecutorGroups" />
+        <MultiSelector name="UserGroupSettings" viewName="UserGroupSettings" property="ExecutorGroups"
+          renderColumns="Name" editPopup="true" newRowEnabled="false" style="&inp2y;" label="=crmTaskExecutorGroups"
+          filter="Owner {u} or Visibility 1">
+        </MultiSelector>
+      </row>
+
+      <row>
+        <Label text="=crmTaskObservers" />
+        <MultiSelector name="Observers" viewName="Users" property="Observers" renderColumns="FirstName LastName"
+          editPopup="true" newRowEnabled="false" editSource="CompanyPerson" style="&inp2x;" label="=crmTaskObservers" />
+      </row>
+
+      <row>
+        <Label text="=crmTaskObserverGroups" />
+        <MultiSelector name="ObserverGroups" viewName="UserGroupSettings" property="ObserverGroups"
+          renderColumns="Name" editPopup="true" newRowEnabled="false" style="&inp2y;" label="=crmTaskObserverGroups"
+          filter="Owner {u} or Visibility 1" />
+      </row>
+
+      <row module="Projects" data="Projects">
+        <Label text="=project" name="ProjectLabel" />
+        <DataSelector source="Project" renderColumns="ProjectName" style="&inp2x;" disablable="true"
+          readOnly="true" editPopup="false" />
+      </row>
+      <row module="Projects" data="ProjectStages">
+        <Label text="=prjStage" name="ProjectStageLabel" />
+        <DataSelector source="ProjectStage" renderColumns="StageName" style="&inp2x;" />
+      </row>
+    </Table>
+
+    <Table style="&tbl; border-top: 1px solid #e8e8e8;" cellStyle="&cell;">
       <col index="0" cellStyle="&col1;" />
       <col index="2" cellStyle="&col3;" />
 
@@ -93,78 +153,9 @@
       </row>
     </Table>
 
-    &separator;
-    <Table style="&tbl;" cellStyle="&cell;">
-      <col index="0" cellStyle="&col1;" />
+    <Label text="=relatedTo" style="font-style: italic; margin-bottom: 2px; border-bottom:#e8e8e8;" data="Relations" />
 
-      <row>
-        <Label for="Summary" />
-        <InputText source="Summary" style="&inp2x;" autocomplete="true" visible="true" />
-      </row>
-
-      <row for="Description">
-        <Label for="Description" />
-        <InputArea source="Description" style="&inp2x; height: 60px;" />
-      </row>
-    </Table>
-
-    &separator;
-    <FlowPanel class="flexBox-horizontal-top" data="TaskFiles">
-      <Label text="=files" style="&col1; margin-top: 4px;" />
-      <FileCollector name="Files" editableColumns="name">
-        <face resource="attachment" />
-      </FileCollector>
-    </FlowPanel>
-
-    &separator;
-    <Table style="&tbl;" cellStyle="&cell;">
-      <col index="0" cellStyle="&col1;" />
-
-      <row>
-        <Label name="ExecutorsLabel" class="bee-required" text="=crmTaskExecutors" />
-        <MultiSelector name="Executors"
-          viewName="Users" property="Executors" renderColumns="FirstName LastName"
-          editPopup="true" newRowEnabled="false" editSource="CompanyPerson" style="&inp2x;"
-          label="=crmTaskExecutors" />
-      </row>
-
-      <row>
-        <Label text="=crmTaskExecutorGroups" />
-        <MultiSelector name="UserGroupSettings" viewName="UserGroupSettings"
-          property="ExecutorGroups" renderColumns="Name" editPopup="true" newRowEnabled="false"
-          style="&inp2y;" label="=crmTaskExecutorGroups" filter="Owner {u} or Visibility 1">
-        </MultiSelector>
-      </row>
-
-      <row>
-        <Label text="=crmTaskObservers" />
-        <MultiSelector name="Observers" viewName="Users" property="Observers" renderColumns="FirstName LastName"
-          editPopup="true" newRowEnabled="false" editSource="CompanyPerson" style="&inp2x;"
-          label="=crmTaskObservers" />
-      </row>
-
-      <row>
-        <Label text="=crmTaskObserverGroups" />
-        <MultiSelector name="ObserverGroups" viewName="UserGroupSettings" property="ObserverGroups" renderColumns="Name"
-          editPopup="true" newRowEnabled="false" style="&inp2y;" label="=crmTaskObserverGroups"
-          filter="Owner {u} or Visibility 1" />
-      </row>
-
-      <row module="Projects" data="Projects" >
-        <Label text="=project" name="ProjectLabel"/>
-        <DataSelector source="Project" renderColumns="ProjectName" style="&inp2x;" disablable="true" readOnly="true"
-        editPopup="false" />
-      </row>
-      <row  module="Projects" data="ProjectStages">
-        <Label text="=prjStage" name="ProjectStageLabel"/>
-        <DataSelector source="ProjectStage" renderColumns="StageName" style="&inp2x;" />
-      </row>
-    </Table>
-
-    &separator;
-    <Label text="=relatedTo" style="font-style: italic; margin-bottom: 2px;" data="Relations" />
-
-    <Table style="&tbl;" cellStyle="&cell;" data="Relations" for="Task">
+    <Table style="&tbl; border-top: 1px solid #e8e8e8;" cellStyle="&cell;" data="Relations" for="Task">
       <col index="0" cellStyle="&col1;" />
 
       <row data="Relations" for="Company" module="Classifiers.Contacts">

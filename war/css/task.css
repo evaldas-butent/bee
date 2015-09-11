@@ -1,13 +1,16 @@
 .bee-crm-taskEvent-container {
-  background-color: #f5f5ed;
-  border-left: 1px solid #ccc;
+  border-left: 1px solid #E8E8E8;
 }
 .bee-crm-taskEvent-row {
   display: flex;
   display: -webkit-flex;
   display: -ms-flexbox;
-  border-bottom: 1px solid #ccc;
+  border-top: 1px solid #e8e8e8;
   padding: 2px 5px 2px;
+}
+
+.bee-crm-taskEvent-row:hover > .bee-fa-label {
+color:black;
 }
 
 .bee-crm-taskEvent-row-new {
@@ -36,6 +39,7 @@
 .bee-crm-taskEvent-col-1 > .bee-fa-label {
   margin: 4px 0;
   font-size: 3ex;
+ color:#e3e3e3;
 }
 
 .bee-crm-taskEvent-Event,
