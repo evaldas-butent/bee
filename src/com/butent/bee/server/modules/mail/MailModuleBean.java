@@ -1335,6 +1335,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
     Assert.state(!BeeUtils.isEmpty(places), "Empty message list");
 
     IsCondition wh = sys.idInList(TBL_PLACES, places);
+    boolean checkMail = false;
 
     SimpleRowSet data = qs.getData(new SqlSelect()
         .addFields(TBL_PLACES, COL_MESSAGE, COL_FLAGS, COL_MESSAGE_UID)
@@ -1359,7 +1360,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
       if (account.isStoredRemotedly(target)) {
         if (account.processMessages(uids, source, target, move)) {
           uids = new long[0];
-          checkMail(true, account, target, null);
+          checkMail = true;
         } else {
           SimpleRowSet contents = qs.getData(new SqlSelect()
               .addFields(TBL_MESSAGES, COL_RAW_CONTENT)
@@ -1433,6 +1434,9 @@ public class MailModuleBean implements BeeModule, HasTimerService {
       MailMessage mailMessage = new MailMessage(source.getId());
       mailMessage.setMessagesUpdated(true);
       Endpoint.sendToUser(account.getUserId(), mailMessage);
+    }
+    if (checkMail) {
+      checkMail(true, account, target, null);
     }
     return data.getNumberOfRows();
   }

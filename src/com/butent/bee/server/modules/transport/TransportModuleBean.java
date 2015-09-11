@@ -571,8 +571,9 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
                       SqlUtils.equals(TBL_TRANSPORT_GROUPS, COL_GROUP_MANAGER,
                           usr.getCurrentUserId()))));
 
-          sys.filterVisibleState(query, TBL_TRANSPORT_GROUPS);
-
+          if (!usr.isAdministrator()) {
+            sys.filterVisibleState(query, TBL_TRANSPORT_GROUPS);
+          }
           event.getQuery()
               .setWhere(SqlUtils.and(event.getQuery().getWhere(),
                   SqlUtils.in(view.getSourceAlias(), view.getSourceIdName(), query)));
