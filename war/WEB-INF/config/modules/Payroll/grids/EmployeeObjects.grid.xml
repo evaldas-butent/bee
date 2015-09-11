@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+
+  name="EmployeeObjects" viewName="EmployeeObjects"
+  newRowCaption="=newObject"
+  flexGrow="1"
+  >
+
+  <g:columns>
+    <RelColumn name="Object" renderColumns="LocationName" visible="true" />
+    <DataColumn name="ObjectCompanyName" label="=company" />
+
+    <DataColumn name="DateFrom" />
+    <DataColumn name="DateUntil" />
+
+    <DataColumn name="Wage" />
+    <RelColumn name="Currency" />
+
+    <DataColumn name="Note" />
+  </g:columns>
+</g:Grid>

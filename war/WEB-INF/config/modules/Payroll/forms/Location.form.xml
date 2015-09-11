@@ -42,6 +42,11 @@
 
     <TabbedPages class="flexible">
       <page>
+        <text>=employees</text>
+        <ChildGrid name="ObjectEmployees" relColumn="Object" />
+      </page>
+
+      <page>
         <text>=contactInfo</text>
         <xi:include href="../../Classifiers/forms/widgets/ContactDetails.widget.xml" />  
       </page>
