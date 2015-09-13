@@ -24,12 +24,12 @@
 
       <SimpleColumn name="Department" />
       <SimpleJoin name="Department" joinType="LEFT">
-        <SimpleColumn name="Name" alias="DepartmentName"/>
+        <SimpleColumn name="Name" alias="DepartmentName" />
       </SimpleJoin>
 
       <SimpleColumn name="Position" />
       <SimpleJoin name="Position" joinType="LEFT">
-        <SimpleColumn name="Name" alias="PositionName"/>
+        <SimpleColumn name="Name" alias="PositionName" />
       </SimpleJoin>
 
       <SimpleColumn name="DateOfEmployment" />

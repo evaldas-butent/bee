@@ -3,13 +3,12 @@
 
   name="ObjectEmployees" viewName="EmployeeObjects"
   newRowCaption="=newEmployee"
-  flexGrow="1"
   >
 
   <g:columns>
     <RelColumn name="Employee" renderColumns="FirstName LastName"
-      choiceColumns="FirstName LastName CompanyName" visible="true" />
-    <DataColumn name="EmployeeCompanyName" label="=company" />
+      choiceColumns="FirstName LastName CompanyName" flexGrow="1" visible="true" />
+    <DataColumn name="EmployeeCompanyName" label="=company" flexGrow="1" />
 
     <DataColumn name="DateFrom" />
     <DataColumn name="DateUntil" />
@@ -17,6 +16,6 @@
     <DataColumn name="Wage" />
     <RelColumn name="Currency" />
 
-    <DataColumn name="Note" />
+    <DataColumn name="Note" flexGrow="1" />
   </g:columns>
 </g:Grid>
