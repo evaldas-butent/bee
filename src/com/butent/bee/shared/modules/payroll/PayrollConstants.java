@@ -33,14 +33,23 @@ public final class PayrollConstants {
   public static final String VIEW_EMPLOYEES = "Employees";
   public static final String VIEW_LOCATIONS = "Locations";
 
+  public static final String VIEW_TIME_CARD_CHANGES = "TimeCardChanges";
+  public static final String VIEW_TIME_CARD_CODES = "TimeCardCodes";
+
   public static final String COL_TAB_NUMBER = "TabNumber";
 
   public static final String COL_LOCATION_NAME = "LocationName";
+
+  public static final String COL_TIME_CARD_FROM = "DateFrom";
+  public static final String COL_TIME_CARD_UNTIL = "DateUntil";
 
   public static final String ALS_DEPARTMENT_NAME = "DepartmentName";
 
   public static final String ALS_LOCATION_MANAGER_FIRST_NAME = "ManagerFirstName";
   public static final String ALS_LOCATION_MANAGER_LAST_NAME = "ManagerLastName";
+
+  public static final String GRID_TIME_CARD_CHANGES = "TimeCardChanges";
+  public static final String GRID_TIME_CARD_CODES = "TimeCardCodes";
 
   public static void register() {
     EnumUtils.register(ObjectStatus.class);
