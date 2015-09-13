@@ -42,6 +42,11 @@
 
     <TabbedPages class="flexible">
       <page>
+        <text>=objectSalaryFund</text>
+        <ChildGrid name="ObjectSalaryFund" relColumn="Object" />
+      </page>
+
+      <page>
         <text>=employees</text>
         <ChildGrid name="ObjectEmployees" relColumn="Object" />
       </page>

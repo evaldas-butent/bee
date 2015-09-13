@@ -378,6 +378,7 @@
       <xs:enumeration value="NewsletterContacts" />
       <xs:enumeration value="NewsletterFiles" />
       <xs:enumeration value="Objects" />
+      <xs:enumeration value="ObjectSalaryFund" />
       <xs:enumeration value="Orders" />
       <xs:enumeration value="OrdersInvoices" />
       <xs:enumeration value="OrderItems" />

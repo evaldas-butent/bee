@@ -13,7 +13,7 @@
     <DataColumn name="DateFrom" />
     <DataColumn name="DateUntil" />
 
-    <DataColumn name="Wage" />
+    <DataColumn name="Wage" visible="true" />
     <RelColumn name="Currency" />
 
     <DataColumn name="Note" flexGrow="1" />
