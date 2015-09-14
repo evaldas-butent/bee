@@ -2687,14 +2687,12 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
         ids.append("'").append(TradeModuleBean.encodeId(TBL_SALES, row.getLong(COL_SALE)))
             .append("'");
       }
-      String remoteNamespace = prm.getText(PRM_ERP_NAMESPACE);
       String remoteAddress = prm.getText(PRM_ERP_ADDRESS);
       String remoteLogin = prm.getText(PRM_ERP_LOGIN);
       String remotePassword = prm.getText(PRM_ERP_PASSWORD);
 
       try {
-        SimpleRowSet payments = ButentWS.connect(remoteNamespace, remoteAddress, remoteLogin,
-            remotePassword)
+        SimpleRowSet payments = ButentWS.connect(remoteAddress, remoteLogin, remotePassword)
             .getSQLData("SELECT extern_id AS id, apm_data AS data, apm_suma AS suma"
                     + " FROM apyvarta WHERE pajamos=0 AND extern_id IN(" + ids.toString() + ")",
                 "id", "data", "suma");
