@@ -482,6 +482,7 @@ public final class TransportConstants {
 
   public static final String COL_SERVICE = "Service";
   public static final String COL_SERVICE_NAME = "Name";
+  public static final String COL_SERVICE_PERCENT = "ServicePercent";
   public static final String COL_TRANSPORTATION = "Transportation";
   public static final String COL_DATE = "Date";
   public static final String COL_AMOUNT = "Amount";

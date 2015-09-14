@@ -38,6 +38,7 @@ import com.butent.bee.client.data.Queries.IntCallback;
 import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
+import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.data.RowUpdateCallback;
 import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.InputCallback;
@@ -62,6 +63,7 @@ import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.HeaderView;
+import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.EditableColumn;
 import com.butent.bee.client.view.edit.Editor;
@@ -90,15 +92,20 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
 import com.butent.bee.shared.data.event.DataChangeEvent;
+import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.IntegerValue;
 import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.modules.transport.TransportConstants.AssessmentStatus;
+import com.butent.bee.shared.modules.transport.TransportConstants.OrderStatus;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
@@ -375,6 +382,9 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
 
     @Override
     public void afterInsertRow(IsRow result) {
+      if (BeeUtils.same(getViewName(), TBL_CARGO_INCOMES)) {
+        createPercentExpense(result);
+      }
       refresh();
     }
 
@@ -397,12 +407,41 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
           && Objects.equals(descr.getId(), COL_CARGO_INCOME)) {
         return null;
       }
+
       return super.beforeCreateColumn(gridView, descr);
     }
 
     @Override
     public GridInterceptor getInstance() {
       return new ServicesGrid();
+    }
+
+    @Override
+    public void onReadyForInsert(GridView gridView, ReadyForInsertEvent event) {
+      if (!BeeUtils.same(gridView.getViewName(), TBL_CARGO_INCOMES)) {
+        return;
+      }
+
+      IsRow row = gridView.getActiveRow();
+
+      Double servicePercent = row.getDouble(gridView.getDataIndex(COL_SERVICE_PERCENT));
+
+      if (!BeeUtils.isPositive(servicePercent)) {
+        return;
+      }
+
+      FormView pForm = ViewHelper.getForm(gridView.asWidget());
+
+      Double cargoValue = pForm.getDoubleValue(COL_CARGO_VALUE);
+
+      if (BeeUtils.isPositive(cargoValue)) {
+        return;
+      }
+
+      pForm.notifySevere(Localized.getConstants().cargoValue(),
+          Localized.getConstants().valueRequired());
+
+      event.consume();
     }
 
     @Override
@@ -428,6 +467,63 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
         Queries.update(form.getViewName(), form.getActiveRowId(), "FinishedCount",
             new IntegerValue(cnt));
       }
+    }
+
+    private void createPercentExpense(IsRow gridRow) {
+      GridView grid = getGridView();
+      if (grid == null) {
+        return;
+      }
+
+      double servicePercent = BeeUtils.unbox(
+          gridRow.getDouble(grid.getDataIndex(COL_SERVICE_PERCENT)));
+
+      if (!BeeUtils.isPositive(servicePercent)) {
+        return;
+      }
+
+      final FormView pForm = ViewHelper.getForm(getGridView().asWidget());
+      IsRow formRow = getActiveRow();
+
+      double cargoValue = BeeUtils.unbox(formRow.getDouble(pForm.getDataIndex(COL_CARGO_VALUE)));
+
+      if (!BeeUtils.isPositive(cargoValue)) {
+        LogUtils.getRootLogger().warning("Assessments.CargoValue", "is empty");
+        return;
+      }
+
+      double expenseSum = getExpenseSum(cargoValue, servicePercent);
+
+      final DataInfo expensesView = Data.getDataInfo(TBL_CARGO_EXPENSES);
+      BeeRow expenseRow = RowFactory.createEmptyRow(expensesView, true);
+
+      expenseRow.setValue(expensesView.getColumnIndex(COL_SERVICE),
+          gridRow.getValue(grid.getDataIndex(COL_SERVICE)));
+      expenseRow.setValue(expensesView.getColumnIndex(COL_AMOUNT), expenseSum);
+      expenseRow.setValue(expensesView.getColumnIndex(COL_CURRENCY),
+          formRow.getValue(pForm.getDataIndex(COL_CURRENCY)));
+      expenseRow.setValue(expensesView.getColumnIndex(COL_TRADE_VAT_PLUS),
+          gridRow.getValue(grid.getDataIndex(COL_TRADE_VAT_PLUS)));
+      expenseRow.setValue(expensesView.getColumnIndex(COL_TRADE_VAT),
+          gridRow.getValue(grid.getDataIndex(COL_TRADE_VAT)));
+      expenseRow.setValue(expensesView.getColumnIndex(COL_TRADE_VAT_PERC),
+          gridRow.getValue(grid.getDataIndex(COL_TRADE_VAT_PERC)));
+      expenseRow.setValue(expensesView.getColumnIndex(COL_CARGO),
+          gridRow.getValue(grid.getDataIndex(COL_CARGO)));
+
+      Queries.insert(expensesView.getViewName(), expensesView.getColumns(), expenseRow,
+          new RowCallback() {
+            @Override
+            public void onSuccess(BeeRow result) {
+              RowInsertEvent.fire(BeeKeeper.getBus(), expensesView.getViewName(), result,
+                  pForm.getId());
+              refresh();
+            }
+          });
+    }
+
+    private double getExpenseSum(double val, double percents) {
+      return BeeUtils.round(val * percents / 100.0, 2);
     }
   }
 
