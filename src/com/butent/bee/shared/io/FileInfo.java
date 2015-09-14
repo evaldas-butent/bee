@@ -1,6 +1,5 @@
 package com.butent.bee.shared.io;
 
-import com.butent.bee.server.io.FileUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.HasInfo;
@@ -25,7 +24,7 @@ public class FileInfo implements HasInfo, HasCaption, BeeSerializable, AutoClose
   @Override
   public void close() {
     if (isTemporary()) {
-      LogUtils.getRootLogger().debug("File deleted:", getPath(), FileUtils.deleteFile(getPath()));
+      LogUtils.getRootLogger().debug("File deleted:", getPath(), new File(getPath()).delete());
     }
   }
 
