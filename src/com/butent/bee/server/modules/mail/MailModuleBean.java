@@ -66,7 +66,6 @@ import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.websocket.messages.MailMessage;
 
 import java.io.BufferedInputStream;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -978,16 +977,16 @@ public class MailModuleBean implements BeeModule, HasTimerService {
 
       for (Entry<Long, String> entry : attachments.entrySet()) {
         MimeBodyPart p = null;
-        FileInfo fileInfo = null;
 
         try {
-          fileInfo = fs.getFile(entry.getKey());
-          File file = new File(fileInfo.getPath());
+          FileInfo fileInfo = fs.getFile(entry.getKey());
 
           p = new MimeBodyPart();
-          p.attachFile(file, fileInfo.getType(), null);
+          p.attachFile(fileInfo.getFile(), fileInfo.getType(), null);
           p.setFileName(MimeUtility.encodeText(BeeUtils.notEmpty(entry.getValue(),
               fileInfo.getName()), BeeConst.CHARSET_UTF8, null));
+
+          files.add(fileInfo);
 
         } catch (IOException ex) {
           logger.error(ex);
@@ -995,9 +994,6 @@ public class MailModuleBean implements BeeModule, HasTimerService {
         }
         if (p != null) {
           multi.addBodyPart(p);
-        }
-        if (fileInfo != null) {
-          files.add(fileInfo);
         }
       }
     }
@@ -1017,26 +1013,23 @@ public class MailModuleBean implements BeeModule, HasTimerService {
         try {
           FileInfo fileInfo = fs.getFile(fileId);
 
-          if (fileInfo != null) {
-            p = new MimeBodyPart();
-            File file = new File(fileInfo.getPath());
-            String cid = BeeUtils.randomString(10);
+          p = new MimeBodyPart();
+          String cid = BeeUtils.randomString(10);
 
-            try {
-              p.attachFile(file, fileInfo.getType(), null);
-              p.addHeader("Content-ID", "<" + cid + ">");
-              p.setFileName(MimeUtility.encodeText(fileInfo.getName(), BeeConst.CHARSET_UTF8,
-                  null));
-            } catch (IOException ex) {
-              logger.error(ex);
-              p = null;
-            }
-            if (p != null) {
-              parsedContent = parsedContent.replace(relatedFiles.get(fileId), "cid:" + cid);
-              related.addBodyPart(p);
-            }
-            files.add(fileInfo);
+          try {
+            p.attachFile(fileInfo.getFile(), fileInfo.getType(), null);
+            p.addHeader("Content-ID", "<" + cid + ">");
+            p.setFileName(MimeUtility.encodeText(fileInfo.getName(), BeeConst.CHARSET_UTF8,
+                null));
+          } catch (IOException ex) {
+            logger.error(ex);
+            p = null;
           }
+          if (p != null) {
+            parsedContent = parsedContent.replace(relatedFiles.get(fileId), "cid:" + cid);
+            related.addBodyPart(p);
+          }
+          files.add(fileInfo);
         } catch (IOException e) {
           logger.error(e);
         }
@@ -1072,9 +1065,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
     MimeMessage msg = new MimeMessage(message);
 
     for (FileInfo fileInfo : files) {
-      if (fileInfo.isTemporary()) {
-        logger.debug("File deleted:", fileInfo.getPath(), new File(fileInfo.getPath()).delete());
-      }
+      fileInfo.close();
     }
     return msg;
   }
@@ -1332,6 +1323,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
 
   private int processMessages(MailAccount account, MailFolder source, MailFolder target,
       Collection<Long> places, boolean move) throws MessagingException {
+
     Assert.state(!BeeUtils.isEmpty(places), "Empty message list");
 
     IsCondition wh = sys.idInList(TBL_PLACES, places);
@@ -1370,22 +1362,17 @@ public class MailModuleBean implements BeeModule, HasTimerService {
               .setWhere(wh));
 
           for (SimpleRow content : contents) {
-            Long fileId = content.getLong(COL_RAW_CONTENT);
-            Integer mask = content.getInt(COL_FLAGS);
-            FileInfo fileInfo = null;
-            File file = null;
-            InputStream is = null;
+            try (
+                FileInfo fileInfo = fs.getFile(content.getLong(COL_RAW_CONTENT));
+                InputStream is = new BufferedInputStream(new FileInputStream(fileInfo.getFile()));
+            ) {
 
-            try {
-              fileInfo = fs.getFile(fileId);
-              file = new File(fileInfo.getPath());
-              is = new BufferedInputStream(new FileInputStream(file));
               MimeMessage message = new MimeMessage(null, is);
               Flags on = new Flags();
               Flags off = new Flags();
 
               for (MessageFlag messageFlag : MessageFlag.values()) {
-                Flags flags = messageFlag.isSet(mask) ? on : off;
+                Flags flags = messageFlag.isSet(content.getInt(COL_FLAGS)) ? on : off;
                 Flag flag = MailEnvelope.getFlag(messageFlag);
 
                 if (flag != null) {
@@ -1400,17 +1387,6 @@ public class MailModuleBean implements BeeModule, HasTimerService {
 
             } catch (IOException e) {
               throw new MessagingException(e.getMessage());
-            } finally {
-              if (is != null) {
-                try {
-                  is.close();
-                } catch (IOException e) {
-                  logger.error(e);
-                }
-              }
-              if (fileInfo != null && fileInfo.isTemporary()) {
-                logger.debug("File deleted:", file.getAbsolutePath(), file.delete());
-              }
             }
           }
         }

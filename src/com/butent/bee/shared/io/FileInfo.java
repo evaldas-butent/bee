@@ -1,8 +1,10 @@
 package com.butent.bee.shared.io;
 
+import com.butent.bee.server.io.FileUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.HasInfo;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -10,13 +12,21 @@ import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-public class FileInfo implements HasInfo, HasCaption, BeeSerializable {
+public class FileInfo implements HasInfo, HasCaption, BeeSerializable, AutoCloseable {
 
   private enum Serial {
     ID, NAME, SIZE, TYPE, ICON, DATE, VERSION, CAPTION, DESCRIPTION, RELATED
+  }
+
+  @Override
+  public void close() {
+    if (isTemporary()) {
+      LogUtils.getRootLogger().debug("File deleted:", getPath(), FileUtils.deleteFile(getPath()));
+    }
   }
 
   public static String getIconUrl(String icon) {
@@ -193,16 +203,20 @@ public class FileInfo implements HasInfo, HasCaption, BeeSerializable {
     return description;
   }
 
+  public File getFile() {
+    return new File(getPath());
+  }
+
   public DateTime getFileDate() {
     return fileDate;
   }
 
-  public Long getId() {
-    return fileId;
-  }
-
   public String getFileVersion() {
     return fileVersion;
+  }
+
+  public Long getId() {
+    return fileId;
   }
 
   public String getIcon() {

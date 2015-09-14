@@ -104,8 +104,16 @@ public class MailAccount {
     }
   }
 
-  private static List<Message> getMessageReferences(Folder remoteSource, long[] uids)
-      throws MessagingException {
+  private static List<Message> getMessageReferences(Folder remoteSource, Long uidValidity,
+      long[] uids) throws MessagingException {
+
+    logger.debug("Checking folder", remoteSource.getName(), "UIDValidity with", uidValidity);
+
+    if (!Objects.equals(((UIDFolder) remoteSource).getUIDValidity(), uidValidity)) {
+      throw new MessagingException("Folder out of sync: " + remoteSource.getName());
+    }
+    logger.debug("Opening folder:", remoteSource.getName());
+    remoteSource.open(Folder.READ_WRITE);
 
     logger.debug("Getting messages from folder", remoteSource.getName(), "by UIDs:", uids);
     Message[] msgs = ((UIDFolder) remoteSource).getMessagesByUID(uids);
@@ -549,17 +557,7 @@ public class MailAccount {
     try {
       store = connectToStore();
       remoteSource = getRemoteFolder(store, source);
-
-      logger.debug("Checking folder", remoteSource.getName(), "UIDValidity with",
-          source.getUidValidity());
-
-      if (!Objects.equals(((UIDFolder) remoteSource).getUIDValidity(), source.getUidValidity())) {
-        throw new MessagingException("Folder out of sync: " + source.getName());
-      }
-      logger.debug("Opening folder:", remoteSource.getName());
-      remoteSource.open(Folder.READ_WRITE);
-
-      List<Message> messages = getMessageReferences(remoteSource, uids);
+      List<Message> messages = getMessageReferences(remoteSource, source.getUidValidity(), uids);
 
       if (isTarget) {
         Folder remoteTarget = getRemoteFolder(store, target);
@@ -572,7 +570,7 @@ public class MailAccount {
         remoteSource.copyMessages(messages.toArray(new Message[0]), remoteTarget);
       }
       if (move) {
-        for (Iterator<Message> iterator = messages.iterator(); iterator.hasNext();) {
+        for (Iterator<Message> iterator = messages.iterator(); iterator.hasNext(); ) {
           Message message = iterator.next();
 
           if (message.isExpunged()) {
@@ -639,17 +637,7 @@ public class MailAccount {
     try {
       store = connectToStore();
       folder = getRemoteFolder(store, source);
-
-      logger.debug("Checking folder", folder.getName(), "UIDValidity with",
-          source.getUidValidity());
-
-      if (!Objects.equals(((UIDFolder) folder).getUIDValidity(), source.getUidValidity())) {
-        throw new MessagingException("Folder out of sync: " + source.getName());
-      }
-      logger.debug("Opening folder:", folder.getName());
-      folder.open(Folder.READ_WRITE);
-
-      List<Message> messages = getMessageReferences(folder, uids);
+      List<Message> messages = getMessageReferences(folder, source.getUidValidity(), uids);
 
       Flag flag = MailEnvelope.getFlag(messageFlag);
       Flags flags = null;

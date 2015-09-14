@@ -380,7 +380,7 @@ public final class FileUtils {
     });
 
     addProgressListener(xhr, progressId);
-    xhr.send(fileInfo.getFile());
+    xhr.send(fileInfo.getNewFile());
   }
 
   public static void uploadTempFile(NewFileInfo fileInfo, final Callback<String> callback) {
@@ -492,7 +492,7 @@ public final class FileUtils {
       }
     });
     addProgressListener(xhr, progressId);
-    xhr.send(fileInfo.getFile());
+    xhr.send(fileInfo.getNewFile());
   }
 
   public static List<FileInfo> validateFileSize(Collection<? extends FileInfo> input,
