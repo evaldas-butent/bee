@@ -105,7 +105,7 @@ class PersonForm extends AbstractFormInterceptor {
               photoImageAttachment = fileInfo;
               setPhotoFileName(fileInfo);
 
-              showImageInFormBeforeUpload(photoImageWidget, fileInfo.getFile());
+              showImageInFormBeforeUpload(photoImageWidget, fileInfo.getNewFile());
             }
           }
         }

@@ -364,7 +364,6 @@ public class TecDocBean implements HasTimerService {
       return;
     }
     EcSupplier supplier = EcSupplier.EOLTAS;
-    String remoteNamespace = prm.getText(PRM_ERP_NAMESPACE);
     String remoteAddress = prm.getText(PRM_ERP_ADDRESS);
     String remoteLogin = prm.getText(PRM_ERP_LOGIN);
     String remotePassword = prm.getText(PRM_ERP_PASSWORD);
@@ -399,8 +398,7 @@ public class TecDocBean implements HasTimerService {
       String itemsFilter = "prekes.gam_art IS NOT NULL AND prekes.gam_art != ''"
           + " AND prekes.gamintojas IS NOT NULL AND prekes.gamintojas != ''";
 
-      SimpleRowSet rows = ButentWS.connect(remoteNamespace, remoteAddress, remoteLogin,
-          remotePassword)
+      SimpleRowSet rows = ButentWS.connect(remoteAddress, remoteLogin, remotePassword)
           .getSQLData("SELECT " + fldList.toString()
                   + " FROM prekes"
                   + " WHERE " + itemsFilter,
@@ -422,7 +420,7 @@ public class TecDocBean implements HasTimerService {
         }
         importItems(supplier, data);
       }
-      rows = ButentWS.connect(remoteNamespace, remoteAddress, remoteLogin, remotePassword)
+      rows = ButentWS.connect(remoteAddress, remoteLogin, remotePassword)
           .getSQLData("SELECT likuciai.sandelis AS sn, likuciai.preke AS pr,"
                   + " sum(likuciai.kiekis) AS lk"
                   + " FROM likuciai INNER JOIN sand"

@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form [
+  <!ENTITY w1 "width: 18em;">
+  <!ENTITY w2 "width: 18em;">
+]>
+<f:Form xmlns="http://www.butent.com/widget"
+  xmlns:f="http://www.butent.com/form"
+  xmlns:xi="http://www.w3.org/2001/XInclude"
+
+  name="Location" viewName="Locations" caption="=object">
+
+  <FlowPanel class="flexBox-vertical">
+    <Table>
+      <col index="0" kind="label" />
+      <col index="2" kind="label" />
+      <col index="4" kind="label" />
+
+      <row>
+        <Label for="LocationName" />
+        <InputText source="LocationName" style="&w1;" visible="true" />
+
+        <Label for="Manager" />
+        <DataSelector source="Manager" editSource="ManagerCompanyPerson" style="&w2;"
+          renderColumns="ManagerFirstName ManagerLastName" newRowEnabled="false" />
+
+        <Label for="Status" />
+        <ListBox source="Status" />
+      </row>
+
+      <row>
+        <Label for="Company" />
+        <DataSelector source="Company" style="&w1;" choiceColumns="Name TypeName" 
+          renderColumns="CompanyName CompanyTypeName" />
+
+        <Label for="CompanyPerson" />
+        <DataSelector source="CompanyPerson" newRowEnabled="false" style="&w2;"
+          renderColumns="ContactFirstName ContactLastName"
+          choiceColumns="FirstName LastName CompanyName" options="Company" />
+      </row>
+    </Table>
+    <br/>
+
+    <TabbedPages class="flexible">
+      <page>
+        <text>=objectSalaryFund</text>
+        <ChildGrid name="ObjectSalaryFund" relColumn="Object" />
+      </page>
+
+      <page>
+        <text>=employees</text>
+        <ChildGrid name="ObjectEmployees" relColumn="Object" />
+      </page>
+
+      <page>
+        <text>=contactInfo</text>
+        <xi:include href="../../Classifiers/forms/widgets/ContactDetails.widget.xml" />  
+      </page>
+
+      <page>
+        <text>=notes</text>
+        <SimplePanel>
+          <InputArea source="Notes" class="occupy-1" summarize="true" />
+        </SimplePanel>
+      </page>
+    </TabbedPages>
+  </FlowPanel>
+</f:Form>

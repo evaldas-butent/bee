@@ -1973,11 +1973,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
       rowValue.setValue(i, newRow.getString(i));
     }
 
-    if (newRow.getProperties() != null) {
-      rowValue.setProperties(newRow.getProperties().copy());
-    } else {
-      rowValue.setProperties(null);
-    }
+    GridUtils.updateProperties(rowValue, newRow);
 
     refreshRow(row);
     refreshFooters(null);

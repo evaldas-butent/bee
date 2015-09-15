@@ -14,9 +14,9 @@ name="Transport" label="=transport" order="50" module="Transport"
 
   <Item name="ERPTripCosts" label="Reisų išlaidos apskaitai" service="grid" parameters="ERPTripCosts" separator="true" />
 
-  <Item name="Drivers" label="=drivers" service="grid" parameters="Drivers" separator="true" />
+  <Item name="Drivers" label="=drivers" service="grid" parameters="AllDrivers" separator="true" />
 
-  <Item name="Vehicles" label="=vehicles" service="grid" parameters="Vehicles" separator="true" />
+  <Item name="Vehicles" label="=vehicles" service="grid" parameters="AllVehicles" separator="true" />
   <Item name="SpareParts" label="=trVehiclePartUsage" service="grid" parameters="SpareParts" />
 
   <Item name="FreightExchange" label="=freightExchange" service="freight_exchange" separator="true" />

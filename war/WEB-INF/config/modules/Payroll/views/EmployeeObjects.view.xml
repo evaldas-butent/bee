@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="EmployeeObjects" source="EmployeeObjects"
+  caption="=employeesAndObjects"
+  >
+  <Columns>
+    <SimpleColumn name="Employee" />
+    <SimpleJoin name="Employee" joinType="LEFT">
+      <SimpleColumn name="CompanyPerson" />
+      <SimpleJoin name="CompanyPerson" joinType="LEFT">
+        <SimpleColumn name="Company" alias="EmployeeCompany"/>
+        <SimpleJoin name="Company" joinType="LEFT">
+          <SimpleColumn name="Name" alias="EmployeeCompanyName" />
+          <SimpleJoin name="CompanyType" joinType="LEFT">
+            <SimpleColumn name="Name" alias="EmployeeCompanyTypeName" />
+          </SimpleJoin>
+        </SimpleJoin>
+
+        <SimpleColumn name="Person" />
+        <SimpleJoin name="Person" joinType="LEFT">
+          <SimpleColumn name="FirstName" />
+          <SimpleColumn name="LastName" />
+        </SimpleJoin>
+
+        <SimpleColumn name="DateOfEmployment" />
+        <SimpleColumn name="DateOfDismissal" />
+      </SimpleJoin>
+  
+      <SimpleColumn name="TabNumber" />
+      <SimpleColumn name="Salary" />
+      <SimpleColumn name="PartTime" />
+    </SimpleJoin>
+    
+    <SimpleColumn name="Object" />
+    <SimpleJoin name="Object" joinType="LEFT">
+      <SimpleColumn name="LocationName" />
+
+      <SimpleColumn name="Company" alias="ObjectCompany"/>
+      <SimpleJoin name="Company" joinType="LEFT">
+        <SimpleColumn name="Name" alias="ObjectCompanyName" />
+        <SimpleJoin name="CompanyType" joinType="LEFT">
+          <SimpleColumn name="Name" alias="ObjectCompanyTypeName" />
+        </SimpleJoin>
+      </SimpleJoin>
+    </SimpleJoin>
+
+    <SimpleColumn name="DateFrom" />
+    <SimpleColumn name="DateUntil" />
+
+    <SimpleColumn name="Wage" />
+    <SimpleColumn name="Currency" />
+    <SimpleJoin name="Currency" joinType="LEFT">
+      <SimpleColumn name="Name" alias="CurrencyName" />
+    </SimpleJoin>
+
+    <SimpleColumn name="Note" />
+  </Columns>
+
+  <Order>
+    <OrderBy column="DateFrom" />
+    <OrderBy column="DateUntil" />
+    <OrderBy column="LastName" />
+    <OrderBy column="FirstName" />
+    <OrderBy column="EmployeeCompanyName" />
+    <OrderBy column="LocationName" />
+  </Order>
+</View>

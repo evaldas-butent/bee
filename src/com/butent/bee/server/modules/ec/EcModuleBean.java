@@ -90,9 +90,7 @@ import com.butent.bee.shared.modules.ec.EcBrand;
 import com.butent.bee.shared.modules.ec.EcCarModel;
 import com.butent.bee.shared.modules.ec.EcCarType;
 import com.butent.bee.shared.modules.ec.EcConstants;
-import com.butent.bee.shared.modules.ec.EcConstants.EcDisplayedPrice;
-import com.butent.bee.shared.modules.ec.EcConstants.EcOrderStatus;
-import com.butent.bee.shared.modules.ec.EcConstants.EcSupplier;
+import com.butent.bee.shared.modules.ec.EcConstants.*;
 import com.butent.bee.shared.modules.ec.EcCriterion;
 import com.butent.bee.shared.modules.ec.EcFinInfo;
 import com.butent.bee.shared.modules.ec.EcGroup;
@@ -261,13 +259,12 @@ public class EcModuleBean implements BeeModule {
         || Endpoint.updateProgress(progressId, 1));
 
     if (ok) {
-      String remoteNamespace = prm.getText(PRM_ERP_NAMESPACE);
       String remoteAddress = prm.getText(PRM_ERP_ADDRESS);
       String remoteLogin = prm.getText(PRM_ERP_LOGIN);
       String remotePassword = prm.getText(PRM_ERP_PASSWORD);
 
       try {
-        rows = ButentWS.connect(remoteNamespace, remoteAddress, remoteLogin, remotePassword)
+        rows = ButentWS.connect(remoteAddress, remoteLogin, remotePassword)
             .getSQLData("SELECT preke AS pr, prekes.grupe AS gr, savikaina AS sv"
                 + " FROM prekes"
                 + " INNER JOIN grupes"
@@ -275,7 +272,7 @@ public class EcModuleBean implements BeeModule {
                 + " WHERE prekes.gam_art IS NOT NULL AND prekes.gam_art != ''"
                 + " AND prekes.gamintojas IS NOT NULL AND prekes.gamintojas != ''"
                 + " AND grupes.pos_mode = 'E'",
-                new String[] {"pr", "gr", "sv"});
+                "pr", "gr", "sv");
 
         ok = !rows.isEmpty();
 
@@ -1776,7 +1773,6 @@ public class EcModuleBean implements BeeModule {
     if (!DataUtils.isId(client)) {
       return ResponseObject.response(finInfo);
     }
-    String remoteNamespace = prm.getText(PRM_ERP_NAMESPACE);
     String remoteAddress = prm.getText(PRM_ERP_ADDRESS);
     String remoteLogin = prm.getText(PRM_ERP_LOGIN);
     String remotePassword = prm.getText(PRM_ERP_PASSWORD);
@@ -1797,13 +1793,12 @@ public class EcModuleBean implements BeeModule {
           "LOWER(klientas) = '" + companyInfo.getValue(COL_COMPANY_NAME).toLowerCase() + "'";
 
       try {
-        SimpleRow row = ButentWS.connect(remoteNamespace, remoteAddress, remoteLogin,
-            remotePassword)
+        SimpleRow row = ButentWS.connect(remoteAddress, remoteLogin, remotePassword)
             .getSQLData("SELECT klientas, max_skola, dienos"
                 + " FROM klientai"
                 + " WHERE " + wh + " OR kodas = '" + companyInfo.getValue(COL_COMPANY_CODE) + "'"
                 + " ORDER BY " + wh + " DESC",
-                new String[] {"klientas", "max_skola", "dienos"}).getRow(0);
+                "klientas", "max_skola", "dienos").getRow(0);
 
         if (row != null) {
           finInfo.setCreditLimit(row.getDouble("max_skola"));
@@ -1815,14 +1810,13 @@ public class EcModuleBean implements BeeModule {
       }
       if (!BeeUtils.isEmpty(company)) {
         try {
-          SimpleRow row = ButentWS.connect(remoteNamespace, remoteAddress, remoteLogin,
-              remotePassword)
+          SimpleRow row = ButentWS.connect(remoteAddress, remoteLogin, remotePassword)
               .getSQLData("SELECT SUM(kiekis * kaina) AS suma"
                   + " FROM likuciai"
                   + " INNER JOIN sand ON likuciai.sandelis = sand.sandelis"
                   + "   AND sand.konsign IS NOT NULL"
                   + " WHERE likuciai.kiekis > 0 AND likuciai.gavejas = '" + company + "'",
-                  new String[] {"suma"}).getRow(0);
+                  "suma").getRow(0);
 
           if (row != null) {
             finInfo.setTotalTaken(row.getDouble("suma"));
@@ -1834,8 +1828,7 @@ public class EcModuleBean implements BeeModule {
           double totalDebt = 0;
           double timedOutDebt = 0;
 
-          SimpleRowSet data = ButentWS.connect(remoteNamespace, remoteAddress, remoteLogin,
-              remotePassword)
+          SimpleRowSet data = ButentWS.connect(remoteAddress, remoteLogin, remotePassword)
               .getSQLData("SELECT data, dokumentas, dok_serija, kitas_dok, viso, skola_w, terminas"
                   + " FROM apyvarta"
                   + " INNER JOIN operac ON apyvarta.operacija = operac.operacija"
@@ -1846,8 +1839,7 @@ public class EcModuleBean implements BeeModule {
                   + "   AND (klientai.klientas = '" + company + "'"
                   + "     OR klientai.moketojas = '" + company + "')"
                   + " ORDER BY data",
-                  new String[] {"data", "dokumentas", "dok_serija", "kitas_dok", "viso", "skola_w",
-                      "terminas"});
+                  "data", "dokumentas", "dok_serija", "kitas_dok", "viso", "skola_w", "terminas");
 
           for (SimpleRow row : data) {
             DateTime date = TimeUtils.parseDateTime(row.getValue("data"));
@@ -3177,7 +3169,6 @@ public class EcModuleBean implements BeeModule {
     if (items.isEmpty()) {
       return ResponseObject.error(usr.getLocalizableConstants().ecNothingToOrder());
     }
-    String remoteNamespace = prm.getText(PRM_ERP_NAMESPACE);
     String remoteAddress = prm.getText(PRM_ERP_ADDRESS);
     String remoteLogin = prm.getText(PRM_ERP_LOGIN);
     String remotePassword = prm.getText(PRM_ERP_PASSWORD);
@@ -3212,7 +3203,7 @@ public class EcModuleBean implements BeeModule {
       String company = null;
 
       try {
-        company = ButentWS.connect(remoteNamespace, remoteAddress, remoteLogin, remotePassword)
+        company = ButentWS.connect(remoteAddress, remoteLogin, remotePassword)
             .importClient(order.getValue(COL_COMPANY), order.getValue(COL_COMPANY_CODE),
                 order.getValue(COL_COMPANY_VAT_CODE), order.getValue(COL_ADDRESS),
                 order.getValue(COL_POST_INDEX), order.getValue(COL_CITY),
@@ -3244,7 +3235,7 @@ public class EcModuleBean implements BeeModule {
                 .addFrom(TBL_TCD_BRANDS)
                 .setWhere(sys.idEquals(TBL_TCD_BRANDS, item.getBrand())));
             try {
-              id = ButentWS.connect(remoteNamespace, remoteAddress, remoteLogin, remotePassword)
+              id = ButentWS.connect(remoteAddress, remoteLogin, remotePassword)
                   .importItem(item.getName(), brandName, item.getCode());
             } catch (BeeException e) {
               response.addError(e);
@@ -3275,7 +3266,7 @@ public class EcModuleBean implements BeeModule {
         }
         if (!response.hasErrors()) {
           try {
-            ButentWS.connect(remoteNamespace, remoteAddress, remoteLogin, remotePassword)
+            ButentWS.connect(remoteAddress, remoteLogin, remotePassword)
                 .importDoc(doc);
           } catch (BeeException e) {
             response.addError(e);

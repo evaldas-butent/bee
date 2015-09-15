@@ -9,7 +9,6 @@ import com.google.common.collect.Sets;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.Style.WhiteSpace;
 import com.google.gwt.dom.client.TableRowElement;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -51,7 +50,6 @@ import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
-import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.DateTimeLabel;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.InlineLabel;
@@ -546,7 +544,6 @@ public class MailMessage extends AbstractFormInterceptor {
         if (!Objects.equals(getRpcId(), rpcId)) {
           return;
         }
-        getRpcId();
         response.notify(getFormView());
 
         if (response.hasErrors()) {
@@ -638,11 +635,10 @@ public class MailMessage extends AbstractFormInterceptor {
         for (SimpleRow part : packet.get(TBL_PARTS)) {
           txt = part.getValue(COL_HTML_CONTENT);
 
-          if (txt == null && part.getValue(COL_CONTENT) != null) {
-            Element div = new CustomDiv().getElement();
-            div.getStyle().setWhiteSpace(WhiteSpace.PRE_WRAP);
-            div.setInnerHTML(part.getValue(COL_CONTENT));
-            txt = div.getString();
+          if (BeeUtils.isEmpty(txt) && !BeeUtils.isEmpty(part.getValue(COL_CONTENT))) {
+            Element pre = Document.get().createPreElement();
+            pre.setInnerHTML(Codec.escapeHtml(part.getValue(COL_CONTENT)));
+            txt = pre.getString();
           }
           content = BeeUtils.join(sep.getString(), content, txt);
         }
@@ -650,6 +646,10 @@ public class MailMessage extends AbstractFormInterceptor {
         setLoading(false);
       }
     });
+  }
+
+  boolean samePlace(Long place) {
+    return DataUtils.isId(place) && Objects.equals(place, placeId);
   }
 
   private Set<String> getBcc() {
