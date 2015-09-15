@@ -4,7 +4,7 @@
         name="GroupDrivers" viewName="GroupDrivers" caption="=drivers"
     >
   <g:columns>
-    <RelColumn name="Driver" viewName="AllDrivers" caption="=trDriverName" newRowEnabled="false"
+    <RelColumn name="Driver" caption="=trDriverName" newRowEnabled="false"
                flexGrow="1" flexShrink="1" />
   </g:columns>
 </g:Grid>

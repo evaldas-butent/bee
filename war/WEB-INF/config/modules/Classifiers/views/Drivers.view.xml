@@ -2,24 +2,37 @@
 <View xmlns="http://www.butent.com/view"
 
       name="Drivers" source="Drivers"
-      filter="DriverGroupID=0 OR GroupID>0"
+      editForm="Driver" newRowForm="Driver"
+      caption="=drivers" newRowCaption="=trNewDriver"
     >
   <Relation renderColumns="FirstName LastName" />
   <Columns>
+    <SimpleColumn name="CompanyPerson" />
     <SimpleJoin name="CompanyPerson" joinType="LEFT">
+      <SimpleJoin name="Company" joinType="LEFT">
+        <SimpleColumn alias="CompanyName" name="Name" />
+      </SimpleJoin>
+      <SimpleColumn name="Person" />
       <SimpleJoin name="Person" joinType="LEFT">
         <SimpleColumn name="FirstName" />
         <SimpleColumn name="LastName" />
       </SimpleJoin>
+      <SimpleJoin name="Contact" joinType="LEFT">
+        <SimpleColumn name="Phone" />
+        <SimpleColumn name="Mobile" />
+        <SimpleJoin name="Email" joinType="LEFT">
+          <SimpleColumn name="Email" />
+        </SimpleJoin>
+      </SimpleJoin>
+      <SimpleJoin name="Position" joinType="LEFT">
+        <SimpleColumn name="Name" alias="PositionName" />
+      </SimpleJoin>
     </SimpleJoin>
 
-    <ExternalJoin name="Driver" joinType="LEFT" source="DriverGroups">
-      <IdColumn name="DriverGroupID" aggregate="COUNT" />
-      <SimpleJoin name="Group" joinType="LEFT" filter="!(Manager) OR Manager={u}">
-        <HiddenColumn name="Manager" />
-        <IdColumn name="GroupID" aggregate="COUNT" />
-      </SimpleJoin>
-    </ExternalJoin>
+    <SimpleColumn name="StartDate" />
+    <SimpleColumn name="EndDate" />
+    <SimpleColumn name="Experience" />
+    <SimpleColumn name="Notes" />
   </Columns>
   <Order>
     <OrderBy column="LastName" />
