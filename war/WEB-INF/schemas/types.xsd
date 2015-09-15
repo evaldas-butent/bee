@@ -211,6 +211,7 @@
       <xs:enumeration value="Service" />
       <xs:enumeration value="Administration" />
       <xs:enumeration value="Orders" />
+      <xs:enumeration value="Payroll" />
     </xs:restriction>
   </xs:simpleType>
 
@@ -343,6 +344,8 @@
       <xs:enumeration value="EcRegistrations" />
       <xs:enumeration value="EditorTemplates" />
       <xs:enumeration value="Emails" />
+      <xs:enumeration value="EmployeeObjects" />
+      <xs:enumeration value="Employees" />
       <xs:enumeration value="EventHistory" />
       <xs:enumeration value="ExpeditionTypes" />
       <xs:enumeration value="ExpeditionTrips" />
@@ -371,12 +374,14 @@
       <xs:enumeration value="ItemGraphics" />
       <xs:enumeration value="ItemRemainders" />
       <xs:enumeration value="Items" />
+      <xs:enumeration value="Locations" />
       <xs:enumeration value="Maintenance" />
       <xs:enumeration value="Messages" />
       <xs:enumeration value="Newsletters" />
       <xs:enumeration value="NewsletterContacts" />
       <xs:enumeration value="NewsletterFiles" />
       <xs:enumeration value="Objects" />
+      <xs:enumeration value="ObjectSalaryFund" />
       <xs:enumeration value="Orders" />
       <xs:enumeration value="OrdersInvoices" />
       <xs:enumeration value="OrderItems" />
@@ -497,6 +502,8 @@
       <xs:enumeration value="TemplateTree" />
       <xs:enumeration value="ThemeColors" />
       <xs:enumeration value="Themes" />
+      <xs:enumeration value="TimeCardChanges" />
+      <xs:enumeration value="TimeCardCodes" />
       <xs:enumeration value="TimeZones" />
       <xs:enumeration value="TodoList" />
       <xs:enumeration value="TradeActInvoices" />

@@ -15,8 +15,6 @@ import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.server.concurrency.ConcurrencyBean;
 import com.butent.bee.server.concurrency.ConcurrencyBean.HasTimerService;
-import com.butent.bee.server.data.BeeView;
-import com.butent.bee.server.data.BeeView.ConditionProvider;
 import com.butent.bee.server.data.DataEditorBean;
 import com.butent.bee.server.data.DataEvent.ViewDeleteEvent;
 import com.butent.bee.server.data.DataEvent.ViewInsertEvent;
@@ -381,13 +379,6 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
   public void init() {
     cb.createIntervalTimer(this.getClass(), PRM_ERP_REFRESH_INTERVAL);
 
-    BeeView.registerConditionProvider(TBL_IMPORT_MAPPINGS, new ConditionProvider() {
-      @Override
-      public IsCondition getCondition(BeeView view, List<String> args) {
-        return null;
-      }
-    });
-
     sys.registerDataEventHandler(new DataEventHandler() {
       @Subscribe
       public void calcAssessmentAmounts(ViewQueryEvent event) {
@@ -594,42 +585,6 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
       public void getFileIcons(ViewQueryEvent event) {
         if (BeeUtils.same(event.getTargetName(), VIEW_CARGO_REQUEST_FILES) && event.isAfter()) {
           ExtensionIcons.setIcons(event.getRowset(), ALS_FILE_NAME, PROP_ICON);
-        }
-      }
-
-      @Subscribe
-      public void getVisibleDrivers(ViewQueryEvent event) {
-        if (BeeUtils.same(event.getTargetName(), TBL_DRIVERS) && event.isBefore()) {
-          BeeView view = sys.getView(event.getTargetName());
-
-          SqlSelect query = new SqlSelect().setDistinctMode(true)
-              .addFields(TBL_DRIVER_GROUPS, COL_DRIVER)
-              .addFrom(TBL_DRIVER_GROUPS)
-              .addFromInner(TBL_TRANSPORT_GROUPS,
-                  sys.joinTables(TBL_TRANSPORT_GROUPS, TBL_DRIVER_GROUPS, COL_GROUP));
-
-          sys.filterVisibleState(query, TBL_TRANSPORT_GROUPS);
-
-          event.getQuery().addFromInner(query, "subq",
-              SqlUtils.join(view.getSourceAlias(), view.getSourceIdName(), "subq", COL_DRIVER));
-        }
-      }
-
-      @Subscribe
-      public void getVisibleVehicles(ViewQueryEvent event) {
-        if (BeeUtils.same(event.getTargetName(), TBL_VEHICLES) && event.isBefore()) {
-          BeeView view = sys.getView(event.getTargetName());
-
-          SqlSelect query = new SqlSelect().setDistinctMode(true)
-              .addFields(TBL_VEHICLE_GROUPS, COL_VEHICLE)
-              .addFrom(TBL_VEHICLE_GROUPS)
-              .addFromInner(TBL_TRANSPORT_GROUPS,
-                  sys.joinTables(TBL_TRANSPORT_GROUPS, TBL_VEHICLE_GROUPS, COL_GROUP));
-
-          sys.filterVisibleState(query, TBL_TRANSPORT_GROUPS);
-
-          event.getQuery().addFromInner(query, "subq",
-              SqlUtils.join(view.getSourceAlias(), view.getSourceIdName(), "subq", COL_VEHICLE));
         }
       }
 
@@ -2809,14 +2764,12 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
         ids.append("'").append(TradeModuleBean.encodeId(TBL_SALES, row.getLong(COL_SALE)))
             .append("'");
       }
-      String remoteNamespace = prm.getText(PRM_ERP_NAMESPACE);
       String remoteAddress = prm.getText(PRM_ERP_ADDRESS);
       String remoteLogin = prm.getText(PRM_ERP_LOGIN);
       String remotePassword = prm.getText(PRM_ERP_PASSWORD);
 
       try {
-        SimpleRowSet payments = ButentWS.connect(remoteNamespace, remoteAddress, remoteLogin,
-            remotePassword)
+        SimpleRowSet payments = ButentWS.connect(remoteAddress, remoteLogin, remotePassword)
             .getSQLData("SELECT extern_id AS id, apm_data AS data, apm_suma AS suma"
                     + " FROM apyvarta WHERE pajamos=0 AND extern_id IN(" + ids.toString() + ")",
                 "id", "data", "suma");

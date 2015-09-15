@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="Employees" source="Employees"
+  editForm="Employee" newRowForm="Employee"
+  caption="=employees" newRowCaption="=newEmployee"
+  >
+  <Columns>
+    <SimpleColumn name="CompanyPerson" />
+    <SimpleJoin name="CompanyPerson" joinType="LEFT">
+      <SimpleColumn name="Company" />
+      <SimpleJoin name="Company" joinType="LEFT">
+        <SimpleColumn name="Name" alias="CompanyName" />
+        <SimpleJoin name="CompanyType" joinType="LEFT">
+          <SimpleColumn name="Name" alias="CompanyTypeName" />
+        </SimpleJoin>
+      </SimpleJoin>
+
+      <SimpleColumn name="Person" />
+      <SimpleJoin name="Person" joinType="LEFT">
+        <SimpleColumn name="FirstName" />
+        <SimpleColumn name="LastName" />
+      </SimpleJoin>
+
+      <SimpleColumn name="Department" />
+      <SimpleJoin name="Department" joinType="LEFT">
+        <SimpleColumn name="Name" alias="DepartmentName" />
+      </SimpleJoin>
+
+      <SimpleColumn name="Position" />
+      <SimpleJoin name="Position" joinType="LEFT">
+        <SimpleColumn name="Name" alias="PositionName" />
+      </SimpleJoin>
+
+      <SimpleColumn name="DateOfEmployment" />
+      <SimpleColumn name="DateOfDismissal" />
+  
+      <SimpleJoin name="Contact" joinType="LEFT">
+        <SimpleColumn name="Phone" />
+        <SimpleColumn name="Mobile" />
+        <SimpleJoin name="Email" joinType="LEFT">
+          <SimpleColumn name="Email" />
+        </SimpleJoin>
+        <SimpleColumn name="Address" />
+      </SimpleJoin>
+    </SimpleJoin>
+
+    <SimpleColumn name="TabNumber" />
+
+    <SimpleColumn name="Salary" />
+    <SimpleColumn name="Currency" />
+    <SimpleJoin name="Currency" joinType="LEFT">
+      <SimpleColumn name="Name" alias="CurrencyName" />
+    </SimpleJoin>
+
+    <SimpleColumn name="PartTime" />
+
+    <SimpleColumn name="Notes" />
+  </Columns>
+
+  <Order>
+    <OrderBy column="LastName" />
+    <OrderBy column="FirstName" />
+    <OrderBy column="CompanyName" />
+    <OrderBy column="TabNumber" />
+  </Order>
+</View>

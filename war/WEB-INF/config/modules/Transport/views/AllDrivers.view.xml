@@ -1,16 +1,37 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
-  xmlns:xpr="http://www.butent.com/expression"
 
-  name="AllDrivers" source="Drivers"
-  >
+      name="AllDrivers" source="Drivers"
+      editForm="Driver" newRowForm="Driver"
+      caption="=drivers" newRowCaption="=trNewDriver"
+    >
   <Columns>
+    <SimpleColumn name="CompanyPerson" />
     <SimpleJoin name="CompanyPerson" joinType="LEFT">
+      <SimpleJoin name="Company" joinType="LEFT">
+        <SimpleColumn alias="CompanyName" name="Name" />
+      </SimpleJoin>
+      <SimpleColumn name="Person" />
       <SimpleJoin name="Person" joinType="LEFT">
         <SimpleColumn name="FirstName" />
         <SimpleColumn name="LastName" />
       </SimpleJoin>
+      <SimpleJoin name="Contact" joinType="LEFT">
+        <SimpleColumn name="Phone" />
+        <SimpleColumn name="Mobile" />
+        <SimpleJoin name="Email" joinType="LEFT">
+          <SimpleColumn name="Email" />
+        </SimpleJoin>
+      </SimpleJoin>
+      <SimpleJoin name="Position" joinType="LEFT">
+        <SimpleColumn name="Name" alias="PositionName" />
+      </SimpleJoin>
     </SimpleJoin>
+
+    <SimpleColumn name="StartDate" />
+    <SimpleColumn name="EndDate" />
+    <SimpleColumn name="Experience" />
+    <SimpleColumn name="Notes" />
   </Columns>
   <Order>
     <OrderBy column="LastName" />

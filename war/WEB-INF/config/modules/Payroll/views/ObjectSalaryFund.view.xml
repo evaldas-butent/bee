@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="ObjectSalaryFund" source="ObjectSalaryFund"
+  caption="=objectSalaryFund" newRowCaption="=newSalaryFund"
+  >
+  <Columns>
+    <SimpleColumn name="Object" />
+
+    <SimpleColumn name="YearFrom" />
+    <SimpleColumn name="MonthFrom" />
+    <SimpleColumn name="YearUntil" />
+    <SimpleColumn name="MonthUntil" />
+
+    <SimpleColumn name="Amount" />
+    <SimpleColumn name="Currency" />
+    <SimpleJoin name="Currency" joinType="LEFT">
+      <SimpleColumn name="Name" alias="CurrencyName" />
+    </SimpleJoin>
+
+    <SimpleColumn name="Note" />
+  </Columns>
+
+  <Order>
+    <OrderBy column="YearFrom" />
+    <OrderBy column="MonthFrom" />
+  </Order>
+</View>

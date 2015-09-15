@@ -18,7 +18,7 @@ public class NewFileInfo extends FileInfo {
     setFileDate((millis > 0) ? new DateTime(BeeUtils.toLong(millis)) : null);
   }
 
-  public File getFile() {
+  public File getNewFile() {
     return file;
   }
 }

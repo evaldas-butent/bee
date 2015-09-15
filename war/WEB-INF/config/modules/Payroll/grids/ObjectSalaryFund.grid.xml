@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+
+  name="ObjectSalaryFund" viewName="ObjectSalaryFund"
+  >
+
+  <g:columns>
+    <DataColumn name="YearFrom" minValue="2000" maxValue="2099" format="0000" />
+    <DataColumn name="MonthFrom" minValue="1" maxValue="12" />
+    <DataColumn name="YearUntil" minValue="2000" maxValue="2099" format="0000" />
+    <DataColumn name="MonthUntil" minValue="1" maxValue="12" />
+
+    <DataColumn name="Amount" minWidth="100" visible="true" />
+    <RelColumn name="Currency" />
+
+    <DataColumn name="Note" flexGrow="1" />
+  </g:columns>
+</g:Grid>

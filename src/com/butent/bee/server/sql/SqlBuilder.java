@@ -298,14 +298,18 @@ public abstract class SqlBuilder {
     switch ((SqlTriggerType) params.get("type")) {
       case AUDIT:
         body = getAuditTrigger(BeeUtils.join(".",
-            sqlQuote((String) triggerParams.get("auditSchema")),
-            sqlQuote((String) triggerParams.get("auditTable"))),
+                sqlQuote((String) triggerParams.get("auditSchema")),
+                sqlQuote((String) triggerParams.get("auditTable"))),
             sqlQuote((String) triggerParams.get("idName")),
             (Collection<String>) triggerParams.get("fields"));
         break;
 
       case RELATION:
         body = getRelationTrigger((List<Map<String, String>>) triggerParams.get("fields"));
+        break;
+
+      case VERSION:
+        body = getVersionTrigger(sqlQuote((String) triggerParams.get("versionName")));
         break;
 
       case CUSTOM:
@@ -371,6 +375,8 @@ public abstract class SqlBuilder {
     return query.toString();
   }
 
+  protected abstract String getVersionTrigger(String versionName);
+
   protected boolean isEmpty(Object x) {
     boolean ok;
 
@@ -379,8 +385,7 @@ public abstract class SqlBuilder {
     } else if (x instanceof String) {
       ok = ((String) x).isEmpty() || ((String) x).trim().isEmpty();
     } else if (x instanceof CharSequence) {
-      ok = ((CharSequence) x).length() == 0
-          || ((CharSequence) x).toString().trim().isEmpty();
+      ok = ((CharSequence) x).length() == 0 || x.toString().trim().isEmpty();
     } else if (x instanceof Number) {
       ok = BeeUtils.isZero(((Number) x).doubleValue());
     } else if (x instanceof Boolean) {

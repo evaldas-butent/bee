@@ -149,6 +149,30 @@ public enum Module implements HasLocalizedCaption {
     }
   },
 
+  ORDERS {
+    @Override
+    public String getCaption(LocalizableConstants constants) {
+      return constants.orders();
+    }
+
+    @Override
+    public String getStyleSheet(SubModule subModule) {
+      return "orders";
+    }
+  },
+
+  PAYROLL {
+    @Override
+    public String getCaption(LocalizableConstants constants) {
+      return constants.payroll();
+    }
+
+    @Override
+    public String getStyleSheet(SubModule subModule) {
+      return null;
+    }
+  },
+
   ADMINISTRATION {
     @Override
     public String getCaption(LocalizableConstants constants) {
@@ -158,19 +182,6 @@ public enum Module implements HasLocalizedCaption {
     @Override
     public String getStyleSheet(SubModule subModule) {
       return null;
-    }
-  },
-
-  ORDERS {
-
-    @Override
-    public String getCaption(LocalizableConstants constants) {
-      return constants.orders();
-    }
-
-    @Override
-    public String getStyleSheet(SubModule subModule) {
-      return "orders";
     }
   };
 
