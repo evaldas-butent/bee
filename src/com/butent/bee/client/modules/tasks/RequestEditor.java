@@ -212,12 +212,6 @@ public class RequestEditor extends AbstractFormInterceptor {
   }
 
   private static void finishRequest(final FormView form, final IsRow row) {
-    String oldValue = BeeConst.STRING_EMPTY;
-    int idxResult = form.getDataIndex(COL_REQUEST_RESULT);
-
-    if (idxResult > -1) {
-      oldValue = row.getString(idxResult);
-    }
 
     final TaskDialog dialog =
         new TaskDialog(Localized.getConstants().requestFinishing());
