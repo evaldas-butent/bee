@@ -3,7 +3,7 @@
   xmlns:ui="http://www.butent.com/ui"
   xmlns:w="http://www.butent.com/widget"
 
-  name="Vehicles" viewName="Vehicles" editForm="Vehicle" caption="=vehicles"
+  name="AllVehicles" viewName="AllVehicles" caption="=vehicles"
   flexGrow="1" minColumnWidth="60"
   >
   <g:west size="160" splitterSize="2">
@@ -20,7 +20,7 @@
       </w:form>
     </w:DataTree>
   </g:west>
-  
+
   <g:columns>
     <RelColumn name="Type" caption="=vehicleType" renderColumns="TypeName" />
     <RelColumn name="Model" renderColumns="ParentModelName ModelName" caption="=vehicleModel" />

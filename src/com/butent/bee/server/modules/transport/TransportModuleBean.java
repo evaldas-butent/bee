@@ -15,7 +15,6 @@ import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.server.concurrency.ConcurrencyBean;
 import com.butent.bee.server.concurrency.ConcurrencyBean.HasTimerService;
-import com.butent.bee.server.data.BeeView;
 import com.butent.bee.server.data.DataEditorBean;
 import com.butent.bee.server.data.DataEvent.ViewDeleteEvent;
 import com.butent.bee.server.data.DataEvent.ViewInsertEvent;
@@ -531,52 +530,6 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
       public void getFileIcons(ViewQueryEvent event) {
         if (BeeUtils.same(event.getTargetName(), VIEW_CARGO_REQUEST_FILES) && event.isAfter()) {
           ExtensionIcons.setIcons(event.getRowset(), ALS_FILE_NAME, PROP_ICON);
-        }
-      }
-
-      @Subscribe
-      public void getVisibleVehiclesAndDrivers(ViewQueryEvent event) {
-        if (event.isBefore()) {
-          String target = event.getTargetName();
-          String groupTable;
-          String groupField;
-
-          switch (target) {
-            case TBL_VEHICLES:
-              groupTable = TBL_VEHICLE_GROUPS;
-              groupField = COL_VEHICLE;
-              break;
-            case TBL_DRIVERS:
-              groupTable = TBL_DRIVER_GROUPS;
-              groupField = COL_DRIVER;
-              break;
-            default:
-              return;
-          }
-          BeeView view = sys.getView(target);
-
-          SqlSelect query = new SqlSelect().setUnionAllMode(false)
-              .addFields(groupTable, groupField)
-              .addFrom(groupTable)
-              .addFromInner(TBL_TRANSPORT_GROUPS,
-                  SqlUtils.and(sys.joinTables(TBL_TRANSPORT_GROUPS, groupTable, COL_GROUP),
-                      SqlUtils.isNull(TBL_TRANSPORT_GROUPS, COL_GROUP_MANAGER)))
-              .addUnion(new SqlSelect()
-                  .addField(target, sys.getIdName(target), groupField)
-                  .addFrom(target)
-                  .addFromLeft(groupTable, sys.joinTables(target, groupTable, groupField))
-                  .addFromLeft(TBL_TRANSPORT_GROUPS,
-                      sys.joinTables(TBL_TRANSPORT_GROUPS, groupTable, COL_GROUP))
-                  .setWhere(SqlUtils.or(SqlUtils.isNull(groupTable, groupField),
-                      SqlUtils.equals(TBL_TRANSPORT_GROUPS, COL_GROUP_MANAGER,
-                          usr.getCurrentUserId()))));
-
-          if (!usr.isAdministrator()) {
-            sys.filterVisibleState(query, TBL_TRANSPORT_GROUPS);
-          }
-          event.getQuery()
-              .setWhere(SqlUtils.and(event.getQuery().getWhere(),
-                  SqlUtils.in(view.getSourceAlias(), view.getSourceIdName(), query)));
         }
       }
 
