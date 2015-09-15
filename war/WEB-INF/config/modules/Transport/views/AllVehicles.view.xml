@@ -49,6 +49,8 @@
     <SimpleColumn name="Chassis" />
     <SimpleColumn name="Gearbox" />
     <SimpleColumn name="Conditioner" />
+
+    <SimpleColumn name="ExternalCode" />
   </Columns>
   <Order>
     <OrderBy column="TypeName" />

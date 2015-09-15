@@ -121,7 +121,7 @@ public final class ButentWS {
     try {
       answer = process("GetCars", XmlUtils.tag("time", getChangesFrom));
     } catch (Exception e) {
-      throw new BeeException(e);
+      throw BeeException.error(e);
     }
     SimpleRowSet data = xmlToSimpleRowSet(answer, "CAR_ID", "VALST_NR", "TIPAS", "MODELIS",
         "PAG_METAI", "KUBATURA", "KEBUL_NR", "VARIKL_NR", "NOTES", "BAKAS", "SKALE", "GALIA",
@@ -198,7 +198,7 @@ public final class ButentWS {
     try {
       answer = process("ImportFin", request);
     } catch (Exception e) {
-      throw new BeeException(e);
+      throw BeeException.error(e);
     }
     SimpleRowSet data = xmlToSimpleRowSet(answer, "ID", "RESULT");
     logger.debug("ImportFin cols:", data.getNumberOfColumns(), "rows:", data.getNumberOfRows());

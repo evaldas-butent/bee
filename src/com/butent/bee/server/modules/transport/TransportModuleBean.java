@@ -900,15 +900,13 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
     }
     sb.append("</table>");
 
-    String remoteNamespace = prm.getText(PRM_ERP_NAMESPACE);
     String remoteAddress = prm.getText(PRM_ERP_ADDRESS);
     String remoteLogin = prm.getText(PRM_ERP_LOGIN);
     String remotePassword = prm.getText(PRM_ERP_PASSWORD);
     SimpleRowSet res = null;
 
     try {
-      res = ButentWS.connect(remoteNamespace, remoteAddress, remoteLogin, remotePassword)
-          .importFin(sb.toString());
+      res = ButentWS.connect(remoteAddress, remoteLogin, remotePassword).importFin(sb.toString());
     } catch (BeeException e) {
       logger.error(e);
       return ResponseObject.error(e);
@@ -2687,14 +2685,13 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
     }
     sql.append(" ORDER BY tipas, data DESC");
 
-    String remoteNamespace = prm.getText(PRM_ERP_NAMESPACE);
     String remoteAddress = prm.getText(PRM_ERP_ADDRESS);
     String remoteLogin = prm.getText(PRM_ERP_LOGIN);
     String remotePassword = prm.getText(PRM_ERP_PASSWORD);
     SimpleRowSet rs = null;
 
     try {
-      rs = ButentWS.connect(remoteNamespace, remoteAddress, remoteLogin, remotePassword)
+      rs = ButentWS.connect(remoteAddress, remoteLogin, remotePassword)
           .getSQLData(sql.toString(), cols.keySet().toArray(new String[0]));
 
     } catch (BeeException e) {
@@ -2877,14 +2874,13 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
   private void importVehicles() {
     long historyId = sys.eventStart(PRM_SYNC_ERP_VEHICLES);
 
-    String remoteNamespace = prm.getText(PRM_ERP_NAMESPACE);
     String remoteAddress = prm.getText(PRM_ERP_ADDRESS);
     String remoteLogin = prm.getText(PRM_ERP_LOGIN);
     String remotePassword = prm.getText(PRM_ERP_PASSWORD);
     SimpleRowSet rs = null;
 
     try {
-      rs = ButentWS.connect(remoteNamespace, remoteAddress, remoteLogin, remotePassword)
+      rs = ButentWS.connect(remoteAddress, remoteLogin, remotePassword)
           .getCars(qs.getDateTime(new SqlSelect()
               .addMax(TBL_EVENT_HISTORY, COL_EVENT_STARTED)
               .addFrom(TBL_EVENT_HISTORY)
