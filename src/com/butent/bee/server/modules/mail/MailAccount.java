@@ -110,7 +110,7 @@ public class MailAccount {
     logger.debug("Checking folder", remoteSource.getName(), "UIDValidity with", uidValidity);
 
     if (!Objects.equals(((UIDFolder) remoteSource).getUIDValidity(), uidValidity)) {
-      throw new MessagingException("Folder out of sync: " + remoteSource.getName());
+      throw new FolderOutOfSyncException("Folder out of sync: " + remoteSource.getName());
     }
     logger.debug("Opening folder:", remoteSource.getName());
     remoteSource.open(Folder.READ_WRITE);
@@ -120,8 +120,7 @@ public class MailAccount {
 
     for (Message message : msgs) {
       if (message == null) {
-        throw new MessagingException("Not all messages where returned by UIDs. "
-            + "Folder resynchronization required.");
+        throw new FolderOutOfSyncException("Not all messages where returned by given UIDs");
       }
     }
     return Lists.newArrayList(msgs);

@@ -72,6 +72,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -235,10 +236,9 @@ public class MailModuleBean implements BeeModule, HasTimerService {
             BeeUtils.toLongOrNull(reqInfo.getParameter(COL_PLACE)));
 
       } else if (BeeUtils.same(svc, SVC_FLAG_MESSAGE)) {
-        response = ResponseObject
-            .response(setMessageFlag(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_PLACE)),
-                EnumUtils.getEnumByName(MessageFlag.class, reqInfo.getParameter(COL_FLAGS)),
-                Codec.unpack(reqInfo.getParameter("on"))));
+        response = setMessageFlag(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_PLACE)),
+            EnumUtils.getEnumByName(MessageFlag.class, reqInfo.getParameter(COL_FLAGS)),
+            Codec.unpack(reqInfo.getParameter("on")));
 
       } else if (BeeUtils.same(svc, SVC_COPY_MESSAGES)) {
         MailAccount account = mail.getAccount(BeeUtils.toLong(reqInfo.getParameter(COL_ACCOUNT)));
@@ -851,7 +851,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
           }
           logger.debug(log);
 
-          processMessages(account, folder, folderTo, Arrays.asList(placeId), move);
+          processMessages(account, folder, folderTo, Collections.singleton(placeId), move);
 
           if (move) {
             return changedFolders;
@@ -1324,7 +1324,8 @@ public class MailModuleBean implements BeeModule, HasTimerService {
   private int processMessages(MailAccount account, MailFolder source, MailFolder target,
       Collection<Long> places, boolean move) throws MessagingException {
 
-    Assert.state(!BeeUtils.isEmpty(places), "Empty message list");
+    Assert.notNull(source);
+    Assert.notEmpty(places);
 
     IsCondition wh = sys.idInList(TBL_PLACES, places);
     boolean checkMail = false;
@@ -1350,9 +1351,14 @@ public class MailModuleBean implements BeeModule, HasTimerService {
     }
     if (target != null) {
       if (account.isStoredRemotedly(target)) {
-        if (account.processMessages(uids, source, target, move)) {
+        try {
+          checkMail = account.processMessages(uids, source, target, move);
+        } catch (FolderOutOfSyncException e) {
+          checkMail(true, account, source, null);
+          return 0;
+        }
+        if (checkMail) {
           uids = new long[0];
-          checkMail = true;
         } else {
           SimpleRowSet contents = qs.getData(new SqlSelect()
               .addFields(TBL_MESSAGES, COL_RAW_CONTENT)
@@ -1404,6 +1410,12 @@ public class MailModuleBean implements BeeModule, HasTimerService {
       }
     }
     if (move) {
+      try {
+        account.processMessages(uids, source, target, move);
+      } catch (FolderOutOfSyncException e) {
+        checkMail(true, account, source, null);
+        return 0;
+      }
       account.processMessages(uids, source, null, true);
       mail.detachMessages(wh);
 
@@ -1444,7 +1456,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
     return c;
   }
 
-  private int setMessageFlag(Long placeId, MessageFlag flag, boolean on)
+  private ResponseObject setMessageFlag(Long placeId, MessageFlag flag, boolean on)
       throws MessagingException {
 
     SimpleRow row = qs.getRow(new SqlSelect()
@@ -1457,6 +1469,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
     Assert.notNull(row);
     int oldValue = BeeUtils.unbox(row.getInt(COL_FLAGS));
     int value;
+    ResponseObject response = ResponseObject.emptyResponse();
 
     if (on) {
       value = flag.set(oldValue);
@@ -1464,20 +1477,24 @@ public class MailModuleBean implements BeeModule, HasTimerService {
       value = flag.clear(oldValue);
     }
     if (value == oldValue) {
-      return value;
+      return response;
     }
     MailAccount account = mail.getAccount(row.getLong(COL_ACCOUNT));
     MailFolder folder = account.findFolder(row.getLong(COL_FOLDER));
 
-    account.setFlag(folder, new long[] {BeeUtils.unbox(row.getLong(COL_MESSAGE_UID))}, flag, on);
-
+    try {
+      account.setFlag(folder, new long[] {BeeUtils.unbox(row.getLong(COL_MESSAGE_UID))}, flag, on);
+    } catch (FolderOutOfSyncException e) {
+      checkMail(true, account, folder, null);
+      return response.addError(e);
+    }
     mail.setFlags(placeId, value);
 
     MailMessage mailMessage = new MailMessage(folder.getId());
     mailMessage.setFlag(flag);
     Endpoint.sendToUser(account.getUserId(), mailMessage);
 
-    return value;
+    return response;
   }
 
   private void storeMail(MailAccount account, MimeMessage message, MailFolder folder)
