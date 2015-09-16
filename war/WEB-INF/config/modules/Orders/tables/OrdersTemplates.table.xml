@@ -5,18 +5,13 @@
   idName="OrderTemplateID"
   >
   <Fields>
-    <String name="Template" precision="100" notNull="true" unique="true" label="=template" />
+    <String name="Template" precision="100" notNull="true" unique="true" label="=name" />
     <Relation name="Type" relation="OrderTypes" label="=type" />
-    <DateTime name="StartDate" notNull="true" defExpr="CURRENT_TIME" label="=startingDate" />
-
     <Relation name="Series" relation="OrderSeries" label="=trdSeries" />
-    <String name="Number" precision="30" label="=number" />
-    
-    <Relation name="Warehouse" relation="Warehouses" label="=warehouse" />
-    
+    <String name="Number" precision="30" label="=number" />   
+    <Relation name="Warehouse" relation="Warehouses" label="=warehouse" />   
     <Relation name="Company" relation="Companies" label="=client" />
     <Relation name="Contact" relation="CompanyPersons" label="=contact" />
-    <Relation name="Manager" relation="Users" label="=manager" defExpr="CURRENT_USER" />
     <Text name="Notes" label="=notes" />
   </Fields>
 </Table>

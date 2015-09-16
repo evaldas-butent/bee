@@ -6,13 +6,11 @@
   <g:columns>
     <DataColumn name="Template" visible="true" />
     <RelColumn name="Type" visible="true" />
-    <DataColumn name="StartDate" visible="true" />
     <RelColumn name="Series" visible="true" />
     <DataColumn name="Number" visible="true" />
     <RelColumn name="Warehouse" visible="true" />
     <RelColumn name="Company" visible="true" />
     <RelColumn name="Contact" renderColumns="ContactFirstName ContactLastName"
       choiceColumns="FirstName LastName CompanyName" />
-    <RelColumn name="Manager" renderColumns="ManagerFirstName ManagerLastName" />
   </g:columns>
 </g:Grid>
