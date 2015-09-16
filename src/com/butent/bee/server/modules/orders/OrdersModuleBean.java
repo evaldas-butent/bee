@@ -106,6 +106,10 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
         response = getItemsForSelection(reqInfo);
         break;
 
+      case SVC_GET_TMPL_ITEMS_FOR_SELECTION:
+        response = getTmplItemsForSelection(reqInfo);
+        break;
+
       case SVC_GET_TEMPLATE_ITEMS:
         response = getTemplateItems(reqInfo);
         break;
@@ -228,7 +232,7 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
     CompoundFilter filter = Filter.and();
     filter.add(Filter.isNull(COL_ITEM_IS_SERVICE));
 
-    Set<Long> orderItems = getOrderItems(orderId);
+    Set<Long> orderItems = getOrderItems(orderId, TBL_ORDER_ITEMS, COL_ORDER);
     if (!orderItems.isEmpty()) {
       filter.add(Filter.idNotIn(orderItems));
     }
@@ -272,6 +276,33 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
       row.setValue(row.getNumberOfCells() - 3, itemsRemainders.get(itemId));
       row.setValue(row.getNumberOfCells() - 2, res);
       row.setValue(row.getNumberOfCells() - 1, itemsRemainders.get(itemId) - res);
+    }
+
+    return ResponseObject.response(items);
+  }
+
+  private ResponseObject getTmplItemsForSelection(RequestInfo reqInfo) {
+
+    Long templateId = reqInfo.getParameterLong(COL_ORDER);
+    String where = reqInfo.getParameter(Service.VAR_VIEW_WHERE);
+
+    CompoundFilter filter = Filter.and();
+    filter.add(Filter.isNull(COL_ITEM_IS_SERVICE));
+
+    Set<Long> orderItems = getOrderItems(templateId, VIEW_ORDER_TMPL_ITEMS, COL_TEMPLATE);
+    if (!orderItems.isEmpty()) {
+      filter.add(Filter.idNotIn(orderItems));
+    }
+
+    if (!BeeUtils.isEmpty(where)) {
+      filter.add(Filter.restore(where));
+    }
+
+    BeeRowSet items = qs.getViewData(VIEW_ITEMS, filter);
+
+    if (DataUtils.isEmpty(items)) {
+      logger.debug(reqInfo.getService(), "no items found", filter);
+      return ResponseObject.emptyResponse();
     }
 
     return ResponseObject.response(items);
@@ -388,12 +419,12 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
     qs.updateData(update);
   }
 
-  private Set<Long> getOrderItems(Long orderId) {
-    if (DataUtils.isId(orderId)) {
+  private Set<Long> getOrderItems(Long targetId, String source, String column) {
+    if (DataUtils.isId(targetId)) {
       return qs.getLongSet(new SqlSelect()
-          .addFields(TBL_ORDER_ITEMS, COL_ITEM)
-          .addFrom(TBL_ORDER_ITEMS)
-          .setWhere(SqlUtils.equals(TBL_ORDER_ITEMS, COL_ORDER, orderId)));
+          .addFields(source, COL_ITEM)
+          .addFrom(source)
+          .setWhere(SqlUtils.equals(source, column, targetId)));
     } else {
       return BeeConst.EMPTY_IMMUTABLE_LONG_SET;
     }
@@ -487,7 +518,7 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
 
     Set<Long> itemIds = new HashSet<>();
 
-    Set<Long> ordItems = getOrderItems(orderId);
+    Set<Long> ordItems = getOrderItems(orderId, TBL_ORDER_ITEMS, COL_ORDER);
     Filter filter = getTemplateChildrenFilter(templateId, ordItems);
 
     BeeRowSet templateItems = qs.getViewData(VIEW_ORDER_TMPL_ITEMS, filter);
