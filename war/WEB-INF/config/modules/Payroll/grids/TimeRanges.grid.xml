@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+
+  name="TimeRanges" viewName="TimeRanges" caption="=timeRanges"
+  >
+  <g:columns>
+    <DataColumn name="Ordinal" />
+
+    <DataColumn name="TrCode" visible="true">
+      <editor type="string" upperCase="true" />
+    </DataColumn>
+    <DataColumn name="TrName" flexGrow="1" />
+
+    <DataColumn name="TimeFrom" visible="true">
+      <editor type="timeOfDay" />
+    </DataColumn>
+    <DataColumn name="TimeUntil" visible="true">
+      <editor type="timeOfDay" />
+    </DataColumn>
+
+    <DataColumn name="Duration">
+      <editor type="timeOfDay" />
+    </DataColumn>
+
+    <DataColumn name="Background" updateMode="row">
+      <editor type="color" />
+    </DataColumn>
+    <DataColumn name="Foreground" updateMode="row">
+      <editor type="color" />
+    </DataColumn>
+
+    <DataColumn name="Description" flexGrow="1" />
+  </g:columns>
+</g:Grid>

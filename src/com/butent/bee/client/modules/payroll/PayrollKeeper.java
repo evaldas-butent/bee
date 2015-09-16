@@ -20,6 +20,10 @@ public final class PayrollKeeper {
     ConditionalStyle.registerGridColumnStyleProvider(GRID_TIME_CARD_CODES, COL_BACKGROUND, csp);
     ConditionalStyle.registerGridColumnStyleProvider(GRID_TIME_CARD_CODES, COL_FOREGROUND, csp);
 
+    csp = ColorStyleProvider.createDefault(VIEW_TIME_RANGES);
+    ConditionalStyle.registerGridColumnStyleProvider(GRID_TIME_RANGES, COL_BACKGROUND, csp);
+    ConditionalStyle.registerGridColumnStyleProvider(GRID_TIME_RANGES, COL_FOREGROUND, csp);
+
     csp = ColorStyleProvider.createDefault(VIEW_TIME_CARD_CHANGES);
     ConditionalStyle.registerGridColumnStyleProvider(GRID_TIME_CARD_CHANGES,
         COL_TIME_CARD_FROM, csp);

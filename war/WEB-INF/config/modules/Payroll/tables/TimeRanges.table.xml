@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+  name="TimeRanges"
+  idName="TimeRangeID"
+  >
+  <Fields>
+    <Char name="TrCode" precision="2" notNull="true" unique="true" label="=code" />
+    <String name="TrName" precision="100" label="=name" />
+
+    <String name="TimeFrom" precision="10" label="=startingTime" notNull="true" />
+    <String name="TimeUntil" precision="10" label="=endingTime" notNull="true" />
+
+    <String name="Duration" precision="10" label="=duration" />
+
+    <Integer name="Ordinal" label="=ordinal" />
+
+    <String name="Background" precision="100" label="=backgroundColor" />
+    <String name="Foreground" precision="100" label="=foregroundColor" />
+
+    <Text name="Description" label="=description" />
+  </Fields>
+</Table>
