@@ -16,11 +16,12 @@
         <InputDateTime source="Date" style="width:11em;" />
         <Label for="Vehicle" class="bee-required" horizontalAlignment="right" />
         <DataSelector name="Vehicle" viewName="UserVehicles" editViewName="Vehicles"
-                      renderColumns="VehicleNumber" filter="IsTruck" required="true"
-                      newRowEnabled="false" />
+                      renderColumns="VehicleNumber" filter="IsTruck" newRowEnabled="false"
+                      required="true" caching="local" />
         <Label for="Trailer" horizontalAlignment="right" />
         <DataSelector name="Trailer" viewName="UserVehicles" editViewName="Vehicles"
-                      renderColumns="TrailerNumber" filter="IsTrailer" newRowEnabled="false" />
+                      renderColumns="TrailerNumber" filter="IsTrailer" newRowEnabled="false"
+                      caching="local" />
       </row>
       <row>
         <Label for="PlannedEndDate" />

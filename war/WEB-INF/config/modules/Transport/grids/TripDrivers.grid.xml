@@ -12,7 +12,7 @@
       </carry>
     </DataColumn>
     <DataColumn name="DateTo" source="DateTo" minWidth="80" visible="false" />
-    <RelColumn name="Driver" newRowEnabled="false" viewName="UserDrivers"
+    <RelColumn name="Driver" newRowEnabled="false" viewName="UserDrivers" caching="local"
                flexGrow="1" flexShrink="1" />
     <DataColumn name="Note" source="Note" flexGrow="2" flexShrink="2" visible="false" />
   </g:columns>

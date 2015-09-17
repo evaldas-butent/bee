@@ -66,11 +66,10 @@ import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
-import com.butent.bee.shared.modules.administration.AdministrationConstants.ReminderMethod;
+import com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 import com.butent.bee.shared.modules.projects.ProjectConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
-import com.butent.bee.shared.modules.tasks.TaskConstants.TaskEvent;
-import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
+import com.butent.bee.shared.modules.tasks.TaskConstants.*;
 import com.butent.bee.shared.modules.tasks.TaskUtils;
 import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.news.Headline;
@@ -138,7 +137,7 @@ public class TasksModuleBean implements BeeModule {
 
     List<SearchResult> tasksSr = qs.getSearchResults(VIEW_TASKS,
         Filter.anyContains(Sets.newHashSet(COL_SUMMARY, COL_DESCRIPTION,
-            ALS_COMPANY_NAME, ALS_EXECUTOR_FIRST_NAME, ALS_EXECUTOR_LAST_NAME),
+                ALS_COMPANY_NAME, ALS_EXECUTOR_FIRST_NAME, ALS_EXECUTOR_LAST_NAME),
             query));
     result.addAll(tasksSr);
 
@@ -208,7 +207,7 @@ public class TasksModuleBean implements BeeModule {
     String module = getModule().getName();
     List<BeeParameter> params = Lists.newArrayList(
         BeeParameter.createText(module, PRM_END_OF_WORK_DAY)
-        );
+    );
     return params;
   }
 
@@ -1183,7 +1182,7 @@ public class TasksModuleBean implements BeeModule {
       String compFullName =
           companiesListSet.getValue(i, COL_COMPANY_NAME)
               + (!BeeUtils.isEmpty(companiesListSet.getValue(i, ALS_COMPANY_TYPE))
-                  ? ", " + companiesListSet.getValue(i, ALS_COMPANY_TYPE) : "");
+              ? ", " + companiesListSet.getValue(i, ALS_COMPANY_TYPE) : "");
       String dTime = "0:00";
 
       SqlSelect companyTimesQuery = new SqlSelect()
@@ -1253,7 +1252,8 @@ public class TasksModuleBean implements BeeModule {
       }
     }
 
-    result.addRow(new String[] {constants.totalOf() + ":",
+    result.addRow(new String[] {
+        constants.totalOf() + ":",
         new DateTime(totalTimeMls).toUtcTimeString()});
 
     ResponseObject resp = ResponseObject.response(result);
@@ -1366,11 +1366,11 @@ public class TasksModuleBean implements BeeModule {
 
     for (SimpleRow file : data) {
       FileInfo sf = new FileInfo(file.getLong(COL_FILE),
-          BeeUtils.notEmpty(file.getValue(COL_CAPTION),
-              file.getValue(COL_FILE_NAME)),
+          file.getValue(COL_FILE_NAME),
           file.getLong(COL_FILE_SIZE),
           file.getValue(COL_FILE_TYPE));
 
+      sf.setCaption(file.getValue(COL_CAPTION));
       sf.setIcon(ExtensionIcons.getIcon(sf.getName()));
       files.add(sf);
     }
@@ -1732,7 +1732,7 @@ public class TasksModuleBean implements BeeModule {
           (!BeeUtils.isEmpty(usersListSet.getValue(i, COL_FIRST_NAME))
               ? usersListSet.getValue(i, COL_FIRST_NAME) : "") + " "
               + (!BeeUtils.isEmpty(usersListSet.getValue(i, COL_LAST_NAME))
-                  ? usersListSet.getValue(i, COL_LAST_NAME) : "");
+              ? usersListSet.getValue(i, COL_LAST_NAME) : "");
 
       userFullName = BeeUtils.isEmpty(userFullName) ? "—" : userFullName;
       String dTime = "0:00";
