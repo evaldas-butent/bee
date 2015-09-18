@@ -2,6 +2,7 @@ package com.butent.bee.client.modules.documents;
 
 import com.google.common.collect.Lists;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
+import com.google.gwt.event.shared.HasHandlers;
 
 import static com.butent.bee.shared.modules.documents.DocumentConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
@@ -11,6 +12,7 @@ import com.butent.bee.client.Callback;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.FileCollector;
+import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.IdCallback;
 import com.butent.bee.client.data.Queries;
@@ -26,6 +28,7 @@ import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.view.ViewHelper;
+import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
@@ -43,10 +46,13 @@ import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
+import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
@@ -66,18 +72,7 @@ public final class DocumentsHandler {
   private static final class DocumentBuilder extends AbstractFormInterceptor {
 
     private FileCollector collector;
-
-    @Override
-    public void afterInsertRow(IsRow result, boolean forced) {
-      if (collector != null && !collector.isEmpty()) {
-        sendFiles(result.getId(), collector.getFiles(), null);
-        collector.clear();
-      }
-
-      if (result.getString(Data.getColumnIndex(VIEW_DOCUMENTS, COL_DOCUMENT_COMPANY)) != null) {
-        insertCompanyInfo(result, null);
-      }
-    }
+    private UnboundSelector templSelector;
 
     @Override
     public void afterCreateWidget(String name, IdentifiableWidget widget,
@@ -87,11 +82,57 @@ public final class DocumentsHandler {
         this.collector = (FileCollector) widget;
         this.collector.bindDnd(getFormView());
       }
+
+      if (widget instanceof UnboundSelector) {
+        templSelector = (UnboundSelector) widget;
+      }
+    }
+
+    @Override
+    public void afterInsertRow(final IsRow result, boolean forced) {
+      if (collector != null && !collector.isEmpty()) {
+        sendFiles(result.getId(), collector.getFiles(), null);
+        collector.clear();
+      }
+
+      if (result.getString(Data.getColumnIndex(VIEW_DOCUMENTS, COL_DOCUMENT_COMPANY)) != null) {
+        insertCompanyInfo(result, null);
+      }
+
+      if (templSelector != null) {
+        Long selId = BeeUtils.toLong(templSelector.getValue());
+        if (DataUtils.isId(selId)) {
+
+          Queries.getRow(VIEW_DOCUMENT_TEMPLATES, selId, new RowCallback() {
+            @Override
+            public void onSuccess(BeeRow templateRow) {
+              insertTemplateContent(result, Data.getString(VIEW_DOCUMENT_TEMPLATES, templateRow,
+                  COL_DOCUMENT_CONTENT));
+            }
+          });
+
+        }
+
+      }
+    }
+
+    @Override
+    public void beforeRefresh(FormView form, IsRow row) {
+      if (templSelector != null
+          && DataUtils.isId(row.getProperty(TaskConstants.PRM_DEFAULT_DBA_TEMPLATE))) {
+        templSelector.setValue(BeeUtils.toLong(row.getProperty(
+            TaskConstants.PRM_DEFAULT_DBA_TEMPLATE)), true);
+      }
     }
 
     @Override
     public FormInterceptor getInstance() {
       return new DocumentBuilder();
+    }
+
+    @Override
+    public void onReadyForInsert(HasHandlers listener, ReadyForInsertEvent event) {
+
     }
   }
 
@@ -334,5 +375,31 @@ public final class DocumentsHandler {
             }
           });
     }
+  }
+
+  public static void insertTemplateContent(final IsRow row, String value) {
+
+    if (row == null) {
+      return;
+    }
+
+    List<BeeColumn> cols = Data.getColumns(VIEW_DOCUMENT_DATA,
+        Lists.newArrayList(COL_DOCUMENT_CONTENT));
+    List<String> values = Lists.newArrayList(value);
+
+    Queries.insert(VIEW_DOCUMENT_DATA, cols, values, null, new RowCallback() {
+
+      @Override
+      public void onSuccess(BeeRow result) {
+        Queries.update(VIEW_DOCUMENTS, row.getId(), COL_DOCUMENT_DATA,
+            Value.getValue(result.getId()), new IntCallback() {
+              @Override
+              public void onSuccess(Integer updResult) {
+                DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_DOCUMENTS);
+              }
+            });
+      }
+    });
+
   }
 }
