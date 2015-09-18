@@ -180,6 +180,19 @@ public class NewsAggregator implements HandlesAllDataEvents {
 
       header.add(refreshWidget);
 
+      FaLabel dismissAllhWidget = new FaLabel(FontAwesome.CLOSE);
+      dismissAllhWidget.setTitle(Localized.getConstants().clearNews());
+      dismissAllhWidget.addStyleName(STYLE_PREFIX + "dismissAll");
+
+      dismissAllhWidget.addClickHandler(new ClickHandler() {
+        @Override
+        public void onClick(ClickEvent event) {
+          dismissAllNews();
+        }
+      });
+
+      header.add(dismissAllhWidget);
+
       this.loadingWidget = new FaLabel(FontAwesome.SPINNER);
       loadingWidget.addStyleName(STYLE_NOT_LOADING);
 
@@ -210,6 +223,24 @@ public class NewsAggregator implements HandlesAllDataEvents {
       if (!content.isEmpty()) {
         content.clear();
         addStyleName(STYLE_NOTHING_HAPPENS);
+      }
+    }
+
+    private void dismissAllNews() {
+
+      List<HeadlinePanel> hpList = new ArrayList<>();
+
+      for (Widget widget : content) {
+        if (widget instanceof SubscriptionPanel) {
+          for (Widget wid : ((SubscriptionPanel) widget).content) {
+            if (wid instanceof HeadlinePanel) {
+              hpList.add((HeadlinePanel) wid);
+            }
+          }
+        }
+      }
+      for (HeadlinePanel hp : hpList) {
+        dismissHeadline(hp);
       }
     }
 
@@ -313,9 +344,7 @@ public class NewsAggregator implements HandlesAllDataEvents {
     private final FaLabel disclosure;
     private final Badge newSize;
     private final Badge updSize;
-
     private final Flow content;
-
     private boolean open;
 
     private SubscriptionPanel(Subscription subscription, boolean open) {
@@ -326,7 +355,6 @@ public class NewsAggregator implements HandlesAllDataEvents {
 
       this.feed = subscription.getFeed();
       this.open = open;
-
       Flow header = new Flow(STYLE_SUBSCRIPTION_PREFIX + "header");
 
       this.disclosure = new FaLabel(open ? FontAwesome.CARET_DOWN : FontAwesome.CARET_RIGHT);
