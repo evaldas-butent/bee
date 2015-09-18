@@ -1,7 +1,6 @@
 package com.butent.bee.client.modules.orders;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -19,6 +18,7 @@ import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.grid.ChildGrid;
+import com.butent.bee.client.modules.mail.MailKeeper;
 import com.butent.bee.client.modules.mail.NewMailMessage;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
@@ -33,28 +33,31 @@ import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.BiConsumer;
+import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.NumberValue;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.modules.mail.AccountInfo;
 import com.butent.bee.shared.modules.orders.OrdersConstants.OrdersStatus;
 import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 public class OrderForm extends AbstractFormInterceptor {
-
-  ChildGrid orderItems;
 
   private final LocalizableConstants loc = Localized.getConstants();
 
@@ -67,13 +70,61 @@ public class OrderForm extends AbstractFormInterceptor {
   public void afterCreateWidget(String name, IdentifiableWidget widget,
       WidgetDescriptionCallback callback) {
     if (BeeUtils.same(name, TBL_ORDER_ITEMS)) {
-      orderItems = (ChildGrid) widget;
-      orderItems.setGridInterceptor(new OrderItemsGrid());
+      ((ChildGrid) widget).setGridInterceptor(new OrderItemsGrid());
     }
   }
 
   @Override
   public void afterRefresh(final FormView form, final IsRow row) {
+    Button prepare = new Button(loc.ordPrepare(), new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        updateStatus(form, OrdersStatus.PREPARED);
+        RowUpdateEvent.fire(BeeKeeper.getBus(), VIEW_ORDERS, (BeeRow) row);
+        form.setEnabled(true);
+      }
+    });
+
+    Button cancel = new Button(loc.ordCancel(), new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        Global.confirm(loc.ordAskCancel(), new ConfirmationCallback() {
+          @Override
+          public void onConfirm() {
+            updateStatus(form, OrdersStatus.CANCELED);
+            save(form);
+          }
+        });
+      }
+    });
+
+    Button approve = new Button(loc.ordApprove(), new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        Global.confirm(loc.ordAskApprove(), new ConfirmationCallback() {
+          @Override
+          public void onConfirm() {
+            updateStatus(form, OrdersStatus.APPROVED);
+            save(form);
+          }
+        });
+      }
+    });
+
+    Button send = new Button(loc.send(), new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        sendMail(form);
+      }
+    });
+
+    Button finish = new Button(loc.crmActionFinish(), new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        checkIsFinish(form);
+      }
+    });
+
     HeaderView header = form.getViewPresenter().getHeader();
     header.clearCommandPanel();
 
@@ -123,59 +174,22 @@ public class OrderForm extends AbstractFormInterceptor {
       status = row.getInteger(idxStatus);
 
       if (status == OrdersStatus.CANCELED.ordinal()) {
-        header.addCommandItem(new Button(loc.ordPrepare(), new ClickHandler() {
-          @Override
-          public void onClick(ClickEvent event1) {
-            updateStatus(form, OrdersStatus.PREPARED);
-          }
-        }));
+        header.addCommandItem(prepare);
+        form.setEnabled(false);
       } else if (status == OrdersStatus.PREPARED.ordinal()) {
-        header.addCommandItem(new Button(loc.ordCancel(), new ClickHandler() {
-          @Override
-          public void onClick(ClickEvent event2) {
-            Global.confirm(loc.ordAskCancel(), new ConfirmationCallback() {
-              @Override
-              public void onConfirm() {
-                updateStatus(form, OrdersStatus.CANCELED);
-                save(form);
-              }
-            });
-          }
-        }));
-
-        header.addCommandItem(new Button(loc.ordApprove(), new ClickHandler() {
-          @Override
-          public void onClick(ClickEvent event3) {
-            Global.confirm(loc.ordAskApprove(), new ConfirmationCallback() {
-              @Override
-              public void onConfirm() {
-                updateStatus(form, OrdersStatus.APPROVED);
-                save(form);
-              }
-            });
-          }
-        }));
-
-        header.addCommandItem(new Button(loc.send(), new ClickHandler() {
-          @Override
-          public void onClick(ClickEvent event4) {
-            sendMail(form);
-            updateStatus(form, OrdersStatus.SENT);
-          }
-        }));
+        header.addCommandItem(cancel);
+        header.addCommandItem(send);
+        header.addCommandItem(approve);
+      } else if (status == OrdersStatus.SENT.ordinal()) {
+        header.addCommandItem(cancel);
+        header.addCommandItem(approve);
       }
-
-    } else if (isOrder && !DataUtils.isNewRow(row)) {
-      header.addCommandItem(new Button(loc.crmActionFinish(), new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent event5) {
-          checkIsFinish(form);
-        }
-      }));
+    } else if (status == OrdersStatus.APPROVED.ordinal() && !DataUtils.isNewRow(row)) {
+      header.addCommandItem(finish);
     }
 
     if (form.getIntegerValue(COL_ORDERS_STATUS).intValue() == OrdersStatus.FINISH.ordinal()) {
-      orderItems.setEnabled(false);
+      form.setEnabled(false);
     }
   }
 
@@ -188,6 +202,7 @@ public class OrderForm extends AbstractFormInterceptor {
       if (parentGrid != null) {
         form.getActiveRow().setValue(Data.getColumnIndex(VIEW_ORDERS, COL_SOURCE),
             parentGrid.getGridName());
+        DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_ORDERS);
       }
     }
     return super.beforeAction(action, presenter);
@@ -265,18 +280,37 @@ public class OrderForm extends AbstractFormInterceptor {
     command.execute();
   }
 
-  private static void sendMail(FormView form) {
-    Set<String> to = null;
-
+  private static void sendMail(final FormView form) {
     String addr = form.getStringValue(ALS_CONTACT_EMAIL);
 
     if (addr == null) {
       addr = form.getStringValue(ALS_COMPANY_EMAIL);
     }
+    final Set<String> to = new HashSet<>();
+
     if (addr != null) {
-      to = Sets.newHashSet(addr);
+      to.add(addr);
     }
-    NewMailMessage.create(to, null, null, null, null, null, null, false);
+    MailKeeper.getAccounts(new BiConsumer<List<AccountInfo>, AccountInfo>() {
+      @Override
+      public void accept(List<AccountInfo> availableAccounts, AccountInfo defaultAccount) {
+        if (!BeeUtils.isEmpty(availableAccounts)) {
+          NewMailMessage newMail = NewMailMessage.create(availableAccounts, defaultAccount, to,
+              null, null, null, null, null, null, false);
+
+          newMail.setCallback(new Consumer<Boolean>() {
+            @Override
+            public void accept(Boolean saveMode) {
+              if (!saveMode) {
+                updateStatus(form, OrdersStatus.SENT);
+              }
+            }
+          });
+        } else {
+          BeeKeeper.getScreen().notifyWarning(Localized.getConstants().mailNoAccountsFound());
+        }
+      }
+    });
   }
 
   private static void checkIsFinish(final FormView form) {
