@@ -32,6 +32,7 @@ public final class DocumentConstants {
   public static final String VIEW_DOCUMENT_DATA = "DocumentData";
   public static final String VIEW_CRITERIA_GROUPS = "CriteriaGroups";
   public static final String VIEW_CRITERIA = "Criteria";
+  public static final String VIEW_DOCUMENT_TYPES = "DocumentTypes";
 
   public static final String COL_CATEGORY_NAME = "Name";
 
@@ -76,6 +77,7 @@ public final class DocumentConstants {
   public static final String COL_FILE_DATE = "FileDate";
   public static final String COL_FILE_VERSION = "FileVersion";
   public static final String COL_FILE_CAPTION = "Caption";
+  public static final String COL_DOCUMENT_TYPE_NAME = "Name";
 
   public static final String ALS_CATEGORY_NAME = "CategoryName";
   public static final String ALS_TYPE_NAME = "TypeName";

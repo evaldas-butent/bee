@@ -64,6 +64,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Holder;
+import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
@@ -73,6 +74,7 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RelationUtils;
 import com.butent.bee.shared.data.RowChildren;
 import com.butent.bee.shared.data.event.DataChangeEvent;
+import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.Value;
@@ -88,6 +90,7 @@ import com.butent.bee.shared.modules.tasks.TaskConstants.TaskEvent;
 import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
 import com.butent.bee.shared.modules.tasks.TaskUtils;
 import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -123,6 +126,10 @@ class TaskEditor extends AbstractFormInterceptor {
 
   private static final List<String> relations = Lists.newArrayList(PROP_COMPANIES, PROP_PERSONS,
       PROP_DOCUMENTS, PROP_APPOINTMENTS, PROP_DISCUSSIONS, PROP_SERVICE_OBJECTS, PROP_TASKS);
+
+  private Pair<Long, String> defaultDBATemplate;
+  private Pair<Long, String> defaultDBAType;
+  private Pair<Long, String> defaultDBACategory;
 
   private static void addDurationCell(HtmlTable display, int row, int col, String value,
       String style) {
@@ -543,7 +550,7 @@ class TaskEditor extends AbstractFormInterceptor {
 
         @Override
         public void accept(FileInfo fileInfo) {
-          createDocumentFromFile(fileInfo, taskRow);
+          createDocument(fileInfo, taskRow);
         }
       });
       fileContainer.setWidget(fileGroup);
@@ -662,7 +669,7 @@ class TaskEditor extends AbstractFormInterceptor {
   }
 
   @Override
-  public void afterRefresh(FormView form, IsRow row) {
+  public void afterRefresh(FormView form, final IsRow row) {
     HeaderView header = form.getViewPresenter().getHeader();
     header.clearCommandPanel();
 
@@ -671,6 +678,20 @@ class TaskEditor extends AbstractFormInterceptor {
     }
 
     Integer status = row.getInteger(form.getDataIndex(COL_STATUS));
+
+    FaLabel createDocument = new FaLabel(FontAwesome.FILE_O);
+    createDocument.setTitle(BeeUtils.join(BeeConst.STRING_SLASH,
+        Localized.getConstants().documentNew(), "DBA"));
+    createDocument.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        createDocument(null, row, true);
+      }
+    });
+
+    if (BeeKeeper.getUser().canCreateData(DocumentConstants.VIEW_DOCUMENTS)) {
+      header.addCommandItem(createDocument);
+    }
 
     for (final TaskEvent event : TaskEvent.values()) {
       String label = event.getCommandLabel();
@@ -696,6 +717,7 @@ class TaskEditor extends AbstractFormInterceptor {
 
     setProjectStagesFilter(form, row);
     setProjectUsersFilter(form, row);
+    parseTaskParameterProperties(row);
   }
 
   @Override
@@ -840,7 +862,7 @@ class TaskEditor extends AbstractFormInterceptor {
 
               @Override
               public void accept(FileInfo fileInfo) {
-                createDocumentFromFile(fileInfo, row);
+                createDocument(fileInfo, row);
               }
             });
           }
@@ -941,7 +963,12 @@ class TaskEditor extends AbstractFormInterceptor {
     }
   }
 
-  public static void createDocumentFromFile(final FileInfo fileInfo, final IsRow row) {
+  public void createDocument(final FileInfo fileInfo, final IsRow row) {
+    createDocument(fileInfo, row, false);
+  }
+
+  public void createDocument(final FileInfo fileInfo, final IsRow row,
+      final boolean enableTemplates) {
 
     final DataInfo dataInfo = Data.getDataInfo(DocumentConstants.VIEW_DOCUMENTS);
     final BeeRow docRow = RowFactory.createEmptyRow(dataInfo, true);
@@ -961,42 +988,62 @@ class TaskEditor extends AbstractFormInterceptor {
           docRow.setValue(dataInfo
               .getColumnIndex(DocumentConstants.COL_DOCUMENT_COMPANY), row
               .getLong(idxCompany));
+          docRow.setValue(dataInfo
+              .getColumnIndex(DocumentConstants.COL_DOCUMENT_DATE), new DateTime(new JustDate()));
         }
 
         FileCollector.pushFiles(Lists.newArrayList(fileInfo));
+
+        if (enableTemplates && defaultDBACategory != null) {
+          docRow.setValue(dataInfo.getColumnIndex(DocumentConstants.COL_DOCUMENT_CATEGORY),
+              defaultDBACategory.getA());
+          docRow.setValue(dataInfo.getColumnIndex(DocumentConstants.ALS_CATEGORY_NAME),
+              defaultDBACategory.getB());
+        }
+
+        if (enableTemplates && defaultDBAType != null) {
+          docRow.setValue(dataInfo.getColumnIndex(DocumentConstants.COL_DOCUMENT_TYPE),
+              defaultDBAType.getA());
+          docRow.setValue(dataInfo.getColumnIndex(DocumentConstants.ALS_TYPE_NAME),
+              defaultDBAType.getB());
+        }
+
+        if (enableTemplates && defaultDBATemplate != null) {
+          docRow.setProperty(PRM_DEFAULT_DBA_TEMPLATE,
+              BeeUtils.toString(defaultDBATemplate.getA()));
+        }
 
         RowFactory.createRow(dataInfo, docRow, new RowCallback() {
 
           @Override
           public void onSuccess(final BeeRow br) {
-            Filter filter = Filter.equals(COL_TASK, row.getId());
+            RowInsertEvent.fire(BeeKeeper.getBus(), DocumentConstants.VIEW_DOCUMENTS, br, null);
+            MultiSelector sel = getMultiSelector(getFormView(), PROP_DOCUMENTS);
 
-            Queries.getRowSet(VIEW_RELATIONS, null, filter, new Queries.RowSetCallback() {
+            if (sel != null) {
+              List<MultiSelector.Choice> val = sel.getChoices();
+              val.add(new MultiSelector.Choice(br.getId()));
+              sel.setChoices(val);
 
-              @Override
-              public void onSuccess(BeeRowSet relRowSet) {
-                List<String> valList;
-                List<BeeColumn> colList = Data.getColumns(VIEW_RELATIONS);
-                int index = Data.getColumnIndex(VIEW_RELATIONS, DocumentConstants.COL_DOCUMENT);
+            }
 
-                for (BeeRow beeRow : relRowSet) {
-                  valList = beeRow.getValues();
+            BeeRow newRow = getNewRow();
+            List<Long> idList = DataUtils.parseIdList(newRow.getProperty(PROP_DOCUMENTS));
+            idList.add(br.getId());
 
-                  for (int i = 0; i < valList.size(); i++) {
-                    if (valList.get(i) == String.valueOf(row.getId())) {
-                      valList.set(i, null);
-                      valList.set(index, String.valueOf(br.getId()));
-                    }
-                  }
-                  Queries.insert(VIEW_RELATIONS, colList, valList);
-                }
+            newRow.setProperty(PROP_DOCUMENTS, DataUtils.buildIdList(idList));
 
-                Queries.insert(VIEW_RELATIONS, Data.getColumns(VIEW_RELATIONS,
-                    Lists.newArrayList(COL_TASK, DocumentConstants.COL_DOCUMENT)),
-                    Lists.newArrayList(String.valueOf(row.getId()), String
-                        .valueOf(br.getId())));
-              }
-            });
+            ParameterList prm = createParams(TaskEvent.EDIT, newRow,
+                TaskUtils.getInsertNote(Localized.getConstants().document(),
+                    BeeUtils.joinWords(
+                        br.getString(Data.getColumnIndex(DocumentConstants.VIEW_DOCUMENTS,
+                            DocumentConstants.COL_DOCUMENT_NAME)),
+                        br.getString(Data.getColumnIndex(DocumentConstants.VIEW_DOCUMENTS,
+                            DocumentConstants.COL_REGISTRATION_NUMBER)),
+                        br.getDateTime(Data.getColumnIndex(DocumentConstants.VIEW_DOCUMENTS,
+                            DocumentConstants.COL_DOCUMENT_DATE))
+                        )));
+            sendRequest(prm, TaskEvent.EDIT);
           }
         });
       }
@@ -1816,6 +1863,41 @@ class TaskEditor extends AbstractFormInterceptor {
 
   private boolean isOwner() {
     return Objects.equals(userId, getOwner());
+  }
+
+  private void parseTaskParameterProperties(IsRow row) {
+    defaultDBACategory = null;
+    defaultDBATemplate = null;
+    defaultDBAType = null;
+
+    if (row == null) {
+      return;
+    }
+
+    if (!BeeUtils.isEmpty(row.getProperty(PRM_DEFAULT_DBA_DOCUMENT_CATEGORY))) {
+      Pair<String, String> p = Pair.restore(row.getProperty(PRM_DEFAULT_DBA_DOCUMENT_CATEGORY));
+
+      if (DataUtils.isId(p.getA())) {
+        defaultDBACategory = Pair.of(BeeUtils.toLong(p.getA()), p.getB());
+      }
+    }
+
+    if (!BeeUtils.isEmpty(row.getProperty(PRM_DEFAULT_DBA_TEMPLATE))) {
+      Pair<String, String> p = Pair.restore(row.getProperty(PRM_DEFAULT_DBA_TEMPLATE));
+
+      if (DataUtils.isId(p.getA())) {
+        defaultDBATemplate = Pair.of(BeeUtils.toLong(p.getA()), p.getB());
+      }
+    }
+
+    if (!BeeUtils.isEmpty(row.getProperty(PRM_DEFAULT_DBA_DOCUMENT_TYPE))) {
+      Pair<String, String> p = Pair.restore(row.getProperty(PRM_DEFAULT_DBA_DOCUMENT_TYPE));
+
+      if (DataUtils.isId(p.getA())) {
+        defaultDBAType = Pair.of(BeeUtils.toLong(p.getA()), p.getB());
+      }
+    }
+
   }
 
   private void onResponse(BeeRow data) {

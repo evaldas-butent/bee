@@ -466,6 +466,9 @@ public final class TaskConstants {
   public static final String FILTER_TASKS_UPDATED = "tasks_updated";
 
   public static final String PRM_END_OF_WORK_DAY = "EndOfWorkDay";
+  public static final String PRM_DEFAULT_DBA_TEMPLATE = "DefaultDBATemplate";
+  public static final String PRM_DEFAULT_DBA_DOCUMENT_TYPE = "DefaultDBADocumentType";
+  public static final String PRM_DEFAULT_DBA_DOCUMENT_CATEGORY = "DefaultDBACategory";
 
   private TaskConstants() {
   }
