@@ -1411,12 +1411,11 @@ public class MailModuleBean implements BeeModule, HasTimerService {
     }
     if (move) {
       try {
-        account.processMessages(uids, source, target, move);
+        account.processMessages(uids, source, null, true);
       } catch (FolderOutOfSyncException e) {
         checkMail(true, account, source, null);
         return 0;
       }
-      account.processMessages(uids, source, null, true);
       mail.detachMessages(wh);
 
       MailMessage mailMessage = new MailMessage(source.getId());
