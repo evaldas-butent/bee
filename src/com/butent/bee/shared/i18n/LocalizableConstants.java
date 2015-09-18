@@ -322,6 +322,10 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String feedPersons();
 
+  String feedRequestsAll();
+
+  String feedRequestsAssigned();
+
   String feeds();
 
   String feedSubscriptionDate();
