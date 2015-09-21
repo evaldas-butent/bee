@@ -18,6 +18,7 @@
     <Boolean name="OpenInNewTab" label="=openInNewTab" />
 
     <Boolean name="WorkspaceContinue" label="=workspaceContinue" />
+    <Boolean name="CommentsLayout" />
     <Text name="LastWorkspace" />
     
     <Integer name="ClickSensitivityMillis" label="=clickSensitivityMillis" />

@@ -406,7 +406,7 @@ public class Appointment extends CalendarItem {
       return true;
 
     } else {
-      return getVisibility() != CalendarVisibility.PRIVATE;
+      return getVisibility() != CalendarVisibility.PUBLIC;
     }
   }
 
