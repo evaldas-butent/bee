@@ -5,9 +5,15 @@
   name="WorkSchedule" caption="=workSchedule">
 
   <FlowPanel class="flexBox-vertical">
-    <FlowPanel name="Objects" style="max-height: 20%; overflow: auto;" />
-    <UnboundSelector viewName="Locations" renderColumns="LocationName CompanyName"
-      style="width: 400px;" />
+    <FlowPanel name="Objects" 
+      style="max-height: 20%; overflow: auto; margin-top: 1ex; margin-left: 1em;" />
+
+    <HorizontalPanel style="margin: 2ex 1em;">
+      <Label text="=object" style="padding-right: 1em;" />
+      <UnboundSelector viewName="Locations" renderColumns="LocationName CompanyName"
+        style="width: 400px;" />
+    </HorizontalPanel>
+    
     <FlowPanel name="Schedule" class="flexible" style="overflow: auto;" />
   </FlowPanel>
 </f:Form>

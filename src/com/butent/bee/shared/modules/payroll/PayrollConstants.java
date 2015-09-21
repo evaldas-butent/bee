@@ -44,6 +44,8 @@ public final class PayrollConstants {
   public static final String COL_TAB_NUMBER = "TabNumber";
 
   public static final String COL_LOCATION_NAME = "LocationName";
+  public static final String COL_LOCATION_MANAGER = "Manager";
+  public static final String COL_LOCATION_STATUS = "Status";
 
   public static final String COL_TIME_CARD_FROM = "DateFrom";
   public static final String COL_TIME_CARD_UNTIL = "DateUntil";
