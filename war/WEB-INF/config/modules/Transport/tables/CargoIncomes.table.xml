@@ -23,6 +23,6 @@
     <Relation name="Purchase" relation="Purchases" cascade="SET_NULL" label="=trdPurchaseId" />
     <Boolean name="ShowAdditionalRoute" label="=trShowRoute" />
     <Text name="AdditionalRoute" label="=route" />
-    <Boolean name="InsuranceCertificate" label="=trInsuranceCertificate" />
+    <Numeric name="InsuranceCertificate" precision="1" label="=trInsuranceCertificate" />
   </Fields>
 </Table>
