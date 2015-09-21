@@ -2,7 +2,7 @@ package com.butent.bee.client.modules.calendar;
 
 import static com.butent.bee.shared.modules.calendar.CalendarConstants.*;
 import static com.butent.bee.shared.modules.calendar.CalendarHelper.*;
-import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.ALS_COMPANY_NAME;
 
 import com.butent.bee.client.data.Data;
 import com.butent.bee.shared.data.BeeColumn;
@@ -11,8 +11,7 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
-import com.butent.bee.shared.modules.calendar.CalendarConstants.CalendarVisibility;
-import com.butent.bee.shared.modules.calendar.CalendarConstants.ItemType;
+import com.butent.bee.shared.modules.calendar.CalendarConstants.*;
 import com.butent.bee.shared.modules.calendar.CalendarItem;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
@@ -406,7 +405,7 @@ public class Appointment extends CalendarItem {
       return true;
 
     } else {
-      return getVisibility() != CalendarVisibility.PUBLIC;
+      return getVisibility() != CalendarVisibility.PRIVATE;
     }
   }
 
