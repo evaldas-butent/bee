@@ -30,9 +30,12 @@ public final class PayrollConstants {
   public static final String TBL_EMPLOYEES = "Employees";
   public static final String TBL_LOCATIONS = "Locations";
 
+  public static final String TBL_WORK_SCHEDULE = "WorkSchedule";
+
   public static final String VIEW_EMPLOYEES = "Employees";
   public static final String VIEW_LOCATIONS = "Locations";
 
+  public static final String VIEW_WORK_SCHEDULE = "WorkSchedule";
   public static final String VIEW_TIME_CARD_CHANGES = "TimeCardChanges";
 
   public static final String VIEW_TIME_CARD_CODES = "TimeCardCodes";
@@ -54,6 +57,8 @@ public final class PayrollConstants {
 
   public static final String GRID_TIME_CARD_CODES = "TimeCardCodes";
   public static final String GRID_TIME_RANGES = "TimeRanges";
+
+  public static final String FORM_WORK_SCHEDULE = "WorkSchedule";
 
   public static void register() {
     EnumUtils.register(ObjectStatus.class);
