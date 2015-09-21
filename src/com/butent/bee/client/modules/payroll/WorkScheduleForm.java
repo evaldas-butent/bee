@@ -147,16 +147,42 @@ class WorkScheduleForm extends AbstractFormInterceptor implements SelectorEvent.
     }
   }
 
+  private void renderSchedule(long objectId) {
+    if (schedulePanel == null) {
+      logger.severe(NameUtils.getName(this), "schedule panel not found");
+
+    } else {
+      if (!schedulePanel.isEmpty()) {
+        schedulePanel.clear();
+      }
+
+      WorkScheduleWidget widget = new WorkScheduleWidget(objectId);
+      schedulePanel.add(widget);
+
+      widget.refresh();
+    }
+  }
+
+  private static boolean isSelected(Widget widget) {
+    return widget != null && widget.getElement().hasClassName(STYLE_OBJECT_ACTIVE);
+  }
+
   private void selectObject(long id) {
+    Widget objectWidget = findObjectWidget(id);
+    if (isSelected(objectWidget)) {
+      return;
+    }
+
     for (Widget widget : objectPanel) {
-      if (widget.getElement().hasClassName(STYLE_OBJECT_ACTIVE)) {
+      if (isSelected(widget)) {
         widget.removeStyleName(STYLE_OBJECT_ACTIVE);
       }
     }
 
-    Widget objectWidget = findObjectWidget(id);
     if (objectWidget != null) {
       objectWidget.addStyleName(STYLE_OBJECT_ACTIVE);
     }
+
+    renderSchedule(id);
   }
 }
