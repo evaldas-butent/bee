@@ -19,10 +19,10 @@
       <DataSelector source="CompanyPerson" style="&w2;"
           renderColumns="FirstName LastName" choiceColumns="FirstName LastName CompanyName" />
 
-        <Label text="=driverGroupsShort" class="bee-required" style="&lbl;" />
+        <Label text="=driverGroupsShort" style="&lbl;" />
         <ChildSelector viewName="TransportGroups" childTable="DriverGroups"
           targetRelColumn="Driver" sourceRelColumn="Group" newRowEnabled="false"
-          required="true" label="=driverGroupsShort" renderColumns="Name" />
+          label="=driverGroupsShort" renderColumns="Name" />
       </row>
 	  <row>
         <Label text="=company" class="bee-co-companyInfo-label" style="&lbl;" />

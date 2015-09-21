@@ -99,24 +99,21 @@ public class FileServlet extends LoginServlet {
           ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(tmp));
 
           for (Entry<String, String> entry : files.entrySet()) {
-            FileInfo fileInfo = fs.getFile(BeeUtils.toLong(entry.getKey()));
+            try (
+                FileInfo fileInfo = fs.getFile(BeeUtils.toLong(entry.getKey()));
+                FileInputStream in = new FileInputStream(fileInfo.getFile());
+            ) {
+              ZipEntry ze = new ZipEntry(BeeUtils.notEmpty(entry.getValue(), fileInfo.getName()));
+              zos.putNextEntry(ze);
 
-            ZipEntry ze = new ZipEntry(BeeUtils.notEmpty(entry.getValue(), fileInfo.getName()));
-            zos.putNextEntry(ze);
-            String filePath = fileInfo.getPath();
-            FileInputStream in = new FileInputStream(filePath);
+              byte[] buffer = new byte[DEFAULT_BUFFER_SIZE];
+              int len = in.read(buffer);
 
-            byte[] buffer = new byte[DEFAULT_BUFFER_SIZE];
-            int len;
-
-            while ((len = in.read(buffer)) > 0) {
-              zos.write(buffer, 0, len);
-            }
-            in.close();
-            zos.closeEntry();
-
-            if (fileInfo.isTemporary()) {
-              logger.debug("File deleted:", filePath, new File(filePath).delete());
+              while (len > 0) {
+                zos.write(buffer, 0, len);
+                len = in.read(buffer);
+              }
+              zos.closeEntry();
             }
           }
           zos.close();
@@ -164,29 +161,22 @@ public class FileServlet extends LoginServlet {
     resp.setHeader("Content-Length", String.valueOf(file.length()));
     resp.setHeader("Content-Disposition", "inline; filename=\"" + fileName + "\"");
 
-    BufferedInputStream input = null;
-
-    try {
-      input = new BufferedInputStream(new FileInputStream(file), DEFAULT_BUFFER_SIZE);
+    try (BufferedInputStream input = new BufferedInputStream(new FileInputStream(file),
+        DEFAULT_BUFFER_SIZE)) {
       OutputStream output = resp.getOutputStream();
 
       byte[] buffer = new byte[DEFAULT_BUFFER_SIZE];
-      int length;
-      while ((length = input.read(buffer)) > 0) {
+      int length = input.read(buffer);
+
+      while (length > 0) {
         output.write(buffer, 0, length);
+        length = input.read(buffer);
       }
       output.flush();
 
     } catch (IOException e) {
       logger.error(e);
     } finally {
-      if (input != null) {
-        try {
-          input.close();
-        } catch (IOException e) {
-          e.printStackTrace();
-        }
-      }
       if (isTemporary) {
         logger.debug("File deleted:", file.getAbsolutePath(), file.delete());
       }

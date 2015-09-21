@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="TimeCardChanges" source="TimeCardChanges"
+  caption="=timeCardChanges" newRowCaption="=newTimeCardChange"
+  >
+  <Columns>
+    <SimpleColumn name="Employee" />
+
+    <SimpleColumn name="TimeCardCode" />
+    <SimpleJoin name="TimeCardCode" joinType="LEFT">
+      <SimpleColumn name="TcCode" />
+      <SimpleColumn name="TcName" />
+    
+      <SimpleColumn name="Background" />
+      <SimpleColumn name="Foreground" />
+    </SimpleJoin>
+
+    <SimpleColumn name="DateFrom" />
+    <SimpleColumn name="DateUntil" />
+
+    <SimpleColumn name="Notes" />
+  </Columns>
+  <Order>
+    <OrderBy column="DateFrom" />
+  </Order>
+</View>
+ 

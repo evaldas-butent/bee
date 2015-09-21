@@ -9,7 +9,7 @@ import com.google.common.collect.Sets;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.Style.WhiteSpace;
+import com.google.gwt.dom.client.Style;
 import com.google.gwt.dom.client.TableRowElement;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -35,11 +35,9 @@ import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dialog.Popup.OutsideClick;
 import com.butent.bee.client.dom.DomUtils;
-import com.butent.bee.client.event.DndHelper;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.HtmlTable;
-import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
@@ -51,11 +49,9 @@ import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
-import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.DateTimeLabel;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.InlineLabel;
-import com.butent.bee.client.widget.Link;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Pair;
@@ -80,7 +76,6 @@ import com.butent.bee.shared.ui.Orientation;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
-import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -244,13 +239,8 @@ public class MailMessage extends AbstractFormInterceptor {
         }
       });
       for (FileInfo file : attachments) {
-        Simple simple = new Simple();
-        DndHelper.makeSource(simple, NameUtils.getClassName(FileInfo.class), file, null);
-        simple.setWidget(new Link(BeeUtils.joinWords(file.getName(),
-            BeeUtils.parenthesize(FileUtils.sizeToText(file.getSize()))),
-            FileUtils.getUrl(file.getName(), file.getId())));
-
-        bar.addItem(simple);
+        bar.addItem(FileUtils.getLink(file, BeeUtils.notEmpty(file.getCaption(), file.getName()),
+            BeeUtils.parenthesize(FileUtils.sizeToText(file.getSize()))));
       }
       popup.setWidget(bar);
       popup.setHideOnEscape(true);
@@ -546,7 +536,6 @@ public class MailMessage extends AbstractFormInterceptor {
         if (!Objects.equals(getRpcId(), rpcId)) {
           return;
         }
-        getRpcId();
         response.notify(getFormView());
 
         if (response.hasErrors()) {
@@ -600,10 +589,13 @@ public class MailMessage extends AbstractFormInterceptor {
         for (SimpleRow attachment : packet.get(TBL_ATTACHMENTS)) {
           Long fileSize = attachment.getLong(AdministrationConstants.COL_FILE_SIZE);
 
-          attachments.add(new FileInfo(attachment.getLong(AdministrationConstants.COL_FILE),
-              BeeUtils.notEmpty(attachment.getValue(COL_ATTACHMENT_NAME),
-                  attachment.getValue(AdministrationConstants.COL_FILE_NAME)), fileSize,
-              attachment.getValue(AdministrationConstants.COL_FILE_TYPE)));
+          FileInfo fileInfo = new FileInfo(attachment.getLong(AdministrationConstants.COL_FILE),
+              attachment.getValue(AdministrationConstants.COL_FILE_NAME), fileSize,
+              attachment.getValue(AdministrationConstants.COL_FILE_TYPE));
+
+          fileInfo.setCaption(attachment.getValue(COL_ATTACHMENT_NAME));
+
+          attachments.add(fileInfo);
           cnt++;
           size += BeeUtils.unbox(fileSize);
         }
@@ -618,15 +610,10 @@ public class MailMessage extends AbstractFormInterceptor {
                   BeeUtils.parenthesize(FileUtils.sizeToText(size))));
               ((InlineLabel) label).addClickHandler(attachmentsHandler);
             } else {
-              label = new Simple();
               FileInfo file = BeeUtils.peek(attachments);
 
-              DndHelper.makeSource((Simple) label, NameUtils.getClassName(FileInfo.class), file,
-                  null);
-
-              ((Simple) label).setWidget(new Link(BeeUtils.joinWords(file.getName(),
-                  BeeUtils.parenthesize(FileUtils.sizeToText(file.getSize()))),
-                  FileUtils.getUrl(file.getName(), file.getId())));
+              label = FileUtils.getLink(file, BeeUtils.notEmpty(file.getCaption(), file.getName()),
+                  BeeUtils.parenthesize(FileUtils.sizeToText(file.getSize())));
             }
             ((HasWidgets) widget).add(label);
           }
@@ -638,11 +625,11 @@ public class MailMessage extends AbstractFormInterceptor {
         for (SimpleRow part : packet.get(TBL_PARTS)) {
           txt = part.getValue(COL_HTML_CONTENT);
 
-          if (txt == null && part.getValue(COL_CONTENT) != null) {
-            Element div = new CustomDiv().getElement();
-            div.getStyle().setWhiteSpace(WhiteSpace.PRE_WRAP);
-            div.setInnerHTML(part.getValue(COL_CONTENT));
-            txt = div.getString();
+          if (BeeUtils.isEmpty(txt) && !BeeUtils.isEmpty(part.getValue(COL_CONTENT))) {
+            Element pre = Document.get().createPreElement();
+            pre.getStyle().setWhiteSpace(Style.WhiteSpace.PRE_WRAP);
+            pre.setInnerHTML(Codec.escapeHtml(part.getValue(COL_CONTENT)));
+            txt = pre.getString();
           }
           content = BeeUtils.join(sep.getString(), content, txt);
         }
@@ -765,7 +752,7 @@ public class MailMessage extends AbstractFormInterceptor {
                 "border-left:1px solid #039; margin:0; padding:10px; color:#039;");
             bq.setInnerHTML(getContent());
             content = BeeUtils.join("<br>", "<br>", getDate() + ", "
-                    + Codec.escapeHtml(getSender() + " " + loc.mailTextWrote().toLowerCase() + ":"),
+                + Codec.escapeHtml(getSender() + " " + loc.mailTextWrote().toLowerCase() + ":"),
                 bq.getString());
 
             if (!BeeUtils.isPrefix(subject, loc.mailReplayPrefix())) {
@@ -783,7 +770,7 @@ public class MailMessage extends AbstractFormInterceptor {
               content = getContent();
             } else {
               content = BeeUtils.join("<br>", "<br>", "---------- "
-                      + loc.mailForwardedMessage() + " ----------",
+                  + loc.mailForwardedMessage() + " ----------",
                   loc.mailFrom() + ": " + Codec.escapeHtml(getSender()),
                   loc.date() + ": " + getDate(),
                   loc.mailSubject() + ": " + Codec.escapeHtml(getSubject()),
@@ -840,6 +827,9 @@ public class MailMessage extends AbstractFormInterceptor {
 
     if (widget != null) {
       widget.getElement().setInnerText(text);
+
+      DomUtils.scrollToLeft(widget);
+      DomUtils.scrollToTop(widget);
     }
   }
 }

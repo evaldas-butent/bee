@@ -503,20 +503,13 @@ public class DocumentsModuleBean implements BeeModule {
     String parsed = HtmlUtils.cleanXml(sb.append(content).toString());
 
     Map<Long, String> files = HtmlUtils.getFileReferences(parsed);
-    List<File> tmpFiles = new ArrayList<>();
+    List<FileInfo> tmpFiles = new ArrayList<>();
 
     try {
       for (Long fileId : files.keySet()) {
         FileInfo fileInfo = fs.getFile(fileId);
-
-        if (fileInfo != null) {
-          File file = new File(fileInfo.getPath());
-
-          if (fileInfo.isTemporary()) {
-            tmpFiles.add(file);
-          }
-          parsed = parsed.replace(files.get(fileId), file.toURI().toString());
-        }
+        tmpFiles.add(fileInfo);
+        parsed = parsed.replace(files.get(fileId), fileInfo.getFile().toURI().toString());
       }
       StringBuilder style = new StringBuilder();
 
@@ -549,8 +542,8 @@ public class DocumentsModuleBean implements BeeModule {
       return ResponseObject.error(e);
 
     } finally {
-      for (File file : tmpFiles) {
-        logger.debug("File deleted:", file.getPath(), file.delete());
+      for (FileInfo fileInfo : tmpFiles) {
+        fileInfo.close();
       }
     }
   }

@@ -234,7 +234,7 @@ public class NewsAggregator implements HandlesAllDataEvents {
         if (widget instanceof SubscriptionPanel) {
           for (Widget wid : ((SubscriptionPanel) widget).content) {
             if (wid instanceof HeadlinePanel) {
-              hpList.add(((HeadlinePanel) wid));
+              hpList.add((HeadlinePanel) wid);
             }
           }
         }

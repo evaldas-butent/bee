@@ -178,7 +178,7 @@ public final class TransportHandler {
           type = getSelectedType().getId();
         }
         getGridPresenter().getDataProvider().setParentFilter(FILTER_KEY, getFilter(type));
-        getGridPresenter().refresh(true);
+        getGridPresenter().refresh(true, true);
       }
     }
 

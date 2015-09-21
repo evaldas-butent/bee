@@ -147,7 +147,7 @@ public class FileStorageBean {
     return storedFile;
   }
 
-  public List<FileInfo> getFiles() {
+  public List<FileInfo> getFiles(List<Long> fileIds) {
     List<FileInfo> files = new ArrayList<>();
 
     String idName = sys.getIdName(TBL_FILES);
@@ -156,6 +156,7 @@ public class FileStorageBean {
     SimpleRowSet data = qs.getData(new SqlSelect()
         .addFields(TBL_FILES, idName, versionName, COL_FILE_NAME, COL_FILE_SIZE, COL_FILE_TYPE)
         .addFrom(TBL_FILES)
+        .setWhere(sys.idInList(TBL_FILES, fileIds))
         .addOrder(TBL_FILES, versionName));
 
     for (SimpleRow row : data) {

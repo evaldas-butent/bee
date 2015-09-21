@@ -185,7 +185,7 @@ class OrderCargoForm extends AbstractFormInterceptor implements SelectorEvent.Ha
       ((InputBoolean) widget).addValueChangeHandler(new ValueChangeHandler<String>() {
         @Override
         public void onValueChange(ValueChangeEvent<String> event) {
-          refreshMetrics(getCheckCount(getFormView()) > 0);
+          refreshMetrics();
         }
       });
     }
@@ -194,8 +194,7 @@ class OrderCargoForm extends AbstractFormInterceptor implements SelectorEvent.Ha
   @Override
   public void afterRefresh(FormView form, IsRow row) {
     refresh(row.getLong(form.getDataIndex(COL_CURRENCY)));
-    refreshMetrics(BeeUtils.unbox(row.getBoolean(form.getDataIndex("Partial")))
-        || BeeUtils.unbox(row.getBoolean(form.getDataIndex("Outsized"))));
+    refreshMetrics();
     refreshKilometers(row, null, null);
 
     Widget cmrWidget = form.getWidgetBySource(COL_CARGO_CMR);
@@ -257,27 +256,6 @@ class OrderCargoForm extends AbstractFormInterceptor implements SelectorEvent.Ha
       RelationUtils.updateRow(Data.getDataInfo(form.getViewName()), COL_CARGO_TYPE, newRow,
           Data.getDataInfo(VIEW_CARGO_TYPES), defaultCargoType, true);
     }
-  }
-
-  private static int getCheckCount(FormView form) {
-    int checkBoxObserved = 0;
-
-    InputBoolean ib1 = (InputBoolean) form.getWidgetByName("Partial");
-    InputBoolean ib2 = (InputBoolean) form.getWidgetByName("Outsized");
-
-    if (ib1 != null) {
-      if (BeeUtils.unbox(BeeUtils.toBooleanOrNull(ib1.getValue()))) {
-        checkBoxObserved += checkBoxObserved;
-      }
-    }
-
-    if (ib2 != null) {
-      if (BeeUtils.unbox(BeeUtils.toBooleanOrNull(ib2.getValue()))) {
-        checkBoxObserved += checkBoxObserved;
-      }
-    }
-
-    return checkBoxObserved;
   }
 
   private void refresh(Long currency) {
@@ -361,11 +339,23 @@ class OrderCargoForm extends AbstractFormInterceptor implements SelectorEvent.Ha
     }
   }
 
-  private void refreshMetrics(boolean on) {
+  private void refreshMetrics() {
     Widget widget = getFormView().getWidgetByName("Metrics");
 
     if (widget != null) {
-      widget.setVisible(on);
+      int checkBoxObserved = 0;
+
+      InputBoolean ib1 = (InputBoolean) getFormView().getWidgetByName("Partial");
+      InputBoolean ib2 = (InputBoolean) getFormView().getWidgetByName("Outsized");
+
+      if (ib1 != null && BeeUtils.toBoolean(ib1.getValue())) {
+        checkBoxObserved += 1;
+      }
+
+      if (ib2 != null && BeeUtils.toBoolean(ib2.getValue())) {
+        checkBoxObserved += 1;
+      }
+      widget.setVisible(checkBoxObserved > 0);
     }
   }
 }

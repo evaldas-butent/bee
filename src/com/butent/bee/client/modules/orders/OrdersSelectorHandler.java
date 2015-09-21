@@ -196,6 +196,7 @@ public class OrdersSelectorHandler implements SelectorEvent.Handler {
             applyOrderTemplate(relatedRow, form);
           }
         }
+        break;
     }
   }
 }

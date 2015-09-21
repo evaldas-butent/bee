@@ -82,6 +82,7 @@ import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.rights.RightsState;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.GridDescription;
+import com.butent.bee.shared.ui.NavigationOrigin;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
@@ -508,7 +509,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
         break;
 
       case REFRESH:
-        refresh(true);
+        refresh(true, false);
         break;
 
       case REMOVE_FILTER:
@@ -531,7 +532,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
           } else {
             getDataProvider().getRightsStates().addAll(GridMenu.ALL_STATES);
           }
-          refresh(true);
+          refresh(true, false);
         }
         break;
 
@@ -553,7 +554,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
 
     if (!BeeUtils.isEmpty(getRoles())) {
       getDataProvider().toggleRightsState(rightsState);
-      refresh(true);
+      refresh(true, false);
     }
 
     if (getGridInterceptor() != null) {
@@ -683,7 +684,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
     super.onViewUnload();
   }
 
-  public void refresh(boolean preserveActiveRow) {
+  public void refresh(boolean preserveActiveRow, boolean goTop) {
     if (getGridInterceptor() != null) {
       getGridInterceptor().beforeRefresh(this);
     }
@@ -694,6 +695,9 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
       }
 
     } else {
+      if (goTop && getGridView().getGrid().getPageStart() > 0) {
+        getGridView().getGrid().setPageStart(0, false, false, NavigationOrigin.SYSTEM);
+      }
       getDataProvider().refresh(preserveActiveRow);
     }
   }

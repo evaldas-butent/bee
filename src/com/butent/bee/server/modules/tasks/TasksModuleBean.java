@@ -1287,7 +1287,8 @@ public class TasksModuleBean implements BeeModule {
       }
     }
 
-    result.addRow(new String[] {constants.totalOf() + ":",
+    result.addRow(new String[] {
+        constants.totalOf() + ":",
         new DateTime(totalTimeMls).toUtcTimeString()});
 
     ResponseObject resp = ResponseObject.response(result);
@@ -1400,11 +1401,11 @@ public class TasksModuleBean implements BeeModule {
 
     for (SimpleRow file : data) {
       FileInfo sf = new FileInfo(file.getLong(COL_FILE),
-          BeeUtils.notEmpty(file.getValue(COL_CAPTION),
-              file.getValue(COL_FILE_NAME)),
+          file.getValue(COL_FILE_NAME),
           file.getLong(COL_FILE_SIZE),
           file.getValue(COL_FILE_TYPE));
 
+      sf.setCaption(file.getValue(COL_CAPTION));
       sf.setIcon(ExtensionIcons.getIcon(sf.getName()));
       files.add(sf);
     }

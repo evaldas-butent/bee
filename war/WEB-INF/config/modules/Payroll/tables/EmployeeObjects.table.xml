@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Table xmlns="http://www.butent.com/table"
+  
+  name="EmployeeObjects"
+  idName="EmployeeObjectID"
+  >
+  <Fields>
+    <Relation name="Employee" notNull="true" relation="Employees" cascade="DELETE"
+      label="=employee" />
+    <Relation name="Object" notNull="true" relation="Locations" cascade="DELETE"
+      label="=object" />
+
+    <Date name="DateFrom" label="=startingDate" />
+    <Date name="DateUntil" label="=endingDate" />
+
+    <Numeric name="Wage" precision="12" scale="2" label="=wage" />
+    <Relation name="Currency" relation="Currencies" label="=currency" />
+
+    <String name="Note" precision="100" label="=note" />
+  </Fields>
+</Table>

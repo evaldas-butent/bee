@@ -5,35 +5,36 @@
 <Table xmlns="http://www.butent.com/widget" xmlns:ui="http://www.butent.com/ui">
   <row>
     <Label text="=phones" style="&lbl;" for="Phone" />
-    <InputText source="Phone" />
+    <InputText source="Phone" summarize="true" />
     <Label text="=mobile" style="&lbl;" for="Mobile" />
-    <InputText source="Mobile" />
+    <InputText source="Mobile" summarize="true" />
     <Label text="=fax" style="&lbl;" for="Fax" />
-    <InputText source="Fax" />
+    <InputText source="Fax" summarize="true" />
   </row>
 
   <row>
     <Label for="EmailId" style="&lbl;" />
     <cell colSpan="2" for="EmailId" >
-      <DataSelector source="EmailId" style="width: 100%;" maxLength="50" editEnabled="true" />
+      <DataSelector source="EmailId" style="width: 100%;" maxLength="50" editEnabled="true"
+        summarize="true" />
     </cell>
 
     <Label text="=website" style="&lbl;" for="Website" />
     <cell colSpan="2" for="Website" >
-      <InputText source="Website" style="width: 100%" />
+      <InputText source="Website" style="width: 100%" summarize="true" />
     </cell>
   </row>
-  
+
   <row for="Address">
     <Label text="=address" style="&lbl;" />
     <cell colSpan="5">
-      <InputText source="Address" style="width: 100%;" />
+      <InputText source="Address" style="width: 100%;" summarize="true" />
     </cell>
   </row>
-  
+
   <row>
     <Label text="=city" style="&lbl;" for="City" />
-    <DataSelector source="City">
+    <DataSelector source="City" summarize="true">
       <selectorColumn source="Name" />
       <selectorColumn source="CountryName" />
       <selectorColumn source="CountryCode">
@@ -44,7 +45,7 @@
     <Label text="=country" style="&lbl;" for="Country" />
     <Table for="Country">
       <row>
-        <DataSelector source="Country" style="width: 120px;">
+        <DataSelector source="Country" style="width: 120px;" summarize="true">
           <renderToken source="CountryName" />
           <renderToken source="CountryCode" prefix=" (" suffix=")" />
           <selectorColumn source="Name" />
@@ -57,13 +58,13 @@
     </Table>
 
     <Label text="=postIndex" style="&lbl;" for="PostIndex" />
-    <InputText source="PostIndex" />
+    <InputText source="PostIndex" summarize="true" />
   </row>
-  
+
   <row for="SocialContacts">
     <Label text="=socialContacts" style="&lbl;" />
     <cell colSpan="5">
-      <InputText source="SocialContacts" style="width: 100%;" />
+      <InputText source="SocialContacts" style="width: 100%;" summarize="true" />
     </cell>
   </row>
 </Table>

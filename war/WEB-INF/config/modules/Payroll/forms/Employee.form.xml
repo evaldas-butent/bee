@@ -65,6 +65,21 @@
 
     <TabbedPages class="flexible">
       <page>
+        <text>=objects</text>
+        <ChildGrid name="EmployeeObjects" relColumn="Employee" />
+      </page>
+
+      <page>
+        <text>=timeCardChanges</text>
+        <ChildGrid name="TimeCardChanges" relColumn="Employee" />
+      </page>
+
+      <page>
+        <text>=workSchedule</text>
+        <FlowPanel name="WorkSchedule" />
+      </page>
+
+      <page>
         <text>=notes</text>
         <SimplePanel>
           <InputArea source="Notes" class="occupy-1" summarize="true" />

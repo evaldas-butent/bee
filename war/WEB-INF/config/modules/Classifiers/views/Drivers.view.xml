@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
-  xmlns:xpr="http://www.butent.com/expression"
 
-  name="Drivers" source="Drivers"
-  editForm="Driver" newRowForm="Driver"
-  caption="=drivers" newRowCaption="=trNewDriver"
-  >
+      name="Drivers" source="Drivers"
+      editForm="Driver" newRowForm="Driver"
+      caption="=drivers" newRowCaption="=trNewDriver"
+    >
   <Relation renderColumns="FirstName LastName" />
   <Columns>
     <SimpleColumn name="CompanyPerson" />
@@ -26,7 +25,7 @@
         </SimpleJoin>
       </SimpleJoin>
       <SimpleJoin name="Position" joinType="LEFT">
-        <SimpleColumn name="Name" alias="PositionName"/>
+        <SimpleColumn name="Name" alias="PositionName" />
       </SimpleJoin>
     </SimpleJoin>
 

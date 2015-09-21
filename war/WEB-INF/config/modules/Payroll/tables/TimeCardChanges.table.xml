@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+  name="TimeCardChanges"
+  idName="TimeCardChangeID"
+  >
+  <Fields>
+    <Relation name="Employee" notNull="true" relation="Employees" cascade="DELETE"
+      label="=employee" />
+    <Relation name="TimeCardCode" relation="TimeCardCodes" notNull="true" label="=timeCardCode" />
+
+    <Date name="DateFrom" label="=startingDate" notNull="true" />
+    <Date name="DateUntil" label="=endingDate" notNull="true" />
+
+    <Text name="Notes" label="=notes" />
+  </Fields>
+</Table>

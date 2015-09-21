@@ -15,14 +15,6 @@
       </row>
 
       <row>
-        <Label for="StartDate" visible="true" style="&lbl;" />
-        <InputDateTime source="StartDate" style="&inpdt;" visible="true" />
-
-        <Label for="Type" visible="true" style="&lbl;" />
-        <DataSelector source="Type" style="&inpw;" visible="true" newRowEnabled="true" />
-      </row>
-
-      <row>
         <Label for="Series" style="&lbl;" />
         <DataSelector source="Series" newRowEnabled="true" style="width: &inpw;" />
 
@@ -34,19 +26,18 @@
         <Label for="Warehouse" visible="true" style="&lbl;" />
         <DataSelector source="Warehouse" style="&inpw;" visible="true" />
 
-        <Label for="Company" visible="true" style="&lbl;" />
-        <DataSelector source="Company" style="&inpw;" visible="true" choiceColumns="Name TypeName"
-          renderColumns="CompanyName TypeName" />
+        <Label for="Type" visible="true" style="&lbl;" />
+        <DataSelector source="Type" style="&inpw;" visible="true" newRowEnabled="true" />
       </row>
 
       <row>
+        <Label for="Company" visible="true" style="&lbl;" />
+        <DataSelector source="Company" style="&inpw;" visible="true" choiceColumns="Name TypeName"
+          renderColumns="CompanyName TypeName" />
+        
         <Label for="Contact" style="&lbl;" />
         <DataSelector source="Contact" newRowEnabled="false" style="&inpw;" renderColumns="ContactFirstName ContactLastName"
           choiceColumns="FirstName LastName CompanyName" options="Company" />
-
-        <Label for="Manager" style="&lbl;" />
-        <DataSelector source="Manager" editSource="ManagerPerson" renderColumns="ManagerFirstName ManagerLastName"
-          newRowEnabled="false" style="&inpw;" />
       </row>
     </Table>
 

@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
-  xmlns:xpr="http://www.butent.com/expression"
 
-  name="Vehicles" source="Vehicles" caption="=vehicles"
-  editForm="Vehicle" newRowForm="Vehicle" newRowCaption="=trNewVehicle"
-  rowCaption="Number"
-  >
+      name="Vehicles" source="Vehicles" caption="=vehicles"
+      editForm="Vehicle" newRowForm="Vehicle" newRowCaption="=trNewVehicle"
+      rowCaption="Number"
+    >
   <Relation renderColumns="Number" choiceColumns="Number ParentModelName ModelName" />
   <Columns>
     <SimpleColumn name="Type" />
@@ -60,4 +59,3 @@
     <OrderBy column="Number" />
   </Order>
 </View>
- 

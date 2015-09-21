@@ -647,7 +647,7 @@ public class Gallery extends Flow implements HasViewName, HasFosterParent, Paren
 
     for (FileInfo fileInfo : files) {
       if (fileInfo instanceof NewFileInfo) {
-        FileUtils.readAsDataURL(((NewFileInfo) fileInfo).getFile(), new Consumer<String>() {
+        FileUtils.readAsDataURL(((NewFileInfo) fileInfo).getNewFile(), new Consumer<String>() {
           @Override
           public void accept(String input) {
             pictures.add(input);

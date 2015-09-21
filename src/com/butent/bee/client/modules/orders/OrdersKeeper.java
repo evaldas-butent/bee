@@ -34,6 +34,7 @@ public final class OrdersKeeper {
 
     GridFactory.registerGridInterceptor(VIEW_ORDER_SALES, new OrderInvoiceBuilder());
     GridFactory.registerGridInterceptor(VIEW_ORDERS_INVOICES, new InvoicesGrid());
+    GridFactory.registerGridInterceptor(VIEW_ORDER_TMPL_ITEMS, new OrderTmplItemsGrid());
 
     SelectorEvent.register(new OrdersSelectorHandler());
   }

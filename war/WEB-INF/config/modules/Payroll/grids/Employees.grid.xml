@@ -3,12 +3,13 @@
 
   name="Employees" viewName="Employees" caption="=employees"
   newRowForm="Employee" editForm="Employee"
+  flexGrow="1"
   >
 
   <g:columns>
     <DataColumn name="FirstName" />
     <DataColumn name="LastName" visible="true" />
-    <DataColumn name="CompanyName" caption="=company" />
+    <DataColumn name="CompanyName" label="=company" />
 
     <DataColumn name="TabNumber" />
 
@@ -29,6 +30,6 @@
 
     <DataColumn name="PartTime" visible="false" />
 
-    <DataColumn name="Notes" caption="=notes" />
+    <DataColumn name="Notes" />
   </g:columns>
 </g:Grid>

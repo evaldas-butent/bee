@@ -867,7 +867,7 @@ class TasksGrid extends AbstractGridInterceptor {
         }
 
         gridView.notifyInfo(Localized.getConstants().crmTaskStatusApproved());
-        getGridPresenter().refresh(true);
+        getGridPresenter().refresh(true, false);
       }
     });
   }
