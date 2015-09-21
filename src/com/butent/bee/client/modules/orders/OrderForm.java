@@ -80,7 +80,7 @@ public class OrderForm extends AbstractFormInterceptor {
       @Override
       public void onClick(ClickEvent event) {
         updateStatus(form, OrdersStatus.PREPARED);
-        RowUpdateEvent.fire(BeeKeeper.getBus(), VIEW_ORDERS, (BeeRow) row);
+        DataChangeEvent.fireLocalRefresh(BeeKeeper.getBus(), VIEW_ORDERS);
         form.setEnabled(true);
       }
     });

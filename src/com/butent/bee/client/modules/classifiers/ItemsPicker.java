@@ -59,7 +59,6 @@ import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.html.builder.elements.Div;
 import com.butent.bee.shared.html.builder.elements.Span;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.classifiers.ItemPrice;
 import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.ui.Action;
@@ -739,10 +738,6 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
       c += warehouseIds.size();
 
       if (isOrder) {
-
-        for (BeeColumn col : items.getColumns()) {
-          LogUtils.getRootLogger().info(col.getId());
-        }
 
         Double rem =
             item.getDouble(DataUtils.getColumnIndex(COL_WAREHOUSE_REMAINDER, items.getColumns()));
