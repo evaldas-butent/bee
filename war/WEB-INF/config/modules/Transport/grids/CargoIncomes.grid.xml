@@ -42,7 +42,30 @@
 
     <DataColumn name="AdditionalRoute" />
     <DataColumn name="ShowAdditionalRoute" width="50" />
-    <DataColumn name="InsuranceCertificate" />
+    <DataColumn name="InsuranceCertificate" >
+      <renderer type="list" />
+      <editor type="list"  >
+        <ui:item>=yes</ui:item>
+        <ui:item>=no</ui:item>
+      </editor>
+      <validation>
+        <ui:function>
+          if (row.ServicePercent != null) {
+            if(cell.newValue != null) {
+             return null;
+            } else {
+              return $wnd.Bee_maybeTranslate("=valueRequired");
+            }
+          } else if (row.ServicePercent == null) {
+            if(cell.newValue == null) {
+               return null;
+            } else {
+             return $wnd.Bee_maybeTranslate("=rowIsReadOnly");
+            }
+          }
+        </ui:function>
+      </validation>
+    </DataColumn>
 
     <RelColumn name="Customer" />
     <DataColumn name="Number" />

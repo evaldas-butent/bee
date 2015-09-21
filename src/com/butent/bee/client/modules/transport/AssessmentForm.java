@@ -500,8 +500,15 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
       expenseRow.setValue(expensesView.getColumnIndex(COL_SERVICE),
           gridRow.getValue(grid.getDataIndex(COL_SERVICE)));
       expenseRow.setValue(expensesView.getColumnIndex(COL_AMOUNT), expenseSum);
-      expenseRow.setValue(expensesView.getColumnIndex(COL_CURRENCY),
-          formRow.getValue(pForm.getDataIndex(COL_CURRENCY)));
+
+      if (DataUtils.isId(formRow.getLong(pForm.getDataIndex(COL_CARGO_VALUE_CURRENCY)))) {
+        expenseRow.setValue(expensesView.getColumnIndex(COL_CURRENCY),
+            formRow.getValue(pForm.getDataIndex(COL_CARGO_VALUE_CURRENCY)));
+      } else {
+        expenseRow.setValue(expensesView.getColumnIndex(COL_CURRENCY),
+            gridRow.getValue(pForm.getDataIndex(COL_CURRENCY)));
+      }
+
       expenseRow.setValue(expensesView.getColumnIndex(COL_TRADE_VAT_PLUS),
           gridRow.getValue(grid.getDataIndex(COL_TRADE_VAT_PLUS)));
       expenseRow.setValue(expensesView.getColumnIndex(COL_TRADE_VAT),
@@ -510,6 +517,9 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
           gridRow.getValue(grid.getDataIndex(COL_TRADE_VAT_PERC)));
       expenseRow.setValue(expensesView.getColumnIndex(COL_CARGO),
           gridRow.getValue(grid.getDataIndex(COL_CARGO)));
+
+      expenseRow.setValue(expensesView.getColumnIndex(COL_CARGO_INCOME),
+          gridRow.getId());
 
       Queries.insert(expensesView.getViewName(), expensesView.getColumns(), expenseRow,
           new RowCallback() {
