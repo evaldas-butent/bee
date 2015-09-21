@@ -19,12 +19,13 @@ xmlns:ui="http://www.butent.com/ui" >
   <DataColumn name="Summary" minWidth="150" maxWidth="500"/>
   <RelColumn name="Company" />
   <RelColumn name="Executor" renderColumns="ExecutorFirstName ExecutorLastName"
-    sortBy="ExecutorLastName ExecutorFirstName" minWidth="100" visible="true" />
+    sortBy="ExecutorLastName ExecutorFirstName" minWidth="100" />
   <RelColumn name="Owner" renderColumns="OwnerFirstName OwnerLastName"
-    sortBy="OwnerLastName OwnerFirstName" minWidth="100"  visible="true" />
+    sortBy="OwnerLastName OwnerFirstName" minWidth="100" />
   <DataColumn name="StartTime" readOnly="true" width="120" />
   <DataColumn name="FinishTime" width="120" />
   <DataColumn name="Completed" />
+  <RelColumn name="Product" />
   
   <DataColumn name="RecurringTask" readOnly="true" visible="false" />
   <RelColumn name="Contact" visible="false" />
@@ -35,5 +36,4 @@ xmlns:ui="http://www.butent.com/ui" >
   <RelColumn name="Reminder" visible="false" />
   <DataColumn name="ReminderTime" visible="false" />
   <DataColumn name="ReminderSent" visible="false" />
-  <DataColumn name="Product" visible="false" />
 </g:columns>

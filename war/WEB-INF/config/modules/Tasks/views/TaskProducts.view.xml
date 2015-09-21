@@ -3,13 +3,16 @@
 
   name="TaskProducts" source="TaskProducts"
   caption="=crmTaskProducts" newRowCaption="=crmTaskNewProduct"
+  newRowForm="TaskProduct"
   >
   <Columns>
+    <SimpleColumn name="Ordinal" />
     <SimpleColumn name="Name" />
+    <SimpleColumn name="Visible" />   
   </Columns>
-  
   <Order>
-    <OrderBy column="Name" />
+    <OrderBy column="Ordinal" />
+    <OrderBy column="Visible" />
   </Order>
 </View>
  

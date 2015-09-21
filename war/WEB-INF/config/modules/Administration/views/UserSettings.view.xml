@@ -44,6 +44,8 @@
 
     <SimpleColumn name="CompanyActionRemindBefore" />
 
+    <SimpleColumn name="CommentsLayout" />
+    
     <SimpleColumn name="UiTheme" />
     <SimpleJoin name="UiTheme" joinType="LEFT">
       <SimpleColumn name="Name" alias="UiThemeName" />

@@ -58,6 +58,7 @@ import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Image;
+import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.client.widget.InternalLink;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
@@ -112,7 +113,6 @@ class TaskEditor extends AbstractFormInterceptor {
   private static final String STYLE_EVENT = CRM_STYLE_PREFIX + "taskEvent-";
   private static final String STYLE_EVENT_ROW = STYLE_EVENT + "row";
   private static final String STYLE_EVENT_ROW_NEW = STYLE_EVENT_ROW + "-new";
-  private static final String STYLE_EVENT_COL = STYLE_EVENT + "col-";
   private static final String STYLE_EVENT_FILES = STYLE_EVENT + "files";
 
   private static final String STYLE_DURATION = CRM_STYLE_PREFIX + "taskDuration-";
@@ -121,8 +121,11 @@ class TaskEditor extends AbstractFormInterceptor {
 
   private static final String STYLE_EXTENSION = CRM_STYLE_PREFIX + "taskExtension";
   private static final String NAME_OBSERVERS = "Observers";
+  private static final String NAME_FLOWPANEL = "MainFlowPanel";
 
   private Label productLabel;
+  private boolean isDefaultLayout;
+  private InputArea area;
 
   private static final List<String> relations = Lists.newArrayList(PROP_COMPANIES, PROP_PERSONS,
       PROP_DOCUMENTS, PROP_APPOINTMENTS, PROP_DISCUSSIONS, PROP_SERVICE_OBJECTS, PROP_TASKS);
@@ -307,6 +310,7 @@ class TaskEditor extends AbstractFormInterceptor {
         } else {
           if (callback != null) {
             callback.onSuccess(response);
+            DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_TASKS);
           }
         }
       }
@@ -421,9 +425,11 @@ class TaskEditor extends AbstractFormInterceptor {
     Flow container = new Flow();
     container.addStyleName(STYLE_EVENT_ROW);
 
+    Flow body = new Flow();
+
     if (renderPhoto) {
       Flow colPhoto = new Flow();
-      colPhoto.addStyleName(STYLE_EVENT_COL + COL_PHOTO);
+      colPhoto.addStyleName(STYLE_EVENT + "col-Photo");
 
       String photo = row.getString(DataUtils.getColumnIndex(COL_PHOTO, columns));
       if (!BeeUtils.isEmpty(photo)) {
@@ -435,19 +441,20 @@ class TaskEditor extends AbstractFormInterceptor {
       container.add(colPhoto);
     }
 
-    int c = 0;
-    Flow col0 = new Flow();
-    col0.addStyleName(STYLE_EVENT_COL + BeeUtils.toString(c));
+    Flow row1 = new Flow();
+    row1.addStyleName(STYLE_EVENT + "col-row");
+    row1.addStyleName(STYLE_EVENT + "flex");
 
-    Integer ev = row.getInteger(DataUtils.getColumnIndex(TaskConstants.COL_EVENT, columns));
-    TaskEvent event = EnumUtils.getEnumByIndex(TaskEvent.class, ev);
-    if (event != null) {
-      col0.add(createEventCell(TaskConstants.COL_EVENT, event.getCaption()));
+    String publisher = BeeUtils.joinWords(
+        row.getString(DataUtils.getColumnIndex(ALS_PUBLISHER_FIRST_NAME, columns)),
+        row.getString(DataUtils.getColumnIndex(ALS_PUBLISHER_LAST_NAME, columns)));
+    if (!BeeUtils.isEmpty(publisher)) {
+      row1.add(createEventCell(COL_PUBLISHER, publisher));
     }
 
     DateTime publishTime = row.getDateTime(DataUtils.getColumnIndex(COL_PUBLISH_TIME, columns));
     if (publishTime != null) {
-      col0.add(createEventCell(COL_PUBLISH_TIME,
+      row1.add(createEventCell(COL_PUBLISH_TIME,
           Format.getDefaultDateTimeFormat().format(publishTime)));
     }
 
@@ -461,37 +468,36 @@ class TaskEditor extends AbstractFormInterceptor {
       container.removeStyleName(STYLE_EVENT_ROW_NEW);
     }
 
-    String publisher = BeeUtils.joinWords(
-        row.getString(DataUtils.getColumnIndex(ALS_PUBLISHER_FIRST_NAME, columns)),
-        row.getString(DataUtils.getColumnIndex(ALS_PUBLISHER_LAST_NAME, columns)));
-    if (!BeeUtils.isEmpty(publisher)) {
-      col0.add(createEventCell(COL_PUBLISHER, publisher));
+    Integer ev = row.getInteger(DataUtils.getColumnIndex(TaskConstants.COL_EVENT, columns));
+    TaskEvent event = EnumUtils.getEnumByIndex(TaskEvent.class, ev);
+    if (event != null) {
+      row1.add(createEventCell(TaskConstants.COL_EVENT, event.getCaption()));
     }
 
-    container.add(col0);
+    body.add(row1);
 
-    c++;
-    Flow col1 = new Flow();
-    col1.addStyleName(STYLE_EVENT_COL + BeeUtils.toString(c));
+    Flow row2 = new Flow();
+    row2.addStyleName(STYLE_EVENT + "col-row");
 
     String note = row.getString(DataUtils.getColumnIndex(COL_EVENT_NOTE, columns));
     if (!BeeUtils.isEmpty(note)) {
-      col1.add(createEventCell(COL_EVENT_NOTE, note));
+      row2.add(createEventCell(COL_EVENT_NOTE, note));
     }
 
     String eventData = row.getString(DataUtils.getColumnIndex(COL_EVENT_DATA, columns));
 
     if (!BeeUtils.isEmpty(eventData)) {
-      col1.add(createEventCell(COL_EVENT_NOTE, eventData, true));
+      row2.add(createEventCell(COL_EVENT_NOTE, eventData, true));
     }
 
     String comment = row.getString(DataUtils.getColumnIndex(COL_COMMENT, columns));
     if (!BeeUtils.isEmpty(comment)) {
-      col1.add(createEventCell(COL_COMMENT, comment));
+      row2.add(createEventCell(COL_COMMENT, comment));
       int idxOwner = Data.getColumnIndex(VIEW_TASKS, COL_OWNER);
 
       if (event == TaskEvent.COMMENT && Objects.equals(taskRow.getLong(idxOwner), userId)) {
         FaLabel createTask = new FaLabel(TaskEvent.CREATE.getCommandIcon());
+        createTask.addStyleName(STYLE_EVENT + "createTask");
         createTask.setTitle(TaskEvent.CREATE.getCommandLabel());
         createTask.addClickHandler(new ClickHandler() {
 
@@ -501,44 +507,16 @@ class TaskEditor extends AbstractFormInterceptor {
           }
         });
 
-        col1.add(createTask);
+        row2.add(createTask);
       }
     }
 
-    container.add(col1);
-
-    String duration = row.getString(DataUtils.getColumnIndex(COL_DURATION, columns));
-    if (!BeeUtils.isEmpty(duration)) {
-      c++;
-      Flow col2 = new Flow();
-      col2.addStyleName(STYLE_EVENT_COL + BeeUtils.toString(c));
-
-      col2.add(createEventCell(COL_DURATION, Localized.getConstants().crmSpentTime() + " "
-          + duration));
-
-      String durType = row.getString(DataUtils.getColumnIndex(COL_DURATION_TYPE, columns));
-      if (!BeeUtils.isEmpty(durType)) {
-        col2.add(createEventCell(COL_DURATION_TYPE, durType));
-      }
-
-      DateTime durDate = row.getDateTime(DataUtils.getColumnIndex(COL_DURATION_DATE, columns));
-      if (durDate != null) {
-        col2.add(createEventCell(COL_DURATION_DATE, durDate.toCompactString()));
-      }
-
-      container.add(col2);
-
-      Long millis = TimeUtils.parseTime(duration);
-      if (BeeUtils.isPositive(millis) && !BeeUtils.isEmpty(publisher)
-          && !BeeUtils.isEmpty(durType)) {
-        Long value = durations.get(publisher, durType);
-        durations.put(publisher, durType, millis + BeeUtils.unbox(value));
-      }
-    }
-
-    panel.add(container);
+    body.add(row2);
 
     if (!files.isEmpty()) {
+      Flow row3 = new Flow();
+      row3.addStyleName(STYLE_EVENT + "col-row");
+
       Simple fileContainer = new Simple();
       fileContainer.addStyleName(STYLE_EVENT_FILES);
 
@@ -554,8 +532,43 @@ class TaskEditor extends AbstractFormInterceptor {
         }
       });
       fileContainer.setWidget(fileGroup);
-      panel.add(fileContainer);
+      row3.add(fileContainer);
+      body.add(row3);
     }
+
+    String duration = row.getString(DataUtils.getColumnIndex(COL_DURATION, columns));
+    if (!BeeUtils.isEmpty(duration)) {
+
+      Flow row4 = new Flow();
+      row4.addStyleName(STYLE_EVENT + "col-row");
+      row4.addStyleName(STYLE_EVENT + "flex"
+          + "");
+      row4.add(createEventCell(COL_DURATION, Localized.getConstants().crmSpentTime() + " " +
+          duration));
+
+      String durType = row.getString(DataUtils.getColumnIndex(COL_DURATION_TYPE, columns));
+      if (!BeeUtils.isEmpty(durType)) {
+        row4.add(createEventCell(COL_DURATION_TYPE, durType));
+      }
+
+      DateTime durDate = row.getDateTime(DataUtils.getColumnIndex(COL_DURATION_DATE, columns));
+      if (durDate != null) {
+        row4.add(createEventCell(COL_DURATION_DATE, durDate.toCompactString()));
+      }
+
+      body.add(row4);
+
+      Long millis = TimeUtils.parseTime(duration);
+      if (BeeUtils.isPositive(millis) &&
+          !BeeUtils.isEmpty(publisher) && !BeeUtils.isEmpty(durType)) {
+        Long value =
+            durations.get(publisher, durType);
+        durations.put(publisher, durType, millis +
+            BeeUtils.unbox(value));
+      }
+    }
+    container.add(body);
+    panel.add(container);
   }
 
   private void showEventsAndDuration(FormView form, IsRow taskRow, BeeRowSet rowSet,
@@ -643,6 +656,7 @@ class TaskEditor extends AbstractFormInterceptor {
   TaskEditor() {
     super();
     this.userId = BeeKeeper.getUser().getUserId();
+    this.isDefaultLayout = BeeKeeper.getUser().getCommentsLayout();
   }
 
   @Override
@@ -665,11 +679,22 @@ class TaskEditor extends AbstractFormInterceptor {
           getFormView().refresh();
         }
       });
+    } else if (BeeUtils.same("InputArea", name) && (widget instanceof InputArea)) {
+      area = (InputArea) widget;
     }
   }
 
   @Override
-  public void afterRefresh(FormView form, final IsRow row) {
+  public void afterRefresh(final FormView form, final IsRow row) {
+
+    area.setHeight("60px");
+    int scroll = area.getElement().getScrollHeight();
+    int client = area.getElement().getClientHeight();
+
+    if (scroll > client) {
+      area.setHeight(String.valueOf(scroll + 2) + "px");
+    }
+
     HeaderView header = form.getViewPresenter().getHeader();
     header.clearCommandPanel();
 
@@ -677,6 +702,7 @@ class TaskEditor extends AbstractFormInterceptor {
       return;
     }
 
+    setCommentsLayout(header);
     Integer status = row.getInteger(form.getDataIndex(COL_STATUS));
 
     FaLabel createDocument = new FaLabel(FontAwesome.FILE_O);
@@ -2004,6 +2030,7 @@ class TaskEditor extends AbstractFormInterceptor {
               sendFiles(files, data.getId(), teId);
             }
           }
+          DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_TASKS);
         }
       }
     };
@@ -2071,5 +2098,49 @@ class TaskEditor extends AbstractFormInterceptor {
       }
     });
 
+  }
+
+  private void setCommentsLayout(final HeaderView header) {
+    final FormView form = getFormView();
+    FaLabel labelVer = new FaLabel(FontAwesome.LIST_ALT);
+    FaLabel labelHor = new FaLabel(FontAwesome.COLUMNS);
+    labelVer.addStyleName(BeeConst.CSS_CLASS_PREFIX + "crm-commentLayout-label");
+    labelVer.setTitle(Localized.getConstants().crmTaskShowCommentsBelow());
+    labelHor.addStyleName(BeeConst.CSS_CLASS_PREFIX + "crm-commentLayout-label");
+    labelHor.setTitle(Localized.getConstants().crmTaskShowCommentsRight());
+
+    labelVer.addClickHandler(new ClickHandler() {
+
+      @Override
+      public void onClick(ClickEvent arg0) {
+        BeeKeeper.getUser().setCommentsLayout(true);
+        isDefaultLayout = true;
+        form.refresh();
+      }
+    });
+
+    labelHor.addClickHandler(new ClickHandler() {
+
+      @Override
+      public void onClick(ClickEvent arg0) {
+        BeeKeeper.getUser().setCommentsLayout(false);
+        isDefaultLayout = false;
+        form.refresh();
+      }
+    });
+
+    if (isDefaultLayout) {
+      form.getWidgetByName(NAME_FLOWPANEL).setStyleName("flexBox-horizontal", false);
+      form.getWidgetByName("TaskTabbedPages").addStyleName("bee-taskEvent-vertical");
+      form.getWidgetByName("TaskTabbedPages").setStyleName("bee-TabbedPages-horizontal", false);
+      form.getWidgetByName("TaskEvents").setStyleName("bee-crm-taskEvent", false);
+      header.addCommandItem(labelHor);
+    } else {
+      form.getWidgetByName(NAME_FLOWPANEL).setStyleName("flexBox-horizontal", true);
+      form.getWidgetByName("TaskTabbedPages").setStyleName("bee-taskEvent-vertical", false);
+      form.getWidgetByName("TaskTabbedPages").addStyleName("bee-TabbedPages-horizontal");
+      form.getWidgetByName("TaskEvents").addStyleName("bee-crm-taskEvent");
+      header.addCommandItem(labelVer);
+    }
   }
 }

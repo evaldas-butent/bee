@@ -29,12 +29,12 @@
 
       <row>
         <Label for="Summary" />
-        <InputText source="Summary" style="&inp2x;" autocomplete="true" visible="true" />
+        <InputText source="Summary" style="&inp2x;" autocomplete="true" visible="true" maxLength="60" />
       </row>
 
       <row for="Description">
         <Label for="Description" />
-        <InputArea source="Description" style="&inp2x; height: 60px;" />
+        <InputArea source="Description" style="&inp2x; height: 60px;" name="InputArea" />
       </row>
     </Table>
 
@@ -94,16 +94,16 @@
         <Label text="=crmTaskTemplate" data="TaskTemplates" />
         <DataSelector viewName="TaskTemplates" choiceColumns="Name" property="Template"
           newRowEnabled="false" style="&inp2;" data="TaskTemplates" />
-        <Label for="Product" name="Product" />
-        <DataSelector source="Product" renderColumns="ProductName" newRowEnabled="true" style="&inp2;" />
+        <Label for="Priority" />
+        <Radio source="Priority" />
       </row>
 
       <row>
         <Label for="Type" class="bee-required" />
         <DataSelector source="Type" name="Type" renderColumns="TypeName" newRowEnabled="true" style="&inp2;"
           disablable="true" required="true" />
-        <Label for="Priority" />
-        <Radio source="Priority" />
+        <Label for="Product" name="Product" />
+        <DataSelector source="Product" renderColumns="ProductName" newRowEnabled="true" style="&inp2;" filter="Visible" />
       </row>
 
       <row>

@@ -5,6 +5,8 @@
   idName="TaskProductID"
   >
   <Fields>
-    <String name="Name" notNull="true" precision="100" label="=crmTaskProduct" />
+    <Integer name="Ordinal" label="=ordinal"/>
+    <Boolean name="Visible" defValue="true" label="=stateVisible" />
+    <String name="Name" unique="true" precision="100" label="=crmTaskProduct" />
   </Fields>
 </Table>

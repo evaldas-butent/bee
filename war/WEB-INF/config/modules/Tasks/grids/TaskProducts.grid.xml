@@ -5,6 +5,8 @@
   minColumnWidth="200"
   >
   <g:columns>
+    <DataColumn name="Ordinal"  visible="true" />
     <DataColumn name="Name" visible="true" />
+    <DataColumn name="Visible" visible="true"/>
   </g:columns>
 </g:Grid>
