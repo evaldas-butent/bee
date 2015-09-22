@@ -11,7 +11,7 @@
     <HorizontalPanel style="margin: 2ex 1em;">
       <Label text="=object" style="padding-right: 1em;" />
       <UnboundSelector viewName="Locations" renderColumns="LocationName CompanyName"
-        style="width: 400px;" />
+        newRowEnabled="false" editPopup="true" style="width: 400px;" />
     </HorizontalPanel>
     
     <FlowPanel name="Schedule" class="flexible" style="overflow: auto;" />

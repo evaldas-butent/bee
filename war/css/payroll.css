@@ -10,3 +10,39 @@
   background-color: #80c4f9;
   cursor: auto;
 }
+
+.bee-Form .bee-payroll-ws-table tr td {
+  border: 1px solid #ccc;
+  padding: 2px;
+}
+
+.bee-payroll-ws-month-panel {
+  display: flex;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  flex-direction: row;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  justify-content: space-around;
+  -webkit-justify-content: space-around;
+  -ms-flex-pack: justify;
+  align-items: center;
+  -webkit-align-items: center;
+  -ms-flex-align: center;
+}
+.bee-payroll-ws-month-label {
+  cursor: pointer;
+}
+.bee-payroll-ws-month-active {
+  background-color: #80c4f9;
+  cursor: auto;
+}
+.bee-payroll-ws-day-label {
+  min-width: 2em;
+  text-align: center;
+}
+
+.bee-payroll-ws-employee-name {
+  cursor: pointer;
+  font-weight: bolder;
+}
