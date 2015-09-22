@@ -110,7 +110,7 @@ public final class ClassifierKeeper {
           model = getSelectedModel().getId();
         }
         getGridPresenter().getDataProvider().setParentFilter(FILTER_KEY, getFilter(model));
-        getGridPresenter().refresh(true);
+        getGridPresenter().refresh(true, true);
       }
     }
 

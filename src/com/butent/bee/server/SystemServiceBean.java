@@ -18,10 +18,10 @@ import com.butent.bee.shared.communication.CommUtils;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.io.FileNameUtils;
 import com.butent.bee.shared.io.Paths;
-import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.time.TimeUtils;
@@ -78,7 +78,7 @@ public class SystemServiceBean {
       response = getDigest(reqInfo);
 
     } else if (BeeUtils.same(svc, Service.GET_FILES)) {
-      response = getFiles();
+      response = getFiles(DataUtils.parseIdList(reqInfo.getParameter(Service.VAR_FILES)));
     } else if (BeeUtils.same(svc, Service.GET_FLAGS)) {
       response = getFlags();
 
@@ -148,13 +148,8 @@ public class SystemServiceBean {
     return response;
   }
 
-  private ResponseObject getFiles() {
-    List<FileInfo> files = fs.getFiles();
-    if (files.isEmpty()) {
-      return ResponseObject.warning("file repository is empty");
-    } else {
-      return ResponseObject.response(files);
-    }
+  private ResponseObject getFiles(List<Long> fileIds) {
+    return ResponseObject.response(fs.getFiles(fileIds));
   }
 
   private static ResponseObject getFlags() {

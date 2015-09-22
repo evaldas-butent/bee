@@ -26,7 +26,9 @@ import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.modules.administration.ExtensionIcons;
 import com.butent.bee.server.modules.administration.FileStorageBean;
 import com.butent.bee.server.modules.mail.MailModuleBean;
+import com.butent.bee.server.news.ExtendedUsageQueryProvider;
 import com.butent.bee.server.news.NewsBean;
+import com.butent.bee.server.news.NewsHelper;
 import com.butent.bee.server.sql.HasConditions;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.SqlDelete;
@@ -36,6 +38,7 @@ import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.css.CssUnit;
 import com.butent.bee.shared.css.values.FontWeight;
@@ -378,6 +381,18 @@ public class TasksModuleBean implements BeeModule {
     news.registerUsageQueryProvider(Feed.TASKS_ASSIGNED, usageQueryProvider);
     news.registerUsageQueryProvider(Feed.TASKS_DELEGATED, usageQueryProvider);
     news.registerUsageQueryProvider(Feed.TASKS_OBSERVED, usageQueryProvider);
+    news.registerUsageQueryProvider(Feed.REQUESTS_ASSIGNED, new ExtendedUsageQueryProvider() {
+      @Override
+      protected List<IsCondition> getConditions(long userId) {
+        return NewsHelper.buildConditions(SqlUtils.equals(TBL_REQUESTS, COL_REQUEST_MANAGER,
+            userId));
+      }
+
+      @Override
+      protected List<Pair<String, IsCondition>> getJoins() {
+        return NewsHelper.buildJoin(TBL_REQUESTS, news.joinUsage(TBL_REQUESTS));
+      }
+    });
 
     HeadlineProducer headlineProducer = new HeadlineProducer() {
       @Override
@@ -1253,7 +1268,8 @@ public class TasksModuleBean implements BeeModule {
       }
     }
 
-    result.addRow(new String[] {constants.totalOf() + ":",
+    result.addRow(new String[] {
+        constants.totalOf() + ":",
         new DateTime(totalTimeMls).toUtcTimeString()});
 
     ResponseObject resp = ResponseObject.response(result);
@@ -1366,11 +1382,11 @@ public class TasksModuleBean implements BeeModule {
 
     for (SimpleRow file : data) {
       FileInfo sf = new FileInfo(file.getLong(COL_FILE),
-          BeeUtils.notEmpty(file.getValue(COL_CAPTION),
-              file.getValue(COL_FILE_NAME)),
+          file.getValue(COL_FILE_NAME),
           file.getLong(COL_FILE_SIZE),
           file.getValue(COL_FILE_TYPE));
 
+      sf.setCaption(file.getValue(COL_CAPTION));
       sf.setIcon(ExtensionIcons.getIcon(sf.getName()));
       files.add(sf);
     }

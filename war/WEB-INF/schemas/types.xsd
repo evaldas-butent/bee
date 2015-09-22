@@ -228,8 +228,6 @@
       <xs:enumeration value="Addressbook" />
       <xs:enumeration value="AdsTopics" />
       <xs:enumeration value="AllCargo" />
-      <xs:enumeration value="AllDrivers" />
-      <xs:enumeration value="AllVehicles" />
       <xs:enumeration value="AppointmentAttendees" />
       <xs:enumeration value="AppointmentOwners" />
       <xs:enumeration value="AppointmentProps" />
@@ -504,6 +502,7 @@
       <xs:enumeration value="Themes" />
       <xs:enumeration value="TimeCardChanges" />
       <xs:enumeration value="TimeCardCodes" />
+      <xs:enumeration value="TimeRanges" />
       <xs:enumeration value="TimeZones" />
       <xs:enumeration value="TodoList" />
       <xs:enumeration value="TradeActInvoices" />
@@ -539,6 +538,7 @@
       <xs:enumeration value="UnsuppliedItems" />
       <xs:enumeration value="UserCalAttendees" />
       <xs:enumeration value="UserCalendars" />
+      <xs:enumeration value="UserDrivers" />
       <xs:enumeration value="UserEmails" />
       <xs:enumeration value="UserFeeds" />
       <xs:enumeration value="UserGroupMembers" />
@@ -549,6 +549,7 @@
       <xs:enumeration value="UserRoles" />
       <xs:enumeration value="Users" />
       <xs:enumeration value="UserSettings" />
+      <xs:enumeration value="UserVehicles" />
       <xs:enumeration value="VehicleModels" />
       <xs:enumeration value="VehiclePartUsage" />
       <xs:enumeration value="Vehicles" />
@@ -557,6 +558,7 @@
       <xs:enumeration value="VehicleTracking" />
       <xs:enumeration value="WaitingCargo" />
       <xs:enumeration value="Warehouses" />
+      <xs:enumeration value="WorkSchedule" />
       <xs:enumeration value="Workspaces" />
 
 <!-- samples -->

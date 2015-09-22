@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <f:Form xmlns="http://www.butent.com/widget"
-  xmlns:f="http://www.butent.com/form"
-  
-  name="TransportGroup" viewName="TransportGroups" caption="=transportGroup"
-  height="50" heightUnit="%" width="600"
-  >
+        xmlns:f="http://www.butent.com/form"
+
+        name="TransportGroup" viewName="TransportGroups" caption="=transportGroup"
+        height="70" heightUnit="%" width="70" widthUnit="%"
+    >
   <FlowPanel class="flexBox-vertical">
     <Table>
       <col index="0" kind="label" />
@@ -15,14 +15,16 @@
       </row>
       <row>
         <Label for="Manager" />
-        <DataSelector source="Manager" editSource="ManagerPerson" newRowEnabled="false" 
-          style="width: 20em;" />
+        <DataSelector source="Manager" editSource="ManagerPerson" newRowEnabled="false"
+                      style="width: 20em;" />
       </row>
     </Table>
 
     <FlowPanel class="flexBox-horizontal flexible" style="margin-top: 20px;">
-      <ChildGrid class="flexible" name="GroupDrivers" relColumn="Group" style="margin: 0 5px 10px 10px;" />
-      <ChildGrid class="flexible" name="GroupVehicles" relColumn="Group" style="margin: 0 10px 10px 5px;" />
+      <ChildGrid class="flexible" name="GroupDrivers" relColumn="Group"
+                 style="margin: 0 5px 10px 10px;" />
+      <ChildGrid class="flexible" name="GroupVehicles" relColumn="Group"
+                 style="margin: 0 10px 10px 5px;" />
     </FlowPanel>
   </FlowPanel>
 </f:Form>

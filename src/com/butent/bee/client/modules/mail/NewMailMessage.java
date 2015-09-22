@@ -280,16 +280,18 @@ public final class NewMailMessage extends AbstractFormInterceptor
   public void onSelection(SelectionEvent<FileInfo> event) {
     final FileInfo file = event.getSelectedItem();
 
-    if (attachmentsWidget.getFiles().contains(file)) {
+    if (attachmentsWidget.contains(file)) {
       FileUtils.uploadFile(file, new Callback<Long>() {
         @Override
         public void onFailure(String... reason) {
+          attachmentsWidget.removeFile(file);
           super.onFailure(reason);
         }
 
         @Override
         public void onSuccess(Long id) {
           file.setFileId(id);
+          attachmentsWidget.refreshFile(file);
         }
       });
     }

@@ -168,6 +168,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String clearFilter();
 
+  String clearNews();
+
   String client();
 
   String clients();
@@ -319,6 +321,10 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
   String feedNew();
 
   String feedPersons();
+
+  String feedRequestsAll();
+
+  String feedRequestsAssigned();
 
   String feeds();
 

@@ -11,8 +11,8 @@
     <Relation name="LoadingPlace" unique="true" relation="CargoPlaces" editable="true" label="=cargoLoadingPlace" />
     <Relation name="UnloadingPlace" unique="true" relation="CargoPlaces" editable="true" label="=cargoUnloadingPlace" />
 
-    <Numeric name="TripPercent" precision="4" scale="1" />
-    <Numeric name="CargoPercent" precision="4" scale="1" />
+    <Numeric name="TripPercent" precision="12" scale="2" />
+    <Numeric name="CargoPercent" precision="12" scale="2" />
     <Numeric name="Ordinal" precision="2" scale="0" label="=ordinal" />
     <Text name="Message" label="=message" />
   </Fields>

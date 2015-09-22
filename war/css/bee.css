@@ -2720,7 +2720,8 @@
 }
 
 .bee-News-disclosure,
-.bee-News-refresh {
+.bee-News-refresh,
+.bee-News-dismissAll {
   position: absolute;
   top: 5px;
   color: #989898;
@@ -2729,14 +2730,18 @@
   cursor: pointer;
 }
 
-.bee-News-refresh:hover {
+.bee-News-refresh:hover,
+.bee-News-dismissAll:hover {
   color: black;
 }
 .bee-News-disclosure {
   left: 20px;
 }
 .bee-News-refresh {
-  right: 27px;
+  right: 45px;
+}
+.bee-News-dismissAll {
+  right: 20px;
 }
 .bee-News-settings {
   right: 10px;
@@ -2884,7 +2889,7 @@
   margin-right: 4px;
 }
 .bee-News-headline-new {
-  background-color: #aaa;
+  background-color: #1eb2d8;
 }
 .bee-News-headline-upd {
   background-color: yellow;
