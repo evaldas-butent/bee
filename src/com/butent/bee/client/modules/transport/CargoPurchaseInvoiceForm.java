@@ -194,7 +194,7 @@ public class CargoPurchaseInvoiceForm extends InvoiceForm implements ClickHandle
                 COL_TRADE_OPERATION, getStringValue(COL_TRADE_OPERATION),
                 BeeUtils.toString(selector.getRelatedId()), ModificationEvent.Kind.UPDATE_ROW);
 
-            grid.getPresenter().refresh(true);
+            grid.getPresenter().refresh(true, false);
           }
         });
       }
