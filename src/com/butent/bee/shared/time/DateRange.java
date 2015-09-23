@@ -20,6 +20,10 @@ public final class DateRange implements HasDateRange, BeeSerializable {
     return closed(date, date);
   }
 
+  public static boolean isValidClosedRange(JustDate min, JustDate max) {
+    return min != null && max != null && min.getDays() <= max.getDays();
+  }
+
   public static DateRange restore(String s) {
     Range<JustDate> r = deserializeRange(s);
     return (r == null) ? null : new DateRange(r);
@@ -109,8 +113,20 @@ public final class DateRange implements HasDateRange, BeeSerializable {
     return range.hashCode();
   }
 
+  public DateRange intersection(DateRange other) {
+    if (intersects(other)) {
+      return new DateRange(range.intersection(other.range));
+    } else {
+      return null;
+    }
+  }
+
   public boolean intersects(DateRange other) {
     return other != null && BeeUtils.intersects(range, other.range);
+  }
+
+  public boolean isConnected(DateRange other) {
+    return other != null && range.isConnected(other.range);
   }
 
   @Override

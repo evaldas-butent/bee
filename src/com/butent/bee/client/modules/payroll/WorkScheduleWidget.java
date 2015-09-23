@@ -1,6 +1,8 @@
 package com.butent.bee.client.modules.payroll;
 
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Multimap;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -22,6 +24,8 @@ import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.ui.Opener;
+import com.butent.bee.client.ui.UiHelper;
+import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
@@ -29,9 +33,12 @@ import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.html.Attributes;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
+import com.butent.bee.shared.time.DateRange;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.time.YearMonth;
@@ -39,9 +46,12 @@ import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
@@ -56,6 +66,8 @@ class WorkScheduleWidget extends HtmlTable {
   private static final String STYLE_MONTH_ACTIVE = STYLE_PREFIX + "month-active";
 
   private static final String STYLE_DAY_LABEL = STYLE_PREFIX + "day-label";
+  private static final String STYLE_DAY_CONTENT = STYLE_PREFIX + "day-content";
+  private static final String STYLE_DAY_EMPTY = STYLE_PREFIX + "day-empty";
 
   private static final String STYLE_EMPLOYEE_PANEL = STYLE_PREFIX + "employee-panel";
   private static final String STYLE_EMPLOYEE_CONTACT = STYLE_PREFIX + "employee-contact";
@@ -64,6 +76,8 @@ class WorkScheduleWidget extends HtmlTable {
 
   private static final String STYLE_EMPLOYEE_APPEND_PANEL = STYLE_PREFIX + "append-panel";
   private static final String STYLE_EMPLOYEE_APPEND_SELECTOR = STYLE_PREFIX + "append-selector";
+
+  private static final String STYLE_TC_CHANGE = STYLE_PREFIX + "tc-change";
 
   private static final String KEY_YM = "ym";
 
@@ -82,6 +96,9 @@ class WorkScheduleWidget extends HtmlTable {
   private BeeRowSet emData;
   private BeeRowSet tcData;
 
+  private BeeRowSet timeCardCodes;
+  private BeeRowSet timeRanges;
+
   private YearMonth activeMonth;
 
   WorkScheduleWidget(long objectId) {
@@ -91,41 +108,74 @@ class WorkScheduleWidget extends HtmlTable {
   }
 
   void refresh() {
-    Queries.getRowSet(VIEW_WORK_SCHEDULE, null, Filter.equals(COL_PAYROLL_OBJECT, objectId),
-        new Queries.RowSetCallback() {
+    Set<String> viewNames = new HashSet<>();
+    Map<String, Filter> filters = new HashMap<>();
+
+    viewNames.add(VIEW_WORK_SCHEDULE);
+    filters.put(VIEW_WORK_SCHEDULE, Filter.equals(COL_PAYROLL_OBJECT, objectId));
+
+    viewNames.add(VIEW_EMPLOYEE_OBJECTS);
+    filters.put(VIEW_EMPLOYEE_OBJECTS, Filter.equals(COL_PAYROLL_OBJECT, objectId));
+
+    viewNames.add(VIEW_TIME_CARD_CODES);
+    viewNames.add(VIEW_TIME_RANGES);
+
+    Queries.getData(viewNames, filters, CachingPolicy.NONE, new Queries.DataCallback() {
+      @Override
+      public void onSuccess(Collection<BeeRowSet> result) {
+        clearData();
+
+        for (BeeRowSet rowSet : result) {
+          switch (rowSet.getViewName()) {
+            case VIEW_WORK_SCHEDULE:
+              setWsData(rowSet);
+              break;
+
+            case VIEW_EMPLOYEE_OBJECTS:
+              setEoData(rowSet);
+              break;
+
+            case VIEW_TIME_CARD_CODES:
+              setTimeCardCodes(rowSet);
+              break;
+
+            case VIEW_TIME_RANGES:
+              setTimeRanges(rowSet);
+              break;
+          }
+        }
+
+        getEmployees(new Consumer<Set<Long>>() {
           @Override
-          public void onSuccess(BeeRowSet wsRowSet) {
-            setWsData(wsRowSet);
+          public void accept(Set<Long> employees) {
+            if (employees.isEmpty()) {
+              setTcData(null);
+              render();
 
-            Queries.getRowSet(VIEW_EMPLOYEE_OBJECTS, null,
-                Filter.equals(COL_PAYROLL_OBJECT, objectId), new Queries.RowSetCallback() {
-                  @Override
-                  public void onSuccess(BeeRowSet eoRowSet) {
-                    setEoData(eoRowSet);
-
-                    getEmployees(new Consumer<Set<Long>>() {
-                      @Override
-                      public void accept(Set<Long> employees) {
-                        if (employees.isEmpty()) {
-                          setTcData(null);
-                          render();
-
-                        } else {
-                          Queries.getRowSet(VIEW_TIME_CARD_CHANGES, null,
-                              Filter.any(COL_EMPLOYEE, employees), new Queries.RowSetCallback() {
-                                @Override
-                                public void onSuccess(BeeRowSet tcRowSet) {
-                                  setTcData(tcRowSet);
-                                  render();
-                                }
-                              });
-                        }
-                      }
-                    });
-                  }
-                });
+            } else {
+              Queries.getRowSet(VIEW_TIME_CARD_CHANGES, null,
+                  Filter.any(COL_EMPLOYEE, employees), new Queries.RowSetCallback() {
+                    @Override
+                    public void onSuccess(BeeRowSet tcRowSet) {
+                      setTcData(tcRowSet);
+                      render();
+                    }
+                  });
+            }
           }
         });
+      }
+    });
+  }
+
+  private void clearData() {
+    setWsData(null);
+    setEoData(null);
+    setEmData(null);
+    setTcData(null);
+
+    setTimeCardCodes(null);
+    setTimeRanges(null);
   }
 
   private void render() {
@@ -169,6 +219,8 @@ class WorkScheduleWidget extends HtmlTable {
         Widget ew = renderEmployee(employee, nameIndexes, contactIndexes, infoIndexes);
         setWidgetAndStyle(r, EMPLOYEE_PANEL_COL, ew, STYLE_EMPLOYEE_PANEL);
 
+        renderSchedule(employee.getId(), activeMonth, r);
+
         DomUtils.setDataIndex(getRowFormatter().getElement(r), employee.getId());
         r++;
       }
@@ -176,6 +228,93 @@ class WorkScheduleWidget extends HtmlTable {
 
     Widget appender = renderEmployeeAppender();
     setWidgetAndStyle(r, EMPLOYEE_PANEL_COL, appender, STYLE_EMPLOYEE_APPEND_PANEL);
+  }
+
+  private void renderSchedule(long employeeId, YearMonth ym, int r) {
+    Multimap<Integer, Long> tcChanges = getTimeCardChanges(employeeId, ym);
+
+    int days = ym.getLength();
+
+    for (int i = 0; i < days; i++) {
+      int day = i + 1;
+
+      Flow panel = new Flow();
+
+      if (tcChanges.containsKey(day)) {
+        for (Long codeId : tcChanges.get(day)) {
+          panel.add(renderTimeCardChange(codeId));
+        }
+
+      } else {
+        panel.addStyleName(STYLE_DAY_EMPTY);
+      }
+
+      setWidgetAndStyle(r, DAY_START_COL + i, panel, STYLE_DAY_CONTENT);
+    }
+  }
+
+  private Widget renderTimeCardChange(long codeId) {
+    CustomDiv widget = new CustomDiv(STYLE_TC_CHANGE);
+
+    if (!DataUtils.isEmpty(timeCardCodes)) {
+      BeeRow row = timeCardCodes.getRowById(codeId);
+
+      if (row != null) {
+        String code = DataUtils.getString(timeCardCodes, row, COL_TC_CODE);
+        if (!BeeUtils.isEmpty(code)) {
+          widget.setText(code);
+          widget.addStyleName(STYLE_TC_CHANGE + BeeConst.STRING_MINUS + code.trim().toLowerCase());
+        }
+
+        String title = BeeUtils.buildLines(DataUtils.getString(timeCardCodes, row, COL_TC_NAME),
+            DataUtils.getString(timeCardCodes, row, COL_TC_DESCRIPTION));
+        if (!BeeUtils.isEmpty(title)) {
+          widget.setTitle(title);
+        }
+
+        UiHelper.setColor(widget,
+            DataUtils.getString(timeCardCodes, row, AdministrationConstants.COL_BACKGROUND),
+            DataUtils.getString(timeCardCodes, row, AdministrationConstants.COL_FOREGROUND));
+      }
+    }
+
+    return widget;
+  }
+
+  private Multimap<Integer, Long> getTimeCardChanges(long employeeId, YearMonth ym) {
+    Multimap<Integer, Long> result = ArrayListMultimap.create();
+
+    if (!DataUtils.isEmpty(tcData)) {
+      DateRange activeRange = DateRange.closed(ym.getDate(), ym.getLast());
+
+      int employeeIndex = tcData.getColumnIndex(COL_EMPLOYEE);
+      int codeIndex = tcData.getColumnIndex(COL_TIME_CARD_CODE);
+
+      int fromIndex = tcData.getColumnIndex(COL_TIME_CARD_CHANGES_FROM);
+      int untilIndex = tcData.getColumnIndex(COL_TIME_CARD_CHANGES_UNTIL);
+
+      for (BeeRow row : tcData) {
+        if (Objects.equals(row.getLong(employeeIndex), employeeId)) {
+          JustDate from = row.getDate(fromIndex);
+          JustDate until = row.getDate(untilIndex);
+
+          if (DateRange.isValidClosedRange(from, until)) {
+            DateRange range = activeRange.intersection(DateRange.closed(from, until));
+
+            if (range != null) {
+              int min = range.getMinDate().getDom();
+              int max = range.getMaxDate().getDom();
+
+              for (int day = min; day <= max; day++) {
+                result.put(day, row.getLong(codeIndex));
+              }
+            }
+          }
+        }
+      }
+    }
+
+    return result;
   }
 
   private Widget renderEmployeeAppender() {
@@ -289,8 +428,8 @@ class WorkScheduleWidget extends HtmlTable {
         public void onClick(ClickEvent event) {
           String s = DomUtils.getDataProperty(EventUtils.getEventTargetElement(event), KEY_YM);
 
-          if (!BeeUtils.isEmpty(s)) {
-            activateMonth(YearMonth.parse(s));
+          if (!BeeUtils.isEmpty(s) && activateMonth(YearMonth.parse(s))) {
+            render();
           }
         }
       });
@@ -374,7 +513,10 @@ class WorkScheduleWidget extends HtmlTable {
     }
 
     if (result.isEmpty()) {
-      result.add(new YearMonth(TimeUtils.today()));
+      YearMonth ym = new YearMonth(TimeUtils.today());
+      result.add(ym.previousMonth());
+      result.add(ym);
+
     } else if (result.size() > 1) {
       Collections.sort(result);
     }
@@ -400,5 +542,13 @@ class WorkScheduleWidget extends HtmlTable {
 
   private void setTcData(BeeRowSet tcData) {
     this.tcData = tcData;
+  }
+
+  private void setTimeCardCodes(BeeRowSet timeCardCodes) {
+    this.timeCardCodes = timeCardCodes;
+  }
+
+  private void setTimeRanges(BeeRowSet timeRanges) {
+    this.timeRanges = timeRanges;
   }
 }

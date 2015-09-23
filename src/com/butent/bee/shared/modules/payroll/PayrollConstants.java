@@ -74,6 +74,17 @@ public final class PayrollConstants {
   public static final String COL_TIME_RANGE_CODE = "TimeRangeCode";
   public static final String COL_TIME_CARD_CODE = "TimeCardCode";
 
+  public static final String COL_TC_CODE = "TcCode";
+  public static final String COL_TC_NAME = "TcName";
+  public static final String COL_TC_DESCRIPTION = "Description";
+
+  public static final String COL_TR_CODE = "TrCode";
+  public static final String COL_TR_NAME = "TrName";
+  public static final String COL_TR_FROM = "TimeFrom";
+  public static final String COL_TR_UNTIL = "TimeUntil";
+  public static final String COL_TR_DURATION = "Duration";
+  public static final String COL_TR_DESCRIPTION = "Description";
+
   public static final String ALS_DEPARTMENT_NAME = "DepartmentName";
 
   public static final String ALS_LOCATION_MANAGER_FIRST_NAME = "ManagerFirstName";
