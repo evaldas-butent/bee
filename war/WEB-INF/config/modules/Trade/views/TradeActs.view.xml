@@ -16,8 +16,12 @@
       <SimpleColumn name="Name" alias="ContractName"/>
       <SimpleColumn name="Number" alias="ContractNumber"/>
       <SimpleColumn name="Expires" alias="ContractExpires" />
+      <SimpleJoin name="Status" joinType="LEFT">
+        <SimpleColumn name="Name" alias="ContractStatusName" />
+        <SimpleColumn name="Main" alias="ContractStatusMain" />
+      </SimpleJoin>
     </SimpleJoin>
-    
+
     <SimpleColumn name="Date" />
     <SimpleColumn name="Until" />
 
@@ -126,11 +130,11 @@
 
     <SimpleColumn name="RegistrationNo" />
   </Columns>
-  
+
   <Order>
     <OrderBy column="SeriesName" />
     <OrderBy column="Number" />
     <OrderBy column="Date" />
   </Order>
 </View>
- 
+

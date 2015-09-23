@@ -42,9 +42,10 @@
       <row>
        <Label text="=trdContract" />
        <DataSelector name="Contract" source="Contract" style="&inpw;"
-          renderColumns="ContractName ContractNumber"
-          choiceColumns="Name Number DocumentDate Expires" viewName="Documents"
-          caching="none" module="Documents" newRowEnabled="false" />
+         renderColumns="ContractName ContractNumber"
+         choiceColumns="Name Number DocumentDate Expires StatusName"
+         viewName="Documents"
+         caching="none" module="Documents" newRowEnabled="false" />
       </row>
 
       <row>
