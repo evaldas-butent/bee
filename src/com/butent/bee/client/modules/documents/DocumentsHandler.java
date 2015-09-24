@@ -4,7 +4,7 @@ import com.google.common.collect.Lists;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 
 import static com.butent.bee.shared.modules.documents.DocumentConstants.*;
-import static com.butent.bee.shared.modules.trade.TradeConstants.*;
+import static com.butent.bee.shared.modules.trade.TradeConstants.VAR_TOTAL;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
@@ -18,48 +18,29 @@ import com.butent.bee.client.data.Queries.IntCallback;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.modules.trade.TradeUtils;
-import com.butent.bee.client.presenter.GridPresenter;
-import com.butent.bee.client.render.AbstractCellRenderer;
-import com.butent.bee.client.render.FileLinkRenderer;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.utils.FileUtils;
-import com.butent.bee.client.view.ViewHelper;
-import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
-import com.butent.bee.client.view.grid.GridView;
-import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
-import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
+import com.butent.bee.client.view.grid.interceptor.FileGridInterceptor;
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
-import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.DataUtils;
-import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
-import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.time.DateTime;
-import com.butent.bee.shared.time.TimeUtils;
-import com.butent.bee.shared.ui.Action;
-import com.butent.bee.shared.ui.ColumnDescription;
-import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 public final class DocumentsHandler {
 
@@ -95,132 +76,13 @@ public final class DocumentsHandler {
     }
   }
 
-  private static final class FileGridHandler extends AbstractGridInterceptor {
-
-    private static Collection<FileInfo> sanitize(GridView gridView,
-        Collection<? extends FileInfo> input) {
-
-      Collection<FileInfo> result = new ArrayList<>();
-      if (BeeUtils.isEmpty(input)) {
-        return result;
-      }
-
-      List<? extends IsRow> data = gridView.getRowData();
-      if (BeeUtils.isEmpty(data)) {
-        result.addAll(input);
-        return result;
-      }
-
-      int fileIndex = gridView.getDataIndex(AdministrationConstants.COL_FILE);
-      int nameIndex = gridView.getDataIndex(AdministrationConstants.ALS_FILE_NAME);
-      int sizeIndex = gridView.getDataIndex(AdministrationConstants.ALS_FILE_SIZE);
-      int typeIndex = gridView.getDataIndex(AdministrationConstants.ALS_FILE_TYPE);
-
-      Set<FileInfo> oldFiles = new HashSet<>();
-      for (IsRow row : data) {
-        oldFiles.add(new FileInfo(row.getLong(fileIndex), row.getString(nameIndex),
-            row.getLong(sizeIndex), row.getString(typeIndex)));
-      }
-
-      List<String> messages = new ArrayList<>();
-
-      for (FileInfo fi : input) {
-        if (oldFiles.contains(fi)) {
-          messages.add(BeeUtils.join(BeeConst.DEFAULT_LIST_SEPARATOR, fi.getName(),
-              FileUtils.sizeToText(fi.getSize()),
-              TimeUtils.renderCompact(fi.getFileDate())));
-        } else {
-          result.add(fi);
-        }
-      }
-
-      if (!messages.isEmpty()) {
-        result.clear();
-
-        messages.add(0, Localized.getConstants().documentFileExists());
-        gridView.notifyWarning(ArrayUtils.toArray(messages));
-      }
-
-      return result;
-    }
-
-    private FileCollector collector;
-
-    private FileGridHandler() {
-    }
-
-    @Override
-    public boolean beforeAction(Action action, final GridPresenter presenter) {
-      if (Action.ADD.equals(action)) {
-        if (collector != null) {
-          collector.clickInput();
-        }
-        return false;
-
-      } else {
-        return super.beforeAction(action, presenter);
-      }
-    }
-
-    @Override
-    public GridInterceptor getInstance() {
-      return new FileGridHandler();
-    }
-
-    @Override
-    public AbstractCellRenderer getRenderer(String columnName,
-        List<? extends IsColumn> dataColumns, ColumnDescription columnDescription,
-        CellSource cellSource) {
-
-      if (BeeUtils.same(columnName, AdministrationConstants.COL_FILE)) {
-        return new FileLinkRenderer(DataUtils.getColumnIndex(columnName, dataColumns),
-            DataUtils.getColumnIndex(COL_FILE_CAPTION, dataColumns),
-            DataUtils.getColumnIndex(AdministrationConstants.ALS_FILE_NAME, dataColumns));
-
-      } else {
-        return super.getRenderer(columnName, dataColumns, columnDescription, cellSource);
-      }
-    }
-
-    @Override
-    public void onLoad(final GridView gridView) {
-      if (collector == null) {
-        collector = FileCollector.headless(new Consumer<Collection<? extends FileInfo>>() {
-          @Override
-          public void accept(Collection<? extends FileInfo> input) {
-            final Collection<FileInfo> files = sanitize(gridView, input);
-
-            if (!files.isEmpty()) {
-              gridView.ensureRelId(new IdCallback() {
-                @Override
-                public void onSuccess(Long result) {
-                  sendFiles(result, files, new ScheduledCommand() {
-                    @Override
-                    public void execute() {
-                      gridView.getViewPresenter().handleAction(Action.REFRESH);
-                    }
-                  });
-                }
-              });
-            }
-          }
-        });
-
-        gridView.add(collector);
-
-        FormView form = ViewHelper.getForm(gridView.asWidget());
-        if (form != null) {
-          collector.bindDnd(form);
-        }
-      }
-    }
-  }
-
   public static void register() {
     GridFactory.registerGridInterceptor(VIEW_DOCUMENT_TEMPLATES, new DocumentTemplatesGrid());
 
     GridFactory.registerGridInterceptor(VIEW_DOCUMENTS, new DocumentTemplatesGrid());
-    GridFactory.registerGridInterceptor(VIEW_DOCUMENT_FILES, new FileGridHandler());
+    GridFactory.registerGridInterceptor(VIEW_DOCUMENT_FILES,
+        new FileGridInterceptor(COL_DOCUMENT, AdministrationConstants.COL_FILE,
+            AdministrationConstants.COL_FILE_CAPTION, AdministrationConstants.ALS_FILE_NAME));
 
     GridFactory.registerGridInterceptor("RelatedDocuments", new RelatedDocumentsHandler());
 

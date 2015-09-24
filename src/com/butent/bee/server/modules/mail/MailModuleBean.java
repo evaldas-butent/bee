@@ -111,7 +111,6 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
-import javax.mail.internet.MimeUtility;
 
 @Stateless
 @LocalBean
@@ -459,8 +458,8 @@ public class MailModuleBean implements BeeModule, HasTimerService {
   @Override
   public void init() {
     System.setProperty("mail.mime.decodetext.strict", "false");
+    System.setProperty("mail.mime.decodefilename", "true");
     System.setProperty("mail.mime.parameters.strict", "false");
-
     System.setProperty("mail.mime.base64.ignoreerrors", "true");
     System.setProperty("mail.mime.ignoreunknownencoding", "true");
     System.setProperty("mail.mime.uudecode.ignoreerrors", "true");
@@ -983,8 +982,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
 
           p = new MimeBodyPart();
           p.attachFile(fileInfo.getFile(), fileInfo.getType(), null);
-          p.setFileName(MimeUtility.encodeText(BeeUtils.notEmpty(entry.getValue(),
-              fileInfo.getName()), BeeConst.CHARSET_UTF8, null));
+          p.setFileName(BeeUtils.notEmpty(entry.getValue(), fileInfo.getName()));
 
           files.add(fileInfo);
 
@@ -1019,8 +1017,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
           try {
             p.attachFile(fileInfo.getFile(), fileInfo.getType(), null);
             p.addHeader("Content-ID", "<" + cid + ">");
-            p.setFileName(MimeUtility.encodeText(fileInfo.getName(), BeeConst.CHARSET_UTF8,
-                null));
+            p.setFileName(fileInfo.getName());
           } catch (IOException ex) {
             logger.error(ex);
             p = null;
@@ -1411,12 +1408,11 @@ public class MailModuleBean implements BeeModule, HasTimerService {
     }
     if (move) {
       try {
-        account.processMessages(uids, source, target, move);
+        account.processMessages(uids, source, null, true);
       } catch (FolderOutOfSyncException e) {
         checkMail(true, account, source, null);
         return 0;
       }
-      account.processMessages(uids, source, null, true);
       mail.detachMessages(wh);
 
       MailMessage mailMessage = new MailMessage(source.getId());

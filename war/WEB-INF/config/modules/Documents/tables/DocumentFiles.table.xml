@@ -11,10 +11,10 @@
     <String name="Caption" precision="100" label="=documentFileCaption"/>
     <Text name="Description" label="=documentFileDescription" />
 
-    <DateTime name="FileDate" notNull="true" label="=documentFileDate" />
+    <DateTime name="FileDate" notNull="true" label="=documentFileDate" defExpr="CURRENT_TIME" />
     <String name="FileVersion" precision="30" label="=documentFileVersion" />
 
-    <Relation name="Owner" notNull="true" relation="Users" defExpr="CURRENT_USER" 
+    <Relation name="Owner" notNull="true" relation="Users" defExpr="CURRENT_USER"
       label="=documentFileOwner" />
     <Text name="Comment" label="=documentFileComment" />
   </Fields>

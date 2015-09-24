@@ -157,7 +157,7 @@ public class TripRoutesGrid extends AbstractGridInterceptor {
                 if (response.hasErrors()) {
                   return;
                 }
-                presenter.refresh(false);
+                presenter.refresh(false, false);
               }
             });
           }

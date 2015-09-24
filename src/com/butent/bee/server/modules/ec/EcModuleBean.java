@@ -90,7 +90,6 @@ import com.butent.bee.shared.modules.ec.EcBrand;
 import com.butent.bee.shared.modules.ec.EcCarModel;
 import com.butent.bee.shared.modules.ec.EcCarType;
 import com.butent.bee.shared.modules.ec.EcConstants;
-import com.butent.bee.shared.modules.ec.EcConstants.*;
 import com.butent.bee.shared.modules.ec.EcCriterion;
 import com.butent.bee.shared.modules.ec.EcFinInfo;
 import com.butent.bee.shared.modules.ec.EcGroup;

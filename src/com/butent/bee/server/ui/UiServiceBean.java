@@ -580,7 +580,10 @@ public class UiServiceBean {
     List<BeeRowSet> result = new ArrayList<>();
 
     for (String viewName : viewNames) {
-      BeeRowSet rs = qs.getViewData(viewName);
+      String where = reqInfo.getParameter(VAR_VIEW_WHERE + viewName);
+      Filter filter = BeeUtils.isEmpty(where) ? null : Filter.restore(where);
+
+      BeeRowSet rs = qs.getViewData(viewName, filter);
       result.add(rs);
     }
     return ResponseObject.response(result);

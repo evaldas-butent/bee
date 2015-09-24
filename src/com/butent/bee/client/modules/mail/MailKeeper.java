@@ -37,6 +37,7 @@ import com.butent.bee.shared.menu.MenuService;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.mail.AccountInfo;
+import com.butent.bee.shared.modules.mail.MailConstants.MessageFlag;
 import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -245,7 +246,7 @@ public final class MailKeeper {
     });
   }
 
-  static void getAccounts(final BiConsumer<List<AccountInfo>, AccountInfo> consumer) {
+  public static void getAccounts(final BiConsumer<List<AccountInfo>, AccountInfo> consumer) {
     ParameterList params = createArgs(SVC_GET_ACCOUNTS);
     params.addDataItem(COL_USER, BeeKeeper.getUser().getUserId());
 

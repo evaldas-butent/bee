@@ -499,6 +499,7 @@
       <xs:enumeration value="Themes" />
       <xs:enumeration value="TimeCardChanges" />
       <xs:enumeration value="TimeCardCodes" />
+      <xs:enumeration value="TimeRanges" />
       <xs:enumeration value="TimeZones" />
       <xs:enumeration value="TodoList" />
       <xs:enumeration value="TradeActInvoices" />
@@ -554,6 +555,7 @@
       <xs:enumeration value="VehicleTracking" />
       <xs:enumeration value="WaitingCargo" />
       <xs:enumeration value="Warehouses" />
+      <xs:enumeration value="WorkSchedule" />
       <xs:enumeration value="Workspaces" />
 
 <!-- samples -->

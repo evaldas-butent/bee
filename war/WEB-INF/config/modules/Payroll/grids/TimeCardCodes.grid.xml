@@ -7,7 +7,7 @@
     <DataColumn name="TcCode" visible="true">
       <editor type="string" upperCase="true" />
     </DataColumn>
-    <DataColumn name="TcName" flexGrow="1" flexShrink="1" />
+    <DataColumn name="TcName" flexGrow="1" />
 
     <DataColumn name="Background" updateMode="row">
       <editor type="color" />
@@ -16,6 +16,6 @@
       <editor type="color" />
     </DataColumn>
 
-    <DataColumn name="Description" visible="false" />
+    <DataColumn name="Description" flexGrow="1" visible="false" />
   </g:columns>
 </g:Grid>

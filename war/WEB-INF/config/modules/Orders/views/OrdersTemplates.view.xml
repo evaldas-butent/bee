@@ -12,8 +12,6 @@
     <SimpleJoin joinType="LEFT" name="Type">
       <SimpleColumn name="TypeName" alias="OrderTypeName" />
     </SimpleJoin>
-    
-    <SimpleColumn name="StartDate" />
 
     <SimpleColumn name="Warehouse" />
     <SimpleJoin name="Warehouse" joinType="LEFT">
@@ -45,17 +43,6 @@
       </SimpleJoin>
       <SimpleJoin name="Company" joinType="LEFT">
         <SimpleColumn alias="ContactCompanyName" name="Name" />
-      </SimpleJoin>
-    </SimpleJoin>
-
-    <SimpleColumn name="Manager" />
-    <SimpleJoin name="Manager" joinType="LEFT">
-      <SimpleColumn name="CompanyPerson" alias="ManagerPerson" />
-      <SimpleJoin name="CompanyPerson" joinType="LEFT">
-        <SimpleJoin name="Person" joinType="LEFT">
-          <SimpleColumn name="FirstName" alias="ManagerFirstName" />
-          <SimpleColumn name="LastName" alias="ManagerLastName" />
-        </SimpleJoin>
       </SimpleJoin>
     </SimpleJoin>
     

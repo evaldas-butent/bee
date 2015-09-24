@@ -63,6 +63,28 @@ public enum Feed implements HasLocalizedCaption {
     }
   },
 
+  REQUESTS_ASSIGNED(
+      ModuleAndSub.of(Module.TASKS),
+      TaskConstants.TBL_REQUESTS,
+      TaskConstants.VIEW_REQUESTS,
+      Lists.newArrayList(TaskConstants.COL_REQUEST_CUSTOMER_NAME)) {
+    @Override
+    public String getCaption(LocalizableConstants constants) {
+      return constants.feedRequestsAssigned();
+    }
+  },
+
+  REQUESTS_ALL(
+      ModuleAndSub.of(Module.TASKS),
+      TaskConstants.TBL_REQUESTS,
+      TaskConstants.VIEW_REQUESTS,
+      Lists.newArrayList(TaskConstants.COL_REQUEST_CUSTOMER_NAME)) {
+    @Override
+    public String getCaption(LocalizableConstants constants) {
+      return constants.feedRequestsAll();
+    }
+  },
+
   COMPANIES_MY(ModuleAndSub.of(Module.CLASSIFIERS, SubModule.CONTACTS),
       TBL_COMPANY_USERS, VIEW_COMPANIES,
       COL_COMPANY_NAME) {

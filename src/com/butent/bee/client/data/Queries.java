@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
@@ -240,50 +241,65 @@ public final class Queries {
         });
   }
 
-  public static int getData(Collection<String> viewNames, final CachingPolicy cachingPolicy,
-      final DataCallback callback) {
+  public static int getData(Collection<String> viewNames, DataCallback callback) {
+    return getData(viewNames, null, CachingPolicy.NONE, callback);
+  }
+
+  public static int getData(Collection<String> viewNames, Map<String, Filter> filters,
+      final CachingPolicy cachingPolicy, final DataCallback callback) {
 
     Assert.notEmpty(viewNames);
     Assert.notNull(callback);
 
     final List<BeeRowSet> result = new ArrayList<>();
-    final String viewList;
+    final List<String> viewList = new ArrayList<>();
 
     if (cachingPolicy != null && cachingPolicy.doRead()) {
-      List<String> notCached = new ArrayList<>();
-
       for (String viewName : viewNames) {
-        BeeRowSet rowSet = Global.getCache().getRowSet(viewName);
+        BeeRowSet rowSet = BeeUtils.containsKey(filters, viewName)
+            ? null : Global.getCache().getRowSet(viewName);
+
         if (rowSet != null) {
           result.add(rowSet);
         } else {
-          notCached.add(viewName);
+          viewList.add(viewName);
         }
       }
 
-      if (notCached.isEmpty()) {
+      if (viewList.isEmpty()) {
         callback.onSuccess(result);
         return RESPONSE_FROM_CACHE;
       }
-      viewList = NameUtils.join(notCached);
 
     } else {
-      viewList = NameUtils.join(viewNames);
+      viewList.addAll(viewNames);
     }
 
     Assert.notEmpty(viewList);
 
     final String service = Service.GET_DATA;
     ParameterList parameters = new ParameterList(service);
-    parameters.addDataItem(Service.VAR_VIEW_LIST, viewList);
+
+    parameters.addDataItem(Service.VAR_VIEW_LIST, NameUtils.join(viewList));
+
+    if (!BeeUtils.isEmpty(filters)) {
+      for (String viewName : viewList) {
+        Filter filter = filters.get(viewName);
+
+        if (filter != null) {
+          parameters.addDataItem(Service.VAR_VIEW_WHERE + viewName, filter.serialize());
+        }
+      }
+    }
 
     return BeeKeeper.getRpc().makePostRequest(parameters, new ResponseCallback() {
       @Override
       public void onResponse(ResponseObject response) {
-        if (checkResponse(service, getRpcId(), viewList, response, null, callback)) {
+        if (checkResponse(service, getRpcId(), viewList.toString(), response, null, callback)) {
           String[] arr = Codec.beeDeserializeCollection((String) response.getResponse());
           if (ArrayUtils.isEmpty(arr)) {
-            error(callback, service, getRpcId(), viewList, "response type:", response.getType());
+            error(callback, service, getRpcId(), viewList.toString(),
+                "response type:", response.getType());
             return;
           }
 

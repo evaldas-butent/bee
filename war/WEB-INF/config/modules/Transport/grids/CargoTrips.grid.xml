@@ -37,6 +37,6 @@
     </CalcColumn>
     <DataColumn name="DateFrom" caption="=trDeparted" />
     <DataColumn name="DateTo" caption="=trReturned" />
-    <DataColumn name="TripPercent" caption="%" minValue="0" maxValue="100" editInPlace="true" />
+    <DataColumn name="TripPercent" caption="%" minValue="0" editInPlace="true" />
   </g:columns>
 </g:Grid>

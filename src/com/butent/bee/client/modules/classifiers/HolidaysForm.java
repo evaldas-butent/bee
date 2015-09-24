@@ -76,9 +76,9 @@ class HolidaysForm extends AbstractFormInterceptor implements SelectorEvent.Hand
 
   private final Multimap<Long, Integer> data = HashMultimap.create();
 
-  UnboundSelector countrySelector;
-  Flow yearPanel;
-  Flow calendarPanel;
+  private UnboundSelector countrySelector;
+  private Flow yearPanel;
+  private Flow calendarPanel;
 
   HolidaysForm() {
   }

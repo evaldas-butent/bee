@@ -817,7 +817,8 @@ public class MailPanel extends AbstractFormInterceptor {
         messageWidget.setVisible(false);
         emptySelectionWidget.setVisible(true);
       }
-      grid.refresh(preserveActiveRow);
+
+      grid.refresh(preserveActiveRow, !preserveActiveRow);
     }
   }
 
@@ -951,7 +952,7 @@ public class MailPanel extends AbstractFormInterceptor {
     final boolean purge = getCurrentAccount().isTrashFolder(getCurrentFolder());
 
     Global.confirm(purge ? Localized.getConstants().delete()
-            : Localized.getConstants().mailActionMoveToTrash(), purge ? Icon.ALARM : Icon.WARNING,
+        : Localized.getConstants().mailActionMoveToTrash(), purge ? Icon.ALARM : Icon.WARNING,
         Collections.singletonList(Localized.getMessages().mailMessages(ids.size())),
         new ConfirmationCallback() {
           @Override
