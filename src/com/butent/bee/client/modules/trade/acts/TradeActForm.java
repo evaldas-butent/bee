@@ -14,7 +14,6 @@ import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.event.logical.SelectorEvent;
-import com.butent.bee.client.modules.transport.PrintInvoiceInterceptor;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
@@ -153,13 +152,13 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
       commandCompose = new Button(
           Localized.getConstants().taInvoiceCompose(), new ClickHandler() {
 
-            @Override
-            public void onClick(ClickEvent arg0) {
-              FormFactory.openForm(FORM_INVOICE_BUILDER, new TradeActInvoiceBuilder(row
-                  .getLong(Data
-                      .getColumnIndex(VIEW_TRADE_ACTS, COL_TA_COMPANY)), row.getId()));
-            }
-          });
+        @Override
+        public void onClick(ClickEvent arg0) {
+          FormFactory.openForm(FORM_INVOICE_BUILDER,
+              new TradeActInvoiceBuilder(row.getLong(Data.getColumnIndex(VIEW_TRADE_ACTS,
+                  COL_TA_COMPANY)), row.getId()));
+        }
+      });
 
       if (kind != TradeActKind.RETURN) {
         header.addCommandItem(commandCompose);
@@ -232,7 +231,7 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
 
   @Override
   public FormInterceptor getPrintFormInterceptor() {
-    return new PrintInvoiceInterceptor();
+    return new PrintActForm();
   }
 
   @Override

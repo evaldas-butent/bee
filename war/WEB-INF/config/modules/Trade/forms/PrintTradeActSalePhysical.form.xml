@@ -2,13 +2,34 @@
 <!DOCTYPE Form [
   <!ENTITY section "margin-top: 5px;">
   <!ENTITY bold "font-weight:bold;">
-  <!ENTITY footer "position: absolute; bottom: 5px; display: inline-block;">
   <!ENTITY form "PrintTradeActSalePhysical">
+  <!ENTITY hdr ".bee-form-PrintTradeActSalePhysical .bee-trade-itemsInfo-header .bee-trade-itemsInfo-">
 ]>
 <f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form" xmlns:ui="http://www.butent.com/ui"
   name="&form;" caption="Perdavimo aktas" disabledActions="save" width="70" widthUnit="%" height="90" heightUnit="%">
   <FlowPanel style="padding: 10px; background-color: white; font-size:12px;" contentEditable="true"
     class="bee-form-TradeActPrint">
+    <css id="&form;">
+      &hdr;Article:before {content: "Artikulas"}
+      &hdr;Quantity:before {content: "Kiekis"}
+      &hdr;Unit:before {content: "Mato vnt."}
+      &hdr;TimeUnit:before {content: "Laiko vnt."}
+      &hdr;ReturnedQty:before {content: "Grąžinta"}
+      &hdr;RemainingQty:before {content: "Liko"}
+      &hdr;DateFrom:before {content: "Data nuo"}
+      &hdr;DateTo:before {content: "Data iki"}
+      &hdr;Weight:before {content: "Svoris"}
+      &hdr;Area:before {content: "Plotas"}
+      &hdr;Tariff:before {content: "Tarifas"}
+      &hdr;Price:before {content: "Kaina"}
+      &hdr;Discount:before {content: "Nuol."}
+      &hdr;Amount:before {content: "Suma be PVM"}
+      &hdr;Vat:before {content: "PVM"}
+      &hdr;AmountTotal:before {content: "Suma"}
+      .bee-form-PrintTradeActSalePhysical .TradeActItems .bee-trade-itemsInfo-header .bee-trade-itemsInfo-Name:before {content: "Nuomojama įranga"}
+      .bee-form-PrintTradeActSalePhysical .TradeActServices .bee-trade-itemsInfo-header .bee-trade-itemsInfo-Name:before {content: "Teikiamos paslaugos/prekės"}
+      .bee-form-PrintTradeActSalePhysical .TradeActServices .bee-trade-itemsInfo-header .bee-trade-itemsInfo-AmountTotal:before {content: "Suma už min. term."}
+    </css>
     <FlowPanel>
       <Image url="images/logo.png" style="position: relative;" />
       <FlowPanel style="margin-top:-35px;">
@@ -70,159 +91,10 @@
       </Table>
     </FlowPanel>
 
-    <Table name="InvoiceDetails1" style="&section; width:100%;">
-      <properties content="TradeActItems" />
-      <row>
-        <Label text="Artikulas">
-          <properties name="Article" />
-        </Label>
-        <Label text="Nuomojama įranga">
-          <properties name="Name" />
-        </Label>
-        <Label text="Kiekis">
-          <properties name="Quantity" />
-        </Label>
-        <Label text="Mato VNT.">
-          <properties name="Unit" />
-        </Label>
-        <Label text="Grąžinta">
-          <properties name="ReturnedQty" />
-        </Label>
-        <Label text="Liko">
-          <properties name="rem" />
-        </Label>
-        <Label text="Svoris">
-          <properties name="Weight" />
-        </Label>
-        <Label text="Plotas">
-          <properties name="Area" />
-        </Label>
-        <Label text="Kaina">
-          <properties name="Price" />
-        </Label>
-        <Label text="Nuolaida, %">
-          <properties name="Discount" />
-        </Label>
-        <Label text="Suma">
-          <properties name="Amount" />
-        </Label>
-      </row>
-      <row>
-        <Label text="Iš viso" style="&bold;" />
-        <cell colSpan="2">
-          <FlowPanel style="text-align:right;">
-            <Label name="TotalItemsQuantity" style="&bold;" />
-          </FlowPanel>
-        </cell>
-        <cell colSpan="2">
-          <Label></Label>
-        </cell>
-        <cell>
-          <FlowPanel style="text-align:left;">
-            <Label name="TotalRemaining" style="&bold;" />
-          </FlowPanel>
-        </cell>
-        <FlowPanel style="text-align:left;">
-          <Label name="TotalWeight" style="&bold;" />
-        </FlowPanel>
-        <FlowPanel style="text-align:left;">
-          <Label name="TotalArea" style="&bold;" />
-        </FlowPanel>
-        <FlowPanel style="text-align:right;">
-          <Label style="&bold;">
-            <properties name="TotalPrice" />
-          </Label>
-        </FlowPanel>
-        <FlowPanel style="text-align:left;">
-          <Label style="&bold;">
-            <properties name="TotalDiscount" />
-          </Label>
-        </FlowPanel>
-        <FlowPanel style="text-align:right;">
-          <Label style="&bold;">
-            <properties name="AmountTotal" />
-          </Label>
-        </FlowPanel>
-      </row>
-    </Table>
+    <FlowPanel name="TradeActItems" class="TradeActItems" style="&section;" />
+    <br/>
+    <FlowPanel name="TradeActServices" class="TradeActServices" style="&section;" />
 
-    <Table name="InvoiceDetails2" style="&section; width:100%">
-      <properties content="TradeActServices" />
-      <row>
-        <Label text="Artikulas">
-          <properties name="Article" />
-        </Label>
-        <Label text="Teikiamos paslaugos/prekės">
-          <properties name="Name" />
-        </Label>
-        <Label text="Data nuo">
-          <properties name="DateFrom" />
-        </Label>
-        <Label text="Data iki">
-          <properties name="DateTo" />
-        </Label>
-        <Label text="Kiekis">
-          <properties name="Quantity" />
-        </Label>
-        <Label text="Mato VNT.">
-          <properties name="Unit" />
-        </Label>
-        <Label text="Laiko VNT.">
-          <properties name="tu" />
-        </Label>
-        <Label text="Tarifas">
-          <properties name="Tariff" />
-        </Label>
-        <Label text="Kaina">
-          <properties name="Price" />
-        </Label>
-        <Label text="Nuolaida, %">
-          <properties name="Discount" />
-        </Label>
-        <Label />
-        <Label text="Suma už min. term.">
-          <properties name="Amount" />
-        </Label>
-      </row>
-      <row>
-        <Label text="Iš viso" style="&bold;" />
-        <cell colSpan="4">
-          <FlowPanel style="text-align:right;">
-            <Label style="&bold;">
-              <properties name="QuantityTotal" />
-            </Label>
-          </FlowPanel>
-        </cell>
-        <cell colSpan="4">
-          <FlowPanel style="text-align:right;">
-            <Label style="&bold;">
-              <properties name="TotalPrice" />
-            </Label>
-          </FlowPanel>
-        </cell>
-        <FlowPanel style="text-align:left;">
-          <Label style="&bold;">
-            <properties name="TotalDiscount" />
-          </Label>
-        </FlowPanel>
-        <FlowPanel style="text-align: right;">
-          <Label text="Bendra suma:" />
-          <Label text="PVM suma:" />
-          <Label text="VISO:" style="&bold;" />
-        </FlowPanel>
-        <FlowPanel style="text-align:right;">
-          <Label>
-            <properties name="AmountTotal" />
-          </Label>
-          <Label>
-            <properties name="VatTotal" />
-          </Label>
-          <Label style="&bold;">
-            <properties name="Total" />
-          </Label>
-        </FlowPanel>
-      </row>
-    </Table>
     <HtmlPanel style="&section;">
       <span style="display:block; white-space:pre-wrap; border:1px solid silver; margin-top: 20px;">Patabos: Grąžinama įranga turi būti nuvalyta ir išardyta taip, kaip buvo išduota. Įranga transporto priemonėje turi būti
 sukrauta taip, kad būtų galima iškrauti šakiniais krautuvais. Už iškrovimą rankomis apmokama papildomai.</span>
