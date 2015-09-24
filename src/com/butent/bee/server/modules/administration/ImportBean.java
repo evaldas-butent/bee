@@ -1216,7 +1216,7 @@ public class ImportBean {
                   Date date = cell.getDateCellValue();
 
                   if (date != null) {
-                    value = BeeUtils.toString(date.getTime());
+                    value = BeeUtils.toString(date.getTime()) + TimeUtils.MS;
                   }
                 } else {
                   value = BeeUtils.toString(cell.getNumericCellValue());
