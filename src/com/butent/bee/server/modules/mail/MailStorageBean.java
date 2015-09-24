@@ -79,7 +79,6 @@ import javax.mail.internet.AddressException;
 import javax.mail.internet.ContentType;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
-import javax.mail.internet.MimeUtility;
 import javax.mail.internet.ParseException;
 import javax.mail.util.SharedByteArrayInputStream;
 
@@ -580,10 +579,6 @@ public class MailStorageBean {
 
       try {
         fileName = part.getFileName();
-
-        if (!BeeUtils.isEmpty(fileName)) {
-          fileName = MimeUtility.decodeText(fileName);
-        }
       } catch (ParseException e) {
         logger.warning("(MessageID=", messageId, ") Error getting part file name:", e);
       }
