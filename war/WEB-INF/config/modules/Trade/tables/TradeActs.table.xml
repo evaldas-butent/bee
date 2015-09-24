@@ -7,7 +7,7 @@
   <Fields>
     <Relation name="Name" relation="TradeActNames" label="=tradeActName" />
     <Relation name="Contract" relation="Documents" label="=trdContract" />
-    
+
     <DateTime name="Date" notNull="true" defExpr="CURRENT_TIME" label="=taDate" />
     <DateTime name="Until" label="=taUntil" />
 
@@ -35,8 +35,10 @@
     <Relation name="Parent" relation="TradeActs" label="=taParent" />
     <String name="RegistrationNo" label="=taRegistrationNo" precision="30" />
   </Fields>
-  
-    <Indexes>
+  <Constraints>
+    <Unique fields="Series Number" />
+  </Constraints>
+  <Indexes>
     <Index unique="true">
       <PostgreSql>((CASE "RegistrationNo" WHEN '0' THEN NULL ELSE "RegistrationNo" END))</PostgreSql>
       <MsSql></MsSql>
