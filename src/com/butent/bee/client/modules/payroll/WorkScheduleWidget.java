@@ -4,6 +4,7 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Widget;
@@ -16,6 +17,7 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
+import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Selectors;
 import com.butent.bee.client.event.EventUtils;
@@ -35,6 +37,7 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.html.Attributes;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
@@ -78,6 +81,14 @@ class WorkScheduleWidget extends HtmlTable {
   private static final String STYLE_EMPLOYEE_APPEND_SELECTOR = STYLE_PREFIX + "append-selector";
 
   private static final String STYLE_TC_CHANGE = STYLE_PREFIX + "tc-change";
+
+  private static final String STYLE_SCHEDULE_ITEM = STYLE_PREFIX + "item";
+  private static final String STYLE_SCHEDULE_TR = STYLE_PREFIX + "item-tr";
+  private static final String STYLE_SCHEDULE_TC = STYLE_PREFIX + "item-tc";
+  private static final String STYLE_SCHEDULE_RANGE = STYLE_PREFIX + "item-range";
+  private static final String STYLE_SCHEDULE_FROM = STYLE_PREFIX + "item-from";
+  private static final String STYLE_SCHEDULE_UNTIL = STYLE_PREFIX + "item-until";
+  private static final String STYLE_SCHEDULE_DURATION = STYLE_PREFIX + "item-duration";
 
   private static final String KEY_YM = "ym";
 
@@ -219,7 +230,7 @@ class WorkScheduleWidget extends HtmlTable {
         Widget ew = renderEmployee(employee, nameIndexes, contactIndexes, infoIndexes);
         setWidgetAndStyle(r, EMPLOYEE_PANEL_COL, ew, STYLE_EMPLOYEE_PANEL);
 
-        renderSchedule(employee.getId(), activeMonth, r);
+        renderSchedule(employee.getId(), r);
 
         DomUtils.setDataIndex(getRowFormatter().getElement(r), employee.getId());
         r++;
@@ -228,29 +239,247 @@ class WorkScheduleWidget extends HtmlTable {
 
     Widget appender = renderEmployeeAppender();
     setWidgetAndStyle(r, EMPLOYEE_PANEL_COL, appender, STYLE_EMPLOYEE_APPEND_PANEL);
+
+    addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        Element targetElement = EventUtils.getEventTargetElement(event);
+        TableCellElement cell = DomUtils.getParentCell(targetElement, true);
+
+        if (cell != null) {
+          long employee = DomUtils.getDataIndexLong(DomUtils.getParentRow(cell, false));
+          int day = DomUtils.getDataIndexInt(cell);
+
+          if (DataUtils.isId(employee) && day > 0) {
+            editSchedule(employee, day);
+          }
+        }
+      }
+    });
   }
 
-  private void renderSchedule(long employeeId, YearMonth ym, int r) {
-    Multimap<Integer, Long> tcChanges = getTimeCardChanges(employeeId, ym);
+  private void renderSchedule(long employeeId, int r) {
+    Multimap<Integer, Long> tcChanges = getTimeCardChanges(employeeId, activeMonth);
 
-    int days = ym.getLength();
+    JustDate date = activeMonth.getDate();
+    int days = activeMonth.getLength();
 
     for (int i = 0; i < days; i++) {
       int day = i + 1;
+      date.setDom(day);
 
       Flow panel = new Flow();
+
+      List<BeeRow> schedule = filterSchedule(employeeId, date);
 
       if (tcChanges.containsKey(day)) {
         for (Long codeId : tcChanges.get(day)) {
           panel.add(renderTimeCardChange(codeId));
         }
+      }
 
-      } else {
+      for (BeeRow wsRow : schedule) {
+        Widget widget = renderSheduleItem(wsRow);
+        if (widget != null) {
+          widget.addStyleName(STYLE_SCHEDULE_ITEM);
+          panel.add(widget);
+        }
+      }
+
+      if (panel.isEmpty()) {
         panel.addStyleName(STYLE_DAY_EMPTY);
       }
 
-      setWidgetAndStyle(r, DAY_START_COL + i, panel, STYLE_DAY_CONTENT);
+      int c = DAY_START_COL + i;
+      setWidgetAndStyle(r, c, panel, STYLE_DAY_CONTENT);
+
+      DomUtils.setDataIndex(getCellFormatter().getElement(r, c), day);
     }
+  }
+
+  private static String extendStyleName(String styleName, String extension) {
+    return BeeUtils.join(BeeConst.STRING_MINUS, styleName,
+        BeeUtils.removeWhiteSpace(extension.toLowerCase()));
+  }
+
+  private static String buildTitle(BeeRowSet rowSet, BeeRow row, String... colNames) {
+    List<String> values = new ArrayList<>();
+
+    for (String colName : colNames) {
+      String value = DataUtils.getString(rowSet, row, colName);
+      if (!BeeUtils.isEmpty(value)) {
+        values.add(value);
+      }
+    }
+
+    return BeeUtils.buildLines(values);
+  }
+
+  private Widget renderSheduleItem(BeeRow item) {
+    String note = DataUtils.getString(wsData, item, COL_WORK_SCHEDULE_NOTE);
+
+    Long trId = DataUtils.getLong(wsData, item, COL_TIME_RANGE_CODE);
+
+    if (DataUtils.isId(trId) && !DataUtils.isEmpty(timeRanges)) {
+      BeeRow trRow = timeRanges.getRowById(trId);
+
+      if (trRow != null) {
+        CustomDiv widget = new CustomDiv(STYLE_SCHEDULE_TR);
+
+        String trCode = DataUtils.getString(timeRanges, trRow, COL_TR_CODE);
+        if (!BeeUtils.isEmpty(trCode)) {
+          widget.setText(trCode);
+          widget.addStyleName(extendStyleName(STYLE_SCHEDULE_TR, trCode));
+        }
+
+        String title = BeeUtils.buildLines(DataUtils.getString(timeRanges, trRow, COL_TR_NAME),
+            TimeUtils.renderPeriod(DataUtils.getString(timeRanges, trRow, COL_TR_FROM),
+                DataUtils.getString(timeRanges, trRow, COL_TR_UNTIL)),
+            DataUtils.getString(timeRanges, trRow, COL_TR_DESCRIPTION), note);
+        if (!BeeUtils.isEmpty(title)) {
+          widget.setTitle(title);
+        }
+
+        UiHelper.setColor(widget,
+            DataUtils.getString(timeRanges, trRow, AdministrationConstants.COL_BACKGROUND),
+            DataUtils.getString(timeRanges, trRow, AdministrationConstants.COL_FOREGROUND));
+
+        return widget;
+      }
+    }
+
+    Long tcId = DataUtils.getLong(wsData, item, COL_TIME_CARD_CODE);
+
+    if (DataUtils.isId(tcId) && !DataUtils.isEmpty(timeCardCodes)) {
+      BeeRow tcRow = timeCardCodes.getRowById(tcId);
+
+      if (tcRow != null) {
+        CustomDiv widget = new CustomDiv(STYLE_SCHEDULE_TC);
+
+        String tcCode = DataUtils.getString(timeCardCodes, tcRow, COL_TC_CODE);
+        if (!BeeUtils.isEmpty(tcCode)) {
+          widget.setText(tcCode);
+          widget.addStyleName(extendStyleName(STYLE_SCHEDULE_TC, tcCode));
+        }
+
+        String title = BeeUtils.buildLines(
+            buildTitle(timeCardCodes, tcRow, COL_TC_NAME, COL_TC_DESCRIPTION), note);
+        if (!BeeUtils.isEmpty(title)) {
+          widget.setTitle(title);
+        }
+
+        UiHelper.setColor(widget,
+            DataUtils.getString(timeCardCodes, tcRow, AdministrationConstants.COL_BACKGROUND),
+            DataUtils.getString(timeCardCodes, tcRow, AdministrationConstants.COL_FOREGROUND));
+
+        return widget;
+      }
+    }
+
+    String from = DataUtils.getString(wsData, item, COL_WORK_SCHEDULE_FROM);
+    String until = DataUtils.getString(wsData, item, COL_WORK_SCHEDULE_UNTIL);
+    String duration = DataUtils.getString(wsData, item, COL_WORK_SCHEDULE_DURATION);
+
+    if (!BeeUtils.isEmpty(from) || !BeeUtils.isEmpty(until)) {
+      Flow panel = new Flow(STYLE_SCHEDULE_RANGE);
+      if (!BeeUtils.isEmpty(note)) {
+        panel.setTitle(note);
+      }
+
+      if (!BeeUtils.isEmpty(from)) {
+        CustomDiv widget = new CustomDiv(STYLE_SCHEDULE_FROM);
+        widget.setText(from);
+        panel.add(widget);
+      }
+
+      if (!BeeUtils.isEmpty(until)) {
+        CustomDiv widget = new CustomDiv(STYLE_SCHEDULE_UNTIL);
+        widget.setText(until);
+        panel.add(widget);
+      }
+
+      if (!BeeUtils.isEmpty(duration)) {
+        CustomDiv widget = new CustomDiv(STYLE_SCHEDULE_DURATION);
+        widget.setText(formatDuration(duration));
+        panel.add(widget);
+      }
+
+      return panel;
+    }
+
+    if (!BeeUtils.isEmpty(duration)) {
+      CustomDiv widget = new CustomDiv(STYLE_SCHEDULE_DURATION);
+      widget.setText(formatDuration(duration));
+
+      if (!BeeUtils.isEmpty(note)) {
+        widget.setTitle(note);
+      }
+
+      return widget;
+    }
+
+    return null;
+  }
+
+  private void editSchedule(long employee, int day) {
+    JustDate date = new JustDate(activeMonth.getYear(), activeMonth.getMonth(), day);
+
+    // List<BeeRow> schedule = filterSchedule(employee, date);
+
+    DataInfo dataInfo = Data.getDataInfo(VIEW_WORK_SCHEDULE);
+    BeeRow row = RowFactory.createEmptyRow(dataInfo, true);
+
+    row.setValue(dataInfo.getColumnIndex(COL_PAYROLL_OBJECT), objectId);
+    row.setValue(dataInfo.getColumnIndex(COL_EMPLOYEE), employee);
+    row.setValue(dataInfo.getColumnIndex(COL_WORK_SCHEDULE_DATE), date);
+
+    String caption = BeeUtils.joinWords(getEmployeeFullName(employee),
+        Format.renderDateFull(date));
+
+    RowFactory.createRow(FORM_WORK_SCHEDULE_EDITOR, caption, dataInfo, row, null, null,
+        new RowCallback() {
+          @Override
+          public void onSuccess(BeeRow result) {
+          }
+        });
+  }
+
+  private BeeRow findEmployee(long id) {
+    if (DataUtils.isEmpty(emData)) {
+      return null;
+    } else {
+      return emData.getRowById(id);
+    }
+  }
+
+  private String getEmployeeFullName(long id) {
+    BeeRow row = findEmployee(id);
+
+    if (row == null) {
+      return null;
+    } else {
+      return BeeUtils.joinWords(DataUtils.getString(emData, row, COL_FIRST_NAME),
+          DataUtils.getString(emData, row, COL_LAST_NAME));
+    }
+  }
+
+  private List<BeeRow> filterSchedule(long employee, JustDate date) {
+    List<BeeRow> result = new ArrayList<>();
+
+    if (!DataUtils.isEmpty(wsData)) {
+      int employeeIndex = wsData.getColumnIndex(COL_EMPLOYEE);
+      int dateIndex = wsData.getColumnIndex(COL_WORK_SCHEDULE_DATE);
+
+      for (BeeRow row : wsData) {
+        if (Objects.equals(row.getLong(employeeIndex), employee)
+            && Objects.equals(row.getDate(dateIndex), date)) {
+
+          result.add(DataUtils.cloneRow(row));
+        }
+      }
+    }
+
+    return result;
   }
 
   private Widget renderTimeCardChange(long codeId) {
@@ -263,11 +492,10 @@ class WorkScheduleWidget extends HtmlTable {
         String code = DataUtils.getString(timeCardCodes, row, COL_TC_CODE);
         if (!BeeUtils.isEmpty(code)) {
           widget.setText(code);
-          widget.addStyleName(STYLE_TC_CHANGE + BeeConst.STRING_MINUS + code.trim().toLowerCase());
+          widget.addStyleName(extendStyleName(STYLE_TC_CHANGE, code));
         }
 
-        String title = BeeUtils.buildLines(DataUtils.getString(timeCardCodes, row, COL_TC_NAME),
-            DataUtils.getString(timeCardCodes, row, COL_TC_DESCRIPTION));
+        String title = buildTitle(timeCardCodes, row, COL_TC_NAME, COL_TC_DESCRIPTION);
         if (!BeeUtils.isEmpty(title)) {
           widget.setTitle(title);
         }
@@ -406,15 +634,19 @@ class WorkScheduleWidget extends HtmlTable {
     return panel;
   }
 
-  private static String format(YearMonth ym) {
+  private static String formatYm(YearMonth ym) {
     return BeeUtils.joinWords(ym.getYear(), Format.renderMonthFullStandalone(ym).toLowerCase());
+  }
+
+  private static String formatDuration(String duration) {
+    return BeeUtils.parenthesize(duration);
   }
 
   private Widget renderMonths(List<YearMonth> months) {
     Flow panel = new Flow();
 
     for (YearMonth ym : months) {
-      Label widget = new Label(format(ym));
+      Label widget = new Label(formatYm(ym));
 
       widget.addStyleName(STYLE_MONTH_LABEL);
       if (ym.equals(activeMonth)) {

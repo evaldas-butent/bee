@@ -105,5 +105,7 @@
     <OrderBy column="EmployeeCompanyName" />
     <OrderBy column="LocationName" />
     <OrderBy column="Date" />
+    <OrderBy column="TrTimeFrom" />
+    <OrderBy column="TimeFrom" />
   </Order>
 </View>

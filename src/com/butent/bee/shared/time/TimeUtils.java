@@ -909,8 +909,25 @@ public final class TimeUtils {
     }
   }
 
+  public static String renderPeriod(String start, String end) {
+    if (BeeUtils.isEmpty(start)) {
+      if (BeeUtils.isEmpty(end)) {
+        return BeeConst.STRING_EMPTY;
+      } else {
+        return PERIOD_SEPARATOR + end.trim();
+      }
+
+    } else if (BeeUtils.isEmpty(end)) {
+      return start.trim() + PERIOD_SEPARATOR;
+
+    } else {
+      return start.trim() + PERIOD_SEPARATOR + end.trim();
+    }
+  }
+
   public static String renderTime(int hour, int minute, int second, int millis,
       boolean leadingZero) {
+
     StringBuilder sb = new StringBuilder();
     sb.append(leadingZero ? padTwo(hour) : BeeUtils.toString(hour));
     sb.append(TIME_FIELD_SEPARATOR).append(padTwo(minute));

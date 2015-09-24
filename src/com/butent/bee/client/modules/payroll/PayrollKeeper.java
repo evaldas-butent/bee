@@ -34,6 +34,16 @@ public final class PayrollKeeper {
     ConditionalStyle.registerGridColumnStyleProvider(GRID_TIME_CARD_CHANGES,
         COL_TIME_CARD_CHANGES_UNTIL, csp);
 
+    csp = ColorStyleProvider.create(VIEW_WORK_SCHEDULE, ALS_TC_BACKGROUND, ALS_TC_FOREGROUND);
+    ConditionalStyle.registerGridColumnStyleProvider(GRID_WORK_SCHEDULE_DAY,
+        COL_TIME_CARD_CODE, csp);
+
+    csp = ColorStyleProvider.create(VIEW_WORK_SCHEDULE, ALS_TR_BACKGROUND, ALS_TR_FOREGROUND);
+    ConditionalStyle.registerGridColumnStyleProvider(GRID_WORK_SCHEDULE_DAY,
+        COL_TIME_RANGE_CODE, csp);
+    ConditionalStyle.registerGridColumnStyleProvider(GRID_WORK_SCHEDULE_DAY, ALS_TR_FROM, csp);
+    ConditionalStyle.registerGridColumnStyleProvider(GRID_WORK_SCHEDULE_DAY, ALS_TR_UNTIL, csp);
+
     FormFactory.registerFormInterceptor(FORM_WORK_SCHEDULE, new WorkScheduleForm());
   }
 

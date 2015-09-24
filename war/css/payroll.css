@@ -31,6 +31,7 @@
   -ms-flex-align: center;
 }
 .bee-payroll-ws-month-label {
+  padding: 2px 10px;
   cursor: pointer;
 }
 .bee-payroll-ws-month-active {
@@ -45,4 +46,10 @@
 .bee-payroll-ws-employee-name {
   cursor: pointer;
   font-weight: bolder;
+}
+
+.bee-payroll-ws-tc-change {
+  padding-top: 3px;
+  padding-bottom: 3px;
+  text-align: center;
 }

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+  xmlns:ui="http://www.butent.com/ui"
+
+  name="WorkScheduleDay" viewName="WorkSchedule"
+  disabledActions="add refresh"
+  >
+  <g:columns>
+    <RelColumn name="TimeRangeCode" renderColumns="TrCode TrName TrTimeFrom TrTimeUntil"
+       choiceColumns="TrCode TrName TimeFrom TimeUntil" searchableColumns="TrCode"
+       newRowEnabled="false" flexGrow="2" visible="true">
+       <editable>
+         <ui:expression>!(row.TimeCardCode || row.TimeFrom || row.TimeUntil || row.Duration)</ui:expression>
+       </editable>
+    </RelColumn>
+
+    <RelColumn name="TimeCardCode" renderColumns="TcCode TcName" newRowEnabled="false"
+      flexGrow="1" visible="true">
+      <editable>
+        <ui:expression>!(row.TimeRangeCode || row.TimeFrom || row.TimeUntil || row.Duration)</ui:expression>
+      </editable>
+    </RelColumn>
+
+    <DataColumn name="TimeFrom" visible="true">
+      <editable>
+        <ui:expression>!(row.TimeRangeCode || row.TimeCardCode)</ui:expression>
+      </editable>
+      <editor type="timeOfDay" />
+    </DataColumn>
+
+    <DataColumn name="TimeUntil" visible="true">
+      <editable>
+        <ui:expression>!(row.TimeRangeCode || row.TimeCardCode)</ui:expression>
+      </editable>
+      <editor type="timeOfDay" />
+    </DataColumn>
+
+    <DataColumn name="Duration" visible="true">
+      <editable>
+        <ui:expression>!(row.TimeRangeCode || row.TimeCardCode)</ui:expression>
+      </editable>
+      <editor type="timeOfDay" />
+    </DataColumn>
+
+    <DataColumn name="Note" flexGrow="1" />
+  </g:columns>
+</g:Grid>
