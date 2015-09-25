@@ -758,7 +758,9 @@ public class ImportBean {
             if (!BeeUtils.isEmpty(value)) {
               DateTime date;
 
-              if (dtf != null) {
+              if (BeeUtils.isLong(value)) {
+                date = TimeUtils.toDateTimeOrNull(value);
+              } else if (dtf != null) {
                 try {
                   date = new DateTime(dtf.parse(value));
                 } catch (ParseException e) {
@@ -1216,7 +1218,7 @@ public class ImportBean {
                   Date date = cell.getDateCellValue();
 
                   if (date != null) {
-                    value = BeeUtils.toString(date.getTime()) + TimeUtils.MS;
+                    value = BeeUtils.toString(date.getTime());
                   }
                 } else {
                   value = BeeUtils.toString(cell.getNumericCellValue());
