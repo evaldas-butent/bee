@@ -5,11 +5,18 @@
       source="TripCosts"
       caption="Reisų išlaidos apskaitai"
       readOnly="true"
+      filter="TabNr"
     >
   <Columns>
     <SimpleColumn name="Trip" />
-    <SimpleJoin joinType="LEFT" name="Trip">
+    <SimpleJoin joinType="INNER" name="Trip">
       <SimpleColumn name="TripNo" />
+
+      <SimpleJoin name="MainDriver" joinType="INNER">
+        <SimpleJoin name="Driver" joinType="INNER">
+          <HiddenColumn name="Notes" alias="TabNr" />
+        </SimpleJoin>
+      </SimpleJoin>
     </SimpleJoin>
     <SimpleColumn name="Date" />
 
@@ -30,6 +37,7 @@
     <SimpleColumn name="Vat" />
     <SimpleColumn name="VatPercent" />
 
+    <SimpleColumn name="Prefix" />
     <SimpleColumn name="Number" />
 
     <SimpleColumn name="Supplier" />
@@ -47,6 +55,7 @@
       <SimpleColumn name="PaymentName" />
       <HiddenColumn name="PaymentCash" />
     </SimpleJoin>
+
     <SimpleColumn name="Note" />
     <SimpleColumn name="Exported" />
   </Columns>

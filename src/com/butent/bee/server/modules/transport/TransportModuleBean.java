@@ -846,12 +846,16 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
   }
 
   private ResponseObject costsToERP(Set<Long> ids) {
+    String idName = sys.getIdName(TBL_TRIP_COSTS);
+
     SimpleRowSet rs = qs.getData(new SqlSelect()
         .addEmptyText("KLAIDA")
         .addField(TBL_TRIPS, COL_TRIP_NO, "reisas")
-        .addField(TBL_TRIP_COSTS, sys.getIdName(TBL_TRIP_COSTS), "id")
+        .addField(TBL_TRIPS, COL_TRIP_DATE_TO, "pab_data")
+        .addField(TBL_TRIP_COSTS, idName, "id")
         .addField(TBL_TRIP_COSTS, COL_COSTS_DATE, "data")
         .addField(TBL_TRIP_COSTS, COL_COSTS_QUANTITY, "kiekis")
+        .addField(TBL_TRIP_COSTS, "Prefix", "serija")
         .addField(TBL_TRIP_COSTS, COL_NUMBER, "numeris")
         .addField(TBL_TRIP_COSTS, COL_COSTS_NOTE, "pastaba")
         .addField(TBL_ITEMS, COL_ITEM_EXTERNAL_CODE, "preke")
@@ -862,8 +866,14 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
         .addField(TBL_PAYMENT_TYPES, "PaymentName", "atsiskaitymas")
         .addExpr(TradeModuleBean.getVatExpression(TBL_TRIP_COSTS), "pvm_suma")
         .addExpr(TradeModuleBean.getWithoutVatExpression(TBL_TRIP_COSTS), "suma_be_pvm")
+        .addField(TBL_VEHICLES, "ExternalCode", "car_id")
+        .addField(TBL_DRIVERS, COL_NOTES, "tab_nr")
+        .addFields("subq", "dienpinigiai")
         .addFrom(TBL_TRIP_COSTS)
         .addFromInner(TBL_TRIPS, sys.joinTables(TBL_TRIPS, TBL_TRIP_COSTS, COL_TRIP))
+        .addFromLeft(TBL_VEHICLES, sys.joinTables(TBL_VEHICLES, TBL_TRIPS, COL_VEHICLE))
+        .addFromLeft(TBL_TRIP_DRIVERS, sys.joinTables(TBL_TRIP_DRIVERS, TBL_TRIPS, COL_MAIN_DRIVER))
+        .addFromLeft(TBL_DRIVERS, sys.joinTables(TBL_DRIVERS, TBL_TRIP_DRIVERS, COL_DRIVER))
         .addFromInner(TBL_ITEMS, sys.joinTables(TBL_ITEMS, TBL_TRIP_COSTS, COL_COSTS_ITEM))
         .addFromInner(TBL_CURRENCIES,
             sys.joinTables(TBL_CURRENCIES, TBL_TRIP_COSTS, COL_COSTS_CURRENCY))
@@ -873,6 +883,15 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
             sys.joinTables(TBL_COUNTRIES, TBL_TRIP_COSTS, COL_COSTS_COUNTRY))
         .addFromLeft(TBL_PAYMENT_TYPES,
             sys.joinTables(TBL_PAYMENT_TYPES, TBL_TRIP_COSTS, "PaymentType"))
+        .addFromLeft(new SqlSelect()
+                .addFields(TBL_TRIP_COSTS, idName)
+                .addConstant(1, "dienpinigiai")
+                .addFrom(TBL_TRIP_COSTS)
+                .addFromInner(TBL_COUNTRY_NORMS, SqlUtils.join(TBL_TRIP_COSTS, COL_COSTS_ITEM,
+                    TBL_COUNTRY_NORMS, COL_DAILY_COSTS_ITEM))
+                .setWhere(sys.idInList(TBL_TRIP_COSTS, ids))
+                .addGroup(TBL_TRIP_COSTS, idName),
+            "subq", SqlUtils.joinUsing(TBL_TRIP_COSTS, "subq", idName))
         .setWhere(sys.idInList(TBL_TRIP_COSTS, ids)));
 
     StringBuilder sb = new StringBuilder("<table>");
@@ -888,6 +907,7 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
             value = TBL_TRIP_COSTS + row.getValue(col);
             break;
           case "data":
+          case "pab_data":
             value = row.getDateTime(col);
             break;
           default:

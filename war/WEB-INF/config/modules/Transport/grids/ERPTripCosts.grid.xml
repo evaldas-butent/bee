@@ -36,6 +36,7 @@
       </style>
     </CalcColumn>
 
+    <DataColumn name="Prefix" />
     <DataColumn name="Number" />
     <RelColumn name="Supplier" />
     <RelColumn name="Country" />
