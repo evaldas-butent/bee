@@ -13,8 +13,10 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.layout.Flow;
+import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
+import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
@@ -26,6 +28,7 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
+import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
@@ -58,6 +61,21 @@ class WorkScheduleForm extends AbstractFormInterceptor implements SelectorEvent.
 
     } else if (BeeUtils.same(name, "Schedule")) {
       schedulePanel = (Flow) widget;
+    }
+  }
+
+  @Override
+  public boolean beforeAction(Action action, Presenter presenter) {
+    if (action == Action.REFRESH) {
+      WorkScheduleWidget widget = UiHelper.getChild(schedulePanel, WorkScheduleWidget.class);
+      if (widget != null) {
+        widget.refresh();
+      }
+
+      return false;
+
+    } else {
+      return super.beforeAction(action, presenter);
     }
   }
 

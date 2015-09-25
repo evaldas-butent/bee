@@ -3,10 +3,14 @@
   xmlns:f="http://www.butent.com/form"
   xmlns:ui="http://www.butent.com/ui"
   
-  name="WorkScheduleEditor" viewName="WorkSchedule" height="420" width="700"
+  name="WorkScheduleEditor" viewName="WorkSchedule"
+  height="460" width="700"
   >
   <FlowPanel class="flexBox-vertical">
     <br/>
+    <DateLabel source="Date" format="date_full" style="text-align: center; font-size: large;" />
+    <br/>
+
     <Table>
       <col index="0" kind="label" />
       <col index="2" kind="label" />

@@ -468,8 +468,7 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable,
   }
 
   public Widget getWidgetByElement(Element elem) {
-    Assert.notNull(elem);
-    return widgetMap.get(elem);
+    return (elem == null) ? null : widgetMap.get(elem);
   }
 
   public int insertRow(int beforeRow) {

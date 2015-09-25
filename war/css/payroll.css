@@ -48,8 +48,15 @@
   font-weight: bolder;
 }
 
-.bee-payroll-ws-tc-change {
+.bee-payroll-ws-day-content-cell {
+  text-align: center;
+  cursor: pointer;
+}
+.bee-payroll-ws-tc-change,
+.bee-payroll-ws-item {
   padding-top: 3px;
   padding-bottom: 3px;
-  text-align: center;
+}
+.bee-payroll-ws-item-tc {
+  border-radius: 20%;
 }
