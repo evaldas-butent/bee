@@ -48,6 +48,13 @@
   font-weight: bolder;
 }
 
+.bee-payroll-ws-weekend {
+  background-color: #f2f2f2;
+}
+.bee-payroll-ws-holiday {
+  background-color: #fff0f0;
+}
+
 .bee-payroll-ws-day-content-cell {
   text-align: center;
   cursor: pointer;

@@ -1,7 +1,6 @@
 package com.butent.bee.client.modules.payroll;
 
 import com.google.gwt.event.shared.HasHandlers;
-import com.google.gwt.xml.client.Element;
 
 import static com.butent.bee.shared.modules.payroll.PayrollConstants.*;
 
@@ -12,24 +11,12 @@ import com.butent.bee.shared.i18n.Localized;
 
 class WorkScheduleEditor extends AbstractFormInterceptor {
 
-  private final boolean showGrid;
-
-  WorkScheduleEditor(boolean showGrid) {
-    this.showGrid = showGrid;
-  }
-
-  @Override
-  public boolean beforeCreateWidget(String name, Element description) {
-    if (GRID_WORK_SCHEDULE_DAY.equals(name)) {
-      return showGrid;
-    } else {
-      return super.beforeCreateWidget(name, description);
-    }
+  WorkScheduleEditor() {
   }
 
   @Override
   public FormInterceptor getInstance() {
-    return new WorkScheduleEditor(showGrid);
+    return new WorkScheduleEditor();
   }
 
   @Override
