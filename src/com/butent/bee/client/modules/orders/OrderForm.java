@@ -148,10 +148,8 @@ public class OrderForm extends AbstractFormInterceptor {
       updateStatus(form, OrdersStatus.APPROVED);
     }
 
-    boolean isOrder =
-        (row.getInteger(idxStatus) == OrdersStatus.APPROVED.ordinal() ||
-        row.getInteger(idxStatus) == OrdersStatus.FINISH
-            .ordinal()) ? true : false;
+    boolean isOrder = status == OrdersStatus.APPROVED.ordinal()
+        || status == OrdersStatus.FINISH.ordinal();
     String caption;
 
     if (DataUtils.isNewRow(row)) {
@@ -231,28 +229,28 @@ public class OrderForm extends AbstractFormInterceptor {
                 Queries.update(VIEW_ORDER_ITEMS, filter, COL_RESERVED_REMAINDER,
                     new NumberValue(BeeConst.DOUBLE_ZERO), new IntCallback() {
 
-                      @Override
-                      public void onSuccess(Integer result) {
-                        if (BeeUtils.isPositive(result)) {
-                          int idxColId = form.getDataIndex(COL_WAREHOUSE);
-                          List<BeeColumn> cols =
-                              Data.getColumns(form.getViewName(), Lists.newArrayList(COL_WAREHOUSE));
-                          List<String> newValues = Lists.newArrayList(newValue);
-                          List<String> oldValues =
-                              Lists.newArrayList(form.getOldRow().getString(idxColId));
+                  @Override
+                  public void onSuccess(Integer result) {
+                    if (BeeUtils.isPositive(result)) {
+                      int idxColId = form.getDataIndex(COL_WAREHOUSE);
+                      List<BeeColumn> cols =
+                          Data.getColumns(form.getViewName(), Lists.newArrayList(COL_WAREHOUSE));
+                      List<String> newValues = Lists.newArrayList(newValue);
+                      List<String> oldValues =
+                          Lists.newArrayList(form.getOldRow().getString(idxColId));
 
-                          Queries.update(VIEW_ORDERS, getActiveRowId(), form.getOldRow()
-                              .getVersion(), cols, oldValues, newValues, null, new RowCallback() {
+                      Queries.update(VIEW_ORDERS, getActiveRowId(), form.getOldRow()
+                          .getVersion(), cols, oldValues, newValues, null, new RowCallback() {
 
-                            @Override
-                            public void onSuccess(BeeRow row) {
-                              RowUpdateEvent.fire(BeeKeeper.getBus(), form.getViewName(), row);
-                              form.refresh();
-                            }
-                          });
+                        @Override
+                        public void onSuccess(BeeRow row) {
+                          RowUpdateEvent.fire(BeeKeeper.getBus(), form.getViewName(), row);
+                          form.refresh();
                         }
-                      }
-                    });
+                      });
+                    }
+                  }
+                });
               }
             }
           });

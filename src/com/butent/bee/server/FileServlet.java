@@ -101,8 +101,7 @@ public class FileServlet extends LoginServlet {
           for (Entry<String, String> entry : files.entrySet()) {
             try (
                 FileInfo fileInfo = fs.getFile(BeeUtils.toLong(entry.getKey()));
-                FileInputStream in = new FileInputStream(fileInfo.getFile());
-            ) {
+                FileInputStream in = new FileInputStream(fileInfo.getFile())) {
               ZipEntry ze = new ZipEntry(BeeUtils.notEmpty(entry.getValue(), fileInfo.getName()));
               zos.putNextEntry(ze);
 
