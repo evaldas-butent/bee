@@ -12,7 +12,7 @@ import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.composite.UnboundSelector;
-import com.butent.bee.client.data.Data;
+import com.butent.bee.client.data.*;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.ui.FormFactory;
@@ -26,12 +26,10 @@ import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.form.interceptor.PrintFormInterceptor;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.State;
 import com.butent.bee.shared.communication.ResponseObject;
-import com.butent.bee.shared.data.BeeRow;
-import com.butent.bee.shared.data.DataUtils;
-import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.*;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.view.*;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.documents.DocumentConstants;
@@ -62,6 +60,7 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
   private boolean hasInvoicesOrSecondaryActs;
   private DataSelector contractSelector;
   private DataSelector objectSelector;
+  private DataSelector companySelector;
 
   TradeActForm() {
   }
@@ -89,13 +88,18 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
       objectSelector = (DataSelector) widget;
       objectSelector.addSelectorHandler(this);
     }
+
+    if (widget instanceof DataSelector && BeeUtils.same(name, TradeActConstants.COL_TA_COMPANY)) {
+      companySelector = (DataSelector) widget;
+      companySelector.addSelectorHandler(this);
+    }
     super.afterCreateWidget(name, widget, callback);
   }
 
   @Override
   public void afterRefresh(FormView form, final IsRow row) {
     TradeActKind kind = TradeActKeeper.getKind(row, getDataIndex(COL_TA_KIND));
-    Button commandCompose = null;
+    Button commandCompose;
     String caption;
 
     if (DataUtils.isNewRow(row)) {
@@ -143,6 +147,10 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
           us.clearValue();
         }
       }
+    }
+
+    if (companySelector != null) {
+      contractSelector.getOracle().setAdditionalFilter(getRelatedDocumentsFilter(), true);
     }
 
     HeaderView header = form.getViewPresenter().getHeader();
@@ -300,16 +308,39 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
           ClassifierConstants.COL_COMPANY);
     }
 
-    if (event.getState() == State.OPEN && BeeUtils.same(event.getRelatedViewName(),
-        DocumentConstants.VIEW_DOCUMENTS)) {
-      Filter relDocFilter =
-          Filter.in(Data.getIdColumn(DocumentConstants.VIEW_DOCUMENTS),
-              DocumentConstants.VIEW_RELATED_DOCUMENTS, DocumentConstants.COL_DOCUMENT, Filter
-                  .equals(ClassifierConstants.COL_COMPANY, getActiveRow()
-                      .getString(getDataIndex(COL_TA_COMPANY))));
+    if (BeeUtils.same(event.getRelatedViewName(), ClassifierConstants.VIEW_COMPANIES)) {
+      Filter relDocFilter = getRelatedDocumentsFilter();
 
-      contractSelector.getOracle().setAdditionalFilter(relDocFilter, true);
+      Filter relActiveDocFilter = Filter.and(relDocFilter,
+          Filter.notNull(DocumentConstants.ALS_STATUS_MAIN));
+
+      DataInfo viewDocuments = Data.getDataInfo(DocumentConstants.VIEW_DOCUMENTS);
+
+      Queries.getRowSet(viewDocuments.getViewName(), viewDocuments.getColumnNames(false),
+          relActiveDocFilter, null, new Queries.RowSetCallback() {
+            @Override
+            public void onSuccess(BeeRowSet result) {
+              if (result.getNumberOfRows() != 1) {
+                return;
+              }
+
+              if (companySelector != null) {
+                contractSelector.setSelection(result.getRow(0), null, true);
+              }
+            }
+          });
+
+      if (companySelector != null) {
+        contractSelector.getOracle().setAdditionalFilter(relDocFilter, true);
+      }
     }
+  }
+
+  private Filter getRelatedDocumentsFilter() {
+    return Filter.in(Data.getIdColumn(DocumentConstants.VIEW_DOCUMENTS),
+        DocumentConstants.VIEW_RELATED_DOCUMENTS, DocumentConstants.COL_DOCUMENT, Filter
+            .equals(ClassifierConstants.COL_COMPANY, getActiveRow()
+                .getString(getDataIndex(COL_TA_COMPANY))));
   }
 
   private static boolean createReqFields(FormView form) {

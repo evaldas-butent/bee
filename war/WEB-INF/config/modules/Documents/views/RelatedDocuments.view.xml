@@ -54,6 +54,7 @@
       <SimpleColumn name="Status" />
       <SimpleJoin joinType="LEFT" name="Status">
         <SimpleColumn alias="StatusName" name="Name" />
+        <SimpleColumn alias="StatusMain" name="Main" />
       </SimpleJoin>
 
       <SimpleColumn name="Received" />
@@ -63,4 +64,3 @@
     </SimpleJoin>
   </Columns>
 </View>
- 
