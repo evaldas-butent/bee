@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Form [
   <!ENTITY inp1 "width: 200px;">
-  
+
   <!ENTITY inp2 "width: 100&#37;;">
 ]>
 <f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form"
-	xmlns:ui="http://www.butent.com/ui" name="CompanyAction" viewName="Appointments"
-	caption="=calAction" showRowId="true" width="660" height="300">
+  name="CompanyAction" viewName="Appointments"
+	caption="=calAction" showRowId="true" width="660" height="400">
 
 	<FlowPanel class="flexBox-vertical">
 		<Table
@@ -19,7 +19,8 @@
 			<row>
 				<Label for="Summary" class="bee-required" visible="true" />
 				<cell colSpan="3">
-					<InputText source="Summary" visible="true" required="true" style="&inp2;" />
+					<InputArea source="Description" visible="true" required="true" style="&inp2;"
+            visibleLines="3" />
 				</cell>
 			</row>
 
@@ -45,9 +46,9 @@
 				<Label for="CompanyPerson" />
 				<cell colSpan="3">
 					<DataSelector name="CompanyPerson" source="CompanyPerson"
-						renderColumns="PersonFirstName 
+						renderColumns="PersonFirstName
         PersonLastName PersonCompanyName PersonPhone PersonMobile PersonEmail"
-						style="&inp2;" choiceColumns="FirstName 
+						style="&inp2;" choiceColumns="FirstName
         LastName CompanyName Phone Mobile Email"
 						searchableColumns="FirstName LastName CompanyName Phone Mobile Email"
 						options="Company" />
@@ -86,4 +87,4 @@
 			</row>
 		</Table>
 	</FlowPanel>
-</f:Form>  
+</f:Form>
