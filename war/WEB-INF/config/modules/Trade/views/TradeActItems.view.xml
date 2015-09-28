@@ -7,21 +7,21 @@
   <Columns>
     <SimpleColumn name="TradeAct" />
     <SimpleJoin name="TradeAct" joinType="LEFT">
-      <SimpleColumn name="Date"></SimpleColumn>
+      <SimpleColumn name="Date" />
     </SimpleJoin>
 
     <SimpleColumn name="Item" />
     <SimpleJoin joinType="INNER" name="Item">
       <SimpleColumn name="Name" alias="ItemName" />
       <SimpleColumn name="Article" />
-      
+
       <SimpleJoin joinType="INNER" name="Unit">
         <SimpleColumn name="Name" alias="UnitName" />
       </SimpleJoin>
-  
+
       <SimpleColumn name="Weight" />
       <SimpleColumn name="Area" />
-  
+
       <SimpleColumn name="Price" alias="ItemPrice" />
       <SimpleColumn name="Currency" alias="ItemCurrency" />
       <SimpleColumn name="Cost" alias="ItemCost" />
@@ -33,6 +33,7 @@
       <SimpleColumn name="Currency2" alias="ItemCurrency2" />
       <SimpleColumn name="Price3" alias="ItemPrice3" />
       <SimpleColumn name="Currency3" alias="ItemCurrency3" />
+      <SimpleColumn name="Ordinal" alias="ItemOrdinal" />
     </SimpleJoin>
 
     <SimpleColumn name="Quantity" />
@@ -46,4 +47,7 @@
 
     <SimpleColumn name="Note" />
   </Columns>
+  <Order>
+    <OrderBy column="ItemOrdinal"/>
+  </Order>
 </View>

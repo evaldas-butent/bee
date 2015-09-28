@@ -98,11 +98,17 @@
 
       <row>
         <Label for="Vehicle" name="labelVehicle" />
+        <InputText source="InputVehicle" />
+        <Label for="Driver" name="labelDriver" />
+        <InputText source="InputDriver" />
+      </row>
+
+      <row>
+        <FlowPanel/>
         <DataSelector source="Vehicle"
           renderColumns="VehicleParentModel VehicleModel VehicleNumber" newRowEnabled="true"
           style="&inpw;" />
-
-        <Label for="Driver" name="labelDriver" />
+        <FlowPanel/>
         <DataSelector source="Driver" renderColumns="DriverFirstName DriverLastName"
           newRowEnabled="true" style="&inpw;" />
       </row>

@@ -69,7 +69,9 @@ public final class TradeActConstants {
   public static final String COL_TA_MANAGER = "Manager";
   public static final String COL_TA_CURRENCY = "Currency";
   public static final String COL_TA_VEHICLE = "Vehicle";
+  public static final String COL_TA_INPUT_VEHICLE = "InputVehicle";
   public static final String COL_TA_DRIVER = "Driver";
+  public static final String COL_TA_INPUT_DRIVER = "InputDriver";
   public static final String COL_TA_NOTES = "Notes";
   public static final String COL_TA_PARENT = "Parent";
   public static final String COL_TA_REGISTRATION_NO = "RegistrationNo";

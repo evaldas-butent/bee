@@ -1,5 +1,6 @@
 .bee-trade-itemsInfo-table {
   border-collapse: collapse;
+  width: 100%;
 }
 
 .bee-trade-itemsInfo-table td {
@@ -17,11 +18,19 @@
 
 .bee-trade-itemsInfo-data {
   border-bottom: 1px solid silver;
+  white-space: nowrap;
+}
+
+.bee-trade-itemsInfo-data .bee-trade-itemsInfo-Name {
+  white-space: pre-wrap;
 }
 
 .bee-trade-itemsInfo-Quantity,
+.bee-trade-itemsInfo-ReturnedQty,
+.bee-trade-itemsInfo-RemainingQty,
 .bee-trade-itemsInfo-Price,
 .bee-trade-itemsInfo-Vat,
+.bee-trade-itemsInfo-Discount,
 .bee-trade-itemsInfo-Amount,
 .bee-trade-itemsInfo-Rate,
 .bee-trade-itemsInfo-RateAmount,

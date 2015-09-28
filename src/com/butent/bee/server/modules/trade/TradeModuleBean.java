@@ -569,22 +569,18 @@ public class TradeModuleBean implements BeeModule {
             .setWhere(SqlUtils.equals(tradeItems, itemsRelation, id));
 
     if (BeeUtils.same(trade, TBL_TRADE_ACTS)) {
-      query.addFields(tradeItems, COL_TRADE_DISCOUNT);
-      query.addFields(TBL_ITEMS, COL_TRADE_WEIGHT);
-      query.addFields(TBL_ITEMS, COL_ITEM_AREA);
-      query.addFields(TBL_TRADE_ACTS, COL_TRADE_NUMBER);
-      query.addFields(TBL_TRADE_ACTS, COL_TRADE_CONTACT);
-      query.addFields(TBL_ITEMS, COL_TRADE_TIME_UNIT);
+      query.addField(tradeItems, sys.getIdName(tradeItems), tradeItems)
+          .addFields(tradeItems, COL_TRADE_DISCOUNT)
+          .addFields(TBL_TRADE_ACTS, COL_TRADE_NUMBER, COL_TRADE_CONTACT);
 
       if (BeeUtils.same(tradeItems, TBL_TRADE_ACT_ITEMS)) {
-        query.addFields(TBL_TRADE_ACT_ITEMS, sys.getIdName(tradeItems));
+        query.addFields(TBL_TRADE_ACT_ITEMS, sys.getIdName(tradeItems))
+            .addFields(TBL_ITEMS, COL_TRADE_WEIGHT, COL_ITEM_AREA);
       }
-
       if (BeeUtils.same(tradeItems, TBL_TRADE_ACT_SERVICES)) {
-        query.addFields(TBL_TRADE_ACT_SERVICES, COL_TA_SERVICE_FROM);
-        query.addFields(TBL_TRADE_ACT_SERVICES, COL_TA_SERVICE_TO);
-        query.addFields(TBL_TRADE_ACT_SERVICES, COL_TA_SERVICE_TARIFF);
-        query.addFields(TBL_TRADE_ACT_SERVICES, COL_TA_SERVICE_MIN, COL_TA_SERVICE_DAYS);
+        query.addFields(TBL_TRADE_ACT_SERVICES, COL_TA_SERVICE_FROM, COL_TA_SERVICE_TO,
+            COL_TA_SERVICE_TARIFF, COL_TA_SERVICE_MIN, COL_TA_SERVICE_DAYS)
+            .addFields(TBL_ITEMS, COL_TRADE_TIME_UNIT);
       }
     } else {
       query.addOrder(tradeItems, COL_TRADE_ITEM_ORDINAL, sys.getIdName(tradeItems));

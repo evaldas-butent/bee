@@ -14,7 +14,6 @@ import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.data.*;
 import com.butent.bee.client.event.logical.SelectorEvent;
-import com.butent.bee.client.modules.transport.PrintInvoiceInterceptor;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
@@ -163,9 +162,9 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
 
         @Override
         public void onClick(ClickEvent arg0) {
-          FormFactory.openForm(FORM_INVOICE_BUILDER, new TradeActInvoiceBuilder(row
-              .getLong(Data
-                  .getColumnIndex(VIEW_TRADE_ACTS, COL_TA_COMPANY)), row.getId()));
+          FormFactory.openForm(FORM_INVOICE_BUILDER,
+              new TradeActInvoiceBuilder(row.getLong(Data.getColumnIndex(VIEW_TRADE_ACTS,
+                  COL_TA_COMPANY)), row.getId()));
         }
       });
 
@@ -240,7 +239,7 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
 
   @Override
   public FormInterceptor getPrintFormInterceptor() {
-    return new PrintInvoiceInterceptor();
+    return new PrintActForm();
   }
 
   @Override
@@ -359,14 +358,47 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
 
     if (fields != null) {
       for (String field : fields) {
-        String value = row.getString(Data.getColumnIndex(VIEW_TRADE_ACTS, field));
 
-        if (BeeUtils.isEmpty(value)) {
-          form.notifySevere(Data.getColumnLabel(VIEW_TRADE_ACTS, field) + " "
-              + Localized.getConstants().valueRequired());
-          valid = false;
-          break;
+        if (BeeUtils.inListSame(field, COL_TA_VEHICLE, COL_TA_INPUT_VEHICLE, COL_TA_DRIVER,
+            COL_TA_INPUT_DRIVER)) {
 
+          String v1 = row.getString(Data.getColumnIndex(VIEW_TRADE_ACTS, field));
+          String v2;
+
+          switch (field) {
+            case COL_TA_DRIVER:
+              v2 = row.getString(Data.getColumnIndex(VIEW_TRADE_ACTS, COL_TA_INPUT_DRIVER));
+              break;
+            case COL_TA_INPUT_DRIVER:
+              v2 = row.getString(Data.getColumnIndex(VIEW_TRADE_ACTS, COL_TA_DRIVER));
+              break;
+            case COL_TA_VEHICLE:
+              v2 = row.getString(Data.getColumnIndex(VIEW_TRADE_ACTS, COL_TA_INPUT_VEHICLE));
+              break;
+            case COL_TA_INPUT_VEHICLE:
+              v2 = row.getString(Data.getColumnIndex(VIEW_TRADE_ACTS, COL_TA_VEHICLE));
+              break;
+            default:
+              v2 = row.getString(Data.getColumnIndex(VIEW_TRADE_ACTS, field));
+          }
+
+          valid = !BeeUtils.isEmpty(v1) || !BeeUtils.isEmpty(v2);
+
+          if (!valid) {
+            form.notifySevere(Data.getColumnLabel(VIEW_TRADE_ACTS, field) + " "
+                + Localized.getConstants().valueRequired());
+
+            return valid;
+          }
+        } else {
+
+          String value = row.getString(Data.getColumnIndex(VIEW_TRADE_ACTS, field));
+          valid = !BeeUtils.isEmpty(value);
+          if (!valid) {
+            form.notifySevere(Data.getColumnLabel(VIEW_TRADE_ACTS, field) + " "
+                + Localized.getConstants().valueRequired());
+            return valid;
+          }
         }
       }
     }

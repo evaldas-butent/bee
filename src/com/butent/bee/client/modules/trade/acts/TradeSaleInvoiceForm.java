@@ -1,6 +1,5 @@
 package com.butent.bee.client.modules.trade.acts;
 
-import com.butent.bee.client.modules.transport.PrintInvoiceInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.form.interceptor.PrintFormInterceptor;
 
@@ -13,6 +12,6 @@ public class TradeSaleInvoiceForm extends PrintFormInterceptor {
 
   @Override
   public FormInterceptor getPrintFormInterceptor() {
-    return new PrintInvoiceInterceptor();
+    return new PrintActForm();
   }
 }
