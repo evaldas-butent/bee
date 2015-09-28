@@ -48,7 +48,7 @@ public final class AdministrationConstants {
 
     private final String caption;
 
-    private UserGroupVisibility(String caption) {
+    UserGroupVisibility(String caption) {
       this.caption = caption;
     }
 

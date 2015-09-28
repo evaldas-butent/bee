@@ -337,7 +337,7 @@ public class FileGroup extends HtmlTable implements HasOptions {
     private final boolean alwaysVisible;
     private final boolean readOnly;
 
-    private Column(String label, String caption, boolean alwaysVisible, boolean readOnly) {
+    Column(String label, String caption, boolean alwaysVisible, boolean readOnly) {
       this.label = label;
       this.caption = caption;
       this.alwaysVisible = alwaysVisible;

@@ -11,7 +11,7 @@ public enum ScheduleDateMode implements HasCaption {
 
   private final String caption;
 
-  private ScheduleDateMode(String caption) {
+  ScheduleDateMode(String caption) {
     this.caption = caption;
   }
 

@@ -55,7 +55,7 @@ public abstract class ModificationEvent<H> extends Event<H> implements DataEvent
 
     private final String brief;
 
-    private Kind(String brief) {
+    Kind(String brief) {
       this.brief = brief;
     }
 

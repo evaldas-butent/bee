@@ -70,7 +70,7 @@ public enum UiOption {
 
   private final Set<Type> types;
 
-  private UiOption(Set<Type> types) {
+  UiOption(Set<Type> types) {
     this.types = types;
   }
 

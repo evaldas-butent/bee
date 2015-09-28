@@ -137,7 +137,7 @@ class CalendarController extends Flow implements HandlesStateChange, HasCaption,
 
     private final String label;
 
-    private UcaColumn(String label) {
+    UcaColumn(String label) {
       this.label = label;
     }
 

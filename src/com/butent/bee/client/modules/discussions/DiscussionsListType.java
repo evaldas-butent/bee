@@ -130,7 +130,7 @@ enum DiscussionsListType implements HasCaption, HasWidgetSupplier {
 
   private final String caption;
 
-  private DiscussionsListType(String caption) {
+  DiscussionsListType(String caption) {
     this.caption = caption;
   }
 
