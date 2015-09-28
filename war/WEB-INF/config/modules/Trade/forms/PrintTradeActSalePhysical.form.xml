@@ -106,17 +106,43 @@ sukrauta taip, kad būtų galima iškrauti šakiniais krautuvais. Už iškrovim�
           <renderToken source="ManagerFirstName" prefix="Perdavė: " />
           <renderToken source="ManagerLastName" />
         </TextLabel>
-        <TextLabel source="Vehicle">
-          <renderToken source="VehicleModel" prefix="Transporto priemonė: " />
-          <renderToken source="VehicleNumber" />
-        </TextLabel>
+        <FlowPanel class="flexBox-horizontal">
+          <TextLabel source="InputVehicle">
+            <dynStyle>
+              <ui:inline>display: none;</ui:inline>
+              <ui:expression>!row.InputVehicle</ui:expression>
+            </dynStyle>
+            <renderToken source="InputVehicle" prefix="Transporto priemonė: " />
+          </TextLabel>
+          <TextLabel source="Vehicle">
+            <dynStyle>
+              <ui:inline>display: none;</ui:inline>
+              <ui:expression>row.InputVehicle</ui:expression>
+            </dynStyle>
+            <renderToken source="VehicleModel" prefix="Transporto priemonė: " />
+            <renderToken source="VehicleNumber" />
+          </TextLabel>
+        </FlowPanel>
       </row>
       <row>
         <Label text="Priėmė ir suskaičiavo:" />
-        <TextLabel source="Driver">
-          <renderToken source="DriverFirstName" prefix="Vairuotojas: " />
-          <renderToken source="DriverLastName" />
-        </TextLabel>
+        <FlowPanel class="flexBox-horizontal">
+          <TextLabel source="InputDriver">
+            <dynStyle>
+              <ui:inline>display: none;</ui:inline>
+              <ui:expression>!row.InputDriver</ui:expression>
+            </dynStyle>
+            <renderToken source="InputDriver" prefix="Vairuotojas: " />
+          </TextLabel>
+          <TextLabel source="Driver">
+            <dynStyle>
+              <ui:inline>display: none;</ui:inline>
+              <ui:expression>row.InputDriver</ui:expression>
+            </dynStyle>
+            <renderToken source="DriverFirstName" prefix="Vairuotojas: " />
+            <renderToken source="DriverLastName" />
+          </TextLabel>
+        </FlowPanel>
       </row>
     </Table>
   </FlowPanel>

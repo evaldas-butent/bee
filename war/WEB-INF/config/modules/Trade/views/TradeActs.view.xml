@@ -17,7 +17,7 @@
       <SimpleColumn name="Number" alias="ContractNumber"/>
       <SimpleColumn name="Expires" alias="ContractExpires" />
     </SimpleJoin>
-    
+
     <SimpleColumn name="Date" />
     <SimpleColumn name="Until" />
 
@@ -108,6 +108,7 @@
         <SimpleColumn name="Name" alias="VehicleModel" />
       </SimpleJoin>
     </SimpleJoin>
+    <SimpleColumn name="InputVehicle" />
 
     <SimpleColumn name="Driver" />
     <SimpleJoin name="Driver" joinType="LEFT">
@@ -119,6 +120,7 @@
         </SimpleJoin>
       </SimpleJoin>
     </SimpleJoin>
+    <SimpleColumn name="InputDriver" />
 
     <SimpleColumn name="Notes" />
 
@@ -126,11 +128,11 @@
 
     <SimpleColumn name="RegistrationNo" />
   </Columns>
-  
+
   <Order>
     <OrderBy column="SeriesName" />
     <OrderBy column="Number" />
     <OrderBy column="Date" />
   </Order>
 </View>
- 
+

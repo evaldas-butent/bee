@@ -28,7 +28,9 @@
       label="=currency" />
 
     <Relation name="Vehicle" relation="Vehicles" label="=trVehicle" />
+    <String name="InputVehicle" precision="100" label="=trVehicle" />
     <Relation name="Driver" relation="Drivers" label="=trdDriver" />
+    <String name="InputDriver" precision="100" label="=trdDriver" />
 
     <Text name="Notes" label="=notes" />
 
