@@ -37,8 +37,10 @@
     <Relation name="Parent" relation="TradeActs" label="=taParent" />
     <String name="RegistrationNo" label="=taRegistrationNo" precision="30" />
   </Fields>
-
-    <Indexes>
+  <Constraints>
+    <Unique fields="Series Number" />
+  </Constraints>
+  <Indexes>
     <Index unique="true">
       <PostgreSql>((CASE "RegistrationNo" WHEN '0' THEN NULL ELSE "RegistrationNo" END))</PostgreSql>
       <MsSql></MsSql>
