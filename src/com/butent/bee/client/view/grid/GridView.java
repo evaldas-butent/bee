@@ -42,7 +42,7 @@ public interface GridView extends DataView, HasAddStartHandlers, HasAddEndHandle
     RowInsertEvent.Handler, RowUpdateEvent.Handler, EditStartEvent.Handler,
     RowCountChangeEvent.Handler, HasSummaryChangeHandlers {
 
-  public enum SelectedRows {
+  enum SelectedRows {
     ALL, EDITABLE, REMOVABLE, MERGEABLE
   }
 

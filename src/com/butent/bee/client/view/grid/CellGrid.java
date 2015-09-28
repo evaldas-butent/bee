@@ -423,7 +423,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     private final int handlePx;
     private final int barPx;
 
-    private ResizerMode(int handlePx, int barPx) {
+    ResizerMode(int handlePx, int barPx) {
       this.handlePx = handlePx;
       this.barPx = barPx;
     }

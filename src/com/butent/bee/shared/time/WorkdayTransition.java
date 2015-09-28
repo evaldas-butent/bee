@@ -13,7 +13,7 @@ public enum WorkdayTransition implements HasCaption {
 
   private final String caption;
 
-  private WorkdayTransition(String caption) {
+  WorkdayTransition(String caption) {
     this.caption = caption;
   }
 

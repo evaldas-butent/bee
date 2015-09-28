@@ -50,7 +50,7 @@ public interface GridInterceptor extends WidgetInterceptor, ActiveRowChangeEvent
     ProvidesGridColumnRenderer, DynamicColumnEnumerator, HasViewName, EditorConsumer,
     RowUpdateEvent.Handler {
 
-  public enum DeleteMode {
+  enum DeleteMode {
     CANCEL, DEFAULT, SILENT, CONFIRM, SINGLE, MULTI;
   }
 

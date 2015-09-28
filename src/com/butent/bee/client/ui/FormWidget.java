@@ -1065,7 +1065,7 @@ public enum FormWidget {
 
   private final Set<Type> types;
 
-  private FormWidget(String tagName, Set<Type> types) {
+  FormWidget(String tagName, Set<Type> types) {
     this.tagName = tagName;
     this.types = types;
   }

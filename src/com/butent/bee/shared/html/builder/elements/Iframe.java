@@ -23,7 +23,7 @@ public class Iframe extends FertileElement {
 
     private final String keyword;
 
-    private Sandbox(String keyword) {
+    Sandbox(String keyword) {
       this.keyword = keyword;
     }
 

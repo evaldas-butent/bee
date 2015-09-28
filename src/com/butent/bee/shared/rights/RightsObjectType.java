@@ -41,7 +41,7 @@ public enum RightsObjectType implements HasLocalizedCaption {
 
   private final Set<RightsState> registeredStates;
 
-  private RightsObjectType(Set<RightsState> states) {
+  RightsObjectType(Set<RightsState> states) {
     this.registeredStates = states;
   }
 

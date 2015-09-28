@@ -31,6 +31,7 @@
   -ms-flex-align: center;
 }
 .bee-payroll-ws-month-label {
+  padding: 2px 10px;
   cursor: pointer;
 }
 .bee-payroll-ws-month-active {
@@ -45,4 +46,24 @@
 .bee-payroll-ws-employee-name {
   cursor: pointer;
   font-weight: bolder;
+}
+
+.bee-payroll-ws-weekend {
+  background-color: #f2f2f2;
+}
+.bee-payroll-ws-holiday {
+  background-color: #fff0f0;
+}
+
+.bee-payroll-ws-day-content-cell {
+  text-align: center;
+  cursor: pointer;
+}
+.bee-payroll-ws-tc-change,
+.bee-payroll-ws-item {
+  padding-top: 3px;
+  padding-bottom: 3px;
+}
+.bee-payroll-ws-item-tc {
+  border-radius: 20%;
 }

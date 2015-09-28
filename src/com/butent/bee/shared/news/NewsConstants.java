@@ -109,9 +109,6 @@ public final class NewsConstants {
 
     observedColumns.put(TransportConstants.TBL_VEHICLES, TransportConstants.COL_VEHICLE_NUMBER);
 
-    observedColumns.put(TransportConstants.TBL_DRIVERS, TransportConstants.COL_DRIVER_START_DATE);
-    observedColumns.put(TransportConstants.TBL_DRIVERS, TransportConstants.COL_DRIVER_END_DATE);
-
     observedColumns.put(TransportConstants.TBL_ASSESSMENTS, TransportConstants.COL_ASSESSMENT);
     observedColumns.put(TransportConstants.TBL_ASSESSMENTS, TransportConstants.COL_STATUS);
     observedColumns.put(TransportConstants.TBL_ASSESSMENTS, TransportConstants.COL_CARGO_NOTES);

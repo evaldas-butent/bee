@@ -59,7 +59,7 @@ public final class Endpoint {
 
     private final int value;
 
-    private ReadyState(int value) {
+    ReadyState(int value) {
       this.value = value;
     }
   }
@@ -359,7 +359,7 @@ public final class Endpoint {
 
       String eventInfo = (event == null) ? null
           : BeeUtils.joinOptions("code", Integer.toString(event.getCode()),
-          "reason", event.getReason());
+              "reason", event.getReason());
       logger.info("close", socket.getUrl(), getReadyState(), eventInfo);
     }
   }

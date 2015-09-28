@@ -17,9 +17,9 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Form;
 import javax.ws.rs.core.MediaType;
 
-public class AutodataClient {
+public final class AutodataClient {
 
-  private static AutodataClient instance = null;
+  private static AutodataClient instance;
 
   private final String baseUrl = "http://api.autodata-group.com/";
   private final String tokenUrl = "https://account.autodata-group.com/oauth/access_token";
@@ -30,7 +30,7 @@ public class AutodataClient {
   private String languageCode = "en-gb";
 
   private String accessToken;
-  private long tokenExpires = 0;
+  private long tokenExpires;
 
   private AutodataClient(String clientId, String clientSecret) {
     this.clientId = Assert.notEmpty(clientId);
