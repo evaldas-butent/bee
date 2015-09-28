@@ -7,7 +7,7 @@
   <Fields>
     <Relation name="Name" relation="TradeActNames" label="=tradeActName" />
     <Relation name="Contract" relation="Documents" label="=trdContract" />
-    
+
     <DateTime name="Date" notNull="true" defExpr="CURRENT_TIME" label="=taDate" />
     <DateTime name="Until" label="=taUntil" />
 
@@ -28,14 +28,16 @@
       label="=currency" />
 
     <Relation name="Vehicle" relation="Vehicles" label="=trVehicle" />
+    <String name="InputVehicle" precision="100" label="=trVehicle" />
     <Relation name="Driver" relation="Drivers" label="=trdDriver" />
+    <String name="InputDriver" precision="100" label="=trdDriver" />
 
     <Text name="Notes" label="=notes" />
 
     <Relation name="Parent" relation="TradeActs" label="=taParent" />
     <String name="RegistrationNo" label="=taRegistrationNo" precision="30" />
   </Fields>
-  
+
     <Indexes>
     <Index unique="true">
       <PostgreSql>((CASE "RegistrationNo" WHEN '0' THEN NULL ELSE "RegistrationNo" END))</PostgreSql>
