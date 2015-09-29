@@ -137,7 +137,7 @@ public final class ButentWS {
       // logger.info("input", data.toString());
       // logger.info("answer", answer);
     } catch (Exception e) {
-      throw new BeeException(e);
+      throw BeeException.error(e);
     }
 
     SimpleRowSet resp =
@@ -169,7 +169,7 @@ public final class ButentWS {
       // logger.info("input", data.toString());
       // logger.info("answer", answer);
     } catch (Exception e) {
-      throw new BeeException(e);
+      throw BeeException.error(e);
     }
 
     SimpleRowSet resp =
@@ -188,7 +188,7 @@ public final class ButentWS {
       answer = process("GetClients", BeeConst.STRING_EMPTY);
       // logger.info("GetClients", answer);
     } catch (Exception e) {
-      throw new BeeException(e);
+      throw BeeException.error(e);
     }
 
     SimpleRowSet resp =

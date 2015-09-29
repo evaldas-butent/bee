@@ -2992,7 +2992,6 @@ public class TradeActBean implements HasTimerService {
     if (!cb.isParameterTimer(timer, PRM_SYNC_ERP_DATA)) {
       return;
     }
-    String remoteNamespace = prm.getText(PRM_ERP_NAMESPACE);
     String remoteAddress = prm.getText(PRM_ERP_ADDRESS);
     String remoteLogin = prm.getText(PRM_ERP_LOGIN);
     String remotePassword = prm.getText(PRM_ERP_PASSWORD);
@@ -3000,13 +2999,13 @@ public class TradeActBean implements HasTimerService {
     SimpleRowSet rs = null;
     // Company Advances
     try {
-      rs = ButentWS.connect(remoteNamespace, remoteAddress, remoteLogin, remotePassword)
+      rs = ButentWS.connect(remoteAddress, remoteLogin, remotePassword)
           .getSQLData("SELECT gav_avans FROM adm_par", new String[] {"gav_avans"});
 
       String avansSask = rs.getValue(0, "gav_avans");
 
       if (!BeeUtils.isEmpty(avansSask)) {
-        rs = ButentWS.connect(remoteNamespace, remoteAddress, remoteLogin, remotePassword)
+        rs = ButentWS.connect(remoteAddress, remoteLogin, remotePassword)
             .getSQLData("SELECT klientai.klientas AS kl, klientai.kodas AS kd,"
                 + " SUM(CASE WHEN debetas LIKE '" + avansSask + "%' THEN (-1) ELSE 1 END * suma)"
                 + " AS av"
@@ -3058,7 +3057,7 @@ public class TradeActBean implements HasTimerService {
         sql += " WHERE car_id NOT IN(" + BeeUtils.joinItems(Lists.newArrayList(objects.keySet()))
             + ")";
       }
-      rs = ButentWS.connect(remoteNamespace, remoteAddress, remoteLogin, remotePassword)
+      rs = ButentWS.connect(remoteAddress, remoteLogin, remotePassword)
           .getSQLData(sql, new String[] {"tp", "nr", "id", "md", "inr", "bnr", "yom", "sl"});
     } catch (BeeException e) {
       logger.error(e);
@@ -3162,7 +3161,7 @@ public class TradeActBean implements HasTimerService {
       }
     }
     try {
-      rs = ButentWS.connect(remoteNamespace, remoteAddress, remoteLogin, remotePassword)
+      rs = ButentWS.connect(remoteAddress, remoteLogin, remotePassword)
           .getSQLData(sql.toString(), cols.keySet().toArray(new String[0]));
     } catch (BeeException e) {
       logger.error(e);
@@ -3222,7 +3221,7 @@ public class TradeActBean implements HasTimerService {
       }
       if (!BeeUtils.isEmpty(missingItems)) {
         try {
-          rs = ButentWS.connect(remoteNamespace, remoteAddress, remoteLogin, remotePassword)
+          rs = ButentWS.connect(remoteAddress, remoteLogin, remotePassword)
               .getSQLData("SELECT grupe AS gr, preke AS pr, pavad AS pv, mato_vien  AS mv,"
                   + " likutis AS lk FROM prekes WHERE preke IN(" + BeeUtils.joinItems(missingItems)
                   + ")", new String[] {"gr", "pr", "pv", "mv", "lk"});
@@ -3302,7 +3301,7 @@ public class TradeActBean implements HasTimerService {
     }
     // Item Stocks
     try {
-      rs = ButentWS.connect(remoteNamespace, remoteAddress, remoteLogin, remotePassword)
+      rs = ButentWS.connect(remoteAddress, remoteLogin, remotePassword)
           .getSQLData("SELECT preke AS pr, sum(kiekis) AS lk"
               + " FROM likuciai GROUP BY preke HAVING lk > 0",
               new String[] {"pr", "lk"});
@@ -3328,7 +3327,7 @@ public class TradeActBean implements HasTimerService {
     // Turnovers
     try {
       SimpleRowSet butentCompanies =
-          ButentWS.connect(remoteNamespace, remoteAddress, remoteLogin, remotePassword)
+          ButentWS.connect(remoteAddress, remoteLogin, remotePassword)
               .getClients();
 
       if (butentCompanies.isEmpty()) {
@@ -3337,7 +3336,7 @@ public class TradeActBean implements HasTimerService {
       }
 
       SimpleRowSet butentDebts =
-          ButentWS.connect(remoteNamespace, remoteAddress, remoteLogin, remotePassword).getTurnovers(
+          ButentWS.connect(remoteAddress, remoteLogin, remotePassword).getTurnovers(
               null, null, BeeConst.STRING_EMPTY);
 
       if (butentDebts.isEmpty()) {
@@ -3383,7 +3382,7 @@ public class TradeActBean implements HasTimerService {
 
           if (!BeeUtils.isEmpty(butentDebts.getValue(i, "dok_serija"))) {
             BeeRowSet series =
-                qs.getViewData(TBL_SALE_SERIES, Filter.equals(COL_SERIES_NAME, butentDebts
+                qs.getViewData(TBL_SALES_SERIES, Filter.equals(COL_SERIES_NAME, butentDebts
                     .getValue(
                         i,
                         "dok_serija")));
@@ -3391,7 +3390,7 @@ public class TradeActBean implements HasTimerService {
             if (series.isEmpty()) {
               serId =
                   qs.insertDataWithResponse(
-                      new SqlInsert(TBL_SALE_SERIES).addConstant(COL_SERIES_NAME, butentDebts
+                      new SqlInsert(TBL_SALES_SERIES).addConstant(COL_SERIES_NAME, butentDebts
                           .getValue(i,
                               "dok_serija"))).getResponseAsLong();
             } else {

@@ -124,7 +124,7 @@ public enum TradeActKind implements HasLocalizedCaption {
     this.options = options;
   }
 
-  private TradeActKind(Option first, Option... rest) {
+  private TradeActKind(String[] reqFields, Option first, Option... rest) {
     this.reqFields = reqFields;
     if (rest == null) {
       this.options = EnumSet.of(first);

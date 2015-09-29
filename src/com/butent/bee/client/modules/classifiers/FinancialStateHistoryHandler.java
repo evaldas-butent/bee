@@ -14,6 +14,7 @@ import com.butent.bee.client.modules.administration.HistoryHandler;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.render.HasCellRenderer;
+import com.butent.bee.client.ui.*;
 import com.butent.bee.client.view.edit.EditableColumn;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
@@ -99,7 +100,7 @@ class FinancialStateHistoryHandler extends HistoryHandler {
   }
 
   @Override
-  public Map<String, Filter> getInitialParentFilters() {
+  public Map<String, Filter> getInitialParentFilters(Collection<UiOption> uiOptions) {
     return ImmutableMap.of(FILTER_KEY, getFilter());
   }
 
