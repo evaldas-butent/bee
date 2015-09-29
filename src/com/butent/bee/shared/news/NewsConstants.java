@@ -10,6 +10,7 @@ import com.butent.bee.shared.modules.discussions.DiscussionsConstants;
 import com.butent.bee.shared.modules.documents.DocumentConstants;
 import com.butent.bee.shared.modules.ec.EcConstants;
 import com.butent.bee.shared.modules.projects.ProjectConstants;
+import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -87,6 +88,10 @@ public final class NewsConstants {
     observedColumns.put(EcConstants.TBL_CLIENTS, EcConstants.COL_CLIENT_MANAGER);
     observedColumns.put(EcConstants.TBL_ORDERS, EcConstants.COL_ORDER_STATUS);
 
+    observedColumns.put(TaskConstants.TBL_REQUESTS, TaskConstants.COL_REQUEST_CONTENT);
+    observedColumns.put(TaskConstants.TBL_REQUESTS, TaskConstants.COL_REQUEST_MANAGER);
+    observedColumns.put(TaskConstants.TBL_REQUESTS, TaskConstants.COL_REQUEST_CUSTOMER);
+
     observedColumns.put(TransportConstants.TBL_ORDER_CARGO, TransportConstants.COL_ORDER);
     observedColumns.put(TransportConstants.TBL_ORDER_CARGO,
         TransportConstants.loadingColumnAlias(TransportConstants.COL_PLACE_DATE));
@@ -103,9 +108,6 @@ public final class NewsConstants {
         TransportConstants.COL_REGISTRATION_STATUS);
 
     observedColumns.put(TransportConstants.TBL_VEHICLES, TransportConstants.COL_VEHICLE_NUMBER);
-
-    observedColumns.put(TransportConstants.TBL_DRIVERS, TransportConstants.COL_DRIVER_START_DATE);
-    observedColumns.put(TransportConstants.TBL_DRIVERS, TransportConstants.COL_DRIVER_END_DATE);
 
     observedColumns.put(TransportConstants.TBL_ASSESSMENTS, TransportConstants.COL_ASSESSMENT);
     observedColumns.put(TransportConstants.TBL_ASSESSMENTS, TransportConstants.COL_STATUS);
@@ -144,6 +146,8 @@ public final class NewsConstants {
     usageTables.put(EcConstants.TBL_CLIENTS, "EcClientUsage");
     usageTables.put(EcConstants.TBL_ORDERS, "EcOrderUsage");
     usageTables.put(EcConstants.TBL_REGISTRATIONS, "EcRegUsage");
+
+    usageTables.put(TaskConstants.TBL_REQUESTS, "TaskRequestUsage");
 
     usageTables.put(TransportConstants.TBL_ORDER_CARGO, "OrderCargoUsage");
     usageTables.put(TransportConstants.TBL_ORDERS, "TranspOrderUsage");

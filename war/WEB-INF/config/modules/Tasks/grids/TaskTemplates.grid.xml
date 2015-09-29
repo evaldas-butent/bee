@@ -1,25 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+        xmlns:xi="http://www.w3.org/2001/XInclude"
   
   name="TaskTemplates" viewName="TaskTemplates" caption="=crmTaskTemplates"
   flexGrow="1" newRowPopup="true"
   >
-  <g:columns>
-    <DataColumn name="Name" visible="true" />
-  
-    <RelColumn name="Type" renderColumns="TypeName" />
-    <DataColumn name="Priority" />
-  
-    <DataColumn name="Summary" />
-    <DataColumn name="ExpectedDuration" caption="=crmTaskDuration">
-      <editor type="time" />
-    </DataColumn>
-    <DataColumn name="Description" />
-  
-    <RelColumn name="Company" />
-    <RelColumn name="Contact" renderColumns="ContactFirstName ContactLastName ContactCompanyName"
-      choiceColumns="FirstName LastName CompanyName" />
-  
-    <RelColumn name="Reminder" newRowEnabled="false" />
-  </g:columns>
+  <xi:include href="columns/TaskTemplate.columns.xml" />
 </g:Grid>

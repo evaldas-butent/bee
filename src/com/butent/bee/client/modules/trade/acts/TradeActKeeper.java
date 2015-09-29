@@ -13,7 +13,6 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.DataCache;
-import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.GridFactory;
@@ -42,7 +41,7 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.menu.MenuHandler;
 import com.butent.bee.shared.menu.MenuService;
-import com.butent.bee.shared.modules.administration.AdministrationConstants;
+import com.butent.bee.shared.modules.administration.*;
 import com.butent.bee.shared.modules.classifiers.ItemPrice;
 import com.butent.bee.shared.modules.trade.acts.TradeActKind;
 import com.butent.bee.shared.rights.Module;
@@ -54,7 +53,6 @@ import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -65,7 +63,7 @@ import java.util.TreeMap;
 
 public final class TradeActKeeper {
 
-  static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "ta-";
+  public static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "ta-";
 
   private static final String STYLE_COMMAND_PREFIX = STYLE_PREFIX + "command-";
   private static final String STYLE_COMMAND_DISABLED = STYLE_COMMAND_PREFIX + "disabled";
@@ -226,7 +224,7 @@ public final class TradeActKeeper {
     }
   }
 
-  static Collection<Long> extractWarehouses(BeeRowSet rowSet) {
+  public static Collection<Long> extractWarehouses(BeeRowSet rowSet) {
     if (DataUtils.isEmpty(rowSet)) {
       return new HashSet<>();
     } else {
@@ -320,36 +318,6 @@ public final class TradeActKeeper {
     }
   }
 
-  static void getHolidays(final Consumer<Set<Integer>> consumer) {
-    Global.getParameter(AdministrationConstants.PRM_COUNTRY, new Consumer<String>() {
-      @Override
-      public void accept(String input) {
-        if (DataUtils.isId(input)) {
-          Queries.getRowSet(VIEW_HOLIDAYS, Collections.singletonList(COL_HOLY_DAY),
-              Filter.equals(COL_HOLY_COUNTRY, BeeUtils.toLong(input)),
-              new Queries.RowSetCallback() {
-                @Override
-                public void onSuccess(BeeRowSet result) {
-                  Set<Integer> holidays = new HashSet<>();
-
-                  if (!DataUtils.isEmpty(result)) {
-                    int index = result.getColumnIndex(COL_HOLY_DAY);
-                    for (BeeRow row : result) {
-                      holidays.add(row.getInteger(index));
-                    }
-                  }
-
-                  consumer.accept(holidays);
-                }
-              });
-
-        } else {
-          consumer.accept(BeeConst.EMPTY_IMMUTABLE_INT_SET);
-        }
-      }
-    });
-  }
-
   static ItemPrice getItemPrice(Long operation) {
     if (DataUtils.isId(operation)) {
       return EnumUtils.getEnumByIndex(ItemPrice.class,
@@ -359,7 +327,7 @@ public final class TradeActKeeper {
     }
   }
 
-  static ItemPrice getItemPrice(String viewName, IsRow row) {
+  public static ItemPrice getItemPrice(String viewName, IsRow row) {
     return getItemPrice(Data.getLong(viewName, row, COL_TA_OPERATION));
   }
 
@@ -451,7 +419,7 @@ public final class TradeActKeeper {
     }
   }
 
-  static Map<Long, String> getWarehouses(Collection<Long> ids) {
+  public static Map<Long, String> getWarehouses(Collection<Long> ids) {
     Map<Long, String> result = new LinkedHashMap<>();
 
     if (!BeeUtils.isEmpty(ids)) {

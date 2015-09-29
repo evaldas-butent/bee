@@ -1,13 +1,17 @@
 package com.butent.bee.client.view.grid;
 
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.data.CustomProperties;
+import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.rights.RightsUtils;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 final class GridUtils {
 
@@ -61,6 +65,36 @@ final class GridUtils {
 
   static String normalizeValue(String value) {
     return BeeUtils.isEmpty(value) ? null : value.trim();
+  }
+
+  static void updateProperties(IsRow target, IsRow source) {
+    if (BeeUtils.isEmpty(target.getProperties())) {
+      if (!BeeUtils.isEmpty(source.getProperties())) {
+        target.setProperties(source.getProperties().copy());
+      }
+
+    } else {
+      CustomProperties retain = new CustomProperties();
+      for (Map.Entry<String, String> property : target.getProperties().entrySet()) {
+        if (RightsUtils.isStateRoleAlias(property.getKey())) {
+          retain.put(property.getKey(), property.getValue());
+        }
+      }
+
+      if (retain.isEmpty() && BeeUtils.isEmpty(source.getProperties())) {
+        target.setProperties(null);
+
+      } else {
+        target.getProperties().clear();
+        if (!retain.isEmpty()) {
+          target.getProperties().putAll(retain);
+        }
+
+        if (!BeeUtils.isEmpty(source.getProperties())) {
+          target.getProperties().putAll(source.getProperties());
+        }
+      }
+    }
   }
 
   private GridUtils() {

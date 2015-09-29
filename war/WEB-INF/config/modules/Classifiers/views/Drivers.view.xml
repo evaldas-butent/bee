@@ -1,20 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
-  xmlns:xpr="http://www.butent.com/expression"
 
-  name="Drivers" source="Drivers"
-  editForm="Driver" newRowForm="Driver"
-  caption="=drivers" newRowCaption="=trNewDriver"
-  >
+      name="Drivers" source="Drivers"
+      editForm="Driver" newRowForm="Driver"
+      caption="=drivers" newRowCaption="=trNewDriver"
+    >
   <Relation renderColumns="FirstName LastName" />
   <Columns>
     <SimpleColumn name="CompanyPerson" />
-    <SimpleJoin name="CompanyPerson" joinType="LEFT">
-      <SimpleJoin name="Company" joinType="LEFT">
+    <SimpleJoin name="CompanyPerson" joinType="INNER">
+      <SimpleJoin name="Company" joinType="INNER">
         <SimpleColumn alias="CompanyName" name="Name" />
       </SimpleJoin>
       <SimpleColumn name="Person" />
-      <SimpleJoin name="Person" joinType="LEFT">
+      <SimpleJoin name="Person" joinType="INNER">
         <SimpleColumn name="FirstName" />
         <SimpleColumn name="LastName" />
       </SimpleJoin>
@@ -26,12 +25,15 @@
         </SimpleJoin>
       </SimpleJoin>
       <SimpleJoin name="Position" joinType="LEFT">
-        <SimpleColumn name="Name" alias="PositionName"/>
+        <SimpleColumn name="Name" alias="PositionName" />
       </SimpleJoin>
+      <ExternalJoin name="CompanyPerson" joinType="LEFT" source="Employees">
+        <SimpleColumn name="TabNumber" />
+      </ExternalJoin>
+      <SimpleColumn name="DateOfEmployment" alias="StartDate" />
+      <SimpleColumn name="DateOfDismissal" alias="EndDate" />
     </SimpleJoin>
 
-    <SimpleColumn name="StartDate" />
-    <SimpleColumn name="EndDate" />
     <SimpleColumn name="Experience" />
     <SimpleColumn name="Notes" />
   </Columns>

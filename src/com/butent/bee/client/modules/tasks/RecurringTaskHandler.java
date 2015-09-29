@@ -134,7 +134,7 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
     private final String source;
     private final int shift;
 
-    private Cron(Field field, String source, int shift) {
+    Cron(Field field, String source, int shift) {
       this.field = field;
       this.source = source;
       this.shift = shift;

@@ -101,7 +101,7 @@ public class MaintenanceGrid extends AbstractGridInterceptor implements HandlesD
 
       if (isRelevantInvoice(event.getViewName(), ids)
           || isRelevantDefect(event.getViewName(), ids)) {
-        getGridPresenter().refresh(false);
+        getGridPresenter().refresh(false, false);
       }
     }
   }
@@ -113,7 +113,7 @@ public class MaintenanceGrid extends AbstractGridInterceptor implements HandlesD
 
       if (isRelevantInvoice(event.getViewName(), ids)
           || isRelevantDefect(event.getViewName(), ids)) {
-        getGridPresenter().refresh(false);
+        getGridPresenter().refresh(false, false);
       }
     }
   }

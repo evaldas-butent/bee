@@ -8,6 +8,7 @@ import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.http.client.RequestBuilder;
 import com.google.gwt.http.client.Response;
 import com.google.gwt.http.client.URL;
+import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
@@ -16,6 +17,9 @@ import com.butent.bee.client.composite.Thermometer;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
+import com.butent.bee.client.event.DndHelper;
+import com.butent.bee.client.layout.Simple;
+import com.butent.bee.client.widget.Link;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
@@ -177,6 +181,20 @@ public final class FileUtils {
 
     JsClipboard clipboard = dataTransfer.cast();
     return clipboard.getFiles();
+  }
+
+  public static Widget getLink(FileInfo fileInfo, String... caption) {
+    Assert.notNull(fileInfo);
+
+    Simple simple = new Simple();
+    String name = BeeUtils.notEmpty(fileInfo.getCaption(), fileInfo.getName());
+
+    simple.setWidget(new Link(BeeUtils.notEmpty(ArrayUtils.joinWords(caption), name),
+        getUrl(fileInfo.getId()) + "/" + URL.encode(name)));
+
+    DndHelper.makeSource(simple, NameUtils.getClassName(FileInfo.class), fileInfo, null);
+
+    return simple;
   }
 
   public static List<NewFileInfo> getNewFileInfos(FileList fileList) {
@@ -380,7 +398,7 @@ public final class FileUtils {
     });
 
     addProgressListener(xhr, progressId);
-    xhr.send(fileInfo.getFile());
+    xhr.send(fileInfo.getNewFile());
   }
 
   public static void uploadTempFile(NewFileInfo fileInfo, final Callback<String> callback) {
@@ -407,7 +425,7 @@ public final class FileUtils {
     });
   }
 
-//@formatter:off
+  //@formatter:off
   static native double getLastModifiedMillis(File file) /*-{
     return file.lastModifiedDate.getTime();
   }-*/;
@@ -492,7 +510,7 @@ public final class FileUtils {
       }
     });
     addProgressListener(xhr, progressId);
-    xhr.send(fileInfo.getFile());
+    xhr.send(fileInfo.getNewFile());
   }
 
   public static List<FileInfo> validateFileSize(Collection<? extends FileInfo> input,

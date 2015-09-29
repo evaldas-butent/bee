@@ -23,10 +23,10 @@
         <![CDATA[
 DECLARE _id BIGINT;
 BEGIN
-  IF (TG_OP='INSERT') THEN
-    _id:=NEW."Purchase";
-  ELSE
+  IF (TG_OP='DELETE') THEN
     _id:=OLD."Purchase";
+  ELSE
+    _id:=NEW."Purchase";
   END IF;
 
   UPDATE "Purchases" SET "Amount"=(SELECT SUM("Quantity"*"Price"+

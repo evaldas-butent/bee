@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="ItemRemainders" source="ItemRemainders"
+  >
+  <Columns>
+    <SimpleColumn name="Item" />
+    <SimpleColumn name="Warehouse" />
+    <SimpleJoin name="Warehouse" joinType="INNER">
+      <SimpleColumn name="Code" alias="WarehouseCode"/>
+      <SimpleColumn name="Name" alias="WarehouseName"/>
+    </SimpleJoin>
+    <SimpleColumn name="Remainder" />
+  </Columns>
+
+  <Order>
+    <OrderBy column="Warehouse" />
+  </Order>
+</View>

@@ -1,10 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
-	xmlns:ui="http://www.butent.com/ui" 
-  name="Companies" viewName="Companies" caption="=clients" favorite="Name" flexGrow="1"
+
+  name="Companies" viewName="Companies" caption="=clients" editShowId="true"
+  favorite="Name" flexGrow="1"
   >
   <g:columns>
+    <IdColumn name="Id" visible="false" />
     <DataColumn name="Name" visible="true" />
+
     <RelColumn name="CompanyType" />
     <RelColumn name="CompanyGroup" filterSupplier="value" />
     <RelColumn name="CompanyPriority" />
@@ -20,7 +23,7 @@
 
     <DataColumn name="CityName" caption="=city" />
     <DataColumn name="CountryName" caption="=country" />
-    <CalcColumn type="string" name="Flag" source="CountryCode" cellType="html" width="30" 
+    <CalcColumn type="string" name="Flag" source="CountryCode" cellType="html" width="30"
         caption="-" label="=countryFlag" sortable="false"	horizontalAlignment="center"
         filterOptions="-" exportWidthFactor="0.5"	visible="false">
             <renderer type="flag" />
@@ -36,15 +39,23 @@
     <DataColumn name="FinancialStateName" visible="false"
         label="=financialState" caption="=financialState" />
     <RelColumn name="DefaultCompanyUser" visible="false" label="=companyResponsibleUser" filterSupplier="value"/>
-    
+
+    <RelColumn name="DefaultCompanyUser" visible="false" filterSupplier="value" />
+
     <DataColumn name="CreditLimit" visible="false" />
     <DataColumn name="CreditTolerance" visible="false" />
     <DataColumn name="CreditDays" visible="false" />
-    <DataColumn name="DaysAsSupplier" visible="false" />
-        
+    <DataColumn name="SupplierCreditDays" visible="false" />
+
     <RelColumn name="Turnover" visible="false" />
     <RelColumn name="InformationSource" visible="false" />
-    <RelColumn name="CompanySize" visible="false" />   
+    <RelColumn name="CompanySize" visible="false" />
+
+    <DataColumn name="DiscountPercent" visible="false" />
+    <DataColumn name="DiscountParent" renderColumns="DiscountParentName" visible="false" />
+    <DataColumn name="PriceName" visible="false" />
+
+    <DataColumn name="Notes" visible="false" />
   </g:columns>
     <g:rowStyle>
       <ui:inline>="background-color: " + row.Background + "; color: " +

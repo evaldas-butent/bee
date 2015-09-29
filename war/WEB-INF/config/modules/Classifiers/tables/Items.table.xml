@@ -60,6 +60,8 @@
 
     <Text name="Description" label="=description" />
     <Text name="Notes" label="=notes" />
+    
+    <Text name="Link" label="=link" />
   </Fields>
 
   <Indexes>

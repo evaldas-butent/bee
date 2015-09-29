@@ -25,7 +25,7 @@ public class Link extends Element {
 
     private final String keyword;
 
-    private Rel(String keyword) {
+    Rel(String keyword) {
       this.keyword = keyword;
     }
 

@@ -20,7 +20,7 @@ public enum ProjectUserType implements HasCaption {
 
   private final String caption;
 
-  private ProjectUserType(String caption) {
+  ProjectUserType(String caption) {
     this.caption = caption;
   }
 

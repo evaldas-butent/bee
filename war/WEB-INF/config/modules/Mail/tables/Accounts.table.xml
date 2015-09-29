@@ -3,6 +3,7 @@
 
   name="Accounts"
   idName="AccountID"
+  mergeable="false"
   >
   <Fields>
     <Relation name="User" relation="Users" cascade="DELETE" label="=user" defExpr="CURRENT_USER" />

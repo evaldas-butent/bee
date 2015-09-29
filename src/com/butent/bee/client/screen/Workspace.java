@@ -418,7 +418,7 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
 
     private final String styleSuffix;
 
-    private TabAction(String label, char group) {
+    TabAction(String label, char group) {
       this.label = label;
       this.group = group;
 

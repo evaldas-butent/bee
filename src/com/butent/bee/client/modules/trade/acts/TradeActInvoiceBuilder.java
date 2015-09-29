@@ -43,6 +43,7 @@ import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.i18n.Money;
 import com.butent.bee.client.layout.Flow;
+import com.butent.bee.client.modules.classifiers.ClassifierKeeper;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
@@ -585,7 +586,7 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
             new Button(Localized.getConstants().taInvoiceCompose(), new ClickHandler() {
               @Override
               public void onClick(ClickEvent event) {
-                TradeActKeeper.getHolidays(new Consumer<Set<Integer>>() {
+                ClassifierKeeper.getHolidays(new Consumer<Set<Integer>>() {
                   @Override
                   public void accept(Set<Integer> input) {
                     doCompose(input);

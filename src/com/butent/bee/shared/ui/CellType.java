@@ -22,7 +22,7 @@ public enum CellType {
 
   private final String code;
 
-  private CellType(String code) {
+  CellType(String code) {
     this.code = code;
   }
 

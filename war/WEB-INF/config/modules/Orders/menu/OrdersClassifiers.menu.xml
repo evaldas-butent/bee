@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Entry xmlns="http://www.butent.com/menu"
+
+name="OrdersClassifiers" label="=classifiers" order="50" parent="Orders" module="Orders"
+>
+  <Item name="OrderTypes" label="=types" service="grid" parameters="OrderTypes" />
+  <Item name="OrderSeries" label="=seriesPlural" service="grid" parameters="OrderSeries" />
+  <Item name="Parameters" label="=parameters" service="parameters" parameters="Orders"
+    separator="true" module="Orders" />
+</Entry>

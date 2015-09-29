@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+      name="UserVehicles" source="Vehicles"
+      filter="VehicleGroupID=0 OR GroupID>0"
+      readOnly="true"
+    >
+  <Columns>
+    <SimpleJoin name="Type" joinType="LEFT">
+      <SimpleColumn name="Name" alias="TypeName" />
+      <SimpleColumn name="IsTruck" />
+      <SimpleColumn name="IsTrailer" />
+    </SimpleJoin>
+    <SimpleColumn name="Number" />
+
+    <ExternalJoin name="Vehicle" joinType="LEFT" source="VehicleGroups">
+      <IdColumn name="VehicleGroupID" aggregate="COUNT" />
+      <SimpleJoin name="Group" joinType="LEFT" filter="!(Manager) OR Manager={u}">
+        <HiddenColumn name="Manager" />
+        <IdColumn name="GroupID" aggregate="COUNT" />
+      </SimpleJoin>
+    </ExternalJoin>
+  </Columns>
+  <Order>
+    <OrderBy column="TypeName" />
+    <OrderBy column="Number" />
+  </Order>
+</View>

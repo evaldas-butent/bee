@@ -21,21 +21,25 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.FutureTask;
+import java.util.concurrent.locks.ReentrantLock;
 
 import javax.annotation.Resource;
-import javax.ejb.AccessTimeout;
 import javax.ejb.EJB;
+import javax.ejb.Lock;
+import javax.ejb.LockType;
 import javax.ejb.ScheduleExpression;
 import javax.ejb.Singleton;
 import javax.ejb.Timer;
 import javax.ejb.TimerConfig;
 import javax.ejb.TimerService;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
+import javax.ejb.TransactionManagement;
+import javax.ejb.TransactionManagementType;
 import javax.enterprise.concurrent.ManagedExecutorService;
+import javax.transaction.SystemException;
+import javax.transaction.UserTransaction;
 
 @Singleton
-@AccessTimeout(value = TimeUtils.MILLIS_PER_MINUTE)
+@TransactionManagement(TransactionManagementType.BEAN)
 public class ConcurrencyBean {
 
   public interface HasTimerService {
@@ -44,7 +48,9 @@ public class ConcurrencyBean {
 
   public abstract static class AsynchronousRunnable implements Runnable {
 
-    public abstract String getId();
+    public String getId() {
+      return null;
+    }
 
     public long getTimeout() {
       return TimeUtils.MILLIS_PER_HOUR;
@@ -65,7 +71,9 @@ public class ConcurrencyBean {
     }
 
     public String getId() {
-      return BeeUtils.joinWords(runnable.getId(), Integer.toHexString(hashCode()));
+      String id = runnable.getId();
+      return BeeUtils.isEmpty(id) ? runnable.toString()
+          : BeeUtils.joinWords(id, Integer.toHexString(hashCode()));
     }
 
     @Override
@@ -111,15 +119,19 @@ public class ConcurrencyBean {
   private Multimap<String, Class<? extends HasTimerService>> calendarRegistry;
   private Multimap<String, Class<? extends HasTimerService>> intervalRegistry;
 
+  private final ReentrantLock lock = new ReentrantLock();
+
   @EJB
   ParamHolderBean prm;
   @Resource
   ManagedExecutorService executor;
+  @Resource
+  UserTransaction utx;
 
   public void asynchronousCall(AsynchronousRunnable runnable) {
     Assert.notNull(runnable);
-    String id = Assert.notEmpty(runnable.getId());
-    Worker worker = asyncThreads.get(id);
+    String id = runnable.getId();
+    Worker worker = BeeUtils.isEmpty(id) ? null : asyncThreads.get(id);
 
     if (worker != null) {
       if (!worker.isDone()) {
@@ -137,7 +149,10 @@ public class ConcurrencyBean {
 
     try {
       executor.execute(newWorker);
-      asyncThreads.put(id, newWorker);
+
+      if (!BeeUtils.isEmpty(id)) {
+        asyncThreads.put(id, newWorker);
+      }
     } catch (Exception e) {
       logger.error(e);
       newWorker.cancel(true);
@@ -232,10 +247,26 @@ public class ConcurrencyBean {
     return Objects.equals(timer.getInfo(), parameter);
   }
 
-  @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+  @Lock(LockType.READ)
   public void synchronizedCall(Runnable runnable) {
     Assert.notNull(runnable);
-    runnable.run();
+    lock.lock();
+
+    try {
+      utx.begin();
+      runnable.run();
+      utx.commit();
+    } catch (Exception ex) {
+      logger.error(ex);
+
+      try {
+        utx.rollback();
+      } catch (SystemException ex2) {
+        logger.error(ex2);
+      }
+    } finally {
+      lock.unlock();
+    }
   }
 
   private <T extends HasTimerService> TimerService removeTimer(Class<T> handler,

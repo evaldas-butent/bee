@@ -119,7 +119,7 @@ public final class SqlConstants {
   }
 
   public enum SqlTriggerType {
-    CUSTOM, AUDIT, RELATION
+    CUSTOM, AUDIT, RELATION, VERSION
   }
 
   public enum SqlTriggerTiming {

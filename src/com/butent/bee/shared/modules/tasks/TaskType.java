@@ -77,7 +77,7 @@ public enum TaskType implements HasCaption, HasWidgetSupplier {
   private final String caption;
   private final Feed feed;
 
-  private TaskType(String caption, Feed feed) {
+  TaskType(String caption, Feed feed) {
     this.caption = caption;
     this.feed = feed;
   }

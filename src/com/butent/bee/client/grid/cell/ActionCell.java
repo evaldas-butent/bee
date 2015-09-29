@@ -26,7 +26,7 @@ public class ActionCell extends AbstractCell<String> implements HasOptions, HasV
 
     private final String styleSuffix;
 
-    private Type(String styleSuffix) {
+    Type(String styleSuffix) {
       this.styleSuffix = styleSuffix;
     }
 

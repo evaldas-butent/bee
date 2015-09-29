@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+  
+  name="OrdersTemplates" viewName="OrdersTemplates" caption="=templates"
+  >
+  <g:columns>
+    <DataColumn name="Template" visible="true" />
+    <RelColumn name="Type" visible="true" />
+    <RelColumn name="Series" visible="true" />
+    <DataColumn name="Number" visible="true" />
+    <RelColumn name="Warehouse" visible="true" />
+    <RelColumn name="Company" visible="true" />
+    <RelColumn name="Contact" renderColumns="ContactFirstName ContactLastName"
+      choiceColumns="FirstName LastName CompanyName" />
+  </g:columns>
+</g:Grid>

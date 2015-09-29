@@ -16,7 +16,7 @@ public class Meta extends Element {
 
     private final String keyword;
 
-    private HttpEquiv(String keyword) {
+    HttpEquiv(String keyword) {
       this.keyword = keyword;
     }
 

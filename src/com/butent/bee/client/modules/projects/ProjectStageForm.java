@@ -8,6 +8,7 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.event.EventUtils;
+import com.butent.bee.client.grid.ChildGrid;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
@@ -44,6 +45,7 @@ class ProjectStageForm extends AbstractFormInterceptor implements DataChangeEven
   private InputNumber wActualTasksExpenses;
   private InputNumber wExpectedTasksExpenses;
   private BeeRowSet timeUnits;
+  private ChildGrid wTasksGrid;
 
   private final Collection<HandlerRegistration> timesRegistry = new ArrayList<>();
 
@@ -72,6 +74,11 @@ class ProjectStageForm extends AbstractFormInterceptor implements DataChangeEven
           wExpectedTasksExpenses = (InputNumber) widget;
         }
         break;
+      case TaskConstants.GRID_CHILD_TASKS:
+        if (widget instanceof ChildGrid) {
+          wTasksGrid = (ChildGrid) widget;
+        }
+        break;
     }
   }
 
@@ -86,6 +93,11 @@ class ProjectStageForm extends AbstractFormInterceptor implements DataChangeEven
     if (getTimeUnits() != null) {
       showComputedTimes(form, row, false);
     }
+
+    if (form.isEnabled()) {
+      ProjectsKeeper.createTemplateTasks(form, row, COL_PROJECT_STAGE, wTasksGrid, null);
+    }
+
   }
 
   @Override

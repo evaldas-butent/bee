@@ -2,6 +2,7 @@ package com.butent.bee.server.modules.classifiers;
 
 import com.google.common.base.CharMatcher;
 import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
@@ -32,6 +33,8 @@ import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.i18n.I18nUtils;
 import com.butent.bee.server.i18n.Localizations;
 import com.butent.bee.server.modules.BeeModule;
+import com.butent.bee.server.modules.ParamHolderBean;
+import com.butent.bee.server.modules.administration.AdministrationModuleBean;
 import com.butent.bee.server.modules.mail.MailModuleBean;
 import com.butent.bee.server.news.NewsBean;
 import com.butent.bee.server.news.NewsHelper;
@@ -44,6 +47,7 @@ import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
+import com.butent.bee.server.websocket.Endpoint;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
@@ -77,6 +81,8 @@ import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.calendar.CalendarConstants;
 import com.butent.bee.shared.modules.calendar.CalendarConstants.AppointmentStatus;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
+import com.butent.bee.shared.modules.classifiers.ItemPrice;
+import com.butent.bee.shared.modules.classifiers.PriceInfo;
 import com.butent.bee.shared.modules.documents.DocumentConstants;
 import com.butent.bee.shared.modules.service.ServiceConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
@@ -90,22 +96,32 @@ import com.butent.bee.shared.rights.SubModule;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
+import com.butent.bee.shared.utils.NameUtils;
+import com.butent.bee.shared.websocket.messages.LogMessage;
 
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.OptionalDouble;
 import java.util.Set;
 
 import javax.annotation.Resource;
@@ -138,6 +154,10 @@ public class ClassifiersModuleBean implements BeeModule {
   NewsBean news;
   @EJB
   MailModuleBean mail;
+  @EJB
+  AdministrationModuleBean adm;
+  @EJB
+  ParamHolderBean prm;
 
   @Resource
   TimerService timerService;
@@ -198,6 +218,10 @@ public class ClassifiersModuleBean implements BeeModule {
         response = ResponseObject.error(e);
         e.printStackTrace();
       }
+
+    } else if (BeeUtils.same(svc, SVC_GET_PRICE_AND_DISCOUNT)) {
+      response = getPriceAndDiscount(reqInfo);
+
     } else {
       String msg = BeeUtils.joinWords("Commons service not recognized:", svc);
       logger.warning(msg);
@@ -902,7 +926,7 @@ public class ClassifiersModuleBean implements BeeModule {
     String email = reqInfo.getParameter(COL_EMAIL);
     if (!BeeUtils.isEmpty(email) && qs.sqlExists(TBL_EMAILS, COL_EMAIL_ADDRESS, email)) {
       logger.warning(usr.getLocalizableMesssages()
-              .valueExists(BeeUtils.joinWords(usr.getLocalizableConstants().email(), email)),
+          .valueExists(BeeUtils.joinWords(usr.getLocalizableConstants().email(), email)),
           "ignored");
       email = null;
     }
@@ -1174,6 +1198,756 @@ public class ClassifiersModuleBean implements BeeModule {
     }
   }
 
+  private void explain(Object... messages) {
+    Long userId = usr.getCurrentUserId();
+    String text = ArrayUtils.joinWords(messages);
+
+    if (DataUtils.isId(userId) && !BeeUtils.isEmpty(text)) {
+      Endpoint.sendToUser(usr.getCurrentUserId(), LogMessage.debug(text));
+    }
+  }
+
+  private ResponseObject getPriceAndDiscount(RequestInfo reqInfo) {
+    Long company = reqInfo.getParameterLong(COL_DISCOUNT_COMPANY);
+    if (company == null) {
+      return ResponseObject.parameterNotFound(SVC_GET_PRICE_AND_DISCOUNT, COL_DISCOUNT_COMPANY);
+    }
+
+    Long item = reqInfo.getParameterLong(COL_DISCOUNT_ITEM);
+    if (!DataUtils.isId(item)) {
+      return ResponseObject.parameterNotFound(SVC_GET_PRICE_AND_DISCOUNT, COL_DISCOUNT_ITEM);
+    }
+
+    Long operation = reqInfo.getParameterLong(COL_DISCOUNT_OPERATION);
+    Long warehouse = reqInfo.getParameterLong(COL_DISCOUNT_WAREHOUSE);
+
+    Long time = reqInfo.getParameterLong(Service.VAR_TIME);
+    if (!BeeUtils.isPositive(time)) {
+      time = System.currentTimeMillis();
+    }
+
+    Double qty = reqInfo.getParameterDouble(Service.VAR_QTY);
+    Long unit = reqInfo.getParameterLong(COL_DISCOUNT_UNIT);
+
+    Long currency = reqInfo.getParameterLong(COL_DISCOUNT_CURRENCY);
+    if (!DataUtils.isId(currency)) {
+      currency = prm.getRelation(PRM_CURRENCY);
+    }
+
+    ItemPrice defPriceName = EnumUtils.getEnumByIndex(ItemPrice.class,
+        reqInfo.getParameterInt(COL_DISCOUNT_PRICE_NAME));
+    if (defPriceName == null) {
+      defPriceName = ItemPrice.SALE;
+    }
+
+    int explain = BeeUtils.unbox(reqInfo.getParameterInt(Service.VAR_EXPLAIN));
+    if (explain > 0) {
+      explain(SVC_GET_PRICE_AND_DISCOUNT,
+          BeeUtils.joinOptions(COL_DISCOUNT_COMPANY, company, COL_DISCOUNT_ITEM, item,
+              COL_DISCOUNT_OPERATION, operation, COL_DISCOUNT_WAREHOUSE, warehouse,
+              Service.VAR_TIME, time, Service.VAR_QTY, qty, COL_DISCOUNT_UNIT, unit,
+              COL_DISCOUNT_CURRENCY, currency, COL_DISCOUNT_PRICE_NAME, defPriceName));
+    }
+
+    List<Long> companyParents = getDiscountParents(company);
+    if (explain > 0) {
+      explain(COL_DISCOUNT_PARENT, companyParents.size(),
+          companyParents.isEmpty() ? BeeConst.STRING_EMPTY : companyParents.toString());
+    }
+
+    Map<Long, Long> categories = getItemCategories(item);
+    if (explain > 0) {
+      explain(TBL_ITEM_CATEGORIES, categories.size(),
+          categories.isEmpty() ? BeeConst.STRING_EMPTY : categories.keySet().toString());
+    }
+
+    EnumMap<ItemPrice, Double> itemPrices = getItemPrices(item, currency, time);
+    if (explain > 0) {
+      explain(NameUtils.getClassName(ItemPrice.class), itemPrices.size(),
+          itemPrices.isEmpty() ? BeeConst.STRING_EMPTY : itemPrices.toString());
+    }
+
+    Double defPrice = itemPrices.get(defPriceName);
+
+    HasConditions discountWhere = SqlUtils.and();
+
+    HasConditions companyWhere = SqlUtils.or(
+        SqlUtils.isNull(TBL_DISCOUNTS, COL_DISCOUNT_COMPANY));
+    if (DataUtils.isId(company)) {
+      companyWhere.add(SqlUtils.equals(TBL_DISCOUNTS, COL_DISCOUNT_COMPANY, company));
+      if (!BeeUtils.isEmpty(companyParents)) {
+        companyWhere.add(SqlUtils.inList(TBL_DISCOUNTS, COL_DISCOUNT_COMPANY, companyParents));
+      }
+    }
+
+    discountWhere.add(companyWhere);
+
+    HasConditions categoryWhere = SqlUtils.or(
+        SqlUtils.isNull(TBL_DISCOUNTS, COL_DISCOUNT_CATEGORY));
+    if (!BeeUtils.isEmpty(categories)) {
+      categoryWhere.add(SqlUtils.inList(TBL_DISCOUNTS, COL_DISCOUNT_CATEGORY, categories.keySet()));
+    }
+
+    discountWhere.add(SqlUtils.or(
+        SqlUtils.equals(TBL_DISCOUNTS, COL_DISCOUNT_ITEM, item),
+        SqlUtils.and(SqlUtils.isNull(TBL_DISCOUNTS, COL_DISCOUNT_ITEM), categoryWhere)));
+
+    HasConditions operationWhere = SqlUtils.or(
+        SqlUtils.isNull(TBL_DISCOUNTS, COL_DISCOUNT_OPERATION));
+    if (DataUtils.isId(operation)) {
+      operationWhere.add(SqlUtils.equals(TBL_DISCOUNTS, COL_DISCOUNT_OPERATION, operation));
+    }
+
+    discountWhere.add(operationWhere);
+
+    HasConditions warehouseWhere = SqlUtils.or(
+        SqlUtils.isNull(TBL_DISCOUNTS, COL_DISCOUNT_WAREHOUSE));
+    if (DataUtils.isId(warehouse)) {
+      warehouseWhere.add(SqlUtils.equals(TBL_DISCOUNTS, COL_DISCOUNT_WAREHOUSE, warehouse));
+    }
+
+    discountWhere.add(warehouseWhere);
+
+    HasConditions timeWhere = SqlUtils.and(
+        SqlUtils.or(
+            SqlUtils.isNull(TBL_DISCOUNTS, COL_DISCOUNT_DATE_FROM),
+            SqlUtils.lessEqual(TBL_DISCOUNTS, COL_DISCOUNT_DATE_FROM, time)),
+        SqlUtils.or(
+            SqlUtils.isNull(TBL_DISCOUNTS, COL_DISCOUNT_DATE_TO),
+            SqlUtils.more(TBL_DISCOUNTS, COL_DISCOUNT_DATE_TO, time)));
+
+    discountWhere.add(timeWhere);
+
+    HasConditions qtyWhere;
+    if (qty == null) {
+      qtyWhere = SqlUtils.or(SqlUtils.isNull(TBL_DISCOUNTS, COL_DISCOUNT_QUANTITY_FROM),
+          SqlUtils.nonPositive(TBL_DISCOUNTS, COL_DISCOUNT_QUANTITY_FROM));
+    } else {
+      qtyWhere = SqlUtils.and(
+          SqlUtils.or(
+              SqlUtils.isNull(TBL_DISCOUNTS, COL_DISCOUNT_QUANTITY_FROM),
+              SqlUtils.lessEqual(TBL_DISCOUNTS, COL_DISCOUNT_QUANTITY_FROM, qty)),
+          SqlUtils.or(
+              SqlUtils.isNull(TBL_DISCOUNTS, COL_DISCOUNT_QUANTITY_TO),
+              SqlUtils.more(TBL_DISCOUNTS, COL_DISCOUNT_QUANTITY_TO, qty)));
+
+      if (DataUtils.isId(unit)) {
+        qtyWhere.add(
+            SqlUtils.or(
+                SqlUtils.and(
+                    SqlUtils.isNull(TBL_DISCOUNTS, COL_DISCOUNT_QUANTITY_FROM),
+                    SqlUtils.isNull(TBL_DISCOUNTS, COL_DISCOUNT_QUANTITY_TO)),
+                SqlUtils.isNull(TBL_DISCOUNTS, COL_DISCOUNT_UNIT),
+                SqlUtils.equals(TBL_DISCOUNTS, COL_DISCOUNT_UNIT, unit)));
+      }
+    }
+
+    discountWhere.add(qtyWhere);
+
+    discountWhere.add(SqlUtils.or(
+        SqlUtils.notNull(TBL_DISCOUNTS, COL_DISCOUNT_PRICE_NAME),
+        SqlUtils.notNull(TBL_DISCOUNTS, COL_DISCOUNT_PERCENT),
+        SqlUtils.positive(TBL_DISCOUNTS, COL_DISCOUNT_PRICE)));
+
+    SqlSelect discountQuery = new SqlSelect()
+        .addFields(TBL_DISCOUNTS, COL_DISCOUNT_COMPANY, COL_DISCOUNT_CATEGORY, COL_DISCOUNT_ITEM,
+            COL_DISCOUNT_PRICE_NAME, COL_DISCOUNT_PERCENT,
+            COL_DISCOUNT_PRICE, COL_DISCOUNT_CURRENCY)
+        .addFrom(TBL_DISCOUNTS)
+        .setWhere(discountWhere);
+
+    if (explain > 1) {
+      explain(discountQuery);
+    }
+
+    SimpleRowSet discountData = qs.getData(discountQuery);
+    if (explain > 0) {
+      explain(TBL_DISCOUNTS, (discountData == null) ? 0 : discountData.getNumberOfRows());
+    }
+
+    List<PriceInfo> discounts = new ArrayList<>();
+
+    if (!DataUtils.isEmpty(discountData)) {
+      for (SimpleRow row : discountData) {
+        PriceInfo pi = PriceInfo.fromDiscount(row);
+        discounts.add(pi);
+
+        if (explain > 0) {
+          explain(pi);
+        }
+      }
+    }
+
+    if (DataUtils.isId(company)) {
+      String companyIdName = sys.getIdName(TBL_COMPANIES);
+
+      HasConditions cw = SqlUtils.or(SqlUtils.equals(TBL_COMPANIES, companyIdName, company));
+      if (!BeeUtils.isEmpty(companyParents)) {
+        cw.add(SqlUtils.inList(TBL_COMPANIES, companyIdName, companyParents));
+      }
+
+      SqlSelect companyQuery = new SqlSelect()
+          .addFields(TBL_COMPANIES, companyIdName,
+              COL_COMPANY_PRICE_NAME, COL_COMPANY_DISCOUNT_PERCENT)
+          .addFrom(TBL_COMPANIES)
+          .setWhere(SqlUtils.and(cw,
+              SqlUtils.or(
+                  SqlUtils.notNull(TBL_COMPANIES, COL_COMPANY_PRICE_NAME),
+                  SqlUtils.notNull(TBL_COMPANIES, COL_COMPANY_DISCOUNT_PERCENT))));
+
+      if (explain > 1) {
+        explain(companyQuery);
+      }
+
+      SimpleRowSet companyData = qs.getData(companyQuery);
+      if (explain > 0) {
+        explain(TBL_COMPANIES, (companyData == null) ? 0 : companyData.getNumberOfRows());
+      }
+
+      if (!DataUtils.isEmpty(companyData)) {
+        for (SimpleRow row : companyData) {
+          PriceInfo pi = PriceInfo.fromCompany(row.getLong(companyIdName), row);
+          discounts.add(pi);
+
+          if (explain > 0) {
+            explain(pi);
+          }
+        }
+      }
+    }
+
+    Pair<Double, Double> result;
+
+    if (discounts.isEmpty()) {
+      if (explain > 0) {
+        explain(BeeConst.NO, TBL_DISCOUNTS);
+      }
+      result = Pair.empty();
+
+    } else {
+      double toRate = getRate(currency, time);
+      for (PriceInfo pi : discounts) {
+        if (pi.hasPrice() && !Objects.equals(currency, pi.getCurrency())) {
+          if (explain > 0) {
+            explain("exchange", pi);
+          }
+
+          double fromRate = getRate(pi.getCurrency(), time);
+          pi.setPrice(pi.getPrice() * fromRate / toRate);
+          pi.setCurrency(currency);
+
+          if (explain > 0) {
+            explain(BeeUtils.joinOptions("fromRate", fromRate, "toRate", toRate,
+                COL_DISCOUNT_PRICE, pi.getPrice(), COL_DISCOUNT_CURRENCY, pi.getCurrency()));
+          }
+        }
+      }
+
+      for (PriceInfo pi : discounts) {
+        if (!pi.hasPrice() && pi.getPriceName() != null
+            && itemPrices.containsKey(pi.getPriceName())) {
+
+          if (explain > 0) {
+            explain("set price", pi);
+          }
+
+          pi.setPrice(itemPrices.get(pi.getPriceName()));
+          pi.setCurrency(currency);
+
+          if (explain > 0) {
+            explain(BeeUtils.joinOptions(COL_DISCOUNT_PRICE_NAME, pi.getPriceName(),
+                COL_DISCOUNT_PRICE, pi.getPrice(), COL_DISCOUNT_CURRENCY, pi.getCurrency()));
+          }
+        }
+      }
+
+      result = getPriceAndDiscount(discounts, company, companyParents, categories, explain);
+    }
+
+    if (!BeeUtils.isPositive(result.getA()) && BeeUtils.isPositive(defPrice)) {
+      result.setA(defPrice);
+      if (explain > 0) {
+        explain(COL_DISCOUNT_PRICE_NAME, "default", defPriceName, result.getA());
+      }
+    }
+
+    if (explain > 0) {
+      if (result.isNull()) {
+        explain(SVC_GET_PRICE_AND_DISCOUNT, "result is null");
+      } else {
+        explain(SVC_GET_PRICE_AND_DISCOUNT, "result:",
+            COL_DISCOUNT_PRICE, result.getA(), COL_DISCOUNT_PERCENT, result.getB());
+      }
+    }
+
+    if (!BeeUtils.isPositive(result.getA()) && !BeeUtils.isDouble(result.getB())) {
+      if (explain > 0) {
+        explain(SVC_GET_PRICE_AND_DISCOUNT, "response is empty");
+      }
+      return ResponseObject.emptyResponse();
+    } else {
+      return ResponseObject.response(result);
+    }
+  }
+
+  private Pair<Double, Double> getPriceAndDiscount(List<PriceInfo> discounts,
+      Long company, List<Long> companyParents, Map<Long, Long> categories, int explain) {
+
+    if (discounts.size() == 1) {
+      PriceInfo pi = discounts.get(0);
+      if (explain > 0) {
+        explain("found 1 discount:", pi);
+      }
+      return Pair.of(pi.getPrice(), pi.getDiscountPercent());
+    }
+
+    List<Long> companies = new ArrayList<>();
+    if (DataUtils.isId(company)) {
+      companies.add(company);
+    }
+    if (!BeeUtils.isEmpty(companyParents)) {
+      companies.addAll(companyParents);
+    }
+
+    if (explain > 0) {
+      explain(TBL_COMPANIES, companies);
+    }
+
+    List<PriceInfo> input = new ArrayList<>(discounts);
+    Collections.sort(input, new Comparator<PriceInfo>() {
+      @Override
+      public int compare(PriceInfo o1, PriceInfo o2) {
+        boolean x1 = o1.hasPrice() && o1.hasPercent();
+        boolean x2 = o2.hasPrice() && o2.hasPercent();
+
+        if (x1 && x2) {
+          return BeeUtils.compareNullsLast(
+              BeeUtils.minusPercent(o1.getPrice(), o1.getDiscountPercent()),
+              BeeUtils.minusPercent(o2.getPrice(), o2.getDiscountPercent()));
+
+        } else if (x1 || x2) {
+          return Boolean.compare(x2, x1);
+
+        } else if (o1.hasPrice() || o2.hasPrice()) {
+          return BeeUtils.compareNullsLast(o1.getPrice(), o2.getPrice());
+
+        } else if (o1.hasPercent() || o2.hasPercent()) {
+          return BeeUtils.compareNullsLast(o2.getDiscountPercent(), o1.getDiscountPercent());
+
+        } else {
+          return BeeConst.COMPARE_EQUAL;
+        }
+      }
+    });
+
+    if (explain > 0) {
+      explain("ordered input", BeeUtils.bracket(input.size()));
+      input.stream().forEach(e -> explain(e));
+    }
+
+    Pair<Double, Double> result = Pair.empty();
+
+    for (Long co : companies) {
+      for (PriceInfo pi : input) {
+        if (co.equals(pi.getCompany()) && DataUtils.isId(pi.getItem())) {
+          acceptDiscount(result, pi, (explain > 0) ? "company + item" : null);
+
+          if (result.noNulls()) {
+            return result;
+          }
+        }
+      }
+    }
+
+    Set<Long> discountCategories = new HashSet<>();
+    List<List<Long>> categoryBranches = new ArrayList<>();
+
+    if (!BeeUtils.isEmpty(categories)) {
+      for (PriceInfo pi : input) {
+        Long cat = pi.getCategory();
+        if (DataUtils.isId(cat) && categories.containsKey(cat) && !DataUtils.isId(pi.getItem())) {
+          discountCategories.add(cat);
+        }
+      }
+    }
+
+    if (!discountCategories.isEmpty()) {
+      Map<Long, Integer> categoryLevels = new HashMap<>();
+      ListMultimap<Long, Long> roots = ArrayListMultimap.create();
+
+      for (Long category : discountCategories) {
+        int level = 0;
+        Long root = category;
+
+        Long parent = categories.get(category);
+        while (parent != null) {
+          level++;
+          root = parent;
+
+          parent = categories.get(parent);
+        }
+
+        categoryLevels.put(category, level);
+        roots.put(root, category);
+      }
+
+      for (Long root : roots.keySet()) {
+        List<Long> branch = new ArrayList<>(roots.get(root));
+
+        if (branch.size() > 1) {
+          Collections.sort(branch, new Comparator<Long>() {
+            @Override
+            public int compare(Long o1, Long o2) {
+              return BeeUtils.compareNullsLast(categoryLevels.get(o1), categoryLevels.get(o2));
+            }
+          });
+        }
+
+        categoryBranches.add(branch);
+      }
+
+      if (explain > 0) {
+        explain("category branches", categoryBranches);
+      }
+    }
+
+    List<Pair<Double, Double>> candidates = new ArrayList<>();
+    Pair<Double, Double> pp;
+
+    for (List<Long> branch : categoryBranches) {
+      pp = getBranchPriceAndDiscount(input, branch, companies, explain);
+      if (!pp.isNull()) {
+        candidates.add(pp);
+
+        if (explain > 0) {
+          explain("candidate company + category", branch, format(pp));
+        }
+      }
+    }
+
+    pp = getCompanyLevelPriceAndDiscount(input, companies, explain);
+    if (!pp.isNull()) {
+      candidates.add(pp);
+
+      if (explain > 0) {
+        explain("candidate company", format(pp));
+      }
+    }
+
+    pp = getItemPriceAndDiscount(input, explain);
+    if (!pp.isNull()) {
+      candidates.add(pp);
+
+      if (explain > 0) {
+        explain("candidate item", format(pp));
+      }
+    }
+
+    for (List<Long> branch : categoryBranches) {
+      pp = getBranchPriceAndDiscount(input, branch, explain);
+      if (!pp.isNull()) {
+        candidates.add(pp);
+
+        if (explain > 0) {
+          explain("candidate category", branch, format(pp));
+        }
+      }
+    }
+
+    if (!candidates.isEmpty()) {
+      if (result.getA() != null) {
+        OptionalDouble maxPercent = candidates
+            .stream()
+            .filter(e -> e.getA() == null && e.getB() != null)
+            .mapToDouble(e -> e.getB())
+            .max();
+
+        if (maxPercent.isPresent()) {
+          result.setB(maxPercent.getAsDouble());
+
+          if (explain > 0) {
+            explain("max candidate percent", result.getB());
+          }
+        }
+
+      } else if (result.getB() != null) {
+        OptionalDouble minPrice = candidates
+            .stream()
+            .filter(e -> e.getA() != null && e.getB() == null)
+            .mapToDouble(e -> e.getA())
+            .min();
+
+        if (minPrice.isPresent()) {
+          result.setB(minPrice.getAsDouble());
+
+          if (explain > 0) {
+            explain("min candidate price", result.getB());
+          }
+        }
+
+      } else if (candidates.stream().anyMatch(e -> e.getA() != null)) {
+        Optional<Pair<Double, Double>> best = candidates
+            .stream()
+            .filter(e -> e.getA() != null)
+            .min((e1, e2) -> BeeUtils.compareNullsLast(BeeUtils.minusPercent(e1.getA(), e1.getB()),
+                BeeUtils.minusPercent(e2.getA(), e2.getB())));
+
+        if (best.isPresent()) {
+          result.setA(best.get().getA());
+          result.setB(best.get().getB());
+
+          if (explain > 0) {
+            explain("best candidate", format(result));
+          }
+        }
+
+      } else {
+        OptionalDouble maxPercent = candidates
+            .stream()
+            .filter(e -> e.getB() != null)
+            .mapToDouble(e -> e.getB())
+            .max();
+
+        if (maxPercent.isPresent()) {
+          result.setB(maxPercent.getAsDouble());
+
+          if (explain > 0) {
+            explain("max candidate percent", result.getB());
+          }
+        }
+      }
+    }
+
+    return result;
+  }
+
+  private static String format(Pair<Double, Double> pp) {
+    return BeeUtils.joinOptions(COL_DISCOUNT_PRICE, pp.getA(), COL_DISCOUNT_PERCENT, pp.getB());
+  }
+
+  private Pair<Double, Double> getCompanyLevelPriceAndDiscount(List<PriceInfo> discounts,
+      List<Long> companies, int explain) {
+
+    Pair<Double, Double> result = Pair.empty();
+
+    for (Long co : companies) {
+      for (PriceInfo pi : discounts) {
+        if (co.equals(pi.getCompany()) && !DataUtils.isId(pi.getItem())
+            && !DataUtils.isId(pi.getCategory())) {
+
+          acceptDiscount(result, pi, (explain > 0) ? "company" : null);
+          if (result.noNulls()) {
+            return result;
+          }
+        }
+      }
+    }
+
+    return result;
+  }
+
+  private Pair<Double, Double> getItemPriceAndDiscount(List<PriceInfo> discounts, int explain) {
+    Pair<Double, Double> result = Pair.empty();
+
+    for (PriceInfo pi : discounts) {
+      if (!DataUtils.isId(pi.getCompany()) && DataUtils.isId(pi.getItem())) {
+        acceptDiscount(result, pi, (explain > 0) ? "item" : null);
+        if (result.noNulls()) {
+          return result;
+        }
+      }
+    }
+
+    return result;
+  }
+
+  private Pair<Double, Double> getBranchPriceAndDiscount(List<PriceInfo> discounts,
+      List<Long> branch, int explain) {
+
+    Pair<Double, Double> result = Pair.empty();
+
+    for (Long cat : branch) {
+      for (PriceInfo pi : discounts) {
+        if (!DataUtils.isId(pi.getCompany()) && cat.equals(pi.getCategory())
+            && !DataUtils.isId(pi.getItem())) {
+
+          acceptDiscount(result, pi, (explain > 0) ? "category" : null);
+          if (result.noNulls()) {
+            return result;
+          }
+        }
+      }
+    }
+
+    return result;
+  }
+
+  private Pair<Double, Double> getBranchPriceAndDiscount(List<PriceInfo> discounts,
+      List<Long> branch, List<Long> companies, int explain) {
+
+    Pair<Double, Double> result = Pair.empty();
+
+    for (Long cat : branch) {
+      for (Long co : companies) {
+        for (PriceInfo pi : discounts) {
+          if (co.equals(pi.getCompany()) && cat.equals(pi.getCategory())
+              && !DataUtils.isId(pi.getItem())) {
+
+            acceptDiscount(result, pi, (explain > 0) ? "company + category" : null);
+            if (result.noNulls()) {
+              return result;
+            }
+          }
+        }
+      }
+    }
+
+    return result;
+  }
+
+  private void acceptDiscount(Pair<Double, Double> priceAndPercent, PriceInfo priceInfo,
+      String source) {
+
+    boolean updatePrice = priceAndPercent.getA() == null && priceInfo.hasPrice();
+    if (updatePrice) {
+      priceAndPercent.setA(priceInfo.getPrice());
+      if (source != null) {
+        explain(source, COL_DISCOUNT_PRICE, priceAndPercent.getA(), "from", priceInfo);
+      }
+    }
+
+    if ((priceAndPercent.getB() == null || updatePrice) && priceInfo.hasPercent()) {
+      priceAndPercent.setB(priceInfo.getDiscountPercent());
+      if (source != null) {
+        explain(source, COL_DISCOUNT_PERCENT, priceAndPercent.getB(), "from", priceInfo);
+      }
+    }
+  }
+
+  private List<Long> getDiscountParents(Long company) {
+    List<Long> result = new ArrayList<>();
+
+    Long child = company;
+    String idName = sys.getIdName(TBL_COMPANIES);
+
+    SqlSelect query = new SqlSelect()
+        .addFields(TBL_COMPANIES, COL_DISCOUNT_PARENT)
+        .addFrom(TBL_COMPANIES);
+
+    while (DataUtils.isId(child)) {
+      query.setWhere(SqlUtils.equals(TBL_COMPANIES, idName, child));
+      Long parent = qs.getLong(query);
+
+      if (DataUtils.isId(parent) && !Objects.equals(company, parent) && !result.contains(parent)) {
+        result.add(parent);
+        child = parent;
+      } else {
+        child = null;
+        break;
+      }
+    }
+
+    return result;
+  }
+
+  private Map<Long, Long> getItemCategories(long item) {
+    Map<Long, Long> result = new HashMap<>();
+
+    Set<Long> categories = new HashSet<>();
+
+    SqlSelect itemQuery = new SqlSelect()
+        .addFields(TBL_ITEMS, COL_ITEM_TYPE, COL_ITEM_GROUP)
+        .addFrom(TBL_ITEMS)
+        .setWhere(sys.idEquals(TBL_ITEMS, item));
+
+    SimpleRowSet itemData = qs.getData(itemQuery);
+    if (!DataUtils.isEmpty(itemData)) {
+      Long type = itemData.getLong(0, COL_ITEM_TYPE);
+      if (DataUtils.isId(type)) {
+        categories.add(type);
+      }
+
+      Long group = itemData.getLong(0, COL_ITEM_GROUP);
+      if (DataUtils.isId(group)) {
+        categories.add(group);
+      }
+    }
+
+    SqlSelect icQuery = new SqlSelect()
+        .addFields(TBL_ITEM_CATEGORIES, COL_CATEGORY)
+        .addFrom(TBL_ITEM_CATEGORIES)
+        .setWhere(SqlUtils.equals(TBL_ITEM_CATEGORIES, COL_ITEM, item));
+
+    categories.addAll(qs.getLongSet(icQuery));
+
+    if (!categories.isEmpty()) {
+      Map<Long, Long> parents = new HashMap<>();
+
+      String idName = sys.getIdName(TBL_ITEM_CATEGORY_TREE);
+      SqlSelect treeQuery = new SqlSelect()
+          .addFields(TBL_ITEM_CATEGORY_TREE, idName, COL_CATEGORY_PARENT)
+          .addFrom(TBL_ITEM_CATEGORY_TREE)
+          .setWhere(SqlUtils.notNull(TBL_ITEM_CATEGORY_TREE, COL_CATEGORY_PARENT));
+
+      SimpleRowSet treeData = qs.getData(treeQuery);
+      if (!DataUtils.isEmpty(treeData)) {
+        for (SimpleRow row : treeData) {
+          parents.put(row.getLong(idName), row.getLong(COL_CATEGORY_PARENT));
+        }
+      }
+
+      for (Long category : categories) {
+        Long c = category;
+
+        while (c != null && !result.containsKey(c)) {
+          Long p = parents.get(c);
+          result.put(c, p);
+
+          c = p;
+        }
+      }
+    }
+
+    return result;
+  }
+
+  private EnumMap<ItemPrice, Double> getItemPrices(long item, Long currency, long time) {
+    EnumMap<ItemPrice, Double> prices = new EnumMap<>(ItemPrice.class);
+
+    SqlSelect query = new SqlSelect();
+    for (ItemPrice ip : ItemPrice.values()) {
+      query.addFields(TBL_ITEMS, ip.getPriceColumn(), ip.getCurrencyColumn());
+    }
+    query.addFrom(TBL_ITEMS).setWhere(sys.idEquals(TBL_ITEMS, item));
+
+    SimpleRow row = qs.getRow(query);
+    if (row != null) {
+      double toRate = getRate(currency, time);
+
+      for (ItemPrice ip : ItemPrice.values()) {
+        Double price = row.getDouble(ip.getPriceColumn());
+
+        if (BeeUtils.isPositive(price)) {
+          Long c = row.getLong(ip.getCurrencyColumn());
+          if (!Objects.equals(currency, c)) {
+            double fromRate = getRate(c, time);
+            price = price * fromRate / toRate;
+          }
+
+          if (BeeUtils.isPositive(price)) {
+            prices.put(ip, price);
+          }
+        }
+      }
+    }
+
+    return prices;
+  }
+
+  private double getRate(Long currency, long time) {
+    return DataUtils.isId(currency) ? adm.getRate(currency, time) : BeeConst.DOUBLE_ONE;
+  }
+
   private Map<Long, Integer> getRemindActionsUserSettings() {
     Map<Long, Integer> userSettings = Maps.newHashMap();
     Filter isSetReminder = Filter.notNull(COL_REMIND_ACTIONS);
@@ -1368,5 +2142,4 @@ public class ClassifiersModuleBean implements BeeModule {
     qrBase64 = Codec.toBase64(imageInByte);
     return qrBase64;
   }
-
 }

@@ -1,35 +1,52 @@
 package com.butent.bee.client.modules.tasks;
 
+import com.google.common.collect.Lists;
+
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.IdCallback;
+import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
+import com.butent.bee.client.event.logical.RenderingEvent;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.view.ViewHelper;
+import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.form.FormView;
+import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.shared.data.BeeRow;
+import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RelationUtils;
+import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.view.DataInfo;
+import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.projects.ProjectConstants;
+import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.modules.tasks.TaskType;
 import com.butent.bee.shared.ui.Action;
-import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.BeeUtils;
+
+import java.util.Collection;
+import java.util.List;
 
 class ChildTasksGrid extends TasksGrid {
 
+  private static final List<String> COPY_COLUMNS = Lists.newArrayList(TaskConstants.COL_SUMMARY,
+      TaskConstants.COL_DESCRIPTION,
+      TaskConstants.COL_PRIORITY, TaskConstants.COL_TASK_TYPE, TaskConstants.ALS_TASK_TYPE_NAME,
+      TaskConstants.COL_EXPECTED_DURATION, ClassifierConstants.COL_COMPANY,
+      ClassifierConstants.ALS_COMPANY_NAME, ProjectConstants.ALS_COMPANY_TYPE_NAME,
+      ClassifierConstants.COL_CONTACT, ClassifierConstants.ALS_CONTACT_FIRST_NAME,
+      ClassifierConstants.ALS_CONTACT_LAST_NAME, ClassifierConstants.ALS_CONTACT_COMPANY_NAME,
+      ClassifierConstants.ALS_CONTACT_COMPANY_TYPE_NAME, TaskConstants.ALS_REMINDER_NAME);
 
   ChildTasksGrid() {
     super(TaskType.RELATED, null);
   }
-
-  // @Override
-  // public void afterInsertRow(IsRow result) {
-  // RowInsertEvent.fire(BeeKeeper.getBus(), getViewName(), new Be result, getGridView().getId());
-  // }
 
   @Override
   public boolean beforeAddRow(final GridPresenter presenter, boolean copy) {
@@ -77,13 +94,129 @@ class ChildTasksGrid extends TasksGrid {
   }
 
   @Override
-  public GridInterceptor getInstance() {
-    return new ChildTasksGrid();
+  public void beforeRender(final GridView gridView, RenderingEvent event) {
+
+    for (IsRow row : getGridView().getRowData()) {
+      if (!BeeUtils.isEmpty(row.getProperty(ProjectConstants.PROP_TEMPLATE))) {
+        getGridView().getRowData().remove(row);
+      }
+    }
+
+    FormView form = ViewHelper.getForm(gridView.asWidget());
+
+    if (form == null) {
+      return;
+    }
+
+    IsRow formRow = form.getActiveRow();
+
+    if (formRow == null) {
+      return;
+    }
+
+    String prop = formRow.getProperty(ProjectConstants.VIEW_PROJECT_TEMPLATE_TASK_COPY);
+
+    if (BeeUtils.isEmpty(prop)) {
+      return;
+    }
+
+    BeeRowSet templates = BeeRowSet.restore(prop);
+    DataInfo viewTasks = Data.getDataInfo(TaskConstants.VIEW_TASKS);
+
+    for (IsRow templRow : templates) {
+
+      BeeRow row = RowFactory.createEmptyRow(viewTasks, true);
+
+      for (String col : COPY_COLUMNS) {
+        row.setValue(viewTasks.getColumnIndex(col),
+            templRow.getValue(templates.getColumnIndex(col)));
+      }
+
+      row.setValue(viewTasks.getColumnIndex(TaskConstants.COL_STATUS),
+          TaskConstants.TaskStatus.SCHEDULED.ordinal());
+
+      row.setProperty(ProjectConstants.PROP_TEMPLATE, BeeUtils.toString(templRow.getId()));
+
+      gridView.getGrid().getRowData().add(0, row);
+    }
   }
 
   @Override
-  public boolean initDescription(GridDescription gridDescription) {
-    return true;
+  public void onEditStart(EditStartEvent event) {
+    if (!BeeUtils.isEmpty(event.getRowValue().getProperty(ProjectConstants.PROP_TEMPLATE))) {
+      event.consume();
+
+      IsRow templRow = event.getRowValue();
+      final Long templateId = BeeUtils.toLong(templRow.getProperty(ProjectConstants.PROP_TEMPLATE));
+
+      if (!DataUtils.isId(templateId)) {
+        return;
+      }
+
+      final DataInfo viewTasks = Data.getDataInfo(TaskConstants.VIEW_TASKS);
+      final BeeRow row = RowFactory.createEmptyRow(viewTasks, true);
+
+      for (String col : COPY_COLUMNS) {
+        row.setValue(viewTasks.getColumnIndex(col),
+            templRow.getValue(viewTasks.getColumnIndex(col)));
+      }
+
+      if (getGridView() != null) {
+
+        getGridView().ensureRelId(new IdCallback() {
+          @Override
+          public void onSuccess(Long result) {
+            FormView parentForm = ViewHelper.getForm(getGridView().asWidget());
+            if (parentForm != null) {
+
+              if (parentForm.getActiveRow() != null) {
+
+                RelationUtils.updateRow(viewTasks, getGridView().getRelColumn(), row,
+                    Data.getDataInfo(parentForm.getViewName()), parentForm.getActiveRow(), true);
+
+                switch (parentForm.getViewName()) {
+                  case ProjectConstants.VIEW_PROJECT_STAGES:
+                    fillProjectStageData(viewTasks, row,
+                        Data.getDataInfo(parentForm.getViewName()),
+                        parentForm.getActiveRow());
+                    fillProjectData(viewTasks, row, Data.getDataInfo(parentForm.getViewName()),
+                        parentForm.getActiveRow());
+                    break;
+                  case ProjectConstants.VIEW_PROJECTS:
+                    fillProjectData(viewTasks, row, Data.getDataInfo(parentForm.getViewName()),
+                        parentForm.getActiveRow());
+                    break;
+                  default:
+                    break;
+                }
+              }
+            }
+
+            RowFactory.createRow(viewTasks, row, new RowCallback() {
+              @Override
+              public void onSuccess(BeeRow createdTask) {
+                Queries.deleteRow(ProjectConstants.VIEW_PROJECT_TEMPLATE_TASK_COPY, templateId,
+                    new Queries.IntCallback() {
+                      @Override
+                      public void onSuccess(Integer templateTask) {
+                        getGridPresenter().handleAction(Action.REFRESH);
+                      }
+                    });
+              }
+            });
+          }
+        });
+      }
+
+      return;
+    }
+
+    super.onEditStart(event);
+  }
+
+  @Override
+  public GridInterceptor getInstance() {
+    return new ChildTasksGrid();
   }
 
   private static void fillProjectData(DataInfo taskData, IsRow taskRow, DataInfo parentFormData,
@@ -108,6 +241,41 @@ class ChildTasksGrid extends TasksGrid {
     if (!BeeUtils.isNegative(idxTaskCompanyName) && !BeeUtils.isNegative(idxProjectCompanyName)) {
       taskRow.setValue(idxTaskCompanyName, parentRowData.getValue(idxProjectCompanyName));
     }
+  }
+
+  @Override
+  public DeleteMode getDeleteMode(GridPresenter presenter,
+      IsRow activeRow, Collection<RowInfo> selectedRows, DeleteMode defMode) {
+
+    if (!BeeUtils.isEmpty(activeRow.getProperty(ProjectConstants.PROP_TEMPLATE))) {
+      return DeleteMode.SINGLE;
+    }
+
+    return super.getDeleteMode(presenter, activeRow, selectedRows, defMode);
+  }
+
+  @Override
+  public DeleteMode beforeDeleteRow(final GridPresenter presenter, IsRow row) {
+    if (!BeeUtils.isEmpty(row.getProperty(ProjectConstants.PROP_TEMPLATE))) {
+
+      final Long templateId = BeeUtils.toLong(row.getProperty(ProjectConstants.PROP_TEMPLATE));
+
+      if (!DataUtils.isId(templateId)) {
+        return DeleteMode.CANCEL;
+      }
+
+      Queries.deleteRow(ProjectConstants.VIEW_PROJECT_TEMPLATE_TASK_COPY, templateId,
+          new Queries.IntCallback() {
+            @Override
+            public void onSuccess(Integer result) {
+              DataChangeEvent.fireRefresh(BeeKeeper.getBus(), getViewName());
+              presenter.handleAction(Action.REFRESH);
+            }
+          });
+      return DeleteMode.CANCEL;
+    }
+
+    return super.beforeDeleteRow(presenter, row);
   }
 
   private static void fillProjectStageData(DataInfo taskData, IsRow taskRow,

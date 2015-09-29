@@ -8,11 +8,10 @@ import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
-import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
 import com.butent.bee.shared.data.event.DataChangeEvent;
-import com.butent.bee.shared.data.event.DataEvent;
 import com.butent.bee.shared.data.event.HandlesAllDataEvents;
+import com.butent.bee.shared.data.event.ModificationEvent;
 import com.butent.bee.shared.data.event.MultiDeleteEvent;
 import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.event.RowInsertEvent;
@@ -91,7 +90,7 @@ public class DataCache implements HandlesAllDataEvents {
       if (notCached.isEmpty()) {
         multiCallback.onSuccess(viewNames.size());
       } else {
-        Queries.getData(notCached, CachingPolicy.NONE, new Queries.DataCallback() {
+        Queries.getData(notCached, new Queries.DataCallback() {
           @Override
           public void onSuccess(Collection<BeeRowSet> result) {
             for (BeeRowSet rowSet : result) {
@@ -270,8 +269,8 @@ public class DataCache implements HandlesAllDataEvents {
     }
   }
 
-  private boolean isEventRelevant(DataEvent event) {
-    return event != null && data.containsKey(event.getViewName());
+  private boolean isEventRelevant(ModificationEvent<?> event) {
+    return event != null && event.containsAny(data.keySet());
   }
 
   private void loadData(final String viewName) {

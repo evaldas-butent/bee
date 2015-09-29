@@ -343,11 +343,17 @@ public final class DomUtils {
     Assert.notNull(root);
     Assert.notEmpty(id);
 
+    Widget child;
     if (root.isAttached()) {
-      return getPhysicalChild(root, id);
+      child = getPhysicalChild(root, id);
     } else {
-      return getLogicalChild(root, id);
+      child = null;
     }
+
+    if (child == null) {
+      child = getLogicalChild(root, id);
+    }
+    return child;
   }
 
   public static Element getChildByDataIndex(Element parent, int dataIndex, boolean recurse) {
@@ -452,11 +458,17 @@ public final class DomUtils {
       return null;
     }
 
+    Widget child;
     if (root.isAttached()) {
-      return getChildByElement(root, Document.get().getElementById(id));
+      child = getChildByElement(root, Document.get().getElementById(id));
     } else {
-      return getLogicalChild(root, id);
+      child = null;
     }
+
+    if (child == null) {
+      child = getLogicalChild(root, id);
+    }
+    return child;
   }
 
   public static NodeList<Element> getChildren(Element parent) {
@@ -1582,6 +1594,52 @@ public final class DomUtils {
     return x != null && y != null && sameId(x.getElement(), y.getElement());
   }
 
+  public static void scrollIntoView(Element elem) {
+    Assert.notNull(elem);
+
+    int left = elem.getOffsetLeft();
+    int top = elem.getOffsetTop();
+    int width = elem.getOffsetWidth();
+    int height = elem.getOffsetHeight();
+
+    Element parent = elem.getParentElement();
+    if (parent != null && parent != elem.getOffsetParent()) {
+      left -= parent.getOffsetLeft();
+      top -= parent.getOffsetTop();
+    }
+
+    Element cur = parent;
+    while (cur != null && !Tags.BODY.equalsIgnoreCase(cur.getTagName())) {
+      if (left < cur.getScrollLeft()) {
+        cur.setScrollLeft(left);
+      }
+      if (left + width > cur.getScrollLeft() + cur.getClientWidth()) {
+        cur.setScrollLeft((left + width) - cur.getClientWidth());
+      }
+
+      if (top < cur.getScrollTop()) {
+        cur.setScrollTop(top);
+      }
+      if (top + height > cur.getScrollTop() + cur.getClientHeight()) {
+        cur.setScrollTop((top + height) - cur.getClientHeight());
+      }
+
+      int offsetLeft = cur.getOffsetLeft();
+      int offsetTop = cur.getOffsetTop();
+
+      parent = cur.getParentElement();
+      if (parent != null && parent != cur.getOffsetParent()) {
+        offsetLeft -= parent.getOffsetLeft();
+        offsetTop -= parent.getOffsetTop();
+      }
+
+      left += offsetLeft - cur.getScrollLeft();
+      top += offsetTop - cur.getScrollTop();
+
+      cur = parent;
+    }
+  }
+
   public static void scrollToBottom(Element elem) {
     Assert.notNull(elem);
     elem.setScrollTop(elem.getScrollHeight());
@@ -1590,6 +1648,18 @@ public final class DomUtils {
   public static void scrollToBottom(UIObject obj) {
     Assert.notNull(obj);
     scrollToBottom(obj.getElement());
+  }
+
+  public static void scrollToLeft(Element elem) {
+    Assert.notNull(elem);
+    if (elem.getScrollLeft() > 0) {
+      elem.setScrollLeft(0);
+    }
+  }
+
+  public static void scrollToLeft(UIObject obj) {
+    Assert.notNull(obj);
+    scrollToLeft(obj.getElement());
   }
 
   public static void scrollToTop(Element elem) {

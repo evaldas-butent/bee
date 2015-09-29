@@ -196,6 +196,10 @@ public class UiServiceBean {
         response = insertRowSilently(reqInfo);
         break;
 
+      case MERGE_ROWS:
+        response = mergeRows(reqInfo);
+        break;
+
       case GET_VIEW_INFO:
         response = getViewInfo(reqInfo);
         break;
@@ -576,7 +580,10 @@ public class UiServiceBean {
     List<BeeRowSet> result = new ArrayList<>();
 
     for (String viewName : viewNames) {
-      BeeRowSet rs = qs.getViewData(viewName);
+      String where = reqInfo.getParameter(VAR_VIEW_WHERE + viewName);
+      Filter filter = BeeUtils.isEmpty(where) ? null : Filter.restore(where);
+
+      BeeRowSet rs = qs.getViewData(viewName, filter);
       result.add(rs);
     }
     return ResponseObject.response(result);
@@ -898,6 +905,42 @@ public class UiServiceBean {
 
   private ResponseObject insertRowSilently(RequestInfo reqInfo) {
     return deb.commitRow(BeeRowSet.restore(reqInfo.getContent()), RowInfo.class);
+  }
+
+  private ResponseObject mergeRows(RequestInfo reqInfo) {
+    String viewName = reqInfo.getParameter(VAR_VIEW_NAME);
+    if (BeeUtils.isEmpty(viewName)) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), VAR_VIEW_NAME);
+    }
+
+    Long from = reqInfo.getParameterLong(VAR_FROM);
+    if (!DataUtils.isId(from)) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), VAR_FROM);
+    }
+    Long into = reqInfo.getParameterLong(VAR_TO);
+    if (!DataUtils.isId(into)) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), VAR_TO);
+    }
+
+    if (Objects.equals(from, into)) {
+      return ResponseObject.error(reqInfo.getService(), viewName, VAR_FROM, from, VAR_TO, into);
+    }
+
+    if (!sys.isView(viewName)) {
+      return ResponseObject.error(reqInfo.getService(), viewName, "view not found");
+    }
+
+    String tableName = sys.getViewSource(viewName);
+    if (BeeUtils.isEmpty(tableName)) {
+      return ResponseObject.error(reqInfo.getService(), viewName, "source not available");
+    }
+
+    ResponseObject response = qs.mergeData(tableName, from, into, true);
+    if (response.hasErrors() || response.isEmpty()) {
+      return response;
+    }
+
+    return qs.mergeData(tableName, from, into, false);
   }
 
   private ResponseObject rebuildData(RequestInfo reqInfo) {

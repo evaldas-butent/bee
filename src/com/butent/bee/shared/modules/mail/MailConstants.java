@@ -31,11 +31,11 @@ public final class MailConstants {
   }
 
   public enum MessageFlag {
-    ANSWERED(1), DELETED(2), FLAGGED(4), SEEN(8), USER(16);
+    ANSWERED(1), DELETED(2), FLAGGED(4), SEEN(8), FORWARDED(16);
 
     final int mask;
 
-    private MessageFlag(int mask) {
+    MessageFlag(int mask) {
       this.mask = mask;
     }
 
@@ -53,6 +53,26 @@ public final class MailConstants {
 
     public int set(Integer bits) {
       return BeeUtils.unbox(bits) | getMask();
+    }
+  }
+
+  public enum RecipientsGroupsVisibility implements HasLocalizedCaption {
+    PUBLIC {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.mailPublic();
+      }
+    },
+    PRIVATE {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.mailPrivate();
+      }
+    };
+
+    @Override
+    public String getCaption() {
+      return getCaption(Localized.getConstants());
     }
   }
 
@@ -168,6 +188,8 @@ public final class MailConstants {
   public static final String TBL_RECIPIENTS = "Recipients";
   public static final String TBL_PLACES = "Places";
 
+  public static final String VIEW_NEWSLETTER_CONTACTS = "NewsletterContacts";
+  public static final String VIEW_NEWSLETTER_FILES = "NewsletterFiles";
   public static final String VIEW_USER_EMAILS = "UserEmails";
 
   public static final String COL_MESSAGE = "Message";
@@ -228,6 +250,8 @@ public final class MailConstants {
 
   public static final String COL_ADDRESSBOOK_LABEL = "Label";
 
+  public static final String COL_NEWSLETTER = "Newsletter";
+
   public static final String FORM_ACCOUNT = "Account";
   public static final String FORM_NEW_ACCOUNT = "NewAccount";
   public static final String FORM_RULE = "Rule";
@@ -244,6 +268,7 @@ public final class MailConstants {
   public static void register() {
     EnumUtils.register(RuleCondition.class);
     EnumUtils.register(RuleAction.class);
+    EnumUtils.register(RecipientsGroupsVisibility.class);
   }
 
   private MailConstants() {

@@ -28,7 +28,7 @@ public enum EditorAction {
 
   private final String code;
 
-  private EditorAction(String code) {
+  EditorAction(String code) {
     this.code = code;
   }
 

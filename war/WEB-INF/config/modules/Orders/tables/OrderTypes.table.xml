@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+  name="OrderTypes"
+  idName="OrderTypeID"
+  >
+  <Fields>
+    <String name="TypeName" notNull="true" unique="true" precision="30" label="=type" />
+  </Fields>
+</Table>

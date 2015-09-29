@@ -39,7 +39,7 @@ public enum CssFrequency implements HasCaption {
 
   private final String caption;
 
-  private CssFrequency(String caption) {
+  CssFrequency(String caption) {
     this.caption = caption;
   }
 

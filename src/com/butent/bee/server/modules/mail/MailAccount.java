@@ -11,20 +11,24 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.mail.AccountInfo;
+import com.butent.bee.shared.modules.mail.MailConstants.MessageFlag;
 import com.butent.bee.shared.modules.mail.MailConstants.Protocol;
 import com.butent.bee.shared.modules.mail.MailConstants.SystemFolder;
 import com.butent.bee.shared.modules.mail.MailFolder;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
 
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Properties;
+import java.util.concurrent.locks.ReentrantLock;
 
 import javax.mail.Flags;
 import javax.mail.Flags.Flag;
@@ -39,7 +43,41 @@ import javax.mail.internet.MimeMessage;
 
 public class MailAccount {
 
+  private static class MailStore {
+    final Store store;
+    final long start;
+    int cnt;
+
+    public MailStore(Store store) {
+      this.store = Assert.notNull(store);
+      this.start = System.currentTimeMillis();
+    }
+
+    public void enter() {
+      cnt++;
+    }
+
+    public boolean expired() {
+      return BeeUtils.isMore(System.currentTimeMillis() - start, TimeUtils.MILLIS_PER_MINUTE * 10L);
+    }
+
+    public Store getStore() {
+      return store;
+    }
+
+    public boolean idle() {
+      return cnt <= 0;
+    }
+
+    public void leave() {
+      cnt--;
+    }
+  }
+
   private static final BeeLogger logger = LogUtils.getLogger(MailAccount.class);
+
+  private static final Map<Long, MailStore> stores = new HashMap<>();
+  private static final ReentrantLock storesLock = new ReentrantLock();
 
   private static boolean checkNewFolderName(Folder newFolder, String name, boolean acceptExisting)
       throws MessagingException {
@@ -69,22 +107,27 @@ public class MailAccount {
     }
   }
 
-  private static List<Message> getMessageReferences(Folder remoteSource, long[] uids)
-      throws MessagingException {
+  private static List<Message> getMessageReferences(Folder remoteSource, Long uidValidity,
+      long[] uids) throws MessagingException {
+
+    logger.debug("Checking folder", remoteSource.getName(), "UIDValidity with", uidValidity);
+
+    if (!Objects.equals(((UIDFolder) remoteSource).getUIDValidity(), uidValidity)) {
+      throw new FolderOutOfSyncException("Folder out of sync: " + remoteSource.getName());
+    }
+    logger.debug("Opening folder:", remoteSource.getName());
+    remoteSource.open(Folder.READ_WRITE);
 
     logger.debug("Getting messages from folder", remoteSource.getName(), "by UIDs:", uids);
     Message[] msgs = ((UIDFolder) remoteSource).getMessagesByUID(uids);
 
     for (Message message : msgs) {
       if (message == null) {
-        throw new MessagingException("Not all messages where returned by UIDs. "
-            + "Folder resynchronization required.");
+        throw new FolderOutOfSyncException("Not all messages where returned by given UIDs");
       }
     }
     return Lists.newArrayList(msgs);
   }
-
-  private String error;
 
   private final Protocol storeProtocol;
   private final String storeHost;
@@ -137,16 +180,12 @@ public class MailAccount {
     return accountInfo.getAddress();
   }
 
-  public Long getAddressId() {
-    return accountInfo.getAddressId();
-  }
-
   public Long getSignatureId() {
     return accountInfo.getSignatureId();
   }
 
   public String getStoreErrorMessage() {
-    String err = error;
+    String err = null;
 
     if (BeeUtils.isEmpty(err)) {
       if (storeProtocol == null) {
@@ -187,7 +226,7 @@ public class MailAccount {
   }
 
   public String getTransportErrorMessage() {
-    String err = error;
+    String err = null;
 
     if (BeeUtils.isEmpty(err)) {
       if (transportProtocol == null) {
@@ -273,23 +312,62 @@ public class MailAccount {
     if (!isValidStoreAccount()) {
       throw new MessagingException(getStoreErrorMessage());
     }
-    logger.debug("Connecting to store...");
+    storesLock.lock();
+    MailStore mailStore = stores.get(getAccountId());
 
-    String protocol = getStoreProtocol().name().toLowerCase();
-    Properties props = new Properties();
-    String pfx = "mail." + protocol + ".";
+    if (mailStore != null) {
+      if (mailStore.expired()) {
+        logger.debug("Removing expired store...");
+        stores.remove(getAccountId());
+        storesLock.unlock();
+        return connectToStore();
 
-    if (isStoreSSL()) {
-      props.put(pfx + "ssl.enable", "true");
+      } else if (mailStore.idle()) {
+        logger.debug("Waiting for connected store...");
+        storesLock.unlock();
+
+        try {
+          Thread.sleep(TimeUtils.MILLIS_PER_SECOND);
+        } catch (InterruptedException e) {
+          logger.warning(e.getMessage());
+        }
+        return connectToStore();
+      }
+      logger.debug("Entering connected store...");
+      mailStore.enter();
+      storesLock.unlock();
+    } else {
+      logger.debug("Connecting to store...");
+
+      String protocol = getStoreProtocol().name().toLowerCase();
+      Properties props = new Properties();
+      String pfx = "mail." + protocol + ".";
+
+      if (isStoreSSL()) {
+        props.put(pfx + "ssl.enable", "true");
+      }
+      for (Entry<String, String> prop : getStoreProperties().entrySet()) {
+        String key = prop.getKey();
+        props.put(BeeUtils.isPrefix(key, "mail.") ? key : pfx + key, prop.getValue());
+      }
+      Session session = Session.getInstance(props, null);
+      mailStore = new MailStore(session.getStore(protocol));
+
+      stores.put(getAccountId(), mailStore);
+      storesLock.unlock();
+
+      try {
+        mailStore.getStore().connect(getStoreHost(), getStorePort(), getStoreLogin(),
+            getStorePassword());
+      } catch (MessagingException ex) {
+        storesLock.lock();
+        stores.remove(getAccountId());
+        storesLock.unlock();
+        throw ex;
+      }
+      mailStore.enter();
     }
-    for (Entry<String, String> prop : getStoreProperties().entrySet()) {
-      String key = prop.getKey();
-      props.put(BeeUtils.isPrefix(key, "mail.") ? key : pfx + key, prop.getValue());
-    }
-    Session session = Session.getInstance(props, null);
-    Store store = session.getStore(protocol);
-    store.connect(getStoreHost(), getStorePort(), getStoreLogin(), getStorePassword());
-    return store;
+    return mailStore.getStore();
   }
 
   Transport connectToTransport() throws MessagingException {
@@ -352,12 +430,29 @@ public class MailAccount {
 
   void disconnectFromStore(Store store) {
     if (store != null) {
-      try {
-        logger.debug("Disconnecting from store...");
-        store.close();
-      } catch (MessagingException e) {
-        logger.warning(e);
+      storesLock.lock();
+      MailStore mailStore = stores.get(getAccountId());
+      boolean disconnect = mailStore == null || mailStore.getStore() != store;
+
+      if (!disconnect) {
+        mailStore.leave();
+        disconnect = mailStore.idle();
+
+        if (disconnect) {
+          stores.remove(getAccountId());
+        }
       }
+      if (disconnect) {
+        try {
+          logger.debug("Disconnecting from store...");
+          store.close();
+        } catch (MessagingException e) {
+          logger.warning(e);
+        }
+      } else {
+        logger.debug("Leaving connected store...");
+      }
+      storesLock.unlock();
     }
   }
 
@@ -464,17 +559,7 @@ public class MailAccount {
     try {
       store = connectToStore();
       remoteSource = getRemoteFolder(store, source);
-
-      logger.debug("Checking folder", remoteSource.getName(), "UIDValidity with",
-          source.getUidValidity());
-
-      if (!Objects.equals(((UIDFolder) remoteSource).getUIDValidity(), source.getUidValidity())) {
-        throw new MessagingException("Folder out of sync: " + source.getName());
-      }
-      logger.debug("Opening folder:", remoteSource.getName());
-      remoteSource.open(Folder.READ_WRITE);
-
-      List<Message> messages = getMessageReferences(remoteSource, uids);
+      List<Message> messages = getMessageReferences(remoteSource, source.getUidValidity(), uids);
 
       if (isTarget) {
         Folder remoteTarget = getRemoteFolder(store, target);
@@ -542,7 +627,9 @@ public class MailAccount {
     return ok;
   }
 
-  boolean setFlag(MailFolder source, long[] uids, Flag flag, boolean on) throws MessagingException {
+  boolean setFlag(MailFolder source, long[] uids, MessageFlag messageFlag, boolean on)
+      throws MessagingException {
+
     if (!isStoredRemotedly(source)) {
       return false;
     }
@@ -552,21 +639,22 @@ public class MailAccount {
     try {
       store = connectToStore();
       folder = getRemoteFolder(store, source);
+      List<Message> messages = getMessageReferences(folder, source.getUidValidity(), uids);
 
-      logger.debug("Checking folder", folder.getName(), "UIDValidity with",
-          source.getUidValidity());
+      Flag flag = MailEnvelope.getFlag(messageFlag);
+      Flags flags = null;
 
-      if (!Objects.equals(((UIDFolder) folder).getUIDValidity(), source.getUidValidity())) {
-        throw new MessagingException("Folder out of sync: " + source.getName());
+      if (flag != null) {
+        flags = new Flags(flag);
+      } else if (folder.getPermanentFlags().contains(Flag.USER)) {
+        flags = new Flags(messageFlag.name());
+      } else {
+        logger.warning("Remote folder", folder.getName(), "does not support user defined flags");
       }
-      logger.debug("Opening folder:", folder.getName());
-      folder.open(Folder.READ_WRITE);
-
-      List<Message> messages = getMessageReferences(folder, uids);
-
-      logger.debug(on ? "Setting" : "Clearing", "flag for selected messages");
-      folder.setFlags(messages.toArray(new Message[0]), new Flags(flag), on);
-
+      if (flags != null) {
+        logger.debug(on ? "Setting" : "Clearing", "flag", messageFlag, " for selected messages");
+        folder.setFlags(messages.toArray(new Message[0]), flags, on);
+      }
     } finally {
       if (folder != null && folder.isOpen()) {
         try {

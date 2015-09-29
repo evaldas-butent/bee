@@ -33,6 +33,11 @@
   min-width: 125px;
 }
 
+.bee-crm-taskEvent-col-1 > .bee-fa-label {
+  margin: 4px 0;
+  font-size: 3ex;
+}
+
 .bee-crm-taskEvent-Event,
 .bee-crm-taskEvent-Duration {
   font-weight: bolder;
@@ -41,6 +46,10 @@
 .bee-crm-taskEvent-EventNote,
 .bee-crm-taskEvent-Comment {
   white-space: pre-wrap;
+}
+.bee-crm-taskEvent-EventNote > .bee-InternalLink {
+  display: inline-block;
+  padding: 0 2px;
 }
 
 .bee-crm-taskDialog-container td {
@@ -107,33 +116,31 @@
   bottom: 0;
 }
 .bee-crm-Slack-late {
-  background-color: red;
+  color: red;
 }
 .bee-crm-Slack-opening {
-  background-color: green;
+  color: green;
 }
 .bee-crm-Slack-endgame {
-  background-color: orange;
+  color: orange;
 }
 .bee-crm-Slack-scheduled {
-  background-color: yellow;
+  color: yellow;
 }
 
 .bee-crm-Slack-label {
   position: absolute;
   top: 3px;
+  font-weight: bold;
 }
 .bee-crm-Slack-late .bee-crm-Slack-label {
   left: 3px;
-  color: white;
 }
 .bee-crm-Slack-opening .bee-crm-Slack-label {
   left: 30%;
-  color: white;
 }
 .bee-crm-Slack-endgame .bee-crm-Slack-label {
   right: 30%;
-  color: white;
 }
 .bee-crm-Slack-scheduled .bee-crm-Slack-label {
   right: 3px;

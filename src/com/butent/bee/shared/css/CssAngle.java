@@ -42,7 +42,7 @@ public enum CssAngle implements HasCaption {
 
   private final String caption;
 
-  private CssAngle(String caption) {
+  CssAngle(String caption) {
     this.caption = caption;
   }
 

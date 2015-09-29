@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+  name="OrdersTemplates"
+  idName="OrderTemplateID"
+  >
+  <Fields>
+    <String name="Template" precision="100" notNull="true" unique="true" label="=name" />
+    <Relation name="Type" relation="OrderTypes" label="=type" />
+    <Relation name="Series" relation="OrderSeries" label="=trdSeries" />
+    <String name="Number" precision="30" label="=number" />   
+    <Relation name="Warehouse" relation="Warehouses" label="=warehouse" />   
+    <Relation name="Company" relation="Companies" label="=client" />
+    <Relation name="Contact" relation="CompanyPersons" label="=contact" />
+    <Text name="Notes" label="=notes" />
+  </Fields>
+</Table>

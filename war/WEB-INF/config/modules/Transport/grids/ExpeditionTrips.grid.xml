@@ -16,5 +16,6 @@
     <DataColumn name="DateFrom" source="DateFrom" caption="=trDeparted" width="80" />
     <DataColumn name="DateTo" source="DateTo" caption="=trReturned" width="80" />
     <DataColumn name="Notes" caption="=notes" whiteSpace="pre-wrap" />
+    <RelColumn name="Manager" />
   </g:columns>
 </g:Grid>

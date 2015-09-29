@@ -227,6 +227,11 @@ public class ResponseObject implements BeeSerializable {
     return (String) getResponse();
   }
 
+  @SuppressWarnings("unchecked")
+  public Collection<String> getResponseAsStringCollection() {
+    return (Collection<String>) getResponse();
+  }
+
   public int getSize() {
     return size;
   }

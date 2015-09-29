@@ -68,7 +68,9 @@ import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.modules.administration.ExtensionIcons;
 import com.butent.bee.server.modules.administration.FileStorageBean;
 import com.butent.bee.server.modules.mail.MailModuleBean;
+import com.butent.bee.server.news.ExtendedUsageQueryProvider;
 import com.butent.bee.server.news.NewsBean;
+import com.butent.bee.server.news.NewsHelper;
 import com.butent.bee.server.sql.HasConditions;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.SqlDelete;
@@ -78,6 +80,7 @@ import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.css.CssUnit;
 import com.butent.bee.shared.css.values.FontWeight;
@@ -420,6 +423,18 @@ public class TasksModuleBean implements BeeModule {
     news.registerUsageQueryProvider(Feed.TASKS_ASSIGNED, usageQueryProvider);
     news.registerUsageQueryProvider(Feed.TASKS_DELEGATED, usageQueryProvider);
     news.registerUsageQueryProvider(Feed.TASKS_OBSERVED, usageQueryProvider);
+    news.registerUsageQueryProvider(Feed.REQUESTS_ASSIGNED, new ExtendedUsageQueryProvider() {
+      @Override
+      protected List<IsCondition> getConditions(long userId) {
+        return NewsHelper.buildConditions(SqlUtils.equals(TBL_REQUESTS, COL_REQUEST_MANAGER,
+            userId));
+      }
+
+      @Override
+      protected List<Pair<String, IsCondition>> getJoins() {
+        return NewsHelper.buildJoin(TBL_REQUESTS, news.joinUsage(TBL_REQUESTS));
+      }
+    });
 
     HeadlineProducer headlineProducer = new HeadlineProducer() {
       @Override
@@ -799,7 +814,7 @@ public class TasksModuleBean implements BeeModule {
 
     for (Long taskId : taskIdList) {
       response = registerTaskEvent(BeeUtils.unbox(taskId), user, TaskEvent.APPROVE, comment,
-          eventNote, null, null, now);
+          eventNote, null, null, null, now);
 
       if (response.hasErrors()) {
         logger.severe("Confirmation failed");
@@ -1033,6 +1048,7 @@ public class TasksModuleBean implements BeeModule {
       case APPROVE:
       case RENEW:
       case ACTIVATE:
+      case OUT_OF_OBSERVERS:
         Long finishTime = BeeUtils.toLongOrNull(reqInfo.getParameter(VAR_TASK_FINISH_TIME));
 
         response = registerTaskEvent(taskId, currentUser, event, reqInfo, eventNote, finishTime,
@@ -1294,7 +1310,8 @@ public class TasksModuleBean implements BeeModule {
       }
     }
 
-    result.addRow(new String[] {constants.totalOf() + ":",
+    result.addRow(new String[] {
+        constants.totalOf() + ":",
         new DateTime(totalTimeMls).toUtcTimeString()});
 
     ResponseObject resp = ResponseObject.response(result);
@@ -1407,11 +1424,11 @@ public class TasksModuleBean implements BeeModule {
 
     for (SimpleRow file : data) {
       FileInfo sf = new FileInfo(file.getLong(COL_FILE),
-          BeeUtils.notEmpty(file.getValue(COL_CAPTION),
-              file.getValue(COL_FILE_NAME)),
+          file.getValue(COL_FILE_NAME),
           file.getLong(COL_FILE_SIZE),
           file.getValue(COL_FILE_TYPE));
 
+      sf.setCaption(file.getValue(COL_CAPTION));
       sf.setIcon(ExtensionIcons.getIcon(sf.getName()));
       files.add(sf);
     }
@@ -2016,12 +2033,13 @@ public class TasksModuleBean implements BeeModule {
   }
 
   private ResponseObject registerTaskEvent(long taskId, long userId, TaskEvent event, long millis) {
-    return registerTaskEvent(taskId, userId, event, null, null, null, null, millis);
+    return registerTaskEvent(taskId, userId, event, null, null, null, null, null, millis);
   }
 
   private ResponseObject registerTaskEvent(long taskId, long userId, TaskEvent event,
       RequestInfo reqInfo, String note, Long finishTime, long millis) {
     String comment = reqInfo.getParameter(VAR_TASK_COMMENT);
+    String eventData = reqInfo.getParameter(COL_EVENT_DATA);
 
     Long durationId = null;
     Long durationType = BeeUtils.toLongOrNull(reqInfo.getParameter(VAR_TASK_DURATION_TYPE));
@@ -2035,11 +2053,13 @@ public class TasksModuleBean implements BeeModule {
       }
     }
 
-    return registerTaskEvent(taskId, userId, event, comment, note, finishTime, durationId, millis);
+    return registerTaskEvent(taskId, userId, event, comment, note, eventData, finishTime,
+        durationId, millis);
   }
 
   private ResponseObject registerTaskEvent(long taskId, long userId, TaskEvent event,
-      String comment, String note, Long finishTime, Long durationId, long millis) {
+      String comment, String note, String eventData, Long finishTime, Long durationId,
+      long millis) {
 
     SqlInsert si = new SqlInsert(TBL_TASK_EVENTS)
         .addConstant(COL_TASK, taskId)
@@ -2052,6 +2072,10 @@ public class TasksModuleBean implements BeeModule {
     }
     if (!BeeUtils.isEmpty(note)) {
       si.addConstant(COL_EVENT_NOTE, note);
+    }
+
+    if (!BeeUtils.isEmpty(eventData)) {
+      si.addConstant(COL_EVENT_DATA, eventData);
     }
 
     if (BeeUtils.isPositive(finishTime)) {

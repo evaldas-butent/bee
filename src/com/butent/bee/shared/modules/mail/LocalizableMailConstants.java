@@ -22,9 +22,7 @@ public interface LocalizableMailConstants {
 
   String mailCreateNewFolder();
 
-  String mailCurrentMessage();
-
-  String mailInFolder();
+  String mailEmptyTrashFolder();
 
   String mailFolderContentsWillBeRemovedFromTheMailServer();
 
@@ -48,6 +46,8 @@ public interface LocalizableMailConstants {
 
   String mailHasAttachments();
 
+  String mailInFolder();
+
   String mailMarkAsUnread();
 
   String mailMessageBodyIsEmpty();
@@ -63,6 +63,10 @@ public interface LocalizableMailConstants {
   String mailQuestionSaveToDraft();
 
   String mailRecipientAddressNotFound();
+
+  String mailPrivate();
+
+  String mailPublic();
 
   String mailReplayPrefix();
 

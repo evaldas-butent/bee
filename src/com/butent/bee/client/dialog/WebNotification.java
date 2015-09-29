@@ -20,7 +20,7 @@ public class WebNotification extends JavaScriptObject {
 
     private final String value;
 
-    private NotificationPermission(String value) {
+    NotificationPermission(String value) {
       this.value = value;
     }
 

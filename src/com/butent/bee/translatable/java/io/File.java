@@ -87,7 +87,7 @@ public class File implements Comparable<File> {
     }
     if (parent != null) {
       if (parent.path.equals("")) {
-        this.path = fs.resolve(fs.getDefaultParent(),  fs.normalize(child));
+        this.path = fs.resolve(fs.getDefaultParent(), fs.normalize(child));
       } else {
         this.path = fs.resolve(parent.path, fs.normalize(child));
       }
@@ -129,6 +129,10 @@ public class File implements Comparable<File> {
   @Override
   public int compareTo(File pathname) {
     return fs.compare(this, pathname);
+  }
+
+  public boolean delete() {
+    return false;
   }
 
   @Override

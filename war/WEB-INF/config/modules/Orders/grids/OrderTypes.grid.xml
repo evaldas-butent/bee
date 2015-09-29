@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+  
+  name="OrderTypes" viewName="OrderTypes" caption="=types"
+  >
+  <g:columns>
+    <DataColumn name="TypeName" visible="true" minWidth="200" />
+  </g:columns>
+</g:Grid>

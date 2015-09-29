@@ -71,8 +71,7 @@ public class PrintActForm extends AbstractFormInterceptor {
     }
     for (Widget total : totals) {
       TradeUtils.getTotalInWords(form.getDoubleValue(COL_TRADE_AMOUNT),
-          form.getStringValue(AdministrationConstants.ALS_CURRENCY_NAME),
-          form.getStringValue("MinorName"), total);
+          form.getLongValue(COL_TRADE_CURRENCY), total);
     }
     renderItems("TradeActItems");
     renderItems("TradeActServices");

@@ -3,15 +3,20 @@
       xmlns:x="http://www.butent.com/expression"
 
   name="CargoInvoices" source="Sales"
-  editForm="CargoInvoice"
+  editForm="CargoInvoice" newRowForm="NewSale" newRowCaption="=trNewCargoInvoice"
   >
   <Columns>
     <SimpleColumn name="Date" />
     <SimpleColumn name="Number" />
-    <SimpleColumn name="InvoicePrefix" />
+
+    <SimpleColumn name="Operation" />
+    <SimpleJoin name="Operation" joinType="LEFT">
+      <SimpleColumn name="OperationName" />
+    </SimpleJoin>
+
     <SimpleColumn name="SaleSeries" />
     <SimpleJoin name="SaleSeries" joinType="LEFT">
-      <SimpleColumn name="SeriesName" />
+      <SimpleColumn name="SeriesName" alias="InvoicePrefix" />
     </SimpleJoin>
     <SimpleColumn name="InvoiceNo" />
     <SimpleColumn name="Term" />
@@ -26,13 +31,12 @@
     <SimpleColumn name="Currency" />
     <SimpleJoin joinType="LEFT" name="Currency">
       <SimpleColumn name="Name" alias="CurrencyName" />
-      <SimpleColumn name="MinorName" />
     </SimpleJoin>
-    
+
     <SimpleColumn name="PaymentTime" />
     <SimpleColumn name="Paid" />
-    
-    <SimpleColumn name="Debt">
+
+    <SimpleColumn name="Debt" label="=trdDebt">
       <x:minus>
         <x:number>"Amount"</x:number>
         <x:nvl type="DECIMAL">
@@ -42,14 +46,6 @@
       </x:minus>
     </SimpleColumn>
 
-    <SimpleColumn name="Supplier" />
-    <SimpleJoin joinType="LEFT" name="Supplier">
-      <SimpleColumn name="Name" alias="SupplierName" label="=trdSupplier" />
-      <SimpleJoin joinType="LEFT" name="CompanyType">
-        <SimpleColumn name="Name" alias="SupplierTypeName" />
-      </SimpleJoin>
-    </SimpleJoin>
-    
     <SimpleColumn name="Customer" />
     <SimpleJoin joinType="LEFT" name="Customer">
       <SimpleColumn name="Name" alias="CustomerName" label="=trdCustomer" />
@@ -57,7 +53,7 @@
         <SimpleColumn name="Name" alias="CustomerTypeName" />
       </SimpleJoin>
     </SimpleJoin>
-    
+
     <SimpleColumn name="Payer" />
     <SimpleJoin joinType="LEFT" name="Payer">
       <SimpleColumn name="Name" alias="PayerName" label="=trdPayer" />
@@ -65,7 +61,12 @@
         <SimpleColumn name="Name" alias="PayerTypeName" />
       </SimpleJoin>
     </SimpleJoin>
-    
+
+    <SimpleColumn name="WarehouseFrom" />
+    <SimpleJoin name="WarehouseFrom" joinType="LEFT">
+      <SimpleColumn name="Code" alias="WarehouseFromCode" />
+    </SimpleJoin>
+
     <SimpleColumn name="Manager" />
     <SimpleJoin name="Manager" joinType="LEFT">
       <SimpleColumn name="CompanyPerson" alias="ManagerPerson" />
@@ -76,7 +77,7 @@
         </SimpleJoin>
       </SimpleJoin>
     </SimpleJoin>
-    
+
     <ExternalJoin name="Sale" source="CargoIncomes" joinType="LEFT">
       <AggregateColumn name="Sale" aggregate="MAX" />
     </ExternalJoin>

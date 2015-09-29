@@ -218,6 +218,8 @@ public class XmlTable {
   @XmlAttribute
   public boolean audit;
   @XmlAttribute
+  public boolean mergeable;
+  @XmlAttribute
   public int x;
   @XmlAttribute
   public int y;

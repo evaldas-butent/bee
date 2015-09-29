@@ -105,4 +105,10 @@ public interface LocalizableTradeConstants {
   String trdTotal();
 
   String trdSynchronizeWithERP();
+
+  String trdTypePurchase();
+
+  String trdTypeSale();
+
+  String trdTypeTransfer();
 }

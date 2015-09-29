@@ -210,6 +210,8 @@
       <xs:enumeration value="Transport.LogisticsSelfService" />
       <xs:enumeration value="Service" />
       <xs:enumeration value="Administration" />
+      <xs:enumeration value="Orders" />
+      <xs:enumeration value="Payroll" />
     </xs:restriction>
   </xs:simpleType>
 
@@ -226,8 +228,6 @@
       <xs:enumeration value="Addressbook" />
       <xs:enumeration value="AdsTopics" />
       <xs:enumeration value="AllCargo" />
-      <xs:enumeration value="AllDrivers" />
-      <xs:enumeration value="AllVehicles" />
       <xs:enumeration value="AppointmentAttendees" />
       <xs:enumeration value="AppointmentOwners" />
       <xs:enumeration value="AppointmentProps" />
@@ -303,6 +303,7 @@
       <xs:enumeration value="Departments" />
       <xs:enumeration value="DepartmentEmployees" />
       <xs:enumeration value="DepartmentPositions" />
+      <xs:enumeration value="Discounts" />
       <xs:enumeration value="Discussions" />
       <xs:enumeration value="DiscussionsComments" />
       <xs:enumeration value="DiscussionsFiles" />
@@ -344,6 +345,8 @@
       <xs:enumeration value="EditorTemplates" />
       <xs:enumeration value="Emails" />
       <xs:enumeration value="ERPSales" />
+      <xs:enumeration value="EmployeeObjects" />
+      <xs:enumeration value="Employees" />
       <xs:enumeration value="EventHistory" />
       <xs:enumeration value="ExpeditionTypes" />
       <xs:enumeration value="ExpeditionTrips" />
@@ -371,13 +374,28 @@
       <xs:enumeration value="IpFilters" />
       <xs:enumeration value="ItemCategories" />
       <xs:enumeration value="ItemGraphics" />
+      <xs:enumeration value="ItemRemainders" />
       <xs:enumeration value="Items" />
+      <xs:enumeration value="Locations" />
       <xs:enumeration value="Maintenance" />
       <xs:enumeration value="Makers" />
       <xs:enumeration value="Messages" />
+      <xs:enumeration value="Newsletters" />
+      <xs:enumeration value="NewsletterContacts" />
+      <xs:enumeration value="NewsletterFiles" />
       <xs:enumeration value="Objects" />
+      <xs:enumeration value="ObjectSalaryFund" />
+      <xs:enumeration value="Orders" />
+      <xs:enumeration value="OrdersInvoices" />
+      <xs:enumeration value="OrderItems" />
+      <xs:enumeration value="OrderSales" />
+      <xs:enumeration value="OrderSeries" />
+      <xs:enumeration value="OrdersTemplates" />
+      <xs:enumeration value="OrderTypes" />
+      <xs:enumeration value="OrderTmplItems" />
       <xs:enumeration value="OrderCargo" />
       <xs:enumeration value="Parameters" />
+      <xs:enumeration value="PaymentTypes" />
       <xs:enumeration value="Persons" />
       <xs:enumeration value="PersonFamily" />
       <xs:enumeration value="Places" />
@@ -390,15 +408,24 @@
       <xs:enumeration value="ProjectEvents" />
       <xs:enumeration value="ProjectFiles" />
       <xs:enumeration value="ProjectIncomes" />
-       <xs:enumeration value="ProjectInvoices" />
+      <xs:enumeration value="ProjectInvoices" />
       <xs:enumeration value="ProjectReasons" />
       <xs:enumeration value="ProjectStages" />
+      <xs:enumeration value="ProjectTemplates" />
+      <xs:enumeration value="ProjectTMLContacts" />
+      <xs:enumeration value="ProjectTMLDates" />
+      <xs:enumeration value="ProjectTMLStages" />
+      <xs:enumeration value="ProjectTMLTaskCopy" />
+      <xs:enumeration value="ProjectTMLUsers" />
       <xs:enumeration value="ProjectTree"/>
       <xs:enumeration value="ProjectTypes" />
       <xs:enumeration value="ProjectUsers" />
       <xs:enumeration value="PropertyGroups" />
       <xs:enumeration value="PurchaseItems" />
+      <xs:enumeration value="PurchaseOperations" />
       <xs:enumeration value="Purchases" />
+      <xs:enumeration value="RecipientsGroups" />
+      <xs:enumeration value="RcpsGroupsContacts" />
       <xs:enumeration value="RecurringTasks" />
       <xs:enumeration value="RejectionReasons" />
       <xs:enumeration value="RelatedDocuments" />
@@ -423,6 +450,7 @@
       <xs:enumeration value="RTFiles" />
       <xs:enumeration value="Rules" />
       <xs:enumeration value="SaleItems" />
+      <xs:enumeration value="SaleOperations" />
       <xs:enumeration value="Sales" />
       <xs:enumeration value="SaleSeries" />
       <xs:enumeration value="SeriesManagers" />
@@ -476,6 +504,9 @@
       <xs:enumeration value="TemplateTree" />
       <xs:enumeration value="ThemeColors" />
       <xs:enumeration value="Themes" />
+      <xs:enumeration value="TimeCardChanges" />
+      <xs:enumeration value="TimeCardCodes" />
+      <xs:enumeration value="TimeRanges" />
       <xs:enumeration value="TimeZones" />
       <xs:enumeration value="TodoList" />
       <xs:enumeration value="TradeActFiles" />
@@ -502,6 +533,8 @@
       <xs:enumeration value="TripDrivers" />
       <xs:enumeration value="TripFuelConsumptions" />
       <xs:enumeration value="TripFuelCosts" />
+      <xs:enumeration value="TripPurchaseInvoices" />
+      <xs:enumeration value="TripPurchases" />
       <xs:enumeration value="TripRoutes" />
       <xs:enumeration value="Trips" />
       <xs:enumeration value="Turnovers" />
@@ -510,6 +543,7 @@
       <xs:enumeration value="UnsuppliedItems" />
       <xs:enumeration value="UserCalAttendees" />
       <xs:enumeration value="UserCalendars" />
+      <xs:enumeration value="UserDrivers" />
       <xs:enumeration value="UserEmails" />
       <xs:enumeration value="UserFeeds" />
       <xs:enumeration value="UserGroupMembers" />
@@ -520,6 +554,7 @@
       <xs:enumeration value="UserRoles" />
       <xs:enumeration value="Users" />
       <xs:enumeration value="UserSettings" />
+      <xs:enumeration value="UserVehicles" />
       <xs:enumeration value="VehicleModels" />
       <xs:enumeration value="VehiclePartUsage" />
       <xs:enumeration value="Vehicles" />
@@ -528,6 +563,7 @@
       <xs:enumeration value="VehicleTracking" />
       <xs:enumeration value="WaitingCargo" />
       <xs:enumeration value="Warehouses" />
+      <xs:enumeration value="WorkSchedule" />
       <xs:enumeration value="Workspaces" />
 
 <!-- samples -->

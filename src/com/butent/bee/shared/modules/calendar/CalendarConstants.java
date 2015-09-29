@@ -71,7 +71,7 @@ public final class CalendarConstants {
 
     private final String caption;
 
-    private MultidayLayout(String caption) {
+    MultidayLayout(String caption) {
       this.caption = caption;
     }
 
@@ -89,7 +89,7 @@ public final class CalendarConstants {
 
     private final String caption;
 
-    private Report(String caption) {
+    Report(String caption) {
       this.caption = caption;
     }
 
@@ -109,7 +109,7 @@ public final class CalendarConstants {
 
     private final String caption;
 
-    private Transparency(String caption) {
+    Transparency(String caption) {
       this.caption = caption;
     }
 
@@ -126,7 +126,7 @@ public final class CalendarConstants {
 
     private final String caption;
 
-    private CalendarVisibility(String caption) {
+    CalendarVisibility(String caption) {
       this.caption = caption;
     }
 
@@ -156,7 +156,7 @@ public final class CalendarConstants {
     private final String columnId;
     private final String caption;
 
-    private ViewType(String columnId, String caption) {
+    ViewType(String columnId, String caption) {
       this.columnId = columnId;
       this.caption = caption;
     }

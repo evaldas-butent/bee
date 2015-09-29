@@ -745,14 +745,10 @@ public class DataEditorBean {
     }
     int c = 0;
     Long id = tblInfo.id;
-    long version = System.currentTimeMillis();
 
     if (!response.hasErrors()) {
-      String idName = sys.getIdName(tblName);
-      String verName = sys.getVersionName(tblName);
-
       if (!DataUtils.isId(id)) { // INSERT
-        SqlInsert si = new SqlInsert(tblName).addConstant(verName, version);
+        SqlInsert si = new SqlInsert(tblName);
 
         for (FieldInfo col : baseUpdate) {
           si.addConstant(col.fieldName, col.newValue);
@@ -791,15 +787,15 @@ public class DataEditorBean {
           c++;
         }
       } else if (!BeeUtils.isEmpty(baseUpdate)) { // UPDATE
-        IsCondition wh = SqlUtils.equals(tblName, idName, id);
+        IsCondition wh = sys.idEquals(tblName, id);
 
-        SqlUpdate su = new SqlUpdate(tblName).addConstant(verName, version);
+        SqlUpdate su = new SqlUpdate(tblName);
 
         for (FieldInfo col : baseUpdate) {
           su.addConstant(col.fieldName, col.newValue);
         }
-        ResponseObject resp = qs.updateDataWithResponse(
-            su.setWhere(SqlUtils.and(wh, SqlUtils.equals(tblName, verName, tblInfo.version))),
+        ResponseObject resp = qs.updateDataWithResponse(su.setWhere(SqlUtils.and(wh,
+                SqlUtils.equals(tblName, sys.getVersionName(tblName), tblInfo.version))),
             errorHandler);
         int res = resp.getResponse(-1, logger);
 
@@ -820,7 +816,10 @@ public class DataEditorBean {
         }
       }
       if (c > 0) {
-        tblInfo.version = version;
+        tblInfo.version = qs.getLong(new SqlSelect()
+            .addFields(tblName, sys.getVersionName(tblName))
+            .addFrom(tblName)
+            .setWhere(sys.idEquals(tblName, id)));
       }
     }
     if (!response.hasErrors() && !BeeUtils.isEmpty(extUpdate)) {
@@ -988,11 +987,9 @@ public class DataEditorBean {
       return false;
     }
     for (TableInfo tblInfo : updates.values()) {
-      String idColumn = tblInfo.tableAlias + "_" + sys.getIdName(tblInfo.tableName);
-      String verColumn = tblInfo.tableAlias + "_" + sys.getVersionName(tblInfo.tableName);
-
-      tblInfo.id = res.getLong(idColumn);
-      tblInfo.version = res.getLong(verColumn);
+      tblInfo.id = res.getLong(tblInfo.tableAlias + "_" + sys.getIdName(tblInfo.tableName));
+      tblInfo.version = res.getLong(tblInfo.tableAlias + "_"
+          + sys.getVersionName(tblInfo.tableName));
 
       for (FieldInfo fldInfo : tblInfo.fields) {
         if (!BeeUtils.isEmpty(fldInfo.fieldAlias)) {

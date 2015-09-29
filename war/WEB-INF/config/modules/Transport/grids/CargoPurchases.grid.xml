@@ -12,8 +12,9 @@
       editViewName="Assessments" editSource="Assessment" module="Transport.Logistics"/>
     <DataColumn name="OrderDate" />
     <RelColumn name="OrderNo" editEnabled="true" editSource="Order" />
-    <DataColumn name="Status" />    
+    <DataColumn name="Status" />
     <DataColumn name="SupplierName" />
+    <DataColumn name="Number" />
 
     <RelColumn name="LoadingCountry" visible="false" readOnly="true"/>
     <CalcColumn type="string" name="From" source="LoadingCountryCode" cellType="html" width="20"

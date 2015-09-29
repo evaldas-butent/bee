@@ -3,7 +3,7 @@
    xmlns:x="http://www.butent.com/expression"
 
   name="Tasks" source="Tasks" caption="=crmTasks"
-  newRowForm="NewTask" editForm="Task" rowCaption="Summary" 
+  newRowForm="NewTask" editForm="Task" rowCaption="Summary"
   >
   <Relation renderColumns="Id Summary ExecutorFirstName ExecutorLastName"
     choiceColumns="Id Summary ExecutorFirstName ExecutorLastName StartTime FinishTime" />
@@ -71,6 +71,10 @@
       </SimpleJoin>
       <SimpleJoin name="Company" joinType="LEFT">
         <SimpleColumn alias="ContactCompanyName" name="Name" />
+        <SimpleColumn alias="ContactCompanyType" name="CompanyType" />
+        <SimpleJoin name="CompanyType" joinType="LEFT">
+          <SimpleColumn name="Name" alias="ContactCompanyTypeName" />
+        </SimpleJoin>
       </SimpleJoin>
     </SimpleJoin>
 
@@ -81,48 +85,49 @@
 
     <SimpleColumn name="ReminderTime" />
     <SimpleColumn name="ReminderSent" />
-    
+
     <SimpleColumn name="Project" />
     <SimpleJoin name="Project" joinType="LEFT">
       <SimpleColumn name="Name" alias="ProjectName"/>
       <SimpleColumn name="Owner" alias="ProjectOwner" />
       <SimpleColumn name="Status" alias="ProjectStatus" />
+      <SimpleColumn name="ProjectTemplate"  />
     </SimpleJoin>
-    
+
     <SimpleColumn name="ProjectStage" />
     <SimpleJoin name="ProjectStage" joinType="LEFT">
       <SimpleColumn name="Name" alias="StageName"/>
+      <SimpleColumn name="StageTemplate" />
     </SimpleJoin>
-    
+
     <SimpleColumn name="ExpectedExpenses" />
-      
+
     <SimpleColumn name="ActualDuration" label="=prjActualTaskDuration">
-       <x:number>0</x:number> 
-      <!-- 
-      Data handling in system module bean  
+       <x:number>0</x:number>
+      <!--
+      Data handling in system module bean
       void com.butent.bee.server.modules.tasks.TasksModuleBean.init().new DataEventHandler()
       {...}.fillTasksTimeData(ViewQueryEvent event)
       -->
     </SimpleColumn>
-    
+
     <SimpleColumn name="ActualExpenses" label="=prjActualExpenses">
-       <x:number>0</x:number> 
-      <!-- 
-      Data handling in system module bean  
+       <x:number>0</x:number>
+      <!--
+      Data handling in system module bean
       void com.butent.bee.server.modules.tasks.TasksModuleBean.init().new DataEventHandler()
       {...}.fillTasksTimeData(ViewQueryEvent event)
       -->
     </SimpleColumn>
-    
+
     <SimpleColumn name="Currency"/>
     <SimpleJoin name="Currency" joinType="LEFT">
       <SimpleColumn name="Name" alias="CurrencyName" />
     </SimpleJoin>
   </Columns>
-  
+
   <Order>
     <OrderBy column="Status" />
     <OrderBy column="FinishTime" />
   </Order>
 </View>
- 
