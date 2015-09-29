@@ -27,6 +27,7 @@ import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.event.FiresModificationEvents;
 import com.butent.bee.shared.data.event.ModificationEvent;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.news.Channel;
@@ -490,6 +491,8 @@ public class NewsBean {
     List<Integer> labelIndexes = new ArrayList<>();
     List<Integer> titleIndexes = new ArrayList<>();
 
+    LocalizableConstants constants = usr.getLocalizableConstants(userId);
+
     for (int pos = 0; pos < ids.size(); pos += ID_CHUNK_SIZE) {
       List<Long> chunk = ids.subList(pos, Math.min(pos + ID_CHUNK_SIZE, ids.size()));
 
@@ -515,7 +518,7 @@ public class NewsBean {
         boolean isNew = hasNew && newIds.contains(row.getId());
 
         if (hasProducer) {
-          Headline headline = NewsHelper.getHeadline(feed, userId, rowSet, row, isNew);
+          Headline headline = NewsHelper.getHeadline(feed, userId, rowSet, row, isNew, constants);
           if (headline != null) {
             headlines.add(headline);
           }
