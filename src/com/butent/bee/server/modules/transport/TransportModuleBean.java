@@ -10,6 +10,7 @@ import com.google.common.eventbus.Subscribe;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
+import static com.butent.bee.shared.modules.payroll.PayrollConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
@@ -105,6 +106,7 @@ import java.util.function.Function;
 
 import javax.annotation.Resource;
 import javax.ejb.EJB;
+import javax.ejb.EJBContext;
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
 import javax.ejb.Timeout;
@@ -160,6 +162,8 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
   ConcurrencyBean cb;
   @EJB
   TransportReportsBean rep;
+  @Resource
+  EJBContext ctx;
 
   @Resource
   TimerService timerService;
@@ -349,6 +353,9 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
         BeeParameter.createRelation(module, PRM_CARGO_SERVICE, false, TBL_SERVICES,
             COL_SERVICE_NAME),
         BeeParameter.createText(module, PRM_SYNC_ERP_VEHICLES),
+        BeeParameter.createText(module, PRM_SYNC_ERP_EMPLOYEES),
+        BeeParameter.createRelation(module, PRM_ERP_DRIVER_POSITION, TBL_POSITIONS,
+            COL_POSITION_NAME),
         BeeParameter.createBoolean(module, PRM_BIND_EXPENSES_TO_INCOMES, false, true));
   }
 
@@ -371,6 +378,7 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
   public void init() {
     cb.createIntervalTimer(this.getClass(), PRM_ERP_REFRESH_INTERVAL);
     cb.createCalendarTimer(this.getClass(), PRM_SYNC_ERP_VEHICLES);
+    cb.createCalendarTimer(this.getClass(), PRM_SYNC_ERP_EMPLOYEES);
 
     sys.registerDataEventHandler(new DataEventHandler() {
       @Subscribe
@@ -1449,6 +1457,8 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
       importERPPayments();
     } else if (cb.isParameterTimer(timer, PRM_SYNC_ERP_VEHICLES)) {
       importVehicles();
+    } else if (cb.isParameterTimer(timer, PRM_SYNC_ERP_EMPLOYEES)) {
+      importEmployees();
     }
   }
 
@@ -2367,6 +2377,10 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
   }
 
   private Map<String, Long> getReferences(String tableName, String keyName) {
+    return getReferences(tableName, keyName, null);
+  }
+
+  private Map<String, Long> getReferences(String tableName, String keyName, IsCondition clause) {
     Map<String, Long> ref = new HashMap<>();
 
     for (SimpleRow row : qs.getData(new SqlSelect()
@@ -2831,6 +2845,228 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
     return ResponseObject.response(settings);
   }
 
+  private void importEmployees() {
+    long historyId = sys.eventStart(PRM_SYNC_ERP_EMPLOYEES);
+
+    String remoteAddress = prm.getText(PRM_ERP_ADDRESS);
+    String remoteLogin = prm.getText(PRM_ERP_LOGIN);
+    String remotePassword = prm.getText(PRM_ERP_PASSWORD);
+    SimpleRowSet rs = null;
+
+    Long driverPosition = prm.getRelation(PRM_ERP_DRIVER_POSITION);
+    Long company = prm.getRelation(PRM_COMPANY);
+
+    if (!DataUtils.isId(company)) {
+      sys.eventEnd(historyId, "ERROR", "Nenurodyta pagrindinė įmonė. Parametras:", PRM_COMPANY);
+      return;
+    }
+    try {
+      rs = ButentWS.connect(remoteAddress, remoteLogin, remotePassword)
+          .getEmployees(qs.getDateTime(new SqlSelect()
+              .addMax(TBL_EVENT_HISTORY, COL_EVENT_STARTED)
+              .addFrom(TBL_EVENT_HISTORY)
+              .setWhere(SqlUtils.and(SqlUtils.equals(TBL_EVENT_HISTORY, COL_EVENT,
+                      PRM_SYNC_ERP_EMPLOYEES),
+                  SqlUtils.startsWith(TBL_EVENT_HISTORY, COL_EVENT_RESULT, "OK")))));
+    } catch (BeeException e) {
+      logger.error(e);
+      sys.eventEnd(historyId, "ERROR", e.getMessage());
+      return;
+    }
+    String companyDepartments = "CompanyDepartments";
+    Map<String, Long> departments = getReferences(companyDepartments, "Name",
+        SqlUtils.equals(companyDepartments, COL_COMPANY, company));
+    Map<String, Long> positions = getReferences(TBL_POSITIONS, COL_POSITION_NAME);
+    Map<String, Long> drivers = getReferences(TBL_DRIVERS, COL_COMPANY_PERSON);
+
+    SimpleRowSet employees = qs.getData(new SqlSelect()
+        .addField(TBL_COMPANY_PERSONS, sys.getIdName(TBL_COMPANY_PERSONS), COL_COMPANY_PERSON)
+        .addFields(TBL_COMPANY_PERSONS, COL_PERSON, COL_CONTACT)
+        .addExpr(SqlUtils.concat(SqlUtils.field(TBL_PERSONS, COL_FIRST_NAME), "' '",
+            SqlUtils.field(TBL_PERSONS, COL_LAST_NAME)), COL_FIRST_NAME)
+        .addField(TBL_PERSONS, COL_CONTACT, COL_PERSON + COL_CONTACT)
+        .addFields(TBL_EMPLOYEES, COL_TAB_NUMBER)
+        .addField(TBL_EMPLOYEES, sys.getIdName(TBL_EMPLOYEES), COL_EMPLOYEE)
+        .addFrom(TBL_COMPANY_PERSONS)
+        .addFromInner(TBL_PERSONS, sys.joinTables(TBL_PERSONS, TBL_COMPANY_PERSONS, COL_PERSON))
+        .addFromLeft(TBL_EMPLOYEES,
+            sys.joinTables(TBL_COMPANY_PERSONS, TBL_EMPLOYEES, COL_COMPANY_PERSON))
+        .setWhere(SqlUtils.equals(TBL_COMPANY_PERSONS, COL_COMPANY, company)));
+
+    int emplNew = 0;
+    int emplUpd = 0;
+    int drvNew = 0;
+    int posNew = 0;
+    int deptNew = 0;
+    String error = null;
+    String tabNr = null;
+
+    try {
+      for (SimpleRow row : rs) {
+        tabNr = row.getValue("CODE");
+        SimpleRow info = employees.getRowByKey(COL_TAB_NUMBER, tabNr);
+
+        if (info == null) {
+          info = employees.getRowByKey(COL_FIRST_NAME,
+              BeeUtils.joinWords(row.getValue("NAME"), row.getValue("SURNAME")));
+
+          if (info != null) {
+            Long id = info.getLong(COL_EMPLOYEE);
+
+            if (DataUtils.isId(id)) {
+              qs.updateData(new SqlUpdate(TBL_EMPLOYEES)
+                  .addConstant(COL_TAB_NUMBER, tabNr)
+                  .setWhere(sys.idEquals(TBL_EMPLOYEES, id)));
+            } else {
+              qs.insertData(new SqlInsert(TBL_EMPLOYEES)
+                  .addConstant(COL_COMPANY_PERSON, info.getLong(COL_COMPANY_PERSON))
+                  .addConstant(COL_TAB_NUMBER, tabNr));
+            }
+          }
+        }
+        Long person;
+        Long personContact = null;
+        Long companyPerson;
+        Long contact = null;
+
+        if (info == null) {
+          person = qs.insertData(new SqlInsert(TBL_PERSONS)
+              .addConstant(COL_FIRST_NAME, row.getValue("NAME"))
+              .addConstant(COL_LAST_NAME, row.getValue("SURNAME")));
+
+          companyPerson = qs.insertData(new SqlInsert(TBL_COMPANY_PERSONS)
+              .addConstant(COL_COMPANY, company)
+              .addConstant(COL_PERSON, person));
+
+          qs.insertData(new SqlInsert(TBL_EMPLOYEES)
+              .addConstant(COL_COMPANY_PERSON, companyPerson)
+              .addConstant(COL_TAB_NUMBER, tabNr));
+          emplNew++;
+        } else {
+          person = info.getLong(COL_PERSON);
+          personContact = info.getLong(COL_PERSON + COL_CONTACT);
+          companyPerson = info.getLong(COL_COMPANY_PERSON);
+          contact = info.getLong(COL_CONTACT);
+          emplUpd++;
+        }
+        String address = row.getValue("ADDRESS1");
+
+        if (!BeeUtils.isEmpty(address)) {
+          if (!DataUtils.isId(personContact)) {
+            personContact = qs.insertData(new SqlInsert(TBL_CONTACTS)
+                .addConstant(COL_ADDRESS, address));
+
+            qs.updateData(new SqlUpdate(TBL_PERSONS)
+                .addConstant(COL_CONTACT, personContact)
+                .setWhere(sys.idEquals(TBL_PERSONS, person)));
+          } else {
+            qs.updateData(new SqlUpdate(TBL_CONTACTS)
+                .addConstant(COL_ADDRESS, address)
+                .setWhere(sys.idEquals(TBL_CONTACTS, personContact)));
+          }
+        }
+        String[] phones = BeeUtils.split(row.getValue("MOBILEPHONE"), BeeConst.CHAR_SEMICOLON);
+
+        if (!ArrayUtils.isEmpty(phones)) {
+          if (!DataUtils.isId(contact)) {
+            contact = qs.insertData(new SqlInsert(TBL_CONTACTS)
+                .addConstant(COL_PHONE, ArrayUtils.getQuietly(phones, 0))
+                .addConstant(COL_MOBILE, ArrayUtils.getQuietly(phones, 1)));
+
+            qs.updateData(new SqlUpdate(TBL_COMPANY_PERSONS)
+                .addConstant(COL_CONTACT, contact)
+                .setWhere(sys.idEquals(TBL_COMPANY_PERSONS, companyPerson)));
+          } else {
+            qs.updateData(new SqlUpdate(TBL_CONTACTS)
+                .addConstant(COL_PHONE, ArrayUtils.getQuietly(phones, 0))
+                .addConstant(COL_MOBILE, ArrayUtils.getQuietly(phones, 1))
+                .setWhere(sys.idEquals(TBL_CONTACTS, contact)));
+          }
+        }
+        String email = BeeUtils.normalize(row.getValue("EMAIL"));
+
+        if (!BeeUtils.isEmpty(email)) {
+          Long emailId = qs.getLong(new SqlSelect()
+              .addFields(TBL_EMAILS, sys.getIdName(TBL_EMAILS))
+              .addFrom(TBL_EMAILS)
+              .setWhere(SqlUtils.equals(TBL_EMAILS, COL_EMAIL_ADDRESS, email)));
+
+          if (!DataUtils.isId(emailId)) {
+            ResponseObject response = qs.insertDataWithResponse(new SqlInsert(TBL_EMAILS)
+                .addConstant(COL_EMAIL_ADDRESS, email));
+
+            if (response.hasErrors()) {
+              error = ArrayUtils.join(BeeConst.STRING_EOL, response.getErrors());
+              break;
+            }
+            emailId = response.getResponseAsLong();
+          }
+          if (DataUtils.isId(emailId)) {
+            if (!DataUtils.isId(contact)) {
+              contact = qs.insertData(new SqlInsert(TBL_CONTACTS)
+                  .addConstant(COL_EMAIL, emailId));
+
+              qs.updateData(new SqlUpdate(TBL_COMPANY_PERSONS)
+                  .addConstant(COL_CONTACT, contact)
+                  .setWhere(sys.idEquals(TBL_COMPANY_PERSONS, companyPerson)));
+            } else {
+              qs.updateData(new SqlUpdate(TBL_CONTACTS)
+                  .addConstant(COL_EMAIL, emailId)
+                  .setWhere(sys.idEquals(TBL_CONTACTS, contact)));
+            }
+          }
+        }
+        String department = row.getValue("DEPARTCODE");
+
+        if (!BeeUtils.isEmpty(department) && !departments.containsKey(department)) {
+          departments.put(department, qs.insertData(new SqlInsert(companyDepartments)
+              .addConstant(COL_COMPANY, company)
+              .addConstant("Name", department)));
+          deptNew++;
+        }
+        String position = row.getValue("POSITIONCODE");
+
+        if (!BeeUtils.isEmpty(position) && !positions.containsKey(position)) {
+          positions.put(position, qs.insertData(new SqlInsert(TBL_POSITIONS)
+              .addConstant(COL_POSITION_NAME, position)));
+          posNew++;
+        }
+        qs.updateData(new SqlUpdate(TBL_PERSONS)
+            .addConstant(COL_DATE_OF_BIRTH, TimeUtils.parseDate(row.getValue("BIRTHDAY")))
+            .setWhere(sys.idEquals(TBL_PERSONS, person)));
+
+        qs.updateData(new SqlUpdate(TBL_COMPANY_PERSONS)
+            .addConstant(COL_DEPARTMENT, departments.get(department))
+            .addConstant(COL_POSITION, positions.get(position))
+            .addConstant(COL_DATE_OF_EMPLOYMENT, TimeUtils.parseDate(row.getValue("DIRBA_NUO")))
+            .addConstant(COL_DATE_OF_DISMISSAL, TimeUtils.parseDate(row.getValue("DISMISSED")))
+            .setWhere(sys.idEquals(TBL_COMPANY_PERSONS, companyPerson)));
+
+        if (DataUtils.isId(driverPosition) && Objects
+            .equals(positions.get(position), driverPosition)
+            && !drivers.containsKey(BeeUtils.toString(companyPerson))) {
+
+          drivers.put(BeeUtils.toString(companyPerson),
+              qs.insertData(new SqlInsert(TBL_DRIVERS)
+                  .addConstant(COL_COMPANY_PERSON, companyPerson)));
+          drvNew++;
+        }
+      }
+    } catch (Throwable e) {
+      error = ArrayUtils.join(BeeConst.STRING_EOL, ResponseObject.error(e).getErrors());
+    }
+    if (!BeeUtils.isEmpty(error)) {
+      ctx.setRollbackOnly();
+      sys.eventEnd(historyId, "ERROR", BeeUtils.join(": ", COL_TAB_NUMBER, tabNr), error);
+    } else {
+      sys.eventEnd(historyId, "OK", deptNew > 0 ? companyDepartments + ": +" + deptNew : null,
+          posNew > 0 ? TBL_POSITIONS + ": +" + posNew : null,
+          (emplNew + emplUpd) > 0 ? TBL_EMPLOYEES + ":" + (emplNew > 0 ? " +" + emplNew : "")
+              + (emplUpd > 0 ? " " + emplUpd : "") : null,
+          drvNew > 0 ? TBL_DRIVERS + ": +" + drvNew : null);
+    }
+  }
+
   private void importERPPayments() {
     long historyId = sys.eventStart(PRM_ERP_REFRESH_INTERVAL);
     int c = 0;
@@ -2904,7 +3140,9 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
           .getCars(qs.getDateTime(new SqlSelect()
               .addMax(TBL_EVENT_HISTORY, COL_EVENT_STARTED)
               .addFrom(TBL_EVENT_HISTORY)
-              .setWhere(SqlUtils.equals(TBL_EVENT_HISTORY, COL_EVENT, PRM_SYNC_ERP_VEHICLES))));
+              .setWhere(SqlUtils.and(SqlUtils.equals(TBL_EVENT_HISTORY, COL_EVENT,
+                      PRM_SYNC_ERP_VEHICLES),
+                  SqlUtils.startsWith(TBL_EVENT_HISTORY, COL_EVENT_RESULT, "OK")))));
     } catch (BeeException e) {
       logger.error(e);
       sys.eventEnd(historyId, "ERROR", e.getMessage());

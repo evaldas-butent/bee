@@ -130,6 +130,21 @@ public final class ButentWS {
     return data;
   }
 
+  public SimpleRowSet getEmployees(DateTime getChangesFrom) throws BeeException {
+    logger.debug("GetEmployees:", getChangesFrom);
+    String answer;
+
+    try {
+      answer = process("GetEmployee", XmlUtils.tag("time", getChangesFrom));
+    } catch (Exception e) {
+      throw BeeException.error(e);
+    }
+    SimpleRowSet data = xmlToSimpleRowSet(answer, "CODE", "NAME", "SURNAME", "BIRTHDAY",
+        "DEPARTCODE", "POSITIONCODE", "ADDRESS1", "MOBILEPHONE", "EMAIL", "DIRBA_NUO", "DISMISSED");
+    logger.debug("GetEmployees cols:", data.getNumberOfColumns(), "rows:", data.getNumberOfRows());
+    return data;
+  }
+
   public SimpleRowSet getSQLData(String query, String... columns) throws BeeException {
     logger.debug("GetSQLData:", query);
     String answer;
@@ -298,17 +313,21 @@ public final class ButentWS {
       for (int i = 0; i < node.getChildNodes().getLength(); i++) {
         NodeList row = node.getChildNodes().item(i).getChildNodes();
         int c = row.getLength();
-
-        String[] cells = new String[data.getNumberOfColumns()];
+        String[] cells = null;
 
         for (int j = 0; j < c; j++) {
           String col = row.item(j).getLocalName();
 
           if (data.hasColumn(col)) {
+            if (cells == null) {
+              cells = new String[data.getNumberOfColumns()];
+            }
             cells[data.getColumnIndex(col)] = row.item(j).getTextContent();
           }
         }
-        data.addRow(cells);
+        if (cells != null) {
+          data.addRow(cells);
+        }
       }
     }
     return data;
