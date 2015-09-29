@@ -28,7 +28,7 @@ public class ChatRoom implements BeeSerializable, HasInfo {
 
     private final String caption;
 
-    private Type(String caption) {
+    Type(String caption) {
       this.caption = caption;
     }
 

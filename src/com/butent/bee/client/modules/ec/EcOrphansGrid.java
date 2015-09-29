@@ -126,7 +126,7 @@ public class EcOrphansGrid extends AbstractGridInterceptor implements ClickHandl
                             @Override
                             public Boolean apply(ProgressMessage pm) {
                               if (pm.isClosed() || pm.isCanceled()) {
-                                getGridPresenter().refresh(true);
+                                getGridPresenter().refresh(true, false);
                                 setLoading(false);
                               }
                               return null;

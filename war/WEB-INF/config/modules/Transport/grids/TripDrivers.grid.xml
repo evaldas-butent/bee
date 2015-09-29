@@ -1,16 +1,23 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
-  xmlns:ui="http://www.butent.com/ui"
-  
-  name="TripDrivers" viewName="TripDrivers" caption="=drivers" headerMode="grid"
-  >
+        xmlns:ui="http://www.butent.com/ui"
+
+        name="TripDrivers" viewName="TripDrivers" caption="=drivers" headerMode="grid"
+    >
 
   <g:columns>
-    <DataColumn name="DateFrom" source="DateFrom" caption="=trTripDateFrom" minWidth="80" visible="false" >
-      <carry><ui:expression>row.DateTo</ui:expression></carry>
+    <DataColumn name="DateFrom" source="DateFrom" minWidth="80" visible="false">
+      <carry>
+        <ui:expression>row.DateTo</ui:expression>
+      </carry>
     </DataColumn>
-    <DataColumn name="DateTo" source="DateTo" caption="=trTripDateTo" minWidth="80" visible="false"/>
-    <RelColumn name="Driver" caption="=trDriverName" newRowEnabled="false" flexGrow="1" flexShrink="1" />
-    <DataColumn name="Note" source="Note" caption="=note" flexGrow="2" flexShrink="2" visible="false"/>
+    <DataColumn name="DateTo" source="DateTo" minWidth="80" visible="false" />
+    <RelColumn name="Driver" newRowEnabled="false" viewName="UserDrivers" caching="local"
+               flexGrow="1" flexShrink="1" />
+    <DataColumn name="Note" source="Note" flexGrow="2" flexShrink="2" visible="false" />
   </g:columns>
+  <g:rowStyle>
+    <ui:inline>="font-weight: bolder"</ui:inline>
+    <ui:expression>row.MainDriver</ui:expression>
+  </g:rowStyle>
 </g:Grid>

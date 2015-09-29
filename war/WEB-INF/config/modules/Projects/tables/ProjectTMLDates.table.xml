@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Table xmlns="http://www.butent.com/table"
+  
+  name="ProjectTMLDates"
+  idName="ProjectTMLDateID"
+  >
+  <Fields>
+    <Relation name="ProjectTemplate" notNull="true" relation="ProjectTemplates" cascade="DELETE"
+      label="=projTemplate" />
+
+    <String name="Color" precision="100" label="=color" />
+    <String name="Note" precision="100" label="=note" />
+  </Fields>
+</Table>

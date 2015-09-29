@@ -111,7 +111,7 @@ class ChartData {
 
     private final String caption;
 
-    private Type(String caption) {
+    Type(String caption) {
       this.caption = caption;
     }
 

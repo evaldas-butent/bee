@@ -8,6 +8,8 @@ import com.butent.bee.shared.modules.discussions.LocalizableDiscussionsConstants
 import com.butent.bee.shared.modules.documents.LocalizableDocumentsConstants;
 import com.butent.bee.shared.modules.ec.LocalizableEcConstants;
 import com.butent.bee.shared.modules.mail.LocalizableMailConstants;
+import com.butent.bee.shared.modules.orders.LocalizableOrderConstants;
+import com.butent.bee.shared.modules.payroll.LocalizablePayrollConstants;
 import com.butent.bee.shared.modules.projects.LocalizableProjectConstants;
 import com.butent.bee.shared.modules.service.LocalizableServiceConstants;
 import com.butent.bee.shared.modules.tasks.LocalizableTaskConstants;
@@ -19,7 +21,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
     LocalizableCalendarConstants, LocalizableMailConstants, LocalizableTransportConstants,
     LocalizableTradeConstants, LocalizableTradeActConstants, LocalizableTaskConstants,
     LocalizableEcConstants, LocalizableDiscussionsConstants, LocalizableDocumentsConstants,
-    LocalizableServiceConstants, LocalizableProjectConstants {
+    LocalizableServiceConstants, LocalizableProjectConstants, LocalizableOrderConstants,
+    LocalizablePayrollConstants {
 
   String actionAdd();
 
@@ -58,6 +61,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
   String actionFilter();
 
   String actionImport();
+
+  String actionMerge();
 
   String actionNew();
 
@@ -127,7 +132,11 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String administration();
 
+  String advance();
+
   String allowPhotoSize();
+
+  String allValuesCannotBeEmpty();
 
   String amount();
 
@@ -161,6 +170,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String clearFilter();
 
+  String clearNews();
+
   String client();
 
   String clients();
@@ -184,6 +195,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
   String companySize();
 
   String companyStatus();
+
+  String companyStructure();
 
   String companyVATCode();
 
@@ -311,6 +324,10 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String feedPersons();
 
+  String feedRequestsAll();
+
+  String feedRequestsAssigned();
+
   String feeds();
 
   String feedSubscriptionDate();
@@ -427,6 +444,10 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String initialFilter();
 
+  String inputFull();
+
+  String inputSimple();
+
   String invalidDate();
 
   String invalidDateFormat();
@@ -444,6 +465,10 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
   String ipBlockCommand();
 
   String ipBlocked();
+
+  String is();
+
+  String isNot();
 
   String keywords();
 
@@ -495,6 +520,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String menu();
 
+  String mergeInto();
+
   String message();
 
   String messageSent();
@@ -526,6 +553,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
   String newProperty();
 
   String newRelation();
+
+  String newRow();
 
   String newTab();
 
@@ -663,6 +692,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String rightStateEdit();
 
+  String rightStateMerge();
+
   String rightStateView();
 
   String roleAddUsers();
@@ -734,6 +765,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
   String signOut();
 
   String sorry();
+
+  String sort();
 
   String specifyCondition();
 

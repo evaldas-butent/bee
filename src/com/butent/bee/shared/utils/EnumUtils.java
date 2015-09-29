@@ -18,9 +18,12 @@ import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.discussions.DiscussionsConstants;
 import com.butent.bee.shared.modules.ec.EcConstants;
 import com.butent.bee.shared.modules.mail.MailConstants;
+import com.butent.bee.shared.modules.orders.OrdersConstants;
+import com.butent.bee.shared.modules.payroll.PayrollConstants;
 import com.butent.bee.shared.modules.projects.ProjectConstants;
 import com.butent.bee.shared.modules.service.ServiceConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
+import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.modules.trade.acts.TradeActConstants;
 import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.ui.HasCaption;
@@ -65,6 +68,9 @@ public final class EnumUtils {
     ServiceConstants.register();
     MailConstants.register();
     TradeActConstants.register();
+    TradeConstants.register();
+    OrdersConstants.register();
+    PayrollConstants.register();
   }
 
   public static String buildIndexList(Collection<? extends Enum<?>> values) {

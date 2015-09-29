@@ -6,6 +6,7 @@
   >
   <Columns>
     <SimpleColumn name="OperationName" />
+    <SimpleColumn name="OperationType" />
     <SimpleColumn name="Ordinal" />
 
     <SimpleColumn name="TradeStatus" />
@@ -38,7 +39,7 @@
 
   <Order>
     <OrderBy column="Ordinal" />
+    <OrderBy column="OperationType" />
     <OrderBy column="OperationName" />
   </Order>
 </View>
- 

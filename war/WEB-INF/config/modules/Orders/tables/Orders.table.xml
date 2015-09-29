@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+  name="Orders"
+  idName="OrderID"
+  >
+  <Fields>
+    <Relation name="Type" relation="OrderTypes" label="=type" />
+    <String name="Source" precision="10" />
+    <Enum name="Status" key="OrdersStatus" label="=status" defValue="2" />
+    <DateTime name="StartDate" notNull="true" defExpr="CURRENT_TIME" label="=startingDate" />
+    <DateTime name="EndDate" label="=endingDate" />
+
+    <Relation name="Series" relation="OrderSeries" label="=trdSeries" />
+    <String name="Number" precision="30" label="=number" />
+    
+    <Relation name="Warehouse" relation="Warehouses" label="=warehouse" />
+    
+    <Relation name="Company" relation="Companies" label="=client" />
+    <Relation name="Contact" relation="CompanyPersons" label="=contact" />
+    <Relation name="Manager" relation="Users" label="=manager" defExpr="CURRENT_USER" />
+    <Text name="Notes" label="=notes" />
+  </Fields>
+</Table>

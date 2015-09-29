@@ -58,7 +58,6 @@ import com.butent.bee.shared.BiConsumer;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
-import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
 import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.event.DataEvent;
@@ -793,7 +792,7 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
   }
 
   private void refresh() {
-    lastRpcId = Queries.getData(viewNames, CachingPolicy.NONE, new Queries.DataCallback() {
+    lastRpcId = Queries.getData(viewNames, new Queries.DataCallback() {
       @Override
       public void onSuccess(Collection<BeeRowSet> result) {
         if (getRpcId() >= lastRpcId) {

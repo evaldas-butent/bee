@@ -26,7 +26,7 @@ public enum CachingPolicy {
   private boolean read;
   private boolean write;
 
-  private CachingPolicy(boolean read, boolean write) {
+  CachingPolicy(boolean read, boolean write) {
     this.read = read;
     this.write = write;
   }

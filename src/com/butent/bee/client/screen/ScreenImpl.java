@@ -41,6 +41,7 @@ import com.butent.bee.client.menu.MenuCommand;
 import com.butent.bee.client.render.PhotoRenderer;
 import com.butent.bee.client.screen.TilePanel.Tile;
 import com.butent.bee.client.style.StyleUtils;
+import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.HasProgress;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.Opener;
@@ -374,6 +375,10 @@ public class ScreenImpl implements Screen {
     }
     if (!Global.getReportSettings().isEmpty() && !containsDomainEntry(Domain.REPORTS, null)) {
       addDomainEntry(Domain.REPORTS, Global.getReportSettings().getPanel(), null, null);
+    }
+
+    if (getCommandPanel() != null) {
+      extendCommandPanel();
     }
   }
 
@@ -1399,48 +1404,49 @@ public class ScreenImpl implements Screen {
 
     JustDate firstDay = TimeUtils.today();
     JustDate day;
-    int n = 5;
 
-    for (int i = 0; i < n; i++) {
+    for (int i = 0; i < 5; i++) {
+
+      Label lblD = new Label();
+      Label lblWd = new Label();
+      Flow cal = new Flow();
+
+      lblD.setStyleName(BeeConst.CSS_CLASS_PREFIX + "MonthDay");
+      lblWd.setStyleName(BeeConst.CSS_CLASS_PREFIX + "WeekDay");
 
       if (i == 0) {
-        Label lblD = new Label();
-        Label lblWd = new Label();
-        Flow cal = new Flow();
 
-        lblD.setStyleName(BeeConst.CSS_CLASS_PREFIX + "MonthDay");
         lblD.addStyleName(BeeConst.CSS_CLASS_PREFIX + "MonthDayToday");
         lblD.setText(String.valueOf(firstDay.getDom()));
-
-        lblWd.setStyleName(BeeConst.CSS_CLASS_PREFIX + "WeekDay");
         lblWd.setText(String.valueOf(Format.renderDayOfWeekShort(firstDay.getDow())));
-
-        cal.add(lblWd);
-        cal.add(lblD);
-        userCal.add(cal);
-
       } else {
         day = TimeUtils.toDateOrNull(firstDay.getDays() + i);
-
-        if (!TimeUtils.isWeekend(day)) {
-          Label lblD = new Label();
-          Label lblWd = new Label();
-          Flow cal = new Flow();
-
-          lblD.addStyleName(BeeConst.CSS_CLASS_PREFIX + "MonthDay");
-          lblD.setText(String.valueOf(day.getDom()));
-
-          lblWd.setStyleName(BeeConst.CSS_CLASS_PREFIX + "WeekDay");
-          lblWd.setText(String.valueOf(Format.renderDayOfWeekShort(day.getDow())));
-
-          cal.add(lblWd);
-          cal.add(lblD);
-          userCal.add(cal);
-        } else {
-          n++;
-        }
+        lblD.setText(String.valueOf(day.getDom()));
+        lblWd.setText(String.valueOf(Format.renderDayOfWeekShort(day.getDow())));
       }
+      cal.add(lblWd);
+      cal.add(lblD);
+      userCal.add(cal);
     }
     return userCal;
+  }
+
+  protected void extendCommandPanel() {
+    if (BeeKeeper.getUser().isWidgetVisible(RegulatedWidget.COMPANY_STRUCTURE)
+        && BeeKeeper.getUser().isDataVisible(AdministrationConstants.VIEW_DEPARTMENTS)) {
+
+      FaLabel command = new FaLabel(FontAwesome.SITEMAP,
+          BeeConst.CSS_CLASS_PREFIX + "CompanyStructure-command");
+      command.setTitle(Localized.getConstants().companyStructure());
+
+      command.addClickHandler(new ClickHandler() {
+        @Override
+        public void onClick(ClickEvent event) {
+          FormFactory.openForm(AdministrationConstants.FORM_COMPANY_STRUCTURE);
+        }
+      });
+
+      getCommandPanel().add(command);
+    }
   }
 }

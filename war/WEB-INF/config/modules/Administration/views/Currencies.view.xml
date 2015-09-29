@@ -4,6 +4,7 @@
   name="Currencies" source="Currencies" caption="=currencies" module="Classifiers"
   newRowCaption="=newCurrency" editForm="Currency" rowCaption="Name"
   >
+  <Relation renderColumns="Name" />
   <Columns>
     <SimpleColumn name="Name" />
     <SimpleColumn name="Caption" />
@@ -15,4 +16,3 @@
     <OrderBy column="Name" />
   </Order>
 </View>
- 

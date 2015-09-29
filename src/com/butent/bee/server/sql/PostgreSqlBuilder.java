@@ -37,8 +37,8 @@ class PostgreSqlBuilder extends SqlBuilder {
     StringBuilder body = new StringBuilder();
     String insert = "INSERT INTO " + auditTable
         + " (" + BeeUtils.join(",", sqlQuote(AUDIT_FLD_TIME), sqlQuote(AUDIT_FLD_USER),
-            sqlQuote(AUDIT_FLD_TX), sqlQuote(AUDIT_FLD_MODE), sqlQuote(AUDIT_FLD_ID),
-            sqlQuote(AUDIT_FLD_FIELD), sqlQuote(AUDIT_FLD_VALUE))
+        sqlQuote(AUDIT_FLD_TX), sqlQuote(AUDIT_FLD_MODE), sqlQuote(AUDIT_FLD_ID),
+        sqlQuote(AUDIT_FLD_FIELD), sqlQuote(AUDIT_FLD_VALUE))
         + ") VALUES (_time,_user,TXID_CURRENT(),SUBSTRING(TG_OP,1,1),";
 
     body.append("DECLARE _time BIGINT=floor(extract(epoch from current_timestamp)*1000);")
@@ -150,6 +150,14 @@ class PostgreSqlBuilder extends SqlBuilder {
   }
 
   @Override
+  protected String getVersionTrigger(String versionName) {
+    return new StringBuilder("BEGIN ")
+        .append("NEW.").append(versionName)
+        .append(":=floor(extract(epoch from current_timestamp)*1000);")
+        .append("RETURN NEW; END;").toString();
+  }
+
+  @Override
   protected String sqlCondition(Operator operator, Map<String, String> params) {
     switch (operator) {
       case FULL_TEXT:
@@ -157,8 +165,16 @@ class PostgreSqlBuilder extends SqlBuilder {
         List<String> values = new ArrayList<>(NameUtils.toList(params.get("value" + 0)));
 
         for (int i = 0; i < values.size(); i++) {
-          values.set(i, values.get(i).replace("'", "''")
-              .replace("\\", "\\\\").replace(":", "\\:") + ":*");
+          String value = values.get(i);
+
+          for (String s : new String[] {"'", ":", "*", "&", "|", "!", "(", ")"}) {
+            value = value.replace(s, "");
+          }
+          if (!BeeUtils.isEmpty(value)) {
+            values.set(i, value + ":*");
+          } else {
+            values.set(i, null);
+          }
         }
         return expression + " @@ to_tsquery('simple', '" + BeeUtils.join("&", values) + "')";
 

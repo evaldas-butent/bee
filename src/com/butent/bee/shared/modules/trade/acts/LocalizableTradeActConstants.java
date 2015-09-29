@@ -48,7 +48,7 @@ public interface LocalizableTradeActConstants {
 
   String taSaveSelectedItems();
 
-  String taSeriesPlural();
+  String seriesPlural();
 
   String taTariff();
 

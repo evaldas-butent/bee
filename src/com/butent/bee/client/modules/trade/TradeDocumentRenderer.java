@@ -200,7 +200,7 @@ public class TradeDocumentRenderer extends AbstractFormInterceptor {
     private final String styleSuffix;
     private final boolean hasCurency;
 
-    private ItemColumn(String styleSuffix, boolean hasCurency) {
+    ItemColumn(String styleSuffix, boolean hasCurency) {
       this.styleSuffix = styleSuffix;
       this.hasCurency = hasCurency;
     }
@@ -513,8 +513,7 @@ public class TradeDocumentRenderer extends AbstractFormInterceptor {
     widget = namedWidgets.get(NAME_TOTAL_IN_WORDS);
     if (widget != null) {
       TradeUtils.getTotalInWords(form.getDoubleValue(COL_TRADE_AMOUNT),
-          form.getStringValue(AdministrationConstants.ALS_CURRENCY_NAME),
-          form.getStringValue(AdministrationConstants.COL_CURRENCY_MINOR_NAME), widget);
+          form.getLongValue(AdministrationConstants.COL_CURRENCY), widget);
     }
   }
 

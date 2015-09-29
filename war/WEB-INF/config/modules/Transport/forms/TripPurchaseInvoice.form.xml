@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<f:Form xmlns="http://www.butent.com/widget"
+        xmlns:f="http://www.butent.com/form"
+        xmlns:xi="http://www.w3.org/2001/XInclude"
+
+        name="TripPurchaseInvoice"
+        caption="=trPurchaseInvoice" showRowId="true"
+        width="840" height="600"
+    >
+  <FlowPanel class="flexBox-vertical">
+    <br />
+    <xi:include href="widgets/PurchaseInvoice.widget.xml" />
+    <br />
+
+    <TabbedPages class="flexible">
+      <page>
+        <text>=productsServices</text>
+        <ChildGrid name="PurchaseItems" relColumn="Purchase" />
+      </page>
+      <page>
+        <text>=trdNotes</text>
+        <SimplePanel>
+          <InputArea source="Notes" class="occupy-1" summarize="true" />
+        </SimplePanel>
+      </page>
+      <page module="Transport">
+        <text>=transportExpenses</text>
+        <ChildGrid name="TripPurchases" relColumn="Purchase" />
+      </page>
+    </TabbedPages>
+  </FlowPanel>
+</f:Form>

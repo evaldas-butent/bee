@@ -9,7 +9,7 @@ import com.google.common.collect.Sets;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.Style.WhiteSpace;
+import com.google.gwt.dom.client.Style;
 import com.google.gwt.dom.client.TableRowElement;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -49,12 +49,11 @@ import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
-import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.DateTimeLabel;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.InlineLabel;
-import com.butent.bee.client.widget.Link;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
@@ -71,8 +70,6 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.documents.DocumentConstants;
-import com.butent.bee.shared.modules.mail.MailConstants.AddressType;
-import com.butent.bee.shared.modules.mail.MailConstants.SystemFolder;
 import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.Orientation;
@@ -86,6 +83,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 
 public class MailMessage extends AbstractFormInterceptor {
@@ -241,9 +239,8 @@ public class MailMessage extends AbstractFormInterceptor {
         }
       });
       for (FileInfo file : attachments) {
-        bar.addItem(new Link(BeeUtils.joinWords(file.getName(),
-            BeeUtils.parenthesize(FileUtils.sizeToText(file.getSize()))),
-            FileUtils.getUrl(file.getName(), file.getId())));
+        bar.addItem(FileUtils.getLink(file, BeeUtils.notEmpty(file.getCaption(), file.getName()),
+            BeeUtils.parenthesize(FileUtils.sizeToText(file.getSize()))));
       }
       popup.setWidget(bar);
       popup.setHideOnEscape(true);
@@ -261,7 +258,9 @@ public class MailMessage extends AbstractFormInterceptor {
   private static final String SUBJECT = "Subject";
 
   private final MailPanel mailPanel;
+  private Integer rpcId;
   private Long placeId;
+  private Long folderId;
   private Long repliedFrom;
   private boolean isSent;
   private boolean isDraft;
@@ -465,6 +464,10 @@ public class MailMessage extends AbstractFormInterceptor {
     return super.beforeAction(action, presenter);
   }
 
+  public Long getFolder() {
+    return folderId;
+  }
+
   @Override
   public FormInterceptor getInstance() {
     return new MailMessage();
@@ -478,6 +481,7 @@ public class MailMessage extends AbstractFormInterceptor {
     }
     sender = Pair.of(null, null);
     placeId = null;
+    folderId = null;
     repliedFrom = null;
     isSent = false;
     isDraft = false;
@@ -488,6 +492,7 @@ public class MailMessage extends AbstractFormInterceptor {
     if (relations != null) {
       relations.reset();
     }
+    rpcId = null;
   }
 
   @Override
@@ -525,9 +530,12 @@ public class MailMessage extends AbstractFormInterceptor {
     ParameterList params = MailKeeper.createArgs(SVC_GET_MESSAGE);
     params.addDataItem(column, columnId);
 
-    BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
+    rpcId = BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
       @Override
       public void onResponse(ResponseObject response) {
+        if (!Objects.equals(getRpcId(), rpcId)) {
+          return;
+        }
         response.notify(getFormView());
 
         if (response.hasErrors()) {
@@ -549,6 +557,7 @@ public class MailMessage extends AbstractFormInterceptor {
           relations.requery(row.getLong(COL_MESSAGE));
         }
         placeId = row.getLong(COL_PLACE);
+        folderId = row.getLong(COL_FOLDER);
         repliedFrom = row.getLong(COL_REPLIED);
         isSent = BeeUtils.unbox(row.getBoolean(SystemFolder.Sent.name()));
         isDraft = BeeUtils.unbox(row.getBoolean(SystemFolder.Drafts.name()));
@@ -580,10 +589,13 @@ public class MailMessage extends AbstractFormInterceptor {
         for (SimpleRow attachment : packet.get(TBL_ATTACHMENTS)) {
           Long fileSize = attachment.getLong(AdministrationConstants.COL_FILE_SIZE);
 
-          attachments.add(new FileInfo(attachment.getLong(AdministrationConstants.COL_FILE),
-              BeeUtils.notEmpty(attachment.getValue(COL_ATTACHMENT_NAME),
-                  attachment.getValue(AdministrationConstants.COL_FILE_NAME)), fileSize,
-              attachment.getValue(AdministrationConstants.COL_FILE_TYPE)));
+          FileInfo fileInfo = new FileInfo(attachment.getLong(AdministrationConstants.COL_FILE),
+              attachment.getValue(AdministrationConstants.COL_FILE_NAME), fileSize,
+              attachment.getValue(AdministrationConstants.COL_FILE_TYPE));
+
+          fileInfo.setCaption(attachment.getValue(COL_ATTACHMENT_NAME));
+
+          attachments.add(fileInfo);
           cnt++;
           size += BeeUtils.unbox(fileSize);
         }
@@ -591,23 +603,19 @@ public class MailMessage extends AbstractFormInterceptor {
           Widget widget = widgets.get(ATTACHMENTS);
 
           if (widget != null && widget instanceof HasWidgets) {
-            ((HasWidgets) widget).clear();
-
-            HtmlTable table = new HtmlTable();
+            Widget label;
 
             if (cnt > 1) {
-              table.setText(0, 0, BeeUtils.toString(cnt));
-              table.setWidget(0, 1, new FaLabel(FontAwesome.PAPERCLIP));
-              table.setText(0, 2, BeeUtils.parenthesize(FileUtils.sizeToText(size)));
-              table.addClickHandler(attachmentsHandler);
+              label = new InlineLabel(BeeUtils.joinWords(cnt,
+                  BeeUtils.parenthesize(FileUtils.sizeToText(size))));
+              ((InlineLabel) label).addClickHandler(attachmentsHandler);
             } else {
               FileInfo file = BeeUtils.peek(attachments);
-              table.setWidget(0, 0, new FaLabel(FontAwesome.PAPERCLIP));
-              table.setWidget(0, 1, new Link(BeeUtils.joinWords(file.getName(),
-                  BeeUtils.parenthesize(FileUtils.sizeToText(file.getSize()))),
-                  FileUtils.getUrl(file.getName(), file.getId())));
+
+              label = FileUtils.getLink(file, BeeUtils.notEmpty(file.getCaption(), file.getName()),
+                  BeeUtils.parenthesize(FileUtils.sizeToText(file.getSize())));
             }
-            ((HasWidgets) widget).add(table);
+            ((HasWidgets) widget).add(label);
           }
         }
         String content = null;
@@ -617,11 +625,11 @@ public class MailMessage extends AbstractFormInterceptor {
         for (SimpleRow part : packet.get(TBL_PARTS)) {
           txt = part.getValue(COL_HTML_CONTENT);
 
-          if (txt == null && part.getValue(COL_CONTENT) != null) {
-            Element div = new CustomDiv().getElement();
-            div.getStyle().setWhiteSpace(WhiteSpace.PRE_WRAP);
-            div.setInnerHTML(part.getValue(COL_CONTENT));
-            txt = div.getString();
+          if (BeeUtils.isEmpty(txt) && !BeeUtils.isEmpty(part.getValue(COL_CONTENT))) {
+            Element pre = Document.get().createPreElement();
+            pre.getStyle().setWhiteSpace(Style.WhiteSpace.PRE_WRAP);
+            pre.setInnerHTML(Codec.escapeHtml(part.getValue(COL_CONTENT)));
+            txt = pre.getString();
           }
           content = BeeUtils.join(sep.getString(), content, txt);
         }
@@ -629,6 +637,10 @@ public class MailMessage extends AbstractFormInterceptor {
         setLoading(false);
       }
     });
+  }
+
+  boolean samePlace(Long place) {
+    return DataUtils.isId(place) && Objects.equals(place, placeId);
   }
 
   private Set<String> getBcc() {
@@ -773,8 +785,26 @@ public class MailMessage extends AbstractFormInterceptor {
             break;
         }
         if (mailPanel != null) {
-          NewMailMessage.create(mailPanel.getAccounts(), mailPanel.getCurrentAccount(),
-              to, cc, bcc, subject, content, attach, relatedId, isDraft);
+          NewMailMessage newMessage = NewMailMessage.create(mailPanel.getAccounts(),
+              mailPanel.getCurrentAccount(), to, cc, bcc, subject, content, attach, relatedId,
+              isDraft);
+
+          if (mode == NewMailMode.FORWARD && !isDraft && DataUtils.isId(placeId)) {
+            final Long place = placeId;
+            newMessage.setCallback(new Consumer<Boolean>() {
+              @Override
+              public void accept(Boolean save) {
+                if (!save) {
+                  ParameterList params = MailKeeper.createArgs(SVC_FLAG_MESSAGE);
+                  params.addDataItem(COL_PLACE, place);
+                  params.addDataItem(COL_FLAGS, MessageFlag.FORWARDED.name());
+                  params.addDataItem("on", Codec.pack(true));
+
+                  BeeKeeper.getRpc().makePostRequest(params, (ResponseCallback) null);
+                }
+              }
+            });
+          }
         } else {
           NewMailMessage.create(to, cc, bcc, subject, content, attach, relatedId, isDraft);
         }
@@ -797,6 +827,9 @@ public class MailMessage extends AbstractFormInterceptor {
 
     if (widget != null) {
       widget.getElement().setInnerText(text);
+
+      DomUtils.scrollToLeft(widget);
+      DomUtils.scrollToTop(widget);
     }
   }
 }

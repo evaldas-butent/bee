@@ -20,7 +20,6 @@ import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
-import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -181,12 +180,18 @@ public class ReportInfo implements BeeSerializable {
           List<String> options = ((ReportTextItem) filterItem).getFilter();
 
           if (!BeeUtils.isEmpty(options)) {
-            HasConditions or = SqlUtils.or();
+            HasConditions conditions = ((ReportTextItem) filterItem).isNegationFilter()
+                ? SqlUtils.and() : SqlUtils.or();
 
             for (String opt : ((ReportTextItem) filterItem).getFilter()) {
-              or.add(SqlUtils.contains(expr, opt));
+              IsCondition condition = SqlUtils.contains(expr, opt);
+
+              if (((ReportTextItem) filterItem).isNegationFilter()) {
+                condition = SqlUtils.not(condition);
+              }
+              conditions.add(condition);
             }
-            and.add(or);
+            and.add(conditions);
           }
         } else if (filterItem instanceof ReportEnumItem) {
           Set<Integer> options = ((ReportEnumItem) filterItem).getFilter();
@@ -274,7 +279,7 @@ public class ReportInfo implements BeeSerializable {
   }
 
   public boolean isEmpty() {
-    return BeeUtils.isEmpty(getRowItems()) && BeeUtils.isEmpty(getColItems());
+    return BeeUtils.isEmpty(getColItems());
   }
 
   public boolean requiresField(String field) {
@@ -308,11 +313,7 @@ public class ReportInfo implements BeeSerializable {
     }
     for (ReportItem filterItem : getFilterItems()) {
       for (ReportItem item : filterItem.getMembers()) {
-        if (BeeUtils.same(item.getExpression(), field)
-            && item.getFilter() != null
-            && item instanceof ReportDateItem
-            && !EnumUtils.in(((ReportDateItem) item).getFormat(), DateTimeFunction.YEAR,
-                DateTimeFunction.DATE, DateTimeFunction.DATETIME)) {
+        if (BeeUtils.same(item.getExpression(), field) && item.getFilter() != null) {
           return true;
         }
       }
@@ -373,6 +374,14 @@ public class ReportInfo implements BeeSerializable {
 
     if (item != null) {
       item.colSummary = summary;
+    }
+  }
+
+  public void setDescending(int colIndex, Boolean descending) {
+    ReportInfoItem item = BeeUtils.getQuietly(getColItems(), colIndex);
+
+    if (item != null) {
+      item.descending = descending;
     }
   }
 

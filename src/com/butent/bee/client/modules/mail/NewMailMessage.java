@@ -28,7 +28,6 @@ import com.butent.bee.client.dialog.DialogConstants;
 import com.butent.bee.client.dialog.InputBoxes;
 import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.dialog.Popup;
-import com.butent.bee.client.event.Previewer;
 import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.FormFactory.FormViewCallback;
@@ -47,6 +46,7 @@ import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BiConsumer;
+import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
@@ -58,7 +58,6 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.mail.AccountInfo;
-import com.butent.bee.shared.modules.mail.MailConstants.AddressType;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
@@ -153,6 +152,8 @@ public final class NewMailMessage extends AbstractFormInterceptor
             if (formView != null) {
               formView.start(null);
 
+              final boolean modal = Popup.hasEventPreview();
+
               final DialogBox dialog = Global.inputWidget(formView.getCaption(), formView,
                   newMessage.new DialogCallback(), RowFactory.DIALOG_STYLE);
               dialog.addStyleName(STYLE_WAITING_FOR_USER_EMAILS);
@@ -162,7 +163,9 @@ public final class NewMailMessage extends AbstractFormInterceptor
                     @Override
                     public void onSuccess(BeeRowSet result) {
                       dialog.removeStyleName(STYLE_WAITING_FOR_USER_EMAILS);
-                      Previewer.ensureUnregistered(dialog);
+                      if (!modal) {
+                        dialog.setPreviewEnabled(false);
+                      }
                     }
                   });
 
@@ -190,6 +193,8 @@ public final class NewMailMessage extends AbstractFormInterceptor
   private Editor contentWidget;
   private final ListBox signaturesWidget = new ListBox();
   private FileCollector attachmentsWidget;
+
+  private Consumer<Boolean> actionCallback;
 
   private NewMailMessage(List<AccountInfo> availableAccounts, AccountInfo defaultAccount,
       Set<String> to, Set<String> cc, Set<String> bcc, String subject, String content,
@@ -275,19 +280,25 @@ public final class NewMailMessage extends AbstractFormInterceptor
   public void onSelection(SelectionEvent<FileInfo> event) {
     final FileInfo file = event.getSelectedItem();
 
-    if (attachmentsWidget.getFiles().contains(file)) {
+    if (attachmentsWidget.contains(file)) {
       FileUtils.uploadFile(file, new Callback<Long>() {
         @Override
         public void onFailure(String... reason) {
+          attachmentsWidget.removeFile(file);
           super.onFailure(reason);
         }
 
         @Override
         public void onSuccess(Long id) {
           file.setFileId(id);
+          attachmentsWidget.refreshFile(file);
         }
       });
     }
+  }
+
+  public void setCallback(Consumer<Boolean> callback) {
+    this.actionCallback = callback;
   }
 
   private void applySignature(Long signatureId) {
@@ -356,16 +367,14 @@ public final class NewMailMessage extends AbstractFormInterceptor
               signaturesWidget.addItem(result.getString(i, COL_SIGNATURE_NAME),
                   BeeUtils.toString(signatureId));
             }
-            signaturesWidget.setEnabled(signaturesWidget.getItemCount() > 1);
+            signaturesWidget.setEnabled(signaturesWidget.getItemCount() > 0);
             signaturesWidget.addChangeHandler(new ChangeHandler() {
               @Override
               public void onChange(ChangeEvent event) {
                 applySignature(BeeUtils.toLongOrNull(signaturesWidget.getValue()));
               }
             });
-            if (!isDraft) {
-              applySignature(account.getSignatureId());
-            }
+            applySignature(isDraft ? null : account.getSignatureId());
           }
         });
     dialog.insertAction(1, signaturesWidget);
@@ -396,7 +405,7 @@ public final class NewMailMessage extends AbstractFormInterceptor
     dialog.insertAction(1, accountsWidget);
   }
 
-  private void save(boolean saveMode) {
+  private void save(final boolean saveMode) {
     if (saveMode && !hasChanges()) {
       return;
     }
@@ -420,7 +429,7 @@ public final class NewMailMessage extends AbstractFormInterceptor
     Map<Long, String> attachments = new LinkedHashMap<>();
 
     for (FileInfo file : attachmentsWidget.getFiles()) {
-      attachments.put(file.getId(), file.getName());
+      attachments.put(file.getId(), BeeUtils.notEmpty(file.getCaption(), file.getName()));
     }
     if (!BeeUtils.isEmpty(attachments)) {
       params.addDataItem(TBL_ATTACHMENTS, Codec.beeSerialize(attachments));
@@ -429,6 +438,10 @@ public final class NewMailMessage extends AbstractFormInterceptor
       @Override
       public void onResponse(ResponseObject response) {
         response.notify(BeeKeeper.getScreen());
+
+        if (actionCallback != null && !response.hasErrors()) {
+          actionCallback.accept(saveMode);
+        }
       }
     });
   }

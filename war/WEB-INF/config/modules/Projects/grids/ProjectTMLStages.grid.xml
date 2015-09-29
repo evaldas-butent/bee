@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+  xmlns:ui="http://www.butent.com/ui" xmlns:w="http://www.butent.com/widget"
+
+  name="ProjectTMLStages" viewName="ProjectTMLStages" caption="=prjStages">
+
+  <g:columns>
+    <DataColumn name="DefaultTMLStage" caption="=prjDefaultStageShort"
+                horizontalAlignment="center">
+      <render><ui:expression>row.DefaultTMLStage ? '\u2713' : ''</ui:expression></render>
+    </DataColumn>
+    <DataColumn name="Name" />
+    <DataColumn name="ExpectedDuration" caption="=crmTaskExpectedDuration"
+      label="=crmTaskExpectedDuration" sortBy="ExpectedDuration">
+      <render>
+        <ui:function>
+          if (row.UnitName == null) {
+            return row.ExpectedDuration;
+          } else if (row.ExpectedDuration != null &amp;&amp; row.UnitName != null) {
+            return row.ExpectedDuration + ' ' + row.UnitName;
+          }
+          return row.ExpectedDuration;
+        </ui:function>
+      </render>
+    </DataColumn>
+
+    <DataColumn name="Expenses" scale="2" />
+    <RelColumn name="Currency" />
+  </g:columns>
+  <g:rowStyle>
+    <ui:inline>="font-weight: bolder"</ui:inline>
+    <ui:expression>row.DefaultTMLStage != null</ui:expression>
+  </g:rowStyle>
+</g:Grid>

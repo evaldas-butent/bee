@@ -570,13 +570,13 @@ public final class CronExpression implements HasInfo {
     private final boolean supportsWeekdayOrdinals;
     private final boolean supportsBaseIncrement;
 
-    private Field(String caption, int min, int max, boolean supportsLast,
+    Field(String caption, int min, int max, boolean supportsLast,
         boolean supportsNegativeValues, boolean supportsOverflowingRanges) {
       this(caption, min, max, supportsLast, supportsNegativeValues, supportsOverflowingRanges,
           false, false, false);
     }
 
-    private Field(String caption, int min, int max,
+    Field(String caption, int min, int max,
         boolean supportsLast, boolean supportsNegativeValues, boolean supportsOverflowingRanges,
         boolean supportsWorkday, boolean supportsWeekdayOrdinals, boolean supportsBaseIncrement) {
       this.caption = caption;

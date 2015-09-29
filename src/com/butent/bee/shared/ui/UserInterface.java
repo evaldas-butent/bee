@@ -293,7 +293,7 @@ public enum UserInterface implements HasCaption {
 
     private final boolean required;
 
-    private Component(boolean required) {
+    Component(boolean required) {
       this.required = required;
     }
 

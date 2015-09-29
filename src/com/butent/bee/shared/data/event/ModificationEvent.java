@@ -7,8 +7,10 @@ import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.Locality;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
+import java.util.Collection;
 import java.util.List;
 
 public abstract class ModificationEvent<H> extends Event<H> implements DataEvent, BeeSerializable {
@@ -53,7 +55,7 @@ public abstract class ModificationEvent<H> extends Event<H> implements DataEvent
 
     private final String brief;
 
-    private Kind(String brief) {
+    Kind(String brief) {
       this.brief = brief;
     }
 
@@ -87,6 +89,10 @@ public abstract class ModificationEvent<H> extends Event<H> implements DataEvent
 
   private transient Locality locality;
 
+  public boolean containsAny(Collection<String> viewNames) {
+    return BeeUtils.intersects(viewNames, getViewNames());
+  }
+
   public String encode() {
     List<String> data = Lists.newArrayList(Codec.pack(getKind()), serialize());
     return Codec.beeSerialize(data);
@@ -97,6 +103,8 @@ public abstract class ModificationEvent<H> extends Event<H> implements DataEvent
   public Locality getLocality() {
     return locality;
   }
+
+  public abstract Collection<String> getViewNames();
 
   public boolean isSpookyActionAtADistance() {
     return getLocality() == Locality.ENTANGLED;

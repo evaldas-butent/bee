@@ -86,6 +86,14 @@ public class SimpleRowSet implements Iterable<SimpleRow>, BeeSerializable {
       return getRowSet().getInt(rowIndex, colName);
     }
 
+    public List<String> getList(List<String> colNames) {
+      List<String> result = new ArrayList<>();
+      for (String colName : colNames) {
+        result.add(getValue(colName));
+      }
+      return result;
+    }
+
     public Long getLong(int colIndex) {
       return getRowSet().getLong(rowIndex, colIndex);
     }

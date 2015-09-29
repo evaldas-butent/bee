@@ -411,7 +411,7 @@ public final class ParametersGrid extends AbstractGridInterceptor {
         Long time = prm.supportsUsers() ? prm.getTime(userId) : prm.getTime();
 
         if (time != null) {
-          ((InputTime) editor).setValue(TimeUtils.renderTime(time, false));
+          editor.setValue(TimeUtils.renderTime(time, false));
         }
         break;
 

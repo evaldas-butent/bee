@@ -4,7 +4,6 @@ import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Table;
-import com.google.common.collect.TreeMultimap;
 import com.google.common.io.CharStreams;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
@@ -27,10 +26,10 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.Pair;
-import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
+import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.mail.MailConstants;
@@ -39,23 +38,33 @@ import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
+import net.fortuna.ical4j.data.CalendarBuilder;
+import net.fortuna.ical4j.data.ParserException;
+import net.fortuna.ical4j.model.Calendar;
+import net.fortuna.ical4j.model.Component;
+import net.fortuna.ical4j.model.Property;
+import net.fortuna.ical4j.model.component.CalendarComponent;
+
 import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
-import java.util.function.Function;
+import java.util.concurrent.locks.ReentrantLock;
 
+import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.ejb.Lock;
 import javax.ejb.LockType;
+import javax.ejb.SessionContext;
 import javax.ejb.Singleton;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
@@ -70,7 +79,6 @@ import javax.mail.internet.AddressException;
 import javax.mail.internet.ContentType;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
-import javax.mail.internet.MimeUtility;
 import javax.mail.internet.ParseException;
 import javax.mail.util.SharedByteArrayInputStream;
 
@@ -89,8 +97,11 @@ public class MailStorageBean {
   FileStorageBean fs;
   @EJB
   ConcurrencyBean cb;
+  @Resource
+  SessionContext ctx;
 
   private final Table<Long, String, Long> repliedStack = HashBasedTable.create();
+  private final ReentrantLock repliedStackLock = new ReentrantLock();
 
   public void attachMessages(Long folderId, Map<Long, Integer> messages) {
     for (Entry<Long, Integer> message : messages.entrySet()) {
@@ -224,135 +235,142 @@ public class MailStorageBean {
         .setWhere(sys.idEquals(TBL_PLACES, placeId)));
   }
 
-  public void setFolder(Long folderId, IsCondition clause) {
-    qs.updateData(new SqlUpdate(TBL_PLACES)
-        .addConstant(COL_FOLDER, folderId)
-        .addConstant(COL_MESSAGE_UID, null)
-        .setWhere(clause));
-  }
-
   public Long storeMail(MailAccount account, Message message, Long folderId, Long messageUID)
       throws MessagingException {
 
     MailEnvelope envelope = new MailEnvelope(message);
     Holder<Long> messageId = Holder.absent();
-    Holder<Long> placeId = Holder.absent();
+    Holder<Boolean> finished = Holder.of(false);
 
     cb.synchronizedCall(new Runnable() {
       @Override
       public void run() {
-        messageId.set(qs.getLong(new SqlSelect()
-            .addFields(TBL_MESSAGES, sys.getIdName(TBL_MESSAGES))
+        SimpleRow row = qs.getRow(new SqlSelect()
+            .addField(TBL_MESSAGES, sys.getIdName(TBL_MESSAGES), COL_MESSAGE)
+            .addFields(TBL_MESSAGES, COL_RAW_CONTENT)
             .addFrom(TBL_MESSAGES)
-            .setWhere(SqlUtils.equals(TBL_MESSAGES, COL_UNIQUE_ID, envelope.getUniqueId()))));
+            .setWhere(SqlUtils.equals(TBL_MESSAGES, COL_UNIQUE_ID, envelope.getUniqueId())));
 
-        if (messageId.isNull()) {
+        if (row != null) {
+          messageId.set(row.getLong(COL_MESSAGE));
+          finished.set(DataUtils.isId(row.getLong(COL_RAW_CONTENT)));
+        } else {
           messageId.set(qs.insertData(new SqlInsert(TBL_MESSAGES)
               .addConstant(COL_UNIQUE_ID, envelope.getUniqueId())
               .addConstant(COL_DATE, envelope.getDate())
               .addConstant(COL_SUBJECT,
                   sys.clampValue(TBL_MESSAGES, COL_SUBJECT, envelope.getSubject()))));
-
-          placeId.set(storePlace(messageId.get(), folderId, envelope.getFlagMask(), messageUID));
         }
       }
     });
-    if (placeId.isNull()) {
-      if (!qs.sqlExists(TBL_PLACES, SqlUtils.and(messageUID == null
+    boolean hasPlace = false;
+
+    if (finished.get()) {
+      hasPlace = qs.sqlExists(TBL_PLACES, SqlUtils.and(messageUID == null
               ? SqlUtils.isNull(TBL_PLACES, COL_MESSAGE_UID)
               : SqlUtils.equals(TBL_PLACES, COL_MESSAGE_UID, messageUID),
-          SqlUtils.equals(TBL_PLACES, COL_MESSAGE, messageId.get(), COL_FOLDER, folderId)))) {
-
-        placeId.set(storePlace(messageId.get(), folderId, envelope.getFlagMask(), messageUID));
-      }
+          SqlUtils.equals(TBL_PLACES, COL_MESSAGE, messageId.get(), COL_FOLDER, folderId)));
     } else {
-      Long fileId = null;
-      InputStream is = null;
-      Long senderId = null;
+      Holder<Long> senderId = Holder.absent();
       InternetAddress sender = envelope.getSender();
 
       if (sender != null) {
         try {
-          senderId = storeAddress(account.getUserId(), sender);
+          senderId.set(storeAddress(account.getUserId(), sender));
         } catch (AddressException e) {
-          logger.warning("( MessageID =", messageId.get(), ") Error storing address:", e);
+          logger.warning("(MessageID=", messageId.get(), ") Error storing address:", e);
         }
       }
+      Long fileId;
+      InputStream is;
+
       try {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         message.writeTo(bos);
         bos.close();
         is = new SharedByteArrayInputStream(bos.toByteArray());
         fileId = fs.storeFile(is, "mail@" + envelope.getUniqueId(), "text/plain");
-      } catch (MessagingException | IOException e) {
-        qs.updateData(new SqlDelete(TBL_PLACES)
-            .setWhere(SqlUtils.equals(TBL_PLACES, COL_MESSAGE, messageId.get())));
-
+      } catch (IOException | MessagingException e) {
         qs.updateData(new SqlDelete(TBL_MESSAGES)
             .setWhere(sys.idEquals(TBL_MESSAGES, messageId.get())));
-
-        logger.error(e);
-        return null;
+        throw new MessagingException("(MessageID=" + messageId.get() + ") Error getting content",
+            e);
       }
-      qs.updateData(new SqlUpdate(TBL_MESSAGES)
-          .addConstant(COL_SENDER, senderId)
-          .addConstant(COL_RAW_CONTENT, fileId)
-          .setWhere(sys.idEquals(TBL_MESSAGES, messageId.get())));
+      cb.synchronizedCall(new Runnable() {
+        @Override
+        public void run() {
+          finished.set(!BeeUtils.isPositive(qs.updateData(new SqlUpdate(TBL_MESSAGES)
+              .addConstant(COL_SENDER, senderId.get())
+              .addConstant(COL_RAW_CONTENT, fileId)
+              .setWhere(SqlUtils.and(sys.idEquals(TBL_MESSAGES, messageId.get()),
+                  SqlUtils.isNull(TBL_MESSAGES, COL_RAW_CONTENT))))));
+        }
+      });
+      if (!finished.get()) {
+        Set<Long> allAddresses = new HashSet<>();
 
-      Set<Long> allAddresses = new HashSet<>();
+        for (Entry<AddressType, InternetAddress> entry : envelope.getRecipients().entries()) {
+          try {
+            Long adr = storeAddress(account.getUserId(), entry.getValue());
 
-      for (Entry<AddressType, InternetAddress> entry : envelope.getRecipients().entries()) {
+            if (allAddresses.add(adr)) {
+              qs.insertData(new SqlInsert(TBL_RECIPIENTS)
+                  .addConstant(COL_MESSAGE, messageId.get())
+                  .addConstant(MailConstants.COL_ADDRESS, adr)
+                  .addConstant(COL_ADDRESS_TYPE, entry.getKey().name()));
+            }
+          } catch (AddressException e) {
+            logger.warning("(MessageID=", messageId.get(), ") Error storing address:", e);
+          }
+        }
         try {
-          Long adr = storeAddress(account.getUserId(), entry.getValue());
+          is.reset();
+          Multimap<String, String> parsed = parsePart(messageId.get(), new MimeMessage(null, is));
 
-          if (allAddresses.add(adr)) {
-            qs.insertData(new SqlInsert(TBL_RECIPIENTS)
-                .addConstant(COL_MESSAGE, messageId.get())
-                .addConstant(MailConstants.COL_ADDRESS, adr)
-                .addConstant(COL_ADDRESS_TYPE, entry.getKey().name()));
-          }
-        } catch (AddressException e) {
-          logger.warning("( MessageID =", messageId.get(), ") Error storing address:", e);
-        }
-      }
-      try {
-        is.reset();
-        Multimap<String, String> parsed = parsePart(messageId.get(), new MimeMessage(null, is));
+          for (Entry<String, String> entry : parsed.entries()) {
+            String content = entry.getValue();
 
-        if (parsed.containsKey(COL_CONTENT)) {
-          for (String text : parsed.get(COL_CONTENT)) {
-            storePart(messageId.get(), text, false);
-          }
-        }
-        if (parsed.containsKey(COL_HTML_CONTENT)) {
-          for (String html : parsed.get(COL_HTML_CONTENT)) {
-            storePart(messageId.get(), html, true);
-          }
-        }
-        if (parsed.containsKey(COL_FILE)) {
-          for (String fileInfo : parsed.get(COL_FILE)) {
-            String[] arr = Codec.beeDeserializeCollection(fileInfo);
+            switch (entry.getKey()) {
+              case COL_CONTENT:
+              case COL_HTML_CONTENT:
+                boolean isHtml = Objects.equals(entry.getKey(), COL_HTML_CONTENT);
 
-            qs.insertData(new SqlInsert(TBL_ATTACHMENTS)
-                .addConstant(COL_MESSAGE, messageId.get())
-                .addConstant(COL_FILE, BeeUtils.toLongOrNull(arr[0]))
-                .addConstant(COL_ATTACHMENT_NAME,
-                    sys.clampValue(TBL_ATTACHMENTS, COL_ATTACHMENT_NAME, arr[1])));
-          }
-        }
-      } catch (MessagingException | IOException e) {
-        logger.error(e);
-      }
-      if (!ArrayUtils.contains(new Long[] {
-          account.getDraftsFolder().getId(), account.getTrashFolder().getId()}, folderId)) {
+                if (!BeeUtils.isEmpty(content)) {
+                  qs.insertData(new SqlInsert(TBL_PARTS)
+                      .addConstant(COL_MESSAGE, messageId.get())
+                      .addConstant(COL_CONTENT, isHtml ? HtmlUtils.stripHtml(content) : content)
+                      .addConstant(COL_HTML_CONTENT, isHtml ? content : null));
+                }
+                break;
 
-        if (DataUtils.isId(senderId)) {
-          allAddresses.add(senderId);
+              case COL_FILE:
+                String[] arr = Codec.beeDeserializeCollection(content);
+
+                qs.insertData(new SqlInsert(TBL_ATTACHMENTS)
+                    .addConstant(COL_MESSAGE, messageId.get())
+                    .addConstant(COL_FILE, BeeUtils.toLongOrNull(arr[0]))
+                    .addConstant(COL_ATTACHMENT_NAME,
+                        sys.clampValue(TBL_ATTACHMENTS, COL_ATTACHMENT_NAME, arr[1])));
+                break;
+            }
+          }
+        } catch (MessagingException | IOException e) {
+          logger.error(e, "(MessageID=", messageId.get(), ") Error parsing content");
         }
-        setRelations(messageId.get(), allAddresses);
+        if (!ArrayUtils.contains(new Long[] {
+            account.getDraftsFolder().getId(), account.getTrashFolder().getId()}, folderId)) {
+
+          if (senderId.isNotNull()) {
+            allAddresses.add(senderId.get());
+          }
+          setRelations(messageId.get(), allAddresses);
+        }
       }
     }
-    return placeId.get();
+    if (hasPlace) {
+      return null;
+    }
+    return storePlace(messageId.get(), folderId, envelope.getFlagMask(), messageUID);
   }
 
   public Pair<Long, Integer> syncFolder(MailAccount account, MailFolder localFolder,
@@ -361,7 +379,7 @@ public class MailStorageBean {
 
     SimpleRowSet data = qs.getData(new SqlSelect()
         .addFields(TBL_PLACES, COL_FLAGS, COL_MESSAGE_UID)
-        .addField(TBL_PLACES, sys.getIdName(TBL_PLACES), COL_UNIQUE_ID)
+        .addField(TBL_PLACES, sys.getIdName(TBL_PLACES), COL_PLACE)
         .addFrom(TBL_PLACES)
         .setWhere(SqlUtils.equals(TBL_PLACES, COL_FOLDER, localFolder.getId()))
         .addOrderDesc(TBL_PLACES, COL_MESSAGE_UID)
@@ -371,7 +389,7 @@ public class MailStorageBean {
     int c = 0;
 
     if (data.getNumberOfRows() > 0) {
-      Set<Long> syncedMsgs = new HashSet<>();
+      Map<Long, Holder<Integer>> syncedMsgs = new HashMap<>();
 
       Message[] msgs = ((UIDFolder) remoteFolder).getMessagesByUID(BeeUtils
           .unbox(data.getLong(data.getNumberOfRows() - 1, COL_MESSAGE_UID)), lastUid);
@@ -386,35 +404,41 @@ public class MailStorageBean {
 
         if (row != null) {
           Integer flags = MailEnvelope.getFlagMask(message);
-          Long id = row.getLong(COL_UNIQUE_ID);
+          Holder<Integer> hasFlags = null;
 
           if (BeeUtils.unbox(row.getInt(COL_FLAGS)) != BeeUtils.unbox(flags)) {
-            c += qs.updateData(new SqlUpdate(TBL_PLACES)
-                .addConstant(COL_FLAGS, flags)
-                .setWhere(sys.idEquals(TBL_PLACES, id)));
+            hasFlags = Holder.of(flags);
           }
-          syncedMsgs.add(id);
+          syncedMsgs.put(row.getLong(COL_PLACE), hasFlags);
         } else {
           try {
-            storeMail(account, message, localFolder.getId(), uid);
+            ctx.getBusinessObject(MailStorageBean.class)
+                .storeMail(account, message, localFolder.getId(), uid);
             c++;
           } catch (MessagingException e) {
             logger.error(e);
           }
         }
       }
+      for (Entry<Long, Holder<Integer>> entry : syncedMsgs.entrySet()) {
+        if (entry.getValue() != null) {
+          c += qs.updateData(new SqlUpdate(TBL_PLACES)
+              .addConstant(COL_FLAGS, entry.getValue().get())
+              .setWhere(sys.idEquals(TBL_PLACES, entry.getKey())));
+        }
+      }
       List<Long> deletedMsgs = new ArrayList<>();
 
       for (int i = 0; i < data.getNumberOfRows(); i++) {
-        Long id = data.getLong(i, COL_UNIQUE_ID);
+        Long id = data.getLong(i, COL_PLACE);
 
-        if (!syncedMsgs.contains(id)) {
+        if (!syncedMsgs.containsKey(id)) {
           deletedMsgs.add(id);
         }
       }
       if (!deletedMsgs.isEmpty()) {
         c += qs.updateData(new SqlDelete(TBL_PLACES)
-            .setWhere(SqlUtils.inList(TBL_PLACES, sys.getIdName(TBL_PLACES), deletedMsgs)));
+            .setWhere(sys.idInList(TBL_PLACES, deletedMsgs)));
       }
     }
     return Pair.of(lastUid, c);
@@ -435,9 +459,10 @@ public class MailStorageBean {
     }
   }
 
-  @Lock(LockType.WRITE)
   public void waitForReplied(Long folderId, String uniqueId, Long repliedFrom) {
+    repliedStackLock.lock();
     repliedStack.put(folderId, uniqueId, repliedFrom);
+    repliedStackLock.unlock();
   }
 
   private MailFolder createFolder(Long accountId, MailFolder parent, String name, Long folderUID) {
@@ -461,10 +486,7 @@ public class MailStorageBean {
   private static String getStringContent(Object enigma) throws IOException {
     String content;
 
-    if (enigma instanceof String) {
-      content = (String) enigma;
-
-    } else if (enigma instanceof InputStream) {
+    if (enigma instanceof InputStream) {
       content = CharStreams.toString(new InputStreamReader((InputStream) enigma,
           BeeConst.CHARSET_UTF8));
     } else {
@@ -476,23 +498,25 @@ public class MailStorageBean {
   private Multimap<String, String> parsePart(Long messageId, Part part)
       throws MessagingException, IOException {
 
-    Multimap<String, String> parsedPart = TreeMultimap.create();
+    Multimap<String, String> parsedPart = LinkedListMultimap.create();
 
     if (part.isMimeType("multipart/*")) {
       Multipart multiPart = (Multipart) part.getContent();
-      Multimap<String, String> related = TreeMultimap.create();
+      Multimap<String, String> related = LinkedListMultimap.create();
 
       for (int i = 0; i < multiPart.getCount(); i++) {
-        Multimap<String, String> parsed = parsePart(messageId, multiPart.getBodyPart(i));
+        Multimap<String, String> parsed;
 
+        try {
+          parsed = parsePart(messageId, multiPart.getBodyPart(i));
+        } catch (MessagingException | IOException e) {
+          logger.warning("(MessageID=", messageId, ") Error parsing multipart/* part:", e);
+          continue;
+        }
         if (part.isMimeType("multipart/alternative")) {
-          if (parsed.containsKey(COL_HTML_CONTENT)) {
+          if (parsed != null && !parsed.isEmpty()) {
             parsedPart.clear();
             parsedPart.putAll(parsed);
-            break;
-
-          } else if (parsed.containsKey(COL_CONTENT) && !parsedPart.containsKey(COL_CONTENT)) {
-            parsedPart.put(COL_CONTENT, BeeUtils.peek(parsed.get(COL_CONTENT)));
           }
         } else if (part.isMimeType("multipart/related")) {
           related.putAll(parsed);
@@ -531,33 +555,32 @@ public class MailStorageBean {
         parsedPart.putAll(COL_FILE, orphans);
       }
     } else if (part.isMimeType("message/rfc822")) {
-      parsedPart.putAll(parsePart(messageId, (Message) part.getContent()));
-
+      try {
+        parsedPart.putAll(parsePart(messageId, (Message) part.getContent()));
+      } catch (MessagingException | IOException e) {
+        logger.warning("(MessageID=", messageId, ") Error parsing message/rfc822 part:", e);
+      }
     } else {
       String contentType = null;
 
       try {
         contentType = new ContentType(part.getContentType()).getBaseType();
       } catch (ParseException e) {
-        logger.warning("( MessageID =", messageId, ") Error getting part content type:", e);
+        logger.warning("(MessageID=", messageId, ") Error getting part content type:", e);
       }
       String disposition = null;
 
       try {
         disposition = part.getDisposition();
       } catch (ParseException e) {
-        logger.warning("( MessageID =", messageId, ") Error getting part disposition:", e);
+        logger.warning("(MessageID=", messageId, ") Error getting part disposition:", e);
       }
       String fileName = null;
 
       try {
         fileName = part.getFileName();
-
-        if (!BeeUtils.isEmpty(fileName)) {
-          fileName = MimeUtility.decodeText(fileName);
-        }
       } catch (ParseException e) {
-        logger.warning("( MessageID =", messageId, ") Error getting part file name:", e);
+        logger.warning("(MessageID=", messageId, ") Error getting part file name:", e);
       }
       if (BeeUtils.same(disposition, Part.ATTACHMENT)
           || !BeeUtils.isEmpty(fileName)
@@ -576,6 +599,39 @@ public class MailStorageBean {
         }
         parsedPart.put(COL_FILE, Codec.beeSerialize(fileInfo));
 
+      } else if (part.isMimeType("text/calendar")) {
+        Long fileId = fs.storeFile(part.getInputStream(), fileName, contentType);
+
+        StringBuilder sb = new StringBuilder("<table>");
+
+        try (FileInfo fileInfo = fs.getFile(fileId)) {
+          Calendar calendar = new CalendarBuilder().build(new FileInputStream(fileInfo.getFile()));
+          fileName = calendar.getMethod().getValue() + ".ics";
+
+          for (CalendarComponent component : calendar.getComponents()) {
+            sb.append("<tr><td colspan=\"2\" style=\"font-weight:bold\">")
+                .append(component.getName()).append("</td></tr>");
+
+            for (Property property : component.getProperties()) {
+              if (!BeeUtils.same(property.getName(), Property.UID)
+                  && !BeeUtils.startsWith(property.getName(), Component.EXPERIMENTAL_PREFIX)) {
+
+                sb.append("<tr><td>").append(property.getName()).append("</td><td>")
+                    .append(property.getValue()).append("</td></tr>");
+              }
+            }
+          }
+          sb.append("</table>");
+          parsedPart.put(COL_HTML_CONTENT, sb.toString());
+
+        } catch (ParserException e) {
+          logger.warning("(MessageID=", messageId, ") Error parsing calendar:", e);
+        }
+        List<String> fileInfo = new ArrayList<>();
+        fileInfo.add(BeeUtils.toString(fileId));
+        fileInfo.add(fileName);
+
+        parsedPart.put(COL_FILE, Codec.beeSerialize(fileInfo));
       } else {
         String content = getStringContent(part.getContent());
 
@@ -650,7 +706,7 @@ public class MailStorageBean {
   private Long storeAddress(Long userId, InternetAddress address) throws AddressException {
     Assert.notNull(address);
 
-    address.validate();
+    new InternetAddress(address.getAddress(), true).validate();
 
     String label = address.getPersonal();
     String email = BeeUtils.normalize(address.getAddress());
@@ -658,7 +714,6 @@ public class MailStorageBean {
     Assert.notEmpty(email);
 
     Holder<Long> emailId = Holder.absent();
-    Holder<Long> bookId = Holder.absent();
 
     cb.synchronizedCall(new Runnable() {
       @Override
@@ -674,72 +729,34 @@ public class MailStorageBean {
           emailId.set(queryBean.insertData(new SqlInsert(TBL_EMAILS)
               .addConstant(COL_EMAIL_ADDRESS, email)));
 
-          bookId.set(queryBean.insertData(new SqlInsert(TBL_ADDRESSBOOK)
+          queryBean.insertData(new SqlInsert(TBL_ADDRESSBOOK)
               .addConstant(MailConstants.COL_USER, userId)
               .addConstant(COL_EMAIL, emailId.get())
-              .addNotEmpty(COL_EMAIL_LABEL, label)));
+              .addNotEmpty(COL_EMAIL_LABEL, label));
+        } else {
+          String bookIdName = sys.getIdName(TBL_ADDRESSBOOK);
+
+          SimpleRow row = qs.getRow(new SqlSelect()
+              .addFields(TBL_ADDRESSBOOK, bookIdName, COL_EMAIL_LABEL)
+              .addFrom(TBL_ADDRESSBOOK)
+              .setWhere(SqlUtils.equals(TBL_ADDRESSBOOK, MailConstants.COL_USER, userId,
+                  COL_EMAIL, emailId.get())));
+
+          if (row == null) {
+            qs.insertData(new SqlInsert(TBL_ADDRESSBOOK)
+                .addConstant(MailConstants.COL_USER, userId)
+                .addConstant(COL_EMAIL, emailId.get())
+                .addNotEmpty(COL_EMAIL_LABEL, label));
+
+          } else if (BeeUtils.isEmpty(row.getValue(COL_EMAIL_LABEL)) && !BeeUtils.isEmpty(label)) {
+            qs.updateData(new SqlUpdate(TBL_ADDRESSBOOK)
+                .addConstant(COL_EMAIL_LABEL, label)
+                .setWhere(sys.idEquals(TBL_ADDRESSBOOK, row.getLong(bookIdName))));
+          }
         }
       }
     });
-    if (bookId.isNull()) {
-      String bookIdName = sys.getIdName(TBL_ADDRESSBOOK);
-
-      SimpleRow row = qs.getRow(new SqlSelect()
-          .addFields(TBL_ADDRESSBOOK, bookIdName, COL_EMAIL_LABEL)
-          .addFrom(TBL_ADDRESSBOOK)
-          .setWhere(SqlUtils.equals(TBL_ADDRESSBOOK, MailConstants.COL_USER, userId,
-              COL_EMAIL, emailId.get())));
-
-      if (row == null) {
-        qs.insertData(new SqlInsert(TBL_ADDRESSBOOK)
-            .addConstant(MailConstants.COL_USER, userId)
-            .addConstant(COL_EMAIL, emailId.get())
-            .addNotEmpty(COL_EMAIL_LABEL, label));
-
-      } else if (BeeUtils.isEmpty(row.getValue(COL_EMAIL_LABEL)) && !BeeUtils.isEmpty(label)) {
-        qs.updateData(new SqlUpdate(TBL_ADDRESSBOOK)
-            .addConstant(COL_EMAIL_LABEL, label)
-            .setWhere(sys.idEquals(TBL_ADDRESSBOOK, row.getLong(bookIdName))));
-      }
-    }
     return emailId.get();
-  }
-
-  private void storePart(Long messageId, String content, boolean isHtml) {
-    if (!BeeUtils.isEmpty(content)) {
-      ResponseObject response = qs.insertDataWithResponse(new SqlInsert(TBL_PARTS)
-              .addConstant(COL_MESSAGE, messageId)
-              .addConstant(COL_CONTENT, isHtml ? HtmlUtils.stripHtml(content) : content)
-              .addConstant(COL_HTML_CONTENT, isHtml ? content : null),
-          new Function<SQLException, ResponseObject>() {
-            @Override
-            public ResponseObject apply(SQLException ex) {
-              return ResponseObject.error(ex);
-            }
-          });
-      if (response.hasErrors()) {
-        String cleanContent;
-        int idx = content.indexOf(0);
-
-        switch (idx) {
-          case -1:
-            cleanContent = content;
-            break;
-
-          case 0:
-            cleanContent = null;
-            break;
-
-          default:
-            cleanContent = content.substring(0, idx);
-            break;
-        }
-        qs.insertData(new SqlInsert(TBL_PARTS)
-            .addConstant(COL_MESSAGE, messageId)
-            .addConstant(COL_CONTENT, isHtml ? HtmlUtils.stripHtml(cleanContent) : cleanContent)
-            .addConstant(COL_HTML_CONTENT, isHtml ? cleanContent : null));
-      }
-    }
   }
 
   private long storePlace(long messageId, Long folderId, Integer flags, Long messageUID) {
@@ -755,7 +772,9 @@ public class MailStorageBean {
           .addFrom(TBL_MESSAGES)
           .setWhere(sys.idEquals(TBL_MESSAGES, messageId)));
 
+      repliedStackLock.lock();
       Long repliedFrom = repliedStack.remove(folderId, uniqueId);
+      repliedStackLock.unlock();
 
       if (DataUtils.isId(repliedFrom)) {
         qs.updateData(new SqlUpdate(TBL_PLACES)

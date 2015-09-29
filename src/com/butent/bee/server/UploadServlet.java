@@ -110,7 +110,7 @@ public class UploadServlet extends LoginServlet {
     } else {
       response = ResponseObject.error(BeeUtils.joinWords(getClass().getSimpleName(), service,
           "service not recognized"));
-      logger.severe((Object[]) response.getErrors());
+      response.log(logger);
     }
 
     ContentType ctp = ContentType.TEXT;
@@ -175,20 +175,18 @@ public class UploadServlet extends LoginServlet {
 
         if (DataUtils.isId(fileId)) {
           response = ResponseObject.response(fileId);
-
-          logger.info(prefix, TimeUtils.elapsedSeconds(start), "stored", fileName,
+          response.addInfo(prefix, TimeUtils.elapsedSeconds(start), "stored", fileName,
               "type", mimeType, "size", fileSize, "id", fileId);
         } else {
           response = ResponseObject.error(prefix, fileName, "not stored");
         }
       } catch (IOException ex) {
-        response = ResponseObject.error(prefix + BeeUtils.notEmpty(ex.getMessage(),
-            ex.getClass().getSimpleName()));
+        response = ResponseObject.error(prefix, fileName, "failed");
+        response.addError(ex);
       }
     }
-    if (response.hasErrors()) {
-      logger.severe((Object[]) response.getErrors());
-    }
+    response.log(logger);
+
     return response;
   }
 

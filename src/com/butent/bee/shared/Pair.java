@@ -23,8 +23,8 @@ public final class Pair<A, B> implements BeeSerializable {
   public static final Splitter SPLITTER =
       Splitter.on(CharMatcher.anyOf(" ,;=")).trimResults().omitEmptyStrings().limit(2);
 
-  public static <A, B> Pair<A, B> of() {
-    return of(null, null);
+  public static <A, B> Pair<A, B> empty() {
+    return new Pair<>();
   }
 
   /**
@@ -132,6 +132,10 @@ public final class Pair<A, B> implements BeeSerializable {
 
   public boolean isNull() {
     return getA() == null && getB() == null;
+  }
+
+  public boolean noNulls() {
+    return getA() != null && getB() != null;
   }
 
   @Override

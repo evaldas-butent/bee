@@ -85,6 +85,12 @@ class OracleSqlBuilder extends SqlBuilder {
   }
 
   @Override
+  protected String getVersionTrigger(String versionName) {
+    // TODO implementation required
+    return null;
+  }
+
+  @Override
   protected String sqlFunction(SqlFunction function, Map<String, Object> params) {
     switch (function) {
       case CAST:

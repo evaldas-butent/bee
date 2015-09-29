@@ -66,7 +66,7 @@ public class DocumentTemplatesGrid extends AbstractGridInterceptor implements
         flt = null;
       }
       getGridPresenter().getDataProvider().setParentFilter(FILTER_KEY, flt);
-      getGridPresenter().refresh(true);
+      getGridPresenter().refresh(true, true);
     }
   }
 

@@ -44,7 +44,7 @@ public enum LayoutEngine {
   private final String styleSheetName;
   private final JustDate styleSheetVersion;
 
-  private LayoutEngine(String substring, String styleSheetName, JustDate styleSheetVersion) {
+  LayoutEngine(String substring, String styleSheetName, JustDate styleSheetVersion) {
     this.substring = substring;
     this.styleSheetName = styleSheetName;
     this.styleSheetVersion = styleSheetVersion;

@@ -11,7 +11,7 @@ public class NotificationOptions {
 
     private final String value;
 
-    private NotificationDirection(String value) {
+    NotificationDirection(String value) {
       this.value = value;
     }
 

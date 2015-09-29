@@ -11,11 +11,14 @@ import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import java.util.Map;
 
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
 import javax.xml.namespace.QName;
 import javax.xml.soap.MessageFactory;
 import javax.xml.soap.SOAPBody;
@@ -31,24 +34,56 @@ import javax.xml.ws.soap.SOAPBinding;
 public final class ButentWS {
 
   private static BeeLogger logger = LogUtils.getLogger(ButentWS.class);
+  private static ButentWS instance;
 
-  public static ButentWS connect(String namespace, String address, String login, String password)
-      throws BeeException {
+  String wsdlAddress;
+  String defaultNamespace;
+  Dispatch<SOAPMessage> dispatch;
 
-    if (BeeUtils.anyEmpty(address, login, password)) {
+  private ButentWS(String address) throws BeeException {
+    Service service = Service.create(new QName("ButentWebService"));
+    QName portName = new QName("ButentWebServicePort");
+
+    service.addPort(portName, SOAPBinding.SOAP11HTTP_BINDING, address);
+
+    if (BeeUtils.isEmpty(defaultNamespace)) {
+      Client client = ClientBuilder.newClient();
+
+      try {
+        Document wsdl = client.target(address)
+            .request()
+            .get(Document.class);
+
+        wsdlAddress = address;
+        defaultNamespace = BeeUtils.removeSuffix(wsdl.getDocumentElement()
+            .getAttribute("targetNamespace"), "wsdl/");
+
+      } catch (Exception e) {
+        throw BeeException.error(e);
+      } finally {
+        client.close();
+      }
+    }
+    dispatch = service.createDispatch(portName, SOAPMessage.class, Service.Mode.MESSAGE);
+    dispatch.getRequestContext().put(Dispatch.SOAPACTION_USE_PROPERTY, new Boolean(true));
+  }
+
+  public static ButentWS connect(String address, String login, String pass) throws BeeException {
+    if (BeeUtils.anyEmpty(address, login, pass)) {
       throw new BeeException("WebService address/login/password not defined");
     }
     logger.info("Connecting to webservice:", address);
 
-    ButentWS butentWS = new ButentWS(address, namespace);
-
+    if (instance == null || !BeeUtils.same(address, instance.wsdlAddress)) {
+      instance = new ButentWS(address);
+    }
     String answer = null;
     String error = "Unknown login response";
 
     try {
-      answer = butentWS.login(login, password);
+      answer = instance.login(login, pass);
     } catch (Exception e) {
-      throw new BeeException(e);
+      throw BeeException.error(e);
     }
     if (BeeUtils.same(answer, "OK")) {
       error = null;
@@ -67,38 +102,7 @@ public final class ButentWS {
     if (!BeeUtils.isEmpty(error)) {
       throw new BeeException(error);
     }
-    return butentWS;
-  }
-
-  private static Node getNode(String answer) throws BeeException {
-    Node node;
-
-    try {
-      node = XmlUtils.fromString(answer).getFirstChild();
-    } catch (Exception e) {
-      throw new BeeException(answer);
-    }
-    if (BeeUtils.same(node.getLocalName(), "Error")) {
-      throw new BeeException(node.getTextContent());
-    }
-    return node;
-  }
-
-  Dispatch<SOAPMessage> dispatch;
-  String actionPrefix;
-  String namespace;
-
-  private ButentWS(String address, String defaultNamespace) {
-    Service service = Service.create(new QName("ButentWebService"));
-    QName portName = new QName("ButentWebServicePort");
-
-    service.addPort(portName, SOAPBinding.SOAP11HTTP_BINDING, address);
-
-    actionPrefix = defaultNamespace + "action/ButentWebService";
-    namespace = defaultNamespace + "message/";
-    dispatch = service.createDispatch(portName, SOAPMessage.class, Service.Mode.MESSAGE);
-
-    dispatch.getRequestContext().put(Dispatch.SOAPACTION_USE_PROPERTY, new Boolean(true));
+    return instance;
   }
 
   public void disconnect() {
@@ -202,7 +206,7 @@ public final class ButentWS {
     try {
       answer = process("GetSQLData", "<query>" + query + "</query>");
     } catch (Exception e) {
-      throw new BeeException(e);
+      throw BeeException.error(e);
     }
     SimpleRowSet data = xmlToSimpleRowSet(answer, columns);
     logger.debug("GetSQLData cols:", data.getNumberOfColumns(), "rows:", data.getNumberOfRows());
@@ -230,7 +234,7 @@ public final class ButentWS {
     try {
       answer = process("ImportClient", sb.toString());
     } catch (Exception e) {
-      throw new BeeException(e);
+      throw BeeException.error(e);
     }
     answer = getNode(answer).getTextContent();
 
@@ -248,7 +252,7 @@ public final class ButentWS {
       logger.info(doc.getXml());
       answer = process("ImportDoc", doc.getXml());
     } catch (Exception e) {
-      throw new BeeException(e);
+      throw BeeException.error(e);
     }
     if (!BeeUtils.same(answer, "OK")) {
       getNode(answer);
@@ -273,7 +277,7 @@ public final class ButentWS {
     try {
       answer = process("ImportItem", sb.toString());
     } catch (Exception e) {
-      throw new BeeException(e);
+      throw BeeException.error(e);
     }
     answer = getNode(answer).getTextContent();
 
@@ -290,7 +294,8 @@ public final class ButentWS {
     SOAPEnvelope envelope = soapPart.getEnvelope();
     SOAPBody body = envelope.getBody();
 
-    SOAPBodyElement bodyElement = body.addBodyElement(envelope.createName(action, "ns", namespace));
+    SOAPBodyElement bodyElement = body.addBodyElement(envelope.createName(action, "ns",
+        defaultNamespace + "message/"));
 
     if (!BeeUtils.isEmpty(attributes)) {
       for (String attribute : attributes.keySet()) {
@@ -301,9 +306,24 @@ public final class ButentWS {
     return message;
   }
 
+  private static Node getNode(String answer) throws BeeException {
+    Node node;
+
+    try {
+      node = XmlUtils.fromString(answer).getFirstChild();
+    } catch (Exception e) {
+      throw new BeeException(answer);
+    }
+    if (BeeUtils.same(node.getLocalName(), "Error")) {
+      throw new BeeException(node.getTextContent());
+    }
+    return node;
+  }
+
   private String invoke(SOAPMessage message) throws SOAPException {
     dispatch.getRequestContext().put(Dispatch.SOAPACTION_URI_PROPERTY,
-        BeeUtils.join(".", actionPrefix, message.getSOAPBody().getFirstChild().getLocalName()));
+        BeeUtils.join(".", defaultNamespace + "action/ButentWebService",
+            message.getSOAPBody().getFirstChild().getLocalName()));
 
     message.saveChanges();
     SOAPMessage response = dispatch.invoke(message);
@@ -339,7 +359,11 @@ public final class ButentWS {
         String[] cells = new String[data.getNumberOfColumns()];
 
         for (int j = 0; j < c; j++) {
-          cells[data.getColumnIndex(row.item(j).getLocalName())] = row.item(j).getTextContent();
+          String col = row.item(j).getLocalName();
+
+          if (data.hasColumn(col)) {
+            cells[data.getColumnIndex(col)] = row.item(j).getTextContent();
+          }
         }
         data.addRow(cells);
       }

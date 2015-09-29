@@ -602,7 +602,7 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
     final List<File> files = new ArrayList<>();
 
     for (FileInfo fileInfo : input) {
-      File file = (fileInfo instanceof NewFileInfo) ? ((NewFileInfo) fileInfo).getFile() : null;
+      File file = (fileInfo instanceof NewFileInfo) ? ((NewFileInfo) fileInfo).getNewFile() : null;
       if (file != null) {
         files.add(file);
       }

@@ -44,15 +44,15 @@ public enum EditorType {
   private final Integer minWidth;
   private final Integer minHeight;
 
-  private EditorType(String typeCode) {
+  EditorType(String typeCode) {
     this(typeCode, null, null, null, null);
   }
 
-  private EditorType(String typeCode, Integer defaultWidth, Integer defaultHeight) {
+  EditorType(String typeCode, Integer defaultWidth, Integer defaultHeight) {
     this(typeCode, defaultWidth, defaultHeight, null, null);
   }
 
-  private EditorType(String typeCode, Integer defaultWidth, Integer defaultHeight,
+  EditorType(String typeCode, Integer defaultWidth, Integer defaultHeight,
       Integer minWidth, Integer minHeight) {
     this.typeCode = typeCode;
     this.defaultWidth = defaultWidth;

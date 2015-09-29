@@ -12,6 +12,7 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Provider;
 import com.butent.bee.client.data.Queries;
@@ -22,25 +23,34 @@ import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.ChoiceCallback;
 import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.Icon;
+import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.ColumnHeader;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.GridFactory.GridOptions;
 import com.butent.bee.client.grid.column.AbstractColumn;
 import com.butent.bee.client.images.star.Stars;
+import com.butent.bee.client.modules.projects.ProjectsKeeper;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.presenter.PresenterCallback;
 import com.butent.bee.client.render.HasCellRenderer;
+import com.butent.bee.client.ui.FormDescription;
+import com.butent.bee.client.ui.FormFactory;
+import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.validation.ValidationHelper;
 import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.edit.EditableColumn;
 import com.butent.bee.client.view.edit.EditorAssistant;
+import com.butent.bee.client.view.form.FormView;
+import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
+import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.grid.GridSettings;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.GridView.SelectedRows;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.view.search.AbstractFilterSupplier;
+import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -99,16 +109,13 @@ class TasksGrid extends AbstractGridInterceptor {
     final TaskType type = TaskType.getByFeed(feed);
     Assert.notNull(type);
 
-    BiConsumer<GridOptions, PresenterCallback> consumer =
-        new BiConsumer<GridFactory.GridOptions, PresenterCallback>() {
-          @Override
-          public void accept(GridOptions gridOptions, PresenterCallback callback) {
-            String cap = BeeUtils.notEmpty(gridOptions.getCaption(), type.getCaption());
-            GridFactory.openGrid(GRID_TASKS, new TasksGrid(type, cap), gridOptions, callback);
-          }
-        };
-
-    return consumer;
+    return new BiConsumer<GridFactory.GridOptions, PresenterCallback>() {
+      @Override
+      public void accept(GridOptions gridOptions, PresenterCallback callback) {
+        String cap = BeeUtils.notEmpty(gridOptions.getCaption(), type.getCaption());
+        GridFactory.openGrid(GRID_TASKS, new TasksGrid(type, cap), gridOptions, callback);
+      }
+    };
   }
 
   private final TaskType type;
@@ -356,7 +363,6 @@ class TasksGrid extends AbstractGridInterceptor {
       IsRow selectedRow = gridView.getActiveRow();
       if (selectedRow == null) {
         gridView.notifyWarning(Localized.getConstants().selectAtLeastOneRow());
-        return;
       } else {
         confirmTask(gridView, selectedRow);
       }
@@ -373,20 +379,8 @@ class TasksGrid extends AbstractGridInterceptor {
 
     final GridView gridView = getGridPresenter().getGridView();
     int idxTaskProject = gridView.getDataIndex(ProjectConstants.COL_PROJECT);
-    int idxTaskCompany = gridView.getDataIndex(ClassifierConstants.COL_COMPANY);
-    int idxTaskCompanyName = gridView.getDataIndex(ClassifierConstants.ALS_COMPANY_NAME);
-    int idxTaskCompanyTypeName = gridView.getDataIndex(ClassifierConstants.ALS_COMPANY_TYPE_NAME);
-    int idxTaskContact = gridView.getDataIndex(ClassifierConstants.COL_CONTACT);
-    int idxTaskContactPerson = gridView.getDataIndex(ClassifierConstants.ALS_CONTACT_PERSON);
-    int idxTaskContactFirstName = gridView.getDataIndex(ClassifierConstants.ALS_CONTACT_FIRST_NAME);
-    int idxTaskContactLastName = gridView.getDataIndex(ClassifierConstants.ALS_CONTACT_LAST_NAME);
-    int idxTaskContactCompanyName =
-        gridView.getDataIndex(ClassifierConstants.ALS_CONTACT_COMPANY_NAME);
 
     int idxTaskOwner = gridView.getDataIndex(COL_OWNER);
-    int idxTaskOwnerFirstName = gridView.getDataIndex(ALS_OWNER_FIRST_NAME);
-    int idxTaskOwnerLastName = gridView.getDataIndex(ALS_OWNER_LAST_NAME);
-    int idxTaskDescrition = gridView.getDataIndex(COL_DESCRIPTION);
 
     final IsRow selectedRow = gridView.getActiveRow();
 
@@ -407,11 +401,28 @@ class TasksGrid extends AbstractGridInterceptor {
       return;
     }
 
+    FormFactory.createFormView(ProjectConstants.FORM_NEW_PROJECT_FROM_TASK, null, null, false,
+        getNewProjectFormInterceptor(selectedRow),
+        new FormFactory.FormViewCallback() {
+          @Override
+          public void onSuccess(FormDescription formDescription, FormView form) {
+            if (form != null) {
+              form.start(null);
+              Global.showModalWidget(form.getCaption(), form.asWidget());
+            }
+          }
+        });
+  }
+
+  private void createSimpleProject(final IsRow selectedRow) {
+
     DataInfo prjDataInfo = Data.getDataInfo(ProjectConstants.VIEW_PROJECTS);
+    DataInfo taskDataInfo = Data.getDataInfo(VIEW_TASKS);
+
     int idxPrjCompany = prjDataInfo.getColumnIndex(ClassifierConstants.COL_COMPANY);
     int idxPrjCompanyName = prjDataInfo.getColumnIndex(ClassifierConstants.ALS_COMPANY_NAME);
     int idxPrjCompanyTypeName =
-        prjDataInfo.getColumnIndex(ClassifierConstants.ALS_COMPANY_TYPE_NAME);
+        prjDataInfo.getColumnIndex(ProjectConstants.ALS_COMPANY_TYPE_NAME);
     int idxPrjContact = prjDataInfo.getColumnIndex(ClassifierConstants.COL_CONTACT);
     int idxPrjContactPerson = prjDataInfo.getColumnIndex(ClassifierConstants.ALS_CONTACT_PERSON);
     int idxPrjContactFirstName =
@@ -427,6 +438,23 @@ class TasksGrid extends AbstractGridInterceptor {
     int idxPrjDescrition = prjDataInfo.getColumnIndex(ProjectConstants.COL_DESCRIPTION);
     int idxPrjStartDate = prjDataInfo.getColumnIndex(ProjectConstants.COL_PROJECT_START_DATE);
 
+    int idxTaskCompany = taskDataInfo.getColumnIndex(ClassifierConstants.COL_COMPANY);
+    int idxTaskCompanyName = taskDataInfo.getColumnIndex(ClassifierConstants.ALS_COMPANY_NAME);
+    int idxTaskCompanyTypeName = taskDataInfo.getColumnIndex(
+        ProjectConstants.ALS_COMPANY_TYPE_NAME);
+    int idxTaskContact = taskDataInfo.getColumnIndex(ClassifierConstants.COL_CONTACT);
+    int idxTaskContactPerson = taskDataInfo.getColumnIndex(ClassifierConstants.ALS_CONTACT_PERSON);
+    int idxTaskContactFirstName = taskDataInfo.getColumnIndex(
+        ClassifierConstants.ALS_CONTACT_FIRST_NAME);
+    int idxTaskContactLastName = taskDataInfo.getColumnIndex(
+        ClassifierConstants.ALS_CONTACT_LAST_NAME);
+    int idxTaskContactCompanyName =
+        taskDataInfo.getColumnIndex(ClassifierConstants.ALS_CONTACT_COMPANY_NAME);
+    int idxTaskOwnerFirstName = taskDataInfo.getColumnIndex(ALS_OWNER_FIRST_NAME);
+    int idxTaskOwnerLastName = taskDataInfo.getColumnIndex(ALS_OWNER_LAST_NAME);
+    int idxTaskDescription = taskDataInfo.getColumnIndex(COL_DESCRIPTION);
+    int idxTaskOwner = taskDataInfo.getColumnIndex(COL_OWNER);
+
     BeeRow prjRow = RowFactory.createEmptyRow(prjDataInfo, true);
     prjRow.setValue(idxPrjCompany, selectedRow.getValue(idxTaskCompany));
     prjRow.setValue(idxPrjCompanyName, selectedRow.getValue(idxTaskCompanyName));
@@ -439,7 +467,7 @@ class TasksGrid extends AbstractGridInterceptor {
     prjRow.setValue(idxPrjOwner, selectedRow.getValue(idxTaskOwner));
     prjRow.setValue(idxPrjOwnerFirstName, selectedRow.getValue(idxTaskOwnerFirstName));
     prjRow.setValue(idxPrjOwnerLastName, selectedRow.getValue(idxTaskOwnerLastName));
-    prjRow.setValue(idxPrjDescrition, selectedRow.getValue(idxTaskDescrition));
+    prjRow.setValue(idxPrjDescrition, selectedRow.getValue(idxTaskDescription));
     prjRow.setValue(idxPrjStartDate, new JustDate());
 
     RowFactory.createRow(prjDataInfo, prjRow, new RowCallback() {
@@ -459,7 +487,38 @@ class TasksGrid extends AbstractGridInterceptor {
 
           @Override
           public void onSuccess(Integer result) {
-            gridView.notifyInfo(Localized.getMessages().newProjectCreated(projectRow.getId()));
+            if (getGridView() != null) {
+              getGridView().notifyInfo(
+                  Localized.getMessages().newProjectCreated(projectRow.getId()));
+            }
+          }
+        });
+      }
+    });
+  }
+
+  public void createProjectFromTemplate(final IsRow selectedRow, final IsRow templateRow) {
+    List<String> copyCols = Lists.newArrayList(ClassifierConstants.COL_COMPANY,
+        ClassifierConstants.ALS_COMPANY_NAME, ProjectConstants.ALS_COMPANY_TYPE_NAME);
+
+    for (String col : copyCols) {
+
+      Data.setValue(ProjectConstants.VIEW_PROJECT_TEMPLATES, templateRow, col,
+          selectedRow.getString(Data.getColumnIndex(VIEW_TASKS, col)));
+    }
+
+    ProjectsKeeper.createProjectFromTemplate(templateRow, new RowCallback() {
+      @Override
+      public void onSuccess(final BeeRow projectRow) {
+        Queries.update(VIEW_TASKS, selectedRow.getId(), ProjectConstants.COL_PROJECT, Value
+            .getValue(projectRow.getId()), new IntCallback() {
+
+          @Override
+          public void onSuccess(Integer result) {
+            if (getGridView() != null) {
+              getGridView().notifyInfo(Localized.getMessages()
+                  .newProjectCreated(projectRow.getId()));
+            }
           }
         });
       }
@@ -728,6 +787,76 @@ class TasksGrid extends AbstractGridInterceptor {
     });
   }
 
+  private AbstractFormInterceptor getNewProjectFormInterceptor(final IsRow selectedRow) {
+    return new AbstractFormInterceptor() {
+      private static final String NAME_PROJECT_TEMPLATE = "ProjectTemplate";
+      private static final String NAME_CREATE = "Create";
+      private static final String NAME_CANCEL = "Cancel";
+
+      private UnboundSelector templateSelector;
+      private Button createButton;
+      private Button cancelButton;
+
+      @Override
+      public void afterCreateWidget(String name, IdentifiableWidget widget,
+          FormFactory.WidgetDescriptionCallback callback) {
+
+        switch (name) {
+          case NAME_PROJECT_TEMPLATE:
+            templateSelector = widget instanceof UnboundSelector ? (UnboundSelector) widget : null;
+            break;
+          case NAME_CREATE:
+            createButton = widget instanceof Button ? (Button) widget : null;
+
+            if (createButton == null) {
+              break;
+            }
+
+            createButton.addClickHandler(new ClickHandler() {
+              @Override
+              public void onClick(ClickEvent event) {
+                Popup.getActivePopup().close();
+
+                if (templateSelector == null) {
+                  createSimpleProject(selectedRow);
+                } else if (BeeUtils.isEmpty(templateSelector.getValue())) {
+                  createSimpleProject(selectedRow);
+                } else {
+                  createProjectFromTemplate(selectedRow, templateSelector.getRelatedRow());
+                }
+              }
+            });
+            break;
+          case NAME_CANCEL:
+            cancelButton = widget instanceof Button ? (Button) widget : null;
+
+            if (cancelButton == null) {
+              break;
+            }
+
+            cancelButton.addClickHandler(new ClickHandler() {
+              @Override
+              public void onClick(ClickEvent event) {
+                if (templateSelector != null) {
+                  templateSelector.setValue(null, true);
+                }
+                Popup.getActivePopup().close();
+              }
+            });
+            break;
+          default:
+            super.afterCreateWidget(name, widget, callback);
+        }
+
+      }
+
+      @Override
+      public FormInterceptor getInstance() {
+        return this;
+      }
+    };
+  }
+
   private void sendRequest(final ParameterList params, final GridView gridView) {
     BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
       @Override
@@ -738,7 +867,7 @@ class TasksGrid extends AbstractGridInterceptor {
         }
 
         gridView.notifyInfo(Localized.getConstants().crmTaskStatusApproved());
-        getGridPresenter().refresh(true);
+        getGridPresenter().refresh(true, false);
       }
     });
   }

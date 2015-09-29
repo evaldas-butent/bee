@@ -14,7 +14,7 @@ public class ShowMessage extends Message {
 
     private final String caption;
 
-    private Subject(String caption) {
+    Subject(String caption) {
       this.caption = caption;
     }
 

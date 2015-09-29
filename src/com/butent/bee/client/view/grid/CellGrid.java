@@ -60,6 +60,7 @@ import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.EnablableWidget;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.Theme;
+import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.edit.HasEditStartHandlers;
@@ -422,7 +423,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     private final int handlePx;
     private final int barPx;
 
-    private ResizerMode(int handlePx, int barPx) {
+    ResizerMode(int handlePx, int barPx) {
       this.handlePx = handlePx;
       this.barPx = barPx;
     }
@@ -1172,6 +1173,13 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     int col = getColumnIndex(columnId);
     if (isColumnWithinBounds(col)) {
       autoFitColumn(col, fitHeader);
+    }
+  }
+
+  public void clearSelection() {
+    if (!getSelectedRows().isEmpty()) {
+      getSelectedRows().clear();
+      fireSelectionCountChange();
     }
   }
 
@@ -1965,11 +1973,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
       rowValue.setValue(i, newRow.getString(i));
     }
 
-    if (newRow.getProperties() != null) {
-      rowValue.setProperties(newRow.getProperties().copy());
-    } else {
-      rowValue.setProperties(null);
-    }
+    GridUtils.updateProperties(rowValue, newRow);
 
     refreshRow(row);
     refreshFooters(null);
@@ -2039,7 +2043,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     int oldRow = getActiveRowIndex();
 
     if (oldRow >= 0 && oldRow < getDataSize()) {
-      int newRow = 0;
+      int newRow = BeeConst.UNDEF;
       long id = getRowData().get(oldRow).getId();
       for (int i = 0; i < rows.size(); i++) {
         if (rows.get(i).getId() == id) {
@@ -2047,7 +2051,8 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
           break;
         }
       }
-      this.activeRowIndex = newRow;
+
+      setActiveRowIndex(newRow, false);
     }
   }
 
@@ -2167,10 +2172,8 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     getResizedRows().clear();
     getResizedCells().clear();
 
-    if (!getSelectedRows().isEmpty()) {
-      getSelectedRows().clear();
-      fireSelectionCountChange();
-    }
+    clearSelection();
+
     onActivateCell(false);
     onActivateRow(false, false);
 
@@ -3728,6 +3731,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
 
     if (activeCell != null) {
       boolean resizable = getColumnInfo(getActiveColumnIndex()).isCellResizable();
+      Element activeElement = DomUtils.getActiveElement();
 
       if (activate) {
         setCellZIndex(activeCell);
@@ -3737,8 +3741,18 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
           activeCell.addClassName(StyleUtils.NAME_RESIZABLE);
         }
 
-        Element activeElement = DomUtils.getActiveElement();
-        if (activeElement == null || !activeCell.isOrHasChild(activeElement)) {
+        boolean focus;
+        if (activeElement == null) {
+          focus = true;
+        } else if (activeCell.isOrHasChild(activeElement)) {
+          focus = false;
+        } else if (getElement().isOrHasChild(activeElement)) {
+          focus = true;
+        } else {
+          focus = UiHelper.isInteractive(this);
+        }
+
+        if (focus) {
           activeCell.focus();
         }
 
@@ -3746,6 +3760,10 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
         activeCell.removeClassName(STYLE_ACTIVE_CELL);
         if (resizable) {
           activeCell.removeClassName(StyleUtils.NAME_RESIZABLE);
+        }
+
+        if (activeElement != null && activeCell.isOrHasChild(activeElement)) {
+          activeElement.blur();
         }
       }
     }
@@ -3936,7 +3954,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
 
           if (cellElement != null) {
             setCellZIndex(cellElement);
-            if (DomUtils.isVisible(cellElement)) {
+            if (UiHelper.isInteractive(CellGrid.this)) {
               cellElement.focus();
             }
           }

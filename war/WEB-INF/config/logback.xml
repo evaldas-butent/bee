@@ -82,7 +82,9 @@
     </encoder>
   </appender>
 
-  <root level ="INFO">
+  <logger name="net.fortuna.ical4j" level="INFO" />
+
+  <root level="INFO">
     <appender-ref ref="STDOUT" />
     <appender-ref ref="STDERR" />
     <appender-ref ref="debugLogger" />
