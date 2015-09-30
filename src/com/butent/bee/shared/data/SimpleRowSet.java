@@ -556,6 +556,7 @@ public class SimpleRowSet implements Iterable<SimpleRow>, BeeSerializable {
   }
 
   private int getKeyIndex(String keyName, String keyValue) {
+    Assert.notNull(keyValue);
     int colIndex = getColumnIndex(keyName);
 
     if (indexes == null) {
@@ -565,7 +566,11 @@ public class SimpleRowSet implements Iterable<SimpleRow>, BeeSerializable {
       Map<String, Integer> index = Maps.newHashMapWithExpectedSize(getNumberOfRows());
 
       for (int i = 0; i < getNumberOfRows(); i++) {
-        index.put(getValue(i, colIndex), i);
+        String value = getValue(i, colIndex);
+
+        if (value != null) {
+          index.put(value, i);
+        }
       }
       indexes.put(colIndex, index);
     }
