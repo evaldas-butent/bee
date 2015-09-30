@@ -6,6 +6,6 @@ import javax.ws.rs.core.Application;
 @ApplicationPath("rest")
 public class EntryPoint extends Application {
 
-  public static final String ENTRY = "/entry";
+  public static final String ENTRY = "/entry/";
 
 }

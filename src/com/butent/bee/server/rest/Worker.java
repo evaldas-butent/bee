@@ -4,18 +4,15 @@ import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
-import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.SimpleRowSet;
-import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.ejb.EJB;
 import javax.ws.rs.GET;
-import javax.ws.rs.HeaderParam;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
@@ -24,8 +21,6 @@ import javax.ws.rs.core.Response;
 @Path("/")
 public class Worker {
 
-  @EJB
-  UserServiceBean usr;
   @EJB
   QueryServiceBean qs;
   @EJB
@@ -40,12 +35,6 @@ public class Worker {
         .addFrom(TBL_COMPANIES));
 
     return rowSetResponse(companies);
-  }
-
-  @GET
-  @Path(EntryPoint.ENTRY)
-  public String entry(@HeaderParam("licence") String licence) {
-    return BeeUtils.joinWords("EJB:", usr.getCurrentUser());
   }
 
   private Response rowSetResponse(SimpleRowSet rowSet) {

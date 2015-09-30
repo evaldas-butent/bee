@@ -31,7 +31,7 @@ public class AuthenticationFilter implements ContainerRequestFilter {
 
   @Override
   public void filter(ContainerRequestContext requestContext) throws IOException {
-    if (BeeUtils.same(requestContext.getUriInfo().getPath(), EntryPoint.ENTRY)) {
+    if (BeeUtils.startsWith(requestContext.getUriInfo().getPath(), EntryPoint.ENTRY)) {
       return;
     }
     String user = requestContext.getHeaderString("usr");
