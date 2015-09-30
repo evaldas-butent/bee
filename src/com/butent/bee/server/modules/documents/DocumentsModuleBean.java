@@ -369,7 +369,7 @@ public class DocumentsModuleBean implements BeeModule {
           + "<html xmlns=\"http://www.w3.org/1999/xhtml\"><head>"
           + "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\"/>"
           + "<link rel=\"stylesheet\" href=\""
-          + new File(Config.WAR_DIR, Paths.getStyleSheetPath("print")).getPath() + "\" />"
+          + new File(Config.WAR_DIR, Paths.getStyleSheetPath("print")).toURI().toString() + "\" />"
           + "<style>" + style.toString() + "</style>"
           + "</head><body>" + parsed + "</body></html>");
 
