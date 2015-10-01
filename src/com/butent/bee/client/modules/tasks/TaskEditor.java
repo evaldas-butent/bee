@@ -695,6 +695,16 @@ class TaskEditor extends AbstractFormInterceptor {
       taskOwner.setEnabled(BeeKeeper.getUser().isAdministrator());
     }
 
+    /** Allow executor edit relations */
+    if(isExecutor()) {
+      for(String prop : relations) {
+        MultiSelector sel = getMultiSelector(form, prop);
+        if (sel != null) {
+          sel.setEnabled(true);
+        }
+      }
+    }
+
     setProjectStagesFilter(form, row);
     setProjectUsersFilter(form, row);
     setObjectFilter(form, row);
@@ -1046,7 +1056,7 @@ class TaskEditor extends AbstractFormInterceptor {
 
     List<String> notes = getUpdateNotes(Data.getDataInfo(viewName), oldRow, newRow);
 
-    if (form.isEnabled()) {
+    if (form.isEnabled() || !getUpdatedRelations(oldRow, newRow).isEmpty()) {
       if (!TaskUtils.sameObservers(oldRow, newRow)) {
         String oldObservers = oldRow.getProperty(PROP_OBSERVERS);
         String newObservers = newRow.getProperty(PROP_OBSERVERS);
