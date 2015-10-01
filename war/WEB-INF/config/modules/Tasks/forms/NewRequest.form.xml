@@ -9,7 +9,7 @@
 ]>
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
-  
+
   name="NewRequest" viewName="Requests" caption="=crmNewRequest"
   width="835" height="450">
   <FlowPanel style="padding: 10px 2px 2px 10px;">
@@ -19,7 +19,7 @@
       <Label text="=client" class="bee-required" style="&inline; width:131px; padding-top:1px; text-align:right; margin-right: 4px" />
       <DataSelector source="Customer" style="&inline; width:200px;" choiceColumns="Name TypeName" renderColumns="CustomerName TypeName" />
       <Label text="=crmRequestForm" style="&inline; width:125px; padding-top:1px; text-align:right; margin-right: 10px" />
-      <DataSelector source="RequestForm" style="&inline; width:130px;" /> 
+      <DataSelector source="RequestForm" style="&inline; width:130px;" />
     </FlowPanel>
     <FlowPanel style="&section;">
       <Label text="=contacts" style="&inline; width:75px; padding-top:1px; text-align:right; padding-right: 10px" />
@@ -32,14 +32,15 @@
     <FlowPanel style="&section;">
       <Label text="=crmRequestType" style="&inline; width:75px; padding-top:1px; text-align:right; margin-right: 10px" />
       <DataSelector source="RequestType" style="&inline; width:130px;" />
-      <Label text="=responsiblePerson" style="&inline; width:125px; padding-top:1px; text-align:right; padding-right: 10px" />
-      <DataSelector source="Manager" style="&inline; width:200px;" />
+      <Label class="bee-required" text="=responsiblePerson"
+        style="&inline; width:125px; padding-top:1px; text-align:right; padding-right: 10px" />
+      <DataSelector source="Manager" style="&inline; width:200px;" required="true" />
     </FlowPanel>
 
     &separator;
     <FlowPanel style="&section;">
       <Label text="=crmRequest" class="bee-required" style="&inline; width:75px; padding-top:1px; text-align:right; margin-right: 10px; vertical-align:top;" />
-      <InputArea source="Content" visibleLines="8" style="width:490px;" />     
+      <InputArea source="Content" visibleLines="8" style="width:490px;" />
     </FlowPanel>
 
     &separator;
