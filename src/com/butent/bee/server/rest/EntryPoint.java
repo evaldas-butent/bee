@@ -1,5 +1,7 @@
 package com.butent.bee.server.rest;
 
+import com.butent.bee.server.modules.tasks.RestfulTaskBuilder;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -15,6 +17,8 @@ public class EntryPoint extends Application {
 
     classes.add(AuthenticationFilter.class);
     classes.add(Worker.class);
+
+    classes.add(RestfulTaskBuilder.class);
 
     return classes;
   }
