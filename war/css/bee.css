@@ -1755,7 +1755,7 @@
 
 .bee-Form .bee-disabled,
 .bee-Form .bee-disabled input {
-  background-color: whitesmoke;
+  background-color: #e8e8e8;
 }
 .bee-Form .bee-CheckBox.bee-disabled {
   background-color: inherit;

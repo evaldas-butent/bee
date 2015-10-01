@@ -20,7 +20,7 @@
         <cell colSpan="3">
           <DataSelector source="TimeRangeCode" renderColumns="TrCode TrName TrTimeFrom TrTimeUntil"
             choiceColumns="TrCode TrName TimeFrom TimeUntil" searchableColumns="TrCode"
-            style="width: 400px;" newRowEnabled="false" visible="true">
+            style="width: 400px;" newRowEnabled="false" updateMode="row" visible="true">
             <editable>
               <ui:expression>!(row.TimeCardCode || row.TimeFrom || row.TimeUntil || row.Duration)</ui:expression>
             </editable>
@@ -32,7 +32,7 @@
         <Label for="TimeCardCode" />
         <cell colSpan="3">
           <DataSelector source="TimeCardCode" renderColumns="TcCode TcName"
-            style="width: 400px;" newRowEnabled="false">
+            style="width: 400px;" newRowEnabled="false" updateMode="row">
             <editable>
               <ui:expression>!(row.TimeRangeCode || row.TimeFrom || row.TimeUntil || row.Duration)</ui:expression>
             </editable>
@@ -42,14 +42,14 @@
 
       <row>
         <Label for="TimeFrom" />
-        <InputTimeOfDay source="TimeFrom" style="width: 60px;">
+        <InputTimeOfDay source="TimeFrom" updateMode="row" style="width: 60px;">
           <editable>
             <ui:expression>!(row.TimeRangeCode || row.TimeCardCode)</ui:expression>
           </editable>
         </InputTimeOfDay>
 
         <Label for="TimeUntil" />
-        <InputTimeOfDay source="TimeUntil" style="width: 60px;">
+        <InputTimeOfDay source="TimeUntil" updateMode="row" style="width: 60px;">
           <editable>
             <ui:expression>!(row.TimeRangeCode || row.TimeCardCode)</ui:expression>
           </editable>
@@ -58,7 +58,7 @@
 
       <row>
         <Label for="Duration" />
-        <InputTimeOfDay source="Duration" style="width: 60px;">
+        <InputTimeOfDay source="Duration" updateMode="row" style="width: 60px;">
           <editable>
             <ui:expression>!(row.TimeRangeCode || row.TimeCardCode)</ui:expression>
           </editable>

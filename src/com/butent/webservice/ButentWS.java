@@ -313,6 +313,7 @@ public final class ButentWS {
       for (int i = 0; i < node.getChildNodes().getLength(); i++) {
         NodeList row = node.getChildNodes().item(i).getChildNodes();
         int c = row.getLength();
+
         String[] cells = null;
 
         for (int j = 0; j < c; j++) {

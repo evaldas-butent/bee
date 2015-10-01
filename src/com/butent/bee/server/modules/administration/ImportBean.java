@@ -739,14 +739,14 @@ public class ImportBean {
         new Function<Map<String, String>, Boolean>() {
           @Override
           public Boolean apply(Map<String, String> values) {
-            double qty = BeeUtils.toDouble(values.get(COL_COSTS_QUANTITY));
-            double prc = BeeUtils.toDouble(values.get(COL_COSTS_PRICE));
+            double qty = toDouble(values.get(COL_COSTS_QUANTITY));
+            double prc = toDouble(values.get(COL_COSTS_PRICE));
 
             if (!BeeUtils.isPositive(qty)) {
               return false;
             }
             if (!BeeUtils.isPositive(prc)) {
-              prc = BeeUtils.round(BeeUtils.toDouble(values.get(COL_AMOUNT)) / qty, 5);
+              prc = BeeUtils.round(toDouble(values.get(COL_AMOUNT)) / qty, 5);
             }
             if (BeeUtils.isPositive(prc)) {
               values.put(COL_COSTS_PRICE, BeeUtils.toString(prc));
@@ -795,6 +795,11 @@ public class ImportBean {
               values.put(COL_COSTS_EXTERNAL_ID, Codec.md5(sb.toString()));
             }
             return true;
+          }
+
+          private double toDouble(String number) {
+            return BeeUtils.toDouble(number != null
+                ? number.replace(BeeConst.CHAR_COMMA, BeeConst.CHAR_POINT) : number);
           }
         });
 
