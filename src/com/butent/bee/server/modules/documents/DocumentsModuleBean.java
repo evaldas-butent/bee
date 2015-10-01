@@ -1,34 +1,34 @@
 package com.butent.bee.server.modules.documents;
 
-import com.butent.bee.server.data.*;
-import com.butent.bee.server.sql.*;
-import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.data.value.TextValue;
-import com.butent.bee.shared.utils.ArrayUtils;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.common.eventbus.Subscribe;
 
 import static com.butent.bee.shared.modules.documents.DocumentConstants.*;
 
-import com.butent.bee.server.Config;
 import com.butent.bee.server.data.BeeTable;
 import com.butent.bee.server.data.BeeView;
 import com.butent.bee.server.data.DataEditorBean;
+import com.butent.bee.server.data.DataEvent;
 import com.butent.bee.server.data.DataEvent.ViewInsertEvent;
 import com.butent.bee.server.data.DataEvent.ViewQueryEvent;
+import com.butent.bee.server.data.DataEventHandler;
+import com.butent.bee.server.data.QueryServiceBean;
+import com.butent.bee.server.data.SystemBean;
+import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.modules.administration.ExtensionIcons;
 import com.butent.bee.server.modules.administration.FileStorageBean;
+import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.IsExpression;
 import com.butent.bee.server.sql.IsFrom;
 import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
-import com.butent.bee.server.utils.HtmlUtils;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
@@ -39,6 +39,7 @@ import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.value.TextValue;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -47,15 +48,12 @@ import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.rights.RegulatedWidget;
 import com.butent.bee.shared.rights.RightsState;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
 
-import org.xhtmlrenderer.pdf.ITextRenderer;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -239,7 +237,7 @@ public class DocumentsModuleBean implements BeeModule {
             }
           }
 
-          if(sent == null) {
+          if (sent == null) {
             return;
           }
 
@@ -279,7 +277,7 @@ public class DocumentsModuleBean implements BeeModule {
             }
           }
 
-          if(sent == null || BeeUtils.isEmpty(value)) {
+          if (sent == null || BeeUtils.isEmpty(value)) {
             return;
           }
 
@@ -318,7 +316,7 @@ public class DocumentsModuleBean implements BeeModule {
             }
           }
 
-          if(received == null) {
+          if (received == null) {
             return;
           }
 
@@ -358,7 +356,7 @@ public class DocumentsModuleBean implements BeeModule {
             }
           }
 
-          if(received == null || BeeUtils.isEmpty(value)) {
+          if (received == null || BeeUtils.isEmpty(value)) {
             return;
           }
 
@@ -536,7 +534,6 @@ public class DocumentsModuleBean implements BeeModule {
   private String getNextRegNumber(String columnFilter,
       int maxLength, String column, String prefix) {
     IsCondition where = SqlUtils.notNull(TBL_DOCUMENTS, columnFilter);
-
 
     if (!BeeUtils.isEmpty(prefix)) {
       SqlUtils.and(where, SqlUtils.startsWith(TBL_DOCUMENTS, column, prefix));
