@@ -54,6 +54,7 @@ import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.data.view.RowInfoList;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.rights.RightsObjectType;
 import com.butent.bee.shared.rights.RightsState;
 import com.butent.bee.shared.rights.RightsUtils;
@@ -240,7 +241,7 @@ public class UiServiceBean {
         break;
 
       case GET_NEWS:
-        response = news.getNews();
+        response = news.getNews(Feed.split(reqInfo.getParameter(VAR_FEED)));
         break;
       case SUBSCRIBE_TO_FEEDS:
         response = news.subscribe(reqInfo);

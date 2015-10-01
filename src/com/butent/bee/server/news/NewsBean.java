@@ -14,6 +14,7 @@ import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.server.websocket.Endpoint;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Locality;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -69,7 +70,11 @@ public class NewsBean {
   @EJB
   SystemBean sys;
 
-  public ResponseObject getNews() {
+  public ResponseObject getNews(Collection<Feed> feeds) {
+    if (BeeUtils.isEmpty(feeds)) {
+      return ResponseObject.error("feeds not specified");
+    }
+
     Long userId = usr.getCurrentUserId();
     if (!DataUtils.isId(userId)) {
       return ResponseObject.error("user id not available");
@@ -89,6 +94,11 @@ public class NewsBean {
       return ResponseObject.emptyResponse();
     }
 
+    String s = BeeUtils.sameElements(feeds, Feed.ALL) ? BeeConst.ALL : feeds.toString();
+    logger.info("user", userId, "feeds", s);
+
+    LocalizableConstants constants = usr.getLocalizableConstants(userId);
+
     List<Subscription> subscriptions = new ArrayList<>();
     int countHeadlines = 0;
 
@@ -105,6 +115,10 @@ public class NewsBean {
         continue;
       }
 
+      if (!feeds.contains(feed)) {
+        continue;
+      }
+
       if (!usr.isModuleVisible(feed.getModuleAndSub())) {
         logger.warning("user", userId, "is subscribed to invisible feed", feed);
         continue;
@@ -115,7 +129,7 @@ public class NewsBean {
 
       Subscription subscription = new Subscription(rowId, feed, caption, date);
 
-      List<Headline> headlines = getHeadlines(feed, userId, date);
+      List<Headline> headlines = getHeadlines(feed, userId, date, constants);
       if (!headlines.isEmpty()) {
         subscription.getHeadlines().addAll(headlines);
         countHeadlines += headlines.size();
@@ -337,7 +351,9 @@ public class NewsBean {
     return access;
   }
 
-  private List<Headline> getHeadlines(Feed feed, long userId, DateTime startDate) {
+  private List<Headline> getHeadlines(Feed feed, long userId, DateTime startDate,
+      LocalizableConstants constants) {
+
     List<Headline> result = new ArrayList<>();
 
     if (NewsHelper.hasChannel(feed)) {
@@ -377,7 +393,7 @@ public class NewsBean {
       }
     }
 
-    List<Headline> headlines = produceHeadlines(feed, userId, newIds, updIds);
+    List<Headline> headlines = produceHeadlines(feed, userId, newIds, updIds, constants);
     if (!headlines.isEmpty()) {
       result.addAll(headlines);
     }
@@ -439,7 +455,8 @@ public class NewsBean {
   }
 
   private List<Headline> produceHeadlines(Feed feed, long userId, Collection<Long> newIds,
-      Collection<Long> updIds) {
+      Collection<Long> updIds, LocalizableConstants constants) {
+
     List<Headline> headlines = new ArrayList<>();
 
     boolean hasNew = !BeeUtils.isEmpty(newIds);
@@ -490,8 +507,6 @@ public class NewsBean {
 
     List<Integer> labelIndexes = new ArrayList<>();
     List<Integer> titleIndexes = new ArrayList<>();
-
-    LocalizableConstants constants = usr.getLocalizableConstants(userId);
 
     for (int pos = 0; pos < ids.size(); pos += ID_CHUNK_SIZE) {
       List<Long> chunk = ids.subList(pos, Math.min(pos + ID_CHUNK_SIZE, ids.size()));

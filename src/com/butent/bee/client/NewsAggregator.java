@@ -2,6 +2,7 @@ package com.butent.bee.client;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.communication.ParameterList;
@@ -11,7 +12,6 @@ import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.GridFactory.GridOptions;
 import com.butent.bee.client.layout.Flow;
-import com.butent.bee.client.modules.mail.MailKeeper;
 import com.butent.bee.client.presenter.PresenterCallback;
 import com.butent.bee.client.screen.Domain;
 import com.butent.bee.client.screen.ScreenImpl;
@@ -48,14 +48,19 @@ import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.news.Headline;
 import com.butent.bee.shared.news.NewsConstants;
 import com.butent.bee.shared.news.Subscription;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
+import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -174,7 +179,8 @@ public class NewsAggregator implements HandlesAllDataEvents {
       refreshWidget.addClickHandler(new ClickHandler() {
         @Override
         public void onClick(ClickEvent event) {
-          refresh();
+          cancelRefresh();
+          refresh(Feed.ALL);
         }
       });
 
@@ -471,6 +477,21 @@ public class NewsAggregator implements HandlesAllDataEvents {
   private static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "News-";
   private static final String STYLE_APATHY = STYLE_PREFIX + "apathy";
 
+  private static int getRefreshIntervalMillis() {
+    int seconds = BeeKeeper.getUser().getNewsRefreshIntervalSeconds();
+    if (seconds <= 0) {
+      seconds = Settings.getNewsRefreshIntervalSeconds();
+    }
+
+    if (seconds <= 0) {
+      seconds = TimeUtils.SECONDS_PER_MINUTE;
+    } else {
+      seconds = Math.min(seconds, Integer.MAX_VALUE / TimeUtils.MILLIS_PER_SECOND);
+    }
+
+    return seconds * TimeUtils.MILLIS_PER_SECOND;
+  }
+
   private final List<Subscription> subscriptions = new ArrayList<>();
 
   private final NewsPanel newsPanel = new NewsPanel();
@@ -482,7 +503,21 @@ public class NewsAggregator implements HandlesAllDataEvents {
 
   private final Map<String, HeadlineAccessor> registeredAccessHandlers = new HashMap<>();
 
+  private final Set<Feed> pendingFeeds = new HashSet<>();
+  private final Timer refreshTimer;
+
   NewsAggregator() {
+    this.refreshTimer = new Timer() {
+      @Override
+      public void run() {
+        if (!pendingFeeds.isEmpty()) {
+          Set<Feed> feeds = new HashSet<>(pendingFeeds);
+          pendingFeeds.clear();
+
+          refresh(feeds);
+        }
+      }
+    };
   }
 
   public int countNews() {
@@ -538,13 +573,19 @@ public class NewsAggregator implements HandlesAllDataEvents {
     } else {
       Map<Feed, Boolean> openness = newsPanel.getOpenness();
 
-      clear(false);
-
       List<String> notifyMsg = new ArrayList<>();
 
       for (String s : arr) {
-        final Subscription subscription = Subscription.restore(s);
-        subscriptions.add(subscription);
+        Subscription subscription = Subscription.restore(s);
+
+        int index = subscriptions.indexOf(subscription);
+        if (index >= 0) {
+          subscriptions.set(index, subscription);
+        } else {
+          subscriptions.add(subscription);
+        }
+
+        newsPanel.removeSubscription(subscription.getFeed());
 
         if (!subscription.isEmpty()) {
           boolean open = openness.containsKey(subscription.getFeed())
@@ -565,8 +606,8 @@ public class NewsAggregator implements HandlesAllDataEvents {
       }
 
       newsPanel.removeStyleName(STYLE_APATHY);
-
       updateHeader();
+
       logger.info("subscriptions", subscriptions.size(), countNews());
     }
   }
@@ -591,16 +632,12 @@ public class NewsAggregator implements HandlesAllDataEvents {
 
   @Override
   public void onCellUpdate(CellUpdateEvent event) {
-    if (requiresRefresh(event)) {
-      refresh();
-    }
+    maybeRefresh(event);
   }
 
   @Override
   public void onDataChange(DataChangeEvent event) {
-    if (requiresRefresh(event)) {
-      refresh();
-    }
+    maybeRefresh(event);
   }
 
   @Override
@@ -613,8 +650,8 @@ public class NewsAggregator implements HandlesAllDataEvents {
         }
       }
 
-    } else if (requiresRefresh(event)) {
-      refresh();
+    } else {
+      maybeRefresh(event);
     }
   }
 
@@ -626,36 +663,50 @@ public class NewsAggregator implements HandlesAllDataEvents {
         removeSubscription(subscription);
       }
 
-    } else if (requiresRefresh(event)) {
-      refresh();
+    } else {
+      maybeRefresh(event);
     }
   }
 
   @Override
   public void onRowInsert(RowInsertEvent event) {
-    if (requiresRefresh(event)) {
-      refresh();
-    }
+    maybeRefresh(event);
   }
 
   @Override
   public void onRowUpdate(RowUpdateEvent event) {
-    if (requiresRefresh(event)) {
-      refresh();
-    }
+    maybeRefresh(event);
   }
 
-  public void refresh() {
+  public void refresh(final Collection<Feed> feeds) {
+    if (BeeUtils.isEmpty(feeds)) {
+      logger.severe(NameUtils.getName(this), "refresh: feeds not specified");
+      return;
+    }
+
+    ParameterList params = BeeKeeper.getRpc().createParameters(Service.GET_NEWS);
+    params.addQueryItem(Service.VAR_FEED, Feed.join(feeds));
+
     newsPanel.startRefresh();
 
-    BeeKeeper.getRpc().makeGetRequest(Service.GET_NEWS, new ResponseCallback() {
+    BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
       @Override
       public void onResponse(ResponseObject response) {
         if (!response.hasErrors()) {
+          Set<Feed> subscribedFeeds = getSubscribedFeeds();
+
+          if (!subscribedFeeds.isEmpty()) {
+            if (feeds.containsAll(subscribedFeeds)) {
+              clear();
+            } else {
+              clearFeeds(feeds);
+            }
+          }
+
           if (response.hasResponse()) {
             loadSubscriptions(response.getResponseAsString(), true);
           } else {
-            clear(true);
+            updateHeader();
           }
         }
 
@@ -681,14 +732,14 @@ public class NewsAggregator implements HandlesAllDataEvents {
   public boolean removeSubscription(Subscription subscription) {
     if (subscriptions.contains(subscription)) {
       if (subscriptions.size() == 1) {
-        clear(true);
+        clear();
 
       } else {
         subscriptions.remove(subscription);
         newsPanel.removeSubscription(subscription.getFeed());
-
-        updateHeader();
       }
+
+      updateHeader();
 
       logger.info("unsubscribed", subscription.getFeed());
       return true;
@@ -698,16 +749,35 @@ public class NewsAggregator implements HandlesAllDataEvents {
     }
   }
 
-  private void clear(boolean clearSizeBadge) {
+  private void cancelRefresh() {
+    if (refreshTimer.isRunning()) {
+      refreshTimer.cancel();
+    }
+    pendingFeeds.clear();
+  }
+
+  private void clear() {
     if (!subscriptions.isEmpty()) {
       subscriptions.clear();
       newsPanel.addStyleName(STYLE_APATHY);
     }
     newsPanel.clearSubscriptions();
+  }
 
-    if (clearSizeBadge && getSizeBadge() != null) {
-      getSizeBadge().setValue(0);
+  private boolean clearFeeds(Collection<Feed> feeds) {
+    boolean updated = false;
+
+    for (Feed feed : feeds) {
+      Subscription subscription = findSubscription(feed);
+      if (subscription != null && !subscription.isEmpty()) {
+        subscription.clear();
+        updated = true;
+      }
+
+      updated |= newsPanel.removeSubscription(feed);
     }
+
+    return updated;
   }
 
   private void dismissHeadline(HeadlinePanel headlinePanel) {
@@ -765,8 +835,34 @@ public class NewsAggregator implements HandlesAllDataEvents {
     return null;
   }
 
+  private Set<Feed> getSubscribedFeeds() {
+    Set<Feed> feeds = new HashSet<>();
+    for (Subscription subscription : subscriptions) {
+      feeds.add(subscription.getFeed());
+    }
+    return feeds;
+  }
+
   private Badge getSizeBadge() {
     return sizeBadge;
+  }
+
+  private void maybeRefresh(ModificationEvent<?> event) {
+    if (event != null && event.hasView(NewsConstants.VIEW_USER_FEEDS)) {
+      cancelRefresh();
+      refresh(Feed.ALL);
+
+    } else {
+      Collection<Feed> feeds = requiresRefresh(event);
+
+      if (!BeeUtils.isEmpty(feeds)) {
+        pendingFeeds.addAll(feeds);
+
+        if (!refreshTimer.isRunning()) {
+          refreshTimer.schedule(getRefreshIntervalMillis());
+        }
+      }
+    }
   }
 
   private void onFilter(Feed feed) {
@@ -810,17 +906,13 @@ public class NewsAggregator implements HandlesAllDataEvents {
     }
   }
 
-  private boolean requiresRefresh(ModificationEvent<?> event) {
-    if (event == null) {
-      return false;
-
-    } else if (event.hasView(NewsConstants.VIEW_USER_FEEDS)) {
-      return true;
-
-    } else if (subscriptions.isEmpty()) {
-      return false;
+  private Collection<Feed> requiresRefresh(ModificationEvent<?> event) {
+    if (event == null || subscriptions.isEmpty()) {
+      return Collections.emptySet();
 
     } else {
+      Set<Feed> feeds = new HashSet<>();
+
       for (String viewName : event.getViewNames()) {
         String table = Data.getViewTable(viewName);
 
@@ -828,13 +920,13 @@ public class NewsAggregator implements HandlesAllDataEvents {
           for (Subscription subscription : subscriptions) {
             if (table.equals(subscription.getTable())
                 || table.equals(Data.getViewTable(subscription.getHeadlineView()))) {
-              return true;
+              feeds.add(subscription.getFeed());
             }
           }
         }
       }
 
-      return false;
+      return feeds;
     }
   }
 
@@ -843,14 +935,11 @@ public class NewsAggregator implements HandlesAllDataEvents {
   }
 
   private void updateHeader() {
-    MailKeeper.getUnreadCount();
-
     int size = countNews();
     BeeKeeper.getScreen().updateNewsSize(size);
 
     if (getSizeBadge() == null) {
       Badge badge = new Badge(size, STYLE_PREFIX + "size");
-
       setSizeBadge(badge);
 
     } else {

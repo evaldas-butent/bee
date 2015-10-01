@@ -69,6 +69,7 @@ import com.butent.bee.shared.websocket.messages.ShowMessage;
 import com.butent.bee.shared.websocket.messages.ShowMessage.Subject;
 import com.butent.bee.shared.websocket.messages.UsersMessage;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -381,7 +382,7 @@ class MessageDispatcher {
               || Objects.equals(mailMessage.getFlag(), MessageFlag.SEEN);
 
           if (Global.getNewsAggregator().hasSubscription(Feed.MAIL) && refreshFolders) {
-            Global.getNewsAggregator().refresh();
+            Global.getNewsAggregator().refresh(Collections.singleton(Feed.MAIL));
           }
           MailKeeper.refreshActivePanel(refreshFolders, mailMessage.getFolderId());
 

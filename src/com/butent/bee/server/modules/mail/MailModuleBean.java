@@ -409,16 +409,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
             .response(HtmlUtils.stripHtml(reqInfo.getParameter(COL_HTML_CONTENT)));
 
       } else if (BeeUtils.same(svc, SVC_GET_UNREAD_COUNT)) {
-
-        response = ResponseObject.response(qs.getData(new SqlSelect()
-            .addCount("UnreadEmailCount")
-            .addFrom(TBL_PLACES)
-            .addFromInner(TBL_FOLDERS, sys.joinTables(TBL_FOLDERS, TBL_PLACES, COL_FOLDER))
-            .addFromInner(TBL_ACCOUNTS, sys.joinTables(TBL_ACCOUNTS, TBL_FOLDERS, COL_ACCOUNT))
-            .setWhere(SqlUtils.and(SqlUtils.equals(TBL_ACCOUNTS, COL_USER, usr.getCurrentUserId()),
-                SqlUtils.or(SqlUtils.isNull(TBL_PLACES, COL_FLAGS),
-                    SqlUtils.equals(SqlUtils.bitAnd(TBL_PLACES, COL_FLAGS,
-                        MessageFlag.SEEN.getMask()), 0))))).getIntColumn("UnreadEmailCount"));
+        response = ResponseObject.response(countUnread());
 
       } else {
         String msg = BeeUtils.joinWords("Mail service not recognized:", svc);
@@ -431,6 +422,20 @@ public class MailModuleBean implements BeeModule, HasTimerService {
       response = ResponseObject.error(e);
     }
     return response;
+  }
+
+  public int countUnread() {
+    Integer cnt = qs.getData(new SqlSelect()
+        .addCount("UnreadEmailCount")
+        .addFrom(TBL_PLACES)
+        .addFromInner(TBL_FOLDERS, sys.joinTables(TBL_FOLDERS, TBL_PLACES, COL_FOLDER))
+        .addFromInner(TBL_ACCOUNTS, sys.joinTables(TBL_ACCOUNTS, TBL_FOLDERS, COL_ACCOUNT))
+        .setWhere(SqlUtils.and(SqlUtils.equals(TBL_ACCOUNTS, COL_USER, usr.getCurrentUserId()),
+            SqlUtils.or(SqlUtils.isNull(TBL_PLACES, COL_FLAGS),
+                SqlUtils.equals(SqlUtils.bitAnd(TBL_PLACES, COL_FLAGS,
+                    MessageFlag.SEEN.getMask()), 0))))).getInt(0, 0);
+
+    return BeeUtils.unbox(cnt);
   }
 
   @Override
@@ -764,7 +769,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
 
   public MimeMessage sendMail(MailAccount account, String[] to, String[] cc, String[] bcc,
       String subject, String content, Map<Long, String> attachments)
-          throws MessagingException {
+      throws MessagingException {
 
     Transport transport = null;
     MimeMessage message = null;
