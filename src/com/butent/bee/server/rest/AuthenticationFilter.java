@@ -11,6 +11,7 @@ import java.io.IOException;
 import javax.ejb.EJB;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
@@ -31,9 +32,6 @@ public class AuthenticationFilter implements ContainerRequestFilter {
 
   @Override
   public void filter(ContainerRequestContext requestContext) throws IOException {
-    if (BeeUtils.startsWith(requestContext.getUriInfo().getPath(), EntryPoint.ENTRY)) {
-      return;
-    }
     String user = requestContext.getHeaderString("usr");
     String password = requestContext.getHeaderString("pwd");
     boolean ok = BeeUtils.allNotEmpty(user, password);
@@ -50,7 +48,6 @@ public class AuthenticationFilter implements ContainerRequestFilter {
           ok = false;
         }
       }
-      req.getSession().invalidate();
     }
     if (ok && !usr.authenticateUser(user, Codec.encodePassword(password))) {
       try {
@@ -61,6 +58,11 @@ public class AuthenticationFilter implements ContainerRequestFilter {
       ok = false;
     }
     if (!ok) {
+      HttpSession session = req.getSession(false);
+
+      if (session != null) {
+        session.invalidate();
+      }
       throw new NotAuthorizedException("B-NOVO");
     }
   }
