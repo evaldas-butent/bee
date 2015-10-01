@@ -157,7 +157,7 @@ public enum Module implements HasLocalizedCaption {
 
     @Override
     public String getStyleSheet(SubModule subModule) {
-      return "orders";
+      return null;
     }
   },
 
@@ -252,7 +252,7 @@ public enum Module implements HasLocalizedCaption {
 
   private final List<SubModule> subModules = new ArrayList<>();
 
-  private Module(SubModule... subModules) {
+  Module(SubModule... subModules) {
     if (subModules != null) {
       for (SubModule subModule : subModules) {
         if (!this.subModules.contains(subModule)) {

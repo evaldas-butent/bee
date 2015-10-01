@@ -38,7 +38,7 @@ public enum RendererType {
   private final String typeCode;
   private final boolean requiresSource;
 
-  private RendererType(String typeCode, boolean requiresSource) {
+  RendererType(String typeCode, boolean requiresSource) {
     this.typeCode = typeCode;
     this.requiresSource = requiresSource;
   }

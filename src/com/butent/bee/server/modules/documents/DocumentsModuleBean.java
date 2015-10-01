@@ -12,6 +12,9 @@ import com.google.common.eventbus.Subscribe;
 import static com.butent.bee.shared.modules.documents.DocumentConstants.*;
 
 import com.butent.bee.server.Config;
+import com.butent.bee.server.data.BeeTable;
+import com.butent.bee.server.data.BeeView;
+import com.butent.bee.server.data.DataEditorBean;
 import com.butent.bee.server.data.DataEvent.ViewInsertEvent;
 import com.butent.bee.server.data.DataEvent.ViewQueryEvent;
 import com.butent.bee.server.http.RequestInfo;
@@ -19,6 +22,11 @@ import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.modules.administration.ExtensionIcons;
 import com.butent.bee.server.modules.administration.FileStorageBean;
+import com.butent.bee.server.sql.IsExpression;
+import com.butent.bee.server.sql.IsFrom;
+import com.butent.bee.server.sql.SqlInsert;
+import com.butent.bee.server.sql.SqlSelect;
+import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.server.utils.HtmlUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -32,8 +40,6 @@ import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.Value;
-import com.butent.bee.shared.io.FileInfo;
-import com.butent.bee.shared.io.Paths;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
@@ -44,14 +50,12 @@ import com.butent.bee.shared.rights.RightsState;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
-import com.lowagie.text.DocumentException;
 
 import org.xhtmlrenderer.pdf.ITextRenderer;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -478,74 +482,11 @@ public class DocumentsModuleBean implements BeeModule {
     });
   }
 
-  private ResponseObject createPdf(String content) {
+  private ResponseObject createPdf(String content, String... styleSheets) {
     if (!BeeUtils.unbox(prm.getBoolean(PRM_PRINT_AS_PDF))) {
       return ResponseObject.emptyResponse();
     }
-    StringBuilder sb = new StringBuilder();
-
-    for (String name : new String[] {PRM_PRINT_HEADER, PRM_PRINT_FOOTER}) {
-      Long id = prm.getRelation(name);
-
-      if (DataUtils.isId(id)) {
-        String nameContent = qs.getValue(new SqlSelect()
-            .addFields(TBL_EDITOR_TEMPLATES, COL_EDITOR_TEMPLATE_CONTENT)
-            .addFrom(TBL_EDITOR_TEMPLATES)
-            .setWhere(sys.idEquals(TBL_EDITOR_TEMPLATES, id)));
-
-        if (!BeeUtils.isEmpty(nameContent)) {
-          sb.append("<div style=\"position:running(").append(name).append(")\">")
-              .append(nameContent)
-              .append("</div>");
-        }
-      }
-    }
-    String parsed = HtmlUtils.cleanXml(sb.append(content).toString());
-
-    Map<Long, String> files = HtmlUtils.getFileReferences(parsed);
-    List<FileInfo> tmpFiles = new ArrayList<>();
-
-    try {
-      for (Long fileId : files.keySet()) {
-        FileInfo fileInfo = fs.getFile(fileId);
-        tmpFiles.add(fileInfo);
-        parsed = parsed.replace(files.get(fileId), fileInfo.getFile().toURI().toString());
-      }
-      StringBuilder style = new StringBuilder();
-
-      if (!BeeUtils.isEmpty(prm.getText(PRM_PRINT_MARGINS))) {
-        style.append("@page {margin:" + prm.getText(PRM_PRINT_MARGINS) + "}");
-      }
-      ITextRenderer renderer = new ITextRenderer();
-
-      renderer.setDocumentFromString("<?xml version=\"1.0\" encoding=\"utf-8\"?>"
-          + "<!DOCTYPE html [<!ENTITY nbsp \"&#160;\">]>"
-          + "<html xmlns=\"http://www.w3.org/1999/xhtml\"><head>"
-          + "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\"/>"
-          + "<link rel=\"stylesheet\" href=\""
-          + new File(Config.WAR_DIR, Paths.getStyleSheetPath("print")).getPath() + "\" />"
-          + "<style>" + style.toString() + "</style>"
-          + "</head><body>" + parsed + "</body></html>");
-
-      renderer.layout();
-
-      File tmp = File.createTempFile("bee_", ".pdf");
-      tmp.deleteOnExit();
-      FileOutputStream os = new FileOutputStream(tmp);
-
-      renderer.createPDF(os);
-      os.close();
-
-      return ResponseObject.response(tmp.getPath());
-
-    } catch (IOException | DocumentException e) {
-      return ResponseObject.error(e);
-
-    } finally {
-      for (FileInfo fileInfo : tmpFiles) {
-        fileInfo.close();
-      }
-    }
+    return ResponseObject.response(fs.createPdf(content, styleSheets));
   }
 
   private ResponseObject copyDocumentData(Long data) {

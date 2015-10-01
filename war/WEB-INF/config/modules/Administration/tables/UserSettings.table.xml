@@ -25,6 +25,7 @@
     <Integer name="ClickSensitivityDistance" label="=clickSensitivityDistance" />
 
     <Integer name="CompanyActionRemindBefore" label="=crmRTRemindBefore" />
+    <Integer name="NewsRefreshIntervalSeconds" label="=newsRefreshIntervalSeconds" />
 
     <Relation name="UiTheme" relation="UiThemes" label="=uiTheme" />
 

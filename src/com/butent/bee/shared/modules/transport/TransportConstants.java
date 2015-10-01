@@ -51,7 +51,7 @@ public final class TransportConstants {
 
     private final String caption;
 
-    private TranspRegStatus(String caption) {
+    TranspRegStatus(String caption) {
       this.caption = caption;
     }
 
@@ -69,7 +69,7 @@ public final class TransportConstants {
 
     private final String caption;
 
-    private CargoRequestStatus(String caption) {
+    CargoRequestStatus(String caption) {
       this.caption = caption;
     }
 
@@ -144,7 +144,7 @@ public final class TransportConstants {
     private final String caption;
     private final boolean editable;
 
-    private TripStatus(String caption, boolean editable) {
+    TripStatus(String caption, boolean editable) {
       this.caption = caption;
       this.editable = editable;
     }

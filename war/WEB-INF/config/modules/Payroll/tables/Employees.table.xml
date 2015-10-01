@@ -5,10 +5,10 @@
   idName="EmployeeID"
   >
   <Fields>
-    <Relation name="CompanyPerson" notNull="true" relation="CompanyPersons"
+    <Relation name="CompanyPerson" notNull="true" unique="true" relation="CompanyPersons"
       label="=companyAndPerson" />
     <Integer name="TabNumber" notNull="true" label="=personTabNo" />
-    
+
     <Numeric name="Salary" precision="12" scale="2" label="=salary" />
     <Relation name="Currency" relation="Currencies" label="=currency" />
 
@@ -16,8 +16,4 @@
 
     <Text name="Notes" label="=notes" />
   </Fields>
-
-  <Constraints>
-    <Unique fields="CompanyPerson TabNumber" />
-  </Constraints>
 </Table>

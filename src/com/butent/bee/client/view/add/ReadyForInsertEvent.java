@@ -69,6 +69,15 @@ public class ReadyForInsertEvent extends GwtEvent<ReadyForInsertEvent.Handler> i
     setConsumed(true);
   }
 
+  public boolean containsColumn(String colName) {
+    for (BeeColumn column : columns) {
+      if (BeeUtils.same(column.getId(), colName)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   @Override
   public Type<Handler> getAssociatedType() {
     return TYPE;

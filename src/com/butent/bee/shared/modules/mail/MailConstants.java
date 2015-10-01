@@ -35,7 +35,7 @@ public final class MailConstants {
 
     final int mask;
 
-    private MessageFlag(int mask) {
+    MessageFlag(int mask) {
       this.mask = mask;
     }
 

@@ -75,7 +75,7 @@ public enum ImportType implements HasLocalizedCaption {
 
   private final List<ImportProperty> properties = new ArrayList<>();
 
-  private ImportType() {
+  ImportType() {
     init();
   }
 

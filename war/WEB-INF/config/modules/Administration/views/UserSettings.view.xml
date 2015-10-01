@@ -43,6 +43,7 @@
     <SimpleColumn name="ClickSensitivityDistance" />
 
     <SimpleColumn name="CompanyActionRemindBefore" />
+    <SimpleColumn name="NewsRefreshIntervalSeconds" />
 
     <SimpleColumn name="CommentsLayout" />
     

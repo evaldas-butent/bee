@@ -54,6 +54,7 @@ import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.data.view.RowInfoList;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.rights.RightsObjectType;
 import com.butent.bee.shared.rights.RightsState;
 import com.butent.bee.shared.rights.RightsUtils;
@@ -240,7 +241,7 @@ public class UiServiceBean {
         break;
 
       case GET_NEWS:
-        response = news.getNews();
+        response = news.getNews(Feed.split(reqInfo.getParameter(VAR_FEED)));
         break;
       case SUBSCRIBE_TO_FEEDS:
         response = news.subscribe(reqInfo);
@@ -580,7 +581,10 @@ public class UiServiceBean {
     List<BeeRowSet> result = new ArrayList<>();
 
     for (String viewName : viewNames) {
-      BeeRowSet rs = qs.getViewData(viewName);
+      String where = reqInfo.getParameter(VAR_VIEW_WHERE + viewName);
+      Filter filter = BeeUtils.isEmpty(where) ? null : Filter.restore(where);
+
+      BeeRowSet rs = qs.getViewData(viewName, filter);
       result.add(rs);
     }
     return ResponseObject.response(result);

@@ -323,7 +323,7 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
     private final boolean alwaysVisible;
     private final boolean readOnly;
 
-    private Column(String label, String caption, boolean alwaysVisible, boolean readOnly) {
+    Column(String label, String caption, boolean alwaysVisible, boolean readOnly) {
       this.label = label;
       this.caption = caption;
       this.alwaysVisible = alwaysVisible;

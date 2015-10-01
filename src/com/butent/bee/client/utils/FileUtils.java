@@ -187,10 +187,10 @@ public final class FileUtils {
     Assert.notNull(fileInfo);
 
     Simple simple = new Simple();
+    String name = BeeUtils.notEmpty(fileInfo.getCaption(), fileInfo.getName());
 
-    simple.setWidget(new Link(BeeUtils.notEmpty(ArrayUtils.joinWords(caption),
-        fileInfo.getCaption(), fileInfo.getName()),
-        getUrl(fileInfo.getId()) + "/" + URL.encode(fileInfo.getName())));
+    simple.setWidget(new Link(BeeUtils.notEmpty(ArrayUtils.joinWords(caption), name),
+        getUrl(fileInfo.getId()) + "/" + URL.encode(name)));
 
     DndHelper.makeSource(simple, NameUtils.getClassName(FileInfo.class), fileInfo, null);
 

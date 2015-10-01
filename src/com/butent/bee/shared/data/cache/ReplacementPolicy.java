@@ -34,7 +34,7 @@ public enum ReplacementPolicy {
 
   private final CacheImpl defaultImpl;
 
-  private ReplacementPolicy(boolean requiresHistory, boolean addFirst, boolean accessOrder,
+  ReplacementPolicy(boolean requiresHistory, boolean addFirst, boolean accessOrder,
       CacheImpl defaultImpl) {
     this.requiresHistory = requiresHistory;
     this.addFirst = addFirst;

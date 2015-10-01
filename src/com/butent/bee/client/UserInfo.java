@@ -45,6 +45,8 @@ public class UserInfo implements HasInfo {
   private int clickSensitivityMillis;
   private int clickSensitivityDistance;
 
+  private int newsRefreshIntervalSeconds;
+
   private String styleId;
 
   public boolean canCreateData(String object) {
@@ -120,6 +122,10 @@ public class UserInfo implements HasInfo {
       return null;
     }
     return userData.getLogin();
+  }
+
+  public int getNewsRefreshIntervalSeconds() {
+    return newsRefreshIntervalSeconds;
   }
 
   public String getProperty(String property) {
@@ -383,6 +389,10 @@ public class UserInfo implements HasInfo {
     this.clickSensitivityMillis = clickSensitivityMillis;
   }
 
+  private void setNewsRefreshIntervalSeconds(int newsRefreshIntervalSeconds) {
+    this.newsRefreshIntervalSeconds = newsRefreshIntervalSeconds;
+  }
+
   private void setOpenInNewTab(boolean openInNewTab) {
     this.openInNewTab = openInNewTab;
   }
@@ -396,6 +406,8 @@ public class UserInfo implements HasInfo {
 
     setClickSensitivityMillis(getIntSetting(COL_CLICK_SENSITIVITY_MILLIS));
     setClickSensitivityDistance(getIntSetting(COL_CLICK_SENSITIVITY_DISTANCE));
+
+    setNewsRefreshIntervalSeconds(getIntSetting(COL_NEWS_REFRESH_INTERVAL_SECONDS));
   }
 
   private void updateStyle(String css) {

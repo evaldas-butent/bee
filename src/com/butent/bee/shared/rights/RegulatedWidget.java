@@ -52,11 +52,11 @@ public enum RegulatedWidget implements HasLocalizedCaption {
 
   private final ModuleAndSub moduleAndSub;
 
-  private RegulatedWidget() {
+  RegulatedWidget() {
     this(null);
   }
 
-  private RegulatedWidget(ModuleAndSub moduleAndSub) {
+  RegulatedWidget(ModuleAndSub moduleAndSub) {
     this.moduleAndSub = moduleAndSub;
   }
 

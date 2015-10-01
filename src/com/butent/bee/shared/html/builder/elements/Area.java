@@ -11,7 +11,7 @@ public class Area extends Element {
 
     private final String keyword;
 
-    private Shape(String keyword) {
+    Shape(String keyword) {
       this.keyword = keyword;
     }
   }

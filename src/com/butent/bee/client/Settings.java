@@ -102,6 +102,10 @@ public final class Settings {
     return (d == null) ? BeeConst.UNDEF : BeeUtils.toLong(d);
   }
 
+  public static int getNewsRefreshIntervalSeconds() {
+    return getInt("newsRefreshIntervalSeconds");
+  }
+
   public static JSONObject getOnEmptyWorkspace() {
     return getObject("onEmptyWorkspace");
   }

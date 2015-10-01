@@ -9,7 +9,7 @@ public enum Axis {
 
   private final String suffix;
 
-  private Axis(String suffix) {
+  Axis(String suffix) {
     this.suffix = suffix;
   }
 

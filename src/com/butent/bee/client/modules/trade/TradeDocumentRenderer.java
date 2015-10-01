@@ -200,7 +200,7 @@ public class TradeDocumentRenderer extends AbstractFormInterceptor {
     private final String styleSuffix;
     private final boolean hasCurency;
 
-    private ItemColumn(String styleSuffix, boolean hasCurency) {
+    ItemColumn(String styleSuffix, boolean hasCurency) {
       this.styleSuffix = styleSuffix;
       this.hasCurency = hasCurency;
     }

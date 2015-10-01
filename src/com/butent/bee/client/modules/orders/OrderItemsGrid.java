@@ -129,7 +129,8 @@ public class OrderItemsGrid extends AbstractGridInterceptor implements Selection
 
                 int updIndex = Data.getColumnIndex(VIEW_ORDER_ITEMS, COL_RESERVED_REMAINDER);
                 Double updValue =
-                    row.getDouble(updIndex);
+                    row.getDouble(updIndex) == null ? 0 : row.getDouble(updIndex);
+
                 BeeColumn updColumn = Data.getColumn(VIEW_ORDER_ITEMS, COL_RESERVED_REMAINDER);
 
                 if (newValue - oldValue <= freeRem && freeRem != 0) {

@@ -37,7 +37,13 @@ public class Worker {
     return rowSetResponse(companies);
   }
 
-  private Response rowSetResponse(SimpleRowSet rowSet) {
+  @GET
+  @Path(EntryPoint.ENTRY)
+  public String entry(@HeaderParam("licence") String licence) {
+    return BeeUtils.joinWords("EJB:", usr.getCurrentUser());
+  }
+
+  private static Response rowSetResponse(SimpleRowSet rowSet) {
     Map<String, Object> map = new HashMap<>();
     map.put("columns", rowSet.getColumnNames());
     map.put("data", rowSet.getRows());

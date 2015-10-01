@@ -12,11 +12,11 @@
 
     <Date name="Date" notNull="true" label="=date" />
 
-    <Relation name="TimeRangeCode" relation="TimeRanges" label="=timeRangeCode" />
+    <Relation name="TimeRangeCode" relation="TimeRanges" label="=timeRange" />
     <Relation name="TimeCardCode" relation="TimeCardCodes" label="=timeCardCode" />
 
-    <String name="TimeFrom" precision="10" label="=startingTime" notNull="true" />
-    <String name="TimeUntil" precision="10" label="=endingTime" notNull="true" />
+    <String name="TimeFrom" precision="10" label="=startingTime" />
+    <String name="TimeUntil" precision="10" label="=endingTime" />
 
     <String name="Duration" precision="10" label="=duration" />
 

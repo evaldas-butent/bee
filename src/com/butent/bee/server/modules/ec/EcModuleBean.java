@@ -90,6 +90,9 @@ import com.butent.bee.shared.modules.ec.EcBrand;
 import com.butent.bee.shared.modules.ec.EcCarModel;
 import com.butent.bee.shared.modules.ec.EcCarType;
 import com.butent.bee.shared.modules.ec.EcConstants;
+import com.butent.bee.shared.modules.ec.EcConstants.EcDisplayedPrice;
+import com.butent.bee.shared.modules.ec.EcConstants.EcOrderStatus;
+import com.butent.bee.shared.modules.ec.EcConstants.EcSupplier;
 import com.butent.bee.shared.modules.ec.EcCriterion;
 import com.butent.bee.shared.modules.ec.EcFinInfo;
 import com.butent.bee.shared.modules.ec.EcGroup;
@@ -694,7 +697,7 @@ public class EcModuleBean implements BeeModule {
           }
 
           for (BeeRow row : rowSet.getRows()) {
-            Long article = (index == DataUtils.ID_INDEX) ? row.getId() : row.getLong(index);
+            Long article = (index == DataUtils.ID_INDEX) ? (Long) row.getId() : row.getLong(index);
 
             if (article != null && articleSuppliers.containsKey(article)) {
               for (ArticleSupplier articleSupplier : articleSuppliers.get(article)) {

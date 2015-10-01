@@ -24,7 +24,7 @@ public enum FilterSupplierType {
 
   private final String typeCode;
 
-  private FilterSupplierType(String typeCode) {
+  FilterSupplierType(String typeCode) {
     this.typeCode = typeCode;
   }
 
