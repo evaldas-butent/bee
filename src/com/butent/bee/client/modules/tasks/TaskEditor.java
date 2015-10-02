@@ -1,6 +1,7 @@
 package com.butent.bee.client.modules.tasks;
 
 import com.butent.bee.client.view.edit.EditableWidget;
+
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Table;
@@ -118,7 +119,8 @@ class TaskEditor extends AbstractFormInterceptor {
   private static final String NAME_SERVICE_OBJECT = "ServiceObjects";
 
   private static final List<String> relations = Lists.newArrayList(PROP_COMPANIES, PROP_PERSONS,
-      PROP_DOCUMENTS, PROP_APPOINTMENTS, PROP_DISCUSSIONS, PROP_SERVICE_OBJECTS, PROP_TASKS);
+      PROP_DOCUMENTS, PROP_APPOINTMENTS, PROP_DISCUSSIONS, PROP_SERVICE_OBJECTS, PROP_TASKS,
+      PROP_PROJECTS);
 
   private static void addDurationCell(HtmlTable display, int row, int col, String value,
       String style) {

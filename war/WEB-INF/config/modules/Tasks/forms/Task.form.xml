@@ -188,8 +188,8 @@
 
           <FlowPanel style="&section;" data="Relations" for="Project" module="Projects">
             <Label text="=projects" style="&top1;" />
-            <DataSelector viewName="Projects" property="Projects"
-              renderColumns="Name" choiceColumns="Name"
+            <MultiSelector viewName="Projects" property="Projects"
+              renderColumns="Id Name" choiceColumns="Id Name"
               newRowEnabled="false" style="&inp2x;" disablable="true" summarize="true"/>
           </FlowPanel>
 
