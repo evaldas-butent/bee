@@ -251,6 +251,7 @@ public class ConcurrencyBean {
     }
   }
 
+  @Lock(LockType.READ)
   public boolean isParameterTimer(Timer timer, Object parameter) {
     if (!Config.isInitialized()) {
       return false;

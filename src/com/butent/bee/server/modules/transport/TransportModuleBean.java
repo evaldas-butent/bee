@@ -56,6 +56,7 @@ import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.SqlConstants.SqlFunction;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.exceptions.BeeException;
 import com.butent.bee.shared.i18n.LocalizableConstants;
@@ -173,12 +174,12 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
 
     List<SearchResult> orderCargoResult = qs.getSearchResults(VIEW_ORDER_CARGO,
         Filter.anyContains(Sets.newHashSet(COL_CARGO_DESCRIPTION,
-            COL_NUMBER, ALS_CARGO_CMR_NUMBER, COL_CARGO_NOTES, COL_CARGO_DIRECTIONS,
-            ALS_LOADING_NUMBER, ALS_LOADING_CONTACT, ALS_LOADING_COMPANY, ALS_LOADING_ADDRESS,
-            ALS_LOADING_POST_INDEX, ALS_LOADING_CITY_NAME, ALS_LOADING_COUNTRY_NAME,
-            ALS_LOADING_COUNTRY_CODE, ALS_UNLOADING_NUMBER, ALS_UNLOADING_CONTACT,
-            ALS_UNLOADING_COMPANY, ALS_UNLOADING_ADDRESS, ALS_UNLOADING_POST_INDEX,
-            ALS_UNLOADING_CITY_NAME, ALS_UNLOADING_COUNTRY_NAME, ALS_UNLOADING_COUNTRY_CODE),
+                COL_NUMBER, ALS_CARGO_CMR_NUMBER, COL_CARGO_NOTES, COL_CARGO_DIRECTIONS,
+                ALS_LOADING_NUMBER, ALS_LOADING_CONTACT, ALS_LOADING_COMPANY, ALS_LOADING_ADDRESS,
+                ALS_LOADING_POST_INDEX, ALS_LOADING_CITY_NAME, ALS_LOADING_COUNTRY_NAME,
+                ALS_LOADING_COUNTRY_CODE, ALS_UNLOADING_NUMBER, ALS_UNLOADING_CONTACT,
+                ALS_UNLOADING_COMPANY, ALS_UNLOADING_ADDRESS, ALS_UNLOADING_POST_INDEX,
+                ALS_UNLOADING_CITY_NAME, ALS_UNLOADING_COUNTRY_NAME, ALS_UNLOADING_COUNTRY_CODE),
             query));
 
     result.addAll(vehiclesResult);
@@ -513,7 +514,7 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
             }
             String crs =
                 rep.getTripIncomes(event.getQuery().resetFields().resetOrder().resetGroup()
-                    .addFields(VIEW_CARGO_TRIPS, COL_TRIP).addGroup(VIEW_CARGO_TRIPS, COL_TRIP),
+                        .addFields(VIEW_CARGO_TRIPS, COL_TRIP).addGroup(VIEW_CARGO_TRIPS, COL_TRIP),
                     null, false);
 
             SimpleRowSet rs = qs.getData(new SqlSelect().addAllFields(crs).addFrom(crs));
@@ -1086,7 +1087,7 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
       if (BeeUtils.unbox(row.getBoolean(COL_TRANSPORTATION))) {
         String value = BeeUtils.join("\n", row.getValue(COL_ORDER_NOTES),
             BeeUtils.join("-", row.getValue(loadCountry)
-                + " (" + row.getValue(loadCountry + "Name") + ")",
+                    + " (" + row.getValue(loadCountry + "Name") + ")",
                 row.getValue(unloadCountry)
                     + " (" + row.getValue(unloadCountry + "Name") + ")"));
 
@@ -1247,13 +1248,15 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
   }
 
   private ResponseObject generateDailyCosts(long tripId) {
+    Long mainCountry = prm.getRelation(PRM_COUNTRY);
+
     SimpleRowSet rs = qs.getData(new SqlSelect()
         .addFields(TBL_COUNTRY_NORMS, COL_COUNTRY, COL_DAILY_COSTS_ITEM)
         .addFields(TBL_COUNTRY_DAILY_COSTS, COL_AMOUNT, COL_CURRENCY)
         .addExpr(SqlUtils.sqlIf(SqlUtils.or(
-            SqlUtils.isNull(TBL_COUNTRY_DAILY_COSTS, COL_TRIP_DATE_FROM),
-            SqlUtils.joinLess(TBL_COUNTRY_DAILY_COSTS, COL_TRIP_DATE_FROM,
-                TBL_TRIP_ROUTES, COL_ROUTE_DEPARTURE_DATE)),
+                SqlUtils.isNull(TBL_COUNTRY_DAILY_COSTS, COL_TRIP_DATE_FROM),
+                SqlUtils.joinLess(TBL_COUNTRY_DAILY_COSTS, COL_TRIP_DATE_FROM,
+                    TBL_TRIP_ROUTES, COL_ROUTE_DEPARTURE_DATE)),
             SqlUtils.field(TBL_TRIP_ROUTES, COL_ROUTE_DEPARTURE_DATE),
             SqlUtils.field(TBL_COUNTRY_DAILY_COSTS, COL_TRIP_DATE_FROM)), COL_ROUTE_DEPARTURE_DATE)
         .addExpr(SqlUtils.sqlIf(
@@ -1263,8 +1266,12 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
             SqlUtils.field(TBL_TRIP_ROUTES, COL_ROUTE_ARRIVAL_DATE),
             SqlUtils.field(TBL_COUNTRY_DAILY_COSTS, COL_TRIP_DATE_TO)), COL_ROUTE_ARRIVAL_DATE)
         .addFrom(TBL_TRIP_ROUTES)
-        .addFromInner(TBL_COUNTRY_NORMS, SqlUtils.join(TBL_TRIP_ROUTES, COL_ROUTE_ARRIVAL_COUNTRY,
-            TBL_COUNTRY_NORMS, COL_COUNTRY))
+        .addFromInner(TBL_COUNTRY_NORMS,
+            SqlUtils.compare(SqlUtils.sqlIf(SqlUtils.equals(TBL_TRIP_ROUTES,
+                        COL_ROUTE_ARRIVAL_COUNTRY, mainCountry),
+                    SqlUtils.field(TBL_TRIP_ROUTES, COL_ROUTE_DEPARTURE_COUNTRY),
+                    SqlUtils.field(TBL_TRIP_ROUTES, COL_ROUTE_ARRIVAL_COUNTRY)), Operator.EQ,
+                SqlUtils.field(TBL_COUNTRY_NORMS, COL_COUNTRY)))
         .addFromInner(TBL_COUNTRY_DAILY_COSTS, SqlUtils.and(
             sys.joinTables(TBL_COUNTRY_NORMS, TBL_COUNTRY_DAILY_COSTS, COL_COUNTRY_NORM),
             SqlUtils.notNull(TBL_TRIP_ROUTES, COL_ROUTE_ARRIVAL_DATE),
@@ -1276,49 +1283,83 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
             SqlUtils.or(SqlUtils.isNull(TBL_COUNTRY_DAILY_COSTS, COL_TRIP_DATE_TO),
                 SqlUtils.joinMore(TBL_COUNTRY_DAILY_COSTS, COL_TRIP_DATE_TO,
                     TBL_TRIP_ROUTES, COL_ROUTE_DEPARTURE_DATE))))
-        .setWhere(SqlUtils.equals(TBL_TRIP_ROUTES, COL_TRIP, tripId)));
+        .setWhere(SqlUtils.equals(TBL_TRIP_ROUTES, COL_TRIP, tripId))
+        .addOrderDesc(TBL_TRIP_ROUTES, COL_ROUTE_DEPARTURE_DATE, COL_ROUTE_ARRIVAL_DATE));
 
     qs.updateData(new SqlDelete(TBL_TRIP_COSTS)
         .setWhere(SqlUtils.and(SqlUtils.equals(TBL_TRIP_COSTS, COL_TRIP, tripId),
             SqlUtils.in(TBL_TRIP_COSTS, COL_COSTS_ITEM, TBL_COUNTRY_NORMS, COL_DAILY_COSTS_ITEM))));
 
     Map<String, Map<String, String>> map = new HashMap<>();
+    DateTime lastArrivalTime = null;
+    String lastKey = null;
 
     for (SimpleRow row : rs) {
-      Map<String, String> values = new LinkedHashMap<>();
-      values.put(COL_COSTS_COUNTRY, row.getValue(COL_COUNTRY));
-      values.put(COL_COSTS_ITEM, row.getValue(COL_DAILY_COSTS_ITEM));
-      values.put(COL_COSTS_PRICE, row.getValue(COL_AMOUNT));
-      values.put(COL_COSTS_CURRENCY, row.getValue(COL_CURRENCY));
+      String key;
 
-      String key = Codec.md5(BeeUtils.joinItems(values.values()));
+      if (TimeUtils.sameDate(row.getDateTime(COL_ROUTE_ARRIVAL_DATE), lastArrivalTime)) {
+        key = lastKey;
+      } else {
+        Map<String, String> values = new LinkedHashMap<>();
+        values.put(COL_COSTS_COUNTRY, row.getValue(COL_COUNTRY));
+        values.put(COL_COSTS_ITEM, row.getValue(COL_DAILY_COSTS_ITEM));
+        values.put(COL_COSTS_PRICE, row.getValue(COL_AMOUNT));
+        values.put(COL_COSTS_CURRENCY, row.getValue(COL_CURRENCY));
 
-      if (!map.containsKey(key)) {
-        map.put(key, values);
+        key = Codec.md5(BeeUtils.joinItems(values.values()));
+
+        if (!map.containsKey(key)) {
+          map.put(key, values);
+        }
+        lastArrivalTime = row.getDateTime(COL_ROUTE_ARRIVAL_DATE);
+        lastKey = key;
       }
-      values = map.get(key);
+      Map<String, String> values = map.get(key);
 
       values.put(COL_COSTS_QUANTITY,
           BeeUtils.toString(BeeUtils.toInt(values.get(COL_COSTS_QUANTITY))
               + TimeUtils.dayDiff(row.getDateTime(COL_ROUTE_DEPARTURE_DATE),
-                  row.getDateTime(COL_ROUTE_ARRIVAL_DATE)) + 1));
+              row.getDateTime(COL_ROUTE_ARRIVAL_DATE))));
+    }
+    if (!BeeUtils.isEmpty(lastKey)) {
+      Map<String, String> values = map.get(lastKey);
+      values.put(COL_COSTS_QUANTITY,
+          BeeUtils.toString(BeeUtils.toInt(values.get(COL_COSTS_QUANTITY)) + 1));
     }
     DateTime date = qs.getDateTime(new SqlSelect()
         .addFields(TBL_TRIPS, COL_TRIP_DATE)
         .addFrom(TBL_TRIPS)
         .setWhere(sys.idEquals(TBL_TRIPS, tripId)));
 
-    for (Map<String, String> values : map.values()) {
-      SqlInsert insert = new SqlInsert(TBL_TRIP_COSTS)
-          .addConstant(COL_TRIP, tripId)
-          .addConstant(COL_COSTS_DATE, date);
+    Long payment = ArrayUtils.getQuietly(qs.getLongColumn(new SqlSelect()
+        .addFields(TBL_PAYMENT_TYPES, sys.getIdName(TBL_PAYMENT_TYPES))
+        .addFrom(TBL_PAYMENT_TYPES)
+        .setWhere(SqlUtils.notNull(TBL_PAYMENT_TYPES, COL_PAYMENT_CASH))), 0);
 
-      for (Entry<String, String> entry : values.entrySet()) {
-        insert.addConstant(entry.getKey(), entry.getValue());
+    Long[] drivers = qs.getLongColumn(new SqlSelect()
+        .addFields(TBL_TRIP_DRIVERS, sys.getIdName(TBL_TRIP_DRIVERS))
+        .addFrom(TBL_TRIP_DRIVERS)
+        .setWhere(SqlUtils.equals(TBL_TRIP_DRIVERS, COL_TRIP, tripId)));
+
+    for (Long driver : drivers) {
+      for (Map<String, String> values : map.values()) {
+        SqlInsert insert = new SqlInsert(TBL_TRIP_COSTS)
+            .addConstant(COL_TRIP, tripId)
+            .addConstant(COL_COSTS_DATE, date)
+            .addConstant(COL_DRIVER, driver)
+            .addNotNull(COL_PAYMENT_TYPE, payment);
+
+        for (Entry<String, String> entry : values.entrySet()) {
+          if (Objects.equals(entry.getKey(), COL_COSTS_QUANTITY)
+              && BeeUtils.toInt(entry.getValue()) == 0) {
+            entry.setValue("1");
+          }
+          insert.addConstant(entry.getKey(), entry.getValue());
+        }
+        qs.insertData(insert);
       }
-      qs.insertData(insert);
     }
-    return ResponseObject.info(Localized.getMessages().createdRows(map.size()));
+    return ResponseObject.info(Localized.getMessages().createdRows(drivers.length * map.size()));
   }
 
   private ResponseObject generateTripRoute(long tripId) {
@@ -1926,8 +1967,8 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
           .addFromInner(TBL_CARGO_INCOMES,
               sys.joinTables(TBL_ORDER_CARGO, TBL_CARGO_INCOMES, COL_CARGO))
           .setWhere(SqlUtils.and(SqlUtils.or(SqlUtils.equals(TBL_ORDERS, COL_PAYER, company),
-              SqlUtils.and(SqlUtils.isNull(TBL_ORDERS, COL_PAYER),
-                  SqlUtils.equals(TBL_ORDERS, COL_CUSTOMER, company))),
+                  SqlUtils.and(SqlUtils.isNull(TBL_ORDERS, COL_PAYER),
+                      SqlUtils.equals(TBL_ORDERS, COL_CUSTOMER, company))),
               SqlUtils.isNull(TBL_CARGO_INCOMES, COL_SALE)));
 
       IsExpression cargoIncome;
@@ -2331,9 +2372,9 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
               .setWhere(SqlUtils.equals(fuels, COL_TRIP, rs.getLong(cnt, tripId))));
 
           SimpleRow row = qs.getRow(rep.getFuelConsumptionsQuery(new SqlSelect()
-              .addFields(TBL_TRIP_ROUTES, sys.getIdName(TBL_TRIP_ROUTES))
-              .addFrom(TBL_TRIP_ROUTES)
-              .setWhere(SqlUtils.equals(TBL_TRIP_ROUTES, COL_TRIP, rs.getLong(cnt, tripId))),
+                  .addFields(TBL_TRIP_ROUTES, sys.getIdName(TBL_TRIP_ROUTES))
+                  .addFrom(TBL_TRIP_ROUTES)
+                  .setWhere(SqlUtils.equals(TBL_TRIP_ROUTES, COL_TRIP, rs.getLong(cnt, tripId))),
               false));
 
           Double consume = row == null ? null : row.getDouble("Quantity");
@@ -2648,7 +2689,7 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
       try {
         SimpleRowSet payments = ButentWS.connect(remoteAddress, remoteLogin, remotePassword)
             .getSQLData("SELECT extern_id AS id, apm_data AS data, apm_suma AS suma"
-                + " FROM apyvarta WHERE pajamos=0 AND extern_id IN(" + ids.toString() + ")",
+                    + " FROM apyvarta WHERE pajamos=0 AND extern_id IN(" + ids.toString() + ")",
                 "id", "data", "suma");
 
         for (SimpleRow payment : payments) {
