@@ -489,7 +489,8 @@ public class NewsAggregator implements HandlesAllDataEvents {
       seconds = Math.min(seconds, Integer.MAX_VALUE / TimeUtils.MILLIS_PER_SECOND);
     }
 
-    return seconds * TimeUtils.MILLIS_PER_SECOND;
+    int millis = seconds * TimeUtils.MILLIS_PER_SECOND;
+    return BeeUtils.round(millis * BeeUtils.randomDouble(0.8, 1.2));
   }
 
   private final List<Subscription> subscriptions = new ArrayList<>();
@@ -578,12 +579,12 @@ public class NewsAggregator implements HandlesAllDataEvents {
       for (String s : arr) {
         Subscription subscription = Subscription.restore(s);
 
-        int index = subscriptions.indexOf(subscription);
-        if (index >= 0) {
-          subscriptions.set(index, subscription);
-        } else {
-          subscriptions.add(subscription);
+        Subscription sub = findSubscription(subscription.getFeed());
+        if (sub != null) {
+          subscriptions.remove(sub);
         }
+
+        subscriptions.add(subscription);
 
         newsPanel.removeSubscription(subscription.getFeed());
 
@@ -859,7 +860,9 @@ public class NewsAggregator implements HandlesAllDataEvents {
         pendingFeeds.addAll(feeds);
 
         if (!refreshTimer.isRunning()) {
-          refreshTimer.schedule(getRefreshIntervalMillis());
+          int delay = getRefreshIntervalMillis();
+          logger.info("news timer", delay);
+          refreshTimer.schedule(delay);
         }
       }
     }
