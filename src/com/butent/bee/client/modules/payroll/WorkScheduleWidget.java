@@ -12,12 +12,14 @@ import com.google.gwt.user.client.ui.Widget;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.payroll.PayrollConstants.*;
 
+import com.butent.bee.client.Global;
 import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
+import com.butent.bee.client.dialog.ChoiceCallback;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Selectors;
 import com.butent.bee.client.event.EventUtils;
@@ -165,7 +167,11 @@ class WorkScheduleWidget extends HtmlTable {
             Widget content = getWidgetByElement(cell.getFirstChildElement());
             Flow panel = (content instanceof Flow) ? (Flow) content : null;
 
-            editSchedule(employee, day, panel);
+            if (EventUtils.hasModifierKey(event.getNativeEvent())) {
+              editSchedule(employee, day, panel);
+            } else {
+              inputTimeRangeCode(employee, day, panel);
+            }
           }
         }
       }
@@ -466,6 +472,68 @@ class WorkScheduleWidget extends HtmlTable {
     }
 
     return result;
+  }
+
+  private void inputTimeRangeCode(final long employee, int day, final Flow contentPanel) {
+    if (DataUtils.isEmpty(timeRanges)) {
+      return;
+    }
+
+    final JustDate date = new JustDate(activeMonth.getYear(), activeMonth.getMonth(), day);
+
+    Set<Long> usedCodes = new HashSet<>();
+
+    List<BeeRow> schedule = filterSchedule(employee, date);
+    if (!schedule.isEmpty()) {
+      int index = wsData.getColumnIndex(COL_TIME_RANGE_CODE);
+      for (BeeRow row : schedule) {
+        Long code = row.getLong(index);
+        if (DataUtils.isId(code)) {
+          usedCodes.add(code);
+        }
+      }
+    }
+
+    final List<Long> codes = new ArrayList<>();
+    List<String> labels = new ArrayList<>();
+
+    int codeIndex = timeRanges.getColumnIndex(COL_TR_CODE);
+    int nameIndex = timeRanges.getColumnIndex(COL_TR_NAME);
+
+    int fromIndex = timeRanges.getColumnIndex(COL_TR_FROM);
+    int untilIndex = timeRanges.getColumnIndex(COL_TR_UNTIL);
+
+    for (BeeRow row : timeRanges) {
+      if (!usedCodes.contains(row.getId())) {
+        codes.add(row.getId());
+        labels.add(BeeUtils.joinWords(row.getString(codeIndex), row.getString(nameIndex),
+            TimeUtils.renderPeriod(row.getString(fromIndex), row.getString(untilIndex))));
+      }
+    }
+
+    if (!codes.isEmpty()) {
+      String caption = getEmployeeFullName(employee);
+      String prompt = Format.renderDateFull(date);
+
+      Global.choiceWithCancel(caption, prompt, labels, new ChoiceCallback() {
+        @Override
+        public void onSuccess(int value) {
+          if (BeeUtils.isIndex(codes, value)) {
+            List<BeeColumn> columns = Data.getColumns(VIEW_WORK_SCHEDULE,
+                Lists.newArrayList(COL_EMPLOYEE, COL_PAYROLL_OBJECT, COL_WORK_SCHEDULE_DATE,
+                    COL_TIME_RANGE_CODE));
+            List<String> values = Queries.asList(employee, objectId, date, codes.get(value));
+
+            Queries.insert(VIEW_WORK_SCHEDULE, columns, values, null, new RowCallback() {
+              @Override
+              public void onSuccess(BeeRow result) {
+                updateSchedule(employee, date, contentPanel);
+              }
+            });
+          }
+        }
+      });
+    }
   }
 
   private void render() {
