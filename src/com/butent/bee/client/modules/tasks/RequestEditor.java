@@ -47,12 +47,11 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
-import com.butent.bee.shared.modules.tasks.TaskConstants.TaskEvent;
 import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
 import com.butent.bee.shared.time.DateTime;
-import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -224,8 +223,8 @@ public class RequestEditor extends AbstractFormInterceptor {
       @Override
       public void execute() {
 
-        String comment = dialog.getComment(cid);
-        String time = dialog.getTime(durIds.get(COL_DURATION));
+        final String comment = dialog.getComment(cid);
+        final String time = dialog.getTime(durIds.get(COL_DURATION));
 
         if (BeeUtils.isEmpty(comment)) {
           Global.showError(Localized.getConstants().error(), Collections.singletonList(Localized
@@ -234,13 +233,13 @@ public class RequestEditor extends AbstractFormInterceptor {
         }
 
         if (!BeeUtils.isEmpty(time)) {
-          Long type = dialog.getSelector(durIds.get(COL_DURATION_TYPE)).getRelatedId();
+          final Long type = dialog.getSelector(durIds.get(COL_DURATION_TYPE)).getRelatedId();
           if (!DataUtils.isId(type)) {
             Global.showError(Localized.getConstants().crmEnterDurationType());
             return;
           }
 
-          DateTime date = dialog.getDateTime(durIds.get(COL_DURATION_DATE));
+          final DateTime date = dialog.getDateTime(durIds.get(COL_DURATION_DATE));
           if (date == null) {
             Global.showError(Localized.getConstants().crmEnterDueDate());
             return;
@@ -260,10 +259,14 @@ public class RequestEditor extends AbstractFormInterceptor {
           oldValues.add(row.getString(form.getDataIndex(TaskConstants.COL_REQUEST_RESULT)));
           newValues.add(comment);
 
-          finishRequestWithTask(form, row, time, type, date);
-
           Queries.update(form.getViewName(), row.getId(), row.getVersion(), columns, oldValues,
-              newValues, form.getChildrenForUpdate(), new FinishSaveCallback(form));
+              newValues, form.getChildrenForUpdate(), new RowCallback() {
+
+                @Override
+                public void onSuccess(BeeRow result) {
+                  finishRequestWithTask(form, result, time, type, comment);
+                }
+              });
 
           dialog.close();
         } else {
@@ -327,44 +330,9 @@ public class RequestEditor extends AbstractFormInterceptor {
 
           @Override
           public void onSuccess(BeeRow result) {
-            int idxFinished = form.getDataIndex(TaskConstants.COL_REQUEST_FINISHED);
-            int idxProp = form.getDataIndex(TaskConstants.COL_REQUEST_RESULT_PROPERTIES);
-            List<BeeColumn> columns = Lists.newArrayList();
-            List<String> oldValues = Lists.newArrayList();
-            List<String> newValues = Lists.newArrayList();
-            Map<String, String> propData = Maps.newHashMap();
-
-            if (idxProp > -1) {
-              if (!BeeUtils.isEmpty(reqRow.getString(idxProp))) {
-                propData = Codec.deserializeMap(reqRow.getString(idxProp));
-              }
-            }
-
-            columns.add(DataUtils
-                .getColumn(TaskConstants.COL_REQUEST_FINISHED, form.getDataColumns()));
-
-            oldValues.add(reqRow.getString(idxFinished));
-
-            newValues.add(BeeUtils.toString(new DateTime().getTime()));
-
             if (result != null && BeeUtils.isPositive(result.getNumberOfCells())) {
-              columns.add(DataUtils
-                  .getColumn(TaskConstants.COL_REQUEST_RESULT_PROPERTIES, form.getDataColumns()));
-              oldValues.add(reqRow.getString(idxProp));
-
-              String key = SupplierKind.FORM.getKey(TaskConstants.FORM_TASK);
-              String ids = result.getString(0);
-              String oldIds = propData.get(key);
-
-              ids = appendIdsData(ids, oldIds);
-              propData.put(key, ids);
-              newValues.add(Codec.beeSerialize(propData));
+              createResulProperties(reqRow, result.getString(0), form);
             }
-
-            Queries.update(form.getViewName(), reqRow.getId(), reqRow.getVersion(),
-                columns, oldValues, newValues, form.getChildrenForUpdate(),
-                new FinishSaveCallback(form));
-
           }
         });
   }
@@ -460,8 +428,8 @@ public class RequestEditor extends AbstractFormInterceptor {
     }
   }
 
-  private static void finishRequestWithTask(FormView form, IsRow reqRow, final String time,
-      final Long type, final DateTime date) {
+  private static void finishRequestWithTask(final FormView form, final IsRow reqRow, String time,
+      Long type, String comment) {
     boolean edited = (reqRow != null) && form.isEditing();
 
     if (!edited) {
@@ -475,24 +443,8 @@ public class RequestEditor extends AbstractFormInterceptor {
     taskRow.setValue(taskDataInfo.getColumnIndex(ClassifierConstants.COL_COMPANY),
         reqRow.getLong(form.getDataIndex(COL_REQUEST_CUSTOMER)));
 
-    taskRow.setValue(taskDataInfo.getColumnIndex(ClassifierConstants.ALS_COMPANY_NAME),
-        reqRow.getString(form.getDataIndex(COL_REQUEST_CUSTOMER_NAME)));
-
     taskRow.setValue(taskDataInfo.getColumnIndex(ClassifierConstants.COL_CONTACT), reqRow
         .getLong(form.getDataIndex(COL_REQUEST_CUSTOMER_PERSON)));
-
-    taskRow.setValue(taskDataInfo.getColumnIndex(ClassifierConstants.ALS_CONTACT_FIRST_NAME),
-        reqRow
-            .getString(form.getDataIndex(ALS_PERSON_FIRST_NAME)));
-
-    taskRow.setValue(taskDataInfo.getColumnIndex(ClassifierConstants.ALS_CONTACT_LAST_NAME), reqRow
-        .getString(form.getDataIndex(ALS_PERSON_LAST_NAME)));
-
-    taskRow.setValue(taskDataInfo.getColumnIndex(ALS_OWNER_FIRST_NAME),
-        reqRow.getString(form.getDataIndex(ClassifierConstants.COL_FIRST_NAME)));
-
-    taskRow.setValue(taskDataInfo.getColumnIndex(ALS_OWNER_LAST_NAME), reqRow
-        .getString(form.getDataIndex(ClassifierConstants.COL_LAST_NAME)));
 
     taskRow.setValue(taskDataInfo.getColumnIndex(COL_DESCRIPTION), reqRow
         .getString(form.getDataIndex(COL_REQUEST_CONTENT)));
@@ -501,69 +453,69 @@ public class RequestEditor extends AbstractFormInterceptor {
         .getConstants().trAssessmentRequest()
         + " " + reqRow.getId());
 
-    taskRow.setValue(taskDataInfo.getColumnIndex(COL_START_TIME), TimeUtils
-        .nowMillis());
-
-    taskRow.setValue(taskDataInfo.getColumnIndex(COL_FINISH_TIME), TimeUtils
-        .nowMillis());
-
     taskRow.setValue(taskDataInfo.getColumnIndex(COL_EXECUTOR), BeeKeeper.getUser()
         .getUserId());
 
     taskRow.setValue(taskDataInfo.getColumnIndex(COL_STATUS), TaskStatus.APPROVED.ordinal());
 
-    Queries.insert(VIEW_TASKS, Data.getColumns(VIEW_TASKS), taskRow, new RowCallback() {
+    ParameterList params = TasksKeeper.createArgs(SVC_FINISH_REQUEST_WITH_TASK);
+    params.addDataItem(VAR_TASK_DATA, Codec.beeSerialize(taskRow));
+    params.addDataItem(COL_DURATION_TYPE, type);
+    params.addDataItem(COL_DURATION, time);
+    params.addDataItem(COL_COMMENT, comment);
+
+    BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
 
       @Override
-      public void onSuccess(final BeeRow taskResult) {
-        DataInfo durDataInfo = Data.getDataInfo(TBL_EVENT_DURATIONS);
-        BeeRow durRow = RowFactory.createEmptyRow(durDataInfo, true);
-
-        durRow.setValue(durDataInfo.getColumnIndex(COL_DURATION_TYPE), type);
-        durRow.setValue(durDataInfo.getColumnIndex(COL_DURATION_DATE), date);
-        durRow.setValue(durDataInfo.getColumnIndex(COL_DURATION), time);
-
-        Queries.insert(TBL_EVENT_DURATIONS, Data.getColumns(TBL_EVENT_DURATIONS), durRow,
-            new RowCallback() {
-
-              @Override
-              public void onSuccess(BeeRow durResult) {
-                DataInfo eventDataInfo = Data.getDataInfo(VIEW_TASK_EVENTS);
-                BeeRow eventRow = RowFactory.createEmptyRow(eventDataInfo, true);
-
-                eventRow.setValue(eventDataInfo.getColumnIndex(COL_TASK), taskResult.getId());
-                eventRow.setValue(eventDataInfo.getColumnIndex(COL_PUBLISHER), BeeKeeper.getUser()
-                    .getUserId());
-
-                eventRow.setValue(eventDataInfo.getColumnIndex(COL_PUBLISH_TIME), TimeUtils
-                    .nowMillis());
-                eventRow.setValue(eventDataInfo.getColumnIndex(COL_EVENT_DURATION), durResult
-                    .getId());
-                eventRow.setValue(eventDataInfo.getColumnIndex(COL_EVENT), TaskEvent.COMMENT
-                    .ordinal());
-
-                Queries.insert(VIEW_TASK_EVENTS, Data.getColumns(VIEW_TASK_EVENTS), eventRow,
-                    new RowCallback() {
-
-                      @Override
-                      public void onSuccess(BeeRow result) {
-                        InternalLink link = new InternalLink(BeeUtils.toString(taskResult.getId())
-                            + BeeConst.DEFAULT_ROW_SEPARATOR);
-                        link.addStyleName(STYLE_PROPERTY_DATA);
-                        link.addClickHandler(new ClickHandler() {
-
-                          @Override
-                          public void onClick(ClickEvent arg0) {
-                            RowEditor.openForm(FORM_TASK, taskDataInfo, taskResult, Opener.NEW_TAB,
-                                null, null);
-                          }
-                        });
-                        resultProperties.add(link);
-                      }
-                    });
-              }
-            });
+      public void onResponse(ResponseObject response) {
+        if (!response.hasErrors()) {
+          createResulProperties(reqRow, response.getResponseAsString(), form);
+        }
       }
     });
+  }
+
+  public static void createResulProperties(IsRow reqRow, String ids, FormView form) {
+    int idxFinished = form.getDataIndex(TaskConstants.COL_REQUEST_FINISHED);
+    int idxProp = form.getDataIndex(TaskConstants.COL_REQUEST_RESULT_PROPERTIES);
+    List<BeeColumn> columns = Lists.newArrayList();
+    List<String> oldValues = Lists.newArrayList();
+    List<String> newValues = Lists.newArrayList();
+    Map<String, String> propData = Maps.newHashMap();
+
+    if (idxProp > -1) {
+      if (!BeeUtils.isEmpty(reqRow.getString(idxProp))) {
+        propData = Codec.deserializeMap(reqRow.getString(idxProp));
+      }
+    }
+
+    columns.add(DataUtils
+        .getColumn(TaskConstants.COL_REQUEST_FINISHED, form.getDataColumns()));
+
+    oldValues.add(reqRow.getString(idxFinished));
+
+    newValues.add(BeeUtils.toString(new DateTime().getTime()));
+
+    if (DataUtils.isId(ids)) {
+
+      Queries.insert(AdministrationConstants.VIEW_RELATIONS, Data.getColumns(
+          AdministrationConstants.VIEW_RELATIONS, Lists.newArrayList(COL_REQUEST, COL_TASK)), Lists
+          .newArrayList(String.valueOf(reqRow.getId()), ids));
+
+      columns.add(DataUtils
+          .getColumn(TaskConstants.COL_REQUEST_RESULT_PROPERTIES, form.getDataColumns()));
+      oldValues.add(reqRow.getString(idxProp));
+
+      String key = SupplierKind.FORM.getKey(TaskConstants.FORM_TASK);
+      String oldIds = propData.get(key);
+
+      ids = appendIdsData(ids, oldIds);
+      propData.put(key, ids);
+      newValues.add(Codec.beeSerialize(propData));
+    }
+
+    Queries.update(form.getViewName(), reqRow.getId(), reqRow.getVersion(),
+        columns, oldValues, newValues, form.getChildrenForUpdate(),
+        new FinishSaveCallback(form));
   }
 }

@@ -181,6 +181,7 @@ public final class TaskConstants {
       + "users_hours";
 
   public static final String SVC_GET_REQUEST_FILES = "get_request_files";
+  public static final String SVC_FINISH_REQUEST_WITH_TASK = "finish_request_with_task";
 
   public static final String SVC_RT_GET_SCHEDULING_DATA = "rt_get_scheduling_data";
   public static final String SVC_RT_SPAWN = "rt_spawn";
