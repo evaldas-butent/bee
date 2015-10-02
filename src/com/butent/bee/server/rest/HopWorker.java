@@ -63,10 +63,13 @@ public class HopWorker {
     StringBuilder xml = new StringBuilder("<data>");
 
     for (SimpleRowSet.SimpleRow row : rs) {
+      xml.append("<row>");
+
       for (String col : rs.getColumnNames()) {
         xml.append(XmlUtils.tag(col, Objects.equals(col, PayrollConstants.COL_TAB_NUMBER)
             ? row.getValue(col) : row.getDate(col)));
       }
+      xml.append("</row>");
     }
     xml.append("</data>");
 
