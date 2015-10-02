@@ -152,6 +152,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String captionPid();
 
+  String cellIsReadOnly();
+
   String changedValues();
 
   String changePassword();
