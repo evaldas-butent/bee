@@ -315,10 +315,17 @@ class WorkScheduleWidget extends HtmlTable {
     Filter filter = Filter.and(Filter.equals(COL_EMPLOYEE, employee),
         Filter.equals(COL_WORK_SCHEDULE_DATE, date));
 
+    WorkScheduleEditor wsEditor = new WorkScheduleEditor(new Runnable() {
+      @Override
+      public void run() {
+        updateSchedule(employee, date, contentPanel);
+      }
+    });
+
     GridFactory.registerImmutableFilter(GRID_WORK_SCHEDULE_DAY, filter);
 
-    RowFactory.createRow(FORM_WORK_SCHEDULE_EDITOR, caption, dataInfo, row, contentPanel,
-        new WorkScheduleEditor(), new RowCallback() {
+    RowFactory.createRow(FORM_WORK_SCHEDULE_EDITOR, caption, dataInfo, row, contentPanel, wsEditor,
+        new RowCallback() {
           @Override
           public void onSuccess(BeeRow result) {
             updateSchedule(employee, date, contentPanel);
