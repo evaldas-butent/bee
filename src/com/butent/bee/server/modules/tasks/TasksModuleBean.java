@@ -185,6 +185,9 @@ public class TasksModuleBean implements BeeModule {
     } else if (BeeUtils.same(svc, SVC_GET_REQUEST_FILES)) {
       response = getRequestFiles(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_REQUEST)));
 
+    } else if (BeeUtils.same(svc, SVC_FINISH_REQUEST_WITH_TASK)) {
+      response = finishRequestWithTask(reqInfo);
+
     } else if (BeeUtils.same(svc, SVC_RT_GET_SCHEDULING_DATA)) {
       response = getSchedulingData(reqInfo);
 
@@ -1133,6 +1136,75 @@ public class TasksModuleBean implements BeeModule {
     return response;
   }
 
+  private ResponseObject finishRequestWithTask(RequestInfo reqInfo) {
+    BeeRow row = BeeRow.restore(reqInfo.getParameter(VAR_TASK_DATA));
+    String comment = reqInfo.getParameter(COL_COMMENT);
+    Long type = reqInfo.getParameterLong(COL_DURATION_TYPE);
+    String time = reqInfo.getParameter(COL_DURATION);
+
+    if (row == null) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), VAR_TASK_DATA);
+    }
+    if (BeeUtils.isEmpty(comment)) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), COL_COMMENT);
+    }
+    if (!DataUtils.isId(type)) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), COL_DURATION_TYPE);
+    }
+    if (BeeUtils.isEmpty(time)) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), COL_DURATION);
+    }
+
+    DataInfo info = sys.getDataInfo(VIEW_TASKS);
+
+    SqlInsert taskInsert =
+        new SqlInsert(TBL_TASKS)
+            .addConstant(COL_SUMMARY, row.getString(info.getColumnIndex(COL_SUMMARY)))
+            .addConstant(COL_DESCRIPTION, row.getString(info.getColumnIndex(COL_DESCRIPTION)))
+            .addConstant(COL_COMPANY, row.getString(info.getColumnIndex(COL_COMPANY)))
+            .addConstant(COL_CONTACT, row.getString(info.getColumnIndex(COL_CONTACT)))
+            .addConstant(COL_EXECUTOR, row.getString(info.getColumnIndex(COL_EXECUTOR)))
+            .addConstant(COL_START_TIME, TimeUtils.nowMillis())
+            .addConstant(COL_FINISH_TIME, TimeUtils.nowMillis())
+            .addConstant(COL_STATUS, row.getString(info.getColumnIndex(COL_STATUS)))
+            .addConstant(COL_PRIORITY, row.getString(info.getColumnIndex(COL_PRIORITY)))
+            .addConstant(COL_OWNER, row.getString(info.getColumnIndex(COL_OWNER)));
+
+    long taskId = qs.insertData(taskInsert);
+
+    if (DataUtils.isId(taskId)) {
+      SqlInsert insertDur = new SqlInsert(TBL_EVENT_DURATIONS)
+          .addConstant(COL_DURATION_TYPE, type)
+          .addConstant(COL_DURATION_DATE, TimeUtils.nowMillis())
+          .addConstant(COL_DURATION, time);
+
+      long durId = qs.insertData(insertDur);
+
+      if (DataUtils.isId(durId)) {
+        SqlInsert insertEvent = new SqlInsert(TBL_TASK_EVENTS)
+            .addConstant(COL_TASK, taskId)
+            .addConstant(COL_PUBLISHER, row.getLong(info.getColumnIndex(COL_EXECUTOR)))
+            .addConstant(COL_PUBLISH_TIME, TimeUtils.nowMillis())
+            .addConstant(TaskConstants.COL_EVENT, TaskEvent.COMMENT.ordinal())
+            .addConstant(COL_EVENT_DURATION, durId)
+            .addConstant(COL_COMMENT, comment);
+
+        SqlInsert insertComment = new SqlInsert(TBL_TASK_EVENTS)
+            .addConstant(COL_TASK, taskId)
+            .addConstant(COL_PUBLISHER, row.getLong(info.getColumnIndex(COL_EXECUTOR)))
+            .addConstant(COL_PUBLISH_TIME, TimeUtils.nowMillis())
+            .addConstant(TaskConstants.COL_EVENT, TaskEvent.COMMENT.ordinal())
+            .addConstant(COL_COMMENT, comment);
+
+        qs.insertData(insertEvent);
+        qs.insertData(insertComment);
+
+      }
+    }
+
+    return ResponseObject.response(taskId);
+  }
+
   private ResponseObject getChangedTasks() {
     IsCondition uwh = SqlUtils.equals(TBL_TASK_USERS, COL_USER, usr.getCurrentUserId());
 
@@ -1220,7 +1292,6 @@ public class TasksModuleBean implements BeeModule {
           companiesListSet.getValue(i, COL_COMPANY_NAME)
               + (!BeeUtils.isEmpty(companiesListSet.getValue(i, ALS_COMPANY_TYPE))
                   ? ", " + companiesListSet.getValue(i, ALS_COMPANY_TYPE) : "");
-      String dTime = "0:00";
 
       SqlSelect companyTimesQuery = new SqlSelect()
           .addFields(TBL_EVENT_DURATIONS, COL_DURATION)
@@ -1273,7 +1344,7 @@ public class TasksModuleBean implements BeeModule {
       }
 
       SimpleRowSet companyTimes = qs.getData(companyTimesQuery);
-      long dTimeMls = TimeUtils.parseTime(dTime);
+      long dTimeMls = 0;
 
       for (int j = 0; j < companyTimes.getNumberOfRows(); j++) {
         Long timeMls = TimeUtils.parseTime(companyTimes.getValue(j, companyTimes
@@ -1284,14 +1355,12 @@ public class TasksModuleBean implements BeeModule {
       totalTimeMls += dTimeMls;
 
       if (!(hideZeroTimes && dTimeMls <= 0)) {
-        dTime = new DateTime(dTimeMls).toUtcTimeString();
-        result.addRow(new String[] {compFullName, dTime});
+        result.addRow(new String[] {compFullName, TimeUtils.renderTime(dTimeMls, false)});
       }
     }
 
     result.addRow(new String[] {
-        constants.totalOf() + ":",
-        new DateTime(totalTimeMls).toUtcTimeString()});
+        constants.totalOf() + ":", TimeUtils.renderTime(totalTimeMls, false)});
 
     ResponseObject resp = ResponseObject.response(result);
     return resp;
@@ -1621,7 +1690,6 @@ public class TasksModuleBean implements BeeModule {
 
     for (int i = 0; i < dTypesList.getNumberOfRows(); i++) {
       String dType = dTypesList.getValue(i, dTypesList.getColumnIndex(COL_DURATION_TYPE_NAME));
-      String dTime = "0:00";
 
       SqlSelect dTypeTime = new SqlSelect()
           .addFrom(TBL_TASK_EVENTS)
@@ -1674,24 +1742,22 @@ public class TasksModuleBean implements BeeModule {
       SimpleRowSet dTypeTimes = qs.getData(dTypeTime);
       Assert.notNull(dTypeTimes);
 
-      long dTimeMls = TimeUtils.parseTime(dTime);
+      long dTimeMls = 0;
 
       for (int j = 0; j < dTypeTimes.getNumberOfRows(); j++) {
-        Long timeMls = TimeUtils.parseTime(dTypeTimes.getValue(j, dTypeTimes
-            .getColumnIndex(COL_DURATION)));
+        Long timeMls = TimeUtils.parseTime(dTypeTimes.getValue(j, COL_DURATION));
         dTimeMls += timeMls;
       }
 
       totalTimeMls += dTimeMls;
 
       if (!(hideTimeZeros && dTimeMls <= 0)) {
-        dTime = new DateTime(dTimeMls).toUtcTimeString();
-        result.addRow(new String[] {dType, dTime});
+        result.addRow(new String[] {dType, TimeUtils.renderTime(dTimeMls, false)});
       }
     }
 
     result.addRow(new String[] {
-        constants.totalOf() + ":", new DateTime(totalTimeMls).toUtcTimeString()});
+        constants.totalOf() + ":", TimeUtils.renderTime(totalTimeMls, false)});
 
     ResponseObject resp = ResponseObject.response(result);
     return resp;
@@ -1772,7 +1838,6 @@ public class TasksModuleBean implements BeeModule {
                   ? usersListSet.getValue(i, COL_LAST_NAME) : "");
 
       userFullName = BeeUtils.isEmpty(userFullName) ? "—" : userFullName;
-      String dTime = "0:00";
 
       SqlSelect userTimesQuery = new SqlSelect()
           .addFields(TBL_EVENT_DURATIONS, COL_DURATION)
@@ -1825,7 +1890,7 @@ public class TasksModuleBean implements BeeModule {
       }
 
       SimpleRowSet companyTimes = qs.getData(userTimesQuery);
-      long dTimeMls = TimeUtils.parseTime(dTime);
+      long dTimeMls = 0;
 
       for (int j = 0; j < companyTimes.getNumberOfRows(); j++) {
         Long timeMls = TimeUtils.parseTime(companyTimes.getValue(j, companyTimes
@@ -1836,13 +1901,12 @@ public class TasksModuleBean implements BeeModule {
       totalTimeMls += dTimeMls;
 
       if (!(hideTimeZeros && dTimeMls <= 0)) {
-        dTime = new DateTime(dTimeMls).toUtcTimeString();
-        result.addRow(new String[] {userFullName, dTime});
+        result.addRow(new String[] {userFullName, TimeUtils.renderTime(dTimeMls, false)});
       }
     }
 
     result.addRow(new String[] {
-        constants.totalOf() + ":", new DateTime(totalTimeMls).toUtcTimeString()});
+        constants.totalOf() + ":", TimeUtils.renderTime(totalTimeMls, false)});
 
     ResponseObject resp = ResponseObject.response(result);
     return resp;
