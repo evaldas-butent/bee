@@ -22,6 +22,7 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -152,8 +153,9 @@ public class OrdersSelectorHandler implements SelectorEvent.Handler {
     BeeRowSet orderItems = new BeeRowSet(viewName, columns);
 
     int ordIndex = orderItems.getColumnIndex(COL_ORDER);
-
     int qtyIndex = orderItems.getColumnIndex(COL_TRADE_ITEM_QUANTITY);
+    int dateIndex = orderItems.getColumnIndex(COL_TRADE_DATE);
+
     boolean qtyNullable = BeeConst.isUndef(qtyIndex)
         ? true : orderItems.getColumn(qtyIndex).isNullable();
 
@@ -170,6 +172,7 @@ public class OrdersSelectorHandler implements SelectorEvent.Handler {
       if (!qtyNullable && ordItem.isNull(qtyIndex)) {
         ordItem.setValue(qtyIndex, 0);
       }
+      ordItem.setValue(dateIndex, TimeUtils.nowMillis().getDate());
 
       orderItems.addRow(ordItem);
     }

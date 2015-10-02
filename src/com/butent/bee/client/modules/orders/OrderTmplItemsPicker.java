@@ -48,7 +48,7 @@ public class OrderTmplItemsPicker extends ItemsPicker {
   }
 
   @Override
-  public boolean setIsOrder() {
+  public boolean setIsOrder(IsRow row) {
     return false;
   }
 
