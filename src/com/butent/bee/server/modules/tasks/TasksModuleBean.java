@@ -68,13 +68,12 @@ import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
-import com.butent.bee.shared.modules.administration.AdministrationConstants.ReminderMethod;
+import com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 import com.butent.bee.shared.modules.documents.DocumentConstants;
 import com.butent.bee.shared.modules.projects.ProjectConstants;
 import com.butent.bee.shared.modules.projects.ProjectStatus;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
-import com.butent.bee.shared.modules.tasks.TaskConstants.TaskEvent;
-import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
+import com.butent.bee.shared.modules.tasks.TaskConstants.*;
 import com.butent.bee.shared.modules.tasks.TaskUtils;
 import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.news.Headline;
@@ -2651,6 +2650,8 @@ public class TasksModuleBean implements BeeModule {
     ResponseObject response = new ResponseObject();
     List<RowChildren> children = new ArrayList<>();
     List<RowChildren> prjChildren = new ArrayList<>();
+    List<RowChildren> taskChildren = new ArrayList<>();
+    List<Long> childTasks = new ArrayList<>();
 
     Long projectId = row.getLong(
         sys.getDataInfo(VIEW_TASKS).getColumnIndex(ProjectConstants.COL_PROJECT));
@@ -2669,12 +2670,31 @@ public class TasksModuleBean implements BeeModule {
               projectId, relation, row.getProperty(property)));
         }
 
+        if (BeeUtils.same(relation, COL_TASK)
+            && DataUtils.isId(projectId)) {
+
+          childTasks = DataUtils.parseIdList(row.getProperty(property));
+          for (Long propTask : childTasks) {
+
+            if (DataUtils.isId(propTask)) {
+              taskChildren.add(RowChildren
+                  .create(TBL_RELATIONS, COL_TASK, propTask, ProjectConstants.COL_PROJECT,
+                      DataUtils.buildIdList(Lists.newArrayList(projectId))));
+            }
+          }
+        }
       }
     }
     int count = 0;
 
     if (!BeeUtils.isEmpty(prjChildren)) {
       deb.commitChildren(projectId, prjChildren, response);
+    }
+
+    if (!BeeUtils.isEmpty(childTasks) && !BeeUtils.isEmpty(taskChildren)) {
+      for (Long childTaskId : childTasks) {
+        deb.commitChildren(childTaskId, taskChildren, response);
+      }
     }
 
     if (!BeeUtils.isEmpty(children)) {
