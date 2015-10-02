@@ -3772,3 +3772,7 @@ textarea,
   font-size: 17px;
   margin-right: 27px;
 }
+
+.bee-ItemPricePicker-disabled select {
+    visibility: hidden;
+}

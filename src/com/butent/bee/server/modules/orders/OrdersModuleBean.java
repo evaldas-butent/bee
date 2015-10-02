@@ -48,6 +48,7 @@ import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.orders.OrdersConstants;
+import com.butent.bee.shared.modules.orders.OrdersConstants.OrdersStatus;
 import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.utils.ArrayUtils;
@@ -241,8 +242,10 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
       filter.add(Filter.restore(where));
     }
 
-    filter.add(Filter.in(sys.getIdName(TBL_ITEMS), VIEW_ITEM_REMAINDERS, COL_ITEM, Filter.equals(
-        ClassifierConstants.COL_WAREHOUSE, warehouse)));
+    if (warehouse != null) {
+      filter.add(Filter.in(sys.getIdName(TBL_ITEMS), VIEW_ITEM_REMAINDERS, COL_ITEM, Filter.equals(
+          ClassifierConstants.COL_WAREHOUSE, warehouse)));
+    }
 
     BeeRowSet items = qs.getViewData(VIEW_ITEMS, filter);
 
@@ -573,13 +576,11 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
           new SqlSelect()
               .addFields(TBL_ORDER_ITEMS, COL_RESERVED_REMAINDER)
               .addFrom(TBL_ORDERS)
-              .addFromLeft(
-                  TBL_ORDER_ITEMS,
-                  SqlUtils
-                      .join(TBL_ORDER_ITEMS, COL_ORDER, TBL_ORDERS, sys.getIdName(TBL_ORDERS)))
-              .setWhere(
-                  SqlUtils.and(SqlUtils.equals(TBL_ORDERS, COL_WAREHOUSE, warehouseId),
-                      SqlUtils.equals(TBL_ORDER_ITEMS, COL_ITEM, itemId)));
+              .addFromLeft(TBL_ORDER_ITEMS,
+                  SqlUtils.join(TBL_ORDER_ITEMS, COL_ORDER, TBL_ORDERS, sys.getIdName(TBL_ORDERS)))
+              .setWhere(SqlUtils.and(SqlUtils.equals(TBL_ORDERS, COL_WAREHOUSE, warehouseId),
+                  SqlUtils.equals(TBL_ORDERS, COL_ORDERS_STATUS, OrdersStatus.APPROVED.ordinal()),
+                  SqlUtils.equals(TBL_ORDER_ITEMS, COL_ITEM, itemId)));
 
       SimpleRowSet srs = qs.getData(qry);
       Double totRes = BeeConst.DOUBLE_ZERO;
