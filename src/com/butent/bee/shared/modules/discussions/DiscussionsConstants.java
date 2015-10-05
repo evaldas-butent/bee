@@ -34,7 +34,7 @@ public final class DiscussionsConstants {
     private final String commandLabel;
     private final FontAwesome commandIcon;
 
-    private DiscussionEvent(String caption, String commandLabel, FontAwesome commandIcon) {
+    DiscussionEvent(String caption, String commandLabel, FontAwesome commandIcon) {
       this.caption = caption;
       this.commandLabel = commandLabel;
       this.commandIcon = commandIcon;
@@ -83,7 +83,7 @@ public final class DiscussionsConstants {
       return status != null && ordinal() == status;
     }
 
-    private DiscussionStatus(String caption) {
+    DiscussionStatus(String caption) {
       this.caption = caption;
     }
 

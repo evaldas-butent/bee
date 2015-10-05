@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Table xmlns="http://www.butent.com/table"
+  
+  name="WorkSchedule"
+  idName="WorkScheduleID"
+  >
+  <Fields>
+    <Relation name="Employee" notNull="true" relation="Employees" cascade="DELETE"
+      label="=employee" />
+    <Relation name="Object" notNull="true" relation="Locations" cascade="DELETE"
+      label="=object" />
+
+    <Date name="Date" notNull="true" label="=date" />
+
+    <Relation name="TimeRangeCode" relation="TimeRanges" label="=timeRange" />
+    <Relation name="TimeCardCode" relation="TimeCardCodes" label="=timeCardCode" />
+
+    <String name="TimeFrom" precision="10" label="=startingTime" />
+    <String name="TimeUntil" precision="10" label="=endingTime" />
+
+    <String name="Duration" precision="10" label="=duration" />
+
+    <String name="Note" precision="100" label="=note" />
+  </Fields>
+</Table>

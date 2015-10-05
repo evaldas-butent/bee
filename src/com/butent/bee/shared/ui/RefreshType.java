@@ -20,7 +20,7 @@ public enum RefreshType {
 
   private final String code;
 
-  private RefreshType(String code) {
+  RefreshType(String code) {
     this.code = code;
   }
 

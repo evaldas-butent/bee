@@ -452,6 +452,22 @@ public final class UiHelper {
         && event.getKeyCode() == KeyCodes.KEY_C && (event.getCtrlKey() || event.getMetaKey());
   }
 
+  public static boolean isInteractive(Widget widget) {
+    Assert.notNull(widget);
+
+    if (!widget.isAttached() || !DomUtils.isVisible(widget)) {
+      return false;
+    }
+
+    Popup activePopup = Popup.getActivePopup();
+    if (activePopup == null) {
+      return true;
+    }
+
+    Popup parentPopup = getParentPopup(widget);
+    return parentPopup != null && DomUtils.sameId(activePopup, parentPopup);
+  }
+
   public static boolean isModal(Widget widget) {
     return getParentPopup(widget) != null;
   }
@@ -598,14 +614,18 @@ public final class UiHelper {
   }
 
   public static void setColor(UIObject obj, Color color) {
-    Assert.notNull(obj);
     Assert.notNull(color);
+    setColor(obj, color.getBackground(), color.getForeground());
+  }
 
-    if (!BeeUtils.isEmpty(color.getBackground())) {
-      StyleUtils.setBackgroundColor(obj, color.getBackground());
+  public static void setColor(UIObject obj, String background, String foreground) {
+    Assert.notNull(obj);
+
+    if (!BeeUtils.isEmpty(background)) {
+      StyleUtils.setBackgroundColor(obj, background);
     }
-    if (!BeeUtils.isEmpty(color.getForeground())) {
-      StyleUtils.setColor(obj, color.getForeground());
+    if (!BeeUtils.isEmpty(foreground)) {
+      StyleUtils.setColor(obj, foreground);
     }
   }
 

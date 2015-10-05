@@ -130,7 +130,7 @@ public final class ViewFactory {
 
     private final String prefix;
 
-    private SupplierKind(String prefix) {
+    SupplierKind(String prefix) {
       this.prefix = prefix;
     }
 

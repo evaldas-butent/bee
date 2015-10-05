@@ -104,6 +104,7 @@ public final class Global {
   private static final ReportSettings reportSettings = new ReportSettings();
 
   private static boolean debug;
+  private static int explain;
 
   public static void addStyleSheet(String name, String text) {
     if (BeeUtils.isEmpty(name)) {
@@ -207,6 +208,10 @@ public final class Global {
 
   public static Defaults getDefaults() {
     return defaults;
+  }
+
+  public static int getExplain() {
+    return explain;
   }
 
   public static Favorites getFavorites() {
@@ -460,6 +465,10 @@ public final class Global {
 
   public static void setDebug(boolean debug) {
     Global.debug = debug;
+  }
+
+  public static void setExplain(int explain) {
+    Global.explain = explain;
   }
 
   public static void setParameter(String prm, String value) {

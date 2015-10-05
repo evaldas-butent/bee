@@ -45,6 +45,7 @@ import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.ColumnDescription;
@@ -377,7 +378,7 @@ public class EditableColumn implements BlurHandler, EditChangeHandler, EditStopE
     boolean ok = BeeUtils.toBoolean(getEditable().evaluate());
 
     if (!ok && warn && getNotificationListener() != null) {
-      getNotificationListener().notifyWarning("Cell is read only:", getEditable().toString());
+      getNotificationListener().notifyWarning(Localized.getConstants().cellIsReadOnly());
     }
     return ok;
   }

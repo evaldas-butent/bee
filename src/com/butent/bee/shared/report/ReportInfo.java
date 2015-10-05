@@ -20,7 +20,6 @@ import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
-import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -314,11 +313,7 @@ public class ReportInfo implements BeeSerializable {
     }
     for (ReportItem filterItem : getFilterItems()) {
       for (ReportItem item : filterItem.getMembers()) {
-        if (BeeUtils.same(item.getExpression(), field)
-            && item.getFilter() != null
-            && item instanceof ReportDateItem
-            && !EnumUtils.in(((ReportDateItem) item).getFormat(), DateTimeFunction.YEAR,
-            DateTimeFunction.DATE, DateTimeFunction.DATETIME)) {
+        if (BeeUtils.same(item.getExpression(), field) && item.getFilter() != null) {
           return true;
         }
       }

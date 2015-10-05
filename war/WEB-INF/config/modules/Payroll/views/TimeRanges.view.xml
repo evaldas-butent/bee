@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="TimeRanges" source="TimeRanges"
+  caption="=timeRanges" newRowCaption="=newTimeRange"
+  >
+  <Columns>
+    <SimpleColumn name="TrCode" />
+    <SimpleColumn name="TrName" />
+
+    <SimpleColumn name="TimeFrom" />
+    <SimpleColumn name="TimeUntil" />
+
+    <SimpleColumn name="Duration" />
+
+    <SimpleColumn name="Ordinal" />
+    
+    <SimpleColumn name="Background" />
+    <SimpleColumn name="Foreground" />
+
+    <SimpleColumn name="Description" />
+  </Columns>
+  <Order>
+    <OrderBy column="Ordinal" />
+    <OrderBy column="TrCode" />
+  </Order>
+</View>
+ 

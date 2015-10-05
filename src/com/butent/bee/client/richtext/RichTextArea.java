@@ -34,7 +34,7 @@ class RichTextArea extends CustomWidget implements HasHtml, HasAllFocusHandlers,
 
     private final int number;
 
-    private FontSize(int number) {
+    FontSize(int number) {
       this.number = number;
     }
 
@@ -120,7 +120,7 @@ class RichTextArea extends CustomWidget implements HasHtml, HasAllFocusHandlers,
 
     private final String cmd;
 
-    private Justification(String cmd) {
+    Justification(String cmd) {
       this.cmd = cmd;
     }
 

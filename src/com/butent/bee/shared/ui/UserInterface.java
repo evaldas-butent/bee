@@ -283,6 +283,7 @@ public enum UserInterface implements HasCaption {
     FAVORITES(false),
     FILTERS(false),
     GRIDS(false),
+    MAIL(false),
     MENU(false),
     MONEY(false),
     NEWS(false),
@@ -293,7 +294,7 @@ public enum UserInterface implements HasCaption {
 
     private final boolean required;
 
-    private Component(boolean required) {
+    Component(boolean required) {
       this.required = required;
     }
 

@@ -86,6 +86,14 @@ public class SimpleRowSet implements Iterable<SimpleRow>, BeeSerializable {
       return getRowSet().getInt(rowIndex, colName);
     }
 
+    public List<String> getList(List<String> colNames) {
+      List<String> result = new ArrayList<>();
+      for (String colName : colNames) {
+        result.add(getValue(colName));
+      }
+      return result;
+    }
+
     public Long getLong(int colIndex) {
       return getRowSet().getLong(rowIndex, colIndex);
     }
@@ -548,6 +556,7 @@ public class SimpleRowSet implements Iterable<SimpleRow>, BeeSerializable {
   }
 
   private int getKeyIndex(String keyName, String keyValue) {
+    Assert.notNull(keyValue);
     int colIndex = getColumnIndex(keyName);
 
     if (indexes == null) {
@@ -557,7 +566,11 @@ public class SimpleRowSet implements Iterable<SimpleRow>, BeeSerializable {
       Map<String, Integer> index = Maps.newHashMapWithExpectedSize(getNumberOfRows());
 
       for (int i = 0; i < getNumberOfRows(); i++) {
-        index.put(getValue(i, colIndex), i);
+        String value = getValue(i, colIndex);
+
+        if (value != null) {
+          index.put(value, i);
+        }
       }
       indexes.put(colIndex, index);
     }

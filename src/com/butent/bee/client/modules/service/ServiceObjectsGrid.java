@@ -93,7 +93,7 @@ public class ServiceObjectsGrid extends AbstractGridInterceptor implements
       }
 
       getGridPresenter().getDataProvider().setParentFilter(FILTER_KEY, flt);
-      getGridPresenter().refresh(true);
+      getGridPresenter().refresh(true, true);
     }
   }
 

@@ -31,7 +31,7 @@ public enum LogLevel {
 
   private final Level level;
 
-  private LogLevel(Level level) {
+  LogLevel(Level level) {
     this.level = level;
   }
 

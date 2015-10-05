@@ -199,10 +199,11 @@ public class ParamHolderBean {
 
     if (DataUtils.isId(relation)) {
       Pair<String, String> relInfo = Pair.restore(param.getOptions());
-      String table = sys.getViewSource(relInfo.getA());
+      BeeView view = sys.getView(relInfo.getA());
+      String table = view.getSourceName();
 
       display = qs.getValue(new SqlSelect()
-          .addFields(table, relInfo.getB())
+          .addFields(table, view.getColumnField(relInfo.getB()))
           .addFrom(table)
           .setWhere(sys.idEquals(table, relation)));
     }

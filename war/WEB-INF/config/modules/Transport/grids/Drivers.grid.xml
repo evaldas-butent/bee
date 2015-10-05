@@ -1,11 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
-  xmlns:ui="http://www.butent.com/ui"
 
-  name="Drivers" viewName="Drivers" caption="=drivers"
-  newRowForm="Driver" editForm="Driver"
-  flexGrow="1" flexShrink="1"
-  >
+        name="Drivers" viewName="Drivers" caption="=drivers"
+        flexGrow="1"
+    >
 
   <g:columns>
     <RelColumn name="CompanyPerson" renderColumns="FirstName LastName" caption="=trDriverName" />

@@ -91,6 +91,14 @@ public final class PriceInfo implements BeeSerializable {
     return priceName;
   }
 
+  public boolean hasPercent() {
+    return BeeUtils.isDouble(getDiscountPercent());
+  }
+
+  public boolean hasPrice() {
+    return BeeUtils.isPositive(getPrice());
+  }
+
   public void setCategory(Long category) {
     this.category = category;
   }

@@ -106,19 +106,23 @@ public class TripForm extends PrintFormInterceptor implements SelectorEvent.Hand
       WidgetDescriptionCallback callback) {
 
     if (widget instanceof ChildGrid) {
-      if (BeeUtils.same(name, TBL_TRIP_DRIVERS)) {
-        ((ChildGrid) widget).setGridInterceptor(new TripDriversGrid());
+      switch (name) {
+        case TBL_TRIP_DRIVERS:
+          ((ChildGrid) widget).setGridInterceptor(new TripDriversGrid());
+          break;
 
-      } else if (BeeUtils.same(name, VIEW_TRIP_CARGO)) {
-        ((ChildGrid) widget).setGridInterceptor(new TripCargoGrid(getFormView()));
+        case VIEW_TRIP_CARGO:
+          ((ChildGrid) widget).setGridInterceptor(new TripCargoGrid());
+          break;
 
-      } else if (BeeUtils.same(name, TBL_TRIP_COSTS)) {
-        ((ChildGrid) widget).setGridInterceptor(new TripCostsGrid());
+        case TBL_TRIP_COSTS:
+          ((ChildGrid) widget).setGridInterceptor(new TripCostsGrid());
+          break;
 
-      } else if (BeeUtils.same(name, TBL_TRIP_ROUTES)) {
-        ((ChildGrid) widget).setGridInterceptor(new TripRoutesGrid());
+        case TBL_TRIP_ROUTES:
+          ((ChildGrid) widget).setGridInterceptor(new TripRoutesGrid());
+          break;
       }
-
     } else if (BeeUtils.same(name, COL_TRIP_ROUTE) && widget instanceof HasClickHandlers) {
       ((HasClickHandlers) widget).addClickHandler(new ClickHandler() {
         @Override

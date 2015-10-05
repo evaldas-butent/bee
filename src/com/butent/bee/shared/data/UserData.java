@@ -90,6 +90,10 @@ public class UserData implements BeeSerializable, HasInfo {
     return hasDataRight(viewName, RightsState.EDIT);
   }
 
+  public boolean canMergeData(String viewName) {
+    return hasDataRight(viewName, RightsState.MERGE);
+  }
+
   @Override
   public void deserialize(String s) {
     String[] arr = Codec.beeDeserializeCollection(s);

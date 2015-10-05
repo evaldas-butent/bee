@@ -58,6 +58,10 @@ public interface LocalizableMailConstants {
 
   String mailQuestionSaveToDraft();
 
+  String mailPrivate();
+
+  String mailPublic();
+
   String mailReplayPrefix();
 
   String mailRule();

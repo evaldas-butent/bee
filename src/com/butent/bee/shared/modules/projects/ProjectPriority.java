@@ -24,7 +24,7 @@ public enum ProjectPriority implements HasCaption {
 
   private String caption;
 
-  private ProjectPriority(String caption) {
+  ProjectPriority(String caption) {
     this.caption = caption;
   }
 

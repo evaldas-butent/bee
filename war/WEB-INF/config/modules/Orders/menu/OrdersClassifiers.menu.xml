@@ -5,4 +5,6 @@ name="OrdersClassifiers" label="=classifiers" order="50" parent="Orders" module=
 >
   <Item name="OrderTypes" label="=types" service="grid" parameters="OrderTypes" />
   <Item name="OrderSeries" label="=seriesPlural" service="grid" parameters="OrderSeries" />
+  <Item name="Parameters" label="=parameters" service="parameters" parameters="Orders"
+    separator="true" module="Orders" />
 </Entry>

@@ -133,7 +133,7 @@ class AllProjectsGrid extends AbstractGridInterceptor implements SelectionHandle
       }
 
       getGridPresenter().getDataProvider().setParentFilter(FILTER_KEY, getFilter(category));
-      getGridPresenter().refresh(true);
+      getGridPresenter().refresh(true, true);
 
     }
   }

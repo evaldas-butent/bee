@@ -34,7 +34,7 @@ public class Input extends Element {
 
     private final String keyword;
 
-    private Type(String keyword) {
+    Type(String keyword) {
       this.keyword = keyword;
     }
 

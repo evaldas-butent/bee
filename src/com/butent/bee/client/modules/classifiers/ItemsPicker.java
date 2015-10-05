@@ -30,6 +30,7 @@ import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.dialog.DecisionCallback;
 import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.dialog.DialogConstants;
+import com.butent.bee.client.dialog.Notification;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Selectors;
@@ -59,6 +60,7 @@ import com.butent.bee.shared.html.builder.elements.Div;
 import com.butent.bee.shared.html.builder.elements.Span;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.classifiers.ItemPrice;
+import com.butent.bee.shared.modules.orders.OrdersConstants;
 import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -104,6 +106,9 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
   private static final String STYLE_ARTICLE_PREFIX = STYLE_PREFIX + "article-";
 
   private static final String STYLE_PRICE_PREFIX = STYLE_PREFIX + "price-";
+  private static final String STYLE_REMAINDER_PREFIX = STYLE_PREFIX + "remainder-";
+  private static final String STYLE_FREE_PREFIX = STYLE_PREFIX + "free-";
+  private static final String STYLE_RESERVED_PREFIX = STYLE_PREFIX + "reserved-";
   private static final String STYLE_PRICE_WRAPPER = STYLE_PRICE_PREFIX + "wrapper";
   private static final String STYLE_PRICE_VALUE = STYLE_PRICE_PREFIX + "value";
   private static final String STYLE_PRICE_CURRENCY = STYLE_PRICE_PREFIX + "currency";
@@ -209,25 +214,26 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
     }
   }
 
-  protected IsRow lastRow;
+  private IsRow lastRow;
 
   private ItemPrice itemPrice;
-  public Long warehouseFrom;
+  private Long warehouseFrom;
 
   private BeeRowSet items;
 
   private final Map<Long, ItemPrice> selectedPrices = new HashMap<>();
-
   private final Flow itemPanel = new Flow(STYLE_ITEM_PANEL);
-
+  private Notification notification = new Notification();
   private NumberFormat priceFormat;
 
   private ChangeHandler quantityChangeHandler;
+  private boolean isOrder;
 
   public ItemsPicker() {
     super(STYLE_CONTAINER);
 
     add(createSearch());
+    add(notification);
     add(itemPanel);
 
     itemPanel.addClickHandler(new ClickHandler() {
@@ -248,6 +254,8 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
 
   public void show(IsRow row, Element target) {
     lastRow = DataUtils.cloneRow(row);
+
+    isOrder = setIsOrder(row);
 
     warehouseFrom = getWarehouseFrom(row);
     itemPrice = TradeActKeeper.getItemPrice(VIEW_TRADE_ACTS, row);
@@ -538,7 +546,6 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
         if (!quantities.isEmpty()) {
           selectItems(quantities);
         }
-
         dialog.close();
       }
     });
@@ -633,6 +640,16 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
       table.setText(r, c++, warehouses.get(w), pfx + STYLE_HEADER_CELL_SUFFIX);
     }
 
+    if (isOrder) {
+      table.setText(r, c++, items.getRow(0).getString(
+          DataUtils.getColumnIndex(ALS_WAREHOUSE_CODE, items.getColumns())),
+          STYLE_FROM_PREFIX + STYLE_HEADER_CELL_SUFFIX);
+      table.setText(r, c++, Localized.getConstants().ordFreeRemainder(),
+          STYLE_FREE_PREFIX + STYLE_HEADER_CELL_SUFFIX);
+      table.setText(r, c++, Localized.getConstants().ordResRemainder(),
+          STYLE_RESERVED_PREFIX + STYLE_HEADER_CELL_SUFFIX);
+    }
+
     table.setText(r, c++, Localized.getConstants().quantity(),
         STYLE_QTY_PREFIX + STYLE_HEADER_CELL_SUFFIX);
 
@@ -709,6 +726,22 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
       }
 
       c += warehouseIds.size();
+
+      if (isOrder) {
+
+        Double rem =
+            item.getDouble(DataUtils.getColumnIndex(COL_WAREHOUSE_REMAINDER, items.getColumns()));
+
+        table.setText(r, c++, rem.toString(), STYLE_REMAINDER_PREFIX + STYLE_CELL_SUFFIX);
+
+        table.setText(r, c++, item.getDouble(items.getNumberOfColumns() - 2).toString(),
+            STYLE_FREE_PREFIX + STYLE_CELL_SUFFIX);
+
+        table.setText(r, c++, item.getDouble(items.getNumberOfColumns() - 1).toString(),
+            STYLE_RESERVED_PREFIX + STYLE_CELL_SUFFIX);
+        item.setProperty(OrdersConstants.PRP_FREE_REMAINDER, item.getDouble(
+            items.getNumberOfColumns() - 2).toString());
+      }
 
       Double qty = quantities.get(item.getId());
       table.setWidget(r, c, renderQty(qtyColumn, qty), STYLE_QTY_PREFIX + STYLE_CELL_SUFFIX);
@@ -807,7 +840,17 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
     SelectionEvent.fire(this, selection);
   }
 
+  protected IsRow getLastRow() {
+    return lastRow;
+  }
+
+  protected Long getWarehouseFrom() {
+    return warehouseFrom;
+  }
+
   public abstract void getItems(Filter filter, RowSetCallback callback);
 
   public abstract Long getWarehouseFrom(IsRow row);
+
+  public abstract boolean setIsOrder(IsRow row);
 }

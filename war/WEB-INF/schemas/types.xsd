@@ -212,6 +212,7 @@
       <xs:enumeration value="Service.Projects" />
       <xs:enumeration value="Administration" />
       <xs:enumeration value="Orders" />
+      <xs:enumeration value="Payroll" />
     </xs:restriction>
   </xs:simpleType>
 
@@ -228,8 +229,6 @@
       <xs:enumeration value="Addressbook" />
       <xs:enumeration value="AdsTopics" />
       <xs:enumeration value="AllCargo" />
-      <xs:enumeration value="AllDrivers" />
-      <xs:enumeration value="AllVehicles" />
       <xs:enumeration value="AppointmentAttendees" />
       <xs:enumeration value="AppointmentOwners" />
       <xs:enumeration value="AppointmentProps" />
@@ -341,6 +340,8 @@
       <xs:enumeration value="EcRegistrations" />
       <xs:enumeration value="EditorTemplates" />
       <xs:enumeration value="Emails" />
+      <xs:enumeration value="EmployeeObjects" />
+      <xs:enumeration value="Employees" />
       <xs:enumeration value="EventHistory" />
       <xs:enumeration value="ExpeditionTypes" />
       <xs:enumeration value="ExpeditionTrips" />
@@ -367,10 +368,16 @@
       <xs:enumeration value="IpFilters" />
       <xs:enumeration value="ItemCategories" />
       <xs:enumeration value="ItemGraphics" />
+      <xs:enumeration value="ItemRemainders" />
       <xs:enumeration value="Items" />
+      <xs:enumeration value="Locations" />
       <xs:enumeration value="Maintenance" />
       <xs:enumeration value="Messages" />
+      <xs:enumeration value="Newsletters" />
+      <xs:enumeration value="NewsletterContacts" />
+      <xs:enumeration value="NewsletterFiles" />
       <xs:enumeration value="Objects" />
+      <xs:enumeration value="ObjectSalaryFund" />
       <xs:enumeration value="Orders" />
       <xs:enumeration value="OrdersInvoices" />
       <xs:enumeration value="OrderItems" />
@@ -410,6 +417,8 @@
       <xs:enumeration value="PurchaseItems" />
       <xs:enumeration value="PurchaseOperations" />
       <xs:enumeration value="Purchases" />
+      <xs:enumeration value="RecipientsGroups" />
+      <xs:enumeration value="RcpsGroupsContacts" />
       <xs:enumeration value="RecurringTasks" />
       <xs:enumeration value="RejectionReasons" />
       <xs:enumeration value="RelatedDocuments" />
@@ -488,6 +497,9 @@
       <xs:enumeration value="TemplateTree" />
       <xs:enumeration value="ThemeColors" />
       <xs:enumeration value="Themes" />
+      <xs:enumeration value="TimeCardChanges" />
+      <xs:enumeration value="TimeCardCodes" />
+      <xs:enumeration value="TimeRanges" />
       <xs:enumeration value="TimeZones" />
       <xs:enumeration value="TodoList" />
       <xs:enumeration value="TradeActInvoices" />
@@ -523,6 +535,7 @@
       <xs:enumeration value="UnsuppliedItems" />
       <xs:enumeration value="UserCalAttendees" />
       <xs:enumeration value="UserCalendars" />
+      <xs:enumeration value="UserDrivers" />
       <xs:enumeration value="UserEmails" />
       <xs:enumeration value="UserFeeds" />
       <xs:enumeration value="UserGroupMembers" />
@@ -533,6 +546,7 @@
       <xs:enumeration value="UserRoles" />
       <xs:enumeration value="Users" />
       <xs:enumeration value="UserSettings" />
+      <xs:enumeration value="UserVehicles" />
       <xs:enumeration value="VehicleModels" />
       <xs:enumeration value="VehiclePartUsage" />
       <xs:enumeration value="Vehicles" />
@@ -541,6 +555,7 @@
       <xs:enumeration value="VehicleTracking" />
       <xs:enumeration value="WaitingCargo" />
       <xs:enumeration value="Warehouses" />
+      <xs:enumeration value="WorkSchedule" />
       <xs:enumeration value="Workspaces" />
 
 <!-- samples -->

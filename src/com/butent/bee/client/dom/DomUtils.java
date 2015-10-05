@@ -343,11 +343,17 @@ public final class DomUtils {
     Assert.notNull(root);
     Assert.notEmpty(id);
 
+    Widget child;
     if (root.isAttached()) {
-      return getPhysicalChild(root, id);
+      child = getPhysicalChild(root, id);
     } else {
-      return getLogicalChild(root, id);
+      child = null;
     }
+
+    if (child == null) {
+      child = getLogicalChild(root, id);
+    }
+    return child;
   }
 
   public static Element getChildByDataIndex(Element parent, int dataIndex, boolean recurse) {
@@ -452,11 +458,17 @@ public final class DomUtils {
       return null;
     }
 
+    Widget child;
     if (root.isAttached()) {
-      return getChildByElement(root, Document.get().getElementById(id));
+      child = getChildByElement(root, Document.get().getElementById(id));
     } else {
-      return getLogicalChild(root, id);
+      child = null;
     }
+
+    if (child == null) {
+      child = getLogicalChild(root, id);
+    }
+    return child;
   }
 
   public static NodeList<Element> getChildren(Element parent) {
@@ -1636,6 +1648,18 @@ public final class DomUtils {
   public static void scrollToBottom(UIObject obj) {
     Assert.notNull(obj);
     scrollToBottom(obj.getElement());
+  }
+
+  public static void scrollToLeft(Element elem) {
+    Assert.notNull(elem);
+    if (elem.getScrollLeft() > 0) {
+      elem.setScrollLeft(0);
+    }
+  }
+
+  public static void scrollToLeft(UIObject obj) {
+    Assert.notNull(obj);
+    scrollToLeft(obj.getElement());
   }
 
   public static void scrollToTop(Element elem) {

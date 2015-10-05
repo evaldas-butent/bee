@@ -15,8 +15,6 @@ import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.server.concurrency.ConcurrencyBean;
 import com.butent.bee.server.concurrency.ConcurrencyBean.HasTimerService;
-import com.butent.bee.server.data.BeeView;
-import com.butent.bee.server.data.BeeView.ConditionProvider;
 import com.butent.bee.server.data.DataEditorBean;
 import com.butent.bee.server.data.DataEvent.ViewDeleteEvent;
 import com.butent.bee.server.data.DataEvent.ViewInsertEvent;
@@ -58,8 +56,10 @@ import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.SqlConstants.SqlFunction;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.exceptions.BeeException;
+import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -174,12 +174,12 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
 
     List<SearchResult> orderCargoResult = qs.getSearchResults(VIEW_ORDER_CARGO,
         Filter.anyContains(Sets.newHashSet(COL_CARGO_DESCRIPTION,
-            COL_NUMBER, ALS_CARGO_CMR_NUMBER, COL_CARGO_NOTES, COL_CARGO_DIRECTIONS,
-            ALS_LOADING_NUMBER, ALS_LOADING_CONTACT, ALS_LOADING_COMPANY, ALS_LOADING_ADDRESS,
-            ALS_LOADING_POST_INDEX, ALS_LOADING_CITY_NAME, ALS_LOADING_COUNTRY_NAME,
-            ALS_LOADING_COUNTRY_CODE, ALS_UNLOADING_NUMBER, ALS_UNLOADING_CONTACT,
-            ALS_UNLOADING_COMPANY, ALS_UNLOADING_ADDRESS, ALS_UNLOADING_POST_INDEX,
-            ALS_UNLOADING_CITY_NAME, ALS_UNLOADING_COUNTRY_NAME, ALS_UNLOADING_COUNTRY_CODE),
+                COL_NUMBER, ALS_CARGO_CMR_NUMBER, COL_CARGO_NOTES, COL_CARGO_DIRECTIONS,
+                ALS_LOADING_NUMBER, ALS_LOADING_CONTACT, ALS_LOADING_COMPANY, ALS_LOADING_ADDRESS,
+                ALS_LOADING_POST_INDEX, ALS_LOADING_CITY_NAME, ALS_LOADING_COUNTRY_NAME,
+                ALS_LOADING_COUNTRY_CODE, ALS_UNLOADING_NUMBER, ALS_UNLOADING_CONTACT,
+                ALS_UNLOADING_COMPANY, ALS_UNLOADING_ADDRESS, ALS_UNLOADING_POST_INDEX,
+                ALS_UNLOADING_CITY_NAME, ALS_UNLOADING_COUNTRY_NAME, ALS_UNLOADING_COUNTRY_CODE),
             query));
 
     result.addAll(vehiclesResult);
@@ -331,7 +331,7 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
     return Lists.newArrayList(
         BeeParameter.createRelation(module, PRM_INVOICE_PREFIX, true, TBL_SALES_SERIES,
             COL_SERIES_NAME),
-        BeeParameter.createCollection(module, PRM_MESSAGE_TEMPLATE, true, null),
+        BeeParameter.createMap(module, PRM_MESSAGE_TEMPLATE, true, null),
         BeeParameter.createNumber(module, PRM_ERP_REFRESH_INTERVAL),
         BeeParameter.createText(module, "SmsServiceAddress"),
         BeeParameter.createText(module, "SmsUserName"),
@@ -363,13 +363,6 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
   @Override
   public void init() {
     cb.createIntervalTimer(this.getClass(), PRM_ERP_REFRESH_INTERVAL);
-
-    BeeView.registerConditionProvider(TBL_IMPORT_MAPPINGS, new ConditionProvider() {
-      @Override
-      public IsCondition getCondition(BeeView view, List<String> args) {
-        return null;
-      }
-    });
 
     sys.registerDataEventHandler(new DataEventHandler() {
       @Subscribe
@@ -521,7 +514,7 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
             }
             String crs =
                 rep.getTripIncomes(event.getQuery().resetFields().resetOrder().resetGroup()
-                    .addFields(VIEW_CARGO_TRIPS, COL_TRIP).addGroup(VIEW_CARGO_TRIPS, COL_TRIP),
+                        .addFields(VIEW_CARGO_TRIPS, COL_TRIP).addGroup(VIEW_CARGO_TRIPS, COL_TRIP),
                     null, false);
 
             SimpleRowSet rs = qs.getData(new SqlSelect().addAllFields(crs).addFrom(crs));
@@ -539,42 +532,6 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
       public void getFileIcons(ViewQueryEvent event) {
         if (BeeUtils.same(event.getTargetName(), VIEW_CARGO_REQUEST_FILES) && event.isAfter()) {
           ExtensionIcons.setIcons(event.getRowset(), ALS_FILE_NAME, PROP_ICON);
-        }
-      }
-
-      @Subscribe
-      public void getVisibleDrivers(ViewQueryEvent event) {
-        if (BeeUtils.same(event.getTargetName(), TBL_DRIVERS) && event.isBefore()) {
-          BeeView view = sys.getView(event.getTargetName());
-
-          SqlSelect query = new SqlSelect().setDistinctMode(true)
-              .addFields(TBL_DRIVER_GROUPS, COL_DRIVER)
-              .addFrom(TBL_DRIVER_GROUPS)
-              .addFromInner(TBL_TRANSPORT_GROUPS,
-                  sys.joinTables(TBL_TRANSPORT_GROUPS, TBL_DRIVER_GROUPS, COL_GROUP));
-
-          sys.filterVisibleState(query, TBL_TRANSPORT_GROUPS);
-
-          event.getQuery().addFromInner(query, "subq",
-              SqlUtils.join(view.getSourceAlias(), view.getSourceIdName(), "subq", COL_DRIVER));
-        }
-      }
-
-      @Subscribe
-      public void getVisibleVehicles(ViewQueryEvent event) {
-        if (BeeUtils.same(event.getTargetName(), TBL_VEHICLES) && event.isBefore()) {
-          BeeView view = sys.getView(event.getTargetName());
-
-          SqlSelect query = new SqlSelect().setDistinctMode(true)
-              .addFields(TBL_VEHICLE_GROUPS, COL_VEHICLE)
-              .addFrom(TBL_VEHICLE_GROUPS)
-              .addFromInner(TBL_TRANSPORT_GROUPS,
-                  sys.joinTables(TBL_TRANSPORT_GROUPS, TBL_VEHICLE_GROUPS, COL_GROUP));
-
-          sys.filterVisibleState(query, TBL_TRANSPORT_GROUPS);
-
-          event.getQuery().addFromInner(query, "subq",
-              SqlUtils.join(view.getSourceAlias(), view.getSourceIdName(), "subq", COL_VEHICLE));
         }
       }
 
@@ -612,27 +569,27 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
 
     HeadlineProducer assessmentsHeadlineProducer = new HeadlineProducer() {
       @Override
-      public Headline produce(Feed feed, long userId, BeeRowSet rowSet, IsRow row, boolean isNew) {
+      public Headline produce(Feed feed, long userId, BeeRowSet rowSet, IsRow row, boolean isNew,
+          LocalizableConstants constants) {
+
         String caption = "";
         String pid = DataUtils.getString(rowSet, row, COL_ASSESSMENT);
 
         if (!BeeUtils.isEmpty(pid)) {
-          caption = BeeUtils.joinWords(caption, usr.getLocalizableConstants().captionPid()
-              + BeeConst.STRING_COLON, pid);
+          caption = BeeUtils.joinWords(caption, constants.captionPid() + BeeConst.STRING_COLON,
+              pid);
         }
 
         String id = BeeUtils.toString(row.getId());
 
-        caption = BeeUtils.joinWords(caption, usr.getLocalizableConstants().captionId()
-            + BeeConst.STRING_COLON, id);
+        caption = BeeUtils.joinWords(caption, constants.captionId() + BeeConst.STRING_COLON, id);
 
         AssessmentStatus status =
             EnumUtils.getEnumByIndex(AssessmentStatus.class,
                 DataUtils.getInteger(rowSet, row, COL_STATUS));
 
         if (status != null) {
-          caption = BeeUtils.joinWords(caption, status.getCaption(
-              usr.getLocalizableConstants(userId)));
+          caption = BeeUtils.joinWords(caption, status.getCaption(constants));
         }
 
         String notes = DataUtils.getString(rowSet, row, ALS_ORDER_NOTES);
@@ -1130,7 +1087,7 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
       if (BeeUtils.unbox(row.getBoolean(COL_TRANSPORTATION))) {
         String value = BeeUtils.join("\n", row.getValue(COL_ORDER_NOTES),
             BeeUtils.join("-", row.getValue(loadCountry)
-                + " (" + row.getValue(loadCountry + "Name") + ")",
+                    + " (" + row.getValue(loadCountry + "Name") + ")",
                 row.getValue(unloadCountry)
                     + " (" + row.getValue(unloadCountry + "Name") + ")"));
 
@@ -1291,13 +1248,15 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
   }
 
   private ResponseObject generateDailyCosts(long tripId) {
+    Long mainCountry = prm.getRelation(PRM_COUNTRY);
+
     SimpleRowSet rs = qs.getData(new SqlSelect()
         .addFields(TBL_COUNTRY_NORMS, COL_COUNTRY, COL_DAILY_COSTS_ITEM)
         .addFields(TBL_COUNTRY_DAILY_COSTS, COL_AMOUNT, COL_CURRENCY)
         .addExpr(SqlUtils.sqlIf(SqlUtils.or(
-            SqlUtils.isNull(TBL_COUNTRY_DAILY_COSTS, COL_TRIP_DATE_FROM),
-            SqlUtils.joinLess(TBL_COUNTRY_DAILY_COSTS, COL_TRIP_DATE_FROM,
-                TBL_TRIP_ROUTES, COL_ROUTE_DEPARTURE_DATE)),
+                SqlUtils.isNull(TBL_COUNTRY_DAILY_COSTS, COL_TRIP_DATE_FROM),
+                SqlUtils.joinLess(TBL_COUNTRY_DAILY_COSTS, COL_TRIP_DATE_FROM,
+                    TBL_TRIP_ROUTES, COL_ROUTE_DEPARTURE_DATE)),
             SqlUtils.field(TBL_TRIP_ROUTES, COL_ROUTE_DEPARTURE_DATE),
             SqlUtils.field(TBL_COUNTRY_DAILY_COSTS, COL_TRIP_DATE_FROM)), COL_ROUTE_DEPARTURE_DATE)
         .addExpr(SqlUtils.sqlIf(
@@ -1307,8 +1266,12 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
             SqlUtils.field(TBL_TRIP_ROUTES, COL_ROUTE_ARRIVAL_DATE),
             SqlUtils.field(TBL_COUNTRY_DAILY_COSTS, COL_TRIP_DATE_TO)), COL_ROUTE_ARRIVAL_DATE)
         .addFrom(TBL_TRIP_ROUTES)
-        .addFromInner(TBL_COUNTRY_NORMS, SqlUtils.join(TBL_TRIP_ROUTES, COL_ROUTE_ARRIVAL_COUNTRY,
-            TBL_COUNTRY_NORMS, COL_COUNTRY))
+        .addFromInner(TBL_COUNTRY_NORMS,
+            SqlUtils.compare(SqlUtils.sqlIf(SqlUtils.equals(TBL_TRIP_ROUTES,
+                        COL_ROUTE_ARRIVAL_COUNTRY, mainCountry),
+                    SqlUtils.field(TBL_TRIP_ROUTES, COL_ROUTE_DEPARTURE_COUNTRY),
+                    SqlUtils.field(TBL_TRIP_ROUTES, COL_ROUTE_ARRIVAL_COUNTRY)), Operator.EQ,
+                SqlUtils.field(TBL_COUNTRY_NORMS, COL_COUNTRY)))
         .addFromInner(TBL_COUNTRY_DAILY_COSTS, SqlUtils.and(
             sys.joinTables(TBL_COUNTRY_NORMS, TBL_COUNTRY_DAILY_COSTS, COL_COUNTRY_NORM),
             SqlUtils.notNull(TBL_TRIP_ROUTES, COL_ROUTE_ARRIVAL_DATE),
@@ -1320,49 +1283,83 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
             SqlUtils.or(SqlUtils.isNull(TBL_COUNTRY_DAILY_COSTS, COL_TRIP_DATE_TO),
                 SqlUtils.joinMore(TBL_COUNTRY_DAILY_COSTS, COL_TRIP_DATE_TO,
                     TBL_TRIP_ROUTES, COL_ROUTE_DEPARTURE_DATE))))
-        .setWhere(SqlUtils.equals(TBL_TRIP_ROUTES, COL_TRIP, tripId)));
+        .setWhere(SqlUtils.equals(TBL_TRIP_ROUTES, COL_TRIP, tripId))
+        .addOrderDesc(TBL_TRIP_ROUTES, COL_ROUTE_DEPARTURE_DATE, COL_ROUTE_ARRIVAL_DATE));
 
     qs.updateData(new SqlDelete(TBL_TRIP_COSTS)
         .setWhere(SqlUtils.and(SqlUtils.equals(TBL_TRIP_COSTS, COL_TRIP, tripId),
             SqlUtils.in(TBL_TRIP_COSTS, COL_COSTS_ITEM, TBL_COUNTRY_NORMS, COL_DAILY_COSTS_ITEM))));
 
     Map<String, Map<String, String>> map = new HashMap<>();
+    DateTime lastArrivalTime = null;
+    String lastKey = null;
 
     for (SimpleRow row : rs) {
-      Map<String, String> values = new LinkedHashMap<>();
-      values.put(COL_COSTS_COUNTRY, row.getValue(COL_COUNTRY));
-      values.put(COL_COSTS_ITEM, row.getValue(COL_DAILY_COSTS_ITEM));
-      values.put(COL_COSTS_PRICE, row.getValue(COL_AMOUNT));
-      values.put(COL_COSTS_CURRENCY, row.getValue(COL_CURRENCY));
+      String key;
 
-      String key = Codec.md5(BeeUtils.joinItems(values.values()));
+      if (TimeUtils.sameDate(row.getDateTime(COL_ROUTE_ARRIVAL_DATE), lastArrivalTime)) {
+        key = lastKey;
+      } else {
+        Map<String, String> values = new LinkedHashMap<>();
+        values.put(COL_COSTS_COUNTRY, row.getValue(COL_COUNTRY));
+        values.put(COL_COSTS_ITEM, row.getValue(COL_DAILY_COSTS_ITEM));
+        values.put(COL_COSTS_PRICE, row.getValue(COL_AMOUNT));
+        values.put(COL_COSTS_CURRENCY, row.getValue(COL_CURRENCY));
 
-      if (!map.containsKey(key)) {
-        map.put(key, values);
+        key = Codec.md5(BeeUtils.joinItems(values.values()));
+
+        if (!map.containsKey(key)) {
+          map.put(key, values);
+        }
+        lastArrivalTime = row.getDateTime(COL_ROUTE_ARRIVAL_DATE);
+        lastKey = key;
       }
-      values = map.get(key);
+      Map<String, String> values = map.get(key);
 
       values.put(COL_COSTS_QUANTITY,
           BeeUtils.toString(BeeUtils.toInt(values.get(COL_COSTS_QUANTITY))
               + TimeUtils.dayDiff(row.getDateTime(COL_ROUTE_DEPARTURE_DATE),
-                  row.getDateTime(COL_ROUTE_ARRIVAL_DATE)) + 1));
+              row.getDateTime(COL_ROUTE_ARRIVAL_DATE))));
+    }
+    if (!BeeUtils.isEmpty(lastKey)) {
+      Map<String, String> values = map.get(lastKey);
+      values.put(COL_COSTS_QUANTITY,
+          BeeUtils.toString(BeeUtils.toInt(values.get(COL_COSTS_QUANTITY)) + 1));
     }
     DateTime date = qs.getDateTime(new SqlSelect()
         .addFields(TBL_TRIPS, COL_TRIP_DATE)
         .addFrom(TBL_TRIPS)
         .setWhere(sys.idEquals(TBL_TRIPS, tripId)));
 
-    for (Map<String, String> values : map.values()) {
-      SqlInsert insert = new SqlInsert(TBL_TRIP_COSTS)
-          .addConstant(COL_TRIP, tripId)
-          .addConstant(COL_COSTS_DATE, date);
+    Long payment = ArrayUtils.getQuietly(qs.getLongColumn(new SqlSelect()
+        .addFields(TBL_PAYMENT_TYPES, sys.getIdName(TBL_PAYMENT_TYPES))
+        .addFrom(TBL_PAYMENT_TYPES)
+        .setWhere(SqlUtils.notNull(TBL_PAYMENT_TYPES, COL_PAYMENT_CASH))), 0);
 
-      for (Entry<String, String> entry : values.entrySet()) {
-        insert.addConstant(entry.getKey(), entry.getValue());
+    Long[] drivers = qs.getLongColumn(new SqlSelect()
+        .addFields(TBL_TRIP_DRIVERS, sys.getIdName(TBL_TRIP_DRIVERS))
+        .addFrom(TBL_TRIP_DRIVERS)
+        .setWhere(SqlUtils.equals(TBL_TRIP_DRIVERS, COL_TRIP, tripId)));
+
+    for (Long driver : drivers) {
+      for (Map<String, String> values : map.values()) {
+        SqlInsert insert = new SqlInsert(TBL_TRIP_COSTS)
+            .addConstant(COL_TRIP, tripId)
+            .addConstant(COL_COSTS_DATE, date)
+            .addConstant(COL_DRIVER, driver)
+            .addNotNull(COL_PAYMENT_TYPE, payment);
+
+        for (Entry<String, String> entry : values.entrySet()) {
+          if (Objects.equals(entry.getKey(), COL_COSTS_QUANTITY)
+              && BeeUtils.toInt(entry.getValue()) == 0) {
+            entry.setValue("1");
+          }
+          insert.addConstant(entry.getKey(), entry.getValue());
+        }
+        qs.insertData(insert);
       }
-      qs.insertData(insert);
     }
-    return ResponseObject.info(Localized.getMessages().createdRows(map.size()));
+    return ResponseObject.info(Localized.getMessages().createdRows(drivers.length * map.size()));
   }
 
   private ResponseObject generateTripRoute(long tripId) {
@@ -1970,8 +1967,8 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
           .addFromInner(TBL_CARGO_INCOMES,
               sys.joinTables(TBL_ORDER_CARGO, TBL_CARGO_INCOMES, COL_CARGO))
           .setWhere(SqlUtils.and(SqlUtils.or(SqlUtils.equals(TBL_ORDERS, COL_PAYER, company),
-              SqlUtils.and(SqlUtils.isNull(TBL_ORDERS, COL_PAYER),
-                  SqlUtils.equals(TBL_ORDERS, COL_CUSTOMER, company))),
+                  SqlUtils.and(SqlUtils.isNull(TBL_ORDERS, COL_PAYER),
+                      SqlUtils.equals(TBL_ORDERS, COL_CUSTOMER, company))),
               SqlUtils.isNull(TBL_CARGO_INCOMES, COL_SALE)));
 
       IsExpression cargoIncome;
@@ -2375,9 +2372,9 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
               .setWhere(SqlUtils.equals(fuels, COL_TRIP, rs.getLong(cnt, tripId))));
 
           SimpleRow row = qs.getRow(rep.getFuelConsumptionsQuery(new SqlSelect()
-              .addFields(TBL_TRIP_ROUTES, sys.getIdName(TBL_TRIP_ROUTES))
-              .addFrom(TBL_TRIP_ROUTES)
-              .setWhere(SqlUtils.equals(TBL_TRIP_ROUTES, COL_TRIP, rs.getLong(cnt, tripId))),
+                  .addFields(TBL_TRIP_ROUTES, sys.getIdName(TBL_TRIP_ROUTES))
+                  .addFrom(TBL_TRIP_ROUTES)
+                  .setWhere(SqlUtils.equals(TBL_TRIP_ROUTES, COL_TRIP, rs.getLong(cnt, tripId))),
               false));
 
           Double consume = row == null ? null : row.getDouble("Quantity");
@@ -2685,16 +2682,14 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
         ids.append("'").append(TradeModuleBean.encodeId(TBL_SALES, row.getLong(COL_SALE)))
             .append("'");
       }
-      String remoteNamespace = prm.getText(PRM_ERP_NAMESPACE);
       String remoteAddress = prm.getText(PRM_ERP_ADDRESS);
       String remoteLogin = prm.getText(PRM_ERP_LOGIN);
       String remotePassword = prm.getText(PRM_ERP_PASSWORD);
 
       try {
-        SimpleRowSet payments = ButentWS.connect(remoteNamespace, remoteAddress, remoteLogin,
-            remotePassword)
+        SimpleRowSet payments = ButentWS.connect(remoteAddress, remoteLogin, remotePassword)
             .getSQLData("SELECT extern_id AS id, apm_data AS data, apm_suma AS suma"
-                + " FROM apyvarta WHERE pajamos=0 AND extern_id IN(" + ids.toString() + ")",
+                    + " FROM apyvarta WHERE pajamos=0 AND extern_id IN(" + ids.toString() + ")",
                 "id", "data", "suma");
 
         for (SimpleRow payment : payments) {
@@ -2756,11 +2751,10 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
     ResponseObject response = ResponseObject.info(Localized.getConstants().messageSent());
     BufferedWriter wr = null;
     BufferedReader in = null;
+    HttpURLConnection conn = null;
 
     try {
-      URL url = new URL(address);
-      HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-
+      conn = (HttpURLConnection) new URL(address).openConnection();
       conn.setRequestMethod("POST");
       conn.setDoOutput(true);
 
@@ -2801,6 +2795,10 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
         logger.error(ex);
       }
       response = ResponseObject.error(e);
+    } finally {
+      if (conn != null) {
+        conn.disconnect();
+      }
     }
     return response;
   }

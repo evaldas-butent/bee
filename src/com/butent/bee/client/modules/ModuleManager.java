@@ -8,6 +8,7 @@ import com.butent.bee.client.modules.documents.DocumentsHandler;
 import com.butent.bee.client.modules.ec.EcKeeper;
 import com.butent.bee.client.modules.mail.MailKeeper;
 import com.butent.bee.client.modules.orders.OrdersKeeper;
+import com.butent.bee.client.modules.payroll.PayrollKeeper;
 import com.butent.bee.client.modules.projects.ProjectsKeeper;
 import com.butent.bee.client.modules.service.ServiceKeeper;
 import com.butent.bee.client.modules.tasks.TasksKeeper;
@@ -65,8 +66,13 @@ public final class ModuleManager {
     if (Module.SERVICE.isEnabled()) {
       ServiceKeeper.register();
     }
+
     if (Module.ORDERS.isEnabled()) {
       OrdersKeeper.register();
+    }
+
+    if (Module.PAYROLL.isEnabled()) {
+      PayrollKeeper.register();
     }
   }
 

@@ -18,7 +18,7 @@ public enum CellKind {
   private final String code;
   private final String styleName;
 
-  private CellKind(String code, String styleSuffix) {
+  CellKind(String code, String styleSuffix) {
     this.code = code;
     this.styleName = BeeConst.CSS_CLASS_PREFIX + styleSuffix;
   }

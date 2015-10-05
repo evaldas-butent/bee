@@ -1,6 +1,7 @@
 package com.butent.bee.server.modules.administration;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
+import static com.butent.bee.shared.modules.documents.DocumentConstants.*;
 
 import com.butent.bee.server.Config;
 import com.butent.bee.server.Invocation;
@@ -8,12 +9,15 @@ import com.butent.bee.server.concurrency.ConcurrencyBean;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.io.FileUtils;
+import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
+import com.butent.bee.server.utils.HtmlUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Holder;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.exceptions.BeeRuntimeException;
@@ -25,6 +29,9 @@ import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
+import com.lowagie.text.DocumentException;
+
+import org.xhtmlrenderer.pdf.ITextRenderer;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -38,7 +45,9 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
@@ -63,8 +72,89 @@ public class FileStorageBean {
   SystemBean sys;
   @EJB
   ConcurrencyBean cb;
+  @EJB
+  ParamHolderBean prm;
 
   private File repositoryDir;
+
+  public String createPdf(String content, String... styleSheets) {
+    StringBuilder sb = new StringBuilder();
+
+    for (String name : new String[] {PRM_PRINT_HEADER, PRM_PRINT_FOOTER}) {
+      Long id = prm.getRelation(name);
+
+      if (DataUtils.isId(id)) {
+        String nameContent = qs.getValue(new SqlSelect()
+            .addFields(TBL_EDITOR_TEMPLATES, COL_EDITOR_TEMPLATE_CONTENT)
+            .addFrom(TBL_EDITOR_TEMPLATES)
+            .setWhere(sys.idEquals(TBL_EDITOR_TEMPLATES, id)));
+
+        if (!BeeUtils.isEmpty(nameContent)) {
+          sb.append("<div style=\"position:running(").append(name).append(")\">")
+              .append(nameContent)
+              .append("</div>");
+        }
+      }
+    }
+    String parsed = HtmlUtils.cleanXml(sb.append(content).toString());
+
+    Map<Long, String> files = HtmlUtils.getFileReferences(parsed);
+    List<FileInfo> tmpFiles = new ArrayList<>();
+    String path = null;
+
+    try {
+      for (Long fileId : files.keySet()) {
+        FileInfo fileInfo = getFile(fileId);
+        tmpFiles.add(fileInfo);
+        parsed = parsed.replace(files.get(fileId), fileInfo.getFile().toURI().toString());
+      }
+      StringBuilder html = new StringBuilder("<?xml version=\"1.0\" encoding=\"utf-8\"?>")
+          .append("<!DOCTYPE html [<!ENTITY nbsp \"&#160;\">]>")
+          .append("<html xmlns=\"http://www.w3.org/1999/xhtml\"><head>")
+          .append("<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\"/>");
+
+      List<String> styles = Arrays.asList("print");
+
+      if (styleSheets != null) {
+        styles.addAll(Arrays.asList(styleSheets));
+      }
+      for (String style : styles) {
+        html.append("<link rel=\"stylesheet\" href=\"")
+            .append(new File(Config.WAR_DIR, Paths.getStyleSheetPath(style)).toURI().toString())
+            .append("\" />");
+      }
+      String style = prm.getText(PRM_PRINT_MARGINS);
+
+      if (!BeeUtils.isEmpty(style)) {
+        html.append("<style>")
+            .append("@page {margin:" + style + "}")
+            .append("</style>");
+      }
+      html.append("</head><body>" + parsed + "</body></html>");
+
+      ITextRenderer renderer = new ITextRenderer();
+      renderer.setDocumentFromString(html.toString());
+      renderer.layout();
+
+      File tmp = File.createTempFile("bee_", ".pdf");
+      tmp.deleteOnExit();
+      FileOutputStream os = new FileOutputStream(tmp);
+
+      renderer.createPDF(os);
+      os.close();
+
+      path = tmp.getPath();
+
+    } catch (IOException | DocumentException e) {
+      logger.error(e);
+
+    } finally {
+      for (FileInfo fileInfo : tmpFiles) {
+        fileInfo.close();
+      }
+    }
+    return path;
+  }
 
   public boolean deletePhoto(String fileName) {
     if (BeeUtils.isEmpty(fileName)) {
@@ -147,7 +237,7 @@ public class FileStorageBean {
     return storedFile;
   }
 
-  public List<FileInfo> getFiles() {
+  public List<FileInfo> getFiles(List<Long> fileIds) {
     List<FileInfo> files = new ArrayList<>();
 
     String idName = sys.getIdName(TBL_FILES);
@@ -156,6 +246,7 @@ public class FileStorageBean {
     SimpleRowSet data = qs.getData(new SqlSelect()
         .addFields(TBL_FILES, idName, versionName, COL_FILE_NAME, COL_FILE_SIZE, COL_FILE_TYPE)
         .addFrom(TBL_FILES)
+        .setWhere(sys.idInList(TBL_FILES, fileIds))
         .addOrder(TBL_FILES, versionName));
 
     for (SimpleRow row : data) {

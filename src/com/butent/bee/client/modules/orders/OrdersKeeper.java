@@ -1,12 +1,12 @@
 package com.butent.bee.client.modules.orders;
 
-import static com.butent.bee.shared.modules.orders.OrdersConstants.COL_ORDER;
-import static com.butent.bee.shared.modules.orders.OrdersConstants.VIEW_ORDER_SALES;
+import static com.butent.bee.shared.modules.orders.OrdersConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.GridFactory;
+import com.butent.bee.client.modules.trade.InvoicesGrid;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.shared.rights.Module;
 
@@ -33,6 +33,8 @@ public final class OrdersKeeper {
     FormFactory.registerFormInterceptor("OrderInvoice", new OrderInvoiceForm());
 
     GridFactory.registerGridInterceptor(VIEW_ORDER_SALES, new OrderInvoiceBuilder());
+    GridFactory.registerGridInterceptor(VIEW_ORDERS_INVOICES, new InvoicesGrid());
+    GridFactory.registerGridInterceptor(VIEW_ORDER_TMPL_ITEMS, new OrderTmplItemsGrid());
 
     SelectorEvent.register(new OrdersSelectorHandler());
   }

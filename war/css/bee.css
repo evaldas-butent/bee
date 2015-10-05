@@ -1,6 +1,6 @@
 ﻿@font-face {
   font-family: FontAwesome;
-  src: url(../fonts/fontawesome-webfont.woff?v=4.3.0);
+  src: url(../fonts/fontawesome-webfont.woff?v=4.4.0);
   font-weight: normal;
   font-style: normal;
 }
@@ -1755,7 +1755,7 @@
 
 .bee-Form .bee-disabled,
 .bee-Form .bee-disabled input {
-  background-color: whitesmoke;
+  background-color: #e8e8e8;
 }
 .bee-Form .bee-CheckBox.bee-disabled {
   background-color: inherit;
@@ -2721,7 +2721,8 @@
 }
 
 .bee-News-disclosure,
-.bee-News-refresh {
+.bee-News-refresh,
+.bee-News-dismissAll {
   position: absolute;
   top: 5px;
   color: #989898;
@@ -2730,14 +2731,18 @@
   cursor: pointer;
 }
 
-.bee-News-refresh:hover {
+.bee-News-refresh:hover,
+.bee-News-dismissAll:hover {
   color: black;
 }
 .bee-News-disclosure {
   left: 20px;
 }
 .bee-News-refresh {
-  right: 27px;
+  right: 45px;
+}
+.bee-News-dismissAll {
+  right: 20px;
 }
 .bee-News-settings {
   right: 10px;
@@ -2885,7 +2890,7 @@
   margin-right: 4px;
 }
 .bee-News-headline-new {
-  background-color: #aaa;
+  background-color: #1eb2d8;
 }
 .bee-News-headline-upd {
   background-color: yellow;
@@ -3760,4 +3765,14 @@ textarea,
 
 .bee-AddBookmark .bee-Dialog-action {
   margin-right: 15px;
+}
+
+.bee-CompanyStructure-command {
+  color: white;
+  font-size: 17px;
+  margin-right: 27px;
+}
+
+.bee-ItemPricePicker-disabled select {
+    visibility: hidden;
 }

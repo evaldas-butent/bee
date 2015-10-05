@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+  name="TimeCardCodes"
+  idName="TimeCardCodeID"
+  >
+  <Fields>
+    <Char name="TcCode" precision="2" notNull="true" unique="true" label="=code" />
+    <String name="TcName" precision="100" label="=name" />
+
+    <String name="Background" precision="100" label="=backgroundColor" />
+    <String name="Foreground" precision="100" label="=foregroundColor" />
+
+    <Text name="Description" label="=description" />
+  </Fields>
+</Table>

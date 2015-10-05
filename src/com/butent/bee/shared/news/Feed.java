@@ -27,6 +27,7 @@ import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -60,6 +61,28 @@ public enum Feed implements HasLocalizedCaption {
     @Override
     public String getCaption(LocalizableConstants constants) {
       return constants.feedTasksAll();
+    }
+  },
+
+  REQUESTS_ASSIGNED(
+      ModuleAndSub.of(Module.TASKS),
+      TaskConstants.TBL_REQUESTS,
+      TaskConstants.VIEW_REQUESTS,
+      Lists.newArrayList(TaskConstants.COL_REQUEST_CUSTOMER_NAME)) {
+    @Override
+    public String getCaption(LocalizableConstants constants) {
+      return constants.feedRequestsAssigned();
+    }
+  },
+
+  REQUESTS_ALL(
+      ModuleAndSub.of(Module.TASKS),
+      TaskConstants.TBL_REQUESTS,
+      TaskConstants.VIEW_REQUESTS,
+      Lists.newArrayList(TaskConstants.COL_REQUEST_CUSTOMER_NAME)) {
+    @Override
+    public String getCaption(LocalizableConstants constants) {
+      return constants.feedRequestsAll();
     }
   },
 
@@ -453,6 +476,8 @@ public enum Feed implements HasLocalizedCaption {
 
   };
 
+  public static final Collection<Feed> ALL = EnumSet.allOf(Feed.class);
+
   private static final String SEPARATOR = BeeConst.STRING_COMMA;
   private static final Splitter splitter = Splitter.on(SEPARATOR).omitEmptyStrings().trimResults();
 
@@ -494,22 +519,21 @@ public enum Feed implements HasLocalizedCaption {
   private final List<String> labelColumns;
   private final List<String> titleColumns;
 
-  private Feed(ModuleAndSub moduleAndSub, String table, String headlineView) {
+  Feed(ModuleAndSub moduleAndSub, String table, String headlineView) {
     this(moduleAndSub, table, headlineView, BeeConst.EMPTY_IMMUTABLE_STRING_LIST,
         BeeConst.EMPTY_IMMUTABLE_STRING_LIST);
   }
 
-  private Feed(ModuleAndSub moduleAndSub, String table, String headlineView, String labelColumn) {
+  Feed(ModuleAndSub moduleAndSub, String table, String headlineView, String labelColumn) {
     this(moduleAndSub, table, headlineView, Lists.newArrayList(labelColumn),
         BeeConst.EMPTY_IMMUTABLE_STRING_LIST);
   }
 
-  private Feed(ModuleAndSub moduleAndSub, String table, String headlineView,
-      List<String> labelColumns) {
+  Feed(ModuleAndSub moduleAndSub, String table, String headlineView, List<String> labelColumns) {
     this(moduleAndSub, table, headlineView, labelColumns, BeeConst.EMPTY_IMMUTABLE_STRING_LIST);
   }
 
-  private Feed(ModuleAndSub moduleAndSub, String table, String headlineView,
+  Feed(ModuleAndSub moduleAndSub, String table, String headlineView,
       List<String> labelColumns, List<String> titleColumns) {
 
     this.moduleAndSub = moduleAndSub;

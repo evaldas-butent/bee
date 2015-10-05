@@ -364,7 +364,6 @@ public class TecDocBean implements HasTimerService {
       return;
     }
     EcSupplier supplier = EcSupplier.EOLTAS;
-    String remoteNamespace = prm.getText(PRM_ERP_NAMESPACE);
     String remoteAddress = prm.getText(PRM_ERP_ADDRESS);
     String remoteLogin = prm.getText(PRM_ERP_LOGIN);
     String remotePassword = prm.getText(PRM_ERP_PASSWORD);
@@ -399,8 +398,7 @@ public class TecDocBean implements HasTimerService {
       String itemsFilter = "prekes.gam_art IS NOT NULL AND prekes.gam_art != ''"
           + " AND prekes.gamintojas IS NOT NULL AND prekes.gamintojas != ''";
 
-      SimpleRowSet rows = ButentWS.connect(remoteNamespace, remoteAddress, remoteLogin,
-          remotePassword)
+      SimpleRowSet rows = ButentWS.connect(remoteAddress, remoteLogin, remotePassword)
           .getSQLData("SELECT " + fldList.toString()
                   + " FROM prekes"
                   + " WHERE " + itemsFilter,
@@ -422,14 +420,14 @@ public class TecDocBean implements HasTimerService {
         }
         importItems(supplier, data);
       }
-      rows = ButentWS.connect(remoteNamespace, remoteAddress, remoteLogin, remotePassword)
+      rows = ButentWS.connect(remoteAddress, remoteLogin, remotePassword)
           .getSQLData("SELECT likuciai.sandelis AS sn, likuciai.preke AS pr,"
                   + " sum(likuciai.kiekis) AS lk"
                   + " FROM likuciai INNER JOIN sand"
                   + " ON likuciai.sandelis = sand.sandelis AND sand.sand_mode LIKE '%e%'"
                   + " INNER JOIN prekes ON likuciai.preke = prekes.preke AND " + itemsFilter
                   + " GROUP by likuciai.sandelis, likuciai.preke HAVING lk > 0",
-              new String[] {"sn", "pr", "lk"});
+              "sn", "pr", "lk");
 
       if (rows.getNumberOfRows() > 0) {
         List<RemoteRemainder> data = Lists.newArrayListWithCapacity(rows.getNumberOfRows());
@@ -1261,7 +1259,7 @@ public class TecDocBean implements HasTimerService {
       sql.setLimit(chunk);
       SqlInsert insert = new SqlInsert(TBL_TCD_GRAPHICS)
           .addFields(COL_TCD_GRAPHICS_TYPE, COL_TCD_GRAPHICS_RESOURCE, TCD_TECDOC_ID,
-              sys.getIdName(TBL_TCD_GRAPHICS), sys.getVersionName(TBL_TCD_GRAPHICS));
+              sys.getIdName(TBL_TCD_GRAPHICS));
 
       do {
         data = qs.getData(sql.setOffset(offset));
@@ -1296,9 +1294,7 @@ public class TecDocBean implements HasTimerService {
               }
             }
           }
-          insert.addValues(new Object[] {
-              type, image, row.getLong(TCD_TECDOC_ID),
-              ig.getId(TBL_TCD_GRAPHICS), System.currentTimeMillis()});
+          insert.addValues(type, image, row.getLong(TCD_TECDOC_ID), ig.getId(TBL_TCD_GRAPHICS));
 
           if (++tot % chunk == 0) {
             qs.insertData(insert);

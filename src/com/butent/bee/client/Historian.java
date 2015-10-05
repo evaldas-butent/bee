@@ -58,7 +58,7 @@ public final class Historian implements HasInfo {
 
     private final String caption;
 
-    private BrowserHistoryState(String caption) {
+    BrowserHistoryState(String caption) {
       this.caption = caption;
     }
 

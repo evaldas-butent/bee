@@ -18,6 +18,9 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
+import com.butent.bee.shared.modules.orders.OrdersConstants.OrdersStatus;
+
+import java.util.Objects;
 
 class OrderItemsPicker extends ItemsPicker {
 
@@ -25,8 +28,12 @@ class OrderItemsPicker extends ItemsPicker {
   public void getItems(Filter filter, final RowSetCallback callback) {
     ParameterList params = OrdersKeeper.createSvcArgs(SVC_GET_ITEMS_FOR_SELECTION);
 
-    if (DataUtils.hasId(lastRow)) {
-      params.addDataItem(COL_ORDER, lastRow.getId());
+    if (DataUtils.hasId(getLastRow())) {
+      params.addDataItem(COL_ORDER, getLastRow().getId());
+    }
+
+    if (DataUtils.isId(getWarehouseFrom())) {
+      params.addDataItem(ClassifierConstants.COL_WAREHOUSE, getWarehouseFrom());
     }
 
     if (filter != null) {
@@ -53,5 +60,15 @@ class OrderItemsPicker extends ItemsPicker {
     }
 
     return row.getLong(warehouseIdx);
+  }
+
+  @Override
+  public boolean setIsOrder(IsRow row) {
+    int statusIdx = Data.getColumnIndex(VIEW_ORDERS, COL_ORDERS_STATUS);
+    if (row == null || BeeConst.isUndef(statusIdx)) {
+      return false;
+    }
+
+    return Objects.equals(row.getInteger(statusIdx), OrdersStatus.APPROVED.ordinal());
   }
 }

@@ -42,8 +42,8 @@ public interface GridView extends DataView, HasAddStartHandlers, HasAddEndHandle
     RowInsertEvent.Handler, RowUpdateEvent.Handler, EditStartEvent.Handler,
     RowCountChangeEvent.Handler, HasSummaryChangeHandlers {
 
-  public enum SelectedRows {
-    ALL, EDITABLE, REMOVABLE
+  enum SelectedRows {
+    ALL, EDITABLE, REMOVABLE, MERGEABLE
   }
 
   boolean addColumn(ColumnDescription columnDescription, String dynGroup, int beforeIndex);

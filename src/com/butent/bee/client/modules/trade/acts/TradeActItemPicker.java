@@ -23,17 +23,17 @@ class TradeActItemPicker extends ItemsPicker {
   public void getItems(Filter filter, final RowSetCallback callback) {
     ParameterList params = TradeActKeeper.createArgs(SVC_GET_ITEMS_FOR_SELECTION);
 
-    if (DataUtils.hasId(lastRow)) {
-      params.addDataItem(COL_TRADE_ACT, lastRow.getId());
+    if (DataUtils.hasId(getLastRow())) {
+      params.addDataItem(COL_TRADE_ACT, getLastRow().getId());
     }
 
-    TradeActKind kind = TradeActKeeper.getKind(VIEW_TRADE_ACTS, lastRow);
+    TradeActKind kind = TradeActKeeper.getKind(VIEW_TRADE_ACTS, getLastRow());
     if (kind != null) {
       params.addDataItem(COL_TA_KIND, kind.ordinal());
     }
 
-    if (DataUtils.isId(warehouseFrom)) {
-      params.addDataItem(ClassifierConstants.COL_WAREHOUSE, warehouseFrom);
+    if (DataUtils.isId(getWarehouseFrom())) {
+      params.addDataItem(ClassifierConstants.COL_WAREHOUSE, getWarehouseFrom());
     }
 
     if (filter != null) {
@@ -57,5 +57,10 @@ class TradeActItemPicker extends ItemsPicker {
   @Override
   public Long getWarehouseFrom(IsRow row) {
     return TradeActKeeper.getWarehouseFrom(VIEW_TRADE_ACTS, row);
+  }
+
+  @Override
+  public boolean setIsOrder(IsRow row) {
+    return false;
   }
 }

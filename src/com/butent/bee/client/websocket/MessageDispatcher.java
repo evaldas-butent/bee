@@ -39,6 +39,7 @@ import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.data.event.ModificationEvent;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogLevel;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.mail.MailConstants.MessageFlag;
 import com.butent.bee.shared.news.Feed;
@@ -68,6 +69,7 @@ import com.butent.bee.shared.websocket.messages.ShowMessage;
 import com.butent.bee.shared.websocket.messages.ShowMessage.Subject;
 import com.butent.bee.shared.websocket.messages.UsersMessage;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -359,9 +361,13 @@ class MessageDispatcher {
 
       case LOG:
         LogMessage logMessage = (LogMessage) message;
+        LogLevel level = logMessage.getLevel();
 
-        if (logMessage.getLevel() != null && !BeeUtils.isEmpty(logMessage.getText())) {
-          logger.log(logMessage.getLevel(), logMessage.getText());
+        if (level != null && !BeeUtils.isEmpty(logMessage.getText())) {
+          if (level == LogLevel.ERROR) {
+            BeeKeeper.getScreen().notifySevere(logMessage.getText());
+          }
+          logger.log(level, logMessage.getText());
         } else {
           WsUtils.onEmptyMessage(message);
         }
@@ -376,7 +382,7 @@ class MessageDispatcher {
               || Objects.equals(mailMessage.getFlag(), MessageFlag.SEEN);
 
           if (Global.getNewsAggregator().hasSubscription(Feed.MAIL) && refreshFolders) {
-            Global.getNewsAggregator().refresh();
+            Global.getNewsAggregator().refresh(Collections.singleton(Feed.MAIL));
           }
           MailKeeper.refreshActivePanel(refreshFolders, mailMessage.getFolderId());
 

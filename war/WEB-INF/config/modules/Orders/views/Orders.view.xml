@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<View xmlns="http://www.butent.com/view" name="Orders" source="Orders" module="Orders" editForm="Order"
-  newRowForm="Order">
+<View xmlns="http://www.butent.com/view" name="Orders" source="Orders" module="Orders" editForm="Order" newRowForm="Order">
   <Columns>
     <SimpleColumn name="Status" />
     <SimpleColumn name="Source" />
@@ -15,6 +14,7 @@
 
     <SimpleColumn name="Warehouse" />
     <SimpleJoin name="Warehouse" joinType="LEFT">
+      <SimpleColumn name="Code" alias="WarehouseCode" />
       <SimpleColumn name="Name" alias="WarehouseName" />
     </SimpleJoin>
 
@@ -68,5 +68,6 @@
     </SimpleJoin>
 
     <SimpleColumn name="Notes" />
+
   </Columns>
 </View>

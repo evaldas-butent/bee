@@ -25,9 +25,11 @@ import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.Value;
+import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.data.view.RowInfoList;
+import com.butent.bee.shared.data.view.ViewColumn;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.time.DateTime;
@@ -43,6 +45,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * Contains methods for getting {@code RowSets} and making POST requests.
@@ -235,50 +241,65 @@ public final class Queries {
         });
   }
 
-  public static int getData(Collection<String> viewNames, final CachingPolicy cachingPolicy,
-      final DataCallback callback) {
+  public static int getData(Collection<String> viewNames, DataCallback callback) {
+    return getData(viewNames, null, CachingPolicy.NONE, callback);
+  }
+
+  public static int getData(Collection<String> viewNames, Map<String, Filter> filters,
+      final CachingPolicy cachingPolicy, final DataCallback callback) {
 
     Assert.notEmpty(viewNames);
     Assert.notNull(callback);
 
     final List<BeeRowSet> result = new ArrayList<>();
-    final String viewList;
+    final List<String> viewList = new ArrayList<>();
 
     if (cachingPolicy != null && cachingPolicy.doRead()) {
-      List<String> notCached = new ArrayList<>();
-
       for (String viewName : viewNames) {
-        BeeRowSet rowSet = Global.getCache().getRowSet(viewName);
+        BeeRowSet rowSet = BeeUtils.containsKey(filters, viewName)
+            ? null : Global.getCache().getRowSet(viewName);
+
         if (rowSet != null) {
           result.add(rowSet);
         } else {
-          notCached.add(viewName);
+          viewList.add(viewName);
         }
       }
 
-      if (notCached.isEmpty()) {
+      if (viewList.isEmpty()) {
         callback.onSuccess(result);
         return RESPONSE_FROM_CACHE;
       }
-      viewList = NameUtils.join(notCached);
 
     } else {
-      viewList = NameUtils.join(viewNames);
+      viewList.addAll(viewNames);
     }
 
     Assert.notEmpty(viewList);
 
     final String service = Service.GET_DATA;
     ParameterList parameters = new ParameterList(service);
-    parameters.addDataItem(Service.VAR_VIEW_LIST, viewList);
+
+    parameters.addDataItem(Service.VAR_VIEW_LIST, NameUtils.join(viewList));
+
+    if (!BeeUtils.isEmpty(filters)) {
+      for (String viewName : viewList) {
+        Filter filter = filters.get(viewName);
+
+        if (filter != null) {
+          parameters.addDataItem(Service.VAR_VIEW_WHERE + viewName, filter.serialize());
+        }
+      }
+    }
 
     return BeeKeeper.getRpc().makePostRequest(parameters, new ResponseCallback() {
       @Override
       public void onResponse(ResponseObject response) {
-        if (checkResponse(service, getRpcId(), viewList, response, null, callback)) {
+        if (checkResponse(service, getRpcId(), viewList.toString(), response, null, callback)) {
           String[] arr = Codec.beeDeserializeCollection((String) response.getResponse());
           if (ArrayUtils.isEmpty(arr)) {
-            error(callback, service, getRpcId(), viewList, "response type:", response.getType());
+            error(callback, service, getRpcId(), viewList.toString(),
+                "response type:", response.getType());
             return;
           }
 
@@ -637,6 +658,83 @@ public final class Queries {
 
   public static boolean isResponseFromCache(int id) {
     return id == RESPONSE_FROM_CACHE;
+  }
+
+  public static void mergeRows(final String viewName, long from, long into,
+      final IntCallback callback) {
+
+    Assert.notEmpty(viewName);
+    Assert.isTrue(DataUtils.isId(from));
+    Assert.isTrue(DataUtils.isId(into));
+    Assert.isTrue(!Objects.equals(from, into));
+
+    ParameterList params = new ParameterList(Service.MERGE_ROWS);
+    params.addQueryItem(Service.VAR_VIEW_NAME, viewName);
+    params.addQueryItem(Service.VAR_FROM, from);
+    params.addQueryItem(Service.VAR_TO, into);
+
+    BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+        if (checkResponse(Service.MERGE_ROWS, getRpcId(), viewName, response, null, callback)) {
+          int size = response.getSize();
+
+          if (size > 0) {
+            String[] tables = Codec.beeDeserializeCollection(response.getResponseAsString());
+
+            if (!ArrayUtils.isEmpty(tables)) {
+              String mainTable = Data.getViewTable(viewName);
+
+              Set<String> otherTables = new TreeSet<>();
+              for (String table : tables) {
+                if (!Objects.equals(table, mainTable)) {
+                  otherTables.add(table);
+                }
+              }
+
+              Set<String> viewNames = new TreeSet<>();
+
+              for (DataInfo dataInfo : Data.getDataInfoProvider().getViews()) {
+                if (Objects.equals(mainTable, dataInfo.getTableName())) {
+                  viewNames.add(dataInfo.getViewName());
+                }
+              }
+
+              if (!otherTables.isEmpty()) {
+                for (DataInfo dataInfo : Data.getDataInfoProvider().getViews()) {
+                  boolean ok = dataInfo.getTableName() != null
+                      && otherTables.contains(dataInfo.getTableName());
+
+                  if (!ok) {
+                    for (ViewColumn vc : dataInfo.getViewColumns()) {
+                      if (vc.getTable() != null && otherTables.contains(vc.getTable())) {
+                        ok = true;
+                        break;
+                      }
+                    }
+                  }
+
+                  if (ok) {
+                    viewNames.add(dataInfo.getViewName());
+                  }
+                }
+              }
+
+              logger.info(Service.MERGE_ROWS, "tables", mainTable, otherTables);
+              logger.info(Service.MERGE_ROWS, "views", viewNames);
+
+              if (!viewNames.isEmpty()) {
+                DataChangeEvent.fireRefresh(BeeKeeper.getBus(), viewNames);
+              }
+            }
+          }
+
+          if (callback != null) {
+            callback.onSuccess(size);
+          }
+        }
+      }
+    });
   }
 
   public static void update(String viewName, long rowId, String column, Value value) {

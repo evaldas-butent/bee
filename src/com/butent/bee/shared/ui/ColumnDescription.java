@@ -53,7 +53,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
     private final String tagName;
     private final boolean readOnly;
 
-    private ColType(String tagName, boolean readOnly) {
+    ColType(String tagName, boolean readOnly) {
       this.tagName = tagName;
       this.readOnly = readOnly;
     }
