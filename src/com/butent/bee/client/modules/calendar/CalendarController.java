@@ -28,6 +28,7 @@ import com.butent.bee.client.screen.Domain;
 import com.butent.bee.client.screen.HandlesStateChange;
 import com.butent.bee.client.screen.HasDomain;
 import com.butent.bee.client.view.edit.EditStopEvent;
+import com.butent.bee.client.widget.CheckBox;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.Label;
@@ -153,6 +154,7 @@ class CalendarController extends Flow implements HandlesStateChange, HasCaption,
 
   private static final String STYLE_DISCLOSURE = STYLE_PREFIX + "disclosure";
   private static final String STYLE_DATE_PICKER = STYLE_PREFIX + "datePicker";
+  private static final String STYLE_CHECK_ALL_ATTENDEES = STYLE_PREFIX + "checkAllAttendees";
 
   private static final String STYLE_TABLE_PANEL = STYLE_PREFIX + "tablePanel";
   private static final String STYLE_TABLE = STYLE_PREFIX + "table";
@@ -207,8 +209,10 @@ class CalendarController extends Flow implements HandlesStateChange, HasCaption,
   private final Image disclosureClosed = new Image(Global.getImages().disclosureClosed());
 
   private final DatePicker datePicker = new DatePicker(TimeUtils.today(), MIN_DATE, MAX_DATE);
+  private final CheckBox checkAllAttendees = new CheckBox();
 
   private final HtmlTable table = new HtmlTable();
+  private final HtmlTable checkTable = new HtmlTable();
   private final List<Long> ucaIds = new ArrayList<>();
 
   private final InputColor colorPicker = new InputColor();
@@ -502,6 +506,36 @@ class CalendarController extends Flow implements HandlesStateChange, HasCaption,
       }
     });
     add(datePicker);
+
+    checkTable.addStyleName(STYLE_CHECK_ALL_ATTENDEES);
+    add(checkTable);
+
+    checkAllAttendees.setTitle(Localized.getConstants().filterAll());
+    checkAllAttendees.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        for (BeeRow row : ucAttendees.getRows()) {
+          setEnabled(row.getId(), checkAllAttendees.isChecked());
+        }
+
+        for (int i = 0; i < table.getRowCount(); i++) {
+          for (int j = 0; j < table.getCellCount(i); j++) {
+            Widget w = table.getWidget(i, j);
+            if (w instanceof SimpleCheckBox && BeeUtils
+                .containsSame(w.getStyleName(), UcaColumn.ENABLE.getLabel())) {
+              ((SimpleCheckBox) w).setChecked(checkAllAttendees.isChecked());
+            }
+          }
+        }
+
+      }
+    });
+
+    checkTable
+        .setWidgetAndStyle(0, 0, new Label(Localized.getConstants().calAttendees()),
+            STYLE_PREFIX + UcaColumn.CAPTION.getLabel());
+    checkTable.setWidgetAndStyle(0, 1, checkAllAttendees,
+        STYLE_PREFIX + UcaColumn.ENABLE.getLabel());
 
     table.addStyleName(STYLE_TABLE);
     for (BeeRow row : ucAttendees.getRows()) {
