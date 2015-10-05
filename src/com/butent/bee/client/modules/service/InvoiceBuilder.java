@@ -33,7 +33,7 @@ import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
-import com.butent.bee.shared.modules.service.ServiceConstants.ObjectStatus;
+import com.butent.bee.shared.modules.service.ServiceConstants.SvcObjectStatus;
 import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -119,7 +119,7 @@ final class InvoiceBuilder {
 
         int kindType =
             BeeUtils.unbox(form.getActiveRow().getInteger(form.getDataIndex(COL_OBJECT_STATUS)))
-            == ObjectStatus.SERVICE_OBJECT.ordinal() ? 1 : 2;
+                == SvcObjectStatus.SERVICE_OBJECT.ordinal() ? 1 : 2;
 
         invRow.setValue(invInfo.getColumnIndex(TradeConstants.COL_TRADE_KIND), kindType);
 

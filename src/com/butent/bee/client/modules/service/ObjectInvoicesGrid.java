@@ -27,7 +27,7 @@ import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.modules.service.ServiceConstants.ObjectStatus;
+import com.butent.bee.shared.modules.service.ServiceConstants.SvcObjectStatus;
 import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -84,7 +84,7 @@ public class ObjectInvoicesGrid extends AbstractGridInterceptor {
         int objStatus = BeeUtils.unbox(
             form.getActiveRow().getInteger(dataInfo.getColumnIndex(COL_OBJECT_STATUS)));
 
-        int filteredValue = ObjectStatus.SERVICE_OBJECT.ordinal() == objStatus
+        int filteredValue = SvcObjectStatus.SERVICE_OBJECT.ordinal() == objStatus
             ? 1 : 2;
 
         Filter filter =
@@ -131,7 +131,7 @@ public class ObjectInvoicesGrid extends AbstractGridInterceptor {
         Integer objStatus =
             form.getActiveRow().getInteger(dataInfo.getColumnIndex(COL_OBJECT_STATUS));
 
-        if (BeeUtils.unbox(objStatus) != ObjectStatus.SERVICE_OBJECT.ordinal()
+        if (BeeUtils.unbox(objStatus) != SvcObjectStatus.SERVICE_OBJECT.ordinal()
             && showAllCheckBox != null) {
           StyleUtils.setDisplay(showAllCheckBox, Display.NONE);
         } else if (showAllCheckBox != null) {

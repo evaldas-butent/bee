@@ -67,7 +67,7 @@ import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
-import com.butent.bee.shared.modules.service.ServiceConstants.ObjectStatus;
+import com.butent.bee.shared.modules.service.ServiceConstants.SvcObjectStatus;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -315,7 +315,7 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
   }
 
   private static void createActionButton(HeaderView headerView, FormView formView, IsRow row,
-      ObjectStatus status) {
+      SvcObjectStatus status) {
 
     if (BeeUtils.isEmpty(status.getCommandCaption())) {
       return;
@@ -331,7 +331,7 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
 
   }
 
-  private static void createActionItemCommand(IdentifiableWidget widget, ObjectStatus status,
+  private static void createActionItemCommand(IdentifiableWidget widget, SvcObjectStatus status,
       final FormView formView, final IsRow row) {
     if (!(widget instanceof HasClickHandlers)) {
       return;
@@ -377,18 +377,18 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
     return input;
   }
 
-  private static boolean isActionEnabled(ObjectStatus status, FormView formView, IsRow row) {
+  private static boolean isActionEnabled(SvcObjectStatus status, FormView formView, IsRow row) {
     int currStatus = BeeUtils.unbox(row.getInteger(formView.getDataIndex(COL_OBJECT_STATUS)));
     int actionStatus = status.ordinal();
 
-    boolean currIsUnknown = EnumUtils.getEnumByIndex(ObjectStatus.class, currStatus) == null;
+    boolean currIsUnknown = EnumUtils.getEnumByIndex(SvcObjectStatus.class, currStatus) == null;
     // boolean currIsServiceObj = currStatus == ObjectStatus.SERVICE_OBJECT.ordinal();
-    boolean currIsProjectObj = currStatus == ObjectStatus.PROJECT_OBJECT.ordinal();
-    boolean currIsPotentialObj = currStatus == ObjectStatus.POTENTIAL_OBJECT.ordinal();
+    boolean currIsProjectObj = currStatus == SvcObjectStatus.PROJECT_OBJECT.ordinal();
+    boolean currIsPotentialObj = currStatus == SvcObjectStatus.POTENTIAL_OBJECT.ordinal();
 
-    boolean actionIsServiceObj = actionStatus == ObjectStatus.SERVICE_OBJECT.ordinal();
-    boolean actionIsProjectObj = actionStatus == ObjectStatus.PROJECT_OBJECT.ordinal();
-    boolean actionIsLostObj = actionStatus == ObjectStatus.LOST_OBJECT.ordinal();
+    boolean actionIsServiceObj = actionStatus == SvcObjectStatus.SERVICE_OBJECT.ordinal();
+    boolean actionIsProjectObj = actionStatus == SvcObjectStatus.PROJECT_OBJECT.ordinal();
+    boolean actionIsLostObj = actionStatus == SvcObjectStatus.LOST_OBJECT.ordinal();
 
     boolean result =
         (currIsUnknown && (actionIsServiceObj || actionIsProjectObj))
@@ -400,7 +400,7 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
   }
 
   private static DecisionCallback getObjectStatusDecisionCallback(final FormView formView,
-      final IsRow row, final ObjectStatus status) {
+      final IsRow row, final SvcObjectStatus status) {
 
     Assert.notNull(formView);
     Assert.notNull(row);
@@ -646,7 +646,7 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
   private static void setAsLostObject(final FormView formView, final IsRow row) {
 
     DecisionCallback decisionCallback = getObjectStatusDecisionCallback(formView, row,
-        ObjectStatus.LOST_OBJECT);
+        SvcObjectStatus.LOST_OBJECT);
 
     Global.getMsgBoxen().decide(Localized.getConstants().svcActionToLostObjects(),
         Lists.newArrayList(Localized.getConstants().svcSendToLostObjectQuestion()),
@@ -656,7 +656,7 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
   private static void setAsProjectObject(final FormView formView, final IsRow row) {
 
     DecisionCallback decisionCallback = getObjectStatusDecisionCallback(formView, row,
-        ObjectStatus.PROJECT_OBJECT);
+        SvcObjectStatus.PROJECT_OBJECT);
 
     Global.getMsgBoxen().decide(Localized.getConstants().svcActionToProjectObjects(),
         Lists.newArrayList(Localized.getConstants().svcSendToProjectObjectQuestion()),
@@ -665,7 +665,7 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
 
   private static void setAsServiceObject(final FormView formView, final IsRow row) {
     DecisionCallback decisionCallback = getObjectStatusDecisionCallback(formView, row,
-        ObjectStatus.SERVICE_OBJECT);
+        SvcObjectStatus.SERVICE_OBJECT);
 
     Global.getMsgBoxen().decide(Localized.getConstants().svcActionToServiceObjects(),
         Lists.newArrayList(Localized.getConstants().svcSendToServiceObjectQuestion()),
@@ -686,7 +686,7 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
       return;
     }
 
-    for (ObjectStatus objStatus : ObjectStatus.values()) {
+    for (SvcObjectStatus objStatus : SvcObjectStatus.values()) {
       createActionButton(header, form, row, objStatus);
     }
   }

@@ -499,13 +499,13 @@ public class TradeModuleBean implements BeeModule {
         customer = invoice.getLong(COL_TRADE_SUPPLIER);
       }
       if (DataUtils.isId(customer) && Objects.equals(customer, prm.getRelation("ERPCustomer"))) {
-        remoteNamespace = prm.getText("ERPCustomerNamespace");
+        //        remoteNamespace = prm.getText("ERPCustomerNamespace");
         remoteAddress = prm.getText("ERPCustomerAddress");
         remoteLogin = prm.getText("ERPCustomerLogin");
         remotePassword = prm.getText("ERPCustomerPassword");
       } else {
         customer = null;
-        remoteNamespace = prm.getText(PRM_ERP_NAMESPACE);
+        //        remoteNamespace = prm.getText(PRM_ERP_NAMESPACE);
         remoteAddress = prm.getText(PRM_ERP_ADDRESS);
         remoteLogin = prm.getText(PRM_ERP_LOGIN);
         remotePassword = prm.getText(PRM_ERP_PASSWORD);

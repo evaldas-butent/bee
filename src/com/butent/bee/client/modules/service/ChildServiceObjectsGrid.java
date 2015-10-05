@@ -77,7 +77,7 @@ class ChildServiceObjectsGrid extends AbstractGridInterceptor {
     }
 
     row.setValue(svcObjectView.getColumnIndex(ServiceConstants.COL_OBJECT_STATUS),
-        ServiceConstants.ObjectStatus.POTENTIAL_OBJECT.ordinal());
+        ServiceConstants.SvcObjectStatus.POTENTIAL_OBJECT.ordinal());
   }
 
   private static void fillParentFormData(DataInfo svcObjectView, BeeRow row, FormView pForm,

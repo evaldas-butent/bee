@@ -7,7 +7,8 @@
   <Fields>
     <Relation name="Category" relation="ServiceTree" notNull="true" label="=category" />
     <String name="Address" precision="100" notNull="true" label="=address" />
-    <Enum name="Status" key="ObjectStatus" notNull="true" defValue="0" label="=svcObjectStatus" />
+    <Enum name="Status" key="SvcObjectStatus" notNull="true" defValue="0"
+      label="=svcObjectStatus" />
 
     <Relation name="Customer" relation="Companies" label="=customer" />
     <Relation name="Contractor" relation="Companies" label="=svcContractor" />

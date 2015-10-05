@@ -45,7 +45,7 @@ import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.documents.DocumentConstants;
 import com.butent.bee.shared.modules.projects.ProjectConstants;
-import com.butent.bee.shared.modules.service.ServiceConstants.ObjectStatus;
+import com.butent.bee.shared.modules.service.ServiceConstants.SvcObjectStatus;
 import com.butent.bee.shared.modules.service.ServiceConstants.ServiceFilterDataType;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.time.JustDate;
@@ -182,12 +182,12 @@ public class ServiceModuleBean implements BeeModule {
 
   public ResponseObject setProjectServiceLostStatus(Long projectId) {
     SqlUpdate update = new SqlUpdate(TBL_SERVICE_OBJECTS);
-    update.addConstant(COL_OBJECT_STATUS, ObjectStatus.LOST_OBJECT.ordinal())
+    update.addConstant(COL_OBJECT_STATUS, SvcObjectStatus.LOST_OBJECT.ordinal())
         .setWhere(SqlUtils.and(SqlUtils.or(
             SqlUtils.equals(TBL_SERVICE_OBJECTS, COL_OBJECT_STATUS,
-                ObjectStatus.POTENTIAL_OBJECT.ordinal()),
+                SvcObjectStatus.POTENTIAL_OBJECT.ordinal()),
                 SqlUtils.equals(TBL_SERVICE_OBJECTS, COL_OBJECT_STATUS,
-                    ObjectStatus.PROJECT_OBJECT.ordinal())),
+                    SvcObjectStatus.PROJECT_OBJECT.ordinal())),
             SqlUtils.equals(TBL_SERVICE_OBJECTS, ProjectConstants.COL_PROJECT, projectId)));
     return qs.updateDataWithResponse(update);
   }
@@ -646,13 +646,13 @@ public class ServiceModuleBean implements BeeModule {
                 SqlUtils.notNull(TBL_RELATIONS, COL_RECURRING_TASK))),
         SqlUtils.in(TBL_SERVICE_OBJECTS, idName, TBL_SERVICE_DATES, COL_SERVICE_OBJECT));
 
-    if (EnumUtils.isOrdinal(ObjectStatus.class, svcObjStatus)) {
+    if (EnumUtils.isOrdinal(SvcObjectStatus.class, svcObjStatus)) {
       IsCondition objFilter = SqlUtils.equals(TBL_SERVICE_OBJECTS, COL_OBJECT_STATUS, svcObjStatus);
 
-      if (ObjectStatus.PROJECT_OBJECT.ordinal() == svcObjStatus) {
+      if (SvcObjectStatus.PROJECT_OBJECT.ordinal() == svcObjStatus) {
         objFilter = SqlUtils.or(objFilter,
             SqlUtils.equals(TBL_SERVICE_OBJECTS, COL_OBJECT_STATUS,
-                ObjectStatus.POTENTIAL_OBJECT.ordinal()));
+                SvcObjectStatus.POTENTIAL_OBJECT.ordinal()));
       }
 
       where =

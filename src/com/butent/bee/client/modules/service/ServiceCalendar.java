@@ -68,7 +68,7 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
-import com.butent.bee.shared.modules.service.ServiceConstants.ObjectStatus;
+import com.butent.bee.shared.modules.service.ServiceConstants.SvcObjectStatus;
 import com.butent.bee.shared.modules.service.ServiceConstants.ServiceCompanyKind;
 import com.butent.bee.shared.modules.service.ServiceConstants.ServiceFilterDataType;
 import com.butent.bee.shared.modules.tasks.TaskConstants.TaskPriority;
@@ -159,9 +159,9 @@ final class ServiceCalendar extends TimeBoard {
   private static final Set<String> relevantDataViews = Sets.newHashSet(VIEW_SERVICE_OBJECTS,
       VIEW_SERVICE_DATES, VIEW_TASKS, VIEW_RECURRING_TASKS, VIEW_RT_DATES, VIEW_TASK_TYPES);
 
-  private static ObjectStatus currentStatus;
+  private static SvcObjectStatus currentStatus;
 
-  static void open(final ViewCallback callback, final ObjectStatus status) {
+  static void open(final ViewCallback callback, final SvcObjectStatus status) {
     Assert.notNull(status);
     currentStatus = status;
     ParameterList svcParams = ServiceKeeper.createArgs(SVC_GET_CALENDAR_DATA);

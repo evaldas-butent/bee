@@ -13,7 +13,7 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.modules.documents.DocumentConstants;
-import com.butent.bee.shared.modules.service.ServiceConstants.ObjectStatus;
+import com.butent.bee.shared.modules.service.ServiceConstants.SvcObjectStatus;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 
@@ -32,14 +32,14 @@ public final class ServiceUtils {
       return;
     }
 
-    ObjectStatus status =
-        EnumUtils.getEnumByIndex(ObjectStatus.class, parentFormRow.getInteger(dataInfo
+    SvcObjectStatus status =
+        EnumUtils.getEnumByIndex(SvcObjectStatus.class, parentFormRow.getInteger(dataInfo
             .getColumnIndex(COL_OBJECT_STATUS)));
 
     fillCategory(status, formDataInfo, formRow);
   }
 
-  private static void fillCategory(ObjectStatus status, DataInfo dataInfo, IsRow formRow) {
+  private static void fillCategory(SvcObjectStatus status, DataInfo dataInfo, IsRow formRow) {
 
     switch (status) {
       case POTENTIAL_OBJECT:
