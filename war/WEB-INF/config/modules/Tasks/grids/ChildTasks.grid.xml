@@ -11,7 +11,7 @@
   <xi:include href="columns/TaskStar.column.xml" />
   <g:columns>
     <IdColumn name="Id" />
-    <RelColumn name="ProjectStage" label="=prjStage" />
+    <!-- RelColumn name="ProjectStage" label="=prjStage"  -->
   </g:columns>
 
   <xi:include href="columns/Task.columns.xml" />
@@ -19,24 +19,23 @@
   <g:columns>
     <DataColumn name="ExpectedExpenses" scale="2" />
     <CalcColumn type="string" name="ActualDuration" label="=prjActualTaskDuration"
-      caption="=prjActualTaskDuration" filterOptions="ActualDuration" >
+      caption="=prjActualTaskDuration" filterOptions="ActualDuration">
       <render>
-          <ui:function>
-            var diff = row.ActualDuration,
-              seconds = 0,
-              minutes = 0,
-              hours = 0,
-              days = 0,
+        <ui:function>
+          var diff = row.ActualDuration,
+          seconds = 0,
+          minutes = 0,
+          hours = 0,
+          days = 0,
 
-
-            seconds = parseInt(diff / 1000 % 60, 10);
-            minutes = parseInt(diff / 1000 / 60 % 60, 10);
-            hours = parseInt(diff / 1000 / 60 / 60, 10);
-            text = (hours > 9 ? hours : ('0' + hours)) + ':'
-            + (minutes > 9 ? minutes : ('0' + minutes));
-            return text;
-          </ui:function>
-        </render>
+          seconds = parseInt(diff / 1000 % 60, 10);
+          minutes = parseInt(diff / 1000 / 60 % 60, 10);
+          hours = parseInt(diff / 1000 / 60 / 60, 10);
+          text = (hours > 9 ? hours : ('0' + hours)) + ':'
+          + (minutes > 9 ? minutes : ('0' + minutes));
+          return text;
+        </ui:function>
+      </render>
     </CalcColumn>
     <DataColumn name="ActualExpenses" scale="2" />
     <RelColumn name="Currency" />
