@@ -60,7 +60,7 @@ public abstract class AbstractFilterSupplier implements HasViewName, HasOptions,
 
     private final String caption;
 
-    private SupplierAction(String caption) {
+    SupplierAction(String caption) {
       this.caption = caption;
     }
 

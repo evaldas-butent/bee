@@ -23,9 +23,7 @@ public enum Domain implements HasCaption {
 
   private final int minHeight;
 
-  private Domain(FontAwesome icon, String caption, boolean closable, boolean removable,
-      int minHeight) {
-
+  Domain(FontAwesome icon, String caption, boolean closable, boolean removable, int minHeight) {
     this.icon = icon;
     this.caption = caption;
 

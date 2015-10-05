@@ -18,7 +18,7 @@ public final class EcConstants {
     private final String caption;
     private final String label;
 
-    private CartType(String caption, String label) {
+    CartType(String caption, String label) {
       this.caption = caption;
       this.label = label;
     }
@@ -151,7 +151,7 @@ public final class EcConstants {
 
     private final String shortName;
 
-    private EcSupplier(String shortName) {
+    EcSupplier(String shortName) {
       this.shortName = shortName;
     }
 

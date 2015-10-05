@@ -23,7 +23,7 @@ import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.modules.service.ServiceConstants.ObjectStatus;
+import com.butent.bee.shared.modules.service.ServiceConstants.SvcObjectStatus;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -93,11 +93,11 @@ public class ObjectDefectsGrid extends AbstractGridInterceptor {
         Filter currStatusFilter = Filter.isEqual(COL_OBJECT_STATUS, Value.getValue(objStatus));
         Filter otherStatusFilter = Filter.isNull(COL_OBJECT_STATUS);
 
-        if (objStatus != null && objStatus.intValue() > ObjectStatus.SERVICE_OBJECT.ordinal()
+        if (objStatus != null && objStatus.intValue() > SvcObjectStatus.SERVICE_OBJECT.ordinal()
             || isChecked()) {
           otherStatusFilter =
               Filter.isMore(COL_OBJECT_STATUS, Value
-                  .getValue(ObjectStatus.SERVICE_OBJECT.ordinal()));
+                  .getValue(SvcObjectStatus.SERVICE_OBJECT.ordinal()));
         }
 
         presenter.getDataProvider().setParentFilter(COL_OBJECT_STATUS, Filter.or(currStatusFilter,
@@ -121,7 +121,7 @@ public class ObjectDefectsGrid extends AbstractGridInterceptor {
         Integer objStatus =
             form.getActiveRow().getInteger(dataInfo.getColumnIndex(COL_OBJECT_STATUS));
 
-        if (BeeUtils.unbox(objStatus) != ObjectStatus.SERVICE_OBJECT.ordinal()
+        if (BeeUtils.unbox(objStatus) != SvcObjectStatus.SERVICE_OBJECT.ordinal()
             && showAllCheckBox != null) {
           StyleUtils.setDisplay(showAllCheckBox, Display.NONE);
         } else if (showAllCheckBox != null) {

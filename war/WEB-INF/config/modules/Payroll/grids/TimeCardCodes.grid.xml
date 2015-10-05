@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+
+  name="TimeCardCodes" viewName="TimeCardCodes" caption="=timeCardCodes"
+  >
+  <g:columns>
+    <DataColumn name="TcCode" visible="true">
+      <editor type="string" upperCase="true" />
+    </DataColumn>
+    <DataColumn name="TcName" flexGrow="1" />
+
+    <DataColumn name="Background" updateMode="row">
+      <editor type="color" />
+    </DataColumn>
+    <DataColumn name="Foreground" updateMode="row">
+      <editor type="color" />
+    </DataColumn>
+
+    <DataColumn name="Description" flexGrow="1" visible="false" />
+  </g:columns>
+</g:Grid>

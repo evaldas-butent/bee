@@ -50,11 +50,10 @@ public final class ServiceConstants {
 
   }
 
-  public enum ObjectStatus implements HasLocalizedCaption {
+  public enum SvcObjectStatus implements HasLocalizedCaption {
     SERVICE_OBJECT(Localized.getConstants().svcObjects(),
         Localized.getConstants().svcActionToServiceObjects(),
         Localized.getConstants().svcCalendar()) {
-
       @Override
       public String getCaption(LocalizableConstants constants) {
         return constants.svcObject();
@@ -64,7 +63,6 @@ public final class ServiceConstants {
     PROJECT_OBJECT(Localized.getConstants().svcProjectObjects(),
         Localized.getConstants().svcActionToProjectObjects(),
         Localized.getConstants().svcObjectCalendar()) {
-
       @Override
       public String getCaption(LocalizableConstants constants) {
         return constants.svcProjectObject();
@@ -73,7 +71,6 @@ public final class ServiceConstants {
 
     POTENTIAL_OBJECT(Localized.getConstants().svcObjectsPotential(), null,
         Localized.getConstants().svcObjectCalendar()) {
-
       @Override
       public String getCaption(LocalizableConstants constants) {
         return constants.svcObjectPotential();
@@ -82,7 +79,6 @@ public final class ServiceConstants {
     LOST_OBJECT(Localized.getConstants().svcObjectsLost(),
         Localized.getConstants().svcActionToLostObjects(),
         Localized.getConstants().svcObjectCalendar()) {
-
       @Override
       public String getCaption(LocalizableConstants constants) {
         return constants.svcObjectLost();
@@ -93,7 +89,7 @@ public final class ServiceConstants {
     private final String commandCaption;
     private final String calendarCaption;
 
-    private ObjectStatus(String listCaption, String commandCaption, String calendarCaption) {
+    private SvcObjectStatus(String listCaption, String commandCaption, String calendarCaption) {
       this.listCaption = listCaption;
       this.commandCaption = commandCaption;
       this.calendarCaption = calendarCaption;
@@ -230,7 +226,7 @@ public final class ServiceConstants {
 
   public static void register() {
     EnumUtils.register(ServiceCompanyKind.class);
-    EnumUtils.register(ObjectStatus.class);
+    EnumUtils.register(SvcObjectStatus.class);
   }
 
   private ServiceConstants() {

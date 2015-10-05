@@ -240,7 +240,7 @@ public class ChildGrid extends EmbeddedGrid implements Launchable {
 
       if (!getPresenter().getGridView().isAdding()) {
         if (hasParentValue(getPendingRow())) {
-          getPresenter().refresh(false);
+          getPresenter().refresh(false, true);
         } else {
           getPresenter().getDataProvider().clear();
         }

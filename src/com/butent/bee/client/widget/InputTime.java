@@ -49,12 +49,13 @@ public class InputTime extends InputText implements HasBounds, HasIntStep {
   private int stepValue = BeeConst.UNDEF;
 
   private State pickerState = State.CLOSED;
+  private String lastEventType;
 
   public InputTime() {
     super();
 
     setMaxLength(getDefaultMaxLength());
-    sinkEvents(Event.ONCLICK | Event.ONKEYPRESS | Event.ONFOCUS | Event.ONBLUR);
+    sinkEvents(Event.ONCLICK | Event.ONKEYPRESS | Event.ONFOCUS | Event.ONBLUR | Event.ONMOUSEDOWN);
   }
 
   @Override
@@ -115,10 +116,13 @@ public class InputTime extends InputText implements HasBounds, HasIntStep {
   public void onBrowserEvent(Event event) {
     String type = event.getType();
 
+    String last = getLastEventType();
+    setLastEventType(type);
+
     if (EventUtils.isClick(type)) {
       if (isPickerClosing()) {
         setPickerState(State.CLOSED);
-      } else if (isPickerClosed()) {
+      } else if (isPickerClosed() && EventUtils.isMouseDown(last)) {
         event.preventDefault();
         event.stopPropagation();
         pickTime();
@@ -407,9 +411,6 @@ public class InputTime extends InputText implements HasBounds, HasIntStep {
     setPickerState(State.OPEN);
     addStyleName(STYLE_ACTIVE);
 
-    popup.setWidget(widget);
-    popup.showRelativeTo(getElement());
-
     if (minutes != null) {
       int index = widget.getItems().indexOf(renderMinutes(minutes));
       if (index > 0) {
@@ -417,7 +418,10 @@ public class InputTime extends InputText implements HasBounds, HasIntStep {
       }
     }
 
-    widget.setFocus(true);
+    popup.setWidget(widget);
+    popup.focusOnOpen(widget);
+
+    popup.showRelativeTo(getElement());
   }
 
   private boolean checkBounds(Long millis) {
@@ -454,6 +458,10 @@ public class InputTime extends InputText implements HasBounds, HasIntStep {
     }
 
     return minutes;
+  }
+
+  private String getLastEventType() {
+    return lastEventType;
   }
 
   private Long getMaxMillis() {
@@ -505,6 +513,10 @@ public class InputTime extends InputText implements HasBounds, HasIntStep {
 
   private static String renderMinutes(int minutes) {
     return TimeUtils.renderMinutes(minutes, true);
+  }
+
+  private void setLastEventType(String lastEventType) {
+    this.lastEventType = lastEventType;
   }
 
   private void setPickerState(State pickerState) {

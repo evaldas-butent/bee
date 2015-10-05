@@ -21,7 +21,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.menu.MenuHandler;
 import com.butent.bee.shared.menu.MenuService;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
-import com.butent.bee.shared.modules.service.ServiceConstants.ObjectStatus;
+import com.butent.bee.shared.modules.service.ServiceConstants.SvcObjectStatus;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.utils.EnumUtils;
 
@@ -65,7 +65,7 @@ public final class ServiceKeeper {
           public void onSuccess(View result) {
             BeeKeeper.getScreen().show(result);
           }
-        }, ObjectStatus.SERVICE_OBJECT);
+        }, SvcObjectStatus.SERVICE_OBJECT);
       }
     });
 
@@ -77,7 +77,7 @@ public final class ServiceKeeper {
           public void onSuccess(View result) {
             BeeKeeper.getScreen().show(result);
           }
-        }, ObjectStatus.PROJECT_OBJECT);
+        }, SvcObjectStatus.PROJECT_OBJECT);
       }
     });
 
@@ -87,7 +87,7 @@ public final class ServiceKeeper {
       public void onSelection(String parameters) {
         Assert.notEmpty(parameters);
 
-        ObjectStatus status = EnumUtils.getEnumByName(ObjectStatus.class, parameters);
+        SvcObjectStatus status = EnumUtils.getEnumByName(SvcObjectStatus.class, parameters);
 
         if (status == null) {
           Global.showError(Lists.newArrayList(GRID_SERVICE_OBJECTS, "Type not recognized:",
@@ -102,20 +102,20 @@ public final class ServiceKeeper {
     ViewFactory.registerSupplier(ServiceCalendar.SUPPLIER_KEY, new ViewSupplier() {
       @Override
       public void create(ViewCallback callback) {
-        ServiceCalendar.open(callback, ObjectStatus.SERVICE_OBJECT);
+        ServiceCalendar.open(callback, SvcObjectStatus.SERVICE_OBJECT);
       }
     });
 
     ViewFactory.registerSupplier(ServiceCalendar.SUPPLIER_KEY_PROJECTS, new ViewSupplier() {
       @Override
       public void create(ViewCallback callback) {
-        ServiceCalendar.open(callback, ObjectStatus.PROJECT_OBJECT);
+        ServiceCalendar.open(callback, SvcObjectStatus.PROJECT_OBJECT);
       }
     });
   }
 
   private static void registerServiceOjectsGridSupplier() {
-    for (ObjectStatus objStatus : ObjectStatus.values()) {
+    for (SvcObjectStatus objStatus : SvcObjectStatus.values()) {
       GridFactory.registerGridSupplier(objStatus.getSuplierKey(), GRID_SERVICE_OBJECTS,
           new ServiceObjectsGrid(objStatus));
     }

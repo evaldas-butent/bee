@@ -70,7 +70,7 @@ public class TripDriversGrid extends AbstractGridInterceptor implements ClickHan
           @Override
           public void onSuccess(Integer result) {
             if (BeeUtils.isPositive(result)) {
-              getGridPresenter().refresh(true);
+              getGridPresenter().refresh(true, false);
             }
           }
         });

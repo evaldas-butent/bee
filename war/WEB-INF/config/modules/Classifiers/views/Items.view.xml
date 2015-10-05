@@ -4,6 +4,7 @@
   name="Items" caption="=goods" source="Items" module="Classifiers"
   newRowForm="Item" newRowCaption="=newItem" editForm="Item"
   >
+  <Relation renderColumns="Name" choiceColumns="Name UnitName" />
   <Columns>
     <SimpleColumn name="Name" />
     <SimpleColumn name="Name2" />
@@ -109,4 +110,3 @@
     <OrderBy column="Article" />
   </Order>
 </View>
- 

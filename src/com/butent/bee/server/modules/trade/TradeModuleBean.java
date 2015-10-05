@@ -481,7 +481,6 @@ public class TradeModuleBean implements BeeModule {
       default:
         return ResponseObject.error("View source not supported:", trade);
     }
-    String remoteNamespace = prm.getText(PRM_ERP_NAMESPACE);
     String remoteAddress = prm.getText(PRM_ERP_ADDRESS);
     String remoteLogin = prm.getText(PRM_ERP_LOGIN);
     String remotePassword = prm.getText(PRM_ERP_PASSWORD);
@@ -500,13 +499,13 @@ public class TradeModuleBean implements BeeModule {
         customer = invoice.getLong(COL_TRADE_SUPPLIER);
       }
       if (DataUtils.isId(customer) && Objects.equals(customer, prm.getRelation("ERPCustomer"))) {
-        remoteNamespace = prm.getText("ERPCustomerNamespace");
+        //        remoteNamespace = prm.getText("ERPCustomerNamespace");
         remoteAddress = prm.getText("ERPCustomerAddress");
         remoteLogin = prm.getText("ERPCustomerLogin");
         remotePassword = prm.getText("ERPCustomerPassword");
       } else {
         customer = null;
-        remoteNamespace = prm.getText(PRM_ERP_NAMESPACE);
+        //        remoteNamespace = prm.getText(PRM_ERP_NAMESPACE);
         remoteAddress = prm.getText(PRM_ERP_ADDRESS);
         remoteLogin = prm.getText(PRM_ERP_LOGIN);
         remotePassword = prm.getText(PRM_ERP_PASSWORD);
@@ -533,8 +532,7 @@ public class TradeModuleBean implements BeeModule {
             String company = BeeUtils.joinItems(data.getValue(COL_COMPANY_NAME),
                 data.getValue(COL_COMPANY_TYPE));
 
-            company = ButentWS.connect(remoteNamespace, remoteAddress, remoteLogin,
-                remotePassword)
+            company = ButentWS.connect(remoteAddress, remoteLogin, remotePassword)
                 .importClient(company, data.getValue(COL_COMPANY_CODE),
                     data.getValue(COL_COMPANY_VAT_CODE), data.getValue(COL_ADDRESS),
                     data.getValue(COL_POST_INDEX), data.getValue(COL_CITY),
@@ -604,7 +602,7 @@ public class TradeModuleBean implements BeeModule {
         break;
       }
       try {
-        ButentWS.connect(remoteNamespace, remoteAddress, remoteLogin, remotePassword)
+        ButentWS.connect(remoteAddress, remoteLogin, remotePassword)
             .importDoc(doc);
       } catch (BeeException e) {
         response.addError(e);

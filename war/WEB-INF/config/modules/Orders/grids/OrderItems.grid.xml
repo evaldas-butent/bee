@@ -18,6 +18,10 @@
 
     <DataColumn name="UnitName" caption="=unitShort" flexGrow="0" />
 
+    <PropColumn name="FreeRemainder" type="double" label="=ordFreeRemainder" visible="true" />
+
+    <DataColumn name="ResRemainder" />
+
     <DataColumn name="Price" visible="true">
       <footer expression="row.Quantity * row.Price" />
     </DataColumn>
@@ -28,16 +32,13 @@
     <DataColumn name="Discount" carry="true" flexGrow="0">
       <footer evaluator="discount" scale="2" />
     </DataColumn>
-    <DataColumn name="VatPlus" width="20" sortable="false" caption="+" format="+" carry="true" visible="false" />
+    <DataColumn name="VatPlus" width="20" sortable="false" caption="+" format="+" carry="true" />
 
-    <DataColumn name="Vat" carry="true" flexGrow="0" visible="false">
+    <DataColumn name="Vat" carry="true" flexGrow="0" >
       <footer evaluator="vat" />
     </DataColumn>
 
-    <DataColumn name="VatPercent" width="20" sortable="false" caption="%" format="%" carry="true" visible="false" />
-
-    <RelColumn name="Sale" caption="=trdInvoiceId" readOnly="true" renderColumns="Sale" editEnabled="true"
-      editForm="OrderInvoice" editViewName="OrdersInvoices" />
+    <DataColumn name="VatPercent" width="20" sortable="false" caption="%" format="%" carry="true" />
 
     <CalcColumn name="Total" type="decimal" caption="=trdAmount" scale="2">
       <style>
@@ -48,6 +49,9 @@
       <renderer type="total" />
       <footer aggregate="sum" />
     </CalcColumn>
+    
+    <RelColumn name="Sale" caption="=trdInvoiceId" readOnly="true" renderColumns="Sale" editEnabled="true"
+      editForm="OrderInvoice" editViewName="OrdersInvoices" />
   </g:columns>
 
   <g:rowEditable>

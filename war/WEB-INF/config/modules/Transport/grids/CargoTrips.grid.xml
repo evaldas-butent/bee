@@ -11,7 +11,7 @@
     <ActionColumn element="link" name="TripNo" caption="=trTripNo" />
     <DataColumn name="ExpeditionType" caption="=trExpeditionType" />
     <DataColumn name="ForwarderName" caption="=carrier" />
-    <CalcColumn name="Vehicle" type="string" caption="=transport" flexBasis="120">
+    <CalcColumn name="Vehicle" type="string" caption="=transport">
       <render>
         <ui:function>
           var vehicle = row.ForwarderVehicle;
@@ -28,8 +28,15 @@
         </ui:function>
       </render>
     </CalcColumn>
+    <CalcColumn name="Driver" type="string" caption="=vehicleDriver">
+      <render>
+        <ui:expression>
+          row.ForwarderDriver ? row.ForwarderDriver : row.Driver;
+        </ui:expression>
+      </render>
+    </CalcColumn>
     <DataColumn name="DateFrom" caption="=trDeparted" />
     <DataColumn name="DateTo" caption="=trReturned" />
-    <DataColumn name="TripPercent" caption="%" minValue="0" maxValue="100" editInPlace="true" />
+    <DataColumn name="TripPercent" caption="%" minValue="0" editInPlace="true" />
   </g:columns>
 </g:Grid>

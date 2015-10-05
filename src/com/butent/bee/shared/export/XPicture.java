@@ -45,7 +45,7 @@ public final class XPicture implements BeeSerializable {
 
     private final Set<String> extensions = new HashSet<>();
 
-    private Type(String... ext) {
+    Type(String... ext) {
       for (String x : ext) {
         extensions.add(x);
       }

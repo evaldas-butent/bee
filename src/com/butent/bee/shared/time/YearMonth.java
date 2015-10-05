@@ -102,6 +102,10 @@ public class YearMonth implements Comparable<YearMonth>, BeeSerializable, HasYea
     return month;
   }
 
+  public DateRange getRange() {
+    return DateRange.closed(getDate(), getLast());
+  }
+
   @Override
   public int getYear() {
     return year;

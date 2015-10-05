@@ -48,7 +48,7 @@ public final class AdministrationConstants {
 
     private final String caption;
 
-    private UserGroupVisibility(String caption) {
+    UserGroupVisibility(String caption) {
       this.caption = caption;
     }
 
@@ -313,6 +313,8 @@ public final class AdministrationConstants {
   public static final String COL_CLICK_SENSITIVITY_MILLIS = "ClickSensitivityMillis";
   public static final String COL_CLICK_SENSITIVITY_DISTANCE = "ClickSensitivityDistance";
 
+  public static final String COL_NEWS_REFRESH_INTERVAL_SECONDS = "NewsRefreshIntervalSeconds";
+
   public static final String COL_UI_THEME = "UiTheme";
   public static final String COL_USER_STYLE = "Style";
 
@@ -372,7 +374,6 @@ public final class AdministrationConstants {
   public static final String PRM_VAT_PERCENT = "VATPercent";
   public static final String PRM_REFRESH_CURRENCY_HOURS = "CurrencyRefreshHours";
 
-  public static final String PRM_ERP_NAMESPACE = "ERPNamespace";
   public static final String PRM_ERP_ADDRESS = "ERPAddress";
   public static final String PRM_ERP_LOGIN = "ERPLogin";
   public static final String PRM_ERP_PASSWORD = "ERPPassword";

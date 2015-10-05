@@ -57,15 +57,10 @@ import com.butent.bee.shared.data.value.IntegerValue;
 import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.Order;
+import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
-import com.butent.bee.shared.modules.administration.AdministrationConstants.ReminderMethod;
-import com.butent.bee.shared.modules.calendar.CalendarConstants.AppointmentStatus;
-import com.butent.bee.shared.modules.calendar.CalendarConstants.CalendarVisibility;
-import com.butent.bee.shared.modules.calendar.CalendarConstants.ItemType;
-import com.butent.bee.shared.modules.calendar.CalendarConstants.Report;
-import com.butent.bee.shared.modules.calendar.CalendarConstants.ViewType;
 import com.butent.bee.shared.modules.calendar.CalendarSettings;
 import com.butent.bee.shared.modules.calendar.CalendarTask;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
@@ -622,7 +617,9 @@ public class CalendarModuleBean implements BeeModule {
 
     HeadlineProducer headlineProducer = new HeadlineProducer() {
       @Override
-      public Headline produce(Feed feed, long userId, BeeRowSet rowSet, IsRow row, boolean isNew) {
+      public Headline produce(Feed feed, long userId, BeeRowSet rowSet, IsRow row, boolean isNew,
+          LocalizableConstants constants) {
+
         String caption = DataUtils.getString(rowSet, row, COL_SUMMARY);
         if (BeeUtils.isEmpty(caption)) {
           caption = BeeUtils.bracket(row.getId());
@@ -640,7 +637,7 @@ public class CalendarModuleBean implements BeeModule {
         AppointmentStatus status = EnumUtils.getEnumByIndex(AppointmentStatus.class,
             DataUtils.getInteger(rowSet, row, COL_STATUS));
         if (status != null) {
-          subtitles.add(status.getCaption(usr.getLocalizableConstants(userId)));
+          subtitles.add(status.getCaption(constants));
         }
 
         return Headline.create(row.getId(), caption, subtitles, isNew);
@@ -706,7 +703,6 @@ public class CalendarModuleBean implements BeeModule {
     String attList = DataUtils.getString(rowSet, row, COL_ATTENDEES);
 
     SqlUpdate update = new SqlUpdate(TBL_REPORT_OPTIONS)
-        .addConstant(sys.getVersionName(TBL_REPORT_OPTIONS), System.currentTimeMillis())
         .addConstant(COL_CAPTION, DataUtils.getString(rowSet, row, COL_CAPTION))
         .addConstant(COL_LOWER_DATE, lowerDate)
         .addConstant(COL_UPPER_DATE, upperDate)

@@ -31,7 +31,7 @@ public class ServiceDefectsGrid extends AbstractGridInterceptor {
   public ServiceDefectsGrid() {
     defaultFilter =
         Filter.or(Filter.isNull(COL_OBJECT_STATUS), Filter.isEqual(COL_OBJECT_STATUS, Value
-            .getValue(ObjectStatus.SERVICE_OBJECT.ordinal())));
+            .getValue(SvcObjectStatus.SERVICE_OBJECT.ordinal())));
   }
 
   @Override

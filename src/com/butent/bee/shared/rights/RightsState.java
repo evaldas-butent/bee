@@ -28,11 +28,17 @@ public enum RightsState implements HasLocalizedCaption {
     public String getCaption(LocalizableConstants constants) {
       return constants.rightStateDelete();
     }
+  },
+  MERGE(false) {
+    @Override
+    public String getCaption(LocalizableConstants constants) {
+      return constants.rightStateMerge();
+    }
   };
 
   private final boolean checked;
 
-  private RightsState(boolean checked) {
+  RightsState(boolean checked) {
     this.checked = checked;
   }
 

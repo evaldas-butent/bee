@@ -59,7 +59,7 @@ import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.service.ServiceConstants;
-import com.butent.bee.shared.modules.service.ServiceConstants.ObjectStatus;
+import com.butent.bee.shared.modules.service.ServiceConstants.SvcObjectStatus;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.rights.ModuleAndSub;
@@ -419,7 +419,7 @@ public class DocumentForm extends DocumentDataForm {
     DataInfo info;
 
     Data.setValue(ServiceConstants.VIEW_SERVICE_OBJECTS, event.getNewRow(),
-        ServiceConstants.COL_OBJECT_STATUS, ObjectStatus.POTENTIAL_OBJECT.ordinal());
+        ServiceConstants.COL_OBJECT_STATUS, SvcObjectStatus.POTENTIAL_OBJECT.ordinal());
 
     for (RowChildren selector : rel.getRowChildren(false)) {
 

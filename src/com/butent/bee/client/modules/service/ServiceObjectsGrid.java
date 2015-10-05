@@ -18,7 +18,7 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.modules.service.ServiceConstants;
-import com.butent.bee.shared.modules.service.ServiceConstants.ObjectStatus;
+import com.butent.bee.shared.modules.service.ServiceConstants.SvcObjectStatus;
 import com.butent.bee.shared.ui.GridDescription;
 
 public class ServiceObjectsGrid extends AbstractGridInterceptor implements
@@ -28,9 +28,9 @@ public class ServiceObjectsGrid extends AbstractGridInterceptor implements
   private static final String STYLE_TREE_PREFIX = "bee-svc-tree-";
 
   private TreeView categoryTree;
-  private ObjectStatus status;
+  private SvcObjectStatus status;
 
-  ServiceObjectsGrid(ObjectStatus status) {
+  ServiceObjectsGrid(SvcObjectStatus status) {
     this.status = status;
   }
 
@@ -93,7 +93,7 @@ public class ServiceObjectsGrid extends AbstractGridInterceptor implements
       }
 
       getGridPresenter().getDataProvider().setParentFilter(FILTER_KEY, flt);
-      getGridPresenter().refresh(true);
+      getGridPresenter().refresh(true, true);
     }
   }
 

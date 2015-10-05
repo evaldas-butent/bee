@@ -42,11 +42,9 @@ import com.butent.bee.client.widget.InputDateTime;
 import com.butent.bee.client.widget.InputFile;
 import com.butent.bee.client.widget.InputText;
 import com.butent.bee.client.widget.Label;
-import com.butent.bee.client.widget.Link;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
-import com.butent.bee.shared.HasHtml;
 import com.butent.bee.shared.HasOptions;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.font.FontAwesome;
@@ -63,6 +61,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 public class FileCollector extends HtmlTable implements DragOverHandler, DropHandler,
@@ -153,19 +152,14 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
       @Override
       void refresh(Widget widget, FileInfo fileInfo) {
         if (widget instanceof Simple) {
-          Widget w = ((Simple) widget).getWidget();
+          Widget w;
 
-          if (w == null) {
-            if (DataUtils.isId(fileInfo.getId())) {
-              w = new Link(null, FileUtils.getUrl(fileInfo.getId()));
-            } else {
-              w = new Label();
-            }
-            ((Simple) widget).setWidget(w);
+          if (DataUtils.isId(fileInfo.getId())) {
+            w = FileUtils.getLink(fileInfo);
+          } else {
+            w = new Label(BeeUtils.notEmpty(fileInfo.getCaption(), fileInfo.getName()));
           }
-          if (w instanceof HasHtml) {
-            ((HasHtml) w).setHtml(BeeUtils.notEmpty(fileInfo.getCaption(), fileInfo.getName()));
-          }
+          ((Simple) widget).setWidget(w);
         }
       }
 
@@ -329,7 +323,7 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
     private final boolean alwaysVisible;
     private final boolean readOnly;
 
-    private Column(String label, String caption, boolean alwaysVisible, boolean readOnly) {
+    Column(String label, String caption, boolean alwaysVisible, boolean readOnly) {
       this.label = label;
       this.caption = caption;
       this.alwaysVisible = alwaysVisible;
@@ -361,8 +355,6 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
       return readOnly;
     }
   }
-
-  public static final List<Column> ALL_COLUMNS = Lists.newArrayList(Column.values());
 
   private static final Collection<FileInfo> FILE_STACK = new ArrayList<>();
 
@@ -421,11 +413,6 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
       }
     }
     return columns;
-  }
-
-  private static boolean isRelevant(DragDropEventBase<?> event) {
-    return event != null
-        && (DndHelper.getDataType() == null || DndHelper.getData() instanceof FileInfo);
   }
 
   private final InputFile inputFile;
@@ -527,6 +514,10 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
     inputFile.click();
   }
 
+  public boolean contains(FileInfo info) {
+    return getIndex(info) >= 0;
+  }
+
   public List<FileInfo> getFiles() {
     return files;
   }
@@ -550,9 +541,8 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
   public void onDragEnter(DragEnterEvent event) {
     if (isRelevant(event)) {
       setDndCounter(getDndCounter() + 1);
-      if (getDndCounter() <= 1
-          && (DndHelper.getData() instanceof FileInfo || DndHelper.hasFiles(event))) {
 
+      if (getDndCounter() <= 1) {
         showDropArea(event.getSource());
       }
     }
@@ -572,7 +562,7 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
   @Override
   public void onDragOver(DragOverEvent event) {
     if (isRelevant(event)) {
-      EventUtils.setDropEffect(event, EventUtils.EFFECT_COPY);
+      EventUtils.selectDropCopy(event);
     }
   }
 
@@ -585,7 +575,7 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
       setDndCounter(0);
       hideDropArea(event.getSource());
 
-      if (DndHelper.getData() instanceof FileInfo) {
+      if (BeeUtils.same(DndHelper.getDataType(), NameUtils.getClassName(FileInfo.class))) {
         addFiles(Collections.singletonList((FileInfo) DndHelper.getData()));
       } else {
         addFiles(FileUtils.getNewFileInfos(FileUtils.getFiles(event.getNativeEvent())));
@@ -607,6 +597,24 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
     return files;
   }
 
+  public void refreshFile(FileInfo fileInfo) {
+    int index = getIndex(fileInfo);
+
+    if (index >= 0) {
+      refresh(index, Collections.singleton(Column.NAME));
+    }
+  }
+
+  public void removeFile(FileInfo fileInfo) {
+    int index = getIndex(fileInfo);
+
+    if (index >= 0) {
+      getFiles().remove(index);
+      removeRow(index);
+      SelectionEvent.fire(FileCollector.this, fileInfo);
+    }
+  }
+
   public void setAccept(MediaType mediaType) {
     inputFile.setAccept(mediaType);
   }
@@ -624,7 +632,6 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
     if (info == null || contains(info)) {
       return;
     }
-
     getFiles().add(info);
 
     int row = getRowCount() - 1;
@@ -642,7 +649,7 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
           ((HasClickHandlers) widget).addClickHandler(new ClickHandler() {
             @Override
             public void onClick(ClickEvent event) {
-              int index = getIndex(info.getName());
+              int index = getIndex(info);
               if (index >= 0 && !editable.isEmpty()) {
                 edit(index);
               }
@@ -654,12 +661,7 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
           ((HasClickHandlers) widget).addClickHandler(new ClickHandler() {
             @Override
             public void onClick(ClickEvent event) {
-              int index = getIndex(info.getName());
-              if (index >= 0) {
-                getFiles().remove(index);
-                removeRow(index);
-                SelectionEvent.fire(FileCollector.this, info);
-              }
+              removeFile(info);
             }
           });
           break;
@@ -675,10 +677,6 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
       }
     }
     SelectionEvent.fire(this, info);
-  }
-
-  private boolean contains(FileInfo info) {
-    return getIndex(info.getName()) >= 0;
   }
 
   private InputFile createInput() {
@@ -764,9 +762,9 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
     return dndCounter;
   }
 
-  private int getIndex(String fileName) {
+  private int getIndex(FileInfo fileInfo) {
     for (int i = 0; i < getFiles().size(); i++) {
-      if (BeeUtils.same(getFiles().get(i).getName(), fileName)) {
+      if (Objects.equals(getFiles().get(i), fileInfo)) {
         return i;
       }
     }
@@ -824,6 +822,23 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
     if (!editable.isEmpty() && !columns.contains(Column.EDIT)) {
       columns.add(Column.EDIT);
     }
+  }
+
+  private boolean isRelevant(DragDropEventBase<?> event) {
+    boolean ok = event != null;
+
+    if (ok) {
+      String type = DndHelper.getDataType();
+
+      if (BeeUtils.isEmpty(type)) {
+        ok = DndHelper.hasFiles(event);
+      } else if (BeeUtils.same(type, NameUtils.getClassName(FileInfo.class))) {
+        ok = !contains((FileInfo) DndHelper.getData());
+      } else {
+        ok = false;
+      }
+    }
+    return ok;
   }
 
   private void refresh(int row, Collection<Column> changedColumns) {

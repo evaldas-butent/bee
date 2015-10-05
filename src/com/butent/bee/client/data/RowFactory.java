@@ -224,6 +224,9 @@ public final class RowFactory {
     addMenuItem(panel, Module.TASKS, TaskConstants.VIEW_TODO_LIST,
         Localized.getConstants().crmNewTodoItem());
 
+    addMenuItem(panel, Module.TASKS, TaskConstants.TBL_REQUESTS,
+        Localized.getConstants().crmNewRequest());
+
     addMenuItem(panel, Module.DISCUSSIONS, DiscussionsConstants.VIEW_DISCUSSIONS,
         Localized.getConstants().announcementNew(), new Runnable() {
           @Override

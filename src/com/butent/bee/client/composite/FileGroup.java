@@ -10,6 +10,7 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.grid.HtmlTable;
+import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.DateTimeLabel;
@@ -19,7 +20,6 @@ import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.client.widget.InputDateTime;
 import com.butent.bee.client.widget.InputText;
 import com.butent.bee.client.widget.Label;
-import com.butent.bee.client.widget.Link;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.HasOptions;
@@ -138,7 +138,7 @@ public class FileGroup extends HtmlTable implements HasOptions {
     NAME("name", Localized.getConstants().fileName(), true, false) {
       @Override
       Widget createDisplay() {
-        return new Link();
+        return new Simple();
       }
 
       @Override
@@ -150,10 +150,8 @@ public class FileGroup extends HtmlTable implements HasOptions {
 
       @Override
       void refresh(Widget widget, FileInfo sf) {
-        if (widget instanceof Link) {
-          ((Link) widget).setHref(FileUtils.getUrl(BeeUtils.notEmpty(sf.getCaption(),
-              sf.getName()), sf.getId()));
-          ((Link) widget).setHtml(BeeUtils.notEmpty(sf.getCaption(), sf.getName()));
+        if (widget instanceof Simple) {
+          ((Simple) widget).setWidget(FileUtils.getLink(sf));
         }
       }
 
@@ -339,7 +337,7 @@ public class FileGroup extends HtmlTable implements HasOptions {
     private final boolean alwaysVisible;
     private final boolean readOnly;
 
-    private Column(String label, String caption, boolean alwaysVisible, boolean readOnly) {
+    Column(String label, String caption, boolean alwaysVisible, boolean readOnly) {
       this.label = label;
       this.caption = caption;
       this.alwaysVisible = alwaysVisible;

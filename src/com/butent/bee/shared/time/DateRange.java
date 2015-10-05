@@ -12,12 +12,26 @@ import java.util.List;
 
 public final class DateRange implements HasDateRange, BeeSerializable {
 
+  private static final JustDate DEFAULT_MIN_DATE = new JustDate(1800, 1, 1);
+  private static final JustDate DEFAULT_MAX_DATE = new JustDate(2999, 12, 31);
+
   public static DateRange closed(JustDate min, JustDate max) {
-    return new DateRange(Range.closed(min, max));
+    JustDate lower = (min == null) ? DEFAULT_MIN_DATE : min;
+    JustDate upper = (max == null) ? DEFAULT_MAX_DATE : max;
+
+    if (isValidClosedRange(lower, upper)) {
+      return new DateRange(Range.closed(lower, upper));
+    } else {
+      return null;
+    }
   }
 
   public static DateRange day(JustDate date) {
     return closed(date, date);
+  }
+
+  public static boolean isValidClosedRange(JustDate min, JustDate max) {
+    return min != null && max != null && min.getDays() <= max.getDays();
   }
 
   public static DateRange restore(String s) {
@@ -109,8 +123,20 @@ public final class DateRange implements HasDateRange, BeeSerializable {
     return range.hashCode();
   }
 
+  public DateRange intersection(DateRange other) {
+    if (intersects(other)) {
+      return new DateRange(range.intersection(other.range));
+    } else {
+      return null;
+    }
+  }
+
   public boolean intersects(DateRange other) {
     return other != null && BeeUtils.intersects(range, other.range);
+  }
+
+  public boolean isConnected(DateRange other) {
+    return other != null && range.isConnected(other.range);
   }
 
   @Override

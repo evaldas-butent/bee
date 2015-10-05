@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form [
+  <!ENTITY inline "display: inline-block;">
+  <!ENTITY inpw "width: 200px;">
+  <!ENTITY lbl "margin-right: 1em; text-align: right; padding-left: 30px">
+]>
+<f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form" name="RecipientsGroup" caption="=mailRecipientsGroup"
+  viewName="RecipientsGroups">
+  <FlowPanel>
+
+    <br />
+    <HorizontalPanel>
+      <Label for="GroupName" style="&lbl;" />
+      <InputText source="GroupName" style="&inpw;" />
+
+      <Radio source="Visibility" style="&inline; font-size: 12px; margin-left: 8px;" />
+    </HorizontalPanel>
+
+    <Disclosure open="true">
+      <Label text="=filters" />
+      <Table>
+        <row>
+          <Label for="CompanyPriority" visible="true" style="&lbl;" />
+          <DataSelector source="CompanyPriority" style="&inpw;" visible="true" />
+
+          <Label for="CompanySize" visible="true" style="&lbl;" />
+          <DataSelector source="CompanySize" style="&inpw;" visible="true" />
+
+          <Label for="Activity" visible="true" style="&lbl;" />
+          <DataSelector source="Activity" style="&inpw;" visible="true" />
+        </row>
+
+        <row>
+          <Label for="CompanyGroup" visible="true" style="&lbl;" />
+          <DataSelector source="CompanyGroup" style="&inpw;" visible="true" />
+
+          <Label for="CompanyRelationType" visible="true" style="&lbl;" />
+          <DataSelector source="CompanyRelationType" style="&inpw;" visible="true" />
+
+          <Label for="CompanyRelationTypeState" visible="true" style="&lbl;" />
+          <DataSelector source="CompanyRelationTypeState" style="&inpw;" visible="true" />
+        </row>
+      </Table>
+    </Disclosure>
+
+    <br />
+    <HorizontalPanel>
+      <Label text="=personContacts" horizontalAlignment="right" style="&lbl; white-space:nowrap;" />
+      <ChildSelector viewName="Emails" name="RcpsGroupsContacts" childTable="RcpsGroupsContacts" targetRelColumn="RecipientsGroup"
+        sourceRelColumn="Email" style="width: 100%;" summarize="true" />
+    </HorizontalPanel>
+  </FlowPanel>
+</f:Form>

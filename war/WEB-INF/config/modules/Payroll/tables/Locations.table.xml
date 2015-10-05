@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+  name="Locations"
+  idName="LocationID"
+  >
+  <Fields>
+    <String name="LocationName" precision="100" notNull="true" unique="true" label="=name" />   
+
+    <Relation name="Company" relation="Companies" label="=company" />
+    <Relation name="CompanyPerson" relation="CompanyPersons" label="=contact" />
+
+    <Relation name="Manager" relation="Users" label="=manager" defExpr="CURRENT_USER" />
+
+    <Relation name="Contact" unique="true" relation="Contacts" editable="true"
+      label="=contactInfo" />
+    
+    <Enum name="Status" key="ObjectStatus" defValue="0" notNull="true" label="=status" />
+    <Text name="Notes" label="=notes" />
+  </Fields>
+</Table>

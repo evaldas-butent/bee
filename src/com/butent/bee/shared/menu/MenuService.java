@@ -103,37 +103,37 @@ public enum MenuService {
 
   private MenuHandler handler;
 
-  private MenuService(RightsState dataRightsState) {
+  MenuService(RightsState dataRightsState) {
     this.dataRightsStates = EnumSet.of(dataRightsState);
   }
 
-  private MenuService(RightsState dataRightsState, String dataName) {
+  MenuService(RightsState dataRightsState, String dataName) {
     this(dataRightsState);
     setDataName(dataName);
   }
 
-  private MenuService(RightsState dataRightsState, Set<String> dataNames) {
+  MenuService(RightsState dataRightsState, Set<String> dataNames) {
     this(dataRightsState);
     setDataNames(dataNames);
   }
 
-  private MenuService(RightsState dataRightsState, boolean dataIsParameter) {
+  MenuService(RightsState dataRightsState, boolean dataIsParameter) {
     this(dataRightsState);
     if (dataIsParameter) {
       setDataIsParameter();
     }
   }
 
-  private MenuService(EnumSet<RightsState> dataRightsStates) {
+  MenuService(EnumSet<RightsState> dataRightsStates) {
     this.dataRightsStates = dataRightsStates;
   }
 
-  private MenuService(EnumSet<RightsState> dataRightsStates, String dataName) {
+  MenuService(EnumSet<RightsState> dataRightsStates, String dataName) {
     this(dataRightsStates);
     setDataName(dataName);
   }
 
-  private MenuService(EnumSet<RightsState> dataRightsStates, boolean dataIsParameter) {
+  MenuService(EnumSet<RightsState> dataRightsStates, boolean dataIsParameter) {
     this(dataRightsStates);
     if (dataIsParameter) {
       setDataIsParameter();

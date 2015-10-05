@@ -1,5 +1,8 @@
 package com.butent.bee.client.modules.projects;
 
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
+
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
@@ -23,8 +26,6 @@ import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.projects.ProjectConstants;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 
 class ProjectTemplateForm extends AbstractFormInterceptor {
 

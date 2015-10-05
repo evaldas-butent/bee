@@ -75,7 +75,7 @@ public class TripCostsGrid extends AbstractGridInterceptor
             if (response.hasErrors()) {
               return;
             }
-            getGridPresenter().refresh(false);
+            getGridPresenter().refresh(false, false);
           }
         });
       }
