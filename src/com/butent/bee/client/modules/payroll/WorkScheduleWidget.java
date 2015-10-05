@@ -41,6 +41,7 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.value.DateValue;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.html.Attributes;
 import com.butent.bee.shared.i18n.Localized;
@@ -339,6 +340,58 @@ class WorkScheduleWidget extends HtmlTable {
         });
   }
 
+  private List<BeeRow> filterEmployees(DateRange filterRange) {
+    List<BeeRow> result = new ArrayList<>();
+
+    if (!DataUtils.isEmpty(emData)) {
+      Set<Long> haveWs = new HashSet<>();
+      Set<Long> haveObj = new HashSet<>();
+
+      if (!DataUtils.isEmpty(wsData)) {
+        int employeeIndex = wsData.getColumnIndex(COL_EMPLOYEE);
+        int dateIndex = wsData.getColumnIndex(COL_WORK_SCHEDULE_DATE);
+
+        for (BeeRow row : wsData) {
+          if (filterRange.contains(row.getDate(dateIndex))) {
+            haveWs.add(row.getLong(employeeIndex));
+          }
+        }
+      }
+
+      if (!DataUtils.isEmpty(eoData)) {
+        int employeeIndex = eoData.getColumnIndex(COL_EMPLOYEE);
+        int fromIndex = eoData.getColumnIndex(COL_EMPLOYEE_OBJECT_FROM);
+        int untilIndex = eoData.getColumnIndex(COL_EMPLOYEE_OBJECT_UNTIL);
+
+        for (BeeRow row : eoData) {
+          DateRange range = DateRange.closed(row.getDate(fromIndex), row.getDate(untilIndex));
+          if (filterRange.intersects(range)) {
+            haveObj.add(row.getLong(employeeIndex));
+          }
+        }
+      }
+
+      if (!haveWs.isEmpty() || !haveObj.isEmpty()) {
+        int fromIndex = emData.getColumnIndex(COL_DATE_OF_EMPLOYMENT);
+        int untilIndex = emData.getColumnIndex(COL_DATE_OF_DISMISSAL);
+
+        for (BeeRow row : emData) {
+          if (haveWs.contains(row.getId())) {
+            result.add(row);
+
+          } else if (haveObj.contains(row.getId())) {
+            DateRange range = DateRange.closed(row.getDate(fromIndex), row.getDate(untilIndex));
+            if (filterRange.intersects(range)) {
+              result.add(row);
+            }
+          }
+        }
+      }
+    }
+
+    return result;
+  }
+
   private List<BeeRow> filterSchedule(long employee, JustDate date) {
     List<BeeRow> result = new ArrayList<>();
 
@@ -442,7 +495,7 @@ class WorkScheduleWidget extends HtmlTable {
     Multimap<Integer, Long> result = ArrayListMultimap.create();
 
     if (!DataUtils.isEmpty(tcData)) {
-      DateRange activeRange = DateRange.closed(ym.getDate(), ym.getLast());
+      DateRange activeRange = ym.getRange();
 
       int employeeIndex = tcData.getColumnIndex(COL_EMPLOYEE);
       int codeIndex = tcData.getColumnIndex(COL_TIME_CARD_CODE);
@@ -572,7 +625,9 @@ class WorkScheduleWidget extends HtmlTable {
 
     int r = EMPLOYEE_START_ROW;
 
-    if (!DataUtils.isEmpty(emData)) {
+    List<BeeRow> employees = filterEmployees(activeMonth.getRange());
+
+    if (!employees.isEmpty()) {
       List<Integer> nameIndexes = new ArrayList<>();
       nameIndexes.add(emData.getColumnIndex(COL_FIRST_NAME));
       nameIndexes.add(emData.getColumnIndex(COL_LAST_NAME));
@@ -586,7 +641,7 @@ class WorkScheduleWidget extends HtmlTable {
       infoIndexes.add(emData.getColumnIndex(ALS_DEPARTMENT_NAME));
       infoIndexes.add(emData.getColumnIndex(COL_TAB_NUMBER));
 
-      for (BeeRow employee : emData) {
+      for (BeeRow employee : employees) {
         Widget ew = renderEmployee(employee, nameIndexes, contactIndexes, infoIndexes);
         setWidgetAndStyle(r, EMPLOYEE_PANEL_COL, ew, STYLE_EMPLOYEE_PANEL);
 
@@ -597,7 +652,7 @@ class WorkScheduleWidget extends HtmlTable {
       }
     }
 
-    Widget appender = renderEmployeeAppender();
+    Widget appender = renderEmployeeAppender(DataUtils.getRowIds(employees), activeMonth);
     setWidgetAndStyle(r, EMPLOYEE_PANEL_COL, appender, STYLE_EMPLOYEE_APPEND_PANEL);
   }
 
@@ -668,7 +723,7 @@ class WorkScheduleWidget extends HtmlTable {
     return panel;
   }
 
-  private Widget renderEmployeeAppender() {
+  private Widget renderEmployeeAppender(Collection<Long> employees, YearMonth ym) {
     Flow panel = new Flow();
 
     Relation relation = Relation.create();
@@ -680,13 +735,21 @@ class WorkScheduleWidget extends HtmlTable {
         ALS_COMPANY_NAME, ALS_DEPARTMENT_NAME, ALS_POSITION_NAME));
     relation.setSearchableColumns(Lists.newArrayList(COL_FIRST_NAME, COL_LAST_NAME));
 
+    Filter filter = Filter.and(
+        Filter.or(Filter.isNull(COL_DATE_OF_EMPLOYMENT),
+            Filter.isLessEqual(COL_DATE_OF_EMPLOYMENT, new DateValue(ym.getLast()))),
+        Filter.or(Filter.isNull(COL_DATE_OF_DISMISSAL),
+            Filter.isMoreEqual(COL_DATE_OF_DISMISSAL, new DateValue(ym.getDate()))));
+
+    relation.setFilter(filter);
+
     UnboundSelector selector = UnboundSelector.create(relation,
         Lists.newArrayList(COL_FIRST_NAME, COL_LAST_NAME));
 
     selector.addStyleName(STYLE_EMPLOYEE_APPEND_SELECTOR);
     DomUtils.setPlaceholder(selector, Localized.getConstants().newEmployee());
 
-    if (!DataUtils.isEmpty(emData)) {
+    if (!BeeUtils.isEmpty(employees)) {
       selector.getOracle().setExclusions(emData.getRowIds());
     }
 
