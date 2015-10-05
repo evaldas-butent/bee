@@ -19,6 +19,7 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.Queries.IntCallback;
 import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.data.RowCallback;
+import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.ChoiceCallback;
 import com.butent.bee.client.dialog.ConfirmationCallback;
@@ -37,6 +38,7 @@ import com.butent.bee.client.render.HasCellRenderer;
 import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.validation.ValidationHelper;
 import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.edit.EditableColumn;
@@ -385,7 +387,7 @@ class TasksGrid extends AbstractGridInterceptor {
     final GridView gridView = getGridPresenter().getGridView();
     int idxTaskProject = gridView.getDataIndex(ProjectConstants.COL_PROJECT);
 
-    int idxTaskOwner = gridView.getDataIndex(COL_OWNER);
+    //    int idxTaskOwner = gridView.getDataIndex(COL_OWNER);
 
     final IsRow selectedRow = gridView.getActiveRow();
 
@@ -400,11 +402,11 @@ class TasksGrid extends AbstractGridInterceptor {
       return;
     }
 
-    if (!userId.equals(selectedRow.getLong(idxTaskOwner))) {
-      gridView
-          .notifyWarning(Localized.getMessages().projectCanCreateTaskOwner(selectedRow.getId()));
-      return;
-    }
+    //    if (!userId.equals(selectedRow.getLong(idxTaskOwner))) {
+    //      gridView
+    //          .notifyWarning(Localized.getMessages().projectCanCreateTaskOwner(selectedRow.getId()));
+    //      return;
+    //    }
 
     FormFactory.createFormView(ProjectConstants.FORM_NEW_PROJECT_FROM_TASK, null, null, false,
         getNewProjectFormInterceptor(selectedRow),
@@ -493,8 +495,7 @@ class TasksGrid extends AbstractGridInterceptor {
           @Override
           public void onSuccess(Integer result) {
             if (getGridView() != null) {
-              getGridView().notifyInfo(
-                  Localized.getMessages().newProjectCreated(projectRow.getId()));
+              RowEditor.open(ProjectConstants.VIEW_PROJECTS, projectRow, Opener.NEW_TAB);
             }
           }
         });
@@ -512,6 +513,10 @@ class TasksGrid extends AbstractGridInterceptor {
           selectedRow.getString(Data.getColumnIndex(VIEW_TASKS, col)));
     }
 
+    Data.setValue(ProjectConstants.VIEW_PROJECT_TEMPLATES,
+        templateRow, ProjectConstants.COL_PROJECT_NAME, selectedRow.getString(
+            Data.getColumnIndex(VIEW_TASKS, COL_SUMMARY)));
+
     ProjectsKeeper.createProjectFromTemplate(templateRow, new RowCallback() {
       @Override
       public void onSuccess(final BeeRow projectRow) {
@@ -521,8 +526,7 @@ class TasksGrid extends AbstractGridInterceptor {
           @Override
           public void onSuccess(Integer result) {
             if (getGridView() != null) {
-              getGridView().notifyInfo(Localized.getMessages()
-                  .newProjectCreated(projectRow.getId()));
+              RowEditor.open(ProjectConstants.VIEW_PROJECTS, projectRow, Opener.NEW_TAB);
             }
           }
         });
@@ -901,7 +905,7 @@ class TasksGrid extends AbstractGridInterceptor {
 
   private static void addProjectUsers(final List<Long> userIds, final BeeRow projectRow) {
     Queries.getRowSet(ProjectConstants.VIEW_PROJECT_USERS, Lists
-        .newArrayList(AdministrationConstants.COL_USER),
+            .newArrayList(AdministrationConstants.COL_USER),
         Filter.equals(ProjectConstants.COL_PROJECT, projectRow.getId()), new RowSetCallback() {
 
           @Override
@@ -913,8 +917,8 @@ class TasksGrid extends AbstractGridInterceptor {
 
             for (Long user : userIds) {
               Queries.insert(ProjectConstants.VIEW_PROJECT_USERS, Data.getColumns(
-                  ProjectConstants.VIEW_PROJECT_USERS, Lists.newArrayList(
-                      ProjectConstants.COL_PROJECT, AdministrationConstants.COL_USER)),
+                      ProjectConstants.VIEW_PROJECT_USERS, Lists.newArrayList(
+                          ProjectConstants.COL_PROJECT, AdministrationConstants.COL_USER)),
                   Lists.newArrayList(BeeUtils.toString(projectRow.getId()), BeeUtils
                       .toString(user)));
             }
