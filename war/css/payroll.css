@@ -70,3 +70,30 @@
 .bee-payroll-ws-item-tc {
   border-radius: 20%;
 }
+
+.bee-payroll-ws-input-mode-panel {
+  display: flex;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  justify-content: flex-end;
+  -webkit-justify-content: flex-end;
+  -ms-flex-pack: end;
+  align-items: center;
+  -webkit-align-items: center;
+  -ms-flex-align: center;
+  text-align: right;
+}
+.bee-payroll-ws-input-mode-simple,
+.bee-payroll-ws-input-mode-full {
+  margin-left: 10px;
+  margin-right: 10px;
+  cursor: pointer;
+}
+.bee-payroll-ws-input-mode-toggle {
+  font-size: large;
+  cursor: pointer;
+}
+.bee-payroll-ws-input-mode-active {
+  font-weight: bolder;
+  cursor: auto;
+}

@@ -7,6 +7,7 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
@@ -33,6 +34,7 @@ import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.Label;
+import com.butent.bee.client.widget.Toggle;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.data.BeeColumn;
@@ -43,6 +45,7 @@ import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.DateValue;
 import com.butent.bee.shared.data.view.DataInfo;
+import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.html.Attributes;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
@@ -99,6 +102,12 @@ class WorkScheduleWidget extends HtmlTable {
   private static final String STYLE_HOLIDAY = STYLE_PREFIX + "holiday";
   private static final String STYLE_TODAY = STYLE_PREFIX + "today";
 
+  private static final String STYLE_INPUT_MODE_PANEL = STYLE_PREFIX + "input-mode-panel";
+  private static final String STYLE_INPUT_MODE_SIMPLE = STYLE_PREFIX + "input-mode-simple";
+  private static final String STYLE_INPUT_MODE_FULL = STYLE_PREFIX + "input-mode-full";
+  private static final String STYLE_INPUT_MODE_TOGGLE = STYLE_PREFIX + "input-mode-toggle";
+  private static final String STYLE_INPUT_MODE_ACTIVE = STYLE_PREFIX + "input-mode-active";
+
   private static final String KEY_YM = "ym";
 
   private static final int MONTH_ROW = 0;
@@ -148,11 +157,22 @@ class WorkScheduleWidget extends HtmlTable {
   private final Set<Integer> holidays = new HashSet<>();
 
   private YearMonth activeMonth;
+  private final Toggle inputMode;
 
   WorkScheduleWidget(long objectId) {
     super(STYLE_TABLE);
 
     this.objectId = objectId;
+
+    this.inputMode = new Toggle(FontAwesome.TOGGLE_OFF, FontAwesome.TOGGLE_ON,
+        STYLE_INPUT_MODE_TOGGLE, false);
+
+    inputMode.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        activateInputMode(inputMode.isChecked());
+      }
+    });
 
     addClickHandler(new ClickHandler() {
       @Override
@@ -168,7 +188,7 @@ class WorkScheduleWidget extends HtmlTable {
             Widget content = getWidgetByElement(cell.getFirstChildElement());
             Flow panel = (content instanceof Flow) ? (Flow) content : null;
 
-            if (EventUtils.hasModifierKey(event.getNativeEvent())) {
+            if (EventUtils.hasModifierKey(event.getNativeEvent()) ^ inputMode.isChecked()) {
               editSchedule(employee, day, panel);
             } else {
               inputTimeRangeCode(employee, day, panel);
@@ -245,6 +265,23 @@ class WorkScheduleWidget extends HtmlTable {
         });
       }
     });
+  }
+
+  private void activateInputMode(boolean modeFull) {
+    Element el = Selectors.getElementByClassName(inputMode.getParent().getElement(),
+        STYLE_INPUT_MODE_SIMPLE);
+    if (el != null) {
+      UIObject.setStyleName(el, STYLE_INPUT_MODE_ACTIVE, !modeFull);
+    }
+
+    el = Selectors.getElementByClassName(inputMode.getParent().getElement(), STYLE_INPUT_MODE_FULL);
+    if (el != null) {
+      UIObject.setStyleName(el, STYLE_INPUT_MODE_ACTIVE, modeFull);
+    }
+
+    if (inputMode.isChecked() != modeFull) {
+      inputMode.setChecked(modeFull);
+    }
   }
 
   private boolean activateMonth(YearMonth ym) {
@@ -654,6 +691,10 @@ class WorkScheduleWidget extends HtmlTable {
 
     Widget appender = renderEmployeeAppender(DataUtils.getRowIds(employees), activeMonth);
     setWidgetAndStyle(r, EMPLOYEE_PANEL_COL, appender, STYLE_EMPLOYEE_APPEND_PANEL);
+
+    Widget inputModePanel = renderInputMode();
+    setWidgetAndStyle(r, DAY_START_COL, inputModePanel, STYLE_INPUT_MODE_PANEL);
+    getCellFormatter().setColSpan(r, DAY_START_COL, days);
   }
 
   private void renderDayContent(Flow panel, long employeeId, JustDate date,
@@ -763,6 +804,46 @@ class WorkScheduleWidget extends HtmlTable {
     });
 
     panel.add(selector);
+    return panel;
+  }
+
+  private Widget renderInputMode() {
+    Flow panel = new Flow();
+
+    Label modeSimple = new Label(Localized.getConstants().inputSimple());
+    modeSimple.addStyleName(STYLE_INPUT_MODE_SIMPLE);
+
+    modeSimple.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        if (inputMode.isChecked()) {
+          activateInputMode(false);
+        }
+      }
+    });
+
+    Label modeFull = new Label(Localized.getConstants().inputFull());
+    modeFull.addStyleName(STYLE_INPUT_MODE_FULL);
+
+    modeFull.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        if (!inputMode.isChecked()) {
+          activateInputMode(true);
+        }
+      }
+    });
+
+    if (inputMode.isChecked()) {
+      modeFull.addStyleName(STYLE_INPUT_MODE_ACTIVE);
+    } else {
+      modeSimple.addStyleName(STYLE_INPUT_MODE_ACTIVE);
+    }
+
+    panel.add(modeSimple);
+    panel.add(inputMode);
+    panel.add(modeFull);
+
     return panel;
   }
 
