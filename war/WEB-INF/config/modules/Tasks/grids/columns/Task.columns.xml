@@ -21,7 +21,12 @@
   <RelColumn name="Company" />
   <RelColumn name="Contact" visible="false" />
 
-  <DataColumn name="Status" visible="true" />
+  <DataColumn name="Status" visible="true">
+    <dynStyle>
+      <ui:inline>color: red;</ui:inline>
+      <ui:expression>row.Status == 4</ui:expression>
+    </dynStyle>
+  </DataColumn>
   <CalcColumn name="Slack" type="string" cellType="html" width="60"
     caption="=crmTaskDelayPlannedShort" />
 
