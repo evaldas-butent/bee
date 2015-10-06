@@ -135,7 +135,13 @@ public class OrderForm extends AbstractFormInterceptor {
     Button finish = new Button(loc.crmActionFinish(), new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
-        checkIsFinish(form);
+        Global.confirm(loc.ordAskFinish(), new ConfirmationCallback() {
+
+          @Override
+          public void onConfirm() {
+            checkIsFinish(form);
+          }
+        });
       }
     });
 
@@ -225,13 +231,23 @@ public class OrderForm extends AbstractFormInterceptor {
 
   @Override
   public boolean beforeAction(Action action, Presenter presenter) {
-    int statusIdx = Data.getColumnIndex(VIEW_ORDERS, COL_ORDERS_STATUS);
 
-    if (action.equals(Action.SAVE)
-        && getActiveRow().getInteger(statusIdx).intValue() == OrdersStatus.APPROVED.ordinal()) {
-      if (BeeUtils.isEmpty(getActiveRow()
-          .getString(Data.getColumnIndex(VIEW_ORDERS, COL_WAREHOUSE)))) {
-        getFormView().notifySevere(Localized.getConstants().warehouse() + " "
+    if (action.equals(Action.SAVE)) {
+      int statusIdx = Data.getColumnIndex(VIEW_ORDERS, COL_ORDERS_STATUS);
+      Long warehouse = getActiveRow().getLong(Data.getColumnIndex(VIEW_ORDERS, COL_WAREHOUSE));
+      Long company = getActiveRow().getLong(Data.getColumnIndex(VIEW_ORDERS, COL_COMPANY));
+      Integer status = getActiveRow().getInteger(statusIdx);
+
+      if (Objects.equals(status, OrdersStatus.APPROVED.ordinal())) {
+        if (!BeeUtils.isPositive(warehouse)) {
+          getFormView().notifySevere(Localized.getConstants().warehouse() + " "
+              + Localized.getConstants().valueRequired());
+          return false;
+        }
+      }
+
+      if (!BeeUtils.isPositive(company)) {
+        getFormView().notifySevere(Localized.getConstants().client() + " "
             + Localized.getConstants().valueRequired());
         return false;
       }
@@ -255,6 +271,7 @@ public class OrderForm extends AbstractFormInterceptor {
             && Objects.equals(getActiveRow().getInteger(
                 Data.getColumnIndex(VIEW_ORDERS, COL_ORDERS_STATUS)), OrdersStatus.APPROVED
                 .ordinal())) {
+
           Global.confirm(Localized.getConstants().ordAskChangeWarehouse() + " "
               + Localized.getConstants().saveChanges(), new ConfirmationCallback() {
 
@@ -269,6 +286,7 @@ public class OrderForm extends AbstractFormInterceptor {
 
                       @Override
                       public void onSuccess(Integer result) {
+
                         if (BeeUtils.isPositive(result)) {
                           int idxColId = form.getDataIndex(COL_WAREHOUSE);
                           List<BeeColumn> cols =
@@ -372,7 +390,7 @@ public class OrderForm extends AbstractFormInterceptor {
           updateStatus(form, OrdersStatus.FINISH);
           int dateIdx = Data.getColumnIndex(VIEW_ORDERS, COL_END_DATE);
           form.getActiveRow().setValue(dateIdx, TimeUtils.nowMinutes());
-          form.refreshBySource(COL_END_DATE);
+          save(form);
         }
       }
     });

@@ -1,14 +1,11 @@
 package com.butent.bee.client.modules.orders;
 
-import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.ALS_COMPANY_NAME;
-import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.COL_COMPANY;
-import static com.butent.bee.shared.modules.orders.OrdersConstants.VIEW_ORDERS_INVOICES;
-import static com.butent.bee.shared.modules.orders.OrdersConstants.VIEW_ORDER_SALES;
-import static com.butent.bee.shared.modules.trade.TradeConstants.ALS_CUSTOMER_NAME;
-import static com.butent.bee.shared.modules.trade.TradeConstants.ALS_SUPPLIER_NAME;
-import static com.butent.bee.shared.modules.trade.TradeConstants.COL_SALE;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
+import static com.butent.bee.shared.modules.orders.OrdersConstants.*;
+import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.RowFactory;
@@ -17,6 +14,7 @@ import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.shared.BiConsumer;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.orders.OrdersConstants;
@@ -45,16 +43,22 @@ public class OrderInvoiceBuilder extends InvoiceBuilder {
   }
 
   @Override
-  protected void createInvoice(BeeRowSet data, BiConsumer<BeeRowSet, BeeRow> consumer) {
+  protected void createInvoice(final BeeRowSet data, final BiConsumer<BeeRowSet, BeeRow> consumer) {
 
-    DataInfo targetInfo = Data.getDataInfo(getTargetView());
-    BeeRow newRow = RowFactory.createEmptyRow(targetInfo, true);
+    final DataInfo targetInfo = Data.getDataInfo(getTargetView());
+    final BeeRow newRow = RowFactory.createEmptyRow(targetInfo, true);
 
     if (data != null) {
       newRow.setValue(targetInfo.getColumnIndex(TradeConstants.COL_TRADE_CUSTOMER), data.getRow(0)
           .getLong(Data.getColumnIndex(VIEW_ORDER_SALES, COL_COMPANY)));
       newRow.setValue(targetInfo.getColumnIndex(ALS_CUSTOMER_NAME), data.getRow(0)
           .getString(Data.getColumnIndex(VIEW_ORDER_SALES, ALS_COMPANY_NAME)));
+
+      newRow.setValue(targetInfo.getColumnIndex(COL_TRADE_WAREHOUSE_FROM), data.getRow(0)
+          .getLong(Data.getColumnIndex(VIEW_ORDER_SALES, COL_WAREHOUSE)));
+      newRow.setValue(targetInfo.getColumnIndex("WarehouseFromCode"), data.getRow(0)
+          .getString(Data.getColumnIndex(VIEW_ORDER_SALES, ALS_WAREHOUSE_CODE)));
+
     }
     newRow.setValue(targetInfo.getColumnIndex(TradeConstants.COL_TRADE_SUPPLIER), BeeKeeper
         .getUser().getCompany());
@@ -71,6 +75,17 @@ public class OrderInvoiceBuilder extends InvoiceBuilder {
 
     newRow.setValue(targetInfo.getColumnIndex(TradeConstants.COL_TRADE_MANAGER
         + ClassifierConstants.COL_LAST_NAME), BeeKeeper.getUser().getLastName());
-    consumer.accept(data, newRow);
+
+    Global.getRelationParameter(PRM_DEFAULT_SALE_OPERATION, new BiConsumer<Long, String>() {
+
+      @Override
+      public void accept(Long t, String u) {
+        if (DataUtils.isId(t)) {
+          newRow.setValue(targetInfo.getColumnIndex(COL_TRADE_OPERATION), t);
+          newRow.setValue(targetInfo.getColumnIndex(COL_OPERATION_NAME), u);
+        }
+        consumer.accept(data, newRow);
+      }
+    });
   }
 }

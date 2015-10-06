@@ -40,6 +40,14 @@
       </row>
 
       <row>
+        <Label for="Operation" />
+        <DataSelector source="Operation" style="&inp;" />
+
+        <Label for="WarehouseFrom" />
+        <DataSelector source="WarehouseFrom" style="&inp;" readOnly="true" />
+      </row>
+      
+      <row>
         <Label for="Supplier" />
         <DataSelector source="Supplier" style="&inp;" />
 
