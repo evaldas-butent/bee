@@ -13,8 +13,6 @@ import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
-import com.butent.bee.server.concurrency.ConcurrencyBean;
-import com.butent.bee.server.concurrency.ConcurrencyBean.HasTimerService;
 import com.butent.bee.server.data.DataEditorBean;
 import com.butent.bee.server.data.DataEvent.ViewDeleteEvent;
 import com.butent.bee.server.data.DataEvent.ViewInsertEvent;
@@ -58,7 +56,6 @@ import com.butent.bee.shared.data.SqlConstants.SqlFunction;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.view.Order;
-import com.butent.bee.shared.exceptions.BeeException;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -83,7 +80,6 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.NameUtils;
-import com.butent.webservice.ButentWS;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -103,18 +99,14 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 
-import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
-import javax.ejb.Timeout;
-import javax.ejb.Timer;
-import javax.ejb.TimerService;
 import javax.servlet.http.HttpServletResponse;
 
 @Stateless
 @LocalBean
-public class TransportModuleBean implements BeeModule, HasTimerService {
+public class TransportModuleBean implements BeeModule {
 
   private static BeeLogger logger = LogUtils.getLogger(TransportModuleBean.class);
 
@@ -157,12 +149,7 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
   @EJB
   NewsBean news;
   @EJB
-  ConcurrencyBean cb;
-  @EJB
   TransportReportsBean rep;
-
-  @Resource
-  TimerService timerService;
 
   @Override
   public List<SearchResult> doSearch(String query) {
@@ -332,7 +319,6 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
         BeeParameter.createRelation(module, PRM_INVOICE_PREFIX, true, TBL_SALES_SERIES,
             COL_SERIES_NAME),
         BeeParameter.createMap(module, PRM_MESSAGE_TEMPLATE, true, null),
-        BeeParameter.createNumber(module, PRM_ERP_REFRESH_INTERVAL),
         BeeParameter.createText(module, "SmsServiceAddress"),
         BeeParameter.createText(module, "SmsUserName"),
         BeeParameter.createText(module, "SmsPassword"),
@@ -356,14 +342,7 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
   }
 
   @Override
-  public TimerService getTimerService() {
-    return timerService;
-  }
-
-  @Override
   public void init() {
-    cb.createIntervalTimer(this.getClass(), PRM_ERP_REFRESH_INTERVAL);
-
     sys.registerDataEventHandler(new DataEventHandler() {
       @Subscribe
       public void calcAssessmentAmounts(ViewQueryEvent event) {
@@ -2652,70 +2631,6 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
     }
 
     return ResponseObject.response(settings);
-  }
-
-  @Timeout
-  private void importERPPayments(Timer timer) {
-    if (!cb.isParameterTimer(timer, PRM_ERP_REFRESH_INTERVAL)) {
-      return;
-    }
-    long historyId = sys.eventStart(PRM_ERP_REFRESH_INTERVAL);
-    int c = 0;
-    String error = null;
-
-    SimpleRowSet debts = qs.getData(new SqlSelect()
-        .addField(TBL_SALES, sys.getIdName(TBL_SALES), COL_SALE)
-        .addFields(TBL_SALES, COL_TRADE_PAID)
-        .addFrom(TBL_SALES)
-        .setWhere(SqlUtils.and(SqlUtils.isNull(TBL_SALES, COL_SALE_PROFORMA),
-            SqlUtils.or(SqlUtils.isNull(TBL_SALES, COL_TRADE_PAID),
-                SqlUtils.less(TBL_SALES, COL_TRADE_PAID,
-                    SqlUtils.field(TBL_SALES, COL_TRADE_AMOUNT))))));
-
-    if (!debts.isEmpty()) {
-      StringBuilder ids = new StringBuilder();
-
-      for (SimpleRow row : debts) {
-        if (ids.length() > 0) {
-          ids.append(",");
-        }
-        ids.append("'").append(TradeModuleBean.encodeId(TBL_SALES, row.getLong(COL_SALE)))
-            .append("'");
-      }
-      String remoteAddress = prm.getText(PRM_ERP_ADDRESS);
-      String remoteLogin = prm.getText(PRM_ERP_LOGIN);
-      String remotePassword = prm.getText(PRM_ERP_PASSWORD);
-
-      try {
-        SimpleRowSet payments = ButentWS.connect(remoteAddress, remoteLogin, remotePassword)
-            .getSQLData("SELECT extern_id AS id, apm_data AS data, apm_suma AS suma"
-                    + " FROM apyvarta WHERE pajamos=0 AND extern_id IN(" + ids.toString() + ")",
-                "id", "data", "suma");
-
-        for (SimpleRow payment : payments) {
-          String id = TradeModuleBean.decodeId(TBL_SALES, payment.getLong("id"));
-          Double paid = payment.getDouble("suma");
-
-          if (!Objects.equals(paid,
-              BeeUtils.toDoubleOrNull(debts.getValueByKey(COL_SALE, id, COL_TRADE_PAID)))) {
-
-            c += qs.updateData(new SqlUpdate(TBL_SALES)
-                .addConstant(COL_TRADE_PAID, paid)
-                .addConstant(COL_TRADE_PAYMENT_TIME,
-                    TimeUtils.parseDateTime(payment.getValue("data")))
-                .setWhere(sys.idEquals(TBL_SALES, BeeUtils.toLong(id))));
-          }
-        }
-      } catch (BeeException e) {
-        logger.error(e);
-        error = e.getMessage();
-      }
-    }
-    if (BeeUtils.isEmpty(error)) {
-      sys.eventEnd(historyId, "OK", BeeUtils.joinWords("Updated", c, "records"));
-    } else {
-      sys.eventEnd(historyId, "ERROR", error);
-    }
   }
 
   private ResponseObject sendMessage(String message, String[] recipients) {

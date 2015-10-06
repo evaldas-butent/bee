@@ -254,7 +254,6 @@ public final class TransportConstants {
 
   public static final String SVC_TRIP_PROFIT_REPORT = "TripProfitReport";
 
-  public static final String PRM_ERP_REFRESH_INTERVAL = "ERPRefreshIntervalInMinutes";
   public static final String PRM_MESSAGE_TEMPLATE = "MessageTemplate";
   public static final String PRM_INVOICE_PREFIX = "DefaultInvoicePrefix";
   public static final String PRM_CARGO_TYPE = "CargoType";
