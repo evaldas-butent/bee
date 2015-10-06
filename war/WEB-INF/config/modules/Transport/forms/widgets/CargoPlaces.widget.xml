@@ -18,7 +18,7 @@
                   style="&inline; width:70px; margin-left:5px;" />
   </FlowPanel>
 
-  <Table>
+  <Table kind="controls">
     <row>
       <cell colSpan="2">
         <Label text="=loading" horizontalAlignment="center" style="font-weight:bold;" />

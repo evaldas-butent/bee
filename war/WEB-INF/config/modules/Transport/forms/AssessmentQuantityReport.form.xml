@@ -5,7 +5,7 @@
   name="AssessmentQuantityReport" caption="=trAssessmentQuantityReport"
   >
   <FlowPanel>
-    <Table style="border-collapse: collapse; margin-top: 1ex;">
+    <Table kind="controls" style="border-collapse: collapse; margin-top: 1ex;">
       <col index="0" cellStyle="padding: 4px 10px; text-align: right;" />
       <col index="1" cellStyle="padding: 4px 0" />
 

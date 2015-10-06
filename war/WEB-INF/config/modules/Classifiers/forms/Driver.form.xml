@@ -13,7 +13,7 @@
     >
   <FlowPanel class="flexBox-vertical" style="padding: 5px 1em 45px 1em; min-width: 1000px;">
     <FlowPanel style="margin-top: 1ex;">
-      <Table style="border-spacing: 5px;">
+      <Table kind="controls" style="border-spacing: 5px;">
         <row>
           <Label text="=trDriverName" class="bee-required" style="&lbl;" />
           <DataSelector source="CompanyPerson" style="&w2;"

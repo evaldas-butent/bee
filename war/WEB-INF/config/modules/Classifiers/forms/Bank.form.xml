@@ -13,7 +13,7 @@
   height="565"
   >
   <FlowPanel>
-    <Table>
+    <Table kind="controls">
       <row>
         <Label text="=name" style="&lbl1;" class="bee-required" />
         <InputText source="Name" style="&inp1;" visible="true" />

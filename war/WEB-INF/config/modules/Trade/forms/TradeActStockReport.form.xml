@@ -33,7 +33,7 @@
 
     <Disclosure open="true">
       <Label text="=filters" />
-      <Table>
+      <Table kind="controls">
         <col index="0" kind="label" />
 
         <row>

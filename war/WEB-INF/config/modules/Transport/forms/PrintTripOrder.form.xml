@@ -36,7 +36,7 @@
 
     <FlowPanel style="margin-left:5em;">
       <Label text="Įsakau:" style="font-weight:bold;" />
-      <Table>
+      <Table kind="output">
         <col index="1" cellStyle="text-align:center; padding:0 2em 0 2em;" />
         <row>
           <Label text="Vykti į tarnybinę komandiruotę tolimųjų reisų vairuotojui" />
@@ -49,7 +49,7 @@
           </cell>
         </row>
       </Table>
-      <Table>
+      <Table kind="output">
         <col index="1" cellStyle="text-align:center; padding:0 2em 0 2em;" />
         <row>
           <Label text="Antram vairuotojui" />
@@ -67,7 +67,7 @@
     <br />
     <br />
 
-    <Table>
+    <Table kind="output">
       <col index="0" cellStyle="font-weight:bold; padding-right:1em;" />
       <col index="1" cellStyle="border-bottom:1px solid black;" />
       <row>
@@ -121,7 +121,7 @@
     <br />
     <br />
 
-    <Table style="text-align:center; white-space:nowrap;">
+    <Table kind="output" style="text-align:center; white-space:nowrap;">
       <col index="0" cellStyle="text-align:left;" />
       <row>
         <Label text="Įgaliotas asmuo" />

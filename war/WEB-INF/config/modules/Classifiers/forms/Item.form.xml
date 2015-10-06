@@ -15,7 +15,7 @@
   width="700" height="720"
   >
   <FlowPanel class="flexBox-vertical">
-    <Table style="margin-top: 1ex;">
+    <Table kind="controls" style="margin-top: 1ex;">
       <col index="0" kind="label" />
       <col index="2" kind="label" />
       
@@ -77,7 +77,7 @@
       <page>
         <text>=prices</text>
         <FlowPanel class="flexBox-vertical">
-          <Table style="margin-top: 1ex; margin-bottom: 1em;">
+          <Table kind="controls" style="margin-top: 1ex; margin-bottom: 1em;">
             <col index="0" kind="label" />
             <col index="2" cellStyle="padding-left: 6px;" />
             <col index="3" kind="label" />
@@ -126,7 +126,7 @@
 
       <page>
         <text>=additionalInfo</text>
-        <Table style="margin-top: 1ex;">
+        <Table kind="controls" style="margin-top: 1ex;">
           <col index="0" kind="label" />
           <col index="2" kind="label" />
       

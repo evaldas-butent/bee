@@ -28,7 +28,7 @@
 
     <br />
 
-    <Table class="&form;-table">
+    <Table kind="output" class="&form;-table">
       <col index="0" cellStyle="width:30%; text-align:left; font-weight:bold;" />
       <row>
         <Label text="Kelionės lapo išdavimo data" />
@@ -58,7 +58,7 @@
 
     <br />
 
-    <Table class="&form;-table" style="text-align:center;">
+    <Table kind="output" class="&form;-table" style="text-align:center;">
       <col index="0" cellStyle="width:30%; text-align:left; font-weight:bold;" />
       <row style="font-weight:bold;">
         <text />
@@ -84,7 +84,7 @@
 
     <br />
 
-    <Table class="&form;-table">
+    <Table kind="output" class="&form;-table">
       <row>
         <Label text="Komandiruotės maršrutas" style="text-align:center; font-weight:bold;" />
       </row>
@@ -105,7 +105,7 @@
     <br />
     <Label text="Maršruto detalizavimas:" style="font-weight:bold;" />
 
-    <Table class="&form;-table" style="font-weight:bold; text-align:center;">
+    <Table kind="output" class="&form;-table" style="font-weight:bold; text-align:center;">
       <row>
         <cell colSpan="2" style="width:35%;">
           <Label text="Išvyko iš" />
@@ -149,7 +149,7 @@
     <br />
     <br />
 
-    <Table style="white-space:nowrap; width:100%;">
+    <Table kind="output" style="white-space:nowrap; width:100%;">
       <col index="0" cellStyle="text-align:left;" />
       <row>
         <Label text="Vairuotojas" style="margin-right:1em;" />
@@ -165,7 +165,7 @@
 
     <br />
 
-    <Table style="white-space:nowrap; width:100%;">
+    <Table kind="output" style="white-space:nowrap; width:100%;">
       <col index="0" cellStyle="text-align:left;" />
       <row>
         <Label text="Į reisą išleido" style="margin-right:1em;" />

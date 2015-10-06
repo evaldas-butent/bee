@@ -13,7 +13,7 @@
   <Disclosure open="true">
     <Label text="=trLoadingInfo" style="&summary;" />
     
-    <Table style="&table;" cellStyle="&cells;">
+    <Table kind="controls" style="&table;" cellStyle="&cells;">
       &cols;
 
       <row>
@@ -57,7 +57,7 @@
   <Disclosure open="true">
     <Label text="=trUnloadingInfo" style="&summary;" />
     
-    <Table style="&table;" cellStyle="&cells;">
+    <Table kind="controls" style="&table;" cellStyle="&cells;">
       &cols;
 
       <row>
@@ -102,7 +102,7 @@
     <Label text="=trRequestShipmentInfo" style="&summary;" />
     
     <FlowPanel>
-      <Table style="&table;" cellStyle="&cells;">
+      <Table kind="controls" style="&table;" cellStyle="&cells;">
         &cols;
 
         <row>
@@ -136,7 +136,7 @@
   <Disclosure open="true">
     <Label text="=trRequestCargoInfo" style="&summary;" />
     
-    <Table style="&table;" cellStyle="&cells;">
+    <Table kind="controls" style="&table;" cellStyle="&cells;">
       &cols;
 
       <row>
@@ -186,7 +186,7 @@
   <Disclosure open="true">
     <Label text="=trRequestAdditionalInfo" style="&summary;" />
     
-    <Table style="&table;" cellStyle="&cells;">
+    <Table kind="controls" style="&table;" cellStyle="&cells;">
       &cols;
 
       <row>

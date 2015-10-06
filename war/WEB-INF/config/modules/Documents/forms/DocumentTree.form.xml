@@ -13,7 +13,7 @@
           <ui:expression>row.CategoryName</ui:expression>
         </calc>
         <form name="EditCategory">
-          <Table>
+          <Table kind="controls">
             <row>
               <Label for="CategoryName" style="text-align:right;" />
               <InputText source="CategoryName" />

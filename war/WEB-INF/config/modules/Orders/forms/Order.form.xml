@@ -8,7 +8,7 @@
 
   name="Order" viewName="Orders" width="800" height="600">
   <FlowPanel>
-    <Table>
+    <Table kind="controls">
       <row data="OrdersTemplates" class="bee-ta-template-selection">
         <Label style="margin-right: 1em; text-align: right; padding-left: 30px" text="=template" />
         <UnboundSelector viewName="OrdersTemplates" name="Template" style="width: 200px;" newRowEnabled="false"

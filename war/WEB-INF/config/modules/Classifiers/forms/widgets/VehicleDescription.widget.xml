@@ -10,7 +10,7 @@
 					 xmlns:d="http://www.butent.com/decorator"
 					 style="padding-top: 5px;"
 					 class="flexBox-vertical">
-  <Table style="border-spacing: 5px;">
+  <Table kind="controls" style="border-spacing: 5px;">
     <row>
 	  <Label text="=vehicleNumber" class="bee-required" horizontalAlignment="right" style="&lbl1;"/>
 	  <InputText source="Number"  upperCase="true" d:size="70" d:unit="px" d:align="right" d:rootStyle="&MARGIN;" />
