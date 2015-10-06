@@ -11,7 +11,7 @@
   cursor: auto;
 }
 
-.bee-Form .bee-payroll-ws-table tr td {
+.bee-payroll-ws-table td {
   border: 1px solid #ccc;
   padding: 2px;
 }
