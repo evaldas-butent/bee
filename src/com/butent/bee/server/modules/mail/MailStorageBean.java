@@ -81,6 +81,7 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.ParseException;
 import javax.mail.util.SharedByteArrayInputStream;
+import javax.ws.rs.core.MediaType;
 
 @Singleton
 @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
@@ -289,7 +290,7 @@ public class MailStorageBean {
         message.writeTo(bos);
         bos.close();
         is = new SharedByteArrayInputStream(bos.toByteArray());
-        fileId = fs.storeFile(is, "mail@" + envelope.getUniqueId(), "text/plain");
+        fileId = fs.storeFile(is, "mail@" + envelope.getUniqueId(), MediaType.TEXT_PLAIN);
       } catch (IOException | MessagingException e) {
         qs.updateData(new SqlDelete(TBL_MESSAGES)
             .setWhere(sys.idEquals(TBL_MESSAGES, messageId.get())));
@@ -636,7 +637,8 @@ public class MailStorageBean {
         String content = getStringContent(part.getContent());
 
         if (!BeeUtils.isEmpty(content)) {
-          parsedPart.put(part.isMimeType("text/html") ? COL_HTML_CONTENT : COL_CONTENT, content);
+          parsedPart.put(part.isMimeType(MediaType.TEXT_HTML)
+              ? COL_HTML_CONTENT : COL_CONTENT, content);
         }
       }
     }
