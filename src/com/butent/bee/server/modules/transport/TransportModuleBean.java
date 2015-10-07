@@ -6,6 +6,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import com.google.common.collect.TreeMultimap;
+import com.google.common.eventbus.AllowConcurrentEvents;
 import com.google.common.eventbus.Subscribe;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
@@ -345,10 +346,9 @@ public class TransportModuleBean implements BeeModule {
   public void init() {
     sys.registerDataEventHandler(new DataEventHandler() {
       @Subscribe
+      @AllowConcurrentEvents
       public void calcAssessmentAmounts(ViewQueryEvent event) {
-        if (BeeUtils.same(event.getTargetName(), VIEW_CHILD_ASSESSMENTS) && event.isAfter()
-            && event.getRowset().getNumberOfRows() > 0) {
-
+        if (event.isAfter(VIEW_CHILD_ASSESSMENTS) && event.hasData()) {
           for (String tbl : new String[] {TBL_CARGO_INCOMES, TBL_CARGO_EXPENSES}) {
             SqlSelect query = new SqlSelect()
                 .addField(TBL_ASSESSMENTS, sys.getIdName(TBL_ASSESSMENTS), COL_ASSESSMENT)
@@ -377,10 +377,9 @@ public class TransportModuleBean implements BeeModule {
       }
 
       @Subscribe
+      @AllowConcurrentEvents
       public void deleteOrphanCargo(ViewDeleteEvent event) {
-        if (BeeUtils.inListSame(event.getTargetName(), VIEW_SHIPMENT_REQUESTS,
-            VIEW_CARGO_REQUESTS)) {
-
+        if (event.isTarget(VIEW_SHIPMENT_REQUESTS, VIEW_CARGO_REQUESTS)) {
           if (event.isBefore()) {
             String tableName;
             String columnName;
@@ -434,92 +433,84 @@ public class TransportModuleBean implements BeeModule {
       }
 
       @Subscribe
+      @AllowConcurrentEvents
       public void fillCargoIncomes(ViewQueryEvent event) {
-        if (BeeUtils.same(event.getTargetName(), VIEW_ORDER_CARGO) && event.isAfter()) {
-          BeeRowSet rowset = event.getRowset();
+        if (event.isAfter(VIEW_ORDER_CARGO) && event.hasData()) {
+          SimpleRowSet rs = qs.getData(rep.getCargoIncomeQuery(event.getQuery()
+              .resetFields().resetOrder().resetGroup()
+              .addField(TBL_ORDER_CARGO, sys.getIdName(TBL_ORDER_CARGO), COL_CARGO)
+              .addGroup(TBL_ORDER_CARGO, sys.getIdName(TBL_ORDER_CARGO)), null, false));
 
-          if (!rowset.isEmpty()) {
-            SimpleRowSet rs = qs.getData(rep.getCargoIncomeQuery(event.getQuery()
-                .resetFields().resetOrder().resetGroup()
-                .addField(TBL_ORDER_CARGO, sys.getIdName(TBL_ORDER_CARGO), COL_CARGO)
-                .addGroup(TBL_ORDER_CARGO, sys.getIdName(TBL_ORDER_CARGO)), null, false));
+          for (BeeRow row : event.getRowset().getRows()) {
+            String cargoId = BeeUtils.toString(row.getId());
+            String cargoIncome = rs.getValueByKey(COL_CARGO, cargoId, "CargoIncome");
+            String servicesIncome = rs.getValueByKey(COL_CARGO, cargoId, "ServicesIncome");
 
-            for (BeeRow row : rowset.getRows()) {
-              String cargoId = BeeUtils.toString(row.getId());
-              String cargoIncome = rs.getValueByKey(COL_CARGO, cargoId, "CargoIncome");
-              String servicesIncome = rs.getValueByKey(COL_CARGO, cargoId, "ServicesIncome");
-
-              row.setProperty(VAR_INCOME, BeeUtils.toString(BeeUtils.toDouble(cargoIncome)
-                  + BeeUtils.toDouble(servicesIncome)));
-            }
+            row.setProperty(VAR_INCOME, BeeUtils.toString(BeeUtils.toDouble(cargoIncome)
+                + BeeUtils.toDouble(servicesIncome)));
           }
         }
       }
 
       @Subscribe
+      @AllowConcurrentEvents
       public void fillFuelConsumptions(ViewQueryEvent event) {
-        if (BeeUtils.same(event.getTargetName(), TBL_TRIP_ROUTES) && event.isAfter()) {
+        if (event.isAfter(TBL_TRIP_ROUTES) && event.hasData()) {
           BeeRowSet rowset = event.getRowset();
+          int colIndex = DataUtils.getColumnIndex("Consumption", rowset.getColumns(), false);
 
-          if (!rowset.isEmpty()) {
-            int colIndex = DataUtils.getColumnIndex("Consumption", rowset.getColumns(), false);
+          if (BeeConst.isUndef(colIndex)) {
+            return;
+          }
+          SimpleRowSet rs = qs.getData(rep.getFuelConsumptionsQuery(event.getQuery()
+              .resetFields().resetOrder().resetGroup()
+              .addFields(TBL_TRIP_ROUTES, sys.getIdName(TBL_TRIP_ROUTES))
+              .addGroup(TBL_TRIP_ROUTES, sys.getIdName(TBL_TRIP_ROUTES)), true));
 
-            if (colIndex == BeeConst.UNDEF) {
-              return;
-            }
-            SimpleRowSet rs = qs.getData(rep.getFuelConsumptionsQuery(event.getQuery()
-                .resetFields().resetOrder().resetGroup()
-                .addFields(TBL_TRIP_ROUTES, sys.getIdName(TBL_TRIP_ROUTES))
-                .addGroup(TBL_TRIP_ROUTES, sys.getIdName(TBL_TRIP_ROUTES)), true));
-
-            for (BeeRow row : rowset.getRows()) {
-              row.setValue(colIndex, rs.getValueByKey(sys.getIdName(TBL_TRIP_ROUTES),
-                  BeeUtils.toString(row.getId()), "Quantity"));
-            }
+          for (BeeRow row : rowset.getRows()) {
+            row.setValue(colIndex, rs.getValueByKey(sys.getIdName(TBL_TRIP_ROUTES),
+                BeeUtils.toString(row.getId()), "Quantity"));
           }
         }
       }
 
       @Subscribe
+      @AllowConcurrentEvents
       public void fillTripCargoIncomes(ViewQueryEvent event) {
-        if (BeeUtils.same(event.getTargetName(), VIEW_TRIP_CARGO) && event.isAfter()) {
+        if (event.isAfter(VIEW_TRIP_CARGO) && event.hasData()) {
           BeeRowSet rowset = event.getRowset();
+          int cargoIndex = rowset.getColumnIndex(COL_CARGO);
 
-          if (!rowset.isEmpty()) {
-            int cargoIndex = rowset.getColumnIndex(COL_CARGO);
+          if (BeeConst.isUndef(cargoIndex)) {
+            return;
+          }
+          String crs = rep.getTripIncomes(event.getQuery().resetFields().resetOrder().resetGroup()
+                  .addFields(VIEW_CARGO_TRIPS, COL_TRIP).addGroup(VIEW_CARGO_TRIPS, COL_TRIP),
+              null, false);
 
-            if (cargoIndex == BeeConst.UNDEF) {
-              return;
-            }
-            String crs =
-                rep.getTripIncomes(event.getQuery().resetFields().resetOrder().resetGroup()
-                        .addFields(VIEW_CARGO_TRIPS, COL_TRIP).addGroup(VIEW_CARGO_TRIPS, COL_TRIP),
-                    null, false);
+          SimpleRowSet rs = qs.getData(new SqlSelect().addAllFields(crs).addFrom(crs));
+          qs.sqlDropTemp(crs);
 
-            SimpleRowSet rs = qs.getData(new SqlSelect().addAllFields(crs).addFrom(crs));
-            qs.sqlDropTemp(crs);
-
-            for (BeeRow row : rowset.getRows()) {
-              row.setProperty(VAR_INCOME, rs.getValueByKey(COL_CARGO, row.getString(cargoIndex),
-                  "TripIncome"));
-            }
+          for (BeeRow row : rowset.getRows()) {
+            row.setProperty(VAR_INCOME, rs.getValueByKey(COL_CARGO, row.getString(cargoIndex),
+                "TripIncome"));
           }
         }
       }
 
       @Subscribe
+      @AllowConcurrentEvents
       public void getFileIcons(ViewQueryEvent event) {
-        if (BeeUtils.same(event.getTargetName(), VIEW_CARGO_REQUEST_FILES) && event.isAfter()) {
+        if (event.isAfter(VIEW_CARGO_REQUEST_FILES)) {
           ExtensionIcons.setIcons(event.getRowset(), ALS_FILE_NAME, PROP_ICON);
         }
       }
 
       @Subscribe
+      @AllowConcurrentEvents
       public void updateAssessmentRelations(ViewInsertEvent event) {
-        String tbl = sys.getViewSource(event.getTargetName());
-
-        if (BeeUtils.inListSame(tbl, TBL_ASSESSMENTS, TBL_ASSESSMENT_FORWARDERS)
-            && event.isAfter()) {
+        if (event.isAfter(TBL_ASSESSMENTS, TBL_ASSESSMENT_FORWARDERS)) {
+          String tbl = sys.getViewSource(event.getTargetName());
           String fld;
           String tblFrom;
           String joinFrom;

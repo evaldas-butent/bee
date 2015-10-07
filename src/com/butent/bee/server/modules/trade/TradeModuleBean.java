@@ -1,6 +1,7 @@
 package com.butent.bee.server.modules.trade;
 
 import com.google.common.collect.Sets;
+import com.google.common.eventbus.AllowConcurrentEvents;
 import com.google.common.eventbus.Subscribe;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
@@ -314,9 +315,9 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
 
     sys.registerDataEventHandler(new DataEventHandler() {
       @Subscribe
+      @AllowConcurrentEvents
       public void fillInvoiceNumber(ViewModifyEvent event) {
-        if (BeeUtils.same(sys.getViewSource(event.getTargetName()), TBL_SALES)
-            && event.isBefore()) {
+        if (event.isBefore(TBL_SALES)) {
           List<BeeColumn> cols = null;
           IsRow row = null;
           String prefix = null;

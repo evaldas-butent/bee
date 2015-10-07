@@ -3,6 +3,7 @@ package com.butent.bee.server.modules.mail;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
+import com.google.common.eventbus.AllowConcurrentEvents;
 import com.google.common.eventbus.Subscribe;
 
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
@@ -54,11 +55,7 @@ import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.mail.MailConstants;
-import com.butent.bee.shared.modules.mail.MailConstants.AddressType;
-import com.butent.bee.shared.modules.mail.MailConstants.MessageFlag;
-import com.butent.bee.shared.modules.mail.MailConstants.RuleAction;
-import com.butent.bee.shared.modules.mail.MailConstants.RuleCondition;
-import com.butent.bee.shared.modules.mail.MailConstants.SystemFolder;
+import com.butent.bee.shared.modules.mail.MailConstants.*;
 import com.butent.bee.shared.modules.mail.MailFolder;
 import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.rights.Module;
@@ -482,27 +479,26 @@ public class MailModuleBean implements BeeModule, HasTimerService {
     sys.registerDataEventHandler(new DataEventHandler() {
 
       @Subscribe
+      @AllowConcurrentEvents
       public void setRowProperties(ViewQueryEvent event) {
-        if (event.isBefore()) {
-          return;
-        }
-
-        if (BeeUtils.same(event.getTargetName(), VIEW_NEWSLETTER_FILES)) {
+        if (event.isAfter(VIEW_NEWSLETTER_FILES)) {
           ExtensionIcons.setIcons(event.getRowset(), AdministrationConstants.ALS_FILE_NAME,
               AdministrationConstants.PROP_ICON);
         }
       }
 
       @Subscribe
+      @AllowConcurrentEvents
       public void initAccount(ViewInsertEvent event) {
-        if (event.isTarget(TBL_ACCOUNTS) && event.isAfter()) {
+        if (event.isAfter(TBL_ACCOUNTS)) {
           mail.initAccount(event.getRow().getId());
         }
       }
 
       @Subscribe
+      @AllowConcurrentEvents
       public void getRecipients(ViewQueryEvent event) {
-        if (event.isTarget(TBL_PLACES) && event.isAfter()) {
+        if (event.isAfter(TBL_PLACES)) {
           BeeRowSet rowSet = event.getRowset();
           int idx = DataUtils.getColumnIndex(COL_MESSAGE, rowSet.getColumns(), false);
 

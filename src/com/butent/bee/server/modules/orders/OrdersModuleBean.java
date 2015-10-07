@@ -1,9 +1,10 @@
 package com.butent.bee.server.modules.orders;
 
 import com.google.common.collect.Lists;
+import com.google.common.eventbus.AllowConcurrentEvents;
 import com.google.common.eventbus.Subscribe;
 
-import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.COL_CURRENCY;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.orders.OrdersConstants.*;
 import static com.butent.bee.shared.modules.projects.ProjectConstants.*;
@@ -48,7 +49,7 @@ import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.orders.OrdersConstants;
-import com.butent.bee.shared.modules.orders.OrdersConstants.OrdersStatus;
+import com.butent.bee.shared.modules.orders.OrdersConstants.*;
 import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.utils.ArrayUtils;
@@ -92,7 +93,6 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
 
   @Override
   public List<SearchResult> doSearch(String query) {
-    // TODO Auto-generated method stub
     return null;
   }
 
@@ -169,8 +169,9 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
     sys.registerDataEventHandler(new DataEventHandler() {
 
       @Subscribe
+      @AllowConcurrentEvents
       public void setFreeRemainder(ViewQueryEvent event) {
-        if (event.isAfter() && event.isTarget(VIEW_ORDER_ITEMS) && event.hasData()
+        if (event.isAfter(VIEW_ORDER_ITEMS) && event.hasData()
             && event.getColumnCount() >= sys.getView(event.getTargetName()).getColumnCount()) {
 
           BeeRowSet rowSet = event.getRowset();
@@ -192,10 +193,9 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
       }
 
       @Subscribe
+      @AllowConcurrentEvents
       public void fillOrderNumber(ViewInsertEvent event) {
-        if (event.isBefore() && event.isTarget(TBL_ORDERS)
-            && !DataUtils.contains(event.getColumns(), COL_TA_NUMBER)) {
-
+        if (event.isBefore(TBL_ORDERS) && !DataUtils.contains(event.getColumns(), COL_TA_NUMBER)) {
           BeeView view = sys.getView(VIEW_ORDERS);
           Long series = null;
 
