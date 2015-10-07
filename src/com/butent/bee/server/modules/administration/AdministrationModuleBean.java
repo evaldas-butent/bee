@@ -76,7 +76,6 @@ import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
-import javax.ejb.Timeout;
 import javax.ejb.Timer;
 import javax.ejb.TimerService;
 
@@ -159,6 +158,13 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
       response = ResponseObject.error(msg);
     }
     return response;
+  }
+
+  @Override
+  public void ejbTimeout(Timer timer) {
+    if (cb.isParameterTimer(timer, PRM_REFRESH_CURRENCY_HOURS)) {
+      refreshCurrencyRates();
+    }
   }
 
   @Override
@@ -786,11 +792,7 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
     return params;
   }
 
-  @Timeout
-  private void refreshCurrencyRates(Timer timer) {
-    if (!cb.isParameterTimer(timer, PRM_REFRESH_CURRENCY_HOURS)) {
-      return;
-    }
+  private void refreshCurrencyRates() {
     long historyId = sys.eventStart(PRM_REFRESH_CURRENCY_HOURS);
 
     String daysOfToday = BeeUtils.toString(TimeUtils.today().getDays());

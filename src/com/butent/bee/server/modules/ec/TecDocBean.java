@@ -65,7 +65,6 @@ import javax.ejb.Asynchronous;
 import javax.ejb.EJB;
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
-import javax.ejb.Timeout;
 import javax.ejb.Timer;
 import javax.ejb.TimerService;
 import javax.imageio.ImageIO;
@@ -328,6 +327,15 @@ public class TecDocBean implements HasTimerService {
             analog.getValue(COL_TCD_ARTICLE_NR), COL_TCD_BRAND, analog.getLong(COL_TCD_BRAND))));
 
     return newArt;
+  }
+
+  @Override
+  public void ejbTimeout(Timer timer) {
+    if (cb.isParameterTimer(timer, PRM_BUTENT_INTERVAL)) {
+      suckButent(true);
+    } else if (cb.isParameterTimer(timer, PRM_MOTONET_HOURS)) {
+      suckMotonet(true);
+    }
   }
 
   public Collection<BeeParameter> getDefaultParameters() {
@@ -942,15 +950,6 @@ public class TecDocBean implements HasTimerService {
 
     for (BeeRow row : data.getRows()) {
       logger.debug(row.getValues());
-    }
-  }
-
-  @Timeout
-  private void doTimerEvent(Timer timer) {
-    if (cb.isParameterTimer(timer, PRM_BUTENT_INTERVAL)) {
-      suckButent(true);
-    } else if (cb.isParameterTimer(timer, PRM_MOTONET_HOURS)) {
-      suckMotonet(true);
     }
   }
 

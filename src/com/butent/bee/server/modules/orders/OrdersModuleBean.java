@@ -68,7 +68,6 @@ import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
-import javax.ejb.Timeout;
 import javax.ejb.Timer;
 import javax.ejb.TimerService;
 
@@ -130,6 +129,13 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
     }
 
     return response;
+  }
+
+  @Override
+  public void ejbTimeout(Timer timer) {
+    if (cb.isParameterTimer(timer, PRM_CLEAR_RESERVATIONS_TIME)) {
+      clearReservations();
+    }
   }
 
   @Override
@@ -218,15 +224,6 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
         }
       }
     });
-  }
-
-  @Timeout
-  private void orderReservationChecker(Timer timer) {
-    if (!cb.isParameterTimer(timer, PRM_CLEAR_RESERVATIONS_TIME)) {
-      return;
-    }
-
-    clearReservations();
   }
 
   private ResponseObject getItemsForSelection(RequestInfo reqInfo) {

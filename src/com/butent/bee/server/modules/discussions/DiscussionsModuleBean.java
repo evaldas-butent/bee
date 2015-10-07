@@ -87,7 +87,6 @@ import javax.ejb.EJB;
 import javax.ejb.EJBContext;
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
-import javax.ejb.Timeout;
 import javax.ejb.Timer;
 import javax.ejb.TimerService;
 
@@ -160,6 +159,13 @@ public class DiscussionsModuleBean implements BeeModule, ConcurrencyBean.HasTime
     }
 
     return response;
+  }
+
+  @Override
+  public void ejbTimeout(Timer timer) {
+    if (cb.isParameterTimer(timer, PRM_DISCUSS_INACTIVE_TIME_IN_DAYS)) {
+      doInactiveDiscussions();
+    }
   }
 
   @Override
@@ -734,13 +740,6 @@ public class DiscussionsModuleBean implements BeeModule, ConcurrencyBean.HasTime
     }
 
     return response;
-  }
-
-  @Timeout
-  private void doTimerEvent(Timer timer) {
-    if (cb.isParameterTimer(timer, PRM_DISCUSS_INACTIVE_TIME_IN_DAYS)) {
-      doInactiveDiscussions();
-    }
   }
 
   private void doInactiveDiscussions() {

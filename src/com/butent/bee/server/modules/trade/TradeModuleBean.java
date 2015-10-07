@@ -65,7 +65,6 @@ import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
-import javax.ejb.Timeout;
 import javax.ejb.Timer;
 import javax.ejb.TimerService;
 
@@ -158,6 +157,13 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     }
 
     return response;
+  }
+
+  @Override
+  public void ejbTimeout(Timer timer) {
+    if (cb.isParameterTimer(timer, PRM_ERP_REFRESH_INTERVAL)) {
+      importERPPayments();
+    }
   }
 
   public static String encodeId(String trade, Long id) {
@@ -355,13 +361,6 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     });
 
     act.init();
-  }
-
-  @Timeout
-  private void doTimerEvent(Timer timer) {
-    if (cb.isParameterTimer(timer, PRM_ERP_REFRESH_INTERVAL)) {
-      importERPPayments();
-    }
   }
 
   private ResponseObject getItemsInfo(String viewName, Long id, String currencyTo) {
