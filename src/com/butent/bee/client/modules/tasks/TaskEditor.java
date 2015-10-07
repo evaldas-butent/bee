@@ -720,8 +720,8 @@ class TaskEditor extends AbstractFormInterceptor {
           setProjectStagesFilter(form, row);
           setProjectUsersFilter(form, row);
 
-          if (event.getValue() != form.getOldRow()
-              .getLong(form.getDataIndex(ProjectConstants.COL_PROJECT))) {
+          if (event.getValue() != BeeUtils.unbox(form.getOldRow()
+              .getLong(form.getDataIndex(ProjectConstants.COL_PROJECT)))) {
             getActiveRow().setValue(form.getDataIndex(ProjectConstants.COL_PROJECT_STAGE),
                 (Long) null);
             getActiveRow().setValue(form.getDataIndex(ProjectConstants.ALS_STAGE_NAME),
@@ -741,7 +741,8 @@ class TaskEditor extends AbstractFormInterceptor {
 
   @Override
   public boolean isRowEditable(IsRow row) {
-    return row != null && BeeKeeper.getUser().is(row.getLong(getDataIndex(COL_OWNER)));
+    return row != null && (BeeKeeper.getUser().is(row.getLong(getDataIndex(COL_OWNER))) ||
+        BeeKeeper.getUser().is(row.getLong(getDataIndex(COL_EXECUTOR))));
   }
 
   @Override
@@ -2093,6 +2094,7 @@ class TaskEditor extends AbstractFormInterceptor {
     long projectId = BeeUtils.unbox(row.getLong(idxProject));
 
     if (!DataUtils.isId(projectId)) {
+      observers.getOracle().setAdditionalFilter(null, true);
       return;
     }
 
