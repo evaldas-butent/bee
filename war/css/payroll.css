@@ -16,6 +16,14 @@
   padding: 2px;
 }
 
+.bee-payroll-ws-table .bee-payroll-ws-month-selector-cell {
+  text-align: center;
+  border-bottom-color: transparent;
+}
+.bee-payroll-ws-month-selector {
+  font-weight: bolder;
+}
+
 .bee-payroll-ws-month-panel {
   display: flex;
   display: -webkit-flex;

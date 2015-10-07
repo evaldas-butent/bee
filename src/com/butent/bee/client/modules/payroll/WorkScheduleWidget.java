@@ -32,6 +32,7 @@ import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.modules.classifiers.ClassifierKeeper;
 import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.ui.UiHelper;
+import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.Toggle;
@@ -72,6 +73,7 @@ class WorkScheduleWidget extends HtmlTable {
 
   private static final String STYLE_TABLE = STYLE_PREFIX + "table";
 
+  private static final String STYLE_MONTH_SELECTOR = STYLE_PREFIX + "month-selector";
   private static final String STYLE_MONTH_PANEL = STYLE_PREFIX + "month-panel";
   private static final String STYLE_MONTH_LABEL = STYLE_PREFIX + "month-label";
   private static final String STYLE_MONTH_ACTIVE = STYLE_PREFIX + "month-active";
@@ -299,6 +301,11 @@ class WorkScheduleWidget extends HtmlTable {
     Element monthElement = getMonthElement(ym);
     if (monthElement != null) {
       monthElement.addClassName(STYLE_MONTH_ACTIVE);
+    }
+
+    Element selectorElement = Selectors.getElementByClassName(getElement(), STYLE_MONTH_SELECTOR);
+    if (selectorElement != null) {
+      selectorElement.setInnerText(formatYm(ym));
     }
 
     setActiveMonth(ym);
@@ -631,6 +638,9 @@ class WorkScheduleWidget extends HtmlTable {
       clear();
     }
 
+    Widget monthSelector = renderMonthSelector();
+    setWidgetAndStyle(MONTH_ROW, MONTH_COL - 1, monthSelector, STYLE_MONTH_SELECTOR);
+
     List<YearMonth> months = getMonths();
     Widget monthPanel = renderMonths(months);
     setWidgetAndStyle(MONTH_ROW, MONTH_COL, monthPanel, STYLE_MONTH_PANEL);
@@ -850,7 +860,10 @@ class WorkScheduleWidget extends HtmlTable {
   private Widget renderMonths(List<YearMonth> months) {
     Flow panel = new Flow();
 
-    for (YearMonth ym : months) {
+    int size = months.size();
+    int from = Math.max(size - 6, 0);
+
+    for (YearMonth ym : months.subList(from, size)) {
       Label widget = new Label(formatYm(ym));
 
       widget.addStyleName(STYLE_MONTH_LABEL);
@@ -875,6 +888,37 @@ class WorkScheduleWidget extends HtmlTable {
     }
 
     return panel;
+  }
+
+  private Widget renderMonthSelector() {
+    Button selector = new Button();
+    if (activeMonth != null) {
+      selector.setText(formatYm(activeMonth));
+    }
+
+    selector.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        final List<YearMonth> months = getMonths();
+
+        List<String> labels = new ArrayList<>();
+        for (YearMonth ym : months) {
+          labels.add(formatYm(ym));
+        }
+
+        Global.choiceWithCancel(Localized.getConstants().yearMonth(), null, labels,
+            new ChoiceCallback() {
+              @Override
+              public void onSuccess(int value) {
+                if (BeeUtils.isIndex(months, value) && activateMonth(months.get(value))) {
+                  render();
+                }
+              }
+            });
+      }
+    });
+
+    return selector;
   }
 
   private void renderSchedule(long employeeId, int r) {
