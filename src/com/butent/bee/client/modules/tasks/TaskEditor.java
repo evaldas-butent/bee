@@ -10,6 +10,7 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.HasClickHandlers;
 import com.google.gwt.event.shared.HasHandlers;
+import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -63,6 +64,7 @@ import com.butent.bee.client.widget.InternalLink;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.BiConsumer;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.Pair;
@@ -127,12 +129,10 @@ class TaskEditor extends AbstractFormInterceptor {
   private boolean isDefaultLayout;
   private InputArea area;
 
+  private Map<String, Pair<Long, String>> dbaParameters = Maps.newConcurrentMap();
+
   private static final List<String> relations = Lists.newArrayList(PROP_COMPANIES, PROP_PERSONS,
       PROP_DOCUMENTS, PROP_APPOINTMENTS, PROP_DISCUSSIONS, PROP_SERVICE_OBJECTS, PROP_TASKS);
-
-  private Pair<Long, String> defaultDBATemplate;
-  private Pair<Long, String> defaultDBAType;
-  private Pair<Long, String> defaultDBACategory;
 
   private static void addDurationCell(HtmlTable display, int row, int col, String value,
       String style) {
@@ -705,13 +705,14 @@ class TaskEditor extends AbstractFormInterceptor {
     setCommentsLayout(header);
     Integer status = row.getInteger(form.getDataIndex(COL_STATUS));
 
-    FaLabel createDocument = new FaLabel(FontAwesome.FILE_O);
+    final FaLabel createDocument = new FaLabel(FontAwesome.FILE_O);
     createDocument.setTitle(BeeUtils.join(BeeConst.STRING_SLASH,
         Localized.getConstants().documentNew(), "DBA"));
     createDocument.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
-        createDocument(null, row, true);
+        createDocument.setEnabled(false);
+        ensureDefaultDBAParameters(createDocument, row);
       }
     });
 
@@ -743,7 +744,6 @@ class TaskEditor extends AbstractFormInterceptor {
 
     setProjectStagesFilter(form, row);
     setProjectUsersFilter(form, row);
-    parseTaskParameterProperties(row);
   }
 
   @Override
@@ -998,6 +998,7 @@ class TaskEditor extends AbstractFormInterceptor {
 
     final DataInfo dataInfo = Data.getDataInfo(DocumentConstants.VIEW_DOCUMENTS);
     final BeeRow docRow = RowFactory.createEmptyRow(dataInfo, true);
+    final boolean ensureEnableTemplate = enableTemplates && dbaParameters != null;
 
     if (docRow != null) {
 
@@ -1009,7 +1010,7 @@ class TaskEditor extends AbstractFormInterceptor {
 
         if (!BeeUtils.isEmpty(companyName)) {
           docRow.setValue(dataInfo
-              .getColumnIndex(DocumentConstants.ALS_DOCUMENT_COMPANY_NAME),
+                  .getColumnIndex(DocumentConstants.ALS_DOCUMENT_COMPANY_NAME),
               companyName);
           docRow.setValue(dataInfo
               .getColumnIndex(DocumentConstants.COL_DOCUMENT_COMPANY), row
@@ -1020,21 +1021,16 @@ class TaskEditor extends AbstractFormInterceptor {
 
         FileCollector.pushFiles(Lists.newArrayList(fileInfo));
 
-        if (enableTemplates && defaultDBACategory != null) {
-          docRow.setValue(dataInfo.getColumnIndex(DocumentConstants.COL_DOCUMENT_CATEGORY),
-              defaultDBACategory.getA());
-          docRow.setValue(dataInfo.getColumnIndex(DocumentConstants.ALS_CATEGORY_NAME),
-              defaultDBACategory.getB());
-        }
-
-        if (enableTemplates && defaultDBAType != null) {
+        if (ensureEnableTemplate && dbaParameters.containsKey(PRM_DEFAULT_DBA_DOCUMENT_TYPE)) {
+          Pair<Long, String> defaultDBAType = dbaParameters.get(PRM_DEFAULT_DBA_DOCUMENT_TYPE);
           docRow.setValue(dataInfo.getColumnIndex(DocumentConstants.COL_DOCUMENT_TYPE),
               defaultDBAType.getA());
           docRow.setValue(dataInfo.getColumnIndex(DocumentConstants.ALS_TYPE_NAME),
               defaultDBAType.getB());
         }
 
-        if (enableTemplates && defaultDBATemplate != null) {
+        if (ensureEnableTemplate && dbaParameters.containsKey(PRM_DEFAULT_DBA_TEMPLATE)) {
+          Pair<Long, String> defaultDBATemplate = dbaParameters.get(PRM_DEFAULT_DBA_TEMPLATE);
           docRow.setProperty(PRM_DEFAULT_DBA_TEMPLATE,
               BeeUtils.toString(defaultDBATemplate.getA()));
         }
@@ -1068,7 +1064,7 @@ class TaskEditor extends AbstractFormInterceptor {
                             DocumentConstants.COL_REGISTRATION_NUMBER)),
                         br.getDateTime(Data.getColumnIndex(DocumentConstants.VIEW_DOCUMENTS,
                             DocumentConstants.COL_DOCUMENT_DATE))
-                        )));
+                    )));
             sendRequest(prm, TaskEvent.EDIT);
           }
         });
@@ -1237,7 +1233,7 @@ class TaskEditor extends AbstractFormInterceptor {
           }
 
           Queries.update(VIEW_TASK_EVENTS, eventId, COL_EVENT_DATA, Value.getValue(Codec
-              .beeSerialize(data)),
+                  .beeSerialize(data)),
               new IntCallback() {
 
                 @Override
@@ -1256,7 +1252,7 @@ class TaskEditor extends AbstractFormInterceptor {
     relIds.addAll(DataUtils.parseIdList(taskIds));
 
     Queries.updateChildren(VIEW_TASKS, taskRow.getId(), Lists.newArrayList(RowChildren
-        .create(TBL_RELATIONS, COL_TASK, null, COL_TASK, DataUtils.buildIdList(relIds))),
+            .create(TBL_RELATIONS, COL_TASK, null, COL_TASK, DataUtils.buildIdList(relIds))),
         new RowCallback() {
 
           @Override
@@ -1438,16 +1434,16 @@ class TaskEditor extends AbstractFormInterceptor {
 
       if (event != null
           && Objects.equals(TaskEvent.COMMENT.ordinal(), event.getInteger(events
-              .getColumnIndex(TaskConstants.COL_EVENT)))) {
+          .getColumnIndex(TaskConstants.COL_EVENT)))) {
         description =
             BeeUtils.join(BeeConst.STRING_EOL
                 + BeeUtils.replicate(BeeConst.CHAR_MINUS, BeeConst.MAX_SCALE)
                 + BeeConst.STRING_EOL, description, BeeUtils
                 .joinWords(event.getDateTime(events.getColumnIndex(COL_PUBLISH_TIME)), BeeUtils
                     .nvl(event
-                        .getString(events.getColumnIndex(ALS_PUBLISHER_FIRST_NAME)),
+                            .getString(events.getColumnIndex(ALS_PUBLISHER_FIRST_NAME)),
                         BeeConst.STRING_EMPTY), BeeUtils.nvl(event
-                    .getString(events.getColumnIndex(ALS_PUBLISHER_LAST_NAME)),
+                        .getString(events.getColumnIndex(ALS_PUBLISHER_LAST_NAME)),
                     BeeConst.STRING_EMPTY)
                     + BeeConst.STRING_COLON, event
                     .getString(events
@@ -1457,16 +1453,16 @@ class TaskEditor extends AbstractFormInterceptor {
       for (IsRow event : events) {
         if (event != null
             && Objects.equals(TaskEvent.COMMENT.ordinal(), event.getInteger(events
-                .getColumnIndex(TaskConstants.COL_EVENT)))) {
+            .getColumnIndex(TaskConstants.COL_EVENT)))) {
           description =
               BeeUtils.join(BeeConst.STRING_EOL
                   + BeeUtils.replicate(BeeConst.CHAR_MINUS, BeeConst.MAX_SCALE)
                   + BeeConst.STRING_EOL, description, BeeUtils
                   .joinWords(event.getDateTime(events.getColumnIndex(COL_PUBLISH_TIME)), BeeUtils
                       .nvl(event
-                          .getString(events.getColumnIndex(ALS_PUBLISHER_FIRST_NAME)),
+                              .getString(events.getColumnIndex(ALS_PUBLISHER_FIRST_NAME)),
                           BeeConst.STRING_EMPTY), BeeUtils.nvl(event
-                      .getString(events.getColumnIndex(ALS_PUBLISHER_LAST_NAME)),
+                          .getString(events.getColumnIndex(ALS_PUBLISHER_LAST_NAME)),
                       BeeConst.STRING_EMPTY)
                       + BeeConst.STRING_COLON, event
                       .getString(events
@@ -1584,7 +1580,7 @@ class TaskEditor extends AbstractFormInterceptor {
 
     final String startId = isScheduled
         ? dialog.addDateTime(Localized.getConstants().crmStartDate(), true,
-            getDateTime(COL_START_TIME)) : null;
+        getDateTime(COL_START_TIME)) : null;
     final String endId = dialog.addDateTime(Localized.getConstants().crmFinishDate(), true, null);
 
     final String cid = dialog.addComment(false);
@@ -1790,6 +1786,50 @@ class TaskEditor extends AbstractFormInterceptor {
     sendRequest(params, TaskEvent.OUT_OF_OBSERVERS);
   }
 
+  private void ensureDefaultDBAParameters(final HasEnabled widget, final IsRow row) {
+    if (row == null && dbaParameters == null) {
+      return;
+    }
+
+    dbaParameters.clear();
+
+    final BiConsumer<String, Pair<Long, String>> paramHolder =
+        new BiConsumer<String, Pair<Long, String>>() {
+          final static int MAX_PARAM_COUNT = 2;
+          int added = 0;
+
+          @Override
+          public void accept(String prm, Pair<Long, String> value) {
+            if (!value.isNull()) {
+              dbaParameters.put(prm, value);
+            }
+            ensureAllParameters();
+          }
+
+          private void ensureAllParameters() {
+            added++;
+            if (added >= MAX_PARAM_COUNT) {
+              createDocument(null, row, true);
+              widget.setEnabled(true);
+            }
+          }
+        };
+
+    Global.getRelationParameter(PRM_DEFAULT_DBA_TEMPLATE, new BiConsumer<Long, String>() {
+      @Override
+      public void accept(Long id, String name) {
+        paramHolder.accept(PRM_DEFAULT_DBA_TEMPLATE, Pair.of(id, name));
+      }
+    });
+
+    Global.getRelationParameter(PRM_DEFAULT_DBA_DOCUMENT_TYPE, new BiConsumer<Long, String>() {
+      @Override
+      public void accept(Long id, String name) {
+        paramHolder.accept(PRM_DEFAULT_DBA_DOCUMENT_TYPE, Pair.of(id, name));
+      }
+    });
+  }
+
   private DateTime getDateTime(String colName) {
     return getFormView().getActiveRow().getDateTime(getFormView().getDataIndex(colName));
   }
@@ -1889,41 +1929,6 @@ class TaskEditor extends AbstractFormInterceptor {
 
   private boolean isOwner() {
     return Objects.equals(userId, getOwner());
-  }
-
-  private void parseTaskParameterProperties(IsRow row) {
-    defaultDBACategory = null;
-    defaultDBATemplate = null;
-    defaultDBAType = null;
-
-    if (row == null) {
-      return;
-    }
-
-    if (!BeeUtils.isEmpty(row.getProperty(PRM_DEFAULT_DBA_DOCUMENT_CATEGORY))) {
-      Pair<String, String> p = Pair.restore(row.getProperty(PRM_DEFAULT_DBA_DOCUMENT_CATEGORY));
-
-      if (DataUtils.isId(p.getA())) {
-        defaultDBACategory = Pair.of(BeeUtils.toLong(p.getA()), p.getB());
-      }
-    }
-
-    if (!BeeUtils.isEmpty(row.getProperty(PRM_DEFAULT_DBA_TEMPLATE))) {
-      Pair<String, String> p = Pair.restore(row.getProperty(PRM_DEFAULT_DBA_TEMPLATE));
-
-      if (DataUtils.isId(p.getA())) {
-        defaultDBATemplate = Pair.of(BeeUtils.toLong(p.getA()), p.getB());
-      }
-    }
-
-    if (!BeeUtils.isEmpty(row.getProperty(PRM_DEFAULT_DBA_DOCUMENT_TYPE))) {
-      Pair<String, String> p = Pair.restore(row.getProperty(PRM_DEFAULT_DBA_DOCUMENT_TYPE));
-
-      if (DataUtils.isId(p.getA())) {
-        defaultDBAType = Pair.of(BeeUtils.toLong(p.getA()), p.getB());
-      }
-    }
-
   }
 
   private void onResponse(BeeRow data) {
