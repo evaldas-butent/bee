@@ -34,7 +34,7 @@
         <Label text="=vehicleDriver" />
         <InputText source="ForwarderDriver" />
         <cell colSpan="2" rowSpan="2">
-          <Table kind="custom">
+          <Table kind="controls">
             <row style="font-weight: bold;">
               <Label text="=transportDeparture" horizontalAlignment="center" />
               <text />

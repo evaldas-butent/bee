@@ -37,7 +37,7 @@
 
     <Disclosure open="true">
       <Label text="=filters" />
-      <Table kind="controls">
+      <Table kind="custom">
         <col index="0" kind="label" />
 
         <row>
