@@ -10,6 +10,10 @@
           <SimpleColumn name="Name" alias="CompanyTypeName" />
         </SimpleJoin>
       </SimpleJoin>
+      <SimpleColumn name="Warehouse" />
+      <SimpleJoin name="Warehouse" joinType="LEFT">
+        <SimpleColumn alias="WarehouseCode" name="Code" />
+      </SimpleJoin>
     </SimpleJoin>
 
     <SimpleColumn name="Date" />

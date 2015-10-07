@@ -137,7 +137,12 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
     String module = getModule().getName();
 
     List<BeeParameter> params = Lists.newArrayList(
-        BeeParameter.createNumber(module, PRM_CHECK_RESERVATION_TIME, false, null));
+        BeeParameter.createNumber(module, PRM_CLEAR_RESERVATIONS_TIME, false, null),
+        BeeParameter.createNumber(module, PRM_IMPORT_ERP_ITEMS_TIME, false, null),
+        BeeParameter.createNumber(module, PRM_IMPORT_ERP_STOCKS_TIME, false, null),
+        BeeParameter.createNumber(module, PRM_EXPORT_ERP_RESERVATIONS_TIME, false, null),
+        BeeParameter.createRelation(module, PRM_DEFAULT_SALE_OPERATION, false,
+            VIEW_TRADE_OPERATIONS, COL_OPERATION_NAME));
 
     return params;
   }
@@ -159,7 +164,7 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
 
   @Override
   public void init() {
-    cb.createIntervalTimer(this.getClass(), PRM_CHECK_RESERVATION_TIME);
+    cb.createIntervalTimer(this.getClass(), PRM_CLEAR_RESERVATIONS_TIME);
 
     sys.registerDataEventHandler(new DataEventHandler() {
 
@@ -217,7 +222,7 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
 
   @Timeout
   private void orderReservationChecker(Timer timer) {
-    if (!cb.isParameterTimer(timer, PRM_CHECK_RESERVATION_TIME)) {
+    if (!cb.isParameterTimer(timer, PRM_CLEAR_RESERVATIONS_TIME)) {
       return;
     }
 

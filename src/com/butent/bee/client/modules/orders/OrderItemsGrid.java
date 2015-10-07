@@ -60,6 +60,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 public class OrderItemsGrid extends AbstractGridInterceptor implements SelectionHandler<BeeRowSet> {
 
@@ -287,11 +288,10 @@ public class OrderItemsGrid extends AbstractGridInterceptor implements Selection
     invoice.clear();
 
     if (DataUtils.isId(orderForm)) {
-      boolean isOrder =
-          (Data.getInteger(event.getViewName(), event.getRow(), COL_ORDERS_STATUS)
-          == OrdersStatus.APPROVED
-              .ordinal()) ? true : false;
-      if (isOrder) {
+
+      int index = Data.getColumnIndex(VIEW_ORDERS, COL_ORDERS_STATUS);
+      if (Objects.equals(event.getRow().getInteger(index), OrdersStatus.APPROVED.ordinal())
+          || Objects.equals(event.getRow().getInteger(index), OrdersStatus.FINISH.ordinal())) {
         invoice.add(new InvoiceCreator(VIEW_ORDER_SALES, Filter.equals(COL_ORDER, orderForm)));
       }
     }
