@@ -116,8 +116,7 @@ public class FileService extends Application {
       tmp.deleteOnExit();
 
       try (
-          ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(tmp))
-      ) {
+          ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(tmp))) {
         for (Map.Entry<String, String> entry : fileMap.entrySet()) {
           FileInfo fileInfo = fs.getFile(BeeUtils.toLong(entry.getKey()));
           ZipEntry ze = new ZipEntry(BeeUtils.notEmpty(entry.getValue(), fileInfo.getName()));
@@ -141,13 +140,13 @@ public class FileService extends Application {
     return response(fileInfo);
   }
 
-  private Response response(FileInfo fileInfo) {
+  private static Response response(FileInfo fileInfo) {
     StreamingOutput so = new StreamingOutput() {
       @Override
       public void write(OutputStream outputStream) throws WebApplicationException {
         try (
             FileInfo file = fileInfo;
-            BufferedOutputStream bus = new BufferedOutputStream(outputStream);
+            BufferedOutputStream bus = new BufferedOutputStream(outputStream)
         ) {
           Files.copy(file.getFile().toPath(), bus);
           bus.flush();
