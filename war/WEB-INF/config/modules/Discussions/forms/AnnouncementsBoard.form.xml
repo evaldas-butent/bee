@@ -4,7 +4,7 @@
 	xmlns:xi="http://www.w3.org/2001/XInclude" name="AnnouncementsBoard"
 	caption="=announcements" enabledActions="refresh add" disabledActions="delete">
 
-	<Table name="AdsContent" class="bee-discuss-adsFormContent"
+	<Table name="AdsContent" kind="controls" class="bee-discuss-adsFormContent"
 		style="background-color: white; margin-left: 1em; word-wrap: normal; margin: 1ex; width: 95%; border-spacing: 0px;">
 		<row>
 			<cell colSpan="2" style="border-bottom: 2px solid #ccc; width: 100%;">

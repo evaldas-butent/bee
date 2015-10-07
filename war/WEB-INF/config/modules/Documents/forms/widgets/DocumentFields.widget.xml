@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Table xmlns="http://www.butent.com/widget"  xmlns:ui="http://www.butent.com/ui" >
+<Table xmlns="http://www.butent.com/widget" kind="controls">
 
   <col index="0" kind="label" />
   <col index="2" kind="label" />

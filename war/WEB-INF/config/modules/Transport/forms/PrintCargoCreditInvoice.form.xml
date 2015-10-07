@@ -37,7 +37,7 @@
     </HorizontalPanel>
 
     <FlowPanel style="&section;">
-      <Table style="width:100%;">
+      <Table kind="output" style="width:100%;">
         <row>
           <cell style="vertical-align:top;">
             <Label html="Siuntėjas:" />
@@ -57,7 +57,7 @@
 
     <DateTimeLabel source="Date" format="DATE_LONG" horizontalAlignment="right" />
 
-    <Table name="InvoiceDetails" class="&form;" style="&section; width:100%">
+    <Table name="InvoiceDetails" kind="output" class="&form;" style="&section; width:100%">
       <properties rateCurrency="EUR" />
       <row>
         <Label text="Paslauga">
@@ -145,7 +145,7 @@ Kreditinės sąskaitos priežastis:
 
     <TextLabel source="Notes" style="white-space:pre-wrap;" />
 
-    <Table style="width:100%; margin-top:10px;">
+    <Table kind="output" style="width:100%; margin-top:10px;">
       <row style="&bold;">
         <Label html="Išdavė" />
         <Label html="Priėmė" />

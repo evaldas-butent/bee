@@ -14,7 +14,7 @@
         viewName="ProjectTemplates"
         caption="=prjTemplate" width="950" widthUnit="px" height="95" heightUnit="%">
   <FlowPanel>
-    <Table class="bee-ProjectTable">
+    <Table kind="controls" class="bee-ProjectTable">
       <row>
         <Label for="Name" text="=name" style="&lbl;" class="bee-required"/>
         <InputText source="Name" style="width:100%"/>
@@ -33,8 +33,8 @@
 
     <Disclosure open="true" name="RelatedInfo">
       <Label text="=relatedInformation" style="text-transform: uppercase; "/>
-      <Table>
-        <Table>
+      <Table kind="custom">
+        <Table kind="controls">
           <row>
             <Label for="Priority" text="=priority" style="width: 120px; &lbl;"/>
             <Radio source="Priority" style="width: 200px"/>
@@ -58,7 +58,7 @@
           </row>
         </Table>
 
-        <Table>
+        <Table kind="controls">
           <row>
             <Label for="ExpectedDuration" text="=expectedDuration" style="&lbl;"/>
             <InputDecimal source="ExpectedDuration" style="&inp3;"/>
@@ -89,7 +89,7 @@
 
         </Table>
 
-        <Table>
+        <Table kind="controls">
           <row>
             <Label for="Description" text="=description" style="width: 115px; &lbl;"/>
             <InputArea source="Description" placeholder="=prjDescriptionContent" style="&inp4;"/>

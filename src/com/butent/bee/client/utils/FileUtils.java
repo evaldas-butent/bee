@@ -221,8 +221,7 @@ public final class FileUtils {
 
   public static String getUrl(String fileName, String filePath) {
     Assert.notEmpty(filePath);
-    return CommUtils.addQueryString(getUrl(fileName, (Long) null),
-        CommUtils.buildQueryString(Collections.singletonMap(Service.VAR_FILES, filePath), true));
+    return getUrl(fileName, (Long) null) + "/" + Codec.encodeBase64(filePath);
   }
 
   public static String getUrl(String fileName, Map<Long, String> files) {

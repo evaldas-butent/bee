@@ -18,6 +18,9 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
+import com.butent.bee.shared.modules.orders.OrdersConstants.OrdersStatus;
+
+import java.util.Objects;
 
 class OrderItemsPicker extends ItemsPicker {
 
@@ -60,7 +63,12 @@ class OrderItemsPicker extends ItemsPicker {
   }
 
   @Override
-  public boolean setIsOrder() {
-    return true;
+  public boolean setIsOrder(IsRow row) {
+    int statusIdx = Data.getColumnIndex(VIEW_ORDERS, COL_ORDERS_STATUS);
+    if (row == null || BeeConst.isUndef(statusIdx)) {
+      return false;
+    }
+
+    return Objects.equals(row.getInteger(statusIdx), OrdersStatus.APPROVED.ordinal());
   }
 }

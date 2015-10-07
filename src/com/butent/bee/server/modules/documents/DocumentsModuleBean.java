@@ -2,6 +2,7 @@ package com.butent.bee.server.modules.documents;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import com.google.common.eventbus.AllowConcurrentEvents;
 import com.google.common.eventbus.Subscribe;
 
 import static com.butent.bee.shared.modules.documents.DocumentConstants.*;
@@ -149,10 +150,9 @@ public class DocumentsModuleBean implements BeeModule {
   public void init() {
     sys.registerDataEventHandler(new DataEventHandler() {
       @Subscribe
+      @AllowConcurrentEvents
       public void applyDocumentRights(ViewQueryEvent event) {
-        if (BeeUtils.inListSame(event.getTargetName(), TBL_DOCUMENTS, VIEW_RELATED_DOCUMENTS)
-            && !usr.isAdministrator()) {
-
+        if (event.isTarget(TBL_DOCUMENTS, VIEW_RELATED_DOCUMENTS) && !usr.isAdministrator()) {
           if (event.isBefore()) {
             SqlSelect query = event.getQuery();
             String tableAlias = null;
@@ -192,8 +192,9 @@ public class DocumentsModuleBean implements BeeModule {
       }
 
       @Subscribe
+      @AllowConcurrentEvents
       public void fillDocumentNumber(ViewInsertEvent event) {
-        if (BeeUtils.same(event.getTargetName(), TBL_DOCUMENTS) && event.isBefore()) {
+        if (event.isBefore(TBL_DOCUMENTS)) {
           List<BeeColumn> cols = event.getColumns();
 
           if (DataUtils.contains(cols, COL_DOCUMENT_NUMBER)
@@ -217,6 +218,7 @@ public class DocumentsModuleBean implements BeeModule {
       }
 
       @Subscribe
+      @AllowConcurrentEvents
       public void fillDocumentSentNumber(ViewInsertEvent event) {
         if (BeeUtils.same(event.getTargetName(), TBL_DOCUMENTS) && event.isBefore()) {
 
@@ -255,6 +257,7 @@ public class DocumentsModuleBean implements BeeModule {
       }
 
       @Subscribe
+      @AllowConcurrentEvents
       public void updateDocumentSentNumber(DataEvent.ViewUpdateEvent event) {
         if (BeeUtils.same(event.getTargetName(), TBL_DOCUMENTS) && event.isBefore()) {
 
@@ -296,6 +299,7 @@ public class DocumentsModuleBean implements BeeModule {
       }
 
       @Subscribe
+      @AllowConcurrentEvents
       public void fillDocumentReceivedNumber(ViewInsertEvent event) {
         if (BeeUtils.same(event.getTargetName(), TBL_DOCUMENTS) && event.isBefore()) {
 
@@ -334,6 +338,7 @@ public class DocumentsModuleBean implements BeeModule {
       }
 
       @Subscribe
+      @AllowConcurrentEvents
       public void updateDocumentReceivedNumber(DataEvent.ViewUpdateEvent event) {
         if (BeeUtils.same(event.getTargetName(), TBL_DOCUMENTS) && event.isBefore()) {
 
@@ -375,15 +380,13 @@ public class DocumentsModuleBean implements BeeModule {
       }
 
       @Subscribe
+      @AllowConcurrentEvents
       public void setRowProperties(ViewQueryEvent event) {
-        if (event.isBefore()) {
-          return;
-        }
-        if (BeeUtils.same(event.getTargetName(), VIEW_DOCUMENT_FILES)) {
+        if (event.isAfter(VIEW_DOCUMENT_FILES)) {
           ExtensionIcons.setIcons(event.getRowset(), AdministrationConstants.ALS_FILE_NAME,
               AdministrationConstants.PROP_ICON);
 
-        } else if (BeeUtils.same(event.getTargetName(), VIEW_DOCUMENT_TEMPLATES)) {
+        } else if (event.isAfter(VIEW_DOCUMENT_TEMPLATES)) {
           Map<Long, IsRow> indexedRows = new HashMap<>();
           BeeRowSet rowSet = event.getRowset();
           int idx = rowSet.getColumnIndex(COL_DOCUMENT_DATA);
@@ -416,8 +419,9 @@ public class DocumentsModuleBean implements BeeModule {
       }
 
       @Subscribe
+      @AllowConcurrentEvents
       public void setRightsProperties(ViewQueryEvent event) {
-        if (event.isAfter() && BeeUtils.same(event.getTargetName(), TBL_DOCUMENT_TREE)
+        if (event.isAfter(TBL_DOCUMENT_TREE)
             && usr.isWidgetVisible(RegulatedWidget.DOCUMENT_TREE)) {
 
           String tableName = event.getTargetName();

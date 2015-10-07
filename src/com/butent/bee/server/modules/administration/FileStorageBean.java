@@ -40,6 +40,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URLConnection;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -277,7 +278,11 @@ public class FileStorageBean {
   public Long storeFile(InputStream is, String fileName, String mimeType) throws IOException {
     boolean storeAsFile = repositoryDir != null;
     String name = sys.clampValue(TBL_FILES, COL_FILE_NAME, BeeUtils.notEmpty(fileName, "unknown"));
-    String type = sys.clampValue(TBL_FILES, COL_FILE_TYPE, mimeType);
+
+    String type = !BeeUtils.isEmpty(mimeType) ? mimeType
+        : BeeUtils.notEmpty(URLConnection.guessContentTypeFromStream(is),
+        URLConnection.guessContentTypeFromName(name));
+
     MessageDigest md = null;
 
     try {
@@ -340,7 +345,7 @@ public class FileStorageBean {
               .addConstant(COL_FILE_HASH, hash)
               .addConstant(COL_FILE_NAME, name)
               .addConstant(COL_FILE_SIZE, size.get())
-              .addConstant(COL_FILE_TYPE, type)));
+              .addConstant(COL_FILE_TYPE, sys.clampValue(TBL_FILES, COL_FILE_TYPE, type))));
         } else {
           exists.set(true);
         }

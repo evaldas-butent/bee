@@ -13,7 +13,7 @@
   name="NewProjectFromTemplate" viewName="Projects"
   caption="=project" width="460" widthUnit="px" height="300" heightUnit="px" >
   <FlowPanel>
-    <Table class="bee-ProjectTable">
+    <Table kind="controls" class="bee-ProjectTable">
       <row>
         <Label for="Name" text="=name" style="&lbl;" class="bee-required" />
         <InputText source="Name" style="width:100%" />

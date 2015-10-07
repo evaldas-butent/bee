@@ -15,7 +15,7 @@
   <FlowPanel>
     <br/>
 
-    <Table style="&table;" cellStyle="&cells;">
+    <Table kind="controls" style="&table;" cellStyle="&cells;">
       &cols;
      
       <row>

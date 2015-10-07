@@ -60,6 +60,7 @@ import com.butent.bee.shared.html.builder.elements.Div;
 import com.butent.bee.shared.html.builder.elements.Span;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.classifiers.ItemPrice;
+import com.butent.bee.shared.modules.orders.OrdersConstants;
 import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -221,7 +222,6 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
   private BeeRowSet items;
 
   private final Map<Long, ItemPrice> selectedPrices = new HashMap<>();
-  private Map<Long, Double> remainders = new HashMap<>();
   private final Flow itemPanel = new Flow(STYLE_ITEM_PANEL);
   private Notification notification = new Notification();
   private NumberFormat priceFormat;
@@ -255,7 +255,7 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
   public void show(IsRow row, Element target) {
     lastRow = DataUtils.cloneRow(row);
 
-    isOrder = setIsOrder();
+    isOrder = setIsOrder(row);
 
     warehouseFrom = getWarehouseFrom(row);
     itemPrice = TradeActKeeper.getItemPrice(VIEW_TRADE_ACTS, row);
@@ -544,11 +544,6 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
       public void onClick(ClickEvent event) {
         Map<Long, Double> quantities = getQuantities();
         if (!quantities.isEmpty()) {
-          if (isOrder) {
-            if (!checkQuantities(quantities)) {
-              return;
-            }
-          }
           selectItems(quantities);
         }
         dialog.close();
@@ -574,11 +569,6 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
               new DecisionCallback() {
                 @Override
                 public void onConfirm() {
-                  if (isOrder) {
-                    if (!checkQuantities(quantities)) {
-                      return;
-                    }
-                  }
                   selectItems(quantities);
                   dialog.close();
                 }
@@ -749,9 +739,8 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
 
         table.setText(r, c++, item.getDouble(items.getNumberOfColumns() - 1).toString(),
             STYLE_RESERVED_PREFIX + STYLE_CELL_SUFFIX);
-
-        remainders.put(item.getId(), item.getDouble(items.getNumberOfColumns() - 2));
-
+        item.setProperty(OrdersConstants.PRP_FREE_REMAINDER, item.getDouble(
+            items.getNumberOfColumns() - 2).toString());
       }
 
       Double qty = quantities.get(item.getId());
@@ -851,18 +840,6 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
     SelectionEvent.fire(this, selection);
   }
 
-  private boolean checkQuantities(Map<Long, Double> quantities) {
-    boolean valid = true;
-    for (Long id : quantities.keySet()) {
-      if (quantities.get(id) > remainders.get(id)) {
-        notification.severe(Localized.getConstants().ordQtyIsTooBig());
-        valid = false;
-        break;
-      }
-    }
-    return valid;
-  }
-
   protected IsRow getLastRow() {
     return lastRow;
   }
@@ -875,5 +852,5 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
 
   public abstract Long getWarehouseFrom(IsRow row);
 
-  public abstract boolean setIsOrder();
+  public abstract boolean setIsOrder(IsRow row);
 }

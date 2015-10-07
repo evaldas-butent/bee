@@ -11,7 +11,7 @@
   >
   <FlowPanel>
     <FlowPanel class="flexBox-horizontal">
-      <Table style="border-spacing: 5px;">
+      <Table kind="controls" style="border-spacing: 5px;">
         <row>
           <Label text="=date" horizontalAlignment="right" class="bee-required bee-hasDefaults" />
           <InputDateTime source="Date" />

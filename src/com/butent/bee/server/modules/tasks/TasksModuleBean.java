@@ -5,6 +5,7 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
+import com.google.common.eventbus.AllowConcurrentEvents;
 import com.google.common.eventbus.Subscribe;
 
 import static com.butent.bee.shared.html.builder.Factory.*;
@@ -69,12 +70,10 @@ import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
-import com.butent.bee.shared.modules.administration.AdministrationConstants.ReminderMethod;
-import com.butent.bee.shared.modules.documents.DocumentConstants;
+import com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 import com.butent.bee.shared.modules.projects.ProjectConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
-import com.butent.bee.shared.modules.tasks.TaskConstants.TaskEvent;
-import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
+import com.butent.bee.shared.modules.tasks.TaskConstants.*;
 import com.butent.bee.shared.modules.tasks.TaskUtils;
 import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.news.Headline;
@@ -142,7 +141,7 @@ public class TasksModuleBean implements BeeModule {
 
     List<SearchResult> tasksSr = qs.getSearchResults(VIEW_TASKS,
         Filter.anyContains(Sets.newHashSet(COL_SUMMARY, COL_DESCRIPTION,
-            ALS_COMPANY_NAME, ALS_EXECUTOR_FIRST_NAME, ALS_EXECUTOR_LAST_NAME),
+                ALS_COMPANY_NAME, ALS_EXECUTOR_FIRST_NAME, ALS_EXECUTOR_LAST_NAME),
             query));
     result.addAll(tasksSr);
 
@@ -242,6 +241,7 @@ public class TasksModuleBean implements BeeModule {
   public void init() {
     sys.registerDataEventHandler(new DataEventHandler() {
       @Subscribe
+      @AllowConcurrentEvents
       public void setRowProperties(ViewQueryEvent event) {
         if (event.isBefore()) {
           return;
@@ -347,52 +347,42 @@ public class TasksModuleBean implements BeeModule {
       }
 
       @Subscribe
-      public void fillTasksTimeDataAndRelProperties(ViewQueryEvent event) {
-        if (event.isBefore()) {
-          return;
-        }
+      @AllowConcurrentEvents
+      public void fillTasksTimeData(ViewQueryEvent event) {
+        if (event.isAfter(VIEW_TASKS) && event.hasData()) {
+          BeeRowSet taskRows = event.getRowset();
 
-        if (!BeeUtils.same(VIEW_TASKS, event.getTargetName())) {
-          return;
-        }
+          int idxActualDuration = DataUtils.getColumnIndex(COL_ACTUAL_DURATION,
+              taskRows.getColumns(), false);
+          int idxActualExpenses = DataUtils.getColumnIndex(COL_ACTUAL_EXPENSES,
+              taskRows.getColumns(), false);
 
-        BeeRowSet taskRows = event.getRowset();
+          List<Long> rowIds = taskRows.getRowIds();
 
-        if (taskRows.isEmpty()) {
-          return;
-        }
+          SimpleRowSet timesData = getTaskActualTimesAndExpenses(rowIds);
 
-        int idxActualDuration = DataUtils.getColumnIndex(COL_ACTUAL_DURATION,
-            taskRows.getColumns(), false);
-        int idxActualExpenses = DataUtils.getColumnIndex(COL_ACTUAL_EXPENSES,
-            taskRows.getColumns(), false);
-
-        List<Long> rowIds = taskRows.getRowIds();
-
-        SimpleRowSet timesData = getTaskActualTimesAndExpenses(rowIds);
-
-        if (timesData.isEmpty()) {
-          return;
-        }
-
-        Map<String, String> times =
-            Codec.deserializeMap(timesData.getValue(0, COL_ACTUAL_DURATION));
-        Map<String, String> expenses =
-            Codec.deserializeMap(timesData.getValue(0, COL_ACTUAL_EXPENSES));
-
-        for (BeeRow row : taskRows) {
-          if (row == null) {
-            continue;
+          if (timesData.isEmpty()) {
+            return;
           }
 
-          if (!BeeUtils.isNegative(idxActualDuration)) {
-            row.setValue(idxActualDuration, times.get(BeeUtils.toString(row.getId())));
-          }
+          Map<String, String> times =
+              Codec.deserializeMap(timesData.getValue(0, COL_ACTUAL_DURATION));
+          Map<String, String> expenses =
+              Codec.deserializeMap(timesData.getValue(0, COL_ACTUAL_EXPENSES));
 
-          if (!BeeUtils.isNegative(idxActualExpenses)) {
-            row.setValue(idxActualExpenses, expenses.get(BeeUtils.toString(row.getId())));
-          }
+          for (BeeRow row : taskRows) {
+            if (row == null) {
+              continue;
+            }
 
+            if (!BeeUtils.isNegative(idxActualDuration)) {
+              row.setValue(idxActualDuration, times.get(BeeUtils.toString(row.getId())));
+            }
+
+            if (!BeeUtils.isNegative(idxActualExpenses)) {
+              row.setValue(idxActualExpenses, expenses.get(BeeUtils.toString(row.getId())));
+            }
+          }
         }
       }
     });
@@ -1291,7 +1281,8 @@ public class TasksModuleBean implements BeeModule {
       String compFullName =
           companiesListSet.getValue(i, COL_COMPANY_NAME)
               + (!BeeUtils.isEmpty(companiesListSet.getValue(i, ALS_COMPANY_TYPE))
-                  ? ", " + companiesListSet.getValue(i, ALS_COMPANY_TYPE) : "");
+              ? ", " + companiesListSet.getValue(i, ALS_COMPANY_TYPE) : "");
+      String dTime = "0:00";
 
       SqlSelect companyTimesQuery = new SqlSelect()
           .addFields(TBL_EVENT_DURATIONS, COL_DURATION)
@@ -1835,7 +1826,7 @@ public class TasksModuleBean implements BeeModule {
           (!BeeUtils.isEmpty(usersListSet.getValue(i, COL_FIRST_NAME))
               ? usersListSet.getValue(i, COL_FIRST_NAME) : "") + " "
               + (!BeeUtils.isEmpty(usersListSet.getValue(i, COL_LAST_NAME))
-                  ? usersListSet.getValue(i, COL_LAST_NAME) : "");
+              ? usersListSet.getValue(i, COL_LAST_NAME) : "");
 
       userFullName = BeeUtils.isEmpty(userFullName) ? "—" : userFullName;
 

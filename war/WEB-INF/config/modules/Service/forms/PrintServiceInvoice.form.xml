@@ -17,7 +17,7 @@
     </FlowPanel>
 
     <br/>
-    <Table class="bee-trade-print-companies">
+    <Table kind="output" class="bee-trade-print-companies">
       <row class="bee-trade-print-supplier" >
         <Label text="=printInvoiceSeller" class="bee-trade-print-company-label" />
         <Label name="SupplierName" class="bee-trade-print-company-name" />
@@ -105,7 +105,7 @@
       </row>
     </Table>
 
-    <Table name="Items" class="bee-trade-print-items">
+    <Table kind="output" name="Items" class="bee-trade-print-items">
       <properties columns="Ordinal, Name, Article, Quantity, Unit, Price, Amount" />
     </Table>
 

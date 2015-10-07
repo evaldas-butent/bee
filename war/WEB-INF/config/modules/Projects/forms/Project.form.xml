@@ -13,7 +13,7 @@
   name="Project" viewName="Projects"
   caption="=project" width="950" widthUnit="px" height="95" heightUnit="%" >
   <FlowPanel>
-    <Table class="bee-ProjectTable">
+    <Table kind="controls" class="bee-ProjectTable">
       <!--
       <row>
         <Label for="ProjectTemplate" style="&lbl;"/>
@@ -45,8 +45,8 @@
 
     <Disclosure open="true" name="RelatedInfo">
       <Label text="=relatedInformation" style="text-transform: uppercase; " />
-      <Table>
-        <Table>
+      <Table kind="custom">
+        <Table kind="controls">
           <row>
             <Label for="Owner" text="=prjManager" style=" &lbl;" class="bee-required" />
             <DataSelector source="Owner" name="Owner" style="&inp2;" />
@@ -74,7 +74,7 @@
           </row>
         </Table>
 
-        <Table>
+        <Table kind="controls">
           <row>
             <Label for="ExpectedDuration" text="=expectedDuration" style="&lbl;" />
             <InputDecimal source="ExpectedDuration" style="&inp3;" />
@@ -104,7 +104,7 @@
 
         </Table>
 
-        <Table>
+        <Table kind="controls">
           <row>
             <Label for="Description" text="=description" style="width: 115px; &lbl;" />
             <InputArea source="Description" placeholder="=prjDescriptionContent" style="&inp4;" />
@@ -134,7 +134,7 @@
       <page module="Documents">
         <text>=documents</text>
         <FlowPanel>
-          <Table style="margin-bottom: 5px;">
+          <Table kind="controls" style="margin-bottom: 5px;">
             <row>
               <Label text="=personContact" style="margin-right: 1em; text-align: left;" />
               <DataSelector source="ContactPerson"

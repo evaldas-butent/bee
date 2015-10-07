@@ -33,6 +33,7 @@ import javax.ejb.Lock;
 import javax.ejb.LockType;
 import javax.ejb.ScheduleExpression;
 import javax.ejb.Singleton;
+import javax.ejb.TimedObject;
 import javax.ejb.Timer;
 import javax.ejb.TimerConfig;
 import javax.ejb.TimerService;
@@ -46,7 +47,7 @@ import javax.transaction.UserTransaction;
 @TransactionManagement(TransactionManagementType.BEAN)
 public class ConcurrencyBean {
 
-  public interface HasTimerService {
+  public interface HasTimerService extends TimedObject {
     TimerService getTimerService();
   }
 
@@ -251,6 +252,7 @@ public class ConcurrencyBean {
     }
   }
 
+  @Lock(LockType.READ)
   public boolean isParameterTimer(Timer timer, Object parameter) {
     if (!Config.isInitialized()) {
       return false;

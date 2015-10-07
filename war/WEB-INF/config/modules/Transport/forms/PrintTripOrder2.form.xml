@@ -80,7 +80,7 @@
     <br />
     <br />
 
-    <Table style="text-align:center; white-space:nowrap;">
+    <Table kind="output" style="text-align:center; white-space:nowrap;">
       <row>
         <Label text="Direktorius arba įgaliotas asmuo" style="text-align:left;" />
         <Label name="User" style="padding:0 2em 0 2em;" />
