@@ -110,6 +110,9 @@ class WorkScheduleWidget extends HtmlTable {
   private static final String STYLE_INPUT_MODE_TOGGLE = STYLE_PREFIX + "input-mode-toggle";
   private static final String STYLE_INPUT_MODE_ACTIVE = STYLE_PREFIX + "input-mode-active";
 
+  private static final String STYLE_INACTIVE = STYLE_PREFIX + "inactive";
+  // private static final String STYLE_OVERLAP = STYLE_PREFIX + "overlap";
+
   private static final String KEY_YM = "ym";
 
   private static final int MONTH_ROW = 0;
@@ -119,6 +122,13 @@ class WorkScheduleWidget extends HtmlTable {
 
   private static final int EMPLOYEE_START_ROW = 2;
   private static final int EMPLOYEE_PANEL_COL = 0;
+
+  private static final String VALUE_SEPARATOR = BeeConst.STRING_COLON + BeeConst.STRING_SPACE;
+
+  private static final String dateOfEmploymentLabel =
+      Data.getColumnLabel(VIEW_EMPLOYEES, COL_DATE_OF_EMPLOYMENT);
+  private static final String dateOfDismissalLabel =
+      Data.getColumnLabel(VIEW_EMPLOYEES, COL_DATE_OF_DISMISSAL);
 
   private static String buildTitle(BeeRowSet rowSet, BeeRow row, String... colNames) {
     List<String> values = new ArrayList<>();
@@ -501,6 +511,30 @@ class WorkScheduleWidget extends HtmlTable {
         }
       });
     }
+  }
+
+  private static Set<Integer> getInactiveDays(YearMonth ym,
+      JustDate activeFrom, JustDate activeUntil) {
+
+    Set<Integer> days = new HashSet<>();
+
+    if (activeFrom != null && BeeUtils.isMore(activeFrom, ym.getDate())) {
+      int max = TimeUtils.sameMonth(activeFrom, ym) ? activeFrom.getDom() - 1 : ym.getLength();
+      for (int day = 1; day <= max; day++) {
+        days.add(day);
+      }
+    }
+
+    if (activeUntil != null && BeeUtils.isLess(activeUntil, ym.getLast())) {
+      int min = TimeUtils.sameMonth(activeUntil, ym) ? activeUntil.getDom() + 1 : 1;
+      int max = ym.getLength();
+
+      for (int day = min; day <= max; day++) {
+        days.add(day);
+      }
+    }
+
+    return days;
   }
 
   private Element getMonthElement(YearMonth ym) {
@@ -932,6 +966,27 @@ class WorkScheduleWidget extends HtmlTable {
 
     String emplName = getEmployeeFullName(employeeId);
 
+    BeeRow row = findEmployee(employeeId);
+    JustDate activeFrom = (row == null)
+        ? null : DataUtils.getDate(emData, row, COL_DATE_OF_EMPLOYMENT);
+    JustDate activeUntil = (row == null)
+        ? null : DataUtils.getDate(emData, row, COL_DATE_OF_DISMISSAL);
+
+    Set<Integer> inactiveDays = getInactiveDays(activeMonth, activeFrom, activeUntil);
+
+    String activityTitle;
+    if (inactiveDays.isEmpty()) {
+      activityTitle = null;
+
+    } else {
+      String from = (activeFrom == null)
+          ? null : BeeUtils.join(VALUE_SEPARATOR, dateOfEmploymentLabel, activeFrom);
+      String until = (activeUntil == null)
+          ? null : BeeUtils.join(VALUE_SEPARATOR, dateOfDismissalLabel, activeUntil);
+
+      activityTitle = BeeUtils.buildLines(from, until);
+    }
+
     for (int i = 0; i < days; i++) {
       int day = i + 1;
       date.setDom(day);
@@ -947,7 +1002,11 @@ class WorkScheduleWidget extends HtmlTable {
       TableCellElement cell = getCellFormatter().getElement(r, c);
       DomUtils.setDataIndex(cell, day);
       cell.setTitle(BeeUtils.buildLines(emplName, Format.renderDateLong(date),
-          Format.renderDayOfWeek(date)));
+          Format.renderDayOfWeek(date), activityTitle));
+
+      if (inactiveDays.contains(day)) {
+        cell.addClassName(STYLE_INACTIVE);
+      }
     }
   }
 

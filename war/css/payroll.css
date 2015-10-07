@@ -105,3 +105,7 @@
   font-weight: bolder;
   cursor: auto;
 }
+
+.bee-payroll-ws-inactive {
+  background-image: url(../images/checkered_background.png);
+}
