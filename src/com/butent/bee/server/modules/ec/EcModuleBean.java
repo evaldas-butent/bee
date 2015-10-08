@@ -91,7 +91,6 @@ import com.butent.bee.shared.modules.ec.EcBrand;
 import com.butent.bee.shared.modules.ec.EcCarModel;
 import com.butent.bee.shared.modules.ec.EcCarType;
 import com.butent.bee.shared.modules.ec.EcConstants;
-import com.butent.bee.shared.modules.ec.EcConstants.*;
 import com.butent.bee.shared.modules.ec.EcCriterion;
 import com.butent.bee.shared.modules.ec.EcFinInfo;
 import com.butent.bee.shared.modules.ec.EcGroup;
@@ -267,12 +266,12 @@ public class EcModuleBean implements BeeModule {
       try {
         rows = ButentWS.connect(remoteAddress, remoteLogin, remotePassword)
             .getSQLData("SELECT preke AS pr, prekes.grupe AS gr, savikaina AS sv"
-                    + " FROM prekes"
-                    + " INNER JOIN grupes"
-                    + " ON prekes.grupe = grupes.grupe"
-                    + " WHERE prekes.gam_art IS NOT NULL AND prekes.gam_art != ''"
-                    + " AND prekes.gamintojas IS NOT NULL AND prekes.gamintojas != ''"
-                    + " AND grupes.pos_mode = 'E'",
+                + " FROM prekes"
+                + " INNER JOIN grupes"
+                + " ON prekes.grupe = grupes.grupe"
+                + " WHERE prekes.gam_art IS NOT NULL AND prekes.gam_art != ''"
+                + " AND prekes.gamintojas IS NOT NULL AND prekes.gamintojas != ''"
+                + " AND grupes.pos_mode = 'E'",
                 "pr", "gr", "sv");
 
         ok = !rows.isEmpty();
@@ -337,7 +336,7 @@ public class EcModuleBean implements BeeModule {
         }
         if (!BeeUtils.isEmpty(progressId)
             && !Endpoint.updateProgress(progressId,
-            1 - (++c / (double) orphans.getNumberOfRows()))) {
+                1 - (++c / (double) orphans.getNumberOfRows()))) {
           break;
         }
       }
@@ -865,13 +864,13 @@ public class EcModuleBean implements BeeModule {
             SqlUtils.joinUsing(tempArticleIds, TBL_TCD_ARTICLE_CODES, COL_TCD_ARTICLE))
         .addFromInner(TBL_TCD_ARTICLES,
             SqlUtils.and(SqlUtils.join(TBL_TCD_ARTICLE_CODES, COL_TCD_CODE_NR, TBL_TCD_ARTICLES,
-                    COL_TCD_ARTICLE_NR),
+                COL_TCD_ARTICLE_NR),
                 SqlUtils.joinUsing(TBL_TCD_ARTICLE_CODES, TBL_TCD_ARTICLES, COL_TCD_BRAND),
                 SqlUtils.notNull(TBL_TCD_ARTICLES, COL_TCD_ARTICLE_VISIBLE)))
         .addFromInner(TBL_TCD_ARTICLES, articlesAlias,
             sys.joinTables(TBL_TCD_ARTICLES, articlesAlias, tempArticleIds, COL_TCD_ARTICLE))
         .setWhere(SqlUtils.or(SqlUtils.joinNotEqual(TBL_TCD_ARTICLES, COL_TCD_ARTICLE_NR,
-                articlesAlias, COL_TCD_ARTICLE_NR),
+            articlesAlias, COL_TCD_ARTICLE_NR),
             SqlUtils.joinNotEqual(TBL_TCD_ARTICLES, COL_TCD_BRAND, articlesAlias, COL_TCD_BRAND)))
         .addGroup(tempArticleIds, COL_TCD_ARTICLE);
 
@@ -1796,10 +1795,10 @@ public class EcModuleBean implements BeeModule {
       try {
         SimpleRow row = ButentWS.connect(remoteAddress, remoteLogin, remotePassword)
             .getSQLData("SELECT klientas, max_skola, dienos"
-                    + " FROM klientai"
-                    + " WHERE " + wh + " OR kodas = '" + companyInfo.getValue(COL_COMPANY_CODE)
-                    + "'"
-                    + " ORDER BY " + wh + " DESC",
+                + " FROM klientai"
+                + " WHERE " + wh + " OR kodas = '" + companyInfo.getValue(COL_COMPANY_CODE)
+                + "'"
+                + " ORDER BY " + wh + " DESC",
                 "klientas", "max_skola", "dienos").getRow(0);
 
         if (row != null) {
@@ -1814,10 +1813,10 @@ public class EcModuleBean implements BeeModule {
         try {
           SimpleRow row = ButentWS.connect(remoteAddress, remoteLogin, remotePassword)
               .getSQLData("SELECT SUM(kiekis * kaina) AS suma"
-                      + " FROM likuciai"
-                      + " INNER JOIN sand ON likuciai.sandelis = sand.sandelis"
-                      + "   AND sand.konsign IS NOT NULL"
-                      + " WHERE likuciai.kiekis > 0 AND likuciai.gavejas = '" + company + "'",
+                  + " FROM likuciai"
+                  + " INNER JOIN sand ON likuciai.sandelis = sand.sandelis"
+                  + "   AND sand.konsign IS NOT NULL"
+                  + " WHERE likuciai.kiekis > 0 AND likuciai.gavejas = '" + company + "'",
                   "suma").getRow(0);
 
           if (row != null) {
@@ -1832,15 +1831,15 @@ public class EcModuleBean implements BeeModule {
 
           SimpleRowSet data = ButentWS.connect(remoteAddress, remoteLogin, remotePassword)
               .getSQLData("SELECT data, dokumentas, dok_serija, kitas_dok, viso, skola_w, terminas"
-                      + " FROM apyvarta"
-                      + " INNER JOIN operac ON apyvarta.operacija = operac.operacija"
-                      + "   AND operac.oper_apm IS NOT NULL AND operac.oper_pirk IS NOT NULL"
-                      + " INNER JOIN klientai ON apyvarta.gavejas = klientai.klientas"
-                      + " WHERE apyvarta.pajamos = 0 AND apyvarta.ivestas IS NOT NULL"
-                      + "   AND apyvarta.skola_w > 0"
-                      + "   AND (klientai.klientas = '" + company + "'"
-                      + "     OR klientai.moketojas = '" + company + "')"
-                      + " ORDER BY data",
+                  + " FROM apyvarta"
+                  + " INNER JOIN operac ON apyvarta.operacija = operac.operacija"
+                  + "   AND operac.oper_apm IS NOT NULL AND operac.oper_pirk IS NOT NULL"
+                  + " INNER JOIN klientai ON apyvarta.gavejas = klientai.klientas"
+                  + " WHERE apyvarta.pajamos = 0 AND apyvarta.ivestas IS NOT NULL"
+                  + "   AND apyvarta.skola_w > 0"
+                  + "   AND (klientai.klientas = '" + company + "'"
+                  + "     OR klientai.moketojas = '" + company + "')"
+                  + " ORDER BY data",
                   "data", "dokumentas", "dok_serija", "kitas_dok", "viso", "skola_w", "terminas");
 
           for (SimpleRow row : data) {
@@ -2170,7 +2169,7 @@ public class EcModuleBean implements BeeModule {
         .addFrom(TBL_TCD_ARTICLE_CODES)
         .addFromInner(TBL_TCD_ARTICLES,
             SqlUtils.and(SqlUtils.join(TBL_TCD_ARTICLE_CODES, COL_TCD_CODE_NR, TBL_TCD_ARTICLES,
-                    COL_TCD_ARTICLE_NR),
+                COL_TCD_ARTICLE_NR),
                 SqlUtils.joinUsing(TBL_TCD_ARTICLE_CODES, TBL_TCD_ARTICLES, COL_TCD_BRAND),
                 SqlUtils.notNull(TBL_TCD_ARTICLES, COL_TCD_ARTICLE_VISIBLE)))
         .setWhere(SqlUtils.and(SqlUtils.equals(TBL_TCD_ARTICLE_CODES, COL_TCD_ARTICLE, id),

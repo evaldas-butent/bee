@@ -44,7 +44,6 @@ import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.projects.ProjectConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
-import com.butent.bee.shared.modules.tasks.TaskConstants.*;
 import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.rights.Module;
@@ -100,10 +99,10 @@ public class ProjectsModuleBean implements BeeModule {
     List<SearchResult> tasksSr =
         qs.getSearchResults(VIEW_PROJECTS,
             Filter.anyContains(Sets.newHashSet(COL_PROJECT_NAME,
-                    ClassifierConstants.ALS_CONTACT_FIRST_NAME,
-                    ClassifierConstants.ALS_CONTACT_LAST_NAME,
-                    ProjectConstants.ALS_OWNER_FIRST_NAME,
-                    ProjectConstants.ALS_OWNER_LAST_NAME, ClassifierConstants.ALS_COMPANY_NAME),
+                ClassifierConstants.ALS_CONTACT_FIRST_NAME,
+                ClassifierConstants.ALS_CONTACT_LAST_NAME,
+                ProjectConstants.ALS_OWNER_FIRST_NAME,
+                ProjectConstants.ALS_OWNER_LAST_NAME, ClassifierConstants.ALS_COMPANY_NAME),
                 query));
     result.addAll(tasksSr);
 
@@ -142,7 +141,7 @@ public class ProjectsModuleBean implements BeeModule {
             BeeConst.DOUBLE_ZERO),
         BeeParameter.createRelation(module, PRM_PROJECT_HOUR_UNIT,
             ClassifierConstants.TBL_UNITS, ClassifierConstants.COL_UNIT_NAME)
-    );
+        );
     return params;
   }
 
@@ -716,14 +715,14 @@ public class ProjectsModuleBean implements BeeModule {
         ProjectConstants.COL_PROJECT_PRIORITY,
         ProjectConstants.COL_PROJECT_START_DATE,
         ProjectConstants.COL_PROJECT_END_DATE
-    );
+        );
     select.addField(TBL_PROJECT_STAGES, COL_STAGE_NAME, ALS_STAGE_NAME);
 
     select.addExpr(SqlUtils.concat(SqlUtils.nvl(SqlUtils.field(ClassifierConstants.TBL_PERSONS,
-                ClassifierConstants.COL_FIRST_NAME), SqlUtils.constant(BeeConst.STRING_EMPTY)),
-            SqlUtils.constant(BeeConst.STRING_SPACE), SqlUtils.nvl(SqlUtils.field(
-                ClassifierConstants.TBL_PERSONS,
-                ClassifierConstants.COL_LAST_NAME), SqlUtils.constant(BeeConst.STRING_EMPTY))),
+        ClassifierConstants.COL_FIRST_NAME), SqlUtils.constant(BeeConst.STRING_EMPTY)),
+        SqlUtils.constant(BeeConst.STRING_SPACE), SqlUtils.nvl(SqlUtils.field(
+            ClassifierConstants.TBL_PERSONS,
+            ClassifierConstants.COL_LAST_NAME), SqlUtils.constant(BeeConst.STRING_EMPTY))),
         ProjectConstants.COL_PROJECT_OWNER);
 
     select.addField(ClassifierConstants.TBL_COMPANIES, ClassifierConstants.COL_COMPANY_NAME,
