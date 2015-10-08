@@ -113,6 +113,38 @@ public final class ButentWS {
     }
   }
 
+  public SimpleRowSet getGoods(String filter) throws BeeException {
+    logger.debug("GetGoods");
+    String answer;
+
+    try {
+      answer = process("GetGoods", XmlUtils.tag("filter", filter));
+    } catch (Exception e) {
+      throw BeeException.error(e);
+    }
+    SimpleRowSet data =
+        xmlToSimpleRowSet(answer, "PAVAD", "PREKE", "MATO_VIEN", "ARTIKULAS",
+            "PARD_KAINA", "SAVIKAINA", "KAINA_1", "KAINA_2", "KAINA_3", "TIPAS", "GRUPE",
+            "PARD_VAL", "SAV_VAL", "VAL_1", "VAL_2", "VAL_3");
+    logger.debug("GetGoods cols:", data.getNumberOfColumns(), "rows:", data.getNumberOfRows());
+    return data;
+  }
+
+  public SimpleRowSet getStocks() throws BeeException {
+    logger.debug("GetStocks");
+    String answer;
+
+    try {
+      answer = process("GetStocks", "");
+    } catch (Exception e) {
+      throw BeeException.error(e);
+    }
+    SimpleRowSet data =
+        xmlToSimpleRowSet(answer, "PREKE", "SANDELIS", "LIKUTIS");
+    logger.debug("GetStocks cols:", data.getNumberOfColumns(), "rows:", data.getNumberOfRows());
+    return data;
+  }
+
   public SimpleRowSet getSQLData(String query, String... columns) throws BeeException {
     logger.debug("GetSQLData:", query);
     String answer;
@@ -195,6 +227,30 @@ public final class ButentWS {
     answer = getNode(answer).getTextContent();
 
     logger.debug("ImportItem:", "import succeeded. New ItemID =", answer);
+
+    return answer;
+  }
+
+  public String importItemReservation(String warehouse, Long itemId, Double remainder)
+      throws BeeException {
+
+    StringBuilder sb = new StringBuilder("<a>")
+        .append("<b>")
+        .append(XmlUtils.tag("sandelis", warehouse))
+        .append(XmlUtils.tag("preke", itemId))
+        .append(XmlUtils.tag("kiekis", remainder))
+        .append("</b>")
+        .append("</a>");
+
+    String answer;
+
+    try {
+      answer = process("Import_rezervations", sb.toString());
+    } catch (Exception e) {
+      throw BeeException.error(e);
+    }
+    LogUtils.getRootLogger().info(answer);
+    answer = getNode(answer).getTextContent();
 
     return answer;
   }
