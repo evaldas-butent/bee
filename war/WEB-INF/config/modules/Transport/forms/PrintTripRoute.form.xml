@@ -39,8 +39,14 @@
         </TextLabel>
       </row>
       <row>
-        <Label text="Vairuotojas" />
-        <TextLabel source="Driver" />
+        <Label text="Vairuotojai" />
+        <FlowPanel>
+          <TextLabel source="Driver" inline="true" />
+          <FlowPanel name="TripDrivers1Container" style="display:inline;">
+            <InlineLabel text=", " />
+            <InlineLabel name="TripDrivers1" />
+          </FlowPanel>
+        </FlowPanel>
       </row>
       <row>
         <Label text="Vilkiko valstybinis numeris" />
@@ -154,6 +160,22 @@
       <row>
         <Label text="Vairuotojas" style="margin-right:1em;" />
         <TextLabel source="Driver" />
+      </row>
+      <row>
+        <text />
+        <cell style="border-top:1px solid black; font-size:x-small; text-align:center; width:100%;">
+          <Label text="(vardas, pavardė, parašas)" />
+        </cell>
+      </row>
+    </Table>
+
+    <br />
+
+    <Table kind="output" name="TripDrivers2Container" style="white-space:nowrap; width:100%;">
+      <col index="0" cellStyle="text-align:left;" />
+      <row>
+        <Label text="Antras vairuotojas" style="margin-right:1em;" />
+        <Label name="TripDrivers2" />
       </row>
       <row>
         <text />

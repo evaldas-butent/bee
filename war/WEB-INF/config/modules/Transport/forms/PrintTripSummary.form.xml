@@ -46,8 +46,8 @@
         <TextLabel source="Driver" />
       </row>
       <row>
-        <Label text="Kiti vairuotojai" />
-        <Label name="TripDrivers" />
+        <Label text="Antras vairuotojas" />
+        <Label name="TripDrivers1" />
       </row>
       <row>
         <Label for="Route" />
@@ -82,7 +82,7 @@
         <TextLabel>
           <render>
             <ui:expression>
-              row.DateFrom &amp;&amp; row.DateTo ? (row.DateTo - row.DateFrom) / (1000*24*3600) : ''
+              row.DateFrom &amp;&amp; row.DateTo ? (row.DateTo - row.DateFrom) / (1000*24*3600) + 1 : ''
             </ui:expression>
           </render>
         </TextLabel>

@@ -38,10 +38,12 @@
     <Label text="Priskaityti komandiruotės išlaidas tolimųjų reisų vairuotojui "
            style="margin-left:3em; display:inline;" />
     <Label name="CurrentDriver" style="display:inline;" />
-    <TextLabel>
-      <renderToken source="DateFrom" prefix="nuo " />
-      <renderToken source="PlannedEndDate" prefix=" iki " />
-    </TextLabel>
+    <FlowPanel>
+      <InlineLabel text="Nuo " />
+      <DateLabel source="DateFrom" style="display:inline-block; min-width:5em;" />
+      <InlineLabel text=" Iki " />
+      <DateLabel source="DateTo" inline="true" />
+    </FlowPanel>
     <HorizontalPanel>
       <Label text="Komandiruotės tikslas: " style="font-weight:bold;" />
       <TextLabel>
