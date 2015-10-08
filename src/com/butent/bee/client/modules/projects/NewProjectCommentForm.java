@@ -78,7 +78,7 @@ class NewProjectCommentForm extends AbstractFormInterceptor {
         getFilesUploadedCallback((FileCollector) widget));
   }
 
-  public NewProjectCommentForm(Long projectId) {
+  NewProjectCommentForm(Long projectId) {
     this();
     this.projectId = projectId;
   }

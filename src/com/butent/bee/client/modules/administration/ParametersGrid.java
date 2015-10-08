@@ -65,12 +65,12 @@ import java.util.Map;
 
 public final class ParametersGrid extends AbstractGridInterceptor {
 
-  private class ValueRenderer extends AbstractCellRenderer {
+  private final class ValueRenderer extends AbstractCellRenderer {
 
     private int nameIdx;
     private int valueIdx;
 
-    public ValueRenderer(int nameIdx, int valueIdx, CellSource cellSource) {
+    private ValueRenderer(int nameIdx, int valueIdx, CellSource cellSource) {
       super(cellSource);
       this.nameIdx = nameIdx;
       this.valueIdx = valueIdx;

@@ -62,7 +62,7 @@ class DiscussionsGridHandler extends AbstractGridInterceptor {
   private final UserInfo currentUser;
   private String discussionAdminLogin;
 
-  public DiscussionsGridHandler(DiscussionsListType type) {
+  DiscussionsGridHandler(DiscussionsListType type) {
     this.type = type;
     this.currentUser = BeeKeeper.getUser();
     this.discussionAdminLogin = "";

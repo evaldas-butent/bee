@@ -10,7 +10,7 @@ class NameExpression implements IsExpression {
 
   private final String name;
 
-  public NameExpression(String name) {
+  NameExpression(String name) {
     Assert.notEmpty(name);
     this.name = name;
   }

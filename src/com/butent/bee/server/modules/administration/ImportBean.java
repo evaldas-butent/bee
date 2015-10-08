@@ -97,7 +97,7 @@ import lt.locator.TripSumRepData;
 @LocalBean
 public class ImportBean {
 
-  private static class ImportObject {
+  private static final class ImportObject {
     private final int prpValue = 0;
     private final int prpRelation = 1;
     private final int prpObject = 2;
@@ -107,7 +107,7 @@ public class ImportBean {
     private final String viewName;
     private final Map<String, Object[]> props = new HashMap<>();
 
-    public ImportObject(SimpleRowSet rs, long optId, SystemBean sys) {
+    private ImportObject(SimpleRowSet rs, long optId, SystemBean sys) {
       Assert.notNull(rs);
       Assert.state(!rs.isEmpty());
 
@@ -843,7 +843,7 @@ public class ImportBean {
 
     for (String tbl : new String[] {TBL_TRIP_COSTS, TBL_TRIP_FUEL_COSTS}) {
       HasConditions wh = SqlUtils.and(BeeUtils.same(tbl, TBL_TRIP_FUEL_COSTS)
-              ? SqlUtils.notNull(tmp, COL_FUEL) : SqlUtils.isNull(tmp, COL_FUEL),
+          ? SqlUtils.notNull(tmp, COL_FUEL) : SqlUtils.isNull(tmp, COL_FUEL),
           SqlUtils.notNull(tbl, COL_COSTS_EXTERNAL_ID));
 
       qs.updateData(new SqlUpdate(tmp)

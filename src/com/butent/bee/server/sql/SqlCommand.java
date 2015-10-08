@@ -18,18 +18,18 @@ class SqlCommand extends SqlQuery<SqlCommand> {
   private final SqlKeyword command;
   private final Map<String, Object> parameters;
 
-  public SqlCommand(SqlKeyword command, Map<String, Object> parameters) {
+  SqlCommand(SqlKeyword command, Map<String, Object> parameters) {
     Assert.notNull(command);
 
     this.command = command;
     this.parameters = parameters;
   }
 
-  public SqlKeyword getCommand() {
+  SqlKeyword getCommand() {
     return command;
   }
 
-  public Map<String, Object> getParameters() {
+  Map<String, Object> getParameters() {
     return parameters;
   }
 

@@ -52,13 +52,13 @@ import java.util.Set;
 
 public class AccountEditor extends AbstractFormInterceptor implements SelectorEvent.Handler {
 
-  private class RuleRenderer extends AbstractCellRenderer {
+  private final class RuleRenderer extends AbstractCellRenderer {
     private final int conditionIdx;
     private final int conditionOptionsIdx;
     private final int actionIdx;
     private final int actionOptionsIdx;
 
-    public RuleRenderer(List<? extends IsColumn> dataColumns) {
+    private RuleRenderer(List<? extends IsColumn> dataColumns) {
       super(null);
 
       conditionIdx = DataUtils.getColumnIndex(COL_RULE_CONDITION, dataColumns);

@@ -17,7 +17,7 @@ import java.util.Set;
 
 public final class FlexLayout {
 
-  private static class Adapter {
+  private static final class Adapter {
     private final int index;
 
     private final int baseSize;
@@ -28,7 +28,7 @@ public final class FlexLayout {
     private int unclampedSize;
     private int clampedSize;
 
-    public Adapter(int index, int baseSize, int hypotheticalSize) {
+    private Adapter(int index, int baseSize, int hypotheticalSize) {
       super();
       this.index = index;
       this.baseSize = baseSize;
