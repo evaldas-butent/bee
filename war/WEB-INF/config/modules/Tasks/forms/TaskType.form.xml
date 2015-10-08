@@ -2,12 +2,12 @@
 <!DOCTYPE Form [
   <!ENTITY inp "width: 15em;">
 ]>
-<f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form" xmlns:ui="http://www.butent.com/ui"
+<f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form"
 
-  name="TaskType" viewName="TaskTypes" caption="=crmTaskType">
+        name="TaskType" viewName="TaskTypes" caption="=crmTaskType">
   <FlowPanel>
     <FlowPanel>
-      <Table style="margin-top: 2ex; margin-left: 1em;">
+      <Table kind="controls" style="margin-top: 2ex; margin-left: 1em;">
         <row>
           <Label for="Name" style="bee-required" />
           <InputText source="Name" style="&inp;" required="true" />

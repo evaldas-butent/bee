@@ -10,7 +10,7 @@
     <page>
       <text>=mainInformation</text>
       <FlowPanel>
-        <Table>
+        <Table kind="controls">
 
         <col index="0" kind="label" />
         <row module="Documents.Templates">

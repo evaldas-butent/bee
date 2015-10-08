@@ -17,14 +17,13 @@
   <!ENTITY timeStep "30">
 ]>
 <f:Form xmlns="http://www.butent.com/widget"
-  xmlns:f="http://www.butent.com/form"
-  xmlns:xi="http://www.w3.org/2001/XInclude"
+        xmlns:f="http://www.butent.com/form"
 
-  name="NewTask" viewName="Tasks" caption="=crmNewTask" width="725" height="700">
+        name="NewTask" viewName="Tasks" caption="=crmNewTask" width="725" height="700">
 
   <FlowPanel style="padding: 10px 2px 2px 10px;">
 
-    <Table style="&tbl; border-bottom: 1px solid #e8e8e8;" cellStyle="&cell;">
+    <Table kind="controls" style="&tbl; border-bottom: 1px solid #e8e8e8;" cellStyle="&cell;">
       <col index="0" cellStyle="&col1;" />
 
       <row>
@@ -45,7 +44,7 @@
       </FileCollector>
     </FlowPanel>
 
-    <Table style="&tbl; border-top: 1px solid #e8e8e8;" cellStyle="&cell;">
+    <Table kind="controls" style="&tbl; border-top: 1px solid #e8e8e8;" cellStyle="&cell;">
       <col index="0" cellStyle="&col1;" />
 
       <row>
@@ -86,7 +85,7 @@
       </row>
     </Table>
 
-    <Table style="&tbl; border-top: 1px solid #e8e8e8;" cellStyle="&cell;">
+    <Table kind="controls" style="&tbl; border-top: 1px solid #e8e8e8;" cellStyle="&cell;">
       <col index="0" cellStyle="&col1;" />
       <col index="2" cellStyle="&col3;" />
 
@@ -155,7 +154,7 @@
 
     <Label text="=relatedTo" style="font-style: italic; margin-bottom: 2px; border-bottom:#e8e8e8;" data="Relations" />
 
-    <Table style="&tbl; border-top: 1px solid #e8e8e8;" cellStyle="&cell;" data="Relations" for="Task">
+    <Table kind="controls" style="&tbl; border-top: 1px solid #e8e8e8;" cellStyle="&cell;" data="Relations" for="Task">
       <col index="0" cellStyle="&col1;" />
 
       <row data="Relations" for="Company" module="Classifiers.Contacts">

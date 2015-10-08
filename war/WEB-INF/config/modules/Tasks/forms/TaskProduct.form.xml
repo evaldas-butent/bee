@@ -1,22 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <f:Form xmlns="http://www.butent.com/widget"
-  xmlns:f="http://www.butent.com/form"
-  xmlns:xi="http://www.w3.org/2001/XInclude"
-  
-  name="TaskProduct" caption="=crmTaskProduct" height="130" width="510">
-  
-  <Table>
+        xmlns:f="http://www.butent.com/form"
+
+        name="TaskProduct" caption="=crmTaskProduct" height="130" width="510">
+
+  <Table kind="controls">
     <row>
       <Label text="=caption" class="bee-required" horizontalAlignment="right"  />
       <cell colSpan="2">
-        <InputText source="Name" style="width: 400px;" /> 
+        <InputText source="Name" style="width: 400px;" />
       </cell>
-    </row> 
+    </row>
     <row>
       <Label text="=ordinal" horizontalAlignment="right" />
       <InputInteger source="Ordinal" style="width: 40px; "/>
       <CheckBox source="Visible" text="=stateVisible" />
     </row>
   </Table>
-</f:Form>  
+</f:Form>
