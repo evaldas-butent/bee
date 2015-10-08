@@ -218,9 +218,6 @@ public class TasksModuleBean implements BeeModule {
         BeeParameter.createRelation(module, PRM_DEFAULT_DBA_TEMPLATE,
             DocumentConstants.VIEW_DOCUMENT_TEMPLATES,
             DocumentConstants.COL_DOCUMENT_TEMPLATE_NAME),
-        BeeParameter.createRelation(module, PRM_DEFAULT_DBA_DOCUMENT_CATEGORY,
-            DocumentConstants.TBL_DOCUMENT_TREE,
-            DocumentConstants.COL_CATEGORY_NAME),
         BeeParameter.createRelation(module, PRM_DEFAULT_DBA_DOCUMENT_TYPE,
             DocumentConstants.VIEW_DOCUMENT_TYPES, DocumentConstants.COL_DOCUMENT_TYPE_NAME)
     );
@@ -258,10 +255,6 @@ public class TasksModuleBean implements BeeModule {
             Set<Long> taskIds = new HashSet<>();
             Long id;
 
-            Pair<Long, String> tml = prm.getRelationInfo(PRM_DEFAULT_DBA_TEMPLATE);
-            Pair<Long, String> type = prm.getRelationInfo(PRM_DEFAULT_DBA_DOCUMENT_TYPE);
-            Pair<Long, String> cat = prm.getRelationInfo(PRM_DEFAULT_DBA_DOCUMENT_CATEGORY);
-
             if (rowSet.getNumberOfRows() < 100) {
               for (BeeRow row : rowSet.getRows()) {
                 switch (event.getTargetName()) {
@@ -278,10 +271,6 @@ public class TasksModuleBean implements BeeModule {
                 if (DataUtils.isId(id)) {
                   taskIds.add(id);
                 }
-
-                row.setProperty(PRM_DEFAULT_DBA_DOCUMENT_CATEGORY, Codec.beeSerialize(cat));
-                row.setProperty(PRM_DEFAULT_DBA_DOCUMENT_TYPE, Codec.beeSerialize(type));
-                row.setProperty(PRM_DEFAULT_DBA_TEMPLATE, Codec.beeSerialize(tml));
               }
             }
 
