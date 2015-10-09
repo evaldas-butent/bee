@@ -3,12 +3,20 @@
 
   name="RequestTypes" source="RequestTypes"
   caption="=crmRequestTypes" newRowCaption="=crmNewRequestType"
+  editForm="RequestType" newRowForm="RequestType"
   >
   <Columns>
     <SimpleColumn name="Name" />
 
     <SimpleColumn name="Background" />
     <SimpleColumn name="Foreground" />
+    
+    <SimpleColumn name="ProductRequired" />
+    
+    <SimpleColumn name="TaskType" />
+    <SimpleJoin name="TaskType" joinType="LEFT" >
+      <SimpleColumn name="Name" alias="TaskTypeName" />
+    </SimpleJoin>
   </Columns>
   
   <Order>

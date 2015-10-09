@@ -213,6 +213,8 @@ public final class TaskConstants {
   public static final String VAR_TASK_RELATIONS = Service.RPC_VAR_PREFIX + "task_relations";
   public static final String VAR_TASK_USERS = Service.RPC_VAR_PREFIX + "task_users";
   public static final String VAR_TASK_PROPERTIES = Service.RPC_VAR_PREFIX + "task_properties";
+  public static final String VAR_TASK_PROJECT = Service.RPC_VAR_PREFIX + "task_project";
+  public static final String VAR_TASK_PRODUCT = Service.RPC_VAR_PREFIX + "task_product";
 
   public static final String VAR_TASK_VISITED = Service.RPC_VAR_PREFIX + "task_visited";
 
@@ -226,6 +228,7 @@ public final class TaskConstants {
   public static final String TBL_TASK_USERS = "TaskUsers";
   public static final String TBL_TASK_EVENTS = "TaskEvents";
   public static final String TBL_TASK_FILES = "TaskFiles";
+  public static final String TBL_TASK_PRODUCTS = "TaskProducts";
 
   public static final String TBL_TASK_TYPES = "TaskTypes";
 

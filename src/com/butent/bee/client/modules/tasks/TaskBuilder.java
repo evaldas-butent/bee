@@ -238,7 +238,7 @@ class TaskBuilder extends AbstractFormInterceptor {
         @Override
         public void onDataSelector(SelectorEvent event) {
 
-          TasksKeeper.getProductRequired(getActiveRow(), productLabel);
+          TasksKeeper.getProductRequired(getActiveRow(), productLabel, getViewName());
           getFormView().refresh();
         }
       });
@@ -360,7 +360,7 @@ class TaskBuilder extends AbstractFormInterceptor {
       return;
     }
 
-    if (TasksKeeper.getProductRequired(activeRow, productLabel)) {
+    if (TasksKeeper.getProductRequired(activeRow, productLabel, getViewName())) {
       if (Data.isNull(VIEW_TASKS, activeRow, COL_PRODUCT)) {
         event.getCallback().onFailure(Localized.getConstants().crmTaskProduct() + " "
             + Localized.getConstants().valueRequired());

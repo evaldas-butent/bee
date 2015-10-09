@@ -10,6 +10,9 @@
     <Label text="=user" horizontalAlignment="right" />
     <MultiSelector name="User" viewName="Users" choiceColumns="FirstName LastName"
       newRowEnabled="false" style="width:200px;" />
+    <Label text="=crmTaskProduct" horizontalAlignment="right" />
+    <MultiSelector name="Product" viewName="TaskProducts" choiceColumns="Name"
+      newRowEnabled="false" style="width:200px;" />
   </row>
   <row>
     <Label text="=client" horizontalAlignment="right" />
@@ -17,6 +20,9 @@
       newRowEnabled="false" style="width:100%;" />
     <Label text="=crmDurationType" horizontalAlignment="right" />
     <MultiSelector name="DurationType" viewName="DurationTypes" choiceColumns="Name"
+      newRowEnabled="false" style="width:200px;" />
+    <Label text="=project" horizontalAlignment="right" />
+    <MultiSelector name="Project" viewName="Projects" choiceColumns="Name"
       newRowEnabled="false" style="width:200px;" />
   </row>
   <row>

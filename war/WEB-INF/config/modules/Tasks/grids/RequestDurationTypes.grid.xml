@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+  
+  name="RequestDurationTypes" viewName="RequestDurationTypes" caption="=crmTaskDurationTypes"
+  minColumnWidth="200"
+  >
+  <g:columns>
+    <RelColumn name="DurationType" />
+  </g:columns>
+</g:Grid>

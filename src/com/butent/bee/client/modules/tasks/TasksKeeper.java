@@ -323,9 +323,9 @@ public final class TasksKeeper {
     });
   }
 
-  public static boolean getProductRequired(IsRow row, Label productLabel) {
+  public static boolean getProductRequired(IsRow row, Label productLabel, String viewName) {
     boolean valueRequired =
-        BeeUtils.toBoolean(row.getString(Data.getColumnIndex(VIEW_TASKS,
+        BeeUtils.toBoolean(row.getString(Data.getColumnIndex(viewName,
             COL_TASK_PRODUCT_REQUIRED)));
     productLabel.setStyleName(StyleUtils.NAME_REQUIRED, valueRequired);
 

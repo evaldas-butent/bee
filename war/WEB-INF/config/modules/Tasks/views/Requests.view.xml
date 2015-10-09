@@ -27,6 +27,8 @@
       <SimpleColumn name="RequestType" />
       <SimpleJoin joinType="LEFT" name="RequestType" >
         <SimpleColumn name="Name" alias="RequestTypeName" />
+        <SimpleColumn name="ProductRequired" />
+        <SimpleColumn name="TaskType" />
       </SimpleJoin>
       
       <SimpleColumn name="RequestForm" />
@@ -62,5 +64,10 @@
           </SimpleJoin>
         </SimpleJoin>
       </SimpleJoin>
+      
+    <SimpleColumn name="Product" />
+    <SimpleJoin name="Product" joinType="LEFT">
+      <SimpleColumn name="Name" alias="ProductName"/>
+    </SimpleJoin>
   </Columns>
 </View>
