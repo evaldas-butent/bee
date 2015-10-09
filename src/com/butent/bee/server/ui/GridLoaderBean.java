@@ -205,7 +205,7 @@ public class GridLoaderBean {
       for (int i = 0; i < itemNodes.size(); i++) {
         String item = itemNodes.get(i).getTextContent();
         if (!BeeUtils.isEmpty(item)) {
-          items.add(Localized.maybeTranslate(item));
+          items.add(item);
         }
       }
       if (!items.isEmpty()) {

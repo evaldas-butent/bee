@@ -487,6 +487,7 @@ public final class TransportConstants {
   public static final String COL_DATE = "Date";
   public static final String COL_AMOUNT = "Amount";
   public static final String COL_NOTE = "Note";
+  public static final String COL_INSURANCE_CERTIFICATE = "InsuranceCertificate";
 
   public static final String COL_ROUTE_CARGO = "TripCargo";
   public static final String COL_ROUTE_DEPARTURE_DATE = "DepartureDate";

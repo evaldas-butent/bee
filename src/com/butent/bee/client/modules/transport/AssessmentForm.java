@@ -67,6 +67,7 @@ import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.EditableColumn;
 import com.butent.bee.client.view.edit.Editor;
+import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.form.interceptor.PrintFormInterceptor;
@@ -78,6 +79,7 @@ import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.InlineLabel;
 import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.client.widget.InputBoolean;
+import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -100,6 +102,7 @@ import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.RowInfo;
+import com.butent.bee.shared.data.view.RowInfoList;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
@@ -189,7 +192,8 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
             public void onSuccess(Long assessment) {
               BeeRow newRow = DataUtils.cloneRow(form.getActiveRow());
 
-              for (String col : new String[] {COL_DATE, COL_CARGO, COL_ASSESSMENT_STATUS,
+              for (String col : new String[] {
+                  COL_DATE, COL_CARGO, COL_ASSESSMENT_STATUS,
                   COL_ASSESSMENT_EXPENSES, COL_ASSESSMENT_LOG,
                   "LogCount", "Finished", "FinishedCount"}) {
                 newRow.clearCell(form.getDataIndex(col));
@@ -284,7 +288,7 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
                       String oldLog = Data.getString(view, row, COL_ASSESSMENT_LOG);
 
                       Queries.update(view, row.getId(), row.getVersion(), Data.getColumns(view,
-                          Lists.newArrayList(COL_ASSESSMENT_STATUS, COL_ASSESSMENT_LOG)),
+                              Lists.newArrayList(COL_ASSESSMENT_STATUS, COL_ASSESSMENT_LOG)),
                           Lists.newArrayList(BeeUtils.toString(status.ordinal()), oldLog),
                           Lists.newArrayList(BeeUtils.toString(AssessmentStatus.NEW.ordinal()),
                               buildLog(loc.trAssessmentRejection(), value, oldLog)), null,
@@ -366,9 +370,14 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
   private class ServicesGrid extends AbstractGridInterceptor {
     @Override
     public void afterCreateEditor(String source, Editor editor, boolean embedded) {
-      if (BeeUtils.same(source, COL_CARGO_INCOME) && editor instanceof DataSelector) {
+      if ((BeeUtils.same(source, COL_CARGO_INCOME) || BeeUtils.same(source, COL_SERVICE))
+          && editor instanceof DataSelector) {
+
         ((DataSelector) editor).addSelectorHandler(AssessmentForm.this);
+      } else if (BeeUtils.same(source, COL_INSURANCE_CERTIFICATE) && editor instanceof ListBox) {
+        insuranceCertificate = (ListBox) editor;
       }
+
       super.afterCreateEditor(source, editor, embedded);
     }
 
@@ -509,6 +518,8 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
             gridRow.getValue(pForm.getDataIndex(COL_CURRENCY)));
       }
 
+      expenseRow.setValue(expensesView.getColumnIndex(COL_DATE),
+          gridRow.getValue(grid.getDataIndex(COL_DATE)));
       expenseRow.setValue(expensesView.getColumnIndex(COL_TRADE_VAT_PLUS),
           gridRow.getValue(grid.getDataIndex(COL_TRADE_VAT_PLUS)));
       expenseRow.setValue(expensesView.getColumnIndex(COL_TRADE_VAT),
@@ -530,10 +541,6 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
               refresh();
             }
           });
-    }
-
-    private double getExpenseSum(double val, double percents) {
-      return BeeUtils.round(val * percents / 100.0, 2);
     }
   }
 
@@ -740,6 +747,8 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
   private final Multimap<Long, Long> departmentHeads = HashMultimap.create();
   private final Map<Long, String> departments = new HashMap<>();
   private final Multimap<Long, Long> employees = HashMultimap.create();
+  private final Set<Long> expensesChangeQueue = new HashSet<>();
+  private ListBox insuranceCertificate;
 
   @Override
   public void afterCreateWidget(final String name, IdentifiableWidget widget,
@@ -892,6 +901,53 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
   }
 
   @Override
+  public void afterUpdateRow(IsRow row) {
+
+    if (!expensesChangeQueue.contains(row.getId())) {
+      return;
+    }
+
+    expensesChangeQueue.remove(row.getId());
+    Long cargoId = row.getLong(getDataIndex(COL_CARGO));
+
+    if (!DataUtils.isId(cargoId)) {
+      return;
+    }
+
+    final double cargoValue = BeeUtils.unbox(row.getDouble(getDataIndex(COL_CARGO_VALUE)));
+    final Long currency = row.getLong(getDataIndex(COL_CARGO_VALUE_CURRENCY));
+
+    Queries.getRowSet(TBL_CARGO_EXPENSES,
+        Lists.newArrayList(COL_AMOUNT, COL_CURRENCY, COL_SERVICE_PERCENT), Filter.and(
+            Filter.equals(COL_CARGO, cargoId), Filter.isNull(COL_SALE),
+            Filter.notNull(COL_SERVICE_PERCENT)),
+        new RowSetCallback() {
+          @Override
+          public void onSuccess(BeeRowSet expenses) {
+            if (expenses.isEmpty()) {
+              return;
+            }
+
+            BeeRowSet updExpenses =
+                new BeeRowSet(TBL_CARGO_EXPENSES, Data.getColumns(TBL_CARGO_EXPENSES,
+                    Lists.newArrayList(COL_AMOUNT, COL_CURRENCY)));
+
+            for (IsRow expense : expenses) {
+              double percent = BeeUtils.unbox(
+                  expense.getDouble(expenses.getColumnIndex(COL_SERVICE_PERCENT)));
+
+              double amount = getExpenseSum(cargoValue, percent);
+
+              updExpenses.addRow(expense.getId(), expense.getVersion(),
+                  new String[] {BeeUtils.toString(amount), BeeUtils.toString(currency)});
+            }
+
+            Queries.updateRows(updExpenses);
+          }
+        });
+  }
+
+  @Override
   public boolean beforeAction(final Action action, final Presenter presenter) {
     if (action == Action.SAVE && !isNewRow() && handleSaveAction(new ScheduledCommand() {
       @Override
@@ -956,6 +1012,34 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
         updateDepartment(form, form.getActiveRow(),
             Data.getLong(event.getRelatedViewName(), event.getRelatedRow(), COL_DEPARTMENT));
       }
+    } else if (BeeUtils.containsSame(event.getRelatedViewName(), TBL_SERVICES)) {
+      DataInfo servicesView = Data.getDataInfo(TBL_SERVICES);
+      IsRow row = event.getRelatedRow();
+
+      if (row == null) {
+        return;
+      }
+
+      Double servicePercent = row.getDouble(servicesView.getColumnIndex(COL_SERVICE_PERCENT));
+
+      if (!BeeUtils.isPositive(servicePercent)) {
+        if (insuranceCertificate != null) {
+          insuranceCertificate.setEnabled(false);
+        }
+
+        return;
+      } else if (insuranceCertificate != null) {
+        insuranceCertificate.setEnabled(true);
+      }
+
+      Double cargoValue = getFormView().getDoubleValue(COL_CARGO_VALUE);
+
+      if (BeeUtils.isPositive(cargoValue)) {
+        return;
+      }
+
+      getFormView().notifySevere(Localized.getConstants().cargoValue(),
+          Localized.getConstants().valueRequired());
     } else if (BeeUtils.same(event.getRelatedViewName(), TBL_CARGO_INCOMES)) {
       if (event.isOpened()) {
         event.getSelector().setAdditionalFilter(Filter.equals(COL_CARGO, getLongValue(COL_CARGO)));
@@ -1002,6 +1086,25 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
   }
 
   @Override
+  public void onSaveChanges(HasHandlers listener, SaveChangesEvent event) {
+    IsRow oldRow = event.getOldRow();
+    IsRow row = event.getNewRow();
+
+    double oldCargoValue = BeeUtils.unbox(oldRow.getDouble(form.getDataIndex(COL_CARGO_VALUE)));
+    long oldCargoCurrency = BeeUtils.unbox(
+        oldRow.getLong(form.getDataIndex(COL_CARGO_VALUE_CURRENCY)));
+
+    double cargoValue = BeeUtils.unbox(row.getDouble(form.getDataIndex(COL_CARGO_VALUE)));
+    long cargoCurrency = BeeUtils.unbox(row.getLong(form.getDataIndex(COL_CARGO_VALUE_CURRENCY)));
+
+    if (oldCargoValue == cargoValue && oldCargoCurrency == cargoCurrency) {
+      return;
+    }
+
+    expensesChangeQueue.add(row.getId());
+  }
+
+  @Override
   public void onStartNewRow(FormView formView, IsRow oldRow, IsRow newRow) {
     newRow.setValue(formView.getDataIndex(COL_ASSESSMENT_STATUS), AssessmentStatus.NEW.ordinal());
     newRow.setValue(formView.getDataIndex(ALS_ORDER_STATUS), OrderStatus.REQUEST.ordinal());
@@ -1020,6 +1123,10 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
   private static String buildLog(String caption, String value, String oldLog) {
     return BeeUtils.join("\n\n",
         TimeUtils.nowMinutes().toCompactString() + " " + caption + "\n" + value, oldLog);
+  }
+
+  private static double getExpenseSum(double val, double percents) {
+    return BeeUtils.round(val * percents / 100.0, 2);
   }
 
   private boolean handleSaveAction(final ScheduledCommand action) {
