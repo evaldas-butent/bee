@@ -62,10 +62,10 @@ import java.util.Objects;
 public class TreePresenter extends AbstractPresenter implements CatchEvent.CatchHandler<IsRow>,
     HasViewName {
 
-  private class CommitCallback extends RowCallback {
+  private final class CommitCallback extends RowCallback {
     private final boolean createMode;
 
-    public CommitCallback(boolean createMode) {
+    private CommitCallback(boolean createMode) {
       this.createMode = createMode;
     }
 

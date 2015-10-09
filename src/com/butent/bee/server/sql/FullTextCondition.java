@@ -12,7 +12,7 @@ class FullTextCondition implements IsCondition {
   private final IsExpression expression;
   private final String value;
 
-  public FullTextCondition(IsExpression expression, String value) {
+  FullTextCondition(IsExpression expression, String value) {
     this.expression = Assert.notNull(expression);
     this.value = Assert.notEmpty(value);
   }

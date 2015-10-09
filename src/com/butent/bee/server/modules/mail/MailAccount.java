@@ -43,33 +43,33 @@ import javax.mail.internet.MimeMessage;
 
 public class MailAccount {
 
-  private static class MailStore {
+  private static final class MailStore {
     final Store store;
     final long start;
     int cnt;
 
-    public MailStore(Store store) {
+    private MailStore(Store store) {
       this.store = Assert.notNull(store);
       this.start = System.currentTimeMillis();
     }
 
-    public void enter() {
+    private void enter() {
       cnt++;
     }
 
-    public boolean expired() {
+    private boolean expired() {
       return BeeUtils.isMore(System.currentTimeMillis() - start, TimeUtils.MILLIS_PER_MINUTE * 10L);
     }
 
-    public Store getStore() {
+    private Store getStore() {
       return store;
     }
 
-    public boolean idle() {
+    private boolean idle() {
       return cnt <= 0;
     }
 
-    public void leave() {
+    private void leave() {
       cnt--;
     }
   }

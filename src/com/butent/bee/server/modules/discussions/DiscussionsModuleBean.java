@@ -86,13 +86,13 @@ import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.ejb.EJBContext;
 import javax.ejb.LocalBean;
+import javax.ejb.Schedule;
 import javax.ejb.Stateless;
-import javax.ejb.Timer;
 import javax.ejb.TimerService;
 
 @Stateless
 @LocalBean
-public class DiscussionsModuleBean implements BeeModule, ConcurrencyBean.HasTimerService {
+public class DiscussionsModuleBean implements BeeModule {
 
   private static final int MAX_NUMBERS_OF_ROWS = 100;
   private static final String IMG_LINK = "link";
@@ -162,23 +162,16 @@ public class DiscussionsModuleBean implements BeeModule, ConcurrencyBean.HasTime
   }
 
   @Override
-  public void ejbTimeout(Timer timer) {
-    if (cb.isParameterTimer(timer, PRM_DISCUSS_INACTIVE_TIME_IN_DAYS)) {
-      doInactiveDiscussions();
-    }
-  }
-
-  @Override
   public Collection<BeeParameter> getDefaultParameters() {
     String module = getModule().getName();
 
     List<BeeParameter> params = Lists.newArrayList(
         BeeParameter.createText(module, PRM_DISCUSS_ADMIN, false, ""),
-        BeeParameter.createBoolean(module, PRM_ALLOW_DELETE_OWN_COMMENTS, false, null),
-        BeeParameter.createText(module, PRM_DISCUSS_INACTIVE_TIME_IN_DAYS, false, null),
+        BeeParameter.createBoolean(module, PRM_ALLOW_DELETE_OWN_COMMENTS),
+        BeeParameter.createNumber(module, PRM_DISCUSS_INACTIVE_TIME_IN_DAYS),
         BeeParameter.createText(module, PRM_FORBIDDEN_FILES_EXTENTIONS, false, ""),
-        BeeParameter.createNumber(module, PRM_MAX_UPLOAD_FILE_SIZE, false, null),
-        BeeParameter.createRelation(module, PRM_DISCUSS_BIRTHDAYS, false, TBL_ADS_TOPICS, COL_NAME)
+        BeeParameter.createNumber(module, PRM_MAX_UPLOAD_FILE_SIZE),
+        BeeParameter.createRelation(module, PRM_DISCUSS_BIRTHDAYS, TBL_ADS_TOPICS, COL_NAME)
     );
 
     return params;
@@ -195,14 +188,7 @@ public class DiscussionsModuleBean implements BeeModule, ConcurrencyBean.HasTime
   }
 
   @Override
-  public TimerService getTimerService() {
-    return timerService;
-  }
-
-  @Override
   public void init() {
-    cb.createCalendarTimer(this.getClass(), PRM_DISCUSS_INACTIVE_TIME_IN_DAYS);
-
     sys.registerDataEventHandler(new DataEventHandler() {
 
       @Subscribe
@@ -742,11 +728,11 @@ public class DiscussionsModuleBean implements BeeModule, ConcurrencyBean.HasTime
     return response;
   }
 
+  @Schedule(hour = "*/12", persistent = false)
   private void doInactiveDiscussions() {
     Long days = prm.getLong(PRM_DISCUSS_INACTIVE_TIME_IN_DAYS);
 
     if (!BeeUtils.isPositive(days)) {
-      logger.info("No value set for discussion deactyvation");
       return;
     }
     SqlSelect select =

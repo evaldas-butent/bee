@@ -73,11 +73,11 @@ public class RequestEditor extends AbstractFormInterceptor {
 
   private final UserInfo currentUser = BeeKeeper.getUser();
 
-  private static class FinishSaveCallback extends RowUpdateCallback {
+  private static final class FinishSaveCallback extends RowUpdateCallback {
 
     private final FormView formView;
 
-    public FinishSaveCallback(FormView formView) {
+    private FinishSaveCallback(FormView formView) {
       super(formView.getViewName());
       this.formView = formView;
     }

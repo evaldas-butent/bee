@@ -218,7 +218,7 @@ public class MailMessage extends AbstractFormInterceptor {
     }
   }
 
-  private static enum NewMailMode {
+  private enum NewMailMode {
     REPLY, REPLY_ALL, FORWARD
   }
 

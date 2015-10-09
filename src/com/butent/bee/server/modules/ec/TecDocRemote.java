@@ -47,16 +47,16 @@ public class TecDocRemote {
     private final List<String[]> baseIndexes = new ArrayList<>();
     private final List<IsSql> preparations = new ArrayList<>();
 
-    public TcdData(SqlCreate base, SqlSelect baseSource) {
+    TcdData(SqlCreate base, SqlSelect baseSource) {
       this.base = base;
       this.baseSource = baseSource;
     }
 
-    public void addPreparation(IsSql preparation) {
+    void addPreparation(IsSql preparation) {
       this.preparations.add(preparation);
     }
 
-    public void addBaseIndexes(String... fldList) {
+    void addBaseIndexes(String... fldList) {
       this.baseIndexes.add(fldList);
     }
   }

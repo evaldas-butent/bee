@@ -65,17 +65,17 @@ public class ConcurrencyBean {
     }
   }
 
-  private static class Worker extends FutureTask<Void> {
+  private static final class Worker extends FutureTask<Void> {
 
     private long start;
     private final AsynchronousRunnable runnable;
 
-    public Worker(AsynchronousRunnable runnable) {
+    private Worker(AsynchronousRunnable runnable) {
       super(runnable, null);
       this.runnable = runnable;
     }
 
-    public String getId() {
+    private String getId() {
       String id = runnable.getId();
       return BeeUtils.isEmpty(id) ? runnable.toString()
           : BeeUtils.joinWords(id, Integer.toHexString(hashCode()));

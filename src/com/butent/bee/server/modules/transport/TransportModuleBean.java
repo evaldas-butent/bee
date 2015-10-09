@@ -1245,7 +1245,7 @@ public class TransportModuleBean implements BeeModule {
         .addFromInner(TBL_COUNTRY_DAILY_COSTS, SqlUtils.and(
             sys.joinTables(TBL_COUNTRY_NORMS, TBL_COUNTRY_DAILY_COSTS, COL_COUNTRY_NORM),
             SqlUtils.notNull(TBL_TRIP_ROUTES, COL_ROUTE_ARRIVAL_DATE),
-            SqlUtils.joinMore(TBL_TRIP_ROUTES, COL_ROUTE_ARRIVAL_DATE, TBL_TRIP_ROUTES,
+            SqlUtils.joinMoreEqual(TBL_TRIP_ROUTES, COL_ROUTE_ARRIVAL_DATE, TBL_TRIP_ROUTES,
                 COL_ROUTE_DEPARTURE_DATE),
             SqlUtils.or(SqlUtils.isNull(TBL_COUNTRY_DAILY_COSTS, COL_TRIP_DATE_FROM),
                 SqlUtils.joinLess(TBL_COUNTRY_DAILY_COSTS, COL_TRIP_DATE_FROM,
