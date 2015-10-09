@@ -159,6 +159,21 @@ public final class ButentWS {
     return data;
   }
 
+  public SimpleRowSet getTimeCards(DateTime getChangesFrom) throws BeeException {
+    logger.debug("GetTimeCards:", getChangesFrom);
+    String answer;
+
+    try {
+      answer = process("GetTimeCard", XmlUtils.tag("time", getChangesFrom));
+    } catch (Exception e) {
+      throw BeeException.error(e);
+    }
+    SimpleRowSet data = xmlToSimpleRowSet(answer, "TAB_NR", "DATA_NUO", "DATA_IKI", "TAB_KODAS",
+        "PAVAD", "ISAK_PAVAD", "D_TAB_ID");
+    logger.debug("GetTimeCards cols:", data.getNumberOfColumns(), "rows:", data.getNumberOfRows());
+    return data;
+  }
+
   public String importClient(String companyName, String companyCode, String companyVATCode,
       String companyAddress, String companyPostIndex, String companyCity, String companyCountry)
       throws BeeException {

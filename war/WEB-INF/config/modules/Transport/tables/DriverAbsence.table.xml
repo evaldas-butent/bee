@@ -10,5 +10,7 @@
     <Date name="DateTo" label="=trAbsenceDateTo" notNull="true" />
     <Relation name="Absence" relation="AbsenceTypes" notNull="true" label="=trAbsenceReason" />
     <Text name="Notes" label="=notes" />
+
+    <Long name="ExternalID" unique="true" label="=externalId" />
   </Fields>
 </Table>

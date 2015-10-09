@@ -60,6 +60,7 @@ import com.butent.bee.shared.data.SqlConstants.SqlFunction;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.view.Order;
+import com.butent.bee.shared.exceptions.BeeException;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -84,6 +85,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.NameUtils;
+import com.butent.webservice.ButentWS;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -92,7 +94,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -103,12 +104,14 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
-import java.util.function.Function;
 
+import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.ejb.EJBContext;
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
+import javax.ejb.Timer;
+import javax.ejb.TimerService;
 import javax.servlet.http.HttpServletResponse;
 
 @Stateless
@@ -157,6 +160,11 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
   NewsBean news;
   @EJB
   TransportReportsBean rep;
+  @EJB
+  ConcurrencyBean cb;
+
+  @Resource
+  TimerService timerService;
   @Resource
   EJBContext ctx;
 
@@ -357,6 +365,11 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
         BeeParameter.createRelation(module, PRM_ERP_DRIVER_POSITION, TBL_POSITIONS,
             COL_POSITION_NAME),
         BeeParameter.createBoolean(module, PRM_BIND_EXPENSES_TO_INCOMES, false, true));
+  }
+
+  @Override
+  public TimerService getTimerService() {
+    return timerService;
   }
 
   @Override
@@ -2400,7 +2413,7 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
         .addFields(tableName, keyName)
         .addField(tableName, sys.getIdName(tableName), tableName)
         .addFrom(tableName)
-        .setWhere(SqlUtils.notNull(tableName, keyName)))) {
+        .setWhere(SqlUtils.and(SqlUtils.notNull(tableName, keyName), clause)))) {
 
       ref.put(row.getValue(keyName), row.getLong(tableName));
     }
@@ -2860,21 +2873,18 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
 
   private void importEmployees() {
     long historyId = sys.eventStart(PRM_SYNC_ERP_EMPLOYEES);
-
-    String remoteAddress = prm.getText(PRM_ERP_ADDRESS);
-    String remoteLogin = prm.getText(PRM_ERP_LOGIN);
-    String remotePassword = prm.getText(PRM_ERP_PASSWORD);
     SimpleRowSet rs = null;
 
     Long driverPosition = prm.getRelation(PRM_ERP_DRIVER_POSITION);
     Long company = prm.getRelation(PRM_COMPANY);
 
     if (!DataUtils.isId(company)) {
-      sys.eventEnd(historyId, "ERROR", "Nenurodyta pagrindinė įmonė. Parametras:", PRM_COMPANY);
+      sys.eventError(historyId, null, "Nenurodyta pagrindinė įmonė. Parametras:", PRM_COMPANY);
       return;
     }
     try {
-      rs = ButentWS.connect(remoteAddress, remoteLogin, remotePassword)
+      rs = ButentWS.connect(prm.getText(PRM_ERP_ADDRESS), prm.getText(PRM_ERP_LOGIN),
+          prm.getText(PRM_ERP_PASSWORD))
           .getEmployees(qs.getDateTime(new SqlSelect()
               .addMax(TBL_EVENT_HISTORY, COL_EVENT_STARTED)
               .addFrom(TBL_EVENT_HISTORY)
@@ -2882,8 +2892,7 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
                       PRM_SYNC_ERP_EMPLOYEES),
                   SqlUtils.startsWith(TBL_EVENT_HISTORY, COL_EVENT_RESULT, "OK")))));
     } catch (BeeException e) {
-      logger.error(e);
-      sys.eventEnd(historyId, "ERROR", e.getMessage());
+      sys.eventError(historyId, e);
       return;
     }
     String companyDepartments = "CompanyDepartments";
@@ -2911,8 +2920,8 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
     int drvNew = 0;
     int posNew = 0;
     int deptNew = 0;
-    String error = null;
     String tabNr = null;
+    String cardsInfo = null;
 
     try {
       for (SimpleRow row : rs) {
@@ -3009,8 +3018,11 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
                 .addConstant(COL_EMAIL_ADDRESS, email));
 
             if (response.hasErrors()) {
-              error = ArrayUtils.join(BeeConst.STRING_EOL, response.getErrors());
-              break;
+              ctx.setRollbackOnly();
+              sys.eventError(historyId, null,
+                  ArrayUtils.join(BeeConst.STRING_EOL, response.getErrors()),
+                  BeeUtils.join(": ", COL_TAB_NUMBER, tabNr));
+              return;
             }
             emailId = response.getResponseAsLong();
           }
@@ -3065,31 +3077,101 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
           drvNew++;
         }
       }
+      cardsInfo = importTimeCards();
+
     } catch (Throwable e) {
-      error = ArrayUtils.join(BeeConst.STRING_EOL, ResponseObject.error(e).getErrors());
-    }
-    if (!BeeUtils.isEmpty(error)) {
       ctx.setRollbackOnly();
-      sys.eventEnd(historyId, "ERROR", BeeUtils.join(": ", COL_TAB_NUMBER, tabNr), error);
-    } else {
-      sys.eventEnd(historyId, "OK", deptNew > 0 ? companyDepartments + ": +" + deptNew : null,
-          posNew > 0 ? TBL_POSITIONS + ": +" + posNew : null,
-          (emplNew + emplUpd) > 0 ? TBL_EMPLOYEES + ":" + (emplNew > 0 ? " +" + emplNew : "")
-              + (emplUpd > 0 ? " " + emplUpd : "") : null,
-          drvNew > 0 ? TBL_DRIVERS + ": +" + drvNew : null);
+      sys.eventError(historyId, e, BeeUtils.join(": ", COL_TAB_NUMBER, tabNr));
+      return;
     }
+    sys.eventEnd(historyId, "OK", deptNew > 0 ? companyDepartments + ": +" + deptNew : null,
+        posNew > 0 ? TBL_POSITIONS + ": +" + posNew : null,
+        (emplNew + emplUpd) > 0 ? TBL_EMPLOYEES + ":" + (emplNew > 0 ? " +" + emplNew : "")
+            + (emplUpd > 0 ? " " + emplUpd : "") : null,
+        drvNew > 0 ? TBL_DRIVERS + ": +" + drvNew : null, cardsInfo);
+  }
+
+  private String importTimeCards() throws BeeException {
+    SimpleRowSet rs = ButentWS.connect(prm.getText(PRM_ERP_ADDRESS), prm.getText(PRM_ERP_LOGIN),
+        prm.getText(PRM_ERP_PASSWORD))
+        .getTimeCards(qs.getDateTime(new SqlSelect()
+            .addMax(TBL_EVENT_HISTORY, COL_EVENT_STARTED)
+            .addFrom(TBL_EVENT_HISTORY)
+            .setWhere(SqlUtils.and(SqlUtils.equals(TBL_EVENT_HISTORY, COL_EVENT,
+                    PRM_SYNC_ERP_EMPLOYEES),
+                SqlUtils.startsWith(TBL_EVENT_HISTORY, COL_EVENT_RESULT, "OK")))));
+
+    SimpleRowSet drivers = qs.getData(new SqlSelect()
+        .addField(TBL_DRIVERS, sys.getIdName(TBL_DRIVERS), COL_DRIVER)
+        .addFields(TBL_EMPLOYEES, COL_TAB_NUMBER)
+        .addFrom(TBL_DRIVERS)
+        .addFromInner(TBL_EMPLOYEES,
+            SqlUtils.joinUsing(TBL_DRIVERS, TBL_EMPLOYEES, COL_COMPANY_PERSON)));
+
+    Map<String, Long> absenceTypes = getReferences(TBL_ABSENCE_TYPES, COL_ABSENCE_NAME);
+
+    int tp = 0;
+    int ins = 0;
+    int upd = 0;
+    int del = 0;
+
+    for (SimpleRow row : rs) {
+      Long id = row.getLong("D_TAB_ID");
+      String tabNumber = row.getValue("TAB_NR");
+
+      if (BeeUtils.isEmpty(tabNumber)) {
+        del += qs.updateData(new SqlDelete(TBL_DRIVER_ABSENCE)
+            .setWhere(SqlUtils.equals(TBL_DRIVER_ABSENCE, COL_COSTS_EXTERNAL_ID, id)));
+        continue;
+      }
+      Long driver = BeeUtils.toLongOrNull(drivers.getValueByKey(COL_TAB_NUMBER, tabNumber,
+          COL_DRIVER));
+
+      if (!DataUtils.isId(driver)) {
+        continue;
+      }
+      String type = sys.clampValue(TBL_ABSENCE_TYPES, COL_ABSENCE_NAME, row.getValue("PAVAD"));
+
+      if (!absenceTypes.containsKey(type)) {
+        absenceTypes.put(type, qs.insertData(new SqlInsert(TBL_ABSENCE_TYPES)
+            .addConstant(COL_ABSENCE_NAME, type)
+            .addConstant(COL_ABSENCE_LABEL,
+                sys.clampValue(TBL_ABSENCE_TYPES, COL_ABSENCE_LABEL, row.getValue("TAB_KODAS")))));
+        tp++;
+      }
+      int c = qs.updateData(new SqlUpdate(TBL_DRIVER_ABSENCE)
+          .addConstant(COL_DRIVER, driver)
+          .addConstant(COL_ABSENCE, absenceTypes.get(type))
+          .addConstant(COL_ABSENCE_FROM, TimeUtils.parseDate(row.getValue("DATA_NUO")))
+          .addConstant(COL_ABSENCE_TO, TimeUtils.parseDate(row.getValue("DATA_IKI")))
+          .addConstant(COL_ABSENCE_NOTES, row.getValue("ISAK_PAVAD"))
+          .setWhere(SqlUtils.equals(TBL_DRIVER_ABSENCE, COL_COSTS_EXTERNAL_ID, id)));
+
+      if (BeeUtils.isPositive(c)) {
+        upd++;
+      } else {
+        qs.insertData(new SqlInsert(TBL_DRIVER_ABSENCE)
+            .addConstant(COL_DRIVER, driver)
+            .addConstant(COL_ABSENCE, absenceTypes.get(type))
+            .addConstant(COL_ABSENCE_FROM, TimeUtils.parseDate(row.getValue("DATA_NUO")))
+            .addConstant(COL_ABSENCE_TO, TimeUtils.parseDate(row.getValue("DATA_IKI")))
+            .addConstant(COL_ABSENCE_NOTES, row.getValue("ISAK_PAVAD"))
+            .addConstant(COL_COSTS_EXTERNAL_ID, id));
+        ins++;
+      }
+    }
+    return BeeUtils.join(BeeConst.STRING_EOL, tp > 0 ? TBL_ABSENCE_TYPES + ": +" + tp : null,
+        (ins + upd + del) > 0 ? TBL_DRIVER_ABSENCE + ":" + (ins > 0 ? " +" + ins : "")
+            + (upd > 0 ? " " + upd : "") + (del > 0 ? " -" + del : "") : null);
   }
 
   private void importVehicles() {
     long historyId = sys.eventStart(PRM_SYNC_ERP_VEHICLES);
-
-    String remoteAddress = prm.getText(PRM_ERP_ADDRESS);
-    String remoteLogin = prm.getText(PRM_ERP_LOGIN);
-    String remotePassword = prm.getText(PRM_ERP_PASSWORD);
     SimpleRowSet rs = null;
 
     try {
-      rs = ButentWS.connect(remoteAddress, remoteLogin, remotePassword)
+      rs = ButentWS.connect(prm.getText(PRM_ERP_ADDRESS), prm.getText(PRM_ERP_LOGIN),
+          prm.getText(PRM_ERP_PASSWORD))
           .getCars(qs.getDateTime(new SqlSelect()
               .addMax(TBL_EVENT_HISTORY, COL_EVENT_STARTED)
               .addFrom(TBL_EVENT_HISTORY)
@@ -3098,7 +3180,7 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
                   SqlUtils.startsWith(TBL_EVENT_HISTORY, COL_EVENT_RESULT, "OK")))));
     } catch (BeeException e) {
       logger.error(e);
-      sys.eventEnd(historyId, "ERROR", e.getMessage());
+      sys.eventError(historyId, e);
       return;
     }
     Map<String, String> mappings = new HashMap<>();
@@ -3120,15 +3202,7 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
     int md = 0;
     int vhNew = 0;
     int vhUpd = 0;
-    String error = null;
 
-    Function<SQLException, ResponseObject> errorHandler =
-        new Function<SQLException, ResponseObject>() {
-          @Override
-          public ResponseObject apply(SQLException e) {
-            return ResponseObject.error(e);
-          }
-        };
     String name = "Name";
 
     Map<String, Long> vehicleNumbers = getReferences(TBL_VEHICLES, COL_VEHICLE_NUMBER);
@@ -3234,29 +3308,23 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
           update.addConstant(key, value);
         }
       }
-      ResponseObject response;
-
-      if (insert != null) {
-        response = qs.insertDataWithResponse(insert, errorHandler);
-        vhNew++;
-      } else {
-        response = qs.updateDataWithResponse(update, errorHandler);
-        vhUpd++;
-      }
-      if (response.hasErrors()) {
-        error = ArrayUtils.join(BeeConst.STRING_EOL, response.getErrors());
-        logger.severe(error);
-        break;
+      try {
+        if (insert != null) {
+          qs.insertData(insert);
+          vhNew++;
+        } else {
+          qs.updateData(update);
+          vhUpd++;
+        }
+      } catch (Throwable e) {
+        sys.eventError(historyId, e);
+        return;
       }
     }
-    if (!BeeUtils.isEmpty(error)) {
-      sys.eventEnd(historyId, "ERROR", error);
-    } else {
-      sys.eventEnd(historyId, "OK", tp > 0 ? TBL_VEHICLE_TYPES + ": +" + tp : null,
-          md > 0 ? TBL_VEHICLE_MODELS + ": +" + md : null,
-          (vhNew + vhUpd) > 0 ? TBL_VEHICLES + ":" + (vhNew > 0 ? " +" + vhNew : "")
-              + (vhUpd > 0 ? " " + vhUpd : "") : null);
-    }
+    sys.eventEnd(historyId, "OK", tp > 0 ? TBL_VEHICLE_TYPES + ": +" + tp : null,
+        md > 0 ? TBL_VEHICLE_MODELS + ": +" + md : null,
+        (vhNew + vhUpd) > 0 ? TBL_VEHICLES + ":" + (vhNew > 0 ? " +" + vhNew : "")
+            + (vhUpd > 0 ? " " + vhUpd : "") : null);
   }
 
   private ResponseObject sendMessage(String message, String[] recipients) {
