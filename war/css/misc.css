@@ -37,10 +37,10 @@
   border-collapse: collapse;
 }
 
-.bee-Form .bee-orgChart-boss-table td,
-.bee-Form .bee-orgChart-employee-table td,
-.bee-Form .bee-orgChart-position-table td,
-.bee-Form .bee-orgChart-pos-and-empl td {
+.bee-orgChart-boss-table td,
+.bee-orgChart-employee-table td,
+.bee-orgChart-position-table td,
+.bee-orgChart-pos-and-empl td {
   padding: 5px;
 }
 

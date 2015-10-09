@@ -8,6 +8,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
+import com.google.common.eventbus.AllowConcurrentEvents;
 import com.google.common.eventbus.Subscribe;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.EncodeHintType;
@@ -103,8 +104,7 @@ import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.websocket.messages.LogMessage;
 
-import java.awt.Color;
-import java.awt.Graphics2D;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -251,10 +251,9 @@ public class ClassifiersModuleBean implements BeeModule {
 
     sys.registerDataEventHandler(new DataEventHandler() {
       @Subscribe
+      @AllowConcurrentEvents
       public void setPersonCompanies(ViewQueryEvent event) {
-        if (event.isAfter() && event.isTarget(VIEW_PERSONS)
-            && !DataUtils.isEmpty(event.getRowset())) {
-
+        if (event.isAfter(VIEW_PERSONS) && event.hasData()) {
           SqlSelect query = new SqlSelect()
               .addFields(TBL_COMPANY_PERSONS, COL_PERSON, COL_COMPANY)
               .addFields(TBL_COMPANIES, COL_COMPANY_NAME)
@@ -294,8 +293,9 @@ public class ClassifiersModuleBean implements BeeModule {
       }
 
       @Subscribe
+      @AllowConcurrentEvents
       public void storeEmail(TableModifyEvent event) {
-        if (BeeUtils.same(event.getTargetName(), TBL_EMAILS) && event.isBefore()
+        if (event.isBefore(TBL_EMAILS)
             && (event.getQuery() instanceof SqlInsert || event.getQuery() instanceof SqlUpdate)) {
 
           IsQuery query = event.getQuery();
@@ -872,7 +872,7 @@ public class ClassifiersModuleBean implements BeeModule {
     String email = reqInfo.getParameter(COL_EMAIL);
     if (!BeeUtils.isEmpty(email) && qs.sqlExists(TBL_EMAILS, COL_EMAIL_ADDRESS, email)) {
       logger.warning(usr.getLocalizableMesssages()
-          .valueExists(BeeUtils.joinWords(usr.getLocalizableConstants().email(), email)),
+              .valueExists(BeeUtils.joinWords(usr.getLocalizableConstants().email(), email)),
           "ignored");
       email = null;
     }

@@ -12,8 +12,18 @@ import java.util.List;
 
 public final class DateRange implements HasDateRange, BeeSerializable {
 
+  private static final JustDate DEFAULT_MIN_DATE = new JustDate(1800, 1, 1);
+  private static final JustDate DEFAULT_MAX_DATE = new JustDate(2999, 12, 31);
+
   public static DateRange closed(JustDate min, JustDate max) {
-    return new DateRange(Range.closed(min, max));
+    JustDate lower = (min == null) ? DEFAULT_MIN_DATE : min;
+    JustDate upper = (max == null) ? DEFAULT_MAX_DATE : max;
+
+    if (isValidClosedRange(lower, upper)) {
+      return new DateRange(Range.closed(lower, upper));
+    } else {
+      return null;
+    }
   }
 
   public static DateRange day(JustDate date) {

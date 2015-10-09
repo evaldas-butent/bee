@@ -9,7 +9,7 @@
   width="900" height="600"
   >
   <FlowPanel class="flexBox-vertical">
-    <Table>
+    <Table kind="controls">
       <row>
         <Label text="=trTripDate" class="bee-hasDefaults bee-required" />
         <InputDateTime source="Date" />
@@ -34,7 +34,7 @@
         <Label text="=vehicleDriver" />
         <InputText source="ForwarderDriver" />
         <cell colSpan="2" rowSpan="2">
-          <Table>
+          <Table kind="controls">
             <row style="font-weight: bold;">
               <Label text="=transportDeparture" horizontalAlignment="center" />
               <text />

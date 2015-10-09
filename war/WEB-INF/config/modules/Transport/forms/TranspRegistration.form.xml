@@ -11,7 +11,7 @@
   >
   <FlowPanel>
 
-    <Table style="border-collapse: collapse; margin-top: 2ex; margin-left: 1em;"
+    <Table kind="controls" style="border-collapse: collapse; margin-top: 2ex; margin-left: 1em;"
         cellStyle="vertical-align: top; padding-bottom: 4px;">
       <col index="0" cellStyle="&colLabel;" />
       <col index="2" cellStyle="&colLabel;" />

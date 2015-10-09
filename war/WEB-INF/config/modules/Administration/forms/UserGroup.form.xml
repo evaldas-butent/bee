@@ -6,7 +6,7 @@
   width="500" height="300"
   >
   <FlowPanel class="flexBox-vertical">
-    <Table style="border-spacing: 10px;">
+    <Table kind="controls" style="border-spacing: 10px;">
       <row>
         <Label text="=name" class="bee-required" />
         <InputText source="Name" style="width: 200px;" />

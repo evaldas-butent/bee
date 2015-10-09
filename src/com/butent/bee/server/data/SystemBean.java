@@ -215,6 +215,28 @@ public class SystemBean {
   }
 
   @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+  public void eventError(long historyId, Throwable err, Object... result) {
+    List<Object> messages = new ArrayList<>();
+    messages.add("ERROR");
+
+    if (err != null) {
+      Throwable cause = err;
+
+      while (cause.getCause() != null) {
+        cause = cause.getCause();
+      }
+      messages.add(cause.toString());
+    }
+    if (!ArrayUtils.isEmpty(result)) {
+      messages.addAll(Arrays.asList(result));
+    }
+    qs.updateData(new SqlUpdate(TBL_EVENT_HISTORY)
+        .addConstant(COL_EVENT_ENDED, System.currentTimeMillis())
+        .addConstant(COL_EVENT_RESULT, BeeUtils.join(BeeConst.STRING_EOL, messages))
+        .setWhere(idEquals(TBL_EVENT_HISTORY, historyId)));
+  }
+
+  @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
   public long eventStart(String event) {
     return qs.insertData(new SqlInsert(TBL_EVENT_HISTORY)
         .addConstant(COL_EVENT, event)

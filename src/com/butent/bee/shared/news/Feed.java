@@ -27,6 +27,7 @@ import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -474,6 +475,8 @@ public enum Feed implements HasLocalizedCaption {
     }
 
   };
+
+  public static final Collection<Feed> ALL = EnumSet.allOf(Feed.class);
 
   private static final String SEPARATOR = BeeConst.STRING_COMMA;
   private static final Splitter splitter = Splitter.on(SEPARATOR).omitEmptyStrings().trimResults();

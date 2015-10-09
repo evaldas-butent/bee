@@ -62,7 +62,7 @@ public class ImportsForm extends AbstractFormInterceptor implements ClickHandler
 
     private final String progressId;
 
-    public ImportCallback(String progressId) {
+    private ImportCallback(String progressId) {
       this.progressId = progressId;
     }
 

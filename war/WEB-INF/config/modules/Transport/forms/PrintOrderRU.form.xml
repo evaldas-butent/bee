@@ -20,7 +20,7 @@
       .&form;-forwarder .bee-co-companyInfo-name .bee-co-companyInfo-item:before {content: "Экспедитор: "; font-weight:normal;}
     </css>
     <HorizontalPanel>
-      <Table>
+      <Table kind="output">
         <row>
           <Label html="Заказ №:" style="text-align:right; &bold;" />
           <TextLabel>
@@ -99,7 +99,7 @@
       <InlineLabel html="Транспорт:" style="&bold;" />
     </FlowPanel>
 
-    <Table class="&form;-table" style="&section;">
+    <Table kind="output" class="&form;-table" style="&section;">
       <row style="font-weight:bold; text-align:center;">
         <Label html="Наименование груза" />
         <Label html="Количество" />
@@ -179,7 +179,7 @@
       </span>
     </HtmlPanel>
 
-    <Table style="width:100%; margin-top:10px;">
+    <Table kind="output" style="width:100%; margin-top:10px;">
       <row style="&bold;">
         <Label html="Представитель заказчика" />
         <Label html="Представитель экспедитора" />

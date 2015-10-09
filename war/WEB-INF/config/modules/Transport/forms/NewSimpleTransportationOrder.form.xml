@@ -7,7 +7,7 @@
   width="600" height="420"
   >
   <FlowPanel>
-    <Table>
+    <Table kind="controls">
       <col index="0" kind="label" />
       <col index="2" kind="label" />
 

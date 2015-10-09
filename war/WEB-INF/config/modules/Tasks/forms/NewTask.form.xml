@@ -26,7 +26,7 @@
 
   <FlowPanel style="padding: 10px 2px 2px 10px;">
 
-    <Table style="&tbl;" cellStyle="&cell;">
+    <Table kind="controls" style="&tbl;" cellStyle="&cell;">
       <col index="0" cellStyle="&col1;" />
       <col index="2" cellStyle="&col3;" />
 
@@ -92,7 +92,7 @@
     </Table>
 
     &separator;
-    <Table style="&tbl;" cellStyle="&cell;">
+    <Table kind="controls" style="&tbl;" cellStyle="&cell;">
       <col index="0" cellStyle="&col1;" />
 
       <row>
@@ -115,7 +115,7 @@
     </FlowPanel>
 
     &separator;
-    <Table style="&tbl;" cellStyle="&cell;">
+    <Table kind="controls" style="&tbl;" cellStyle="&cell;">
       <col index="0" cellStyle="&col1;" />
 
       <row>
@@ -162,7 +162,7 @@
     &separator;
     <Label text="=relatedTo" style="font-style: italic; margin-bottom: 2px;" data="Relations" />
 
-    <Table style="&tbl;" cellStyle="&cell;" data="Relations" for="Task">
+    <Table kind="controls" style="&tbl;" cellStyle="&cell;" data="Relations" for="Task">
       <col index="0" cellStyle="&col1;" />
 
       <row data="Relations" for="Company" module="Classifiers.Contacts">

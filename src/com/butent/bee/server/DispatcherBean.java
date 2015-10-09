@@ -11,6 +11,7 @@ import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.i18n.Localizations;
 import com.butent.bee.server.modules.ModuleHolderBean;
 import com.butent.bee.server.modules.ParamHolderBean;
+import com.butent.bee.server.modules.mail.MailModuleBean;
 import com.butent.bee.server.news.NewsBean;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.ui.UiHolderBean;
@@ -25,6 +26,7 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.rights.RightsUtils;
 import com.butent.bee.shared.time.TimeUtils;
@@ -71,6 +73,8 @@ public class DispatcherBean {
   ParamHolderBean prm;
   @EJB
   QueryServiceBean qs;
+  @EJB
+  MailModuleBean mail;
 
   public void beforeLogout(RequestInfo reqInfo) {
     String workspace = reqInfo.getParameter(COL_LAST_WORKSPACE);
@@ -187,6 +191,13 @@ public class DispatcherBean {
             }
             break;
 
+          case MAIL:
+            int unread = mail.countUnread();
+            if (unread > 0) {
+              data.put(component.key(), unread);
+            }
+            break;
+
           case MENU:
             ResponseObject menuData = uiHolder.getMenu(true);
             if (menuData != null) {
@@ -205,7 +216,7 @@ public class DispatcherBean {
             break;
 
           case NEWS:
-            ResponseObject newsData = news.getNews();
+            ResponseObject newsData = news.getNews(Feed.ALL);
             if (newsData != null) {
               response.addMessagesFrom(newsData);
               if (!newsData.hasErrors() && newsData.hasResponse()) {

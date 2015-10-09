@@ -11,9 +11,17 @@
   cursor: auto;
 }
 
-.bee-Form .bee-payroll-ws-table tr td {
+.bee-payroll-ws-table td {
   border: 1px solid #ccc;
   padding: 2px;
+}
+
+.bee-payroll-ws-table .bee-payroll-ws-month-selector-cell {
+  text-align: center;
+  border-bottom-color: transparent;
+}
+.bee-payroll-ws-month-selector {
+  font-weight: bolder;
 }
 
 .bee-payroll-ws-month-panel {
@@ -69,4 +77,35 @@
 }
 .bee-payroll-ws-item-tc {
   border-radius: 20%;
+}
+
+.bee-payroll-ws-input-mode-panel {
+  display: flex;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  justify-content: flex-end;
+  -webkit-justify-content: flex-end;
+  -ms-flex-pack: end;
+  align-items: center;
+  -webkit-align-items: center;
+  -ms-flex-align: center;
+  text-align: right;
+}
+.bee-payroll-ws-input-mode-simple,
+.bee-payroll-ws-input-mode-full {
+  margin-left: 10px;
+  margin-right: 10px;
+  cursor: pointer;
+}
+.bee-payroll-ws-input-mode-toggle {
+  font-size: large;
+  cursor: pointer;
+}
+.bee-payroll-ws-input-mode-active {
+  font-weight: bolder;
+  cursor: auto;
+}
+
+.bee-payroll-ws-inactive {
+  background-image: url(../images/checkered_background.png);
 }

@@ -12,6 +12,7 @@ import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.dialog.ChoiceCallback;
 import com.butent.bee.client.grid.HtmlTable;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
@@ -69,17 +70,24 @@ public class PrintTripForm extends AbstractFormInterceptor {
                   BeeUtils.joinWords(driver.getValue(COL_FIRST_NAME),
                       driver.getValue(COL_LAST_NAME)));
             }
-            Widget driversWidget = form.getWidgetByName(TBL_TRIP_DRIVERS);
+            String txt = null;
 
-            if (driversWidget != null) {
-              String txt = null;
+            for (Long driver : drivers.keySet()) {
+              if (!Objects.equals(driver, mainDriver)) {
+                txt = BeeUtils.joinItems(txt, drivers.get(driver));
+              }
+            }
+            for (Map.Entry<String, Widget> entry : form.getNamedWidgets().entrySet()) {
+              if (BeeUtils.isPrefix(entry.getKey(), TBL_TRIP_DRIVERS)
+                  && !BeeUtils.isSuffix(entry.getKey(), "Container")) {
 
-              for (Long driver : drivers.keySet()) {
-                if (!Objects.equals(driver, mainDriver)) {
-                  txt = BeeUtils.joinItems(txt, drivers.get(driver));
+                entry.getValue().getElement().setInnerText(txt);
+                Widget containerWidget = form.getWidgetByName(entry.getKey() + "Container");
+
+                if (containerWidget != null) {
+                  StyleUtils.setVisible(containerWidget, !BeeUtils.isEmpty(txt));
                 }
               }
-              driversWidget.getElement().setInnerText(txt);
             }
             // FUEL
             Widget fuelWidget = form.getWidgetByName(COL_FUEL);

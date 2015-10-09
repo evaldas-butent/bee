@@ -10,7 +10,7 @@
     >
   <f:properties reports="PrintTripRoute, PrintTripOrder, PrintTripOrder2, PrintTripSummary" />
   <FlowPanel class="flexBox-vertical">
-    <Table>
+    <Table kind="controls">
       <row>
         <Label for="Date" class="bee-hasDefaults bee-required" />
         <InputDateTime source="Date" style="width:11em;" />

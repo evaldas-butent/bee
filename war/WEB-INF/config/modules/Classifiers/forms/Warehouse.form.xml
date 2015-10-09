@@ -8,7 +8,7 @@
   height="300" width="800"
   >
   <FlowPanel>
-    <Table style="margin: 1ex 1em;">
+    <Table kind="controls" style="margin: 1ex 1em;">
       <col index="0" kind="label" />
       <col index="2" kind="label" />
 

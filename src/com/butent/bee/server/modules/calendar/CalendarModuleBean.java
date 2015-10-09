@@ -8,6 +8,7 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
+import com.google.common.eventbus.AllowConcurrentEvents;
 import com.google.common.eventbus.Subscribe;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
@@ -474,59 +475,58 @@ public class CalendarModuleBean implements BeeModule {
 
     sys.registerDataEventHandler(new DataEventHandler() {
       @Subscribe
+      @AllowConcurrentEvents
       public void setRowProperties(ViewQueryEvent event) {
-        if (event.isAfter() && BeeUtils.same(event.getTargetName(), VIEW_APPOINTMENTS)
-            && !DataUtils.isEmpty(event.getRowset())) {
+        if (event.isAfter(VIEW_APPOINTMENTS) && event.hasData()) {
           setAppopintmentProperties(event.getRowset());
         }
       }
 
       @Subscribe
+      @AllowConcurrentEvents
       public void updateTimers(ViewModifyEvent event) {
-        if (event.isAfter()) {
-          if (BeeUtils.same(event.getTargetName(), TBL_REMINDER_TYPES)) {
-            if (event instanceof ViewDeleteEvent
-                || event instanceof ViewUpdateEvent
-                && (DataUtils.contains(((ViewUpdateEvent) event).getColumns(), COL_HOURS)
-                || DataUtils.contains(((ViewUpdateEvent) event).getColumns(), COL_MINUTES))) {
+        if (event.isAfter(TBL_REMINDER_TYPES)) {
+          if (event instanceof ViewDeleteEvent
+              || event instanceof ViewUpdateEvent
+              && (DataUtils.contains(((ViewUpdateEvent) event).getColumns(), COL_HOURS)
+              || DataUtils.contains(((ViewUpdateEvent) event).getColumns(), COL_MINUTES))) {
 
-              createNotificationTimers(null);
+            createNotificationTimers(null);
+          }
+
+        } else if (event.isAfter(TBL_APPOINTMENTS)) {
+          if (event instanceof ViewDeleteEvent) {
+            for (long id : ((ViewDeleteEvent) event).getIds()) {
+              createNotificationTimers(Pair.of(TBL_APPOINTMENTS, id));
             }
+          } else if (event instanceof ViewUpdateEvent) {
+            ViewUpdateEvent ev = (ViewUpdateEvent) event;
 
-          } else if (BeeUtils.same(event.getTargetName(), TBL_APPOINTMENTS)) {
-            if (event instanceof ViewDeleteEvent) {
-              for (long id : ((ViewDeleteEvent) event).getIds()) {
-                createNotificationTimers(Pair.of(TBL_APPOINTMENTS, id));
-              }
-            } else if (event instanceof ViewUpdateEvent) {
-              ViewUpdateEvent ev = (ViewUpdateEvent) event;
+            if (DataUtils.contains(ev.getColumns(), COL_STATUS)
+                || DataUtils.contains(ev.getColumns(), COL_START_DATE_TIME)) {
 
-              if (DataUtils.contains(ev.getColumns(), COL_STATUS)
-                  || DataUtils.contains(ev.getColumns(), COL_START_DATE_TIME)) {
-
-                createNotificationTimers(Pair.of(TBL_APPOINTMENTS, ev.getRow().getId()));
-              }
+              createNotificationTimers(Pair.of(TBL_APPOINTMENTS, ev.getRow().getId()));
             }
+          }
 
-          } else if (BeeUtils.same(event.getTargetName(), TBL_APPOINTMENT_REMINDERS)) {
-            if (event instanceof ViewDeleteEvent) {
-              for (long id : ((ViewDeleteEvent) event).getIds()) {
-                createNotificationTimers(Pair.of(TBL_APPOINTMENT_REMINDERS, id));
-              }
-            } else if (event instanceof ViewUpdateEvent) {
-              ViewUpdateEvent ev = (ViewUpdateEvent) event;
-
-              if (DataUtils.contains(ev.getColumns(), COL_REMINDER_TYPE)
-                  || DataUtils.contains(ev.getColumns(), COL_HOURS)
-                  || DataUtils.contains(ev.getColumns(), COL_MINUTES)
-                  || DataUtils.contains(ev.getColumns(), COL_SCHEDULED)) {
-
-                createNotificationTimers(Pair.of(TBL_APPOINTMENT_REMINDERS, ev.getRow().getId()));
-              }
-            } else if (event instanceof ViewInsertEvent) {
-              createNotificationTimers(Pair.of(TBL_APPOINTMENT_REMINDERS,
-                  ((ViewInsertEvent) event).getRow().getId()));
+        } else if (event.isAfter(TBL_APPOINTMENT_REMINDERS)) {
+          if (event instanceof ViewDeleteEvent) {
+            for (long id : ((ViewDeleteEvent) event).getIds()) {
+              createNotificationTimers(Pair.of(TBL_APPOINTMENT_REMINDERS, id));
             }
+          } else if (event instanceof ViewUpdateEvent) {
+            ViewUpdateEvent ev = (ViewUpdateEvent) event;
+
+            if (DataUtils.contains(ev.getColumns(), COL_REMINDER_TYPE)
+                || DataUtils.contains(ev.getColumns(), COL_HOURS)
+                || DataUtils.contains(ev.getColumns(), COL_MINUTES)
+                || DataUtils.contains(ev.getColumns(), COL_SCHEDULED)) {
+
+              createNotificationTimers(Pair.of(TBL_APPOINTMENT_REMINDERS, ev.getRow().getId()));
+            }
+          } else if (event instanceof ViewInsertEvent) {
+            createNotificationTimers(Pair.of(TBL_APPOINTMENT_REMINDERS,
+                ((ViewInsertEvent) event).getRow().getId()));
           }
         }
       }

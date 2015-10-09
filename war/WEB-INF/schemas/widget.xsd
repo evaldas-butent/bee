@@ -523,6 +523,7 @@
             <xs:group ref="wdht" />
           </xs:choice>
 
+          <xs:attribute name="kind" type="ui:tableKind" use="required"  />
           <xs:attributeGroup ref="ui:cellAppearance" />
         </xs:extension>
       </xs:complexContent>

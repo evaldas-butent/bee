@@ -384,18 +384,18 @@ public final class MailKeeper {
 
   public static void getUnreadCount() {
     ParameterList params = createArgs(SVC_GET_UNREAD_COUNT);
-    params.addDataItem(COL_USER, BeeKeeper.getUser().getUserId());
+    params.addQueryItem(COL_USER, BeeKeeper.getUser().getUserId());
 
-    BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
+    BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
       @Override
       public void onResponse(ResponseObject response) {
-
-        if (!BeeUtils.isEmpty(response.getResponseAsString())) {
-          ScreenImpl.updateOnlineEmails(Integer.valueOf(Codec.beeDeserializeCollection(response
-              .getResponseAsString())[0]));
+        if (response.hasResponse()) {
+          Integer count = response.getResponseAsInt();
+          if (count != null) {
+            ScreenImpl.updateOnlineEmails(count);
+          }
         }
       }
     });
-
   }
 }

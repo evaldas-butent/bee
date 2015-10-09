@@ -12,7 +12,7 @@
   height="565"
   >
   <FlowPanel>
-    <Table>
+    <Table kind="controls">
       <row>
         <Label text="=name" style="&lbl;" class="bee-required" />
         <cell colSpan="3">
@@ -74,7 +74,7 @@
     <Disclosure open="false" style="margin-top: 40px;">
       <Label text="=otherInfo" />
       <FlowPanel style="padding-bottom: 40px;">
-        <Table>
+        <Table kind="controls">
           <row>
             <Label text="=website" style="&lbl;" for="Website" />
             <InputText source="Website" style="width: 280px;" />
@@ -107,7 +107,7 @@
       <page data="Sales">
         <text>=financialInfo</text>
         <FlowPanel class="flexBox-horizontal">
-          <Table style="margin-right: 8px;" >
+          <Table kind="controls" style="margin-right: 8px;" >
             <row>
               <Label text="=creditLimit" for="CreditLimit" style="&lbl;"/>
               <FlowPanel>
@@ -156,7 +156,7 @@
       <page>
         <text>=additionalInfo</text>
         <FlowPanel style="margin:5px;">
-          <Table>
+          <Table kind="controls">
             <row>
               <Label style="&lbl;" for="CompanySize" />
               <DataSelector source="CompanySize" summarize="true" />

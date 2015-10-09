@@ -264,11 +264,11 @@ public class TreeLayout<T> {
    * taking the current bounds into account. This way the left most node bounds will start at x = 0,
    * the top most node bounds at y = 0.
    */
-  private class NormalizedPosition extends Point2D {
+  private final class NormalizedPosition extends Point2D {
     private double xRelativeToRoot;
     private double yRelativeToRoot;
 
-    public NormalizedPosition(double xRelativeToRoot, double yRelativeToRoot) {
+    private NormalizedPosition(double xRelativeToRoot, double yRelativeToRoot) {
       setLocation(xRelativeToRoot, yRelativeToRoot);
     }
 

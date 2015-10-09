@@ -68,7 +68,7 @@ import javax.ejb.Singleton;
 @Lock(LockType.READ)
 public class UiHolderBean {
 
-  private static class UiObjectInfo implements BeeObject {
+  private static final class UiObjectInfo implements BeeObject {
 
     private final String module;
     private final String name;
@@ -76,7 +76,7 @@ public class UiHolderBean {
     private String viewName;
     boolean viewSet;
 
-    public UiObjectInfo(String module, String name, String resource) {
+    private UiObjectInfo(String module, String name, String resource) {
       this.module = Assert.notEmpty(module);
       this.name = Assert.notEmpty(name);
       this.resource = Assert.notEmpty(resource);
@@ -92,19 +92,19 @@ public class UiHolderBean {
       return name;
     }
 
-    public String getResource() {
+    private String getResource() {
       return resource;
     }
 
-    public String getViewName() {
+    private String getViewName() {
       return viewName;
     }
 
-    public boolean isViewSet() {
+    private boolean isViewSet() {
       return viewSet;
     }
 
-    public void setViewName(String viewName) {
+    private void setViewName(String viewName) {
       this.viewName = viewName;
       this.viewSet = true;
     }

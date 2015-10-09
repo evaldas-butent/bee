@@ -288,8 +288,7 @@ class NewReasonCommentForm extends AbstractFormInterceptor {
     }
   }
 
-  public NewReasonCommentForm(FormView projectForm, IsRow projectRow,
-      CellValidateEvent projectValidator) {
+  NewReasonCommentForm(FormView projectForm, IsRow projectRow, CellValidateEvent projectValidator) {
     this.projectForm = projectForm;
     this.projectRow = projectRow;
     this.projectValidator = projectValidator;

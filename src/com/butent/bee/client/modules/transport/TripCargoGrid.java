@@ -34,14 +34,14 @@ import java.util.List;
 
 class TripCargoGrid extends AbstractGridInterceptor {
 
-  private static class Action {
+  private static final class Action {
 
     private final GridView gridView;
     private final int cargoIndex;
     private final int tripIndex;
     private final DialogBox dialog;
 
-    public Action(GridView gridView) {
+    private Action(GridView gridView) {
       CellGrid grd = gridView.getGrid();
       this.gridView = gridView;
       this.cargoIndex = DataUtils.getColumnIndex(COL_CARGO, gridView.getDataColumns());

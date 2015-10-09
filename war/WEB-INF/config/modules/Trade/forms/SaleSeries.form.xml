@@ -4,7 +4,7 @@
   name="SaleSeries" viewName="SaleSeries" caption="=trdSaleSeries"
   width="500" height="300">
 
-  <Table>
+  <Table kind="controls">
     <col index="0" kind="label" />
 
     <row>

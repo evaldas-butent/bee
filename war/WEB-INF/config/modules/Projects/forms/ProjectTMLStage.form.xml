@@ -15,7 +15,7 @@
     name="ProjectTMLStage" viewName="ProjectTMLStages" caption="=prjStage" width="70" height="80" widthUnit="%" heightUnit="%">
 
   <FlowPanel class="flexBox-vertical">
-    <Table>
+    <Table kind="controls">
       <row>
         <Label text="=name" style="&lbl;" class="bee-required" />
         <InputText source="Name" style="&inp1;" />

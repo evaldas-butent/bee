@@ -99,7 +99,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
     IsCondition getCondition(BeeView view, List<String> args);
   }
 
-  private class ColumnInfo {
+  private final class ColumnInfo {
     private final String colName;
     private final String alias;
     private final BeeField field;
@@ -113,7 +113,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
     private final String label;
     private final Boolean editable;
 
-    public ColumnInfo(String alias, BeeField field, String colName, String locale,
+    private ColumnInfo(String alias, BeeField field, String colName, String locale,
         SqlFunction aggregate, boolean hidden, String parent, String owner,
         XmlExpression expression, String label, Boolean editable) {
       this.colName = colName;

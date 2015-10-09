@@ -30,7 +30,7 @@
     </HorizontalPanel>
 
     <FlowPanel style="&section;">
-      <Table style="width:100%;">
+      <Table kind="output" style="width:100%;">
         <row>
           <cell rowSpan="2" style="vertical-align:top;">
             <Label html="Siuntėjas:" />
@@ -62,7 +62,7 @@
 
     <DateTimeLabel source="Date" format="DATE_LONG" horizontalAlignment="right" />
 
-    <Table name="InvoiceDetails" style="&section; width:100%">
+    <Table name="InvoiceDetails" kind="output" style="&section; width:100%">
       <properties rateCurrency="EUR" />
       <row>
         <cell rowSpan="2">
@@ -198,7 +198,7 @@ Pagal LR CK 6.210 (1) straipsnį: „Terminą įvykdyti piniginę prievolę pral
 
     <TextLabel source="Notes" style="white-space:pre-wrap;" />
 
-    <Table style="width:100%; margin-top:10px;">
+    <Table kind="output" style="width:100%; margin-top:10px;">
       <row style="&bold;">
         <Label html="Išdavė" />
         <Label html="Priėmė" />

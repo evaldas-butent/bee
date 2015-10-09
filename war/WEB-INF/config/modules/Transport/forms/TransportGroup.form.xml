@@ -6,7 +6,7 @@
         height="70" heightUnit="%" width="70" widthUnit="%"
     >
   <FlowPanel class="flexBox-vertical">
-    <Table>
+    <Table kind="controls">
       <col index="0" kind="label" />
 
       <row>

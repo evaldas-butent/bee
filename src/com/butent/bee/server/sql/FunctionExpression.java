@@ -16,7 +16,7 @@ class FunctionExpression implements IsExpression {
   private final SqlFunction function;
   private final Map<String, Object> parameters;
 
-  public FunctionExpression(SqlFunction function, Map<String, Object> parameters) {
+  FunctionExpression(SqlFunction function, Map<String, Object> parameters) {
     Assert.notNull(function);
 
     this.function = function;

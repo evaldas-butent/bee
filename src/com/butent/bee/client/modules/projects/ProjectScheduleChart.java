@@ -101,7 +101,7 @@ final class ProjectScheduleChart extends TimeBoard {
       return Range.closed(s, BeeUtils.max(s, e));
     }
 
-    public ChartItem(String viewName, Long stageId, String caption, JustDate start,
+    private ChartItem(String viewName, Long stageId, String caption, JustDate start,
         JustDate end, String color, String taskStatus, String beeRowSet) {
 
       this();
@@ -115,26 +115,26 @@ final class ProjectScheduleChart extends TimeBoard {
       this.beeRowSet = beeRowSet;
     }
 
-    public Long getStageId() {
+    private Long getStageId() {
       return stageId;
     }
 
-    public String getCaption() {
+    private String getCaption() {
       return caption;
     }
 
-    public String getColor() {
+    private String getColor() {
       return color;
     }
 
-    public String getViewName() {
+    private String getViewName() {
       return viewName;
     }
 
     private ChartItem() {
     }
 
-    public String getTaskStatus() {
+    private String getTaskStatus() {
       return taskStatus;
     }
   }

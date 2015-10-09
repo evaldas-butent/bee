@@ -15,7 +15,7 @@ class NegationCondition implements IsCondition {
 
   private final IsCondition condition;
 
-  public NegationCondition(IsCondition condition) {
+  NegationCondition(IsCondition condition) {
     Assert.notNull(condition);
     this.condition = condition;
   }

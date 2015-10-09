@@ -1163,6 +1163,12 @@ public final class StyleUtils {
     return ok;
   }
 
+  public static String joinName(String prefix, String suffix) {
+    Assert.notEmpty(prefix);
+    Assert.notEmpty(suffix);
+    return prefix.trim() + NAME_DELIMITER + suffix.trim();
+  }
+
   public static void makeAbsolute(Element el) {
     Assert.notNull(el);
     makeAbsolute(el.getStyle());

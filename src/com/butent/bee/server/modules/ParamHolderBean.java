@@ -2,6 +2,7 @@ package com.butent.bee.server.modules;
 
 import com.google.common.collect.Table;
 import com.google.common.collect.TreeBasedTable;
+import com.google.common.eventbus.AllowConcurrentEvents;
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 
@@ -235,6 +236,7 @@ public class ParamHolderBean {
   public void init() {
     sys.registerDataEventHandler(new DataEventHandler() {
       @Subscribe
+      @AllowConcurrentEvents
       public void checkRelation(ViewDeleteEvent event) {
         if (event.isBefore()) {
           String table = BeeUtils.normalize(sys.getViewSource(event.getTargetName()));

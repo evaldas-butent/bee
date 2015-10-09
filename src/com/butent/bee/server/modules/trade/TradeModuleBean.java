@@ -1,12 +1,14 @@
 package com.butent.bee.server.modules.trade;
 
 import com.google.common.collect.Sets;
+import com.google.common.eventbus.AllowConcurrentEvents;
 import com.google.common.eventbus.Subscribe;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
+import com.butent.bee.server.concurrency.ConcurrencyBean;
 import com.butent.bee.server.data.DataEvent.ViewInsertEvent;
 import com.butent.bee.server.data.DataEvent.ViewModifyEvent;
 import com.butent.bee.server.data.DataEvent.ViewUpdateEvent;
@@ -56,15 +58,19 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
+import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
+import javax.ejb.Timer;
+import javax.ejb.TimerService;
 
 @Stateless
 @LocalBean
-public class TradeModuleBean implements BeeModule {
+public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerService {
 
   private static BeeLogger logger = LogUtils.getLogger(TradeModuleBean.class);
 
@@ -77,7 +83,12 @@ public class TradeModuleBean implements BeeModule {
   @EJB
   ParamHolderBean prm;
   @EJB
+  ConcurrencyBean cb;
+  @EJB
   TradeActBean act;
+
+  @Resource
+  TimerService timerService;
 
   public static String decodeId(String trade, Long id) {
     Assert.notEmpty(trade);
@@ -146,6 +157,13 @@ public class TradeModuleBean implements BeeModule {
     }
 
     return response;
+  }
+
+  @Override
+  public void ejbTimeout(Timer timer) {
+    if (cb.isParameterTimer(timer, PRM_ERP_REFRESH_INTERVAL)) {
+      importERPPayments();
+    }
   }
 
   public static String encodeId(String trade, Long id) {
@@ -241,7 +259,10 @@ public class TradeModuleBean implements BeeModule {
   @Override
   public Collection<BeeParameter> getDefaultParameters() {
     String module = getModule().getName();
-    return act.getDefaultParameters(module);
+    Collection<BeeParameter> params = new ArrayList<>();
+    params.add(BeeParameter.createNumber(module, PRM_ERP_REFRESH_INTERVAL));
+    params.addAll(act.getDefaultParameters(module));
+    return params;
   }
 
   @Override
@@ -252,6 +273,11 @@ public class TradeModuleBean implements BeeModule {
   @Override
   public String getResourcePath() {
     return getModule().getName();
+  }
+
+  @Override
+  public TimerService getTimerService() {
+    return timerService;
   }
 
   public static IsExpression getTotalExpression(String tblName) {
@@ -291,11 +317,13 @@ public class TradeModuleBean implements BeeModule {
 
   @Override
   public void init() {
+    cb.createIntervalTimer(this.getClass(), PRM_ERP_REFRESH_INTERVAL);
+
     sys.registerDataEventHandler(new DataEventHandler() {
       @Subscribe
+      @AllowConcurrentEvents
       public void fillInvoiceNumber(ViewModifyEvent event) {
-        if (BeeUtils.same(sys.getViewSource(event.getTargetName()), TBL_SALES)
-            && event.isBefore()) {
+        if (event.isBefore(TBL_SALES)) {
           List<BeeColumn> cols = null;
           IsRow row = null;
           String prefix = null;
@@ -430,6 +458,62 @@ public class TradeModuleBean implements BeeModule {
 
     TradeDocumentData tdd = new TradeDocumentData(companies, bankAccounts, items, null, null);
     return ResponseObject.response(tdd);
+  }
+
+  private void importERPPayments() {
+    long historyId = sys.eventStart(PRM_ERP_REFRESH_INTERVAL);
+    int c = 0;
+
+    SimpleRowSet debts = qs.getData(new SqlSelect()
+        .addField(TBL_SALES, sys.getIdName(TBL_SALES), COL_SALE)
+        .addFields(TBL_SALES, COL_TRADE_PAID)
+        .addFrom(TBL_SALES)
+        .setWhere(SqlUtils.and(SqlUtils.isNull(TBL_SALES, COL_SALE_PROFORMA),
+            SqlUtils.or(SqlUtils.isNull(TBL_SALES, COL_TRADE_PAID),
+                SqlUtils.less(TBL_SALES, COL_TRADE_PAID,
+                    SqlUtils.field(TBL_SALES, COL_TRADE_AMOUNT))))));
+
+    if (!debts.isEmpty()) {
+      StringBuilder ids = new StringBuilder();
+
+      for (SimpleRow row : debts) {
+        if (ids.length() > 0) {
+          ids.append(",");
+        }
+        ids.append("'").append(TradeModuleBean.encodeId(TBL_SALES, row.getLong(COL_SALE)))
+            .append("'");
+      }
+      String remoteAddress = prm.getText(PRM_ERP_ADDRESS);
+      String remoteLogin = prm.getText(PRM_ERP_LOGIN);
+      String remotePassword = prm.getText(PRM_ERP_PASSWORD);
+
+      try {
+        SimpleRowSet payments = ButentWS.connect(remoteAddress, remoteLogin, remotePassword)
+            .getSQLData("SELECT extern_id AS id, apm_data AS data, apm_suma AS suma"
+                    + " FROM apyvarta WHERE pajamos=0 AND extern_id IN(" + ids.toString() + ")",
+                "id", "data", "suma");
+
+        for (SimpleRow payment : payments) {
+          String id = TradeModuleBean.decodeId(TBL_SALES, payment.getLong("id"));
+          Double paid = payment.getDouble("suma");
+
+          if (!Objects.equals(paid,
+              BeeUtils.toDoubleOrNull(debts.getValueByKey(COL_SALE, id, COL_TRADE_PAID)))) {
+
+            c += qs.updateData(new SqlUpdate(TBL_SALES)
+                .addConstant(COL_TRADE_PAID, paid)
+                .addConstant(COL_TRADE_PAYMENT_TIME,
+                    TimeUtils.parseDateTime(payment.getValue("data")))
+                .setWhere(sys.idEquals(TBL_SALES, BeeUtils.toLong(id))));
+          }
+        }
+      } catch (BeeException e) {
+        logger.error(e);
+        sys.eventError(historyId, e);
+        return;
+      }
+    }
+    sys.eventEnd(historyId, "OK", BeeUtils.joinWords("Updated", c, "records"));
   }
 
   private ResponseObject sendToERP(String viewName, Set<Long> ids) {

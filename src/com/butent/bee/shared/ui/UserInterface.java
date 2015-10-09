@@ -283,6 +283,7 @@ public enum UserInterface implements HasCaption {
     FAVORITES(false),
     FILTERS(false),
     GRIDS(false),
+    MAIL(false),
     MENU(false),
     MONEY(false),
     NEWS(false),
