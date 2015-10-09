@@ -276,6 +276,7 @@
       <xs:enumeration value="CompanyContacts" />
       <xs:enumeration value="CompanyDepartments" />
       <xs:enumeration value="CompanyGroups" />
+      <xs:enumeration value="CompanyLicences" />
       <xs:enumeration value="CompanyObjects" />
       <xs:enumeration value="CompanyPersons" />
       <xs:enumeration value="CompanyPriorities" />
