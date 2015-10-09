@@ -4,6 +4,7 @@ import com.google.common.net.UrlEscapers;
 
 import com.butent.bee.server.io.FileUtils;
 import com.butent.bee.server.modules.administration.FileStorageBean;
+import com.butent.bee.server.rest.annotations.Authorized;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -44,9 +45,10 @@ import javax.ws.rs.core.StreamingOutput;
 @ApplicationPath(AdministrationConstants.FILE_URL)
 @Path("/")
 @Produces(MediaType.APPLICATION_OCTET_STREAM)
-public class FileService extends Application {
+@Authorized
+public class FileServiceApplication extends Application {
 
-  private static BeeLogger logger = LogUtils.getLogger(FileService.class);
+  private static BeeLogger logger = LogUtils.getLogger(FileServiceApplication.class);
 
   @EJB
   FileStorageBean fs;
@@ -55,7 +57,7 @@ public class FileService extends Application {
   public Set<Class<?>> getClasses() {
     Set<Class<?>> classes = new HashSet<>();
 
-    classes.add(AuthorizationFilter.class);
+    classes.add(AuthenticationFilter.class);
     classes.add(this.getClass());
 
     return classes;
