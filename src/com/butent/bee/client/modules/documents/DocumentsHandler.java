@@ -46,6 +46,7 @@ import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
@@ -106,6 +107,14 @@ public final class DocumentsHandler {
           && DataUtils.isId(row.getProperty(TaskConstants.PRM_DEFAULT_DBA_TEMPLATE))) {
         templSelector.setValue(BeeUtils.toLong(row.getProperty(
             TaskConstants.PRM_DEFAULT_DBA_TEMPLATE)), true);
+      }
+
+      DateTime t1 = row.getDateTime(form.getDataIndex(COL_DOCUMENT_DATE));
+       /* resetting document date without current time */
+      if (t1 != null && DataUtils.isNewRow(row)) {
+        t1.setLocalTime(new JustDate(t1).getTime());
+        row.setValue(form.getDataIndex(COL_DOCUMENT_DATE), t1);
+        form.refreshBySource(COL_DOCUMENT_DATE);
       }
     }
 

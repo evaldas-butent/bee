@@ -552,7 +552,8 @@ public class DocumentDataForm extends AbstractFormInterceptor
     }
     UserInfo user = BeeKeeper.getUser();
 
-    if (user.isModuleVisible(ModuleAndSub.of(Module.DOCUMENTS, SubModule.TEMPLATES))) {
+    if (user.isModuleVisible(ModuleAndSub.of(Module.DOCUMENTS, SubModule.TEMPLATES)) && user
+        .isDataVisible(VIEW_DOCUMENT_TEMPLATES)) {
       getHeaderView().addCommandItem(new Button(Localized.getConstants().selectDocumentTemplate(),
           new ClickHandler() {
             @Override

@@ -180,7 +180,8 @@ public class DocumentForm extends DocumentDataForm {
     }
     getHeaderView().clearCommandPanel();
 
-    if (!newRow && user.isModuleVisible(ModuleAndSub.of(Module.DOCUMENTS, SubModule.TEMPLATES))) {
+    if (!newRow && user.isModuleVisible(ModuleAndSub.of(Module.DOCUMENTS, SubModule.TEMPLATES))
+        && user.canCreateData(VIEW_DOCUMENT_TEMPLATES)) {
       getHeaderView().addCommandItem(newTemplateButton);
     }
     super.onStart(form);
