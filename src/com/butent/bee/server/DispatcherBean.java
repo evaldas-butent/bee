@@ -296,7 +296,7 @@ public class DispatcherBean {
       response = ResponseObject.info(System.currentTimeMillis(), BeeConst.whereAmI());
 
     } else if (BeeUtils.same(svc, Service.INVOKE)) {
-      response = Reflection.invoke(invocation, reqInfo.getParameter(Service.VAR_METHOD), reqInfo);
+      response = Reflection.invoke(invocation, reqInfo.getSubService(), reqInfo);
 
     } else {
       String msg = BeeUtils.joinWords(svc, "service not recognized");
