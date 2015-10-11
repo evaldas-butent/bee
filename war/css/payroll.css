@@ -109,3 +109,10 @@
 .bee-payroll-ws-inactive {
   background-image: url(../images/checkered_background.png);
 }
+.bee-payroll-ws-overlap-warn {
+  background-color: yellow;
+}
+.bee-payroll-ws-overlap-err {
+  background-color: red;
+  color: white;
+}

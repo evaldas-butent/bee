@@ -1,5 +1,6 @@
 package com.butent.bee.client.modules.payroll;
 
+import com.google.common.base.Splitter;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
@@ -13,7 +14,10 @@ import com.google.gwt.user.client.ui.Widget;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.payroll.PayrollConstants.*;
 
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
+import com.butent.bee.client.communication.ParameterList;
+import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
@@ -30,6 +34,7 @@ import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.modules.classifiers.ClassifierKeeper;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.widget.Button;
@@ -38,6 +43,8 @@ import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.Toggle;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
+import com.butent.bee.shared.Service;
+import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -111,7 +118,8 @@ class WorkScheduleWidget extends HtmlTable {
   private static final String STYLE_INPUT_MODE_ACTIVE = STYLE_PREFIX + "input-mode-active";
 
   private static final String STYLE_INACTIVE = STYLE_PREFIX + "inactive";
-  // private static final String STYLE_OVERLAP = STYLE_PREFIX + "overlap";
+  private static final String STYLE_OVERLAP_WARNING = STYLE_PREFIX + "overlap-warn";
+  private static final String STYLE_OVERLAP_ERROR = STYLE_PREFIX + "overlap-err";
 
   private static final String KEY_YM = "ym";
 
@@ -351,6 +359,58 @@ class WorkScheduleWidget extends HtmlTable {
     }
   }
 
+  private void checkOverlap() {
+    List<Element> elements = Selectors.getElementsByClassName(getElement(), STYLE_OVERLAP_WARNING);
+    if (!BeeUtils.isEmpty(elements)) {
+      StyleUtils.removeClassName(elements, STYLE_OVERLAP_WARNING);
+    }
+
+    elements = Selectors.getElementsByClassName(getElement(), STYLE_OVERLAP_ERROR);
+    if (!BeeUtils.isEmpty(elements)) {
+      StyleUtils.removeClassName(elements, STYLE_OVERLAP_ERROR);
+    }
+
+    if (activeMonth != null) {
+      final int startDay = activeMonth.getDate().getDays();
+      final int lastDay = activeMonth.getLast().getDays();
+
+      ParameterList params = PayrollKeeper.createArgs(SVC_GET_SCHEDULE_OVERLAP);
+
+      params.addQueryItem(COL_PAYROLL_OBJECT, objectId);
+      params.addQueryItem(Service.VAR_FROM, startDay);
+      params.addQueryItem(Service.VAR_TO, lastDay);
+
+      BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
+        @Override
+        public void onResponse(ResponseObject response) {
+          if (response.hasResponse()) {
+            Splitter splitter = Splitter.on(BeeConst.DEFAULT_ROW_SEPARATOR);
+
+            for (String s : splitter.split(response.getResponseAsString())) {
+              String pfx = BeeUtils.getPrefix(s, BeeConst.DEFAULT_VALUE_SEPARATOR);
+              String sfx = BeeUtils.getSuffix(s, BeeConst.DEFAULT_VALUE_SEPARATOR);
+
+              Long employeeId = BeeUtils.toLongOrNull(pfx);
+              List<Integer> days = BeeUtils.toInts(sfx);
+
+              if (DataUtils.isId(employeeId) && !BeeUtils.isEmpty(days)) {
+                for (int day : days) {
+                  if (BeeUtils.betweenInclusive(Math.abs(day), startDay, lastDay)) {
+                    Element cell = findCell(employeeId, Math.abs(day) - startDay + 1);
+
+                    if (cell != null) {
+                      cell.addClassName((day > 0) ? STYLE_OVERLAP_WARNING : STYLE_OVERLAP_ERROR);
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+  }
+
   private void clearData() {
     setWsData(null);
     setEoData(null);
@@ -463,6 +523,19 @@ class WorkScheduleWidget extends HtmlTable {
     }
 
     return result;
+  }
+
+  private Element findCell(long employeeId, int day) {
+    for (int r = EMPLOYEE_START_ROW; r < getRowCount(); r++) {
+      if (DomUtils.getDataIndexLong(getRow(r)) == employeeId) {
+        int c = DAY_START_COL + day - 1;
+
+        if (c < getCellCount(r)) {
+          return getCellFormatter().getElement(r, c);
+        }
+      }
+    }
+    return null;
   }
 
   private BeeRow findEmployee(long id) {
@@ -731,6 +804,8 @@ class WorkScheduleWidget extends HtmlTable {
         DomUtils.setDataIndex(getRowFormatter().getElement(r), employee.getId());
         r++;
       }
+
+      checkOverlap();
     }
 
     Widget appender = renderEmployeeAppender(DataUtils.getRowIds(employees), activeMonth);
@@ -1186,6 +1261,8 @@ class WorkScheduleWidget extends HtmlTable {
 
               Multimap<Integer, Long> tcc = getTimeCardChanges(employeeId, YearMonth.of(date));
               renderDayContent(contentPanel, employeeId, date, tcc);
+
+              checkOverlap();
             }
           });
     }
