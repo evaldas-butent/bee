@@ -41,8 +41,8 @@ public class AuthenticationFilter implements ContainerRequestFilter {
   public void filter(ContainerRequestContext requestContext) throws IOException {
     Trusted trusted = info.getResourceMethod().getAnnotation(Trusted.class);
 
-    if (Objects.nonNull(trusted) &&
-        Objects.equals(requestContext.getHeaderString("secret"),
+    if (Objects.nonNull(trusted)
+        && Objects.equals(requestContext.getHeaderString("secret"),
             Codec.md5(TimeUtils.year() + trusted.secret() + TimeUtils.month()))) {
       return;
     }
