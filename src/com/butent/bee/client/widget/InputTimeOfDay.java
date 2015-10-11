@@ -29,7 +29,7 @@ public class InputTimeOfDay extends InputTime {
 
   @Override
   protected long getDefaultMaxMillis() {
-    return TimeUtils.MILLIS_PER_DAY - TimeUtils.MILLIS_PER_MINUTE;
+    return TimeUtils.MILLIS_PER_DAY;
   }
 
   @Override
