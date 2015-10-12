@@ -84,7 +84,8 @@
   color: black !important;
 }
 
-.bee-payroll-ws-input-mode-panel {
+.bee-payroll-ws-input-mode-panel,
+.bee-payroll-ws-dnd-mode-panel {
   display: flex;
   display: -webkit-flex;
   display: -ms-flexbox;
@@ -97,16 +98,20 @@
   text-align: right;
 }
 .bee-payroll-ws-input-mode-simple,
-.bee-payroll-ws-input-mode-full {
+.bee-payroll-ws-input-mode-full,
+.bee-payroll-ws-dnd-mode-move,
+.bee-payroll-ws-dnd-mode-copy {
   margin-left: 10px;
   margin-right: 10px;
   cursor: pointer;
 }
-.bee-payroll-ws-input-mode-toggle {
+.bee-payroll-ws-input-mode-toggle,
+.bee-payroll-ws-dnd-mode-toggle {
   font-size: large;
   cursor: pointer;
 }
-.bee-payroll-ws-input-mode-active {
+.bee-payroll-ws-input-mode-active,
+.bee-payroll-ws-dnd-mode-active {
   font-weight: bolder;
   cursor: auto;
 }

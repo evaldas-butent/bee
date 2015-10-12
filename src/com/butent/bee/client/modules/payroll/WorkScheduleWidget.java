@@ -119,11 +119,19 @@ class WorkScheduleWidget extends Flow {
   private static final String STYLE_HOLIDAY = STYLE_PREFIX + "holiday";
   private static final String STYLE_TODAY = STYLE_PREFIX + "today";
 
+  private static final String STYLE_CONTROL_PANEL = STYLE_PREFIX + "control-panel";
+
   private static final String STYLE_INPUT_MODE_PANEL = STYLE_PREFIX + "input-mode-panel";
   private static final String STYLE_INPUT_MODE_SIMPLE = STYLE_PREFIX + "input-mode-simple";
   private static final String STYLE_INPUT_MODE_FULL = STYLE_PREFIX + "input-mode-full";
   private static final String STYLE_INPUT_MODE_TOGGLE = STYLE_PREFIX + "input-mode-toggle";
   private static final String STYLE_INPUT_MODE_ACTIVE = STYLE_PREFIX + "input-mode-active";
+
+  private static final String STYLE_DND_MODE_PANEL = STYLE_PREFIX + "dnd-mode-panel";
+  private static final String STYLE_DND_MODE_MOVE = STYLE_PREFIX + "dnd-mode-move";
+  private static final String STYLE_DND_MODE_COPY = STYLE_PREFIX + "dnd-mode-copy";
+  private static final String STYLE_DND_MODE_TOGGLE = STYLE_PREFIX + "dnd-mode-toggle";
+  private static final String STYLE_DND_MODE_ACTIVE = STYLE_PREFIX + "dnd-mode-active";
 
   private static final String STYLE_INACTIVE = STYLE_PREFIX + "inactive";
   private static final String STYLE_OVERLAP_WARNING = STYLE_PREFIX + "overlap-warn";
@@ -190,7 +198,9 @@ class WorkScheduleWidget extends Flow {
   private final HtmlTable table;
 
   private YearMonth activeMonth;
+
   private final Toggle inputMode;
+  private final Toggle dndMode;
 
   WorkScheduleWidget(long objectId) {
     super(STYLE_CONTAINER);
@@ -207,6 +217,16 @@ class WorkScheduleWidget extends Flow {
       @Override
       public void onClick(ClickEvent event) {
         activateInputMode(inputMode.isChecked());
+      }
+    });
+
+    this.dndMode = new Toggle(FontAwesome.ARROW_RIGHT, FontAwesome.RETWEET,
+        STYLE_DND_MODE_TOGGLE, false);
+
+    dndMode.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        activateDndMode(dndMode.isChecked());
       }
     });
 
@@ -247,7 +267,8 @@ class WorkScheduleWidget extends Flow {
 
               if (DataUtils.isId(employee) && BeeUtils.isPositive(day) && activeMonth != null) {
                 JustDate date = new JustDate(activeMonth.getYear(), activeMonth.getMonth(), day);
-                boolean copy = EventUtils.hasModifierKey(event.getNativeEvent());
+                boolean copy = EventUtils.hasModifierKey(event.getNativeEvent())
+                    ^ dndMode.isChecked();
 
                 onDrop((long) u, employee, date, copy);
               }
@@ -325,19 +346,38 @@ class WorkScheduleWidget extends Flow {
   }
 
   private void activateInputMode(boolean modeFull) {
-    Element el = Selectors.getElementByClassName(inputMode.getParent().getElement(),
-        STYLE_INPUT_MODE_SIMPLE);
+    Element root = inputMode.getParent().getElement();
+
+    Element el = Selectors.getElementByClassName(root, STYLE_INPUT_MODE_SIMPLE);
     if (el != null) {
       UIObject.setStyleName(el, STYLE_INPUT_MODE_ACTIVE, !modeFull);
     }
 
-    el = Selectors.getElementByClassName(inputMode.getParent().getElement(), STYLE_INPUT_MODE_FULL);
+    el = Selectors.getElementByClassName(root, STYLE_INPUT_MODE_FULL);
     if (el != null) {
       UIObject.setStyleName(el, STYLE_INPUT_MODE_ACTIVE, modeFull);
     }
 
     if (inputMode.isChecked() != modeFull) {
       inputMode.setChecked(modeFull);
+    }
+  }
+
+  private void activateDndMode(boolean modeCopy) {
+    Element root = dndMode.getParent().getElement();
+
+    Element el = Selectors.getElementByClassName(root, STYLE_DND_MODE_MOVE);
+    if (el != null) {
+      UIObject.setStyleName(el, STYLE_DND_MODE_ACTIVE, !modeCopy);
+    }
+
+    el = Selectors.getElementByClassName(root, STYLE_DND_MODE_COPY);
+    if (el != null) {
+      UIObject.setStyleName(el, STYLE_DND_MODE_ACTIVE, modeCopy);
+    }
+
+    if (dndMode.isChecked() != modeCopy) {
+      dndMode.setChecked(modeCopy);
     }
   }
 
@@ -981,8 +1021,11 @@ class WorkScheduleWidget extends Flow {
     Widget appender = renderEmployeeAppender(DataUtils.getRowIds(employees), activeMonth);
     table.setWidgetAndStyle(r, EMPLOYEE_PANEL_COL, appender, STYLE_EMPLOYEE_APPEND_PANEL);
 
-    Widget inputModePanel = renderInputMode();
-    table.setWidgetAndStyle(r, DAY_START_COL, inputModePanel, STYLE_INPUT_MODE_PANEL);
+    Flow controlPanel = new Flow();
+    controlPanel.add(renderInputMode());
+    controlPanel.add(renderDndMode());
+
+    table.setWidgetAndStyle(r, DAY_START_COL, controlPanel, STYLE_CONTROL_PANEL);
     table.getCellFormatter().setColSpan(r, DAY_START_COL, days);
   }
 
@@ -1015,6 +1058,46 @@ class WorkScheduleWidget extends Flow {
     }
 
     panel.setStyleName(STYLE_DAY_EMPTY, panel.isEmpty());
+  }
+
+  private Widget renderDndMode() {
+    Flow panel = new Flow(STYLE_DND_MODE_PANEL);
+
+    Label modeMove = new Label(Localized.getConstants().actionMove());
+    modeMove.addStyleName(STYLE_DND_MODE_MOVE);
+
+    modeMove.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        if (dndMode.isChecked()) {
+          activateDndMode(false);
+        }
+      }
+    });
+
+    Label modeCopy = new Label(Localized.getConstants().actionCopy());
+    modeCopy.addStyleName(STYLE_DND_MODE_COPY);
+
+    modeCopy.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        if (!dndMode.isChecked()) {
+          activateDndMode(true);
+        }
+      }
+    });
+
+    if (dndMode.isChecked()) {
+      modeCopy.addStyleName(STYLE_DND_MODE_ACTIVE);
+    } else {
+      modeMove.addStyleName(STYLE_DND_MODE_ACTIVE);
+    }
+
+    panel.add(modeMove);
+    panel.add(dndMode);
+    panel.add(modeCopy);
+
+    return panel;
   }
 
   private Widget renderEmployee(BeeRow row, List<Integer> nameIndexes,
@@ -1099,7 +1182,7 @@ class WorkScheduleWidget extends Flow {
   }
 
   private Widget renderInputMode() {
-    Flow panel = new Flow();
+    Flow panel = new Flow(STYLE_INPUT_MODE_PANEL);
 
     Label modeSimple = new Label(Localized.getConstants().inputSimple());
     modeSimple.addStyleName(STYLE_INPUT_MODE_SIMPLE);
