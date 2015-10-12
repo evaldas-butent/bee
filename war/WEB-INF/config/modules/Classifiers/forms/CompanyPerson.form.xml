@@ -5,7 +5,7 @@
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
   xmlns:ui="http://www.butent.com/ui"
-    
+
   name="CompanyPerson" viewName="CompanyPersons" caption="=companyPerson"
   height="350" width="800"
   >
@@ -38,7 +38,7 @@
     <Disclosure open="true">
       <Label text="=contactInfo" style="text-transform: uppercase; " />
 
-      <Table>
+      <Table kind="controls">
         <row>
           <Label text="=phones" style="&lbl;" for="Phone" />
           <InputText source="Phone" />
@@ -47,26 +47,26 @@
           <Label text="=fax" style="&lbl;" for="Fax" />
           <InputText source="Fax" />
         </row>
-      
+
         <row>
           <Label for="EmailId" style="&lbl;" class="bee-required" />
           <cell colSpan="2" for="EmailId" >
             <DataSelector source="EmailId" style="width: 100%;" maxLength="50" required="true" />
           </cell>
-      
+
           <Label text="=website" style="&lbl;" for="Website" />
           <cell colSpan="2" for="Website" >
             <InputText source="Website" style="width: 100%" />
           </cell>
         </row>
-        
+
         <row for="Address">
           <Label text="=address" style="&lbl;" />
           <cell colSpan="5">
             <InputText source="Address" style="width: 100%;" />
           </cell>
         </row>
-        
+
         <row>
           <Label text="=city" style="&lbl;" for="City" />
           <DataSelector source="City">
@@ -76,9 +76,9 @@
               <ui:renderer type="flag" />
             </selectorColumn>
           </DataSelector>
-      
+
           <Label text="=country" style="&lbl;" for="Country" />
-          <Table for="Country">
+          <Table kind="controls" for="Country">
             <row>
               <DataSelector source="Country" style="width: 120px;">
                 <renderToken source="CountryName" />
@@ -91,11 +91,11 @@
               <Flag source="CountryCode" style="width: 22px;" />
             </row>
           </Table>
-      
+
           <Label text="=postIndex" style="&lbl;" for="PostIndex" />
           <InputText source="PostIndex" />
         </row>
-        
+
         <row for="SocialContacts">
           <Label text="=socialContacts" style="&lbl;" />
           <cell colSpan="5">
@@ -105,4 +105,4 @@
       </Table>
     </Disclosure>
   </FlowPanel>
-</f:Form>  
+</f:Form>

@@ -14,8 +14,6 @@ import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
-import com.butent.bee.server.concurrency.ConcurrencyBean;
-import com.butent.bee.server.concurrency.ConcurrencyBean.HasTimerService;
 import com.butent.bee.server.data.BeeView;
 import com.butent.bee.server.data.DataEditorBean;
 import com.butent.bee.server.data.DataEvent.ViewDeleteEvent;
@@ -60,7 +58,6 @@ import com.butent.bee.shared.data.SqlConstants.SqlFunction;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.view.Order;
-import com.butent.bee.shared.exceptions.BeeException;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -406,15 +403,11 @@ public class TransportModuleBean implements BeeModule {
       @Subscribe
       @AllowConcurrentEvents
       public void calcInvoiceVat(ViewQueryEvent event) {
-        String target = event.getTargetName();
-
-        if (BeeUtils.inListSame(target, VIEW_CARGO_INVOICES, VIEW_CARGO_PURCHASE_INVOICES)
-            && event.isAfter() && event.getRowset().getNumberOfRows() > 0) {
-
+        if (event.isAfter(VIEW_CARGO_INVOICES, VIEW_CARGO_PURCHASE_INVOICES) && event.hasData()) {
           String tbl;
           String fld;
 
-          if (BeeUtils.same(target, VIEW_CARGO_PURCHASE_INVOICES)) {
+          if (event.isTarget(VIEW_CARGO_PURCHASE_INVOICES)) {
             tbl = TBL_PURCHASE_ITEMS;
             fld = COL_PURCHASE;
           } else {

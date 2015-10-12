@@ -38,7 +38,7 @@
 
     <DataColumn name="ServiceName" />
     <DataColumn name="Amount" format="0.00" />
-    <DataColumn name="CurrencyName" flexGrow="0" />
+    <DataColumn name="CurrencyName" flexGrow="0" filterSupplier="list" />
     <DataColumn name="Vat" horizontalAlignment="right">
       <render>
         <ui:expression>row.Vat ? ((row.VatPlus ? '+' : '') + row.Vat + (row.VatPercent ? '%' : ''))
@@ -53,7 +53,7 @@
         </bodyStyle>
       </style>
     </CalcColumn>
-    <RelColumn name="Manager"  />
+    <RelColumn name="Manager" filterSupplier="list" />
 
     <DataColumn name="Number" />
     <DataColumn name="Note" />

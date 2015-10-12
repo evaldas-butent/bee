@@ -18,7 +18,6 @@ import com.butent.bee.shared.data.filter.FilterComponent;
 import com.butent.bee.shared.data.filter.FilterDescription;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.html.Attributes;
-import com.butent.bee.shared.i18n.*;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.Action;
@@ -205,7 +204,7 @@ public class GridLoaderBean {
       for (int i = 0; i < itemNodes.size(); i++) {
         String item = itemNodes.get(i).getTextContent();
         if (!BeeUtils.isEmpty(item)) {
-          items.add(Localized.maybeTranslate(item));
+          items.add(item);
         }
       }
       if (!items.isEmpty()) {

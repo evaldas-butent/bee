@@ -35,7 +35,7 @@
     </VerticalPanel>
 
     <FlowPanel style="&section;">
-      <Table style="width:100%;">
+      <Table kind="output" style="width:100%;">
         <row>
           <cell>
             <Label html="Ekspeditorius / Forwarding agent:" />
@@ -145,7 +145,7 @@
       <DateTimeLabel source="Date" format="DATE_SHORT" />
     </HorizontalPanel>
 
-    <Table name="InvoiceDetails" style="&section; width:100%">
+    <Table kind="output" name="InvoiceDetails" style="&section; width:100%">
       <properties rateCurrency="EUR" />
       <row>
         <cell rowSpan="2">
@@ -318,7 +318,7 @@ documents after the transaction will be made.
     <Label html="Kiti dokumentai/Other documents:" style="&section; &bold;" />
     <TextLabel name="Documents" style="white-space:pre-wrap;" />
 
-    <Table style="width:100%; margin-top:10px;">
+    <Table kind="output" style="width:100%; margin-top:10px;">
       <row style="&bold;">
         <Label html="Išdavė / Dispenser:" />
         <Label html="Gavėjas / Receiver:" />

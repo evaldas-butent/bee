@@ -13,13 +13,13 @@
     <IdColumn name="ID" caption="=trdInvoiceId" />
     <DataColumn name="Date" />
     <DataColumn name="Number" label="Užsakymų ID" />
-    <RelColumn name="Operation" />
+    <RelColumn name="Operation" filterSupplier="list" />
     <DataColumn name="InvoiceNo" renderColumns="InvoicePrefix InvoiceNo"
                 searchBy="InvoicePrefix InvoiceNo" />
-    <RelColumn name="Customer" filterSupplier="value" />
-    <RelColumn name="Payer" filterSupplier="value" />
+    <RelColumn name="Customer" />
+    <RelColumn name="Payer" />
     <DataColumn name="Amount" />
-    <DataColumn name="CurrencyName" />
+    <DataColumn name="CurrencyName" filterSupplier="list" />
 
     <PropColumn name="Vat" type="decimal" caption="PVM suma" format="#.##" />
     <PropColumn name="WithoutVat" type="decimal" caption="Be PVM" format="#.##" horizontalAlignment="right">
@@ -36,7 +36,7 @@
 
     <DataColumn name="Term" />
 
-    <RelColumn name="Manager" renderColumns="ManagerFirstName ManagerLastName" filterSupplier="value" />
+    <RelColumn name="Manager" renderColumns="ManagerFirstName ManagerLastName" filterSupplier="list" />
 
     <DataColumn name="PaymentTime" />
     <DataColumn name="Paid" />

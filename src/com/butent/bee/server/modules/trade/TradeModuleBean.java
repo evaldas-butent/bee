@@ -712,34 +712,30 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
             item.getBoolean(COL_TRADE_VAT_PLUS));
 
         String article = item.getValue(COL_TRADE_ITEM_ARTICLE);
-        Long incomeId = BeeUtils.toLongOrNull(ArrayUtils.getQuietly(BeeUtils.split(article, '_'),
-            1));
+        String[] split = BeeUtils.split(article, '_');
+        String note = null;
+        Long incomeId = BeeUtils.toLongOrNull(ArrayUtils.getQuietly(split, 1));
 
         if (DataUtils.isId(incomeId)) {
-          if (BeeUtils.same(tradeItems, TBL_SALE_ITEMS)) {
-            article = BeeUtils.join("_",
-                BeeUtils.joinWords(invoice.getValue(COL_TRADE_INVOICE_PREFIX),
-                    invoice.getValue(COL_TRADE_INVOICE_NO)), incomeId);
-          } else {
-            SimpleRow row = qs.getRow(new SqlSelect()
-                .addField(TBL_SALES_SERIES, COL_SERIES_NAME, COL_TRADE_INVOICE_PREFIX)
-                .addFields(TBL_SALES, COL_TRADE_INVOICE_NO)
-                .addFrom(TransportConstants.TBL_CARGO_INCOMES)
-                .addFromInner(TBL_SALES,
-                    sys.joinTables(TBL_SALES, TransportConstants.TBL_CARGO_INCOMES, COL_SALE))
-                .addFromLeft(TBL_SALES_SERIES,
-                    sys.joinTables(TBL_SALES_SERIES, TBL_SALES, COL_TRADE_SALE_SERIES))
-                .setWhere(sys.idEquals(TransportConstants.TBL_CARGO_INCOMES, incomeId)));
+          SimpleRow row = qs.getRow(new SqlSelect()
+              .addField(TBL_SALES_SERIES, COL_SERIES_NAME, COL_TRADE_INVOICE_PREFIX)
+              .addFields(TBL_SALES, COL_TRADE_INVOICE_NO)
+              .addFrom(TransportConstants.TBL_CARGO_INCOMES)
+              .addFromInner(TBL_SALES,
+                  sys.joinTables(TBL_SALES, TransportConstants.TBL_CARGO_INCOMES, COL_SALE))
+              .addFromLeft(TBL_SALES_SERIES,
+                  sys.joinTables(TBL_SALES_SERIES, TBL_SALES, COL_TRADE_SALE_SERIES))
+              .setWhere(sys.idEquals(TransportConstants.TBL_CARGO_INCOMES, incomeId)));
 
-            if (row != null) {
-              article = BeeUtils.join("_",
-                  BeeUtils.joinWords(row.getValue(COL_TRADE_INVOICE_PREFIX),
-                      row.getValue(COL_TRADE_INVOICE_NO)), incomeId);
-            }
+          if (Objects.isNull(row)) {
+            note = ArrayUtils.getQuietly(split, 0);
+          } else {
+            note = BeeUtils.joinWords(row.getValue(COL_TRADE_INVOICE_PREFIX),
+                row.getValue(COL_TRADE_INVOICE_NO));
           }
         }
         wsItem.setArticle(article);
-        wsItem.setNote(item.getValue(COL_TRADE_ITEM_NOTE));
+        wsItem.setNote(note);
       }
       if (response.hasErrors()) {
         break;

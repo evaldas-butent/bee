@@ -12,7 +12,7 @@
     <RelColumn name="Assessment" width="40" filterSupplier="value" editEnabled="true"
       editViewName="Assessments" editSource="Assessment" module="Transport.Logistics"/>
     <DataColumn name="Date" width="110" />
-    <RelColumn name="Manager" />
+    <RelColumn name="Manager" filterSupplier="list" />
     <DataColumn name="Number" width="70" />
     <DataColumn name="Status" width="70" />
 
@@ -67,7 +67,7 @@
       </render>
     </CalcColumn>
 
-    <RelColumn name="Author" />
+    <RelColumn name="Author" filterSupplier="list" />
   </g:columns>
 
   <g:predefinedFilter name="new_answered" label="Nauji ir atsakyti" initial="true">

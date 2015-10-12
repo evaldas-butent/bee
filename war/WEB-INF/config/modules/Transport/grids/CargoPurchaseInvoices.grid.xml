@@ -13,15 +13,15 @@
     <IdColumn name="ID" caption="=trdInvoiceId" />
     <DataColumn name="Date" />
     <DataColumn name="Number" label="Užsakymų ID" />
-    <RelColumn name="OperationName" />
+    <RelColumn name="OperationName" filterSupplier="list" />
 
     <DataColumn name="InvoiceNo" searchBy="InvoicePrefix InvoiceNo">
       <renderToken source="InvoicePrefix" suffix=" " />
       <renderToken source="InvoiceNo" />
     </DataColumn>
-    <RelColumn name="Supplier" filterSupplier="value" />
+    <RelColumn name="Supplier" />
     <DataColumn name="Amount" />
-    <RelColumn name="Currency" />
+    <DataColumn name="CurrencyName" filterSupplier="list" />
 
     <PropColumn name="Vat" type="decimal" caption="PVM suma" format="#.##" />
     <PropColumn name="WithoutVat" type="decimal" caption="Be PVM" format="#.##"
@@ -39,7 +39,7 @@
 
     <DataColumn name="Term" />
 
-    <RelColumn name="Manager" renderColumns="ManagerFirstName ManagerLastName" filterSupplier="value" />
+    <RelColumn name="Manager" renderColumns="ManagerFirstName ManagerLastName" filterSupplier="list" />
 
     <DataColumn name="Exported" />
   </g:columns>
