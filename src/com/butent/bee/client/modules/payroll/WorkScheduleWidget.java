@@ -397,16 +397,6 @@ class WorkScheduleWidget extends Flow {
   }
 
   private void checkOverlap() {
-    List<Element> elements = Selectors.getElementsByClassName(getElement(), STYLE_OVERLAP_WARNING);
-    if (!BeeUtils.isEmpty(elements)) {
-      StyleUtils.removeClassName(elements, STYLE_OVERLAP_WARNING);
-    }
-
-    elements = Selectors.getElementsByClassName(getElement(), STYLE_OVERLAP_ERROR);
-    if (!BeeUtils.isEmpty(elements)) {
-      StyleUtils.removeClassName(elements, STYLE_OVERLAP_ERROR);
-    }
-
     if (activeMonth != null) {
       final int startDay = activeMonth.getDate().getDays();
       final int lastDay = activeMonth.getLast().getDays();
@@ -420,6 +410,9 @@ class WorkScheduleWidget extends Flow {
       BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
         @Override
         public void onResponse(ResponseObject response) {
+          Set<Element> warnings = new HashSet<>();
+          Set<Element> errors = new HashSet<>();
+
           if (response.hasResponse()) {
             Splitter splitter = Splitter.on(BeeConst.DEFAULT_ROW_SEPARATOR);
 
@@ -436,13 +429,20 @@ class WorkScheduleWidget extends Flow {
                     Element cell = findCell(employeeId, Math.abs(day) - startDay + 1);
 
                     if (cell != null) {
-                      cell.addClassName((day > 0) ? STYLE_OVERLAP_WARNING : STYLE_OVERLAP_ERROR);
+                      if (day > 0) {
+                        warnings.add(cell);
+                      } else {
+                        errors.add(cell);
+                      }
                     }
                   }
                 }
               }
             }
           }
+
+          updateStyles(warnings, STYLE_OVERLAP_WARNING);
+          updateStyles(errors, STYLE_OVERLAP_ERROR);
         }
       });
     }
@@ -1446,5 +1446,31 @@ class WorkScheduleWidget extends Flow {
             }
           }
         });
+  }
+
+  private void updateStyles(Collection<Element> newElements, String styleName) {
+    List<Element> oldElements = Selectors.getElementsByClassName(getElement(), styleName);
+
+    if (BeeUtils.isEmpty(oldElements)) {
+      if (!BeeUtils.isEmpty(newElements)) {
+        StyleUtils.addClassName(newElements, styleName);
+      }
+
+    } else if (BeeUtils.isEmpty(newElements)) {
+      StyleUtils.removeClassName(oldElements, styleName);
+
+    } else {
+      for (Element el : oldElements) {
+        if (!newElements.contains(el)) {
+          el.removeClassName(styleName);
+        }
+      }
+
+      for (Element el : newElements) {
+        if (!oldElements.contains(el)) {
+          el.addClassName(styleName);
+        }
+      }
+    }
   }
 }
