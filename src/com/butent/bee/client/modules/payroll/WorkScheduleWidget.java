@@ -142,6 +142,9 @@ class WorkScheduleWidget extends Flow {
 
   private static final String DATA_TYPE_WS_ITEM = "WorkScheduleItem";
 
+  private static final String NAME_INPUT_MODE = "InputMode";
+  private static final String NAME_DND_MODE = "DndMode";
+
   private static final int MONTH_ROW = 0;
   private static final int MONTH_COL = 1;
   private static final int DAY_ROW = 1;
@@ -183,6 +186,20 @@ class WorkScheduleWidget extends Flow {
     return BeeUtils.joinWords(ym.getYear(), Format.renderMonthFullStandalone(ym).toLowerCase());
   }
 
+  private static boolean readBoolean(String name) {
+    String key = storageKey(name);
+    if (BeeKeeper.getStorage().hasItem(key)) {
+      return BeeKeeper.getStorage().getBoolean(key);
+    } else {
+      return false;
+    }
+  }
+
+  private static String storageKey(String name) {
+    Long userId = BeeKeeper.getUser().getUserId();
+    return BeeUtils.join(BeeConst.STRING_MINUS, "WorkSchedule", userId, name);
+  }
+
   private final long objectId;
 
   private BeeRowSet wsData;
@@ -211,7 +228,7 @@ class WorkScheduleWidget extends Flow {
     add(table);
 
     this.inputMode = new Toggle(FontAwesome.TOGGLE_OFF, FontAwesome.TOGGLE_ON,
-        STYLE_INPUT_MODE_TOGGLE, false);
+        STYLE_INPUT_MODE_TOGGLE, readBoolean(NAME_INPUT_MODE));
 
     inputMode.addClickHandler(new ClickHandler() {
       @Override
@@ -221,7 +238,7 @@ class WorkScheduleWidget extends Flow {
     });
 
     this.dndMode = new Toggle(FontAwesome.ARROW_RIGHT, FontAwesome.RETWEET,
-        STYLE_DND_MODE_TOGGLE, false);
+        STYLE_DND_MODE_TOGGLE, readBoolean(NAME_DND_MODE));
 
     dndMode.addClickHandler(new ClickHandler() {
       @Override
@@ -345,24 +362,6 @@ class WorkScheduleWidget extends Flow {
     });
   }
 
-  private void activateInputMode(boolean modeFull) {
-    Element root = inputMode.getParent().getElement();
-
-    Element el = Selectors.getElementByClassName(root, STYLE_INPUT_MODE_SIMPLE);
-    if (el != null) {
-      UIObject.setStyleName(el, STYLE_INPUT_MODE_ACTIVE, !modeFull);
-    }
-
-    el = Selectors.getElementByClassName(root, STYLE_INPUT_MODE_FULL);
-    if (el != null) {
-      UIObject.setStyleName(el, STYLE_INPUT_MODE_ACTIVE, modeFull);
-    }
-
-    if (inputMode.isChecked() != modeFull) {
-      inputMode.setChecked(modeFull);
-    }
-  }
-
   private void activateDndMode(boolean modeCopy) {
     Element root = dndMode.getParent().getElement();
 
@@ -379,6 +378,28 @@ class WorkScheduleWidget extends Flow {
     if (dndMode.isChecked() != modeCopy) {
       dndMode.setChecked(modeCopy);
     }
+
+    BeeKeeper.getStorage().set(storageKey(NAME_DND_MODE), modeCopy);
+  }
+
+  private void activateInputMode(boolean modeFull) {
+    Element root = inputMode.getParent().getElement();
+
+    Element el = Selectors.getElementByClassName(root, STYLE_INPUT_MODE_SIMPLE);
+    if (el != null) {
+      UIObject.setStyleName(el, STYLE_INPUT_MODE_ACTIVE, !modeFull);
+    }
+
+    el = Selectors.getElementByClassName(root, STYLE_INPUT_MODE_FULL);
+    if (el != null) {
+      UIObject.setStyleName(el, STYLE_INPUT_MODE_ACTIVE, modeFull);
+    }
+
+    if (inputMode.isChecked() != modeFull) {
+      inputMode.setChecked(modeFull);
+    }
+
+    BeeKeeper.getStorage().set(storageKey(NAME_INPUT_MODE), modeFull);
   }
 
   private boolean activateMonth(YearMonth ym) {
