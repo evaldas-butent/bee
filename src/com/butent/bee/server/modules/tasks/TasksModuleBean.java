@@ -139,7 +139,7 @@ public class TasksModuleBean implements BeeModule {
 
     List<SearchResult> tasksSr = qs.getSearchResults(VIEW_TASKS,
         Filter.anyContains(Sets.newHashSet(COL_SUMMARY, COL_DESCRIPTION,
-            ALS_COMPANY_NAME, ALS_EXECUTOR_FIRST_NAME, ALS_EXECUTOR_LAST_NAME),
+                ALS_COMPANY_NAME, ALS_EXECUTOR_FIRST_NAME, ALS_EXECUTOR_LAST_NAME),
             query));
     result.addAll(tasksSr);
 
@@ -209,7 +209,7 @@ public class TasksModuleBean implements BeeModule {
     String module = getModule().getName();
     List<BeeParameter> params = Lists.newArrayList(
         BeeParameter.createText(module, PRM_END_OF_WORK_DAY)
-        );
+    );
     return params;
   }
 
@@ -229,95 +229,88 @@ public class TasksModuleBean implements BeeModule {
       @Subscribe
       @AllowConcurrentEvents
       public void setRowProperties(ViewQueryEvent event) {
-        if (event.isBefore()) {
-          return;
-        }
-
-        if (event.isTarget(VIEW_RT_FILES)) {
+        if (event.isAfter(VIEW_RT_FILES)) {
           ExtensionIcons.setIcons(event.getRowset(), ALS_FILE_NAME, PROP_ICON);
 
-        } else if (event.isTarget(VIEW_TASKS) || event.isTarget(VIEW_RELATED_TASKS)) {
+        } else if (event.isAfter(VIEW_TASKS, VIEW_RELATED_TASKS) && event.hasData()) {
           BeeRowSet rowSet = event.getRowset();
+          Set<Long> taskIds = new HashSet<>();
+          Long id;
 
-          if (!rowSet.isEmpty()) {
-            Set<Long> taskIds = new HashSet<>();
-            Long id;
+          if (rowSet.getNumberOfRows() < 100) {
+            for (BeeRow row : rowSet.getRows()) {
+              switch (event.getTargetName()) {
+                case VIEW_TASKS:
+                  id = row.getId();
+                  break;
+                case VIEW_RELATED_TASKS:
+                  id = row.getLong(rowSet.getColumnIndex(COL_TASK));
+                  break;
+                default:
+                  id = null;
+              }
 
-            if (rowSet.getNumberOfRows() < 100) {
-              for (BeeRow row : rowSet.getRows()) {
-                switch (event.getTargetName()) {
-                  case VIEW_TASKS:
-                    id = row.getId();
-                    break;
-                  case VIEW_RELATED_TASKS:
-                    id = row.getLong(rowSet.getColumnIndex(COL_TASK));
-                    break;
-                  default:
-                    id = null;
-                }
-
-                if (DataUtils.isId(id)) {
-                  taskIds.add(id);
-                }
+              if (DataUtils.isId(id)) {
+                taskIds.add(id);
               }
             }
+          }
 
-            SqlSelect tuQuery = new SqlSelect().addFrom(TBL_TASK_USERS)
-                .addFields(TBL_TASK_USERS, COL_TASK, COL_LAST_ACCESS, COL_STAR);
+          SqlSelect tuQuery = new SqlSelect().addFrom(TBL_TASK_USERS)
+              .addFields(TBL_TASK_USERS, COL_TASK, COL_LAST_ACCESS, COL_STAR);
 
-            IsCondition uwh = SqlUtils.equals(TBL_TASK_USERS, COL_USER, usr.getCurrentUserId());
+          IsCondition uwh = SqlUtils.equals(TBL_TASK_USERS, COL_USER, usr.getCurrentUserId());
 
-            if (taskIds.isEmpty()) {
-              tuQuery.setWhere(uwh);
-            } else {
-              tuQuery.setWhere(SqlUtils.and(uwh,
-                  SqlUtils.inList(TBL_TASK_USERS, COL_TASK, taskIds)));
+          if (taskIds.isEmpty()) {
+            tuQuery.setWhere(uwh);
+          } else {
+            tuQuery.setWhere(SqlUtils.and(uwh,
+                SqlUtils.inList(TBL_TASK_USERS, COL_TASK, taskIds)));
+          }
+
+          SimpleRowSet tuData = qs.getData(tuQuery);
+          int taskIndex = tuData.getColumnIndex(COL_TASK);
+          int accessIndex = tuData.getColumnIndex(COL_LAST_ACCESS);
+          int starIndex = tuData.getColumnIndex(COL_STAR);
+
+          for (SimpleRow tuRow : tuData) {
+            long taskId = tuRow.getLong(taskIndex);
+            BeeRow row = event.isTarget(VIEW_RELATED_TASKS)
+                ? rowSet.findRow(Filter.equals(COL_TASK, taskId)) : rowSet.getRowById(taskId);
+
+            if (row != null) {
+              row.setProperty(PROP_USER, BeeConst.STRING_PLUS);
+
+              if (tuRow.getValue(accessIndex) != null) {
+                row.setProperty(PROP_LAST_ACCESS, tuRow.getValue(accessIndex));
+              }
+              if (tuRow.getValue(starIndex) != null) {
+                row.setProperty(PROP_STAR, tuRow.getValue(starIndex));
+              }
             }
+          }
 
-            SimpleRowSet tuData = qs.getData(tuQuery);
-            int taskIndex = tuData.getColumnIndex(COL_TASK);
-            int accessIndex = tuData.getColumnIndex(COL_LAST_ACCESS);
-            int starIndex = tuData.getColumnIndex(COL_STAR);
+          SqlSelect teQuery = new SqlSelect().addFrom(TBL_TASK_EVENTS)
+              .addFields(TBL_TASK_EVENTS, COL_TASK)
+              .addMax(TBL_TASK_EVENTS, COL_PUBLISH_TIME)
+              .addGroup(TBL_TASK_EVENTS, COL_TASK);
 
-            for (SimpleRow tuRow : tuData) {
-              long taskId = tuRow.getLong(taskIndex);
+          if (!taskIds.isEmpty()) {
+            teQuery.setWhere(SqlUtils.inList(TBL_TASK_EVENTS, COL_TASK, taskIds));
+          }
+
+          SimpleRowSet teData = qs.getData(teQuery);
+          taskIndex = teData.getColumnIndex(COL_TASK);
+          int publishIndex = teData.getColumnIndex(COL_PUBLISH_TIME);
+
+          for (SimpleRow teRow : teData) {
+            if (teRow.getValue(publishIndex) != null) {
+              long taskId = teRow.getLong(taskIndex);
               BeeRow row = event.isTarget(VIEW_RELATED_TASKS)
                   ? rowSet.findRow(Filter.equals(COL_TASK, taskId)) : rowSet.getRowById(taskId);
 
               if (row != null) {
-                row.setProperty(PROP_USER, BeeConst.STRING_PLUS);
-
-                if (tuRow.getValue(accessIndex) != null) {
-                  row.setProperty(PROP_LAST_ACCESS, tuRow.getValue(accessIndex));
-                }
-                if (tuRow.getValue(starIndex) != null) {
-                  row.setProperty(PROP_STAR, tuRow.getValue(starIndex));
-                }
-              }
-            }
-
-            SqlSelect teQuery = new SqlSelect().addFrom(TBL_TASK_EVENTS)
-                .addFields(TBL_TASK_EVENTS, COL_TASK)
-                .addMax(TBL_TASK_EVENTS, COL_PUBLISH_TIME)
-                .addGroup(TBL_TASK_EVENTS, COL_TASK);
-
-            if (!taskIds.isEmpty()) {
-              teQuery.setWhere(SqlUtils.inList(TBL_TASK_EVENTS, COL_TASK, taskIds));
-            }
-
-            SimpleRowSet teData = qs.getData(teQuery);
-            taskIndex = teData.getColumnIndex(COL_TASK);
-            int publishIndex = teData.getColumnIndex(COL_PUBLISH_TIME);
-
-            for (SimpleRow teRow : teData) {
-              if (teRow.getValue(publishIndex) != null) {
-                long taskId = teRow.getLong(taskIndex);
-                BeeRow row = event.isTarget(VIEW_RELATED_TASKS)
-                    ? rowSet.findRow(Filter.equals(COL_TASK, taskId)) : rowSet.getRowById(taskId);
-
-                if (row != null) {
-                  row.setProperty(PROP_LAST_PUBLISH, teRow.getValue(publishIndex));
-                }
+                row.setProperty(PROP_LAST_PUBLISH, teRow.getValue(publishIndex));
               }
             }
           }
@@ -1190,7 +1183,7 @@ public class TasksModuleBean implements BeeModule {
       String compFullName =
           companiesListSet.getValue(i, COL_COMPANY_NAME)
               + (!BeeUtils.isEmpty(companiesListSet.getValue(i, ALS_COMPANY_TYPE))
-                  ? ", " + companiesListSet.getValue(i, ALS_COMPANY_TYPE) : "");
+              ? ", " + companiesListSet.getValue(i, ALS_COMPANY_TYPE) : "");
       String dTime = "0:00";
 
       SqlSelect companyTimesQuery = new SqlSelect()
@@ -1740,7 +1733,7 @@ public class TasksModuleBean implements BeeModule {
           (!BeeUtils.isEmpty(usersListSet.getValue(i, COL_FIRST_NAME))
               ? usersListSet.getValue(i, COL_FIRST_NAME) : "") + " "
               + (!BeeUtils.isEmpty(usersListSet.getValue(i, COL_LAST_NAME))
-                  ? usersListSet.getValue(i, COL_LAST_NAME) : "");
+              ? usersListSet.getValue(i, COL_LAST_NAME) : "");
 
       userFullName = BeeUtils.isEmpty(userFullName) ? "—" : userFullName;
       String dTime = "0:00";

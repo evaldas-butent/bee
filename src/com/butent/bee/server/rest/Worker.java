@@ -8,7 +8,9 @@ import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.SimpleRowSet;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.ejb.EJB;
@@ -38,11 +40,17 @@ public class Worker {
   }
 
   private static Response rowSetResponse(SimpleRowSet rowSet) {
-    Map<String, Object> map = new HashMap<>();
-    map.put("columns", rowSet.getColumnNames());
-    map.put("data", rowSet.getRows());
+    List<Map<String, String>> data = new ArrayList<>();
 
-    return Response.ok(map, MediaType.APPLICATION_JSON_TYPE.withCharset(BeeConst.CHARSET_UTF8))
+    for (int i = 0; i < rowSet.getNumberOfRows(); i++) {
+      Map<String, String> row = new HashMap<>(rowSet.getNumberOfColumns());
+
+      for (int j = 0; j < rowSet.getNumberOfColumns(); j++) {
+        row.put(rowSet.getColumnName(j), rowSet.getValue(i, j));
+      }
+      data.add(row);
+    }
+    return Response.ok(data, MediaType.APPLICATION_JSON_TYPE.withCharset(BeeConst.CHARSET_UTF8))
         .build();
   }
 }
