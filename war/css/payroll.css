@@ -79,6 +79,11 @@
   border-radius: 20%;
 }
 
+.bee-payroll-ws-item-drag {
+  background-image: linear-gradient(to bottom, skyblue, skyblue);
+  color: black !important;
+}
+
 .bee-payroll-ws-input-mode-panel {
   display: flex;
   display: -webkit-flex;
