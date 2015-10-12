@@ -58,7 +58,7 @@ public enum CssUnit implements HasCaption {
   private final String caption;
   private final Type type;
 
-  private CssUnit(String caption, Type type) {
+  CssUnit(String caption, Type type) {
     this.caption = caption;
     this.type = type;
   }

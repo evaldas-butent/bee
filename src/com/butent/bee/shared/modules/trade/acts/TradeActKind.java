@@ -108,11 +108,11 @@ public enum TradeActKind implements HasLocalizedCaption {
 
   private final EnumSet<Option> options;
 
-  private TradeActKind(EnumSet<Option> options) {
+  TradeActKind(EnumSet<Option> options) {
     this.options = options;
   }
 
-  private TradeActKind(Option first, Option... rest) {
+  TradeActKind(Option first, Option... rest) {
     if (rest == null) {
       this.options = EnumSet.of(first);
     } else {

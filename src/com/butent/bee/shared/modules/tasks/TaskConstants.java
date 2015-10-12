@@ -15,34 +15,33 @@ public final class TaskConstants {
     CREATE(Localized.getConstants().crmTaskEventCreated(), Localized.getConstants().crmNewTask(),
         FontAwesome.CODE_FORK),
     VISIT(Localized.getConstants().crmTaskEventVisited(), null, null),
-    ACTIVATE(Localized.getConstants().crmTaskForwardedForExecution(), Localized.getConstants()
-        .crmTaskForwardForExecution(), FontAwesome.ARROW_CIRCLE_RIGHT),
+    ACTIVATE(Localized.getConstants().crmTaskForwardedForExecution(),
+        Localized.getConstants().crmTaskForwardForExecution(), FontAwesome.ARROW_CIRCLE_RIGHT),
     COMMENT(Localized.getConstants().crmTaskComment(), Localized.getConstants().crmActionComment(),
         FontAwesome.COMMENT_O),
-    EXTEND(Localized.getConstants().crmTaskEventExtended(), Localized.getConstants()
-        .crmTaskChangeTerm(), FontAwesome.CLOCK_O),
-    SUSPEND(Localized.getConstants().crmTaskStatusSuspended(), Localized.getConstants()
-        .crmActionSuspend(), FontAwesome.MINUS_CIRCLE),
-    RENEW(Localized.getConstants().crmTaskEventRenewed(), Localized.getConstants()
-        .crmTaskReturnExecution(), FontAwesome.ARROW_CIRCLE_RIGHT),
-    FORWARD(Localized.getConstants().crmTaskEventForwarded(), Localized.getConstants()
-        .crmActionForward(), FontAwesome.ARROW_CIRCLE_O_RIGHT),
-    CANCEL(Localized.getConstants().crmTaskStatusCanceled(), Localized.getConstants()
-        .crmTaskCancel(), FontAwesome.BAN),
-    COMPLETE(Localized.getConstants().crmTaskStatusCompleted(), Localized.getConstants()
-        .crmActionFinish(), FontAwesome.CHECK_CIRCLE_O),
-    APPROVE(Localized.getConstants().crmTaskEventApproved(), Localized.getConstants()
-        .crmTaskConfirm(), FontAwesome.CHECK_SQUARE_O),
+    EXTEND(Localized.getConstants().crmTaskEventExtended(),
+        Localized.getConstants().crmTaskChangeTerm(), FontAwesome.CLOCK_O),
+    SUSPEND(Localized.getConstants().crmTaskStatusSuspended(),
+        Localized.getConstants().crmActionSuspend(), FontAwesome.MINUS_CIRCLE),
+    RENEW(Localized.getConstants().crmTaskEventRenewed(),
+        Localized.getConstants().crmTaskReturnExecution(), FontAwesome.ARROW_CIRCLE_RIGHT),
+    FORWARD(Localized.getConstants().crmTaskEventForwarded(),
+        Localized.getConstants().crmActionForward(), FontAwesome.ARROW_CIRCLE_O_RIGHT),
+    CANCEL(Localized.getConstants().crmTaskStatusCanceled(),
+        Localized.getConstants().crmTaskCancel(), FontAwesome.BAN),
+    COMPLETE(Localized.getConstants().crmTaskStatusCompleted(),
+        Localized.getConstants().crmActionFinish(), FontAwesome.CHECK_CIRCLE_O),
+    APPROVE(Localized.getConstants().crmTaskEventApproved(),
+        Localized.getConstants().crmTaskConfirm(), FontAwesome.CHECK_SQUARE_O),
     EDIT(Localized.getConstants().crmTaskEventEdited(), null, null),
-    OUT_OF_OBSERVERS(Localized.getConstants().crmTaskOutOfObservers(), Localized.getConstants()
-        .crmTaskOutOfObservers(),
-        FontAwesome.USER_TIMES);
+    OUT_OF_OBSERVERS(Localized.getConstants().crmTaskOutOfObservers(),
+        Localized.getConstants().crmTaskOutOfObservers(), FontAwesome.USER_TIMES);
 
     private final String caption;
     private final String commandLabel;
     private final FontAwesome commandIcon;
 
-    private TaskEvent(String caption, String commandLabel, FontAwesome commandIcon) {
+    TaskEvent(String caption, String commandLabel, FontAwesome commandIcon) {
       this.caption = caption;
       this.commandLabel = commandLabel;
       this.commandIcon = commandIcon;
@@ -63,12 +62,13 @@ public final class TaskConstants {
   }
 
   public enum TaskPriority implements HasCaption {
-    LOW(Localized.getConstants().crmTaskPriorityLow()), MEDIUM(Localized.getConstants()
-        .crmTaskPriorityMedium()), HIGH(Localized.getConstants().crmTaskPriorityHigh());
+    LOW(Localized.getConstants().crmTaskPriorityLow()),
+    MEDIUM(Localized.getConstants().crmTaskPriorityMedium()),
+    HIGH(Localized.getConstants().crmTaskPriorityHigh());
 
     private final String caption;
 
-    private TaskPriority(String caption) {
+    TaskPriority(String caption) {
       this.caption = caption;
     }
 
@@ -147,7 +147,7 @@ public final class TaskConstants {
 
     private final String caption;
 
-    private ToDoVisibility(String caption) {
+    ToDoVisibility(String caption) {
       this.caption = caption;
     }
 

@@ -31,6 +31,7 @@ import com.butent.bee.shared.HasScale;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.EditorDescription;
 import com.butent.bee.shared.ui.EditorType;
 import com.butent.bee.shared.ui.HasCapsLock;
@@ -250,7 +251,7 @@ public final class EditorFactory {
     }
 
     if (editor instanceof HasItems && description.getItems() != null) {
-      ((HasItems) editor).setItems(description.getItems());
+      ((HasItems) editor).setItems(Localized.maybeTranslate(description.getItems()));
     }
     if (editor instanceof AcceptsCaptions && !BeeUtils.isEmpty(enumKey)) {
       ((AcceptsCaptions) editor).setCaptions(enumKey);

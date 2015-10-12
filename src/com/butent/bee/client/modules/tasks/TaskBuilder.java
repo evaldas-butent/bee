@@ -106,7 +106,7 @@ class TaskBuilder extends AbstractFormInterceptor {
     super();
   }
 
-  public TaskBuilder(Map<Long, FileInfo> files, Long executor, boolean taskIdsCallback) {
+  TaskBuilder(Map<Long, FileInfo> files, Long executor, boolean taskIdsCallback) {
     this();
 
     if (files != null) {

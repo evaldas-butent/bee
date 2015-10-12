@@ -40,6 +40,7 @@ import com.butent.bee.client.grid.ChildGrid;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.GridPanel;
 import com.butent.bee.client.grid.HtmlTable;
+import com.butent.bee.client.grid.TableKind;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.images.Images;
 import com.butent.bee.client.layout.Absolute;
@@ -1065,7 +1066,7 @@ public enum FormWidget {
 
   private final Set<Type> types;
 
-  private FormWidget(String tagName, Set<Type> types) {
+  FormWidget(String tagName, Set<Type> types) {
     this.tagName = tagName;
     this.types = types;
   }
@@ -1740,6 +1741,10 @@ public enum FormWidget {
 
       case TABLE:
         widget = new HtmlTable();
+        TableKind tableKind = TableKind.parse(attributes.get(ATTR_KIND));
+        if (tableKind != null) {
+          ((HtmlTable) widget).setKind(tableKind);
+        }
         break;
 
       case TEXT_LABEL:

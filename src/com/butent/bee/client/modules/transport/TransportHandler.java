@@ -92,7 +92,7 @@ public final class TransportHandler {
     private final String idName;
     private final long id;
 
-    public Profit(String idName, long id) {
+    Profit(String idName, long id) {
       super(Global.getImages().silverProfit());
       setTitle(Localized.getConstants().profit());
       addClickHandler(this);

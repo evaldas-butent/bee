@@ -97,7 +97,7 @@ import lt.locator.TripSumRepData;
 @LocalBean
 public class ImportBean {
 
-  private static class ImportObject {
+  private static final class ImportObject {
     private final int prpValue = 0;
     private final int prpRelation = 1;
     private final int prpObject = 2;
@@ -107,7 +107,7 @@ public class ImportBean {
     private final String viewName;
     private final Map<String, Object[]> props = new HashMap<>();
 
-    public ImportObject(SimpleRowSet rs, long optId, SystemBean sys) {
+    private ImportObject(SimpleRowSet rs, long optId, SystemBean sys) {
       Assert.notNull(rs);
       Assert.state(!rs.isEmpty());
 
@@ -739,14 +739,14 @@ public class ImportBean {
         new Function<Map<String, String>, Boolean>() {
           @Override
           public Boolean apply(Map<String, String> values) {
-            double qty = BeeUtils.toDouble(values.get(COL_COSTS_QUANTITY));
-            double prc = BeeUtils.toDouble(values.get(COL_COSTS_PRICE));
+            double qty = toDouble(values.get(COL_COSTS_QUANTITY));
+            double prc = toDouble(values.get(COL_COSTS_PRICE));
 
             if (!BeeUtils.isPositive(qty)) {
               return false;
             }
             if (!BeeUtils.isPositive(prc)) {
-              prc = BeeUtils.round(BeeUtils.toDouble(values.get(COL_AMOUNT)) / qty, 5);
+              prc = BeeUtils.round(toDouble(values.get(COL_AMOUNT)) / qty, 5);
             }
             if (BeeUtils.isPositive(prc)) {
               values.put(COL_COSTS_PRICE, BeeUtils.toString(prc));
@@ -758,7 +758,9 @@ public class ImportBean {
             if (!BeeUtils.isEmpty(value)) {
               DateTime date;
 
-              if (dtf != null) {
+              if (BeeUtils.isLong(value)) {
+                date = TimeUtils.toDateTimeOrNull(value);
+              } else if (dtf != null) {
                 try {
                   date = new DateTime(dtf.parse(value));
                 } catch (ParseException e) {
@@ -793,6 +795,11 @@ public class ImportBean {
               values.put(COL_COSTS_EXTERNAL_ID, Codec.md5(sb.toString()));
             }
             return true;
+          }
+
+          private double toDouble(String number) {
+            return BeeUtils.toDouble(number != null
+                ? number.replace(BeeConst.CHAR_COMMA, BeeConst.CHAR_POINT) : number);
           }
         });
 
@@ -836,7 +843,7 @@ public class ImportBean {
 
     for (String tbl : new String[] {TBL_TRIP_COSTS, TBL_TRIP_FUEL_COSTS}) {
       HasConditions wh = SqlUtils.and(BeeUtils.same(tbl, TBL_TRIP_FUEL_COSTS)
-              ? SqlUtils.notNull(tmp, COL_FUEL) : SqlUtils.isNull(tmp, COL_FUEL),
+          ? SqlUtils.notNull(tmp, COL_FUEL) : SqlUtils.isNull(tmp, COL_FUEL),
           SqlUtils.notNull(tbl, COL_COSTS_EXTERNAL_ID));
 
       qs.updateData(new SqlUpdate(tmp)

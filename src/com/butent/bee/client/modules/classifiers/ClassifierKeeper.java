@@ -12,6 +12,7 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
+import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.presenter.TreePresenter;
@@ -32,6 +33,8 @@ import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.data.BeeRow;
+import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.RowTransformEvent;
@@ -43,11 +46,14 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.menu.MenuHandler;
 import com.butent.bee.shared.menu.MenuService;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.classifiers.ItemPrice;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -154,6 +160,36 @@ public final class ClassifierKeeper {
     private void setSelectedModel(IsRow selectedModel) {
       this.selectedModel = selectedModel;
     }
+  }
+
+  public static void getHolidays(final Consumer<Set<Integer>> consumer) {
+    Global.getParameter(AdministrationConstants.PRM_COUNTRY, new Consumer<String>() {
+      @Override
+      public void accept(String input) {
+        if (DataUtils.isId(input)) {
+          Queries.getRowSet(VIEW_HOLIDAYS, Collections.singletonList(COL_HOLY_DAY),
+              Filter.equals(COL_HOLY_COUNTRY, BeeUtils.toLong(input)),
+              new Queries.RowSetCallback() {
+                @Override
+                public void onSuccess(BeeRowSet result) {
+                  Set<Integer> holidays = new HashSet<>();
+
+                  if (!DataUtils.isEmpty(result)) {
+                    int index = result.getColumnIndex(COL_HOLY_DAY);
+                    for (BeeRow row : result) {
+                      holidays.add(row.getInteger(index));
+                    }
+                  }
+
+                  consumer.accept(holidays);
+                }
+              });
+
+        } else {
+          consumer.accept(BeeConst.EMPTY_IMMUTABLE_INT_SET);
+        }
+      }
+    });
   }
 
   public static void getPricesAndDiscounts(Map<String, Long> options,

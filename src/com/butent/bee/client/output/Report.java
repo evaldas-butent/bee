@@ -48,7 +48,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 
-//import com.butent.bee.shared.modules.transport.TransportConstants.TripStatus;
+// import com.butent.bee.shared.modules.transport.TransportConstants.TripStatus;
 
 public enum Report implements HasWidgetSupplier {
   COMPANY_TYPES(ModuleAndSub.of(Module.CLASSIFIERS), "CompanyTypes", "CompanyRelationTypeReport") {
@@ -313,9 +313,9 @@ public enum Report implements HasWidgetSupplier {
           new ReportNumericItem(ProjectConstants.ALS_PROFIT, loc.profit()).setPrecision(2),
 
           new ReportEnumItem(ProjectConstants.ALS_TASK_STATUS, BeeUtils.joinWords(Data
-                  .getColumnLabel(TaskConstants.VIEW_TASKS, TaskConstants.COL_STATUS),
+              .getColumnLabel(TaskConstants.VIEW_TASKS, TaskConstants.COL_STATUS),
               BeeUtils.parenthesize(loc.crmTasks())), TaskStatus.class)
-      );
+          );
     }
 
     @Override
@@ -390,11 +390,11 @@ public enum Report implements HasWidgetSupplier {
   private final String reportName;
   private final String formName;
 
-  private Report(ModuleAndSub module, String reportName) {
+  Report(ModuleAndSub module, String reportName) {
     this(module, reportName, "ExtendedReport");
   }
 
-  private Report(ModuleAndSub moduleAndSub, String reportName, String formName) {
+  Report(ModuleAndSub moduleAndSub, String reportName, String formName) {
     this.moduleAndSub = Assert.notNull(moduleAndSub);
     this.reportName = Assert.notEmpty(reportName);
     this.formName = formName;

@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<f:Form xmlns="http://www.butent.com/widget"
+  xmlns:f="http://www.butent.com/form"
+  xmlns:ui="http://www.butent.com/ui"
+  
+  name="WorkScheduleEditor" viewName="WorkSchedule"
+  height="500" width="700"
+  >
+  <FlowPanel class="flexBox-vertical">
+    <br/>
+    <DateLabel source="Date" format="date_full" style="text-align: center; font-size: large;" />
+    <br/>
+
+    <Table kind="controls">
+      <col index="0" kind="label" />
+      <col index="2" kind="label" />
+
+      <row>
+        <Label for="TimeRangeCode" />
+        <cell colSpan="3">
+          <DataSelector source="TimeRangeCode" renderColumns="TrCode TrName TrTimeFrom TrTimeUntil"
+            choiceColumns="TrCode TrName TimeFrom TimeUntil" searchableColumns="TrCode"
+            style="width: 400px;" newRowEnabled="false" updateMode="row" visible="true">
+            <editable>
+              <ui:expression>!(row.TimeCardCode || row.TimeFrom || row.TimeUntil || row.Duration)</ui:expression>
+            </editable>
+          </DataSelector>
+        </cell>
+      </row>
+
+      <row>
+        <Label for="TimeCardCode" />
+        <cell colSpan="3">
+          <DataSelector source="TimeCardCode" renderColumns="TcCode TcName"
+            style="width: 400px;" newRowEnabled="false" updateMode="row">
+            <editable>
+              <ui:expression>!(row.TimeRangeCode || row.TimeFrom || row.TimeUntil || row.Duration)</ui:expression>
+            </editable>
+          </DataSelector>
+        </cell>
+      </row>
+
+      <row>
+        <Label for="TimeFrom" />
+        <InputTimeOfDay source="TimeFrom" updateMode="row" style="width: 60px;">
+          <editable>
+            <ui:expression>!(row.TimeRangeCode || row.TimeCardCode)</ui:expression>
+          </editable>
+        </InputTimeOfDay>
+
+        <Label for="TimeUntil" />
+        <InputTimeOfDay source="TimeUntil" updateMode="row" style="width: 60px;">
+          <editable>
+            <ui:expression>!(row.TimeRangeCode || row.TimeCardCode)</ui:expression>
+          </editable>
+        </InputTimeOfDay>
+      </row>
+
+      <row>
+        <Label for="Duration" />
+        <InputTimeOfDay source="Duration" updateMode="row" style="width: 60px;">
+          <editable>
+            <ui:expression>!(row.TimeRangeCode || row.TimeCardCode)</ui:expression>
+          </editable>
+        </InputTimeOfDay>
+
+        <Label for="Note" />
+        <InputText source="Note" style="width: 200px;" />
+      </row>
+    </Table>
+
+    <br/>
+    <GridPanel name="WorkScheduleDay" class="flexible" />
+  </FlowPanel>
+</f:Form>  

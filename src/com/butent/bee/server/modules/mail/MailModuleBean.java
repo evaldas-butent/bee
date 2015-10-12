@@ -3,6 +3,7 @@ package com.butent.bee.server.modules.mail;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
+import com.google.common.eventbus.AllowConcurrentEvents;
 import com.google.common.eventbus.Subscribe;
 
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
@@ -89,7 +90,6 @@ import javax.ejb.EJB;
 import javax.ejb.LocalBean;
 import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
-import javax.ejb.Timeout;
 import javax.ejb.Timer;
 import javax.ejb.TimerService;
 import javax.ejb.TransactionAttribute;
@@ -111,7 +111,6 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
-import javax.mail.internet.MimeUtility;
 
 @Stateless
 @LocalBean
@@ -405,16 +404,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
             .response(HtmlUtils.stripHtml(reqInfo.getParameter(COL_HTML_CONTENT)));
 
       } else if (BeeUtils.same(svc, SVC_GET_UNREAD_COUNT)) {
-
-        response = ResponseObject.response(qs.getData(new SqlSelect()
-            .addCount("UnreadEmailCount")
-            .addFrom(TBL_PLACES)
-            .addFromInner(TBL_FOLDERS, sys.joinTables(TBL_FOLDERS, TBL_PLACES, COL_FOLDER))
-            .addFromInner(TBL_ACCOUNTS, sys.joinTables(TBL_ACCOUNTS, TBL_FOLDERS, COL_ACCOUNT))
-            .setWhere(SqlUtils.and(SqlUtils.equals(TBL_ACCOUNTS, COL_USER, usr.getCurrentUserId()),
-                SqlUtils.or(SqlUtils.isNull(TBL_PLACES, COL_FLAGS),
-                    SqlUtils.equals(SqlUtils.bitAnd(TBL_PLACES, COL_FLAGS,
-                        MessageFlag.SEEN.getMask()), 0))))).getIntColumn("UnreadEmailCount"));
+        response = ResponseObject.response(countUnread());
 
       } else {
         String msg = BeeUtils.joinWords("Mail service not recognized:", svc);
@@ -427,6 +417,27 @@ public class MailModuleBean implements BeeModule, HasTimerService {
       response = ResponseObject.error(e);
     }
     return response;
+  }
+
+  public int countUnread() {
+    Integer cnt = qs.getData(new SqlSelect()
+        .addCount("UnreadEmailCount")
+        .addFrom(TBL_PLACES)
+        .addFromInner(TBL_FOLDERS, sys.joinTables(TBL_FOLDERS, TBL_PLACES, COL_FOLDER))
+        .addFromInner(TBL_ACCOUNTS, sys.joinTables(TBL_ACCOUNTS, TBL_FOLDERS, COL_ACCOUNT))
+        .setWhere(SqlUtils.and(SqlUtils.equals(TBL_ACCOUNTS, COL_USER, usr.getCurrentUserId()),
+            SqlUtils.or(SqlUtils.isNull(TBL_PLACES, COL_FLAGS),
+                SqlUtils.equals(SqlUtils.bitAnd(TBL_PLACES, COL_FLAGS,
+                    MessageFlag.SEEN.getMask()), 0))))).getInt(0, 0);
+
+    return BeeUtils.unbox(cnt);
+  }
+
+  @Override
+  public void ejbTimeout(Timer timer) {
+    if (cb.isParameterTimer(timer, PRM_MAIL_CHECK_INTERVAL)) {
+      checkMail();
+    }
   }
 
   @Override
@@ -459,8 +470,8 @@ public class MailModuleBean implements BeeModule, HasTimerService {
   @Override
   public void init() {
     System.setProperty("mail.mime.decodetext.strict", "false");
+    System.setProperty("mail.mime.decodefilename", "true");
     System.setProperty("mail.mime.parameters.strict", "false");
-
     System.setProperty("mail.mime.base64.ignoreerrors", "true");
     System.setProperty("mail.mime.ignoreunknownencoding", "true");
     System.setProperty("mail.mime.uudecode.ignoreerrors", "true");
@@ -473,27 +484,26 @@ public class MailModuleBean implements BeeModule, HasTimerService {
     sys.registerDataEventHandler(new DataEventHandler() {
 
       @Subscribe
+      @AllowConcurrentEvents
       public void setRowProperties(ViewQueryEvent event) {
-        if (event.isBefore()) {
-          return;
-        }
-
-        if (BeeUtils.same(event.getTargetName(), VIEW_NEWSLETTER_FILES)) {
+        if (event.isAfter(VIEW_NEWSLETTER_FILES)) {
           ExtensionIcons.setIcons(event.getRowset(), AdministrationConstants.ALS_FILE_NAME,
               AdministrationConstants.PROP_ICON);
         }
       }
 
       @Subscribe
+      @AllowConcurrentEvents
       public void initAccount(ViewInsertEvent event) {
-        if (event.isTarget(TBL_ACCOUNTS) && event.isAfter()) {
+        if (event.isAfter(TBL_ACCOUNTS)) {
           mail.initAccount(event.getRow().getId());
         }
       }
 
       @Subscribe
+      @AllowConcurrentEvents
       public void getRecipients(ViewQueryEvent event) {
-        if (event.isTarget(TBL_PLACES) && event.isAfter()) {
+        if (event.isAfter(TBL_PLACES)) {
           BeeRowSet rowSet = event.getRowset();
           int idx = DataUtils.getColumnIndex(COL_MESSAGE, rowSet.getColumns(), false);
 
@@ -983,8 +993,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
 
           p = new MimeBodyPart();
           p.attachFile(fileInfo.getFile(), fileInfo.getType(), null);
-          p.setFileName(MimeUtility.encodeText(BeeUtils.notEmpty(entry.getValue(),
-              fileInfo.getName()), BeeConst.CHARSET_UTF8, null));
+          p.setFileName(BeeUtils.notEmpty(entry.getValue(), fileInfo.getName()));
 
           files.add(fileInfo);
 
@@ -1019,8 +1028,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
           try {
             p.attachFile(fileInfo.getFile(), fileInfo.getType(), null);
             p.addHeader("Content-ID", "<" + cid + ">");
-            p.setFileName(MimeUtility.encodeText(fileInfo.getName(), BeeConst.CHARSET_UTF8,
-                null));
+            p.setFileName(fileInfo.getName());
           } catch (IOException ex) {
             logger.error(ex);
             p = null;
@@ -1163,6 +1171,23 @@ public class MailModuleBean implements BeeModule, HasTimerService {
     return c;
   }
 
+  private void checkMail() {
+    for (String accountId : qs.getColumn(new SqlSelect()
+        .addFields(TBL_ACCOUNTS, sys.getIdName(TBL_ACCOUNTS))
+        .addFrom(TBL_ACCOUNTS)
+        .setWhere(SqlUtils.notNull(TBL_ACCOUNTS, COL_STORE_SERVER)))) {
+
+      MailAccount account = mail.getAccount(BeeUtils.toLongOrNull(accountId));
+      checkMail(true, account, account.getInboxFolder(), null);
+
+      try {
+        Thread.sleep(TimeUtils.MILLIS_PER_SECOND);
+      } catch (InterruptedException e) {
+        logger.warning(e.getMessage());
+      }
+    }
+  }
+
   private int copyMessages(MailAccount account, List<Long> places, MailFolder target,
       boolean move) throws MessagingException {
 
@@ -1300,27 +1325,6 @@ public class MailModuleBean implements BeeModule, HasTimerService {
     return ResponseObject.response(packet);
   }
 
-  @Timeout
-  private void mailChecker(Timer timer) {
-    if (!cb.isParameterTimer(timer, PRM_MAIL_CHECK_INTERVAL)) {
-      return;
-    }
-    for (String accountId : qs.getColumn(new SqlSelect()
-        .addFields(TBL_ACCOUNTS, sys.getIdName(TBL_ACCOUNTS))
-        .addFrom(TBL_ACCOUNTS)
-        .setWhere(SqlUtils.notNull(TBL_ACCOUNTS, COL_STORE_SERVER)))) {
-
-      MailAccount account = mail.getAccount(BeeUtils.toLongOrNull(accountId));
-      checkMail(true, account, account.getInboxFolder(), null);
-
-      try {
-        Thread.sleep(TimeUtils.MILLIS_PER_SECOND);
-      } catch (InterruptedException e) {
-        logger.warning(e.getMessage());
-      }
-    }
-  }
-
   private int processMessages(MailAccount account, MailFolder source, MailFolder target,
       Collection<Long> places, boolean move) throws MessagingException {
 
@@ -1370,8 +1374,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
           for (SimpleRow content : contents) {
             try (
                 FileInfo fileInfo = fs.getFile(content.getLong(COL_RAW_CONTENT));
-                InputStream is = new BufferedInputStream(new FileInputStream(fileInfo.getFile()));
-            ) {
+                InputStream is = new BufferedInputStream(new FileInputStream(fileInfo.getFile()))) {
 
               MimeMessage message = new MimeMessage(null, is);
               Flags on = new Flags();

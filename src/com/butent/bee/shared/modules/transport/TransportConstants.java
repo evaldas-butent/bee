@@ -51,7 +51,7 @@ public final class TransportConstants {
 
     private final String caption;
 
-    private TranspRegStatus(String caption) {
+    TranspRegStatus(String caption) {
       this.caption = caption;
     }
 
@@ -69,7 +69,7 @@ public final class TransportConstants {
 
     private final String caption;
 
-    private CargoRequestStatus(String caption) {
+    CargoRequestStatus(String caption) {
       this.caption = caption;
     }
 
@@ -144,7 +144,7 @@ public final class TransportConstants {
     private final String caption;
     private final boolean editable;
 
-    private TripStatus(String caption, boolean editable) {
+    TripStatus(String caption, boolean editable) {
       this.caption = caption;
       this.editable = editable;
     }
@@ -256,7 +256,6 @@ public final class TransportConstants {
   public static final String SVC_TRIP_PROFIT_REPORT = "TripProfitReport";
   public static final String SVC_INCOME_INVOICES_REPORT = "IncomeInvoicesReport";
 
-  public static final String PRM_ERP_REFRESH_INTERVAL = "ERPRefreshIntervalInMinutes";
   public static final String PRM_MESSAGE_TEMPLATE = "MessageTemplate";
   public static final String PRM_INVOICE_PREFIX = "DefaultInvoicePrefix";
   public static final String PRM_PURCHASE_OPERATION = "DefaultPurchaseOperation";

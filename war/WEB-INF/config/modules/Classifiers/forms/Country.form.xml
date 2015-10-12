@@ -8,7 +8,7 @@
   name="Country" viewName="Countries" caption="=country" height="275" width="300"
   >
   <FlowPanel class="flexBox-vertical" style="padding: 15px 1em 45px 1em;">
-    <Table style="border-spacing: 5px;">
+    <Table kind="controls" style="border-spacing: 5px;">
       <row>
         <Label text="=country" class="bee-required" horizontalAlignment="right" style="&lbl1;"/>
 		<InputText source="Name" />

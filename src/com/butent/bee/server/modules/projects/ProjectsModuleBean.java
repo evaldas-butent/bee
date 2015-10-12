@@ -3,6 +3,7 @@ package com.butent.bee.server.modules.projects;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import com.google.common.eventbus.AllowConcurrentEvents;
 import com.google.common.eventbus.Subscribe;
 
 import static com.butent.bee.shared.modules.projects.ProjectConstants.*;
@@ -43,7 +44,6 @@ import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.projects.ProjectConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
-import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
 import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.rights.Module;
@@ -100,7 +100,8 @@ public class ProjectsModuleBean implements BeeModule {
         qs.getSearchResults(VIEW_PROJECTS,
             Filter.anyContains(Sets.newHashSet(COL_PROJECT_NAME,
                 ClassifierConstants.ALS_CONTACT_FIRST_NAME,
-                ClassifierConstants.ALS_CONTACT_LAST_NAME, ProjectConstants.ALS_OWNER_FIRST_NAME,
+                ClassifierConstants.ALS_CONTACT_LAST_NAME,
+                ProjectConstants.ALS_OWNER_FIRST_NAME,
                 ProjectConstants.ALS_OWNER_LAST_NAME, ClassifierConstants.ALS_COMPANY_NAME),
                 query));
     result.addAll(tasksSr);
@@ -159,95 +160,75 @@ public class ProjectsModuleBean implements BeeModule {
     sys.registerDataEventHandler(new DataEventHandler() {
 
       @Subscribe
+      @AllowConcurrentEvents
       public void fillProjectsTimeData(ViewQueryEvent event) {
-        if (event.isBefore()) {
-          return;
-        }
+        if (event.isAfter(VIEW_PROJECTS, VIEW_PROJECT_STAGES) && event.hasData()) {
+          BeeRowSet viewRows = event.getRowset();
 
-        if (!BeeUtils.same(VIEW_PROJECTS, event.getTargetName())
-            && !BeeUtils.same(VIEW_PROJECT_STAGES, event.getTargetName())) {
-          return;
-        }
+          int idxExpectedTasksDuration = DataUtils.getColumnIndex(COL_EXPECTED_TASKS_DURATION,
+              viewRows.getColumns(), false);
+          int idxActualTasksDuration = DataUtils.getColumnIndex(COL_ACTUAL_TASKS_DURATION,
+              viewRows.getColumns(), false);
 
-        BeeRowSet viewRows = event.getRowset();
+          int idxActualExpenses = DataUtils.getColumnIndex(TaskConstants.COL_ACTUAL_EXPENSES,
+              viewRows.getColumns(), false);
 
-        if (viewRows.isEmpty()) {
-          return;
-        }
+          List<Long> rowIds = viewRows.getRowIds();
 
-        int idxExpectedTasksDuration = DataUtils.getColumnIndex(COL_EXPECTED_TASKS_DURATION,
-            viewRows.getColumns(), false);
-        int idxActualTasksDuration = DataUtils.getColumnIndex(COL_ACTUAL_TASKS_DURATION,
-            viewRows.getColumns(), false);
+          SimpleRowSet times = getProjectsTasksTimesAndExpenses(rowIds, event.getTargetName());
 
-        int idxActualExpenses = DataUtils.getColumnIndex(TaskConstants.COL_ACTUAL_EXPENSES,
-            viewRows.getColumns(), false);
+          for (int i = 0; i < times.getNumberOfRows(); i++) {
+            Long rowId = times.getLong(i, ALS_ROW_ID);
+            Long expectedTaskDuration = times.getLong(i, COL_EXPECTED_TASKS_DURATION);
+            Long actualTaskDuration = times.getLong(i, COL_ACTUAL_TASKS_DURATION);
+            Double actualExpenses = times.getDouble(i, TaskConstants.COL_ACTUAL_EXPENSES);
 
-        List<Long> rowIds = viewRows.getRowIds();
+            if (!DataUtils.isId(rowId)) {
+              continue;
+            }
 
-        SimpleRowSet times = getProjectsTasksTimesAndExpenses(rowIds, event.getTargetName());
+            IsRow row = viewRows.getRowById(rowId);
 
-        for (int i = 0; i < times.getNumberOfRows(); i++) {
-          Long rowId = times.getLong(i, ALS_ROW_ID);
-          Long expectedTaskDuration = times.getLong(i, COL_EXPECTED_TASKS_DURATION);
-          Long actualTaskDuration = times.getLong(i, COL_ACTUAL_TASKS_DURATION);
-          Double actualExpenses = times.getDouble(i, TaskConstants.COL_ACTUAL_EXPENSES);
+            if (row == null) {
+              continue;
+            }
 
-          if (!DataUtils.isId(rowId)) {
-            continue;
-          }
+            if (!BeeUtils.isNegative(idxExpectedTasksDuration)) {
+              row.setValue(idxExpectedTasksDuration, expectedTaskDuration);
+            }
 
-          IsRow row = viewRows.getRowById(rowId);
+            if (!BeeUtils.isNegative(idxActualTasksDuration)) {
+              row.setValue(idxActualTasksDuration, actualTaskDuration);
+            }
 
-          if (row == null) {
-            continue;
-          }
-
-          if (!BeeUtils.isNegative(idxExpectedTasksDuration)) {
-            row.setValue(idxExpectedTasksDuration, expectedTaskDuration);
-          }
-
-          if (!BeeUtils.isNegative(idxActualTasksDuration)) {
-            row.setValue(idxActualTasksDuration, actualTaskDuration);
-          }
-
-          if (!BeeUtils.isNegative(idxActualExpenses)) {
-            row.setValue(idxActualExpenses, actualExpenses);
+            if (!BeeUtils.isNegative(idxActualExpenses)) {
+              row.setValue(idxActualExpenses, actualExpenses);
+            }
           }
         }
       }
 
       @Subscribe
+      @AllowConcurrentEvents
       public void fillProjectsTimeUnits(ViewQueryEvent event) {
-        if (event.isBefore()) {
-          return;
-        }
+        if (event.isAfter(VIEW_PROJECTS, VIEW_PROJECT_STAGES) && event.hasData()) {
+          BeeRowSet viewRows = event.getRowset();
 
-        if (!BeeUtils.same(VIEW_PROJECTS, event.getTargetName())
-            && !BeeUtils.same(VIEW_PROJECT_STAGES, event.getTargetName())) {
-          return;
-        }
+          ResponseObject units = getTimeUnits();
 
-        BeeRowSet viewRows = event.getRowset();
+          if (units == null) {
+            return;
+          }
 
-        if (viewRows.isEmpty()) {
-          return;
-        }
+          if (!units.hasResponse(BeeRowSet.class)) {
+            return;
+          }
 
-        ResponseObject units = getTimeUnits();
+          BeeRowSet unitsRs = (BeeRowSet) units.getResponse();
 
-        if (units == null) {
-          return;
-        }
-
-        if (!units.hasResponse(BeeRowSet.class)) {
-          return;
-        }
-
-        BeeRowSet unitsRs = (BeeRowSet) units.getResponse();
-
-        for (BeeRow row : viewRows) {
-          row.setProperty(PROP_TIME_UNTIS, unitsRs.serialize());
+          for (BeeRow row : viewRows) {
+            row.setProperty(PROP_TIME_UNTIS, unitsRs.serialize());
+          }
         }
       }
     });
@@ -451,7 +432,8 @@ public class ProjectsModuleBean implements BeeModule {
       BeeRowSet newRow = new BeeRowSet(VIEW_PROJECT_DATES, rs.getColumns());
       newRow.addRow(rsRow);
 
-      chartData.addRow(new String[] {VIEW_PROJECT_DATES,
+      chartData.addRow(new String[] {
+          VIEW_PROJECT_DATES,
           null,
           rsRow.getString(idxCaption),
           startDate == null ? null : BeeUtils.toString(startDate.getDate().getDays()),

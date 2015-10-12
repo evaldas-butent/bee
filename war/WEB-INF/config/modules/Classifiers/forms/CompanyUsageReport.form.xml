@@ -34,7 +34,7 @@
     <br/>
     <Disclosure open="true">
       <Label text="=filters" />
-      <Table>
+      <Table kind="custom">
         <col index="0" cellStyle="padding: 4px 10px; text-align: right;" />
         <col index="1" cellStyle="padding: 4px 0" />
         <col index="2" cellStyle="padding: 4px 10px; text-align: right;" />

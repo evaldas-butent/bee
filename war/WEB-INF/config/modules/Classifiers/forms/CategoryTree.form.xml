@@ -12,7 +12,7 @@
 
     <form>
       <FlowPanel>
-        <Table style="margin-bottom: 1em;">
+        <Table kind="controls" style="margin-bottom: 1em;">
           <col index="0" kind="label" />
       
           <row>

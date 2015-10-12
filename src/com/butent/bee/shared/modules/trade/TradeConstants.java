@@ -37,6 +37,8 @@ public final class TradeConstants {
     EnumUtils.register(OperationType.class);
   }
 
+  public static final String PRM_ERP_REFRESH_INTERVAL = "ERPRefreshIntervalInMinutes";
+
   public static final String SVC_ITEMS_INFO = "ItemsInfo";
   public static final String SVC_CREDIT_INFO = "CreditInfo";
   public static final String SVC_GET_DOCUMENT_DATA = "getTradeDocumentData";

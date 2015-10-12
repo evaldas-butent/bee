@@ -1,9 +1,10 @@
 package com.butent.bee.server.modules.orders;
 
 import com.google.common.collect.Lists;
+import com.google.common.eventbus.AllowConcurrentEvents;
 import com.google.common.eventbus.Subscribe;
 
-import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.COL_CURRENCY;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.orders.OrdersConstants.*;
 import static com.butent.bee.shared.modules.projects.ProjectConstants.*;
@@ -66,7 +67,6 @@ import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
-import javax.ejb.Timeout;
 import javax.ejb.Timer;
 import javax.ejb.TimerService;
 
@@ -91,7 +91,6 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
 
   @Override
   public List<SearchResult> doSearch(String query) {
-    // TODO Auto-generated method stub
     return null;
   }
 
@@ -132,11 +131,23 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
   }
 
   @Override
+  public void ejbTimeout(Timer timer) {
+    if (cb.isParameterTimer(timer, PRM_CLEAR_RESERVATIONS_TIME)) {
+      clearReservations();
+    }
+  }
+
+  @Override
   public Collection<BeeParameter> getDefaultParameters() {
     String module = getModule().getName();
 
     List<BeeParameter> params = Lists.newArrayList(
-        BeeParameter.createNumber(module, PRM_CHECK_RESERVATION_TIME, false, null));
+        BeeParameter.createNumber(module, PRM_CLEAR_RESERVATIONS_TIME, false, null),
+        BeeParameter.createNumber(module, PRM_IMPORT_ERP_ITEMS_TIME, false, null),
+        BeeParameter.createNumber(module, PRM_IMPORT_ERP_STOCKS_TIME, false, null),
+        BeeParameter.createNumber(module, PRM_EXPORT_ERP_RESERVATIONS_TIME, false, null),
+        BeeParameter.createRelation(module, PRM_DEFAULT_SALE_OPERATION, false,
+            VIEW_TRADE_OPERATIONS, COL_OPERATION_NAME));
 
     return params;
   }
@@ -158,13 +169,14 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
 
   @Override
   public void init() {
-    cb.createIntervalTimer(this.getClass(), PRM_CHECK_RESERVATION_TIME);
+    cb.createIntervalTimer(this.getClass(), PRM_CLEAR_RESERVATIONS_TIME);
 
     sys.registerDataEventHandler(new DataEventHandler() {
 
       @Subscribe
+      @AllowConcurrentEvents
       public void setFreeRemainder(ViewQueryEvent event) {
-        if (event.isAfter() && event.isTarget(VIEW_ORDER_ITEMS) && event.hasData()
+        if (event.isAfter(VIEW_ORDER_ITEMS) && event.hasData()
             && event.getColumnCount() >= sys.getView(event.getTargetName()).getColumnCount()) {
 
           BeeRowSet rowSet = event.getRowset();
@@ -186,10 +198,9 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
       }
 
       @Subscribe
+      @AllowConcurrentEvents
       public void fillOrderNumber(ViewInsertEvent event) {
-        if (event.isBefore() && event.isTarget(TBL_ORDERS)
-            && !DataUtils.contains(event.getColumns(), COL_TA_NUMBER)) {
-
+        if (event.isBefore(TBL_ORDERS) && !DataUtils.contains(event.getColumns(), COL_TA_NUMBER)) {
           BeeView view = sys.getView(VIEW_ORDERS);
           Long series = null;
 
@@ -214,15 +225,6 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
     });
   }
 
-  @Timeout
-  private void orderReservationChecker(Timer timer) {
-    if (!cb.isParameterTimer(timer, PRM_CHECK_RESERVATION_TIME)) {
-      return;
-    }
-
-    clearReservations();
-  }
-
   private ResponseObject getItemsForSelection(RequestInfo reqInfo) {
 
     Long orderId = reqInfo.getParameterLong(COL_ORDER);
@@ -241,8 +243,10 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
       filter.add(Filter.restore(where));
     }
 
-    filter.add(Filter.in(sys.getIdName(TBL_ITEMS), VIEW_ITEM_REMAINDERS, COL_ITEM, Filter.equals(
-        ClassifierConstants.COL_WAREHOUSE, warehouse)));
+    if (warehouse != null) {
+      filter.add(Filter.in(sys.getIdName(TBL_ITEMS), VIEW_ITEM_REMAINDERS, COL_ITEM, Filter.equals(
+          ClassifierConstants.COL_WAREHOUSE, warehouse)));
+    }
 
     BeeRowSet items = qs.getViewData(VIEW_ITEMS, filter);
 
@@ -573,13 +577,11 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
           new SqlSelect()
               .addFields(TBL_ORDER_ITEMS, COL_RESERVED_REMAINDER)
               .addFrom(TBL_ORDERS)
-              .addFromLeft(
-                  TBL_ORDER_ITEMS,
-                  SqlUtils
-                      .join(TBL_ORDER_ITEMS, COL_ORDER, TBL_ORDERS, sys.getIdName(TBL_ORDERS)))
-              .setWhere(
-                  SqlUtils.and(SqlUtils.equals(TBL_ORDERS, COL_WAREHOUSE, warehouseId),
-                      SqlUtils.equals(TBL_ORDER_ITEMS, COL_ITEM, itemId)));
+              .addFromLeft(TBL_ORDER_ITEMS,
+                  SqlUtils.join(TBL_ORDER_ITEMS, COL_ORDER, TBL_ORDERS, sys.getIdName(TBL_ORDERS)))
+              .setWhere(SqlUtils.and(SqlUtils.equals(TBL_ORDERS, COL_WAREHOUSE, warehouseId),
+                  SqlUtils.equals(TBL_ORDERS, COL_ORDERS_STATUS, OrdersStatus.APPROVED.ordinal()),
+                  SqlUtils.equals(TBL_ORDER_ITEMS, COL_ITEM, itemId)));
 
       SimpleRowSet srs = qs.getData(qry);
       Double totRes = BeeConst.DOUBLE_ZERO;

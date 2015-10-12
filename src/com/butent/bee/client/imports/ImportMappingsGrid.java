@@ -48,7 +48,8 @@ public class ImportMappingsGrid extends AbstractGridInterceptor {
       }
       descr.setRelation(relation);
 
-      Queries.getRowSet(viewName, relation.getChoiceColumns(), new Queries.RowSetCallback() {
+      Queries.getRowSet(viewName, relation.getOriginalRenderColumns(),
+          new Queries.RowSetCallback() {
         @Override
         public void onSuccess(BeeRowSet result) {
           cache = result;

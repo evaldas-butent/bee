@@ -1,13 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Table xmlns="http://www.butent.com/table"
 
-  name="Drivers"
-  idName="DriverID"
-  >
+       name="Drivers"
+       idName="DriverID"
+    >
   <Fields>
-    <Relation name="CompanyPerson" notNull="true" unique="true" relation="CompanyPersons" label="=trDriverName"/>
-    <Date name="StartDate" label="=trDriverStartingDate" />
-    <Date name="EndDate" label="=trDriverEndingDate" />
+    <Relation name="CompanyPerson" notNull="true" unique="true" relation="CompanyPersons"
+              label="=trDriverName" />
     <Date name="Experience" label="=trDriverExperience" />
     <Text name="Notes" label="=notes" />
   </Fields>

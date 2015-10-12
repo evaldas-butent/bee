@@ -4,18 +4,17 @@ import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
-import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.SimpleRowSet;
-import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.ejb.EJB;
 import javax.ws.rs.GET;
-import javax.ws.rs.HeaderParam;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
@@ -24,8 +23,6 @@ import javax.ws.rs.core.Response;
 @Path("/")
 public class Worker {
 
-  @EJB
-  UserServiceBean usr;
   @EJB
   QueryServiceBean qs;
   @EJB
@@ -42,18 +39,18 @@ public class Worker {
     return rowSetResponse(companies);
   }
 
-  @GET
-  @Path(EntryPoint.ENTRY)
-  public String entry(@HeaderParam("licence") String licence) {
-    return BeeUtils.joinWords("EJB:", usr.getCurrentUser());
-  }
+  private static Response rowSetResponse(SimpleRowSet rowSet) {
+    List<Map<String, String>> data = new ArrayList<>();
 
-  private Response rowSetResponse(SimpleRowSet rowSet) {
-    Map<String, Object> map = new HashMap<>();
-    map.put("columns", rowSet.getColumnNames());
-    map.put("data", rowSet.getRows());
+    for (int i = 0; i < rowSet.getNumberOfRows(); i++) {
+      Map<String, String> row = new HashMap<>(rowSet.getNumberOfColumns());
 
-    return Response.ok(map, MediaType.APPLICATION_JSON_TYPE.withCharset(BeeConst.CHARSET_UTF8))
+      for (int j = 0; j < rowSet.getNumberOfColumns(); j++) {
+        row.put(rowSet.getColumnName(j), rowSet.getValue(i, j));
+      }
+      data.add(row);
+    }
+    return Response.ok(data, MediaType.APPLICATION_JSON_TYPE.withCharset(BeeConst.CHARSET_UTF8))
         .build();
   }
 }

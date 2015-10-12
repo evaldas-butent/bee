@@ -68,7 +68,7 @@ public enum Action implements BeeSerializable, HasCaption {
   private final String caption;
   private final String styleSuffix;
 
-  private Action(FontAwesome icon, String caption, String styleSuffix) {
+  Action(FontAwesome icon, String caption, String styleSuffix) {
     this.icon = icon;
     this.caption = caption;
     this.styleSuffix = styleSuffix;

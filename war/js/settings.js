@@ -13,6 +13,7 @@ var BeeSettings = {
   "onStartup": {"content": "grid_AssessmentRequests", "force": "*"},
   "clickSensitivityMillis": 100,
   "clickSensitivityDistance": 10,
+  "newsRefreshIntervalSeconds": 60,
   "theme" : {
     "WorkspaceMarginRight": 25,
     "ViewHeaderHeight": "600, 30, 1200, 52",

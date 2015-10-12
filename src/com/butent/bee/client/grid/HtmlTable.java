@@ -468,8 +468,7 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable,
   }
 
   public Widget getWidgetByElement(Element elem) {
-    Assert.notNull(elem);
-    return widgetMap.get(elem);
+    return (elem == null) ? null : widgetMap.get(elem);
   }
 
   public int insertRow(int beforeRow) {
@@ -623,6 +622,12 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable,
   @Override
   public void setId(String id) {
     DomUtils.setId(this, id);
+  }
+
+  public void setKind(TableKind kind) {
+    if (kind != null && !BeeUtils.isEmpty(kind.getStyleSuffix())) {
+      addStyleName(StyleUtils.joinName(STYLE_NAME, kind.getStyleSuffix()));
+    }
   }
 
   public void setText(int row, int column, String text) {

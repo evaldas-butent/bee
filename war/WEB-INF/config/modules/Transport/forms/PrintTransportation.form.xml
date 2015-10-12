@@ -19,7 +19,7 @@
       .&form; tr:first-child {text-align:center; font-weight:bold;}
       .&form; td {border:1px solid black; padding:2px;}
     </css>
-    <Table style="width: 100%">
+    <Table kind="output" style="width: 100%">
       <row style="vertical-align: middle">
         <Image url="images/logo1.gif" style="display:block; max-height: 100px; max-width: 25%;" />
         <cell style="text-align: right;">
@@ -37,7 +37,7 @@
     <FlowPanel name="FirstParagraph" />
     <Label html="1. Transporto duomenys" style="&section;"/>
     <FlowPanel class="&form;" >
-      <Table style="border-spacing: 1px; border 1px solid black;">
+      <Table kind="output" style="border-spacing: 1px; border 1px solid black;">
         <row>
           <Label html="A/m markė"/>
           <Label html="A/m ir P/p valst. nr."/>
@@ -81,7 +81,7 @@
     <Label name="customerFax" text="Atsiųskite šios sutarties kopiją faksu {fax} nurodant visą reikiamą informaciją." />
     <Label html="Sutarties patvirtinimo laukiama per 1 val. nuo jos gavimo, nepatvirtinus sutarties laikoma, kad užsakymas priimtas tarp Užsakovo ir Vežėjo sutinkant su šios sutarties sąlygomis." />
 
-    <Table style="width:100%; margin-top:10px; padding-left: 1em;">
+    <Table kind="output" style="width:100%; margin-top:10px; padding-left: 1em;">
       <row style="&bold;">
         <Label html="Užsakovas" />
         <Label html="Vežėjas" />

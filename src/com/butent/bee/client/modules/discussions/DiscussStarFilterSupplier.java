@@ -24,7 +24,7 @@ final class DiscussStarFilterSupplier extends AbstractFilterSupplier {
 
   private boolean starred;
 
-  public DiscussStarFilterSupplier(String options) {
+  DiscussStarFilterSupplier(String options) {
     super(VIEW_DISCUSSIONS, null, null, options);
   }
 

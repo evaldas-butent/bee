@@ -24,6 +24,7 @@ import com.butent.bee.client.logging.ClientLogManager;
 import com.butent.bee.client.modules.ModuleManager;
 import com.butent.bee.client.modules.administration.AdministrationKeeper;
 import com.butent.bee.client.screen.BodyPanel;
+import com.butent.bee.client.screen.ScreenImpl;
 import com.butent.bee.client.screen.Workspace;
 import com.butent.bee.client.ui.AutocompleteProvider;
 import com.butent.bee.client.ui.Theme;
@@ -205,6 +206,10 @@ public class Bee implements EntryPoint, ClosingHandler {
           case GRIDS:
             Pair<String, String> settings = Pair.restore(serialized);
             GridSettings.load(settings.getA(), settings.getB());
+            break;
+
+          case MAIL:
+            ScreenImpl.updateOnlineEmails(BeeUtils.toInt(serialized));
             break;
 
           case MENU:

@@ -10,7 +10,7 @@
   width="700" height="400"
   >
   <FlowPanel>
-    <Table style="margin-top: 2ex; margin-left: 1em;">
+    <Table kind="controls" style="margin-top: 2ex; margin-left: 1em;">
 
       <col index="0" kind="label" />
       <col index="2" kind="label" />

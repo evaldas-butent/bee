@@ -326,12 +326,12 @@ public class GridMenu {
     private final Action action;
     private final RightsState rightsState;
 
-    private Item(Action action) {
+    Item(Action action) {
       this.action = action;
       this.rightsState = null;
     }
 
-    private Item(RightsState rightsState) {
+    Item(RightsState rightsState) {
       this.action = Action.RIGHTS;
       this.rightsState = rightsState;
     }

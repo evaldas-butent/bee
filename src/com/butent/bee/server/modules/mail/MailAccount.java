@@ -11,6 +11,9 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.mail.AccountInfo;
+import com.butent.bee.shared.modules.mail.MailConstants.MessageFlag;
+import com.butent.bee.shared.modules.mail.MailConstants.Protocol;
+import com.butent.bee.shared.modules.mail.MailConstants.SystemFolder;
 import com.butent.bee.shared.modules.mail.MailFolder;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.ArrayUtils;
@@ -40,33 +43,33 @@ import javax.mail.internet.MimeMessage;
 
 public class MailAccount {
 
-  private static class MailStore {
+  private static final class MailStore {
     final Store store;
     final long start;
     int cnt;
 
-    public MailStore(Store store) {
+    private MailStore(Store store) {
       this.store = Assert.notNull(store);
       this.start = System.currentTimeMillis();
     }
 
-    public void enter() {
+    private void enter() {
       cnt++;
     }
 
-    public boolean expired() {
+    private boolean expired() {
       return BeeUtils.isMore(System.currentTimeMillis() - start, TimeUtils.MILLIS_PER_MINUTE * 10L);
     }
 
-    public Store getStore() {
+    private Store getStore() {
       return store;
     }
 
-    public boolean idle() {
+    private boolean idle() {
       return cnt <= 0;
     }
 
-    public void leave() {
+    private void leave() {
       cnt--;
     }
   }
@@ -569,7 +572,7 @@ public class MailAccount {
         remoteSource.copyMessages(messages.toArray(new Message[0]), remoteTarget);
       }
       if (move) {
-        for (Iterator<Message> iterator = messages.iterator(); iterator.hasNext(); ) {
+        for (Iterator<Message> iterator = messages.iterator(); iterator.hasNext();) {
           Message message = iterator.next();
 
           if (message.isExpunged()) {

@@ -115,7 +115,7 @@ import java.util.Set;
 
 public class MailPanel extends AbstractFormInterceptor {
 
-  private class EnvelopeRenderer extends AbstractCellRenderer {
+  private final class EnvelopeRenderer extends AbstractCellRenderer {
     private final int folderIdx;
     private final int senderEmail;
     private final int senderLabel;
@@ -124,7 +124,7 @@ public class MailPanel extends AbstractFormInterceptor {
     private final int flagsIdx;
     private final int attachmentCount;
 
-    public EnvelopeRenderer(CellSource cellSource, List<? extends IsColumn> dataColumns) {
+    private EnvelopeRenderer(CellSource cellSource, List<? extends IsColumn> dataColumns) {
       super(cellSource);
 
       folderIdx = DataUtils.getColumnIndex(COL_FOLDER, dataColumns);
@@ -198,11 +198,11 @@ public class MailPanel extends AbstractFormInterceptor {
     }
   }
 
-  private static class FlagRenderer extends AbstractCellRenderer {
+  private static final class FlagRenderer extends AbstractCellRenderer {
 
     private final int flags;
 
-    public FlagRenderer(CellSource cellSource, List<? extends IsColumn> dataColumns) {
+    private FlagRenderer(CellSource cellSource, List<? extends IsColumn> dataColumns) {
       super(cellSource);
       flags = DataUtils.getColumnIndex(COL_FLAGS, dataColumns);
     }
@@ -381,7 +381,7 @@ public class MailPanel extends AbstractFormInterceptor {
     private InputText searchWidget;
     private FaLabel searchOptions;
 
-    public SearchPanel() {
+    private SearchPanel() {
       setStyleName(CSS_SEARCH_PREFIX + "Panel");
       LocalizableConstants loc = Localized.getConstants();
 
@@ -448,7 +448,7 @@ public class MailPanel extends AbstractFormInterceptor {
       add(search);
     }
 
-    public void clearSearch() {
+    private void clearSearch() {
       for (Editor editor : criteria.values()) {
         editor.clearValue();
       }
@@ -463,7 +463,7 @@ public class MailPanel extends AbstractFormInterceptor {
       refreshMessages(false);
     }
 
-    public Map<String, String> getSearchCriteria() {
+    private Map<String, String> getSearchCriteria() {
       Map<String, String> map = new HashMap<>();
 
       for (Entry<String, Editor> entry : criteria.entrySet()) {
@@ -476,14 +476,14 @@ public class MailPanel extends AbstractFormInterceptor {
       return map;
     }
 
-    public boolean searchInCurrentFolder() {
+    private boolean searchInCurrentFolder() {
       if (folderContainer.getWidget() != null) {
         return ((InputBoolean) folderContainer.getWidget()).isChecked();
       }
       return false;
     }
 
-    public void setSearchOptionsWidget(final FaLabel widget) {
+    private void setSearchOptionsWidget(final FaLabel widget) {
       searchOptions = widget;
       searchOptions.addClickHandler(new ClickHandler() {
         @Override
@@ -508,7 +508,7 @@ public class MailPanel extends AbstractFormInterceptor {
       });
     }
 
-    public void setSearchWidget(InputText widget) {
+    private void setSearchWidget(InputText widget) {
       searchWidget = widget;
       searchWidget.addValueChangeHandler(new ValueChangeHandler<String>() {
         @Override

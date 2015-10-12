@@ -7,7 +7,7 @@
   height="250" width="400">
   
   <FlowPanel style="padding: 15px 1em;">
-    <Table style="border-spacing: 5px;">
+    <Table kind="controls" style="border-spacing: 5px;">
       <row>
         <Label text="=groupName" class="bee-required" horizontalAlignment="right" style="&lbl1;" />
         <InputText source="Name" />

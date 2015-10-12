@@ -18,7 +18,7 @@
 
     <Disclosure open="true">
       <Label text="=filters" />
-      <Table>
+      <Table kind="controls">
         <row>
           <Label for="CompanyPriority" visible="true" style="&lbl;" />
           <DataSelector source="CompanyPriority" style="&inpw;" visible="true" />

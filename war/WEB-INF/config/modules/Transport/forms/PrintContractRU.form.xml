@@ -27,7 +27,7 @@
     </TextLabel>
     <DateLabel source="Date" style="text-align:center; font-size: 11px; font-family: 'Tahoma';" />
 
-    <Table class="&form;-table" style="&section; font-size: 11px; font-family: 'Tahoma';">
+    <Table kind="output" class="&form;-table" style="&section; font-size: 11px; font-family: 'Tahoma';">
       <row>
         <cell style="vertical-align:top;">
           <FlowPanel name="Forwarder" class="&form;-forwarder">
@@ -136,7 +136,7 @@ return descr;
     <Label html="Данный договор, подписанный по факсимильной копии, имеет такую же юридическую силу, как и оригинал. Прошу подтвердить договор."
       style="&section; font-style:italic; font-weight:bold; font-size:8px; font-family: 'Arial'; margin-left: 10px;" />
 
-    <Table style="width:100%; margin-top:10px;">
+    <Table kind="output" style="width:100%; margin-top:10px;">
       <row style="&bold; font-size: 11px; font-family: 'Tahoma';">
         <Label html="Перевозчик" />
         <Label html="Заказчик" />

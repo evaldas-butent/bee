@@ -4,7 +4,6 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.utils.EnumUtils;
 
@@ -34,7 +33,7 @@ public final class DiscussionsConstants {
     private final String commandLabel;
     private final FontAwesome commandIcon;
 
-    private DiscussionEvent(String caption, String commandLabel, FontAwesome commandIcon) {
+    DiscussionEvent(String caption, String commandLabel, FontAwesome commandIcon) {
       this.caption = caption;
       this.commandLabel = commandLabel;
       this.commandIcon = commandIcon;
@@ -83,7 +82,7 @@ public final class DiscussionsConstants {
       return status != null && ordinal() == status;
     }
 
-    private DiscussionStatus(String caption) {
+    DiscussionStatus(String caption) {
       this.caption = caption;
     }
 
@@ -230,7 +229,6 @@ public final class DiscussionsConstants {
   public static final String VIEW_DISCUSSIONS_MARK_TYPES = "DiscussMarkTypes";
   public static final String VIEW_ADS_TOPICS = "AdsTopics";
 
-  public static final long DEFAUT_DISCCUSS_TIMER_TIMEOUT = 12 * TimeUtils.MILLIS_PER_HOUR;
   public static final int DEFAULT_BIRTHDAYS_DAYS_RANGE = 6;
 
   private DiscussionsConstants() {

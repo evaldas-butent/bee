@@ -2,7 +2,7 @@
 <!DOCTYPE Table [
   <!ENTITY lbl "margin-left: 1em; margin-right: 1em; text-align: right">
 ]>
-<Table xmlns="http://www.butent.com/widget" xmlns:ui="http://www.butent.com/ui">
+<Table xmlns="http://www.butent.com/widget" xmlns:ui="http://www.butent.com/ui" kind="controls">
   <row>
     <Label text="=phones" style="&lbl;" for="Phone" />
     <InputText source="Phone" summarize="true" />
@@ -43,19 +43,17 @@
     </DataSelector>
 
     <Label text="=country" style="&lbl;" for="Country" />
-    <Table for="Country">
-      <row>
-        <DataSelector source="Country" style="width: 120px;" summarize="true">
-          <renderToken source="CountryName" />
-          <renderToken source="CountryCode" prefix=" (" suffix=")" />
-          <selectorColumn source="Name" />
-          <selectorColumn source="Code">
-            <ui:renderer type="flag" />
-          </selectorColumn>
-        </DataSelector>
-        <Flag source="CountryCode" style="width: 22px;" />
-      </row>
-    </Table>
+    <HorizontalPanel for="Country">
+      <DataSelector source="Country" style="width: 120px;" summarize="true">
+        <renderToken source="CountryName" />
+        <renderToken source="CountryCode" prefix=" (" suffix=")" />
+        <selectorColumn source="Name" />
+        <selectorColumn source="Code">
+          <ui:renderer type="flag" />
+        </selectorColumn>
+      </DataSelector>
+      <Flag source="CountryCode" style="width: 22px;" />
+    </HorizontalPanel>
 
     <Label text="=postIndex" style="&lbl;" for="PostIndex" />
     <InputText source="PostIndex" summarize="true" />

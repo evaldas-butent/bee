@@ -7,7 +7,7 @@
   >
   <FlowPanel>
     <FlowPanel class="flexBox-vertical-center">
-      <Table>
+      <Table kind="controls">
         <row>
           <Label for="Description" horizontalAlignment="right" />
           <InputText source="Description" style="width:200px" />
@@ -29,7 +29,7 @@
 
     <FlowPanel class="flexBox-horizontal">
       <FlowPanel class="flexBox-vertical-center flexible">
-        <Table style="border-spacing:5px">
+        <Table kind="controls" style="border-spacing:5px">
           <row>
             <cell colSpan="2">
               <Label text="=mailServerSettings" style="font-weight:bold; text-align:center;" />

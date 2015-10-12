@@ -714,7 +714,7 @@ public enum FontAwesome {
 
   private final char code;
 
-  private FontAwesome(char code) {
+  FontAwesome(char code) {
     this.code = code;
   }
 

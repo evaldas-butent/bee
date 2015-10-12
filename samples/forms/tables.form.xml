@@ -28,7 +28,7 @@
       <html>html</html>
     </VerticalPanel>
 
-    <Table class="test">
+    <Table kind="custom" class="test">
       <col index="0" width="150" widthUnit="px" />
       <col index="1" width="300" widthUnit="px" />
 

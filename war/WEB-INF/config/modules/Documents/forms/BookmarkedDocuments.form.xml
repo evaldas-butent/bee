@@ -10,7 +10,7 @@
   disabledActions="save"
   >
   <FlowPanel class="flexBox-vertical">
-    <Table style="width:100%;">
+    <Table kind="controls" style="width:100%;">
       <row>
         <Label style="&lblRight;" text="=name" />
         <InputText style="&inpLeft;" source="CategoryName" readOnly="true" />

@@ -27,7 +27,7 @@
     </TextLabel>
     <DateLabel source="Date" style="text-align:center; font-size: 11px; font-family: 'Tahoma';" />
 
-    <Table class="&form;-table" style="&section; font-size: 10px; font-family: 'Tahoma';">
+    <Table kind="output" class="&form;-table" style="&section; font-size: 10px; font-family: 'Tahoma';">
       <row>
         <cell style="vertical-align:top;">
           <FlowPanel name="Forwarder" class="&form;-forwarder">
@@ -135,7 +135,7 @@ return descr;
     <Label html="This Order, signed and sent by fax, has the same legal effect as the original. Please confirm the Order."
       style="&section; font-style:italic; font-weight:bold; font-size:8px; font-family: 'Arial'; margin-left: 10px;" />
 
-    <Table style="width:100%; margin-top:10px;">
+    <Table kind="output" style="width:100%; margin-top:10px;">
        <row style="&bold; font-size: 11px; font-family: 'Tahoma';">
         <Label html="Carrier" />
         <Label html="Customer" />

@@ -18,7 +18,7 @@
   >
   <FlowPanel class="flexBox-vertical">
 
-    <Table style="margin: 0 0 25px 30px;">
+    <Table kind="controls" style="margin: 0 0 25px 30px;">
       <Label text="=companyInfo" style="padding-bottom: 10px; padding-top:10px"></Label>
       <row>
         <Label text="=name" class="bee-required" style="&lbl2;" />

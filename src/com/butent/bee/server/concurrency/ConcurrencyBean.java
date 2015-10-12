@@ -6,15 +6,19 @@ import com.google.common.eventbus.Subscribe;
 
 import com.butent.bee.server.Config;
 import com.butent.bee.server.Invocation;
+import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.modules.ParameterEvent;
 import com.butent.bee.server.modules.ParameterEventHandler;
+import com.butent.bee.server.websocket.Endpoint;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
+import com.butent.bee.shared.websocket.messages.LogMessage;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -29,6 +33,7 @@ import javax.ejb.Lock;
 import javax.ejb.LockType;
 import javax.ejb.ScheduleExpression;
 import javax.ejb.Singleton;
+import javax.ejb.TimedObject;
 import javax.ejb.Timer;
 import javax.ejb.TimerConfig;
 import javax.ejb.TimerService;
@@ -42,7 +47,7 @@ import javax.transaction.UserTransaction;
 @TransactionManagement(TransactionManagementType.BEAN)
 public class ConcurrencyBean {
 
-  public interface HasTimerService {
+  public interface HasTimerService extends TimedObject {
     TimerService getTimerService();
   }
 
@@ -60,17 +65,17 @@ public class ConcurrencyBean {
     }
   }
 
-  private static class Worker extends FutureTask<Void> {
+  private static final class Worker extends FutureTask<Void> {
 
     private long start;
     private final AsynchronousRunnable runnable;
 
-    public Worker(AsynchronousRunnable runnable) {
+    private Worker(AsynchronousRunnable runnable) {
       super(runnable, null);
       this.runnable = runnable;
     }
 
-    public String getId() {
+    private String getId() {
       String id = runnable.getId();
       return BeeUtils.isEmpty(id) ? runnable.toString()
           : BeeUtils.joinWords(id, Integer.toHexString(hashCode()));
@@ -123,6 +128,8 @@ public class ConcurrencyBean {
 
   @EJB
   ParamHolderBean prm;
+  @EJB
+  UserServiceBean usr;
   @Resource
   ManagedExecutorService executor;
   @Resource
@@ -194,6 +201,9 @@ public class ConcurrencyBean {
         logger.info("Created", NameUtils.getClassName(handler), parameter, "timer on hours [",
             hours, "] starting at", timer.getNextTimeout());
       } catch (IllegalArgumentException ex) {
+        if (DataUtils.isId(usr.getCurrentUserId())) {
+          Endpoint.sendToUser(usr.getCurrentUserId(), LogMessage.error(ex));
+        }
         logger.error(ex);
       }
     }
@@ -234,11 +244,15 @@ public class ConcurrencyBean {
         logger.info("Created", NameUtils.getClassName(handler), parameter, "timer every", minutes,
             "minutes starting at", timer.getNextTimeout());
       } catch (IllegalArgumentException ex) {
+        if (DataUtils.isId(usr.getCurrentUserId())) {
+          Endpoint.sendToUser(usr.getCurrentUserId(), LogMessage.error(ex));
+        }
         logger.error(ex);
       }
     }
   }
 
+  @Lock(LockType.READ)
   public boolean isParameterTimer(Timer timer, Object parameter) {
     if (!Config.isInitialized()) {
       return false;

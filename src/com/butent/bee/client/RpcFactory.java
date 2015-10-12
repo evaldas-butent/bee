@@ -76,7 +76,7 @@ public class RpcFactory {
     Assert.notEmpty(method);
 
     ParameterList params = createParameters(module.getName());
-    params.addQueryItem(Service.VAR_METHOD, method);
+    params.addQueryItem(Service.RPC_VAR_SUB, method);
 
     return params;
   }
@@ -139,7 +139,7 @@ public class RpcFactory {
     Assert.notEmpty(method);
 
     ParameterList params = createParameters(Service.INVOKE);
-    params.addQueryItem(Service.VAR_METHOD, method);
+    params.addQueryItem(Service.RPC_VAR_SUB, method);
 
     if (data == null) {
       return makeGetRequest(params, callback);
@@ -323,7 +323,7 @@ public class RpcFactory {
     if (debug) {
       logger.info("request", id, meth.toString(), url);
     } else {
-      logger.info(">", id, svc);
+      logger.info(">", id, svc, params.getSubService());
     }
 
     String content = null;

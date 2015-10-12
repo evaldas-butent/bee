@@ -19,7 +19,7 @@ public final class ProjectConstants {
     private final String commandLabel;
     private final FontAwesome commandIcon;
 
-    private ProjectEvent(String caption, String commandLabel, FontAwesome commandIcon) {
+    ProjectEvent(String caption, String commandLabel, FontAwesome commandIcon) {
       this.caption = caption;
       this.commandLabel = commandLabel;
       this.commandIcon = commandIcon;

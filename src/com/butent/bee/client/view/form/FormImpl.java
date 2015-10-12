@@ -1292,17 +1292,19 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
 
         Set<String> refreshed = new HashSet<>();
 
-        if (event.hasRelation() && source instanceof EditableWidget) {
-          refreshed.addAll(refreshEditableWidget(index));
-        }
-
-        if (!event.hasRelation() && event.isRowMode()) {
+        if (event.isRowMode()) {
           refreshed.addAll(refreshEditableWidgets());
 
-        } else if (!BeeUtils.isEmpty(updatedColumns)) {
-          for (String uc : updatedColumns) {
-            if (!column.getId().equals(uc)) {
-              refreshed.addAll(refreshEditableWidget(getDataIndex(uc)));
+        } else {
+          if (event.hasRelation() && source instanceof EditableWidget) {
+            refreshed.addAll(refreshEditableWidget(index));
+          }
+
+          if (!BeeUtils.isEmpty(updatedColumns)) {
+            for (String uc : updatedColumns) {
+              if (!column.getId().equals(uc)) {
+                refreshed.addAll(refreshEditableWidget(getDataIndex(uc)));
+              }
             }
           }
         }

@@ -39,7 +39,7 @@ public enum CssTime implements HasCaption {
 
   private final String caption;
 
-  private CssTime(String caption) {
+  CssTime(String caption) {
     this.caption = caption;
   }
 

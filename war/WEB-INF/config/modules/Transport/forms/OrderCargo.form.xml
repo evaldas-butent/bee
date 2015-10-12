@@ -11,7 +11,7 @@
         width="900" height="870"
     >
   <FlowPanel class="flexBox-vertical">
-    <Table cellStyle="padding-top: 3px; padding-bottom: 3px;">
+    <Table kind="controls" cellStyle="padding-top: 3px; padding-bottom: 3px;">
       <row>
         <cell kind="label">
           <Label for="Description" />
@@ -59,7 +59,7 @@
             <xi:include href="widgets/CargoPlaces.widget.xml" />
 
             <FlowPanel>
-              <Table>
+              <Table kind="controls">
                 <row>
                   <Label text="=cargoChangeOfPallets" style="&lbl1;" />
                   <InputInteger source="ExchangeOfPalettes" style="width:70px" />
@@ -69,7 +69,7 @@
                   <InputInteger source="Palettes" style="width:70px" />
                 </row>
               </Table>
-              <Table>
+              <Table kind="controls">
                 <row>
                   <CheckBox source="Dangerous" text="=dangerous" />
                 </row>
@@ -80,7 +80,7 @@
                   <CheckBox name="Partial" source="Partial" text="=partial" />
                 </row>
               </Table>
-              <Table name="Metrics">
+              <Table name="Metrics" kind="controls">
                 <row>
                   <Label text="=length" horizontalAlignment="right" style="&lbl1;" />
                   <InputDecimal source="Length" format="0.00" style="width:70px" />
@@ -107,7 +107,7 @@
 
           &separator;
 
-          <Table>
+          <Table kind="controls">
             <row>
               <Label html="CMR" horizontalAlignment="right" style="&lbl1;" module="Documents" />
               <DataSelector source="Cmr" caching="none" newRowEnabled="false" module="Documents" />

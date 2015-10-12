@@ -537,7 +537,7 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
     }
   }
 
-  private class StatusUpdater implements ClickHandler {
+  private final class StatusUpdater implements ClickHandler {
 
     private final AssessmentStatus status;
     private final OrderStatus orderStatus;
@@ -545,15 +545,15 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
     private final boolean request;
     private final String confirmationQuestion;
 
-    public StatusUpdater(AssessmentStatus status, String confirm) {
+    private StatusUpdater(AssessmentStatus status, String confirm) {
       this(status, null, false, confirm);
     }
 
-    public StatusUpdater(OrderStatus orderStatus, String confirm) {
+    private StatusUpdater(OrderStatus orderStatus, String confirm) {
       this(orderStatus, null, false, confirm);
     }
 
-    public StatusUpdater(AssessmentStatus status, OrderStatus orderStatus, boolean check,
+    private StatusUpdater(AssessmentStatus status, OrderStatus orderStatus, boolean check,
         String confirm) {
       this.status = status;
       this.orderStatus = orderStatus;
@@ -562,7 +562,7 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
       this.request = true;
     }
 
-    public StatusUpdater(OrderStatus orderStatus, AssessmentStatus status, boolean check,
+    private StatusUpdater(OrderStatus orderStatus, AssessmentStatus status, boolean check,
         String confirm) {
       this.status = status;
       this.orderStatus = orderStatus;

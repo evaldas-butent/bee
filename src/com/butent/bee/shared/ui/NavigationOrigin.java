@@ -9,7 +9,7 @@ public enum NavigationOrigin {
 
   private final boolean shiftActiveRow;
 
-  private NavigationOrigin(boolean shiftActiveRow) {
+  NavigationOrigin(boolean shiftActiveRow) {
     this.shiftActiveRow = shiftActiveRow;
   }
 

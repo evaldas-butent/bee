@@ -60,7 +60,7 @@ class TradeActItemPicker extends ItemsPicker {
   }
 
   @Override
-  public boolean setIsOrder() {
+  public boolean setIsOrder(IsRow row) {
     return false;
   }
 }

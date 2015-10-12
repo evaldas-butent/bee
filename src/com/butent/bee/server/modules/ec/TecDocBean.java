@@ -65,7 +65,6 @@ import javax.ejb.Asynchronous;
 import javax.ejb.EJB;
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
-import javax.ejb.Timeout;
 import javax.ejb.Timer;
 import javax.ejb.TimerService;
 import javax.imageio.ImageIO;
@@ -96,7 +95,7 @@ public class TecDocBean implements HasTimerService {
     });
   }
 
-  private static class RemoteItem {
+  private static final class RemoteItem {
     private final String supplierId;
     private final Double cost;
     private final String brand;
@@ -105,7 +104,7 @@ public class TecDocBean implements HasTimerService {
     private final String descr;
     private Map<String, Double> prices;
 
-    public RemoteItem(String supplierId, String brand, String articleNr, Double cost,
+    private RemoteItem(String supplierId, String brand, String articleNr, Double cost,
         String name, String descr) {
       this.supplierId = supplierId;
       this.brand = brand;
@@ -115,7 +114,7 @@ public class TecDocBean implements HasTimerService {
       this.descr = descr;
     }
 
-    public void addPrice(String priceList, Double price) {
+    private void addPrice(String priceList, Double price) {
       if (prices == null) {
         prices = new HashMap<>();
       }
@@ -123,12 +122,12 @@ public class TecDocBean implements HasTimerService {
     }
   }
 
-  private static class RemoteRemainder {
+  private static final class RemoteRemainder {
     private final String supplierId;
     private final String warehouse;
     private final Double remainder;
 
-    public RemoteRemainder(String supplierId, String warehouse, Double remainder) {
+    private RemoteRemainder(String supplierId, String warehouse, Double remainder) {
       this.supplierId = supplierId;
       this.warehouse = warehouse;
       this.remainder = remainder;
@@ -330,6 +329,15 @@ public class TecDocBean implements HasTimerService {
     return newArt;
   }
 
+  @Override
+  public void ejbTimeout(Timer timer) {
+    if (cb.isParameterTimer(timer, PRM_BUTENT_INTERVAL)) {
+      suckButent(true);
+    } else if (cb.isParameterTimer(timer, PRM_MOTONET_HOURS)) {
+      suckMotonet(true);
+    }
+  }
+
   public Collection<BeeParameter> getDefaultParameters() {
     return Lists.newArrayList(
         BeeParameter.createMap(Module.ECOMMERCE.getName(), PRM_BUTENT_PRICES),
@@ -400,8 +408,8 @@ public class TecDocBean implements HasTimerService {
 
       SimpleRowSet rows = ButentWS.connect(remoteAddress, remoteLogin, remotePassword)
           .getSQLData("SELECT " + fldList.toString()
-                  + " FROM prekes"
-                  + " WHERE " + itemsFilter,
+              + " FROM prekes"
+              + " WHERE " + itemsFilter,
               fields.keySet().toArray(new String[0]));
 
       if (rows.getNumberOfRows() > 0) {
@@ -422,11 +430,11 @@ public class TecDocBean implements HasTimerService {
       }
       rows = ButentWS.connect(remoteAddress, remoteLogin, remotePassword)
           .getSQLData("SELECT likuciai.sandelis AS sn, likuciai.preke AS pr,"
-                  + " sum(likuciai.kiekis) AS lk"
-                  + " FROM likuciai INNER JOIN sand"
-                  + " ON likuciai.sandelis = sand.sandelis AND sand.sand_mode LIKE '%e%'"
-                  + " INNER JOIN prekes ON likuciai.preke = prekes.preke AND " + itemsFilter
-                  + " GROUP by likuciai.sandelis, likuciai.preke HAVING lk > 0",
+              + " sum(likuciai.kiekis) AS lk"
+              + " FROM likuciai INNER JOIN sand"
+              + " ON likuciai.sandelis = sand.sandelis AND sand.sand_mode LIKE '%e%'"
+              + " INNER JOIN prekes ON likuciai.preke = prekes.preke AND " + itemsFilter
+              + " GROUP by likuciai.sandelis, likuciai.preke HAVING lk > 0",
               "sn", "pr", "lk");
 
       if (rows.getNumberOfRows() > 0) {
@@ -552,11 +560,11 @@ public class TecDocBean implements HasTimerService {
                 SqlUtils.join("tof_country_designations", "cds_lng_id", "tof_languages", "lng_id"),
                 SqlUtils.equals("tof_languages", "lng_iso2", "lt")))
             .setWhere(SqlUtils.equals(SqlUtils.expression("SUBSTRING(",
-                    SqlUtils.field("tof_country_designations", "cds_ctm"), ", LOCATE('1', (",
-                    new SqlSelect()
-                        .addFields("tof_countries", "cou_ctm")
-                        .addFrom("tof_countries")
-                        .setWhere(SqlUtils.equals("tof_countries", "cou_iso2", "LT")), ")), 1)"),
+                SqlUtils.field("tof_country_designations", "cds_ctm"), ", LOCATE('1', (",
+                new SqlSelect()
+                    .addFields("tof_countries", "cou_ctm")
+                    .addFrom("tof_countries")
+                    .setWhere(SqlUtils.equals("tof_countries", "cou_iso2", "LT")), ")), 1)"),
                 "1"))));
 
     init.add(SqlUtils.createPrimaryKey(cds, SqlUtils.uniqueName(),
@@ -587,7 +595,7 @@ public class TecDocBean implements HasTimerService {
                             SqlUtils.join("tof_designations", "des_lng_id", "tof_languages",
                                 "lng_id"),
                             SqlUtils.equals("tof_languages", "lng_iso2", "lt")))
-                ))))));
+                    ))))));
 
     init.add(SqlUtils.createPrimaryKey(des, SqlUtils.uniqueName(),
         Collections.singletonList("des_id")));
@@ -945,15 +953,6 @@ public class TecDocBean implements HasTimerService {
     }
   }
 
-  @Timeout
-  private void doTimerEvent(Timer timer) {
-    if (cb.isParameterTimer(timer, PRM_BUTENT_INTERVAL)) {
-      suckButent(true);
-    } else if (cb.isParameterTimer(timer, PRM_MOTONET_HOURS)) {
-      suckMotonet(true);
-    }
-  }
-
   private void importArticles(String art) {
     // ---------------- TcdArticles
     String tcdArticles = SqlUtils.table(TCD_SCHEMA, TBL_TCD_ARTICLES);
@@ -1071,11 +1070,11 @@ public class TecDocBean implements HasTimerService {
     qs.updateData(new SqlUpdate(TBL_TCD_CATEGORIES)
         .addExpression(COL_TCD_CATEGORY_PARENT, SqlUtils.field(als, COL_TCD_CATEGORY_PARENT))
         .setFrom(new SqlSelect()
-                .addFields(categ, COL_TCD_CATEGORY_PARENT)
-                .addFields(TBL_TCD_TECDOC_CATEGORIES, COL_TCD_CATEGORY)
-                .addFrom(categ)
-                .addFromInner(TBL_TCD_TECDOC_CATEGORIES, SqlUtils.join(categ, TCD_CATEGORY_ID,
-                    TBL_TCD_TECDOC_CATEGORIES, TCD_TECDOC_ID)),
+            .addFields(categ, COL_TCD_CATEGORY_PARENT)
+            .addFields(TBL_TCD_TECDOC_CATEGORIES, COL_TCD_CATEGORY)
+            .addFrom(categ)
+            .addFromInner(TBL_TCD_TECDOC_CATEGORIES, SqlUtils.join(categ, TCD_CATEGORY_ID,
+                TBL_TCD_TECDOC_CATEGORIES, TCD_TECDOC_ID)),
             als, sys.joinTables(TBL_TCD_CATEGORIES, als, COL_TCD_CATEGORY)));
 
     qs.sqlDropTemp(categ);
@@ -1248,7 +1247,7 @@ public class TecDocBean implements HasTimerService {
           .addFields(resource, COL_TCD_GRAPHICS_RESOURCE)
           .addFrom(resource)
           .addFromInner(graph, SqlUtils.and(SqlUtils.equals(graph,
-                  TCD_GRAPHICS_RESOURCE_NO, part),
+              TCD_GRAPHICS_RESOURCE_NO, part),
               SqlUtils.joinUsing(resource, graph, TCD_GRAPHICS_RESOURCE_ID)))
           .addOrder(resource, TCD_GRAPHICS_RESOURCE_ID);
 
@@ -1523,7 +1522,7 @@ public class TecDocBean implements HasTimerService {
             .addMax(tmpPrices, col, COL_TCD_PRICE)
             .addFrom(tmpPrices)
             .addFromLeft(TBL_TCD_ARTICLE_PRICES, SqlUtils.and(SqlUtils.joinUsing(tmpPrices,
-                    TBL_TCD_ARTICLE_PRICES, COL_TCD_ARTICLE),
+                TBL_TCD_ARTICLE_PRICES, COL_TCD_ARTICLE),
                 SqlUtils.equals(TBL_TCD_ARTICLE_PRICES, COL_TCD_PRICELIST, id)))
             .addGroup(tmpPrices, COL_TCD_ARTICLE)
             .addGroup(TBL_TCD_ARTICLE_PRICES, sys.getIdName(TBL_TCD_ARTICLE_PRICES)));
@@ -1551,7 +1550,7 @@ public class TecDocBean implements HasTimerService {
 
     qs.updateData(new SqlDelete(TBL_TCD_ORPHANS)
         .setWhere(SqlUtils.and(SqlUtils.not(SqlUtils.in(TBL_TCD_ORPHANS, COL_TCD_SUPPLIER_ID, tmp,
-                COL_TCD_SUPPLIER_ID)),
+            COL_TCD_SUPPLIER_ID)),
             SqlUtils.equals(TBL_TCD_ORPHANS, COL_TCD_SUPPLIER, supplier.ordinal()))));
 
     importBrands(new SqlSelect()
@@ -1587,7 +1586,7 @@ public class TecDocBean implements HasTimerService {
         .addFrom(TBL_TCD_REMAINDERS)
         .addFromInner(TBL_TCD_ARTICLE_SUPPLIERS,
             SqlUtils.and(SqlUtils.equals(TBL_TCD_ARTICLE_SUPPLIERS, COL_TCD_SUPPLIER,
-                    supplier.ordinal()),
+                supplier.ordinal()),
                 sys.joinTables(TBL_TCD_ARTICLE_SUPPLIERS, TBL_TCD_REMAINDERS,
                     COL_TCD_ARTICLE_SUPPLIER)))
         .addFromInner(TBL_WAREHOUSES,

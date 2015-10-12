@@ -10,3 +10,109 @@
   background-color: #80c4f9;
   cursor: auto;
 }
+
+.bee-payroll-ws-table td {
+  border: 1px solid #ccc;
+  padding: 2px;
+}
+
+.bee-payroll-ws-table .bee-payroll-ws-month-selector-cell {
+  text-align: center;
+  border-bottom-color: transparent;
+}
+.bee-payroll-ws-month-selector {
+  font-weight: bolder;
+}
+
+.bee-payroll-ws-month-panel {
+  display: flex;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  flex-direction: row;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  justify-content: space-around;
+  -webkit-justify-content: space-around;
+  -ms-flex-pack: justify;
+  align-items: center;
+  -webkit-align-items: center;
+  -ms-flex-align: center;
+}
+.bee-payroll-ws-month-label {
+  padding: 2px 10px;
+  cursor: pointer;
+}
+.bee-payroll-ws-month-active {
+  background-color: #80c4f9;
+  cursor: auto;
+}
+.bee-payroll-ws-day-label {
+  min-width: 2em;
+  text-align: center;
+}
+
+.bee-payroll-ws-employee-name {
+  cursor: pointer;
+  font-weight: bolder;
+}
+
+.bee-payroll-ws-weekend {
+  background-color: #f2f2f2;
+}
+.bee-payroll-ws-holiday {
+  background-color: #ffe0e0;
+}
+.bee-payroll-ws-day-label-cell.bee-payroll-ws-today {
+  outline: #f99 ridge 5px;
+}
+
+.bee-payroll-ws-day-content-cell {
+  text-align: center;
+  cursor: pointer;
+}
+.bee-payroll-ws-tc-change,
+.bee-payroll-ws-item {
+  padding-top: 3px;
+  padding-bottom: 3px;
+}
+.bee-payroll-ws-item-tc {
+  border-radius: 20%;
+}
+
+.bee-payroll-ws-input-mode-panel {
+  display: flex;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  justify-content: flex-end;
+  -webkit-justify-content: flex-end;
+  -ms-flex-pack: end;
+  align-items: center;
+  -webkit-align-items: center;
+  -ms-flex-align: center;
+  text-align: right;
+}
+.bee-payroll-ws-input-mode-simple,
+.bee-payroll-ws-input-mode-full {
+  margin-left: 10px;
+  margin-right: 10px;
+  cursor: pointer;
+}
+.bee-payroll-ws-input-mode-toggle {
+  font-size: large;
+  cursor: pointer;
+}
+.bee-payroll-ws-input-mode-active {
+  font-weight: bolder;
+  cursor: auto;
+}
+
+.bee-payroll-ws-inactive {
+  background-image: url(../images/checkered_background.png);
+}
+.bee-payroll-ws-overlap-warn {
+  background-color: yellow;
+}
+.bee-payroll-ws-overlap-err {
+  background-color: red;
+  color: white;
+}

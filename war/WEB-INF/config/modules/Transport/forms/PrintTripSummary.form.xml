@@ -39,15 +39,15 @@
     <br />
     <br />
 
-    <Table style="width:100%">
+    <Table kind="output" style="width:100%">
       <col index="0" style="width:30%;" />
       <row>
         <Label text="Pagrindinis vairuotojas" />
         <TextLabel source="Driver" />
       </row>
       <row>
-        <Label text="Kiti vairuotojai" />
-        <Label name="TripDrivers" />
+        <Label text="Antras vairuotojas" />
+        <Label name="TripDrivers1" />
       </row>
       <row>
         <Label for="Route" />
@@ -67,7 +67,7 @@
 
     <Label text="1. Kelionės lapo informacija:" style="font-weight:bold;" />
 
-    <Table class="&form;-table" style="text-align:center;">
+    <Table kind="output" class="&form;-table" style="text-align:center;">
       <col index="0" cellStyle="text-align:left;" />
       <row>
         <text />
@@ -82,7 +82,7 @@
         <TextLabel>
           <render>
             <ui:expression>
-              row.DateFrom &amp;&amp; row.DateTo ? (row.DateTo - row.DateFrom) / (1000*24*3600) : ''
+              row.DateFrom &amp;&amp; row.DateTo ? (row.DateTo - row.DateFrom) / (1000*24*3600) + 1 : ''
             </ui:expression>
           </render>
         </TextLabel>
@@ -132,7 +132,7 @@
 
     <br />
     <Label text="4. REISO IŠLAIDŲ SUVESTINĖ" style="font-weight:bold;" />
-    <Table class="&form;-table">
+    <Table kind="output" class="&form;-table">
       <row>
         <Label text="Kompensuotinos išlaidos (2)" />
         <Label name="DriverCostsTotal" class="Amount" />
@@ -164,7 +164,7 @@
 
     <br />
 
-    <Table style="width:100%">
+    <Table kind="output" style="width:100%">
       <col index="1" cellStyle="text-align:right;" />
       <row>
         <Label name="User" />

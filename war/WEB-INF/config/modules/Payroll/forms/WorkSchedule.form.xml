@@ -2,8 +2,9 @@
 <!DOCTYPE Form>
 <f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form"
 
-  name="WorkSchedule" caption="=workSchedule">
-
+  name="WorkSchedule" caption="=workSchedule"
+  enabledActions="refresh"
+  >
   <FlowPanel class="flexBox-vertical">
     <FlowPanel name="Objects" 
       style="max-height: 20%; overflow: auto; margin-top: 1ex; margin-left: 1em;" />
@@ -11,7 +12,7 @@
     <HorizontalPanel style="margin: 2ex 1em;">
       <Label text="=object" style="padding-right: 1em;" />
       <UnboundSelector viewName="Locations" renderColumns="LocationName CompanyName"
-        style="width: 400px;" />
+        newRowEnabled="false" editPopup="true" style="width: 400px;" />
     </HorizontalPanel>
     
     <FlowPanel name="Schedule" class="flexible" style="overflow: auto;" />

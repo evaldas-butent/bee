@@ -1,4 +1,4 @@
-#/wildfly/bin/jboss-cli.sh -c --file=config.cli
+#/opt/wildfly/bin/jboss-cli.sh -c controller=localhost:12190 --file=config.cli
 
 module add --name=org.postgres --resources=/opt/postgresql-9.4-1201.jdbc41.jar --dependencies=javax.api,javax.transaction.api
 /subsystem=datasources/jdbc-driver=postgres:add(driver-name="postgres",driver-module-name="org.postgres",driver-class-name=org.postgresql.Driver)

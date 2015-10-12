@@ -311,6 +311,14 @@ public class RpcInfo {
     return sb.toString();
   }
 
+  public String getSubService() {
+    if (getReqParams() == null) {
+      return null;
+    } else {
+      return getReqParams().getSubService();
+    }
+  }
+
   public int getTimeout() {
     return duration.getTimeout();
   }

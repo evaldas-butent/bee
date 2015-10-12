@@ -9,7 +9,7 @@
 	caption="=calAction" showRowId="true" width="660" height="400">
 
 	<FlowPanel class="flexBox-vertical">
-		<Table
+		<Table kind="controls"
 			style="border-collapse: collapse; margin-top: 1ex; margin-bottom: 2ex;"
 			cellStyle="padding: 4px 10px;">
 

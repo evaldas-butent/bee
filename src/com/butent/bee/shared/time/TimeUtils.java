@@ -76,6 +76,8 @@ public final class TimeUtils {
 
   public static final String PERIOD_SEPARATOR = "..";
 
+  public static final String MS = "ms";
+
   private static final String[] FIELD_NAME = {
       "ERA", "YEAR", "MONTH", "WEEK_OF_YEAR", "WEEK_OF_MONTH",
       "DAY_OF_MONTH", "DAY_OF_YEAR", "DAY_OF_WEEK",
@@ -91,11 +93,9 @@ public final class TimeUtils {
 
   private static final int MINIMAL_DAYS_IN_FIRST_WEEK = 4;
 
-  private static final String MS = "ms";
-
   /**
    * Adds an amount of field type data to the date.
-   * 
+   *
    * @param date the initial date to add to
    * @param field the field type to add
    * @param amount the amount to add
@@ -211,7 +211,7 @@ public final class TimeUtils {
 
   /**
    * Gets the difference between {@code start} and {@code end}.
-   * 
+   *
    * @param start the start time
    * @param end the end time
    * @return the difference between {@code start} and {@code end} in days.
@@ -258,7 +258,7 @@ public final class TimeUtils {
 
   /**
    * Returns the elapsed time in seconds.
-   * 
+   *
    * @param start the start time
    * @return the elapsed time in seconds from the specified start in brackets.
    */
@@ -307,7 +307,7 @@ public final class TimeUtils {
 
   /**
    * Gets the specified field's difference between {@code start} and {@code end}.
-   * 
+   *
    * @param start the start time
    * @param end the end time
    * @param field the used field. E.g 1(years),2(months),5(days) etc.
@@ -454,7 +454,7 @@ public final class TimeUtils {
 
   /**
    * Checks if {@code x} is and instance of HasDateValue or Date.
-   * 
+   *
    * @param x the Object to check
    * @return true if {@code x} is an instance of any of these types, false otherwise.
    */
@@ -637,7 +637,7 @@ public final class TimeUtils {
 
   /**
    * Left pads and integer {@code number} by adding "0" to size of two.
-   * 
+   *
    * @param number the value to pad
    * @return a String representation of the padded value {@code number} if
    *         {@code number >=0 and number < 10}, otherwise a non-padded value String.
@@ -775,7 +775,7 @@ public final class TimeUtils {
 
   /**
    * Generates a random JustDate between {@code min} and {@code max}.
-   * 
+   *
    * @param min the minimum JustDate
    * @param max the maximum JustDate
    * @return a JustDate between specified {@code min} and {@code max}.
@@ -788,7 +788,7 @@ public final class TimeUtils {
 
   /**
    * Generates a random DateTime between {@code min} and {@code max}.
-   * 
+   *
    * @param min the minimum DateTime
    * @param max the maximum DateTime
    * @return a DateTime between specified {@code min} and {@code max}.
@@ -909,8 +909,25 @@ public final class TimeUtils {
     }
   }
 
+  public static String renderPeriod(String start, String end) {
+    if (BeeUtils.isEmpty(start)) {
+      if (BeeUtils.isEmpty(end)) {
+        return BeeConst.STRING_EMPTY;
+      } else {
+        return PERIOD_SEPARATOR + end.trim();
+      }
+
+    } else if (BeeUtils.isEmpty(end)) {
+      return start.trim() + PERIOD_SEPARATOR;
+
+    } else {
+      return start.trim() + PERIOD_SEPARATOR + end.trim();
+    }
+  }
+
   public static String renderTime(int hour, int minute, int second, int millis,
       boolean leadingZero) {
+
     StringBuilder sb = new StringBuilder();
     sb.append(leadingZero ? padTwo(hour) : BeeUtils.toString(hour));
     sb.append(TIME_FIELD_SEPARATOR).append(padTwo(minute));
@@ -1085,7 +1102,7 @@ public final class TimeUtils {
 
   /**
    * Converts {@code x} to a JustDate format.
-   * 
+   *
    * @param x the Object to convert
    * @return a JustDate type date.
    */
@@ -1122,7 +1139,7 @@ public final class TimeUtils {
 
   /**
    * Converts {@code x} to a DateTime format.
-   * 
+   *
    * @param x the Object to convert
    * @return a DateTime type date.
    */
@@ -1179,7 +1196,7 @@ public final class TimeUtils {
 
   /**
    * Converts {@code x} to a Date format.
-   * 
+   *
    * @param x the Object to convert
    * @return a Date type date.
    */
@@ -1197,7 +1214,7 @@ public final class TimeUtils {
 
   /**
    * Converts milliseconds {@code millis} to seconds. E.g 6010 is converted to 6.010.
-   * 
+   *
    * @param millis value to convert
    * @return seconds.
    */

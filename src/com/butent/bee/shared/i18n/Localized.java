@@ -48,6 +48,22 @@ public final class Localized {
     return messages;
   }
 
+  public static List<String> maybeTranslate(List<String> items) {
+    return maybeTranslate(items, dictionary);
+  }
+
+  public static List<String> maybeTranslate(List<String> items, Map<String, String> dict) {
+    List<String> result = new ArrayList<>();
+
+    if (items != null) {
+      for (String item : items) {
+        result.add(maybeTranslate(item, dict));
+      }
+    }
+
+    return result;
+  }
+
   public static String maybeTranslate(String text) {
     return maybeTranslate(text, dictionary);
   }

@@ -359,11 +359,11 @@ public class MessageBuilder extends FaLabel implements ClickHandler {
           if (!BeeUtils.isEmpty(selectedIds)) {
             Queries.update(gridView.getViewName(), Filter.idIn(selectedIds), COL_CARGO_MESSAGE,
                 Value.getValue(msg), new Queries.IntCallback() {
-                  @Override
-                  public void onSuccess(Integer result) {
-                    DataChangeEvent.fireRefresh(BeeKeeper.getBus(), gridView.getViewName());
-                  }
-                });
+              @Override
+              public void onSuccess(Integer result) {
+                DataChangeEvent.fireRefresh(BeeKeeper.getBus(), gridView.getViewName());
+              }
+            });
           }
         }
       });
@@ -437,6 +437,7 @@ public class MessageBuilder extends FaLabel implements ClickHandler {
     }
     Queries.getRowSet(TBL_TRIP_DRIVERS, Lists.newArrayList(COL_DRIVER),
         Filter.any(COL_TRIP, tripIds), new Queries.RowSetCallback() {
+          @SuppressWarnings("unused")
           @Override
           public void onSuccess(BeeRowSet result) {
             new MessageDialog(result.getDistinctLongs(0), cargoIds, ids);

@@ -38,7 +38,7 @@ public enum RightsState implements HasLocalizedCaption {
 
   private final boolean checked;
 
-  private RightsState(boolean checked) {
+  RightsState(boolean checked) {
     this.checked = checked;
   }
 

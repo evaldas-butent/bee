@@ -7,6 +7,7 @@ import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
+import com.google.common.eventbus.AllowConcurrentEvents;
 import com.google.common.eventbus.Subscribe;
 
 import static com.butent.bee.shared.html.builder.Factory.*;
@@ -568,8 +569,9 @@ public class EcModuleBean implements BeeModule {
 
     sys.registerDataEventHandler(new DataEventHandler() {
       @Subscribe
+      @AllowConcurrentEvents
       public void orderCategories(ViewQueryEvent event) {
-        if (event.isAfter() && BeeUtils.same(event.getTargetName(), VIEW_CATEGORIES)) {
+        if (event.isAfter(VIEW_CATEGORIES)) {
           BeeRowSet rowSet = event.getRowset();
 
           if (rowSet.getNumberOfRows() > 1) {
@@ -650,18 +652,17 @@ public class EcModuleBean implements BeeModule {
       }
 
       @Subscribe
+      @AllowConcurrentEvents
       public void setSuppliersAndRemainders(ViewQueryEvent event) {
-        if (event.isAfter() && !DataUtils.isEmpty(event.getRowset())
-            && BeeUtils.inListSame(event.getTargetName(), VIEW_ARTICLES, VIEW_ORDER_ITEMS)) {
-
+        if (event.isAfter(VIEW_ARTICLES, VIEW_ORDER_ITEMS) && event.hasData()) {
           Set<Long> articleIds = new HashSet<>();
 
           BeeRowSet rowSet = event.getRowset();
 
           int index;
-          if (BeeUtils.same(event.getTargetName(), VIEW_ARTICLES)) {
+          if (event.isTarget(VIEW_ARTICLES)) {
             index = DataUtils.ID_INDEX;
-          } else if (BeeUtils.same(event.getTargetName(), VIEW_ORDER_ITEMS)) {
+          } else if (event.isTarget(VIEW_ORDER_ITEMS)) {
             index = rowSet.getColumnIndex(COL_ORDER_ITEM_ARTICLE);
           } else {
             index = BeeConst.UNDEF;
@@ -694,7 +695,7 @@ public class EcModuleBean implements BeeModule {
           }
 
           for (BeeRow row : rowSet.getRows()) {
-            Long article = (index == DataUtils.ID_INDEX) ? row.getId() : row.getLong(index);
+            Long article = (index == DataUtils.ID_INDEX) ? (Long) row.getId() : row.getLong(index);
 
             if (article != null && articleSuppliers.containsKey(article)) {
               for (ArticleSupplier articleSupplier : articleSuppliers.get(article)) {
@@ -1795,7 +1796,8 @@ public class EcModuleBean implements BeeModule {
         SimpleRow row = ButentWS.connect(remoteAddress, remoteLogin, remotePassword)
             .getSQLData("SELECT klientas, max_skola, dienos"
                 + " FROM klientai"
-                + " WHERE " + wh + " OR kodas = '" + companyInfo.getValue(COL_COMPANY_CODE) + "'"
+                + " WHERE " + wh + " OR kodas = '" + companyInfo.getValue(COL_COMPANY_CODE)
+                + "'"
                 + " ORDER BY " + wh + " DESC",
                 "klientas", "max_skola", "dienos").getRow(0);
 

@@ -36,7 +36,7 @@
 
     <FlowPanel style="margin-left:5em;">
       <Label text="Įsakau:" style="font-weight:bold;" />
-      <Table>
+      <Table kind="output">
         <col index="1" cellStyle="text-align:center; padding:0 2em 0 2em;" />
         <row>
           <Label text="Vykti į tarnybinę komandiruotę tolimųjų reisų vairuotojui" />
@@ -49,11 +49,11 @@
           </cell>
         </row>
       </Table>
-      <Table>
+      <Table kind="output" name="TripDrivers1Container">
         <col index="1" cellStyle="text-align:center; padding:0 2em 0 2em;" />
         <row>
           <Label text="Antram vairuotojui" />
-          <Label name="TripDrivers" />
+          <Label name="TripDrivers1" />
         </row>
         <row>
           <text />
@@ -67,12 +67,12 @@
     <br />
     <br />
 
-    <Table>
+    <Table kind="output">
       <col index="0" cellStyle="font-weight:bold; padding-right:1em;" />
       <col index="1" cellStyle="border-bottom:1px solid black;" />
       <row>
         <Label text="Išvykimo data" />
-        <DateLabel source="DateFrom" />
+        <DateTimeLabel source="Date" />
       </row>
       <row>
         <Label text="Komandiruotės tikslas" />
@@ -90,7 +90,7 @@
       <row>
         <Label text="Komandiruotės trukmė" />
         <TextLabel>
-          <renderToken source="DateFrom" prefix="nuo " />
+          <renderToken source="Date" prefix="nuo " />
           <renderToken source="PlannedEndDate" prefix=" iki " />
         </TextLabel>
       </row>
@@ -121,7 +121,7 @@
     <br />
     <br />
 
-    <Table style="text-align:center; white-space:nowrap;">
+    <Table kind="output" style="text-align:center; white-space:nowrap;">
       <col index="0" cellStyle="text-align:left;" />
       <row>
         <Label text="Įgaliotas asmuo" />
@@ -139,12 +139,36 @@
           <Label text="(parašas)" style="width:15em;" />
         </cell>
       </row>
-      <row>
-        <Label text="&amp;#160;" />
-      </row>
+    </Table>
+    <br />
+    <Table kind="output" style="text-align:center; white-space:nowrap;">
+      <col index="0" cellStyle="text-align:left;" />
       <row>
         <Label text="Su įsakymu susipažinau, sutinku" />
         <TextLabel source="Driver" style="padding:0 2em 0 2em;" />
+        <cell rowSpan="5" style="width:100%;">
+          <text />
+        </cell>
+      </row>
+      <row>
+        <text />
+        <cell style="border-top: 1px solid black; font-size:x-small;">
+          <Label text="(vardas, pavardė)" />
+        </cell>
+        <cell style="border-top: 1px solid black; font-size:x-small;">
+          <Label text="(parašas)" style="width:15em;" />
+        </cell>
+      </row>
+    </Table>
+    <br />
+    <Table kind="output" name="TripDrivers2Container" style="text-align:center; white-space:nowrap;">
+      <col index="0" cellStyle="text-align:left;" />
+      <row>
+        <Label text="Su įsakymu susipažinau, sutinku" />
+        <Label name="TripDrivers2" style="padding:0 2em 0 2em;" />
+        <cell rowSpan="5" style="width:100%;">
+          <text />
+        </cell>
       </row>
       <row>
         <text />

@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
+import com.google.common.eventbus.AllowConcurrentEvents;
 import com.google.common.eventbus.Subscribe;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
@@ -75,7 +76,6 @@ import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
-import javax.ejb.Timeout;
 import javax.ejb.Timer;
 import javax.ejb.TimerService;
 
@@ -161,6 +161,13 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
   }
 
   @Override
+  public void ejbTimeout(Timer timer) {
+    if (cb.isParameterTimer(timer, PRM_REFRESH_CURRENCY_HOURS)) {
+      refreshCurrencyRates();
+    }
+  }
+
+  @Override
   public Collection<BeeParameter> getDefaultParameters() {
     String module = getModule().getName();
 
@@ -227,24 +234,26 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
 
     sys.registerDataEventHandler(new DataEventHandler() {
       @Subscribe
+      @AllowConcurrentEvents
       public void refreshIpFilterCache(TableModifyEvent event) {
-        if (BeeUtils.same(event.getTargetName(), TBL_IP_FILTERS) && event.isAfter()) {
+        if (event.isAfter(TBL_IP_FILTERS)) {
           usr.initIpFilters();
         }
       }
 
       @Subscribe
+      @AllowConcurrentEvents
       public void refreshUsersCache(TableModifyEvent event) {
-        if (BeeUtils.inList(event.getTargetName(), TBL_USERS, TBL_ROLES, TBL_USER_ROLES)
-            && event.isAfter()) {
+        if (event.isAfter(TBL_USERS, TBL_ROLES, TBL_USER_ROLES)) {
           usr.initUsers();
           Endpoint.updateUserData(usr.getAllUserData());
         }
       }
 
       @Subscribe
+      @AllowConcurrentEvents
       public void orderDepartments(ViewQueryEvent event) {
-        if (event.isAfter() && event.isTarget(VIEW_DEPARTMENTS) && event.hasData()) {
+        if (event.isAfter(VIEW_DEPARTMENTS) && event.hasData()) {
           String idName = sys.getIdName(TBL_DEPARTMENTS);
 
           SqlSelect query = new SqlSelect()
@@ -783,11 +792,7 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
     return params;
   }
 
-  @Timeout
-  private void refreshCurrencyRates(Timer timer) {
-    if (!cb.isParameterTimer(timer, PRM_REFRESH_CURRENCY_HOURS)) {
-      return;
-    }
+  private void refreshCurrencyRates() {
     long historyId = sys.eventStart(PRM_REFRESH_CURRENCY_HOURS);
 
     String daysOfToday = BeeUtils.toString(TimeUtils.today().getDays());
