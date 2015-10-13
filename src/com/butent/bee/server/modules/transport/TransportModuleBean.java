@@ -872,13 +872,15 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
         .addExpr(TradeModuleBean.getVatExpression(TBL_TRIP_COSTS), "pvm_suma")
         .addExpr(TradeModuleBean.getWithoutVatExpression(TBL_TRIP_COSTS), "suma_be_pvm")
         .addField(TBL_VEHICLES, "ExternalCode", "car_id")
-        .addField(TBL_DRIVERS, COL_NOTES, "tab_nr")
+        .addField(TBL_EMPLOYEES, COL_TAB_NUMBER, "tab_nr")
         .addFields("subq", "dienpinigiai")
         .addFrom(TBL_TRIP_COSTS)
         .addFromInner(TBL_TRIPS, sys.joinTables(TBL_TRIPS, TBL_TRIP_COSTS, COL_TRIP))
         .addFromLeft(TBL_VEHICLES, sys.joinTables(TBL_VEHICLES, TBL_TRIPS, COL_VEHICLE))
         .addFromLeft(TBL_TRIP_DRIVERS, sys.joinTables(TBL_TRIP_DRIVERS, TBL_TRIPS, COL_MAIN_DRIVER))
         .addFromLeft(TBL_DRIVERS, sys.joinTables(TBL_DRIVERS, TBL_TRIP_DRIVERS, COL_DRIVER))
+        .addFromLeft(TBL_EMPLOYEES,
+            SqlUtils.joinUsing(TBL_DRIVERS, TBL_EMPLOYEES, COL_COMPANY_PERSON))
         .addFromInner(TBL_ITEMS, sys.joinTables(TBL_ITEMS, TBL_TRIP_COSTS, COL_COSTS_ITEM))
         .addFromInner(TBL_CURRENCIES,
             sys.joinTables(TBL_CURRENCIES, TBL_TRIP_COSTS, COL_COSTS_CURRENCY))

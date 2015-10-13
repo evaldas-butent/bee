@@ -5,7 +5,7 @@
       source="TripCosts"
       caption="Reisų išlaidos apskaitai"
       readOnly="true"
-      filter="TabNr"
+      filter="TabNumber"
     >
   <Columns>
     <SimpleColumn name="Trip" />
@@ -14,7 +14,11 @@
 
       <SimpleJoin name="MainDriver" joinType="INNER">
         <SimpleJoin name="Driver" joinType="INNER">
-          <HiddenColumn name="Notes" alias="TabNr" />
+          <SimpleJoin name="CompanyPerson" joinType="INNER">
+            <ExternalJoin name="CompanyPerson" joinType="INNER" source="Employees">
+              <HiddenColumn name="TabNumber" />
+            </ExternalJoin>
+          </SimpleJoin>
         </SimpleJoin>
       </SimpleJoin>
     </SimpleJoin>
