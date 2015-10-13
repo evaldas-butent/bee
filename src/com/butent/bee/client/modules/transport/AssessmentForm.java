@@ -919,7 +919,7 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
 
     Queries.getRowSet(TBL_CARGO_EXPENSES,
         Lists.newArrayList(COL_AMOUNT, COL_CURRENCY, COL_SERVICE_PERCENT), Filter.and(
-            Filter.equals(COL_CARGO, cargoId), Filter.isNull(COL_SALE),
+            Filter.equals(COL_CARGO, cargoId), Filter.isNull(COL_PURCHASE),
             Filter.notNull(COL_SERVICE_PERCENT)),
         new RowSetCallback() {
           @Override

@@ -62,7 +62,6 @@
       <SimpleJoin joinType="LEFT" name="Currency">
         <SimpleColumn name="Name" alias="IncomeCurrency" />
       </SimpleJoin>
-      <SimpleColumn name="Sale" />
     </SimpleJoin>
   </Columns>
 </View>
