@@ -13,8 +13,8 @@
 
     <SimpleColumn name="Contract" />
     <SimpleJoin name="Contract" joinType="LEFT">
-      <SimpleColumn name="Name" alias="ContractName"/>
-      <SimpleColumn name="Number" alias="ContractNumber"/>
+      <SimpleColumn name="Name" alias="ContractName" />
+      <SimpleColumn name="Number" alias="ContractNumber" />
       <SimpleColumn name="Expires" alias="ContractExpires" />
       <SimpleJoin name="Status" joinType="LEFT">
         <SimpleColumn name="Name" alias="ContractStatusName" />
@@ -87,9 +87,9 @@
           <SimpleColumn name="FirstName" alias="ManagerFirstName" />
           <SimpleColumn name="LastName" alias="ManagerLastName" />
         </SimpleJoin>
-      <SimpleJoin name="Contact" joinType="LEFT">
-        <SimpleColumn alias="ManagerMobile" name="Mobile" />
-      </SimpleJoin>
+        <SimpleJoin name="Contact" joinType="LEFT">
+          <SimpleColumn alias="ManagerMobile" name="Mobile" />
+        </SimpleJoin>
       </SimpleJoin>
     </SimpleJoin>
 
@@ -113,6 +113,9 @@
       </SimpleJoin>
     </SimpleJoin>
     <SimpleColumn name="InputVehicle" />
+    <SimpleJoin name="InputVehicle" joinType="LEFT">
+      <SimpleColumn name="Name" alias="VehicleName" />
+    </SimpleJoin>
 
     <SimpleColumn name="Driver" />
     <SimpleJoin name="Driver" joinType="LEFT">
@@ -125,6 +128,10 @@
       </SimpleJoin>
     </SimpleJoin>
     <SimpleColumn name="InputDriver" />
+    <SimpleJoin name="InputDriver" joinType="LEFT">
+      <SimpleColumn name="FirstName" alias="DriverFirstName1" />
+      <SimpleColumn name="LastName" alias="DriverLastName1" />
+    </SimpleJoin>
 
     <SimpleColumn name="Notes" />
 

@@ -167,7 +167,7 @@
         <xs:list itemType="fileInfoColumn" />
       </xs:simpleType>
       <xs:simpleType>
-        <xs:restriction base="xs:string" >
+        <xs:restriction base="xs:string">
           <xs:enumeration value="all" />
           <xs:enumeration value="none" />
         </xs:restriction>
@@ -417,7 +417,7 @@
       <xs:enumeration value="ProjectTMLStages" />
       <xs:enumeration value="ProjectTMLTaskCopy" />
       <xs:enumeration value="ProjectTMLUsers" />
-      <xs:enumeration value="ProjectTree"/>
+      <xs:enumeration value="ProjectTree" />
       <xs:enumeration value="ProjectTypes" />
       <xs:enumeration value="ProjectUsers" />
       <xs:enumeration value="PropertyGroups" />
@@ -509,6 +509,7 @@
       <xs:enumeration value="TimeRanges" />
       <xs:enumeration value="TimeZones" />
       <xs:enumeration value="TodoList" />
+      <xs:enumeration value="TradeActDrivers" />
       <xs:enumeration value="TradeActFiles" />
       <xs:enumeration value="TradeActInvoices" />
       <xs:enumeration value="TradeActItems" />
@@ -519,6 +520,7 @@
       <xs:enumeration value="TradeActTemplates" />
       <xs:enumeration value="TradeActTmplItems" />
       <xs:enumeration value="TradeActTmplServices" />
+      <xs:enumeration value="TradeActVehicles" />
       <xs:enumeration value="TradeNotes" />
       <xs:enumeration value="TradeOperations" />
       <xs:enumeration value="TradeSeries" />
@@ -566,7 +568,7 @@
       <xs:enumeration value="WorkSchedule" />
       <xs:enumeration value="Workspaces" />
 
-<!-- samples -->
+      <!-- samples -->
       <xs:enumeration value="DataTypes" />
     </xs:restriction>
   </xs:simpleType>

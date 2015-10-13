@@ -28,9 +28,9 @@
       label="=currency" />
 
     <Relation name="Vehicle" relation="Vehicles" label="=trVehicle" />
-    <String name="InputVehicle" precision="100" label="=trVehicle" />
+    <Relation name="InputVehicle" relation="TradeActVehicles" label="=trVehicle" />
     <Relation name="Driver" relation="Drivers" label="=trdDriver" />
-    <String name="InputDriver" precision="100" label="=trdDriver" />
+    <Relation name="InputDriver" relation="TradeActDrivers" label="=trdDriver" />
 
     <Text name="Notes" label="=notes" />
 
@@ -42,7 +42,9 @@
   </Constraints>
   <Indexes>
     <Index unique="true">
-      <PostgreSql>((CASE "RegistrationNo" WHEN '0' THEN NULL ELSE "RegistrationNo" END))</PostgreSql>
+      <PostgreSql>((CASE "RegistrationNo" WHEN '0' THEN NULL ELSE "RegistrationNo" || ' '
+        || COALESCE("Series", 0) END))
+      </PostgreSql>
       <MsSql></MsSql>
       <Oracle></Oracle>
     </Index>

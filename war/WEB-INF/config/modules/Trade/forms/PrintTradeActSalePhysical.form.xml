@@ -92,7 +92,7 @@
     </FlowPanel>
 
     <FlowPanel name="TradeActItems" class="TradeActItems" style="&section;" />
-    <br/>
+    <br />
     <FlowPanel name="TradeActServices" class="TradeActServices" style="&section;" />
 
     <HtmlPanel style="&section;">
@@ -112,7 +112,7 @@ sukrauta taip, kad būtų galima iškrauti šakiniais krautuvais. Už iškrovim�
               <ui:inline>display: none;</ui:inline>
               <ui:expression>!row.InputVehicle</ui:expression>
             </dynStyle>
-            <renderToken source="InputVehicle" prefix="Transporto priemonė: " />
+            <renderToken source="VehicleName" prefix="Transporto priemonė: " />
           </TextLabel>
           <TextLabel source="Vehicle">
             <dynStyle>
@@ -132,7 +132,8 @@ sukrauta taip, kad būtų galima iškrauti šakiniais krautuvais. Už iškrovim�
               <ui:inline>display: none;</ui:inline>
               <ui:expression>!row.InputDriver</ui:expression>
             </dynStyle>
-            <renderToken source="InputDriver" prefix="Vairuotojas: " />
+            <renderToken source="DriverFirstName1" prefix="Vairuotojas: " />
+            <renderToken source="DriverLastName1" />
           </TextLabel>
           <TextLabel source="Driver">
             <dynStyle>

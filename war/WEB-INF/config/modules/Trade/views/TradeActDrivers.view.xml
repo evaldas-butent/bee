@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="TradeActDrivers" source="TradeActDrivers"
+  caption="=drivers" newRowCaption="=trNewDriver"
+  >
+  <Columns>
+    <SimpleColumn name="FirstName" />
+    <SimpleColumn name="LastName" />
+    <SimpleColumn name="Notes" />
+  </Columns>
+
+  <Order>
+    <OrderBy column="FirstName" />
+    <OrderBy column="LastName" />
+  </Order>
+</View>

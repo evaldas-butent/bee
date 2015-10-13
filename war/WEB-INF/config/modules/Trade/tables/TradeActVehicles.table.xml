@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+  name="TradeActVehicles"
+  idName="TradeActVehicleID"
+  >
+  <Fields>
+    <String name="Name" precision="100" notNull="true" label="=trVehicle" />
+    <Text name="Notes" label="=notes" />
+  </Fields>
+</Table>
