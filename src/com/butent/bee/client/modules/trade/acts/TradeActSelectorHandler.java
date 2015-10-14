@@ -5,6 +5,7 @@ import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
@@ -159,7 +160,8 @@ class TradeActSelectorHandler implements SelectorEvent.Handler {
     }
   }
 
-  private static void applyActTemplate(final IsRow templRow, final FormView form) {
+  private static void applyActTemplate(final IsRow templRow, final FormView form,
+      final Callback<Boolean> validation) {
     IsRow targetRow = form.getActiveRow();
     List<BeeColumn> templColumns = Data.getColumns(VIEW_TRADE_ACT_TEMPLATES);
 
@@ -243,6 +245,15 @@ class TradeActSelectorHandler implements SelectorEvent.Handler {
           form.refreshBySource(colName);
         }
         logger.debug(updatedColumns);
+      }
+
+      if (!form.validate(form, false)) {
+        if (validation != null) {
+          validation.onFailure();
+        }
+        return;
+      } else if (validation != null) {
+        validation.onSuccess(Boolean.TRUE);
       }
 
       ParameterList params = TradeActKeeper.createArgs(SVC_GET_TEMPLATE_ITEMS_AND_SERVICES);
@@ -431,7 +442,7 @@ class TradeActSelectorHandler implements SelectorEvent.Handler {
   }
 
   @Override
-  public void onDataSelector(SelectorEvent event) {
+  public void onDataSelector(final SelectorEvent event) {
     String relatedViewName = event.getRelatedViewName();
     if (BeeUtils.isEmpty(relatedViewName)) {
       return;
@@ -539,7 +550,17 @@ class TradeActSelectorHandler implements SelectorEvent.Handler {
           FormView form = ViewHelper.getForm(event.getSelector());
 
           if (relatedRow != null && form != null) {
-            applyActTemplate(relatedRow, form);
+            applyActTemplate(relatedRow, form, new Callback<Boolean>() {
+
+              @Override
+              public void onFailure(String... reason) {
+                event.getSelector().clearValue();
+              }
+
+              @Override
+              public void onSuccess(Boolean valid) {
+              }
+            });
           }
         }
         break;
@@ -582,7 +603,7 @@ class TradeActSelectorHandler implements SelectorEvent.Handler {
               filter =
                   DataUtils.isId(company) ? Filter.and(Filter.equals(COL_COMPANY, company),
                       Filter.or(Filter.isMore(ClassifierConstants.COL_DATE_UNTIL,
-                          new DateTimeValue(timeFrom)),
+                              new DateTimeValue(timeFrom)),
                           Filter.isNull(ClassifierConstants.COL_DATE_UNTIL))) : null;
             } else {
               filter = DataUtils.isId(company) ? Filter.equals(COL_COMPANY, company) : null;

@@ -140,10 +140,13 @@ public class FileGridInterceptor extends AbstractGridInterceptor {
 
   @Override
   public void beforeRender(GridView gridView, RenderingEvent event) {
-    collector.clear();
     final Map<Long, String> fileIds = new HashMap<>();
     int fileIdx = gridView.getDataIndex(fileColumn);
     int capIdx = gridView.getDataIndex(captionColumn);
+
+    if (collector != null) {
+      collector.clear();
+    }
 
     for (IsRow row : gridView.getRowData()) {
       fileIds.put(row.getLong(fileIdx), row.getString(capIdx));
