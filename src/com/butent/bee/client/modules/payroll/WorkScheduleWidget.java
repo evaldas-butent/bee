@@ -308,12 +308,16 @@ class WorkScheduleWidget extends Flow {
               long employeeId = DomUtils.getDataIndexLong(DomUtils.getParentRow(cell, false));
               Integer day = DomUtils.getDataPropertyInt(cell, KEY_DAY);
 
+              long wsId = (long) u;
+              boolean copy = EventUtils.hasModifierKey(event.getNativeEvent())
+                  ^ dndMode.isChecked();
+
               if (DataUtils.isId(employeeId) && BeeUtils.isPositive(day) && activeMonth != null) {
                 JustDate date = new JustDate(activeMonth.getYear(), activeMonth.getMonth(), day);
-                boolean copy = EventUtils.hasModifierKey(event.getNativeEvent())
-                    ^ dndMode.isChecked();
+                onDrop(wsId, employeeId, date, copy);
 
-                onDrop((long) u, employeeId, date, copy);
+              } else if (!copy) {
+                removeFromSchedule(wsId);
               }
             }
           }
@@ -1086,6 +1090,27 @@ class WorkScheduleWidget extends Flow {
             });
       }
     }
+  }
+
+  private void removeFromSchedule(final long wsId) {
+    Queries.deleteRow(VIEW_WORK_SCHEDULE, wsId, new Queries.IntCallback() {
+      @Override
+      public void onSuccess(Integer result) {
+        if (BeeUtils.isPositive(result)) {
+          BeeRow row = (wsData == null) ? null : wsData.getRowById(wsId);
+
+          if (row != null) {
+            Long employeeId = DataUtils.getLong(wsData, row, COL_EMPLOYEE);
+            JustDate date = DataUtils.getDate(wsData, row, COL_WORK_SCHEDULE_DATE);
+
+            wsData.removeRowById(wsId);
+
+            updateDayContent(employeeId, date);
+            checkOverlap();
+          }
+        }
+      }
+    });
   }
 
   private void render() {
