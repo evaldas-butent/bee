@@ -9,4 +9,6 @@ public interface LocalizablePayrollConstants {
   String objectStatusInactive();
 
   String payroll();
+
+  String timeRangeCode();
 }

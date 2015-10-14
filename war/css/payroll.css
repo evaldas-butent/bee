@@ -126,3 +126,43 @@
   background-color: red;
   color: white;
 }
+
+.bee-payroll-ws-trc-header {
+  margin-top: 1ex;
+  font-size: larger;
+  text-align: center;
+}
+.bee-payroll-ws-trc-input-container {
+  margin-top: 2ex;
+  margin-left: 5px;
+}
+.bee-payroll-ws-trc-input-label {
+  display: inline-block;
+  padding-right: 1em;
+}
+.bee-payroll-ws-trc-input-widget.bee-payroll-ws-trc-input-widget {
+  width: 4em;
+}
+.bee-payroll-ws-trc-options-container {
+  margin-top: 2ex;
+  max-height: 50vh;
+  overflow: auto;
+}
+.bee-payroll-ws-trc-options-table {
+  border-collapse: collapse;
+}
+.bee-payroll-ws-trc-option-widget-cell {
+  padding: 5px;
+}
+.bee-payroll-ws-trc-option-code {
+  font-weight: bolder;
+}
+.bee-payroll-ws-trc-option-separator {
+  display: inline-block;
+  width: 5px;
+}
+.bee-payroll-ws-trc-controls {
+  margin-top: 2ex;
+  margin-right: 5px;
+  text-align: right;
+}
