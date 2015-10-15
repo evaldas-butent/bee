@@ -745,6 +745,7 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
   private final Multimap<Long, Long> departmentHeads = HashMultimap.create();
   private final Map<Long, String> departments = new HashMap<>();
   private final Multimap<Long, Long> employees = HashMultimap.create();
+  private final Set<Long> gods = new HashSet<>();
   private final Set<Long> expensesChangeQueue = new HashSet<>();
   private ListBox insuranceCertificate;
 
@@ -891,7 +892,7 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
       childAssessments.setEnabled(false);
     }
     if (manager != null && manager.isEnabled()
-        && !BeeKeeper.getUser().isAdministrator() && !departmentHeads.containsKey(userPerson)) {
+        && !gods.contains(userPerson) && !departmentHeads.containsKey(userPerson)) {
       manager.setEnabled(false);
     }
     onValueChange(null);
@@ -1004,7 +1005,8 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
       }
     } else if (Objects.equals(event.getSelector(), manager)) {
       if (event.isOpened()) {
-        manager.setAdditionalFilter(Filter.any(COL_DEPARTMENT, employees.get(userPerson)));
+        manager.setAdditionalFilter(Filter.any(COL_DEPARTMENT,
+            gods.contains(userPerson) ? departments.keySet() : employees.get(userPerson)));
 
       } else if (event.isChanged()) {
         updateDepartment(form, form.getActiveRow(),
@@ -1048,7 +1050,7 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
   @Override
   public void onLoad(final FormView formView) {
     Queries.getRowSet(TBL_DEPARTMENT_EMPLOYEES, Lists.newArrayList(COL_DEPARTMENT,
-        COL_COMPANY_PERSON, COL_DEPARTMENT_HEAD, COL_DEPARTMENT_NAME, "Heads"), null,
+            COL_COMPANY_PERSON, COL_DEPARTMENT_HEAD, COL_DEPARTMENT_NAME, "Heads"), null,
         new RowSetCallback() {
           @Override
           public void onSuccess(BeeRowSet result) {
@@ -1064,10 +1066,12 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
               if (DataUtils.isId(headDepartment)) {
                 departmentHeads.put(employer, headDepartment);
 
-              } else if (BeeUtils.unbox(row.getBoolean(4))
-                  && !departmentHeads.containsKey(employer)) {
-                departmentHeads.put(employer, null);
+              } else if (BeeUtils.unbox(row.getBoolean(4))) {
+                gods.add(employer);
               }
+            }
+            if (BeeKeeper.getUser().isAdministrator()) {
+              gods.add(userPerson);
             }
             form = formView;
             updateDepartment(form, form.getActiveRow(), null);
@@ -1179,7 +1183,7 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
   private boolean isExecutor() {
     return Objects.equals(form.getLongValue(COL_COMPANY_PERSON), userPerson)
         || departmentHeads.get(userPerson).contains(form.getLongValue(COL_DEPARTMENT))
-        || BeeKeeper.getUser().isAdministrator();
+        || gods.contains(userPerson);
   }
 
   private boolean isPrimary() {

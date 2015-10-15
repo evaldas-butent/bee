@@ -14,9 +14,13 @@
   <FlowPanel class="bee-PrintableForm bee-tr-Invoice-Print"
     style="font-family:Tahoma; font-size:8pt;">
     <css id="&form;">
+      .&form;-bank div div:first-child:before {content:"a.s. / a.n.: ";}
       .&form;-bank span:after {content:"; ";}
       .&form;-bank .CurrencyName {font-weight: bold;}
       .&form;-bank .CurrencyName:after {content:" ";}
+      .&form;-bank .BankAccount {display: none;}
+      .&form;-bank .correspondent .BankAccount {display: inline;}
+      .&form;-bank .correspondent .BankName:before {content:"bankas korespondentas / correspondent bank: ";}
       .&form;-bank .BankCode:before {content:"kodas / code: ";}
       .&form;-bank .SWIFTCode:before {content:"SWIFT: ";}
     </css>

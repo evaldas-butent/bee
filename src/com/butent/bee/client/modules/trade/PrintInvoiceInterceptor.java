@@ -455,7 +455,7 @@ public class PrintInvoiceInterceptor extends AbstractFormInterceptor {
 
   private static void renderBankAccounts(final Widget widget, Long supplier, Set<Long> ids) {
     Queries.getRowSet(TBL_COMPANY_BANK_ACCOUNTS, Arrays.asList(ALS_CURRENCY_NAME, COL_BANK_ACCOUNT,
-            ALS_BANK_NAME, COL_BANK_CODE, COL_SWIFT_CODE),
+            ALS_BANK_NAME, COL_ADDRESS, COL_BANK_CODE, COL_SWIFT_CODE),
         Filter.and(Filter.equals(COL_COMPANY, supplier), Filter.idIn(ids)),
         new Queries.RowSetCallback() {
           @Override
@@ -463,7 +463,8 @@ public class PrintInvoiceInterceptor extends AbstractFormInterceptor {
             Flow flow = new Flow();
 
             for (int i = 0; i < result.getNumberOfRows(); i++) {
-              Flow item = new Flow();
+              Flow item = new Flow(BeeUtils.isEmpty(result.getString(i, ALS_CURRENCY_NAME))
+                  ? null : "correspondent");
 
               for (int j = 0; j < result.getNumberOfColumns(); j++) {
                 String text = result.getString(i, j);

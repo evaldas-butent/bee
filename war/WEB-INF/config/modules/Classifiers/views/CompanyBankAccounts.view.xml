@@ -12,6 +12,9 @@
       <SimpleColumn name="Name" alias="BankName" />
       <SimpleColumn name="BankCode" />
       <SimpleColumn name="SWIFTCode" />
+      <SimpleJoin name="Contact" joinType="LEFT">
+        <SimpleColumn name="Address" />
+      </SimpleJoin>
     </SimpleJoin>
 
     <ExternalJoin source="Companies" joinType="LEFT" name="DefaultBankAccount">
