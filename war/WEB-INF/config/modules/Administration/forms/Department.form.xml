@@ -2,7 +2,7 @@
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
   xmlns:ui="http://www.butent.com/ui"
-  
+
   name="Department" viewName="Departments" caption="=department"
   width="600" height="600"
   >
@@ -13,12 +13,13 @@
       <row>
         <Label for="DepartmentName" />
         <InputText source="DepartmentName" style="width: 200px;" />
+        <CheckBox source="Heads" text="Vadovai" module="Administration" />
       </row>
       <row for="Parent">
         <Label for="Parent" />
-        <DataSelector name="Parent" source="Parent" renderColumns="ParentName" 
+        <DataSelector name="Parent" source="Parent" renderColumns="ParentName"
           choiceColumns="FullName" searchableColumns="DepartmentName" visibleLines="7"
-          selectorClass="bee-BranchSelector" style="width: 200px;" 
+          selectorClass="bee-BranchSelector" style="width: 200px;"
           newRowEnabled="false" editEnabled="false">
           <ui:rowRenderer type="branch" />
         </DataSelector>
@@ -36,7 +37,7 @@
     </Table>
 
     <br/>
-    
+
     <TabbedPages class="flexible">
       <page>
         <text>=departmentEmployees</text>
@@ -47,6 +48,6 @@
         <ChildGrid name="DepartmentPositions" relColumn="Department" />
       </page>
     </TabbedPages>
-    
+
   </FlowPanel>
-</f:Form>  
+</f:Form>

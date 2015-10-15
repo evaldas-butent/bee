@@ -13,6 +13,13 @@
   >
   <FlowPanel class="bee-PrintableForm bee-tr-Invoice-Print"
     style="font-family:Tahoma; font-size:8pt;">
+    <css id="&form;">
+      .&form;-bank span:after {content:"; ";}
+      .&form;-bank .CurrencyName {font-weight: bold;}
+      .&form;-bank .CurrencyName:after {content:" ";}
+      .&form;-bank .BankCode:before {content:"kodas / code: ";}
+      .&form;-bank .SWIFTCode:before {content:"SWIFT: ";}
+    </css>
     <VerticalPanel>
       <cell style="text-align:center;">
         <Image url="images/HL_logo.jpg" style="width:50%;" />
@@ -69,17 +76,7 @@
               <TextLabel source="SupplierFax">
                 <renderToken source="SupplierFax" prefix="Faksas / Fax: " />
               </TextLabel>
-              <TextLabel source="SupplierBankAccount">
-                <renderToken source="SupplierBankAccount" prefix="a.s. / a.n.: " />
-                <renderToken source="SupplierBankName" prefix=", " />
-                <renderToken source="SupplierBankCode" prefix=", kodas / code: " />
-                <renderToken source="SupplierBankSWIFTCode" prefix=", SWIFT: " />
-              </TextLabel>
-              <TextLabel source="SupplierCorrBankName">
-                <renderToken source="SupplierCorrBankCurrencyName" suffix=" bank correspondent:" />
-                <renderToken source="SupplierCorrBankName" prefix=" " />
-                <renderToken source="SupplierCorrBankSWIFTCode" prefix=", SWIFT: " />
-              </TextLabel>
+              <Label name="BankAccount" class="&form;-bank" />
             </FlowPanel>
           </cell>
           <cell style="vertical-align:top; width:50%;">

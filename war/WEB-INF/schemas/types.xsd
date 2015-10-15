@@ -278,6 +278,7 @@
       <xs:enumeration value="CompanyDepartments" />
       <xs:enumeration value="CompanyGroups" />
       <xs:enumeration value="CompanyObjects" />
+      <xs:enumeration value="CompanyPayAccounts" />
       <xs:enumeration value="CompanyPersons" />
       <xs:enumeration value="CompanyPriorities" />
       <xs:enumeration value="CompanyRelationTypes" />

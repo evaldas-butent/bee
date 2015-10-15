@@ -102,13 +102,11 @@ import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.RowInfo;
-import com.butent.bee.shared.data.view.RowInfoList;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.LogUtils;
-import com.butent.bee.shared.modules.transport.TransportConstants.AssessmentStatus;
-import com.butent.bee.shared.modules.transport.TransportConstants.OrderStatus;
+import com.butent.bee.shared.modules.transport.TransportConstants.*;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
@@ -1050,27 +1048,32 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
   @Override
   public void onLoad(final FormView formView) {
     Queries.getRowSet(TBL_DEPARTMENT_EMPLOYEES, Lists.newArrayList(COL_DEPARTMENT,
-        COL_COMPANY_PERSON, COL_DEPARTMENT_HEAD, COL_DEPARTMENT_NAME), null, new RowSetCallback() {
-      @Override
-      public void onSuccess(BeeRowSet result) {
-        for (BeeRow row : result) {
-          Long department = row.getLong(0);
-          Long employer = row.getLong(1);
-          Long headDepartment = row.getLong(2);
-          String departmentName = row.getString(3);
+        COL_COMPANY_PERSON, COL_DEPARTMENT_HEAD, COL_DEPARTMENT_NAME, "Heads"), null,
+        new RowSetCallback() {
+          @Override
+          public void onSuccess(BeeRowSet result) {
+            for (BeeRow row : result) {
+              Long department = row.getLong(0);
+              Long employer = row.getLong(1);
+              Long headDepartment = row.getLong(2);
+              String departmentName = row.getString(3);
 
-          employees.put(employer, department);
-          departments.put(department, departmentName);
+              employees.put(employer, department);
+              departments.put(department, departmentName);
 
-          if (DataUtils.isId(headDepartment)) {
-            departmentHeads.put(employer, headDepartment);
+              if (DataUtils.isId(headDepartment)) {
+                departmentHeads.put(employer, headDepartment);
+
+              } else if (BeeUtils.unbox(row.getBoolean(4))
+                  && !departmentHeads.containsKey(employer)) {
+                departmentHeads.put(employer, null);
+              }
+            }
+            form = formView;
+            updateDepartment(form, form.getActiveRow(), null);
+            afterRefresh(form, form.getActiveRow());
           }
-        }
-        form = formView;
-        updateDepartment(form, form.getActiveRow(), null);
-        afterRefresh(form, form.getActiveRow());
-      }
-    });
+        });
   }
 
   @Override

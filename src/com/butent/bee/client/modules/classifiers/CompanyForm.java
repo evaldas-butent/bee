@@ -10,11 +10,13 @@ import com.google.gwt.xml.client.Element;
 
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
+import static com.butent.bee.shared.modules.transport.TransportConstants.COL_SERVICE;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.IdCallback;
 import com.butent.bee.client.data.Queries;
@@ -23,6 +25,7 @@ import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.ChildGrid;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.modules.trade.TradeKeeper;
@@ -32,6 +35,7 @@ import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
+import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
@@ -43,6 +47,7 @@ import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
@@ -53,17 +58,33 @@ import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.rights.RegulatedWidget;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 public class CompanyForm extends AbstractFormInterceptor implements ClickHandler {
 
   private final Button toErp = new Button(Localized.getConstants().trSendToERP(), this);
+
+  private Long company;
+
+  @Override
+  public void afterCreate(FormView form) {
+    Global.getParameter(AdministrationConstants.PRM_COMPANY, new Consumer<String>() {
+      @Override
+      public void accept(String input) {
+        company = BeeUtils.toLongOrNull(input);
+      }
+    });
+    super.afterCreate(form);
+  }
 
   @Override
   public void afterCreateWidget(String name, IdentifiableWidget widget,
@@ -230,6 +251,40 @@ public class CompanyForm extends AbstractFormInterceptor implements ClickHandler
           return null;
         }
       });
+    } else if (BeeUtils.same(name, "CompanyPayAccounts") && widget instanceof ChildGrid) {
+      ((ChildGrid) widget).setGridInterceptor(new AbstractGridInterceptor() {
+        @Override
+        public void afterCreateEditor(String source, Editor editor, boolean embedded) {
+          if ((BeeUtils.same(source, "Account") || BeeUtils.same(source, COL_SERVICE))
+              && editor instanceof DataSelector) {
+
+            ((DataSelector) editor).addSelectorHandler(new SelectorEvent.Handler() {
+              @Override
+              public void onDataSelector(SelectorEvent event) {
+                if (BeeUtils.same(event.getRelatedViewName(), TBL_COMPANY_BANK_ACCOUNTS)) {
+                  if (event.isOpened()) {
+                    int idx = getDataIndex("Account");
+                    Set<Long> ids = new HashSet<>();
+
+                    for (IsRow row : getGridView().getRowData()) {
+                      ids.add(row.getLong(idx));
+                    }
+                    event.getSelector()
+                        .setAdditionalFilter(Filter.and(Filter.equals(COL_COMPANY, company),
+                            Filter.idNotIn(ids)));
+                  }
+                }
+              }
+            });
+          }
+          super.afterCreateEditor(source, editor, embedded);
+        }
+
+        @Override
+        public GridInterceptor getInstance() {
+          return null;
+        }
+      });
     }
   }
 
@@ -331,7 +386,8 @@ public class CompanyForm extends AbstractFormInterceptor implements ClickHandler
 
   private boolean checkRequired() {
     if (!BeeUtils.toBoolean(getStringValue("Offshore"))) {
-      for (String field : new String[] {COL_COMPANY_CODE, COL_COMPANY_VAT_CODE, COL_ADDRESS,
+      for (String field : new String[] {
+          COL_COMPANY_CODE, COL_COMPANY_VAT_CODE, COL_ADDRESS,
           COL_CITY, COL_COUNTRY}) {
         if (BeeUtils.isEmpty(getStringValue(field))) {
           DomUtils.setFocus(getFormView().getWidgetBySource(field), true);

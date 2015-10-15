@@ -23,11 +23,12 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.data.Data;
+import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Flow;
+import com.butent.bee.client.layout.Span;
 import com.butent.bee.client.modules.classifiers.ClassifierUtils;
-import com.butent.bee.client.modules.trade.TradeUtils;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
@@ -38,10 +39,12 @@ import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.widget.CheckBox;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Pair;
+import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
+import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.utils.ArrayUtils;
@@ -49,10 +52,12 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.TreeSet;
 
 public class PrintInvoiceInterceptor extends AbstractFormInterceptor {
@@ -85,6 +90,24 @@ public class PrintInvoiceInterceptor extends AbstractFormInterceptor {
         id = BeeKeeper.getUser().getUserData().getCompany();
       }
       ClassifierUtils.getCompanyInfo(id, companies.get(name));
+    }
+    final Widget bankAccounts = form.getWidgetByName(COL_BANK_ACCOUNT);
+
+    if (bankAccounts != null) {
+      bankAccounts.getElement().setInnerHTML(null);
+      Long customer = BeeUtils.nvl(getLongValue(COL_PAYER), getLongValue(COL_CUSTOMER));
+
+      if (DataUtils.isId(customer)) {
+        Queries.getRowSet("CompanyPayAccounts", Collections.singletonList("Account"),
+            Filter.equals(COL_COMPANY, customer),
+            new Queries.RowSetCallback() {
+              @Override
+              public void onSuccess(BeeRowSet result) {
+                renderBankAccounts(bankAccounts, BeeUtils.nvl(getLongValue(COL_TRADE_SUPPLIER),
+                    BeeKeeper.getUser().getUserData().getCompany()), result.getDistinctLongs(0));
+              }
+            });
+      }
     }
     if (invoiceDetails != null) {
       if (BeeUtils.containsSame(form.getFormName(), "short")) {
@@ -264,7 +287,8 @@ public class PrintInvoiceInterceptor extends AbstractFormInterceptor {
   private static void collectWidgetInfo(FormView form, SimpleRowSet rs) {
     final Map<String, Pair<Widget, String>> widgets = new HashMap<>();
 
-    for (String name : new String[] {"Documents", COL_VEHICLE, COL_LOADING_PLACE,
+    for (String name : new String[] {
+        "Documents", COL_VEHICLE, COL_LOADING_PLACE,
         COL_UNLOADING_PLACE, COL_ASSESSMENT, COL_NUMBER}) {
       widgets.put(name, Pair.of(form.getWidgetByName(name), (String) null));
     }
@@ -427,5 +451,36 @@ public class PrintInvoiceInterceptor extends AbstractFormInterceptor {
     }
 
     return null;
+  }
+
+  private static void renderBankAccounts(final Widget widget, Long supplier, Set<Long> ids) {
+    Queries.getRowSet(TBL_COMPANY_BANK_ACCOUNTS, Arrays.asList(ALS_CURRENCY_NAME, COL_BANK_ACCOUNT,
+            ALS_BANK_NAME, COL_BANK_CODE, COL_SWIFT_CODE),
+        Filter.and(Filter.equals(COL_COMPANY, supplier), Filter.idIn(ids)),
+        new Queries.RowSetCallback() {
+          @Override
+          public void onSuccess(BeeRowSet result) {
+            Flow flow = new Flow();
+
+            for (int i = 0; i < result.getNumberOfRows(); i++) {
+              Flow item = new Flow();
+
+              for (int j = 0; j < result.getNumberOfColumns(); j++) {
+                String text = result.getString(i, j);
+
+                if (!BeeUtils.isEmpty(text)) {
+                  Span span = new Span();
+                  span.getElement().setClassName(result.getColumnId(j));
+                  span.getElement().setInnerText(text);
+                  item.add(span);
+                }
+              }
+              if (!item.isEmpty()) {
+                flow.add(item);
+              }
+            }
+            widget.getElement().setInnerHTML(flow.getElement().getString());
+          }
+        });
   }
 }

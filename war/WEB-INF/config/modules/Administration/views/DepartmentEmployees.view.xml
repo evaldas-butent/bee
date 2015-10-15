@@ -1,15 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-  name="DepartmentEmployees" source="DepartmentEmployees" caption="=departmentEmployees" 
+  name="DepartmentEmployees" source="DepartmentEmployees" caption="=departmentEmployees"
   module="Administration"
   >
   <Columns>
     <SimpleColumn name="Department" />
     <SimpleJoin name="Department" joinType="LEFT">
       <SimpleColumn name="DepartmentName" />
+      <SimpleColumn name="Heads" />
     </SimpleJoin>
-    
+
     <SimpleColumn name="CompanyPerson" />
     <SimpleJoin name="CompanyPerson" joinType="LEFT">
       <SimpleColumn name="Person" />
@@ -43,4 +44,3 @@
     <OrderBy column="CompanyName" />
   </Order>
 </View>
- 

@@ -33,6 +33,8 @@
     <SimpleJoin name="Role" joinType="LEFT">
       <SimpleColumn name="Name" alias="RoleName" />
     </SimpleJoin>
+
+    <SimpleColumn name="Heads" />
   </Columns>
   <Order>
     <OrderBy column="DepartmentName" />
