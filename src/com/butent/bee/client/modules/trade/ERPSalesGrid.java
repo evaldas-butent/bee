@@ -7,6 +7,7 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
+import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.modules.trade.acts.TradeActKeeper;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.view.HeaderView;
@@ -20,6 +21,8 @@ import com.butent.bee.shared.modules.trade.acts.TradeActConstants;
 import com.butent.bee.shared.ui.Action;
 
 class ERPSalesGrid extends AbstractGridInterceptor {
+
+  private final Flow summingAction = new Flow();
 
   @Override
   public void afterCreatePresenter(final GridPresenter presenter) {
@@ -37,8 +40,18 @@ class ERPSalesGrid extends AbstractGridInterceptor {
       }
     });
 
+    summingAction.clear();
+    summingAction.add(TradeKeeper.createAmountAction(presenter.getViewName(),
+        presenter.getDataProvider().getFilter(), Data.getIdColumn(presenter.getViewName()),
+        presenter.getGridView()));
     header.addCommandItem(action);
-    header.addCommandItem(TradeKeeper.createAmountAction(presenter.getViewName(),
+    header.addCommandItem(summingAction);
+  }
+
+  @Override
+  public void beforeRefresh(GridPresenter presenter) {
+    summingAction.clear();
+    summingAction.add(TradeKeeper.createAmountAction(presenter.getViewName(),
         presenter.getDataProvider().getFilter(), Data.getIdColumn(presenter.getViewName()),
         presenter.getGridView()));
   }

@@ -183,20 +183,8 @@ public class TradeActBean implements HasTimerService {
       case SVC_SYNCHRONIZE_ERP_DATA:
         Collection<Timer> timers = getTimerService().getTimers();
 
-        for (Timer t1 : timers) {
-          if (cb.isParameterTimer(t1, PRM_SYNC_ERP_DATA)) {
-            try {
-              syncERPData(t1);
-              return ResponseObject.info(Localized.getConstants().imported());
-            } catch (Exception err) {
-              return ResponseObject.error(err);
-            }
-          }
-        }
-
-        response =
-            ResponseObject.error(Localized.getMessages().allValuesEmpty(SVC_SYNCHRONIZE_ERP_DATA,
-                PRM_SYNC_ERP_DATA));
+        syncERPData(null, true);
+        response = ResponseObject.info(usr.getLocalizableConstants().imported());
 
         break;
 
@@ -1469,7 +1457,7 @@ public class TradeActBean implements HasTimerService {
                 sys.joinTables(TBL_TRADE_ACTS, TBL_TRADE_ACT_ITEMS, COL_TRADE_ACT))
             .setWhere(
                 SqlUtils.and(SqlUtils.inList(TBL_TRADE_ACTS, COL_TA_PARENT, Lists
-                    .newArrayList(actId)),
+                        .newArrayList(actId)),
                     SqlUtils.equals(TBL_TRADE_ACTS, COL_TA_KIND, TradeActKind.RETURN.ordinal())))
             .addGroup(TBL_TRADE_ACT_ITEMS, COL_TA_ITEM);
 
@@ -2989,9 +2977,16 @@ public class TradeActBean implements HasTimerService {
 
   @Timeout
   private void syncERPData(Timer timer) {
-    if (!cb.isParameterTimer(timer, PRM_SYNC_ERP_DATA)) {
-      return;
+    syncERPData(timer, false);
+  }
+
+  private void syncERPData(Timer timer, boolean force) {
+    if (!force) {
+      if (!cb.isParameterTimer(timer, PRM_SYNC_ERP_DATA)) {
+        return;
+      }
     }
+
     String remoteAddress = prm.getText(PRM_ERP_ADDRESS);
     String remoteLogin = prm.getText(PRM_ERP_LOGIN);
     String remotePassword = prm.getText(PRM_ERP_PASSWORD);
@@ -3007,11 +3002,13 @@ public class TradeActBean implements HasTimerService {
       if (!BeeUtils.isEmpty(avansSask)) {
         rs = ButentWS.connect(remoteAddress, remoteLogin, remotePassword)
             .getSQLData("SELECT klientai.klientas AS kl, klientai.kodas AS kd,"
-                + " SUM(CASE WHEN debetas LIKE '" + avansSask + "%' THEN (-1) ELSE 1 END * suma)"
-                + " AS av"
-                + " FROM finans INNER JOIN klientai ON klientai.klientas = finans.klientas"
-                + " WHERE debetas LIKE '" + avansSask + "%' OR kreditas LIKE '" + avansSask + "%'"
-                + " GROUP BY klientai.klientas, klientai.kodas HAVING av > 0",
+                    + " SUM(CASE WHEN debetas LIKE '" + avansSask
+                    + "%' THEN (-1) ELSE 1 END * suma)"
+                    + " AS av"
+                    + " FROM finans INNER JOIN klientai ON klientai.klientas = finans.klientas"
+                    + " WHERE debetas LIKE '" + avansSask + "%' OR kreditas LIKE '" + avansSask
+                    + "%'"
+                    + " GROUP BY klientai.klientas, klientai.kodas HAVING av > 0",
                 new String[] {"kl", "kd", "av"});
       } else {
         rs = null;
@@ -3303,7 +3300,7 @@ public class TradeActBean implements HasTimerService {
     try {
       rs = ButentWS.connect(remoteAddress, remoteLogin, remotePassword)
           .getSQLData("SELECT preke AS pr, sum(kiekis) AS lk"
-              + " FROM likuciai GROUP BY preke HAVING lk > 0",
+                  + " FROM likuciai GROUP BY preke HAVING lk > 0",
               new String[] {"pr", "lk"});
     } catch (BeeException e) {
       logger.error(e);
@@ -3410,7 +3407,8 @@ public class TradeActBean implements HasTimerService {
             continue;
           }
 
-          BeeRowSet users = qs.getViewData(VIEW_USERS, Filter.equals(COL_EMPLOYER_ID, butentDebts.getValue(i, "manager")));
+          BeeRowSet users = qs.getViewData(VIEW_USERS,
+              Filter.equals(COL_EMPLOYER_ID, butentDebts.getValue(i, "manager")));
 
           Long userId = null;
 

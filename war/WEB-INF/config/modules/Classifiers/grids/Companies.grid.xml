@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+  xmlns:ui="http://www.butent.com/ui"
 
   name="Companies" viewName="Companies" caption="=clients" editShowId="true"
   favorite="Name" flexGrow="1"
@@ -40,8 +41,6 @@
         label="=financialState" caption="=financialState" />
     <RelColumn name="DefaultCompanyUser" visible="false" label="=companyResponsibleUser" filterSupplier="value"/>
 
-    <RelColumn name="DefaultCompanyUser" visible="false" filterSupplier="value" />
-
     <DataColumn name="CreditLimit" visible="false" />
     <DataColumn name="CreditTolerance" visible="false" />
     <DataColumn name="CreditDays" visible="false" />
@@ -58,9 +57,9 @@
     <DataColumn name="Notes" visible="false" />
   </g:columns>
     <g:rowStyle>
-      <ui:inline>="background-color: " + row.Background + "; color: " +
-        +
-        row.Foreground +"; "</ui:inline>
+      <ui:inline>="background-color: " + row.Background + "; color: "
+         +row.Foreground  + "; "
+      </ui:inline>
       <ui:expression>row.Color != null</ui:expression>
   </g:rowStyle>
 </g:Grid>
