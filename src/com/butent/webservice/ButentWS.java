@@ -175,7 +175,7 @@ public final class ButentWS {
     SimpleRowSet resp =
         xmlToSimpleRowSet(answer, "data", "dokumentas", "dok_serija", "kitas_dok", "gavejas",
             "manager",
-            "terminas", "viso", "viso_val", "apm_suma", "apm_val", "apm_data");
+            "terminas", "viso", "viso_val", "apm_suma", "apm_val", "apm_data", "skola_w");
     return resp;
   }
 

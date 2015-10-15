@@ -229,46 +229,6 @@
         <ChildGrid name="CompanyTradeActs" relColumn="Company" module="Trade.Acts" />
       </page>
 
-      <page>
-        <text>=additionalInfo</text>
-        <FlowPanel style="margin:5px;">
-          <Table>
-            <row>
-              <Label style="&lbl;" for="CompanySize" />
-              <DataSelector source="CompanySize" summarize="true" />
-              <Label style="margin-left: 8px; margin-right: 8px;" for="InformationSource" />
-              <DataSelector source="InformationSource" summarize="true" />
-            </row>
-            <row data="CompActStore">
-              <Label text="=companyActivities" style="&lbl;" />
-              <cell colSpan="3">
-                <ChildSelector viewName="CompanyActivities" childTable="CompActStore"
-                  targetRelColumn="Company" sourceRelColumn="Activity"
-                  label="=companyActivities" style="width: 100%;" summarize="true" />
-              </cell>
-            </row>
-            <row>
-              <Label text="=trdTurnover" style="&lbl;"/>
-              <DataSelector source="Turnover" summarize="true" />
-              <DataSelector source="TurnoverCurrency" editEnabled="false" placeholder="=currencyShort"
-               style="width:5em; margin-left:5px; display:inline-block;" for="Turnover" />
-            </row>
-            <row>
-              <Label text="=clientGroup" style="&lbl;" for="CompanyGroup" />
-              <DataSelector source="CompanyGroup" />
-            </row>
-            <row>
-              <Label text="=companyRelation" style="&lbl;" data="CompRelTypeStore" />
-              <ChildSelector viewName="CompanyRelationTypes" childTable="CompRelTypeStore"
-                targetRelColumn="Company" sourceRelColumn="RelationType" newRowEnabled="true"
-                label="=companyRelationType" data="CompRelTypeStore" />
-              <Label style="&lbl;" for="CompanyRelationTypeState" />
-              <DataSelector source="CompanyRelationTypeState" />
-            </row>
-          </Table>
-        </FlowPanel>
-      </page>
-
       <page for="RelatedMessages">
         <text>=mails</text>
         <ChildGrid name="RelatedMessages" relColumn="Company" />
@@ -285,11 +245,6 @@
       <page for="Requests">
         <text>=crmRequests</text>
         <ChildGrid name="ChildRequests" relColumn="Customer" />
-      </page>
-
-      <page data="Projects">
-        <text>=projects</text>
-        <ChildGrid name="CompanyProjects" relColumn="Company" />
       </page>
 
       <page data="Projects">
