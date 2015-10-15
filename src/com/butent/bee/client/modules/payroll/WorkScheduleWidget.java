@@ -557,14 +557,16 @@ class WorkScheduleWidget extends Flow {
 
     row.setValue(dataInfo.getColumnIndex(COL_PAYROLL_OBJECT), objectId);
     row.setValue(dataInfo.getColumnIndex(COL_EMPLOYEE), employeeId);
-    row.setValue(dataInfo.getColumnIndex(COL_WORK_SCHEDULE_DATE), date);
+
+    final int dateIndex = dataInfo.getColumnIndex(COL_WORK_SCHEDULE_DATE);
+    row.setValue(dateIndex, date);
 
     String caption = getEmployeeFullName(employeeId);
 
     Filter filter = Filter.and(Filter.equals(COL_EMPLOYEE, employeeId),
         Filter.equals(COL_WORK_SCHEDULE_DATE, date));
 
-    WorkScheduleEditor wsEditor = new WorkScheduleEditor(new Runnable() {
+    WorkScheduleEditor wsEditor = new WorkScheduleEditor(date, holidays, new Runnable() {
       @Override
       public void run() {
         updateSchedule(employeeId, date);
@@ -577,7 +579,11 @@ class WorkScheduleWidget extends Flow {
         new RowCallback() {
           @Override
           public void onSuccess(BeeRow result) {
-            updateSchedule(employeeId, date);
+            if (result != null) {
+              updateSchedule(employeeId, result.getDate(dateIndex));
+            } else {
+              updateSchedule();
+            }
           }
         });
   }
@@ -1698,6 +1704,17 @@ class WorkScheduleWidget extends Flow {
     }
   }
 
+  private void updateSchedule() {
+    Queries.getRowSet(VIEW_WORK_SCHEDULE, null, Filter.equals(COL_PAYROLL_OBJECT, objectId),
+        new Queries.RowSetCallback() {
+          @Override
+          public void onSuccess(BeeRowSet result) {
+            setWsData(result);
+            render();
+          }
+        });
+  }
+
   private void updateSchedule(final long employeeId, final JustDate date) {
     Queries.getRowSet(VIEW_WORK_SCHEDULE, null, Filter.equals(COL_PAYROLL_OBJECT, objectId),
         new Queries.RowSetCallback() {
@@ -1708,7 +1725,7 @@ class WorkScheduleWidget extends Flow {
             if (updateDayContent(employeeId, date)) {
               checkOverlap();
             } else {
-              refresh();
+              render();
             }
           }
         });

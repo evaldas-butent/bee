@@ -56,10 +56,12 @@
   font-weight: bolder;
 }
 
-.bee-payroll-ws-weekend {
+.bee-payroll-ws-weekend,
+.bee-payroll-ws-editor-weekend {
   background-color: #f2f2f2;
 }
-.bee-payroll-ws-holiday {
+.bee-payroll-ws-holiday,
+.bee-payroll-ws-editor-holiday {
   background-color: #ffe0e0;
 }
 .bee-payroll-ws-day-label-cell.bee-payroll-ws-today {
@@ -165,4 +167,35 @@
   margin-top: 2ex;
   margin-right: 5px;
   text-align: right;
+}
+
+.bee-payroll-ws-editor-calendar-label {
+  text-align: center;
+  font-weight: bolder;
+  margin-bottom: 5px;
+}
+.bee-payroll-ws-editor-calendar-table {
+  border-collapse: collapse;
+}
+.bee-payroll-ws-editor-calendar-table td {
+  border: 1px solid #ccc;
+  text-align: center;
+  width: 26px;
+  height: 22px;
+}
+
+.bee-payroll-ws-editor-day-cell:hover {
+  font-weight: bolder;
+  font-size: larger;
+  outline: black solid 1px;
+  cursor: pointer;
+}
+.bee-payroll-ws-editor-day-selected {
+  background-color: #80c4f9;
+  font-weight: bolder;
+  font-size: larger;
+}
+.bee-payroll-ws-editor-day-selected:hover {
+  outline: #80c4f9 solid 3px;
+  outline-offset: -1px;
 }
