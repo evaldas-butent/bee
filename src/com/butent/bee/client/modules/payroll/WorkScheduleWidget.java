@@ -30,7 +30,9 @@ import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.ChoiceCallback;
 import com.butent.bee.client.dialog.CloseButton;
+import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.DialogBox;
+import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Selectors;
 import com.butent.bee.client.event.DndHelper;
@@ -48,6 +50,7 @@ import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.DndDiv;
+import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.InputText;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.Toggle;
@@ -104,9 +107,11 @@ class WorkScheduleWidget extends Flow {
   private static final String STYLE_DAY_EMPTY = STYLE_PREFIX + "day-empty";
 
   private static final String STYLE_EMPLOYEE_PANEL = STYLE_PREFIX + "employee-panel";
+  private static final String STYLE_EMPLOYEE_CONTAINER = STYLE_PREFIX + "employee-container";
   private static final String STYLE_EMPLOYEE_CONTACT = STYLE_PREFIX + "employee-contact";
   private static final String STYLE_EMPLOYEE_NAME = STYLE_PREFIX + "employee-name";
   private static final String STYLE_EMPLOYEE_INFO = STYLE_PREFIX + "employee-info";
+  private static final String STYLE_EMPLOYEE_CLEAR = STYLE_PREFIX + "employee-clear";
 
   private static final String STYLE_EMPLOYEE_APPEND_PANEL = STYLE_PREFIX + "append-panel";
   private static final String STYLE_EMPLOYEE_APPEND_SELECTOR = STYLE_PREFIX + "append-selector";
@@ -549,6 +554,42 @@ class WorkScheduleWidget extends Flow {
     setTimeRanges(null);
   }
 
+  private void clearSchedule(final long employeeId) {
+    if (activeMonth == null) {
+      return;
+    }
+
+    final DateRange range = activeMonth.getRange();
+
+    if (hasSchedule(employeeId, range)) {
+      String caption = getEmployeeFullName(employeeId);
+      List<String> messages = Lists.newArrayList(formatYm(activeMonth),
+          Localized.getConstants().clearWorkScheduleQuestion());
+
+      Global.confirmDelete(caption, Icon.WARNING, messages, new ConfirmationCallback() {
+        @Override
+        public void onConfirm() {
+          Filter filter = Filter.and(
+              Filter.equals(COL_PAYROLL_OBJECT, objectId),
+              Filter.equals(COL_EMPLOYEE, employeeId),
+              range.getFilter(COL_WORK_SCHEDULE_DATE));
+
+          Queries.delete(VIEW_WORK_SCHEDULE, filter, new Queries.IntCallback() {
+            @Override
+            public void onSuccess(Integer result) {
+              if (BeeUtils.isPositive(result)) {
+                refresh();
+              }
+            }
+          });
+        }
+      });
+
+    } else {
+      BeeKeeper.getScreen().notifyWarning(Localized.getConstants().noData());
+    }
+  }
+
   private void editSchedule(final long employeeId, int day, final Flow contentPanel) {
     final JustDate date = new JustDate(activeMonth.getYear(), activeMonth.getMonth(), day);
 
@@ -820,6 +861,22 @@ class WorkScheduleWidget extends Flow {
     }
 
     return result;
+  }
+
+  private boolean hasSchedule(long employeeId, DateRange range) {
+    if (!DataUtils.isEmpty(wsData)) {
+      int employeeIndex = wsData.getColumnIndex(COL_EMPLOYEE);
+      int dateIndex = wsData.getColumnIndex(COL_WORK_SCHEDULE_DATE);
+
+      for (BeeRow row : wsData) {
+        if (Objects.equals(row.getLong(employeeIndex), employeeId)
+            && range.contains(row.getDate(dateIndex))) {
+          return true;
+        }
+      }
+    }
+
+    return false;
   }
 
   private void inputTimeRangeCode(final long employeeId, int day, Flow contentPanel) {
@@ -1274,6 +1331,8 @@ class WorkScheduleWidget extends Flow {
 
     Flow panel = new Flow();
 
+    Flow container = new Flow(STYLE_EMPLOYEE_CONTAINER);
+
     Label nameWidget = new Label(DataUtils.join(emData.getColumns(), row, nameIndexes,
         BeeConst.STRING_SPACE));
     nameWidget.addStyleName(STYLE_EMPLOYEE_NAME);
@@ -1290,19 +1349,36 @@ class WorkScheduleWidget extends Flow {
       }
     });
 
-    panel.add(nameWidget);
+    container.add(nameWidget);
 
     Label contactWidget = new Label(DataUtils.join(emData.getColumns(), row, contactIndexes,
         BeeConst.DEFAULT_LIST_SEPARATOR));
     contactWidget.addStyleName(STYLE_EMPLOYEE_CONTACT);
 
-    panel.add(contactWidget);
+    container.add(contactWidget);
 
     Label infoWidget = new Label(DataUtils.join(emData.getColumns(), row, infoIndexes,
         BeeConst.DEFAULT_LIST_SEPARATOR));
     infoWidget.addStyleName(STYLE_EMPLOYEE_INFO);
 
-    panel.add(infoWidget);
+    container.add(infoWidget);
+    panel.add(container);
+
+    FaLabel clear = new FaLabel(FontAwesome.TRASH, STYLE_EMPLOYEE_CLEAR);
+
+    clear.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        Element targetElement = EventUtils.getEventTargetElement(event);
+        long id = DomUtils.getDataIndexLong(DomUtils.getParentRow(targetElement, false));
+
+        if (DataUtils.isId(id)) {
+          clearSchedule(id);
+        }
+      }
+    });
+
+    panel.add(clear);
 
     return panel;
   }

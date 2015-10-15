@@ -51,9 +51,39 @@
   text-align: center;
 }
 
+.bee-payroll-ws-employee-panel {
+  display: flex;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  flex-direction: row;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  justify-content: space-between;
+  -webkit-justify-content: space-between;
+  -ms-flex-pack: justify;
+  align-items: center;
+  -webkit-align-items: center;
+  -ms-flex-align: center;
+}
+
 .bee-payroll-ws-employee-name {
   cursor: pointer;
   font-weight: bolder;
+}
+
+.bee-payroll-ws-employee-clear {
+  font-size: large;
+  padding: 5px;
+  color: #666;
+  cursor: pointer;
+  visibility: hidden;
+}
+.bee-payroll-ws-employee-clear:hover {
+  color: white;
+  background-color: red;
+}
+.bee-payroll-ws-employee-panel-cell:hover .bee-payroll-ws-employee-clear {
+  visibility: visible;
 }
 
 .bee-payroll-ws-weekend,
