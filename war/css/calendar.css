@@ -138,7 +138,7 @@
   border-top: 1px solid #FF7F6E;
   border-bottom: 1px solid #FF7F6E;
   z-index: 1;
-} 
+}
 
 .bee-cal .leftEmptyCell {
   width: 50px;
@@ -402,7 +402,7 @@
   display: flex;
   display: -webkit-flex;
   display: -ms-flexbox;
-  justify-content: space-between;  
+  justify-content: space-between;
   -webkit-justify-content: space-between;
   -ms-flex-pack: justify;
   align-items: center;
@@ -572,7 +572,7 @@
 
 .bee-cal-Controller {
   overflow: hidden;
-  background-image: linear-gradient(to bottom, #ffffff, #f2f2f2);  
+  background-image: linear-gradient(to bottom, #ffffff, #f2f2f2);
 }
 .bee-cal-Controller-disclosure {
   position: absolute;
@@ -608,7 +608,7 @@
   position: absolute;
   left: 10px;
   right: 5px;
-  top: 160px;
+  top: 185px;
   bottom: 40px;
   overflow: auto;
   transition: top 200ms;
@@ -627,6 +627,18 @@
 }
 
 .bee-cal-Controller-closed .bee-cal-Controller-tablePanel {
+  top: 52px;
+}
+
+.bee-cal-Controller-checkAllAttendees {
+  position: absolute;
+  left: 10px;
+  right: 5px;
+  top: 160px;
+  transition: top 200ms;
+  font-weight: bolder;
+}
+.bee-cal-Controller-closed .bee-cal-Controller-checkAllAttendees {
   top: 32px;
 }
 
@@ -679,7 +691,7 @@
   left: 16px;
   width: 180px;
   bottom: 8px;
-} 
+}
 
 .bee-cal-Controller-colorPicker {
   position: absolute;
@@ -706,7 +718,7 @@
   word-wrap: break-word;
   overflow: hidden;
   color: #777;
-  font-size: 12px;  
+  font-size: 12px;
   font-weight: bold;
 }
 
