@@ -1,32 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:columns xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
-xmlns:ui="http://www.butent.com/ui" >
+  xmlns:ui="http://www.butent.com/ui">
 
   <RelColumn name="Type" renderColumns="TypeName" />
-  <DataColumn name="Priority" >
-       <dynStyle>
-       <ui:inline>color: blue; font-weight: bold;</ui:inline>
-       <ui:expression>row.Priority == 0</ui:expression>
-     </dynStyle>
-     <dynStyle>
-       <ui:inline>color: red; font-weight: bold;</ui:inline>
-       <ui:expression>row.Priority == 2</ui:expression>
-     </dynStyle>
+  <DataColumn name="Priority">
+    <dynStyle>
+      <ui:inline>color: blue; font-weight: bold;</ui:inline>
+      <ui:expression>row.Priority == 0</ui:expression>
+    </dynStyle>
+    <dynStyle>
+      <ui:inline>color: red; font-weight: bold;</ui:inline>
+      <ui:expression>row.Priority == 2</ui:expression>
+    </dynStyle>
   </DataColumn>
   <CalcColumn name="Slack" type="string" cellType="html" width="60"
     caption="=crmTaskDelayPlannedShort" />
   <DataColumn name="Status" />
-  <DataColumn name="Summary" minWidth="150" maxWidth="500"/>
+  <DataColumn name="Summary" minWidth="150" maxWidth="500" />
   <RelColumn name="Company" />
   <RelColumn name="Executor" renderColumns="ExecutorFirstName ExecutorLastName"
     sortBy="ExecutorLastName ExecutorFirstName" minWidth="100" />
+
+  <RelColumn name="Project" visible="true" renderColumns="ProjectName" />
+  <RelColumn name="ProjectStage" visible="false" renderColumns="StageName" />
   <RelColumn name="Owner" renderColumns="OwnerFirstName OwnerLastName"
     sortBy="OwnerLastName OwnerFirstName" minWidth="100" />
   <DataColumn name="StartTime" readOnly="true" width="120" />
   <DataColumn name="FinishTime" width="120" />
   <DataColumn name="Completed" />
   <RelColumn name="Product" />
-  
+
   <DataColumn name="RecurringTask" readOnly="true" visible="false" />
   <RelColumn name="Contact" visible="false" />
   <DataColumn name="Description" visible="false" />
