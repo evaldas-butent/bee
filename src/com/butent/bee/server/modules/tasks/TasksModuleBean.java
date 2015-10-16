@@ -13,6 +13,7 @@ import static com.butent.bee.shared.modules.administration.AdministrationConstan
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
 
+import com.butent.bee.client.Bee;
 import com.butent.bee.server.Config;
 import com.butent.bee.server.data.BeeView;
 import com.butent.bee.server.data.DataEditorBean;
@@ -140,7 +141,7 @@ public class TasksModuleBean implements BeeModule {
 
     List<SearchResult> tasksSr = qs.getSearchResults(VIEW_TASKS,
         Filter.anyContains(Sets.newHashSet(COL_SUMMARY, COL_DESCRIPTION,
-            ALS_COMPANY_NAME, ALS_EXECUTOR_FIRST_NAME, ALS_EXECUTOR_LAST_NAME),
+                ALS_COMPANY_NAME, ALS_EXECUTOR_FIRST_NAME, ALS_EXECUTOR_LAST_NAME),
             query));
     result.addAll(tasksSr);
 
@@ -217,7 +218,11 @@ public class TasksModuleBean implements BeeModule {
             DocumentConstants.VIEW_DOCUMENT_TEMPLATES,
             DocumentConstants.COL_DOCUMENT_TEMPLATE_NAME),
         BeeParameter.createRelation(module, PRM_DEFAULT_DBA_DOCUMENT_TYPE,
-            DocumentConstants.VIEW_DOCUMENT_TYPES, DocumentConstants.COL_DOCUMENT_TYPE_NAME)
+            DocumentConstants.VIEW_DOCUMENT_TYPES, DocumentConstants.COL_DOCUMENT_TYPE_NAME),
+        BeeParameter.createRelation(module, PRM_DEFAULT_REST_REQUEST_FORM, VIEW_REQUEST_FORMS,
+            COL_REQUEST_FROM_NAME),
+        BeeParameter.createRelation(module, PRM_DEFAULT_REST_REQUEST_TYPE, VIEW_REQUEST_TYPES,
+            COL_REQUEST_TYPE_NAME)
     );
 
     return params;
@@ -1813,7 +1818,7 @@ public class TasksModuleBean implements BeeModule {
           (!BeeUtils.isEmpty(usersListSet.getValue(i, COL_FIRST_NAME))
               ? usersListSet.getValue(i, COL_FIRST_NAME) : "") + " "
               + (!BeeUtils.isEmpty(usersListSet.getValue(i, COL_LAST_NAME))
-                  ? usersListSet.getValue(i, COL_LAST_NAME) : "");
+              ? usersListSet.getValue(i, COL_LAST_NAME) : "");
 
       userFullName = BeeUtils.isEmpty(userFullName) ? "—" : userFullName;
 

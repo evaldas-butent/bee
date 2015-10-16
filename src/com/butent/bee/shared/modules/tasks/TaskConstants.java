@@ -257,6 +257,8 @@ public final class TaskConstants {
   public static final String VIEW_RT_FILES = "RTFiles";
 
   public static final String VIEW_REQUEST_FILES = "RequestFiles";
+  public static final String VIEW_REQUEST_FORMS = "RequestForms";
+  public static final String VIEW_REQUEST_TYPES = "RequestTypes";
 
   public static final String VIEW_RELATED_TASKS = "RelatedTasks";
   public static final String VIEW_RELATED_RECURRING_TASKS = "RelatedRecurringTasks";
@@ -340,6 +342,10 @@ public final class TaskConstants {
   public static final String COL_REQUEST_RESULT = "Result";
   public static final String COL_REQUEST_RESULT_PROPERTIES = "ResultProperties";
   public static final String COL_REQUEST_FINISHED = "Finished";
+  public static final String COL_REQUEST_TYPE = "RequestType";
+  public static final String COL_REQUEST_FORM = "RequestForm";
+  public static final String COL_REQUEST_FROM_NAME = "Name";
+  public static final String COL_REQUEST_TYPE_NAME = "Name";
 
   public static final String COL_RECURRING_TASK = "RecurringTask";
 
@@ -469,7 +475,8 @@ public final class TaskConstants {
   public static final String PRM_END_OF_WORK_DAY = "EndOfWorkDay";
   public static final String PRM_DEFAULT_DBA_TEMPLATE = "DefaultDBATemplate";
   public static final String PRM_DEFAULT_DBA_DOCUMENT_TYPE = "DefaultDBADocumentType";
-  public static final String PRM_DEFAULT_DBA_DOCUMENT_CATEGORY = "DefaultDBACategory";
+  public static final String PRM_DEFAULT_REST_REQUEST_TYPE = "DefaultRestRequestType";
+  public static final String PRM_DEFAULT_REST_REQUEST_FORM = "DefaultRestRequestForm";
 
   private TaskConstants() {
   }

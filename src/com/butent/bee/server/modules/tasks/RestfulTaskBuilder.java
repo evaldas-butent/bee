@@ -88,6 +88,18 @@ public class RestfulTaskBuilder {
     row.setValue(reqDataInfo.getColumnIndex(TaskConstants.COL_REQUEST_CUSTOMER), companyId);
     row.setValue(reqDataInfo.getColumnIndex(TaskConstants.COL_REQUEST_CONTENT), message);
 
+    Long type = prm.getRelation(TaskConstants.PRM_DEFAULT_REST_REQUEST_TYPE);
+
+    if (DataUtils.isId(type)) {
+      row.setValue(reqDataInfo.getColumnIndex(TaskConstants.COL_REQUEST_TYPE), type);
+    }
+
+    Long form = prm.getRelation(TaskConstants.PRM_DEFAULT_REST_REQUEST_FORM);
+
+    if (DataUtils.isId(form)) {
+      row.setValue(reqDataInfo.getColumnIndex(TaskConstants.COL_REQUEST_FORM), form);
+    }
+
     BeeRowSet reqRowSet = DataUtils.createRowSetForInsert(TaskConstants.VIEW_REQUESTS,
         reqDataInfo.getColumns(), row);
 
@@ -117,7 +129,6 @@ public class RestfulTaskBuilder {
                     Feed.REQUESTS_ALL.name()), SqlUtils
                 .equals(NewsConstants.TBL_USER_FEEDS, NewsConstants.COL_UF_FEED,
                     Feed.REQUESTS_ASSIGNED.name())));
-
 
         for (Long user : qs.getLongColumn(usrSel)) {
           Endpoint.sendToUser(user, new ModificationMessage(event));
