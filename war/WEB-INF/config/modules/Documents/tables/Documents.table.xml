@@ -13,7 +13,8 @@
     <DateTime name="Expires" label="=documentExpires" />
 
     <String name="Number" precision="30" label="=documentNumber" />
-    <String name="RegistrationNumber" precision="30" defExpr="NEXT_NUMBER" label="=documentRegistrationNumber" />
+    <String name="RegistrationNumber" precision="30" defExpr="NEXT_NUMBER"
+      label="=documentRegistrationNumber" />
 
     <Relation name="Category" notNull="true" relation="DocumentTree" label="=documentCategory" />
     <Relation name="Type" relation="DocumentTypes" label="=documentType" />
@@ -28,6 +29,8 @@
     <Text name="Description" label="=documentDescription" />
     <Relation name="User" relation="Users" label="=creator" defExpr="CURRENT_USER" />
 
-    <Relation name="Data" relation="DocumentData" unique="true" label="=documentData" editable="true" />
+    <Relation name="Data" relation="DocumentData" unique="true" label="=documentData"
+      editable="true" />
+    <Text name="Notes" label="=notes" />
   </Fields>
 </Table>
