@@ -47,14 +47,14 @@
       <row>
         <Label text="=notes" style="&lbl2;"/>
         <InputArea source="Notes" visibleLines="5" style="width: 365px; height: 125px" />
-      </row>   
+      </row>
       <Label text="=contactInfo" style="padding-bottom: 10px; padding-top:10px"></Label>
-         
+
       <row for="Address" >
         <Label text="=address" style="&lbl2;" />
-        <InputText source="Address" style="&inp1;" />     
+        <InputText source="Address" style="&inp1;" />
       </row>
-          
+
       <row>
         <Label text="=phone" for="Phone" style="&lbl2;" />
         <InputText source="Phone" style="&inp1;" />
@@ -121,47 +121,61 @@
          <Label for="CompanySize" style="&lbl2;"/>
          <InputText source="CompanySize" style="&inp1;" />
       </row>
-      
+
       <row for="InformationSource">
          <Label for="InformationSource" style="&lbl2;" />
          <InputText source="InformationSource" style="&inp1;" />
       </row>
-      
+
       <row for="CompanyRelation">
          <Label text="=companyRelation" data="CompRelTypeStore" style="&lbl2;" />
          <ChildSelector viewName="CompanyRelationTypes" childTable="CompRelTypeStore"
            targetRelColumn="Company" sourceRelColumn="RelationType" newRowEnabled="true"
            label="=companyRelationType" data="CompRelTypeStore" style="&inp1;"/>
       </row>
-      
+
       <row for="CompanyRelationTypeState">
          <Label for="CompanyRelationTypeState" style="&lbl2;" />
          <DataSelector source="CompanyRelationTypeState" style="&inp1;" />
       </row>
-      
+
       <row data="CompActStore">
          <Label text="=companyActivities" style="&lbl2;" />
          <ChildSelector viewName="CompanyActivities" childTable="CompActStore"
           targetRelColumn="Company" sourceRelColumn="Activity"
           label="=companyActivities" summarize="true" style="&inp1;" />
       </row>
-      
+
       <row for="Turnover">
          <Label text="=trdTurnover" style="&lbl2;" />
          <DataSelector source="Turnover" style="&inp1;" />
       </row>
-      
+
       <row for="CompanyGroup">
          <Label for="CompanyGroup" style="&lbl2;" />
          <DataSelector source="CompanyGroup" style="&inp1;" />
       </row>
-      
+
+
+      <row>
+        <Label style="&lbl2;" for="BankruptcyRisk" text="=clientBankruptcyRisk" />
+        <DataSelector style="&inp1;" source="BankruptcyRisk" />
+      </row>
+      <row>
+        <Label style="&lbl2;" for="DelayedPaymentRisk" text="=clientDelayedPaymentRisk" />
+        <DataSelector style="&inp1;" source="DelayedPaymentRisk" />
+      </row>
+      <row>
+        <Label style="&lbl2;" for="InvoiceTransferType" text="=invoiceTransferType" />
+        <DataSelector style="&inp1;" source="InvoiceTransferType" />
+      </row>
+
          </Table>
-     
+
          <ChildGrid name="CompanyBankAccounts" relColumn="Company" style="min-height: 150px;" />
-      
+
          <ChildGrid name="CompanyPersons" relColumn="Company" style="min-height: 150px;" />
-      
+
          <ChildGrid name="CompanyUsers" relColumn="Company" style="min-height: 150px;" />
 
   </FlowPanel>
