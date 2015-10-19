@@ -122,7 +122,7 @@ public class MailStorageBean {
         return subFolder;
       }
     }
-    MailFolder folder = createFolder(account.getAccountId(), parent, name, null);
+    MailFolder folder = createFolder(account.getAccountId(), parent, name);
 
     if (!account.isStoredRemotedly(parent)) {
       disconnectFolder(folder);
@@ -466,17 +466,31 @@ public class MailStorageBean {
     repliedStackLock.unlock();
   }
 
-  private MailFolder createFolder(Long accountId, MailFolder parent, String name, Long folderUID) {
+  private MailFolder createFolder(Long accountId, MailFolder parent, String name) {
     Assert.state(DataUtils.isId(accountId));
     Assert.notEmpty(name);
+    Long parentId = Objects.isNull(parent) ? null : parent.getId();
 
-    long id = qs.insertData(new SqlInsert(TBL_FOLDERS)
-        .addConstant(COL_ACCOUNT, accountId)
-        .addConstant(COL_FOLDER_PARENT, parent == null ? null : parent.getId())
-        .addConstant(COL_FOLDER_NAME, name)
-        .addConstant(COL_FOLDER_UID, folderUID));
+    SimpleRow row = qs.getRow(new SqlSelect()
+        .addField(TBL_FOLDERS, sys.getIdName(TBL_FOLDERS), COL_FOLDER)
+        .addFields(TBL_FOLDERS, COL_FOLDER_UID)
+        .addFrom(TBL_FOLDERS)
+        .setWhere(SqlUtils.equals(TBL_FOLDERS, COL_ACCOUNT, accountId,
+            COL_FOLDER_PARENT, parentId, COL_FOLDER_NAME, name)));
 
-    MailFolder folder = new MailFolder(parent, id, name, folderUID);
+    long id;
+    Long uidValidity = null;
+
+    if (Objects.isNull(row)) {
+      id = qs.insertData(new SqlInsert(TBL_FOLDERS)
+          .addConstant(COL_ACCOUNT, accountId)
+          .addConstant(COL_FOLDER_PARENT, parentId)
+          .addConstant(COL_FOLDER_NAME, name));
+    } else {
+      id = row.getLong(COL_FOLDER);
+      uidValidity = row.getLong(COL_FOLDER_UID);
+    }
+    MailFolder folder = new MailFolder(parent, id, name, uidValidity);
 
     if (parent != null) {
       parent.addSubFolder(folder);
