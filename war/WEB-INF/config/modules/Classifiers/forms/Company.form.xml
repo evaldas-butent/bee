@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Form [
   <!ENTITY lbl "text-align: right; padding: 0 10px 0 30px;">
-]>
+  ]>
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
   xmlns:ui="http://www.butent.com/ui"
@@ -18,7 +18,7 @@
         <cell colSpan="3">
           <InputText source="Name" style="width: 425px;" visible="true" />
         </cell>
-        <DataSelector source="CompanyType" style="width: 80px;"/>
+        <DataSelector source="CompanyType" style="width: 80px;" />
         <Label style="&lbl;" for="CompanyPriority" />
         <DataSelector source="CompanyPriority" style="width: 180px" />
         <FlowPanel name="qrFlowPanel" style="margin-left: 10px" />
@@ -87,9 +87,19 @@
           </row>
           <row>
             <Label text="=code" style="&lbl;" for="Code" />
-            <InputText source="Code" style="width: 280px;"/>
+            <InputText source="Code" style="width: 280px;" />
             <Label text="=companyVATCode" style="&lbl;" for="VATCode" />
             <InputText source="VATCode" style="width: 280px;" upperCase="true" />
+          </row>
+          <row>
+            <Label style="&lbl;" for="BankruptcyRisk" text="=clientBankruptcyRisk" />
+            <DataSelector style="width: 280px;" source="BankruptcyRisk" />
+            <Label style="&lbl;" for="DelayedPaymentRisk" text="=clientDelayedPaymentRisk" />
+            <DataSelector style="width: 280px;" source="DelayedPaymentRisk" />
+          </row>
+          <row>
+            <Label style="&lbl;" for="InvoiceTransferType" text="=invoiceTransferType" />
+            <DataSelector style="width: 280px;" source="InvoiceTransferType" />
           </row>
         </Table>
       </FlowPanel>
@@ -111,12 +121,13 @@
       <page data="Sales">
         <text>=financialInfo</text>
         <FlowPanel class="flexBox-horizontal">
-          <Table style="margin-right: 8px;" >
+          <Table style="margin-right: 8px;">
             <row>
-              <Label text="=creditLimit" for="CreditLimit" style="&lbl;"/>
+              <Label text="=creditLimit" for="CreditLimit" style="&lbl;" />
               <FlowPanel>
                 <InputInteger source="CreditLimit" style="text-align: right" summarize="true" />
-                <DataSelector source="LimitCurrency" editEnabled="false" placeholder="=currencyShort"
+                <DataSelector source="LimitCurrency" editEnabled="false"
+                  placeholder="=currencyShort"
                   style="width:5em; margin-left:5px; display:inline-block;" for="CreditLimit" />
               </FlowPanel>
               <cell rowSpan="5" verticalAlignment="top">
@@ -130,17 +141,32 @@
             </row>
 
             <row for="CreditDays">
-              <Label text="=creditDays" style="&lbl;"/>
+              <Label text="=creditDays" style="&lbl;" />
               <InputDecimal source="CreditDays" style="width: 60px;" summarize="true" />
             </row>
 
             <row for="FinancialState">
               <Label text="=financialState" style="&lbl;" />
-              <DataSelector source="FinancialState" summarize="true" />
+              <Table>
+                <row>
+                  <DataSelector source="FinancialState" summarize="true" />
+                  <FaLabel name="FinancialStateAudit" char="history" style="font-size: larger;" />
+                </row>
+              </Table>
+            </row>
+
+            <row for="DaysAsBuyer">
+              <Label text="=daysAsBuyer" style="&lbl;" />
+              <InputDecimal source="DaysAsBuyer" style="width: 60px;" summarize="true" />
+            </row>
+
+            <row for="DaysAsSupplier">
+              <Label text="=daysAsSupplier" style="&lbl;" />
+              <InputDecimal source="DaysAsSupplier" style="width: 60px;" summarize="true" />
             </row>
 
             <row for="SupplierCreditDays">
-              <Label text="=supplierCreditDays" style="&lbl;"/>
+              <Label text="=supplierCreditDays" style="&lbl;" />
               <InputDecimal source="SupplierCreditDays" style="width: 60px;" summarize="true" />
             </row>
           </Table>
@@ -176,7 +202,7 @@
               </cell>
             </row>
             <row>
-              <Label text="=trdTurnover" style="&lbl;"/>
+              <Label text="=trdTurnover" style="&lbl;" />
               <DataSelector source="Turnover" summarize="true" />
               <DataSelector source="TurnoverCurrency" editEnabled="false"
                 placeholder="=currencyShort"
