@@ -27,6 +27,8 @@ public final class PayrollConstants {
     }
   }
 
+  public static final String SVC_GET_SCHEDULE_OVERLAP = "getScheduleOverlap";
+
   public static final String TBL_EMPLOYEES = "Employees";
   public static final String TBL_LOCATIONS = "Locations";
 
@@ -98,6 +100,7 @@ public final class PayrollConstants {
 
   public static final String ALS_TR_FROM = "TrTimeFrom";
   public static final String ALS_TR_UNTIL = "TrTimeUntil";
+  public static final String ALS_TR_DURATION = "TrDuration";
 
   public static final String GRID_TIME_CARD_CHANGES = "TimeCardChanges";
 

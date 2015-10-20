@@ -2,6 +2,8 @@ package com.butent.bee.shared.modules.payroll;
 
 public interface LocalizablePayrollConstants {
 
+  String clearWorkScheduleQuestion();
+
   String newEmployee();
 
   String objectStatusActive();
@@ -9,4 +11,6 @@ public interface LocalizablePayrollConstants {
   String objectStatusInactive();
 
   String payroll();
+
+  String timeRangeCode();
 }

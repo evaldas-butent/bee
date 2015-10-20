@@ -539,6 +539,9 @@ public class MailMessage extends AbstractFormInterceptor {
         response.notify(getFormView());
 
         if (response.hasErrors()) {
+          if (mailPanel != null) {
+            mailPanel.refreshMessages(true);
+          }
           return;
         }
         String[] data = Codec.beeDeserializeCollection((String) response.getResponse());
@@ -752,7 +755,7 @@ public class MailMessage extends AbstractFormInterceptor {
                 "border-left:1px solid #039; margin:0; padding:10px; color:#039;");
             bq.setInnerHTML(getContent());
             content = BeeUtils.join("<br>", "<br>", getDate() + ", "
-                + Codec.escapeHtml(getSender() + " " + loc.mailTextWrote().toLowerCase() + ":"),
+                    + Codec.escapeHtml(getSender() + " " + loc.mailTextWrote().toLowerCase() + ":"),
                 bq.getString());
 
             if (!BeeUtils.isPrefix(subject, loc.mailReplayPrefix())) {
@@ -770,7 +773,7 @@ public class MailMessage extends AbstractFormInterceptor {
               content = getContent();
             } else {
               content = BeeUtils.join("<br>", "<br>", "---------- "
-                  + loc.mailForwardedMessage() + " ----------",
+                      + loc.mailForwardedMessage() + " ----------",
                   loc.mailFrom() + ": " + Codec.escapeHtml(getSender()),
                   loc.date() + ": " + getDate(),
                   loc.mailSubject() + ": " + Codec.escapeHtml(getSubject()),

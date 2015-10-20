@@ -103,6 +103,10 @@ public final class TimeRange implements HasRange<Long>, BeeSerializable {
     }
   }
 
+  public boolean encloses(TimeRange other) {
+    return other != null && range.encloses(other.range);
+  }
+
   @Override
   public boolean equals(Object obj) {
     return obj instanceof TimeRange && range.equals(((TimeRange) obj).range);

@@ -244,6 +244,10 @@ public class ParameterList extends ArrayList<RpcParameter> {
     return service;
   }
 
+  public String getSubService() {
+    return getParameter(Service.RPC_VAR_SUB);
+  }
+
   public boolean hasData() {
     for (RpcParameter item : this) {
       if (item.getSection() == Section.DATA) {

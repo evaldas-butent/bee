@@ -5,10 +5,13 @@ import com.google.common.collect.Range;
 
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeSerializable;
+import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.value.DateValue;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public final class DateRange implements HasDateRange, BeeSerializable {
 
@@ -72,6 +75,18 @@ public final class DateRange implements HasDateRange, BeeSerializable {
   @Override
   public boolean equals(Object obj) {
     return obj instanceof DateRange && range.equals(((DateRange) obj).range);
+  }
+
+  public Filter getFilter(String colName) {
+    JustDate minDate = getMinDate();
+    JustDate maxDate = getMaxDate();
+
+    if (Objects.equals(minDate, maxDate)) {
+      return Filter.equals(colName, minDate);
+    } else {
+      return Filter.and(Filter.isMoreEqual(colName, new DateValue(minDate)),
+          Filter.isLessEqual(colName, new DateValue(maxDate)));
+    }
   }
 
   public JustDate getMaxDate() {
