@@ -51,15 +51,47 @@
   text-align: center;
 }
 
+.bee-payroll-ws-employee-panel {
+  display: flex;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  flex-direction: row;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  justify-content: space-between;
+  -webkit-justify-content: space-between;
+  -ms-flex-pack: justify;
+  align-items: center;
+  -webkit-align-items: center;
+  -ms-flex-align: center;
+}
+
 .bee-payroll-ws-employee-name {
   cursor: pointer;
   font-weight: bolder;
 }
 
-.bee-payroll-ws-weekend {
+.bee-payroll-ws-employee-clear {
+  font-size: large;
+  padding: 5px;
+  color: #666;
+  cursor: pointer;
+  visibility: hidden;
+}
+.bee-payroll-ws-employee-clear:hover {
+  color: white;
+  background-color: red;
+}
+.bee-payroll-ws-employee-panel-cell:hover .bee-payroll-ws-employee-clear {
+  visibility: visible;
+}
+
+.bee-payroll-ws-weekend,
+.bee-payroll-ws-editor-weekend {
   background-color: #f2f2f2;
 }
-.bee-payroll-ws-holiday {
+.bee-payroll-ws-holiday,
+.bee-payroll-ws-editor-holiday {
   background-color: #ffe0e0;
 }
 .bee-payroll-ws-day-label-cell.bee-payroll-ws-today {
@@ -79,7 +111,13 @@
   border-radius: 20%;
 }
 
-.bee-payroll-ws-input-mode-panel {
+.bee-payroll-ws-item-drag {
+  background-image: linear-gradient(to bottom, skyblue, skyblue);
+  color: black !important;
+}
+
+.bee-payroll-ws-input-mode-panel,
+.bee-payroll-ws-dnd-mode-panel {
   display: flex;
   display: -webkit-flex;
   display: -ms-flexbox;
@@ -92,16 +130,20 @@
   text-align: right;
 }
 .bee-payroll-ws-input-mode-simple,
-.bee-payroll-ws-input-mode-full {
+.bee-payroll-ws-input-mode-full,
+.bee-payroll-ws-dnd-mode-move,
+.bee-payroll-ws-dnd-mode-copy {
   margin-left: 10px;
   margin-right: 10px;
   cursor: pointer;
 }
-.bee-payroll-ws-input-mode-toggle {
+.bee-payroll-ws-input-mode-toggle,
+.bee-payroll-ws-dnd-mode-toggle {
   font-size: large;
   cursor: pointer;
 }
-.bee-payroll-ws-input-mode-active {
+.bee-payroll-ws-input-mode-active,
+.bee-payroll-ws-dnd-mode-active {
   font-weight: bolder;
   cursor: auto;
 }
@@ -115,4 +157,75 @@
 .bee-payroll-ws-overlap-err {
   background-color: red;
   color: white;
+}
+
+.bee-payroll-ws-trc-header {
+  margin-top: 1ex;
+  font-size: larger;
+  text-align: center;
+}
+.bee-payroll-ws-trc-input-container {
+  margin-top: 2ex;
+  margin-left: 5px;
+}
+.bee-payroll-ws-trc-input-label {
+  display: inline-block;
+  padding-right: 1em;
+}
+.bee-payroll-ws-trc-input-widget.bee-payroll-ws-trc-input-widget {
+  width: 4em;
+}
+.bee-payroll-ws-trc-options-container {
+  margin-top: 2ex;
+  max-height: 50vh;
+  overflow: auto;
+}
+.bee-payroll-ws-trc-options-table {
+  border-collapse: collapse;
+}
+.bee-payroll-ws-trc-option-widget-cell {
+  padding: 5px;
+}
+.bee-payroll-ws-trc-option-code {
+  font-weight: bolder;
+}
+.bee-payroll-ws-trc-option-separator {
+  display: inline-block;
+  width: 5px;
+}
+.bee-payroll-ws-trc-controls {
+  margin-top: 2ex;
+  margin-right: 5px;
+  text-align: right;
+}
+
+.bee-payroll-ws-editor-calendar-label {
+  text-align: center;
+  font-weight: bolder;
+  margin-bottom: 5px;
+}
+.bee-payroll-ws-editor-calendar-table {
+  border-collapse: collapse;
+}
+.bee-payroll-ws-editor-calendar-table td {
+  border: 1px solid #ccc;
+  text-align: center;
+  width: 26px;
+  height: 22px;
+}
+
+.bee-payroll-ws-editor-day-cell:hover {
+  font-weight: bolder;
+  font-size: larger;
+  outline: black solid 1px;
+  cursor: pointer;
+}
+.bee-payroll-ws-editor-day-selected {
+  background-color: #80c4f9;
+  font-weight: bolder;
+  font-size: larger;
+}
+.bee-payroll-ws-editor-day-selected:hover {
+  outline: #80c4f9 solid 3px;
+  outline-offset: -1px;
 }

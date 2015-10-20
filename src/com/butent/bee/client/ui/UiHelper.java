@@ -312,6 +312,33 @@ public final class UiHelper {
     return result;
   }
 
+  public static int getLayoutColumns(int size, int minCols, int maxCols) {
+    Assert.isPositive(size);
+    Assert.isTrue(minCols > 1);
+    Assert.isTrue(minCols < maxCols);
+
+    if (size <= minCols) {
+      return size;
+    }
+
+    int cols = minCols;
+    int rows = (size - 1) / cols + 1;
+    int rem = (cols - size % cols) % cols;
+
+    for (int c = minCols + 1; c <= Math.min(maxCols, size); c++) {
+      int r = (size - 1) / c + 1;
+      int x = (c - size % c) % c;
+
+      if (x < rem || x == rem && Math.abs(r - c) <= Math.abs(cols - rows)) {
+        cols = c;
+        rows = r;
+        rem = x;
+      }
+    }
+
+    return cols;
+  }
+
   public static int getMaxLength(IsColumn column) {
     if (column == null) {
       return BeeConst.UNDEF;

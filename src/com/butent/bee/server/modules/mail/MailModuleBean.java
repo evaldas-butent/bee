@@ -176,15 +176,16 @@ public class MailModuleBean implements BeeModule, HasTimerService {
 
       try {
         store = account.connectToStore();
+        Folder remoteFolder = account.getRemoteFolder(store, localFolder);
 
         if (account.isInbox(localFolder)) {
-          f = syncFolders(account, account.getRemoteFolder(store, account.getRootFolder()),
+          f += syncFolders(account, account.getRemoteFolder(store, account.getRootFolder()),
               account.getRootFolder());
         }
-        c = checkFolder(account, account.getRemoteFolder(store, localFolder), localFolder,
-            progressId);
+        f += syncFolders(account, remoteFolder, localFolder);
+        c += checkFolder(account, remoteFolder, localFolder, progressId);
 
-      } catch (Exception e) {
+      } catch (Throwable e) {
         logger.error(e, "LOGIN:", account.getStoreLogin());
         error = BeeUtils.joinWords(account.getStoreLogin(), e.getMessage());
       } finally {
@@ -1260,8 +1261,10 @@ public class MailModuleBean implements BeeModule, HasTimerService {
           .setWhere(sys.idEquals(TBL_MESSAGES, messageId));
     }
     SimpleRow msg = qs.getRow(query);
-    Assert.notNull(msg);
 
+    if (Objects.isNull(msg)) {
+      return ResponseObject.error(usr.getLocalizableConstants().nothingFound());
+    }
     packet.put(TBL_MESSAGES, msg.getRowSet());
 
     Long message = msg.getLong(COL_MESSAGE);
@@ -1539,14 +1542,13 @@ public class MailModuleBean implements BeeModule, HasTimerService {
             break;
           }
         }
-        if (localSubFolder == null) {
+        if (Objects.isNull(localSubFolder)) {
           localSubFolder = mail.createFolder(account, localFolder, subFolder.getName());
           c++;
         }
         if (localSubFolder.isConnected() && !subFolder.isSubscribed()) {
           subFolder.setSubscribed(true);
         }
-        c += syncFolders(account, subFolder, localSubFolder);
       }
     }
     for (Iterator<MailFolder> iter = localFolder.getSubFolders().iterator(); iter.hasNext(); ) {

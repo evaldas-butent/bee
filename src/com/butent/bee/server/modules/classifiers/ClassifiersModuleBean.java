@@ -872,7 +872,7 @@ public class ClassifiersModuleBean implements BeeModule {
     String email = reqInfo.getParameter(COL_EMAIL);
     if (!BeeUtils.isEmpty(email) && qs.sqlExists(TBL_EMAILS, COL_EMAIL_ADDRESS, email)) {
       logger.warning(usr.getLocalizableMesssages()
-              .valueExists(BeeUtils.joinWords(usr.getLocalizableConstants().email(), email)),
+          .valueExists(BeeUtils.joinWords(usr.getLocalizableConstants().email(), email)),
           "ignored");
       email = null;
     }
@@ -1541,7 +1541,7 @@ public class ClassifiersModuleBean implements BeeModule {
           Collections.sort(branch, new Comparator<Long>() {
             @Override
             public int compare(Long o1, Long o2) {
-              return BeeUtils.compareNullsLast(categoryLevels.get(o1), categoryLevels.get(o2));
+              return BeeUtils.compareNullsLast(categoryLevels.get(o2), categoryLevels.get(o1));
             }
           });
         }
