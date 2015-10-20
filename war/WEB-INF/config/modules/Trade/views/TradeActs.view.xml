@@ -137,6 +137,12 @@
 
     <SimpleColumn name="Parent" />
 
+    <ExternalJoin name="Parent" joinType="LEFT" source="TradeActs" filter="ChildKind = 2">
+      <HiddenColumn name="Kind" alias="ChildKind" />
+      <AggregateColumn name="Parent" alias="ReturnedCount" aggregate="COUNT"
+        label="=tradeActReturnedCountShort" />
+    </ExternalJoin>
+
     <SimpleColumn name="RegistrationNo" />
   </Columns>
 
