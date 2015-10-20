@@ -98,6 +98,8 @@ public final class MailKeeper {
     FormFactory.registerFormInterceptor(FORM_NEW_ACCOUNT, new AccountEditor());
     FormFactory.registerFormInterceptor(FORM_MAIL_MESSAGE, new MailMessage());
     FormFactory.registerFormInterceptor(FORM_RULE, new RuleForm());
+    FormFactory.registerFormInterceptor(FORM_RECIPIENTS_GROUP, new RecipientsGroupForm());
+    FormFactory.registerFormInterceptor(COL_NEWSLETTER, new NewsletterForm());
 
     GridFactory.registerGridInterceptor(VIEW_NEWSLETTER_FILES,
         new FileGridInterceptor(COL_NEWSLETTER, AdministrationConstants.COL_FILE,

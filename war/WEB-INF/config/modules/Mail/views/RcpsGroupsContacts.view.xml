@@ -3,13 +3,9 @@
   <Columns>
     <SimpleColumn name="RecipientsGroup" />
 
-    <SimpleColumn name="Email" />
-    <SimpleJoin name="Email" joinType="LEFT">
-      <SimpleColumn name="Email" alias="ContactEmail" />
-    </SimpleJoin>
+    <SimpleColumn name="Company" />
+    <SimpleColumn name="CompanyPerson" />
+    <SimpleColumn name="CompanyContact" />
   </Columns>
-  <Order>
-    <OrderBy column="Email" />
-  </Order>
 </View>
  
