@@ -526,6 +526,8 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
           gridRow.getValue(grid.getDataIndex(COL_TRADE_VAT_PERC)));
       expenseRow.setValue(expensesView.getColumnIndex(COL_CARGO),
           gridRow.getValue(grid.getDataIndex(COL_CARGO)));
+      expenseRow.setValue(expensesView.getColumnIndex(COL_COSTS_SUPPLIER),
+          gridRow.getValue(grid.getDataIndex(COL_SERVICE_INSURER)));
 
       expenseRow.setValue(expensesView.getColumnIndex(COL_CARGO_INCOME),
           gridRow.getId());
