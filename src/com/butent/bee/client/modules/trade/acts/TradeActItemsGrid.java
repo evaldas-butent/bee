@@ -260,7 +260,7 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
                       });
 
                       if ((parentAct != null)
-                          && !allReturned) {
+                          && allReturned) {
                         maybeMarkAsReturned(parentAct.getId(), parentAct.getVersion());
                       }
                     }

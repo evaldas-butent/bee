@@ -487,6 +487,7 @@ public class TradeActGrid extends AbstractGridInterceptor {
           @Override
           public void onSuccess(BeeRow result) {
             getGridView().ensureRow(result, true);
+            maybeOpenAct(getGridView(), parent);
           }
         });
 
