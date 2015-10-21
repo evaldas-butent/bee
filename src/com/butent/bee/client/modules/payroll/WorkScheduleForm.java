@@ -174,7 +174,7 @@ class WorkScheduleForm extends AbstractFormInterceptor implements SelectorEvent.
         schedulePanel.clear();
       }
 
-      WorkScheduleWidget widget = new WorkScheduleWidget(objectId);
+      WorkScheduleWidget widget = new LocationSchedule(objectId);
       schedulePanel.add(widget);
 
       widget.refresh();

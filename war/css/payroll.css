@@ -51,7 +51,7 @@
   text-align: center;
 }
 
-.bee-payroll-ws-employee-panel {
+.bee-payroll-ws-partition-panel {
   display: flex;
   display: -webkit-flex;
   display: -ms-flexbox;
@@ -66,23 +66,23 @@
   -ms-flex-align: center;
 }
 
-.bee-payroll-ws-employee-name {
+.bee-payroll-ws-partition-name {
   cursor: pointer;
   font-weight: bolder;
 }
 
-.bee-payroll-ws-employee-clear {
+.bee-payroll-ws-partition-clear {
   font-size: large;
   padding: 5px;
   color: #666;
   cursor: pointer;
   visibility: hidden;
 }
-.bee-payroll-ws-employee-clear:hover {
+.bee-payroll-ws-partition-clear:hover {
   color: white;
   background-color: red;
 }
-.bee-payroll-ws-employee-panel-cell:hover .bee-payroll-ws-employee-clear {
+.bee-payroll-ws-partition-panel-cell:hover .bee-payroll-ws-partition-clear {
   visibility: visible;
 }
 

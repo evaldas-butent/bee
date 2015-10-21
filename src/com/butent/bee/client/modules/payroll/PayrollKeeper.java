@@ -45,6 +45,7 @@ public final class PayrollKeeper {
     ConditionalStyle.registerGridColumnStyleProvider(GRID_WORK_SCHEDULE_DAY, ALS_TR_UNTIL, csp);
 
     FormFactory.registerFormInterceptor(FORM_LOCATION, new LocationForm());
+    FormFactory.registerFormInterceptor(FORM_EMPLOYEE, new EmployeeForm());
     FormFactory.registerFormInterceptor(FORM_WORK_SCHEDULE, new WorkScheduleForm());
   }
 

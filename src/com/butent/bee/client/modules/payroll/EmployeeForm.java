@@ -9,9 +9,9 @@ import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 
-class LocationForm extends AbstractFormInterceptor {
+class EmployeeForm extends AbstractFormInterceptor {
 
-  LocationForm() {
+  EmployeeForm() {
   }
 
   @Override
@@ -24,7 +24,7 @@ class LocationForm extends AbstractFormInterceptor {
       }
 
       if (DataUtils.hasId(row)) {
-        WorkScheduleWidget widget = new LocationSchedule(row.getId());
+        EmployeeSchedule widget = new EmployeeSchedule(row.getId());
         panel.add(widget);
 
         widget.refresh();
@@ -36,6 +36,6 @@ class LocationForm extends AbstractFormInterceptor {
 
   @Override
   public FormInterceptor getInstance() {
-    return new LocationForm();
+    return new EmployeeForm();
   }
 }
