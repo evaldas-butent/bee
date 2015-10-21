@@ -91,6 +91,8 @@ class EmployeeSchedule extends WorkScheduleWidget {
       if (!haveWs.isEmpty() || !haveEmpl.isEmpty()) {
         int statusIndex = obData.getColumnIndex(COL_LOCATION_STATUS);
 
+        DateRange employeeRange = getEmployeeRange();
+
         for (BeeRow row : obData) {
           if (haveWs.contains(row.getId())) {
             result.add(row);
@@ -98,7 +100,9 @@ class EmployeeSchedule extends WorkScheduleWidget {
           } else if (haveEmpl.contains(row.getId())) {
             ObjectStatus status = EnumUtils.getEnumByIndex(ObjectStatus.class,
                 row.getInteger(statusIndex));
-            if (status == ObjectStatus.ACTIVE) {
+
+            if (status == ObjectStatus.ACTIVE
+                && (employeeRange == null || filterRange.intersects(employeeRange))) {
               result.add(row);
             }
           }
@@ -280,6 +284,20 @@ class EmployeeSchedule extends WorkScheduleWidget {
       return null;
     } else {
       return obData.getRowById(id);
+    }
+  }
+
+  private DateRange getEmployeeRange() {
+    if (DataUtils.isEmpty(emData)) {
+      return null;
+
+    } else {
+      BeeRow row = emData.getRow(0);
+
+      JustDate from = DataUtils.getDate(emData, row, COL_DATE_OF_EMPLOYMENT);
+      JustDate until = DataUtils.getDate(emData, row, COL_DATE_OF_DISMISSAL);
+
+      return DateRange.closed(from, until);
     }
   }
 
