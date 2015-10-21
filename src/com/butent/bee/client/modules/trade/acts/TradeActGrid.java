@@ -48,8 +48,10 @@ import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.modules.calendar.CalendarConstants;
 import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.modules.trade.acts.TradeActKind;
+import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.StringList;
@@ -322,7 +324,7 @@ public class TradeActGrid extends AbstractGridInterceptor {
               for (IsRow row : getGridView().getRowData()) {
                 if (getGridView().isRowSelected(row.getId()) || DataUtils.sameId(row, activeRow)) {
                   if (BeeUtils.compare(activeRow.getLong(idxObject), row.getLong(idxObject), null)
-                  != BeeConst.COMPARE_EQUAL) {
+                      != BeeConst.COMPARE_EQUAL) {
                     getGridView().notifyWarning(Localized.getConstants().taObjectsIsDifferent());
                     return;
                   }
@@ -421,7 +423,11 @@ public class TradeActGrid extends AbstractGridInterceptor {
 
   private void createReturn(final IsRow parent) {
     ParameterList prm = TradeActKeeper.createArgs(SVC_GET_NEXT_RETURN_ACT_NUMBER);
-    prm.addDataItem(COL_TA_SERIES, parent.getLong(getDataIndex(COL_TA_SERIES)));
+
+    if (DataUtils.isId(parent.getLong(getDataIndex(COL_TA_SERIES)))) {
+      prm.addDataItem(COL_TA_SERIES, parent.getLong(getDataIndex(COL_TA_SERIES)));
+    }
+
     prm.addDataItem(TradeConstants.VAR_VIEW_NAME, getViewName());
     prm.addDataItem(Service.VAR_COLUMN, COL_TA_NUMBER);
     prm.addDataItem(COL_TA_PARENT, parent.getId());
@@ -452,6 +458,19 @@ public class TradeActGrid extends AbstractGridInterceptor {
             case COL_TA_NUMBER:
               newRow.setValue(i, parent.getString(i) + "-"
                   + response.getResponseAsString());
+              break;
+            case COL_TA_INPUT_VEHICLE:
+            case "VehicleName":
+            case COL_TA_VEHICLE:
+            case TransportConstants.ALS_VEHICLE_NUMBER:
+            case "VehicleType":
+            case CalendarConstants.COL_VEHICLE_PARENT_MODEL:
+            case CalendarConstants.COL_VEHICLE_MODEL:
+            case COL_TA_DRIVER:
+            case "DriverPerson":
+            case "DriverFirstName":
+            case "DriverLastName":
+            case COL_TA_INPUT_DRIVER:
               break;
 
             default:

@@ -28,6 +28,7 @@
 .bee-ta-picker-search-panel {
   margin-top: 2ex;
   margin-bottom: 2ex;
+  width: 400px;
 }
 .bee-ta-picker-search-box {
   margin-left: 1em;
@@ -46,7 +47,7 @@
 .bee-ta-picker-item-panel,
 .bee-ta-return-items-wrapper,
 .bee-ta-import-items-wrapper {
-  max-height: 70vh;
+  max-height: 65vh;
   overflow: auto;
 }
 .bee-ta-picker-item-table,
@@ -268,6 +269,13 @@
 .bee-ta-invoice-service-total-cell {
   text-align: right;
   font-weight: bold;
+}
+
+.bee-ta-picker-search-by-2 {
+
+}
+
+.bee-ta-picker-search-box-2 {
 }
 
 .bee-ta-report-ibc-table td,
