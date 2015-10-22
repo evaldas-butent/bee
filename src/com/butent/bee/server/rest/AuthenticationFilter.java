@@ -43,7 +43,7 @@ public class AuthenticationFilter implements ContainerRequestFilter {
 
     if (Objects.nonNull(trusted)
         && Objects.equals(requestContext.getHeaderString("secret"),
-            Codec.md5(TimeUtils.year() + trusted.secret() + TimeUtils.month()))) {
+        Codec.md5(TimeUtils.year() + trusted.secret() + TimeUtils.month()))) {
       return;
     }
     String[] split = BeeUtils.split(requestContext.getHeaderString(HttpHeaders.AUTHORIZATION), ' ');
@@ -74,6 +74,7 @@ public class AuthenticationFilter implements ContainerRequestFilter {
       if (session != null) {
         session.invalidate();
       }
+      logger.warning(requestContext.getUriInfo().getRequestUri(), ArrayUtils.joinWords(split));
       throw new NotAuthorizedException("B-NOVO");
     }
   }
