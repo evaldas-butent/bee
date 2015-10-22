@@ -5,7 +5,6 @@ import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.json.client.JSONArray;
 import com.google.gwt.json.client.JSONNull;
-import com.google.gwt.json.client.JSONParser;
 import com.google.gwt.json.client.JSONString;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -171,7 +170,7 @@ public class ListFilterSupplier extends AbstractFilterSupplier {
   @Override
   public Filter parse(FilterValue input) {
     if (input != null && input.hasValue()) {
-      return buildFilter(JsonUtils.toList(JSONParser.parseStrict(input.getValue())));
+      return buildFilter(JsonUtils.toList(JsonUtils.parseValue(input.getValue())));
     } else {
       return null;
     }
@@ -181,7 +180,7 @@ public class ListFilterSupplier extends AbstractFilterSupplier {
   public void setFilterValue(FilterValue filterValue) {
     values.clear();
     if (filterValue != null && filterValue.hasValue()) {
-      values.addAll(JsonUtils.toList(JSONParser.parseStrict(filterValue.getValue())));
+      values.addAll(JsonUtils.toList(JsonUtils.parseValue(filterValue.getValue())));
     }
   }
 

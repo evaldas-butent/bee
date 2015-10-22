@@ -539,7 +539,7 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
       Set<String> contents = new HashSet<>();
 
       for (String s : input) {
-        JSONObject space = JsonUtils.parse(s);
+        JSONObject space = JsonUtils.parseObject(s);
 
         if (space != null) {
           spaces.add(space);
@@ -984,7 +984,7 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
       Set<Direction> hiddenDirections = EnumSet.noneOf(Direction.class);
 
       for (String s : input) {
-        JSONObject space = JsonUtils.parse(s);
+        JSONObject space = JsonUtils.parseObject(s);
 
         if (space == null) {
           showError("cannot parse space " + BeeUtils.trim(s));
