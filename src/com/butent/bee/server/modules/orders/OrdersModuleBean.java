@@ -4,7 +4,7 @@ import com.google.common.collect.Lists;
 import com.google.common.eventbus.AllowConcurrentEvents;
 import com.google.common.eventbus.Subscribe;
 
-import static com.butent.bee.shared.modules.administration.AdministrationConstants.COL_CURRENCY;
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.orders.OrdersConstants.*;
 import static com.butent.bee.shared.modules.projects.ProjectConstants.*;
@@ -49,6 +49,7 @@ import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.orders.OrdersConstants;
+import com.butent.bee.shared.modules.orders.OrdersConstants.OrdersStatus;
 import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.utils.ArrayUtils;
@@ -56,6 +57,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -119,6 +121,10 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
 
       case SVC_GET_NEXT_NUMBER:
         response = getNextNumber(reqInfo);
+        break;
+
+      case SVC_FILL_RESERVED_REMAINDERS:
+        response = fillReservedRemainders(reqInfo);
         break;
 
       default:
@@ -610,5 +616,48 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
     }
 
     return totRemainders;
+  }
+
+  private ResponseObject fillReservedRemainders(RequestInfo reqInfo) {
+    Long orderId = reqInfo.getParameterLong(COL_ORDER);
+    Long warehouseId = reqInfo.getParameterLong(COL_WAREHOUSE);
+
+    if (!DataUtils.isId(orderId)) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), COL_ORDER);
+    }
+    if (!DataUtils.isId(warehouseId)) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), COL_WAREHOUSE);
+    }
+
+    SqlSelect itemsQry =
+        new SqlSelect()
+            .addField(VIEW_ORDER_ITEMS, sys.getIdName(VIEW_ORDER_ITEMS), "OrderItem")
+            .addFields(VIEW_ORDER_ITEMS, COL_ITEM, COL_TRADE_ITEM_QUANTITY)
+            .addFrom(VIEW_ORDER_ITEMS)
+            .setWhere(SqlUtils.equals(VIEW_ORDER_ITEMS, COL_ORDER, orderId));
+
+    SimpleRowSet srs = qs.getData(itemsQry);
+    Map<Long, Double> rem =
+        totReservedRemainders(Arrays.asList(srs.getLongColumn(COL_ITEM)), null, warehouseId);
+
+    for (SimpleRow sr : srs) {
+      Double resRemainder = BeeConst.DOUBLE_ZERO;
+      Double qty = sr.getDouble(COL_TRADE_ITEM_QUANTITY);
+      Double free = rem.get(sr.getLong(COL_ITEM));
+      if (qty <= free) {
+        resRemainder = qty;
+      } else {
+        resRemainder = free;
+      }
+
+      SqlUpdate update =
+          new SqlUpdate(VIEW_ORDER_ITEMS)
+              .addConstant(COL_RESERVED_REMAINDER, resRemainder)
+              .setWhere(sys.idEquals(VIEW_ORDER_ITEMS, sr.getLong("OrderItem")));
+
+      qs.updateData(update);
+    }
+
+    return ResponseObject.emptyResponse();
   }
 }
