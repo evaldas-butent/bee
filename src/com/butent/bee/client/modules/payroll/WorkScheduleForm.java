@@ -67,7 +67,7 @@ class WorkScheduleForm extends AbstractFormInterceptor implements SelectorEvent.
   @Override
   public boolean beforeAction(Action action, Presenter presenter) {
     if (action == Action.REFRESH) {
-      WorkScheduleWidget widget = UiHelper.getChild(schedulePanel, WorkScheduleWidget.class);
+      WorkScheduleWidget widget = UiHelper.getChild(schedulePanel, LocationSchedule.class);
       if (widget != null) {
         widget.refresh();
       }
@@ -174,7 +174,7 @@ class WorkScheduleForm extends AbstractFormInterceptor implements SelectorEvent.
         schedulePanel.clear();
       }
 
-      WorkScheduleWidget widget = new WorkScheduleWidget(objectId);
+      WorkScheduleWidget widget = new LocationSchedule(objectId);
       schedulePanel.add(widget);
 
       widget.refresh();

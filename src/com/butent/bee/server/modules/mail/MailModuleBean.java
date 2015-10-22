@@ -797,12 +797,11 @@ public class MailModuleBean implements BeeModule, HasTimerService {
     return message;
   }
 
-  private Set<MailFolder> applyRules(Message message, long placeId, MailAccount account,
+  private void applyRules(Message message, long placeId, MailAccount account,
       MailFolder folder, SimpleRowSet rules) throws MessagingException {
 
     MailEnvelope envelope = new MailEnvelope(message);
     String sender = envelope.getSender() != null ? envelope.getSender().getAddress() : null;
-    Set<MailFolder> changedFolders = new HashSet<>();
 
     for (SimpleRow row : rules) {
       RuleCondition condition = EnumUtils.getEnumByIndex(RuleCondition.class,
@@ -857,7 +856,6 @@ public class MailModuleBean implements BeeModule, HasTimerService {
           MailFolder folderTo = account.findFolder(row.getLong(COL_RULE_ACTION_OPTIONS));
 
           if (folderTo != null) {
-            changedFolders.add(folderTo);
             log += " " + BeeUtils.join("/", folderTo.getParent().getName(), folderTo.getName());
           }
           logger.debug(log);
@@ -865,7 +863,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
           processMessages(account, folder, folderTo, Collections.singleton(placeId), move);
 
           if (move) {
-            return changedFolders;
+            return;
           }
           break;
 
@@ -944,7 +942,6 @@ public class MailModuleBean implements BeeModule, HasTimerService {
           break;
       }
     }
-    return changedFolders;
   }
 
   private MimeMessage buildMessage(MailAccount account, String[] to, String[] cc, String[] bcc,
@@ -1087,7 +1084,6 @@ public class MailModuleBean implements BeeModule, HasTimerService {
     SimpleRowSet rules = null;
 
     if (localFolder.isConnected() && account.holdsMessages(remoteFolder)) {
-      Set<MailFolder> changedFolders = new HashSet<>();
       boolean hasUid = remoteFolder instanceof UIDFolder;
 
       if (hasUid && !DataUtils.isId(localFolder.getUidValidity())) {
@@ -1143,7 +1139,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
                       .addOrder(TBL_RULES, COL_RULE_ORDINAL, sys.getIdName(TBL_RULES)));
                 }
                 if (!rules.isEmpty()) {
-                  changedFolders.addAll(applyRules(message, placeId, account, localFolder, rules));
+                  applyRules(message, placeId, account, localFolder, rules);
                 }
               }
               c++;
@@ -1161,11 +1157,6 @@ public class MailModuleBean implements BeeModule, HasTimerService {
           } catch (MessagingException e) {
             logger.warning(e);
           }
-        }
-      }
-      for (MailFolder mailFolder : changedFolders) {
-        if (!account.isInbox(mailFolder)) {
-          checkMail(true, account, mailFolder, null);
         }
       }
     }

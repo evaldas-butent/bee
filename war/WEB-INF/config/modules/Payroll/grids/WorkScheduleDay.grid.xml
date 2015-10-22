@@ -8,6 +8,9 @@
   <g:columns>
     <DataColumn name="LocationName" label="=object" flexGrow="1" visible="true" />
 
+    <DataColumn name="FirstName" flexGrow="1" visible="true" />
+    <DataColumn name="LastName" flexGrow="1" visible="true" />
+
     <RelColumn name="TimeRangeCode" renderColumns="TrCode TrName TrTimeFrom TrTimeUntil"
        choiceColumns="TrCode TrName TimeFrom TimeUntil" searchableColumns="TrCode"
        newRowEnabled="false" flexGrow="1" visible="true">

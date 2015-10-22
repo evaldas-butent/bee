@@ -561,8 +561,9 @@ public class TransportModuleBean implements BeeModule {
       @Subscribe
       @AllowConcurrentEvents
       public void updateAssessmentRelations(ViewInsertEvent event) {
-        if (event.isAfter(TBL_ASSESSMENTS, TBL_ASSESSMENT_FORWARDERS)) {
-          String tbl = sys.getViewSource(event.getTargetName());
+        String tbl = sys.getViewSource(event.getTargetName());
+
+        if (BeeUtils.inList(tbl, TBL_ASSESSMENTS, TBL_ASSESSMENT_FORWARDERS) && event.isAfter()) {
           String fld;
           String tblFrom;
           String joinFrom;
