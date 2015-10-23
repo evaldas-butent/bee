@@ -12,9 +12,9 @@ import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.MultiSelector;
 import com.butent.bee.client.grid.HtmlTable;
-import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory;
+import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.ViewCallback;
@@ -99,6 +99,18 @@ public class TasksReportsInterceptor extends AbstractFormInterceptor {
       if (durationTId != null) {
         durationTId.clearValue();
       }
+
+      MultiSelector projectId = (MultiSelector) form.getWidgetByName(WIDGET_PROJECT);
+
+      if (projectId != null) {
+        projectId.clearValue();
+      }
+
+      MultiSelector productId = (MultiSelector) form.getWidgetByName(WIDGET_PRODUCT);
+
+      if (productId != null) {
+        productId.clearValue();
+      }
     }
   }
 
@@ -179,6 +191,21 @@ public class TasksReportsInterceptor extends AbstractFormInterceptor {
         }
       }
 
+      MultiSelector productId = (MultiSelector) form.getWidgetByName(WIDGET_PRODUCT);
+
+      if (productId != null) {
+        if (!BeeUtils.isEmpty(productId.getValue())) {
+          params.addQueryItem(TaskConstants.VAR_TASK_PRODUCT, productId.getValue().trim());
+        }
+      }
+
+      MultiSelector projectId = (MultiSelector) form.getWidgetByName(WIDGET_PROJECT);
+
+      if (projectId != null) {
+        if (!BeeUtils.isEmpty(projectId.getValue())) {
+          params.addQueryItem(TaskConstants.VAR_TASK_PROJECT, projectId.getValue().trim());
+        }
+      }
       BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
 
         @Override
@@ -244,6 +271,8 @@ public class TasksReportsInterceptor extends AbstractFormInterceptor {
   private static final String WIDGET_CLEAR_FILTER_NAME = "ClearFilter";
   private static final String WIDGET_REPORT_TABLE_NAME = "reportTable";
   private static final String WIDGET_USER_NAME = "User";
+  private static final String WIDGET_PROJECT = "Project";
+  private static final String WIDGET_PRODUCT = "Product";
 
   private static final String WIDGET_COMPANY_NAME = "Company";
   private static final String WIDGET_DURATION_TYPE_NAME = "DurationType";

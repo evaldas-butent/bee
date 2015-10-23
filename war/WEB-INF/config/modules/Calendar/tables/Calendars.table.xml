@@ -8,7 +8,7 @@
     <String name="Name" precision="150" notNull="true" unique="true" label="=calName" />
     <Text name="Description" label="=description" />
 
-    <Enum name="Visibility" key="CalendarVisibility" label="=calVisibility" />
+    <Enum name="Visibility" key="CalendarVisibility" defValue="0" label="=calVisibility" />
 
     <Integer name="DefaultDisplayedDays" defValue="3" label="=calDefaultDisplayedDays" />
 

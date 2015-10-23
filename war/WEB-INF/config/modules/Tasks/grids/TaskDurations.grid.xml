@@ -7,7 +7,7 @@
   >
 
   <g:columns>
-    <DataColumn name="DurationDate" flexShrink="0" visible="true" />
+    <DataColumn name="DurationDate" format="DATE_SHORT" flexShrink="0" visible="true" />
     <DataColumn name="DurationType" visible="true" />
     <DataColumn name="Duration" visible="true" />
 

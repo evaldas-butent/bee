@@ -13,7 +13,6 @@ import static com.butent.bee.shared.modules.administration.AdministrationConstan
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
 
-import com.butent.bee.client.Bee;
 import com.butent.bee.server.Config;
 import com.butent.bee.server.data.BeeView;
 import com.butent.bee.server.data.DataEditorBean;
@@ -71,9 +70,12 @@ import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
+import com.butent.bee.shared.modules.administration.AdministrationConstants.ReminderMethod;
 import com.butent.bee.shared.modules.documents.DocumentConstants;
 import com.butent.bee.shared.modules.projects.ProjectConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
+import com.butent.bee.shared.modules.tasks.TaskConstants.TaskEvent;
+import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
 import com.butent.bee.shared.modules.tasks.TaskUtils;
 import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.news.Headline;
@@ -141,7 +143,7 @@ public class TasksModuleBean implements BeeModule {
 
     List<SearchResult> tasksSr = qs.getSearchResults(VIEW_TASKS,
         Filter.anyContains(Sets.newHashSet(COL_SUMMARY, COL_DESCRIPTION,
-                ALS_COMPANY_NAME, ALS_EXECUTOR_FIRST_NAME, ALS_EXECUTOR_LAST_NAME),
+            ALS_COMPANY_NAME, ALS_EXECUTOR_FIRST_NAME, ALS_EXECUTOR_LAST_NAME),
             query));
     result.addAll(tasksSr);
 
@@ -223,7 +225,7 @@ public class TasksModuleBean implements BeeModule {
             COL_REQUEST_FROM_NAME),
         BeeParameter.createRelation(module, PRM_DEFAULT_REST_REQUEST_TYPE, VIEW_REQUEST_TYPES,
             COL_REQUEST_TYPE_NAME)
-    );
+        );
 
     return params;
   }
@@ -1144,6 +1146,8 @@ public class TasksModuleBean implements BeeModule {
             .addConstant(COL_FINISH_TIME, TimeUtils.nowMillis())
             .addConstant(COL_STATUS, row.getString(info.getColumnIndex(COL_STATUS)))
             .addConstant(COL_PRIORITY, row.getString(info.getColumnIndex(COL_PRIORITY)))
+            .addConstant(COL_TASK_TYPE, row.getString(info.getColumnIndex(COL_TASK_TYPE)))
+            .addConstant(COL_PRODUCT, row.getString(info.getColumnIndex(COL_PRODUCT)))
             .addConstant(COL_OWNER, row.getString(info.getColumnIndex(COL_OWNER)));
 
     long taskId = qs.insertData(taskInsert);
@@ -1267,7 +1271,7 @@ public class TasksModuleBean implements BeeModule {
       String compFullName =
           companiesListSet.getValue(i, COL_COMPANY_NAME)
               + (!BeeUtils.isEmpty(companiesListSet.getValue(i, ALS_COMPANY_TYPE))
-              ? ", " + companiesListSet.getValue(i, ALS_COMPANY_TYPE) : "");
+                  ? ", " + companiesListSet.getValue(i, ALS_COMPANY_TYPE) : "");
 
       SqlSelect companyTimesQuery = new SqlSelect()
           .addFields(TBL_EVENT_DURATIONS, COL_DURATION)
@@ -1316,6 +1320,22 @@ public class TasksModuleBean implements BeeModule {
           companyTimesQuery.setWhere(SqlUtils.and(companyTimesQuery.getWhere(), SqlUtils.inList(
               TBL_DURATION_TYPES, sys.getIdName(TBL_DURATION_TYPES), DataUtils
                   .parseIdList(reqInfo.getParameter(VAR_TASK_DURATION_TYPE)))));
+        }
+      }
+
+      if (reqInfo.hasParameter(VAR_TASK_PRODUCT)) {
+        if (!BeeUtils.isEmpty(reqInfo.getParameter(VAR_TASK_PRODUCT))) {
+          companyTimesQuery.setWhere(SqlUtils.and(companyTimesQuery.getWhere(), SqlUtils.inList(
+              TBL_TASKS, COL_PRODUCT, DataUtils
+                  .parseIdList(reqInfo.getParameter(VAR_TASK_PRODUCT)))));
+        }
+      }
+
+      if (reqInfo.hasParameter(VAR_TASK_PROJECT)) {
+        if (!BeeUtils.isEmpty(reqInfo.getParameter(VAR_TASK_PROJECT))) {
+          companyTimesQuery.setWhere(SqlUtils.and(companyTimesQuery.getWhere(), SqlUtils.inList(
+              TBL_TASKS, ProjectConstants.COL_PROJECT, DataUtils
+                  .parseIdList(reqInfo.getParameter(VAR_TASK_PROJECT)))));
         }
       }
 
@@ -1715,6 +1735,22 @@ public class TasksModuleBean implements BeeModule {
         }
       }
 
+      if (reqInfo.hasParameter(VAR_TASK_PRODUCT)) {
+        if (!BeeUtils.isEmpty(reqInfo.getParameter(VAR_TASK_PRODUCT))) {
+          dTypeTime.setWhere(SqlUtils.and(dTypeTime.getWhere(), SqlUtils.inList(
+              TBL_TASKS, COL_PRODUCT, DataUtils
+                  .parseIdList(reqInfo.getParameter(VAR_TASK_PRODUCT)))));
+        }
+      }
+
+      if (reqInfo.hasParameter(VAR_TASK_PROJECT)) {
+        if (!BeeUtils.isEmpty(reqInfo.getParameter(VAR_TASK_PROJECT))) {
+          dTypeTime.setWhere(SqlUtils.and(dTypeTime.getWhere(), SqlUtils.inList(
+              TBL_TASKS, ProjectConstants.COL_PROJECT, DataUtils
+                  .parseIdList(reqInfo.getParameter(VAR_TASK_PROJECT)))));
+        }
+      }
+
       SimpleRowSet dTypeTimes = qs.getData(dTypeTime);
       Assert.notNull(dTypeTimes);
 
@@ -1811,7 +1847,7 @@ public class TasksModuleBean implements BeeModule {
           (!BeeUtils.isEmpty(usersListSet.getValue(i, COL_FIRST_NAME))
               ? usersListSet.getValue(i, COL_FIRST_NAME) : "") + " "
               + (!BeeUtils.isEmpty(usersListSet.getValue(i, COL_LAST_NAME))
-              ? usersListSet.getValue(i, COL_LAST_NAME) : "");
+                  ? usersListSet.getValue(i, COL_LAST_NAME) : "");
 
       userFullName = BeeUtils.isEmpty(userFullName) ? "—" : userFullName;
 
@@ -1862,6 +1898,22 @@ public class TasksModuleBean implements BeeModule {
           userTimesQuery.setWhere(SqlUtils.and(userTimesQuery.getWhere(), SqlUtils.inList(
               TBL_DURATION_TYPES, sys.getIdName(TBL_DURATION_TYPES), DataUtils
                   .parseIdList(reqInfo.getParameter(VAR_TASK_DURATION_TYPE)))));
+        }
+      }
+
+      if (reqInfo.hasParameter(VAR_TASK_PRODUCT)) {
+        if (!BeeUtils.isEmpty(reqInfo.getParameter(VAR_TASK_PRODUCT))) {
+          userTimesQuery.setWhere(SqlUtils.and(userTimesQuery.getWhere(), SqlUtils.inList(
+              TBL_TASKS, COL_PRODUCT, DataUtils
+                  .parseIdList(reqInfo.getParameter(VAR_TASK_PRODUCT)))));
+        }
+      }
+
+      if (reqInfo.hasParameter(VAR_TASK_PROJECT)) {
+        if (!BeeUtils.isEmpty(reqInfo.getParameter(VAR_TASK_PROJECT))) {
+          userTimesQuery.setWhere(SqlUtils.and(userTimesQuery.getWhere(), SqlUtils.inList(
+              TBL_TASKS, ProjectConstants.COL_PROJECT, DataUtils
+                  .parseIdList(reqInfo.getParameter(VAR_TASK_PROJECT)))));
         }
       }
 

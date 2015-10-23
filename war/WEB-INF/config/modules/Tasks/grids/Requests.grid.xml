@@ -10,14 +10,14 @@
     <IdColumn name="ID" width="50" />
     <DataColumn name="Date" caption="=date" width="100" />
     <RelColumn name="Customer" caption="=client" minWidth="100" />
-    <DataColumn name="Content" caption="=crmRequest" minWidth="100" flexShrink="1" 
-      whiteSpace="nowrap" />
+    <DataColumn name="Content" caption="=crmRequest" minWidth="100" maxWidth="900" whiteSpace="nowrap" />
     <RelColumn name="Manager" caption="=responsiblePerson" minWidth="100" />
     <RelColumn name="RequestType" />
     <DataColumn name="Finished" caption="=crmRequestFinish" width="100" format="DATE_TIME_SHORT" />
     <DataColumn name="Result" />
 
     <RelColumn name="RequestForm" visible="false" />
+    <RelColumn name="Product" visible="false" />
   </g:columns>
   
   <g:predefinedFilter name="request_registred" label="=requestShowRegistered" initial="true" >

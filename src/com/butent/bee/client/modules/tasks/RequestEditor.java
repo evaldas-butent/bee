@@ -24,6 +24,10 @@ import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.data.RowUpdateCallback;
 import com.butent.bee.client.dialog.ConfirmationCallback;
+import com.butent.bee.client.event.logical.SelectorEvent;
+import com.butent.bee.client.event.logical.SelectorEvent.Handler;
+import com.butent.bee.client.presenter.Presenter;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.Opener;
@@ -35,12 +39,14 @@ import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.InternalLink;
+import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
@@ -52,6 +58,7 @@ import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
 import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -91,6 +98,7 @@ public class RequestEditor extends AbstractFormInterceptor {
   }
 
   static FlowPanel resultProperties;
+  private Label productLabel;
 
   @Override
   public void afterCreateWidget(String name, IdentifiableWidget widget,
@@ -98,6 +106,18 @@ public class RequestEditor extends AbstractFormInterceptor {
 
     if (BeeUtils.same(WIDGET_RESULT_PROPERTIES, name) && widget instanceof FlowPanel) {
       resultProperties = (FlowPanel) widget;
+    } else if (BeeUtils.same(COL_PRODUCT, name) && (widget instanceof Label)) {
+      productLabel = (Label) widget;
+      productLabel.setStyleName(StyleUtils.NAME_REQUIRED, false);
+    } else if (BeeUtils.same(COL_REQUEST_TYPE, name) && (widget instanceof DataSelector)) {
+      ((DataSelector) widget).addSelectorHandler(new Handler() {
+
+        @Override
+        public void onDataSelector(SelectorEvent event) {
+          TasksKeeper.getProductRequired(getActiveRow(), productLabel, getViewName());
+          getFormView().refresh();
+        }
+      });
     }
     super.afterCreateWidget(name, widget, callback);
   }
@@ -146,6 +166,25 @@ public class RequestEditor extends AbstractFormInterceptor {
 
     showResultProperties(form, row);
 
+  }
+
+  @Override
+  public boolean beforeAction(Action action, Presenter presenter) {
+    if (action == Action.SAVE) {
+      if (TasksKeeper.getProductRequired(getActiveRow(), productLabel, getViewName())) {
+        if (Data.isNull(VIEW_REQUESTS, getActiveRow(), COL_PRODUCT)) {
+          getFormView().notifySevere(Localized.getConstants().crmTaskProduct() + " "
+              + Localized.getConstants().valueRequired());
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
+  @Override
+  public void beforeRefresh(FormView form, IsRow row) {
+    TasksKeeper.getProductRequired(row, productLabel, getViewName());
   }
 
   @Override
@@ -218,6 +257,14 @@ public class RequestEditor extends AbstractFormInterceptor {
     final String cid = dialog.addComment(true);
 
     final Map<String, String> durIds = dialog.addDuration();
+
+    Filter filter =
+        Filter.in(Data.getIdColumn(VIEW_DURATION_TYPES), "RequestDurationTypes", COL_DURATION_TYPE,
+            Filter.equals(COL_TASK_TYPE, row.getLong(
+                Data.getColumnIndex(VIEW_REQUESTS, COL_REQUEST_TYPE))));
+
+    dialog.getSelector(durIds.get(COL_DURATION_TYPE)).getOracle()
+        .setAdditionalFilter(filter, true);
 
     dialog.addAction(Localized.getConstants().actionSave(), new ScheduledCommand() {
       @Override
@@ -439,6 +486,11 @@ public class RequestEditor extends AbstractFormInterceptor {
 
     final DataInfo taskDataInfo = Data.getDataInfo(TaskConstants.VIEW_TASKS);
     final BeeRow taskRow = RowFactory.createEmptyRow(taskDataInfo, true);
+    String taskType = reqRow.getString(form.getDataIndex("TaskType"));
+
+    if (!BeeUtils.isEmpty(taskType)) {
+      taskRow.setValue(taskDataInfo.getColumnIndex(COL_TASK_TYPE), taskType);
+    }
 
     taskRow.setValue(taskDataInfo.getColumnIndex(ClassifierConstants.COL_COMPANY),
         reqRow.getLong(form.getDataIndex(COL_REQUEST_CUSTOMER)));
@@ -457,6 +509,11 @@ public class RequestEditor extends AbstractFormInterceptor {
         .getUserId());
 
     taskRow.setValue(taskDataInfo.getColumnIndex(COL_STATUS), TaskStatus.APPROVED.ordinal());
+
+    if (!BeeUtils.isEmpty(reqRow.getString(form.getDataIndex(COL_PRODUCT)))) {
+      taskRow.setValue(taskDataInfo.getColumnIndex(COL_PRODUCT), reqRow
+          .getString(form.getDataIndex(COL_PRODUCT)));
+    }
 
     ParameterList params = TasksKeeper.createArgs(SVC_FINISH_REQUEST_WITH_TASK);
     params.addDataItem(VAR_TASK_DATA, Codec.beeSerialize(taskRow));

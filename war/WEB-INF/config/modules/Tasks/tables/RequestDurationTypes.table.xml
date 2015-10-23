@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table" name="RequestDurationTypes" idName="RequestDurationTypeID">
+  <Fields>
+    <Relation name="Type" notNull="true" relation="RequestTypes" label="=crmRequestType" />
+    <Relation name="DurationType" notNull="true" relation="DurationTypes" label="=crmDurationType" />
+  </Fields>
+
+  <Constraints>
+    <Unique fields="Type DurationType" />
+  </Constraints>
+</Table>

@@ -543,8 +543,8 @@ class TaskEditor extends AbstractFormInterceptor {
       row4.addStyleName(STYLE_EVENT + "col-row");
       row4.addStyleName(STYLE_EVENT + "flex"
           + "");
-      row4.add(createEventCell(COL_DURATION, Localized.getConstants().crmSpentTime() + " " +
-          duration));
+      row4.add(createEventCell(COL_DURATION, Localized.getConstants().crmSpentTime() + " "
+          + duration));
 
       String durType = row.getString(DataUtils.getColumnIndex(COL_DURATION_TYPE, columns));
       if (!BeeUtils.isEmpty(durType)) {
@@ -559,12 +559,12 @@ class TaskEditor extends AbstractFormInterceptor {
       body.add(row4);
 
       Long millis = TimeUtils.parseTime(duration);
-      if (BeeUtils.isPositive(millis) &&
-          !BeeUtils.isEmpty(publisher) && !BeeUtils.isEmpty(durType)) {
+      if (BeeUtils.isPositive(millis)
+          && !BeeUtils.isEmpty(publisher) && !BeeUtils.isEmpty(durType)) {
         Long value =
             durations.get(publisher, durType);
-        durations.put(publisher, durType, millis +
-            BeeUtils.unbox(value));
+        durations.put(publisher, durType, millis
+            + BeeUtils.unbox(value));
       }
     }
     container.add(body);
@@ -675,7 +675,7 @@ class TaskEditor extends AbstractFormInterceptor {
         @Override
         public void onDataSelector(SelectorEvent event) {
 
-          TasksKeeper.getProductRequired(getActiveRow(), productLabel);
+          TasksKeeper.getProductRequired(getActiveRow(), productLabel, getViewName());
           getFormView().refresh();
         }
       });
@@ -749,7 +749,7 @@ class TaskEditor extends AbstractFormInterceptor {
   @Override
   public boolean beforeAction(Action action, Presenter presenter) {
     if (action == Action.SAVE) {
-      if (TasksKeeper.getProductRequired(getActiveRow(), productLabel)) {
+      if (TasksKeeper.getProductRequired(getActiveRow(), productLabel, getViewName())) {
         if (Data.isNull(VIEW_TASKS, getActiveRow(), COL_PRODUCT)) {
           getFormView().notifySevere(Localized.getConstants().crmTaskProduct() + " "
               + Localized.getConstants().valueRequired());
@@ -762,7 +762,7 @@ class TaskEditor extends AbstractFormInterceptor {
 
   @Override
   public void beforeRefresh(FormView form, IsRow row) {
-    TasksKeeper.getProductRequired(row, productLabel);
+    TasksKeeper.getProductRequired(row, productLabel, getViewName());
   }
 
   @Override
@@ -1332,13 +1332,7 @@ class TaskEditor extends AbstractFormInterceptor {
 
     final Map<String, String> durIds = dialog.addDuration();
 
-    Filter filter =
-        Filter.in(Data.getIdColumn(VIEW_DURATION_TYPES), "TaskDurationTypes", COL_DURATION_TYPE,
-            Filter.equals(COL_TASK_TYPE, getActiveRow().getLong(
-                Data.getColumnIndex(VIEW_TASKS, COL_TASK_TYPE))));
-
-    dialog.getSelector(durIds.get(COL_DURATION_TYPE)).getOracle()
-        .setAdditionalFilter(filter, true);
+    setTaskDurationFilter(dialog, durIds);
 
     dialog.addAction(Localized.getConstants().actionSave(), new ScheduledCommand() {
       @Override
@@ -1374,6 +1368,8 @@ class TaskEditor extends AbstractFormInterceptor {
     final String fid = dialog.addFileCollector();
 
     final Map<String, String> durIds = dialog.addDuration();
+
+    setTaskDurationFilter(dialog, durIds);
 
     dialog.addAction(Localized.getConstants().crmActionFinish(), new ScheduledCommand() {
       @Override
@@ -2147,5 +2143,15 @@ class TaskEditor extends AbstractFormInterceptor {
       form.getWidgetByName("TaskEvents").addStyleName("bee-crm-taskEvent");
       header.addCommandItem(labelVer);
     }
+  }
+
+  private void setTaskDurationFilter(TaskDialog dialog, Map<String, String> durIds) {
+    Filter filter =
+        Filter.in(Data.getIdColumn(VIEW_DURATION_TYPES), "TaskDurationTypes", COL_DURATION_TYPE,
+            Filter.equals(COL_TASK_TYPE, getActiveRow().getLong(
+                Data.getColumnIndex(VIEW_TASKS, COL_TASK_TYPE))));
+
+    dialog.getSelector(durIds.get(COL_DURATION_TYPE)).getOracle()
+        .setAdditionalFilter(filter, true);
   }
 }
