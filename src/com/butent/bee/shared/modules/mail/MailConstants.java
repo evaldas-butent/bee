@@ -174,6 +174,7 @@ public final class MailConstants {
   public static final String SVC_SEND_MAIL = "send_mail";
   public static final String SVC_STRIP_HTML = "strip_html";
   public static final String SVC_GET_UNREAD_COUNT = "get_unread_count";
+  public static final String SVC_GET_NEWSLETTER_CONTACTS = "get_newsletter_contacts";
 
   public static final String TBL_SIGNATURES = "Signatures";
   public static final String TBL_ACCOUNTS = "Accounts";
@@ -190,7 +191,19 @@ public final class MailConstants {
 
   public static final String VIEW_NEWSLETTER_CONTACTS = "NewsletterContacts";
   public static final String VIEW_NEWSLETTER_FILES = "NewsletterFiles";
+  public static final String VIEW_NEWSLETTERS = "Newsletters";
   public static final String VIEW_USER_EMAILS = "UserEmails";
+
+  public static final String VIEW_RECIPIENTS_GROUPS = "RecipientsGroups";
+  public static final String VIEW_RCPS_GROUPS_CONTACTS = "RcpsGroupsContacts";
+
+  public static final String VIEW_NEWS_COMPANIES = "NewsCompanies";
+  public static final String VIEW_NEWS_COMPANY_PERSONS = "NewsCompanyPersons";
+  public static final String VIEW_NEWS_COMPANY_CONTACTS = "NewsCompanyContacts";
+
+  public static final String VIEW_SELECT_COMPANIES = "SelectCompanies";
+  public static final String VIEW_SELECT_COMPANY_PERSONS = "SelectCompanyPersons";
+  public static final String VIEW_SELECT_COMPANY_CONTACTS = "SelectCompanyContacts";
 
   public static final String COL_MESSAGE = "Message";
   public static final String COL_RAW_CONTENT = "RawContent";
@@ -251,6 +264,8 @@ public final class MailConstants {
   public static final String COL_ADDRESSBOOK_LABEL = "Label";
 
   public static final String COL_NEWSLETTER = "Newsletter";
+  public static final String COL_GROUP_NAME = "GroupName";
+  public static final String COL_RECIPIENTS_GROUP = "RecipientsGroup";
 
   public static final String FORM_ACCOUNT = "Account";
   public static final String FORM_NEW_ACCOUNT = "NewAccount";
@@ -260,10 +275,14 @@ public final class MailConstants {
   public static final String FORM_MAIL_MESSAGE = "MailMessage";
   public static final String FORM_NEW_MAIL_MESSAGE = "NewMailMessage";
 
+  public static final String FORM_RECIPIENTS_GROUP = "RecipientsGroup";
+
   public static final String DATA_TYPE_MESSAGE = "Message";
 
   public static final String PRM_DEFAULT_ACCOUNT = "DefaultAccount";
   public static final String PRM_MAIL_CHECK_INTERVAL = "MailCheckIntervalInMinutes";
+  public static final String PRM_SEND_NEWSLETTERS_COUNT = "SendNewslettersCount";
+  public static final String PRM_SEND_NEWSLETTERS_INTERVAL = "SendNewslettersInterval";
 
   public static void register() {
     EnumUtils.register(RuleCondition.class);

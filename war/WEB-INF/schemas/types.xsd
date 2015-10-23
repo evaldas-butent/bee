@@ -376,6 +376,9 @@
       <xs:enumeration value="Messages" />
       <xs:enumeration value="Newsletters" />
       <xs:enumeration value="NewsletterContacts" />
+      <xs:enumeration value="NewsCompanies" />
+      <xs:enumeration value="NewsCompanyContacts" />
+      <xs:enumeration value="NewsCompanyPersons" />
       <xs:enumeration value="NewsletterFiles" />
       <xs:enumeration value="Objects" />
       <xs:enumeration value="ObjectSalaryFund" />
@@ -448,6 +451,9 @@
       <xs:enumeration value="SaleOperations" />
       <xs:enumeration value="Sales" />
       <xs:enumeration value="SaleSeries" />
+      <xs:enumeration value="SelectCompanies" />
+      <xs:enumeration value="SelectCompanyContacts" />
+      <xs:enumeration value="SelectCompanyPersons" />
       <xs:enumeration value="SeriesManagers" />
       <xs:enumeration value="ServiceCriteria" />
       <xs:enumeration value="ServiceCritGroups" />

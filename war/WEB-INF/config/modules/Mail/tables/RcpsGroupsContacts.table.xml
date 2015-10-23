@@ -6,6 +6,8 @@
     
   <Fields>
     <Relation name="RecipientsGroup" notNull="true" relation="RecipientsGroups" cascade="DELETE" />
-    <Relation name="Email" notNull="true" relation="Emails" cascade="DELETE" />
+    <Relation name="Company" relation="Companies" cascade="DELETE" />
+    <Relation name="CompanyPerson" relation="CompanyPersons" cascade="DELETE" />
+    <Relation name="CompanyContact" relation="CompanyContacts" cascade="DELETE" />
   </Fields>
 </Table>
