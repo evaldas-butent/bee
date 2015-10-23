@@ -18,7 +18,7 @@
               defaultRelations="Companies Persons Requests Tasks" style="margin-left: 15px; min-width:300px;" />
           </FlowPanel>
         </FlowPanel>
-        <ChildGrid name="DocumentFiles" relColumn="Document" style="margin-top: 1ex; height: 400px;" />
+        <ChildGrid name="DocumentFiles" relColumn="Document" style="margin-top: 1ex; min-height: 650px;" />
       </FlowPanel>
     </page>
 
