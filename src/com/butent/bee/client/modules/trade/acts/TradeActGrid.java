@@ -471,6 +471,8 @@ public class TradeActGrid extends AbstractGridInterceptor {
             case "DriverFirstName":
             case "DriverLastName":
             case COL_TA_INPUT_DRIVER:
+            case "DriverFirstName1":
+            case "DriverLastName1":
               break;
 
             default:
