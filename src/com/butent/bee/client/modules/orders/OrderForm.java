@@ -7,9 +7,12 @@ import com.google.gwt.event.dom.client.ClickHandler;
 
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.orders.OrdersConstants.*;
+import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
+import com.butent.bee.client.communication.ParameterList;
+import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
@@ -38,6 +41,7 @@ import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BiConsumer;
 import com.butent.bee.shared.Consumer;
+import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -118,8 +122,21 @@ public class OrderForm extends AbstractFormInterceptor {
                   + Localized.getConstants().valueRequired());
               return;
             }
-            updateStatus(form, OrdersStatus.APPROVED);
-            save(form);
+
+            ParameterList params = OrdersKeeper.createSvcArgs(SVC_FILL_RESERVED_REMAINDERS);
+            params.addDataItem(COL_ORDER, row.getId());
+            params.addDataItem(COL_WAREHOUSE, form.getLongValue(COL_WAREHOUSE));
+
+            BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
+
+              @Override
+              public void onResponse(ResponseObject response) {
+                if (!response.hasErrors()) {
+                  updateStatus(form, OrdersStatus.APPROVED);
+                  save(form);
+                }
+              }
+            });
           }
         });
       }
@@ -195,25 +212,27 @@ public class OrderForm extends AbstractFormInterceptor {
       header.setCaption(caption);
     }
 
-    if (!isOrder && !DataUtils.isNewRow(row)) {
+    if (isManager(row)) {
+      if (!isOrder && !DataUtils.isNewRow(row)) {
 
-      status = row.getInteger(idxStatus);
+        status = row.getInteger(idxStatus);
 
-      if (Objects.equals(status, OrdersStatus.CANCELED.ordinal())) {
-        header.addCommandItem(prepare);
-        form.setEnabled(false);
-      } else if (Objects.equals(status, OrdersStatus.PREPARED.ordinal())) {
-        header.addCommandItem(cancel);
+        if (Objects.equals(status, OrdersStatus.CANCELED.ordinal())) {
+          header.addCommandItem(prepare);
+          form.setEnabled(false);
+        } else if (Objects.equals(status, OrdersStatus.PREPARED.ordinal())) {
+          header.addCommandItem(cancel);
+          header.addCommandItem(send);
+          header.addCommandItem(approve);
+        } else if (Objects.equals(status, OrdersStatus.SENT.ordinal())) {
+          header.addCommandItem(cancel);
+          header.addCommandItem(approve);
+        }
+      } else if (Objects.equals(status, OrdersStatus.APPROVED.ordinal())
+          && !DataUtils.isNewRow(row)) {
         header.addCommandItem(send);
-        header.addCommandItem(approve);
-      } else if (Objects.equals(status, OrdersStatus.SENT.ordinal())) {
-        header.addCommandItem(cancel);
-        header.addCommandItem(approve);
+        header.addCommandItem(finish);
       }
-    } else if (Objects.equals(status, OrdersStatus.APPROVED.ordinal())
-        && !DataUtils.isNewRow(row)) {
-      header.addCommandItem(send);
-      header.addCommandItem(finish);
     }
 
     if (Objects.equals(form.getIntegerValue(COL_ORDERS_STATUS), OrdersStatus.FINISH.ordinal())) {
@@ -253,6 +272,14 @@ public class OrderForm extends AbstractFormInterceptor {
       }
     }
     return true;
+  }
+
+  @Override
+  public void beforeRefresh(FormView form, IsRow row) {
+
+    if (!isManager(row)) {
+      form.setEnabled(false);
+    }
   }
 
   @Override
@@ -394,5 +421,16 @@ public class OrderForm extends AbstractFormInterceptor {
         }
       }
     });
+  }
+
+  public static boolean isManager(IsRow row) {
+    if (row == null) {
+      return false;
+    }
+
+    int managerIdx = Data.getColumnIndex(VIEW_ORDERS, COL_TA_MANAGER);
+    Long managerId = row.getLong(managerIdx);
+
+    return Objects.equals(managerId, BeeKeeper.getUser().getUserId());
   }
 }
