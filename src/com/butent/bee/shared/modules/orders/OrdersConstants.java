@@ -57,6 +57,7 @@ public final class OrdersConstants {
   public static final String SVC_GET_NEXT_NUMBER = "GetNextNumber";
   public static final String SVC_EXPORT_ITEM_REMAINDERS = "ExportItemReminder";
   public static final String SVC_CREATE_PDF_FILE = "CreatePDFFile";
+  public static final String SVC_FILL_RESERVED_REMAINDERS = "FillReservedRemainders";
 
   public static final String TBL_ORDER_ITEMS = "OrderItems";
   public static final String TBL_ORDERS = "Orders";

@@ -109,6 +109,7 @@ public final class PayrollConstants {
   public static final String GRID_WORK_SCHEDULE_DAY = "WorkScheduleDay";
 
   public static final String FORM_LOCATION = "Location";
+  public static final String FORM_EMPLOYEE = "Employee";
   public static final String FORM_WORK_SCHEDULE = "WorkSchedule";
   public static final String FORM_WORK_SCHEDULE_EDITOR = "WorkScheduleEditor";
 

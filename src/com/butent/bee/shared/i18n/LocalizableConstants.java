@@ -550,6 +550,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String newEmailAccount();
 
+  String newObject();
+
   String newPassword();
 
   String newPasswordIsRequired();

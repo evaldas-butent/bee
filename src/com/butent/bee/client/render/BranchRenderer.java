@@ -46,7 +46,7 @@ public class BranchRenderer extends AbstractCellRenderer {
     List<JSONObject> params = new ArrayList<>();
 
     if (JsonUtils.isJson(separator)) {
-      JSONObject json = JsonUtils.parse(separator);
+      JSONObject json = JsonUtils.parseObject(separator);
       if (json != null) {
         params.add(json);
       }
@@ -56,7 +56,7 @@ public class BranchRenderer extends AbstractCellRenderer {
     }
 
     if (JsonUtils.isJson(options)) {
-      JSONObject json = JsonUtils.parse(options);
+      JSONObject json = JsonUtils.parseObject(options);
       if (json != null) {
         params.add(json);
       }
