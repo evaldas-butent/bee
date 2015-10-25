@@ -692,13 +692,15 @@ abstract class WorkScheduleWidget extends Flow {
   }
 
   private void checkOverlap() {
-    if (activeMonth != null && activeMonth.getYear() < 0) {
+    if (activeMonth != null) {
       final int startDay = activeMonth.getDate().getDays();
       final int lastDay = activeMonth.getLast().getDays();
 
       ParameterList params = PayrollKeeper.createArgs(SVC_GET_SCHEDULE_OVERLAP);
 
-      // params.addQueryItem(COL_PAYROLL_OBJECT, objectId);
+      params.addQueryItem(Service.VAR_COLUMN, scheduleParent.getWorkScheduleRelationColumn());
+      params.addQueryItem(Service.VAR_VALUE, getRelationId());
+
       params.addQueryItem(Service.VAR_FROM, startDay);
       params.addQueryItem(Service.VAR_TO, lastDay);
 
@@ -715,13 +717,13 @@ abstract class WorkScheduleWidget extends Flow {
               String pfx = BeeUtils.getPrefix(s, BeeConst.DEFAULT_VALUE_SEPARATOR);
               String sfx = BeeUtils.getSuffix(s, BeeConst.DEFAULT_VALUE_SEPARATOR);
 
-              Long employeeId = BeeUtils.toLongOrNull(pfx);
+              Long partId = BeeUtils.toLongOrNull(pfx);
               List<Integer> days = BeeUtils.toInts(sfx);
 
-              if (DataUtils.isId(employeeId) && !BeeUtils.isEmpty(days)) {
+              if (DataUtils.isId(partId) && !BeeUtils.isEmpty(days)) {
                 for (int day : days) {
                   if (BeeUtils.betweenInclusive(Math.abs(day), startDay, lastDay)) {
-                    Element cell = findCell(employeeId, Math.abs(day) - startDay + 1);
+                    Element cell = findCell(partId, Math.abs(day) - startDay + 1);
 
                     if (cell != null) {
                       if (day > 0) {
