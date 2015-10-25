@@ -23,7 +23,6 @@ import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
-import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.Label;
@@ -34,11 +33,9 @@ import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.view.RowInfoList;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.time.Grego;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
-import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.HashSet;
@@ -70,36 +67,6 @@ class WorkScheduleEditor extends AbstractFormInterceptor {
     }
 
     @Override
-    public ColumnDescription beforeCreateColumn(GridView gridView,
-        ColumnDescription columnDescription) {
-
-      switch (columnDescription.getId()) {
-        case COL_LOCATION_NAME:
-          if (scheduleParent == ScheduleParent.EMPLOYEE) {
-            return null;
-          }
-          break;
-
-        case ClassifierConstants.COL_FIRST_NAME:
-        case ClassifierConstants.COL_LAST_NAME:
-          if (scheduleParent == ScheduleParent.LOCATION) {
-            return null;
-          }
-          break;
-
-      }
-
-      switch (scheduleParent) {
-        case EMPLOYEE:
-          break;
-        case LOCATION:
-          break;
-      }
-
-      return super.beforeCreateColumn(gridView, columnDescription);
-    }
-
-    @Override
     public String getCaption() {
       return Format.renderDateFull(date);
     }
@@ -122,8 +89,6 @@ class WorkScheduleEditor extends AbstractFormInterceptor {
   private static final String STYLE_HOLIDAY = STYLE_PREFIX + "holiday";
   private static final String STYLE_DAY_SELECTED = STYLE_PREFIX + "day-selected";
 
-  private final ScheduleParent scheduleParent;
-
   private final JustDate date;
   private final Set<Integer> holidays;
 
@@ -131,10 +96,7 @@ class WorkScheduleEditor extends AbstractFormInterceptor {
 
   private String calendarId;
 
-  WorkScheduleEditor(ScheduleParent scheduleParent, JustDate date, Set<Integer> holidays,
-      Runnable dayRefresher) {
-
-    this.scheduleParent = scheduleParent;
+  WorkScheduleEditor(JustDate date, Set<Integer> holidays, Runnable dayRefresher) {
     this.date = date;
 
     if (holidays == null) {
@@ -160,7 +122,7 @@ class WorkScheduleEditor extends AbstractFormInterceptor {
 
   @Override
   public FormInterceptor getInstance() {
-    return new WorkScheduleEditor(scheduleParent, date, holidays, dayRefresher);
+    return new WorkScheduleEditor(date, holidays, dayRefresher);
   }
 
   @Override

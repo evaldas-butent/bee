@@ -793,17 +793,18 @@ abstract class WorkScheduleWidget extends Flow {
     final int dateIndex = dataInfo.getColumnIndex(COL_WORK_SCHEDULE_DATE);
     row.setValue(dateIndex, date);
 
-    Filter filter = Filter.and(getWorkScheduleFilter(),
+    Filter filter = Filter.and(
+        Filter.or(getWorkScheduleFilter(),
+            Filter.equals(scheduleParent.getWorkSchedulePartitionColumn(), partId)),
         Filter.equals(COL_WORK_SCHEDULE_DATE, date));
     GridFactory.registerImmutableFilter(GRID_WORK_SCHEDULE_DAY, filter);
 
-    WorkScheduleEditor wsEditor = new WorkScheduleEditor(scheduleParent, date, holidays,
-        new Runnable() {
-          @Override
-          public void run() {
-            updateSchedule(partId, date);
-          }
-        });
+    WorkScheduleEditor wsEditor = new WorkScheduleEditor(date, holidays, new Runnable() {
+      @Override
+      public void run() {
+        updateSchedule(partId, date);
+      }
+    });
 
     String caption = getPartitionCaption(partId);
 
