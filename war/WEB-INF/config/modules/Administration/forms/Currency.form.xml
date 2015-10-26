@@ -12,7 +12,7 @@
 
       <row>
         <Label for="Name" />
-        <InputText source="Name" visible="true" />
+        <InputText source="Name" upperCase="true" visible="true" />
         <Label for="Caption" />
         <InputText source="Caption" />
       </row>
