@@ -166,7 +166,7 @@ public class MailController extends Flow implements HasDomain, HandlesStateChang
       label.addMouseDownHandler(new MouseDownHandler() {
         @Override
         public void onMouseDown(MouseDownEvent event) {
-          MailKeeper.clickFolder(folderId);
+          MailKeeper.clickFolder(folderId, event.isShiftKeyDown());
         }
       });
       if (folder.getUnread() > 0) {
@@ -238,7 +238,7 @@ public class MailController extends Flow implements HasDomain, HandlesStateChang
 
             if (selected != null
                 && Objects.equals(((Pair<?, ?>) selected.getUserObject()).getA(), folderId)) {
-              MailKeeper.clickFolder(folderId);
+              MailKeeper.clickFolder(folderId, event.isShiftKeyDown());
             }
           }
         });

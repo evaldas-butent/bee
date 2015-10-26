@@ -142,7 +142,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
 
   @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
   public void checkMail(boolean async, MailAccount account, MailFolder localFolder,
-      String progressId) {
+      String progressId, boolean syncAll) {
 
     Assert.noNulls(account, localFolder);
 
@@ -164,7 +164,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
         @Override
         public void run() {
           MailModuleBean bean = Assert.notNull(Invocation.locateRemoteBean(MailModuleBean.class));
-          bean.checkMail(false, account, localFolder, progressId);
+          bean.checkMail(false, account, localFolder, progressId, syncAll);
         }
       });
       return;
@@ -184,7 +184,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
               account.getRootFolder());
         }
         f += syncFolders(account, remoteFolder, localFolder);
-        c += checkFolder(account, remoteFolder, localFolder, progressId);
+        c += checkFolder(account, remoteFolder, localFolder, progressId, syncAll);
 
       } catch (Throwable e) {
         logger.error(e, "LOGIN:", account.getStoreLogin());
@@ -338,7 +338,8 @@ public class MailModuleBean implements BeeModule, HasTimerService {
         if (folder == null) {
           response = ResponseObject.error("Folder does not exist: ID =", folderId);
         } else {
-          checkMail(true, account, folder, reqInfo.getParameter(Service.VAR_PROGRESS));
+          checkMail(true, account, folder, reqInfo.getParameter(Service.VAR_PROGRESS),
+              BeeUtils.toBoolean(reqInfo.getParameter(Service.VAR_CHECK)));
           response = ResponseObject.emptyResponse();
         }
       } else if (BeeUtils.same(svc, SVC_SEND_MAIL)) {
@@ -1078,7 +1079,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
   }
 
   private int checkFolder(MailAccount account, Folder remoteFolder, MailFolder localFolder,
-      String progressId) throws MessagingException {
+      String progressId, boolean syncAll) throws MessagingException {
     Assert.noNulls(remoteFolder, localFolder);
 
     int c = 0;
@@ -1108,7 +1109,12 @@ public class MailModuleBean implements BeeModule, HasTimerService {
         Long lastUid = null;
 
         if (hasUid) {
-          Pair<Long, Integer> pair = mail.syncFolder(account, localFolder, remoteFolder);
+          Pair<Long, Integer> pair = mail.syncFolder(account, localFolder, remoteFolder, progressId,
+              syncAll);
+
+          if (Objects.isNull(pair)) {
+            return c;
+          }
           lastUid = pair.getA();
           c += pair.getB();
           newMessages = ((UIDFolder) remoteFolder).getMessagesByUID(lastUid + 1, UIDFolder.LASTUID);
@@ -1171,7 +1177,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
         .setWhere(SqlUtils.notNull(TBL_ACCOUNTS, COL_STORE_SERVER)))) {
 
       MailAccount account = mail.getAccount(BeeUtils.toLongOrNull(accountId));
-      checkMail(true, account, account.getInboxFolder(), null);
+      checkMail(account, account.getInboxFolder());
 
       try {
         Thread.sleep(TimeUtils.MILLIS_PER_SECOND);
@@ -1179,6 +1185,10 @@ public class MailModuleBean implements BeeModule, HasTimerService {
         logger.warning(e.getMessage());
       }
     }
+  }
+
+  private void checkMail(MailAccount account, MailFolder localFolder) {
+    checkMail(true, account, localFolder, null, false);
   }
 
   private int copyMessages(MailAccount account, List<Long> places, MailFolder target,
@@ -1359,7 +1369,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
         try {
           checkMail = account.processMessages(uids, source, target, move);
         } catch (FolderOutOfSyncException e) {
-          checkMail(true, account, source, null);
+          checkMail(account, source);
           return 0;
         }
         if (checkMail) {
@@ -1417,7 +1427,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
       try {
         account.processMessages(uids, source, null, true);
       } catch (FolderOutOfSyncException e) {
-        checkMail(true, account, source, null);
+        checkMail(account, source);
         return 0;
       }
       mail.detachMessages(wh);
@@ -1427,7 +1437,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
       Endpoint.sendToUser(account.getUserId(), mailMessage);
     }
     if (checkMail) {
-      checkMail(true, account, target, null);
+      checkMail(account, target);
     }
     return data.getNumberOfRows();
   }
@@ -1488,7 +1498,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
     try {
       account.setFlag(folder, new long[] {BeeUtils.unbox(row.getLong(COL_MESSAGE_UID))}, flag, on);
     } catch (FolderOutOfSyncException e) {
-      checkMail(true, account, folder, null);
+      checkMail(account, folder);
       return response.addError(e);
     }
     mail.setFlags(placeId, value);
@@ -1504,7 +1514,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
       throws MessagingException {
 
     if (account.addMessageToRemoteFolder(message, folder)) {
-      checkMail(true, account, folder, null);
+      checkMail(account, folder);
     } else {
       mail.storeMail(account, message, folder.getId(), null);
 
