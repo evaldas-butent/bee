@@ -55,9 +55,7 @@ public class ConcurrencyBean {
 
   public abstract static class AsynchronousRunnable implements Runnable {
 
-    public String getId() {
-      return null;
-    }
+    public abstract String getId();
 
     public long getTimeout() {
       return TimeUtils.MILLIS_PER_HOUR;
@@ -260,7 +258,7 @@ public class ConcurrencyBean {
     Worker candidate = waitingThreads.poll();
 
     if (Objects.nonNull(candidate)) {
-      logger.info("Polling:", worker);
+      logger.info("Polling:", candidate);
       execute(candidate);
     }
   }

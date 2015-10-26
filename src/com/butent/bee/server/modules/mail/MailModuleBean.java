@@ -150,7 +150,8 @@ public class MailModuleBean implements BeeModule, HasTimerService {
       cb.asynchronousCall(new AsynchronousRunnable() {
         @Override
         public String getId() {
-          return BeeUtils.join("-", MailModuleBean.class.getName(), localFolder.getId());
+          return BeeUtils.join("-", MailModuleBean.class.getSimpleName(), "CheckMailFolder",
+              localFolder.getId());
         }
 
         @Override
@@ -1306,6 +1307,12 @@ public class MailModuleBean implements BeeModule, HasTimerService {
 
     if (DataUtils.isId(placeId) && !MessageFlag.SEEN.isSet(msg.getInt(COL_FLAGS))) {
       cb.asynchronousCall(new AsynchronousRunnable() {
+        @Override
+        public String getId() {
+          return BeeUtils.join("-", MailModuleBean.class.getSimpleName(), "SetMessageFlag",
+              placeId);
+        }
+
         @Override
         public void run() {
           try {
