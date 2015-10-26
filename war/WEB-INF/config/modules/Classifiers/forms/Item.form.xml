@@ -221,7 +221,7 @@
       <page>
         <text>=pictures</text>
         <Gallery viewName="ItemGraphics" relColumn="Item" pictureColumn="Picture"
-          orderColumn="Ordinal" />
+          orderColumn="Ordinal" summarize="true" />
       </page>
 
       <page for="Description">

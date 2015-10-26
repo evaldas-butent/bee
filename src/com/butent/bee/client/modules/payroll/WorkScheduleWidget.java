@@ -12,6 +12,7 @@ import com.google.gwt.event.dom.client.DropEvent;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.event.dom.client.KeyDownHandler;
+import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -36,6 +37,9 @@ import com.butent.bee.client.dom.Selectors;
 import com.butent.bee.client.event.DndHelper;
 import com.butent.bee.client.event.DndSource;
 import com.butent.bee.client.event.EventUtils;
+import com.butent.bee.client.event.logical.HasSummaryChangeHandlers;
+import com.butent.bee.client.event.logical.SummaryChangeEvent;
+import com.butent.bee.client.event.logical.SummaryChangeEvent.Handler;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.i18n.Format;
@@ -60,6 +64,8 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.value.IntegerValue;
+import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.html.Attributes;
@@ -81,7 +87,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-abstract class WorkScheduleWidget extends Flow {
+abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandlers {
 
   protected static final class CalendarInfo {
 
@@ -295,6 +301,8 @@ abstract class WorkScheduleWidget extends Flow {
   private final Toggle inputMode;
   private final Toggle dndMode;
 
+  private boolean summarize = true;
+
   WorkScheduleWidget(ScheduleParent scheduleParent) {
     super(STYLE_CONTAINER);
 
@@ -373,6 +381,26 @@ abstract class WorkScheduleWidget extends Flow {
             }
           }
         });
+  }
+
+  @Override
+  public HandlerRegistration addSummaryChangeHandler(Handler handler) {
+    return addHandler(handler, SummaryChangeEvent.getType());
+  }
+
+  @Override
+  public Value getSummary() {
+    return new IntegerValue(getScheduledMonths().size());
+  }
+
+  @Override
+  public void setSummarize(boolean summarize) {
+    this.summarize = summarize;
+  }
+
+  @Override
+  public boolean summarize() {
+    return summarize;
   }
 
   protected void addEmployeeObject(long employeeId, long objectId, final boolean fire) {
@@ -506,6 +534,8 @@ abstract class WorkScheduleWidget extends Flow {
     }
 
     renderFooters(DataUtils.getRowIds(partitions), r);
+
+    SummaryChangeEvent.maybeFire(this);
   }
 
   protected abstract Widget renderAppender(Collection<Long> partIds, YearMonth ym,
@@ -876,20 +906,33 @@ abstract class WorkScheduleWidget extends Flow {
     result.add(ym);
     result.add(ym.nextMonth());
 
+    Set<YearMonth> scheduledMonths = getScheduledMonths();
+
+    if (!scheduledMonths.isEmpty()) {
+      for (YearMonth scheduledMonth : scheduledMonths) {
+        if (!result.contains(scheduledMonth)) {
+          result.add(scheduledMonth);
+        }
+      }
+
+      Collections.sort(result);
+    }
+
+    return result;
+  }
+
+  private Set<YearMonth> getScheduledMonths() {
+    Set<YearMonth> result = new HashSet<>();
+
     if (!DataUtils.isEmpty(wsData)) {
       int dateIndex = wsData.getColumnIndex(COL_WORK_SCHEDULE_DATE);
 
       for (BeeRow row : wsData) {
         JustDate date = row.getDate(dateIndex);
         if (date != null) {
-          ym = new YearMonth(date);
-          if (!result.contains(ym)) {
-            result.add(ym);
-          }
+          result.add(new YearMonth(date));
         }
       }
-
-      Collections.sort(result);
     }
 
     return result;
@@ -1087,6 +1130,8 @@ abstract class WorkScheduleWidget extends Flow {
             wsData.addRow(result);
             updateDayContent(partId, date);
             checkOverlap();
+
+            SummaryChangeEvent.maybeFire(WorkScheduleWidget.this);
           }
         });
 
@@ -1134,6 +1179,8 @@ abstract class WorkScheduleWidget extends Flow {
 
             updateDayContent(partId, date);
             checkOverlap();
+
+            SummaryChangeEvent.maybeFire(WorkScheduleWidget.this);
           }
         }
       }
@@ -1597,6 +1644,8 @@ abstract class WorkScheduleWidget extends Flow {
           wsData.addRow(result);
           updateDayContent(partId, date);
           checkOverlap();
+
+          SummaryChangeEvent.maybeFire(WorkScheduleWidget.this);
         }
       }
     });
@@ -1640,6 +1689,7 @@ abstract class WorkScheduleWidget extends Flow {
 
             if (updateDayContent(partId, date)) {
               checkOverlap();
+              SummaryChangeEvent.maybeFire(WorkScheduleWidget.this);
             } else {
               render();
             }

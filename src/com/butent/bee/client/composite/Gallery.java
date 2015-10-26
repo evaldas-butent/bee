@@ -276,7 +276,7 @@ public class Gallery extends Flow implements HasViewName, HasFosterParent, Paren
   private final boolean readOnly;
   private final CachingPolicy cachingPolicy;
 
-  private boolean summarize = true;
+  private boolean summarize;
 
   private final Flow picturePanel;
 

@@ -1058,6 +1058,7 @@
           <xs:attribute name="parentRelColumn" type="tp:fieldNameType" />
           <xs:attribute name="readOnly" type="xs:boolean" />
           <xs:attribute name="cache" type="xs:boolean" />
+          <xs:attribute name="summarize" type="xs:boolean" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
@@ -1071,6 +1072,16 @@
           <xs:attribute name="y1" type="xs:int" use="required" />
           <xs:attribute name="x2" type="xs:int" use="required" />
           <xs:attribute name="y2" type="xs:int" use="required" />
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="SummaryProxy" substitutionGroup="widget">
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="widgetType">
+          <xs:attribute name="summarize" type="xs:boolean" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>

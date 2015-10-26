@@ -62,6 +62,7 @@ import com.butent.bee.client.layout.SimpleInline;
 import com.butent.bee.client.layout.Span;
 import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.layout.Stack;
+import com.butent.bee.client.layout.SummaryProxy;
 import com.butent.bee.client.layout.TabbedPages;
 import com.butent.bee.client.layout.Vertical;
 import com.butent.bee.client.modules.mail.Relations;
@@ -259,6 +260,7 @@ public enum FormWidget {
   SPLIT_PANEL("SplitPanel", EnumSet.of(Type.PANEL)),
   STACK_PANEL("StackPanel", EnumSet.of(Type.PANEL)),
   SUMMARY("Summary", null),
+  SUMMARY_PROXY("SummaryProxy", null),
   SVG("Svg", EnumSet.of(Type.DISPLAY)),
   TAB_BAR("TabBar", EnumSet.of(Type.DISPLAY)),
   TABBED_PAGES("TabbedPages", EnumSet.of(Type.PANEL)),
@@ -1721,6 +1723,10 @@ public enum FormWidget {
 
       case SUMMARY:
         widget = new Summary(html);
+        break;
+
+      case SUMMARY_PROXY:
+        widget = new SummaryProxy();
         break;
 
       case TAB_BAR:

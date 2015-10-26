@@ -2,7 +2,7 @@ package com.butent.bee.client.modules.payroll;
 
 import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.client.layout.Flow;
+import com.butent.bee.client.layout.SummaryProxy;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
@@ -17,17 +17,17 @@ class EmployeeForm extends AbstractFormInterceptor {
   @Override
   public void afterRefresh(FormView form, IsRow row) {
     Widget container = form.getWidgetByName("WorkSchedule");
-    if (container instanceof Flow) {
-      Flow panel = (Flow) container;
-      if (!panel.isEmpty()) {
-        panel.clear();
-      }
+    if (container instanceof SummaryProxy) {
+      SummaryProxy panel = (SummaryProxy) container;
 
       if (DataUtils.hasId(row)) {
         EmployeeSchedule widget = new EmployeeSchedule(row.getId());
-        panel.add(widget);
+        panel.setWidget(widget);
 
         widget.refresh();
+
+      } else if (!panel.isEmpty()) {
+        panel.clear();
       }
     }
 
