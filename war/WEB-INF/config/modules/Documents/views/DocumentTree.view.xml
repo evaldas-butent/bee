@@ -6,7 +6,6 @@
   >
   <Columns>
     <SimpleColumn name="Parent" />
-    <SimpleColumn name="NumberPrefix" />
     <SimpleColumn name="Ordinal" />
     <SimpleColumn name="Name" alias="CategoryName" />
     <SimpleJoin joinType="LEFT" name="Parent">
