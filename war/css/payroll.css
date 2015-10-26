@@ -148,7 +148,12 @@
   cursor: auto;
 }
 
-.bee-payroll-ws-inactive {
+.bee-payroll-ws-inactive-month .bee-payroll-ws-append-panel,
+.bee-payroll-ws-inactive-month .bee-payroll-ws-control-panel {
+  display: none;
+}
+
+.bee-payroll-ws-inactive-day {
   background-image: url(../images/checkered_background.png);
 }
 .bee-payroll-ws-overlap-warn {

@@ -23,11 +23,13 @@ import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.DateValue;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.modules.payroll.PayrollConstants.ObjectStatus;
 import com.butent.bee.shared.time.DateRange;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.YearMonth;
 import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -48,8 +50,6 @@ class LocationSchedule extends WorkScheduleWidget {
 
   private final long objectId;
 
-  private BeeRowSet emData;
-
   LocationSchedule(long objectId) {
     super(ScheduleParent.LOCATION);
 
@@ -66,7 +66,7 @@ class LocationSchedule extends WorkScheduleWidget {
   protected List<BeeRow> filterPartitions(DateRange filterRange) {
     List<BeeRow> result = new ArrayList<>();
 
-    if (!DataUtils.isEmpty(emData)) {
+    if (!DataUtils.isEmpty(getEmData())) {
       Set<Long> haveWs = new HashSet<>();
       Set<Long> haveObj = new HashSet<>();
 
@@ -95,10 +95,10 @@ class LocationSchedule extends WorkScheduleWidget {
       }
 
       if (!haveWs.isEmpty() || !haveObj.isEmpty()) {
-        int fromIndex = emData.getColumnIndex(COL_DATE_OF_EMPLOYMENT);
-        int untilIndex = emData.getColumnIndex(COL_DATE_OF_DISMISSAL);
+        int fromIndex = getEmData().getColumnIndex(COL_DATE_OF_EMPLOYMENT);
+        int untilIndex = getEmData().getColumnIndex(COL_DATE_OF_DISMISSAL);
 
-        for (BeeRow row : emData) {
+        for (BeeRow row : getEmData()) {
           if (haveWs.contains(row.getId())) {
             result.add(row);
 
@@ -128,30 +128,30 @@ class LocationSchedule extends WorkScheduleWidget {
   @Override
   protected List<Integer> getPartitionContactIndexes() {
     List<Integer> contactIndexes = new ArrayList<>();
-    contactIndexes.add(emData.getColumnIndex(COL_MOBILE));
-    contactIndexes.add(emData.getColumnIndex(COL_PHONE));
+    contactIndexes.add(getEmData().getColumnIndex(COL_MOBILE));
+    contactIndexes.add(getEmData().getColumnIndex(COL_PHONE));
     return contactIndexes;
   }
 
   @Override
   protected List<BeeColumn> getPartitionDataColumns() {
-    return emData.getColumns();
+    return getEmData().getColumns();
   }
 
   @Override
   protected List<Integer> getPartitionInfoIndexes() {
     List<Integer> infoIndexes = new ArrayList<>();
-    infoIndexes.add(emData.getColumnIndex(ALS_COMPANY_NAME));
-    infoIndexes.add(emData.getColumnIndex(ALS_DEPARTMENT_NAME));
-    infoIndexes.add(emData.getColumnIndex(COL_TAB_NUMBER));
+    infoIndexes.add(getEmData().getColumnIndex(ALS_COMPANY_NAME));
+    infoIndexes.add(getEmData().getColumnIndex(ALS_DEPARTMENT_NAME));
+    infoIndexes.add(getEmData().getColumnIndex(COL_TAB_NUMBER));
     return infoIndexes;
   }
 
   @Override
   protected List<Integer> getPartitionNameIndexes() {
     List<Integer> nameIndexes = new ArrayList<>();
-    nameIndexes.add(emData.getColumnIndex(COL_FIRST_NAME));
-    nameIndexes.add(emData.getColumnIndex(COL_LAST_NAME));
+    nameIndexes.add(getEmData().getColumnIndex(COL_FIRST_NAME));
+    nameIndexes.add(getEmData().getColumnIndex(COL_LAST_NAME));
     return nameIndexes;
   }
 
@@ -167,6 +167,20 @@ class LocationSchedule extends WorkScheduleWidget {
 
   @Override
   protected void initCalendarInfo(YearMonth ym, CalendarInfo calendarInfo) {
+  }
+
+  @Override
+  protected boolean isActive(YearMonth ym) {
+    if (DataUtils.isEmpty(getObData())) {
+      return false;
+
+    } else {
+      int statusIndex = getObData().getColumnIndex(COL_LOCATION_STATUS);
+      ObjectStatus status = EnumUtils.getEnumByIndex(ObjectStatus.class,
+          getObData().getInteger(0, statusIndex));
+
+      return status == ObjectStatus.ACTIVE;
+    }
   }
 
   @Override
@@ -219,8 +233,8 @@ class LocationSchedule extends WorkScheduleWidget {
   protected void updateCalendarInfo(YearMonth ym, BeeRow partition, CalendarInfo calendarInfo) {
     calendarInfo.setTcChanges(getTimeCardChanges(partition.getId(), ym));
 
-    JustDate activeFrom = DataUtils.getDate(emData, partition, COL_DATE_OF_EMPLOYMENT);
-    JustDate activeUntil = DataUtils.getDate(emData, partition, COL_DATE_OF_DISMISSAL);
+    JustDate activeFrom = DataUtils.getDate(getEmData(), partition, COL_DATE_OF_EMPLOYMENT);
+    JustDate activeUntil = DataUtils.getDate(getEmData(), partition, COL_DATE_OF_DISMISSAL);
 
     calendarInfo.setInactiveDays(getInactiveDays(ym, activeFrom, activeUntil));
 
@@ -242,6 +256,9 @@ class LocationSchedule extends WorkScheduleWidget {
     Set<String> viewNames = new HashSet<>();
     Map<String, Filter> filters = new HashMap<>();
 
+    viewNames.add(VIEW_LOCATIONS);
+    filters.put(VIEW_LOCATIONS, Filter.compareId(objectId));
+
     viewNames.add(VIEW_WORK_SCHEDULE);
     filters.put(VIEW_WORK_SCHEDULE, Filter.equals(COL_PAYROLL_OBJECT, objectId));
 
@@ -258,6 +275,10 @@ class LocationSchedule extends WorkScheduleWidget {
 
         for (BeeRowSet rowSet : result) {
           switch (rowSet.getViewName()) {
+            case VIEW_LOCATIONS:
+              setObData(rowSet);
+              break;
+
             case VIEW_WORK_SCHEDULE:
               setWsData(rowSet);
               break;
@@ -307,10 +328,10 @@ class LocationSchedule extends WorkScheduleWidget {
   }
 
   private BeeRow findEmployee(long id) {
-    if (DataUtils.isEmpty(emData)) {
+    if (DataUtils.isEmpty(getEmData())) {
       return null;
     } else {
-      return emData.getRowById(id);
+      return getEmData().getRowById(id);
     }
   }
 
@@ -320,8 +341,8 @@ class LocationSchedule extends WorkScheduleWidget {
     if (row == null) {
       return null;
     } else {
-      return BeeUtils.joinWords(DataUtils.getString(emData, row, COL_FIRST_NAME),
-          DataUtils.getString(emData, row, COL_LAST_NAME));
+      return BeeUtils.joinWords(DataUtils.getString(getEmData(), row, COL_FIRST_NAME),
+          DataUtils.getString(getEmData(), row, COL_LAST_NAME));
     }
   }
 
@@ -352,9 +373,5 @@ class LocationSchedule extends WorkScheduleWidget {
         }
       });
     }
-  }
-
-  private void setEmData(BeeRowSet emData) {
-    this.emData = emData;
   }
 }

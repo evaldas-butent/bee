@@ -180,7 +180,8 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
   private static final String STYLE_DND_MODE_TOGGLE = STYLE_PREFIX + "dnd-mode-toggle";
   private static final String STYLE_DND_MODE_ACTIVE = STYLE_PREFIX + "dnd-mode-active";
 
-  private static final String STYLE_INACTIVE = STYLE_PREFIX + "inactive";
+  private static final String STYLE_INACTIVE_DAY = STYLE_PREFIX + "inactive-day";
+  private static final String STYLE_INACTIVE_MONTH = STYLE_PREFIX + "inactive-month";
   private static final String STYLE_OVERLAP_WARNING = STYLE_PREFIX + "overlap-warn";
   private static final String STYLE_OVERLAP_ERROR = STYLE_PREFIX + "overlap-err";
 
@@ -284,6 +285,9 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
   }
 
   private final ScheduleParent scheduleParent;
+
+  private BeeRowSet emData;
+  private BeeRowSet obData;
 
   private BeeRowSet wsData;
   private BeeRowSet eoData;
@@ -435,8 +439,16 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
 
   protected abstract long getEmployeeId(long partId);
 
+  protected BeeRowSet getEmData() {
+    return emData;
+  }
+
   protected BeeRowSet getEoData() {
     return eoData;
+  }
+
+  protected BeeRowSet getObData() {
+    return obData;
   }
 
   protected abstract String getPartitionCaption(long partId);
@@ -495,6 +507,8 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
 
   protected abstract void initCalendarInfo(YearMonth ym, CalendarInfo calendarInfo);
 
+  protected abstract boolean isActive(YearMonth ym);
+
   protected void render() {
     if (!table.isEmpty()) {
       table.clear();
@@ -504,6 +518,8 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
     if (activeMonth == null || !months.contains(activeMonth)) {
       activateMonth(new YearMonth(TimeUtils.today()));
     }
+
+    setStyleName(STYLE_INACTIVE_MONTH, !isActive(activeMonth));
 
     renderHeaders(months);
 
@@ -541,12 +557,20 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
   protected abstract Widget renderAppender(Collection<Long> partIds, YearMonth ym,
       String selectorStyleName);
 
+  protected void setEmData(BeeRowSet emData) {
+    this.emData = emData;
+  }
+
   protected void setEoData(BeeRowSet eoData) {
     this.eoData = eoData;
   }
 
   protected void setHolidays(Set<Integer> input) {
     BeeUtils.overwrite(holidays, input);
+  }
+
+  protected void setObData(BeeRowSet obData) {
+    this.obData = obData;
   }
 
   protected void setTcData(BeeRowSet tcData) {
@@ -1487,7 +1511,7 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
           Format.renderDayOfWeek(date), calendarInfo.getSubTitle()));
 
       if (calendarInfo.isInactive(day)) {
-        cell.addClassName(STYLE_INACTIVE);
+        cell.addClassName(STYLE_INACTIVE_DAY);
       }
     }
   }

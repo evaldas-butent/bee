@@ -5,7 +5,9 @@
 ]>
 <f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form" 
 
-  name="Employee" viewName="Employees" caption="=employee">
+  name="Employee" viewName="Employees" caption="=employee"
+  width="70" widthUnit="%" height="80" heightUnit="%"
+  >
   <FlowPanel class="flexBox-vertical">
     <Table kind="controls" cellStyle="vertical-align: top;">
       <col index="0" kind="label" />
