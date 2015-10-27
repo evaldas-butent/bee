@@ -57,6 +57,19 @@ class LocationSchedule extends WorkScheduleWidget {
   }
 
   @Override
+  public String getCaption() {
+    BeeRow row = findObject(objectId);
+
+    if (row == null) {
+      return BeeConst.STRING_EMPTY;
+    } else {
+      return BeeUtils.joinItems(DataUtils.getString(getObData(), row, COL_LOCATION_NAME),
+          DataUtils.getString(getObData(), row, COL_ADDRESS),
+          DataUtils.getString(getObData(), row, ALS_COMPANY_NAME));
+    }
+  }
+
+  @Override
   protected void clearData() {
     super.clearData();
     setEmData(null);
@@ -325,25 +338,6 @@ class LocationSchedule extends WorkScheduleWidget {
         });
       }
     });
-  }
-
-  private BeeRow findEmployee(long id) {
-    if (DataUtils.isEmpty(getEmData())) {
-      return null;
-    } else {
-      return getEmData().getRowById(id);
-    }
-  }
-
-  private String getEmployeeFullName(long id) {
-    BeeRow row = findEmployee(id);
-
-    if (row == null) {
-      return null;
-    } else {
-      return BeeUtils.joinWords(DataUtils.getString(getEmData(), row, COL_FIRST_NAME),
-          DataUtils.getString(getEmData(), row, COL_LAST_NAME));
-    }
   }
 
   private void getEmployees(final Consumer<Set<Long>> consumer) {

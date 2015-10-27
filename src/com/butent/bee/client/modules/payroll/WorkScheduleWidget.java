@@ -4,6 +4,7 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Sets;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -16,6 +17,7 @@ import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.Widget;
 
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.payroll.PayrollConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
@@ -44,6 +46,8 @@ import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.layout.Flow;
+import com.butent.bee.client.output.Printable;
+import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.ui.UiHelper;
@@ -77,6 +81,7 @@ import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeRange;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.time.YearMonth;
+import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
@@ -87,7 +92,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandlers {
+abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandlers, Printable {
 
   protected static final class CalendarInfo {
 
@@ -131,6 +136,10 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
 
   private static final String STYLE_CONTAINER = STYLE_PREFIX + "container";
   private static final String STYLE_TABLE = STYLE_PREFIX + "table";
+
+  private static final String STYLE_HEADER_PANEL = STYLE_PREFIX + "header-panel";
+  private static final String STYLE_CAPTION = STYLE_PREFIX + "caption";
+  private static final String STYLE_ACTION = STYLE_PREFIX + "action";
 
   private static final String STYLE_MONTH_SELECTOR = STYLE_PREFIX + "month-selector";
   private static final String STYLE_MONTH_PANEL = STYLE_PREFIX + "month-panel";
@@ -212,13 +221,18 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
   private static final String NAME_INPUT_MODE = "InputMode";
   private static final String NAME_DND_MODE = "DndMode";
 
-  private static final int MONTH_ROW = 0;
+  private static final int HEADER_ROW = 0;
+  private static final int MONTH_ROW = HEADER_ROW + 1;
+  private static final int DAY_ROW = MONTH_ROW + 1;
+  private static final int CALENDAR_START_ROW = DAY_ROW + 1;
+
   private static final int MONTH_COL = 1;
-  private static final int DAY_ROW = 1;
   private static final int DAY_START_COL = 1;
 
-  private static final int CALENDAR_START_ROW = 2;
   private static final int CALENDAR_PARTITION_COL = 0;
+
+  private static final Set<String> NON_PRINTABLE = Sets.newHashSet(STYLE_ACTION,
+      STYLE_MONTH_SELECTOR, STYLE_APPEND_PANEL, STYLE_CONTROL_PANEL);
 
   protected static Set<Integer> getInactiveDays(YearMonth ym,
       JustDate activeFrom, JustDate activeUntil) {
@@ -393,6 +407,22 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
   }
 
   @Override
+  public Element getPrintElement() {
+    return table.getElement();
+  }
+
+  @Override
+  public boolean onPrint(Element source, Element target) {
+    if (StyleUtils.hasAnyClass(source, NON_PRINTABLE)) {
+      return false;
+    } else if (source.hasClassName(STYLE_MONTH_LABEL)) {
+      return source.hasClassName(STYLE_MONTH_ACTIVE);
+    } else {
+      return true;
+    }
+  }
+
+  @Override
   public Value getSummary() {
     return new IntegerValue(getScheduledMonths().size());
   }
@@ -435,7 +465,34 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
     setTimeRanges(null);
   }
 
+  protected BeeRow findObject(long id) {
+    if (DataUtils.isEmpty(obData)) {
+      return null;
+    } else {
+      return obData.getRowById(id);
+    }
+  }
+
+  protected BeeRow findEmployee(long id) {
+    if (DataUtils.isEmpty(emData)) {
+      return null;
+    } else {
+      return emData.getRowById(id);
+    }
+  }
+
   protected abstract List<BeeRow> filterPartitions(DateRange filterRange);
+
+  protected String getEmployeeFullName(long id) {
+    BeeRow row = findEmployee(id);
+
+    if (row == null) {
+      return null;
+    } else {
+      return BeeUtils.joinWords(DataUtils.getString(emData, row, COL_FIRST_NAME),
+          DataUtils.getString(emData, row, COL_LAST_NAME));
+    }
+  }
 
   protected abstract long getEmployeeId(long partId);
 
@@ -449,6 +506,16 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
 
   protected BeeRowSet getObData() {
     return obData;
+  }
+
+  protected String getObjectName(long id) {
+    BeeRow row = findObject(id);
+
+    if (row == null) {
+      return null;
+    } else {
+      return DataUtils.getString(obData, row, COL_LOCATION_NAME);
+    }
   }
 
   protected abstract String getPartitionCaption(long partId);
@@ -1295,13 +1362,46 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
   }
 
   private void renderHeaders(List<YearMonth> months) {
+    int days = activeMonth.getLength();
+
+    Flow headerPanel = new Flow();
+
+    Label caption = new Label(getCaption());
+    caption.addStyleName(STYLE_CAPTION);
+    headerPanel.add(caption);
+
+    FaLabel refresh = new FaLabel(Action.REFRESH.getIcon(), STYLE_ACTION);
+    refresh.addStyleName(STYLE_PREFIX + Action.REFRESH.getStyleSuffix());
+    refresh.setTitle(Action.REFRESH.getCaption());
+
+    refresh.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        refresh();
+      }
+    });
+    headerPanel.add(refresh);
+
+    FaLabel print = new FaLabel(Action.PRINT.getIcon(), STYLE_ACTION);
+    print.addStyleName(STYLE_PREFIX + Action.PRINT.getStyleSuffix());
+    print.setTitle(Action.PRINT.getCaption());
+
+    print.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        Printer.print(WorkScheduleWidget.this);
+      }
+    });
+    headerPanel.add(print);
+
+    table.setWidgetAndStyle(HEADER_ROW, 0, headerPanel, STYLE_HEADER_PANEL);
+    table.getCellFormatter().setColSpan(HEADER_ROW, 0, DAY_START_COL + days);
+
     Widget monthSelector = renderMonthSelector();
     table.setWidgetAndStyle(MONTH_ROW, MONTH_COL - 1, monthSelector, STYLE_MONTH_SELECTOR);
 
     Widget monthPanel = renderMonths(months);
     table.setWidgetAndStyle(MONTH_ROW, MONTH_COL, monthPanel, STYLE_MONTH_PANEL);
-
-    int days = activeMonth.getLength();
     table.getCellFormatter().setColSpan(MONTH_ROW, MONTH_COL, days);
 
     JustDate date = activeMonth.getDate();

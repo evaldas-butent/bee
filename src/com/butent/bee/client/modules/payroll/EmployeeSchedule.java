@@ -12,6 +12,7 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.modules.classifiers.ClassifierKeeper;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
@@ -45,6 +46,22 @@ class EmployeeSchedule extends WorkScheduleWidget {
     super(ScheduleParent.EMPLOYEE);
 
     this.employeeId = employeeId;
+  }
+
+  @Override
+  public String getCaption() {
+    BeeRow row = findEmployee(employeeId);
+
+    if (row == null) {
+      return BeeConst.STRING_EMPTY;
+    } else {
+      return BeeUtils.joinItems(
+          BeeUtils.joinWords(DataUtils.getString(getEmData(), row, COL_FIRST_NAME),
+              DataUtils.getString(getEmData(), row, COL_LAST_NAME)),
+          DataUtils.getString(getEmData(), row, ALS_COMPANY_NAME),
+          BeeUtils.joinWords(Localized.getLabel(getEmData().getColumn(COL_TAB_NUMBER)),
+              DataUtils.getString(getEmData(), row, COL_TAB_NUMBER)));
+    }
   }
 
   @Override
@@ -281,14 +298,6 @@ class EmployeeSchedule extends WorkScheduleWidget {
     });
   }
 
-  private BeeRow findObject(long id) {
-    if (DataUtils.isEmpty(getObData())) {
-      return null;
-    } else {
-      return getObData().getRowById(id);
-    }
-  }
-
   private DateRange getEmployeeRange() {
     if (DataUtils.isEmpty(getEmData())) {
       return null;
@@ -300,16 +309,6 @@ class EmployeeSchedule extends WorkScheduleWidget {
       JustDate until = DataUtils.getDate(getEmData(), row, COL_DATE_OF_DISMISSAL);
 
       return DateRange.closed(from, until);
-    }
-  }
-
-  private String getObjectName(long id) {
-    BeeRow row = findObject(id);
-
-    if (row == null) {
-      return null;
-    } else {
-      return DataUtils.getString(getObData(), row, COL_LOCATION_NAME);
     }
   }
 
