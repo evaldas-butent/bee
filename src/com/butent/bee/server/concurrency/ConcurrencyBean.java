@@ -75,9 +75,25 @@ public class ConcurrencyBean {
       this.runnable = runnable;
     }
 
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      }
+      if (o == null || getClass() != o.getClass()) {
+        return false;
+      }
+      return Objects.equals(getId(), ((Worker) o).getId());
+    }
+
     public String getId() {
       String id = runnable.getId();
       return BeeUtils.isEmpty(id) ? runnable.toString() : id;
+    }
+
+    @Override
+    public int hashCode() {
+      return getId().hashCode();
     }
 
     public void onError() {
@@ -281,7 +297,7 @@ public class ConcurrencyBean {
       utx.begin();
       runnable.run();
       utx.commit();
-    } catch (Exception ex) {
+    } catch (Throwable ex) {
       logger.error(ex);
 
       try {
@@ -315,7 +331,7 @@ public class ConcurrencyBean {
           finish(worker);
         }
       }
-    } else {
+    } else if (!waitingThreads.contains(worker)) {
       logger.info("Queuing:", worker);
       waitingThreads.offer(worker);
     }

@@ -35,6 +35,7 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.mail.MailConstants;
 import com.butent.bee.shared.modules.mail.MailFolder;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -235,6 +236,12 @@ public class MailStorageBean {
     qs.updateData(new SqlUpdate(TBL_PLACES)
         .addConstant(COL_FLAGS, flags)
         .setWhere(sys.idEquals(TBL_PLACES, placeId)));
+  }
+
+  public void setAutoReply(Long addressbookId) {
+    qs.updateData(new SqlUpdate(TBL_ADDRESSBOOK)
+        .addConstant(COL_ADDRESSBOOK_AUTOREPLY, TimeUtils.nowMillis())
+        .setWhere(sys.idEquals(TBL_ADDRESSBOOK, addressbookId)));
   }
 
   public Long storeMail(MailAccount account, Message message, Long folderId, Long messageUID)
