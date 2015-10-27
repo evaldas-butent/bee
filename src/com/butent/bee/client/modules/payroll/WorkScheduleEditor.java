@@ -26,6 +26,7 @@ import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.Label;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
@@ -187,6 +188,10 @@ class WorkScheduleEditor extends AbstractFormInterceptor {
     return calendarId;
   }
 
+  private int getMonthLength() {
+    return Grego.monthLength(date.getYear(), date.getMonth());
+  }
+
   private Set<JustDate> getSelectedDates() {
     Set<JustDate> dates = new HashSet<>();
     if (date == null || BeeUtils.isEmpty(getCalendarId())) {
@@ -237,7 +242,7 @@ class WorkScheduleEditor extends AbstractFormInterceptor {
     int dow = startOfMonth.getDow();
     int shift = dow - 1;
 
-    int length = Grego.monthLength(date.getYear(), date.getMonth());
+    int length = getMonthLength();
 
     for (int dom = 1; dom <= length; dom++) {
       int row = (dom + shift - 1) / TimeUtils.DAYS_PER_WEEK + 1;
@@ -247,6 +252,7 @@ class WorkScheduleEditor extends AbstractFormInterceptor {
 
       TableCellElement cell = table.getCellFormatter().getElement(row, col);
       DomUtils.setDataIndex(cell, dom);
+      DomUtils.preventSelection(cell);
 
       if (holidays.contains(startDays + dom - 1)) {
         cell.addClassName(STYLE_HOLIDAY);
@@ -272,6 +278,9 @@ class WorkScheduleEditor extends AbstractFormInterceptor {
         int dom = DomUtils.getDataIndexInt(cell);
 
         if (dom > 0) {
+          if (EventUtils.hasModifierKey(event.getNativeEvent())) {
+            selectRange(dom, !cell.hasClassName(STYLE_DAY_SELECTED));
+          }
           cell.toggleClassName(STYLE_DAY_SELECTED);
         }
       }
@@ -279,6 +288,79 @@ class WorkScheduleEditor extends AbstractFormInterceptor {
 
     setCalendarId(table.getId());
     panel.add(table);
+  }
+
+  private void selectRange(int boundDom, boolean select) {
+    int lower = BeeConst.UNDEF;
+    int upper = BeeConst.UNDEF;
+
+    Set<Integer> selectedDoms = new HashSet<>();
+
+    Element root = DomUtils.getElement(getCalendarId());
+    List<Element> cells = Selectors.getElementsByClassName(root, STYLE_DAY_SELECTED);
+
+    if (!BeeUtils.isEmpty(cells)) {
+      for (Element cell : cells) {
+        int dom = DomUtils.getDataIndexInt(cell);
+        if (dom > 0 && dom != boundDom) {
+          selectedDoms.add(dom);
+        }
+      }
+    }
+
+    if (selectedDoms.isEmpty()) {
+      if (boundDom > 1 && select) {
+        lower = 1;
+        upper = boundDom - 1;
+      }
+
+    } else {
+      boolean found = false;
+
+      if (boundDom > 1) {
+        for (int dom = boundDom - 1; dom >= 1; dom--) {
+          if (selectedDoms.contains(dom) == select) {
+            found = true;
+            break;
+          } else {
+            lower = dom;
+          }
+        }
+
+        if (!found) {
+          lower = BeeConst.UNDEF;
+        }
+      }
+
+      if (lower > 0) {
+        upper = boundDom - 1;
+
+      } else if (!found) {
+        int length = getMonthLength();
+        if (boundDom < length) {
+          for (int dom = boundDom + 1; dom <= length; dom++) {
+            if (selectedDoms.contains(dom) == select) {
+              break;
+            } else {
+              upper = dom;
+            }
+          }
+        }
+
+        if (upper > 0) {
+          lower = boundDom + 1;
+        }
+      }
+    }
+
+    if (lower > 0 && upper >= lower) {
+      for (int dom = lower; dom <= upper; dom++) {
+        Element cell = Selectors.getElementByDataIndex(root, dom);
+        if (cell != null) {
+          cell.toggleClassName(STYLE_DAY_SELECTED);
+        }
+      }
+    }
   }
 
   private void setCalendarId(String calendarId) {
