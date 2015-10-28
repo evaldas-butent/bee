@@ -8,6 +8,7 @@ import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.payroll.PayrollConstants.*;
 
 import com.butent.bee.server.data.QueryServiceBean;
+import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.sql.HasConditions;
@@ -31,10 +32,12 @@ import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeRange;
+import com.butent.bee.shared.time.YearMonth;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -48,6 +51,8 @@ public class PayrollModuleBean implements BeeModule {
 
   private static BeeLogger logger = LogUtils.getLogger(PayrollModuleBean.class);
 
+  @EJB
+  SystemBean sys;
   @EJB
   QueryServiceBean qs;
 
@@ -83,6 +88,10 @@ public class PayrollModuleBean implements BeeModule {
         response = getScheduleOverlap(reqInfo);
         break;
 
+      case SVC_GET_SCHEDULED_MONTHS:
+        response = getScheduledMonths(reqInfo);
+        break;
+
       default:
         String msg = BeeUtils.joinWords("service not recognized:", svc);
         logger.warning(msg);
@@ -109,6 +118,57 @@ public class PayrollModuleBean implements BeeModule {
 
   @Override
   public void init() {
+  }
+
+  private ResponseObject getScheduledMonths(RequestInfo reqInfo) {
+    Long manager = reqInfo.getParameterLong(COL_LOCATION_MANAGER);
+
+    SqlSelect query = new SqlSelect().setDistinctMode(true)
+        .addFields(TBL_WORK_SCHEDULE, COL_WORK_SCHEDULE_DATE, COL_PAYROLL_OBJECT)
+        .addFrom(TBL_WORK_SCHEDULE);
+
+    if (DataUtils.isId(manager)) {
+      query
+          .addFromInner(TBL_LOCATIONS,
+              sys.joinTables(TBL_LOCATIONS, TBL_WORK_SCHEDULE, COL_PAYROLL_OBJECT))
+          .setWhere(SqlUtils.equals(TBL_LOCATIONS, COL_LOCATION_MANAGER, manager));
+    }
+
+    SimpleRowSet data = qs.getData(query);
+    if (DataUtils.isEmpty(data)) {
+      return ResponseObject.emptyResponse();
+    }
+
+    HashMultimap<YearMonth, Long> map = HashMultimap.create();
+
+    for (SimpleRow row : data) {
+      JustDate date = row.getDate(COL_WORK_SCHEDULE_DATE);
+      Long objId = row.getLong(COL_PAYROLL_OBJECT);
+
+      if (date != null && DataUtils.isId(objId)) {
+        map.put(new YearMonth(date), objId);
+      }
+    }
+
+    if (map.isEmpty()) {
+      return ResponseObject.emptyResponse();
+    }
+
+    List<YearMonth> months = new ArrayList<>(map.keySet());
+    if (months.size() > 1) {
+      Collections.sort(months);
+    }
+
+    StringBuilder sb = new StringBuilder();
+
+    for (YearMonth ym : months) {
+      if (sb.length() > 0) {
+        sb.append(BeeConst.CHAR_COMMA);
+      }
+      sb.append(ym.serialize()).append(BeeConst.CHAR_EQ).append(map.get(ym).size());
+    }
+
+    return ResponseObject.response(sb.toString());
   }
 
   private ResponseObject getScheduleOverlap(RequestInfo reqInfo) {

@@ -77,6 +77,15 @@
 
     <SimpleColumn name="Approved" />
     <SimpleColumn name="ApprovedBy" />
+    <SimpleJoin name="ApprovedBy" joinType="LEFT">
+      <SimpleJoin name="CompanyPerson" joinType="LEFT">
+        <SimpleJoin name="Person" joinType="LEFT">
+          <SimpleColumn name="FirstName" alias="ApprovedByFirstName" />
+          <SimpleColumn name="LastName" alias="ApprovedByLastName" />
+        </SimpleJoin>
+      </SimpleJoin>
+    </SimpleJoin>
+
     <SimpleColumn name="ApprovedAmount" />
     <SimpleColumn name="ApprovedCurrency" />
     <SimpleJoin name="ApprovedCurrency" joinType="LEFT">
@@ -85,6 +94,15 @@
 
     <SimpleColumn name="Exported" />
     <SimpleColumn name="ExportedBy" />
+    <SimpleJoin name="ExportedBy" joinType="LEFT">
+      <SimpleJoin name="CompanyPerson" joinType="LEFT">
+        <SimpleJoin name="Person" joinType="LEFT">
+          <SimpleColumn name="FirstName" alias="ExportedByFirstName" />
+          <SimpleColumn name="LastName" alias="ExportedByLastName" />
+        </SimpleJoin>
+      </SimpleJoin>
+    </SimpleJoin>
+
     <SimpleColumn name="ExportedAmount" />
     <SimpleColumn name="ExportedCurrency" />
     <SimpleJoin name="ExportedCurrency" joinType="LEFT">

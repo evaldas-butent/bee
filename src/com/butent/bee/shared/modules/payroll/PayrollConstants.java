@@ -28,6 +28,7 @@ public final class PayrollConstants {
   }
 
   public static final String SVC_GET_SCHEDULE_OVERLAP = "getScheduleOverlap";
+  public static final String SVC_GET_SCHEDULED_MONTHS = "getScheduledMonths";
 
   public static final String TBL_EMPLOYEES = "Employees";
   public static final String TBL_LOCATIONS = "Locations";
@@ -112,6 +113,7 @@ public final class PayrollConstants {
   public static final String FORM_EMPLOYEE = "Employee";
   public static final String FORM_WORK_SCHEDULE = "WorkSchedule";
   public static final String FORM_WORK_SCHEDULE_EDITOR = "WorkScheduleEditor";
+  public static final String FORM_EARNINGS = "Earnings";
 
   public static void register() {
     EnumUtils.register(ObjectStatus.class);
