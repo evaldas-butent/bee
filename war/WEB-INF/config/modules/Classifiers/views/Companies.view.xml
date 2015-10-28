@@ -109,8 +109,12 @@
     <SimpleJoin name="DiscountParent" joinType="LEFT">
       <SimpleColumn name="Name" alias="DiscountParentName" />
     </SimpleJoin>
-    
+
     <SimpleColumn name="PriceName" />
+
+    <SimpleColumn name="ERPAddress" />
+    <SimpleColumn name="ERPLogin" />
+    <SimpleColumn name="ERPPassword" />
 
     <SimpleColumn name="Notes" />
    </Columns>

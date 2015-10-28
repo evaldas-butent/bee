@@ -42,5 +42,9 @@
     <Enum name="PriceName" key="ItemPrice" label="=priceName" />
 
     <Text name="Notes" label="=notes" />
+
+    <String name="ERPAddress" precision="100" />
+    <String name="ERPLogin" precision="20" />
+    <String name="ERPPassword" precision="20" />
   </Fields>
 </Table>

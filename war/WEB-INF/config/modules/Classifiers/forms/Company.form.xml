@@ -87,6 +87,18 @@
             <Label text="=companyVATCode" style="&lbl;" for="VATCode" />
             <InputText source="VATCode" style="width: 280px;" upperCase="true" />
           </row>
+          <row>
+            <Label text="WebServiso adresas" style="&lbl;" for="ERPAddress" />
+            <cell colSpan="3">
+              <InputText source="ERPAddress" style="width:100%;" />
+            </cell>
+          </row>
+          <row>
+            <Label text="Prisijungimas" style="&lbl;" for="ERPLogin" />
+            <InputText source="ERPLogin" />
+            <Label text="Slaptažodis" style="&lbl;" for="ERPPassword" />
+            <InputText source="ERPPassword" />
+          </row>
         </Table>
       </FlowPanel>
     </Disclosure>

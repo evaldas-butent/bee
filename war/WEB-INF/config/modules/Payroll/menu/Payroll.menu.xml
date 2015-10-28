@@ -8,8 +8,11 @@ name="Payroll" label="=payroll" order="120" module="Payroll"
 
   <Item name="WorkSchedule" label="=workSchedule" service="form" parameters="WorkSchedule"
     separator="true" />
-  
+
   <Item name="TimeCardCodes" label="=timeCardCodes" service="grid" parameters="TimeCardCodes"
     separator="true" />
   <Item name="TimeRanges" label="=timeRanges" service="grid" parameters="TimeRanges" />
+
+  <Item name="Parameters" label="=parameters" service="parameters" parameters="Payroll"
+        separator="true" />
 </Entry>
