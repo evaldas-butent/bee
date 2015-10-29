@@ -6,7 +6,7 @@
   enabledActions="refresh"
   >
   <FlowPanel class="flexBox-vertical">
-    <FlowPanel name="Months" style="max-height: 20%; overflow: auto; margin: 2ex 2em;" />
+    <FlowPanel name="Months" style="max-height: 20%; overflow: auto; margin: 2ex 1em;" />
 
     <GridPanel name="ObjectEarnings" class="flexible" />
   </FlowPanel>

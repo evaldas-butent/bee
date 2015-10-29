@@ -274,3 +274,24 @@
   outline: #80c4f9 solid 3px;
   outline-offset: -1px;
 }
+
+.bee-payroll-earn-month-widget {
+  display: inline-block;
+  margin-left: 1em;
+}
+.bee-payroll-earn-month-label {
+  display: inline-block;
+  font-size: larger;
+  padding: 2px 4px;
+  cursor: pointer;
+}
+.bee-payroll-earn-month-active .bee-payroll-earn-month-label {
+  background-color: #80c4f9;
+  cursor: auto;
+}
+.bee-payroll-earn-month-badge {
+  display: inline-block;
+  vertical-align: top;
+  color: white;
+  background-color: #bbb;
+}

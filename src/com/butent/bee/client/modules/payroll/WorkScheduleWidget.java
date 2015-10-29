@@ -72,7 +72,6 @@ import com.butent.bee.shared.data.value.IntegerValue;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.font.FontAwesome;
-import com.butent.bee.shared.html.Attributes;
 import com.butent.bee.shared.html.builder.elements.Span;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
@@ -278,10 +277,6 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
 
   private static String formatDuration(String duration) {
     return BeeUtils.parenthesize(duration);
-  }
-
-  private static String formatYm(YearMonth ym) {
-    return BeeUtils.joinWords(ym.getYear(), Format.renderMonthFullStandalone(ym).toLowerCase());
   }
 
   private static boolean readBoolean(String name) {
@@ -720,7 +715,7 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
 
     Element selectorElement = Selectors.getElementByClassName(getElement(), STYLE_MONTH_SELECTOR);
     if (selectorElement != null) {
-      selectorElement.setInnerText(formatYm(ym));
+      selectorElement.setInnerText(PayrollHelper.format(ym));
     }
 
     setActiveMonth(ym);
@@ -875,7 +870,7 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
 
     if (hasSchedule(partId, range)) {
       String caption = getPartitionCaption(partId);
-      List<String> messages = Lists.newArrayList(formatYm(activeMonth),
+      List<String> messages = Lists.newArrayList(PayrollHelper.format(activeMonth),
           Localized.getConstants().clearWorkScheduleQuestion());
 
       Global.confirmDelete(caption, Icon.WARNING, messages, new ConfirmationCallback() {
@@ -985,8 +980,7 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
   }
 
   private Element getMonthElement(YearMonth ym) {
-    return Selectors.getElement(this, Selectors.attributeEquals(Attributes.DATA_PREFIX + KEY_YM,
-        ym.serialize()));
+    return Selectors.getElementByDataProperty(this, KEY_YM, ym.serialize());
   }
 
   private List<YearMonth> getMonths() {
@@ -1470,7 +1464,7 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
     int from = Math.max(size - 6, 0);
 
     for (YearMonth ym : months.subList(from, size)) {
-      Label widget = new Label(formatYm(ym));
+      Label widget = new Label(PayrollHelper.format(ym));
 
       widget.addStyleName(STYLE_MONTH_LABEL);
       if (ym.equals(activeMonth)) {
@@ -1499,7 +1493,7 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
   private Widget renderMonthSelector() {
     Button selector = new Button();
     if (activeMonth != null) {
-      selector.setText(formatYm(activeMonth));
+      selector.setText(PayrollHelper.format(activeMonth));
     }
 
     selector.addClickHandler(new ClickHandler() {
@@ -1509,7 +1503,7 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
 
         List<String> labels = new ArrayList<>();
         for (YearMonth ym : months) {
-          labels.add(formatYm(ym));
+          labels.add(PayrollHelper.format(ym));
         }
 
         Global.choiceWithCancel(Localized.getConstants().yearMonth(), null, labels,
