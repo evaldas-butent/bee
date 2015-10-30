@@ -666,7 +666,10 @@ public class GridContainerImpl extends Split implements GridContainerView,
           if (DomUtils.sameId(ew.getWidget().asWidget(), target)
               && !BeeUtils.isEmpty(ew.getStorageKey())) {
 
+            ew.setSize(size);
             BeeKeeper.getStorage().set(ew.getStorageKey(), size);
+
+            break;
           }
         }
       }
