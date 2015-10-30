@@ -26,6 +26,7 @@ import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.style.StyleUtils;
+import com.butent.bee.client.ui.FormWidget;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.ui.WidgetCreationCallback;
@@ -244,7 +245,24 @@ public class GridContainerImpl extends Split implements GridContainerView,
       for (String xml : gridDescription.getWidgets()) {
         ExtWidget extWidget = ExtWidget.create(xml, gridDescription.getViewName(),
             gridView.getDataColumns(), getExtCreation(), gridInterceptor);
+
         if (extWidget != null) {
+          if (getExtCreation().getLastWidgetDescription() != null) {
+            String widgetName = getExtCreation().getLastWidgetDescription().getWidgetName();
+
+            if (!BeeUtils.isEmpty(widgetName)) {
+              String key = BeeUtils.join(BeeConst.STRING_MINUS,
+                  BeeUtils.notEmpty(getSupplierKey(), gridDescription.getName()),
+                  BeeKeeper.getUser().getUserId(), widgetName, FormWidget.ATTR_SIZE);
+              extWidget.setStorageKey(key);
+
+              Integer size = BeeKeeper.getStorage().getInteger(key);
+              if (BeeUtils.isPositive(size)) {
+                extWidget.setSize(size);
+              }
+            }
+          }
+
           getExtWidgets().add(extWidget);
         }
       }
@@ -633,6 +651,26 @@ public class GridContainerImpl extends Split implements GridContainerView,
         }
       }
     });
+  }
+
+  @Override
+  protected void onSplitterMove(Splitter splitter, int by) {
+    super.onSplitterMove(splitter, by);
+
+    if (!getExtWidgets().isEmpty()) {
+      Widget target = splitter.getTarget();
+      int size = getWidgetSize(target);
+
+      if (size > 0) {
+        for (ExtWidget ew : getExtWidgets()) {
+          if (DomUtils.sameId(ew.getWidget().asWidget(), target)
+              && !BeeUtils.isEmpty(ew.getStorageKey())) {
+
+            BeeKeeper.getStorage().set(ew.getStorageKey(), size);
+          }
+        }
+      }
+    }
   }
 
   @Override
