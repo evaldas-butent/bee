@@ -10,7 +10,7 @@
   <TabbedPages resizable="false">
     <page>
       <text>=mainInformation</text>
-      <FlowPanel class="flexBox-vertical">
+      <FlowPanel>
         <FlowPanel class="flexBox-horizontal">
           <xi:include href="widgets/DocumentFields.widget.xml" />
           <FlowPanel style="max-width: 40%;" >
