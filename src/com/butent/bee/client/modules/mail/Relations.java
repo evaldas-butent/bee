@@ -30,7 +30,9 @@ import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.event.logical.ParentRowEvent;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.event.logical.SummaryChangeEvent;
+import com.butent.bee.client.grid.CellKind;
 import com.butent.bee.client.grid.HtmlTable;
+import com.butent.bee.client.grid.TableKind;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.render.RendererFactory;
 import com.butent.bee.client.ui.FormWidget;
@@ -46,6 +48,7 @@ import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.css.values.TextAlign;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
@@ -113,6 +116,8 @@ public class Relations extends Flow implements Editor, ClickHandler, SelectorEve
     this.view = Assert.notEmpty(info.getRelation(column));
     this.inline = inline;
 
+    table.setKind(TableKind.CONTROLS);
+
     if (inline) {
       FaLabel add = new FaLabel(FontAwesome.PLUS);
 
@@ -123,6 +128,7 @@ public class Relations extends Flow implements Editor, ClickHandler, SelectorEve
         }
       });
       table.setWidget(0, 0, add);
+      table.getCellFormatter().setHorizontalAlignment(0, 0, TextAlign.CENTER);
       add(table);
 
     } else {
@@ -132,7 +138,9 @@ public class Relations extends Flow implements Editor, ClickHandler, SelectorEve
       add(face);
       table.setWidth("600px");
     }
-    table.setColumnCellStyles(0, "text-align:right; white-space:nowrap;");
+
+    table.setColumnCellKind(0, CellKind.LABEL);
+    table.setColumnCellStyles(0, "white-space:nowrap;");
     table.setColumnCellStyles(1, "width:100%");
 
     Map<String, String> viewMap = new HashMap<>();
