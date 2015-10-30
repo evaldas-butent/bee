@@ -6,6 +6,7 @@ import com.google.gwt.user.client.ui.UIObject;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.html.Attributes;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -174,8 +175,37 @@ public final class Selectors {
     return getElement(root, classSelector(className));
   }
 
-  public static Element getElementByDataIndex(UIObject root, long idx) {
+  public static Element getElementByDataIndex(Element root, int idx) {
     return getElement(root, attributeEquals(DomUtils.ATTRIBUTE_DATA_INDEX, idx));
+  }
+
+  public static Element getElementByDataIndex(Element root, long idx) {
+    return getElement(root, attributeEquals(DomUtils.ATTRIBUTE_DATA_INDEX, idx));
+  }
+
+  public static Element getElementByDataProperty(Element root, String key, String value) {
+    Assert.notEmpty(key);
+    return getElement(root, attributeEquals(Attributes.DATA_PREFIX + key.trim(), value));
+  }
+
+  public static Element getElementByClassName(UIObject root, String className) {
+    Assert.notNull(root);
+    return getElementByClassName(root.getElement(), className);
+  }
+
+  public static Element getElementByDataIndex(UIObject root, int idx) {
+    Assert.notNull(root);
+    return getElementByDataIndex(root.getElement(), idx);
+  }
+
+  public static Element getElementByDataIndex(UIObject root, long idx) {
+    Assert.notNull(root);
+    return getElementByDataIndex(root.getElement(), idx);
+  }
+
+  public static Element getElementByDataProperty(UIObject root, String key, String value) {
+    Assert.notNull(root);
+    return getElementByDataProperty(root.getElement(), key, value);
   }
 
   public static List<Element> getElementsByClassName(Element root, String className) {

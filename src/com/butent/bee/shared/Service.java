@@ -110,6 +110,7 @@ public final class Service {
   public static final String RPC_VAR_SYS_PREFIX = RPC_VAR_PREFIX + "sys_";
 
   public static final String RPC_VAR_SVC = RPC_VAR_SYS_PREFIX + "svc";
+  public static final String RPC_VAR_SUB = RPC_VAR_SYS_PREFIX + "sub";
   public static final String RPC_VAR_QID = RPC_VAR_SYS_PREFIX + "qid";
   public static final String RPC_VAR_SID = RPC_VAR_SYS_PREFIX + "sid";
   public static final String RPC_VAR_OPT = RPC_VAR_SYS_PREFIX + "opt";
@@ -123,8 +124,6 @@ public final class Service {
   public static final String RPC_VAR_PRM = RPC_VAR_SYS_PREFIX + "prm";
 
   public static final String VAR_SUB_MODULE = RPC_VAR_PREFIX + "sub_module";
-  public static final String VAR_METHOD = RPC_VAR_PREFIX + "method";
-
   public static final String VAR_USER = RPC_VAR_PREFIX + "user";
 
   public static final String VAR_JDBC_QUERY = RPC_VAR_PREFIX + "jdbc_query";

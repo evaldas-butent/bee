@@ -157,8 +157,10 @@ public final class EditorFactory {
     return editor;
   }
 
-  public static Editor createEditor(EditorDescription description, String enumKey,
+  public static Editor createEditor(EditorDescription description, BeeColumn column,
+      String enumKey,
       ValueType valueType, Relation relation, boolean embedded) {
+
     Assert.notNull(description);
     EditorType editorType = description.getType();
     Assert.notNull(editorType);
@@ -266,6 +268,12 @@ public final class EditorFactory {
         ((HasTextDimensions) editor).setCharacterWidth(description.getCharacterWidth());
       } else if (editor instanceof HasMaxLength) {
         ((HasMaxLength) editor).setMaxLength(description.getCharacterWidth());
+      }
+
+    } else if (editor instanceof HasMaxLength && column != null) {
+      int maxLength = UiHelper.getMaxLength(column);
+      if (maxLength > 0) {
+        ((HasMaxLength) editor).setMaxLength(maxLength);
       }
     }
 

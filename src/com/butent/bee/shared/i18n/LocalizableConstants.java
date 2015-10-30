@@ -64,6 +64,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String actionMerge();
 
+  String actionMove();
+
   String actionNew();
 
   String actionNew1();
@@ -541,6 +543,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
   String newCompanyPerson();
 
   String newEmailAccount();
+
+  String newObject();
 
   String newPassword();
 

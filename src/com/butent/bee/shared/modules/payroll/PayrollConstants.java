@@ -27,6 +27,9 @@ public final class PayrollConstants {
     }
   }
 
+  public static final String SVC_GET_SCHEDULE_OVERLAP = "getScheduleOverlap";
+  public static final String SVC_GET_SCHEDULED_MONTHS = "getScheduledMonths";
+
   public static final String TBL_EMPLOYEES = "Employees";
   public static final String TBL_LOCATIONS = "Locations";
 
@@ -98,6 +101,7 @@ public final class PayrollConstants {
 
   public static final String ALS_TR_FROM = "TrTimeFrom";
   public static final String ALS_TR_UNTIL = "TrTimeUntil";
+  public static final String ALS_TR_DURATION = "TrDuration";
 
   public static final String GRID_TIME_CARD_CHANGES = "TimeCardChanges";
 
@@ -106,8 +110,10 @@ public final class PayrollConstants {
   public static final String GRID_WORK_SCHEDULE_DAY = "WorkScheduleDay";
 
   public static final String FORM_LOCATION = "Location";
+  public static final String FORM_EMPLOYEE = "Employee";
   public static final String FORM_WORK_SCHEDULE = "WorkSchedule";
   public static final String FORM_WORK_SCHEDULE_EDITOR = "WorkScheduleEditor";
+  public static final String FORM_EARNINGS = "Earnings";
 
   public static void register() {
     EnumUtils.register(ObjectStatus.class);

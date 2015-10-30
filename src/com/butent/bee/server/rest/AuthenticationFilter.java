@@ -41,9 +41,9 @@ public class AuthenticationFilter implements ContainerRequestFilter {
   public void filter(ContainerRequestContext requestContext) throws IOException {
     Trusted trusted = info.getResourceMethod().getAnnotation(Trusted.class);
 
-    if (Objects.nonNull(trusted) &&
-        Objects.equals(requestContext.getHeaderString("secret"),
-            Codec.md5(TimeUtils.year() + trusted.secret() + TimeUtils.month()))) {
+    if (Objects.nonNull(trusted)
+        && Objects.equals(requestContext.getHeaderString("secret"),
+        Codec.md5(TimeUtils.year() + trusted.secret() + TimeUtils.month()))) {
       return;
     }
     String[] split = BeeUtils.split(requestContext.getHeaderString(HttpHeaders.AUTHORIZATION), ' ');
@@ -74,6 +74,7 @@ public class AuthenticationFilter implements ContainerRequestFilter {
       if (session != null) {
         session.invalidate();
       }
+      logger.warning(requestContext.getUriInfo().getRequestUri(), ArrayUtils.joinWords(split));
       throw new NotAuthorizedException("B-NOVO");
     }
   }

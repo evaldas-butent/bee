@@ -552,8 +552,9 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
       @Subscribe
       @AllowConcurrentEvents
       public void updateAssessmentRelations(ViewInsertEvent event) {
-        if (event.isAfter(TBL_ASSESSMENTS, TBL_ASSESSMENT_FORWARDERS)) {
-          String tbl = sys.getViewSource(event.getTargetName());
+        String tbl = sys.getViewSource(event.getTargetName());
+
+        if (BeeUtils.inList(tbl, TBL_ASSESSMENTS, TBL_ASSESSMENT_FORWARDERS) && event.isAfter()) {
           String fld;
           String tblFrom;
           String joinFrom;
@@ -1558,7 +1559,7 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
 
       if (!BeeUtils.isEmpty(stack) && TimeUtils.isMore(date, currentDate)) {
         Map<String, Object> rec = new HashMap<>();
-        data.put(unloading ? orderCargo : currentCargo, rec);
+        data.put(unloading || !BeeUtils.isPositive(currentWeight) ? orderCargo : currentCargo, rec);
 
         rec.put(COL_ROUTE_DEPARTURE_DATE, currentDate);
         rec.put(COL_ROUTE_DEPARTURE_COUNTRY, currentCountry);

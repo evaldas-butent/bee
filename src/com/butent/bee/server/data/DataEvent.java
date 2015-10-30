@@ -188,8 +188,8 @@ public abstract class DataEvent {
     return !isAfter() && isTarget(targets);
   }
 
-  public boolean isTarget(String... target) {
-    return target == null || ArrayUtils.contains(target, getTargetName());
+  public boolean isTarget(String... targets) {
+    return ArrayUtils.isEmpty(targets) || ArrayUtils.contains(targets, getTargetName());
   }
 
   public void setUserObject(Object userObject) {

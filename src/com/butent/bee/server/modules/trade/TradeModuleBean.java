@@ -323,7 +323,8 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
       @Subscribe
       @AllowConcurrentEvents
       public void fillInvoiceNumber(ViewModifyEvent event) {
-        if (event.isBefore(TBL_SALES)) {
+        if (event.isBefore()
+            && Objects.equals(sys.getViewSource(event.getTargetName()), TBL_SALES)) {
           List<BeeColumn> cols = null;
           IsRow row = null;
           String prefix = null;

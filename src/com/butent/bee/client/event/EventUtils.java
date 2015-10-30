@@ -83,6 +83,7 @@ import com.google.gwt.event.dom.client.TouchMoveEvent;
 import com.google.gwt.event.dom.client.TouchMoveHandler;
 import com.google.gwt.event.dom.client.TouchStartEvent;
 import com.google.gwt.event.dom.client.TouchStartHandler;
+import com.google.gwt.event.shared.GwtEvent;
 import com.google.gwt.media.dom.client.MediaError;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.UIObject;
@@ -713,6 +714,17 @@ public final class EventUtils {
       return null;
     } else {
       return getTargetId(target);
+    }
+  }
+
+  public static Element getSourceElement(GwtEvent<?> ev) {
+    Assert.notNull(ev);
+    Object source = ev.getSource();
+
+    if (source instanceof UIObject) {
+      return ((UIObject) source).getElement();
+    } else {
+      return null;
     }
   }
 

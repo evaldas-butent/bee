@@ -290,8 +290,9 @@ public class OrderItemsGrid extends AbstractGridInterceptor implements Selection
     if (DataUtils.isId(orderForm)) {
 
       int index = Data.getColumnIndex(VIEW_ORDERS, COL_ORDERS_STATUS);
-      if (Objects.equals(event.getRow().getInteger(index), OrdersStatus.APPROVED.ordinal())
-          || Objects.equals(event.getRow().getInteger(index), OrdersStatus.FINISH.ordinal())) {
+      if ((Objects.equals(event.getRow().getInteger(index), OrdersStatus.APPROVED.ordinal())
+          || Objects.equals(event.getRow().getInteger(index), OrdersStatus.FINISH.ordinal()))
+          && OrderForm.isManager(event.getRow())) {
         invoice.add(new InvoiceCreator(VIEW_ORDER_SALES, Filter.equals(COL_ORDER, orderForm)));
       }
     }

@@ -8,6 +8,7 @@
     <Relation name="User" relation="Users" cascade="DELETE" notNull="true" label="=user" defExpr="CURRENT_USER" />
     <Relation name="Email" relation="Emails" notNull="true" label="=email" />
     <String name="Label" precision="255" label="=name" />
+    <DateTime name="LastAutoReply" />
   </Fields>
   <Constraints>
     <Unique fields="User Email" />

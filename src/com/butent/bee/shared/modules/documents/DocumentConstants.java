@@ -12,6 +12,7 @@ public final class DocumentConstants {
   public static final String PRM_PRINT_MARGINS = "PrintPageMargins";
 
   public static final String TBL_DOCUMENT_TREE = "DocumentTree";
+  public static final String TBL_TREE_PREFIXES = "TreePrefixes";
   public static final String TBL_DOCUMENTS = "Documents";
   public static final String TBL_DOCUMENT_DATA = "DocumentData";
   public static final String TBL_CRITERIA_GROUPS = "CriteriaGroups";

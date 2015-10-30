@@ -53,7 +53,7 @@ public class ModuleHolderBean {
 
   public ResponseObject doModule(String moduleName, RequestInfo reqInfo) {
     Assert.notNull(reqInfo);
-    return getModule(moduleName).doService(reqInfo.getParameter(Service.VAR_METHOD), reqInfo);
+    return getModule(moduleName).doService(reqInfo.getSubService(), reqInfo);
   }
 
   public List<SearchResult> doSearch(String query) {
