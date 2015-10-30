@@ -1,32 +1,32 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <f:Form xmlns="http://www.butent.com/widget"
-  xmlns:f="http://www.butent.com/form"
-  xmlns:ui="http://www.butent.com/ui"
-  
-  name="DocumentTree" caption="=documentTree" data="DocumentTree"
-  >
+        xmlns:f="http://www.butent.com/form"
+        xmlns:ui="http://www.butent.com/ui"
+
+        name="DocumentTree" caption="=documentTree" data="DocumentTree"
+    >
   <SplitPanel>
     <west size="300" splitterSize="2">
       <DataTree name="Tree" caption="=documentCategories" viewName="DocumentTree"
-        parentColumn="Parent" orderColumn="Ordinal">
+                parentColumn="Parent" orderColumn="Ordinal">
         <calc>
           <ui:expression>row.CategoryName</ui:expression>
         </calc>
         <form name="EditCategory">
-          <Table kind="controls">
-            <row>
-              <Label for="CategoryName" style="text-align:right;" />
-              <InputText source="CategoryName" />
-            </row>
-            <row>
-              <Label for="NumberPrefix" style="text-align:right;" />
-              <InputText source="NumberPrefix" />
-            </row>
-            <row>
-              <Label for="Ordinal" style="text-align:right;" />
-              <InputDecimal source="Ordinal" style="width:40px;" />
-            </row>
-          </Table>
+          <FlowPanel>
+            <Table kind="controls">
+              <row>
+                <Label for="CategoryName" style="text-align:right;" />
+                <InputText source="CategoryName" style="width:22em;" />
+              </row>
+              <row>
+                <Label for="Ordinal" style="text-align:right;" />
+                <InputDecimal source="Ordinal" style="width:40px;" />
+              </row>
+            </Table>
+            <br />
+            <ChildGrid name="TreePrefixes" relColumn="Category" style="height:150px;" />
+          </FlowPanel>
         </form>
       </DataTree>
     </west>
@@ -34,4 +34,4 @@
       <FlowPanel name="Rights" />
     </center>
   </SplitPanel>
-</f:Form>  
+</f:Form>

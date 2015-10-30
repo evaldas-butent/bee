@@ -12,6 +12,7 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.modules.classifiers.ClassifierKeeper;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
@@ -41,13 +42,26 @@ class EmployeeSchedule extends WorkScheduleWidget {
 
   private final long employeeId;
 
-  private BeeRowSet emData;
-  private BeeRowSet obData;
-
   EmployeeSchedule(long employeeId) {
     super(ScheduleParent.EMPLOYEE);
 
     this.employeeId = employeeId;
+  }
+
+  @Override
+  public String getCaption() {
+    BeeRow row = findEmployee(employeeId);
+
+    if (row == null) {
+      return BeeConst.STRING_EMPTY;
+    } else {
+      return BeeUtils.joinItems(
+          BeeUtils.joinWords(DataUtils.getString(getEmData(), row, COL_FIRST_NAME),
+              DataUtils.getString(getEmData(), row, COL_LAST_NAME)),
+          DataUtils.getString(getEmData(), row, ALS_COMPANY_NAME),
+          BeeUtils.joinWords(Localized.getLabel(getEmData().getColumn(COL_TAB_NUMBER)),
+              DataUtils.getString(getEmData(), row, COL_TAB_NUMBER)));
+    }
   }
 
   @Override
@@ -60,7 +74,7 @@ class EmployeeSchedule extends WorkScheduleWidget {
   protected List<BeeRow> filterPartitions(DateRange filterRange) {
     List<BeeRow> result = new ArrayList<>();
 
-    if (!DataUtils.isEmpty(obData)) {
+    if (!DataUtils.isEmpty(getObData())) {
       Set<Long> haveWs = new HashSet<>();
       Set<Long> haveEmpl = new HashSet<>();
 
@@ -89,11 +103,11 @@ class EmployeeSchedule extends WorkScheduleWidget {
       }
 
       if (!haveWs.isEmpty() || !haveEmpl.isEmpty()) {
-        int statusIndex = obData.getColumnIndex(COL_LOCATION_STATUS);
+        int statusIndex = getObData().getColumnIndex(COL_LOCATION_STATUS);
 
         DateRange employeeRange = getEmployeeRange();
 
-        for (BeeRow row : obData) {
+        for (BeeRow row : getObData()) {
           if (haveWs.contains(row.getId())) {
             result.add(row);
 
@@ -125,22 +139,22 @@ class EmployeeSchedule extends WorkScheduleWidget {
 
   @Override
   protected List<Integer> getPartitionContactIndexes() {
-    return Collections.singletonList(obData.getColumnIndex(COL_ADDRESS));
+    return Collections.singletonList(getObData().getColumnIndex(COL_ADDRESS));
   }
 
   @Override
   protected List<BeeColumn> getPartitionDataColumns() {
-    return obData.getColumns();
+    return getObData().getColumns();
   }
 
   @Override
   protected List<Integer> getPartitionInfoIndexes() {
-    return Collections.singletonList(obData.getColumnIndex(ALS_COMPANY_NAME));
+    return Collections.singletonList(getObData().getColumnIndex(ALS_COMPANY_NAME));
   }
 
   @Override
   protected List<Integer> getPartitionNameIndexes() {
-    return Collections.singletonList(obData.getColumnIndex(COL_LOCATION_NAME));
+    return Collections.singletonList(getObData().getColumnIndex(COL_LOCATION_NAME));
   }
 
   @Override
@@ -157,13 +171,18 @@ class EmployeeSchedule extends WorkScheduleWidget {
   protected void initCalendarInfo(YearMonth ym, CalendarInfo calendarInfo) {
     calendarInfo.setTcChanges(getTimeCardChanges(employeeId, ym));
 
-    BeeRow employee = DataUtils.isEmpty(emData) ? null : emData.getRow(0);
+    BeeRow employee = DataUtils.isEmpty(getEmData()) ? null : getEmData().getRow(0);
     JustDate activeFrom = (employee == null)
-        ? null : DataUtils.getDate(emData, employee, COL_DATE_OF_EMPLOYMENT);
+        ? null : DataUtils.getDate(getEmData(), employee, COL_DATE_OF_EMPLOYMENT);
     JustDate activeUntil = (employee == null)
-        ? null : DataUtils.getDate(emData, employee, COL_DATE_OF_DISMISSAL);
+        ? null : DataUtils.getDate(getEmData(), employee, COL_DATE_OF_DISMISSAL);
 
     calendarInfo.setInactiveDays(getInactiveDays(ym, activeFrom, activeUntil));
+  }
+
+  @Override
+  protected boolean isActive(YearMonth ym) {
+    return ym != null && ym.getRange().intersects(getEmployeeRange());
   }
 
   @Override
@@ -279,35 +298,17 @@ class EmployeeSchedule extends WorkScheduleWidget {
     });
   }
 
-  private BeeRow findObject(long id) {
-    if (DataUtils.isEmpty(obData)) {
-      return null;
-    } else {
-      return obData.getRowById(id);
-    }
-  }
-
   private DateRange getEmployeeRange() {
-    if (DataUtils.isEmpty(emData)) {
+    if (DataUtils.isEmpty(getEmData())) {
       return null;
 
     } else {
-      BeeRow row = emData.getRow(0);
+      BeeRow row = getEmData().getRow(0);
 
-      JustDate from = DataUtils.getDate(emData, row, COL_DATE_OF_EMPLOYMENT);
-      JustDate until = DataUtils.getDate(emData, row, COL_DATE_OF_DISMISSAL);
+      JustDate from = DataUtils.getDate(getEmData(), row, COL_DATE_OF_EMPLOYMENT);
+      JustDate until = DataUtils.getDate(getEmData(), row, COL_DATE_OF_DISMISSAL);
 
       return DateRange.closed(from, until);
-    }
-  }
-
-  private String getObjectName(long id) {
-    BeeRow row = findObject(id);
-
-    if (row == null) {
-      return null;
-    } else {
-      return DataUtils.getString(obData, row, COL_LOCATION_NAME);
     }
   }
 
@@ -333,13 +334,5 @@ class EmployeeSchedule extends WorkScheduleWidget {
         }
       });
     }
-  }
-
-  private void setEmData(BeeRowSet emData) {
-    this.emData = emData;
-  }
-
-  private void setObData(BeeRowSet obData) {
-    this.obData = obData;
   }
 }

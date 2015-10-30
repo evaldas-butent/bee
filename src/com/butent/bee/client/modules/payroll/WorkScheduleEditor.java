@@ -23,10 +23,10 @@ import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
-import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.Label;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
@@ -34,11 +34,9 @@ import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.view.RowInfoList;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.time.Grego;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
-import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.HashSet;
@@ -70,36 +68,6 @@ class WorkScheduleEditor extends AbstractFormInterceptor {
     }
 
     @Override
-    public ColumnDescription beforeCreateColumn(GridView gridView,
-        ColumnDescription columnDescription) {
-
-      switch (columnDescription.getId()) {
-        case COL_LOCATION_NAME:
-          if (scheduleParent == ScheduleParent.EMPLOYEE) {
-            return null;
-          }
-          break;
-
-        case ClassifierConstants.COL_FIRST_NAME:
-        case ClassifierConstants.COL_LAST_NAME:
-          if (scheduleParent == ScheduleParent.LOCATION) {
-            return null;
-          }
-          break;
-
-      }
-
-      switch (scheduleParent) {
-        case EMPLOYEE:
-          break;
-        case LOCATION:
-          break;
-      }
-
-      return super.beforeCreateColumn(gridView, columnDescription);
-    }
-
-    @Override
     public String getCaption() {
       return Format.renderDateFull(date);
     }
@@ -122,8 +90,6 @@ class WorkScheduleEditor extends AbstractFormInterceptor {
   private static final String STYLE_HOLIDAY = STYLE_PREFIX + "holiday";
   private static final String STYLE_DAY_SELECTED = STYLE_PREFIX + "day-selected";
 
-  private final ScheduleParent scheduleParent;
-
   private final JustDate date;
   private final Set<Integer> holidays;
 
@@ -131,10 +97,7 @@ class WorkScheduleEditor extends AbstractFormInterceptor {
 
   private String calendarId;
 
-  WorkScheduleEditor(ScheduleParent scheduleParent, JustDate date, Set<Integer> holidays,
-      Runnable dayRefresher) {
-
-    this.scheduleParent = scheduleParent;
+  WorkScheduleEditor(JustDate date, Set<Integer> holidays, Runnable dayRefresher) {
     this.date = date;
 
     if (holidays == null) {
@@ -160,7 +123,7 @@ class WorkScheduleEditor extends AbstractFormInterceptor {
 
   @Override
   public FormInterceptor getInstance() {
-    return new WorkScheduleEditor(scheduleParent, date, holidays, dayRefresher);
+    return new WorkScheduleEditor(date, holidays, dayRefresher);
   }
 
   @Override
@@ -225,6 +188,10 @@ class WorkScheduleEditor extends AbstractFormInterceptor {
     return calendarId;
   }
 
+  private int getMonthLength() {
+    return Grego.monthLength(date.getYear(), date.getMonth());
+  }
+
   private Set<JustDate> getSelectedDates() {
     Set<JustDate> dates = new HashSet<>();
     if (date == null || BeeUtils.isEmpty(getCalendarId())) {
@@ -275,7 +242,7 @@ class WorkScheduleEditor extends AbstractFormInterceptor {
     int dow = startOfMonth.getDow();
     int shift = dow - 1;
 
-    int length = Grego.monthLength(date.getYear(), date.getMonth());
+    int length = getMonthLength();
 
     for (int dom = 1; dom <= length; dom++) {
       int row = (dom + shift - 1) / TimeUtils.DAYS_PER_WEEK + 1;
@@ -285,6 +252,7 @@ class WorkScheduleEditor extends AbstractFormInterceptor {
 
       TableCellElement cell = table.getCellFormatter().getElement(row, col);
       DomUtils.setDataIndex(cell, dom);
+      DomUtils.preventSelection(cell);
 
       if (holidays.contains(startDays + dom - 1)) {
         cell.addClassName(STYLE_HOLIDAY);
@@ -310,6 +278,9 @@ class WorkScheduleEditor extends AbstractFormInterceptor {
         int dom = DomUtils.getDataIndexInt(cell);
 
         if (dom > 0) {
+          if (EventUtils.hasModifierKey(event.getNativeEvent())) {
+            selectRange(dom, !cell.hasClassName(STYLE_DAY_SELECTED));
+          }
           cell.toggleClassName(STYLE_DAY_SELECTED);
         }
       }
@@ -317,6 +288,79 @@ class WorkScheduleEditor extends AbstractFormInterceptor {
 
     setCalendarId(table.getId());
     panel.add(table);
+  }
+
+  private void selectRange(int boundDom, boolean select) {
+    int lower = BeeConst.UNDEF;
+    int upper = BeeConst.UNDEF;
+
+    Set<Integer> selectedDoms = new HashSet<>();
+
+    Element root = DomUtils.getElement(getCalendarId());
+    List<Element> cells = Selectors.getElementsByClassName(root, STYLE_DAY_SELECTED);
+
+    if (!BeeUtils.isEmpty(cells)) {
+      for (Element cell : cells) {
+        int dom = DomUtils.getDataIndexInt(cell);
+        if (dom > 0 && dom != boundDom) {
+          selectedDoms.add(dom);
+        }
+      }
+    }
+
+    if (selectedDoms.isEmpty()) {
+      if (boundDom > 1 && select) {
+        lower = 1;
+        upper = boundDom - 1;
+      }
+
+    } else {
+      boolean found = false;
+
+      if (boundDom > 1) {
+        for (int dom = boundDom - 1; dom >= 1; dom--) {
+          if (selectedDoms.contains(dom) == select) {
+            found = true;
+            break;
+          } else {
+            lower = dom;
+          }
+        }
+
+        if (!found) {
+          lower = BeeConst.UNDEF;
+        }
+      }
+
+      if (lower > 0) {
+        upper = boundDom - 1;
+
+      } else if (!found) {
+        int length = getMonthLength();
+        if (boundDom < length) {
+          for (int dom = boundDom + 1; dom <= length; dom++) {
+            if (selectedDoms.contains(dom) == select) {
+              break;
+            } else {
+              upper = dom;
+            }
+          }
+        }
+
+        if (upper > 0) {
+          lower = boundDom + 1;
+        }
+      }
+    }
+
+    if (lower > 0 && upper >= lower) {
+      for (int dom = lower; dom <= upper; dom++) {
+        Element cell = Selectors.getElementByDataIndex(root, dom);
+        if (cell != null) {
+          cell.toggleClassName(STYLE_DAY_SELECTED);
+        }
+      }
+    }
   }
 
   private void setCalendarId(String calendarId) {

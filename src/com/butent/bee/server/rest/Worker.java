@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import javax.ejb.EJB;
 import javax.ws.rs.GET;
@@ -28,6 +29,9 @@ import javax.ws.rs.core.Response;
 @Path("/")
 public class Worker {
 
+  private static final String LAST_SYNC_TIME = "LastSyncTime";
+  private static final String ID = "ID";
+
   @EJB
   QueryServiceBean qs;
   @EJB
@@ -36,12 +40,33 @@ public class Worker {
   @GET
   @Path("companies")
   @Produces(MediaType.APPLICATION_JSON)
-  public Response companies() {
-    SimpleRowSet companies = qs.getData(new SqlSelect().setLimit(10)
-        .addFields(TBL_COMPANIES, sys.getIdName(TBL_COMPANIES), COL_COMPANY_NAME, COL_COMPANY_CODE)
-        .addFrom(TBL_COMPANIES));
+  public Response companies(@HeaderParam(LAST_SYNC_TIME) Long lastSynced) {
+    long time = System.currentTimeMillis();
 
-    return rowSetResponse(companies);
+    SqlSelect query = new SqlSelect()
+        .addField(TBL_COMPANIES, sys.getIdName(TBL_COMPANIES), ID)
+        .addFields(TBL_COMPANIES, COL_COMPANY_NAME, COL_COMPANY_CODE)
+        .addFields(TBL_CONTACTS, COL_PHONE, COL_MOBILE, COL_ADDRESS)
+        .addFields(TBL_EMAILS, COL_EMAIL_ADDRESS)
+        .addField(TBL_CITIES, COL_CITY_NAME, COL_CITY)
+        .addField(TBL_COUNTRIES, COL_COUNTRY_NAME, COL_COUNTRY)
+        .addFrom(TBL_COMPANIES)
+        .addFromLeft(TBL_CONTACTS, sys.joinTables(TBL_CONTACTS, TBL_COMPANIES, COL_CONTACT))
+        .addFromLeft(TBL_EMAILS, sys.joinTables(TBL_EMAILS, TBL_CONTACTS, COL_EMAIL))
+        .addFromLeft(TBL_CITIES, sys.joinTables(TBL_CITIES, TBL_CONTACTS, COL_CITY))
+        .addFromLeft(TBL_COUNTRIES, sys.joinTables(TBL_COUNTRIES, TBL_CONTACTS, COL_COUNTRY));
+
+    if (Objects.nonNull(lastSynced)) {
+      query.setWhere(SqlUtils.or(
+          SqlUtils.more(TBL_COMPANIES, sys.getVersionName(TBL_COMPANIES), lastSynced),
+          SqlUtils.more(TBL_CONTACTS, sys.getVersionName(TBL_CONTACTS), lastSynced)));
+    }
+    SimpleRowSet companies = qs.getData(query);
+
+    Response response = rowSetResponse(companies);
+    response.getHeaders().add(LAST_SYNC_TIME, time);
+
+    return response;
   }
 
   @GET
@@ -60,6 +85,12 @@ public class Worker {
       throw new NotFoundException(licence);
     }
     return endpoint;
+  }
+
+  @GET
+  @Path("login")
+  public Response login() {
+    return Response.ok().build();
   }
 
   private static Response rowSetResponse(SimpleRowSet rowSet) {

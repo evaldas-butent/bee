@@ -22,7 +22,7 @@ import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.modules.administration.ExtensionIcons;
 import com.butent.bee.server.modules.administration.FileStorageBean;
-import com.butent.bee.server.sql.IsCondition;
+import com.butent.bee.server.sql.HasConditions;
 import com.butent.bee.server.sql.IsExpression;
 import com.butent.bee.server.sql.IsFrom;
 import com.butent.bee.server.sql.SqlInsert;
@@ -49,7 +49,8 @@ import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.rights.RegulatedWidget;
 import com.butent.bee.shared.rights.RightsState;
-import com.butent.bee.shared.utils.ArrayUtils;
+import com.butent.bee.shared.time.JustDate;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
@@ -202,17 +203,36 @@ public class DocumentsModuleBean implements BeeModule {
             return;
           }
           IsRow row = event.getRow();
+          HasConditions or = SqlUtils.or(SqlUtils.isNull(TBL_TREE_PREFIXES, COL_DOCUMENT_TYPE));
 
-          String prefix = qs.getValue(new SqlSelect()
-              .addFields(TBL_DOCUMENT_TREE, COL_NUMBER_PREFIX)
-              .addFrom(TBL_DOCUMENT_TREE)
-              .setWhere(sys.idEquals(TBL_DOCUMENT_TREE,
-                  row.getLong(DataUtils.getColumnIndex(COL_DOCUMENT_CATEGORY, cols)))));
+          SqlSelect query = new SqlSelect()
+              .addFields(TBL_TREE_PREFIXES, COL_NUMBER_PREFIX)
+              .addFrom(TBL_TREE_PREFIXES)
+              .setWhere(SqlUtils.and(SqlUtils.equals(TBL_TREE_PREFIXES, COL_DOCUMENT_CATEGORY,
+                  row.getLong(DataUtils.getColumnIndex(COL_DOCUMENT_CATEGORY, cols))), or))
+              .addOrder(TBL_TREE_PREFIXES, COL_DOCUMENT_TYPE);
+
+          Long type = null;
+          int typeIdx = DataUtils.getColumnIndex(COL_DOCUMENT_TYPE, cols);
+
+          if (!BeeConst.isUndef(typeIdx)) {
+            type = row.getLong(typeIdx);
+
+            if (DataUtils.isId(type)) {
+              or.add(SqlUtils.equals(TBL_TREE_PREFIXES, COL_DOCUMENT_TYPE, type));
+            }
+          }
+          SimpleRowSet rs = qs.getData(query);
+          String prefix = DataUtils.isEmpty(rs) ? null : rs.getValue(0, COL_NUMBER_PREFIX);
 
           if (!BeeUtils.isEmpty(prefix)) {
+            JustDate date = TimeUtils.today();
             cols.add(new BeeColumn(COL_DOCUMENT_NUMBER));
             row.addValue(Value.getValue(qs.getNextNumber(event.getTargetName(),
-                COL_DOCUMENT_NUMBER, prefix, null)));
+                COL_DOCUMENT_NUMBER,
+                prefix.replace("{year}", TimeUtils.yearToString(date.getYear()))
+                    .replace("{month}", TimeUtils.monthToString(date.getMonth()))
+                    .replace("{day}", TimeUtils.dayOfMonthToString(date.getDom())), null)));
           }
         }
       }

@@ -152,8 +152,8 @@ public class EditableColumn implements BlurHandler, EditChangeHandler, EditStopE
 
     String format = null;
     if (getEditorDescription() != null) {
-      result = EditorFactory.createEditor(getEditorDescription(), getEnumKey(), getDataType(),
-          getRelation(), embedded);
+      result = EditorFactory.createEditor(getEditorDescription(), getDataColumn(),
+          getEnumKey(), getDataType(), getRelation(), embedded);
       format = getEditorDescription().getFormat();
 
     } else if (getRelation() != null) {
@@ -162,6 +162,7 @@ public class EditableColumn implements BlurHandler, EditChangeHandler, EditStopE
       } else {
         result = new DataSelector(getRelation(), embedded);
       }
+
     } else if (!BeeUtils.isEmpty(getEnumKey())) {
       result = new ListBox();
       ((ListBox) result).setValueNumeric(ValueType.isNumeric(getDataType()));

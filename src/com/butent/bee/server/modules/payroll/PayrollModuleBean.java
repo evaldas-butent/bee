@@ -8,9 +8,11 @@ import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.payroll.PayrollConstants.*;
 
 import com.butent.bee.server.data.QueryServiceBean;
+import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.sql.HasConditions;
+import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.BeeConst;
@@ -22,6 +24,7 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
+import com.butent.bee.shared.data.SqlConstants.SqlFunction;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -29,10 +32,12 @@ import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeRange;
+import com.butent.bee.shared.time.YearMonth;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -46,6 +51,8 @@ public class PayrollModuleBean implements BeeModule {
 
   private static BeeLogger logger = LogUtils.getLogger(PayrollModuleBean.class);
 
+  @EJB
+  SystemBean sys;
   @EJB
   QueryServiceBean qs;
 
@@ -81,6 +88,10 @@ public class PayrollModuleBean implements BeeModule {
         response = getScheduleOverlap(reqInfo);
         break;
 
+      case SVC_GET_SCHEDULED_MONTHS:
+        response = getScheduledMonths(reqInfo);
+        break;
+
       default:
         String msg = BeeUtils.joinWords("service not recognized:", svc);
         logger.warning(msg);
@@ -109,10 +120,81 @@ public class PayrollModuleBean implements BeeModule {
   public void init() {
   }
 
+  private ResponseObject getScheduledMonths(RequestInfo reqInfo) {
+    Long manager = reqInfo.getParameterLong(COL_LOCATION_MANAGER);
+
+    SqlSelect query = new SqlSelect().setDistinctMode(true)
+        .addFields(TBL_WORK_SCHEDULE, COL_WORK_SCHEDULE_DATE, COL_PAYROLL_OBJECT)
+        .addFrom(TBL_WORK_SCHEDULE);
+
+    if (DataUtils.isId(manager)) {
+      query
+          .addFromInner(TBL_LOCATIONS,
+              sys.joinTables(TBL_LOCATIONS, TBL_WORK_SCHEDULE, COL_PAYROLL_OBJECT))
+          .setWhere(SqlUtils.equals(TBL_LOCATIONS, COL_LOCATION_MANAGER, manager));
+    }
+
+    SimpleRowSet data = qs.getData(query);
+    if (DataUtils.isEmpty(data)) {
+      return ResponseObject.emptyResponse();
+    }
+
+    HashMultimap<YearMonth, Long> map = HashMultimap.create();
+
+    for (SimpleRow row : data) {
+      JustDate date = row.getDate(COL_WORK_SCHEDULE_DATE);
+      Long objId = row.getLong(COL_PAYROLL_OBJECT);
+
+      if (date != null && DataUtils.isId(objId)) {
+        map.put(new YearMonth(date), objId);
+      }
+    }
+
+    if (map.isEmpty()) {
+      return ResponseObject.emptyResponse();
+    }
+
+    List<YearMonth> months = new ArrayList<>(map.keySet());
+    if (months.size() > 1) {
+      Collections.sort(months);
+    }
+
+    StringBuilder sb = new StringBuilder();
+
+    for (YearMonth ym : months) {
+      if (sb.length() > 0) {
+        sb.append(BeeConst.CHAR_COMMA);
+      }
+      sb.append(ym.serialize()).append(BeeConst.CHAR_EQ).append(map.get(ym).size());
+    }
+
+    return ResponseObject.response(sb.toString());
+  }
+
   private ResponseObject getScheduleOverlap(RequestInfo reqInfo) {
-    Long objId = reqInfo.getParameterLong(COL_PAYROLL_OBJECT);
-    if (!DataUtils.isId(objId)) {
-      return ResponseObject.parameterNotFound(SVC_GET_SCHEDULE_OVERLAP, COL_PAYROLL_OBJECT);
+    String relationColumn = reqInfo.getParameter(Service.VAR_COLUMN);
+    if (BeeUtils.isEmpty(relationColumn)) {
+      return ResponseObject.parameterNotFound(reqInfo.getSubService(), Service.VAR_COLUMN);
+    }
+
+    Long relId = reqInfo.getParameterLong(Service.VAR_VALUE);
+    if (!DataUtils.isId(relId)) {
+      return ResponseObject.parameterNotFound(reqInfo.getSubService(), Service.VAR_VALUE);
+    }
+
+    String partitionColumn;
+    switch (relationColumn) {
+      case COL_PAYROLL_OBJECT:
+        partitionColumn = COL_EMPLOYEE;
+        break;
+
+      case COL_EMPLOYEE:
+        partitionColumn = COL_PAYROLL_OBJECT;
+        break;
+
+      default:
+        return ResponseObject.error(reqInfo.getSubService(), "unrecognized relation column",
+            relationColumn);
     }
 
     Integer from = reqInfo.getParameterInt(Service.VAR_FROM);
@@ -129,21 +211,44 @@ public class PayrollModuleBean implements BeeModule {
       dateWhere.add(SqlUtils.lessEqual(TBL_WORK_SCHEDULE, COL_WORK_SCHEDULE_DATE, dateUntil));
     }
 
+    IsCondition relWhere = SqlUtils.equals(TBL_WORK_SCHEDULE, relationColumn, relId);
+
     SqlSelect subQuery = new SqlSelect().setDistinctMode(true)
-        .addFields(TBL_WORK_SCHEDULE, COL_EMPLOYEE, COL_WORK_SCHEDULE_DATE)
-        .addFrom(TBL_WORK_SCHEDULE)
-        .setWhere(SqlUtils.and(SqlUtils.notEqual(TBL_WORK_SCHEDULE, COL_PAYROLL_OBJECT, objId),
-            dateWhere));
+        .addFields(TBL_WORK_SCHEDULE, partitionColumn, COL_WORK_SCHEDULE_DATE)
+        .addFrom(TBL_WORK_SCHEDULE);
 
     String subAlias = SqlUtils.uniqueName();
 
     SqlSelect query = new SqlSelect().setDistinctMode(true)
-        .addFields(TBL_WORK_SCHEDULE, COL_EMPLOYEE, COL_WORK_SCHEDULE_DATE)
-        .addFrom(TBL_WORK_SCHEDULE)
-        .addFromInner(subQuery, subAlias, SqlUtils.joinUsing(TBL_WORK_SCHEDULE, subAlias,
-            COL_EMPLOYEE, COL_WORK_SCHEDULE_DATE))
-        .setWhere(SqlUtils.and(SqlUtils.equals(TBL_WORK_SCHEDULE, COL_PAYROLL_OBJECT, objId),
+        .addFields(TBL_WORK_SCHEDULE, partitionColumn, COL_WORK_SCHEDULE_DATE)
+        .addFrom(TBL_WORK_SCHEDULE);
+
+    switch (relationColumn) {
+      case COL_PAYROLL_OBJECT:
+        subQuery.setWhere(SqlUtils.and(SqlUtils.notEqual(TBL_WORK_SCHEDULE, relationColumn, relId),
             dateWhere));
+
+        query.addFromInner(subQuery, subAlias, SqlUtils.joinUsing(TBL_WORK_SCHEDULE, subAlias,
+            partitionColumn, COL_WORK_SCHEDULE_DATE));
+        query.setWhere(SqlUtils.and(relWhere, dateWhere));
+        break;
+
+      case COL_EMPLOYEE:
+        subQuery.setWhere(SqlUtils.and(relWhere, dateWhere));
+
+        SqlSelect datesQuery = new SqlSelect()
+            .addFields(subAlias, COL_WORK_SCHEDULE_DATE)
+            .addFrom(subQuery, subAlias)
+            .addGroup(subAlias, COL_WORK_SCHEDULE_DATE)
+            .setHaving(SqlUtils.more(SqlUtils.aggregate(SqlFunction.COUNT, null), 1));
+
+        String datesAlias = SqlUtils.uniqueName();
+
+        query.addFromInner(datesQuery, datesAlias,
+            SqlUtils.joinUsing(TBL_WORK_SCHEDULE, datesAlias, COL_WORK_SCHEDULE_DATE));
+        query.setWhere(relWhere);
+        break;
+    }
 
     SimpleRowSet candidates = qs.getData(query);
     if (DataUtils.isEmpty(candidates)) {
@@ -152,15 +257,38 @@ public class PayrollModuleBean implements BeeModule {
 
     Multimap<Long, Integer> overlap = HashMultimap.create();
 
+    long objId = BeeConst.LONG_UNDEF;
+    long emplId = BeeConst.LONG_UNDEF;
+
+    switch (relationColumn) {
+      case COL_PAYROLL_OBJECT:
+        objId = relId;
+        break;
+
+      case COL_EMPLOYEE:
+        emplId = relId;
+        break;
+    }
+
     for (SimpleRow row : candidates) {
-      Long emplId = row.getLong(COL_EMPLOYEE);
+      Long partId = row.getLong(partitionColumn);
       JustDate date = row.getDate(COL_WORK_SCHEDULE_DATE);
 
-      if (DataUtils.isId(emplId) && date != null && date.getDays() > 0) {
+      if (DataUtils.isId(partId) && date != null && date.getDays() > 0) {
+        switch (relationColumn) {
+          case COL_PAYROLL_OBJECT:
+            emplId = partId;
+            break;
+
+          case COL_EMPLOYEE:
+            objId = partId;
+            break;
+        }
+
         if (overlaps(objId, emplId, date)) {
-          overlap.put(emplId, -date.getDays());
+          overlap.put(partId, -date.getDays());
         } else {
-          overlap.put(emplId, date.getDays());
+          overlap.put(partId, date.getDays());
         }
       }
     }
@@ -171,12 +299,12 @@ public class PayrollModuleBean implements BeeModule {
     } else {
       StringBuilder sb = new StringBuilder();
 
-      for (long emplId : overlap.keySet()) {
+      for (long partId : overlap.keySet()) {
         if (sb.length() > 0) {
           sb.append(BeeConst.DEFAULT_ROW_SEPARATOR);
         }
         sb.append(BeeUtils.join(BeeConst.DEFAULT_VALUE_SEPARATOR,
-            emplId, BeeUtils.joinInts(overlap.get(emplId))));
+            partId, BeeUtils.joinInts(overlap.get(partId))));
       }
 
       return ResponseObject.response(sb.toString());

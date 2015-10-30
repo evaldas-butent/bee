@@ -1401,7 +1401,7 @@ public class TransportModuleBean implements BeeModule {
 
       if (!BeeUtils.isEmpty(stack) && TimeUtils.isMore(date, currentDate)) {
         Map<String, Object> rec = new HashMap<>();
-        data.put(unloading ? orderCargo : currentCargo, rec);
+        data.put(unloading || !BeeUtils.isPositive(currentWeight) ? orderCargo : currentCargo, rec);
 
         rec.put(COL_ROUTE_DEPARTURE_DATE, currentDate);
         rec.put(COL_ROUTE_DEPARTURE_COUNTRY, currentCountry);

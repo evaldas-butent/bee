@@ -55,9 +55,7 @@ public class ConcurrencyBean {
 
   public abstract static class AsynchronousRunnable implements Runnable {
 
-    public String getId() {
-      return null;
-    }
+    public abstract String getId();
 
     public long getTimeout() {
       return TimeUtils.MILLIS_PER_HOUR;
@@ -77,9 +75,25 @@ public class ConcurrencyBean {
       this.runnable = runnable;
     }
 
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      }
+      if (o == null || getClass() != o.getClass()) {
+        return false;
+      }
+      return Objects.equals(getId(), ((Worker) o).getId());
+    }
+
     public String getId() {
       String id = runnable.getId();
       return BeeUtils.isEmpty(id) ? runnable.toString() : id;
+    }
+
+    @Override
+    public int hashCode() {
+      return getId().hashCode();
     }
 
     public void onError() {
@@ -260,7 +274,7 @@ public class ConcurrencyBean {
     Worker candidate = waitingThreads.poll();
 
     if (Objects.nonNull(candidate)) {
-      logger.info("Polling:", worker);
+      logger.info("Polling:", candidate);
       execute(candidate);
     }
   }
@@ -283,7 +297,7 @@ public class ConcurrencyBean {
       utx.begin();
       runnable.run();
       utx.commit();
-    } catch (Exception ex) {
+    } catch (Throwable ex) {
       logger.error(ex);
 
       try {
@@ -317,7 +331,7 @@ public class ConcurrencyBean {
           finish(worker);
         }
       }
-    } else {
+    } else if (!waitingThreads.contains(worker)) {
       logger.info("Queuing:", worker);
       waitingThreads.offer(worker);
     }

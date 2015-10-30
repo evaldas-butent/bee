@@ -101,6 +101,10 @@ public class Simple extends SimplePanel implements DndWidget, RequiresResize, Pr
     return targetState;
   }
 
+  public boolean isEmpty() {
+    return getWidget() == null;
+  }
+
   @Override
   public void onResize() {
     if (getWidget() instanceof RequiresResize) {
