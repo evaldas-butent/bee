@@ -381,8 +381,9 @@ public final class CliWorker {
       getFs();
 
     } else if ("gen".equals(z)) {
-      BeeKeeper.getRpc().sendText(Service.GENERATE, BeeUtils.joinWords(arr[1], arr[2],
-          ArrayUtils.getQuietly(arr, 3), ArrayUtils.getQuietly(arr, 4)));
+      BeeKeeper.getRpc().sendText(new ParameterList(Service.GENERATE),
+          BeeUtils.joinWords(arr[1], arr[2],
+              ArrayUtils.getQuietly(arr, 3), ArrayUtils.getQuietly(arr, 4)), null);
 
     } else if ("geo".equals(z)) {
       showGeo();
@@ -436,7 +437,7 @@ public final class CliWorker {
       doLog(arr);
 
     } else if ("mail".equals(z)) {
-      BeeKeeper.getRpc().sendText(Service.MAIL, args);
+      BeeKeeper.getRpc().sendText(new ParameterList(Service.MAIL), args, null);
 
     } else if ("map".equals(z) && arr.length >= 3) {
       showMap(arr, errorPopup);
@@ -499,7 +500,7 @@ public final class CliWorker {
       scheduleTasks(arr, errorPopup);
 
     } else if ("run".equals(z)) {
-      BeeKeeper.getRpc().sendText(Service.RUN, args);
+      BeeKeeper.getRpc().sendText(new ParameterList(Service.RUN), args, null);
 
     } else if (z.startsWith("selector") && arr.length >= 2) {
       querySelector(z, args, errorPopup);
@@ -1529,7 +1530,7 @@ public final class CliWorker {
   }
 
   private static void doSql(final String sql) {
-    BeeKeeper.getRpc().sendText(Service.DO_SQL, sql,
+    BeeKeeper.getRpc().sendText(new ParameterList(Service.DO_SQL), sql,
         new ResponseCallback() {
           @Override
           public void onResponse(ResponseObject response) {
@@ -1645,7 +1646,8 @@ public final class CliWorker {
       showError(errorPopup, "Class name", args, "too short");
 
     } else {
-      BeeKeeper.getRpc().sendText(Service.GET_CLASS_INFO, args, ResponseHandler.callback(args));
+      BeeKeeper.getRpc().sendText(new ParameterList(Service.GET_CLASS_INFO), args,
+          ResponseHandler.callback(args));
     }
   }
 
@@ -1981,7 +1983,7 @@ public final class CliWorker {
         }
       });
     } else {
-      BeeKeeper.getRpc().sendText(Service.REBUILD, args, new ResponseCallback() {
+      BeeKeeper.getRpc().sendText(new ParameterList(Service.REBUILD), args, new ResponseCallback() {
         @Override
         public void onResponse(ResponseObject response) {
           Assert.notNull(response);

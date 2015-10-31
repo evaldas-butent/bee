@@ -607,6 +607,10 @@ public final class BeeUtils {
     }
   }
 
+  public static <T> Collection<T> emptyToNull(Collection<T> col) {
+    return isEmpty(col) ? null : col;
+  }
+
   /**
    * Trims both Strings and then compares them.
    * 
