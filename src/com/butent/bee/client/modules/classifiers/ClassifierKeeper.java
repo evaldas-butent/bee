@@ -85,7 +85,6 @@ public final class ClassifierKeeper {
   private static class VehiclesGridHandler extends AbstractGridInterceptor
       implements SelectionHandler<IsRow> {
 
-    private static final String FILTER_KEY = "f1";
     private IsRow selectedModel;
     private TreePresenter modelTree;
 
@@ -115,7 +114,7 @@ public final class ClassifierKeeper {
         if (getSelectedModel() != null) {
           model = getSelectedModel().getId();
         }
-        getGridPresenter().getDataProvider().setParentFilter(FILTER_KEY, getFilter(model));
+        getGridPresenter().getDataProvider().setDefaultParentFilter(getFilter(model));
         getGridPresenter().refresh(true, true);
       }
     }

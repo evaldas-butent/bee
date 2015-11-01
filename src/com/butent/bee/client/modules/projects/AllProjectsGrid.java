@@ -25,8 +25,6 @@ import java.util.Collection;
 
 class AllProjectsGrid extends AbstractGridInterceptor implements SelectionHandler<IsRow> {
 
-  private static final String FILTER_KEY = "f1";
-
   private final Long userId = BeeKeeper.getUser().getUserId();
   private TreeView treeView;
   private IsRow selectedCategory;
@@ -94,7 +92,7 @@ class AllProjectsGrid extends AbstractGridInterceptor implements SelectionHandle
         category = getSelectedCategory().getId();
       }
 
-      getGridPresenter().getDataProvider().setParentFilter(FILTER_KEY, getFilter(category));
+      getGridPresenter().getDataProvider().setDefaultParentFilter(getFilter(category));
       getGridPresenter().refresh(true, true);
 
     }

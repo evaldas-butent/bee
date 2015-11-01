@@ -22,7 +22,6 @@ import java.util.List;
 public class DocumentTemplatesGrid extends AbstractGridInterceptor implements
     SelectionHandler<IsRow> {
 
-  private static final String FILTER_KEY = "f1";
   private TreeView categoryTree;
 
   @Override
@@ -65,7 +64,7 @@ public class DocumentTemplatesGrid extends AbstractGridInterceptor implements
       } else {
         flt = null;
       }
-      getGridPresenter().getDataProvider().setParentFilter(FILTER_KEY, flt);
+      getGridPresenter().getDataProvider().setDefaultParentFilter(flt);
       getGridPresenter().refresh(true, true);
     }
   }

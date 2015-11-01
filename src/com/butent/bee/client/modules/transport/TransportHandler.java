@@ -147,7 +147,6 @@ public final class TransportHandler {
   private static class SparePartsGridHandler extends AbstractGridInterceptor
       implements SelectionHandler<IsRow> {
 
-    private static final String FILTER_KEY = "f1";
     private IsRow selectedType;
     private TreePresenter typeTree;
 
@@ -177,7 +176,7 @@ public final class TransportHandler {
         if (getSelectedType() != null) {
           type = getSelectedType().getId();
         }
-        getGridPresenter().getDataProvider().setParentFilter(FILTER_KEY, getFilter(type));
+        getGridPresenter().getDataProvider().setDefaultParentFilter(getFilter(type));
         getGridPresenter().refresh(true, true);
       }
     }

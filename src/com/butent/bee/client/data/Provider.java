@@ -1,5 +1,6 @@
 package com.butent.bee.client.data;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 
 import com.butent.bee.client.BeeKeeper;
@@ -43,6 +44,12 @@ import java.util.Set;
 
 public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvents, HasViewName,
     DataRequestEvent.Handler, FilterConsumer, HandlesActions {
+
+  private static final String DEFAULT_PARENT_FILTER_KEY = "f1";
+
+  public static Map<String, Filter> createDefaultParentFilters(Filter filter) {
+    return ImmutableMap.of(DEFAULT_PARENT_FILTER_KEY, filter);
+  }
 
   private HasDataTable display;
   private final HandlesActions actionHandler;
@@ -215,6 +222,10 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
   }
 
   public abstract void refresh(boolean preserveActiveRow);
+
+  public boolean setDefaultParentFilter(Filter filter) {
+    return setParentFilter(DEFAULT_PARENT_FILTER_KEY, filter);
+  }
 
   public void setDisplay(HasDataTable display) {
     this.display = display;

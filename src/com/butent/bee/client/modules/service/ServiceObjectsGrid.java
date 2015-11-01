@@ -20,8 +20,6 @@ import com.butent.bee.shared.ui.GridDescription;
 public class ServiceObjectsGrid extends AbstractGridInterceptor implements
     SelectionHandler<IsRow> {
 
-  private static final String FILTER_KEY = "f1";
-
   private TreeView categoryTree;
 
   ServiceObjectsGrid() {
@@ -59,7 +57,7 @@ public class ServiceObjectsGrid extends AbstractGridInterceptor implements
         flt = Filter.isFalse();
       }
 
-      getGridPresenter().getDataProvider().setParentFilter(FILTER_KEY, flt);
+      getGridPresenter().getDataProvider().setDefaultParentFilter(flt);
       getGridPresenter().refresh(true, true);
     }
   }

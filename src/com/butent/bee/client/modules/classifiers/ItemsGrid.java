@@ -24,8 +24,6 @@ import java.util.List;
 
 class ItemsGrid extends AbstractGridInterceptor implements SelectionHandler<IsRow> {
 
-  private static final String FILTER_KEY = "f1";
-
   static String getSupplierKey(boolean services) {
     return BeeUtils.join(BeeConst.STRING_UNDER, GRID_ITEMS, services ? "services" : "goods");
   }
@@ -132,7 +130,7 @@ class ItemsGrid extends AbstractGridInterceptor implements SelectionHandler<IsRo
       if (getSelectedCategory() != null) {
         category = getSelectedCategory().getId();
       }
-      getGridPresenter().getDataProvider().setParentFilter(FILTER_KEY, getFilter(category));
+      getGridPresenter().getDataProvider().setDefaultParentFilter(getFilter(category));
       getGridPresenter().refresh(true, true);
     }
   }
