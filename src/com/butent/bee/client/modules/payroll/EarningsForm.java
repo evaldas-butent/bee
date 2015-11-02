@@ -15,22 +15,19 @@ import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Selectors;
 import com.butent.bee.client.event.EventUtils;
+import com.butent.bee.client.grid.GridPanel;
 import com.butent.bee.client.layout.Flow;
-import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
-import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
-import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.widget.Badge;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.DataUtils;
-import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.time.YearMonth;
@@ -60,6 +57,8 @@ class EarningsForm extends AbstractFormInterceptor {
     return YearMonth.parse(DomUtils.getDataProperty(element, KEY_YM));
   }
 
+  private final ObjectEarningsGrid gridInterceptor = new ObjectEarningsGrid();
+
   private Flow monthsPanel;
 
   EarningsForm() {
@@ -71,6 +70,8 @@ class EarningsForm extends AbstractFormInterceptor {
 
     if (BeeUtils.same(name, "Months") && widget instanceof Flow) {
       monthsPanel = (Flow) widget;
+    } else if (BeeUtils.same(name, GRID_OBJECT_EARNINGS) && widget instanceof GridPanel) {
+      ((GridPanel) widget).setGridInterceptor(gridInterceptor);
     }
   }
 
@@ -193,32 +194,6 @@ class EarningsForm extends AbstractFormInterceptor {
     return panel;
   }
 
-  private void refreshObjects(final YearMonth ym) {
-    ParameterList params = PayrollKeeper.createArgs(SVC_INIT_EARNINGS);
-
-    params.addQueryItem(COL_EARNINGS_YEAR, ym.getYear());
-    params.addQueryItem(COL_EARNINGS_MONTH, ym.getMonth());
-
-    params.setSummary(ym.toString());
-
-    BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
-      @Override
-      public void onResponse(ResponseObject response) {
-        GridView gridView = ViewHelper.getChildGrid(getFormView(), GRID_OBJECT_EARNINGS);
-
-        if (gridView != null && gridView.getViewPresenter() instanceof GridPresenter) {
-          GridPresenter presenter = (GridPresenter) gridView.getViewPresenter();
-
-          Filter filter = Filter.and(Filter.equals(COL_EARNINGS_YEAR, ym.getYear()),
-              Filter.equals(COL_EARNINGS_MONTH, ym.getMonth()));
-
-          presenter.getDataProvider().setParentFilter(getFormView().getId(), filter);
-          presenter.refresh(false, true);
-        }
-      }
-    });
-  }
-
   private void renderMonths(Map<YearMonth, Integer> months) {
     if (monthsPanel == null) {
       logger.severe(NameUtils.getName(this), "months panel not found");
@@ -263,7 +238,7 @@ class EarningsForm extends AbstractFormInterceptor {
       element.scrollIntoView();
     }
 
-    refreshObjects(ym);
+    gridInterceptor.selectMonth(ym);
 
     return true;
   }
