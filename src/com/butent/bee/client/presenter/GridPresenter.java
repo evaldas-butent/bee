@@ -20,6 +20,7 @@ import com.butent.bee.client.dialog.ChoiceCallback;
 import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.DialogConstants;
 import com.butent.bee.client.dialog.Icon;
+import com.butent.bee.client.event.logical.ReadyEvent;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.modules.administration.HistoryHandler;
 import com.butent.bee.client.output.Exporter;
@@ -99,7 +100,7 @@ import java.util.Set;
 
 public class GridPresenter extends AbstractPresenter implements ReadyForInsertEvent.Handler,
     ReadyForUpdateEvent.Handler, SaveChangesEvent.Handler, HasDataProvider, HasActiveRow,
-    HasGridView, HasViewName, FilterConsumer {
+    HasGridView, HasViewName, FilterConsumer, ReadyEvent.Handler {
 
   private final class DeleteCallback extends ConfirmationCallback {
     private final IsRow activeRow;
@@ -217,6 +218,9 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
   private List<String> parentLabels;
 
   private Map<Long, String> roles;
+
+  private Pair<Boolean, Boolean> pendingRefresh;
+  private boolean ready;
 
   public GridPresenter(GridDescription gridDescription, GridView gridView, int rowCount,
       BeeRowSet rowSet, ProviderType providerType, CachingPolicy cachingPolicy,
@@ -578,6 +582,16 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
   }
 
   @Override
+  public void onReady(ReadyEvent event) {
+    setReady(true);
+
+    if (pendingRefresh != null) {
+      refresh(pendingRefresh.getA(), pendingRefresh.getB());
+      pendingRefresh = null;
+    }
+  }
+
+  @Override
   public void onReadyForInsert(final ReadyForInsertEvent event) {
     Queries.insert(getViewName(), event.getColumns(), event.getValues(), event.getChildren(),
         new RowCallback() {
@@ -685,20 +699,25 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
   }
 
   public void refresh(boolean preserveActiveRow, boolean goTop) {
-    if (getGridInterceptor() != null) {
-      getGridInterceptor().beforeRefresh(this);
-    }
+    if (isReady()) {
+      if (getGridInterceptor() != null) {
+        getGridInterceptor().beforeRefresh(this);
+      }
 
-    if (getGridView().likeAMotherlessChild()) {
-      if (getGridView().getGrid().getRowCount() > 0) {
-        getDataProvider().clear();
+      if (getGridView().likeAMotherlessChild()) {
+        if (getGridView().getGrid().getRowCount() > 0) {
+          getDataProvider().clear();
+        }
+
+      } else {
+        if (goTop && getGridView().getGrid().getPageStart() > 0) {
+          getGridView().getGrid().setPageStart(0, false, false, NavigationOrigin.SYSTEM);
+        }
+        getDataProvider().refresh(preserveActiveRow);
       }
 
     } else {
-      if (goTop && getGridView().getGrid().getPageStart() > 0) {
-        getGridView().getGrid().setPageStart(0, false, false, NavigationOrigin.SYSTEM);
-      }
-      getDataProvider().refresh(preserveActiveRow);
+      pendingRefresh = Pair.of(preserveActiveRow, goTop);
     }
   }
 
@@ -775,7 +794,10 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
   private void bind() {
     GridContainerView view = gridContainer;
     view.setViewPresenter(this);
+
     view.bind();
+
+    view.getGridView().addReadyHandler(this);
 
     view.getGridView().addReadyForUpdateHandler(this);
     view.getGridView().addReadyForInsertHandler(this);
@@ -869,6 +891,10 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
   private Element getHeaderElement() {
     HeaderView header = getHeader();
     return (header == null) ? null : header.getElement();
+  }
+
+  private boolean isReady() {
+    return ready;
   }
 
   private void onMerge() {
@@ -1037,6 +1063,10 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
         }
       }
     });
+  }
+
+  private void setReady(boolean ready) {
+    this.ready = ready;
   }
 
   private void showFailure(String activity, String... reasons) {
