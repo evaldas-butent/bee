@@ -46,6 +46,7 @@ import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.SqlConstants.SqlDataType;
+import com.butent.bee.shared.data.SqlConstants.SqlFunction;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.LongValue;
@@ -54,7 +55,6 @@ import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.exceptions.BeeException;
-import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
@@ -181,11 +181,8 @@ public class TradeActBean implements HasTimerService {
         break;
 
       case SVC_SYNCHRONIZE_ERP_DATA:
-        Collection<Timer> timers = getTimerService().getTimers();
-
         syncERPData(null, true);
         response = ResponseObject.info(usr.getLocalizableConstants().imported());
-
         break;
 
       case SVC_ALTER_ACT_KIND:
@@ -227,6 +224,8 @@ public class TradeActBean implements HasTimerService {
         BeeParameter.createNumber(module, PRM_TA_NUMBER_LENGTH, false, 6),
         BeeParameter.createRelation(module, PRM_RETURNED_ACT_STATUS,
             TBL_TRADE_STATUSES, COL_STATUS_NAME),
+        BeeParameter
+            .createRelation(module, PRM_APPROVED_ACT_STATUS, TBL_TRADE_STATUSES, COL_STATUS_NAME),
         BeeParameter.createText(module, PRM_SYNC_ERP_DATA));
   }
 
@@ -461,6 +460,18 @@ public class TradeActBean implements HasTimerService {
 
         qs.insertData(insert);
       }
+    }
+
+    Long approvedStatusId = prm.getRelation(PRM_APPROVED_ACT_STATUS);
+    Long returnedStatusId = prm.getRelation(PRM_RETURNED_ACT_STATUS);
+
+    if (DataUtils.isId(returnedStatusId) && DataUtils
+        .isId(approvedStatusId) && !BeeUtils
+            .isEmpty(reqInfo.getParameter(VAR_ID_LIST))) {
+
+      List<Long> acts = DataUtils.parseIdList(reqInfo.getParameter(VAR_ID_LIST));
+
+      maybeApproveTradeActs(returnedStatusId, approvedStatusId, acts);
     }
 
     return response;
@@ -2525,6 +2536,43 @@ public class TradeActBean implements HasTimerService {
     } else {
       return ResponseObject.response(data);
     }
+  }
+
+  private void maybeApproveTradeActs(Long retId, Long apprId, List<Long> acts) {
+    if (!DataUtils.isId(retId) && !DataUtils.isId(apprId) && BeeUtils.isEmpty(acts)) {
+      return;
+    }
+
+    IsExpression expr =
+        SqlUtils.sqlIf(SqlUtils.equals(SqlUtils.aggregate(SqlFunction.COUNT, SqlUtils.field(
+            TBL_TRADE_ACT_SERVICES, sys.getIdName(TBL_TRADE_ACT_SERVICES))), SqlUtils.aggregate(
+                SqlFunction.COUNT_DISTINCT, SqlUtils.field(TBL_TRADE_ACT_INVOICES,
+                    COL_TA_INVOICE_SERVICE))), SqlUtils.field(TBL_TRADE_ACTS, sys.getIdName(
+                        TBL_TRADE_ACTS)), null);
+
+    SqlSelect select = new SqlSelect().setDistinctMode(true)
+        .addExpr(expr, COL_TA_ACT)
+        .addFrom(TBL_TRADE_ACTS)
+        .addFromLeft(TBL_TRADE_ACT_SERVICES,
+            sys.joinTables(TBL_TRADE_ACTS, TBL_TRADE_ACT_SERVICES, COL_TRADE_ACT))
+        .addFromLeft(TBL_TRADE_ACT_INVOICES,
+            sys.joinTables(TBL_TRADE_ACT_SERVICES, TBL_TRADE_ACT_INVOICES, COL_TA_INVOICE_SERVICE))
+        .setWhere(SqlUtils.and(
+            SqlUtils.equals(TBL_TRADE_ACTS, COL_TA_STATUS, retId),
+            SqlUtils.inList(TBL_TRADE_ACTS, sys.getIdName(TBL_TRADE_ACTS), acts)))
+        .addGroup(TBL_TRADE_ACTS, sys.getIdName(TBL_TRADE_ACTS));
+
+    List<Long> retActs = qs.getLongList(select);
+
+    if (BeeUtils.isEmpty(retActs)) {
+      return;
+    }
+
+    SqlUpdate upd = new SqlUpdate(TBL_TRADE_ACTS)
+        .addConstant(COL_TA_STATUS, apprId)
+        .setWhere(SqlUtils.inList(TBL_TRADE_ACTS, sys.getIdName(TBL_TRADE_ACTS), retActs));
+
+    qs.updateData(upd);
   }
 
   private void prepareTransferReport(String tmp, Long startDate, Long endDate, String idName) {

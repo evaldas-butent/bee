@@ -4,6 +4,7 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Range;
+import com.google.common.collect.Sets;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.InputElement;
 import com.google.gwt.dom.client.NodeList;
@@ -850,6 +851,7 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
     int itemNameIndex = selectedServices.getColumnIndex(ALS_ITEM_NAME);
     int objectNameIndex = Data.getColumnIndex(VIEW_TRADE_ACTS, COL_COMPANY_OBJECT_NAME);
     int objectAddressIndex = Data.getColumnIndex(VIEW_TRADE_ACTS, COL_COMPANY_OBJECT_ADDRESS);
+    Set<Long> prepareApproveActs = Sets.newLinkedHashSet();
 
     for (Service svc : services) {
       if (ss.containsKey(svc.id())) {
@@ -860,6 +862,10 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
 
         Long svcActId = svc.row.getLong(actIndex);
         Act act = findAct(svcActId);
+
+        if (DataUtils.isId(svcActId)) {
+          prepareApproveActs.add(svcActId);
+        }
 
         String objectInfo = (act == null) ? null
             : BeeUtils.joinWords(act.row.getString(objectNameIndex),
@@ -911,6 +917,7 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
 
     params.addDataItem(sales.getViewName(), sales.serialize());
     params.addDataItem(saleItems.getViewName(), saleItems.serialize());
+    params.addDataItem(VAR_ID_LIST, DataUtils.buildIdList(prepareApproveActs));
 
     BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
       @Override
@@ -920,6 +927,7 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
 
           RowInsertEvent.fire(BeeKeeper.getBus(), VIEW_SALES, result, null);
           DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_TRADE_ACT_INVOICES);
+          DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_TRADE_ACTS);
 
           refresh(false);
           RowEditor.open(VIEW_SALES, result, Opener.MODAL);
@@ -1424,7 +1432,7 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
 
         if (cell != null
             && (cell.hasClassName(STYLE_ACT_ID_PREFIX + STYLE_CELL_SUFFIX)
-            || cell.hasClassName(STYLE_ACT_NUMBER_PREFIX + STYLE_CELL_SUFFIX))) {
+                || cell.hasClassName(STYLE_ACT_NUMBER_PREFIX + STYLE_CELL_SUFFIX))) {
 
           long id = DomUtils.getDataIndexLong(DomUtils.getParentRow(cell, false));
           if (DataUtils.isId(id)) {
@@ -1655,7 +1663,7 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
 
         if (cell != null
             && (cell.hasClassName(STYLE_SVC_ACT_PREFIX + STYLE_CELL_SUFFIX)
-            || cell.hasClassName(STYLE_SVC_ITEM_PREFIX + STYLE_CELL_SUFFIX))) {
+                || cell.hasClassName(STYLE_SVC_ITEM_PREFIX + STYLE_CELL_SUFFIX))) {
 
           Service svc = findService(cell);
 
