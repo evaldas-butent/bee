@@ -149,7 +149,8 @@
               <Label text="=financialState" style="&lbl;" />
               <Table>
                 <row>
-                  <DataSelector source="FinancialState" summarize="true" />
+                  <DataSelector source="FinancialState" renderColumns="FinancialStateName" 
+                  choiceColumns="Name" summarize="true" />
                   <FaLabel name="FinancialStateAudit" char="history" style="font-size: larger;" />
                 </row>
               </Table>
