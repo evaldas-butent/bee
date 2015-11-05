@@ -343,6 +343,16 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
     });
   }
 
+  public Double maybeExchange(Long from, Long to, Double v, DateTime dt) {
+    if (from == null || to == null || Objects.equals(from, to) || !BeeUtils.nonZero(v)) {
+      return v;
+
+    } else {
+      long time = (dt == null) ? System.currentTimeMillis() : dt.getTime();
+      return v * getRate(from, time) / getRate(to, time);
+    }
+  }
+
   private ResponseObject blockHost(RequestInfo reqInfo) {
     String host = BeeUtils.trim(reqInfo.getParameter(COL_IP_FILTER_HOST));
     if (BeeUtils.isEmpty(host)) {

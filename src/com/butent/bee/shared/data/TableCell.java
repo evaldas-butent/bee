@@ -132,6 +132,33 @@ public class TableCell implements IsCell {
   }
 
   @Override
+  public void setProperty(String key, Double v) {
+    if (BeeUtils.isDouble(v)) {
+      setProperty(key, BeeUtils.toString(v));
+    } else {
+      clearProperty(key);
+    }
+  }
+
+  @Override
+  public void setProperty(String key, Integer v) {
+    if (v == null) {
+      clearProperty(key);
+    } else {
+      setProperty(key, BeeUtils.toString(v));
+    }
+  }
+
+  @Override
+  public void setProperty(String key, Long v) {
+    if (v == null) {
+      clearProperty(key);
+    } else {
+      setProperty(key, BeeUtils.toString(v));
+    }
+  }
+
+  @Override
   public void setProperty(String propertyKey, String propertyValue) {
     Assert.notEmpty(propertyKey);
 

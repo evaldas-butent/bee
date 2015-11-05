@@ -20,6 +20,9 @@
 
     <DataColumn name="Year" />
     <DataColumn name="Month" />
+    
+    <PropColumn name="Earnings_duration" type="string" label="=duration" />
+    <PropColumn name="Earnings_amount" type="decimal" label="=amount" />
 
     <DataColumn name="Approved" />
     <RelColumn name="ApprovedBy" renderColumns="ApprovedByFirstName ApprovedByLastName"

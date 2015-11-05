@@ -33,6 +33,7 @@ public final class PayrollConstants {
 
   public static final String TBL_EMPLOYEES = "Employees";
   public static final String TBL_LOCATIONS = "Locations";
+  public static final String TBL_EMPLOYEE_OBJECTS = "EmployeeObjects";
 
   public static final String TBL_WORK_SCHEDULE = "WorkSchedule";
 
@@ -41,11 +42,17 @@ public final class PayrollConstants {
 
   public static final String TBL_OBJECT_SALARY_FUND = "ObjectSalaryFund";
 
+  public static final String TBL_TIME_RANGES = "TimeRanges";
+
   public static final String VIEW_EMPLOYEES = "Employees";
   public static final String VIEW_LOCATIONS = "Locations";
   public static final String VIEW_EMPLOYEE_OBJECTS = "EmployeeObjects";
 
   public static final String VIEW_WORK_SCHEDULE = "WorkSchedule";
+
+  public static final String VIEW_OBJECT_EARNINGS = "ObjectEarnings";
+  public static final String VIEW_EMPLOYEE_EARNINGS = "EmployeeEarnings";
+
   public static final String VIEW_TIME_CARD_CHANGES = "TimeCardChanges";
 
   public static final String VIEW_TIME_CARD_CODES = "TimeCardCodes";
@@ -145,6 +152,12 @@ public final class PayrollConstants {
   public static final String FORM_WORK_SCHEDULE = "WorkSchedule";
   public static final String FORM_WORK_SCHEDULE_EDITOR = "WorkScheduleEditor";
   public static final String FORM_EARNINGS = "Earnings";
+
+  public static final String PRP_EARNINGS_NUMBER_OF_DAYS = "Earnings_day_count";
+  public static final String PRP_EARNINGS_MILLIS = "Earnings_millis";
+  public static final String PRP_EARNINGS_DURATION = "Earnings_duration";
+  public static final String PRP_EARNINGS_AMOUNT = "Earnings_amount";
+  public static final String PRP_EARNINGS_HOURLY_WAGE = "Earnings_hourly_wage";
 
   public static void register() {
     EnumUtils.register(ObjectStatus.class);
