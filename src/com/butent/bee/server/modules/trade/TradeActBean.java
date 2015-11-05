@@ -54,7 +54,6 @@ import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.exceptions.BeeException;
-import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
@@ -1323,7 +1322,8 @@ public class TradeActBean implements HasTimerService {
     String where = reqInfo.getParameter(Service.VAR_VIEW_WHERE);
 
     CompoundFilter filter = Filter.and();
-    filter.add(Filter.isNull(COL_ITEM_IS_SERVICE));
+
+    // filter.add(Filter.isNull(COL_ITEM_IS_SERVICE));
 
     Set<Long> actItems = getActItems(actId);
     if (!actItems.isEmpty()) {

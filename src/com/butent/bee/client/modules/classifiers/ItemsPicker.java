@@ -612,22 +612,22 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
           Global.decide(Localized.getConstants().goods(),
               Lists.newArrayList(Localized.getConstants().taSaveSelectedItems()),
               new DecisionCallback() {
-                @Override
-                public void onConfirm() {
-                  if (isOrder) {
-                    if (!checkQuantities(quantities)) {
-                      return;
-                    }
-                  }
-                  selectItems(quantities);
-                  dialog.close();
+            @Override
+            public void onConfirm() {
+              if (isOrder) {
+                if (!checkQuantities(quantities)) {
+                  return;
                 }
+              }
+              selectItems(quantities);
+              dialog.close();
+            }
 
-                @Override
-                public void onDeny() {
-                  dialog.close();
-                }
-              }, DialogConstants.DECISION_YES);
+            @Override
+            public void onDeny() {
+              dialog.close();
+            }
+          }, DialogConstants.DECISION_YES);
         }
       }
     });
@@ -692,7 +692,7 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
 
     if (isOrder) {
       table.setText(r, c++, items.getRow(0).getString(
-              DataUtils.getColumnIndex(ALS_WAREHOUSE_CODE, items.getColumns())),
+          DataUtils.getColumnIndex(ALS_WAREHOUSE_CODE, items.getColumns())),
           STYLE_FROM_PREFIX + STYLE_HEADER_CELL_SUFFIX);
       table.setText(r, c++, Localized.getConstants().ordFreeRemainder(),
           STYLE_FREE_PREFIX + STYLE_HEADER_CELL_SUFFIX);
