@@ -1334,7 +1334,8 @@ public class TradeActBean implements HasTimerService {
     String where = reqInfo.getParameter(Service.VAR_VIEW_WHERE);
 
     CompoundFilter filter = Filter.and();
-    filter.add(Filter.isNull(COL_ITEM_IS_SERVICE));
+
+    // filter.add(Filter.isNull(COL_ITEM_IS_SERVICE));
 
     Set<Long> actItems = getActItems(actId);
     if (!actItems.isEmpty()) {

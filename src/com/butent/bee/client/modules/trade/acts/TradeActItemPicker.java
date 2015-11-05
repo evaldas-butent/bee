@@ -36,16 +36,25 @@ class TradeActItemPicker extends ItemsPicker {
       params.addDataItem(ClassifierConstants.COL_WAREHOUSE, getWarehouseFrom());
     }
 
+    Filter defFilter = getDefaultItemFilter();
+
     if (filter != null) {
-      params.addDataItem(Service.VAR_VIEW_WHERE, filter.serialize());
+      if (defFilter != null) {
+        defFilter = Filter.and(defFilter, filter);
+      } else {
+        defFilter = filter;
+      }
+    }
+
+    if (defFilter != null) {
+      params.addDataItem(Service.VAR_VIEW_WHERE, defFilter.serialize());
     }
 
     BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
 
       @Override
       public void onResponse(ResponseObject response) {
-        if
-        (response.hasResponse(BeeRowSet.class)) {
+        if (response.hasResponse(BeeRowSet.class)) {
           callback.onSuccess(BeeRowSet.restore(response.getResponseAsString()));
         } else {
           BeeKeeper.getScreen().notifyWarning(Localized.getConstants().nothingFound());
@@ -62,5 +71,9 @@ class TradeActItemPicker extends ItemsPicker {
   @Override
   public boolean setIsOrder() {
     return false;
+  }
+
+  protected Filter getDefaultItemFilter() {
+    return Filter.isNull(ClassifierConstants.COL_ITEM_IS_SERVICE);
   }
 }
