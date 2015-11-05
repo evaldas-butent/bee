@@ -29,11 +29,17 @@ public final class PayrollConstants {
 
   public static final String SVC_GET_SCHEDULE_OVERLAP = "getScheduleOverlap";
   public static final String SVC_GET_SCHEDULED_MONTHS = "getScheduledMonths";
+  public static final String SVC_INIT_EARNINGS = "initEarnings";
 
   public static final String TBL_EMPLOYEES = "Employees";
   public static final String TBL_LOCATIONS = "Locations";
 
   public static final String TBL_WORK_SCHEDULE = "WorkSchedule";
+
+  public static final String TBL_OBJECT_EARNINGS = "ObjectEarnings";
+  public static final String TBL_EMPLOYEE_EARNINGS = "EmployeeEarnings";
+
+  public static final String TBL_OBJECT_SALARY_FUND = "ObjectSalaryFund";
 
   public static final String VIEW_EMPLOYEES = "Employees";
   public static final String VIEW_LOCATIONS = "Locations";
@@ -88,6 +94,30 @@ public final class PayrollConstants {
   public static final String COL_TR_DURATION = "Duration";
   public static final String COL_TR_DESCRIPTION = "Description";
 
+  public static final String COL_EARNINGS_YEAR = "Year";
+  public static final String COL_EARNINGS_MONTH = "Month";
+
+  public static final String COL_EARNINGS_APPROVED = "Approved";
+  public static final String COL_EARNINGS_APPROVED_BY = "ApprovedBy";
+  public static final String COL_EARNINGS_APPROVED_AMOUNT = "ApprovedAmount";
+  public static final String COL_EARNINGS_APPROVED_CURRENCY = "ApprovedCurrency";
+
+  public static final String COL_EARNINGS_EXPORTED = "Exported";
+  public static final String COL_EARNINGS_EXPORTED_BY = "ExportedBy";
+  public static final String COL_EARNINGS_EXPORTED_AMOUNT = "ExportedAmount";
+  public static final String COL_EARNINGS_EXPORTED_CURRENCY = "ExportedCurrency";
+
+  public static final String COL_EARNINGS_BONUS_PERCENT = "BonusPercent";
+  public static final String COL_EARNINGS_BONUS_1 = "Bonus1";
+  public static final String COL_EARNINGS_BONUS_2 = "Bonus2";
+
+  public static final String COL_OSF_YEAR_FROM = "YearFrom";
+  public static final String COL_OSF_MONTH_FROM = "MonthFrom";
+  public static final String COL_OSF_YEAR_UNTIL = "YearUntil";
+  public static final String COL_OSF_MONTH_UNTIL = "MonthUntil";
+
+  public static final String COL_OSF_AMOUNT = "Amount";
+
   public static final String ALS_DEPARTMENT_NAME = "DepartmentName";
 
   public static final String ALS_LOCATION_MANAGER_FIRST_NAME = "ManagerFirstName";
@@ -108,6 +138,7 @@ public final class PayrollConstants {
   public static final String GRID_TIME_CARD_CODES = "TimeCardCodes";
   public static final String GRID_TIME_RANGES = "TimeRanges";
   public static final String GRID_WORK_SCHEDULE_DAY = "WorkScheduleDay";
+  public static final String GRID_OBJECT_EARNINGS = "ObjectEarnings";
 
   public static final String FORM_LOCATION = "Location";
   public static final String FORM_EMPLOYEE = "Employee";

@@ -36,6 +36,13 @@
         <DataSelector source="Manager" editSource="ManagerPerson" newRowEnabled="false" />
         <Label for="Created" horizontalAlignment="right" />
         <DateTimeLabel source="Created" />
+        <cell colSpan="2">
+          <FlowPanel style="display:none;">
+            <InlineLabel text="=vehicleDriver" class="bee-required" />
+            <UnboundSelector name="Driver" viewName="UserDrivers" required="true"
+                             newRowEnabled="false" disablable="false" />
+          </FlowPanel>
+        </cell>
       </row>
       <row>
         <FlowPanel class="flexBox-horizontal-center">

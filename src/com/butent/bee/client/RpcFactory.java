@@ -251,14 +251,6 @@ public class RpcFactory {
     return makePostRequest(params, ContentType.TEXT, data, callback);
   }
 
-  public int sendText(String svc, String data) {
-    return makePostRequest(svc, ContentType.TEXT, data);
-  }
-
-  public int sendText(String svc, String data, ResponseCallback callback) {
-    return makePostRequest(svc, ContentType.TEXT, data, callback);
-  }
-
   private int makeRequest(RequestBuilder.Method meth, ParameterList params,
       ContentType type, String reqData, ResponseCallback callback, int timeout) {
 
@@ -323,7 +315,7 @@ public class RpcFactory {
     if (debug) {
       logger.info("request", id, meth.toString(), url);
     } else {
-      logger.info(">", id, svc, params.getSubService());
+      logger.info(">", id, svc, params.getSubService(), params.getSummary());
     }
 
     String content = null;

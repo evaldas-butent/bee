@@ -13,8 +13,7 @@
     <Relation name="Vehicle" relation="Vehicles" label="=trTruck" />
     <Relation name="Trailer" relation="Vehicles" label="=trailer" />
 
-    <Relation name="MainDriver" relation="TripDrivers" unique="true" cascade="SET_NULL"
-              label="=vehicleDriver" />
+    <Relation name="MainDriver" relation="TripDrivers" unique="true" label="=vehicleDriver" />
 
     <Date name="DateFrom" label="=trTripDateFrom" />
     <Date name="DateTo" label="=trTripDateTo" />

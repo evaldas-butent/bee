@@ -276,6 +276,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String email();
 
+  String employment();
+
   String enterColor();
 
   String enterDate();

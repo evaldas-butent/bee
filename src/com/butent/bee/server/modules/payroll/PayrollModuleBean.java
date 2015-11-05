@@ -13,9 +13,11 @@ import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.sql.HasConditions;
 import com.butent.bee.server.sql.IsCondition;
+import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
@@ -32,6 +34,7 @@ import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeRange;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.time.YearMonth;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -90,6 +93,10 @@ public class PayrollModuleBean implements BeeModule {
 
       case SVC_GET_SCHEDULED_MONTHS:
         response = getScheduledMonths(reqInfo);
+        break;
+
+      case SVC_INIT_EARNINGS:
+        response = initializeEarnings(reqInfo);
         break;
 
       default:
@@ -309,6 +316,118 @@ public class PayrollModuleBean implements BeeModule {
 
       return ResponseObject.response(sb.toString());
     }
+  }
+
+  private ResponseObject initializeEarnings(RequestInfo reqInfo) {
+    Integer year = reqInfo.getParameterInt(COL_EARNINGS_YEAR);
+    if (!TimeUtils.isYear(year)) {
+      return ResponseObject.parameterNotFound(reqInfo.getSubService(), COL_EARNINGS_YEAR);
+    }
+
+    Integer month = reqInfo.getParameterInt(COL_EARNINGS_MONTH);
+    if (!TimeUtils.isMonth(month)) {
+      return ResponseObject.parameterNotFound(reqInfo.getSubService(), COL_EARNINGS_MONTH);
+    }
+
+    int result = 0;
+
+    JustDate from = new JustDate(year, month, 1);
+    JustDate until = TimeUtils.endOfMonth(from);
+
+    HasConditions scheduleWhere =
+        SqlUtils.and(
+            SqlUtils.moreEqual(TBL_WORK_SCHEDULE, COL_WORK_SCHEDULE_DATE, from),
+            SqlUtils.lessEqual(TBL_WORK_SCHEDULE, COL_WORK_SCHEDULE_DATE, until),
+            SqlUtils.or(
+                SqlUtils.notNull(TBL_WORK_SCHEDULE, COL_TIME_RANGE_CODE),
+                SqlUtils.notNull(TBL_WORK_SCHEDULE, COL_WORK_SCHEDULE_FROM),
+                SqlUtils.notNull(TBL_WORK_SCHEDULE, COL_WORK_SCHEDULE_DURATION)));
+
+    SqlSelect wsEmplQuery = new SqlSelect().setDistinctMode(true)
+        .addFields(TBL_WORK_SCHEDULE, COL_EMPLOYEE, COL_PAYROLL_OBJECT)
+        .addFrom(TBL_WORK_SCHEDULE)
+        .setWhere(scheduleWhere);
+
+    SimpleRowSet scheduledEmployees = qs.getData(wsEmplQuery);
+    if (DataUtils.isEmpty(scheduledEmployees)) {
+      return ResponseObject.response(result);
+    }
+
+    Set<Pair<Long, Long>> existingEmployees = new HashSet<>();
+
+    SqlSelect earnEmplQuery = new SqlSelect().setDistinctMode(true)
+        .addFields(TBL_EMPLOYEE_EARNINGS, COL_EMPLOYEE, COL_PAYROLL_OBJECT)
+        .addFrom(TBL_EMPLOYEE_EARNINGS)
+        .setWhere(SqlUtils.equals(TBL_EMPLOYEE_EARNINGS,
+            COL_EARNINGS_YEAR, year, COL_EARNINGS_MONTH, month));
+
+    SimpleRowSet earnEmplData = qs.getData(earnEmplQuery);
+    if (!DataUtils.isEmpty(earnEmplData)) {
+      for (SimpleRow row : earnEmplData) {
+        Long employee = row.getLong(COL_EMPLOYEE);
+        Long object = row.getLong(COL_PAYROLL_OBJECT);
+
+        if (DataUtils.isId(employee) && DataUtils.isId(object)) {
+          existingEmployees.add(Pair.of(employee, object));
+        }
+      }
+    }
+
+    for (SimpleRow row : scheduledEmployees) {
+      Long employee = row.getLong(COL_EMPLOYEE);
+      Long object = row.getLong(COL_PAYROLL_OBJECT);
+
+      if (DataUtils.isId(employee) && DataUtils.isId(object)
+          && !existingEmployees.contains(Pair.of(employee, object))) {
+
+        SqlInsert insert = new SqlInsert(TBL_EMPLOYEE_EARNINGS)
+            .addConstant(COL_EMPLOYEE, employee)
+            .addConstant(COL_PAYROLL_OBJECT, object)
+            .addConstant(COL_EARNINGS_YEAR, year)
+            .addConstant(COL_EARNINGS_MONTH, month);
+
+        ResponseObject response = qs.insertDataWithResponse(insert);
+        if (response.hasErrors()) {
+          return response;
+        }
+
+        result++;
+      }
+    }
+
+    SqlSelect wsObjQuery = new SqlSelect().setDistinctMode(true)
+        .addFields(TBL_WORK_SCHEDULE, COL_PAYROLL_OBJECT)
+        .addFrom(TBL_WORK_SCHEDULE)
+        .setWhere(scheduleWhere);
+
+    Set<Long> scheduledObjects = qs.getLongSet(wsObjQuery);
+
+    SqlSelect earnObjQuery = new SqlSelect().setDistinctMode(true)
+        .addFields(TBL_OBJECT_EARNINGS, COL_PAYROLL_OBJECT)
+        .addFrom(TBL_OBJECT_EARNINGS)
+        .setWhere(SqlUtils.equals(TBL_OBJECT_EARNINGS,
+            COL_EARNINGS_YEAR, year, COL_EARNINGS_MONTH, month));
+
+    Set<Long> existingObjects = qs.getLongSet(earnObjQuery);
+    scheduledObjects.removeAll(existingObjects);
+
+    for (Long object : scheduledObjects) {
+      if (DataUtils.isId(object)) {
+        SqlInsert insert = new SqlInsert(TBL_OBJECT_EARNINGS)
+            .addConstant(COL_PAYROLL_OBJECT, object)
+            .addConstant(COL_EARNINGS_YEAR, year)
+            .addConstant(COL_EARNINGS_MONTH, month);
+
+        ResponseObject response = qs.insertDataWithResponse(insert);
+        if (response.hasErrors()) {
+          return response;
+        }
+
+        result++;
+      }
+    }
+
+    return ResponseObject.response(result);
   }
 
   private boolean overlaps(long objId, long emplId, JustDate date) {
