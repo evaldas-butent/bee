@@ -1037,14 +1037,14 @@ public class TransportReportsBean {
     // Trip costs
     SqlSelect ss = new SqlSelect()
         .addField(TBL_TRIPS, sys.getIdName(TBL_TRIPS), COL_TRIP)
-        .addField(TBL_TRIPS, "Date", "TripDate")
-        .addFields(TBL_TRIPS, COL_VEHICLE, "FuelBefore", "FuelAfter")
+        .addField(TBL_TRIPS, COL_TRIP_DATE, "TripDate")
+        .addFields(TBL_TRIPS, COL_VEHICLE, COL_FUEL_BEFORE, COL_FUEL_AFTER)
         .addEmptyDouble("FuelCosts")
         .addFrom(TBL_TRIPS)
         .addFromInner(trips, alias, sys.joinTables(TBL_TRIPS, alias, COL_TRIP))
         .addFromLeft(TBL_TRIP_COSTS, sys.joinTables(TBL_TRIPS, TBL_TRIP_COSTS, COL_TRIP))
-        .addGroup(TBL_TRIPS, sys.getIdName(TBL_TRIPS), "Date", COL_VEHICLE, "FuelBefore",
-            "FuelAfter");
+        .addGroup(TBL_TRIPS, sys.getIdName(TBL_TRIPS), COL_TRIP_DATE, COL_VEHICLE, COL_FUEL_BEFORE,
+            COL_FUEL_AFTER);
 
     IsExpression amountExpr;
 
@@ -1127,7 +1127,7 @@ public class TransportReportsBean {
         .addExpression("FuelCosts", SqlUtils.field(tmp, "FuelCosts")));
 
     // Fuel consumptions
-    if (qs.sqlExists(tmpCosts, SqlUtils.isNull(tmpCosts, "FuelAfter"))) {
+    if (qs.sqlExists(tmpCosts, SqlUtils.isNull(tmpCosts, COL_FUEL_AFTER))) {
       String tmpRoutes = qs.sqlCreateTemp(getFuelConsumptionsQuery(new SqlSelect()
           .addFields(TBL_TRIP_ROUTES, sys.getIdName(TBL_TRIP_ROUTES))
           .addFrom(TBL_TRIP_ROUTES)
@@ -1153,13 +1153,13 @@ public class TransportReportsBean {
                   .addFromLeft(tmpRoutes, SqlUtils.joinUsing(tmp, tmpRoutes, COL_TRIP))
                   .addFromLeft(tmpConsumptions, SqlUtils.joinUsing(tmp, tmpConsumptions, COL_TRIP)),
               "sub", SqlUtils.joinUsing(tmpCosts, "sub", COL_TRIP))
-          .addExpression("FuelAfter", SqlUtils.minus(
+          .addExpression(COL_FUEL_AFTER, SqlUtils.minus(
               SqlUtils.plus(
-                  SqlUtils.nvl(SqlUtils.field(tmpCosts, "FuelBefore"), 0),
+                  SqlUtils.nvl(SqlUtils.field(tmpCosts, COL_FUEL_BEFORE), 0),
                   SqlUtils.nvl(SqlUtils.field("sub", "Quantity"), 0)),
               SqlUtils.nvl(SqlUtils.field("sub", "routeQuantity"), 0),
               SqlUtils.nvl(SqlUtils.field("sub", "consumeQuantity"), 0)))
-          .setWhere(SqlUtils.isNull(tmpCosts, "FuelAfter")));
+          .setWhere(SqlUtils.isNull(tmpCosts, COL_FUEL_AFTER)));
 
       qs.sqlDropTemp(tmpRoutes);
       qs.sqlDropTemp(tmpConsumptions);
@@ -1211,7 +1211,7 @@ public class TransportReportsBean {
 
     for (int i = 0; i < 2; i++) {
       boolean plusMode = i == 0;
-      String fld = plusMode ? "FuelBefore" : "FuelAfter";
+      String fld = plusMode ? COL_FUEL_BEFORE : COL_FUEL_AFTER;
 
       tmp = qs.sqlCreateTemp(new SqlSelect()
           .addFields(tmpCosts, COL_TRIP, "TripDate", COL_VEHICLE)

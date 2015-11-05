@@ -1,12 +1,12 @@
 package com.butent.bee.client.modules.transport;
 
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Multimap;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.HasClickHandlers;
+import com.google.gwt.event.shared.GwtEvent;
+import com.google.gwt.event.shared.HasHandlers;
+import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
@@ -14,9 +14,13 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
-import com.butent.bee.client.composite.DataSelector;
+import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.data.Data;
-import com.butent.bee.client.event.logical.SelectorEvent;
+import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.data.RowCallback;
+import com.butent.bee.client.data.RowUpdateCallback;
+import com.butent.bee.client.dialog.ConfirmationCallback;
+import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.grid.ChildGrid;
 import com.butent.bee.client.modules.transport.TransportHandler.Profit;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
@@ -24,76 +28,44 @@ import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.validation.CellValidateEvent;
 import com.butent.bee.client.validation.CellValidation;
 import com.butent.bee.client.view.HeaderView;
+import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.EditableWidget;
+import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.form.interceptor.PrintFormInterceptor;
-import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.time.DateRange;
-import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
-import java.util.HashSet;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
-public class TripForm extends PrintFormInterceptor implements SelectorEvent.Handler {
+public class TripForm extends PrintFormInterceptor {
 
-  private static final Multimap<Long, DateRange> vehicleBusy = HashMultimap.create();
+  private UnboundSelector driver;
 
   @Override
   public void afterCreateEditableWidget(EditableWidget editableWidget,
       IdentifiableWidget widget) {
 
-    if (BeeUtils.same(editableWidget.getColumnId(), "Vehicle")) {
-      String viewName = getFormView().getViewName();
-      final int dateIndex = Data.getColumnIndex(viewName, "Date");
-      final int speedIndex = Data.getColumnIndex(viewName, "SpeedometerBefore");
-      final int fuelIndex = Data.getColumnIndex(viewName, "FuelBefore");
-
+    if (BeeUtils.same(editableWidget.getColumnId(), COL_VEHICLE)) {
       editableWidget.addCellValidationHandler(new CellValidateEvent.Handler() {
         @Override
         public Boolean validateCell(CellValidateEvent event) {
           if (event.isCellValidation() && event.isPostValidation()) {
-            CellValidation cv = event.getCellValidation();
-            String id = cv.getNewValue();
-
-            if (!BeeUtils.isEmpty(id)) {
-              final IsRow row = cv.getRow();
-
-              ParameterList args = TransportHandler.createArgs(SVC_GET_BEFORE);
-              args.addDataItem(COL_VEHICLE, id);
-
-              if (!row.isNull(dateIndex)) {
-                args.addDataItem(COL_DATE, row.getString(dateIndex));
-              }
-              BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
-                @Override
-                public void onResponse(ResponseObject response) {
-                  Assert.notNull(response);
-
-                  if (response.hasErrors()) {
-                    Global.showError(Lists.newArrayList(response.getErrors()));
-
-                  } else if (response.hasArrayResponse(String.class)) {
-                    String[] r = Codec.beeDeserializeCollection((String) response.getResponse());
-                    row.setValue(speedIndex, r[0]);
-                    row.setValue(fuelIndex, r[1]);
-                    getFormView().refresh(false, false);
-
-                  } else {
-                    Global.showError("Unknown response");
-                  }
-                }
-              });
-            }
+            CellValidation cellValidation = event.getCellValidation();
+            getBeforeInfo(cellValidation.getNewValue(), cellValidation.getRow());
           }
           return true;
         }
@@ -108,7 +80,7 @@ public class TripForm extends PrintFormInterceptor implements SelectorEvent.Hand
     if (widget instanceof ChildGrid) {
       switch (name) {
         case TBL_TRIP_DRIVERS:
-          ((ChildGrid) widget).setGridInterceptor(new TripDriversGrid());
+          ((ChildGrid) widget).setGridInterceptor(new TripDriversGrid(this));
           break;
 
         case VIEW_TRIP_CARGO:
@@ -157,12 +129,25 @@ public class TripForm extends PrintFormInterceptor implements SelectorEvent.Hand
           }
         }
       });
-
-    } else if (BeeUtils.inListSame(name, COL_VEHICLE, COL_TRAILER)
-        && widget instanceof DataSelector) {
-
-      ((DataSelector) widget).addSelectorHandler(this);
+    } else if (BeeUtils.same(name, COL_DRIVER) && widget instanceof UnboundSelector) {
+      driver = (UnboundSelector) widget;
     }
+  }
+
+  @Override
+  public void afterInsertRow(final IsRow trip, boolean forced) {
+    if (driver != null && DataUtils.isId(driver.getValue())) {
+      Queries.insert(VIEW_TRIP_DRIVERS, Data.getColumns(VIEW_TRIP_DRIVERS,
+          Arrays.asList(COL_TRIP, COL_DRIVER)), Arrays.asList(BeeUtils.toString(trip.getId()),
+          driver.getValue()), null, new RowCallback() {
+        @Override
+        public void onSuccess(BeeRow res) {
+          setMainDriver(trip, res.getId());
+        }
+      });
+    }
+    showDriver(false);
+    super.afterInsertRow(trip, forced);
   }
 
   @Override
@@ -176,39 +161,20 @@ public class TripForm extends PrintFormInterceptor implements SelectorEvent.Hand
   }
 
   @Override
-  public void onDataSelector(SelectorEvent event) {
-    if (event.isOpened() && event.hasRelatedView(VIEW_VEHICLES)) {
-      Set<Long> exclusions = new HashSet<>();
+  public void onReadyForInsert(final HasHandlers listener, final ReadyForInsertEvent event) {
+    if (checkVehicle(listener, event, event.getColumns(), event.getValues())) {
+      event.consume();
+    } else {
+      super.onReadyForInsert(listener, event);
+    }
+  }
 
-      JustDate start = getDateValue(COL_TRIP_DATE_FROM);
-      if (start == null) {
-        DateTime dt = getDateTimeValue(COL_TRIP_DATE);
-        if (dt != null) {
-          start = dt.getDate();
-        }
-      }
-
-      if (start != null && !vehicleBusy.isEmpty()) {
-        JustDate end = getDateValue(COL_TRIP_DATE_TO);
-        if (end == null) {
-          end = getDateValue(COL_TRIP_PLANNED_END_DATE);
-        }
-        if (end == null || BeeUtils.isLess(end, start)) {
-          end = start;
-        }
-
-        DateRange tripRange = DateRange.closed(start, end);
-
-        for (Long vehicle : vehicleBusy.keySet()) {
-          for (DateRange vr : vehicleBusy.get(vehicle)) {
-            if (tripRange.intersects(vr)) {
-              exclusions.add(vehicle);
-            }
-          }
-        }
-      }
-
-      event.getSelector().getOracle().setExclusions(exclusions);
+  @Override
+  public void onSaveChanges(HasHandlers listener, SaveChangesEvent event) {
+    if (checkVehicle(listener, event, event.getColumns(), event.getNewValues())) {
+      event.consume();
+    } else {
+      super.onSaveChanges(listener, event);
     }
   }
 
@@ -218,42 +184,174 @@ public class TripForm extends PrintFormInterceptor implements SelectorEvent.Hand
     header.clearCommandPanel();
     header.addCommandItem(new Profit(COL_TRIP, row.getId()));
 
-    vehicleBusy.clear();
-
+    showDriver(false);
     return true;
   }
 
   @Override
   public void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow) {
     form.getViewPresenter().getHeader().clearCommandPanel();
+    showDriver(true);
+    getBeforeInfo(newRow.getString(getDataIndex(COL_VEHICLE)), newRow);
+  }
 
-    BeeKeeper.getRpc().makeRequest(TransportHandler.createArgs(SVC_GET_VEHICLE_BUSY_DATES),
-        new ResponseCallback() {
-          @Override
-          public void onResponse(ResponseObject response) {
-            if (response.hasErrors()) {
-              response.notify(getFormView());
-            } else {
-              vehicleBusy.clear();
+  void checkDriver(final HasHandlers listener, final GwtEvent<?> event, final Long driverId) {
+    if (!DataUtils.isId(driverId)) {
+      listener.fireEvent(event);
+      return;
+    }
+    ParameterList args = TransportHandler.createArgs(SVC_GET_DRIVER_BUSY_DATES);
+    args.addDataItem(COL_DRIVER, driverId);
+    args.addDataItem(COL_TRIP_DATE_FROM, BeeUtils.nvl(getDateValue(COL_TRIP_DATE_FROM),
+        getDateTimeValue(COL_TRIP_DATE).getDate()).getTime());
 
-              if (response.hasResponse()) {
-                String[] arr = Codec.beeDeserializeCollection(response.getResponseAsString());
+    JustDate to = BeeUtils.nvl(getDateValue(COL_TRIP_DATE_TO),
+        getDateValue(COL_TRIP_PLANNED_END_DATE));
 
-                if (arr != null) {
-                  for (String s : arr) {
-                    Pair<String, String> pair = Pair.restore(s);
+    if (to != null) {
+      args.addDataItem(COL_TRIP_DATE_TO, to.getTime());
+    }
+    BeeKeeper.getRpc().makeRequest(args, new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+        response.notify(getFormView());
 
-                    Long vehicle = BeeUtils.toLongOrNull(pair.getA());
-                    DateRange range = DateRange.restore(pair.getB());
+        if (response.hasErrors()) {
+          return;
+        }
+        final List<String> messages = Arrays.asList(Codec.beeDeserializeCollection(response
+            .getResponseAsString()));
 
-                    if (DataUtils.isId(vehicle) && range != null) {
-                      vehicleBusy.put(vehicle, range);
+        if (BeeUtils.isEmpty(messages)) {
+          listener.fireEvent(event);
+        } else {
+          Queries.getRow(TBL_DRIVERS, driverId, Arrays.asList(ClassifierConstants.COL_FIRST_NAME,
+              ClassifierConstants.COL_LAST_NAME), new RowCallback() {
+            @Override
+            public void onSuccess(BeeRow result) {
+              Global.confirm(Localized.getConstants().employment()
+                      + " (" + BeeUtils.joinWords(result.getValues()) + ")", Icon.WARNING, messages,
+                  new ConfirmationCallback() {
+                    @Override
+                    public void onConfirm() {
+                      listener.fireEvent(event);
                     }
-                  }
-                }
-              }
+                  });
+            }
+          });
+        }
+      }
+    });
+  }
+
+  void setMainDriver(IsRow tripRow, Long driverId) {
+    Queries.update(getViewName(), tripRow.getId(), tripRow.getVersion(),
+        DataUtils.getColumns(getFormView().getDataColumns(),
+            Collections.singletonList(COL_MAIN_DRIVER)),
+        Collections.singletonList(tripRow.getString(getDataIndex(COL_MAIN_DRIVER))),
+        Collections.singletonList(BeeUtils.toString(driverId)), null,
+        new RowUpdateCallback(getViewName()) {
+          @Override
+          public void onSuccess(BeeRow result) {
+            super.onSuccess(result);
+            Widget drivers = getFormView().getWidgetByName(TBL_TRIP_DRIVERS);
+
+            if (drivers instanceof ChildGrid) {
+              ((ChildGrid) drivers).getPresenter().refresh(true, false);
             }
           }
         });
+  }
+
+  private boolean checkVehicle(final HasHandlers listener, final GwtEvent<?> event,
+      List<BeeColumn> columns, List<String> values) {
+
+    final Long driverId = driver != null ? BeeUtils.toLongOrNull(driver.getValue()) : null;
+    String vehicle = null;
+    String trailer = null;
+    int i = 0;
+
+    for (BeeColumn column : columns) {
+      if (BeeUtils.same(column.getId(), COL_VEHICLE)) {
+        vehicle = values.get(i);
+      } else if (BeeUtils.same(column.getId(), COL_TRAILER)) {
+        trailer = values.get(i);
+      }
+      i++;
+    }
+    if (DataUtils.isId(vehicle) || DataUtils.isId(trailer)) {
+      ParameterList args = TransportHandler.createArgs(SVC_GET_VEHICLE_BUSY_DATES);
+      args.addNotEmptyData(COL_VEHICLE, vehicle);
+      args.addNotEmptyData(COL_TRAILER, trailer);
+      args.addDataItem(COL_TRIP_DATE_FROM, BeeUtils.nvl(getDateValue(COL_TRIP_DATE_FROM),
+          getDateTimeValue(COL_TRIP_DATE).getDate()).getTime());
+
+      JustDate to = BeeUtils.nvl(getDateValue(COL_TRIP_DATE_TO),
+          getDateValue(COL_TRIP_PLANNED_END_DATE));
+
+      if (to != null) {
+        args.addDataItem(COL_TRIP_DATE_TO, to.getTime());
+      }
+      BeeKeeper.getRpc().makeRequest(args, new ResponseCallback() {
+        @Override
+        public void onResponse(ResponseObject response) {
+          response.notify(getFormView());
+
+          if (response.hasErrors()) {
+            return;
+          }
+          final List<String> messages = Arrays.asList(Codec.beeDeserializeCollection(response
+              .getResponseAsString()));
+
+          if (BeeUtils.isEmpty(messages)) {
+            checkDriver(listener, event, driverId);
+          } else {
+            Global.confirm(Localized.getConstants().employment(), Icon.WARNING, messages,
+                new ConfirmationCallback() {
+                  @Override
+                  public void onConfirm() {
+                    checkDriver(listener, event, driverId);
+                  }
+                });
+          }
+        }
+      });
+    } else if (DataUtils.isId(driverId)) {
+      checkDriver(listener, event, driverId);
+    } else {
+      return false;
+    }
+    return true;
+  }
+
+  private void getBeforeInfo(String vehicleId, final IsRow row) {
+    if (DataUtils.isId(vehicleId)) {
+      ParameterList args = TransportHandler.createArgs(SVC_GET_BEFORE);
+      args.addDataItem(COL_VEHICLE, vehicleId);
+      args.addNotEmptyData(COL_DATE, row.getString(getDataIndex(COL_DATE)));
+
+      BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
+        @Override
+        public void onResponse(ResponseObject response) {
+          response.notify(getFormView());
+
+          if (response.hasErrors()) {
+            return;
+          }
+          Pair<String, String> pair = Pair.restore(response.getResponseAsString());
+          row.setValue(getDataIndex(COL_SPEEDOMETER_BEFORE), pair.getA());
+          row.setValue(getDataIndex(COL_FUEL_BEFORE), pair.getB());
+          getFormView().refresh(false, false);
+        }
+      });
+    }
+  }
+
+  private void showDriver(boolean show) {
+    if (driver != null) {
+      driver.clearValue();
+      driver.setEnabled(show);
+      driver.getParent().setVisible(show);
+    }
   }
 }

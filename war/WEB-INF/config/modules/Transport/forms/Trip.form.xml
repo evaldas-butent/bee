@@ -34,6 +34,14 @@
       <row>
         <Label for="Manager" class="bee-required bee-hasDefaults" />
         <DataSelector source="Manager" editSource="ManagerPerson" newRowEnabled="false" />
+        <text />
+        <cell colSpan="2">
+          <FlowPanel style="display:none;">
+            <InlineLabel text="=vehicleDriver" class="bee-required" />
+            <UnboundSelector name="Driver" viewName="UserDrivers" required="true"
+                             newRowEnabled="false" disablable="false" />
+          </FlowPanel>
+        </cell>
       </row>
       <row>
         <FlowPanel class="flexBox-horizontal-center">
