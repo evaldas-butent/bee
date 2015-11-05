@@ -10,8 +10,8 @@
         width="70" widthUnit="%" height="90" heightUnit="%"
     >
 
-  <FlowPanel class="bee-PrintableForm">
-    <br />
+  <FlowPanel class="bee-PrintableForm" style="font-family:Arial;">
+    <Image url="images/hop_header.jpg" style="display:block; margin:auto;" />
 
     <Label html="KOREGUOJANTIS ĮSAKYMAS" style="text-align:center; font-weight:bold;" />
     <Label html="DĖL TARNYBINĖS KOMANDIRUOTĖS Į UŽSIENĮ"

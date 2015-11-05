@@ -10,9 +10,9 @@
         width="70" widthUnit="%" height="90" heightUnit="%"
     >
 
-  <FlowPanel class="bee-PrintableForm">
+  <FlowPanel class="bee-PrintableForm" style="font-family:Arial;">
     <css id="&form;">
-      .&form;-table {border-collapse:collapse;}
+      .&form;-table {border-collapse:collapse; page-break-inside:avoid;}
       .&form;-table td {border:1px solid black; padding:2px;}
 
       .&form;-table .Number .bee-Label:before {content:"Dok.Nr.";}
@@ -30,13 +30,12 @@
       .&form;-table .footer {font-weight:bold;}
     </css>
 
-    <br />
+    <Image url="images/hop_header.jpg" style="display:block; margin:auto;" />
+
     <Label html="KOMANDIRUOTĖS ATASKAITA - IŠLAIDŲ SUVESTINĖ"
            style="text-align:center; font-weight:bold;" />
 
     <TextLabel source="TripNo" style="text-align:center; font-weight:bold;" />
-
-    <br />
     <br />
 
     <Table kind="output" style="width:100%">
