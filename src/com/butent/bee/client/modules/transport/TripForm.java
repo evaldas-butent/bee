@@ -59,6 +59,7 @@ import java.util.Objects;
 public class TripForm extends PrintFormInterceptor {
 
   private FaLabel copyAction;
+  private Long defaultDriver;
   private UnboundSelector driver;
 
   @Override
@@ -157,7 +158,7 @@ public class TripForm extends PrintFormInterceptor {
   }
 
   @Override
-  public FormInterceptor getInstance() {
+  public TripForm getInstance() {
     return new TripForm();
   }
 
@@ -375,7 +376,11 @@ public class TripForm extends PrintFormInterceptor {
               newRow.setValue(idx, getStringValue(col));
             }
           }
-          RowFactory.createRow(info, newRow);
+          TripForm interceptor = getInstance();
+          interceptor.defaultDriver = getLongValue(COL_DRIVER);
+
+          RowFactory.createRow(info.getNewRowForm(), info.getNewRowCaption(), info, newRow, null,
+              interceptor, null);
         }
       });
     }
@@ -387,6 +392,11 @@ public class TripForm extends PrintFormInterceptor {
       driver.clearValue();
       driver.setEnabled(show);
       driver.getParent().setVisible(show);
+
+      if (show && DataUtils.isId(defaultDriver)) {
+        driver.setValue(defaultDriver, false);
+        defaultDriver = null;
+      }
     }
   }
 }

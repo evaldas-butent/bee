@@ -228,7 +228,7 @@ class TransportationOrderForm extends AbstractFormInterceptor implements ClickHa
         @Override
         public void onClick(ClickEvent clickEvent) {
           DataInfo info = Data.getDataInfo(getViewName());
-          BeeRow newRow = RowFactory.createEmptyRow(info, true);
+          BeeRow order = RowFactory.createEmptyRow(info, true);
           final Long orderId = getActiveRowId();
 
           for (String col : new String[] {
@@ -238,10 +238,10 @@ class TransportationOrderForm extends AbstractFormInterceptor implements ClickHa
             int idx = info.getColumnIndex(col);
 
             if (!BeeConst.isUndef(idx)) {
-              newRow.setValue(idx, getStringValue(col));
+              order.setValue(idx, getStringValue(col));
             }
           }
-          RowFactory.createRow(info, newRow, new RowCallback() {
+          RowFactory.createRow(info, order, new RowCallback() {
             @Override
             public void onSuccess(final BeeRow newOrder) {
               Filter orderFilter = Filter.equals(COL_ORDER, orderId);
