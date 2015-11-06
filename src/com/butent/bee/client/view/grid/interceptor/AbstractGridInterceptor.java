@@ -32,6 +32,7 @@ import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.CellSource;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.RowInsertEvent;
@@ -41,6 +42,8 @@ import com.butent.bee.shared.data.filter.FilterComponent;
 import com.butent.bee.shared.data.filter.FilterDescription;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.GridDescription;
@@ -189,6 +192,16 @@ public abstract class AbstractGridInterceptor implements GridInterceptor {
   }
 
   @Override
+  public IsRow getActiveRow() {
+    return (getGridView() == null) ? null : getGridView().getActiveRow();
+  }
+
+  @Override
+  public long getActiveRowId() {
+    return DataUtils.getId(getActiveRow());
+  }
+
+  @Override
   public String getCaption() {
     return null;
   }
@@ -206,6 +219,26 @@ public abstract class AbstractGridInterceptor implements GridInterceptor {
   @Override
   public int getDataIndex(String source) {
     return (getGridView() == null) ? BeeConst.UNDEF : getGridView().getDataIndex(source);
+  }
+
+  @Override
+  public DateTime getDateTimeValue(String source) {
+    int index = getDataIndex(source);
+    if (getActiveRow() != null && index >= 0) {
+      return getActiveRow().getDateTime(index);
+    } else {
+      return null;
+    }
+  }
+
+  @Override
+  public JustDate getDateValue(String source) {
+    int index = getDataIndex(source);
+    if (getActiveRow() != null && index >= 0) {
+      return getActiveRow().getDate(index);
+    } else {
+      return null;
+    }
   }
 
   @Override
@@ -271,6 +304,26 @@ public abstract class AbstractGridInterceptor implements GridInterceptor {
   }
 
   @Override
+  public Integer getIntegerValue(String source) {
+    int index = getDataIndex(source);
+    if (getActiveRow() != null && index >= 0) {
+      return getActiveRow().getInteger(index);
+    } else {
+      return null;
+    }
+  }
+
+  @Override
+  public Long getLongValue(String source) {
+    int index = getDataIndex(source);
+    if (getActiveRow() != null && index >= 0) {
+      return getActiveRow().getLong(index);
+    } else {
+      return null;
+    }
+  }
+
+  @Override
   public List<String> getParentLabels() {
     return null;
   }
@@ -294,6 +347,16 @@ public abstract class AbstractGridInterceptor implements GridInterceptor {
   @Override
   public StyleProvider getRowStyleProvider() {
     return null;
+  }
+
+  @Override
+  public String getStringValue(String source) {
+    int index = getDataIndex(source);
+    if (getActiveRow() != null && index >= 0) {
+      return getActiveRow().getString(index);
+    } else {
+      return null;
+    }
   }
 
   @Override

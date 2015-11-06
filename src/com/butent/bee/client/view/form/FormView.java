@@ -62,8 +62,6 @@ public interface FormView extends DataView, HasDataTable, ActiveWidgetChangeEven
 
   int flush();
 
-  long getActiveRowId();
-
   Collection<RowChildren> getChildrenForInsert();
 
   Collection<RowChildren> getChildrenForUpdate();

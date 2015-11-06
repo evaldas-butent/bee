@@ -2,7 +2,7 @@
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
 
   name="ObjectEarnings" viewName="ObjectEarnings"
-  editForm="ObjectEarnings" disabledActions="add delete"
+  editForm="ObjectEarnings" editPopup="true" disabledActions="add delete"
   >
 
   <g:columns>
@@ -13,16 +13,18 @@
     <RelColumn name="CompanyPerson" renderColumns="ContactFirstName ContactLastName"
       choiceColumns="FirstName LastName CompanyName" flexGrow="1" visible="false" />
 
-    <RelColumn name="Manager" renderColumns="ManagerFirstName ManagerLastName" flexGrow="1" />
+    <RelColumn name="Manager" renderColumns="ManagerFirstName ManagerLastName" flexGrow="1"
+      visible="false" />
 
     <DataColumn name="Status" />
-    <DataColumn name="Notes" visible="false" />
+    <DataColumn name="Notes" visible="false" flexGrow="1" />
 
-    <DataColumn name="Year" />
-    <DataColumn name="Month" />
+    <DataColumn name="Year" visible="false" />
+    <DataColumn name="Month" visible="false" />
     
+    <PropColumn name="Salary_fund" type="decimal" label="=objectSalaryFund" scale="2" />
     <PropColumn name="Earnings_duration" type="string" label="=duration" />
-    <PropColumn name="Earnings_amount" type="decimal" label="=amount" />
+    <PropColumn name="Earnings_amount" type="decimal" label="=remuneration" scale="2" />
 
     <DataColumn name="Approved" />
     <RelColumn name="ApprovedBy" renderColumns="ApprovedByFirstName ApprovedByLastName"
@@ -36,6 +38,6 @@
     <DataColumn name="ExportedAmount" visible="false" />
     <RelColumn name="ExportedCurrency" visible="false" />
 
-    <DataColumn name="Note" visible="false" />
+    <DataColumn name="Note" visible="false" flexGrow="1" />
   </g:columns>
 </g:Grid>

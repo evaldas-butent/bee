@@ -329,6 +329,11 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
   }
 
   @Override
+  public long getActiveRowId() {
+    return DataUtils.getId(getActiveRow());
+  }
+
+  @Override
   public String getCaption() {
     return gridContainer.getCaption();
   }

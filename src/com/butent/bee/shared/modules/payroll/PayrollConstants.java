@@ -146,6 +146,7 @@ public final class PayrollConstants {
   public static final String GRID_TIME_RANGES = "TimeRanges";
   public static final String GRID_WORK_SCHEDULE_DAY = "WorkScheduleDay";
   public static final String GRID_OBJECT_EARNINGS = "ObjectEarnings";
+  public static final String GRID_EMPLOYEE_EARNINGS = "EmployeeEarnings";
 
   public static final String FORM_LOCATION = "Location";
   public static final String FORM_EMPLOYEE = "Employee";
@@ -158,6 +159,8 @@ public final class PayrollConstants {
   public static final String PRP_EARNINGS_DURATION = "Earnings_duration";
   public static final String PRP_EARNINGS_AMOUNT = "Earnings_amount";
   public static final String PRP_EARNINGS_HOURLY_WAGE = "Earnings_hourly_wage";
+
+  public static final String PRP_SALARY_FUND = "Salary_fund";
 
   public static void register() {
     EnumUtils.register(ObjectStatus.class);

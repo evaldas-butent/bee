@@ -34,7 +34,11 @@ public final class DateRange implements HasDateRange, BeeSerializable {
   }
 
   public static DateRange day(JustDate date) {
-    return closed(date, date);
+    if (date == null) {
+      return null;
+    } else {
+      return closed(date, date);
+    }
   }
 
   public static boolean isValidClosedRange(JustDate min, JustDate max) {
