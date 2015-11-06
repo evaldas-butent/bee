@@ -44,7 +44,7 @@
     <TabbedPages class="flexible">
       <page>
         <text>=earningsOfEmployees</text>
-        <GridPanel name="EmployeeEarnings" />
+        <GridPanel name="EmployeeEarnings" parent="{form}" />
       </page>
 
       <page>
