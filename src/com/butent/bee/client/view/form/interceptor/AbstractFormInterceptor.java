@@ -23,6 +23,7 @@ import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.time.DateTime;
@@ -114,7 +115,7 @@ public abstract class AbstractFormInterceptor implements FormInterceptor {
 
   @Override
   public long getActiveRowId() {
-    return (getFormView() == null) ? BeeConst.UNDEF : getFormView().getActiveRowId();
+    return DataUtils.getId(getActiveRow());
   }
 
   @Override

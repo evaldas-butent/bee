@@ -7,8 +7,9 @@
   xmlns:f="http://www.butent.com/form"
   xmlns:xi="http://www.w3.org/2001/XInclude"
 
-  name="Location" viewName="Locations" caption="=object">
-
+  name="Location" viewName="Locations" caption="=object"
+  width="70" widthUnit="%" height="80" heightUnit="%"
+  >
   <FlowPanel class="flexBox-vertical">
     <Table kind="controls">
       <col index="0" kind="label" />
@@ -58,7 +59,7 @@
 
       <page>
         <text>=workSchedule</text>
-        <FlowPanel name="WorkSchedule" />
+        <SummaryProxy name="WorkSchedule" summarize="true" />
       </page>
 
       <page>

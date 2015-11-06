@@ -5,7 +5,6 @@ import static com.butent.bee.shared.modules.mail.MailConstants.*;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
-import com.butent.bee.shared.modules.mail.MailConstants.SystemFolder;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.HashMap;

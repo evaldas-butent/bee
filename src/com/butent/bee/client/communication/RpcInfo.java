@@ -319,6 +319,14 @@ public class RpcInfo {
     }
   }
 
+  public String getSummary() {
+    if (getReqParams() == null) {
+      return null;
+    } else {
+      return getReqParams().getSummary();
+    }
+  }
+
   public int getTimeout() {
     return duration.getTimeout();
   }

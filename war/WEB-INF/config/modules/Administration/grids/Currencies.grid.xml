@@ -6,7 +6,9 @@
   newRowPopup="true" editPopup="true"
   >
   <g:columns>
-    <DataColumn name="Name" visible="true" />
+    <DataColumn name="Name" visible="true">
+      <editor type="string" upperCase="true" />
+    </DataColumn>
     <DataColumn name="Caption" />
 
     <DataColumn name="MinorName" />

@@ -22,6 +22,7 @@ import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.server.utils.HtmlUtils;
+import com.butent.bee.server.websocket.Endpoint;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Holder;
@@ -34,6 +35,7 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.mail.MailConstants;
 import com.butent.bee.shared.modules.mail.MailFolder;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -236,6 +238,12 @@ public class MailStorageBean {
         .setWhere(sys.idEquals(TBL_PLACES, placeId)));
   }
 
+  public void setAutoReply(Long addressbookId) {
+    qs.updateData(new SqlUpdate(TBL_ADDRESSBOOK)
+        .addConstant(COL_ADDRESSBOOK_AUTOREPLY, TimeUtils.nowMillis())
+        .setWhere(sys.idEquals(TBL_ADDRESSBOOK, addressbookId)));
+  }
+
   public Long storeMail(MailAccount account, Message message, Long folderId, Long messageUID)
       throws MessagingException {
 
@@ -375,7 +383,7 @@ public class MailStorageBean {
   }
 
   public Pair<Long, Integer> syncFolder(MailAccount account, MailFolder localFolder,
-      Folder remoteFolder) throws MessagingException {
+      Folder remoteFolder, String progressId, boolean syncAll) throws MessagingException {
     Assert.noNulls(localFolder, remoteFolder);
 
     SimpleRowSet data = qs.getData(new SqlSelect()
@@ -384,7 +392,7 @@ public class MailStorageBean {
         .addFrom(TBL_PLACES)
         .setWhere(SqlUtils.equals(TBL_PLACES, COL_FOLDER, localFolder.getId()))
         .addOrderDesc(TBL_PLACES, COL_MESSAGE_UID)
-        .setLimit(100));
+        .setLimit(syncAll ? 0 : 100));
 
     long lastUid = BeeUtils.unbox(data.getLong(0, COL_MESSAGE_UID));
     int c = 0;
@@ -398,6 +406,9 @@ public class MailStorageBean {
       FetchProfile fp = new FetchProfile();
       fp.add(FetchProfile.Item.FLAGS);
       remoteFolder.fetch(msgs, fp);
+
+      long l = msgs.length;
+      long progressUpdated = System.currentTimeMillis();
 
       for (Message message : msgs) {
         long uid = ((UIDFolder) remoteFolder).getUID(message);
@@ -418,6 +429,16 @@ public class MailStorageBean {
             c++;
           } catch (MessagingException e) {
             logger.error(e);
+          }
+        }
+        if (!BeeUtils.isEmpty(progressId)) {
+          l--;
+
+          if ((System.currentTimeMillis() - progressUpdated) > 10) {
+            if (!Endpoint.updateProgress(progressId, --l / (double) msgs.length)) {
+              return null;
+            }
+            progressUpdated = System.currentTimeMillis();
           }
         }
       }
@@ -720,15 +741,18 @@ public class MailStorageBean {
   }
 
   private Long storeAddress(Long userId, InternetAddress address) throws AddressException {
-    Assert.notNull(address);
+    InternetAddress adr = Assert.notNull(address);
 
-    new InternetAddress(address.getAddress(), true).validate();
+    if (adr.isGroup()) {
+      adr = ArrayUtils.getQuietly(adr.getGroup(true), 0);
 
-    String label = address.getPersonal();
-    String email = BeeUtils.normalize(address.getAddress());
-
-    Assert.notEmpty(email);
-
+      if (Objects.isNull(adr)) {
+        throw new AddressException(address.toString());
+      }
+    }
+    adr.validate();
+    String label = adr.getPersonal();
+    String email = Assert.notEmpty(BeeUtils.normalize(adr.getAddress()));
     Holder<Long> emailId = Holder.absent();
 
     cb.synchronizedCall(new Runnable() {

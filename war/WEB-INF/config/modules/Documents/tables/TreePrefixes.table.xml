@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+       name="TreePrefixes"
+       idName="PrefixID"
+    >
+  <Fields>
+    <Relation name="Category" notNull="true" relation="DocumentTree" label="=documentCategory" />
+    <String name="NumberPrefix" precision="50" notNull="true" label="=documentNumberPrefix" />
+    <Relation name="Type" relation="DocumentTypes" label="=documentType" />
+  </Fields>
+  <Constraints>
+    <Unique fields="Category Type" />
+  </Constraints>
+</Table>

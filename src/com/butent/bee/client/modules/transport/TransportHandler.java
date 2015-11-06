@@ -4,12 +4,10 @@ import com.google.common.collect.Lists;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.logical.shared.SelectionEvent;
-import com.google.gwt.event.logical.shared.SelectionHandler;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
-import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.COL_COMPANY_PERSON;
-import static com.butent.bee.shared.modules.trade.TradeConstants.VAR_TOTAL;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
+import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
@@ -28,15 +26,11 @@ import com.butent.bee.client.modules.trade.TradeUtils;
 import com.butent.bee.client.modules.transport.charts.ChartBase;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.presenter.PresenterCallback;
-import com.butent.bee.client.presenter.TreePresenter;
 import com.butent.bee.client.render.ProvidesGridColumnRenderer;
 import com.butent.bee.client.render.RendererFactory;
 import com.butent.bee.client.style.ColorStyleProvider;
 import com.butent.bee.client.style.ConditionalStyle;
 import com.butent.bee.client.ui.FormFactory;
-import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
-import com.butent.bee.client.ui.IdentifiableWidget;
-import com.butent.bee.client.view.TreeView;
 import com.butent.bee.client.view.ViewCallback;
 import com.butent.bee.client.view.ViewFactory;
 import com.butent.bee.client.view.ViewHelper;
@@ -45,6 +39,7 @@ import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.FileGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
+import com.butent.bee.client.view.grid.interceptor.TreeGridInterceptor;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -144,21 +139,7 @@ public final class TransportHandler {
     }
   }
 
-  private static class SparePartsGridHandler extends AbstractGridInterceptor
-      implements SelectionHandler<IsRow> {
-
-    private static final String FILTER_KEY = "f1";
-    private IsRow selectedType;
-    private TreePresenter typeTree;
-
-    @Override
-    public void afterCreateWidget(String name, IdentifiableWidget widget,
-        WidgetDescriptionCallback callback) {
-      if (widget instanceof TreeView && BeeUtils.same(name, "SparePartTypes")) {
-        ((TreeView) widget).addSelectionHandler(this);
-        typeTree = ((TreeView) widget).getTreePresenter();
-      }
-    }
+  private static class SparePartsGridHandler extends TreeGridInterceptor {
 
     @Override
     public SparePartsGridHandler getInstance() {
@@ -166,25 +147,8 @@ public final class TransportHandler {
     }
 
     @Override
-    public void onSelection(SelectionEvent<IsRow> event) {
-      if (event == null) {
-        return;
-      }
-      if (getGridPresenter() != null) {
-        Long type = null;
-        setSelectedType(event.getSelectedItem());
-
-        if (getSelectedType() != null) {
-          type = getSelectedType().getId();
-        }
-        getGridPresenter().getDataProvider().setParentFilter(FILTER_KEY, getFilter(type));
-        getGridPresenter().refresh(true, true);
-      }
-    }
-
-    @Override
     public boolean onStartNewRow(GridView gridView, IsRow oldRow, IsRow newRow) {
-      IsRow type = getSelectedType();
+      IsRow type = getSelectedTreeItem();
 
       if (type != null) {
         List<BeeColumn> cols = getGridPresenter().getDataColumns();
@@ -197,7 +161,8 @@ public final class TransportHandler {
       return true;
     }
 
-    private static Filter getFilter(Long type) {
+    @Override
+    protected Filter getFilter(Long type) {
       if (type == null) {
         return null;
       } else {
@@ -205,19 +170,11 @@ public final class TransportHandler {
       }
     }
 
-    private IsRow getSelectedType() {
-      return selectedType;
-    }
-
     private String getTypeValue(IsRow type, String colName) {
-      if (BeeUtils.allNotNull(type, typeTree, typeTree.getDataColumns())) {
-        return type.getString(DataUtils.getColumnIndex(colName, typeTree.getDataColumns()));
+      if (BeeUtils.allNotNull(type, getTreeDataColumns())) {
+        return type.getString(getTreeColumnIndex(colName));
       }
       return null;
-    }
-
-    private void setSelectedType(IsRow selectedType) {
-      this.selectedType = selectedType;
     }
   }
 

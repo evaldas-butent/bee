@@ -61,6 +61,8 @@ import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.discussions.DiscussionsConstants;
+import com.butent.bee.shared.modules.discussions.DiscussionsConstants.DiscussionEvent;
+import com.butent.bee.shared.modules.discussions.DiscussionsConstants.DiscussionStatus;
 import com.butent.bee.shared.modules.discussions.DiscussionsUtils;
 import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.news.NewsConstants;
@@ -650,7 +652,7 @@ public class DiscussionsModuleBean implements BeeModule {
         boolean announcement = false;
         String announcementTopic = "";
 
-        if (!(discussData.getColumnIndex(COL_TOPIC) < 0)) {
+        if (!(DataUtils.getColumnIndex(COL_TOPIC, discussData.getColumns(), false) < 0)) {
           announcement =
               DataUtils.isId(discussRow.getLong(discussData.getColumnIndex(COL_TOPIC)));
         }
@@ -1451,10 +1453,6 @@ public class DiscussionsModuleBean implements BeeModule {
     }
 
     discussMailList.setWhere(where);
-
-    logger.warning(typeAnnoucement ? LOG_CREATE_ANNOUNCEMENT_LABEL : LOG_CREATE_DISCUSSION_LABEL,
-        "query:",
-        discussMailList.getQuery());
 
     SimpleRowSet discussMailListRowSet = qs.getData(discussMailList);
 

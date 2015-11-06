@@ -676,8 +676,8 @@ public class MailPanel extends AbstractFormInterceptor {
     refreshWidget.setTitle(Localized.getConstants().actionRefresh());
     refreshWidget.addClickHandler(new ClickHandler() {
       @Override
-      public void onClick(ClickEvent arg0) {
-        checkFolderRecursively(getCurrentAccount().getRootFolder());
+      public void onClick(ClickEvent clickEvent) {
+        checkFolderRecursively(getCurrentAccount().getRootFolder(), clickEvent.isShiftKeyDown());
       }
     });
     header.addCommandItem(refreshWidget);
@@ -737,11 +737,14 @@ public class MailPanel extends AbstractFormInterceptor {
     }
   }
 
-  void checkFolder(final Long folderId) {
+  void checkFolder(final Long folderId, boolean syncAll) {
     final ParameterList params = MailKeeper.createArgs(SVC_CHECK_MAIL);
     params.addDataItem(COL_ACCOUNT, getCurrentAccount().getAccountId());
     params.addDataItem(COL_FOLDER, folderId);
 
+    if (syncAll) {
+      params.addDataItem(Service.VAR_CHECK, BeeUtils.toString(syncAll));
+    }
     Endpoint.initProgress(getFolderCaption(folderId), new Consumer<String>() {
       @Override
       public void accept(String progress) {
@@ -771,16 +774,12 @@ public class MailPanel extends AbstractFormInterceptor {
   }
 
   void refreshFolder(Long folderId) {
-    if (DataUtils.isId(folderId) && Objects.equals(folderId, getCurrentFolder())) {
-      checkFolder(folderId);
-    } else {
-      if (DataUtils.isId(folderId)) {
-        searchPanel.clearSearch();
-      }
-      setCurrentFolder(folderId);
-      MailKeeper.refreshController();
-      refreshMessages(false);
+    if (DataUtils.isId(folderId)) {
+      searchPanel.clearSearch();
     }
+    setCurrentFolder(folderId);
+    MailKeeper.refreshController();
+    refreshMessages(false);
   }
 
   void refreshMessages(boolean preserveActiveRow) {
@@ -875,12 +874,12 @@ public class MailPanel extends AbstractFormInterceptor {
     });
   }
 
-  private void checkFolderRecursively(MailFolder folder) {
+  private void checkFolderRecursively(MailFolder folder, boolean syncAll) {
     if (DataUtils.isId(folder.getId())) {
-      checkFolder(folder.getId());
+      checkFolder(folder.getId(), syncAll);
     }
     for (MailFolder subFolder : folder.getSubFolders()) {
-      checkFolderRecursively(subFolder);
+      checkFolderRecursively(subFolder, syncAll);
     }
   }
 
@@ -952,7 +951,7 @@ public class MailPanel extends AbstractFormInterceptor {
     final boolean purge = getCurrentAccount().isTrashFolder(getCurrentFolder());
 
     Global.confirm(purge ? Localized.getConstants().delete()
-        : Localized.getConstants().mailActionMoveToTrash(), purge ? Icon.ALARM : Icon.WARNING,
+            : Localized.getConstants().mailActionMoveToTrash(), purge ? Icon.ALARM : Icon.WARNING,
         Collections.singletonList(Localized.getMessages().mailMessages(ids.size())),
         new ConfirmationCallback() {
           @Override

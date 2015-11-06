@@ -18,6 +18,10 @@ public final class DateRange implements HasDateRange, BeeSerializable {
   private static final JustDate DEFAULT_MIN_DATE = new JustDate(1800, 1, 1);
   private static final JustDate DEFAULT_MAX_DATE = new JustDate(2999, 12, 31);
 
+  public static DateRange all() {
+    return new DateRange(Range.closed(DEFAULT_MIN_DATE, DEFAULT_MAX_DATE));
+  }
+
   public static DateRange closed(JustDate min, JustDate max) {
     JustDate lower = (min == null) ? DEFAULT_MIN_DATE : min;
     JustDate upper = (max == null) ? DEFAULT_MAX_DATE : max;
@@ -30,7 +34,11 @@ public final class DateRange implements HasDateRange, BeeSerializable {
   }
 
   public static DateRange day(JustDate date) {
-    return closed(date, date);
+    if (date == null) {
+      return null;
+    } else {
+      return closed(date, date);
+    }
   }
 
   public static boolean isValidClosedRange(JustDate min, JustDate max) {

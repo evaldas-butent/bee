@@ -1096,6 +1096,11 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
   }
 
   @Override
+  public long getActiveRowId() {
+    return DataUtils.getId(getActiveRow());
+  }
+
+  @Override
   public List<BeeColumn> getDataColumns() {
     return dataColumns;
   }
@@ -1218,6 +1223,11 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
       }
     }
     return result;
+  }
+
+  @Override
+  public State getState() {
+    return state;
   }
 
   @Override
@@ -1598,6 +1608,11 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
   @Override
   public void setRelId(Long relId) {
     this.relId = relId;
+  }
+
+  @Override
+  public void setState(State state) {
+    this.state = state;
   }
 
   @Override
@@ -2132,10 +2147,6 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
       saveChangesCallback = new SaveChangesCallback();
     }
     return saveChangesCallback;
-  }
-
-  private State getState() {
-    return state;
   }
 
   private boolean hasEditMode() {
@@ -2871,10 +2882,6 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
 
   private void setSingleForm(boolean singleForm) {
     this.singleForm = singleForm;
-  }
-
-  private void setState(State state) {
-    this.state = state;
   }
 
   private boolean showEditPopup() {

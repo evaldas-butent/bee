@@ -11,9 +11,44 @@
   cursor: auto;
 }
 
+.bee-payroll-ws-table {
+  border-collapse: collapse;
+}
 .bee-payroll-ws-table td {
   border: 1px solid #ccc;
   padding: 2px;
+}
+
+.bee-payroll-ws-header-panel-cell {
+  background-color: #f5f5f5;
+}
+.bee-payroll-ws-header-panel {
+  display: flex;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  align-items: center;
+  -webkit-align-items: center;
+  -ms-flex-align: center;
+}
+.bee-payroll-ws-caption {
+  font-weight: bolder;
+  font-size: larger;
+  flex: 1;
+  -webkit-flex: 1;
+  -ms-flex: 1;
+  text-align: center;
+  visibility: hidden;
+}
+.bee-Print .bee-payroll-ws-caption {
+  visibility: visible;
+}
+.bee-payroll-ws-action {
+  margin-right: 10px;
+  font-size: large;
+  color: #414142;
+}
+.bee-payroll-ws-action:hover {
+  color: black;
 }
 
 .bee-payroll-ws-table .bee-payroll-ws-month-selector-cell {
@@ -141,6 +176,11 @@
 .bee-payroll-ws-dnd-mode-toggle {
   font-size: large;
   cursor: pointer;
+  color: #414142;
+}
+.bee-payroll-ws-input-mode-toggle:hover,
+.bee-payroll-ws-dnd-mode-toggle:hover {
+  color: black;
 }
 .bee-payroll-ws-input-mode-active,
 .bee-payroll-ws-dnd-mode-active {
@@ -148,7 +188,12 @@
   cursor: auto;
 }
 
-.bee-payroll-ws-inactive {
+.bee-payroll-ws-inactive-month .bee-payroll-ws-append-panel,
+.bee-payroll-ws-inactive-month .bee-payroll-ws-control-panel {
+  display: none;
+}
+
+.bee-payroll-ws-inactive-day {
   background-image: url(../images/checkered_background.png);
 }
 .bee-payroll-ws-overlap-warn {
@@ -228,4 +273,25 @@
 .bee-payroll-ws-editor-day-selected:hover {
   outline: #80c4f9 solid 3px;
   outline-offset: -1px;
+}
+
+.bee-payroll-earn-month-widget {
+  display: inline-block;
+  margin-left: 1em;
+}
+.bee-payroll-earn-month-label {
+  display: inline-block;
+  font-size: larger;
+  padding: 2px 4px;
+  cursor: pointer;
+}
+.bee-payroll-earn-month-active .bee-payroll-earn-month-label {
+  background-color: #80c4f9;
+  cursor: auto;
+}
+.bee-payroll-earn-month-badge {
+  display: inline-block;
+  vertical-align: top;
+  color: white;
+  background-color: #bbb;
 }

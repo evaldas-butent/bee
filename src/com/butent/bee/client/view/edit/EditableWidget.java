@@ -479,7 +479,7 @@ public class EditableWidget implements EditChangeHandler, FocusHandler, BlurHand
   }
 
   public boolean validate(ValidationOrigin origin) {
-    if (isReadOnly()) {
+    if (isReadOnly() || !getEditor().isEnabled()) {
       return true;
 
     } else {

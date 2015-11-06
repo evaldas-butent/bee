@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+  xmlns:ui="http://www.butent.com/ui"
+
+  name="EmployeeEarnings" viewName="EmployeeEarnings"
+  disabledActions="add delete"
+  >
+
+  <g:columns>
+    <RelColumn name="Employee" renderColumns="FirstName LastName" editPopup="true"
+      readOnly="true" visible="true" flexGrow="1" />
+    <DataColumn name="Address" visible="false" flexGrow="1" />
+
+    <DataColumn name="EmployeeCompanyName" label="=company" flexGrow="1" />
+    <DataColumn name="TabNumber" />
+
+    <DataColumn name="Year" visible="false" />
+    <DataColumn name="Month" visible="false" />
+    
+    <PropColumn name="Earnings_day_count" type="integer" label="=days" />
+    <PropColumn name="Earnings_duration" type="string" label="=duration" />
+    <PropColumn name="Earnings_hourly_wage" type="decimal" label="=wage" scale="5" />
+    <PropColumn name="Earnings_amount" type="decimal" label="=remuneration" scale="2" />
+
+    <DataColumn name="BonusPercent" />
+    <DataColumn name="Bonus1" />
+    <DataColumn name="Bonus2" />
+    
+    <CalcColumn name="Total" type="decimal" scale="2" label="=total">
+      <render><ui:expression>
+        row.Earnings_amount * (1 + row.BonusPercent) + row.Bonus1 + row.Bonus2
+      </ui:expression></render>
+    </CalcColumn>
+
+    <DataColumn name="ApprovedAmount" visible="false" />
+    <DataColumn name="ExportedAmount" visible="false" />
+
+    <DataColumn name="Note" visible="false" flexGrow="1" />
+  </g:columns>
+</g:Grid>

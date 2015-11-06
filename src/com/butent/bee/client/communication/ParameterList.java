@@ -37,6 +37,8 @@ public class ParameterList extends ArrayList<RpcParameter> {
   private List<RpcParameter> headerItems;
   private List<RpcParameter> queryItems;
 
+  private String summary;
+
   public ParameterList(String svc) {
     super();
     this.service = svc;
@@ -248,6 +250,10 @@ public class ParameterList extends ArrayList<RpcParameter> {
     return getParameter(Service.RPC_VAR_SUB);
   }
 
+  public String getSummary() {
+    return summary;
+  }
+
   public boolean hasData() {
     for (RpcParameter item : this) {
       if (item.getSection() == Section.DATA) {
@@ -268,6 +274,14 @@ public class ParameterList extends ArrayList<RpcParameter> {
       }
     }
     return ok;
+  }
+
+  public void setSummary(String summary) {
+    this.summary = summary;
+  }
+
+  public void setSummary(Object first, Object second, Object... rest) {
+    setSummary(BeeUtils.joinWords(first, second, rest));
   }
 
   private void addItem(RpcParameter item) {

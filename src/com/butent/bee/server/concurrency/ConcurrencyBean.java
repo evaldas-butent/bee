@@ -29,6 +29,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.locks.ReentrantLock;
 
+import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.ejb.Lock;
@@ -55,9 +56,7 @@ public class ConcurrencyBean {
 
   public abstract static class AsynchronousRunnable implements Runnable {
 
-    public String getId() {
-      return null;
-    }
+    public abstract String getId();
 
     public long getTimeout() {
       return TimeUtils.MILLIS_PER_HOUR;
@@ -77,9 +76,25 @@ public class ConcurrencyBean {
       this.runnable = runnable;
     }
 
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      }
+      if (o == null || getClass() != o.getClass()) {
+        return false;
+      }
+      return Objects.equals(getId(), ((Worker) o).getId());
+    }
+
     public String getId() {
       String id = runnable.getId();
       return BeeUtils.isEmpty(id) ? runnable.toString() : id;
+    }
+
+    @Override
+    public int hashCode() {
+      return getId().hashCode();
     }
 
     public void onError() {
@@ -144,8 +159,8 @@ public class ConcurrencyBean {
   }
 
   private static final BeeLogger logger = LogUtils.getLogger(ConcurrencyBean.class);
-  private static final int MAX_ACTIVE_THREADS = 200;
 
+  private int maxActiveThreads = 200;
   private final Map<String, Worker> asyncThreads = new ConcurrentHashMap<>();
   private final Queue<Worker> waitingThreads = new ConcurrentLinkedQueue<>();
 
@@ -260,7 +275,7 @@ public class ConcurrencyBean {
     Worker candidate = waitingThreads.poll();
 
     if (Objects.nonNull(candidate)) {
-      logger.info("Polling:", worker);
+      logger.info("Polling:", candidate);
       execute(candidate);
     }
   }
@@ -283,7 +298,7 @@ public class ConcurrencyBean {
       utx.begin();
       runnable.run();
       utx.commit();
-    } catch (Exception ex) {
+    } catch (Throwable ex) {
       logger.error(ex);
 
       try {
@@ -304,7 +319,7 @@ public class ConcurrencyBean {
       worker.onError();
       return;
     }
-    if (asyncThreads.size() < MAX_ACTIVE_THREADS) {
+    if (asyncThreads.size() < maxActiveThreads) {
       asyncThreads.put(id, worker);
 
       try {
@@ -317,9 +332,20 @@ public class ConcurrencyBean {
           finish(worker);
         }
       }
-    } else {
+    } else if (!waitingThreads.contains(worker)) {
       logger.info("Queuing:", worker);
       waitingThreads.offer(worker);
+    } else {
+      worker.onError();
+    }
+  }
+
+  @PostConstruct
+  private void init() {
+    Integer maxThreads = BeeUtils.toInt(Config.getProperty("MaxActiveThreads"));
+
+    if (BeeUtils.betweenInclusive(maxThreads, 1, 10 ^ 3)) {
+      maxActiveThreads = maxThreads;
     }
   }
 

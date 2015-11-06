@@ -249,6 +249,7 @@ public final class MailConstants {
   public static final String COL_RULE_ACTION_OPTIONS = "ActionOptions";
 
   public static final String COL_ADDRESSBOOK_LABEL = "Label";
+  public static final String COL_ADDRESSBOOK_AUTOREPLY = "LastAutoReply";
 
   public static final String COL_NEWSLETTER = "Newsletter";
 
