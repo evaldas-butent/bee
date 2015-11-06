@@ -13,11 +13,15 @@ import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.dialog.ConfirmationCallback;
+import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.event.logical.ParentRowEvent;
 import com.butent.bee.client.event.logical.SelectorEvent;
+import com.butent.bee.client.grid.GridFactory;
+import com.butent.bee.client.grid.GridPanel;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.presenter.GridPresenter;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
@@ -41,6 +45,7 @@ public class TripCostsGrid extends AbstractGridInterceptor
   Long trip;
 
   final Flow invoice = new Flow();
+  final FaLabel finance = new FaLabel(FontAwesome.CLOUD_UPLOAD);
   final FaLabel dailyCosts = new FaLabel(FontAwesome.MONEY);
 
   @Override
@@ -54,6 +59,24 @@ public class TripCostsGrid extends AbstractGridInterceptor
   @Override
   public void afterCreatePresenter(GridPresenter presenter) {
     presenter.getHeader().addCommandItem(invoice);
+
+    finance.setTitle("Reiso išlaidos apskaitai");
+    finance.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent clickEvent) {
+        GridPanel grid = new GridPanel(VIEW_ERP_TRIP_COSTS,
+            GridFactory.GridOptions.forFilter(Filter.equals(COL_TRIP, trip)), false);
+
+        StyleUtils.setSize(grid, 800, 600);
+
+        DialogBox dialog = DialogBox.create(null);
+        dialog.setWidget(grid);
+        dialog.setAnimationEnabled(true);
+        dialog.setHideOnEscape(true);
+        dialog.center();
+      }
+    });
+    presenter.getHeader().addCommandItem(finance);
 
     dailyCosts.setTitle(Localized.getConstants().trGenerateDailyCosts());
     dailyCosts.addClickHandler(this);
@@ -119,6 +142,7 @@ public class TripCostsGrid extends AbstractGridInterceptor
     if (DataUtils.isId(trip) && Data.isViewEditable(VIEW_TRIP_PURCHASE_INVOICES)) {
       invoice.add(new InvoiceCreator(VIEW_TRIP_PURCHASES, Filter.equals(COL_TRIP, trip)));
     }
+    finance.setVisible(DataUtils.isId(trip));
     dailyCosts.setVisible(DataUtils.isId(trip));
 
     super.onParentRow(event);

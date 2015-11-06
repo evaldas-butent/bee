@@ -3,7 +3,7 @@
 
       name="TripPurchases" source="TripCosts" caption="=trTripCosts"
       readOnly="true"
-      filter="!(PaymentCash) AND Prefix AND Number"
+      filter="Prefix AND Number"
     >
   <Columns>
     <SimpleColumn name="Trip" />
@@ -48,7 +48,6 @@
     <SimpleColumn name="PaymentType" />
     <SimpleJoin name="PaymentType" joinType="LEFT">
       <SimpleColumn name="PaymentName" />
-      <HiddenColumn name="PaymentCash" />
     </SimpleJoin>
     <SimpleColumn name="Note" />
 

@@ -35,13 +35,13 @@ public class HopWorker {
     JustDate dateFrom = TimeUtils.parseDate(from);
     JustDate dateTo = TimeUtils.parseDate(to);
 
-    HasConditions clause =
-        SqlUtils.and(SqlUtils.and(SqlUtils.notNull(TBL_TRIPS, COL_TRIP_DATE_FROM),
-            SqlUtils.or(SqlUtils.notNull(TBL_TRIPS, COL_TRIP_DATE_TO),
-                SqlUtils.notNull(TBL_TRIPS, COL_TRIP_PLANNED_END_DATE))));
+    HasConditions clause = SqlUtils.and(SqlUtils.or(SqlUtils.notNull(TBL_TRIPS, COL_TRIP_DATE_TO),
+        SqlUtils.notNull(TBL_TRIPS, COL_TRIP_PLANNED_END_DATE)));
 
     if (dateFrom != null) {
-      clause.add(SqlUtils.moreEqual(TBL_TRIPS, COL_TRIP_DATE_FROM, dateFrom));
+      clause.add(SqlUtils.or(SqlUtils.and(SqlUtils.notNull(TBL_TRIPS, COL_TRIP_DATE_FROM),
+              SqlUtils.more(TBL_TRIPS, COL_TRIP_DATE_FROM, dateFrom)),
+          SqlUtils.more(TBL_TRIPS, COL_TRIP_DATE, dateFrom)));
     }
     if (dateTo != null) {
       clause.add(SqlUtils.or(SqlUtils.and(SqlUtils.notNull(TBL_TRIPS, COL_TRIP_DATE_TO),
@@ -50,7 +50,8 @@ public class HopWorker {
     }
     SimpleRowSet rs = qs.getData(new SqlSelect()
         .addFields(PayrollConstants.TBL_EMPLOYEES, PayrollConstants.COL_TAB_NUMBER)
-        .addFields(TBL_TRIPS, COL_TRIP_DATE_FROM)
+        .addExpr(SqlUtils.nvl(SqlUtils.field(TBL_TRIPS, COL_TRIP_DATE_FROM),
+            SqlUtils.field(TBL_TRIPS, COL_TRIP_DATE)), COL_TRIP_DATE_FROM)
         .addExpr(SqlUtils.nvl(SqlUtils.field(TBL_TRIPS, COL_TRIP_DATE_TO),
             SqlUtils.field(TBL_TRIPS, COL_TRIP_PLANNED_END_DATE)), COL_TRIP_DATE_TO)
         .addFrom(PayrollConstants.TBL_EMPLOYEES)
