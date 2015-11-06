@@ -21,7 +21,7 @@ public class MailMessage extends Message {
 
   public MailMessage(Long folderId) {
     this();
-    this.folderId = Assert.notNull(folderId);
+    this.folderId = folderId;
   }
 
   protected MailMessage() {
