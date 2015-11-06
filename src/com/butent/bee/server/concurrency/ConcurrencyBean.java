@@ -160,7 +160,7 @@ public class ConcurrencyBean {
 
   private static final BeeLogger logger = LogUtils.getLogger(ConcurrencyBean.class);
 
-  private int MAX_ACTIVE_THREADS = 200;
+  private int maxActiveThreads = 200;
   private final Map<String, Worker> asyncThreads = new ConcurrentHashMap<>();
   private final Queue<Worker> waitingThreads = new ConcurrentLinkedQueue<>();
 
@@ -319,7 +319,7 @@ public class ConcurrencyBean {
       worker.onError();
       return;
     }
-    if (asyncThreads.size() < MAX_ACTIVE_THREADS) {
+    if (asyncThreads.size() < maxActiveThreads) {
       asyncThreads.put(id, worker);
 
       try {
@@ -335,7 +335,7 @@ public class ConcurrencyBean {
     } else if (!waitingThreads.contains(worker)) {
       logger.info("Queuing:", worker);
       waitingThreads.offer(worker);
-    }else {
+    } else {
       worker.onError();
     }
   }
@@ -345,7 +345,7 @@ public class ConcurrencyBean {
     Integer maxThreads = BeeUtils.toInt(Config.getProperty("MaxActiveThreads"));
 
     if (BeeUtils.betweenInclusive(maxThreads, 1, 10 ^ 3)) {
-      MAX_ACTIVE_THREADS = maxThreads;
+      maxActiveThreads = maxThreads;
     }
   }
 

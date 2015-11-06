@@ -42,7 +42,7 @@
       <col index="0" style="width:30%;" />
       <row>
         <Label text="Pagrindinis vairuotojas" />
-        <TextLabel source="Driver" />
+        <TextLabel source="DriverName" />
       </row>
       <row>
         <Label text="Antras vairuotojas" />

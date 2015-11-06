@@ -342,8 +342,8 @@ public class TransportReportsBean {
 
     query = new SqlSelect()
         .addFields(TBL_PAYMENT_TYPES, COL_PAYMENT_CASH)
-        .addFields(TBL_TRIP_COSTS, COL_COSTS_DATE, COL_COSTS_ITEM, COL_COSTS_QUANTITY,
-            COL_DRIVER, COL_NUMBER)
+        .addFields(TBL_TRIP_COSTS, COL_COSTS_ITEM, COL_COSTS_DATE, COL_COSTS_QUANTITY,
+            COL_NUMBER, COL_DRIVER)
         .addFields(TBL_ITEMS, COL_ITEM_NAME)
         .addField(TBL_UNITS, COL_UNIT_NAME, COL_UNIT)
         .addField(TBL_COUNTRIES, COL_COUNTRY_NAME, COL_COSTS_COUNTRY)
@@ -355,7 +355,7 @@ public class TransportReportsBean {
         .addFromLeft(TBL_PAYMENT_TYPES,
             sys.joinTables(TBL_PAYMENT_TYPES, TBL_TRIP_COSTS, COL_PAYMENT_TYPE))
         .setWhere(SqlUtils.equals(TBL_TRIP_COSTS, COL_TRIP, trip))
-        .addOrder(TBL_TRIP_COSTS, COL_COSTS_DATE);
+        .addOrder(null, COL_COSTS_DATE);
 
     total = ExchangeUtils.exchangeFieldTo(query,
         TradeModuleBean.getTotalExpression(TBL_TRIP_COSTS),
@@ -363,7 +363,49 @@ public class TransportReportsBean {
         SqlUtils.field(TBL_TRIP_COSTS, COL_COSTS_DATE),
         DataUtils.isId(currencyInfo.getA()) ? SqlUtils.constant(currencyInfo.getA()) : null);
 
-    pack.put(TBL_TRIP_COSTS, qs.getData(query.addExpr(total, COL_AMOUNT)));
+    query.addExpr(total, COL_AMOUNT);
+
+    String alsItems = SqlUtils.uniqueName();
+    String alsUnits = SqlUtils.uniqueName();
+
+    SqlSelect fuelQuery = new SqlSelect()
+        .addFields(TBL_PAYMENT_TYPES, COL_PAYMENT_CASH)
+        .addExpr(SqlUtils.nvl(SqlUtils.field(TBL_TRIP_FUEL_COSTS, COL_COSTS_ITEM),
+            SqlUtils.field(TBL_FUEL_TYPES, COL_COSTS_ITEM)), COL_COSTS_ITEM)
+        .addFields(TBL_TRIP_FUEL_COSTS, COL_COSTS_DATE, COL_COSTS_QUANTITY, COL_NUMBER)
+        .addEmptyLong(COL_DRIVER)
+        .addExpr(SqlUtils.nvl(SqlUtils.field(alsItems, COL_ITEM_NAME),
+            SqlUtils.field(TBL_ITEMS, COL_ITEM_NAME)), COL_ITEM_NAME)
+        .addExpr(SqlUtils.nvl(SqlUtils.field(alsUnits, COL_UNIT_NAME),
+            SqlUtils.field(TBL_UNITS, COL_UNIT_NAME)), COL_UNIT)
+        .addField(TBL_COUNTRIES, COL_COUNTRY_NAME, COL_COSTS_COUNTRY)
+        .addFrom(TBL_TRIP_FUEL_COSTS)
+        .addFromLeft(TBL_ITEMS, alsItems,
+            sys.joinTables(TBL_ITEMS, alsItems, TBL_TRIP_FUEL_COSTS, COL_COSTS_ITEM))
+        .addFromLeft(TBL_UNITS, alsUnits,
+            sys.joinTables(TBL_UNITS, alsUnits, alsItems, COL_UNIT))
+        .addFromLeft(TBL_TRIPS, sys.joinTables(TBL_TRIPS, TBL_TRIP_FUEL_COSTS, COL_TRIP))
+        .addFromLeft(TBL_VEHICLES, sys.joinTables(TBL_VEHICLES, TBL_TRIPS, COL_VEHICLE))
+        .addFromLeft(TBL_FUEL_TYPES, sys.joinTables(TBL_FUEL_TYPES, TBL_VEHICLES, COL_FUEL))
+        .addFromLeft(TBL_ITEMS, sys.joinTables(TBL_ITEMS, TBL_FUEL_TYPES, COL_COSTS_ITEM))
+        .addFromLeft(TBL_UNITS, sys.joinTables(TBL_UNITS, TBL_ITEMS, COL_UNIT))
+        .addFromLeft(TBL_COUNTRIES,
+            sys.joinTables(TBL_COUNTRIES, TBL_TRIP_FUEL_COSTS, COL_COSTS_COUNTRY))
+        .addFromLeft(TBL_PAYMENT_TYPES,
+            sys.joinTables(TBL_PAYMENT_TYPES, TBL_TRIP_FUEL_COSTS, COL_PAYMENT_TYPE))
+        .setWhere(SqlUtils.and(SqlUtils.equals(TBL_TRIP_FUEL_COSTS, COL_TRIP, trip),
+            SqlUtils.or(SqlUtils.notNull(TBL_TRIP_FUEL_COSTS, COL_COSTS_ITEM),
+                SqlUtils.notNull(TBL_FUEL_TYPES, COL_COSTS_ITEM))));
+
+    total = ExchangeUtils.exchangeFieldTo(fuelQuery,
+        TradeModuleBean.getTotalExpression(TBL_TRIP_FUEL_COSTS),
+        SqlUtils.field(TBL_TRIP_FUEL_COSTS, COL_COSTS_CURRENCY),
+        SqlUtils.field(TBL_TRIP_FUEL_COSTS, COL_COSTS_DATE),
+        DataUtils.isId(currencyInfo.getA()) ? SqlUtils.constant(currencyInfo.getA()) : null);
+
+    fuelQuery.addExpr(total, COL_AMOUNT);
+
+    pack.put(TBL_TRIP_COSTS, qs.getData(query.addUnion(fuelQuery)));
 
     pack.put(COL_DAILY_COSTS_ITEM, qs.getColumn(new SqlSelect().setDistinctMode(true)
         .addFields(TBL_COUNTRY_NORMS, COL_DAILY_COSTS_ITEM)

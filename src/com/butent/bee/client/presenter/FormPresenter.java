@@ -39,6 +39,7 @@ import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.CellSource;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.HasViewName;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.ProviderType;
@@ -115,6 +116,11 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
   @Override
   public IsRow getActiveRow() {
     return getFormView().getActiveRow();
+  }
+
+  @Override
+  public long getActiveRowId() {
+    return DataUtils.getId(getActiveRow());
   }
 
   @Override

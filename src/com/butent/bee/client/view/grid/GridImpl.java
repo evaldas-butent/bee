@@ -1096,6 +1096,11 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
   }
 
   @Override
+  public long getActiveRowId() {
+    return DataUtils.getId(getActiveRow());
+  }
+
+  @Override
   public List<BeeColumn> getDataColumns() {
     return dataColumns;
   }

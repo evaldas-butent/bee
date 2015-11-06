@@ -40,7 +40,7 @@
         <col index="1" cellStyle="text-align:center; padding:0 2em 0 2em;" />
         <row>
           <Label text="Vykti į tarnybinę komandiruotę tolimųjų reisų vairuotojui" />
-          <TextLabel source="Driver" />
+          <TextLabel source="DriverName" />
         </row>
         <row>
           <text />
@@ -145,7 +145,7 @@
       <col index="0" cellStyle="text-align:left;" />
       <row>
         <Label text="Su įsakymu susipažinau, sutinku" />
-        <TextLabel source="Driver" style="padding:0 2em 0 2em;" />
+        <TextLabel source="DriverName" style="padding:0 2em 0 2em;" />
         <cell rowSpan="5" style="width:100%;">
           <text />
         </cell>

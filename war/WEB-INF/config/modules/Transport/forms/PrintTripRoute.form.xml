@@ -41,7 +41,7 @@
       <row>
         <Label text="Vairuotojai" />
         <FlowPanel>
-          <TextLabel source="Driver" inline="true" />
+          <TextLabel source="DriverName" inline="true" />
           <FlowPanel name="TripDrivers1Container" style="display:inline;">
             <InlineLabel text=", " />
             <InlineLabel name="TripDrivers1" />
@@ -159,7 +159,7 @@
       <col index="0" cellStyle="text-align:left;" />
       <row>
         <Label text="Vairuotojas" style="margin-right:1em;" />
-        <TextLabel source="Driver" />
+        <TextLabel source="DriverName" />
       </row>
       <row>
         <text />

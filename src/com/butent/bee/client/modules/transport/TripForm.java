@@ -18,6 +18,7 @@ import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
+import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.data.RowUpdateCallback;
 import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.Icon;
@@ -34,12 +35,16 @@ import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.form.interceptor.PrintFormInterceptor;
+import com.butent.bee.client.widget.FaLabel;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.view.DataInfo;
+import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.time.JustDate;
@@ -53,6 +58,8 @@ import java.util.Objects;
 
 public class TripForm extends PrintFormInterceptor {
 
+  private FaLabel copyAction;
+  private Long defaultDriver;
   private UnboundSelector driver;
 
   @Override
@@ -151,7 +158,7 @@ public class TripForm extends PrintFormInterceptor {
   }
 
   @Override
-  public FormInterceptor getInstance() {
+  public TripForm getInstance() {
     return new TripForm();
   }
 
@@ -183,6 +190,7 @@ public class TripForm extends PrintFormInterceptor {
     HeaderView header = form.getViewPresenter().getHeader();
     header.clearCommandPanel();
     header.addCommandItem(new Profit(COL_TRIP, row.getId()));
+    header.addCommandItem(getCopyAction());
 
     showDriver(false);
     return true;
@@ -192,7 +200,7 @@ public class TripForm extends PrintFormInterceptor {
   public void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow) {
     form.getViewPresenter().getHeader().clearCommandPanel();
     showDriver(true);
-    getBeforeInfo(newRow.getString(getDataIndex(COL_VEHICLE)), newRow);
+    getBeforeInfo(DataUtils.getStringQuietly(newRow, form.getDataIndex(COL_VEHICLE)), newRow);
   }
 
   void checkDriver(final HasHandlers listener, final GwtEvent<?> event, final Long driverId) {
@@ -347,11 +355,48 @@ public class TripForm extends PrintFormInterceptor {
     }
   }
 
+  private IdentifiableWidget getCopyAction() {
+    if (copyAction == null) {
+      copyAction = new FaLabel(FontAwesome.COPY);
+      copyAction.setTitle(Localized.getConstants().actionCopy());
+
+      copyAction.addClickHandler(new ClickHandler() {
+        @Override
+        public void onClick(ClickEvent clickEvent) {
+          DataInfo info = Data.getDataInfo(getViewName());
+          BeeRow newRow = RowFactory.createEmptyRow(info, true);
+
+          for (String col : new String[] {
+              COL_VEHICLE, "VehicleNumber", COL_EXPEDITION, "ExpeditionType",
+              COL_FORWARDER, "ForwarderName", COL_FORWARDER_VEHICLE, COL_FORWARDER_DRIVER}) {
+
+            int idx = info.getColumnIndex(col);
+
+            if (!BeeConst.isUndef(idx)) {
+              newRow.setValue(idx, getStringValue(col));
+            }
+          }
+          TripForm interceptor = getInstance();
+          interceptor.defaultDriver = getLongValue(COL_DRIVER);
+
+          RowFactory.createRow(info.getNewRowForm(), info.getNewRowCaption(), info, newRow, null,
+              interceptor, null);
+        }
+      });
+    }
+    return copyAction;
+  }
+
   private void showDriver(boolean show) {
     if (driver != null) {
       driver.clearValue();
       driver.setEnabled(show);
       driver.getParent().setVisible(show);
+
+      if (show && DataUtils.isId(defaultDriver)) {
+        driver.setValue(defaultDriver, false);
+        defaultDriver = null;
+      }
     }
   }
 }

@@ -236,6 +236,33 @@ public abstract class AbstractRow implements IsRow {
   }
 
   @Override
+  public void setProperty(String key, Double value) {
+    if (BeeUtils.isDouble(value)) {
+      setProperty(key, BeeUtils.toString(value));
+    } else {
+      clearProperty(key);
+    }
+  }
+
+  @Override
+  public void setProperty(String key, Integer value) {
+    if (value == null) {
+      clearProperty(key);
+    } else {
+      setProperty(key, BeeUtils.toString(value));
+    }
+  }
+
+  @Override
+  public void setProperty(String key, Long value) {
+    if (value == null) {
+      clearProperty(key);
+    } else {
+      setProperty(key, BeeUtils.toString(value));
+    }
+  }
+
+  @Override
   public void setProperty(String propertyKey, String propertyValue) {
     Assert.notEmpty(propertyKey);
 
