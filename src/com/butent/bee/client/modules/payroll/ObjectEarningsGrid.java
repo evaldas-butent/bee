@@ -6,14 +6,11 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
-import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.presenter.GridPresenter;
-import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRowSet;
-import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.time.YearMonth;
 import com.butent.bee.shared.ui.GridDescription;
@@ -50,22 +47,6 @@ class ObjectEarningsGrid extends AbstractGridInterceptor {
   @Override
   public GridInterceptor getInstance() {
     return new ObjectEarningsGrid();
-  }
-
-  @Override
-  public void onEditStart(EditStartEvent event) {
-    Long object = getLongValue(COL_PAYROLL_OBJECT);
-
-    Filter filter;
-    if (DataUtils.isId(object) && activeMonth != null) {
-      filter = Filter.and(Filter.equals(COL_PAYROLL_OBJECT, object),
-          Filter.equals(COL_EARNINGS_YEAR, activeMonth.getYear()),
-          Filter.equals(COL_EARNINGS_MONTH, activeMonth.getMonth()));
-    } else {
-      filter = Filter.isFalse();
-    }
-
-    GridFactory.registerImmutableFilter(GRID_EMPLOYEE_EARNINGS, filter);
   }
 
   void selectMonth(final YearMonth ym) {
