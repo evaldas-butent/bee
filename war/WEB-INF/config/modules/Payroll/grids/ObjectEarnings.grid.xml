@@ -6,7 +6,9 @@
   >
 
   <g:columns>
-    <DataColumn name="LocationName" visible="true" flexGrow="1" />
+    <DataColumn name="LocationName" visible="true" flexGrow="1">
+      <footer text="=totalOf" horizontalAlignment="right" />
+    </DataColumn>
     <DataColumn name="Address" visible="false" flexGrow="1" />
 
     <DataColumn name="CompanyName" label="=company" flexGrow="1" />
@@ -22,20 +24,30 @@
     <DataColumn name="Year" visible="false" />
     <DataColumn name="Month" visible="false" />
     
-    <PropColumn name="Salary_fund" type="decimal" label="=objectSalaryFund" scale="2" />
-    <PropColumn name="Earnings_duration" type="string" label="=duration" />
-    <PropColumn name="Earnings_amount" type="decimal" label="=remuneration" scale="2" />
+    <PropColumn name="Salary_fund" type="decimal" label="=objectSalaryFund" scale="2">
+      <footer aggregate="sum" />
+    </PropColumn>
+    
+    <PropColumn name="Earnings_duration" type="string" horizontalAlignment="right"
+      label="=duration" />
+    <PropColumn name="Earnings_amount" type="decimal" label="=remuneration" scale="2">
+      <footer aggregate="sum" />
+    </PropColumn>
 
     <DataColumn name="Approved" />
     <RelColumn name="ApprovedBy" renderColumns="ApprovedByFirstName ApprovedByLastName"
       visible="false" />
-    <DataColumn name="ApprovedAmount" visible="false" />
+    <DataColumn name="ApprovedAmount" visible="false">
+      <footer aggregate="sum" />
+    </DataColumn>
     <RelColumn name="ApprovedCurrency" visible="false" />
 
     <DataColumn name="Exported" />
     <RelColumn name="ExportedBy" renderColumns="ExportedByFirstName ExportedByLastName"
       visible="false" />
-    <DataColumn name="ExportedAmount" visible="false" />
+    <DataColumn name="ExportedAmount" visible="false">
+      <footer aggregate="sum" />
+    </DataColumn>
     <RelColumn name="ExportedCurrency" visible="false" />
 
     <DataColumn name="Note" visible="false" flexGrow="1" />

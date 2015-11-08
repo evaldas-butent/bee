@@ -1194,13 +1194,20 @@ public class MailModuleBean implements BeeModule, HasTimerService {
   }
 
   private void checkMail() {
-    for (String accountId : qs.getColumn(new SqlSelect()
-        .addFields(TBL_ACCOUNTS, sys.getIdName(TBL_ACCOUNTS))
+    SimpleRowSet rs = qs.getData(new SqlSelect()
+        .addField(TBL_ACCOUNTS, sys.getIdName(TBL_ACCOUNTS), COL_ACCOUNT)
+        .addFields(TBL_ACCOUNTS, COL_ACCOUNT_SYNC_ALL)
         .addFrom(TBL_ACCOUNTS)
-        .setWhere(SqlUtils.notNull(TBL_ACCOUNTS, COL_STORE_SERVER)))) {
+        .setWhere(SqlUtils.notNull(TBL_ACCOUNTS, COL_STORE_SERVER)));
 
-      MailAccount account = mail.getAccount(BeeUtils.toLongOrNull(accountId));
-      checkMail(account, account.getRootFolder(), true);
+    for (SimpleRow row : rs) {
+      MailAccount account = mail.getAccount(row.getLong(COL_ACCOUNT));
+
+      if (BeeUtils.unbox(row.getBoolean(COL_ACCOUNT_SYNC_ALL))) {
+        checkMail(account, account.getRootFolder(), true);
+      } else {
+        checkMail(account, account.getInboxFolder(), false);
+      }
     }
   }
 

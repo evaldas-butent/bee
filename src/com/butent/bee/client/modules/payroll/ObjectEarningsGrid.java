@@ -7,6 +7,8 @@ import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.presenter.GridPresenter;
+import com.butent.bee.client.view.edit.SaveChangesEvent;
+import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -47,6 +49,13 @@ class ObjectEarningsGrid extends AbstractGridInterceptor {
   @Override
   public GridInterceptor getInstance() {
     return new ObjectEarningsGrid();
+  }
+
+  @Override
+  public void onSaveChanges(GridView gridView, SaveChangesEvent event) {
+    if (event.isEmpty()) {
+      getGridPresenter().refresh(true, false);
+    }
   }
 
   void selectMonth(final YearMonth ym) {
