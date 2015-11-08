@@ -114,6 +114,21 @@ public abstract class AbstractRow implements IsRow {
   }
 
   @Override
+  public Double getPropertyDouble(String key) {
+    return BeeUtils.toDoubleOrNull(getProperty(key));
+  }
+
+  @Override
+  public Integer getPropertyInteger(String key) {
+    return BeeUtils.toIntOrNull(getProperty(key));
+  }
+
+  @Override
+  public Long getPropertyLong(String key) {
+    return BeeUtils.toLongOrNull(getProperty(key));
+  }
+
+  @Override
   public Map<Integer, String> getShadow() {
     return shadow;
   }

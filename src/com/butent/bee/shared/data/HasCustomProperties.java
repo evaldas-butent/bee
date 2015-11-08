@@ -12,6 +12,12 @@ public interface HasCustomProperties {
 
   String getProperty(String key);
 
+  Double getPropertyDouble(String key);
+
+  Integer getPropertyInteger(String key);
+
+  Long getPropertyLong(String key);
+
   void setProperties(CustomProperties properties);
 
   void setProperty(String key, Double value);

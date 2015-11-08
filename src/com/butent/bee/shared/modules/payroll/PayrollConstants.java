@@ -153,6 +153,7 @@ public final class PayrollConstants {
   public static final String FORM_WORK_SCHEDULE = "WorkSchedule";
   public static final String FORM_WORK_SCHEDULE_EDITOR = "WorkScheduleEditor";
   public static final String FORM_EARNINGS = "Earnings";
+  public static final String FORM_OBJECT_EARNINGS = "ObjectEarnings";
 
   public static final String PRP_EARNINGS_NUMBER_OF_DAYS = "Earnings_day_count";
   public static final String PRP_EARNINGS_MILLIS = "Earnings_millis";
