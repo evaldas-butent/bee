@@ -40,6 +40,7 @@ import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.HasRelatedCurrency;
 import com.butent.bee.shared.data.HasViewName;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
@@ -104,6 +105,7 @@ public class EditableColumn implements BlurHandler, EditChangeHandler, EditStopE
 
   public EditableColumn(String viewName, List<BeeColumn> dataColumns, int colIndex,
       AbstractColumn<?> uiColumn, String caption, ColumnDescription columnDescr, String enumKey) {
+
     Assert.isIndex(dataColumns, colIndex);
     Assert.notNull(uiColumn);
     Assert.notNull(columnDescr);
@@ -284,6 +286,16 @@ public class EditableColumn implements BlurHandler, EditChangeHandler, EditStopE
     return getDataColumn().getId();
   }
 
+  public String getCurrencySource() {
+    if (getEditor() instanceof HasRelatedCurrency) {
+      return ((HasRelatedCurrency) getEditor()).getCurrencySource();
+    } else if (getEditorDescription() != null) {
+      return getEditorDescription().getCurrencySource();
+    } else {
+      return null;
+    }
+  }
+
   public BeeColumn getDataColumn() {
     return dataColumn;
   }
@@ -451,6 +463,7 @@ public class EditableColumn implements BlurHandler, EditChangeHandler, EditStopE
   public void openEditor(HasWidgets editorContainer, EditorConsumer editorConsumer,
       Element sourceElement, Element adjustElement, int zIndex, IsRow row, char charCode,
       EditEndEvent.Handler handler) {
+
     Assert.notNull(handler);
 
     setCloseHandler(handler);
