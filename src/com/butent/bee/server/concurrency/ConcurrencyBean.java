@@ -342,11 +342,13 @@ public class ConcurrencyBean {
 
   @PostConstruct
   private void init() {
-    Integer maxThreads = BeeUtils.toInt(Config.getProperty("MaxActiveThreads"));
+    String prop = "MaxActiveThreads";
+    Integer maxThreads = BeeUtils.toInt(Config.getProperty(prop));
 
-    if (BeeUtils.betweenInclusive(maxThreads, 1, 10 ^ 3)) {
+    if (BeeUtils.betweenInclusive(maxThreads, 1, maxActiveThreads)) {
       maxActiveThreads = maxThreads;
     }
+    logger.info(prop, maxActiveThreads);
   }
 
   private <T extends HasTimerService> TimerService removeTimer(Class<T> handler,

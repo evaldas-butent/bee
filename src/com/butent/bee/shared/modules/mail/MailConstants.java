@@ -214,6 +214,7 @@ public final class MailConstants {
   public static final String COL_ACCOUNT_DESCRIPTION = "Description";
   public static final String COL_ACCOUNT_DEFAULT = "Main";
   public static final String COL_ACCOUNT_PRIVATE = "Private";
+  public static final String COL_ACCOUNT_SYNC_ALL = "SynchronizeAll";
   public static final String COL_STORE_TYPE = "StoreType";
   public static final String COL_STORE_SERVER = "StoreServer";
   public static final String COL_STORE_SPORT = "StorePort";

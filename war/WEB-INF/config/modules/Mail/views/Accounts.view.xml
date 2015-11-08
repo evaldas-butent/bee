@@ -8,6 +8,7 @@
     <SimpleColumn name="Description" />
     <SimpleColumn name="Main" />
     <SimpleColumn name="Private" />
+    <SimpleColumn name="SynchronizeAll" />
 
     <SimpleColumn name="Address" />
     <SimpleJoin name="Address" joinType="INNER">
@@ -67,4 +68,3 @@
     <OrderBy column="Description" />
   </Order>
 </View>
- 
