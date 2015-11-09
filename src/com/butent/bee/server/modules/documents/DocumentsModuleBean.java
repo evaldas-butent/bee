@@ -23,7 +23,6 @@ import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.modules.administration.ExtensionIcons;
 import com.butent.bee.server.modules.administration.FileStorageBean;
 import com.butent.bee.server.sql.HasConditions;
-import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.IsExpression;
 import com.butent.bee.server.sql.IsFrom;
 import com.butent.bee.server.sql.SqlInsert;
@@ -52,12 +51,10 @@ import com.butent.bee.shared.rights.RegulatedWidget;
 import com.butent.bee.shared.rights.RightsState;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
-import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
 
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -241,162 +238,45 @@ public class DocumentsModuleBean implements BeeModule {
 
       @Subscribe
       @AllowConcurrentEvents
-      public void fillDocumentSentNumber(ViewInsertEvent event) {
+      public void fillDocumentSentReceivedNumber(DataEvent.ViewModifyEvent event) {
         if (BeeUtils.same(event.getTargetName(), TBL_DOCUMENTS) && event.isBefore()) {
 
-          List<BeeColumn> cols = event.getColumns();
+          final IsRow row;
+          final List<BeeColumn> columns;
 
-          if (DataUtils.contains(cols, COL_DOCUMENT_SENT_NUMBER)
-              && !DataUtils.contains(cols, COL_DOCUMENT_SENT)) {
+          if (event instanceof ViewInsertEvent) {
+            row = ((ViewInsertEvent) event).getRow();
+            columns = ((ViewInsertEvent) event).getColumns();
+          } else if (event instanceof DataEvent.ViewUpdateEvent) {
+            row = ((DataEvent.ViewUpdateEvent) event).getRow();
+            columns = ((DataEvent.ViewUpdateEvent) event).getColumns();
+          } else {
             return;
           }
 
-          Boolean sent = null;
+          if (!DataUtils.contains(columns, COL_DOCUMENT_SENT_NUMBER) && DataUtils
+              .contains(columns, COL_DOCUMENT_SENT)) {
+            String sendPrefix =
+                BeeUtils.nvl(prm.getText(PRM_DOCUMENT_SENT_PREFIX), BeeConst.STRING_EMPTY);
 
-          for (int i = 0; i < event.getColumns().size(); i++) {
-            switch (event.getColumns().get(i).getId()) {
-              case COL_DOCUMENT_SENT:
-                sent = true;
-                break;
-            }
+            /** Write values in derived references of instances */
+            columns.add(sys.getView(VIEW_DOCUMENTS).getBeeColumn(COL_DOCUMENT_SENT_NUMBER));
+            row.addValue(new TextValue(
+                qs.getNextNumber(event.getTargetName(), COL_DOCUMENT_SENT_NUMBER, sendPrefix,
+                    null)));
           }
 
-          if (sent == null) {
-            return;
-          }
+          if (!DataUtils.contains(columns, COL_DOCUMENT_RECEIVED_NUMBER) && DataUtils
+              .contains(columns, COL_DOCUMENT_RECEIVED)) {
 
-          String prefix = prm.getText(PRM_DOCUMENT_SENT_PREFIX);
-          prefix = BeeUtils.isEmpty(prefix) ? BeeConst.STRING_EMPTY : prefix;
+            String recPrefix =
+                BeeUtils.nvl(prm.getText(PRM_DOCUMENT_RECEIVED_PREFIX), BeeConst.STRING_EMPTY);
 
-          BeeColumn column = sys.getView(VIEW_DOCUMENTS).getBeeColumn(COL_DOCUMENT_SENT_NUMBER);
-          String number = getNextRegNumber(COL_DOCUMENT_SENT,
-              column.getPrecision(), COL_DOCUMENT_SENT_NUMBER, prefix);
-
-          if (!BeeUtils.isEmpty(number)) {
-            event.addValue(column, new TextValue(prefix + number));
-          }
-        }
-      }
-
-      @Subscribe
-      @AllowConcurrentEvents
-      public void updateDocumentSentNumber(DataEvent.ViewUpdateEvent event) {
-        if (BeeUtils.same(event.getTargetName(), TBL_DOCUMENTS) && event.isBefore()) {
-
-          List<BeeColumn> cols = event.getColumns();
-
-          if (DataUtils.contains(cols, COL_DOCUMENT_SENT_NUMBER)
-              && !DataUtils.contains(cols, COL_DOCUMENT_SENT)) {
-            return;
-          }
-
-          Boolean sent = null;
-          String value = null;
-
-          for (int i = 0; i < event.getColumns().size(); i++) {
-            switch (event.getColumns().get(i).getId()) {
-              case COL_DOCUMENT_SENT:
-                sent = true;
-                value = event.getRow().getString(i);
-                break;
-            }
-          }
-
-          if (sent == null || BeeUtils.isEmpty(value)) {
-            return;
-          }
-
-          String prefix = prm.getText(PRM_DOCUMENT_SENT_PREFIX);
-          prefix = BeeUtils.isEmpty(prefix) ? BeeConst.STRING_EMPTY : prefix;
-
-          BeeColumn column = sys.getView(VIEW_DOCUMENTS).getBeeColumn(COL_DOCUMENT_SENT_NUMBER);
-          String number = getNextRegNumber(COL_DOCUMENT_SENT, column.getPrecision(),
-              COL_DOCUMENT_SENT_NUMBER, prefix);
-
-          if (!BeeUtils.isEmpty(number)) {
-            event.getColumns().add(column);
-            event.getRow().addValue(new TextValue(prefix + number));
-          }
-        }
-      }
-
-      @Subscribe
-      @AllowConcurrentEvents
-      public void fillDocumentReceivedNumber(ViewInsertEvent event) {
-        if (BeeUtils.same(event.getTargetName(), TBL_DOCUMENTS) && event.isBefore()) {
-
-          List<BeeColumn> cols = event.getColumns();
-
-          if (DataUtils.contains(cols, COL_DOCUMENT_RECEIVED_NUMBER)
-              && !DataUtils.contains(cols, COL_DOCUMENT_RECEIVED)) {
-            return;
-          }
-
-          Boolean received = null;
-
-          for (int i = 0; i < event.getColumns().size(); i++) {
-            switch (event.getColumns().get(i).getId()) {
-              case COL_DOCUMENT_RECEIVED:
-                received = true;
-                break;
-            }
-          }
-
-          if (received == null) {
-            return;
-          }
-
-          String prefix = prm.getText(PRM_DOCUMENT_RECEIVED_PREFIX);
-          prefix = BeeUtils.isEmpty(prefix) ? BeeConst.STRING_EMPTY : prefix;
-
-          BeeColumn column = sys.getView(VIEW_DOCUMENTS).getBeeColumn(COL_DOCUMENT_RECEIVED_NUMBER);
-          String number = getNextRegNumber(COL_DOCUMENT_RECEIVED,
-              column.getPrecision(), COL_DOCUMENT_RECEIVED_NUMBER, prefix);
-
-          if (!BeeUtils.isEmpty(number)) {
-            event.addValue(column, new TextValue(prefix + number));
-          }
-        }
-      }
-
-      @Subscribe
-      @AllowConcurrentEvents
-      public void updateDocumentReceivedNumber(DataEvent.ViewUpdateEvent event) {
-        if (BeeUtils.same(event.getTargetName(), TBL_DOCUMENTS) && event.isBefore()) {
-
-          List<BeeColumn> cols = event.getColumns();
-
-          if (DataUtils.contains(cols, COL_DOCUMENT_RECEIVED_NUMBER)
-              && !DataUtils.contains(cols, COL_DOCUMENT_RECEIVED)) {
-            return;
-          }
-
-          Boolean received = null;
-          String value = null;
-
-          for (int i = 0; i < event.getColumns().size(); i++) {
-            switch (event.getColumns().get(i).getId()) {
-              case COL_DOCUMENT_RECEIVED:
-                received = true;
-                value = event.getRow().getString(i);
-                break;
-            }
-          }
-
-          if (received == null || BeeUtils.isEmpty(value)) {
-            return;
-          }
-
-          String prefix = prm.getText(PRM_DOCUMENT_RECEIVED_PREFIX);
-          prefix = BeeUtils.isEmpty(prefix) ? BeeConst.STRING_EMPTY : prefix;
-
-          BeeColumn column = sys.getView(VIEW_DOCUMENTS).getBeeColumn(COL_DOCUMENT_RECEIVED_NUMBER);
-          String number = getNextRegNumber(COL_DOCUMENT_RECEIVED, column.getPrecision(),
-              COL_DOCUMENT_RECEIVED_NUMBER, prefix);
-
-          if (!BeeUtils.isEmpty(number)) {
-            event.getColumns().add(column);
-            event.getRow().addValue(new TextValue(prefix + number));
+            /** Write values in derived references of instances */
+            columns.add(sys.getView(VIEW_DOCUMENTS).getBeeColumn(COL_DOCUMENT_RECEIVED_NUMBER));
+            row.addValue(new TextValue(qs.getNextNumber(event.getTargetName(),
+                COL_DOCUMENT_RECEIVED_NUMBER, recPrefix,
+                null)));
           }
         }
       }
@@ -555,63 +435,6 @@ public class DocumentsModuleBean implements BeeModule {
       }
     }
     return ResponseObject.response(dataId);
-  }
-
-  private String getNextRegNumber(String columnFilter,
-      int maxLength, String column, String prefix) {
-    IsCondition where = SqlUtils.notNull(TBL_DOCUMENTS, columnFilter);
-
-    if (!BeeUtils.isEmpty(prefix)) {
-      SqlUtils.and(where, SqlUtils.startsWith(TBL_DOCUMENTS, column, prefix));
-    }
-
-    SqlSelect query = new SqlSelect()
-        .addFields(TBL_DOCUMENTS, column)
-        .addFrom(TBL_DOCUMENTS)
-        .setWhere(where);
-
-    String[] values = qs.getColumn(query);
-
-    long max = 0;
-    BigInteger bigMax = null;
-    int paternSize = 0;
-
-    if (!ArrayUtils.isEmpty(values)) {
-      for (String value : values) {
-        if (!BeeUtils.isEmpty(prefix)) {
-          value = BeeUtils.getSuffix(value, prefix);
-        }
-        if (BeeUtils.isDigit(value)) {
-          if (BeeUtils.isLong(value)) {
-            long oldMax = max;
-            max = Math.max(max, BeeUtils.toLong(value));
-            if (max != oldMax) {
-              paternSize = Math.max(paternSize, value.length());
-            }
-          } else {
-            BigInteger big = new BigInteger(value);
-
-            if (bigMax == null || BeeUtils.isLess(bigMax, big)) {
-              bigMax = big;
-            }
-          }
-        }
-      }
-    }
-
-    BigInteger big = new BigInteger(BeeUtils.toString(max));
-    if (bigMax != null) {
-      big = big.max(bigMax);
-    }
-
-    String number = big.add(BigInteger.ONE).toString();
-    number = BeeUtils.padLeft(number, paternSize, BeeConst.CHAR_ZERO);
-
-    if (maxLength > 0 && number.length() > maxLength) {
-      number = number.substring(number.length() - maxLength);
-    }
-
-    return number;
   }
 
   private ResponseObject setCategoryState(Long id, Long roleId, RightsState state, boolean on) {
