@@ -2,6 +2,7 @@ package com.butent.bee.client.view.grid.interceptor;
 
 import com.google.gwt.xml.client.Element;
 
+import com.butent.bee.client.data.HasActiveRow;
 import com.butent.bee.client.data.IdCallback;
 import com.butent.bee.client.event.logical.ActiveRowChangeEvent;
 import com.butent.bee.client.event.logical.ParentRowEvent;
@@ -48,7 +49,7 @@ import java.util.Map;
 public interface GridInterceptor extends WidgetInterceptor, ActiveRowChangeEvent.Handler,
     ParentRowEvent.Handler, EditStartEvent.Handler, EditEndEvent.Handler,
     ProvidesGridColumnRenderer, DynamicColumnEnumerator, HasViewName, EditorConsumer,
-    RowUpdateEvent.Handler {
+    RowUpdateEvent.Handler, HasActiveRow {
 
   enum DeleteMode {
     CANCEL, DEFAULT, SILENT, CONFIRM, SINGLE, MULTI;
@@ -107,8 +108,6 @@ public interface GridInterceptor extends WidgetInterceptor, ActiveRowChangeEvent
   StyleProvider getColumnStyleProvider(String columnName);
 
   List<BeeColumn> getDataColumns();
-
-  int getDataIndex(String source);
 
   DeleteMode getDeleteMode(GridPresenter presenter, IsRow activeRow,
       Collection<RowInfo> selectedRows, DeleteMode defMode);

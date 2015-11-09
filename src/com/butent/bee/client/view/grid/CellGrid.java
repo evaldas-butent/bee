@@ -1320,6 +1320,11 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     }
   }
 
+  @Override
+  public long getActiveRowId() {
+    return DataUtils.getId(getActiveRow());
+  }
+
   public int getBodyCellHeight() {
     return getBodyComponent().getCellHeight();
   }

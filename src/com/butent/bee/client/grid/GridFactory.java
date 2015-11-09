@@ -7,6 +7,7 @@ import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
+import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
@@ -707,7 +708,10 @@ public final class GridFactory {
       return;
     }
 
-    BeeKeeper.getRpc().sendText(Service.GET_GRID, name, new ResponseCallback() {
+    ParameterList params = new ParameterList(Service.GET_GRID);
+    params.setSummary(name);
+
+    BeeKeeper.getRpc().sendText(params, name, new ResponseCallback() {
       @Override
       public void onResponse(ResponseObject response) {
         Assert.notNull(response);

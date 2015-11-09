@@ -9,6 +9,7 @@ import com.google.gwt.xml.client.XMLParser;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
+import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.presenter.FormPresenter;
@@ -394,7 +395,10 @@ public final class FormFactory {
       return;
     }
 
-    BeeKeeper.getRpc().sendText(Service.GET_FORM, BeeUtils.trim(name), new ResponseCallback() {
+    ParameterList params = new ParameterList(Service.GET_FORM);
+    params.setSummary(name);
+
+    BeeKeeper.getRpc().sendText(params, BeeUtils.trim(name), new ResponseCallback() {
       @Override
       public void onResponse(ResponseObject response) {
         if (response.hasResponse(String.class)) {

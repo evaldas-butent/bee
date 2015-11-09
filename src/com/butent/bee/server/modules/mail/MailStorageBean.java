@@ -741,15 +741,18 @@ public class MailStorageBean {
   }
 
   private Long storeAddress(Long userId, InternetAddress address) throws AddressException {
-    Assert.notNull(address);
+    InternetAddress adr = Assert.notNull(address);
 
-    new InternetAddress(address.getAddress(), true).validate();
+    if (adr.isGroup()) {
+      adr = ArrayUtils.getQuietly(adr.getGroup(true), 0);
 
-    String label = address.getPersonal();
-    String email = BeeUtils.normalize(address.getAddress());
-
-    Assert.notEmpty(email);
-
+      if (Objects.isNull(adr)) {
+        throw new AddressException(address.toString());
+      }
+    }
+    adr.validate();
+    String label = adr.getPersonal();
+    String email = Assert.notEmpty(BeeUtils.normalize(adr.getAddress()));
     Holder<Long> emailId = Holder.absent();
 
     cb.synchronizedCall(new Runnable() {

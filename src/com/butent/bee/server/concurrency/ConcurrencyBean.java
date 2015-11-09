@@ -29,6 +29,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.locks.ReentrantLock;
 
+import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.ejb.Lock;
@@ -158,8 +159,8 @@ public class ConcurrencyBean {
   }
 
   private static final BeeLogger logger = LogUtils.getLogger(ConcurrencyBean.class);
-  private static final int MAX_ACTIVE_THREADS = 200;
 
+  private int maxActiveThreads = 200;
   private final Map<String, Worker> asyncThreads = new ConcurrentHashMap<>();
   private final Queue<Worker> waitingThreads = new ConcurrentLinkedQueue<>();
 
@@ -318,7 +319,7 @@ public class ConcurrencyBean {
       worker.onError();
       return;
     }
-    if (asyncThreads.size() < MAX_ACTIVE_THREADS) {
+    if (asyncThreads.size() < maxActiveThreads) {
       asyncThreads.put(id, worker);
 
       try {
@@ -334,7 +335,20 @@ public class ConcurrencyBean {
     } else if (!waitingThreads.contains(worker)) {
       logger.info("Queuing:", worker);
       waitingThreads.offer(worker);
+    } else {
+      worker.onError();
     }
+  }
+
+  @PostConstruct
+  private void init() {
+    String prop = "MaxActiveThreads";
+    Integer maxThreads = BeeUtils.toInt(Config.getProperty(prop));
+
+    if (BeeUtils.betweenInclusive(maxThreads, 1, maxActiveThreads)) {
+      maxActiveThreads = maxThreads;
+    }
+    logger.info(prop, maxActiveThreads);
   }
 
   private <T extends HasTimerService> TimerService removeTimer(Class<T> handler,

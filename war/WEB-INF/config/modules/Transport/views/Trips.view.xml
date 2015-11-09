@@ -35,13 +35,14 @@
 
     <SimpleColumn name="MainDriver" />
     <SimpleJoin name="MainDriver" joinType="LEFT">
+      <SimpleColumn name="Driver" />
       <SimpleJoin name="Driver" joinType="LEFT">
         <SimpleJoin name="CompanyPerson" joinType="LEFT">
           <SimpleJoin name="Person" joinType="LEFT">
             <HiddenColumn name="FirstName" />
             <HiddenColumn name="LastName" />
 
-            <SimpleColumn name="Driver" label="=vehicleDriver">
+            <SimpleColumn name="DriverName" label="=vehicleDriver">
               <xpr:concat>
                 <xpr:string>"FirstName"</xpr:string>
                 <xpr:string>' '</xpr:string>

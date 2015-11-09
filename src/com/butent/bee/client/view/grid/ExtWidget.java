@@ -32,6 +32,7 @@ public final class ExtWidget {
 
   public static ExtWidget create(String xml, String viewName, List<BeeColumn> dataColumns,
       WidgetCreationCallback creationCallback, GridInterceptor gridInterceptor) {
+
     Document doc = XmlUtils.parse(xml);
     if (doc == null) {
       return null;
@@ -77,15 +78,19 @@ public final class ExtWidget {
   private final IdentifiableWidget widget;
 
   private final Direction direction;
-  private final int size;
+  private int size;
   private final Integer splSize;
 
   private final Component precedes;
   private final boolean hidable;
 
+  private String storageKey;
+
   private ExtWidget(IdentifiableWidget widget, Direction direction, int size, Integer splSize,
       Component precedes, boolean hidable) {
+
     super();
+
     this.widget = widget;
     this.direction = direction;
     this.size = size;
@@ -106,6 +111,10 @@ public final class ExtWidget {
     return splSize;
   }
 
+  public String getStorageKey() {
+    return storageKey;
+  }
+
   public int getTotalSize() {
     return getSize() + BeeUtils.toNonNegativeInt(getSplSize());
   }
@@ -124,5 +133,13 @@ public final class ExtWidget {
 
   public boolean precedesHeader() {
     return Component.HEADER.equals(precedes);
+  }
+
+  public void setSize(int size) {
+    this.size = size;
+  }
+
+  public void setStorageKey(String storageKey) {
+    this.storageKey = storageKey;
   }
 }
