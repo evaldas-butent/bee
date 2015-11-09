@@ -453,7 +453,7 @@ public class TradeModuleBean implements BeeModule {
             Long oSumDays =
                 overdueRow != null
                     ? BeeUtils.toLong(overdueRow[idxOverdueSum])
-                    / 86400000L : 0L;
+                        / 86400000L : 0L;
 
             String[] salesRow = salesCountData.get(gridRow.getLong(
                 gridRowset.getColumnIndex(COL_TRADE_CUSTOMER)));
@@ -469,7 +469,7 @@ public class TradeModuleBean implements BeeModule {
             Long sSumDays =
                 salesRow != null
                     ? BeeUtils.toLong(salesRow[salesSumResult.getColumnIndex(ALS_SALES_SUM)])
-                    / 86400000L : 0L;
+                        / 86400000L : 0L;
 
             Long sum = oCount + sCount;
 
@@ -653,15 +653,13 @@ public class TradeModuleBean implements BeeModule {
     select.setWhere(SqlUtils.and(
         SqlUtils.or(SqlUtils.inList(TBL_ERP_SALES, COL_SALE_PAYER, companyIds),
             SqlUtils.and(SqlUtils.isNull(TBL_ERP_SALES, COL_SALE_PAYER),
-                SqlUtils.inList(TBL_ERP_SALES, COL_TRADE_CUSTOMER, companyIds)
-                )),
+                SqlUtils.inList(TBL_ERP_SALES, COL_TRADE_CUSTOMER, companyIds))),
         SqlUtils.or(SqlUtils.less(TBL_ERP_SALES, COL_TRADE_TERM, (new JustDate()).getTime()),
             SqlUtils
                 .isNull(TBL_ERP_SALES, COL_TRADE_TERM)),
         SqlUtils.less(SqlUtils.minus(
             SqlUtils.nvl(SqlUtils.field(TBL_ERP_SALES, COL_TRADE_PAID), 0),
-            SqlUtils.field(TBL_ERP_SALES, COL_TRADE_AMOUNT)), 0)
-        ));
+            SqlUtils.field(TBL_ERP_SALES, COL_TRADE_AMOUNT)), 0)));
 
     select.addGroup(SqlUtils.field(TBL_ERP_SALES, COL_TRADE_CUSTOMER));
 
@@ -710,8 +708,7 @@ public class TradeModuleBean implements BeeModule {
     select.setWhere(SqlUtils.and(
         SqlUtils.or(SqlUtils.inList(TBL_ERP_SALES, COL_SALE_PAYER, companyIds),
             SqlUtils.and(SqlUtils.isNull(TBL_ERP_SALES, COL_SALE_PAYER),
-                SqlUtils.inList(TBL_ERP_SALES, COL_TRADE_CUSTOMER, companyIds)
-                )),
+                SqlUtils.inList(TBL_ERP_SALES, COL_TRADE_CUSTOMER, companyIds))),
         SqlUtils.equals(TBL_ERP_SALES, COL_TRADE_PAID, SqlUtils.field(TBL_ERP_SALES,
             COL_TRADE_AMOUNT)),
         SqlUtils.notNull(TBL_ERP_SALES, COL_TRADE_TERM),
@@ -731,8 +728,7 @@ public class TradeModuleBean implements BeeModule {
     select.setWhere(SqlUtils.and(
         SqlUtils.or(SqlUtils.inList(TBL_ERP_SALES, COL_SALE_PAYER, companyIds),
             SqlUtils.and(SqlUtils.isNull(TBL_ERP_SALES, COL_SALE_PAYER),
-                SqlUtils.inList(TBL_ERP_SALES, COL_TRADE_CUSTOMER, companyIds)
-                )),
+                SqlUtils.inList(TBL_ERP_SALES, COL_TRADE_CUSTOMER, companyIds))),
         SqlUtils.less(SqlUtils.field(TBL_ERP_SALES, COL_TRADE_TERM), SqlUtils
             .field(TBL_ERP_SALES, COL_TRADE_PAYMENT_TIME)),
         SqlUtils.equals(TBL_ERP_SALES, COL_TRADE_AMOUNT, SqlUtils.field(TBL_ERP_SALES,
@@ -779,8 +775,6 @@ public class TradeModuleBean implements BeeModule {
     query.addSum(amountXpr, VAR_AMOUNT);
     query.addSum(paidXpr, VAR_TOTAL);
     query.addCount(VAR_DEBT);
-
-    logger.warning(query.getQuery());
 
     SimpleRowSet rs = qs.getData(query);
 
@@ -1043,8 +1037,8 @@ public class TradeModuleBean implements BeeModule {
         MailAccount account = mailStore.getAccount(senderMailAccountId);
         MimeMessage message = mail.sendMail(account,
             ArrayUtils.toArray(
-                Lists.newArrayList(emails.get(companyId).values()
-                    )), null, null, subject, mailDocument
+                Lists.newArrayList(emails.get(companyId).values())), null, null, subject,
+            mailDocument
                 .buildLines(),
             null);
 
@@ -1069,8 +1063,8 @@ public class TradeModuleBean implements BeeModule {
       for (Long id : errorMails.keySet()) {
 
         message = BeeUtils.joinWords(message,
-            rs.getRowById(id).getString(rs.getColumnIndex(COL_COMPANY_NAME)), errorMails.get(id)
-            , br().build());
+            rs.getRowById(id).getString(rs.getColumnIndex(COL_COMPANY_NAME)), errorMails.get(id),
+            br().build());
 
         if (i > 5) {
           message = BeeUtils.joinWords(message, br().build(),
@@ -1094,7 +1088,7 @@ public class TradeModuleBean implements BeeModule {
     String tradeItems;
     String itemsRelation;
 
-        SqlSelect query = new SqlSelect()
+    SqlSelect query = new SqlSelect()
         .addFields(trade, COL_TRADE_DATE, COL_TRADE_INVOICE_NO,
             COL_TRADE_NUMBER, COL_TRADE_TERM, COL_TRADE_SUPPLIER, COL_TRADE_CUSTOMER)
         .addFields(TBL_TRADE_OPERATIONS, COL_OPERATION_NAME)
