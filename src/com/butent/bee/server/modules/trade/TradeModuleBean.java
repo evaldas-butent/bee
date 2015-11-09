@@ -243,23 +243,24 @@ public class TradeModuleBean implements BeeModule {
       int days = BeeUtils.unbox(company.getInt(COL_COMPANY_CREDIT_DAYS));
 
       SqlSelect query = new SqlSelect()
-          .addFields(TBL_SALES, COL_TRADE_DATE, COL_TRADE_TERM)
-          .addFrom(TBL_SALES)
-          .setWhere(SqlUtils.and(SqlUtils.or(SqlUtils.equals(TBL_SALES, COL_SALE_PAYER, companyId),
-              SqlUtils.and(SqlUtils.isNull(TBL_SALES, COL_SALE_PAYER),
-                  SqlUtils.equals(TBL_SALES, COL_TRADE_CUSTOMER, companyId))),
-              SqlUtils.less(SqlUtils.nvl(SqlUtils.field(TBL_SALES, COL_TRADE_PAID), 0),
-                  SqlUtils.nvl(SqlUtils.field(TBL_SALES, COL_TRADE_AMOUNT), 0))));
+          .addFields(TBL_ERP_SALES, COL_TRADE_DATE, COL_TRADE_TERM)
+          .addFrom(TBL_ERP_SALES)
+          .setWhere(SqlUtils.and(SqlUtils.or(SqlUtils.equals(TBL_ERP_SALES, COL_SALE_PAYER,
+              companyId),
+              SqlUtils.and(SqlUtils.isNull(TBL_ERP_SALES, COL_SALE_PAYER),
+                  SqlUtils.equals(TBL_ERP_SALES, COL_TRADE_CUSTOMER, companyId))),
+              SqlUtils.less(SqlUtils.nvl(SqlUtils.field(TBL_ERP_SALES, COL_TRADE_PAID), 0),
+                  SqlUtils.nvl(SqlUtils.field(TBL_ERP_SALES, COL_TRADE_AMOUNT), 0))));
 
       if (DataUtils.isId(curr)) {
-        query.addExpr(ExchangeUtils.exchangeFieldTo(query, TBL_SALES, COL_TRADE_AMOUNT,
+        query.addExpr(ExchangeUtils.exchangeFieldTo(query, TBL_ERP_SALES, COL_TRADE_AMOUNT,
             COL_TRADE_CURRENCY, COL_TRADE_DATE, curr), COL_TRADE_AMOUNT)
-            .addExpr(ExchangeUtils.exchangeFieldTo(query, TBL_SALES, COL_TRADE_PAID,
+            .addExpr(ExchangeUtils.exchangeFieldTo(query, TBL_ERP_SALES, COL_TRADE_PAID,
                 COL_TRADE_CURRENCY, COL_TRADE_PAYMENT_TIME, curr), COL_TRADE_PAID);
       } else {
-        query.addExpr(ExchangeUtils.exchangeField(query, TBL_SALES, COL_TRADE_AMOUNT,
+        query.addExpr(ExchangeUtils.exchangeField(query, TBL_ERP_SALES, COL_TRADE_AMOUNT,
             COL_TRADE_CURRENCY, COL_TRADE_DATE), COL_TRADE_AMOUNT)
-            .addExpr(ExchangeUtils.exchangeField(query, TBL_SALES, COL_TRADE_PAID,
+            .addExpr(ExchangeUtils.exchangeField(query, TBL_ERP_SALES, COL_TRADE_PAID,
                 COL_TRADE_CURRENCY, COL_TRADE_PAYMENT_TIME), COL_TRADE_PAID);
       }
       double debt = 0.0;
