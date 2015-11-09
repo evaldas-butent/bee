@@ -5,7 +5,7 @@ import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.event.shared.HasHandlers;
 
 import static com.butent.bee.shared.modules.documents.DocumentConstants.*;
-import static com.butent.bee.shared.modules.trade.TradeConstants.VAR_TOTAL;
+import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
@@ -24,13 +24,13 @@ import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.utils.FileUtils;
-import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.grid.interceptor.FileGridInterceptor;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
@@ -38,11 +38,12 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.DataChangeEvent;
+import com.butent.bee.shared.data.event.RowTransformEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.Value;
-import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
+import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.time.DateTime;
@@ -110,7 +111,7 @@ public final class DocumentsHandler {
       }
 
       DateTime t1 = row.getDateTime(form.getDataIndex(COL_DOCUMENT_DATE));
-       /* resetting document date without current time */
+      /* resetting document date without current time */
       if (t1 != null && DataUtils.isNewRow(row)) {
         t1.setLocalTime(new JustDate(t1).getTime());
         row.setValue(form.getDataIndex(COL_DOCUMENT_DATE), t1);
@@ -127,6 +128,24 @@ public final class DocumentsHandler {
     public void onReadyForInsert(HasHandlers listener, ReadyForInsertEvent event) {
 
     }
+  }
+
+  private static class RowTransformHandler implements RowTransformEvent.Handler {
+
+    @Override
+    public void onRowTransform(RowTransformEvent event) {
+      if (event.hasView(VIEW_DOCUMENTS)) {
+        event.setResult(DataUtils.join(Data.getDataInfo(VIEW_DOCUMENTS), event.getRow(),
+            Lists.newArrayList(COL_DOCUMENT_NAME, ALS_DOCUMENT_COMPANY_NAME, "CompanyTypeName",
+                COL_DOCUMENT_DATE, "Expires", COL_DOCUMENT_NUMBER, COL_REGISTRATION_NUMBER,
+                ALS_CATEGORY_NAME, ALS_TYPE_NAME, ALS_PLACE_NAME, ALS_STATUS_NAME,
+                COL_DOCUMENT_RECEIVED, COL_DOCUMENT_SENT, COL_DOCUMENT_RECEIVED_NUMBER,
+                COL_DOCUMENT_SENT_NUMBER, COL_DESCRIPTION, ClassifierConstants.COL_FIRST_NAME,
+                ClassifierConstants.COL_LAST_NAME, ClassifierConstants.ALS_POSITION_NAME, "Notes"),
+            BeeConst.STRING_SPACE));
+      }
+    }
+
   }
 
   public static void register() {
@@ -148,6 +167,7 @@ public final class DocumentsHandler {
     FormFactory.registerFormInterceptor("NewDocument", new DocumentBuilder());
 
     TradeUtils.registerTotalRenderer(VIEW_DOCUMENT_ITEMS, VAR_TOTAL);
+    BeeKeeper.getBus().registerRowTransformHandler(new RowTransformHandler(), false);
   }
 
   static void copyDocumentData(Long dataId, final IdCallback callback) {
@@ -244,7 +264,7 @@ public final class DocumentsHandler {
                     AdministrationConstants.VIEW_RELATIONS,
                     Lists.newArrayList(COL_DOCUMENT_COMPANY,
                         COL_DOCUMENT)), Lists.newArrayList(company, BeeUtils
-                    .toString(rowId)));
+                            .toString(rowId)));
               }
             }
           });
@@ -267,11 +287,11 @@ public final class DocumentsHandler {
       public void onSuccess(BeeRow result) {
         Queries.update(VIEW_DOCUMENTS, row.getId(), COL_DOCUMENT_DATA,
             Value.getValue(result.getId()), new IntCallback() {
-              @Override
-              public void onSuccess(Integer updResult) {
-                DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_DOCUMENTS);
-              }
-            });
+          @Override
+          public void onSuccess(Integer updResult) {
+            DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_DOCUMENTS);
+          }
+        });
       }
     });
 
