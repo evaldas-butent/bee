@@ -11,12 +11,11 @@ import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.payroll.PayrollConstants.*;
 import static com.butent.bee.shared.modules.transport.TransportConstants.COL_COSTS_EXTERNAL_ID;
 
-import com.butent.bee.server.data.DataEventHandler;
 import com.butent.bee.server.Invocation;
 import com.butent.bee.server.concurrency.ConcurrencyBean;
-import com.butent.bee.server.data.QueryServiceBean;
-import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.DataEvent.ViewQueryEvent;
+import com.butent.bee.server.data.DataEventHandler;
+import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.BeeModule;
@@ -24,7 +23,6 @@ import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.modules.administration.AdministrationModuleBean;
 import com.butent.bee.server.sql.HasConditions;
 import com.butent.bee.server.sql.IsCondition;
-import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlDelete;
 import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
@@ -58,13 +56,11 @@ import com.butent.bee.shared.time.MonthRange;
 import com.butent.bee.shared.time.TimeRange;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.time.YearMonth;
-import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.webservice.ButentWS;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -95,8 +91,6 @@ public class PayrollModuleBean implements BeeModule, ConcurrencyBean.HasTimerSer
   QueryServiceBean qs;
   @EJB
   ConcurrencyBean cb;
-  @EJB
-  SystemBean sys;
   @EJB
   AdministrationModuleBean adm;
   @EJB
@@ -415,98 +409,6 @@ public class PayrollModuleBean implements BeeModule, ConcurrencyBean.HasTimerSer
     sys.eventEnd(historyId, "OK", log);
   }
 
-  private int importLocations(String erpAddress, String erpLogin, String erpPassword)
-      throws BeeException {
-
-    SimpleRowSet rs = ButentWS.connect(erpAddress, erpLogin, erpPassword)
-        .getObjects();
-
-    int locNew = 0;
-    Map<String, Long> locations = getReferences(TBL_LOCATIONS, COL_LOCATION_NAME);
-
-    for (SimpleRow row : rs) {
-      String location = row.getValue("objektas");
-
-      if (!locations.containsKey(location)) {
-        locations.put(location, qs.insertData(new SqlInsert(TBL_LOCATIONS)
-            .addConstant(COL_LOCATION_NAME, location)
-            .addConstant(COL_LOCATION_STATUS, ObjectStatus.INACTIVE.ordinal())));
-        locNew++;
-      }
-    }
-    return locNew;
-  }
-
-  private String importTimeCards(String erpAddress, String erpLogin, String erpPassword,
-      DateTime lastSyncTime, Long company) throws BeeException {
-    SimpleRowSet rs = ButentWS.connect(erpAddress, erpLogin, erpPassword)
-        .getTimeCards(lastSyncTime);
-
-    SimpleRowSet employees = qs.getData(new SqlSelect()
-        .addField(TBL_EMPLOYEES, sys.getIdName(TBL_EMPLOYEES), COL_EMPLOYEE)
-        .addFields(TBL_EMPLOYEES, COL_TAB_NUMBER)
-        .addFrom(TBL_EMPLOYEES)
-        .addFromInner(TBL_COMPANY_PERSONS,
-            sys.joinTables(TBL_COMPANY_PERSONS, TBL_EMPLOYEES, COL_COMPANY_PERSON))
-        .setWhere(SqlUtils.equals(TBL_COMPANY_PERSONS, COL_COMPANY, company)));
-
-    Map<String, Long> tcCodes = getReferences(VIEW_TIME_CARD_CODES, COL_TC_CODE);
-
-    int cds = 0;
-    int ins = 0;
-    int upd = 0;
-    int del = 0;
-
-    for (SimpleRow row : rs) {
-      Long id = row.getLong("D_TAB_ID");
-      String tabNumber = row.getValue("TAB_NR");
-
-      if (BeeUtils.isEmpty(tabNumber)) {
-        del += qs.updateData(new SqlDelete(VIEW_TIME_CARD_CHANGES)
-            .setWhere(SqlUtils.equals(VIEW_TIME_CARD_CHANGES, COL_COSTS_EXTERNAL_ID, id)));
-        continue;
-      }
-      Long employee = BeeUtils.toLongOrNull(employees.getValueByKey(COL_TAB_NUMBER, tabNumber,
-          COL_EMPLOYEE));
-
-      if (!DataUtils.isId(employee)) {
-        continue;
-      }
-      String code = row.getValue("TAB_KODAS");
-
-      if (!tcCodes.containsKey(code)) {
-        tcCodes.put(code, qs.insertData(new SqlInsert(VIEW_TIME_CARD_CODES)
-            .addConstant(COL_TC_CODE, code)
-            .addConstant(COL_TC_NAME,
-                sys.clampValue(VIEW_TIME_CARD_CODES, COL_TC_NAME, row.getValue("PAVAD")))));
-        cds++;
-      }
-      int c = qs.updateData(new SqlUpdate(VIEW_TIME_CARD_CHANGES)
-          .addConstant(COL_EMPLOYEE, employee)
-          .addConstant(COL_TIME_CARD_CODE, tcCodes.get(code))
-          .addConstant(COL_TIME_CARD_CHANGES_FROM, TimeUtils.parseDate(row.getValue("DATA_NUO")))
-          .addConstant(COL_TIME_CARD_CHANGES_UNTIL, TimeUtils.parseDate(row.getValue("DATA_IKI")))
-          .addConstant(COL_NOTES, row.getValue("ISAK_PAVAD"))
-          .setWhere(SqlUtils.equals(VIEW_TIME_CARD_CHANGES, COL_COSTS_EXTERNAL_ID, id)));
-
-      if (BeeUtils.isPositive(c)) {
-        upd++;
-      } else {
-        qs.insertData(new SqlInsert(VIEW_TIME_CARD_CHANGES)
-            .addConstant(COL_EMPLOYEE, employee)
-            .addConstant(COL_TIME_CARD_CODE, tcCodes.get(code))
-            .addConstant(COL_TIME_CARD_CHANGES_FROM, TimeUtils.parseDate(row.getValue("DATA_NUO")))
-            .addConstant(COL_TIME_CARD_CHANGES_UNTIL, TimeUtils.parseDate(row.getValue("DATA_IKI")))
-            .addConstant(COL_NOTES, row.getValue("ISAK_PAVAD"))
-            .addConstant(COL_COSTS_EXTERNAL_ID, id));
-        ins++;
-      }
-    }
-    return BeeUtils.join(BeeConst.STRING_EOL, cds > 0 ? VIEW_TIME_CARD_CODES + ": +" + cds : null,
-        (ins + upd + del) > 0 ? VIEW_TIME_CARD_CHANGES + ":" + (ins > 0 ? " +" + ins : "")
-            + (upd > 0 ? " " + upd : "") + (del > 0 ? " -" + del : "") : null);
-  }
-
   @Override
   public void init() {
     cb.createIntervalTimer(this.getClass(), PRM_ERP_SYNC_HOURS);
@@ -573,24 +475,6 @@ public class PayrollModuleBean implements BeeModule, ConcurrencyBean.HasTimerSer
         }
       }
     });
-  }
-
-  private Map<String, Long> getReferences(String tableName, String keyName) {
-    return getReferences(tableName, keyName, null);
-  }
-
-  private Map<String, Long> getReferences(String tableName, String keyName, IsCondition clause) {
-    Map<String, Long> ref = new HashMap<>();
-
-    for (SimpleRow row : qs.getData(new SqlSelect()
-        .addFields(tableName, keyName)
-        .addField(tableName, sys.getIdName(tableName), tableName)
-        .addFrom(tableName)
-        .setWhere(SqlUtils.and(SqlUtils.notNull(tableName, keyName), clause)))) {
-
-      ref.put(row.getValue(keyName), row.getLong(tableName));
-    }
-    return ref;
   }
 
   private Earning getEarning(long employee, long object, int year, int month, Long currency) {
@@ -703,6 +587,24 @@ public class PayrollModuleBean implements BeeModule, ConcurrencyBean.HasTimerSer
     } else {
       return null;
     }
+  }
+
+  private Map<String, Long> getReferences(String tableName, String keyName) {
+    return getReferences(tableName, keyName, null);
+  }
+
+  private Map<String, Long> getReferences(String tableName, String keyName, IsCondition clause) {
+    Map<String, Long> ref = new HashMap<>();
+
+    for (SimpleRow row : qs.getData(new SqlSelect()
+        .addFields(tableName, keyName)
+        .addField(tableName, sys.getIdName(tableName), tableName)
+        .addFrom(tableName)
+        .setWhere(SqlUtils.and(SqlUtils.notNull(tableName, keyName), clause)))) {
+
+      ref.put(row.getValue(keyName), row.getLong(tableName));
+    }
+    return ref;
   }
 
   private Double getSalaryFund(long object, int year, int month, Long currency) {
@@ -976,6 +878,98 @@ public class PayrollModuleBean implements BeeModule, ConcurrencyBean.HasTimerSer
     }
 
     return result;
+  }
+
+  private int importLocations(String erpAddress, String erpLogin, String erpPassword)
+      throws BeeException {
+
+    SimpleRowSet rs = ButentWS.connect(erpAddress, erpLogin, erpPassword)
+        .getObjects();
+
+    int locNew = 0;
+    Map<String, Long> locations = getReferences(TBL_LOCATIONS, COL_LOCATION_NAME);
+
+    for (SimpleRow row : rs) {
+      String location = row.getValue("objektas");
+
+      if (!locations.containsKey(location)) {
+        locations.put(location, qs.insertData(new SqlInsert(TBL_LOCATIONS)
+            .addConstant(COL_LOCATION_NAME, location)
+            .addConstant(COL_LOCATION_STATUS, ObjectStatus.INACTIVE.ordinal())));
+        locNew++;
+      }
+    }
+    return locNew;
+  }
+
+  private String importTimeCards(String erpAddress, String erpLogin, String erpPassword,
+      DateTime lastSyncTime, Long company) throws BeeException {
+    SimpleRowSet rs = ButentWS.connect(erpAddress, erpLogin, erpPassword)
+        .getTimeCards(lastSyncTime);
+
+    SimpleRowSet employees = qs.getData(new SqlSelect()
+        .addField(TBL_EMPLOYEES, sys.getIdName(TBL_EMPLOYEES), COL_EMPLOYEE)
+        .addFields(TBL_EMPLOYEES, COL_TAB_NUMBER)
+        .addFrom(TBL_EMPLOYEES)
+        .addFromInner(TBL_COMPANY_PERSONS,
+            sys.joinTables(TBL_COMPANY_PERSONS, TBL_EMPLOYEES, COL_COMPANY_PERSON))
+        .setWhere(SqlUtils.equals(TBL_COMPANY_PERSONS, COL_COMPANY, company)));
+
+    Map<String, Long> tcCodes = getReferences(VIEW_TIME_CARD_CODES, COL_TC_CODE);
+
+    int cds = 0;
+    int ins = 0;
+    int upd = 0;
+    int del = 0;
+
+    for (SimpleRow row : rs) {
+      Long id = row.getLong("D_TAB_ID");
+      String tabNumber = row.getValue("TAB_NR");
+
+      if (BeeUtils.isEmpty(tabNumber)) {
+        del += qs.updateData(new SqlDelete(VIEW_TIME_CARD_CHANGES)
+            .setWhere(SqlUtils.equals(VIEW_TIME_CARD_CHANGES, COL_COSTS_EXTERNAL_ID, id)));
+        continue;
+      }
+      Long employee = BeeUtils.toLongOrNull(employees.getValueByKey(COL_TAB_NUMBER, tabNumber,
+          COL_EMPLOYEE));
+
+      if (!DataUtils.isId(employee)) {
+        continue;
+      }
+      String code = row.getValue("TAB_KODAS");
+
+      if (!tcCodes.containsKey(code)) {
+        tcCodes.put(code, qs.insertData(new SqlInsert(VIEW_TIME_CARD_CODES)
+            .addConstant(COL_TC_CODE, code)
+            .addConstant(COL_TC_NAME,
+                sys.clampValue(VIEW_TIME_CARD_CODES, COL_TC_NAME, row.getValue("PAVAD")))));
+        cds++;
+      }
+      int c = qs.updateData(new SqlUpdate(VIEW_TIME_CARD_CHANGES)
+          .addConstant(COL_EMPLOYEE, employee)
+          .addConstant(COL_TIME_CARD_CODE, tcCodes.get(code))
+          .addConstant(COL_TIME_CARD_CHANGES_FROM, TimeUtils.parseDate(row.getValue("DATA_NUO")))
+          .addConstant(COL_TIME_CARD_CHANGES_UNTIL, TimeUtils.parseDate(row.getValue("DATA_IKI")))
+          .addConstant(COL_NOTES, row.getValue("ISAK_PAVAD"))
+          .setWhere(SqlUtils.equals(VIEW_TIME_CARD_CHANGES, COL_COSTS_EXTERNAL_ID, id)));
+
+      if (BeeUtils.isPositive(c)) {
+        upd++;
+      } else {
+        qs.insertData(new SqlInsert(VIEW_TIME_CARD_CHANGES)
+            .addConstant(COL_EMPLOYEE, employee)
+            .addConstant(COL_TIME_CARD_CODE, tcCodes.get(code))
+            .addConstant(COL_TIME_CARD_CHANGES_FROM, TimeUtils.parseDate(row.getValue("DATA_NUO")))
+            .addConstant(COL_TIME_CARD_CHANGES_UNTIL, TimeUtils.parseDate(row.getValue("DATA_IKI")))
+            .addConstant(COL_NOTES, row.getValue("ISAK_PAVAD"))
+            .addConstant(COL_COSTS_EXTERNAL_ID, id));
+        ins++;
+      }
+    }
+    return BeeUtils.join(BeeConst.STRING_EOL, cds > 0 ? VIEW_TIME_CARD_CODES + ": +" + cds : null,
+        (ins + upd + del) > 0 ? VIEW_TIME_CARD_CHANGES + ":" + (ins > 0 ? " +" + ins : "")
+            + (upd > 0 ? " " + upd : "") + (del > 0 ? " -" + del : "") : null);
   }
 
   private ResponseObject initializeEarnings(RequestInfo reqInfo) {
