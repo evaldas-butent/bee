@@ -55,7 +55,7 @@ public class AssessmentForwarderForm extends PrintFormInterceptor {
         @Override
         public void onReadyForInsert(GridView gridView, ReadyForInsertEvent event) {
           event.getColumns().add(DataUtils.getColumn(COL_CARGO, gridView.getDataColumns()));
-          event.getValues().add(getStringValue(COL_CARGO));
+          event.getValues().add(AssessmentForwarderForm.this.getStringValue(COL_CARGO));
           super.onReadyForInsert(gridView, event);
         }
 
