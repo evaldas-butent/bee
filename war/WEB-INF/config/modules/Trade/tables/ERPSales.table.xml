@@ -9,6 +9,7 @@
     <String name="Number" precision="50" label="=trdNumber" />
     <Relation name="SaleSeries" relation="SaleSeries" label="=trdInvoicePrefix"/>
     <String name="InvoiceNo" precision="20" label="=trdInvoiceNo" defExpr="NEXT_NUMBER" defValue="InvoicePrefix" />
+    <String name="ERPInvoice" precision="20" unique="true" />
 
     <Relation name="Supplier" relation="Companies" label="=trdSupplier" />
     <Relation name="Customer" relation="Companies" label="=trdCustomer" />
