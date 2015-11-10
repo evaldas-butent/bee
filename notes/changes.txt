@@ -49,4 +49,4 @@
 2014.11.27 TinyMCE 4.1.7
 2014.12.14 flying-saucer-pdf-9.0.7 (flying-saucer-core-9.0.7, itext-2.1.7)
 2015.04.01 zxing-3.2.0.jar QR code library
-2015.08.26 ical4j-2.0-beta1 (commons-lang3-3.4)
+2015.08.26 ical4j-2.0-beta1 (commons-lang3-3.4, commons-codec-1.10)
