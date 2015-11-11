@@ -39,14 +39,14 @@ public class HopWorker {
         SqlUtils.notNull(TBL_TRIPS, COL_TRIP_PLANNED_END_DATE)));
 
     if (dateFrom != null) {
-      clause.add(SqlUtils.or(SqlUtils.and(SqlUtils.notNull(TBL_TRIPS, COL_TRIP_DATE_FROM),
-              SqlUtils.more(TBL_TRIPS, COL_TRIP_DATE_FROM, dateFrom)),
-          SqlUtils.more(TBL_TRIPS, COL_TRIP_DATE, dateFrom)));
+      clause.add(SqlUtils.or(SqlUtils.and(SqlUtils.notNull(TBL_TRIPS, COL_TRIP_DATE_TO),
+              SqlUtils.more(TBL_TRIPS, COL_TRIP_DATE_TO, dateFrom)),
+          SqlUtils.more(TBL_TRIPS, COL_TRIP_PLANNED_END_DATE, dateFrom)));
     }
     if (dateTo != null) {
-      clause.add(SqlUtils.or(SqlUtils.and(SqlUtils.notNull(TBL_TRIPS, COL_TRIP_DATE_TO),
-              SqlUtils.less(TBL_TRIPS, COL_TRIP_DATE_TO, dateTo)),
-          SqlUtils.less(TBL_TRIPS, COL_TRIP_PLANNED_END_DATE, dateTo)));
+      clause.add(SqlUtils.or(SqlUtils.and(SqlUtils.notNull(TBL_TRIPS, COL_TRIP_DATE_FROM),
+              SqlUtils.less(TBL_TRIPS, COL_TRIP_DATE_FROM, dateTo)),
+          SqlUtils.less(TBL_TRIPS, COL_TRIP_DATE, dateTo)));
     }
     SimpleRowSet rs = qs.getData(new SqlSelect()
         .addFields(PayrollConstants.TBL_EMPLOYEES, PayrollConstants.COL_TAB_NUMBER)
