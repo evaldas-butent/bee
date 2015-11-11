@@ -457,7 +457,7 @@ public class EditableColumn implements BlurHandler, EditChangeHandler, EditStopE
 
   @Override
   public void onValueChange(ValueChangeEvent<String> event) {
-    endEdit(null, false);
+    endEdit(KeyCodes.KEY_TAB, false);
   }
 
   public void openEditor(HasWidgets editorContainer, EditorConsumer editorConsumer,
