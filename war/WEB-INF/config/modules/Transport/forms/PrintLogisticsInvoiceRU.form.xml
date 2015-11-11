@@ -26,7 +26,7 @@
     </css>
     <VerticalPanel>
       <cell style="text-align:center;">
-        <Image url="images/HL_logo.jpg" style="width:50%;" />
+        <Image url="images/HL_logo.jpg" style="width:50%; margin: 1em 0 1em 0;" />
       </cell>
       <cell width="100" widthUnit="%" style="text-align:center; &bold; font-size:medium;">
         <FlowPanel>

@@ -24,7 +24,7 @@
     </css>
 
     <HorizontalPanel>
-      <Image  url="images/logo1.gif" />
+      <Image  url="images/HL_logo.jpg" style="max-height:40px; max-width: 285px;"/>
       <cell width="100" widthUnit="%">
         <FlowPanel style="text-align:center;">
           <Label html="Kreditinė PVM Sąskaita faktūra" style="&bold;" />

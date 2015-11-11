@@ -39,7 +39,7 @@
           <DateTimeLabel source="Date" format="DATE_SHORT" />
         </row>
       </Table>
-      <Image url="images/HL_logo.jpg" style="width:50%; margin-left: 50px;" />
+     <Image url="images/HL_logo.jpg" style="width:50%; margin-left: 50px; margin-top:1em; margin-bottom:1em" />
     </HorizontalPanel>
 
     <FlowPanel style="&section;">
