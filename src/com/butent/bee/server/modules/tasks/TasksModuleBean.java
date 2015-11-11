@@ -139,7 +139,7 @@ public class TasksModuleBean implements BeeModule {
 
     List<SearchResult> tasksSr = qs.getSearchResults(VIEW_TASKS,
         Filter.anyContains(Sets.newHashSet(COL_SUMMARY, COL_DESCRIPTION,
-                ALS_COMPANY_NAME, ALS_EXECUTOR_FIRST_NAME, ALS_EXECUTOR_LAST_NAME),
+            ALS_COMPANY_NAME, ALS_EXECUTOR_FIRST_NAME, ALS_EXECUTOR_LAST_NAME),
             query));
     result.addAll(tasksSr);
 
@@ -209,7 +209,7 @@ public class TasksModuleBean implements BeeModule {
     String module = getModule().getName();
     List<BeeParameter> params = Lists.newArrayList(
         BeeParameter.createText(module, PRM_END_OF_WORK_DAY)
-    );
+        );
     return params;
   }
 
@@ -629,7 +629,7 @@ public class TasksModuleBean implements BeeModule {
         updateTaskUsers(row.getId(), oldUsers, newUsers);
       }
     } else {
-      newUsers = new ArrayList<>(oldUsers);
+      newUsers = null;
     }
 
     if (!BeeUtils.isEmpty(updatedRelations)) {
@@ -662,8 +662,11 @@ public class TasksModuleBean implements BeeModule {
 
       response = deb.commitRow(updated);
       if (!response.hasErrors() && response.hasResponse(BeeRow.class)) {
-        addTaskProperties((BeeRow) response.getResponse(), data.getColumns(), newUsers, eventId,
-            propNames, addRelations);
+        BeeRow respRow = (BeeRow) response.getResponse();
+        if (newUsers == null) {
+          newUsers = getTaskUsers(respRow.getId());
+        }
+        addTaskProperties(respRow, data.getColumns(), newUsers, eventId, propNames, addRelations);
       }
 
     } else {
@@ -1183,7 +1186,7 @@ public class TasksModuleBean implements BeeModule {
       String compFullName =
           companiesListSet.getValue(i, COL_COMPANY_NAME)
               + (!BeeUtils.isEmpty(companiesListSet.getValue(i, ALS_COMPANY_TYPE))
-              ? ", " + companiesListSet.getValue(i, ALS_COMPANY_TYPE) : "");
+                  ? ", " + companiesListSet.getValue(i, ALS_COMPANY_TYPE) : "");
       String dTime = "0:00";
 
       SqlSelect companyTimesQuery = new SqlSelect()
@@ -1733,7 +1736,7 @@ public class TasksModuleBean implements BeeModule {
           (!BeeUtils.isEmpty(usersListSet.getValue(i, COL_FIRST_NAME))
               ? usersListSet.getValue(i, COL_FIRST_NAME) : "") + " "
               + (!BeeUtils.isEmpty(usersListSet.getValue(i, COL_LAST_NAME))
-              ? usersListSet.getValue(i, COL_LAST_NAME) : "");
+                  ? usersListSet.getValue(i, COL_LAST_NAME) : "");
 
       userFullName = BeeUtils.isEmpty(userFullName) ? "—" : userFullName;
       String dTime = "0:00";

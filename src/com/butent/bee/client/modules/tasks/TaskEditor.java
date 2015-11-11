@@ -762,7 +762,6 @@ class TaskEditor extends AbstractFormInterceptor {
     }
 
     params.addDataItem(VAR_TASK_DATA, Codec.beeSerialize(rowSet));
-    params.addDataItem(VAR_TASK_USERS, getTaskUsers(form, row));
 
     sendRequest(params, new RpcCallback<ResponseObject>() {
       @Override
