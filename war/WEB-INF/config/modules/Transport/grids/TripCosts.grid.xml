@@ -13,7 +13,9 @@
     <RelColumn name="Item" renderColumns="ItemName" />
     <DataColumn name="UnitName" />
     <DataColumn name="Quantity" />
-    <DataColumn name="Price" format="0.00" />
+    <DataColumn name="Price" format="0.00">
+      <editor type="number" currencySource="Currency" />
+    </DataColumn>
     <RelColumn name="Currency" />
     <DataColumn name="VatPlus" width="20" sortable="false" horizontalAlignment="center" caption="+">
       <render><ui:expression>row.VatPlus ? '+' : ''</ui:expression></render>

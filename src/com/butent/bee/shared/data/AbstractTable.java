@@ -176,7 +176,10 @@ public abstract class AbstractTable<R extends IsRow, C extends IsColumn> impleme
     cell.clearProperties();
   }
 
-  public boolean containsAllColumnIds(Collection<String> colIds) {
+  public boolean containsColumns(String... colIds) {
+    if (colIds == null) {
+      return false;
+    }
     for (String id : colIds) {
       if (!containsColumn(id)) {
         return false;

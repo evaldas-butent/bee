@@ -145,7 +145,10 @@ public class PayrollModuleBean implements BeeModule {
       @Subscribe
       @AllowConcurrentEvents
       public void setRowProperties(ViewQueryEvent event) {
-        if (event.isAfter(VIEW_OBJECT_EARNINGS, VIEW_EMPLOYEE_EARNINGS) && event.hasData()) {
+        if (event.isAfter(VIEW_OBJECT_EARNINGS, VIEW_EMPLOYEE_EARNINGS) && event.hasData()
+            && event.getRowset().containsColumns(COL_PAYROLL_OBJECT, COL_EARNINGS_YEAR,
+                COL_EARNINGS_MONTH)) {
+
           Long currency = prm.getRelation(PRM_CURRENCY);
 
           int objectIndex = event.getRowset().getColumnIndex(COL_PAYROLL_OBJECT);
@@ -154,21 +157,23 @@ public class PayrollModuleBean implements BeeModule {
 
           switch (event.getTargetName()) {
             case VIEW_EMPLOYEE_EARNINGS:
-              int employeeIndex = event.getRowset().getColumnIndex(COL_EMPLOYEE);
+              if (event.getRowset().containsColumn(COL_EMPLOYEE)) {
+                int employeeIndex = event.getRowset().getColumnIndex(COL_EMPLOYEE);
 
-              for (BeeRow row : event.getRowset()) {
-                Long employee = row.getLong(employeeIndex);
-                Long object = row.getLong(objectIndex);
+                for (BeeRow row : event.getRowset()) {
+                  Long employee = row.getLong(employeeIndex);
+                  Long object = row.getLong(objectIndex);
 
-                Integer year = row.getInteger(yearIndex);
-                Integer month = row.getInteger(monthIndex);
+                  Integer year = row.getInteger(yearIndex);
+                  Integer month = row.getInteger(monthIndex);
 
-                if (DataUtils.isId(employee) && DataUtils.isId(object)
-                    && TimeUtils.isYear(year) && TimeUtils.isMonth(month)) {
+                  if (DataUtils.isId(employee) && DataUtils.isId(object)
+                      && TimeUtils.isYear(year) && TimeUtils.isMonth(month)) {
 
-                  Earning earning = getEarning(employee, object, year, month, currency);
-                  if (earning != null) {
-                    earning.appplyTo(row);
+                    Earning earning = getEarning(employee, object, year, month, currency);
+                    if (earning != null) {
+                      earning.appplyTo(row);
+                    }
                   }
                 }
               }
@@ -265,14 +270,15 @@ public class PayrollModuleBean implements BeeModule {
   }
 
   private Earning getObjectEarning(long object, int year, int month, Long currency) {
-    SqlSelect query = new SqlSelect().setDistinctMode(true)
-        .addFields(TBL_EMPLOYEE_EARNINGS, COL_EMPLOYEE)
+    SqlSelect query = new SqlSelect()
+        .addFields(TBL_EMPLOYEE_EARNINGS, COL_EMPLOYEE,
+            COL_EARNINGS_BONUS_PERCENT, COL_EARNINGS_BONUS_1, COL_EARNINGS_BONUS_2)
         .addFrom(TBL_EMPLOYEE_EARNINGS)
         .setWhere(SqlUtils.equals(TBL_EMPLOYEE_EARNINGS, COL_PAYROLL_OBJECT, object,
             COL_EARNINGS_YEAR, year, COL_EARNINGS_MONTH, month));
 
-    Set<Long> employees = qs.getLongSet(query);
-    if (employees.isEmpty()) {
+    SimpleRowSet employees = qs.getData(query);
+    if (DataUtils.isEmpty(employees)) {
       return null;
     }
 
@@ -280,19 +286,31 @@ public class PayrollModuleBean implements BeeModule {
     long millis = 0;
     double amount = BeeConst.DOUBLE_ZERO;
 
-    for (Long employee : employees) {
+    double emplAmount;
+
+    for (SimpleRow row : employees) {
+      Long employee = row.getLong(COL_EMPLOYEE);
+
       if (DataUtils.isId(employee)) {
         Earning earning = getEarning(employee, object, year, month, currency);
 
-        if (earning != null) {
+        if (earning == null) {
+          emplAmount = BeeConst.DOUBLE_ZERO;
+
+        } else {
           days.addAll(earning.getDays());
           millis += earning.getMillis();
-          amount += earning.getAmount();
+
+          emplAmount = earning.getAmount();
         }
+
+        amount += PayrollUtils.calculateEarnings(emplAmount,
+            row.getDouble(COL_EARNINGS_BONUS_PERCENT),
+            row.getDouble(COL_EARNINGS_BONUS_1), row.getDouble(COL_EARNINGS_BONUS_2));
       }
     }
 
-    if (millis > 0) {
+    if (BeeUtils.nonZero(amount)) {
       return new Earning(days, millis, amount);
     } else {
       return null;

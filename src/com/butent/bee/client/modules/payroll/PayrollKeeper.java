@@ -51,6 +51,8 @@ public final class PayrollKeeper {
     FormFactory.registerFormInterceptor(FORM_WORK_SCHEDULE, new WorkScheduleForm());
     FormFactory.registerFormInterceptor(FORM_EARNINGS, new EarningsForm());
 
+    FormFactory.registerFormInterceptor(FORM_OBJECT_EARNINGS, new ObjectEarningsForm());
+
     GridFactory.registerGridInterceptor(GRID_EMPLOYEE_EARNINGS, new EmployeeEarningsGrid());
   }
 
