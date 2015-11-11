@@ -319,6 +319,25 @@ public class TradeActBean implements HasTimerService {
     });
   }
 
+  private Map<String, Long> getReferences(String tableName, String keyName) {
+    return getReferences(tableName, keyName, null);
+  }
+
+  private Map<String, Long> getReferences(String tableName, String keyName,
+      IsCondition clause) {
+    Map<String, Long> ref = new HashMap<>();
+
+    for (SimpleRow row : qs.getData(new SqlSelect()
+        .addFields(tableName, keyName)
+        .addField(tableName, sys.getIdName(tableName), tableName)
+        .addFrom(tableName)
+        .setWhere(SqlUtils.and(SqlUtils.notNull(tableName, keyName), clause)))) {
+
+      ref.put(row.getValue(keyName), row.getLong(tableName));
+    }
+    return ref;
+  }
+
   private ResponseObject alterKind(RequestInfo reqInfo) {
     Long actId = reqInfo.getParameterLong(COL_TRADE_ACT);
     if (!DataUtils.isId(actId)) {
@@ -682,7 +701,7 @@ public class TradeActBean implements HasTimerService {
         SqlUtils.and(SqlUtils.equals(TBL_TRADE_ACTS, COL_TA_SERIES, seriesId),
             SqlUtils.notNull(TBL_TRADE_ACTS, columnName), SqlUtils.equals(TBL_TRADE_ACTS,
                 COL_TA_KIND, TradeActKind.RETURN.ordinal()), SqlUtils.equals(TBL_TRADE_ACTS,
-                COL_TA_PARENT, parentId));
+                    COL_TA_PARENT, parentId));
 
     SqlSelect query = new SqlSelect()
         .addFields(TBL_TRADE_ACTS, columnName)
@@ -1469,7 +1488,7 @@ public class TradeActBean implements HasTimerService {
                 sys.joinTables(TBL_TRADE_ACTS, TBL_TRADE_ACT_ITEMS, COL_TRADE_ACT))
             .setWhere(
                 SqlUtils.and(SqlUtils.inList(TBL_TRADE_ACTS, COL_TA_PARENT, Lists
-                        .newArrayList(actId)),
+                    .newArrayList(actId)),
                     SqlUtils.equals(TBL_TRADE_ACTS, COL_TA_KIND, TradeActKind.RETURN.ordinal())))
             .addGroup(TBL_TRADE_ACT_ITEMS, COL_TA_ITEM);
 
@@ -3051,13 +3070,13 @@ public class TradeActBean implements HasTimerService {
       if (!BeeUtils.isEmpty(avansSask)) {
         rs = ButentWS.connect(remoteAddress, remoteLogin, remotePassword)
             .getSQLData("SELECT klientai.klientas AS kl, klientai.kodas AS kd,"
-                    + " SUM(CASE WHEN debetas LIKE '" + avansSask
-                    + "%' THEN (-1) ELSE 1 END * suma)"
-                    + " AS av"
-                    + " FROM finans INNER JOIN klientai ON klientai.klientas = finans.klientas"
-                    + " WHERE debetas LIKE '" + avansSask + "%' OR kreditas LIKE '" + avansSask
-                    + "%'"
-                    + " GROUP BY klientai.klientas, klientai.kodas HAVING av > 0",
+                + " SUM(CASE WHEN debetas LIKE '" + avansSask
+                + "%' THEN (-1) ELSE 1 END * suma)"
+                + " AS av"
+                + " FROM finans INNER JOIN klientai ON klientai.klientas = finans.klientas"
+                + " WHERE debetas LIKE '" + avansSask + "%' OR kreditas LIKE '" + avansSask
+                + "%'"
+                + " GROUP BY klientai.klientas, klientai.kodas HAVING av > 0",
                 new String[] {"kl", "kd", "av"});
       } else {
         rs = null;
@@ -3349,7 +3368,7 @@ public class TradeActBean implements HasTimerService {
     try {
       rs = ButentWS.connect(remoteAddress, remoteLogin, remotePassword)
           .getSQLData("SELECT preke AS pr, sum(kiekis) AS lk"
-                  + " FROM likuciai GROUP BY preke HAVING lk > 0",
+              + " FROM likuciai GROUP BY preke HAVING lk > 0",
               new String[] {"pr", "lk"});
     } catch (BeeException e) {
       logger.error(e);
@@ -3372,137 +3391,104 @@ public class TradeActBean implements HasTimerService {
 
     // Turnovers
     try {
-      SimpleRowSet butentCompanies =
+      SimpleRowSet erpCompanies =
           ButentWS.connect(remoteAddress, remoteLogin, remotePassword)
               .getClients();
 
-      if (butentCompanies.isEmpty()) {
+      if (erpCompanies.isEmpty()) {
         logger.info("Finish import Debts. Clients set from ERP is empty");
         return;
       }
 
-      SqlDelete del =
-          new SqlDelete(TBL_ERP_SALES).setWhere(SqlUtils.sqlTrue());
+      Map<String, Long> companies = getReferences(TBL_COMPANIES, COL_COMPANY_CODE, SqlUtils.notNull(
+          TBL_COMPANIES, COL_COMPANY_CODE));
 
-      qs.updateData(del);
+      if (companies.isEmpty()) {
+        logger.info("Finish import Debts. Clients set from system by code is empty");
+        return;
+      }
 
-      for (int comp = 0; comp < butentCompanies.getNumberOfRows(); comp++) {
-        if (BeeUtils.isEmpty(butentCompanies.getValue(comp, "kodas"))) {
+      SimpleRowSet erpTurnovers =
+          ButentWS.connect(remoteAddress, remoteLogin, remotePassword).getTurnovers(
+              null, null, null);
+
+      if (erpTurnovers.isEmpty()) {
+        logger.info("Finish import Turnovers. Turnovers set from ERP is empty");
+        return;
+      }
+
+      Map<String, Long> compIdByName = new HashMap<>();
+
+      for (String code : companies.keySet()) {
+        String name = erpCompanies.getValueByKey("kodas", code, "gavejas");
+
+        if (!BeeUtils.isEmpty(name)) {
+          compIdByName.put(name, companies.get(COL_COMPANY));
+        }
+      }
+
+      Map<String, Long> series = getReferences(TBL_SALES_SERIES, COL_SERIES_NAME);
+      Map<String, Long> currencies = getReferences(TBL_CURRENCIES, COL_CURRENCY_NAME);
+      Map<String, Long> users = getReferences(TBL_USERS, COL_EMPLOYER_ID, SqlUtils.notNull(
+          TBL_USERS, COL_EMPLOYER_ID));
+
+      SqlSelect salesSelect = new SqlSelect()
+          .addFields(TBL_ERP_SALES, COL_TRADE_ERP_INVOICE)
+          .addExpr(SqlUtils.minus(SqlUtils.nvl(SqlUtils.field(TBL_ERP_SALES, COL_TRADE_PAID), 0),
+              SqlUtils.nvl(SqlUtils.field(TBL_ERP_SALES, COL_TRADE_AMOUNT)), 0), COL_TRADE_DEBT)
+          .addFrom(TBL_ERP_SALES);
+
+      SimpleRowSet sales = qs.getData(salesSelect);
+
+      for (SimpleRow erpInvoice : erpTurnovers) {
+
+        Double debt = BeeUtils.toDoubleOrNull(sales.getValueByKey(COL_TRADE_ERP_INVOICE, erpInvoice
+            .getValue("dokumentas"), COL_TRADE_DEBT));
+
+        if (BeeUtils.isZero(debt)) {
           continue;
         }
 
-        SqlSelect selCompanny = new SqlSelect()
-            .addField(TBL_COMPANIES, sys.getIdName(TBL_COMPANIES), COL_COMPANY)
-            .addFrom(TBL_COMPANIES)
-            .setWhere(SqlUtils.equals(TBL_COMPANIES, COL_COMPANY_CODE, butentCompanies
-                .getValue(comp, "kodas")));
-
-        Long companyId = qs.getLong(selCompanny);
+        Long companyId = compIdByName.get(erpInvoice.getValue("gavejas"));
 
         if (!DataUtils.isId(companyId)) {
-          logger.info(" Company not found by code", butentCompanies
-                  .getValue(comp, "kodas"),
-              "not found in B-NOVO. Row data: ");
           continue;
         }
 
-        SimpleRowSet butentDebts =
-            ButentWS.connect(remoteAddress, remoteLogin, remotePassword).getTurnovers(
-                null, null, butentCompanies.getValue(comp, "klientas"));
+        Long currencyId = currencies.get(erpInvoice.getValue("viso_val"));
 
-        if (butentDebts.isEmpty()) {
-          logger.info("Finish import Turnovers. Turnovers set from ERP is empty",
-              butentCompanies.getValue(comp, "klientas"));
+        if (DataUtils.isId(currencyId)) {
           continue;
         }
 
-        for (int i = 0; i < butentDebts.getNumberOfRows(); i++) {
+        String docSeries = erpInvoice.getValue("dok_serija");
 
-          SqlSelect select = new SqlSelect()
-              .addField(TBL_ERP_SALES, sys.getIdName(TBL_ERP_SALES), COL_SALE)
-              .addFrom(TBL_ERP_SALES)
-              .addFromLeft(TBL_SALES_SERIES,
-                  sys.joinTables(TBL_SALES_SERIES, TBL_ERP_SALES, COL_TRADE_SALE_SERIES))
-              .setWhere(
-                  SqlUtils.and(
-                      SqlUtils.equals(TBL_SALES_SERIES, COL_SERIES_NAME,
-                          butentDebts.getValue(i, "dok_serija")),
-                      SqlUtils.equals(TBL_ERP_SALES, COL_TRADE_INVOICE_NO,
-                          butentDebts.getValue(i, "kitas_dok"))
-                  )
-              );
-
-          Long saleId = qs.getLong(select);
-
-          if (!DataUtils.isId(saleId)) {
-            Long serId = null;
-
-            if (!BeeUtils.isEmpty(butentDebts.getValue(i, "dok_serija"))) {
-
-              SqlSelect serSelect = new SqlSelect()
-                  .addField(TBL_SALES_SERIES, sys.getIdName(TBL_SALES_SERIES), COL_SERIES)
-                  .addFrom(TBL_SALES_SERIES)
-                  .setWhere(SqlUtils.equals(TBL_SALES_SERIES, COL_SERIES_NAME, butentDebts
-                      .getValue(i, "dok_serija")));
-
-              serId = qs.getLong(serSelect);
-
-              if (!DataUtils.isId(serId)) {
-                serId =
-                    qs.insertDataWithResponse(
-                        new SqlInsert(TBL_SALES_SERIES).addConstant(COL_SERIES_NAME, butentDebts
-                            .getValue(i,
-                                "dok_serija"))).getResponseAsLong();
-              }
-            }
-
-            SqlSelect selCurrencies = new SqlSelect()
-                .addField(TBL_CURRENCIES, sys.getIdName(TBL_CURRENCIES), COL_CURRENCY)
-                .addFrom(TBL_CURRENCIES)
-                .setWhere(SqlUtils.equals(TBL_CURRENCIES, COL_CURRENCY_NAME, butentDebts
-                    .getValue(i, "viso_val")));
-
-            Long currencyId = qs.getLong(selCurrencies);
-
-            if (!DataUtils.isId(currencyId)) {
-              logger.info("Turnover row was skipped. Company", butentDebts.getValue(i, "gavejas"),
-                  "code", butentCompanies
-                      .getValue(comp, "kodas"), "currency", butentDebts
-                      .getValue(i, "viso_val"),
-                  "not found in B-NOVO. Row data:", butentDebts.getRow(i).getValues());
-              continue;
-            }
-
-            SqlSelect selUsers = new SqlSelect()
-                .addField(TBL_USERS, sys.getIdName(TBL_USERS), COL_USER)
-                .addFrom(TBL_USERS)
-                .setWhere(
-                    SqlUtils
-                        .equals(TBL_USERS, COL_EMPLOYER_ID, butentDebts.getValue(i, "manager")));
-
-            Long userId = qs.getLong(selUsers);
-
-            SqlInsert si =
-                new SqlInsert(TBL_ERP_SALES)
-                    .addConstant(COL_TRADE_DATE,
-                        TimeUtils.parseDate(butentDebts.getValue(i, "data")))
-                    .addConstant(COL_TRADE_CUSTOMER, companyId)
-                    .addConstant(COL_TRADE_AMOUNT, butentDebts.getValue(i, "viso"))
-                    .addConstant(COL_TRADE_SALE_SERIES, serId)
-                    .addConstant(COL_TRADE_INVOICE_NO, butentDebts.getValue(i, "dokumentas"))
-                    .addConstant(COL_TRADE_CURRENCY, currencyId)
-                    .addConstant(COL_TRADE_MANAGER, userId)
-                    .addConstant(
-                        COL_TRADE_PAID,
-                        BeeUtils.unbox(butentDebts.getDouble(i, "apm_suma")))
-                    .addConstant(
-                        COL_TRADE_PAYMENT_TIME,
-                        TimeUtils.parseDate(butentDebts.getValue(i, "apm_data")))
-                    .addConstant(COL_TRADE_TERM,
-                        TimeUtils.parseDate(butentDebts.getValue(i, "terminas")));
-            qs.insertData(si);
-          }
+        if (!BeeUtils.isEmpty(docSeries) && !series.containsKey(docSeries)) {
+          series.put(docSeries, qs.insertData(
+              new SqlInsert(TBL_SALES_SERIES)
+                  .addConstant(COL_SERIES_NAME, docSeries)));
         }
+
+        Long seriesId = series.get(docSeries);
+        Long userId = users.get(erpInvoice.getValue("manager"));
+
+        SqlInsert insertRow =
+            new SqlInsert(TBL_ERP_SALES)
+                .addConstant(COL_TRADE_DATE,
+                    TimeUtils.parseDate(erpInvoice.getValue("data")))
+                .addConstant(COL_TRADE_CUSTOMER, companyId)
+                .addConstant(COL_TRADE_AMOUNT, erpInvoice.getValue("viso"))
+                .addConstant(COL_TRADE_SALE_SERIES, seriesId)
+                .addConstant(COL_TRADE_INVOICE_NO, erpInvoice.getValue("kitas_dok"))
+                .addConstant(COL_TRADE_ERP_INVOICE, erpInvoice.getValue("dokumentas"))
+                .addConstant(COL_TRADE_CURRENCY, currencyId)
+                .addConstant(COL_TRADE_MANAGER, userId)
+                .addConstant(COL_TRADE_PAID, BeeUtils.unbox(erpInvoice.getDouble("apm_suma")))
+                .addConstant(COL_TRADE_PAYMENT_TIME, TimeUtils.parseDate(erpInvoice.getValue(
+                    "apm_data")))
+                .addConstant(COL_TRADE_TERM, TimeUtils.parseDate(erpInvoice.getValue(
+                    "terminas")));
+        qs.insertData(insertRow);
       }
     } catch (BeeException e) {
       logger.error(e);

@@ -13,6 +13,7 @@
       <SimpleColumn name="SeriesName" />
     </SimpleJoin>
     <SimpleColumn name="InvoiceNo" />
+    <SimpleColumn name="ERPInvoice" />
 
     <SimpleColumn name="Term" />
     <SimpleColumn name="Proforma" />
