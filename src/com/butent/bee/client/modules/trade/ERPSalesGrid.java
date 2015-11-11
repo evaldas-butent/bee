@@ -7,10 +7,12 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
+import com.butent.bee.client.event.logical.RenderingEvent;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.modules.trade.acts.TradeActKeeper;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.view.HeaderView;
+import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.FaLabel;
@@ -49,10 +51,16 @@ class ERPSalesGrid extends AbstractGridInterceptor {
   }
 
   @Override
-  public void beforeRefresh(GridPresenter presenter) {
+  public void beforeRender(GridView gridView, RenderingEvent event) {
+    GridPresenter presenter = getGridPresenter();
+
+    if (presenter == null) {
+      return;
+    }
+
     summingAction.clear();
     summingAction.add(TradeKeeper.createAmountAction(presenter.getViewName(),
-        presenter.getDataProvider().getFilter(), Data.getIdColumn(presenter.getViewName()),
+        presenter.getDataProvider().getUserFilter(), Data.getIdColumn(presenter.getViewName()),
         presenter.getGridView()));
   }
 

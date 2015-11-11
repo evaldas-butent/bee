@@ -1,12 +1,15 @@
 package com.butent.bee.client.modules.trade;
 
 import com.butent.bee.client.data.Data;
+import com.butent.bee.client.event.logical.RenderingEvent;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.GridFactory.GridOptions;
+import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.presenter.PresenterCallback;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.edit.EditStartEvent;
+import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.view.search.AbstractFilterSupplier;
@@ -24,13 +27,16 @@ import com.butent.bee.shared.utils.BeeUtils;
 class DebtsGrid extends AbstractGridInterceptor {
 
   private static final LocalizableConstants localizedConstants = Localized.getConstants();
+  private final Flow ammountAction = new Flow();
 
   @Override
   public void afterCreatePresenter(GridPresenter presenter) {
     HeaderView header = presenter.getHeader();
 
     header.clearCommandPanel();
-    header.addCommandItem(TradeKeeper.createAmountAction(presenter.getViewName(),
+    header.addCommandItem(ammountAction);
+    ammountAction.clear();
+    ammountAction.add(TradeKeeper.createAmountAction(presenter.getViewName(),
         presenter.getDataProvider().getFilter(), Data.getIdColumn(presenter.getViewName()),
         presenter.getGridView()));
   }
@@ -47,6 +53,20 @@ class DebtsGrid extends AbstractGridInterceptor {
     } else {
       return super.getFilterSupplier(columnName, columnDescription);
     }
+  }
+
+  @Override
+  public void beforeRender(GridView gridView, RenderingEvent event) {
+    GridPresenter presenter = getGridPresenter();
+
+    if (presenter == null) {
+      return;
+    }
+
+    ammountAction.clear();
+    ammountAction.add(TradeKeeper.createAmountAction(presenter.getViewName(),
+        presenter.getDataProvider().getUserFilter(), Data.getIdColumn(presenter.getViewName()),
+        presenter.getGridView()));
   }
 
   @Override
