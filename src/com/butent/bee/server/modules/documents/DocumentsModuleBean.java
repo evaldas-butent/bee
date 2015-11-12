@@ -266,21 +266,30 @@ public class DocumentsModuleBean implements BeeModule {
           if (!DataUtils.contains(columns, COL_DOCUMENT_SENT_NUMBER) && DataUtils
               .contains(columns, COL_DOCUMENT_SENT)) {
 
-            /** Write values in derived references of instances */
-            columns.add(sys.getView(VIEW_DOCUMENTS).getBeeColumn(COL_DOCUMENT_SENT_NUMBER));
-            row.addValue(new TextValue(
-                qs.getNextNumber(event.getTargetName(), COL_DOCUMENT_SENT_NUMBER, null,
-                    null)));
+            int idxSent = DataUtils.getColumnIndex(COL_DOCUMENT_SENT, columns);
+
+            if (!BeeUtils.isEmpty(row.getString(idxSent))) {
+
+              /** Write values in derived references of instances */
+              columns.add(sys.getView(VIEW_DOCUMENTS).getBeeColumn(COL_DOCUMENT_SENT_NUMBER));
+              row.addValue(new TextValue(
+                  qs.getNextNumber(event.getTargetName(), COL_DOCUMENT_SENT_NUMBER, null,
+                      null)));
+            }
           }
 
           if (!DataUtils.contains(columns, COL_DOCUMENT_RECEIVED_NUMBER) && DataUtils
               .contains(columns, COL_DOCUMENT_RECEIVED)) {
 
-            /** Write values in derived references of instances */
-            columns.add(sys.getView(VIEW_DOCUMENTS).getBeeColumn(COL_DOCUMENT_RECEIVED_NUMBER));
-            row.addValue(new TextValue(qs.getNextNumber(event.getTargetName(),
-                COL_DOCUMENT_RECEIVED_NUMBER, null,
-                null)));
+            int idxReceived = DataUtils.getColumnIndex(COL_DOCUMENT_RECEIVED, columns);
+
+            if (!BeeUtils.isEmpty(row.getString(idxReceived))) {
+              /** Write values in derived references of instances */
+              columns.add(sys.getView(VIEW_DOCUMENTS).getBeeColumn(COL_DOCUMENT_RECEIVED_NUMBER));
+              row.addValue(new TextValue(qs.getNextNumber(event.getTargetName(),
+                  COL_DOCUMENT_RECEIVED_NUMBER, null,
+                  null)));
+            }
           }
         }
       }

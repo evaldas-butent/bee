@@ -7,6 +7,7 @@ import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.calendar.CalendarConstants;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.discussions.DiscussionsConstants;
+import com.butent.bee.shared.modules.documents.DocumentConstants;
 import com.butent.bee.shared.modules.ec.EcConstants;
 import com.butent.bee.shared.modules.service.ServiceConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
@@ -50,6 +51,9 @@ public enum MenuService {
 
   @XmlEnumValue("discuss_list")
   DISCUSS_LIST(RightsState.VIEW, DiscussionsConstants.VIEW_DISCUSSIONS),
+
+  @XmlEnumValue("documents")
+  DOCUMENTS(RightsState.VIEW, DocumentConstants.VIEW_DOCUMENTS),
 
   @XmlEnumValue("open_mail")
   OPEN_MAIL(EnumSet.noneOf(RightsState.class)),
