@@ -152,6 +152,7 @@ public class FileGroup extends HtmlTable implements HasOptions {
       void refresh(Widget widget, FileInfo sf) {
         if (widget instanceof Simple) {
           ((Simple) widget).setWidget(FileUtils.getLink(sf));
+          ((Simple) widget).setTitle(BeeUtils.notEmpty(sf.getCaption(), sf.getName()));
         }
       }
 
