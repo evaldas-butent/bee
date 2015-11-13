@@ -849,23 +849,28 @@ public class QueryServiceBean {
     if (provider != null) {
       return provider.getViewData(view, query, filter);
     }
-    return getViewData(query, view);
+    return getViewData(query, view, BeeUtils.isEmpty(columns));
   }
 
-  public BeeRowSet getViewData(final SqlSelect query, final BeeView view) {
+  public BeeRowSet getViewData(final SqlSelect query, final BeeView view, boolean postEvent) {
     Assert.noNulls(query, view);
     Assert.state(!query.isEmpty());
 
     activateTables(query);
 
     final ViewQueryEvent event = new ViewQueryEvent(view.getName(), query);
-    sys.postDataEvent(event);
 
+    if (postEvent) {
+      sys.postDataEvent(event);
+    }
     return processSql(null, query.getQuery(), new SqlHandler<BeeRowSet>() {
       @Override
       public BeeRowSet processResultSet(ResultSet rs) throws SQLException {
         event.setRowset(rsToBeeRowSet(rs, view));
-        sys.postDataEvent(event);
+
+        if (postEvent) {
+          sys.postDataEvent(event);
+        }
         return event.getRowset();
       }
 

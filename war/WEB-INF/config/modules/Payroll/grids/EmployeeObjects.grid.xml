@@ -12,7 +12,9 @@
     <DataColumn name="DateFrom" />
     <DataColumn name="DateUntil" />
 
-    <DataColumn name="Wage" visible="true" />
+    <DataColumn name="Wage" visible="true">
+      <editor type="number" currencySource="Currency" />
+    </DataColumn>
     <RelColumn name="Currency" />
 
     <DataColumn name="Note" flexGrow="1" />

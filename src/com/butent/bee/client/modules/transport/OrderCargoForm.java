@@ -102,17 +102,17 @@ class OrderCargoForm extends AbstractFormInterceptor implements SelectorEvent.Ha
     } else if (widget instanceof ChildGrid) {
       switch (name) {
         case TBL_CARGO_INCOMES:
-          final String viewName = getViewName();
+          final FormView form = getFormView();
 
           ((ChildGrid) widget).setGridInterceptor(new AbstractGridInterceptor() {
             @Override
             public void afterDeleteRow(long rowId) {
-              refresh(Data.getLong(viewName, getActiveRow(), COL_CURRENCY));
+              refresh(form.getLongValue(COL_CURRENCY));
             }
 
             @Override
             public void afterInsertRow(IsRow result) {
-              refresh(Data.getLong(viewName, getActiveRow(), COL_CURRENCY));
+              refresh(form.getLongValue(COL_CURRENCY));
             }
 
             @Override
@@ -120,7 +120,7 @@ class OrderCargoForm extends AbstractFormInterceptor implements SelectorEvent.Ha
                 IsRow result, boolean rowMode) {
               if (BeeUtils.inListSame(column.getId(), COL_DATE, COL_AMOUNT, COL_CURRENCY,
                   COL_TRADE_VAT_PLUS, COL_TRADE_VAT, COL_TRADE_VAT_PERC)) {
-                refresh(Data.getLong(viewName, getActiveRow(), COL_CURRENCY));
+                refresh(form.getLongValue(COL_CURRENCY));
               }
             }
 

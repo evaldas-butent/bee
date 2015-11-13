@@ -5,6 +5,7 @@ import static com.butent.bee.shared.modules.payroll.PayrollConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ParameterList;
+import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.style.ColorStyleProvider;
 import com.butent.bee.client.style.ConditionalStyle;
 import com.butent.bee.client.ui.FormFactory;
@@ -49,6 +50,10 @@ public final class PayrollKeeper {
 
     FormFactory.registerFormInterceptor(FORM_WORK_SCHEDULE, new WorkScheduleForm());
     FormFactory.registerFormInterceptor(FORM_EARNINGS, new EarningsForm());
+
+    FormFactory.registerFormInterceptor(FORM_OBJECT_EARNINGS, new ObjectEarningsForm());
+
+    GridFactory.registerGridInterceptor(GRID_EMPLOYEE_EARNINGS, new EmployeeEarningsGrid());
   }
 
   private PayrollKeeper() {

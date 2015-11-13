@@ -49,6 +49,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
@@ -271,12 +272,8 @@ public class FileStorageBean {
     return file.exists();
   }
 
-  public void setRepositoryDir(File repositoryDir) {
-    this.repositoryDir = repositoryDir;
-  }
-
   public Long storeFile(InputStream is, String fileName, String mimeType) throws IOException {
-    boolean storeAsFile = repositoryDir != null;
+    boolean storeAsFile = Objects.nonNull(repositoryDir);
     String name = sys.clampValue(TBL_FILES, COL_FILE_NAME, BeeUtils.notEmpty(fileName, "unknown"));
 
     String type = !BeeUtils.isEmpty(mimeType) ? mimeType
@@ -444,7 +441,7 @@ public class FileStorageBean {
       File repository = new File(repo);
 
       if (FileUtils.isDirectory(repository)) {
-        setRepositoryDir(repository);
+        repositoryDir = repository;
       } else {
         logger.warning("Wrong repository directory:", repo);
       }

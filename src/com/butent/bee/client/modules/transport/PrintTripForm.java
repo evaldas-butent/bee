@@ -142,7 +142,8 @@ public class PrintTripForm extends AbstractFormInterceptor {
               double amount = BeeUtils.round(BeeUtils.unbox(cost.getDouble(COL_AMOUNT)), 2);
 
               if (!BeeUtils.unbox(cost.getBoolean(COL_PAYMENT_CASH))) {
-                otherInfo.put(itemName, BeeUtils.unbox(otherInfo.get(itemName)) + amount);
+                otherInfo.put(itemName, BeeUtils.round(BeeUtils.unbox(otherInfo.get(itemName))
+                    + amount, 2));
                 continue;
               }
               Long driver = BeeUtils.nvl(cost.getLong(COL_DRIVER), mainDriver);

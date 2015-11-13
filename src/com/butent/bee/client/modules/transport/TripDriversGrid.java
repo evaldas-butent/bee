@@ -5,15 +5,17 @@ import com.google.gwt.event.dom.client.ClickHandler;
 
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
-import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.event.logical.ParentRowEvent;
 import com.butent.bee.client.presenter.GridPresenter;
+import com.butent.bee.client.view.add.ReadyForInsertEvent;
+import com.butent.bee.client.view.edit.ReadyForUpdateEvent;
+import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.FaLabel;
+import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -21,6 +23,11 @@ import com.butent.bee.shared.utils.BeeUtils;
 public class TripDriversGrid extends AbstractGridInterceptor implements ClickHandler {
 
   private final FaLabel main = new FaLabel(FontAwesome.CHECK);
+  private final TripForm tripForm;
+
+  public TripDriversGrid(TripForm tripForm) {
+    this.tripForm = tripForm;
+  }
 
   @Override
   public void afterCreatePresenter(GridPresenter presenter) {
@@ -33,7 +40,11 @@ public class TripDriversGrid extends AbstractGridInterceptor implements ClickHan
 
   @Override
   public void afterInsertRow(IsRow result) {
-    setMain(result, false);
+    IsRow tripRow = tripForm.getActiveRow();
+
+    if (BeeUtils.isEmpty(tripRow.getString(tripForm.getDataIndex(COL_MAIN_DRIVER)))) {
+      tripForm.setMainDriver(tripRow, result.getId());
+    }
     super.afterInsertRow(result);
   }
 
@@ -50,7 +61,7 @@ public class TripDriversGrid extends AbstractGridInterceptor implements ClickHan
       getGridView().notifyWarning(Localized.getConstants().selectAtLeastOneRow());
       return;
     }
-    setMain(row, true);
+    tripForm.setMainDriver(tripForm.getActiveRow(), row.getId());
   }
 
   @Override
@@ -59,20 +70,28 @@ public class TripDriversGrid extends AbstractGridInterceptor implements ClickHan
     super.onParentRow(event);
   }
 
-  private void setMain(IsRow row, boolean forced) {
-    Filter flt = Filter.compareId(row.getLong(getGridView().getDataIndex(COL_TRIP)));
+  @Override
+  public void onReadyForInsert(GridView gridView, ReadyForInsertEvent event) {
+    int i = 0;
 
-    if (!forced) {
-      flt = Filter.and(flt, Filter.isNull(COL_MAIN_DRIVER));
+    for (BeeColumn column : event.getColumns()) {
+      if (BeeUtils.same(column.getId(), COL_DRIVER)) {
+        event.consume();
+        tripForm.checkDriver(gridView, event, BeeUtils.toLongOrNull(event.getValues().get(i)));
+        return;
+      }
+      i++;
     }
-    Queries.update(TBL_TRIPS, flt, COL_MAIN_DRIVER, BeeUtils.toString(row.getId()),
-        new Queries.IntCallback() {
-          @Override
-          public void onSuccess(Integer result) {
-            if (BeeUtils.isPositive(result)) {
-              getGridPresenter().refresh(true, false);
-            }
-          }
-        });
+    super.onReadyForInsert(gridView, event);
+  }
+
+  @Override
+  public void onReadyForUpdate(GridView gridView, ReadyForUpdateEvent event) {
+    if (BeeUtils.same(event.getColumn().getId(), COL_DRIVER)) {
+      event.consume();
+      tripForm.checkDriver(gridView, event, BeeUtils.toLongOrNull(event.getNewValue()));
+      return;
+    }
+    super.onReadyForUpdate(gridView, event);
   }
 }

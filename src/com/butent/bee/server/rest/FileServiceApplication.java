@@ -5,6 +5,7 @@ import com.google.common.net.UrlEscapers;
 import com.butent.bee.server.io.FileUtils;
 import com.butent.bee.server.modules.administration.FileStorageBean;
 import com.butent.bee.server.rest.annotations.Authorized;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -160,7 +161,8 @@ public class FileServiceApplication extends Application {
     String name = BeeUtils.notEmpty(fileInfo.getCaption(), fileInfo.getName());
 
     if (!BeeUtils.isEmpty(name)) {
-      name = UrlEscapers.urlFragmentEscaper().escape(name);
+      name = UrlEscapers.urlFragmentEscaper()
+          .escape(name.replace(BeeConst.CHAR_COMMA, BeeConst.CHAR_SPACE));
     }
     return Response.ok(so,
         BeeUtils.notEmpty(fileInfo.getType(), MediaType.APPLICATION_OCTET_STREAM))

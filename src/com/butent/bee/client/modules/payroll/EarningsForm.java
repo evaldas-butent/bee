@@ -15,6 +15,7 @@ import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Selectors;
 import com.butent.bee.client.event.EventUtils;
+import com.butent.bee.client.grid.GridPanel;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
@@ -56,6 +57,8 @@ class EarningsForm extends AbstractFormInterceptor {
     return YearMonth.parse(DomUtils.getDataProperty(element, KEY_YM));
   }
 
+  private final ObjectEarningsGrid gridInterceptor = new ObjectEarningsGrid();
+
   private Flow monthsPanel;
 
   EarningsForm() {
@@ -67,6 +70,8 @@ class EarningsForm extends AbstractFormInterceptor {
 
     if (BeeUtils.same(name, "Months") && widget instanceof Flow) {
       monthsPanel = (Flow) widget;
+    } else if (BeeUtils.same(name, GRID_OBJECT_EARNINGS) && widget instanceof GridPanel) {
+      ((GridPanel) widget).setGridInterceptor(gridInterceptor);
     }
   }
 
@@ -232,6 +237,8 @@ class EarningsForm extends AbstractFormInterceptor {
     if (DomUtils.isInView(monthsPanel)) {
       element.scrollIntoView();
     }
+
+    gridInterceptor.selectMonth(ym);
 
     return true;
   }

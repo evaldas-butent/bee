@@ -28,10 +28,10 @@
         </ui:function>
       </render>
     </CalcColumn>
-    <CalcColumn name="Driver" type="string" caption="=vehicleDriver">
+    <CalcColumn name="DriverName" type="string" caption="=vehicleDriver">
       <render>
         <ui:expression>
-          row.ForwarderDriver ? row.ForwarderDriver : row.Driver;
+          row.ForwarderDriver ? row.ForwarderDriver : row.DriverName;
         </ui:expression>
       </render>
     </CalcColumn>

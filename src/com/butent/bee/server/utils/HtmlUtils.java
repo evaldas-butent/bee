@@ -5,6 +5,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import org.jsoup.Jsoup;
 import org.jsoup.examples.HtmlToPlainText;
+import org.jsoup.nodes.Document;
 import org.jsoup.parser.Parser;
 import org.jsoup.safety.Whitelist;
 
@@ -20,7 +21,7 @@ public final class HtmlUtils {
       return Jsoup.clean(dirtyHtml, "http:", Whitelist.relaxed()
           .addTags("font")
           .addAttributes(":all", "style", "color")
-          .preserveRelativeLinks(true));
+          .preserveRelativeLinks(true), new Document.OutputSettings().prettyPrint(false));
     }
     return dirtyHtml;
   }

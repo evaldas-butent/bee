@@ -447,6 +447,10 @@ public final class DataUtils {
     return row.getDouble(getColumnIndex(columnId, columns));
   }
 
+  public static long getId(IsRow row) {
+    return (row == null) ? BeeConst.LONG_UNDEF : row.getId();
+  }
+
   public static Set<Long> getIdSetDifference(String s1, String s2) {
     Set<Long> difference = parseIdSet(s1);
     if (!difference.isEmpty() || !BeeUtils.isEmpty(s2)) {

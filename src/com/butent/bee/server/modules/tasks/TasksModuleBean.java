@@ -646,7 +646,7 @@ public class TasksModuleBean implements BeeModule {
         updateTaskUsers(row.getId(), oldUsers, newUsers);
       }
     } else {
-      newUsers = new ArrayList<>(oldUsers);
+      newUsers = null;
     }
 
     if (!BeeUtils.isEmpty(updatedRelations)) {
@@ -679,8 +679,11 @@ public class TasksModuleBean implements BeeModule {
 
       response = deb.commitRow(updated);
       if (!response.hasErrors() && response.hasResponse(BeeRow.class)) {
-        addTaskProperties((BeeRow) response.getResponse(), data.getColumns(), newUsers, eventId,
-            propNames, addRelations);
+        BeeRow respRow = (BeeRow) response.getResponse();
+        if (newUsers == null) {
+          newUsers = getTaskUsers(respRow.getId());
+        }
+        addTaskProperties(respRow, data.getColumns(), newUsers, eventId, propNames, addRelations);
       }
 
     } else {

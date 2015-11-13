@@ -18,6 +18,7 @@ import com.butent.bee.client.view.edit.HasReadyForUpdateHandlers;
 import com.butent.bee.client.view.edit.HasSaveChangesHandlers;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
+import com.butent.bee.shared.HasState;
 import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.IsRow;
@@ -40,7 +41,7 @@ public interface GridView extends DataView, HasAddStartHandlers, HasAddEndHandle
     HasReadyForInsertHandlers, HasReadyForUpdateHandlers, HasSaveChangesHandlers,
     HasEditFormHandlers, ParentRowCreator, HandlesHistory, DndWidget, HasWidgets,
     RowInsertEvent.Handler, RowUpdateEvent.Handler, EditStartEvent.Handler,
-    RowCountChangeEvent.Handler, HasSummaryChangeHandlers {
+    RowCountChangeEvent.Handler, HasSummaryChangeHandlers, HasState {
 
   enum SelectedRows {
     ALL, EDITABLE, REMOVABLE, MERGEABLE

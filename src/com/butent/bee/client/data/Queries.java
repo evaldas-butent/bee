@@ -148,7 +148,9 @@ public final class Queries {
 
     List<Property> lst = PropertyUtils.createProperties(Service.VAR_VIEW_NAME, viewName,
         Service.VAR_VIEW_WHERE, filter.serialize());
+
     ParameterList parameters = new ParameterList(Service.DELETE, RpcParameter.Section.DATA, lst);
+    parameters.setSummary(viewName, filter);
 
     BeeKeeper.getRpc().makePostRequest(parameters, new ResponseCallback() {
       @Override
@@ -209,36 +211,42 @@ public final class Queries {
     List<Property> lst = PropertyUtils.createProperties(Service.VAR_VIEW_NAME, viewName,
         Service.VAR_VIEW_ROWS, Codec.beeSerialize(rows));
 
-    BeeKeeper.getRpc().makePostRequest(new ParameterList(Service.DELETE_ROWS,
-        RpcParameter.Section.DATA, lst),
-        new ResponseCallback() {
-          @Override
-          public void onResponse(ResponseObject response) {
-            if (checkResponse(Service.DELETE_ROWS, getRpcId(), viewName, response, Integer.class,
-                callback)) {
+    ParameterList params = new ParameterList(Service.DELETE_ROWS, RpcParameter.Section.DATA, lst);
 
-              int responseCount = BeeUtils.toInt((String) response.getResponse());
-              String message;
+    List<Long> rowIds = new ArrayList<>();
+    for (RowInfo ri : rows) {
+      rowIds.add(ri.getId());
+    }
+    params.setSummary(viewName, rowIds);
 
-              if (responseCount == requestCount) {
-                message = BeeUtils.joinWords(viewName, "deleted", responseCount, "rows");
-                logger.info(message);
-              } else {
-                message = BeeUtils.joinWords(viewName, "deleted", responseCount, "rows of",
-                    requestCount, "requested");
-                logger.warning(message);
-              }
+    BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+        if (checkResponse(Service.DELETE_ROWS, getRpcId(), viewName, response, Integer.class,
+            callback)) {
 
-              if (callback != null) {
-                if (responseCount > 0) {
-                  callback.onSuccess(responseCount);
-                } else {
-                  callback.onFailure(message);
-                }
-              }
+          int responseCount = BeeUtils.toInt((String) response.getResponse());
+          String message;
+
+          if (responseCount == requestCount) {
+            message = BeeUtils.joinWords(viewName, "deleted", responseCount, "rows");
+            logger.info(message);
+          } else {
+            message = BeeUtils.joinWords(viewName, "deleted", responseCount, "rows of",
+                requestCount, "requested");
+            logger.warning(message);
+          }
+
+          if (callback != null) {
+            if (responseCount > 0) {
+              callback.onSuccess(responseCount);
+            } else {
+              callback.onFailure(message);
             }
           }
-        });
+        }
+      }
+    });
   }
 
   public static int getData(Collection<String> viewNames, DataCallback callback) {
@@ -292,6 +300,8 @@ public final class Queries {
       }
     }
 
+    parameters.setSummary(viewNames.toString());
+
     return BeeKeeper.getRpc().makePostRequest(parameters, new ResponseCallback() {
       @Override
       public void onResponse(ResponseObject response) {
@@ -326,12 +336,15 @@ public final class Queries {
     Assert.notEmpty(resultColumn);
     Assert.notNull(callback);
 
-    List<Property> params = PropertyUtils.createProperties(Service.VAR_TABLE, tableName,
+    List<Property> lst = PropertyUtils.createProperties(Service.VAR_TABLE, tableName,
         Service.VAR_FILTER_COLUMN, filterColumn, Service.VAR_VALUE, filterValue,
         Service.VAR_VALUE_COLUMN, resultColumn);
 
-    BeeKeeper.getRpc().makePostRequest(new ParameterList(Service.GET_RELATED_VALUES,
-        RpcParameter.Section.QUERY, params), new ResponseCallback() {
+    ParameterList params = new ParameterList(Service.GET_RELATED_VALUES,
+        RpcParameter.Section.QUERY, lst);
+    params.setSummary(tableName, filterColumn, filterValue, resultColumn);
+
+    BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
       @Override
       public void onResponse(ResponseObject response) {
         if (checkResponse(Service.GET_RELATED_VALUES, getRpcId(), tableName, response,
@@ -362,24 +375,25 @@ public final class Queries {
       PropertyUtils.addProperties(lst, Service.VAR_VIEW_COLUMNS, columnNames);
     }
 
-    BeeKeeper.getRpc().makePostRequest(new ParameterList(Service.QUERY,
-        RpcParameter.Section.DATA, lst),
-        new ResponseCallback() {
-          @Override
-          public void onResponse(ResponseObject response) {
-            if (checkResponse(Service.QUERY, getRpcId(), viewName, response, BeeRowSet.class,
-                callback)) {
+    ParameterList params = new ParameterList(Service.QUERY, RpcParameter.Section.DATA, lst);
+    params.setSummary(viewName, rowId);
 
-              BeeRowSet rs = BeeRowSet.restore((String) response.getResponse());
-              if (rs.getNumberOfRows() == 1) {
-                callback.onSuccess(rs.getRow(0));
-              } else {
-                error(callback, "Get Row:", getRpcId(), viewName, "id " + rowId,
-                    "response number of rows: " + rs.getNumberOfRows());
-              }
-            }
+    BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+        if (checkResponse(Service.QUERY, getRpcId(), viewName, response, BeeRowSet.class,
+            callback)) {
+
+          BeeRowSet rs = BeeRowSet.restore((String) response.getResponse());
+          if (rs.getNumberOfRows() == 1) {
+            callback.onSuccess(rs.getRow(0));
+          } else {
+            error(callback, "Get Row:", getRpcId(), viewName, "id " + rowId,
+                "response number of rows: " + rs.getNumberOfRows());
           }
-        });
+        }
+      }
+    });
   }
 
   public static void getRow(String viewName, long rowId, RowCallback callback) {
@@ -397,20 +411,21 @@ public final class Queries {
       PropertyUtils.addProperties(lst, Service.VAR_VIEW_WHERE, filter.serialize());
     }
 
-    BeeKeeper.getRpc().makePostRequest(new ParameterList(Service.COUNT_ROWS,
-        RpcParameter.Section.DATA, lst),
-        new ResponseCallback() {
-          @Override
-          public void onResponse(ResponseObject response) {
-            if (checkResponse(Service.COUNT_ROWS, getRpcId(), viewName, response, Integer.class,
-                callback)) {
+    ParameterList params = new ParameterList(Service.COUNT_ROWS, RpcParameter.Section.DATA, lst);
+    params.setSummary(viewName, filter);
 
-              int rowCount = BeeUtils.toInt((String) response.getResponse());
-              logger.info(viewName, filter, "row count:", rowCount);
-              callback.onSuccess(rowCount);
-            }
-          }
-        });
+    BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+        if (checkResponse(Service.COUNT_ROWS, getRpcId(), viewName, response, Integer.class,
+            callback)) {
+
+          int rowCount = BeeUtils.toInt((String) response.getResponse());
+          logger.info(viewName, filter, "row count:", rowCount);
+          callback.onSuccess(rowCount);
+        }
+      }
+    });
   }
 
   public static int getRowSet(String viewName, List<String> columns, Filter filter, Order order,
@@ -455,37 +470,42 @@ public final class Queries {
       PropertyUtils.addProperties(lst, Service.VAR_VIEW_ORDER, order.serialize());
     }
 
+    String portion;
     if (offset >= 0 && limit > 0) {
       PropertyUtils.addProperties(lst, Service.VAR_VIEW_OFFSET, offset,
           Service.VAR_VIEW_LIMIT, limit);
+      portion = BeeUtils.joinWords(offset, limit);
+    } else {
+      portion = null;
     }
 
     if (!BeeUtils.isEmpty(options)) {
       lst.addAll(options);
     }
 
-    return BeeKeeper.getRpc().makePostRequest(new ParameterList(Service.QUERY,
-        RpcParameter.Section.DATA, lst),
-        new ResponseCallback() {
-          @Override
-          public void onResponse(ResponseObject response) {
-            if (checkResponse(Service.QUERY, getRpcId(), viewName, response, BeeRowSet.class,
-                callback)) {
+    ParameterList params = new ParameterList(Service.QUERY, RpcParameter.Section.DATA, lst);
+    params.setSummary(viewName, filter, portion, BeeUtils.emptyToNull(options));
 
-              BeeRowSet rs = BeeRowSet.restore((String) response.getResponse());
-              if (offset >= 0 && limit > 0) {
-                rs.setTableProperty(Service.VAR_VIEW_OFFSET, BeeUtils.toString(offset));
-              }
+    return BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+        if (checkResponse(Service.QUERY, getRpcId(), viewName, response, BeeRowSet.class,
+            callback)) {
 
-              callback.onSuccess(rs);
-
-              if (cachingPolicy != null && cachingPolicy.doWrite()
-                  && BeeUtils.isEmpty(columnNames) && isCacheable(options)) {
-                Global.getCache().add(Data.getDataInfo(viewName), rs, filter, order, offset, limit);
-              }
-            }
+          BeeRowSet rs = BeeRowSet.restore((String) response.getResponse());
+          if (offset >= 0 && limit > 0) {
+            rs.setTableProperty(Service.VAR_VIEW_OFFSET, BeeUtils.toString(offset));
           }
-        });
+
+          callback.onSuccess(rs);
+
+          if (cachingPolicy != null && cachingPolicy.doWrite()
+              && BeeUtils.isEmpty(columnNames) && isCacheable(options)) {
+            Global.getCache().add(Data.getDataInfo(viewName), rs, filter, order, offset, limit);
+          }
+        }
+      }
+    });
   }
 
   private static boolean isCacheable(Collection<Property> options) {
@@ -543,8 +563,9 @@ public final class Queries {
         Service.VAR_VIEW_ROW_ID, BeeUtils.toString(rowId), Service.VAR_COLUMN, column);
 
     ParameterList params = new ParameterList(Service.GET_VALUE, RpcParameter.Section.QUERY, lst);
+    params.setSummary(viewName, rowId, column);
 
-    BeeKeeper.getRpc().makeGetRequest(params, new ResponseCallback() {
+    BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
       @Override
       public void onResponse(ResponseObject response) {
         if (checkResponse(Service.GET_VALUE, getRpcId(), viewName, response, String.class,
@@ -606,7 +627,10 @@ public final class Queries {
     }
     final String viewName = rowSet.getViewName();
 
-    BeeKeeper.getRpc().sendText(service, Codec.beeSerialize(rowSet), new ResponseCallback() {
+    ParameterList params = new ParameterList(service);
+    params.setSummary(viewName);
+
+    BeeKeeper.getRpc().sendText(params, Codec.beeSerialize(rowSet), new ResponseCallback() {
       @Override
       public void onResponse(ResponseObject response) {
         if (checkResponse(service, getRpcId(), viewName, response, RowInfo.class, callback)) {
@@ -641,7 +665,10 @@ public final class Queries {
 
     final String viewName = rowSet.getViewName();
 
-    BeeKeeper.getRpc().sendText(svc, Codec.beeSerialize(rowSet), new ResponseCallback() {
+    ParameterList params = new ParameterList(svc);
+    params.setSummary(viewName, rowSet.getNumberOfRows());
+
+    BeeKeeper.getRpc().sendText(params, Codec.beeSerialize(rowSet), new ResponseCallback() {
       @Override
       public void onResponse(ResponseObject response) {
         if (checkResponse(svc, getRpcId(), viewName, response, RowInfoList.class, callback)) {
@@ -672,6 +699,8 @@ public final class Queries {
     params.addQueryItem(Service.VAR_VIEW_NAME, viewName);
     params.addQueryItem(Service.VAR_FROM, from);
     params.addQueryItem(Service.VAR_TO, into);
+
+    params.setSummary(viewName, from, into);
 
     BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
       @Override
@@ -774,7 +803,9 @@ public final class Queries {
         Service.VAR_VIEW_WHERE, filter.serialize(),
         Service.VAR_COLUMN, Codec.beeSerialize(columns),
         Service.VAR_VALUE, Codec.beeSerialize(values));
+
     ParameterList parameters = new ParameterList(Service.UPDATE, RpcParameter.Section.DATA, lst);
+    parameters.setSummary(viewName, filter, columns, values);
 
     BeeKeeper.getRpc().makePostRequest(parameters, new ResponseCallback() {
       @Override
@@ -893,6 +924,7 @@ public final class Queries {
 
     ParameterList parameters = new ParameterList(Service.UPDATE_RELATED_VALUES,
         RpcParameter.Section.DATA, lst);
+    parameters.setSummary(viewName, rowId);
 
     BeeKeeper.getRpc().makePostRequest(parameters, new ResponseCallback() {
       @Override
@@ -928,7 +960,10 @@ public final class Queries {
 
     final String viewName = rowSet.getViewName();
 
-    BeeKeeper.getRpc().sendText(svc, Codec.beeSerialize(rowSet), new ResponseCallback() {
+    ParameterList params = new ParameterList(svc);
+    params.setSummary(viewName, rowSet.getRowIds());
+
+    BeeKeeper.getRpc().sendText(params, Codec.beeSerialize(rowSet), new ResponseCallback() {
       @Override
       public void onResponse(ResponseObject response) {
         if (checkResponse(svc, getRpcId(), viewName, response, RowInfoList.class, callback)) {
@@ -967,7 +1002,16 @@ public final class Queries {
     }
     final String viewName = rowSet.getViewName();
 
-    BeeKeeper.getRpc().sendText(service, Codec.beeSerialize(rowSet), new ResponseCallback() {
+    ParameterList params = new ParameterList(service);
+
+    long id = rowSet.getRow(0).getId();
+    if (DataUtils.isId(id)) {
+      params.setSummary(viewName, id);
+    } else {
+      params.setSummary(viewName);
+    }
+
+    BeeKeeper.getRpc().sendText(params, Codec.beeSerialize(rowSet), new ResponseCallback() {
       @Override
       public void onResponse(ResponseObject response) {
         if (checkResponse(service, getRpcId(), viewName, response, BeeRow.class, callback)) {

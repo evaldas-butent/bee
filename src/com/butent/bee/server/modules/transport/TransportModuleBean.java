@@ -71,9 +71,7 @@ import com.butent.bee.shared.news.NewsConstants;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.rights.ModuleAndSub;
 import com.butent.bee.shared.rights.SubModule;
-import com.butent.bee.shared.time.DateRange;
 import com.butent.bee.shared.time.DateTime;
-import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Color;
 import com.butent.bee.shared.utils.ArrayUtils;
@@ -90,6 +88,7 @@ import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -186,10 +185,9 @@ public class TransportModuleBean implements BeeModule {
     ResponseObject response = null;
 
     if (BeeUtils.same(svc, SVC_GET_BEFORE)) {
-      long vehicle = BeeUtils.toLong(reqInfo.getParameter(COL_VEHICLE));
-      long date = BeeUtils.toLong(reqInfo.getParameter(COL_DATE));
+      response = getTripBeforeData(BeeUtils.toLong(reqInfo.getParameter(COL_VEHICLE)),
+          BeeUtils.toLongOrNull(reqInfo.getParameter(COL_DATE)));
 
-      response = getTripBeforeData(vehicle, date);
     } else if (BeeUtils.same(svc, SVC_GET_UNASSIGNED_CARGOS)) {
       response = getUnassignedCargos(reqInfo);
 
@@ -299,7 +297,15 @@ public class TransportModuleBean implements BeeModule {
       response = rep.getTripProfitReport(reqInfo);
 
     } else if (BeeUtils.same(svc, SVC_GET_VEHICLE_BUSY_DATES)) {
-      response = getVehicleBusyDates();
+      response = getVehicleBusyDates(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_VEHICLE)),
+          BeeUtils.toLongOrNull(reqInfo.getParameter(COL_TRAILER)),
+          BeeUtils.toLongOrNull(reqInfo.getParameter(COL_TRIP_DATE_FROM)),
+          BeeUtils.toLongOrNull(reqInfo.getParameter(COL_TRIP_DATE_TO)));
+
+    } else if (BeeUtils.same(svc, SVC_GET_DRIVER_BUSY_DATES)) {
+      response = getDriverBusyDates(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_DRIVER)),
+          BeeUtils.toLongOrNull(reqInfo.getParameter(COL_TRIP_DATE_FROM)),
+          BeeUtils.toLongOrNull(reqInfo.getParameter(COL_TRIP_DATE_TO)));
 
     } else if (BeeUtils.same(svc, SVC_GET_TRIP_INFO)) {
       response = rep.getTripInfo(reqInfo);
@@ -1962,6 +1968,57 @@ public class TransportModuleBean implements BeeModule {
     return ResponseObject.response(resp);
   }
 
+  private ResponseObject getDriverBusyDates(Long driver, Long from, Long to) {
+    SqlSelect query = new SqlSelect()
+        .addField(TBL_TRIPS, COL_TRIP_NO, COL_NOTES)
+        .addExpr(SqlUtils.nvl(SqlUtils.field(TBL_TRIPS, COL_TRIP_DATE_FROM),
+            SqlUtils.field(TBL_TRIPS, COL_TRIP_DATE)), COL_ABSENCE_FROM)
+        .addExpr(SqlUtils.nvl(SqlUtils.field(TBL_TRIPS, COL_TRIP_DATE_TO),
+            SqlUtils.field(TBL_TRIPS, COL_TRIP_PLANNED_END_DATE)), COL_ABSENCE_TO)
+        .addFrom(TBL_TRIPS)
+        .addFromInner(TBL_TRIP_DRIVERS,
+            SqlUtils.and(sys.joinTables(TBL_TRIPS, TBL_TRIP_DRIVERS, COL_TRIP),
+                SqlUtils.equals(TBL_TRIP_DRIVERS, COL_DRIVER, driver)))
+        .setWhere(SqlUtils.or(
+            SqlUtils.and(SqlUtils.isNull(TBL_TRIPS, COL_TRIP_DATE_TO),
+                SqlUtils.isNull(TBL_TRIPS, COL_TRIP_PLANNED_END_DATE)),
+            SqlUtils.and(SqlUtils.isNull(TBL_TRIPS, COL_TRIP_DATE_TO),
+                SqlUtils.more(TBL_TRIPS, COL_TRIP_PLANNED_END_DATE, from)),
+            SqlUtils.and(SqlUtils.notNull(TBL_TRIPS, COL_TRIP_DATE_TO),
+                SqlUtils.more(TBL_TRIPS, COL_TRIP_DATE_TO, from))))
+        .addOrder(null, COL_ABSENCE_FROM, COL_ABSENCE_TO);
+
+    if (Objects.nonNull(to)) {
+      query.setWhere(SqlUtils.and(query.getWhere(),
+          SqlUtils.or(SqlUtils.and(SqlUtils.isNull(TBL_TRIPS, COL_TRIP_DATE_FROM),
+                  SqlUtils.less(TBL_TRIPS, COL_TRIP_DATE, to)),
+              SqlUtils.and(SqlUtils.notNull(TBL_TRIPS, COL_TRIP_DATE_FROM),
+                  SqlUtils.less(TBL_TRIPS, COL_TRIP_DATE_FROM, to)))));
+    }
+    query.addUnion(new SqlSelect()
+        .addExpr(SqlUtils.concat(SqlUtils.field(TBL_ABSENCE_TYPES, COL_ABSENCE_NAME), "' '",
+            SqlUtils.nvl(SqlUtils.field(TBL_DRIVER_ABSENCE, COL_ABSENCE_NOTES), "''")), COL_NOTES)
+        .addFields(TBL_DRIVER_ABSENCE, COL_ABSENCE_FROM, COL_ABSENCE_TO)
+        .addFrom(TBL_DRIVER_ABSENCE)
+        .addFromInner(TBL_ABSENCE_TYPES,
+            sys.joinTables(TBL_ABSENCE_TYPES, TBL_DRIVER_ABSENCE, COL_ABSENCE))
+        .setWhere(SqlUtils.and(SqlUtils.equals(TBL_DRIVER_ABSENCE, COL_DRIVER, driver),
+            SqlUtils.more(TBL_DRIVER_ABSENCE, COL_ABSENCE_TO, from),
+            Objects.nonNull(to) ? SqlUtils.less(TBL_DRIVER_ABSENCE, COL_ABSENCE_FROM, to) : null)));
+
+    List<String> messages = new ArrayList<>();
+    LocalizableConstants loc = usr.getLocalizableConstants();
+
+    for (SimpleRow row : qs.getData(query)) {
+      messages.add(BeeUtils.joinWords(loc.dateFromShort(), row.getDate(COL_ABSENCE_FROM),
+          Objects.isNull(row.getDate(COL_ABSENCE_TO))
+              ? null : loc.dateToShort() + " " + row.getDate(COL_ABSENCE_TO),
+          row.getValue(COL_NOTES)));
+    }
+
+    return ResponseObject.response(messages);
+  }
+
   private ResponseObject getDtbData() {
     BeeRowSet settings = getSettings();
     if (settings == null) {
@@ -2298,71 +2355,68 @@ public class TransportModuleBean implements BeeModule {
     return result;
   }
 
-  private ResponseObject getTripBeforeData(long vehicle, long date) {
-    String[] resp = new String[2];
+  private ResponseObject getTripBeforeData(long vehicle, Long date) {
+    Pair<String, String> pair = Pair.empty();
 
-    if (date != 0) {
-      String trips = TBL_TRIPS;
-      String fuels = TBL_TRIP_FUEL_COSTS;
-      String consumptions = TBL_TRIP_FUEL_CONSUMPTIONS;
-      String tripId = sys.getIdName(trips);
+    if (Objects.nonNull(date)) {
+      SimpleRow row = qs.getRow(new SqlSelect()
+          .addField(TBL_TRIPS, sys.getIdName(TBL_TRIPS), COL_TRIP)
+          .addFields(TBL_TRIPS, COL_SPEEDOMETER_BEFORE, COL_SPEEDOMETER_AFTER, COL_FUEL_BEFORE,
+              COL_FUEL_AFTER)
+          .addFields(TBL_VEHICLES, COL_SPEEDOMETER)
+          .addFrom(TBL_TRIPS)
+          .addFromInner(TBL_VEHICLES,
+              SqlUtils.and(sys.joinTables(TBL_VEHICLES, TBL_TRIPS, COL_VEHICLE),
+                  sys.idEquals(TBL_VEHICLES, vehicle)))
+          .setWhere(SqlUtils.less(TBL_TRIPS, COL_DATE, date))
+          .addOrderDesc(TBL_TRIPS, COL_DATE)
+          .setLimit(1));
 
-      SimpleRowSet rs = qs.getData(new SqlSelect()
-          .addFields(trips,
-              tripId, "SpeedometerBefore", "SpeedometerAfter", "FuelBefore", "FuelAfter")
-          .addFrom(trips)
-          .setWhere(SqlUtils.and(SqlUtils.equals(trips, COL_VEHICLE, vehicle),
-              SqlUtils.less(trips, "Date", date))));
+      if (Objects.nonNull(row)) {
+        Long tripId = row.getLong(COL_TRIP);
+        Double speedometer = row.getDouble(COL_SPEEDOMETER_AFTER);
+        Double fuel = row.getDouble(COL_FUEL_AFTER);
 
-      int cnt = rs.getNumberOfRows();
-
-      if (cnt > 0) {
-        cnt--;
-        Double speedometer = rs.getDouble(cnt, "SpeedometerAfter");
-        Double fuel = rs.getDouble(cnt, "FuelAfter");
-
-        if (speedometer == null) {
+        if (Objects.isNull(speedometer)) {
           Double km = qs.getDouble(new SqlSelect()
-              .addSum(TBL_TRIP_ROUTES, "Kilometers")
+              .addSum(TBL_TRIP_ROUTES, COL_ROUTE_KILOMETERS)
               .addFrom(TBL_TRIP_ROUTES)
-              .setWhere(SqlUtils.equals(TBL_TRIP_ROUTES, COL_TRIP, rs.getLong(cnt, tripId))));
+              .setWhere(SqlUtils.equals(TBL_TRIP_ROUTES, COL_TRIP, tripId)));
 
-          speedometer = BeeUtils.unbox(rs.getDouble(cnt, "SpeedometerBefore"))
-              + BeeUtils.unbox(km);
-
-          Integer scale = BeeUtils.toIntOrNull(qs.sqlValue(VIEW_VEHICLES, "Speedometer", vehicle));
+          speedometer = BeeUtils.unbox(row.getDouble(COL_SPEEDOMETER_BEFORE)) + BeeUtils.unbox(km);
+          Integer scale = row.getInt(COL_SPEEDOMETER);
 
           if (BeeUtils.isPositive(scale) && scale < speedometer) {
             speedometer -= scale;
           }
         }
-        if (fuel == null) {
+        if (Objects.isNull(fuel)) {
           Double fill = qs.getDouble(new SqlSelect()
-              .addSum(fuels, "Quantity")
-              .addFrom(fuels)
-              .setWhere(SqlUtils.equals(fuels, COL_TRIP, rs.getLong(cnt, tripId))));
+              .addSum(TBL_TRIP_FUEL_COSTS, COL_COSTS_QUANTITY)
+              .addFrom(TBL_TRIP_FUEL_COSTS)
+              .setWhere(SqlUtils.equals(TBL_TRIP_FUEL_COSTS, COL_TRIP, tripId)));
 
-          SimpleRow row = qs.getRow(rep.getFuelConsumptionsQuery(new SqlSelect()
+          SimpleRow cons = qs.getRow(rep.getFuelConsumptionsQuery(new SqlSelect()
                   .addFields(TBL_TRIP_ROUTES, sys.getIdName(TBL_TRIP_ROUTES))
                   .addFrom(TBL_TRIP_ROUTES)
-                  .setWhere(SqlUtils.equals(TBL_TRIP_ROUTES, COL_TRIP, rs.getLong(cnt, tripId))),
+                  .setWhere(SqlUtils.equals(TBL_TRIP_ROUTES, COL_TRIP, tripId)),
               false));
 
-          Double consume = row == null ? null : row.getDouble("Quantity");
+          Double consume = Objects.isNull(cons) ? null : cons.getDouble(COL_COSTS_QUANTITY);
 
           Double addit = qs.getDouble(new SqlSelect()
-              .addSum(consumptions, "Quantity")
-              .addFrom(consumptions)
-              .setWhere(SqlUtils.equals(consumptions, "Trip", rs.getLong(cnt, tripId))));
+              .addSum(TBL_TRIP_FUEL_CONSUMPTIONS, COL_COSTS_QUANTITY)
+              .addFrom(TBL_TRIP_FUEL_CONSUMPTIONS)
+              .setWhere(SqlUtils.equals(TBL_TRIP_FUEL_CONSUMPTIONS, COL_TRIP, tripId)));
 
-          fuel = BeeUtils.unbox(rs.getDouble(cnt, "FuelBefore")) + BeeUtils.unbox(fill)
+          fuel = BeeUtils.unbox(row.getDouble(COL_FUEL_BEFORE)) + BeeUtils.unbox(fill)
               - BeeUtils.unbox(consume) - BeeUtils.unbox(addit);
         }
-        resp[0] = BeeUtils.toString(speedometer);
-        resp[1] = BeeUtils.toString(fuel);
+        pair.setA(BeeUtils.toString(speedometer));
+        pair.setB(BeeUtils.toString(fuel));
       }
     }
-    return ResponseObject.response(resp);
+    return ResponseObject.response(pair);
   }
 
   private SimpleRowSet getTripDrivers(IsCondition condition) {
@@ -2416,78 +2470,79 @@ public class TransportModuleBean implements BeeModule {
     return ResponseObject.response(qs.getColumn(query));
   }
 
-  private ResponseObject getVehicleBusyDates() {
-    Set<Pair<Long, DateRange>> result = new HashSet<>();
+  private ResponseObject getVehicleBusyDates(Long vehicle, Long trailer, Long from, Long to) {
+    SqlSelect select = null;
 
-    SqlSelect tripQuery = new SqlSelect()
-        .addFrom(TBL_TRIPS)
-        .addFields(TBL_TRIPS, COL_VEHICLE, COL_TRAILER,
-            COL_TRIP_DATE, COL_TRIP_PLANNED_END_DATE, COL_TRIP_DATE_FROM, COL_TRIP_DATE_TO);
+    for (Pair<String, Long> pair : Arrays.asList(Pair.of(COL_VEHICLE, vehicle),
+        Pair.of(COL_TRAILER, trailer))) {
 
-    SimpleRowSet tripData = qs.getData(tripQuery);
+      if (DataUtils.isId(pair.getB())) {
+        SqlSelect query = new SqlSelect()
+            .addFields(TBL_VEHICLES, COL_VEHICLE_NUMBER)
+            .addField(TBL_TRIPS, COL_TRIP_NO, COL_NOTES)
+            .addExpr(SqlUtils.nvl(SqlUtils.field(TBL_TRIPS, COL_TRIP_DATE_FROM),
+                SqlUtils.field(TBL_TRIPS, COL_TRIP_DATE)), COL_ABSENCE_FROM)
+            .addExpr(SqlUtils.nvl(SqlUtils.field(TBL_TRIPS, COL_TRIP_DATE_TO),
+                SqlUtils.field(TBL_TRIPS, COL_TRIP_PLANNED_END_DATE)), COL_ABSENCE_TO)
+            .addFrom(TBL_TRIPS)
+            .addFromInner(TBL_VEHICLES,
+                SqlUtils.and(sys.joinTables(TBL_VEHICLES, TBL_TRIPS, pair.getA()),
+                    sys.idEquals(TBL_VEHICLES, pair.getB())))
+            .setWhere(SqlUtils.or(
+                SqlUtils.and(SqlUtils.isNull(TBL_TRIPS, COL_TRIP_DATE_TO),
+                    SqlUtils.isNull(TBL_TRIPS, COL_TRIP_PLANNED_END_DATE)),
+                SqlUtils.and(SqlUtils.isNull(TBL_TRIPS, COL_TRIP_DATE_TO),
+                    SqlUtils.more(TBL_TRIPS, COL_TRIP_PLANNED_END_DATE, from)),
+                SqlUtils.and(SqlUtils.notNull(TBL_TRIPS, COL_TRIP_DATE_TO),
+                    SqlUtils.more(TBL_TRIPS, COL_TRIP_DATE_TO, from))));
 
-    if (!DataUtils.isEmpty(tripData)) {
-      for (SimpleRow row : tripData) {
-        JustDate start = row.getDate(COL_TRIP_DATE_FROM);
-        if (start == null) {
-          DateTime dt = row.getDateTime(COL_TRIP_DATE);
-          if (dt != null) {
-            start = dt.getDate();
-          } else {
-            continue;
-          }
+        if (Objects.nonNull(to)) {
+          query.setWhere(SqlUtils.and(query.getWhere(),
+              SqlUtils.or(SqlUtils.and(SqlUtils.isNull(TBL_TRIPS, COL_TRIP_DATE_FROM),
+                      SqlUtils.less(TBL_TRIPS, COL_TRIP_DATE, to)),
+                  SqlUtils.and(SqlUtils.notNull(TBL_TRIPS, COL_TRIP_DATE_FROM),
+                      SqlUtils.less(TBL_TRIPS, COL_TRIP_DATE_FROM, to)))));
         }
-
-        JustDate end = row.getDate(COL_TRIP_DATE_TO);
-        if (end == null) {
-          end = row.getDate(COL_TRIP_PLANNED_END_DATE);
+        if (Objects.isNull(select)) {
+          select = query.setUnionAllMode(false);
+        } else {
+          select.addUnion(query);
         }
-        if (end == null || BeeUtils.isLess(end, start)) {
-          end = start;
-        }
-
-        DateRange range = DateRange.closed(start, end);
-
-        Long vehicle = row.getLong(COL_VEHICLE);
-        if (DataUtils.isId(vehicle)) {
-          result.add(Pair.of(vehicle, range));
-        }
-
-        Long trailer = row.getLong(COL_TRAILER);
-        if (DataUtils.isId(trailer)) {
-          result.add(Pair.of(trailer, range));
-        }
+        select.addUnion(new SqlSelect()
+            .addFields(TBL_VEHICLES, COL_VEHICLE_NUMBER)
+            .addExpr(SqlUtils
+                .concat(SqlUtils.field(TBL_VEHICLE_SERVICE_TYPES, COL_VEHICLE_SERVICE_NAME), "' '",
+                    SqlUtils.nvl(SqlUtils.field(TBL_VEHICLE_SERVICES, COL_VEHICLE_SERVICE_NOTES),
+                        "''")), COL_NOTES)
+            .addField(TBL_VEHICLE_SERVICES, COL_VEHICLE_SERVICE_DATE, COL_ABSENCE_FROM)
+            .addField(TBL_VEHICLE_SERVICES, COL_VEHICLE_SERVICE_DATE_TO, COL_ABSENCE_TO)
+            .addFrom(TBL_VEHICLE_SERVICES)
+            .addFromInner(TBL_VEHICLES,
+                SqlUtils.and(sys.joinTables(TBL_VEHICLES, TBL_VEHICLE_SERVICES, COL_VEHICLE),
+                    sys.idEquals(TBL_VEHICLES, pair.getB())))
+            .addFromInner(TBL_VEHICLE_SERVICE_TYPES,
+                sys.joinTables(TBL_VEHICLE_SERVICE_TYPES, TBL_VEHICLE_SERVICES,
+                    COL_VEHICLE_SERVICE_TYPE))
+            .setWhere(SqlUtils.and(
+                SqlUtils.or(SqlUtils.isNull(TBL_VEHICLE_SERVICES, COL_VEHICLE_SERVICE_DATE_TO),
+                    SqlUtils.more(TBL_VEHICLE_SERVICES, COL_VEHICLE_SERVICE_DATE_TO, from)),
+                Objects.nonNull(to)
+                    ? SqlUtils.less(TBL_VEHICLE_SERVICES, COL_VEHICLE_SERVICE_DATE, to) : null)));
       }
     }
+    List<String> messages = new ArrayList<>();
+    LocalizableConstants loc = usr.getLocalizableConstants();
 
-    SqlSelect serviceQuery = new SqlSelect()
-        .addFrom(TBL_VEHICLE_SERVICES)
-        .addFields(TBL_VEHICLE_SERVICES, COL_VEHICLE, COL_VEHICLE_SERVICE_DATE,
-            COL_VEHICLE_SERVICE_DATE_TO);
+    for (SimpleRow row : qs.getData(select
+        .addOrder(null, COL_VEHICLE_NUMBER, COL_ABSENCE_FROM, COL_ABSENCE_TO))) {
 
-    SimpleRowSet serviceData = qs.getData(serviceQuery);
-
-    if (!DataUtils.isEmpty(serviceData)) {
-      for (SimpleRow row : serviceData) {
-        Long vehicle = row.getLong(COL_VEHICLE);
-        JustDate start = row.getDate(COL_VEHICLE_SERVICE_DATE);
-
-        if (DataUtils.isId(vehicle) && start != null) {
-          JustDate end = row.getDate(COL_VEHICLE_SERVICE_DATE_TO);
-          if (end == null || BeeUtils.isLess(end, start)) {
-            end = start;
-          }
-
-          result.add(Pair.of(vehicle, DateRange.closed(start, end)));
-        }
-      }
+      messages.add(BeeUtils.joinWords(row.getValue(COL_VEHICLE_NUMBER),
+          loc.dateFromShort(), row.getDate(COL_ABSENCE_FROM),
+          Objects.isNull(row.getDate(COL_ABSENCE_TO))
+              ? null : loc.dateToShort() + " " + row.getDate(COL_ABSENCE_TO),
+          row.getValue(COL_NOTES)));
     }
-
-    if (result.isEmpty()) {
-      return ResponseObject.emptyResponse();
-    } else {
-      return ResponseObject.response(result);
-    }
+    return ResponseObject.response(messages);
   }
 
   private Map<Long, Long> getVehicleManagers(IsCondition condition) {
