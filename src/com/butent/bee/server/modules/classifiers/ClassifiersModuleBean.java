@@ -28,6 +28,7 @@ import com.butent.bee.server.data.DataEvent.TableModifyEvent;
 import com.butent.bee.server.data.DataEvent.ViewQueryEvent;
 import com.butent.bee.server.data.DataEventHandler;
 import com.butent.bee.server.data.QueryServiceBean;
+import com.butent.bee.server.data.SearchBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
@@ -159,6 +160,9 @@ public class ClassifiersModuleBean implements BeeModule {
   @EJB
   ParamHolderBean prm;
 
+  @EJB
+  SearchBean src;
+
   @Resource
   TimerService timerService;
 
@@ -167,21 +171,23 @@ public class ClassifiersModuleBean implements BeeModule {
     List<SearchResult> search = new ArrayList<>();
 
     if (usr.isModuleVisible(ModuleAndSub.of(getModule(), SubModule.CONTACTS))) {
-      List<SearchResult> companiesSr = qs.getSearchResults(VIEW_COMPANIES,
-          Filter.anyContains(Sets.newHashSet(COL_COMPANY_NAME, COL_COMPANY_CODE, COL_PHONE,
+      List<SearchResult> companiesSr = qs.getSearchResults(VIEW_COMPANIES, src.buildSearchFilter(
+          VIEW_COMPANIES, Sets.newHashSet(COL_COMPANY_NAME, COL_COMPANY_CODE, COL_PHONE,
               COL_EMAIL_ADDRESS, COL_ADDRESS, ALS_CITY_NAME, ALS_COUNTRY_NAME), query));
       search.addAll(companiesSr);
 
       List<SearchResult> personsSr = qs.getSearchResults(VIEW_PERSONS,
-          Filter.anyContains(Sets.newHashSet(COL_FIRST_NAME, COL_LAST_NAME, COL_PHONE,
-              COL_EMAIL_ADDRESS, COL_ADDRESS, ALS_CITY_NAME, ALS_COUNTRY_NAME), query));
+          src.buildSearchFilter(VIEW_PERSONS, Sets.newHashSet(COL_FIRST_NAME, COL_LAST_NAME,
+              COL_PHONE, COL_EMAIL_ADDRESS, COL_ADDRESS, ALS_CITY_NAME, ALS_COUNTRY_NAME), query));
       search.addAll(personsSr);
 
       List<SearchResult> companiesAndPersons =
-          qs.getSearchResults(VIEW_COMPANY_PERSONS, Filter.anyContains(Sets.newHashSet(
-              ALS_COMPANY_NAME, ALS_COMPANY_TYPE_NAME, COL_FIRST_NAME, COL_LAST_NAME,
-              COL_DEPARTMENT_NAME, ALS_POSITION_NAME, COL_PHONE, COL_MOBILE, COL_FAX, COL_EMAIL,
-              COL_ADDRESS, COL_POST_INDEX, COL_WEBSITE, ALS_CITY_NAME, ALS_COUNTRY_NAME), query));
+          qs.getSearchResults(VIEW_COMPANY_PERSONS, src.buildSearchFilter(VIEW_COMPANY_PERSONS, Sets
+              .newHashSet(
+                  ALS_COMPANY_NAME, ALS_COMPANY_TYPE_NAME, COL_FIRST_NAME, COL_LAST_NAME,
+                  COL_DEPARTMENT_NAME, ALS_POSITION_NAME, COL_PHONE, COL_MOBILE, COL_FAX, COL_EMAIL,
+                  COL_ADDRESS, COL_POST_INDEX, COL_WEBSITE, ALS_CITY_NAME, ALS_COUNTRY_NAME),
+              query));
       search.addAll(companiesAndPersons);
     }
 

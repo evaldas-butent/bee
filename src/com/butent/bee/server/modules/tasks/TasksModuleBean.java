@@ -19,6 +19,7 @@ import com.butent.bee.server.data.DataEditorBean;
 import com.butent.bee.server.data.DataEvent.ViewQueryEvent;
 import com.butent.bee.server.data.DataEventHandler;
 import com.butent.bee.server.data.QueryServiceBean;
+import com.butent.bee.server.data.SearchBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
@@ -70,8 +71,11 @@ import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
+import com.butent.bee.shared.modules.administration.AdministrationConstants.ReminderMethod;
 import com.butent.bee.shared.modules.projects.ProjectConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
+import com.butent.bee.shared.modules.tasks.TaskConstants.TaskEvent;
+import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
 import com.butent.bee.shared.modules.tasks.TaskUtils;
 import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.news.Headline;
@@ -130,6 +134,9 @@ public class TasksModuleBean implements BeeModule {
   @EJB
   MailModuleBean mail;
 
+  @EJB
+  SearchBean src;
+
   @Resource
   EJBContext ctx;
 
@@ -138,9 +145,8 @@ public class TasksModuleBean implements BeeModule {
     List<SearchResult> result = new ArrayList<>();
 
     List<SearchResult> tasksSr = qs.getSearchResults(VIEW_TASKS,
-        Filter.anyContains(Sets.newHashSet(COL_SUMMARY, COL_DESCRIPTION,
-            ALS_COMPANY_NAME, ALS_EXECUTOR_FIRST_NAME, ALS_EXECUTOR_LAST_NAME),
-            query));
+        src.buildSearchFilter(VIEW_TASKS, Sets.newHashSet(COL_ID, COL_SUMMARY, COL_DESCRIPTION,
+            ALS_COMPANY_NAME, ALS_EXECUTOR_FIRST_NAME, ALS_EXECUTOR_LAST_NAME), query));
     result.addAll(tasksSr);
 
     List<SearchResult> rtSr = qs.getSearchResults(VIEW_RECURRING_TASKS,
@@ -208,8 +214,7 @@ public class TasksModuleBean implements BeeModule {
   public Collection<BeeParameter> getDefaultParameters() {
     String module = getModule().getName();
     List<BeeParameter> params = Lists.newArrayList(
-        BeeParameter.createText(module, PRM_END_OF_WORK_DAY)
-        );
+        BeeParameter.createText(module, PRM_END_OF_WORK_DAY));
     return params;
   }
 
@@ -1205,7 +1210,7 @@ public class TasksModuleBean implements BeeModule {
           .setWhere(
               SqlUtils.equals(TBL_COMPANIES, sys
                   .getIdName(TBL_COMPANIES), companiesListSet.getValue(i, sys
-                  .getIdName(TBL_COMPANIES))));
+                      .getIdName(TBL_COMPANIES))));
 
       if (reqInfo.hasParameter(VAR_TASK_DURATION_DATE_FROM)) {
         if (!BeeUtils.isEmpty(reqInfo.getParameter(VAR_TASK_DURATION_DATE_FROM))) {
@@ -1757,7 +1762,7 @@ public class TasksModuleBean implements BeeModule {
           .setWhere(
               SqlUtils.equals(TBL_USERS, sys
                   .getIdName(TBL_USERS), usersListSet.getValue(i, sys
-                  .getIdName(TBL_USERS))));
+                      .getIdName(TBL_USERS))));
 
       if (reqInfo.hasParameter(VAR_TASK_DURATION_DATE_FROM)) {
         if (!BeeUtils.isEmpty(reqInfo.getParameter(VAR_TASK_DURATION_DATE_FROM))) {
