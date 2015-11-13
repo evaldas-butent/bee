@@ -58,11 +58,7 @@ import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.calendar.CalendarConstants;
 import com.butent.bee.shared.modules.mail.MailConstants;
-import com.butent.bee.shared.modules.mail.MailConstants.AddressType;
-import com.butent.bee.shared.modules.mail.MailConstants.MessageFlag;
-import com.butent.bee.shared.modules.mail.MailConstants.RuleAction;
-import com.butent.bee.shared.modules.mail.MailConstants.RuleCondition;
-import com.butent.bee.shared.modules.mail.MailConstants.SystemFolder;
+import com.butent.bee.shared.modules.mail.MailConstants.*;
 import com.butent.bee.shared.modules.mail.MailFolder;
 import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.rights.Module;
@@ -738,7 +734,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
                     .addFromLeft(TBL_POSITIONS,
                         sys.joinTables(TBL_POSITIONS, TBL_COMPANY_PERSONS, COL_POSITION)))
                 .addOrder(null, COL_EMAIL_ADDRESS),
-            sys.getView(VIEW_USER_EMAILS));
+            sys.getView(VIEW_USER_EMAILS), false);
       }
 
       @Override
@@ -1013,7 +1009,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
           LocalizableConstants loc = Localized.getConstants();
 
           String content = BeeUtils.join("<br>", "---------- "
-              + loc.mailForwardedMessage() + " ----------",
+                  + loc.mailForwardedMessage() + " ----------",
               loc.mailFrom() + ": " + sender,
               loc.date() + ": " + envelope.getDate(),
               loc.mailSubject() + ": " + envelope.getSubject(),
@@ -1682,7 +1678,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
         }
       }
     }
-    for (Iterator<MailFolder> iter = localFolder.getSubFolders().iterator(); iter.hasNext();) {
+    for (Iterator<MailFolder> iter = localFolder.getSubFolders().iterator(); iter.hasNext(); ) {
       MailFolder subFolder = iter.next();
 
       if (!visitedFolders.contains(subFolder.getName())
