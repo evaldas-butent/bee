@@ -56,7 +56,7 @@ class DiscussionFilesGrid extends AbstractGridInterceptor {
     String url = "";
     url =
         FileUtils.getUrl(row.getString(gridView
-            .getDataIndex(AdministrationConstants.COL_FILE_CAPTION)),
+            .getDataIndex(AdministrationConstants.ALS_FILE_NAME)),
             row.getLong(gridView.getDataIndex(AdministrationConstants.COL_FILE)));
 
     BrowsingContext.open(url);

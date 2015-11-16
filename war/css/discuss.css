@@ -55,7 +55,6 @@
 
 .bee-discuss-comment-Comment {
   display: inline-block;
-  min-height: 35px;
   width: 100%;
   max-height: 9em;
   margin-top: 10px;
@@ -63,11 +62,7 @@
 
 .bee-discuss-comment-files {
   overflow: auto;
-  max-height: 6em;
   display: block;
-  border-top: 1px dotted #ccc;
-  margin-left: 2em;
-  margin-left: 2em;
 }
 
 .bee-discuss-comment-row {
@@ -77,11 +72,11 @@
 
 .bee-discuss-comment-col-Actions {
   display: inline-block;
-  min-width: 95px;
   vertical-align: top;
   margin: -1px -1px -3px 0px;
   text-align: center;
   font-size: 17px;
+  padding: 4px 0px 4px 0px;
 }
 
 .bee-discuss-comment-col-Mark>.bee-discuss-Actions-mark {
@@ -104,6 +99,12 @@
 }
 
 .bee-discuss-Actions:hover {
+  color: gray;
+}
+
+.bee-discuss-comment-col-Mark button:hover{
+  color: black !important;
+  background-color: gray !important;
 }
 
 .bee-discuss-comment-col-Actions-reply {
@@ -115,9 +116,9 @@
 }
 
 .bee-discuss-comment-col-Mark {
-  text-align: right;
   display: inline-block;
   width: 100%;
+  margin-top: 2px;
 }
 
 .bee-discuss-commentDialog {
@@ -161,7 +162,7 @@
   margin-left: -1em;
   font-size: smaller;
   font-weight: bolder;
-  background-color: whitesmoke;
+  background-color: transparent;
 }
 
 .bee-discuss-Actions-mark {
@@ -206,63 +207,208 @@
   border-spacing: 0px;
 }
 
-.bee-discuss-adsFormContent-TopicName {
-  
+.bee-discuss-adsFormContent-right{
+  float: right;
 }
 
-.bee-discuss-adsFormContent-Important {
-  color: red;
+.bee-discuss-adsFormContent-Send {
+  float: right;
+  color: black;
+}
+.FaDisplayNone{
+  display: none !important;
+}
+.FaDisplay{
+  display: block;
+}
+.bee-discuss-adsFormContent-Attach {
+  float: right;
+  margin-right: 10px;
+}
+.bee-discuss-adsFormContent-LeftBorder {
+  border-left: 3px solid #1ca5c7;
+}
+.bee-discuss-adsFormContent-leftBorder-none{
+  border-left: 0px solid;
+}
+.bee-discuss-adsFormContent-leftBorder-red{
+  border-left: 3px solid #ffb300;
+}
+.bee-discuss-adsFormContent-auth-photo{
+  max-height: 60px;
+  max-width: 60px;
+  cursor: default; 
+  float: left; 
+  margin-top: 17px;
+  margin-left: 30px; 
+  border-radius: 50%;
+}
+.bee-discuss-adsFormContent-hb-photo{
+  max-height: 25px;
+  max-width: 25px;
+  cursor: default; 
+  float: left; 
+  margin-top: 5px;
+  margin-left: 30px; 
+  border-radius: 50%;
+}
+.bee-discuss-adsFormContent-name-sur{
+  float: left; 
+  margin-top: 32px; 
+  margin-left: 15px;
+  margin-right: 20px;
+  font-weight: bold; 
+  font-size: 13px;
+}
+.bee-discuss-adsFormContent-name-sur-hb{
+  float: left; 
+  margin-left: 15px;
+  margin-right: 20px;
+  font-weight: bold; 
+  font-size: 13px;
+}
+.bee-discuss-adsFormContent-important{
+  float: left; 
+  margin-top: 32px; 
+  margin-left: 10px; 
+  color: red; 
+  font-size: 14pt; 
+  float: left;
+}
+.bee-discuss-adsFormContent-topic-flow {
+  float: left; 
+  margin-top: 32px; 
+  margin-left: 10px;
+  text-transform: uppercase; 
+  font-size: 10px; 
+  font-weight: 600;
+  padding: 3px;
+  border-radius: 5px;
+}
+.bee-discuss-adsFormContent-topic-hb{
+  float: left; 
+  margin-left: 10px;
+  text-transform: uppercase; 
+  font-size: 10px; 
+  font-weight: 600;
+  padding: 3px;
+  border-radius: 5px;
+}
+.bee-discuss-adsFormContent-time-created{
+  float: right; 
+  margin-top: 32px; 
+  margin-right: 100px; 
+  color: #c5c5c5;
+}
+.comment-count{
+  float: right; 
+  margin-top: 32px; 
+  color: #c5c5c5;
+}
+.bee-discuss-adsFormContent-paper-clip {
+  font-size: 18px;
+  color: gray;
+  margin-top: 32px;
+  margin-left: 10px;
+  float: left;  
+}
+.bee-discuss-adsFormContent-paper-clip:hover {
+ cursor: pointer;
+ color: black;
+}
+.bee-discuss-adsFormContent-topic{
+  font-size: 12px;
+  margin-left: 95px;
+  margin-bottom: 30px;
+  width: 730px;
+  float: left;
+}
+.bee-discuss-adsFormContent-subject{
+  float: left;
+  margin-top: 10px;
+  margin-left: 94px;
+  margin-right: 20px;
   font-weight: bold;
+  margin-bottom: 5px;
+  font-size: 13px;
+  width: 730px;
 }
-
-.bee-discuss-adsFormContent-Important > td {
-  border-bottom: 1px solid red !important;
+.bee-discuss-adsFormContent-file-group{
+  margin-left: 60px; 
+  margin-bottom: 30px;
+}
+.bee-discuss-adsFormContent-comment-line{
+  background-color: #f5f5f5; 
+  min-height: 40px;
+}
+.bee-discuss-adsFormContent-user-photo{
+  max-height: 25px; 
+  max-width: 25px; 
+  cursor: default; 
+  float: left;
+  margin-left: 70px; 
+  margin-top: 8px; 
+  border-radius: 50%;
+}
+.bee-discuss-adsFormContent-coment-input{
+  float: left; 
+  margin-top: 7px; 
+  margin-left: 10px;
+  border: 0px solid; 
+  background-color: #f4f4f4; 
+  width: 40% !important;
+}
+.bee-discuss-adsFormContent-fa{
+  float: right; 
+  font-size: 18px; 
+  color: gray; 
+  margin-top: 11px; 
+  margin-right: 30px;
+}
+.bee-discuss-adsFormContent-fa-send{
+  margin-top: 11px; 
+  font-size: 18px; 
+  color: gray; 
+  margin-right: 30px;
+}
+.bee-discuss-adsFormContent-file-collector{
+  padding-top: 0px !important;
+  float: right;
+  margin-right: 20px;
+}
+.bee-discuss-adsFormContent-line{
+  background-color:#e8e8e8; 
+  height: 10px;
+}
+.bee-discuss-adsFormContent-hb-date{
+  color: #c5c5c5;
+  font-weight: 500;
 }
 
 .bee-discuss-adsFormContent-TopicName > td {
-  border-bottom: 2px solid #ccc;
-  width: 100%;
+  
 }
 
 .bee-discuss-adsFormContent-Created {
  
 }
 
-.bee-discuss-adsFormContent-Subject {
-  font-weight: bolder;
-  vertical-align: top;
-  padding-left: 1ex;
-  border-top: 1px solid #ccc;
-  border-left: 1px solid #ccc;
-  border-right:  1px solid #ccc;
-  background-color: whitesmoke;
-  position: relative;
-  top: 2px;
-  width: 100%;
-}
-
 .bee-discuss-adsFormContent-Owner {
   white-space: nowrap;
   vertical-align: top;
   padding-right: 1ex;
+  width: 20%;
 }
 
 .bee-discuss-adsFormContent-Description {
   vertical-align: top;
   padding: 1ex;
   max-height: 370px;
-  display: block;
   overflow: hidden;
   text-overflow: ellipsis;
   min-height: 6em;
-  border-bottom: 1px solid #ccc;
-  border-left: 1px solid #ccc;
-  border-right:  1px solid #ccc;
-  border-bottom-right-radius: 10px;
-  background-color: whitesmoke;
   position: relative;
   top: 2px;
-  box-shadow: 5px 3px 5px #ccc;
   margin-bottom: 1em;
 }
 
@@ -272,13 +418,15 @@
 
 .bee-discuss-adsFormContent-Owner-Photo {
   text-align: center;
-  max-width: 40px;
-  min-width: 40px;
-  padding: 1ex;
+  max-width: 25px;
+  min-width: 25px;
+  padding: 10px 0px 10px 10px;
+  float:left;
 }
 
 .bee-discuss-adsFormContent-Owner-Publisher {
-  
+      float: left;
+      padding: 1em;
 }
 
 .bee-discuss-adsFormContent-Birthday {
@@ -291,19 +439,16 @@
 }
 
 .bee-discuss-adsFormContent-TopicNameBirthday {
-  color: green;
 }
 .bee-discuss-adsFormContent-TopicNameBirthday > td {
-  border-bottom: 2px solid green !important; 
 }
 
 .bee-discuss-adsFormContent-DescriptionBirthday-birthList {
-  color: green;
   padding: 1em;
 }
 
 .bee-discuss-adsFormContent-DescriptionBirthday-happyDay {
-  font-weight: bolder;
+  
 }
 
 .bee-discuss-adsFormContent-DescriptionBirthday-birthList > td {
@@ -315,16 +460,12 @@
 }
 
 .bee-discuss-adsFormContent-actionDiscussion {
-  width: 33%;
-  height: 2em;
-  padding: 0px;
-  padding-bottom: 1ex;
+  width: 100%;
+  height: 120px;
   letter-spacing: 2px;
-  opacity: 0.7;
+  opacity: 0;
   background: whitesmoke;
-  margin-right: 25%;
-  position: relative;
-  top: -6ex;
+  position: absolute;
   border: 0px !important;
 }
 

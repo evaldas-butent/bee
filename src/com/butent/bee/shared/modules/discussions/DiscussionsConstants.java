@@ -107,16 +107,22 @@ public final class DiscussionsConstants {
   public static final String ALS_FILES_COUNT = "FilesCount";
   public static final String ALS_RELATIONS_COUNT = "RelCount";
   public static final String ALS_TOPIC_NAME = "TopicName";
+  public static final String ALS_BG_COLOR = "BackgroundColor";
+  public static final String ALS_TXT_COLOR = "Color";
   public static final String ALS_NEW_ANNOUCEMENT = "NewAnnouncement";
 
   public static final String COL_ACCESSIBILITY = "Accessibility";
+  public static final String COL_ACCESS = "Access";
   public static final String COL_CAPTION = "Caption";
   public static final String COL_COMMENT = "Comment";
   public static final String COL_COMMENT_TEXT = "CommentText";
   public static final String COL_CREATED = "Created";
+  public static final String COL_RED_TOPIC = "Red";
   public static final String COL_DISCUSSION = "Discussion";
+  public static final String COL_DISCUSSION_COM_ID = "DiscussionCommentID";
   public static final String COL_DISCUSSION_ID = "DiscussionID";
   public static final String COL_DESCRIPTION = "Description";
+  public static final String COL_SUMMARY = "Summary";
   public static final String COL_DELETED = "Deleted";
   public static final String COL_IMAGE_RESOURCE_NAME = "ImageResourceName";
   public static final String COL_IMPORTANT = "Important";
@@ -132,12 +138,20 @@ public final class DiscussionsConstants {
   public static final String COL_MEMBER = "Member";
   public static final String COL_NAME = "Name";
   public static final String COL_ORDINAL = "Ordinal";
+  public static final String COL_BG_COLOR = "BackgroundColor";
+  public static final String COL_TXT_COLOR = "Color";
   public static final String COL_OWNER = "Owner";
   public static final String COL_PERMIT_COMMENT = "PermitComment";
   public static final String COL_PUBLISHER = "Publisher";
   public static final String COL_PUBLISHER_FIRST_NAME = "PublisherFirstName";
   public static final String COL_PUBLISHER_LAST_NAME = "PublisherLastName";
   public static final String COL_PUBLISH_TIME = "PublishTime";
+  public static final String ALS_MAX_PUBLISH_TIME = "maxPT";
+  public static final String COL_COUNT_ID = "countID";
+  public static final String COL_MAX_COM_ID = "maxComID";
+  public static final String COL_DISCUSION = "Discusion";
+  public static final String COL_MAX_COM = "MaxCom";
+  public static final String COL_DIS_COM = "DisCom";
   public static final String COL_PARENT_COMMENT = "Parent";
   public static final String COL_REASON = "Reason";
   public static final String COL_STAR = "Star";
@@ -152,6 +166,7 @@ public final class DiscussionsConstants {
   public static final String FORM_NEW_DISCUSSION = "NewDiscussion";
   public static final String FORM_DISCUSSION = "Discussion";
   public static final String FORM_ANNOUNCEMENTS_BOARD = "AnnouncementsBoard";
+  public static final String FORM_NEW_TOPIC = "NewTopic";
 
   public static final String GRID_DISCUSSIONS = "Discussions";
   public static final String GRID_DISCUSSION_FILES = "DiscussionFiles";

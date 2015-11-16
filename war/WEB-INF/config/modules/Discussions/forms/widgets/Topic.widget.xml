@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form [
+  <!ENTITY inline "display: inline-block;">
+
+  <!ENTITY section "margin-top: 4px;">
+  <!ENTITY header "font-size: 20px;">
+  <!ENTITY separator "<hr/>">
+
+  <!ENTITY lbl1 "&inline; max-width: 128px; min-width: 110px; text-align: right; padding-right: 28px; min-height: 20px; max-height: 20px; padding-top: 1px;">
+  <!ENTITY top1 "text-align: right; padding-right: 28px; max-width: 128px; padding-top: 1px;">
+  <!ENTITY inp1x "&inline; width: 450px;">
+  <!ENTITY inp2x "&inline; width: 710px;">
+  <!ENTITY bold "font-weight: bold;">
+ 
+]>
+<FlowPanel xmlns="http://www.butent.com/widget" style="padding: 10px 2px 2px 10px; min-width: 660px; min-height: 450px">
+    
+    <FlowPanel for="Subject" style="&section;" class="flexBox-horizontal">
+      <Label text="=discussSubject" class="bee-required" style="&lbl1; min-width:80px; &bold; padding-left: 11px;" />
+      <InputText source="Subject" style="&inp2x;" />
+    </FlowPanel>
+
+    <FlowPanel for="Summary" style="&section;" class="flexBox-horizontal">
+      <Label text="=discussSummary" style="&top1; padding-right: 28px; min-width:80px; &bold; padding-left: 11px;" />
+      <RichTextEditor name="Summary" style="width: 710px; height: 200px;" />
+    </FlowPanel>
+    
+    <Disclosure open="false" style="margin-top: 10px;">
+    <Label text="=discussDescription" style="text-transform: uppercase; " />
+    <FlowPanel for="Description" style="&section;" class="flexBox-horizontal">
+      <Label text="=discussDescription" style="&top1; padding-right: 28px; min-width:80px; &bold; padding-left: 11px;" />
+      <RichTextEditor name="Description" style="width: 710px; height: 200px;" />
+    </FlowPanel>
+    </Disclosure>
+
+	<Disclosure open="false" style="margin-bottom: 10px;">
+	<Label text="=relatedTo" style="text-transform: uppercase; " />
+	<FlowPanel style="padding-bottom: 10px;">
+
+    <FlowPanel data="Relations" for="Company" module="Classifiers.Contacts" 
+    style="&section; &bold;" class="flexBox-horizontal">
+      <Label text="=companies" style="&top1;min-width:80px; padding-right:0px; padding-left:24px;" />
+      <MultiSelector viewName="Companies" property="Companies" choiceColumns="Name TypeName" 
+          renderColumns="Name TypeName" editPopup="true" style="&inp2x; margin-left: 15px;" />
+    </FlowPanel>
+
+    <FlowPanel data="Relations" for="Person" module="Classifiers.Contacts"
+      style="&section;" class="flexBox-horizontal">
+      <Label text="=persons" style="&top1;min-width:80px; padding-right:0px; padding-left:24px; &bold;" />
+      <MultiSelector viewName="Persons" property="Persons" renderColumns="FirstName LastName"
+        editPopup="true" style="&inp2x; margin-left: 15px;" />
+    </FlowPanel>
+
+    <FlowPanel data="Relations" for="Appointment" module="Calendar"
+    style="&section;" class="flexBox-horizontal">
+      <Label text="=calAppointments" style="&top1;min-width:93px; padding-right:0px; padding-left:11px; &bold;" />
+      <MultiSelector viewName="Appointments" property="Appointments"
+        renderColumns="Summary" choiceColumns="Summary StartDateTime EndDateTime"
+        newRowEnabled="false" editPopup="true" style="&inp2x; margin-left: 15px;" />
+    </FlowPanel>
+
+    <FlowPanel data="Relations" for="Task" module="Tasks" 
+    style="&section;" class="flexBox-horizontal">
+      <Label text="=crmTasks" style="&top1;min-width:80px; padding-right:0px; padding-left:24px; &bold;" />
+      <MultiSelector viewName="Tasks" property="Tasks" 
+        renderColumns="Id Summary ExecutorFirstName ExecutorLastName"
+        choiceColumns="Id Summary ExecutorFirstName ExecutorLastName StartTime FinishTime"
+        newRowEnabled="false" editPopup="true" style="&inp2x; margin-left: 15px;" />
+    </FlowPanel>
+    
+    <FlowPanel data="Relations" for="Document" module="Documents"
+      style="&section;" class="flexBox-horizontal">
+      <Label text="=documents" style="&top1;min-width:80px; padding-right:0px; padding-left:24px; &bold;" />
+      <MultiSelector viewName="Documents" property="Documents" 
+        renderColumns="Name Number RegistrationNumber DocumentDate"
+        choiceColumns="Name Number RegistrationNumber DocumentDate"
+        newRowEnabled="false" editPopup="true" style="&inp2x; margin-left: 15px;" />
+    </FlowPanel>
+    
+ </FlowPanel>
+</Disclosure>
+
+    &separator;
+
+    <FlowPanel data="DiscussionsFiles" style="&section;" class="flexBox-horizontal">
+      <Label text="=discussFiles" style="&top1; min-width:104px;" />
+      <FileCollector name="Files" editableColumns="name">
+        <face resource="attachment" />
+      </FileCollector>
+    </FlowPanel>
+
+    <FlowPanel data="Users" style="&section;" class="flexBox-horizontal">
+      <Label name="membersLabel" text="=discussMembers" style="&top1;min-width:80px; padding-left:24px; padding-right: 0px;" />
+      <MultiSelector name="Members" viewName="Users" property="Members" renderColumns="FirstName LastName"
+        editPopup="true" editSource="CompanyPerson" disablable="true" style="&inp2x; margin-left: 15px;" label="=discussMembers" />
+    </FlowPanel>
+    
+    <FlowPanel data="Users" style="&section;" class="flexBox-horizontal">
+      <Label name="groupsLable" text="=discussUserGroup" style="&top1;min-width:104px; padding-right: 0px;" />
+      <MultiSelector name="ObserverGroups" viewName="UserGroupSettings" property="ObserverGroups" renderColumns="Name"
+        editPopup="true" style="&inp2x; margin-left: 15px;" label="=discussMembers" filter="Owner {u} or Visibility 1" />
+    </FlowPanel>
+
+    <FlowPanel style="&section; margin-left: 110px; margin-top: 10px;" class="flexBox-horizontal">
+      <CheckBox data="Users" name="Accessibility" source="Accessibility" text="=discussPublic"
+        style="&top1; min-width:70px; padding-right:28px;" />
+      <CheckBox module="Mail.Administration" name="Mail" text="=mailNotify" />
+    </FlowPanel>
+    </FlowPanel>

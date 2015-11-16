@@ -1582,7 +1582,6 @@
   border-collapse: collapse;
 }
 .bee-FileCollector-faceCell {
-  padding-top: 4px;
 }
 .bee-FileCollector-hiddenWidget {
   width: 1px;
@@ -3320,7 +3319,6 @@ textarea,
 }
 @media (min-height: 600px) and (max-height: 1300px) {
   .bee-HtmlTable-controls > tbody > tr > td {
-    padding-top: calc(2vh - 6px);
   }
 }
 @media (min-height: 1300px) {
