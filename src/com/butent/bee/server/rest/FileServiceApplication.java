@@ -111,6 +111,7 @@ public class FileServiceApplication extends Application {
     if (BeeUtils.isEmpty(files)) {
       throw new BadRequestException();
     }
+    logger.warning(files);
     Map<String, String> fileMap = Codec.deserializeMap(Codec.decodeBase64(files));
     File tmp;
 
@@ -119,10 +120,32 @@ public class FileServiceApplication extends Application {
       tmp.deleteOnExit();
 
       try (
-          ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(tmp))) {
+          ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(tmp))
+      ) {
+        Set<String> names = new HashSet<>();
+
         for (Map.Entry<String, String> entry : fileMap.entrySet()) {
           FileInfo fileInfo = fs.getFile(BeeUtils.toLong(entry.getKey()));
-          ZipEntry ze = new ZipEntry(BeeUtils.notEmpty(entry.getValue(), fileInfo.getName()));
+          String name = BeeUtils.notEmpty(entry.getValue(), fileInfo.getName());
+
+          if (!names.add(name)) {
+            int idx = name.lastIndexOf(BeeConst.CHAR_POINT);
+            String stem;
+            String ext;
+            int i = 0;
+
+            if (BeeConst.isUndef(idx)) {
+              stem = name;
+              ext = BeeConst.STRING_EMPTY;
+            } else {
+              stem = name.substring(0, idx);
+              ext = name.substring(idx);
+            }
+            do {
+              name = stem + BeeUtils.parenthesize(++i) + ext;
+            } while (!names.add(name));
+          }
+          ZipEntry ze = new ZipEntry(name);
           zos.putNextEntry(ze);
 
           Files.copy(fileInfo.getFile().toPath(), zos);
