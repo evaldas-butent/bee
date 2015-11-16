@@ -1,5 +1,7 @@
 package com.butent.bee.shared.communication;
 
+import com.google.gwt.http.client.URL;
+
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
@@ -101,7 +103,7 @@ public final class CommUtils {
         }
 
         sb.append(key).append(QUERY_STRING_VALUE_SEPARATOR);
-        sb.append(encode ? Codec.encodeBase64(value) : value);
+        sb.append(URL.encodePathSegment(encode ? Codec.encodeBase64(value) : value));
       }
     }
     return sb.toString();
