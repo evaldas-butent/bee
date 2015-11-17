@@ -3,6 +3,7 @@ package com.butent.bee.client.modules.transport.charts;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.i18n.Collator;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -103,6 +104,8 @@ class ChartData {
     PLACE(Localized.getConstants().cargoHandlingPlaces()),
     TRAILER(Localized.getConstants().trailers()),
     TRIP(Localized.getConstants().trips()),
+    TRIP_ARRIVAL(Localized.getConstants().transportArrival()),
+    TRIP_DEPARTURE(Localized.getConstants().transportDeparture()),
     TRUCK(Localized.getConstants().trucks()),
     UNLOADING(Localized.getConstants().cargoUnloading()),
     VEHICLE_GROUP(Localized.getConstants().vehicleGroupsShort()),
@@ -165,6 +168,12 @@ class ChartData {
     }
   }
 
+  void addNotNull(JustDate date) {
+    if (date != null) {
+      add(date.toString(), (long) date.getDays());
+    }
+  }
+
   void addUser(Long userId) {
     if (userId != null) {
       String signature = Global.getUsers().getSignature(userId);
@@ -187,6 +196,15 @@ class ChartData {
     }
 
     long id = e.ordinal();
+    return contains(id);
+  }
+
+  boolean contains(JustDate date) {
+    if (date == null) {
+      return false;
+    }
+
+    long id = date.getDays();
     return contains(id);
   }
 

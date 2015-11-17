@@ -16,7 +16,6 @@ import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.view.edit.EditStopEvent;
-import com.butent.bee.client.view.edit.EditStopEvent.Handler;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.data.BeeColumn;
@@ -34,7 +33,7 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
 
-final class TripSelector implements Handler, ClickHandler {
+final class TripSelector implements EditStopEvent.Handler, ClickHandler {
 
   public static void select(long cargoId, List<String> columns, Filter tripFilter, Element target) {
     String[] cargos = new String[] {BeeUtils.toString(cargoId)};

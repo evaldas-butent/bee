@@ -22,6 +22,7 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.time.HasDateRange;
+import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
@@ -176,6 +177,14 @@ final class FilterHelper {
     }
 
     return result;
+  }
+
+  static boolean matches(ChartData data, JustDate date) {
+    if (data == null) {
+      return true;
+    } else {
+      return data.contains(date);
+    }
   }
 
   static boolean matches(ChartData data, Long id) {

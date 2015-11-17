@@ -200,13 +200,17 @@ abstract class VehicleTimeBoard extends ChartBase {
     CargoMatcher cargoMatcher = CargoMatcher.maybeCreate(selectedData);
 
     ChartData tripData = FilterHelper.getDataByType(selectedData, ChartData.Type.TRIP);
+    ChartData departureData = FilterHelper.getDataByType(selectedData,
+        ChartData.Type.TRIP_DEPARTURE);
+    ChartData arrivalData = FilterHelper.getDataByType(selectedData, ChartData.Type.TRIP_ARRIVAL);
+
     ChartData driverData = FilterHelper.getDataByType(selectedData, ChartData.Type.DRIVER);
 
     PlaceMatcher placeMatcher = PlaceMatcher.maybeCreate(selectedData);
 
     boolean freightRequired = cargoMatcher != null || placeMatcher != null;
     boolean tripRequired = freightRequired || otherVehicleData != null || tripData != null
-        || driverData != null;
+        || departureData != null || arrivalData != null || driverData != null;
 
     for (Vehicle vehicle : vehicles) {
       boolean vehicleMatch = FilterHelper.matches(vehicleData, vehicle.getId())
@@ -223,6 +227,8 @@ abstract class VehicleTimeBoard extends ChartBase {
 
         for (Trip trip : trips.get(vehicle.getId())) {
           boolean tripMatch = FilterHelper.matches(tripData, trip.getTripId())
+              && FilterHelper.matches(departureData, trip.getTripDeparture())
+              && FilterHelper.matches(arrivalData, trip.getTripArrival())
               && FilterHelper.matches(otherVehicleData, trip.getVehicleId(otherVehicleType))
               && trip.matchesDrivers(driverData);
 
@@ -541,6 +547,8 @@ abstract class VehicleTimeBoard extends ChartBase {
     ChartData cargoData = new ChartData(ChartData.Type.CARGO);
 
     ChartData tripData = new ChartData(ChartData.Type.TRIP);
+    ChartData departureData = new ChartData(ChartData.Type.TRIP_DEPARTURE);
+    ChartData arrivalData = new ChartData(ChartData.Type.TRIP_ARRIVAL);
 
     ChartData loadData = new ChartData(ChartData.Type.LOADING);
     ChartData unloadData = new ChartData(ChartData.Type.UNLOADING);
@@ -572,7 +580,9 @@ abstract class VehicleTimeBoard extends ChartBase {
           continue;
         }
 
-        tripData.add(trip.getItemName(), trip.getTripId());
+        tripData.add(trip.getTripNo(), trip.getTripId());
+        departureData.addNotNull(trip.getTripDeparture());
+        arrivalData.addNotNull(trip.getTripArrival());
 
         String otherVehicleNumber = trip.getVehicleNumber(otherVehicleType);
         if (!BeeUtils.isEmpty(otherVehicleNumber)) {
@@ -650,6 +660,8 @@ abstract class VehicleTimeBoard extends ChartBase {
     data.add(cargoData);
 
     data.add(tripData);
+    data.add(departureData);
+    data.add(arrivalData);
 
     data.add(loadData);
     data.add(unloadData);
