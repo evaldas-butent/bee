@@ -232,14 +232,18 @@ final class DriverTimeBoard extends ChartBase {
 
     ChartData truckData = FilterHelper.getDataByType(selectedData, ChartData.Type.TRUCK);
     ChartData trailerData = FilterHelper.getDataByType(selectedData, ChartData.Type.TRAILER);
+
     ChartData tripData = FilterHelper.getDataByType(selectedData, ChartData.Type.TRIP);
+    ChartData departureData = FilterHelper.getDataByType(selectedData,
+        ChartData.Type.TRIP_DEPARTURE);
+    ChartData arrivalData = FilterHelper.getDataByType(selectedData, ChartData.Type.TRIP_ARRIVAL);
 
     CargoMatcher cargoMatcher = CargoMatcher.maybeCreate(selectedData);
     PlaceMatcher placeMatcher = PlaceMatcher.maybeCreate(selectedData);
 
     boolean freightRequired = cargoMatcher != null || placeMatcher != null;
     boolean tripRequired = freightRequired || truckData != null || trailerData != null
-        || tripData != null;
+        || tripData != null || departureData != null || arrivalData != null;
 
     for (Driver driver : drivers) {
       boolean driverMatch = FilterHelper.matches(driverData, driver.getItemName());
@@ -260,6 +264,8 @@ final class DriverTimeBoard extends ChartBase {
           }
 
           boolean tripMatch = FilterHelper.matches(tripData, tripId)
+              && FilterHelper.matches(departureData, trip.getTripDeparture())
+              && FilterHelper.matches(arrivalData, trip.getTripArrival())
               && FilterHelper.matches(truckData, trip.getTruckId())
               && FilterHelper.matches(trailerData, trip.getTrailerId());
 
@@ -588,7 +594,10 @@ final class DriverTimeBoard extends ChartBase {
 
     ChartData truckData = new ChartData(ChartData.Type.TRUCK);
     ChartData trailerData = new ChartData(ChartData.Type.TRAILER);
+
     ChartData tripData = new ChartData(ChartData.Type.TRIP);
+    ChartData departureData = new ChartData(ChartData.Type.TRIP_DEPARTURE);
+    ChartData arrivalData = new ChartData(ChartData.Type.TRIP_ARRIVAL);
 
     ChartData customerData = new ChartData(ChartData.Type.CUSTOMER);
     ChartData managerData = new ChartData(ChartData.Type.MANAGER);
@@ -637,7 +646,9 @@ final class DriverTimeBoard extends ChartBase {
           trailerData.add(trip.getTrailerNumber(), trip.getTrailerId());
         }
 
-        tripData.add(trip.getItemName(), tripId);
+        tripData.add(trip.getTripNo(), tripId);
+        departureData.addNotNull(trip.getTripDeparture());
+        arrivalData.addNotNull(trip.getTripArrival());
 
         if (!freights.containsKey(tripId)) {
           continue;
@@ -691,7 +702,10 @@ final class DriverTimeBoard extends ChartBase {
 
     data.add(truckData);
     data.add(trailerData);
+
     data.add(tripData);
+    data.add(departureData);
+    data.add(arrivalData);
 
     data.add(customerData);
     data.add(managerData);
