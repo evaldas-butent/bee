@@ -153,6 +153,8 @@ public abstract class ChartBase extends TimeBoard {
     });
   }
 
+  private final Map<Long, String> transportGroups = new HashMap<>();
+
   private final Map<Long, Color> cargoTypeColors = new HashMap<>();
 
   private final Multimap<Long, CargoHandling> cargoHandling = ArrayListMultimap.create();
@@ -167,7 +169,7 @@ public abstract class ChartBase extends TimeBoard {
 
   private final Set<String> relevantDataViews = Sets.newHashSet(VIEW_ORDER_CARGO,
       VIEW_CARGO_TYPES, VIEW_CARGO_HANDLING, VIEW_CARGO_TRIPS, VIEW_TRIP_CARGO,
-      ClassifierConstants.VIEW_COUNTRIES,
+      VIEW_TRANSPORT_GROUPS, ClassifierConstants.VIEW_COUNTRIES,
       AdministrationConstants.VIEW_COLORS, AdministrationConstants.VIEW_THEME_COLORS);
 
   private final List<ChartData> filterData = new ArrayList<>();
@@ -342,6 +344,10 @@ public abstract class ChartBase extends TimeBoard {
 
   protected abstract String getThemeColumnName();
 
+  protected String getTransportGroupName(Long id) {
+    return transportGroups.get(id);
+  }
+
   protected boolean hasCargoHandling(Long cargoId) {
     return cargoId != null && cargoHandling.containsKey(cargoId);
   }
@@ -489,6 +495,20 @@ public abstract class ChartBase extends TimeBoard {
     serialized = rowSet.getTableProperty(PROP_COLORS);
     if (!BeeUtils.isEmpty(serialized)) {
       restoreColors(serialized);
+    }
+
+    transportGroups.clear();
+    serialized = rowSet.getTableProperty(PROP_TRANSPORT_GROUPS);
+    if (!BeeUtils.isEmpty(serialized)) {
+      BeeRowSet groups = BeeRowSet.restore(serialized);
+      int nameIndex = groups.getColumnIndex(COL_GROUP_NAME);
+
+      for (BeeRow group : groups) {
+        String name = group.getString(nameIndex);
+        if (!BeeUtils.isEmpty(name)) {
+          transportGroups.put(group.getId(), name);
+        }
+      }
     }
 
     cargoTypeColors.clear();

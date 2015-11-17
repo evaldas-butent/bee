@@ -225,6 +225,20 @@ class ChartData {
     return find(name) != null;
   }
 
+  boolean containsAny(Collection<Long> ids) {
+    if (BeeUtils.isEmpty(ids)) {
+      return false;
+    }
+
+    for (Long id : ids) {
+      if (contains(id)) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
   void deselectAll() {
     if (getNumberOfSelectedItems() > 0) {
       for (Item item : items) {

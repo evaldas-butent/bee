@@ -194,6 +194,8 @@ abstract class VehicleTimeBoard extends ChartBase {
     ChartData otherVehicleData = FilterHelper.getDataByType(selectedData,
         isTrailerPark() ? ChartData.Type.TRUCK : ChartData.Type.TRAILER);
 
+    ChartData groupData = FilterHelper.getDataByType(selectedData, ChartData.Type.VEHICLE_GROUP);
+
     ChartData typeData = FilterHelper.getDataByType(selectedData, ChartData.Type.VEHICLE_TYPE);
     ChartData modelData = FilterHelper.getDataByType(selectedData, ChartData.Type.VEHICLE_MODEL);
 
@@ -214,6 +216,7 @@ abstract class VehicleTimeBoard extends ChartBase {
 
     for (Vehicle vehicle : vehicles) {
       boolean vehicleMatch = FilterHelper.matches(vehicleData, vehicle.getId())
+          && FilterHelper.matchesAny(groupData, vehicle.getGroups())
           && FilterHelper.matches(typeData, vehicle.getType())
           && FilterHelper.matches(modelData, vehicle.getModel());
 
@@ -535,6 +538,8 @@ abstract class VehicleTimeBoard extends ChartBase {
     ChartData truckData = new ChartData(ChartData.Type.TRUCK);
     ChartData trailerData = new ChartData(ChartData.Type.TRAILER);
 
+    ChartData groupData = new ChartData(ChartData.Type.VEHICLE_GROUP);
+
     ChartData modelData = new ChartData(ChartData.Type.VEHICLE_MODEL);
     ChartData typeData = new ChartData(ChartData.Type.VEHICLE_TYPE);
 
@@ -566,6 +571,12 @@ abstract class VehicleTimeBoard extends ChartBase {
         trailerData.add(vehicleName, vehicle.getId());
       } else {
         truckData.add(vehicleName, vehicle.getId());
+      }
+
+      if (!BeeUtils.isEmpty(vehicle.getGroups())) {
+        for (Long group : vehicle.getGroups()) {
+          groupData.add(getTransportGroupName(group), group);
+        }
       }
 
       modelData.add(vehicle.getModel());
@@ -648,6 +659,8 @@ abstract class VehicleTimeBoard extends ChartBase {
     }
 
     data.add(isTrailerPark() ? trailerData : truckData);
+    data.add(groupData);
+
     data.add(modelData);
     data.add(typeData);
 

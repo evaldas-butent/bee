@@ -381,6 +381,7 @@ public final class TransportConstants {
   public static final String VIEW_SHIPPING_TERMS = "ShippingTerms";
 
   public static final String COL_GROUP = "Group";
+  public static final String COL_GROUP_NAME = "Name";
   public static final String COL_GROUP_MANAGER = "Manager";
 
   public static final String COL_TRIP = "Trip";
@@ -791,6 +792,8 @@ public final class TransportConstants {
   public static final String PROP_FREIGHTS = "Freights";
   public static final String PROP_CARGO_HANDLING = "CargoHandling";
   public static final String PROP_CARGO_TYPES = "CargoTypes";
+  public static final String PROP_TRANSPORT_GROUPS = "TransportGroups";
+  public static final String PROP_VEHICLE_GROUPS = "VehicleGroups";
   public static final String PROP_VEHICLE_MANAGER = "VehicleManager";
 
   public static final String ALS_TRIP_DATE = "TripDate";

@@ -207,6 +207,14 @@ final class FilterHelper {
     }
   }
 
+  static boolean matchesAny(ChartData data, Collection<Long> ids) {
+    if (data == null) {
+      return true;
+    } else {
+      return data.containsAny(ids);
+    }
+  }
+
   static List<ChartData> notEmptyData(Collection<ChartData> data) {
     List<ChartData> result = new ArrayList<>();
 
