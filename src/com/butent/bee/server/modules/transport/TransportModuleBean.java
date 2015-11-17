@@ -2019,6 +2019,24 @@ public class TransportModuleBean implements BeeModule {
     return ResponseObject.response(messages);
   }
 
+  private Multimap<Long, Long> getDriverGroups(IsCondition condition) {
+    SqlSelect query = new SqlSelect()
+        .addFields(TBL_DRIVER_GROUPS, COL_DRIVER, COL_GROUP)
+        .addFrom(TBL_DRIVER_GROUPS)
+        .setWhere(condition);
+
+    SimpleRowSet data = qs.getData(query);
+
+    Multimap<Long, Long> result = HashMultimap.create();
+    if (!DataUtils.isEmpty(data)) {
+      for (SimpleRow row : data) {
+        result.put(row.getLong(COL_DRIVER), row.getLong(COL_GROUP));
+      }
+    }
+
+    return result;
+  }
+
   private ResponseObject getDtbData() {
     BeeRowSet settings = getSettings();
     if (settings == null) {
@@ -2049,9 +2067,21 @@ public class TransportModuleBean implements BeeModule {
       logger.warning(SVC_GET_DTB_DATA, "drivers not available");
       return ResponseObject.response(settings);
     }
-    settings.setTableProperty(PROP_DRIVERS, drivers.serialize());
 
     List<Long> driverIds = DataUtils.getRowIds(drivers);
+
+    IsCondition groupWhere = SqlUtils.inList(TBL_DRIVER_GROUPS, COL_DRIVER, driverIds);
+    Multimap<Long, Long> driverGroups = getDriverGroups(groupWhere);
+    if (!driverGroups.isEmpty()) {
+      for (BeeRow row : drivers) {
+        if (driverGroups.containsKey(row.getId())) {
+          row.setProperty(PROP_DRIVER_GROUPS,
+              DataUtils.buildIdList(driverGroups.get(row.getId())));
+        }
+      }
+    }
+
+    settings.setTableProperty(PROP_DRIVERS, drivers.serialize());
 
     BeeRowSet absence = qs.getViewData(VIEW_DRIVER_ABSENCE, Filter.any(COL_DRIVER, driverIds));
     if (!DataUtils.isEmpty(absence)) {

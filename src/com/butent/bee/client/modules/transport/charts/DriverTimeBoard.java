@@ -229,6 +229,7 @@ final class DriverTimeBoard extends ChartBase {
     }
 
     ChartData driverData = FilterHelper.getDataByType(selectedData, ChartData.Type.DRIVER);
+    ChartData groupData = FilterHelper.getDataByType(selectedData, ChartData.Type.DRIVER_GROUP);
 
     ChartData truckData = FilterHelper.getDataByType(selectedData, ChartData.Type.TRUCK);
     ChartData trailerData = FilterHelper.getDataByType(selectedData, ChartData.Type.TRAILER);
@@ -246,7 +247,8 @@ final class DriverTimeBoard extends ChartBase {
         || tripData != null || departureData != null || arrivalData != null;
 
     for (Driver driver : drivers) {
-      boolean driverMatch = FilterHelper.matches(driverData, driver.getItemName());
+      boolean driverMatch = FilterHelper.matches(driverData, driver.getItemName())
+          && FilterHelper.matchesAny(groupData, driver.getGroups());
 
       boolean hasTrips = driverMatch && driverTrips.containsKey(driver.getId());
       if (driverMatch && !hasTrips && tripRequired) {
@@ -436,7 +438,8 @@ final class DriverTimeBoard extends ChartBase {
         drivers.add(new Driver(row.getId(),
             row.getString(firstNameIndex), row.getString(lastNameIndex),
             row.getDate(startDateIndex), row.getDate(endDateIndex),
-            row.getDate(experienceIndex), row.getString(notesIndex)));
+            row.getDate(experienceIndex), row.getString(notesIndex),
+            DataUtils.parseIdSet(row.getProperty(PROP_DRIVER_GROUPS))));
       }
     }
 
@@ -591,6 +594,7 @@ final class DriverTimeBoard extends ChartBase {
     }
 
     ChartData driverData = new ChartData(ChartData.Type.DRIVER);
+    ChartData groupData = new ChartData(ChartData.Type.DRIVER_GROUP);
 
     ChartData truckData = new ChartData(ChartData.Type.TRUCK);
     ChartData trailerData = new ChartData(ChartData.Type.TRAILER);
@@ -619,6 +623,12 @@ final class DriverTimeBoard extends ChartBase {
       }
 
       driverData.add(driver.getItemName());
+
+      if (!BeeUtils.isEmpty(driver.getGroups())) {
+        for (Long group : driver.getGroups()) {
+          groupData.add(getTransportGroupName(group), group);
+        }
+      }
 
       if (!driverTrips.containsKey(driver.getId())) {
         continue;
@@ -699,6 +709,7 @@ final class DriverTimeBoard extends ChartBase {
     }
 
     data.add(driverData);
+    data.add(groupData);
 
     data.add(truckData);
     data.add(trailerData);

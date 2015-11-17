@@ -783,6 +783,7 @@ public final class TransportConstants {
   public static final String PROP_COUNTRIES = "Countries";
   public static final String PROP_CITIES = "Cities";
   public static final String PROP_DRIVERS = "Drivers";
+  public static final String PROP_DRIVER_GROUPS = "DriverGroups";
   public static final String PROP_ABSENCE = "Absence";
   public static final String PROP_VEHICLES = "Vehicles";
   public static final String PROP_VEHICLE_SERVICES = "VehicleServices";
