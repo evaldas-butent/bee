@@ -3410,7 +3410,7 @@ public class TradeActBean implements HasTimerService {
 
       SimpleRowSet erpTurnovers =
           ButentWS.connect(remoteAddress, remoteLogin, remotePassword).getTurnovers(
-              null, null, null);
+              null, null, BeeConst.STRING_EMPTY);
 
       if (erpTurnovers.isEmpty()) {
         logger.info("Finish import Turnovers. Turnovers set from ERP is empty");
@@ -3420,10 +3420,10 @@ public class TradeActBean implements HasTimerService {
       Map<String, Long> compIdByName = new HashMap<>();
 
       for (String code : companies.keySet()) {
-        String name = erpCompanies.getValueByKey("kodas", code, "gavejas");
+        String name = erpCompanies.getValueByKey("kodas", code, "klientas");
 
         if (!BeeUtils.isEmpty(name)) {
-          compIdByName.put(name, companies.get(COL_COMPANY));
+          compIdByName.put(name, companies.get(code));
         }
       }
 
@@ -3435,7 +3435,7 @@ public class TradeActBean implements HasTimerService {
       SqlSelect salesSelect = new SqlSelect()
           .addFields(TBL_ERP_SALES, COL_TRADE_ERP_INVOICE)
           .addExpr(SqlUtils.minus(SqlUtils.nvl(SqlUtils.field(TBL_ERP_SALES, COL_TRADE_PAID), 0),
-              SqlUtils.nvl(SqlUtils.field(TBL_ERP_SALES, COL_TRADE_AMOUNT)), 0), COL_TRADE_DEBT)
+              SqlUtils.nvl(SqlUtils.field(TBL_ERP_SALES, COL_TRADE_AMOUNT), 0)), COL_TRADE_DEBT)
           .addFrom(TBL_ERP_SALES);
 
       SimpleRowSet sales = qs.getData(salesSelect);
@@ -3445,7 +3445,7 @@ public class TradeActBean implements HasTimerService {
         Double debt = BeeUtils.toDoubleOrNull(sales.getValueByKey(COL_TRADE_ERP_INVOICE, erpInvoice
             .getValue("dokumentas"), COL_TRADE_DEBT));
 
-        if (BeeUtils.isZero(debt)) {
+        if (debt != null && debt == BeeConst.DOUBLE_ZERO) {
           continue;
         }
 
@@ -3457,7 +3457,7 @@ public class TradeActBean implements HasTimerService {
 
         Long currencyId = currencies.get(erpInvoice.getValue("viso_val"));
 
-        if (DataUtils.isId(currencyId)) {
+        if (!DataUtils.isId(currencyId)) {
           continue;
         }
 
@@ -3472,23 +3472,45 @@ public class TradeActBean implements HasTimerService {
         Long seriesId = series.get(docSeries);
         Long userId = users.get(erpInvoice.getValue("manager"));
 
-        SqlInsert insertRow =
-            new SqlInsert(TBL_ERP_SALES)
+        SqlUpdate updateRow =
+            new SqlUpdate(TBL_ERP_SALES)
                 .addConstant(COL_TRADE_DATE,
                     TimeUtils.parseDate(erpInvoice.getValue("data")))
                 .addConstant(COL_TRADE_CUSTOMER, companyId)
                 .addConstant(COL_TRADE_AMOUNT, erpInvoice.getValue("viso"))
                 .addConstant(COL_TRADE_SALE_SERIES, seriesId)
                 .addConstant(COL_TRADE_INVOICE_NO, erpInvoice.getValue("kitas_dok"))
-                .addConstant(COL_TRADE_ERP_INVOICE, erpInvoice.getValue("dokumentas"))
                 .addConstant(COL_TRADE_CURRENCY, currencyId)
                 .addConstant(COL_TRADE_MANAGER, userId)
                 .addConstant(COL_TRADE_PAID, BeeUtils.unbox(erpInvoice.getDouble("apm_suma")))
                 .addConstant(COL_TRADE_PAYMENT_TIME, TimeUtils.parseDate(erpInvoice.getValue(
                     "apm_data")))
                 .addConstant(COL_TRADE_TERM, TimeUtils.parseDate(erpInvoice.getValue(
-                    "terminas")));
-        qs.insertData(insertRow);
+                    "terminas")))
+                .setWhere(SqlUtils.equals(TBL_ERP_SALES, COL_TRADE_ERP_INVOICE, erpInvoice.getValue(
+                    "dokumentas")));
+        int updateCount = qs.updateData(updateRow);
+
+        if (updateCount == 0) {
+
+          SqlInsert insertRow =
+              new SqlInsert(TBL_ERP_SALES)
+                  .addConstant(COL_TRADE_DATE,
+                      TimeUtils.parseDate(erpInvoice.getValue("data")))
+                  .addConstant(COL_TRADE_CUSTOMER, companyId)
+                  .addConstant(COL_TRADE_AMOUNT, erpInvoice.getValue("viso"))
+                  .addConstant(COL_TRADE_SALE_SERIES, seriesId)
+                  .addConstant(COL_TRADE_INVOICE_NO, erpInvoice.getValue("kitas_dok"))
+                  .addConstant(COL_TRADE_ERP_INVOICE, erpInvoice.getValue("dokumentas"))
+                  .addConstant(COL_TRADE_CURRENCY, currencyId)
+                  .addConstant(COL_TRADE_MANAGER, userId)
+                  .addConstant(COL_TRADE_PAID, BeeUtils.unbox(erpInvoice.getDouble("apm_suma")))
+                  .addConstant(COL_TRADE_PAYMENT_TIME, TimeUtils.parseDate(erpInvoice.getValue(
+                      "apm_data")))
+                  .addConstant(COL_TRADE_TERM, TimeUtils.parseDate(erpInvoice.getValue(
+                      "terminas")));
+          qs.insertData(insertRow);
+        }
       }
     } catch (BeeException e) {
       logger.error(e);
