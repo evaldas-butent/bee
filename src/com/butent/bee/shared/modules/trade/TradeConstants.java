@@ -178,6 +178,7 @@ public final class TradeConstants {
 
   public static final String GRID_TRADE_OPERATIONS = "TradeOperations";
   public static final String GRID_TRADE_STATUSES = "TradeStatuses";
+  public static final String VIEW_TRADE_ACT_DRIVERS = "TradeActDrivers";
 
   public static final String GRID_SERIES_MANAGERS = "SeriesManagers";
   public static final String GRID_DEBTS = "Debts";

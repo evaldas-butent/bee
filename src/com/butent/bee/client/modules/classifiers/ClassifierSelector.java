@@ -26,6 +26,7 @@ import com.butent.bee.shared.data.value.DecimalValue;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
+import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -56,7 +57,8 @@ public class ClassifierSelector implements SelectorEvent.Handler {
       handleCities(event);
 
     } else if (event.isNewRow()
-        && BeeUtils.inListSame(event.getRelatedViewName(), VIEW_PERSONS, VIEW_COMPANY_PERSONS)) {
+        && BeeUtils.inListSame(event.getRelatedViewName(), VIEW_PERSONS, VIEW_COMPANY_PERSONS,
+            TradeConstants.VIEW_TRADE_ACT_DRIVERS)) {
       handleNewPersons(event);
 
     } else if (BeeUtils.same(event.getRelatedViewName(), VIEW_COMPANY_PERSONS)) {
