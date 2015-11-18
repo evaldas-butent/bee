@@ -20,13 +20,13 @@
     <RelColumn name="Customer" visible="true" />
     <RelColumn name="Payer" visible="false" />
 
-    <DataColumn name="Amount" />
+    <DataColumn name="Amount" format="0.00" />
     <RelColumn name="Currency" renderColumns="CurrencyName" />
 
     <DataColumn name="Term" />
     <DataColumn name="PaymentTime" />
 
-    <DataColumn name="Paid" />
+    <DataColumn name="Paid" format="0.00" />
     <DataColumn name="Debt" format="0.00" />
 
   
