@@ -7,24 +7,21 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
-import com.butent.bee.client.event.logical.RenderingEvent;
-import com.butent.bee.client.layout.Flow;
+import com.butent.bee.client.modules.trade.TradeKeeper.FilterCallback;
 import com.butent.bee.client.modules.trade.acts.TradeActKeeper;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.view.HeaderView;
-import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.trade.acts.TradeActConstants;
 import com.butent.bee.shared.ui.Action;
 
 class ERPSalesGrid extends AbstractGridInterceptor {
-
-  private final Flow summingAction = new Flow();
 
   @Override
   public void afterCreatePresenter(final GridPresenter presenter) {
@@ -42,26 +39,16 @@ class ERPSalesGrid extends AbstractGridInterceptor {
       }
     });
 
-    summingAction.clear();
-    summingAction.add(TradeKeeper.createAmountAction(presenter.getViewName(),
-        presenter.getDataProvider().getFilter(), Data.getIdColumn(presenter.getViewName()),
+    header.addCommandItem(TradeKeeper.createAmountAction(presenter.getViewName(),
+        new FilterCallback() {
+
+          @Override
+          public Filter getFilter() {
+            return presenter.getDataProvider().getFilter();
+          }
+        }, Data.getIdColumn(presenter.getViewName()),
         presenter.getGridView()));
     header.addCommandItem(action);
-    header.addCommandItem(summingAction);
-  }
-
-  @Override
-  public void beforeRender(GridView gridView, RenderingEvent event) {
-    GridPresenter presenter = getGridPresenter();
-
-    if (presenter == null) {
-      return;
-    }
-
-    summingAction.clear();
-    summingAction.add(TradeKeeper.createAmountAction(presenter.getViewName(),
-        presenter.getDataProvider().getUserFilter(), Data.getIdColumn(presenter.getViewName()),
-        presenter.getGridView()));
   }
 
   @Override

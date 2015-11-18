@@ -33,6 +33,9 @@ import com.butent.bee.shared.rights.SubModule;
 import com.butent.bee.shared.utils.Codec;
 
 public final class TradeKeeper {
+  public interface FilterCallback {
+    Filter getFilter();
+  }
 
   public static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "trade-";
 
@@ -40,7 +43,8 @@ public final class TradeKeeper {
     return BeeKeeper.getRpc().createParameters(Module.TRADE, method);
   }
 
-  public static IdentifiableWidget createAmountAction(final String viewName, final Filter filter,
+  public static IdentifiableWidget createAmountAction(final String viewName,
+      final FilterCallback filterCallback,
       final String salesRelColumn, final NotificationListener listener) {
 
     Assert.notEmpty(viewName);
@@ -54,6 +58,11 @@ public final class TradeKeeper {
         ParameterList args = createArgs(SVC_GET_SALE_AMOUNTS);
         args.addDataItem(VAR_VIEW_NAME, viewName);
         args.addDataItem(Service.VAR_COLUMN, salesRelColumn);
+        Filter filter = null;
+
+        if (filterCallback != null) {
+          filter = filterCallback.getFilter();
+        }
 
         if (filter != null) {
           args.addDataItem(EcConstants.VAR_FILTER, Codec.beeSerialize(filter));
@@ -69,6 +78,20 @@ public final class TradeKeeper {
     });
 
     return summary;
+  }
+
+  public static IdentifiableWidget createAmountAction(final String viewName,
+      final Filter filter, final String salesRelColumn,
+      final NotificationListener listener) {
+
+    return createAmountAction(viewName, new FilterCallback() {
+
+      @Override
+      public Filter getFilter() {
+        return filter;
+      }
+    }, salesRelColumn, listener);
+
   }
 
   public static void register() {
