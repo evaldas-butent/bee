@@ -115,6 +115,7 @@
     <SimpleColumn name="InputVehicle" />
     <SimpleJoin name="InputVehicle" joinType="LEFT">
       <SimpleColumn name="Name" alias="VehicleName" />
+      <SimpleColumn name="Notes" alias="InputVehicleNotes"/>
     </SimpleJoin>
 
     <SimpleColumn name="Driver" />
@@ -131,6 +132,7 @@
     <SimpleJoin name="InputDriver" joinType="LEFT">
       <SimpleColumn name="FirstName" alias="DriverFirstName1" />
       <SimpleColumn name="LastName" alias="DriverLastName1" />
+       <SimpleColumn name="Notes" alias="InputDriverNotes" />
     </SimpleJoin>
 
     <SimpleColumn name="Notes" />
