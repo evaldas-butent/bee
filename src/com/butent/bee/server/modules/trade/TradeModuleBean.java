@@ -775,21 +775,20 @@ public class TradeModuleBean implements BeeModule {
 
     query.addSum(amountXpr, VAR_AMOUNT);
     query.addSum(paidXpr, VAR_TOTAL);
-    query.addCount(VAR_DEBT);
+    query.addSum(SqlUtils.minus(amountXpr, paidXpr), VAR_DEBT);
+    query.addCount("SalesCount");
 
     SimpleRowSet rs = qs.getData(query);
 
     LocalizableConstants loc = usr.getLocalizableConstants();
-
     return ResponseObject.info(BeeUtils.joinWords(loc.trdAmount(),
-        BeeUtils.round(BeeUtils.unbox(rs.getDouble(0, VAR_AMOUNT)), 2),
+        BeeUtils.round(rs.getValue(0, VAR_AMOUNT), 2),
         loc.trdPaid(),
-        BeeUtils.round(BeeUtils.unbox(rs.getDouble(0, VAR_TOTAL)), 2),
+        BeeUtils.round(rs.getValue(0, VAR_TOTAL), 2),
         loc.trdDebt(),
-        BeeUtils.round(BeeUtils.unbox(rs.getDouble(0, VAR_TOTAL))
-            - BeeUtils.unbox(rs.getDouble(0, VAR_AMOUNT)), 2),
+        BeeUtils.round(rs.getValue(0, VAR_DEBT), 2),
         loc.trdInvoices(),
-        BeeUtils.unbox(rs.getInt(0, VAR_DEBT))));
+        BeeUtils.unbox(rs.getInt(0, "SalesCount"))));
 
   }
 
