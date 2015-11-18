@@ -11,11 +11,10 @@ import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.dialog.Popup;
-import com.butent.bee.client.event.logical.RenderingEvent;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.GridFactory.GridOptions;
-import com.butent.bee.client.layout.Flow;
+import com.butent.bee.client.modules.trade.TradeKeeper.FilterCallback;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.presenter.PresenterCallback;
 import com.butent.bee.client.ui.FormDescription;
@@ -27,7 +26,6 @@ import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
-import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.GridView.SelectedRows;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
@@ -160,30 +158,19 @@ class DebtReportsGrid extends AbstractGridInterceptor implements ClickHandler {
   }
 
   private final Button action = new Button(Localized.getConstants().sendReminder(), this);
-  private final Flow ammountAction = new Flow();
 
   @Override
-  public void afterCreatePresenter(GridPresenter presenter) {
+  public void afterCreatePresenter(final GridPresenter presenter) {
     presenter.getHeader().clearCommandPanel();
     presenter.getHeader().addCommandItem(action);
-    presenter.getHeader().addCommandItem(ammountAction);
-    ammountAction.clear();
-    ammountAction.add(TradeKeeper.createAmountAction(presenter.getViewName(),
-        presenter.getDataProvider().getFilter(), TradeConstants.COL_SALE, presenter.getGridView()));
-  }
+    presenter.getHeader().addCommandItem(TradeKeeper.createAmountAction(presenter.getViewName(),
+        new FilterCallback() {
 
-  @Override
-  public void beforeRender(GridView gridView, RenderingEvent event) {
-    GridPresenter presenter = getGridPresenter();
-
-    if (presenter == null) {
-      return;
-    }
-
-    ammountAction.clear();
-    ammountAction.add(TradeKeeper.createAmountAction(presenter.getViewName(),
-        presenter.getDataProvider().getUserFilter(), Data.getIdColumn(presenter.getViewName()),
-        presenter.getGridView()));
+          @Override
+          public Filter getFilter() {
+            return presenter.getDataProvider().getFilter();
+          }
+        }, TradeConstants.COL_SALE, presenter.getGridView()));
   }
 
   @Override
