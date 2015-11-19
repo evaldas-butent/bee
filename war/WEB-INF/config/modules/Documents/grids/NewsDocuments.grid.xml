@@ -4,20 +4,10 @@
   xmlns:w="http://www.butent.com/widget"
   xmlns:xi="http://www.w3.org/2001/XInclude"
 
-  name="Documents" viewName="Documents" caption="=documents"
+  name="NewsDocuments" viewName="Documents" caption="=documents"
   newRowForm="NewDocument" editForm="Document" parent="Tree" favorite="Name"
   flexGrow="1" order="DocumentID desc"
   >
-
-  <g:west size="200" splitterSize="2">
-    <w:DataTree class="bee-documents-parentWiget" name="Tree" caption="=documentCategories"
-    viewName="DocumentTree" parentColumn="Parent" favorite="CategoryName">
-      <w:calc>
-        <ui:expression>row.CategoryName + (row.DocumentCount != 0 ? ' [' + row.DocumentCount + ']' : '')</ui:expression>
-      </w:calc>
-    </w:DataTree>
-  </g:west>
-
   <xi:include href="columns/Documents.columns.xml" />
 
   <g:predefinedFilter name="received" label="=documentFilterReceived">
