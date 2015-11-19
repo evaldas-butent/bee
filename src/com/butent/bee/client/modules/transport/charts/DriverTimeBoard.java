@@ -356,6 +356,11 @@ final class DriverTimeBoard extends ChartBase {
   }
 
   @Override
+  protected String getFilterDataTypesColumnName() {
+    return COL_DTB_FILTER_DATA_TYPES;
+  }
+
+  @Override
   protected String getFooterHeightColumnName() {
     return COL_DTB_FOOTER_HEIGHT;
   }

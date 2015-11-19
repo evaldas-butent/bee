@@ -1,5 +1,7 @@
 package com.butent.bee.client.modules.transport.charts;
 
+import com.google.gwt.user.client.ui.HasEnabled;
+
 import com.butent.bee.client.Global;
 import com.butent.bee.client.i18n.Collator;
 import com.butent.bee.shared.i18n.Localized;
@@ -13,7 +15,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-class ChartData {
+class ChartData implements HasEnabled {
 
   static final class Item implements Comparable<Item> {
     private final String name;
@@ -131,8 +133,20 @@ class ChartData {
   private int numberOfSelectedItems;
   private int numberOfDisabledItems;
 
+  private boolean enabled = true;
+
   ChartData(Type type) {
     this.type = type;
+  }
+
+  @Override
+  public boolean isEnabled() {
+    return enabled;
+  }
+
+  @Override
+  public void setEnabled(boolean enabled) {
+    this.enabled = enabled;
   }
 
   void add(Collection<String> names) {
@@ -381,16 +395,16 @@ class ChartData {
     }
   }
 
-  boolean setEnabled(String name, boolean enabled) {
-    return setItemEnabled(find(name), enabled);
+  boolean setItemEnabled(String name, boolean enbl) {
+    return setItemEnabled(find(name), enbl);
   }
 
-  boolean setItemEnabled(Item item, boolean enabled) {
-    if (item != null && item.isEnabled() != enabled) {
-      item.setEnabled(enabled);
-      setNumberOfDisabledItems(getNumberOfDisabledItems() + (enabled ? -1 : 1));
+  boolean setItemEnabled(Item item, boolean enbl) {
+    if (item != null && item.isEnabled() != enbl) {
+      item.setEnabled(enbl);
+      setNumberOfDisabledItems(getNumberOfDisabledItems() + (enbl ? -1 : 1));
 
-      if (!enabled) {
+      if (!enbl) {
         setItemSelected(item, false);
       }
 

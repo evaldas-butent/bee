@@ -26,6 +26,8 @@
 
     <Integer name="FxItemOpacity" />
     <Integer name="FxStripOpacity" />
+    
+    <Text name="FxFilterDataTypes" />
 
     <Integer name="SsPixelsPerTruck" />
     <Integer name="SsPixelsPerTrip" />
@@ -51,6 +53,8 @@
     <Integer name="SsStripOpacity" />
 
     <Relation name="SsTheme" relation="Themes" />
+
+    <Text name="SsFilterDataTypes" />
     
     <Integer name="DtbPixelsPerDriver" />
 
@@ -72,6 +76,8 @@
     <Integer name="DtbStripOpacity" />
 
     <Relation name="DtbColor" relation="Colors" />
+
+    <Text name="DtbFilterDataTypes" />
 
     <Integer name="TruckPixelsPerNumber" />
     <Integer name="TruckPixelsPerInfo" />
@@ -97,6 +103,8 @@
 
     <Relation name="TruckTheme" relation="Themes" />
 
+    <Text name="TruckFilterDataTypes" />
+
     <Integer name="TrailerPixelsPerNumber" />
     <Integer name="TrailerPixelsPerInfo" />
 
@@ -120,5 +128,7 @@
     <Integer name="TrailerStripOpacity" />
 
     <Relation name="TrailerTheme" relation="Themes" />
+
+    <Text name="TrailerFilterDataTypes" />
   </Fields>
 </Table>

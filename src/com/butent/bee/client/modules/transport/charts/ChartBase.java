@@ -1,5 +1,6 @@
 package com.butent.bee.client.modules.transport.charts;
 
+import com.google.common.base.Strings;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Multimap;
@@ -51,6 +52,7 @@ import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.Color;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -182,10 +184,18 @@ public abstract class ChartBase extends TimeBoard {
   public void handleAction(Action action) {
     switch (action) {
       case FILTER:
+        FilterHelper.enableDataTypes(filterData, getEnabledFilterDataTypes());
+
         FilterHelper.openDialog(filterData, new FilterHelper.DialogCallback() {
           @Override
           public void onClear() {
             resetFilter(FilterType.TENTATIVE);
+          }
+
+          @Override
+          public void onDataTypesChange(Set<ChartData.Type> types) {
+            updateEnabledFilterDataTypes(types);
+            handleAction(Action.FILTER);
           }
 
           @Override
@@ -329,6 +339,8 @@ public abstract class ChartBase extends TimeBoard {
   protected List<ChartData> getFilterData() {
     return filterData;
   }
+
+  protected abstract String getFilterDataTypesColumnName();
 
   protected abstract String getSettingsFormName();
 
@@ -764,6 +776,17 @@ public abstract class ChartBase extends TimeBoard {
     }
   }
 
+  private Set<ChartData.Type> getEnabledFilterDataTypes() {
+    Set<ChartData.Type> types = EnumSet.noneOf(ChartData.Type.class);
+
+    String s = TimeBoardHelper.getString(getSettings(), getFilterDataTypesColumnName());
+    if (!BeeUtils.isEmpty(s)) {
+      types.addAll(EnumUtils.parseNameSet(ChartData.Type.class, s));
+    }
+
+    return types;
+  }
+
   private void refreshFilterInfo() {
     if (isFiltered()) {
       List<String> selection = new ArrayList<>();
@@ -838,6 +861,19 @@ public abstract class ChartBase extends TimeBoard {
         render(false);
       }
     });
+  }
+
+  private boolean updateEnabledFilterDataTypes(Set<ChartData.Type> types) {
+    if (!DataUtils.isEmpty(getSettings())
+        && getSettings().containsColumn(getFilterDataTypesColumnName())
+        && !BeeUtils.sameElements(types, getEnabledFilterDataTypes())) {
+
+      return TimeBoardHelper.updateSettings(getSettings(), getFilterDataTypesColumnName(),
+          Strings.emptyToNull(EnumUtils.joinNames(types)));
+
+    } else {
+      return false;
+    }
   }
 
   private void updateFilterData() {

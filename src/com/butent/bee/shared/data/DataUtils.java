@@ -25,6 +25,7 @@ import com.butent.bee.shared.utils.Wildcards.Pattern;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -648,6 +649,15 @@ public final class DataUtils {
     }
     return getUpdated(viewName, oldRow.getId(), oldRow.getVersion(),
         columns, oldValues, newValues, children);
+  }
+
+  public static BeeRowSet getUpdated(String viewName, long rowId, long rowVersion,
+      BeeColumn column, String oldValue, String newValue) {
+
+    Assert.notNull(column);
+
+    return getUpdated(viewName, rowId, rowVersion, Collections.singletonList(column),
+        Collections.singletonList(oldValue), Collections.singletonList(newValue), null);
   }
 
   public static BeeRowSet getUpdated(String viewName, long rowId, long rowVersion,

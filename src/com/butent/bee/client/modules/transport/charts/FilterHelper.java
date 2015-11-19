@@ -1,5 +1,6 @@
 package com.butent.bee.client.modules.transport.charts;
 
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
@@ -8,15 +9,21 @@ import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Callback;
+import com.butent.bee.client.Global;
 import com.butent.bee.client.dialog.DialogBox;
+import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.logical.CloseEvent;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.layout.Split;
+import com.butent.bee.client.modules.transport.charts.ChartData.Type;
 import com.butent.bee.client.modules.transport.charts.Filterable.FilterType;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.widget.Button;
+import com.butent.bee.client.widget.CheckBox;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -24,16 +31,21 @@ import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.time.HasDateRange;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 
 final class FilterHelper {
 
   interface DialogCallback {
 
     void onClear();
+
+    void onDataTypesChange(Set<ChartData.Type> types);
 
     void onFilter();
 
@@ -53,7 +65,12 @@ final class FilterHelper {
 
   private static final String STYLE_COMMAND_GROUP = STYLE_PREFIX + "commandGroup";
   private static final String STYLE_COMMAND_CLEAR = STYLE_PREFIX + "commandClear";
+  private static final String STYLE_COMMAND_CONFIGURE = STYLE_PREFIX + "commandConfigure";
   private static final String STYLE_COMMAND_FILTER = STYLE_PREFIX + "commandFilter";
+
+  private static final String STYLE_CONFIGURE_DIALOG = STYLE_PREFIX + "configure-dialog";
+  private static final String STYLE_CONFIGURE_PANEL = STYLE_PREFIX + "configure-panel";
+  private static final String STYLE_CONFIGURE_ITEM = STYLE_PREFIX + "configure-item";
 
   private static final int DATA_SPLITTER_WIDTH = 3;
   private static final int DATA_PANEL_MIN_WIDTH = 100;
@@ -122,6 +139,39 @@ final class FilterHelper {
 
       if (changed && dataWidget != null) {
         dataWidget.refresh();
+      }
+    }
+  }
+
+  static void enableDataTypes(Collection<ChartData> data, Set<ChartData.Type> types) {
+    if (BeeUtils.isEmpty(data)) {
+      return;
+    }
+
+    if (BeeUtils.isEmpty(types)) {
+      for (ChartData cd : data) {
+        if (cd != null) {
+          cd.setEnabled(true);
+        }
+      }
+
+    } else {
+      boolean found = false;
+      for (ChartData cd : data) {
+        if (cd != null && types.contains(cd.getType())) {
+          found = true;
+          break;
+        }
+      }
+
+      for (ChartData cd : data) {
+        if (cd != null) {
+          if (found) {
+            cd.setEnabled(types.contains(cd.getType()));
+          } else {
+            cd.setEnabled(true);
+          }
+        }
       }
     }
   }
@@ -233,7 +283,7 @@ final class FilterHelper {
     int dataCounter = 0;
 
     for (ChartData data : filterData) {
-      if (!data.isEmpty()) {
+      if (data.isEnabled() && !data.isEmpty()) {
         dataCounter++;
       }
     }
@@ -285,7 +335,7 @@ final class FilterHelper {
 
     int dataIndex = 0;
     for (ChartData data : filterData) {
-      if (!data.isEmpty()) {
+      if (data.isEnabled() && !data.isEmpty()) {
         data.saveState();
 
         FilterDataWidget dataWidget = new FilterDataWidget(data);
@@ -326,6 +376,23 @@ final class FilterHelper {
     });
     clear.addStyleName(STYLE_COMMAND_CLEAR);
     commands.add(clear);
+
+    Button configure = new Button(Localized.getConstants().actionConfigure(), new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        configureDataTypes(filterData, EventUtils.getEventTargetElement(event),
+            new Callback<Set<ChartData.Type>>() {
+              @Override
+              public void onSuccess(Set<Type> result) {
+                dialog.setAnimationEnabled(false);
+                dialog.close();
+                callback.onDataTypesChange(result);
+              }
+            });
+      }
+    });
+    configure.addStyleName(STYLE_COMMAND_CONFIGURE);
+    commands.add(configure);
 
     dialog.addCloseHandler(new CloseEvent.Handler() {
       @Override
@@ -379,6 +446,65 @@ final class FilterHelper {
         }
       }
     }
+  }
+
+  private static void configureDataTypes(List<ChartData> filterData, Element target,
+      final Callback<Set<ChartData.Type>> callback) {
+
+    final Set<ChartData.Type> oldTypes = EnumSet.noneOf(ChartData.Type.class);
+    final Set<ChartData.Type> newTypes = EnumSet.noneOf(ChartData.Type.class);
+
+    Flow panel = new Flow(STYLE_CONFIGURE_PANEL);
+
+    for (ChartData chartData : filterData) {
+      ChartData.Type type = chartData.getType();
+      boolean enabled = chartData.isEnabled();
+
+      CheckBox item = new CheckBox(type.getCaption());
+      DomUtils.setDataIndex(item.getElement(), type.ordinal());
+      item.setChecked(enabled);
+
+      item.addStyleName(STYLE_CONFIGURE_ITEM);
+
+      item.addClickHandler(new ClickHandler() {
+        @Override
+        public void onClick(ClickEvent event) {
+          if (event.getSource() instanceof CheckBox) {
+            CheckBox source = (CheckBox) event.getSource();
+            ChartData.Type tp = EnumUtils.getEnumByIndex(ChartData.Type.class,
+                DomUtils.getDataIndexInt(source.getElement()));
+
+            if (tp != null) {
+              if (source.isChecked()) {
+                newTypes.add(tp);
+              } else {
+                newTypes.remove(tp);
+              }
+            }
+          }
+        }
+      });
+
+      panel.add(item);
+
+      if (enabled) {
+        oldTypes.add(type);
+      }
+    }
+
+    if (!oldTypes.isEmpty()) {
+      newTypes.addAll(oldTypes);
+    }
+
+    Global.inputWidget(Localized.getConstants().actionConfigure(), panel,
+        new InputCallback() {
+          @Override
+          public void onSuccess() {
+            if (!oldTypes.equals(newTypes)) {
+              callback.onSuccess(newTypes);
+            }
+          }
+        }, STYLE_CONFIGURE_DIALOG, target);
   }
 
   private FilterHelper() {

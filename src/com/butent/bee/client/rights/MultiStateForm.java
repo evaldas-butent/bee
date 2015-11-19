@@ -343,7 +343,7 @@ abstract class MultiStateForm extends RightsForm {
 
       Map<String, String> diff = new HashMap<>();
       for (String objectName : changes.keySet()) {
-        diff.put(objectName, EnumUtils.buildIndexList(changes.get(objectName)));
+        diff.put(objectName, EnumUtils.joinIndexes(changes.get(objectName)));
       }
       params.addDataItem(COL_OBJECT, Codec.beeSerialize(diff));
 

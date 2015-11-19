@@ -77,7 +77,7 @@
       </row>
     </Table>
     
-    <Table kind="controls" style="&tbl;" cellStyle="&cell;">
+    <Table kind="custom" style="&tbl;" cellStyle="&cell;">
       <row>
         <text />
         <Label text="=color" />
