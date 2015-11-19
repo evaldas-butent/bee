@@ -77,6 +77,17 @@
 .bee-ta-picker-sel-price-label {
   max-width: 80px;
 }
+
+.bee-ta-picker-number-input.bee-ta-picker-number-input {
+ width: 60px;
+ font-weight: bold;
+}
+
+.bee-ta-picker-date-input.bee-ta-picker-date-input {
+ width: 120px;
+ font-weight: bold;
+}
+
 .bee-ta-return-items-header,
 .bee-ta-import-items-header {
   white-space: nowrap;
