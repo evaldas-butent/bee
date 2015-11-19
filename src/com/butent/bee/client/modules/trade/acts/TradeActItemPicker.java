@@ -73,6 +73,11 @@ class TradeActItemPicker extends ItemsPicker {
     return false;
   }
 
+  @Override
+  protected String getCaption() {
+    return Localized.getConstants().services();
+  }
+
   protected Filter getDefaultItemFilter() {
     return Filter.isNull(ClassifierConstants.COL_ITEM_IS_SERVICE);
   }

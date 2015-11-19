@@ -198,7 +198,8 @@ public class TradeActServicesGrid extends AbstractGridInterceptor implements
     List<String> colNames =
         Lists.newArrayList(COL_TRADE_ACT, COL_TA_ITEM,
             COL_TRADE_ITEM_QUANTITY, COL_TRADE_ITEM_PRICE, COL_TRADE_VAT,
-            COL_TRADE_VAT_PERC);
+            COL_TRADE_VAT_PERC, COL_TA_SERVICE_TO, COL_TA_SERVICE_FROM, COL_TA_SERVICE_FROM,
+            COL_TA_SERVICE_TARIFF, COL_TRADE_DISCOUNT);
     BeeRowSet rowSet = new BeeRowSet(getViewName(), Data.getColumns(getViewName(), colNames));
 
     int actIndex = rowSet.getColumnIndex(COL_TRADE_ACT);
@@ -207,6 +208,10 @@ public class TradeActServicesGrid extends AbstractGridInterceptor implements
     int priceIndex = rowSet.getColumnIndex(COL_TRADE_ITEM_PRICE);
     int vatIndex = rowSet.getColumnIndex(COL_TRADE_VAT);
     int vatPercIndex = rowSet.getColumnIndex(COL_TRADE_VAT_PERC);
+    int dateFrom = rowSet.getColumnIndex(COL_TA_SERVICE_FROM);
+    int dateTo = rowSet.getColumnIndex(COL_TA_SERVICE_TO);
+    int tariff = rowSet.getColumnIndex(COL_TA_SERVICE_TARIFF);
+    int discount = rowSet.getColumnIndex(COL_TRADE_DISCOUNT);
 
     for (BeeRow item : items) {
       Double qty = BeeUtils.toDoubleOrNull(item.getProperty(PRP_QUANTITY));
@@ -221,6 +226,10 @@ public class TradeActServicesGrid extends AbstractGridInterceptor implements
 
         row.setValue(vatIndex, item.getValue(Data.getColumnIndex(VIEW_ITEMS, COL_ITEM_VAT_PERC)));
         row.setValue(vatPercIndex, item.getBoolean(Data.getColumnIndex(VIEW_ITEMS, COL_ITEM_VAT)));
+        row.setValue(dateFrom, picker.getDatesFrom().get(item.getId()));
+        row.setValue(dateTo, picker.getDatesTo().get(item.getId()));
+        row.setValue(tariff, picker.getTariffs().get(item.getId()));
+        row.setValue(discount, picker.getDiscounts().get(item.getId()));
 
         ItemPrice itemPrice = defPrice;
 
