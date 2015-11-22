@@ -147,6 +147,10 @@ class ChartData implements HasEnabled {
   @Override
   public void setEnabled(boolean enabled) {
     this.enabled = enabled;
+
+    if (!enabled) {
+      deselectAll();
+    }
   }
 
   void add(Collection<String> names) {
@@ -366,6 +370,9 @@ class ChartData implements HasEnabled {
 
       for (Item item : items) {
         item.restoreState();
+        if (!isEnabled()) {
+          item.setSelected(false);
+        }
 
         if (item.isSelected()) {
           cntSelected++;
