@@ -161,12 +161,12 @@ public class TransportModuleBean implements BeeModule {
 
     List<SearchResult> orderCargoResult = qs.getSearchResults(VIEW_ORDER_CARGO,
         Filter.anyContains(Sets.newHashSet(COL_CARGO_DESCRIPTION,
-                COL_NUMBER, ALS_CARGO_CMR_NUMBER, COL_CARGO_NOTES, COL_CARGO_DIRECTIONS,
-                ALS_LOADING_NUMBER, ALS_LOADING_CONTACT, ALS_LOADING_COMPANY, ALS_LOADING_ADDRESS,
-                ALS_LOADING_POST_INDEX, ALS_LOADING_CITY_NAME, ALS_LOADING_COUNTRY_NAME,
-                ALS_LOADING_COUNTRY_CODE, ALS_UNLOADING_NUMBER, ALS_UNLOADING_CONTACT,
-                ALS_UNLOADING_COMPANY, ALS_UNLOADING_ADDRESS, ALS_UNLOADING_POST_INDEX,
-                ALS_UNLOADING_CITY_NAME, ALS_UNLOADING_COUNTRY_NAME, ALS_UNLOADING_COUNTRY_CODE),
+            COL_NUMBER, ALS_CARGO_CMR_NUMBER, COL_CARGO_NOTES, COL_CARGO_DIRECTIONS,
+            ALS_LOADING_NUMBER, ALS_LOADING_CONTACT, ALS_LOADING_COMPANY, ALS_LOADING_ADDRESS,
+            ALS_LOADING_POST_INDEX, ALS_LOADING_CITY_NAME, ALS_LOADING_COUNTRY_NAME,
+            ALS_LOADING_COUNTRY_CODE, ALS_UNLOADING_NUMBER, ALS_UNLOADING_CONTACT,
+            ALS_UNLOADING_COMPANY, ALS_UNLOADING_ADDRESS, ALS_UNLOADING_POST_INDEX,
+            ALS_UNLOADING_CITY_NAME, ALS_UNLOADING_COUNTRY_NAME, ALS_UNLOADING_COUNTRY_CODE),
             query));
 
     result.addAll(vehiclesResult);
@@ -491,7 +491,7 @@ public class TransportModuleBean implements BeeModule {
             return;
           }
           String crs = rep.getTripIncomes(event.getQuery().resetFields().resetOrder().resetGroup()
-                  .addFields(VIEW_CARGO_TRIPS, COL_TRIP).addGroup(VIEW_CARGO_TRIPS, COL_TRIP),
+              .addFields(VIEW_CARGO_TRIPS, COL_TRIP).addGroup(VIEW_CARGO_TRIPS, COL_TRIP),
               null, false);
 
           SimpleRowSet rs = qs.getData(new SqlSelect().addAllFields(crs).addFrom(crs));
@@ -1064,7 +1064,7 @@ public class TransportModuleBean implements BeeModule {
       if (BeeUtils.unbox(row.getBoolean(COL_TRANSPORTATION))) {
         String value = BeeUtils.join("\n", row.getValue(COL_ORDER_NOTES),
             BeeUtils.join("-", row.getValue(loadCountry)
-                    + " (" + row.getValue(loadCountry + "Name") + ")",
+                + " (" + row.getValue(loadCountry + "Name") + ")",
                 row.getValue(unloadCountry)
                     + " (" + row.getValue(unloadCountry + "Name") + ")"));
 
@@ -1231,9 +1231,9 @@ public class TransportModuleBean implements BeeModule {
         .addFields(TBL_COUNTRY_NORMS, COL_COUNTRY, COL_DAILY_COSTS_ITEM)
         .addFields(TBL_COUNTRY_DAILY_COSTS, COL_AMOUNT, COL_CURRENCY)
         .addExpr(SqlUtils.sqlIf(SqlUtils.or(
-                SqlUtils.isNull(TBL_COUNTRY_DAILY_COSTS, COL_TRIP_DATE_FROM),
-                SqlUtils.joinLess(TBL_COUNTRY_DAILY_COSTS, COL_TRIP_DATE_FROM,
-                    TBL_TRIP_ROUTES, COL_ROUTE_DEPARTURE_DATE)),
+            SqlUtils.isNull(TBL_COUNTRY_DAILY_COSTS, COL_TRIP_DATE_FROM),
+            SqlUtils.joinLess(TBL_COUNTRY_DAILY_COSTS, COL_TRIP_DATE_FROM,
+                TBL_TRIP_ROUTES, COL_ROUTE_DEPARTURE_DATE)),
             SqlUtils.field(TBL_TRIP_ROUTES, COL_ROUTE_DEPARTURE_DATE),
             SqlUtils.field(TBL_COUNTRY_DAILY_COSTS, COL_TRIP_DATE_FROM)), COL_ROUTE_DEPARTURE_DATE)
         .addExpr(SqlUtils.sqlIf(
@@ -1245,9 +1245,9 @@ public class TransportModuleBean implements BeeModule {
         .addFrom(TBL_TRIP_ROUTES)
         .addFromInner(TBL_COUNTRY_NORMS,
             SqlUtils.compare(SqlUtils.sqlIf(SqlUtils.equals(TBL_TRIP_ROUTES,
-                        COL_ROUTE_ARRIVAL_COUNTRY, mainCountry),
-                    SqlUtils.field(TBL_TRIP_ROUTES, COL_ROUTE_DEPARTURE_COUNTRY),
-                    SqlUtils.field(TBL_TRIP_ROUTES, COL_ROUTE_ARRIVAL_COUNTRY)), Operator.EQ,
+                COL_ROUTE_ARRIVAL_COUNTRY, mainCountry),
+                SqlUtils.field(TBL_TRIP_ROUTES, COL_ROUTE_DEPARTURE_COUNTRY),
+                SqlUtils.field(TBL_TRIP_ROUTES, COL_ROUTE_ARRIVAL_COUNTRY)), Operator.EQ,
                 SqlUtils.field(TBL_COUNTRY_NORMS, COL_COUNTRY)))
         .addFromInner(TBL_COUNTRY_DAILY_COSTS, SqlUtils.and(
             sys.joinTables(TBL_COUNTRY_NORMS, TBL_COUNTRY_DAILY_COSTS, COL_COUNTRY_NORM),
@@ -1296,7 +1296,7 @@ public class TransportModuleBean implements BeeModule {
       values.put(COL_COSTS_QUANTITY,
           BeeUtils.toString(BeeUtils.toInt(values.get(COL_COSTS_QUANTITY))
               + TimeUtils.dayDiff(row.getDateTime(COL_ROUTE_DEPARTURE_DATE),
-              row.getDateTime(COL_ROUTE_ARRIVAL_DATE))));
+                  row.getDateTime(COL_ROUTE_ARRIVAL_DATE))));
     }
     if (!BeeUtils.isEmpty(lastKey)) {
       Map<String, String> values = map.get(lastKey);
@@ -1944,8 +1944,8 @@ public class TransportModuleBean implements BeeModule {
           .addFromInner(TBL_CARGO_INCOMES,
               sys.joinTables(TBL_ORDER_CARGO, TBL_CARGO_INCOMES, COL_CARGO))
           .setWhere(SqlUtils.and(SqlUtils.or(SqlUtils.equals(TBL_ORDERS, COL_PAYER, company),
-                  SqlUtils.and(SqlUtils.isNull(TBL_ORDERS, COL_PAYER),
-                      SqlUtils.equals(TBL_ORDERS, COL_CUSTOMER, company))),
+              SqlUtils.and(SqlUtils.isNull(TBL_ORDERS, COL_PAYER),
+                  SqlUtils.equals(TBL_ORDERS, COL_CUSTOMER, company))),
               SqlUtils.isNull(TBL_CARGO_INCOMES, COL_SALE)));
 
       IsExpression cargoIncome;
@@ -1991,7 +1991,7 @@ public class TransportModuleBean implements BeeModule {
     if (Objects.nonNull(to)) {
       query.setWhere(SqlUtils.and(query.getWhere(),
           SqlUtils.or(SqlUtils.and(SqlUtils.isNull(TBL_TRIPS, COL_TRIP_DATE_FROM),
-                  SqlUtils.less(TBL_TRIPS, COL_TRIP_DATE, to)),
+              SqlUtils.less(TBL_TRIPS, COL_TRIP_DATE, to)),
               SqlUtils.and(SqlUtils.notNull(TBL_TRIPS, COL_TRIP_DATE_FROM),
                   SqlUtils.less(TBL_TRIPS, COL_TRIP_DATE_FROM, to)))));
     }
@@ -2019,6 +2019,24 @@ public class TransportModuleBean implements BeeModule {
     return ResponseObject.response(messages);
   }
 
+  private Multimap<Long, Long> getDriverGroups(IsCondition condition) {
+    SqlSelect query = new SqlSelect()
+        .addFields(TBL_DRIVER_GROUPS, COL_DRIVER, COL_GROUP)
+        .addFrom(TBL_DRIVER_GROUPS)
+        .setWhere(condition);
+
+    SimpleRowSet data = qs.getData(query);
+
+    Multimap<Long, Long> result = HashMultimap.create();
+    if (!DataUtils.isEmpty(data)) {
+      for (SimpleRow row : data) {
+        result.put(row.getLong(COL_DRIVER), row.getLong(COL_GROUP));
+      }
+    }
+
+    return result;
+  }
+
   private ResponseObject getDtbData() {
     BeeRowSet settings = getSettings();
     if (settings == null) {
@@ -2027,6 +2045,11 @@ public class TransportModuleBean implements BeeModule {
 
     List<Color> colors = getThemeColors(null);
     settings.setTableProperty(PROP_COLORS, Codec.beeSerialize(colors));
+
+    BeeRowSet transportGroups = qs.getViewData(VIEW_TRANSPORT_GROUPS);
+    if (!DataUtils.isEmpty(transportGroups)) {
+      settings.setTableProperty(PROP_TRANSPORT_GROUPS, transportGroups.serialize());
+    }
 
     BeeRowSet cargoTypes = qs.getViewData(VIEW_CARGO_TYPES);
     if (!DataUtils.isEmpty(cargoTypes)) {
@@ -2044,9 +2067,21 @@ public class TransportModuleBean implements BeeModule {
       logger.warning(SVC_GET_DTB_DATA, "drivers not available");
       return ResponseObject.response(settings);
     }
-    settings.setTableProperty(PROP_DRIVERS, drivers.serialize());
 
     List<Long> driverIds = DataUtils.getRowIds(drivers);
+
+    IsCondition groupWhere = SqlUtils.inList(TBL_DRIVER_GROUPS, COL_DRIVER, driverIds);
+    Multimap<Long, Long> driverGroups = getDriverGroups(groupWhere);
+    if (!driverGroups.isEmpty()) {
+      for (BeeRow row : drivers) {
+        if (driverGroups.containsKey(row.getId())) {
+          row.setProperty(PROP_DRIVER_GROUPS,
+              DataUtils.buildIdList(driverGroups.get(row.getId())));
+        }
+      }
+    }
+
+    settings.setTableProperty(PROP_DRIVERS, drivers.serialize());
 
     BeeRowSet absence = qs.getViewData(VIEW_DRIVER_ABSENCE, Filter.any(COL_DRIVER, driverIds));
     if (!DataUtils.isEmpty(absence)) {
@@ -2397,9 +2432,9 @@ public class TransportModuleBean implements BeeModule {
               .setWhere(SqlUtils.equals(TBL_TRIP_FUEL_COSTS, COL_TRIP, tripId)));
 
           SimpleRow cons = qs.getRow(rep.getFuelConsumptionsQuery(new SqlSelect()
-                  .addFields(TBL_TRIP_ROUTES, sys.getIdName(TBL_TRIP_ROUTES))
-                  .addFrom(TBL_TRIP_ROUTES)
-                  .setWhere(SqlUtils.equals(TBL_TRIP_ROUTES, COL_TRIP, tripId)),
+              .addFields(TBL_TRIP_ROUTES, sys.getIdName(TBL_TRIP_ROUTES))
+              .addFrom(TBL_TRIP_ROUTES)
+              .setWhere(SqlUtils.equals(TBL_TRIP_ROUTES, COL_TRIP, tripId)),
               false));
 
           Double consume = Objects.isNull(cons) ? null : cons.getDouble(COL_COSTS_QUANTITY);
@@ -2499,7 +2534,7 @@ public class TransportModuleBean implements BeeModule {
         if (Objects.nonNull(to)) {
           query.setWhere(SqlUtils.and(query.getWhere(),
               SqlUtils.or(SqlUtils.and(SqlUtils.isNull(TBL_TRIPS, COL_TRIP_DATE_FROM),
-                      SqlUtils.less(TBL_TRIPS, COL_TRIP_DATE, to)),
+                  SqlUtils.less(TBL_TRIPS, COL_TRIP_DATE, to)),
                   SqlUtils.and(SqlUtils.notNull(TBL_TRIPS, COL_TRIP_DATE_FROM),
                       SqlUtils.less(TBL_TRIPS, COL_TRIP_DATE_FROM, to)))));
         }
@@ -2543,6 +2578,24 @@ public class TransportModuleBean implements BeeModule {
           row.getValue(COL_NOTES)));
     }
     return ResponseObject.response(messages);
+  }
+
+  private Multimap<Long, Long> getVehicleGroups(IsCondition condition) {
+    SqlSelect query = new SqlSelect()
+        .addFields(TBL_VEHICLE_GROUPS, COL_VEHICLE, COL_GROUP)
+        .addFrom(TBL_VEHICLE_GROUPS)
+        .setWhere(condition);
+
+    SimpleRowSet data = qs.getData(query);
+
+    Multimap<Long, Long> result = HashMultimap.create();
+    if (!DataUtils.isEmpty(data)) {
+      for (SimpleRow row : data) {
+        result.put(row.getLong(COL_VEHICLE), row.getLong(COL_GROUP));
+      }
+    }
+
+    return result;
   }
 
   private Map<Long, Long> getVehicleManagers(IsCondition condition) {
@@ -2605,6 +2658,11 @@ public class TransportModuleBean implements BeeModule {
     List<Color> colors = getThemeColors(theme);
     settings.setTableProperty(PROP_COLORS, Codec.beeSerialize(colors));
 
+    BeeRowSet transportGroups = qs.getViewData(VIEW_TRANSPORT_GROUPS);
+    if (!DataUtils.isEmpty(transportGroups)) {
+      settings.setTableProperty(PROP_TRANSPORT_GROUPS, transportGroups.serialize());
+    }
+
     BeeRowSet cargoTypes = qs.getViewData(VIEW_CARGO_TYPES);
     if (!DataUtils.isEmpty(cargoTypes)) {
       settings.setTableProperty(PROP_CARGO_TYPES, cargoTypes.serialize());
@@ -2624,9 +2682,19 @@ public class TransportModuleBean implements BeeModule {
     }
 
     List<Long> vehicleIds = DataUtils.getRowIds(vehicles);
+    IsCondition groupWhere = SqlUtils.inList(TBL_VEHICLE_GROUPS, COL_VEHICLE, vehicleIds);
 
-    Map<Long, Long> vehicleManagers = getVehicleManagers(SqlUtils.inList(TBL_VEHICLE_GROUPS,
-        COL_VEHICLE, vehicleIds));
+    Multimap<Long, Long> vehicleGroups = getVehicleGroups(groupWhere);
+    if (!vehicleGroups.isEmpty()) {
+      for (BeeRow row : vehicles) {
+        if (vehicleGroups.containsKey(row.getId())) {
+          row.setProperty(PROP_VEHICLE_GROUPS,
+              DataUtils.buildIdList(vehicleGroups.get(row.getId())));
+        }
+      }
+    }
+
+    Map<Long, Long> vehicleManagers = getVehicleManagers(groupWhere);
     if (!BeeUtils.isEmpty(vehicleManagers)) {
       for (BeeRow row : vehicles) {
         Long manager = vehicleManagers.get(row.getId());

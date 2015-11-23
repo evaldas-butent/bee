@@ -65,7 +65,7 @@ public final class TasksKeeper {
 
   private static class RowTransformHandler implements RowTransformEvent.Handler {
 
-    private final List<String> taskColumns = Lists.newArrayList(COL_SUMMARY,
+    private final List<String> taskColumns = Lists.newArrayList(COL_ID, COL_SUMMARY,
         ClassifierConstants.ALS_COMPANY_NAME, ALS_EXECUTOR_FIRST_NAME, ALS_EXECUTOR_LAST_NAME,
         COL_FINISH_TIME, COL_STATUS);
 

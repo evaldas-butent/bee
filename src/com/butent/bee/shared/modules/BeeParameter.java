@@ -315,8 +315,6 @@ public final class BeeParameter implements BeeSerializable {
   }
 
   public String getValue(Long userId) {
-    Assert.isTrue(supportsUsers() == DataUtils.isId(userId));
-
     if (userValues.containsKey(userId)) {
       return userValues.get(userId);
     } else {

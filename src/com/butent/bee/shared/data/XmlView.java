@@ -21,7 +21,7 @@ import javax.xml.bind.annotation.XmlSeeAlso;
 public class XmlView {
 
   @XmlSeeAlso({XmlSimpleColumn.class, XmlHiddenColumn.class, XmlIdColumn.class,
-      XmlAggregateColumn.class, XmlSimpleJoin.class, XmlExternalJoin.class})
+      XmlVersionColumn.class, XmlAggregateColumn.class, XmlSimpleJoin.class, XmlExternalJoin.class})
   public abstract static class XmlColumn {
     @XmlAttribute
     public String name;
@@ -55,6 +55,16 @@ public class XmlView {
   public static class XmlIdColumn extends XmlColumn {
     @XmlAttribute
     public String aggregate;
+    @XmlAttribute
+    public boolean hidden;
+  }
+
+  @XmlRootElement(name = "VersionColumn", namespace = DataUtils.VIEW_NAMESPACE)
+  public static class XmlVersionColumn extends XmlColumn {
+    @XmlAttribute
+    public String aggregate;
+    @XmlAttribute
+    public boolean hidden;
   }
 
   @XmlRootElement(name = "SimpleJoin", namespace = DataUtils.VIEW_NAMESPACE)

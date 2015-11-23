@@ -25,6 +25,7 @@ import com.butent.bee.shared.utils.Wildcards.Pattern;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -159,12 +160,29 @@ public final class DataUtils {
   }
 
   public static BeeRowSet createRowSetForInsert(String viewName, List<BeeColumn> columns,
+      List<String> values) {
+
+    if (BeeUtils.isEmpty(columns)) {
+      return null;
+    }
+    BeeRow row = createEmptyRow(columns.size());
+    row.setValues(Assert.notNull(values));
+
+    return createRowSetForInsert(viewName, columns, row, null, false);
+  }
+
+  public static BeeRowSet createRowSetForInsert(String viewName, List<BeeColumn> columns,
       IsRow row) {
     return createRowSetForInsert(viewName, columns, row, null, false);
   }
 
   public static BeeRowSet createRowSetForInsert(String viewName, List<BeeColumn> columns,
       IsRow row, Collection<String> alwaysInclude, boolean addProperties) {
+
+    if (BeeUtils.isEmpty(columns)) {
+      return null;
+    }
+    Assert.notNull(row);
 
     List<BeeColumn> newColumns = new ArrayList<>();
     List<String> values = new ArrayList<>();
@@ -648,6 +666,15 @@ public final class DataUtils {
     }
     return getUpdated(viewName, oldRow.getId(), oldRow.getVersion(),
         columns, oldValues, newValues, children);
+  }
+
+  public static BeeRowSet getUpdated(String viewName, long rowId, long rowVersion,
+      BeeColumn column, String oldValue, String newValue) {
+
+    Assert.notNull(column);
+
+    return getUpdated(viewName, rowId, rowVersion, Collections.singletonList(column),
+        Collections.singletonList(oldValue), Collections.singletonList(newValue), null);
   }
 
   public static BeeRowSet getUpdated(String viewName, long rowId, long rowVersion,

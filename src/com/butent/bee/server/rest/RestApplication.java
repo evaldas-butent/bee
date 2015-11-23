@@ -17,6 +17,8 @@ public class RestApplication extends Application {
 
     classes.add(AuthenticationFilter.class);
     classes.add(Worker.class);
+    classes.add(CompaniesWorker.class);
+    classes.add(CompanyPersonsWorker.class);
 
     classes.add(RestfulTaskBuilder.class);
 

@@ -274,7 +274,7 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
   protected Collection<Property> getQueryOptions() {
     Collection<Property> result = new HashSet<>();
     if (!rightsStates.isEmpty()) {
-      result.add(new Property(Service.VAR_RIGHTS, EnumUtils.buildIndexList(rightsStates)));
+      result.add(new Property(Service.VAR_RIGHTS, EnumUtils.joinIndexes(rightsStates)));
     }
     return result;
   }

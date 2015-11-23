@@ -754,6 +754,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String search();
 
+  String searchTips();
+
   String selectAtLeastOneRow();
 
   String selectImport();

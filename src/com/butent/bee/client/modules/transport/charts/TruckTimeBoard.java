@@ -67,6 +67,11 @@ final class TruckTimeBoard extends VehicleTimeBoard {
   }
 
   @Override
+  protected String getFilterDataTypesColumnName() {
+    return COL_TRUCK_FILTER_DATA_TYPES;
+  }
+
+  @Override
   protected String getFooterHeightColumnName() {
     return COL_TRUCK_FOOTER_HEIGHT;
   }

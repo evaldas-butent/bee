@@ -8,6 +8,7 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RowFilter;
+import com.butent.bee.shared.data.value.DateTimeValue;
 import com.butent.bee.shared.data.value.DateValue;
 import com.butent.bee.shared.data.value.IntegerValue;
 import com.butent.bee.shared.data.value.LongValue;
@@ -240,6 +241,10 @@ public abstract class Filter implements BeeSerializable, RowFilter {
   public static Filter custom(String key, String arg1, String arg2) {
     Assert.notEmpty(key);
     return new CustomFilter(key, Lists.newArrayList(arg1, arg2));
+  }
+
+  public static Filter equals(String column, DateTime value) {
+    return compareWithValue(column, Operator.EQ, new DateTimeValue(value));
   }
 
   public static Filter equals(String column, Integer value) {

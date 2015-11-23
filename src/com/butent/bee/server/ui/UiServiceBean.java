@@ -221,6 +221,9 @@ public class UiServiceBean {
       case HISTOGRAM:
         response = getHistogram(reqInfo);
         break;
+      case GET_DISTINCT_LONGS:
+        response = getDistinctLongs(reqInfo);
+        break;
 
       case GET_RELATED_VALUES:
         response = getRelatedValues(reqInfo);
@@ -597,6 +600,30 @@ public class UiServiceBean {
     } else {
       DataInfo dataInfo = sys.getDataInfo(viewName);
       return ResponseObject.response(dataInfo);
+    }
+  }
+
+  private ResponseObject getDistinctLongs(RequestInfo reqInfo) {
+    String viewName = reqInfo.getParameter(VAR_VIEW_NAME);
+    if (BeeUtils.isEmpty(viewName)) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), VAR_VIEW_NAME);
+    }
+
+    String column = reqInfo.getParameter(VAR_COLUMN);
+    if (BeeUtils.isEmpty(column)) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), VAR_COLUMN);
+    }
+
+    String where = reqInfo.getParameter(VAR_VIEW_WHERE);
+    Filter filter = BeeUtils.isEmpty(where) ? null : Filter.restore(where);
+
+    Set<Long> values = qs.getDistinctLongs(viewName, column, filter);
+    String s = BeeUtils.joinLongs(values);
+
+    if (BeeUtils.isEmpty(s)) {
+      return ResponseObject.emptyResponse();
+    } else {
+      return ResponseObject.response(s);
     }
   }
 

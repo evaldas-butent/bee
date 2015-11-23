@@ -443,6 +443,8 @@
       <xs:enumeration value="RequestTypes" />
       <xs:enumeration value="RequestForms" />
       <xs:enumeration value="Responsibilities" />
+      <xs:enumeration value="RestCompanies" />
+      <xs:enumeration value="RestCompanyPersons" />
       <xs:enumeration value="Rights" />
       <xs:enumeration value="Roles" />
       <xs:enumeration value="RoleUsers" />

@@ -64,6 +64,7 @@
   <xs:element name="Join" abstract="true" />
 
   <xs:element name="IdColumn" type="columnId" substitutionGroup="Column" />
+  <xs:element name="VersionColumn" type="columnVersion" substitutionGroup="Column" />
   <xs:element name="SimpleColumn" type="columnSimple" substitutionGroup="Column" />
   <xs:element name="HiddenColumn" type="columnSimple" substitutionGroup="Column" />
   <xs:element name="AggregateColumn" type="columnAggregate" substitutionGroup="Column" />
@@ -107,6 +108,16 @@
     <xs:complexContent>
       <xs:extension base="column">
         <xs:attribute name="aggregate" type="tp:aggregateType" />
+        <xs:attribute name="hidden" type="xs:boolean" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="columnVersion">
+    <xs:complexContent>
+      <xs:extension base="column">
+        <xs:attribute name="aggregate" type="tp:aggregateType" />
+        <xs:attribute name="hidden" type="xs:boolean" />
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>

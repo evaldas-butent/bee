@@ -585,6 +585,27 @@ public class QueryServiceBean {
     return getSingleColumn(query).getDecimalColumn(0);
   }
 
+  public Set<Long> getDistinctLongs(String viewName, String column, Filter filter) {
+    Assert.notEmpty(column);
+
+    BeeRowSet rowSet = getViewData(viewName, filter, null, Collections.singletonList(column));
+    Set<Long> result = new HashSet<>();
+
+    if (!DataUtils.isEmpty(rowSet)) {
+      if (BeeUtils.same(column, sys.getView(viewName).getSourceIdName())) {
+        result.addAll(rowSet.getRowIds());
+
+      } else {
+        int index = rowSet.getColumnIndex(column);
+        if (!BeeConst.isUndef(index)) {
+          result.addAll(rowSet.getDistinctLongs(index));
+        }
+      }
+    }
+
+    return result;
+  }
+
   public Double getDouble(IsQuery query) {
     return getSingleValue(query).getDouble(0, 0);
   }

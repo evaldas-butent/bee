@@ -74,6 +74,7 @@ public final class Service {
   public static final String INSERT_ROW_SILENTLY = DATA_SERVICE_PREFIX + "insert_row_silently";
   public static final String SEARCH = DATA_SERVICE_PREFIX + "search";
   public static final String HISTOGRAM = DATA_SERVICE_PREFIX + "histogram";
+  public static final String GET_DISTINCT_LONGS = DATA_SERVICE_PREFIX + "get_distinct_longs";
   public static final String GET_RELATED_VALUES = DATA_SERVICE_PREFIX + "get_related_values";
   public static final String UPDATE_RELATED_VALUES = DATA_SERVICE_PREFIX + "update_related_values";
   public static final String MERGE_ROWS = DATA_SERVICE_PREFIX + "merge_rows";

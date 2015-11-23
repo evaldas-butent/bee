@@ -97,7 +97,7 @@ public class ResponseObject implements BeeSerializable {
     while (cause.getCause() != null) {
       cause = cause.getCause();
     }
-    addError(cause.toString());
+    addError(BeeUtils.notEmpty(cause.getLocalizedMessage(), cause.toString()));
     return this;
   }
 

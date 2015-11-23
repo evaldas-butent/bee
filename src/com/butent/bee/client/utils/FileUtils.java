@@ -190,7 +190,7 @@ public final class FileUtils {
     String name = BeeUtils.notEmpty(fileInfo.getCaption(), fileInfo.getName());
 
     simple.setWidget(new Link(BeeUtils.notEmpty(ArrayUtils.joinWords(caption), name),
-        getUrl(fileInfo.getId()) + "/" + URL.encode(name)));
+        getUrl(name, fileInfo.getId())));
 
     DndHelper.makeSource(simple, NameUtils.getClassName(FileInfo.class), fileInfo, null);
 
@@ -216,19 +216,19 @@ public final class FileUtils {
 
   public static String getUrl(String fileName, Long fileId) {
     Assert.notEmpty(fileName);
-    return getUrl(fileId) + "/" + URL.encode(fileName);
+    return getUrl(fileId) + "/" + URL.encodePathSegment(fileName);
   }
 
   public static String getUrl(String fileName, String filePath) {
     Assert.notEmpty(filePath);
-    return getUrl(fileName, (Long) null) + "/" + Codec.encodeBase64(filePath);
+    return getUrl(fileName, (Long) null) + "/"
+        + URL.encodePathSegment(Codec.encodeBase64(filePath));
   }
 
   public static String getUrl(String fileName, Map<Long, String> files) {
     Assert.notEmpty(files);
-    return CommUtils.addQueryString(getUrl(fileName, (Long) null),
-        CommUtils.buildQueryString(Collections.singletonMap(Service.VAR_FILES,
-            Codec.beeSerialize(files)), true));
+    return CommUtils.getPath(getUrl(fileName, (Long) null),
+        Collections.singletonMap(Service.VAR_FILES, Codec.beeSerialize(files)), true);
   }
 
   public static void readAsDataURL(File file, final Consumer<String> consumer) {
