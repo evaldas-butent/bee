@@ -54,7 +54,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 @Produces(MediaType.APPLICATION_JSON)
-public abstract class CRUDWorker {
+public abstract class CRUDtmpWorker {
 
   static final String LAST_SYNC_TIME = "LastSyncTime";
   private static final String SERVER_ERROR = "ServerError";
