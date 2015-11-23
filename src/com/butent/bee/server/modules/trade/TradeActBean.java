@@ -46,7 +46,6 @@ import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.SqlConstants.SqlDataType;
-import com.butent.bee.shared.data.SqlConstants.SqlFunction;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.LongValue;
@@ -575,6 +574,23 @@ public class TradeActBean implements HasTimerService {
     }
   }
 
+  private Collection<Integer> getHolidays() {
+    Long countryId = prm.getRelation(PRM_COUNTRY);
+
+    if (DataUtils.isId(countryId)) {
+      SqlSelect holidaysQuery = new SqlSelect()
+          .addFields(TBL_HOLIDAYS, COL_HOLY_DAY)
+          .addFrom(TBL_HOLIDAYS)
+          .setWhere(SqlUtils.equals(TBL_HOLIDAYS, COL_HOLY_COUNTRY, countryId));
+
+      return Lists.newArrayList(qs.getIntColumn(holidaysQuery));
+
+    } else {
+      return BeeConst.EMPTY_IMMUTABLE_INT_SET;
+    }
+
+  }
+
   private Long getDefaultOperation(TradeActKind kind) {
     IsCondition where = SqlUtils.equals(TBL_TRADE_OPERATIONS, COL_OPERATION_KIND, kind.ordinal());
 
@@ -798,15 +814,27 @@ public class TradeActBean implements HasTimerService {
 
   private ResponseObject getServicesForInvoice(RequestInfo reqInfo) {
     Set<Long> actIds = DataUtils.parseIdSet(reqInfo.getParameter(COL_TRADE_ACT));
+
     if (actIds.isEmpty()) {
       return ResponseObject.parameterNotFound(reqInfo.getService(), COL_TRADE_ACT);
     }
+    BeeRowSet services = getServicesForInvoice(actIds);
+
+    if (DataUtils.isEmpty(services)) {
+      return ResponseObject.emptyResponse();
+    }
+
+    return ResponseObject.response(services);
+  }
+
+  private BeeRowSet getServicesForInvoice(Set<Long> actIds) {
 
     Filter filter = Filter.any(COL_TRADE_ACT, actIds);
 
     BeeRowSet services = qs.getViewData(VIEW_TRADE_ACT_SERVICES, filter);
-    if (DataUtils.isEmpty(services)) {
-      return ResponseObject.emptyResponse();
+
+    if (services.isEmpty()) {
+      return services;
     }
 
     SqlSelect invoiceQuery = new SqlSelect()
@@ -839,7 +867,7 @@ public class TradeActBean implements HasTimerService {
       }
     }
 
-    return ResponseObject.response(services);
+    return services;
   }
 
   private ResponseObject getItemsByCompanyReport(RequestInfo reqInfo) {
@@ -1959,6 +1987,36 @@ public class TradeActBean implements HasTimerService {
     }
   }
 
+  private Range<JustDate> getMainRange(List<Long> acts) {
+    String colActId = sys.getIdName(TBL_TRADE_ACTS);
+
+    SqlSelect rangesSel = new SqlSelect()
+        .addMin(TBL_TRADE_ACTS, COL_TA_DATE, "ActLow")
+        .addMax(TBL_TRADE_ACTS, COL_TA_UNTIL, "ActHi")
+        .addMin(TBL_TRADE_ACT_SERVICES, COL_TA_SERVICE_FROM, "SvcLow")
+        .addMax(TBL_TRADE_ACT_SERVICES, COL_TA_SERVICE_TO, "SvcHi")
+        .addFrom(TBL_TRADE_ACTS)
+        .addFromLeft(TBL_TRADE_ACT_SERVICES, sys.joinTables(TBL_TRADE_ACTS, TBL_TRADE_ACT_SERVICES,
+            COL_TRADE_ACT))
+        .setWhere(SqlUtils.inList(TBL_TRADE_ACTS, colActId, acts));
+
+    SimpleRowSet minMaxRanges = qs.getData(rangesSel);
+
+    DateTime start = BeeUtils.min(minMaxRanges.getDateTime(0, "ActLow"),
+        minMaxRanges.getDateTime(0, "SvcLow"));
+
+    DateTime end = BeeUtils.max(minMaxRanges.getDateTime(0, "ActHi"), minMaxRanges.getDateTime(0,
+        "SvcHi"));
+
+    if (start == null || end == null || TimeUtils.isMeq(start, end)) {
+      logger.warning("Invalid  main range for approve act", start, end);
+      return null;
+    }
+
+    return Range.closedOpen(new JustDate(start), new JustDate(end));
+
+  }
+
   private String getMovement(IsCondition actCondition, IsCondition itemCondition,
       Long startTime, Long endTime, Collection<Long> warehouses) {
 
@@ -2563,34 +2621,104 @@ public class TradeActBean implements HasTimerService {
       return;
     }
 
-    IsExpression expr =
-        SqlUtils.sqlIf(SqlUtils.equals(SqlUtils.aggregate(SqlFunction.COUNT, SqlUtils.field(
-            TBL_TRADE_ACT_SERVICES, sys.getIdName(TBL_TRADE_ACT_SERVICES))), SqlUtils.aggregate(
-                SqlFunction.COUNT_DISTINCT, SqlUtils.field(TBL_TRADE_ACT_INVOICES,
-                    COL_TA_INVOICE_SERVICE))), SqlUtils.field(TBL_TRADE_ACTS, sys.getIdName(
-                        TBL_TRADE_ACTS)), null);
+    String colActId = sys.getIdName(TBL_TRADE_ACTS);
 
-    SqlSelect select = new SqlSelect().setDistinctMode(true)
-        .addExpr(expr, COL_TA_ACT)
+    SqlSelect actDataSelect = new SqlSelect()
+        .addFields(TBL_TRADE_ACTS, colActId, COL_TA_DATE, COL_TA_UNTIL)
         .addFrom(TBL_TRADE_ACTS)
-        .addFromLeft(TBL_TRADE_ACT_SERVICES,
-            sys.joinTables(TBL_TRADE_ACTS, TBL_TRADE_ACT_SERVICES, COL_TRADE_ACT))
-        .addFromLeft(TBL_TRADE_ACT_INVOICES,
-            sys.joinTables(TBL_TRADE_ACT_SERVICES, TBL_TRADE_ACT_INVOICES, COL_TA_INVOICE_SERVICE))
-        .setWhere(SqlUtils.and(
-            SqlUtils.equals(TBL_TRADE_ACTS, COL_TA_STATUS, retId),
-            SqlUtils.inList(TBL_TRADE_ACTS, sys.getIdName(TBL_TRADE_ACTS), acts)))
-        .addGroup(TBL_TRADE_ACTS, sys.getIdName(TBL_TRADE_ACTS));
+        .setWhere(SqlUtils.inList(TBL_TRADE_ACTS, colActId, acts));
 
-    List<Long> retActs = qs.getLongList(select);
+    SimpleRowSet actData = qs.getData(actDataSelect);
 
-    if (BeeUtils.isEmpty(retActs)) {
+    Range<JustDate> mainRange = getMainRange(acts);
+
+    if (mainRange == null) {
+      return;
+    }
+
+    Range<DateTime> builderRange = TradeActUtils.convertRange(mainRange);
+
+    Set<Long> actsForApprove = new HashSet<>();
+    actsForApprove.addAll(acts);
+
+    BeeRowSet services = getServicesForInvoice(actsForApprove);
+
+    if (!services.isEmpty()) {
+      for (int i = 0; i < services.getNumberOfRows(); i++) {
+        if (!ArrayUtils.contains(actData.getLongColumn(colActId), services.getLong(i,
+            COL_TRADE_ACT))) {
+          continue;
+        }
+
+        SimpleRow actRow = actData.getRowByKey(colActId, services.getString(i, COL_TRADE_ACT));
+
+        TradeActTimeUnit tu = EnumUtils.getEnumByIndex(TradeActTimeUnit.class, services.getInteger(
+            i, COL_TIME_UNIT));
+        JustDate dateFrom = services.getDate(i, COL_TA_SERVICE_FROM);
+        JustDate dateTo = services.getDate(i, COL_TA_SERVICE_TO);
+
+        Range<DateTime> actRange = TradeActUtils.createRange(actRow.getDateTime(COL_TA_DATE),
+            actRow.getDateTime(COL_TA_UNTIL));
+
+        Range<DateTime> serviceRange = TradeActUtils.createServiceRange(dateFrom, dateTo, tu,
+            builderRange, actRange);
+
+        if (serviceRange == null) {
+          continue;
+        }
+
+        List<Range<DateTime>> invoicesRanges = new ArrayList<>();
+
+        List<Integer> periods = BeeUtils.toInts(services.getRowProperty(i, PRP_INVOICE_PERIODS));
+        if (periods.size() >= 2) {
+          for (int j = 0; j < periods.size() - 1; j += 2) {
+            JustDate from = new JustDate(periods.get(j));
+            JustDate to = new JustDate(periods.get(j + 1));
+
+            invoicesRanges.add(TradeActUtils.createRange(from, to));
+          }
+        }
+
+        List<Range<DateTime>> ranges = TradeActUtils.buildRanges(serviceRange, invoicesRanges, tu);
+
+        if (ranges.isEmpty()) {
+          continue;
+        }
+
+        boolean hasValidRange = false;
+
+        for (Range<DateTime> r : ranges) {
+
+          if (tu == TradeActTimeUnit.MONTH) {
+            double mf = TradeActUtils.getMonthFactor(r, getHolidays());
+
+            if (BeeUtils.isPositive(mf)) {
+              hasValidRange = true;
+              break;
+            }
+
+          } else {
+            hasValidRange = true;
+            break;
+          }
+        }
+
+        if (hasValidRange) {
+          actsForApprove.remove(actRow.getLong(colActId));
+        } else {
+          continue;
+        }
+      }
+
+    }
+
+    if (actsForApprove.isEmpty()) {
       return;
     }
 
     SqlUpdate upd = new SqlUpdate(TBL_TRADE_ACTS)
         .addConstant(COL_TA_STATUS, apprId)
-        .setWhere(SqlUtils.inList(TBL_TRADE_ACTS, sys.getIdName(TBL_TRADE_ACTS), retActs));
+        .setWhere(SqlUtils.inList(TBL_TRADE_ACTS, sys.getIdName(TBL_TRADE_ACTS), actsForApprove));
 
     qs.updateData(upd);
   }

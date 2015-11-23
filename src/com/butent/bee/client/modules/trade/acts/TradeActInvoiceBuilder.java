@@ -304,85 +304,6 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
   private static final String KEY_SERVICE_ID = "service";
   private static final String KEY_RANGE_INDEX = "range";
 
-  private static List<Range<DateTime>> buildRanges(Range<DateTime> serviceRange,
-      Collection<Range<DateTime>> invoiceRanges, TradeActTimeUnit timeUnit) {
-
-    List<Range<DateTime>> result = new ArrayList<>();
-    if (serviceRange == null) {
-      return result;
-    }
-
-    if (BeeUtils.isEmpty(invoiceRanges)) {
-      result.add(serviceRange);
-      return result;
-    } else if (timeUnit == null) {
-      return result;
-    }
-
-    List<Range<Integer>> invoiceDays = new ArrayList<>();
-
-    for (Range<DateTime> range : invoiceRanges) {
-      int lower = range.lowerEndpoint().getDate().getDays();
-
-      int upper = range.upperEndpoint().getDate().getDays();
-      if (upper <= lower) {
-        upper = lower + 1;
-      }
-
-      invoiceDays.add(Range.closedOpen(lower, upper));
-    }
-
-    List<Integer> serviceDays = new ArrayList<>();
-
-    int from = serviceRange.lowerEndpoint().getDate().getDays();
-    int to = serviceRange.upperEndpoint().getDate().getDays();
-    if (to <= from) {
-      to = from + 1;
-    }
-
-    for (int d = from; d < to; d++) {
-      boolean ok = true;
-
-      for (Range<Integer> range : invoiceDays) {
-        if (range.contains(d)) {
-          ok = false;
-          break;
-        }
-      }
-
-      if (ok) {
-        serviceDays.add(d);
-      }
-    }
-
-    if (serviceDays.isEmpty()) {
-      return result;
-    }
-
-    from = serviceDays.get(0);
-    to = serviceDays.get(serviceDays.size() - 1) + 1;
-
-    if (from + serviceDays.size() == to) {
-      result.add(TradeActUtils.createRange(new JustDate(from), new JustDate(to)));
-      return result;
-    }
-
-    int p = 0;
-
-    for (int i = 1; i < serviceDays.size(); i++) {
-      int d = serviceDays.get(i);
-      if (from + i - p < d) {
-        result.add(TradeActUtils.createRange(new JustDate(from), new JustDate(from + i - p)));
-        from = d;
-        p = i;
-      }
-    }
-
-    result.add(TradeActUtils.createRange(new JustDate(from), new JustDate(to)));
-
-    return result;
-  }
-
   private static void onToggle(Toggle toggle, String styleSelected) {
     TableRowElement rowElement = DomUtils.getParentRow(toggle.getElement(), false);
 
@@ -714,7 +635,8 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
               }
             }
 
-            List<Range<DateTime>> ranges = buildRanges(serviceRange, invoiceRanges, tu);
+            List<Range<DateTime>> ranges = TradeActUtils.buildRanges(serviceRange, invoiceRanges,
+                tu);
             if (ranges.isEmpty()) {
               continue;
             }
