@@ -65,13 +65,13 @@ public class FileServiceApplication extends Application {
   }
 
   @GET
-  @Path("{id : \\d+}")
+  @Path("{id:\\d+}")
   public Response getFile(@PathParam("id") Long fileId) {
     return getFile(fileId, null);
   }
 
   @GET
-  @Path("{id : \\d+}/{name}")
+  @Path("{id:\\d+}/{name}")
   public Response getFile(@PathParam("id") Long fileId, @PathParam("name") String fileName) {
     FileInfo fileInfo;
 

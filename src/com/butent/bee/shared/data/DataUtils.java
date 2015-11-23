@@ -160,12 +160,29 @@ public final class DataUtils {
   }
 
   public static BeeRowSet createRowSetForInsert(String viewName, List<BeeColumn> columns,
+      List<String> values) {
+
+    if (BeeUtils.isEmpty(columns)) {
+      return null;
+    }
+    BeeRow row = createEmptyRow(columns.size());
+    row.setValues(Assert.notNull(values));
+
+    return createRowSetForInsert(viewName, columns, row, null, false);
+  }
+
+  public static BeeRowSet createRowSetForInsert(String viewName, List<BeeColumn> columns,
       IsRow row) {
     return createRowSetForInsert(viewName, columns, row, null, false);
   }
 
   public static BeeRowSet createRowSetForInsert(String viewName, List<BeeColumn> columns,
       IsRow row, Collection<String> alwaysInclude, boolean addProperties) {
+
+    if (BeeUtils.isEmpty(columns)) {
+      return null;
+    }
+    Assert.notNull(row);
 
     List<BeeColumn> newColumns = new ArrayList<>();
     List<String> values = new ArrayList<>();
