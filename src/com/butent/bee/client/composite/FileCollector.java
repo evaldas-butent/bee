@@ -160,6 +160,7 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
             w = new Label(BeeUtils.notEmpty(fileInfo.getCaption(), fileInfo.getName()));
           }
           ((Simple) widget).setWidget(w);
+          ((Simple) widget).setTitle(BeeUtils.notEmpty(fileInfo.getCaption(), fileInfo.getName()));
         }
       }
 

@@ -47,6 +47,7 @@ import com.butent.bee.shared.data.XmlView.XmlIdColumn;
 import com.butent.bee.shared.data.XmlView.XmlOrder;
 import com.butent.bee.shared.data.XmlView.XmlSimpleColumn;
 import com.butent.bee.shared.data.XmlView.XmlSimpleJoin;
+import com.butent.bee.shared.data.XmlView.XmlVersionColumn;
 import com.butent.bee.shared.data.filter.ColumnColumnFilter;
 import com.butent.bee.shared.data.filter.ColumnInFilter;
 import com.butent.bee.shared.data.filter.ColumnIsNullFilter;
@@ -190,7 +191,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
         if (!((BeeRelation) parent.field).isEditable()) {
           level = 1;
         }
-        level = level + parent.getLevel();
+        level += parent.getLevel();
       }
       return level;
     }
@@ -268,7 +269,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
     }
 
     public boolean isReadOnly() {
-      return isHidden() || getAggregate() != null || getExpression() != null;
+      return getAggregate() != null || getExpression() != null;
     }
 
     private IsExpression parse(XmlExpression xmlExpr, Set<String> history) {
@@ -1060,8 +1061,15 @@ public class BeeView implements BeeObject, HasExtendedInfo {
         XmlExpression xpr = new XmlName();
         xpr.type = SqlDataType.LONG.name();
         xpr.content = BeeUtils.join(".", alias, table.getIdName());
-        addColumn(alias, null, column.name, null, ((XmlIdColumn) column).aggregate, false, parent,
-            xpr, null, null);
+        addColumn(alias, null, column.name, null, ((XmlIdColumn) column).aggregate,
+            ((XmlIdColumn) column).hidden, parent, xpr, null, null);
+
+      } else if (column instanceof XmlVersionColumn) {
+        XmlExpression xpr = new XmlName();
+        xpr.type = SqlDataType.LONG.name();
+        xpr.content = BeeUtils.join(".", alias, table.getVersionName());
+        addColumn(alias, null, column.name, null, ((XmlVersionColumn) column).aggregate,
+            ((XmlVersionColumn) column).hidden, parent, xpr, null, null);
 
       } else if (column instanceof XmlSimpleColumn) {
         XmlSimpleColumn col = (XmlSimpleColumn) column;

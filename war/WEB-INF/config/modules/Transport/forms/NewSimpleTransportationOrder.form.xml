@@ -4,18 +4,22 @@
   xmlns:ui="http://www.butent.com/ui"
   
   name="NewSimpleTransportationOrder" viewName="OrderCargo" caption="=newTransportationOrder"
-  width="600" height="420"
+  width="800" height="500"
   >
-  <FlowPanel>
+  <FlowPanel class="flexBox-vertical">
     <Table kind="controls">
       <col index="0" kind="label" />
       <col index="2" kind="label" />
+      <col index="4" kind="label" />
 
       <row>
         <Label text="=orderDate" class="bee-hasDefaults" />
         <InputDateTime name="Date" />
         <Label text="=customer" class="bee-required" />
-        <UnboundSelector name="Customer" viewName="Companies" choiceColumns="Name TypeName" />
+        <UnboundSelector name="Customer" viewName="Companies" choiceColumns="Name TypeName"
+          required="true" label="=customer" />
+        <Label for="CargoType" class="bee-required" />
+        <DataSelector source="CargoType" required="true" />
       </row>
   
       <row>
@@ -32,6 +36,9 @@
         <InputDateTime source="LoadingDate" />
         <Label text="=date" />
         <InputDateTime source="UnloadingDate" />
+
+        <Label text="=pallets" />
+        <InputInteger source="Palettes" style="width: 70px;" />
       </row>
   
       <row>
@@ -52,6 +59,11 @@
             <ui:renderer type="flag" />
           </selectorColumn>
         </DataSelector>
+
+        <Label text="=notes" />
+        <cell rowSpan="3" verticalAlignment="top">
+          <InputArea source="Notes" visibleLines="4" />
+        </cell>
       </row>
     
       <row>
@@ -98,7 +110,13 @@
           <InputMoney name="Vat" placeholder="=vat" style="width: 5em;" />
           <CheckBox name="VatPercent" text="%" />
         </HorizontalPanel>
+
+        <cell><text/></cell>
+        <Button name="Trip" text="=trAssignTrip" />
       </row>
     </Table>
+
+    <ChildGrid name="CargoHandling" relColumn="Cargo" caption="=trAdditionalHandlingPlaces"
+      class="flexible" style="margin-top: 2ex;" />
   </FlowPanel>
 </f:Form>

@@ -274,6 +274,7 @@ public final class TaskConstants {
   public static final String COL_EXECUTOR = "Executor";
 
   public static final String COL_TASK_ID = "TaskID";
+  public static final String COL_ID = "Id";
 
   public static final String COL_TASK = "Task";
 

@@ -1,8 +1,11 @@
 package com.butent.bee.client.modules.transport.charts;
 
+import com.google.gwt.user.client.ui.HasEnabled;
+
 import com.butent.bee.client.Global;
 import com.butent.bee.client.i18n.Collator;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -12,7 +15,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-class ChartData {
+class ChartData implements HasEnabled {
 
   static final class Item implements Comparable<Item> {
     private final String name;
@@ -103,6 +106,8 @@ class ChartData {
     PLACE(Localized.getConstants().cargoHandlingPlaces()),
     TRAILER(Localized.getConstants().trailers()),
     TRIP(Localized.getConstants().trips()),
+    TRIP_ARRIVAL(Localized.getConstants().transportArrival()),
+    TRIP_DEPARTURE(Localized.getConstants().transportDeparture()),
     TRUCK(Localized.getConstants().trucks()),
     UNLOADING(Localized.getConstants().cargoUnloading()),
     VEHICLE_GROUP(Localized.getConstants().vehicleGroupsShort()),
@@ -128,8 +133,24 @@ class ChartData {
   private int numberOfSelectedItems;
   private int numberOfDisabledItems;
 
+  private boolean enabled = true;
+
   ChartData(Type type) {
     this.type = type;
+  }
+
+  @Override
+  public boolean isEnabled() {
+    return enabled;
+  }
+
+  @Override
+  public void setEnabled(boolean enabled) {
+    this.enabled = enabled;
+
+    if (!enabled) {
+      deselectAll();
+    }
   }
 
   void add(Collection<String> names) {
@@ -165,6 +186,12 @@ class ChartData {
     }
   }
 
+  void addNotNull(JustDate date) {
+    if (date != null) {
+      add(date.toString(), (long) date.getDays());
+    }
+  }
+
   void addUser(Long userId) {
     if (userId != null) {
       String signature = Global.getUsers().getSignature(userId);
@@ -190,6 +217,15 @@ class ChartData {
     return contains(id);
   }
 
+  boolean contains(JustDate date) {
+    if (date == null) {
+      return false;
+    }
+
+    long id = date.getDays();
+    return contains(id);
+  }
+
   boolean contains(Long id) {
     if (id == null) {
       return false;
@@ -205,6 +241,20 @@ class ChartData {
 
   boolean contains(String name) {
     return find(name) != null;
+  }
+
+  boolean containsAny(Collection<Long> ids) {
+    if (BeeUtils.isEmpty(ids)) {
+      return false;
+    }
+
+    for (Long id : ids) {
+      if (contains(id)) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   void deselectAll() {
@@ -320,6 +370,9 @@ class ChartData {
 
       for (Item item : items) {
         item.restoreState();
+        if (!isEnabled()) {
+          item.setSelected(false);
+        }
 
         if (item.isSelected()) {
           cntSelected++;
@@ -349,16 +402,16 @@ class ChartData {
     }
   }
 
-  boolean setEnabled(String name, boolean enabled) {
-    return setItemEnabled(find(name), enabled);
+  boolean setItemEnabled(String name, boolean enbl) {
+    return setItemEnabled(find(name), enbl);
   }
 
-  boolean setItemEnabled(Item item, boolean enabled) {
-    if (item != null && item.isEnabled() != enabled) {
-      item.setEnabled(enabled);
-      setNumberOfDisabledItems(getNumberOfDisabledItems() + (enabled ? -1 : 1));
+  boolean setItemEnabled(Item item, boolean enbl) {
+    if (item != null && item.isEnabled() != enbl) {
+      item.setEnabled(enbl);
+      setNumberOfDisabledItems(getNumberOfDisabledItems() + (enbl ? -1 : 1));
 
-      if (!enabled) {
+      if (!enbl) {
         setItemSelected(item, false);
       }
 

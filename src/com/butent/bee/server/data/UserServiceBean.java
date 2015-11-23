@@ -357,7 +357,7 @@ public class UserServiceBean {
       Map<String, String> result = new HashMap<>();
 
       for (String object : objectStates.keySet()) {
-        result.put(object, EnumUtils.buildIndexList(objectStates.get(object)));
+        result.put(object, EnumUtils.joinIndexes(objectStates.get(object)));
       }
 
       return ResponseObject.response(result);
@@ -704,7 +704,7 @@ public class UserServiceBean {
           .addConstant(COL_LOGGED_IN, System.currentTimeMillis())
           .addConstant(COL_REMOTE_HOST, host)
           .addConstant(COL_USER_AGENT, agent)
-          .addConstant(sys.getVersionName(TBL_USER_HISTORY),  //TODO backward compatibility
+          .addConstant(sys.getVersionName(TBL_USER_HISTORY), // TODO backward compatibility
               System.currentTimeMillis()));
 
       UserInfo info = getUserInfo(userId);

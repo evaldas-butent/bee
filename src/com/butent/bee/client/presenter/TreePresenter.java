@@ -16,6 +16,7 @@ import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.DialogConstants;
 import com.butent.bee.client.dialog.Icon;
+import com.butent.bee.client.dialog.InputBoxes;
 import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.event.logical.CatchEvent;
@@ -306,6 +307,10 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
 
       @Override
       public String getErrorMessage() {
+        if (!formView.validate(formView, true)) {
+          return InputBoxes.SILENT_ERROR;
+        }
+
         columns.clear();
         oldValues.clear();
         values.clear();
@@ -331,8 +336,8 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
           }
         }
 
-        if (BeeUtils.isEmpty(columns)) {
-          return Localized.getConstants().noChanges();
+        if (addMode && BeeUtils.isEmpty(columns)) {
+          return Localized.getConstants().allValuesCannotBeEmpty();
         }
         return null;
       }
@@ -356,7 +361,7 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
           Queries.insert(getViewName(), columns, values, formView.getChildrenForInsert(),
               new CommitCallback(true));
 
-        } else {
+        } else if (!columns.isEmpty()) {
           Queries.update(getViewName(), row.getId(), row.getVersion(), columns, oldValues, values,
               formView.getChildrenForUpdate(), new CommitCallback(false));
         }

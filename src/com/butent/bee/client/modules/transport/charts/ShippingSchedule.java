@@ -127,6 +127,11 @@ final class ShippingSchedule extends VehicleTimeBoard {
   }
 
   @Override
+  protected String getFilterDataTypesColumnName() {
+    return COL_SS_FILTER_DATA_TYPES;
+  }
+
+  @Override
   protected String getFooterHeightColumnName() {
     return COL_SS_FOOTER_HEIGHT;
   }

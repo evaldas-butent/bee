@@ -559,6 +559,7 @@ public class Search {
 
     getInput().getElement().setAttribute(Attributes.PLACEHOLDER, Localized.getConstants().search());
     getInput().addStyleName(STYLE_INPUT);
+    getInput().setTitle(Localized.getConstants().searchTips());
 
     getInput().addKeyDownHandler(new KeyDownHandler() {
       @Override
@@ -605,9 +606,9 @@ public class Search {
     String value = BeeUtils.trim(getInput().getValue());
 
     if (!BeeUtils.isEmpty(value)) {
-      if (value.length() < MIN_SEARCH_PHRASE_LENGTH) {
+      if (value.length() < MIN_SEARCH_PHRASE_LENGTH && !BeeUtils.isDigit(value)) {
         BeeKeeper.getScreen().notifyWarning(
-            Localized.getMessages().minSearchQueryLength(MIN_SEARCH_PHRASE_LENGTH));
+            Localized.getMessages().searchQueryRestriction(MIN_SEARCH_PHRASE_LENGTH));
 
       } else {
         doSearch(getInput(), value, null);

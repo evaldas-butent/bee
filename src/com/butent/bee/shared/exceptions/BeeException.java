@@ -15,16 +15,15 @@ public class BeeException extends Exception {
     super(message, cause);
   }
 
-  private BeeException(Throwable cause) {
-    super(cause);
-  }
-
   public static BeeException error(Throwable err) {
     Throwable cause = err;
 
     while (cause.getCause() != null) {
       cause = cause.getCause();
     }
-    return new BeeException(cause);
+    if (cause instanceof BeeException) {
+      return (BeeException) cause;
+    }
+    return new BeeException(cause.getLocalizedMessage(), cause);
   }
 }

@@ -3121,7 +3121,7 @@ public class EcModuleBean implements BeeModule {
     IsCondition codeCondition = getCodeCondition(code, defOperator);
     if (codeCondition == null) {
       return ResponseObject.error(EcUtils.normalizeCode(code),
-          usr.getLocalizableMesssages().minSearchQueryLength(MIN_SEARCH_QUERY_LENGTH));
+          usr.getLocalizableMesssages().searchQueryRestriction(MIN_SEARCH_QUERY_LENGTH));
     }
 
     SqlSelect articleIdQuery = new SqlSelect().setDistinctMode(true)

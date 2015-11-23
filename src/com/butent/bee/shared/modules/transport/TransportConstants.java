@@ -390,6 +390,7 @@ public final class TransportConstants {
   public static final String VIEW_SHIPPING_TERMS = "ShippingTerms";
 
   public static final String COL_GROUP = "Group";
+  public static final String COL_GROUP_NAME = "Name";
   public static final String COL_GROUP_MANAGER = "Manager";
 
   public static final String COL_TRIP = "Trip";
@@ -585,6 +586,8 @@ public final class TransportConstants {
   public static final String COL_FX_ITEM_OPACITY = "FxItemOpacity";
   public static final String COL_FX_STRIP_OPACITY = "FxStripOpacity";
 
+  public static final String COL_FX_FILTER_DATA_TYPES = "FxFilterDataTypes";
+
   public static final String COL_SS_PIXELS_PER_TRUCK = "SsPixelsPerTruck";
   public static final String COL_SS_PIXELS_PER_TRIP = "SsPixelsPerTrip";
 
@@ -609,6 +612,8 @@ public final class TransportConstants {
   public static final String COL_SS_ITEM_OPACITY = "SsItemOpacity";
   public static final String COL_SS_STRIP_OPACITY = "SsStripOpacity";
 
+  public static final String COL_SS_FILTER_DATA_TYPES = "SsFilterDataTypes";
+
   public static final String COL_DTB_PIXELS_PER_DRIVER = "DtbPixelsPerDriver";
 
   public static final String COL_DTB_COUNTRY_FLAGS = "DtbCountryFlags";
@@ -629,6 +634,8 @@ public final class TransportConstants {
 
   public static final String COL_DTB_ITEM_OPACITY = "DtbItemOpacity";
   public static final String COL_DTB_STRIP_OPACITY = "DtbStripOpacity";
+
+  public static final String COL_DTB_FILTER_DATA_TYPES = "DtbFilterDataTypes";
 
   public static final String COL_TRUCK_PIXELS_PER_NUMBER = "TruckPixelsPerNumber";
   public static final String COL_TRUCK_PIXELS_PER_INFO = "TruckPixelsPerInfo";
@@ -653,6 +660,8 @@ public final class TransportConstants {
   public static final String COL_TRUCK_ITEM_OPACITY = "TruckItemOpacity";
   public static final String COL_TRUCK_STRIP_OPACITY = "TruckStripOpacity";
 
+  public static final String COL_TRUCK_FILTER_DATA_TYPES = "TruckFilterDataTypes";
+
   public static final String COL_TRAILER_PIXELS_PER_NUMBER = "TrailerPixelsPerNumber";
   public static final String COL_TRAILER_PIXELS_PER_INFO = "TrailerPixelsPerInfo";
 
@@ -674,6 +683,8 @@ public final class TransportConstants {
 
   public static final String COL_TRAILER_ITEM_OPACITY = "TrailerItemOpacity";
   public static final String COL_TRAILER_STRIP_OPACITY = "TrailerStripOpacity";
+
+  public static final String COL_TRAILER_FILTER_DATA_TYPES = "TrailerFilterDataTypes";
 
   public static final String COL_CARGO_REQUEST_DATE = "Date";
   public static final String COL_CARGO_REQUEST_USER = "User";
@@ -793,6 +804,7 @@ public final class TransportConstants {
   public static final String PROP_COUNTRIES = "Countries";
   public static final String PROP_CITIES = "Cities";
   public static final String PROP_DRIVERS = "Drivers";
+  public static final String PROP_DRIVER_GROUPS = "DriverGroups";
   public static final String PROP_ABSENCE = "Absence";
   public static final String PROP_VEHICLES = "Vehicles";
   public static final String PROP_VEHICLE_SERVICES = "VehicleServices";
@@ -802,6 +814,8 @@ public final class TransportConstants {
   public static final String PROP_FREIGHTS = "Freights";
   public static final String PROP_CARGO_HANDLING = "CargoHandling";
   public static final String PROP_CARGO_TYPES = "CargoTypes";
+  public static final String PROP_TRANSPORT_GROUPS = "TransportGroups";
+  public static final String PROP_VEHICLE_GROUPS = "VehicleGroups";
   public static final String PROP_VEHICLE_MANAGER = "VehicleManager";
 
   public static final String ALS_TRIP_DATE = "TripDate";
