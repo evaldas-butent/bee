@@ -1,6 +1,6 @@
 package com.butent.bee.server.rest;
 
-import static com.butent.bee.server.rest.CRUDtmpWorker.*;
+import static com.butent.bee.server.rest.CrudWorker.*;
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.COL_COMPANY_PERSON;
 import static com.butent.bee.shared.modules.documents.DocumentConstants.*;
