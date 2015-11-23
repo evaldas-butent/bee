@@ -2,14 +2,13 @@ package com.butent.bee.server.rest;
 
 import static com.butent.bee.server.rest.CrudWorker.*;
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
-import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.COL_COMPANY_PERSON;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.documents.DocumentConstants.*;
 
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.modules.administration.FileStorageBean;
 import com.butent.bee.server.rest.annotations.Trusted;
-import com.butent.bee.server.sql.IsExpression;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -77,7 +76,7 @@ public class Worker {
 
   @GET
   @Path("login")
-  public Response login() {
+  public static Response login() {
     return Response.ok().build();
   }
 
