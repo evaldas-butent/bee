@@ -238,6 +238,16 @@ public class UserServiceBean {
     return (info == null) ? false : info.getUserData().canEditColumn(viewName, column);
   }
 
+  public boolean canDeleteData(String viewName) {
+    UserInfo info = getCurrentUserInfo();
+    return (info == null) ? false : info.getUserData().canDeleteData(viewName);
+  }
+
+  public boolean canEditData(String viewName) {
+    UserInfo info = getCurrentUserInfo();
+    return (info == null) ? false : info.getUserData().canEditData(viewName);
+  }
+
   public BeeRowSet ensureUserSettings() {
     Long userId = getCurrentUserId();
 
