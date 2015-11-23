@@ -12,6 +12,7 @@ import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -55,13 +56,11 @@ public class SearchBean {
    *         Examples: <br />
    *         {@code String viewName = "Tasks"; } <br />
    *         {@code Set<String> columns = Sets.newHashSet("Id", // ID column type of view } <br />
-   *         {@code "Subject", "OwnerFirstName", "OwnerLastName" // String column types  of view}
-   *         <br />
+   *         {@code "Subject", "OwnerFirstName", "OwnerLastName" // String columns of view} <br />
    *         {@code ); } <br />
    *         </p>
    *         <p>
-   *         {@code
-   *         String query = "System supp" // search only matched strings  } <br />
+   *         {@code String query = "System supp" // search only matched strings  } <br />
    *         {@code Filter f = buildSearchFilter(viewName, columns, query); } <br />
    *         </p>
    *         <p>
@@ -72,8 +71,7 @@ public class SearchBean {
    *         Tasks.OwnerLastName LIKE '%supp%')
    *         </p>
    *         <p>
-   *         {@code
-   *         query = "System 109" // search only matched strings or numbers } <br />
+   *         {@code query = "System 109" // search only matched strings or numbers } <br />
    *         {@code f = buildSearchFilter(viewName, columns, query); } <br />
    *         </p>
    *         <p>
@@ -84,8 +82,7 @@ public class SearchBean {
    *         Tasks.OwnerLastName LIKE '%109%')
    *         </p>
    *         <p>
-   *         {@code
-   *         query = "\"System 109"\" // search only exact string } <br />
+   *         {@code query = "\"System 109"\" // search only exact string } <br />
    *         {@code f = buildSearchFilter(viewName, columns, query); } <br />
    *         </p>
    *         <p>
@@ -145,9 +142,9 @@ public class SearchBean {
             }
             break;
           case DATE_TIME:
-            Long time = TimeUtils.parseTime(part);
-            if (time != null) {
-              sub = Filter.or(sub, Filter.equals(column, time));
+            DateTime dt = TimeUtils.parseDateTime(part);
+            if (dt != null) {
+              sub = Filter.or(sub, Filter.equals(column, dt));
             }
             break;
           case DATE:
