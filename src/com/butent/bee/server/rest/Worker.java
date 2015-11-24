@@ -58,7 +58,7 @@ public class Worker {
 
   @GET
   @Path("login")
-  public Response login() {
+  public static Response login() {
     return Response.ok().build();
   }
 

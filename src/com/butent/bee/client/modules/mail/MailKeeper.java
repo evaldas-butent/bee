@@ -93,6 +93,8 @@ public final class MailKeeper {
       }
     });
 
+    GridFactory.registerGridInterceptor(TBL_ACCOUNTS, new AccountsGrid());
+
     FormFactory.registerFormInterceptor(FORM_ACCOUNT, new AccountEditor());
     FormFactory.registerFormInterceptor(FORM_NEW_ACCOUNT, new AccountEditor());
     FormFactory.registerFormInterceptor(FORM_MAIL_MESSAGE, new MailMessage());
