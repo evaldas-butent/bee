@@ -20,5 +20,6 @@
     <Numeric name="Discount" precision="7" scale="3" label="=discountPercent" />
 
     <Text name="Note" label="=note" />
+    <Relation name="Sale" relation="Sales" cascade="SET_NULL" label="=trdInvoiceId" />
   </Fields>
 </Table>

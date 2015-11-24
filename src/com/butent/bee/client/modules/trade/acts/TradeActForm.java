@@ -12,7 +12,8 @@ import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.composite.UnboundSelector;
-import com.butent.bee.client.data.*;
+import com.butent.bee.client.data.Data;
+import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.ui.FormFactory;
@@ -27,9 +28,12 @@ import com.butent.bee.client.view.form.interceptor.PrintFormInterceptor;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
-import com.butent.bee.shared.data.*;
+import com.butent.bee.shared.data.BeeRow;
+import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
-import com.butent.bee.shared.data.view.*;
+import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.documents.DocumentConstants;
@@ -93,6 +97,7 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
       companySelector = (DataSelector) widget;
       companySelector.addSelectorHandler(this);
     }
+
     super.afterCreateWidget(name, widget, callback);
   }
 
@@ -160,13 +165,13 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
       commandCompose = new Button(
           Localized.getConstants().taInvoiceCompose(), new ClickHandler() {
 
-        @Override
-        public void onClick(ClickEvent arg0) {
-          FormFactory.openForm(FORM_INVOICE_BUILDER,
-              new TradeActInvoiceBuilder(row.getLong(Data.getColumnIndex(VIEW_TRADE_ACTS,
-                  COL_TA_COMPANY)), row.getId()));
-        }
-      });
+            @Override
+            public void onClick(ClickEvent arg0) {
+              FormFactory.openForm(FORM_INVOICE_BUILDER,
+                  new TradeActInvoiceBuilder(row.getLong(Data.getColumnIndex(VIEW_TRADE_ACTS,
+                      COL_TA_COMPANY)), row.getId()));
+            }
+          });
 
       if (kind != TradeActKind.RETURN) {
         header.addCommandItem(commandCompose);

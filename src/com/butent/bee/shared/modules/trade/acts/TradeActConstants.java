@@ -28,6 +28,7 @@ public final class TradeActConstants {
   public static final String SVC_TRANSFER_REPORT = "GetTransferReport";
 
   public static final String SVC_HAS_INVOICES_OR_SECONDARY_ACTS = "HasInvoicesOrSecondaryActs";
+  public static final String SVC_CREATE_INVOICE_ITEMS = "CreateInvoiceItems";
 
   public static final String TBL_TRADE_ACTS = "TradeActs";
   public static final String TBL_TRADE_ACT_ITEMS = "TradeActItems";
@@ -118,6 +119,7 @@ public final class TradeActConstants {
 
   public static final String FORM_TRADE_ACT = "TradeAct";
   public static final String FORM_INVOICE_BUILDER = "TradeActInvoiceBuilder";
+  public static final String FORM_NEW_TA_INVOICE = "NewTradeActInvoice";
 
   public static final String PRP_QUANTITY = "qty";
   public static final String PRP_ITEM_PRICE = "item_price";
