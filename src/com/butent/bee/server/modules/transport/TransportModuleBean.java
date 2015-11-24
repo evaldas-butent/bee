@@ -894,7 +894,7 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
         .addFromLeft(TBL_DRIVERS, "alsDrivers",
             sys.joinTables(TBL_DRIVERS, "alsDrivers", "alsTripDrivers", COL_DRIVER))
         .addFromLeft(TBL_EMPLOYEES, "alsEmployees",
-            sys.joinTables(TBL_EMPLOYEES, "alsEmployees", "alsDrivers", COL_COMPANY_PERSON))
+            SqlUtils.joinUsing("alsEmployees", "alsDrivers", COL_COMPANY_PERSON))
         .addFromInner(TBL_ITEMS, sys.joinTables(TBL_ITEMS, TBL_TRIP_COSTS, COL_COSTS_ITEM))
         .addFromInner(TBL_CURRENCIES,
             sys.joinTables(TBL_CURRENCIES, TBL_TRIP_COSTS, COL_COSTS_CURRENCY))
