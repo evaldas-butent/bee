@@ -10,6 +10,10 @@
   flexGrow="1" renderMode="full"
   newRowCaption="=newItem" disabledActions="filter"
   >
+  <g:columns>
+    <SelectionColumn name="Select" width="20" />
+  </g:columns>
+
   <xi:include href="columns/TradeActItem.columns.xml" />
 
   <xi:include href="columns/TradeActQuantity.columns.xml" />
@@ -48,8 +52,15 @@
   <xi:include href="columns/TradeActDiscount.columns.xml" />
   <xi:include href="columns/TradeActVat.columns.xml" />
   <xi:include href="columns/TradeActTotal.columns.xml" />
-
+ 
   <g:columns>
+    <RelColumn name="Sale" caption="=trdInvoiceId" readOnly="true" renderColumns="Sale"
+      editEnabled="true" editForm="SalesInvoice" editViewName="Sales"/>
     <DataColumn name="Note" visible="false" />
   </g:columns>
+  
+  <g:rowEditable>
+    <ui:expression>!row.Sale</ui:expression>
+  </g:rowEditable>
+  
 </g:Grid>

@@ -44,7 +44,7 @@
     <SimpleColumn name="VatPercent" />
 
     <SimpleColumn name="Discount" />
-
+    <SimpleColumn name="Sale" />
     <SimpleColumn name="Note" />
   </Columns>
   <Order>

@@ -10,6 +10,7 @@ import com.google.common.eventbus.Subscribe;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
+import static com.butent.bee.shared.modules.projects.ProjectConstants.*;
 import static com.butent.bee.shared.modules.service.ServiceConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
@@ -58,7 +59,10 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
+import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.trade.Totalizer;
+import com.butent.bee.shared.modules.trade.TradeConstants;
+import com.butent.bee.shared.modules.trade.acts.TradeActConstants;
 import com.butent.bee.shared.modules.trade.acts.TradeActKind;
 import com.butent.bee.shared.modules.trade.acts.TradeActTimeUnit;
 import com.butent.bee.shared.modules.trade.acts.TradeActUtils;
@@ -206,6 +210,9 @@ public class TradeActBean implements HasTimerService {
 
       case SVC_HAS_INVOICES_OR_SECONDARY_ACTS:
         response = hasInvoicesOrSecondaryActs(reqInfo);
+        break;
+      case TradeActConstants.SVC_CREATE_INVOICE_ITEMS:
+        response = createInvoiceItems(reqInfo);
         break;
 
       default:
@@ -493,6 +500,102 @@ public class TradeActBean implements HasTimerService {
     }
 
     return response;
+  }
+
+  private ResponseObject createInvoiceItems(RequestInfo reqInfo) {
+    Long saleId = BeeUtils.toLongOrNull(reqInfo.getParameter(TradeConstants.COL_SALE));
+    Long currency = BeeUtils.toLongOrNull(reqInfo.getParameter(TradeConstants.COL_TRADE_CURRENCY));
+    Set<Long> ids = DataUtils.parseIdSet(reqInfo.getParameter(Service.VAR_ID));
+
+    if (!DataUtils.isId(saleId)) {
+      return ResponseObject.error("Wrong sale ID");
+    }
+    if (!DataUtils.isId(currency)) {
+      return ResponseObject.error("Wrong currency ID");
+    }
+    if (BeeUtils.isEmpty(ids)) {
+      return ResponseObject.error("Empty ID list");
+    }
+
+    IsCondition where = sys.idInList(TBL_TRADE_ACT_ITEMS, ids);
+
+    SqlSelect query = new SqlSelect()
+        .addFields(TBL_TRADE_ACT_ITEMS, TradeConstants.COL_TRADE_VAT_PLUS,
+            TradeConstants.COL_TRADE_VAT, TradeConstants.COL_TRADE_VAT_PERC, COL_INCOME_ITEM,
+            TradeConstants.COL_TRADE_ITEM_PRICE,
+            TradeConstants.COL_TRADE_ITEM_QUANTITY, COL_INCOME_NOTE)
+        .addFrom(TBL_TRADE_ACT_ITEMS)
+        .setWhere(where);
+
+    SimpleRowSet data = qs.getData(query);
+    if (DataUtils.isEmpty(data)) {
+      return ResponseObject.error(TBL_TRADE_ACT_ITEMS, ids, "not found");
+    }
+
+    ResponseObject response = new ResponseObject();
+
+    for (SimpleRow row : data) {
+      Long item = row.getLong(COL_INCOME_ITEM);
+      SqlInsert insert = new SqlInsert(TradeConstants.TBL_SALE_ITEMS)
+          .addConstant(TradeConstants.COL_SALE, saleId)
+          .addConstant(ClassifierConstants.COL_ITEM, item);
+
+      Boolean vatPerc = row.getBoolean(TradeConstants.COL_TRADE_VAT_PERC);
+      Double vat;
+      if (BeeUtils.isTrue(vatPerc)) {
+        insert.addConstant(TradeConstants.COL_TRADE_VAT_PERC, vatPerc);
+        vat = row.getDouble(TradeConstants.COL_TRADE_VAT);
+      } else {
+        vat = row.getDouble(TradeConstants.COL_TRADE_VAT);
+      }
+
+      if (BeeUtils.nonZero(vat)) {
+        insert.addConstant(TradeConstants.COL_TRADE_VAT, vat);
+      }
+
+      Boolean vatPlus = row.getBoolean(TradeConstants.COL_TRADE_VAT_PLUS);
+
+      if (BeeUtils.isTrue(vatPlus)) {
+        insert.addConstant(TradeConstants.COL_TRADE_VAT_PLUS, vatPlus);
+      }
+
+      Double quantity = row.getDouble(TradeConstants.COL_TRADE_ITEM_QUANTITY);
+      Double price = row.getDouble(TradeConstants.COL_TRADE_ITEM_PRICE);
+
+      insert.addConstant(TradeConstants.COL_TRADE_ITEM_QUANTITY, BeeUtils.unbox(quantity));
+
+      if (price != null) {
+        insert.addConstant(TradeConstants.COL_TRADE_ITEM_PRICE, price);
+      }
+
+      if (data.hasColumn(COL_INCOME_NOTE)) {
+        String notes = row.getValue(COL_INCOME_NOTE);
+
+        if (!BeeUtils.isEmpty(notes)) {
+          insert.addConstant(TradeConstants.COL_TRADE_ITEM_NOTE, notes);
+        }
+      }
+
+      ResponseObject insResponse = qs.insertDataWithResponse(insert);
+      if (insResponse.hasErrors()) {
+        response.addMessagesFrom(insResponse);
+        break;
+      }
+    }
+
+    if (!response.hasErrors()) {
+      SqlUpdate update = new SqlUpdate(TBL_TRADE_ACT_ITEMS)
+          .addConstant(COL_INCOME_SALE, saleId)
+          .setWhere(where);
+
+      ResponseObject updResponse = qs.updateDataWithResponse(update);
+      if (updResponse.hasErrors()) {
+        response.addMessagesFrom(updResponse);
+      }
+    }
+
+    return response;
+
   }
 
   private long exchange(String target, String fromCol, long to, long time, String... columns) {
