@@ -6,10 +6,13 @@
         disabledActions="add delete"
         readOnly="true"
         caption="=trdDebtReports"
+        cacheData="false"
     >
 
+<!-- cacheData="false" due grid dublicate fields by company id in currency position -->
+
   <g:columns xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid">
-    <SelectionColumn name="Select" width="20"/>
+    <SelectionColumn name="Select" width="20" label="=trdTerm"/>
     <DataColumn name="Name" caption="=company" label="=company"/>
     <PropColumn name="RemindEmail" type="string" caption="=email" label="=email"/>
     <DataColumn name="DebtCount">

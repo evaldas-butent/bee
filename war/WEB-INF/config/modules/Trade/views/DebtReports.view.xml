@@ -21,6 +21,7 @@
       <AggregateColumn name="Paid" aggregate="SUM" alias="PaidSum" />
       <HiddenColumn name="Paid" />
       <HiddenColumn name="Amount" />
+      <HiddenColumn name="Term" />
       <SimpleColumn name="Currency" />
       <SimpleJoin name="Currency" joinType="LEFT">
         <SimpleColumn name="Name" alias="CurrencyName"/>

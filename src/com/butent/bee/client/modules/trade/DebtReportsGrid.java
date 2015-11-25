@@ -1,7 +1,10 @@
 package com.butent.bee.client.modules.trade;
 
+import com.google.gwt.core.client.Scheduler.ScheduledCommand;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
@@ -14,6 +17,8 @@ import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.GridFactory.GridOptions;
+import com.butent.bee.client.grid.HtmlTable;
+import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.modules.trade.TradeKeeper.FilterCallback;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.presenter.PresenterCallback;
@@ -29,24 +34,35 @@ import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.grid.GridView.SelectedRows;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
+import com.butent.bee.client.view.search.AbstractFilterSupplier;
 import com.butent.bee.client.widget.Button;
+import com.butent.bee.client.widget.CheckBox;
 import com.butent.bee.client.widget.InputArea;
+import com.butent.bee.client.widget.InputDate;
 import com.butent.bee.client.widget.InputText;
+import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.filter.FilterValue;
+import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.trade.TradeConstants;
+import com.butent.bee.shared.time.JustDate;
+import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 class DebtReportsGrid extends AbstractGridInterceptor implements ClickHandler {
@@ -171,6 +187,230 @@ class DebtReportsGrid extends AbstractGridInterceptor implements ClickHandler {
             return presenter.getDataProvider().getFilter();
           }
         }, TradeConstants.COL_SALE, presenter.getGridView()));
+  }
+
+  @Override
+  public AbstractFilterSupplier getFilterSupplier(String columnName,
+      ColumnDescription columnDescription) {
+
+    if (BeeUtils.same(columnName, "Select")) {
+      return new AbstractFilterSupplier(TradeConstants.VIEW_DEBT_REPORTS, null, null,
+          columnDescription.getFilterOptions()) {
+
+        private static final String F_OVERDUE = "termOverdue";
+        private static final String F_NOT_EXPIRED = "termNotExpired";
+        private static final String F_PAY_FROM = "termPayFrom";
+        private static final String F_PAY_TO = "termPayTo";
+
+        private boolean termOverdue;
+        private boolean termNotExpired;
+        private JustDate termPayFrom;
+        private JustDate termPayTo;
+
+        @Override
+        public void setFilterValue(FilterValue filterValue) {
+          if (filterValue == null) {
+            setTermOverdue(false);
+            setTermNotExpired(false);
+            setTermPayFrom(null);
+            setTermPayTo(null);
+            return;
+          }
+
+          Map<String, String> val = Codec.deserializeMap(filterValue.getValue());
+
+          if (val == null) {
+            return;
+          }
+
+          setTermOverdue(BeeUtils.toBoolean(val.get(F_OVERDUE)));
+          setTermNotExpired(BeeUtils.toBoolean(val.get(F_NOT_EXPIRED)));
+
+          if (!BeeUtils.isEmpty(val.get(F_PAY_FROM))) {
+            JustDate d = new JustDate();
+            d.deserialize(val.get(F_PAY_FROM));
+            setTermPayFrom(d);
+          }
+
+          if (!BeeUtils.isEmpty(val.get(F_PAY_TO))) {
+            JustDate d = new JustDate();
+            d.deserialize(val.get(F_PAY_TO));
+            setTermPayTo(d);
+          }
+        }
+
+        @Override
+        public Filter parse(FilterValue input) {
+          if (input == null) {
+            return null;
+          }
+
+          Map<String, String> val = Codec.deserializeMap(input.getValue());
+
+          if (val == null) {
+            return null;
+          }
+
+          Filter f = Filter.isTrue();
+          if (BeeUtils.toBoolean(val.get(F_OVERDUE))) {
+            f = Filter.and(f, Filter.isMoreEqual(
+                TradeConstants.COL_TRADE_TERM, Value.getValue(new JustDate())));
+          }
+
+          if (BeeUtils.toBoolean(val.get(F_NOT_EXPIRED))) {
+            f = Filter.and(f, Filter.isLess(
+                TradeConstants.COL_TRADE_TERM, Value.getValue(new JustDate())));
+          }
+
+          if (!BeeUtils.isEmpty(val.get(F_PAY_FROM))) {
+            JustDate d = new JustDate();
+            d.deserialize(val.get(F_PAY_FROM));
+            f = Filter.and(f, Filter.isMoreEqual(TradeConstants.COL_TRADE_TERM, Value.getValue(
+                d)));
+          }
+
+          if (!BeeUtils.isEmpty(val.get(F_PAY_TO))) {
+            JustDate d = new JustDate();
+            d.deserialize(val.get(F_PAY_TO));
+            f = Filter.and(f, Filter.isLessEqual(TradeConstants.COL_TRADE_TERM, Value.getValue(
+                d)));
+          }
+
+          return f;
+        }
+
+        @Override
+        public void onRequest(Element target, ScheduledCommand onChange) {
+          openDialog(target, getWidget(), null, onChange);
+
+        }
+
+        @Override
+        public String getComponentLabel(String ownerLabel) {
+          return BeeUtils.isEmpty(getLabel()) ? null : getLabel();
+        }
+
+        @Override
+        public String getLabel() {
+          return BeeUtils.join(BeeConst.DEFAULT_LIST_SEPARATOR, isTermOverdue() ? Localized
+              .getConstants().trdTermInOverdue()
+              : null, isTermNotExpired() ? Localized.getConstants().trdTermNotExpired() : null,
+              getTermPayFrom() != null ? BeeUtils.joinWords(Localized.getConstants().trdTerm(),
+                  Localized.getConstants().dateFromShort(), getTermPayFrom().toString()) : null,
+              getTermPayTo() != null ? BeeUtils.joinWords(Localized.getConstants().trdTerm(),
+                  Localized.getConstants().dateToShort(), getTermPayTo().toString()) : null);
+        }
+
+        @Override
+        public FilterValue getFilterValue() {
+          Map<String, String> val = new HashMap<>();
+
+          if (isTermOverdue()) {
+            val.put(F_OVERDUE, BeeUtils.toString(isTermOverdue()));
+          }
+          if (isTermNotExpired()) {
+            val.put(F_NOT_EXPIRED, BeeUtils.toString(isTermNotExpired()));
+          }
+          val.put(F_PAY_FROM, getTermPayFrom() != null ? BeeUtils.toString(getTermPayFrom()
+              .getDays()) : null);
+          val.put(F_PAY_TO, getTermPayTo() != null ? BeeUtils.toString(getTermPayTo().getDays())
+              : null);
+
+          return val.isEmpty() ? null : FilterValue.of(Codec.beeSerialize(val));
+        }
+
+        private Widget getWidget() {
+          Flow conatainer = new Flow();
+          HtmlTable tbl = new HtmlTable();
+          final CheckBox ovt = new CheckBox(Localized.getConstants().trdTermInOverdue());
+          final CheckBox net = new CheckBox(Localized.getConstants().trdTermNotExpired());
+          final InputDate pfd = new InputDate();
+          final InputDate ptd = new InputDate();
+
+          ovt.setChecked(isTermOverdue());
+
+          net.setChecked(isTermNotExpired());
+          pfd.setDate(getTermPayFrom());
+          ptd.setDate(getTermPayTo());
+
+          // Flow ckContainer = new Flow(StyleUtils.NAME_FLEX_BOX_HORIZONTAL);
+
+          tbl.setWidget(0, 0, ovt);
+          tbl.setWidget(0, 1, net);
+          conatainer.add(tbl);
+
+          // Flow dateContainer = new Flow(StyleUtils.NAME_FLEX_BOX_HORIZONTAL);
+          tbl.setWidget(1, 0, new Label(Localized.getConstants().trdTerm()));
+          tbl.setWidget(1, 1, pfd);
+          tbl.setWidget(1, 2, new Label(BeeConst.STRING_MINUS));
+          tbl.setWidget(1, 3, ptd);
+          // conatainer.add(dateContainer);
+
+          Button filter = new Button(Localized.getConstants().doFilter());
+          filter.addClickHandler(new ClickHandler() {
+
+            @Override
+            public void onClick(ClickEvent arg0) {
+              setTermOverdue(ovt.isChecked());
+              setTermNotExpired(net.isChecked());
+              setTermPayFrom(pfd.getDate());
+              setTermPayTo(ptd.getDate());
+              update(true);
+            }
+          });
+
+          Button cancel = new Button(Localized.getConstants().cancel());
+          cancel.addClickHandler(new ClickHandler() {
+            @Override
+            public void onClick(ClickEvent event) {
+              closeDialog();
+            }
+          });
+
+          Flow btnContainer = new Flow("bee-FilterSupplier-commandPanel");
+
+          btnContainer.add(filter);
+          btnContainer.add(cancel);
+          conatainer.add(btnContainer);
+
+          return conatainer;
+        }
+
+        private boolean isTermNotExpired() {
+          return termNotExpired;
+        }
+
+        private boolean isTermOverdue() {
+          return termOverdue;
+        }
+
+        private void setTermNotExpired(boolean termNotExpired) {
+          this.termNotExpired = termNotExpired;
+        }
+
+        private void setTermOverdue(boolean termOverdue) {
+          this.termOverdue = termOverdue;
+        }
+
+        public JustDate getTermPayFrom() {
+          return termPayFrom;
+        }
+
+        public void setTermPayFrom(JustDate termPayFrom) {
+          this.termPayFrom = termPayFrom;
+        }
+
+        public JustDate getTermPayTo() {
+          return termPayTo;
+        }
+
+        public void setTermPayTo(JustDate termPayTo) {
+          this.termPayTo = termPayTo;
+        }
+      };
+    }
+
+    return super.getFilterSupplier(columnName, columnDescription);
   }
 
   @Override
