@@ -102,6 +102,12 @@ public interface LocalizableTradeConstants {
 
   String trdStatuses();
 
+  String trdTerm();
+
+  String trdTermNotExpired();
+
+  String trdTermInOverdue();
+
   String trdTotal();
 
   String trdSynchronizeWithERP();
