@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-  name="CargoExpenses" source="CargoExpenses"
-  >
+      name="CargoExpenses" source="CargoExpenses"
+    >
   <Columns>
     <SimpleColumn name="Cargo" />
     <SimpleJoin name="Cargo" joinType="INNER">
@@ -55,10 +55,14 @@
 
     <SimpleColumn name="Income" />
     <SimpleJoin name="Income" joinType="LEFT">
+      <SimpleColumn name="Date" alias="IncomeDate" />
+
       <SimpleJoin joinType="LEFT" name="Service">
         <SimpleColumn name="Name" alias="IncomeName" />
       </SimpleJoin>
+
       <SimpleColumn name="Amount" alias="IncomeAmount" />
+
       <SimpleJoin joinType="LEFT" name="Currency">
         <SimpleColumn name="Name" alias="IncomeCurrency" />
       </SimpleJoin>

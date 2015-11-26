@@ -721,7 +721,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
                     .addFromLeft(TBL_POSITIONS,
                         sys.joinTables(TBL_POSITIONS, TBL_COMPANY_PERSONS, COL_POSITION)))
                 .addOrder(null, COL_EMAIL_ADDRESS),
-            sys.getView(VIEW_USER_EMAILS));
+            sys.getView(VIEW_USER_EMAILS), false);
       }
 
       @Override

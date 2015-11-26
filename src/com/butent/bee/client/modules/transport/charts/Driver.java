@@ -14,6 +14,8 @@ import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 class Driver extends Filterable implements HasDateRange, HasItemName {
 
@@ -46,6 +48,8 @@ class Driver extends Filterable implements HasDateRange, HasItemName {
   private final Long id;
   private final String itemName;
 
+  private final Set<Long> groups = new HashSet<>();
+
   private final Range<JustDate> range;
 
   private final String title;
@@ -53,14 +57,18 @@ class Driver extends Filterable implements HasDateRange, HasItemName {
   Driver(Long driverId, String firstName, String lastName, DateTime startDate, DateTime endDate,
       String notes) {
     this(driverId, firstName, lastName, JustDate.get(startDate), JustDate.get(endDate), null,
-        notes);
+        notes, null);
   }
 
   Driver(Long driverId, String firstName, String lastName, JustDate startDate, JustDate endDate,
-      JustDate experience, String notes) {
+      JustDate experience, String notes, Set<Long> groups) {
 
     this.id = driverId;
     this.itemName = BeeUtils.joinWords(firstName, lastName);
+
+    if (!BeeUtils.isEmpty(groups)) {
+      this.groups.addAll(groups);
+    }
 
     this.range = TimeBoardHelper.getActivity(startDate, endDate);
 
@@ -77,6 +85,10 @@ class Driver extends Filterable implements HasDateRange, HasItemName {
   @Override
   public Range<JustDate> getRange() {
     return range;
+  }
+
+  Set<Long> getGroups() {
+    return groups;
   }
 
   Long getId() {

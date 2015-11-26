@@ -314,6 +314,14 @@ class Trip extends Filterable implements HasColorSource, HasDateRange, HasItemNa
     return trailerNumber;
   }
 
+  JustDate getTripArrival() {
+    return range.upperEndpoint();
+  }
+
+  JustDate getTripDeparture() {
+    return range.lowerEndpoint();
+  }
+
   Long getTripId() {
     return tripId;
   }

@@ -13,6 +13,7 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.Place;
+import com.butent.bee.client.data.ClientDefaults;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.IdCallback;
 import com.butent.bee.client.data.ParentRowCreator;
@@ -1356,13 +1357,32 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
       String newValue = event.getNewValue();
 
       if (!BeeUtils.equalsTrimRight(oldValue, newValue)) {
-        updateCell(event.getRowValue(), event.getColumn(), oldValue, newValue, event.isRowMode());
+        EditableColumn editableColumn = (source instanceof EditableColumn)
+            ? (EditableColumn) source : null;
+        updateCell(editableColumn, event.getRowValue(), event.getColumn(), oldValue, newValue,
+            event.isRowMode());
       }
 
       if (event.getKeyCode() != null) {
-        int keyCode = BeeUtils.unbox(event.getKeyCode());
-        if (BeeUtils.inList(keyCode, KeyCodes.KEY_TAB, KeyCodes.KEY_UP, KeyCodes.KEY_DOWN)) {
-          getGrid().handleKeyboardNavigation(keyCode, event.hasModifiers());
+        int keyCode;
+
+        switch (BeeUtils.unbox(event.getKeyCode())) {
+          case KeyCodes.KEY_ENTER:
+          case KeyCodes.KEY_TAB:
+            keyCode = event.hasModifiers() ? KeyCodes.KEY_LEFT : KeyCodes.KEY_RIGHT;
+            break;
+
+          case KeyCodes.KEY_UP:
+          case KeyCodes.KEY_DOWN:
+            keyCode = event.getKeyCode();
+            break;
+
+          default:
+            keyCode = BeeConst.UNDEF;
+        }
+
+        if (!BeeConst.isUndef(keyCode)) {
+          getGrid().handleKeyboardNavigation(keyCode, false);
         }
       }
     }
@@ -3004,10 +3024,33 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     getNotification().show(level, messages);
   }
 
-  private void updateCell(final IsRow rowValue, final IsColumn dataColumn,
-      final String oldValue, final String newValue, final boolean rowMode) {
+  private void updateCell(EditableColumn editableColumn, final IsRow rowValue,
+      final IsColumn dataColumn, final String oldValue, final String newValue,
+      final boolean rowMode) {
 
     getGrid().preliminaryUpdate(rowValue.getId(), dataColumn.getId(), newValue);
+
+    String currencySource = (editableColumn == null) ? null : editableColumn.getCurrencySource();
+    int currencyIndex = BeeUtils.isEmpty(currencySource)
+        ? BeeConst.UNDEF : getDataIndex(currencySource);
+
+    if (!BeeConst.isUndef(currencyIndex)) {
+      Long oldCurrency = rowValue.getLong(currencyIndex);
+
+      Long newCurrency;
+      if (BeeUtils.isEmpty(newValue) || BeeUtils.isZero(BeeUtils.toDoubleOrNull(newValue))) {
+        newCurrency = null;
+      } else if (!DataUtils.isId(oldCurrency) && DataUtils.isId(ClientDefaults.getCurrency())) {
+        newCurrency = ClientDefaults.getCurrency();
+      } else {
+        newCurrency = oldCurrency;
+      }
+
+      if (!Objects.equals(oldCurrency, newCurrency)) {
+        String v = DataUtils.isId(newCurrency) ? BeeUtils.toString(newCurrency) : null;
+        rowValue.preliminaryUpdate(currencyIndex, v);
+      }
+    }
 
     RowCallback callback = new RowCallback() {
       @Override
@@ -3074,7 +3117,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
       return false;
     }
 
-    updateCell(row, editableColumn.getDataColumn(), oldValue, newValue,
+    updateCell(editableColumn, row, editableColumn.getDataColumn(), oldValue, newValue,
         editableColumn.getRowModeForUpdate());
     if (tab) {
       getGrid().handleKeyboardNavigation(KeyCodes.KEY_TAB, false);

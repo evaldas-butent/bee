@@ -38,8 +38,6 @@ public interface LocalizableMessages extends Messages, LocalizableTaskMessages,
 
   String keyNotFound(String key);
 
-  String minSearchQueryLength(int min);
-
   String not(String value);
 
   String recordIsInUse(String place);
@@ -49,6 +47,8 @@ public interface LocalizableMessages extends Messages, LocalizableTaskMessages,
   String rowsRetrieved(int cnt);
 
   String rowsUpdated(int cnt);
+
+  String searchQueryRestriction(int min);
 
   String valueExists(String value);
 }

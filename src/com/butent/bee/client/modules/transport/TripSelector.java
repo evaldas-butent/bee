@@ -16,7 +16,6 @@ import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.view.edit.EditStopEvent;
-import com.butent.bee.client.view.edit.EditStopEvent.Handler;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.data.BeeColumn;
@@ -34,10 +33,18 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
 
-final class TripSelector implements Handler, ClickHandler {
+final class TripSelector implements EditStopEvent.Handler, ClickHandler {
+
+  public static void select(long cargoId, List<String> columns, Filter tripFilter, Element target) {
+    String[] cargos = new String[] {BeeUtils.toString(cargoId)};
+    TripSelector selector = new TripSelector(cargos, tripFilter, columns);
+    selector.dialog.showOnTop(target);
+  }
 
   public static void select(String[] cargos, Filter tripFilter, Element target) {
-    TripSelector selector = new TripSelector(cargos, tripFilter);
+    TripSelector selector = new TripSelector(cargos, tripFilter,
+        Lists.newArrayList(COL_TRIP_NO, "VehicleNumber", "DriverFirstName", "DriverLastName",
+            "ExpeditionType", "ForwarderName"));
     selector.dialog.showOnTop(target);
   }
 
@@ -47,7 +54,7 @@ final class TripSelector implements Handler, ClickHandler {
   final Button tripButton;
   final Button expeditionTripButton;
 
-  private TripSelector(String[] cargos, Filter tripFilter) {
+  private TripSelector(String[] cargos, Filter tripFilter, List<String> columns) {
     this.cargos = cargos;
     this.dialog = DialogBox.create(Localized.getConstants().trAssignTrip());
     dialog.setHideOnEscape(true);
@@ -57,9 +64,7 @@ final class TripSelector implements Handler, ClickHandler {
 
     container.setHtml(0, 0, Localized.getConstants().trCargoSelectTrip());
 
-    Relation relation = Relation.create(VIEW_ACTIVE_TRIPS,
-        Lists.newArrayList(COL_TRIP_NO, "VehicleNumber", "DriverFirstName", "DriverLastName",
-            "ExpeditionType", "ForwarderName"));
+    Relation relation = Relation.create(VIEW_ACTIVE_TRIPS, columns);
     relation.disableNewRow();
     relation.setCaching(Relation.Caching.QUERY);
     relation.setFilter(tripFilter);

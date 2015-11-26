@@ -129,7 +129,7 @@ public class DocumentsModuleBean implements BeeModule {
             COL_EDITOR_TEMPLATE_NAME),
         BeeParameter.createRelation(module, PRM_PRINT_FOOTER, true, TBL_EDITOR_TEMPLATES,
             COL_EDITOR_TEMPLATE_NAME),
-        BeeParameter.createText(module, PRM_PRINT_MARGINS, true, null));
+        BeeParameter.createText(module, PRM_PRINT_MARGINS, true, "1em 2em 2em 1em"));
   }
 
   @Override

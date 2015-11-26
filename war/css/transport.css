@@ -295,8 +295,14 @@
   -webkit-justify-content: center;
   -ms-flex-pack: center;
 }
-.bee-tr-chart-filter-commandClear {
+.bee-tr-chart-filter-commandClear,
+.bee-tr-chart-filter-commandConfigure {
   margin-left: 2em;
+}
+
+.bee-tr-chart-filter-configure-item {
+  display: block;
+  margin-top: 5px;
 }
 
 .bee-tr-SelfService-screen .bee-MainCommandPanel {

@@ -160,7 +160,7 @@ public class ConcurrencyBean {
 
   private static final BeeLogger logger = LogUtils.getLogger(ConcurrencyBean.class);
 
-  private int maxActiveThreads = 200;
+  private int maxActiveThreads = 25;
   private final Map<String, Worker> asyncThreads = new ConcurrentHashMap<>();
   private final Queue<Worker> waitingThreads = new ConcurrentLinkedQueue<>();
 
@@ -345,7 +345,7 @@ public class ConcurrencyBean {
     String prop = "MaxActiveThreads";
     Integer maxThreads = BeeUtils.toInt(Config.getProperty(prop));
 
-    if (BeeUtils.betweenInclusive(maxThreads, 1, maxActiveThreads)) {
+    if (BeeUtils.betweenInclusive(maxThreads, 1, 1000)) {
       maxActiveThreads = maxThreads;
     }
     logger.info(prop, maxActiveThreads);

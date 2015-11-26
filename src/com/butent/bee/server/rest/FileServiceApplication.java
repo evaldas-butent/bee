@@ -5,6 +5,7 @@ import com.google.common.net.UrlEscapers;
 import com.butent.bee.server.io.FileUtils;
 import com.butent.bee.server.modules.administration.FileStorageBean;
 import com.butent.bee.server.rest.annotations.Authorized;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -64,13 +65,13 @@ public class FileServiceApplication extends Application {
   }
 
   @GET
-  @Path("{id : \\d+}")
+  @Path("{id:\\d+}")
   public Response getFile(@PathParam("id") Long fileId) {
     return getFile(fileId, null);
   }
 
   @GET
-  @Path("{id : \\d+}/{name}")
+  @Path("{id:\\d+}/{name}")
   public Response getFile(@PathParam("id") Long fileId, @PathParam("name") String fileName) {
     FileInfo fileInfo;
 
@@ -110,6 +111,7 @@ public class FileServiceApplication extends Application {
     if (BeeUtils.isEmpty(files)) {
       throw new BadRequestException();
     }
+    logger.warning(files);
     Map<String, String> fileMap = Codec.deserializeMap(Codec.decodeBase64(files));
     File tmp;
 
@@ -118,10 +120,32 @@ public class FileServiceApplication extends Application {
       tmp.deleteOnExit();
 
       try (
-          ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(tmp))) {
+          ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(tmp))
+      ) {
+        Set<String> names = new HashSet<>();
+
         for (Map.Entry<String, String> entry : fileMap.entrySet()) {
           FileInfo fileInfo = fs.getFile(BeeUtils.toLong(entry.getKey()));
-          ZipEntry ze = new ZipEntry(BeeUtils.notEmpty(entry.getValue(), fileInfo.getName()));
+          String name = BeeUtils.notEmpty(entry.getValue(), fileInfo.getName());
+
+          if (!names.add(name)) {
+            int idx = name.lastIndexOf(BeeConst.CHAR_POINT);
+            String stem;
+            String ext;
+            int i = 0;
+
+            if (BeeConst.isUndef(idx)) {
+              stem = name;
+              ext = BeeConst.STRING_EMPTY;
+            } else {
+              stem = name.substring(0, idx);
+              ext = name.substring(idx);
+            }
+            do {
+              name = stem + BeeUtils.parenthesize(++i) + ext;
+            } while (!names.add(name));
+          }
+          ZipEntry ze = new ZipEntry(name);
           zos.putNextEntry(ze);
 
           Files.copy(fileInfo.getFile().toPath(), zos);
@@ -160,7 +184,8 @@ public class FileServiceApplication extends Application {
     String name = BeeUtils.notEmpty(fileInfo.getCaption(), fileInfo.getName());
 
     if (!BeeUtils.isEmpty(name)) {
-      name = UrlEscapers.urlFragmentEscaper().escape(name);
+      name = UrlEscapers.urlFragmentEscaper()
+          .escape(name.replace(BeeConst.CHAR_COMMA, BeeConst.CHAR_SPACE));
     }
     return Response.ok(so,
         BeeUtils.notEmpty(fileInfo.getType(), MediaType.APPLICATION_OCTET_STREAM))

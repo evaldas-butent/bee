@@ -1644,6 +1644,14 @@
   visibility: hidden;
 }
 
+.bee-FileCollector-name,
+.bee-FileGroup-name {
+  max-width: 30ex;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
 .bee-EditableRelation:hover {
   text-decoration: underline;
   color: #00e;

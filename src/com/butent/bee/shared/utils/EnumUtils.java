@@ -31,7 +31,7 @@ import com.butent.bee.shared.ui.HasLocalizedCaption;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 
@@ -56,6 +56,13 @@ public final class EnumUtils {
     }
   };
 
+  private static final Function<Enum<?>, String> nameFunction = new Function<Enum<?>, String>() {
+    @Override
+    public String apply(Enum<?> input) {
+      return (input == null) ? null : input.name();
+    }
+  };
+
   static {
     AdministrationConstants.register();
     ClassifierConstants.register();
@@ -71,14 +78,6 @@ public final class EnumUtils {
     TradeConstants.register();
     OrdersConstants.register();
     PayrollConstants.register();
-  }
-
-  public static String buildIndexList(Collection<? extends Enum<?>> values) {
-    if (values == null) {
-      return null;
-    } else {
-      return joiner.join(Iterables.transform(values, indexFunction));
-    }
   }
 
   public static String getCaption(Class<? extends Enum<?>> clazz, Integer index) {
@@ -284,9 +283,45 @@ public final class EnumUtils {
     return CLASSES.containsKey(BeeUtils.normalize(key));
   }
 
+  public static String joinIndexes(Collection<? extends Enum<?>> values) {
+    if (values == null) {
+      return null;
+    } else {
+      return joiner.join(Iterables.transform(values, indexFunction));
+    }
+  }
+
+  public static String joinNames(Collection<? extends Enum<?>> values) {
+    if (values == null) {
+      return null;
+    } else {
+      return joiner.join(Iterables.transform(values, nameFunction));
+    }
+  }
+
   public static <E extends Enum<?>> List<E> parseIndexList(Class<E> clazz, String input) {
+    Assert.notNull(clazz);
+
     List<E> result = new ArrayList<>();
-    if (clazz == null || BeeUtils.isEmpty(input)) {
+    if (BeeUtils.isEmpty(input)) {
+      return result;
+    }
+
+    for (String s : splitter.split(input)) {
+      E e = getEnumByIndex(clazz, s);
+      if (e != null) {
+        result.add(e);
+      }
+    }
+
+    return result;
+  }
+
+  public static <E extends Enum<E>> Set<E> parseIndexSet(Class<E> clazz, String input) {
+    Assert.notNull(clazz);
+
+    Set<E> result = EnumSet.noneOf(clazz);
+    if (BeeUtils.isEmpty(input)) {
       return result;
     }
 
@@ -301,8 +336,10 @@ public final class EnumUtils {
   }
 
   public static <E extends Enum<?>> List<E> parseNameList(Class<E> clazz, String input) {
+    Assert.notNull(clazz);
+
     List<E> result = new ArrayList<>();
-    if (clazz == null || BeeUtils.isEmpty(input)) {
+    if (BeeUtils.isEmpty(input)) {
       return result;
     }
 
@@ -316,14 +353,16 @@ public final class EnumUtils {
     return result;
   }
 
-  public static <E extends Enum<?>> Set<E> parseIndexSet(Class<E> clazz, String input) {
-    Set<E> result = new HashSet<>();
-    if (clazz == null || BeeUtils.isEmpty(input)) {
+  public static <E extends Enum<E>> Set<E> parseNameSet(Class<E> clazz, String input) {
+    Assert.notNull(clazz);
+
+    Set<E> result = EnumSet.noneOf(clazz);
+    if (BeeUtils.isEmpty(input)) {
       return result;
     }
 
     for (String s : splitter.split(input)) {
-      E e = getEnumByIndex(clazz, s);
+      E e = getEnumByName(clazz, s);
       if (e != null) {
         result.add(e);
       }

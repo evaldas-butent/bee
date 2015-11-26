@@ -47,8 +47,10 @@ import net.fortuna.ical4j.model.Component;
 import net.fortuna.ical4j.model.Property;
 import net.fortuna.ical4j.model.component.CalendarComponent;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
+import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -520,15 +522,36 @@ public class MailStorageBean {
   }
 
   private static String getStringContent(Object enigma) throws IOException {
-    String content;
+    InputStream stream;
 
     if (enigma instanceof InputStream) {
-      content = CharStreams.toString(new InputStreamReader((InputStream) enigma,
-          BeeConst.CHARSET_UTF8));
+      stream = (InputStream) enigma;
     } else {
-      content = enigma.toString();
+      stream = new ByteArrayInputStream(enigma.toString().getBytes(BeeConst.CHARSET_UTF8));
     }
-    return content;
+    return CharStreams.toString(new InputStreamReader(new FilterInputStream(stream) {
+      @Override
+      public int read() throws IOException {
+        int chr = super.read();
+
+        if (chr == 0) {
+          chr = BeeConst.CHAR_SPACE;
+        }
+        return chr;
+      }
+
+      @Override
+      public int read(byte[] b, int off, int len) throws IOException {
+        int cnt = super.read(b, off, len);
+
+        for (int i = 0; i < cnt; i++) {
+          if (b[i] == 0) {
+            b[i] = BeeConst.CHAR_SPACE;
+          }
+        }
+        return cnt;
+      }
+    }, BeeConst.CHARSET_UTF8));
   }
 
   private Multimap<String, String> parsePart(Long messageId, Part part)
