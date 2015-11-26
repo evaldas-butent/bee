@@ -106,7 +106,8 @@ import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.LogUtils;
-import com.butent.bee.shared.modules.transport.TransportConstants.*;
+import com.butent.bee.shared.modules.transport.TransportConstants.AssessmentStatus;
+import com.butent.bee.shared.modules.transport.TransportConstants.OrderStatus;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
@@ -490,7 +491,7 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
       }
 
       final FormView pForm = ViewHelper.getForm(getGridView().asWidget());
-      IsRow formRow = getActiveRow();
+      IsRow formRow = pForm.getActiveRow();
 
       double cargoValue = BeeUtils.unbox(formRow.getDouble(pForm.getDataIndex(COL_CARGO_VALUE)));
 
