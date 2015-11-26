@@ -5,7 +5,6 @@ import com.google.common.collect.Lists;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.Pair;
-import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -18,6 +17,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 
 public final class BeeParameter implements BeeSerializable {
@@ -244,6 +244,13 @@ public final class BeeParameter implements BeeSerializable {
     return (DateTime) getTypedValue(ParameterType.DATETIME, getValue(userId));
   }
 
+  public String getDefValue() {
+    if (supportsUsers() && hasValue()) {
+      return getValue();
+    }
+    return defValue;
+  }
+
   public Long getId() {
     return id;
   }
@@ -315,10 +322,10 @@ public final class BeeParameter implements BeeSerializable {
   }
 
   public String getValue(Long userId) {
-    if (userValues.containsKey(userId)) {
+    if (hasValue(userId)) {
       return userValues.get(userId);
     } else {
-      return defValue;
+      return getDefValue();
     }
   }
 
@@ -327,13 +334,7 @@ public final class BeeParameter implements BeeSerializable {
   }
 
   public boolean hasValue(Long userId) {
-    Assert.isTrue(supportsUsers() == DataUtils.isId(userId));
     return userValues.containsKey(userId);
-  }
-
-  public void reset() {
-    userValues.clear();
-    setId(null);
   }
 
   @Override
@@ -374,14 +375,16 @@ public final class BeeParameter implements BeeSerializable {
     this.id = id;
   }
 
+  public void setUserSupport(boolean support) {
+    supportsUsers = support;
+  }
+
   public void setValue(String value) {
     setValue(null, value);
   }
 
   public void setValue(Long userId, String value) {
-    Assert.isTrue(supportsUsers() == DataUtils.isId(userId));
-
-    if (value == null) {
+    if (Objects.equals(value, getDefValue())) {
       userValues.remove(userId);
     } else {
       userValues.put(userId, value);

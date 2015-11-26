@@ -267,7 +267,7 @@ public class Relations extends Flow implements Editor, ClickHandler, SelectorEve
     for (Entry<String, MultiSelector> entry : widgetMap.entrySet()) {
       MultiSelector multi = entry.getValue();
 
-      if ((multi != null && (all || multi.isValueChanged()))) {
+      if (multi != null && (all || multi.isValueChanged())) {
         relations.add(RowChildren.create(STORAGE, column, id, entry.getKey(),
             DataUtils.buildIdList(multi.getIds())));
       }
