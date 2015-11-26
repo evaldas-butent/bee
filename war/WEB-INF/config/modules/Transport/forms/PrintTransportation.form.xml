@@ -21,8 +21,8 @@
     </css>
     <Table kind="output" style="width: 100%">
       <row style="vertical-align: middle">
-        <Image url="images/logo1.gif" style="display:block; max-height: 100px; max-width: 25%;" />
-        <cell style="text-align: right;">
+        <Image url="images/HL_logo.jpg" style="display:block; max-height: 100px; max-width: 25%;" />
+        <cell style="text-align: right; min-width:150px">
           <FlowPanel class=".flexBox-vertical" style="display: inline-block; text-align:left;" >
             <DateTimeLabel source="Date" format="DATE_SHORT"  />
             <Label html="Kaunas"/>

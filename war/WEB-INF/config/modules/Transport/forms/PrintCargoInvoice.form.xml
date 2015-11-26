@@ -13,7 +13,7 @@
   >
   <FlowPanel class="bee-PrintableForm bee-tr-Invoice-Print" style="padding: 10px; background-color: white;">
     <HorizontalPanel>
-      <Image  url="images/logo1.gif" />
+      <Image  url="images/HL_logo.jpg" style="max-height:40px; max-width: 285px;"/>
       <cell width="100" widthUnit="%">
         <FlowPanel style="text-align:center; font-size:medium;">
           <TextLabel style="&bold;">
