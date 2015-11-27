@@ -253,12 +253,12 @@ class DebtReportsGrid extends AbstractGridInterceptor implements ClickHandler {
 
           Filter f = Filter.isTrue();
           if (BeeUtils.toBoolean(val.get(F_OVERDUE))) {
-            f = Filter.and(f, Filter.isMoreEqual(
+            f = Filter.and(f, Filter.isLess(
                 TradeConstants.COL_TRADE_TERM, Value.getValue(new JustDate())));
           }
 
           if (BeeUtils.toBoolean(val.get(F_NOT_EXPIRED))) {
-            f = Filter.and(f, Filter.isLess(
+            f = Filter.and(f, Filter.isMoreEqual(
                 TradeConstants.COL_TRADE_TERM, Value.getValue(new JustDate())));
           }
 

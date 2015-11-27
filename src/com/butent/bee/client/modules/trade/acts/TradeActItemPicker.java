@@ -75,7 +75,7 @@ class TradeActItemPicker extends ItemsPicker {
 
   @Override
   protected String getCaption() {
-    return Localized.getConstants().services();
+    return Localized.getConstants().goods();
   }
 
   protected Filter getDefaultItemFilter() {

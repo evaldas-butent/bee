@@ -81,6 +81,11 @@ class TradeActServicePicker extends TradeActItemPicker {
   }
 
   @Override
+  protected String getCaption() {
+    return Localized.getConstants().services();
+  }
+
+  @Override
   public Long getWarehouseFrom(IsRow row) {
     return null;
   }
