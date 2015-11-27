@@ -140,7 +140,7 @@ public class Relations extends Flow implements Editor, ClickHandler, SelectorEve
     }
 
     table.setColumnCellKind(0, CellKind.LABEL);
-    table.setColumnCellStyles(0, "white-space:nowrap;");
+    table.setColumnCellStyles(0, "white-space:nowrap; vertical-align:middle; padding-right:1em;");
     table.setColumnCellStyles(1, "width:100%");
 
     Map<String, String> viewMap = new HashMap<>();
@@ -217,7 +217,7 @@ public class Relations extends Flow implements Editor, ClickHandler, SelectorEve
   @Override
   public Collection<RowChildren> getChildrenForInsert() {
     if (inline) {
-      return getRowChildren(true);
+      return getRowChildren(false);
     }
     return null;
   }
@@ -267,7 +267,7 @@ public class Relations extends Flow implements Editor, ClickHandler, SelectorEve
     for (Entry<String, MultiSelector> entry : widgetMap.entrySet()) {
       MultiSelector multi = entry.getValue();
 
-      if ((multi != null && multi.isValueChanged()) || (!all && multi != null)) {
+      if (multi != null && (all || multi.isValueChanged())) {
         relations.add(RowChildren.create(STORAGE, column, id, entry.getKey(),
             DataUtils.buildIdList(multi.getIds())));
       }
@@ -386,7 +386,7 @@ public class Relations extends Flow implements Editor, ClickHandler, SelectorEve
 
       @Override
       public void onSuccess() {
-        Collection<RowChildren> relations = getRowChildren(true);
+        Collection<RowChildren> relations = getRowChildren(false);
 
         if (!BeeUtils.isEmpty(relations)) {
           Queries.updateChildren(view, id, relations, new RowCallback() {

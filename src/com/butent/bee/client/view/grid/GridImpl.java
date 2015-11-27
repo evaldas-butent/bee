@@ -36,6 +36,7 @@ import com.butent.bee.client.event.logical.SummaryChangeEvent;
 import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.ColumnHeader;
 import com.butent.bee.client.grid.GridFactory;
+import com.butent.bee.client.grid.GridFactory.GridOptions;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.grid.cell.AbstractCell;
 import com.butent.bee.client.grid.cell.ActionCell;
@@ -127,6 +128,7 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogLevel;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.Captions;
 import com.butent.bee.shared.ui.CellType;
@@ -307,9 +309,11 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
 
   private boolean summarize;
 
+  private Feed feed;
+
   public GridImpl(GridDescription gridDescription, String gridKey,
       List<BeeColumn> dataColumns, String relColumn,
-      Collection<UiOption> uiOptions, GridInterceptor gridInterceptor) {
+      Collection<UiOption> uiOptions, GridInterceptor gridInterceptor, GridOptions gridOptions) {
 
     super();
     addStyleName(STYLE_NAME);
@@ -330,6 +334,8 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     this.relColumn = relColumn;
 
     this.gridInterceptor = gridInterceptor;
+
+    this.feed = gridOptions == null ? null : gridOptions.getFeed();
   }
 
   @Override
@@ -1757,6 +1763,11 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
   private void closeEditForm() {
     showForm(true, false);
     fireEvent(new EditFormEvent(State.CLOSED, showEditPopup()));
+
+    if (feed != null) {
+      getGrid().getRowData().remove(getActiveRow());
+      getGrid().refresh();
+    }
 
     maybeResizeGrid();
     getGrid().refocus();

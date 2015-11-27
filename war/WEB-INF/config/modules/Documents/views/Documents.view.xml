@@ -12,7 +12,7 @@
 
     <SimpleColumn name="Company" />
     <SimpleJoin joinType="LEFT" name="Company">
-      <SimpleColumn alias="CompanyName" name="Name" />
+      <SimpleColumn alias="CompanyName" name="Name" label="=company" />
       <SimpleJoin joinType="LEFT" name="CompanyType">
         <SimpleColumn name="Name" alias="CompanyTypeName" />
       </SimpleJoin>
@@ -74,4 +74,3 @@
 
   </Columns>
 </View>
-

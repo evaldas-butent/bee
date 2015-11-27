@@ -316,7 +316,7 @@ public class MessageBuilder extends FaLabel implements ClickHandler {
       if (!BeeConst.isUndef(idx)) {
         tabs.selectTab(idx);
       }
-      Global.setParameter(PRM_MESSAGE_TEMPLATE, Codec.beeSerialize(templates));
+      Global.setParameter(PRM_MESSAGE_TEMPLATE, Codec.beeSerialize(templates), false);
     }
 
     private void sendMessage() {

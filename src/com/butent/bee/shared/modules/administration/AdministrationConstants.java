@@ -81,7 +81,6 @@ public final class AdministrationConstants {
 
   public static final String SVC_GET_PARAMETER = PARAMETERS_PREFIX + "parameter";
   public static final String SVC_GET_RELATION_PARAMETER = PARAMETERS_PREFIX + "relation_parameter";
-  public static final String SVC_GET_PARAMETERS = PARAMETERS_PREFIX + "get";
   public static final String SVC_SET_PARAMETER = PARAMETERS_PREFIX + "set";
 
   public static final String SVC_DO_IMPORT = "DoImport";
@@ -92,8 +91,7 @@ public final class AdministrationConstants {
   public static final String VAR_LOCALE = Service.RPC_VAR_PREFIX + "locale";
 
   public static final String VAR_PARAMETERS_MODULE = Service.RPC_VAR_PREFIX + "module";
-  public static final String VAR_PARAMETER = Service.RPC_VAR_PREFIX + "parameters";
-  public static final String VAR_PARAMETER_VALUE = Service.RPC_VAR_PREFIX + "value";
+  public static final String VAR_PARAMETER_DEFAULT = "DefaultMode";
 
   public static final String SVC_GET_HISTORY = "get_history";
   public static final String VAR_HISTORY_VIEW = Service.RPC_VAR_PREFIX + "history_view";
@@ -117,8 +115,6 @@ public final class AdministrationConstants {
   public static final String SVC_COPY_RIGHTS = "copy_rights";
 
   public static final String VAR_IMPORT_TEST = "Test";
-  public static final String VAR_MAPPING_TABLE = "MappingTable";
-  public static final String VAR_MAPPING_FIELD = "MappingField";
   public static final String VAR_IMPORT_FILE = "File";
   public static final String VAR_IMPORT_SHEET = "Sheet";
   public static final String VAR_IMPORT_START_ROW = "Row";
@@ -136,6 +132,9 @@ public final class AdministrationConstants {
   public static final String AUDIT_FLD_ID = "RecordId";
   public static final String AUDIT_FLD_FIELD = "Field";
   public static final String AUDIT_FLD_VALUE = "Value";
+
+  public static final String TBL_PARAMETERS = "Parameters";
+  public static final String TBL_USER_PARAMETERS = "UserParameters";
 
   public static final String TBL_USERS = "Users";
   public static final String TBL_USER_SETTINGS = "UserSettings";
@@ -216,6 +215,10 @@ public final class AdministrationConstants {
   public static final String GRID_COLORS = "Colors";
   public static final String GRID_THEMES = "Themes";
   public static final String GRID_THEME_COLORS = "ThemeColors";
+
+  public static final String COL_PARAMETER = "Parameter";
+  public static final String COL_PARAMETER_NAME = "Name";
+  public static final String COL_PARAMETER_VALUE = "Value";
 
   public static final String COL_RELATION = "Relation";
 

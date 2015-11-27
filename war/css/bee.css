@@ -1487,6 +1487,7 @@
 }
 .bee-MultiSelector-label {
   line-height: 13px;
+  margin-left: 10px;
 }
 .bee-MultiSelector-close {
   position: absolute;

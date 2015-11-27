@@ -4,18 +4,24 @@
       name="RestCompanyPersons" source="CompanyPersons"
     >
   <Columns>
-    <SimpleColumn name="Company" />
-    <SimpleColumn name="Person" />
+    <SimpleColumn name="Company" alias="CompanyID" />
 
+    <SimpleColumn name="Person" alias="PersonID" />
     <SimpleJoin name="Person" joinType="LEFT">
       <SimpleColumn name="FirstName" />
       <SimpleColumn name="LastName" />
     </SimpleJoin>
 
+    <ExternalJoin name="CompanyPerson" joinType="LEFT" source="Users">
+      <IdColumn name="UserID" />
+    </ExternalJoin>
+
+    <SimpleColumn name="Department" alias="DepartmentID" />
     <SimpleJoin name="Department" joinType="LEFT">
       <SimpleColumn name="Name" alias="Department" />
     </SimpleJoin>
 
+    <SimpleColumn name="Position" alias="PositionID" />
     <SimpleJoin name="Position" joinType="LEFT">
       <SimpleColumn name="Name" alias="Position" />
     </SimpleJoin>
@@ -26,23 +32,22 @@
       <SimpleColumn name="Mobile" />
       <SimpleColumn name="Fax" />
 
+      <SimpleColumn name="Email" alias="EmailID" />
       <SimpleJoin name="Email" joinType="LEFT">
         <SimpleColumn name="Email" />
       </SimpleJoin>
 
       <SimpleColumn name="Address" />
 
+      <SimpleColumn name="City" alias="CityID" />
       <SimpleJoin name="City" joinType="LEFT">
         <SimpleColumn name="Name" alias="City" />
       </SimpleJoin>
 
+      <SimpleColumn name="Country" alias="CountryID" />
       <SimpleJoin name="Country" joinType="LEFT">
         <SimpleColumn name="Name" alias="Country" />
       </SimpleJoin>
     </SimpleJoin>
   </Columns>
-  <Order>
-    <OrderBy column="LastName" />
-    <OrderBy column="FirstName" />
-  </Order>
 </View>

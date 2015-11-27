@@ -16,7 +16,6 @@ import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.UserInfo;
-import com.butent.bee.client.composite.ChildSelector;
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.IdCallback;
@@ -144,9 +143,7 @@ public class DocumentForm extends DocumentDataForm {
     }
   });
   private ChildGrid itemsGrid;
-  Relations rel;
-
-  private final Map<String, ChildSelector> childSelectors = new HashMap<>();
+  private Relations rel;
 
   @Override
   public void afterCreateWidget(String name, IdentifiableWidget widget,
@@ -209,7 +206,8 @@ public class DocumentForm extends DocumentDataForm {
             Pair.of(Localized.getLabel(dataInfo.getColumn(col)), "{" + COL_DOCUMENT + col + "}"));
       }
     }
-    for (String relation : childSelectors.keySet()) {
+    for (RowChildren garden : rel.getRowChildren(true)) {
+      String relation = Data.getColumnRelation(garden.getRepository(), garden.getChildColumn());
       dataInfo = Data.getDataInfo(relation);
 
       for (String col : dataInfo.getColumnNames(false)) {
@@ -237,7 +235,8 @@ public class DocumentForm extends DocumentDataForm {
         .append(" border:1px solid black; text-align:right;\">")
         .append("<tbody><tr style=\"text-align:center;\">");
 
-    for (String cap : new String[] {loc.ordinal(), loc.description(), loc.quantity(), loc.price(),
+    for (String cap : new String[] {
+        loc.ordinal(), loc.description(), loc.quantity(), loc.price(),
         loc.amount(), loc.vat(), loc.total()}) {
       sb.append("<td style=\"border:1px solid black;\">" + cap + "</td>");
     }
@@ -247,7 +246,8 @@ public class DocumentForm extends DocumentDataForm {
         .append("<td style=\"border:1px solid black;\">{Index}</td>")
         .append("<td style=\"border:1px solid black; text-align:left;\">{Description}</td>");
 
-    for (String col : new String[] {"{Quantity}", "{Price}", "{Amount}", "{Vat}",
+    for (String col : new String[] {
+        "{Quantity}", "{Price}", "{Amount}", "{Vat}",
         "{VatPlusAmount}"}) {
       sb.append("<td style=\"border:1px solid black;\">" + col + "</td>");
     }
@@ -284,7 +284,7 @@ public class DocumentForm extends DocumentDataForm {
             .on("<!--{" + VIEW_DOCUMENT_ITEMS + "}-->").split(input));
 
         final Map<String, Double> globals = new HashMap<>();
-        final Holder<Integer> holder = Holder.of(childSelectors.size() + parts.size());
+        final Holder<Integer> holder = Holder.of(rel.getRowChildren(true).size() + parts.size());
 
         final BiConsumer<Integer, String> executor = new BiConsumer<Integer, String>() {
           @Override
@@ -311,7 +311,10 @@ public class DocumentForm extends DocumentDataForm {
                 result = result.replace("{" + COL_DOCUMENT + column.getId() + "}",
                     BeeUtils.nvl(getParsedValue(getViewName(), getActiveRow(), column), ""));
               }
-              for (String relation : childSelectors.keySet()) {
+              for (RowChildren garden : rel.getRowChildren(true)) {
+                String relation = Data.getColumnRelation(garden.getRepository(),
+                    garden.getChildColumn());
+
                 for (BeeColumn column : Data.getColumns(relation)) {
                   result = result.replace("{" + relation + column.getId() + "}",
                       BeeUtils.nvl(getParsedValue(relation, relations.get(relation), column), ""));
@@ -363,8 +366,10 @@ public class DocumentForm extends DocumentDataForm {
             return val;
           }
         };
-        for (final String relation : childSelectors.keySet()) {
-          Long id = BeeUtils.peek(DataUtils.parseIdList(childSelectors.get(relation).getValue()));
+        for (RowChildren garden : rel.getRowChildren(true)) {
+          final String relation = Data.getColumnRelation(garden.getRepository(),
+              garden.getChildColumn());
+          Long id = BeeUtils.peek(DataUtils.parseIdList(garden.getChildrenIds()));
 
           if (DataUtils.isId(id)) {
             Queries.getRow(relation, id, new RowCallback() {
@@ -393,13 +398,11 @@ public class DocumentForm extends DocumentDataForm {
 
   private void createNewServiceObjectRelation(SelectorEvent event) {
     Long company = null;
-    DataInfo info;
 
-    for (RowChildren selector : rel.getRowChildren(false)) {
-
-      info = Data.getDataInfo(selector.getRepository());
-      if (BeeUtils.same(info.getRelation(selector.getChildColumn()), VIEW_COMPANIES)) {
-        company = BeeUtils.peek(DataUtils.parseIdList(selector.getChildrenIds()));
+    for (RowChildren garden : rel.getRowChildren(true)) {
+      if (Objects.equals(Data.getColumnRelation(garden.getRepository(), garden.getChildColumn()),
+          VIEW_COMPANIES)) {
+        company = BeeUtils.peek(DataUtils.parseIdList(garden.getChildrenIds()));
       }
     }
 
@@ -424,33 +427,36 @@ public class DocumentForm extends DocumentDataForm {
 
   private void createNewTaskRelation(final SelectorEvent event) {
     final BeeRow row = event.getNewRow();
-    DataInfo info;
-
     String summary = BeeUtils.notEmpty(event.getDefValue(), getStringValue(COL_DOCUMENT_NAME));
+
     if (!BeeUtils.isEmpty(summary)) {
       Data.squeezeValue(TaskConstants.VIEW_TASKS, row, TaskConstants.COL_SUMMARY,
           BeeUtils.trim(summary));
     }
-
     event.setDefValue(null);
-
     String description = getStringValue(COL_DESCRIPTION);
+
     if (!BeeUtils.isEmpty(description)) {
       Data.setValue(TaskConstants.VIEW_TASKS, row, TaskConstants.COL_DESCRIPTION,
           BeeUtils.trim(description));
     }
-
     final List<Long> companies = new ArrayList<>();
     final List<Long> persons = new ArrayList<>();
 
-    for (RowChildren selector : rel.getRowChildren(false)) {
-      info = Data.getDataInfo(selector.getRepository());
+    for (RowChildren garden : rel.getRowChildren(true)) {
+      final List<Long> collection;
 
-      if (BeeUtils.same(info.getRelation(selector.getChildColumn()), VIEW_COMPANIES)) {
-        companies.addAll(DataUtils.parseIdList(selector.getChildrenIds()));
-      } else if (BeeUtils.same(info.getRelation(selector.getChildColumn()), VIEW_PERSONS)) {
-        persons.addAll(DataUtils.parseIdList(selector.getChildrenIds()));
+      switch (Data.getColumnRelation(garden.getRepository(), garden.getChildColumn())) {
+        case VIEW_COMPANIES:
+          collection = companies;
+          break;
+        case VIEW_PERSONS:
+          collection = persons;
+          break;
+        default:
+          continue;
       }
+      collection.addAll(DataUtils.parseIdList(garden.getChildrenIds()));
     }
 
     if (!companies.isEmpty() || !persons.isEmpty()) {

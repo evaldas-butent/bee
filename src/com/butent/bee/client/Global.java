@@ -239,7 +239,7 @@ public final class Global {
     Assert.notNull(prmConsumer);
 
     ParameterList args = AdministrationKeeper.createArgs(SVC_GET_PARAMETER);
-    args.addDataItem(VAR_PARAMETER, prm);
+    args.addDataItem(COL_PARAMETER, prm);
 
     BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
       @Override
@@ -258,7 +258,7 @@ public final class Global {
     Assert.notNull(prmConsumer);
 
     ParameterList args = AdministrationKeeper.createArgs(SVC_GET_RELATION_PARAMETER);
-    args.addDataItem(VAR_PARAMETER, prm);
+    args.addDataItem(COL_PARAMETER, prm);
 
     BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
       @Override
@@ -471,14 +471,17 @@ public final class Global {
     Global.explain = explain;
   }
 
-  public static void setParameter(String prm, String value) {
+  public static void setParameter(String prm, String value, boolean defaultMode) {
     Assert.notEmpty(prm);
 
     ParameterList args = AdministrationKeeper.createArgs(SVC_SET_PARAMETER);
-    args.addDataItem(VAR_PARAMETER, prm);
+    args.addDataItem(COL_PARAMETER, prm);
 
     if (!BeeUtils.isEmpty(value)) {
-      args.addDataItem(VAR_PARAMETER_VALUE, value);
+      args.addDataItem(COL_PARAMETER_VALUE, value);
+    }
+    if (defaultMode) {
+      args.addDataItem(VAR_PARAMETER_DEFAULT, 1);
     }
     BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
       @Override
@@ -595,7 +598,7 @@ public final class Global {
     exportMethods();
   }
 
-//@formatter:off
+  //@formatter:off
   // CHECKSTYLE:OFF
   private static native void exportMethods() /*-{
     $wnd.Bee_updateForm = $entry(@com.butent.bee.client.view.ViewHelper::updateForm(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;));

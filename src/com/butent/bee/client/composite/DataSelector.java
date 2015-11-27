@@ -1576,7 +1576,10 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     getInput().addStyleName(STYLE_WAITING);
     setWaiting(true);
 
-    getOracle().requestSuggestions(request, getCallback());
+    SelectorEvent event = SelectorEvent.fireRequest(this, request, getCallback());
+    if (!event.isConsumed()) {
+      getOracle().requestSuggestions(request, getCallback());
+    }
   }
 
   private void editRow() {

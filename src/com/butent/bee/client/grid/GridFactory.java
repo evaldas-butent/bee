@@ -268,10 +268,10 @@ public final class GridFactory {
 
   public static GridView createGridView(GridDescription gridDescription, String supplierKey,
       List<BeeColumn> dataColumns, String relColumn, Collection<UiOption> uiOptions,
-      GridInterceptor gridInterceptor, Order order) {
+      GridInterceptor gridInterceptor, Order order, GridOptions gridOptions) {
 
     GridView gridView = new GridImpl(gridDescription, supplierKey, dataColumns, relColumn,
-        uiOptions, gridInterceptor);
+        uiOptions, gridInterceptor, gridOptions);
     gridView.create(order);
 
     return gridView;
@@ -609,7 +609,7 @@ public final class GridFactory {
 
     if (brs != null) {
       GridView gridView = createGridView(gridDescription, supplierKey, brs.getColumns(),
-          uiOptions, gridInterceptor, order);
+          uiOptions, gridInterceptor, order, gridOptions);
       gridView.initData(brs.getNumberOfRows(), brs);
 
       Filter filter = GridFilterManager.parseFilter(gridView.getGrid(), initialUserFilterValues);
@@ -638,7 +638,7 @@ public final class GridFactory {
     }
 
     final GridView gridView = createGridView(gridDescription, supplierKey,
-        Data.getColumns(viewName), uiOptions, gridInterceptor, order);
+        Data.getColumns(viewName), uiOptions, gridInterceptor, order, gridOptions);
 
     final Filter initialUserFilter = GridFilterManager.parseFilter(gridView.getGrid(),
         initialUserFilterValues);
@@ -667,10 +667,10 @@ public final class GridFactory {
 
   private static GridView createGridView(GridDescription gridDescription, String supplierKey,
       List<BeeColumn> dataColumns, Collection<UiOption> uiOptions, GridInterceptor gridInterceptor,
-      Order order) {
+      Order order, GridOptions gridOptions) {
 
     return createGridView(gridDescription, supplierKey, dataColumns, null, uiOptions,
-        gridInterceptor, order);
+        gridInterceptor, order, gridOptions);
   }
 
   private static void createPresenter(GridDescription gridDescription, GridView gridView,
