@@ -57,10 +57,12 @@ import javax.ws.rs.core.Response;
 public abstract class CrudWorker {
 
   static final String LAST_SYNC_TIME = "LastSyncTime";
+
+  static final String ID = "ID";
+  static final String VERSION = "VERSION";
+
   private static final String SERVER_ERROR = "ServerError";
 
-  private static final String ID = "ID";
-  private static final String VERSION = "VERSION";
   private static final String CONTACT_VERSION = "ContactVersion";
   private static final String OLD_VALUES = "OLD_VALUES";
 
@@ -302,24 +304,25 @@ public abstract class CrudWorker {
         BeeColumn column = view.getBeeColumn(col);
         String value = getValue(data, col);
 
-        if (!BeeUtils.isEmpty(value)) {
-          if (column.isForeign()) {
-            column = getParentColumn(view, column);
+        if (column.isReadOnly() || BeeUtils.isEmpty(value)) {
+          continue;
+        }
+        if (column.isForeign()) {
+          column = getParentColumn(view, column);
 
-            if (columns.containsKey(column.getId())) {
-              continue;
-            }
-            value = getValue(data, column.getId());
+          if (columns.containsKey(column.getId())) {
+            continue;
+          }
+          value = getValue(data, column.getId());
 
-            if (BeeUtils.isEmpty(value)) {
-              value = getRelation(view.getColumnTable(col),
-                  getFields(view, view.getColumnParent(col), data));
-            }
+          if (BeeUtils.isEmpty(value)) {
+            value = getRelation(view.getColumnTable(col),
+                getFields(view, view.getColumnParent(col), data));
           }
-          if (usr.canEditColumn(getViewName(), column.getId())) {
-            columns.put(column.getId(), column);
-            values.add(value);
-          }
+        }
+        if (usr.canEditColumn(getViewName(), column.getId())) {
+          columns.put(column.getId(), column);
+          values.add(value);
         }
       }
     }
@@ -354,6 +357,10 @@ public abstract class CrudWorker {
       for (String col : oldData.keySet()) {
         if (view.hasColumn(col)) {
           BeeColumn column = view.getBeeColumn(col);
+
+          if (column.isReadOnly()) {
+            continue;
+          }
           String oldValue = getValue(oldData, col);
           String value = getValue(data, col);
 

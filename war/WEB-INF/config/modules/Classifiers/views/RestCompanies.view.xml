@@ -4,6 +4,7 @@
       name="RestCompanies" source="Companies"
     >
   <Columns>
+    <SimpleColumn name="CompanyType" alias="TypeID" />
     <SimpleJoin joinType="LEFT" name="CompanyType">
       <SimpleColumn name="Name" alias="Type" />
     </SimpleJoin>
@@ -17,6 +18,7 @@
       <SimpleColumn name="Mobile" />
       <SimpleColumn name="Fax" />
 
+      <SimpleColumn name="Email" alias="EmailID" />
       <SimpleJoin name="Email" joinType="LEFT">
         <SimpleColumn name="Email" />
       </SimpleJoin>
@@ -24,10 +26,12 @@
       <SimpleColumn name="Address" />
       <SimpleColumn name="PostIndex" />
 
+      <SimpleColumn name="City" alias="CityID" />
       <SimpleJoin name="City" joinType="LEFT">
         <SimpleColumn name="Name" alias="City" />
       </SimpleJoin>
 
+      <SimpleColumn name="Country" alias="CountryID" />
       <SimpleJoin name="Country" joinType="LEFT">
         <SimpleColumn name="Name" alias="Country" />
       </SimpleJoin>
