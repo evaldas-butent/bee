@@ -389,10 +389,12 @@ public class TransportReportsBean {
     qs.updateData(new SqlUpdate(tmpExpenses)
         .addExpression(fldTotalExpense, SqlUtils.field("subq", fldTotalExpense))
         .setFrom(new SqlSelect()
-            .addFields(tmpExpenses, id)
-            .addSum(tmpExpenses, VAR_EXPENSE, fldTotalExpense)
-            .addFrom(tmpExpenses)
-            .addGroup(tmpExpenses, id), "subq", SqlUtils.joinUsing(tmpExpenses, "subq", id)));
+                .addFields(tmpExpenses, id)
+                .addSum(tmpExpenses, VAR_EXPENSE, fldTotalExpense)
+                .addFrom(tmpExpenses)
+                .addGroup(tmpExpenses, id), "subq",
+            SqlUtils.and(SqlUtils.joinUsing(tmpExpenses, "subq", id),
+                SqlUtils.notEqual("subq", fldTotalExpense, 0))));
 
     String tmp = qs.sqlCreateTemp(new SqlSelect()
         .addFields(tmpIncomes, COL_ASSESSMENT, COL_ORDER + COL_DATE, COL_DEPARTMENT_NAME,
