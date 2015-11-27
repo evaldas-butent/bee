@@ -160,7 +160,7 @@ public class PayrollWorker {
     parent.appendChild(item);
 
     XmlUtils.appendElementWithText(document, item, TAG_TAB_NUMBER, BeeUtils.toString(tabNumber));
-    XmlUtils.appendElementWithText(document, item, TAG_DATE, date.toTimeStamp());
+    XmlUtils.appendElementWithText(document, item, TAG_DATE, date.toString());
 
     if (!BeeUtils.isEmpty(duration)) {
       XmlUtils.appendElementWithText(document, item, TAG_HOURS, duration);
