@@ -105,8 +105,7 @@ public final class DocumentsHandler {
         new BiConsumer<GridFactory.GridOptions, PresenterCallback>() {
           @Override
           public void accept(GridOptions gridOptions, PresenterCallback callback) {
-            GridFactory.openGrid("NewsDocuments", null, gridOptions,
-                callback);
+            GridFactory.openGrid("NewsDocuments", null, gridOptions, callback);
           }
         });
   }

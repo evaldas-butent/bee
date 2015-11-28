@@ -39,9 +39,13 @@ public class PayrollWorker {
 
   private static final String TAG_ITEM = "item";
   private static final String TAG_TAB_NUMBER = "tab";
+
   private static final String TAG_DATE = "date";
   private static final String TAG_HOURS = "hours";
   private static final String TAG_CODE = "code";
+
+  private static final String TAG_OBJECT = "object";
+  private static final String TAG_AMOUNT = "amount";
 
   @EJB
   PayrollModuleBean pmb;
@@ -65,6 +69,40 @@ public class PayrollWorker {
 
     if (!validateParameters(document, root, company, year, month, employee)) {
       return toString(document);
+    }
+
+    ResponseObject response = pmb.getEmployeeEarnings(company, BeeUtils.toIntOrNull(employee),
+        TimeUtils.parseYear(year), TimeUtils.parseMonth(month));
+    addMessages(document, root, response);
+
+    Table<Integer, String, Double> table = getEarningsTable(response);
+
+    if (table == null || table.isEmpty()) {
+      if (!response.hasMessages()) {
+        addMessage(document, root, LogLevel.INFO, "employee earnings not found");
+      }
+      return toString(document);
+    }
+
+    List<Integer> tabNumbers = new ArrayList<>(table.rowKeySet());
+    BeeUtils.sort(tabNumbers);
+
+    for (Integer tn : tabNumbers) {
+      List<String> objects = new ArrayList<>(table.row(tn).keySet());
+      BeeUtils.sort(objects);
+
+      for (String object : objects) {
+        Double amount = table.get(tn, object);
+
+        if (BeeUtils.isPositive(amount)) {
+          Element item = document.createElement(TAG_ITEM);
+          root.appendChild(item);
+
+          XmlUtils.appendElementWithText(document, item, TAG_TAB_NUMBER, BeeUtils.toString(tn));
+          XmlUtils.appendElementWithText(document, item, TAG_OBJECT, object);
+          XmlUtils.appendElementWithText(document, item, TAG_AMOUNT, BeeUtils.toString(amount, 2));
+        }
+      }
     }
 
     return toString(document);
@@ -167,6 +205,15 @@ public class PayrollWorker {
     }
     if (!BeeUtils.isEmpty(tcCode)) {
       XmlUtils.appendElementWithText(document, item, TAG_CODE, tcCode);
+    }
+  }
+
+  @SuppressWarnings("unchecked")
+  private static Table<Integer, String, Double> getEarningsTable(ResponseObject response) {
+    if (response.getResponse() instanceof Table) {
+      return (Table<Integer, String, Double>) response.getResponse();
+    } else {
+      return null;
     }
   }
 

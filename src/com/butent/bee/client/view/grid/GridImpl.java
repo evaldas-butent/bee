@@ -309,7 +309,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
 
   private boolean summarize;
 
-  private Feed feed;
+  private final Feed feed;
 
   public GridImpl(GridDescription gridDescription, String gridKey,
       List<BeeColumn> dataColumns, String relColumn,
