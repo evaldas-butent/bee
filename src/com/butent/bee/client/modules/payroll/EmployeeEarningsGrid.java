@@ -4,6 +4,7 @@ import static com.butent.bee.shared.modules.payroll.PayrollConstants.*;
 
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.event.logical.ParentRowEvent;
+import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
@@ -74,7 +75,17 @@ class EmployeeEarningsGrid extends AbstractGridInterceptor {
     }
   }
 
+  private Filter pendingFilter;
+
   EmployeeEarningsGrid() {
+  }
+
+  @Override
+  public void afterCreatePresenter(GridPresenter presenter) {
+    if (pendingFilter != null) {
+      setFilter(presenter, pendingFilter);
+      this.pendingFilter = null;
+    }
   }
 
   @Override
@@ -119,8 +130,14 @@ class EmployeeEarningsGrid extends AbstractGridInterceptor {
     }
 
     if (getGridPresenter() != null) {
-      getGridPresenter().getDataProvider().setDefaultParentFilter(filter);
-      getGridPresenter().refresh(false, true);
+      setFilter(getGridPresenter(), filter);
+    } else {
+      this.pendingFilter = filter;
     }
+  }
+
+  private static void setFilter(GridPresenter presenter, Filter filter) {
+    presenter.getDataProvider().setDefaultParentFilter(filter);
+    presenter.refresh(false, true);
   }
 }
