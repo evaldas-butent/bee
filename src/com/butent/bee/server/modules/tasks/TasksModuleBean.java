@@ -149,9 +149,11 @@ public class TasksModuleBean implements BeeModule {
             ALS_COMPANY_NAME, ALS_EXECUTOR_FIRST_NAME, ALS_EXECUTOR_LAST_NAME), query));
     result.addAll(tasksSr);
 
+    result.addAll(qs.getSearchResults(VIEW_TASK_EVENTS, src.buildSearchFilter(VIEW_TASK_EVENTS,
+        Collections.singleton(COL_COMMENT), query)));
+
     List<SearchResult> rtSr = qs.getSearchResults(VIEW_RECURRING_TASKS,
-        Filter.anyContains(Sets.newHashSet(COL_SUMMARY, COL_DESCRIPTION, ALS_COMPANY_NAME),
-            query));
+        Filter.anyContains(Sets.newHashSet(COL_SUMMARY, COL_DESCRIPTION, ALS_COMPANY_NAME), query));
     result.addAll(rtSr);
 
     return result;
@@ -1210,7 +1212,7 @@ public class TasksModuleBean implements BeeModule {
           .setWhere(
               SqlUtils.equals(TBL_COMPANIES, sys
                   .getIdName(TBL_COMPANIES), companiesListSet.getValue(i, sys
-                      .getIdName(TBL_COMPANIES))));
+                  .getIdName(TBL_COMPANIES))));
 
       if (reqInfo.hasParameter(VAR_TASK_DURATION_DATE_FROM)) {
         if (!BeeUtils.isEmpty(reqInfo.getParameter(VAR_TASK_DURATION_DATE_FROM))) {
@@ -1762,7 +1764,7 @@ public class TasksModuleBean implements BeeModule {
           .setWhere(
               SqlUtils.equals(TBL_USERS, sys
                   .getIdName(TBL_USERS), usersListSet.getValue(i, sys
-                      .getIdName(TBL_USERS))));
+                  .getIdName(TBL_USERS))));
 
       if (reqInfo.hasParameter(VAR_TASK_DURATION_DATE_FROM)) {
         if (!BeeUtils.isEmpty(reqInfo.getParameter(VAR_TASK_DURATION_DATE_FROM))) {

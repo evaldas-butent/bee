@@ -147,9 +147,8 @@ public class EventManager implements FiresModificationEvents {
     return ParentRowEvent.register(getBus(prior), source, handler);
   }
 
-  public HandlerRegistration registerRowActionHandler(RowActionEvent.Handler handler,
-      boolean prior) {
-    return RowActionEvent.register(getBus(prior), handler);
+  public HandlerRegistration registerRowActionHandler(RowActionEvent.Handler handler) {
+    return RowActionEvent.register(getBus(false), handler);
   }
 
   public HandlerRegistration registerRowDeleteHandler(RowDeleteEvent.Handler handler,
@@ -162,9 +161,8 @@ public class EventManager implements FiresModificationEvents {
     return RowInsertEvent.register(getBus(prior), handler);
   }
 
-  public HandlerRegistration registerRowTransformHandler(RowTransformEvent.Handler handler,
-      boolean prior) {
-    return RowTransformEvent.register(getBus(prior), handler);
+  public HandlerRegistration registerRowTransformHandler(RowTransformEvent.Handler handler) {
+    return RowTransformEvent.register(getBus(false), handler);
   }
 
   public HandlerRegistration registerRowUpdateHandler(RowUpdateEvent.Handler handler,

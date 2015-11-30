@@ -5,6 +5,7 @@ import com.google.web.bindery.event.shared.EventBus;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.ui.Opener;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Consumable;
 import com.butent.bee.shared.data.HasViewName;
@@ -37,8 +38,8 @@ public final class RowActionEvent extends Event<RowActionEvent.Handler> implemen
     return !event.isConsumed();
   }
 
-  public static boolean fireEditRow(String viewName, IsRow row) {
-    RowActionEvent event = new RowActionEvent(Kind.EDIT_ROW, viewName, row, null);
+  public static boolean fireEditRow(String viewName, IsRow row, Opener opener) {
+    RowActionEvent event = new RowActionEvent(Kind.EDIT_ROW, viewName, row, null, opener, null);
     BeeKeeper.getBus().fireEvent(event);
     return !event.isConsumed();
   }
@@ -61,23 +62,27 @@ public final class RowActionEvent extends Event<RowActionEvent.Handler> implemen
   private final IsRow row;
   private final Long rowId;
 
+  private final Opener opener;
   private final String options;
 
   private boolean consumed;
 
   private RowActionEvent(Kind kind, String viewName, IsRow row, String options) {
-    this(kind, viewName, row, (row == null) ? null : row.getId(), options);
+    this(kind, viewName, row, (row == null) ? null : row.getId(), null, options);
   }
 
   private RowActionEvent(Kind kind, String viewName, Long rowId, String options) {
-    this(kind, viewName, null, rowId, options);
+    this(kind, viewName, null, rowId, null, options);
   }
 
-  private RowActionEvent(Kind kind, String viewName, IsRow row, Long rowId, String options) {
+  private RowActionEvent(Kind kind, String viewName, IsRow row, Long rowId, Opener opener,
+      String options) {
+
     this.viewName = viewName;
     this.row = row;
     this.rowId = rowId;
     this.kind = kind;
+    this.opener = opener;
     this.options = options;
   }
 
@@ -89,6 +94,10 @@ public final class RowActionEvent extends Event<RowActionEvent.Handler> implemen
   @Override
   public Type<Handler> getAssociatedType() {
     return TYPE;
+  }
+
+  public Opener getOpener() {
+    return opener;
   }
 
   public String getOptions() {

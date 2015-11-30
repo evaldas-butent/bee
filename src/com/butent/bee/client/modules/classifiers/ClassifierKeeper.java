@@ -285,7 +285,7 @@ public final class ClassifierKeeper {
 
     SelectorEvent.register(new ClassifierSelector());
 
-    BeeKeeper.getBus().registerRowTransformHandler(new RowTransformHandler(), false);
+    BeeKeeper.getBus().registerRowTransformHandler(new RowTransformHandler());
   }
 
   private ClassifierKeeper() {

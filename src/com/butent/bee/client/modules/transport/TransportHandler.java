@@ -335,9 +335,9 @@ public final class TransportHandler {
     FormFactory.registerFormInterceptor(FORM_NEW_CARGO_REQUEST, new CargoRequestForm());
     FormFactory.registerFormInterceptor(FORM_CARGO_REQUEST, new CargoRequestForm());
 
-    BeeKeeper.getBus().registerRowActionHandler(new TransportActionHandler(), false);
+    BeeKeeper.getBus().registerRowActionHandler(new TransportActionHandler());
 
-    BeeKeeper.getBus().registerRowTransformHandler(new RowTransformHandler(), false);
+    BeeKeeper.getBus().registerRowTransformHandler(new RowTransformHandler());
 
     ChartBase.registerBoards();
     CargoIncomesObserver.register();

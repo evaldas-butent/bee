@@ -13,8 +13,11 @@ import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
+import com.butent.bee.client.data.RowEditor;
+import com.butent.bee.client.event.logical.RowActionEvent;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.GridFactory;
+import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.modules.tasks.TasksReportsInterceptor.ReportType;
 import com.butent.bee.client.style.ColorStyleProvider;
 import com.butent.bee.client.style.ConditionalStyle;
@@ -73,6 +76,15 @@ public final class TasksKeeper {
       if (event.hasView(VIEW_TASKS)) {
         event.setResult(DataUtils.join(getTaskViewInfo(), event.getRow(), taskColumns,
             BeeConst.STRING_SPACE));
+
+      } else if (event.hasView(VIEW_TASK_EVENTS)) {
+        event.setResult(BeeUtils.joinWords(
+            Data.getLong(event.getViewName(), event.getRow(), COL_TASK),
+            Data.getString(event.getViewName(), event.getRow(), ALS_PUBLISHER_FIRST_NAME),
+            Data.getString(event.getViewName(), event.getRow(), ALS_PUBLISHER_LAST_NAME),
+            Format.getDefaultDateTimeFormat().format(Data.getDateTime(event.getViewName(),
+                event.getRow(), COL_PUBLISH_TIME)),
+            Data.getString(event.getViewName(), event.getRow(), COL_COMMENT)));
       }
     }
 
@@ -248,7 +260,21 @@ public final class TasksKeeper {
 
     SelectorEvent.register(new TaskSelectorHandler());
 
-    BeeKeeper.getBus().registerRowTransformHandler(new RowTransformHandler(), false);
+    BeeKeeper.getBus().registerRowTransformHandler(new RowTransformHandler());
+
+    BeeKeeper.getBus().registerRowActionHandler(new RowActionEvent.Handler() {
+      @Override
+      public void onRowAction(RowActionEvent event) {
+        if (event.isEditRow() && event.hasView(VIEW_TASK_EVENTS)) {
+          event.consume();
+
+          if (event.hasRow() && event.getOpener() != null) {
+            Long taskId = Data.getLong(event.getViewName(), event.getRow(), COL_TASK);
+            RowEditor.open(VIEW_TASKS, taskId, event.getOpener());
+          }
+        }
+      }
+    });
 
     Global.getNewsAggregator().registerFilterHandler(Feed.TASKS_ASSIGNED,
         TasksGrid.getFeedFilterHandler(Feed.TASKS_ASSIGNED));

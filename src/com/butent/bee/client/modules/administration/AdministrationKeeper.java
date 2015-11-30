@@ -100,7 +100,7 @@ public final class AdministrationKeeper {
     ConditionalStyle.registerGridColumnStyleProvider(GRID_THEME_COLORS, COL_FOREGROUND,
         styleProvider);
 
-    BeeKeeper.getBus().registerRowTransformHandler(new RowTransformHandler(), false);
+    BeeKeeper.getBus().registerRowTransformHandler(new RowTransformHandler());
 
     RightsForm.register();
   }

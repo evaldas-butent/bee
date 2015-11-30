@@ -384,8 +384,8 @@ public final class CalendarKeeper {
         COL_FOREGROUND, styleProvider);
 
     BeeKeeper.getBus().registerDataHandler(CACHE, true);
-    BeeKeeper.getBus().registerRowActionHandler(new RowActionHandler(), false);
-    BeeKeeper.getBus().registerRowTransformHandler(new RowTransformHandler(), false);
+    BeeKeeper.getBus().registerRowActionHandler(new RowActionHandler());
+    BeeKeeper.getBus().registerRowTransformHandler(new RowTransformHandler());
 
     SelectorEvent.register(SELECTOR_HANDLER);
 
