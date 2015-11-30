@@ -5,6 +5,7 @@ import com.butent.bee.server.data.DataEditorBean;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
+import com.butent.bee.server.sql.HasConditions;
 import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
@@ -25,6 +26,7 @@ import com.butent.bee.shared.data.view.ViewColumn;
 import com.butent.bee.shared.exceptions.BeeException;
 import com.butent.bee.shared.exceptions.BeeRuntimeException;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -216,7 +218,7 @@ public abstract class CrudWorker {
     return response;
   }
 
-  private static Map<String, Object> getFields(BeeView view, String parentCol, JsonObject data) {
+  private Map<String, Object> getFields(BeeView view, String parentCol, JsonObject data) {
     Map<String, Object> fields = new HashMap<>();
 
     for (ViewColumn viewColumn : view.getViewColumns()) {
@@ -224,6 +226,31 @@ public abstract class CrudWorker {
           && data.containsKey(viewColumn.getName())) {
 
         fields.put(viewColumn.getField(), getValue(data, viewColumn.getName()));
+      }
+    }
+    if (Objects.equals(view.getColumnRelation(parentCol), ClassifierConstants.TBL_CITIES)) {
+      String parent = view.getColumnParent(parentCol);
+      String countryParent = null;
+
+      for (ViewColumn viewColumn : view.getViewColumns()) {
+        if (Objects.equals(viewColumn.getParent(), parent)
+            && Objects.equals(viewColumn.getRelation(), ClassifierConstants.TBL_COUNTRIES)) {
+
+          countryParent = viewColumn.getName();
+
+          if (data.containsKey(countryParent)) {
+            break;
+          }
+        }
+      }
+      if (!BeeUtils.isEmpty(countryParent)) {
+        String country = getValue(data, countryParent);
+
+        if (!DataUtils.isId(country)) {
+          country = getRelation(ClassifierConstants.TBL_COUNTRIES,
+              getFields(view, countryParent, data));
+        }
+        fields.put(ClassifierConstants.COL_COUNTRY, BeeUtils.toLongOrNull(country));
       }
     }
     return fields;
@@ -261,10 +288,20 @@ public abstract class CrudWorker {
     if (!ok) {
       return null;
     }
+    HasConditions clause = SqlUtils.and();
+
+    for (Map.Entry<String, Object> entry : fields.entrySet()) {
+      if (entry.getValue() instanceof String) {
+        clause.add(SqlUtils.startsWith(table, entry.getKey(), (String) entry.getValue()))
+            .add(SqlUtils.endsWith(table, entry.getKey(), (String) entry.getValue()));
+      } else {
+        clause.add(SqlUtils.equals(table, entry.getKey(), entry.getValue()));
+      }
+    }
     String[] ids = qs.getColumn(new SqlSelect()
         .addFields(table, sys.getIdName(table))
         .addFrom(table)
-        .setWhere(SqlUtils.equals(table, fields)));
+        .setWhere(clause));
 
     String id = (ids.length == 1) ? ids[0] : null;
 

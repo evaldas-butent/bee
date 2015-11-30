@@ -5,6 +5,9 @@
     >
   <Columns>
     <SimpleColumn name="Company" alias="CompanyID" />
+    <SimpleJoin name="Company" joinType="LEFT">
+      <SimpleColumn name="Name" alias="CompanyName" />
+    </SimpleJoin>
 
     <SimpleColumn name="Person" alias="PersonID" />
     <SimpleJoin name="Person" joinType="LEFT">
@@ -32,7 +35,6 @@
       <SimpleColumn name="Mobile" />
       <SimpleColumn name="Fax" />
 
-      <SimpleColumn name="Email" alias="EmailID" />
       <SimpleJoin name="Email" joinType="LEFT">
         <SimpleColumn name="Email" />
       </SimpleJoin>
