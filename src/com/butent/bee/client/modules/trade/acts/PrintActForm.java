@@ -25,7 +25,6 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.trade.acts.TradeActTimeUnit;
 import com.butent.bee.shared.time.JustDate;
@@ -43,6 +42,7 @@ import java.util.Set;
 
 public class PrintActForm extends AbstractFormInterceptor {
 
+  final Map<String, String> tableHeaders = new HashMap<>();
   Map<String, Widget> companies = new HashMap<>();
   List<Widget> totals = new ArrayList<>();
 
@@ -82,6 +82,28 @@ public class PrintActForm extends AbstractFormInterceptor {
   @Override
   public FormInterceptor getInstance() {
     return new PrintActForm();
+  }
+
+  public PrintActForm() {
+    tableHeaders.put("Article", "Artikulas");
+    tableHeaders.put("Quantity", "Kiekis");
+    tableHeaders.put("Unit", "Mato vnt.");
+    tableHeaders.put("TimeUnit", "Laiko vnt.");
+    tableHeaders.put("ReturnedQty", "Grąžinta");
+    tableHeaders.put("RemainingQty", "Liko");
+    tableHeaders.put("DateFrom", "Data nuo");
+    tableHeaders.put("DateTo", "Data iki");
+    tableHeaders.put("Weight", "Svoris");
+    tableHeaders.put("Area", "Plotas");
+    tableHeaders.put("Tariff", "Tarifas");
+    tableHeaders.put("Price", "Kaina");
+    tableHeaders.put("Discount", "Nuol.");
+    tableHeaders.put("Amount", "Suma be PVM");
+    tableHeaders.put("Vat", "PVM");
+    tableHeaders.put("AmountTotal", "Suma");
+    tableHeaders.put("TradeActServicesAmountTotal", "Suma už min. term.");
+    tableHeaders.put("Name", "Nuomojama įranga");
+    tableHeaders.put("TradeActServicesName", "Teikiamos paslaugos/prekės");
   }
 
   private void renderItems(final String typeTable) {
@@ -213,7 +235,8 @@ public class PrintActForm extends AbstractFormInterceptor {
           if (!data.containsColumn(col)) {
             continue;
           }
-          table.setText(0, c, null, TradeUtils.STYLE_ITEMS + col);
+          table.setText(0, c, BeeUtils.nvl(tableHeaders.get(typeTable + col), tableHeaders.get(
+              col)), TradeUtils.STYLE_ITEMS + col);
           int r = 1;
           BigDecimal sum = BigDecimal.ZERO;
 
@@ -239,7 +262,7 @@ public class PrintActForm extends AbstractFormInterceptor {
         for (int i = 0; i < table.getRowCount(); i++) {
           table.getRowFormatter().addStyleName(i, i == 0 ? TradeUtils.STYLE_ITEMS_HEADER
               : (i < (table.getRowCount() - 1)
-              ? TradeUtils.STYLE_ITEMS_DATA : TradeUtils.STYLE_ITEMS_FOOTER));
+                  ? TradeUtils.STYLE_ITEMS_DATA : TradeUtils.STYLE_ITEMS_FOOTER));
         }
         items.getElement().setInnerHTML(table.getElement().getString());
       }

@@ -9,6 +9,8 @@
   name="&form;" caption="Perdavimo aktas" disabledActions="save" width="70" widthUnit="%" height="90" heightUnit="%">
   <FlowPanel style="padding: 10px; background-color: white; font-size:12px;" contentEditable="true"
     class="bee-form-TradeActPrint">
+    <!-- 
+    @DEPRECATED, media:print not supported :before of css rule 
     <css id="&form;">
       &hdr;Article:before {content: "Artikulas"}
       &hdr;Quantity:before {content: "Kiekis"}
@@ -30,6 +32,7 @@
       .bee-form-PrintTradeActSalePhysical .TradeActServices .bee-trade-itemsInfo-header .bee-trade-itemsInfo-Name:before {content: "Teikiamos paslaugos/prekės"}
       .bee-form-PrintTradeActSalePhysical .TradeActServices .bee-trade-itemsInfo-header .bee-trade-itemsInfo-AmountTotal:before {content: "Suma už min. term."}
     </css>
+    -->
     <FlowPanel>
       <Image url="images/logo.png" style="position: relative;" />
       <FlowPanel style="margin-top:-35px;">
@@ -47,7 +50,7 @@
     <FlowPanel style="margin-top:12px;">
       <Table style="width:100%; border:1px solid black;">
         <row>
-          <cell>
+          <cell style="vertical-align:top;">
             <Label html="Nuomotojas" style="font-weight: bold; margin-left:10px;" />
           </cell>
           <cell style="vertical-align:top;">
@@ -55,11 +58,11 @@
           </cell>
         </row>
         <row>
-          <cell>
-            <FlowPanel name="Supplier" style="vertical-align:top;margin-left:10px;" />
+          <cell style="vertical-align:top;">
+            <FlowPanel name="Supplier" style="margin-left:10px;" />
           </cell>
-          <cell>
-            <FlowPanel name="Company" style="vertical-align:top;" />
+          <cell style="vertical-align:top;">
+            <FlowPanel name="Company" />
           </cell>
         </row>
         <row>
