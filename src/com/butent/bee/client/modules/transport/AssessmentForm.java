@@ -509,14 +509,10 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
           gridRow.getValue(grid.getDataIndex(COL_SERVICE)));
       expenseRow.setValue(expensesView.getColumnIndex(COL_AMOUNT), expenseSum);
 
-      if (DataUtils.isId(formRow.getLong(pForm.getDataIndex(COL_CARGO_VALUE_CURRENCY)))) {
-        expenseRow.setValue(expensesView.getColumnIndex(COL_CURRENCY),
-            formRow.getValue(pForm.getDataIndex(COL_CARGO_VALUE_CURRENCY)));
-      } else {
-        expenseRow.setValue(expensesView.getColumnIndex(COL_CURRENCY),
-            gridRow.getValue(pForm.getDataIndex(COL_CURRENCY)));
-      }
+      Long currency = BeeUtils.nvl(formRow.getLong(pForm.getDataIndex(COL_CARGO_VALUE_CURRENCY)),
+          gridRow.getLong(grid.getDataIndex(COL_CURRENCY)));
 
+      expenseRow.setValue(expensesView.getColumnIndex(COL_CURRENCY), currency);
       expenseRow.setValue(expensesView.getColumnIndex(COL_DATE),
           gridRow.getValue(grid.getDataIndex(COL_DATE)));
       expenseRow.setValue(expensesView.getColumnIndex(COL_TRADE_VAT_PLUS),
@@ -917,12 +913,12 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
     }
 
     final double cargoValue = BeeUtils.unbox(row.getDouble(getDataIndex(COL_CARGO_VALUE)));
-    final Long currency = row.getLong(getDataIndex(COL_CARGO_VALUE_CURRENCY));
+    final Long valueCurrency = row.getLong(getDataIndex(COL_CARGO_VALUE_CURRENCY));
 
     Queries.getRowSet(TBL_CARGO_EXPENSES,
-        Lists.newArrayList(COL_AMOUNT, COL_CURRENCY, COL_SERVICE_PERCENT), Filter.and(
-            Filter.equals(COL_CARGO, cargoId), Filter.isNull(COL_PURCHASE),
-            Filter.notNull(COL_SERVICE_PERCENT)),
+        Lists.newArrayList(COL_AMOUNT, COL_CURRENCY, COL_SERVICE_PERCENT,
+            ALS_CARGO_INCOME_CURRENCY), Filter.and(Filter.equals(COL_CARGO, cargoId), Filter.isNull(
+                COL_PURCHASE), Filter.notNull(COL_SERVICE_PERCENT)),
         new RowSetCallback() {
           @Override
           public void onSuccess(BeeRowSet expenses) {
@@ -935,6 +931,11 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
                     Lists.newArrayList(COL_AMOUNT, COL_CURRENCY)));
 
             for (IsRow expense : expenses) {
+              Long incomeCurrency = expense.getLong(expenses.getColumnIndex(
+                  ALS_CARGO_INCOME_CURRENCY));
+
+              Long currency = BeeUtils.nvl(valueCurrency, incomeCurrency);
+
               double percent = BeeUtils.unbox(
                   expense.getDouble(expenses.getColumnIndex(COL_SERVICE_PERCENT)));
 
