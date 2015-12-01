@@ -841,6 +841,7 @@ public final class TransportConstants {
   public static final String ALS_CUSTOMER_TYPE_NAME = "CustomerTypeName";
 
   public static final String ALS_CARGO_DESCRIPTION = "CargoDescription";
+  public static final String ALS_CARGO_INCOME_CURRENCY = "IncomeCurrency";
 
   public static final String ALS_LOADING_DATE = "LoadingDate";
   public static final String ALS_LOADING_NUMBER = "LoadingNumber";
