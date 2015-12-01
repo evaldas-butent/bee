@@ -376,7 +376,7 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
 
     HeaderView formHeader = getFormHeader(gridView);
 
-    if (formHeader != null && kind != TradeActKind.RETURN && BeeKeeper.getUser().canCreateData(
+    if (formHeader != null && kind == TradeActKind.SALE && BeeKeeper.getUser().canCreateData(
         VIEW_SALES)) {
       formHeader.addCommandItem(commandSale);
     } else if (kind != TradeActKind.RETURN) {
