@@ -90,38 +90,45 @@ public final class GridFactory {
 
     public static GridOptions forCaptionAndFilter(String cap, Filter flt) {
       return (BeeUtils.isEmpty(cap) && flt == null)
-          ? null : new GridOptions(cap, null, flt, null, null);
+          ? null : new GridOptions(cap, null, flt, null, null, null);
     }
 
     public static GridOptions forCurrentUserFilter(String column) {
-      return BeeUtils.isEmpty(column) ? null : new GridOptions(null, null, null, column, null);
+      return BeeUtils.isEmpty(column)
+          ? null : new GridOptions(null, null, null, column, null, null);
     }
 
     public static GridOptions forFeed(Feed feed, String cap, Filter flt) {
       return (feed == null)
-          ? forCaptionAndFilter(cap, flt) : new GridOptions(cap, null, flt, null, feed);
+          ? forCaptionAndFilter(cap, flt) : new GridOptions(cap, null, flt, null, feed, null);
     }
 
     public static GridOptions forFilter(Filter flt) {
-      return (flt == null) ? null : new GridOptions(null, null, flt, null, null);
+      return (flt == null) ? null : new GridOptions(null, null, flt, null, null, null);
     }
 
     private final String caption;
 
     private final String filterDescription;
     private final Filter filter;
-
     private final String currentUserFilter;
 
     private final Feed feed;
 
+    private final Boolean paging;
+
     private GridOptions(String caption, String filterDescription, Filter filter,
-        String currentUserFilter, Feed feed) {
+        String currentUserFilter, Feed feed, Boolean paging) {
+
       this.caption = caption;
+
       this.filterDescription = filterDescription;
       this.filter = filter;
       this.currentUserFilter = currentUserFilter;
+
       this.feed = feed;
+
+      this.paging = paging;
     }
 
     @Override
@@ -131,6 +138,10 @@ public final class GridFactory {
 
     public Feed getFeed() {
       return feed;
+    }
+
+    public Boolean getPaging() {
+      return paging;
     }
 
     private Filter buildFilter(String viewName) {
@@ -318,14 +329,17 @@ public final class GridFactory {
     }
 
     String caption = attributes.get(UiConstants.ATTR_CAPTION);
+
     String filterDescription = attributes.get(UiConstants.ATTR_FILTER);
     String currentUserFilter = attributes.get(UiConstants.ATTR_CURRENT_USER_FILTER);
 
-    if (BeeUtils.allEmpty(caption, filterDescription, currentUserFilter)) {
+    Boolean paging = BeeUtils.toBooleanOrNull(attributes.get(UiConstants.ATTR_PAGING));
+
+    if (BeeUtils.allEmpty(caption, filterDescription, currentUserFilter) && paging == null) {
       return null;
     } else {
       return new GridOptions(Localized.maybeTranslate(caption), filterDescription, null,
-          currentUserFilter, null);
+          currentUserFilter, null, paging);
     }
   }
 

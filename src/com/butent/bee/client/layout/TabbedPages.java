@@ -77,6 +77,14 @@ public class TabbedPages extends Flow implements
       StyleUtils.occupy(w);
       VisibilityChangeEvent.hideAndFire(w);
 
+      if (w instanceof RequiresResize) {
+        String id = DomUtils.getId(w);
+
+        if (!BeeUtils.isEmpty(id)) {
+          pendingResize.add(id);
+        }
+      }
+
       super.insert(w, beforeIndex);
     }
 

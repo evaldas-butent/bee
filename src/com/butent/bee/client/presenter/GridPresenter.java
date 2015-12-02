@@ -586,6 +586,10 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
     }
   }
 
+  public boolean isReady() {
+    return ready;
+  }
+
   @Override
   public void onReady(ReadyEvent event) {
     setReady(true);
@@ -896,10 +900,6 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
   private Element getHeaderElement() {
     HeaderView header = getHeader();
     return (header == null) ? null : header.getElement();
-  }
-
-  private boolean isReady() {
-    return ready;
   }
 
   private void onMerge() {
