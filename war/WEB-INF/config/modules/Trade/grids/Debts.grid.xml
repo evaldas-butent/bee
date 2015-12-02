@@ -79,6 +79,6 @@
       </render>
 		</CalcColumn>
 		<DataColumn name="LastAppointment"  caption ="=calLastActionDate" label="=calLastActionDate"/>
-		<DataColumn name="LastestPayment" label="=trdNoPaymentPeriod" caption="=trdLatestSalePayment" visible="false" />
+		<DataColumn name="LastestPayment" label="=trdNoPaymentPeriod" format="date_time_short" caption="=trdLatestSalePayment" visible="false" />
 	</g:columns>
 </g:Grid>
