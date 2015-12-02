@@ -73,7 +73,7 @@
         <AggregateColumn name="Created" alias="LastAppointment" aggregate="MAX" />
       </ExternalJoin>
       
-      <ExternalJoin name="Customer" source="Sales" joinType="LEFT">
+      <ExternalJoin name="Customer" source="ERPSales" joinType="LEFT">
 	      <AggregateColumn name="PaymentTime" alias="LastestPayment" aggregate="MAX" 
 	      label="=trdLatestSalePayment"/>
       </ExternalJoin>
