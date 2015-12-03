@@ -251,6 +251,7 @@ public final class ClassifierConstants {
   public static final String COL_DISCOUNT_PERCENT = "Percent";
   public static final String COL_DISCOUNT_PRICE = "Price";
   public static final String COL_DISCOUNT_CURRENCY = "Currency";
+  public static final String COL_EXTERNAL_STOCK = "ExternalStock";
 
   public static final String ALS_COMPANY_NAME = "CompanyName";
   public static final String ALS_COMPANY_CODE = "CompanyCode";

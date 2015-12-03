@@ -224,6 +224,7 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
   private final Map<Long, ItemPrice> selectedPrices = new HashMap<>();
   private Map<Long, Double> remainders = new HashMap<>();
   private final Flow itemPanel = new Flow(STYLE_ITEM_PANEL);
+  private final List<String> visibleTableCols = new ArrayList<>();
   private Notification notification = new Notification();
   private NumberFormat priceFormat;
 
@@ -278,6 +279,10 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
     return Localized.getConstants().goods();
   }
 
+  public List<String> getVisibleTableCols() {
+    return visibleTableCols;
+  }
+
   protected void renderItems(Map<Long, Double> quantities, Map<Long, String> warehouses,
       final Flow panel, final BeeRowSet itemList) {
     List<Long> warehouseIds = new ArrayList<>();
@@ -288,22 +293,30 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
     panel.clear();
 
     HtmlTable table = new HtmlTable(STYLE_ITEM_TABLE);
+    visibleTableCols.clear();
 
     int r = 0;
     int c = 0;
 
     String pfx;
 
+    visibleTableCols.add(DataUtils.ID_TAG);
     table.setText(r, c++, Localized.getConstants().captionId(),
         STYLE_ID_PREFIX + STYLE_HEADER_CELL_SUFFIX);
 
+    visibleTableCols.add(ALS_ITEM_TYPE_NAME);
     table.setText(r, c++, Localized.getConstants().type(),
         STYLE_TYPE_PREFIX + STYLE_HEADER_CELL_SUFFIX);
+
+    visibleTableCols.add(ALS_ITEM_GROUP_NAME);
     table.setText(r, c++, Localized.getConstants().group(),
         STYLE_GROUP_PREFIX + STYLE_HEADER_CELL_SUFFIX);
 
+    visibleTableCols.add(ALS_ITEM_NAME);
     table.setText(r, c++, Localized.getConstants().name(),
         STYLE_NAME_PREFIX + STYLE_HEADER_CELL_SUFFIX);
+
+    visibleTableCols.add(COL_ITEM_ARTICLE);
     table.setText(r, c++, Localized.getConstants().article(),
         STYLE_ARTICLE_PREFIX + STYLE_HEADER_CELL_SUFFIX);
 
@@ -311,25 +324,33 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
       table.setText(r, c, ip.getCaption(),
           (ip == itemPrice) ? STYLE_SELECTED_PRICE_HEADER_CELL : STYLE_PRICE_HEADER_CELL);
 
+      visibleTableCols.add(ip.toString());
       DomUtils.setDataColumn(table.getCellFormatter().getElement(r, c), ip.ordinal());
       c++;
     }
 
     for (Long w : warehouseIds) {
       pfx = isFrom(w) ? STYLE_FROM_PREFIX : STYLE_STOCK_PREFIX;
+      visibleTableCols.add(COL_WAREHOUSE + "_" + w);
       table.setText(r, c++, warehouses.get(w), pfx + STYLE_HEADER_CELL_SUFFIX);
     }
 
     if (isOrder) {
+      visibleTableCols.add(ALS_WAREHOUSE_CODE);
       table.setText(r, c++, itemList.getRow(0).getString(
           DataUtils.getColumnIndex(ALS_WAREHOUSE_CODE, itemList.getColumns())),
           STYLE_FROM_PREFIX + STYLE_HEADER_CELL_SUFFIX);
+
+      visibleTableCols.add(COL_WAREHOUSE_REMAINDER);
       table.setText(r, c++, Localized.getConstants().ordFreeRemainder(),
           STYLE_FREE_PREFIX + STYLE_HEADER_CELL_SUFFIX);
+
+      visibleTableCols.add(COL_WAREHOUSE_REMAINDER + "1");
       table.setText(r, c++, Localized.getConstants().ordResRemainder(),
           STYLE_RESERVED_PREFIX + STYLE_HEADER_CELL_SUFFIX);
     }
 
+    visibleTableCols.add("QTY");
     table.setText(r, c++, Localized.getConstants().quantity(),
         STYLE_QTY_PREFIX + STYLE_HEADER_CELL_SUFFIX);
 

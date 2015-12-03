@@ -10,14 +10,18 @@ import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.widget.InputDate;
 import com.butent.bee.client.widget.InputNumber;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.data.BeeRow;
+import com.butent.bee.shared.css.values.Display;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
+import com.butent.bee.shared.modules.trade.TradeConstants;
+import com.butent.bee.shared.modules.trade.acts.TradeActConstants;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
+import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -63,20 +67,38 @@ class TradeActServicePicker extends TradeActItemPicker {
     int r = 0;
     int c = table.getCellCount(r);
 
+    getVisibleTableCols().add(TradeActConstants.COL_TA_SERVICE_FROM);
     table.setText(r, c++, Localized.getConstants().dateFrom());
+
+    getVisibleTableCols().add(TradeActConstants.COL_TA_SERVICE_TO);
     table.setText(r, c++, Localized.getConstants().dateTo());
+    getVisibleTableCols().add(TradeActConstants.COL_TA_SERVICE_TARIFF);
     table.setText(r, c++, Localized.getConstants().taTariff());
+
+    getVisibleTableCols().add(TradeConstants.COL_TRADE_DISCOUNT);
     table.setText(r, c++, Localized.getConstants().discount());
 
-    r++;
-    for (BeeRow item : itemList) {
-      c = table.getCellCount(r);
+    StyleUtils.setDisplay(table.getCellFormatter().getElement(r, getVisibleTableCols().indexOf(
+        ClassifierConstants.COL_EXTERNAL_STOCK)), Display.NONE);
 
-      table.setWidget(r, c++, renderDate(datesFrom, item.getId()));
-      table.setWidget(r, c++, renderDate(datesTo, item.getId()));
-      table.setWidget(r, c++, renderNumber(tariffs, item.getId()));
-      table.setWidget(r, c++, renderNumber(discounts, item.getId()));
-      r++;
+    r++;
+    for (int i = r; i < table.getRowCount(); i++) {
+      c = table.getCellCount(i);
+
+      StyleUtils.setDisplay(table.getCellFormatter().getElement(i, getVisibleTableCols().indexOf(
+          ClassifierConstants.COL_EXTERNAL_STOCK)), Display.NONE);
+
+      Long itemId = BeeUtils.toLongOrNull(table.getCellFormatter().getElement(i,
+          getVisibleTableCols().indexOf(DataUtils.ID_TAG)).getInnerText());
+
+      if (!DataUtils.isId(itemId)) {
+        continue;
+      }
+
+      table.setWidget(i, c++, renderDate(datesFrom, itemId));
+      table.setWidget(i, c++, renderDate(datesTo, itemId));
+      table.setWidget(i, c++, renderNumber(tariffs, itemId));
+      table.setWidget(i, c++, renderNumber(discounts, itemId));
     }
   }
 
