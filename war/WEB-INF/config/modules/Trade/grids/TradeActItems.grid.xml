@@ -19,6 +19,7 @@
   <xi:include href="columns/TradeActQuantity.columns.xml" />
 
   <g:columns>
+    <DataColumn name="ExternalStock" />
     <PropColumn name="returned_qty" type="double" label="=taQuantityReturned" visible="true">
       <style>
         <bodyStyle><ui:inline>color: red;</ui:inline></bodyStyle>
