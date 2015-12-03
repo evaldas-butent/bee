@@ -99,6 +99,7 @@ import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.view.search.AbstractFilterSupplier;
 import com.butent.bee.client.view.search.FilterSupplierFactory;
+import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -124,6 +125,7 @@ import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
+import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogLevel;
@@ -194,6 +196,12 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
   private static final BeeLogger logger = LogUtils.getLogger(GridImpl.class);
 
   private static final String STYLE_NAME = BeeConst.CSS_CLASS_PREFIX + "GridView";
+  private static final String STYLE_SPINNER = BeeConst.CSS_CLASS_PREFIX + "Grid-Spinner";
+
+  private static Widget createSpinner() {
+    FaLabel widget = new FaLabel(FontAwesome.SPINNER, STYLE_SPINNER);
+    return widget;
+  }
 
   private static boolean isColumnReadOnly(String viewName, String source,
       ColumnDescription columnDescription) {
@@ -831,6 +839,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     initOrder(order);
 
     add(getGrid());
+    add(createSpinner());
     add(getNotification());
 
     setEditMode(BeeUtils.unbox(gridDescription.getEditMode()));

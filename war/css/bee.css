@@ -3787,3 +3787,19 @@ textarea,
   cursor: pointer;
   color: #888;
 }
+
+.bee-Grid-Spinner {
+  display: none;
+}
+.bee-loading .bee-CellGrid {
+  opacity: 0.25;
+}
+.bee-loading .bee-Grid-Spinner {
+  display: block;
+  position: absolute;
+  left: 45%;
+  top: 45%;
+  font-size: xx-large;
+  animation: rotate 1s linear infinite;
+  -webkit-animation: rotate 1s linear infinite;
+}

@@ -13,6 +13,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.NotificationListener;
+import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -25,7 +26,6 @@ import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
-import com.butent.bee.shared.ui.HandlesActions;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
@@ -58,6 +58,12 @@ public class AsyncProvider extends Provider {
     }
 
     @Override
+    public void onFailure(String... reason) {
+      super.onFailure(reason);
+      onStateChange(State.ERROR);
+    }
+
+    @Override
     public void onSuccess(BeeRowSet rowSet) {
       int id = getRpcId();
       if (id > 0) {
@@ -73,6 +79,7 @@ public class AsyncProvider extends Provider {
       if (getPageStart() != getDisplayOffset() || getPageSize() != getDisplayLimit()) {
         logger.warning("range changed:", getDisplayOffset(), getDisplayLimit(),
             getPageStart(), getPageSize());
+        onStateChange(State.EXPIRED);
         return;
       }
       updateDisplay(rowSet, getQueryOffset(), preserveActiveRow());
@@ -143,6 +150,8 @@ public class AsyncProvider extends Provider {
 
     @Override
     public void run() {
+      onStateChange(State.LOADING);
+
       int rpcId = Queries.getRowSet(getViewName(), null, queryFilter, queryOrder,
           queryOffset, queryLimit, caching, getQueryOptions(), callback);
 
@@ -228,22 +237,13 @@ public class AsyncProvider extends Provider {
 
   private boolean prefetchPending;
 
-  public AsyncProvider(HasDataTable display, HandlesActions actionHandler,
-      NotificationListener notificationListener,
-      String viewName, List<BeeColumn> columns, CachingPolicy cachingPolicy) {
-
-    this(display, actionHandler, notificationListener,
-        viewName, columns, null, null,
-        null, cachingPolicy, null, null);
-  }
-
-  public AsyncProvider(HasDataTable display, HandlesActions actionHandler,
+  public AsyncProvider(HasDataTable display, HasDataProvider presenter,
       NotificationListener notificationListener,
       String viewName, List<BeeColumn> columns, String idColumnName, String versionColumnName,
       Filter immutableFilter, CachingPolicy cachingPolicy, Map<String, Filter> parentFilters,
       Filter userFilter) {
 
-    super(display, actionHandler, notificationListener,
+    super(display, presenter, notificationListener,
         viewName, columns, idColumnName, versionColumnName,
         immutableFilter, parentFilters, userFilter);
 
@@ -377,7 +377,15 @@ public class AsyncProvider extends Provider {
     Global.getCache().remove(getViewName());
 
     if (hasPaging()) {
+      onStateChange(State.PENDING);
+
       Queries.getRowCount(getViewName(), getFilter(), new Queries.IntCallback() {
+        @Override
+        public void onFailure(String... reason) {
+          super.onFailure(reason);
+          onStateChange(State.ERROR);
+        }
+
         @Override
         public void onSuccess(Integer result) {
           onRowCount(result, preserveActiveRow);
@@ -396,7 +404,19 @@ public class AsyncProvider extends Provider {
     resetRequests();
     Filter flt = getQueryFilter(newFilter);
 
+    onStateChange(State.PENDING);
+
     Queries.getRowCount(getViewName(), flt, new Queries.IntCallback() {
+      @Override
+      public void onFailure(String... reason) {
+        super.onFailure(reason);
+        onStateChange(State.ERROR);
+
+        if (callback != null) {
+          callback.accept(false);
+        }
+      }
+
       @Override
       public void onSuccess(Integer result) {
         if (newFilter == null || BeeUtils.isPositive(result)) {
@@ -409,6 +429,7 @@ public class AsyncProvider extends Provider {
 
         } else {
           rejectFilter(newFilter, notify);
+          onStateChange(State.CANCELED);
 
           if (callback != null) {
             callback.accept(false);
@@ -563,9 +584,12 @@ public class AsyncProvider extends Provider {
     if (BeeUtils.isPositive(rowCount)) {
       getDisplay().setRowCount(rowCount, true);
       onRequest(preserveActiveRow);
+
     } else {
       getDisplay().setRowCount(0, true);
       getDisplay().setRowData(null, true);
+
+      onStateChange(State.LOADED);
     }
   }
 
@@ -710,5 +734,7 @@ public class AsyncProvider extends Provider {
       getDisplay().preserveActiveRow(rows);
     }
     getDisplay().setRowData(rows, true);
+
+    onStateChange(State.LOADED);
   }
 }
