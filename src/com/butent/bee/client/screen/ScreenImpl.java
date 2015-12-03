@@ -898,8 +898,12 @@ public class ScreenImpl implements Screen {
     if (commandContainer != null) {
       panel.add(commandContainer);
 
-      commandContainer.add(onlineEmail());
-      commandContainer.add(onlineUsers());
+      if (Settings.showCommand("mail")) {
+        commandContainer.add(onlineEmail());
+      }
+      if (Settings.showCommand("users")) {
+        commandContainer.add(onlineUsers());
+      }
 
       setCommandPanel(commandContainer);
     }
@@ -1465,7 +1469,8 @@ public class ScreenImpl implements Screen {
   }
 
   protected void extendCommandPanel() {
-    if (BeeKeeper.getUser().isWidgetVisible(RegulatedWidget.COMPANY_STRUCTURE)
+    if (Settings.showCommand("company_structure")
+        && BeeKeeper.getUser().isWidgetVisible(RegulatedWidget.COMPANY_STRUCTURE)
         && BeeKeeper.getUser().isDataVisible(AdministrationConstants.VIEW_DEPARTMENTS)) {
 
       FaLabel command = new FaLabel(FontAwesome.SITEMAP,

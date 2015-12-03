@@ -1,6 +1,6 @@
 var BeeSettings = {
   "appName": "Trade Acts",
-  "logoImage": "images/logo.png",
+  "logoImage": "images/logo_white.png",
   "logoOpen": "http://www.butent.com",
   "logCapacity": 2000,
   "showLogout": true,

@@ -178,7 +178,7 @@ public enum UserInterface implements HasCaption {
 
     @Override
     public List<String> getScripts() {
-      return Lists.newArrayList("settings");
+      return Lists.newArrayList("trsettings");
     }
 
     @Override
