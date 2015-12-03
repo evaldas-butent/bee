@@ -214,8 +214,8 @@
   max-width: 39px;
   max-height: 39px;
   border: 2px solid #fafafa;
-  margin-right: 40px;
-  border-radius: 50px;
+  margin-right: 2em;
+  border-radius: 50%;
 }
 .bee-UserSignature {
   color: black;
@@ -3776,5 +3776,14 @@ textarea,
 }
 
 .bee-ItemPricePicker-disabled select {
-    visibility: hidden;
+  visibility: hidden;
+}
+
+.bee-LogoutContainer {
+  margin-left: 1em;
+}
+.bee-Logout {
+  font-size: 18px;
+  cursor: pointer;
+  color: #888;
 }

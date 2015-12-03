@@ -1,5 +1,6 @@
 package com.butent.bee.client.screen;
 
+import com.google.common.collect.Lists;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style.Cursor;
@@ -20,6 +21,8 @@ import com.butent.bee.client.cli.Shell;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
+import com.butent.bee.client.dialog.ConfirmationCallback;
+import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dialog.Notification;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dialog.Popup.Animation;
@@ -35,6 +38,7 @@ import com.butent.bee.client.layout.CustomComplex;
 import com.butent.bee.client.layout.Direction;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Horizontal;
+import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.logging.ClientLogManager;
 import com.butent.bee.client.menu.MenuCommand;
@@ -58,6 +62,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasHtml;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.css.CssUnit;
+import com.butent.bee.shared.css.values.FontSize;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.font.FontAwesome;
@@ -809,6 +814,34 @@ public class ScreenImpl implements Screen {
       userContainer.add(photoContainer);
       setUserPhotoContainer(photoContainer);
     }
+
+    if (Settings.showLogout()) {
+      Simple exitContainer = new Simple();
+      exitContainer.addStyleName(BeeConst.CSS_CLASS_PREFIX + "LogoutContainer");
+
+      FaLabel exit = new FaLabel(FontAwesome.SIGN_OUT);
+      exit.addStyleName(BeeConst.CSS_CLASS_PREFIX + "Logout");
+      exit.setTitle(Localized.getConstants().signOut());
+
+      exit.addClickHandler(new ClickHandler() {
+        @Override
+        public void onClick(ClickEvent event) {
+          Global.getMsgBoxen().confirm(Localized.getMessages().endSession(Settings.getAppName()),
+              Icon.QUESTION, Lists.newArrayList(Localized.getConstants().questionLogout()),
+              Localized.getConstants().yes(), Localized.getConstants().no(),
+              new ConfirmationCallback() {
+                @Override
+                public void onConfirm() {
+                  Bee.exit();
+                }
+              }, null, StyleUtils.className(FontSize.MEDIUM), null, null);
+        }
+      });
+
+      exitContainer.setWidget(exit);
+      userContainer.add(exitContainer);
+    }
+
     return userContainer;
   }
 
