@@ -184,7 +184,7 @@ public class TradeActBean implements HasTimerService {
         break;
 
       case SVC_SYNCHRONIZE_ERP_DATA:
-        syncERPData(null, true);
+        syncERPData();
         response = ResponseObject.info(usr.getLocalizableConstants().imported());
         break;
 
@@ -232,7 +232,8 @@ public class TradeActBean implements HasTimerService {
             TBL_TRADE_STATUSES, COL_STATUS_NAME),
         BeeParameter
             .createRelation(module, PRM_APPROVED_ACT_STATUS, TBL_TRADE_STATUSES, COL_STATUS_NAME),
-        BeeParameter.createText(module, PRM_SYNC_ERP_DATA));
+        BeeParameter.createText(module, PRM_SYNC_ERP_DATA),
+        BeeParameter.createNumber(module, PRM_SYNC_ERP_STOCK));
   }
 
   @Override
@@ -242,6 +243,7 @@ public class TradeActBean implements HasTimerService {
 
   public void init() {
     cb.createCalendarTimer(this.getClass(), PRM_SYNC_ERP_DATA);
+    cb.createIntervalTimer(this.getClass(), PRM_SYNC_ERP_STOCK);
 
     sys.registerDataEventHandler(new DataEventHandler() {
 
@@ -3275,17 +3277,19 @@ public class TradeActBean implements HasTimerService {
   }
 
   @Timeout
-  private void syncERPData(Timer timer) {
-    syncERPData(timer, false);
-  }
-
-  private void syncERPData(Timer timer, boolean force) {
-    if (!force) {
-      if (!cb.isParameterTimer(timer, PRM_SYNC_ERP_DATA)) {
-        return;
-      }
+  private void syncERP(Timer timer) {
+    if (cb.isParameterTimer(timer, PRM_SYNC_ERP_DATA)) {
+      logger.info("Starting: syncERPData");
+      syncERPData();
     }
 
+    if (cb.isParameterTimer(timer, PRM_SYNC_ERP_STOCK)) {
+      logger.info("Starting: syncERPStock");
+      syncERPStock();
+    }
+  }
+
+  private void syncERPData() {
     String remoteAddress = prm.getText(PRM_ERP_ADDRESS);
     String remoteLogin = prm.getText(PRM_ERP_LOGIN);
     String remotePassword = prm.getText(PRM_ERP_PASSWORD);
@@ -3518,7 +3522,7 @@ public class TradeActBean implements HasTimerService {
       if (!BeeUtils.isEmpty(missingItems)) {
         try {
           rs = ButentWS.connect(remoteAddress, remoteLogin, remotePassword)
-              .getSQLData("SELECT grupe AS gr, preke AS pr, pavad AS pv, mato_vien  AS mv,"
+              .getSQLData("SELECT grupe AS gr, preke AS pr, pavad AS pv, mato_vien AS mv,"
                   + " likutis AS lk FROM prekes WHERE preke IN(" + BeeUtils.joinItems(missingItems)
                   + ")", new String[] {"gr", "pr", "pv", "mv", "lk"});
 
@@ -3746,6 +3750,51 @@ public class TradeActBean implements HasTimerService {
     } catch (BeeException e) {
       logger.error(e);
       return;
+    }
+  }
+
+  private void syncERPStock() {
+    // Item Stocks
+
+    String remoteAddress = prm.getText(PRM_ERP_ADDRESS);
+    String remoteLogin = prm.getText(PRM_ERP_LOGIN);
+    String remotePassword = prm.getText(PRM_ERP_PASSWORD);
+
+    SimpleRowSet rs = null;
+
+    Map<String, Long> items = new HashMap<>();
+
+    for (SimpleRow row : qs.getData(new SqlSelect()
+        .addFields(TBL_ITEMS, COL_ITEM_EXTERNAL_CODE)
+        .addField(TBL_ITEMS, sys.getIdName(TBL_ITEMS), COL_ITEM)
+        .addFrom(TBL_ITEMS)
+        .setWhere(SqlUtils.notNull(TBL_ITEMS, COL_ITEM_EXTERNAL_CODE)))) {
+
+      items.put(row.getValue(COL_ITEM_EXTERNAL_CODE), row.getLong(COL_ITEM));
+    }
+
+    try {
+      rs = ButentWS.connect(remoteAddress, remoteLogin, remotePassword)
+          .getSQLData("SELECT preke AS pr, sum(kiekis) AS lk"
+              + " FROM likuciai GROUP BY preke HAVING lk > 0",
+              new String[] {"pr", "lk"});
+    } catch (BeeException e) {
+      logger.error(e);
+      return;
+    }
+    if (rs != null) {
+      qs.updateData(new SqlUpdate(TBL_ITEMS)
+          .addConstant("ExternalStock", null));
+
+      for (Entry<String, Long> entry : items.entrySet()) {
+        String stock = rs.getValueByKey("pr", entry.getKey(), "lk");
+
+        if (!BeeUtils.isEmpty(stock)) {
+          qs.updateData(new SqlUpdate(TBL_ITEMS)
+              .addConstant("ExternalStock", stock)
+              .setWhere(sys.idEquals(TBL_ITEMS, entry.getValue())));
+        }
+      }
     }
   }
 
