@@ -5,7 +5,7 @@ import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.event.shared.HasHandlers;
 
 import static com.butent.bee.shared.modules.documents.DocumentConstants.*;
-import static com.butent.bee.shared.modules.trade.TradeConstants.*;
+import static com.butent.bee.shared.modules.trade.TradeConstants.VAR_TOTAL;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
@@ -179,9 +179,9 @@ public final class DocumentsHandler {
     FormFactory.registerFormInterceptor("NewDocument", new DocumentBuilder());
 
     TradeUtils.registerTotalRenderer(VIEW_DOCUMENT_ITEMS, VAR_TOTAL);
-    BeeKeeper.getBus().registerRowTransformHandler(new RowTransformHandler(), false);
+    BeeKeeper.getBus().registerRowTransformHandler(new RowTransformHandler());
 
-     MenuService.DOCUMENTS.setHandler(new MenuHandler() {
+    MenuService.DOCUMENTS.setHandler(new MenuHandler() {
 
       @Override
       public void onSelection(String parameters) {
@@ -319,11 +319,10 @@ public final class DocumentsHandler {
             @Override
             public void onSuccess(Integer result) {
               if (result == 0) {
-                Queries.insert(AdministrationConstants.VIEW_RELATIONS, Data.getColumns(
-                    AdministrationConstants.VIEW_RELATIONS,
-                    Lists.newArrayList(COL_DOCUMENT_COMPANY,
-                        COL_DOCUMENT)), Lists.newArrayList(company, BeeUtils
-                            .toString(rowId)));
+                Queries.insert(AdministrationConstants.VIEW_RELATIONS,
+                    Data.getColumns(AdministrationConstants.VIEW_RELATIONS,
+                        Lists.newArrayList(COL_DOCUMENT_COMPANY, COL_DOCUMENT)),
+                    Lists.newArrayList(company, BeeUtils.toString(rowId)));
               }
             }
           });
@@ -346,11 +345,11 @@ public final class DocumentsHandler {
       public void onSuccess(BeeRow result) {
         Queries.update(VIEW_DOCUMENTS, row.getId(), COL_DOCUMENT_DATA,
             Value.getValue(result.getId()), new IntCallback() {
-          @Override
-          public void onSuccess(Integer updResult) {
-            DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_DOCUMENTS);
-          }
-        });
+              @Override
+              public void onSuccess(Integer updResult) {
+                DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_DOCUMENTS);
+              }
+            });
       }
     });
 

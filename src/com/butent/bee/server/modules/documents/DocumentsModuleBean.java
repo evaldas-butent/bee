@@ -132,9 +132,7 @@ public class DocumentsModuleBean implements BeeModule {
             COL_EDITOR_TEMPLATE_NAME),
         BeeParameter.createRelation(module, PRM_PRINT_FOOTER, true, TBL_EDITOR_TEMPLATES,
             COL_EDITOR_TEMPLATE_NAME),
-        BeeParameter.createText(module, PRM_PRINT_MARGINS, true, "1em 2em 2em 1em"),
-        BeeParameter.createText(module, PRM_DOCUMENT_RECEIVED_PREFIX, false, null),
-        BeeParameter.createText(module, PRM_DOCUMENT_SENT_PREFIX, false, null));
+        BeeParameter.createText(module, PRM_PRINT_MARGINS, true, "1em 2em 2em 1em"));
   }
 
   @Override
@@ -282,51 +280,6 @@ public class DocumentsModuleBean implements BeeModule {
                     null)));
               }
             }
-          }
-        }
-      }
-
-      @Subscribe
-      @AllowConcurrentEvents
-      public void fillDocumentSentReceivedNumber(DataEvent.ViewModifyEvent event) {
-        if (BeeUtils.same(event.getTargetName(), TBL_DOCUMENTS) && event.isBefore()) {
-
-          final IsRow row;
-          final List<BeeColumn> columns;
-
-          if (event instanceof ViewInsertEvent) {
-            row = ((ViewInsertEvent) event).getRow();
-            columns = ((ViewInsertEvent) event).getColumns();
-          } else if (event instanceof DataEvent.ViewUpdateEvent) {
-            row = ((DataEvent.ViewUpdateEvent) event).getRow();
-            columns = ((DataEvent.ViewUpdateEvent) event).getColumns();
-          } else {
-            return;
-          }
-
-          if (!DataUtils.contains(columns, COL_DOCUMENT_SENT_NUMBER) && DataUtils
-              .contains(columns, COL_DOCUMENT_SENT)) {
-            String sendPrefix =
-                BeeUtils.nvl(prm.getText(PRM_DOCUMENT_SENT_PREFIX), BeeConst.STRING_EMPTY);
-
-            /** Write values in derived references of instances */
-            columns.add(sys.getView(VIEW_DOCUMENTS).getBeeColumn(COL_DOCUMENT_SENT_NUMBER));
-            row.addValue(new TextValue(
-                qs.getNextNumber(event.getTargetName(), COL_DOCUMENT_SENT_NUMBER, sendPrefix,
-                    null)));
-          }
-
-          if (!DataUtils.contains(columns, COL_DOCUMENT_RECEIVED_NUMBER) && DataUtils
-              .contains(columns, COL_DOCUMENT_RECEIVED)) {
-
-            String recPrefix =
-                BeeUtils.nvl(prm.getText(PRM_DOCUMENT_RECEIVED_PREFIX), BeeConst.STRING_EMPTY);
-
-            /** Write values in derived references of instances */
-            columns.add(sys.getView(VIEW_DOCUMENTS).getBeeColumn(COL_DOCUMENT_RECEIVED_NUMBER));
-            row.addValue(new TextValue(qs.getNextNumber(event.getTargetName(),
-                COL_DOCUMENT_RECEIVED_NUMBER, recPrefix,
-                null)));
           }
         }
       }
