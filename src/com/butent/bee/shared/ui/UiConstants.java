@@ -59,6 +59,7 @@ public final class UiConstants {
 
   public static final String ATTR_GRID_NAME = "gridName";
   public static final String ATTR_REL_COLUMN = "relColumn";
+  public static final String ATTR_PAGING = "paging";
 
   public static final String TAG_ROW = "row";
   public static final String TAG_COL = "col";

@@ -154,6 +154,14 @@ public final class Settings {
     return getBoolean("minimizeNumberOfConcurrentRequests");
   }
 
+  public static boolean showCommand(String command) {
+    return BeeUtils.containsSame(getList("showCommands"), command);
+  }
+
+  public static boolean showLogout() {
+    return getBoolean("showLogout");
+  }
+
   public static boolean showUserPhoto() {
     return getBoolean("showUserPhoto");
   }

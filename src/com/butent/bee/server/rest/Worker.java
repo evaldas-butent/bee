@@ -13,7 +13,6 @@ import com.butent.bee.server.rest.annotations.Trusted;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
-import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -31,7 +30,6 @@ import javax.ws.rs.NotFoundException;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 
@@ -85,8 +83,8 @@ public class Worker {
 
   @GET
   @Path("users")
-  @Produces(MediaType.APPLICATION_JSON)
-  public Response getUsers(@HeaderParam(LAST_SYNC_TIME) Long lastSynced) {
+  @Produces(RestResponse.JSON_TYPE)
+  public RestResponse getUsers(@HeaderParam(RestResponse.LAST_SYNC_TIME) Long lastSynced) {
     long time = System.currentTimeMillis();
 
     IsCondition clause = SqlUtils.or(
@@ -118,11 +116,7 @@ public class Worker {
       }
       data.add(row);
     }
-    Response response = Response.ok(data,
-        MediaType.APPLICATION_JSON_TYPE.withCharset(BeeConst.CHARSET_UTF8)).build();
-    response.getHeaders().add(LAST_SYNC_TIME, time);
-
-    return response;
+    return RestResponse.ok(data).setLastSync(time);
   }
 
   @GET

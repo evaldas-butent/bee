@@ -15,7 +15,7 @@
     <Label for="Company" visible="true" style="&lbl;" />
     <cell colSpan="3">
       <DataSelector source="Company" style="width: 100%;" choiceColumns="Name TypeName"
-        renderColumns="CompanyName CompanyTypeName" />
+            renderColumns="CompanyName CompanyTypeName" />
     </cell>
   </row>
 
@@ -57,7 +57,7 @@
   <row>
     <Label for="ReceivedNumber" class="bee-hasDefaults" style="&lbl;" />
     <InputText source="ReceivedNumber" />
-    <Label for="SentNumber" class="bee-hasDefaults" style="&lbl;" />
+    <Label for="SentNumber" class="bee-hasDefaults" style="&lbl;"/>
     <InputText source="SentNumber" />
   </row>
 
@@ -82,4 +82,3 @@
     </cell>
   </row>
 </Table>
-

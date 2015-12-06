@@ -41,6 +41,7 @@
       <xs:enumeration value="task_list" />
       <xs:enumeration value="task_reports" />
       <xs:enumeration value="discuss_list" />
+      <xs:enumeration value="documents" />
       <xs:enumeration value="open_mail" />
       <xs:enumeration value="ensure_categories_and_open_grid" />
       <xs:enumeration value="edit_terms_of_delivery" />

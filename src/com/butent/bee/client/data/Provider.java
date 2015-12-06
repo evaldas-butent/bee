@@ -8,10 +8,12 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.logical.DataRequestEvent;
 import com.butent.bee.client.event.logical.SortEvent;
+import com.butent.bee.client.screen.HandlesStateChange;
 import com.butent.bee.client.view.search.FilterConsumer;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.Service;
+import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.HasViewName;
@@ -43,7 +45,7 @@ import java.util.Set;
  */
 
 public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvents, HasViewName,
-    DataRequestEvent.Handler, FilterConsumer, HandlesActions {
+    DataRequestEvent.Handler, FilterConsumer, HandlesActions, HandlesStateChange {
 
   private static final String DEFAULT_PARENT_FILTER_KEY = "f1";
 
@@ -52,7 +54,7 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
   }
 
   private HasDataTable display;
-  private final HandlesActions actionHandler;
+  private final HasDataProvider presenter;
   private final NotificationListener notificationListener;
 
   private final String viewName;
@@ -72,13 +74,13 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
 
   private final Set<RightsState> rightsStates = new HashSet<>();
 
-  protected Provider(HasDataTable display, HandlesActions actionHandler,
+  protected Provider(HasDataTable display, HasDataProvider presenter,
       NotificationListener notificationListener,
       String viewName, List<BeeColumn> columns, String idColumnName, String versionColumnName,
       Filter immutableFilter, Map<String, Filter> parentFilters, Filter userFilter) {
 
     this.display = display;
-    this.actionHandler = actionHandler;
+    this.presenter = presenter;
     this.notificationListener = notificationListener;
 
     this.viewName = viewName;
@@ -176,8 +178,8 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
 
   @Override
   public void handleAction(Action action) {
-    if (actionHandler != null) {
-      actionHandler.handleAction(action);
+    if (presenter != null) {
+      presenter.handleAction(action);
     }
   }
 
@@ -213,6 +215,13 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
   public void onRowUpdate(RowUpdateEvent event) {
     if (BeeUtils.same(getViewName(), event.getViewName())) {
       getDisplay().onRowUpdate(event);
+    }
+  }
+
+  @Override
+  public void onStateChange(State state) {
+    if (presenter != null) {
+      presenter.onStateChange(state);
     }
   }
 

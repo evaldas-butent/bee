@@ -135,13 +135,16 @@ public class PayrollModuleBean implements BeeModule {
   }
 
   public ResponseObject getEmployeeEarnings(String companyCode, Integer tabNumber,
-      DateRange range) {
+      Integer year, Integer month) {
 
     if (BeeUtils.isEmpty(companyCode)) {
       return ResponseObject.error("company code not specified");
     }
-    if (range == null) {
-      return ResponseObject.error("date range not specified");
+    if (!TimeUtils.isYear(year)) {
+      return ResponseObject.error("year not specified");
+    }
+    if (!TimeUtils.isMonth(month)) {
+      return ResponseObject.error("month not specified");
     }
 
     ResponseObject ecr = getEmployeeCondition(companyCode, tabNumber);
@@ -149,7 +152,52 @@ public class PayrollModuleBean implements BeeModule {
       return ecr;
     }
 
-    return null;
+    if (!(ecr.getResponse() instanceof IsCondition)) {
+      return ResponseObject.error("cannot filter employees", companyCode, tabNumber);
+    }
+
+    IsCondition employeeCondition = (IsCondition) ecr.getResponse();
+
+    SqlSelect query = new SqlSelect()
+        .addFields(TBL_EMPLOYEES, COL_TAB_NUMBER)
+        .addFields(TBL_LOCATIONS, COL_LOCATION_NAME)
+        .addFields(TBL_EMPLOYEE_EARNINGS, COL_EARNINGS_APPROVED_AMOUNT)
+        .addFrom(TBL_EMPLOYEE_EARNINGS)
+        .addFromLeft(TBL_EMPLOYEES,
+            sys.joinTables(TBL_EMPLOYEES, TBL_EMPLOYEE_EARNINGS, COL_EMPLOYEE))
+        .addFromLeft(TBL_COMPANY_PERSONS,
+            sys.joinTables(TBL_COMPANY_PERSONS, TBL_EMPLOYEES, COL_COMPANY_PERSON))
+        .addFromLeft(TBL_LOCATIONS,
+            sys.joinTables(TBL_LOCATIONS, TBL_EMPLOYEE_EARNINGS, COL_PAYROLL_OBJECT))
+        .setWhere(
+            SqlUtils.and(employeeCondition,
+                SqlUtils.equals(TBL_EMPLOYEE_EARNINGS, COL_EARNINGS_YEAR, year),
+                SqlUtils.equals(TBL_EMPLOYEE_EARNINGS, COL_EARNINGS_MONTH, month),
+                SqlUtils.positive(TBL_EMPLOYEE_EARNINGS, COL_EARNINGS_APPROVED_AMOUNT)));
+
+    SimpleRowSet data = qs.getData(query);
+    if (DataUtils.isEmpty(data)) {
+      return ResponseObject.info("employee earnings not found", companyCode, tabNumber,
+          year, month);
+    }
+
+    Table<Integer, String, Double> table = HashBasedTable.create();
+
+    for (SimpleRow row : data) {
+      Integer tnr = row.getInt(COL_TAB_NUMBER);
+      String obj = row.getValue(COL_LOCATION_NAME);
+      Double amount = row.getDouble(COL_EARNINGS_APPROVED_AMOUNT);
+
+      if (BeeUtils.isPositive(tnr) && !BeeUtils.isEmpty(obj) && BeeUtils.isPositive(amount)) {
+        if (table.contains(tnr, obj)) {
+          amount += table.get(tnr, obj);
+        }
+
+        table.put(tnr, obj, amount);
+      }
+    }
+
+    return ResponseObject.response(table);
   }
 
   @Override

@@ -45,15 +45,15 @@ public final class DocumentConstants {
   public static final String COL_DOCUMENT_CATEGORY = "Category";
   public static final String COL_DOCUMENT_TYPE = "Type";
   public static final String COL_DOCUMENT_PLACE = "Place";
+
   public static final String COL_DOCUMENT_RETURNED = "Returned";
   public static final String COL_DOCUMENT_RETURNED_USER = "ReturnedUser";
   public static final String COL_DOCUMENT_RETURNED_DATE = "ReturnedDate";
+
   public static final String COL_DOCUMENT_RECEIVED = "Received";
   public static final String COL_DOCUMENT_SENT = "Sent";
-
   public static final String COL_DOCUMENT_SENT_NUMBER = "SentNumber";
   public static final String COL_DOCUMENT_RECEIVED_NUMBER = "ReceivedNumber";
-
   public static final String COL_DOCUMENT_STATUS = "Status";
 
   public static final String COL_DOCUMENT_TEMPLATE = "Template";

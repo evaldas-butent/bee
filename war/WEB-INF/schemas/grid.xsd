@@ -54,6 +54,7 @@
     <xs:attribute name="cacheDescription" type="xs:boolean" default="true" />
     <xs:attribute name="dataProvider" type="tp:dataProvider" />
     <xs:attribute name="initialRowSetSize" type="xs:int" />
+    <xs:attribute name="paging" type="xs:boolean" />
     <xs:attribute name="readOnly" type="xs:boolean" />
     <xs:attribute name="newRowForm" type="xs:normalizedString" />
     <xs:attribute name="newRowColumns" type="xs:normalizedString" />

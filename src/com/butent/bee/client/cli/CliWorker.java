@@ -3832,7 +3832,11 @@ public final class CliWorker {
     }
 
     Svg widget = new Svg();
+
     Element parent = widget.getElement();
+    StyleUtils.fullWidth(parent);
+    StyleUtils.fullHeight(parent);
+
     Element child;
 
     for (int i = 0; i < BeeUtils.randomInt(cntMin, cntMax); i++) {

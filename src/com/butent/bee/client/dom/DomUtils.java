@@ -863,18 +863,6 @@ public final class DomUtils {
     }
   }
 
-  public static int getParentClientHeight(Widget widget) {
-    Assert.notNull(widget);
-    Assert.notNull(widget.getParent(), "Widget is orphan");
-    return widget.getParent().getElement().getClientHeight();
-  }
-
-  public static int getParentClientWidth(Widget widget) {
-    Assert.notNull(widget);
-    Assert.notNull(widget.getParent(), "Widget is orphan");
-    return widget.getParent().getElement().getClientWidth();
-  }
-
   public static Element getParentElement(Element child, Collection<String> tagNames, boolean incl) {
     if (child == null) {
       return null;

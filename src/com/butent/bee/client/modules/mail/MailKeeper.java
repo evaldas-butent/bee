@@ -136,12 +136,12 @@ public final class MailKeeper {
           event.consume();
 
           NewMailMessage.create(Collections
-                  .singleton(Data.getString(ClassifierConstants.TBL_EMAILS,
-                      event.getRow(), ClassifierConstants.COL_EMAIL_ADDRESS)),
+              .singleton(Data.getString(ClassifierConstants.TBL_EMAILS,
+                  event.getRow(), ClassifierConstants.COL_EMAIL_ADDRESS)),
               null, null, null, null, null, null, false);
         }
       }
-    }, false);
+    });
   }
 
   static void activateController(MailPanel mailPanel) {
@@ -189,8 +189,8 @@ public final class MailKeeper {
           LocalizableMessages loc = Localized.getMessages();
 
           panel.getFormView().notifyInfo(move
-                  ? loc.mailMovedMessagesToFolder(response.getResponseAsString())
-                  : loc.mailCopiedMessagesToFolder(response.getResponseAsString()),
+              ? loc.mailMovedMessagesToFolder(response.getResponseAsString())
+              : loc.mailCopiedMessagesToFolder(response.getResponseAsString()),
               BeeUtils.bracket(panel.getCurrentAccount().findFolder(folderTo).getName()));
         }
       }
