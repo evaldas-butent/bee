@@ -30,6 +30,7 @@ import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
@@ -236,59 +237,48 @@ public class DocumentsModuleBean implements BeeModule {
 
       /**
        * Fills sent/received document numbers.
-       * 
+       *
        * Data modify handler checks document sent/received date field changes. If sent/received date
        * was modified then sent/received number field will be changed. New sent/received number
        * value is latest numbers of documents max value. Changes of sent/received number not
        * applying when sent/received date field is empty or sent/received number has own input
        * value.
-       * 
+       *
        * @param event listener of Data modify handler
        */
       @Subscribe
       @AllowConcurrentEvents
       public void fillDocumentSentReceivedNumber(DataEvent.ViewModifyEvent event) {
-        if (BeeUtils.same(event.getTargetName(), TBL_DOCUMENTS) && event.isBefore()) {
-
+        if (event.isBefore(TBL_DOCUMENTS)) {
           final IsRow row;
           final List<BeeColumn> columns;
 
           if (event instanceof ViewInsertEvent) {
             row = ((ViewInsertEvent) event).getRow();
             columns = ((ViewInsertEvent) event).getColumns();
+
           } else if (event instanceof DataEvent.ViewUpdateEvent) {
             row = ((DataEvent.ViewUpdateEvent) event).getRow();
             columns = ((DataEvent.ViewUpdateEvent) event).getColumns();
+
           } else {
             return;
           }
+          for (Pair<String, String> pair : Arrays.asList(Pair.of(COL_DOCUMENT_SENT_NUMBER,
+              COL_DOCUMENT_SENT), Pair.of(COL_DOCUMENT_RECEIVED_NUMBER, COL_DOCUMENT_RECEIVED))) {
 
-          if (!DataUtils.contains(columns, COL_DOCUMENT_SENT_NUMBER) && DataUtils
-              .contains(columns, COL_DOCUMENT_SENT)) {
+            String number = pair.getA();
+            String date = pair.getB();
 
-            int idxSent = DataUtils.getColumnIndex(COL_DOCUMENT_SENT, columns);
+            if (!DataUtils.contains(columns, number) && DataUtils.contains(columns, date)) {
+              int idxDate = DataUtils.getColumnIndex(date, columns);
 
-            if (!BeeUtils.isEmpty(row.getString(idxSent))) {
-
-              /** Write values in derived references of instances */
-              columns.add(sys.getView(VIEW_DOCUMENTS).getBeeColumn(COL_DOCUMENT_SENT_NUMBER));
-              row.addValue(new TextValue(
-                  qs.getNextNumber(event.getTargetName(), COL_DOCUMENT_SENT_NUMBER, null,
-                      null)));
-            }
-          }
-
-          if (!DataUtils.contains(columns, COL_DOCUMENT_RECEIVED_NUMBER) && DataUtils
-              .contains(columns, COL_DOCUMENT_RECEIVED)) {
-
-            int idxReceived = DataUtils.getColumnIndex(COL_DOCUMENT_RECEIVED, columns);
-
-            if (!BeeUtils.isEmpty(row.getString(idxReceived))) {
-              /** Write values in derived references of instances */
-              columns.add(sys.getView(VIEW_DOCUMENTS).getBeeColumn(COL_DOCUMENT_RECEIVED_NUMBER));
-              row.addValue(new TextValue(qs.getNextNumber(event.getTargetName(),
-                  COL_DOCUMENT_RECEIVED_NUMBER, null,
-                  null)));
+              if (!BeeUtils.isEmpty(row.getString(idxDate))) {
+                /** Write values in derived references of instances */
+                columns.add(sys.getView(TBL_DOCUMENTS).getBeeColumn(number));
+                row.addValue(new TextValue(qs.getNextNumber(event.getTargetName(), number, null,
+                    null)));
+              }
             }
           }
         }

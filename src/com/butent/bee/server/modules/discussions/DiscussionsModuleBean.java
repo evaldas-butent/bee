@@ -12,6 +12,7 @@ import static com.butent.bee.shared.modules.administration.AdministrationConstan
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.discussions.DiscussionsConstants.*;
 
+import com.butent.bee.server.Config;
 import com.butent.bee.server.concurrency.ConcurrencyBean;
 import com.butent.bee.server.data.DataEditorBean;
 import com.butent.bee.server.data.DataEvent.ViewQueryEvent;
@@ -61,8 +62,7 @@ import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.discussions.DiscussionsConstants;
-import com.butent.bee.shared.modules.discussions.DiscussionsConstants.DiscussionEvent;
-import com.butent.bee.shared.modules.discussions.DiscussionsConstants.DiscussionStatus;
+import com.butent.bee.shared.modules.discussions.DiscussionsConstants.*;
 import com.butent.bee.shared.modules.discussions.DiscussionsUtils;
 import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.news.NewsConstants;
@@ -732,6 +732,9 @@ public class DiscussionsModuleBean implements BeeModule {
 
   @Schedule(hour = "*/12", persistent = false)
   private void doInactiveDiscussions() {
+    if (!Config.isInitialized()) {
+      return;
+    }
     Long days = prm.getLong(PRM_DISCUSS_INACTIVE_TIME_IN_DAYS);
 
     if (!BeeUtils.isPositive(days)) {
