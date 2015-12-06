@@ -10,6 +10,7 @@ import static com.butent.bee.shared.modules.documents.DocumentConstants.*;
 import com.butent.bee.server.data.BeeTable;
 import com.butent.bee.server.data.BeeView;
 import com.butent.bee.server.data.DataEditorBean;
+import com.butent.bee.server.data.DataEvent;
 import com.butent.bee.server.data.DataEvent.ViewInsertEvent;
 import com.butent.bee.server.data.DataEvent.ViewQueryEvent;
 import com.butent.bee.server.data.DataEventHandler;
@@ -39,6 +40,7 @@ import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.value.TextValue;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -228,6 +230,66 @@ public class DocumentsModuleBean implements BeeModule {
                 prefix.replace("{year}", TimeUtils.yearToString(date.getYear()))
                     .replace("{month}", TimeUtils.monthToString(date.getMonth()))
                     .replace("{day}", TimeUtils.dayOfMonthToString(date.getDom())), null)));
+          }
+        }
+      }
+
+      /**
+       * Fills sent/received document numbers.
+       * 
+       * Data modify handler checks document sent/received date field changes. If sent/received date
+       * was modified then sent/received number field will be changed. New sent/received number
+       * value is latest numbers of documents max value. Changes of sent/received number not
+       * applying when sent/received date field is empty or sent/received number has own input
+       * value.
+       * 
+       * @param event listener of Data modify handler
+       */
+      @Subscribe
+      @AllowConcurrentEvents
+      public void fillDocumentSentReceivedNumber(DataEvent.ViewModifyEvent event) {
+        if (BeeUtils.same(event.getTargetName(), TBL_DOCUMENTS) && event.isBefore()) {
+
+          final IsRow row;
+          final List<BeeColumn> columns;
+
+          if (event instanceof ViewInsertEvent) {
+            row = ((ViewInsertEvent) event).getRow();
+            columns = ((ViewInsertEvent) event).getColumns();
+          } else if (event instanceof DataEvent.ViewUpdateEvent) {
+            row = ((DataEvent.ViewUpdateEvent) event).getRow();
+            columns = ((DataEvent.ViewUpdateEvent) event).getColumns();
+          } else {
+            return;
+          }
+
+          if (!DataUtils.contains(columns, COL_DOCUMENT_SENT_NUMBER) && DataUtils
+              .contains(columns, COL_DOCUMENT_SENT)) {
+
+            int idxSent = DataUtils.getColumnIndex(COL_DOCUMENT_SENT, columns);
+
+            if (!BeeUtils.isEmpty(row.getString(idxSent))) {
+
+              /** Write values in derived references of instances */
+              columns.add(sys.getView(VIEW_DOCUMENTS).getBeeColumn(COL_DOCUMENT_SENT_NUMBER));
+              row.addValue(new TextValue(
+                  qs.getNextNumber(event.getTargetName(), COL_DOCUMENT_SENT_NUMBER, null,
+                      null)));
+            }
+          }
+
+          if (!DataUtils.contains(columns, COL_DOCUMENT_RECEIVED_NUMBER) && DataUtils
+              .contains(columns, COL_DOCUMENT_RECEIVED)) {
+
+            int idxReceived = DataUtils.getColumnIndex(COL_DOCUMENT_RECEIVED, columns);
+
+            if (!BeeUtils.isEmpty(row.getString(idxReceived))) {
+              /** Write values in derived references of instances */
+              columns.add(sys.getView(VIEW_DOCUMENTS).getBeeColumn(COL_DOCUMENT_RECEIVED_NUMBER));
+              row.addValue(new TextValue(qs.getNextNumber(event.getTargetName(),
+                  COL_DOCUMENT_RECEIVED_NUMBER, null,
+                  null)));
+            }
           }
         }
       }

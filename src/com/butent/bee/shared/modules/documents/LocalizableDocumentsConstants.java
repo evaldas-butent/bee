@@ -10,6 +10,10 @@ public interface LocalizableDocumentsConstants {
 
   String documentFileExists();
 
+  String documentFilterReceived();
+
+  String documentFilterSent();
+
   String documentItems();
 
   String documentName();
