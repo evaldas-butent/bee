@@ -62,6 +62,7 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
 
   private static final String WIDGET_ACCESSIBILITY = "Accessibility";
   private static final String WIDGET_DESCRIPTION = "Description";
+  private static final String WIDGET_SUMMARY = "Summary";
   private static final String WIDGET_FILES = "Files";
   private static final String WIDGET_LABEL_MEMBERS = "membersLabel";
   private static final String WIDGET_LABEL_DISPLAY_IN_BOARD = "DisplayInBoard";
@@ -83,6 +84,9 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
         ms.setEnabled(!BeeUtils.toBoolean(ac.getValue()));
       }
     }
+
+    Editor wSummary = (Editor) getFormView().getWidgetByName(WIDGET_SUMMARY);
+    wSummary.clearValue();
   }
 
   @Override
@@ -166,7 +170,6 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
         }
       });
     }
-
     if (BeeUtils.same(name, COL_TOPIC) && widget instanceof DataSelector) {
       final DataSelector tds = (DataSelector) widget;
       Handler selHandler = new Handler() {
@@ -209,12 +212,14 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
     boolean discussClosed = false;
     boolean isTopic = false;
     String description = "";
+    String summary = "";
 
     HasCheckedness wIsPublic = (HasCheckedness) getFormView().getWidgetByName(WIDGET_ACCESSIBILITY);
-    HasCheckedness wPermitComment = (HasCheckedness) getFormView().
-        getWidgetByName(COL_PERMIT_COMMENT);
+    HasCheckedness wPermitComment = (HasCheckedness) getFormView().getWidgetByName(
+        COL_PERMIT_COMMENT);
 
     Editor wDescription = (Editor) getFormView().getWidgetByName(WIDGET_DESCRIPTION);
+    Editor wSummary = (Editor) getFormView().getWidgetByName(WIDGET_SUMMARY);
     DataSelector wTopic = (DataSelector) getFormView().getWidgetBySource(COL_TOPIC);
 
     if (wIsPublic != null) {
@@ -266,6 +271,10 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
       description = wDescription.getValue();
     }
 
+    if (wSummary != null) {
+      summary = wSummary.getValue();
+    }
+
     if (!discussPublic && BeeUtils.isEmpty(activeRow.getProperty(PROP_MEMBERS))) {
       event.getCallback().onFailure(Localized.getConstants().discussSelectMembers());
       return;
@@ -275,6 +284,10 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
 
     if (!BeeUtils.isEmpty(description)) {
       Data.setValue(VIEW_DISCUSSIONS, newRow, COL_DESCRIPTION, description);
+    }
+
+    if (!BeeUtils.isEmpty(summary)) {
+      Data.setValue(VIEW_DISCUSSIONS, newRow, COL_SUMMARY, summary);
     }
 
     if (discussPublic) {

@@ -46,6 +46,12 @@ public interface LocalizableDiscussionsConstants {
 
   String discussComment();
 
+  String discussCommentCount();
+
+  String discussCommentPlaceholder();
+
+  String discussCommentPermit();
+
   String discussCreatedNewDiscussion();
 
   String discussDeleteCanOwnerOrAdmin();

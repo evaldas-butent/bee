@@ -130,7 +130,6 @@ public final class ClassifierConstants {
   public static final String COL_PERSON = "Person";
   public static final String COL_FIRST_NAME = "FirstName";
   public static final String COL_LAST_NAME = "LastName";
-  public static final String COL_PHOTO = "Photo";
   public static final String COL_DATE_OF_BIRTH = "DateOfBirth";
 
   public static final String COL_CATEGORY = "Category";
@@ -170,6 +169,7 @@ public final class ClassifierConstants {
 
   public static final String COL_CONTACT = "Contact";
   public static final String COL_PHONE = "Phone";
+  public static final String COL_PHOTO = "Photo";
   public static final String COL_MOBILE = "Mobile";
   public static final String COL_FAX = "Fax";
   public static final String COL_EMAIL = "Email";

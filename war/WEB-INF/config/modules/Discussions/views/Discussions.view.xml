@@ -5,8 +5,11 @@
   >
   <Relation renderColumns="Subject" />
   <Columns>
-    <SimpleColumn name="Subject" />
-    <SimpleColumn name="Description" />
+  
+  <SimpleColumn name="Subject" />
+    <SimpleColumn name="Summary" />
+  
+    <SimpleColumn name="Description" /> 
 
     <SimpleColumn name="Created" />
     <SimpleColumn name="Status" />
@@ -18,6 +21,8 @@
         <SimpleJoin name="Person" joinType="LEFT">
           <SimpleColumn alias="OwnerFirstName" name="FirstName" />
           <SimpleColumn alias="OwnerLastName" name="LastName" />
+          <SimpleColumn alias="OwnerPhoto" name="Photo" /> 
+          <!--  Select "Photo" as "OwnerPhoto" from  "Persons" -->
         </SimpleJoin>
       </SimpleJoin>
     </SimpleJoin>

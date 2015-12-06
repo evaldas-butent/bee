@@ -10,7 +10,6 @@ import com.butent.bee.client.UserInfo;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.Queries.RowSetCallback;
-import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.event.logical.RenderingEvent;
 import com.butent.bee.client.grid.ColumnHeader;
@@ -45,6 +44,7 @@ import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
+import com.butent.bee.shared.modules.discussions.DiscussionsConstants.DiscussionStatus;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.GridDescription;
@@ -86,24 +86,9 @@ class DiscussionsGridHandler extends AbstractGridInterceptor {
       if (beeCol != null) {
         beeCol.setNullable(false);
       }
-      RowFactory.createRow(FORM_NEW_DISCUSSION, Localized.getConstants().announcementNew(),
+      RowFactory.createRow(FORM_NEW_TOPIC, Localized.getConstants().announcementNew(),
           data, emptyRow, presenter.getMainView().asWidget(),
-          new CreateDiscussionInterceptor(), new RowCallback() {
-
-            @Override
-            public void onCancel() {
-              if (beeCol != null) {
-                beeCol.setNullable(true);
-              }
-            }
-
-            @Override
-            public void onSuccess(BeeRow result) {
-              if (beeCol != null) {
-                beeCol.setNullable(true);
-              }
-            }
-          });
+          new CreateDiscussionInterceptor(), null);
     } else {
       return super.beforeAddRow(presenter, copy);
     }

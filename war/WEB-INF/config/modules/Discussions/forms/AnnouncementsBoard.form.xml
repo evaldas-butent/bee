@@ -1,16 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+
 <f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form"
 	xmlns:xi="http://www.w3.org/2001/XInclude" name="AnnouncementsBoard"
 	caption="=announcements" enabledActions="refresh add" disabledActions="delete">
 
+<FlowPanel>
+<FlowPanel name="MainFlow" />
 	<Table name="AdsContent" kind="controls" class="bee-discuss-adsFormContent"
-		style="background-color: white; margin-left: 1em; word-wrap: normal; margin: 1ex; width: 95%; border-spacing: 0px;">
+		style="background-color: white; margin-left: 1em; word-wrap: normal; margin: 4ex; width: 95%; border-spacing: 0px;">
 		<row>
 			<cell colSpan="2" style="border-bottom: 2px solid #ccc; width: 100%;">
 				<Label text="=welcome" />
 			</cell>
 		</row>
+    
 		<row>
 			<FlowPanel />
 			<cell
@@ -35,4 +39,9 @@
 		
 		 <!--  Content generating via form interceptor -->
 	</Table>
+   
+     <FlowPanel name="Flowing">
+     </FlowPanel>
+     </FlowPanel>
+
 </f:Form>  

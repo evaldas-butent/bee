@@ -9,5 +9,39 @@
     <DataColumn name="Ordinal"  visible="true" />
     <DataColumn name="Name" visible="true" />
     <DataColumn name="Visible" visible="true"/>
+    
+    <DataColumn name="BackgroundColor" visible="true" updateMode="row">
+    <dynStyle>
+      <ui:inline>background-color: [row.BackgroundColor]; color:[row.Color];</ui:inline>
+      <ui:expression>row.BackgroundColor &amp;&amp;  row.Color</ui:expression>
+    </dynStyle>
+    <dynStyle>
+      <ui:inline>color: [row.Color];</ui:inline>
+      <ui:expression>row.Color &amp;&amp; row.BackgroundColor != null</ui:expression>
+    </dynStyle>
+    <dynStyle>
+      <ui:inline>background-color: [row.Background];</ui:inline>
+      <ui:expression>row.Color == null &amp;&amp; row.Background</ui:expression>
+    </dynStyle>
+    <editor type="color" />
+    </DataColumn>
+    
+    <DataColumn name="Color" visible="true" updateMode="row">
+    <dynStyle>
+      <ui:inline>background-color: [row.BackgroundColor]; color:[row.Color];</ui:inline>
+      <ui:expression>row.BackgroundColor &amp;&amp;  row.Color</ui:expression>
+    </dynStyle>
+    <dynStyle>
+      <ui:inline>color: [row.Color];</ui:inline>
+      <ui:expression>row.Color &amp;&amp; row.BackgroundColor != null</ui:expression>
+    </dynStyle>
+    <dynStyle>
+      <ui:inline>background-color: [row.Background];</ui:inline>
+      <ui:expression>row.Color == null &amp;&amp; row.Background</ui:expression>
+    </dynStyle>
+    <editor type="color" />
+    </DataColumn>
+    
   </g:columns>
+ 
 </g:Grid>

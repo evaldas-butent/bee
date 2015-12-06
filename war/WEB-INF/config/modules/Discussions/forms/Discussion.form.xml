@@ -61,26 +61,45 @@
   name="Discussion" viewName="Discussions" caption="=discussion">
 
   <FlowPanel>
-    <FlowPanel class="flexBox-vertical">
-      <FlowPanel class="flexBox-horizontal">
-        <FlowPanel>
-          <Label for="Subject" text="=discussSubject" class="bee-required"
-            style="&subjectLbl;" />
-          <InputText source="Subject" style="&subjectInp;" />
-          <Label for="Created" text="=discussCreated" style="&createdLbl;" />
-          <InputDateTime source="Created" style="&createdInp;"
-            readOnly="true" />
-          <Label for="Status" text="=discussStatus" style="&statusLbl;" />
-          <ListBox source="Status" style="&statusInp; margin-right: 14px"
-            readOnly="true" />
-        </FlowPanel>
-      </FlowPanel>
-
-      <FlowPanel data="DiscussMarkTypes" name="DiscussMarkTypes"
-        class="flexBox-horizontal bee-discuss-markTypes-container" />
-    </FlowPanel>
+  <FlowPanel class="flexBox-vertical">
+ 			  
+     <FlowPanel name="DiscussionTop" style="float: right;">
+     
+     <Image name="PhotoPerson"  
+              style="max-height: 25px; max-width: 25px; cursor: default; float: left; margin-top: 17px;
+    margin-left: 30px; border-radius: 50%;" />
+              
+     	  <TextLabel  renderColumns="OwnerFirstName OwnerLastName" style="font-size: 12px; float: left; margin-top: 20px; margin-left: 5px; margin-right: 20px;" />
+     	  
+     	  <FlowPanel data="DiscussMarkTypes" name="DiscussMarkTypes"
+        class="flexBox-horizontal bee-discuss-markTypes-container" style="margin-top: 10px; text-align: left;"/>
+     	  
+ 		  <FlowPanel style="float:right; margin-right:50px; margin-top:20px;">
+          <Label text="Būsena: " style="font-size: 11px; color: #C0C0C0; float: left;"/>
+          <TextLabel source="Status" style="font-size: 11px; color: #C0C0C0; float: right; padding: 1px 5px;" />
+          </FlowPanel>
+ 
+          <FlowPanel style="float:right; margin-right:50px; margin-top:20px;">
+          <Label for="Created" text="Paskelbta: " style="font-size: 11px; color: #C0C0C0; float: left;"/>
+          <InputDateTime source="Created" style="font-size: 11px; color: #C0C0C0; float: right; border: 0px solid; background-color: transparent; width: 110px; line-height:0px; padding: 1px 5px;" />
+          </FlowPanel>
+          
+     </FlowPanel>
+   </FlowPanel>  
+   
+    <TextLabel source="Subject" style="font-size: 18px; margin-left: 60px; margin-bottom: 20px; margin-top: 20px;" />
+<FlowPanel class="flexBox-vertical">
+  <FlowPanel style="float: right;">
+  
+    <TextLabel source="Summary" style="font-size: 12px; margin-left: 60px; margin-bottom: 30px; width: 730px; float:left;" />
+   
+   <FaLabel name="replyFa" disablable="false" char="reply" style="float: right; margin-right: 40px; color:#c5c5c5; font-size:50px;" />
     
-    <Disclosure open="true">
+    </FlowPanel>
+</FlowPanel>
+<FileGroup style="margin-left: 60px; margin-bottom: 30px;" data="DiscussionsFiles" name="Files" />
+       
+    <Disclosure open="false">
       <Label text="=discussDescription" style="text-transform: uppercase;" />
 
       <FlowPanel>
@@ -102,8 +121,8 @@
       <FlowPanel class="flexBox-vertical" style="&discussDataPanel;">
         <FlowPanel>
           <Label for="Owner" text="=discussOwner" style="&ownerLbl;" />
-          <DataSelector source="Owner" editSource="OwnerPerson"
-            style="&ownerInp;" readOnly="true" />
+          <DataSelector source="Owner" editSource="OwnerPerson" 
+            renderColumns="OwnerFirstName OwnerLastName" style="&ownerInp;" readOnly="true" />
           <CheckBox for="Accessibility" data="Users" name="Accessibility"
             source="Accessibility" text="=discussPublic" disablable="false" />
         </FlowPanel>
@@ -148,33 +167,34 @@
             renderColumns="Name DocumentDate Number" choiceColumns="Name Number RegistrationNumber DocumentDate"
             newRowEnabled="false" style="&relDocumentsInp;" />
         </FlowPanel>
-
-        <FileGroup data="DiscussionsFiles" name="Files" />
-           &separator;
+       
+       &separator;
         <FlowPanel for="Topic" class="flexBox-horizontal">
           <Label text="=announcement" style="&header;" />
         </FlowPanel>
 
         <FlowPanel for="Topic" class="flexBox-horizontal">
           <Label text="=adTopic" style="&lbl1; min-width:150px;" />
-          <DataSelector name="Topic" source="Topic"
+          <DataSelector name="Topic" source="Topic" disablable="false"
             style="&inp2x; width: 250px" choiceColumns="Name" filter="Visible" />
         </FlowPanel>
 
         <FlowPanel for="Topic" class="flexBox-horizontal">
           <Label for="Topic" name="DisplayInBoard" text="=displayInBoard" style="&lbl1; min-width:150px;" />
-          <InputDateTime source="VisibleFrom" style="&inp2x; width: 120px; margin-right:10px" placeholder="=dateFromShort" />
-          <InputDateTime source="VisibleTo" style="&inp2x; width: 120px" placeholder="=dateToShort" />
+          <InputDateTime source="VisibleFrom" style="&inp2x; width: 120px; margin-right:10px" placeholder="=dateFromShort" disablable="false"  />
+          <InputDateTime source="VisibleTo" style="&inp2x; width: 120px" placeholder="=dateToShort" disablable="false"  />
         </FlowPanel>
 
-        <FlowPanel style="margin-top:20px;" class="flexBox-horizontal">
+        <FlowPanel style="margin-top:20px; margin-bottom: 20px;" class="flexBox-horizontal">
           <CheckBox name="Important" source="Important" text="=important"
-            style="&top1; min-width:70px; padding-right:40px; margin-left: 160px;" />
-          <CheckBox name="PermitComment" text="=prohibitComment" style="min-width: 135px;" />
+            style="&top1; min-width:70px; padding-right:40px; margin-left: 160px;" disablable="false"  />
+          <CheckBox name="PermitComment" text="=prohibitComment" style="min-width: 135px;" disablable="false"  />
         </FlowPanel>
+       
       </FlowPanel>
     </Disclosure>
-
-    <FlowPanel data="DiscussionsComments" name="DiscussionsComments" class="flexible bee-discuss-comment-container" />
+    <FlowPanel style="background-color:#c5c5c5; height: 10px;"></FlowPanel>
+ <FlowPanel data="DiscussionsComments" name="DiscussionsComments" class="flexible bee-discuss-comment-container" />
+   
   </FlowPanel>
 </f:Form>

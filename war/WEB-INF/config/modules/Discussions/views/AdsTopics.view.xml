@@ -6,10 +6,11 @@
   newRowForm="AdTopic"
   >
   <Columns>
-
     <SimpleColumn name="Ordinal" />
     <SimpleColumn name="Name" />
     <SimpleColumn name="Visible" />   
+    <SimpleColumn name="BackgroundColor" />   
+    <SimpleColumn name="Color" />   
   </Columns>
   <Order>
     <OrderBy column="Ordinal" />
