@@ -9,7 +9,7 @@ import java.util.Objects;
 
 import javax.xml.bind.annotation.XmlAttribute;
 
-public class RestResponse {
+public final class RestResponse {
 
   static final String JSON_TYPE = "application/json;charset=UTF-8";
 
@@ -72,13 +72,13 @@ public class RestResponse {
     return this;
   }
 
-  public RestResponse setLastSync(Long lastSync) {
-    this.lastSync = lastSync;
+  public RestResponse setLastSync(Long last) {
+    this.lastSync = last;
     return this;
   }
 
-  public RestResponse setResult(Object result) {
-    this.result = result;
+  public RestResponse setResult(Object obj) {
+    this.result = obj;
     return this;
   }
 }

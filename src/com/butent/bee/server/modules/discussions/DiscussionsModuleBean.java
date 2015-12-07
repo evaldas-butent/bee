@@ -62,7 +62,6 @@ import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.discussions.DiscussionsConstants;
-import com.butent.bee.shared.modules.discussions.DiscussionsConstants.*;
 import com.butent.bee.shared.modules.discussions.DiscussionsUtils;
 import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.news.NewsConstants;
@@ -174,7 +173,7 @@ public class DiscussionsModuleBean implements BeeModule {
         BeeParameter.createText(module, PRM_FORBIDDEN_FILES_EXTENTIONS, false, ""),
         BeeParameter.createNumber(module, PRM_MAX_UPLOAD_FILE_SIZE),
         BeeParameter.createRelation(module, PRM_DISCUSS_BIRTHDAYS, TBL_ADS_TOPICS, COL_NAME)
-    );
+        );
 
     return params;
   }
@@ -840,8 +839,8 @@ public class DiscussionsModuleBean implements BeeModule {
         .addFrom(TBL_DISCUSSIONS)
         .addFromInner(TBL_ADS_TOPICS, sys.joinTables(TBL_ADS_TOPICS, TBL_DISCUSSIONS, COL_TOPIC))
         .addFromLeft(TBL_DISCUSSIONS_USAGE, SqlUtils.and(SqlUtils.equals(TBL_DISCUSSIONS_USAGE,
-                COL_DISCUSSION, SqlUtils.field(TBL_DISCUSSIONS, sys
-                    .getIdName(TBL_DISCUSSIONS))),
+            COL_DISCUSSION, SqlUtils.field(TBL_DISCUSSIONS, sys
+                .getIdName(TBL_DISCUSSIONS))),
             SqlUtils.equals(TBL_DISCUSSIONS_USAGE, AdministrationConstants.COL_USER, usr
                 .getCurrentUserId())))
         .addFromLeft(AdministrationConstants.TBL_USERS,
@@ -861,36 +860,36 @@ public class DiscussionsModuleBean implements BeeModule {
         .addFromLeft(TBL_DISCUSSIONS_USERS,
             sys.joinTables(TBL_DISCUSSIONS, TBL_DISCUSSIONS_USERS, COL_DISCUSSION))
         .setWhere(SqlUtils.and(
-                SqlUtils.notNull(TBL_ADS_TOPICS, COL_VISIBLE),
-                SqlUtils.notNull(TBL_DISCUSSIONS, sys.getIdName(TBL_DISCUSSIONS)),
+            SqlUtils.notNull(TBL_ADS_TOPICS, COL_VISIBLE),
+            SqlUtils.notNull(TBL_DISCUSSIONS, sys.getIdName(TBL_DISCUSSIONS)),
+            SqlUtils.or(
+                SqlUtils.and(
+                    SqlUtils.moreEqual(TBL_DISCUSSIONS, COL_VISIBLE_TO, System
+                        .currentTimeMillis()),
+                    SqlUtils.lessEqual(TBL_DISCUSSIONS, COL_VISIBLE_FROM, System
+                        .currentTimeMillis())
+                    ),
                 SqlUtils.or(
-                    SqlUtils.and(
-                        SqlUtils.moreEqual(TBL_DISCUSSIONS, COL_VISIBLE_TO, System
-                            .currentTimeMillis()),
-                        SqlUtils.lessEqual(TBL_DISCUSSIONS, COL_VISIBLE_FROM, System
-                            .currentTimeMillis())
+                    SqlUtils.equals(TBL_DISCUSSIONS, COL_VISIBLE_TO, nowStart),
+                    SqlUtils.equals(TBL_DISCUSSIONS, COL_VISIBLE_FROM, nowStart)
                     ),
-                    SqlUtils.or(
-                        SqlUtils.equals(TBL_DISCUSSIONS, COL_VISIBLE_TO, nowStart),
-                        SqlUtils.equals(TBL_DISCUSSIONS, COL_VISIBLE_FROM, nowStart)
+                SqlUtils.and(
+                    SqlUtils.lessEqual(TBL_DISCUSSIONS, COL_VISIBLE_FROM, System
+                        .currentTimeMillis()),
+                    SqlUtils.isNull(TBL_DISCUSSIONS, COL_VISIBLE_TO)
                     ),
-                    SqlUtils.and(
-                        SqlUtils.lessEqual(TBL_DISCUSSIONS, COL_VISIBLE_FROM, System
-                            .currentTimeMillis()),
-                        SqlUtils.isNull(TBL_DISCUSSIONS, COL_VISIBLE_TO)
-                    ),
-                    SqlUtils.and(
-                        SqlUtils.isNull(TBL_DISCUSSIONS, COL_VISIBLE_FROM),
-                        SqlUtils.moreEqual(TBL_DISCUSSIONS, COL_VISIBLE_TO, nowFinish)
+                SqlUtils.and(
+                    SqlUtils.isNull(TBL_DISCUSSIONS, COL_VISIBLE_FROM),
+                    SqlUtils.moreEqual(TBL_DISCUSSIONS, COL_VISIBLE_TO, nowFinish)
                     )
                 ),
-                SqlUtils.or(SqlUtils.or(SqlUtils.and(SqlUtils.equals(TBL_DISCUSSIONS_USERS,
-                                AdministrationConstants.COL_USER,
-                                usr.getCurrentUserId()),
-                            SqlUtils.notNull(TBL_DISCUSSIONS_USERS, COL_MEMBER)),
-                        SqlUtils.equals(TBL_DISCUSSIONS, COL_OWNER, usr.getCurrentUserId())
-                    ),
-                    SqlUtils.notNull(TBL_DISCUSSIONS, COL_ACCESSIBILITY)
+            SqlUtils.or(SqlUtils.or(SqlUtils.and(SqlUtils.equals(TBL_DISCUSSIONS_USERS,
+                AdministrationConstants.COL_USER,
+                usr.getCurrentUserId()),
+                SqlUtils.notNull(TBL_DISCUSSIONS_USERS, COL_MEMBER)),
+                SqlUtils.equals(TBL_DISCUSSIONS, COL_OWNER, usr.getCurrentUserId())
+                ),
+                SqlUtils.notNull(TBL_DISCUSSIONS, COL_ACCESSIBILITY)
                 ))
         )
         .addOrder(TBL_ADS_TOPICS, COL_ORDINAL)
@@ -1106,7 +1105,7 @@ public class DiscussionsModuleBean implements BeeModule {
             .setWhere(
                 SqlUtils
                     .and(SqlUtils.notNull(TBL_DISCUSSIONS_COMMENTS, sys
-                            .getIdName(TBL_DISCUSSIONS_COMMENTS)),
+                        .getIdName(TBL_DISCUSSIONS_COMMENTS)),
                         SqlUtils.inList(TBL_DISCUSSIONS, sys.getIdName(TBL_DISCUSSIONS),
                             discussionIds)))
             .addGroup(TBL_DISCUSSIONS_COMMENTS, COL_DISCUSSION);
@@ -1143,7 +1142,7 @@ public class DiscussionsModuleBean implements BeeModule {
             .setWhere(
                 SqlUtils
                     .and(SqlUtils.notNull(TBL_DISCUSSIONS_COMMENTS, sys
-                            .getIdName(TBL_DISCUSSIONS_COMMENTS)),
+                        .getIdName(TBL_DISCUSSIONS_COMMENTS)),
                         SqlUtils.inList(TBL_DISCUSSIONS_COMMENTS,
                             sys.getIdName(TBL_DISCUSSIONS_COMMENTS),
                             (Object[]) maxComments.getColumn(maxComments
@@ -1293,7 +1292,7 @@ public class DiscussionsModuleBean implements BeeModule {
       tableFields.append(
           tr().append(td().text(constants.adTopic()),
               td().text(anouncmentTopic))
-      );
+          );
     }
 
     Div discussDescriptionContent = div().text(discussMailRow.getValue(COL_DESCRIPTION));
@@ -1305,13 +1304,13 @@ public class DiscussionsModuleBean implements BeeModule {
             td().text(usr.getUserSign(discussMailRow.getLong(COL_OWNER)))),
         tr().append(td().text(constants.discussDescription()),
             td().append(discussDescriptionContent))
-    );
+        );
 
     if (isPublic && !typeAnnoucement) {
       tableFields.append(
           tr().append(td().text(constants.discussMembers()),
               td().text(constants.systemAllUsers()))
-      );
+          );
     } else if (!isPublic) {
 
       List<Long> discussMemberIds = getDiscussionMembers(discussionId);
@@ -1327,7 +1326,7 @@ public class DiscussionsModuleBean implements BeeModule {
       tableFields.append(
           tr().append(td().text(constants.discussMembers()),
               td().text(memberList))
-      );
+          );
     }
 
     List<Element> cells = tableFields.queryTag(Tags.TD);
