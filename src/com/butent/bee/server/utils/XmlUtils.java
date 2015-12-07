@@ -19,6 +19,7 @@ import org.w3c.dom.Attr;
 import org.w3c.dom.CDATASection;
 import org.w3c.dom.Comment;
 import org.w3c.dom.DOMConfiguration;
+import org.w3c.dom.DOMException;
 import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.DOMStringList;
 import org.w3c.dom.Document;
@@ -166,6 +167,18 @@ public final class XmlUtils {
       logger.error(ex);
     }
     schemaFactory = sf;
+  }
+
+  public static void appendElementWithText(Document doc, Element parent, String tag, String txt) {
+    Assert.notNull(doc);
+    Assert.notNull(parent);
+    Assert.notEmpty(tag);
+
+    Element el = doc.createElement(tag);
+    Text x = doc.createTextNode(BeeUtils.trim(txt));
+
+    el.appendChild(x);
+    parent.appendChild(el);
   }
 
   public static Document createDoc(String rootName, String... nodes) {
@@ -991,6 +1004,23 @@ public final class XmlUtils {
     }
   }
 
+  public static void setAttribute(Element element, String name, String value) {
+    Assert.notNull(element);
+    Assert.notEmpty(name);
+
+    try {
+      element.setAttribute(name, value);
+    } catch (DOMException ex) {
+      logger.error(ex);
+    }
+  }
+
+  public static void setNotEmptyAttribute(Element element, String name, String value) {
+    if (!BeeUtils.isEmpty(value)) {
+      setAttribute(element, name, value);
+    }
+  }
+
   public static String tag(String tagName, Object value) {
     if (value == null) {
       return "";
@@ -1126,14 +1156,6 @@ public final class XmlUtils {
     } else {
       return BeeConst.STRING_EMPTY;
     }
-  }
-
-  private static void appendElementWithText(Document doc, Element root, String tag, String txt) {
-    Element el = doc.createElement(tag);
-    Text x = doc.createTextNode(txt);
-
-    el.appendChild(x);
-    root.appendChild(el);
   }
 
   private static Document asDocument(Node nd) {

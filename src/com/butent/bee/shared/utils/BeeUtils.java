@@ -17,6 +17,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -2411,6 +2412,13 @@ public final class BeeUtils {
       return x;
     } else {
       return round((double) x / to) * to;
+    }
+  }
+
+  public static <T extends Comparable<? super T>> void sort(List<T> list) {
+    Assert.notNull(list);
+    if (list.size() > 1) {
+      Collections.sort(list);
     }
   }
 

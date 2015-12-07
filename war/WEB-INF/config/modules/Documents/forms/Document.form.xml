@@ -11,7 +11,7 @@
     <page>
       <text>=mainInformation</text>
       <FlowPanel>
-        <FlowPanel class="flexBox-horizontal">
+        <FlowPanel class="flexBox-horizontal" style="overflow:auto;">
           <xi:include href="widgets/DocumentFields.widget.xml" />
           <FlowPanel style="max-width: 40%;" >
             <Relations relColumn="Document" inline="true"

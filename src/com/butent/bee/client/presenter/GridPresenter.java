@@ -54,6 +54,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.Pair;
+import com.butent.bee.shared.State;
 import com.butent.bee.shared.css.values.FontSize;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
@@ -586,6 +587,10 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
     }
   }
 
+  public boolean isReady() {
+    return ready;
+  }
+
   @Override
   public void onReady(ReadyEvent event) {
     setReady(true);
@@ -692,6 +697,12 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
             }
           }
         });
+  }
+
+  @Override
+  public void onStateChange(State state) {
+    getMainView().setStyleName(StyleUtils.NAME_LOADING,
+        state == State.LOADING || state == State.PENDING);
   }
 
   @Override
@@ -896,10 +907,6 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
   private Element getHeaderElement() {
     HeaderView header = getHeader();
     return (header == null) ? null : header.getElement();
-  }
-
-  private boolean isReady() {
-    return ready;
   }
 
   private void onMerge() {

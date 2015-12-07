@@ -145,7 +145,17 @@ public class GridContainerImpl extends Split implements GridContainerView,
       addStyleName(UiOption.getStyleName(uiOptions));
     }
 
-    setHasPaging(UiOption.hasPaging(uiOptions));
+    Boolean paging = gridDescription.getPaging();
+    if (gridOptions != null && gridOptions.getPaging() != null) {
+      paging = gridOptions.getPaging();
+    }
+
+    if (UiOption.hasPaging(uiOptions)) {
+      setHasPaging(!BeeUtils.isFalse(paging));
+    } else {
+      setHasPaging(BeeUtils.isTrue(paging));
+    }
+
     setHasSearch(UiOption.hasSearch(uiOptions)
         && !gridDescription.getDisabledActions().contains(Action.FILTER));
 
@@ -711,14 +721,16 @@ public class GridContainerImpl extends Split implements GridContainerView,
 
   private int estimatePageSize() {
     if (hasPaging()) {
-      int w = getElement().getClientWidth();
-      int h = getElement().getClientHeight();
+      int w = 0;
+      int h = 0;
 
-      if (w <= 0) {
-        w = DomUtils.getParentClientWidth(this);
-      }
-      if (h <= 0) {
-        h = DomUtils.getParentClientHeight(this);
+      Element el = getElement();
+
+      while (el != null && (w <= 0 || h <= 0)) {
+        w = el.getClientWidth();
+        h = el.getClientHeight();
+
+        el = el.getParentElement();
       }
 
       return estimatePageSize(getGridView(), w, h);

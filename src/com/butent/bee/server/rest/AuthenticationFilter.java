@@ -60,7 +60,7 @@ public class AuthenticationFilter implements ContainerRequestFilter {
         && Objects.nonNull(req.getUserPrincipal())) {
       return;
     }
-    if (ok && !usr.authenticateUser(user, password)) {
+    if (ok && (!usr.authenticateUser(user, password) || usr.isBlocked(user))) {
       try {
         req.logout();
       } catch (ServletException e) {

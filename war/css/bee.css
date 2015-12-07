@@ -214,8 +214,8 @@
   max-width: 39px;
   max-height: 39px;
   border: 2px solid #fafafa;
-  margin-right: 40px;
-  border-radius: 50px;
+  margin-right: 2em;
+  border-radius: 50%;
 }
 .bee-UserSignature {
   color: black;
@@ -1487,6 +1487,7 @@
 }
 .bee-MultiSelector-label {
   line-height: 13px;
+  margin-left: 10px;
 }
 .bee-MultiSelector-close {
   position: absolute;
@@ -3775,5 +3776,30 @@ textarea,
 }
 
 .bee-ItemPricePicker-disabled select {
-    visibility: hidden;
+  visibility: hidden;
+}
+
+.bee-LogoutContainer {
+  margin-left: 1em;
+}
+.bee-Logout {
+  font-size: 18px;
+  cursor: pointer;
+  color: #888;
+}
+
+.bee-Grid-Spinner {
+  display: none;
+}
+.bee-loading .bee-CellGrid {
+  opacity: 0.25;
+}
+.bee-loading .bee-Grid-Spinner {
+  display: block;
+  position: absolute;
+  left: 45%;
+  top: 45%;
+  font-size: xx-large;
+  animation: rotate 1s linear infinite;
+  -webkit-animation: rotate 1s linear infinite;
 }

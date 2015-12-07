@@ -812,6 +812,10 @@ public class GridLoaderBean {
     if (initialRowSetSize != null) {
       dst.setInitialRowSetSize(initialRowSetSize);
     }
+    Boolean paging = XmlUtils.getAttributeBoolean(src, UiConstants.ATTR_PAGING);
+    if (paging != null) {
+      dst.setPaging(paging);
+    }
 
     Boolean readOnly = XmlUtils.getAttributeBoolean(src, UiConstants.ATTR_READ_ONLY);
     if (readOnly != null) {

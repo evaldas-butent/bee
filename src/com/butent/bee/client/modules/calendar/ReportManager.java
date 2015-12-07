@@ -156,7 +156,7 @@ class ReportManager {
 
     GridView gridView = GridFactory.createGridView(gridDescription,
         GridFactory.getSupplierKey(gridName, gridInterceptor), rowSet.getColumns(), null,
-        uiOptions, gridInterceptor, null);
+        uiOptions, gridInterceptor, null, null);
 
     gridView.initData(rowSet.getNumberOfRows(), rowSet);
 

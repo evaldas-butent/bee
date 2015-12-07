@@ -727,6 +727,23 @@ public final class TimeUtils {
     return result;
   }
 
+  public static Integer parseMonth(String input) {
+    if (BeeUtils.isEmpty(input)) {
+      return null;
+
+    } else if (BeeUtils.isDigit(input.trim())) {
+      int month = BeeUtils.toInt(input.trim());
+      if (isMonth(month)) {
+        return month;
+      } else {
+        return null;
+      }
+
+    } else {
+      return null;
+    }
+  }
+
   public static Long parseTime(String input) {
     if (BeeUtils.isEmpty(input)) {
       return null;
@@ -771,6 +788,23 @@ public final class TimeUtils {
 
   public static JustDate previousDay(HasDateValue ref) {
     return nextDay(ref, -1);
+  }
+
+  public static Integer parseYear(String input) {
+    if (BeeUtils.isEmpty(input)) {
+      return null;
+
+    } else if (BeeUtils.isDigit(input.trim())) {
+      int year = normalizeYear(BeeUtils.toInt(input.trim()));
+      if (isYear(year)) {
+        return year;
+      } else {
+        return null;
+      }
+
+    } else {
+      return null;
+    }
   }
 
   /**

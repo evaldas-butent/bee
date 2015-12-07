@@ -42,6 +42,7 @@ public final class PayrollConstants {
 
   public static final String TBL_OBJECT_SALARY_FUND = "ObjectSalaryFund";
 
+  public static final String TBL_TIME_CARD_CODES = "TimeCardCodes";
   public static final String TBL_TIME_RANGES = "TimeRanges";
 
   public static final String VIEW_EMPLOYEES = "Employees";

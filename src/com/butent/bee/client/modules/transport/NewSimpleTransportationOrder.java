@@ -1,31 +1,25 @@
 package com.butent.bee.client.modules.transport;
 
-import com.google.common.collect.Lists;
-import com.google.gwt.dom.client.Element;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.dom.client.HasClickHandlers;
 import com.google.gwt.event.shared.HasHandlers;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
-import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.RpcCallback;
+import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.data.ClientDefaults;
 import com.butent.bee.client.data.Data;
-import com.butent.bee.client.data.IdCallback;
-import com.butent.bee.client.data.ParentRowCreator;
+import com.butent.bee.client.data.HasRelatedRow;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
-import com.butent.bee.client.event.EventUtils;
+import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
+import com.butent.bee.client.view.edit.EditableWidget;
 import com.butent.bee.client.view.edit.Editor;
-import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.widget.InputDateTime;
@@ -50,11 +44,15 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 class NewSimpleTransportationOrder extends AbstractFormInterceptor {
 
   private Long cargoService;
+
+  private DateTime loadingDate;
+  private DateTime unloadingDate;
 
   NewSimpleTransportationOrder() {
   }
@@ -71,11 +69,16 @@ class NewSimpleTransportationOrder extends AbstractFormInterceptor {
 
       ((UnboundSelector) widget).setValue(ClientDefaults.getCurrency(), false);
 
-    } else if (COL_TRIP.equals(name) && widget instanceof HasClickHandlers) {
-      ((HasClickHandlers) widget).addClickHandler(new ClickHandler() {
+    } else if (COL_TRIP.equals(name) && widget instanceof UnboundSelector) {
+
+      ((UnboundSelector) widget).addSelectorHandler(new SelectorEvent.Handler() {
         @Override
-        public void onClick(ClickEvent event) {
-          onAssignTrip(EventUtils.getEventTargetElement(event));
+        public void onDataSelector(SelectorEvent event) {
+          if (event.isRequest() && event.getRequest() != null
+              && event.getRequest().getOffset() <= 0) {
+
+            onRequestTrip(event);
+          }
         }
       });
     }
@@ -127,13 +130,37 @@ class NewSimpleTransportationOrder extends AbstractFormInterceptor {
         values.add(BooleanValue.pack(vatPercent));
       }
 
-      Queries.insert(VIEW_CARGO_INCOMES, columns, values);
+      Queries.insertAndFire(VIEW_CARGO_INCOMES, columns, values);
+    }
+
+    IsRow tripRow = getSelectedTrip();
+
+    if (DataUtils.hasId(tripRow) && DataUtils.hasId(result)) {
+      List<BeeColumn> columns = new ArrayList<>();
+      List<String> values = new ArrayList<>();
+
+      columns.add(Data.getColumn(VIEW_CARGO_TRIPS, COL_CARGO));
+      values.add(BeeUtils.toString(result.getId()));
+
+      columns.add(Data.getColumn(VIEW_CARGO_TRIPS, COL_TRIP));
+      values.add(BeeUtils.toString(tripRow.getId()));
+
+      Queries.insertAndFire(VIEW_CARGO_TRIPS, columns, values);
     }
   }
 
   @Override
   public FormInterceptor getInstance() {
     return new NewSimpleTransportationOrder();
+  }
+
+  @Override
+  public boolean isWidgetEditable(EditableWidget editableWidget, IsRow row) {
+    if (editableWidget != null && !editableWidget.hasColumn()) {
+      return !DataUtils.hasId(row);
+    } else {
+      return super.isWidgetEditable(editableWidget, row);
+    }
   }
 
   @Override
@@ -165,6 +192,16 @@ class NewSimpleTransportationOrder extends AbstractFormInterceptor {
     orderColumns.add(Data.getColumn(VIEW_ORDERS, COL_CUSTOMER));
     orderValues.add(customer);
 
+    IsRow tripRow = getSelectedTrip();
+    if (tripRow != null) {
+      Long manager = Data.getLong(VIEW_ACTIVE_TRIPS, tripRow, COL_TRIP_MANAGER);
+
+      if (DataUtils.isId(manager)) {
+        orderColumns.add(Data.getColumn(VIEW_ORDERS, COL_ORDER_MANAGER));
+        orderValues.add(BeeUtils.toString(manager));
+      }
+    }
+
     Queries.insert(VIEW_ORDERS, orderColumns, orderValues, null, new RowCallback() {
       @Override
       public void onSuccess(BeeRow orderRow) {
@@ -184,32 +221,6 @@ class NewSimpleTransportationOrder extends AbstractFormInterceptor {
         }
       }
     });
-  }
-
-  private void ensureCargoId(final IdCallback callback) {
-    long id = getActiveRowId();
-    if (DataUtils.isId(id)) {
-      callback.onSuccess(id);
-      return;
-    }
-
-    FormView form = getFormView();
-    if (form != null && form.getViewPresenter() instanceof ParentRowCreator) {
-      ((ParentRowCreator) form.getViewPresenter()).createParentRow(form, new Callback<IsRow>() {
-        @Override
-        public void onFailure(String... reason) {
-          callback.onFailure(reason);
-        }
-
-        @Override
-        public void onSuccess(IsRow result) {
-          callback.onSuccess(result.getId());
-        }
-      });
-
-    } else {
-      callback.onFailure("parent row creator not available");
-    }
   }
 
   private boolean getBoolean(String name) {
@@ -243,13 +254,19 @@ class NewSimpleTransportationOrder extends AbstractFormInterceptor {
     }
   }
 
-  private void getTripFilter(final Consumer<Filter> consumer) {
-    DateTime from = getDateTimeValue(ALS_LOADING_DATE);
-    if (from == null) {
-      from = getOrderDate();
-    }
+  private IsRow getSelectedTrip() {
+    Widget widget = getFormView().getWidgetByName(COL_TRIP);
 
-    DateTime until = getDateTimeValue(ALS_UNLOADING_DATE);
+    if (widget instanceof HasRelatedRow) {
+      return ((HasRelatedRow) widget).getRelatedRow();
+    } else {
+      return null;
+    }
+  }
+
+  private static void getTripFilter(DateTime from, DateTime until,
+      final Consumer<Filter> consumer) {
+
     if (from == null && until == null) {
       consumer.accept(null);
       return;
@@ -309,24 +326,28 @@ class NewSimpleTransportationOrder extends AbstractFormInterceptor {
         });
   }
 
-  private void onAssignTrip(final Element target) {
-    getTripFilter(new Consumer<Filter>() {
-      @Override
-      public void accept(final Filter tripFilter) {
+  private void onRequestTrip(final SelectorEvent event) {
+    DateTime from = getDateTimeValue(ALS_LOADING_DATE);
+    if (from == null) {
+      from = getOrderDate();
+    }
 
-        ensureCargoId(new IdCallback() {
-          @Override
-          public void onSuccess(Long result) {
+    DateTime until = getDateTimeValue(ALS_UNLOADING_DATE);
 
-            List<String> columns = Lists.newArrayList(COL_TRIP_NO,
-                ALS_VEHICLE_NUMBER, ALS_TRAILER_NUMBER,
-                "DriverFirstName", "DriverLastName",
-                "ManagerFirstName", "ManagerLastName",
-                "ExpeditionType", "ForwarderName");
-            TripSelector.select(result, columns, tripFilter, target);
-          }
-        });
-      }
-    });
+    if (!Objects.equals(loadingDate, from) || !Objects.equals(unloadingDate, until)) {
+      this.loadingDate = from;
+      this.unloadingDate = until;
+
+      final DataSelector selector = event.getSelector();
+      event.consume();
+
+      getTripFilter(from, until, new Consumer<Filter>() {
+        @Override
+        public void accept(Filter input) {
+          selector.setAdditionalFilter(input);
+          event.resumeRequest(selector);
+        }
+      });
+    }
   }
 }

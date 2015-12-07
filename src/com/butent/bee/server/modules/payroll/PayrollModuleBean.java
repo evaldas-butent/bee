@@ -1,8 +1,10 @@
 package com.butent.bee.server.modules.payroll;
 
+import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
+import com.google.common.collect.Table;
 import com.google.common.eventbus.AllowConcurrentEvents;
 import com.google.common.eventbus.Subscribe;
 
@@ -10,10 +12,10 @@ import static com.butent.bee.shared.modules.administration.AdministrationConstan
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.payroll.PayrollConstants.*;
 
+import com.butent.bee.server.data.DataEvent.ViewQueryEvent;
 import com.butent.bee.server.data.DataEventHandler;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
-import com.butent.bee.server.data.DataEvent.ViewQueryEvent;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.modules.ParamHolderBean;
@@ -41,6 +43,7 @@ import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.payroll.Earning;
 import com.butent.bee.shared.modules.payroll.PayrollUtils;
+import com.butent.bee.shared.modules.payroll.WorkScheduleSummary;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.time.DateRange;
 import com.butent.bee.shared.time.JustDate;
@@ -59,9 +62,11 @@ import java.util.Objects;
 import java.util.Set;
 
 import javax.ejb.EJB;
+import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
 
 @Stateless
+@LocalBean
 public class PayrollModuleBean implements BeeModule {
 
   private static BeeLogger logger = LogUtils.getLogger(PayrollModuleBean.class);
@@ -129,6 +134,72 @@ public class PayrollModuleBean implements BeeModule {
     return null;
   }
 
+  public ResponseObject getEmployeeEarnings(String companyCode, Integer tabNumber,
+      Integer year, Integer month) {
+
+    if (BeeUtils.isEmpty(companyCode)) {
+      return ResponseObject.error("company code not specified");
+    }
+    if (!TimeUtils.isYear(year)) {
+      return ResponseObject.error("year not specified");
+    }
+    if (!TimeUtils.isMonth(month)) {
+      return ResponseObject.error("month not specified");
+    }
+
+    ResponseObject ecr = getEmployeeCondition(companyCode, tabNumber);
+    if (ecr.hasErrors()) {
+      return ecr;
+    }
+
+    if (!(ecr.getResponse() instanceof IsCondition)) {
+      return ResponseObject.error("cannot filter employees", companyCode, tabNumber);
+    }
+
+    IsCondition employeeCondition = (IsCondition) ecr.getResponse();
+
+    SqlSelect query = new SqlSelect()
+        .addFields(TBL_EMPLOYEES, COL_TAB_NUMBER)
+        .addFields(TBL_LOCATIONS, COL_LOCATION_NAME)
+        .addFields(TBL_EMPLOYEE_EARNINGS, COL_EARNINGS_APPROVED_AMOUNT)
+        .addFrom(TBL_EMPLOYEE_EARNINGS)
+        .addFromLeft(TBL_EMPLOYEES,
+            sys.joinTables(TBL_EMPLOYEES, TBL_EMPLOYEE_EARNINGS, COL_EMPLOYEE))
+        .addFromLeft(TBL_COMPANY_PERSONS,
+            sys.joinTables(TBL_COMPANY_PERSONS, TBL_EMPLOYEES, COL_COMPANY_PERSON))
+        .addFromLeft(TBL_LOCATIONS,
+            sys.joinTables(TBL_LOCATIONS, TBL_EMPLOYEE_EARNINGS, COL_PAYROLL_OBJECT))
+        .setWhere(
+            SqlUtils.and(employeeCondition,
+                SqlUtils.equals(TBL_EMPLOYEE_EARNINGS, COL_EARNINGS_YEAR, year),
+                SqlUtils.equals(TBL_EMPLOYEE_EARNINGS, COL_EARNINGS_MONTH, month),
+                SqlUtils.positive(TBL_EMPLOYEE_EARNINGS, COL_EARNINGS_APPROVED_AMOUNT)));
+
+    SimpleRowSet data = qs.getData(query);
+    if (DataUtils.isEmpty(data)) {
+      return ResponseObject.info("employee earnings not found", companyCode, tabNumber,
+          year, month);
+    }
+
+    Table<Integer, String, Double> table = HashBasedTable.create();
+
+    for (SimpleRow row : data) {
+      Integer tnr = row.getInt(COL_TAB_NUMBER);
+      String obj = row.getValue(COL_LOCATION_NAME);
+      Double amount = row.getDouble(COL_EARNINGS_APPROVED_AMOUNT);
+
+      if (BeeUtils.isPositive(tnr) && !BeeUtils.isEmpty(obj) && BeeUtils.isPositive(amount)) {
+        if (table.contains(tnr, obj)) {
+          amount += table.get(tnr, obj);
+        }
+
+        table.put(tnr, obj, amount);
+      }
+    }
+
+    return ResponseObject.response(table);
+  }
+
   @Override
   public Module getModule() {
     return Module.PAYROLL;
@@ -137,6 +208,102 @@ public class PayrollModuleBean implements BeeModule {
   @Override
   public String getResourcePath() {
     return getModule().getName();
+  }
+
+  public ResponseObject getWorkSchedule(String companyCode, Integer tabNumber, DateRange range) {
+    if (BeeUtils.isEmpty(companyCode)) {
+      return ResponseObject.error("company code not specified");
+    }
+    if (range == null) {
+      return ResponseObject.error("date range not specified");
+    }
+
+    ResponseObject ecr = getEmployeeCondition(companyCode, tabNumber);
+    if (ecr.hasErrors()) {
+      return ecr;
+    }
+
+    if (!(ecr.getResponse() instanceof IsCondition)) {
+      return ResponseObject.error("cannot filter employees", companyCode, tabNumber);
+    }
+
+    IsCondition employeeCondition = (IsCondition) ecr.getResponse();
+
+    JustDate from = range.getMinDate();
+    JustDate until = range.getMaxDate();
+
+    SqlSelect query = new SqlSelect()
+        .addFields(TBL_EMPLOYEES, COL_TAB_NUMBER)
+        .addFields(TBL_WORK_SCHEDULE, COL_WORK_SCHEDULE_DATE,
+            COL_TIME_RANGE_CODE, COL_TIME_CARD_CODE,
+            COL_WORK_SCHEDULE_FROM, COL_WORK_SCHEDULE_UNTIL, COL_WORK_SCHEDULE_DURATION)
+        .addField(TBL_TIME_RANGES, COL_TR_FROM, ALS_TR_FROM)
+        .addField(TBL_TIME_RANGES, COL_TR_UNTIL, ALS_TR_UNTIL)
+        .addField(TBL_TIME_RANGES, COL_TR_DURATION, ALS_TR_DURATION)
+        .addFields(TBL_TIME_CARD_CODES, COL_TC_CODE)
+        .addFrom(TBL_WORK_SCHEDULE)
+        .addFromLeft(TBL_TIME_RANGES,
+            sys.joinTables(TBL_TIME_RANGES, TBL_WORK_SCHEDULE, COL_TIME_RANGE_CODE))
+        .addFromLeft(TBL_TIME_CARD_CODES,
+            sys.joinTables(TBL_TIME_CARD_CODES, TBL_WORK_SCHEDULE, COL_TIME_CARD_CODE))
+        .addFromLeft(TBL_EMPLOYEES,
+            sys.joinTables(TBL_EMPLOYEES, TBL_WORK_SCHEDULE, COL_EMPLOYEE))
+        .addFromLeft(TBL_COMPANY_PERSONS,
+            sys.joinTables(TBL_COMPANY_PERSONS, TBL_EMPLOYEES, COL_COMPANY_PERSON))
+        .setWhere(
+            SqlUtils.and(employeeCondition,
+                SqlUtils.moreEqual(TBL_WORK_SCHEDULE, COL_WORK_SCHEDULE_DATE, from),
+                SqlUtils.lessEqual(TBL_WORK_SCHEDULE, COL_WORK_SCHEDULE_DATE, until)));
+
+    SimpleRowSet data = qs.getData(query);
+    if (DataUtils.isEmpty(data)) {
+      return ResponseObject.info("work schedule not found", companyCode, tabNumber, range);
+    }
+
+    Table<Integer, JustDate, WorkScheduleSummary> table = HashBasedTable.create();
+
+    long duration;
+    String tcCode;
+    WorkScheduleSummary wss;
+
+    for (SimpleRow row : data) {
+      if (DataUtils.isId(row.getLong(COL_TIME_CARD_CODE))) {
+        duration = BeeConst.LONG_UNDEF;
+        tcCode = row.getValue(COL_TC_CODE);
+
+      } else if (DataUtils.isId(row.getLong(COL_TIME_RANGE_CODE))) {
+        duration = PayrollUtils.getMillis(row.getValue(ALS_TR_FROM), row.getValue(ALS_TR_UNTIL),
+            row.getValue(ALS_TR_DURATION));
+        tcCode = null;
+
+      } else {
+        duration = PayrollUtils.getMillis(row.getValue(COL_WORK_SCHEDULE_FROM),
+            row.getValue(COL_WORK_SCHEDULE_UNTIL), row.getValue(COL_WORK_SCHEDULE_DURATION));
+        tcCode = null;
+      }
+
+      if (duration > 0 || !BeeUtils.isEmpty(tcCode)) {
+        Integer tnr = row.getInt(COL_TAB_NUMBER);
+        JustDate date = row.getDate(COL_WORK_SCHEDULE_DATE);
+
+        if (BeeUtils.isPositive(tnr) && date != null) {
+          if (table.contains(tnr, date)) {
+            wss = table.get(tnr, date);
+          } else {
+            wss = new WorkScheduleSummary();
+            table.put(tnr, date, wss);
+          }
+
+          if (duration > 0) {
+            wss.addMillis(duration);
+          } else {
+            wss.addTimeCardCode(tcCode);
+          }
+        }
+      }
+    }
+
+    return ResponseObject.response(table);
   }
 
   @Override
@@ -266,6 +433,36 @@ public class PayrollModuleBean implements BeeModule {
       return new Earning(days, millis, amount);
     } else {
       return null;
+    }
+  }
+
+  private ResponseObject getEmployeeCondition(String companyCode, Integer tabNumber) {
+    SqlSelect companyQuery = new SqlSelect()
+        .addFields(TBL_COMPANIES, sys.getIdName(TBL_COMPANIES))
+        .addFrom(TBL_COMPANIES)
+        .setWhere(SqlUtils.equals(TBL_COMPANIES, COL_COMPANY_CODE, companyCode));
+
+    List<Long> companies = qs.getLongList(companyQuery);
+
+    if (BeeUtils.isEmpty(companies)) {
+      return ResponseObject.error("Company code", companyCode, "not found");
+
+    } else if (companies.size() > 1) {
+      return ResponseObject.error("Company code", companyCode, "found", companies.size(),
+          "companies", companies);
+
+    } else {
+      Long company = companies.get(0);
+
+      IsCondition companyWhere = SqlUtils.equals(TBL_COMPANY_PERSONS, COL_COMPANY, company);
+
+      if (BeeUtils.isPositive(tabNumber)) {
+        return ResponseObject.response(SqlUtils.and(companyWhere,
+            SqlUtils.equals(TBL_EMPLOYEES, COL_TAB_NUMBER, tabNumber)));
+
+      } else {
+        return ResponseObject.response(companyWhere);
+      }
     }
   }
 

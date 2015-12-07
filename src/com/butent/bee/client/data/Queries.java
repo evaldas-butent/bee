@@ -644,6 +644,10 @@ public final class Queries {
     insertRow(rs, callback);
   }
 
+  public static void insertAndFire(String viewName, List<BeeColumn> columns, List<String> values) {
+    insert(viewName, columns, values, null, new RowInsertCallback(viewName));
+  }
+
   public static void insertRow(BeeRowSet rowSet, final RpcCallback<RowInfo> callback) {
     final String service = INSERT_ROW_SILENTLY;
 

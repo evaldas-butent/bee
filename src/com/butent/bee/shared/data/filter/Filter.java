@@ -26,6 +26,7 @@ import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.List;
 
 /**
@@ -73,6 +74,18 @@ public abstract class Filter implements BeeSerializable, RowFilter {
 
   public static Filter and(Filter f1, Filter f2, Filter f3, Filter f4) {
     return and(and(f1, f2), and(f3, f4));
+  }
+
+  public static Filter any(String column, EnumSet<? extends Enum<?>> enums) {
+    Assert.notEmpty(column);
+    Assert.notNull(enums);
+
+    CompoundFilter filter = Filter.or();
+
+    for (Enum<?> e : enums) {
+      filter.add(equals(column, e));
+    }
+    return filter;
   }
 
   public static Filter any(String column, Collection<Long> values) {
