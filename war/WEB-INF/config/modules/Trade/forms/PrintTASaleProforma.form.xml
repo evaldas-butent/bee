@@ -2,45 +2,19 @@
 <!DOCTYPE Form [
   <!ENTITY section "margin-top: 5px;">
   <!ENTITY bold "font-weight:bold;">
-  <!ENTITY form "PrintTradeActSalePhysical">
+  <!ENTITY form "PrintTASaleProforma">
   <!ENTITY hdr ".bee-form-PrintTradeActSalePhysical .bee-trade-itemsInfo-header .bee-trade-itemsInfo-">
 ]>
 <f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form" xmlns:ui="http://www.butent.com/ui"
-  name="&form;" caption="Perdavimo aktas" disabledActions="save" width="70" widthUnit="%" height="90" heightUnit="%">
+  name="&form;" caption="Išankstinė sąskaita" disabledActions="save" width="70" widthUnit="%" height="90" heightUnit="%">
   <FlowPanel style="padding: 10px; background-color: white; font-size:12px;" contentEditable="true"
     class="bee-form-TradeActPrint">
-    <!-- 
-    @DEPRECATED, media:print not supported :before of css rule 
-    <css id="&form;">
-      &hdr;Article:before {content: "Artikulas"}
-      &hdr;Quantity:before {content: "Kiekis"}
-      &hdr;Unit:before {content: "Mato vnt."}
-      &hdr;TimeUnit:before {content: "Laiko vnt."}
-      &hdr;ReturnedQty:before {content: "Grąžinta"}
-      &hdr;RemainingQty:before {content: "Liko"}
-      &hdr;DateFrom:before {content: "Data nuo"}
-      &hdr;DateTo:before {content: "Data iki"}
-      &hdr;Weight:before {content: "Svoris"}
-      &hdr;Area:before {content: "Plotas"}
-      &hdr;Tariff:before {content: "Tarifas"}
-      &hdr;Price:before {content: "Kaina"}
-      &hdr;Discount:before {content: "Nuol."}
-      &hdr;Amount:before {content: "Suma be PVM"}
-      &hdr;Vat:before {content: "PVM"}
-      &hdr;AmountTotal:before {content: "Suma"}
-      .bee-form-PrintTradeActSalePhysical .TradeActItems .bee-trade-itemsInfo-header .bee-trade-itemsInfo-Name:before {content: "Nuomojama įranga"}
-      .bee-form-PrintTradeActSalePhysical .TradeActServices .bee-trade-itemsInfo-header .bee-trade-itemsInfo-Name:before {content: "Teikiamos paslaugos/prekės"}
-      .bee-form-PrintTradeActSalePhysical .TradeActServices .bee-trade-itemsInfo-header .bee-trade-itemsInfo-AmountTotal:before {content: "Suma už min. term."}
-    </css>
-    -->
     <FlowPanel>
       <Image url="images/logo.png" style="position: relative;" />
       <FlowPanel style="margin-top:-35px;">
         <TextLabel style="text-align:center; &bold;">
           <render>
-            <ui:expression>'Įrenginių perdavimo aktas Nr. ' + row.SeriesName + '-' + (row.Number ?
-              row.Number :
-              rowId)</ui:expression>
+            <ui:expression>'IŠANKSTINĖ SĄSKAITA Nr. ' + rowId</ui:expression>
           </render>
         </TextLabel>
         <DateTimeLabel source="Date" format="DATE_TIME_SHORT" style="text-align: center;" />
@@ -97,6 +71,13 @@
     <FlowPanel name="TradeActItems" class="TradeActItems" style="&section;" />
     <br />
     <FlowPanel name="TradeActServices" class="TradeActServices" style="&section;" />
+    <FlowPanel name="TotalOf" style="&section; position: absolute;right: 0; padding-right: 5px; font-weight: bold" />
+    <br />
+    
+    <FlowPanel class="flexBox-horizontal" >
+      <Label html="Suma žodžiais " />
+      <Label name="TotalInWords" style="text-decoration: underline; padding-left:1em; font-style:italic;" />
+    </FlowPanel>
 
     <HtmlPanel style="&section;">
       <span style="display:block; white-space:pre-wrap; border:1px solid silver; margin-top: 20px;">Patabos: Grąžinama įranga turi būti nuvalyta ir išardyta taip, kaip buvo išduota. Įranga transporto priemonėje turi būti
@@ -104,49 +85,25 @@ sukrauta taip, kad būtų galima iškrauti šakiniais krautuvais. Už iškrovim�
     </HtmlPanel>
 
     <Table style="width:100%; margin-top:10px;">
-      <row>
-        <TextLabel source="Manager">
-          <renderToken source="ManagerFirstName" prefix="Perdavė: " />
-          <renderToken source="ManagerLastName" />
-        </TextLabel>
-        <FlowPanel class="flexBox-horizontal">
-          <TextLabel source="InputVehicle">
-            <dynStyle>
-              <ui:inline>display: none;</ui:inline>
-              <ui:expression>!row.InputVehicle</ui:expression>
-            </dynStyle>
-            <renderToken source="VehicleName" prefix="Transporto priemonė: " />
-          </TextLabel>
-          <TextLabel source="Vehicle">
-            <dynStyle>
-              <ui:inline>display: none;</ui:inline>
-              <ui:expression>row.InputVehicle</ui:expression>
-            </dynStyle>
-            <renderToken source="VehicleModel" prefix="Transporto priemonė: " />
-            <renderToken source="VehicleNumber" />
-          </TextLabel>
-        </FlowPanel>
+      <row style="text-align: right;">
+        <Label html="Išrašė" />
+        <cell style="border-bottom: 1px solid black; width:4cm;">
+          <br />
+        </cell>
+        <br />
+        <Label text="Priėmė:" />
+         <cell style="border-bottom: 1px solid black; width:4cm;">
+          <br />
+        </cell>
+        <br/>
       </row>
-      <row>
-        <Label text="Priėmė ir suskaičiavo:" />
-        <FlowPanel class="flexBox-horizontal">
-          <TextLabel source="InputDriver">
-            <dynStyle>
-              <ui:inline>display: none;</ui:inline>
-              <ui:expression>!row.InputDriver</ui:expression>
-            </dynStyle>
-            <renderToken source="DriverFirstName1" prefix="Vairuotojas: " />
-            <renderToken source="DriverLastName1" />
-          </TextLabel>
-          <TextLabel source="Driver">
-            <dynStyle>
-              <ui:inline>display: none;</ui:inline>
-              <ui:expression>row.InputDriver</ui:expression>
-            </dynStyle>
-            <renderToken source="DriverFirstName" prefix="Vairuotojas: " />
-            <renderToken source="DriverLastName" />
-          </TextLabel>
-        </FlowPanel>
+      <row style="vertical-align: sub; font-size:smaller;">
+      <br/>
+         <Label html="(Vardas, Pavardė, parašas)" style="/*padding: 2em 0 0 4em;*/" />
+       <br />
+       <br />
+         <Label html="(Vardas, Pavardė, parašas)" style="/*padding: 2em 0 0 4em;*/" />
+       <br />
       </row>
     </Table>
   </FlowPanel>

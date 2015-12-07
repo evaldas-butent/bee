@@ -71,6 +71,9 @@
       <SimpleJoin name="Company" joinType="LEFT">
         <SimpleColumn alias="ContactCompanyName" name="Name" />
       </SimpleJoin>
+       <SimpleJoin name="Position" joinType="LEFT">
+          <SimpleColumn name="Name" alias="ContactPositionName" />
+       </SimpleJoin>
     </SimpleJoin>
 
     <SimpleColumn name="Object" />
@@ -86,6 +89,9 @@
         <SimpleJoin name="Person" joinType="LEFT">
           <SimpleColumn name="FirstName" alias="ManagerFirstName" />
           <SimpleColumn name="LastName" alias="ManagerLastName" />
+        </SimpleJoin>
+        <SimpleJoin name="Position" joinType="LEFT">
+          <SimpleColumn name="Name" alias="ManagerPositionName" />
         </SimpleJoin>
         <SimpleJoin name="Contact" joinType="LEFT">
           <SimpleColumn alias="ManagerMobile" name="Mobile" />
