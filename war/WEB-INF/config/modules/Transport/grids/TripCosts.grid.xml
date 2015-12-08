@@ -6,9 +6,7 @@
   >
 
   <g:columns>
-    <DataColumn name="Date" caption="=date">
-      <carry><ui:expression>row.Date</ui:expression></carry>
-    </DataColumn>
+    <DataColumn name="Date" caption="=date" />
 
     <RelColumn name="Item" renderColumns="ItemName" />
     <DataColumn name="UnitName" />
@@ -56,4 +54,9 @@
 
     <DataColumn name="ExternalID" visible="false" />
   </g:columns>
+
+  <g:rowStyle>
+    <ui:inline>="color:green"</ui:inline>
+    <ui:expression>row.Exported</ui:expression>
+  </g:rowStyle>
 </g:Grid>

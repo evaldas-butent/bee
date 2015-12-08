@@ -1471,8 +1471,8 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
       values.put(COL_COSTS_QUANTITY,
           BeeUtils.toString(BeeUtils.toInt(values.get(COL_COSTS_QUANTITY)) + 1));
     }
-    DateTime date = qs.getDateTime(new SqlSelect()
-        .addFields(TBL_TRIPS, COL_TRIP_DATE)
+    SimpleRow dateRow = qs.getRow(new SqlSelect()
+        .addFields(TBL_TRIPS, COL_TRIP_DATE, COL_TRIP_DATE_TO)
         .addFrom(TBL_TRIPS)
         .setWhere(sys.idEquals(TBL_TRIPS, tripId)));
 
@@ -1490,7 +1490,8 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
       for (Map<String, String> values : map.values()) {
         SqlInsert insert = new SqlInsert(TBL_TRIP_COSTS)
             .addConstant(COL_TRIP, tripId)
-            .addConstant(COL_COSTS_DATE, date)
+            .addConstant(COL_COSTS_DATE,
+                BeeUtils.nvl(dateRow.getDate(COL_TRIP_DATE_TO), dateRow.getDateTime(COL_TRIP_DATE)))
             .addConstant(COL_DRIVER, driver)
             .addNotNull(COL_PAYMENT_TYPE, payment);
 

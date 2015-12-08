@@ -22,12 +22,16 @@ import com.butent.bee.client.grid.GridPanel;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.style.StyleUtils;
+import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.edit.Editor;
+import com.butent.bee.client.view.form.FormView;
+import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.InputNumber;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
@@ -35,6 +39,8 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.time.JustDate;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
@@ -178,5 +184,17 @@ public class TripCostsGrid extends AbstractGridInterceptor
       }
     }
     super.onEditStart(event);
+  }
+
+  @Override
+  public boolean onStartNewRow(GridView gridView, IsRow oldRow, IsRow newRow) {
+    FormView tripForm = ViewHelper.getForm(gridView);
+    JustDate date = TimeUtils.today();
+
+    if (tripForm != null && !BeeConst.isUndef(tripForm.getDataIndex(COL_TRIP_DATE_TO))) {
+      date = BeeUtils.nvl(tripForm.getDateValue(COL_TRIP_DATE_TO), date);
+    }
+    newRow.setValue(gridView.getDataIndex(COL_DATE), date);
+    return super.onStartNewRow(gridView, oldRow, newRow);
   }
 }

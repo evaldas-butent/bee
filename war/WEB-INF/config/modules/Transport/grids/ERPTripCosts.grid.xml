@@ -47,7 +47,7 @@
 
   <g:rowStyle>
     <ui:inline>="color:green"</ui:inline>
-    <ui:expression>row.Exported != null</ui:expression>
+    <ui:expression>row.Exported</ui:expression>
   </g:rowStyle>
 
   <g:predefinedFilter name="active" label="Neišsiųstos" initial="true">
