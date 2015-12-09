@@ -27,4 +27,13 @@
     <Label for="Project" />
     <DataSelector source="Project" style="&inp;"  readOnly="true"/>
   </row>
+
+  <row>
+    <Label for="Number" />
+    <InputText source="Number" style="&inp;" />
+    <Label for="Name" class="bee-required"/>
+    <InputText source="Name" style="&inp;" required="true" />
+    <br />
+    <br />
+  </row>
 </Table>

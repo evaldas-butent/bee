@@ -32,6 +32,8 @@
     <IdColumn name="Id" />
     <DataColumn name="CategoryName" visible="false" />
     <DataColumn name="Address" visible="true" />
+    <DataColumn name="Number" />
+    <DataColumn name="Name" />
 
     <RelColumn name="Customer" renderColumns="CustomerName" visible="true" />
     <RelColumn name="Contractor" />
