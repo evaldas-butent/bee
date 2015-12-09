@@ -10,6 +10,9 @@
     <Enum name="Status" key="SvcObjectStatus" notNull="true" defValue="0"
       label="=svcObjectStatus" />
 
+    <String name="Number" precision="256" label="=svcObjectNumber"/>
+    <String name="Name" precision="256" label="=svcObjectName" />
+
     <Relation name="Customer" relation="Companies" label="=customer" />
     <Relation name="Contractor" relation="Companies" label="=svcContractor" />
     <Relation name="Project" relation="Projects" label="=project" />
