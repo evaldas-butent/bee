@@ -1,16 +1,13 @@
 package com.butent.bee.client.dialog;
 
-public abstract class ChoiceCallback {
+@FunctionalInterface
+public interface ChoiceCallback {
 
-  public ChoiceCallback() {
-    super();
+  default void onCancel() {
   }
 
-  public void onCancel() {
-  }
+  void onSuccess(int value);
 
-  public abstract void onSuccess(int value);
-
-  public void onTimeout() {
+  default void onTimeout() {
   }
 }
