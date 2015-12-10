@@ -2,6 +2,7 @@
 <!DOCTYPE Form [
   <!ENTITY clbl "text-align: right;">
   <!ENTITY inp "width: 200px;">
+  <!ENTITY inline "display:inline-block;">
 ]>
 <f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form"
   
@@ -45,6 +46,22 @@
       <DataSelector source="Reminder" style="&inp;" newRowEnabled="false" />
       <Label for="Description" />
       <InputArea source="Description" style="&inp;" />
+    </row>
+    <row>
+      <Label data="TaskTMLUsers" text="=crmTaskExecutors"/>
+      <MultiSelector name="Executors" viewName="Users" property="Executors" renderColumns="FirstName LastName"
+        newRowEnabled="false" style="&inp;"/>
+      <Label data="TaskTMLUsers" text="=crmTaskObservers"/>
+      <MultiSelector name="Observers" viewName="Users" property="Observers" renderColumns="FirstName LastName"
+        newRowEnabled="false" style="&inp;" />
+    </row>
+     <row>
+      <Label data="TaskTMLFiles" text="=crmTaskFiles"/>
+      <FileCollector name="Files" editableColumns="name" style="&inline;">
+        <face resource="attachment" />
+      </FileCollector>
+      <br />
+      <br />
     </row>
   </Table>
 </f:Form>

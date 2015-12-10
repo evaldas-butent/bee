@@ -474,6 +474,8 @@
       <xs:enumeration value="TaskFiles" />
       <xs:enumeration value="Tasks" />
       <xs:enumeration value="TaskTemplates" />
+      <xs:enumeration value="TaskTMLFiles" />
+      <xs:enumeration value="TaskTMLUsers" />
       <xs:enumeration value="TaskTypes" />
       <xs:enumeration value="TaskUsers" />
       <xs:enumeration value="TcdArticleCategories" />
