@@ -76,6 +76,10 @@ public final class Settings {
     return (d == null) ? BeeConst.UNDEF : BeeUtils.toInt(d);
   }
 
+  public static int getLoadingStateDelayMillis() {
+    return getInt("loadingStateDelayMillis");
+  }
+
   public static int getLogCapacity() {
     return getInt("logCapacity");
   }
