@@ -84,11 +84,11 @@ public abstract class CrudWorker {
       commit(new Runnable() {
         @Override
         public void run() {
-          ResponseObject response = deb.deleteRows(getViewName(),
+          ResponseObject resp = deb.deleteRows(getViewName(),
               new RowInfo[] {new RowInfo(id, version)});
 
-          if (response.hasErrors()) {
-            throw new BeeRuntimeException(ArrayUtils.joinWords(response.getErrors()));
+          if (resp.hasErrors()) {
+            throw new BeeRuntimeException(ArrayUtils.joinWords(resp.getErrors()));
           }
         }
       });
