@@ -58,6 +58,8 @@ public interface FormView extends DataView, HasDataTable, ActiveWidgetChangeEven
 
   void editRow(IsRow rowValue, Scheduler.ScheduledCommand focusCommand);
 
+  String getFavorite();
+
   boolean focus(String source);
 
   int flush();

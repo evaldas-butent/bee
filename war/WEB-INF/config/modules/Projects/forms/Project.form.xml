@@ -11,7 +11,7 @@
 
 <f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form"
   name="Project" viewName="Projects"
-  caption="=project" width="950" widthUnit="px" height="95" heightUnit="%" >
+  caption="=project" width="950" widthUnit="px" height="95" heightUnit="%" favorite="Name" >
   <FlowPanel>
     <Table kind="controls" class="bee-ProjectTable">
       <!--

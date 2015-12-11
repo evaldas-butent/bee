@@ -9,7 +9,7 @@
   xmlns:f="http://www.butent.com/form"
   xmlns:xi="http://www.w3.org/2001/XInclude"
 
-  name="Calendar" viewName="Calendars" caption="=calendar">
+  name="Calendar" viewName="Calendars" caption="=calendar" favorite="Name">
 
   <FlowPanel class="flexBox-vertical">
     <Table kind="controls" style="&tbl;" cellStyle="&cell;">

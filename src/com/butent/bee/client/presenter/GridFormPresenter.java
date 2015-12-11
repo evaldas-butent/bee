@@ -4,6 +4,8 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.Callback;
+import com.butent.bee.client.Global;
+import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.IdCallback;
 import com.butent.bee.client.data.ParentRowCreator;
 import com.butent.bee.client.dom.ElementSize;
@@ -24,8 +26,12 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.ui.Action;
+import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.NameUtils;
 
+import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Set;
 
 public class GridFormPresenter extends AbstractPresenter implements HasGridView, Printable,
@@ -52,10 +58,17 @@ public class GridFormPresenter extends AbstractPresenter implements HasGridView,
 
   private final boolean editSave;
 
+  private List<String> favorite = new ArrayList<>();
+
   public GridFormPresenter(GridView gridView, FormView formView, String caption,
       Set<Action> actions, boolean edit, boolean editSave) {
 
     this.gridView = gridView;
+
+    if (!BeeUtils.isEmpty(formView.getFavorite())) {
+      actions.add(Action.BOOKMARK);
+      favorite.addAll(NameUtils.toList(formView.getFavorite()));
+    }
 
     this.header = createHeader(caption, actions, edit);
     this.container = createContainer(this.header, formView, edit);
@@ -167,6 +180,13 @@ public class GridFormPresenter extends AbstractPresenter implements HasGridView,
           Printer.print(this);
         } else {
           Printer.print(getForm());
+        }
+        break;
+
+      case BOOKMARK:
+        if (!BeeUtils.isEmpty(getForm().getViewName()) && getForm().getActiveRow() != null) {
+          Global.getFavorites().bookmark(getForm().getViewName(), getForm().getActiveRow(),
+              Data.getColumns(getForm().getViewName()), favorite);
         }
         break;
 

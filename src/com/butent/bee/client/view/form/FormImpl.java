@@ -356,6 +356,8 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
 
   private boolean readOnly;
 
+  private String favorite;
+
   private String caption;
   private boolean showRowId;
 
@@ -533,6 +535,8 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   public void create(FormDescription formDescription, String view, List<BeeColumn> dataCols,
       boolean addStyle, FormInterceptor interceptor) {
     Assert.notNull(formDescription);
+
+    setFavorite(formDescription.getFavorite());
 
     setViewName(BeeUtils.notEmpty(view, formDescription.getViewName()));
     setDataColumns(dataCols);
@@ -1527,6 +1531,10 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
     getRootWidget().asWidget().setStyleName(STYLE_FORM_DISABLED, !enabled);
   }
 
+  public void setFavorite(String favorite) {
+    this.favorite = favorite;
+  }
+
   @Override
   public void setHandlesTabulation(boolean handlesTabulation) {
   }
@@ -2263,5 +2271,10 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
 
   private boolean showRowId() {
     return showRowId;
+  }
+
+  @Override
+  public String getFavorite() {
+    return favorite;
   }
 }
