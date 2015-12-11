@@ -705,7 +705,7 @@ public class Rooms implements HasInfo {
     ownersLabel.addStyleName(StyleUtils.NAME_REQUIRED);
     table.setWidgetAndStyle(row, 0, ownersLabel, stylePrefix + "ownersLabel");
 
-    final MultiSelector ownersWidget = MultiSelector.autonomous(AdministrationConstants.TBL_USERS,
+    final MultiSelector ownersWidget = MultiSelector.autonomous(AdministrationConstants.VIEW_USERS,
         Lists.newArrayList(COL_FIRST_NAME, COL_LAST_NAME));
     if (!BeeUtils.isEmpty(roomSettings.getOwners())) {
       ownersWidget.setIds(roomSettings.getOwners());
@@ -717,7 +717,7 @@ public class Rooms implements HasInfo {
     table.setWidgetAndStyle(row, 0, dwellersLabel, stylePrefix + "dwellersLabel");
 
     final MultiSelector dwellersWidget =
-        MultiSelector.autonomous(AdministrationConstants.TBL_USERS,
+        MultiSelector.autonomous(AdministrationConstants.VIEW_USERS,
             Lists.newArrayList(COL_FIRST_NAME, COL_LAST_NAME));
     if (!BeeUtils.isEmpty(roomSettings.getDwellers())) {
       dwellersWidget.setIds(roomSettings.getDwellers());

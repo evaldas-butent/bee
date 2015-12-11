@@ -9,7 +9,7 @@
     <DataColumn name="Login" visible="true" />
 
     <RelColumn name="CompanyPerson" renderColumns="FirstName LastName"
-      label="=personFullName" visible="true" />
+      label="=personFullName" sortBy="LastName FirstName" visible="true" />
     <DataColumn name="CompanyName" label="=company" />
 
     <DataColumn name="PositionName" label="=personPosition" visible="false" />

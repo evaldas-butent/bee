@@ -46,12 +46,12 @@ public class Worker {
     long time = System.currentTimeMillis();
 
     IsCondition clause = SqlUtils.or(
-        SqlUtils.and(SqlUtils.isNull(TBL_USERS, COL_USER_BLOCK_AFTER),
-            SqlUtils.isNull(TBL_USERS, COL_USER_BLOCK_BEFORE)),
-        SqlUtils.and(SqlUtils.notNull(TBL_USERS, COL_USER_BLOCK_AFTER),
-            SqlUtils.more(TBL_USERS, COL_USER_BLOCK_AFTER, time)),
-        SqlUtils.and(SqlUtils.notNull(TBL_USERS, COL_USER_BLOCK_BEFORE),
-            SqlUtils.less(TBL_USERS, COL_USER_BLOCK_BEFORE, time)));
+        SqlUtils.and(SqlUtils.isNull(TBL_USERS, COL_USER_BLOCK_FROM),
+            SqlUtils.isNull(TBL_USERS, COL_USER_BLOCK_UNTIL)),
+        SqlUtils.and(SqlUtils.notNull(TBL_USERS, COL_USER_BLOCK_FROM),
+            SqlUtils.more(TBL_USERS, COL_USER_BLOCK_FROM, time)),
+        SqlUtils.and(SqlUtils.notNull(TBL_USERS, COL_USER_BLOCK_UNTIL),
+            SqlUtils.less(TBL_USERS, COL_USER_BLOCK_UNTIL, time)));
 
     if (Objects.nonNull(lastSynced)) {
       clause = SqlUtils.and(clause,
