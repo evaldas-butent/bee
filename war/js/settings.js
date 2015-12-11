@@ -7,6 +7,7 @@ var BeeSettings = {
   "providerRepeatMillis": 200,
   "providerMinPrefetchSteps": 1,
   "providerMaxPrefetchSteps": 100,
+  "loadingStateDelayMillis": 300,
   "logCapacity": 10000,
   "minimizeNumberOfConcurrentRequests": true,
   "showCommands": "mail, users, company_structure",

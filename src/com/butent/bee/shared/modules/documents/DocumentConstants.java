@@ -7,6 +7,7 @@ public final class DocumentConstants {
   public static final String SVC_CREATE_PDF_DOCUMENT = "create_pdf_document";
 
   public static final String PRM_PRINT_AS_PDF = "PrintAsPDF";
+  public static final String PRM_PRINT_SIZE = "PrintPageSize";
   public static final String PRM_PRINT_HEADER = "PrintPageHeader";
   public static final String PRM_PRINT_FOOTER = "PrintPageFooter";
   public static final String PRM_PRINT_MARGINS = "PrintPageMargins";

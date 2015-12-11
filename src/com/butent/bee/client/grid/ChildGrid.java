@@ -133,6 +133,8 @@ public class ChildGrid extends EmbeddedGrid implements Launchable {
     gp.setEventSource(getId());
     setPresenter(gp);
 
+    gp.getMainView().setEnabled(false);
+
     gridView.addReadyHandler(new ReadyEvent.Handler() {
       @Override
       public void onReady(ReadyEvent event) {

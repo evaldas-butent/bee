@@ -2,6 +2,7 @@ package com.butent.bee.client.presenter;
 
 import com.google.common.collect.Lists;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
@@ -26,6 +27,7 @@ import com.butent.bee.client.modules.administration.HistoryHandler;
 import com.butent.bee.client.output.Exporter;
 import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.style.StyleUtils;
+import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.ui.WidgetInitializer;
 import com.butent.bee.client.view.GridContainerImpl;
@@ -223,9 +225,13 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
   private Pair<Boolean, Boolean> pendingRefresh;
   private boolean ready;
 
+  private final int loadingStateDelay;
+  private final Timer loadingStateTimer;
+
   public GridPresenter(GridDescription gridDescription, GridView gridView, int rowCount,
       BeeRowSet rowSet, ProviderType providerType, CachingPolicy cachingPolicy,
       Collection<UiOption> uiOptions) {
+
     this(gridDescription, gridView, rowCount, rowSet, providerType, cachingPolicy, uiOptions,
         null, null, null, null, null, null, null);
   }
@@ -261,6 +267,19 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
 
     if (!BeeUtils.isEmpty(gridDescription.getFavorite())) {
       favorite.addAll(NameUtils.toList(gridDescription.getFavorite()));
+    }
+
+    this.loadingStateDelay = UiHelper.getLoadingStateDelayMillis();
+
+    if (loadingStateDelay > 0) {
+      this.loadingStateTimer = new Timer() {
+        @Override
+        public void run() {
+          setLoading(true);
+        }
+      };
+    } else {
+      this.loadingStateTimer = null;
     }
 
     bind();
@@ -701,8 +720,20 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
 
   @Override
   public void onStateChange(State state) {
-    getMainView().setStyleName(StyleUtils.NAME_LOADING,
-        state == State.LOADING || state == State.PENDING);
+    if (state == State.LOADING || state == State.PENDING) {
+      if (loadingStateTimer == null) {
+        setLoading(true);
+      } else if (!loadingStateTimer.isRunning()) {
+        loadingStateTimer.schedule(loadingStateDelay);
+      }
+
+    } else {
+      if (loadingStateTimer != null && loadingStateTimer.isRunning()) {
+        loadingStateTimer.cancel();
+      }
+
+      setLoading(false);
+    }
   }
 
   @Override
@@ -1075,6 +1106,10 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
         }
       }
     });
+  }
+
+  private void setLoading(boolean loading) {
+    getMainView().setStyleName(StyleUtils.NAME_LOADING, loading);
   }
 
   private void setReady(boolean ready) {

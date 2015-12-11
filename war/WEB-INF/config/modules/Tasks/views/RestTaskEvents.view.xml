@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+      name="RestTaskEvents" source="TaskEvents"
+    >
+  <Columns>
+    <SimpleColumn name="Task" alias="TaskID" />
+    <SimpleColumn name="Publisher" alias="PublisherID" />
+    <SimpleColumn name="PublishTime" />
+    <SimpleColumn name="Comment" />
+    <SimpleColumn name="Event" />
+    <SimpleColumn name="EventNote" />
+
+    <SimpleJoin name="EventDuration" joinType="LEFT">
+      <SimpleColumn name="DurationType" alias="DurationTypeID" />
+      <SimpleJoin name="DurationType" joinType="LEFT">
+        <SimpleColumn name="Name" alias="DurationType" />
+      </SimpleJoin>
+
+      <SimpleColumn name="DurationDate" />
+      <SimpleColumn name="Duration" />
+    </SimpleJoin>
+  </Columns>
+</View>

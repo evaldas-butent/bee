@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+      name="RestTaskFiles" source="TaskFiles"
+    >
+  <Columns>
+    <SimpleColumn name="Task" alias="TaskID" />
+    <SimpleColumn name="TaskEvent" alias="TaskEventID" />
+    <SimpleColumn name="File" alias="FileID" />
+    <SimpleColumn name="Caption" />
+  </Columns>
+</View>

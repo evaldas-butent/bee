@@ -130,7 +130,7 @@ public class ImportBean {
         BeeView view = sys.getView(viewName);
 
         for (ViewColumn col : view.getViewColumns()) {
-          if (col.isReadOnly() || !BeeUtils.unbox(col.getEditable())
+          if (col.isHidden() || col.isReadOnly() || !BeeUtils.unbox(col.getEditable())
               && BeeUtils.isPositive(col.getLevel())) {
             continue;
           }
@@ -745,10 +745,10 @@ public class ImportBean {
             if (!BeeUtils.isPositive(qty)) {
               return false;
             }
-            if (!BeeUtils.isPositive(prc)) {
+            if (BeeUtils.isZero(prc)) {
               prc = BeeUtils.round(toDouble(values.get(COL_AMOUNT)) / qty, 5);
             }
-            if (BeeUtils.isPositive(prc)) {
+            if (!BeeUtils.isZero(prc)) {
               values.put(COL_COSTS_PRICE, BeeUtils.toString(prc));
             } else {
               return false;

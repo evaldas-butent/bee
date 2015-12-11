@@ -113,6 +113,11 @@
               <InputSpinner source="NewsRefreshIntervalSeconds" minValue="0" maxValue="1000"
                 step="10" style="width: 60px;" summarize="true" />
             </row>
+            <row>
+              <Label for="LoadingStateDelayMillis" />
+              <InputSpinner source="LoadingStateDelayMillis" minValue="0" maxValue="3000" step="50"
+                style="width: 60px;" summarize="true" />
+            </row>
           </Table>
         </FlowPanel>
       </page>
