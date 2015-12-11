@@ -216,7 +216,9 @@ public class TasksModuleBean implements BeeModule {
   public Collection<BeeParameter> getDefaultParameters() {
     String module = getModule().getName();
     List<BeeParameter> params = Lists.newArrayList(
-        BeeParameter.createText(module, PRM_END_OF_WORK_DAY));
+        BeeParameter.createTimeOfDay(module, PRM_END_OF_WORK_DAY),
+        BeeParameter.createTimeOfDay(module, PRM_START_OF_WORK_DAY)
+        );
     return params;
   }
 
@@ -1828,10 +1830,17 @@ public class TasksModuleBean implements BeeModule {
     ResponseObject response = ResponseObject.emptyResponse();
     String label = "mail new task";
 
-    SqlSelect query = new SqlSelect()
-        .addFields(TBL_TASKS, COL_SUMMARY, COL_DESCRIPTION, COL_OWNER,
-            COL_EXECUTOR, COL_START_TIME, COL_FINISH_TIME)
-        .addFrom(TBL_TASKS);
+    SqlSelect query =
+        new SqlSelect()
+            .addFields(TBL_TASKS, COL_SUMMARY, COL_DESCRIPTION, COL_OWNER,
+                COL_EXECUTOR, COL_START_TIME, COL_FINISH_TIME)
+            .addField(TBL_COMPANIES, COL_COMPANY_NAME, ALS_COMPANY_NAME)
+            .addField(TBL_COMPANY_TYPES, COL_COMPANY_TYPE_NAME, ALS_COMPANY_TYPE_NAME)
+            .addFrom(TBL_TASKS)
+            .addFromLeft(TBL_COMPANIES,
+                sys.joinTables(TBL_COMPANIES, TBL_TASKS, COL_COMPANY))
+            .addFromLeft(TBL_COMPANY_TYPES,
+                sys.joinTables(TBL_COMPANY_TYPES, TBL_COMPANIES, COL_COMPANY_TYPE));
 
     HasConditions where = SqlUtils.and(SqlUtils.equals(TBL_TASKS, COL_TASK_ID, taskId));
 
@@ -1868,9 +1877,12 @@ public class TasksModuleBean implements BeeModule {
       return response;
     }
 
-    Document document = taskToHtml(taskId, row.getDateTime(COL_START_TIME),
-        row.getDateTime(COL_FINISH_TIME), row.getValue(COL_SUMMARY),
-        row.getValue(COL_DESCRIPTION), row.getLong(COL_OWNER), executor, constants);
+    Document document =
+        taskToHtml(taskId, row.getDateTime(COL_START_TIME),
+            row.getDateTime(COL_FINISH_TIME), row.getValue(COL_SUMMARY),
+            row.getValue(COL_DESCRIPTION), BeeUtils.joinItems(row.getValue(ALS_COMPANY_NAME), row
+                .getValue(ALS_COMPANY_TYPE_NAME)), row.getLong(COL_OWNER),
+            executor, constants);
     String content = document.buildLines();
 
     logger.info(label, taskId, "mail to", executor, recipientEmail);
@@ -2223,7 +2235,13 @@ public class TasksModuleBean implements BeeModule {
             COL_EXECUTOR, COL_START_TIME, COL_FINISH_TIME, COL_REMINDER_TIME, COL_REMINDER_SENT)
         .addFields(TBL_REMINDER_TYPES, COL_REMINDER_HOURS,
             COL_REMINDER_MINUTES)
+        .addField(TBL_COMPANIES, COL_COMPANY_NAME, ALS_COMPANY_NAME)
+        .addField(TBL_COMPANY_TYPES, COL_COMPANY_TYPE_NAME, ALS_COMPANY_TYPE_NAME)
         .addFrom(TBL_TASKS)
+        .addFromLeft(TBL_COMPANIES,
+            sys.joinTables(TBL_COMPANIES, TBL_TASKS, COL_COMPANY))
+        .addFromLeft(TBL_COMPANY_TYPES,
+            sys.joinTables(TBL_COMPANY_TYPES, TBL_COMPANIES, COL_COMPANY_TYPE))
         .addFromInner(TBL_REMINDER_TYPES,
             sys.joinTables(TBL_REMINDER_TYPES, TBL_TASKS, COL_REMINDER))
         .setWhere(SqlUtils.and(
@@ -2293,9 +2311,12 @@ public class TasksModuleBean implements BeeModule {
         continue;
       }
 
-      Document document = taskToHtml(taskId, row.getDateTime(COL_START_TIME),
-          row.getDateTime(COL_FINISH_TIME), row.getValue(COL_SUMMARY),
-          row.getValue(COL_DESCRIPTION), row.getLong(COL_OWNER), executor, constants);
+      Document document =
+          taskToHtml(taskId, row.getDateTime(COL_START_TIME),
+              row.getDateTime(COL_FINISH_TIME), row.getValue(COL_SUMMARY),
+              row.getValue(COL_DESCRIPTION), BeeUtils.joinItems(row.getValue(ALS_COMPANY_NAME), row
+                  .getValue(ALS_COMPANY_TYPE_NAME)), row.getLong(COL_OWNER),
+              executor, constants);
       String content = document.buildLines();
 
       logger.info(label, taskId, "mail to", executor, recipientEmail);
@@ -2535,7 +2556,7 @@ public class TasksModuleBean implements BeeModule {
   }
 
   private Document taskToHtml(long taskId, DateTime startTime, DateTime finishTime,
-      String summary, String description, Long owner, Long executor,
+      String summary, String description, String company, Long owner, Long executor,
       LocalizableConstants constants) {
 
     String caption = BeeUtils.joinWords(constants.crmTask(), taskId);
@@ -2563,6 +2584,12 @@ public class TasksModuleBean implements BeeModule {
       fields.append(tr().append(
           td().verticalAlign(VerticalAlign.TOP).text(constants.crmTaskDescription()),
           td().whiteSpace(WhiteSpace.PRE_LINE).text(BeeUtils.trim(description))));
+    }
+
+    if (!BeeUtils.isEmpty(company)) {
+      fields.append(tr().append(
+          td().text(constants.company()),
+          td().text(company)));
     }
 
     if (owner != null) {

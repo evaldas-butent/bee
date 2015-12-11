@@ -175,7 +175,7 @@
           <FlowPanel style="&section;" data="Relations" for="Discussion" module="Discussions">
             <Label text="=discussions" style="&top1;" />
             <MultiSelector viewName="Discussions" property="Discussions"
-              renderColumns="Subject" newRowEnabled="false" style="&inp2x;" disablable="true" summarize="true"/>
+              renderColumns="Subject" newRowEnabled="true" style="&inp2x;" disablable="true" summarize="true"/>
           </FlowPanel>
 
           <FlowPanel style="&section;" data="Relations" for="ServiceObject" module="Service">
@@ -197,7 +197,7 @@
             <MultiSelector viewName="Tasks" property="Tasks"
               renderColumns="Id Summary ExecutorFirstName ExecutorLastName"
               choiceColumns="Id Summary ExecutorFirstName ExecutorLastName StartTime FinishTime"
-              newRowEnabled="false" style="&inp2x;" disablable="true" summarize="true"/>
+              newRowEnabled="true" style="&inp2x;" disablable="true" summarize="true"/>
           </FlowPanel>
         </FlowPanel>
       </FlowPanel>

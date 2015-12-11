@@ -675,6 +675,17 @@ class TaskEditor extends AbstractFormInterceptor {
 
     setProjectStagesFilter(form, row);
     setProjectUsersFilter(form, row);
+
+    if (isExecutor()) {
+      setEnabledRelations();
+    }
+  }
+
+  @Override
+  public void beforeRefresh(FormView form, IsRow row) {
+    if (isExecutor()) {
+      setEnabledRelations();
+    }
   }
 
   @Override
@@ -684,7 +695,8 @@ class TaskEditor extends AbstractFormInterceptor {
 
   @Override
   public boolean isRowEditable(IsRow row) {
-    return row != null && BeeKeeper.getUser().is(row.getLong(getDataIndex(COL_OWNER)));
+    return row != null && (BeeKeeper.getUser().is(row.getLong(getDataIndex(COL_OWNER))) ||
+        BeeKeeper.getUser().is(row.getLong(getDataIndex(COL_EXECUTOR))));
   }
 
   @Override
@@ -1011,7 +1023,7 @@ class TaskEditor extends AbstractFormInterceptor {
 
     List<String> notes = getUpdateNotes(Data.getDataInfo(viewName), oldRow, newRow);
 
-    if (form.isEnabled()) {
+    if (form.isEnabled() || !getUpdatedRelations(oldRow, newRow).isEmpty()) {
       if (!TaskUtils.sameObservers(oldRow, newRow)) {
         String oldObservers = oldRow.getProperty(PROP_OBSERVERS);
         String newObservers = newRow.getProperty(PROP_OBSERVERS);
@@ -1185,6 +1197,7 @@ class TaskEditor extends AbstractFormInterceptor {
     });
 
     dialog.display();
+    dialog.focusOnOpen(DomUtils.getWidget(cid));
   }
 
   private void doCancel() {
@@ -1269,19 +1282,30 @@ class TaskEditor extends AbstractFormInterceptor {
 
         String comment = dialog.getComment(cid);
 
-        BeeRow newRow = getNewRow(TaskStatus.COMPLETED);
+        TaskStatus status;
+        TaskEvent event;
+
+        if (isOwner() && isExecutor()) {
+          status = TaskStatus.APPROVED;
+          event = TaskEvent.APPROVE;
+        } else {
+          status = TaskStatus.COMPLETED;
+          event = TaskEvent.COMPLETE;
+        }
+        BeeRow newRow = getNewRow(status);
         newRow.setValue(getFormView().getDataIndex(COL_COMPLETED), completed);
 
-        ParameterList params = createParams(TaskEvent.COMPLETE, newRow, comment);
+        ParameterList params = createParams(event, newRow, comment);
 
         if (setDurationParams(dialog, durIds, params)) {
-          sendRequest(params, TaskEvent.COMPLETE, dialog.getFiles(fid));
+          sendRequest(params, event, dialog.getFiles(fid));
           dialog.close();
         }
       }
     });
 
     dialog.display();
+    dialog.focusOnOpen(DomUtils.getWidget(cid));
   }
 
   private void doCreate(final Long eventId, final IsRow taskRow) {
@@ -1543,6 +1567,7 @@ class TaskEditor extends AbstractFormInterceptor {
     final String obs = dialog.addCheckBox(true);
 
     final String cid = dialog.addComment(true);
+    final String fid = dialog.addFileCollector();
 
     dialog.addAction(Localized.getConstants().crmActionForward(), new ScheduledCommand() {
       @Override
@@ -1593,8 +1618,7 @@ class TaskEditor extends AbstractFormInterceptor {
         }
 
         ParameterList params = createParams(TaskEvent.FORWARD, newRow, comment);
-
-        sendRequest(params, TaskEvent.FORWARD);
+        sendRequest(params, TaskEvent.FORWARD, dialog.getFiles(fid));
         dialog.close();
       }
     });
@@ -1938,6 +1962,14 @@ class TaskEditor extends AbstractFormInterceptor {
         setProjectUsers(userIds);
       }
     });
+  }
 
+  private void setEnabledRelations() {
+    for (String relation : relations) {
+      MultiSelector selector = getMultiSelector(getFormView(), relation);
+      if (selector != null) {
+        selector.setEnabled(true);
+      }
+    }
   }
 }
