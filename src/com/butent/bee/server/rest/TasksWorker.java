@@ -2,23 +2,12 @@ package com.butent.bee.server.rest;
 
 import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
 
-import com.butent.bee.shared.data.BeeColumn;
-import com.butent.bee.shared.data.BeeRow;
-import com.butent.bee.shared.data.BeeRowSet;
-import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.Operator;
-import com.butent.bee.shared.data.view.DataInfo;
-import com.butent.bee.shared.exceptions.BeeException;
-import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.logging.LogUtils;
-import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.EnumSet;
-import java.util.Objects;
 
-import javax.json.JsonObject;
 import javax.ws.rs.Path;
 
 @Path("tasks")
@@ -49,48 +38,5 @@ public class TasksWorker extends CrudWorker {
   @Override
   protected String getViewName() {
     return "RestTasks";
-  }
-
-  @Override
-  public RestResponse update(Long id, Long version, JsonObject data) {
-    if (!usr.canEditData(getViewName())) {
-      return RestResponse.forbidden();
-    }
-    RestResponse error = null;
-
-    try {
-      commit(new Runnable() {
-        @Override
-        public void run() {
-          BeeRowSet updated = update(getViewName(), id, version, data);
-
-          if (!DataUtils.isEmpty(updated)) {
-            DataInfo info = sys.getDataInfo(getViewName());
-            BeeRow row = DataUtils.createEmptyRow(info.getColumnCount());
-
-            for (String col : data.keySet()) {
-              BeeColumn column = info.getColumn(col);
-
-              if (Objects.nonNull(column)) {
-                row.setValue(info.getColumnIndex(col), getValue(data, col));
-              }
-            }
-            for (BeeColumn column : updated.getColumns()) {
-              String note = BeeUtils.join(": ", Localized.getLabel(column),
-                  DataUtils.render(info, row, column, info.getColumnIndex(column.getId())));
-              LogUtils.getRootLogger().warning(note);
-            }
-          }
-        }
-      });
-    } catch (BeeException e) {
-      error = RestResponse.error(e);
-    }
-    RestResponse response = get(id);
-
-    if (Objects.nonNull(error)) {
-      response = error.setResult(response.getResult());
-    }
-    return response;
   }
 }

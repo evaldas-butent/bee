@@ -256,26 +256,26 @@ public abstract class CrudWorker {
           if (isReadOnly(column) || columns.containsKey(column.getId())) {
             continue;
           }
-          String oldValue = getValue(oldData, col);
-          String value = getValue(data, col);
+          String oldValue;
+          String value;
 
           if (column.isForeign()) {
-            column = getParentColumn(view, column);
+            String parentCol = view.getColumnParent(col);
+            column = getParentColumn(view, parentCol);
 
-            if (columns.containsKey(column.getId())) {
-              continue;
-            }
             String key = getValue(data, column.getId());
-            String table = view.getColumnTable(col);
 
-            if (oldData.containsKey(column.getId())) {
-              oldValue = getValue(oldData, column.getId());
-              value = key;
+            if (!DataUtils.isId(key) || oldData.containsKey(column.getId())) {
+              value = getRelation(view, parentCol, data);
 
-            } else if (BeeUtils.isEmpty(key)) {
-              oldValue = getRelation(table, getFields(view, view.getColumnParent(col), oldData));
-              value = getRelation(table, getFields(view, view.getColumnParent(col), data));
+              if (columns.containsKey(column.getId())) {
+                newValues.set(new ArrayList<>(columns.keySet()).indexOf(column.getId()), value);
+                continue;
+              }
+              oldValue = getRelation(view, parentCol, oldData);
             } else {
+              String table = view.getColumnRelation(column.getId());
+
               ResponseObject response = qs.updateDataWithResponse(new SqlUpdate(table)
                   .addConstant(view.getColumnField(col), getValue(data, col))
                   .setWhere(sys.idEquals(table, BeeUtils.toLong(key))));
@@ -285,6 +285,9 @@ public abstract class CrudWorker {
               }
               continue;
             }
+          } else {
+            oldValue = getValue(oldData, col);
+            value = getValue(data, col);
           }
           if (usr.canEditColumn(getViewName(), column.getId())) {
             columns.put(column.getId(), column);
@@ -308,47 +311,8 @@ public abstract class CrudWorker {
     return null;
   }
 
-  private Map<String, Object> getFields(BeeView view, String parentCol, JsonObject data) {
-    Map<String, Object> fields = new HashMap<>();
-
-    for (ViewColumn viewColumn : view.getViewColumns()) {
-      if (Objects.equals(viewColumn.getParent(), parentCol)
-          && data.containsKey(viewColumn.getName())) {
-
-        fields.put(viewColumn.getField(), getValue(data, viewColumn.getName()));
-      }
-    }
-    if (Objects.equals(view.getColumnRelation(parentCol), ClassifierConstants.TBL_CITIES)) {
-      String parent = view.getColumnParent(parentCol);
-      String countryParent = null;
-
-      for (ViewColumn viewColumn : view.getViewColumns()) {
-        if (Objects.equals(viewColumn.getParent(), parent)
-            && Objects.equals(viewColumn.getRelation(), ClassifierConstants.TBL_COUNTRIES)) {
-
-          countryParent = viewColumn.getName();
-
-          if (data.containsKey(countryParent)) {
-            break;
-          }
-        }
-      }
-      if (!BeeUtils.isEmpty(countryParent)) {
-        String country = getValue(data, countryParent);
-
-        if (!DataUtils.isId(country)) {
-          country = getRelation(ClassifierConstants.TBL_COUNTRIES,
-              getFields(view, countryParent, data));
-        }
-        fields.put(ClassifierConstants.COL_COUNTRY, BeeUtils.toLongOrNull(country));
-      }
-    }
-    return fields;
-  }
-
-  private static BeeColumn getParentColumn(BeeView view, BeeColumn column) {
+  private static BeeColumn getParentColumn(BeeView view, String parentCol) {
     BeeColumn parent = null;
-    String parentCol = view.getColumnParent(column.getId());
 
     for (ViewColumn viewColumn : view.getViewColumns()) {
       if (!Objects.equals(viewColumn.getName(), parentCol)
@@ -366,7 +330,35 @@ public abstract class CrudWorker {
     return parent;
   }
 
-  private String getRelation(String table, Map<String, Object> fields) {
+  private String getRelation(BeeView view, String parentCol, JsonObject data) {
+    String value = getValue(data, getParentColumn(view, parentCol).getId());
+
+    if (DataUtils.isId(value)) {
+      return value;
+    }
+    Map<String, Object> fields = new HashMap<>();
+
+    for (ViewColumn viewColumn : view.getViewColumns()) {
+      if (Objects.equals(viewColumn.getParent(), parentCol)
+          && data.containsKey(viewColumn.getName())) {
+
+        fields.put(viewColumn.getField(), getValue(data, viewColumn.getName()));
+      }
+    }
+    if (Objects.equals(view.getColumnRelation(parentCol), ClassifierConstants.TBL_CITIES)) {
+      String parent = view.getColumnParent(parentCol);
+
+      for (ViewColumn viewColumn : view.getViewColumns()) {
+        if (Objects.equals(viewColumn.getParent(), parent)
+            && Objects.equals(viewColumn.getRelation(), ClassifierConstants.TBL_COUNTRIES)
+            && viewColumn.isHidden()) {
+
+          fields.put(ClassifierConstants.COL_COUNTRY,
+              BeeUtils.toLongOrNull(getRelation(view, viewColumn.getName(), data)));
+          break;
+        }
+      }
+    }
     boolean ok = false;
 
     for (Object o : fields.values()) {
@@ -378,6 +370,7 @@ public abstract class CrudWorker {
     if (!ok) {
       return null;
     }
+    String table = view.getColumnRelation(parentCol);
     HasConditions clause = SqlUtils.and();
 
     for (Map.Entry<String, Object> entry : fields.entrySet()) {
@@ -425,17 +418,13 @@ public abstract class CrudWorker {
           continue;
         }
         if (column.isForeign()) {
-          column = getParentColumn(view, column);
+          String parentCol = view.getColumnParent(col);
+          column = getParentColumn(view, parentCol);
 
           if (columns.containsKey(column.getId())) {
             continue;
           }
-          value = getValue(data, column.getId());
-
-          if (BeeUtils.isEmpty(value)) {
-            value = getRelation(view.getColumnTable(col),
-                getFields(view, view.getColumnParent(col), data));
-          }
+          value = getRelation(view, parentCol, data);
         }
         if (usr.canEditColumn(getViewName(), column.getId())) {
           columns.put(column.getId(), column);
@@ -458,6 +447,6 @@ public abstract class CrudWorker {
   }
 
   private static boolean isReadOnly(BeeColumn column) {
-    return column.isReadOnly() || column.isForeign() && column.getLevel() > 1;
+    return column.isReadOnly() || column.getLevel() > 1;
   }
 }
