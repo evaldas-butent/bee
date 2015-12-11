@@ -14,7 +14,8 @@
   <FlowPanel class="bee-PrintableForm bee-tr-Invoice-Print"
     style="font-family:Tahoma; font-size:8pt;">
     <css id="&form;">
-      .&form;-bank div div:first-child:before {content:"a.s. / a.n.: ";}
+      .&form;-bank div div:first-child {font-weight: bold;}
+      .&form;-bank div div:first-child:before {content:"a.s. / a.n. (Bankas gavėjas / Beneficiary bank): ";}
       .&form;-bank span:after {content:"; ";}
       .&form;-bank .CurrencyName {font-weight: bold;}
       .&form;-bank .CurrencyName:after {content:" ";}
