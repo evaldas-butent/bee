@@ -17,6 +17,7 @@ import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.server.utils.HtmlUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Holder;
+import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
@@ -41,6 +42,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URLConnection;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -125,11 +128,19 @@ public class FileStorageBean {
             .append(new File(Config.WAR_DIR, Paths.getStyleSheetPath(style)).toURI().toString())
             .append("\" />");
       }
-      String style = prm.getText(PRM_PRINT_MARGINS);
+      sb = new StringBuilder();
 
-      if (!BeeUtils.isEmpty(style)) {
+      for (Pair<String, String> pair : Arrays.asList(Pair.of(PRM_PRINT_MARGINS, "margin"),
+          Pair.of(PRM_PRINT_SIZE, "size"))) {
+        String prop = prm.getText(pair.getA());
+
+        if (!BeeUtils.isEmpty(prop)) {
+          sb.append(pair.getB()).append(":").append(prop).append(";");
+        }
+      }
+      if (BeeUtils.isPositive(sb.length())) {
         html.append("<style>")
-            .append("@page {margin:" + style + "}")
+            .append("@page {").append(sb.toString()).append("}")
             .append("</style>");
       }
       html.append("</head><body>" + parsed + "</body></html>");
@@ -158,7 +169,7 @@ public class FileStorageBean {
     return path;
   }
 
-  public boolean deletePhoto(String fileName) {
+  public static boolean deletePhoto(String fileName) {
     if (BeeUtils.isEmpty(fileName)) {
       return false;
     }
@@ -216,18 +227,10 @@ public class FileStorageBean {
         res.deleteOnExit();
         repo = res.getAbsolutePath();
 
-        out = new FileOutputStream(res);
-        byte[] buffer = new byte[BUFFER_SIZE];
-        int bytesRead;
-
         try {
-          while ((bytesRead = in.read(buffer)) > 0) {
-            out.write(buffer, 0, bytesRead);
-          }
+          Files.copy(in, res.toPath(), StandardCopyOption.REPLACE_EXISTING);
           in.closeEntry();
-          out.flush();
         } finally {
-          out.close();
           in.close();
         }
       }
@@ -263,7 +266,7 @@ public class FileStorageBean {
     return files;
   }
 
-  public boolean photoExists(String fileName) {
+  public static boolean photoExists(String fileName) {
     if (BeeUtils.isEmpty(fileName)) {
       return false;
     }
@@ -305,14 +308,16 @@ public class FileStorageBean {
     }
     tmp.deleteOnExit();
 
-    byte[] buffer = new byte[BUFFER_SIZE];
-    int bytesRead;
     Holder<Long> size = Holder.of(0L);
 
     try {
-      while ((bytesRead = in.read(buffer)) > 0) {
+      byte[] buffer = new byte[BUFFER_SIZE];
+      int bytesRead = in.read(buffer);
+
+      while (bytesRead > 0) {
         out.write(buffer, 0, bytesRead);
         size.set(size.get() + bytesRead);
+        bytesRead = in.read(buffer);
       }
       if (!storeAsFile) {
         ((ZipOutputStream) out).closeEntry();
@@ -349,15 +354,17 @@ public class FileStorageBean {
       }
     });
     if (!exists.get() && !storeAsFile) {
-      buffer = new byte[0x100000];
       in = new FileInputStream(tmp);
 
       try {
-        while ((bytesRead = in.read(buffer)) > 0) {
+        byte[] buffer = new byte[0x100000];
+        int bytesRead = in.read(buffer);
+
+        while (bytesRead > 0) {
           long recId = qs.insertData(new SqlInsert(TBL_FILE_PARTS)
               .addConstant(COL_FILE, id.get()));
-
           qs.updateBlob(TBL_FILE_PARTS, recId, COL_FILE_PART, new ByteArrayInputStream(buffer));
+          bytesRead = in.read(buffer);
         }
       } catch (SQLException e) {
         throw new RuntimeException(e);
@@ -394,7 +401,7 @@ public class FileStorageBean {
     return id.get();
   }
 
-  public boolean storePhoto(InputStream is, String fileName) {
+  public static boolean storePhoto(InputStream is, String fileName) {
     File dir = getPhotoDir();
     if (!dir.exists() && !dir.mkdirs()) {
       logger.severe("cannot create", dir.getPath());
@@ -402,27 +409,15 @@ public class FileStorageBean {
     }
 
     File file = new File(dir, BeeUtils.trim(fileName));
-
-    byte[] buffer = new byte[BUFFER_SIZE];
-    int bytesRead;
-
-    OutputStream out = null;
-    boolean ok;
+    boolean ok = true;
 
     try {
-      out = new FileOutputStream(file);
-      while ((bytesRead = is.read(buffer)) > 0) {
-        out.write(buffer, 0, bytesRead);
-      }
-      out.flush();
-      ok = true;
+      Files.copy(is, file.toPath(), StandardCopyOption.REPLACE_EXISTING);
 
     } catch (IOException ex) {
       logger.severe(ex);
       ok = false;
     }
-
-    FileUtils.closeQuietly(out);
     if (!ok && file.exists()) {
       file.delete();
     }
