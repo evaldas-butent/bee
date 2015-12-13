@@ -935,12 +935,12 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   }
 
   @Override
-  public Widget getWidgetByName(String name) {
+  public Widget getWidgetByName(String name, boolean warn) {
     Assert.notEmpty(name);
     String id = creationCallback.getWidgetIdByName(name);
 
     Widget widget = getWidgetById(id);
-    if (widget == null) {
+    if (widget == null && warn) {
       logger.warning("widget not found:", name);
     }
 

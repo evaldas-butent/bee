@@ -94,7 +94,11 @@ public interface FormView extends DataView, HasDataTable, ActiveWidgetChangeEven
 
   String getStringValue(String source);
 
-  Widget getWidgetByName(String name);
+  default Widget getWidgetByName(String name) {
+    return getWidgetByName(name, true);
+  }
+
+  Widget getWidgetByName(String name, boolean warn);
 
   Widget getWidgetBySource(String source);
 
