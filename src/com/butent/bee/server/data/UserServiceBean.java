@@ -641,6 +641,11 @@ public class UserServiceBean {
     }
   }
 
+  public boolean isActive(Long userId) {
+    UserInfo userInfo = getUserInfo(userId);
+    return (userInfo == null) ? false : !userInfo.isBlocked(System.currentTimeMillis());
+  }
+
   public boolean isAdministrator() {
     return isModuleVisible(ModuleAndSub.of(Module.ADMINISTRATION));
   }

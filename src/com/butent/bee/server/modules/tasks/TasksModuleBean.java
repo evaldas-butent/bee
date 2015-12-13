@@ -1281,7 +1281,9 @@ public class TasksModuleBean implements BeeModule {
 
     if (users != null) {
       for (Long user : users) {
-        result.add(user);
+        if (usr.isActive(user)) {
+          result.add(user);
+        }
       }
     }
 
@@ -1296,7 +1298,9 @@ public class TasksModuleBean implements BeeModule {
 
     if (users != null) {
       for (Long user : users) {
-        result.add(user);
+        if (usr.isActive(user)) {
+          result.add(user);
+        }
       }
     }
 
@@ -1320,7 +1324,9 @@ public class TasksModuleBean implements BeeModule {
 
     if (users != null) {
       for (Long user : users) {
-        result.add(user);
+        if (usr.isActive(user)) {
+          result.add(user);
+        }
       }
     }
 
@@ -1335,7 +1341,9 @@ public class TasksModuleBean implements BeeModule {
 
     if (users != null) {
       for (Long user : users) {
-        result.add(user);
+        if (usr.isActive(user)) {
+          result.add(user);
+        }
       }
     }
 
@@ -1683,13 +1691,12 @@ public class TasksModuleBean implements BeeModule {
         .setDistinctMode(true)
         .addFields(TBL_USER_GROUPS, COL_UG_USER)
         .addFrom(TBL_USER_GROUPS)
-        .setWhere(SqlUtils.inList(TBL_USER_GROUPS,
-            COL_UG_GROUP, groups));
+        .setWhere(SqlUtils.inList(TBL_USER_GROUPS, COL_UG_GROUP, groups));
 
     Long[] members = qs.getLongColumn(query);
     if (members != null) {
       for (Long member : members) {
-        if (member != null) {
+        if (member != null && usr.isActive(member)) {
           users.add(member);
         }
       }

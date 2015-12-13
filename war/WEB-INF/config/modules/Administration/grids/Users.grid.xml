@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+  xmlns:ui="http://www.butent.com/ui"
   
   name="Users" viewName="Users" caption="=users"
   newRowPopup="true"
@@ -20,4 +21,23 @@
     <DataColumn name="BlockAfter" />
     <DataColumn name="BlockBefore" />
   </g:columns>
+
+  <g:rowStyle>
+    <ui:inline>color: pink;</ui:inline>
+    <ui:function>
+      var from = row.BlockAfter;
+      var until = row.BlockBefore;
+      var now = new Date();
+
+      if (from &amp;&amp; until) {
+        return from &lt;= now &amp;&amp; until &gt; now;
+      } else if (from) {
+        return from &lt;= now;
+      } else if (until) {
+        return until &gt; now;
+      } else {
+        return false;
+      }
+    </ui:function>
+  </g:rowStyle>
 </g:Grid>
