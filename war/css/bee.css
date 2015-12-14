@@ -194,16 +194,6 @@
   border: 1px solid #bebebe;
 }
 
-.bee-MainMenu {
-  left: 0px;
-  right: 0px;
-  height: 51px;
-  top: 62px;
-  background-color: #484849;
-  color: white;
-  overflow: auto;
-}
-
 .bee-UserContainer {
   position: absolute;
   right: 8px;
@@ -263,22 +253,43 @@
   display: none;
 }
 
-.bee-MenuRoot, .bee-MenuBar {
-  overflow: auto;
+.bee-MainMenu {
+  left: 0px;
+  right: 0px;
+  height: 51px;
+  top: 62px;
+  background-color: #484849;
+  color: white;
 }
 
 .bee-MenuRoot {
-  margin: 3px 19px;
+  height: 100%;
 }
 
-.bee-MenuRoot-flow .bee-MenuItem-label {
+.bee-MenuRoot > div {
+  height: 100%;
+  overflow: auto;
+  display: flex;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  flex-direction: row;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-wrap: wrap;
+  -webkit-flex-wrap: wrap;
+  -ms-flex-wrap: wrap;
+  align-items: center;
+  -webkit-align-items: center;
+  -ms-flex-align: center;
+}
+
+.bee-MenuRoot .bee-MenuItem {
   display: inline-block;
   font-size: 14px;
-  padding: 0 13px;
-  line-height: 45px;
+  margin-left: 1vw;
 }
 
-.bee-MenuRoot-flow.bee-MenuRoot-horizontal .bee-MenuItem-selected {
+.bee-MenuRoot .bee-MenuItem-selected {
   font-weight: bold;
 }
 
@@ -296,6 +307,10 @@
 .bee-MenuPopup .bee-MenuItem-label {
   font-size: 12px;
   padding: 0 20px;
+}
+
+.bee-MenuBar {
+  overflow: auto;
 }
 
 .bee-MenuBar tr:hover {
@@ -3802,4 +3817,14 @@ textarea,
   font-size: xx-large;
   animation: rotate 1s linear infinite;
   -webkit-animation: rotate 1s linear infinite;
+}
+
+.bee-MenuRoot .bee-potentially-bold::after {
+  content: attr(data-text);
+  font-weight: bold;
+  display: block;
+  height: 1px;
+  margin-bottom: -1px;
+  overflow: hidden;
+  visibility: hidden;
 }
