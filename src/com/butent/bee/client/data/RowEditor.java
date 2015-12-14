@@ -327,6 +327,9 @@ public final class RowEditor {
             }
             break;
 
+          case BOOKMARK:
+            break;
+
           default:
             logger.warning(NameUtils.getName(this), action, "not implemented");
         }

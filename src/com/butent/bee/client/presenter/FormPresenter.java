@@ -8,6 +8,7 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.data.AsyncProvider;
 import com.butent.bee.client.data.CachedProvider;
+import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.HasActiveRow;
 import com.butent.bee.client.data.HasDataProvider;
 import com.butent.bee.client.data.HasDataTable;
@@ -221,6 +222,13 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
           Printer.print(formContainer);
         } else {
           Printer.print(form);
+        }
+        break;
+
+      case BOOKMARK:
+        if (!BeeUtils.isEmpty(getViewName()) && getActiveRow() != null) {
+          Global.getFavorites().bookmark(getViewName(), getActiveRow(),
+              Data.getColumns(getViewName()), NameUtils.toList(getFormView().getFavorite()));
         }
         break;
 

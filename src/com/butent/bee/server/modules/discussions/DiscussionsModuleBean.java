@@ -62,6 +62,8 @@ import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.discussions.DiscussionsConstants;
+import com.butent.bee.shared.modules.discussions.DiscussionsConstants.DiscussionEvent;
+import com.butent.bee.shared.modules.discussions.DiscussionsConstants.DiscussionStatus;
 import com.butent.bee.shared.modules.discussions.DiscussionsUtils;
 import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.news.NewsConstants;
@@ -603,7 +605,8 @@ public class DiscussionsModuleBean implements BeeModule {
         discussionId = ((BeeRow) response.getResponse()).getId();
 
         if (!response.hasErrors()) {
-          response = createDiscussionUser(discussionId, currentUser, now, true);
+          response =
+              createDiscussionUser(discussionId, currentUser, now, !BeeUtils.isEmpty(members));
         }
 
         if (!response.hasErrors()) {

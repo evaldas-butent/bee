@@ -58,7 +58,7 @@
   xmlns:f="http://www.butent.com/form"
   xmlns:ui="http://www.butent.com/ui"
    
-  name="Discussion" viewName="Discussions" caption="=discussion">
+  name="Discussion" viewName="Discussions" caption="=discussion" favorite="Subject">
 
   <FlowPanel>
     <FlowPanel class="flexBox-vertical">

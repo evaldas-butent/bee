@@ -8,7 +8,7 @@
   xmlns:xi="http://www.w3.org/2001/XInclude"
 
   name="Location" viewName="Locations" caption="=object"
-  width="70" widthUnit="%" height="80" heightUnit="%"
+  width="70" widthUnit="%" height="80" heightUnit="%" favorite="LocationName"
   >
   <FlowPanel class="flexBox-vertical">
     <Table kind="controls">
