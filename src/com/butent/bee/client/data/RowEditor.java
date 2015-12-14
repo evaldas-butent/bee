@@ -328,6 +328,7 @@ public final class RowEditor {
             break;
 
           case BOOKMARK:
+            formView.bookmark();
             break;
 
           default:

@@ -501,6 +501,14 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   }
 
   @Override
+  public void bookmark() {
+    if (BeeUtils.allNotEmpty(getFavorite(), getViewName()) && DataUtils.hasId(getActiveRow())) {
+      Global.getFavorites().bookmark(getViewName(), getActiveRow(), getDataColumns(),
+          NameUtils.toList(getFavorite()));
+    }
+  }
+
+  @Override
   public boolean checkOnClose(NativePreviewEvent event) {
     if (isChildEditing()) {
       return false;
@@ -534,9 +542,8 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   @Override
   public void create(FormDescription formDescription, String view, List<BeeColumn> dataCols,
       boolean addStyle, FormInterceptor interceptor) {
-    Assert.notNull(formDescription);
 
-    setFavorite(formDescription.getFavorite());
+    Assert.notNull(formDescription);
 
     setViewName(BeeUtils.notEmpty(view, formDescription.getViewName()));
     setDataColumns(dataCols);
@@ -563,6 +570,8 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
 
     setCaption(formDescription.getCaption());
     setShowRowId(formDescription.showRowId());
+
+    setFavorite(formDescription.getFavorite());
 
     setPrintHeader(formDescription.printHeader());
     setPrintFooter(formDescription.printFooter());
@@ -1531,10 +1540,6 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
     getRootWidget().asWidget().setStyleName(STYLE_FORM_DISABLED, !enabled);
   }
 
-  public void setFavorite(String favorite) {
-    this.favorite = favorite;
-  }
-
   @Override
   public void setHandlesTabulation(boolean handlesTabulation) {
   }
@@ -2192,6 +2197,10 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
 
   private void setDimensions(Dimensions dimensions) {
     this.dimensions = dimensions;
+  }
+
+  private void setFavorite(String favorite) {
+    this.favorite = favorite;
   }
 
   private void setFormInterceptor(FormInterceptor formInterceptor) {

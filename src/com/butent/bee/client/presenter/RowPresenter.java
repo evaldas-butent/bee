@@ -4,7 +4,6 @@ import com.google.gwt.dom.client.Element;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
-import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
@@ -28,12 +27,9 @@ import com.butent.bee.shared.ui.HandlesActions;
 import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.ui.HasWidgetSupplier;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.NameUtils;
 
-import java.util.ArrayList;
 import java.util.EnumSet;
-import java.util.List;
-import java.util.Objects;
+import java.util.HashSet;
 import java.util.Set;
 
 public class RowPresenter extends AbstractPresenter implements Printable, SaveChangesEvent.Handler {
@@ -99,20 +95,23 @@ public class RowPresenter extends AbstractPresenter implements Printable, SaveCh
 
   private HandlesActions actionDelegate;
 
-  private List<String> favorite = new ArrayList<>();
-
   public RowPresenter(FormView formView, DataInfo dataInfo, long rowId, String initialCaption,
       Set<Action> enabledActions, Set<Action> disabledActions) {
 
     this.formView = formView;
     this.dataInfo = dataInfo;
 
-    if (!BeeUtils.isEmpty(formView.getFavorite())) {
-      enabledActions.add(Action.BOOKMARK);
-      favorite.addAll(NameUtils.toList(formView.getFavorite()));
+    Set<Action> ea = new HashSet<>();
+    if (!BeeUtils.isEmpty(enabledActions)) {
+      ea.addAll(enabledActions);
     }
 
-    HeaderView headerView = createHeader(formView.getCaption(), enabledActions, disabledActions);
+    if (!BeeUtils.isEmpty(formView.getFavorite())
+        && !Global.getFavorites().isBookmarked(formView.getViewName(), rowId)) {
+      ea.add(Action.BOOKMARK);
+    }
+
+    HeaderView headerView = createHeader(formView.getCaption(), ea, disabledActions);
 
     this.container = new Container(dataInfo, rowId, initialCaption);
     container.addStyleName(STYLE_CONTAINER);
@@ -150,13 +149,6 @@ public class RowPresenter extends AbstractPresenter implements Printable, SaveCh
   public void handleAction(Action action) {
     if (getActionDelegate() != null) {
       getActionDelegate().handleAction(action);
-    }
-
-    if (Objects.equals(action, Action.BOOKMARK)) {
-      if (!BeeUtils.isEmpty(dataInfo.getViewName()) && formView.getActiveRow() != null) {
-        Global.getFavorites().bookmark(dataInfo.getViewName(), formView.getActiveRow(),
-            Data.getColumns(dataInfo.getViewName()), favorite);
-      }
     }
   }
 

@@ -49,6 +49,8 @@ public interface FormView extends DataView, HasDataTable, ActiveWidgetChangeEven
 
   void applyOptions(String options);
 
+  void bookmark();
+
   boolean checkOnClose(NativePreviewEvent event);
 
   boolean checkOnSave(NativePreviewEvent event);
@@ -57,8 +59,6 @@ public interface FormView extends DataView, HasDataTable, ActiveWidgetChangeEven
       boolean addStyle, FormInterceptor interceptor);
 
   void editRow(IsRow rowValue, Scheduler.ScheduledCommand focusCommand);
-
-  String getFavorite();
 
   boolean focus(String source);
 
@@ -75,6 +75,8 @@ public interface FormView extends DataView, HasDataTable, ActiveWidgetChangeEven
   Double getDoubleValue(String source);
 
   List<EditableWidget> getEditableWidgets();
+
+  String getFavorite();
 
   FormInterceptor getFormInterceptor();
 
