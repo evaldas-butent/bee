@@ -28,6 +28,7 @@ import com.butent.bee.client.event.logical.SummaryChangeEvent;
 import com.butent.bee.client.event.logical.VisibilityChangeEvent;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
@@ -496,7 +497,10 @@ public class TabbedPages extends Flow implements
   }
 
   private static Widget createCaption(String text) {
-    return new Label(text);
+    Label widget = new Label(text);
+    UiHelper.makePotentiallyBold(widget.getElement(), text);
+
+    return widget;
   }
 
   private Tab getTab(int index) {
