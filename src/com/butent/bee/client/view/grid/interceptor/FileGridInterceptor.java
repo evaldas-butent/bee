@@ -140,6 +140,9 @@ public class FileGridInterceptor extends AbstractGridInterceptor {
 
   @Override
   public void beforeRender(GridView gridView, RenderingEvent event) {
+    if (collector == null) {
+      init(gridView);
+    }
     collector.clear();
     final Map<Long, String> fileIds = new HashMap<>();
     int fileIdx = gridView.getDataIndex(fileColumn);
@@ -168,8 +171,7 @@ public class FileGridInterceptor extends AbstractGridInterceptor {
     super.beforeRender(gridView, event);
   }
 
-  @Override
-  public void onLoad(final GridView gridView) {
+  private void init(final GridView gridView) {
     if (collector == null) {
       collector = FileCollector.headless(new Consumer<Collection<? extends FileInfo>>() {
         @Override
