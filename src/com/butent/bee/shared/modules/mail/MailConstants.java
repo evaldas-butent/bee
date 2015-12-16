@@ -239,7 +239,7 @@ public final class MailConstants {
   public static final String COL_FOLDER = "Folder";
   public static final String COL_FLAGS = "Flags";
   public static final String COL_MESSAGE_UID = "MessageUID";
-  public static final String COL_REPLIED = "Replied";
+  public static final String COL_IN_REPLY_TO = "InReplyTo";
 
   public static final String COL_RULE = "Rule";
   public static final String COL_RULE_ACTIVE = "Active";
