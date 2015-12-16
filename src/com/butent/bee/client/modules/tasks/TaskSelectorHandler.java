@@ -1,20 +1,29 @@
 package com.butent.bee.client.modules.tasks;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Callback;
 import com.butent.bee.client.composite.DataSelector;
+import com.butent.bee.client.composite.FileCollector;
 import com.butent.bee.client.composite.MultiSelector;
 import com.butent.bee.client.data.Data;
+import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.io.FileInfo;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -29,9 +38,9 @@ class TaskSelectorHandler implements SelectorEvent.Handler {
   }
 
   @Override
-  public void onDataSelector(SelectorEvent event) {
+  public void onDataSelector(final SelectorEvent event) {
 
-    FormView form = ViewHelper.getForm(event.getSelector());
+    final FormView form = ViewHelper.getForm(event.getSelector());
     if (form == null) {
       return;
     }
@@ -39,13 +48,43 @@ class TaskSelectorHandler implements SelectorEvent.Handler {
       return;
     }
 
-    IsRow taskRow = form.getActiveRow();
+    final IsRow taskRow = form.getActiveRow();
     if (taskRow == null) {
       return;
     }
 
     if (BeeUtils.same(event.getRelatedViewName(), VIEW_TASK_TEMPLATES)) {
-      handleTemplate(event, form, taskRow);
+
+      TaskTemplateForm.getTemplateFiles(event.getValue(), new Callback<List<FileInfo>>() {
+
+        @Override
+        public void onSuccess(final List<FileInfo> files) {
+
+          Queries.getRowSet(VIEW_TASK_TML_USERS, Lists.newArrayList(
+              AdministrationConstants.COL_USER,
+              COL_EXECUTOR), Filter.equals(COL_TASK_TEMPLATE, event.getValue()),
+              new RowSetCallback() {
+
+            @Override
+            public void onSuccess(BeeRowSet users) {
+              List<Long> executors = Lists.newArrayList();
+              List<Long> observers = Lists.newArrayList();
+
+              for (int i = 0; i < users.getNumberOfRows(); i++) {
+                if (BeeUtils.isEmpty(users.getString(i, COL_EXECUTOR))) {
+                  observers.add(users.getLong(i, AdministrationConstants.COL_USER));
+                } else {
+                  executors.add(users.getLong(i, AdministrationConstants.COL_USER));
+                }
+              }
+
+              handleTemplate(event, form, taskRow, DataUtils.buildIdList(executors), DataUtils
+                  .buildIdList(observers), files);
+            }
+          });
+
+        }
+      });
 
     } else if (event.getSelector() instanceof MultiSelector && event.isExclusions()) {
       CellSource cellSource = ((MultiSelector) event.getSelector()).getCellSource();
@@ -62,6 +101,15 @@ class TaskSelectorHandler implements SelectorEvent.Handler {
         handleTasks(event, taskRow);
       }
     }
+  }
+
+  private static String getMappedTaskTemplateColumn(String tmlColumn) {
+    List<String> restricted = Lists.newArrayList("TMLStageName");
+
+    if (restricted.contains(tmlColumn)) {
+      return null;
+    }
+    return tmlColumn;
   }
 
   private static void handleCompanies(SelectorEvent event, IsRow taskRow) {
@@ -127,7 +175,8 @@ class TaskSelectorHandler implements SelectorEvent.Handler {
     event.getSelector().getOracle().setExclusions(exclusions);
   }
 
-  private static void handleTemplate(SelectorEvent event, FormView form, IsRow taskRow) {
+  private static void handleTemplate(SelectorEvent event, FormView form, IsRow taskRow,
+      String executors, String observers, List<FileInfo> files) {
     DataSelector selector = event.getSelector();
 
     if (event.isClosed()) {
@@ -156,8 +205,9 @@ class TaskSelectorHandler implements SelectorEvent.Handler {
 
       if (BeeUtils.same(colName, COL_TASK_TEMPLATE_NAME)) {
         selector.setDisplayValue(BeeUtils.trim(value));
-      } else if (!BeeUtils.isEmpty(value)) {
-        int index = Data.getColumnIndex(VIEW_TASKS, colName);
+      } else if (!BeeUtils.isEmpty(value) && !BeeUtils.isEmpty(getMappedTaskTemplateColumn(
+          colName))) {
+        int index = Data.getColumnIndex(VIEW_TASKS, getMappedTaskTemplateColumn(colName));
         if (index >= 0 && taskRow.isNull(index)) {
           taskRow.setValue(index, value);
           if (templateColumns.get(i).isEditable()) {
@@ -170,5 +220,21 @@ class TaskSelectorHandler implements SelectorEvent.Handler {
     for (String colName : updatedColumns) {
       form.refreshBySource(colName);
     }
+
+    if (!DataUtils.parseIdList(executors).isEmpty()) {
+      taskRow.setProperty(PROP_EXECUTORS, executors);
+      form.refreshBySource(PROP_EXECUTORS);
+    }
+
+    if (!DataUtils.parseIdList(observers).isEmpty()) {
+      taskRow.setProperty(PROP_OBSERVERS, observers);
+      form.refreshBySource(PROP_OBSERVERS);
+    }
+
+    if (!BeeUtils.isEmpty(files) && form.getWidgetByName(
+        TaskBuilder.NAME_FILES) instanceof FileCollector) {
+      ((FileCollector) form.getWidgetByName(TaskBuilder.NAME_FILES)).addFiles(files);
+    }
+
   }
 }

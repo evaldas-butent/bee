@@ -71,6 +71,8 @@ import java.util.Map;
 
 class TaskBuilder extends AbstractFormInterceptor {
 
+  static final String NAME_FILES = "Files";
+
   private static final String NAME_START_DATE = "Start_Date";
   private static final String NAME_START_TIME = "Start_Time";
   private static final String NAME_END_DATE = "End_Date";
@@ -87,8 +89,6 @@ class TaskBuilder extends AbstractFormInterceptor {
   private static final String NAME_REMINDER_DATE = "Reminder_Date";
   private static final String NAME_REMINDER_TIME = "Reminder_Time";
   private static final String NAME_LABEL_SUFFIX = "Label";
-
-  private static final String NAME_FILES = "Files";
 
   private HasCheckedness mailToggle;
   private InputTime expectedDurationInput;
@@ -109,7 +109,7 @@ class TaskBuilder extends AbstractFormInterceptor {
     super();
   }
 
-  public TaskBuilder(Map<Long, FileInfo> files, Long executor, boolean taskIdsCallback) {
+  TaskBuilder(Map<Long, FileInfo> files, Long executor, boolean taskIdsCallback) {
     this();
 
     if (files != null) {
@@ -596,19 +596,20 @@ class TaskBuilder extends AbstractFormInterceptor {
         Lists.newArrayList(ServiceConstants.COL_SERVICE_ADDRESS),
         Filter.isEqual(
             ProjectConstants.COL_PROJECT, Value.getValue(projectId)), new RowSetCallback() {
-          @Override
-          public void onSuccess(BeeRowSet result) {
-            if (result.isEmpty()) {
-              return;
-            }
+              @Override
+              public void onSuccess(BeeRowSet result) {
+                if (result.isEmpty()) {
+                  return;
+                }
 
-            if (serviceObjects == null) {
-              return;
-            }
+                if (serviceObjects == null) {
+                  return;
+                }
 
-            serviceObjects.getOracle().setAdditionalFilter(Filter.idIn(result.getRowIds()), true);
-          }
-        });
+                serviceObjects.getOracle().setAdditionalFilter(Filter.idIn(result.getRowIds()),
+                    true);
+              }
+            });
   }
 
   private void setProjectUsersFilter(final FormView form, IsRow row) {
@@ -650,44 +651,44 @@ class TaskBuilder extends AbstractFormInterceptor {
 
     Queries.getRowSet(ProjectConstants.VIEW_PROJECT_USERS, Lists
         .newArrayList(AdministrationConstants.COL_USER), Filter.isEqual(
-        ProjectConstants.COL_PROJECT, Value.getValue(projectId)), new RowSetCallback() {
+            ProjectConstants.COL_PROJECT, Value.getValue(projectId)), new RowSetCallback() {
 
-      @Override
-      public void onSuccess(BeeRowSet result) {
-        if (DataUtils.isEmpty(result)) {
-          if (executors != null) {
-            executors.getOracle().setAdditionalFilter(Filter.compareId(projectOwner), true);
-            executors.setEnabled(true);
-            return;
-          }
-        }
+              @Override
+              public void onSuccess(BeeRowSet result) {
+                if (DataUtils.isEmpty(result)) {
+                  if (executors != null) {
+                    executors.getOracle().setAdditionalFilter(Filter.compareId(projectOwner), true);
+                    executors.setEnabled(true);
+                    return;
+                  }
+                }
 
-        List<Long> userIds = Lists.newArrayList(projectOwner);
-        int idxUser = result.getColumnIndex(AdministrationConstants.COL_USER);
+                List<Long> userIds = Lists.newArrayList(projectOwner);
+                int idxUser = result.getColumnIndex(AdministrationConstants.COL_USER);
 
-        if (BeeConst.isUndef(idxUser)) {
-          Assert.untouchable();
-          return;
-        }
+                if (BeeConst.isUndef(idxUser)) {
+                  Assert.untouchable();
+                  return;
+                }
 
-        for (IsRow userRow : result) {
-          long projectUser = BeeUtils.unbox(userRow.getLong(idxUser));
+                for (IsRow userRow : result) {
+                  long projectUser = BeeUtils.unbox(userRow.getLong(idxUser));
 
-          if (DataUtils.isId(projectUser)) {
-            userIds.add(projectUser);
-          }
-        }
+                  if (DataUtils.isId(projectUser)) {
+                    userIds.add(projectUser);
+                  }
+                }
 
-        if (executors != null) {
-          executors.getOracle().setAdditionalFilter(Filter.idIn(userIds), true);
-          executors.setEnabled(true);
-        }
+                if (executors != null) {
+                  executors.getOracle().setAdditionalFilter(Filter.idIn(userIds), true);
+                  executors.setEnabled(true);
+                }
 
-        if (observers != null) {
-          observers.getOracle().setAdditionalFilter(Filter.idIn(userIds), true);
-          observers.setEnabled(true);
-        }
-      }
-    });
+                if (observers != null) {
+                  observers.getOracle().setAdditionalFilter(Filter.idIn(userIds), true);
+                  observers.setEnabled(true);
+                }
+              }
+            });
   }
 }

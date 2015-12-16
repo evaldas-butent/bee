@@ -188,6 +188,7 @@ public final class TasksKeeper {
 
     FormFactory.registerFormInterceptor(FORM_NEW_REQUEST, new RequestBuilder());
     FormFactory.registerFormInterceptor(FORM_REQUEST, new RequestEditor());
+    FormFactory.registerFormInterceptor(FORM_TASK_TEMPLATE, new TaskTemplateForm());
 
     GridFactory.registerGridInterceptor(GRID_TODO_LIST, new TodoListInterceptor());
 

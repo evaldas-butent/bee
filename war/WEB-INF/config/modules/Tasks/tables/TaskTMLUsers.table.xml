@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Table xmlns="http://www.butent.com/table"
+  
+  name="TaskTMLUsers"
+  idName="TaskTMLUserID"
+  >
+  <Fields>
+    <Relation name="TaskTemplate" notNull="true" relation="TaskTemplates" cascade="DELETE" label="=crmTask"/>
+    <Relation name="User" notNull="true" relation="Users" cascade="DELETE" label="=user"/>
+    <Boolean name="Executor"/>
+  </Fields>
+
+  <Constraints>
+    <Unique fields="TaskTemplate User" />
+  </Constraints>
+</Table>
