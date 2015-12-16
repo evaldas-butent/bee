@@ -2,7 +2,8 @@ package com.butent.bee.server.rest;
 
 import static com.butent.bee.server.rest.CrudWorker.*;
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
-import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.COL_COMPANY_PERSON;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
+import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
 
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
@@ -12,8 +13,11 @@ import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
+import com.butent.bee.shared.ui.HasCaption;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,8 +28,6 @@ import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriBuilder;
 
 @Path("/")
 public class Worker {
@@ -79,8 +81,30 @@ public class Worker {
 
   @GET
   @Path("login")
-  public Response login() {
-    return Response.temporaryRedirect(UriBuilder.fromResource(CompanyPersonsWorker.class)
-        .path("{id}").build(usr.getCompanyPerson(usr.getCurrentUserId()))).build();
+  @Produces(RestResponse.JSON_TYPE)
+  public RestResponse login() {
+    Map<String, Object> resp = new HashMap<>();
+
+    for (Class<? extends Enum<?>> aClass : Arrays.asList(TaskStatus.class,
+        TaskPriority.class, TaskEvent.class)) {
+
+      List<Object> list = new ArrayList<>();
+
+      for (Enum<?> constant : aClass.getEnumConstants()) {
+        Map<String, Object> map = new LinkedHashMap<>();
+        map.put("Id", constant.ordinal());
+        map.put("Caption", ((HasCaption) constant).getCaption());
+        list.add(map);
+      }
+      resp.put(aClass.getSimpleName(), list);
+    }
+    Long userId = usr.getCurrentUserId();
+    Map<String, Object> map = new LinkedHashMap<>();
+    map.put(ID, userId);
+    map.put(COL_USER, usr.getUserSign(userId));
+    map.put(COL_EMAIL, usr.getUserEmail(userId, true));
+    resp.put(COL_USER, map);
+
+    return RestResponse.ok(resp);
   }
 }

@@ -218,6 +218,10 @@ public abstract class CrudWorker {
           case LONG:
             value = rowSet.getLong(i, j);
             break;
+          case DECIMAL:
+          case NUMBER:
+            value = rowSet.getDecimal(i, j);
+            break;
           default:
             value = rowSet.getString(i, j);
             break;
