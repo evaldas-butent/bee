@@ -16,6 +16,7 @@ import com.google.gwt.event.logical.shared.HasSelectionHandlers;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
+import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -161,10 +162,13 @@ public class TabbedPages extends Flow implements
     }
   }
 
-  private final class Tab extends Simple implements HasClickHandlers, SummaryChangeEvent.Handler {
+  private final class Tab extends Simple implements HasClickHandlers, HasEnabled,
+      SummaryChangeEvent.Handler {
 
     private final CustomDiv summaryWidget;
     private final Map<String, Value> summaryValues = new LinkedHashMap<>();
+
+    private boolean enabled = true;
 
     private Tab(Widget child) {
       this(child, null, null);
@@ -199,6 +203,11 @@ public class TabbedPages extends Flow implements
     }
 
     @Override
+    public boolean isEnabled() {
+      return enabled;
+    }
+
+    @Override
     public void onSummaryChange(SummaryChangeEvent event) {
       Value oldValue = summaryValues.get(event.getSourceId());
 
@@ -206,6 +215,12 @@ public class TabbedPages extends Flow implements
         summaryValues.put(event.getSourceId(), event.getValue());
         summaryWidget.setHtml(SummaryChangeEvent.renderSummary(summaryValues.values()));
       }
+    }
+
+    @Override
+    public void setEnabled(boolean enabled) {
+      this.enabled = enabled;
+      setStyleName(getStylePrefix() + "tabDisabled", !enabled);
     }
 
     private void setSelected(boolean selected) {
@@ -289,6 +304,14 @@ public class TabbedPages extends Flow implements
     return addHandler(handler, SelectionEvent.getType());
   }
 
+  public void disablePage(int index) {
+    setPageEnabled(index, false);
+  }
+
+  public void enablePage(int index) {
+    setPageEnabled(index, true);
+  }
+
   public int getContentIndex(String id) {
     for (int i = 0; i < getPageCount(); i++) {
       if (DomUtils.idEquals(getContentWidget(i), id)) {
@@ -356,9 +379,12 @@ public class TabbedPages extends Flow implements
 
     if (index == getSelectedIndex()) {
       setSelectedIndex(BeeConst.UNDEF);
-      if (getPageCount() > 0) {
-        selectPage(Math.min(index, getPageCount() - 1), SelectionOrigin.REMOVE);
+
+      int page = nextEnabledPage(index);
+      if (isIndex(page)) {
+        selectPage(page, SelectionOrigin.REMOVE);
       }
+
     } else if (index < getSelectedIndex()) {
       setSelectedIndex(getSelectedIndex() - 1);
     }
@@ -371,10 +397,14 @@ public class TabbedPages extends Flow implements
     deckPanel.resize(index);
   }
 
-  public void selectPage(int index, SelectionOrigin origin) {
+  public boolean selectPage(int index, SelectionOrigin origin) {
     checkIndex(index);
     if (index == getSelectedIndex()) {
-      return;
+      return true;
+    }
+
+    if (!isPageEnabled(index)) {
+      return false;
     }
 
     Pair<Integer, SelectionOrigin> data = Pair.of(index, origin);
@@ -382,7 +412,7 @@ public class TabbedPages extends Flow implements
     BeforeSelectionEvent<Pair<Integer, SelectionOrigin>> event =
         BeforeSelectionEvent.fire(this, data);
     if ((event != null) && event.isCanceled()) {
-      return;
+      return false;
     }
 
     if (!BeeConst.isUndef(getSelectedIndex())) {
@@ -395,6 +425,7 @@ public class TabbedPages extends Flow implements
     setSelectedIndex(index);
 
     SelectionEvent.fire(this, data);
+    return true;
   }
 
   public void setResizable(boolean resizable) {
@@ -550,6 +581,10 @@ public class TabbedPages extends Flow implements
     checkLayout();
   }
 
+  private boolean isPageEnabled(int index) {
+    return getTab(index).isEnabled();
+  }
+
   private void maybeInitResizer() {
     Widget target = getParent();
     Element offsetParent = getElement().getOffsetParent();
@@ -595,6 +630,53 @@ public class TabbedPages extends Flow implements
       logger.warning(NameUtils.getName(this), getId(), "not resizable, parent",
           NameUtils.getName(target), target.getElement().getId());
     }
+  }
+
+  private int nextEnabledPage(int from) {
+    if (getPageCount() > 0) {
+      if (from < getPageCount()) {
+        for (int i = Math.max(from, 0); i < getPageCount(); i++) {
+          if (isPageEnabled(i)) {
+            return i;
+          }
+        }
+      }
+
+      if (from > 0) {
+        for (int i = Math.min(from, getPageCount()) - 1; i >= 0; i--) {
+          if (isPageEnabled(i)) {
+            return i;
+          }
+        }
+      }
+    }
+
+    return BeeConst.UNDEF;
+  }
+
+  private void setPageEnabled(int index, boolean enabled) {
+    checkIndex(index);
+
+    Tab tab = getTab(index);
+    if (tab.isEnabled() == enabled) {
+      return;
+    }
+
+    saveLayout();
+    tab.setEnabled(enabled);
+
+    if (!enabled && index == getSelectedIndex()) {
+      int page = nextEnabledPage(index);
+
+      if (isIndex(page)) {
+        selectPage(page, SelectionOrigin.SCRIPT);
+      } else {
+        tab.setSelected(false);
+        setSelectedIndex(BeeConst.UNDEF);
+      }
+    }
+
+    checkLayout();
   }
 
   private void setSelectedIndex(int selectedIndex) {

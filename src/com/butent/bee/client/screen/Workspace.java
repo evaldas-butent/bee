@@ -52,6 +52,7 @@ import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.ui.UserInterface.Component;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.ExtendedProperty;
 import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.utils.PropertyUtils;
@@ -868,16 +869,18 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
   }
 
   @Override
-  public void selectPage(int index, SelectionOrigin origin) {
-    super.selectPage(index, origin);
+  public boolean selectPage(int index, SelectionOrigin origin) {
+    boolean result = super.selectPage(index, origin);
 
-    if (SelectionOrigin.CLICK.equals(origin) || SelectionOrigin.INSERT.equals(origin)
-        || SelectionOrigin.REMOVE.equals(origin)) {
+    if (EnumUtils.in(origin, SelectionOrigin.CLICK, SelectionOrigin.INSERT,
+        SelectionOrigin.REMOVE)) {
+
       Tile tile = getActiveTile();
 
       Historian.goTo(tile.getId());
       tile.activateContent();
     }
+    return result;
   }
 
   void activateWidget(IdentifiableWidget widget) {

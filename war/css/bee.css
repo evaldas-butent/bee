@@ -1185,6 +1185,10 @@
   border-bottom-color: #1ca5c7;
 }
 
+.bee-TabbedPages-tabDisabled {
+  display: none;
+}
+
 .bee-TabbedPages-tabCaption {
   margin-top: 2px;
 }
