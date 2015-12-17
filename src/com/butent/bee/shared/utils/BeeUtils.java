@@ -32,6 +32,13 @@ public final class BeeUtils {
   public static final Splitter NUMBER_SPLITTER =
       Splitter.on(CharMatcher.anyOf(" ,;")).trimResults().omitEmptyStrings();
 
+  /**
+   * Adds String {@code item} to collection {@code col} if {@code item} is not empty.
+   * 
+   * @param col Collection where the {@code item} should be added to
+   * @param item String that will be added
+   * @return true if addition is successful
+   */
   public static boolean addNotEmpty(Collection<String> col, String item) {
     if (isEmpty(item)) {
       return false;
@@ -41,6 +48,13 @@ public final class BeeUtils {
     }
   }
 
+  /**
+   * Adds String {@code item} to collection {@code col} if {@code item} is not null.
+   * 
+   * @param col Collection where the {@code item} should be added to
+   * @param item T that will be added
+   * @return true if addition is successful
+   */
   public static <T> boolean addNotNull(Collection<T> col, T item) {
     if (item == null) {
       return false;
@@ -50,6 +64,14 @@ public final class BeeUtils {
     }
   }
 
+  /**
+   * Adds {@code item} to {@code list} at specified {@code index} or if index not valid at last
+   * position. position
+   * 
+   * @param list List to which the {@code item} should be added
+   * @param index at which position to add
+   * @param item which should be added
+   */
   public static <T> void addQuietly(List<T> list, int index, T item) {
     if (isIndex(list, index)) {
       list.add(index, item);
@@ -1053,6 +1075,16 @@ public final class BeeUtils {
     return Ascii.isUpperCase(c) || Ascii.isLowerCase(c);
   }
 
+  /**
+   * Checks whether {@code d} is between {@code min} and {@code max}.
+   * 
+   * @param d Double to check
+   * @param min minimum value
+   * @param minInclusive true if minimum value should be included to check
+   * @param max maximum value
+   * @param maxInclusive true if maximum value should be included to check
+   * @return true if d is between min and max
+   */
   public static boolean isBetween(Double d, Double min, boolean minInclusive,
       Double max, boolean maxInclusive) {
     if (!isDouble(d)) {
@@ -1181,6 +1213,16 @@ public final class BeeUtils {
     return isDouble(s, min, minInclusive, null, false);
   }
 
+  /**
+   * Checks if Double from String {@code s} is between min and max.
+   * 
+   * @param s String to be converted to Double and checked if it is between min and max values
+   * @param min minimum value
+   * @param minInclusive true if minimum value should be included
+   * @param max maximum value
+   * @param maxInclusive true if maximum value should be included
+   * @return true if {@code s} is between min and max
+   */
   public static boolean isDouble(String s, Double min, boolean minInclusive,
       Double max, boolean maxInclusive) {
     if (isEmpty(s)) {
@@ -1197,14 +1239,32 @@ public final class BeeUtils {
     return ok;
   }
 
+  /**
+   * Checks whether {@code col} is empty and not null.
+   * 
+   * @param col Collection to be checked
+   * @return true if collection is empty.
+   */
   public static boolean isEmpty(Collection<?> col) {
     return col == null || col.isEmpty();
   }
 
+  /**
+   * Checks whether given {@code map} is empty and not null.
+   * 
+   * @param map to be checked
+   * @return true if map is empty.
+   */
   public static boolean isEmpty(Map<?, ?> map) {
     return map == null || map.isEmpty();
   }
 
+  /**
+   * Checks whether {@code s} is empty or null and not null.
+   * 
+   * @param s String to be checked.
+   * @return true if String is empty or null.
+   */
   public static boolean isEmpty(String s) {
     return s == null || s.trim().isEmpty();
   }
@@ -1244,6 +1304,14 @@ public final class BeeUtils {
     return ok;
   }
 
+  /**
+   * Checks whether collection is not null, index is lower than the size of collection and index not
+   * to be negative.
+   * 
+   * @param col Collection to be checked
+   * @param idx index
+   * @return true if index is of collection
+   */
   public static boolean isIndex(Collection<?> col, int idx) {
     return col != null && idx >= 0 && idx < col.size();
   }
