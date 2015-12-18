@@ -7,11 +7,11 @@
 ]>
 <f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form" xmlns:ui="http://www.butent.com/ui"
   name="&form;" caption="Sutarties priedas" disabledActions="save" width="70" widthUnit="%" height="90" heightUnit="%">
-  <FlowPanel style="padding: 10px; background-color: white; font-size:12px;" contentEditable="true"
-    class="bee-form-TradeActPrint">
+  <FlowPanel style="padding: 10px; background-color: white; font-size:11px;" contentEditable="true"
+    class="bee-form-TradeActPrint bee-PrintableForm">
     <FlowPanel>
-      <Image url="images/logo.png" style="position: relative;" />
-      <FlowPanel style="/*margin-top:-35px;*/">
+      <Image url="images/logo.png" style="position: relative; width:12.86em; height:3em;" />
+      <FlowPanel style="margin-top:-35px; padding-top: 20px;">
         <TextLabel style="text-align:center; &bold;">
           <render>
             <ui:expression>'Priedas Nr. ' + rowId + ' prie nuomos sutarties: ' + row.ContractNumber</ui:expression>
@@ -73,13 +73,13 @@
 sąlygų bei įkainių.</span>
     </HtmlPanel>
     <br />
-    <TextLabel source="ActName" style="text-align:center; &bold;" />
+    <TextLabel source="ActName" style="text-align:center; &bold; padding-top: 5px; padding-bottom: 10px;" />
     <FlowPanel name="TradeActItems" class="TradeActItems" style="&section;" />
     <br />
     <FlowPanel name="TradeActServices" class="TradeActServices" style="&section;" />
 
     <HtmlPanel style="&section;">
-      <span style="display:block; white-space:pre-wrap; border:1px solid silver; margin-top: 20px;">Patabos: Grąžinama įranga turi būti nuvalyta ir išardyta taip, kaip buvo išduota. Įranga transporto priemonėje turi būti
+      <span style="display:block; white-space:pre-wrap; border:1px solid silver; margin-top: 20px;">Pastabos: Grąžinama įranga turi būti nuvalyta ir išardyta taip, kaip buvo išduota. Įranga transporto priemonėje turi būti
 sukrauta taip, kad būtų galima iškrauti šakiniais krautuvais. Už iškrovimą rankomis apmokama papildomai.</span>
     </HtmlPanel>
     <br />

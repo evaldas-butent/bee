@@ -7,8 +7,8 @@
 ]>
 <f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form" xmlns:ui="http://www.butent.com/ui"
   name="&form;" caption="Perdavimo aktas" disabledActions="save" width="70" widthUnit="%" height="90" heightUnit="%">
-  <FlowPanel style="padding: 10px; background-color: white; font-size:12px;" contentEditable="true"
-    class="bee-form-TradeActPrint">
+  <FlowPanel style="padding: 10px; background-color: white; font-size:11px;" contentEditable="true"
+    class="bee-PrintableForm bee-form-TradeActPrint">
     <!-- 
     @DEPRECATED, media:print not supported :before of css rule 
     <css id="&form;">
@@ -34,9 +34,9 @@
     </css>
     -->
     <FlowPanel>
-      <Image url="images/logo.png" style="position: relative;" />
-      <FlowPanel style="margin-top:-35px;">
-        <TextLabel style="text-align:center; &bold;">
+      <Image url="images/logo.png" style="position: relative; width:12.86em; height:3em;" />
+      <FlowPanel style="margin-top:-35px; padding-top: 20px;">
+        <TextLabel style="text-align:center; &bold; font-size: 11px;">
           <render>
             <ui:expression>'Įrenginių perdavimo aktas Nr. ' + row.SeriesName + '-' + (row.Number ?
               row.Number :
@@ -48,7 +48,7 @@
     </FlowPanel>
 
     <FlowPanel style="margin-top:12px;">
-      <Table style="width:100%; border:1px solid black;">
+      <Table style="width:100%; border:1px solid black; font-size: 11px;">
         <row>
           <cell style="vertical-align:top;">
             <Label html="Nuomotojas" style="font-weight: bold; margin-left:10px;" />
@@ -67,7 +67,7 @@
         </row>
         <row>
           <TextLabel />
-          <TextLabel source="Contract" style="border-left: 1px solid black;">
+          <TextLabel source="Contract">
             <renderToken source="ContractName" prefix="Sutarties Nr. " />
             <renderToken source="ContractNumber" />
           </TextLabel>
@@ -93,13 +93,13 @@
         </row>
       </Table>
     </FlowPanel>
-    <TextLabel source="ActName" style="text-align:center; &bold;" />
-    <FlowPanel name="TradeActItems" class="TradeActItems" style="&section;" />
+    <TextLabel source="ActName" style="text-align:center; &bold; padding-top: 10px; padding-bottom: 10px;" />
+    <FlowPanel name="TradeActItems" class="TradeActItems" style="&section; font-size: 11px;" />
     <br />
-    <FlowPanel name="TradeActServices" class="TradeActServices" style="&section;" />
+    <FlowPanel name="TradeActServices" class="TradeActServices" style="&section; font-size: 11px;" />
 
     <HtmlPanel style="&section;">
-      <span style="display:block; white-space:pre-wrap; border:1px solid silver; margin-top: 20px;">Patabos: Grąžinama įranga turi būti nuvalyta ir išardyta taip, kaip buvo išduota. Įranga transporto priemonėje turi būti
+      <span style="display:block; white-space:pre-wrap; border:1px solid silver; margin-top: 20px;">Pastabos: Grąžinama įranga turi būti nuvalyta ir išardyta taip, kaip buvo išduota. Įranga transporto priemonėje turi būti
 sukrauta taip, kad būtų galima iškrauti šakiniais krautuvais. Už iškrovimą rankomis apmokama papildomai.</span>
     </HtmlPanel>
 
