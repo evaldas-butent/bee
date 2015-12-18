@@ -27,6 +27,7 @@ import com.butent.bee.client.event.DndTarget;
 import com.butent.bee.client.event.logical.HasSummaryChangeHandlers;
 import com.butent.bee.client.event.logical.SummaryChangeEvent;
 import com.butent.bee.client.event.logical.VisibilityChangeEvent;
+import com.butent.bee.client.style.ComputedStyles;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiHelper;
@@ -36,6 +37,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BiConsumer;
 import com.butent.bee.shared.Pair;
+import com.butent.bee.shared.css.CssUnit;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -605,23 +607,31 @@ public class TabbedPages extends Flow implements
               int dy = t.getNativeEvent().getClientY() - DndHelper.getStartY();
 
               int top = getElement().getOffsetTop();
-              int height = getOffsetHeight();
+              int height = getElement().getClientHeight();
+
+              int margin = ComputedStyles.getPixels(getElement(), StyleUtils.STYLE_MARGIN_TOP);
+              int minHeight = ComputedStyles.getPixels(getElement(), StyleUtils.STYLE_MIN_HEIGHT);
+
+              dy += margin;
+              if (minHeight > 0 && height - dy < minHeight) {
+                dy = height - minHeight;
+              }
 
               if (dy != 0 && top + dy >= 0 && height > dy) {
-                int left = getElement().getOffsetLeft();
-                int width = getOffsetWidth();
-
                 Style style = getElement().getStyle();
+
+                if (margin != 0) {
+                  StyleUtils.setProperty(style, StyleUtils.STYLE_MARGIN_TOP,
+                      BeeConst.DOUBLE_ZERO, CssUnit.PX);
+                }
 
                 StyleUtils.setTop(style, top + dy);
                 StyleUtils.setHeight(style, height - dy);
 
-                StyleUtils.setLeft(style, left);
-                StyleUtils.setWidth(style, width);
-
                 StyleUtils.makeAbsolute(style);
-
                 addStyleName(getStylePrefix() + "resized");
+
+                Scheduler.get().scheduleDeferred(() -> deckPanel.onResize());
               }
             }
           });
