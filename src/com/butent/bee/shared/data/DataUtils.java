@@ -309,7 +309,7 @@ public final class DataUtils {
   }
 
   /**
-   * Finds column place in the list
+   * Finds column place in the list.
    * 
    * @param columnId the name of target column
    * @param columns a list of columns
@@ -320,7 +320,7 @@ public final class DataUtils {
   }
 
   /**
-   * Finds column place in the list with the warning
+   * Finds column place in the list with the warning.
    * 
    * @param columnId the name of target column
    * @param columns a list of columns
@@ -764,7 +764,7 @@ public final class DataUtils {
   }
 
   /**
-   * Checks if the rowSet is empty.
+   * Checks if the rowSet is empty or null.
    * 
    * @param rowSet data set (BeeRowSet object)
    * @return True if rowSet is empty, otherwise false.
@@ -774,7 +774,7 @@ public final class DataUtils {
   }
 
   /**
-   * Checks if the rowSet is empty.
+   * Checks if the rowSet is empty or null.
    * 
    * @param rowSet data set (SimpleRowSet object)
    * @return True if rowSet is empty, otherwise false.
@@ -814,12 +814,12 @@ public final class DataUtils {
   }
 
   /**
-   * Checks if the {@code row} is {@code null}
+   * Checks if the value at {@code row} {@code columnId} is {@code null}.
    * 
    * @param rowSet data set (BeeRowSet object)
    * @param row data entry
    * @param columnId the name of target column
-   * @return True if the {@code row} equals {@code null}, otherwise false.
+   * @return True if the cell at {@code row} {@code columnId} equals {@code null}, otherwise false.
    */
   public static boolean isNull(BeeRowSet rowSet, IsRow row, String columnId) {
     return row.isNull(getColumnIndex(columnId, rowSet.getColumns()));
@@ -1193,7 +1193,7 @@ public final class DataUtils {
   }
 
   /**
-   * Sets a String value to the row
+   * Sets a String value to the cell.
    * 
    * @param rowSet
    * @param row target row

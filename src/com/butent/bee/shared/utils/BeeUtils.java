@@ -49,7 +49,7 @@ public final class BeeUtils {
   }
 
   /**
-   * Adds String {@code item} to collection {@code col} if {@code item} is not null.
+   * Adds {@code item} to collection {@code col} if {@code item} is not null.
    * 
    * @param col Collection where the {@code item} should be added to
    * @param item T that will be added
@@ -65,8 +65,8 @@ public final class BeeUtils {
   }
 
   /**
-   * Adds {@code item} to {@code list} at specified {@code index} or if index not valid at last
-   * position. position
+   * Adds {@code item} to {@code list} at specified {@code index} or if index not valid appends
+   * {@code item} to the end of {@code list}.
    * 
    * @param list List to which the {@code item} should be added
    * @param index at which position to add
@@ -1240,27 +1240,27 @@ public final class BeeUtils {
   }
 
   /**
-   * Checks whether {@code col} is empty and not null.
+   * Checks whether {@code col} is empty or null.
    * 
    * @param col Collection to be checked
-   * @return true if collection is empty.
+   * @return true if collection is empty or null.
    */
   public static boolean isEmpty(Collection<?> col) {
     return col == null || col.isEmpty();
   }
 
   /**
-   * Checks whether given {@code map} is empty and not null.
+   * Checks whether given {@code map} is empty or null.
    * 
    * @param map to be checked
-   * @return true if map is empty.
+   * @return true if map is empty or null.
    */
   public static boolean isEmpty(Map<?, ?> map) {
     return map == null || map.isEmpty();
   }
 
   /**
-   * Checks whether {@code s} is empty or null and not null.
+   * Checks whether {@code s} is empty or null.
    * 
    * @param s String to be checked.
    * @return true if String is empty or null.
@@ -1305,12 +1305,12 @@ public final class BeeUtils {
   }
 
   /**
-   * Checks whether collection is not null, index is lower than the size of collection and index not
-   * to be negative.
+   * Checks whether collection is not null, index is lower than the size of collection and index is
+   * not negative.
    * 
    * @param col Collection to be checked
    * @param idx index
-   * @return true if index is of collection
+   * @return true if index is valid.
    */
   public static boolean isIndex(Collection<?> col, int idx) {
     return col != null && idx >= 0 && idx < col.size();
