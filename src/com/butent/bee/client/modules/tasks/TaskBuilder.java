@@ -22,6 +22,7 @@ import com.butent.bee.client.composite.MultiSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.Queries.RowSetCallback;
+import com.butent.bee.client.modules.projects.ProjectsHelper;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
@@ -442,12 +443,10 @@ class TaskBuilder extends AbstractFormInterceptor {
   private static void setProjectStagesFilter(FormView form, IsRow row) {
     int idxProjectOwner = form.getDataIndex(ALS_PROJECT_OWNER);
     int idxProject = form.getDataIndex(ProjectConstants.COL_PROJECT);
+    int idxProjectUser = form.getDataIndex(ProjectConstants.ALS_FILTERED_PROJECT_USER);
 
-    if (BeeConst.isUndef(idxProjectOwner)) {
-      return;
-    }
-
-    if (BeeConst.isUndef(idxProject)) {
+    if (BeeConst.isUndef(idxProjectOwner) || BeeConst.isUndef(idxProject) || BeeConst.isUndef(
+        idxProjectUser)) {
       return;
     }
 
@@ -459,8 +458,6 @@ class TaskBuilder extends AbstractFormInterceptor {
       return;
     }
 
-    long currentUser = BeeUtils.unbox(BeeKeeper.getUser().getUserId());
-    long projectOwner = BeeUtils.unbox(row.getLong(idxProjectOwner));
     long projectId = BeeUtils.unbox(row.getLong(idxProject));
 
     if (DataUtils.isId(projectId)) {
@@ -469,7 +466,7 @@ class TaskBuilder extends AbstractFormInterceptor {
       setVisibleProjectData(form, false);
     }
 
-    if (currentUser != projectOwner) {
+    if (!ProjectsHelper.isProjectOwner(form, row) || !ProjectsHelper.isProjectUser(form, row)) {
       return;
     }
 
