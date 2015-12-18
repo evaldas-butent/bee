@@ -17,9 +17,22 @@
       <SimpleColumn name="Company" />
       <SimpleJoin name="Company" joinType="LEFT">
         <SimpleColumn alias="CompanyName" name="Name" />
+        <SimpleColumn name="CompanyType" />
+         <SimpleJoin name="CompanyType" joinType="LEFT">
+            <SimpleColumn alias="CompanyTypeName" name="Name" />
+         </SimpleJoin>
+      </SimpleJoin>
+      
+      <SimpleColumn name="Type" />
+      <SimpleJoin name="Type" joinType="LEFT">
+        <SimpleColumn alias="TypeName" name="Name" />
       </SimpleJoin>
       
       <SimpleColumn name="Project" />
+      <SimpleJoin name="Project" joinType="LEFT">
+        <SimpleColumn alias="ProjectName" name="Name" />
+      </SimpleJoin>
+
       <SimpleColumn name="ProjectStage" />
     </SimpleJoin>
 
