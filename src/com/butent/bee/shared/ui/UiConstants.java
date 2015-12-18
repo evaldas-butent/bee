@@ -61,6 +61,9 @@ public final class UiConstants {
   public static final String ATTR_REL_COLUMN = "relColumn";
   public static final String ATTR_PAGING = "paging";
 
+  public static final String ATTR_SPLITTER_SIZE = "splitterSize";
+  public static final String ATTR_SIZE = "size";
+
   public static final String TAG_ROW = "row";
   public static final String TAG_COL = "col";
   public static final String TAG_CELL = "cell";

@@ -1644,7 +1644,7 @@
   position: relative;
 }
 .bee-FileCollector-dropArea-active:before {
-  content: "Krepšis";
+  content: "Krepšys";
   font-size: xx-large;
   letter-spacing: 5px;
   color: #999;
