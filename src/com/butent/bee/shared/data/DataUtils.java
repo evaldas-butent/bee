@@ -308,10 +308,25 @@ public final class DataUtils {
     }
   }
 
+  /**
+   * Finds column place in the list
+   * 
+   * @param columnId the name of target column
+   * @param columns a list of columns
+   * @return an index of target column in columns list
+   */
   public static int getColumnIndex(String columnId, List<? extends IsColumn> columns) {
     return getColumnIndex(columnId, columns, false);
   }
 
+  /**
+   * Finds column place in the list with the warning
+   * 
+   * @param columnId the name of target column
+   * @param columns a list of columns
+   * @param warn value to show or not the warning
+   * @return an index of target column in columns list
+   */
   public static int getColumnIndex(String columnId, List<? extends IsColumn> columns,
       boolean warn) {
 
@@ -727,34 +742,85 @@ public final class DataUtils {
     return rowSet;
   }
 
+  /**
+   * Checks if row has id.
+   * 
+   * @param row data entry
+   * @return true if a row has id value, otherwise false.
+   */
   public static boolean hasId(IsRow row) {
     return row != null && isId(row.getId());
   }
 
+  /**
+   * Checks if the id of the row and specific id are equal.
+   * 
+   * @param row data entry
+   * @param id specific id value
+   * @return true if both id are equal, otherwise false.
+   */
   public static boolean idEquals(IsRow row, Long id) {
     return row != null && id != null && id.equals(row.getId());
   }
 
+  /**
+   * Checks if the rowSet is empty.
+   * 
+   * @param rowSet data set (BeeRowSet object)
+   * @return True if rowSet is empty, otherwise false.
+   */
   public static boolean isEmpty(BeeRowSet rowSet) {
     return rowSet == null || rowSet.isEmpty();
   }
 
+  /**
+   * Checks if the rowSet is empty.
+   * 
+   * @param rowSet data set (SimpleRowSet object)
+   * @return True if rowSet is empty, otherwise false.
+   */
   public static boolean isEmpty(SimpleRowSet rowSet) {
     return rowSet == null || rowSet.isEmpty();
   }
 
+  /**
+   * Checks if the id is truly correct.
+   * 
+   * @param id target id value (Long object)
+   * @return True if the {@code id} is positive, otherwise false.
+   */
   public static boolean isId(Long id) {
     return id != null && id > 0;
   }
 
+  /**
+   * Checks if the id is truly correct.
+   * 
+   * @param s target String value
+   * @return True if the {@code s} is positive, otherwise false.
+   */
   public static boolean isId(String s) {
     return s != null && BeeUtils.isDigit(s.trim()) && isId(BeeUtils.toLongOrNull(s));
   }
 
+  /**
+   * Checks if the target row is a new row.
+   * 
+   * @param row data entry
+   * @return True if id of the {@code row} equals 0, otherwise false.
+   */
   public static boolean isNewRow(IsRow row) {
     return row != null && row.getId() == NEW_ROW_ID;
   }
 
+  /**
+   * Checks if the {@code row} is {@code null}
+   * 
+   * @param rowSet data set (BeeRowSet object)
+   * @param row data entry
+   * @param columnId the name of target column
+   * @return True if the {@code row} equals {@code null}, otherwise false.
+   */
   public static boolean isNull(BeeRowSet rowSet, IsRow row, String columnId) {
     return row.isNull(getColumnIndex(columnId, rowSet.getColumns()));
   }
@@ -1039,10 +1105,24 @@ public final class DataUtils {
     return result;
   }
 
+  /**
+   * Checks if the rows have same id.
+   * 
+   * @param r1 first row
+   * @param r2 second row
+   * @return true if the rows have the same id, otherwise false.
+   */
   public static boolean sameId(IsRow r1, IsRow r2) {
     return r1 != null && r2 != null && r1.getId() == r2.getId();
   }
 
+  /**
+   * Checks if the rows have same id and version.
+   * 
+   * @param r1 first row
+   * @param r2 second row
+   * @return true if the rows have the same id and same version, otherwise false.
+   */
   public static boolean sameIdAndVersion(IsRow r1, IsRow r2) {
     return r1 != null && r2 != null
         && r1.getId() == r2.getId() && r1.getVersion() == r2.getVersion();
@@ -1061,6 +1141,13 @@ public final class DataUtils {
     return sameIdSet(s1, parseIdSet(s2));
   }
 
+  /**
+   * Checks if the rows have same values.
+   * 
+   * @param r1 first row
+   * @param r2 second row
+   * @return true if the rows have same values, otherwise false.
+   */
   public static boolean sameValues(IsRow r1, IsRow r2) {
     if (r1 != null && r2 != null && r1.getNumberOfCells() == r2.getNumberOfCells()) {
       for (int i = 0; i < r1.getNumberOfCells(); i++) {
@@ -1105,6 +1192,14 @@ public final class DataUtils {
     return result;
   }
 
+  /**
+   * Sets a String value to the row
+   * 
+   * @param rowSet
+   * @param row target row
+   * @param columnId column ID
+   * @param value String value
+   */
   public static void setValue(BeeRowSet rowSet, IsRow row, String columnId, String value) {
     row.setValue(getColumnIndex(columnId, rowSet.getColumns()), value);
   }
