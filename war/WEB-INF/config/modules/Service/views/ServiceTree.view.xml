@@ -77,6 +77,22 @@
           </x:else>
         </x:switch>
       </AggregateColumn>
+      
+      <HiddenColumn name="Status" alias="TemplateObjects" />
+      <AggregateColumn name="Status" alias="TemplateObjectsCount" aggregate="COUNT">
+        <x:switch  type="INTEGER">
+          <x:number>"TemplateObjects"</x:number>
+          <x:case>
+            <x:number>4</x:number>
+            <x:then>
+              <x:number>1</x:number>
+            </x:then>
+          </x:case>
+          <x:else>
+            <x:number>null</x:number>
+          </x:else>
+        </x:switch>
+      </AggregateColumn>
     </ExternalJoin>
   </Columns>
   <Order>

@@ -52,6 +52,9 @@ public class ServiceObjectsGrid extends AbstractGridInterceptor implements
         case SERVICE_OBJECT:
           categoryTree.addStyleName(STYLE_TREE_PREFIX + "service");
           break;
+        case TEMPLATE_OBJECT:
+          categoryTree.addStyleName(STYLE_TREE_PREFIX + "template");
+          break;
         default:
           categoryTree.addStyleName(STYLE_TREE_PREFIX + "service");
           break;

@@ -4,6 +4,7 @@
   <!ENTITY inp "width: 200px;">
 ]>
 <Table xmlns="http://www.butent.com/widget"
+  xmlns:ui="http://www.butent.com/ui"
     style="border-collapse: collapse;" cellStyle="padding-top: 8px;">
 
   <col index="0" cellStyle="&clbl;" />
@@ -15,8 +16,18 @@
       style="&inp;" />
     <Label for="Address" />
     <InputText source="Address" style="&inp;" />
-    <Label name="StatusLabel" for="Status" />
-    <ListBox name="Status" source="Status" style="&inp;" readOnly="true" visible="true" />
+    <Label name="StatusLabel" for="Status">
+       <dynStyle>
+        <ui:inline>display:none</ui:inline>
+        <ui:expression>rowId&lt;1</ui:expression>
+      </dynStyle>
+    </Label>
+    <ListBox name="Status" source="Status" style="&inp;" readOnly="true" visible="true" >
+     <dynStyle>
+        <ui:inline>display:none</ui:inline>
+        <ui:expression>rowId&lt;1</ui:expression>
+      </dynStyle>
+    </ListBox>
   </row>
 
   <row>
@@ -24,8 +35,18 @@
     <DataSelector source="Customer" renderColumns="CustomerName CustomerTypeName" style="&inp;" />
     <Label for="Contractor" />
     <DataSelector source="Contractor" style="&inp;" />
-    <Label for="Project" />
-    <DataSelector source="Project" style="&inp;"  readOnly="true"/>
+    <Label for="Project" >
+      <dynStyle>
+        <ui:inline>display:none</ui:inline>
+        <ui:expression>row.Status == 4</ui:expression>
+      </dynStyle>
+    </Label>
+    <DataSelector source="Project" style="&inp;"  readOnly="true">
+      <dynStyle>
+        <ui:inline>display:none</ui:inline>
+        <ui:expression>row.Status == 4</ui:expression>
+      </dynStyle>
+    </DataSelector>
   </row>
 
   <row>

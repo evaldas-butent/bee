@@ -3,6 +3,7 @@
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
   xmlns:xi="http://www.w3.org/2001/XInclude"
+   xmlns:ui="http://www.butent.com/ui"
   
   name="ServiceObject" viewName="ServiceObjects" caption="=svcObject"
   width="1000" height="600"
@@ -10,15 +11,14 @@
   <FlowPanel class="flexBox-vertical">
     <xi:include href="widgets/ObjectHeader.widget.xml" />
     <xi:include href="widgets/ObjectMainCriteria.widget.xml" />
-    
-    <TabbedPages class="flexible">
+
+    <TabbedPages class="flexible" name="ObjectChildData">
       <page>
         <text>=svcSpecification</text>
         <xi:include href="widgets/ObjectCriteria.widget.xml" />
       </page>
-
       <page>
-        <text>=svcMaintenance</text>
+        <text>=svcMaintenance</text> 
         <ChildGrid name="Maintenance" relColumn="ServiceObject" />
       </page>
       <page>

@@ -17,6 +17,7 @@
           + '&lt;span class="bee-svc-tree-expr-projects-count" &gt;' + (row.ProjObjectsCount > 0 ? ' [' + row.ProjObjectsCount + ']' : '') + '&lt;&#47;span&gt;'
           + '&lt;span class="bee-svc-tree-expr-potential-count" &gt;' + (row.PotObjectsCount > 0 ? ' [' + row.PotObjectsCount + ']' : '') + '&lt;&#47;span&gt;'
           + '&lt;span class="bee-svc-tree-expr-lost-count" &gt;' + (row.LostObjectsCount > 0 ? ' [' + row.LostObjectsCount + ']' : '') + '&lt;&#47;span&gt;'
+          + '&lt;span class="bee-svc-tree-expr-template-count" &gt;' + (row.TemplateObjectsCount > 0 ? ' [' + row.TemplateObjectsCount + ']' : '') + '&lt;&#47;span&gt;'
         </ui:expression>
       </w:calc>
       <w:form>

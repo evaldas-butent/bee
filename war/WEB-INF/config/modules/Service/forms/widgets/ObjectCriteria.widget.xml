@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<FlowPanel xmlns="http://www.butent.com/widget" class="flexBox-horizontal-space-between">
+<FlowPanel xmlns="http://www.butent.com/widget" class="flexBox-horizontal-space-between" name="CritData">
   <ChildGrid name="ServiceCritGroups" relColumn="ServiceObject" 
     style="width: 460px; margin-right: 20px;" />
   <ChildGrid class="flexible" name="ServiceCriteria" parent="ServiceCritGroups"

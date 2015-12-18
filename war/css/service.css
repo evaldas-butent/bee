@@ -333,22 +333,28 @@
 }
 
 .bee-svc-tree-service .bee-svc-tree-expr-projects-count,
+.bee-svc-tree-service .bee-svc-tree-expr-template-count,
 .bee-svc-tree-service .bee-svc-tree-expr-potential-count {
   display: none;
 }
 
 .bee-svc-tree-project .bee-svc-tree-expr-service-count,
+.bee-svc-tree-project .bee-svc-tree-expr-template-count,
 .bee-svc-tree-project .bee-svc-tree-expr-potential-count  {
   display: none;
 }
 
 .bee-svc-tree-potential .bee-svc-tree-expr-service-count,
+.bee-svc-tree-potential .bee-svc-tree-expr-template-count,
+.bee-svc-tree-potential .bee-svc-tree-expr-lost-count,
 .bee-svc-tree-potential .bee-svc-tree-expr-projects-count{
   display: none;
 }
 
-.bee-svc-tree-potential .bee-svc-tree-expr-service-count,
-.bee-svc-tree-potential .bee-svc-tree-expr-lost-count{
+.bee-svc-tree-template .bee-svc-tree-expr-service-count,
+.bee-svc-tree-template .bee-svc-tree-expr-projects-count,
+.bee-svc-tree-template .bee-svc-tree-expr-potential-count,
+.bee-svc-tree-template .bee-svc-tree-expr-lost-count { 
   display: none;
 }
 
@@ -363,3 +369,12 @@
 .bee-svc-tree-expr-potential-count {
 
 }
+
+.bee-svc-tree-expr-lost-count {
+
+}
+
+.bee-svc-tree-expr-template-count {
+
+}
+
