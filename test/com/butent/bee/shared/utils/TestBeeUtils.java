@@ -106,4 +106,31 @@ public class TestBeeUtils {
     assertFalse(BeeUtils.isEmpty(queue2));
   }
 
+  @Test
+  public void testDoubleToString() {
+    assertEquals("NaN", BeeUtils.toString(Double.NaN));
+    assertEquals("Infinity", BeeUtils.toString(Double.POSITIVE_INFINITY));
+    assertEquals("-Infinity", BeeUtils.toString(Double.NEGATIVE_INFINITY));
+
+    assertEquals("0", BeeUtils.toString(0.0));
+    assertEquals("0", BeeUtils.toString(-0.0));
+
+    assertEquals("1.2E15", BeeUtils.toString(1.2e15));
+    assertEquals("-1.1E15", BeeUtils.toString(-1.1e15));
+
+    assertEquals("1000000000000000", BeeUtils.toString(1e15));
+    assertEquals("-1000000000000000", BeeUtils.toString(-1e15));
+
+    assertEquals("0", BeeUtils.toString(0.9e-15));
+    assertEquals("0", BeeUtils.toString(-0.9e-15));
+
+    assertEquals("0.000000000000001", BeeUtils.toString(1e-15));
+    assertEquals("-0.000000000000001", BeeUtils.toString(-1e-15));
+
+    assertEquals("123456789012345", BeeUtils.toString(123456789012345.0));
+    assertEquals("-123456789012345", BeeUtils.toString(-123456789012345.0));
+
+    assertEquals("0.3", BeeUtils.toString(0.1 + 0.2));
+    assertEquals("3.14159265358979", BeeUtils.toString(Math.PI));
+  }
 }

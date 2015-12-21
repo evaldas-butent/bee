@@ -14,6 +14,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasRange;
 
 import java.math.BigDecimal;
+import java.math.MathContext;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -31,6 +32,8 @@ public final class BeeUtils {
   public static final Joiner NUMBER_JOINER = Joiner.on(BeeConst.CHAR_COMMA).skipNulls();
   public static final Splitter NUMBER_SPLITTER =
       Splitter.on(CharMatcher.anyOf(" ,;")).trimResults().omitEmptyStrings();
+
+  private static final MathContext DEFAULT_MATH_CONTEXT = new MathContext(15);
 
   /**
    * Adds String {@code item} to collection {@code col} if {@code item} is not empty.
@@ -2880,7 +2883,19 @@ public final class BeeUtils {
    * @return a String representation of {@code x}
    */
   public static String toString(double x) {
-    return removeTrailingZeros(Double.toString(x));
+    if (Double.isNaN(x) || Double.isInfinite(x) || Math.abs(x) > 1e15) {
+      return Double.toString(x);
+
+    } else if (Math.abs(x) < 1e-15) {
+      return BeeConst.STRING_ZERO;
+
+    } else if (x % 1 == BeeConst.DOUBLE_ZERO) {
+      return Long.toString((long) x);
+
+    } else {
+      BigDecimal b = new BigDecimal(x, DEFAULT_MATH_CONTEXT);
+      return removeTrailingZeros(b.toPlainString());
+    }
   }
 
   public static String toString(double x, int maxDec) {
