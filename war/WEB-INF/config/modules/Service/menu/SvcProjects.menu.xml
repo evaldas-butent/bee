@@ -8,6 +8,8 @@ name="SvcProjects" label="=svcProjectsMenu" order="115" module="Service.Projects
   <Item name="ProjectObjects" label="=svcProjectObjects" service="service_objects" parameters="project_object" />
 
   <Item name="LostObjects" label="=svcObjectsLost" service="service_objects" parameters="lost_object" />
+  
+  <Item name="AllObjects" label="=svcAllObjects" service="service_objects" parameters="all" />
 
   <Item name="ServiceInvoices" label="=svcInvoices" service="grid" parameters="SvcProjectInvoices"
     separator="true" />

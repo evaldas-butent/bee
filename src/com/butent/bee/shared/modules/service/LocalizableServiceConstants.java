@@ -12,6 +12,8 @@ public interface LocalizableServiceConstants {
 
   String svcActionToServiceObjects();
 
+  String svcAllObjects();
+
   String svcCalendar();
 
   String svcContractor();
