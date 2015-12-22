@@ -66,6 +66,8 @@ public class UserData implements BeeSerializable, HasInfo {
 
   private Table<RightsState, RightsObjectType, Set<String>> rights;
 
+  private transient boolean authoritah;
+
   public UserData(long userId, String login) {
     this.userId = userId;
     this.login = login;
@@ -255,6 +257,10 @@ public class UserData implements BeeSerializable, HasInfo {
     return BeeUtils.notEmpty(BeeUtils.joinWords(getFirstName(), getLastName()), getLogin());
   }
 
+  public boolean hasAuthoritah() {
+    return authoritah;
+  }
+
   public boolean hasDataRight(String viewName, RightsState state) {
     return isAnyModuleVisible(RightsUtils.getViewModules(viewName))
         && hasRight(RightsObjectType.DATA, viewName, state);
@@ -302,6 +308,11 @@ public class UserData implements BeeSerializable, HasInfo {
       return hasRight(RightsObjectType.WIDGET, widget.getName(), RightsState.VIEW)
           && isModuleVisible(widget.getModuleAndSub());
     }
+  }
+
+  public boolean respectMyAuthoritah() {
+    this.authoritah = !hasAuthoritah();
+    return hasAuthoritah();
   }
 
   @Override
@@ -421,7 +432,7 @@ public class UserData implements BeeSerializable, HasInfo {
           "is not registered for type", BeeUtils.bracket(type.name()));
       return false;
     }
-    if (BeeUtils.isEmpty(object)) {
+    if (BeeUtils.isEmpty(object) || hasAuthoritah()) {
       return true;
     }
     boolean checked;

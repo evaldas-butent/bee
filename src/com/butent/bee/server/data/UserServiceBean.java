@@ -751,6 +751,9 @@ public class UserServiceBean {
           .setWhere(sys.idEquals(TBL_USER_HISTORY, historyId)));
 
       UserData userData = getUserData(userId);
+      if (userData.hasAuthoritah()) {
+        userData.respectMyAuthoritah();
+      }
 
       String sign = userData.getLogin() + " "
           + BeeUtils.parenthesize(userData.getUserSign());
@@ -765,6 +768,16 @@ public class UserServiceBean {
 
     } else {
       logger.severe("Logout attempt by an unauthorized user:", getCurrentUser());
+    }
+  }
+
+  public ResponseObject respectMyAuthoritah() {
+    UserInfo info = getCurrentUserInfo();
+
+    if (info == null) {
+      return ResponseObject.error("current user info not available");
+    } else {
+      return ResponseObject.response(info.getUserData().respectMyAuthoritah());
     }
   }
 

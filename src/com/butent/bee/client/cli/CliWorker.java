@@ -153,6 +153,7 @@ import com.butent.bee.shared.data.PropertiesData;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.StringMatrix;
 import com.butent.bee.shared.data.TableColumn;
+import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.font.FontAwesome;
@@ -405,6 +406,9 @@ public final class CliWorker {
 
     } else if ("id".equals(z)) {
       showElement(v, arr, errorPopup);
+
+    } else if ("iddqd".equals(z)) {
+      respectMyAuthoritah();
 
     } else if (z.startsWith("image")) {
       showImages(arr);
@@ -1995,6 +1999,25 @@ public final class CliWorker {
         }
       });
     }
+  }
+
+  private static void respectMyAuthoritah() {
+    BeeKeeper.getRpc().makeGetRequest(Service.RESPECT_MY_AUTHORITAH, new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+        if (response.hasResponse(Boolean.class)) {
+          boolean authoritah = BeeUtils.toBoolean(response.getResponseAsString());
+          UserData userData = BeeKeeper.getUser().getUserData();
+
+          if (userData != null && userData.hasAuthoritah() != authoritah) {
+            BeeKeeper.getUser().getUserData().respectMyAuthoritah();
+            BeeKeeper.onRightsChange();
+
+            logger.debug(authoritah ? "respect my authoritah" : "screw you guys i'm going home");
+          }
+        }
+      }
+    });
   }
 
   //@formatter:off

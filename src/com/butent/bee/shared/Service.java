@@ -45,6 +45,7 @@ public final class Service {
   public static final String GET_ROOM = RPC_SERVICE_PREFIX + "get_room";
 
   public static final String WHERE_AM_I = RPC_SERVICE_PREFIX + "where_am_i";
+  public static final String RESPECT_MY_AUTHORITAH = RPC_SERVICE_PREFIX + "respect_my_authoritah";
 
   public static final String DATA_SERVICE_PREFIX = RPC_SERVICE_PREFIX + "data_";
 
