@@ -79,6 +79,8 @@ import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
+import com.butent.bee.shared.modules.projects.ProjectConstants;
+import com.butent.bee.shared.modules.projects.ProjectStatus;
 import com.butent.bee.shared.modules.service.ServiceConstants;
 import com.butent.bee.shared.modules.service.ServiceConstants.SvcObjectStatus;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
@@ -183,6 +185,7 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
   private ChildGrid criteriaGrid;
   private TabbedPages tabbedPages;
   private FlowPanel criteriaData;
+  private ChildGrid taskGrid;
 
   private final List<HandlerRegistration> registry = new ArrayList<>();
 
@@ -216,6 +219,10 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
     } else if (widget instanceof FlowPanel && BeeUtils.same(name, NAME_CRITERIA_DATA)) {
       setCriteriaData((FlowPanel) widget);
     }
+
+    if (widget instanceof ChildGrid && BeeUtils.same(name, TaskConstants.VIEW_RELATED_TASKS)) {
+      taskGrid = (ChildGrid) widget;
+    }
   }
 
   @Override
@@ -229,6 +236,15 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
   public void afterRefresh(FormView form, IsRow row) {
     showElements(form, row);
     requery(row);
+
+    if (BeeUtils.unbox(row.getInteger(form.getDataIndex(ProjectConstants.ALS_PROJECT_STATUS)))
+        == ProjectStatus.APPROVED.ordinal()) {
+      if (taskGrid != null) {
+        taskGrid.setEnabled(false);
+      }
+    } else {
+      taskGrid.setEnabled(true);
+    }
   }
 
   @Override
@@ -428,17 +444,17 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
       public void onConfirm() {
         Queries.update(formView.getViewName(), Filter.compareId(row.getId()), COL_OBJECT_STATUS,
             Value.getValue(status.ordinal()), new IntCallback() {
-          @Override
-          public void onSuccess(Integer result) {
-            DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_SERVICE_OBJECTS);
-            CellUpdateEvent.fire(BeeKeeper.getBus(), formView.getViewName(),
-                row.getId(), row.getVersion(),
-                CellSource.forColumn(formView.getDataColumns().get(
-                    formView.getDataIndex(COL_OBJECT_STATUS)), formView
+              @Override
+              public void onSuccess(Integer result) {
+                DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_SERVICE_OBJECTS);
+                CellUpdateEvent.fire(BeeKeeper.getBus(), formView.getViewName(),
+                    row.getId(), row.getVersion(),
+                    CellSource.forColumn(formView.getDataColumns().get(
+                        formView.getDataIndex(COL_OBJECT_STATUS)), formView
                         .getDataIndex(COL_OBJECT_STATUS)), BeeUtils.toString(status.ordinal()));
-            formView.getViewPresenter().handleAction(Action.REFRESH);
-          }
-        });
+                formView.getViewPresenter().handleAction(Action.REFRESH);
+              }
+            });
       }
     };
 
@@ -523,11 +539,11 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
             if (form.getViewPresenter() instanceof ParentRowCreator) {
               ((ParentRowCreator) form.getViewPresenter()).createParentRow(form,
                   new Callback<IsRow>() {
-                @Override
-                public void onSuccess(final IsRow commitedRow) {
-                  fillServiceObjectData(commitedRow);
-                }
-              });
+                    @Override
+                    public void onSuccess(final IsRow commitedRow) {
+                      fillServiceObjectData(commitedRow);
+                    }
+                  });
             }
           }
 
