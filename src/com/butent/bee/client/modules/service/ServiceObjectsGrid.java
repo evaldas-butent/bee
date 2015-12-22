@@ -17,6 +17,7 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.Value;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.service.ServiceConstants;
 import com.butent.bee.shared.modules.service.ServiceConstants.SvcObjectStatus;
 import com.butent.bee.shared.ui.GridDescription;
@@ -42,6 +43,11 @@ public class ServiceObjectsGrid extends AbstractGridInterceptor implements
       categoryTree = (TreeView) widget;
       categoryTree.addSelectionHandler(this);
 
+      if (status == null) {
+        categoryTree.addStyleName(STYLE_TREE_PREFIX + "all");
+        return;
+      }
+
       switch (status) {
         case POTENTIAL_OBJECT:
           categoryTree.addStyleName(STYLE_TREE_PREFIX + "potential");
@@ -51,6 +57,9 @@ public class ServiceObjectsGrid extends AbstractGridInterceptor implements
           break;
         case SERVICE_OBJECT:
           categoryTree.addStyleName(STYLE_TREE_PREFIX + "service");
+          break;
+        case LOST_OBJECT:
+          categoryTree.addStyleName(STYLE_TREE_PREFIX + "lost");
           break;
         case TEMPLATE_OBJECT:
           categoryTree.addStyleName(STYLE_TREE_PREFIX + "template");
@@ -64,6 +73,9 @@ public class ServiceObjectsGrid extends AbstractGridInterceptor implements
 
   @Override
   public String getCaption() {
+    if (status == null) {
+      return Localized.getConstants().svcAllObjects();
+    }
     return status.getListCaption();
   }
 
@@ -79,6 +91,11 @@ public class ServiceObjectsGrid extends AbstractGridInterceptor implements
 
   @Override
   public boolean initDescription(GridDescription gridDescription) {
+    if (status == null) {
+      gridDescription.setFilter(Filter.isNotEqual(COL_OBJECT_STATUS, Value.getValue(
+          SvcObjectStatus.TEMPLATE_OBJECT.ordinal())));
+      return true;
+    }
     gridDescription.setFilter(Filter.isEqual(COL_OBJECT_STATUS, Value.getValue(status.ordinal())));
     return true;
   }

@@ -97,7 +97,7 @@ public final class ServiceConstants {
         Localized.getConstants().svcObjectCalendar()) {
         @Override
         public String getCaption(LocalizableConstants constants) {
-          return constants.svcObjectLost();
+          return constants.svcObjectsTemplate();
         }
       };
 

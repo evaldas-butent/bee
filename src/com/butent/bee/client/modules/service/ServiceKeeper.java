@@ -23,11 +23,14 @@ import com.butent.bee.shared.menu.MenuService;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.service.ServiceConstants.SvcObjectStatus;
 import com.butent.bee.shared.rights.Module;
+import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 
 public final class ServiceKeeper {
 
   public static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "svc-";
+  public static final String ALL_SERVICE_OBJECTS_SUPPLIER_KEY = GRID_SERVICE_OBJECTS
+      + BeeConst.STRING_UNDER + "all";
 
   public static ParameterList createArgs(String method) {
     return BeeKeeper.getRpc().createParameters(Module.SERVICE, method);
@@ -87,6 +90,11 @@ public final class ServiceKeeper {
       public void onSelection(String parameters) {
         Assert.notEmpty(parameters);
 
+        if (BeeUtils.same(parameters, "all")) {
+          ViewFactory.createAndShow(ALL_SERVICE_OBJECTS_SUPPLIER_KEY);
+          return;
+        }
+
         SvcObjectStatus status = EnumUtils.getEnumByName(SvcObjectStatus.class, parameters);
 
         if (status == null) {
@@ -119,6 +127,10 @@ public final class ServiceKeeper {
       GridFactory.registerGridSupplier(objStatus.getSuplierKey(), GRID_SERVICE_OBJECTS,
           new ServiceObjectsGrid(objStatus));
     }
+    GridFactory.registerGridSupplier(ALL_SERVICE_OBJECTS_SUPPLIER_KEY,
+        GRID_SERVICE_OBJECTS,
+        new ServiceObjectsGrid(null));
+
   }
 
   private ServiceKeeper() {
