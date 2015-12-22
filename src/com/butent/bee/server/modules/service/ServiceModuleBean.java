@@ -45,8 +45,8 @@ import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.documents.DocumentConstants;
 import com.butent.bee.shared.modules.projects.ProjectConstants;
-import com.butent.bee.shared.modules.service.ServiceConstants.SvcObjectStatus;
 import com.butent.bee.shared.modules.service.ServiceConstants.ServiceFilterDataType;
+import com.butent.bee.shared.modules.service.ServiceConstants.SvcObjectStatus;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -101,7 +101,8 @@ public class ServiceModuleBean implements BeeModule {
 
     } else if (BeeUtils.same(svc, SVC_COPY_DOCUMENT_CRITERIA)) {
       response = copyDocumentCriteria(reqInfo);
-
+    } else if (BeeUtils.same(svc, SVC_COPY_OBJECT_DATA)) {
+      response = copyServiceObject(reqInfo);
     } else {
       String msg = BeeUtils.joinWords("service not recognized:", svc);
       logger.warning(msg);
@@ -121,8 +122,7 @@ public class ServiceModuleBean implements BeeModule {
         BeeParameter.createRelation(module, PRM_SVC_PROJECT_OBJECT_CATEGORY, false,
             TBL_DOCUMENT_TREE, DocumentConstants.COL_CATEGORY_NAME),
         BeeParameter.createRelation(module, PRM_SVC_SERVICE_OBJECT_CATEGORY, false,
-            TBL_DOCUMENT_TREE, DocumentConstants.COL_CATEGORY_NAME)
-        );
+            TBL_DOCUMENT_TREE, DocumentConstants.COL_CATEGORY_NAME));
 
     return params;
   }
@@ -170,7 +170,7 @@ public class ServiceModuleBean implements BeeModule {
 
               if (r != null) {
                 r.setProperty(COL_SERVICE_CRITERION_NAME
-                        + row.getValue(COL_SERVICE_CRITERION_NAME),
+                    + row.getValue(COL_SERVICE_CRITERION_NAME),
                     row.getValue(COL_SERVICE_CRITERION_VALUE));
               }
             }
@@ -186,8 +186,8 @@ public class ServiceModuleBean implements BeeModule {
         .setWhere(SqlUtils.and(SqlUtils.or(
             SqlUtils.equals(TBL_SERVICE_OBJECTS, COL_OBJECT_STATUS,
                 SvcObjectStatus.POTENTIAL_OBJECT.ordinal()),
-                SqlUtils.equals(TBL_SERVICE_OBJECTS, COL_OBJECT_STATUS,
-                    SvcObjectStatus.PROJECT_OBJECT.ordinal())),
+            SqlUtils.equals(TBL_SERVICE_OBJECTS, COL_OBJECT_STATUS,
+                SvcObjectStatus.PROJECT_OBJECT.ordinal())),
             SqlUtils.equals(TBL_SERVICE_OBJECTS, ProjectConstants.COL_PROJECT, projectId)));
     return qs.updateDataWithResponse(update);
   }
@@ -218,6 +218,90 @@ public class ServiceModuleBean implements BeeModule {
         .addFromLeft(TBL_CRITERIA,
             sys.joinTables(TBL_CRITERIA_GROUPS, TBL_CRITERIA, COL_CRITERIA_GROUP))
         .setWhere(SqlUtils.equals(TBL_CRITERIA_GROUPS, COL_DOCUMENT_DATA, dataId)));
+
+    if (DataUtils.isEmpty(rs)) {
+      return ResponseObject.emptyResponse();
+    }
+
+    Map<Long, Long> groups = new HashMap<>();
+    Long svcGroupId;
+
+    for (SimpleRow row : rs) {
+      Long docGroupId = row.getLong(COL_CRITERIA_GROUP);
+
+      if (groups.containsKey(docGroupId)) {
+        svcGroupId = groups.get(docGroupId);
+
+      } else {
+        SqlInsert insGroup = new SqlInsert(TBL_SERVICE_CRITERIA_GROUPS)
+            .addConstant(COL_SERVICE_OBJECT, objId);
+
+        Integer groupOrdinal = row.getInt(aliasGroupOrdinal);
+        if (groupOrdinal != null) {
+          insGroup.addConstant(COL_SERVICE_CRITERIA_ORDINAL, groupOrdinal);
+        }
+
+        String groupName = row.getValue(COL_CRITERIA_GROUP_NAME);
+        if (!BeeUtils.isEmpty(groupName)) {
+          insGroup.addConstant(COL_SERVICE_CRITERIA_GROUP_NAME, groupName);
+        }
+
+        svcGroupId = qs.insertData(insGroup);
+        groups.put(docGroupId, svcGroupId);
+      }
+
+      String criterion = row.getValue(COL_CRITERION_NAME);
+
+      if (DataUtils.isId(svcGroupId) && !BeeUtils.isEmpty(criterion)) {
+        SqlInsert insCrit = new SqlInsert(TBL_SERVICE_CRITERIA)
+            .addConstant(COL_SERVICE_CRITERIA_GROUP, svcGroupId)
+            .addConstant(COL_SERVICE_CRITERION_NAME, criterion);
+
+        Integer ordinal = row.getInt(COL_CRITERIA_ORDINAL);
+        if (ordinal != null) {
+          insCrit.addConstant(COL_SERVICE_CRITERIA_ORDINAL, ordinal);
+        }
+
+        String value = row.getValue(COL_CRITERION_VALUE);
+        if (!BeeUtils.isEmpty(value)) {
+          insCrit.addConstant(COL_SERVICE_CRITERION_VALUE, value);
+        }
+
+        qs.insertData(insCrit);
+      }
+    }
+
+    return ResponseObject.response(rs.getNumberOfRows());
+  }
+
+  private ResponseObject copyServiceObject(RequestInfo reqInfo) {
+    Long dataId = reqInfo.getParameterLong(VAR_SERVICE_TEMPLATE);
+
+    if (!DataUtils.isId(dataId)) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), VAR_SERVICE_TEMPLATE);
+    }
+
+    Long objId = BeeUtils.toLongOrNull(reqInfo.getParameter(COL_SERVICE_OBJECT));
+    if (!DataUtils.isId(objId)) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), COL_SERVICE_OBJECT);
+    }
+
+    if (qs.sqlExists(TBL_SERVICE_CRITERIA_GROUPS, COL_SERVICE_OBJECT, objId)) {
+      return ResponseObject.emptyResponse();
+    }
+
+    String aliasGroupOrdinal = COL_CRITERIA_GROUP + COL_CRITERIA_ORDINAL;
+
+    SimpleRowSet rs = qs.getData(new SqlSelect()
+        .addField(TBL_SERVICE_CRITERIA_GROUPS, COL_CRITERIA_ORDINAL, aliasGroupOrdinal)
+        .addFields(TBL_SERVICE_CRITERIA_GROUPS, COL_CRITERIA_GROUP_NAME)
+        .addFields(TBL_SERVICE_CRITERIA, COL_CRITERIA_GROUP, COL_CRITERIA_ORDINAL,
+            COL_CRITERION_NAME,
+            COL_CRITERION_VALUE)
+        .addFrom(TBL_SERVICE_CRITERIA_GROUPS)
+        .addFromLeft(TBL_SERVICE_CRITERIA,
+            sys.joinTables(TBL_SERVICE_CRITERIA_GROUPS, TBL_SERVICE_CRITERIA, COL_CRITERIA_GROUP))
+        .setWhere(SqlUtils.equals(TBL_SERVICE_CRITERIA_GROUPS, COL_SERVICE_OBJECT, dataId)));
 
     if (DataUtils.isEmpty(rs)) {
       return ResponseObject.emptyResponse();
@@ -658,7 +742,6 @@ public class ServiceModuleBean implements BeeModule {
       where =
           SqlUtils
               .and(where, objFilter);
-
 
     }
 

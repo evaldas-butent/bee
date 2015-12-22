@@ -4,6 +4,8 @@ public interface LocalizableServiceConstants {
 
   String svcActionToLostObjects();
 
+  String svcActionCreateFromTemplate();
+
   String svcActionShowFromProjects();
 
   String svcActionToProjectObjects();
@@ -32,6 +34,8 @@ public interface LocalizableServiceConstants {
 
   String svcObjectsLost();
 
+  String svcObjectsTemplate();
+
   String svcObjectPotential();
 
   String svcObjectsPotential();
@@ -41,6 +45,8 @@ public interface LocalizableServiceConstants {
   String svcProjectObject();
 
   String svcProjectObjects();
+
+  String svcSelectTemplate();
 
   String svcSendToLostObjectQuestion();
 

@@ -2,6 +2,7 @@ package com.butent.bee.client.modules.service;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -17,23 +18,31 @@ import com.google.web.bindery.event.shared.HandlerRegistration;
 import static com.butent.bee.shared.modules.service.ServiceConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
+import com.butent.bee.client.communication.ParameterList;
+import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.Autocomplete;
+import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.data.Data;
+import com.butent.bee.client.data.ParentRowCreator;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.Queries.IntCallback;
 import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowUpdateCallback;
 import com.butent.bee.client.dialog.DecisionCallback;
+import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.logical.AutocompleteEvent;
 import com.butent.bee.client.event.logical.RowActionEvent;
 import com.butent.bee.client.grid.ChildGrid;
+import com.butent.bee.client.layout.TabbedPages;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
@@ -46,10 +55,11 @@ import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.State;
-import com.butent.bee.shared.css.values.Display;
+import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.css.values.TextAlign;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
@@ -60,16 +70,21 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RelationUtils;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
 import com.butent.bee.shared.data.event.DataChangeEvent;
+import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.TextValue;
 import com.butent.bee.shared.data.value.Value;
+import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
+import com.butent.bee.shared.modules.service.ServiceConstants;
 import com.butent.bee.shared.modules.service.ServiceConstants.SvcObjectStatus;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
+import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.Relation;
+import com.butent.bee.shared.ui.Relation.Caching;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 
@@ -81,6 +96,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Set;
 
 public class ServiceObjectForm extends AbstractFormInterceptor implements ClickHandler,
     RowActionEvent.Handler {
@@ -152,7 +168,8 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
     }
   };
 
-  private static final String NAME_WIDGET_STATUS_LABEL = "StatusLabel";
+  private static final String NAME_CHILD_DATA = "ObjectChildData";
+  private static final String NAME_CRITERIA_DATA = "CritData";
 
   private HasWidgets criteriaPanel;
 
@@ -164,6 +181,8 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
 
   private ChildGrid groupsGrid;
   private ChildGrid criteriaGrid;
+  private TabbedPages tabbedPages;
+  private FlowPanel criteriaData;
 
   private final List<HandlerRegistration> registry = new ArrayList<>();
 
@@ -192,6 +211,10 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
         criteriaGrid = grid;
         grid.setGridInterceptor(childInterceptor);
       }
+    } else if (widget instanceof TabbedPages && BeeUtils.same(name, NAME_CHILD_DATA)) {
+      setTabbedPages((TabbedPages) widget);
+    } else if (widget instanceof FlowPanel && BeeUtils.same(name, NAME_CRITERIA_DATA)) {
+      setCriteriaData((FlowPanel) widget);
     }
   }
 
@@ -200,6 +223,12 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
     if (!forced) {
       save(result);
     }
+  }
+
+  @Override
+  public void afterRefresh(FormView form, IsRow row) {
+    showElements(form, row);
+    requery(row);
   }
 
   @Override
@@ -248,6 +277,7 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
 
   @Override
   public void onClose(List<String> messages, IsRow oldRow, IsRow newRow) {
+
     if (save(null)) {
       if (messages.size() == 1) {
         String msg = BeeUtils.joinItems(messages.get(0), Localized.getConstants().mainCriteria());
@@ -296,27 +326,13 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
   }
 
   @Override
-  public boolean onStartEdit(FormView form, IsRow row, ScheduledCommand focusCommand) {
-    showElements(form, row);
-    requery(row);
-
-    return true;
-  }
-
-  @Override
-  public void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow) {
-    hideElements(form);
-    requery(newRow);
-  }
-
-  @Override
   public void onUnload(FormView form) {
     EventUtils.clearRegistry(registry);
   }
 
-  private static void createActionButton(HeaderView headerView, FormView formView, IsRow row,
+  private static void createActionButton(FormView formView, IsRow row,
       SvcObjectStatus status) {
-
+    HeaderView headerView = formView.getViewPresenter().getHeader();
     if (BeeUtils.isEmpty(status.getCommandCaption())) {
       return;
     }
@@ -412,30 +428,205 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
       public void onConfirm() {
         Queries.update(formView.getViewName(), Filter.compareId(row.getId()), COL_OBJECT_STATUS,
             Value.getValue(status.ordinal()), new IntCallback() {
-              @Override
-              public void onSuccess(Integer result) {
-                DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_SERVICE_OBJECTS);
-                CellUpdateEvent.fire(BeeKeeper.getBus(), formView.getViewName(),
-                    row.getId(), row.getVersion(),
-                    CellSource.forColumn(formView.getDataColumns().get(
-                        formView.getDataIndex(COL_OBJECT_STATUS)), formView
+          @Override
+          public void onSuccess(Integer result) {
+            DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_SERVICE_OBJECTS);
+            CellUpdateEvent.fire(BeeKeeper.getBus(), formView.getViewName(),
+                row.getId(), row.getVersion(),
+                CellSource.forColumn(formView.getDataColumns().get(
+                    formView.getDataIndex(COL_OBJECT_STATUS)), formView
                         .getDataIndex(COL_OBJECT_STATUS)), BeeUtils.toString(status.ordinal()));
-                showElements(formView, row);
-              }
-            });
+            formView.getViewPresenter().handleAction(Action.REFRESH);
+          }
+        });
       }
     };
 
   }
 
-  private static void hideElements(FormView formView) {
-    Widget widget = formView.getWidgetByName(NAME_WIDGET_STATUS_LABEL);
-    StyleUtils.setDisplay(widget, Display.NONE);
+  private static void setAsLostObject(final FormView formView, final IsRow row) {
 
-    widget = formView.getWidgetBySource(COL_OBJECT_STATUS);
-    StyleUtils.setDisplay(widget, Display.NONE);
+    DecisionCallback decisionCallback = getObjectStatusDecisionCallback(formView, row,
+        SvcObjectStatus.LOST_OBJECT);
 
+    Global.getMsgBoxen().decide(Localized.getConstants().svcActionToLostObjects(),
+        Lists.newArrayList(Localized.getConstants().svcSendToLostObjectQuestion()),
+        decisionCallback, 0, null, null, null, null);
+  }
+
+  private static void setAsProjectObject(final FormView formView, final IsRow row) {
+
+    DecisionCallback decisionCallback = getObjectStatusDecisionCallback(formView, row,
+        SvcObjectStatus.PROJECT_OBJECT);
+
+    Global.getMsgBoxen().decide(Localized.getConstants().svcActionToProjectObjects(),
+        Lists.newArrayList(Localized.getConstants().svcSendToProjectObjectQuestion()),
+        decisionCallback, 0, null, null, null, null);
+  }
+
+  private static void setAsServiceObject(final FormView formView, final IsRow row) {
+    DecisionCallback decisionCallback = getObjectStatusDecisionCallback(formView, row,
+        SvcObjectStatus.SERVICE_OBJECT);
+
+    Global.getMsgBoxen().decide(Localized.getConstants().svcActionToServiceObjects(),
+        Lists.newArrayList(Localized.getConstants().svcSendToServiceObjectQuestion()),
+        decisionCallback, 0, null, null, null, null);
+  }
+
+  private Button getSelectTemplateButton() {
+    final Set<String> restrictedCols = Sets.newHashSet(COL_OBJECT_STATUS);
+    Button btn = new Button(Localized.getConstants().svcSelectTemplate(), new ScheduledCommand() {
+
+      @Override
+      public void execute() {
+        final FormView form = getFormView();
+        if (form == null) {
+          return;
+        }
+
+        final IsRow row = form.getActiveRow();
+
+        if (row == null) {
+          return;
+        }
+
+        if (!BeeUtils.same(VIEW_SERVICE_OBJECTS, form.getViewName())) {
+          return;
+        }
+
+        Relation relation = Relation.create(VIEW_SERVICE_OBJECTS, Lists.newArrayList(
+            ALS_SERVICE_CATEGORY_NAME, COL_OBJECT_NAME));
+        relation.disableNewRow();
+        relation.setFilter(Filter.equals(COL_OBJECT_STATUS, SvcObjectStatus.TEMPLATE_OBJECT
+            .ordinal()));
+        relation.setCaching(Caching.QUERY);
+        final UnboundSelector selector = UnboundSelector.create(relation);
+
+        Global.inputWidget(Localized.getConstants().template(), selector, new InputCallback() {
+
+          @Override
+          public String getErrorMessage() {
+            if (selector.getRelatedRow() == null) {
+              UiHelper.focus(selector);
+              return Localized.getConstants().valueRequired();
+            }
+            return super.getErrorMessage();
+          }
+
+          @Override
+          public void onSuccess() {
+            fillServiceObject();
+
+            if (!form.validate(form, true)) {
+              return;
+            }
+            if (form.getViewPresenter() instanceof ParentRowCreator) {
+              ((ParentRowCreator) form.getViewPresenter()).createParentRow(form,
+                  new Callback<IsRow>() {
+                @Override
+                public void onSuccess(final IsRow commitedRow) {
+                  fillServiceObjectData(commitedRow);
+                }
+              });
+            }
+          }
+
+          void fillServiceObject() {
+
+            DataInfo viewData = Data.getDataInfo(form.getViewName());
+            for (String col : viewData.getColumnNames(false)) {
+              if (restrictedCols.contains(col)) {
+                continue;
+              }
+
+              if (!BeeUtils.isEmpty(form.getStringValue(col))) {
+                continue;
+              }
+
+              if (COL_SERVICE_ADDRESS.equals(col) && BeeUtils.isEmpty(form.getStringValue(col))
+                  && BeeConst.STRING_ASTERISK.equals(Data.getString(VIEW_SERVICE_OBJECTS, selector
+                      .getRelatedRow(), COL_SERVICE_ADDRESS))) {
+                return;
+              }
+
+              row.setValue(form.getDataIndex(col),
+                  Data.getString(VIEW_SERVICE_OBJECTS, selector.getRelatedRow(), col));
+              form.refreshBySource(col);
+            }
+            form.refresh();
+          }
+
+          void fillServiceObjectData(final IsRow commitedRow) {
+            ParameterList prm = ServiceKeeper.createArgs(ServiceConstants.SVC_COPY_OBJECT_DATA);
+            prm.addDataItem(COL_SERVICE_OBJECT, commitedRow.getId());
+            prm.addDataItem(VAR_SERVICE_TEMPLATE, selector.getRelatedId());
+
+            BeeKeeper.getRpc().makePostRequest(prm, new ResponseCallback() {
+
+              @Override
+              public void onResponse(ResponseObject response) {
+
+                Queries.getRow(form.getViewName(), commitedRow.getId(), new RowCallback() {
+
+                  @Override
+                  public void onSuccess(BeeRow result) {
+                    RowUpdateEvent.fire(BeeKeeper.getBus(), form.getViewName(), result);
+                    requery(result);
+                    form.refresh();
+
+                    if (BeeConst.STRING_ASTERISK.equals(form.getStringValue(COL_SERVICE_ADDRESS))) {
+                      form.getActiveRow().setValue(form.getDataIndex(COL_SERVICE_ADDRESS),
+                          (String) null);
+                      form.getOldRow().setProperty(VAR_SERVICE_TEMPLATE, BeeUtils.toString(selector
+                          .getRelatedId()));
+                      form.refreshBySource(COL_SERVICE_ADDRESS);
+                    }
+                  }
+                });
+
+              }
+            });
+          }
+        });
+      }
+    });
+
+    return btn;
+  }
+
+  private FlowPanel getCriteriaData() {
+    return criteriaData;
+  }
+
+  private TabbedPages getTabbedPages() {
+    return tabbedPages;
+  }
+
+  private void hideElements(FormView formView) {
     formView.getViewPresenter().getHeader().clearCommandPanel();
+
+    int status = BeeUtils.unbox(formView.getIntegerValue(COL_OBJECT_STATUS));
+
+    if (getTabbedPages() != null && SvcObjectStatus.TEMPLATE_OBJECT.ordinal() == status) {
+      TabbedPages pages = getTabbedPages();
+
+      for (int i = 0; i < pages.getPageCount(); i++) {
+        Widget page = pages.getTabWidget(i);
+        Widget content = pages.getContentWidget(i).asWidget();
+
+        if (Objects.equals(getCriteriaData(), content)) {
+          continue;
+        }
+
+        if (page != null) {
+          page.setVisible(false);
+        }
+
+        if (content != null) {
+          pages.getContentWidget(i).setVisible(false);
+        }
+      }
+    }
   }
 
   private void render() {
@@ -643,51 +834,34 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
     return true;
   }
 
-  private static void setAsLostObject(final FormView formView, final IsRow row) {
-
-    DecisionCallback decisionCallback = getObjectStatusDecisionCallback(formView, row,
-        SvcObjectStatus.LOST_OBJECT);
-
-    Global.getMsgBoxen().decide(Localized.getConstants().svcActionToLostObjects(),
-        Lists.newArrayList(Localized.getConstants().svcSendToLostObjectQuestion()),
-        decisionCallback, 0, null, null, null, null);
+  private void setCriteriaData(FlowPanel criteriaData) {
+    this.criteriaData = criteriaData;
   }
 
-  private static void setAsProjectObject(final FormView formView, final IsRow row) {
-
-    DecisionCallback decisionCallback = getObjectStatusDecisionCallback(formView, row,
-        SvcObjectStatus.PROJECT_OBJECT);
-
-    Global.getMsgBoxen().decide(Localized.getConstants().svcActionToProjectObjects(),
-        Lists.newArrayList(Localized.getConstants().svcSendToProjectObjectQuestion()),
-        decisionCallback, 0, null, null, null, null);
+  private void setTabbedPages(TabbedPages tabbedPages) {
+    this.tabbedPages = tabbedPages;
   }
 
-  private static void setAsServiceObject(final FormView formView, final IsRow row) {
-    DecisionCallback decisionCallback = getObjectStatusDecisionCallback(formView, row,
-        SvcObjectStatus.SERVICE_OBJECT);
-
-    Global.getMsgBoxen().decide(Localized.getConstants().svcActionToServiceObjects(),
-        Lists.newArrayList(Localized.getConstants().svcSendToServiceObjectQuestion()),
-        decisionCallback, 0, null, null, null, null);
-  }
-
-  private static void showElements(FormView form, IsRow row) {
-    Widget widget = form.getWidgetByName(NAME_WIDGET_STATUS_LABEL);
-    StyleUtils.unhideDisplay(widget);
-
-    widget = form.getWidgetBySource(COL_OBJECT_STATUS);
-    StyleUtils.unhideDisplay(widget);
-
-    HeaderView header = form.getViewPresenter().getHeader();
-    header.clearCommandPanel();
+  private void showElements(FormView form, IsRow row) {
+    hideElements(form);
 
     if (row == null) {
       return;
     }
 
     for (SvcObjectStatus objStatus : SvcObjectStatus.values()) {
-      createActionButton(header, form, row, objStatus);
+      createActionButton(form, row, objStatus);
+    }
+
+    int status = BeeUtils.unbox(form.getIntegerValue(COL_OBJECT_STATUS));
+
+    if (SvcObjectStatus.TEMPLATE_OBJECT.ordinal() != status && !DataUtils.isId(row.getId())) {
+      form.getViewPresenter().getHeader().addCommandItem(getSelectTemplateButton());
+    } else if (SvcObjectStatus.TEMPLATE_OBJECT.ordinal() == status && !DataUtils.isId(row
+        .getId())) {
+      row.setValue(form.getDataIndex(COL_SERVICE_ADDRESS), BeeConst.STRING_ASTERISK);
+      form.refreshBySource(COL_SERVICE_ADDRESS);
     }
   }
+
 }
