@@ -58,6 +58,9 @@ public class ServiceObjectsGrid extends AbstractGridInterceptor implements
         case SERVICE_OBJECT:
           categoryTree.addStyleName(STYLE_TREE_PREFIX + "service");
           break;
+        case LOST_OBJECT:
+          categoryTree.addStyleName(STYLE_TREE_PREFIX + "lost");
+          break;
         case TEMPLATE_OBJECT:
           categoryTree.addStyleName(STYLE_TREE_PREFIX + "template");
           break;
@@ -89,7 +92,8 @@ public class ServiceObjectsGrid extends AbstractGridInterceptor implements
   @Override
   public boolean initDescription(GridDescription gridDescription) {
     if (status == null) {
-      gridDescription.setFilter(null);
+      gridDescription.setFilter(Filter.isNotEqual(COL_OBJECT_STATUS, Value.getValue(
+          SvcObjectStatus.TEMPLATE_OBJECT.ordinal())));
       return true;
     }
     gridDescription.setFilter(Filter.isEqual(COL_OBJECT_STATUS, Value.getValue(status.ordinal())));
