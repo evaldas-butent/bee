@@ -45,6 +45,15 @@ public class TestBeeUtils {
   }
 
   @Test
+  public void testCeil() {
+    assertEquals(0, BeeUtils.ceil(0.0));
+    assertEquals(-1, BeeUtils.ceil(-1.1));
+    assertEquals(-1, BeeUtils.ceil(-1.9));
+    assertEquals(3, BeeUtils.ceil(2.9));
+    assertEquals(3, BeeUtils.ceil(2.1));
+  }
+
+  @Test
   public void testIsBetween() {
     assertTrue(BeeUtils.isBetween(30.0, 30.0, true, 40.0, true));
     assertTrue(BeeUtils.isBetween(40.0, 30.0, true, 40.0, true));

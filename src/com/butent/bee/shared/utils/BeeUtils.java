@@ -25,7 +25,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Contains base methods for developement.
+ * Contains base methods for development.
  */
 public final class BeeUtils {
 
@@ -83,6 +83,14 @@ public final class BeeUtils {
     }
   }
 
+  /**
+   * Checks whether all given Strings are empty or null.
+   * 
+   * @param first String to check.
+   * @param second String to check.
+   * @param rest Rest of the Strings to check.
+   * @return true if all given Strings are empty or null.
+   */
   public static boolean allEmpty(String first, String second, String... rest) {
     if (!isEmpty(first) || !isEmpty(second)) {
       return false;
@@ -99,6 +107,14 @@ public final class BeeUtils {
     return true;
   }
 
+  /**
+   * Checks whether all given Strings are not empty and not null.
+   * 
+   * @param first String to check.
+   * @param second String to check.
+   * @param rest Rest of the Strings to check.
+   * @return true if all given Strings are not empty or not null.
+   */
   public static boolean allNotEmpty(String first, String second, String... rest) {
     if (isEmpty(first) || isEmpty(second)) {
       return false;
@@ -115,6 +131,14 @@ public final class BeeUtils {
     return true;
   }
 
+  /**
+   * Checks whether all provided objects are not null.
+   * 
+   * @param first object to check.
+   * @param second object to check.
+   * @param rest objects to check.
+   * @return true if all provided objects are not null.
+   */
   public static boolean allNotNull(Object first, Object second, Object... rest) {
     if (first == null || second == null) {
       return false;
@@ -131,6 +155,14 @@ public final class BeeUtils {
     return true;
   }
 
+  /**
+   * Checks if any of the provided Strings are empty or null.
+   * 
+   * @param first String to check.
+   * @param second String to check.
+   * @param rest Strings to check.
+   * @return true if any of the provided Strings are empty or null.
+   */
   public static boolean anyEmpty(String first, String second, String... rest) {
     if (isEmpty(first) || isEmpty(second)) {
       return true;
@@ -147,6 +179,14 @@ public final class BeeUtils {
     return false;
   }
 
+  /**
+   * Checks if any of provided Strings are not empty and not null.
+   * 
+   * @param first String to check.
+   * @param second String to check.
+   * @param rest Strings to check.
+   * @return true if any of provided Strings are not empty or not null.
+   */
   public static boolean anyNotEmpty(String first, String second, String... rest) {
     if (!isEmpty(first) || !isEmpty(second)) {
       return true;
@@ -163,6 +203,14 @@ public final class BeeUtils {
     return false;
   }
 
+  /**
+   * Checks if any of the provided Objects are not null.
+   * 
+   * @param first String to check.
+   * @param second first String to check.
+   * @param rest Strings to check.
+   * @return true if any of the provided Strings are not null.
+   */
   public static boolean anyNotNull(Object first, Object second, Object... rest) {
     if (first != null || second != null) {
       return true;
@@ -179,6 +227,14 @@ public final class BeeUtils {
     return false;
   }
 
+  /**
+   * Checks whether any of the provided objects are null.
+   * 
+   * @param first Object to check.
+   * @param second Object to check.
+   * @param rest Objects to check.
+   * @return true if any of the provided objects are null.
+   */
   public static boolean anyNull(Object first, Object second, Object... rest) {
     if (first == null || second == null) {
       return true;
@@ -222,10 +278,22 @@ public final class BeeUtils {
     return x >= min && x <= max;
   }
 
+  /**
+   * Surrounds int value {@code x} in brackets.
+   * 
+   * @param x int value to put in brackets.
+   * @return a String representation of the int surrounded by brackets.
+   */
   public static String bracket(int x) {
     return bracket(toString(x));
   }
 
+  /**
+   * Surrounds long value {@code x} in brackets.
+   * 
+   * @param x long value to put in brackets.
+   * @return a String representation of the long surrounded by brackets.
+   */
   public static String bracket(long x) {
     return bracket(toString(x));
   }
@@ -244,6 +312,12 @@ public final class BeeUtils {
     }
   }
 
+  /**
+   * Constructs a String from given lines in a collection.
+   * 
+   * @param lines Collection from which String will be constructed.
+   * @return String which will be built from given lines in a collection.
+   */
   public static String buildLines(Collection<String> lines) {
     if (lines == null || lines.isEmpty()) {
       return null;
@@ -263,6 +337,13 @@ public final class BeeUtils {
     return sb.toString();
   }
 
+  /**
+   * Constructs a String text from given String lines. It takes each of the String line, adds end of
+   * line character to the end of each and forms String text.
+   * 
+   * @param lines from which the String will be built.
+   * @return String which will be built from given String lines.
+   */
   public static String buildLines(String... lines) {
     if (lines == null) {
       return null;
@@ -282,6 +363,14 @@ public final class BeeUtils {
     return sb.toString();
   }
 
+  /**
+   * Returns the value rounded to the bigger part (closer to the positive infinity) of the value
+   * provided.
+   * 
+   * @param x double which value should be rounded to the bigger part
+   * @return the value rounded to the bigger part (closer to the positive infinity) of the value
+   *         provided.
+   */
   public static int ceil(double x) {
     return toInt(Math.ceil(x));
   }
@@ -2341,6 +2430,12 @@ public final class BeeUtils {
     return (x < min || x >= max) ? min : x + 1;
   }
 
+  /**
+   * Rounds a double value to closest int value.
+   * 
+   * @param x double value that should be rounded to an int.
+   * @return integer value that will be rounded from double.
+   */
   public static int round(double x) {
     return toInt(Math.round(x));
   }
@@ -2699,6 +2794,12 @@ public final class BeeUtils {
     return b ? BeeConst.INT_TRUE : BeeConst.INT_FALSE;
   }
 
+  /**
+   * Rounds provided Double {@code d} value to an integer.
+   * 
+   * @param d Double that should be rounded to an int.
+   * @return int value of the Double or 0 if not Double provided.
+   */
   public static int toInt(Double d) {
     return isDouble(d) ? round(d) : 0;
   }
