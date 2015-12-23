@@ -113,7 +113,7 @@ public final class BeeUtils {
    * @param first String to check.
    * @param second String to check.
    * @param rest Rest of the Strings to check.
-   * @return true if all given Strings are not empty or not null.
+   * @return true if all given Strings are not empty and not null.
    */
   public static boolean allNotEmpty(String first, String second, String... rest) {
     if (isEmpty(first) || isEmpty(second)) {
@@ -185,7 +185,7 @@ public final class BeeUtils {
    * @param first String to check.
    * @param second String to check.
    * @param rest Strings to check.
-   * @return true if any of provided Strings are not empty or not null.
+   * @return true if any of provided Strings are not empty and not null.
    */
   public static boolean anyNotEmpty(String first, String second, String... rest) {
     if (!isEmpty(first) || !isEmpty(second)) {
@@ -206,10 +206,10 @@ public final class BeeUtils {
   /**
    * Checks if any of the provided Objects are not null.
    * 
-   * @param first String to check.
-   * @param second first String to check.
-   * @param rest Strings to check.
-   * @return true if any of the provided Strings are not null.
+   * @param first object to check.
+   * @param second first object to check.
+   * @param rest objects to check.
+   * @return true if any of the provided objects are not null.
    */
   public static boolean anyNotNull(Object first, Object second, Object... rest) {
     if (first != null || second != null) {
@@ -313,7 +313,8 @@ public final class BeeUtils {
   }
 
   /**
-   * Constructs a String from given lines in a collection.
+   * Constructs a String from given lines in a collection. Lines are joined using end of line
+   * character. Nulls are skipped.
    * 
    * @param lines Collection from which String will be constructed.
    * @return String which will be built from given lines in a collection.
