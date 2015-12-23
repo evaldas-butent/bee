@@ -234,9 +234,6 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
 
   @Override
   public void afterRefresh(FormView form, IsRow row) {
-    showElements(form, row);
-    requery(row);
-
     if (BeeUtils.unbox(row.getInteger(form.getDataIndex(ProjectConstants.ALS_PROJECT_STATUS)))
         == ProjectStatus.APPROVED.ordinal()) {
       if (taskGrid != null) {
@@ -245,6 +242,8 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
     } else {
       taskGrid.setEnabled(true);
     }
+    showElements(form, row);
+    requery(row);
   }
 
   @Override
