@@ -298,11 +298,8 @@ public class PrintActForm extends AbstractFormInterceptor {
             if (calc.contains(col)) {
               sum = sum.add(BeeUtils.nvl(BeeUtils.toDecimalOrNull(value), BigDecimal.ZERO));
               value = BeeUtils.removeTrailingZeros(value);
-
-              if ("AmountTotal".equals(col)) {
-                totConsumer.accept(BeeUtils.toDouble(value));
-              }
             }
+
             table.setText(r++, c, value, TradeUtils.STYLE_ITEMS + col);
           }
           String value = null;
@@ -310,6 +307,10 @@ public class PrintActForm extends AbstractFormInterceptor {
           if (sum.compareTo(BigDecimal.ZERO) != 0) {
             value = BeeUtils.removeTrailingZeros(sum.toPlainString());
           }
+          if ("AmountTotal".equals(col)) {
+            totConsumer.accept(sum.doubleValue());
+          }
+
           table.setText(r, c, value, TradeUtils.STYLE_ITEMS + col);
           c++;
         }
