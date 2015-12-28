@@ -9,11 +9,11 @@ import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.modules.administration.FileStorageBean;
-import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.ui.HasCaption;
+import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -47,24 +47,14 @@ public class Worker {
   public RestResponse getUsers(@HeaderParam(RestResponse.LAST_SYNC_TIME) Long lastSynced) {
     long time = System.currentTimeMillis();
 
-    IsCondition clause = SqlUtils.or(
-        SqlUtils.and(SqlUtils.isNull(TBL_USERS, COL_USER_BLOCK_FROM),
-            SqlUtils.isNull(TBL_USERS, COL_USER_BLOCK_UNTIL)),
-        SqlUtils.and(SqlUtils.notNull(TBL_USERS, COL_USER_BLOCK_FROM),
-            SqlUtils.more(TBL_USERS, COL_USER_BLOCK_FROM, time)),
-        SqlUtils.and(SqlUtils.notNull(TBL_USERS, COL_USER_BLOCK_UNTIL),
-            SqlUtils.less(TBL_USERS, COL_USER_BLOCK_UNTIL, time)));
-
-    if (Objects.nonNull(lastSynced)) {
-      clause = SqlUtils.and(clause,
-          SqlUtils.more(TBL_USERS, sys.getVersionName(TBL_USERS), lastSynced));
-    }
     SimpleRowSet rowSet = qs.getData(new SqlSelect()
         .addField(TBL_USERS, sys.getIdName(TBL_USERS), ID)
         .addField(TBL_USERS, sys.getVersionName(TBL_USERS), VERSION)
         .addField(TBL_USERS, COL_COMPANY_PERSON, COL_COMPANY_PERSON + ID)
+        .addFields(TBL_USERS, COL_USER_BLOCK_FROM, COL_USER_BLOCK_UNTIL)
         .addFrom(TBL_USERS)
-        .setWhere(clause));
+        .setWhere(Objects.nonNull(lastSynced)
+            ? SqlUtils.more(TBL_USERS, sys.getVersionName(TBL_USERS), lastSynced) : null));
 
     List<Map<String, Long>> data = new ArrayList<>();
 
@@ -99,9 +89,27 @@ public class Worker {
       resp.put(aClass.getSimpleName(), list);
     }
     Long userId = usr.getCurrentUserId();
-    Map<String, Object> map = new LinkedHashMap<>();
-    map.put(ID, userId);
-    map.put(COL_USER, usr.getUserSign(userId));
+
+    SimpleRowSet.SimpleRow info = qs.getRow(new SqlSelect()
+        .addConstant(userId, COL_USER + ID)
+        .addField(TBL_COMPANY_PERSONS, COL_COMPANY, COL_COMPANY + ID)
+        .addField(TBL_COMPANIES, COL_COMPANY_NAME, ALS_COMPANY_NAME)
+        .addField(TBL_USERS, COL_COMPANY_PERSON, COL_COMPANY_PERSON + ID)
+        .addFields(TBL_PERSONS, COL_FIRST_NAME, COL_LAST_NAME)
+        .addFrom(TBL_USERS)
+        .addFromInner(TBL_COMPANY_PERSONS,
+            sys.joinTables(TBL_COMPANY_PERSONS, TBL_USERS, COL_COMPANY_PERSON))
+        .addFromInner(TBL_PERSONS,
+            sys.joinTables(TBL_PERSONS, TBL_COMPANY_PERSONS, COL_PERSON))
+        .addFromInner(TBL_COMPANIES,
+            sys.joinTables(TBL_COMPANIES, TBL_COMPANY_PERSONS, COL_COMPANY))
+        .setWhere(sys.idEquals(TBL_USERS, userId)));
+
+    Map<String, Object> map = new HashMap<>();
+
+    for (String col : info.getColumnNames()) {
+      map.put(col, BeeUtils.isSuffix(col, ID) ? info.getLong(col) : info.getValue(col));
+    }
     map.put(COL_EMAIL, usr.getUserEmail(userId, true));
     resp.put(COL_USER, map);
 

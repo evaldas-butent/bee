@@ -40,7 +40,7 @@
 
     <ExternalJoin source="TaskUsers" name="Task" joinType="INNER" filter="User={u}">
       <HiddenColumn name="User" />
-      <HiddenColumn name="LastAccess" />
+      <SimpleColumn name="LastAccess" />
     </ExternalJoin>
 
     <ExternalJoin source="TaskEvents" name="Task" joinType="LEFT" filter="Publisher!={u}">

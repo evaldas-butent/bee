@@ -71,11 +71,8 @@ import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
-import com.butent.bee.shared.modules.administration.AdministrationConstants.ReminderMethod;
 import com.butent.bee.shared.modules.projects.ProjectConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
-import com.butent.bee.shared.modules.tasks.TaskConstants.TaskEvent;
-import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
 import com.butent.bee.shared.modules.tasks.TaskUtils;
 import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.news.Headline;
@@ -162,18 +159,28 @@ public class TasksModuleBean implements BeeModule {
   @Override
   public ResponseObject doService(String svc, RequestInfo reqInfo) {
     ResponseObject response = null;
+    Map<String, String> reqMap = new HashMap<>();
 
+    if (!BeeUtils.isEmpty(reqInfo.getParams())) {
+      reqMap.putAll(reqInfo.getParams());
+    }
+    if (!BeeUtils.isEmpty(reqInfo.getHeaders())) {
+      reqMap.putAll(reqInfo.getHeaders());
+    }
+    if (!BeeUtils.isEmpty(reqInfo.getVars())) {
+      reqMap.putAll(reqInfo.getVars());
+    }
     if (BeeUtils.isPrefix(svc, CRM_TASK_PREFIX)) {
-      response = doTaskEvent(BeeUtils.removePrefix(svc, CRM_TASK_PREFIX), reqInfo);
+      response = doTaskEvent(BeeUtils.removePrefix(svc, CRM_TASK_PREFIX), reqMap);
 
     } else if (BeeUtils.same(svc, SVC_ACCESS_TASK)) {
-      response = accessTask(reqInfo);
+      response = accessTask(BeeUtils.toLongOrNull(reqInfo.getParameter(VAR_TASK_ID)));
 
     } else if (BeeUtils.same(svc, SVC_GET_TASK_DATA)) {
       response = getTaskData(reqInfo);
 
     } else if (BeeUtils.same(svc, SVC_EXTEND_TASK)) {
-      response = extendTask(reqInfo);
+      response = extendTask(reqMap);
 
     } else if (BeeUtils.same(svc, SVC_GET_CHANGED_TASKS)) {
       response = getChangedTasks();
@@ -218,7 +225,7 @@ public class TasksModuleBean implements BeeModule {
     List<BeeParameter> params = Lists.newArrayList(
         BeeParameter.createTimeOfDay(module, PRM_END_OF_WORK_DAY),
         BeeParameter.createTimeOfDay(module, PRM_START_OF_WORK_DAY)
-        );
+    );
     return params;
   }
 
@@ -546,18 +553,16 @@ public class TasksModuleBean implements BeeModule {
 
   }
 
-  private ResponseObject accessTask(RequestInfo reqInfo) {
-    Long taskId = BeeUtils.toLongOrNull(reqInfo.getParameter(VAR_TASK_ID));
+  public ResponseObject accessTask(Long taskId) {
     if (!DataUtils.isId(taskId)) {
-      return ResponseObject.parameterNotFound(reqInfo.getService(), VAR_TASK_ID);
+      return ResponseObject.parameterNotFound(SVC_ACCESS_TASK, VAR_TASK_ID);
     }
-
     Long userId = usr.getCurrentUserId();
     if (!DataUtils.isId(userId)) {
-      return ResponseObject.error(reqInfo.getService(), "user id not available");
+      return ResponseObject.error(SVC_ACCESS_TASK, "user id not available");
     }
-
     IsCondition where = SqlUtils.equals(TBL_TASK_USERS, COL_TASK, taskId, COL_USER, userId);
+
     if (qs.sqlExists(TBL_TASK_USERS, where)) {
       return registerTaskVisit(taskId, userId, System.currentTimeMillis());
     } else {
@@ -923,7 +928,7 @@ public class TasksModuleBean implements BeeModule {
     return qs.insertDataWithResponse(si);
   }
 
-  private ResponseObject doTaskEvent(String svc, RequestInfo reqInfo) {
+  public ResponseObject doTaskEvent(String svc, Map<String, String> reqInfo) {
     ResponseObject response = null;
 
     TaskEvent event = EnumUtils.getEnumByName(TaskEvent.class, svc);
@@ -934,7 +939,7 @@ public class TasksModuleBean implements BeeModule {
       return response;
     }
 
-    String dataParam = reqInfo.getParameter(VAR_TASK_DATA);
+    String dataParam = reqInfo.get(VAR_TASK_DATA);
     if (BeeUtils.isEmpty(dataParam)) {
       String msg = BeeUtils.joinWords("Task data not received:", svc, event);
       logger.warning(msg);
@@ -953,15 +958,15 @@ public class TasksModuleBean implements BeeModule {
     Long eventId = null;
     String eventNote;
 
-    String notes = reqInfo.getParameter(VAR_TASK_NOTES);
+    String notes = reqInfo.get(VAR_TASK_NOTES);
     if (BeeUtils.isEmpty(notes)) {
       eventNote = null;
     } else {
       eventNote = BeeUtils.buildLines(Codec.beeDeserializeCollection(notes));
     }
 
-    Set<Long> oldUsers = DataUtils.parseIdSet(reqInfo.getParameter(VAR_TASK_USERS));
-    Set<String> updatedRelations = NameUtils.toSet(reqInfo.getParameter(VAR_TASK_RELATIONS));
+    Set<Long> oldUsers = DataUtils.parseIdSet(reqInfo.get(VAR_TASK_USERS));
+    Set<String> updatedRelations = NameUtils.toSet(reqInfo.get(VAR_TASK_RELATIONS));
 
     switch (event) {
       case CREATE:
@@ -985,7 +990,7 @@ public class TasksModuleBean implements BeeModule {
         break;
 
       case VISIT:
-        if (reqInfo.hasParameter(VAR_TASK_VISITED)) {
+        if (reqInfo.containsKey(VAR_TASK_VISITED)) {
           response = registerTaskEvent(taskId, currentUser, event, now);
         }
         if (response == null || !response.hasErrors()) {
@@ -1004,7 +1009,7 @@ public class TasksModuleBean implements BeeModule {
       case RENEW:
       case ACTIVATE:
       case OUT_OF_OBSERVERS:
-        Long finishTime = BeeUtils.toLongOrNull(reqInfo.getParameter(VAR_TASK_FINISH_TIME));
+        Long finishTime = BeeUtils.toLongOrNull(reqInfo.get(VAR_TASK_FINISH_TIME));
 
         response = registerTaskEvent(taskId, currentUser, event, reqInfo, eventNote, finishTime,
             now);
@@ -1037,22 +1042,22 @@ public class TasksModuleBean implements BeeModule {
     return response;
   }
 
-  private ResponseObject extendTask(RequestInfo reqInfo) {
-    Long taskId = BeeUtils.toLongOrNull(reqInfo.getParameter(VAR_TASK_ID));
+  public ResponseObject extendTask(Map<String, String> reqInfo) {
+    Long taskId = BeeUtils.toLongOrNull(reqInfo.get(VAR_TASK_ID));
     if (!DataUtils.isId(taskId)) {
-      return ResponseObject.parameterNotFound(reqInfo.getService(), VAR_TASK_ID);
+      return ResponseObject.parameterNotFound(SVC_EXTEND_TASK, VAR_TASK_ID);
     }
 
-    Long startMillis = BeeUtils.toLongOrNull(reqInfo.getParameter(COL_START_TIME));
-    Long endMillis = BeeUtils.toLongOrNull(reqInfo.getParameter(COL_FINISH_TIME));
+    Long startMillis = BeeUtils.toLongOrNull(reqInfo.get(COL_START_TIME));
+    Long endMillis = BeeUtils.toLongOrNull(reqInfo.get(COL_FINISH_TIME));
 
     if (!BeeUtils.isPositive(startMillis) && !BeeUtils.isPositive(endMillis)) {
-      return ResponseObject.error(reqInfo.getService(), COL_START_TIME, "or", COL_FINISH_TIME,
+      return ResponseObject.error(SVC_EXTEND_TASK, COL_START_TIME, "or", COL_FINISH_TIME,
           "not specified");
     }
 
     String eventNote;
-    String notes = reqInfo.getParameter(VAR_TASK_NOTES);
+    String notes = reqInfo.get(VAR_TASK_NOTES);
     if (BeeUtils.isEmpty(notes)) {
       eventNote = null;
     } else {
@@ -1061,12 +1066,12 @@ public class TasksModuleBean implements BeeModule {
 
     Long userId = usr.getCurrentUserId();
     if (!DataUtils.isId(userId)) {
-      return ResponseObject.error(reqInfo.getService(), "user id not available");
+      return ResponseObject.error(SVC_EXTEND_TASK, "user id not available");
     }
 
     BeeRowSet data = qs.getViewData(VIEW_TASKS, Filter.compareId(taskId));
     if (DataUtils.isEmpty(data)) {
-      return ResponseObject.error(reqInfo.getService(), "task", taskId, "not found");
+      return ResponseObject.error(SVC_EXTEND_TASK, "task", taskId, "not found");
     }
 
     BeeRow row = data.getRow(0);
@@ -1090,8 +1095,8 @@ public class TasksModuleBean implements BeeModule {
     long now = System.currentTimeMillis();
     Long eventId = null;
 
-    ResponseObject response = registerTaskEvent(taskId, userId, TaskEvent.EXTEND, reqInfo,
-        eventNote, oldEnd, now);
+    ResponseObject response = registerTaskEvent(taskId, userId, TaskEvent.EXTEND,
+        reqInfo, eventNote, oldEnd, now);
     if (response.hasResponse(Long.class)) {
       eventId = (Long) response.getResponse();
     }
@@ -1195,7 +1200,7 @@ public class TasksModuleBean implements BeeModule {
       String compFullName =
           companiesListSet.getValue(i, COL_COMPANY_NAME)
               + (!BeeUtils.isEmpty(companiesListSet.getValue(i, ALS_COMPANY_TYPE))
-                  ? ", " + companiesListSet.getValue(i, ALS_COMPANY_TYPE) : "");
+              ? ", " + companiesListSet.getValue(i, ALS_COMPANY_TYPE) : "");
       String dTime = "0:00";
 
       SqlSelect companyTimesQuery = new SqlSelect()
@@ -1752,7 +1757,7 @@ public class TasksModuleBean implements BeeModule {
           (!BeeUtils.isEmpty(usersListSet.getValue(i, COL_FIRST_NAME))
               ? usersListSet.getValue(i, COL_FIRST_NAME) : "") + " "
               + (!BeeUtils.isEmpty(usersListSet.getValue(i, COL_LAST_NAME))
-                  ? usersListSet.getValue(i, COL_LAST_NAME) : "");
+              ? usersListSet.getValue(i, COL_LAST_NAME) : "");
 
       userFullName = BeeUtils.isEmpty(userFullName) ? "—" : userFullName;
       String dTime = "0:00";
@@ -1987,13 +1992,13 @@ public class TasksModuleBean implements BeeModule {
     }
   }
 
-  private ResponseObject registerTaskDuration(long durationType, RequestInfo reqInfo) {
-    Long date = BeeUtils.toLongOrNull(reqInfo.getParameter(VAR_TASK_DURATION_DATE));
+  private ResponseObject registerTaskDuration(long durationType, Map<String, String> reqInfo) {
+    Long date = BeeUtils.toLongOrNull(reqInfo.get(VAR_TASK_DURATION_DATE));
     if (date == null) {
       return ResponseObject.error("task duration date not specified");
     }
 
-    String time = reqInfo.getParameter(VAR_TASK_DURATION_TIME);
+    String time = reqInfo.get(VAR_TASK_DURATION_TIME);
     if (BeeUtils.isEmpty(time)) {
       return ResponseObject.error("task duration time not specified");
     }
@@ -2009,12 +2014,12 @@ public class TasksModuleBean implements BeeModule {
   }
 
   private ResponseObject registerTaskEvent(long taskId, long userId, TaskEvent event,
-      RequestInfo reqInfo, String note, Long finishTime, long millis) {
-    String comment = reqInfo.getParameter(VAR_TASK_COMMENT);
-    String eventData = reqInfo.getParameter(COL_EVENT_DATA);
+      Map<String, String> reqInfo, String note, Long finishTime, long millis) {
+    String comment = reqInfo.get(VAR_TASK_COMMENT);
+    String eventData = reqInfo.get(COL_EVENT_DATA);
 
     Long durationId = null;
-    Long durationType = BeeUtils.toLongOrNull(reqInfo.getParameter(VAR_TASK_DURATION_TYPE));
+    Long durationType = BeeUtils.toLongOrNull(reqInfo.get(VAR_TASK_DURATION_TYPE));
 
     if (DataUtils.isId(durationType)) {
       ResponseObject response = registerTaskDuration(durationType, reqInfo);

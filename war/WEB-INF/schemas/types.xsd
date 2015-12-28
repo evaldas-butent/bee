@@ -442,7 +442,6 @@
       <xs:enumeration value="RestTasks" />
       <xs:enumeration value="RestTaskEvents" />
       <xs:enumeration value="RestTaskFiles" />
-      <xs:enumeration value="RestTaskUsers" />
       <xs:enumeration value="Rights" />
       <xs:enumeration value="Roles" />
       <xs:enumeration value="RoleUsers" />

@@ -17,6 +17,11 @@ public class TaskEventsWorker extends CrudWorker {
   }
 
   @Override
+  public RestResponse insert(JsonObject data) {
+    return RestResponse.forbidden();
+  }
+
+  @Override
   public RestResponse update(Long id, Long version, JsonObject data) {
     return RestResponse.forbidden();
   }

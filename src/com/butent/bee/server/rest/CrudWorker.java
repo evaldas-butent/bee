@@ -111,10 +111,11 @@ public abstract class CrudWorker {
 
   @GET
   public RestResponse getAll(@HeaderParam(RestResponse.LAST_SYNC_TIME) Long lastSynced) {
-    Filter filter = Filter.compareVersion(Operator.GT, lastSynced);
+    long sync = BeeUtils.unbox(lastSynced);
+    Filter filter = Filter.compareVersion(Operator.GT, sync);
 
     if (sys.getView(getViewName()).hasColumn(CONTACT_VERSION)) {
-      filter = Filter.or(filter, Filter.isMore(CONTACT_VERSION, Value.getValue(lastSynced)));
+      filter = Filter.or(filter, Filter.isMore(CONTACT_VERSION, Value.getValue(sync)));
     }
     return get(filter);
   }
@@ -244,76 +245,6 @@ public abstract class CrudWorker {
   }
 
   abstract String getViewName();
-
-  BeeRowSet update(String viewName, Long id, Long version, JsonObject data) {
-    if (data.containsKey(OLD_VALUES) && data.get(OLD_VALUES) instanceof JsonObject) {
-      JsonObject oldData = data.getJsonObject(OLD_VALUES);
-      BeeView view = sys.getView(viewName);
-      Map<String, BeeColumn> columns = new LinkedHashMap<>();
-      List<String> oldValues = new ArrayList<>();
-      List<String> newValues = new ArrayList<>();
-
-      for (String col : oldData.keySet()) {
-        if (view.hasColumn(col)) {
-          BeeColumn column = view.getBeeColumn(col);
-
-          if (isReadOnly(column) || columns.containsKey(column.getId())) {
-            continue;
-          }
-          String oldValue;
-          String value;
-
-          if (column.isForeign()) {
-            String parentCol = view.getColumnParent(col);
-            column = getParentColumn(view, parentCol);
-
-            String key = getValue(data, column.getId());
-
-            if (!DataUtils.isId(key) || oldData.containsKey(column.getId())) {
-              value = getRelation(view, parentCol, data);
-
-              if (columns.containsKey(column.getId())) {
-                newValues.set(new ArrayList<>(columns.keySet()).indexOf(column.getId()), value);
-                continue;
-              }
-              oldValue = getRelation(view, parentCol, oldData);
-            } else {
-              String table = view.getColumnRelation(column.getId());
-
-              ResponseObject response = qs.updateDataWithResponse(new SqlUpdate(table)
-                  .addConstant(view.getColumnField(col), getValue(data, col))
-                  .setWhere(sys.idEquals(table, BeeUtils.toLong(key))));
-
-              if (response.hasErrors()) {
-                throw new BeeRuntimeException(ArrayUtils.joinWords(response.getErrors()));
-              }
-              continue;
-            }
-          } else {
-            oldValue = getValue(oldData, col);
-            value = getValue(data, col);
-          }
-          if (usr.canEditColumn(getViewName(), column.getId())) {
-            columns.put(column.getId(), column);
-            oldValues.add(oldValue);
-            newValues.add(value);
-          }
-        }
-      }
-      BeeRowSet rs = DataUtils.getUpdated(viewName, id, version,
-          new ArrayList<>(columns.values()), oldValues, newValues, null);
-
-      if (Objects.nonNull(rs)) {
-        ResponseObject response = deb.commitRow(rs, RowInfo.class);
-
-        if (response.hasErrors()) {
-          throw new BeeRuntimeException(ArrayUtils.joinWords(response.getErrors()));
-        }
-      }
-      return rs;
-    }
-    return null;
-  }
 
   private static BeeColumn getParentColumn(BeeView view, String parentCol) {
     BeeColumn parent = null;
@@ -452,5 +383,75 @@ public abstract class CrudWorker {
 
   private static boolean isReadOnly(BeeColumn column) {
     return column.isReadOnly() || column.getLevel() > 1;
+  }
+
+  private BeeRowSet update(String viewName, Long id, Long version, JsonObject data) {
+    if (data.containsKey(OLD_VALUES) && data.get(OLD_VALUES) instanceof JsonObject) {
+      JsonObject oldData = data.getJsonObject(OLD_VALUES);
+      BeeView view = sys.getView(viewName);
+      Map<String, BeeColumn> columns = new LinkedHashMap<>();
+      List<String> oldValues = new ArrayList<>();
+      List<String> newValues = new ArrayList<>();
+
+      for (String col : oldData.keySet()) {
+        if (view.hasColumn(col)) {
+          BeeColumn column = view.getBeeColumn(col);
+
+          if (isReadOnly(column) || columns.containsKey(column.getId())) {
+            continue;
+          }
+          String oldValue;
+          String value;
+
+          if (column.isForeign()) {
+            String parentCol = view.getColumnParent(col);
+            column = getParentColumn(view, parentCol);
+
+            String key = getValue(data, column.getId());
+
+            if (!DataUtils.isId(key) || oldData.containsKey(column.getId())) {
+              value = getRelation(view, parentCol, data);
+
+              if (columns.containsKey(column.getId())) {
+                newValues.set(new ArrayList<>(columns.keySet()).indexOf(column.getId()), value);
+                continue;
+              }
+              oldValue = getRelation(view, parentCol, oldData);
+            } else {
+              String table = view.getColumnRelation(column.getId());
+
+              ResponseObject response = qs.updateDataWithResponse(new SqlUpdate(table)
+                  .addConstant(view.getColumnField(col), getValue(data, col))
+                  .setWhere(sys.idEquals(table, BeeUtils.toLong(key))));
+
+              if (response.hasErrors()) {
+                throw new BeeRuntimeException(ArrayUtils.joinWords(response.getErrors()));
+              }
+              continue;
+            }
+          } else {
+            oldValue = getValue(oldData, col);
+            value = getValue(data, col);
+          }
+          if (usr.canEditColumn(getViewName(), column.getId())) {
+            columns.put(column.getId(), column);
+            oldValues.add(oldValue);
+            newValues.add(value);
+          }
+        }
+      }
+      BeeRowSet rs = DataUtils.getUpdated(viewName, id, version,
+          new ArrayList<>(columns.values()), oldValues, newValues, null);
+
+      if (Objects.nonNull(rs)) {
+        ResponseObject response = deb.commitRow(rs, RowInfo.class);
+
+        if (response.hasErrors()) {
+          throw new BeeRuntimeException(ArrayUtils.joinWords(response.getErrors()));
+        }
+      }
+      return rs;
+    }
+    return null;
   }
 }
