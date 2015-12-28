@@ -4,11 +4,17 @@ body {
   color: #222;
   overflow: hidden;
   background-image: url(../images/login-bg.jpg);
-  background-size:cover;
+  background-size: cover;
   background-repeat: no-repeat;
   background-attachment: fixed;
 }
 
+.bee-SignIn-Background {
+  position: absolute;
+  max-width: 100vw;
+  max-height: 100vh;
+}
+  
 .bee-SignIn-Panel {
   position: absolute;
   left: 50%;
