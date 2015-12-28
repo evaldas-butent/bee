@@ -109,6 +109,48 @@ public abstract class CrudWorker {
     return get(Filter.compareId(id));
   }
 
+  public RestResponse get(Filter filter) {
+    long time = System.currentTimeMillis();
+
+    BeeRowSet rowSet = qs.getViewData(getViewName(), filter);
+
+    List<Map<String, Object>> data = new ArrayList<>();
+
+    for (int i = 0; i < rowSet.getNumberOfRows(); i++) {
+      Map<String, Object> row = new LinkedHashMap<>(rowSet.getNumberOfColumns());
+      BeeRow beeRow = rowSet.getRow(i);
+      row.put(ID, beeRow.getId());
+      row.put(VERSION, beeRow.getVersion());
+
+      for (int j = 0; j < rowSet.getNumberOfColumns(); j++) {
+        BeeColumn column = rowSet.getColumn(j);
+        Object value = null;
+
+        switch (column.getType()) {
+          case BOOLEAN:
+            value = rowSet.getBoolean(i, j);
+            break;
+          case DATE:
+          case DATE_TIME:
+          case INTEGER:
+          case LONG:
+            value = rowSet.getLong(i, j);
+            break;
+          case DECIMAL:
+          case NUMBER:
+            value = rowSet.getDecimal(i, j);
+            break;
+          default:
+            value = rowSet.getString(i, j);
+            break;
+        }
+        row.put(column.getId(), value);
+      }
+      data.add(row);
+    }
+    return RestResponse.ok(data).setLastSync(time);
+  }
+
   @GET
   public RestResponse getAll(@HeaderParam(RestResponse.LAST_SYNC_TIME) Long lastSynced) {
     long sync = BeeUtils.unbox(lastSynced);
@@ -190,48 +232,6 @@ public abstract class CrudWorker {
       }
       throw BeeException.error(ex);
     }
-  }
-
-  RestResponse get(Filter filter) {
-    long time = System.currentTimeMillis();
-
-    BeeRowSet rowSet = qs.getViewData(getViewName(), filter);
-
-    List<Map<String, Object>> data = new ArrayList<>();
-
-    for (int i = 0; i < rowSet.getNumberOfRows(); i++) {
-      Map<String, Object> row = new LinkedHashMap<>(rowSet.getNumberOfColumns());
-      BeeRow beeRow = rowSet.getRow(i);
-      row.put(ID, beeRow.getId());
-      row.put(VERSION, beeRow.getVersion());
-
-      for (int j = 0; j < rowSet.getNumberOfColumns(); j++) {
-        BeeColumn column = rowSet.getColumn(j);
-        Object value = null;
-
-        switch (column.getType()) {
-          case BOOLEAN:
-            value = rowSet.getBoolean(i, j);
-            break;
-          case DATE:
-          case DATE_TIME:
-          case INTEGER:
-          case LONG:
-            value = rowSet.getLong(i, j);
-            break;
-          case DECIMAL:
-          case NUMBER:
-            value = rowSet.getDecimal(i, j);
-            break;
-          default:
-            value = rowSet.getString(i, j);
-            break;
-        }
-        row.put(column.getId(), value);
-      }
-      data.add(row);
-    }
-    return RestResponse.ok(data).setLastSync(time);
   }
 
   static String getValue(JsonObject data, String field) {

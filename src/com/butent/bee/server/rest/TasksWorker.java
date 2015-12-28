@@ -4,21 +4,26 @@ import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
 
 import com.butent.bee.server.data.BeeView;
 import com.butent.bee.server.modules.tasks.TasksModuleBean;
+import com.butent.bee.server.sql.SqlInsert;
+import com.butent.bee.server.sql.SqlSelect;
+import com.butent.bee.server.sql.SqlUpdate;
+import com.butent.bee.server.sql.SqlUtils;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.exceptions.BeeException;
 import com.butent.bee.shared.exceptions.BeeRuntimeException;
-import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.logging.LogUtils;
-import com.butent.bee.shared.modules.tasks.TaskConstants;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
+import com.butent.bee.shared.modules.tasks.TaskUtils;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -31,7 +36,6 @@ import java.util.Map;
 import java.util.Objects;
 
 import javax.ejb.EJB;
-import javax.inject.Inject;
 import javax.json.JsonObject;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
@@ -43,9 +47,10 @@ public class TasksWorker extends CrudWorker {
 
   @EJB
   TasksModuleBean task;
-
-  @Inject
+  @EJB
   TaskEventsWorker events;
+  @EJB
+  TaskFilesWorker files;
 
   @GET
   @Path("{" + ID + ":\\d+}/access")
@@ -85,7 +90,16 @@ public class TasksWorker extends CrudWorker {
   public RestResponse getEvents(@PathParam(ID) Long id,
       @HeaderParam(RestResponse.LAST_SYNC_TIME) Long lastSynced) {
 
-    return events.get(Filter.and(Filter.equals(TaskConstants.COL_TASK + ID, id),
+    return events.get(Filter.and(Filter.equals(COL_TASK + ID, id),
+        Filter.compareVersion(Operator.GT, BeeUtils.unbox(lastSynced))));
+  }
+
+  @GET
+  @Path("{" + ID + ":\\d+}/files")
+  public RestResponse getFiles(@PathParam(ID) Long id,
+      @HeaderParam(RestResponse.LAST_SYNC_TIME) Long lastSynced) {
+
+    return files.get(Filter.and(Filter.equals(COL_TASK + ID, id),
         Filter.compareVersion(Operator.GT, BeeUtils.unbox(lastSynced))));
   }
 
@@ -102,7 +116,7 @@ public class TasksWorker extends CrudWorker {
       commit(new Runnable() {
         @Override
         public void run() {
-          BeeView view = sys.getView(TBL_TASKS);
+          BeeView view = sys.getView(getViewName());
           List<BeeColumn> cols = new ArrayList<>();
           List<String> vals = new ArrayList<>();
 
@@ -120,7 +134,7 @@ public class TasksWorker extends CrudWorker {
               }
             }
           }
-          BeeRowSet rs = DataUtils.createRowSetForInsert(VIEW_TASKS, cols, vals);
+          BeeRowSet rs = DataUtils.createRowSetForInsert(view.getName(), cols, vals);
           rs.setRowProperty(0, PROP_EXECUTORS, getValue(data, COL_EXECUTOR));
 
           Map<String, String> params = new HashMap<>();
@@ -146,36 +160,78 @@ public class TasksWorker extends CrudWorker {
   }
 
   @Override
-  public RestResponse update(Long id, Long version, JsonObject data) {
+  public RestResponse update(Long id, Long version, JsonObject taskData) {
     if (!usr.canEditData(getViewName())) {
       return RestResponse.forbidden();
     }
-    JsonObject task = data.getJsonObject(COL_TASK);
-    JsonObject event = data.getJsonObject(COL_EVENT);
-
     RestResponse error = null;
 
     try {
       commit(new Runnable() {
         @Override
         public void run() {
-          BeeRowSet updated = null;//update(getViewName(), id, version, data);
+          DataInfo info = sys.getDataInfo(getViewName());
+          List<BeeColumn> columns = info.getColumns();
+          BeeRow row = DataUtils.createEmptyRow(columns.size());
+          row.setId(id);
+          row.setVersion(version);
+          BeeRow oldRow = DataUtils.cloneRow(row);
 
-          if (!DataUtils.isEmpty(updated)) {
-            DataInfo info = sys.getDataInfo(getViewName());
-            BeeRow row = DataUtils.createEmptyRow(info.getColumnCount());
+          JsonObject oldTask = taskData.getJsonObject(OLD_VALUES);
 
-            for (String col : task.keySet()) {
-              BeeColumn column = info.getColumn(col);
+          if (Objects.nonNull(oldTask)) {
+            for (String col : oldTask.keySet()) {
+              int idx = DataUtils.getColumnIndex(col, columns);
 
-              if (Objects.nonNull(column)) {
-                row.setValue(info.getColumnIndex(col), getValue(task, col));
+              if (!BeeConst.isUndef(idx)) {
+                row.setValue(idx, getValue(taskData, col));
+                oldRow.setValue(idx, getValue(oldTask, col));
               }
             }
-            for (BeeColumn column : updated.getColumns()) {
-              String note = BeeUtils.join(": ", Localized.getLabel(column),
-                  DataUtils.render(info, row, column, info.getColumnIndex(column.getId())));
-              LogUtils.getRootLogger().warning(note);
+          }
+          BeeRowSet updated = DataUtils.getUpdated(info.getViewName(), columns, oldRow, row, null);
+
+          if (!DataUtils.isEmpty(updated)) {
+            Map<String, String> params = new HashMap<>();
+            params.put(VAR_TASK_DATA, Codec.beeSerialize(updated));
+
+            List<String> notes = TaskUtils.getUpdateNotes(info, oldRow, row);
+
+            if (!notes.isEmpty()) {
+              params.put(VAR_TASK_NOTES, Codec.beeSerialize(notes));
+            }
+            ResponseObject resp = task.doTaskEvent(TaskEvent.EDIT.name(), params);
+
+            if (resp.hasErrors()) {
+              throw new BeeRuntimeException(ArrayUtils.joinWords(resp.getErrors()));
+            }
+            int idx = updated.getColumnIndex(COL_EXECUTOR);
+
+            if (!BeeConst.isUndef(idx)) {
+              Long executor = updated.getLong(0, idx);
+
+              SimpleRowSet.SimpleRow taskRow = qs.getRow(new SqlSelect()
+                  .addFields(TBL_TASKS, COL_OWNER)
+                  .addField(TBL_TASK_USERS, sys.getIdName(TBL_TASK_USERS), ID)
+                  .addFrom(TBL_TASKS)
+                  .addFromLeft(TBL_TASK_USERS,
+                      SqlUtils.and(sys.joinTables(TBL_TASKS, TBL_TASK_USERS, COL_TASK),
+                          SqlUtils.equals(TBL_TASK_USERS, AdministrationConstants.COL_USER,
+                              executor)))
+                  .setWhere(sys.idEquals(TBL_TASKS, id)));
+
+              Long userId = taskRow.getLong(ID);
+
+              if (Objects.isNull(userId)) {
+                qs.insertData(new SqlInsert(TBL_TASK_USERS)
+                    .addConstant(COL_TASK, id)
+                    .addConstant(AdministrationConstants.COL_USER, executor));
+
+              } else if (!Objects.equals(taskRow.getLong(COL_OWNER), executor)) {
+                qs.updateData(new SqlUpdate(TBL_TASK_USERS)
+                    .addConstant(COL_LAST_ACCESS, null)
+                    .setWhere(sys.idEquals(TBL_TASK_USERS, userId)));
+              }
             }
           }
         }

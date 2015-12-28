@@ -80,8 +80,7 @@ import com.butent.bee.shared.modules.documents.DocumentConstants;
 import com.butent.bee.shared.modules.projects.ProjectConstants;
 import com.butent.bee.shared.modules.projects.ProjectStatus;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
-import com.butent.bee.shared.modules.tasks.TaskConstants.TaskEvent;
-import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
+import com.butent.bee.shared.modules.tasks.TaskConstants.*;
 import com.butent.bee.shared.modules.tasks.TaskUtils;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
@@ -218,39 +217,6 @@ class TaskEditor extends AbstractFormInterceptor {
     return updatedRelations;
   }
 
-  private static List<String> getUpdateNotes(DataInfo dataInfo, IsRow oldRow, IsRow newRow) {
-    List<String> notes = new ArrayList<>();
-    if (dataInfo == null || oldRow == null || newRow == null) {
-      return notes;
-    }
-
-    List<BeeColumn> columns = dataInfo.getColumns();
-    for (int i = 0; i < columns.size(); i++) {
-      BeeColumn column = columns.get(i);
-
-      String oldValue = oldRow.getString(i);
-      String newValue = newRow.getString(i);
-
-      if (!BeeUtils.equalsTrimRight(oldValue, newValue) && column.isEditable()) {
-        String label = Localized.getLabel(column);
-        String note;
-
-        if (BeeUtils.isEmpty(oldValue)) {
-          note = TaskUtils.getInsertNote(label, renderColumn(dataInfo, newRow, column, i));
-        } else if (BeeUtils.isEmpty(newValue)) {
-          note = TaskUtils.getDeleteNote(label, renderColumn(dataInfo, oldRow, column, i));
-        } else {
-          note = TaskUtils.getUpdateNote(label, renderColumn(dataInfo, oldRow, column, i),
-              renderColumn(dataInfo, newRow, column, i));
-        }
-
-        notes.add(note);
-      }
-    }
-
-    return notes;
-  }
-
   private static boolean hasRelations(IsRow row) {
     if (row == null) {
       return false;
@@ -262,18 +228,6 @@ class TaskEditor extends AbstractFormInterceptor {
       }
     }
     return false;
-  }
-
-  private static String renderColumn(DataInfo dataInfo, IsRow row, BeeColumn column, int index) {
-    if (COL_TASK_TYPE.equals(column.getId())) {
-      int nameIndex = dataInfo.getColumnIndex(ALS_TASK_TYPE_NAME);
-
-      if (!BeeConst.isUndef(nameIndex)) {
-        return row.getString(nameIndex);
-      }
-    }
-
-    return DataUtils.render(dataInfo, row, column, index);
   }
 
   private static String renderDuration(long millis) {
@@ -1021,7 +975,7 @@ class TaskEditor extends AbstractFormInterceptor {
       params.addDataItem(VAR_TASK_COMMENT, comment);
     }
 
-    List<String> notes = getUpdateNotes(Data.getDataInfo(viewName), oldRow, newRow);
+    List<String> notes = TaskUtils.getUpdateNotes(Data.getDataInfo(viewName), oldRow, newRow);
 
     if (form.isEnabled() || !getUpdatedRelations(oldRow, newRow).isEmpty()) {
       if (!TaskUtils.sameObservers(oldRow, newRow)) {

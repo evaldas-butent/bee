@@ -573,24 +573,12 @@ public class TasksModuleBean implements BeeModule {
     }
   }
 
-  private void addTaskProperties(BeeRow row, List<BeeColumn> columns, Collection<Long> taskUsers,
-      Long eventId, Collection<String> propNames, boolean addRelations) {
+  private void addTaskProperties(BeeRow row, Collection<Long> observers, Long eventId,
+      Collection<String> propNames, boolean addRelations) {
     long taskId = row.getId();
 
-    if (propNames.contains(PROP_OBSERVERS) && !BeeUtils.isEmpty(taskUsers)) {
-      Long owner = row.getLong(DataUtils.getColumnIndex(COL_OWNER, columns));
-      Long executor = row.getLong(DataUtils.getColumnIndex(COL_EXECUTOR, columns));
-
-      List<Long> observers = new ArrayList<>();
-      for (Long user : taskUsers) {
-        if (!Objects.equals(user, owner) && !Objects.equals(user, executor)) {
-          observers.add(user);
-        }
-      }
-
-      if (!observers.isEmpty()) {
-        row.setProperty(PROP_OBSERVERS, DataUtils.buildIdList(observers));
-      }
+    if (propNames.contains(PROP_OBSERVERS) && !BeeUtils.isEmpty(observers)) {
+      row.setProperty(PROP_OBSERVERS, DataUtils.buildIdList(observers));
     }
 
     if (addRelations) {
@@ -631,13 +619,13 @@ public class TasksModuleBean implements BeeModule {
   }
 
   private ResponseObject commitTaskData(BeeRowSet data, Collection<Long> oldUsers,
-      boolean checkUsers, Set<String> updatedRelations, Long eventId) {
+      Set<String> updatedRelations, Long eventId) {
 
     ResponseObject response;
     BeeRow row = data.getRow(0);
 
     List<Long> newUsers;
-    if (checkUsers) {
+    if (!BeeUtils.isEmpty(oldUsers)) {
       newUsers = TaskUtils.getTaskUsers(row, data.getColumns());
       if (!BeeUtils.sameElements(oldUsers, newUsers)) {
         updateTaskUsers(row.getId(), oldUsers, newUsers);
@@ -680,7 +668,11 @@ public class TasksModuleBean implements BeeModule {
         if (newUsers == null) {
           newUsers = getTaskUsers(respRow.getId());
         }
-        addTaskProperties(respRow, data.getColumns(), newUsers, eventId, propNames, addRelations);
+        columns = sys.getView(data.getViewName()).getRowSetColumns();
+        newUsers.remove(DataUtils.getLong(columns, respRow, COL_OWNER));
+        newUsers.remove(DataUtils.getLong(columns, respRow, COL_EXECUTOR));
+
+        addTaskProperties(respRow, newUsers, eventId, propNames, addRelations);
       }
 
     } else {
@@ -964,8 +956,6 @@ public class TasksModuleBean implements BeeModule {
     } else {
       eventNote = BeeUtils.buildLines(Codec.beeDeserializeCollection(notes));
     }
-
-    Set<Long> oldUsers = DataUtils.parseIdSet(reqInfo.get(VAR_TASK_USERS));
     Set<String> updatedRelations = NameUtils.toSet(reqInfo.get(VAR_TASK_RELATIONS));
 
     switch (event) {
@@ -994,7 +984,7 @@ public class TasksModuleBean implements BeeModule {
           response = registerTaskEvent(taskId, currentUser, event, now);
         }
         if (response == null || !response.hasErrors()) {
-          response = commitTaskData(taskData, oldUsers, false, updatedRelations, eventId);
+          response = commitTaskData(taskData, null, updatedRelations, eventId);
         }
         break;
 
@@ -1021,7 +1011,8 @@ public class TasksModuleBean implements BeeModule {
         }
 
         if (!response.hasErrors()) {
-          response = commitTaskData(taskData, oldUsers, true, updatedRelations, eventId);
+          response = commitTaskData(taskData, DataUtils.parseIdSet(reqInfo.get(VAR_TASK_USERS)),
+              updatedRelations, eventId);
         }
 
         if (!response.hasErrors() && event == TaskEvent.FORWARD
@@ -1105,10 +1096,7 @@ public class TasksModuleBean implements BeeModule {
     }
 
     if (!response.hasErrors()) {
-      Set<Long> users = Collections.emptySet();
-      Set<String> relations = Collections.emptySet();
-
-      response = commitTaskData(data, users, false, relations, eventId);
+      response = commitTaskData(data, null, null, eventId);
     }
 
     return response;
@@ -1507,10 +1495,13 @@ public class TasksModuleBean implements BeeModule {
     if (DataUtils.isEmpty(rowSet)) {
       return ResponseObject.error(SVC_GET_TASK_DATA, "task id: " + taskId + " not found");
     }
+    List<Long> observers = getTaskUsers(taskId);
+    observers.remove(rowSet.getLong(0, COL_OWNER));
+    observers.remove(rowSet.getLong(0, COL_EXECUTOR));
 
     BeeRow data = rowSet.getRow(0);
-    addTaskProperties(data, rowSet.getColumns(), getTaskUsers(taskId), eventId, propNames,
-        addRelations);
+
+    addTaskProperties(data, observers, eventId, propNames, addRelations);
 
     return ResponseObject.response(data);
   }
