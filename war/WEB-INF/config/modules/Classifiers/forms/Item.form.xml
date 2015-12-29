@@ -238,6 +238,16 @@
         </SimplePanel>
       </page> 
       
+      <page>
+        <text>=suppliers</text>
+        <ChildGrid name="ItemSuppliers" relColumn="Item" />
+      </page> 
+      
+      <page>
+        <text>=manufacturers</text>
+        <ChildGrid name="ItemManufacturers" relColumn="Item" />
+      </page> 
+      
       <page for="Notes">
         <text>=notes</text>
         <SimplePanel>
