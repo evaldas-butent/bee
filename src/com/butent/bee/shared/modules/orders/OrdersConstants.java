@@ -58,12 +58,16 @@ public final class OrdersConstants {
   public static final String SVC_EXPORT_ITEM_REMAINDERS = "ExportItemReminder";
   public static final String SVC_CREATE_PDF_FILE = "CreatePDFFile";
   public static final String SVC_FILL_RESERVED_REMAINDERS = "FillReservedRemainders";
+  public static final String SVC_GET_ITEMS_SUPPLIERS = "GetItemsSuppliers";
+  public static final String SVC_GET_FILTERED_INVOICES = "GetFilteredInvoices";
+  public static final String SVC_GET_ERP_STOCKS = "GetERPStocks";
 
   public static final String TBL_ORDER_ITEMS = "OrderItems";
   public static final String TBL_ORDERS = "Orders";
 
   public static final String VIEW_ORDERS = "Orders";
   public static final String VIEW_ORDERS_INVOICES = "OrdersInvoices";
+  public static final String VIEW_ORDER_CHILD_INVOICES = "OrderChildInvoices";
   public static final String VIEW_ORDER_ITEMS = "OrderItems";
   public static final String VIEW_ORDERS_TEMPLATES = "OrdersTemplates";
   public static final String VIEW_ORDER_TMPL_ITEMS = "OrderTmplItems";
@@ -71,6 +75,7 @@ public final class OrdersConstants {
 
   public static final String ALS_COMPANY_EMAIL = "CompanyEmail";
   public static final String ALS_CONTACT_EMAIL = "ContactEmail";
+  public static final String ALS_TOTAL_QTY = "TotalQty";
 
   public static final String COL_END_DATE = "EndDate";
   public static final String COL_ORDER = "Order";
@@ -78,14 +83,20 @@ public final class OrdersConstants {
   public static final String COL_RESERVED_REMAINDER = "ResRemainder";
   public static final String COL_TEMPLATE = "Template";
   public static final String COL_SOURCE = "Source";
+  public static final String COL_UNPACKING = "Unpacking";
+  public static final String COL_ORDER_ITEM = "OrderItem";
+  public static final String COL_COMPLETED_QTY = "CompletedQty";
+  public static final String COL_SUPPLIER_TERM = "SupplierTerm";
 
   public static final String PRP_FREE_REMAINDER = "FreeRemainder";
+  public static final String PRP_COMPLETED_INVOICES = "CompletedInvoices";
 
-  public static final String PRM_CLEAR_RESERVATIONS_TIME = "ClearReservationsTime";
+  public static final String PRM_UPDATE_ITEMS_PRICES = "UpdateItemsPrices";
   public static final String PRM_IMPORT_ERP_ITEMS_TIME = "ImportERPItemsTime";
   public static final String PRM_IMPORT_ERP_STOCKS_TIME = "ImportERPStocksTime";
   public static final String PRM_EXPORT_ERP_RESERVATIONS_TIME = "ExportERPReservationsTime";
   public static final String PRM_DEFAULT_SALE_OPERATION = "DefaultSaleOperation";
+  public static final String PRM_CLEAR_RESERVATIONS_TIME = "ClearReservationsTime";
 
   private OrdersConstants() {
   }

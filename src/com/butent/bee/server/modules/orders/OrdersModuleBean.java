@@ -131,6 +131,12 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
         response = fillReservedRemainders(reqInfo);
         break;
 
+      case SVC_GET_ERP_STOCKS:
+        Set<Long> ids = DataUtils.parseIdSet(reqInfo.getParameter(Service.VAR_DATA));
+        getERPStocks(ids);
+        response = ResponseObject.emptyResponse();
+        break;
+        
       default:
         String msg = BeeUtils.joinWords("service not recognized:", svc);
         logger.warning(msg);
@@ -149,7 +155,7 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
       getERPItems();
     }
     if (cb.isParameterTimer(timer, PRM_IMPORT_ERP_STOCKS_TIME)) {
-      getERPStocks();
+      getERPStocks(null);
     }
     if (cb.isParameterTimer(timer, PRM_EXPORT_ERP_RESERVATIONS_TIME)) {
       exportReservations();
@@ -161,6 +167,7 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
     String module = getModule().getName();
 
     List<BeeParameter> params = Lists.newArrayList(
+        BeeParameter.createBoolean(module, PRM_UPDATE_ITEMS_PRICES, false, false),
         BeeParameter.createNumber(module, PRM_CLEAR_RESERVATIONS_TIME, false, null),
         BeeParameter.createNumber(module, PRM_IMPORT_ERP_ITEMS_TIME, false, null),
         BeeParameter.createNumber(module, PRM_IMPORT_ERP_STOCKS_TIME, false, null),
@@ -497,17 +504,11 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
     SimpleRowSet rs = qs.getData(select);
 
     if (rs.getNumberOfRows() > 0) {
-      for (SimpleRow sr : rs) {
-        try {
-          ButentWS.connect(remoteAddress, remoteLogin, remotePassword).importItemReservation(
-              sr.getValue(COL_WAREHOUSE_CODE), sr.getLong(COL_ITEM_EXTERNAL_CODE),
-              sr.getDouble(ALS_TOTAL_AMOUNT));
-
-        } catch (BeeException e) {
-          logger.error(e);
-          sys.eventEnd(sys.eventStart(PRM_EXPORT_ERP_RESERVATIONS_TIME), "ERROR", e.getMessage());
-          continue;
-        }
+      try {
+        ButentWS.connect(remoteAddress, remoteLogin, remotePassword).importItemReservation(rs);
+      } catch (BeeException e) {
+        logger.error(e);
+        sys.eventEnd(sys.eventStart(PRM_EXPORT_ERP_RESERVATIONS_TIME), "ERROR", e.getMessage());
       }
     }
   }
@@ -570,6 +571,8 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
         units.put(row.getValue(COL_UNIT_NAME), row.getLong(COL_UNIT));
       }
 
+      boolean updatePrc = BeeUtils.unbox(prm.getBoolean(PRM_UPDATE_ITEMS_PRICES));
+
       for (SimpleRow row : rs) {
 
         String type = row.getValue("TIPAS");
@@ -584,6 +587,13 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
         currenciesMap.put("VAL_1", row.getValue("VAL_1"));
         currenciesMap.put("VAL_2", row.getValue("VAL_2"));
         currenciesMap.put("VAL_3", row.getValue("VAL_3"));
+        currenciesMap.put("VAL_4", row.getValue("VAL_4"));
+        currenciesMap.put("VAL_5", row.getValue("VAL_5"));
+        currenciesMap.put("VAL_6", row.getValue("VAL_6"));
+        currenciesMap.put("VAL_7", row.getValue("VAL_7"));
+        currenciesMap.put("VAL_8", row.getValue("VAL_8"));
+        currenciesMap.put("VAL_9", row.getValue("VAL_9"));
+        currenciesMap.put("VAL_10", row.getValue("VAL_10"));
 
         if (!articles.contains(article) && !externalCodes.contains(exCode)) {
 
@@ -619,31 +629,100 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
               .addConstant(COL_ITEM_PRICE_1, row.getDouble("KAINA_1"))
               .addConstant(COL_ITEM_PRICE_2, row.getDouble("KAINA_2"))
               .addConstant(COL_ITEM_PRICE_3, row.getDouble("KAINA_3"))
+              .addConstant(COL_ITEM_PRICE_4, row.getDouble("KAINA_4"))
+              .addConstant(COL_ITEM_PRICE_5, row.getDouble("KAINA_5"))
+              .addConstant(COL_ITEM_PRICE_6, row.getDouble("KAINA_6"))
+              .addConstant(COL_ITEM_PRICE_7, row.getDouble("KAINA_7"))
+              .addConstant(COL_ITEM_PRICE_8, row.getDouble("KAINA_8"))
+              .addConstant(COL_ITEM_PRICE_9, row.getDouble("KAINA_9"))
+              .addConstant(COL_ITEM_PRICE_10, row.getDouble("KAINA_10"))
               .addConstant(COL_ITEM_GROUP, typesGroups.get(group))
               .addConstant(COL_ITEM_TYPE, typesGroups.get(type))
               .addConstant(COL_ITEM_CURRENCY, currencies.get(currenciesMap.get("PARD_VAL")))
               .addConstant(COL_ITEM_COST_CURRENCY, currencies.get(currenciesMap.get("SAV_VAL")))
               .addConstant(COL_ITEM_CURRENCY_1, currencies.get(currenciesMap.get("VAL_1")))
               .addConstant(COL_ITEM_CURRENCY_2, currencies.get(currenciesMap.get("VAL_2")))
-              .addConstant(COL_ITEM_CURRENCY_3, currencies.get(currenciesMap.get("VAL_3"))));
+              .addConstant(COL_ITEM_CURRENCY_3, currencies.get(currenciesMap.get("VAL_3")))
+              .addConstant(COL_ITEM_CURRENCY_4, currencies.get(currenciesMap.get("VAL_4")))
+              .addConstant(COL_ITEM_CURRENCY_5, currencies.get(currenciesMap.get("VAL_5")))
+              .addConstant(COL_ITEM_CURRENCY_6, currencies.get(currenciesMap.get("VAL_6")))
+              .addConstant(COL_ITEM_CURRENCY_7, currencies.get(currenciesMap.get("VAL_7")))
+              .addConstant(COL_ITEM_CURRENCY_8, currencies.get(currenciesMap.get("VAL_8")))
+              .addConstant(COL_ITEM_CURRENCY_9, currencies.get(currenciesMap.get("VAL_9")))
+              .addConstant(COL_ITEM_CURRENCY_10, currencies.get(currenciesMap.get("VAL_10")))
+              .addConstant(COL_TRADE_VAT, true)
+              .addConstant(COL_TRADE_VAT_PERC, prm.getInteger(PRM_VAT_PERCENT)));
 
           if (!response.hasErrors()) {
             externalCodes.add(exCode);
             articles.add(article);
           }
+        } else if (updatePrc) {
+          SqlUpdate update = new SqlUpdate(TBL_ITEMS)
+              .addConstant(COL_ITEM_PRICE, row.getDouble("PARD_KAINA"))
+              .addConstant(COL_ITEM_COST, row.getDouble("SAVIKAINA"))
+              .addConstant(COL_ITEM_PRICE_1, row.getDouble("KAINA_1"))
+              .addConstant(COL_ITEM_PRICE_2, row.getDouble("KAINA_2"))
+              .addConstant(COL_ITEM_PRICE_3, row.getDouble("KAINA_3"))
+              .addConstant(COL_ITEM_PRICE_4, row.getDouble("KAINA_4"))
+              .addConstant(COL_ITEM_PRICE_5, row.getDouble("KAINA_5"))
+              .addConstant(COL_ITEM_PRICE_6, row.getDouble("KAINA_6"))
+              .addConstant(COL_ITEM_PRICE_7, row.getDouble("KAINA_7"))
+              .addConstant(COL_ITEM_PRICE_8, row.getDouble("KAINA_8"))
+              .addConstant(COL_ITEM_PRICE_9, row.getDouble("KAINA_9"))
+              .addConstant(COL_ITEM_PRICE_10, row.getDouble("KAINA_10"))
+              .addConstant(COL_ITEM_CURRENCY, currencies.get(currenciesMap.get("PARD_VAL")))
+              .addConstant(COL_ITEM_COST_CURRENCY, currencies.get(currenciesMap.get("SAV_VAL")))
+              .addConstant(COL_ITEM_CURRENCY_1, currencies.get(currenciesMap.get("VAL_1")))
+              .addConstant(COL_ITEM_CURRENCY_2, currencies.get(currenciesMap.get("VAL_2")))
+              .addConstant(COL_ITEM_CURRENCY_3, currencies.get(currenciesMap.get("VAL_3")))
+              .addConstant(COL_ITEM_CURRENCY_4, currencies.get(currenciesMap.get("VAL_4")))
+              .addConstant(COL_ITEM_CURRENCY_5, currencies.get(currenciesMap.get("VAL_5")))
+              .addConstant(COL_ITEM_CURRENCY_6, currencies.get(currenciesMap.get("VAL_6")))
+              .addConstant(COL_ITEM_CURRENCY_7, currencies.get(currenciesMap.get("VAL_7")))
+              .addConstant(COL_ITEM_CURRENCY_8, currencies.get(currenciesMap.get("VAL_8")))
+              .addConstant(COL_ITEM_CURRENCY_9, currencies.get(currenciesMap.get("VAL_9")))
+              .addConstant(COL_ITEM_CURRENCY_10, currencies.get(currenciesMap.get("VAL_10")))
+              .setWhere(SqlUtils.equals(TBL_ITEMS, COL_ITEM_EXTERNAL_CODE, exCode));
+
+          qs.updateData(update);
         }
       }
     }
   }
 
-  private void getERPStocks() {
+  private void getERPStocks(Set<Long> ids) {
     String remoteAddress = prm.getText(PRM_ERP_ADDRESS);
     String remoteLogin = prm.getText(PRM_ERP_LOGIN);
     String remotePassword = prm.getText(PRM_ERP_PASSWORD);
     SimpleRowSet rs = null;
+    SqlSelect select = null;
+    
+    if (ids != null) {
+      select = new SqlSelect()
+          .addFields(TBL_ITEMS, COL_ITEM_EXTERNAL_CODE)
+          .addFrom(TBL_SALES)
+          .addFromLeft(TBL_SALE_ITEMS, sys.joinTables(TBL_SALES, TBL_SALE_ITEMS, COL_SALE))
+          .addFromLeft(TBL_ITEMS, sys.joinTables(TBL_ITEMS, TBL_SALE_ITEMS, COL_ITEM))
+          .setWhere(sys.idInList(TBL_SALES, ids));
+    }
 
     try {
-      rs = ButentWS.connect(remoteAddress, remoteLogin, remotePassword).getStocks();
+
+      if (ids != null) {
+        String[] codeList = qs.getColumn(select);
+        for (int i = 0; i < codeList.length; i++) {
+          if (i == 0) {
+            rs =
+                ButentWS.connect(remoteAddress, remoteLogin, remotePassword).getStocks(codeList[i]);
+          } else {
+            rs.append(ButentWS.connect(remoteAddress, remoteLogin, remotePassword).getStocks(
+                codeList[i]));
+          }
+        }
+      } else {
+        rs = ButentWS.connect(remoteAddress, remoteLogin, remotePassword).getStocks("");
+      }
 
     } catch (BeeException e) {
       logger.error(e);
