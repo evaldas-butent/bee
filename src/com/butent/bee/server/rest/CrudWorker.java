@@ -10,6 +10,7 @@ import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
@@ -29,6 +30,7 @@ import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -111,44 +113,8 @@ public abstract class CrudWorker {
 
   public RestResponse get(Filter filter) {
     long time = System.currentTimeMillis();
-
     BeeRowSet rowSet = qs.getViewData(getViewName(), filter);
-
-    List<Map<String, Object>> data = new ArrayList<>();
-
-    for (int i = 0; i < rowSet.getNumberOfRows(); i++) {
-      Map<String, Object> row = new LinkedHashMap<>(rowSet.getNumberOfColumns());
-      BeeRow beeRow = rowSet.getRow(i);
-      row.put(ID, beeRow.getId());
-      row.put(VERSION, beeRow.getVersion());
-
-      for (int j = 0; j < rowSet.getNumberOfColumns(); j++) {
-        BeeColumn column = rowSet.getColumn(j);
-        Object value = null;
-
-        switch (column.getType()) {
-          case BOOLEAN:
-            value = rowSet.getBoolean(i, j);
-            break;
-          case DATE:
-          case DATE_TIME:
-          case INTEGER:
-          case LONG:
-            value = rowSet.getLong(i, j);
-            break;
-          case DECIMAL:
-          case NUMBER:
-            value = rowSet.getDecimal(i, j);
-            break;
-          default:
-            value = rowSet.getString(i, j);
-            break;
-        }
-        row.put(column.getId(), value);
-      }
-      data.add(row);
-    }
-    return RestResponse.ok(data).setLastSync(time);
+    return RestResponse.ok(getData(rowSet, null)).setLastSync(time);
   }
 
   @GET
@@ -234,12 +200,78 @@ public abstract class CrudWorker {
     }
   }
 
+  static Collection<Map<String, Object>> getData(BeeRowSet rowSet, String child, String... cols) {
+    Map<Long, Map<String, Object>> data = new LinkedHashMap<>();
+    boolean hasChilds = !BeeUtils.isEmpty(child) && !ArrayUtils.isEmpty(cols);
+
+    for (int i = 0; i < rowSet.getNumberOfRows(); i++) {
+      BeeRow beeRow = rowSet.getRow(i);
+
+      if (!data.containsKey(beeRow.getId())) {
+        Map<String, Object> row = new LinkedHashMap<>();
+        row.put(ID, beeRow.getId());
+        row.put(VERSION, beeRow.getVersion());
+
+        for (int j = 0; j < rowSet.getNumberOfColumns(); j++) {
+          String col = rowSet.getColumnId(j);
+
+          if (!ArrayUtils.contains(cols, col)) {
+            row.put(col, getValue(rowSet, i, j));
+          }
+        }
+        if (hasChilds) {
+          row.put(child, new ArrayList<Map<String, Object>>());
+        }
+        data.put(beeRow.getId(), row);
+      }
+      if (hasChilds) {
+        Map<String, Object> row = new LinkedHashMap<>();
+
+        for (String col : cols) {
+          int j = rowSet.getColumnIndex(col);
+
+          if (!BeeConst.isUndef(j)) {
+            row.put(col, getValue(rowSet, i, j));
+          }
+        }
+        if (BeeUtils.anyNotNull(row.values())) {
+          ((Collection<Map<String, Object>>) data.get(beeRow.getId()).get(child)).add(row);
+        }
+      }
+    }
+    return data.values();
+  }
+
   static String getValue(JsonObject data, String field) {
     String value = null;
     JsonValue object = data.get(field);
 
     if (Objects.nonNull(object) && object != JsonValue.NULL) {
       value = object instanceof JsonString ? ((JsonString) object).getString() : object.toString();
+    }
+    return value;
+  }
+
+  static Object getValue(BeeRowSet rowSet, int row, int col) {
+    Object value = null;
+
+    switch (rowSet.getColumnType(col)) {
+      case BOOLEAN:
+        value = rowSet.getBoolean(row, col);
+        break;
+      case DATE:
+      case DATE_TIME:
+      case INTEGER:
+      case LONG:
+        value = rowSet.getLong(row, col);
+        break;
+      case DECIMAL:
+      case NUMBER:
+        value = rowSet.getDecimal(row, col);
+        break;
+      default:
+        value = rowSet.getString(row, col);
+        break;
     }
     return value;
   }

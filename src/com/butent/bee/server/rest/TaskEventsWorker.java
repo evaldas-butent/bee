@@ -1,5 +1,10 @@
 package com.butent.bee.server.rest;
 
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
+
+import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.filter.Filter;
+
 import javax.ejb.Stateless;
 import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
@@ -14,6 +19,13 @@ public class TaskEventsWorker extends CrudWorker {
   @Override
   public RestResponse delete(Long id, Long version) {
     return RestResponse.forbidden();
+  }
+
+  @Override
+  public RestResponse get(Filter filter) {
+    long time = System.currentTimeMillis();
+    BeeRowSet rowSet = qs.getViewData(getViewName(), filter);
+    return RestResponse.ok(getData(rowSet, TBL_FILES, COL_FILE, ALS_FILE_NAME)).setLastSync(time);
   }
 
   @Override

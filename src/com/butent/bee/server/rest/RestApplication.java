@@ -19,7 +19,6 @@ public class RestApplication extends Application {
     classes.add(CompanyPersonsWorker.class);
     classes.add(TasksWorker.class);
     classes.add(TaskEventsWorker.class);
-    classes.add(TaskFilesWorker.class);
     classes.add(PayrollWorker.class);
 
     return classes;

@@ -1,5 +1,6 @@
 package com.butent.bee.server.rest;
 
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
 
 import com.butent.bee.server.data.BeeView;
@@ -49,8 +50,6 @@ public class TasksWorker extends CrudWorker {
   TasksModuleBean task;
   @EJB
   TaskEventsWorker events;
-  @EJB
-  TaskFilesWorker files;
 
   @GET
   @Path("{" + ID + ":\\d+}/access")
@@ -66,6 +65,13 @@ public class TasksWorker extends CrudWorker {
   @Override
   public RestResponse delete(Long id, Long version) {
     return RestResponse.forbidden();
+  }
+
+  @Override
+  public RestResponse get(Filter filter) {
+    long time = System.currentTimeMillis();
+    BeeRowSet rowSet = qs.getViewData(getViewName(), filter);
+    return RestResponse.ok(getData(rowSet, TBL_FILES, COL_FILE, ALS_FILE_NAME)).setLastSync(time);
   }
 
   @Override
@@ -91,15 +97,6 @@ public class TasksWorker extends CrudWorker {
       @HeaderParam(RestResponse.LAST_SYNC_TIME) Long lastSynced) {
 
     return events.get(Filter.and(Filter.equals(COL_TASK + ID, id),
-        Filter.compareVersion(Operator.GT, BeeUtils.unbox(lastSynced))));
-  }
-
-  @GET
-  @Path("{" + ID + ":\\d+}/files")
-  public RestResponse getFiles(@PathParam(ID) Long id,
-      @HeaderParam(RestResponse.LAST_SYNC_TIME) Long lastSynced) {
-
-    return files.get(Filter.and(Filter.equals(COL_TASK + ID, id),
         Filter.compareVersion(Operator.GT, BeeUtils.unbox(lastSynced))));
   }
 
