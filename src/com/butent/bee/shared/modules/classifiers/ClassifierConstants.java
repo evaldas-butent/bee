@@ -104,6 +104,7 @@ public final class ClassifierConstants {
   public static final String COL_COMPANY = "Company";
   public static final String COL_COMPANY_NAME = "Name";
   public static final String COL_COMPANY_CODE = "Code";
+  public static final String COL_COMPANY_CONTACT = "CompanyContact";
   public static final String COL_COMPANY_VAT_CODE = "VATCode";
   public static final String COL_COMPANY_PERSON = "CompanyPerson";
   public static final String COL_COMPANY_TYPE = "CompanyType";
