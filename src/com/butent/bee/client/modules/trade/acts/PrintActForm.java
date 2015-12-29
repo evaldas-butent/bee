@@ -20,6 +20,7 @@ import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
+import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
@@ -42,9 +43,15 @@ import java.util.Set;
 
 public class PrintActForm extends AbstractFormInterceptor {
 
+  private static final String ITEMS_WIDGET_NAME = "TradeActItems";
+  private static final String SERVICES_WIDGET_NAME = "TradeActServices";
+  private static final String FORM_PRINT_TA_NO_STOCK = "PrintTASaleNoStock";
+
   final Map<String, String> tableHeaders = new HashMap<>();
   Map<String, Widget> companies = new HashMap<>();
   List<Widget> totals = new ArrayList<>();
+  List<Widget> totalsOf = new ArrayList<>();
+  Consumer<Double> totConsumer;
 
   @Override
   public void afterCreateWidget(String name, IdentifiableWidget widget,
@@ -56,6 +63,8 @@ public class PrintActForm extends AbstractFormInterceptor {
 
     } else if (BeeUtils.startsSame(name, "TotalInWords")) {
       totals.add(widget.asWidget());
+    } else if (BeeUtils.startsSame(name, "TotalOf")) {
+      totalsOf.add(widget.asWidget());
     }
   }
 
@@ -69,12 +78,25 @@ public class PrintActForm extends AbstractFormInterceptor {
       }
       ClassifierUtils.getCompanyInfo(id, companies.get(name));
     }
-    for (Widget total : totals) {
-      TradeUtils.getTotalInWords(form.getDoubleValue(COL_TRADE_AMOUNT),
-          form.getLongValue(COL_TRADE_CURRENCY), total);
-    }
-    renderItems("TradeActItems");
-    renderItems("TradeActServices");
+
+    totConsumer = new Consumer<Double>() {
+      double totalOf;
+      int count;
+
+      @Override
+      public void accept(Double input) {
+        totalOf += input;
+        count++;
+
+        if (count >= 2) {
+          renderTotalOf(totalOf);
+        }
+
+      }
+    };
+
+    renderItems(ITEMS_WIDGET_NAME);
+    renderItems(SERVICES_WIDGET_NAME);
 
     super.beforeRefresh(form, row);
   }
@@ -104,6 +126,27 @@ public class PrintActForm extends AbstractFormInterceptor {
     tableHeaders.put("TradeActServicesAmountTotal", "Suma už min. term.");
     tableHeaders.put("Name", "Nuomojama įranga");
     tableHeaders.put("TradeActServicesName", "Teikiamos paslaugos/prekės");
+  }
+
+  private List<String> getVisibleColumns() {
+    final String[] columnList = new String[] {
+        COL_ITEM_ARTICLE, COL_ITEM_NAME, COL_TA_SERVICE_FROM, COL_TA_SERVICE_TO,
+        COL_TRADE_ITEM_QUANTITY, COL_UNIT, COL_TRADE_TIME_UNIT, COL_TA_RETURNED_QTY,
+        "RemainingQty", COL_TRADE_WEIGHT, COL_ITEM_AREA, COL_TA_SERVICE_TARIFF,
+        COL_TRADE_ITEM_PRICE, COL_TRADE_DISCOUNT, "Amount", COL_TRADE_VAT, "AmountTotal"};
+    final String formName = getFormView().getFormName();
+
+    List<String> res = new ArrayList<>();
+
+    for (String col : columnList) {
+      if (BeeUtils.same(col, "RemainingQty") && BeeUtils.same(formName, FORM_PRINT_TA_NO_STOCK)) {
+        continue;
+      }
+
+      res.add(col);
+    }
+
+    return res;
   }
 
   private void renderItems(final String typeTable) {
@@ -159,9 +202,15 @@ public class PrintActForm extends AbstractFormInterceptor {
                   value = EnumUtils.getCaption(TradeActTimeUnit.class, BeeUtils.toIntOrNull(value));
                   break;
 
+                case COL_TRADE_ITEM_NOTE:
+                  if (BeeUtils.same(typeTable, ITEMS_WIDGET_NAME)) {
+                    data.put(id, COL_ITEM_NAME, BeeUtils.join("/", row.getValue(COL_ITEM_NAME),
+                        row.getValue(COL_TRADE_ITEM_NOTE)));
+                  }
+                  break;
+
                 case COL_TA_SERVICE_MIN:
                   String daysPerWeek = row.getValue(COL_TA_SERVICE_DAYS);
-
                   data.put(id, COL_ITEM_NAME, BeeUtils.join("/", row.getValue(COL_ITEM_NAME),
                       row.getValue(COL_TRADE_ITEM_NOTE),
                       BeeUtils.joinWords("Minimalus nuomos terminas", value,
@@ -169,13 +218,20 @@ public class PrintActForm extends AbstractFormInterceptor {
                               row.getInt(COL_TRADE_TIME_UNIT))),
                       BeeUtils.isEmpty(daysPerWeek) ? null : daysPerWeek + "d.per Sav."));
                   break;
+
               }
               data.put(id, col, value);
             }
           }
           double qty = BeeUtils.toDouble(data.get(id, COL_TRADE_ITEM_QUANTITY))
               - BeeUtils.toDouble(data.get(id, COL_TA_RETURNED_QTY));
-          double sum = qty * BeeUtils.toDouble(data.get(id, COL_TRADE_ITEM_PRICE));
+          double prc = BeeUtils.toDouble(data.get(id, COL_TRADE_ITEM_PRICE));
+          double sum = qty * prc;
+
+          if (BeeUtils.same(typeTable, SERVICES_WIDGET_NAME)) {
+            double mint = BeeUtils.toDouble(data.get(id, COL_TA_SERVICE_MIN));
+            sum = mint * prc;
+          }
           double disc = BeeUtils.toDouble(data.get(id, COL_TRADE_DISCOUNT));
           double vat = BeeUtils.toDouble(data.get(id, COL_TRADE_VAT));
           boolean vatInPercents = BeeUtils.toBoolean(data.get(id, COL_TRADE_VAT_PERC));
@@ -226,11 +282,7 @@ public class PrintActForm extends AbstractFormInterceptor {
         calc.add(COL_TRADE_VAT);
         calc.add("AmountTotal");
 
-        for (String col : new String[] {
-            COL_ITEM_ARTICLE, COL_ITEM_NAME, COL_TA_SERVICE_FROM, COL_TA_SERVICE_TO,
-            COL_TRADE_ITEM_QUANTITY, COL_UNIT, COL_TRADE_TIME_UNIT, COL_TA_RETURNED_QTY,
-            "RemainingQty", COL_TRADE_WEIGHT, COL_ITEM_AREA, COL_TA_SERVICE_TARIFF,
-            COL_TRADE_ITEM_PRICE, COL_TRADE_DISCOUNT, "Amount", COL_TRADE_VAT, "AmountTotal"}) {
+        for (String col : getVisibleColumns()) {
 
           if (!data.containsColumn(col)) {
             continue;
@@ -247,6 +299,7 @@ public class PrintActForm extends AbstractFormInterceptor {
               sum = sum.add(BeeUtils.nvl(BeeUtils.toDecimalOrNull(value), BigDecimal.ZERO));
               value = BeeUtils.removeTrailingZeros(value);
             }
+
             table.setText(r++, c, value, TradeUtils.STYLE_ITEMS + col);
           }
           String value = null;
@@ -254,6 +307,10 @@ public class PrintActForm extends AbstractFormInterceptor {
           if (sum.compareTo(BigDecimal.ZERO) != 0) {
             value = BeeUtils.removeTrailingZeros(sum.toPlainString());
           }
+          if ("AmountTotal".equals(col)) {
+            totConsumer.accept(sum.doubleValue());
+          }
+
           table.setText(r, c, value, TradeUtils.STYLE_ITEMS + col);
           c++;
         }
@@ -268,4 +325,18 @@ public class PrintActForm extends AbstractFormInterceptor {
       }
     });
   }
+
+  private void renderTotalOf(double tot) {
+
+    for (Widget total : totals) {
+      total.getElement().setInnerText("");
+      TradeUtils.getTotalInWords(BeeUtils.round(tot, 2),
+          getFormView().getLongValue(COL_TRADE_CURRENCY), total);
+    }
+
+    for (Widget total : totalsOf) {
+      total.getElement().setInnerText("Iš viso: " + BeeUtils.round(tot, 2));
+    }
+  }
+
 }
