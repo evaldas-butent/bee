@@ -158,6 +158,7 @@ import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.html.Attributes;
+import com.butent.bee.shared.html.Keywords;
 import com.butent.bee.shared.html.Tags;
 import com.butent.bee.shared.html.builder.elements.Input;
 import com.butent.bee.shared.i18n.Localized;
@@ -439,6 +440,9 @@ public final class CliWorker {
 
     } else if ("log".equals(z)) {
       doLog(arr);
+
+    } else if ("login_bg".equals(z)) {
+      setLoginBackground(args);
 
     } else if ("mail".equals(z)) {
       BeeKeeper.getRpc().sendText(new ParameterList(Service.MAIL), args, null);
@@ -2059,6 +2063,43 @@ public final class CliWorker {
         Global.setDebug(BeeConst.isTrue(args));
       }
       logger.debug("debug", Global.isDebug());
+    }
+  }
+
+  private static void setLoginBackground(String args) {
+    final String key = "login_bg";
+
+    if (BeeUtils.isEmpty(args)) {
+      final Popup popup = new Popup(OutsideClick.CLOSE);
+
+      final InputFile widget = new InputFile();
+      widget.setAccept(Keywords.ACCEPT_IMAGE);
+
+      widget.addChangeHandler(new ChangeHandler() {
+        @Override
+        public void onChange(ChangeEvent event) {
+          popup.close();
+
+          List<NewFileInfo> fileInfos = FileUtils.getNewFileInfos(widget.getFiles());
+          List<NewFileInfo> files = Images.sanitizeInput(fileInfos, BeeKeeper.getScreen());
+
+          if (!BeeUtils.isEmpty(files)) {
+            FileUtils.readAsDataURL(files.get(0).getNewFile(),
+                e -> BeeKeeper.getStorage().set(key, e));
+          }
+        }
+      });
+
+      popup.setWidget(widget);
+      popup.center();
+
+    } else if (BeeConst.STRING_MINUS.equals(args)) {
+      BeeKeeper.getStorage().remove(key);
+      logger.debug(key, "removed");
+
+    } else {
+      BeeKeeper.getStorage().set(key, args);
+      logger.debug(key, BeeConst.STRING_EQ, args);
     }
   }
 
@@ -4144,7 +4185,7 @@ public final class CliWorker {
     }
 
     if (parCnt <= 0) {
-      showPropData("Storage", BeeKeeper.getStorage().getAll());
+      showPropData("Storage", BeeKeeper.getStorage().getAll(200));
       return;
     }
 
@@ -4174,9 +4215,11 @@ public final class CliWorker {
 
       } else {
         int count = 0;
-        for (Property p : BeeKeeper.getStorage().getAll()) {
-          if (BeeUtils.isPrefix(p.getName(), value)) {
-            BeeKeeper.getStorage().remove(p.getName());
+        List<String> keys = BeeKeeper.getStorage().keys();
+
+        for (String k : keys) {
+          if (BeeUtils.isPrefix(k, value)) {
+            BeeKeeper.getStorage().remove(k);
             count++;
           }
         }

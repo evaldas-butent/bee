@@ -15,6 +15,7 @@ import com.butent.bee.shared.html.builder.Document;
 import com.butent.bee.shared.html.builder.Node;
 import com.butent.bee.shared.html.builder.elements.Div;
 import com.butent.bee.shared.html.builder.elements.Form;
+import com.butent.bee.shared.html.builder.elements.Img;
 import com.butent.bee.shared.html.builder.elements.Input;
 import com.butent.bee.shared.html.builder.elements.Input.Type;
 import com.butent.bee.shared.html.builder.elements.Link.Rel;
@@ -274,14 +275,17 @@ public class LoginServlet extends HttpServlet {
 
     doc.getBody().onLoad(event("onload", requestLanguage));
 
-    String background = customBackground("loginbg");
-    if (!BeeUtils.isEmpty(background)) {
-      doc.getBody().setBackgroundImage(BeeConst.NONE);
+    Img background = img()
+        .addClass(STYLE_PREFIX + "Background")
+        .id("background");
 
-      doc.getBody().append(img().addClass(STYLE_PREFIX + "Background")
-          .src(Paths.buildPath(contextPath, background))
-          .alt("background"));
+    String bg = customBackground("loginbg");
+    if (!BeeUtils.isEmpty(bg)) {
+      doc.getBody().setBackgroundImage(BeeConst.NONE);
+      background.addClass(STYLE_PREFIX + "has-src").src(Paths.buildPath(contextPath, bg));
     }
+
+    doc.getBody().append(background);
 
     Div panel = div().addClass(STYLE_PREFIX + "Panel").id("login-panel");
     doc.getBody().append(panel);
