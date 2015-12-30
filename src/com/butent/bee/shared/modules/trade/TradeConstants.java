@@ -8,24 +8,24 @@ import com.butent.bee.shared.utils.EnumUtils;
 public final class TradeConstants {
 
   public enum OperationType implements HasLocalizedCaption {
-    PURCHASE {
-      @Override
-      public String getCaption(LocalizableConstants constants) {
-        return constants.trdTypePurchase();
-      }
-    },
-    SALE {
-      @Override
-      public String getCaption(LocalizableConstants constants) {
-        return constants.trdTypeSale();
-      }
-    },
-    TRANSFER {
-      @Override
-      public String getCaption(LocalizableConstants constants) {
-        return constants.trdTypeTransfer();
-      }
-    };
+      PURCHASE {
+        @Override
+        public String getCaption(LocalizableConstants constants) {
+          return constants.trdTypePurchase();
+        }
+      },
+      SALE {
+        @Override
+        public String getCaption(LocalizableConstants constants) {
+          return constants.trdTypeSale();
+        }
+      },
+      TRANSFER {
+        @Override
+        public String getCaption(LocalizableConstants constants) {
+          return constants.trdTypeTransfer();
+        }
+      };
 
     @Override
     public String getCaption() {
@@ -41,6 +41,7 @@ public final class TradeConstants {
   public static final String SVC_CREDIT_INFO = "CreditInfo";
   public static final String SVC_GET_DOCUMENT_DATA = "getTradeDocumentData";
   public static final String SVC_SEND_TO_ERP = "SendToERP";
+  public static final String SVC_SEND_COMPANY_TO_ERP = "SendCompanyToERP";
   public static final String SVC_REMIND_DEBTS_EMAIL = "RemindDebtsEmail";
   public static final String SVC_GET_SALE_AMOUNTS = "GetSaleAmounts";
 

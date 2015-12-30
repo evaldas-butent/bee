@@ -14,6 +14,7 @@ import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
@@ -22,6 +23,7 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.Queries.IntCallback;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
+import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.ModalGrid;
 import com.butent.bee.client.grid.ChildGrid;
 import com.butent.bee.client.grid.GridFactory;
@@ -40,7 +42,9 @@ import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
+import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.FaLabel;
+import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.InputBoolean;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
@@ -54,6 +58,7 @@ import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
+import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.rights.RegulatedWidget;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -65,6 +70,8 @@ public class CompanyForm extends AbstractFormInterceptor {
 
   private static final String WIDGET_FINANCIAL_STATE_AUDIT_NAME = COL_COMPANY_FINANCIAL_STATE
       + "Audit";
+
+  private Button toErp;
 
   @Override
   public void afterCreateWidget(String name, IdentifiableWidget widget,
@@ -284,12 +291,20 @@ public class CompanyForm extends AbstractFormInterceptor {
 
   @Override
   public boolean onStartEdit(FormView form, IsRow row, ScheduledCommand focusCommand) {
+
+    if (BeeKeeper.getUser().isWidgetVisible(RegulatedWidget.TO_ERP)) {
+      HeaderView header = form.getViewPresenter().getHeader();
+      header.clearCommandPanel();
+      header.addCommandItem(getToErp());
+    }
+
     createCellValidationHandlers(form, row);
     return super.onStartEdit(form, row, focusCommand);
   }
 
   @Override
   public void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow) {
+    form.getViewPresenter().getHeader().clearCommandPanel();
     createCellValidationHandlers(form, newRow);
     newRow.setValue(form.getDataIndex(COL_REMIND_EMAIL), Boolean.TRUE);
     newRow.setValue(form.getDataIndex(COL_EMAIL_INVOICES), Boolean.TRUE);
@@ -412,6 +427,50 @@ public class CompanyForm extends AbstractFormInterceptor {
         ClassifierKeeper.generateQrCode(form, row);
       }
     });
+
+  }
+
+  private Button getToErp() {
+    if (toErp != null) {
+      return toErp;
+    }
+
+    toErp = new Button(Localized.getConstants().trSendToERP(), new ClickHandler() {
+
+      @Override
+      public void onClick(ClickEvent arg0) {
+        if (DataUtils.isNewRow(getActiveRow())) {
+          return;
+        }
+        Global.confirm(Localized.getConstants().trSendToERP() + "?", new ConfirmationCallback() {
+          @Override
+          public void onConfirm() {
+            final HeaderView header = getHeaderView();
+            header.clearCommandPanel();
+            header.addCommandItem(new Image(Global.getImages().loading()));
+
+            ParameterList args = TradeKeeper.createArgs(TradeConstants.SVC_SEND_COMPANY_TO_ERP);
+            args.addDataItem(COL_COMPANY, getActiveRowId());
+
+            BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
+              @Override
+              public void onResponse(ResponseObject response) {
+                header.clearCommandPanel();
+                header.addCommandItem(toErp);
+                response.notify(getFormView());
+
+                if (!response.hasErrors()) {
+                  getFormView().notifyInfo(Localized.getConstants().ok() + ":",
+                      response.getResponseAsString());
+                }
+              }
+            });
+          }
+        });
+      }
+    });
+
+    return toErp;
 
   }
 
