@@ -7,48 +7,54 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 public enum RegulatedWidget implements HasLocalizedCaption {
 
-  NEWS {
-    @Override
-    public String getCaption(LocalizableConstants constants) {
-      return constants.domainNews();
-    }
-  },
-  ONLINE {
-    @Override
-    public String getCaption(LocalizableConstants constants) {
-      return constants.domainOnline();
-    }
-  },
-  ROOMS {
-    @Override
-    public String getCaption(LocalizableConstants constants) {
-      return constants.domainRooms();
-    }
-  },
-  ADMIN(ModuleAndSub.of(Module.ADMINISTRATION)) {
-    @Override
-    public String getCaption(LocalizableConstants constants) {
-      return "Admin";
-    }
-  },
-  AUDIT {
-    @Override
-    public String getCaption(LocalizableConstants constants) {
-      return constants.actionAudit();
-    }
-  },
-  DOCUMENT_TREE {
-    @Override
-    public String getCaption(LocalizableConstants constants) {
-      return constants.documentTree();
-    }
-  },
-  COMPANY_STRUCTURE {
-    @Override
-    public String getCaption(LocalizableConstants constants) {
-      return constants.companyStructure();
-    }
-  };
+    NEWS {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.domainNews();
+      }
+    },
+    ONLINE {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.domainOnline();
+      }
+    },
+    ROOMS {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.domainRooms();
+      }
+    },
+    ADMIN(ModuleAndSub.of(Module.ADMINISTRATION)) {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return "Admin";
+      }
+    },
+    AUDIT {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.actionAudit();
+      }
+    },
+    DOCUMENT_TREE {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.documentTree();
+      }
+    },
+    COMPANY_STRUCTURE {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.companyStructure();
+      }
+    },
+    TO_ERP {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.trSendToERP();
+      }
+    };
 
   private final ModuleAndSub moduleAndSub;
 
