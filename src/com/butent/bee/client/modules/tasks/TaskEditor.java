@@ -1,8 +1,5 @@
 package com.butent.bee.client.modules.tasks;
 
-import com.butent.bee.client.event.logical.SelectorEvent;
-import com.butent.bee.client.view.edit.EditableWidget;
-
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Table;
@@ -39,6 +36,7 @@ import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.layout.Flow;
@@ -49,6 +47,7 @@ import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.view.HeaderView;
+import com.butent.bee.client.view.edit.EditableWidget;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
@@ -72,6 +71,7 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RelationUtils;
 import com.butent.bee.shared.data.RowChildren;
 import com.butent.bee.shared.data.event.DataChangeEvent;
+import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.Value;
@@ -771,6 +771,8 @@ class TaskEditor extends AbstractFormInterceptor {
 
           if (hasRelations(oldRow) || hasRelations(data)) {
             DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_RELATED_TASKS);
+            DataChangeEvent.fireRefresh(BeeKeeper.getBus(),
+                DocumentConstants.VIEW_RELATED_DOCUMENTS);
           }
         }
       }
@@ -895,12 +897,9 @@ class TaskEditor extends AbstractFormInterceptor {
     Widget wProjectStage = form.getWidgetBySource(ProjectConstants.COL_PROJECT_STAGE);
 
     /*
-    if (wProjectStage instanceof DataSelector) {
-      ((DataSelector) wProjectStage).setEnabled(false);
-    } else {
-      return;
-    }
-    */
+     * if (wProjectStage instanceof DataSelector) { ((DataSelector)
+     * wProjectStage).setEnabled(false); } else { return; }
+     */
 
     /*
      * if (BeeConst.isUndef(idxTaskState)) { return; }
@@ -911,24 +910,19 @@ class TaskEditor extends AbstractFormInterceptor {
     }
 
     /*
-    long currentUser = BeeUtils.unbox(BeeKeeper.getUser().getUserId());
-    long projectOwner = BeeUtils.unbox(row.getLong(idxProjectOwner));
-    */
+     * long currentUser = BeeUtils.unbox(BeeKeeper.getUser().getUserId()); long projectOwner =
+     * BeeUtils.unbox(row.getLong(idxProjectOwner));
+     */
     long projectId = BeeUtils.unbox(row.getLong(idxProject));
     /* int state = BeeUtils.unbox(row.getInteger(idxTaskState)); */
     int projectStatus = BeeUtils.unbox(row.getInteger(idxProjectStatus));
 
     /*
-   @Deprecated
-    if (DataUtils.isId(projectId)) {
-      setVisibleProjectData(form, true);
-    } else {
-      setVisibleProjectData(form, false);
-    }
-
-    if (currentUser != projectOwner) {
-      return;
-    }*/
+     * @Deprecated if (DataUtils.isId(projectId)) { setVisibleProjectData(form, true); } else {
+     * setVisibleProjectData(form, false); }
+     * 
+     * if (currentUser != projectOwner) { return; }
+     */
 
     /*
      * if (TaskStatus.SCHEDULED.ordinal() != state) { return; }
@@ -940,7 +934,7 @@ class TaskEditor extends AbstractFormInterceptor {
 
     ((DataSelector) wProjectStage).getOracle().setAdditionalFilter(
         Filter.equals(ProjectConstants.COL_PROJECT, projectId), true);
-    /*((DataSelector) wProjectStage).setEnabled(true);*/
+    /* ((DataSelector) wProjectStage).setEnabled(true); */
 
   }
 
@@ -970,7 +964,7 @@ class TaskEditor extends AbstractFormInterceptor {
     }
   }
 
-  public static void createDocumentFromFile(final FileInfo fileInfo, final IsRow row) {
+  public void createDocumentFromFile(final FileInfo fileInfo, final IsRow row) {
 
     final DataInfo dataInfo = Data.getDataInfo(DocumentConstants.VIEW_DOCUMENTS);
     final BeeRow docRow = RowFactory.createEmptyRow(dataInfo, true);
@@ -986,7 +980,7 @@ class TaskEditor extends AbstractFormInterceptor {
 
         if (!BeeUtils.isEmpty(companyName)) {
           docRow.setValue(dataInfo
-                  .getColumnIndex(DocumentConstants.ALS_DOCUMENT_COMPANY_NAME),
+              .getColumnIndex(DocumentConstants.ALS_DOCUMENT_COMPANY_NAME),
               companyName);
           docRow.setValue(dataInfo
               .getColumnIndex(DocumentConstants.COL_DOCUMENT_COMPANY), row
@@ -1022,15 +1016,37 @@ class TaskEditor extends AbstractFormInterceptor {
                 }
 
                 Queries.insert(VIEW_RELATIONS, Data.getColumns(VIEW_RELATIONS,
-                        Lists.newArrayList(COL_TASK, DocumentConstants.COL_DOCUMENT)),
-                    Lists.newArrayList(String.valueOf(row.getId()), String
-                        .valueOf(br.getId())));
-
-                Queries.insert(VIEW_RELATIONS, Data.getColumns(VIEW_RELATIONS,
-                        Lists.newArrayList(DocumentConstants.COL_DOCUMENT,
-                            ProjectConstants.COL_PROJECT)),
+                    Lists.newArrayList(DocumentConstants.COL_DOCUMENT,
+                        ProjectConstants.COL_PROJECT)),
                     Lists.newArrayList(String.valueOf(br.getId()),
                         String.valueOf(row.getString(idxProject))));
+
+                List<Long> list1 = DataUtils.parseIdList(row.getProperty(PROP_DOCUMENTS));
+                list1.add(br.getId());
+                BeeRow newRow = getNewRow();
+                newRow.setProperty(PROP_DOCUMENTS, DataUtils.buildIdList(list1));
+                RowInsertEvent.fire(BeeKeeper.getBus(), DocumentConstants.VIEW_DOCUMENTS, br, null);
+                MultiSelector sel = getMultiSelector(getFormView(), PROP_DOCUMENTS);
+                if (sel != null) {
+                  List<MultiSelector.Choice> val = sel.getChoices();
+                  val.add(new MultiSelector.Choice(br.getId()));
+                  sel.setChoices(val);
+
+                }
+
+                ParameterList params = createParams(TaskEvent.EDIT, newRow,
+                    TaskUtils.getInsertNote(Localized.getConstants().document(),
+                        BeeUtils.joinWords(
+                            br.getString(Data.getColumnIndex(DocumentConstants.VIEW_DOCUMENTS,
+                                DocumentConstants.COL_DOCUMENT_NAME)),
+                            br.getString(Data.getColumnIndex(DocumentConstants.VIEW_DOCUMENTS,
+                                DocumentConstants.COL_REGISTRATION_NUMBER)),
+                            br.getDateTime(Data.getColumnIndex(DocumentConstants.VIEW_DOCUMENTS,
+                                DocumentConstants.COL_DOCUMENT_DATE))
+                            )));
+
+                sendRequest(params, TaskEvent.EDIT);
+
               }
             });
           }
@@ -1200,7 +1216,7 @@ class TaskEditor extends AbstractFormInterceptor {
           }
 
           Queries.update(VIEW_TASK_EVENTS, eventId, COL_EVENT_DATA, Value.getValue(Codec
-                  .beeSerialize(data)),
+              .beeSerialize(data)),
               new IntCallback() {
 
                 @Override
@@ -1219,7 +1235,7 @@ class TaskEditor extends AbstractFormInterceptor {
     relIds.addAll(DataUtils.parseIdList(taskIds));
 
     Queries.updateChildren(VIEW_TASKS, taskRow.getId(), Lists.newArrayList(RowChildren
-            .create(TBL_RELATIONS, COL_TASK, null, COL_TASK, DataUtils.buildIdList(relIds))),
+        .create(TBL_RELATIONS, COL_TASK, null, COL_TASK, DataUtils.buildIdList(relIds))),
         new RowCallback() {
 
           @Override
@@ -1433,16 +1449,16 @@ class TaskEditor extends AbstractFormInterceptor {
 
       if (event != null
           && Objects.equals(TaskEvent.COMMENT.ordinal(), event.getInteger(events
-          .getColumnIndex(TaskConstants.COL_EVENT)))) {
+              .getColumnIndex(TaskConstants.COL_EVENT)))) {
         description =
             BeeUtils.join(BeeConst.STRING_EOL
                 + BeeUtils.replicate(BeeConst.CHAR_MINUS, BeeConst.MAX_SCALE)
                 + BeeConst.STRING_EOL, description, BeeUtils
                 .joinWords(event.getDateTime(events.getColumnIndex(COL_PUBLISH_TIME)), BeeUtils
                     .nvl(event
-                            .getString(events.getColumnIndex(ALS_PUBLISHER_FIRST_NAME)),
+                        .getString(events.getColumnIndex(ALS_PUBLISHER_FIRST_NAME)),
                         BeeConst.STRING_EMPTY), BeeUtils.nvl(event
-                        .getString(events.getColumnIndex(ALS_PUBLISHER_LAST_NAME)),
+                    .getString(events.getColumnIndex(ALS_PUBLISHER_LAST_NAME)),
                     BeeConst.STRING_EMPTY)
                     + BeeConst.STRING_COLON, event
                     .getString(events
@@ -1452,16 +1468,16 @@ class TaskEditor extends AbstractFormInterceptor {
       for (IsRow event : events) {
         if (event != null
             && Objects.equals(TaskEvent.COMMENT.ordinal(), event.getInteger(events
-            .getColumnIndex(TaskConstants.COL_EVENT)))) {
+                .getColumnIndex(TaskConstants.COL_EVENT)))) {
           description =
               BeeUtils.join(BeeConst.STRING_EOL
                   + BeeUtils.replicate(BeeConst.CHAR_MINUS, BeeConst.MAX_SCALE)
                   + BeeConst.STRING_EOL, description, BeeUtils
                   .joinWords(event.getDateTime(events.getColumnIndex(COL_PUBLISH_TIME)), BeeUtils
                       .nvl(event
-                              .getString(events.getColumnIndex(ALS_PUBLISHER_FIRST_NAME)),
+                          .getString(events.getColumnIndex(ALS_PUBLISHER_FIRST_NAME)),
                           BeeConst.STRING_EMPTY), BeeUtils.nvl(event
-                          .getString(events.getColumnIndex(ALS_PUBLISHER_LAST_NAME)),
+                      .getString(events.getColumnIndex(ALS_PUBLISHER_LAST_NAME)),
                       BeeConst.STRING_EMPTY)
                       + BeeConst.STRING_COLON, event
                       .getString(events
@@ -1579,7 +1595,7 @@ class TaskEditor extends AbstractFormInterceptor {
 
     final String startId = isScheduled
         ? dialog.addDateTime(Localized.getConstants().crmStartDate(), true,
-        getDateTime(COL_START_TIME)) : null;
+            getDateTime(COL_START_TIME)) : null;
     final String endId = dialog.addDateTime(Localized.getConstants().crmFinishDate(), true, null);
 
     final String cid = dialog.addComment(false);

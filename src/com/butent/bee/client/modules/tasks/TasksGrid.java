@@ -59,6 +59,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BiConsumer;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.CellSource;
@@ -67,6 +68,7 @@ import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RelationUtils;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
+import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.IntegerValue;
@@ -387,7 +389,7 @@ class TasksGrid extends AbstractGridInterceptor {
     final GridView gridView = getGridPresenter().getGridView();
     int idxTaskProject = gridView.getDataIndex(ProjectConstants.COL_PROJECT);
 
-    //    int idxTaskOwner = gridView.getDataIndex(COL_OWNER);
+    // int idxTaskOwner = gridView.getDataIndex(COL_OWNER);
 
     final IsRow selectedRow = gridView.getActiveRow();
 
@@ -402,11 +404,11 @@ class TasksGrid extends AbstractGridInterceptor {
       return;
     }
 
-    //    if (!userId.equals(selectedRow.getLong(idxTaskOwner))) {
-    //      gridView
-    //          .notifyWarning(Localized.getMessages().projectCanCreateTaskOwner(selectedRow.getId()));
-    //      return;
-    //    }
+    // if (!userId.equals(selectedRow.getLong(idxTaskOwner))) {
+    // gridView.notifyWarning(Localized.getMessages()
+    // .projectCanCreateTaskOwner(selectedRow.getId()));
+    // return;
+    // }
 
     FormFactory.createFormView(ProjectConstants.FORM_NEW_PROJECT_FROM_TASK, null, null, false,
         getNewProjectFormInterceptor(selectedRow),
@@ -421,10 +423,10 @@ class TasksGrid extends AbstractGridInterceptor {
         });
   }
 
-  private void createSimpleProject(final IsRow selectedRow) {
+  private static void createSimpleProject(final IsRow selectedRow) {
 
     DataInfo prjDataInfo = Data.getDataInfo(ProjectConstants.VIEW_PROJECTS);
-    DataInfo taskDataInfo = Data.getDataInfo(VIEW_TASKS);
+    final DataInfo taskDataInfo = Data.getDataInfo(VIEW_TASKS);
 
     int idxPrjCompany = prjDataInfo.getColumnIndex(ClassifierConstants.COL_COMPANY);
     int idxPrjCompanyName = prjDataInfo.getColumnIndex(ClassifierConstants.ALS_COMPANY_NAME);
@@ -482,6 +484,13 @@ class TasksGrid extends AbstractGridInterceptor {
       @Override
       public void onSuccess(final BeeRow projectRow) {
         final List<Long> observers = Lists.newArrayList();
+
+        final List<BeeColumn> columns =
+            Data.getColumns(VIEW_TASKS, Lists.newArrayList(ProjectConstants.COL_PROJECT));
+        final List<String> oldValues =
+            Lists.newArrayList(selectedRow.getString(taskDataInfo
+                .getColumnIndex(ProjectConstants.COL_PROJECT)));
+        final List<String> newValues = Lists.newArrayList(BeeUtils.toString(projectRow.getId()));
         // Temporary disabled create project users
         // DataUtils.parseIdList(selectedRow.getProperty(TaskConstants.PROP_OBSERVERS));
 
@@ -489,16 +498,16 @@ class TasksGrid extends AbstractGridInterceptor {
           addProjectUsers(observers, projectRow);
         }
 
-        Queries.update(VIEW_TASKS, selectedRow.getId(), ProjectConstants.COL_PROJECT, Value
-            .getValue(projectRow.getId()), new IntCallback() {
+        Queries.update(VIEW_TASKS, selectedRow.getId(), selectedRow.getVersion(), columns,
+            oldValues, newValues, null, new RowCallback() {
 
-          @Override
-          public void onSuccess(Integer result) {
-            if (getGridView() != null) {
-              RowEditor.open(ProjectConstants.VIEW_PROJECTS, projectRow, Opener.NEW_TAB);
-            }
-          }
-        });
+              @Override
+              public void onSuccess(BeeRow result) {
+                RowUpdateEvent.fire(BeeKeeper.getBus(), VIEW_TASKS, result);
+                RowEditor.open(ProjectConstants.VIEW_PROJECTS, projectRow, Opener.NEW_TAB);
+              }
+
+            });
       }
     });
   }
@@ -905,7 +914,7 @@ class TasksGrid extends AbstractGridInterceptor {
 
   private static void addProjectUsers(final List<Long> userIds, final BeeRow projectRow) {
     Queries.getRowSet(ProjectConstants.VIEW_PROJECT_USERS, Lists
-            .newArrayList(AdministrationConstants.COL_USER),
+        .newArrayList(AdministrationConstants.COL_USER),
         Filter.equals(ProjectConstants.COL_PROJECT, projectRow.getId()), new RowSetCallback() {
 
           @Override
@@ -917,8 +926,8 @@ class TasksGrid extends AbstractGridInterceptor {
 
             for (Long user : userIds) {
               Queries.insert(ProjectConstants.VIEW_PROJECT_USERS, Data.getColumns(
-                      ProjectConstants.VIEW_PROJECT_USERS, Lists.newArrayList(
-                          ProjectConstants.COL_PROJECT, AdministrationConstants.COL_USER)),
+                  ProjectConstants.VIEW_PROJECT_USERS, Lists.newArrayList(
+                      ProjectConstants.COL_PROJECT, AdministrationConstants.COL_USER)),
                   Lists.newArrayList(BeeUtils.toString(projectRow.getId()), BeeUtils
                       .toString(user)));
             }
