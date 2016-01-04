@@ -386,7 +386,7 @@ public final class BeeUtils {
    * Returns the value rounded to the bigger part (closer to the positive infinity) of the value
    * provided.
    *
-   * @param x double which value should be rounded to the bigger part
+   * @param x double which value should be rounded to the bigger part.
    * @return the value rounded to the bigger part (closer to the positive infinity) of the value
    * provided.
    */
@@ -394,6 +394,14 @@ public final class BeeUtils {
     return toInt(Math.ceil(x));
   }
 
+  /**
+   * Returns the result of applying {@code predicate} to {@code input}. If predicate is null,
+   * returns true.
+   * 
+   * @param predicate is the condition which should be checked.
+   * @param input which should be checked.
+   * @return true if {@code predicate} applies to {@code input}.
+   */
   public static <T> boolean check(Predicate<T> predicate, T input) {
     return (predicate == null) ? true : predicate.apply(input);
   }
