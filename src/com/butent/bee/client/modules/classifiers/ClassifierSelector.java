@@ -84,6 +84,8 @@ public class ClassifierSelector implements SelectorEvent.Handler {
           && AdministrationConstants.VIEW_DEPARTMENT_EMPLOYEES.equals(dataView.getViewName())) {
         filterDepartmentPositions(event, dataView);
       }
+    } else if (BeeUtils.same(event.getRelatedViewName(), VIEW_COMPANIES)) {
+      handleCities(event);
     }
   }
 
