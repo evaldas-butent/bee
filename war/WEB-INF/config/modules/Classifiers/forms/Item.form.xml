@@ -41,6 +41,18 @@
         <Label for="Unit" text="=unitShort" />
         <DataSelector source="Unit" visible="true" editEnabled="false" style="width: 80px;" />
 
+        <Label for="TimeUnit" module="Trade.Acts">
+          &forservice;
+        </Label>
+        <ListBox source="TimeUnit" style="width: 80px;" module="Trade.Acts">
+          &forservice;
+        </ListBox>
+      </row>
+
+      <row>
+        <Label for="Barcode" />
+        <InputText source="Barcode" />
+
         <CheckBox source="Vat" text="=vat" />
         <cell style="padding-left: 6px;">
           <FlowPanel>
@@ -49,17 +61,18 @@
           </FlowPanel>
         </cell>
       </row>
-
+      
       <row>
-        <Label for="Barcode" />
-        <InputText source="Barcode" />
-
-        <Label for="TimeUnit" module="Trade.Acts">
-          &forservice;
+        <Label for="Attribute" >
+          &foritem;
         </Label>
-        <ListBox source="TimeUnit" style="width: 80px;" module="Trade.Acts">
-          &forservice;
-        </ListBox>
+        <InputText source="Attribute" >
+          &foritem;
+        </InputText>
+        
+        <CheckBox source="NotManufactured" text="=notManufactured" >
+          &foritem;
+        </CheckBox>
       </row>
 
       <row data="ItemCategories">
@@ -202,13 +215,6 @@
               </InputText>
             </cell>  
           </row>
-          <row>
-            <Label for="Article2" />
-            <InputText source="Article2" summarize="true" />
-
-            <Label for="Ordinal" />
-            <InputInteger source="Ordinal" style="width: 80px;" summarize="true" />
-          </row>
 
           <row>
             <Label for="Department" data="Departments" />
@@ -231,22 +237,6 @@
           </row>
 
           <row>
-            <Label for="Weight">
-              &foritem;
-            </Label>
-            <InputDecimal source="Weight" style="width: 80px;" summarize="true">
-              &foritem;
-            </InputDecimal>
-
-            <Label for="Area">
-              &foritem;
-            </Label>
-            <InputDecimal source="Area" style="width: 80px;" summarize="true">
-              &foritem;
-            </InputDecimal>
-          </row>
-
-          <row>
             <Label for="DaysPerWeek" module="Trade.Acts">
               &forservice;
             </Label>
@@ -266,6 +256,88 @@
         </Table>
       </page>
 
+      <page>
+        <text>=transportOtherDetails</text>
+        <Table kind="controls" style="margin-top: 1ex;">
+          <col index="0" kind="label" />
+          <col index="2" kind="label" />
+          
+          <row>
+            <Label for="Article2" />
+            <InputText source="Article2" summarize="true" />
+            
+            <Label for="Article3" />
+            <InputText source="Article3" summarize="true" />
+          </row>
+          
+          <row>
+            <Label for="Article4" />
+            <InputText source="Article4" summarize="true" />
+            
+            <Label for="KPNCode">
+              &foritem;
+            </Label>
+            <InputText source="KPNCode" summarize="true">
+              &foritem;
+            </InputText>
+          </row>
+          
+          <row>
+            <Label for="Weight">
+              &foritem;
+            </Label>
+            <InputDecimal source="Weight" style="width: 80px;" summarize="true">
+              &foritem;
+            </InputDecimal>
+
+            <Label for="Area">
+              &foritem;
+            </Label>
+            <InputDecimal source="Area" style="width: 80px;" summarize="true">
+              &foritem;
+            </InputDecimal>
+          </row>
+          
+          <row>
+            <Label for="Height">
+              &foritem;
+            </Label>
+            <InputDecimal source="Height" style="width: 80px;" summarize="true">
+              &foritem;
+            </InputDecimal>
+            
+            <Label for="PackageUnits">
+              &foritem;
+            </Label>
+            <InputDecimal source="PackageUnits" style="width: 80px;"
+              summarize="true">
+              &foritem;
+            </InputDecimal>
+          </row>
+          
+          <row>
+            <Label for="Ordinal" />
+            <InputInteger source="Ordinal" style="width: 80px;" summarize="true" />
+            
+            <Label for="Width">
+              &foritem;
+            </Label>
+            <InputDecimal source="Width" style="width: 80px;" summarize="true">
+              &foritem;
+            </InputDecimal>
+          </row>
+          
+          <row>
+            <Label for="Length">
+              &foritem;
+            </Label>
+            <InputDecimal source="Length" style="width: 80px;" summarize="true">
+              &foritem;
+            </InputDecimal>
+          </row>
+        </Table>
+      </page>
+      
       <page>
         <text>=pictures</text>
         <Gallery viewName="ItemGraphics" relColumn="Item" pictureColumn="Picture"
