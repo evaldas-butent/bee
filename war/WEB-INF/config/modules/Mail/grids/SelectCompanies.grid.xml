@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<g:Grid 
+  xmlns="http://www.butent.com/column" 
+  xmlns:g="http://www.butent.com/grid" 
+  xmlns:xi="http://www.w3.org/2001/XInclude"
+    
+  name="SelectCompanies" viewName="SelectCompanies"
+  caption="=clients" readOnly="true" filter="EmailId"
+  > 
+  <g:columns>
+    <SelectionColumn name="Select" width="20" />
+    <DataColumn name="Name" visible="true" />
+    <RelColumn name="CompanyType" />
+  </g:columns>
+  <xi:include href="columns/CompanyIndicators.columns.xml" />
+</g:Grid>
