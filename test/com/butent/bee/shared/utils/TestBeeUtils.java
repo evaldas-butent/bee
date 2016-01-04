@@ -1,5 +1,7 @@
 package com.butent.bee.shared.utils;
 
+import com.google.common.base.Predicate;
+
 import static org.junit.Assert.*;
 
 import org.junit.Test;
@@ -42,6 +44,33 @@ public class TestBeeUtils {
     BeeUtils.addQuietly(list1, index, test3);
     assertEquals(size1 + 1, list1.size());
     assertTrue(list1.contains(test3));
+  }
+
+  @Test
+  public void testCheck() {
+    Predicate<String> predicate1 = null;
+    String test1 = "test1";
+    String test2 = "t2";
+    assertEquals(true, BeeUtils.check(predicate1, test1));
+    Predicate<String> predicate2 = (s) -> s.length() > 3;
+    assertEquals(true, BeeUtils.check(predicate2, test1));
+    assertEquals(false, BeeUtils.check(predicate2, test2));
+  }
+
+  @Test
+  public void testCompareNullsFirst() {
+    assertEquals(-1, BeeUtils.compareNullsFirst(null, -10));
+    assertEquals(0, BeeUtils.compareNullsFirst(null, null));
+    assertEquals(1, BeeUtils.compareNullsFirst(-100, null));
+    assertEquals(1, BeeUtils.compareNullsFirst(4, 3));
+  }
+
+  @Test
+  public void testCompareNullsLast() {
+    assertEquals(1, BeeUtils.compareNullsLast(null, -10));
+    assertEquals(0, BeeUtils.compareNullsLast(null, null));
+    assertEquals(-1, BeeUtils.compareNullsLast(-100, null));
+    assertEquals(1, BeeUtils.compareNullsLast(4, 3));
   }
 
   @Test
