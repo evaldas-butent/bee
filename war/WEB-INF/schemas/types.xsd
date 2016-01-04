@@ -366,8 +366,10 @@
       <xs:enumeration value="InformationSources" />
       <xs:enumeration value="InvoiceTradeActs" />
       <xs:enumeration value="IpFilters" />
+      <xs:enumeration value="ItemSuppliers" />
       <xs:enumeration value="ItemCategories" />
       <xs:enumeration value="ItemGraphics" />
+      <xs:enumeration value="ItemManufacturers" />
       <xs:enumeration value="ItemRemainders" />
       <xs:enumeration value="Items" />
       <xs:enumeration value="Locations" />
