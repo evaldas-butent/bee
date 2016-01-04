@@ -97,6 +97,7 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
 
   private static final String STYLE_HEADER_CELL_SUFFIX = "label";
   private static final String STYLE_CELL_SUFFIX = "cell";
+  private static final String STYLE_CELL_BOLD = "-bold";
 
   private static final String STYLE_ID_PREFIX = STYLE_PREFIX + "id-";
 
@@ -686,8 +687,23 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
       table.setText(r, c++, DataUtils.join(items.getColumns(), item, groupIndexes,
           BeeConst.STRING_EOL), STYLE_GROUP_PREFIX + STYLE_CELL_SUFFIX);
 
-      table.setText(r, c++, item.getString(nameIndex),
-          STYLE_NAME_PREFIX + STYLE_CELL_SUFFIX);
+      if (isOrder) {
+        int notMnfctIdx = items.getColumnIndex(COL_ITEM_NOT_MANUFACTURED);
+        if (!BeeConst.isUndef(notMnfctIdx)) {
+          Boolean notMnfct = item.getBoolean(notMnfctIdx);
+          if (BeeUtils.unbox(notMnfct)) {
+            table.setText(r, c++, item.getString(nameIndex),
+                STYLE_NAME_PREFIX + STYLE_CELL_SUFFIX + STYLE_CELL_BOLD);
+          } else {
+            table.setText(r, c++, item.getString(nameIndex),
+                STYLE_NAME_PREFIX + STYLE_CELL_SUFFIX);
+          }
+        }
+      } else {
+        table.setText(r, c++, item.getString(nameIndex),
+            STYLE_NAME_PREFIX + STYLE_CELL_SUFFIX);
+      }
+
       table.setText(r, c++, item.getString(articleIndex),
           STYLE_ARTICLE_PREFIX + STYLE_CELL_SUFFIX);
 
