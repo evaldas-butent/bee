@@ -54,7 +54,29 @@
     <DataColumn name="Price2" scale="&pricescale;" visible="false" />
     <RelColumn name="Currency2" caption="=currencyShort" visible="false" />
     <DataColumn name="Price3" scale="&pricescale;" visible="false" />
-    <RelColumn name="Currency3" caption="=currencyShort" visible="false" />
+    <RelColumn name="Currency3" caption="=currencyShort"
+      visible="false" />
+    <DataColumn name="Price4" scale="&pricescale;" visible="false" />
+    <RelColumn name="Currency4" caption="=currencyShort"
+      visible="false" />
+    <DataColumn name="Price5" scale="&pricescale;" visible="false" />
+    <RelColumn name="Currency5" caption="=currencyShort"
+      visible="false" />
+    <DataColumn name="Price6" scale="&pricescale;" visible="false" />
+    <RelColumn name="Currency6" caption="=currencyShort"
+      visible="false" />
+    <DataColumn name="Price7" scale="&pricescale;" visible="false" />
+    <RelColumn name="Currency7" caption="=currencyShort"
+      visible="false" />
+    <DataColumn name="Price8" scale="&pricescale;" visible="false" />
+    <RelColumn name="Currency8" caption="=currencyShort"
+      visible="false" />
+    <DataColumn name="Price9" scale="&pricescale;" visible="false" />
+    <RelColumn name="Currency9" caption="=currencyShort"
+      visible="false" />
+    <DataColumn name="Price10" scale="&pricescale;" visible="false" />
+    <RelColumn name="Currency10" caption="=currencyShort"
+      visible="false" />
 
     <DataColumn name="Vat" carry="true" />
     <DataColumn name="VatPercent" carry="true" />

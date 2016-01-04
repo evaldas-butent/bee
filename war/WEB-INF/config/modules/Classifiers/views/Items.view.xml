@@ -51,6 +51,41 @@
     <SimpleJoin joinType="LEFT" name="Currency3">
       <SimpleColumn name="Name" alias="Currency3Name" />
     </SimpleJoin>
+    <SimpleColumn name="Price4" />
+    <SimpleColumn name="Currency4" />
+    <SimpleJoin joinType="LEFT" name="Currency4">
+      <SimpleColumn name="Name" alias="Currency4Name" />
+    </SimpleJoin>
+    <SimpleColumn name="Price5" />
+    <SimpleColumn name="Currency5" />
+    <SimpleJoin joinType="LEFT" name="Currency5">
+      <SimpleColumn name="Name" alias="Currency5Name" />
+    </SimpleJoin>
+    <SimpleColumn name="Price6" />
+    <SimpleColumn name="Currency6" />
+    <SimpleJoin joinType="LEFT" name="Currency6">
+      <SimpleColumn name="Name" alias="Currency6Name" />
+    </SimpleJoin>
+    <SimpleColumn name="Price7" />
+    <SimpleColumn name="Currency7" />
+    <SimpleJoin joinType="LEFT" name="Currency7">
+      <SimpleColumn name="Name" alias="Currency7Name" />
+    </SimpleJoin>
+    <SimpleColumn name="Price8" />
+    <SimpleColumn name="Currency8" />
+    <SimpleJoin joinType="LEFT" name="Currency8">
+      <SimpleColumn name="Name" alias="Currency8Name" />
+    </SimpleJoin>
+    <SimpleColumn name="Price9" />
+    <SimpleColumn name="Currency9" />
+    <SimpleJoin joinType="LEFT" name="Currency9">
+      <SimpleColumn name="Name" alias="Currency9Name" />
+    </SimpleJoin>
+    <SimpleColumn name="Price10" />
+    <SimpleColumn name="Currency10" />
+    <SimpleJoin joinType="LEFT" name="Currency10">
+      <SimpleColumn name="Name" alias="Currency10Name" />
+    </SimpleJoin>
 
     <SimpleColumn name="Vat" />
     <SimpleColumn name="VatPercent" />
