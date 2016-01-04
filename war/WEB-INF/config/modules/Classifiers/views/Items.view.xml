@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<View xmlns="http://www.butent.com/view"
-
-  name="Items" caption="=goods" source="Items" module="Classifiers"
-  newRowForm="Item" newRowCaption="=newItem" editForm="Item"
-  >
+<View xmlns="http://www.butent.com/view" name="Items" caption="=goods"
+  source="Items" module="Classifiers" newRowForm="Item" newRowCaption="=newItem"
+  editForm="Item">
   <Relation renderColumns="Name" choiceColumns="Name UnitName" />
   <Columns>
     <SimpleColumn name="Name" />
@@ -12,7 +10,10 @@
 
     <SimpleColumn name="Article" />
     <SimpleColumn name="Article2" />
+    <SimpleColumn name="Article3" />
+    <SimpleColumn name="Article4" />
     <SimpleColumn name="Barcode" />
+    <SimpleColumn name="KPNCode" />
 
     <SimpleColumn name="Unit" />
     <SimpleJoin joinType="LEFT" name="Unit">
@@ -20,9 +21,13 @@
     </SimpleJoin>
 
     <SimpleColumn name="TimeUnit" />
+    <SimpleColumn name="PackageUnits" />
 
     <SimpleColumn name="Weight" />
     <SimpleColumn name="Area" />
+    <SimpleColumn name="Height" />
+    <SimpleColumn name="Width" />
+    <SimpleColumn name="Length" />
 
     <SimpleColumn name="Price" />
     <SimpleColumn name="Currency" />
@@ -90,7 +95,9 @@
     <SimpleColumn name="Vat" />
     <SimpleColumn name="VatPercent" />
 
-    <SimpleColumn name="IsService"/>
+    <SimpleColumn name="IsService" />
+    <SimpleColumn name="NotManufactured" />
+    <SimpleColumn name="Attribute" />
 
     <SimpleColumn name="Type" />
     <SimpleJoin joinType="LEFT" name="Type">
