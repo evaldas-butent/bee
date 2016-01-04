@@ -89,5 +89,16 @@
 
     <DataColumn name="Description" visible="false" />
     <DataColumn name="Notes" visible="false" />
+
+    <PropColumn name="ResRemainder" type="string" label="=ordResRemainder" />
+
+    <CalcColumn name="FreeRemainder" type="string" label="=ordFreeRemainder" >
+      <render>
+        <ui:expression>row.WarehouseRemainder - row.ResRemainder</ui:expression>
+      </render>
+    </CalcColumn>
+
+    <PropColumn name="Remainder" type="string" dynamic="true" />
+
   </g:columns>
 </g:Grid>
