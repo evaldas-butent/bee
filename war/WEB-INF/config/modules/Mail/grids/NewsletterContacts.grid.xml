@@ -4,7 +4,7 @@
   name="NewsletterContacts" viewName="NewsletterContacts" caption="=contacts"
   >
   <g:columns>
-    <DataColumn name="Email" />
+    <RelColumn name="Email" />
     <DataColumn name="Date" />
   </g:columns>
 </g:Grid>
