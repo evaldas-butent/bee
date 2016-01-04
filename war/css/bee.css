@@ -685,7 +685,6 @@
   height: 30px;
   background-color: #e8e8e8;
   border-bottom: 1px solid #ddd;
-  cursor: move;
   display: flex;
   display: -webkit-flex;
   display: -ms-flexbox;
@@ -714,11 +713,6 @@
 
 .bee-Dialog-content {
   margin: 1ex 1em;
-}
-
-.bee-ModalForm-content > .bee-Header-container,
-.bee-ModalGrid-content > .bee-Header-container {
-  cursor: move;
 }
 
 .bee-NotificationContainer {
