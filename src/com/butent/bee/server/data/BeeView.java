@@ -54,6 +54,7 @@ import com.butent.bee.shared.data.filter.ColumnIsNullFilter;
 import com.butent.bee.shared.data.filter.ColumnNotNullFilter;
 import com.butent.bee.shared.data.filter.ColumnValueFilter;
 import com.butent.bee.shared.data.filter.CompoundFilter;
+import com.butent.bee.shared.data.filter.CompoundType;
 import com.butent.bee.shared.data.filter.CustomFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.FilterParser;
@@ -1034,8 +1035,15 @@ public class BeeView implements BeeObject, HasExtendedInfo {
         }
         if (!BeeUtils.isEmpty(col.filter)) {
           HasConditions compound = SqlUtils.and();
-          joinFilters.put(compound, col.filter);
-          join = SqlUtils.and(join, compound);
+          String flt = col.filter;
+
+          if (BeeUtils.isPrefix(flt, CompoundType.OR.name())) {
+            flt = BeeUtils.removePrefix(flt, CompoundType.OR.name());
+            join = SqlUtils.or(join, compound);
+          } else {
+            join = SqlUtils.and(join, compound);
+          }
+          joinFilters.put(compound, flt);
         }
         String relTbl = relTable.getName();
 

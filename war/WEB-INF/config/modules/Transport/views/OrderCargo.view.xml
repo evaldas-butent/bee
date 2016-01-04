@@ -11,6 +11,8 @@
   <Columns>
     <SimpleColumn name="Order" />
 
+    <SimpleColumn name="CargoHandling" />
+
     <SimpleJoin name="LoadingPlace" joinType="LEFT">
       <SimpleColumn name="Date" alias="LoadingDate" label="=trLoadingDate" />
       <SimpleColumn name="Note" alias="LoadingNote" label="=trLoadingNote" />

@@ -101,6 +101,7 @@ import javax.mail.Folder;
 import javax.mail.Message;
 import javax.mail.Message.RecipientType;
 import javax.mail.MessagingException;
+import javax.mail.ReadOnlyFolderException;
 import javax.mail.Session;
 import javax.mail.Store;
 import javax.mail.Transport;
@@ -1122,12 +1123,13 @@ public class MailModuleBean implements BeeModule, HasTimerService {
     int c = 0;
     SimpleRowSet rules = null;
 
-    if (localFolder.isConnected() && account.holdsMessages(remoteFolder)) {
+    if (localFolder.isConnected() && MailAccount.holdsMessages(remoteFolder)) {
       boolean hasUid = remoteFolder instanceof UIDFolder;
 
       if (hasUid && !DataUtils.isId(localFolder.getUidValidity())) {
         try {
           remoteFolder.open(Folder.READ_WRITE); // Courier-IMAP server bug workaround
+        } catch (ReadOnlyFolderException e) {
         } finally {
           if (remoteFolder.isOpen()) {
             try {
@@ -1591,7 +1593,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
     int c = 0;
     Set<String> visitedFolders = new HashSet<>();
 
-    if (account.holdsFolders(remoteFolder)) {
+    if (MailAccount.holdsFolders(remoteFolder)) {
       for (Folder subFolder : remoteFolder.list()) {
         visitedFolders.add(subFolder.getName());
         MailFolder localSubFolder = null;

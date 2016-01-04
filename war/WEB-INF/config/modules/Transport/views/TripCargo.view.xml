@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-  name="TripCargo"
-  source="CargoTrips"
-  >
+      name="TripCargo"
+      source="CargoTrips"
+    >
   <Columns>
-    <SimpleColumn name="Trip"/>
+    <SimpleColumn name="Trip" />
     <SimpleColumn name="Ordinal" />
     <SimpleColumn name="CargoPercent" />
+    <SimpleColumn name="TripPercent" />
     <SimpleColumn name="Message" />
 
     <SimpleColumn name="Cargo" />
@@ -25,14 +26,21 @@
 
       <SimpleColumn name="Cmr" />
       <SimpleJoin name="Cmr" joinType="LEFT">
-        <SimpleColumn name="Name" alias="CmrName"/>
-        <SimpleColumn name="Number" alias="CmrNumber"/>
+        <SimpleColumn name="Name" alias="CmrName" />
+        <SimpleColumn name="Number" alias="CmrNumber" />
       </SimpleJoin>
 
       <SimpleColumn name="Notes" />
+      <HiddenColumn name="CargoHandling" alias="DefaultHandling" />
+    </SimpleJoin>
 
+    <SimpleColumn name="CargoHandling" />
+    <SimpleJoin name="CargoHandling" joinType="LEFT"
+                filter="OR !(CargoHandling) AND Handling=DefaultHandling">
+      <IdColumn name="Handling" hidden="true" />
       <SimpleJoin name="LoadingPlace" joinType="LEFT">
         <SimpleColumn name="Date" alias="LoadingDate" label="=trLoadingDate" />
+        <SimpleColumn name="Note" alias="LoadingNote" label="=trLoadingNote" />
         <SimpleColumn name="Number" alias="LoadingNumber" label="=trLoadingNumber" />
         <SimpleColumn name="Contact" alias="LoadingContact" label="=trLoadingContact" />
         <SimpleColumn name="Company" alias="LoadingCompany" label="=trLoadingCompany" />
@@ -50,6 +58,7 @@
 
       <SimpleJoin name="UnloadingPlace" joinType="LEFT">
         <SimpleColumn name="Date" alias="UnloadingDate" label="=trUnloadingDate" />
+        <SimpleColumn name="Note" alias="UnloadingNote" label="=trUnloadingNote" />
         <SimpleColumn name="Number" alias="UnloadingNumber" label="=trUnloadingNumber" />
         <SimpleColumn name="Contact" alias="UnloadingContact" label="=trUnloadingContact" />
         <SimpleColumn name="Company" alias="UnloadingCompany" label="=trUnloadingCompany" />
@@ -64,6 +73,11 @@
           <SimpleColumn name="Code" alias="UnloadingCountryCode" />
         </SimpleJoin>
       </SimpleJoin>
+    </SimpleJoin>
+
+    <SimpleColumn name="Trailer" />
+    <SimpleJoin name="Trailer" joinType="LEFT">
+      <SimpleColumn name="Number" alias="TrailerNumber" />
     </SimpleJoin>
   </Columns>
   <Order>

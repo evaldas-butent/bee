@@ -260,6 +260,7 @@ public final class TransportConstants {
   public static final String PRM_CARGO_TYPE = "CargoType";
   public static final String PRM_CARGO_SERVICE = "CargoService";
   public static final String PRM_BIND_EXPENSES_TO_INCOMES = "BindExpensesToIncomes";
+  public static final String PRM_EXCLUDE_VAT = "ExcludeVat";
 
   public static final String VAR_INCOME = "Income";
   public static final String VAR_EXPENSE = "Expense";
@@ -434,6 +435,7 @@ public final class TransportConstants {
   public static final String COL_CARGO_VALUE_CURRENCY = "ValueCurrency";
   public static final String COL_CARGO_TYPE = "CargoType";
 
+  public static final String COL_CARGO_HANDLING = "CargoHandling";
   public static final String COL_CARGO_HANDLING_NOTES = "Notes";
 
   public static final String COL_DAILY_COSTS_ITEM = "DailyCostsItem";

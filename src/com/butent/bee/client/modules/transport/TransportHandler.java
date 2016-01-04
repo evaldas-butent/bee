@@ -6,8 +6,8 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
-import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
-import static com.butent.bee.shared.modules.trade.TradeConstants.*;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.COL_COMPANY_PERSON;
+import static com.butent.bee.shared.modules.trade.TradeConstants.VAR_TOTAL;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
@@ -223,6 +223,7 @@ public final class TransportHandler {
     GridFactory.registerGridInterceptor(VIEW_EXPEDITION_TRIPS, new CargoTripChecker());
 
     GridFactory.registerGridInterceptor(VIEW_ORDER_CARGO, new CargoGridHandler());
+    GridFactory.registerGridInterceptor(VIEW_CARGO_HANDLING, new CargoHandlingGrid());
 
     GridFactory.registerGridInterceptor("CargoDocuments", new TransportDocumentsGrid(COL_CARGO));
     GridFactory.registerGridInterceptor("TranspOrderDocuments",
@@ -247,6 +248,8 @@ public final class TransportHandler {
     RendererFactory.registerGcrProvider(VIEW_CARGO_TRIPS, unloading, provider);
     RendererFactory.registerGcrProvider(VIEW_TRIP_CARGO, loading, provider);
     RendererFactory.registerGcrProvider(VIEW_TRIP_CARGO, unloading, provider);
+    RendererFactory.registerGcrProvider(TBL_ASSESSMENT_FORWARDERS, loading, provider);
+    RendererFactory.registerGcrProvider(TBL_ASSESSMENT_FORWARDERS, unloading, provider);
 
     ConditionalStyle.registerGridColumnStyleProvider(VIEW_ABSENCE_TYPES, COL_ABSENCE_COLOR,
         ColorStyleProvider.createDefault(VIEW_ABSENCE_TYPES));

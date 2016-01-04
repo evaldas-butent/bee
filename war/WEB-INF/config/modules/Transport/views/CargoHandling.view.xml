@@ -6,6 +6,7 @@
     >
   <Columns>
     <SimpleColumn name="Cargo" />
+    <SimpleColumn name="CargoTrip" />
     <SimpleColumn name="Forwarder" />
 
     <SimpleColumn name="Notes" />

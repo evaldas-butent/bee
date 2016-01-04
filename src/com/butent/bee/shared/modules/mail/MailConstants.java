@@ -9,7 +9,7 @@ import com.butent.bee.shared.utils.EnumUtils;
 public final class MailConstants {
 
   public enum SystemFolder {
-    Inbox("INBOX"), Sent("Sent Messages"), Drafts("Drafts"), Trash("Deleted Messages");
+    Inbox("INBOX"), Sent("Sent"), Drafts("Drafts"), Trash("Trash");
 
     private final String name;
 
@@ -188,7 +188,6 @@ public final class MailConstants {
   public static final String TBL_RECIPIENTS = "Recipients";
   public static final String TBL_PLACES = "Places";
 
-  public static final String VIEW_NEWSLETTER_CONTACTS = "NewsletterContacts";
   public static final String VIEW_NEWSLETTER_FILES = "NewsletterFiles";
   public static final String VIEW_USER_EMAILS = "UserEmails";
 
