@@ -41,6 +41,7 @@ import com.butent.bee.shared.data.XmlExpression.XmlSwitch;
 import com.butent.bee.shared.data.XmlView;
 import com.butent.bee.shared.data.XmlView.XmlAggregateColumn;
 import com.butent.bee.shared.data.XmlView.XmlColumn;
+import com.butent.bee.shared.data.XmlView.XmlColumns;
 import com.butent.bee.shared.data.XmlView.XmlExternalJoin;
 import com.butent.bee.shared.data.XmlView.XmlHiddenColumn;
 import com.butent.bee.shared.data.XmlView.XmlIdColumn;
@@ -992,13 +993,13 @@ public class BeeView implements BeeObject, HasExtendedInfo {
             expression, label, editable));
   }
 
-  private void addColumns(BeeTable table, String alias, Collection<XmlColumn> cols, String parent,
+  private void addColumns(BeeTable table, String alias, XmlColumns cols, String parent,
       Map<String, BeeTable> tables) {
     Assert.notNull(table);
     Assert.notEmpty(alias);
-    Assert.notEmpty(cols);
+    Assert.notNull(cols);
 
-    for (XmlColumn column : cols) {
+    for (XmlColumn column : cols.columns) {
       if (column instanceof XmlSimpleJoin) {
         XmlSimpleJoin col = (XmlSimpleJoin) column;
         BeeTable relTable;
@@ -1063,7 +1064,10 @@ public class BeeView implements BeeObject, HasExtendedInfo {
         }
         String colName = SqlUtils.uniqueName();
         addColumn(als, field, colName, null, null, true, parent, null, null, null);
-        addColumns(relTable, relAls, col.columns, colName, tables);
+        addColumns(relTable, relAls, col, colName, tables);
+
+      } else if (column instanceof XmlColumns) {
+        addColumns(table, alias, (XmlColumns) column, parent, tables);
 
       } else if (column instanceof XmlIdColumn) {
         XmlExpression xpr = new XmlName();
