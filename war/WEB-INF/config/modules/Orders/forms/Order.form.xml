@@ -7,6 +7,7 @@
 <f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form" xmlns:ui="http://www.butent.com/ui"
 
   name="Order" viewName="Orders" width="800" height="600">
+  <f:properties reports="PrintOrder, PrintOffer, PrintOfferApprove" />
   <FlowPanel>
     <Table kind="controls">
       <row data="OrdersTemplates" class="bee-ta-template-selection">
@@ -59,7 +60,7 @@
       </row>
     </Table>
     <br />
-    <TabbedPages style="height: 400px;">
+    <TabbedPages style="height: 480px;" name="TabbedPages" >
       <page>
         <text>=goods</text>
         <ChildGrid name="OrderItems" relColumn="Order" />
