@@ -118,7 +118,8 @@ public class FileStorageBean {
           .append("<html xmlns=\"http://www.w3.org/1999/xhtml\"><head>")
           .append("<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\"/>");
 
-      List<String> styles = Arrays.asList("print");
+      List<String> styles = new ArrayList<>();
+      styles.add("print");
 
       if (styleSheets != null) {
         styles.addAll(Arrays.asList(styleSheets));

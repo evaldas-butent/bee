@@ -7,7 +7,6 @@ import com.google.gwt.event.dom.client.ClickHandler;
 
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.orders.OrdersConstants.*;
-import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
@@ -19,6 +18,8 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.Queries.IntCallback;
 import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.data.RowCallback;
+import com.butent.bee.client.data.RowEditor;
+import com.butent.bee.client.dialog.ChoiceCallback;
 import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.grid.ChildGrid;
 import com.butent.bee.client.modules.mail.MailKeeper;
@@ -27,13 +28,14 @@ import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.validation.CellValidateEvent;
 import com.butent.bee.client.validation.CellValidateEvent.Handler;
 import com.butent.bee.client.validation.CellValidation;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.form.FormView;
-import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
+import com.butent.bee.client.view.form.interceptor.PrintFormInterceptor;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.Label;
@@ -52,19 +54,22 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.NumberValue;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.modules.mail.AccountInfo;
 import com.butent.bee.shared.modules.orders.OrdersConstants.OrdersStatus;
 import com.butent.bee.shared.modules.trade.TradeConstants;
+import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-public class OrderForm extends AbstractFormInterceptor {
+public class OrderForm extends PrintFormInterceptor {
 
   private final LocalizableConstants loc = Localized.getConstants();
   private Label warehouseLabel;
@@ -145,7 +150,7 @@ public class OrderForm extends AbstractFormInterceptor {
     Button send = new Button(loc.send(), new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
-        sendMail(form);
+        beforeSendMail();
       }
     });
 
@@ -212,27 +217,25 @@ public class OrderForm extends AbstractFormInterceptor {
       header.setCaption(caption);
     }
 
-    if (isManager(row)) {
-      if (!isOrder && !DataUtils.isNewRow(row)) {
+    if (!isOrder && !DataUtils.isNewRow(row)) {
 
-        status = row.getInteger(idxStatus);
+      status = row.getInteger(idxStatus);
 
-        if (Objects.equals(status, OrdersStatus.CANCELED.ordinal())) {
-          header.addCommandItem(prepare);
-          form.setEnabled(false);
-        } else if (Objects.equals(status, OrdersStatus.PREPARED.ordinal())) {
-          header.addCommandItem(cancel);
-          header.addCommandItem(send);
-          header.addCommandItem(approve);
-        } else if (Objects.equals(status, OrdersStatus.SENT.ordinal())) {
-          header.addCommandItem(cancel);
-          header.addCommandItem(approve);
-        }
-      } else if (Objects.equals(status, OrdersStatus.APPROVED.ordinal())
-          && !DataUtils.isNewRow(row)) {
+      if (Objects.equals(status, OrdersStatus.CANCELED.ordinal())) {
+        header.addCommandItem(prepare);
+        form.setEnabled(false);
+      } else if (Objects.equals(status, OrdersStatus.PREPARED.ordinal())) {
+        header.addCommandItem(cancel);
         header.addCommandItem(send);
-        header.addCommandItem(finish);
+        header.addCommandItem(approve);
+      } else if (Objects.equals(status, OrdersStatus.SENT.ordinal())) {
+        header.addCommandItem(cancel);
+        header.addCommandItem(approve);
       }
+    } else if (Objects.equals(status, OrdersStatus.APPROVED.ordinal())
+        && !DataUtils.isNewRow(row)) {
+      header.addCommandItem(send);
+      header.addCommandItem(finish);
     }
 
     if (Objects.equals(form.getIntegerValue(COL_ORDERS_STATUS), OrdersStatus.FINISH.ordinal())) {
@@ -275,15 +278,7 @@ public class OrderForm extends AbstractFormInterceptor {
   }
 
   @Override
-  public void beforeRefresh(FormView form, IsRow row) {
-
-    if (!isManager(row)) {
-      form.setEnabled(false);
-    }
-  }
-
-  @Override
-  public void onLoad(final FormView form) {
+  public void onLoad(FormView form) {
     form.addCellValidationHandler(COL_WAREHOUSE, new Handler() {
 
       @Override
@@ -327,8 +322,8 @@ public class OrderForm extends AbstractFormInterceptor {
                               .getVersion(), cols, oldValues, newValues, null, new RowCallback() {
 
                             @Override
-                            public void onSuccess(BeeRow row) {
-                              RowUpdateEvent.fire(BeeKeeper.getBus(), form.getViewName(), row);
+                            public void onSuccess(BeeRow r) {
+                              RowUpdateEvent.fire(BeeKeeper.getBus(), form.getViewName(), r);
                               form.refresh();
                             }
                           });
@@ -341,6 +336,100 @@ public class OrderForm extends AbstractFormInterceptor {
           return false;
         }
         return true;
+      }
+    });
+  }
+
+  @Override
+  public void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow) {
+
+    GridView parentGrid = getGridView();
+    if (parentGrid == null) {
+      return;
+    } else if ("Offers".equals(parentGrid.getGridName())) {
+      int statusIdx = Data.getColumnIndex(VIEW_ORDERS, COL_ORDERS_STATUS);
+      int endDateIdx = Data.getColumnIndex(VIEW_ORDERS, COL_END_DATE);
+
+      if (Objects.equals(OrdersStatus.PREPARED.ordinal(), newRow.getInteger(statusIdx))) {
+        DateTime now = TimeUtils.nowMillis();
+        int year = now.getYear();
+        int month = now.getMonth() + 3;
+
+        if (month > 12) {
+          year++;
+          month = month - 12;
+        }
+        newRow.setValue(endDateIdx, new DateTime(year, month, now.getDom()));
+      }
+    }
+
+    super.onStartNewRow(form, oldRow, newRow);
+  }
+
+  @Override
+  public FormInterceptor getPrintFormInterceptor() {
+    return new PrintOrdersInterceptor();
+  }
+
+  @Override
+  public String[] getReports() {
+    IsRow row = getActiveRow();
+
+    if (row == null) {
+      return null;
+    }
+
+    String[] reports = null;
+    Integer status = row.getInteger(Data.getColumnIndex(getViewName(), COL_ORDERS_STATUS));
+
+    if (Objects.equals(OrdersStatus.APPROVED.ordinal(), status)
+        || Objects.equals(OrdersStatus.FINISH.ordinal(), status)) {
+      reports = new String[] {"PrintOrder"};
+    } else {
+      reports = new String[] {"PrintOffer", "PrintOfferApprove"};
+    }
+
+    return reports;
+  }
+
+  public void sendMail(final FileInfo fileInfo) {
+    final FormView form = getFormView();
+
+    String addr = form.getStringValue(ALS_CONTACT_EMAIL);
+
+    if (addr == null) {
+      addr = form.getStringValue(ALS_COMPANY_EMAIL);
+    }
+    final Set<String> to = new HashSet<>();
+
+    if (addr != null) {
+      to.add(addr);
+    }
+    MailKeeper.getAccounts(new BiConsumer<List<AccountInfo>, AccountInfo>() {
+
+      @Override
+      public void accept(List<AccountInfo> availableAccounts, AccountInfo defaultAccount) {
+        if (!BeeUtils.isEmpty(availableAccounts)) {
+
+          List<FileInfo> attach = new ArrayList<>();
+          attach.add(fileInfo);
+
+          NewMailMessage newMail = NewMailMessage.create(availableAccounts, defaultAccount,
+              to, null, null, null, null, attach, null, false);
+          newMail.setCallback(new Consumer<Boolean>() {
+
+            @Override
+            public void accept(Boolean saveMode) {
+              if (!saveMode
+                  && !Objects.equals(form.getIntegerValue(COL_ORDER), OrdersStatus.APPROVED
+                      .ordinal())) {
+                updateStatus(form, OrdersStatus.SENT);
+              }
+            }
+          });
+        } else {
+          BeeKeeper.getScreen().notifyWarning(Localized.getConstants().mailNoAccountsFound());
+        }
       }
     });
   }
@@ -362,39 +451,45 @@ public class OrderForm extends AbstractFormInterceptor {
     command.execute();
   }
 
-  private static void sendMail(final FormView form) {
-    String addr = form.getStringValue(ALS_CONTACT_EMAIL);
+  private void beforeSendMail() {
+    IsRow row = getActiveRow();
 
-    if (addr == null) {
-      addr = form.getStringValue(ALS_COMPANY_EMAIL);
+    if (row == null) {
+      return;
     }
-    final Set<String> to = new HashSet<>();
 
-    if (addr != null) {
-      to.add(addr);
+    final String[] reports = getReports();
+
+    if (reports == null) {
+      return;
     }
-    MailKeeper.getAccounts(new BiConsumer<List<AccountInfo>, AccountInfo>() {
+
+    final ChoiceCallback choice = new ChoiceCallback() {
+
       @Override
-      public void accept(List<AccountInfo> availableAccounts, AccountInfo defaultAccount) {
-        if (!BeeUtils.isEmpty(availableAccounts)) {
-          NewMailMessage newMail = NewMailMessage.create(availableAccounts, defaultAccount, to,
-              null, null, null, null, null, null, false);
+      public void onSuccess(int value) {
+        RowEditor.openForm(reports[value],
+            Data.getDataInfo(getFormView().getViewName()), getActiveRowId(), Opener.MODAL, null,
+            new PrintOrdersInterceptor(true, OrderForm.this));
+      }
+    };
 
-          newMail.setCallback(new Consumer<Boolean>() {
+    if (reports.length > 1) {
+      final List<String> captions = new ArrayList<>();
+      captions.add("Pasiūlymas");
+      captions.add("Užsakymo patvirtinimas");
+
+      Global.choice(null,
+          Localized.getConstants().choosePrintingForm(), captions, new ChoiceCallback() {
+
             @Override
-            public void accept(Boolean saveMode) {
-              if (!saveMode
-                  && !Objects.equals(form.getIntegerValue(COL_ORDER),
-                      OrdersStatus.APPROVED.ordinal())) {
-                updateStatus(form, OrdersStatus.SENT);
-              }
+            public void onSuccess(int value) {
+              choice.onSuccess(value);
             }
           });
-        } else {
-          BeeKeeper.getScreen().notifyWarning(Localized.getConstants().mailNoAccountsFound());
-        }
-      }
-    });
+    } else {
+      choice.onSuccess(0);
+    }
   }
 
   private static void checkIsFinish(final FormView form) {
@@ -421,16 +516,5 @@ public class OrderForm extends AbstractFormInterceptor {
         }
       }
     });
-  }
-
-  public static boolean isManager(IsRow row) {
-    if (row == null) {
-      return false;
-    }
-
-    int managerIdx = Data.getColumnIndex(VIEW_ORDERS, COL_TA_MANAGER);
-    Long managerId = row.getLong(managerIdx);
-
-    return Objects.equals(managerId, BeeKeeper.getUser().getUserId());
   }
 }
