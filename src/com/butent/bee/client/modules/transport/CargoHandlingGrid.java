@@ -73,7 +73,10 @@ public class CargoHandlingGrid extends AbstractGridInterceptor {
   public void onParentRow(ParentRowEvent event) {
     if (BeeUtils.isEmpty(parentView)) {
       parentView = event.getViewName();
-      handlingIdx = Data.getColumnIndex(parentView, COL_CARGO_HANDLING);
+
+      if (Data.containsColumn(parentView, COL_CARGO_HANDLING)) {
+        handlingIdx = Data.getColumnIndex(parentView, COL_CARGO_HANDLING);
+      }
     }
     if (!BeeConst.isUndef(handlingIdx)) {
       parentRow = DataUtils.cloneRow(event.getRow());

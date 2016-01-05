@@ -41,7 +41,12 @@
     <DataColumn name="DateFrom" caption="=trDeparted" />
     <DataColumn name="DateTo" caption="=trReturned" />
     <DataColumn name="CargoPercent" minValue="0" />
-    <DataColumn name="TripPercent" minValue="0" editInPlace="true" />
+    <DataColumn name="TripPercent" minValue="0" editInPlace="true">
+      <style>
+        <headerStyle><ui:inline>font-weight:bold;</ui:inline></headerStyle>
+        <bodyStyle><ui:inline>font-weight:bold;</ui:inline></bodyStyle>
+      </style>
+    </DataColumn>
   </g:columns>
 
   <xi:include href="columns/Handling.columns.xml" />

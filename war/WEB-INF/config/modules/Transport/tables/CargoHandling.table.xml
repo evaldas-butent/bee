@@ -15,7 +15,7 @@
 
     <Integer name="EmptyKilometers" label="=trEmptyKilometers" />
     <Integer name="LoadedKilometers" label="=trLoadedKilometers" />
-    <Numeric name="Weight" precision="7" scale="3" label="=trWeightInTons" />
+    <Numeric name="Weight" precision="10" scale="3" label="=trWeightInTons" />
     <Text name="Notes" label="=notes" />
 
     <!--TODO: drop Forwarder-->

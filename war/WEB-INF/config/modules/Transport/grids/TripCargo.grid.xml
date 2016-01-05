@@ -20,23 +20,28 @@
     <DataColumn name="Cmr" caption="CMR" renderColumns="CmrName CmrNumber" />
     <DataColumn name="Notes" caption="=notes" whiteSpace="pre-wrap" />
 
-    <DataColumn name="CargoPercent" minValue="0" editInPlace="true" />
     <DataColumn name="TripPercent" minValue="0" />
-    <PropColumn name="Income" type="decimal" caption="=income" format="#.00">
+    <PropColumn name="Income" type="decimal" caption="=income" format="#.00" />
+
+    <DataColumn name="CargoPercent" minValue="0" editInPlace="true">
       <style>
-        <headerStyle>
-          <ui:font>bold</ui:font>
-        </headerStyle>
-        <bodyStyle>
-          <ui:font>bold</ui:font>
-        </bodyStyle>
+        <headerStyle><ui:inline>font-weight:bold;</ui:inline></headerStyle>
+        <bodyStyle><ui:inline>font-weight:bold;</ui:inline></bodyStyle>
       </style>
-    </PropColumn>
-    <DataColumn name="Message" readOnly="true" />
-    <DataColumn name="Ordinal" visible="false" />
-    <RelColumn name="Trailer" viewName="UserVehicles" filter="IsTrailer" newRowEnabled="false"
-               caching="local" editInPlace="true" />
+    </DataColumn>
   </g:columns>
 
   <xi:include href="columns/Handling.columns.xml" />
+
+  <g:columns>
+    <RelColumn name="Trailer" viewName="UserVehicles" filter="IsTrailer" newRowEnabled="false"
+               caching="local" editInPlace="true">
+      <style>
+        <headerStyle><ui:inline>font-weight:bold;</ui:inline></headerStyle>
+        <bodyStyle><ui:inline>font-weight:bold;</ui:inline></bodyStyle>
+      </style>
+    </RelColumn>
+    <DataColumn name="Message" readOnly="true" />
+    <DataColumn name="Ordinal" visible="false" />
+  </g:columns>
 </g:Grid>
