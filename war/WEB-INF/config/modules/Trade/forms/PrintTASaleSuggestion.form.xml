@@ -9,11 +9,11 @@
   name="&form;" caption="Komercinis pasiūlymas" disabledActions="save" width="70" widthUnit="%" height="90" heightUnit="%">
   <FlowPanel style="padding: 10px; background-color: white; font-size:11px;" contentEditable="true"
     class="bee-form-TradeActPrint bee-PrintableForm">
-    <FlowPanel style="text-align: center">
-      <Image url="images/logo.png" style="width:12.86em; height:3em;" />
-      <FlowPanel style="margin-top:-35px; padding-top: 40px;">
-        <Label html="Statybinė įranga, pastoliai, klojiniai, konteineriai" />
+    <FlowPanel>
+      <Image url="images/logo.png" />
+      <FlowPanel style="margin-top:-35px; padding-top: 20px;">
         <br />
+        <Label html="Statybinė įranga, pastoliai, klojiniai, konteineriai" style="text-align:center;"/>
         <TextLabel style="text-align:center; &bold;">
           <render>
             <ui:expression>'Komercinis pasiūlymas Nr. ' + row.SeriesName + '-' + (row.Number ?
@@ -29,18 +29,24 @@
        <Table style="width:100%; border:1px solid black;">
         <row>
          <cell style="vertical-align:top;">
-            <FlowPanel name="Company" />
-          </cell>
-          <cell style="vertical-align:top;">
-            <FlowPanel name="Supplier" style="margin-left:10px;" />
-          </cell>
+           <FlowPanel>
+             <TextLabel source="Company">
+               <renderToken source="CompanyName" />
+               <renderToken source="TypeName" prefix=", " />
+             </TextLabel>
+             <TextLabel source="Contact">
+               <renderToken source="ContactFirstName" prefix="Atsakingas asmuo: " />
+               <renderToken source="ContactLastName" />
+               <renderToken source="ContactMobile" prefix=" Mob.: " />
+             </TextLabel>
+            </FlowPanel>
+         </cell>
+         <cell style="vertical-align:top;">
+           <FlowPanel name="Supplier" style="margin-left:10px;" />
+         </cell>
         </row>
         <row>
-           <TextLabel source="Contact">
-            <renderToken source="ContactFirstName" prefix="Atsakingas asmuo: " />
-            <renderToken source="ContactLastName" />
-            <renderToken source="ContactMobile" prefix=" Mob.: " />
-          </TextLabel>
+          <br />
           <br />
         </row>
       </Table>
@@ -62,11 +68,11 @@ sukrauta taip, kad būtų galima iškrauti šakiniais krautuvais. Už iškrovim�
     <Table style="width:100%; margin-top:10px;">
       <row>
         <TextLabel source="Manager">
-          <renderToken source="ManagerFirstName" prefix="Pagarbiai: &lt;br /&gt;" />
-          <renderToken source="ManagerLastName" suffix=" &lt;br /&gt;"/>
+          <renderToken source="ManagerFirstName" prefix="Pagarbiai: &lt;br /&gt; &lt;b&gt;" suffix="&lt;/b&gt;" />
+          <renderToken source="ManagerLastName" prefix="&lt;b&gt;" suffix=" &lt;/b&gt; &lt;br /&gt;"/>
           <renderToken source="ManagerPositionName" suffix=" &lt;br /&gt;" />
-          <renderToken source="ManagerPhone" suffix=" &lt;br /&gt;" prefix="tel.: " />
-          <renderToken source="ManagerMobile" suffix=" &lt;br /&gt;" prefix="mob.: " />
+          <renderToken source="ManagerPhone" suffix="&lt;/b&gt; &lt;br /&gt;" prefix="&lt;b&gt; tel.: " />
+          <renderToken source="ManagerMobile" suffix="&lt;/b&gt; &lt;br /&gt;" prefix="&lt;b&gt; mob.: " />
         </TextLabel>
       </row>
     </Table>

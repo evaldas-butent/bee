@@ -80,6 +80,7 @@ public class PrintActForm extends AbstractFormInterceptor {
     }
 
     totConsumer = new Consumer<Double>() {
+      static final int MAX_COUNT = 4;
       double totalOf;
       int count;
 
@@ -88,7 +89,7 @@ public class PrintActForm extends AbstractFormInterceptor {
         totalOf += input;
         count++;
 
-        if (count >= 2) {
+        if (count >= MAX_COUNT) {
           renderTotalOf(totalOf);
         }
 
@@ -228,10 +229,6 @@ public class PrintActForm extends AbstractFormInterceptor {
           double prc = BeeUtils.toDouble(data.get(id, COL_TRADE_ITEM_PRICE));
           double sum = qty * prc;
 
-          if (BeeUtils.same(typeTable, SERVICES_WIDGET_NAME)) {
-            double mint = BeeUtils.toDouble(data.get(id, COL_TA_SERVICE_MIN));
-            sum = mint * prc;
-          }
           double disc = BeeUtils.toDouble(data.get(id, COL_TRADE_DISCOUNT));
           double vat = BeeUtils.toDouble(data.get(id, COL_TRADE_VAT));
           boolean vatInPercents = BeeUtils.toBoolean(data.get(id, COL_TRADE_VAT_PERC));
@@ -267,7 +264,16 @@ public class PrintActForm extends AbstractFormInterceptor {
           data.put(id, COL_TRADE_ITEM_PRICE, BeeUtils.removeTrailingZeros(BeeUtils
               .toString(BeeUtils.round((sum + dscSum) / (qty != 0 ? qty : 1d), 5))));
           data.put(id, "Amount", BeeUtils.toString(BeeUtils.round(sum, 2)));
-          data.put(id, "AmountTotal", BeeUtils.toString(BeeUtils.round(sum + vat, 2)));
+
+          if (BeeUtils.same(typeTable, SERVICES_WIDGET_NAME)) {
+            if (BeeUtils.isDouble(BeeUtils.toDouble(data.get(id, COL_TA_SERVICE_MIN)))) {
+              double mint = BeeUtils.toDouble(data.get(id, COL_TA_SERVICE_MIN));
+              sum = mint * prc;
+            }
+            data.put(id, "AmountTotal", BeeUtils.toString(BeeUtils.round(sum, 2)));
+          } else {
+            data.put(id, "AmountTotal", BeeUtils.toString(BeeUtils.round(sum + vat, 2)));
+          }
         }
         HtmlTable table = new HtmlTable(TradeUtils.STYLE_ITEMS_TABLE);
         int c = 0;
@@ -307,7 +313,7 @@ public class PrintActForm extends AbstractFormInterceptor {
           if (sum.compareTo(BigDecimal.ZERO) != 0) {
             value = BeeUtils.removeTrailingZeros(sum.toPlainString());
           }
-          if ("AmountTotal".equals(col)) {
+          if ("Amount".equals(col) || COL_TRADE_VAT.equals(col)) {
             totConsumer.accept(sum.doubleValue());
           }
 
