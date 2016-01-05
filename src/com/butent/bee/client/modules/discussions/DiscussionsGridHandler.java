@@ -46,6 +46,7 @@ import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
+import com.butent.bee.shared.modules.discussions.DiscussionsConstants.DiscussionStatus;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.GridDescription;
@@ -88,7 +89,7 @@ class DiscussionsGridHandler extends AbstractGridInterceptor {
         beeCol.setNullable(false);
       }
       RowFactory.createRow(FORM_NEW_DISCUSSION, Localized.getConstants().announcementNew(),
-          data, emptyRow, Modality.ENABLED, presenter.getMainView().asWidget(),
+          data, emptyRow, Modality.ENABLED, null,
           new CreateDiscussionInterceptor(), new RowCallback() {
 
             @Override
