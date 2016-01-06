@@ -3,13 +3,12 @@
   <!ENTITY inp "width: 15em;">
 ]>
 <f:Form xmlns="http://www.butent.com/widget"
-  xmlns:f="http://www.butent.com/form"
-  xmlns:xi="http://www.w3.org/2001/XInclude"
-  
-  name="TransportationOrder" viewName="TransportationOrders" caption="=trOrder"
-  width="900" height="900"
-  >
-  <FlowPanel>
+        xmlns:f="http://www.butent.com/form"
+
+        name="TransportationOrder" viewName="TransportationOrders" caption="=trOrder"
+        width="900" height="900"
+    >
+  <FlowPanel class="flexBox-vertical">
     <FlowPanel class="flexBox-horizontal">
       <Table kind="controls" style="border-spacing: 5px;">
         <row>
@@ -40,7 +39,7 @@
       </Table>
     </FlowPanel>
 
-    <TabbedPages style="margin-top: 1ex; height: 600px;" >
+    <TabbedPages class="flexible" resizable="false" style="margin-top:1ex;" >
       <page>
         <text>=cargos</text>
         <ChildGrid name="OrderCargo" relColumn="Order" />

@@ -24,8 +24,10 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.ui.Action;
+import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.Set;
 
 public class GridFormPresenter extends AbstractPresenter implements HasGridView, Printable,
@@ -57,7 +59,16 @@ public class GridFormPresenter extends AbstractPresenter implements HasGridView,
 
     this.gridView = gridView;
 
-    this.header = createHeader(caption, actions, edit);
+    Set<Action> enabledActions = new HashSet<>();
+    if (!BeeUtils.isEmpty(actions)) {
+      enabledActions.addAll(actions);
+    }
+
+    if (edit && !BeeUtils.isEmpty(formView.getFavorite())) {
+      enabledActions.add(Action.BOOKMARK);
+    }
+
+    this.header = createHeader(caption, enabledActions, edit);
     this.container = createContainer(this.header, formView, edit);
 
     this.container.setViewPresenter(this);
@@ -168,6 +179,10 @@ public class GridFormPresenter extends AbstractPresenter implements HasGridView,
         } else {
           Printer.print(getForm());
         }
+        break;
+
+      case BOOKMARK:
+        getForm().bookmark();
         break;
 
       default:

@@ -80,8 +80,6 @@ import com.butent.bee.shared.modules.documents.DocumentConstants;
 import com.butent.bee.shared.modules.projects.ProjectConstants;
 import com.butent.bee.shared.modules.projects.ProjectStatus;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
-import com.butent.bee.shared.modules.tasks.TaskConstants.TaskEvent;
-import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
 import com.butent.bee.shared.modules.tasks.TaskUtils;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
@@ -218,39 +216,6 @@ class TaskEditor extends AbstractFormInterceptor {
     return updatedRelations;
   }
 
-  private static List<String> getUpdateNotes(DataInfo dataInfo, IsRow oldRow, IsRow newRow) {
-    List<String> notes = new ArrayList<>();
-    if (dataInfo == null || oldRow == null || newRow == null) {
-      return notes;
-    }
-
-    List<BeeColumn> columns = dataInfo.getColumns();
-    for (int i = 0; i < columns.size(); i++) {
-      BeeColumn column = columns.get(i);
-
-      String oldValue = oldRow.getString(i);
-      String newValue = newRow.getString(i);
-
-      if (!BeeUtils.equalsTrimRight(oldValue, newValue) && column.isEditable()) {
-        String label = Localized.getLabel(column);
-        String note;
-
-        if (BeeUtils.isEmpty(oldValue)) {
-          note = TaskUtils.getInsertNote(label, renderColumn(dataInfo, newRow, column, i));
-        } else if (BeeUtils.isEmpty(newValue)) {
-          note = TaskUtils.getDeleteNote(label, renderColumn(dataInfo, oldRow, column, i));
-        } else {
-          note = TaskUtils.getUpdateNote(label, renderColumn(dataInfo, oldRow, column, i),
-              renderColumn(dataInfo, newRow, column, i));
-        }
-
-        notes.add(note);
-      }
-    }
-
-    return notes;
-  }
-
   private static boolean hasRelations(IsRow row) {
     if (row == null) {
       return false;
@@ -262,18 +227,6 @@ class TaskEditor extends AbstractFormInterceptor {
       }
     }
     return false;
-  }
-
-  private static String renderColumn(DataInfo dataInfo, IsRow row, BeeColumn column, int index) {
-    if (COL_TASK_TYPE.equals(column.getId())) {
-      int nameIndex = dataInfo.getColumnIndex(ALS_TASK_TYPE_NAME);
-
-      if (!BeeConst.isUndef(nameIndex)) {
-        return row.getString(nameIndex);
-      }
-    }
-
-    return DataUtils.render(dataInfo, row, column, index);
   }
 
   private static String renderDuration(long millis) {
@@ -675,6 +628,17 @@ class TaskEditor extends AbstractFormInterceptor {
 
     setProjectStagesFilter(form, row);
     setProjectUsersFilter(form, row);
+
+    if (isExecutor()) {
+      setEnabledRelations();
+    }
+  }
+
+  @Override
+  public void beforeRefresh(FormView form, IsRow row) {
+    if (isExecutor()) {
+      setEnabledRelations();
+    }
   }
 
   @Override
@@ -684,7 +648,8 @@ class TaskEditor extends AbstractFormInterceptor {
 
   @Override
   public boolean isRowEditable(IsRow row) {
-    return row != null && BeeKeeper.getUser().is(row.getLong(getDataIndex(COL_OWNER)));
+    return row != null && (BeeKeeper.getUser().is(row.getLong(getDataIndex(COL_OWNER)))
+        || BeeKeeper.getUser().is(row.getLong(getDataIndex(COL_EXECUTOR))));
   }
 
   @Override
@@ -1009,9 +974,9 @@ class TaskEditor extends AbstractFormInterceptor {
       params.addDataItem(VAR_TASK_COMMENT, comment);
     }
 
-    List<String> notes = getUpdateNotes(Data.getDataInfo(viewName), oldRow, newRow);
+    List<String> notes = TaskUtils.getUpdateNotes(Data.getDataInfo(viewName), oldRow, newRow);
 
-    if (form.isEnabled()) {
+    if (form.isEnabled() || !getUpdatedRelations(oldRow, newRow).isEmpty()) {
       if (!TaskUtils.sameObservers(oldRow, newRow)) {
         String oldObservers = oldRow.getProperty(PROP_OBSERVERS);
         String newObservers = newRow.getProperty(PROP_OBSERVERS);
@@ -1185,6 +1150,7 @@ class TaskEditor extends AbstractFormInterceptor {
     });
 
     dialog.display();
+    dialog.focusOnOpen(DomUtils.getWidget(cid));
   }
 
   private void doCancel() {
@@ -1269,19 +1235,30 @@ class TaskEditor extends AbstractFormInterceptor {
 
         String comment = dialog.getComment(cid);
 
-        BeeRow newRow = getNewRow(TaskStatus.COMPLETED);
+        TaskStatus status;
+        TaskEvent event;
+
+        if (isOwner() && isExecutor()) {
+          status = TaskStatus.APPROVED;
+          event = TaskEvent.APPROVE;
+        } else {
+          status = TaskStatus.COMPLETED;
+          event = TaskEvent.COMPLETE;
+        }
+        BeeRow newRow = getNewRow(status);
         newRow.setValue(getFormView().getDataIndex(COL_COMPLETED), completed);
 
-        ParameterList params = createParams(TaskEvent.COMPLETE, newRow, comment);
+        ParameterList params = createParams(event, newRow, comment);
 
         if (setDurationParams(dialog, durIds, params)) {
-          sendRequest(params, TaskEvent.COMPLETE, dialog.getFiles(fid));
+          sendRequest(params, event, dialog.getFiles(fid));
           dialog.close();
         }
       }
     });
 
     dialog.display();
+    dialog.focusOnOpen(DomUtils.getWidget(cid));
   }
 
   private void doCreate(final Long eventId, final IsRow taskRow) {
@@ -1543,6 +1520,7 @@ class TaskEditor extends AbstractFormInterceptor {
     final String obs = dialog.addCheckBox(true);
 
     final String cid = dialog.addComment(true);
+    final String fid = dialog.addFileCollector();
 
     dialog.addAction(Localized.getConstants().crmActionForward(), new ScheduledCommand() {
       @Override
@@ -1593,8 +1571,7 @@ class TaskEditor extends AbstractFormInterceptor {
         }
 
         ParameterList params = createParams(TaskEvent.FORWARD, newRow, comment);
-
-        sendRequest(params, TaskEvent.FORWARD);
+        sendRequest(params, TaskEvent.FORWARD, dialog.getFiles(fid));
         dialog.close();
       }
     });
@@ -1938,6 +1915,14 @@ class TaskEditor extends AbstractFormInterceptor {
         setProjectUsers(userIds);
       }
     });
+  }
 
+  private void setEnabledRelations() {
+    for (String relation : relations) {
+      MultiSelector selector = getMultiSelector(getFormView(), relation);
+      if (selector != null) {
+        selector.setEnabled(true);
+      }
+    }
   }
 }

@@ -1076,21 +1076,12 @@ public final class XmlUtils {
         if (BeeUtils.isEmpty(schemaPath)) {
           result = (T) unmarshaller.unmarshal(source);
         } else {
-          DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
-          builderFactory.setNamespaceAware(true);
-          builderFactory.setXIncludeAware(true);
-          builderFactory.setSchema(schemaFactory.newSchema(new File(schemaPath)));
-          DocumentBuilder builder = builderFactory.newDocumentBuilder();
-          builder.setErrorHandler(new SAXErrorHandler());
-          result = (T) unmarshaller.unmarshal(builder.parse(source));
+          result = (T) unmarshaller.unmarshal(getXmlResource(resource, schemaPath));
         }
       } catch (JAXBException e) {
         throw new BeeRuntimeException(e.getLinkedException() == null ? e : e.getLinkedException());
 
-      } catch (SAXException e) {
-        throw new BeeRuntimeException(e.getException() == null ? e : e.getException());
-
-      } catch (ParserConfigurationException | IOException e) {
+      } catch (IOException e) {
         throw new BeeRuntimeException(e);
       }
     }

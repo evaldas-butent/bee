@@ -522,6 +522,13 @@ public final class UiHelper {
         && EventUtils.hasModifierKey(event);
   }
 
+  public static void makePotentiallyBold(Element element, String text) {
+    if (element != null && !BeeUtils.isEmpty(text)) {
+      DomUtils.setDataText(element, text);
+      element.addClassName(StyleUtils.NAME_POTENTIALLY_BOLD);
+    }
+  }
+
   public static boolean maybeResize(Widget root, String id) {
     Widget child = DomUtils.getChildQuietly(root, id);
     if (child instanceof RequiresResize && DomUtils.isVisible(child)) {

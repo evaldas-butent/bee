@@ -512,17 +512,17 @@ public final class FileUtils {
     xhr.send(fileInfo.getNewFile());
   }
 
-  public static List<FileInfo> validateFileSize(Collection<? extends FileInfo> input,
+  public static <T extends FileInfo> List<T> validateFileSize(Collection<T> input,
       long maxSize, NotificationListener notificationListener) {
 
-    List<FileInfo> result = new ArrayList<>();
+    List<T> result = new ArrayList<>();
     if (BeeUtils.isEmpty(input)) {
       return result;
     }
 
     List<String> errors = new ArrayList<>();
 
-    for (FileInfo fileInfo : input) {
+    for (T fileInfo : input) {
       long size = fileInfo.getSize();
 
       if (size > maxSize) {

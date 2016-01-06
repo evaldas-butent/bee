@@ -15,10 +15,6 @@
       <SimpleColumn name="LastName" />
     </SimpleJoin>
 
-    <ExternalJoin name="CompanyPerson" joinType="LEFT" source="Users">
-      <IdColumn name="UserID" />
-    </ExternalJoin>
-
     <SimpleColumn name="Department" alias="DepartmentID" />
     <SimpleJoin name="Department" joinType="LEFT">
       <SimpleColumn name="Name" alias="Department" />

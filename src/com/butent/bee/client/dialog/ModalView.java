@@ -27,9 +27,8 @@ public class ModalView extends Popup {
     if (dimensions != null) {
       setDimensions(dimensions);
     }
-    if (presenter.getHeader() != null) {
-      enableDragging();
-    }
+
+    setResizable(true);
   }
 
   @Override

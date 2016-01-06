@@ -12,6 +12,7 @@ import java.util.List;
 public final class Paths {
 
   public static final String IMAGE_DIR = "images";
+  public static final String CUSTOM_DIR = "custom";
 
   public static final String FILE_ICON_DIR = "fileicons";
   public static final String PHOTO_DIR = "photo";

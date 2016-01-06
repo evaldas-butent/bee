@@ -539,7 +539,7 @@ public final class Images {
     map.put(key("silverTruck"), resources.silverTruck());
   }
 
-  public static List<FileInfo> sanitizeInput(Collection<? extends FileInfo> input,
+  public static <T extends FileInfo> List<T> sanitizeInput(Collection<T> input,
       NotificationListener notificationListener) {
     return FileUtils.validateFileSize(input, MAX_SIZE_FOR_DATA_URL, notificationListener);
   }

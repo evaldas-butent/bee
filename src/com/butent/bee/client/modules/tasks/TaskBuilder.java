@@ -102,6 +102,8 @@ class TaskBuilder extends AbstractFormInterceptor {
   private Long executor;
   private boolean taskIdsCallback;
 
+  String startTime;
+
   TaskBuilder() {
     super();
   }
@@ -261,10 +263,6 @@ class TaskBuilder extends AbstractFormInterceptor {
     if (widget instanceof InputDate) {
       ((InputDate) widget).setDate(start);
     }
-    widget = getFormView().getWidgetByName(NAME_START_TIME);
-    if (widget instanceof InputTime) {
-      ((InputTime) widget).setTime(start);
-    }
 
     DateTime end = newRow.getDateTime(getDataIndex(COL_FINISH_TIME));
     DateTime endTime = newRow.getDateTime(getDataIndex(COL_FINISH_TIME));
@@ -291,6 +289,12 @@ class TaskBuilder extends AbstractFormInterceptor {
       }
     });
 
+    Global.getParameter(TaskConstants.PRM_START_OF_WORK_DAY, new Consumer<String>() {
+      @Override
+      public void accept(String input) {
+        startTime = input;
+      }
+    });
   }
 
   @Override
@@ -304,6 +308,22 @@ class TaskBuilder extends AbstractFormInterceptor {
       event.getCallback().onFailure(Localized.getConstants().crmEnterStartDate());
       return;
     }
+
+    DateTime nowTime = TimeUtils.nowMillis();
+    InputTime widget = (InputTime) getFormView().getWidgetByName(NAME_START_TIME);
+    if (widget != null) {
+      String time = widget.getValue();
+
+      if (BeeUtils.isEmpty(time)) {
+        if (nowTime.getDate().getDays() < start.getDate().getDays()) {
+          widget.setValue(startTime);
+        } else {
+          widget.setTime(TimeUtils.nowMillis());
+        }
+      }
+    }
+
+    start = getStart();
 
     DateTime end = getEnd(start, Data.getString(VIEW_TASKS, activeRow, COL_EXPECTED_DURATION));
     if (end == null) {
@@ -343,10 +363,13 @@ class TaskBuilder extends AbstractFormInterceptor {
       return;
     }
 
+    String summary = activeRow.getString(Data.getColumnIndex(VIEW_TASKS, COL_SUMMARY)).trim();
+
     BeeRow newRow = DataUtils.cloneRow(activeRow);
 
     Data.setValue(VIEW_TASKS, newRow, COL_START_TIME, start);
     Data.setValue(VIEW_TASKS, newRow, COL_FINISH_TIME, end);
+    Data.setValue(VIEW_TASKS, newRow, COL_SUMMARY, summary);
 
     if (reminderTime != null) {
       Data.setValue(VIEW_TASKS, newRow, COL_REMINDER_TIME, reminderTime);

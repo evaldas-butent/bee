@@ -418,7 +418,7 @@ public class Gallery extends Flow implements HasViewName, HasFosterParent, Paren
           notificationListener = BeeKeeper.getScreen();
         }
 
-        Collection<FileInfo> files = Images.sanitizeInput(input, notificationListener);
+        Collection<? extends FileInfo> files = Images.sanitizeInput(input, notificationListener);
         if (!files.isEmpty()) {
           read(files, new Callback<List<String>>() {
 
@@ -641,7 +641,9 @@ public class Gallery extends Flow implements HasViewName, HasFosterParent, Paren
     }
   }
 
-  private static void read(Collection<FileInfo> files, final Callback<List<String>> callback) {
+  private static void read(Collection<? extends FileInfo> files,
+      final Callback<List<String>> callback) {
+
     final Latch latch = new Latch(files.size());
     final List<String> pictures = new ArrayList<>();
 

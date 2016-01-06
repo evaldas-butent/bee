@@ -224,6 +224,10 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
         }
         break;
 
+      case BOOKMARK:
+        getFormView().bookmark();
+        break;
+
       default:
         logger.warning(NameUtils.getName(this), action, "not implemented");
     }

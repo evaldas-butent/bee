@@ -71,6 +71,7 @@ import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.documents.DocumentConstants;
 import com.butent.bee.shared.modules.transport.TransportConstants;
+import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.Orientation;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -79,6 +80,7 @@ import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -261,13 +263,13 @@ public class MailMessage extends AbstractFormInterceptor {
   private Integer rpcId;
   private Long placeId;
   private Long folderId;
-  private Long repliedFrom;
   private boolean isSent;
   private boolean isDraft;
   private Long rawId;
   private Pair<String, String> sender;
   private final Multimap<String, Pair<String, String>> recipients = LinkedHashMultimap.create();
   private final List<FileInfo> attachments = new ArrayList<>();
+  private final Map<Long, Pair<DateTime, String>> related = new LinkedHashMap<>();
   private final Map<String, Widget> widgets = new HashMap<>();
 
   private Relations relations;
@@ -321,10 +323,14 @@ public class MailMessage extends AbstractFormInterceptor {
               ft.setText(r, 1, Localized.getConstants().mailGetAllAttachments());
               DomUtils.setDataProperty(ft.getRow(r++), CONTAINER, ATTACHMENTS);
             }
-            if (DataUtils.isId(repliedFrom)) {
-              ft.setWidget(r, 0, new FaLabel(FontAwesome.REPLY));
-              ft.setText(r, 1, Localized.getConstants().mailShowAnswer());
-              DomUtils.setDataProperty(ft.getRow(r++), CONTAINER, COL_REPLIED);
+            if (!BeeUtils.isEmpty(related)) {
+              for (Long place : related.keySet()) {
+                ft.setWidget(r, 0, new FaLabel(BeeUtils.isPositive(place)
+                    ? FontAwesome.LONG_ARROW_RIGHT : FontAwesome.LONG_ARROW_LEFT));
+                ft.setText(r, 1, related.get(place).toString());
+                DomUtils.setDataProperty(ft.getRow(r++), CONTAINER,
+                    BeeUtils.toString(Math.abs(place)));
+              }
             }
             if (r > 0) {
               ft.addClickHandler(new ClickHandler() {
@@ -351,8 +357,8 @@ public class MailMessage extends AbstractFormInterceptor {
                           .getUrl(Localized.getConstants().mailAttachments() + ".zip", files));
                       break;
 
-                    case COL_REPLIED:
-                      RowEditor.open(TBL_PLACES, repliedFrom, Opener.MODAL);
+                    default:
+                      RowEditor.open(TBL_PLACES, BeeUtils.toLong(index), Opener.MODAL);
                       break;
                   }
                 }
@@ -483,12 +489,12 @@ public class MailMessage extends AbstractFormInterceptor {
     sender = Pair.of(null, null);
     placeId = null;
     folderId = null;
-    repliedFrom = null;
     isSent = false;
     isDraft = false;
     rawId = null;
     recipients.clear();
     attachments.clear();
+    related.clear();
 
     if (relations != null) {
       relations.reset();
@@ -562,7 +568,6 @@ public class MailMessage extends AbstractFormInterceptor {
         }
         placeId = row.getLong(COL_PLACE);
         folderId = row.getLong(COL_FOLDER);
-        repliedFrom = row.getLong(COL_REPLIED);
         isSent = BeeUtils.unbox(row.getBoolean(SystemFolder.Sent.name()));
         isDraft = BeeUtils.unbox(row.getBoolean(SystemFolder.Drafts.name()));
         rawId = row.getLong(COL_RAW_CONTENT);
@@ -620,6 +625,13 @@ public class MailMessage extends AbstractFormInterceptor {
                   BeeUtils.parenthesize(FileUtils.sizeToText(file.getSize())));
             }
             ((HasWidgets) widget).add(label);
+          }
+        }
+        if (packet.containsKey(COL_IN_REPLY_TO)) {
+          for (SimpleRow place : packet.get(COL_IN_REPLY_TO)) {
+            related.put(place.getLong(COL_PLACE) * (BeeUtils.same(place.getValue(COL_IN_REPLY_TO),
+                    row.getValue(COL_UNIQUE_ID)) ? 1 : -1),
+                Pair.of(place.getDateTime(COL_DATE), place.getValue(COL_SUBJECT)));
           }
         }
         String content = null;
@@ -749,6 +761,8 @@ public class MailMessage extends AbstractFormInterceptor {
                 cc = getTo();
                 cc.addAll(getCc());
               }
+            }
+            if (!isDraft) {
               relatedId = placeId;
             }
             Element bq = Document.get().createBlockQuoteElement();

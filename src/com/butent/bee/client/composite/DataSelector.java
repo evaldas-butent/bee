@@ -426,9 +426,8 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     private Boolean pendingSelection;
 
     private Selector(ItemType itemType, Element partner, String selectorClass) {
-      this.menu = new MenuBar(MenuConstants.ROOT_MENU_INDEX, true, BarType.TABLE, itemType);
-
-      menu.addStyleName(STYLE_MENU);
+      this.menu = new MenuBar(MenuConstants.ROOT_MENU_INDEX, true, BarType.TABLE, itemType,
+          STYLE_MENU);
 
       this.popup = new Popup(OutsideClick.CLOSE, STYLE_POPUP);
       if (!BeeUtils.isEmpty(selectorClass)) {

@@ -948,7 +948,8 @@ public class MailPanel extends AbstractFormInterceptor {
     if (BeeUtils.isEmpty(ids)) {
       return;
     }
-    final boolean purge = getCurrentAccount().isTrashFolder(getCurrentFolder());
+    final boolean purge = getCurrentAccount().isTrashFolder(getCurrentFolder())
+        || getCurrentAccount().isDraftsFolder(getCurrentFolder());
 
     Global.confirm(purge ? Localized.getConstants().delete()
             : Localized.getConstants().mailActionMoveToTrash(), purge ? Icon.ALARM : Icon.WARNING,

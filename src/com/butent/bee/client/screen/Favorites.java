@@ -406,8 +406,11 @@ public class Favorites implements HandlesDeleteEvents {
   }
 
   public boolean isBookmarked(String viewName, IsRow row) {
-    return !BeeUtils.isEmpty(viewName) && DataUtils.hasId(row)
-        && Group.ROW.find(viewName, row.getId()) != null;
+    return DataUtils.hasId(row) && isBookmarked(viewName, row.getId());
+  }
+
+  public boolean isBookmarked(String viewName, long rowId) {
+    return !BeeUtils.isEmpty(viewName) && Group.ROW.find(viewName, rowId) != null;
   }
 
   public void load(String serialized) {

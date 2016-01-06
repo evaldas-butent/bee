@@ -30,6 +30,7 @@ import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
+import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.widget.InputBoolean;
 import com.butent.bee.client.widget.InputDateTime;
 import com.butent.bee.client.widget.Label;
@@ -57,6 +58,7 @@ import com.butent.bee.shared.utils.Codec;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 class CreateDiscussionInterceptor extends AbstractFormInterceptor {
 
@@ -74,13 +76,22 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
 
   @Override
   public void afterRefresh(FormView form, IsRow row) {
+    boolean isPublic = true;
+    GridView parentGrid = getGridView();
+    String gridKey = parentGrid.getGridKey();
+
+    if (Objects.equals(gridKey, "Discussions_observed")) {
+      isPublic = false;
+    }
+
     Widget widget = getFormView().getWidgetByName(WIDGET_ACCESSIBILITY);
     if (widget instanceof InputBoolean) {
       InputBoolean ac = (InputBoolean) widget;
+      ac.setValue(Boolean.toString(isPublic));
       MultiSelector ms = getMultiSelector(getFormView(), PROP_MEMBERS);
 
       if (ms != null) {
-        ms.setEnabled(!BeeUtils.toBoolean(ac.getValue()));
+        ms.setEnabled(!isPublic);
       }
     }
   }

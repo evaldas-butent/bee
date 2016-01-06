@@ -1,36 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<View xmlns="http://www.butent.com/view"
-  name="WaitingCargo"
-  source="OrderCargo"
-  readOnly="true"
-  filter="!(Cargo)"
-  >
+<View xmlns="http://www.butent.com/view" xmlns:xi="http://www.w3.org/2001/XInclude"
+      name="WaitingCargo"
+      source="OrderCargo"
+      readOnly="true"
+      filter="!(Cargo)"
+    >
   <Columns>
     <SimpleJoin name="Order" joinType="INNER">
       <SimpleColumn name="Status" />
       <SimpleColumn name="OrderNo" />
-      
+
       <SimpleJoin joinType="LEFT" name="Customer">
         <SimpleColumn name="Name" alias="CustomerName" />
       </SimpleJoin>
     </SimpleJoin>
 
-    <SimpleJoin name="LoadingPlace" joinType="LEFT">
-      <SimpleColumn name="Date" alias="LoadingDate" />
-      <SimpleColumn name="PostIndex" alias="LoadingPostIndex" />
-      <SimpleColumn name="Country" alias="LoadingCountry" />
-      <SimpleJoin joinType="LEFT" name="Country">
-        <SimpleColumn name="Name" alias="LoadingCountryName" />
-      </SimpleJoin>
-    </SimpleJoin>
-
-    
-    <SimpleJoin name="UnloadingPlace" joinType="LEFT">
-      <SimpleColumn name="PostIndex" alias="UnloadingPostIndex" />
-      <SimpleColumn name="Country" alias="UnloadingCountry" />
-      <SimpleJoin joinType="LEFT" name="Country">
-        <SimpleColumn name="Name" alias="UnloadingCountryName" />
-      </SimpleJoin>
+    <SimpleJoin name="CargoHandling" joinType="LEFT">
+      <xi:include href="viewcolumns/Handling.viewcolumns.xml" />
     </SimpleJoin>
 
     <SimpleColumn name="Description" />
