@@ -2,14 +2,10 @@
 <!DOCTYPE Form [
   <!ENTITY inp "width: 15em;">
 ]>
-<f:Form xmlns="http://www.butent.com/widget"
-  xmlns:f="http://www.butent.com/form"
-
-  name="OrderInvoice" viewName="Sales"
-  caption="=trdInvoice" showRowId="true"
-  width="840" height="600"
-  >
-  <f:properties reports="PrintSalesInvoice" />
+<f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form"
+  name="OrderInvoice" viewName="Sales" caption="=trdInvoice" showRowId="true"
+  width="840" height="600" readOnly="true">
+  <f:properties reports="PrintOrderInvoice, PrintOrderProforma" />
   <FlowPanel class="flexBox-vertical">
     <br/>
     <Table kind="controls">
