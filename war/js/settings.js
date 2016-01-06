@@ -16,6 +16,7 @@ var BeeSettings = {
   "clickSensitivityMillis": 100,
   "clickSensitivityDistance": 10,
   "newsRefreshIntervalSeconds": 60,
+  "dialogResizerWidth": 10,
   "theme" : {
     "WorkspaceMarginRight": 25,
     "ViewHeaderHeight": "600, 30, 1200, 52",

@@ -51,6 +51,10 @@ public final class Settings {
     return getInt("clickSensitivityMillis");
   }
 
+  public static int getDialogResizerWidth() {
+    return getInt("dialogResizerWidth");
+  }
+
   public static Double getDouble(String key) {
     JSONValue value = getValue(key);
     if (value != null) {
