@@ -200,6 +200,7 @@ public abstract class CrudWorker {
     }
   }
 
+  @SuppressWarnings("unchecked")
   static Collection<Map<String, Object>> getData(BeeRowSet rowSet, String child, String... cols) {
     Map<Long, Map<String, Object>> data = new LinkedHashMap<>();
     boolean hasChilds = !BeeUtils.isEmpty(child) && !ArrayUtils.isEmpty(cols);

@@ -1335,10 +1335,10 @@ public final class BeeUtils {
   /**
    * Checks if Double from String {@code s} is between min and max.
    *
-   * @param s            String to be converted to Double and checked if it is between min and max values
-   * @param min          minimum value
+   * @param s String to be converted to Double and checked if it is between min and max values
+   * @param min minimum value
    * @param minInclusive true if minimum value should be included
-   * @param max          maximum value
+   * @param max maximum value
    * @param maxInclusive true if maximum value should be included
    * @return true if {@code s} is between min and max
    */
