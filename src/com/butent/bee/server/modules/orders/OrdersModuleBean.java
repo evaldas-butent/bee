@@ -23,6 +23,7 @@ import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.modules.administration.ExchangeUtils;
+import com.butent.bee.server.modules.administration.FileStorageBean;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.IsExpression;
 import com.butent.bee.server.sql.SqlInsert;
@@ -49,6 +50,7 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
+import com.butent.bee.shared.modules.mail.MailConstants;
 import com.butent.bee.shared.modules.orders.OrdersConstants;
 import com.butent.bee.shared.modules.orders.OrdersConstants.OrdersStatus;
 import com.butent.bee.shared.modules.trade.TradeConstants;
@@ -59,6 +61,9 @@ import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.webservice.ButentWS;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -91,6 +96,8 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
   ParamHolderBean prm;
   @EJB
   ConcurrencyBean cb;
+  @EJB
+  FileStorageBean fs;
 
   @Resource
   TimerService timerService;
@@ -131,12 +138,16 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
         response = fillReservedRemainders(reqInfo);
         break;
 
+      case SVC_CREATE_PDF_FILE:
+        response = createPdf(reqInfo);
+        break;
+
       case SVC_GET_ERP_STOCKS:
         Set<Long> ids = DataUtils.parseIdSet(reqInfo.getParameter(Service.VAR_DATA));
         getERPStocks(ids);
         response = ResponseObject.emptyResponse();
         break;
-        
+
       default:
         String msg = BeeUtils.joinWords("service not recognized:", svc);
         logger.warning(msg);
@@ -445,6 +456,23 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
     return response;
   }
 
+  private ResponseObject createPdf(RequestInfo reqInfo) {
+
+    String content = reqInfo.getParameter(MailConstants.COL_CONTENT);
+
+    String path = fs.createPdf(content, "bee", "trade", "commons");
+    File tmp = new File(path);
+
+    Long fileId;
+    try {
+      fileId = fs.storeFile(new FileInputStream(tmp), tmp.getName(), "");
+      tmp.delete();
+      return ResponseObject.response(fs.getFile(fileId));
+    } catch (IOException e) {
+      return ResponseObject.error(e);
+    }
+  }
+
   private void clearReservations() {
 
     Double hours = prm.getDouble(PRM_CLEAR_RESERVATIONS_TIME);
@@ -697,7 +725,7 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
     String remotePassword = prm.getText(PRM_ERP_PASSWORD);
     SimpleRowSet rs = null;
     SqlSelect select = null;
-    
+
     if (ids != null) {
       select = new SqlSelect()
           .addFields(TBL_ITEMS, COL_ITEM_EXTERNAL_CODE)

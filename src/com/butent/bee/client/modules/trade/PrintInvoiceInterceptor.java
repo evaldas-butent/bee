@@ -24,9 +24,9 @@ import java.util.Map;
 
 public class PrintInvoiceInterceptor extends AbstractFormInterceptor {
 
-  Map<String, Widget> companies = new HashMap<>();
-  HtmlTable invoiceDetails;
-  List<Widget> totals = new ArrayList<>();
+  protected Map<String, Widget> companies = new HashMap<>();
+  protected HtmlTable invoiceDetails;
+  protected List<Widget> totals = new ArrayList<>();
 
   @Override
   public void afterCreateWidget(String name, IdentifiableWidget widget,
