@@ -10,11 +10,12 @@
   <FlowPanel style="padding: 10px; background-color: white; font-size:11px;" contentEditable="true"
     class="bee-form-TradeActPrint bee-PrintableForm">
     <FlowPanel>
-      <Image url="images/logo.png" style="position: relative; width:12.86em; height:3em;" />
+      <Image url="images/logo.png" style="position: relative;" />
       <FlowPanel style="margin-top:-35px; padding-top: 20px;">
+        <br />
         <TextLabel style="text-align:center; &bold;">
           <render>
-            <ui:expression>'Priedas Nr. ' + rowId + ' prie nuomos sutarties: ' + row.ContractNumber</ui:expression>
+            <ui:expression>'Priedas Nr. ' + rowId + ' prie nuomos sutarties: ' + (row.ContractNumber ? row.ContractNumber : '')</ui:expression>
           </render>
         </TextLabel>
         <DateTimeLabel source="Date" format="DATE_TIME_SHORT" style="text-align: center;" />
@@ -69,8 +70,7 @@
     </FlowPanel>
     <br />
     <HtmlPanel style="&section;">
-      <span style="display:block; white-space:pre-wrap;">Pagal nuomos sutarties 3 straipsnį NUOMOTOJAS ir NUOMININKAS susitaria dėl šių toliau išdėstytų nuomos
-sąlygų bei įkainių.</span>
+      <span style="display:block; white-space:pre-wrap;">Pagal nuomos sutarties 3 straipsnį NUOMOTOJAS ir NUOMININKAS susitaria dėl šių toliau išdėstytų nuomos sąlygų bei įkainių.</span>
     </HtmlPanel>
     <br />
     <TextLabel source="ActName" style="text-align:center; &bold; padding-top: 5px; padding-bottom: 10px;" />
@@ -83,7 +83,7 @@ sąlygų bei įkainių.</span>
 sukrauta taip, kad būtų galima iškrauti šakiniais krautuvais. Už iškrovimą rankomis apmokama papildomai.</span>
     </HtmlPanel>
     <br />
-    <Label html="Asmuo (asmenys), įgaliotas(­i) priimti įrangą ir pasirašyti įrangos priėmimo­perdavimo dokumentuose:" />
+    <Label html="Asmuo (asmenys), įgaliotas(-­i) priimti įrangą ir pasirašyti įrangos priėmimo­-perdavimo dokumentuose:" />
     <Table style="width:100%; margin-top:10px;  border:1px solid silver; ">
       <row style="text-align: center; border:1px solid silver;" >
         <cell style="border:1px solid silver;">

@@ -10,8 +10,9 @@
   <FlowPanel style="padding: 10px; background-color: white; font-size:11px;" contentEditable="true"
     class="bee-form-TradeActPrint bee-PrintableForm">
     <FlowPanel>
-      <Image url="images/logo.png" style="position: relative; width:12.86em; height:3em;" />
+      <Image url="images/logo.png" style="position: relative;" />
       <FlowPanel style="margin-top:-35px; padding-top: 20px;">
+        <br />
         <TextLabel style="text-align:center; &bold;">
           <render>
             <ui:expression>'Įrenginių perdavimo aktas Nr. ' + row.SeriesName + '-' + (row.Number ?

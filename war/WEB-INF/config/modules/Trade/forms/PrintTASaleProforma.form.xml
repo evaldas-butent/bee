@@ -10,8 +10,9 @@
   <FlowPanel style="padding: 10px; background-color: white; font-size:11px;" contentEditable="true"
     class="bee-form-TradeActPrint bee-PrintableForm">
     <FlowPanel>
-      <Image url="images/logo.png" style="position: relative; width:12.86em; height:3em;" />
+      <Image url="images/logo.png" style="position: relative;" />
       <FlowPanel style="margin-top:-35px; padding-top: 20px;">
+        <br />
         <TextLabel style="text-align:center; &bold;">
           <render>
             <ui:expression>'IŠANKSTINĖ SĄSKAITA Nr. ' + rowId</ui:expression>
@@ -67,7 +68,7 @@
         </row>
       </Table>
     </FlowPanel>
-    <TextLabel source="ActName" style="text-align:center; &bold; padding-top: 10px; padding-bottom: 10px;" />
+   <br />
     <FlowPanel name="TradeActItems" class="TradeActItems" style="&section;" />
     <br />
     <FlowPanel name="TradeActServices" class="TradeActServices" style="&section;" />
@@ -77,6 +78,7 @@
     <FlowPanel class="flexBox-horizontal" >
       <Label html="Suma žodžiais " />
       <Label name="TotalInWords" style="text-decoration: underline; padding-left:1em; font-style:italic;" />
+      <Label html="." />
     </FlowPanel>
 
     <HtmlPanel style="&section;">

@@ -10,8 +10,9 @@
   <FlowPanel style="padding: 10px; background-color: white; font-size:11px;" contentEditable="true"
     class="bee-PrintableForm bee-form-TradeActPrint">
     <FlowPanel>
-      <Image url="images/logo.png" style="position: relative; width:12.86em; height:3em;" />
+      <Image url="images/logo.png" style="position: relative;" />
       <FlowPanel style="margin-top:-35px; padding-top: 20px;">
+        <br />
         <TextLabel style="text-align:center; &bold;">
           <render>
             <ui:expression>'Nuomos sutartis Nr. ' + row.SeriesName + '-' + (row.Number ?
@@ -74,7 +75,7 @@
     <Label html="2. Sutarties objektas ir pagrindinės sąlygos" style="font-weight: bold"/>
     <HtmlPanel style="&section;">
       <span style="display:block; white-space:pre-wrap; margin-top: 1ex;">Pagal šią sutartį NUOMOTOJAS perduoda NUOMININKUI laikinai už nuomos mokestį naudotis šiuo NUOMOTOJUI
-nuosavybės teise priklausančiu turtu (toliau ĮRANGA), o NUOMININKAS priima ĮRANGĄ ir nuomos mokestį šiomis sąlygomis:</span>
+nuosavybės teise priklausančiu turtu (toliau - ĮRANGA), o NUOMININKAS priima ĮRANGĄ ir nuomos mokestį šiomis sąlygomis:</span>
     </HtmlPanel>
     <br />
     <TextLabel source="ActName" style="text-align:center; &bold; padding-top: 5px; padding-bottom: 10px;" />
@@ -140,8 +141,8 @@ sukrauta taip, kad būtų galima iškrauti šakiniais krautuvais. Už iškrovim�
         <Label html="Su šios sutarties sąlygomis susipažinau ir sutinku." />
       </row>
       <row style="vertical-align: sub; font-size:smaller;">
-        <Label html="(Vardas, Pavardė, parašas)" style="padding: 2em 0 0 4em;"/>
-        <Label html="(Vardas, Pavardė, parašas)" style="padding: 2em 0 0 4em;" />
+        <Label html="(Vardas, Pavardė, parašas)" style="padding: 2em 0;"/>
+        <Label html="(Vardas, Pavardė, parašas)" style="padding: 2em 0;" />
       </row>
     </Table>
   </FlowPanel>
