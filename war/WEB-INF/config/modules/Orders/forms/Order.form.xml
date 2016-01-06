@@ -66,6 +66,11 @@
         <ChildGrid name="OrderItems" relColumn="Order" />
       </page>
 
+     <page>
+        <text>=trInvoices</text>
+        <ChildGrid name="OrderChildInvoices" relColumn="Order" />
+      </page>
+      
       <page>
         <text>=notes</text>
         <FlowPanel class="flexBox-vertical">

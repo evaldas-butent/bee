@@ -19,7 +19,8 @@
       </row>
       <row>
         <cell colSpan="4">
-          <CheckBox source="Proforma" text="=trdProformaInvoice" style="float:right;" />
+          <CheckBox source="Proforma" text="=trdProformaInvoice"
+            style="float:right;" />
         </cell>
       </row>
       <row>
@@ -27,27 +28,31 @@
         <InputDateTime source="Date" style="width:11em;" />
       </row>
       <row>
-        <Label text="=currency" class="bee-required" style="&lbl2; width:143px; margin-right: 5px;" />
-        <DataSelector source="CurrencyName" style="width:5em;" editEnabled="false" />
-        <cell colSpan="2">
-          <HorizontalPanel style="border-spacing: 0px;">
-            <Label text="=trdInvoicePrefix" style="&lbl2; width: 42px; " />
-            <DataSelector source="SaleSeries" upperCase="true" style="width:50px; margin-right: 4px;" />
-            <InlineLabel text="=trdInvoiceNo" style="&lbl2; margin-right: 5px;" />
-            <InputText source="InvoiceNo" />
-          </HorizontalPanel>
-        </cell>
+        <Label class="bee-required" text="=trdInvoicePrefix" style="&lbl2;" />
+        <DataSelector source="SaleSeries" upperCase="true"
+          style="width:5em; margin-right: 4px;" required="true" />
+
+        <Label text="=trdInvoiceNo" style="&lbl2;" />
+        <InputText source="InvoiceNo" />
       </row>
       <row>
-        <Label text="=trdTerm" style="&lbl2; width:143px; text-align:right; margin-right: 5px;" />
+        <Label text="=trdTerm"
+          style="&lbl2; width:143px; text-align:right; margin-right: 5px;" />
         <InputDate source="Term" style="width:150px;" />
+
+        <Label text="=currency" class="bee-required"
+          style="&lbl2; width:143px; margin-right: 5px;" />
+        <DataSelector source="CurrencyName" style="width:5em;"
+          editEnabled="false" />
       </row>
       <row>
         <Label for="Operation" style="&lbl2;" class="bee-required" />
-        <DataSelector source="Operation" style="width:150px;" required="true" />
+        <DataSelector source="Operation" style="width:150px;"
+          required="true" />
 
         <Label for="WarehouseFrom" style="&lbl2;" class="bee-required" />
-        <DataSelector source="WarehouseFrom" style="width:150px;" required="true" />
+        <DataSelector source="WarehouseFrom" style="width:150px;"
+          required="true" readOnly="true" />
       </row>
       <row>
         <Label text="=trdSupplier" style="&lbl2; width:143px;" />

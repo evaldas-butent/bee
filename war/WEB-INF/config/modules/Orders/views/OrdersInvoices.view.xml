@@ -1,23 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<View xmlns="http://www.butent.com/view"
-      xmlns:x="http://www.butent.com/expression"
-
-  name="OrdersInvoices" source="Sales" caption="=trdInvoices"
-  editForm="OrderInvoice" newRowForm="NewOrderInvoice"
-  >
+<View xmlns="http://www.butent.com/view" xmlns:x="http://www.butent.com/expression" name="OrdersInvoices" source="Sales"
+  caption="=trdInvoices" editForm="OrderInvoice" newRowForm="NewOrderInvoice">
   <Columns>
     <SimpleColumn name="Date" />
-    
+
     <SimpleColumn name="Operation" />
     <SimpleJoin name="Operation" joinType="LEFT">
       <SimpleColumn name="OperationName" />
     </SimpleJoin>
-    
+
     <SimpleColumn name="WarehouseFrom" />
     <SimpleJoin joinType="LEFT" name="WarehouseFrom">
       <SimpleColumn alias="WarehouseFromCode" name="Code" />
     </SimpleJoin>
-      
+
     <SimpleColumn name="SaleSeries" />
     <SimpleJoin name="SaleSeries" joinType="LEFT">
       <SimpleColumn name="SeriesName" alias="InvoicePrefix" />
@@ -70,16 +66,18 @@
     <SimpleJoin name="Manager" joinType="LEFT">
       <SimpleColumn name="CompanyPerson" alias="ManagerPerson" />
       <SimpleJoin name="CompanyPerson" joinType="LEFT">
+        <SimpleJoin name="Position" joinType="LEFT">
+          <SimpleColumn name="Name" alias="PositionName" />
+        </SimpleJoin>
         <SimpleJoin name="Person" joinType="LEFT">
           <SimpleColumn name="FirstName" alias="ManagerFirstName" />
           <SimpleColumn name="LastName" alias="ManagerLastName" />
         </SimpleJoin>
       </SimpleJoin>
     </SimpleJoin>
-
-    <ExternalJoin name="Sale" source="OrderItems" joinType="LEFT">
+    
+    <ExternalJoin name="Sale" source="OrderChildInvoices" joinType="LEFT">
       <AggregateColumn name="Sale" aggregate="MAX" />
-      <AggregateColumn name="Order" aggregate="MAX" />
     </ExternalJoin>
   </Columns>
   <Order>
