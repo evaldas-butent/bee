@@ -7,6 +7,7 @@ public final class DocumentConstants {
   public static final String SVC_CREATE_PDF_DOCUMENT = "create_pdf_document";
 
   public static final String PRM_PRINT_AS_PDF = "PrintAsPDF";
+  public static final String PRM_PRINT_SIZE = "PrintPageSize";
   public static final String PRM_PRINT_HEADER = "PrintPageHeader";
   public static final String PRM_PRINT_FOOTER = "PrintPageFooter";
   public static final String PRM_PRINT_MARGINS = "PrintPageMargins";
@@ -41,6 +42,10 @@ public final class DocumentConstants {
   public static final String COL_DOCUMENT_CATEGORY = "Category";
   public static final String COL_DOCUMENT_TYPE = "Type";
   public static final String COL_DOCUMENT_PLACE = "Place";
+  public static final String COL_DOCUMENT_RECEIVED = "Received";
+  public static final String COL_DOCUMENT_SENT = "Sent";
+  public static final String COL_DOCUMENT_SENT_NUMBER = "SentNumber";
+  public static final String COL_DOCUMENT_RECEIVED_NUMBER = "ReceivedNumber";
   public static final String COL_DOCUMENT_STATUS = "Status";
 
   public static final String COL_DOCUMENT_TEMPLATE = "Template";

@@ -677,7 +677,27 @@ public enum FontAwesome {
   HOUZZ('\uf27c'),
   VIMEO('\uf27d'),
   BLACK_TIE('\uf27e'),
-  FONTICONS('\uf280');
+  FONTICONS('\uf280'),
+  REDDIT_ALIEN('\uf281'),
+  EDGE('\uf282'),
+  CREDIT_CARD_ALT('\uf283'),
+  CODIEPIE('\uf284'),
+  MODX('\uf285'),
+  FORT_AWESOME('\uf286'),
+  USB('\uf287'),
+  PRODUCT_HUNT('\uf288'),
+  MIXCLOUD('\uf289'),
+  SCRIBD('\uf28a'),
+  PAUSE_CIRCLE('\uf28b'),
+  PAUSE_CIRCLE_O('\uf28c'),
+  STOP_CIRCLE('\uf28d'),
+  STOP_CIRCLE_O('\uf28e'),
+  SHOPPING_BAG('\uf290'),
+  SHOPPING_BASKET('\uf291'),
+  HASHTAG('\uf292'),
+  BLUETOOTH('\uf293'),
+  BLUETOOTH_B('\uf294'),
+  PERCENT('\uf295');
 
   public static final String FAMILY = "FontAwesome";
 

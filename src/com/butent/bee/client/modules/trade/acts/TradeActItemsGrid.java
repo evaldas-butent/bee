@@ -499,7 +499,8 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
       collector = FileCollector.headless(new Consumer<Collection<? extends FileInfo>>() {
         @Override
         public void accept(Collection<? extends FileInfo> input) {
-          List<FileInfo> fileInfos = FileUtils.validateFileSize(input, 100_000L, getGridView());
+          List<? extends FileInfo> fileInfos =
+              FileUtils.validateFileSize(input, 100_000L, getGridView());
 
           if (!BeeUtils.isEmpty(fileInfos)) {
             List<String> fileNames = new ArrayList<>();

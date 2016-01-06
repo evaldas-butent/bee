@@ -298,6 +298,9 @@ public class DispatcherBean {
     } else if (BeeUtils.same(svc, Service.INVOKE)) {
       response = Reflection.invoke(invocation, reqInfo.getSubService(), reqInfo);
 
+    } else if (BeeUtils.same(svc, Service.RESPECT_MY_AUTHORITAH)) {
+      response = userService.respectMyAuthoritah();
+
     } else {
       String msg = BeeUtils.joinWords(svc, "service not recognized");
       logger.warning(msg);

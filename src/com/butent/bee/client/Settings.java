@@ -76,6 +76,10 @@ public final class Settings {
     return (d == null) ? BeeConst.UNDEF : BeeUtils.toInt(d);
   }
 
+  public static int getLoadingStateDelayMillis() {
+    return getInt("loadingStateDelayMillis");
+  }
+
   public static int getLogCapacity() {
     return getInt("logCapacity");
   }
@@ -152,6 +156,14 @@ public final class Settings {
 
   public static boolean minimizeNumberOfConcurrentRequests() {
     return getBoolean("minimizeNumberOfConcurrentRequests");
+  }
+
+  public static boolean showCommand(String command) {
+    return BeeUtils.containsSame(getList("showCommands"), command);
+  }
+
+  public static boolean showLogout() {
+    return getBoolean("showLogout");
   }
 
   public static boolean showUserPhoto() {

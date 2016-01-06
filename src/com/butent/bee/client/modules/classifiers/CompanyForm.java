@@ -49,6 +49,7 @@ import com.butent.bee.client.widget.Image;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.css.values.FontSize;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
@@ -290,8 +291,8 @@ public class CompanyForm extends AbstractFormInterceptor implements ClickHandler
 
   @Override
   public void afterRefresh(FormView form, IsRow row) {
-    refreshCreditInfo();
-    if (!DataUtils.isNewRow(row)) {
+    if (DataUtils.hasId(row)) {
+      refreshCreditInfo();
       createQrButton(form, row);
     }
   }
@@ -301,21 +302,21 @@ public class CompanyForm extends AbstractFormInterceptor implements ClickHandler
     return new CompanyForm();
   }
 
-  private static void createQrButton(final FormView form, final IsRow row) {
-    FlowPanel qrFlowPanel = (FlowPanel) Assert.notNull(form.getWidgetByName(QR_FLOW_PANEL));
-    qrFlowPanel.clear();
-    FaLabel qrCodeLabel = new FaLabel(FontAwesome.QRCODE);
-    qrCodeLabel.setTitle(Localized.getConstants().qrCode());
-    qrCodeLabel.addStyleName("bee-FontSize-x-large");
-    qrFlowPanel.add(qrCodeLabel);
-    qrCodeLabel.addClickHandler(new ClickHandler() {
+  private static void createQrButton(FormView form, IsRow row) {
+    Widget widget = form.getWidgetByName(QR_FLOW_PANEL, false);
 
-      @Override
-      public void onClick(ClickEvent arg0) {
-        ClassifierKeeper.generateQrCode(form, row);
-      }
-    });
+    if (widget instanceof FlowPanel) {
+      FlowPanel qrFlowPanel = (FlowPanel) widget;
+      qrFlowPanel.clear();
 
+      FaLabel qrCodeLabel = new FaLabel(FontAwesome.QRCODE);
+      qrCodeLabel.setTitle(Localized.getConstants().qrCode());
+      qrCodeLabel.addStyleName(StyleUtils.className(FontSize.X_LARGE));
+
+      qrCodeLabel.addClickHandler(event -> ClassifierKeeper.generateQrCode(form, row));
+
+      qrFlowPanel.add(qrCodeLabel);
+    }
   }
 
   @Override
@@ -404,7 +405,7 @@ public class CompanyForm extends AbstractFormInterceptor implements ClickHandler
 
   private void refreshCreditInfo() {
     final FormView form = getFormView();
-    final Widget widget = form.getWidgetByName(SVC_CREDIT_INFO);
+    final Widget widget = form.getWidgetByName(SVC_CREDIT_INFO, false);
 
     if (widget != null) {
       widget.getElement().setInnerText(null);

@@ -538,6 +538,7 @@
         <xs:attribute name="filter" type="xs:normalizedString" />
         <xs:attribute name="currentUserFilter" type="tp:fieldNameType" />
         <xs:attribute name="summarize" type="xs:boolean" />
+        <xs:attribute name="paging" type="xs:boolean" />
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>

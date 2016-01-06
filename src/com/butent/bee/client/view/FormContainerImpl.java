@@ -118,6 +118,10 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
     Set<Action> enabledActions = formDescription.getEnabledActions();
     Set<Action> disabledActions = formDescription.getDisabledActions();
 
+    if (!BeeUtils.isEmpty(formDescription.getFavorite())) {
+      enabledActions.add(Action.BOOKMARK);
+    }
+
     if (!disabledActions.contains(Action.PRINT)) {
       enabledActions.add(Action.PRINT);
     }

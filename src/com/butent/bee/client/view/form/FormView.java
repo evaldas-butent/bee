@@ -49,6 +49,8 @@ public interface FormView extends DataView, HasDataTable, ActiveWidgetChangeEven
 
   void applyOptions(String options);
 
+  void bookmark();
+
   boolean checkOnClose(NativePreviewEvent event);
 
   boolean checkOnSave(NativePreviewEvent event);
@@ -76,6 +78,8 @@ public interface FormView extends DataView, HasDataTable, ActiveWidgetChangeEven
 
   List<EditableWidget> getEditableWidgets();
 
+  String getFavorite();
+
   FormInterceptor getFormInterceptor();
 
   String getFormName();
@@ -96,7 +100,11 @@ public interface FormView extends DataView, HasDataTable, ActiveWidgetChangeEven
 
   String getStringValue(String source);
 
-  Widget getWidgetByName(String name);
+  default Widget getWidgetByName(String name) {
+    return getWidgetByName(name, true);
+  }
+
+  Widget getWidgetByName(String name, boolean warn);
 
   Widget getWidgetBySource(String source);
 

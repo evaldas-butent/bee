@@ -20,6 +20,7 @@ import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.output.Printer;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.view.FormContainerImpl;
 import com.butent.bee.client.view.FormContainerView;
@@ -35,6 +36,7 @@ import com.butent.bee.client.view.search.FilterHandler;
 import com.butent.bee.client.view.search.SearchView;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.NotificationListener;
+import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -222,6 +224,10 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
         }
         break;
 
+      case BOOKMARK:
+        getFormView().bookmark();
+        break;
+
       default:
         logger.warning(NameUtils.getName(this), action, "not implemented");
     }
@@ -295,6 +301,12 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
       Queries.updateCell(rowSet, rowCallback);
     }
     return true;
+  }
+
+  @Override
+  public void onStateChange(State state) {
+    getMainView().setStyleName(StyleUtils.NAME_LOADING,
+        state == State.LOADING || state == State.PENDING);
   }
 
   @Override

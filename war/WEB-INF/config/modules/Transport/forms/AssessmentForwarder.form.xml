@@ -79,6 +79,6 @@
       <InputArea source="Notes" visibleLines="4" style="width:350px;" />
     </FlowPanel>
 
-    <ChildGrid class="flexible" name="CargoHandling" relColumn="Forwarder" />
+    <ChildGrid class="flexible" name="CargoHandling" relColumn="CargoTrip" source="CargoTrip" />
   </FlowPanel>
 </f:Form>

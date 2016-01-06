@@ -614,7 +614,7 @@ public class UserServiceBean {
     SqlSelect ss = new SqlSelect()
         .addField(TBL_USERS, sys.getIdName(TBL_USERS), COL_USER)
         .addFields(TBL_USERS, COL_LOGIN, COL_PASSWORD, COL_USER_INTERFACE,
-            COL_USER_BLOCK_AFTER, COL_USER_BLOCK_BEFORE)
+            COL_USER_BLOCK_FROM, COL_USER_BLOCK_UNTIL)
         .addFrom(TBL_USERS);
 
     for (SimpleRow row : qs.getData(ss)) {
@@ -628,8 +628,8 @@ public class UserServiceBean {
           .setRoles(userRoles.get(userId))
           .setUserInterface(EnumUtils.getEnumByIndex(UserInterface.class,
               row.getInt(COL_USER_INTERFACE)))
-          .setBlockAfter(TimeUtils.toDateTimeOrNull(row.getLong(COL_USER_BLOCK_AFTER)))
-          .setBlockBefore(TimeUtils.toDateTimeOrNull(row.getLong(COL_USER_BLOCK_BEFORE)));
+          .setBlockAfter(TimeUtils.toDateTimeOrNull(row.getLong(COL_USER_BLOCK_FROM)))
+          .setBlockBefore(TimeUtils.toDateTimeOrNull(row.getLong(COL_USER_BLOCK_UNTIL)));
 
       UserInfo oldInfo = expiredCache.get(login);
 
@@ -639,6 +639,11 @@ public class UserServiceBean {
       infoCache.put(login, userInfo);
       userData.setRights(getUserRights(userId));
     }
+  }
+
+  public boolean isActive(Long userId) {
+    UserInfo userInfo = getUserInfo(userId);
+    return (userInfo == null) ? false : !userInfo.isBlocked(System.currentTimeMillis());
   }
 
   public boolean isAdministrator() {
@@ -746,6 +751,9 @@ public class UserServiceBean {
           .setWhere(sys.idEquals(TBL_USER_HISTORY, historyId)));
 
       UserData userData = getUserData(userId);
+      if (userData.hasAuthoritah()) {
+        userData.respectMyAuthoritah();
+      }
 
       String sign = userData.getLogin() + " "
           + BeeUtils.parenthesize(userData.getUserSign());
@@ -760,6 +768,16 @@ public class UserServiceBean {
 
     } else {
       logger.severe("Logout attempt by an unauthorized user:", getCurrentUser());
+    }
+  }
+
+  public ResponseObject respectMyAuthoritah() {
+    UserInfo info = getCurrentUserInfo();
+
+    if (info == null) {
+      return ResponseObject.error("current user info not available");
+    } else {
+      return ResponseObject.response(info.getUserData().respectMyAuthoritah());
     }
   }
 

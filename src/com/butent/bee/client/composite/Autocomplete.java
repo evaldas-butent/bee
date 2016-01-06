@@ -301,9 +301,7 @@ public final class Autocomplete extends Composite implements Editor, HasVisibleL
     private Boolean pendingSelection;
 
     private Selector(Element partner, String selectorClass) {
-      this.menu = new MenuBar(MenuConstants.ROOT_MENU_INDEX, true);
-
-      menu.addStyleName(STYLE_MENU);
+      this.menu = new MenuBar(MenuConstants.ROOT_MENU_INDEX, true, STYLE_MENU);
 
       this.popup = new Popup(OutsideClick.CLOSE, STYLE_POPUP);
       if (!BeeUtils.isEmpty(selectorClass)) {

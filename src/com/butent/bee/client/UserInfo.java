@@ -46,6 +46,7 @@ public class UserInfo implements HasInfo {
   private int clickSensitivityDistance;
 
   private int newsRefreshIntervalSeconds;
+  private int loadingStateDelayMillis;
 
   private String styleId;
 
@@ -115,6 +116,10 @@ public class UserInfo implements HasInfo {
 
   public String getLastWorkspace() {
     return getSetting(COL_LAST_WORKSPACE);
+  }
+
+  public int getLoadingStateDelayMillis() {
+    return loadingStateDelayMillis;
   }
 
   public String getLogin() {
@@ -319,18 +324,18 @@ public class UserInfo implements HasInfo {
     }
   }
 
-  private int getIntSetting(String colName) {
+  private int getIntSetting(String colName, int def) {
     if (DataUtils.isEmpty(settings)) {
-      return BeeConst.UNDEF;
+      return def;
 
     } else {
       int index = getSettingsIndex(colName);
 
       if (BeeConst.isUndef(index)) {
-        return BeeConst.UNDEF;
+        return def;
       } else {
         Integer value = settings.getInteger(0, index);
-        return BeeUtils.nvl(value, BeeConst.UNDEF);
+        return BeeUtils.nvl(value, def);
       }
     }
   }
@@ -370,6 +375,10 @@ public class UserInfo implements HasInfo {
     this.clickSensitivityMillis = clickSensitivityMillis;
   }
 
+  private void setLoadingStateDelayMillis(int loadingStateDelayMillis) {
+    this.loadingStateDelayMillis = loadingStateDelayMillis;
+  }
+
   private void setNewsRefreshIntervalSeconds(int newsRefreshIntervalSeconds) {
     this.newsRefreshIntervalSeconds = newsRefreshIntervalSeconds;
   }
@@ -385,10 +394,11 @@ public class UserInfo implements HasInfo {
   private void updateFields() {
     setOpenInNewTab(getBooleanSetting(COL_OPEN_IN_NEW_TAB));
 
-    setClickSensitivityMillis(getIntSetting(COL_CLICK_SENSITIVITY_MILLIS));
-    setClickSensitivityDistance(getIntSetting(COL_CLICK_SENSITIVITY_DISTANCE));
+    setClickSensitivityMillis(getIntSetting(COL_CLICK_SENSITIVITY_MILLIS, BeeConst.UNDEF));
+    setClickSensitivityDistance(getIntSetting(COL_CLICK_SENSITIVITY_DISTANCE, BeeConst.UNDEF));
 
-    setNewsRefreshIntervalSeconds(getIntSetting(COL_NEWS_REFRESH_INTERVAL_SECONDS));
+    setNewsRefreshIntervalSeconds(getIntSetting(COL_NEWS_REFRESH_INTERVAL_SECONDS, BeeConst.UNDEF));
+    setLoadingStateDelayMillis(getIntSetting(COL_LOADING_STATE_DELAY_MILLIS, BeeConst.UNDEF));
   }
 
   private void updateStyle(String css) {

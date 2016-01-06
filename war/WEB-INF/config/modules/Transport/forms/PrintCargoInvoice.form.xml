@@ -81,7 +81,7 @@
           </Label>
         </cell>
         <Label text="Pakrovimas">
-          <properties name="LoadingPlace" />
+          <properties name="LoadingDate" />
         </Label>
         <cell rowSpan="2">
           <Label text="Maršrutas">
@@ -114,7 +114,7 @@
       </row>
       <row>
         <Label text="Iškrovimas">
-          <properties name="UnloadingPlace" />
+          <properties name="UnloadingDate" />
         </Label>
         <Label text="Transporto valst.Nr.">
           <properties name="Vehicle" />

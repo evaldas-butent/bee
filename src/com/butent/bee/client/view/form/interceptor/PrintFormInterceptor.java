@@ -17,6 +17,7 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.Action;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
@@ -30,10 +31,12 @@ public abstract class PrintFormInterceptor extends AbstractFormInterceptor {
       if (DataUtils.isNewRow(getActiveRow())) {
         return false;
       }
-      String print = getFormView().getProperty("reports");
+      String[] reports = getReports();
 
-      if (!BeeUtils.isEmpty(print)) {
-        String[] reports = BeeUtils.split(print, BeeConst.CHAR_COMMA);
+      if (ArrayUtils.isEmpty(reports)) {
+        reports = BeeUtils.split(getFormView().getProperty("reports"), BeeConst.CHAR_COMMA);
+      }
+      if (!ArrayUtils.isEmpty(reports)) {
         final List<FormDescription> forms = Lists.newArrayListWithCapacity(reports.length);
         for (int i = 0; i < reports.length; i++) {
           forms.add(null);
@@ -107,4 +110,8 @@ public abstract class PrintFormInterceptor extends AbstractFormInterceptor {
   }
 
   public abstract FormInterceptor getPrintFormInterceptor();
+
+  public String[] getReports() {
+    return null;
+  }
 }

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<View xmlns="http://www.butent.com/view"
+<View xmlns="http://www.butent.com/view" xmlns:xi="http://www.w3.org/2001/XInclude"
 
       name="CargoPurchases" source="CargoExpenses"
       caption="=transportTripCosts"
@@ -35,21 +35,9 @@
           </SimpleJoin>
         </SimpleJoin>
       </SimpleJoin>
-      <SimpleJoin name="LoadingPlace" joinType="LEFT">
-        <SimpleColumn name="Country" alias="LoadingCountry" label="=trLoadingCountry" />
-        <SimpleJoin joinType="LEFT" name="Country">
-          <SimpleColumn name="Name" alias="LoadingCountryName" />
-          <SimpleColumn name="Code" alias="LoadingCountryCode" label="=from" />
-        </SimpleJoin>
-        <SimpleColumn name="Date" alias="LoadingDate" label="=loading" />
-      </SimpleJoin>
-      <SimpleJoin name="UnloadingPlace" joinType="LEFT">
-        <SimpleColumn name="Country" alias="UnloadingCountry" label="=trUnloadingCountry" />
-        <SimpleJoin joinType="LEFT" name="Country">
-          <SimpleColumn name="Name" alias="UnloadingCountryName" />
-          <SimpleColumn name="Code" alias="UnloadingCountryCode" label="=to" />
-        </SimpleJoin>
-        <SimpleColumn name="Date" alias="UnloadingDate" label="=unloading" />
+
+      <SimpleJoin name="CargoHandling" joinType="LEFT">
+        <xi:include href="viewcolumns/Handling.viewcolumns.xml" />
       </SimpleJoin>
     </SimpleJoin>
 

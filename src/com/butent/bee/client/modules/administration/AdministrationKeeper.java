@@ -8,6 +8,7 @@ import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.data.Data;
+import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.GridFactory.GridOptions;
 import com.butent.bee.client.imports.ImportsForm;
@@ -20,11 +21,14 @@ import com.butent.bee.client.view.grid.interceptor.UniqueChildInterceptor;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.event.RowTransformEvent;
+import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.value.DateTimeValue;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.menu.MenuHandler;
 import com.butent.bee.shared.menu.MenuService;
 import com.butent.bee.shared.news.NewsConstants;
 import com.butent.bee.shared.rights.Module;
+import com.butent.bee.shared.time.TimeUtils;
 
 public final class AdministrationKeeper {
 
@@ -100,13 +104,29 @@ public final class AdministrationKeeper {
     ConditionalStyle.registerGridColumnStyleProvider(GRID_THEME_COLORS, COL_FOREGROUND,
         styleProvider);
 
-    BeeKeeper.getBus().registerRowTransformHandler(new RowTransformHandler(), false);
+    BeeKeeper.getBus().registerRowTransformHandler(new RowTransformHandler());
 
     RightsForm.register();
+
+    SelectorEvent.register(event -> onDataSelector(event));
   }
 
   public static void setCompany(Long company) {
     AdministrationKeeper.company = company;
+  }
+
+  private static void onDataSelector(SelectorEvent event) {
+    if (event.isOpened() && event.hasRelatedView(VIEW_USERS)) {
+      DateTimeValue now = new DateTimeValue(TimeUtils.nowMinutes());
+
+      event.getSelector().getOracle().setResponseFilter(Filter.or(
+          Filter.and(Filter.isNull(COL_USER_BLOCK_FROM), Filter.isNull(COL_USER_BLOCK_UNTIL)),
+          Filter.and(Filter.notNull(COL_USER_BLOCK_FROM),
+              Filter.isMore(COL_USER_BLOCK_FROM, now)),
+          Filter.and(Filter.notNull(COL_USER_BLOCK_UNTIL),
+              Filter.isLess(COL_USER_BLOCK_UNTIL, now))
+          ));
+    }
   }
 
   private AdministrationKeeper() {

@@ -20,6 +20,7 @@ import java.util.Collection;
 
 public final class SelectorEvent extends GwtEvent<SelectorEvent.Handler> implements Consumable {
 
+  @FunctionalInterface
   public interface Handler extends EventHandler {
     void onDataSelector(SelectorEvent event);
   }

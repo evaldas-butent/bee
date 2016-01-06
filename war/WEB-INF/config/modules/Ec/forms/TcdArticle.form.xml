@@ -93,7 +93,7 @@
 
       <page>
         <text>=ecItemDetailsCarTypes</text>
-        <ChildGrid name="TcdTypeArticles" relColumn="Article" />
+        <ChildGrid name="TcdTypeArticles" relColumn="Article" paging="true" />
       </page>
 
       <page>

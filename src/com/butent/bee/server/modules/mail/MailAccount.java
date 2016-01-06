@@ -523,11 +523,11 @@ public class MailAccount {
     return accountInfo.getRootFolder();
   }
 
-  boolean holdsFolders(Folder remoteFolder) throws MessagingException {
+  static boolean holdsFolders(Folder remoteFolder) throws MessagingException {
     return (remoteFolder.getType() & Folder.HOLDS_FOLDERS) != 0;
   }
 
-  boolean holdsMessages(Folder remoteFolder) throws MessagingException {
+  static boolean holdsMessages(Folder remoteFolder) throws MessagingException {
     return (remoteFolder.getType() & Folder.HOLDS_MESSAGES) != 0;
   }
 

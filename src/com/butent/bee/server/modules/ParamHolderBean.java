@@ -365,7 +365,7 @@ public class ParamHolderBean {
       data = qs.getData(new SqlSelect()
           .addFields(TBL_USER_PARAMETERS, COL_PARAMETER, COL_USER, COL_PARAMETER_VALUE)
           .addFrom(TBL_USER_PARAMETERS)
-          .setWhere(sys.idInList(TBL_USER_PARAMETERS, ids.keySet())));
+          .setWhere(SqlUtils.inList(TBL_USER_PARAMETERS, COL_PARAMETER, ids.keySet())));
 
       for (SimpleRow row : data) {
         ids.get(row.getLong(COL_PARAMETER))

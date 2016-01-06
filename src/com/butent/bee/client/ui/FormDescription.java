@@ -71,6 +71,10 @@ public class FormDescription implements HasViewName {
     return Action.parse(actions);
   }
 
+  public String getFavorite() {
+    return getFormElement().getAttribute(UiConstants.ATTR_FAVORITE);
+  }
+
   public String getName() {
     return getFormElement().getAttribute(UiConstants.ATTR_NAME);
   }

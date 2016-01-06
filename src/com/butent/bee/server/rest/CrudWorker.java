@@ -5,6 +5,7 @@ import com.butent.bee.server.data.DataEditorBean;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
+import com.butent.bee.server.sql.HasConditions;
 import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
@@ -19,16 +20,17 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.value.Value;
-import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.data.view.ViewColumn;
 import com.butent.bee.shared.exceptions.BeeException;
 import com.butent.bee.shared.exceptions.BeeRuntimeException;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -51,18 +53,15 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 
-@Produces(MediaType.APPLICATION_JSON)
+@Produces(RestResponse.JSON_TYPE)
 public abstract class CrudWorker {
 
-  static final String LAST_SYNC_TIME = "LastSyncTime";
-  private static final String SERVER_ERROR = "ServerError";
+  static final String ID = "ID";
+  static final String VERSION = "VERSION";
 
-  private static final String ID = "ID";
-  private static final String VERSION = "VERSION";
+  static final String OLD_VALUES = "OLD_VALUES";
   private static final String CONTACT_VERSION = "ContactVersion";
-  private static final String OLD_VALUES = "OLD_VALUES";
 
   @EJB
   SystemBean sys;
@@ -77,55 +76,71 @@ public abstract class CrudWorker {
 
   @DELETE
   @Path("{" + ID + ":\\d+}/{" + VERSION + ":\\d+}")
-  public Response delete(@PathParam(ID) Long id, @PathParam(VERSION) Long version) {
+  public RestResponse delete(@PathParam(ID) Long id, @PathParam(VERSION) Long version) {
     if (!usr.canDeleteData(getViewName())) {
-      return Response.status(Response.Status.FORBIDDEN).build();
+      return RestResponse.forbidden();
     }
+    RestResponse response = null;
+
     try {
       commit(new Runnable() {
         @Override
         public void run() {
-          ResponseObject response = deb.deleteRows(getViewName(),
+          ResponseObject resp = deb.deleteRows(getViewName(),
               new RowInfo[] {new RowInfo(id, version)});
 
-          if (response.hasErrors()) {
-            throw new BeeRuntimeException(ArrayUtils.joinWords(response.getErrors()));
+          if (resp.hasErrors()) {
+            throw new BeeRuntimeException(ArrayUtils.joinWords(resp.getErrors()));
           }
         }
       });
     } catch (BeeException e) {
-      return serverError(e);
+      response = RestResponse.error(e);
     }
-    return Response.ok().build();
+    if (Objects.isNull(response)) {
+      response = RestResponse.empty();
+    } else {
+      response.setResult(get(id).getResult());
+    }
+    return response;
   }
 
   @GET
   @Path("{" + ID + ":\\d+}")
-  public Response get(@PathParam(ID) Long id) {
+  public RestResponse get(@PathParam(ID) Long id) {
     return get(Filter.compareId(id));
   }
 
+  public RestResponse get(Filter filter) {
+    long time = System.currentTimeMillis();
+    BeeRowSet rowSet = qs.getViewData(getViewName(), filter);
+    return RestResponse.ok(getData(rowSet, null)).setLastSync(time);
+  }
+
   @GET
-  public Response getAll(@HeaderParam(LAST_SYNC_TIME) Long lastSynced) {
-    Filter filter = Filter.compareVersion(Operator.GT, lastSynced);
+  public RestResponse getAll(@HeaderParam(RestResponse.LAST_SYNC_TIME) Long lastSynced) {
+    long sync = BeeUtils.unbox(lastSynced);
+    Filter filter = Filter.compareVersion(Operator.GT, sync);
 
     if (sys.getView(getViewName()).hasColumn(CONTACT_VERSION)) {
-      filter = Filter.or(filter, Filter.isMore(CONTACT_VERSION, Value.getValue(lastSynced)));
+      filter = Filter.or(filter, Filter.isMore(CONTACT_VERSION, Value.getValue(sync)));
     }
     return get(filter);
   }
 
   @POST
   @Consumes(MediaType.APPLICATION_JSON)
-  public Response insert(JsonObject data) {
+  public RestResponse insert(JsonObject data) {
     Holder<Long> idHolder = Holder.of(BeeUtils.toLongOrNull(getValue(data, ID)));
 
     if (DataUtils.isId(idHolder.get())) {
       return update(idHolder.get(), BeeUtils.toLongOrNull(getValue(data, VERSION)), data);
     }
     if (!usr.canCreateData(getViewName())) {
-      return Response.status(Response.Status.FORBIDDEN).build();
+      return RestResponse.forbidden();
     }
+    RestResponse response = null;
+
     try {
       commit(new Runnable() {
         @Override
@@ -134,21 +149,24 @@ public abstract class CrudWorker {
         }
       });
     } catch (BeeException e) {
-      return serverError(e);
+      response = RestResponse.error(e);
     }
-    return Response.fromResponse(get(idHolder.get())).status(Response.Status.CREATED).build();
+    if (Objects.isNull(response)) {
+      response = get(idHolder.get());
+    }
+    return response;
   }
 
   @PUT
   @Path("{" + ID + ":\\d+}/{" + VERSION + ":\\d+}")
   @Consumes(MediaType.APPLICATION_JSON)
-  public Response update(@PathParam(ID) Long id, @PathParam(VERSION) Long version,
+  public RestResponse update(@PathParam(ID) Long id, @PathParam(VERSION) Long version,
       JsonObject data) {
 
     if (!usr.canEditData(getViewName())) {
-      return Response.status(Response.Status.FORBIDDEN).build();
+      return RestResponse.forbidden();
     }
-    String error = null;
+    RestResponse error = null;
 
     try {
       commit(new Runnable() {
@@ -158,39 +176,17 @@ public abstract class CrudWorker {
         }
       });
     } catch (BeeException e) {
-      error = e.getLocalizedMessage();
+      error = RestResponse.error(e);
     }
-    Response response = get(id);
+    RestResponse response = get(id);
 
-    if (!BeeUtils.isEmpty(error)) {
-      response.getHeaders().add(SERVER_ERROR, error);
+    if (Objects.nonNull(error)) {
+      response = error.setResult(response.getResult());
     }
     return response;
   }
 
-  protected abstract String getViewName();
-
-  static Response rowSetResponse(BeeRowSet rowSet) {
-    List<Map<String, Object>> data = new ArrayList<>();
-
-    for (int i = 0; i < rowSet.getNumberOfRows(); i++) {
-      Map<String, Object> row = new LinkedHashMap<>(rowSet.getNumberOfColumns());
-      BeeRow beeRow = rowSet.getRow(i);
-      row.put(ID, beeRow.getId());
-      row.put(VERSION, beeRow.getVersion());
-
-      for (int j = 0; j < rowSet.getNumberOfColumns(); j++) {
-        BeeColumn column = rowSet.getColumn(j);
-        row.put(column.getId(),
-            column.getType() == ValueType.LONG ? rowSet.getLong(i, j) : rowSet.getString(i, j));
-      }
-      data.add(row);
-    }
-    return Response.ok(data, MediaType.APPLICATION_JSON_TYPE.withCharset(BeeConst.CHARSET_UTF8))
-        .build();
-  }
-
-  private void commit(Runnable executor) throws BeeException {
+  void commit(Runnable executor) throws BeeException {
     try {
       utx.begin();
       executor.run();
@@ -204,32 +200,86 @@ public abstract class CrudWorker {
     }
   }
 
-  private Response get(Filter filter) {
-    long time = System.currentTimeMillis();
+  static Collection<Map<String, Object>> getData(BeeRowSet rowSet, String child, String... cols) {
+    Map<Long, Map<String, Object>> data = new LinkedHashMap<>();
+    boolean hasChilds = !BeeUtils.isEmpty(child) && !ArrayUtils.isEmpty(cols);
 
-    BeeRowSet rs = qs.getViewData(getViewName(), filter);
-    Response response = rowSetResponse(rs);
-    response.getHeaders().add(LAST_SYNC_TIME, time);
+    for (int i = 0; i < rowSet.getNumberOfRows(); i++) {
+      BeeRow beeRow = rowSet.getRow(i);
 
-    return response;
-  }
+      if (!data.containsKey(beeRow.getId())) {
+        Map<String, Object> row = new LinkedHashMap<>();
+        row.put(ID, beeRow.getId());
+        row.put(VERSION, beeRow.getVersion());
 
-  private static Map<String, Object> getFields(BeeView view, String parentCol, JsonObject data) {
-    Map<String, Object> fields = new HashMap<>();
+        for (int j = 0; j < rowSet.getNumberOfColumns(); j++) {
+          String col = rowSet.getColumnId(j);
 
-    for (ViewColumn viewColumn : view.getViewColumns()) {
-      if (Objects.equals(viewColumn.getParent(), parentCol)
-          && data.containsKey(viewColumn.getName())) {
+          if (!ArrayUtils.contains(cols, col)) {
+            row.put(col, getValue(rowSet, i, j));
+          }
+        }
+        if (hasChilds) {
+          row.put(child, new ArrayList<Map<String, Object>>());
+        }
+        data.put(beeRow.getId(), row);
+      }
+      if (hasChilds) {
+        Map<String, Object> row = new LinkedHashMap<>();
 
-        fields.put(viewColumn.getField(), getValue(data, viewColumn.getName()));
+        for (String col : cols) {
+          int j = rowSet.getColumnIndex(col);
+
+          if (!BeeConst.isUndef(j)) {
+            row.put(col, getValue(rowSet, i, j));
+          }
+        }
+        if (BeeUtils.anyNotNull(row.values())) {
+          ((Collection<Map<String, Object>>) data.get(beeRow.getId()).get(child)).add(row);
+        }
       }
     }
-    return fields;
+    return data.values();
   }
 
-  private static BeeColumn getParentColumn(BeeView view, BeeColumn column) {
+  static String getValue(JsonObject data, String field) {
+    String value = null;
+    JsonValue object = data.get(field);
+
+    if (Objects.nonNull(object) && object != JsonValue.NULL) {
+      value = object instanceof JsonString ? ((JsonString) object).getString() : object.toString();
+    }
+    return value;
+  }
+
+  static Object getValue(BeeRowSet rowSet, int row, int col) {
+    Object value = null;
+
+    switch (rowSet.getColumnType(col)) {
+      case BOOLEAN:
+        value = rowSet.getBoolean(row, col);
+        break;
+      case DATE:
+      case DATE_TIME:
+      case INTEGER:
+      case LONG:
+        value = rowSet.getLong(row, col);
+        break;
+      case DECIMAL:
+      case NUMBER:
+        value = rowSet.getDecimal(row, col);
+        break;
+      default:
+        value = rowSet.getString(row, col);
+        break;
+    }
+    return value;
+  }
+
+  abstract String getViewName();
+
+  private static BeeColumn getParentColumn(BeeView view, String parentCol) {
     BeeColumn parent = null;
-    String parentCol = view.getColumnParent(column.getId());
 
     for (ViewColumn viewColumn : view.getViewColumns()) {
       if (!Objects.equals(viewColumn.getName(), parentCol)
@@ -247,7 +297,35 @@ public abstract class CrudWorker {
     return parent;
   }
 
-  private String getRelation(String table, Map<String, Object> fields) {
+  private String getRelation(BeeView view, String parentCol, JsonObject data) {
+    String value = getValue(data, getParentColumn(view, parentCol).getId());
+
+    if (DataUtils.isId(value)) {
+      return value;
+    }
+    Map<String, Object> fields = new HashMap<>();
+
+    for (ViewColumn viewColumn : view.getViewColumns()) {
+      if (Objects.equals(viewColumn.getParent(), parentCol)
+          && data.containsKey(viewColumn.getName())) {
+
+        fields.put(viewColumn.getField(), getValue(data, viewColumn.getName()));
+      }
+    }
+    if (Objects.equals(view.getColumnRelation(parentCol), ClassifierConstants.TBL_CITIES)) {
+      String parent = view.getColumnParent(parentCol);
+
+      for (ViewColumn viewColumn : view.getViewColumns()) {
+        if (Objects.equals(viewColumn.getParent(), parent)
+            && Objects.equals(viewColumn.getRelation(), ClassifierConstants.TBL_COUNTRIES)
+            && viewColumn.isHidden()) {
+
+          fields.put(ClassifierConstants.COL_COUNTRY,
+              BeeUtils.toLongOrNull(getRelation(view, viewColumn.getName(), data)));
+          break;
+        }
+      }
+    }
     boolean ok = false;
 
     for (Object o : fields.values()) {
@@ -259,10 +337,21 @@ public abstract class CrudWorker {
     if (!ok) {
       return null;
     }
+    String table = view.getColumnRelation(parentCol);
+    HasConditions clause = SqlUtils.and();
+
+    for (Map.Entry<String, Object> entry : fields.entrySet()) {
+      if (entry.getValue() instanceof String) {
+        clause.add(SqlUtils.startsWith(table, entry.getKey(), (String) entry.getValue()))
+            .add(SqlUtils.endsWith(table, entry.getKey(), (String) entry.getValue()));
+      } else {
+        clause.add(SqlUtils.equals(table, entry.getKey(), entry.getValue()));
+      }
+    }
     String[] ids = qs.getColumn(new SqlSelect()
         .addFields(table, sys.getIdName(table))
         .addFrom(table)
-        .setWhere(SqlUtils.equals(table, fields)));
+        .setWhere(clause));
 
     String id = (ids.length == 1) ? ids[0] : null;
 
@@ -282,16 +371,6 @@ public abstract class CrudWorker {
     return id;
   }
 
-  private static String getValue(JsonObject data, String field) {
-    String value = null;
-    JsonValue object = data.get(field);
-
-    if (Objects.nonNull(object) && object != JsonValue.NULL) {
-      value = object instanceof JsonString ? ((JsonString) object).getString() : object.toString();
-    }
-    return value;
-  }
-
   private Long insert(String viewName, JsonObject data) {
     BeeView view = sys.getView(viewName);
     Map<String, BeeColumn> columns = new LinkedHashMap<>();
@@ -302,24 +381,21 @@ public abstract class CrudWorker {
         BeeColumn column = view.getBeeColumn(col);
         String value = getValue(data, col);
 
-        if (!BeeUtils.isEmpty(value)) {
-          if (column.isForeign()) {
-            column = getParentColumn(view, column);
+        if (isReadOnly(column) || columns.containsKey(column.getId()) || BeeUtils.isEmpty(value)) {
+          continue;
+        }
+        if (column.isForeign()) {
+          String parentCol = view.getColumnParent(col);
+          column = getParentColumn(view, parentCol);
 
-            if (columns.containsKey(column.getId())) {
-              continue;
-            }
-            value = getValue(data, column.getId());
-
-            if (BeeUtils.isEmpty(value)) {
-              value = getRelation(view.getColumnTable(col),
-                  getFields(view, view.getColumnParent(col), data));
-            }
+          if (columns.containsKey(column.getId())) {
+            continue;
           }
-          if (usr.canEditColumn(getViewName(), column.getId())) {
-            columns.put(column.getId(), column);
-            values.add(value);
-          }
+          value = getRelation(view, parentCol, data);
+        }
+        if (usr.canEditColumn(getViewName(), column.getId())) {
+          columns.put(column.getId(), column);
+          values.add(value);
         }
       }
     }
@@ -337,13 +413,11 @@ public abstract class CrudWorker {
     return ((RowInfo) response.getResponse()).getId();
   }
 
-  private static Response serverError(BeeException e) {
-    return Response.serverError()
-        .type(MediaType.TEXT_PLAIN_TYPE.withCharset(BeeConst.CHARSET_UTF8))
-        .entity(BeeUtils.notEmpty(e.getLocalizedMessage(), e.toString())).build();
+  private static boolean isReadOnly(BeeColumn column) {
+    return column.isReadOnly() || column.getLevel() > 1;
   }
 
-  private void update(String viewName, Long id, Long version, JsonObject data) {
+  private BeeRowSet update(String viewName, Long id, Long version, JsonObject data) {
     if (data.containsKey(OLD_VALUES) && data.get(OLD_VALUES) instanceof JsonObject) {
       JsonObject oldData = data.getJsonObject(OLD_VALUES);
       BeeView view = sys.getView(viewName);
@@ -354,26 +428,30 @@ public abstract class CrudWorker {
       for (String col : oldData.keySet()) {
         if (view.hasColumn(col)) {
           BeeColumn column = view.getBeeColumn(col);
-          String oldValue = getValue(oldData, col);
-          String value = getValue(data, col);
+
+          if (isReadOnly(column) || columns.containsKey(column.getId())) {
+            continue;
+          }
+          String oldValue;
+          String value;
 
           if (column.isForeign()) {
-            column = getParentColumn(view, column);
+            String parentCol = view.getColumnParent(col);
+            column = getParentColumn(view, parentCol);
 
-            if (columns.containsKey(column.getId())) {
-              continue;
-            }
             String key = getValue(data, column.getId());
-            String table = view.getColumnTable(col);
 
-            if (oldData.containsKey(column.getId())) {
-              oldValue = getValue(oldData, column.getId());
-              value = key;
+            if (!DataUtils.isId(key) || oldData.containsKey(column.getId())) {
+              value = getRelation(view, parentCol, data);
 
-            } else if (BeeUtils.isEmpty(key)) {
-              oldValue = getRelation(table, getFields(view, view.getColumnParent(col), oldData));
-              value = getRelation(table, getFields(view, view.getColumnParent(col), data));
+              if (columns.containsKey(column.getId())) {
+                newValues.set(new ArrayList<>(columns.keySet()).indexOf(column.getId()), value);
+                continue;
+              }
+              oldValue = getRelation(view, parentCol, oldData);
             } else {
+              String table = view.getColumnRelation(column.getId());
+
               ResponseObject response = qs.updateDataWithResponse(new SqlUpdate(table)
                   .addConstant(view.getColumnField(col), getValue(data, col))
                   .setWhere(sys.idEquals(table, BeeUtils.toLong(key))));
@@ -383,6 +461,9 @@ public abstract class CrudWorker {
               }
               continue;
             }
+          } else {
+            oldValue = getValue(oldData, col);
+            value = getValue(data, col);
           }
           if (usr.canEditColumn(getViewName(), column.getId())) {
             columns.put(column.getId(), column);
@@ -401,6 +482,8 @@ public abstract class CrudWorker {
           throw new BeeRuntimeException(ArrayUtils.joinWords(response.getErrors()));
         }
       }
+      return rs;
     }
+    return null;
   }
 }

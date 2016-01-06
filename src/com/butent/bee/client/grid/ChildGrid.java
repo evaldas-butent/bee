@@ -3,8 +3,8 @@ package com.butent.bee.client.grid;
 import com.butent.bee.client.Callback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Provider;
-import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.event.logical.ParentRowEvent;
+import com.butent.bee.client.event.logical.ReadyEvent;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.view.HeaderView;
@@ -27,7 +27,6 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.Map;
-import java.util.Objects;
 
 /**
  * Enables using data grids with data related to another source.
@@ -51,6 +50,7 @@ public class ChildGrid extends EmbeddedGrid implements Launchable {
 
   public ChildGrid(String gridName, GridFactory.GridOptions gridOptions,
       int parentIndex, String relSource, boolean disablable) {
+
     super(gridName, gridOptions);
 
     this.parentIndex = parentIndex;
@@ -75,7 +75,7 @@ public class ChildGrid extends EmbeddedGrid implements Launchable {
         }
 
         setGridDescription(GridSettings.apply(getGridKey(), result));
-        resolveState();
+        resolveState(false);
       }
     });
   }
@@ -91,7 +91,7 @@ public class ChildGrid extends EmbeddedGrid implements Launchable {
       setPendingEnabled(event.getRow() != null);
     }
 
-    resolveState();
+    resolveState(false);
   }
 
   @Override
@@ -103,32 +103,49 @@ public class ChildGrid extends EmbeddedGrid implements Launchable {
     }
   }
 
-  private void createPresenter(GridView gridView, IsRow row, BeeRowSet rowSet,
-      Filter immutableFilter, Map<String, Filter> initialFilters, Order order) {
+  private void createPresenter() {
+    Filter immutableFilter = GridFactory.getImmutableFilter(getGridDescription(), getGridOptions());
+    Map<String, Filter> initialFilters = (getGridInterceptor() == null)
+        ? null : getGridInterceptor().getInitialParentFilters(uiOptions);
+
+    Order order = getGridDescription().getOrder();
+
+    DataInfo dataInfo = Data.getDataInfo(getGridDescription().getViewName());
+    if (dataInfo == null) {
+      return;
+    }
+
+    GridView gridView = GridFactory.createGridView(getGridDescription(), getGridKey(),
+        dataInfo.getColumns(), getRelSource(), uiOptions, getGridInterceptor(), order,
+        getGridOptions());
+
+    gridView.getGrid().setPageSize(BeeConst.UNDEF, false);
+    afterCreateGrid(gridView);
+
+    BeeRowSet rowSet = new BeeRowSet(dataInfo.getViewName(), dataInfo.getColumns());
+    gridView.initData(rowSet.getNumberOfRows(), rowSet);
 
     GridPresenter gp = new GridPresenter(getGridDescription(), gridView,
         rowSet.getNumberOfRows(), rowSet, ProviderType.ASYNC, getCachingPolicy(),
         uiOptions, getGridInterceptor(), immutableFilter, initialFilters, null, null,
         order, getGridOptions());
 
-    gp.getGridView().getGrid().setPageSize(BeeConst.UNDEF, false);
     gp.setEventSource(getId());
+    setPresenter(gp);
+
+    gp.getMainView().setEnabled(false);
+
+    gridView.addReadyHandler(new ReadyEvent.Handler() {
+      @Override
+      public void onReady(ReadyEvent event) {
+        resolveState(true);
+      }
+    });
 
     setWidget(gp.getMainView());
-    setPresenter(gp);
 
     if (getGridInterceptor() != null) {
       getGridInterceptor().afterCreatePresenter(gp);
-    }
-
-    if (Objects.equals(row, getPendingRow())) {
-      updateFilter(row);
-      resetState();
-      if (row == null) {
-        setEnabled(false);
-      }
-    } else {
-      resolveState();
     }
   }
 
@@ -143,44 +160,6 @@ public class ChildGrid extends EmbeddedGrid implements Launchable {
 
   private GridDescription getGridDescription() {
     return gridDescription;
-  }
-
-  private void getInitialRowSet(final IsRow row) {
-    final Filter immutableFilter =
-        GridFactory.getImmutableFilter(getGridDescription(), getGridOptions());
-    final Map<String, Filter> initialFilters = (getGridInterceptor() == null)
-        ? null : getGridInterceptor().getInitialParentFilters(uiOptions);
-
-    final Order order = getGridDescription().getOrder();
-
-    DataInfo dataInfo = Data.getDataInfo(getGridDescription().getViewName());
-    if (dataInfo == null) {
-      return;
-    }
-
-    final GridView gridView = GridFactory.createGridView(getGridDescription(), getGridKey(),
-        dataInfo.getColumns(), getRelSource(), uiOptions, getGridInterceptor(), order);
-
-    afterCreateGrid(gridView);
-
-    if (!hasParentValue(row)) {
-      BeeRowSet rowSet = new BeeRowSet(dataInfo.getViewName(), dataInfo.getColumns());
-      gridView.initData(rowSet.getNumberOfRows(), rowSet);
-      createPresenter(gridView, row, rowSet, immutableFilter, initialFilters, order);
-      return;
-    }
-
-    Filter queryFilter = Filter.and(getFilter(row),
-        GridFactory.getInitialQueryFilter(immutableFilter, initialFilters, null));
-
-    Queries.getRowSet(getGridDescription().getViewName(), null, queryFilter, order,
-        getCachingPolicy(), new Queries.RowSetCallback() {
-          @Override
-          public void onSuccess(BeeRowSet rowSet) {
-            gridView.initData(rowSet.getNumberOfRows(), rowSet);
-            createPresenter(gridView, row, rowSet, immutableFilter, initialFilters, order);
-          }
-        });
   }
 
   private int getParentIndex() {
@@ -225,15 +204,15 @@ public class ChildGrid extends EmbeddedGrid implements Launchable {
     setPendingRow(null);
   }
 
-  private void resolveState() {
+  private void resolveState(boolean ready) {
     if (getGridDescription() == null) {
       return;
     }
 
     if (getPresenter() == null) {
-      getInitialRowSet(getPendingRow());
+      createPresenter();
 
-    } else {
+    } else if (ready || getPresenter().isReady()) {
       getPresenter().getGridView().getGrid().deactivate();
 
       updateFilter(getPendingRow());

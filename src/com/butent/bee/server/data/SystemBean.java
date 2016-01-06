@@ -58,6 +58,7 @@ import com.butent.bee.shared.data.XmlTable.XmlTrigger;
 import com.butent.bee.shared.data.XmlTable.XmlUnique;
 import com.butent.bee.shared.data.XmlView;
 import com.butent.bee.shared.data.XmlView.XmlColumn;
+import com.butent.bee.shared.data.XmlView.XmlColumns;
 import com.butent.bee.shared.data.XmlView.XmlSimpleColumn;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.ViewColumn;
@@ -1004,12 +1005,13 @@ public class SystemBean {
   }
 
   private BeeView getDefaultView(String tblName) {
-    List<XmlColumn> columns = new ArrayList<>();
+    XmlColumns columns = new XmlColumns();
+    columns.columns = new ArrayList<>();
 
     for (BeeField field : getTableFields(tblName)) {
       XmlColumn column = new XmlSimpleColumn();
       column.name = field.getName();
-      columns.add(column);
+      columns.columns.add(column);
     }
     XmlView xmlView = new XmlView();
     xmlView.name = tblName;

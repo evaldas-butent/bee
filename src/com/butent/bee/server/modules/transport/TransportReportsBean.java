@@ -101,7 +101,7 @@ public class TransportReportsBean {
   }
 
   public ResponseObject getCargoProfit(SqlSelect flt) {
-    SqlSelect ss = getCargoIncomeQuery(flt, null, false)
+    SqlSelect ss = getCargoIncomeQuery(flt, null, BeeUtils.unbox(prm.getBoolean(PRM_EXCLUDE_VAT)))
         .addEmptyDouble("ServicesCost")
         .addEmptyDouble("TripCosts");
 
@@ -109,8 +109,8 @@ public class TransportReportsBean {
     String alias = SqlUtils.uniqueName();
 
     qs.updateData(new SqlUpdate(crsTotals)
-        .setFrom(getCargoCostQuery(flt, null, false), alias,
-            SqlUtils.joinUsing(crsTotals, alias, COL_CARGO))
+        .setFrom(getCargoCostQuery(flt, null, BeeUtils.unbox(prm.getBoolean(PRM_EXCLUDE_VAT))),
+            alias, SqlUtils.joinUsing(crsTotals, alias, COL_CARGO))
         .addExpression("ServicesCost", SqlUtils.field(alias, VAR_EXPENSE)));
 
     ss = new SqlSelect()
@@ -119,8 +119,8 @@ public class TransportReportsBean {
         .addFrom(TBL_CARGO_TRIPS)
         .addFromInner(crsTotals, SqlUtils.joinUsing(TBL_CARGO_TRIPS, crsTotals, COL_CARGO));
 
-    String crsIncomes = getTripIncomes(ss, null, false);
-    String crsCosts = getTripCosts(ss, null, false);
+    String crsIncomes = getTripIncomes(ss, null, BeeUtils.unbox(prm.getBoolean(PRM_EXCLUDE_VAT)));
+    String crsCosts = getTripCosts(ss, null, BeeUtils.unbox(prm.getBoolean(PRM_EXCLUDE_VAT)));
 
     ss = new SqlSelect()
         .addFields(crsIncomes, COL_TRIP)
@@ -484,7 +484,8 @@ public class TransportReportsBean {
     Pair<Long, String> currencyInfo = prm.getRelationInfo(PRM_CURRENCY);
 
     String crs = getTripCosts(new SqlSelect().addConstant(trip, COL_TRIP),
-        currencyInfo != null ? currencyInfo.getA() : null, false);
+        currencyInfo != null ? currencyInfo.getA() : null,
+        BeeUtils.unbox(prm.getBoolean(PRM_EXCLUDE_VAT)));
     String fuelCosts = qs.getValue(new SqlSelect().addFields(crs, "FuelCosts").addFrom(crs));
     qs.sqlDropTemp(crs);
 
@@ -599,13 +600,15 @@ public class TransportReportsBean {
   }
 
   public ResponseObject getTripProfit(long tripId) {
-    String crs = getTripCosts(new SqlSelect().addConstant(tripId, "Trip"), null, false);
+    String crs = getTripCosts(new SqlSelect().addConstant(tripId, "Trip"), null,
+        BeeUtils.unbox(prm.getBoolean(PRM_EXCLUDE_VAT)));
 
     SimpleRowSet.SimpleRow res = qs.getRow(new SqlSelect().addAllFields(crs).addFrom(crs));
 
     qs.sqlDropTemp(crs);
 
-    crs = getTripIncomes(new SqlSelect().addConstant(tripId, "Trip"), null, false);
+    crs = getTripIncomes(new SqlSelect().addConstant(tripId, "Trip"), null,
+        BeeUtils.unbox(prm.getBoolean(PRM_EXCLUDE_VAT)));
 
     SqlSelect ss = new SqlSelect()
         .addSum(crs, "TripIncome")

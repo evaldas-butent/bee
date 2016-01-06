@@ -168,7 +168,7 @@ public final class BeeParameter implements BeeSerializable {
     setModule(module);
     setName(name);
     setType(type);
-    this.supportsUsers = userMode;
+    setUserSupport(userMode);
     this.defValue = defValue;
   }
 
@@ -201,7 +201,7 @@ public final class BeeParameter implements BeeSerializable {
           }
           break;
         case SUPPORTS_USERS:
-          supportsUsers = BeeUtils.toBoolean(val);
+          setUserSupport(BeeUtils.toBoolean(val));
           break;
         case OPTIONS:
           setOptions(val);

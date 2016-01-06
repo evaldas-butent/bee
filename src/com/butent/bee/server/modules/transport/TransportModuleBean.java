@@ -113,20 +113,23 @@ public class TransportModuleBean implements BeeModule {
   private static BeeLogger logger = LogUtils.getLogger(TransportModuleBean.class);
 
   private static IsExpression getAssessmentTurnoverExpression(SqlSelect query, String source,
-      String defDateSource, String defDateAlias, Long currency) {
+      String defDateSource, String defDateAlias, Long currency, boolean woVat) {
 
-    IsExpression xpr = SqlUtils.minus(
-        TradeModuleBean.getTotalExpression(source, SqlUtils.field(source, COL_AMOUNT)),
-        TradeModuleBean.getVatExpression(source, SqlUtils.field(source, COL_AMOUNT)));
+    IsExpression amountExpr = SqlUtils.field(source, COL_AMOUNT);
 
+    if (woVat) {
+      amountExpr = TradeModuleBean.getWithoutVatExpression(source, amountExpr);
+    } else {
+      amountExpr = TradeModuleBean.getTotalExpression(source, amountExpr);
+    }
     if (DataUtils.isId(currency)) {
-      return ExchangeUtils.exchangeFieldTo(query, xpr, SqlUtils.field(source, COL_CURRENCY),
+      return ExchangeUtils.exchangeFieldTo(query, amountExpr, SqlUtils.field(source, COL_CURRENCY),
           SqlUtils.nvl(SqlUtils.field(source, COL_DATE),
               SqlUtils.field(defDateSource, defDateAlias)),
           SqlUtils.constant(currency));
 
     } else {
-      return ExchangeUtils.exchangeField(query, xpr, SqlUtils.field(source, COL_CURRENCY),
+      return ExchangeUtils.exchangeField(query, amountExpr, SqlUtils.field(source, COL_CURRENCY),
           SqlUtils.nvl(SqlUtils.field(source, COL_DATE),
               SqlUtils.field(defDateSource, defDateAlias)));
     }
@@ -163,12 +166,12 @@ public class TransportModuleBean implements BeeModule {
 
     List<SearchResult> orderCargoResult = qs.getSearchResults(VIEW_ORDER_CARGO,
         Filter.anyContains(Sets.newHashSet(COL_CARGO_DESCRIPTION,
-            COL_NUMBER, ALS_CARGO_CMR_NUMBER, COL_CARGO_NOTES, COL_CARGO_DIRECTIONS,
-            ALS_LOADING_NUMBER, ALS_LOADING_CONTACT, ALS_LOADING_COMPANY, ALS_LOADING_ADDRESS,
-            ALS_LOADING_POST_INDEX, ALS_LOADING_CITY_NAME, ALS_LOADING_COUNTRY_NAME,
-            ALS_LOADING_COUNTRY_CODE, ALS_UNLOADING_NUMBER, ALS_UNLOADING_CONTACT,
-            ALS_UNLOADING_COMPANY, ALS_UNLOADING_ADDRESS, ALS_UNLOADING_POST_INDEX,
-            ALS_UNLOADING_CITY_NAME, ALS_UNLOADING_COUNTRY_NAME, ALS_UNLOADING_COUNTRY_CODE),
+                COL_NUMBER, ALS_CARGO_CMR_NUMBER, COL_CARGO_NOTES, COL_CARGO_DIRECTIONS,
+                ALS_LOADING_NUMBER, ALS_LOADING_CONTACT, ALS_LOADING_COMPANY, ALS_LOADING_ADDRESS,
+                ALS_LOADING_POST_INDEX, ALS_LOADING_CITY_NAME, ALS_LOADING_COUNTRY_NAME,
+                ALS_LOADING_COUNTRY_CODE, ALS_UNLOADING_NUMBER, ALS_UNLOADING_CONTACT,
+                ALS_UNLOADING_COMPANY, ALS_UNLOADING_ADDRESS, ALS_UNLOADING_POST_INDEX,
+                ALS_UNLOADING_CITY_NAME, ALS_UNLOADING_COUNTRY_NAME, ALS_UNLOADING_COUNTRY_CODE),
             query));
 
     result.addAll(vehiclesResult);
@@ -332,6 +335,7 @@ public class TransportModuleBean implements BeeModule {
     String module = getModule().getName();
 
     return Lists.newArrayList(
+        BeeParameter.createBoolean(module, PRM_EXCLUDE_VAT),
         BeeParameter.createRelation(module, PRM_INVOICE_PREFIX, true, TBL_SALES_SERIES,
             COL_SERIES_NAME),
         BeeParameter.createRelation(module, PRM_PURCHASE_OPERATION, false,
@@ -383,20 +387,24 @@ public class TransportModuleBean implements BeeModule {
                 .setWhere(sys.idInList(TBL_ASSESSMENTS, event.getRowset().getRowIds()))
                 .addGroup(TBL_ASSESSMENTS, sys.getIdName(TBL_ASSESSMENTS));
 
-            IsExpression xpr = TradeModuleBean.getWithoutVatExpression(tbl,
-                SqlUtils.field(tbl, COL_AMOUNT));
+            IsExpression amountExpr = SqlUtils.field(tbl, COL_AMOUNT);
 
+            if (BeeUtils.unbox(prm.getBoolean(PRM_EXCLUDE_VAT))) {
+              amountExpr = TradeModuleBean.getWithoutVatExpression(tbl, amountExpr);
+            } else {
+              amountExpr = TradeModuleBean.getTotalExpression(tbl, amountExpr);
+            }
             if (BeeUtils.same(event.getTargetName(), TBL_ASSESSMENTS)) {
-              xpr = ExchangeUtils.exchangeField(query, xpr,
+              amountExpr = ExchangeUtils.exchangeField(query, amountExpr,
                   SqlUtils.field(tbl, COL_CURRENCY), SqlUtils.nvl(SqlUtils.field(tbl, COL_DATE),
                       SqlUtils.field(TBL_ORDERS, COL_DATE)));
             } else {
-              xpr = ExchangeUtils.exchangeFieldTo(query, xpr,
+              amountExpr = ExchangeUtils.exchangeFieldTo(query, amountExpr,
                   SqlUtils.field(tbl, COL_CURRENCY), SqlUtils.nvl(SqlUtils.field(tbl, COL_DATE),
                       SqlUtils.field(TBL_ORDERS, COL_DATE)),
                   SqlUtils.field(TBL_ORDER_CARGO, COL_CURRENCY));
             }
-            SimpleRowSet rs = qs.getData(query.addSum(xpr, VAR_TOTAL));
+            SimpleRowSet rs = qs.getData(query.addSum(amountExpr, VAR_TOTAL));
 
             for (BeeRow row : event.getRowset().getRows()) {
               row.setProperty((BeeUtils.same(tbl, TBL_CARGO_INCOMES)) ? VAR_INCOME : VAR_EXPENSE,
@@ -495,9 +503,10 @@ public class TransportModuleBean implements BeeModule {
       public void fillCargoIncomes(ViewQueryEvent event) {
         if (event.isAfter(VIEW_ORDER_CARGO) && event.hasData()) {
           SimpleRowSet rs = qs.getData(rep.getCargoIncomeQuery(event.getQuery()
-              .resetFields().resetOrder().resetGroup()
-              .addField(TBL_ORDER_CARGO, sys.getIdName(TBL_ORDER_CARGO), COL_CARGO)
-              .addGroup(TBL_ORDER_CARGO, sys.getIdName(TBL_ORDER_CARGO)), null, false));
+                  .resetFields().resetOrder().resetGroup()
+                  .addField(TBL_ORDER_CARGO, sys.getIdName(TBL_ORDER_CARGO), COL_CARGO)
+                  .addGroup(TBL_ORDER_CARGO, sys.getIdName(TBL_ORDER_CARGO)), null,
+              BeeUtils.unbox(prm.getBoolean(PRM_EXCLUDE_VAT))));
 
           for (BeeRow row : event.getRowset().getRows()) {
             String cargoId = BeeUtils.toString(row.getId());
@@ -543,8 +552,8 @@ public class TransportModuleBean implements BeeModule {
             return;
           }
           String crs = rep.getTripIncomes(event.getQuery().resetFields().resetOrder().resetGroup()
-              .addFields(VIEW_CARGO_TRIPS, COL_TRIP).addGroup(VIEW_CARGO_TRIPS, COL_TRIP),
-              null, false);
+                  .addFields(VIEW_CARGO_TRIPS, COL_TRIP).addGroup(VIEW_CARGO_TRIPS, COL_TRIP),
+              null, BeeUtils.unbox(prm.getBoolean(PRM_EXCLUDE_VAT)));
 
           SimpleRowSet rs = qs.getData(new SqlSelect().addAllFields(crs).addFrom(crs));
           qs.sqlDropTemp(crs);
@@ -987,12 +996,12 @@ public class TransportModuleBean implements BeeModule {
                 SqlUtils.constant("_"),
                 SqlUtils.field(TBL_CARGO_INCOMES, sys.getIdName(TBL_CARGO_INCOMES))),
             COL_TRADE_ITEM_ARTICLE)
-        .addField(loadPlace, COL_DATE, COL_LOADING_PLACE)
-        .addField(unloadPlace, COL_DATE, COL_UNLOADING_PLACE)
-        .addField(loadCountry, COL_COUNTRY_CODE, loadCountry)
-        .addField(loadCountry, COL_COUNTRY_NAME, loadCountry + "Name")
-        .addField(unloadCountry, COL_COUNTRY_CODE, unloadCountry)
-        .addField(unloadCountry, COL_COUNTRY_NAME, unloadCountry + "Name")
+        .addField(loadPlace, COL_DATE, ALS_LOADING_DATE)
+        .addField(unloadPlace, COL_DATE, ALS_UNLOADING_DATE)
+        .addField(loadCountry, COL_COUNTRY_CODE, ALS_LOADING_COUNTRY_CODE)
+        .addField(loadCountry, COL_COUNTRY_NAME, ALS_LOADING_COUNTRY_NAME)
+        .addField(unloadCountry, COL_COUNTRY_CODE, ALS_UNLOADING_COUNTRY_CODE)
+        .addField(unloadCountry, COL_COUNTRY_NAME, ALS_UNLOADING_COUNTRY_NAME)
         .addField(TBL_ASSESSMENTS, sys.getIdName(TBL_ASSESSMENTS), COL_ASSESSMENT)
         .addField(DocumentConstants.TBL_DOCUMENTS, DocumentConstants.COL_DOCUMENT_NUMBER,
             ALS_CARGO_CMR_NUMBER)
@@ -1004,13 +1013,14 @@ public class TransportModuleBean implements BeeModule {
         .addFromInner(TBL_ORDER_CARGO,
             sys.joinTables(TBL_ORDER_CARGO, TBL_CARGO_INCOMES, COL_CARGO))
         .addFromInner(TBL_ORDERS, sys.joinTables(TBL_ORDERS, TBL_ORDER_CARGO, COL_ORDER))
+        .addFromLeft(TBL_CARGO_HANDLING,
+            sys.joinTables(TBL_CARGO_HANDLING, TBL_ORDER_CARGO, COL_CARGO_HANDLING))
         .addFromLeft(TBL_CARGO_PLACES, loadPlace,
-            sys.joinTables(TBL_CARGO_PLACES, loadPlace, TBL_ORDER_CARGO, COL_LOADING_PLACE))
+            sys.joinTables(TBL_CARGO_PLACES, loadPlace, TBL_CARGO_HANDLING, COL_LOADING_PLACE))
         .addFromLeft(TBL_COUNTRIES, loadCountry,
             sys.joinTables(TBL_COUNTRIES, loadCountry, loadPlace, COL_COUNTRY))
         .addFromLeft(TBL_CARGO_PLACES, unloadPlace,
-            sys.joinTables(TBL_CARGO_PLACES, unloadPlace, TBL_ORDER_CARGO,
-                COL_UNLOADING_PLACE))
+            sys.joinTables(TBL_CARGO_PLACES, unloadPlace, TBL_CARGO_HANDLING, COL_UNLOADING_PLACE))
         .addFromLeft(TBL_COUNTRIES, unloadCountry,
             sys.joinTables(TBL_COUNTRIES, unloadCountry, unloadPlace, COL_COUNTRY))
         .addFromLeft(TBL_ASSESSMENTS,
@@ -1134,16 +1144,16 @@ public class TransportModuleBean implements BeeModule {
       if (BeeUtils.unbox(row.getBoolean(COL_TRANSPORTATION))) {
         String value = BeeUtils.join("\n", row.getValue(COL_ADDITIONAL_ROUTE),
             BeeUtils.unbox(row.getBoolean(COL_SHOW_ADDITIONAL_ROUTE))
-                ? BeeUtils.join("-", row.getValue(loadCountry)
-                    + " (" + row.getValue(loadCountry + "Name") + ")",
-                row.getValue(unloadCountry)
-                    + " (" + row.getValue(unloadCountry + "Name") + ")")
+                ? BeeUtils.join("-", row.getValue(ALS_LOADING_COUNTRY_CODE)
+                    + " (" + ALS_LOADING_COUNTRY_NAME + ")",
+                row.getValue(ALS_UNLOADING_COUNTRY_CODE)
+                    + " (" + row.getValue(ALS_UNLOADING_COUNTRY_NAME) + ")")
                 : null);
 
         if (!BeeUtils.isEmpty(value)) {
           valueMap.put(COL_ORDER_NOTES, value);
         }
-        for (String fld : new String[] {COL_LOADING_PLACE, COL_UNLOADING_PLACE}) {
+        for (String fld : new String[] {ALS_LOADING_DATE, ALS_UNLOADING_DATE}) {
           DateTime time = row.getDateTime(fld);
 
           if (time != null) {
@@ -1316,9 +1326,9 @@ public class TransportModuleBean implements BeeModule {
         .addFields(TBL_COUNTRY_NORMS, COL_COUNTRY, COL_DAILY_COSTS_ITEM)
         .addFields(TBL_COUNTRY_DAILY_COSTS, COL_AMOUNT, COL_CURRENCY)
         .addExpr(SqlUtils.sqlIf(SqlUtils.or(
-            SqlUtils.isNull(TBL_COUNTRY_DAILY_COSTS, COL_TRIP_DATE_FROM),
-            SqlUtils.joinLess(TBL_COUNTRY_DAILY_COSTS, COL_TRIP_DATE_FROM,
-                TBL_TRIP_ROUTES, COL_ROUTE_DEPARTURE_DATE)),
+                SqlUtils.isNull(TBL_COUNTRY_DAILY_COSTS, COL_TRIP_DATE_FROM),
+                SqlUtils.joinLess(TBL_COUNTRY_DAILY_COSTS, COL_TRIP_DATE_FROM,
+                    TBL_TRIP_ROUTES, COL_ROUTE_DEPARTURE_DATE)),
             SqlUtils.field(TBL_TRIP_ROUTES, COL_ROUTE_DEPARTURE_DATE),
             SqlUtils.field(TBL_COUNTRY_DAILY_COSTS, COL_TRIP_DATE_FROM)), COL_ROUTE_DEPARTURE_DATE)
         .addExpr(SqlUtils.sqlIf(
@@ -1330,9 +1340,9 @@ public class TransportModuleBean implements BeeModule {
         .addFrom(TBL_TRIP_ROUTES)
         .addFromInner(TBL_COUNTRY_NORMS,
             SqlUtils.compare(SqlUtils.sqlIf(SqlUtils.equals(TBL_TRIP_ROUTES,
-                COL_ROUTE_ARRIVAL_COUNTRY, mainCountry),
-                SqlUtils.field(TBL_TRIP_ROUTES, COL_ROUTE_DEPARTURE_COUNTRY),
-                SqlUtils.field(TBL_TRIP_ROUTES, COL_ROUTE_ARRIVAL_COUNTRY)), Operator.EQ,
+                        COL_ROUTE_ARRIVAL_COUNTRY, mainCountry),
+                    SqlUtils.field(TBL_TRIP_ROUTES, COL_ROUTE_DEPARTURE_COUNTRY),
+                    SqlUtils.field(TBL_TRIP_ROUTES, COL_ROUTE_ARRIVAL_COUNTRY)), Operator.EQ,
                 SqlUtils.field(TBL_COUNTRY_NORMS, COL_COUNTRY)))
         .addFromInner(TBL_COUNTRY_DAILY_COSTS, SqlUtils.and(
             sys.joinTables(TBL_COUNTRY_NORMS, TBL_COUNTRY_DAILY_COSTS, COL_COUNTRY_NORM),
@@ -1381,7 +1391,7 @@ public class TransportModuleBean implements BeeModule {
       values.put(COL_COSTS_QUANTITY,
           BeeUtils.toString(BeeUtils.toInt(values.get(COL_COSTS_QUANTITY))
               + TimeUtils.dayDiff(row.getDateTime(COL_ROUTE_DEPARTURE_DATE),
-                  row.getDateTime(COL_ROUTE_ARRIVAL_DATE))));
+              row.getDateTime(COL_ROUTE_ARRIVAL_DATE))));
     }
     if (!BeeUtils.isEmpty(lastKey)) {
       Map<String, String> values = map.get(lastKey);
@@ -1425,8 +1435,17 @@ public class TransportModuleBean implements BeeModule {
   }
 
   private ResponseObject generateTripRoute(long tripId) {
+    List<Long> ids = qs.getLongList(new SqlSelect().setDistinctMode(true)
+        .addFields(TBL_CARGO_HANDLING, COL_CARGO_TRIP)
+        .addFrom(TBL_CARGO_TRIPS)
+        .addFromInner(TBL_CARGO_HANDLING,
+            sys.joinTables(TBL_CARGO_TRIPS, TBL_CARGO_HANDLING, COL_CARGO_TRIP))
+        .setWhere(SqlUtils.equals(TBL_CARGO_TRIPS, COL_TRIP, tripId)));
+
     SqlSelect query = new SqlSelect()
         .addField(TBL_CARGO_TRIPS, sys.getIdName(TBL_CARGO_TRIPS), COL_ROUTE_CARGO)
+        .addFields(TBL_CARGO_HANDLING, COL_CARGO_WEIGHT, COL_LOADED_KILOMETERS,
+            COL_EMPTY_KILOMETERS)
         .addFields(TBL_CARGO_PLACES, COL_PLACE_DATE, COL_PLACE_COUNTRY, COL_PLACE_CITY)
         .addFields(TBL_ORDER_CARGO, COL_CARGO_PARTIAL)
         .addFrom(TBL_CARGO_TRIPS)
@@ -1434,22 +1453,39 @@ public class TransportModuleBean implements BeeModule {
         .setWhere(SqlUtils.and(SqlUtils.equals(TBL_CARGO_TRIPS, COL_TRIP, tripId),
             SqlUtils.notNull(TBL_CARGO_PLACES, COL_PLACE_DATE)));
 
-    SimpleRowSet rs = qs.getData(query.copyOf()
-        .addFields(TBL_ORDER_CARGO, COL_CARGO_WEIGHT, COL_LOADED_KILOMETERS, COL_EMPTY_KILOMETERS)
+    SqlSelect union = query.copyOf()
         .addConstant(0, VAR_UNLOADING)
+        .addFromInner(TBL_CARGO_HANDLING,
+            sys.joinTables(TBL_CARGO_TRIPS, TBL_CARGO_HANDLING, COL_CARGO_TRIP))
         .addFromLeft(TBL_CARGO_PLACES,
-            sys.joinTables(TBL_CARGO_PLACES, TBL_ORDER_CARGO, COL_LOADING_PLACE))
+            sys.joinTables(TBL_CARGO_PLACES, TBL_CARGO_HANDLING, COL_LOADING_PLACE))
 
         .addUnion(query.copyOf()
-            .addFields(TBL_ORDER_CARGO, COL_CARGO_WEIGHT, COL_LOADED_KILOMETERS,
-                COL_EMPTY_KILOMETERS)
             .addConstant(1, VAR_UNLOADING)
+            .addFromInner(TBL_CARGO_HANDLING,
+                sys.joinTables(TBL_CARGO_TRIPS, TBL_CARGO_HANDLING, COL_CARGO_TRIP))
             .addFromLeft(TBL_CARGO_PLACES,
-                sys.joinTables(TBL_CARGO_PLACES, TBL_ORDER_CARGO, COL_UNLOADING_PLACE)))
+                sys.joinTables(TBL_CARGO_PLACES, TBL_CARGO_HANDLING, COL_UNLOADING_PLACE)));
+
+    if (!BeeUtils.isEmpty(ids)) {
+      query.setWhere(SqlUtils.and(query.getWhere(),
+          SqlUtils.not(sys.idInList(TBL_CARGO_TRIPS, ids))));
+    }
+    union.addUnion(query.copyOf()
+        .addConstant(0, VAR_UNLOADING)
+        .addFromInner(TBL_CARGO_HANDLING,
+            sys.joinTables(TBL_CARGO_HANDLING, TBL_ORDER_CARGO, COL_CARGO_HANDLING))
+        .addFromLeft(TBL_CARGO_PLACES,
+            sys.joinTables(TBL_CARGO_PLACES, TBL_CARGO_HANDLING, COL_LOADING_PLACE))
 
         .addUnion(query.copyOf()
-            .addFields(TBL_CARGO_HANDLING, COL_CARGO_WEIGHT, COL_LOADED_KILOMETERS,
-                COL_EMPTY_KILOMETERS)
+            .addConstant(1, VAR_UNLOADING)
+            .addFromInner(TBL_CARGO_HANDLING,
+                sys.joinTables(TBL_CARGO_HANDLING, TBL_ORDER_CARGO, COL_CARGO_HANDLING))
+            .addFromLeft(TBL_CARGO_PLACES,
+                sys.joinTables(TBL_CARGO_PLACES, TBL_CARGO_HANDLING, COL_UNLOADING_PLACE)))
+
+        .addUnion(query.copyOf()
             .addConstant(0, VAR_UNLOADING)
             .addFromInner(TBL_CARGO_HANDLING,
                 sys.joinTables(TBL_ORDER_CARGO, TBL_CARGO_HANDLING, COL_CARGO))
@@ -1457,8 +1493,6 @@ public class TransportModuleBean implements BeeModule {
                 sys.joinTables(TBL_CARGO_PLACES, TBL_CARGO_HANDLING, COL_LOADING_PLACE)))
 
         .addUnion(query.copyOf()
-            .addFields(TBL_CARGO_HANDLING, COL_CARGO_WEIGHT, COL_LOADED_KILOMETERS,
-                COL_EMPTY_KILOMETERS)
             .addConstant(1, VAR_UNLOADING)
             .addFromInner(TBL_CARGO_HANDLING,
                 sys.joinTables(TBL_ORDER_CARGO, TBL_CARGO_HANDLING, COL_CARGO))
@@ -1477,7 +1511,7 @@ public class TransportModuleBean implements BeeModule {
     Map<Long, Pair<Integer, Integer>> stack = new HashMap<>();
     Set<Long> nonPartials = new HashSet<>();
 
-    for (SimpleRow row : rs) {
+    for (SimpleRow row : qs.getData(union)) {
       Long orderCargo = row.getLong(COL_ROUTE_CARGO);
       boolean loaded = stack.containsKey(orderCargo);
       boolean unloading = BeeUtils.unbox(row.getBoolean(VAR_UNLOADING));
@@ -1763,8 +1797,14 @@ public class TransportModuleBean implements BeeModule {
         } else {
           ss.setWhere(sys.idEquals(TBL_ASSESSMENTS, assessmentId));
         }
-        IsExpression xpr = ExchangeUtils.exchangeFieldTo(ss,
-            TradeModuleBean.getWithoutVatExpression(tbl, SqlUtils.field(tbl, COL_AMOUNT)),
+        IsExpression amountExpr = SqlUtils.field(tbl, COL_AMOUNT);
+
+        if (BeeUtils.unbox(prm.getBoolean(PRM_EXCLUDE_VAT))) {
+          amountExpr = TradeModuleBean.getWithoutVatExpression(tbl, amountExpr);
+        } else {
+          amountExpr = TradeModuleBean.getTotalExpression(tbl, amountExpr);
+        }
+        IsExpression xpr = ExchangeUtils.exchangeFieldTo(ss, amountExpr,
             SqlUtils.field(tbl, COL_CURRENCY),
             SqlUtils.nvl(SqlUtils.field(tbl, COL_DATE), SqlUtils.field(TBL_ORDERS, COL_DATE)),
             SqlUtils.constant(currency));
@@ -1843,12 +1883,14 @@ public class TransportModuleBean implements BeeModule {
       query.addFields(TBL_ORDERS, COL_CUSTOMER);
     }
 
-    query.addFrom(TBL_ASSESSMENTS);
-    query.addFromInner(TBL_ORDER_CARGO,
-        sys.joinTables(TBL_ORDER_CARGO, TBL_ASSESSMENTS, COL_CARGO));
-    query.addFromInner(TBL_CARGO_PLACES,
-        sys.joinTables(TBL_CARGO_PLACES, TBL_ORDER_CARGO, COL_UNLOADING_PLACE));
-    query.addFromInner(TBL_ORDERS, sys.joinTables(TBL_ORDERS, TBL_ORDER_CARGO, COL_ORDER));
+    query.addFrom(TBL_ASSESSMENTS)
+        .addFromInner(TBL_ORDER_CARGO,
+            sys.joinTables(TBL_ORDER_CARGO, TBL_ASSESSMENTS, COL_CARGO))
+        .addFromLeft(TBL_CARGO_HANDLING,
+            sys.joinTables(TBL_CARGO_HANDLING, TBL_ORDER_CARGO, COL_CARGO_HANDLING))
+        .addFromInner(TBL_CARGO_PLACES,
+            sys.joinTables(TBL_CARGO_PLACES, COL_CARGO_HANDLING, COL_UNLOADING_PLACE))
+        .addFromInner(TBL_ORDERS, sys.joinTables(TBL_ORDERS, TBL_ORDER_CARGO, COL_ORDER));
 
     if (!managers.isEmpty() || groupBy.contains(AR_MANAGER)) {
       query.addFromLeft(TBL_USERS, sys.joinTables(TBL_USERS, TBL_ORDERS, COL_ORDER_MANAGER));
@@ -1938,7 +1980,7 @@ public class TransportModuleBean implements BeeModule {
         .addGroup(tmp, COL_CARGO);
 
     IsExpression incomeXpr = getAssessmentTurnoverExpression(subIncome, TBL_CARGO_INCOMES,
-        tmp, orderDateAlias, currency);
+        tmp, orderDateAlias, currency, BeeUtils.unbox(prm.getBoolean(PRM_EXCLUDE_VAT)));
     subIncome.addSum(incomeXpr, AR_INCOME);
 
     SqlSelect subExpense = new SqlSelect()
@@ -1949,7 +1991,7 @@ public class TransportModuleBean implements BeeModule {
         .addGroup(tmp, COL_CARGO);
 
     IsExpression expenseXpr = getAssessmentTurnoverExpression(subExpense, TBL_CARGO_EXPENSES,
-        tmp, orderDateAlias, currency);
+        tmp, orderDateAlias, currency, BeeUtils.unbox(prm.getBoolean(PRM_EXCLUDE_VAT)));
     subExpense.addSum(expenseXpr, AR_EXPENSE);
 
     String incomeAlias = "Inc" + SqlUtils.uniqueName();
@@ -1984,7 +2026,8 @@ public class TransportModuleBean implements BeeModule {
   private ResponseObject getCargoTotal(long cargoId, Long currency) {
     String val = null;
     SimpleRow row = qs.getRow(rep.getCargoIncomeQuery(new SqlSelect()
-        .addConstant(cargoId, COL_CARGO), currency, false));
+            .addConstant(cargoId, COL_CARGO), currency,
+        BeeUtils.unbox(prm.getBoolean(PRM_EXCLUDE_VAT))));
 
     if (row != null) {
       val = BeeUtils.round(row.getValue("CargoIncome"), 2);
@@ -2065,8 +2108,8 @@ public class TransportModuleBean implements BeeModule {
           .addFromInner(TBL_CARGO_INCOMES,
               sys.joinTables(TBL_ORDER_CARGO, TBL_CARGO_INCOMES, COL_CARGO))
           .setWhere(SqlUtils.and(SqlUtils.or(SqlUtils.equals(TBL_ORDERS, COL_PAYER, company),
-              SqlUtils.and(SqlUtils.isNull(TBL_ORDERS, COL_PAYER),
-                  SqlUtils.equals(TBL_ORDERS, COL_CUSTOMER, company))),
+                  SqlUtils.and(SqlUtils.isNull(TBL_ORDERS, COL_PAYER),
+                      SqlUtils.equals(TBL_ORDERS, COL_CUSTOMER, company))),
               SqlUtils.isNull(TBL_CARGO_INCOMES, COL_SALE)));
 
       IsExpression cargoIncome;
@@ -2112,7 +2155,7 @@ public class TransportModuleBean implements BeeModule {
     if (Objects.nonNull(to)) {
       query.setWhere(SqlUtils.and(query.getWhere(),
           SqlUtils.or(SqlUtils.and(SqlUtils.isNull(TBL_TRIPS, COL_TRIP_DATE_FROM),
-              SqlUtils.less(TBL_TRIPS, COL_TRIP_DATE, to)),
+                  SqlUtils.less(TBL_TRIPS, COL_TRIP_DATE, to)),
               SqlUtils.and(SqlUtils.notNull(TBL_TRIPS, COL_TRIP_DATE_FROM),
                   SqlUtils.less(TBL_TRIPS, COL_TRIP_DATE_FROM, to)))));
     }
@@ -2251,8 +2294,6 @@ public class TransportModuleBean implements BeeModule {
     String loadAlias = "load_" + SqlUtils.uniqueName();
     String unlAlias = "unl_" + SqlUtils.uniqueName();
 
-    String colPlaceId = sys.getIdName(TBL_CARGO_PLACES);
-
     IsCondition handlingWhere = SqlUtils.or(SqlUtils.notNull(loadAlias, COL_PLACE_DATE),
         SqlUtils.notNull(unlAlias, COL_PLACE_DATE));
 
@@ -2264,9 +2305,9 @@ public class TransportModuleBean implements BeeModule {
         .addFromInner(TBL_CARGO_HANDLING,
             sys.joinTables(TBL_ORDER_CARGO, TBL_CARGO_HANDLING, COL_CARGO))
         .addFromLeft(TBL_CARGO_PLACES, loadAlias,
-            SqlUtils.join(loadAlias, colPlaceId, TBL_CARGO_HANDLING, COL_LOADING_PLACE))
+            sys.joinTables(TBL_CARGO_PLACES, loadAlias, TBL_CARGO_HANDLING, COL_LOADING_PLACE))
         .addFromLeft(TBL_CARGO_PLACES, unlAlias,
-            SqlUtils.join(unlAlias, colPlaceId, TBL_CARGO_HANDLING, COL_UNLOADING_PLACE))
+            sys.joinTables(TBL_CARGO_PLACES, unlAlias, TBL_CARGO_HANDLING, COL_UNLOADING_PLACE))
         .addFields(TBL_CARGO_HANDLING, COL_CARGO, COL_CARGO_HANDLING_NOTES)
         .addField(loadAlias, COL_PLACE_DATE, loadingColumnAlias(COL_PLACE_DATE))
         .addField(loadAlias, COL_PLACE_COUNTRY, loadingColumnAlias(COL_PLACE_COUNTRY))
@@ -2290,22 +2331,25 @@ public class TransportModuleBean implements BeeModule {
 
     String defLoadAlias = "defl_" + SqlUtils.uniqueName();
     String defUnlAlias = "defu_" + SqlUtils.uniqueName();
-
-    String colPlaceId = sys.getIdName(TBL_CARGO_PLACES);
+    String defHandling = SqlUtils.uniqueName();
 
     return new SqlSelect()
         .addFrom(TBL_TRIPS)
         .addFromInner(TBL_CARGO_TRIPS,
             SqlUtils.join(TBL_CARGO_TRIPS, COL_TRIP, TBL_TRIPS, COL_TRIP_ID))
+        .addFromLeft(TBL_CARGO_HANDLING,
+            sys.joinTables(TBL_CARGO_HANDLING, TBL_CARGO_TRIPS, COL_CARGO_HANDLING))
         .addFromLeft(TBL_CARGO_PLACES, loadAlias,
-            SqlUtils.join(loadAlias, colPlaceId, TBL_CARGO_TRIPS, COL_LOADING_PLACE))
+            sys.joinTables(TBL_CARGO_PLACES, loadAlias, TBL_CARGO_HANDLING, COL_LOADING_PLACE))
         .addFromLeft(TBL_CARGO_PLACES, unlAlias,
-            SqlUtils.join(unlAlias, colPlaceId, TBL_CARGO_TRIPS, COL_UNLOADING_PLACE))
+            sys.joinTables(TBL_CARGO_PLACES, unlAlias, TBL_CARGO_HANDLING, COL_LOADING_PLACE))
         .addFromInner(TBL_ORDER_CARGO, sys.joinTables(TBL_ORDER_CARGO, TBL_CARGO_TRIPS, COL_CARGO))
+        .addFromLeft(TBL_CARGO_HANDLING, defHandling,
+            sys.joinTables(TBL_CARGO_HANDLING, defHandling, TBL_ORDER_CARGO, COL_CARGO_HANDLING))
         .addFromLeft(TBL_CARGO_PLACES, defLoadAlias,
-            SqlUtils.join(defLoadAlias, colPlaceId, TBL_ORDER_CARGO, COL_LOADING_PLACE))
+            sys.joinTables(TBL_CARGO_PLACES, defLoadAlias, defHandling, COL_LOADING_PLACE))
         .addFromLeft(TBL_CARGO_PLACES, defUnlAlias,
-            SqlUtils.join(defUnlAlias, colPlaceId, TBL_ORDER_CARGO, COL_UNLOADING_PLACE))
+            sys.joinTables(TBL_CARGO_PLACES, defUnlAlias, defHandling, COL_UNLOADING_PLACE))
         .addFromLeft(TBL_ORDERS, sys.joinTables(TBL_ORDERS, TBL_ORDER_CARGO, COL_ORDER))
         .addFromLeft(TBL_COMPANIES, sys.joinTables(TBL_COMPANIES, TBL_ORDERS, COL_CUSTOMER))
         .addFields(TBL_TRIPS, COL_TRIP_ID, COL_VEHICLE, COL_TRAILER)
@@ -2370,16 +2414,16 @@ public class TransportModuleBean implements BeeModule {
     String loadAlias = "load_" + SqlUtils.uniqueName();
     String unlAlias = "unl_" + SqlUtils.uniqueName();
 
-    String colPlaceId = sys.getIdName(TBL_CARGO_PLACES);
-
     SqlSelect query = new SqlSelect()
         .addFrom(TBL_ORDER_CARGO)
         .addFromLeft(TBL_ORDERS, sys.joinTables(TBL_ORDERS, TBL_ORDER_CARGO, COL_ORDER))
         .addFromLeft(TBL_COMPANIES, sys.joinTables(TBL_COMPANIES, TBL_ORDERS, COL_CUSTOMER))
+        .addFromLeft(TBL_CARGO_HANDLING,
+            sys.joinTables(TBL_CARGO_HANDLING, TBL_ORDER_CARGO, COL_CARGO_HANDLING))
         .addFromLeft(TBL_CARGO_PLACES, loadAlias,
-            SqlUtils.join(loadAlias, colPlaceId, TBL_ORDER_CARGO, COL_LOADING_PLACE))
+            sys.joinTables(TBL_CARGO_PLACES, loadAlias, TBL_CARGO_HANDLING, COL_LOADING_PLACE))
         .addFromLeft(TBL_CARGO_PLACES, unlAlias,
-            SqlUtils.join(unlAlias, colPlaceId, TBL_ORDER_CARGO, COL_UNLOADING_PLACE))
+            sys.joinTables(TBL_CARGO_PLACES, unlAlias, TBL_CARGO_HANDLING, COL_UNLOADING_PLACE))
         .addFromLeft(TBL_CARGO_TRIPS,
             SqlUtils.join(TBL_CARGO_TRIPS, COL_CARGO, TBL_ORDER_CARGO, COL_CARGO_ID));
 
@@ -2433,9 +2477,9 @@ public class TransportModuleBean implements BeeModule {
         .addFromInner(TBL_CARGO_HANDLING,
             sys.joinTables(TBL_ORDER_CARGO, TBL_CARGO_HANDLING, COL_CARGO))
         .addFromLeft(TBL_CARGO_PLACES, loadAlias,
-            SqlUtils.join(loadAlias, colPlaceId, TBL_CARGO_HANDLING, COL_LOADING_PLACE))
+            sys.joinTables(TBL_CARGO_PLACES, loadAlias, TBL_CARGO_HANDLING, COL_LOADING_PLACE))
         .addFromLeft(TBL_CARGO_PLACES, unlAlias,
-            SqlUtils.join(unlAlias, colPlaceId, TBL_CARGO_HANDLING, COL_UNLOADING_PLACE))
+            sys.joinTables(TBL_CARGO_PLACES, unlAlias, TBL_CARGO_HANDLING, COL_UNLOADING_PLACE))
         .addFields(TBL_CARGO_HANDLING, COL_CARGO, COL_CARGO_HANDLING_NOTES)
         .addField(loadAlias, COL_PLACE_DATE, loadingColumnAlias(COL_PLACE_DATE))
         .addField(loadAlias, COL_PLACE_COUNTRY, loadingColumnAlias(COL_PLACE_COUNTRY))
@@ -2553,9 +2597,9 @@ public class TransportModuleBean implements BeeModule {
               .setWhere(SqlUtils.equals(TBL_TRIP_FUEL_COSTS, COL_TRIP, tripId)));
 
           SimpleRow cons = qs.getRow(rep.getFuelConsumptionsQuery(new SqlSelect()
-              .addFields(TBL_TRIP_ROUTES, sys.getIdName(TBL_TRIP_ROUTES))
-              .addFrom(TBL_TRIP_ROUTES)
-              .setWhere(SqlUtils.equals(TBL_TRIP_ROUTES, COL_TRIP, tripId)),
+                  .addFields(TBL_TRIP_ROUTES, sys.getIdName(TBL_TRIP_ROUTES))
+                  .addFrom(TBL_TRIP_ROUTES)
+                  .setWhere(SqlUtils.equals(TBL_TRIP_ROUTES, COL_TRIP, tripId)),
               false));
 
           Double consume = Objects.isNull(cons) ? null : cons.getDouble(COL_COSTS_QUANTITY);
@@ -2655,7 +2699,7 @@ public class TransportModuleBean implements BeeModule {
         if (Objects.nonNull(to)) {
           query.setWhere(SqlUtils.and(query.getWhere(),
               SqlUtils.or(SqlUtils.and(SqlUtils.isNull(TBL_TRIPS, COL_TRIP_DATE_FROM),
-                  SqlUtils.less(TBL_TRIPS, COL_TRIP_DATE, to)),
+                      SqlUtils.less(TBL_TRIPS, COL_TRIP_DATE, to)),
                   SqlUtils.and(SqlUtils.notNull(TBL_TRIPS, COL_TRIP_DATE_FROM),
                       SqlUtils.less(TBL_TRIPS, COL_TRIP_DATE_FROM, to)))));
         }

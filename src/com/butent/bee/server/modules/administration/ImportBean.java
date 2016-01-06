@@ -98,10 +98,10 @@ import lt.locator.TripSumRepData;
 public class ImportBean {
 
   private static final class ImportObject {
-    private final int prpValue = 0;
-    private final int prpRelation = 1;
-    private final int prpObject = 2;
-    private final int prpId = 3;
+    private static final int prpValue = 0;
+    private static final int prpRelation = 1;
+    private static final int prpObject = 2;
+    private static final int prpId = 3;
 
     private final long objectId;
     private final String viewName;
@@ -130,7 +130,7 @@ public class ImportBean {
         BeeView view = sys.getView(viewName);
 
         for (ViewColumn col : view.getViewColumns()) {
-          if (col.isReadOnly() || !BeeUtils.unbox(col.getEditable())
+          if (col.isHidden() || col.isReadOnly() || !BeeUtils.unbox(col.getEditable())
               && BeeUtils.isPositive(col.getLevel())) {
             continue;
           }
@@ -341,14 +341,7 @@ public class ImportBean {
           String name = names.get(entry.getKey());
 
           if (!BeeUtils.isEmpty(name)) {
-            IsCondition wh;
-
-            if (entry.getValue() == null) {
-              wh = SqlUtils.isNull(data, name);
-            } else {
-              wh = SqlUtils.equals(data, name, entry.getValue());
-            }
-            clause.add(wh);
+            clause.add(SqlUtils.equals(data, name, entry.getValue()));
           }
         }
         condition.add(clause);
@@ -745,10 +738,10 @@ public class ImportBean {
             if (!BeeUtils.isPositive(qty)) {
               return false;
             }
-            if (!BeeUtils.isPositive(prc)) {
+            if (BeeUtils.isZero(prc)) {
               prc = BeeUtils.round(toDouble(values.get(COL_AMOUNT)) / qty, 5);
             }
-            if (BeeUtils.isPositive(prc)) {
+            if (!BeeUtils.isZero(prc)) {
               values.put(COL_COSTS_PRICE, BeeUtils.toString(prc));
             } else {
               return false;
@@ -843,7 +836,7 @@ public class ImportBean {
 
     for (String tbl : new String[] {TBL_TRIP_COSTS, TBL_TRIP_FUEL_COSTS}) {
       HasConditions wh = SqlUtils.and(BeeUtils.same(tbl, TBL_TRIP_FUEL_COSTS)
-          ? SqlUtils.notNull(tmp, COL_FUEL) : SqlUtils.isNull(tmp, COL_FUEL),
+              ? SqlUtils.notNull(tmp, COL_FUEL) : SqlUtils.isNull(tmp, COL_FUEL),
           SqlUtils.notNull(tbl, COL_COSTS_EXTERNAL_ID));
 
       qs.updateData(new SqlUpdate(tmp)

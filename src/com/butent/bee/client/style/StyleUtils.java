@@ -167,6 +167,8 @@ public final class StyleUtils {
   public static final String NAME_RESIZABLE = BeeConst.CSS_CLASS_PREFIX + "resizable";
   public static final String NAME_FOCUSABLE = BeeConst.CSS_CLASS_PREFIX + "focusable";
   public static final String NAME_DISABLED = BeeConst.CSS_CLASS_PREFIX + SUFFIX_DISABLED;
+  public static final String NAME_LOADING = BeeConst.CSS_CLASS_PREFIX + "loading";
+  public static final String NAME_POTENTIALLY_BOLD = BeeConst.CSS_CLASS_PREFIX + "potentially-bold";
 
   public static final String NAME_TEXT_BOX = BeeConst.CSS_CLASS_PREFIX + "TextBox";
   public static final String NAME_FORM = BeeConst.CSS_CLASS_PREFIX + "Form";

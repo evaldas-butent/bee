@@ -2394,7 +2394,11 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
   @Override
   public void setRowCount(int count, boolean fireScopeChange) {
     Assert.nonNegative(count);
+
     if (count == getRowCount()) {
+      if (fireScopeChange) {
+        fireScopeChange(NavigationOrigin.SYSTEM);
+      }
       return;
     }
 

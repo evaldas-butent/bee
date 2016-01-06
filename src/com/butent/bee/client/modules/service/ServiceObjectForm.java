@@ -251,7 +251,7 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
   @Override
   public void onLoad(FormView form) {
     EventUtils.clearRegistry(registry);
-    registry.add(BeeKeeper.getBus().registerRowActionHandler(this, false));
+    registry.add(BeeKeeper.getBus().registerRowActionHandler(this));
   }
 
   @Override

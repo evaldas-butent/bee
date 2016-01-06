@@ -34,7 +34,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
 
   private enum Serial {
     NAME, PARENT, CAPTION, VIEW, ID_NAME, VERSION_NAME, FILTER, CURRENT_USER_FILTER, ORDER,
-    HEADER_MODE, FOOTER_MODE, DATA_PROVIDER, INITIAL_ROW_SET_SIZE, READONLY,
+    HEADER_MODE, FOOTER_MODE, DATA_PROVIDER, INITIAL_ROW_SET_SIZE, PAGING, READONLY,
     NEW_ROW_FORM, NEW_ROW_COLUMNS, NEW_ROW_DEFAULTS, NEW_ROW_CAPTION, NEW_ROW_POPUP,
     NEW_ROW_FORM_IMMEDIATE,
     EDIT_FORM, EDIT_MODE, EDIT_SAVE, EDIT_MESSAGE, EDIT_SHOW_ID, EDIT_POPUP,
@@ -88,6 +88,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
 
   private ProviderType dataProvider;
   private Integer initialRowSetSize;
+  private Boolean paging;
 
   private Boolean readOnly;
 
@@ -288,6 +289,9 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
           break;
         case INITIAL_ROW_SET_SIZE:
           setInitialRowSetSize(BeeUtils.toIntOrNull(value));
+          break;
+        case PAGING:
+          setPaging(BeeUtils.toBooleanOrNull(value));
           break;
         case FILTER:
           setFilter(Filter.restore(value));
@@ -524,6 +528,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         "Cache Description", getCacheDescription(),
         "Data Provider", getDataProvider(),
         "Initial Row Set Size", getInitialRowSetSize(),
+        "Paging", getPaging(),
         "Read Only", isReadOnly(),
         "New Row Form", getNewRowForm(),
         "New Row Columns", getNewRowColumns(),
@@ -730,6 +735,10 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
     return order;
   }
 
+  public Boolean getPaging() {
+    return paging;
+  }
+
   public String getParent() {
     return parent;
   }
@@ -906,6 +915,9 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
           break;
         case INITIAL_ROW_SET_SIZE:
           arr[i++] = getInitialRowSetSize();
+          break;
+        case PAGING:
+          arr[i++] = getPaging();
           break;
         case FILTER:
           arr[i++] = getFilter();
@@ -1151,6 +1163,10 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
 
   public void setOrder(Order order) {
     this.order = order;
+  }
+
+  public void setPaging(Boolean paging) {
+    this.paging = paging;
   }
 
   public void setParent(String parent) {
