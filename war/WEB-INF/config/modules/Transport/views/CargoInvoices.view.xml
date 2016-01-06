@@ -2,9 +2,9 @@
 <View xmlns="http://www.butent.com/view"
       xmlns:x="http://www.butent.com/expression"
 
-  name="CargoInvoices" source="Sales"
-  editForm="CargoInvoice" newRowForm="NewSale" newRowCaption="=trNewCargoInvoice"
-  >
+      name="CargoInvoices" source="Sales"
+      editForm="CargoInvoice" newRowForm="NewSale" newRowCaption="=trNewCargoInvoice"
+    >
   <Columns>
     <SimpleColumn name="Date" />
     <SimpleColumn name="Number" />
@@ -62,7 +62,7 @@
     <SimpleColumn name="Payer" />
     <SimpleJoin joinType="LEFT" name="Payer">
       <SimpleColumn name="Name" alias="PayerName" label="=trdPayer" />
-       <SimpleJoin joinType="LEFT" name="CompanyType">
+      <SimpleJoin joinType="LEFT" name="CompanyType">
         <SimpleColumn name="Name" alias="PayerTypeName" />
       </SimpleJoin>
     </SimpleJoin>
@@ -91,27 +91,29 @@
         <AggregateColumn name="Number" aggregate="MAX" alias="MaxRef" />
         <AggregateColumn name="Number" aggregate="COUNT" alias="CntRef" />
 
-        <SimpleJoin name="LoadingPlace" joinType="LEFT">
-          <AggregateColumn name="Date" aggregate="MIN" alias="MinLoadingDate" />
-          <AggregateColumn name="Date" aggregate="MAX" alias="MaxLoadingDate" />
-          <AggregateColumn name="Date" aggregate="COUNT" alias="CntLoadingDate" />
+        <SimpleJoin name="CargoHandling" joinType="LEFT">
+          <SimpleJoin name="LoadingPlace" joinType="LEFT">
+            <AggregateColumn name="Date" aggregate="MIN" alias="MinLoadingDate" />
+            <AggregateColumn name="Date" aggregate="MAX" alias="MaxLoadingDate" />
+            <AggregateColumn name="Date" aggregate="COUNT" alias="CntLoadingDate" />
 
-          <SimpleJoin joinType="LEFT" name="Country">
-            <AggregateColumn name="Name" aggregate="MIN" alias="MinLoadingCountry" />
-            <AggregateColumn name="Name" aggregate="MAX" alias="MaxLoadingCountry" />
-            <AggregateColumn name="Name" aggregate="COUNT" alias="CntLoadingCountry" />
+            <SimpleJoin joinType="LEFT" name="Country">
+              <AggregateColumn name="Name" aggregate="MIN" alias="MinLoadingCountry" />
+              <AggregateColumn name="Name" aggregate="MAX" alias="MaxLoadingCountry" />
+              <AggregateColumn name="Name" aggregate="COUNT" alias="CntLoadingCountry" />
+            </SimpleJoin>
           </SimpleJoin>
-        </SimpleJoin>
 
-        <SimpleJoin name="UnloadingPlace" joinType="LEFT">
-          <AggregateColumn name="Date" aggregate="MIN" alias="MinUnloadingDate" />
-          <AggregateColumn name="Date" aggregate="MAX" alias="MaxUnloadingDate" />
-          <AggregateColumn name="Date" aggregate="COUNT" alias="CntUnloadingDate" />
+          <SimpleJoin name="UnloadingPlace" joinType="LEFT">
+            <AggregateColumn name="Date" aggregate="MIN" alias="MinUnloadingDate" />
+            <AggregateColumn name="Date" aggregate="MAX" alias="MaxUnloadingDate" />
+            <AggregateColumn name="Date" aggregate="COUNT" alias="CntUnloadingDate" />
 
-          <SimpleJoin joinType="LEFT" name="Country">
-            <AggregateColumn name="Name" aggregate="MIN" alias="MinUnloadingCountry" />
-            <AggregateColumn name="Name" aggregate="MAX" alias="MaxUnloadingCountry" />
-            <AggregateColumn name="Name" aggregate="COUNT" alias="CntUnloadingCountry" />
+            <SimpleJoin joinType="LEFT" name="Country">
+              <AggregateColumn name="Name" aggregate="MIN" alias="MinUnloadingCountry" />
+              <AggregateColumn name="Name" aggregate="MAX" alias="MaxUnloadingCountry" />
+              <AggregateColumn name="Name" aggregate="COUNT" alias="CntUnloadingCountry" />
+            </SimpleJoin>
           </SimpleJoin>
         </SimpleJoin>
       </SimpleJoin>

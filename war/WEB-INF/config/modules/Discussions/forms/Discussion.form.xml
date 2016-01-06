@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Form [
   <!ENTITY inline "display: inline-block;">
-    
+
   <!ENTITY lblRight "&inline; width: 90px; vertical-align: top; text-align: right; margin: 3px 4px 3px 4px;" >
   <!ENTITY lblLeft "&inline; width: 90px; vertical-align: top; text-align: left; margin: 3px 4px 3px 4px;" >
   <!ENTITY inpLeft "&inline; text-align: left; margin: 3px 7px 3px 4px;" >
@@ -9,41 +9,41 @@
   <!ENTITY discussDataPanel "min-width: 550px;" >
   <!ENTITY relDataPanel "overflow: auto;" >
   <!ENTITY discussionHeadPanel "max-height:150px">
- 
+
   <!ENTITY subjectLbl "&lblRight;">
   <!ENTITY subjectInp "&inpLeft;  min-width: 380px;">
-  
+
   <!ENTITY ownerLbl "&lblRight;">
   <!ENTITY ownerInp "&inpLeft; width: 180px;">
-  
+
   <!ENTITY createdLbl "&lblRight;">
-  <!ENTITY createdInp "&inpLeft; width: 11em;"> 
-  
+  <!ENTITY createdInp "&inpLeft; width: 11em;">
+
   <!ENTITY statusLbl "&lblRight;">
   <!ENTITY statusInp "&inpLeft; width: 9em;">
-    
+
   <!ENTITY membersLbl "&lblRight;">
   <!ENTITY membersInp "&inpLeft; width: 400px;">
-  
+
   <!ENTITY descriptionLbl "&lblRight;">
   <!ENTITY descriptionInp "&inpLeft; /*width: calc(100&#37; - 10em);*/ min-height: 1.5em;
   max-height: 9em; overflow: auto;">
-  
+
   <!ENTITY FilesInp "&inpLeft;">
-  
-  <!-- relations --> 
+
+  <!-- relations -->
   <!ENTITY relCompaniesLbl "&lblRight;">
   <!ENTITY relCompaniesInp "&inpLeft;  width: 400px;">
-  
+
   <!ENTITY relPersonsLbl "&lblRight;">
   <!ENTITY relPersonsInp "&inpLeft; width: 400px;">
-  
+
   <!ENTITY relAppoitmentsLbl "&lblRight;">
   <!ENTITY relAppoitmentsInp "&inpLeft; width: 400px;">
-  
+
   <!ENTITY relTasksLbl "&lblRight;">
   <!ENTITY relTasksInp "&inpLeft; width: 400px;">
-  
+
   <!ENTITY relDocumentsLbl "&lblRight;">
   <!ENTITY relDocumentsInp "&inpLeft; width: 400px;">
   <!ENTITY separator "<hr/>">
@@ -51,13 +51,12 @@
   <!ENTITY lbl1 "&inline; max-width: 128px; min-width: 110px; text-align: right; padding-right: 18px; min-height: 20px; max-height: 20px; padding-top: 1px;">
   <!ENTITY inp2x "&inline; width: 540px;">
   <!ENTITY top1 "text-align: right; padding-right: 18px; max-width: 128px; padding-top: 1px;">
-  
+
 ]>
-<f:Form 
+<f:Form
   xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
-  xmlns:ui="http://www.butent.com/ui"
-   
+
   name="Discussion" viewName="Discussions" caption="=discussion" favorite="Subject">
 
   <FlowPanel>
@@ -79,7 +78,7 @@
       <FlowPanel data="DiscussMarkTypes" name="DiscussMarkTypes"
         class="flexBox-horizontal bee-discuss-markTypes-container" />
     </FlowPanel>
-    
+
     <Disclosure open="true">
       <Label text="=discussDescription" style="text-transform: uppercase;" />
 
@@ -95,7 +94,7 @@
     </Disclosure>
 
     <Disclosure xmlns="http://www.butent.com/widget"
-      xmlns:xi="http://www.w3.org/2001/XInclude" open="false">
+                open="false">
       <Label data="Relations" text="=discussRelatedInformation"
         style="text-transform: uppercase;" />
 

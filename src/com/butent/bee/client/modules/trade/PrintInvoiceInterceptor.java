@@ -288,8 +288,8 @@ public class PrintInvoiceInterceptor extends AbstractFormInterceptor {
     final Map<String, Pair<Widget, String>> widgets = new HashMap<>();
 
     for (String name : new String[] {
-        "Documents", COL_VEHICLE, COL_LOADING_PLACE,
-        COL_UNLOADING_PLACE, COL_ASSESSMENT, COL_NUMBER}) {
+        "Documents", COL_VEHICLE, ALS_LOADING_DATE,
+        ALS_UNLOADING_DATE, COL_ASSESSMENT, COL_NUMBER}) {
       widgets.put(name, Pair.of(form.getWidgetByName(name), (String) null));
     }
     for (SimpleRow simpleRow : rs) {

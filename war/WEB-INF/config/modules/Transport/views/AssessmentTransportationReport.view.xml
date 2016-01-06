@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<View xmlns="http://www.butent.com/view"
+<View xmlns="http://www.butent.com/view" xmlns:xi="http://www.w3.org/2001/XInclude"
 
   name="AssessmentTransportationReport" source="Trips"
   filter="!(AssessmentForwarder)"  caption="Vežėjų ataskaita"
@@ -9,7 +9,7 @@
     <SimpleJoin joinType="LEFT" name="TransportationCurrency">
       <SimpleColumn name="Name" alias="TransportationCurrencyName" />
     </SimpleJoin>
-    
+
     <SimpleJoin joinType="LEFT" name="Forwarder">
       <SimpleColumn name="Name" alias="ForwarderName" label="=carrier" />
     </SimpleJoin>
@@ -17,7 +17,7 @@
     <ExternalJoin name="Trip" source="AssessmentForwarders" joinType="LEFT">
       <HiddenColumn name="Trip" alias="AssessmentForwarder" />
     </ExternalJoin>
-    
+
     <ExternalJoin name="Trip" source="CargoTrips" joinType="INNER">
       <SimpleJoin name="Cargo" joinType="INNER">
         <ExternalJoin name="Cargo" source="Assessments" joinType="INNER">
@@ -30,7 +30,7 @@
               <SimpleJoin joinType="LEFT" name="Currency">
                 <SimpleColumn name="Name" alias="CurrencyName" />
               </SimpleJoin>
-              
+
               <SimpleColumn name="Purchase" />
               <SimpleJoin name="Purchase" joinType="LEFT">
                 <SimpleColumn name="InvoicePrefix" />
@@ -43,38 +43,21 @@
         <SimpleColumn name="Description" />
         <SimpleColumn name="LoadedKilometers" label="=trAssessmentPlannedKm" />
         <SimpleColumn name="Partial" />
-  
-        <SimpleJoin name="LoadingPlace" joinType="LEFT">
-          <SimpleColumn name="Date" alias="LoadingDate" label="=trLoadingDate" />
-          <SimpleColumn name="PostIndex" alias="LoadingPostIndex" label="=trLoadingPostIndex" />
 
-          <SimpleColumn name="Country" alias="LoadingCountry" editable="true" label="=trLoadingCountry" />
-          <SimpleJoin joinType="LEFT" name="Country">
-            <SimpleColumn name="Name" alias="LoadingCountryName" />
-            <SimpleColumn name="Code" alias="LoadingCountryCode" label="=from" />
-          </SimpleJoin>
-        </SimpleJoin>
-        <SimpleJoin name="UnloadingPlace" joinType="LEFT">
-          <SimpleColumn name="Date" alias="UnloadingDate" label="=trUnloadingDate" />
-          <SimpleColumn name="PostIndex" alias="UnloadingPostIndex" label="=trUnloadingPostIndex" />
-
-          <SimpleColumn name="Country" alias="UnloadingCountry" editable="true" label="=trUnloadingCountry" />
-          <SimpleJoin joinType="LEFT" name="Country">
-            <SimpleColumn name="Name" alias="UnloadingCountryName" />
-            <SimpleColumn name="Code" alias="UnloadingCountryCode" label="=to" />
-          </SimpleJoin>
+        <SimpleJoin name="CargoHandling" joinType="LEFT">
+          <xi:include href="viewcolumns/Handling.viewcolumns.xml" />
         </SimpleJoin>
 
         <SimpleColumn name="Weight" />
         <SimpleJoin joinType="LEFT" name="WeightUnit">
           <SimpleColumn name="Name" alias="WeightUnitName" />
         </SimpleJoin>
-    
+
         <SimpleColumn name="Volume" />
         <SimpleJoin joinType="LEFT" name="VolumeUnit">
           <SimpleColumn name="Name" alias="VolumeUnitName" />
         </SimpleJoin>
-    
+
         <SimpleColumn name="Quantity" />
         <SimpleJoin joinType="LEFT" name="QuantityUnit">
           <SimpleColumn name="Name" alias="QuantityUnitName" />

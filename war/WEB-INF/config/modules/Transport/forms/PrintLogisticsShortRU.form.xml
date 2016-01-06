@@ -125,11 +125,11 @@
               </FlowPanel>
               <FlowPanel>
                 <InlineLabel html="Pakrovimo data/Дата погрузки: " />
-                <InlineLabel name="LoadingPlace" />
+                <InlineLabel name="LoadingDate" />
               </FlowPanel>
               <FlowPanel>
                 <InlineLabel html="Iškrovimo data/Дата разгрузки: " />
-                <InlineLabel name="UnloadingPlace" />
+                <InlineLabel name="UnloadingDate" />
               </FlowPanel>
             </FlowPanel>
           </cell>
