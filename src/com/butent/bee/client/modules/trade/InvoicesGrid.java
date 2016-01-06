@@ -66,6 +66,7 @@ public class InvoicesGrid extends AbstractGridInterceptor implements ClickHandle
       view.notifyWarning(Localized.getConstants().selectAtLeastOneRow());
       return;
     }
+
     Global.confirm(Localized.getConstants().trSendToERPConfirm(), new ConfirmationCallback() {
       @Override
       public void onConfirm() {
@@ -81,12 +82,16 @@ public class InvoicesGrid extends AbstractGridInterceptor implements ClickHandle
             response.notify(view);
 
             if (!response.hasErrors()) {
+              getERPStocks(ids);
               Data.onViewChange(view.getViewName(), DataChangeEvent.RESET_REFRESH);
             }
           }
         });
       }
     });
+  }
+
+  public void getERPStocks(Set<Long> ids) {
   }
 
   private void setWaiting(boolean waiting) {
