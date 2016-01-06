@@ -501,15 +501,44 @@ class TasksGrid extends AbstractGridInterceptor {
         Queries.update(VIEW_TASKS, selectedRow.getId(), selectedRow.getVersion(), columns,
             oldValues, newValues, null, new RowCallback() {
 
-              @Override
-              public void onSuccess(BeeRow result) {
-                RowUpdateEvent.fire(BeeKeeper.getBus(), VIEW_TASKS, result);
-                RowEditor.open(ProjectConstants.VIEW_PROJECTS, projectRow, Opener.NEW_TAB);
-              }
+          @Override
+          public void onSuccess(BeeRow result) {
+            RowUpdateEvent.fire(BeeKeeper.getBus(), VIEW_TASKS, result);
+            RowEditor.open(ProjectConstants.VIEW_PROJECTS, projectRow, Opener.NEW_TAB);
+          }
 
-            });
+        });
+        updateProjectRelations(selectedRow.getId(), projectRow.getId());
       }
     });
+  }
+
+  private static void updateProjectRelations(final long taskId, final long projectRow) {
+    final DataInfo relatedDocuments = Data.getDataInfo(AdministrationConstants.VIEW_RELATIONS);
+
+    Queries.getRowSet(relatedDocuments.getViewName(), relatedDocuments.getColumnNames(false), Filter
+        .equals(COL_TASK, taskId), new RowSetCallback() {
+
+          @Override
+          public void onSuccess(BeeRowSet relTaskDocuments) {
+            BeeRowSet relProjectDocuments = Data.createRowSet(relatedDocuments.getViewName());
+
+            for (BeeRow relTask : relTaskDocuments) {
+              BeeRow relProject = DataUtils.cloneRow(relTask);
+              relProject.setValue(relatedDocuments.getColumnIndex(COL_TASK), (Long) null);
+              relProject.setValue(relatedDocuments.getColumnIndex(ProjectConstants.COL_PROJECT),
+                  projectRow);
+
+              relProjectDocuments.addRow(relProject);
+            }
+
+            if (relProjectDocuments.isEmpty()) {
+              return;
+            }
+
+            Queries.insertRows(relProjectDocuments);
+          }
+        });
   }
 
   public void createProjectFromTemplate(final IsRow selectedRow, final IsRow templateRow) {
@@ -539,6 +568,7 @@ class TasksGrid extends AbstractGridInterceptor {
             }
           }
         });
+        updateProjectRelations(selectedRow.getId(), projectRow.getId());
       }
     });
   }
@@ -628,17 +658,17 @@ class TasksGrid extends AbstractGridInterceptor {
 
         Global.confirm(Localized.getConstants().crmTasksConfirmQuestion(),
             new ConfirmationCallback() {
-              @Override
-              public void onConfirm() {
-                DateTime approved = new DateTime();
+          @Override
+          public void onConfirm() {
+            DateTime approved = new DateTime();
 
-                ParameterList params = TasksKeeper.createArgs(SVC_CONFIRM_TASKS);
-                params.addDataItem(VAR_TASK_DATA, Codec.beeSerialize(result.getRowIds()));
-                params.addDataItem(VAR_TASK_APPROVED_TIME, approved.serialize());
+            ParameterList params = TasksKeeper.createArgs(SVC_CONFIRM_TASKS);
+            params.addDataItem(VAR_TASK_DATA, Codec.beeSerialize(result.getRowIds()));
+            params.addDataItem(VAR_TASK_APPROVED_TIME, approved.serialize());
 
-                sendRequest(params, gridView);
-              }
-            });
+            sendRequest(params, gridView);
+          }
+        });
       }
     });
   }
