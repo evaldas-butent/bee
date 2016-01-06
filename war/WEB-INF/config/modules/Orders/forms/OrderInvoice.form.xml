@@ -7,7 +7,7 @@
   width="840" height="600" readOnly="true">
   <f:properties reports="PrintOrderInvoice, PrintOrderProforma" />
   <FlowPanel class="flexBox-vertical">
-    <br/>
+    <br />
     <Table kind="controls">
       <col index="0" kind="label" />
       <col index="2" kind="label" />
@@ -16,19 +16,23 @@
       <row>
         <Label for="Date" />
         <InputDateTime source="Date" visible="true" />
+      </row>
 
+      <row>
         <Label for="SaleSeries" />
-        <DataSelector source="SaleSeries" upperCase="true" style="width: 7em;" />
+        <DataSelector source="SaleSeries" upperCase="true"
+          style="width: 7em;" />
+
         <Label for="InvoiceNo" />
         <InputText source="InvoiceNo" />
       </row>
-
       <row>
         <Label for="Term" />
         <InputDate source="Term" style="width: 10em;" />
 
         <Label text="=trdTotal" />
-        <DecimalLabel source="Amount" format="0.00" style="font-weight: bold;" />
+        <DecimalLabel source="Amount" format="0.00"
+          style="font-weight: bold;" />
 
         <Label for="Currency" />
         <DataSelector source="Currency" renderColumns="CurrencyName"
@@ -40,15 +44,17 @@
         <DataSelector source="Operation" style="&inp;" />
 
         <Label for="WarehouseFrom" />
-        <DataSelector source="WarehouseFrom" style="&inp;" readOnly="true" />
+        <DataSelector source="WarehouseFrom" style="&inp;"
+          readOnly="true" />
       </row>
-      
+
       <row>
         <Label for="Supplier" />
         <DataSelector source="Supplier" style="&inp;" />
 
         <Label for="Customer" />
-        <DataSelector source="Customer" required="true" visible="true" style="&inp;" />
+        <DataSelector source="Customer" required="true"
+          visible="true" style="&inp;" />
       </row>
 
       <row>
@@ -57,11 +63,11 @@
           renderColumns="ManagerFirstName ManagerLastName" style="&inp;" />
 
         <Label for="Payer" />
-        <DataSelector source="Payer" style="&inp;"/>
+        <DataSelector source="Payer" style="&inp;" />
       </row>
     </Table>
 
-    <br/>
+    <br />
 
     <TabbedPages class="flexible">
       <page>
@@ -72,7 +78,8 @@
       <page>
         <text>=trdNotes</text>
         <SimplePanel>
-          <InputArea source="Notes" class="occupy-1" summarize="true" />
+          <InputArea source="Notes" class="occupy-1"
+            summarize="true" />
         </SimplePanel>
       </page>
     </TabbedPages>
