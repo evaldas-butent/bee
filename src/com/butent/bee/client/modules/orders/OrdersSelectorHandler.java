@@ -1,5 +1,6 @@
 package com.butent.bee.client.modules.orders;
 
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.orders.OrdersConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
@@ -20,8 +21,11 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.i18n.LocalizableConstants;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.modules.orders.OrdersConstants.OrdersStatus;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -31,6 +35,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 public class OrdersSelectorHandler implements SelectorEvent.Handler {
@@ -192,10 +197,27 @@ public class OrdersSelectorHandler implements SelectorEvent.Handler {
     switch (relatedViewName) {
       case VIEW_ORDERS_TEMPLATES:
         if (event.isChanged()) {
+          LocalizableConstants lc = Localized.getConstants();
           IsRow relatedRow = event.getRelatedRow();
           FormView form = ViewHelper.getForm(event.getSelector());
 
-          if (relatedRow != null && form != null) {
+          if (!Objects.equals(form.getIntegerValue(COL_ORDERS_STATUS), OrdersStatus.PREPARED
+              .ordinal())) {
+
+            if (!BeeUtils.isPositive(form.getLongValue(COL_WAREHOUSE))) {
+              form.notifySevere(lc.warehouse() + " " + lc.valueRequired());
+              event.getSelector().clearValue();
+              return;
+            }
+          }
+
+          if (!BeeUtils.isPositive(form.getLongValue(COL_COMPANY))) {
+            form.notifySevere(lc.client() + " " + lc.valueRequired());
+            event.getSelector().clearValue();
+            return;
+          }
+
+          if (relatedRow != null) {
             applyOrderTemplate(relatedRow, form);
           }
         }

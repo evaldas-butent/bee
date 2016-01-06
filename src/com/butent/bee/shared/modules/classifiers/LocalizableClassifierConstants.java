@@ -4,6 +4,8 @@ public interface LocalizableClassifierConstants {
 
   String article();
 
+  String askDeleteAll();
+
   String bank();
 
   String branch();
