@@ -40,6 +40,7 @@ import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.css.values.Cursor;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -272,15 +273,15 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
           event.preventDefault();
           DOM.setCapture(getElement());
 
+          int clientHeight = DomUtils.getClientHeight();
+          int headerHeight = getHeaderHeight();
+
           switch (windowState) {
             case MOVING:
               this.startX = event.getX();
               this.startY = event.getY();
 
               this.maxX = DomUtils.getClientWidth() - getOffsetWidth();
-
-              int clientHeight = DomUtils.getClientHeight();
-              int headerHeight = getHeaderHeight();
 
               if (headerHeight > 0) {
                 this.maxY = clientHeight - headerHeight;
@@ -290,14 +291,24 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
               break;
 
             case RESIZING:
+              this.maxX = DomUtils.getClientWidth();
+
+              if (EnumUtils.in(resizeDirection,
+                  ResizeDirection.TOP_LEFT, ResizeDirection.TOP, ResizeDirection.TOP_RIGHT)
+                  && headerHeight > 0) {
+                this.maxY = clientHeight - headerHeight;
+              } else {
+                this.maxY = clientHeight;
+              }
+
               int w = getElement().getClientWidth();
               int h = getElement().getClientHeight();
 
               int minWidth = Math.min(MIN_WIDTH, w);
-              int minHeight = Math.min(Math.max(MIN_HEIGHT, getHeaderHeight()), h);
+              int minHeight = Math.min(Math.max(MIN_HEIGHT, headerHeight), h);
 
               int maxWidth = DomUtils.getClientWidth() + w - getElement().getOffsetWidth();
-              int maxHeight = DomUtils.getClientHeight() + h - getElement().getOffsetHeight();
+              int maxHeight = clientHeight + h - getElement().getOffsetHeight();
 
               this.bounds = new Bounds(minWidth, minHeight, maxWidth, maxHeight);
               break;
@@ -318,8 +329,8 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
         setPopupPosition(x, y);
 
       } else if (windowState == WindowState.RESIZING) {
-        int x = BeeUtils.clamp(event.getClientX(), 0, DomUtils.getClientWidth());
-        int y = BeeUtils.clamp(event.getClientY(), 0, DomUtils.getClientHeight());
+        int x = BeeUtils.clamp(event.getClientX(), 0, maxX);
+        int y = BeeUtils.clamp(event.getClientY(), 0, maxY);
 
         Rectangle rectangle = new Rectangle(getAbsoluteLeft(), getAbsoluteTop(),
             getElement().getClientWidth(), getElement().getClientHeight());
