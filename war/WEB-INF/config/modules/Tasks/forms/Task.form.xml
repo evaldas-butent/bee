@@ -48,7 +48,7 @@
 
             <FlowPanel style="margin-top:20px;">
               <Label for="Summary" style="&lbl1;" />
-              <InputText source="Summary" style="&inp2x;" readOnly="true" visible="true" maxLength="60" />
+              <InputText source="Summary" style="&inp2x;" readOnly="true" visible="true" maxLength="70" />
             </FlowPanel>
 
             <FlowPanel style="&section;" for="Description">
