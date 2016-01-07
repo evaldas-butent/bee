@@ -1,7 +1,6 @@
 package com.butent.bee.client.modules.discussions;
 
 import com.google.common.collect.Lists;
-import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.i18n.client.LocaleInfo;
@@ -98,6 +97,7 @@ class AnnouncementsBoardInterceptor extends AbstractFormInterceptor implements
     private static final String STYLE_IMPORTANT = STYLE_PREFIX + "important";
     private static final String STYLE_TOPIC_FLOW = STYLE_PREFIX + "topic-flow";
     private static final String STYLE_TIME_CREATED = STYLE_PREFIX + "time-created";
+    private static final String STYLE_COMMENTS_COUNT = STYLE_PREFIX + "comments-count";
     private static final String STYLE_PAPER_CLIP = STYLE_PREFIX + "paper-clip";
     private static final String STYLE_TOPIC = STYLE_PREFIX + "topic";
     private static final String STYLE_SUBJECT = STYLE_PREFIX + "subject";
@@ -169,7 +169,7 @@ class AnnouncementsBoardInterceptor extends AbstractFormInterceptor implements
       timeCreated.setStyleName(STYLE_TIME_CREATED);
       userContainer.add(timeCreated);
 
-      commentCount.setStyleName(STYLE_TIME_CREATED);
+      commentCount.setStyleName(STYLE_COMMENTS_COUNT);
       numbersContainer.add(commentCount);
       userContainer.add(numbersContainer);
       eventContainer.add(containerSubject);
@@ -299,18 +299,20 @@ class AnnouncementsBoardInterceptor extends AbstractFormInterceptor implements
     }
 
     void openOnClick(final String viewName, final Long id) {
-      moreButton.setCommand(null);
+
       if (DataUtils.isId(id) && BeeKeeper.getUser().isDataVisible(viewName)) {
 
-        ScheduledCommand command = new ScheduledCommand() {
+        ClickHandler handler = new ClickHandler() {
 
           @Override
-          public void execute() {
+          public void onClick(ClickEvent arg0) {
             RowEditor.open(viewName, id, Opener.NEW_TAB);
             markAsReaded();
           }
+
         };
-        moreButton.setCommand(command);
+        moreButton.addClickHandler(handler);
+        commentCount.addClickHandler(handler);
       }
     }
 
