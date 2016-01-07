@@ -46,6 +46,13 @@ public class PrintActForm extends AbstractFormInterceptor {
   private static final String ITEMS_WIDGET_NAME = "TradeActItems";
   private static final String SERVICES_WIDGET_NAME = "TradeActServices";
   private static final String FORM_PRINT_TA_NO_STOCK = "PrintTASaleNoStock";
+  private static final String[] COLUMN_LIST = new String[] {
+      COL_ITEM_ARTICLE, COL_ITEM_NAME, COL_TA_SERVICE_FROM, COL_TA_SERVICE_TO,
+      COL_TRADE_ITEM_QUANTITY, COL_UNIT, COL_TRADE_TIME_UNIT, COL_TA_RETURNED_QTY,
+      "RemainingQty", COL_TRADE_WEIGHT, COL_ITEM_AREA, COL_TA_SERVICE_TARIFF,
+      COL_TRADE_ITEM_PRICE, COL_TRADE_DISCOUNT, "Amount", COL_TRADE_VAT, "AmountTotal",
+      "MinTermAmount"
+  };
 
   final Map<String, String> tableHeaders = new HashMap<>();
   Map<String, Widget> companies = new HashMap<>();
@@ -80,7 +87,7 @@ public class PrintActForm extends AbstractFormInterceptor {
     }
 
     totConsumer = new Consumer<Double>() {
-      static final int MAX_COUNT = 4;
+      static final int MAX_COUNT = 2;
       double totalOf;
       int count;
 
@@ -124,30 +131,28 @@ public class PrintActForm extends AbstractFormInterceptor {
     tableHeaders.put("Amount", "Suma be PVM");
     tableHeaders.put("Vat", "PVM");
     tableHeaders.put("AmountTotal", "Suma");
-    tableHeaders.put("TradeActServicesAmountTotal", "Suma už min. term.");
+    tableHeaders.put("MinTermAmount", "Suma už min. term.");
     tableHeaders.put("Name", "Nuomojama įranga");
     tableHeaders.put("TradeActServicesName", "Teikiamos paslaugos/prekės");
   }
 
-  private List<String> getVisibleColumns() {
-    final String[] columnList = new String[] {
-        COL_ITEM_ARTICLE, COL_ITEM_NAME, COL_TA_SERVICE_FROM, COL_TA_SERVICE_TO,
-        COL_TRADE_ITEM_QUANTITY, COL_UNIT, COL_TRADE_TIME_UNIT, COL_TA_RETURNED_QTY,
-        "RemainingQty", COL_TRADE_WEIGHT, COL_ITEM_AREA, COL_TA_SERVICE_TARIFF,
-        COL_TRADE_ITEM_PRICE, COL_TRADE_DISCOUNT, "Amount", COL_TRADE_VAT, "AmountTotal"};
+  private boolean isVisibleColumn(String widgetName, String col) {
+
     final String formName = getFormView().getFormName();
 
-    List<String> res = new ArrayList<>();
-
-    for (String col : columnList) {
-      if (BeeUtils.same(col, "RemainingQty") && BeeUtils.same(formName, FORM_PRINT_TA_NO_STOCK)) {
-        continue;
-      }
-
-      res.add(col);
+    if (BeeUtils.same(col, "RemainingQty") && BeeUtils.same(formName, FORM_PRINT_TA_NO_STOCK)) {
+      return false;
     }
 
-    return res;
+    if (BeeUtils.same(col, "MinTermAmount") && !BeeUtils.same(widgetName, SERVICES_WIDGET_NAME)) {
+      return false;
+    }
+
+    if (BeeUtils.same(col, "AmountTotal") && BeeUtils.same(widgetName, SERVICES_WIDGET_NAME)) {
+      return false;
+    }
+
+    return true;
   }
 
   private void renderItems(final String typeTable) {
@@ -169,11 +174,13 @@ public class PrintActForm extends AbstractFormInterceptor {
         response.notify(BeeKeeper.getScreen());
 
         if (response.hasErrors()) {
+          totConsumer.accept(0.0);
           return;
         }
         SimpleRowSet rs = SimpleRowSet.restore(response.getResponseAsString());
 
         if (rs.isEmpty()) {
+          totConsumer.accept(0.0);
           return;
         }
         Table<Long, String, String> data = TreeBasedTable.create();
@@ -268,12 +275,12 @@ public class PrintActForm extends AbstractFormInterceptor {
           if (BeeUtils.same(typeTable, SERVICES_WIDGET_NAME)) {
             if (BeeUtils.isDouble(BeeUtils.toDouble(data.get(id, COL_TA_SERVICE_MIN)))) {
               double mint = BeeUtils.toDouble(data.get(id, COL_TA_SERVICE_MIN));
-              sum = mint * prc;
+              data.put(id, "MinTermAmount", BeeUtils.toString(BeeUtils.round(mint * prc, 2)));
             }
-            data.put(id, "AmountTotal", BeeUtils.toString(BeeUtils.round(sum, 2)));
-          } else {
-            data.put(id, "AmountTotal", BeeUtils.toString(BeeUtils.round(sum + vat, 2)));
           }
+
+          data.put(id, "AmountTotal", BeeUtils.toString(BeeUtils.round(sum + vat, 2)));
+
         }
         HtmlTable table = new HtmlTable(TradeUtils.STYLE_ITEMS_TABLE);
         int c = 0;
@@ -287,14 +294,18 @@ public class PrintActForm extends AbstractFormInterceptor {
         calc.add("Amount");
         calc.add(COL_TRADE_VAT);
         calc.add("AmountTotal");
+        calc.add("MinTermAmount");
 
-        for (String col : getVisibleColumns()) {
+        for (String col : COLUMN_LIST) {
 
           if (!data.containsColumn(col)) {
             continue;
           }
-          table.setText(0, c, BeeUtils.nvl(tableHeaders.get(typeTable + col), tableHeaders.get(
-              col)), TradeUtils.STYLE_ITEMS + col);
+
+          if (isVisibleColumn(typeTable, col)) {
+            table.setText(0, c, BeeUtils.nvl(tableHeaders.get(typeTable + col), tableHeaders.get(
+                col)), TradeUtils.STYLE_ITEMS + col);
+          }
           int r = 1;
           BigDecimal sum = BigDecimal.ZERO;
 
@@ -306,18 +317,22 @@ public class PrintActForm extends AbstractFormInterceptor {
               value = BeeUtils.removeTrailingZeros(value);
             }
 
-            table.setText(r++, c, value, TradeUtils.STYLE_ITEMS + col);
+            if (isVisibleColumn(typeTable, col)) {
+              table.setText(r++, c, value, TradeUtils.STYLE_ITEMS + col);
+            }
           }
           String value = null;
 
           if (sum.compareTo(BigDecimal.ZERO) != 0) {
             value = BeeUtils.removeTrailingZeros(sum.toPlainString());
           }
-          if ("Amount".equals(col) || COL_TRADE_VAT.equals(col)) {
+          if ("AmountTotal".equals(col)) {
             totConsumer.accept(sum.doubleValue());
           }
 
-          table.setText(r, c, value, TradeUtils.STYLE_ITEMS + col);
+          if (isVisibleColumn(typeTable, col)) {
+            table.setText(r, c, value, TradeUtils.STYLE_ITEMS + col);
+          }
           c++;
         }
         table.setText(table.getRowCount() - 1, 0, Localized.getConstants().totalOf());
