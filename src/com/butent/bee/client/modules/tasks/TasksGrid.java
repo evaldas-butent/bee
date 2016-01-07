@@ -16,7 +16,6 @@ import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Provider;
 import com.butent.bee.client.data.Queries;
-import com.butent.bee.client.data.Queries.IntCallback;
 import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
@@ -73,7 +72,6 @@ import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.IntegerValue;
 import com.butent.bee.shared.data.value.LongValue;
-import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.RowInfo;
@@ -558,14 +556,16 @@ class TasksGrid extends AbstractGridInterceptor {
     ProjectsKeeper.createProjectFromTemplate(templateRow, new RowCallback() {
       @Override
       public void onSuccess(final BeeRow projectRow) {
-        Queries.update(VIEW_TASKS, selectedRow.getId(), ProjectConstants.COL_PROJECT, Value
-            .getValue(projectRow.getId()), new IntCallback() {
+        Queries.update(VIEW_TASKS, selectedRow.getId(), selectedRow.getVersion(),
+            Data.getColumns(VIEW_TASKS, Lists.newArrayList(ProjectConstants.COL_PROJECT)), Lists
+                .newArrayList((String) null), Lists.newArrayList(BeeUtils.toString(projectRow
+                    .getId())), null,
+            new RowCallback() {
 
           @Override
-          public void onSuccess(Integer result) {
-            if (getGridView() != null) {
-              RowEditor.open(ProjectConstants.VIEW_PROJECTS, projectRow, Opener.NEW_TAB);
-            }
+          public void onSuccess(BeeRow updatedTaskRow) {
+            RowUpdateEvent.fire(BeeKeeper.getBus(), VIEW_TASKS, updatedTaskRow);
+            RowEditor.open(ProjectConstants.VIEW_PROJECTS, projectRow, Opener.NEW_TAB);
           }
         });
         updateProjectRelations(selectedRow.getId(), projectRow.getId());
