@@ -146,6 +146,11 @@ public class RowPresenter extends AbstractPresenter implements Printable, SaveCh
   }
 
   @Override
+  public String getViewKey() {
+    return formView.getSupplierKey();
+  }
+
+  @Override
   public void handleAction(Action action) {
     if (getActionDelegate() != null) {
       getActionDelegate().handleAction(action);

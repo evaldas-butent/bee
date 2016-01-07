@@ -296,6 +296,11 @@ public abstract class TimeBoard extends Flow implements Presenter, View, Printab
   }
 
   @Override
+  public String getViewKey() {
+    return getSupplierKey();
+  }
+
+  @Override
   public Presenter getViewPresenter() {
     return this;
   }

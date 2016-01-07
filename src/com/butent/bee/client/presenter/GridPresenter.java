@@ -430,6 +430,11 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
   }
 
   @Override
+  public String getViewKey() {
+    return gridContainer.getSupplierKey();
+  }
+
+  @Override
   public String getViewName() {
     return getDataProvider().getViewName();
   }

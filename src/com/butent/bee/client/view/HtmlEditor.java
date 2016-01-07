@@ -161,6 +161,11 @@ public class HtmlEditor extends Flow implements Presenter, View, Printable, HasW
   }
 
   @Override
+  public String getViewKey() {
+    return getSupplierKey();
+  }
+
+  @Override
   public Presenter getViewPresenter() {
     return this;
   }

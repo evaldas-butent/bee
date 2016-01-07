@@ -13,6 +13,8 @@ public interface Presenter extends HandlesActions, HasCaption {
 
   View getMainView();
 
+  String getViewKey();
+
   void onViewUnload();
 
   void setEventSource(String eventSource);

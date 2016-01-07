@@ -49,6 +49,11 @@ class ProjectEventsHandler extends EventsBoard {
   }
 
   @Override
+  public String getViewKey() {
+    return null;
+  }
+
+  @Override
   protected IdentifiableWidget getAddEventActionWidget() {
     if (ProjectEvent.COMMENT.getCommandIcon() != null) {
       FaLabel label = new FaLabel(ProjectEvent.COMMENT.getCommandIcon());

@@ -384,6 +384,11 @@ public class CalendarPanel extends Split implements AppointmentEvent.Handler, Pr
   }
 
   @Override
+  public String getViewKey() {
+    return getSupplierKey();
+  }
+
+  @Override
   public Presenter getViewPresenter() {
     return this;
   }
