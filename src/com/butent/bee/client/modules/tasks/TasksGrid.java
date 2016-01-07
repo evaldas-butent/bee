@@ -543,17 +543,19 @@ class TasksGrid extends AbstractGridInterceptor {
     List<String> copyCols = Lists.newArrayList(ClassifierConstants.COL_COMPANY,
         ClassifierConstants.ALS_COMPANY_NAME, ProjectConstants.ALS_COMPANY_TYPE_NAME);
 
+    final IsRow temlateRowData = DataUtils.cloneRow(templateRow);
+
     for (String col : copyCols) {
 
-      Data.setValue(ProjectConstants.VIEW_PROJECT_TEMPLATES, templateRow, col,
+      Data.setValue(ProjectConstants.VIEW_PROJECT_TEMPLATES, temlateRowData, col,
           selectedRow.getString(Data.getColumnIndex(VIEW_TASKS, col)));
     }
 
     Data.setValue(ProjectConstants.VIEW_PROJECT_TEMPLATES,
-        templateRow, ProjectConstants.COL_PROJECT_NAME, selectedRow.getString(
+        temlateRowData, ProjectConstants.COL_PROJECT_NAME, selectedRow.getString(
             Data.getColumnIndex(VIEW_TASKS, COL_SUMMARY)));
 
-    ProjectsKeeper.createProjectFromTemplate(templateRow, new RowCallback() {
+    ProjectsKeeper.createProjectFromTemplate(temlateRowData, new RowCallback() {
       @Override
       public void onSuccess(final BeeRow projectRow) {
         Queries.update(VIEW_TASKS, selectedRow.getId(), selectedRow.getVersion(),
@@ -896,6 +898,13 @@ class TasksGrid extends AbstractGridInterceptor {
             super.afterCreateWidget(name, widget, callback);
         }
 
+      }
+
+      @Override
+      public void afterRefresh(FormView form, IsRow row) {
+        if (templateSelector != null) {
+          templateSelector.clearValue();
+        }
       }
 
       @Override
