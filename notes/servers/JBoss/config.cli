@@ -10,7 +10,7 @@
 #<size-rotating-file-handler...>
 #    ...
 #    <rotate-size value="100M"/>
-#    <max-backup-index value="5"/>
+#    <max-backup-index value="50"/>
 #    ...
 #</size-rotating-file-handler>
 

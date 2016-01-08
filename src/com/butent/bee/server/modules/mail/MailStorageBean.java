@@ -431,7 +431,7 @@ public class MailStorageBean {
           l--;
 
           if ((System.currentTimeMillis() - progressUpdated) > 10) {
-            if (!Endpoint.updateProgress(progressId, --l / (double) msgs.length)) {
+            if (!Endpoint.updateProgress(progressId, l / (double) msgs.length)) {
               return null;
             }
             progressUpdated = System.currentTimeMillis();
