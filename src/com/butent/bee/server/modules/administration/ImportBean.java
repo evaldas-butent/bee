@@ -161,6 +161,37 @@ public class ImportBean {
       }
     }
 
+    public SqlCreate createStructure(SystemBean sb, String parentName, SqlCreate query) {
+      SqlCreate create = BeeUtils.nvl(query, new SqlCreate(SqlUtils.temporaryName())
+          .addInteger(COL_REC_NO, true));
+
+      BeeView view = BeeUtils.isEmpty(getViewName()) ? null : sb.getView(getViewName());
+
+      for (ImportProperty prop : getProperties()) {
+        if (!prop.isDataProperty()) {
+          continue;
+        }
+        ImportObject ro = getPropertyRelation(prop.getName());
+
+        String propName = BeeUtils.join("_", parentName, prop.getName());
+
+        if (Objects.isNull(view)) {
+          if (Objects.nonNull(ro)) {
+            create.addLong(propName, false);
+          } else {
+            create.addText(propName, false);
+          }
+        } else {
+          create.addField(propName, view.getColumnType(prop.getName()),
+              view.getColumnPrecision(prop.getName()), view.getColumnScale(prop.getName()), false);
+        }
+        if (Objects.nonNull(ro)) {
+          ro.createStructure(sb, propName, create);
+        }
+      }
+      return create;
+    }
+
     public Map<Long, String> getDeepNames(String parentName) {
       Map<Long, String> propNames = new LinkedHashMap<>();
 
@@ -182,8 +213,8 @@ public class ImportBean {
       return propNames;
     }
 
-    public Map<String, Pair<ImportProperty, String>> getDeepProperties(String parentName) {
-      Map<String, Pair<ImportProperty, String>> propNames = new LinkedHashMap<>();
+    public Map<String, String> getDeepProperties(String parentName) {
+      Map<String, String> propNames = new LinkedHashMap<>();
 
       for (ImportProperty prop : getProperties()) {
         if (!prop.isDataProperty()) {
@@ -194,7 +225,7 @@ public class ImportBean {
         ImportObject ro = getPropertyRelation(propName);
 
         propName = BeeUtils.join("_", parentName, propName);
-        propNames.put(propName, Pair.of(prop, propValue));
+        propNames.put(propName, propValue);
 
         if (ro != null) {
           propNames.putAll(ro.getDeepProperties(propName));
@@ -261,6 +292,14 @@ public class ImportBean {
 
   private static final String COL_REC_NO = "_RecNo_";
   private static final String COL_REASON = "_Reason_";
+
+  private static Function<SQLException, ResponseObject> errorHandler = new Function<SQLException,
+      ResponseObject>() {
+    @Override
+    public ResponseObject apply(SQLException ex) {
+      return ResponseObject.error(ex);
+    }
+  };
 
   @EJB
   SystemBean sys;
@@ -353,24 +392,6 @@ public class ImportBean {
           .addConstant(parentName, mapping)
           .setWhere(SqlUtils.and(SqlUtils.isNull(data, parentName), condition)));
     }
-  }
-
-  private static IsExpression cast(BeeView view, String tmp, String col) {
-    IsExpression xpr = SqlUtils.field(tmp, col);
-    SqlDataType type = view.getColumnType(col);
-
-    switch (type) {
-      case CHAR:
-      case STRING:
-      case TEXT:
-      case BLOB:
-        break;
-
-      default:
-        xpr = SqlUtils.cast(xpr, type, view.getColumnPrecision(col), view.getColumnScale(col));
-        break;
-    }
-    return xpr;
   }
 
   private String commitData(ImportObject io, String data, String parentName, String parentCap,
@@ -520,7 +541,7 @@ public class ImportBean {
       for (String col : keys) {
         condition.add(SqlUtils.notNull(tmp, col),
             cols.get(col).isNotNull() ? null : SqlUtils.notNull(vw, col),
-            SqlUtils.compare(cast(view, tmp, col), Operator.EQ, SqlUtils.field(vw, col)));
+            SqlUtils.joinUsing(tmp, vw, col));
       }
       qs.updateData(update.setWhere(condition));
     }
@@ -529,7 +550,7 @@ public class ImportBean {
 
       for (String col : cols.keySet()) {
         IsCondition condition = SqlUtils.and(SqlUtils.notNull(tmp, col),
-            SqlUtils.compare(cast(view, tmp, col), Operator.EQ, SqlUtils.field(vw, col)));
+            SqlUtils.joinUsing(tmp, vw, col));
 
         if (cols.get(col).isNotNull()) {
           clause.add(condition);
@@ -568,7 +589,7 @@ public class ImportBean {
           upd.addFields(vw, col)
               .addField(tmp, col, col + tmp);
 
-          IsCondition wh = SqlUtils.compare(cast(view, tmp, col), Operator.NE,
+          IsCondition wh = SqlUtils.compare(SqlUtils.field(tmp, col), Operator.NE,
               SqlUtils.field(vw, col));
 
           if (cols.get(col).isNotNull()) {
@@ -620,13 +641,7 @@ public class ImportBean {
               row.getLong(view.getSourceIdName()), row.getLong(view.getSourceVersionName()),
               columns, oldValues, newValues, null);
 
-          ResponseObject response = deb.commitRow(rowSet, 0, RowInfo.class,
-              new Function<SQLException, ResponseObject>() {
-                @Override
-                public ResponseObject apply(SQLException ex) {
-                  return ResponseObject.error(ex);
-                }
-              });
+          ResponseObject response = deb.commitRow(rowSet, 0, RowInfo.class, errorHandler);
 
           if (!response.hasErrors()) {
             if (counters == null) {
@@ -733,13 +748,7 @@ public class ImportBean {
         }
         BeeRowSet rowSet = DataUtils.createRowSetForInsert(view.getName(), columns, values);
 
-        ResponseObject response = deb.commitRow(rowSet, 0, RowInfo.class,
-            new Function<SQLException, ResponseObject>() {
-              @Override
-              public ResponseObject apply(SQLException ex) {
-                return ResponseObject.error(ex);
-              }
-            });
+        ResponseObject response = deb.commitRow(rowSet, 0, RowInfo.class, errorHandler);
 
         if (!response.hasErrors()) {
           qs.updateData(new SqlUpdate(tmp)
@@ -797,6 +806,10 @@ public class ImportBean {
       if (status.get(viewName).getB() != null) {
         status.get(viewName).getB().addRows(newRs.getRows());
       } else {
+        for (BeeColumn column : newRs.getColumns()) {
+          column.setLabel("<b>" + (Objects.equals(column.getId(), COL_REASON) ? consts.reason() :
+              column.getLabel()) + "</b>");
+        }
         status.get(viewName).setB(newRs);
       }
     }
@@ -815,23 +828,6 @@ public class ImportBean {
     return null;
   }
 
-  private static SqlCreate createStructure(ImportObject io) {
-    SqlCreate create = new SqlCreate(SqlUtils.temporaryName())
-        .addInteger(COL_REC_NO, true);
-
-    for (Entry<String, Pair<ImportProperty, String>> e : io.getDeepProperties(null).entrySet()) {
-      String propName = e.getKey();
-      ImportProperty prop = e.getValue().getA();
-
-      if (!BeeUtils.isEmpty(prop.getRelation())) {
-        create.addLong(propName, false);
-      } else {
-        create.addText(propName, false);
-      }
-    }
-    return create;
-  }
-
   private ResponseObject importCosts(Long optId, String fileName, String progress) {
     Map<String, String> dict = usr.getLocalizableDictionary();
     ImportObject io = initImport(optId, dict);
@@ -844,7 +840,7 @@ public class ImportBean {
     }
     String prfx = "_";
 
-    SqlCreate create = createStructure(io)
+    SqlCreate create = io.createStructure(sys, null, null)
         .addBoolean(prfx, false)
         .addBoolean(COL_FUEL, false)
         .addLong(COL_TRIP, false);
@@ -1079,7 +1075,7 @@ public class ImportBean {
   private ResponseObject importData(Long optionId, String fileName, String progress) {
     ImportObject io = initImport(optionId, usr.getLocalizableDictionary());
 
-    SqlCreate create = createStructure(io);
+    SqlCreate create = io.createStructure(sys, null, null);
     String tmp = create.getTarget();
     qs.updateData(create);
 
@@ -1129,7 +1125,7 @@ public class ImportBean {
     if (DataUtils.isEmpty(objects)) {
       return ResponseObject.error(usr.getLocalizableConstants().noData());
     }
-    SqlCreate create = createStructure(io);
+    SqlCreate create = io.createStructure(sys, null, null);
     String tmp = create.getTarget();
     qs.updateData(create);
 
@@ -1297,36 +1293,34 @@ public class ImportBean {
       return e.getMessage();
     }
     Map<String, Integer> indexes = new HashMap<>();
-    Map<String, Pair<ImportProperty, String>> props = io.getDeepProperties(null);
+    Map<String, String> props = io.getDeepProperties(null);
 
-    for (Entry<String, Pair<ImportProperty, String>> entry : props.entrySet()) {
-      String colValue = entry.getValue().getB();
+    for (Entry<String, String> entry : props.entrySet()) {
+      String colValue = entry.getValue();
 
       if (BeeUtils.isPrefix(colValue, '=')) {
         indexes.put(entry.getKey(), CellReference.convertColStringToIndex(colValue.substring(1)));
       }
     }
     Map<String, String> values = new HashMap<>();
-    int recNo = 0;
     int startRow = BeeUtils.max(BeeUtils.toInt(io.getPropertyValue(VAR_IMPORT_START_ROW)) - 1,
         shit.getFirstRowNum());
     int endRow = shit.getLastRowNum();
 
     for (int i = startRow; i <= endRow; i++) {
-      if (!BeeUtils.isEmpty(progress)
-          && !Endpoint.updateProgress(progress, recNo / (double) (endRow - startRow + 1))) {
+      if (!BeeUtils.isEmpty(progress) && !Endpoint.updateProgress(progress,
+          (i - startRow + 1) / (double) (endRow - startRow + 1))) {
         return usr.getLocalizableConstants().canceled();
       }
-      recNo++;
       Row row = shit.getRow(i);
       if (row == null) {
         continue;
       }
       values.clear();
 
-      for (Entry<String, Pair<ImportProperty, String>> entry : props.entrySet()) {
+      for (Entry<String, String> entry : props.entrySet()) {
         String prop = entry.getKey();
-        String value = entry.getValue().getB();
+        String value = entry.getValue();
         Integer col = indexes.get(prop);
 
         if (BeeUtils.isNonNegative(col)) {
@@ -1369,7 +1363,13 @@ public class ImportBean {
         insert.addNotEmpty(name, values.get(name));
       }
       if (!insert.isEmpty()) {
-        qs.updateData(insert.addConstant(COL_REC_NO, recNo));
+        ResponseObject response = qs.updateDataWithResponse(insert.addConstant(COL_REC_NO, i + 1),
+            errorHandler);
+
+        if (response.hasErrors()) {
+          throw new BeeRuntimeException(BeeUtils.join("\n", response.getErrors(),
+              insert.getQuery()));
+        }
       }
     }
     file.delete();

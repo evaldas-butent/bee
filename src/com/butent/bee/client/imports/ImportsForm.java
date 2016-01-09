@@ -108,7 +108,7 @@ public class ImportsForm extends AbstractFormInterceptor implements ClickHandler
           lbl.addClickHandler(new ClickHandler() {
             @Override
             public void onClick(ClickEvent arg0) {
-              Global.showModalGrid(cap, rs);
+              Global.showModalGrid(cap, rs, StyleUtils.NAME_INFO_TABLE);
             }
           });
         }

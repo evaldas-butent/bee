@@ -549,8 +549,8 @@ public final class Global {
     msgBoxen.showInfo(caption, messages, dialogStyle, closeHtml);
   }
 
-  public static void showModalGrid(String caption, IsTable<?, ?> table) {
-    msgBoxen.showTable(caption, table);
+  public static void showModalGrid(String caption, IsTable<?, ?> table, String... styles) {
+    msgBoxen.showTable(caption, table, styles);
   }
 
   public static void showModalWidget(String caption, Widget widget) {
