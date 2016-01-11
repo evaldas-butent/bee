@@ -6,7 +6,7 @@ import com.butent.bee.shared.ui.HasCaption;
 
 public enum Domain implements HasCaption {
   NEWS(FontAwesome.RSS, Localized.getConstants().domainNews(), false, false, 100),
-  FAVORITES(FontAwesome.STAR_O, null, false, false, 60),
+  FAVORITES(FontAwesome.BOOKMARK_O, null, false, false, 60),
   WORKSPACES(FontAwesome.NEWSPAPER_O, Localized.getConstants().workspaces(), false, false, 100),
   REPORTS(FontAwesome.FILE_TEXT_O, Localized.getConstants().reports(), false, false, 100),
   CALENDAR(FontAwesome.CALENDAR, null, true, true, 400),
