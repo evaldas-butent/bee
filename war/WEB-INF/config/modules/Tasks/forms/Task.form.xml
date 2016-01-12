@@ -7,10 +7,11 @@
   <!ENTITY header "font-style: italic;">
   <!ENTITY separator "<br/>">
 
-  <!ENTITY lbl1 "&inline; width: 100px; padding-top: 1px; margin-left: 5px;">
+  <!ENTITY lbl1 "&inline; width: 101px; padding-top: 1px; margin-left: 5px;">
+  <!ENTITY lbl2 "&inline; width: 113px; padding-top: 1px; margin-left: 5px;">
   <!ENTITY top1 "float: left; width: 100px; padding-top: 1px;">
   <!ENTITY inp2 "&inline; width: 180px;">
-  <!ENTITY inp2x "&inline; width: 464px;">
+  <!ENTITY inp2x "&inline; width: 478px;">
   <!ENTITY lbl3 "&inline; width: 128px; padding-top: 1px; margin-left: 16px;">
   <!ENTITY inp4 "&inline; width: 140px;">
 ]>
@@ -26,34 +27,45 @@
             <FlowPanel style="&section;">
               <Label for="Owner" style="&lbl1;" />
               <DataSelector source="Owner" editSource="OwnerPerson" style="&inp2;" readOnly="true" />
-              <Label for="Executor" style="&lbl1;" />
+              <Label for="Executor" style="&lbl2;" />
               <DataSelector source="Executor" editSource="ExecutorPerson" style="&inp2;" readOnly="true" />
             </FlowPanel>
 
             <FlowPanel style="&section;">
               <Label for="StartTime" style="&lbl1;" />
               <InputDateTime source="StartTime" style="&inp2;" readOnly="true" visible="true" />
-              <Label for="FinishTime" style="&lbl1;" />
+              <Label for="FinishTime" style="&lbl2;" />
               <InputDateTime source="FinishTime" style="&inp2;" readOnly="true" />
             </FlowPanel>
 
-            <FlowPanel style="&section1;">
+            <FlowPanel style="&section;">
+              <Label for="Company" style="&lbl1;" module="Classifiers.Contacts" class="bee-required" />
+              <DataSelector source="Company" newRowEnabled="false" style="&inp2;" disablable="true"
+                choiceColumns="Name TypeName " renderColumns="CompanyName CompanyTypeName" module="Classifiers.Contacts"
+                required="true" />
+              <Label for="Contact" style="&lbl2;" module="Classifiers.Contacts" />
+              <DataSelector source="Contact" newRowEnabled="false" style="&inp2;" disablable="true"
+                renderColumns="ContactFirstName ContactLastName" choiceColumns="FirstName LastName CompanyName" options="Company"
+                module="Classifiers.Contacts" />
+            </FlowPanel>
+
+            <FlowPanel style="&section;">
               <Label for="Type" style="&lbl1;" class="bee-required" />
               <DataSelector source="Type" name="Type" renderColumns="TypeName" newRowEnabled="false" style="&inp2;"
                 disablable="true" required="true" />
-              <Label for="Product" name="Product" style="&lbl1;" />
+              <Label for="Product" name="Product" style="&lbl2;" />
               <DataSelector source="Product" renderColumns="ProductName" newRowEnabled="true" style="&inp2;"
                 filter="Visible" />
             </FlowPanel>
 
-            <FlowPanel style="margin-top:20px;">
+            <FlowPanel style="&section;">
               <Label for="Summary" style="&lbl1;" />
               <InputText source="Summary" style="&inp2x;" readOnly="true" visible="true" maxLength="60" />
             </FlowPanel>
 
             <FlowPanel style="&section;" for="Description">
               <Label for="Description" style="&top1; &lbl1;" />
-              <InputArea source="Description" style="width: 464px; height: 60px;" readOnly="true" name="InputArea" />
+              <InputArea source="Description" style="width: 478px; height: 60px;" readOnly="true" name="InputArea" />
             </FlowPanel>
 
             <FileGroup name="Files" data="TaskFiles" visibleColumns="icon name size createdoc" />
@@ -72,17 +84,6 @@
               <ListBox source="Status" style="&inp2;" readOnly="true" visible="true" />
               <Label for="Priority" style="&inline; margin-left: 16px;" />
               <Radio source="Priority" style="&inline; font-size: 12px; margin-left: 8px;" disablable="true" />
-            </FlowPanel>
-
-            <FlowPanel style="&section;">
-              <Label for="Company" style="&lbl1;" module="Classifiers.Contacts" class="bee-required" />
-              <DataSelector source="Company" newRowEnabled="false" style="&inp2;" disablable="true"
-                choiceColumns="Name TypeName " renderColumns="CompanyName CompanyTypeName" module="Classifiers.Contacts"
-                required="true" />
-              <Label for="Contact" style="&lbl3;" module="Classifiers.Contacts" />
-              <DataSelector source="Contact" newRowEnabled="false" style="&inp4;" disablable="true"
-                renderColumns="ContactFirstName ContactLastName" choiceColumns="FirstName LastName CompanyName" options="Company"
-                module="Classifiers.Contacts" />
             </FlowPanel>
 
             <FlowPanel style="&section;">
