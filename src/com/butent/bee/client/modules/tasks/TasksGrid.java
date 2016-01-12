@@ -567,7 +567,8 @@ class TasksGrid extends AbstractGridInterceptor {
           @Override
           public void onSuccess(BeeRow updatedTaskRow) {
             RowUpdateEvent.fire(BeeKeeper.getBus(), VIEW_TASKS, updatedTaskRow);
-            RowEditor.open(ProjectConstants.VIEW_PROJECTS, projectRow, Opener.NEW_TAB);
+            RowEditor.openForm(ProjectConstants.FORM_PROJECT, Data.getDataInfo(
+                ProjectConstants.VIEW_PROJECTS), projectRow.getId(), Opener.NEW_TAB);
           }
         });
         updateProjectRelations(selectedRow.getId(), projectRow.getId());
