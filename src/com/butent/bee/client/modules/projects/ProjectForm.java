@@ -233,7 +233,7 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
       owner.setEnabled(true);
     }
 
-    if((isProjectUser(form, row) || isOwner(form, row)) && tasks!= null) {
+    if ((isProjectUser(form, row) || isOwner(form, row)) && tasks != null) {
       tasks.setEnabled(true);
     }
 
@@ -334,8 +334,6 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
               CellSource.forColumn(Data.getColumn(VIEW_PROJECTS, ALS_FILTERED_OWNER_USER), form
                   .getDataIndex(ALS_FILTERED_OWNER_USER)),
               row.getString(form.getDataIndex(COL_PROJECT_OWNER)));
-
-          form.refresh();
         }
       });
     }
@@ -359,9 +357,6 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
               CellSource.forColumn(Data.getColumn(VIEW_PROJECTS, ALS_STAGES_COUNT), form
                   .getDataIndex(ALS_STAGES_COUNT)),
               BeeUtils.toString(BeeConst.INT_TRUE));
-
-          form.refresh();
-
         }
       });
     }
@@ -422,10 +417,10 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
       IsRow newRow = event.getRow();
 
       if (newRow.getId() == getActiveRow().getId()) {
-        if (newRow.getInteger(getFormView().getDataIndex(COL_PROJECT_STATUS))
-            != getActiveRow().getInteger(getFormView().getDataIndex(COL_PROJECT_STATUS))) {
+        if (newRow.getInteger(getFormView().getDataIndex(COL_PROJECT_STATUS)) != getActiveRow()
+            .getInteger(getFormView().getDataIndex(COL_PROJECT_STATUS))) {
 
-          IsRow  oldRow = DataUtils.cloneRow(getActiveRow());
+          IsRow oldRow = DataUtils.cloneRow(getActiveRow());
           getActiveRow().setValue(getFormView().getDataIndex(COL_PROJECT_STATUS),
               newRow.getValue(getFormView().getDataIndex(COL_PROJECT_STATUS)));
           getFormView().refreshBySource(COL_PROJECT_STATUS);

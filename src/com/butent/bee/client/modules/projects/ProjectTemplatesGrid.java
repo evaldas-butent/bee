@@ -24,6 +24,7 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.RowInfoList;
@@ -111,55 +112,58 @@ public class ProjectTemplatesGrid extends AbstractGridInterceptor {
                 taskTemplatesView.getColumnNames(false),
                 Filter.equals(ProjectConstants.COL_PROJECT_TEMPLATE, tmlRow.getId()),
                 new Queries.RowSetCallback() {
-                  @Override
-                  public void onSuccess(BeeRowSet taskTemplates) {
-                    if (taskTemplates.isEmpty()) {
-                      createProjectUsers(prjRow, tmlRow, callback);
-                      return;
-                    }
+              @Override
+              public void onSuccess(BeeRowSet taskTemplates) {
+                if (taskTemplates.isEmpty()) {
+                  createProjectUsers(prjRow, tmlRow, callback);
+                  return;
+                }
 
-                    Map<Long, Long> stageCache = Maps.newConcurrentMap();
+                Map<Long, Long> stageCache = Maps.newConcurrentMap();
 
-                    for (int i = 0; i < stages.getNumberOfRows(); i++) {
-                      Long tmlId = stages.getLong(i, stagesView.getColumnIndex(
-                          ProjectConstants.COL_STAGE_TEMPLATE));
-                      if (DataUtils.isId(tmlId)) {
-                        stageCache.put(tmlId, stages.getRow(i).getId());
-                      }
-                    }
+                for (int i = 0; i < stages.getNumberOfRows(); i++) {
+                  Long tmlId = stages.getLong(i, stagesView.getColumnIndex(
+                      ProjectConstants.COL_STAGE_TEMPLATE));
+                  if (DataUtils.isId(tmlId)) {
+                    stageCache.put(tmlId, stages.getRow(i).getId());
+                  }
+                }
 
-                    for (int i = 0; i < taskTemplates.getNumberOfRows(); i++) {
-                      BeeRow row = taskCopy.addEmptyRow();
-                      for (String col : copyCols) {
-                        switch (col) {
-                          case ProjectConstants.COL_PROJECT_STAGE:
-                            Long id = taskTemplates.getLong(i, taskTemplatesView.getColumnIndex(
-                                ProjectConstants.COL_STAGE_TEMPLATE));
+                for (int i = 0; i < taskTemplates.getNumberOfRows(); i++) {
+                  BeeRow row = taskCopy.addEmptyRow();
+                  for (String col : copyCols) {
+                    switch (col) {
+                      case ProjectConstants.COL_PROJECT_STAGE:
+                        Long id = taskTemplates.getLong(i, taskTemplatesView.getColumnIndex(
+                            ProjectConstants.COL_STAGE_TEMPLATE));
 
-                            if (DataUtils.isId(id)) {
-                              row.setValue(taskCopy.getColumnIndex(col),
-                                  stageCache.get(id));
-                            }
-                            break;
-                          case ProjectConstants.COL_PROJECT:
-                            row.setValue(taskCopy.getColumnIndex(col), prjRow.getId());
-                            break;
-                          default:
-                            row.setValue(taskCopy.getColumnIndex(col),
-                                taskTemplates.getString(i, col));
-                            break;
+                        if (DataUtils.isId(id)) {
+                          row.setValue(taskCopy.getColumnIndex(col),
+                              stageCache.get(id));
                         }
-                      }
+                        break;
+                      case ProjectConstants.COL_PROJECT:
+                        row.setValue(taskCopy.getColumnIndex(col), prjRow.getId());
+                        break;
+                      default:
+                        row.setValue(taskCopy.getColumnIndex(col),
+                            taskTemplates.getString(i, col));
+                        break;
                     }
+                  }
+                }
 
-                    Queries.insertRows(taskCopy, new RpcCallback<RowInfoList>() {
-                      @Override
-                      public void onSuccess(RowInfoList result) {
-                        createProjectUsers(prjRow, tmlRow, callback);
-                      }
-                    });
+                Queries.insertRows(taskCopy, new RpcCallback<RowInfoList>() {
+                  @Override
+                  public void onSuccess(RowInfoList result) {
+                    DataChangeEvent.fireRefresh(BeeKeeper.getBus(), TaskConstants.VIEW_TASKS);
+                    DataChangeEvent.fireRefresh(BeeKeeper.getBus(),
+                        TaskConstants.VIEW_RELATED_TASKS);
+                    createProjectUsers(prjRow, tmlRow, callback);
                   }
                 });
+              }
+            });
 
           }
         });
@@ -228,6 +232,9 @@ public class ProjectTemplatesGrid extends AbstractGridInterceptor {
         new RowCallback() {
           @Override
           public void onSuccess(BeeRow result) {
+            // RowInsertEvent.fire(BeeKeeper.getBus(), ProjectConstants.VIEW_PROJECTS, result,
+            // null);
+            DataChangeEvent.fireRefresh(BeeKeeper.getBus(), ProjectConstants.VIEW_PROJECTS);
             createStages(result, templateRow, callback);
           }
         });
@@ -251,11 +258,7 @@ public class ProjectTemplatesGrid extends AbstractGridInterceptor {
           @Override
           public void onSuccess(BeeRowSet tmlPersons) {
             if (tmlPersons.isEmpty()) {
-              if (callback == null) {
-                openProjectFullForm(prjRow.getId());
-              } else {
-                callback.onSuccess(prjRow);
-              }
+              requery(prjRow, callback);
               return;
             }
 
@@ -269,11 +272,7 @@ public class ProjectTemplatesGrid extends AbstractGridInterceptor {
             Queries.insertRows(persons, new RpcCallback<RowInfoList>() {
               @Override
               public void onSuccess(RowInfoList result) {
-                if (callback == null) {
-                  openProjectFullForm(prjRow.getId());
-                } else {
-                  callback.onSuccess(prjRow);
-                }
+                requery(prjRow, callback);
               }
             });
           }
@@ -320,8 +319,9 @@ public class ProjectTemplatesGrid extends AbstractGridInterceptor {
             Queries.insertRows(users, new RpcCallback<RowInfoList>() {
               @Override
               public void onSuccess(RowInfoList result) {
+                DataChangeEvent.fireRefresh(BeeKeeper.getBus(),
+                    ProjectConstants.VIEW_PROJECT_USERS);
                 createProjectContacts(prjRow, tmlRow, callback);
-                return;
               }
             });
           }
@@ -337,8 +337,7 @@ public class ProjectTemplatesGrid extends AbstractGridInterceptor {
         ProjectConstants.COL_STAGE_TEMPLATE);
 
     final List<BeeColumn> stageCols =
-        Lists.newArrayList(Data.getColumns(ProjectConstants.VIEW_PROJECT_STAGES, copyCols
-            ));
+        Lists.newArrayList(Data.getColumns(ProjectConstants.VIEW_PROJECT_STAGES, copyCols));
 
     final BeeRowSet stages = new BeeRowSet(ProjectConstants.VIEW_PROJECT_STAGES, stageCols);
 
@@ -351,7 +350,7 @@ public class ProjectTemplatesGrid extends AbstractGridInterceptor {
           @Override
           public void onSuccess(BeeRowSet stageTml) {
             if (stageTml.isEmpty()) {
-              createProjectUsers(prjRow, tmlRow, callback);
+              copyTasks(prjRow, tmlRow, callback);
               return;
             }
 
@@ -375,15 +374,14 @@ public class ProjectTemplatesGrid extends AbstractGridInterceptor {
             Queries.insertRows(stages, new RpcCallback<RowInfoList>() {
               @Override
               public void onSuccess(RowInfoList result) {
-                // createProjectUsers(prjRow, tmlRow, callback);
-
+                DataChangeEvent.fireRefresh(BeeKeeper.getBus(),
+                    ProjectConstants.VIEW_PROJECT_STAGES);
                 copyTasks(prjRow, tmlRow, callback);
               }
             });
 
           }
-        }
-        );
+        });
   }
 
   private static void openProjectFullForm(long projectId) {
@@ -391,4 +389,11 @@ public class ProjectTemplatesGrid extends AbstractGridInterceptor {
         Data.getDataInfo(ProjectConstants.VIEW_PROJECTS), projectId, Opener.NEW_TAB);
   }
 
+  private static void requery(BeeRow result, final RowCallback callback) {
+    if (callback == null) {
+      openProjectFullForm(result.getId());
+    } else {
+      callback.onSuccess(result);
+    }
+  }
 }
