@@ -1171,15 +1171,7 @@ public class TasksModuleBean implements BeeModule {
             .addConstant(COL_EVENT_DURATION, durId)
             .addConstant(COL_COMMENT, comment);
 
-        SqlInsert insertComment = new SqlInsert(TBL_TASK_EVENTS)
-            .addConstant(COL_TASK, taskId)
-            .addConstant(COL_PUBLISHER, row.getLong(info.getColumnIndex(COL_EXECUTOR)))
-            .addConstant(COL_PUBLISH_TIME, TimeUtils.nowMillis())
-            .addConstant(TaskConstants.COL_EVENT, TaskEvent.COMMENT.ordinal())
-            .addConstant(COL_COMMENT, comment);
-
         qs.insertData(insertEvent);
-        qs.insertData(insertComment);
 
       }
     }
