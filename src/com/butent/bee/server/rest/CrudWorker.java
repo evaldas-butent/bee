@@ -25,6 +25,7 @@ import com.butent.bee.shared.data.view.ViewColumn;
 import com.butent.bee.shared.exceptions.BeeException;
 import com.butent.bee.shared.exceptions.BeeRuntimeException;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -419,6 +420,8 @@ public abstract class CrudWorker {
   }
 
   private BeeRowSet update(String viewName, Long id, Long version, JsonObject data) {
+    LogUtils.getRootLogger().info(data);
+
     if (data.containsKey(OLD_VALUES) && data.get(OLD_VALUES) instanceof JsonObject) {
       JsonObject oldData = data.getJsonObject(OLD_VALUES);
       BeeView view = sys.getView(viewName);

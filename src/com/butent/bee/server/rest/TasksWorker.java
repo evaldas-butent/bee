@@ -2,6 +2,7 @@ package com.butent.bee.server.rest;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
+import static com.butent.bee.shared.modules.tasks.TaskConstants.COL_EVENT;
 
 import com.butent.bee.server.data.BeeView;
 import com.butent.bee.server.modules.tasks.TasksModuleBean;
@@ -23,11 +24,14 @@ import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.exceptions.BeeException;
 import com.butent.bee.shared.exceptions.BeeRuntimeException;
+import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.tasks.TaskUtils;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
+import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -37,6 +41,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import javax.ejb.EJB;
+import javax.json.Json;
 import javax.json.JsonObject;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
@@ -58,6 +63,24 @@ public class TasksWorker extends CrudWorker {
 
     if (response.hasErrors()) {
       return RestResponse.error(ArrayUtils.joinWords(response.getErrors()));
+    }
+    SimpleRowSet.SimpleRow row = qs.getRow(new SqlSelect()
+        .addField(TBL_TASKS, sys.getVersionName(TBL_TASKS), VERSION)
+        .addFields(TBL_TASKS, COL_STATUS, COL_START_TIME, COL_EXECUTOR)
+        .addFrom(TBL_TASKS)
+        .setWhere(sys.idEquals(TBL_TASKS, id)));
+
+    TaskStatus oldStatus = EnumUtils.getEnumByIndex(TaskStatus.class, row.getInt(COL_STATUS));
+
+    if (Objects.equals(row.getLong(COL_EXECUTOR), usr.getCurrentUserId())
+        && (TaskStatus.NOT_VISITED == oldStatus || TaskStatus.SCHEDULED == oldStatus
+        && !TaskUtils.isScheduled(row.getDateTime(COL_START_TIME)))) {
+
+      return update(id, row.getLong(VERSION), Json.createObjectBuilder()
+          .add(COL_STATUS, TaskStatus.ACTIVE.ordinal())
+          .add(OLD_VALUES, Json.createObjectBuilder().add(COL_STATUS, oldStatus.ordinal()))
+          .add(COL_TASK_EVENT,
+              Json.createObjectBuilder().add(COL_EVENT, TaskEvent.VISIT.ordinal())).build());
     }
     return get(id);
   }
@@ -158,10 +181,12 @@ public class TasksWorker extends CrudWorker {
 
   @Override
   public RestResponse update(Long id, Long version, JsonObject taskData) {
+    LogUtils.getRootLogger().info(taskData);
+
     if (!usr.canEditData(getViewName())) {
       return RestResponse.forbidden();
     }
-    RestResponse error = null;
+    Holder<RestResponse> error = Holder.absent();
 
     try {
       commit(new Runnable() {
@@ -173,10 +198,12 @@ public class TasksWorker extends CrudWorker {
           row.setId(id);
           row.setVersion(version);
           BeeRow oldRow = DataUtils.cloneRow(row);
+          BeeRowSet updated = null;
 
           JsonObject oldTask = taskData.getJsonObject(OLD_VALUES);
+          JsonObject taskEvent = taskData.getJsonObject(COL_TASK_EVENT);
 
-          if (Objects.nonNull(oldTask)) {
+          if (Objects.nonNull(oldTask) && Objects.nonNull(taskEvent)) {
             for (String col : oldTask.keySet()) {
               int idx = DataUtils.getColumnIndex(col, columns);
 
@@ -185,9 +212,8 @@ public class TasksWorker extends CrudWorker {
                 oldRow.setValue(idx, getValue(oldTask, col));
               }
             }
+            updated = DataUtils.getUpdated(info.getViewName(), columns, oldRow, row, null);
           }
-          BeeRowSet updated = DataUtils.getUpdated(info.getViewName(), columns, oldRow, row, null);
-
           if (!DataUtils.isEmpty(updated)) {
             Map<String, String> params = new HashMap<>();
             params.put(VAR_TASK_DATA, Codec.beeSerialize(updated));
@@ -197,15 +223,31 @@ public class TasksWorker extends CrudWorker {
             if (!notes.isEmpty()) {
               params.put(VAR_TASK_NOTES, Codec.beeSerialize(notes));
             }
-            ResponseObject resp = task.doTaskEvent(TaskEvent.EDIT.name(), params);
+            String comment = getValue(taskEvent, COL_COMMENT);
+
+            if (!BeeUtils.isEmpty(comment)) {
+              params.put(VAR_TASK_COMMENT, comment);
+            }
+            String time = getValue(taskEvent, COL_DURATION);
+
+            if (!BeeUtils.isEmpty(time)) {
+              params.put(VAR_TASK_DURATION_DATE, getValue(taskEvent, COL_DURATION_DATE));
+              params.put(VAR_TASK_DURATION_TYPE, getValue(taskEvent, COL_DURATION_TYPE + ID));
+              params.put(VAR_TASK_DURATION_TIME, time);
+            }
+            TaskEvent event = EnumUtils.getEnumByIndex(TaskEvent.class,
+                getValue(taskEvent, COL_EVENT));
+
+            if (event == TaskEvent.VISIT) {
+              params.put(VAR_TASK_VISITED, "1");
+            }
+            ResponseObject resp = task.doTaskEvent(event.name(), params);
 
             if (resp.hasErrors()) {
               throw new BeeRuntimeException(ArrayUtils.joinWords(resp.getErrors()));
             }
-            int idx = updated.getColumnIndex(COL_EXECUTOR);
-
-            if (!BeeConst.isUndef(idx)) {
-              Long executor = updated.getLong(0, idx);
+            if (updated.containsColumn(COL_EXECUTOR)) {
+              Long executor = updated.getLong(0, COL_EXECUTOR);
 
               SimpleRowSet.SimpleRow taskRow = qs.getRow(new SqlSelect()
                   .addFields(TBL_TASKS, COL_OWNER)
@@ -230,16 +272,18 @@ public class TasksWorker extends CrudWorker {
                     .setWhere(sys.idEquals(TBL_TASK_USERS, userId)));
               }
             }
+          } else {
+            error.set(RestResponse.error(Localized.getConstants().noData()));
           }
         }
       });
     } catch (BeeException e) {
-      error = RestResponse.error(e);
+      error.set(RestResponse.error(e));
     }
     RestResponse response = get(id);
 
-    if (Objects.nonNull(error)) {
-      response = error.setResult(response.getResult());
+    if (error.isNotNull()) {
+      response = error.get().setResult(response.getResult());
     }
     return response;
   }

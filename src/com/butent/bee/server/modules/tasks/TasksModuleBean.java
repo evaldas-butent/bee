@@ -857,7 +857,7 @@ public class TasksModuleBean implements BeeModule {
       }
       newRow.setValue(data.getColumnIndex(COL_STATUS), status.ordinal());
 
-      BeeRowSet rowSet = new BeeRowSet(VIEW_TASKS, data.getColumns());
+      BeeRowSet rowSet = new BeeRowSet(data.getViewName(), data.getColumns());
       rowSet.addRow(newRow);
 
       response = deb.commitRow(rowSet, RowInfo.class);
@@ -975,7 +975,7 @@ public class TasksModuleBean implements BeeModule {
             }
           }
 
-          response.setResponse(qs.getViewData(VIEW_TASKS, Filter.idIn(createdTasks)));
+          response.setResponse(qs.getViewData(taskData.getViewName(), Filter.idIn(createdTasks)));
         }
         break;
 
@@ -1033,7 +1033,7 @@ public class TasksModuleBean implements BeeModule {
     return response;
   }
 
-  public ResponseObject extendTask(Map<String, String> reqInfo) {
+  private ResponseObject extendTask(Map<String, String> reqInfo) {
     Long taskId = BeeUtils.toLongOrNull(reqInfo.get(VAR_TASK_ID));
     if (!DataUtils.isId(taskId)) {
       return ResponseObject.parameterNotFound(SVC_EXTEND_TASK, VAR_TASK_ID);

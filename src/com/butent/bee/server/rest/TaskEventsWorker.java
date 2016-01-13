@@ -4,6 +4,8 @@ import static com.butent.bee.shared.modules.administration.AdministrationConstan
 
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.modules.tasks.TaskConstants.TaskEvent;
+import com.butent.bee.shared.utils.EnumUtils;
 
 import javax.ejb.Stateless;
 import javax.ejb.TransactionManagement;
@@ -35,6 +37,11 @@ public class TaskEventsWorker extends CrudWorker {
 
   @Override
   public RestResponse insert(JsonObject data) {
+    TaskEvent event = EnumUtils.getEnumByIndex(TaskEvent.class, getValue(data, COL_EVENT));
+
+    if (event == TaskEvent.COMMENT) {
+      return super.insert(data);
+    }
     return RestResponse.forbidden();
   }
 

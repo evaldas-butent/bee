@@ -18,6 +18,7 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URLConnection;
 import java.nio.file.Files;
@@ -30,9 +31,11 @@ import java.util.zip.ZipOutputStream;
 import javax.ejb.EJB;
 import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.BadRequestException;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.NotFoundException;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -163,6 +166,18 @@ public class FileServiceApplication extends Application {
     fileInfo.setTemporary(true);
 
     return response(fileInfo);
+  }
+
+  @POST
+  @Path("{name}")
+  @Consumes(MediaType.APPLICATION_OCTET_STREAM)
+  @Produces(RestResponse.JSON_TYPE)
+  public RestResponse upload(@PathParam("name") String fileName, InputStream is) {
+    try {
+      return RestResponse.ok(fs.storeFile(is, fileName, null));
+    } catch (IOException e) {
+      return RestResponse.error(e);
+    }
   }
 
   private static Response response(FileInfo fileInfo) {
