@@ -28,10 +28,14 @@
     <Text name="Notes" label="=trdNotes" />
 
     <Boolean name="Proforma" label="=trdProformaInvoice" />
-      
+
   </Fields>
 
   <Indexes>
     <Index fields="Proforma" />
+    <Index fields="PaymentTime" />
+    <Index fields="Customer"/>
+    <Index fields="SaleSeries InvoiceNo" />
+    <Index fields="ERPInvoice" />
   </Indexes>
 </Table>

@@ -68,15 +68,18 @@
         <SimpleColumn name="Name" alias="DelayedPaymentRiskName" />
       </SimpleJoin>
       
+      <SimpleColumn name="LastestPayment" />
+      
       <ExternalJoin name="Company" source="Appointments" joinType="LEFT">
         <AggregateColumn name="Created" alias="AppointmentsCount" aggregate="COUNT_DISTINCT" />
         <AggregateColumn name="Created" alias="LastAppointment" aggregate="MAX" />
       </ExternalJoin>
-      
+<!--
       <ExternalJoin name="Customer" source="ERPSales" joinType="LEFT">
 	      <AggregateColumn name="PaymentTime" alias="LastestPayment" aggregate="MAX" 
 	      label="=trdLatestSalePayment"/>
       </ExternalJoin>
+-->
     </SimpleJoin>
         
     <SimpleColumn name="Manager" />
