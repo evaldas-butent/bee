@@ -44,6 +44,7 @@ import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.communication.RpcInfo;
 import com.butent.bee.client.communication.RpcList;
+import com.butent.bee.client.communication.RtcAdapter;
 import com.butent.bee.client.composite.FileGroup;
 import com.butent.bee.client.composite.FileGroup.Column;
 import com.butent.bee.client.composite.RadioGroup;
@@ -503,6 +504,9 @@ public final class CliWorker {
 
     } else if ("rooms".equals(z)) {
       showPropData("Client Rooms", Global.getRooms().getInfo());
+
+    } else if ("rtc".equals(z)) {
+      showPropData(v, RtcAdapter.getInfo());
 
     } else if ("rts".equals(z)) {
       scheduleTasks(arr, errorPopup);
