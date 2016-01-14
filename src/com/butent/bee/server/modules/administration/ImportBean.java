@@ -1310,6 +1310,7 @@ public class ImportBean {
     for (int i = startRow; i <= endRow; i++) {
       if (!BeeUtils.isEmpty(progress) && !Endpoint.updateProgress(progress,
           (i - startRow + 1) / (double) (endRow - startRow + 1))) {
+        file.delete();
         return usr.getLocalizableConstants().canceled();
       }
       Row row = shit.getRow(i);
@@ -1367,6 +1368,7 @@ public class ImportBean {
             errorHandler);
 
         if (response.hasErrors()) {
+          file.delete();
           throw new BeeRuntimeException(BeeUtils.join("\n", response.getErrors(),
               insert.getQuery()));
         }
