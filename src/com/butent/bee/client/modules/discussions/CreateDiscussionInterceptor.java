@@ -78,10 +78,13 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
   public void afterRefresh(FormView form, IsRow row) {
     boolean isPublic = true;
     GridView parentGrid = getGridView();
-    String gridKey = parentGrid.getGridKey();
 
-    if (Objects.equals(gridKey, "Discussions_observed")) {
-      isPublic = false;
+    if (parentGrid != null) {
+      String gridKey = parentGrid.getGridKey();
+
+      if (Objects.equals(gridKey, "Discussions_observed")) {
+        isPublic = false;
+      }
     }
 
     Widget widget = getFormView().getWidgetByName(WIDGET_ACCESSIBILITY);
@@ -222,8 +225,8 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
     String description = "";
 
     HasCheckedness wIsPublic = (HasCheckedness) getFormView().getWidgetByName(WIDGET_ACCESSIBILITY);
-    HasCheckedness wPermitComment = (HasCheckedness) getFormView().
-        getWidgetByName(COL_PERMIT_COMMENT);
+    HasCheckedness wPermitComment = (HasCheckedness) getFormView().getWidgetByName(
+        COL_PERMIT_COMMENT);
 
     Editor wDescription = (Editor) getFormView().getWidgetByName(WIDGET_DESCRIPTION);
     DataSelector wTopic = (DataSelector) getFormView().getWidgetBySource(COL_TOPIC);
