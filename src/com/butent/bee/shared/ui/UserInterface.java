@@ -33,7 +33,7 @@ public enum UserInterface implements HasCaption {
 
     @Override
     public List<String> getScripts() {
-      return Lists.newArrayList("settings", "js/tinymce/js/tinymce/tinymce.min.js");
+      return Lists.newArrayList("settings", "js/tinymce/js/tinymce/tinymce.min.js", "rtcadapter");
     }
 
     @Override

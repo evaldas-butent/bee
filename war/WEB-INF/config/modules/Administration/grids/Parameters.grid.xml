@@ -19,6 +19,11 @@
       </dynStyle>
     </DataColumn>
     <PropColumn type="string" name="Description" caption="=description">
+      <style>
+        <bodyStyle>
+          <ui:inline>color:green;</ui:inline>
+        </bodyStyle>
+      </style>
       <render>
         <ui:expression>$wnd.Bee_translate(row.Name ? 'prm' + row.Name : null)</ui:expression>
       </render>

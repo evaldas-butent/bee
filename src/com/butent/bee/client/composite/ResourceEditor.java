@@ -164,6 +164,11 @@ public class ResourceEditor extends Flow implements Presenter, View, Printable, 
   }
 
   @Override
+  public String getViewKey() {
+    return getSupplierKey();
+  }
+
+  @Override
   public Presenter getViewPresenter() {
     return this;
   }

@@ -356,6 +356,8 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
 
   private boolean readOnly;
 
+  private String favorite;
+
   private String caption;
   private boolean showRowId;
 
@@ -499,6 +501,14 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   }
 
   @Override
+  public void bookmark() {
+    if (BeeUtils.allNotEmpty(getFavorite(), getViewName()) && DataUtils.hasId(getActiveRow())) {
+      Global.getFavorites().bookmark(getViewName(), getActiveRow(), getDataColumns(),
+          NameUtils.toList(getFavorite()));
+    }
+  }
+
+  @Override
   public boolean checkOnClose(NativePreviewEvent event) {
     if (isChildEditing()) {
       return false;
@@ -532,6 +542,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   @Override
   public void create(FormDescription formDescription, String view, List<BeeColumn> dataCols,
       boolean addStyle, FormInterceptor interceptor) {
+
     Assert.notNull(formDescription);
 
     setViewName(BeeUtils.notEmpty(view, formDescription.getViewName()));
@@ -559,6 +570,8 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
 
     setCaption(formDescription.getCaption());
     setShowRowId(formDescription.showRowId());
+
+    setFavorite(formDescription.getFavorite());
 
     setPrintHeader(formDescription.printHeader());
     setPrintFooter(formDescription.printFooter());
@@ -935,12 +948,12 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   }
 
   @Override
-  public Widget getWidgetByName(String name) {
+  public Widget getWidgetByName(String name, boolean warn) {
     Assert.notEmpty(name);
     String id = creationCallback.getWidgetIdByName(name);
 
     Widget widget = getWidgetById(id);
-    if (widget == null) {
+    if (widget == null && warn) {
       logger.warning("widget not found:", name);
     }
 
@@ -2186,6 +2199,10 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
     this.dimensions = dimensions;
   }
 
+  private void setFavorite(String favorite) {
+    this.favorite = favorite;
+  }
+
   private void setFormInterceptor(FormInterceptor formInterceptor) {
     this.formInterceptor = formInterceptor;
   }
@@ -2263,5 +2280,10 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
 
   private boolean showRowId() {
     return showRowId;
+  }
+
+  @Override
+  public String getFavorite() {
+    return favorite;
   }
 }

@@ -129,6 +129,11 @@ public class NewRowPresenter extends AbstractPresenter implements ParentRowCreat
   }
 
   @Override
+  public String getViewKey() {
+    return formView.getSupplierKey();
+  }
+
+  @Override
   public void handleAction(Action action) {
     if (getActionDelegate() != null) {
       getActionDelegate().handleAction(action);

@@ -166,6 +166,11 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
   }
 
   @Override
+  public String getViewKey() {
+    return formContainer.getSupplierKey();
+  }
+
+  @Override
   public String getViewName() {
     if (getDataProvider() == null) {
       return null;
@@ -222,6 +227,10 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
         } else {
           Printer.print(form);
         }
+        break;
+
+      case BOOKMARK:
+        getFormView().bookmark();
         break;
 
       default:

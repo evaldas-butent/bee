@@ -51,6 +51,10 @@ public final class Settings {
     return getInt("clickSensitivityMillis");
   }
 
+  public static int getDialogResizerWidth() {
+    return getInt("dialogResizerWidth");
+  }
+
   public static Double getDouble(String key) {
     JSONValue value = getValue(key);
     if (value != null) {
@@ -74,6 +78,10 @@ public final class Settings {
   public static int getInt(String key) {
     Double d = getDouble(key);
     return (d == null) ? BeeConst.UNDEF : BeeUtils.toInt(d);
+  }
+
+  public static int getLoadingStateDelayMillis() {
+    return getInt("loadingStateDelayMillis");
   }
 
   public static int getLogCapacity() {

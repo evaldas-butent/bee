@@ -820,6 +820,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String unitWeekShort();
 
+  String updated();
+
   String user();
 
   String userFullName();

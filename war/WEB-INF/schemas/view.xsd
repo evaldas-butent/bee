@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xs:schema targetNamespace="http://www.butent.com/view" elementFormDefault="qualified"
-  xmlns="http://www.butent.com/view"
-  xmlns:xs="http://www.w3.org/2001/XMLSchema"
-  xmlns:w="http://www.butent.com/widget"
-  xmlns:tp="http://www.butent.com/type"
-  xmlns:expression="http://www.butent.com/expression">
+           xmlns="http://www.butent.com/view"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:w="http://www.butent.com/widget"
+           xmlns:tp="http://www.butent.com/type"
+           xmlns:xpr="http://www.butent.com/expression">
 
+  <xs:import namespace="http://www.w3.org/XML/1998/namespace" schemaLocation="xml.xsd" />
   <xs:import namespace="http://www.butent.com/widget" schemaLocation="widget.xsd" />
   <xs:import namespace="http://www.butent.com/type" schemaLocation="types.xsd" />
   <xs:import namespace="http://www.butent.com/expression" schemaLocation="expressions.xsd" />
@@ -14,14 +15,7 @@
     <xs:complexType>
       <xs:sequence>
         <xs:element name="Relation" type="w:selectorType" minOccurs="0" maxOccurs="1" />
-        <xs:element name="Columns" minOccurs="1" maxOccurs="1">
-          <xs:complexType>
-            <xs:choice maxOccurs="unbounded">
-              <xs:element ref="Column" />
-              <xs:element ref="Join" />
-            </xs:choice>
-          </xs:complexType>
-        </xs:element>
+        <xs:element ref="Columns" />
         <xs:element name="GroupBy" type="group" minOccurs="0" maxOccurs="1" />
         <xs:element name="Order" minOccurs="0" maxOccurs="1">
           <xs:complexType>
@@ -61,26 +55,33 @@
   </xs:simpleType>
 
   <xs:element name="Column" abstract="true" />
-  <xs:element name="Join" abstract="true" />
 
+  <xs:element name="Columns" type="columns" substitutionGroup="Column" />
   <xs:element name="IdColumn" type="columnId" substitutionGroup="Column" />
   <xs:element name="VersionColumn" type="columnVersion" substitutionGroup="Column" />
   <xs:element name="SimpleColumn" type="columnSimple" substitutionGroup="Column" />
   <xs:element name="HiddenColumn" type="columnSimple" substitutionGroup="Column" />
   <xs:element name="AggregateColumn" type="columnAggregate" substitutionGroup="Column" />
-
-  <xs:element name="SimpleJoin" type="joinSimple" substitutionGroup="Join" />
-  <xs:element name="ExternalJoin" type="joinExternal" substitutionGroup="Join" />
+  <xs:element name="SimpleJoin" type="joinSimple" substitutionGroup="Column" />
+  <xs:element name="ExternalJoin" type="joinExternal" substitutionGroup="Column" />
 
   <xs:complexType name="column" abstract="true">
     <xs:attribute name="name" type="tp:fieldNameType" use="required" />
+    <xs:attribute ref="xml:base" />
+  </xs:complexType>
+
+  <xs:complexType name="columns">
+    <xs:sequence maxOccurs="unbounded">
+      <xs:element ref="Column" />
+    </xs:sequence>
+    <xs:attribute ref="xml:base" />
   </xs:complexType>
 
   <xs:complexType name="columnSimple">
     <xs:complexContent>
       <xs:extension base="column">
         <xs:sequence>
-          <xs:element ref="expression:expression" minOccurs="0" maxOccurs="1" />
+          <xs:element ref="xpr:expression" minOccurs="0" maxOccurs="1" />
         </xs:sequence>
         <xs:attribute name="alias" type="tp:fieldNameType" />
         <xs:attribute name="locale">
@@ -125,10 +126,9 @@
   <xs:complexType name="joinSimple">
     <xs:complexContent>
       <xs:extension base="column">
-        <xs:choice maxOccurs="unbounded">
+        <xs:sequence maxOccurs="unbounded">
           <xs:element ref="Column" />
-          <xs:element ref="Join" />
-        </xs:choice>
+        </xs:sequence>
         <xs:attribute name="joinType" type="tp:joinType" use="required" />
         <xs:attribute name="filter" type="xs:string" />
       </xs:extension>

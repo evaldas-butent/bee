@@ -1,5 +1,19 @@
 #/opt/wildfly/bin/jboss-cli.sh -c controller=localhost:12190 --file=config.cli
 
+# REPLACE
+#<periodic-rotating-file-handler...>
+#    ...
+#    <suffix value=".yyyy-MM-dd"/>
+#    ...
+#</periodic-rotating-file-handler>
+# TO
+#<size-rotating-file-handler...>
+#    ...
+#    <rotate-size value="100M"/>
+#    <max-backup-index value="50"/>
+#    ...
+#</size-rotating-file-handler>
+
 module add --name=org.postgres --resources=/opt/postgresql-9.4-1201.jdbc41.jar --dependencies=javax.api,javax.transaction.api
 /subsystem=datasources/jdbc-driver=postgres:add(driver-name="postgres",driver-module-name="org.postgres",driver-class-name=org.postgresql.Driver)
 data-source add --jndi-name=java:/jdbc/BeeDS --name=PostgrePool --connection-url=jdbc:postgresql://192.168.0.210/DB --driver-name=postgres --user-name=postgres --password=admin

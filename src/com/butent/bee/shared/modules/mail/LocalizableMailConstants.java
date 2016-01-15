@@ -100,8 +100,6 @@ public interface LocalizableMailConstants {
 
   String mailMessageSent();
 
-  String mailShowAnswer();
-
   String mailShowOriginal();
 
   String mailSpecifyRecipient();

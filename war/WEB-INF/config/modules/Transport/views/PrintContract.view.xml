@@ -6,6 +6,7 @@
   <Columns>
     <SimpleColumn name="Assessment" />
 
+    <SimpleColumn name="CargoTrip" />
     <SimpleJoin name="CargoTrip" joinType="INNER">
       <SimpleJoin joinType="INNER" name="Cargo">
         <SimpleColumn name="Description" />
@@ -30,12 +31,12 @@
               </SimpleJoin>
 
               <SimpleColumn name="Company" alias="Customer" />
-    
+
               <SimpleJoin name="Person" joinType="LEFT">
                 <SimpleColumn name="FirstName" />
                 <SimpleColumn name="LastName" />
               </SimpleJoin>
-    
+
               <SimpleJoin name="Contact" joinType="LEFT">
                 <SimpleColumn name="Phone" />
                 <SimpleColumn name="Mobile" />
@@ -47,7 +48,7 @@
           </SimpleJoin>
         </SimpleJoin>
       </SimpleJoin>
-      
+
       <SimpleJoin joinType="LEFT" name="Trip">
         <SimpleColumn name="Forwarder" />
         <SimpleColumn name="ForwarderVehicle" />

@@ -76,7 +76,7 @@ public abstract class Filter implements BeeSerializable, RowFilter {
     return and(and(f1, f2), and(f3, f4));
   }
 
-  public static Filter any(String column, EnumSet<? extends Enum> enums) {
+  public static Filter any(String column, EnumSet<? extends Enum<?>> enums) {
     Assert.notEmpty(column);
     Assert.notNull(enums);
 

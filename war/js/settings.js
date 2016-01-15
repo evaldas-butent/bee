@@ -7,6 +7,7 @@ var BeeSettings = {
   "providerRepeatMillis": 200,
   "providerMinPrefetchSteps": 1,
   "providerMaxPrefetchSteps": 100,
+  "loadingStateDelayMillis": 300,
   "logCapacity": 10000,
   "minimizeNumberOfConcurrentRequests": true,
   "showCommands": "mail, users, company_structure",
@@ -15,6 +16,7 @@ var BeeSettings = {
   "clickSensitivityMillis": 100,
   "clickSensitivityDistance": 10,
   "newsRefreshIntervalSeconds": 60,
+  "dialogResizerWidth": 10,
   "theme" : {
     "WorkspaceMarginRight": 25,
     "ViewHeaderHeight": "600, 30, 1200, 52",

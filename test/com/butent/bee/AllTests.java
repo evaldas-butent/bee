@@ -4,8 +4,8 @@ import com.butent.bee.shared.data.TestDataUtils;
 import com.butent.bee.shared.html.builder.TestBuilder;
 import com.butent.bee.shared.testutils.TestArrayUtils;
 import com.butent.bee.shared.testutils.TestBeeConst;
-import com.butent.bee.shared.testutils.TestBeeUtilsTransform;
 import com.butent.bee.shared.testutils.TestBeeUtilsIntersects;
+import com.butent.bee.shared.testutils.TestBeeUtilsTransform;
 import com.butent.bee.shared.testutils.TestBooleanValue;
 import com.butent.bee.shared.testutils.TestCodec;
 import com.butent.bee.shared.testutils.TestDateTime;
@@ -36,6 +36,7 @@ import com.butent.bee.shared.testutils.TestTimeUtils;
 import com.butent.bee.shared.testutils.TestValueType;
 import com.butent.bee.shared.testutils.TestWildcards;
 import com.butent.bee.shared.testutils.TestWildcardsPattern;
+import com.butent.bee.shared.utils.TestBeeUtils;
 
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite.SuiteClasses;
@@ -57,7 +58,6 @@ import org.junit.runners.Suite.SuiteClasses;
     TestService.class, TestStringArray.class,
     TestBooleanValue.class, TestDateTimeValue.class,
     TestDateValue.class, TestNumberValue.class, TestTextValue.class,
-    TestTimeOfDayValue.class, TestDataUtils.class, TestBuilder.class })
-
+    TestTimeOfDayValue.class, TestDataUtils.class, TestBuilder.class, TestBeeUtils.class})
 public class AllTests {
 }

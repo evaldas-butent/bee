@@ -62,6 +62,7 @@ public class DialogBox extends Popup implements Printable {
 
   protected DialogBox(String caption, String styleName) {
     super(OutsideClick.IGNORE, STYLE_DIALOG);
+
     if (!BeeUtils.isEmpty(styleName) && !BeeUtils.same(styleName, STYLE_DIALOG)) {
       addStyleName(styleName);
     }
@@ -80,7 +81,7 @@ public class DialogBox extends Popup implements Printable {
 
     this.caption = caption;
 
-    enableDragging();
+    setResizable(true);
   }
 
   public void addAction(Action action, Widget widget) {

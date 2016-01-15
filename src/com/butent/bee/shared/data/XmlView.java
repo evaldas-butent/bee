@@ -20,11 +20,18 @@ import javax.xml.bind.annotation.XmlSeeAlso;
 @XmlRootElement(name = "View", namespace = DataUtils.VIEW_NAMESPACE)
 public class XmlView {
 
-  @XmlSeeAlso({XmlSimpleColumn.class, XmlHiddenColumn.class, XmlIdColumn.class,
+  @XmlSeeAlso({
+      XmlColumns.class, XmlSimpleColumn.class, XmlHiddenColumn.class, XmlIdColumn.class,
       XmlVersionColumn.class, XmlAggregateColumn.class, XmlSimpleJoin.class, XmlExternalJoin.class})
   public abstract static class XmlColumn {
     @XmlAttribute
     public String name;
+  }
+
+  @XmlRootElement(name = "Columns", namespace = DataUtils.VIEW_NAMESPACE)
+  public static class XmlColumns extends XmlColumn {
+    @XmlElementRef
+    public Collection<XmlColumn> columns;
   }
 
   @XmlRootElement(name = "SimpleColumn", namespace = DataUtils.VIEW_NAMESPACE)
@@ -68,13 +75,11 @@ public class XmlView {
   }
 
   @XmlRootElement(name = "SimpleJoin", namespace = DataUtils.VIEW_NAMESPACE)
-  public static class XmlSimpleJoin extends XmlColumn {
+  public static class XmlSimpleJoin extends XmlColumns {
     @XmlAttribute
     public String joinType;
     @XmlAttribute
     public String filter;
-    @XmlElementRef
-    public Collection<XmlColumn> columns;
   }
 
   @XmlRootElement(name = "ExternalJoin", namespace = DataUtils.VIEW_NAMESPACE)
@@ -135,9 +140,8 @@ public class XmlView {
   @XmlAnyElement
   public Object relation;
 
-  @XmlElementWrapper(name = "Columns", namespace = DataUtils.VIEW_NAMESPACE)
   @XmlElementRef
-  public Collection<XmlColumn> columns;
+  public XmlColumns columns;
 
   @XmlElementRef
   public XmlGroup groupBy;

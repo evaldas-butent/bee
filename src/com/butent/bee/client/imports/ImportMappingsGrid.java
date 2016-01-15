@@ -1,8 +1,11 @@
 package com.butent.bee.client.imports;
 
+import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.render.AbstractCellRenderer;
+import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
@@ -22,7 +25,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ImportMappingsGrid extends AbstractGridInterceptor {
+public class ImportMappingsGrid extends AbstractGridInterceptor implements SelectorEvent.Handler {
 
   private final String viewName;
   private BeeRowSet cache;
@@ -30,6 +33,16 @@ public class ImportMappingsGrid extends AbstractGridInterceptor {
 
   public ImportMappingsGrid(String viewName) {
     this.viewName = viewName;
+  }
+
+  @Override
+  public void afterCreateEditor(String source, Editor editor, boolean embedded) {
+    if (BeeUtils.same(source, AdministrationConstants.COL_IMPORT_MAPPING)
+        && editor instanceof DataSelector) {
+
+      ((DataSelector) editor).addSelectorHandler(this);
+    }
+    super.afterCreateEditor(source, editor, embedded);
   }
 
   @Override
@@ -50,15 +63,15 @@ public class ImportMappingsGrid extends AbstractGridInterceptor {
 
       Queries.getRowSet(viewName, relation.getOriginalRenderColumns(),
           new Queries.RowSetCallback() {
-        @Override
-        public void onSuccess(BeeRowSet result) {
-          cache = result;
+            @Override
+            public void onSuccess(BeeRowSet result) {
+              cache = result;
 
-          if (waiting) {
-            gridView.refresh(true, true);
-          }
-        }
-      });
+              if (waiting) {
+                gridView.refresh(true, true);
+              }
+            }
+          });
     }
     return super.beforeCreateColumn(gridView, descr);
   }
@@ -95,5 +108,18 @@ public class ImportMappingsGrid extends AbstractGridInterceptor {
       };
     }
     return super.getRenderer(columnName, dataColumns, columnDescription, cellSource);
+  }
+
+  @Override
+  public void onDataSelector(SelectorEvent event) {
+    if (event.hasRelatedView(viewName) && event.isRowCreated()) {
+      List<String> data = new ArrayList<>();
+      BeeRow newRow = event.getNewRow();
+
+      for (BeeColumn column : cache.getColumns()) {
+        data.add(Data.getString(viewName, newRow, column.getId()));
+      }
+      cache.addRow(newRow.getId(), newRow.getVersion(), data);
+    }
   }
 }

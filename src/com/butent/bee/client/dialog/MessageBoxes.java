@@ -44,6 +44,7 @@ import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.Orientation;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -501,7 +502,7 @@ public class MessageBoxes {
         null, null, null, null);
   }
 
-  public void showTable(String caption, IsTable<?, ?> table) {
+  public void showTable(String caption, IsTable<?, ?> table, String... styles) {
     Assert.notNull(table);
 
     int c = table.getNumberOfColumns();
@@ -513,7 +514,7 @@ public class MessageBoxes {
       return;
     }
 
-    HtmlTable grid = new HtmlTable();
+    HtmlTable grid = new HtmlTable(BeeUtils.joinWords(Arrays.asList(styles)));
     grid.addStyleName(STYLE_TABLE);
     int index = 0;
 

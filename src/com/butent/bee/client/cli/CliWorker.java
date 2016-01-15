@@ -44,6 +44,7 @@ import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.communication.RpcInfo;
 import com.butent.bee.client.communication.RpcList;
+import com.butent.bee.client.communication.RtcAdapter;
 import com.butent.bee.client.composite.FileGroup;
 import com.butent.bee.client.composite.FileGroup.Column;
 import com.butent.bee.client.composite.RadioGroup;
@@ -153,10 +154,12 @@ import com.butent.bee.shared.data.PropertiesData;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.StringMatrix;
 import com.butent.bee.shared.data.TableColumn;
+import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.html.Attributes;
+import com.butent.bee.shared.html.Keywords;
 import com.butent.bee.shared.html.Tags;
 import com.butent.bee.shared.html.builder.elements.Input;
 import com.butent.bee.shared.i18n.Localized;
@@ -406,6 +409,9 @@ public final class CliWorker {
     } else if ("id".equals(z)) {
       showElement(v, arr, errorPopup);
 
+    } else if ("iddqd".equals(z)) {
+      respectMyAuthoritah();
+
     } else if (z.startsWith("image")) {
       showImages(arr);
 
@@ -435,6 +441,9 @@ public final class CliWorker {
 
     } else if ("log".equals(z)) {
       doLog(arr);
+
+    } else if ("login_bg".equals(z)) {
+      setLoginBackground(args);
 
     } else if ("mail".equals(z)) {
       BeeKeeper.getRpc().sendText(new ParameterList(Service.MAIL), args, null);
@@ -495,6 +504,9 @@ public final class CliWorker {
 
     } else if ("rooms".equals(z)) {
       showPropData("Client Rooms", Global.getRooms().getInfo());
+
+    } else if ("rtc".equals(z)) {
+      showPropData(v, RtcAdapter.getInfo());
 
     } else if ("rts".equals(z)) {
       scheduleTasks(arr, errorPopup);
@@ -1997,6 +2009,25 @@ public final class CliWorker {
     }
   }
 
+  private static void respectMyAuthoritah() {
+    BeeKeeper.getRpc().makeGetRequest(Service.RESPECT_MY_AUTHORITAH, new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+        if (response.hasResponse(Boolean.class)) {
+          boolean authoritah = BeeUtils.toBoolean(response.getResponseAsString());
+          UserData userData = BeeKeeper.getUser().getUserData();
+
+          if (userData != null && userData.hasAuthoritah() != authoritah) {
+            BeeKeeper.getUser().getUserData().respectMyAuthoritah();
+            BeeKeeper.onRightsChange();
+
+            logger.debug(authoritah ? "respect my authoritah" : "screw you guys i'm going home");
+          }
+        }
+      }
+    });
+  }
+
   //@formatter:off
   // CHECKSTYLE:OFF
   private static native void sampleCanvas(Element el) /*-{
@@ -2036,6 +2067,43 @@ public final class CliWorker {
         Global.setDebug(BeeConst.isTrue(args));
       }
       logger.debug("debug", Global.isDebug());
+    }
+  }
+
+  private static void setLoginBackground(String args) {
+    final String key = "login_bg";
+
+    if (BeeUtils.isEmpty(args)) {
+      final Popup popup = new Popup(OutsideClick.CLOSE);
+
+      final InputFile widget = new InputFile();
+      widget.setAccept(Keywords.ACCEPT_IMAGE);
+
+      widget.addChangeHandler(new ChangeHandler() {
+        @Override
+        public void onChange(ChangeEvent event) {
+          popup.close();
+
+          List<NewFileInfo> fileInfos = FileUtils.getNewFileInfos(widget.getFiles());
+          List<NewFileInfo> files = Images.sanitizeInput(fileInfos, BeeKeeper.getScreen());
+
+          if (!BeeUtils.isEmpty(files)) {
+            FileUtils.readAsDataURL(files.get(0).getNewFile(),
+                e -> BeeKeeper.getStorage().set(key, e));
+          }
+        }
+      });
+
+      popup.setWidget(widget);
+      popup.center();
+
+    } else if (BeeConst.STRING_MINUS.equals(args)) {
+      BeeKeeper.getStorage().remove(key);
+      logger.debug(key, "removed");
+
+    } else {
+      BeeKeeper.getStorage().set(key, args);
+      logger.debug(key, BeeConst.STRING_EQ, args);
     }
   }
 
@@ -2729,6 +2797,8 @@ public final class CliWorker {
         range = Range.closed(FontAwesome.BUYSELLADS.getCode(), FontAwesome.MEDIUM.getCode());
       } else if (args.startsWith("4.4")) {
         range = Range.closed(FontAwesome.YC.getCode(), FontAwesome.FONTICONS.getCode());
+      } else if (args.startsWith("4.5")) {
+        range = Range.closed(FontAwesome.REDDIT_ALIEN.getCode(), FontAwesome.PERCENT.getCode());
       }
 
       styles.addAll(StyleUtils.parseStyles(args));
@@ -4119,7 +4189,7 @@ public final class CliWorker {
     }
 
     if (parCnt <= 0) {
-      showPropData("Storage", BeeKeeper.getStorage().getAll());
+      showPropData("Storage", BeeKeeper.getStorage().getAll(200));
       return;
     }
 
@@ -4149,9 +4219,11 @@ public final class CliWorker {
 
       } else {
         int count = 0;
-        for (Property p : BeeKeeper.getStorage().getAll()) {
-          if (BeeUtils.isPrefix(p.getName(), value)) {
-            BeeKeeper.getStorage().remove(p.getName());
+        List<String> keys = BeeKeeper.getStorage().keys();
+
+        for (String k : keys) {
+          if (BeeUtils.isPrefix(k, value)) {
+            BeeKeeper.getStorage().remove(k);
             count++;
           }
         }

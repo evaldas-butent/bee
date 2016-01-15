@@ -1,9 +1,7 @@
 package com.butent.bee.server.modules.mail;
 
-import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Multimap;
-import com.google.common.collect.Table;
 import com.google.common.io.CharStreams;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
@@ -62,14 +60,12 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.locks.ReentrantLock;
 
 import javax.annotation.Resource;
 import javax.ejb.EJB;
-import javax.ejb.Lock;
-import javax.ejb.LockType;
+import javax.ejb.LocalBean;
 import javax.ejb.SessionContext;
-import javax.ejb.Singleton;
+import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.mail.FetchProfile;
@@ -87,9 +83,9 @@ import javax.mail.internet.ParseException;
 import javax.mail.util.SharedByteArrayInputStream;
 import javax.ws.rs.core.MediaType;
 
-@Singleton
+@Stateless
+@LocalBean
 @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-@Lock(LockType.READ)
 public class MailStorageBean {
 
   private static final BeeLogger logger = LogUtils.getLogger(MailStorageBean.class);
@@ -104,9 +100,6 @@ public class MailStorageBean {
   ConcurrencyBean cb;
   @Resource
   SessionContext ctx;
-
-  private final Table<Long, String, Long> repliedStack = HashBasedTable.create();
-  private final ReentrantLock repliedStackLock = new ReentrantLock();
 
   public void attachMessages(Long folderId, Map<Long, Integer> messages) {
     for (Entry<Long, Integer> message : messages.entrySet()) {
@@ -269,8 +262,9 @@ public class MailStorageBean {
           messageId.set(qs.insertData(new SqlInsert(TBL_MESSAGES)
               .addConstant(COL_UNIQUE_ID, envelope.getUniqueId())
               .addConstant(COL_DATE, envelope.getDate())
-              .addConstant(COL_SUBJECT,
-                  sys.clampValue(TBL_MESSAGES, COL_SUBJECT, envelope.getSubject()))));
+              .addNotEmpty(COL_SUBJECT,
+                  sys.clampValue(TBL_MESSAGES, COL_SUBJECT, envelope.getSubject()))
+              .addNotEmpty(COL_IN_REPLY_TO, envelope.getInReplyTo())));
         }
       }
     });
@@ -437,7 +431,7 @@ public class MailStorageBean {
           l--;
 
           if ((System.currentTimeMillis() - progressUpdated) > 10) {
-            if (!Endpoint.updateProgress(progressId, --l / (double) msgs.length)) {
+            if (!Endpoint.updateProgress(progressId, l / (double) msgs.length)) {
               return null;
             }
             progressUpdated = System.currentTimeMillis();
@@ -481,12 +475,6 @@ public class MailStorageBean {
 
       folder.setUidValidity(uidValidity);
     }
-  }
-
-  public void waitForReplied(Long folderId, String uniqueId, Long repliedFrom) {
-    repliedStackLock.lock();
-    repliedStack.put(folderId, uniqueId, repliedFrom);
-    repliedStackLock.unlock();
   }
 
   private MailFolder createFolder(Long accountId, MailFolder parent, String name) {
@@ -823,28 +811,10 @@ public class MailStorageBean {
   }
 
   private long storePlace(long messageId, Long folderId, Integer flags, Long messageUID) {
-    long placeId = qs.insertData(new SqlInsert(TBL_PLACES)
+    return qs.insertData(new SqlInsert(TBL_PLACES)
         .addConstant(COL_MESSAGE, messageId)
         .addConstant(COL_FOLDER, folderId)
         .addNotNull(COL_FLAGS, flags)
         .addNotNull(COL_MESSAGE_UID, messageUID));
-
-    if (repliedStack.containsRow(folderId)) {
-      String uniqueId = qs.getValue(new SqlSelect()
-          .addFields(TBL_MESSAGES, COL_UNIQUE_ID)
-          .addFrom(TBL_MESSAGES)
-          .setWhere(sys.idEquals(TBL_MESSAGES, messageId)));
-
-      repliedStackLock.lock();
-      Long repliedFrom = repliedStack.remove(folderId, uniqueId);
-      repliedStackLock.unlock();
-
-      if (DataUtils.isId(repliedFrom)) {
-        qs.updateData(new SqlUpdate(TBL_PLACES)
-            .addConstant(COL_REPLIED, placeId)
-            .setWhere(sys.idEquals(TBL_PLACES, repliedFrom)));
-      }
-    }
-    return placeId;
   }
 }

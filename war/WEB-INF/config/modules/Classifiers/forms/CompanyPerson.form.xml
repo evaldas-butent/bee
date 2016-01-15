@@ -5,7 +5,7 @@
   xmlns:xi="http://www.w3.org/2001/XInclude"
     
   name="CompanyPerson" viewName="CompanyPersons" caption="=companyPerson"
-  height="350" width="800"
+  height="350" width="800" favorite="FirstName LastName"
   >
   <FlowPanel>
     <Table kind="controls" style="margin-top: 1ex;">

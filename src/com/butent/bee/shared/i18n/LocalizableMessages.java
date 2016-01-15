@@ -50,5 +50,9 @@ public interface LocalizableMessages extends Messages, LocalizableTaskMessages,
 
   String searchQueryRestriction(int min);
 
+  String valueEmpty(String value);
+
   String valueExists(String value);
+
+  String valueNotUnique(String value);
 }

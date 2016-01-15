@@ -13,10 +13,14 @@
 
     <DataColumn name="Comment" flexGrow="1" flexShrink="2" flexBasis="30" flexBasisUnit="%" />
 
-    <DataColumn name="CompanyName" caption="=client" />
+    <RelColumn name="Company" caption="=client" renderColumns="CompanyName CompanyTypeName" />
 
     <RelColumn name="Task" editEnabled="true" renderColumns="Summary" flexGrow="1" />
 
     <RelColumn name="Publisher" renderColumns="PublisherFirstName PublisherLastName" />
+    
+    <RelColumn name="Type" renderColumns="TypeName" />
+    
+    <RelColumn name="Project" renderColumns="ProjectName" />
   </g:columns>
 </g:Grid>

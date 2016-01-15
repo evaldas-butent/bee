@@ -2,7 +2,7 @@
 <View xmlns="http://www.butent.com/view"
 
   name="ProjectIncomes" source="ProjectIncomes" module="Projects"
-  caption="=Incomes"
+  caption="=incomes"
   >
   <Columns>
     <SimpleColumn name="Project" />

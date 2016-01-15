@@ -2,6 +2,7 @@
 gwt-unitCache
 lib
 war\bee
+war\custom
 war\images\photo
 war\SqlDesigner
 war\WEB-INF\classes

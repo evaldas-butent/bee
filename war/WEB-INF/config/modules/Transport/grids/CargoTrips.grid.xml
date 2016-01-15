@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
-  xmlns:ui="http://www.butent.com/ui"
+        xmlns:ui="http://www.butent.com/ui" xmlns:xi="http://www.w3.org/2001/XInclude"
 
-  name="CargoTrips" viewName="CargoTrips"
+        name="CargoTrips" viewName="CargoTrips"
+        editForm="CargoHandling"
         caption="=trips" flexGrow="1"
-  >
+    >
   <g:body height="50" />
 
   <g:columns>
@@ -20,8 +21,10 @@
             if (row.VehicleNumber) {
               vehicle = row.VehicleNumber;
             }
-            if (row.TrailerNumber) {
-              vehicle = (vehicle ? vehicle + ' / ' : '')  + row.TrailerNumber;
+            var trailer = row.LocalTrailer ? row.LocalTrailer : row.TrailerNumber;
+
+            if (trailer) {
+              vehicle = (vehicle ? vehicle + ' / ' : '')  + trailer;
             }
           }
           return vehicle;
@@ -37,6 +40,14 @@
     </CalcColumn>
     <DataColumn name="DateFrom" caption="=trDeparted" />
     <DataColumn name="DateTo" caption="=trReturned" />
-    <DataColumn name="TripPercent" caption="%" minValue="0" editInPlace="true" />
+    <DataColumn name="CargoPercent" minValue="0" />
+    <DataColumn name="TripPercent" minValue="0" editInPlace="true">
+      <style>
+        <headerStyle><ui:inline>font-weight:bold;</ui:inline></headerStyle>
+        <bodyStyle><ui:inline>font-weight:bold;</ui:inline></bodyStyle>
+      </style>
+    </DataColumn>
   </g:columns>
+
+  <xi:include href="columns/Handling.columns.xml" />
 </g:Grid>

@@ -46,14 +46,18 @@ public class Storage {
     }
   }
 
-  public List<Property> getAll() {
+  public List<Property> getAll(int maxLen) {
     List<Property> lst = new ArrayList<>();
     int len = length();
+
     String z;
+    String v;
 
     for (int i = 0; i < len; i++) {
       z = key(i);
-      lst.add(new Property(z, get(z)));
+      v = (maxLen > 0) ? BeeUtils.clip(get(z), maxLen) : get(z);
+
+      lst.add(new Property(z, v));
     }
 
     return lst;
@@ -119,6 +123,16 @@ public class Storage {
       }
     }
     return key;
+  }
+
+  public List<String> keys() {
+    List<String> lst = new ArrayList<>();
+    int len = length();
+
+    for (int i = 0; i < len; i++) {
+      lst.add(key(i));
+    }
+    return lst;
   }
 
   public int length() {
