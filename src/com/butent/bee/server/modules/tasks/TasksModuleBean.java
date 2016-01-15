@@ -228,7 +228,7 @@ public class TasksModuleBean implements BeeModule {
     String module = getModule().getName();
     List<BeeParameter> params = Lists.newArrayList(
         BeeParameter.createText(module, PRM_END_OF_WORK_DAY),
-        BeeParameter.createTimeOfDay(module, PRM_START_OF_WORK_DAY)
+        BeeParameter.createTimeOfDay(module, PRM_START_OF_WORK_DAY),
         BeeParameter.createRelation(module, PRM_DEFAULT_DBA_TEMPLATE,
             DocumentConstants.VIEW_DOCUMENT_TEMPLATES,
             DocumentConstants.COL_DOCUMENT_TEMPLATE_NAME),

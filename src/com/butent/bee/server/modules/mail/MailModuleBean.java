@@ -25,6 +25,7 @@ import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.modules.ParamHolderBean;
+import com.butent.bee.server.modules.administration.ExtensionIcons;
 import com.butent.bee.server.modules.administration.FileStorageBean;
 import com.butent.bee.server.news.NewsBean;
 import com.butent.bee.server.news.UsageQueryProvider;
@@ -883,8 +884,8 @@ public class MailModuleBean implements BeeModule, HasTimerService {
             try {
               MimeMessage message =
                   sendMail(account, null, emailSet.getColumn(COL_EMAIL), null, subject, content,
-                      attachments);
-              storeMessage(account, message, account.getSentFolder(), null);
+                      attachments, null);
+              storeMessage(account, message, account.getSentFolder());
             } catch (MessagingException e) {
               logger.error(e);
             }

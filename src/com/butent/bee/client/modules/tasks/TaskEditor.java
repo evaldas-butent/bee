@@ -704,13 +704,6 @@ class TaskEditor extends AbstractFormInterceptor {
   }
 
   @Override
-  public void beforeRefresh(FormView form, IsRow row) {
-    if (isExecutor()) {
-      setEnabledRelations();
-    }
-  }
-
-  @Override
   public boolean beforeAction(Action action, Presenter presenter) {
     if (action == Action.SAVE) {
       if (TasksKeeper.getProductRequired(getActiveRow(), productLabel, getViewName())) {
@@ -726,6 +719,9 @@ class TaskEditor extends AbstractFormInterceptor {
 
   @Override
   public void beforeRefresh(FormView form, IsRow row) {
+    if (isExecutor()) {
+      setEnabledRelations();
+    }
     TasksKeeper.getProductRequired(row, productLabel, getViewName());
   }
 
