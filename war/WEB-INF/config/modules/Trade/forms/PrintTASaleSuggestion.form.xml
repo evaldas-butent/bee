@@ -10,10 +10,9 @@
   <FlowPanel style="padding: 10px; background-color: white; font-size:11px;" contentEditable="true"
     class="bee-form-TradeActPrint bee-PrintableForm">
     <FlowPanel>
-      <Image url="images/logo.png" />
+      <Image url="images/logo.png" style="position: relative; width:33%;"/>
       <FlowPanel style="margin-top:-35px; padding-top: 20px;">
         <br />
-        <Label html="Statybinė įranga, pastoliai, klojiniai, konteineriai" style="text-align:center;"/>
         <TextLabel style="text-align:center; &bold;">
           <render>
             <ui:expression>'Komercinis pasiūlymas Nr. ' + row.SeriesName + '-' + (row.Number ?

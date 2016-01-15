@@ -10,7 +10,7 @@
   <FlowPanel style="padding: 10px; background-color: white; font-size:11px;" contentEditable="true"
     class="bee-form-TradeActPrint bee-PrintableForm">
     <FlowPanel>
-      <Image url="images/logo.png" style="position: relative;" />
+      <Image url="images/logo.png" style="position: relative; width:33%;" />
       <FlowPanel style="margin-top:-35px; padding-top: 20px;">
         <br />
         <TextLabel style="text-align:center; &bold;">
@@ -43,7 +43,7 @@
         <row>
           <TextLabel />
           <TextLabel source="Contract" style="border-left: 1px solid black;">
-            <renderToken source="ContractName" prefix="Sutarties Nr. " />
+            <renderToken source="ContractName" />
             <renderToken source="ContractNumber" />
           </TextLabel>
         </row>
