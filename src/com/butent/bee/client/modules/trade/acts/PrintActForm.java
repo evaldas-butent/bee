@@ -46,6 +46,9 @@ public class PrintActForm extends AbstractFormInterceptor {
   private static final String ITEMS_WIDGET_NAME = "TradeActItems";
   private static final String SERVICES_WIDGET_NAME = "TradeActServices";
   private static final String FORM_PRINT_TA_NO_STOCK = "PrintTASaleNoStock";
+  private static final String FORM_PRINT_TA_SALE = "PrintTradeActSalePhysical";
+  private static final String FORM_PRINT_TA_SALE_RENT = "PrintTASaleRent";
+
   private static final String[] COLUMN_LIST = new String[] {
       COL_ITEM_ARTICLE, COL_ITEM_NAME, COL_TA_SERVICE_FROM, COL_TA_SERVICE_TO,
       COL_TRADE_ITEM_QUANTITY, COL_UNIT, COL_TRADE_TIME_UNIT, COL_TA_RETURNED_QTY,
@@ -133,7 +136,6 @@ public class PrintActForm extends AbstractFormInterceptor {
     tableHeaders.put("AmountTotal", "Suma");
     tableHeaders.put("MinTermAmount", "Suma už min. term.");
     tableHeaders.put("Name", "Nuomojama įranga");
-    tableHeaders.put("TradeActServicesName", "Teikiamos paslaugos/prekės");
   }
 
   private boolean isVisibleColumn(String widgetName, String col) {
@@ -148,11 +150,50 @@ public class PrintActForm extends AbstractFormInterceptor {
       return false;
     }
 
-    if (BeeUtils.same(col, "AmountTotal") && BeeUtils.same(widgetName, SERVICES_WIDGET_NAME)) {
+    if (BeeUtils.same(col, "AmountTotal") && (BeeUtils.same(widgetName, ITEMS_WIDGET_NAME)
+        && BeeUtils.inList(formName,
+            FORM_PRINT_TA_SALE, FORM_PRINT_TA_NO_STOCK, FORM_PRINT_TA_SALE_RENT))) {
+      return false;
+    }
+
+    if (BeeUtils.same(col, "Vat") && (BeeUtils.same(widgetName, SERVICES_WIDGET_NAME) || (BeeUtils
+        .same(widgetName, ITEMS_WIDGET_NAME) && BeeUtils.inList(formName,
+            FORM_PRINT_TA_SALE, FORM_PRINT_TA_NO_STOCK, FORM_PRINT_TA_SALE_RENT)))) {
+      return false;
+    }
+
+    if (BeeUtils.same(col, "Amount") && BeeUtils.same(widgetName, SERVICES_WIDGET_NAME)) {
       return false;
     }
 
     return true;
+  }
+
+  private String getTableHeader(FormView form, String widgetName, String column) {
+    switch (column) {
+      case "Name":
+        if (SERVICES_WIDGET_NAME.equals(widgetName)) {
+          return "Teikiamos paslaugos/prekės";
+        }
+        break;
+      case "Amount":
+        if (ITEMS_WIDGET_NAME.equals(widgetName) && BeeUtils.inList(form.getFormName(),
+            FORM_PRINT_TA_SALE, FORM_PRINT_TA_NO_STOCK, FORM_PRINT_TA_SALE_RENT)) {
+          return "Suma";
+        }
+
+        break;
+
+      case "AmountTotal":
+        if (SERVICES_WIDGET_NAME.equals(widgetName)) {
+          return "Suma su PVM";
+        }
+        break;
+      default:
+        break;
+    }
+
+    return tableHeaders.get(column);
   }
 
   private void renderItems(final String typeTable) {
@@ -273,9 +314,12 @@ public class PrintActForm extends AbstractFormInterceptor {
           data.put(id, "Amount", BeeUtils.toString(BeeUtils.round(sum, 2)));
 
           if (BeeUtils.same(typeTable, SERVICES_WIDGET_NAME)) {
-            if (BeeUtils.isDouble(BeeUtils.toDouble(data.get(id, COL_TA_SERVICE_MIN)))) {
+            if (BeeUtils.isEmpty(data.get(id, COL_TIME_UNIT))) {
+              data.put(id, "MinTermAmount", BeeUtils.toString(BeeUtils.round(sum + vat, 2)));
+            } else if (BeeUtils.isDouble(BeeUtils.toDouble(data.get(id, COL_TA_SERVICE_MIN)))) {
               double mint = BeeUtils.toDouble(data.get(id, COL_TA_SERVICE_MIN));
-              data.put(id, "MinTermAmount", BeeUtils.toString(BeeUtils.round(mint * prc, 2)));
+              data.put(id, "MinTermAmount", BeeUtils.toString(BeeUtils.round(mint * (sum + vat),
+                  2)));
             }
           }
 
@@ -303,8 +347,8 @@ public class PrintActForm extends AbstractFormInterceptor {
           }
 
           if (isVisibleColumn(typeTable, col)) {
-            table.setText(0, c, BeeUtils.nvl(tableHeaders.get(typeTable + col), tableHeaders.get(
-                col)), TradeUtils.STYLE_ITEMS + col);
+            table.setText(0, c, getTableHeader(getFormView(), typeTable, col),
+                TradeUtils.STYLE_ITEMS + col);
           }
           int r = 1;
           BigDecimal sum = BigDecimal.ZERO;
