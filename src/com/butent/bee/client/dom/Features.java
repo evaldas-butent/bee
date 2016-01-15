@@ -69,6 +69,7 @@ public final class Features {
 
   private static Boolean fileApi;
   private static Boolean geolocation;
+  private static Boolean getUserMedia;
   private static Boolean highResolutionTime;
   private static Boolean indexedDB;
 
@@ -201,6 +202,7 @@ public final class Features {
 
         "File Api", supportsFileApi(),
         "Geolocation", supportsGeolocation(),
+        "Get User Media", supportsGetUserMedia(),
         "High Resolution Time", supportsHighResolutionTime(),
         "Indexed DB", supportsIndexedDB(),
 
@@ -502,6 +504,13 @@ public final class Features {
       geolocation = testGeolocation();
     }
     return geolocation;
+  }
+
+  public static boolean supportsGetUserMedia() {
+    if (getUserMedia == null) {
+      getUserMedia = testGetUserMedia();
+    }
+    return getUserMedia;
   }
 
   public static boolean supportsHighResolutionTime() {
@@ -1050,6 +1059,10 @@ public final class Features {
 
   private static boolean testGeolocation() {
     return isNavigatorProperty("geolocation");
+  }
+
+  private static boolean testGetUserMedia() {
+    return isWindowFunction("getUserMedia");
   }
 
   private static boolean testHighResolutionTime() {
