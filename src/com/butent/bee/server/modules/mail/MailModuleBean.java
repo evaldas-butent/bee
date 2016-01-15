@@ -25,7 +25,6 @@ import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.modules.ParamHolderBean;
-import com.butent.bee.server.modules.administration.ExtensionIcons;
 import com.butent.bee.server.modules.administration.FileStorageBean;
 import com.butent.bee.server.news.NewsBean;
 import com.butent.bee.server.news.UsageQueryProvider;
@@ -504,15 +503,6 @@ public class MailModuleBean implements BeeModule, HasTimerService {
     cb.createIntervalTimer(this.getClass(), PRM_MAIL_CHECK_INTERVAL);
 
     sys.registerDataEventHandler(new DataEventHandler() {
-
-      @Subscribe
-      @AllowConcurrentEvents
-      public void setRowProperties(ViewQueryEvent event) {
-        if (event.isAfter(VIEW_NEWSLETTER_FILES)) {
-          ExtensionIcons.setIcons(event.getRowset(), AdministrationConstants.ALS_FILE_NAME,
-              AdministrationConstants.PROP_ICON);
-        }
-      }
 
       @Subscribe
       @AllowConcurrentEvents

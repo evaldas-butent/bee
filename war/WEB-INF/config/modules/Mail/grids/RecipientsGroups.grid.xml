@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid" name="RecipientsGroups"
-  viewName="RecipientsGroups" caption="=mailRecipientsGroups" filter="Creator={u} or Visibility = 0" >
-  <g:columns>
-    <DataColumn name="GroupName" />
-    <RelColumn name="Creator" />
-    
-  </g:columns>
-</g:Grid>
