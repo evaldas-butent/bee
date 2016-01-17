@@ -1,20 +1,36 @@
 package com.butent.bee.client.media;
 
 import jsinterop.annotations.JsProperty;
-import jsinterop.annotations.JsType;
 
-@JsType(isNative = true)
-public interface MediaStreamConstraints {
+public class MediaStreamConstraints {
 
   @JsProperty
-  boolean getAudio();
+  boolean audio;
 
   @JsProperty
-  boolean getVideo();
+  boolean video;
 
-  @JsProperty
-  void setAudio(boolean audio);
+  public MediaStreamConstraints() {
+  }
 
-  @JsProperty
-  void setVideo(boolean video);
+  public MediaStreamConstraints(boolean audio, boolean video) {
+    this.audio = audio;
+    this.video = video;
+  }
+
+  public boolean isAudio() {
+    return audio;
+  }
+
+  public boolean isVideo() {
+    return video;
+  }
+
+  public void setAudio(boolean audio) {
+    this.audio = audio;
+  }
+
+  public void setVideo(boolean video) {
+    this.video = video;
+  }
 }

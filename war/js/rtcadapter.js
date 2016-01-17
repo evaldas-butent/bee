@@ -472,6 +472,11 @@ if (typeof window === 'undefined' || !window.navigator) {
 
   // the minimum version still supported by adapter.
   webrtcMinimumVersion = 12;
+  
+  getUserMedia = function(constraints, onSuccess, onError) {
+    return navigator.getUserMedia(constraints, onSuccess, onError);
+  };
+  
 } else {
   webrtcUtils.log('Browser does not appear to be WebRTC-capable');
 }

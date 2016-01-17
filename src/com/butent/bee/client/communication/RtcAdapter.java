@@ -1,7 +1,9 @@
 package com.butent.bee.client.communication;
 
 import com.google.gwt.core.client.JavaScriptException;
+import com.google.gwt.dom.client.MediaElement;
 
+import com.butent.bee.client.media.MediaStream;
 import com.butent.bee.client.media.MediaStreamConstraints;
 import com.butent.bee.client.media.NavigatorUserMediaErrorCallback;
 import com.butent.bee.client.media.NavigatorUserMediaSuccessCallback;
@@ -20,6 +22,9 @@ import jsinterop.annotations.JsProperty;
 public final class RtcAdapter {
 
   private static final BeeLogger logger = LogUtils.getLogger(RtcAdapter.class);
+
+  @JsMethod(namespace = JsPackage.GLOBAL)
+  public static native void attachMediaStream(MediaElement element, MediaStream stream);
 
   public static List<Property> getInfo() {
     List<Property> info = new ArrayList<>();

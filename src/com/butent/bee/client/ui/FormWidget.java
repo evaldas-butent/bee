@@ -79,8 +79,8 @@ import com.butent.bee.client.utils.XmlUtils;
 import com.butent.bee.client.view.TreeContainer;
 import com.butent.bee.client.view.TreeView;
 import com.butent.bee.client.view.edit.Editor;
-import com.butent.bee.client.widget.BeeAudio;
-import com.butent.bee.client.widget.BeeVideo;
+import com.butent.bee.client.widget.Audio;
+import com.butent.bee.client.widget.Video;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.Canvas;
 import com.butent.bee.client.widget.CustomDiv;
@@ -1112,8 +1112,8 @@ public enum FormWidget {
         break;
 
       case AUDIO:
-        widget = new BeeAudio();
-        initMedia((BeeAudio) widget, attributes);
+        widget = new Audio();
+        initMedia((Audio) widget, attributes);
         break;
 
       case BR:
@@ -1789,8 +1789,8 @@ public enum FormWidget {
         break;
 
       case VIDEO:
-        widget = new BeeVideo();
-        initMedia((BeeVideo) widget, attributes);
+        widget = new Video();
+        initMedia((Video) widget, attributes);
         break;
 
       case VOLUME_SLIDER:
