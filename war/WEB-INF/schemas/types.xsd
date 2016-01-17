@@ -375,11 +375,11 @@
       <xs:enumeration value="Locations" />
       <xs:enumeration value="Maintenance" />
       <xs:enumeration value="Messages" />
-      <xs:enumeration value="Newsletters" />
-      <xs:enumeration value="NewsletterContacts" />
       <xs:enumeration value="NewsCompanies" />
       <xs:enumeration value="NewsCompanyContacts" />
       <xs:enumeration value="NewsCompanyPersons" />
+      <xs:enumeration value="Newsletters" />
+      <xs:enumeration value="NewsletterContacts" />
       <xs:enumeration value="NewsletterFiles" />
       <xs:enumeration value="Objects" />
       <xs:enumeration value="ObjectEarnings" />
