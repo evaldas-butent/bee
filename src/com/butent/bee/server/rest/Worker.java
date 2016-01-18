@@ -38,6 +38,7 @@ import javax.ws.rs.NotFoundException;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 @Path("/")
@@ -56,6 +57,7 @@ public class Worker {
 
   @GET
   @Path("{api}.pdf")
+  @Produces(MediaType.APPLICATION_OCTET_STREAM)
   @Trusted
   public Response getApi(@PathParam("api") String name) {
     String content = qs.getValue(new SqlSelect()
@@ -91,6 +93,7 @@ public class Worker {
 
   @GET
   @Path("endpoint")
+  @Produces(MediaType.TEXT_PLAIN)
   @Trusted(secret = "B-NOVO")
   public String getPath(@HeaderParam("licence") String licence) {
     String endpoint = null;
