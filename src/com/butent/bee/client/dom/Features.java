@@ -114,6 +114,7 @@ public final class Features {
   private static Boolean videoPoster;
 
   private static Boolean webGl;
+  private static Boolean webRtc;
   private static Boolean webSockets;
   private static Boolean webWorkers;
 
@@ -247,6 +248,7 @@ public final class Features {
         "Video Poster", supportsVideoPoster(),
 
         "Web Gl", supportsWebGl(),
+        "Web RTC", supportsWebRtc(),
         "Web Sockets", supportsWebSockets(),
         "Web Workers", supportsWebWorkers(),
 
@@ -767,6 +769,13 @@ public final class Features {
       webGl = testWebGl();
     }
     return webGl;
+  }
+
+  public static boolean supportsWebRtc() {
+    if (webRtc == null) {
+      webRtc = testWebRtc();
+    }
+    return webRtc;
   }
 
   public static boolean supportsWebSockets() {
@@ -1302,6 +1311,10 @@ public final class Features {
     return ok;
   }-*/;
 //@formatter:on
+
+  private static boolean testWebRtc() {
+    return isWindowFunction("RTCPeerConnection");
+  }
 
   private static boolean testWebSockets() {
     return isInWindow("WebSocket");

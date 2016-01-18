@@ -95,6 +95,7 @@ import com.butent.bee.client.maps.MapUtils;
 import com.butent.bee.client.maps.MapWidget;
 import com.butent.bee.client.media.MediaStream;
 import com.butent.bee.client.media.MediaStreamConstraints;
+import com.butent.bee.client.media.MediaUtils;
 import com.butent.bee.client.menu.MenuCommand;
 import com.butent.bee.client.modules.administration.AdministrationKeeper;
 import com.butent.bee.client.modules.ec.EcKeeper;
@@ -205,7 +206,6 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 
@@ -4057,7 +4057,7 @@ public final class CliWorker {
     }
 
     RtcAdapter.getUserMedia(constraints, stream -> renderUserMedia(stream, constraints),
-        error -> showError(errorPopup, "gum error", Objects.toString(error)));
+        error -> showError(errorPopup, "gum error", MediaUtils.format(error)));
   }
 
   private static void renderUserMedia(MediaStream stream, MediaStreamConstraints constraints) {
