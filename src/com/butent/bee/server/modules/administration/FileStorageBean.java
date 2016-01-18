@@ -220,13 +220,13 @@ public class FileStorageBean {
       out.flush();
       out.close();
 
+      File res = File.createTempFile("bee_", null);
+      res.deleteOnExit();
+      repo = res.getAbsolutePath();
+
       ZipInputStream in = new ZipInputStream(new FileInputStream(tmp));
 
       if (in.getNextEntry() != null) {
-        File res = File.createTempFile("bee_", null);
-        res.deleteOnExit();
-        repo = res.getAbsolutePath();
-
         try {
           Files.copy(in, res.toPath(), StandardCopyOption.REPLACE_EXISTING);
           in.closeEntry();
