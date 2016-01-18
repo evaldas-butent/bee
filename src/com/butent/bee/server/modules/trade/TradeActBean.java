@@ -3624,6 +3624,11 @@ public class TradeActBean implements HasTimerService {
       }
     }
 
+    syncERPTurnovers(remoteAddress, remoteLogin, remotePassword);
+
+  }
+
+  private void syncERPTurnovers(String remoteAddress, String remoteLogin, String remotePassword) {
     // Turnovers
     try {
       SimpleRowSet erpCompanies =
@@ -3666,6 +3671,7 @@ public class TradeActBean implements HasTimerService {
       Map<String, Long> currencies = getReferences(TBL_CURRENCIES, COL_CURRENCY_NAME);
       Map<String, Long> users = getReferences(TBL_USERS, COL_EMPLOYER_ID, SqlUtils.notNull(
           TBL_USERS, COL_EMPLOYER_ID));
+      Map<String, JustDate> lastestPayments = new HashMap<>();
 
       SqlSelect salesSelect = new SqlSelect()
           .addFields(TBL_ERP_SALES, COL_TRADE_ERP_INVOICE)
@@ -3680,6 +3686,9 @@ public class TradeActBean implements HasTimerService {
         Double debt = BeeUtils.toDoubleOrNull(sales.getValueByKey(COL_TRADE_ERP_INVOICE, erpInvoice
             .getValue("dokumentas"), COL_TRADE_DEBT));
 
+        lastestPayments.put(erpInvoice.getValue("gavejas"), BeeUtils.max(lastestPayments.get(
+            erpInvoice.getValue("gavejas")), TimeUtils.parseDate(erpInvoice.getValue("apm_data"))));
+
         if (debt != null && debt == BeeConst.DOUBLE_ZERO) {
           continue;
         }
@@ -3687,12 +3696,15 @@ public class TradeActBean implements HasTimerService {
         Long companyId = compIdByName.get(erpInvoice.getValue("gavejas"));
 
         if (!DataUtils.isId(companyId)) {
+          logger.warning("ERP Sync turnovers", erpInvoice.getValue("gavejas"), "not found");
           continue;
         }
 
         Long currencyId = currencies.get(erpInvoice.getValue("viso_val"));
 
         if (!DataUtils.isId(currencyId)) {
+          logger.warning("ERP Sync turnovers", erpInvoice.getValue("gavejas"), erpInvoice.getValue(
+              "viso_val"), "not found");
           continue;
         }
 
@@ -3747,6 +3759,8 @@ public class TradeActBean implements HasTimerService {
           qs.insertData(insertRow);
         }
       }
+
+      updateLastestPayments(lastestPayments, compIdByName);
     } catch (BeeException e) {
       logger.error(e);
       return;
@@ -3833,5 +3847,26 @@ public class TradeActBean implements HasTimerService {
     }
 
     return result;
+  }
+
+  private void updateLastestPayments(final Map<String, JustDate> lastestPayments,
+      Map<String, Long> compIdByName) {
+
+    for (String companyName : lastestPayments.keySet()) {
+      Long companyId = compIdByName.get(companyName);
+
+      if (!DataUtils.isId(companyId)) {
+        continue;
+      }
+
+      JustDate date = lastestPayments.get(companyName);
+
+      SqlUpdate query = new SqlUpdate(TBL_COMPANIES)
+          .addConstant(COL_SALE_LASTEST_PAYMENT, date)
+          .setWhere(SqlUtils.and(
+              SqlUtils.equals(TBL_COMPANIES, sys.getIdName(TBL_COMPANIES), companyId),
+              SqlUtils.less(TBL_COMPANIES, COL_SALE_LASTEST_PAYMENT, date)));
+      qs.updateData(query);
+    }
   }
 }

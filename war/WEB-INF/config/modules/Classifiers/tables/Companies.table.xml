@@ -51,5 +51,6 @@
     <Numeric name="ExternalAdvance" precision="10" scale="2" label="ERP avansas" audit="false" />
     <Numeric name="DaysAsBuyer" precision="3" label="=daysAsBuyer" />
     <Numeric name="DaysAsSupplier" precision="3" label="=daysAsSupplier" />
+    <DateTime name="LastestPayment" label="=trdLatestSalePayment" />
   </Fields>
 </Table>
