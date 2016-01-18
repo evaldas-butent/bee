@@ -83,7 +83,7 @@ if (typeof window === 'undefined' || !window.navigator) {
   webrtcMinimumVersion = 31;
 
   // The RTCPeerConnection object.
-  window.RTCPeerConnection = function(pcConfig, pcConstraints) {
+  window.RTCPeerConnection = function(pcConfig) {
     if (webrtcDetectedVersion < 38) {
       // .urls is not supported in FF < 38.
       // create RTCIceServers with a single url.
@@ -109,7 +109,7 @@ if (typeof window === 'undefined' || !window.navigator) {
         pcConfig.iceServers = newIceServers;
       }
     }
-    return new mozRTCPeerConnection(pcConfig, pcConstraints); // jscs:ignore requireCapitalizedConstructors
+    return new mozRTCPeerConnection(pcConfig); // jscs:ignore requireCapitalizedConstructors
   };
 
   // The RTCSessionDescription object.
@@ -226,14 +226,14 @@ if (typeof window === 'undefined' || !window.navigator) {
   webrtcMinimumVersion = 38;
 
   // The RTCPeerConnection object.
-  window.RTCPeerConnection = function(pcConfig, pcConstraints) {
+  window.RTCPeerConnection = function(pcConfig) {
     // Translate iceTransportPolicy to iceTransports,
     // see https://code.google.com/p/webrtc/issues/detail?id=4869
     if (pcConfig && pcConfig.iceTransportPolicy) {
       pcConfig.iceTransports = pcConfig.iceTransportPolicy;
     }
 
-    var pc = new webkitRTCPeerConnection(pcConfig, pcConstraints); // jscs:ignore requireCapitalizedConstructors
+    var pc = new webkitRTCPeerConnection(pcConfig); // jscs:ignore requireCapitalizedConstructors
     var origGetStats = pc.getStats.bind(pc);
     pc.getStats = function(selector, successCallback, errorCallback) { // jshint ignore: line
       var self = this;

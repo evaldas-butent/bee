@@ -7,6 +7,8 @@ import com.butent.bee.client.media.MediaStream;
 import com.butent.bee.client.media.MediaStreamConstraints;
 import com.butent.bee.client.media.NavigatorUserMediaErrorCallback;
 import com.butent.bee.client.media.NavigatorUserMediaSuccessCallback;
+import com.butent.bee.client.webrtc.RTCConfiguration;
+import com.butent.bee.client.webrtc.RTCPeerConnection;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.Property;
@@ -25,6 +27,9 @@ public final class RtcAdapter {
 
   @JsMethod(namespace = JsPackage.GLOBAL)
   public static native void attachMediaStream(MediaElement element, MediaStream stream);
+
+  @JsMethod(namespace = JsPackage.GLOBAL, name = "RTCPeerConnection")
+  public static native RTCPeerConnection createRTCPeerConnection(RTCConfiguration pcConfig);
 
   public static List<Property> getInfo() {
     List<Property> info = new ArrayList<>();
