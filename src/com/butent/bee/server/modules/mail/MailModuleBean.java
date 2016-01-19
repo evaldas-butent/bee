@@ -279,7 +279,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
         if (DataUtils.isId(folderId)) {
           parent = account.findFolder(folderId);
         } else {
-          parent = account.getInboxFolder();
+          parent = account.getRootFolder();
         }
         if (parent == null) {
           response = ResponseObject.error("Folder does not exist: ID =", folderId);
@@ -287,6 +287,10 @@ public class MailModuleBean implements BeeModule, HasTimerService {
           String name = reqInfo.getParameter(COL_FOLDER_NAME);
           boolean ok = account.createRemoteFolder(parent, name, false);
 
+          if (!ok && Objects.equals(parent, account.getRootFolder())) {
+            parent = account.getInboxFolder();
+            ok = account.createRemoteFolder(parent, name, false);
+          }
           if (ok) {
             mail.createFolder(account, parent, name);
             response = ResponseObject.info("Folder created:", name);
@@ -863,14 +867,23 @@ public class MailModuleBean implements BeeModule, HasTimerService {
         case COPY:
         case MOVE:
         case DELETE:
-          boolean move = EnumSet.of(RuleAction.MOVE, RuleAction.DELETE).contains(action);
-          MailFolder folderTo = account.findFolder(row.getLong(COL_RULE_ACTION_OPTIONS));
+          MailFolder folderTo = null;
 
-          if (folderTo != null) {
+          if (EnumSet.of(RuleAction.COPY, RuleAction.MOVE).contains(action)) {
+            folderTo = account.findFolder(row.getLong(COL_RULE_ACTION_OPTIONS));
+
+            if (Objects.isNull(folderTo)) {
+              logger.severe(log, ": Destination folder not found",
+                  row.getLong(COL_RULE_ACTION_OPTIONS));
+              continue;
+            }
+          }
+          if (Objects.nonNull(folderTo)) {
             log += " " + BeeUtils.join("/", folderTo.getParent().getName(), folderTo.getName());
           }
           logger.debug(log);
 
+          boolean move = EnumSet.of(RuleAction.MOVE, RuleAction.DELETE).contains(action);
           processMessages(account, folder, folderTo, Collections.singleton(placeId), move);
 
           if (move) {
