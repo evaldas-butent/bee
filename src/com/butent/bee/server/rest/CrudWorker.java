@@ -374,6 +374,8 @@ public abstract class CrudWorker {
   }
 
   private Long insert(String viewName, JsonObject data) {
+    LogUtils.getRootLogger().debug(viewName, data);
+
     BeeView view = sys.getView(viewName);
     Map<String, BeeColumn> columns = new LinkedHashMap<>();
     List<String> values = new ArrayList<>();
@@ -420,7 +422,7 @@ public abstract class CrudWorker {
   }
 
   private BeeRowSet update(String viewName, Long id, Long version, JsonObject data) {
-    LogUtils.getRootLogger().info(data);
+    LogUtils.getRootLogger().debug(data);
 
     if (data.containsKey(OLD_VALUES) && data.get(OLD_VALUES) instanceof JsonObject) {
       JsonObject oldData = data.getJsonObject(OLD_VALUES);

@@ -125,6 +125,8 @@ public class TasksWorker extends CrudWorker {
 
   @Override
   public RestResponse insert(JsonObject data) {
+    LogUtils.getRootLogger().debug(data);
+
     Holder<Long> idHolder = Holder.of(BeeUtils.toLongOrNull(getValue(data, ID)));
 
     if (DataUtils.isId(idHolder.get()) || !usr.canCreateData(getViewName())) {
@@ -181,7 +183,7 @@ public class TasksWorker extends CrudWorker {
 
   @Override
   public RestResponse update(Long id, Long version, JsonObject taskData) {
-    LogUtils.getRootLogger().info(taskData);
+    LogUtils.getRootLogger().debug(taskData);
 
     if (!usr.canEditData(getViewName())) {
       return RestResponse.forbidden();
@@ -272,6 +274,8 @@ public class TasksWorker extends CrudWorker {
                     .setWhere(sys.idEquals(TBL_TASK_USERS, userId)));
               }
             }
+            events.storeFiles(id, ((BeeRow) resp.getResponse()).getPropertyLong(PROP_LAST_EVENT_ID),
+                taskEvent.getJsonArray(TBL_FILES));
           } else {
             error.set(RestResponse.error(Localized.getConstants().noData()));
           }
