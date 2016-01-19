@@ -44,7 +44,6 @@ import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.communication.RpcInfo;
 import com.butent.bee.client.communication.RpcList;
-import com.butent.bee.client.communication.RtcAdapter;
 import com.butent.bee.client.composite.FileGroup;
 import com.butent.bee.client.composite.FileGroup.Column;
 import com.butent.bee.client.composite.RadioGroup;
@@ -117,6 +116,8 @@ import com.butent.bee.client.utils.JsUtils;
 import com.butent.bee.client.utils.NewFileInfo;
 import com.butent.bee.client.utils.XmlUtils;
 import com.butent.bee.client.view.ViewFactory;
+import com.butent.bee.client.webrtc.RtcAdapter;
+import com.butent.bee.client.webrtc.RtcUtils;
 import com.butent.bee.client.websocket.Endpoint;
 import com.butent.bee.client.widget.Audio;
 import com.butent.bee.client.widget.CustomDiv;
@@ -512,7 +513,7 @@ public final class CliWorker {
       showPropData("Client Rooms", Global.getRooms().getInfo());
 
     } else if ("rtc".equals(z)) {
-      showPropData(v, RtcAdapter.getInfo());
+      doRtc(args, errorPopup);
 
     } else if ("rts".equals(z)) {
       scheduleTasks(arr, errorPopup);
@@ -1513,6 +1514,23 @@ public final class CliWorker {
 
     } else {
       showError(errorPopup, args);
+    }
+  }
+
+  private static void doRtc(String args, boolean errorPopup) {
+    if (BeeUtils.isEmpty(args)) {
+      showPropData("rtc adapter", RtcAdapter.getInfo());
+      return;
+    }
+
+    if (!Features.supportsWebRtc()) {
+      showError(errorPopup, "rtc not supported");
+      return;
+    }
+
+    IdentifiableWidget demo = RtcUtils.createBasicDemo();
+    if (demo != null) {
+      BeeKeeper.getScreen().show(demo);
     }
   }
 

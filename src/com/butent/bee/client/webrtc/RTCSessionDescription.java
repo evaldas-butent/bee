@@ -5,8 +5,11 @@ import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
 
 @JsType(isNative = true, namespace = JsPackage.GLOBAL)
-public interface RTCPeerConnectionIceEvent {
+public interface RTCSessionDescription {
 
   @JsProperty
-  RTCIceCandidate getCandidate();
+  String getType();
+
+  @JsProperty
+  String getSdp();
 }

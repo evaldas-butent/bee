@@ -487,3 +487,11 @@ function requestUserMedia(constraints) {
     getUserMedia(constraints, resolve, reject);
   });
 }
+
+var createRTCIceCandidate = null;
+
+if (typeof window === 'object' && window.RTCIceCandidate) {
+  createRTCIceCandidate = function(candidate) {
+    return new RTCIceCandidate(candidate);
+  }
+}
