@@ -209,7 +209,8 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
     }
 
     if (!DataUtils.isNewRow(row)) {
-      form.setEnabled(isOwner(form, row) && !isProjectApproved(form, row));
+      form.setEnabled(isOwner(form, row) && !isProjectApproved(form, row) && !isProjectSuspended(
+          form, row));
 
       if (status != null) {
         status.setEnabled(isOwner(form, row));
@@ -233,7 +234,8 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
       owner.setEnabled(true);
     }
 
-    if ((isProjectUser(form, row) || isOwner(form, row)) && tasks != null) {
+    if ((isProjectUser(form, row) || isOwner(form, row)) && tasks != null && !(isProjectApproved(
+        form, row) || isProjectSuspended(form, row))) {
       tasks.setEnabled(true);
     }
 
@@ -573,6 +575,18 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
     long projectUser = BeeUtils.unbox(row.getLong(idxProjectUser));
 
     return currentUser == projectUser;
+  }
+
+  private static boolean isProjectSuspended(FormView form, IsRow row) {
+    int idxStatus = form.getDataIndex(COL_PROJECT_STATUS);
+
+    if (BeeConst.isUndef(idxStatus)) {
+      return false;
+    }
+
+    int status = BeeUtils.unbox(row.getInteger(idxStatus));
+
+    return ProjectStatus.SUSPENDED.ordinal() == status;
   }
 
   private static void resetData(FormView form, IsRow row, CellValidateEvent event) {

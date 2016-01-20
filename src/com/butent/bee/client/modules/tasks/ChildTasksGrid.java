@@ -25,6 +25,7 @@ import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.projects.ProjectConstants;
+import com.butent.bee.shared.modules.projects.ProjectStatus;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.modules.tasks.TaskType;
 import com.butent.bee.shared.ui.Action;
@@ -108,6 +109,11 @@ class ChildTasksGrid extends TasksGrid {
       return;
     }
 
+    if (!BeeUtils.inList(form.getViewName(), ProjectConstants.VIEW_PROJECTS,
+        ProjectConstants.VIEW_PROJECT_STAGES)) {
+      return;
+    }
+
     IsRow formRow = form.getActiveRow();
 
     if (formRow == null) {
@@ -115,8 +121,11 @@ class ChildTasksGrid extends TasksGrid {
     }
 
     String prop = formRow.getProperty(ProjectConstants.VIEW_PROJECT_TEMPLATE_TASK_COPY);
+    int status = BeeUtils.unbox(formRow.getInteger(form.getDataIndex(
+        ProjectConstants.COL_PROJECT_STATUS)));
 
-    if (BeeUtils.isEmpty(prop)) {
+    if (BeeUtils.isEmpty(prop) || BeeUtils.inList(status, ProjectStatus.APPROVED.ordinal(),
+        ProjectStatus.SUSPENDED.ordinal())) {
       return;
     }
 
