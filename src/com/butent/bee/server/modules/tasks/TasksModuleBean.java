@@ -908,7 +908,7 @@ public class TasksModuleBean implements BeeModule {
     return response;
   }
 
-  private ResponseObject createTaskUser(long taskId, long userId, Long millis) {
+  public ResponseObject createTaskUser(long taskId, long userId, Long millis) {
     SqlInsert si = new SqlInsert(TBL_TASK_USERS)
         .addConstant(COL_TASK, taskId)
         .addConstant(COL_USER, userId);

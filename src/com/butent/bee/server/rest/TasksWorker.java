@@ -1,12 +1,15 @@
 package com.butent.bee.server.rest;
 
+import com.google.common.collect.HashMultimap;
+
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
 import static com.butent.bee.shared.modules.tasks.TaskConstants.COL_EVENT;
 
 import com.butent.bee.server.data.BeeView;
 import com.butent.bee.server.modules.tasks.TasksModuleBean;
-import com.butent.bee.server.sql.SqlInsert;
+import com.butent.bee.server.sql.SqlDelete;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
@@ -26,7 +29,6 @@ import com.butent.bee.shared.exceptions.BeeException;
 import com.butent.bee.shared.exceptions.BeeRuntimeException;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.LogUtils;
-import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.tasks.TaskUtils;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -34,19 +36,26 @@ import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 import javax.ejb.EJB;
 import javax.json.Json;
+import javax.json.JsonArray;
 import javax.json.JsonObject;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.core.MediaType;
 
 @Path("tasks")
 public class TasksWorker extends CrudWorker {
@@ -58,8 +67,8 @@ public class TasksWorker extends CrudWorker {
 
   @GET
   @Path("{" + ID + ":\\d+}/access")
-  public RestResponse access(@PathParam(ID) Long id) {
-    ResponseObject response = task.accessTask(id);
+  public RestResponse access(@PathParam(ID) Long taskId) {
+    ResponseObject response = task.accessTask(taskId);
 
     if (response.hasErrors()) {
       return RestResponse.error(ArrayUtils.joinWords(response.getErrors()));
@@ -68,7 +77,7 @@ public class TasksWorker extends CrudWorker {
         .addField(TBL_TASKS, sys.getVersionName(TBL_TASKS), VERSION)
         .addFields(TBL_TASKS, COL_STATUS, COL_START_TIME, COL_EXECUTOR)
         .addFrom(TBL_TASKS)
-        .setWhere(sys.idEquals(TBL_TASKS, id)));
+        .setWhere(sys.idEquals(TBL_TASKS, taskId)));
 
     TaskStatus oldStatus = EnumUtils.getEnumByIndex(TaskStatus.class, row.getInt(COL_STATUS));
 
@@ -76,13 +85,53 @@ public class TasksWorker extends CrudWorker {
         && (TaskStatus.NOT_VISITED == oldStatus || TaskStatus.SCHEDULED == oldStatus
         && !TaskUtils.isScheduled(row.getDateTime(COL_START_TIME)))) {
 
-      return update(id, row.getLong(VERSION), Json.createObjectBuilder()
+      return update(taskId, row.getLong(VERSION), Json.createObjectBuilder()
           .add(COL_STATUS, TaskStatus.ACTIVE.ordinal())
           .add(OLD_VALUES, Json.createObjectBuilder().add(COL_STATUS, oldStatus.ordinal()))
           .add(COL_TASK_EVENT,
               Json.createObjectBuilder().add(COL_EVENT, TaskEvent.VISIT.ordinal())).build());
     }
-    return get(id);
+    return get(taskId);
+  }
+
+  @POST
+  @Path("{" + ID + ":\\d+}/addobservers")
+  @Consumes(MediaType.APPLICATION_JSON)
+  public RestResponse addObservers(@PathParam(ID) Long taskId, JsonArray observers) {
+    List<Long> users = new ArrayList<>();
+    List<String> notes = new ArrayList<>();
+
+    for (JsonObject observer : observers.getValuesAs(JsonObject.class)) {
+      Long user = BeeUtils.toLongOrNull(getValue(observer, COL_USER));
+
+      try {
+        commit(new Runnable() {
+          @Override
+          public void run() {
+            task.createTaskUser(taskId, user, null);
+            notes.add(TaskUtils.getInsertNote(Localized.getConstants().crmTaskObservers(),
+                BeeUtils.joinWords(getValue(observer, COL_FIRST_NAME),
+                    getValue(observer, COL_LAST_NAME))));
+          }
+        });
+      } catch (BeeException ex) {
+        LogUtils.getRootLogger().error(ex);
+      }
+      users.add(user);
+    }
+    if (!BeeUtils.isEmpty(notes)) {
+      events.insert(Json.createObjectBuilder()
+          .add(COL_TASK + ID, taskId)
+          .add(COL_PUBLISHER + ID, usr.getCurrentUserId())
+          .add(COL_PUBLISH_TIME, System.currentTimeMillis())
+          .add(COL_EVENT, TaskEvent.COMMENT.ordinal())
+          .add(COL_COMMENT, BeeUtils.buildLines(notes))
+          .build());
+    }
+    return RestResponse.ok(getData(qs.getViewData(TBL_TASK_USERS,
+        Filter.and(Filter.equals(COL_TASK, taskId),
+            BeeUtils.isEmpty(users) ? Filter.isFalse() : Filter.any(COL_USER, users)), null,
+        Arrays.asList(COL_TASK, COL_USER)), null));
   }
 
   @Override
@@ -90,11 +139,56 @@ public class TasksWorker extends CrudWorker {
     return RestResponse.forbidden();
   }
 
+  @POST
+  @Path("{" + ID + ":\\d+}/removeobservers")
+  @Consumes(MediaType.APPLICATION_JSON)
+  public RestResponse removeObservers(@PathParam(ID) Long taskId, JsonArray observers) {
+    List<Long> users = new ArrayList<>();
+    List<String> notes = new ArrayList<>();
+
+    for (JsonObject observer : observers.getValuesAs(JsonObject.class)) {
+      users.add(BeeUtils.toLongOrNull(getValue(observer, COL_USER)));
+      notes.add(TaskUtils.getDeleteNote(Localized.getConstants().crmTaskObservers(),
+          BeeUtils.joinWords(getValue(observer, COL_FIRST_NAME),
+              getValue(observer, COL_LAST_NAME))));
+    }
+    if (!BeeUtils.isEmpty(users)) {
+      try {
+        commit(new Runnable() {
+          @Override
+          public void run() {
+            int cnt = qs.updateData(new SqlDelete(TBL_TASK_USERS)
+                .setWhere(SqlUtils.and(SqlUtils.equals(TBL_TASK_USERS, COL_TASK, taskId),
+                    SqlUtils.inList(TBL_TASK_USERS, COL_USER, users))));
+
+            if (BeeUtils.isPositive(cnt)) {
+              events.insert(Json.createObjectBuilder()
+                  .add(COL_TASK + ID, taskId)
+                  .add(COL_PUBLISHER + ID, usr.getCurrentUserId())
+                  .add(COL_PUBLISH_TIME, System.currentTimeMillis())
+                  .add(COL_EVENT, TaskEvent.COMMENT.ordinal())
+                  .add(COL_COMMENT, BeeUtils.buildLines(notes))
+                  .build());
+            }
+          }
+        });
+      } catch (BeeException ex) {
+        LogUtils.getRootLogger().error(ex);
+      }
+    }
+    return RestResponse.empty();
+  }
+
   @Override
   public RestResponse get(Filter filter) {
     long time = System.currentTimeMillis();
     BeeRowSet rowSet = qs.getViewData(getViewName(), filter);
-    return RestResponse.ok(getData(rowSet, TBL_FILES, COL_FILE, ALS_FILE_NAME)).setLastSync(time);
+
+    HashMultimap<String, String> children = HashMultimap.create();
+    children.putAll(TBL_FILES, Arrays.asList(COL_FILE, ALS_FILE_NAME));
+    children.putAll(PROP_OBSERVERS, Arrays.asList(COL_TASK, COL_USER, ID));
+
+    return RestResponse.ok(getData(rowSet, children)).setLastSync(time);
   }
 
   @Override
@@ -116,10 +210,10 @@ public class TasksWorker extends CrudWorker {
 
   @GET
   @Path("{" + ID + ":\\d+}/events")
-  public RestResponse getEvents(@PathParam(ID) Long id,
+  public RestResponse getEvents(@PathParam(ID) Long taskId,
       @HeaderParam(RestResponse.LAST_SYNC_TIME) Long lastSynced) {
 
-    return events.get(Filter.and(Filter.equals(COL_TASK + ID, id),
+    return events.get(Filter.and(Filter.equals(COL_TASK + ID, taskId),
         Filter.compareVersion(Operator.GT, BeeUtils.unbox(lastSynced))));
   }
 
@@ -159,6 +253,16 @@ public class TasksWorker extends CrudWorker {
           BeeRowSet rs = DataUtils.createRowSetForInsert(view.getName(), cols, vals);
           rs.setRowProperty(0, PROP_EXECUTORS, getValue(data, COL_EXECUTOR));
 
+          JsonArray observers = data.getJsonArray(PROP_OBSERVERS);
+
+          if (Objects.nonNull(observers)) {
+            Set<Long> ids = new HashSet<>();
+
+            for (JsonObject observer : observers.getValuesAs(JsonObject.class)) {
+              ids.add(BeeUtils.toLongOrNull(getValue(observer, COL_USER)));
+            }
+            rs.setRowProperty(0, PROP_OBSERVERS, DataUtils.buildIdList(ids));
+          }
           Map<String, String> params = new HashMap<>();
           params.put(VAR_TASK_DATA, Codec.beeSerialize(rs));
 
@@ -174,8 +278,8 @@ public class TasksWorker extends CrudWorker {
       response = RestResponse.error(e);
       e.printStackTrace();
     }
-
     if (Objects.isNull(response)) {
+      events.storeFiles(idHolder.get(), null, data.getJsonArray(TBL_FILES));
       response = get(idHolder.get());
     }
     return response;
@@ -257,16 +361,13 @@ public class TasksWorker extends CrudWorker {
                   .addFrom(TBL_TASKS)
                   .addFromLeft(TBL_TASK_USERS,
                       SqlUtils.and(sys.joinTables(TBL_TASKS, TBL_TASK_USERS, COL_TASK),
-                          SqlUtils.equals(TBL_TASK_USERS, AdministrationConstants.COL_USER,
-                              executor)))
+                          SqlUtils.equals(TBL_TASK_USERS, COL_USER, executor)))
                   .setWhere(sys.idEquals(TBL_TASKS, id)));
 
               Long userId = taskRow.getLong(ID);
 
               if (Objects.isNull(userId)) {
-                qs.insertData(new SqlInsert(TBL_TASK_USERS)
-                    .addConstant(COL_TASK, id)
-                    .addConstant(AdministrationConstants.COL_USER, executor));
+                task.createTaskUser(id, executor, null);
 
               } else if (!Objects.equals(taskRow.getLong(COL_OWNER), executor)) {
                 qs.updateData(new SqlUpdate(TBL_TASK_USERS)

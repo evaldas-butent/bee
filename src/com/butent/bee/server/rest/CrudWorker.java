@@ -1,5 +1,8 @@
 package com.butent.bee.server.rest;
 
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
+
 import com.butent.bee.server.data.BeeView;
 import com.butent.bee.server.data.DataEditorBean;
 import com.butent.bee.server.data.QueryServiceBean;
@@ -202,42 +205,53 @@ public abstract class CrudWorker {
   }
 
   @SuppressWarnings("unchecked")
-  static Collection<Map<String, Object>> getData(BeeRowSet rowSet, String child, String... cols) {
+  static Collection<Map<String, Object>> getData(BeeRowSet rs, Multimap<String, String> children) {
     Map<Long, Map<String, Object>> data = new LinkedHashMap<>();
-    boolean hasChilds = !BeeUtils.isEmpty(child) && !ArrayUtils.isEmpty(cols);
+    boolean hasChildren = Objects.nonNull(children);
+    Multimap<String, Map<String, Object>> childData = HashMultimap.create();
 
-    for (int i = 0; i < rowSet.getNumberOfRows(); i++) {
-      BeeRow beeRow = rowSet.getRow(i);
+    for (int i = 0; i < rs.getNumberOfRows(); i++) {
+      BeeRow beeRow = rs.getRow(i);
 
       if (!data.containsKey(beeRow.getId())) {
         Map<String, Object> row = new LinkedHashMap<>();
         row.put(ID, beeRow.getId());
         row.put(VERSION, beeRow.getVersion());
 
-        for (int j = 0; j < rowSet.getNumberOfColumns(); j++) {
-          String col = rowSet.getColumnId(j);
+        for (int j = 0; j < rs.getNumberOfColumns(); j++) {
+          String col = rs.getColumnId(j);
 
-          if (!ArrayUtils.contains(cols, col)) {
-            row.put(col, getValue(rowSet, i, j));
+          if (!hasChildren || !children.containsValue(col)) {
+            row.put(col, getValue(rs, i, j));
           }
-        }
-        if (hasChilds) {
-          row.put(child, new ArrayList<Map<String, Object>>());
         }
         data.put(beeRow.getId(), row);
       }
-      if (hasChilds) {
-        Map<String, Object> row = new LinkedHashMap<>();
+      if (hasChildren) {
+        for (String child : children.keySet()) {
+          Map<String, Object> row = new LinkedHashMap<>();
 
-        for (String col : cols) {
-          int j = rowSet.getColumnIndex(col);
+          for (String col : children.get(child)) {
+            int j = rs.getColumnIndex(col);
 
-          if (!BeeConst.isUndef(j)) {
-            row.put(col, getValue(rowSet, i, j));
+            if (!BeeConst.isUndef(j)) {
+              row.put(col, getValue(rs, i, j));
+            }
+          }
+          if (BeeUtils.anyNotNull(row.values())) {
+            String key = BeeUtils.joinWords(beeRow.getId(), child);
+
+            if (!childData.containsEntry(key, row)) {
+              childData.put(key, row);
+            }
           }
         }
-        if (BeeUtils.anyNotNull(row.values())) {
-          ((Collection<Map<String, Object>>) data.get(beeRow.getId()).get(child)).add(row);
+      }
+    }
+    if (hasChildren) {
+      for (Long id : data.keySet()) {
+        for (String child : children.keySet()) {
+          data.get(id).put(child, childData.get(BeeUtils.joinWords(id, child)));
         }
       }
     }

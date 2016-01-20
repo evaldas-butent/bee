@@ -1,5 +1,7 @@
 package com.butent.bee.server.rest;
 
+import com.google.common.collect.HashMultimap;
+
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
 
@@ -11,6 +13,7 @@ import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
@@ -36,7 +39,11 @@ public class TaskEventsWorker extends CrudWorker {
   public RestResponse get(Filter filter) {
     long time = System.currentTimeMillis();
     BeeRowSet rowSet = qs.getViewData(getViewName(), filter);
-    return RestResponse.ok(getData(rowSet, TBL_FILES, COL_FILE, ALS_FILE_NAME)).setLastSync(time);
+
+    HashMultimap<String, String> children = HashMultimap.create();
+    children.putAll(TBL_FILES, Arrays.asList(COL_FILE, ALS_FILE_NAME));
+
+    return RestResponse.ok(getData(rowSet, children)).setLastSync(time);
   }
 
   @Override

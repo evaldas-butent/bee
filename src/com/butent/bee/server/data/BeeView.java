@@ -88,6 +88,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -522,10 +523,6 @@ public class BeeView implements BeeObject, HasExtendedInfo {
     return getColumnNames().size();
   }
 
-  public Pair<DefaultExpression, Object> getColumnDefaults(String colName) {
-    return getColumnInfo(colName).getDefaults();
-  }
-
   public String getColumnEnumKey(String colName) {
     return getColumnInfo(colName).getEnumKey();
   }
@@ -676,7 +673,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
           "Aggregate Function", getColumnAggregate(col), "Hidden", isColHidden(col),
           "Read Only", isColReadOnly(col), "Editable", isColEditable(col),
           "Level", getColumnLevel(col),
-          "Expression", isColCalculated(col) ? getColumnExpression(col)
+          "Expression", Objects.nonNull(getColumnExpression(col)) ? getColumnExpression(col)
               .getSqlString(SqlBuilderFactory.getBuilder(SqlEngine.GENERIC)) : null,
           "Parent Column", getColumnParent(col), "Owner Alias", getColumnOwner(col),
           "Label", getColumnLabel(col), "Enum key", getColumnEnumKey(col));
@@ -762,7 +759,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
       for (Order.Column ordCol : o.getColumns()) {
         for (String col : ordCol.getSources()) {
           if (hasColumn(col)) {
-            if (isColAggregate(col) || isColCalculated(col)) {
+            if (isColAggregate(col) || Objects.nonNull(getColumnExpression(col))) {
               alias = null;
               colName = getColumnName(col);
 
@@ -904,7 +901,8 @@ public class BeeView implements BeeObject, HasExtendedInfo {
   }
 
   public boolean isColCalculated(String colName) {
-    return getColumnExpression(colName) != null;
+    return Objects.nonNull(getColumnExpression(colName))
+        && Objects.isNull(getColumnSource(colName));
   }
 
   public Boolean isColEditable(String colName) {
