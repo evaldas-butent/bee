@@ -234,8 +234,9 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
 
   @Override
   public void afterRefresh(FormView form, IsRow row) {
-    if (BeeUtils.unbox(row.getInteger(form.getDataIndex(ProjectConstants.ALS_PROJECT_STATUS)))
-        == ProjectStatus.APPROVED.ordinal()) {
+    if (BeeUtils.inList(BeeUtils.unbox(row.getInteger(form.getDataIndex(
+        ProjectConstants.ALS_PROJECT_STATUS))), ProjectStatus.APPROVED.ordinal(),
+        ProjectStatus.SUSPENDED.ordinal())) {
       if (taskGrid != null) {
         taskGrid.setEnabled(false);
       }
@@ -409,6 +410,10 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
   }
 
   private static boolean isActionEnabled(SvcObjectStatus status, FormView formView, IsRow row) {
+    if (DataUtils.isNewRow(row)) {
+      return false;
+    }
+
     int currStatus = BeeUtils.unbox(row.getInteger(formView.getDataIndex(COL_OBJECT_STATUS)));
     int actionStatus = status.ordinal();
 
@@ -443,17 +448,17 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
       public void onConfirm() {
         Queries.update(formView.getViewName(), Filter.compareId(row.getId()), COL_OBJECT_STATUS,
             Value.getValue(status.ordinal()), new IntCallback() {
-              @Override
-              public void onSuccess(Integer result) {
-                DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_SERVICE_OBJECTS);
-                CellUpdateEvent.fire(BeeKeeper.getBus(), formView.getViewName(),
-                    row.getId(), row.getVersion(),
-                    CellSource.forColumn(formView.getDataColumns().get(
-                        formView.getDataIndex(COL_OBJECT_STATUS)), formView
+          @Override
+          public void onSuccess(Integer result) {
+            DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_SERVICE_OBJECTS);
+            CellUpdateEvent.fire(BeeKeeper.getBus(), formView.getViewName(),
+                row.getId(), row.getVersion(),
+                CellSource.forColumn(formView.getDataColumns().get(
+                    formView.getDataIndex(COL_OBJECT_STATUS)), formView
                         .getDataIndex(COL_OBJECT_STATUS)), BeeUtils.toString(status.ordinal()));
-                formView.getViewPresenter().handleAction(Action.REFRESH);
-              }
-            });
+            formView.getViewPresenter().handleAction(Action.REFRESH);
+          }
+        });
       }
     };
 
@@ -538,11 +543,11 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
             if (form.getViewPresenter() instanceof ParentRowCreator) {
               ((ParentRowCreator) form.getViewPresenter()).createParentRow(form,
                   new Callback<IsRow>() {
-                    @Override
-                    public void onSuccess(final IsRow commitedRow) {
-                      fillServiceObjectData(commitedRow);
-                    }
-                  });
+                @Override
+                public void onSuccess(final IsRow commitedRow) {
+                  fillServiceObjectData(commitedRow);
+                }
+              });
             }
           }
 
