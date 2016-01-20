@@ -79,6 +79,7 @@ import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
+import com.butent.bee.shared.modules.documents.DocumentConstants;
 import com.butent.bee.shared.modules.projects.ProjectConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
 import com.butent.bee.shared.modules.tasks.TaskType;
@@ -522,8 +523,10 @@ class TasksGrid extends AbstractGridInterceptor {
             BeeRowSet relProjectDocuments = Data.createRowSet(relatedDocuments.getViewName());
 
             for (BeeRow relTask : relTaskDocuments) {
-              BeeRow relProject = DataUtils.cloneRow(relTask);
-              relProject.setValue(relatedDocuments.getColumnIndex(COL_TASK), (Long) null);
+              BeeRow relProject = DataUtils.createEmptyRow(relProjectDocuments
+                  .getNumberOfColumns());
+              relProject.setValue(relatedDocuments.getColumnIndex(DocumentConstants.COL_DOCUMENT),
+                  relTask.getLong(relTaskDocuments.getColumnIndex(DocumentConstants.COL_DOCUMENT)));
               relProject.setValue(relatedDocuments.getColumnIndex(ProjectConstants.COL_PROJECT),
                   projectRow);
 
