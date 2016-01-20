@@ -1,15 +1,18 @@
 package com.butent.bee.client.webrtc;
 
+import com.google.gwt.user.client.ui.Widget;
+
 import com.butent.bee.client.dom.DOMError;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Horizontal;
-import com.butent.bee.client.media.MediaStream;
 import com.butent.bee.client.media.MediaStreamConstraints;
 import com.butent.bee.client.media.MediaUtils;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.Video;
-import com.butent.bee.shared.Holder;
+import com.butent.bee.shared.css.CssProperties;
+import com.butent.bee.shared.css.values.Visibility;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 
@@ -46,79 +49,78 @@ public final class RtcUtils {
     controls.add(startButton);
 
     final Button callButton = new Button("call");
-    callButton.setEnabled(false);
     controls.add(callButton);
 
     final Button hangupButton = new Button("hang up");
-    hangupButton.setEnabled(false);
     controls.add(hangupButton);
 
     panel.add(controls);
 
-    final Holder<MediaStream> localStream = Holder.absent();
-    final Holder<RTCPeerConnection> localPeerConnection = Holder.absent();
-    final Holder<RTCPeerConnection> remotePeerConnection = Holder.absent();
+    disable(callButton);
+    disable(hangupButton);
+
+    final RtcHolder holder = new RtcHolder();
 
     startButton.addClickHandler(event -> {
-      startButton.setEnabled(false);
+      disable(startButton);
 
       MediaStreamConstraints constraints = new MediaStreamConstraints(true, true);
       RtcAdapter.getUserMedia(constraints, stream -> {
         logger.debug("received local stream");
-        localStream.set(stream);
+        holder.setLocalStream(stream);
         RtcAdapter.attachMediaStream(localVideo.getMediaElement(), stream);
-        callButton.setEnabled(true);
+        enable(callButton);
       }, error -> logger.severe("gum error", MediaUtils.format(error)));
     });
 
     callButton.addClickHandler(ce -> {
-      callButton.setEnabled(false);
-      hangupButton.setEnabled(true);
+      disable(callButton);
+      enable(hangupButton);
       logger.debug("starting call");
 
       RTCConfiguration pcConfig = null;
 
-      localPeerConnection.set(RtcAdapter.createRTCPeerConnection(pcConfig));
+      holder.setLocalPeerConnection(RtcAdapter.createRTCPeerConnection(pcConfig));
       logger.debug("created local peer connection");
 
-      localPeerConnection.get().setOnicecandidate(iceEvent -> {
+      holder.getLocalPeerConnection().setOnicecandidate(iceEvent -> {
         if (iceEvent.getCandidate() != null) {
           logger.debug("local ice candidate", iceEvent.getCandidate().getCandidate());
 
           RTCIceCandidate candidate = RtcAdapter.createRTCIceCandidate(iceEvent.getCandidate());
-          remotePeerConnection.get().addIceCandidate(candidate);
+          holder.getRemotePeerConnection().addIceCandidate(candidate);
         }
       });
 
-      remotePeerConnection.set(RtcAdapter.createRTCPeerConnection(pcConfig));
+      holder.setRemotePeerConnection(RtcAdapter.createRTCPeerConnection(pcConfig));
       logger.debug("created remote peer connection");
 
-      remotePeerConnection.get().setOnicecandidate(iceEvent -> {
+      holder.getRemotePeerConnection().setOnicecandidate(iceEvent -> {
         if (iceEvent.getCandidate() != null) {
           logger.debug("remote ice candidate", iceEvent.getCandidate().getCandidate());
 
           RTCIceCandidate candidate = RtcAdapter.createRTCIceCandidate(iceEvent.getCandidate());
-          localPeerConnection.get().addIceCandidate(candidate);
+          holder.getLocalPeerConnection().addIceCandidate(candidate);
         }
       });
 
-      remotePeerConnection.get().setOnaddstream(streamEvent -> {
+      holder.getRemotePeerConnection().setOnaddstream(streamEvent -> {
         RtcAdapter.attachMediaStream(remoteVideo.getMediaElement(), streamEvent.getStream());
         logger.debug("received remote stream");
       });
 
-      localPeerConnection.get().addStream(localStream.get());
+      holder.getLocalPeerConnection().addStream(holder.getLocalStream());
       logger.debug("added localStream to localPeerConnection");
 
-      localPeerConnection.get().createOffer(localDescription -> {
-        localPeerConnection.get().setLocalDescription(localDescription);
+      holder.getLocalPeerConnection().createOffer(localDescription -> {
+        holder.getLocalPeerConnection().setLocalDescription(localDescription);
         logger.debug("offer from localPeerConnection", localDescription.getSdp());
 
-        remotePeerConnection.get().setRemoteDescription(localDescription);
-        remotePeerConnection.get().createAnswer(remoteDescription -> {
-          remotePeerConnection.get().setLocalDescription(remoteDescription);
+        holder.getRemotePeerConnection().setRemoteDescription(localDescription);
+        holder.getRemotePeerConnection().createAnswer(remoteDescription -> {
+          holder.getRemotePeerConnection().setLocalDescription(remoteDescription);
           logger.debug("answer from remotePeerConnection", remoteDescription.getSdp());
-          localPeerConnection.get().setRemoteDescription(remoteDescription);
+          holder.getLocalPeerConnection().setRemoteDescription(remoteDescription);
         }, RtcUtils::handleError);
       }, RtcUtils::handleError);
     });
@@ -126,20 +128,28 @@ public final class RtcUtils {
     hangupButton.addClickHandler(event -> {
       logger.debug("ending call");
 
-      if (localPeerConnection.isNotNull()) {
-        localPeerConnection.get().close();
-        localPeerConnection.clear();
+      if (holder.getLocalPeerConnection() != null) {
+        holder.getLocalPeerConnection().close();
+        holder.setLocalPeerConnection(null);
       }
-      if (remotePeerConnection.isNotNull()) {
-        remotePeerConnection.get().close();
-        remotePeerConnection.clear();
+      if (holder.getRemotePeerConnection() != null) {
+        holder.getRemotePeerConnection().close();
+        holder.setRemotePeerConnection(null);
       }
 
-      hangupButton.setEnabled(false);
-      callButton.setEnabled(true);
+      disable(hangupButton);
+      enable(callButton);
     });
 
     return panel;
+  }
+
+  private static void disable(Widget widget) {
+    StyleUtils.setProperty(widget, CssProperties.VISIBILITY, Visibility.HIDDEN);
+  }
+
+  private static void enable(Widget widget) {
+    StyleUtils.setProperty(widget, CssProperties.VISIBILITY, Visibility.VISIBLE);
   }
 
   private static void handleError(DOMError error) {
