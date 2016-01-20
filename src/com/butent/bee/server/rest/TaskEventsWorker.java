@@ -1,14 +1,13 @@
 package com.butent.bee.server.rest;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
-import static com.butent.bee.shared.modules.tasks.TaskConstants.COL_EVENT;
 import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
 
 import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.exceptions.BeeException;
-import com.butent.bee.shared.modules.tasks.TaskConstants.*;
+import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 
@@ -47,12 +46,14 @@ public class TaskEventsWorker extends CrudWorker {
 
   @Override
   public RestResponse insert(JsonObject data) {
-    TaskEvent event = EnumUtils.getEnumByIndex(TaskEvent.class, getValue(data, COL_EVENT));
+    TaskEvent event = EnumUtils.getEnumByIndex(TaskEvent.class,
+        getValue(data, TaskConstants.COL_EVENT));
 
     if (event == TaskEvent.COMMENT) {
       RestResponse response = super.insert(data);
 
       if (!response.hasError()) {
+        @SuppressWarnings("unchecked")
         Long eventId = BeeUtils.toLong(BeeUtils.peek((Collection<Map<?, ?>>) response.getResult())
             .get(ID).toString());
         RestResponse resp = storeFiles(BeeUtils.toLong(getValue(data, COL_TASK_ID)), eventId,
