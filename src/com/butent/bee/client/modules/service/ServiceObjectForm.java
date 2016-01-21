@@ -236,7 +236,7 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
   public void afterRefresh(FormView form, IsRow row) {
     if (BeeUtils.inList(BeeUtils.unbox(row.getInteger(form.getDataIndex(
         ProjectConstants.ALS_PROJECT_STATUS))), ProjectStatus.APPROVED.ordinal(),
-        ProjectStatus.SUSPENDED.ordinal())) {
+        ProjectStatus.SUSPENDED.ordinal()) && !isServiceObject(form, row)) {
       if (taskGrid != null) {
         taskGrid.setEnabled(false);
       }
@@ -433,6 +433,15 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
             || (currIsPotentialObj && (actionIsProjectObj || actionIsLostObj));
 
     return result;
+  }
+
+  private static boolean isServiceObject(FormView form, IsRow row) {
+    if (form == null || row == null) {
+      return false;
+    }
+
+    return BeeUtils.unbox(row.getInteger(form.getDataIndex(
+        COL_OBJECT_STATUS))) == SvcObjectStatus.SERVICE_OBJECT.ordinal();
   }
 
   private static DecisionCallback getObjectStatusDecisionCallback(final FormView formView,
