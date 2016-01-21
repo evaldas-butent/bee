@@ -26,9 +26,9 @@ import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.modules.administration.ExtensionIcons;
 import com.butent.bee.server.modules.administration.FileStorageBean;
 import com.butent.bee.server.modules.mail.MailModuleBean;
-import com.butent.bee.server.news.ExtendedUsageQueryProvider;
 import com.butent.bee.server.modules.projects.ProjectsModuleBean;
 import com.butent.bee.server.modules.service.ServiceModuleBean;
+import com.butent.bee.server.news.ExtendedUsageQueryProvider;
 import com.butent.bee.server.news.NewsBean;
 import com.butent.bee.server.news.NewsHelper;
 import com.butent.bee.server.sql.HasConditions;
@@ -71,12 +71,14 @@ import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
-import com.butent.bee.shared.modules.administration.AdministrationConstants.*;
+import com.butent.bee.shared.modules.administration.AdministrationConstants.ReminderMethod;
 import com.butent.bee.shared.modules.documents.DocumentConstants;
 import com.butent.bee.shared.modules.projects.ProjectConstants;
 import com.butent.bee.shared.modules.projects.ProjectStatus;
+import com.butent.bee.shared.modules.service.ServiceConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
-import com.butent.bee.shared.modules.tasks.TaskConstants.*;
+import com.butent.bee.shared.modules.tasks.TaskConstants.TaskEvent;
+import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
 import com.butent.bee.shared.modules.tasks.TaskUtils;
 import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.news.Headline;
@@ -218,8 +220,7 @@ public class TasksModuleBean implements BeeModule {
   public Collection<BeeParameter> getDefaultParameters() {
     String module = getModule().getName();
     List<BeeParameter> params = Lists.newArrayList(
-        BeeParameter.createText(module, PRM_END_OF_WORK_DAY)
-        );
+        BeeParameter.createText(module, PRM_END_OF_WORK_DAY));
     return params;
   }
 
@@ -1051,8 +1052,7 @@ public class TasksModuleBean implements BeeModule {
                                       .ordinal())),
                               SqlUtils.equals(TBL_TASKS, ProjectConstants.COL_PROJECT, taskRow
                                   .getLong(
-                                  taskData.getColumnIndex(ProjectConstants.COL_PROJECT)))
-                              ));
+                                      taskData.getColumnIndex(ProjectConstants.COL_PROJECT)))));
 
               response = qs.updateDataWithResponse(update);
             }
@@ -1276,7 +1276,7 @@ public class TasksModuleBean implements BeeModule {
           .setWhere(
               SqlUtils.equals(TBL_COMPANIES, sys
                   .getIdName(TBL_COMPANIES), companiesListSet.getValue(i, sys
-                  .getIdName(TBL_COMPANIES))));
+                      .getIdName(TBL_COMPANIES))));
 
       if (reqInfo.hasParameter(VAR_TASK_DURATION_DATE_FROM)) {
         if (!BeeUtils.isEmpty(reqInfo.getParameter(VAR_TASK_DURATION_DATE_FROM))) {
@@ -1828,7 +1828,7 @@ public class TasksModuleBean implements BeeModule {
           .setWhere(
               SqlUtils.equals(TBL_USERS, sys
                   .getIdName(TBL_USERS), usersListSet.getValue(i, sys
-                  .getIdName(TBL_USERS))));
+                      .getIdName(TBL_USERS))));
 
       if (reqInfo.hasParameter(VAR_TASK_DURATION_DATE_FROM)) {
         if (!BeeUtils.isEmpty(reqInfo.getParameter(VAR_TASK_DURATION_DATE_FROM))) {
@@ -2669,6 +2669,7 @@ public class TasksModuleBean implements BeeModule {
     List<RowChildren> children = new ArrayList<>();
     List<RowChildren> prjChildren = new ArrayList<>();
     List<RowChildren> taskChildren = new ArrayList<>();
+    Set<Long> assignPrjSvcObj = new HashSet<>();
     List<Long> childTasks = new ArrayList<>();
 
     Long projectId = row.getLong(
@@ -2680,12 +2681,15 @@ public class TasksModuleBean implements BeeModule {
       if (!BeeUtils.isEmpty(relation)) {
         children.add(RowChildren.create(TBL_RELATIONS, COL_TASK, taskId,
             relation, row.getProperty(property)));
-
         if (BeeUtils.same(relation, DocumentConstants.COL_DOCUMENT)
             && DataUtils.isId(projectId)) {
-
           prjChildren.add(RowChildren.create(TBL_RELATIONS, ProjectConstants.COL_PROJECT,
               projectId, relation, row.getProperty(property)));
+        }
+
+        if (BeeUtils.same(relation, ServiceConstants.COL_SERVICE_OBJECT)
+            && DataUtils.isId(projectId)) {
+          assignPrjSvcObj = DataUtils.parseIdSet(row.getProperty(property));
         }
 
         if (BeeUtils.same(relation, COL_TASK)
@@ -2713,6 +2717,14 @@ public class TasksModuleBean implements BeeModule {
       for (Long childTaskId : childTasks) {
         deb.commitChildren(childTaskId, taskChildren, response);
       }
+    }
+
+    if (!BeeUtils.isEmpty(assignPrjSvcObj)) {
+      qs.updateData(new SqlUpdate(ServiceConstants.TBL_SERVICE_OBJECTS).addConstant(
+          ProjectConstants.COL_PROJECT, projectId).setWhere(SqlUtils.and(SqlUtils.inList(
+              ServiceConstants.TBL_SERVICE_OBJECTS, sys.getIdName(
+                  ServiceConstants.TBL_SERVICE_OBJECTS), assignPrjSvcObj), SqlUtils.isNull(
+                      ServiceConstants.TBL_SERVICE_OBJECTS, ProjectConstants.COL_PROJECT))));
     }
 
     if (!BeeUtils.isEmpty(children)) {

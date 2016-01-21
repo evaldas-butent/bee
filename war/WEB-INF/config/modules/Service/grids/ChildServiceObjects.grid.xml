@@ -3,7 +3,7 @@
 
   name="ChildServiceObjects" viewName="ServiceObjects"
   caption="=svcProjectObjects" editShowId="true"
-  autoFit="true" filter="Status &gt; 0"
+  autoFit="true" filter="Status &gt; 0 and  Status != 4"
   >
 
   <g:columns>

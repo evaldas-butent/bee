@@ -81,6 +81,7 @@ import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.documents.DocumentConstants;
 import com.butent.bee.shared.modules.projects.ProjectConstants;
+import com.butent.bee.shared.modules.service.ServiceConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
 import com.butent.bee.shared.modules.tasks.TaskType;
 import com.butent.bee.shared.modules.tasks.TaskUtils;
@@ -525,9 +526,14 @@ class TasksGrid extends AbstractGridInterceptor {
             for (BeeRow relTask : relTaskDocuments) {
               BeeRow relProject = DataUtils.createEmptyRow(relProjectDocuments
                   .getNumberOfColumns());
-              relProject.setValue(relatedDocuments.getColumnIndex(DocumentConstants.COL_DOCUMENT),
+              relProject.setValue(relProjectDocuments.getColumnIndex(
+                  DocumentConstants.COL_DOCUMENT),
                   relTask.getLong(relTaskDocuments.getColumnIndex(DocumentConstants.COL_DOCUMENT)));
-              relProject.setValue(relatedDocuments.getColumnIndex(ProjectConstants.COL_PROJECT),
+              relProject.setValue(relProjectDocuments.getColumnIndex(
+                  ServiceConstants.COL_SERVICE_OBJECT),
+                  relTask.getLong(relTaskDocuments.getColumnIndex(
+                      ServiceConstants.COL_SERVICE_OBJECT)));
+              relProject.setValue(relProjectDocuments.getColumnIndex(ProjectConstants.COL_PROJECT),
                   projectRow);
 
               relProjectDocuments.addRow(relProject);

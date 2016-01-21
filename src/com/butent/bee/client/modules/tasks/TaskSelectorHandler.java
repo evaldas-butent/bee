@@ -22,9 +22,13 @@ import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
+import com.butent.bee.shared.modules.projects.ProjectConstants;
+import com.butent.bee.shared.modules.service.ServiceConstants;
+import com.butent.bee.shared.modules.service.ServiceConstants.SvcObjectStatus;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.HashSet;
@@ -100,6 +104,13 @@ class TaskSelectorHandler implements SelectorEvent.Handler {
       } else if (BeeUtils.same(rowProperty, PROP_TASKS)) {
         handleTasks(event, taskRow);
       }
+    } else if (event.getSelector() instanceof MultiSelector && event.isNewRow()) {
+      CellSource cellSource = ((MultiSelector) event.getSelector()).getCellSource();
+      String rowProperty = (cellSource == null) ? null : cellSource.getName();
+
+      if (BeeUtils.same(rowProperty, PROP_SERVICE_OBJECTS)) {
+        handleServiceObjects(event, taskRow);
+      }
     }
   }
 
@@ -159,6 +170,25 @@ class TaskSelectorHandler implements SelectorEvent.Handler {
 
     event.consume();
     event.getSelector().getOracle().setExclusions(exclusions);
+  }
+
+  private static void handleServiceObjects(SelectorEvent event, IsRow taskRow) {
+    if (DataUtils.isNewRow(taskRow)) {
+      return;
+    }
+
+    if (!event.isNewRow()) {
+      return;
+    }
+
+    DataInfo serviceObject = Data.getDataInfo(ServiceConstants.VIEW_SERVICE_OBJECTS);
+    IsRow svcRow = event.getNewRow();
+    svcRow.setValue(serviceObject.getColumnIndex(ProjectConstants.COL_PROJECT), Data.getLong(
+        VIEW_TASKS, taskRow, ProjectConstants.COL_PROJECT));
+    svcRow.setValue(serviceObject.getColumnIndex(ProjectConstants.ALS_PROJECT_NAME), Data.getString(
+        VIEW_TASKS, taskRow, ProjectConstants.ALS_PROJECT_NAME));
+    svcRow.setValue(serviceObject.getColumnIndex(ServiceConstants.COL_OBJECT_STATUS),
+        SvcObjectStatus.POTENTIAL_OBJECT.ordinal());
   }
 
   private static void handleTasks(SelectorEvent event, IsRow taskRow) {
