@@ -41,7 +41,7 @@
         <ui:expression>row.Status == 4</ui:expression>
       </dynStyle>
     </Label>
-    <DataSelector source="Project" style="&inp;"  readOnly="true">
+    <DataSelector source="Project" style="&inp;" renderColumns="Name" readOnly="true">
       <dynStyle>
         <ui:inline>display:none</ui:inline>
         <ui:expression>row.Status == 4</ui:expression>
