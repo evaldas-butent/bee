@@ -48,6 +48,7 @@ public class PrintActForm extends AbstractFormInterceptor {
   private static final String FORM_PRINT_TA_NO_STOCK = "PrintTASaleNoStock";
   private static final String FORM_PRINT_TA_SALE = "PrintTradeActSalePhysical";
   private static final String FORM_PRINT_TA_SALE_RENT = "PrintTASaleRent";
+  private static final String FORM_PRINT_TA_SALE_ADDITION = "PrintTASaleAddition";
 
   private static final String[] COLUMN_LIST = new String[] {
       COL_ITEM_ARTICLE, COL_ITEM_NAME, COL_TA_SERVICE_FROM, COL_TA_SERVICE_TO,
@@ -152,13 +153,15 @@ public class PrintActForm extends AbstractFormInterceptor {
 
     if (BeeUtils.same(col, "AmountTotal") && (BeeUtils.same(widgetName, ITEMS_WIDGET_NAME)
         && BeeUtils.inList(formName,
-            FORM_PRINT_TA_SALE, FORM_PRINT_TA_NO_STOCK, FORM_PRINT_TA_SALE_RENT))) {
+            FORM_PRINT_TA_SALE, FORM_PRINT_TA_NO_STOCK, FORM_PRINT_TA_SALE_RENT,
+            FORM_PRINT_TA_SALE_ADDITION))) {
       return false;
     }
 
     if (BeeUtils.same(col, "Vat") && (BeeUtils.same(widgetName, SERVICES_WIDGET_NAME) || (BeeUtils
         .same(widgetName, ITEMS_WIDGET_NAME) && BeeUtils.inList(formName,
-            FORM_PRINT_TA_SALE, FORM_PRINT_TA_NO_STOCK, FORM_PRINT_TA_SALE_RENT)))) {
+            FORM_PRINT_TA_SALE, FORM_PRINT_TA_NO_STOCK, FORM_PRINT_TA_SALE_RENT,
+            FORM_PRINT_TA_SALE_ADDITION)))) {
       return false;
     }
 
@@ -178,7 +181,8 @@ public class PrintActForm extends AbstractFormInterceptor {
         break;
       case "Amount":
         if (ITEMS_WIDGET_NAME.equals(widgetName) && BeeUtils.inList(form.getFormName(),
-            FORM_PRINT_TA_SALE, FORM_PRINT_TA_NO_STOCK, FORM_PRINT_TA_SALE_RENT)) {
+            FORM_PRINT_TA_SALE, FORM_PRINT_TA_NO_STOCK, FORM_PRINT_TA_SALE_RENT,
+            FORM_PRINT_TA_SALE_ADDITION)) {
           return "Suma";
         }
 
