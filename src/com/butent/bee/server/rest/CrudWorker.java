@@ -204,7 +204,6 @@ public abstract class CrudWorker {
     }
   }
 
-  @SuppressWarnings("unchecked")
   static Collection<Map<String, Object>> getData(BeeRowSet rs, Multimap<String, String> children) {
     Map<Long, Map<String, Object>> data = new LinkedHashMap<>();
     boolean hasChildren = Objects.nonNull(children);
