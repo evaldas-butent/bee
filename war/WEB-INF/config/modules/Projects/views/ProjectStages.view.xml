@@ -35,6 +35,7 @@
         <SimpleColumn name="Factor" />
         <SimpleColumn name="BaseUnit" />
       </SimpleJoin>
+      <SimpleColumn name="Status"/>
     </SimpleJoin>
     <SimpleColumn name="Name" />
     <SimpleColumn name="StartDate" />
