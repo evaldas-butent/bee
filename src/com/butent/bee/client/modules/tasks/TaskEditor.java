@@ -36,15 +36,20 @@ import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.event.logical.MutationEvent;
+import com.butent.bee.client.event.logical.MutationEvent.Handler;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.i18n.Format;
+import com.butent.bee.client.layout.Direction;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
+import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.render.PhotoRenderer;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.utils.FileUtils;
+import com.butent.bee.client.utils.XmlUtils;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.FormView;
@@ -80,9 +85,12 @@ import com.butent.bee.shared.modules.documents.DocumentConstants;
 import com.butent.bee.shared.modules.projects.ProjectConstants;
 import com.butent.bee.shared.modules.projects.ProjectStatus;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
+import com.butent.bee.shared.modules.tasks.TaskConstants.TaskEvent;
+import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
 import com.butent.bee.shared.modules.tasks.TaskUtils;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
+import com.butent.bee.shared.ui.UiConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
@@ -585,11 +593,44 @@ class TaskEditor extends AbstractFormInterceptor {
   }
 
   @Override
+  public boolean beforeCreateWidget(String name, com.google.gwt.xml.client.Element description) {
+
+    if (BeeUtils.same(name, "Split")) {
+      Integer size = BeeKeeper.getStorage().getInteger(getStorageKey());
+
+      if (BeeUtils.isPositive(size)) {
+
+        com.google.gwt.xml.client.Element west =
+            XmlUtils.getFirstChildElement(description, Direction.WEST.name()
+                .toLowerCase());
+
+        if (west != null) {
+          west.setAttribute(UiConstants.ATTR_SIZE, size.toString());
+        }
+      }
+    }
+    return super.beforeCreateWidget(name, description);
+  }
+
+  @Override
   public void afterCreateWidget(String name, IdentifiableWidget widget,
       WidgetDescriptionCallback callback) {
 
     if (BeeUtils.same(name, NAME_OBSERVERS) && widget instanceof MultiSelector) {
       observers = (MultiSelector) widget;
+    } else if (BeeUtils.same(name, "Split") && widget instanceof Split) {
+      Split split = (Split) widget;
+      split.addMutationHandler(new Handler() {
+
+        @Override
+        public void onMutation(MutationEvent event) {
+          int size = split.getDirectionSize(Direction.WEST);
+
+          if (size > 0 && !BeeUtils.isEmpty(getStorageKey())) {
+            BeeKeeper.getStorage().set(getStorageKey(), size);
+          }
+        }
+      });
     }
   }
 
@@ -1677,6 +1718,14 @@ class TaskEditor extends AbstractFormInterceptor {
 
   private Integer getStatus() {
     return getFormView().getActiveRow().getInteger(getFormView().getDataIndex(COL_STATUS));
+  }
+
+  private static String getStorageKey() {
+    String key =
+        BeeUtils.join(BeeConst.STRING_MINUS, "TaskTree", BeeKeeper.getUser().getUserId(),
+            UiConstants.ATTR_SIZE);
+
+    return key;
   }
 
   private boolean isEventEnabled(TaskEvent event, Integer status) {
