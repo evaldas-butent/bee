@@ -34,6 +34,13 @@
       </SimpleJoin>
 
       <SimpleColumn name="ProjectStage" />
+      
+      <!-- @B-NOVO INTRANET { -->
+      <SimpleColumn name="Product" />
+      <SimpleJoin name="Product" joinType="LEFT">
+        <SimpleColumn name="Name" alias="ProductName"></SimpleColumn>
+      </SimpleJoin>
+      <!-- } @B-NOVO INTRANET -->
     </SimpleJoin>
 
     <SimpleColumn name="Publisher" />
