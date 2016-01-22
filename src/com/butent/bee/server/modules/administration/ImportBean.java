@@ -807,8 +807,8 @@ public class ImportBean {
         status.get(viewName).getB().addRows(newRs.getRows());
       } else {
         for (BeeColumn column : newRs.getColumns()) {
-          column.setLabel("<b>" + (Objects.equals(column.getId(), COL_REASON) ? consts.reason() :
-              column.getLabel()) + "</b>");
+          column.setLabel("<b>" + (Objects.equals(column.getId(), COL_REASON)
+              ? consts.reason() : column.getLabel()) + "</b>");
         }
         status.get(viewName).setB(newRs);
       }

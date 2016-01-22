@@ -42,8 +42,8 @@
       </SimpleJoin>
     </SimpleJoin>
 
-    <ExternalJoin source="TaskUsers" name="Task" joinType="INNER" filter="User={u}">
-      <HiddenColumn name="User" />
+    <ExternalJoin source="TaskUsers" name="Task" joinType="INNER" filter="UserID={u}">
+      <HiddenColumn name="User" alias="UserID" />
       <SimpleColumn name="LastAccess" />
     </ExternalJoin>
 
@@ -64,6 +64,13 @@
         <SimpleColumn name="LastName" alias="PersonLastName" />
       </SimpleJoin>
     </SimpleJoin>
+
+    <ExternalJoin source="TaskUsers" name="Task" joinType="LEFT"
+                  filter="User!=Owner AND User!=Executor">
+      <SimpleColumn name="User" />
+      <SimpleColumn name="Task" />
+      <IdColumn name="ID" />
+    </ExternalJoin>
 
     <ExternalJoin name="Task" joinType="LEFT" source="TaskFiles" filter="!(TaskEvent)">
       <HiddenColumn name="TaskEvent" />

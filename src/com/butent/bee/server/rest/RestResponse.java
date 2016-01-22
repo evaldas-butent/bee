@@ -67,6 +67,10 @@ public final class RestResponse {
     return status;
   }
 
+  public boolean hasError() {
+    return !BeeUtils.toBoolean(getStatus().get(SUCCESS).toString());
+  }
+
   public RestResponse setError(String errorMessage) {
     this.error = errorMessage;
     return this;

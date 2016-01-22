@@ -44,7 +44,6 @@ import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.communication.RpcInfo;
 import com.butent.bee.client.communication.RpcList;
-import com.butent.bee.client.communication.RtcAdapter;
 import com.butent.bee.client.composite.FileGroup;
 import com.butent.bee.client.composite.FileGroup.Column;
 import com.butent.bee.client.composite.RadioGroup;
@@ -93,6 +92,9 @@ import com.butent.bee.client.maps.MapContainer;
 import com.butent.bee.client.maps.MapOptions;
 import com.butent.bee.client.maps.MapUtils;
 import com.butent.bee.client.maps.MapWidget;
+import com.butent.bee.client.media.MediaStream;
+import com.butent.bee.client.media.MediaStreamConstraints;
+import com.butent.bee.client.media.MediaUtils;
 import com.butent.bee.client.menu.MenuCommand;
 import com.butent.bee.client.modules.administration.AdministrationKeeper;
 import com.butent.bee.client.modules.ec.EcKeeper;
@@ -114,9 +116,10 @@ import com.butent.bee.client.utils.JsUtils;
 import com.butent.bee.client.utils.NewFileInfo;
 import com.butent.bee.client.utils.XmlUtils;
 import com.butent.bee.client.view.ViewFactory;
+import com.butent.bee.client.webrtc.RtcAdapter;
+import com.butent.bee.client.webrtc.RtcUtils;
 import com.butent.bee.client.websocket.Endpoint;
-import com.butent.bee.client.widget.BeeAudio;
-import com.butent.bee.client.widget.BeeVideo;
+import com.butent.bee.client.widget.Audio;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.CustomWidget;
 import com.butent.bee.client.widget.FaLabel;
@@ -126,6 +129,7 @@ import com.butent.bee.client.widget.InputFile;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.Meter;
 import com.butent.bee.client.widget.Svg;
+import com.butent.bee.client.widget.Video;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
@@ -397,6 +401,9 @@ public final class CliWorker {
     } else if (z.startsWith("gridinf")) {
       GridFactory.showGridInfo(args);
 
+    } else if ("gum".equals(z)) {
+      showUserMedia(arr, errorPopup);
+
     } else if ("gwt".equals(z)) {
       showGwt();
 
@@ -506,7 +513,7 @@ public final class CliWorker {
       showPropData("Client Rooms", Global.getRooms().getInfo());
 
     } else if ("rtc".equals(z)) {
-      showPropData(v, RtcAdapter.getInfo());
+      doRtc(args, errorPopup);
 
     } else if ("rts".equals(z)) {
       scheduleTasks(arr, errorPopup);
@@ -1510,6 +1517,23 @@ public final class CliWorker {
     }
   }
 
+  private static void doRtc(String args, boolean errorPopup) {
+    if (BeeUtils.isEmpty(args)) {
+      showPropData("rtc adapter", RtcAdapter.getInfo());
+      return;
+    }
+
+    if (!Features.supportsWebRtc()) {
+      showError(errorPopup, "rtc not supported");
+      return;
+    }
+
+    IdentifiableWidget demo = RtcUtils.createBasicDemo();
+    if (demo != null) {
+      BeeKeeper.getScreen().show(demo);
+    }
+  }
+
   private static void doScreen(String[] arr, boolean errorPopup) {
     Split screen = BeeKeeper.getScreen().getScreenPanel();
     Assert.notNull(screen);
@@ -1809,7 +1833,7 @@ public final class CliWorker {
       return;
     }
 
-    final BeeAudio widget = new BeeAudio();
+    final Audio widget = new Audio();
 
     widget.getAudioElement().setSrc(src);
     widget.getAudioElement().setControls(true);
@@ -1828,7 +1852,7 @@ public final class CliWorker {
     final String src = BeeUtils.notEmpty(args,
         "http://people.opera.com/shwetankd/webm/sunflower.webm");
 
-    final BeeVideo widget = new BeeVideo();
+    final Video widget = new Video();
     widget.getVideoElement().setSrc(src);
     widget.getVideoElement().setControls(true);
 
@@ -4024,6 +4048,59 @@ public final class CliWorker {
     }
 
     showTable("Pixels", new PropertiesData(info));
+  }
+
+  private static void showUserMedia(String[] arr, boolean errorPopup) {
+    if (!Features.supportsGetUserMedia()) {
+      showError(errorPopup, "gum not supported");
+      return;
+    }
+
+    int len = ArrayUtils.length(arr);
+
+    MediaStreamConstraints constraints = new MediaStreamConstraints();
+    if (len > 1) {
+      for (int i = 1; i < len; i++) {
+        if (BeeUtils.startsWith(arr[i], 'a')) {
+          constraints.setAudio(true);
+        } else if (BeeUtils.startsWith(arr[i], 'v')) {
+          constraints.setVideo(true);
+        }
+      }
+    }
+
+    if (!constraints.isAudio() && !constraints.isVideo()) {
+      constraints.setAudio(true);
+      constraints.setVideo(true);
+    }
+
+    RtcAdapter.getUserMedia(constraints, stream -> renderUserMedia(stream, constraints),
+        error -> showError(errorPopup, "gum error", MediaUtils.format(error)));
+  }
+
+  private static void renderUserMedia(MediaStream stream, MediaStreamConstraints constraints) {
+    Flow container = new Flow();
+
+    if (constraints.isVideo()) {
+      Video video = new Video();
+      video.setControls(true);
+      video.setAutoplay(true);
+
+      RtcAdapter.attachMediaStream(video.getMediaElement(), stream);
+
+      container.add(video);
+
+    } else {
+      Audio audio = new Audio();
+      audio.setControls(true);
+      audio.setAutoplay(true);
+
+      RtcAdapter.attachMediaStream(audio.getMediaElement(), stream);
+
+      container.add(audio);
+    }
+
+    BeeKeeper.getScreen().show(container);
   }
 
   private static void showViewInfo(String input, String args) {
