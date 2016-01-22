@@ -3865,7 +3865,8 @@ public class TradeActBean implements HasTimerService {
           .addConstant(COL_SALE_LASTEST_PAYMENT, date)
           .setWhere(SqlUtils.and(
               SqlUtils.equals(TBL_COMPANIES, sys.getIdName(TBL_COMPANIES), companyId),
-              SqlUtils.less(TBL_COMPANIES, COL_SALE_LASTEST_PAYMENT, date)));
+              SqlUtils.or(SqlUtils.less(TBL_COMPANIES, COL_SALE_LASTEST_PAYMENT, date), SqlUtils
+                  .isNull(TBL_COMPANIES, COL_SALE_LASTEST_PAYMENT))));
       qs.updateData(query);
     }
   }
