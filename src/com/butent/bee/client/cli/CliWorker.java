@@ -1528,9 +1528,17 @@ public final class CliWorker {
       return;
     }
 
-    IdentifiableWidget demo = RtcUtils.createBasicDemo();
-    if (demo != null) {
-      BeeKeeper.getScreen().show(demo);
+    switch (args) {
+      case "b":
+        BeeKeeper.getScreen().show(RtcUtils.createBasicDemo());
+        break;
+
+      case "t":
+        BeeKeeper.getScreen().show(RtcUtils.createTextDemo());
+        break;
+
+      default:
+        showError(errorPopup, "rtc", args, "not recognized");
     }
   }
 
