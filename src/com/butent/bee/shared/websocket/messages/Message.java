@@ -24,16 +24,16 @@ public abstract class Message {
         return new ChatMessage();
       }
     },
-    ECHO {
-      @Override
-      Message createMessage() {
-        return new EchoMessage();
-      }
-    },
     CONFIG {
       @Override
       Message createMessage() {
         return new ConfigMessage();
+      }
+    },
+    ECHO {
+      @Override
+      Message createMessage() {
+        return new EchoMessage();
       }
     },
     INFO {
@@ -112,6 +112,12 @@ public abstract class Message {
       @Override
       Message createMessage() {
         return new ShowMessage();
+      }
+    },
+    SIGNALING {
+      @Override
+      Message createMessage() {
+        return new SignalingMessage();
       }
     },
     USERS {

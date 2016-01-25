@@ -19,6 +19,8 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import jsinterop.annotations.JsMethod;
+
 public final class RtcUtils {
 
   private static final BeeLogger logger = LogUtils.getLogger(RtcUtils.class);
@@ -299,6 +301,15 @@ public final class RtcUtils {
       }, RtcUtils::handleError);
     }, RtcUtils::handleError);
   }
+
+  @JsMethod(namespace = "JSON", name = "parse")
+  private static native RTCIceCandidate parseIceCandidate(String input);
+
+  @JsMethod(namespace = "JSON", name = "parse")
+  private static native RTCSessionDescription parseSessionDescription(String input);
+
+  @JsMethod(namespace = "JSON")
+  private static native String stringify(Object obj);
 
   private RtcUtils() {
   }

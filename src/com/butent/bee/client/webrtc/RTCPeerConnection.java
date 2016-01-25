@@ -21,21 +21,27 @@ public interface RTCPeerConnection {
   void createAnswer(JsConsumer<RTCSessionDescription> successCallback,
       JsConsumer<DOMError> failureCallback);
 
+  RTCDataChannel createDataChannel(String label, RTCDataChannelInit dataChannelDict);
+
   void createOffer(JsConsumer<RTCSessionDescription> successCallback,
       JsConsumer<DOMError> failureCallback);
 
-  RTCDataChannel createDataChannel(String label, RTCDataChannelInit dataChannelDict);
-
   void setLocalDescription(RTCSessionDescription description);
-
-  @JsProperty
-  void setOnicecandidate(JsConsumer<RTCPeerConnectionIceEvent> onicecandidate);
 
   @JsProperty
   void setOnaddstream(JsConsumer<MediaStreamEvent> onaddstream);
 
   @JsProperty
   void setOndatachannel(JsConsumer<DataChannelEvent> ondatachannel);
+
+  @JsProperty
+  void setOnicecandidate(JsConsumer<RTCPeerConnectionIceEvent> onicecandidate);
+
+  @JsProperty
+  void setOnnegotiationneeded(JsConsumer<NegotiationNeededEvent> negotiationneeded);
+
+  @JsProperty
+  void setOntrack(JsConsumer<RTCTrackEvent> ontrack);
 
   void setRemoteDescription(RTCSessionDescription description);
 }

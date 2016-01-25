@@ -67,6 +67,7 @@ import com.butent.bee.shared.websocket.messages.RoomsMessage;
 import com.butent.bee.shared.websocket.messages.SessionMessage;
 import com.butent.bee.shared.websocket.messages.ShowMessage;
 import com.butent.bee.shared.websocket.messages.ShowMessage.Subject;
+import com.butent.bee.shared.websocket.messages.SignalingMessage;
 import com.butent.bee.shared.websocket.messages.UsersMessage;
 
 import java.util.Collections;
@@ -512,6 +513,11 @@ class MessageDispatcher {
         } else {
           WsUtils.onInvalidState(message);
         }
+        break;
+
+      case SIGNALING:
+        SignalingMessage signal = (SignalingMessage) message;
+        logger.debug(signal);
         break;
 
       case USERS:
