@@ -513,7 +513,7 @@
   left: -8px;
 }
 
-.bee-Header-disabled .bee-Header-control {
+.bee-Header-control-disabled {
   display: none;
 }
 .bee-Header-control-hidden {

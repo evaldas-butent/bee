@@ -405,12 +405,12 @@ public class GridMenu {
     return false;
   }
 
-  public void open(final GridPresenter presenter) {
+  public void open(final GridPresenter presenter, boolean enabled) {
     final HtmlTable table = new HtmlTable(STYLE_TABLE);
     int r = 0;
 
     for (Item item : enabledItems) {
-      if (item.isVisible(presenter)) {
+      if ((enabled || !item.action.isDisablable()) && item.isVisible(presenter)) {
         Widget icon = item.renderIcon(presenter);
         if (icon != null) {
           table.setWidgetAndStyle(r, 0, icon, STYLE_ICON);

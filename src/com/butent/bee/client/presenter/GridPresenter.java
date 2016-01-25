@@ -529,7 +529,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
         break;
 
       case MENU:
-        menu.open(this);
+        menu.open(this, getMainView().isEnabled());
         break;
 
       case MERGE:
@@ -603,8 +603,13 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
   public boolean isActionEnabled(Action action) {
     if (action == null) {
       return false;
+
+    } else if (action.isDisablable() && !getMainView().isEnabled()) {
+      return false;
+
     } else if (menu.isActionVisible(this, action)) {
       return true;
+
     } else {
       HeaderView header = getHeader();
       return header != null && header.isActionEnabled(action);
