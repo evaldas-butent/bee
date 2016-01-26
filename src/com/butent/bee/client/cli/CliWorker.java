@@ -1531,15 +1531,30 @@ public final class CliWorker {
     switch (args) {
       case "b":
         BeeKeeper.getScreen().show(RtcUtils.createBasicDemo());
-        break;
+        return;
 
       case "t":
         BeeKeeper.getScreen().show(RtcUtils.createTextDemo());
-        break;
-
-      default:
-        showError(errorPopup, "rtc", args, "not recognized");
+        return;
     }
+
+    Long userId = Global.getUsers().parseUserName(args, true);
+    if (userId == null) {
+      showError(errorPopup, "user not found", args);
+      return;
+    } else if (BeeKeeper.getUser().is(userId)) {
+      showError(errorPopup, "me myself & I");
+      return;
+    }
+
+    Set<String> sessions = Global.getUsers().getSessions(Collections.singleton(userId));
+    if (BeeUtils.isEmpty(sessions)) {
+      showError(errorPopup, args, "no open sessions found");
+      return;
+    }
+
+    String session = BeeUtils.peek(sessions);
+    RtcUtils.call(session);
   }
 
   private static void doScreen(String[] arr, boolean errorPopup) {

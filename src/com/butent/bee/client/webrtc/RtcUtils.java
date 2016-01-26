@@ -2,6 +2,7 @@ package com.butent.bee.client.webrtc;
 
 import com.google.gwt.user.client.ui.Widget;
 
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.dom.DOMError;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.layout.Flow;
@@ -10,20 +11,88 @@ import com.butent.bee.client.media.MediaStreamConstraints;
 import com.butent.bee.client.media.MediaUtils;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.client.websocket.Endpoint;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.client.widget.Video;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.css.CssProperties;
 import com.butent.bee.shared.css.values.Visibility;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.websocket.messages.SignalingMessage;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import jsinterop.annotations.JsMethod;
 
 public final class RtcUtils {
 
   private static final BeeLogger logger = LogUtils.getLogger(RtcUtils.class);
+
+  private static final String KEY_CANDIDATE = "candidate";
+  private static final String KEY_SDP = "sdp";
+
+  private static final Map<String, RtcHolder> rooms = new HashMap<>();
+
+  public static void call(final String session) {
+    final Horizontal videos = new Horizontal();
+    videos.setBorderSpacing(10);
+
+    final Video localVideo = new Video();
+    localVideo.setAutoplay(true);
+    localVideo.setControls(true);
+
+    videos.add(localVideo);
+
+    final Video remoteVideo = new Video();
+    remoteVideo.setAutoplay(true);
+    remoteVideo.setControls(true);
+
+    videos.add(remoteVideo);
+
+    final String room = BeeUtils.randomString(10, BeeConst.DIGITS);
+
+    final RtcHolder holder = new RtcHolder();
+
+    MediaStreamConstraints constraints = new MediaStreamConstraints(true, true);
+
+    RtcAdapter.getUserMedia(constraints, stream -> {
+      rooms.put(room, holder);
+      BeeKeeper.getScreen().show(videos);
+
+      logger.debug("received local stream");
+      holder.setLocalStream(stream);
+      RtcAdapter.attachMediaStream(localVideo.getMediaElement(), stream);
+
+      RTCConfiguration pcConfig = null;
+      holder.setLocalPeerConnection(RtcAdapter.createRTCPeerConnection(pcConfig));
+      logger.debug("created local peer connection");
+
+      holder.getLocalPeerConnection().setOnicecandidate(iceEvent -> {
+        if (iceEvent.getCandidate() != null) {
+          logger.debug("on ice candidate");
+          send(session, room, iceEvent.getCandidate());
+        }
+      });
+
+      holder.getLocalPeerConnection().setOnaddstream(streamEvent -> {
+        logger.debug("on add stream");
+        RtcAdapter.attachMediaStream(remoteVideo.getMediaElement(), streamEvent.getStream());
+      });
+
+      holder.getLocalPeerConnection().addStream(stream);
+      logger.debug("added local stream");
+
+      holder.getLocalPeerConnection().createOffer(description -> {
+        logger.debug("create offer");
+        holder.getLocalPeerConnection().setLocalDescription(description);
+        send(session, room, description);
+      }, RtcUtils::handleError);
+    }, error -> logger.severe("gum error", MediaUtils.format(error)));
+  }
 
   public static IdentifiableWidget createBasicDemo() {
     Flow panel = new Flow();
@@ -267,6 +336,81 @@ public final class RtcUtils {
     return panel;
   }
 
+  public static void onMessage(SignalingMessage message) {
+    RtcHolder holder = rooms.get(message.getLabel());
+
+    if (holder == null) {
+      answer(message.getFrom(), message.getLabel());
+
+    } else {
+      switch (message.getKey()) {
+        case KEY_CANDIDATE:
+          holder.getLocalPeerConnection().addIceCandidate(parseIceCandidate(message.getValue()));
+          break;
+
+        case KEY_SDP:
+          RTCSessionDescription sdp = parseSessionDescription(message.getValue());
+          holder.getLocalPeerConnection().setRemoteDescription(sdp);
+          break;
+      }
+    }
+  }
+
+  private static void answer(final String session, final String room) {
+    final Horizontal videos = new Horizontal();
+    videos.setBorderSpacing(10);
+
+    final Video localVideo = new Video();
+    localVideo.setAutoplay(true);
+    localVideo.setControls(true);
+
+    videos.add(localVideo);
+
+    final Video remoteVideo = new Video();
+    remoteVideo.setAutoplay(true);
+    remoteVideo.setControls(true);
+
+    videos.add(remoteVideo);
+
+    final RtcHolder holder = new RtcHolder();
+
+    MediaStreamConstraints constraints = new MediaStreamConstraints(true, true);
+
+    RtcAdapter.getUserMedia(constraints, stream -> {
+      rooms.put(room, holder);
+      BeeKeeper.getScreen().show(videos);
+
+      logger.debug("received local stream");
+      holder.setLocalStream(stream);
+      RtcAdapter.attachMediaStream(localVideo.getMediaElement(), stream);
+
+      RTCConfiguration pcConfig = null;
+      holder.setLocalPeerConnection(RtcAdapter.createRTCPeerConnection(pcConfig));
+      logger.debug("created local peer connection");
+
+      holder.getLocalPeerConnection().setOnicecandidate(iceEvent -> {
+        if (iceEvent.getCandidate() != null) {
+          logger.debug("on ice candidate");
+          send(session, room, iceEvent.getCandidate());
+        }
+      });
+
+      holder.getLocalPeerConnection().setOnaddstream(streamEvent -> {
+        logger.debug("on add stream");
+        RtcAdapter.attachMediaStream(remoteVideo.getMediaElement(), streamEvent.getStream());
+      });
+
+      holder.getLocalPeerConnection().addStream(stream);
+      logger.debug("added local stream");
+
+      holder.getLocalPeerConnection().createAnswer(description -> {
+        logger.debug("create answer");
+        holder.getLocalPeerConnection().setLocalDescription(description);
+        send(session, room, description);
+      }, RtcUtils::handleError);
+    }, error -> logger.severe("gum error", MediaUtils.format(error)));
+  }
+
   private static void disable(Widget widget) {
     StyleUtils.setProperty(widget, CssProperties.VISIBILITY, Visibility.HIDDEN);
   }
@@ -307,6 +451,16 @@ public final class RtcUtils {
 
   @JsMethod(namespace = "JSON", name = "parse")
   private static native RTCSessionDescription parseSessionDescription(String input);
+
+  private static void send(String to, String label, RTCIceCandidate candidate) {
+    Endpoint.send(SignalingMessage.signal(Endpoint.getSessionId(), to, label,
+        KEY_CANDIDATE, stringify(candidate)));
+  }
+
+  private static void send(String to, String label, RTCSessionDescription sdp) {
+    Endpoint.send(SignalingMessage.signal(Endpoint.getSessionId(), to, label,
+        KEY_SDP, stringify(sdp)));
+  }
 
   @JsMethod(namespace = "JSON")
   private static native String stringify(Object obj);

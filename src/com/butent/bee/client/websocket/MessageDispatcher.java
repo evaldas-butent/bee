@@ -24,6 +24,7 @@ import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.maps.MapUtils;
 import com.butent.bee.client.modules.mail.MailKeeper;
 import com.butent.bee.client.render.PhotoRenderer;
+import com.butent.bee.client.webrtc.RtcUtils;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.InputText;
@@ -516,8 +517,7 @@ class MessageDispatcher {
         break;
 
       case SIGNALING:
-        SignalingMessage signal = (SignalingMessage) message;
-        logger.debug(signal);
+        RtcUtils.onMessage((SignalingMessage) message);
         break;
 
       case USERS:
