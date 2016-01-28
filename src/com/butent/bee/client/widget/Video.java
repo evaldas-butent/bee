@@ -6,11 +6,19 @@ import com.google.gwt.media.client.MediaBase;
 
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.shared.utils.BeeUtils;
 
 public class Video extends MediaBase implements IdentifiableWidget {
 
   public Video() {
     this(Document.get().createVideoElement());
+  }
+
+  public Video(String styleName) {
+    this();
+    if (!BeeUtils.isEmpty(styleName)) {
+      addStyleName(styleName);
+    }
   }
 
   public Video(VideoElement element) {

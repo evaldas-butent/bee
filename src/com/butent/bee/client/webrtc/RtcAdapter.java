@@ -33,6 +33,9 @@ public final class RtcAdapter {
   @JsMethod(namespace = JsPackage.GLOBAL, name = "RTCPeerConnection")
   public static native RTCPeerConnection createRTCPeerConnection(RTCConfiguration pcConfig);
 
+  @JsMethod(namespace = JsPackage.GLOBAL)
+  public static native RTCSessionDescription createRTCSessionDescription(RTCSessionDescription rsd);
+
   public static List<Property> getInfo() {
     List<Property> info = new ArrayList<>();
 

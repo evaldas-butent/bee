@@ -35,19 +35,24 @@ public final class RtcUtils {
   private static final String KEY_CANDIDATE = "candidate";
   private static final String KEY_SDP = "sdp";
 
+  private static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "rtc-";
+  private static final String STYLE_PANEL = STYLE_PREFIX + "panel";
+  private static final String STYLE_LOCAL = STYLE_PREFIX + "local";
+  private static final String STYLE_REMOTE = STYLE_PREFIX + "remote";
+
   private static final Map<String, RtcHolder> rooms = new HashMap<>();
 
   public static void call(final String session) {
-    final Horizontal videos = new Horizontal();
-    videos.setBorderSpacing(10);
+    final Flow videos = new Flow(STYLE_PANEL);
 
-    final Video localVideo = new Video();
+    final Video localVideo = new Video(STYLE_LOCAL);
     localVideo.setAutoplay(true);
     localVideo.setControls(true);
+    localVideo.setMuted(true);
 
     videos.add(localVideo);
 
-    final Video remoteVideo = new Video();
+    final Video remoteVideo = new Video(STYLE_REMOTE);
     remoteVideo.setAutoplay(true);
     remoteVideo.setControls(true);
 
@@ -57,31 +62,31 @@ public final class RtcUtils {
 
     final RtcHolder holder = new RtcHolder();
 
+    RTCConfiguration pcConfig = null;
+    holder.setLocalPeerConnection(RtcAdapter.createRTCPeerConnection(pcConfig));
+    logger.debug("created local peer connection");
+
+    holder.getLocalPeerConnection().setOnicecandidate(iceEvent -> {
+      if (iceEvent.getCandidate() != null) {
+        logger.debug("on ice candidate");
+        send(session, room, iceEvent.getCandidate());
+      }
+    });
+
+    holder.getLocalPeerConnection().setOnaddstream(streamEvent -> {
+      logger.debug("on add stream");
+      RtcAdapter.attachMediaStream(remoteVideo.getMediaElement(), streamEvent.getStream());
+    });
+
+    rooms.put(room, holder);
+    BeeKeeper.getScreen().show(videos);
+
     MediaStreamConstraints constraints = new MediaStreamConstraints(true, true);
 
     RtcAdapter.getUserMedia(constraints, stream -> {
-      rooms.put(room, holder);
-      BeeKeeper.getScreen().show(videos);
-
       logger.debug("received local stream");
       holder.setLocalStream(stream);
       RtcAdapter.attachMediaStream(localVideo.getMediaElement(), stream);
-
-      RTCConfiguration pcConfig = null;
-      holder.setLocalPeerConnection(RtcAdapter.createRTCPeerConnection(pcConfig));
-      logger.debug("created local peer connection");
-
-      holder.getLocalPeerConnection().setOnicecandidate(iceEvent -> {
-        if (iceEvent.getCandidate() != null) {
-          logger.debug("on ice candidate");
-          send(session, room, iceEvent.getCandidate());
-        }
-      });
-
-      holder.getLocalPeerConnection().setOnaddstream(streamEvent -> {
-        logger.debug("on add stream");
-        RtcAdapter.attachMediaStream(remoteVideo.getMediaElement(), streamEvent.getStream());
-      });
 
       holder.getLocalPeerConnection().addStream(stream);
       logger.debug("added local stream");
@@ -337,36 +342,40 @@ public final class RtcUtils {
   }
 
   public static void onMessage(SignalingMessage message) {
-    RtcHolder holder = rooms.get(message.getLabel());
+    String room = message.getLabel();
+    logger.debug("on message", message.getKey());
 
-    if (holder == null) {
-      answer(message.getFrom(), message.getLabel());
+    if (!rooms.containsKey(room)) {
+      answer(message.getFrom(), room);
+    }
 
-    } else {
-      switch (message.getKey()) {
-        case KEY_CANDIDATE:
-          holder.getLocalPeerConnection().addIceCandidate(parseIceCandidate(message.getValue()));
-          break;
+    RtcHolder holder = rooms.get(room);
 
-        case KEY_SDP:
-          RTCSessionDescription sdp = parseSessionDescription(message.getValue());
-          holder.getLocalPeerConnection().setRemoteDescription(sdp);
-          break;
-      }
+    switch (message.getKey()) {
+      case KEY_CANDIDATE:
+        RTCIceCandidate c = RtcAdapter.createRTCIceCandidate(parseIceCandidate(message.getValue()));
+        holder.getLocalPeerConnection().addIceCandidate(c);
+        break;
+
+      case KEY_SDP:
+        RTCSessionDescription sdp =
+            RtcAdapter.createRTCSessionDescription(parseSessionDescription(message.getValue()));
+        holder.getLocalPeerConnection().setRemoteDescription(sdp);
+        break;
     }
   }
 
   private static void answer(final String session, final String room) {
-    final Horizontal videos = new Horizontal();
-    videos.setBorderSpacing(10);
+    final Flow videos = new Flow(STYLE_PANEL);
 
-    final Video localVideo = new Video();
+    final Video localVideo = new Video(STYLE_LOCAL);
     localVideo.setAutoplay(true);
     localVideo.setControls(true);
+    localVideo.setMuted(true);
 
     videos.add(localVideo);
 
-    final Video remoteVideo = new Video();
+    final Video remoteVideo = new Video(STYLE_REMOTE);
     remoteVideo.setAutoplay(true);
     remoteVideo.setControls(true);
 
@@ -374,31 +383,31 @@ public final class RtcUtils {
 
     final RtcHolder holder = new RtcHolder();
 
+    RTCConfiguration pcConfig = null;
+    holder.setLocalPeerConnection(RtcAdapter.createRTCPeerConnection(pcConfig));
+    logger.debug("created local peer connection");
+
+    holder.getLocalPeerConnection().setOnicecandidate(iceEvent -> {
+      if (iceEvent.getCandidate() != null) {
+        logger.debug("on ice candidate");
+        send(session, room, iceEvent.getCandidate());
+      }
+    });
+
+    holder.getLocalPeerConnection().setOnaddstream(streamEvent -> {
+      logger.debug("on add stream");
+      RtcAdapter.attachMediaStream(remoteVideo.getMediaElement(), streamEvent.getStream());
+    });
+
+    rooms.put(room, holder);
+    BeeKeeper.getScreen().show(videos);
+
     MediaStreamConstraints constraints = new MediaStreamConstraints(true, true);
 
     RtcAdapter.getUserMedia(constraints, stream -> {
-      rooms.put(room, holder);
-      BeeKeeper.getScreen().show(videos);
-
       logger.debug("received local stream");
       holder.setLocalStream(stream);
       RtcAdapter.attachMediaStream(localVideo.getMediaElement(), stream);
-
-      RTCConfiguration pcConfig = null;
-      holder.setLocalPeerConnection(RtcAdapter.createRTCPeerConnection(pcConfig));
-      logger.debug("created local peer connection");
-
-      holder.getLocalPeerConnection().setOnicecandidate(iceEvent -> {
-        if (iceEvent.getCandidate() != null) {
-          logger.debug("on ice candidate");
-          send(session, room, iceEvent.getCandidate());
-        }
-      });
-
-      holder.getLocalPeerConnection().setOnaddstream(streamEvent -> {
-        logger.debug("on add stream");
-        RtcAdapter.attachMediaStream(remoteVideo.getMediaElement(), streamEvent.getStream());
-      });
 
       holder.getLocalPeerConnection().addStream(stream);
       logger.debug("added local stream");
@@ -428,7 +437,7 @@ public final class RtcUtils {
   }
 
   private static void handleError(DOMError error) {
-    logger.severe((error == null) ? "error" : error.getName());
+    logger.severe((error == null) ? "error" : stringify(error));
   }
 
   private static void offer(final RTCPeerConnection localPc, final RTCPeerConnection remotePc) {
