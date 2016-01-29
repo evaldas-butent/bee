@@ -314,7 +314,15 @@ class TasksGrid extends AbstractGridInterceptor {
 
   @Override
   public boolean initDescription(GridDescription gridDescription) {
-    gridDescription.setFilter(type.getFilter(new LongValue(userId)));
+
+    Filter f1 = type.getFilter(new LongValue(userId));
+    Filter f2 = Filter.or(Filter.and(f1, Filter.isNull(COL_PRIVATE_TASK)), Filter.and(f1, Filter
+        .notNull(COL_PRIVATE_TASK), Filter.or(Filter.equals(COL_OWNER, userId), Filter
+        .equals(COL_EXECUTOR, userId), Filter.in("TaskID", VIEW_TASK_USERS, COL_TASK, Filter
+        .equals(AdministrationConstants.COL_USER, userId)))));
+
+    gridDescription.setFilter(Filter.or(f1, f2));
+
     return true;
   }
 

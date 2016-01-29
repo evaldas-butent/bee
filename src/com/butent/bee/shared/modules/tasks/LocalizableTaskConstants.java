@@ -210,6 +210,8 @@ public interface LocalizableTaskConstants {
 
   String crmTasksObservedTasks();
 
+  String crmTaskPrivate();
+
   String crmTasksRelated();
 
   String crmTaskStatus();

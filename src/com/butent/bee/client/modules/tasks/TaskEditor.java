@@ -45,6 +45,8 @@ import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.utils.FileUtils;
+import com.butent.bee.client.validation.CellValidateEvent;
+import com.butent.bee.client.validation.CellValidateEvent.Handler;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.FormView;
@@ -76,13 +78,17 @@ import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.FileInfo;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.documents.DocumentConstants;
 import com.butent.bee.shared.modules.projects.ProjectConstants;
 import com.butent.bee.shared.modules.projects.ProjectStatus;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
+import com.butent.bee.shared.modules.tasks.TaskConstants.TaskEvent;
+import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
 import com.butent.bee.shared.modules.tasks.TaskUtils;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
+import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
@@ -111,6 +117,7 @@ class TaskEditor extends AbstractFormInterceptor {
 
   private static final String STYLE_EXTENSION = CRM_STYLE_PREFIX + "taskExtension";
   private static final String NAME_OBSERVERS = "Observers";
+  private static final String NAME_PRIVATE_TASK = "PrivateTask";
 
   private static final List<String> relations = Lists.newArrayList(PROP_COMPANIES, PROP_PERSONS,
       PROP_DOCUMENTS, PROP_APPOINTMENTS, PROP_DISCUSSIONS, PROP_SERVICE_OBJECTS, PROP_TASKS);
@@ -653,6 +660,34 @@ class TaskEditor extends AbstractFormInterceptor {
   }
 
   @Override
+  public void onSetActiveRow(IsRow row) {
+
+    boolean privateTask =
+        BeeUtils.unbox(row.getBoolean(Data.getColumnIndex(TaskConstants.VIEW_TASKS,
+            COL_PRIVATE_TASK)));
+
+    if (privateTask) {
+      Filter filter =
+          Filter.and(Filter.notNull(COL_PRIVATE_TASK), Filter.or(Filter.equals(COL_OWNER,
+              userId), Filter.equals(COL_EXECUTOR, userId), Filter.in("TaskID",
+              VIEW_TASK_USERS, COL_TASK, Filter.equals(AdministrationConstants.COL_USER,
+                  userId))));
+      Queries.getRowSet(TaskConstants.VIEW_TASKS, null, filter, new RowSetCallback() {
+
+        @Override
+        public void onSuccess(BeeRowSet result) {
+          if (!result.getRowIds().contains(row.getId())) {
+            getFormView().getViewPresenter().handleAction(Action.CLOSE);
+            getFormView().notifySevere(Localized.getConstants().crmTaskPrivate());
+          }
+        }
+      });
+    } else {
+      super.onSetActiveRow(row);
+    }
+  }
+
+  @Override
   public void onSaveChanges(HasHandlers listener, SaveChangesEvent event) {
     final IsRow oldRow = event.getOldRow();
     IsRow newRow = event.getNewRow();
@@ -693,6 +728,8 @@ class TaskEditor extends AbstractFormInterceptor {
     final Long lastAccess = BeeUtils.toLongOrNull(row.getProperty(PROP_LAST_ACCESS));
     Long owner = row.getLong(form.getDataIndex(COL_OWNER));
     Long executor = row.getLong(form.getDataIndex(COL_EXECUTOR));
+
+    createCellValidationHandler(form, row);
 
     TaskStatus oldStatus = EnumUtils.getEnumByIndex(TaskStatus.class,
         row.getInteger(form.getDataIndex(COL_STATUS)));
@@ -941,6 +978,24 @@ class TaskEditor extends AbstractFormInterceptor {
     }
 
     return FileInfo.restoreCollection(row.getProperty(PROP_FILES));
+  }
+
+  private void createCellValidationHandler(FormView form, IsRow row) {
+
+    if (form == null || row == null) {
+      return;
+    }
+
+    form.addCellValidationHandler(NAME_PRIVATE_TASK, new Handler() {
+
+      @Override
+      public Boolean validateCell(CellValidateEvent event) {
+        if (isOwner()) {
+          return true;
+        }
+        return false;
+      }
+    });
   }
 
   private ParameterList createParams(TaskEvent event, BeeRow newRow, String comment) {
