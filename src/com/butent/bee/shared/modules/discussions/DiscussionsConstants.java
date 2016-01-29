@@ -27,7 +27,9 @@ public final class DiscussionsConstants {
         .discussActionReply(), FontAwesome.REPLY),
     MARK(Localized.getConstants().discussEventMarked(), Localized.getConstants()
         .discussActionMark(), FontAwesome.TAG),
-    MODIFY(Localized.getConstants().discussEventModified(), null, null);
+    MODIFY(Localized.getConstants().discussEventModified(), null, null),
+    REFRESH(Localized.getConstants().actionRefresh(), Localized.getConstants().actionRefresh(),
+        FontAwesome.REFRESH);
 
     private final String caption;
     private final String commandLabel;

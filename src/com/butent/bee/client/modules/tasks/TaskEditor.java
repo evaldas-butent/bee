@@ -80,6 +80,8 @@ import com.butent.bee.shared.modules.documents.DocumentConstants;
 import com.butent.bee.shared.modules.projects.ProjectConstants;
 import com.butent.bee.shared.modules.projects.ProjectStatus;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
+import com.butent.bee.shared.modules.tasks.TaskConstants.TaskEvent;
+import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
 import com.butent.bee.shared.modules.tasks.TaskUtils;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
@@ -1425,6 +1427,9 @@ class TaskEditor extends AbstractFormInterceptor {
       case OUT_OF_OBSERVERS:
         doOut();
         break;
+      case REFRESH:
+        onStartEdit(getFormView(), getActiveRow(), null);
+        break;
       case ACTIVATE:
       case VISIT:
       case EDIT:
@@ -1686,6 +1691,9 @@ class TaskEditor extends AbstractFormInterceptor {
 
     switch (event) {
       case COMMENT:
+        return true;
+
+      case REFRESH:
         return true;
 
       case RENEW:
