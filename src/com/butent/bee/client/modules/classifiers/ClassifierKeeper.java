@@ -274,6 +274,7 @@ public final class ClassifierKeeper {
     });
 
     GridFactory.registerGridInterceptor(VIEW_VEHICLES, new VehiclesGridHandler());
+    GridFactory.registerGridInterceptor(VIEW_COMPANIES, new CompaniesGrid());
 
     FormFactory.registerFormInterceptor("Item", new ItemForm());
     FormFactory.registerFormInterceptor(FORM_PERSON, new PersonForm());
