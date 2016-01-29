@@ -3788,6 +3788,45 @@ textarea,
   margin-right: 27px;
 }
 
+.bee-Companies-input-panel {
+  margin-right: 30px;
+}
+
+.bee-Companies-input-toggle {
+  font-size: large;
+  color: #414142;
+  cursor: pointer;
+}
+
+.bee-Companies-input-toggle:hover {
+  color: black;
+}
+
+.bee-Companies-input-panel {
+  display: flex;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  justify-content: flex-end;
+  -webkit-justify-content: flex-end;
+  -ms-flex-pack: end;
+  align-items: center;
+  -webkit-align-items: center;
+  -ms-flex-align: center;
+  text-align: right;
+}
+
+.bee-Companies-label-disabled,
+.bee-Companies-label-enabled {
+  margin-left: 10px;
+  margin-right: 10px;
+  cursor: pointer;
+}
+
+.bee-Companies-label-active {
+  font-weight: bolder;
+  cursor: auto;
+}
+
 .bee-ItemPricePicker-disabled select {
   visibility: hidden;
 }

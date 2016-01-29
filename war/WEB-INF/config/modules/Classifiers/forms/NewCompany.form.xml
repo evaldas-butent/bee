@@ -10,6 +10,7 @@
 
         name="NewCompany"
         viewName="Companies"
+        favorite="Name"
         caption="=client"
         width="700"
         height="700"

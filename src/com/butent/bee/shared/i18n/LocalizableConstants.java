@@ -266,6 +266,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String deselectAll();
 
+  String disabledShort();
+
   String doFilter();
 
   String domainNews();
@@ -274,9 +276,13 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String domainRooms();
 
+  String editing();
+
   String email();
 
   String employment();
+
+  String enabledShort();
 
   String enterColor();
 
