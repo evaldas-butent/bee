@@ -761,6 +761,6 @@ public class Endpoint {
 
     sessionUsers.add(sessionUser);
 
-    send(session, new OnlineMessage(sessionUsers, Rooms.getRoomDataWithoutMessagess(userId)));
+    send(session, new OnlineMessage(sessionUsers, Rooms.getRoomDataWithoutMessages(userId)));
   }
 }
