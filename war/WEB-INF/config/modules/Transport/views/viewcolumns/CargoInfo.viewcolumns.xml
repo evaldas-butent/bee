@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Columns xmlns="http://www.butent.com/view" xmlns:xi="http://www.w3.org/2001/XInclude">
+  <SimpleColumn name="Description" />
+
+  <SimpleJoin name="CargoHandling" joinType="LEFT">
+    <SimpleColumn name="EmptyKilometers" />
+    <SimpleColumn name="LoadedKilometers" />
+    <SimpleColumn name="Weight" alias="CargoWeight" />
+
+    <xi:include href="Handling.viewcolumns.xml" />
+  </SimpleJoin>
+
+  <SimpleColumn name="Weight" />
+  <SimpleColumn name="WeightUnit" />
+  <SimpleJoin joinType="LEFT" name="WeightUnit">
+    <SimpleColumn name="Name" alias="WeightUnitName" />
+  </SimpleJoin>
+
+  <SimpleColumn name="Volume" />
+  <SimpleColumn name="VolumeUnit" />
+  <SimpleJoin joinType="LEFT" name="VolumeUnit">
+    <SimpleColumn name="Name" alias="VolumeUnitName" />
+  </SimpleJoin>
+
+  <SimpleColumn name="Quantity" />
+  <SimpleColumn name="QuantityUnit" />
+  <SimpleJoin joinType="LEFT" name="QuantityUnit">
+    <SimpleColumn name="Name" alias="QuantityUnitName" />
+  </SimpleJoin>
+
+  <SimpleColumn name="LDM" />
+  <SimpleColumn name="Length" />
+  <SimpleColumn name="Width" />
+  <SimpleColumn name="Height" />
+  <SimpleColumn name="Palettes" />
+
+  <SimpleColumn name="Value" />
+  <SimpleColumn name="ValueCurrency" />
+  <SimpleJoin joinType="LEFT" name="ValueCurrency">
+    <SimpleColumn name="Name" alias="ValueCurrencyName" />
+  </SimpleJoin>
+
+  <SimpleColumn name="ShippingTerm" />
+  <SimpleJoin joinType="LEFT" name="ShippingTerm">
+    <SimpleColumn name="Name" alias="ShippingTermName" />
+  </SimpleJoin>
+
+  <SimpleColumn name="Partial" />
+  <SimpleColumn name="Outsized" />
+  <SimpleColumn name="Dangerous" />
+  <SimpleColumn name="ExchangeOfPalettes" />
+
+  <SimpleColumn name="Notes" />
+</Columns>

@@ -190,6 +190,40 @@ public abstract class CrudWorker {
     return response;
   }
 
+  public static String getValue(JsonObject data, String field) {
+    String value = null;
+    JsonValue object = data.get(field);
+
+    if (Objects.nonNull(object) && object != JsonValue.NULL) {
+      value = object instanceof JsonString ? ((JsonString) object).getString() : object.toString();
+    }
+    return value;
+  }
+
+  public static Object getValue(BeeRowSet rowSet, int row, int col) {
+    Object value = null;
+
+    switch (rowSet.getColumnType(col)) {
+      case BOOLEAN:
+        value = rowSet.getBoolean(row, col);
+        break;
+      case DATE:
+      case DATE_TIME:
+      case INTEGER:
+      case LONG:
+        value = rowSet.getLong(row, col);
+        break;
+      case DECIMAL:
+      case NUMBER:
+        value = rowSet.getDecimal(row, col);
+        break;
+      default:
+        value = rowSet.getString(row, col);
+        break;
+    }
+    return value;
+  }
+
   void commit(Runnable executor) throws BeeException {
     try {
       utx.begin();
@@ -255,40 +289,6 @@ public abstract class CrudWorker {
       }
     }
     return data.values();
-  }
-
-  static String getValue(JsonObject data, String field) {
-    String value = null;
-    JsonValue object = data.get(field);
-
-    if (Objects.nonNull(object) && object != JsonValue.NULL) {
-      value = object instanceof JsonString ? ((JsonString) object).getString() : object.toString();
-    }
-    return value;
-  }
-
-  static Object getValue(BeeRowSet rowSet, int row, int col) {
-    Object value = null;
-
-    switch (rowSet.getColumnType(col)) {
-      case BOOLEAN:
-        value = rowSet.getBoolean(row, col);
-        break;
-      case DATE:
-      case DATE_TIME:
-      case INTEGER:
-      case LONG:
-        value = rowSet.getLong(row, col);
-        break;
-      case DECIMAL:
-      case NUMBER:
-        value = rowSet.getDecimal(row, col);
-        break;
-      default:
-        value = rowSet.getString(row, col);
-        break;
-    }
-    return value;
   }
 
   abstract String getViewName();
