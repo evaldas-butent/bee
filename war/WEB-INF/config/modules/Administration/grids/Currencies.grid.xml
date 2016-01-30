@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
-  
+
   name="Currencies" viewName="Currencies" caption="=currencies"
   newRowForm="Currency" newRowCaption="=newCurrency" editForm="Currency"
   newRowPopup="true" editPopup="true"
@@ -16,5 +16,7 @@
 
     <DataColumn name="UpdateTag" />
     <IdColumn name="Id" />
+
+    <DataColumn name="SelfService" module="Transport.SelfService" editInPlace="true" />
   </g:columns>
 </g:Grid>

@@ -135,7 +135,7 @@ public final class Rooms {
     }
   }
 
-  public static List<ChatRoom> getRoomDataWithoutMessagess(Long userId) {
+  public static List<ChatRoom> getRoomDataWithoutMessages(Long userId) {
     List<ChatRoom> result = new ArrayList<>();
 
     for (ChatRoom room : chatRooms) {

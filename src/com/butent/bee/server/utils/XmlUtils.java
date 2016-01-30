@@ -916,8 +916,10 @@ public final class XmlUtils {
     builderFactory.setXIncludeAware(true);
 
     try {
-      Schema schema = schemaFactory.newSchema(new StreamSource(resourceSchema));
-      builderFactory.setSchema(schema);
+      if (!BeeUtils.isEmpty(resourceSchema)) {
+        Schema schema = schemaFactory.newSchema(new StreamSource(resourceSchema));
+        builderFactory.setSchema(schema);
+      }
       DocumentBuilder builder = builderFactory.newDocumentBuilder();
       builder.setErrorHandler(new SAXErrorHandler());
 

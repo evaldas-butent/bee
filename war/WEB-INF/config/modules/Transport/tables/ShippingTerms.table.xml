@@ -6,6 +6,6 @@
   <Fields>
     <String name="Name" precision="3" notNull="true" unique="true" label="=trShippingTermName" />
     <Text name="Description" label="=description" />
-    <Integer name="SelfService" label="=trShippingTermSelfService" />
+    <Integer name="SelfService" label="=trSelfService" />
   </Fields>
 </Table>

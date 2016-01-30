@@ -1053,6 +1053,29 @@ public final class BeeUtils {
     return BeeConst.UNDEF;
   }
 
+  @SafeVarargs
+  public static <T> boolean in(T x, T first, T second, T... rest) {
+    if (x == null) {
+      return false;
+    }
+    if (x.equals(first)) {
+      return true;
+    }
+    if (x.equals(second)) {
+      return true;
+    }
+
+    if (rest == null) {
+      return false;
+    }
+    for (T y : rest) {
+      if (x.equals(y)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   public static boolean inList(int x, int first, int second, int... rest) {
     if (x == first || x == second) {
       return true;

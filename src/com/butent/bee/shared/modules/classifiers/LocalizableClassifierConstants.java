@@ -46,6 +46,8 @@ public interface LocalizableClassifierConstants {
 
   String departments();
 
+  String editMode();
+
   String employees();
 
   String goods();

@@ -57,6 +57,7 @@
 .bee-crm-taskEvent-col-1 {
   margin-right: auto;
   min-width: 125px;
+  word-wrap: break-word;
 }
 
 .bee-crm-taskEvent-col-1 > .bee-fa-label {

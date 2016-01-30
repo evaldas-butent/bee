@@ -5,40 +5,43 @@ import com.butent.bee.client.js.JsConsumer;
 import com.butent.bee.client.media.MediaStream;
 import com.butent.bee.client.media.MediaStreamEvent;
 
-import jsinterop.annotations.JsMethod;
 import jsinterop.annotations.JsPackage;
 import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
 
 @JsType(isNative = true, namespace = JsPackage.GLOBAL)
-public class RTCPeerConnection {
+public interface RTCPeerConnection {
 
-  @JsMethod
-  public native void addIceCandidate(RTCIceCandidate candidate);
+  void addIceCandidate(RTCIceCandidate candidate);
 
-  @JsMethod
-  public native void addStream(MediaStream stream);
+  void addStream(MediaStream stream);
 
-  @JsMethod
-  public native void close();
+  void close();
 
-  @JsMethod
-  public native void createAnswer(JsConsumer<RTCSessionDescription> successCallback,
+  void createAnswer(JsConsumer<RTCSessionDescription> successCallback,
       JsConsumer<DOMError> failureCallback);
 
-  @JsMethod
-  public native void createOffer(JsConsumer<RTCSessionDescription> successCallback,
+  RTCDataChannel createDataChannel(String label, RTCDataChannelInit dataChannelDict);
+
+  void createOffer(JsConsumer<RTCSessionDescription> successCallback,
       JsConsumer<DOMError> failureCallback);
 
-  @JsMethod
-  public native void setLocalDescription(RTCSessionDescription description);
+  void setLocalDescription(RTCSessionDescription description);
 
   @JsProperty
-  public native void setOnicecandidate(JsConsumer<RTCPeerConnectionIceEvent> onicecandidate);
+  void setOnaddstream(JsConsumer<MediaStreamEvent> onaddstream);
 
   @JsProperty
-  public native void setOnaddstream(JsConsumer<MediaStreamEvent> onaddstream);
+  void setOndatachannel(JsConsumer<DataChannelEvent> ondatachannel);
 
-  @JsMethod
-  public native void setRemoteDescription(RTCSessionDescription description);
+  @JsProperty
+  void setOnicecandidate(JsConsumer<RTCPeerConnectionIceEvent> onicecandidate);
+
+  @JsProperty
+  void setOnnegotiationneeded(JsConsumer<NegotiationNeededEvent> negotiationneeded);
+
+  @JsProperty
+  void setOntrack(JsConsumer<RTCTrackEvent> ontrack);
+
+  void setRemoteDescription(RTCSessionDescription description);
 }

@@ -1125,16 +1125,16 @@ public final class CronExpression implements HasInfo {
 
           String value = sb.toString();
 
-          if (value.equals(STRING_LAST) || value.equals(String.valueOf(CHAR_LAST))) {
+          if (BeeUtils.in(value, STRING_LAST, String.valueOf(CHAR_LAST))) {
             token = new Token(Token.Kind.LAST);
 
           } else if (value.equals(String.valueOf(CHAR_WORKDAY))) {
             token = new Token(Token.Kind.WORK);
 
-          } else if (value.equals(STRING_LAST + CHAR_WORKDAY)
-              || value.equals(String.valueOf(CHAR_LAST) + CHAR_WORKDAY)
-              || value.equals(String.valueOf(CHAR_WORKDAY) + STRING_LAST)
-              || value.equals(String.valueOf(CHAR_WORKDAY) + CHAR_LAST)) {
+          } else if (BeeUtils.in(value, STRING_LAST + CHAR_WORKDAY,
+              String.valueOf(CHAR_LAST) + CHAR_WORKDAY,
+              String.valueOf(CHAR_WORKDAY) + STRING_LAST,
+              String.valueOf(CHAR_WORKDAY) + CHAR_LAST)) {
             token = new Token(Token.Kind.LAST_WORK);
 
           } else {

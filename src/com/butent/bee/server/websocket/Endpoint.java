@@ -152,6 +152,7 @@ public class Endpoint {
       case ADMIN:
       case LOCATION:
       case NOTIFICATION:
+      case SIGNALING:
         Session toSession = findOpenSession(((HasRecipient) message).getTo(), true);
         if (toSession != null) {
           send(toSession, message);
@@ -760,6 +761,6 @@ public class Endpoint {
 
     sessionUsers.add(sessionUser);
 
-    send(session, new OnlineMessage(sessionUsers, Rooms.getRoomDataWithoutMessagess(userId)));
+    send(session, new OnlineMessage(sessionUsers, Rooms.getRoomDataWithoutMessages(userId)));
   }
 }

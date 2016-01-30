@@ -1,0 +1,539 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>=trRequestNew</title>
+    <script type="text/javascript">
+      //<![CDATA[
+      function dimensions() {
+        var a = ["Outsized", "Partial"];
+        var checked = false;
+
+        for (var index = 0; index < a.length; ++index) {
+          var el = document.getElementById(a[index]);
+          checked = checked || el && el.checked;
+        }
+        display(checked, ['Width', 'Height', 'Length', 'LDM']);
+      }
+
+      function display(display, ids) {
+        for (var index = 0; index < ids.length; ++index) {
+          var el = document.getElementById(ids[index]);
+
+          if (el && el.parentNode && el.parentNode.parentNode) {
+            el.parentNode.parentNode.style.display = display ? '' : 'none';
+            el.disabled = !display;
+          }
+        }
+      }
+
+      function register(checked) {
+        display(checked, ['Status', 'Position', 'Fax']);
+
+        var a = ["Customer", "Code", "Country", "City", "Address"];
+        var required = "required";
+
+        for (var index = 0; index < a.length; ++index) {
+          var el = document.getElementById(a[index]);
+
+          if (el) {
+            if (checked) {
+              el.setAttribute(required, required);
+            } else {
+              el.removeAttribute(required);
+            }
+          }
+        }
+      }
+
+      function drop(id) {
+        var el = document.getElementById('CargoHandling-' + id);
+
+        if (el) {
+          el.remove();
+        }
+      }
+
+      function replicate() {
+        var el = document.getElementById("Counter");
+
+        if (el) {
+          var template = document.getElementById("CargoHandling");
+
+          if (template) {
+            var cnt = el.value;
+            el.value = parseInt(cnt) + 1;
+
+            var item = template.cloneNode(true);
+            item.id = item.id + '-' + cnt;
+
+            var drop = item.querySelector("span[onclick]");
+
+            if (drop) {
+              drop.id = cnt;
+              drop.style.display = '';
+            }
+            var inputs = item.querySelectorAll("input[name]");
+
+            for (var index = 0; index < inputs.length; ++index) {
+              inputs[index].name = inputs[index].name + '-' + cnt;
+              inputs[index].value = '';
+            }
+            template.parentNode.appendChild(item);
+          }
+        }
+      }
+      //]]>
+    </script>
+    <style>
+      td label {
+      float: right;
+      }
+      input[required] {
+      border: 1px solid red;
+      }
+      input[type="number"] {
+      width: 6em;
+      }
+      legend {
+      font-size: large;
+      font-weight: bold;
+      }
+      .flexBox-horizontal {
+      display: flex;
+      flex-direction: row;
+      flex-wrap: wrap;
+      align-items: flex-start;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="bee-tr-query-panel">
+      <label style="display:block; text-align:center; font-size:x-large;">=trRequestNew</label>
+      <form accept-charset="UTF-8" method="post">
+        <div class="flexBox-horizontal">
+          <fieldset>
+            <legend>=trRequestCustomerInfo</legend>
+            <table>
+              <tbody>
+                <tr style="display:none;">
+                  <td>
+                    <label for="Status">=companyStatus</label>
+                  </td>
+                  <td>
+                    <input id="Status" name="Type" type="text" maxlength="100"
+                           placeholder="UAB, LTD, LLC, ..." disabled="disabled" />
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <label for="Customer">=trRequestCustomerName</label>
+                  </td>
+                  <td>
+                    <input id="Customer" name="Name" type="text" maxlength="100" />
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <label for="Code">=trRequestCustomerCode</label>
+                  </td>
+                  <td>
+                    <input id="Code" name="Code" type="text" maxlength="30" />
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <label for="VatCode">=trRequestCustomerVatCode</label>
+                  </td>
+                  <td>
+                    <input id="VatCode" name="VatCode" type="text" maxlength="30" />
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <label for="Person">=trRequestCustomerContact</label>
+                  </td>
+                  <td>
+                    <input id="Person" name="ContactPerson" type="text" required="required"
+                           maxlength="60" />
+                  </td>
+                </tr>
+                <tr style="display:none;">
+                  <td>
+                    <label for="Position">=trRequestCustomerContactPosition</label>
+                  </td>
+                  <td>
+                    <input id="Position" name="ContactPersonPosition" type="text"
+                           maxlength="100" required="required" disabled="disabled" />
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <label for="Phone">=phone</label>
+                  </td>
+                  <td>
+                    <input id="Phone" name="Phone" type="tel" required="required" maxlength="50" />
+                  </td>
+                </tr>
+                <tr style="display:none;">
+                  <td>
+                    <label for="Fax">=fax</label>
+                  </td>
+                  <td>
+                    <input id="Fax" name="Fax" type="text" maxlength="50" disabled="disabled" />
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <label for="Email">=email</label>
+                  </td>
+                  <td>
+                    <input id="Email" name="Email" type="email" required="required"
+                           maxlength="255" />
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <label for="Country">=country</label>
+                  </td>
+                  <td>
+                    <input id="Country" name="Country" type="text" maxlength="60"
+                           list="Countries-Name" />
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <label for="City">=city</label>
+                  </td>
+                  <td>
+                    <input id="City" name="City" type="text" maxlength="30" list="Cities-Name" />
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <label for="Address">=address</label>
+                  </td>
+                  <td>
+                    <input id="Address" name="Address" type="text" maxlength="100" />
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <label for="PostIndex">=postIndex</label>
+                  </td>
+                  <td>
+                    <input id="PostIndex" name="PostIndex" type="text" maxlength="30" />
+                  </td>
+                </tr>
+                <tr>
+                  <td colspan="2">
+                    <label for="AdditionalInfo">=additionalInfo</label>
+                  </td>
+                </tr>
+                <tr>
+                  <td colspan="2">
+                    <textarea id="AdditionalInfo" name="AdditionalInfo" rows="2"
+                              style="width:100%"> </textarea>
+                  </td>
+                </tr>
+                <tr>
+                  <td colspan="2" style="text-align:right;">
+                    <input type="checkbox" id="Registration" name="CustomerRegistration"
+                           onchange="register(this.checked)" />
+                    <label for="Registration">=loginCommandRegister</label>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </fieldset>
+
+          <fieldset>
+            <legend>=cargoHandlingPlaces</legend>
+            <div style="max-height:500px; overflow:auto;">
+              <table id="CargoHandling">
+                <tbody>
+                  <tr>
+                    <td>
+                      <span style="cursor:pointer; display:none;" onclick="drop(this.id)">-</span>
+                    </td>
+                    <td style="text-align:center; font-weight:bold;">
+                      <label style="float:none;">=loading</label>
+                    </td>
+                    <td style="text-align:center; font-weight:bold;">
+                      <label style="float:none;">=unloading</label>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <label>=date</label>
+                    </td>
+                    <td>
+                      <input name="LoadingDate" type="date" required="required" />
+                    </td>
+                    <td>
+                      <input name="UnloadingDate" type="date" required="required" />
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <label>=country</label>
+                    </td>
+                    <td>
+                      <input name="LoadingCountry" type="text" required="required" maxlength="60"
+                             list="Countries-Name" />
+                    </td>
+                    <td>
+                      <input name="UnloadingCountry" type="text" required="required" maxlength="60"
+                             list="Countries-Name" />
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <label>=city</label>
+                    </td>
+                    <td>
+                      <input name="LoadingCity" type="text" required="required" maxlength="30"
+                             list="Cities-Name" />
+                    </td>
+                    <td>
+                      <input name="UnloadingCity" type="text" required="required" maxlength="30"
+                             list="Cities-Name" />
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <label>=address</label>
+                    </td>
+                    <td>
+                      <input name="LoadingAddress" type="text" required="required"
+                             maxlength="100" />
+                    </td>
+                    <td>
+                      <input name="UnloadingAddress" type="text" required="required"
+                             maxlength="100" />
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <label>=postIndex</label>
+                    </td>
+                    <td>
+                      <input name="LoadingPostIndex" type="text" required="required"
+                             maxlength="20" />
+                    </td>
+                    <td>
+                      <input name="UnloadingPostIndex" type="text" required="required"
+                             maxlength="20" />
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <label>=company</label>
+                    </td>
+                    <td>
+                      <input name="LoadingCompany" type="text" required="required"
+                             maxlength="100" />
+                    </td>
+                    <td>
+                      <input name="UnloadingCompany" type="text" required="required"
+                             maxlength="100" />
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <label>=companyPerson</label>
+                    </td>
+                    <td>
+                      <input name="LoadingContact" type="text" required="required" maxlength="50" />
+                    </td>
+                    <td>
+                      <input name="UnloadingContact" type="text" required="required"
+                             maxlength="50" />
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <label>=ref</label>
+                    </td>
+                    <td>
+                      <input name="LoadingNumber" type="text" maxlength="50" />
+                    </td>
+                    <td>
+                      <input name="UnloadingNumber" type="text" maxlength="50" />
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <span style="cursor:pointer;" onclick="replicate()">+</span>
+            <input id="Counter" name="Counter" type="hidden" value="1" disabled="disabled" />
+          </fieldset>
+
+          <fieldset>
+            <legend>=trRequestCargoInfo</legend>
+            <table>
+              <tbody>
+                <tr>
+                  <td>
+                    <label for="Description">=trRequestCargoDescription</label>
+                  </td>
+                  <td>
+                    <input type="text" id="Description" name="Description" />
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <label for="Quantity">=quantity</label>
+                  </td>
+                  <td>
+                    <input id="Quantity" name="Quantity" type="number" maxlength="8" step="0.01" />
+                    <input name="QuantityUnit" type="text" maxlength="10" placeholder="=unitShort"
+                           list="Units-Name" style="display:inline; width: 6em;" />
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <label for="Weight">=trRequestCargoWeight</label>
+                  </td>
+                  <td>
+                    <input id="Weight" name="Weight" type="number" maxlength="10" step="0.001" />
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <label for="Volume">=trRequestCargoVolume</label>
+                  </td>
+                  <td>
+                    <input id="Volume" name="Volume" type="number" maxlength="8" step="0.001" />
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <label for="Dangerous">=dangerous</label>
+                  </td>
+                  <td>
+                    <input type="checkbox" id="Dangerous" name="Dangerous" />
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <label for="Outsized">=outsized</label>
+                  </td>
+                  <td>
+                    <input type="checkbox" id="Outsized" name="Outsized" onchange="dimensions()" />
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <label for="Partial">=partial</label>
+                  </td>
+                  <td>
+                    <input type="checkbox" id="Partial" name="Partial" onchange="dimensions()" />
+                  </td>
+                </tr>
+                <tr style="display:none;">
+                  <td>
+                    <label for="Height">=height</label>
+                  </td>
+                  <td>
+                    <input id="Height" name="Height" type="number" maxlength="8" step="0.01"
+                           disabled="disabled" />
+                  </td>
+                </tr>
+                <tr style="display:none;">
+                  <td>
+                    <label for="Width">=width</label>
+                  </td>
+                  <td>
+                    <input id="Width" name="Width" type="number" maxlength="8" step="0.01"
+                           disabled="disabled" />
+                  </td>
+                </tr>
+                <tr style="display:none;">
+                  <td>
+                    <label for="Length">=length</label>
+                  </td>
+                  <td>
+                    <input id="Length" name="Length" type="number" maxlength="8" step="0.01"
+                           disabled="disabled" />
+                  </td>
+                </tr>
+                <tr style="display:none;">
+                  <td>
+                    <label for="LDM">=trRequestCargoLdm</label>
+                  </td>
+                  <td>
+                    <input id="LDM" name="LDM" type="number" maxlength="5" step="0.01"
+                           disabled="disabled" />
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </fieldset>
+
+          <fieldset>
+            <legend>=trRequestShipmentInfo</legend>
+            <table>
+              <tbody>
+                <tr>
+                  <td>
+                    <label for="ExpeditionTypes-Name">=trRequestExpeditionType</label>
+                  </td>
+                  <td>
+                    <select id="ExpeditionTypes-Name" name="Expedition" required="required" />
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <label for="ShippingTerms-Name">=trRequestShippingTerms</label>
+                  </td>
+                  <td>
+                    <select id="ShippingTerms-Name" name="ShippingTerm" required="required" />
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <label for="CustomsBrokerage">=trRequestCustomsBrokerage</label>
+                  </td>
+                  <td>
+                    <input type="checkbox" id="CustomsBrokerage" name="CustomsBrokerage" />
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <label for="FreightInsurance">=trRequestFreightInsurance</label>
+                  </td>
+                  <td>
+                    <input type="checkbox" id="FreightInsurance" name="FreightInsurance"
+                           onchange="display(this.checked, ['Value', 'Currencies-Name', 'Notes'])" />
+                  </td>
+                </tr>
+                <tr style="display:none;">
+                  <td>
+                    <label for="Value">=cargoValue</label>
+                  </td>
+                  <td>
+                    <input type="number" id="Value" name="Value" maxlength="12" step="0.01"
+                           required="required" disabled="disabled" />
+                    <select id="Currencies-Name" name="ValueCurrency" style="display:inline;"
+                            required="required" disabled="disabled" />
+                  </td>
+                </tr>
+                <tr style="display:none;">
+                  <td colspan="2">
+                    <label for="Notes">=notes</label>
+                    <textarea id="Notes" name="Notes" rows="3" style="width:100%"
+                              disabled="disabled"> </textarea>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </fieldset>
+        </div>
+        <button style="display:block; margin:auto;" type="submit">=trRequestActionSubmit</button>
+      </form>
+      <datalist id="Countries-Name" />
+      <datalist id="Cities-Name" />
+      <datalist id="Units-Name" />
+    </div>
+  </body>
+</html>

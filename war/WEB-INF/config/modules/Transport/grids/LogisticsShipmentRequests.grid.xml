@@ -2,7 +2,7 @@
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
 
   name="LogisticsShipmentRequests" viewName="ShipmentRequests"
-  caption="=trRequestsUnregistered" filter="Interface = 6 OR !(Interface)"
+  caption="=trRequestsUnregistered" filter="Logistics"
   >
   <g:columns>
     <DataColumn name="Date" visible="true" />
@@ -21,7 +21,7 @@
     <DataColumn name="CustomerContactPosition" visible="false" />
 
     <DataColumn name="CustomerExchangeCode" visible="false" />
-    
+
     <DataColumn name="LoadingDate" />
     <DataColumn name="LoadingCompany" visible="false" />
     <DataColumn name="LoadingContact" visible="false" />
@@ -45,7 +45,7 @@
     <DataColumn name="UnloadingPhone" visible="false" />
     <DataColumn name="UnloadingFax" visible="false" />
     <DataColumn name="UnloadingNumber" visible="false" />
-    
+
     <RelColumn name="Expedition" visible="false" />
     <RelColumn name="ShippingTerm" visible="false" />
 
@@ -69,7 +69,7 @@
 
     <DataColumn name="Value" />
     <RelColumn name="ValueCurrency" />
-    
+
     <RelColumn name="Manager" />
 
     <DataColumn name="Notes" visible="false" />

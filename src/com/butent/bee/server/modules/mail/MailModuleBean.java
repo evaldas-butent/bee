@@ -1652,7 +1652,9 @@ public class MailModuleBean implements BeeModule, HasTimerService {
         .addFromInner(TBL_FOLDERS, sys.joinTables(TBL_FOLDERS, TBL_PLACES, COL_FOLDER))
         .setWhere(sys.idEquals(TBL_PLACES, placeId)));
 
-    Assert.notNull(row);
+    if (Objects.isNull(row)) {
+      return ResponseObject.error(usr.getLocalizableConstants().nothingFound());
+    }
     int oldValue = BeeUtils.unbox(row.getInt(COL_FLAGS));
     int value;
     ResponseObject response = ResponseObject.emptyResponse();

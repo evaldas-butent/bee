@@ -882,8 +882,13 @@ public class ImportBean {
               } else {
                 date = TimeUtils.parseDateTime(value);
               }
-              values.put(COL_COSTS_DATE,
-                  date != null ? BeeUtils.toString(date.getDate().getTime()) : null);
+              if (Objects.nonNull(date)) {
+                JustDate dt = date.getDate();
+                dt.increment();
+                values.put(COL_COSTS_DATE, BeeUtils.toString(dt.getTime() - 1));
+              } else {
+                values.put(COL_COSTS_DATE, null);
+              }
             }
             value = values.get(COL_COSTS_EXTERNAL_ID);
 

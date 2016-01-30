@@ -5,8 +5,8 @@
 
         name="Mail" caption="=mails" readOnly="true" enabledActions="add delete"
     >
-  <SplitPanel splitterSize="1" style="margin:5px;">
-    <west size="300">
+  <SplitPanel splitterSize="1" style="margin:5px;" name="Split" >
+    <west size="300" >
       <FlowPanel class="flexBox-vertical">
         <FlowPanel style="background:white; border:1px solid silver; border-radius:4px;">
           <InputText name="Search" placeholder="=search"

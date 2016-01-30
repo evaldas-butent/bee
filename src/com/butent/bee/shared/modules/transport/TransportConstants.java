@@ -276,6 +276,7 @@ public final class TransportConstants {
   public static final String TBL_VEHICLE_GROUPS = "VehicleGroups";
   public static final String TBL_VEHICLE_SERVICE_TYPES = "ServiceTypes";
   public static final String TBL_EXPEDITION_TYPES = "ExpeditionTypes";
+  public static final String TBL_SHIPPING_TERMS = "ShippingTerms";
   public static final String TBL_FUEL_CONSUMPTIONS = "FuelConsumptions";
 
   public static final String TBL_TRIPS = "Trips";
@@ -746,11 +747,10 @@ public final class TransportConstants {
   public static final String COL_QUERY_HOST = "Host";
   public static final String COL_QUERY_AGENT = "Agent";
 
+  public static final String COL_EXPEDITION_LOGISTICS = "Logistics";
   public static final String COL_EXPEDITION_TYPE_NAME = "Name";
-  public static final String COL_EXPEDITION_TYPE_SELF_SERVICE = "SelfService";
-
   public static final String COL_SHIPPING_TERM_NAME = "Name";
-  public static final String COL_SHIPPING_TERM_SELF_SERVICE = "SelfService";
+  public static final String COL_SELF_SERVICE = "SelfService";
 
   public static final String COL_CRF_REQUEST = "CargoRequest";
 

@@ -151,17 +151,10 @@ public class UiHolderBean {
   }
 
   public ResponseObject getForm(String formName) {
-    if (!isForm(formName)) {
-      return ResponseObject.error("Not a form:", formName);
-    }
-    UiObjectInfo formInfo = formCache.get(key(formName));
-
-    String resource = formInfo.getResource();
-    Document doc = XmlUtils.getXmlResource(resource,
-        Config.getSchemaPath(SysObject.FORM.getSchemaName()));
+    Document doc = getFormDocument(formName, true);
 
     if (doc == null) {
-      return ResponseObject.error("Cannot parse xml:", resource);
+      return ResponseObject.error("Not a form:", formName);
     }
     Element formElement = doc.getDocumentElement();
 
@@ -189,6 +182,14 @@ public class UiHolderBean {
         return result;
       }
     };
+  }
+
+  public Document getFormDocument(String formName, boolean respectSchema) {
+    if (!isForm(formName)) {
+      return null;
+    }
+    return XmlUtils.getXmlResource(formCache.get(key(formName)).getResource(),
+        respectSchema ? Config.getSchemaPath(SysObject.FORM.getSchemaName()) : null);
   }
 
   public ResponseObject getGrid(String gridName) {
@@ -413,7 +414,7 @@ public class UiHolderBean {
         List<Menu> items = ((MenuEntry) entry).getItems();
 
         if (!BeeUtils.isEmpty(items)) {
-          for (Iterator<Menu> iterator = items.iterator(); iterator.hasNext();) {
+          for (Iterator<Menu> iterator = items.iterator(); iterator.hasNext(); ) {
             if (getMenu(ref, iterator.next(), checkRights) == null) {
               iterator.remove();
             }

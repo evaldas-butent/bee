@@ -24,6 +24,7 @@ import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.maps.MapUtils;
 import com.butent.bee.client.modules.mail.MailKeeper;
 import com.butent.bee.client.render.PhotoRenderer;
+import com.butent.bee.client.webrtc.RtcUtils;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.InputText;
@@ -67,6 +68,7 @@ import com.butent.bee.shared.websocket.messages.RoomsMessage;
 import com.butent.bee.shared.websocket.messages.SessionMessage;
 import com.butent.bee.shared.websocket.messages.ShowMessage;
 import com.butent.bee.shared.websocket.messages.ShowMessage.Subject;
+import com.butent.bee.shared.websocket.messages.SignalingMessage;
 import com.butent.bee.shared.websocket.messages.UsersMessage;
 
 import java.util.Collections;
@@ -512,6 +514,10 @@ class MessageDispatcher {
         } else {
           WsUtils.onInvalidState(message);
         }
+        break;
+
+      case SIGNALING:
+        RtcUtils.onMessage((SignalingMessage) message);
         break;
 
       case USERS:

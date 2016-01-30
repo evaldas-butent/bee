@@ -34,12 +34,6 @@
       <InputDateTime source="UnloadingDate" style="width: 11em;" />
     </row>
     <row>
-      <Label text="=note" style="&lbl1;" />
-      <InputText source="LoadingNote" />
-      <Label text="=note" style="&lbl1;" />
-      <InputText source="UnloadingNote" />
-    </row>
-    <row>
       <Label text="=company" style="&lbl1;" />
       <InputText source="LoadingCompany" autocompleteKey="cargo-place-company" />
       <Label text="=company" style="&lbl1;" />
@@ -116,6 +110,12 @@
       <InputText source="LoadingNumber" />
       <Label text="=ref" style="&lbl1;" />
       <InputText source="UnloadingNumber" />
+    </row>
+    <row>
+      <Label text="=note" style="&lbl1;" />
+      <InputArea source="LoadingNote" visibleLines="3" />
+      <Label text="=note" style="&lbl1;" />
+      <InputArea source="UnloadingNote" visibleLines="3" />
     </row>
   </Table>
 </FlowPanel>

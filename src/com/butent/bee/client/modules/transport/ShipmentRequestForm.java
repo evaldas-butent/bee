@@ -13,7 +13,6 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.IdCallback;
 import com.butent.bee.client.data.Queries;
-import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.dialog.ConfirmationCallback;
@@ -27,17 +26,12 @@ import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
-import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.DataChangeEvent;
-import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
-import com.butent.bee.shared.modules.transport.TransportConstants;
-import com.butent.bee.shared.modules.transport.TransportConstants.AssessmentStatus;
-import com.butent.bee.shared.modules.transport.TransportConstants.CargoRequestStatus;
-import com.butent.bee.shared.ui.UserInterface;
+import com.butent.bee.shared.modules.transport.TransportConstants.*;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 
@@ -50,25 +44,18 @@ class ShipmentRequestForm extends AbstractFormInterceptor {
   private Button activateCommand;
   private Button blockCommand;
 
-  ShipmentRequestForm() {
-  }
-
   @Override
   public void afterRefresh(FormView form, IsRow row) {
     CargoRequestStatus status;
-    UserInterface fromInterface;
+
     if (DataUtils.hasId(row)) {
       status = EnumUtils.getEnumByIndex(CargoRequestStatus.class,
           Data.getInteger(getViewName(), row, COL_QUERY_STATUS));
-      fromInterface = UserInterface.normalize(
-          EnumUtils.getEnumByIndex(UserInterface.class, Data.getInteger(getViewName(), row,
-              AdministrationConstants.COL_USER_INTERFACE)));
     } else {
       status = null;
-      fromInterface = UserInterface.normalize(null);
     }
 
-    refreshCommands(status, fromInterface);
+    refreshCommands(status);
   }
 
   @Override
@@ -102,8 +89,7 @@ class ShipmentRequestForm extends AbstractFormInterceptor {
     });
   }
 
-  private void onCreateOrder(final String viewName,
-      final Long departmentId, final UserInterface fromUI) {
+  private void onCreateOrder(final String viewName) {
     Global.confirm(Localized.getConstants().trConfirmCreateNewOrder(), new ConfirmationCallback() {
       @Override
       public void onConfirm() {
@@ -133,11 +119,6 @@ class ShipmentRequestForm extends AbstractFormInterceptor {
             if (!BeeUtils.isEmpty(manager)) {
               colNames.add(COL_ORDER_MANAGER);
               values.add(manager);
-            }
-
-            if (DataUtils.isId(departmentId) && !BeeUtils.isEmpty(viewName)) {
-              colNames.add(AdministrationConstants.COL_DEPARTMENT);
-              values.add(BeeUtils.toString(departmentId));
             }
 
             switch (viewName) {
@@ -212,7 +193,7 @@ class ShipmentRequestForm extends AbstractFormInterceptor {
 
                 CargoRequestStatus status = CargoRequestStatus.ACTIVE;
                 updateStatus(status);
-                refreshCommands(status, fromUI);
+                refreshCommands(status);
 
                 DataChangeEvent.fireRefresh(BeeKeeper.getBus(), viewName);
 
@@ -231,7 +212,7 @@ class ShipmentRequestForm extends AbstractFormInterceptor {
     }
   }
 
-  private void refreshCommands(CargoRequestStatus status, final UserInterface fromUI) {
+  private void refreshCommands(CargoRequestStatus status) {
     HeaderView header = getHeaderView();
     if (header == null) {
       return;
@@ -242,67 +223,24 @@ class ShipmentRequestForm extends AbstractFormInterceptor {
     }
 
     if (status == CargoRequestStatus.NEW) {
-      if (Data.isViewEditable(VIEW_ORDERS)
-          && (UserInterface.SELF_SERVICE.equals(fromUI) || fromUI == null)) {
+      if (Data.isViewEditable(VIEW_ORDERS)) {
         if (this.activateCommand == null) {
-          this.activateCommand =
-              new Button(Localized.getConstants().trCommandCreateNewOrder(), new ClickHandler() {
+          this.activateCommand = new Button(Localized.getConstants().trCommandCreateNewOrder(),
+              new ClickHandler() {
                 @Override
                 public void onClick(ClickEvent event) {
-                  onCreateOrder(VIEW_ORDERS, null, fromUI);
+                  onCreateOrder(VIEW_ORDERS);
                 }
               });
         }
         header.addCommandItem(this.activateCommand);
       }
 
-      if (Data.isViewEditable(VIEW_ASSESSMENTS)
-          && (UserInterface.SELF_SERVICE_LOG.equals(fromUI) || fromUI == null)) {
-        Button newAssessment =
-            new Button(Localized.getConstants().trNewAssessment(), new ClickHandler() {
-              @Override
-              public void onClick(ClickEvent event) {
-
-                if (DataUtils.isId(getLongValue(COL_QUERY_MANAGER))) {
-
-                  Queries.getRowSet(VIEW_ASSESSMENT_EXECUTORS, Lists
-                      .newArrayList(AdministrationConstants.COL_DEPARTMENT), Filter.equals(
-                      AdministrationConstants.COL_USER, getLongValue(COL_QUERY_MANAGER)),
-                      new RowSetCallback() {
-
-                        @Override
-                        public void onSuccess(BeeRowSet result) {
-                          if (result.isEmpty()) {
-                            notifyRequired(AdministrationConstants.COL_DEPARTMENT);
-                            return;
-                          }
-
-                          onCreateOrder(VIEW_ASSESSMENTS, result.getLong(result
-                              .getNumberOfRows() - 1, result.getNumberOfColumns() - 1), fromUI);
-
-                        }
-                      });
-
-                } else {
-                  BeeColumn col =
-                      Data.getColumn(VIEW_ASSESSMENTS, TransportConstants.COL_ORDER_MANAGER);
-                  if (col != null) {
-                    notifyRequired(Localized.getLabel(col));
-                  } else {
-                    notifyRequired(COL_QUERY_MANAGER);
-                  }
-                }
-              }
-            });
-
-        header.addCommandItem(newAssessment);
-      }
-
       if (!BeeUtils.isEmpty(getStringValue(COL_QUERY_HOST))
           && Data.isViewEditable(AdministrationConstants.VIEW_IP_FILTERS)) {
         if (this.blockCommand == null) {
-          this.blockCommand =
-              new Button(Localized.getConstants().ipBlockCommand(), new ClickHandler() {
+          this.blockCommand = new Button(Localized.getConstants().ipBlockCommand(),
+              new ClickHandler() {
                 @Override
                 public void onClick(ClickEvent event) {
                   onBlock();

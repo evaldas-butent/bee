@@ -11,6 +11,7 @@
     <SimpleColumn name="MinorName" />
     <SimpleColumn name="MinorCaption" />
     <SimpleColumn name="UpdateTag" />
+    <SimpleColumn name="SelfService" />
   </Columns>
   <Order>
     <OrderBy column="Name" />
