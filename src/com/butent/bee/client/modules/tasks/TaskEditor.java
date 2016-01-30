@@ -38,9 +38,7 @@ import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.logical.MutationEvent;
-import com.butent.bee.client.event.logical.MutationEvent.Handler;
 import com.butent.bee.client.event.logical.SelectorEvent;
-import com.butent.bee.client.event.logical.SelectorEvent.Handler;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.layout.Direction;
@@ -94,8 +92,6 @@ import com.butent.bee.shared.modules.documents.DocumentConstants;
 import com.butent.bee.shared.modules.projects.ProjectConstants;
 import com.butent.bee.shared.modules.projects.ProjectStatus;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
-import com.butent.bee.shared.modules.tasks.TaskConstants.TaskEvent;
-import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
 import com.butent.bee.shared.modules.tasks.TaskUtils;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
@@ -651,7 +647,7 @@ class TaskEditor extends AbstractFormInterceptor {
       productLabel.setStyleName(StyleUtils.NAME_REQUIRED, false);
 
     } else if (BeeUtils.same(COL_TASK_TYPE, name) && (widget instanceof DataSelector)) {
-      ((DataSelector) widget).addSelectorHandler(new Handler() {
+      ((DataSelector) widget).addSelectorHandler(new SelectorEvent.Handler() {
 
         @Override
         public void onDataSelector(SelectorEvent event) {
@@ -664,7 +660,7 @@ class TaskEditor extends AbstractFormInterceptor {
       area = (InputArea) widget;
     } else if (BeeUtils.same(name, "Split") && widget instanceof Split) {
       Split split = (Split) widget;
-      split.addMutationHandler(new Handler() {
+      split.addMutationHandler(new MutationEvent.Handler() {
 
         @Override
         public void onMutation(MutationEvent event) {
