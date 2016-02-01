@@ -22,5 +22,9 @@
     <RelColumn name="Type" renderColumns="TypeName" />
     
     <RelColumn name="Project" renderColumns="ProjectName" />
+    
+    <!-- @B-NOVO INTRANET { -->
+    <RelColumn name="Product" renderColumns="ProductName"/>
+    <!-- } @B-NOVO INTRANET -->
   </g:columns>
 </g:Grid>
