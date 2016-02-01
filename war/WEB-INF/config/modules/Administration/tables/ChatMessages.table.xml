@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+  name="ChatMessages"
+  idName="ChatMessageID"
+  >
+  <Fields>
+    <Relation name="Chat" notNull="true" relation="Chats" cascade="DELETE" label="=chat" />
+    <Relation name="User" notNull="true" relation="Users" cascade="DELETE" label="=user" />
+
+    <Long name="Time" notNull="true" label="=time" />
+    <Text name="Text" label="=text" />
+  </Fields>
+</Table>

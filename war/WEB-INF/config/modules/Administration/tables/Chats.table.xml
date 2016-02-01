@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+  name="Chats"
+  idName="ChatID"
+  >
+  <Fields>
+    <String name="ChatName" precision="50" label="=chatName" />
+
+    <DateTime name="Created" defExpr="CURRENT_TIME" label="=creationDate" />
+    <Relation name="Creator" relation="Users" defExpr="CURRENT_USER" label="=creator" />
+  </Fields>
+</Table>
