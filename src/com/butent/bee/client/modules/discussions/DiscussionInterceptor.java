@@ -910,7 +910,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
       colPublisher.add(createCommentCell(COL_COMMENT, text));
     }
 
-    if (!files.isEmpty()) {
+    if (!files.isEmpty() && !deleted) {
       renderFiles(files, colPublisher);
     }
 
