@@ -8,6 +8,7 @@ import com.google.common.collect.Table;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.HasInfo;
+import com.butent.bee.shared.communication.Presence;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.rights.Module;
@@ -38,7 +39,7 @@ public class UserData implements BeeSerializable, HasInfo {
 
   private enum Serial {
     LOGIN, USER_ID, FIRST_NAME, LAST_NAME, PHOTO_FILE_NAME, COMPANY_NAME,
-    COMPANY_PERSON, COMPANY, PERSON, PROPERTIES, RIGHTS
+    COMPANY_PERSON, COMPANY, PERSON, PROPERTIES, RIGHTS, PRESENCE
   }
 
   private static BeeLogger logger = LogUtils.getLogger(UserData.class);
@@ -65,6 +66,8 @@ public class UserData implements BeeSerializable, HasInfo {
   private Map<String, String> properties;
 
   private Table<RightsState, RightsObjectType, Set<String>> rights;
+
+  private Presence presence;
 
   private transient boolean authoritah;
 
@@ -174,6 +177,10 @@ public class UserData implements BeeSerializable, HasInfo {
             }
           }
           break;
+
+        case PRESENCE:
+          setPresence(Codec.unpack(Presence.class, value));
+          break;
       }
     }
   }
@@ -204,7 +211,8 @@ public class UserData implements BeeSerializable, HasInfo {
         "Company Name", getCompanyName(),
         "Company Person ID", getCompanyPerson(),
         "Company ID", getCompany(),
-        "Person ID", getPerson());
+        "Person ID", getPerson(),
+        "Presence", getPresence());
 
     if (!BeeUtils.isEmpty(properties)) {
       info.add(new Property("Properties", BeeUtils.bracket(properties.size())));
@@ -236,6 +244,10 @@ public class UserData implements BeeSerializable, HasInfo {
 
   public String getPhotoFileName() {
     return photoFileName;
+  }
+
+  public Presence getPresence() {
+    return presence;
   }
 
   public Map<String, String> getProperties() {
@@ -370,6 +382,9 @@ public class UserData implements BeeSerializable, HasInfo {
           }
           arr[i++] = map;
           break;
+        case PRESENCE:
+          arr[i++] = Codec.pack(presence);
+          break;
       }
     }
     return Codec.beeSerialize(arr);
@@ -401,6 +416,10 @@ public class UserData implements BeeSerializable, HasInfo {
 
   public void setPhotoFileName(String photoFileName) {
     this.photoFileName = photoFileName;
+  }
+
+  public void setPresence(Presence presence) {
+    this.presence = presence;
   }
 
   public void setProperties(Map<String, String> properties) {

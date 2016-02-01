@@ -9,6 +9,7 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasInfo;
+import com.butent.bee.shared.communication.Presence;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
@@ -131,6 +132,10 @@ public class UserInfo implements HasInfo {
 
   public int getNewsRefreshIntervalSeconds() {
     return newsRefreshIntervalSeconds;
+  }
+
+  public Presence getPresence() {
+    return isLoggedIn() ? userData.getPresence() : Presence.OFFLINE;
   }
 
   public String getProperty(String property) {

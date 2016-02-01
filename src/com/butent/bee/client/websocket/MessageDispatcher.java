@@ -65,7 +65,7 @@ import com.butent.bee.shared.websocket.messages.ProgressMessage;
 import com.butent.bee.shared.websocket.messages.RoomStateMessage;
 import com.butent.bee.shared.websocket.messages.RoomUserMessage;
 import com.butent.bee.shared.websocket.messages.RoomsMessage;
-import com.butent.bee.shared.websocket.messages.SessionMessage;
+import com.butent.bee.shared.websocket.messages.PresenceMessage;
 import com.butent.bee.shared.websocket.messages.ShowMessage;
 import com.butent.bee.shared.websocket.messages.ShowMessage.Subject;
 import com.butent.bee.shared.websocket.messages.SignalingMessage;
@@ -443,6 +443,19 @@ class MessageDispatcher {
         }
         break;
 
+      case PRESENCE:
+        PresenceMessage supm = (PresenceMessage) message;
+        SessionUser su = supm.getSessionUser();
+
+        if (supm.isOnline()) {
+          Global.getUsers().addSession(su.getSessionId(), su.getUserId(), false);
+        } else if (supm.isOffline()) {
+          Global.getUsers().removeSession(su.getSessionId());
+        } else {
+          WsUtils.onInvalidState(message);
+        }
+        break;
+
       case PROGRESS:
         ProgressMessage pm = (ProgressMessage) message;
         String progressId = pm.getProgressId();
@@ -491,19 +504,6 @@ class MessageDispatcher {
           WsUtils.onEmptyMessage(message);
         } else {
           Global.getRooms().setRoomData(rooms);
-        }
-        break;
-
-      case SESSION:
-        SessionMessage sm = (SessionMessage) message;
-        SessionUser su = sm.getSessionUser();
-
-        if (sm.isOpen()) {
-          Global.getUsers().addSession(su.getSessionId(), su.getUserId(), false);
-        } else if (sm.isClosed()) {
-          Global.getUsers().removeSession(su.getSessionId());
-        } else {
-          WsUtils.onInvalidState(message);
         }
         break;
 

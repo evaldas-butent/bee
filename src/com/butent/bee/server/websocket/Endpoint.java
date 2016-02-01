@@ -26,7 +26,7 @@ import com.butent.bee.shared.websocket.messages.OnlineMessage;
 import com.butent.bee.shared.websocket.messages.ProgressMessage;
 import com.butent.bee.shared.websocket.messages.RoomStateMessage;
 import com.butent.bee.shared.websocket.messages.RoomUserMessage;
-import com.butent.bee.shared.websocket.messages.SessionMessage;
+import com.butent.bee.shared.websocket.messages.PresenceMessage;
 import com.butent.bee.shared.websocket.messages.ShowMessage;
 import com.butent.bee.shared.websocket.messages.ShowMessage.Subject;
 import com.butent.bee.shared.websocket.messages.UsersMessage;
@@ -349,8 +349,8 @@ public class Endpoint {
       case INFO:
       case MAIL:
       case ONLINE:
+      case PRESENCE:
       case ROOMS:
-      case SESSION:
       case USERS:
         logger.severe("ws message not supported", message, toLog(session));
         break;
@@ -710,7 +710,7 @@ public class Endpoint {
 
       for (Session openSession : openSessions) {
         if (openSession.isOpen()) {
-          send(openSession, SessionMessage.close(sessionUser));
+          send(openSession, PresenceMessage.offline(sessionUser));
         }
       }
     }
@@ -749,7 +749,7 @@ public class Endpoint {
     if (!openSessions.isEmpty()) {
       for (Session openSession : openSessions) {
         if (openSession.isOpen()) {
-          send(openSession, SessionMessage.open(sessionUser));
+          send(openSession, PresenceMessage.online(sessionUser));
           sessionUsers.add(getSessionUser(openSession));
         }
       }

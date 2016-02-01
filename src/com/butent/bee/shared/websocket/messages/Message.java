@@ -78,6 +78,12 @@ public abstract class Message {
         return new OnlineMessage();
       }
     },
+    PRESENCE {
+      @Override
+      Message createMessage() {
+        return new PresenceMessage();
+      }
+    },
     PROGRESS {
       @Override
       Message createMessage() {
@@ -100,12 +106,6 @@ public abstract class Message {
       @Override
       Message createMessage() {
         return new RoomsMessage();
-      }
-    },
-    SESSION {
-      @Override
-      Message createMessage() {
-        return new SessionMessage();
       }
     },
     SHOW {

@@ -650,6 +650,14 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String precision();
 
+  String presenceAway();
+
+  String presenceIdle();
+
+  String presenceOffline();
+
+  String presenceOnline();
+
   String price();
 
   String print();
