@@ -217,6 +217,7 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
   @Override
   public void onReadyForInsert(HasHandlers listener, final ReadyForInsertEvent event) {
     event.consume();
+    FormView form = getFormView();
     IsRow activeRow = getFormView().getActiveRow();
 
     boolean discussPublic = true;
@@ -332,7 +333,13 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
 
           event.getCallback().onSuccess(null);
 
-          String message = Localized.getConstants().discussCreatedNewDiscussion();
+          String message;
+
+          if (BeeUtils.isEmpty(activeRow.getString(form.getDataIndex(ALS_TOPIC_NAME)))) {
+            message = Localized.getConstants().discussCreatedNewDiscussion();
+          } else {
+            message = Localized.getConstants().discussCreatedNewAnnouncement();
+          }
 
           BeeKeeper.getScreen().notifyInfo(message);
 
