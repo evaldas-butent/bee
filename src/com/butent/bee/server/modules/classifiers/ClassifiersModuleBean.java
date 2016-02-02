@@ -2,6 +2,7 @@ package com.butent.bee.server.modules.classifiers;
 
 import com.google.common.base.CharMatcher;
 import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -51,6 +52,7 @@ import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.server.websocket.Endpoint;
+import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
@@ -71,6 +73,7 @@ import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.Order;
+import com.butent.bee.shared.exceptions.BeeRuntimeException;
 import com.butent.bee.shared.html.builder.Document;
 import com.butent.bee.shared.html.builder.elements.Table;
 import com.butent.bee.shared.html.builder.elements.Td;
@@ -777,6 +780,66 @@ public class ClassifiersModuleBean implements BeeModule {
         return conditions;
       }
     });
+  }
+
+  /**
+   * Returns map based collection of company and e-mail address'es list. This collection formed from
+   * data source table of Contacts where has relation of Companies table. It must also be not empty
+   * the RemindEmail field in Contacts data source table.
+   * 
+   * This collection using send reports or documents over e-mail liked with company Id.
+   * 
+   * @param companyIds List of company Id's using to filter company email of contacts.
+   * @return collection of company contact e-mails where key of map is companyId and value of map is
+   *         collection of email address.
+   * @throws BeeRuntimeException throws if collection {@code companyIds} is empty or null.
+   */
+  public Multimap<Long, String> getCompaniesRemindEmailAddresses(
+      List<Long> companyIds) {
+
+    Assert.notEmpty(companyIds);
+
+    Multimap<Long, String> emails = HashMultimap.create();
+
+    SqlSelect select = new SqlSelect();
+    select.addField(TBL_COMPANIES, sys.getIdName(TBL_COMPANIES), COL_COMPANY);
+    select.addField(TBL_EMAILS, COL_EMAIL_ADDRESS, COL_EMAIL_ADDRESS);
+    select.addFrom(TBL_COMPANIES);
+    select.addFromLeft(TBL_CONTACTS, sys.joinTables(TBL_CONTACTS, TBL_COMPANIES, COL_CONTACT));
+    select.addFromLeft(TBL_EMAILS, sys.joinTables(TBL_EMAILS, TBL_CONTACTS, COL_EMAIL));
+    select.setWhere(SqlUtils.and(SqlUtils.inList(TBL_COMPANIES, sys.getIdName(TBL_COMPANIES),
+        companyIds),
+        SqlUtils.notNull(TBL_CONTACTS, COL_REMIND_EMAIL)));
+
+    SimpleRowSet companiesEmails = qs.getData(select);
+
+    select = new SqlSelect();
+    select.addField(TBL_COMPANIES, sys.getIdName(TBL_COMPANIES), COL_COMPANY);
+    select.addField(TBL_EMAILS, COL_EMAIL_ADDRESS, COL_EMAIL_ADDRESS);
+    select.addFrom(TBL_COMPANIES);
+    select.addFromLeft(TBL_COMPANY_CONTACTS, sys.joinTables(TBL_COMPANIES, TBL_COMPANY_CONTACTS,
+        COL_COMPANY));
+    select.addFromLeft(TBL_CONTACTS, sys
+        .joinTables(TBL_CONTACTS, TBL_COMPANY_CONTACTS, COL_CONTACT));
+    select.addFromLeft(TBL_EMAILS, sys.joinTables(TBL_EMAILS, TBL_CONTACTS, COL_EMAIL));
+    select.setWhere(SqlUtils.and(SqlUtils.inList(TBL_COMPANIES, sys.getIdName(TBL_COMPANIES),
+        companyIds),
+        SqlUtils.notNull(TBL_CONTACTS, COL_REMIND_EMAIL)));
+
+    SimpleRowSet companiesOtherEmails = qs.getData(select);
+
+    for (String[] row : companiesEmails.getRows()) {
+      Long companyId = BeeUtils.toLong(row[companiesEmails.getColumnIndex(COL_COMPANY)]);
+
+      emails.put(companyId, row[companiesEmails.getColumnIndex(COL_EMAIL)]);
+    }
+
+    for (String[] row : companiesOtherEmails.getRows()) {
+      Long companyId = BeeUtils.toLong(row[companiesOtherEmails.getColumnIndex(COL_COMPANY)]);
+      emails.put(companyId, row[companiesOtherEmails.getColumnIndex(COL_EMAIL)]);
+    }
+
+    return emails;
   }
 
   public void initActionReminderTimer() {

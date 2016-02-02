@@ -32,6 +32,8 @@ public final class TradeKeeper {
     GridFactory.registerGridInterceptor(GRID_SERIES_MANAGERS,
         UniqueChildInterceptor.forUsers(Localized.getConstants().managers(),
             COL_SERIES, COL_TRADE_MANAGER));
+    GridFactory.registerGridInterceptor(GRID_DEBTS, new DebtsGrid());
+    GridFactory.registerGridInterceptor(GRID_DEBT_REPORTS, new DebtReportsGrid());
 
     FormFactory.registerFormInterceptor(FORM_SALES_INVOICE, new SalesInvoiceForm());
 

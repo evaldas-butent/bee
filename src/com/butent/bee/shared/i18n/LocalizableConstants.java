@@ -766,6 +766,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String send();
 
+  String sendReminderMail();
+
   String separator();
 
   String setAsPrimary();
