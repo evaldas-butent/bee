@@ -812,7 +812,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
 
   public MimeMessage sendMail(MailAccount account, String[] to, String[] cc, String[] bcc,
       String subject, String content, Map<Long, String> attachments, String inReplyTo)
-      throws MessagingException {
+          throws MessagingException {
 
     Transport transport = null;
     MimeMessage message = null;
@@ -862,7 +862,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
               .setWhere(
                   SqlUtils.and(SqlUtils.equals(VIEW_NEWSLETTER_CONTACTS, COL_NEWSLETTER,
                       sr.getValue(sys.getIdName(VIEW_NEWSLETTERS))), SqlUtils.isNull(
-                      VIEW_NEWSLETTER_CONTACTS, COL_DATE))).setLimit(count);
+                          VIEW_NEWSLETTER_CONTACTS, COL_DATE))).setLimit(count);
 
           SimpleRowSet emailSet = qs.getData(contacts);
 
@@ -904,7 +904,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
                       .addConstant(COL_DATE, TimeUtils.nowMillis())
                       .setWhere(SqlUtils.and(SqlUtils.equals(VIEW_NEWSLETTER_CONTACTS, COL_EMAIL,
                           email), SqlUtils.equals(VIEW_NEWSLETTER_CONTACTS, COL_NEWSLETTER, sr
-                          .getValue(sys.getIdName(VIEW_NEWSLETTERS)))));
+                              .getValue(sys.getIdName(VIEW_NEWSLETTERS)))));
 
               qs.updateData(update);
             }
@@ -920,6 +920,29 @@ public class MailModuleBean implements BeeModule, HasTimerService {
       }
     }
   }
+
+  // @company: Hetlita
+  // @comitId: Debts. Store send mail message from TradeModuleBean.sendDebtsRemindEmail(RequestInfo)
+  // @notes: Remove if Store mail function is available in master
+  // {
+  /**
+   * Store mail message to account sent folder storage.
+   * 
+   * @param account Mail account info.
+   * @param message MIME style email message.
+   * @return ResponseObject with boolean response if message store are successful. Otherwise returns
+   *         ResponseObject warning response if storing mail in server fails.
+   */
+  public ResponseObject storeSentMailMessage(MailAccount account, MimeMessage message) {
+    try {
+      storeMessage(account, message, account.getSentFolder());
+      return ResponseObject.response(Boolean.TRUE);
+    } catch (MessagingException e) {
+      logger.warning(e);
+      return ResponseObject.warning(e);
+    }
+  }
+  // }
 
   private void applyRules(Message message, long placeId, MailAccount account,
       MailFolder folder, SimpleRowSet rules) throws MessagingException {
@@ -1085,7 +1108,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
 
   private MimeMessage buildMessage(MailAccount account, String[] to, String[] cc, String[] bcc,
       String subject, String content, Map<Long, String> attachments, String inReplyTo)
-      throws MessagingException {
+          throws MessagingException {
 
     MimeMessage message = new MimeMessage((Session) null);
     Map<RecipientType, String[]> recs = new HashMap<>();
@@ -1779,7 +1802,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
               .setWhere(
                   SqlUtils.and(SqlUtils
                       .inList(VIEW_RCPS_GROUPS_CONTACTS, COL_RECIPIENTS_GROUP, ids), SqlUtils
-                      .notNull(TBL_CONTACTS, COL_EMAIL)))
+                          .notNull(TBL_CONTACTS, COL_EMAIL)))
               .addUnion(
                   new SqlSelect()
                       .addFields(TBL_CONTACTS, COL_EMAIL)
