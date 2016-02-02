@@ -20,6 +20,9 @@
 
     <DataColumn name="Quantity" visible="true">
       <footer aggregate="sum" />
+      <editable>
+        <ui:expression>row.Quantity != row.CompletedInvoices</ui:expression>
+      </editable>
     </DataColumn>
 
     <DataColumn name="UnitName" caption="=unitShort"

@@ -85,13 +85,13 @@
 
   <xs:simpleType name="tableNameType">
     <xs:restriction base="nameType">
-      <xs:maxLength value="20"></xs:maxLength>
+      <xs:maxLength value="20" />
     </xs:restriction>
   </xs:simpleType>
 
   <xs:simpleType name="fieldNameType">
     <xs:restriction base="nameType">
-      <xs:maxLength value="30"></xs:maxLength>
+      <xs:maxLength value="30" />
     </xs:restriction>
   </xs:simpleType>
 

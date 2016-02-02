@@ -8,10 +8,19 @@
 ]>
 <f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form"
   xmlns:ui="http://www.butent.com/ui" name="&form;" disabledActions="save"
-  caption="Užsakymo patvirtinimas" height="90" heightUnit="%" width="70" widthUnit="%">
+  caption="Užsakymo patvirtinimas" height="90" heightUnit="%" width="60"
+  widthUnit="%">
   <FlowPanel style="padding: 10px; background-color: white; font-size:10px;"
     contentEditable="true">
 
+    <css id="&form;">
+      .&form;-bank .BankAccount:before {content:"a.s: ";}
+      .&form;-bank .BankAccount:after {content:", ";}
+      .&form;-bank .BankCode:before {content:", ";}
+      .&form;-bank .BankCode:after {content:" ";}
+      .&form;-bank .SWIFTCode:before {content:"SWIFT: ";}
+    </css>
+    
     <FlowPanel
       style="height:80px; background-color:#d6d6d6; position:relative;">
       <Image url="file/251" style="height:80px; float:right;" />
@@ -48,7 +57,10 @@
         </cell>
       </row>
       <row>
-        <FlowPanel name="Supplier" style="vertical-align:top;margin-left:10px;" />
+        <FlowPanel style="vertical-align:top;margin-left:10px;" >
+          <FlowPanel name="Supplier" />
+          <Label name="BankAccount" class="&form;-bank" />
+        </FlowPanel>
         <FlowPanel name="Company" style="vertical-align:top;" />
       </row>
       <row>
@@ -137,18 +149,31 @@
       </row>
     </Table>
 
-    <Table kind="controls" style="&bold;" > 
+    <Table kind="controls" style="&bold;">
       <row>
         <TextLabel source="Company">
-          <renderToken source="CreditDays" prefix="Apmok. terminas: " suffix=" dienų"/>
+          <renderToken source="CreditDays" prefix="Apmok. terminas: "
+            suffix=" dienų" />
         </TextLabel>
       </row>
       <row>
-        <TextLabel source="Manager" style="margin-top:5px;">
-          <renderToken source="ManagerFirstName" prefix="Pasiūlymą ruošė: " />
-          <renderToken source="ManagerLastName" />
-          <renderToken source="ManagerPosition" prefix=", " />
-        </TextLabel>
+        <FlowPanel>
+          <Label text="Pasiūlymą ruošė:" />
+          <TextLabel source="Manager" style="margin-top:5px;">
+            <renderToken source="ManagerFirstName" prefix=" " />
+            <renderToken source="ManagerLastName" />
+            <renderToken source="ManagerPosition" prefix=", " />
+          </TextLabel>
+          <TextLabel source="Manager">
+            <renderToken source="ManagerPhone" prefix="Tel: " />
+          </TextLabel>
+          <TextLabel source="Manager">
+            <renderToken source="ManagerMObile" prefix="Mob: " />
+          </TextLabel>
+          <TextLabel source="Manager">
+            <renderToken source="ManagerEmail" prefix="El. paštas: " />
+          </TextLabel>
+        </FlowPanel>
       </row>
     </Table>
   </FlowPanel>

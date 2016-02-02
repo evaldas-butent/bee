@@ -8,6 +8,8 @@
       <SimpleColumn name="Company" />
       <SimpleJoin name="Company" joinType="LEFT">
       <SimpleColumn name="CreditDays" />
+      <SimpleColumn name="CreditLimit" />
+      <SimpleColumn name="ToleratedDays" />
         <SimpleColumn alias="CompanyName" name="Name" />
         <SimpleJoin joinType="LEFT" name="CompanyType">
           <SimpleColumn name="Name" alias="CompanyTypeName" />

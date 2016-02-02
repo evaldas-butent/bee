@@ -16,6 +16,9 @@
       <row>
         <Label for="Date" />
         <InputDateTime source="Date" visible="true" />
+        
+        <Label for="CheckNo" />
+        <InputText source="CheckNo" />
       </row>
 
       <row>
@@ -41,7 +44,7 @@
 
       <row>
         <Label for="Operation" />
-        <DataSelector source="Operation" style="&inp;" />
+        <DataSelector source="Operation" style="&inp;" renderColumns="OperationName" />
 
         <Label for="WarehouseFrom" />
         <DataSelector source="WarehouseFrom" style="&inp;"
@@ -54,7 +57,7 @@
 
         <Label for="Customer" />
         <DataSelector source="Customer" required="true"
-          visible="true" style="&inp;" />
+          visible="true" style="&inp;" renderColumns="CustomerName" />
       </row>
 
       <row>

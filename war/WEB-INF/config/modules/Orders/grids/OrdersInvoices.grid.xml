@@ -21,6 +21,7 @@
         </ui:function>
       </render>
     </DataColumn>
+    <DataColumn name="CheckNo" />
     <DataColumn name="CustomerName" />
     <DataColumn name="PayerName" />
     <RelColumn name="Manager" />
