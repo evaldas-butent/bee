@@ -61,6 +61,7 @@ public final class OrdersConstants {
   public static final String SVC_GET_ITEMS_SUPPLIERS = "GetItemsSuppliers";
   public static final String SVC_GET_FILTERED_INVOICES = "GetFilteredInvoices";
   public static final String SVC_GET_ERP_STOCKS = "GetERPStocks";
+  public static final String SVC_GET_CREDIT_INFO = "GetCreditInfo";
 
   public static final String TBL_ORDER_ITEMS = "OrderItems";
   public static final String TBL_ORDERS = "Orders";
@@ -76,6 +77,10 @@ public final class OrdersConstants {
   public static final String ALS_COMPANY_EMAIL = "CompanyEmail";
   public static final String ALS_CONTACT_EMAIL = "ContactEmail";
   public static final String ALS_TOTAL_QTY = "TotalQty";
+  public static final String ALS_MANAGER_FIRST_NAME = "ManagerFirstName";
+  public static final String ALS_MANAGER_LAST_NAME = "ManagerLastName";
+  public static final String ALS_CUSTOMER_EMAIL = "CustomerEmail";
+  public static final String ALS_PAYER_EMAIL = "PayerEmail";
 
   public static final String COL_END_DATE = "EndDate";
   public static final String COL_ORDER = "Order";

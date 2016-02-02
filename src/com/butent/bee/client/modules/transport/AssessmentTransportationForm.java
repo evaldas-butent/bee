@@ -180,8 +180,8 @@ public class AssessmentTransportationForm extends PrintFormInterceptor {
         .languageTag());
 
     ClassifierUtils.getCompanyInfo(row.getLong(form.getDataIndex(COL_FORWARDER)),
-        forwarderDetails);
-    ClassifierUtils.getCompanyInfo(BeeKeeper.getUser().getCompany(), customerDetails);
+        forwarderDetails, COL_FORWARDER);
+    ClassifierUtils.getCompanyInfo(BeeKeeper.getUser().getCompany(), customerDetails, COL_CUSTOMER);
     renderFirstParagraph(form, row, firstParagraph);
 
     super.beforeRefresh(form, row);
@@ -264,7 +264,7 @@ public class AssessmentTransportationForm extends PrintFormInterceptor {
                 forwarderCompanySignature + BeeConst.STRING_COMMA,
                 BeeUtils.join(BeeConst.STRING_SPACE, PARAGRAPH_TEXT.subList(2, PARAGRAPH_TEXT
                     .size()))
-            );
+                );
 
             widget.getElement().setInnerText(pText);
           }

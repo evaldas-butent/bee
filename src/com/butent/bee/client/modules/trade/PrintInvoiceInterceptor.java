@@ -32,7 +32,8 @@ public class PrintInvoiceInterceptor extends AbstractFormInterceptor {
   public void afterCreateWidget(String name, IdentifiableWidget widget,
       WidgetDescriptionCallback callback) {
 
-    if (BeeUtils.inListSame(name, COL_TRADE_SUPPLIER, COL_TRADE_CUSTOMER, COL_SALE_PAYER)) {
+    if (BeeUtils
+        .inListSame(name, COL_TRADE_SUPPLIER, COL_TRADE_CUSTOMER, COL_SALE_PAYER, "Company")) {
       companies.put(name, widget.asWidget());
 
     } else if (BeeUtils.same(name, "InvoiceDetails") && widget instanceof HtmlTable) {
@@ -44,16 +45,18 @@ public class PrintInvoiceInterceptor extends AbstractFormInterceptor {
   }
 
   @Override
-  public void beforeRefresh(FormView form, IsRow row) {
+  public void beforeRefresh(final FormView form, IsRow row) {
     for (String name : companies.keySet()) {
       Long id = form.getLongValue(name);
 
       if (!DataUtils.isId(id) && !BeeUtils.same(name, COL_SALE_PAYER)) {
         id = BeeKeeper.getUser().getUserData().getCompany();
       }
-      ClassifierUtils.getCompanyInfo(id, companies.get(name));
+      ClassifierUtils.getCompanyInfo(id, companies.get(name), name);
     }
+
     if (invoiceDetails != null) {
+
       TradeUtils.getDocumentItems(getViewName(), row.getId(),
           form.getStringValue(AdministrationConstants.ALS_CURRENCY_NAME), invoiceDetails);
     }
