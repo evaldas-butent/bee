@@ -69,10 +69,8 @@ reattachMediaStream = function(to, from) {
 
 if (typeof window === 'undefined' || !window.navigator) {
   webrtcUtils.log('This does not appear to be a browser');
-  webrtcDetectedBrowser = 'not a browser';
-} else if (navigator.mozGetUserMedia && window.mozRTCPeerConnection) {
-  webrtcUtils.log('This appears to be Firefox');
 
+} else if (navigator.mozGetUserMedia && window.mozRTCPeerConnection) {
   webrtcDetectedBrowser = 'firefox';
 
   // the detected firefox version.
@@ -214,8 +212,6 @@ if (typeof window === 'undefined' || !window.navigator) {
     };
   }
 } else if (navigator.webkitGetUserMedia && window.webkitRTCPeerConnection) {
-  webrtcUtils.log('This appears to be Chrome');
-
   webrtcDetectedBrowser = 'chrome';
 
   // the detected chrome version.
@@ -346,7 +342,6 @@ if (typeof window === 'undefined' || !window.navigator) {
     if (constraints.video) {
       constraints.video = constraintsToChrome(constraints.video);
     }
-    webrtcUtils.log('chrome: ' + JSON.stringify(constraints));
     return navigator.webkitGetUserMedia(constraints, onSuccess, onError);
   };
   navigator.getUserMedia = getUserMedia;
@@ -420,9 +415,7 @@ if (typeof window === 'undefined' || !window.navigator) {
     }
   };
 
-} else if (navigator.mediaDevices && navigator.userAgent.match(
-    /Edge\/(\d+).(\d+)$/)) {
-  webrtcUtils.log('This appears to be Edge');
+} else if (navigator.mediaDevices && navigator.userAgent.match(/Edge\/(\d+).(\d+)$/)) {
   webrtcDetectedBrowser = 'edge';
 
   webrtcDetectedVersion = webrtcUtils.extractVersion(navigator.userAgent,
