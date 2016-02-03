@@ -17,7 +17,7 @@ class AssessmentPrintForm extends AbstractFormInterceptor {
       Widget widget = form.getWidgetByName(name);
 
       if (widget != null) {
-        ClassifierUtils.getCompanyInfo(row.getLong(form.getDataIndex(name)), widget);
+        ClassifierUtils.getCompanyInfo(row.getLong(form.getDataIndex(name)), widget, name);
       }
     }
   }
