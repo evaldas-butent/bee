@@ -8,10 +8,19 @@
 ]>
 <f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form"
   xmlns:ui="http://www.butent.com/ui" name="&form;" caption="=trdInvoice"
-  disabledActions="save" height="90" heightUnit="%" width="70"
+  disabledActions="save" height="90" heightUnit="%" width="60"
   widthUnit="%">
   <FlowPanel style="padding: 10px; background-color: white;"
     contentEditable="true">
+    
+    <css id="&form;">
+      .&form;-bank .BankAccount:before {content:"a.s: ";}
+      .&form;-bank .BankAccount:after {content:", ";}
+      .&form;-bank .BankCode:before {content:", ";}
+      .&form;-bank .BankCode:after {content:" ";}
+      .&form;-bank .SWIFTCode:before {content:"SWIFT: ";}
+    </css>
+    
     <FlowPanel style="position:relative; &section;">
       <Image url="images/Hetlita.png" style="position:absolute; right:0; height:30px;" />
       <FlowPanel style="text-align:center; font-size:medium;">
@@ -29,7 +38,10 @@
         <cell style="vertical-align: top;">
           <Label html="Tiekėjas" />
         </cell>
-        <FlowPanel name="Supplier" />
+        <FlowPanel>
+          <FlowPanel name="Supplier" />
+          <Label name="BankAccount" class="&form;-bank" />
+        </FlowPanel>
       </row>
       <row>
         <cell style="vertical-align: top;">
@@ -140,22 +152,49 @@
     </TextLabel>
 
     <Table kind="output" style="width:100%; margin-top:10px;">
-      <row>
-        <Label html="Sąskaitą išrašė" />
+      <row style="verticalAlign:top;" >
+        <FlowPanel>
+          <Label text="Sąskaitą išrašė:" />
+          <TextLabel source="Manager" style="margin-top:5px;">
+            <renderToken source="ManagerFirstName" prefix=" " />
+            <renderToken source="ManagerLastName" />
+            <renderToken source="PositionName" prefix=", " />
+          </TextLabel>
+          <TextLabel source="Manager">
+            <renderToken source="ManagerPhone" prefix="Tel: " />
+          </TextLabel>
+          <TextLabel source="Manager">
+            <renderToken source="ManagerMobile" prefix="Mob: " />
+          </TextLabel>
+          <TextLabel source="Manager">
+            <renderToken source="ManagerEmail" prefix="El. paštas: " />
+          </TextLabel>
+        </FlowPanel>
         <Label html="Priėmė" />
-      </row>
-      <row>
-        <TextLabel source="Manager"
-          style="margin-top:5px; text-decoration: underline;">
-          <renderToken source="ManagerFirstName" />
-          <renderToken source="ManagerLastName" />
-          <renderToken source="PositionName" prefix=", " />
-        </TextLabel>
-        <Label text="____________________________" />
       </row>
       <row style="font-size:xx-small;">
         <Label html="(vardas, pavardė, pareigos ir parašas)" />
-        <Label html="(vardas, pavardė, pareigos ir parašas)" />
+        <Label html="(vardas, pavardė, pareigos ir parašas)" style="text-decoration:overline;" />
+      </row>
+      <row>
+        <TextLabel source="CashRegisterNo" style="&section1; white-space:pre-wrap;">
+          <render>
+            <ui:function>
+              if (row.CashRegisterNo) {
+              var dt = new Date(row.Date);
+              var checkNo = "";
+              if (row.CheckNo) {
+                checkNo = " Kvito Nr.: " + row.CheckNo;
+              }
+              return "Kasos kvito išdavimo data: " + dt.getFullYear()
+              + "." + (dt.getMonth() &lt; 9 ? "0" : "") + (dt.getMonth() + 1)
+              + "." + (dt.getDate() &lt; 10 ? "0" : "") + dt.getDate() 
+              + "   Kasos aparato Nr.: " + row.CashRegisterNo + checkNo;
+              }
+              return null;
+            </ui:function>
+          </render>
+        </TextLabel>
       </row>
     </Table>
   </FlowPanel>

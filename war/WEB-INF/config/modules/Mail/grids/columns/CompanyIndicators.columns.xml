@@ -6,4 +6,5 @@
   <DataColumn name="PriorityName" />
   <DataColumn name="CompanySizeName" />
   <DataColumn name="RelationTypeStateName" />
+  <RelColumn name="InformationSourceName" />
 </g:columns>

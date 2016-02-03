@@ -26,6 +26,9 @@
       <row>
         <Label text="=trdDate" class="bee-required" style="&lbl2; width:143px;" />
         <InputDateTime source="Date" style="width:11em;" />
+        
+        <Label for="CheckNo" style="&lbl2;" />
+        <InputText source="CheckNo" />
       </row>
       <row>
         <Label class="bee-required" text="=trdInvoicePrefix" style="&lbl2;" />
@@ -47,8 +50,8 @@
       </row>
       <row>
         <Label for="Operation" style="&lbl2;" class="bee-required" />
-        <DataSelector source="Operation" style="width:150px;"
-          required="true" />
+        <DataSelector name="Operation" source="Operation" style="width:150px;"
+          required="true" renderColumns="OperationName" />
 
         <Label for="WarehouseFrom" style="&lbl2;" class="bee-required" />
         <DataSelector source="WarehouseFrom" style="width:150px;"
@@ -58,7 +61,7 @@
         <Label text="=trdSupplier" style="&lbl2; width:143px;" />
         <DataSelector source="Supplier" />
         <Label text="=trdCustomer" class="bee-required" style="&lbl2;" />
-        <DataSelector source="Customer" required="true" />
+        <DataSelector source="Customer" required="true" renderColumns="CustomerName" />
       </row>
       <row>
         <Label text="=trdManager" style="&lbl2; width:143px;" />

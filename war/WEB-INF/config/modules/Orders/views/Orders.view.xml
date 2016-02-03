@@ -75,6 +75,13 @@
           <SimpleColumn name="FirstName" alias="ManagerFirstName" />
           <SimpleColumn name="LastName" alias="ManagerLastName" />
         </SimpleJoin>
+        <SimpleJoin joinType="LEFT" name="Contact">
+          <SimpleColumn name="Phone" alias="ManagerPhone" />
+          <SimpleColumn name="Mobile" alias="ManagerMobile" />
+          <SimpleJoin joinType="LEFT" name="Email">
+            <SimpleColumn name="Email" alias="ManagerEmail" />
+          </SimpleJoin>
+        </SimpleJoin>
       </SimpleJoin>
     </SimpleJoin>
 

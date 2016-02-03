@@ -101,14 +101,19 @@
     <DataColumn name="Description" visible="false" />
     <DataColumn name="Notes" visible="false" />
 
-    <PropColumn name="ResRemainder" type="string" label="=ordResRemainder" />
+    <PropColumn name="ResRemainder" type="string" label="=ordResRemainder" >
+      <dynStyle>
+        <ui:inline>text-decoration: underline; cursor: pointer;</ui:inline>
+        <ui:expression>row.ResRemainder > -1</ui:expression>
+      </dynStyle>
+    </PropColumn>
 
     <CalcColumn name="FreeRemainder" type="string" label="=ordFreeRemainder" >
       <render>
-        <ui:expression>row.WarehouseRemainder - row.ResRemainder</ui:expression>
+        <ui:expression>(row.WarehouseRemainder ? row.WarehouseRemainder : 0 ) - (row.ResRemainder ? row.ResRemainder : 0) </ui:expression>
       </render>
     </CalcColumn>
-
+    
     <PropColumn name="Remainder" type="string" dynamic="true" />
 
   </g:columns>

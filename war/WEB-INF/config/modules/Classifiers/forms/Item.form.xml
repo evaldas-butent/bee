@@ -2,8 +2,8 @@
 <!DOCTYPE Form[
   <!ENTITY foritem "<dynStyle><ui:inline>display: none;</ui:inline><ui:expression>row.IsService</ui:expression></dynStyle>">
   <!ENTITY forservice "<dynStyle><ui:inline>display: none;</ui:inline><ui:expression>!row.IsService</ui:expression></dynStyle>">
-  <!ENTITY pricescale "2">
-  <!ENTITY costscale "2">
+  <!ENTITY pricescale "4">
+  <!ENTITY costscale "4">
   <!ENTITY pricestyle "width: 120px;">
   <!ENTITY currencystyle "width: 50px;">
 ]>
@@ -360,12 +360,16 @@
       
       <page>
         <text>=suppliers</text>
-        <ChildGrid name="ItemSuppliers" relColumn="Item" />
+        <SimplePanel>
+           <ChildGrid name="ItemSuppliers" relColumn="Item" class="occupy-1" summarize="true" />
+        </SimplePanel>
       </page> 
       
       <page>
         <text>=manufacturers</text>
-        <ChildGrid name="ItemManufacturers" relColumn="Item" />
+        <SimplePanel>
+           <ChildGrid name="ItemManufacturers" relColumn="Item" class="occupy-1" summarize="true" />
+        </SimplePanel>
       </page> 
       
       <page for="Notes">

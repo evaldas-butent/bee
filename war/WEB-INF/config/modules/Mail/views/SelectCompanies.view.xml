@@ -40,6 +40,11 @@
     <SimpleJoin joinType="LEFT" name="CompanyRelationTypeState">
       <SimpleColumn alias="RelationTypeStateName" name="Name" />
     </SimpleJoin>
+    
+    <SimpleColumn name="InformationSource" />
+    <SimpleJoin joinType="LEFT" name="InformationSource">
+      <SimpleColumn alias="InformationSourceName" name="Name" />
+    </SimpleJoin>
   </Columns>
   <Order>
     <OrderBy column="Name" />

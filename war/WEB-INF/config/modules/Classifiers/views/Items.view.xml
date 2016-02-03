@@ -2,7 +2,7 @@
 <View xmlns="http://www.butent.com/view" name="Items" caption="=goods"
   source="Items" module="Classifiers" newRowForm="Item" newRowCaption="=newItem"
   editForm="Item">
-  <Relation renderColumns="Name" choiceColumns="Name UnitName" />
+  <Relation renderColumns="Name" choiceColumns="Name UnitName Article" />
   <Columns>
     <SimpleColumn name="Name" />
     <SimpleColumn name="Name2" />
