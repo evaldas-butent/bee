@@ -12,6 +12,8 @@ var BeeSettings = {
   "minimizeNumberOfConcurrentRequests": true,
   "showCommands": "mail, users, company_structure",
   "showUserPhoto": true,
+  "showUserPresence": true,
+  "showLogout": false,
   "onStartup": {"content": "form_AnnouncementsBoard", "force": "*"},
   "clickSensitivityMillis": 100,
   "clickSensitivityDistance": 10,

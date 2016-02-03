@@ -12,6 +12,7 @@ import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.shared.HasExtendedInfo;
 import com.butent.bee.shared.NotificationListener;
+import com.butent.bee.shared.communication.Presence;
 import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.ui.UserInterface;
 
@@ -99,6 +100,8 @@ public interface Screen extends NotificationListener, HasExtendedInfo {
   void updateUserCount(int count);
 
   void updateUserData(UserData userData);
+
+  void updateUserPresence(Presence presence);
 
   Flow getOnlineEmailSize();
 

@@ -249,6 +249,13 @@ public class UserInfo implements HasInfo {
     }
   }
 
+  public void maybeUpdatePresence(Presence presence) {
+    if (presence != null && isLoggedIn() && getPresence() != presence) {
+      getUserData().setPresence(presence);
+      BeeKeeper.getScreen().updateUserPresence(presence);
+    }
+  }
+
   public boolean openInNewTab() {
     return openInNewTab;
   }

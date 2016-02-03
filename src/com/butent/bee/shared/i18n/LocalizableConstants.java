@@ -652,6 +652,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String presenceAway();
 
+  String presenceChangeTooltip();
+
   String presenceIdle();
 
   String presenceOffline();

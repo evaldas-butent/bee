@@ -185,7 +185,7 @@
 
 .bee-UserContainer {
   position: absolute;
-  right: 8px;
+  right: 20px;
   top: 8px;
   border-collapse: collapse;
 }
@@ -193,16 +193,12 @@
   max-width: 39px;
   max-height: 39px;
   border: 2px solid #fafafa;
-  margin-right: 2em;
   border-radius: 50%;
 }
 .bee-UserSignature {
   color: black;
   font-size: 16px;
   font-weight: bold;
-}
-.bee-UserExitContainer {
-  margin-right: 12px;
 }
 .bee-UserExit {
   cursor: pointer;
@@ -3576,7 +3572,6 @@ textarea,
 }
 
 .bee-PopupUsersContent {
-  width: 230px;
   border-collapse: collapse;
   font-size: 14px;
 }
@@ -3850,4 +3845,44 @@ textarea,
   margin-bottom: -1px;
   overflow: hidden;
   visibility: hidden;
+}
+
+.bee-UserPresenceIcon {
+  margin-top: 15px;
+  font-size: 14px;
+}
+
+.bee-UserPresenceIcon.bee-Presence-online {
+  color: lightgreen;
+}
+.bee-UserPresenceIcon.bee-Presence-idle {
+  color: powderblue;
+}
+.bee-UserPresenceIcon.bee-Presence-away {
+  color: gold;
+}
+.bee-UserPresenceIcon.bee-Presence-offline {
+  color: #f88;
+}
+
+.bee-PresenceChange {
+  background-color: white;
+}
+.bee-PresenceChangeTable {
+  border-collapse: collapse;
+  color: #555;
+  cursor: pointer;
+}
+.bee-PresenceChangeTable tr:hover {
+  background-color: #f7f7f7;
+  color: black;
+}
+.bee-PresenceChangeTable td {
+  padding: 5px 8px;
+}
+.bee-PresenceChangeIcon {
+  font-size: large;
+}
+.bee-PresenceChangeLabel {
+  font-size: smaller;
 }

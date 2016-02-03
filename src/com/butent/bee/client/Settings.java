@@ -170,6 +170,10 @@ public final class Settings {
     return getBoolean("showLogout");
   }
 
+  public static boolean showUserPresence() {
+    return getBoolean("showUserPresence");
+  }
+
   public static boolean showUserPhoto() {
     return getBoolean("showUserPhoto");
   }

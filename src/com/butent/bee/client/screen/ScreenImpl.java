@@ -11,6 +11,7 @@ import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.Widget;
 
+
 import com.butent.bee.client.Bee;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
@@ -61,6 +62,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasHtml;
 import com.butent.bee.shared.Pair;
+import com.butent.bee.shared.communication.Presence;
 import com.butent.bee.shared.css.CssUnit;
 import com.butent.bee.shared.css.values.FontSize;
 import com.butent.bee.shared.data.BeeRow;
@@ -80,8 +82,10 @@ import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.UiConstants;
 import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.ExtendedProperty;
 import com.butent.bee.shared.utils.NameUtils;
+
 
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -114,7 +118,9 @@ public class ScreenImpl implements Screen {
 
   private static final String STYLE_USERS_COUNT = BeeConst.CSS_CLASS_PREFIX + "OnlineUsersCount";
   private static final String STYLE_USERS_ICON = BeeConst.CSS_CLASS_PREFIX + "OnlineUsersIcon";
+
   private static final String STYLE_POPUP_USERS = BeeConst.CSS_CLASS_PREFIX + "PopupUsers";
+  private static final String STYLE_POPUP_PRESENCE = BeeConst.CSS_CLASS_PREFIX + "PresenceChange";
 
   private static final int NORTH_HEIGHT = 112;
   private static final int MENU_HEIGHT = 50;
@@ -128,6 +134,7 @@ public class ScreenImpl implements Screen {
   private HasWidgets menuPanel;
 
   private HasWidgets userPhotoContainer;
+  private Panel userPresenceContainer;
   private HasHtml userSignature;
 
   private Notification notification;
@@ -501,7 +508,12 @@ public class ScreenImpl implements Screen {
 
   @Override
   public void updateUserData(UserData userData) {
-    if (userData != null && getUserPhotoContainer() != null) {
+    if (userData == null) {
+      logger.warning("user data is null");
+      return;
+    }
+
+    if (getUserPhotoContainer() != null) {
       getUserPhotoContainer().clear();
       final Image image;
 
@@ -583,6 +595,15 @@ public class ScreenImpl implements Screen {
 
       getUserPhotoContainer().add(newsBadge);
       getUserPhotoContainer().add(image);
+    }
+
+    if (getUserPresenceContainer() != null) {
+      Presence presence = userData.getPresence();
+      if (presence == null) {
+        presence = Presence.ONLINE;
+      }
+
+      updateUserPresence(presence);
     }
 
     if (getUserSignature() != null) {
@@ -819,6 +840,12 @@ public class ScreenImpl implements Screen {
       setUserPhotoContainer(photoContainer);
     }
 
+    if (Settings.showUserPresence()) {
+      Flow presenceContainer = new Flow(BeeConst.CSS_CLASS_PREFIX + "UserPresenceContainer");
+      userContainer.add(presenceContainer);
+      setUserPresenceContainer(presenceContainer);
+    }
+
     if (Settings.showLogout()) {
       Simple exitContainer = new Simple();
       exitContainer.addStyleName(BeeConst.CSS_CLASS_PREFIX + "LogoutContainer");
@@ -999,6 +1026,10 @@ public class ScreenImpl implements Screen {
     this.userPhotoContainer = userPhotoContainer;
   }
 
+  protected void setUserPresenceContainer(Panel userPresenceContainer) {
+    this.userPresenceContainer = userPresenceContainer;
+  }
+
   protected void setUserSignature(HasHtml userSignature) {
     this.userSignature = userSignature;
   }
@@ -1079,6 +1110,10 @@ public class ScreenImpl implements Screen {
 
   private HasWidgets getUserPhotoContainer() {
     return userPhotoContainer;
+  }
+
+  private Panel getUserPresenceContainer() {
+    return userPresenceContainer;
   }
 
   private HasHtml getUserSignature() {
@@ -1207,8 +1242,20 @@ public class ScreenImpl implements Screen {
 
           img.addStyleName(STYLE_POPUP_USERS + "Photo");
 
-          table.setWidget(r, 0, img);
-          table.setText(r, 1, user.getUserSign());
+          int c = 0;
+
+          table.setWidget(r, c++, img);
+          table.setText(r, c++, user.getUserSign());
+
+          Presence presence = user.getPresence();
+          if (presence != null) {
+            FaLabel presenceWidget = new FaLabel(presence.getIcon(), presence.getStyleName());
+            presenceWidget.addStyleName(STYLE_POPUP_USERS + "Presence");
+            presenceWidget.setTitle(presence.getCaption());
+
+            table.setWidget(r, c, presenceWidget);
+          }
+          c++;
 
           DomUtils.setDataIndex(table.getRow(r), user.getPerson());
           r++;
@@ -1282,7 +1329,6 @@ public class ScreenImpl implements Screen {
   }
 
   public static void updateOnlineEmails(int size) {
-
     FaLabel label = BeeKeeper.getScreen().getOnlineEmailLabel();
     Flow emailSize = BeeKeeper.getScreen().getOnlineEmailSize();
 
@@ -1309,6 +1355,56 @@ public class ScreenImpl implements Screen {
     } else {
       newsBadge.setStyleName(BeeConst.CSS_CLASS_PREFIX + "NewsSize-None");
       newsBadge.getElement().setInnerText(BeeConst.STRING_EMPTY);
+    }
+  }
+
+  @Override
+  public void updateUserPresence(Presence presence) {
+    if (getUserPresenceContainer() != null && presence != null
+        && DomUtils.getDataIndexInt(getUserPresenceContainer().getElement())
+          != presence.ordinal()) {
+
+      getUserPresenceContainer().clear();
+      DomUtils.setDataIndex(getUserPresenceContainer().getElement(), presence.ordinal());
+
+      FaLabel presenceWidget = new FaLabel(presence.getIcon(), presence.getStyleName());
+      presenceWidget.addStyleName(BeeConst.CSS_CLASS_PREFIX + "UserPresenceIcon");
+      presenceWidget.setTitle(Localized.getConstants().presenceChangeTooltip());
+
+      presenceWidget.addClickHandler(event -> {
+        HtmlTable table = new HtmlTable(STYLE_POPUP_PRESENCE + "Table");
+        int r = 0;
+
+        for (Presence p : Presence.values()) {
+          table.setWidgetAndStyle(r, 0, new FaLabel(p.getIcon(), p.getStyleName()),
+              STYLE_POPUP_PRESENCE + "Icon");
+          table.setWidgetAndStyle(r, 1, new Label(p.getCaption()),
+              STYLE_POPUP_PRESENCE + "Label");
+
+          DomUtils.setDataIndex(table.getRow(r), p.ordinal());
+          r++;
+        }
+
+        table.addClickHandler(te -> {
+          Element targetElement = EventUtils.getEventTargetElement(te);
+          TableRowElement rowElement = DomUtils.getParentRow(targetElement, true);
+
+          int index = DomUtils.getDataIndexInt(rowElement);
+          Presence newPresence = EnumUtils.getEnumByIndex(Presence.class, index);
+
+          UiHelper.closeDialog(table);
+          BeeKeeper.getUser().maybeUpdatePresence(newPresence);
+        });
+
+        Popup popup = new Popup(OutsideClick.CLOSE, STYLE_POPUP_PRESENCE);
+
+        popup.setWidget(table);
+        popup.setHideOnEscape(true);
+
+        popup.showRelativeTo(presenceWidget.getElement());
+      });
+
+      getUserPresenceContainer().add(presenceWidget);
     }
   }
 
