@@ -278,6 +278,10 @@ public class UserData implements BeeSerializable, HasInfo {
         && hasRight(RightsObjectType.DATA, viewName, state);
   }
 
+  public boolean hasPhoto() {
+    return !BeeUtils.isEmpty(getPhotoFileName());
+  }
+
   public boolean isAnyModuleVisible(String input) {
     if (BeeUtils.isEmpty(input) || Module.NEVER_MIND.equals(input)) {
       return true;

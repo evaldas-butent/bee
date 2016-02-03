@@ -96,11 +96,9 @@ public interface Screen extends NotificationListener, HasExtendedInfo {
 
   boolean updateProgress(String id, String label, double value);
 
+  void updateUserCount(int count);
+
   void updateUserData(UserData userData);
-
-  FaLabel getOnlineUserLabel();
-
-  Flow getOnlineUserSize();
 
   Flow getOnlineEmailSize();
 

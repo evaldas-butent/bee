@@ -11,6 +11,8 @@ public enum Presence implements HasCaption {
   AWAY(FontAwesome.BICYCLE, Localized.getConstants().presenceAway(), "away"),
   OFFLINE(FontAwesome.MINUS_CIRCLE, Localized.getConstants().presenceOffline(), "offline");
 
+  private static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "Presence-";
+
   private final FontAwesome icon;
   private final String caption;
 
@@ -32,7 +34,7 @@ public enum Presence implements HasCaption {
   }
 
   public String getStyleName() {
-    return BeeConst.CSS_CLASS_PREFIX + "Presence-" + styleSuffix;
+    return STYLE_PREFIX + styleSuffix;
   }
 
   public String getStyleSuffix() {

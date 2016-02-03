@@ -9,7 +9,6 @@ import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.render.PhotoRenderer;
 import com.butent.bee.client.screen.Domain;
-import com.butent.bee.client.screen.ScreenImpl;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.websocket.Endpoint;
@@ -171,7 +170,7 @@ public class Users {
     OnlineWidget widget = new OnlineWidget(sessionId, userData);
     onlinePanel.add(widget);
 
-    ScreenImpl.updateOnlineUsers();
+    BeeKeeper.getScreen().updateUserCount(openSessions.size());
     updateHeader(initial);
   }
 
@@ -262,7 +261,7 @@ public class Users {
 
   public boolean hasPhoto(Long userId) {
     UserData userData = getUserData(userId);
-    return userData != null && !BeeUtils.isEmpty(userData.getPhotoFileName());
+    return userData != null && userData.hasPhoto();
   }
 
   public boolean isOpen(String sessionId) {
@@ -369,7 +368,7 @@ public class Users {
         onlinePanel.remove(widget);
       }
 
-      ScreenImpl.updateOnlineUsers();
+      BeeKeeper.getScreen().updateUserCount(openSessions.size());
       updateHeader(false);
 
     } else {
