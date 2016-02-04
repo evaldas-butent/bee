@@ -397,7 +397,7 @@ public final class BeeUtils {
   /**
    * Returns the result of applying {@code predicate} to {@code input}. If predicate is null,
    * returns true.
-   * 
+   *
    * @param predicate is the condition which should be checked.
    * @param input which should be checked.
    * @return true if {@code predicate} applies to {@code input}.

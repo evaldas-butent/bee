@@ -458,7 +458,7 @@ public class LoginServlet extends HttpServlet {
           }
         }
         if (ok) {
-          if (!usr.validateHost(req) || !usr.authenticateUser(userName, password)) {
+          if (!usr.validateHost(req.getRemoteAddr()) || !usr.authenticateUser(userName, password)) {
             try {
               req.logout();
               session.invalidate();

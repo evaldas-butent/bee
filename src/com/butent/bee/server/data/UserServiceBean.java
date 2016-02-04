@@ -65,7 +65,6 @@ import javax.ejb.EJBContext;
 import javax.ejb.Lock;
 import javax.ejb.LockType;
 import javax.ejb.Singleton;
-import javax.servlet.http.HttpServletRequest;
 
 /**
  * Responsible for users system, their login status, localization, user and roles cache etc.
@@ -896,12 +895,11 @@ public class UserServiceBean {
     }
   }
 
-  public boolean validateHost(HttpServletRequest request) {
+  public boolean validateHost(String addr) {
     if (ipFilters.isEmpty()) {
       return true;
     }
-    Assert.notNull(request);
-    String addr = request.getRemoteAddr();
+    Assert.notEmpty(addr);
     DateTime now = TimeUtils.nowMinutes();
 
     for (IpFilter ipFilter : ipFilters) {
