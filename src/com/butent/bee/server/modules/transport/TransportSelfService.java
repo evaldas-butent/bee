@@ -33,7 +33,6 @@ import com.butent.bee.shared.html.builder.elements.Input.Type;
 import com.butent.bee.shared.html.builder.elements.Tbody;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.i18n.SupportedLocale;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.time.TimeUtils;
@@ -47,7 +46,6 @@ import org.w3c.dom.NodeList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.TreeMap;
 
 import javax.ejb.EJB;
@@ -87,7 +85,7 @@ public class TransportSelfService extends LoginServlet {
     String path = req.getPathInfo();
 
     if (BeeUtils.isEmpty(path)) {
-      html = getInitialPage(req, getInitialUserInterface());
+      html = getInitialPage(req, UserInterface.SELF_SERVICE);
 
     } else if (BeeUtils.same(path, getQueryPath())) {
       Map<String, String> parameters = HttpUtils.getParameters(req, false);
@@ -126,10 +124,6 @@ public class TransportSelfService extends LoginServlet {
   @Override
   protected boolean isProtected(HttpServletRequest req) {
     return !BeeUtils.same(req.getPathInfo(), PATH_QUERY) && super.isProtected(req);
-  }
-
-  protected UserInterface getInitialUserInterface() {
-    return UserInterface.SELF_SERVICE;
   }
 
   protected static String getQueryPath() {
@@ -214,7 +208,7 @@ public class TransportSelfService extends LoginServlet {
           value = req.getHeader(HttpHeaders.USER_AGENT);
           break;
         case COL_USER_INTERFACE:
-          row.setValue(i, UserInterface.normalize(getInitialUserInterface()).ordinal());
+          row.setValue(i, UserInterface.normalize(UserInterface.SELF_SERVICE).ordinal());
           break;
 
         default:

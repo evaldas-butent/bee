@@ -44,38 +44,47 @@ public final class TransportConstants {
     }
   }
 
-  public enum TranspRegStatus implements HasCaption {
-    NEW(Localized.getConstants().trRegistrationStatusNew()),
-    CONFIRMED(Localized.getConstants().trRegistrationStatusConfirmed()),
-    REJECTED(Localized.getConstants().trRegistrationStatusRejected());
-
-    private final String caption;
-
-    TranspRegStatus(String caption) {
-      this.caption = caption;
-    }
+  public enum CargoRequestStatus implements HasLocalizedCaption {
+    NEW {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.trRequestStatusNew();
+      }
+    },
+    ANSWERED {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.trRequestStatusAnswered();
+      }
+    },
+    APPROVED {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.trRequestStatusApproved();
+      }
+    },
+    REJECTED {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.trRequestStatusRejected();
+      }
+    },
+    CONFIRMED {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.trRequestStatusConfirmed();
+      }
+    },
+    LOST {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.trRequestStatusLost();
+      }
+    };
 
     @Override
     public String getCaption() {
-      return caption;
-    }
-  }
-
-  public enum CargoRequestStatus implements HasCaption {
-    NEW(Localized.getConstants().trRequestStatusNew()),
-    ACTIVE(Localized.getConstants().trRequestStatusActive()),
-    REJECTED(Localized.getConstants().trRequestStatusRejected()),
-    FINISHED(Localized.getConstants().trRequestStatusFinished());
-
-    private final String caption;
-
-    CargoRequestStatus(String caption) {
-      this.caption = caption;
-    }
-
-    @Override
-    public String getCaption() {
-      return caption;
+      return getCaption(Localized.getConstants());
     }
   }
 
@@ -221,7 +230,6 @@ public final class TransportConstants {
     EnumUtils.register(TripStatus.class);
     EnumUtils.register(OrderStatus.class);
 
-    EnumUtils.register(TranspRegStatus.class);
     EnumUtils.register(CargoRequestStatus.class);
 
     EnumUtils.register(FuelSeason.class);
@@ -317,7 +325,6 @@ public final class TransportConstants {
 
   public static final String TBL_FUEL_TYPES = "FuelTypes";
 
-  public static final String TBL_REGISTRATIONS = "TranspRegistrations";
   public static final String TBL_SHIPMENT_REQUESTS = "ShipmentRequests";
   public static final String TBL_CARGO_REQUESTS = "CargoRequests";
 
@@ -373,11 +380,10 @@ public final class TransportConstants {
   public static final String VIEW_ASSESSMENT_TRANSPORTATIONS = "AssessmentTransportations";
   public static final String VIEW_ASSESSMENT_EXECUTORS = "AssessmentExecutors";
 
-  public static final String VIEW_REGISTRATIONS = "TranspRegistrations";
   public static final String VIEW_SHIPMENT_REQUESTS = "ShipmentRequests";
+  public static final String VIEW_SHIPMENT_REQUEST_FILES = "ShipmentRequestFiles";
   public static final String VIEW_CARGO_REQUESTS = "CargoRequests";
   public static final String VIEW_CARGO_REQUEST_TEMPLATES = "CargoReqTemplates";
-  public static final String VIEW_CARGO_REQUEST_FILES = "CargoRequestFiles";
 
   public static final String VIEW_EXPEDITION_TYPES = "ExpeditionTypes";
   public static final String VIEW_SHIPPING_TERMS = "ShippingTerms";
@@ -692,30 +698,23 @@ public final class TransportConstants {
 
   public static final String COL_REGISTRATION_DATE = "Date";
   public static final String COL_REGISTRATION_STATUS = "Status";
-
   public static final String COL_REGISTRATION_COMPANY_NAME = "CompanyName";
   public static final String COL_REGISTRATION_COMPANY_CODE = "CompanyCode";
   public static final String COL_REGISTRATION_VAT_CODE = "VatCode";
   public static final String COL_REGISTRATION_CONTACT = "Contact";
   public static final String COL_REGISTRATION_CONTACT_POSITION = "ContactPosition";
-
   public static final String COL_REGISTRATION_ADDRESS = "Address";
   public static final String COL_REGISTRATION_CITY = "City";
   public static final String COL_REGISTRATION_COUNTRY = "Country";
-
   public static final String COL_REGISTRATION_PHONE = "Phone";
   public static final String COL_REGISTRATION_MOBILE = "Mobile";
-
   public static final String COL_REGISTRATION_FAX = "Fax";
   public static final String COL_REGISTRATION_EMAIL = "Email";
-
   public static final String COL_REGISTRATION_EXCHANGE_CODE = "ExchangeCode";
-
   public static final String COL_REGISTRATION_BANK = "Bank";
   public static final String COL_REGISTRATION_BANK_ADDRESS = "BankAddress";
   public static final String COL_REGISTRATION_BANK_ACCOUNT = "BankAccount";
   public static final String COL_REGISTRATION_SWIFT = "Swift";
-
   public static final String COL_REGISTRATION_NOTES = "Notes";
   public static final String COL_REGISTRATION_HOST = "Host";
   public static final String COL_REGISTRATION_AGENT = "Agent";
@@ -746,11 +745,13 @@ public final class TransportConstants {
   public static final String COL_QUERY_NOTES = "Notes";
   public static final String COL_QUERY_HOST = "Host";
   public static final String COL_QUERY_AGENT = "Agent";
+  public static final String COL_QUERY_REASON = "LossReason";
 
   public static final String COL_EXPEDITION_LOGISTICS = "Logistics";
   public static final String COL_EXPEDITION_TYPE_NAME = "Name";
   public static final String COL_SHIPPING_TERM_NAME = "Name";
   public static final String COL_SELF_SERVICE = "SelfService";
+  public static final String COL_SHIPMENT_REQUEST = "ShipmentRequest";
 
   public static final String COL_CRF_REQUEST = "CargoRequest";
 
@@ -780,7 +781,6 @@ public final class TransportConstants {
   public static final String FORM_TRUCK_SETTINGS = "TruckTbSettings";
   public static final String FORM_TRAILER_SETTINGS = "TrailerTbSettings";
 
-  public static final String FORM_REGISTRATION = "TranspRegistration";
   public static final String FORM_SHIPMENT_REQUEST = "ShipmentRequest";
   public static final String FORM_NEW_CARGO_REQUEST = "NewCargoRequest";
   public static final String FORM_CARGO_REQUEST = "CargoRequest";
@@ -788,9 +788,6 @@ public final class TransportConstants {
   public static final String GRID_ASSESSMENT_REQUESTS = "AssessmentRequests";
   public static final String GRID_ASSESSMENT_ORDERS = "AssessmentOrders";
   public static final String GRID_CARGO_REQUESTS = "CargoRequests";
-  public static final String GRID_LOGISTICS_CARGO_REQUESTS = "LogisticsCargoRequests";
-  public static final String GRID_SHIPMENT_REQUESTS = "ShipmentRequests";
-  public static final String GRID_LOGISTICS_SHIPMENT_REQUESTS = "LogisitcsShipmentRequests";
 
   public static final String PROP_COLORS = "Colors";
   public static final String PROP_COUNTRIES = "Countries";

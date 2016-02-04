@@ -230,10 +230,6 @@ public final class TransportHandler {
         new TransportDocumentsGrid(COL_TRANSPORTATION_ORDER));
     GridFactory.registerGridInterceptor("TripDocuments", new TransportDocumentsGrid(COL_TRIP));
 
-    GridFactory.registerGridInterceptor(GRID_SHIPMENT_REQUESTS, new ShipmentRequestsGrid());
-    GridFactory.registerGridInterceptor(GRID_LOGISTICS_CARGO_REQUESTS,
-        new LogisticsShipmentRequestsGrid());
-
     ProvidesGridColumnRenderer provider = new CargoPlaceRenderer.Provider();
     String loading = "Loading";
     String unloading = "Unloading";
@@ -278,8 +274,8 @@ public final class TransportHandler {
     GridFactory.registerGridInterceptor(VIEW_TRIP_PURCHASE_INVOICES, new InvoicesGrid());
 
     GridFactory.registerGridInterceptor(VIEW_CARGO_REQUESTS, new CargoRequestsGrid());
-    GridFactory.registerGridInterceptor(VIEW_CARGO_REQUEST_FILES,
-        new FileGridInterceptor(COL_CRF_REQUEST, AdministrationConstants.COL_FILE,
+    GridFactory.registerGridInterceptor(VIEW_SHIPMENT_REQUEST_FILES,
+        new FileGridInterceptor(COL_SHIPMENT_REQUEST, AdministrationConstants.COL_FILE,
             AdministrationConstants.COL_FILE_CAPTION, AdministrationConstants.ALS_FILE_NAME));
 
     if (!BeeKeeper.getUser().isAdministrator()) {
@@ -333,7 +329,6 @@ public final class TransportHandler {
         new CargoPurchaseInvoiceForm());
     FormFactory.registerFormInterceptor(FORM_TRIP_PURCHASE_INVOICE, new InvoiceForm(null));
 
-    FormFactory.registerFormInterceptor(FORM_REGISTRATION, new TransportRegistrationForm());
     FormFactory.registerFormInterceptor(FORM_SHIPMENT_REQUEST, new ShipmentRequestForm());
     FormFactory.registerFormInterceptor(FORM_NEW_CARGO_REQUEST, new CargoRequestForm());
     FormFactory.registerFormInterceptor(FORM_CARGO_REQUEST, new CargoRequestForm());

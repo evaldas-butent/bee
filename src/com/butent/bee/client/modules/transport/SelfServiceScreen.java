@@ -70,10 +70,6 @@ public class SelfServiceScreen extends ScreenImpl {
 
   private final Map<String, String> activeViews = new HashMap<>();
 
-  public SelfServiceScreen() {
-    super();
-  }
-
   @Override
   public void closeAll() {
     super.closeAll();
@@ -89,10 +85,10 @@ public class SelfServiceScreen extends ScreenImpl {
   public void start(UserData userData) {
     super.start(userData);
 
-    Data.setVisibleViews(Sets.newHashSet(VIEW_CARGO_REQUESTS, VIEW_CARGO_REQUEST_FILES,
+    Data.setVisibleViews(Sets.newHashSet(VIEW_CARGO_REQUESTS, VIEW_SHIPMENT_REQUEST_FILES,
         VIEW_CARGO_REQUEST_TEMPLATES, VIEW_ORDERS, VIEW_CARGO_INVOICES,
         VIEW_CARGO_PURCHASE_INVOICES));
-    Data.setEditableViews(Sets.newHashSet(VIEW_CARGO_REQUESTS, VIEW_CARGO_REQUEST_FILES,
+    Data.setEditableViews(Sets.newHashSet(VIEW_CARGO_REQUESTS, VIEW_SHIPMENT_REQUEST_FILES,
         VIEW_CARGO_REQUEST_TEMPLATES));
 
     Data.setColumnReadOnly(VIEW_CARGO_REQUESTS, COL_CARGO_REQUEST_DATE);
@@ -239,10 +235,6 @@ public class SelfServiceScreen extends ScreenImpl {
     switch (getUserInterface()) {
       case SELF_SERVICE:
         openGrid(GRID_CARGO_REQUESTS, true, COL_CARGO_REQUEST_USER);
-        break;
-
-      case SELF_SERVICE_LOG:
-        openGrid(GRID_LOGISTICS_CARGO_REQUESTS, true, COL_CARGO_REQUEST_USER);
         break;
 
       default:

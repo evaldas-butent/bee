@@ -24,5 +24,7 @@
     <String name="PostIndex" precision="20" label="=postIndex" />
 
     <Text name="Notes" label="=additionalInfo" />
+
+    <Boolean name="Register" label="=loginCommandRegister" />
   </Fields>
 </Table>
