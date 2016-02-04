@@ -28,6 +28,7 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.lowagie.text.DocumentException;
@@ -53,6 +54,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
@@ -82,6 +85,9 @@ public class FileStorageBean {
 
   private File repositoryDir;
 
+  private ConcurrentMap<Long, FileInfo> cache;
+  private long cacheAge;
+
   public String createPdf(String content, String... styleSheets) {
     StringBuilder sb = new StringBuilder();
 
@@ -104,13 +110,11 @@ public class FileStorageBean {
     String parsed = HtmlUtils.cleanXml(sb.append(content).toString());
 
     Map<Long, String> files = HtmlUtils.getFileReferences(parsed);
-    List<FileInfo> tmpFiles = new ArrayList<>();
     String path = null;
 
     try {
       for (Long fileId : files.keySet()) {
         FileInfo fileInfo = getFile(fileId);
-        tmpFiles.add(fileInfo);
         parsed = parsed.replace(files.get(fileId), fileInfo.getFile().toURI().toString());
       }
       StringBuilder html = new StringBuilder("<?xml version=\"1.0\" encoding=\"utf-8\"?>")
@@ -160,11 +164,6 @@ public class FileStorageBean {
 
     } catch (IOException | DocumentException e) {
       logger.error(e);
-
-    } finally {
-      for (FileInfo fileInfo : tmpFiles) {
-        fileInfo.close();
-      }
     }
     return path;
   }
@@ -181,68 +180,88 @@ public class FileStorageBean {
   public FileInfo getFile(Long fileId) throws IOException {
     Assert.notNull(fileId);
 
-    SimpleRow row = qs.getRow(new SqlSelect()
-        .addFields(TBL_FILES, COL_FILE_REPO, COL_FILE_NAME, COL_FILE_SIZE, COL_FILE_TYPE)
-        .addFrom(TBL_FILES)
-        .setWhere(sys.idEquals(TBL_FILES, fileId)));
+    if (System.currentTimeMillis() - cacheAge > TimeUtils.MILLIS_PER_DAY) {
+      ConcurrentMap<Long, FileInfo> oldCache = cache;
+      cache = new ConcurrentHashMap();
+      cacheAge = System.currentTimeMillis();
 
-    if (row == null) {
-      throw new IOException("File not found: id =" + fileId);
+      if (!BeeUtils.isEmpty(oldCache)) {
+        cb.asynchronousCall(() -> {
+          try {
+            Thread.sleep(TimeUtils.MILLIS_PER_MINUTE);
+          } catch (InterruptedException e) {
+            logger.error(e);
+          }
+          oldCache.values().forEach(fileInfo -> fileInfo.close());
+        });
+      }
     }
-    FileInfo storedFile = new FileInfo(fileId, row.getValue(COL_FILE_NAME),
-        row.getLong(COL_FILE_SIZE), row.getValue(COL_FILE_TYPE));
+    FileInfo storedFile = cache.get(fileId);
 
-    String repo = row.getValue(COL_FILE_REPO);
+    if (Objects.isNull(storedFile) || !FileUtils.isInputFile(storedFile.getFile())) {
+      SimpleRow row = qs.getRow(new SqlSelect()
+          .addFields(TBL_FILES, COL_FILE_REPO, COL_FILE_NAME, COL_FILE_SIZE, COL_FILE_TYPE)
+          .addFrom(TBL_FILES)
+          .setWhere(sys.idEquals(TBL_FILES, fileId)));
 
-    if (BeeUtils.isEmpty(repo)) {
-      SqlSelect query = new SqlSelect().setLimit(10)
-          .addFields(TBL_FILE_PARTS, COL_FILE_PART)
-          .addFrom(TBL_FILE_PARTS)
-          .setWhere(SqlUtils.equals(TBL_FILE_PARTS, COL_FILE, fileId))
-          .addOrder(TBL_FILE_PARTS, sys.getIdName(TBL_FILE_PARTS));
+      if (row == null) {
+        throw new IOException("File not found: id =" + fileId);
+      }
+      storedFile = new FileInfo(fileId, row.getValue(COL_FILE_NAME),
+          row.getLong(COL_FILE_SIZE), row.getValue(COL_FILE_TYPE));
 
-      File tmp = File.createTempFile("bee_", null);
-      tmp.deleteOnExit();
-      OutputStream out = new FileOutputStream(tmp);
-      List<byte[]> rs = qs.getBytesColumn(query);
+      String repo = row.getValue(COL_FILE_REPO);
 
-      while (rs.size() > 0) {
-        for (byte[] bytes : rs) {
-          if (bytes != null) {
-            out.write(bytes, 0, bytes.length);
+      if (BeeUtils.isEmpty(repo)) {
+        SqlSelect query = new SqlSelect().setLimit(10)
+            .addFields(TBL_FILE_PARTS, COL_FILE_PART)
+            .addFrom(TBL_FILE_PARTS)
+            .setWhere(SqlUtils.equals(TBL_FILE_PARTS, COL_FILE, fileId))
+            .addOrder(TBL_FILE_PARTS, sys.getIdName(TBL_FILE_PARTS));
+
+        File tmp = File.createTempFile("bee_", null);
+        tmp.deleteOnExit();
+        OutputStream out = new FileOutputStream(tmp);
+        List<byte[]> rs = qs.getBytesColumn(query);
+
+        while (rs.size() > 0) {
+          for (byte[] bytes : rs) {
+            if (bytes != null) {
+              out.write(bytes, 0, bytes.length);
+            }
+          }
+          if (rs.size() < query.getLimit()) {
+            break;
+          }
+          rs = qs.getBytesColumn(query.setOffset(query.getOffset() + query.getLimit()));
+        }
+        out.flush();
+        out.close();
+
+        File res = File.createTempFile("bee_", null);
+        res.deleteOnExit();
+        repo = res.getAbsolutePath();
+
+        ZipInputStream in = new ZipInputStream(new FileInputStream(tmp));
+
+        if (in.getNextEntry() != null) {
+          try {
+            Files.copy(in, res.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            in.closeEntry();
+          } finally {
+            in.close();
           }
         }
-        if (rs.size() < query.getLimit()) {
-          break;
-        }
-        rs = qs.getBytesColumn(query.setOffset(query.getOffset() + query.getLimit()));
+        tmp.delete();
+        storedFile.setTemporary(true);
       }
-      out.flush();
-      out.close();
-
-      File res = File.createTempFile("bee_", null);
-      res.deleteOnExit();
-      repo = res.getAbsolutePath();
-
-      ZipInputStream in = new ZipInputStream(new FileInputStream(tmp));
-
-      if (in.getNextEntry() != null) {
-        try {
-          Files.copy(in, res.toPath(), StandardCopyOption.REPLACE_EXISTING);
-          in.closeEntry();
-        } finally {
-          in.close();
-        }
-      }
-      tmp.delete();
-      storedFile.setTemporary(true);
+      storedFile.setPath(repo);
+      cache.put(fileId, storedFile);
     }
-    storedFile.setPath(repo);
-
-    return storedFile;
+    return FileInfo.restore(storedFile.serialize());
   }
 
-  public List<FileInfo> getFiles(List<Long> fileIds) {
+  public List<FileInfo> getFileInfos(List<Long> fileIds) {
     List<FileInfo> files = new ArrayList<>();
 
     String idName = sys.getIdName(TBL_FILES);

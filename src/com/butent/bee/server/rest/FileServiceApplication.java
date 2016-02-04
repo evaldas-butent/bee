@@ -80,12 +80,11 @@ public class FileServiceApplication extends Application {
 
     try {
       fileInfo = fs.getFile(fileId);
-      fileInfo.setCaption(fileName);
     } catch (IOException e) {
       logger.error(e);
       throw new InternalServerErrorException(e);
     }
-    return response(fileInfo);
+    return response(fileInfo, fileName, false);
   }
 
   @GET
@@ -101,7 +100,7 @@ public class FileServiceApplication extends Application {
     fileInfo.setPath(path);
     fileInfo.setTemporary(true);
 
-    return response(fileInfo);
+    return response(fileInfo, null, true);
   }
 
   @GET
@@ -147,11 +146,8 @@ public class FileServiceApplication extends Application {
           }
           ZipEntry ze = new ZipEntry(name);
           zos.putNextEntry(ze);
-
           Files.copy(fileInfo.getFile().toPath(), zos);
-
           zos.closeEntry();
-          fileInfo.close();
         }
       }
     } catch (IOException e) {
@@ -163,7 +159,7 @@ public class FileServiceApplication extends Application {
     fileInfo.setPath(tmp.getAbsolutePath());
     fileInfo.setTemporary(true);
 
-    return response(fileInfo);
+    return response(fileInfo, null, true);
   }
 
   @POST
@@ -178,22 +174,22 @@ public class FileServiceApplication extends Application {
     }
   }
 
-  private static Response response(FileInfo fileInfo) {
+  private static Response response(FileInfo fileInfo, String fileName, boolean close) {
     StreamingOutput so = new StreamingOutput() {
       @Override
       public void write(OutputStream outputStream) throws WebApplicationException {
-        try (
-            FileInfo file = fileInfo;
-            BufferedOutputStream bus = new BufferedOutputStream(outputStream)
-        ) {
-          Files.copy(file.getFile().toPath(), bus);
+        try (BufferedOutputStream bus = new BufferedOutputStream(outputStream)) {
+          Files.copy(fileInfo.getFile().toPath(), bus);
           bus.flush();
         } catch (IOException e) {
           logger.error(e);
         }
+        if (close) {
+          fileInfo.close();
+        }
       }
     };
-    String name = BeeUtils.notEmpty(fileInfo.getCaption(), fileInfo.getName());
+    String name = BeeUtils.notEmpty(fileName, fileInfo.getCaption(), fileInfo.getName());
 
     if (!BeeUtils.isEmpty(name)) {
       name = UrlEscapers.urlFragmentEscaper()
