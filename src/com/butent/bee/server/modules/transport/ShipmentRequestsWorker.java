@@ -7,6 +7,7 @@ import com.butent.bee.server.data.BeeView;
 import com.butent.bee.server.data.DataEditorBean;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
+import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.rest.CrudWorker;
 import com.butent.bee.server.rest.RestResponse;
 import com.butent.bee.server.rest.annotations.Trusted;
@@ -19,6 +20,7 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.exceptions.BeeException;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.i18n.SupportedLocale;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
@@ -55,11 +57,16 @@ public class ShipmentRequestsWorker {
   SystemBean sys;
   @EJB
   DataEditorBean deb;
+  @EJB
+  UserServiceBean usr;
 
   @POST
   @Path("request")
   @Trusted
   public RestResponse request(JsonObject data) {
+    if (!usr.validateHost(CrudWorker.getValue(data, COL_QUERY_HOST))) {
+      return RestResponse.error(Localized.getConstants().ipBlocked());
+    }
     try {
       BeeView view = sys.getView(VIEW_SHIPMENT_REQUESTS);
       List<JsonObject> places = new ArrayList<>();

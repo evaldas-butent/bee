@@ -6,8 +6,9 @@
   >
   <Columns>
     <SimpleColumn name="Company" />
-    <SimpleColumn name="Message" />
+    <SimpleColumn name="ShipmentRequest" />
 
+    <SimpleColumn name="Message" />
     <SimpleJoin name="Message" joinType="INNER">
       <SimpleColumn name="Date" />
       <SimpleColumn name="Subject" />
@@ -32,4 +33,3 @@
     <OrderBy column="Date" descending="true" />
   </Order>
 </View>
- 

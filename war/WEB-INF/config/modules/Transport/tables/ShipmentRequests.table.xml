@@ -14,7 +14,6 @@
 
     <Relation name="CompanyPerson" relation="CompanyPersons" label="=companyPerson" />
 
-    <Boolean name="CustomerRegistration" label="=loginCommandRegister" />
     <Boolean name="CustomsBrokerage" label="=trRequestCustomsBrokerage" />
     <Boolean name="FreightInsurance" label="=trRequestFreightInsurance" />
 
@@ -25,8 +24,9 @@
 
     <Relation name="Manager" relation="Users" label="=trRequestResponsibleManager" />
 
-    <Enum name="Locale" key="SupportedLocale" label="=userLocale" />
+    <Text name="LossReason" label="=reason" />
 
+    <Enum name="Locale" key="SupportedLocale" label="=userLocale" />
     <Text name="Host" label="=remoteHost" />
     <Text name="Agent" label="=userAgent" />
 

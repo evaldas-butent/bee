@@ -120,7 +120,7 @@
                     <label for="Status">=companyStatus</label>
                   </td>
                   <td>
-                    <input id="Status" name="Type" type="text" maxlength="100"
+                    <input id="Status" name="CustomerType" type="text" maxlength="100"
                            placeholder="UAB, LTD, LLC, ..." disabled="disabled" />
                   </td>
                 </tr>
@@ -129,7 +129,7 @@
                     <label for="Customer">=trRequestCustomerName</label>
                   </td>
                   <td>
-                    <input id="Customer" name="Name" type="text" maxlength="100" />
+                    <input id="Customer" name="CustomerName" type="text" maxlength="100" />
                   </td>
                 </tr>
                 <tr>
@@ -137,7 +137,7 @@
                     <label for="Code">=trRequestCustomerCode</label>
                   </td>
                   <td>
-                    <input id="Code" name="Code" type="text" maxlength="30" />
+                    <input id="Code" name="CustomerCode" type="text" maxlength="30" />
                   </td>
                 </tr>
                 <tr>
@@ -145,7 +145,7 @@
                     <label for="VatCode">=trRequestCustomerVatCode</label>
                   </td>
                   <td>
-                    <input id="VatCode" name="VatCode" type="text" maxlength="30" />
+                    <input id="VatCode" name="CustomerVatCode" type="text" maxlength="30" />
                   </td>
                 </tr>
                 <tr>
@@ -153,7 +153,7 @@
                     <label for="Person">=trRequestCustomerContact</label>
                   </td>
                   <td>
-                    <input id="Person" name="ContactPerson" type="text" required="required"
+                    <input id="Person" name="CustomerContactPerson" type="text" required="required"
                            maxlength="60" />
                   </td>
                 </tr>
@@ -162,7 +162,7 @@
                     <label for="Position">=trRequestCustomerContactPosition</label>
                   </td>
                   <td>
-                    <input id="Position" name="ContactPersonPosition" type="text"
+                    <input id="Position" name="CustomerPersonPosition" type="text"
                            maxlength="100" required="required" disabled="disabled" />
                   </td>
                 </tr>
@@ -171,7 +171,8 @@
                     <label for="Phone">=phone</label>
                   </td>
                   <td>
-                    <input id="Phone" name="Phone" type="tel" required="required" maxlength="50" />
+                    <input id="Phone" name="CustomerPhone" type="tel" required="required"
+                           maxlength="50" />
                   </td>
                 </tr>
                 <tr style="display:none;">
@@ -179,7 +180,8 @@
                     <label for="Fax">=fax</label>
                   </td>
                   <td>
-                    <input id="Fax" name="Fax" type="text" maxlength="50" disabled="disabled" />
+                    <input id="Fax" name="CustomerFax" type="text" maxlength="50"
+                           disabled="disabled" />
                   </td>
                 </tr>
                 <tr>
@@ -187,7 +189,7 @@
                     <label for="Email">=email</label>
                   </td>
                   <td>
-                    <input id="Email" name="Email" type="email" required="required"
+                    <input id="Email" name="CustomerEmail" type="email" required="required"
                            maxlength="255" />
                   </td>
                 </tr>
@@ -196,7 +198,7 @@
                     <label for="Country">=country</label>
                   </td>
                   <td>
-                    <input id="Country" name="Country" type="text" maxlength="60"
+                    <input id="Country" name="CustomerCountry" type="text" maxlength="60"
                            list="Countries-Name" />
                   </td>
                 </tr>
@@ -205,7 +207,8 @@
                     <label for="City">=city</label>
                   </td>
                   <td>
-                    <input id="City" name="City" type="text" maxlength="30" list="Cities-Name" />
+                    <input id="City" name="CustomerCity" type="text" maxlength="30"
+                           list="Cities-Name" />
                   </td>
                 </tr>
                 <tr>
@@ -213,7 +216,7 @@
                     <label for="Address">=address</label>
                   </td>
                   <td>
-                    <input id="Address" name="Address" type="text" maxlength="100" />
+                    <input id="Address" name="CustomerAddress" type="text" maxlength="100" />
                   </td>
                 </tr>
                 <tr>
@@ -221,7 +224,7 @@
                     <label for="PostIndex">=postIndex</label>
                   </td>
                   <td>
-                    <input id="PostIndex" name="PostIndex" type="text" maxlength="30" />
+                    <input id="PostIndex" name="CustomerPostIndex" type="text" maxlength="30" />
                   </td>
                 </tr>
                 <tr>
@@ -231,15 +234,15 @@
                 </tr>
                 <tr>
                   <td colspan="2">
-                    <textarea id="AdditionalInfo" name="AdditionalInfo" rows="2"
+                    <textarea id="AdditionalInfo" name="CustomerNotes" rows="2"
                               style="width:100%"> </textarea>
                   </td>
                 </tr>
                 <tr>
                   <td colspan="2" style="text-align:right;">
-                    <input type="checkbox" id="Registration" name="CustomerRegistration"
+                    <input type="checkbox" id="Register" name="CustomerRegister"
                            onchange="register(this.checked)" />
-                    <label for="Registration">=loginCommandRegister</label>
+                    <label for="Register">=loginCommandRegister</label>
                   </td>
                 </tr>
               </tbody>

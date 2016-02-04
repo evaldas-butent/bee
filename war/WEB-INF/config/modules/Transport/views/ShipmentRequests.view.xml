@@ -5,29 +5,31 @@
       caption="=trRequestsUnregistered" newRowCaption="=trRequestUnregisteredNew"
       newRowForm="ShipmentRequest" editForm="ShipmentRequest"
     >
+  <Relation renderColumns="Date CustomerName" choiceColumns="Date CustomerName" />
   <Columns>
     <SimpleColumn name="Date" />
     <SimpleColumn name="Status" />
 
     <SimpleJoin name="Registration" joinType="LEFT">
-      <SimpleColumn name="Type" />
-      <SimpleColumn name="Name" />
-      <SimpleColumn name="Code" />
-      <SimpleColumn name="VatCode" />
+      <SimpleColumn name="Type" alias="CustomerType" />
+      <SimpleColumn name="Name" alias="CustomerName" />
+      <SimpleColumn name="Code" alias="CustomerCode" />
+      <SimpleColumn name="VatCode" alias="CustomerVatCode" />
 
-      <SimpleColumn name="Phone" />
-      <SimpleColumn name="Fax" />
-      <SimpleColumn name="Email" />
+      <SimpleColumn name="Phone" alias="CustomerPhone" />
+      <SimpleColumn name="Fax" alias="CustomerFax" />
+      <SimpleColumn name="Email" alias="CustomerEmail" />
 
-      <SimpleColumn name="ContactPerson" />
-      <SimpleColumn name="ContactPersonPosition" />
+      <SimpleColumn name="ContactPerson" alias="CustomerContactPerson" />
+      <SimpleColumn name="ContactPersonPosition" alias="CustomerPersonPosition" />
 
-      <SimpleColumn name="Country" />
-      <SimpleColumn name="City" />
-      <SimpleColumn name="Address" />
-      <SimpleColumn name="PostIndex" />
+      <SimpleColumn name="Country" alias="CustomerCountry" />
+      <SimpleColumn name="City" alias="CustomerCity" />
+      <SimpleColumn name="Address" alias="CustomerAddress" />
+      <SimpleColumn name="PostIndex" alias="CustomerPostIndex" />
 
-      <SimpleColumn name="Notes" alias="AdditionalInfo" />
+      <SimpleColumn name="Notes" alias="CustomerNotes" />
+      <SimpleColumn name="Register" alias="CustomerRegister" />
     </SimpleJoin>
 
     <SimpleColumn name="Expedition" />
@@ -53,6 +55,8 @@
         </SimpleJoin>
       </SimpleJoin>
     </SimpleJoin>
+
+    <SimpleColumn name="LossReason" />
 
     <SimpleColumn name="Locale" />
     <SimpleColumn name="Host" />

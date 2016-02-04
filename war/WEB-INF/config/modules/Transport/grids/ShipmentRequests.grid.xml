@@ -2,50 +2,40 @@
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
 
   name="ShipmentRequests" viewName="ShipmentRequests"
-  caption="=trRequestsUnregistered" filter="!(Logistics)"
+  caption="=trRequestsUnregistered"
   >
   <g:columns>
     <DataColumn name="Date" />
     <DataColumn name="Status" />
 
-    <DataColumn name="Name" />
-    <DataColumn name="Code" />
-    <DataColumn name="VatCode" />
+    <DataColumn name="CustomerName" />
+    <DataColumn name="CustomerCode" />
+    <DataColumn name="CustomerVatCode" />
 
-    <DataColumn name="Phone" />
-    <DataColumn name="Fax" />
-    <DataColumn name="Email" />
+    <DataColumn name="CustomerPhone" />
+    <DataColumn name="CustomerFax" />
+    <DataColumn name="CustomerEmail" />
 
-    <DataColumn name="CustomerPerson" />
+    <DataColumn name="CustomerContactPerson" />
     <DataColumn name="CustomerPersonPosition"  />
 
-    <DataColumn name="Country" />
-    <DataColumn name="City" />
-    <DataColumn name="Address" />
-    <DataColumn name="PostIndex" />
+    <DataColumn name="CustomerCountry" />
+    <DataColumn name="CustomerCity" />
+    <DataColumn name="CustomerAddress" />
+    <DataColumn name="CustomerPostIndex" />
 
     <DataColumn name="LoadingDate" />
     <DataColumn name="LoadingCompany" />
     <DataColumn name="LoadingContact" />
-
     <DataColumn name="LoadingCity" />
-
     <DataColumn name="LoadingAddress" />
-    <DataColumn name="LoadingEmail" />
-    <DataColumn name="LoadingPhone" />
-    <DataColumn name="LoadingFax" />
     <DataColumn name="LoadingNumber" />
 
     <DataColumn name="UnloadingDate" />
     <DataColumn name="UnloadingCompany" />
     <DataColumn name="UnloadingContact" />
-
     <DataColumn name="UnloadingCity" />
-
     <DataColumn name="UnloadingAddress" />
-    <DataColumn name="UnloadingEmail" />
-    <DataColumn name="UnloadingPhone" />
-    <DataColumn name="UnloadingFax" />
     <DataColumn name="UnloadingNumber" />
 
     <RelColumn name="Expedition" />
@@ -70,7 +60,10 @@
     <RelColumn name="Manager" />
 
     <DataColumn name="Notes" />
+    <DataColumn name="LossReason" />
     <DataColumn name="Host" />
     <DataColumn name="Agent" />
+
+    <DataColumn name="Logistics" />
   </g:columns>
 </g:Grid>

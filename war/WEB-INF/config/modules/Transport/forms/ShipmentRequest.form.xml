@@ -15,18 +15,24 @@
   name="ShipmentRequest" viewName="ShipmentRequests" caption="=trRequestUnregistered"
   >
   <FlowPanel>
-    <br/>
-
-    <Table kind="controls" style="&table;" cellStyle="&cells;">
+    <Table kind="custom" style="&table; margin-top:10px;" cellStyle="&cells;">
       &cols;
 
       <row>
-        <Label for="Date" class="bee-required bee-hasDefaults" />
-        <InputDateTime source="Date" />
-        <Label for="Status" class="bee-required bee-hasDefaults" />
-        <ListBox source="Status" />
+        <Label for="Date" />
+        <DateTimeLabel source="Date" />
+        <Label for="Status" />
+        <TextLabel source="Status" style="font-weight:bold;" />
         <Label for="Locale" />
         <TextLabel source="Locale" style="font-weight:bold;" />
+      </row>
+      <row>
+        <cell colSpan="3">
+          <text />
+        </cell>
+        <cell colSpan="3">
+          <TextLabel source="LossReason" style="color:red; white-space:pre-wrap;" />
+        </cell>
       </row>
     </Table>
     &separator;
@@ -38,56 +44,63 @@
         &cols;
 
         <row>
-          <Label for="Name" />
-          <InputText source="Name" />
-          <Label for="Type" />
-          <InputText source="Type" />
+          <Label for="CustomerName" />
+          <cell colSpan="2">
+            <FlowPanel>
+              <InputText source="CustomerName" style="width:20em;; margin-right:5px; display:inline;" />
+              <DataSelector source="CustomerType" valueSource="Name" viewName="CompanyTypes"
+                            choiceColumns="Name" style="width:5em;" placeholder="=companyStatus" />
+            </FlowPanel>
+          </cell>
+          <CheckBox source="CustomerRegister" />
         </row>
 
         <row>
-          <Label for="Code" />
-          <InputText source="Code" />
-          <Label for="VatCode" />
-          <InputText source="VATCode" />
+          <Label for="CustomerCode" />
+          <InputText source="CustomerCode" />
+          <Label for="CustomerVatCode" />
+          <InputText source="CustomerVATCode" />
         </row>
 
         <row>
-          <Label for="ContactPerson" />
-          <InputText source="ContactPerson" />
-          <Label for="ContactPersonPosition" />
-          <InputText source="ContactPersonPosition" />
+          <Label for="CustomerContactPerson" />
+          <InputText source="CustomerContactPerson" />
+          <Label for="CustomerPersonPosition" />
+          <InputText source="CustomerPersonPosition" />
         </row>
 
         <row>
-          <Label for="Phone" />
-          <InputText source="Phone" />
-          <Label for="Email" />
-          <InputText source="Email" />
+          <Label for="CustomerPhone" />
+          <InputText source="CustomerPhone" />
+          <Label for="CustomerEmail" />
+          <InputText source="CustomerEmail" />
         </row>
 
         <row>
-          <Label for="Fax" />
-          <InputText source="Fax" />
+          <Label for="CustomerFax" />
+          <InputText source="CustomerFax" />
         </row>
 
         <row>
-          <Label for="Address" />
-          <InputText source="Address" />
-          <Label for="PostIndex" />
-          <InputText source="PostIndex" />
+          <Label for="CustomerAddress" />
+          <InputText source="CustomerAddress" />
+          <Label for="CustomerPostIndex" />
+          <InputText source="CustomerPostIndex" />
         </row>
 
         <row>
-          <Label for="City" />
-          <InputText source="City" />
-          <Label for="Country" />
-          <InputText source="Country" />
+          <Label for="CustomerCity" />
+          <DataSelector source="CustomerCity" valueSource="Name" viewName="Cities"
+                        choiceColumns="Name CountryName" />
+          <Label for="CustomerCountry" />
+          <DataSelector source="CustomerCountry" valueSource="Name" viewName="Countries"
+                        choiceColumns="Name" />
         </row>
 
         <row>
-        <Label for="AdditionalInfo" />
+        <Label for="CustomerNotes" />
           <cell colSpan="3">
-            <InputArea source="AdditionalInfo" style="&area; width:100%;" />
+            <InputArea source="CustomerNotes" style="&area; width:100%;" />
           </cell>
         </row>
       </Table>
@@ -197,21 +210,32 @@
         &cols;
 
         <row>
-          <Label text="=trRequestResponsibleManager" />
-          <DataSelector source="Manager" newRowEnabled="false" style="width: 15em;"/>
+          <Label for="Manager" />
+          <DataSelector source="Manager" newRowEnabled="false" editSource="ManagerPerson"
+                        style="width:15em;"/>
           <Label text="=trRequestNotes" />
           <InputArea source="Notes" style="&area;" />
         </row>
 
         <row>
           <Label for="Host" />
-          <InputArea source="Host" style="&area;" />
+          <TextLabel source="Host" />
           <Label for="Agent" />
-          <InputArea source="Agent" style="&area;" />
+          <TextLabel source="Agent" />
         </row>
       </Table>
     </Details>
     &separator;
 
+    <TabbedPages style="height:300px;">
+      <page>
+        <text>=mails</text>
+        <ChildGrid name="RelatedMessages" relColumn="ShipmentRequest" paging="true" />
+      </page>
+      <page>
+        <text>=files</text>
+        <ChildGrid name="ShipmentRequestFiles" relColumn="ShipmentRequest" />
+      </page>
+    </TabbedPages>
   </FlowPanel>
 </f:Form>
