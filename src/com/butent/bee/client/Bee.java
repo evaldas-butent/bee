@@ -44,10 +44,13 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.rights.RightsUtils;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.ui.UserInterface.Component;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
+import com.butent.bee.shared.utils.Property;
+import com.butent.bee.shared.utils.PropertyUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -91,7 +94,15 @@ public class Bee implements EntryPoint, ClosingHandler {
     }
   }
 
-  private static State getState() {
+  public static long getEntryTime() {
+    return entryTime;
+  }
+
+  public static long getReadyTime() {
+    return readyTime;
+  }
+
+  public static State getState() {
     return state;
   }
 
@@ -275,10 +286,29 @@ public class Bee implements EntryPoint, ClosingHandler {
     });
   }
 
+  private static long entryTime;
+  private static long readyTime;
+
   private static State state;
+
+  public static List<Property> getInfo() {
+    List<Property> info = PropertyUtils.createProperties("State", getState());
+
+    if (getEntryTime() > 0) {
+      info.add(new Property("Entry Time", TimeUtils.renderDateTime(getEntryTime(), true)));
+    }
+
+    if (getReadyTime() > 0) {
+      info.add(new Property("Ready Time", TimeUtils.renderDateTime(getReadyTime(), true)));
+      info.add(new Property("Ready Seconds", TimeUtils.toSeconds(getReadyTime() - getEntryTime())));
+    }
+
+    return info;
+  }
 
   @Override
   public void onModuleLoad() {
+    Bee.entryTime = System.currentTimeMillis();
     setState(State.LOADING);
 
     BeeConst.setClient();
@@ -332,7 +362,9 @@ public class Bee implements EntryPoint, ClosingHandler {
         BeeKeeper.getBus().registerExitHandler(Bee.this);
 
         start();
+
         setState(State.INITIALIZED);
+        Bee.readyTime = System.currentTimeMillis();
       }
     });
 

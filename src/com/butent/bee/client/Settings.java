@@ -138,6 +138,10 @@ public final class Settings {
     return getInt("providerSensitivityMillis");
   }
 
+  public static int getReducedInteractionStatusMinutes() {
+    return getInt("reducedInteractionStatusMinutes");
+  }
+
   public static List<String> getScripts() {
     return getList("scripts");
   }

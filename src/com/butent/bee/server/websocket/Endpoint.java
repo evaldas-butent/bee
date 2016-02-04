@@ -4,6 +4,7 @@ import com.butent.bee.server.Config;
 import com.butent.bee.server.communication.Rooms;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ChatRoom;
+import com.butent.bee.shared.communication.Presence;
 import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogLevel;
@@ -65,6 +66,7 @@ import javax.websocket.server.ServerEndpoint;
 public class Endpoint {
 
   private static final String PROPERTY_USER_ID = "UserId";
+  private static final String PROPERTY_USER_PRESENCE = "UserPresence";
 
   private static final Class<? extends RemoteEndpoint> DEFAULT_REMOTE_ENDPOINT_TYPE =
       RemoteEndpoint.Async.class;
@@ -236,6 +238,17 @@ public class Endpoint {
         }
         break;
 
+      case PRESENCE:
+        PresenceMessage presenceMessage = (PresenceMessage) message;
+
+        if (presenceMessage.isValid()) {
+          setUserPresence(session, presenceMessage.getSessionUser().getPresence());
+          sendToOtherSessions(presenceMessage, session.getId());
+        } else {
+          WsUtils.onInvalidState(message, toLog(session));
+        }
+        break;
+
       case PROGRESS:
         ProgressMessage pm = (ProgressMessage) message;
         String progressId = pm.getProgressId();
@@ -349,7 +362,6 @@ public class Endpoint {
       case INFO:
       case MAIL:
       case ONLINE:
-      case PRESENCE:
       case ROOMS:
       case USERS:
         logger.severe("ws message not supported", message, toLog(session));
@@ -509,7 +521,7 @@ public class Endpoint {
   }
 
   private static SessionUser getSessionUser(Session session) {
-    return new SessionUser(session.getId(), getUserId(session));
+    return new SessionUser(session.getId(), getUserId(session), getUserPresence(session));
   }
 
   private static Long getUserId(Session session) {
@@ -517,6 +529,16 @@ public class Endpoint {
       Object value = session.getUserProperties().get(PROPERTY_USER_ID);
       if (value instanceof Long) {
         return (Long) value;
+      }
+    }
+    return null;
+  }
+
+  private static Presence getUserPresence(Session session) {
+    if (session != null && session.getUserProperties() != null) {
+      Object value = session.getUserProperties().get(PROPERTY_USER_PRESENCE);
+      if (value instanceof Presence) {
+        return (Presence) value;
       }
     }
     return null;
@@ -649,6 +671,10 @@ public class Endpoint {
     session.getUserProperties().put(PROPERTY_USER_ID, userId);
   }
 
+  private static void setUserPresence(Session session, Presence presence) {
+    session.getUserProperties().put(PROPERTY_USER_PRESENCE, presence);
+  }
+
   private static String toLog(Session session) {
     if (session == null) {
       return null;
@@ -706,11 +732,14 @@ public class Endpoint {
     logger.info("ws close", reasonInfo, toLog(session));
 
     if (!openSessions.isEmpty()) {
+      setUserPresence(session, Presence.OFFLINE);
+
       SessionUser sessionUser = getSessionUser(session);
+      PresenceMessage message = new PresenceMessage(sessionUser);
 
       for (Session openSession : openSessions) {
         if (openSession.isOpen()) {
-          send(openSession, PresenceMessage.offline(sessionUser));
+          send(openSession, message);
         }
       }
     }
@@ -742,14 +771,17 @@ public class Endpoint {
   @OnOpen
   public void onOpen(@PathParam("user-id") Long userId, Session session) {
     setUserId(session, userId);
+    setUserPresence(session, Presence.ONLINE);
+
     SessionUser sessionUser = getSessionUser(session);
+    PresenceMessage message = new PresenceMessage(sessionUser);
 
     List<SessionUser> sessionUsers = new ArrayList<>();
 
     if (!openSessions.isEmpty()) {
       for (Session openSession : openSessions) {
         if (openSession.isOpen()) {
-          send(openSession, PresenceMessage.online(sessionUser));
+          send(openSession, message);
           sessionUsers.add(getSessionUser(openSession));
         }
       }

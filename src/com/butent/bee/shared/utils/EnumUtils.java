@@ -387,6 +387,14 @@ public final class EnumUtils {
     return normalized;
   }
 
+  public static String toLowerCase(Enum<?> e) {
+    if (e == null) {
+      return null;
+    } else {
+      return e.name().toLowerCase();
+    }
+  }
+
   private EnumUtils() {
   }
 }

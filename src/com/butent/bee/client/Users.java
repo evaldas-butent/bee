@@ -18,6 +18,7 @@ import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.communication.Presence;
 import com.butent.bee.shared.communication.TextMessage;
 import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.font.FontAwesome;
@@ -35,6 +36,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -143,7 +145,9 @@ public class Users {
   private static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "Online-";
 
   private Map<Long, UserData> users = new HashMap<>();
-  private final Map<String, Long> openSessions = new HashMap<>();
+
+  private final Map<String, Long> openSessions = new LinkedHashMap<>();
+  private final Map<String, Presence> sessionPresence = new HashMap<>();
 
   private final OnlinePanel onlinePanel = new OnlinePanel();
 
@@ -152,7 +156,7 @@ public class Users {
   Users() {
   }
 
-  public void addSession(final String sessionId, long userId, boolean initial) {
+  public void addSession(String sessionId, long userId, Presence presence) {
     Assert.notEmpty(sessionId, "attempt to add empty session");
     if (openSessions.containsKey(sessionId)) {
       logger.severe("session", sessionId, "already exists");
@@ -166,12 +170,15 @@ public class Users {
     }
 
     openSessions.put(sessionId, userId);
+    if (presence != null) {
+      sessionPresence.put(sessionId, presence);
+    }
 
     OnlineWidget widget = new OnlineWidget(sessionId, userData);
     onlinePanel.add(widget);
 
     BeeKeeper.getScreen().updateUserCount(openSessions.size());
-    updateHeader(initial);
+    updateHeader();
   }
 
   public Set<String> getAllSessions() {
@@ -200,6 +207,10 @@ public class Users {
 
       return image;
     }
+  }
+
+  public Presence getPresenceBySession(String sessionId) {
+    return sessionPresence.get(sessionId);
   }
 
   public Set<String> getSessions(Collection<Long> userIds) {
@@ -362,6 +373,7 @@ public class Users {
 
     } else if (openSessions.containsKey(sessionId)) {
       openSessions.remove(sessionId);
+      sessionPresence.remove(sessionId);
 
       OnlineWidget widget = onlinePanel.findBySession(sessionId);
       if (widget != null) {
@@ -369,10 +381,27 @@ public class Users {
       }
 
       BeeKeeper.getScreen().updateUserCount(openSessions.size());
-      updateHeader(false);
+      updateHeader();
 
     } else {
       logger.warning("session not found:", sessionId);
+    }
+  }
+
+  public void updateSession(String sessionId, long userId, Presence presence) {
+    if (BeeUtils.isEmpty(sessionId)) {
+      logger.severe("update session: id is empty");
+
+    } else if (openSessions.containsKey(sessionId)) {
+      if (presence == Presence.OFFLINE) {
+        removeSession(sessionId);
+
+      } else if (presence != null) {
+        sessionPresence.put(sessionId, presence);
+      }
+
+    } else {
+      addSession(sessionId, userId, presence);
     }
   }
 
@@ -425,7 +454,7 @@ public class Users {
     this.sizeBadge = sizeBadge;
   }
 
-  private void updateHeader(boolean initial) {
+  private void updateHeader() {
     Flow header = BeeKeeper.getScreen().getDomainHeader(Domain.ONLINE, null);
     if (header == null) {
       return;
@@ -439,11 +468,8 @@ public class Users {
       header.add(badge);
       setSizeBadge(badge);
 
-    } else if (initial) {
-      getSizeBadge().setValue(size);
-
     } else {
-      getSizeBadge().update(size);
+      getSizeBadge().setValue(size);
     }
   }
 }

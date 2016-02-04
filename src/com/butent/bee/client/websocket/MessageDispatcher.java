@@ -424,8 +424,8 @@ class MessageDispatcher {
         List<SessionUser> sessionUsers = om.getSessionUsers();
         if (sessionUsers.size() > 1) {
           for (int i = 0; i < sessionUsers.size() - 1; i++) {
-            SessionUser sessionUser = sessionUsers.get(i);
-            Global.getUsers().addSession(sessionUser.getSessionId(), sessionUser.getUserId(), true);
+            SessionUser su = sessionUsers.get(i);
+            Global.getUsers().addSession(su.getSessionId(), su.getUserId(), su.getPresence());
           }
         }
 
@@ -444,13 +444,10 @@ class MessageDispatcher {
         break;
 
       case PRESENCE:
-        PresenceMessage supm = (PresenceMessage) message;
-        SessionUser su = supm.getSessionUser();
+        SessionUser su = ((PresenceMessage) message).getSessionUser();
 
-        if (supm.isOnline()) {
-          Global.getUsers().addSession(su.getSessionId(), su.getUserId(), false);
-        } else if (supm.isOffline()) {
-          Global.getUsers().removeSession(su.getSessionId());
+        if (su != null) {
+          Global.getUsers().updateSession(su.getSessionId(), su.getUserId(), su.getPresence());
         } else {
           WsUtils.onInvalidState(message);
         }

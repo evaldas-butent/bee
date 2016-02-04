@@ -3573,23 +3573,39 @@ textarea,
 
 .bee-PopupUsersContent {
   border-collapse: collapse;
-  font-size: 14px;
 }
-
 .bee-PopupUsersContent tr {
   border: 1px solid #e3e3e3;
-  height: 60px;
 }
 .bee-PopupUsersContent tr:hover {
   background-color: #f7f7f7;
   cursor: pointer;
+}
+.bee-PopupUsersContent tr td {
+  padding: 5px 10px;
 }
 
 .bee-PopupUsersPhoto {
   max-width: 40px;
   max-height: 40px;
   border-radius: 50px;
-  margin-left: 20px;
+}
+.bee-PopupUsersLabel {
+  font-size: 14px;
+  white-space: nowrap;
+}
+.bee-PopupUsersPresence {
+  font-size: large;
+  cursor: default;
+}
+.bee-PopupUsersPresence.bee-Presence-online {
+  color: green;
+}
+.bee-PopupUsersPresence.bee-Presence-idle {
+  color: deepskyblue;
+}
+.bee-PopupUsersPresence.bee-Presence-away {
+  color: hotpink;
 }
 
 .bee-DataSelector,
@@ -3857,6 +3873,7 @@ textarea,
 }
 .bee-UserPresenceIcon.bee-Presence-idle {
   color: powderblue;
+  cursor: default;
 }
 .bee-UserPresenceIcon.bee-Presence-away {
   color: gold;
@@ -3870,7 +3887,7 @@ textarea,
 }
 .bee-PresenceChangeTable {
   border-collapse: collapse;
-  color: #555;
+  color: #333;
   cursor: pointer;
 }
 .bee-PresenceChangeTable tr:hover {
@@ -3882,7 +3899,4 @@ textarea,
 }
 .bee-PresenceChangeIcon {
   font-size: large;
-}
-.bee-PresenceChangeLabel {
-  font-size: smaller;
 }

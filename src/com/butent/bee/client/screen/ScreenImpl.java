@@ -11,7 +11,6 @@ import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.Widget;
 
-
 import com.butent.bee.client.Bee;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
@@ -85,7 +84,6 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.ExtendedProperty;
 import com.butent.bee.shared.utils.NameUtils;
-
 
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -460,6 +458,7 @@ public class ScreenImpl implements Screen {
   @Override
   public void start(UserData userData) {
     updateUserData(userData);
+    updateUserPresence(BeeKeeper.getUser().getPresence());
 
     if (!BeeKeeper.getUser().isMenuVisible()) {
       getScreenPanel().setDirectionSize(Direction.NORTH, getNorthHeight(NORTH_HEIGHT), true);
@@ -595,15 +594,6 @@ public class ScreenImpl implements Screen {
 
       getUserPhotoContainer().add(newsBadge);
       getUserPhotoContainer().add(image);
-    }
-
-    if (getUserPresenceContainer() != null) {
-      Presence presence = userData.getPresence();
-      if (presence == null) {
-        presence = Presence.ONLINE;
-      }
-
-      updateUserPresence(presence);
     }
 
     if (getUserSignature() != null) {
@@ -1243,11 +1233,14 @@ public class ScreenImpl implements Screen {
           img.addStyleName(STYLE_POPUP_USERS + "Photo");
 
           int c = 0;
-
           table.setWidget(r, c++, img);
-          table.setText(r, c++, user.getUserSign());
 
-          Presence presence = user.getPresence();
+          Label label = new Label(user.getUserSign());
+          label.addStyleName(STYLE_POPUP_USERS + "Label");
+
+          table.setWidget(r, c++, label);
+
+          Presence presence = Global.getUsers().getPresenceBySession(session);
           if (presence != null) {
             FaLabel presenceWidget = new FaLabel(presence.getIcon(), presence.getStyleName());
             presenceWidget.addStyleName(STYLE_POPUP_USERS + "Presence");
@@ -1371,38 +1364,40 @@ public class ScreenImpl implements Screen {
       presenceWidget.addStyleName(BeeConst.CSS_CLASS_PREFIX + "UserPresenceIcon");
       presenceWidget.setTitle(Localized.getConstants().presenceChangeTooltip());
 
-      presenceWidget.addClickHandler(event -> {
-        HtmlTable table = new HtmlTable(STYLE_POPUP_PRESENCE + "Table");
-        int r = 0;
+      if (presence != Presence.IDLE) {
+        presenceWidget.addClickHandler(event -> {
+          HtmlTable table = new HtmlTable(STYLE_POPUP_PRESENCE + "Table");
+          int r = 0;
 
-        for (Presence p : Presence.values()) {
-          table.setWidgetAndStyle(r, 0, new FaLabel(p.getIcon(), p.getStyleName()),
-              STYLE_POPUP_PRESENCE + "Icon");
-          table.setWidgetAndStyle(r, 1, new Label(p.getCaption()),
-              STYLE_POPUP_PRESENCE + "Label");
+          for (Presence p : Presence.values()) {
+            table.setWidgetAndStyle(r, 0, new FaLabel(p.getIcon(), p.getStyleName()),
+                STYLE_POPUP_PRESENCE + "Icon");
+            table.setWidgetAndStyle(r, 1, new Label(p.getCaption()),
+                STYLE_POPUP_PRESENCE + "Label");
 
-          DomUtils.setDataIndex(table.getRow(r), p.ordinal());
-          r++;
-        }
+            DomUtils.setDataIndex(table.getRow(r), p.ordinal());
+            r++;
+          }
 
-        table.addClickHandler(te -> {
-          Element targetElement = EventUtils.getEventTargetElement(te);
-          TableRowElement rowElement = DomUtils.getParentRow(targetElement, true);
+          table.addClickHandler(te -> {
+            Element targetElement = EventUtils.getEventTargetElement(te);
+            TableRowElement rowElement = DomUtils.getParentRow(targetElement, true);
 
-          int index = DomUtils.getDataIndexInt(rowElement);
-          Presence newPresence = EnumUtils.getEnumByIndex(Presence.class, index);
+            int index = DomUtils.getDataIndexInt(rowElement);
+            Presence newPresence = EnumUtils.getEnumByIndex(Presence.class, index);
 
-          UiHelper.closeDialog(table);
-          BeeKeeper.getUser().maybeUpdatePresence(newPresence);
+            UiHelper.closeDialog(table);
+            BeeKeeper.getUser().maybeUpdatePresence(newPresence);
+          });
+
+          Popup popup = new Popup(OutsideClick.CLOSE, STYLE_POPUP_PRESENCE);
+
+          popup.setWidget(table);
+          popup.setHideOnEscape(true);
+
+          popup.showRelativeTo(presenceWidget.getElement());
         });
-
-        Popup popup = new Popup(OutsideClick.CLOSE, STYLE_POPUP_PRESENCE);
-
-        popup.setWidget(table);
-        popup.setHideOnEscape(true);
-
-        popup.showRelativeTo(presenceWidget.getElement());
-      });
+      }
 
       getUserPresenceContainer().add(presenceWidget);
     }

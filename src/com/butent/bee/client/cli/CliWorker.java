@@ -252,6 +252,9 @@ public final class CliWorker {
     } else if (z.startsWith("autoc") && !args.isEmpty()) {
       AutocompleteProvider.switchTo(args);
 
+    } else if ("bee".equals(z)) {
+      showPropData(v, Bee.getInfo());
+
     } else if ("browser".equals(z) || z.startsWith("wind")) {
       showBrowser(arr);
 
