@@ -41,7 +41,6 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -127,10 +126,8 @@ public final class MailKeeper {
         if (event.hasView(ClassifierConstants.TBL_EMAILS) && event.isEditRow()) {
           event.consume();
 
-          NewMailMessage.create(Collections
-              .singleton(Data.getString(ClassifierConstants.TBL_EMAILS,
-                  event.getRow(), ClassifierConstants.COL_EMAIL_ADDRESS)),
-              null, null, null, null, null, null, false);
+          NewMailMessage.create(Data.getString(ClassifierConstants.TBL_EMAILS, event.getRow(),
+              ClassifierConstants.COL_EMAIL_ADDRESS), null, null, null, null);
         }
       }
     });
@@ -181,8 +178,8 @@ public final class MailKeeper {
           LocalizableMessages loc = Localized.getMessages();
 
           panel.getFormView().notifyInfo(move
-              ? loc.mailMovedMessagesToFolder(response.getResponseAsString())
-              : loc.mailCopiedMessagesToFolder(response.getResponseAsString()),
+                  ? loc.mailMovedMessagesToFolder(response.getResponseAsString())
+                  : loc.mailCopiedMessagesToFolder(response.getResponseAsString()),
               BeeUtils.bracket(panel.getCurrentAccount().findFolder(folderTo).getName()));
         }
       }

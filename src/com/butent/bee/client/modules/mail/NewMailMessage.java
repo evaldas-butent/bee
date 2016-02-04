@@ -46,7 +46,6 @@ import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BiConsumer;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
@@ -64,6 +63,7 @@ import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -121,16 +121,23 @@ public final class NewMailMessage extends AbstractFormInterceptor
   private static final String STYLE_WAITING_FOR_USER_EMAILS = BeeConst.CSS_CLASS_PREFIX
       + "mail-WaitingForUserEmails";
 
+  public static void create(String to, String subject, String content,
+      Collection<FileInfo> attachments, BiConsumer<Long, Boolean> callback) {
+
+    create(Collections.singleton(to), null, null, subject, content, attachments, null, false,
+        callback);
+  }
+
   public static void create(final Set<String> to, final Set<String> cc, final Set<String> bcc,
       final String subject, final String content, final Collection<FileInfo> attachments,
-      final Long relatedId, final boolean isDraft) {
+      final Long relatedId, final boolean isDraft, BiConsumer<Long, Boolean> callback) {
 
     MailKeeper.getAccounts(new BiConsumer<List<AccountInfo>, AccountInfo>() {
       @Override
       public void accept(List<AccountInfo> availableAccounts, AccountInfo defaultAccount) {
         if (!BeeUtils.isEmpty(availableAccounts)) {
           create(availableAccounts, defaultAccount, to, cc, bcc, subject, content, attachments,
-              relatedId, isDraft);
+              relatedId, isDraft).setCallback(callback);
         } else {
           BeeKeeper.getScreen().notifyWarning(Localized.getConstants().mailNoAccountsFound());
         }
@@ -194,7 +201,7 @@ public final class NewMailMessage extends AbstractFormInterceptor
   private final ListBox signaturesWidget = new ListBox();
   private FileCollector attachmentsWidget;
 
-  private Consumer<Boolean> actionCallback;
+  private BiConsumer<Long, Boolean> actionCallback;
 
   private NewMailMessage(List<AccountInfo> availableAccounts, AccountInfo defaultAccount,
       Set<String> to, Set<String> cc, Set<String> bcc, String subject, String content,
@@ -297,7 +304,7 @@ public final class NewMailMessage extends AbstractFormInterceptor
     }
   }
 
-  public void setCallback(Consumer<Boolean> callback) {
+  public void setCallback(BiConsumer<Long, Boolean> callback) {
     this.actionCallback = callback;
   }
 
@@ -440,7 +447,7 @@ public final class NewMailMessage extends AbstractFormInterceptor
         response.notify(BeeKeeper.getScreen());
 
         if (actionCallback != null && !response.hasErrors()) {
-          actionCallback.accept(saveMode);
+          actionCallback.accept(response.getResponseAsLong(), saveMode);
         }
       }
     });
