@@ -422,23 +422,19 @@ class MessageDispatcher {
         OnlineMessage om = (OnlineMessage) message;
 
         List<SessionUser> sessionUsers = om.getSessionUsers();
-        if (sessionUsers.size() > 1) {
-          for (int i = 0; i < sessionUsers.size() - 1; i++) {
-            SessionUser su = sessionUsers.get(i);
-            Global.getUsers().addSession(su.getSessionId(), su.getUserId(), su.getPresence());
-          }
-        }
 
         if (sessionUsers.isEmpty()) {
           WsUtils.onEmptyMessage(message);
 
         } else {
-          Endpoint.setSessionId(sessionUsers.get(sessionUsers.size() - 1).getSessionId());
-
-          if (!om.getChatRooms().isEmpty()) {
-            Global.getRooms().setRoomData(om.getChatRooms());
+          if (sessionUsers.size() > 1) {
+            for (int i = 0; i < sessionUsers.size() - 1; i++) {
+              SessionUser su = sessionUsers.get(i);
+              Global.getUsers().addSession(su.getSessionId(), su.getUserId(), su.getPresence());
+            }
           }
 
+          Endpoint.setSessionId(sessionUsers.get(sessionUsers.size() - 1).getSessionId());
           Endpoint.online();
         }
         break;

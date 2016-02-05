@@ -11,7 +11,6 @@ import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import com.butent.bee.client.communication.Chat;
 import com.butent.bee.client.communication.ChatUtils;
 import com.butent.bee.client.composite.MultiSelector;
-import com.butent.bee.client.composite.RadioGroup;
 import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.dialog.Icon;
@@ -33,7 +32,6 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.HasInfo;
 import com.butent.bee.shared.communication.ChatRoom;
-import com.butent.bee.shared.communication.ChatRoom.Type;
 import com.butent.bee.shared.communication.TextMessage;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.font.FontAwesome;
@@ -42,9 +40,7 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.time.TimeUtils;
-import com.butent.bee.shared.ui.Orientation;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.websocket.messages.ChatMessage;
 import com.butent.bee.shared.websocket.messages.RoomStateMessage;
@@ -61,42 +57,27 @@ public class Rooms implements HasInfo {
 
   private final class RoomSettings {
     private String name;
-    private Type type;
 
     private final List<Long> owners = new ArrayList<>();
-    private final List<Long> dwellers = new ArrayList<>();
 
     private RoomSettings() {
-      this.type = Type.DEFAULT;
       this.owners.add(BeeKeeper.getUser().getUserId());
     }
 
     private RoomSettings(ChatRoom room) {
       this.name = room.getName();
-      this.type = room.getType();
 
       if (!BeeUtils.isEmpty(room.getOwners())) {
         this.owners.addAll(room.getOwners());
-      }
-      if (!BeeUtils.isEmpty(room.getDwellers())) {
-        this.dwellers.addAll(room.getDwellers());
       }
     }
 
     private RoomSettings(RoomSettings other) {
       this.name = other.getName();
-      this.type = other.getType();
 
       if (!BeeUtils.isEmpty(other.getOwners())) {
         this.owners.addAll(other.getOwners());
       }
-      if (!BeeUtils.isEmpty(other.getDwellers())) {
-        this.dwellers.addAll(other.getDwellers());
-      }
-    }
-
-    private List<Long> getDwellers() {
-      return dwellers;
     }
 
     private String getName() {
@@ -107,20 +88,12 @@ public class Rooms implements HasInfo {
       return owners;
     }
 
-    private Type getType() {
-      return type;
-    }
-
     private boolean isValid() {
-      return !BeeUtils.isEmpty(getName()) && getType() != null && !getOwners().isEmpty();
+      return !BeeUtils.isEmpty(getName()) && !getOwners().isEmpty();
     }
 
     private void setName(String name) {
       this.name = name;
-    }
-
-    private void setType(Type type) {
-      this.type = type;
     }
   }
 
@@ -581,12 +554,9 @@ public class Rooms implements HasInfo {
       public void accept(RoomSettings input) {
         if (input.isValid()) {
           List<TextMessage> messages = new ArrayList<>();
-          ChatRoom room = new ChatRoom(input.getName(), input.getType(), messages);
+          ChatRoom room = new ChatRoom(input.getName(), messages);
 
           room.getOwners().addAll(input.getOwners());
-          if (!BeeUtils.isEmpty(input.getDwellers())) {
-            room.getDwellers().addAll(input.getDwellers());
-          }
 
           Endpoint.send(RoomStateMessage.add(room));
         }
@@ -619,17 +589,9 @@ public class Rooms implements HasInfo {
           room.setName(input.getName());
           changed = true;
         }
-        if (room.getType() != input.getType()) {
-          room.setType(input.getType());
-          changed = true;
-        }
 
         if (!BeeUtils.sameElements(room.getOwners(), input.getOwners())) {
           BeeUtils.overwrite(room.getOwners(), input.getOwners());
-          changed = true;
-        }
-        if (!BeeUtils.sameElements(room.getDwellers(), input.getDwellers())) {
-          BeeUtils.overwrite(room.getDwellers(), input.getDwellers());
           changed = true;
         }
 
@@ -696,10 +658,6 @@ public class Rooms implements HasInfo {
     typeLabel.addStyleName(StyleUtils.NAME_REQUIRED);
     table.setWidgetAndStyle(row, 0, typeLabel, stylePrefix + "typeLabel");
 
-    final RadioGroup typeWidget = new RadioGroup(Orientation.HORIZONTAL, roomSettings.getType(),
-        Type.class);
-    table.setWidgetAndStyle(row, 1, typeWidget, stylePrefix + "typeInput");
-
     row++;
     Label ownersLabel = new Label(Localized.getConstants().roomOwners());
     ownersLabel.addStyleName(StyleUtils.NAME_REQUIRED);
@@ -711,18 +669,6 @@ public class Rooms implements HasInfo {
       ownersWidget.setIds(roomSettings.getOwners());
     }
     table.setWidgetAndStyle(row, 1, ownersWidget, stylePrefix + "ownersInput");
-
-    row++;
-    Label dwellersLabel = new Label(Localized.getConstants().roomDwellers());
-    table.setWidgetAndStyle(row, 0, dwellersLabel, stylePrefix + "dwellersLabel");
-
-    final MultiSelector dwellersWidget =
-        MultiSelector.autonomous(AdministrationConstants.VIEW_USERS,
-            Lists.newArrayList(COL_FIRST_NAME, COL_LAST_NAME));
-    if (!BeeUtils.isEmpty(roomSettings.getDwellers())) {
-      dwellersWidget.setIds(roomSettings.getDwellers());
-    }
-    table.setWidgetAndStyle(row, 1, dwellersWidget, stylePrefix + "dwellersInput");
 
     row++;
     Flow commands = new Flow();
@@ -738,11 +684,6 @@ public class Rooms implements HasInfo {
           return;
         }
 
-        Type type = EnumUtils.getEnumByIndex(Type.class, typeWidget.getSelectedIndex());
-        if (type == null) {
-          return;
-        }
-
         List<Long> owners = DataUtils.parseIdList(ownersWidget.getValue());
         if (BeeUtils.isEmpty(owners)) {
           ownersWidget.setFocus(true);
@@ -750,11 +691,8 @@ public class Rooms implements HasInfo {
         }
 
         result.setName(BeeUtils.trim(nameInput.getValue()));
-        result.setType(type);
 
         BeeUtils.overwrite(result.getOwners(), owners);
-        BeeUtils.overwrite(result.getDwellers(),
-            DataUtils.parseIdList(dwellersWidget.getValue()));
 
         dialog.close();
         consumer.accept(result);
@@ -822,15 +760,7 @@ public class Rooms implements HasInfo {
     int row = 0;
 
     table.setText(row, 0, Localized.getConstants().captionId());
-    if (room.getType() != null) {
-      table.setText(row, 2, BeeUtils.toString(roomId));
-    }
-
-    row++;
-    table.setText(row, 0, Localized.getConstants().type());
-    if (room.getType() != null) {
-      table.setText(row, 2, room.getType().getCaption());
-    }
+    table.setText(row, 2, BeeUtils.toString(roomId));
 
     row++;
     table.setText(row, 0, Localized.getConstants().roomOwners());
@@ -838,14 +768,6 @@ public class Rooms implements HasInfo {
     if (!BeeUtils.isEmpty(room.getOwners())) {
       table.setText(row, 2, BeeUtils.join(BeeConst.DEFAULT_LIST_SEPARATOR,
           Global.getUsers().getSignatures(room.getOwners())));
-    }
-
-    row++;
-    table.setText(row, 0, Localized.getConstants().roomDwellers());
-    table.setText(row, 1, BeeUtils.bracket(BeeUtils.size(room.getDwellers())));
-    if (!BeeUtils.isEmpty(room.getDwellers())) {
-      table.setText(row, 2, BeeUtils.join(BeeConst.DEFAULT_LIST_SEPARATOR,
-          Global.getUsers().getSignatures(room.getDwellers())));
     }
 
     row++;
@@ -889,10 +811,8 @@ public class Rooms implements HasInfo {
 
     if (target != null) {
       target.setName(source.getName());
-      target.setType(source.getType());
 
       BeeUtils.overwrite(target.getOwners(), source.getOwners());
-      BeeUtils.overwrite(target.getDwellers(), source.getDwellers());
 
       BeeUtils.overwrite(target.getUsers(), source.getUsers());
 

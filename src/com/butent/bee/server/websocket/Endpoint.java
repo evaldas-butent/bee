@@ -1,7 +1,6 @@
 package com.butent.bee.server.websocket;
 
 import com.butent.bee.server.Config;
-import com.butent.bee.server.communication.Rooms;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ChatRoom;
 import com.butent.bee.shared.communication.Presence;
@@ -163,16 +162,16 @@ public class Endpoint {
 
       case CHAT:
         ChatMessage chatMessage = (ChatMessage) message;
-        room = Rooms.getRoom(chatMessage.getRoomId());
+        // room = Rooms.getRoom(chatMessage.getRoomId());
 
         if (!chatMessage.isValid()) {
           WsUtils.onEmptyMessage(message, toLog(session));
 
-        } else if (room == null) {
-          WsUtils.onInvalidState(message, toLog(session));
+          // } else if (room == null) {
+          // WsUtils.onInvalidState(message, toLog(session));
 
-        } else if (Rooms.addMessage(room, chatMessage.getTextMessage())) {
-          sendToNeighbors(room, message, session.getId());
+          // } else if (Rooms.addMessage(room, chatMessage.getTextMessage())) {
+          // sendToNeighbors(room, message, session.getId());
 
         } else {
           logger.warning("cannot add message", message);
@@ -278,22 +277,22 @@ public class Endpoint {
           WsUtils.onInvalidState(message, toLog(session));
 
         } else if (rsm.isNew()) {
-          room = Rooms.addRoom(rsm.getRoom());
-          if (room != null) {
-            sendToOccupants(room, RoomStateMessage.add(room));
-          }
+          // room = Rooms.addRoom(rsm.getRoom());
+          // if (room != null) {
+          // sendToOccupants(room, RoomStateMessage.add(room));
+          // }
 
         } else if (rsm.isUpdated()) {
-          room = Rooms.updateRoom(rsm.getRoom());
-          if (room != null) {
-            sendToAll(RoomStateMessage.update(room));
-          }
+          // room = Rooms.updateRoom(rsm.getRoom());
+          // if (room != null) {
+          // sendToAll(RoomStateMessage.update(room));
+          // }
 
         } else if (rsm.isRemoved()) {
-          room = Rooms.removeRoom(rsm.getRoom().getId());
-          if (room != null) {
-            sendToOccupants(room, RoomStateMessage.remove(room));
-          }
+          // room = Rooms.removeRoom(rsm.getRoom().getId());
+          // if (room != null) {
+          // sendToOccupants(room, RoomStateMessage.remove(room));
+          // }
 
         } else {
           WsUtils.onInvalidState(message, toLog(session));
@@ -303,31 +302,31 @@ public class Endpoint {
 
       case ROOM_USER:
         RoomUserMessage rum = (RoomUserMessage) message;
-        room = Rooms.getRoom(rum.getRoomId());
+        // room = Rooms.getRoom(rum.getRoomId());
 
-        if (room == null) {
-          WsUtils.onInvalidState(message, toLog(session));
-
-        } else {
-          boolean ok;
-          if (rum.join()) {
-            ok = room.join(rum.getUserId());
-          } else if (rum.quit()) {
-            ok = room.quit(rum.getUserId());
-          } else {
-            ok = false;
-          }
-
-          if (ok) {
-            if (rum.join()) {
-              send(session, RoomStateMessage.load(room));
-            }
-            sendToNeighbors(room, message, session.getId());
-
-          } else {
-            WsUtils.onInvalidState(message, toLog(session));
-          }
-        }
+        // if (room == null) {
+        // WsUtils.onInvalidState(message, toLog(session));
+        //
+        // } else {
+        // boolean ok;
+        // if (rum.join()) {
+        // ok = room.join(rum.getUserId());
+        // } else if (rum.quit()) {
+        // ok = room.quit(rum.getUserId());
+        // } else {
+        // ok = false;
+        // }
+        //
+        // if (ok) {
+        // if (rum.join()) {
+        // send(session, RoomStateMessage.load(room));
+        // }
+        // sendToNeighbors(room, message, session.getId());
+        //
+        // } else {
+        // WsUtils.onInvalidState(message, toLog(session));
+        // }
+        // }
 
         break;
 
@@ -349,7 +348,7 @@ public class Endpoint {
               break;
 
             case ROOMS:
-              send(session, new InfoMessage(caption, Rooms.getInfo()));
+              // send(session, new InfoMessage(caption, Rooms.getInfo()));
               break;
 
             case SESSION:
@@ -793,6 +792,6 @@ public class Endpoint {
 
     sessionUsers.add(sessionUser);
 
-    send(session, new OnlineMessage(sessionUsers, Rooms.getRoomDataWithoutMessages(userId)));
+    send(session, new OnlineMessage(sessionUsers));
   }
 }

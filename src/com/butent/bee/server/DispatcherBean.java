@@ -2,7 +2,6 @@ package com.butent.bee.server;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 
-import com.butent.bee.server.communication.Rooms;
 import com.butent.bee.server.data.DataServiceBean;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
@@ -288,9 +287,6 @@ public class DispatcherBean {
 
     } else if (BeeUtils.same(svc, Service.GET_MENU)) {
       response = uiHolder.getMenu(reqInfo.hasParameter(Service.VAR_RIGHTS));
-
-    } else if (BeeUtils.same(svc, Service.GET_ROOM)) {
-      response = Rooms.getRoom(reqInfo);
 
     } else if (BeeUtils.same(svc, Service.WHERE_AM_I)) {
       response = ResponseObject.info(System.currentTimeMillis(), BeeConst.whereAmI());

@@ -4,9 +4,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.HasInfo;
 import com.butent.bee.shared.data.DataUtils;
-import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.time.TimeUtils;
-import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.Property;
@@ -20,26 +18,8 @@ import java.util.Vector;
 
 public class ChatRoom implements BeeSerializable, HasInfo {
 
-  public enum Type implements HasCaption {
-    PUBLIC(Localized.getConstants().roomTypePublic()),
-    PRIVATE(Localized.getConstants().roomTypePrivate());
-
-    public static final Type DEFAULT = PUBLIC;
-
-    private final String caption;
-
-    Type(String caption) {
-      this.caption = caption;
-    }
-
-    @Override
-    public String getCaption() {
-      return caption;
-    }
-  }
-
   private enum Serial {
-    ID, NAME, TYPE, OWNERS, DWELLERS, USERS, MESSAGES, MESSAGE_COUNT, MAX_TIME
+    ID, NAME, OWNERS, USERS, MESSAGES, MESSAGE_COUNT, MAX_TIME
   }
 
   public static final int DEFAULT_CAPACITY = 1024;
@@ -62,10 +42,7 @@ public class ChatRoom implements BeeSerializable, HasInfo {
 
   private String name;
 
-  private Type type;
   private final Vector<Long> owners = new Vector<>();
-
-  private final Vector<Long> dwellers = new Vector<>();
 
   private final Vector<Long> users = new Vector<>();
 
@@ -74,10 +51,9 @@ public class ChatRoom implements BeeSerializable, HasInfo {
   private int messageCount;
   private long maxTime;
 
-  public ChatRoom(String name, Type type, Collection<TextMessage> messages) {
+  public ChatRoom(String name, Collection<TextMessage> messages) {
     this.id = idCounter++;
     this.name = name;
-    this.type = type;
     this.messages = messages;
   }
 
@@ -107,13 +83,8 @@ public class ChatRoom implements BeeSerializable, HasInfo {
     copy.setId(getId());
     copy.setName(getName());
 
-    copy.setType(getType());
-
     if (!BeeUtils.isEmpty(getOwners())) {
       copy.getOwners().addAll(getOwners());
-    }
-    if (!BeeUtils.isEmpty(getDwellers())) {
-      copy.getDwellers().addAll(getDwellers());
     }
 
     if (!BeeUtils.isEmpty(getUsers())) {
@@ -146,10 +117,6 @@ public class ChatRoom implements BeeSerializable, HasInfo {
           setName(value);
           break;
 
-        case TYPE:
-          setType(Codec.unpack(Type.class, value));
-          break;
-
         case OWNERS:
           if (!owners.isEmpty()) {
             owners.clear();
@@ -161,22 +128,6 @@ public class ChatRoom implements BeeSerializable, HasInfo {
               Long owner = BeeUtils.toLongOrNull(os);
               if (DataUtils.isId(owner)) {
                 owners.add(owner);
-              }
-            }
-          }
-          break;
-
-        case DWELLERS:
-          if (!dwellers.isEmpty()) {
-            dwellers.clear();
-          }
-
-          String[] dArr = Codec.beeDeserializeCollection(value);
-          if (dArr != null) {
-            for (String ds : dArr) {
-              Long dweller = BeeUtils.toLongOrNull(ds);
-              if (DataUtils.isId(dweller)) {
-                dwellers.add(dweller);
               }
             }
           }
@@ -222,18 +173,14 @@ public class ChatRoom implements BeeSerializable, HasInfo {
     }
   }
 
-  public Vector<Long> getDwellers() {
-    return dwellers;
-  }
-
   public long getId() {
     return id;
   }
 
   @Override
   public List<Property> getInfo() {
-    return PropertyUtils.createProperties("Room Id", getId(), "Name", getName(), "Type", getType(),
-        "Owners", getOwners(), "Dwellers", getDwellers(), "Users", getUsers(),
+    return PropertyUtils.createProperties("Room Id", getId(), "Name", getName(),
+        "Owners", getOwners(), "Users", getUsers(),
         "Messages", (getMessages() == null) ? null : BeeUtils.bracket(getMessages().size()),
         "Message Count", getMessageCount(), "Max Time", formatMillis(getMaxTime()));
   }
@@ -258,10 +205,6 @@ public class ChatRoom implements BeeSerializable, HasInfo {
     return owners;
   }
 
-  public Type getType() {
-    return type;
-  }
-
   public Vector<Long> getUsers() {
     return users;
   }
@@ -270,9 +213,9 @@ public class ChatRoom implements BeeSerializable, HasInfo {
     setMessageCount(getMessageCount() + 1);
   }
 
-  public boolean invite(Long dwellerId) {
-    if (DataUtils.isId(dwellerId) && !getDwellers().contains(dwellerId)) {
-      getDwellers().add(dwellerId);
+  public boolean invite(Long userId) {
+    if (DataUtils.isId(userId) && !getUsers().contains(userId)) {
+      getUsers().add(userId);
       return true;
     } else {
       return false;
@@ -290,10 +233,8 @@ public class ChatRoom implements BeeSerializable, HasInfo {
   public boolean isVisible(Long userId) {
     if (userId == null) {
       return false;
-    } else if (getType() == Type.PUBLIC) {
-      return true;
     } else {
-      return getOwners().contains(userId) || getDwellers().contains(userId);
+      return getUsers().contains(userId);
     }
   }
 
@@ -309,8 +250,8 @@ public class ChatRoom implements BeeSerializable, HasInfo {
     }
   }
 
-  public boolean kick(Long dwellerId) {
-    return getDwellers().remove(dwellerId);
+  public boolean kick(Long userId) {
+    return getUsers().remove(userId);
   }
 
   public boolean quit(Long userId) {
@@ -336,16 +277,8 @@ public class ChatRoom implements BeeSerializable, HasInfo {
           arr[i++] = getName();
           break;
 
-        case TYPE:
-          arr[i++] = Codec.pack(getType());
-          break;
-
         case OWNERS:
           arr[i++] = getOwners();
-          break;
-
-        case DWELLERS:
-          arr[i++] = getDwellers();
           break;
 
         case USERS:
@@ -380,17 +313,11 @@ public class ChatRoom implements BeeSerializable, HasInfo {
     this.name = name;
   }
 
-  public void setType(Type type) {
-    this.type = type;
-  }
-
   @Override
   public String toString() {
     return BeeUtils.joinOptions("id", BeeUtils.toString(getId()),
         "name", getName(),
-        "type", (getType() == null) ? null : getType().name().toLowerCase(),
         "owners", getOwners().isEmpty() ? null : getOwners().toString(),
-        "dwellers", getDwellers().isEmpty() ? null : getDwellers().toString(),
         "users", getUsers().isEmpty() ? null : getUsers().toString(),
         "messages", (getMessages() == null) ? null : BeeUtils.toString(getMessages().size()),
         "message count", BeeUtils.toString(getMessageCount()),

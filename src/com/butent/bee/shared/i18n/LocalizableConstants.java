@@ -726,8 +726,6 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String roomDeleteQuestion();
 
-  String roomDwellers();
-
   String roomName();
 
   String roomNew();
@@ -735,10 +733,6 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
   String roomOwners();
 
   String roomSettings();
-
-  String roomTypePrivate();
-
-  String roomTypePublic();
 
   String roomUpdateTime();
 
