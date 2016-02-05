@@ -71,8 +71,11 @@ import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
+import com.butent.bee.shared.modules.administration.AdministrationConstants.ReminderMethod;
 import com.butent.bee.shared.modules.projects.ProjectConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
+import com.butent.bee.shared.modules.tasks.TaskConstants.TaskEvent;
+import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
 import com.butent.bee.shared.modules.tasks.TaskUtils;
 import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.news.Headline;
@@ -225,7 +228,7 @@ public class TasksModuleBean implements BeeModule {
     List<BeeParameter> params = Lists.newArrayList(
         BeeParameter.createTimeOfDay(module, PRM_END_OF_WORK_DAY),
         BeeParameter.createTimeOfDay(module, PRM_START_OF_WORK_DAY)
-    );
+        );
     return params;
   }
 
@@ -1188,8 +1191,7 @@ public class TasksModuleBean implements BeeModule {
       String compFullName =
           companiesListSet.getValue(i, COL_COMPANY_NAME)
               + (!BeeUtils.isEmpty(companiesListSet.getValue(i, ALS_COMPANY_TYPE))
-              ? ", " + companiesListSet.getValue(i, ALS_COMPANY_TYPE) : "");
-      String dTime = "0:00";
+                  ? ", " + companiesListSet.getValue(i, ALS_COMPANY_TYPE) : "");
 
       SqlSelect companyTimesQuery = new SqlSelect()
           .addFields(TBL_EVENT_DURATIONS, COL_DURATION)
@@ -1241,8 +1243,16 @@ public class TasksModuleBean implements BeeModule {
         }
       }
 
+      if (reqInfo.hasParameter(VAR_TASK_PROJECT)) {
+        if (!BeeUtils.isEmpty(reqInfo.getParameter(VAR_TASK_PROJECT))) {
+          companyTimesQuery.setWhere(SqlUtils.and(companyTimesQuery.getWhere(), SqlUtils.inList(
+              TBL_TASKS, ProjectConstants.COL_PROJECT, DataUtils
+                  .parseIdList(reqInfo.getParameter(VAR_TASK_PROJECT)))));
+        }
+      }
+
       SimpleRowSet companyTimes = qs.getData(companyTimesQuery);
-      long dTimeMls = TimeUtils.parseTime(dTime);
+      long dTimeMls = 0;
 
       for (int j = 0; j < companyTimes.getNumberOfRows(); j++) {
         Long timeMls = TimeUtils.parseTime(companyTimes.getValue(j, companyTimes
@@ -1253,14 +1263,12 @@ public class TasksModuleBean implements BeeModule {
       totalTimeMls += dTimeMls;
 
       if (!(hideZeroTimes && dTimeMls <= 0)) {
-        dTime = new DateTime(dTimeMls).toUtcTimeString();
-        result.addRow(new String[] {compFullName, dTime});
+        result.addRow(new String[] {compFullName, TimeUtils.renderTime(dTimeMls, false)});
       }
     }
 
     result.addRow(new String[] {
-        constants.totalOf() + ":",
-        new DateTime(totalTimeMls).toUtcTimeString()});
+        constants.totalOf() + ":", TimeUtils.renderTime(totalTimeMls, false)});
 
     ResponseObject resp = ResponseObject.response(result);
     return resp;
@@ -1601,7 +1609,6 @@ public class TasksModuleBean implements BeeModule {
 
     for (int i = 0; i < dTypesList.getNumberOfRows(); i++) {
       String dType = dTypesList.getValue(i, dTypesList.getColumnIndex(COL_DURATION_TYPE_NAME));
-      String dTime = "0:00";
 
       SqlSelect dTypeTime = new SqlSelect()
           .addFrom(TBL_TASK_EVENTS)
@@ -1651,27 +1658,33 @@ public class TasksModuleBean implements BeeModule {
         }
       }
 
+      if (reqInfo.hasParameter(VAR_TASK_PROJECT)) {
+        if (!BeeUtils.isEmpty(reqInfo.getParameter(VAR_TASK_PROJECT))) {
+          dTypeTime.setWhere(SqlUtils.and(dTypeTime.getWhere(), SqlUtils.inList(
+              TBL_TASKS, ProjectConstants.COL_PROJECT, DataUtils
+                  .parseIdList(reqInfo.getParameter(VAR_TASK_PROJECT)))));
+        }
+      }
+
       SimpleRowSet dTypeTimes = qs.getData(dTypeTime);
       Assert.notNull(dTypeTimes);
 
-      long dTimeMls = TimeUtils.parseTime(dTime);
+      long dTimeMls = 0;
 
       for (int j = 0; j < dTypeTimes.getNumberOfRows(); j++) {
-        Long timeMls = TimeUtils.parseTime(dTypeTimes.getValue(j, dTypeTimes
-            .getColumnIndex(COL_DURATION)));
+        Long timeMls = TimeUtils.parseTime(dTypeTimes.getValue(j, COL_DURATION));
         dTimeMls += timeMls;
       }
 
       totalTimeMls += dTimeMls;
 
       if (!(hideTimeZeros && dTimeMls <= 0)) {
-        dTime = new DateTime(dTimeMls).toUtcTimeString();
-        result.addRow(new String[] {dType, dTime});
+        result.addRow(new String[] {dType, TimeUtils.renderTime(dTimeMls, false)});
       }
     }
 
     result.addRow(new String[] {
-        constants.totalOf() + ":", new DateTime(totalTimeMls).toUtcTimeString()});
+        constants.totalOf() + ":", TimeUtils.renderTime(totalTimeMls, false)});
 
     ResponseObject resp = ResponseObject.response(result);
     return resp;
@@ -1748,10 +1761,9 @@ public class TasksModuleBean implements BeeModule {
           (!BeeUtils.isEmpty(usersListSet.getValue(i, COL_FIRST_NAME))
               ? usersListSet.getValue(i, COL_FIRST_NAME) : "") + " "
               + (!BeeUtils.isEmpty(usersListSet.getValue(i, COL_LAST_NAME))
-              ? usersListSet.getValue(i, COL_LAST_NAME) : "");
+                  ? usersListSet.getValue(i, COL_LAST_NAME) : "");
 
       userFullName = BeeUtils.isEmpty(userFullName) ? "—" : userFullName;
-      String dTime = "0:00";
 
       SqlSelect userTimesQuery = new SqlSelect()
           .addFields(TBL_EVENT_DURATIONS, COL_DURATION)
@@ -1803,8 +1815,16 @@ public class TasksModuleBean implements BeeModule {
         }
       }
 
+      if (reqInfo.hasParameter(VAR_TASK_PROJECT)) {
+        if (!BeeUtils.isEmpty(reqInfo.getParameter(VAR_TASK_PROJECT))) {
+          userTimesQuery.setWhere(SqlUtils.and(userTimesQuery.getWhere(), SqlUtils.inList(
+              TBL_TASKS, ProjectConstants.COL_PROJECT, DataUtils
+                  .parseIdList(reqInfo.getParameter(VAR_TASK_PROJECT)))));
+        }
+      }
+
       SimpleRowSet companyTimes = qs.getData(userTimesQuery);
-      long dTimeMls = TimeUtils.parseTime(dTime);
+      long dTimeMls = 0;
 
       for (int j = 0; j < companyTimes.getNumberOfRows(); j++) {
         Long timeMls = TimeUtils.parseTime(companyTimes.getValue(j, companyTimes
@@ -1815,13 +1835,12 @@ public class TasksModuleBean implements BeeModule {
       totalTimeMls += dTimeMls;
 
       if (!(hideTimeZeros && dTimeMls <= 0)) {
-        dTime = new DateTime(dTimeMls).toUtcTimeString();
-        result.addRow(new String[] {userFullName, dTime});
+        result.addRow(new String[] {userFullName, TimeUtils.renderTime(dTimeMls, false)});
       }
     }
 
     result.addRow(new String[] {
-        constants.totalOf() + ":", new DateTime(totalTimeMls).toUtcTimeString()});
+        constants.totalOf() + ":", TimeUtils.renderTime(totalTimeMls, false)});
 
     ResponseObject resp = ResponseObject.response(result);
     return resp;
