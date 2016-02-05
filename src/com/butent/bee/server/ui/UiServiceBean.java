@@ -1050,6 +1050,7 @@ public class UiServiceBean {
           .addExpression(TransportConstants.COL_CARGO_TRIP,
               SqlUtils.field(TransportConstants.TBL_ASSESSMENT_FORWARDERS,
                   TransportConstants.COL_CARGO_TRIP))
+          .addExpression(TransportConstants.COL_CARGO, SqlUtils.constant(null))
           .setFrom(TransportConstants.TBL_ASSESSMENT_FORWARDERS,
               sys.joinTables(TransportConstants.TBL_ASSESSMENT_FORWARDERS,
                   TransportConstants.TBL_CARGO_HANDLING, TransportConstants.COL_FORWARDER)));

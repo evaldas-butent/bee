@@ -56,15 +56,15 @@ public class ConcurrencyBean {
 
   public interface AsynchronousRunnable extends Runnable {
 
-    default public String getId() {
+    default String getId() {
       return null;
     }
 
-    default public long getTimeout() {
+    default long getTimeout() {
       return TimeUtils.MILLIS_PER_HOUR;
     }
 
-    default public void onError() {
+    default void onError() {
     }
   }
 

@@ -297,11 +297,6 @@ public class FileStorageBean {
   public Long storeFile(InputStream is, String fileName, String mimeType) throws IOException {
     boolean storeAsFile = Objects.nonNull(repositoryDir);
     String name = sys.clampValue(TBL_FILES, COL_FILE_NAME, BeeUtils.notEmpty(fileName, "unknown"));
-
-    String type = !BeeUtils.isEmpty(mimeType) ? mimeType
-        : BeeUtils.notEmpty(URLConnection.guessContentTypeFromStream(is),
-        URLConnection.guessContentTypeFromName(name));
-
     MessageDigest md = null;
 
     try {
@@ -327,12 +322,17 @@ public class FileStorageBean {
     }
     tmp.deleteOnExit();
 
+    InputStream header = null;
     Holder<Long> size = Holder.of(0L);
 
     try {
       byte[] buffer = new byte[BUFFER_SIZE];
       int bytesRead = in.read(buffer);
 
+      if (Objects.isNull(header)) {
+        header = new ByteArrayInputStream(Arrays.copyOf(buffer,
+            Math.min(16, Math.max(bytesRead, 0))));
+      }
       while (bytesRead > 0) {
         out.write(buffer, 0, bytesRead);
         size.set(size.get() + bytesRead);
@@ -350,6 +350,9 @@ public class FileStorageBean {
     String hash = Codec.toHex(md.digest());
     Holder<Long> id = Holder.absent();
     Holder<Boolean> exists = Holder.of(false);
+
+    String type = BeeUtils.notEmpty(URLConnection.guessContentTypeFromStream(header), mimeType,
+        URLConnection.guessContentTypeFromName(name));
 
     cb.synchronizedCall(new Runnable() {
       @Override

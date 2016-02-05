@@ -31,8 +31,8 @@ import java.util.zip.ZipOutputStream;
 import javax.ejb.EJB;
 import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.BadRequestException;
-import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.HeaderParam;
 import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
@@ -42,6 +42,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Application;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
@@ -164,11 +165,12 @@ public class FileServiceApplication extends Application {
 
   @POST
   @Path("{name}")
-  @Consumes(MediaType.APPLICATION_OCTET_STREAM)
   @Produces(RestResponse.JSON_TYPE)
-  public RestResponse upload(@PathParam("name") String fileName, InputStream is) {
+  public RestResponse upload(@PathParam("name") String fileName,
+      @HeaderParam(HttpHeaders.CONTENT_TYPE) String fileType, InputStream is) {
+
     try {
-      return RestResponse.ok(fs.storeFile(is, fileName, null));
+      return RestResponse.ok(fs.storeFile(is, fileName, fileType));
     } catch (IOException e) {
       return RestResponse.error(e);
     }
@@ -197,8 +199,8 @@ public class FileServiceApplication extends Application {
     }
     return Response.ok(so,
         BeeUtils.notEmpty(fileInfo.getType(), MediaType.APPLICATION_OCTET_STREAM))
-        .header("Content-Length", fileInfo.getSize())
-        .header("Content-Disposition", "inline; filename*=" + name)
+        .header(HttpHeaders.CONTENT_LENGTH, fileInfo.getSize())
+        .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename*=" + name)
         .build();
   }
 }

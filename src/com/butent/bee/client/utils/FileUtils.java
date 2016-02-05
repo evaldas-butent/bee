@@ -8,6 +8,7 @@ import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.http.client.RequestBuilder;
 import com.google.gwt.http.client.Response;
 import com.google.gwt.http.client.URL;
+import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
@@ -50,6 +51,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import elemental.client.Browser;
 import elemental.events.Event;
@@ -481,7 +483,8 @@ public final class FileUtils {
     final String progressId = maybeCreateProgress(fileName, fileSize);
 
     final XMLHttpRequest xhr = RpcUtils.createXhr();
-    xhr.open(RequestBuilder.POST.toString(), getUploadUrl(parameters), true);
+    xhr.open(RequestBuilder.POST.toString(), Objects.equals(srv, Service.UPLOAD_FILE)
+        ? getUrl(fileName, (Long) null) : getUploadUrl(parameters), true);
 
     RpcUtils.addSessionId(xhr);
 
@@ -494,13 +497,26 @@ public final class FileUtils {
         String msg = BeeUtils.joinWords("upload", fileName, "response status:");
 
         if (xhr.getStatus() == Response.SC_OK) {
-          ResponseObject resp = ResponseObject.restore(xhr.getResponseText());
+          String response = xhr.getResponseText();
 
-          if (!resp.hasErrors()) {
-            callback.onSuccess(resp.getResponseAsString());
-            return;
+          if (JsonUtils.isJson(response)) {
+            JSONObject json = JsonUtils.parseObject(response);
+            JSONObject status = (JSONObject) json.get("Status");
+
+            if (BeeUtils.toBoolean(JsonUtils.toString(status.get("Success")))) {
+              callback.onSuccess(JsonUtils.toString(json.get("Result")));
+              return;
+            }
+            msg = BeeUtils.joinWords(msg, status.toString());
+          } else {
+            ResponseObject resp = ResponseObject.restore(response);
+
+            if (!resp.hasErrors()) {
+              callback.onSuccess(resp.getResponseAsString());
+              return;
+            }
+            msg = BeeUtils.joinWords(msg, resp.getErrors());
           }
-          msg = BeeUtils.joinWords(msg, resp.getErrors());
         } else {
           msg = BeeUtils.joinWords(msg, BeeUtils.bracket(xhr.getStatus()), xhr.getStatusText());
         }
