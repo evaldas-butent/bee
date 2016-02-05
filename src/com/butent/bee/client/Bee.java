@@ -194,6 +194,10 @@ public class Bee implements EntryPoint, ClosingHandler {
             AutocompleteProvider.load(serialized);
             break;
 
+          case CHATS:
+            Global.getRooms().load(serialized);
+            break;
+
           case DATA_INFO:
             Data.getDataInfoProvider().restore(serialized);
             break;

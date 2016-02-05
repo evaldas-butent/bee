@@ -38,6 +38,7 @@ import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.communication.ChatItem;
 import com.butent.bee.shared.communication.ChatRoom;
 import com.butent.bee.shared.communication.TextMessage;
 import com.butent.bee.shared.font.FontAwesome;
@@ -64,10 +65,10 @@ public class Chat extends Flow implements Presenter, View, Printable,
     private final long millis;
     private final Label timeLabel;
 
-    private MessageWidget(TextMessage textMessage) {
+    private MessageWidget(ChatItem message) {
       super(STYLE_MESSAGE_WRAPPER);
 
-      Image photo = Global.getUsers().getPhoto(textMessage.getUserId());
+      Image photo = Global.getUsers().getPhoto(message.getUserId());
       if (photo == null) {
         CustomDiv placeholder = new CustomDiv(STYLE_MESSAGE_PHOTO_PLACEHOLDER);
         add(placeholder);
@@ -76,15 +77,15 @@ public class Chat extends Flow implements Presenter, View, Printable,
         add(photo);
       }
 
-      Label signature = new Label(Global.getUsers().getSignature(textMessage.getUserId()));
+      Label signature = new Label(Global.getUsers().getSignature(message.getUserId()));
       signature.addStyleName(STYLE_MESSAGE_SIGNATURE);
       add(signature);
 
-      Label body = new Label(textMessage.getText());
+      Label body = new Label(message.getText());
       body.addStyleName(STYLE_MESSAGE_BODY);
       add(body);
 
-      this.millis = textMessage.getMillis();
+      this.millis = message.getTime();
 
       this.timeLabel = new Label();
       timeLabel.addStyleName(STYLE_MESSAGE_TIME);
@@ -200,8 +201,8 @@ public class Chat extends Flow implements Presenter, View, Printable,
     add(footer);
 
     if (!chatRoom.getMessages().isEmpty()) {
-      for (TextMessage textMessage : chatRoom.getMessages()) {
-        addMessage(textMessage, false);
+      for (ChatItem message : chatRoom.getMessages()) {
+        addMessage(message, false);
       }
       updateHeader(chatRoom.getMaxTime());
     }
@@ -217,15 +218,15 @@ public class Chat extends Flow implements Presenter, View, Printable,
     timer.scheduleRepeating(TIMER_PERIOD);
   }
 
-  public void addMessage(TextMessage textMessage, boolean update) {
-    if (textMessage != null && textMessage.isValid()) {
-      MessageWidget messageWidget = new MessageWidget(textMessage);
+  public void addMessage(ChatItem message, boolean update) {
+    if (message != null && message.isValid()) {
+      MessageWidget messageWidget = new MessageWidget(message);
       messagePanel.add(messageWidget);
 
       if (update) {
-        updateHeader(textMessage.getMillis());
+        updateHeader(message.getTime());
 
-        if (BeeKeeper.getUser().is(textMessage.getUserId())) {
+        if (BeeKeeper.getUser().is(message.getUserId())) {
           DomUtils.scrollToBottom(messagePanel);
         } else {
           maybeScroll(true);
@@ -404,9 +405,9 @@ public class Chat extends Flow implements Presenter, View, Printable,
       return false;
     }
 
-    TextMessage textMessage = new TextMessage(BeeKeeper.getUser().getUserId(), text);
+    ChatItem item = new ChatItem(BeeKeeper.getUser().getUserId(), text);
 
-    ChatMessage chatMessage = new ChatMessage(roomId, textMessage);
+    ChatMessage chatMessage = new ChatMessage(roomId, item);
     Global.getRooms().addMessage(chatMessage);
 
     Endpoint.send(chatMessage);

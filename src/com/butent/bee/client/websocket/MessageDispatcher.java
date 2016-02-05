@@ -33,7 +33,6 @@ import com.butent.bee.client.widget.Paragraph;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Locality;
-import com.butent.bee.shared.communication.ChatRoom;
 import com.butent.bee.shared.communication.TextMessage;
 import com.butent.bee.shared.data.PropertiesData;
 import com.butent.bee.shared.data.UserData;
@@ -64,7 +63,6 @@ import com.butent.bee.shared.websocket.messages.OnlineMessage;
 import com.butent.bee.shared.websocket.messages.ProgressMessage;
 import com.butent.bee.shared.websocket.messages.RoomStateMessage;
 import com.butent.bee.shared.websocket.messages.RoomUserMessage;
-import com.butent.bee.shared.websocket.messages.RoomsMessage;
 import com.butent.bee.shared.websocket.messages.PresenceMessage;
 import com.butent.bee.shared.websocket.messages.ShowMessage;
 import com.butent.bee.shared.websocket.messages.ShowMessage.Subject;
@@ -488,16 +486,6 @@ class MessageDispatcher {
 
       case ROOM_USER:
         Global.getRooms().onRoomUser((RoomUserMessage) message);
-        break;
-
-      case ROOMS:
-        List<ChatRoom> rooms = ((RoomsMessage) message).getData();
-
-        if (BeeUtils.isEmpty(rooms)) {
-          WsUtils.onEmptyMessage(message);
-        } else {
-          Global.getRooms().setRoomData(rooms);
-        }
         break;
 
       case SHOW:

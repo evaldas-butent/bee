@@ -1,6 +1,7 @@
 package com.butent.bee.shared.communication;
 
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.HasInfo;
 import com.butent.bee.shared.data.DataUtils;
@@ -14,12 +15,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
-import java.util.Vector;
 
-public class ChatRoom implements BeeSerializable, HasInfo {
+public class ChatRoom implements BeeSerializable, HasInfo, Comparable<ChatRoom> {
 
   private enum Serial {
-    ID, NAME, USERS, MESSAGES, MESSAGE_COUNT, MAX_TIME
+    ID, NAME, USERS, CREATED, CREATOR, REGISTERED, LAST_ACCESS,
+    MESSAGES, MESSAGE_COUNT, UNREAD_COUNT, LAST_MESSAGE
   }
 
   public static ChatRoom restore(String s) {
@@ -35,46 +36,41 @@ public class ChatRoom implements BeeSerializable, HasInfo {
   private long id;
   private String name;
 
-  private final Vector<Long> users = new Vector<>();
+  private final List<Long> users = new ArrayList<>();
 
-  private Long creator;
+  private long created;
+  private long creator;
 
-  private final Collection<TextMessage> messages;
+  private long registered;
+  private long lastAccess;
+
+  private final List<ChatItem> messages = new ArrayList<>();
 
   private int messageCount;
-  private long maxTime;
+  private int unreadCount;
 
-  public ChatRoom(long id, String name, Collection<TextMessage> messages) {
+  private ChatItem lastMessage;
+
+  public ChatRoom(long id, String name) {
     this.id = id;
     this.name = name;
-    this.messages = messages;
   }
 
   private ChatRoom() {
-    this.messages = new ArrayList<>();
   }
 
-  public void clear() {
-    messages.clear();
+  @Override
+  public int compareTo(ChatRoom o) {
+    int result = Boolean.compare(o.unreadCount > 0, unreadCount > 0);
 
-    setMessageCount(0);
-    setMaxTime(0);
-  }
-
-  public ChatRoom copyWithoutMessages() {
-    ChatRoom copy = new ChatRoom();
-
-    copy.setId(getId());
-    copy.setName(getName());
-
-    if (!BeeUtils.isEmpty(getUsers())) {
-      copy.getUsers().addAll(getUsers());
+    if (result == BeeConst.COMPARE_EQUAL) {
+      result = Long.compare(o.getMaxTime(), getMaxTime());
+    }
+    if (result == BeeConst.COMPARE_EQUAL) {
+      result = Long.compare(o.created, created);
     }
 
-    copy.setMessageCount(getMessageCount());
-    copy.setMaxTime(getMaxTime());
-
-    return copy;
+    return result;
   }
 
   @Override
@@ -113,6 +109,22 @@ public class ChatRoom implements BeeSerializable, HasInfo {
           }
           break;
 
+        case CREATED:
+          setCreated(BeeUtils.toLong(value));
+          break;
+
+        case CREATOR:
+          setCreator(BeeUtils.toLong(value));
+          break;
+
+        case REGISTERED:
+          setRegistered(BeeUtils.toLong(value));
+          break;
+
+        case LAST_ACCESS:
+          setLastAccess(BeeUtils.toLong(value));
+          break;
+
         case MESSAGES:
           if (!messages.isEmpty()) {
             messages.clear();
@@ -121,7 +133,7 @@ public class ChatRoom implements BeeSerializable, HasInfo {
           String[] mArr = Codec.beeDeserializeCollection(value);
           if (mArr != null) {
             for (String msg : mArr) {
-              messages.add(TextMessage.restore(msg));
+              messages.add(ChatItem.restore(msg));
             }
           }
           break;
@@ -130,11 +142,23 @@ public class ChatRoom implements BeeSerializable, HasInfo {
           setMessageCount(BeeUtils.toInt(value));
           break;
 
-        case MAX_TIME:
-          setMaxTime(BeeUtils.toLong(value));
+        case UNREAD_COUNT:
+          setUnreadCount(BeeUtils.toInt(value));
+          break;
+
+        case LAST_MESSAGE:
+          setLastMessage(ChatItem.restore(value));
           break;
       }
     }
+  }
+
+  public long getCreated() {
+    return created;
+  }
+
+  public long getCreator() {
+    return creator;
   }
 
   public long getId() {
@@ -143,27 +167,36 @@ public class ChatRoom implements BeeSerializable, HasInfo {
 
   @Override
   public List<Property> getInfo() {
-    return PropertyUtils.createProperties("Room Id", getId(),
+    return PropertyUtils.createProperties("Id", getId(),
         "Name", getName(),
         "Users", getUsers(),
-        "Messages", (getMessages() == null) ? null : BeeUtils.bracket(getMessages().size()),
+        "Created", formatMillis(getCreated()),
+        "Creator", getCreator(),
+        "Registered", formatMillis(getRegistered()),
+        "Last Access", formatMillis(getLastAccess()),
+        "Messages", getMessages().isEmpty() ? null : BeeUtils.bracket(getMessages().size()),
         "Message Count", getMessageCount(),
+        "Unread Count", getUnreadCount(),
         "Max Time", formatMillis(getMaxTime()));
   }
 
-  public Long getCreator() {
-    return creator;
+  public long getLastAccess() {
+    return lastAccess;
+  }
+
+  public ChatItem getLastMessage() {
+    return lastMessage;
   }
 
   public long getMaxTime() {
-    return maxTime;
+    return (getLastMessage() == null) ? BeeConst.LONG_UNDEF : getLastMessage().getTime();
   }
 
   public int getMessageCount() {
     return messageCount;
   }
 
-  public Collection<TextMessage> getMessages() {
+  public Collection<ChatItem> getMessages() {
     return messages;
   }
 
@@ -171,8 +204,20 @@ public class ChatRoom implements BeeSerializable, HasInfo {
     return name;
   }
 
-  public Vector<Long> getUsers() {
+  public long getRegistered() {
+    return registered;
+  }
+
+  public int getUnreadCount() {
+    return unreadCount;
+  }
+
+  public List<Long> getUsers() {
     return users;
+  }
+
+  public boolean hasUser(Long userId) {
+    return userId != null && getUsers().contains(userId);
   }
 
   public void incrementMessageCount() {
@@ -196,19 +241,9 @@ public class ChatRoom implements BeeSerializable, HasInfo {
     return userId != null && userId.equals(getCreator());
   }
 
-  public boolean isVisible(Long userId) {
-    if (userId == null) {
-      return false;
-    } else {
-      return getUsers().contains(userId);
-    }
-  }
-
   public boolean join(Long userId) {
-    if (isVisible(userId)) {
-      if (!getUsers().contains(userId)) {
-        getUsers().add(userId);
-      }
+    if (DataUtils.isId(userId) && !getUsers().contains(userId)) {
+      getUsers().add(userId);
       return true;
 
     } else {
@@ -243,6 +278,22 @@ public class ChatRoom implements BeeSerializable, HasInfo {
           arr[i++] = getUsers();
           break;
 
+        case CREATED:
+          arr[i++] = getCreated();
+          break;
+
+        case CREATOR:
+          arr[i++] = getCreator();
+          break;
+
+        case REGISTERED:
+          arr[i++] = getRegistered();
+          break;
+
+        case LAST_ACCESS:
+          arr[i++] = getLastAccess();
+          break;
+
         case MESSAGES:
           arr[i++] = getMessages();
           break;
@@ -251,20 +302,32 @@ public class ChatRoom implements BeeSerializable, HasInfo {
           arr[i++] = getMessageCount();
           break;
 
-        case MAX_TIME:
-          arr[i++] = getMaxTime();
+        case UNREAD_COUNT:
+          arr[i++] = getUnreadCount();
+          break;
+
+        case LAST_MESSAGE:
+          arr[i++] = getLastMessage();
           break;
       }
     }
     return Codec.beeSerialize(arr);
   }
 
-  public void setCreator(Long creator) {
+  public void setCreated(long created) {
+    this.created = created;
+  }
+
+  public void setCreator(long creator) {
     this.creator = creator;
   }
 
-  public void setMaxTime(long maxTime) {
-    this.maxTime = maxTime;
+  public void setLastAccess(long lastAccess) {
+    this.lastAccess = lastAccess;
+  }
+
+  public void setLastMessage(ChatItem lastMessage) {
+    this.lastMessage = lastMessage;
   }
 
   public void setMessageCount(int messageCount) {
@@ -275,20 +338,23 @@ public class ChatRoom implements BeeSerializable, HasInfo {
     this.name = name;
   }
 
-  @Override
-  public String toString() {
-    return BeeUtils.joinOptions("id", BeeUtils.toString(getId()),
-        "name", getName(),
-        "users", getUsers().isEmpty() ? null : getUsers().toString(),
-        "messages", (getMessages() == null) ? null : BeeUtils.toString(getMessages().size()),
-        "message count", BeeUtils.toString(getMessageCount()),
-        "max time", formatMillis(getMaxTime()));
+  public void setRegistered(long registered) {
+    this.registered = registered;
   }
 
-  public void updateMaxTime(long time) {
-    if (time > 0) {
-      setMaxTime(Math.max(getMaxTime(), time));
-    }
+  public void setUnreadCount(int unreadCount) {
+    this.unreadCount = unreadCount;
+  }
+
+  @Override
+  public String toString() {
+    return BeeUtils.joinOptions("id", getId(),
+        "name", getName(),
+        "users", getUsers(),
+        "messages", BeeUtils.size(getMessages()),
+        "message count", getMessageCount(),
+        "unread count", getUnreadCount(),
+        "max time", formatMillis(getMaxTime()));
   }
 
   private void setId(long id) {

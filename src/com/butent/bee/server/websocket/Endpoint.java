@@ -361,7 +361,6 @@ public class Endpoint {
       case INFO:
       case MAIL:
       case ONLINE:
-      case ROOMS:
       case USERS:
         logger.severe("ws message not supported", message, toLog(session));
         break;
@@ -640,7 +639,7 @@ public class Endpoint {
   private static void sendToNeighbors(ChatRoom room, Message message, String mySessionId) {
     for (Session session : openSessions) {
       if (session.isOpen() && !mySessionId.equals(session.getId())
-          && room.isVisible(getUserId(session))) {
+          && room.hasUser(getUserId(session))) {
         send(session, message);
       }
     }
@@ -648,7 +647,7 @@ public class Endpoint {
 
   private static void sendToOccupants(ChatRoom room, Message message) {
     for (Session session : openSessions) {
-      if (session.isOpen() && room.isVisible(getUserId(session))) {
+      if (session.isOpen() && room.hasUser(getUserId(session))) {
         send(session, message);
       }
     }

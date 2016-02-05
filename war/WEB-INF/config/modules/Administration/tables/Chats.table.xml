@@ -7,7 +7,7 @@
   <Fields>
     <String name="ChatName" precision="50" label="=chatName" />
 
-    <DateTime name="Created" defExpr="CURRENT_TIME" label="=creationDate" />
-    <Relation name="Creator" relation="Users" defExpr="CURRENT_USER" label="=creator" />
+    <Long name="Created" notNull="true" label="=creationDate" />
+    <Relation name="Creator" notNull="true" relation="Users" label="=creator" />
   </Fields>
 </Table>

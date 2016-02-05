@@ -41,7 +41,9 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.time.TimeUtils;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.websocket.messages.ChatMessage;
 import com.butent.bee.shared.websocket.messages.RoomStateMessage;
@@ -340,23 +342,23 @@ public class Rooms implements HasInfo {
   public void addMessage(ChatMessage chatMessage) {
     Assert.notNull(chatMessage);
 
-    ChatRoom room = findRoom(chatMessage.getRoomId());
+    ChatRoom room = findRoom(chatMessage.getChatId());
     if (room != null && chatMessage.isValid()) {
       room.incrementMessageCount();
-      room.updateMaxTime(chatMessage.getTextMessage().getMillis());
+      room.setLastMessage(chatMessage.getChatItem());
 
       RoomWidget roomWidget = roomsPanel.findRoomWidget(room.getId());
       if (roomWidget != null) {
         roomWidget.updateTime(room.getMaxTime());
 
-        if (!BeeKeeper.getUser().is(chatMessage.getTextMessage().getUserId())) {
+        if (!BeeKeeper.getUser().is(chatMessage.getChatItem().getUserId())) {
           roomWidget.addStyleName(STYLE_ROOM_UPDATED);
         }
       }
 
       Chat chat = findChat(room.getId());
       if (chat != null) {
-        chat.addMessage(chatMessage.getTextMessage(), true);
+        chat.addMessage(chatMessage.getChatItem(), true);
       }
     }
   }
@@ -408,6 +410,35 @@ public class Rooms implements HasInfo {
     }
   }
 
+  public void load(String serialized) {
+    if (!chatRooms.isEmpty()) {
+      for (ChatRoom room : chatRooms) {
+        RoomWidget widget = roomsPanel.findRoomWidget(room.getId());
+        if (widget != null) {
+          roomsPanel.remove(widget);
+        }
+      }
+
+      chatRooms.clear();
+    }
+
+    String[] arr = Codec.beeDeserializeCollection(serialized);
+
+    if (!ArrayUtils.isEmpty(arr)) {
+
+      for (String s : arr) {
+        ChatRoom cr = ChatRoom.restore(s);
+        chatRooms.add(cr);
+
+        RoomWidget widget = new RoomWidget(cr);
+        roomsPanel.addRoomWidget(widget);
+      }
+
+      updateHeader();
+      logger.info("rooms", chatRooms.size());
+    }
+  }
+
   public void onRoomState(RoomStateMessage roomStateMessage) {
     Assert.notNull(roomStateMessage);
     Assert.isTrue(roomStateMessage.isValid());
@@ -430,12 +461,12 @@ public class Rooms implements HasInfo {
     } else if (roomStateMessage.isNew()) {
       if (contains(room.getId())) {
         logger.warning("attempt to add existing room:", room.getId());
-      } else if (room.isVisible(BeeKeeper.getUser().getUserId())) {
+      } else if (room.hasUser(BeeKeeper.getUser().getUserId())) {
         addRoom(room);
       }
 
     } else if (roomStateMessage.isUpdated()) {
-      boolean visible = room.isVisible(BeeKeeper.getUser().getUserId());
+      boolean visible = room.hasUser(BeeKeeper.getUser().getUserId());
 
       if (contains(room.getId())) {
         if (visible) {
@@ -500,31 +531,6 @@ public class Rooms implements HasInfo {
       viewCallbacks.put(roomId, callback);
       Endpoint.send(RoomUserMessage.enter(roomId, BeeKeeper.getUser().getUserId()));
     }
-  }
-
-  public void setRoomData(List<ChatRoom> data) {
-    Assert.notNull(data);
-
-    if (!chatRooms.isEmpty()) {
-      for (ChatRoom room : chatRooms) {
-        RoomWidget widget = roomsPanel.findRoomWidget(room.getId());
-        if (widget != null) {
-          roomsPanel.remove(widget);
-        }
-      }
-
-      chatRooms.clear();
-    }
-
-    chatRooms.addAll(data);
-
-    for (ChatRoom room : data) {
-      RoomWidget widget = new RoomWidget(room);
-      roomsPanel.addRoomWidget(widget);
-    }
-
-    updateHeader();
-    logger.info("rooms", chatRooms.size());
   }
 
   private void addRoom(ChatRoom room) {
@@ -784,7 +790,7 @@ public class Rooms implements HasInfo {
       BeeUtils.overwrite(target.getUsers(), source.getUsers());
 
       target.setMessageCount(source.getMessageCount());
-      target.setMaxTime(source.getMaxTime());
+      target.setLastMessage(source.getLastMessage());
 
       RoomWidget widget = roomsPanel.findRoomWidget(source.getId());
       if (widget != null) {

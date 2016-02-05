@@ -102,12 +102,6 @@ public abstract class Message {
         return new RoomUserMessage();
       }
     },
-    ROOMS {
-      @Override
-      Message createMessage() {
-        return new RoomsMessage();
-      }
-    },
     SHOW {
       @Override
       Message createMessage() {
