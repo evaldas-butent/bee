@@ -12,7 +12,6 @@ public enum Domain implements HasCaption {
   CALENDAR(FontAwesome.CALENDAR, null, true, true, 400),
   MAIL(FontAwesome.ENVELOPE_O, null, true, true, 200),
   ONLINE(FontAwesome.USERS, Localized.getConstants().domainOnline(), false, false, 100),
-  ROOMS(FontAwesome.COMMENTS_O, Localized.getConstants().domainRooms(), false, false, 100),
   ADMIN(FontAwesome.MAGIC, "Admin", false, true, 300);
 
   private final FontAwesome icon;

@@ -8,8 +8,8 @@ public final class ChatConstants {
   public static final String TBL_CHAT_FILES = "ChatFiles";
 
   public static final String COL_CHAT_NAME = "ChatName";
-  public static final String COL_CHAT_CREATED = "ChatCreated";
-  public static final String COL_CHAT_CREATOR = "ChatCreator";
+  public static final String COL_CHAT_CREATED = "Created";
+  public static final String COL_CHAT_CREATOR = "Creator";
 
   public static final String COL_CHAT = "Chat";
   public static final String COL_CHAT_USER = "User";

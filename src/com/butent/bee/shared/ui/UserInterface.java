@@ -244,6 +244,7 @@ public enum UserInterface implements HasCaption {
 
   public enum Component {
     AUTOCOMPLETE(false),
+    CHATS(false),
     DATA_INFO(false),
     DECORATORS(false),
     DICTIONARY(false),

@@ -19,10 +19,10 @@ public enum RegulatedWidget implements HasLocalizedCaption {
       return constants.domainOnline();
     }
   },
-  ROOMS {
+  CHATS {
     @Override
     public String getCaption(LocalizableConstants constants) {
-      return constants.domainRooms();
+      return constants.chats();
     }
   },
   ADMIN(ModuleAndSub.of(Module.ADMINISTRATION)) {

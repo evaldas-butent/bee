@@ -2,6 +2,7 @@ package com.butent.bee.server;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 
+import com.butent.bee.server.communication.ChatBean;
 import com.butent.bee.server.data.DataServiceBean;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
@@ -74,6 +75,8 @@ public class DispatcherBean {
   QueryServiceBean qs;
   @EJB
   MailModuleBean mail;
+  @EJB
+  ChatBean chat;
 
   public void beforeLogout(RequestInfo reqInfo) {
     String workspace = reqInfo.getParameter(COL_LAST_WORKSPACE);
@@ -146,6 +149,16 @@ public class DispatcherBean {
               response.addMessagesFrom(acData);
               if (!acData.hasErrors() && acData.hasResponse()) {
                 data.put(component.key(), acData.getResponse());
+              }
+            }
+            break;
+
+          case CHATS:
+            ResponseObject chats = chat.getChats();
+            if (chats != null) {
+              response.addMessagesFrom(chats);
+              if (!chats.hasErrors() && chats.hasResponse()) {
+                data.put(component.key(), chats.getResponse());
               }
             }
             break;

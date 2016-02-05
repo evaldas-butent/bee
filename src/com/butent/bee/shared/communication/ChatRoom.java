@@ -19,14 +19,8 @@ import java.util.Vector;
 public class ChatRoom implements BeeSerializable, HasInfo {
 
   private enum Serial {
-    ID, NAME, OWNERS, USERS, MESSAGES, MESSAGE_COUNT, MAX_TIME
+    ID, NAME, USERS, MESSAGES, MESSAGE_COUNT, MAX_TIME
   }
-
-  public static final int DEFAULT_CAPACITY = 1024;
-
-  public static final int MAX_NAME_LENGTH = 32;
-
-  private static long idCounter = 1;
 
   public static ChatRoom restore(String s) {
     ChatRoom room = new ChatRoom();
@@ -39,35 +33,25 @@ public class ChatRoom implements BeeSerializable, HasInfo {
   }
 
   private long id;
-
   private String name;
 
-  private final Vector<Long> owners = new Vector<>();
-
   private final Vector<Long> users = new Vector<>();
+
+  private Long creator;
 
   private final Collection<TextMessage> messages;
 
   private int messageCount;
   private long maxTime;
 
-  public ChatRoom(String name, Collection<TextMessage> messages) {
-    this.id = idCounter++;
+  public ChatRoom(long id, String name, Collection<TextMessage> messages) {
+    this.id = id;
     this.name = name;
     this.messages = messages;
   }
 
   private ChatRoom() {
     this.messages = new ArrayList<>();
-  }
-
-  public boolean addOwner(Long ownerId) {
-    if (DataUtils.isId(ownerId) && !getOwners().contains(ownerId)) {
-      getOwners().add(ownerId);
-      return true;
-    } else {
-      return false;
-    }
   }
 
   public void clear() {
@@ -82,10 +66,6 @@ public class ChatRoom implements BeeSerializable, HasInfo {
 
     copy.setId(getId());
     copy.setName(getName());
-
-    if (!BeeUtils.isEmpty(getOwners())) {
-      copy.getOwners().addAll(getOwners());
-    }
 
     if (!BeeUtils.isEmpty(getUsers())) {
       copy.getUsers().addAll(getUsers());
@@ -115,22 +95,6 @@ public class ChatRoom implements BeeSerializable, HasInfo {
 
         case NAME:
           setName(value);
-          break;
-
-        case OWNERS:
-          if (!owners.isEmpty()) {
-            owners.clear();
-          }
-
-          String[] oArr = Codec.beeDeserializeCollection(value);
-          if (oArr != null) {
-            for (String os : oArr) {
-              Long owner = BeeUtils.toLongOrNull(os);
-              if (DataUtils.isId(owner)) {
-                owners.add(owner);
-              }
-            }
-          }
           break;
 
         case USERS:
@@ -179,10 +143,16 @@ public class ChatRoom implements BeeSerializable, HasInfo {
 
   @Override
   public List<Property> getInfo() {
-    return PropertyUtils.createProperties("Room Id", getId(), "Name", getName(),
-        "Owners", getOwners(), "Users", getUsers(),
+    return PropertyUtils.createProperties("Room Id", getId(),
+        "Name", getName(),
+        "Users", getUsers(),
         "Messages", (getMessages() == null) ? null : BeeUtils.bracket(getMessages().size()),
-        "Message Count", getMessageCount(), "Max Time", formatMillis(getMaxTime()));
+        "Message Count", getMessageCount(),
+        "Max Time", formatMillis(getMaxTime()));
+  }
+
+  public Long getCreator() {
+    return creator;
   }
 
   public long getMaxTime() {
@@ -199,10 +169,6 @@ public class ChatRoom implements BeeSerializable, HasInfo {
 
   public String getName() {
     return name;
-  }
-
-  public Vector<Long> getOwners() {
-    return owners;
   }
 
   public Vector<Long> getUsers() {
@@ -227,7 +193,7 @@ public class ChatRoom implements BeeSerializable, HasInfo {
   }
 
   public boolean isOwner(Long userId) {
-    return userId != null && getOwners().contains(userId);
+    return userId != null && userId.equals(getCreator());
   }
 
   public boolean isVisible(Long userId) {
@@ -258,10 +224,6 @@ public class ChatRoom implements BeeSerializable, HasInfo {
     return getUsers().remove(userId);
   }
 
-  public boolean removeOwner(Long ownerId) {
-    return getOwners().remove(ownerId);
-  }
-
   @Override
   public String serialize() {
     Object[] arr = new Object[Serial.values().length];
@@ -275,10 +237,6 @@ public class ChatRoom implements BeeSerializable, HasInfo {
 
         case NAME:
           arr[i++] = getName();
-          break;
-
-        case OWNERS:
-          arr[i++] = getOwners();
           break;
 
         case USERS:
@@ -301,6 +259,10 @@ public class ChatRoom implements BeeSerializable, HasInfo {
     return Codec.beeSerialize(arr);
   }
 
+  public void setCreator(Long creator) {
+    this.creator = creator;
+  }
+
   public void setMaxTime(long maxTime) {
     this.maxTime = maxTime;
   }
@@ -317,7 +279,6 @@ public class ChatRoom implements BeeSerializable, HasInfo {
   public String toString() {
     return BeeUtils.joinOptions("id", BeeUtils.toString(getId()),
         "name", getName(),
-        "owners", getOwners().isEmpty() ? null : getOwners().toString(),
         "users", getUsers().isEmpty() ? null : getUsers().toString(),
         "messages", (getMessages() == null) ? null : BeeUtils.toString(getMessages().size()),
         "message count", BeeUtils.toString(getMessageCount()),
