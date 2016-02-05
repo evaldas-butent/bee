@@ -46,18 +46,18 @@
       }
 
       function drop(id) {
-        var el = document.getElementById('CargoHandling-' + id);
+        var el = document.getElementById(id.replace('_', '-'));
 
         if (el) {
           el.remove();
         }
       }
 
-      function replicate() {
-        var el = document.getElementById("Counter");
+      function replicate(id) {
+        var el = document.getElementById(id + "Counter");
 
         if (el) {
-          var template = document.getElementById("CargoHandling");
+          var template = document.getElementById(id);
 
           if (template) {
             var cnt = el.value;
@@ -69,8 +69,8 @@
             var drop = item.querySelector("span[onclick]");
 
             if (drop) {
-              drop.id = cnt;
-              drop.style.display = '';
+              drop.id = id + '_' + cnt;
+              drop.style.visibility = 'visible';
             }
             var inputs = item.querySelectorAll("input[name]");
 
@@ -109,7 +109,7 @@
   <body>
     <div class="bee-tr-query-panel">
       <label style="display:block; text-align:center; font-size:x-large;">=trRequestNew</label>
-      <form accept-charset="UTF-8" method="post">
+      <form accept-charset="UTF-8" method="post" enctype="multipart/form-data">
         <div class="flexBox-horizontal">
           <fieldset>
             <legend>=trRequestCustomerInfo</legend>
@@ -252,11 +252,13 @@
           <fieldset>
             <legend>=cargoHandlingPlaces</legend>
             <div style="max-height:500px; overflow:auto;">
-              <table id="CargoHandling">
+              <table id="Handling">
                 <tbody>
                   <tr>
                     <td>
-                      <span style="cursor:pointer; display:none;" onclick="drop(this.id)">-</span>
+                      <span style="cursor:pointer; visibility:hidden;"
+                            onclick="drop(this.id)">-
+                      </span>
                     </td>
                     <td style="text-align:center; font-weight:bold;">
                       <label style="float:none;">=loading</label>
@@ -367,8 +369,8 @@
                 </tbody>
               </table>
             </div>
-            <span style="cursor:pointer;" onclick="replicate()">+</span>
-            <input id="Counter" name="Counter" type="hidden" value="1" disabled="disabled" />
+            <span style="cursor:pointer;" onclick="replicate('Handling')">+</span>
+            <input id="HandlingCounter" type="hidden" value="1" disabled="disabled" />
           </fieldset>
 
           <fieldset>
@@ -475,61 +477,80 @@
 
           <fieldset>
             <legend>=trRequestShipmentInfo</legend>
-            <table>
-              <tbody>
-                <tr>
-                  <td>
-                    <label for="ExpeditionTypes-Name">=trRequestExpeditionType</label>
-                  </td>
-                  <td>
-                    <select id="ExpeditionTypes-Name" name="Expedition" required="required" />
-                  </td>
-                </tr>
-                <tr>
-                  <td>
-                    <label for="ShippingTerms-Name">=trRequestShippingTerms</label>
-                  </td>
-                  <td>
-                    <select id="ShippingTerms-Name" name="ShippingTerm" required="required" />
-                  </td>
-                </tr>
-                <tr>
-                  <td>
-                    <label for="CustomsBrokerage">=trRequestCustomsBrokerage</label>
-                  </td>
-                  <td>
-                    <input type="checkbox" id="CustomsBrokerage" name="CustomsBrokerage" />
-                  </td>
-                </tr>
-                <tr>
-                  <td>
-                    <label for="FreightInsurance">=trRequestFreightInsurance</label>
-                  </td>
-                  <td>
-                    <input type="checkbox" id="FreightInsurance" name="FreightInsurance"
-                           onchange="display(this.checked, ['Value', 'Currencies-Name', 'Notes'])" />
-                  </td>
-                </tr>
-                <tr style="display:none;">
-                  <td>
-                    <label for="Value">=cargoValue</label>
-                  </td>
-                  <td>
-                    <input type="number" id="Value" name="Value" maxlength="12" step="0.01"
-                           required="required" disabled="disabled" />
-                    <select id="Currencies-Name" name="ValueCurrency" style="display:inline;"
-                            required="required" disabled="disabled" />
-                  </td>
-                </tr>
-                <tr style="display:none;">
-                  <td colspan="2">
-                    <label for="Notes">=notes</label>
-                    <textarea id="Notes" name="Notes" rows="3" style="width:100%"
-                              disabled="disabled"> </textarea>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+            <div>
+              <table>
+                <tbody>
+                  <tr>
+                    <td>
+                      <label for="ExpeditionTypes-Name">=trRequestExpeditionType</label>
+                    </td>
+                    <td>
+                      <select id="ExpeditionTypes-Name" name="Expedition" required="required" />
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <label for="ShippingTerms-Name">=trRequestShippingTerms</label>
+                    </td>
+                    <td>
+                      <select id="ShippingTerms-Name" name="ShippingTerm" required="required" />
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <label for="CustomsBrokerage">=trRequestCustomsBrokerage</label>
+                    </td>
+                    <td>
+                      <input type="checkbox" id="CustomsBrokerage" name="CustomsBrokerage" />
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <label for="FreightInsurance">=trRequestFreightInsurance</label>
+                    </td>
+                    <td>
+                      <input type="checkbox" id="FreightInsurance" name="FreightInsurance"
+                             onchange="display(this.checked, ['Value', 'Currencies-Name', 'Notes'])" />
+                    </td>
+                  </tr>
+                  <tr style="display:none;">
+                    <td>
+                      <label for="Value">=cargoValue</label>
+                    </td>
+                    <td>
+                      <input type="number" id="Value" name="Value" maxlength="12" step="0.01"
+                             required="required" disabled="disabled" />
+                      <select id="Currencies-Name" name="ValueCurrency" style="display:inline;"
+                              required="required" disabled="disabled" />
+                    </td>
+                  </tr>
+                  <tr style="display:none;">
+                    <td colspan="2">
+                      <label for="Notes">=notes</label>
+                      <textarea id="Notes" name="Notes" rows="3" style="width:100%"
+                                disabled="disabled"> </textarea>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+              <div style="max-height:100px; overflow:auto;">
+                <table id="Upload">
+                  <tbody>
+                    <tr>
+                      <td>
+                        <span style="cursor:pointer; visibility:hidden;" onclick="drop(this.id)">-
+                        </span>
+                      </td>
+                      <td>
+                        <input type="file" name="File" />
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <span style="cursor:pointer;" onclick="replicate('Upload')">+</span>
+            <input id="UploadCounter" type="hidden" value="1" disabled="disabled" />
           </fieldset>
         </div>
         <button style="display:block; margin:auto;" type="submit">=trRequestActionSubmit</button>

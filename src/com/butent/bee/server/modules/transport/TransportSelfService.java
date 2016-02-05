@@ -13,29 +13,18 @@ import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.http.HttpConst;
 import com.butent.bee.server.http.HttpUtils;
 import com.butent.bee.server.i18n.Localizations;
+import com.butent.bee.server.modules.administration.FileStorageBean;
 import com.butent.bee.server.rest.RestResponse;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.server.ui.UiHolderBean;
 import com.butent.bee.server.utils.XmlUtils;
-import com.butent.bee.shared.communication.ResponseMessage;
-import com.butent.bee.shared.communication.ResponseObject;
-import com.butent.bee.shared.css.CssUnit;
-import com.butent.bee.shared.data.BeeColumn;
-import com.butent.bee.shared.data.BeeRow;
-import com.butent.bee.shared.data.BeeRowSet;
-import com.butent.bee.shared.data.DataUtils;
-import com.butent.bee.shared.data.value.ValueType;
-import com.butent.bee.shared.html.builder.Document;
 import com.butent.bee.shared.html.builder.Node;
 import com.butent.bee.shared.html.builder.elements.Form;
 import com.butent.bee.shared.html.builder.elements.Input.Type;
-import com.butent.bee.shared.html.builder.elements.Tbody;
-import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
-import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -43,8 +32,8 @@ import com.butent.bee.shared.utils.BeeUtils;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
+import java.io.IOException;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -52,9 +41,12 @@ import javax.ejb.EJB;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
+import javax.servlet.ServletException;
+import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.Part;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
@@ -62,6 +54,7 @@ import javax.xml.xpath.XPathFactory;
 
 @WebServlet(urlPatterns = "/tr/*")
 @SuppressWarnings("serial")
+@MultipartConfig
 public class TransportSelfService extends LoginServlet {
 
   private static final String PATH_QUERY = "/query";
@@ -78,6 +71,8 @@ public class TransportSelfService extends LoginServlet {
   UiHolderBean ui;
   @EJB
   ShipmentRequestsWorker worker;
+  @EJB
+  FileStorageBean fs;
 
   @Override
   protected void doService(HttpServletRequest req, HttpServletResponse resp) {
@@ -93,8 +88,8 @@ public class TransportSelfService extends LoginServlet {
       String language = getLanguage(req);
       Map<String, String> dictionary = Localizations.getPreferredDictionary(language);
 
-      if (parameters.containsKey(COL_QUERY_LOADING_CITY)) {
-        html = query(req, parameters);
+      if (parameters.containsKey(COL_QUERY_EXPEDITION)) {
+        html = doQuery(req, parameters);
       } else {
         html = getQuery(language, dictionary);
       }
@@ -130,7 +125,7 @@ public class TransportSelfService extends LoginServlet {
     return PATH_QUERY;
   }
 
-  private String query(HttpServletRequest req, Map<String, String> parameters) {
+  private String doQuery(HttpServletRequest req, Map<String, String> parameters) {
     Map<Integer, Map<String, String>> handling = new TreeMap<>();
     JsonObjectBuilder json = Json.createObjectBuilder();
 
@@ -143,171 +138,43 @@ public class TransportSelfService extends LoginServlet {
       if (!BeeUtils.isEmpty(value)) {
         if (BeeUtils.startsWith(key, VAR_LOADING) || BeeUtils.startsWith(key, VAR_UNLOADING)) {
           String[] arr = key.split("-", 2);
-          key = arr[0];
           Integer idx = BeeUtils.toInt(ArrayUtils.getQuietly(arr, 1));
 
           if (!handling.containsKey(idx)) {
             handling.put(idx, new HashMap<>());
           }
-          handling.get(idx).put(key, value);
+          handling.get(idx).put(arr[0], value);
         } else {
           json.add(key, value);
         }
       }
     }
-    JsonArrayBuilder array = Json.createArrayBuilder();
+    JsonArrayBuilder files = Json.createArrayBuilder();
+
+    try {
+      for (Part part : req.getParts()) {
+        if (BeeUtils.startsWith(part.getName(), COL_FILE) && BeeUtils.isPositive(part.getSize())) {
+          String caption = part.getSubmittedFileName();
+          JsonObjectBuilder obj = Json.createObjectBuilder();
+          obj.add(COL_FILE, fs.storeFile(part.getInputStream(), caption, part.getContentType()));
+          obj.add(COL_FILE_CAPTION, BeeUtils.nvl(caption, part.getName()));
+          files.add(obj);
+        }
+      }
+    } catch (IOException | ServletException e) {
+      logger.error(e);
+    }
+    JsonArrayBuilder places = Json.createArrayBuilder();
 
     for (Map<String, String> map : handling.values()) {
-      JsonObjectBuilder place = Json.createObjectBuilder();
-
-      for (Map.Entry<String, String> entry : map.entrySet()) {
-        place.add(entry.getKey(), entry.getValue());
-      }
-      array.add(place);
+      JsonObjectBuilder obj = Json.createObjectBuilder();
+      map.forEach((name, value) -> obj.add(name, value));
+      places.add(obj);
     }
-    RestResponse result = worker.request(json.add(TBL_CARGO_HANDLING, array).build());
+    RestResponse result = worker.request(json.add(TBL_CARGO_HANDLING, places)
+        .add(TBL_FILES, files).build());
 
     return (result.hasError() ? result.getStatus() : result.getResult()).toString();
-  }
-
-  private String doQuery(HttpServletRequest req, Map<String, String> parameters,
-      LocalizableConstants constants, Map<String, String> dictionary) {
-
-    Document doc = new Document();
-
-    doc.getHead().append(
-        meta().encodingDeclarationUtf8(),
-        title().text(constants.trRequestNew()));
-
-    List<BeeColumn> columns = sys.getView(VIEW_SHIPMENT_REQUESTS).getRowSetColumns();
-    BeeRow row = DataUtils.createEmptyRow(columns.size());
-
-    for (int i = 0; i < columns.size(); i++) {
-      BeeColumn column = columns.get(i);
-      String colId = column.getId();
-      String value = null;
-
-      switch (colId) {
-        case COL_QUERY_DATE:
-          row.setValue(i, TimeUtils.nowMinutes());
-          break;
-
-        case COL_QUERY_STATUS:
-          row.setValue(i, CargoRequestStatus.NEW.ordinal());
-          break;
-
-        case ALS_CARGO_DESCRIPTION:
-          value = BeeUtils.notEmpty(parameters.get(colId), DEFAULT_CARGO_DESCRIPTION);
-          break;
-
-        case COL_QUERY_HOST:
-          value = req.getRemoteAddr();
-          break;
-
-        case COL_QUERY_AGENT:
-          value = req.getHeader(HttpHeaders.USER_AGENT);
-          break;
-        case COL_USER_INTERFACE:
-          row.setValue(i, UserInterface.normalize(UserInterface.SELF_SERVICE).ordinal());
-          break;
-
-        default:
-          if (parameters.containsKey(colId)) {
-            value = parameters.get(colId);
-          }
-      }
-
-      if (!BeeUtils.isEmpty(value)) {
-        switch (column.getType()) {
-          case BOOLEAN:
-            row.setValue(i, true);
-            break;
-
-          case DATE:
-            row.setValue(i, TimeUtils.parseDate(value));
-            break;
-
-          case DATE_TIME:
-            row.setValue(i, TimeUtils.parseDateTime(value));
-            break;
-
-          case DECIMAL:
-            row.setValue(i, BeeUtils.toDecimalOrNull(value));
-            break;
-
-          case INTEGER:
-            row.setValue(i, BeeUtils.toIntOrNull(value));
-            break;
-
-          case LONG:
-            row.setValue(i, BeeUtils.toLongOrNull(value));
-            break;
-
-          case NUMBER:
-            row.setValue(i, BeeUtils.toDoubleOrNull(value));
-            break;
-
-          default:
-            row.setValue(i, value.trim());
-        }
-      }
-    }
-
-    BeeRowSet insert = DataUtils.createRowSetForInsert(VIEW_SHIPMENT_REQUESTS, columns, row);
-    ResponseObject response = proxy.commitRow(insert);
-
-    if (response.hasErrors()) {
-      for (String message : response.getErrors()) {
-        doc.getBody().append(div().text(message));
-      }
-
-    } else if (response.hasResponse(BeeRow.class)) {
-      row = (BeeRow) response.getResponse();
-
-      Tbody fields = tbody();
-
-      for (int i = 0; i < columns.size(); i++) {
-        if (row.isNull(i)) {
-          continue;
-        }
-
-        BeeColumn column = columns.get(i);
-        String value;
-
-        switch (column.getId()) {
-          case COL_QUERY_STATUS:
-          case COL_QUERY_HOST:
-          case COL_QUERY_AGENT:
-          case COL_USER_INTERFACE:
-            value = null;
-            break;
-
-          default:
-            value = (column.getType() == ValueType.LONG) ? null : DataUtils.render(column, row, i);
-        }
-
-        if (!BeeUtils.isEmpty(value)) {
-          String label = Localized.maybeTranslate(column.getLabel(), dictionary);
-
-          fields.append(tr().append(
-              td().alignRight().paddingRight(1, CssUnit.EM).text(label),
-              td().text(value)));
-        }
-      }
-
-      doc.getBody().append(h3().text(constants.trRequestReceived()), table().append(fields));
-
-    } else if (response.hasMessages()) {
-      for (ResponseMessage message : response.getMessages()) {
-        doc.getBody().append(div().text(message.getMessage()));
-      }
-
-    } else {
-      doc.getBody().append(div().text(BeeUtils.joinWords("response", response.getType(),
-          response.getResponse())));
-    }
-
-    return doc.buildLines();
   }
 
   private String getQuery(String locale, Map<String, String> dictionary) {

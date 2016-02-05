@@ -1,5 +1,7 @@
 package com.butent.bee.server.modules.transport;
 
+import com.google.common.collect.ImmutableMap;
+
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
@@ -16,12 +18,13 @@ import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
-import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.exceptions.BeeException;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.i18n.SupportedLocale;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -67,28 +70,33 @@ public class ShipmentRequestsWorker {
     if (!usr.validateHost(CrudWorker.getValue(data, COL_QUERY_HOST))) {
       return RestResponse.error(Localized.getConstants().ipBlocked());
     }
+    LogUtils.getRootLogger().debug(data);
+
     try {
       BeeView view = sys.getView(VIEW_SHIPMENT_REQUESTS);
-      List<JsonObject> places = new ArrayList<>();
       BeeRowSet rs = buildRowSet(view, data);
-      JsonArray handlings = data.getJsonArray(COL_CARGO_HANDLING);
+      List<JsonObject> places = new ArrayList<>();
+      List<JsonObject> files = new ArrayList<>();
 
-      if (Objects.nonNull(handlings)) {
-        places.addAll(handlings.getValuesAs(JsonObject.class));
+      ImmutableMap.of(TBL_CARGO_HANDLING, places, TBL_FILES, files).forEach((tag, list) -> {
+        JsonArray children = data.getJsonArray(tag);
 
-        if (!BeeUtils.isEmpty(places)) {
-          BeeRowSet handlingRs = buildRowSet(view, places.get(0));
-          rs.getColumns().addAll(handlingRs.getColumns());
-          rs.getRow(0).getValues().addAll(handlingRs.getRow(0).getValues());
+        if (Objects.nonNull(children)) {
+          list.addAll(children.getValuesAs(JsonObject.class));
         }
+      });
+      if (!BeeUtils.isEmpty(places)) {
+        BeeRowSet handlingRs = buildRowSet(view, places.get(0));
+        rs.getColumns().addAll(handlingRs.getColumns());
+        rs.getRow(0).getValues().addAll(handlingRs.getRow(0).getValues());
       }
       ResponseObject response = deb.commitRow(rs);
 
       if (response.hasErrors()) {
         return RestResponse.error(response.getErrors());
       }
-      String cargo = DataUtils.getString(view.getRowSetColumns(), (BeeRow) response.getResponse(),
-          COL_CARGO);
+      IsRow row = (IsRow) response.getResponse();
+      String cargo = DataUtils.getString(view.getRowSetColumns(), row, COL_CARGO);
       view = sys.getView(VIEW_CARGO_HANDLING);
 
       for (int i = 1; i < places.size(); i++) {
@@ -97,6 +105,15 @@ public class ShipmentRequestsWorker {
         handlingRs.getRow(0).getValues().add(cargo);
 
         response = deb.commitRow(handlingRs);
+      }
+      view = sys.getView(VIEW_SHIPMENT_REQUEST_FILES);
+
+      for (JsonObject file : files) {
+        BeeRowSet filesRs = buildRowSet(view, file);
+        filesRs.getColumns().add(view.getBeeColumn(COL_SHIPMENT_REQUEST));
+        filesRs.getRow(0).getValues().add(BeeUtils.toString(row.getId()));
+
+        response = deb.commitRow(filesRs);
       }
     } catch (BeeException e) {
       return RestResponse.error(e);
@@ -185,6 +202,9 @@ public class ShipmentRequestsWorker {
             case INTEGER:
             case LONG:
               val = BeeUtils.toDecimalOrNull(value);
+              break;
+            case TEXT:
+              val = column.getPrecision() > 0 ? BeeUtils.left(value, column.getPrecision()) : value;
               break;
             default:
               val = value;
