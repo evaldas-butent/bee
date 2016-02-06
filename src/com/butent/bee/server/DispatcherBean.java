@@ -292,6 +292,9 @@ public class DispatcherBean {
     } else if (Service.isDataService(svc)) {
       response = uiService.doService(reqInfo);
 
+    } else if (Service.isChatService(svc)) {
+      response = chat.doService(reqInfo);
+
     } else if (Service.isDbService(svc)) {
       response = dataService.doService(svc, reqInfo);
 

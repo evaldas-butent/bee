@@ -12,15 +12,20 @@ import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 
 import com.butent.bee.client.communication.Chat;
 import com.butent.bee.client.communication.ChatUtils;
+import com.butent.bee.client.communication.ParameterList;
+import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.MultiSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.dialog.Icon;
+import com.butent.bee.client.dialog.Popup;
+import com.butent.bee.client.dialog.Popup.OutsideClick;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.ViewCallback;
 import com.butent.bee.client.websocket.Endpoint;
 import com.butent.bee.client.widget.Badge;
@@ -33,8 +38,9 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.HasInfo;
+import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ChatRoom;
-import com.butent.bee.shared.communication.TextMessage;
+import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
@@ -52,6 +58,7 @@ import com.butent.bee.shared.websocket.messages.RoomUserMessage;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -59,16 +66,16 @@ import java.util.Objects;
 
 public class Rooms implements HasInfo, HasEnabled {
 
-  private final class RoomSettings {
+  private final class ChatSettings {
+
     private String name;
 
     private final List<Long> users = new ArrayList<>();
 
-    private RoomSettings() {
-      this.users.add(BeeKeeper.getUser().getUserId());
+    private ChatSettings() {
     }
 
-    private RoomSettings(ChatRoom room) {
+    private ChatSettings(ChatRoom room) {
       this.name = room.getName();
 
       if (!BeeUtils.isEmpty(room.getUsers())) {
@@ -76,7 +83,7 @@ public class Rooms implements HasInfo, HasEnabled {
       }
     }
 
-    private RoomSettings(RoomSettings other) {
+    private ChatSettings(ChatSettings other) {
       this.name = other.getName();
 
       if (!BeeUtils.isEmpty(other.getUsers())) {
@@ -93,7 +100,7 @@ public class Rooms implements HasInfo, HasEnabled {
     }
 
     private boolean isValid() {
-      return !BeeUtils.isEmpty(getName()) && !getUsers().isEmpty();
+      return !getUsers().isEmpty();
     }
 
     private void setName(String name) {
@@ -101,142 +108,118 @@ public class Rooms implements HasInfo, HasEnabled {
     }
   }
 
-  private final class RoomsPanel extends Flow {
+  private final class ChatsPanel extends Flow {
 
-    private RoomsPanel() {
-      super(STYLE_CHATS_PREFIX + "panel");
+    private ChatsPanel(List<ChatRoom> list) {
+      super(STYLE_CHATS_PANEL);
 
-      FaLabel plusWidget = new FaLabel(FontAwesome.PLUS_SQUARE_O);
-      plusWidget.setTitle(Localized.getConstants().chatNew());
-      plusWidget.addStyleName(STYLE_CHATS_PREFIX + "plus");
-
-      plusWidget.addClickHandler(new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent event) {
-          createRoom();
+      Flow wrapper = new Flow(STYLE_CHATS_WRAPPER);
+      if (!list.isEmpty()) {
+        for (ChatRoom chat : list) {
+          wrapper.add(new ChatWidget(chat));
         }
-      });
+      }
+      add(wrapper);
 
-      add(plusWidget);
+      Flow actions = new Flow(STYLE_CHATS_ACTIONS);
+
+      CustomDiv plus = new CustomDiv(STYLE_CHATS_PLUS);
+      plus.setText(Localized.getConstants().chatStartNew());
+
+      plus.addClickHandler(event -> createChat());
+      actions.add(plus);
+
+      if (!list.isEmpty()) {
+        CustomDiv showAll = new CustomDiv(STYLE_CHATS_SHOW);
+        showAll.setText(Localized.getConstants().chatsShowAll());
+
+        showAll.addClickHandler(event -> showAll());
+        actions.add(showAll);
+      }
+
+      add(actions);
     }
 
-    @Override
-    protected void onUnload() {
-      timer.cancel();
-      super.onUnload();
+    private void addChatWidget(ChatWidget chatWidget) {
+      getWrapper().add(chatWidget);
     }
 
-    private void addRoomWidget(RoomWidget roomWidget) {
-      int count = getWidgetCount();
-      insert(roomWidget, count - 1);
-    }
-
-    private RoomWidget findRoomWidget(long roomId) {
-      for (Widget widget : this) {
-        if (widget instanceof RoomWidget
-            && Objects.equals(((RoomWidget) widget).getRoomId(), roomId)) {
-          return (RoomWidget) widget;
+    private ChatWidget findChatWidget(long chatId) {
+      for (Widget widget : getWrapper()) {
+        if (widget instanceof ChatWidget
+            && Objects.equals(((ChatWidget) widget).getChatId(), chatId)) {
+          return (ChatWidget) widget;
         }
       }
 
-      logger.warning("widget not found for room", roomId);
+      logger.warning("widget not found for chat", chatId);
       return null;
+    }
+
+    private Flow getWrapper() {
+      return (Flow) getWidget(0);
     }
   }
 
-  private final class RoomWidget extends Flow {
+  private final class ChatWidget extends Flow {
 
-    private final long roomId;
+    private final long chatId;
 
     private final CustomDiv nameWidget;
 
-    private final FaLabel settingsWidget;
-    private final FaLabel deleteWidget;
-
     private final Badge usersBadge;
     private final Flow usersPanel;
+
     private final CustomDiv timeLabel;
 
-    private RoomWidget(ChatRoom chatRoom) {
-      super(STYLE_ROOM_PREFIX + "container");
-      this.roomId = chatRoom.getId();
+    private ChatWidget(ChatRoom chatRoom) {
+      super(STYLE_CHAT_PREFIX + "container");
+      this.chatId = chatRoom.getId();
 
-      Flow headerPanel = new Flow(STYLE_ROOM_PREFIX + "headerPanel");
+      Flow headerPanel = new Flow(STYLE_CHAT_PREFIX + "headerPanel");
 
-      this.nameWidget = new CustomDiv(STYLE_ROOM_PREFIX + "nameLabel");
+      this.nameWidget = new CustomDiv(STYLE_CHAT_PREFIX + "nameLabel");
       nameWidget.setText(chatRoom.getName());
 
       nameWidget.addClickHandler(new ClickHandler() {
         @Override
         public void onClick(ClickEvent event) {
-          enterRoom(roomId);
-          removeStyleName(STYLE_ROOM_UPDATED);
+          enterChat(chatId);
+          removeStyleName(STYLE_CHAT_UPDATED);
         }
       });
 
       headerPanel.add(nameWidget);
 
       FaLabel infoWidget = new FaLabel(FontAwesome.INFO_CIRCLE);
-      infoWidget.addStyleName(STYLE_ROOM_PREFIX + "infoCommand");
+      infoWidget.addStyleName(STYLE_CHAT_PREFIX + "infoCommand");
 
       infoWidget.addClickHandler(new ClickHandler() {
         @Override
         public void onClick(ClickEvent event) {
-          showInfo(roomId);
+          showInfo(chatId);
         }
       });
 
       headerPanel.add(infoWidget);
 
-      this.settingsWidget = new FaLabel(FontAwesome.GEAR);
-      settingsWidget.addStyleName(STYLE_ROOM_PREFIX + "settingsCommand");
-
-      settingsWidget.addClickHandler(new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent event) {
-          editSetting(roomId);
-        }
-      });
-
-      headerPanel.add(settingsWidget);
-
-      this.deleteWidget = new FaLabel(FontAwesome.TRASH_O);
-      deleteWidget.addStyleName(STYLE_ROOM_PREFIX + "deleteCommand");
-
-      deleteWidget.addClickHandler(new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent event) {
-          ChatRoom room = findRoom(roomId);
-          if (room != null) {
-            onDelete(room);
-          }
-        }
-      });
-
-      headerPanel.add(deleteWidget);
-
-      if (!chatRoom.isOwner(BeeKeeper.getUser().getUserId())) {
-        settingsWidget.addStyleName(STYLE_GUEST);
-        deleteWidget.addStyleName(STYLE_GUEST);
-      }
-
       add(headerPanel);
 
-      Flow infoPanel = new Flow(STYLE_ROOM_PREFIX + "infoPanel");
+      Flow infoPanel = new Flow(STYLE_CHAT_PREFIX + "infoPanel");
 
       int userCount = ChatUtils.countOtherUsers(chatRoom.getUsers());
 
-      this.usersBadge = new Badge(userCount, STYLE_ROOM_PREFIX + "usersBadge");
+      this.usersBadge = new Badge(userCount, STYLE_CHAT_PREFIX + "usersBadge");
       infoPanel.add(usersBadge);
 
-      this.usersPanel = new Flow(STYLE_ROOM_PREFIX + "usersPanel");
+      this.usersPanel = new Flow(STYLE_CHAT_PREFIX + "usersPanel");
       if (userCount > 0) {
-        ChatUtils.renderOtherUsers(usersPanel, chatRoom.getUsers(), STYLE_USER);
+        ChatUtils.renderOtherUsers(usersPanel, chatRoom.getUsers(), STYLE_CHAT_USER);
       }
 
       infoPanel.add(usersPanel);
 
-      this.timeLabel = new CustomDiv(STYLE_ROOM_PREFIX + "maxTime");
+      this.timeLabel = new CustomDiv(STYLE_CHAT_PREFIX + "maxTime");
       if (chatRoom.getMaxTime() > 0) {
         ChatUtils.updateTime(timeLabel, chatRoom.getMaxTime());
       }
@@ -245,17 +228,13 @@ public class Rooms implements HasInfo, HasEnabled {
       add(infoPanel);
     }
 
-    private long getRoomId() {
-      return roomId;
+    private long getChatId() {
+      return chatId;
     }
 
     private void update(ChatRoom chatRoom) {
       if (chatRoom != null) {
         nameWidget.getElement().setInnerText(chatRoom.getName());
-
-        boolean isOwner = chatRoom.isOwner(BeeKeeper.getUser().getUserId());
-        settingsWidget.setStyleName(STYLE_GUEST, !isOwner);
-        deleteWidget.setStyleName(STYLE_GUEST, !isOwner);
 
         updateUsers(chatRoom.getUsers());
         updateTime(chatRoom.getMaxTime());
@@ -271,7 +250,7 @@ public class Rooms implements HasInfo, HasEnabled {
       usersBadge.update(count);
 
       if (count > 0) {
-        ChatUtils.renderOtherUsers(usersPanel, users, STYLE_USER);
+        ChatUtils.renderOtherUsers(usersPanel, users, STYLE_CHAT_USER);
       } else {
         usersPanel.clear();
       }
@@ -287,40 +266,46 @@ public class Rooms implements HasInfo, HasEnabled {
   private static final String STYLE_CHATS_ICON = STYLE_CHATS_PREFIX + "icon";
   private static final String STYLE_CHATS_DISABLED = STYLE_CHATS_PREFIX + "disabled";
 
-  private static final String STYLE_ROOM_PREFIX = BeeConst.CSS_CLASS_PREFIX + "Room-";
-  private static final String STYLE_GUEST = STYLE_ROOM_PREFIX + "guest";
-  private static final String STYLE_USER = STYLE_ROOM_PREFIX + "user";
-  private static final String STYLE_ROOM_UPDATED = STYLE_ROOM_PREFIX + "updated";
+  private static final String STYLE_CHATS_POPUP = STYLE_CHATS_PREFIX + "popup";
+  private static final String STYLE_CHATS_PANEL = STYLE_CHATS_PREFIX + "panel";
+  private static final String STYLE_CHATS_WRAPPER = STYLE_CHATS_PREFIX + "wrapper";
+  private static final String STYLE_CHATS_ACTIONS = STYLE_CHATS_PREFIX + "actions";
+  private static final String STYLE_CHATS_PLUS = STYLE_CHATS_PREFIX + "plus";
+  private static final String STYLE_CHATS_SHOW = STYLE_CHATS_PREFIX + "show";
+
+  private static final String STYLE_CHAT_PREFIX = BeeConst.CSS_CLASS_PREFIX + "Chat-";
+  private static final String STYLE_CHAT_USER = STYLE_CHAT_PREFIX + "user";
+  private static final String STYLE_CHAT_UPDATED = STYLE_CHAT_PREFIX + "updated";
 
   private static final int TIMER_PERIOD = 10_000;
 
-  private static void enterRoom(long roomId) {
-    Chat chat = findChat(roomId);
+  private static void enterChat(long chatId) {
+    Chat chatView = findChatView(chatId);
 
-    if (chat == null) {
-      Endpoint.send(RoomUserMessage.enter(roomId, BeeKeeper.getUser().getUserId()));
+    if (chatView == null) {
+      Endpoint.send(RoomUserMessage.enter(chatId, BeeKeeper.getUser().getUserId()));
     } else {
-      BeeKeeper.getScreen().activateWidget(chat);
+      BeeKeeper.getScreen().activateWidget(chatView);
     }
   }
 
-  private static Chat findChat(long roomId) {
+  private static Chat findChatView(long chatId) {
     List<IdentifiableWidget> openWidgets = BeeKeeper.getScreen().getOpenWidgets();
     for (IdentifiableWidget widget : openWidgets) {
-      if (widget instanceof Chat && Objects.equals(((Chat) widget).getRoomId(), roomId)) {
+      if (widget instanceof Chat && Objects.equals(((Chat) widget).getRoomId(), chatId)) {
         return (Chat) widget;
       }
     }
     return null;
   }
 
-  private static void onDelete(final ChatRoom room) {
+  private static void onDelete(final ChatRoom chat) {
     List<String> messages = Lists.newArrayList(Localized.getConstants().roomDeleteQuestion());
 
-    Global.confirmDelete(room.getName(), Icon.WARNING, messages, new ConfirmationCallback() {
+    Global.confirmDelete(chat.getName(), Icon.WARNING, messages, new ConfirmationCallback() {
       @Override
       public void onConfirm() {
-        Endpoint.send(RoomStateMessage.remove(room));
+        Endpoint.send(RoomStateMessage.remove(chat));
       }
     });
   }
@@ -330,46 +315,38 @@ public class Rooms implements HasInfo, HasEnabled {
   private Widget chatsCommand;
   private Widget unreadBadge;
 
-  private final RoomsPanel roomsPanel = new RoomsPanel();
+  private ChatsPanel chatsPanel;
 
-  private final Timer timer;
+  private Timer timer;
 
   private Map<Long, ViewCallback> viewCallbacks = new HashMap<>();
 
   private boolean enabled;
 
   Rooms() {
-    this.timer = new Timer() {
-      @Override
-      public void run() {
-        if (!chats.isEmpty()) {
-          onTimer();
-        }
-      }
-    };
-    timer.scheduleRepeating(TIMER_PERIOD);
   }
 
   public void addMessage(ChatMessage chatMessage) {
     Assert.notNull(chatMessage);
 
-    ChatRoom room = findRoom(chatMessage.getChatId());
-    if (room != null && chatMessage.isValid()) {
-      room.incrementMessageCount();
-      room.setLastMessage(chatMessage.getChatItem());
+    ChatRoom chat = findChat(chatMessage.getChatId());
 
-      RoomWidget roomWidget = roomsPanel.findRoomWidget(room.getId());
-      if (roomWidget != null) {
-        roomWidget.updateTime(room.getMaxTime());
+    if (chat != null && chatMessage.isValid()) {
+      chat.incrementMessageCount();
+      chat.setLastMessage(chatMessage.getChatItem());
+
+      ChatWidget chatWidget = findChatWidget(chat.getId());
+      if (chatWidget != null) {
+        chatWidget.updateTime(chat.getMaxTime());
 
         if (!BeeKeeper.getUser().is(chatMessage.getChatItem().getUserId())) {
-          roomWidget.addStyleName(STYLE_ROOM_UPDATED);
+          chatWidget.addStyleName(STYLE_CHAT_UPDATED);
         }
       }
 
-      Chat chat = findChat(room.getId());
-      if (chat != null) {
-        chat.addMessage(chatMessage.getChatItem(), true);
+      Chat chatView = findChatView(chat.getId());
+      if (chatView != null) {
+        chatView.addMessage(chatMessage.getChatItem(), true);
       }
     }
   }
@@ -397,16 +374,16 @@ public class Rooms implements HasInfo, HasEnabled {
     return command;
   }
 
-  public void configure(long roomId) {
-    ChatRoom room = findRoom(roomId);
-    if (room == null) {
+  public void configure(long chatId) {
+    ChatRoom chat = findChat(chatId);
+    if (chat == null) {
       return;
     }
 
-    if (room.isOwner(BeeKeeper.getUser().getUserId())) {
-      editSetting(roomId);
+    if (chat.isOwner(BeeKeeper.getUser().getUserId())) {
+      editSetting(chatId);
     } else {
-      showInfo(roomId);
+      showInfo(chatId);
     }
   }
 
@@ -415,24 +392,20 @@ public class Rooms implements HasInfo, HasEnabled {
     List<Property> info = new ArrayList<>();
     info.add(new Property("Chats", BeeUtils.bracket(chats.size())));
 
-    for (ChatRoom room : chats) {
-      info.addAll(room.getInfo());
+    for (ChatRoom chat : chats) {
+      info.addAll(chat.getInfo());
 
-      Chat chat = findChat(room.getId());
-      if (chat != null) {
-        info.add(new Property("Chat View", chat.getId()));
+      Chat chatView = findChatView(chat.getId());
+      if (chatView != null) {
+        info.add(new Property("Chat View", chatView.getId()));
       }
     }
     return info;
   }
 
-  public Long getMaxTime(long roomId) {
-    ChatRoom room = findRoom(roomId);
-    return (room == null) ? null : room.getMaxTime();
-  }
-
-  public IdentifiableWidget getRoomsPanel() {
-    return roomsPanel;
+  public Long getMaxTime(long chatId) {
+    ChatRoom chat = findChat(chatId);
+    return (chat == null) ? null : chat.getMaxTime();
   }
 
   @Override
@@ -440,24 +413,17 @@ public class Rooms implements HasInfo, HasEnabled {
     return enabled;
   }
 
-  public void leaveRoom(long roomId) {
-    Endpoint.send(RoomUserMessage.leave(roomId, BeeKeeper.getUser().getUserId()));
+  public void leaveChat(long chatId) {
+    Endpoint.send(RoomUserMessage.leave(chatId, BeeKeeper.getUser().getUserId()));
 
-    ChatRoom room = findRoom(roomId);
-    if (room != null) {
-      room.quit(BeeKeeper.getUser().getUserId());
+    ChatRoom chat = findChat(chatId);
+    if (chat != null) {
+      chat.quit(BeeKeeper.getUser().getUserId());
     }
   }
 
   public void load(String serialized) {
     if (!chats.isEmpty()) {
-      for (ChatRoom room : chats) {
-        RoomWidget widget = roomsPanel.findRoomWidget(room.getId());
-        if (widget != null) {
-          roomsPanel.remove(widget);
-        }
-      }
-
       chats.clear();
     }
 
@@ -467,9 +433,6 @@ public class Rooms implements HasInfo, HasEnabled {
       for (String s : arr) {
         ChatRoom cr = ChatRoom.restore(s);
         chats.add(cr);
-
-        RoomWidget widget = new RoomWidget(cr);
-        roomsPanel.addRoomWidget(widget);
       }
 
       logger.info("loaded", chats.size(), "chats");
@@ -483,25 +446,25 @@ public class Rooms implements HasInfo, HasEnabled {
     Assert.isTrue(roomStateMessage.isValid());
 
     ChatRoom room = roomStateMessage.getRoom();
-    Chat chat;
+    Chat chatView;
 
     if (roomStateMessage.isLoading()) {
-      chat = new Chat(room);
+      chatView = new Chat(room);
 
       ViewCallback callback = viewCallbacks.remove(room.getId());
       if (callback == null) {
-        BeeKeeper.getScreen().show(chat);
+        BeeKeeper.getScreen().show(chatView);
       } else {
-        callback.onSuccess(chat);
+        callback.onSuccess(chatView);
       }
 
-      updateRoom(room);
+      updateChat(room);
 
     } else if (roomStateMessage.isNew()) {
       if (contains(room.getId())) {
         logger.warning("attempt to add existing room:", room.getId());
       } else if (room.hasUser(BeeKeeper.getUser().getUserId())) {
-        addRoom(room);
+        addChat(room);
       }
 
     } else if (roomStateMessage.isUpdated()) {
@@ -509,23 +472,23 @@ public class Rooms implements HasInfo, HasEnabled {
 
       if (contains(room.getId())) {
         if (visible) {
-          updateRoom(room);
+          updateChat(room);
 
-          chat = findChat(room.getId());
-          if (chat != null) {
-            chat.onRoomUpdate(room);
+          chatView = findChatView(room.getId());
+          if (chatView != null) {
+            chatView.onRoomUpdate(room);
           }
 
         } else {
-          removeRoom(room.getId());
+          removeChat(room.getId());
         }
 
       } else if (visible) {
-        addRoom(room);
+        addChat(room);
       }
 
     } else if (roomStateMessage.isRemoved()) {
-      removeRoom(room.getId());
+      removeChat(room.getId());
 
     } else {
       logger.warning("unrecongnized room state:", roomStateMessage.getState());
@@ -535,7 +498,7 @@ public class Rooms implements HasInfo, HasEnabled {
   public void onRoomUser(RoomUserMessage roomUserMessage) {
     Assert.notNull(roomUserMessage);
 
-    ChatRoom room = findRoom(roomUserMessage.getRoomId());
+    ChatRoom room = findChat(roomUserMessage.getRoomId());
 
     if (room != null) {
       boolean ok;
@@ -548,15 +511,15 @@ public class Rooms implements HasInfo, HasEnabled {
       }
 
       if (ok) {
-        RoomWidget widget = roomsPanel.findRoomWidget(room.getId());
+        ChatWidget widget = findChatWidget(room.getId());
         if (widget != null) {
           widget.updateUsers(room.getUsers());
           widget.updateTime(room.getMaxTime());
         }
 
-        Chat chat = findChat(room.getId());
-        if (chat != null) {
-          chat.onRoomUpdate(room);
+        Chat chatView = findChatView(room.getId());
+        if (chatView != null) {
+          chatView.onRoomUpdate(room);
         }
       }
     }
@@ -565,7 +528,7 @@ public class Rooms implements HasInfo, HasEnabled {
   public void open(long roomId, ViewCallback callback) {
     Assert.notNull(callback);
 
-    ChatRoom room = findRoom(roomId);
+    ChatRoom room = findChat(roomId);
     if (room != null) {
       viewCallbacks.put(roomId, callback);
       Endpoint.send(RoomUserMessage.enter(roomId, BeeKeeper.getUser().getUserId()));
@@ -582,19 +545,41 @@ public class Rooms implements HasInfo, HasEnabled {
 
     if (isEnabled()) {
       updateUnreadBadge();
+
+      if (timer == null) {
+        this.timer = new Timer() {
+          @Override
+          public void run() {
+            if (!chats.isEmpty()) {
+              onTimer();
+            }
+          }
+        };
+
+        timer.scheduleRepeating(TIMER_PERIOD);
+      }
+
     } else if (getChatsCommand() != null) {
       getChatsCommand().addStyleName(STYLE_CHATS_DISABLED);
     }
   }
 
-  private void addRoom(ChatRoom room) {
-    chats.add(room);
+  private void addChat(ChatRoom chat) {
+    chats.add(chat);
 
-    RoomWidget widget = new RoomWidget(room);
-    roomsPanel.addRoomWidget(widget);
+    if (getChatsPanel() != null) {
+      ChatWidget widget = new ChatWidget(chat);
+      getChatsPanel().addChatWidget(widget);
+    }
 
     updateUnreadBadge();
-    logger.info("added chat", room.getId(), room.getName());
+    logger.info("added chat", chat.getId(), chat.getName());
+  }
+
+  private void closeChatsPopup() {
+    if (getChatsPanel() != null) {
+      UiHelper.closeDialog(getChatsPanel());
+    }
   }
 
   private boolean contains(long roomId) {
@@ -606,38 +591,49 @@ public class Rooms implements HasInfo, HasEnabled {
     return false;
   }
 
-  private void createRoom() {
-    RoomSettings roomSettings = new RoomSettings();
-    openSettings(roomSettings, true, new Consumer<RoomSettings>() {
-      @Override
-      public void accept(RoomSettings input) {
-        if (input.isValid()) {
-          List<TextMessage> messages = new ArrayList<>();
-          // ChatRoom room = new ChatRoom(input.getName(), messages);
-          //
-          // room.getOwners().addAll(input.getOwners());
-          //
-          // Endpoint.send(RoomStateMessage.add(room));
+  private void createChat() {
+    ChatSettings settings = new ChatSettings();
+
+    openSettings(settings, true, input -> {
+      if (input.isValid()) {
+        closeChatsPopup();
+
+        ParameterList params = BeeKeeper.getRpc().createParameters(Service.CREATE_CHAT);
+        if (!BeeUtils.isEmpty(input.getName())) {
+          params.addDataItem(COL_CHAT_NAME, input.getName());
         }
+        params.addDataItem(TBL_CHAT_USERS, DataUtils.buildIdList(input.getUsers()));
+
+        BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
+          @Override
+          public void onResponse(ResponseObject response) {
+            if (response.hasResponse(ChatRoom.class)) {
+              ChatRoom chat = ChatRoom.restore(response.getResponseAsString());
+              addChat(chat);
+
+              Endpoint.send(RoomStateMessage.add(chat));
+            }
+          }
+        });
       }
     });
   }
 
   private void editSetting(final long roomId) {
-    ChatRoom original = findRoom(roomId);
+    ChatRoom original = findChat(roomId);
     if (original == null) {
       return;
     }
 
-    RoomSettings roomSettings = new RoomSettings(original);
-    openSettings(roomSettings, false, new Consumer<RoomSettings>() {
+    ChatSettings settings = new ChatSettings(original);
+    openSettings(settings, false, new Consumer<ChatSettings>() {
       @Override
-      public void accept(RoomSettings input) {
+      public void accept(ChatSettings input) {
         if (!input.isValid()) {
           return;
         }
 
-        ChatRoom room = findRoom(roomId);
+        ChatRoom room = findChat(roomId);
         if (room == null) {
           return;
         }
@@ -663,19 +659,31 @@ public class Rooms implements HasInfo, HasEnabled {
     });
   }
 
-  private ChatRoom findRoom(long roomId) {
+  private ChatRoom findChat(long chatId) {
     for (ChatRoom room : chats) {
-      if (room.is(roomId)) {
+      if (room.is(chatId)) {
         return room;
       }
     }
 
-    logger.warning("chat not found:", roomId);
+    logger.warning("chat not found:", chatId);
     return null;
+  }
+
+  private ChatWidget findChatWidget(long chatId) {
+    if (getChatsPanel() == null) {
+      return null;
+    } else {
+      return getChatsPanel().findChatWidget(chatId);
+    }
   }
 
   private Widget getChatsCommand() {
     return chatsCommand;
+  }
+
+  private ChatsPanel getChatsPanel() {
+    return chatsPanel;
   }
 
   private Widget getUnreadBadge() {
@@ -683,43 +691,37 @@ public class Rooms implements HasInfo, HasEnabled {
   }
 
   private void onTimer() {
-    for (ChatRoom room : chats) {
-      RoomWidget widget = roomsPanel.findRoomWidget(room.getId());
+    for (ChatRoom chat : chats) {
+      ChatWidget widget = findChatWidget(chat.getId());
       if (widget != null) {
-        widget.updateTime(room.getMaxTime());
+        widget.updateTime(chat.getMaxTime());
       }
     }
   }
 
-  private void openSettings(RoomSettings roomSettings, boolean isNew,
-      final Consumer<RoomSettings> consumer) {
+  private void openSettings(ChatSettings settings, final boolean isNew,
+      final Consumer<ChatSettings> consumer) {
 
-    final RoomSettings result = new RoomSettings(roomSettings);
+    final ChatSettings result = new ChatSettings(settings);
 
-    String stylePrefix = STYLE_ROOM_PREFIX + "editor-";
+    String stylePrefix = STYLE_CHAT_PREFIX + "editor-";
 
     String caption = isNew ? Localized.getConstants().chatNew()
-        : Localized.getConstants().roomSettings();
+        : Localized.getConstants().chatSettings();
     final DialogBox dialog = DialogBox.create(caption, stylePrefix + "dialog");
 
     HtmlTable table = new HtmlTable(stylePrefix + "table");
     int row = 0;
 
     Label nameLabel = new Label(Localized.getConstants().chatName());
-    nameLabel.addStyleName(StyleUtils.NAME_REQUIRED);
     table.setWidgetAndStyle(row, 0, nameLabel, stylePrefix + "nameLabel");
 
     final InputText nameInput = new InputText();
     nameInput.setMaxLength(Data.getColumnPrecision(TBL_CHATS, COL_CHAT_NAME));
-    if (!BeeUtils.isEmpty(roomSettings.getName())) {
-      nameInput.setValue(roomSettings.getName());
+    if (!BeeUtils.isEmpty(settings.getName())) {
+      nameInput.setValue(settings.getName());
     }
     table.setWidgetAndStyle(row, 1, nameInput, stylePrefix + "nameInput");
-
-    row++;
-    Label typeLabel = new Label(Localized.getConstants().type());
-    typeLabel.addStyleName(StyleUtils.NAME_REQUIRED);
-    table.setWidgetAndStyle(row, 0, typeLabel, stylePrefix + "typeLabel");
 
     row++;
     Label usersLabel = new Label(Localized.getConstants().users());
@@ -728,8 +730,10 @@ public class Rooms implements HasInfo, HasEnabled {
 
     final MultiSelector usersWidget = MultiSelector.autonomous(AdministrationConstants.VIEW_USERS,
         Lists.newArrayList(COL_FIRST_NAME, COL_LAST_NAME));
-    if (!BeeUtils.isEmpty(roomSettings.getUsers())) {
-      usersWidget.setIds(roomSettings.getUsers());
+    if (isNew) {
+      usersWidget.getOracle().setExclusions(Collections.singleton(BeeKeeper.getUser().getUserId()));
+    } else if (!BeeUtils.isEmpty(settings.getUsers())) {
+      usersWidget.setIds(settings.getUsers());
     }
     table.setWidgetAndStyle(row, 1, usersWidget, stylePrefix + "usersInput");
 
@@ -739,27 +743,20 @@ public class Rooms implements HasInfo, HasEnabled {
     Button save = new Button(Localized.getConstants().actionSave());
     save.addStyleName(stylePrefix + "save");
 
-    save.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        if (nameInput.isEmpty()) {
-          nameInput.setFocus(true);
-          return;
-        }
+    save.addClickHandler(event -> {
+      List<Long> users = usersWidget.getIds();
+      int minSize = isNew ? 1 : 2;
 
-        List<Long> users = DataUtils.parseIdList(usersWidget.getValue());
-        if (BeeUtils.isEmpty(users)) {
-          usersWidget.setFocus(true);
-          return;
-        }
-
-        result.setName(BeeUtils.trim(nameInput.getValue()));
-
-        BeeUtils.overwrite(result.getUsers(), users);
-
-        dialog.close();
-        consumer.accept(result);
+      if (BeeUtils.size(users) < minSize) {
+        usersWidget.setFocus(true);
+        return;
       }
+
+      result.setName(BeeUtils.trim(nameInput.getValue()));
+      BeeUtils.overwrite(result.getUsers(), users);
+
+      dialog.close();
+      consumer.accept(result);
     });
 
     commands.add(save);
@@ -767,13 +764,7 @@ public class Rooms implements HasInfo, HasEnabled {
     Button cancel = new Button(Localized.getConstants().actionCancel());
     cancel.addStyleName(stylePrefix + "cancel");
 
-    cancel.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        dialog.close();
-      }
-    });
-
+    cancel.addClickHandler(event -> dialog.close());
     commands.add(cancel);
 
     table.setWidgetAndStyle(row, 1, commands, stylePrefix + "commands");
@@ -781,31 +772,29 @@ public class Rooms implements HasInfo, HasEnabled {
     dialog.setWidget(table);
 
     dialog.setAnimationEnabled(true);
-    dialog.center();
+    dialog.focusOnOpen(usersWidget);
 
-    if (isNew) {
-      nameInput.setFocus(true);
-    }
+    dialog.center();
   }
 
-  private void removeRoom(long roomId) {
-    ChatRoom room = findRoom(roomId);
+  private void removeChat(long chatId) {
+    ChatRoom chat = findChat(chatId);
 
-    if (room != null) {
-      chats.remove(room);
+    if (chat != null) {
+      chats.remove(chat);
 
-      RoomWidget widget = roomsPanel.findRoomWidget(roomId);
+      ChatWidget widget = findChatWidget(chatId);
       if (widget != null) {
-        roomsPanel.remove(widget);
+        widget.removeFromParent();
       }
 
-      Chat chat = findChat(roomId);
-      if (chat != null) {
-        BeeKeeper.getScreen().closeWidget(chat);
+      Chat chatView = findChatView(chatId);
+      if (chatView != null) {
+        BeeKeeper.getScreen().closeWidget(chatView);
       }
 
       updateUnreadBadge();
-      logger.info("removed room", room.getName());
+      logger.info("removed chat", chat.getId(), chat.getName());
     }
   }
 
@@ -813,24 +802,49 @@ public class Rooms implements HasInfo, HasEnabled {
     this.chatsCommand = chatsCommand;
   }
 
+  private void setChatsPanel(ChatsPanel chatsPanel) {
+    this.chatsPanel = chatsPanel;
+  }
+
   private void setUnreadBadge(Widget unreadBadge) {
     this.unreadBadge = unreadBadge;
   }
 
-  private void showChats() {
+  private void showAll() {
   }
 
-  private void showInfo(long roomId) {
-    ChatRoom room = findRoom(roomId);
+  private void showChats() {
+    List<ChatRoom> list = new ArrayList<>();
+    if (!chats.isEmpty()) {
+      list.addAll(chats);
+
+      if (list.size() > 1) {
+        Collections.sort(list);
+      }
+    }
+
+    setChatsPanel(new ChatsPanel(list));
+
+    Popup popup = new Popup(OutsideClick.CLOSE, STYLE_CHATS_POPUP);
+    popup.setWidget(getChatsPanel());
+
+    popup.setHideOnEscape(true);
+    popup.addCloseHandler(event -> setChatsPanel(null));
+
+    popup.showRelativeTo(getChatsCommand().getElement());
+  }
+
+  private void showInfo(long chatId) {
+    ChatRoom room = findChat(chatId);
     if (room == null) {
       return;
     }
 
-    HtmlTable table = new HtmlTable(STYLE_ROOM_PREFIX + "details");
+    HtmlTable table = new HtmlTable(STYLE_CHAT_PREFIX + "details");
     int row = 0;
 
     table.setText(row, 0, Localized.getConstants().captionId());
-    table.setText(row, 2, BeeUtils.toString(roomId));
+    table.setText(row, 2, BeeUtils.toString(chatId));
 
     row++;
     table.setText(row, 0, Localized.getConstants().users());
@@ -868,8 +882,8 @@ public class Rooms implements HasInfo, HasEnabled {
     }
   }
 
-  private void updateRoom(ChatRoom source) {
-    ChatRoom target = findRoom(source.getId());
+  private void updateChat(ChatRoom source) {
+    ChatRoom target = findChat(source.getId());
 
     if (target != null) {
       target.setName(source.getName());
@@ -879,7 +893,7 @@ public class Rooms implements HasInfo, HasEnabled {
       target.setMessageCount(source.getMessageCount());
       target.setLastMessage(source.getLastMessage());
 
-      RoomWidget widget = roomsPanel.findRoomWidget(source.getId());
+      ChatWidget widget = findChatWidget(source.getId());
       if (widget != null) {
         widget.update(source);
       }

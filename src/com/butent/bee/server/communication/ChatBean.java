@@ -5,9 +5,12 @@ import static com.butent.bee.shared.communication.ChatConstants.*;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
+import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.sql.HasConditions;
+import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
+import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ChatItem;
 import com.butent.bee.shared.communication.ChatRoom;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -38,6 +41,25 @@ public class ChatBean {
   QueryServiceBean qs;
   @EJB
   SystemBean sys;
+
+  public ResponseObject doService(RequestInfo reqInfo) {
+    ResponseObject response;
+
+    String svc = BeeUtils.trim(reqInfo.getService());
+
+    switch (svc) {
+      case Service.CREATE_CHAT:
+        response = createChat(reqInfo);
+        break;
+
+      default:
+        String msg = BeeUtils.joinWords("chat service not recognized:", svc);
+        logger.warning(msg);
+        response = ResponseObject.error(msg);
+    }
+
+    return response;
+  }
 
   public ResponseObject getChats() {
     Long userId = usr.getCurrentUserId();
@@ -124,6 +146,75 @@ public class ChatBean {
     return ResponseObject.response(chats);
   }
 
+  private ResponseObject createChat(RequestInfo reqInfo) {
+    String chatName = reqInfo.getParameter(COL_CHAT_NAME);
+
+    List<Long> users = DataUtils.parseIdList(reqInfo.getParameter(TBL_CHAT_USERS));
+    if (BeeUtils.isEmpty(users)) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), TBL_CHAT_USERS);
+    }
+
+    Long userId = usr.getCurrentUserId();
+
+    if (!DataUtils.isId(userId)) {
+      String message = BeeUtils.joinWords(reqInfo.getService(), "current user not available");
+      logger.severe(message);
+
+      return ResponseObject.error(message);
+    }
+
+    long created = System.currentTimeMillis();
+
+    SqlInsert insChat = new SqlInsert(TBL_CHATS)
+        .addConstant(COL_CHAT_CREATED, created)
+        .addConstant(COL_CHAT_CREATOR, userId);
+
+    if (!BeeUtils.isEmpty(chatName)) {
+      insChat.addConstant(COL_CHAT_NAME, chatName);
+    }
+
+    ResponseObject chatResponse = qs.insertDataWithResponse(insChat);
+    if (chatResponse.hasErrors()) {
+      return chatResponse;
+    }
+
+    Long chatId = chatResponse.getResponseAsLong();
+
+    SqlInsert insUser = new SqlInsert(TBL_CHAT_USERS)
+        .addConstant(COL_CHAT, chatId)
+        .addConstant(COL_CHAT_USER_REGISTERED, created)
+        .addConstant(COL_CHAT_USER, userId);
+
+    ResponseObject userResponse = qs.insertDataWithResponse(insUser);
+    if (userResponse.hasErrors()) {
+      return userResponse;
+    }
+
+    ChatRoom chat = new ChatRoom(chatId, chatName);
+    chat.setCreated(created);
+    chat.setCreator(userId);
+
+    chat.setRegistered(created);
+
+    for (Long u : users) {
+      if (!userId.equals(u)) {
+        insUser = new SqlInsert(TBL_CHAT_USERS)
+            .addConstant(COL_CHAT, chatId)
+            .addConstant(COL_CHAT_USER_REGISTERED, created)
+            .addConstant(COL_CHAT_USER, u);
+
+        userResponse = qs.insertDataWithResponse(insUser);
+        if (userResponse.hasErrors()) {
+          return userResponse;
+        }
+
+        chat.join(u);
+      }
+    }
+
+    return ResponseObject.response(chat);
+  }
+
   private int countMessages(long chatId) {
     return qs.sqlCount(TBL_CHAT_MESSAGES, SqlUtils.equals(TBL_CHAT_MESSAGES, COL_CHAT, chatId));
   }
@@ -144,7 +235,7 @@ public class ChatBean {
         .addFields(TBL_CHAT_USERS, COL_CHAT_USER)
         .addFrom(TBL_CHAT_USERS)
         .setWhere(SqlUtils.equals(TBL_CHAT_USERS, COL_CHAT, chatId))
-        .addOrder(TBL_CHAT_USERS, COL_CHAT_USER_REGISTERED);
+        .addOrder(TBL_CHAT_USERS, COL_CHAT_USER_REGISTERED, sys.getIdName(TBL_CHAT_USERS));
 
     return qs.getLongList(query);
   }

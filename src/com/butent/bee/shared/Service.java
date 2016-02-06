@@ -107,6 +107,11 @@ public final class Service {
 
   public static final String EXPORT_WORKBOOK = EXPORT_SERVICE_PREFIX + "workbook";
 
+  public static final String CHAT_SERVICE_PREFIX = RPC_SERVICE_PREFIX + "chat_";
+
+  public static final String CREATE_CHAT = CHAT_SERVICE_PREFIX + "create";
+  public static final String SEND_CHAT_MESSAGE = CHAT_SERVICE_PREFIX + "send_message";
+
   public static final String RPC_VAR_PREFIX = "bee_";
   public static final String RPC_VAR_SYS_PREFIX = RPC_VAR_PREFIX + "sys_";
 
@@ -206,6 +211,11 @@ public final class Service {
   public static final String VAR_QTY = RPC_VAR_PREFIX + " qty";
 
   public static final String VIEW_COLUMN_SEPARATOR = " ";
+
+  public static boolean isChatService(String svc) {
+    Assert.notEmpty(svc);
+    return svc.startsWith(CHAT_SERVICE_PREFIX);
+  }
 
   /**
    * Returns true if {@code svc} value starts with {@link #DATA_SERVICE_PREFIX}.

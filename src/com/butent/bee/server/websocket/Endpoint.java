@@ -23,10 +23,10 @@ import com.butent.bee.shared.websocket.messages.LogMessage;
 import com.butent.bee.shared.websocket.messages.Message;
 import com.butent.bee.shared.websocket.messages.ModificationMessage;
 import com.butent.bee.shared.websocket.messages.OnlineMessage;
+import com.butent.bee.shared.websocket.messages.PresenceMessage;
 import com.butent.bee.shared.websocket.messages.ProgressMessage;
 import com.butent.bee.shared.websocket.messages.RoomStateMessage;
 import com.butent.bee.shared.websocket.messages.RoomUserMessage;
-import com.butent.bee.shared.websocket.messages.PresenceMessage;
 import com.butent.bee.shared.websocket.messages.ShowMessage;
 import com.butent.bee.shared.websocket.messages.ShowMessage.Subject;
 import com.butent.bee.shared.websocket.messages.UsersMessage;
@@ -277,10 +277,7 @@ public class Endpoint {
           WsUtils.onInvalidState(message, toLog(session));
 
         } else if (rsm.isNew()) {
-          // room = Rooms.addRoom(rsm.getRoom());
-          // if (room != null) {
-          // sendToOccupants(room, RoomStateMessage.add(room));
-          // }
+          sendToNeighbors(rsm.getRoom(), rsm, session.getId());
 
         } else if (rsm.isUpdated()) {
           // room = Rooms.updateRoom(rsm.getRoom());

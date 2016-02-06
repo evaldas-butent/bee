@@ -387,7 +387,7 @@ public class Chat extends Flow implements Presenter, View, Printable,
 
     super.onUnload();
 
-    Global.getRooms().leaveRoom(getRoomId());
+    Global.getRooms().leaveChat(getRoomId());
   }
 
   private boolean autoScroll() {
