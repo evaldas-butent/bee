@@ -2435,6 +2435,11 @@
   display: none;
 }
 
+.bee-Chats-popup {
+  background-color: white;
+  border: 1px solid #ccc;
+}
+
 .bee-Room-container {
   padding-top: 5px;
   padding-bottom: 5px;

@@ -9,36 +9,32 @@ import com.butent.bee.shared.utils.Codec;
 import java.util.ArrayList;
 import java.util.List;
 
-public class RoomStateMessage extends Message {
+public class ChatStateMessage extends Message {
 
-  public static RoomStateMessage add(ChatRoom room) {
-    return (room == null) ? null : new RoomStateMessage(room, State.NEW);
+  public static ChatStateMessage add(ChatRoom chat) {
+    return (chat == null) ? null : new ChatStateMessage(chat, State.NEW);
   }
 
-  public static RoomStateMessage load(ChatRoom room) {
-    return (room == null) ? null : new RoomStateMessage(room, State.LOADING);
+  public static ChatStateMessage remove(ChatRoom chat) {
+    return (chat == null) ? null : new ChatStateMessage(chat, State.REMOVED);
   }
 
-  public static RoomStateMessage remove(ChatRoom room) {
-    return (room == null) ? null : new RoomStateMessage(room, State.REMOVED);
+  public static ChatStateMessage update(ChatRoom chat) {
+    return (chat == null) ? null : new ChatStateMessage(chat, State.UPDATING);
   }
 
-  public static RoomStateMessage update(ChatRoom room) {
-    return (room == null) ? null : new RoomStateMessage(room, State.UPDATING);
-  }
-
-  private ChatRoom room;
+  private ChatRoom chat;
   private State state;
 
-  private RoomStateMessage(ChatRoom room, State state) {
+  private ChatStateMessage(ChatRoom chat, State state) {
     this();
 
-    this.room = room;
+    this.chat = chat;
     this.state = state;
   }
 
-  RoomStateMessage() {
-    super(Type.ROOM_STATE);
+  ChatStateMessage() {
+    super(Type.CHAT_STATE);
   }
 
   @Override
@@ -46,16 +42,12 @@ public class RoomStateMessage extends Message {
     return string(getState());
   }
 
-  public ChatRoom getRoom() {
-    return room;
+  public ChatRoom getChat() {
+    return chat;
   }
 
   public State getState() {
     return state;
-  }
-
-  public boolean isLoading() {
-    return getState() == State.LOADING;
   }
 
   public boolean isNew() {
@@ -72,13 +64,13 @@ public class RoomStateMessage extends Message {
 
   @Override
   public boolean isValid() {
-    return getRoom() != null && getState() != null;
+    return getChat() != null && getState() != null;
   }
 
   @Override
   public String toString() {
     return BeeUtils.joinOptions("state", string(getState()),
-        "room", (getRoom() == null) ? null : room.toString());
+        "chat", (getChat() == null) ? null : chat.toString());
   }
 
   @Override
@@ -86,7 +78,7 @@ public class RoomStateMessage extends Message {
     String[] arr = Codec.beeDeserializeCollection(s);
     Assert.lengthEquals(arr, 2);
 
-    setRoom(ChatRoom.restore(arr[0]));
+    setChat(ChatRoom.restore(arr[0]));
     setState(Codec.unpack(State.class, arr[1]));
   }
 
@@ -94,14 +86,14 @@ public class RoomStateMessage extends Message {
   protected String serialize() {
     List<Object> values = new ArrayList<>();
 
-    values.add(getRoom());
+    values.add(getChat());
     values.add(Codec.pack(getState()));
 
     return Codec.beeSerialize(values);
   }
 
-  private void setRoom(ChatRoom room) {
-    this.room = room;
+  private void setChat(ChatRoom chat) {
+    this.chat = chat;
   }
 
   private void setState(State state) {

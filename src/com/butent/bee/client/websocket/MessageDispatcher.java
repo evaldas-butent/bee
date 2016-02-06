@@ -50,6 +50,7 @@ import com.butent.bee.shared.websocket.SessionUser;
 import com.butent.bee.shared.websocket.WsUtils;
 import com.butent.bee.shared.websocket.messages.AdminMessage;
 import com.butent.bee.shared.websocket.messages.ChatMessage;
+import com.butent.bee.shared.websocket.messages.ChatStateMessage;
 import com.butent.bee.shared.websocket.messages.ConfigMessage;
 import com.butent.bee.shared.websocket.messages.EchoMessage;
 import com.butent.bee.shared.websocket.messages.InfoMessage;
@@ -60,10 +61,8 @@ import com.butent.bee.shared.websocket.messages.Message;
 import com.butent.bee.shared.websocket.messages.ModificationMessage;
 import com.butent.bee.shared.websocket.messages.NotificationMessage;
 import com.butent.bee.shared.websocket.messages.OnlineMessage;
-import com.butent.bee.shared.websocket.messages.ProgressMessage;
-import com.butent.bee.shared.websocket.messages.RoomStateMessage;
-import com.butent.bee.shared.websocket.messages.RoomUserMessage;
 import com.butent.bee.shared.websocket.messages.PresenceMessage;
+import com.butent.bee.shared.websocket.messages.ProgressMessage;
 import com.butent.bee.shared.websocket.messages.ShowMessage;
 import com.butent.bee.shared.websocket.messages.ShowMessage.Subject;
 import com.butent.bee.shared.websocket.messages.SignalingMessage;
@@ -287,13 +286,23 @@ class MessageDispatcher {
         }
         break;
 
-      case CHAT:
+      case CHAT_MESSAGE:
         ChatMessage chatMessage = (ChatMessage) message;
 
         if (chatMessage.isValid()) {
-          Global.getRooms().addMessage(chatMessage);
+          Global.getChatManager().addMessage(chatMessage);
         } else {
           WsUtils.onEmptyMessage(message);
+        }
+        break;
+
+      case CHAT_STATE:
+        ChatStateMessage rsm = (ChatStateMessage) message;
+
+        if (rsm.isValid()) {
+          Global.getChatManager().onChatState(rsm);
+        } else {
+          WsUtils.onInvalidState(message);
         }
         break;
 
@@ -472,20 +481,6 @@ class MessageDispatcher {
             WsUtils.onInvalidState(message);
           }
         }
-        break;
-
-      case ROOM_STATE:
-        RoomStateMessage rsm = (RoomStateMessage) message;
-
-        if (rsm.isValid()) {
-          Global.getRooms().onRoomState(rsm);
-        } else {
-          WsUtils.onInvalidState(message);
-        }
-        break;
-
-      case ROOM_USER:
-        Global.getRooms().onRoomUser((RoomUserMessage) message);
         break;
 
       case SHOW:

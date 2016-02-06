@@ -18,10 +18,16 @@ public abstract class Message {
         return new AdminMessage();
       }
     },
-    CHAT {
+    CHAT_MESSAGE {
       @Override
       Message createMessage() {
         return new ChatMessage();
+      }
+    },
+    CHAT_STATE {
+      @Override
+      Message createMessage() {
+        return new ChatStateMessage();
       }
     },
     CONFIG {
@@ -88,18 +94,6 @@ public abstract class Message {
       @Override
       Message createMessage() {
         return new ProgressMessage();
-      }
-    },
-    ROOM_STATE {
-      @Override
-      Message createMessage() {
-        return new RoomStateMessage();
-      }
-    },
-    ROOM_USER {
-      @Override
-      Message createMessage() {
-        return new RoomUserMessage();
       }
     },
     SHOW {

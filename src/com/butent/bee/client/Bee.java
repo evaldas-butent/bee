@@ -195,7 +195,7 @@ public class Bee implements EntryPoint, ClosingHandler {
             break;
 
           case CHATS:
-            Global.getRooms().load(serialized);
+            Global.getChatManager().load(serialized);
             break;
 
           case DATA_INFO:
@@ -286,7 +286,7 @@ public class Bee implements EntryPoint, ClosingHandler {
       @Override
       public void accept(Boolean input) {
         initWorkspace();
-        Global.getRooms().start();
+        Global.getChatManager().start();
       }
     });
   }

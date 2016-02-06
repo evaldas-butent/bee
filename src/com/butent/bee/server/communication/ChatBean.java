@@ -10,6 +10,7 @@ import com.butent.bee.server.sql.HasConditions;
 import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
+import com.butent.bee.server.websocket.Endpoint;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ChatItem;
 import com.butent.bee.shared.communication.ChatRoom;
@@ -21,6 +22,7 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
+import com.butent.bee.shared.websocket.messages.ChatMessage;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,6 +52,14 @@ public class ChatBean {
     switch (svc) {
       case Service.CREATE_CHAT:
         response = createChat(reqInfo);
+        break;
+
+      case Service.GET_CHAT_MESSAGES:
+        response = getMessages(reqInfo);
+        break;
+
+      case Service.SEND_CHAT_MESSAGE:
+        response = putMessage(reqInfo);
         break;
 
       default:
@@ -111,7 +121,7 @@ public class ChatBean {
 
       List<Long> users = getChatUsers(chatId);
       for (Long u : users) {
-        chat.join(u);
+        chat.addUser(u);
       }
 
       int messageCount = countMessages(chatId);
@@ -208,7 +218,7 @@ public class ChatBean {
           return userResponse;
         }
 
-        chat.join(u);
+        chat.addUser(u);
       }
     }
 
@@ -257,5 +267,80 @@ public class ChatBean {
 
     return new ChatItem(row.getLong(COL_CHAT_USER), row.getLong(COL_CHAT_MESSAGE_TIME),
         row.getValue(COL_CHAT_MESSAGE_TEXT));
+  }
+
+  private ResponseObject getMessages(RequestInfo reqInfo) {
+    Long chatId = reqInfo.getParameterLong(COL_CHAT);
+    if (!DataUtils.isId(chatId)) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), COL_CHAT);
+    }
+
+    SqlSelect query = new SqlSelect()
+        .addFields(TBL_CHAT_MESSAGES, COL_CHAT_USER, COL_CHAT_MESSAGE_TIME, COL_CHAT_MESSAGE_TEXT)
+        .addFrom(TBL_CHAT_MESSAGES)
+        .setWhere(SqlUtils.equals(TBL_CHAT_MESSAGES, COL_CHAT, chatId))
+        .addOrder(TBL_CHAT_MESSAGES, COL_CHAT_MESSAGE_TIME);
+
+    SimpleRowSet data = qs.getData(query);
+    if (DataUtils.isEmpty(data)) {
+      return ResponseObject.emptyResponse();
+    }
+
+    List<ChatItem> messages = new ArrayList<>();
+
+    for (SimpleRow row : data) {
+      messages.add(new ChatItem(row.getLong(COL_CHAT_USER), row.getLong(COL_CHAT_MESSAGE_TIME),
+          row.getValue(COL_CHAT_MESSAGE_TEXT)));
+    }
+
+    logger.info(messages.size(), "messages found in chat", chatId);
+    return ResponseObject.response(messages).setSize(messages.size());
+  }
+
+  private ResponseObject putMessage(RequestInfo reqInfo) {
+    String input = reqInfo.getParameter(COL_CHAT_MESSAGE);
+    if (BeeUtils.isEmpty(input)) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), COL_CHAT_MESSAGE);
+    }
+
+    ChatMessage message = ChatMessage.restore(input);
+    if (message == null) {
+      return ResponseObject.error(reqInfo.getService(), "invalid message:", input);
+    }
+
+    String from = reqInfo.getParameter(Service.VAR_FROM);
+    if (BeeUtils.isEmpty(from)) {
+      logger.warning(reqInfo.getService(), "parameter not found:", Service.VAR_FROM);
+    }
+
+    message.getChatItem().setTime(System.currentTimeMillis());
+
+    SqlInsert insert = new SqlInsert(TBL_CHAT_MESSAGES)
+        .addConstant(COL_CHAT, message.getChatId())
+        .addConstant(COL_CHAT_USER, message.getChatItem().getUserId())
+        .addConstant(COL_CHAT_MESSAGE_TIME, message.getChatItem().getTime());
+
+    String text = message.getChatItem().getText();
+    if (!BeeUtils.isEmpty(text)) {
+      insert.addConstant(COL_CHAT_MESSAGE_TEXT, text);
+    }
+
+    ResponseObject response = qs.insertDataWithResponse(insert);
+    if (response.hasErrors()) {
+      return response;
+    }
+
+    List<Long> users = getChatUsers(message.getChatId());
+    if (BeeUtils.isEmpty(from)) {
+      users.remove(message.getChatItem().getUserId());
+    }
+
+    if (BeeUtils.isEmpty(users)) {
+      logger.warning(reqInfo.getService(), "chat", message.getChatId(), "users not available");
+    } else {
+      Endpoint.sendToUsers(users, message, from);
+    }
+
+    return response;
   }
 }

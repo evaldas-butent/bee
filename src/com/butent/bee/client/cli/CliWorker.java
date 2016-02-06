@@ -513,7 +513,7 @@ public final class CliWorker {
       showRpc(args);
 
     } else if ("rooms".equals(z)) {
-      showPropData("Client Rooms", Global.getRooms().getInfo());
+      showPropData("Client Rooms", Global.getChatManager().getInfo());
 
     } else if ("rtc".equals(z)) {
       doRtc(args, errorPopup);
@@ -1671,8 +1671,6 @@ public final class CliWorker {
       Endpoint.send(ShowMessage.showOpenSessions());
     } else if (BeeUtils.same(args, "server")) {
       Endpoint.send(ShowMessage.showEndpoint());
-    } else if (BeeUtils.same(args, "rooms")) {
-      Endpoint.send(ShowMessage.showRooms());
 
     } else if (BeeUtils.inListSame(args, "async", "basic")) {
       Endpoint.send(ConfigMessage.switchRemoteEndpointType(args));

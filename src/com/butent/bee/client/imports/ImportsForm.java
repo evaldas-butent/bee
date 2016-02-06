@@ -192,7 +192,7 @@ public class ImportsForm extends AbstractFormInterceptor implements ClickHandler
             @Override
             public void onFailure(String... reason) {
               setImporting(false);
-              super.onFailure(reason);
+              Callback.super.onFailure(reason);
             }
 
             @Override

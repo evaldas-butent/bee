@@ -9,6 +9,8 @@ import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 
+import static com.butent.bee.shared.communication.ChatConstants.*;
+
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.dom.DomUtils;
@@ -38,6 +40,7 @@ import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ChatItem;
 import com.butent.bee.shared.communication.ChatRoom;
 import com.butent.bee.shared.communication.TextMessage;
@@ -299,7 +302,7 @@ public class Chat extends Flow implements Presenter, View, Printable,
   public void handleAction(Action action) {
     switch (action) {
       case CONFIGURE:
-        Global.getRooms().configure(getRoomId());
+        Global.getChatManager().configure(getRoomId());
         break;
 
       case PRINT:
@@ -387,7 +390,7 @@ public class Chat extends Flow implements Presenter, View, Printable,
 
     super.onUnload();
 
-    Global.getRooms().leaveChat(getRoomId());
+    Global.getChatManager().leaveChat(getRoomId());
   }
 
   private boolean autoScroll() {
@@ -406,11 +409,20 @@ public class Chat extends Flow implements Presenter, View, Printable,
     }
 
     ChatItem item = new ChatItem(BeeKeeper.getUser().getUserId(), text);
-
     ChatMessage chatMessage = new ChatMessage(roomId, item);
-    Global.getRooms().addMessage(chatMessage);
 
-    Endpoint.send(chatMessage);
+    Global.getChatManager().addMessage(chatMessage);
+
+    ParameterList params = BeeKeeper.getRpc().createParameters(Service.SEND_CHAT_MESSAGE);
+    params.addDataItem(COL_CHAT_MESSAGE, chatMessage.encode());
+
+    String from = Endpoint.getSessionId();
+    if (!BeeUtils.isEmpty(from)) {
+      params.addDataItem(Service.VAR_FROM, from);
+    }
+
+    BeeKeeper.getRpc().makeRequest(params);
+
     return true;
   }
 
@@ -465,7 +477,7 @@ public class Chat extends Flow implements Presenter, View, Printable,
         }
       }
 
-      Long maxTime = Global.getRooms().getMaxTime(roomId);
+      Long maxTime = Global.getChatManager().getMaxTime(roomId);
       if (maxTime != null) {
         updateHeader(maxTime);
       }

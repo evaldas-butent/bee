@@ -110,6 +110,7 @@ public final class Service {
   public static final String CHAT_SERVICE_PREFIX = RPC_SERVICE_PREFIX + "chat_";
 
   public static final String CREATE_CHAT = CHAT_SERVICE_PREFIX + "create";
+  public static final String GET_CHAT_MESSAGES = CHAT_SERVICE_PREFIX + "get_messages";
   public static final String SEND_CHAT_MESSAGE = CHAT_SERVICE_PREFIX + "send_message";
 
   public static final String RPC_VAR_PREFIX = "bee_";

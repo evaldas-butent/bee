@@ -78,6 +78,10 @@ public class ChatItem implements BeeSerializable, Comparable<ChatItem> {
     return Codec.beeSerialize(values);
   }
 
+  public void setTime(long time) {
+    this.time = time;
+  }
+
   @Override
   public String toString() {
     return BeeUtils.joinOptions("userId", getUserId(),
@@ -87,10 +91,6 @@ public class ChatItem implements BeeSerializable, Comparable<ChatItem> {
 
   private void setText(String text) {
     this.text = text;
-  }
-
-  private void setTime(long time) {
-    this.time = time;
   }
 
   private void setUserId(long userId) {

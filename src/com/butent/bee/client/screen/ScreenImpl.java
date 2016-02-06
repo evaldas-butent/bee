@@ -1554,7 +1554,7 @@ public class ScreenImpl implements Screen {
 
   protected void extendCommandPanel() {
     if (getUserInterface().hasComponent(Component.CHATS) && Settings.showCommand("chat")) {
-      Widget command = Global.getRooms().createCommand();
+      Widget command = Global.getChatManager().createCommand();
 
       if (command != null) {
         command.addStyleName(STYLE_COMMAND);

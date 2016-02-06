@@ -160,6 +160,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String changePassword();
 
+  String chatDeleteQuestion();
+
   String chatName();
 
   String chatNew();
@@ -167,10 +169,12 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
   String chats();
 
   String chatSettings();
-  
+
   String chatsShowAll();
 
   String chatStartNew();
+
+  String chatUpdateTime();
 
   String chooseFiles();
 
@@ -733,10 +737,6 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
   String rows();
 
   String rowResults();
-
-  String roomDeleteQuestion();
-
-  String roomUpdateTime();
 
   String rowIsNotRemovable();
 

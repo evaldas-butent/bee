@@ -2,6 +2,7 @@ package com.butent.bee.shared.websocket.messages;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.communication.ChatItem;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -9,6 +10,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ChatMessage extends Message {
+
+  public static ChatMessage restore(String s) {
+    Message message = decode(s);
+
+    if (message != null && message.getType() == Type.CHAT_MESSAGE && message.isValid()) {
+      return (ChatMessage) message;
+    } else {
+      return null;
+    }
+  }
 
   private long chatId;
   private ChatItem chatItem;
@@ -21,7 +32,7 @@ public class ChatMessage extends Message {
   }
 
   ChatMessage() {
-    super(Type.CHAT);
+    super(Type.CHAT_MESSAGE);
   }
 
   @Override
@@ -39,7 +50,7 @@ public class ChatMessage extends Message {
 
   @Override
   public boolean isValid() {
-    return getChatItem() != null && getChatItem().isValid();
+    return DataUtils.isId(getChatId()) && getChatItem() != null && getChatItem().isValid();
   }
 
   @Override

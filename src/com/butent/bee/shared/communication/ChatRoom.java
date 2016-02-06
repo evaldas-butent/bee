@@ -12,7 +12,6 @@ import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 
@@ -57,6 +56,31 @@ public class ChatRoom implements BeeSerializable, HasInfo, Comparable<ChatRoom> 
   }
 
   private ChatRoom() {
+  }
+
+  public void addMessage(ChatItem message) {
+    if (message != null) {
+      messages.add(message);
+    }
+  }
+
+  public boolean addUser(Long userId) {
+    if (DataUtils.isId(userId) && !getUsers().contains(userId)) {
+      getUsers().add(userId);
+      return true;
+
+    } else {
+      return false;
+    }
+  }
+
+  public void clearMessages() {
+    getMessages().clear();
+
+    setMessageCount(0);
+    setUnreadCount(0);
+
+    setLastMessage(null);
   }
 
   @Override
@@ -196,7 +220,7 @@ public class ChatRoom implements BeeSerializable, HasInfo, Comparable<ChatRoom> 
     return messageCount;
   }
 
-  public Collection<ChatItem> getMessages() {
+  public List<ChatItem> getMessages() {
     return messages;
   }
 
@@ -214,6 +238,10 @@ public class ChatRoom implements BeeSerializable, HasInfo, Comparable<ChatRoom> 
 
   public List<Long> getUsers() {
     return users;
+  }
+
+  public boolean hasMessages() {
+    return !getMessages().isEmpty();
   }
 
   public boolean hasUser(Long userId) {
@@ -241,21 +269,7 @@ public class ChatRoom implements BeeSerializable, HasInfo, Comparable<ChatRoom> 
     return userId != null && userId.equals(getCreator());
   }
 
-  public boolean join(Long userId) {
-    if (DataUtils.isId(userId) && !getUsers().contains(userId)) {
-      getUsers().add(userId);
-      return true;
-
-    } else {
-      return false;
-    }
-  }
-
-  public boolean kick(Long userId) {
-    return getUsers().remove(userId);
-  }
-
-  public boolean quit(Long userId) {
+  public boolean removeUser(Long userId) {
     return getUsers().remove(userId);
   }
 

@@ -57,6 +57,7 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.mail.AccountInfo;
+import com.butent.bee.shared.modules.mail.MailConstants.AddressType;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
@@ -292,7 +293,7 @@ public final class NewMailMessage extends AbstractFormInterceptor
         @Override
         public void onFailure(String... reason) {
           attachmentsWidget.removeFile(file);
-          super.onFailure(reason);
+          Callback.super.onFailure(reason);
         }
 
         @Override
