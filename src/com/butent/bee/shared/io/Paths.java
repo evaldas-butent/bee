@@ -13,6 +13,7 @@ public final class Paths {
 
   public static final String IMAGE_DIR = "images";
   public static final String CUSTOM_DIR = "custom";
+  public static final String SOUND_DIR = "sounds";
 
   public static final String FILE_ICON_DIR = "fileicons";
   public static final String PHOTO_DIR = "photo";
@@ -78,6 +79,14 @@ public final class Paths {
       return null;
     } else {
       return normalizePath(JS_DIR, fileName, JS_EXT);
+    }
+  }
+
+  public static String getSoundPath(String fileName) {
+    if (BeeUtils.isEmpty(fileName)) {
+      return null;
+    } else {
+      return buildPath(SOUND_DIR, fileName);
     }
   }
 

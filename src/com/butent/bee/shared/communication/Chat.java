@@ -15,17 +15,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class ChatRoom implements BeeSerializable, HasInfo, Comparable<ChatRoom> {
+public class Chat implements BeeSerializable, HasInfo, Comparable<Chat> {
 
   private enum Serial {
     ID, NAME, USERS, CREATED, CREATOR, REGISTERED, LAST_ACCESS,
     MESSAGES, MESSAGE_COUNT, UNREAD_COUNT, LAST_MESSAGE
   }
 
-  public static ChatRoom restore(String s) {
-    ChatRoom room = new ChatRoom();
-    room.deserialize(s);
-    return room;
+  public static Chat restore(String s) {
+    Chat chat = new Chat();
+    chat.deserialize(s);
+    return chat;
   }
 
   private static String formatMillis(long millis) {
@@ -50,12 +50,12 @@ public class ChatRoom implements BeeSerializable, HasInfo, Comparable<ChatRoom> 
 
   private ChatItem lastMessage;
 
-  public ChatRoom(long id, String name) {
+  public Chat(long id, String name) {
     this.id = id;
     this.name = name;
   }
 
-  private ChatRoom() {
+  private Chat() {
   }
 
   public void addMessage(ChatItem message) {
@@ -84,7 +84,7 @@ public class ChatRoom implements BeeSerializable, HasInfo, Comparable<ChatRoom> 
   }
 
   @Override
-  public int compareTo(ChatRoom o) {
+  public int compareTo(Chat o) {
     int result = Boolean.compare(o.unreadCount > 0, unreadCount > 0);
 
     if (result == BeeConst.COMPARE_EQUAL) {
@@ -252,17 +252,8 @@ public class ChatRoom implements BeeSerializable, HasInfo, Comparable<ChatRoom> 
     setMessageCount(getMessageCount() + 1);
   }
 
-  public boolean invite(Long userId) {
-    if (DataUtils.isId(userId) && !getUsers().contains(userId)) {
-      getUsers().add(userId);
-      return true;
-    } else {
-      return false;
-    }
-  }
-
-  public boolean is(Long roomId) {
-    return Objects.equals(roomId, getId());
+  public boolean is(Long chatId) {
+    return Objects.equals(chatId, getId());
   }
 
   public boolean isOwner(Long userId) {

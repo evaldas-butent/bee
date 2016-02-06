@@ -2,7 +2,7 @@ package com.butent.bee.shared.websocket.messages;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.State;
-import com.butent.bee.shared.communication.ChatRoom;
+import com.butent.bee.shared.communication.Chat;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -11,22 +11,22 @@ import java.util.List;
 
 public class ChatStateMessage extends Message {
 
-  public static ChatStateMessage add(ChatRoom chat) {
+  public static ChatStateMessage add(Chat chat) {
     return (chat == null) ? null : new ChatStateMessage(chat, State.NEW);
   }
 
-  public static ChatStateMessage remove(ChatRoom chat) {
+  public static ChatStateMessage remove(Chat chat) {
     return (chat == null) ? null : new ChatStateMessage(chat, State.REMOVED);
   }
 
-  public static ChatStateMessage update(ChatRoom chat) {
+  public static ChatStateMessage update(Chat chat) {
     return (chat == null) ? null : new ChatStateMessage(chat, State.UPDATING);
   }
 
-  private ChatRoom chat;
+  private Chat chat;
   private State state;
 
-  private ChatStateMessage(ChatRoom chat, State state) {
+  private ChatStateMessage(Chat chat, State state) {
     this();
 
     this.chat = chat;
@@ -42,7 +42,7 @@ public class ChatStateMessage extends Message {
     return string(getState());
   }
 
-  public ChatRoom getChat() {
+  public Chat getChat() {
     return chat;
   }
 
@@ -78,7 +78,7 @@ public class ChatStateMessage extends Message {
     String[] arr = Codec.beeDeserializeCollection(s);
     Assert.lengthEquals(arr, 2);
 
-    setChat(ChatRoom.restore(arr[0]));
+    setChat(Chat.restore(arr[0]));
     setState(Codec.unpack(State.class, arr[1]));
   }
 
@@ -92,7 +92,7 @@ public class ChatStateMessage extends Message {
     return Codec.beeSerialize(values);
   }
 
-  private void setChat(ChatRoom chat) {
+  private void setChat(Chat chat) {
     this.chat = chat;
   }
 

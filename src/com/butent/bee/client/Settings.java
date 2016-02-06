@@ -65,6 +65,14 @@ public final class Settings {
     }
   }
 
+  public static String getIncomingChatMessageSound() {
+    return getString("incomingChatMessageSound");
+  }
+
+  public static Double getIncomingChatMessageVolume() {
+    return getDouble("incomingChatMessageVolume");
+  }
+
   public static List<Property> getInfo() {
     List<Property> info = new ArrayList<>();
     if (checkSettings()) {

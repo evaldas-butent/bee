@@ -1,15 +1,18 @@
 package com.butent.bee.shared.communication;
 
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.css.Colors;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.HasCaption;
 
 public enum Presence implements HasCaption {
-  ONLINE(FontAwesome.CHECK_CIRCLE, Localized.getConstants().presenceOnline(), "online"),
-  IDLE(FontAwesome.COFFEE, Localized.getConstants().presenceIdle(), "idle"),
-  AWAY(FontAwesome.BICYCLE, Localized.getConstants().presenceAway(), "away"),
-  OFFLINE(FontAwesome.MINUS_CIRCLE, Localized.getConstants().presenceOffline(), "offline");
+  ONLINE(FontAwesome.CHECK_CIRCLE, Localized.getConstants().presenceOnline(), "online",
+      Colors.PALEGREEN),
+  IDLE(FontAwesome.COFFEE, Localized.getConstants().presenceIdle(), "idle", Colors.LIGHTSKYBLUE),
+  AWAY(FontAwesome.BICYCLE, Localized.getConstants().presenceAway(), "away", Colors.LIGHTYELLOW),
+  OFFLINE(FontAwesome.MINUS_CIRCLE, Localized.getConstants().presenceOffline(), "offline",
+      Colors.PINK);
 
   private static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "Presence-";
 
@@ -17,11 +20,18 @@ public enum Presence implements HasCaption {
   private final String caption;
 
   private final String styleSuffix;
+  private final String background;
 
-  Presence(FontAwesome icon, String caption, String styleSuffix) {
+  Presence(FontAwesome icon, String caption, String styleSuffix, String background) {
     this.icon = icon;
     this.caption = caption;
+
     this.styleSuffix = styleSuffix;
+    this.background = background;
+  }
+
+  public String getBackground() {
+    return background;
   }
 
   @Override

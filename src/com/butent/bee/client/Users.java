@@ -20,6 +20,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.Presence;
 import com.butent.bee.shared.communication.TextMessage;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -261,6 +262,24 @@ public class Users {
 
   public Long getUserIdBySession(String sessionId) {
     return openSessions.get(sessionId);
+  }
+
+  public Presence getUserPresence(Long userId) {
+    Presence result = Presence.OFFLINE;
+    if (!DataUtils.isId(userId)) {
+      return result;
+    }
+
+    for (String session : sessionPresence.keySet()) {
+      if (userId.equals(openSessions.get(session))) {
+        Presence p = sessionPresence.get(session);
+
+        if (p != null && BeeUtils.isLess(p, result)) {
+          result = p;
+        }
+      }
+    }
+    return result;
   }
 
   public String getUserSignatureBySession(String sessionId) {

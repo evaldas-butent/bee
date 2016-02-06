@@ -41,8 +41,8 @@ import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
+import com.butent.bee.shared.communication.Chat;
 import com.butent.bee.shared.communication.ChatItem;
-import com.butent.bee.shared.communication.ChatRoom;
 import com.butent.bee.shared.communication.TextMessage;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -60,7 +60,7 @@ import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
 
-public class Chat extends Flow implements Presenter, View, Printable,
+public class ChatView extends Flow implements Presenter, View, Printable,
     VisibilityChangeEvent.Handler, HasWidgetSupplier {
 
   private static final class MessageWidget extends Flow {
@@ -107,7 +107,7 @@ public class Chat extends Flow implements Presenter, View, Printable,
     }
   }
 
-  private static final BeeLogger logger = LogUtils.getLogger(Chat.class);
+  private static final BeeLogger logger = LogUtils.getLogger(ChatView.class);
 
   private static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "Chat-";
   private static final String STYLE_MESSAGE_WRAPPER = STYLE_PREFIX + "message";
@@ -133,7 +133,7 @@ public class Chat extends Flow implements Presenter, View, Printable,
 
   private static final EnumSet<UiOption> uiOptions = EnumSet.of(UiOption.VIEW);
 
-  private final long roomId;
+  private final long chatId;
 
   private final HeaderView headerView;
   private final Flow messagePanel;
@@ -147,14 +147,14 @@ public class Chat extends Flow implements Presenter, View, Printable,
 
   private final List<HandlerRegistration> registry = new ArrayList<>();
 
-  public Chat(ChatRoom chatRoom) {
+  public ChatView(Chat chat) {
     super(STYLE_PREFIX + "view");
     addStyleName(UiOption.getStyleName(uiOptions));
 
-    this.roomId = chatRoom.getId();
+    this.chatId = chat.getId();
 
     this.headerView = new HeaderImpl();
-    headerView.create(chatRoom.getName(), false, true, null, uiOptions,
+    headerView.create(chat.getName(), false, true, null, uiOptions,
         EnumSet.of(Action.PRINT, Action.CONFIGURE, Action.CLOSE), Action.NO_ACTIONS,
         Action.NO_ACTIONS);
     headerView.setViewPresenter(this);
@@ -203,14 +203,14 @@ public class Chat extends Flow implements Presenter, View, Printable,
 
     add(footer);
 
-    if (!chatRoom.getMessages().isEmpty()) {
-      for (ChatItem message : chatRoom.getMessages()) {
+    if (!chat.getMessages().isEmpty()) {
+      for (ChatItem message : chat.getMessages()) {
         addMessage(message, false);
       }
-      updateHeader(chatRoom.getMaxTime());
+      updateHeader(chat.getMaxTime());
     }
 
-    updateOnlinePanel(chatRoom.getUsers());
+    updateOnlinePanel(chat.getUsers());
 
     this.timer = new Timer() {
       @Override
@@ -249,6 +249,10 @@ public class Chat extends Flow implements Presenter, View, Printable,
     return headerView.getCaption();
   }
 
+  public long getChatId() {
+    return chatId;
+  }
+
   @Override
   public String getEventSource() {
     return null;
@@ -274,13 +278,9 @@ public class Chat extends Flow implements Presenter, View, Printable,
     return messagePanel.getElement();
   }
 
-  public long getRoomId() {
-    return roomId;
-  }
-
   @Override
   public String getSupplierKey() {
-    return ViewFactory.SupplierKind.CHAT.getKey(BeeUtils.toString(roomId));
+    return ViewFactory.SupplierKind.CHAT.getKey(BeeUtils.toString(chatId));
   }
 
   @Override
@@ -302,7 +302,7 @@ public class Chat extends Flow implements Presenter, View, Printable,
   public void handleAction(Action action) {
     switch (action) {
       case CONFIGURE:
-        Global.getChatManager().configure(getRoomId());
+        Global.getChatManager().configure(getChatId());
         break;
 
       case PRINT:
@@ -324,6 +324,15 @@ public class Chat extends Flow implements Presenter, View, Printable,
     return enabled;
   }
 
+  public void onChatUpdate(Chat chat) {
+    Assert.notNull(chat);
+
+    headerView.setCaption(chat.getName());
+    updateOnlinePanel(chat.getUsers());
+
+    BeeKeeper.getScreen().onWidgetChange(this);
+  }
+
   @Override
   public boolean onPrint(Element source, Element target) {
     if (messagePanel.getId().equals(source.getId())) {
@@ -331,15 +340,6 @@ public class Chat extends Flow implements Presenter, View, Printable,
       target.setClassName(BeeConst.STRING_EMPTY);
     }
     return true;
-  }
-
-  public void onRoomUpdate(ChatRoom chatRoom) {
-    Assert.notNull(chatRoom);
-
-    headerView.setCaption(chatRoom.getName());
-    updateOnlinePanel(chatRoom.getUsers());
-
-    BeeKeeper.getScreen().onWidgetChange(this);
   }
 
   @Override
@@ -390,7 +390,7 @@ public class Chat extends Flow implements Presenter, View, Printable,
 
     super.onUnload();
 
-    Global.getChatManager().leaveChat(getRoomId());
+    Global.getChatManager().leaveChat(getChatId());
   }
 
   private boolean autoScroll() {
@@ -409,7 +409,7 @@ public class Chat extends Flow implements Presenter, View, Printable,
     }
 
     ChatItem item = new ChatItem(BeeKeeper.getUser().getUserId(), text);
-    ChatMessage chatMessage = new ChatMessage(roomId, item);
+    ChatMessage chatMessage = new ChatMessage(chatId, item);
 
     Global.getChatManager().addMessage(chatMessage);
 
@@ -477,7 +477,7 @@ public class Chat extends Flow implements Presenter, View, Printable,
         }
       }
 
-      Long maxTime = Global.getChatManager().getMaxTime(roomId);
+      Long maxTime = Global.getChatManager().getMaxTime(chatId);
       if (maxTime != null) {
         updateHeader(maxTime);
       }

@@ -20,6 +20,8 @@ var BeeSettings = {
   "newsRefreshIntervalSeconds": 60,
   "dialogResizerWidth": 10,
   "reducedInteractionStatusMinutes": 15,
+  "incomingChatMessageSound": "notification.wav",
+  "incomingChatMessageVolume": 0.5,
   "theme" : {
     "WorkspaceMarginRight": 25,
     "ViewHeaderHeight": "600, 30, 1200, 52",

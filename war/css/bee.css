@@ -2440,6 +2440,12 @@
   border: 1px solid #ccc;
 }
 
+.bee-Chat-photo {
+  max-width: 40px;
+  max-height: 40px;
+  border-radius: 50px;
+}
+
 .bee-Room-container {
   padding-top: 5px;
   padding-bottom: 5px;

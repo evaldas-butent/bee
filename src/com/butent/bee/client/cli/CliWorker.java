@@ -288,6 +288,9 @@ public final class CliWorker {
     } else if (z.startsWith("data")) {
       showDataInfo(args, errorPopup);
 
+    } else if (z.startsWith("chat")) {
+      showPropData(v, Global.getChatManager().getInfo());
+
     } else if (z.startsWith("color")) {
       showColor(arr);
 
@@ -511,9 +514,6 @@ public final class CliWorker {
 
     } else if ("rpc".equals(z)) {
       showRpc(args);
-
-    } else if ("rooms".equals(z)) {
-      showPropData("Client Rooms", Global.getChatManager().getInfo());
 
     } else if ("rtc".equals(z)) {
       doRtc(args, errorPopup);

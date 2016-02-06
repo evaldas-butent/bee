@@ -2,7 +2,7 @@ package com.butent.bee.server.websocket;
 
 import com.butent.bee.server.Config;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.communication.ChatRoom;
+import com.butent.bee.shared.communication.Chat;
 import com.butent.bee.shared.communication.Presence;
 import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -575,7 +575,7 @@ public class Endpoint {
     }
   }
 
-  private static void sendToNeighbors(ChatRoom chat, Message message, String mySessionId) {
+  private static void sendToNeighbors(Chat chat, Message message, String mySessionId) {
     for (Session session : openSessions) {
       if (session.isOpen() && !mySessionId.equals(session.getId())
           && chat.hasUser(getUserId(session))) {

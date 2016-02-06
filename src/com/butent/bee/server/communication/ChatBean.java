@@ -13,7 +13,7 @@ import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.server.websocket.Endpoint;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ChatItem;
-import com.butent.bee.shared.communication.ChatRoom;
+import com.butent.bee.shared.communication.Chat;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
@@ -93,11 +93,11 @@ public class ChatBean {
       return ResponseObject.emptyResponse();
     }
 
-    List<ChatRoom> chats = new ArrayList<>();
+    List<Chat> chats = new ArrayList<>();
 
     for (SimpleRow row : chatData) {
       long chatId = row.getLong(COL_CHAT);
-      ChatRoom chat = new ChatRoom(chatId, row.getValue(COL_CHAT_NAME));
+      Chat chat = new Chat(chatId, row.getValue(COL_CHAT_NAME));
 
       Long created = row.getLong(COL_CHAT_CREATED);
       if (BeeUtils.isPositive(created)) {
@@ -200,7 +200,7 @@ public class ChatBean {
       return userResponse;
     }
 
-    ChatRoom chat = new ChatRoom(chatId, chatName);
+    Chat chat = new Chat(chatId, chatName);
     chat.setCreated(created);
     chat.setCreator(userId);
 
