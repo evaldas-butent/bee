@@ -80,6 +80,7 @@ import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.UiConstants;
 import com.butent.bee.shared.ui.UserInterface;
+import com.butent.bee.shared.ui.UserInterface.Component;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.ExtendedProperty;
@@ -1552,6 +1553,15 @@ public class ScreenImpl implements Screen {
   }
 
   protected void extendCommandPanel() {
+    if (getUserInterface().hasComponent(Component.CHATS) && Settings.showCommand("chat")) {
+      Widget command = Global.getRooms().createCommand();
+
+      if (command != null) {
+        command.addStyleName(STYLE_COMMAND);
+        getCommandPanel().add(command);
+      }
+    }
+
     if (Settings.showCommand("company_structure")
         && BeeKeeper.getUser().isWidgetVisible(RegulatedWidget.COMPANY_STRUCTURE)
         && BeeKeeper.getUser().isDataVisible(AdministrationConstants.VIEW_DEPARTMENTS)) {

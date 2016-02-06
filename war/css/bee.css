@@ -2431,6 +2431,10 @@
   background-color: #80c4f9;
 }
 
+.bee-Chats-disabled {
+  display: none;
+}
+
 .bee-Room-container {
   padding-top: 5px;
   padding-bottom: 5px;
@@ -3538,7 +3542,8 @@ textarea,
   text-transform: uppercase;
 }
 
-.bee-OnlineUsersIcon {
+.bee-OnlineUsersIcon,
+.bee-Chats-icon {
   color: white;
   font-size: 17px;
   margin-right: 27px;
@@ -3547,7 +3552,8 @@ textarea,
   color: #6f6f6f;
 }
 
-.bee-OnlineUsersCount {
+.bee-OnlineUsersCount,
+.bee-Chats-unread {
   background-color: #63a140;
   color: white;
   width: 15px;
@@ -3561,7 +3567,8 @@ textarea,
   border-radius: 3px;
 }
 
-.bee-OnlineUsersCount.bee-empty {
+.bee-OnlineUsersCount.bee-empty,
+.bee-Chats-unread.bee-empty {
   display: none;
 }
 

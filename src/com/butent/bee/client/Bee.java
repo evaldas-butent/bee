@@ -286,6 +286,7 @@ public class Bee implements EntryPoint, ClosingHandler {
       @Override
       public void accept(Boolean input) {
         initWorkspace();
+        Global.getRooms().start();
       }
     });
   }

@@ -10,7 +10,7 @@ var BeeSettings = {
   "loadingStateDelayMillis": 300,
   "logCapacity": 10000,
   "minimizeNumberOfConcurrentRequests": true,
-  "showCommands": "mail, users, company_structure",
+  "showCommands": "mail, users, chat, company_structure",
   "showUserPhoto": true,
   "showUserPresence": true,
   "showLogout": false,
