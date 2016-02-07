@@ -1,6 +1,7 @@
 package com.butent.bee.client;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Multimap;
 import com.google.gwt.dom.client.AudioElement;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.user.client.Timer;
@@ -53,7 +54,7 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.time.TimeUtils;
-import com.butent.bee.shared.ui.Color;
+import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -64,7 +65,6 @@ import com.butent.bee.shared.websocket.messages.ChatStateMessage;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 public class ChatManager implements HasInfo, HasEnabled {
@@ -171,106 +171,106 @@ public class ChatManager implements HasInfo, HasEnabled {
     private final CustomDiv timeLabel;
 
     private ChatWidget(Chat chat) {
-      super(STYLE_CHAT_PREFIX + "container");
+      super(STYLE_CHATS_ITEM_PREFIX + "container");
       this.chatId = chat.getId();
 
-      List<Long> users = ChatUtils.getOtherUsers(chat.getUsers());
-
-      Map<Presence, Integer> presence = ChatUtils.countUserPresence(users);
-      if (!BeeUtils.isEmpty(presence)) {
-        applyPresence(presence);
+      if (chat.getUnreadCount() > 0) {
+        addStyleName(STYLE_CHATS_ITEM_PREFIX + "hasUnread");
       }
 
-      Flow picturePanel = new Flow(STYLE_CHAT_PREFIX + "picturePanel");
+      List<Long> users = ChatUtils.getOtherUsers(chat.getUsers());
+      Multimap<Presence, Long> presence = ChatUtils.getUserPresence(users);
 
+      Flow picturePanel = new Flow(STYLE_CHATS_ITEM_PREFIX + "picturePanel");
       Widget picture = createPicture(users);
       if (picture != null) {
         picturePanel.add(picture);
       }
-
       add(picturePanel);
 
-      Flow headerPanel = new Flow(STYLE_CHAT_PREFIX + "headerPanel");
+      Flow presencePanel = new Flow(STYLE_CHATS_ITEM_PREFIX + "presencePanel");
+      if (!presence.isEmpty()) {
+        List<Presence> keys = new ArrayList<>(presence.keySet());
+        Collections.sort(keys);
 
+        for (Presence p : keys) {
+          FaLabel icon = new FaLabel(p.getIcon(), p.getStyleName());
+          icon.addStyleName(STYLE_CHATS_ITEM_PREFIX + "presenceIcon");
+
+          if (users.size() > 1) {
+            icon.setTitle(ChatUtils.buildUserTitle(presence.get(p), true));
+          } else {
+            icon.setTitle(p.getCaption());
+          }
+
+          presencePanel.add(icon);
+        }
+      }
+      add(presencePanel);
+
+      Flow mainPanel = new Flow(STYLE_CHATS_ITEM_PREFIX + "mainPanel");
+
+      Flow headerPanel = new Flow(STYLE_CHATS_ITEM_PREFIX + "headerPanel");
       if (BeeUtils.isEmpty(chat.getName())) {
-        Flow usersPanel = new Flow(STYLE_CHAT_PREFIX + "usersPanel");
-
         if (users.size() == 1) {
-          CustomDiv userWidget = new CustomDiv(STYLE_CHAT_PREFIX + "userName");
+          CustomDiv userWidget = new CustomDiv(STYLE_CHATS_ITEM_PREFIX + "userName");
           userWidget.setText(Global.getUsers().getSignature(users.get(0)));
-
-          usersPanel.add(userWidget);
+          headerPanel.add(userWidget);
 
         } else {
-          ChatUtils.renderOtherUsers(usersPanel, chat.getUsers(), STYLE_CHAT_USER);
+          Flow usersPanel = new Flow(STYLE_CHATS_ITEM_PREFIX + "usersPanel");
+          ChatUtils.renderOtherUsers(usersPanel, chat.getUsers(), STYLE_CHATS_ITEM_USER);
+          headerPanel.add(usersPanel);
         }
 
-        headerPanel.add(usersPanel);
-
       } else {
-        CustomDiv nameWidget = new CustomDiv(STYLE_CHAT_PREFIX + "nameLabel");
+        CustomDiv nameWidget = new CustomDiv(STYLE_CHATS_ITEM_PREFIX + "nameLabel");
         nameWidget.setText(chat.getName());
 
         headerPanel.add(nameWidget);
       }
 
-      this.timeLabel = new CustomDiv(STYLE_CHAT_PREFIX + "maxTime");
+      this.timeLabel = new CustomDiv(STYLE_CHATS_ITEM_PREFIX + "maxTime");
       if (chat.getMaxTime() > 0) {
         ChatUtils.updateTime(timeLabel, chat.getMaxTime());
       }
       headerPanel.add(timeLabel);
+      mainPanel.add(headerPanel);
 
-      add(headerPanel);
-
-      Flow infoPanel = new Flow(STYLE_CHAT_PREFIX + "infoPanel");
-
+      Flow infoPanel = new Flow(STYLE_CHATS_ITEM_PREFIX + "infoPanel");
       if (chat.getLastMessage() != null) {
         String text = chat.getLastMessage().getText();
 
         if (!BeeUtils.isEmpty(text)) {
-          CustomDiv lastMessageWidget = new CustomDiv(STYLE_CHAT_PREFIX + "lastMessage");
+          CustomDiv lastMessageWidget = new CustomDiv(STYLE_CHATS_ITEM_PREFIX + "lastMessage");
           lastMessageWidget.setText(text);
 
           infoPanel.add(lastMessageWidget);
         }
       }
+      mainPanel.add(infoPanel);
 
-      add(infoPanel);
+      add(mainPanel);
 
       addClickHandler(event -> enterChat(chatId));
-    }
-
-    private void applyPresence(Map<Presence, Integer> presence) {
-      if (presence.size() == 1) {
-        Presence p = BeeUtils.peek(presence.keySet());
-        StyleUtils.setBackgroundColor(this, p.getBackground());
-
-      } else if (presence.size() > 1) {
-        List<String> colors = new ArrayList<>();
-
-        for (Presence p : presence.keySet()) {
-          String color = p.getBackground();
-
-          for (int i = 0; i < presence.get(p); i++) {
-            colors.add(color);
-          }
-        }
-
-        StyleUtils.setBackgroundColor(this, Color.blend(colors));
-      }
     }
 
     private Widget createPicture(List<Long> users) {
       if (users.size() == 1 && Global.getUsers().hasPhoto(users.get(0))) {
         Image photo = Global.getUsers().getPhoto(users.get(0));
         if (photo != null) {
-          photo.addStyleName(STYLE_CHAT_PREFIX + "photo");
+          photo.addStyleName(STYLE_CHATS_ITEM_PREFIX + "photo");
           return photo;
         }
       }
 
-      CustomDiv badge = new CustomDiv(STYLE_CHAT_PREFIX + "usersBadge");
+      CustomDiv badge = new CustomDiv(STYLE_CHATS_ITEM_PREFIX + "usersBadge");
       badge.setText(BeeUtils.toString(users.size()));
+
+      String title = ChatUtils.buildUserTitle(users, true);
+      if (!BeeUtils.isEmpty(title)) {
+        badge.setTitle(title);
+      }
 
       return badge;
     }
@@ -306,8 +306,8 @@ public class ChatManager implements HasInfo, HasEnabled {
   private static final String STYLE_CHATS_PLUS = STYLE_CHATS_PREFIX + "plus";
   private static final String STYLE_CHATS_SHOW = STYLE_CHATS_PREFIX + "show";
 
-  private static final String STYLE_CHAT_PREFIX = BeeConst.CSS_CLASS_PREFIX + "Chat-";
-  private static final String STYLE_CHAT_USER = STYLE_CHAT_PREFIX + "user";
+  private static final String STYLE_CHATS_ITEM_PREFIX = BeeConst.CSS_CLASS_PREFIX + "ChatsItem-";
+  private static final String STYLE_CHATS_ITEM_USER = STYLE_CHATS_ITEM_PREFIX + "user";
 
   private static final int TIMER_PERIOD = 10_000;
 
@@ -741,7 +741,7 @@ public class ChatManager implements HasInfo, HasEnabled {
 
     final ChatSettings result = new ChatSettings(settings);
 
-    String stylePrefix = STYLE_CHAT_PREFIX + "editor-";
+    String stylePrefix = STYLE_CHATS_ITEM_PREFIX + "editor-";
 
     String caption = isNew ? Localized.getConstants().chatNew()
         : Localized.getConstants().chatSettings();
@@ -765,7 +765,11 @@ public class ChatManager implements HasInfo, HasEnabled {
     usersLabel.addStyleName(StyleUtils.NAME_REQUIRED);
     table.setWidgetAndStyle(row, 0, usersLabel, stylePrefix + "usersLabel");
 
-    final MultiSelector usersWidget = MultiSelector.autonomous(AdministrationConstants.VIEW_USERS,
+    Relation relation = Relation.create(AdministrationConstants.VIEW_USERS,
+        Lists.newArrayList(COL_FIRST_NAME, COL_LAST_NAME, ALS_POSITION_NAME, ALS_COMPANY_NAME));
+    relation.disableNewRow();
+
+    final MultiSelector usersWidget = MultiSelector.autonomous(relation,
         Lists.newArrayList(COL_FIRST_NAME, COL_LAST_NAME));
     if (isNew) {
       usersWidget.getOracle().setExclusions(Collections.singleton(BeeKeeper.getUser().getUserId()));
@@ -877,7 +881,7 @@ public class ChatManager implements HasInfo, HasEnabled {
       return;
     }
 
-    HtmlTable table = new HtmlTable(STYLE_CHAT_PREFIX + "details");
+    HtmlTable table = new HtmlTable(STYLE_CHATS_ITEM_PREFIX + "details");
     int row = 0;
 
     table.setText(row, 0, Localized.getConstants().captionId());

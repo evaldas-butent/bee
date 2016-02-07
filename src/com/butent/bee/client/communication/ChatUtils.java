@@ -1,10 +1,14 @@
 package com.butent.bee.client.communication;
 
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
 import com.google.gwt.user.client.ui.IsWidget;
+import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.i18n.DateTimeFormat;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.HasIndexedWidgets;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.shared.Assert;
@@ -16,12 +20,12 @@ import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.EnumMap;
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 public final class ChatUtils {
@@ -29,41 +33,55 @@ public final class ChatUtils {
   private static final DateTimeFormat dateTimeFormat =
       DateTimeFormat.getFormat(DateTimeFormat.PredefinedFormat.MONTH_DAY);
 
+  public static void applyPresence(Widget widget, Multimap<Presence, Long> presence) {
+    if (presence.keySet().size() == 1) {
+      Presence p = BeeUtils.peek(presence.keySet());
+      StyleUtils.setBackgroundColor(widget, p.getBackground());
+
+    } else if (presence.keySet().size() > 1) {
+      List<String> colors = new ArrayList<>();
+
+      List<Presence> keys = new ArrayList<>(presence.keySet());
+      Collections.sort(keys);
+
+      for (Presence p : keys) {
+        String color = p.getBackground();
+
+        for (int i = 0; i < presence.get(p).size(); i++) {
+          colors.add(color);
+        }
+      }
+
+      widget.getElement().getStyle().setBackgroundImage("linear-gradient(to bottom, "
+          + BeeUtils.joinItems(colors) + ")");
+    }
+  }
+
+  public static String buildUserTitle(Collection<Long> users, boolean addPresence) {
+    List<String> lines = new ArrayList<>();
+
+    if (!BeeUtils.isEmpty(users)) {
+      for (Long u : users) {
+        String signature = Global.getUsers().getSignature(u);
+
+        if (addPresence) {
+          String presence = EnumUtils.getCaption(Global.getUsers().getUserPresence(u));
+          lines.add(BeeUtils.joinItems(signature, BeeUtils.toLowerCase(presence)));
+        } else {
+          lines.add(signature);
+        }
+      }
+    }
+
+    return BeeUtils.buildLines(lines);
+  }
+
   public static int countOtherUsers(Collection<Long> users) {
     int size = BeeUtils.size(users);
     if (size > 0 && users.contains(BeeKeeper.getUser().getUserId())) {
       size--;
     }
     return size;
-  }
-
-  public static Map<Presence, Integer> countUserPresence(Collection<Long> users) {
-    EnumMap<Presence, Integer> map = new EnumMap<>(Presence.class);
-
-    Presence p;
-    int count;
-
-    for (Long u : users) {
-      if (BeeKeeper.getUser().is(u)) {
-        p = BeeKeeper.getUser().getPresence();
-      } else {
-        p = Global.getUsers().getUserPresence(u);
-      }
-
-      if (p == null) {
-        p = Presence.OFFLINE;
-      }
-
-      if (map.containsKey(p)) {
-        count = map.get(p);
-      } else {
-        count = 0;
-      }
-
-      map.put(p, count + 1);
-    }
-
-    return map;
   }
 
   public static String elapsed(long start) {
@@ -97,6 +115,27 @@ public final class ChatUtils {
           result.add(u);
         }
       }
+    }
+
+    return result;
+  }
+
+  public static Multimap<Presence, Long> getUserPresence(Collection<Long> users) {
+    Multimap<Presence, Long> result = ArrayListMultimap.create();
+    Presence p;
+
+    for (Long u : users) {
+      if (BeeKeeper.getUser().is(u)) {
+        p = BeeKeeper.getUser().getPresence();
+      } else {
+        p = Global.getUsers().getUserPresence(u);
+      }
+
+      if (p == null) {
+        p = Presence.OFFLINE;
+      }
+
+      result.put(p, u);
     }
 
     return result;

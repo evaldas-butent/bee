@@ -205,6 +205,7 @@ public class Users {
     } else {
       Image image = new Image(PhotoRenderer.getUrl(userData.getPhotoFileName()));
       image.setAlt(userData.getLogin());
+      image.setTitle(userData.getUserSign());
 
       return image;
     }

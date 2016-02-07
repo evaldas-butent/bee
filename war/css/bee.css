@@ -2372,8 +2372,7 @@
 }
 
 .bee-News-size,
-.bee-Online-size,
-.bee-Rooms-size {
+.bee-Online-size {
   position: absolute;
   top: 3px;
   right: 10px;
@@ -2383,8 +2382,7 @@
   background-image: linear-gradient(to bottom, #858a90, #CCCED1);
 }
 
-.bee-Online-item,
-.bee-Room-headerPanel {
+.bee-Online-item {
   display: flex;
   display: -webkit-flex;
   display: -ms-flexbox;
@@ -2439,106 +2437,164 @@
   background-color: white;
   border: 1px solid #ccc;
 }
-
-.bee-Chat-photo {
-  max-width: 40px;
-  max-height: 40px;
-  border-radius: 50px;
+.bee-Chats-panel {
+  width: 360px;
+}
+.bee-Chats-wrapper {
+  max-height: 50vh;
+  overflow: auto;
 }
 
-.bee-Room-container {
-  padding-top: 5px;
-  padding-bottom: 5px;
-  border-bottom: 1px solid #ccc;
-  transition: background-color 1s;
-}
-
-.bee-Room-headerPanel {
-  margin-bottom: 5px;
-}
-
-.bee-Room-nameLabel {
-  font-weight: bold;
-  color: #888;
-  text-decoration: underline;
-  flex: 1;
-  -webkit-flex: 1;
-  -ms-flex: 1;
-  margin-left: 1em;
-  margin-right: 1em;
-  cursor: pointer;
-}
-.bee-Room-container:hover .bee-Room-nameLabel {
-  color: #556CCA;
-}
-
-.bee-Room-infoCommand,
-.bee-Room-settingsCommand,
-.bee-Room-deleteCommand {
-  font-size: large;
-  padding: 3px;
-  cursor: pointer;
-  color: #888;
-}
-
-.bee-Room-guest {
-  display: none;
-}
-
-.bee-Room-infoPanel {
+.bee-ChatsItem-container {
   display: flex;
   display: -webkit-flex;
   display: -ms-flexbox;
+  flex-direction: row;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  align-items: flex-start;
+  -webkit-align-items: flex-start;
+  -ms-flex-align: start;
+  padding-bottom: 5px;
+  border-bottom: 1px solid #ccc;
+  cursor: pointer;
+}
+.bee-ChatsItem-container:hover {
+  background-color: #f7f7f7;
+}
+
+.bee-ChatsItem-picturePanel {
+  width: 52px;
+  text-align: right;
+}
+.bee-ChatsItem-photo {
+  margin-top: 5px;
+  max-width: 40px;
+  max-height: 40px;
+  border-radius: 50%;
+}
+.bee-ChatsItem-usersBadge {
+  display: inline-block;
+  margin-top: 5px;
+  padding: 8px 13px;
+  background-color: #63a140;
+  color: white;
+  font-weight: bold;
+  border-radius: 50%;
+}
+
+.bee-ChatsItem-presencePanel {
+  width: 30px;
+}
+.bee-ChatsItem-presenceIcon {
+  margin-top: 2px;
+  margin-left: 2px;
+  font-size: 14px;
+}
+.bee-ChatsItem-presenceIcon.bee-Presence-online {
+  color: green;
+}
+.bee-ChatsItem-presenceIcon.bee-Presence-idle {
+  color: deepskyblue;
+}
+.bee-ChatsItem-presenceIcon.bee-Presence-away {
+  color: hotpink;
+}
+.bee-ChatsItem-presenceIcon.bee-Presence-offline {
+  color: red;
+}
+
+.bee-ChatsItem-mainPanel {
+  color: #414142;
+  width: 260px;
+  overflow: hidden;
+}
+
+.bee-ChatsItem-headerPanel {
+  margin-top: 4px;
+  display: flex;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  flex-direction: row;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
   align-items: flex-start;
   -webkit-align-items: flex-start;
   -ms-flex-align: start;
 }
-
-.bee-Room-usersBadge {
-  margin-left: 2px;
-  color: white;
-  background-color: #aaa;
-}
-.bee-Room-usersPanel {
+.bee-ChatsItem-headerPanel > :first-child {
   flex: 1;
   -webkit-flex: 1;
   -ms-flex: 1;
-  max-height: 100px;
-  overflow: auto;
-}
-.bee-Room-user {
-  display: inline-block;
-  font-size: 12px;
-  font-style: italic;
-  margin-left: 5px;
-}
-.bee-Room-maxTime {
-  margin-left: 5px;
-  margin-right: 2px;
-  color: #777;
 }
 
-.bee-Room-updated {
-  background-color: #ffa;
+.bee-ChatsItem-nameLabel,
+.bee-ChatsItem-userName {
+  font-size: 14pt;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+.bee-ChatsItem-user {
+  display: inline-block;
+  font-size: 10pt;
+  margin-right: 4px;
 }
 
-.bee-Rooms-plus {
-  display: inline-block;
-  font-size: x-large;
+.bee-ChatsItem-maxTime {
   margin-left: 1em;
-  margin-top: 5px;
-  padding: 1px 3px;
+  font-size: 10pt;
+}
+
+.bee-ChatsItem-infoPanel {
+  margin-top: 3px;
+}
+.bee-ChatsItem-lastMessage {
+  font-size: 12pt;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.bee-ChatsItem-hasUnread .bee-ChatsItem-nameLabel,
+.bee-ChatsItem-hasUnread .bee-ChatsItem-userName,
+.bee-ChatsItem-hasUnread .bee-ChatsItem-usersPanel {
+  font-weight: bold;
+}
+.bee-ChatsItem-hasUnread .bee-ChatsItem-maxTime {
+  font-weight: bold;
+  color: green;
+}
+
+.bee-Chats-actions {
+  display: flex;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  flex-direction: column;
+  -webkit-flex-direction: column;
+  -ms-flex-direction: column;
+  align-items: center;
+  -webkit-align-items: center;
+  -ms-flex-align: center;
+}
+.bee-Chats-plus {
+  margin-top: 30px;
+  margin-bottom: 15px;
+  padding: 4px 8px;
+  border-radius: 5px;
+  background-color: #6bae45;
+  color: white;
+  text-transform: uppercase;
+  font-weight: bold;
+  font-size: 13pt;
   cursor: pointer;
 }
-.bee-Room-infoCommand:hover,
-.bee-Room-settingsCommand:hover,
-.bee-Rooms-plus:hover:hover {
-  color: white;
-  background-color: #80c4f9;
-}
-.bee-Room-deleteCommand:hover {
-  color: white;
-  background-color: red;
+.bee-Chats-show {
+  color: #414142;
+  margin-bottom: 30px;
+  text-transform: uppercase;
+  font-size: 13pt;
+  cursor: pointer;
 }
 
 .bee-Room-details {
@@ -3585,6 +3641,7 @@ textarea,
 
 .bee-PopupUsers {
   background-color: white;
+  border: 1px solid #b4b4b4;
   max-height: 70vh;
   overflow: auto;
 }
@@ -3606,7 +3663,7 @@ textarea,
 .bee-PopupUsersPhoto {
   max-width: 40px;
   max-height: 40px;
-  border-radius: 50px;
+  border-radius: 50%;
 }
 .bee-PopupUsersLabel {
   font-size: 14px;
@@ -3624,6 +3681,9 @@ textarea,
 }
 .bee-PopupUsersPresence.bee-Presence-away {
   color: hotpink;
+}
+.bee-PopupUsersPresence.bee-Presence-offline {
+  color: red;
 }
 
 .bee-DataSelector,
@@ -3901,6 +3961,7 @@ textarea,
 }
 
 .bee-PresenceChange {
+  border: 1px solid #b4b4b4;
   background-color: white;
 }
 .bee-PresenceChangeTable {

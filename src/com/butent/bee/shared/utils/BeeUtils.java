@@ -2087,10 +2087,6 @@ public final class BeeUtils {
     return joinWords(progress(pos, tot), message);
   }
 
-  public static String proper(Enum<?> e) {
-    return (e == null) ? BeeConst.STRING_EMPTY : proper(e.name(), BeeConst.CHAR_UNDER);
-  }
-
   public static String proper(String s) {
     return proper(s, null);
   }
@@ -3002,6 +2998,10 @@ public final class BeeUtils {
     return result;
   }
 
+  public static String toLowerCase(String s) {
+    return (s == null) ? BeeConst.STRING_EMPTY : s.toLowerCase();
+  }
+
   public static int toNonNegativeInt(Double d) {
     return toNonNegativeInt(toInt(d));
   }
@@ -3056,10 +3056,6 @@ public final class BeeUtils {
     } else {
       return s;
     }
-  }
-
-  public static String toString(Enum<?> e) {
-    return (e == null) ? BeeConst.STRING_EMPTY : e.name();
   }
 
   /**
