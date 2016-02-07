@@ -162,6 +162,10 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String chatDeleteQuestion();
 
+  String chat();
+
+  String chatMessages();
+
   String chatName();
 
   String chatNew();
@@ -233,6 +237,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
   String createNew();
 
   String createNewRow();
+
+  String creationDate();
 
   String creator();
 

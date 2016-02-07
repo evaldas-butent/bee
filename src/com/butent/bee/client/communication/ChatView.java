@@ -1,10 +1,6 @@
 package com.butent.bee.client.communication;
 
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.dom.client.KeyDownEvent;
-import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.web.bindery.event.shared.HandlerRegistration;
@@ -43,11 +39,12 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.Chat;
 import com.butent.bee.shared.communication.ChatItem;
+import com.butent.bee.shared.communication.Presence;
 import com.butent.bee.shared.communication.TextMessage;
+import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
-import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.HasWidgetSupplier;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -68,25 +65,8 @@ public class ChatView extends Flow implements Presenter, View, Printable,
     private final long millis;
     private final Label timeLabel;
 
-    private MessageWidget(ChatItem message) {
+    private MessageWidget(ChatItem message, boolean addPhoto) {
       super(STYLE_MESSAGE_WRAPPER);
-
-      Image photo = Global.getUsers().getPhoto(message.getUserId());
-      if (photo == null) {
-        CustomDiv placeholder = new CustomDiv(STYLE_MESSAGE_PHOTO_PLACEHOLDER);
-        add(placeholder);
-      } else {
-        photo.addStyleName(STYLE_MESSAGE_PHOTO);
-        add(photo);
-      }
-
-      Label signature = new Label(Global.getUsers().getSignature(message.getUserId()));
-      signature.addStyleName(STYLE_MESSAGE_SIGNATURE);
-      add(signature);
-
-      Label body = new Label(message.getText());
-      body.addStyleName(STYLE_MESSAGE_BODY);
-      add(body);
 
       this.millis = message.getTime();
 
@@ -95,6 +75,24 @@ public class ChatView extends Flow implements Presenter, View, Printable,
       ChatUtils.updateTime(timeLabel, millis);
 
       add(timeLabel);
+
+      if (addPhoto) {
+        Image photo = Global.getUsers().getPhoto(message.getUserId());
+
+        if (photo == null) {
+          CustomDiv signature = new CustomDiv(STYLE_MESSAGE_SIGNATURE);
+          signature.setText(Global.getUsers().getSignature(message.getUserId()));
+          add(signature);
+
+        } else {
+          photo.addStyleName(STYLE_MESSAGE_PHOTO);
+          add(photo);
+        }
+      }
+
+      Label body = new Label(message.getText());
+      body.addStyleName(STYLE_MESSAGE_BODY);
+      add(body);
     }
 
     private boolean refresh() {
@@ -113,10 +111,10 @@ public class ChatView extends Flow implements Presenter, View, Printable,
   private static final String STYLE_MESSAGE_WRAPPER = STYLE_PREFIX + "message";
 
   private static final String STYLE_MESSAGE_PREFIX = STYLE_PREFIX + "message-";
-  private static final String STYLE_MESSAGE_PHOTO = STYLE_MESSAGE_PREFIX + "photo";
-  private static final String STYLE_MESSAGE_PHOTO_PLACEHOLDER = STYLE_MESSAGE_PHOTO
-      + "-placeholder";
+  private static final String STYLE_MESSAGE_INCOMING = STYLE_MESSAGE_PREFIX + "incoming";
+  private static final String STYLE_MESSAGE_OUTGOING = STYLE_MESSAGE_PREFIX + "outgoing";
 
+  private static final String STYLE_MESSAGE_PHOTO = STYLE_MESSAGE_PREFIX + "photo";
   private static final String STYLE_MESSAGE_SIGNATURE = STYLE_MESSAGE_PREFIX + "signature";
   private static final String STYLE_MESSAGE_BODY = STYLE_MESSAGE_PREFIX + "body";
   private static final String STYLE_MESSAGE_TIME = STYLE_MESSAGE_PREFIX + "time";
@@ -134,6 +132,7 @@ public class ChatView extends Flow implements Presenter, View, Printable,
   private static final EnumSet<UiOption> uiOptions = EnumSet.of(UiOption.VIEW);
 
   private final long chatId;
+  private final List<Long> otherUsers;
 
   private final HeaderView headerView;
   private final Flow messagePanel;
@@ -152,14 +151,24 @@ public class ChatView extends Flow implements Presenter, View, Printable,
     addStyleName(UiOption.getStyleName(uiOptions));
 
     this.chatId = chat.getId();
+    this.otherUsers = ChatUtils.getOtherUsers(chat.getUsers());
+
+    String caption;
+    if (!BeeUtils.isEmpty(chat.getName())) {
+      caption = chat.getName();
+    } else if (otherUsers.size() == 1) {
+      caption = Global.getUsers().getSignature(otherUsers.get(0));
+    } else {
+      caption = ChatUtils.getFirstNames(otherUsers);
+    }
 
     this.headerView = new HeaderImpl();
-    headerView.create(chat.getName(), false, true, null, uiOptions,
-        EnumSet.of(Action.PRINT, Action.CONFIGURE, Action.CLOSE), Action.NO_ACTIONS,
-        Action.NO_ACTIONS);
+    headerView.create(caption, false, true, null, uiOptions,
+        EnumSet.of(Action.CLOSE), Action.NO_ACTIONS, Action.NO_ACTIONS);
     headerView.setViewPresenter(this);
 
-    headerView.addCommandItem(createAutoScrollToggle(autoScroll));
+    // EnumSet.of(Action.PRINT, Action.CONFIGURE, Action.CLOSE)
+    // headerView.addCommandItem(createAutoScrollToggle(autoScroll));
     add(headerView);
 
     this.messagePanel = new Flow(STYLE_PREFIX + "messages");
@@ -170,27 +179,21 @@ public class ChatView extends Flow implements Presenter, View, Printable,
     inputArea.addStyleName(STYLE_PREFIX + "input");
     inputArea.setMaxLength(TextMessage.MAX_LENGTH);
 
-    inputArea.addKeyDownHandler(new KeyDownHandler() {
-      @Override
-      public void onKeyDown(KeyDownEvent event) {
-        if (UiHelper.isSave(event.getNativeEvent()) && compose()) {
-          event.preventDefault();
-          event.stopPropagation();
+    inputArea.addKeyDownHandler(event -> {
+      if (UiHelper.isSave(event.getNativeEvent()) && compose()) {
+        event.preventDefault();
+        event.stopPropagation();
 
-          inputArea.clearValue();
-        }
+        inputArea.clearValue();
       }
     });
 
     FaLabel submit = new FaLabel(FontAwesome.REPLY_ALL);
     submit.addStyleName(STYLE_PREFIX + "submit");
 
-    submit.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        if (compose()) {
-          inputArea.clearValue();
-        }
+    submit.addClickHandler(event -> {
+      if (compose()) {
+        inputArea.clearValue();
       }
     });
 
@@ -210,7 +213,7 @@ public class ChatView extends Flow implements Presenter, View, Printable,
       updateHeader(chat.getMaxTime());
     }
 
-    updateOnlinePanel(chat.getUsers());
+    updateOnlinePanel(otherUsers);
 
     this.timer = new Timer() {
       @Override
@@ -223,16 +226,21 @@ public class ChatView extends Flow implements Presenter, View, Printable,
 
   public void addMessage(ChatItem message, boolean update) {
     if (message != null && message.isValid()) {
-      MessageWidget messageWidget = new MessageWidget(message);
+      boolean incoming = !BeeKeeper.getUser().is(message.getUserId());
+      boolean addPhoto = incoming && otherUsers.size() > 1;
+
+      MessageWidget messageWidget = new MessageWidget(message, addPhoto);
+      messageWidget.addStyleName(incoming ? STYLE_MESSAGE_INCOMING : STYLE_MESSAGE_OUTGOING);
+
       messagePanel.add(messageWidget);
 
       if (update) {
         updateHeader(message.getTime());
 
-        if (BeeKeeper.getUser().is(message.getUserId())) {
-          DomUtils.scrollToBottom(messagePanel);
-        } else {
+        if (incoming) {
           maybeScroll(true);
+        } else {
+          DomUtils.scrollToBottom(messagePanel);
         }
       }
     }
@@ -437,17 +445,14 @@ public class ChatView extends Flow implements Presenter, View, Printable,
     toggle.addStyleName(STYLE_AUTO_SCROLL_PREFIX + "toggle");
     toggle.addStyleName(on ? STYLE_AUTO_SCROLL_ON : AUTO_SCROLL_OFF);
 
-    toggle.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        setAutoScroll(!autoScroll());
+    toggle.addClickHandler(event -> {
+      setAutoScroll(!autoScroll());
 
-        toggle.setHtml(autoScroll() ? AUTO_SCROLL_ON : AUTO_SCROLL_OFF);
-        toggle.setStyleName(STYLE_AUTO_SCROLL_ON, autoScroll());
-        toggle.setStyleName(STYLE_AUTO_SCROLL_OFF, !autoScroll());
+      toggle.setHtml(autoScroll() ? AUTO_SCROLL_ON : AUTO_SCROLL_OFF);
+      toggle.setStyleName(STYLE_AUTO_SCROLL_ON, autoScroll());
+      toggle.setStyleName(STYLE_AUTO_SCROLL_OFF, !autoScroll());
 
-        maybeScroll(false);
-      }
+      maybeScroll(false);
     });
 
     container.add(toggle);
@@ -489,22 +494,44 @@ public class ChatView extends Flow implements Presenter, View, Printable,
   }
 
   private void updateHeader(long maxTime) {
-    List<String> list = new ArrayList<>();
-
-    if (!messagePanel.isEmpty()) {
-      list.add(BeeUtils.bracket(messagePanel.getWidgetCount()));
-    }
-    if (maxTime > 0) {
-      list.add(ChatUtils.elapsed(maxTime));
-    }
-
-    headerView.setMessage(BeeUtils.join(BeeConst.STRING_SPACE, list));
-    if (maxTime > 0) {
-      headerView.setMessageTitle(TimeUtils.renderDateTime(maxTime));
-    }
+    // List<String> list = new ArrayList<>();
+    //
+    // if (!messagePanel.isEmpty()) {
+    // list.add(BeeUtils.bracket(messagePanel.getWidgetCount()));
+    // }
+    // if (maxTime > 0) {
+    // list.add(ChatUtils.elapsed(maxTime));
+    // }
+    //
+    // headerView.setMessage(BeeUtils.join(BeeConst.STRING_SPACE, list));
+    // if (maxTime > 0) {
+    // headerView.setMessageTitle(TimeUtils.renderDateTime(maxTime));
+    // }
   }
 
   private void updateOnlinePanel(Collection<Long> users) {
-    ChatUtils.renderOtherUsers(onlinePanel, users, STYLE_PREFIX + "user");
+    if (!onlinePanel.isEmpty()) {
+      onlinePanel.clear();
+    }
+
+    for (Long userId : users) {
+      UserData userData = Global.getUsers().getUserData(userId);
+      if (userData != null) {
+        CustomDiv label = new CustomDiv(STYLE_PREFIX + "userLabel");
+        label.setText(userData.getFirstName());
+        label.setTitle(userData.getUserSign());
+
+        onlinePanel.add(label);
+      }
+
+      Presence presence = Global.getUsers().getUserPresence(userId);
+      if (presence != null) {
+        FaLabel icon = new FaLabel(presence.getIcon(), presence.getStyleName());
+        icon.addStyleName(STYLE_PREFIX + "userPresence");
+        icon.setTitle(presence.getCaption());
+
+        onlinePanel.add(icon);
+      }
+    }
   }
 }

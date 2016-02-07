@@ -52,6 +52,7 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
     CLOSE, IGNORE
   }
 
+  @FunctionalInterface
   public interface PositionCallback {
     void setPosition(int offsetWidth, int offsetHeight);
   }

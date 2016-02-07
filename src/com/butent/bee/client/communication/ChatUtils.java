@@ -106,6 +106,18 @@ public final class ChatUtils {
     }
   }
 
+  public static String getFirstNames(Collection<Long> users) {
+    List<String> names = new ArrayList<>();
+
+    if (!BeeUtils.isEmpty(users)) {
+      for (Long u : users) {
+        names.add(Global.getUsers().getFirstName(u));
+      }
+    }
+
+    return BeeUtils.joinItems(names);
+  }
+
   public static List<Long> getOtherUsers(List<Long> users) {
     List<Long> result = new ArrayList<>();
 

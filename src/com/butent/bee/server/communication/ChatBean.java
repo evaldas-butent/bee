@@ -9,11 +9,12 @@ import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.sql.HasConditions;
 import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
+import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.server.websocket.Endpoint;
 import com.butent.bee.shared.Service;
-import com.butent.bee.shared.communication.ChatItem;
 import com.butent.bee.shared.communication.Chat;
+import com.butent.bee.shared.communication.ChatItem;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
@@ -286,6 +287,13 @@ public class ChatBean {
       return ResponseObject.emptyResponse();
     }
 
+    Long userId = usr.getCurrentUserId();
+    if (DataUtils.isId(userId)) {
+      onAccess(chatId, userId);
+    } else {
+      logger.warning(reqInfo.getService(), "current user not available");
+    }
+
     List<ChatItem> messages = new ArrayList<>();
 
     for (SimpleRow row : data) {
@@ -295,6 +303,17 @@ public class ChatBean {
 
     logger.info(messages.size(), "messages found in chat", chatId);
     return ResponseObject.response(messages).setSize(messages.size());
+  }
+
+  private void onAccess(long chatId, long userId) {
+    SqlUpdate update = new SqlUpdate(TBL_CHAT_USERS)
+        .addConstant(COL_CHAT_USER_LAST_ACCESS, System.currentTimeMillis())
+        .setWhere(SqlUtils.equals(TBL_CHAT_USERS, COL_CHAT, chatId, COL_CHAT_USER, userId));
+
+    int result = qs.updateData(update);
+    if (result != 1) {
+      logger.warning("cannot set last access: chat", chatId, "user", userId);
+    }
   }
 
   private ResponseObject putMessage(RequestInfo reqInfo) {
@@ -329,6 +348,8 @@ public class ChatBean {
     if (response.hasErrors()) {
       return response;
     }
+
+    onAccess(message.getChatId(), message.getChatItem().getUserId());
 
     List<Long> users = getChatUsers(message.getChatId());
     if (BeeUtils.isEmpty(from)) {
