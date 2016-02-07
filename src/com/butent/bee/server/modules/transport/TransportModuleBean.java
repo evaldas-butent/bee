@@ -46,6 +46,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
@@ -56,6 +57,7 @@ import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.SqlConstants.SqlFunction;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.Operator;
+import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
@@ -327,6 +329,7 @@ public class TransportModuleBean implements BeeModule {
 
     return Lists.newArrayList(
         BeeParameter.createBoolean(module, PRM_EXCLUDE_VAT),
+        BeeParameter.createText(module, PRM_TRIP_PREFIX, true, null),
         BeeParameter.createRelation(module, PRM_INVOICE_PREFIX, true, TBL_SALES_SERIES,
             COL_SERIES_NAME),
         BeeParameter.createMap(module, PRM_MESSAGE_TEMPLATE, true, null),
@@ -520,6 +523,21 @@ public class TransportModuleBean implements BeeModule {
       public void getFileIcons(ViewQueryEvent event) {
         if (event.isAfter(VIEW_SHIPMENT_REQUEST_FILES)) {
           ExtensionIcons.setIcons(event.getRowset(), ALS_FILE_NAME, PROP_ICON);
+        }
+      }
+
+      @Subscribe
+      @AllowConcurrentEvents
+      public void fillTripNumber(ViewInsertEvent event) {
+        if (event.isBefore(VIEW_TRIPS, VIEW_EXPEDITION_TRIPS)
+            && BeeConst.isUndef(DataUtils.getColumnIndex(COL_TRIP_NO, event.getColumns()))) {
+
+          String prefix = prm.getText(PRM_TRIP_PREFIX);
+
+          if (!BeeUtils.isEmpty(prefix)) {
+            event.addValue(new BeeColumn(COL_TRIP_NO),
+                Value.getValue(qs.getNextNumber(TBL_TRIPS, COL_TRIP_NO, prefix, null)));
+          }
         }
       }
 
@@ -2128,7 +2146,9 @@ public class TransportModuleBean implements BeeModule {
 
     settings.setTableProperty(PROP_DRIVERS, drivers.serialize());
 
-    BeeRowSet absence = qs.getViewData(VIEW_DRIVER_ABSENCE, Filter.any(COL_DRIVER, driverIds));
+    BeeRowSet absence = qs.getViewData(VIEW_DRIVER_ABSENCE,
+        Filter.and(Filter.any(COL_DRIVER, driverIds), Filter.isMoreEqual(COL_ABSENCE_FROM,
+            Value.getValue(TimeUtils.startOfYear()))));
     if (!DataUtils.isEmpty(absence)) {
       settings.setTableProperty(PROP_ABSENCE, absence.serialize());
     }
@@ -2180,11 +2200,15 @@ public class TransportModuleBean implements BeeModule {
 
     return new SqlSelect()
         .addFrom(TBL_TRIPS)
-        .addFromInner(TBL_CARGO_TRIPS,
-            SqlUtils.join(TBL_CARGO_TRIPS, COL_TRIP, TBL_TRIPS, COL_TRIP_ID))
+        .addFromInner(TBL_CARGO_TRIPS, sys.joinTables(TBL_TRIPS, TBL_CARGO_TRIPS, COL_TRIP))
         .addFromInner(TBL_ORDER_CARGO, sys.joinTables(TBL_ORDER_CARGO, TBL_CARGO_TRIPS, COL_CARGO))
         .addFromInner(TBL_CARGO_HANDLING,
-            sys.joinTables(TBL_ORDER_CARGO, TBL_CARGO_HANDLING, COL_CARGO))
+            SqlUtils.or(SqlUtils.and(SqlUtils.notNull(TBL_CARGO_TRIPS, COL_CARGO_HANDLING),
+                    sys.joinTables(TBL_CARGO_TRIPS, TBL_CARGO_HANDLING, COL_CARGO_TRIP),
+                    SqlUtils.joinNotEqual(TBL_CARGO_TRIPS, COL_CARGO_HANDLING, TBL_CARGO_HANDLING,
+                        sys.getIdName(TBL_CARGO_HANDLING))),
+                SqlUtils.and(SqlUtils.isNull(TBL_CARGO_TRIPS, COL_CARGO_HANDLING),
+                    sys.joinTables(TBL_ORDER_CARGO, TBL_CARGO_HANDLING, COL_CARGO))))
         .addFromLeft(TBL_CARGO_PLACES, loadAlias,
             sys.joinTables(TBL_CARGO_PLACES, loadAlias, TBL_CARGO_HANDLING, COL_LOADING_PLACE))
         .addFromLeft(TBL_CARGO_PLACES, unlAlias,
@@ -2223,7 +2247,7 @@ public class TransportModuleBean implements BeeModule {
         .addFromLeft(TBL_CARGO_PLACES, loadAlias,
             sys.joinTables(TBL_CARGO_PLACES, loadAlias, TBL_CARGO_HANDLING, COL_LOADING_PLACE))
         .addFromLeft(TBL_CARGO_PLACES, unlAlias,
-            sys.joinTables(TBL_CARGO_PLACES, unlAlias, TBL_CARGO_HANDLING, COL_LOADING_PLACE))
+            sys.joinTables(TBL_CARGO_PLACES, unlAlias, TBL_CARGO_HANDLING, COL_UNLOADING_PLACE))
         .addFromInner(TBL_ORDER_CARGO, sys.joinTables(TBL_ORDER_CARGO, TBL_CARGO_TRIPS, COL_CARGO))
         .addFromLeft(TBL_CARGO_HANDLING, defHandling,
             sys.joinTables(TBL_CARGO_HANDLING, defHandling, TBL_ORDER_CARGO, COL_CARGO_HANDLING))
@@ -2233,7 +2257,9 @@ public class TransportModuleBean implements BeeModule {
             sys.joinTables(TBL_CARGO_PLACES, defUnlAlias, defHandling, COL_UNLOADING_PLACE))
         .addFromLeft(TBL_ORDERS, sys.joinTables(TBL_ORDERS, TBL_ORDER_CARGO, COL_ORDER))
         .addFromLeft(TBL_COMPANIES, sys.joinTables(TBL_COMPANIES, TBL_ORDERS, COL_CUSTOMER))
-        .addFields(TBL_TRIPS, COL_TRIP_ID, COL_VEHICLE, COL_TRAILER)
+        .addFields(TBL_TRIPS, COL_TRIP_ID, COL_VEHICLE)
+        .addExpr(SqlUtils.nvl(SqlUtils.field(TBL_CARGO_TRIPS, COL_TRAILER),
+            SqlUtils.field(TBL_TRIPS, COL_TRAILER)), COL_TRAILER)
         .addFields(TBL_CARGO_TRIPS, COL_CARGO, COL_CARGO_TRIP_ID)
         .addField(TBL_CARGO_TRIPS, sys.getVersionName(TBL_CARGO_TRIPS), ALS_CARGO_TRIP_VERSION)
         .addField(loadAlias, COL_PLACE_DATE, loadingColumnAlias(COL_PLACE_DATE))
