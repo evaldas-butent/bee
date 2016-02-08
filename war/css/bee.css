@@ -1760,7 +1760,7 @@
   outline: #555 solid 1px;
 }
 
-.bee-Form .bee-disabled,
+/*.bee-Form .bee-disabled,*/
 .bee-Form .bee-disabled input {
   background-color: #e8e8e8;
 }
