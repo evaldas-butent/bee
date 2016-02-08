@@ -552,6 +552,7 @@ abstract class VehicleTimeBoard extends ChartBase {
     ChartData statusData = new ChartData(ChartData.Type.ORDER_STATUS);
 
     ChartData cargoData = new ChartData(ChartData.Type.CARGO);
+    ChartData cargoTypeData = new ChartData(ChartData.Type.CARGO_TYPE);
 
     ChartData tripData = new ChartData(ChartData.Type.TRIP);
     ChartData departureData = new ChartData(ChartData.Type.TRIP_DEPARTURE);
@@ -628,6 +629,9 @@ abstract class VehicleTimeBoard extends ChartBase {
           statusData.addNotNull(freight.getOrderStatus());
 
           cargoData.add(freight.getCargoDescription(), freight.getCargoId());
+          if (DataUtils.isId(freight.getCargoType())) {
+            cargoTypeData.add(getCargoTypeName(freight.getCargoType()), freight.getCargoType());
+          }
 
           String loading = Places.getLoadingPlaceInfo(freight);
           if (!BeeUtils.isEmpty(loading)) {
@@ -673,6 +677,7 @@ abstract class VehicleTimeBoard extends ChartBase {
     data.add(statusData);
 
     data.add(cargoData);
+    data.add(cargoTypeData);
 
     data.add(tripData);
     data.add(departureData);

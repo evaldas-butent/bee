@@ -357,6 +357,7 @@ final class FreightExchange extends ChartBase {
     ChartData statusData = new ChartData(ChartData.Type.ORDER_STATUS);
 
     ChartData cargoData = new ChartData(ChartData.Type.CARGO);
+    ChartData cargoTypeData = new ChartData(ChartData.Type.CARGO_TYPE);
 
     ChartData loadData = new ChartData(ChartData.Type.LOADING);
     ChartData unloadData = new ChartData(ChartData.Type.UNLOADING);
@@ -374,6 +375,9 @@ final class FreightExchange extends ChartBase {
       statusData.addNotNull(item.getOrderStatus());
 
       cargoData.add(item.getCargoDescription(), item.getCargoId());
+      if (DataUtils.isId(item.getCargoType())) {
+        cargoTypeData.add(getCargoTypeName(item.getCargoType()), item.getCargoType());
+      }
 
       String loading = Places.getLoadingPlaceInfo(item);
       if (!BeeUtils.isEmpty(loading)) {
@@ -411,6 +415,7 @@ final class FreightExchange extends ChartBase {
     data.add(statusData);
 
     data.add(cargoData);
+    data.add(cargoTypeData);
 
     data.add(loadData);
     data.add(unloadData);
