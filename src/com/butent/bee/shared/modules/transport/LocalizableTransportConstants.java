@@ -194,6 +194,8 @@ public interface LocalizableTransportConstants {
 
   String trCargoTripThereCargosAssignedInTripsAlarm();
 
+  String trCargoTypes();
+
   String trChildOrder();
 
   String trChooseForwarder();
