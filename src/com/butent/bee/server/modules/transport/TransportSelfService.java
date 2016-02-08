@@ -8,6 +8,7 @@ import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.server.LoginServlet;
 import com.butent.bee.server.ProxyBean;
+import com.butent.bee.server.data.BeeView;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.http.HttpConst;
@@ -15,10 +16,11 @@ import com.butent.bee.server.http.HttpUtils;
 import com.butent.bee.server.i18n.Localizations;
 import com.butent.bee.server.modules.administration.FileStorageBean;
 import com.butent.bee.server.rest.RestResponse;
-import com.butent.bee.server.sql.SqlSelect;
-import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.server.ui.UiHolderBean;
 import com.butent.bee.server.utils.XmlUtils;
+import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.html.builder.Node;
 import com.butent.bee.shared.html.builder.elements.Form;
 import com.butent.bee.shared.html.builder.elements.Input.Type;
@@ -33,8 +35,11 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.TreeMap;
 
 import javax.ejb.EJB;
@@ -214,18 +219,39 @@ public class TransportSelfService extends LoginServlet {
           String tbl = id[0];
           String fld = id[1];
 
-          if (sys.isTable(tbl)) {
-            SqlSelect query = new SqlSelect()
-                .addFields(tbl, fld)
-                .addFrom(tbl);
+          if (sys.isView(tbl)) {
+            BeeView view = sys.getView(tbl);
+            List<String> columns = new ArrayList<>();
+            columns.add(fld);
+            Filter filter = null;
+            Order order = null;
 
-            if (sys.hasField(tbl, COL_SELF_SERVICE)) {
-              query.setWhere(SqlUtils.notNull(tbl, COL_SELF_SERVICE))
-                  .addOrder(tbl, COL_SELF_SERVICE);
+            String fldLoc = fld + locale.toUpperCase();
+
+            if (view.hasColumn(fldLoc)) {
+              columns.add(fldLoc);
+            } else {
+              fldLoc = null;
             }
-            for (String value : qs.getColumn(query.addOrder(tbl, fld))) {
+            if (view.hasColumn(COL_SELF_SERVICE)) {
+              filter = Filter.notNull(COL_SELF_SERVICE);
+              order = Order.ascending(COL_SELF_SERVICE, fld);
+            } else {
+              order = Order.ascending(fld);
+            }
+            BeeRowSet rs = qs.getViewData(tbl, filter, order, columns);
+            for (int j = 0; j < rs.getNumberOfRows(); j++) {
               org.w3c.dom.Element opt = form.createElement("option");
-              opt.setTextContent(value);
+              String value = rs.getString(j, fld);
+
+              if (BeeUtils.isEmpty(fldLoc)) {
+                opt.setTextContent(value);
+              } else {
+                if (Objects.equals(tag, "select")) {
+                  opt.setAttribute("value", value);
+                }
+                opt.setTextContent(BeeUtils.notEmpty(rs.getString(j, fldLoc), value));
+              }
               node.appendChild(opt);
             }
           }
