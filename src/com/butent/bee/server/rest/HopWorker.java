@@ -35,27 +35,36 @@ public class HopWorker {
     JustDate dateFrom = TimeUtils.parseDate(from);
     JustDate dateTo = TimeUtils.parseDate(to);
 
-    HasConditions clause = SqlUtils.and(SqlUtils.or(SqlUtils.notNull(TBL_TRIPS, COL_TRIP_DATE_TO),
+    HasConditions clause = SqlUtils.and(SqlUtils.or(
+        SqlUtils.notNull(TBL_TRIP_DRIVERS, COL_DRIVER_END_DATE),
+        SqlUtils.notNull(TBL_TRIPS, COL_TRIP_DATE_TO),
         SqlUtils.notNull(TBL_TRIPS, COL_TRIP_PLANNED_END_DATE)));
 
     if (dateFrom != null) {
-      clause.add(SqlUtils.or(SqlUtils.and(SqlUtils.notNull(TBL_TRIPS, COL_TRIP_DATE_TO),
+      clause.add(SqlUtils.or(SqlUtils.and(SqlUtils.notNull(TBL_TRIP_DRIVERS, COL_DRIVER_END_DATE),
+              SqlUtils.more(TBL_TRIP_DRIVERS, COL_DRIVER_END_DATE, dateFrom)),
+          SqlUtils.and(SqlUtils.isNull(TBL_TRIP_DRIVERS, COL_DRIVER_END_DATE),
+              SqlUtils.notNull(TBL_TRIPS, COL_TRIP_DATE_TO),
               SqlUtils.more(TBL_TRIPS, COL_TRIP_DATE_TO, dateFrom)),
-          SqlUtils.and(SqlUtils.isNull(TBL_TRIPS, COL_TRIP_DATE_TO),
+          SqlUtils.and(SqlUtils.isNull(TBL_TRIP_DRIVERS, COL_DRIVER_END_DATE),
+              SqlUtils.isNull(TBL_TRIPS, COL_TRIP_DATE_TO),
               SqlUtils.more(TBL_TRIPS, COL_TRIP_PLANNED_END_DATE, dateFrom))));
     }
     if (dateTo != null) {
-      clause.add(SqlUtils.or(SqlUtils.and(SqlUtils.notNull(TBL_TRIPS, COL_TRIP_DATE_FROM),
+      clause.add(SqlUtils.or(SqlUtils.and(SqlUtils.notNull(TBL_TRIP_DRIVERS, COL_DRIVER_START_DATE),
+              SqlUtils.less(TBL_TRIP_DRIVERS, COL_DRIVER_START_DATE, dateTo)),
+          SqlUtils.and(SqlUtils.isNull(TBL_TRIP_DRIVERS, COL_DRIVER_START_DATE),
+              SqlUtils.notNull(TBL_TRIPS, COL_TRIP_DATE_FROM),
               SqlUtils.less(TBL_TRIPS, COL_TRIP_DATE_FROM, dateTo)),
-          SqlUtils.and(SqlUtils.isNull(TBL_TRIPS, COL_TRIP_DATE_FROM),
+          SqlUtils.and(SqlUtils.isNull(TBL_TRIP_DRIVERS, COL_DRIVER_START_DATE),
+              SqlUtils.isNull(TBL_TRIPS, COL_TRIP_DATE_FROM),
               SqlUtils.less(TBL_TRIPS, COL_TRIP_DATE, dateTo))));
     }
     SimpleRowSet rs = qs.getData(new SqlSelect()
         .addFields(PayrollConstants.TBL_EMPLOYEES, PayrollConstants.COL_TAB_NUMBER)
-        .addExpr(SqlUtils.nvl(SqlUtils.field(TBL_TRIPS, COL_TRIP_DATE_FROM),
-            SqlUtils.field(TBL_TRIPS, COL_TRIP_DATE)), COL_TRIP_DATE_FROM)
-        .addExpr(SqlUtils.nvl(SqlUtils.field(TBL_TRIPS, COL_TRIP_DATE_TO),
-            SqlUtils.field(TBL_TRIPS, COL_TRIP_PLANNED_END_DATE)), COL_TRIP_DATE_TO)
+        .addField(TBL_TRIPS, COL_TRIP_DATE, "PlannedStartDate")
+        .addFields(TBL_TRIPS, COL_TRIP_PLANNED_END_DATE, COL_TRIP_DATE_FROM, COL_TRIP_DATE_TO)
+        .addFields(TBL_TRIP_DRIVERS, COL_DRIVER_START_DATE, COL_DRIVER_END_DATE)
         .addFrom(PayrollConstants.TBL_EMPLOYEES)
         .addFromInner(TBL_DRIVERS, SqlUtils.joinUsing(PayrollConstants.TBL_EMPLOYEES, TBL_DRIVERS,
             ClassifierConstants.COL_COMPANY_PERSON))
