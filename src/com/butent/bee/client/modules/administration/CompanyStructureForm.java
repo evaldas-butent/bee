@@ -1464,12 +1464,12 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
 
     String companyName = DataUtils.getString(employees, employee, ALS_COMPANY_NAME);
 
-    String photo = DataUtils.getString(employees, employee, COL_PHOTO);
+    Long photo = DataUtils.getLong(employees, employee, COL_PHOTO);
     Flow photoContainer = new Flow();
 
     String styleName;
 
-    if (!BeeUtils.isEmpty(photo)) {
+    if (DataUtils.isId(photo)) {
       Image image = new Image(PhotoRenderer.getUrl(photo));
       image.setTitle(BeeUtils.buildLines(fullName, positionName, companyName));
 
@@ -1519,13 +1519,13 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
     }
 
     if (boss) {
-      if (!BeeUtils.isEmpty(photo)) {
+      if (DataUtils.isId(photo)) {
         DndHelper.makeSource(photoContainer, DATA_TYPE_BOSS, emplId, null);
       }
       DndHelper.makeSource(label, DATA_TYPE_BOSS, emplId, STYLE_BOSS_DRAG);
 
     } else {
-      if (!BeeUtils.isEmpty(photo)) {
+      if (DataUtils.isId(photo)) {
         DndHelper.makeSource(photoContainer, DATA_TYPE_EMPLOYEE, emplId, null);
       }
       DndHelper.makeSource(label, DATA_TYPE_EMPLOYEE, emplId, STYLE_EMPLOYEE_DRAG);

@@ -199,11 +199,11 @@ public class Users {
   public Image getPhoto(Long userId) {
     UserData userData = getUserData(userId);
 
-    if (userData == null || BeeUtils.isEmpty(userData.getPhotoFileName())) {
+    if (userData == null || !DataUtils.isId(userData.getPhotoFile())) {
       return null;
 
     } else {
-      Image image = new Image(PhotoRenderer.getUrl(userData.getPhotoFileName()));
+      Image image = new Image(PhotoRenderer.getUrl(userData.getPhotoFile()));
       image.setAlt(userData.getLogin());
       image.setTitle(userData.getUserSign());
 
