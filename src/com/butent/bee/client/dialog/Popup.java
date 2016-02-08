@@ -402,6 +402,8 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
     private Popup popup;
     private AnimationState state;
 
+    private Runnable onClose;
+
     protected Animation(double duration) {
       super(duration);
     }
@@ -421,6 +423,10 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
       } else {
         return BeeConst.DOUBLE_ONE - normalize(elapsed);
       }
+    }
+
+    protected Runnable getOnClose() {
+      return onClose;
     }
 
     protected Popup getPopup() {
@@ -443,11 +449,19 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
     protected void onComplete() {
       setState(AnimationState.FINISHED);
 
-      if (popup.isShowing()) {
+      if (onClose != null) {
+        onClose.run();
+
+      } else if (popup.isShowing()) {
         OpenEvent.fire(popup);
+
       } else {
         BodyPanel.get().remove(popup);
       }
+    }
+
+    protected void setOnClose(Runnable onClose) {
+      this.onClose = onClose;
     }
 
     private void setPopup(Popup popup) {
@@ -894,12 +908,15 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
 
       Stacking.removeContext(this);
 
-      if (!maybeAnimate()) {
-        BodyPanel.get().remove(this);
-      }
+      Runnable onClose = () -> {
+        BodyPanel.get().remove(Popup.this);
+        if (fireEvent) {
+          CloseEvent.fire(Popup.this, cause, target);
+        }
+      };
 
-      if (fireEvent) {
-        CloseEvent.fire(this, cause, target);
+      if (!maybeAnimate(onClose)) {
+        onClose.run();
       }
     }
   }
@@ -969,7 +986,7 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
     hide(CloseEvent.Cause.SCRIPT, null, fireEvent);
   }
 
-  private boolean maybeAnimate() {
+  private boolean maybeAnimate(Runnable onClose) {
     if (isAnimationEnabled()) {
       if (getAnimation() == null) {
         setAnimation(new DefaultAnimation(getAnimationDuration()));
@@ -979,6 +996,8 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
       }
 
       getAnimation().setPopup(this);
+      getAnimation().setOnClose(onClose);
+
       getAnimation().start();
       return true;
 
@@ -1056,17 +1075,16 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
       getElement().getStyle().setVisibility(Visibility.HIDDEN);
       BodyPanel.get().add(this);
 
-      Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
-        @Override
-        public void execute() {
-          if (callback != null) {
-            callback.setPosition(getOffsetWidth(), getOffsetHeight());
-          }
+      Scheduler.get().scheduleDeferred(() -> {
+        if (callback != null) {
+          callback.setPosition(getOffsetWidth(), getOffsetHeight());
+        }
 
-          if (!maybeAnimate()) {
-            getElement().getStyle().clearVisibility();
-            OpenEvent.fire(Popup.this);
-          }
+        Runnable onClose = () -> OpenEvent.fire(Popup.this);
+
+        if (!maybeAnimate(onClose)) {
+          getElement().getStyle().clearVisibility();
+          onClose.run();
         }
       });
     }

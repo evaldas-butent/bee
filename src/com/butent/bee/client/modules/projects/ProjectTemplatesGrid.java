@@ -12,6 +12,7 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
+import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.HeaderView;
@@ -224,7 +225,7 @@ public class ProjectTemplatesGrid extends AbstractGridInterceptor {
         templateRow.getString(idxTMLDefaultStage));
 
     RowFactory.createRow(ProjectConstants.FORM_NEW_PROJECT_FROM_TEMPLATE,
-        prjDataInfo.getNewRowCaption(), prjDataInfo, prjRow, null, null,
+        prjDataInfo.getNewRowCaption(), prjDataInfo, prjRow, Modality.ENABLED, null, null,
         new RowCallback() {
           @Override
           public void onSuccess(BeeRow result) {

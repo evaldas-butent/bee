@@ -31,6 +31,7 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.Icon;
+import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dialog.Popup.OutsideClick;
 import com.butent.bee.client.dom.DomUtils;
@@ -706,7 +707,7 @@ public class MailPanel extends AbstractFormInterceptor {
                   DataUtils.getString(grid.getDataColumns(), row, "SenderEmail"));
             }
           }
-          RowFactory.createRow(dataInfo, newRow);
+          RowFactory.createRow(dataInfo, newRow, Modality.ENABLED);
         }
       });
       header.addCommandItem(accountSettings);

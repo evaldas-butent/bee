@@ -35,6 +35,7 @@ import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
+import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.logical.MutationEvent;
 import com.butent.bee.client.event.logical.MutationEvent.Handler;
@@ -930,7 +931,7 @@ class TaskEditor extends AbstractFormInterceptor {
 
         FileCollector.pushFiles(Lists.newArrayList(fileInfo));
 
-        RowFactory.createRow(dataInfo, docRow, new RowCallback() {
+        RowFactory.createRow(dataInfo, docRow, Modality.ENABLED, new RowCallback() {
 
           @Override
           public void onSuccess(final BeeRow br) {
@@ -1413,7 +1414,7 @@ class TaskEditor extends AbstractFormInterceptor {
     }
 
     RowFactory.createRow(newTaskInfo.getNewRowForm(), newTaskInfo.getNewRowCaption(), newTaskInfo,
-        newTaskRow, null, new TaskBuilder(files, null, true), new RowCallback() {
+        newTaskRow, Modality.ENABLED, null, new TaskBuilder(files, null, true), new RowCallback() {
 
           @Override
           public void onSuccess(BeeRow result) {

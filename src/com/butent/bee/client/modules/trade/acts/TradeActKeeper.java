@@ -14,6 +14,7 @@ import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.DataCache;
 import com.butent.bee.client.data.RowFactory;
+import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.GridFactory.GridOptions;
@@ -105,7 +106,7 @@ public final class TradeActKeeper {
 
               prepareNewTradeAct(row, kind);
 
-              RowFactory.createRow(dataInfo, row);
+              RowFactory.createRow(dataInfo, row, Modality.ENABLED);
             }
           });
         }

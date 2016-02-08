@@ -13,6 +13,7 @@ import com.butent.bee.client.cli.Shell;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
+import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.GridFactory.GridOptions;
@@ -119,7 +120,7 @@ public class SelfServiceScreen extends ScreenImpl {
             row.setValue(info.getColumnIndex(AdministrationConstants.COL_USER_INTERFACE),
                 UserInterface.normalize(getUserInterface()).ordinal());
 
-            RowFactory.createRow(info, row, new RowCallback() {
+            RowFactory.createRow(info, row, Modality.ENABLED, new RowCallback() {
 
               @Override
               public void onSuccess(BeeRow result) {

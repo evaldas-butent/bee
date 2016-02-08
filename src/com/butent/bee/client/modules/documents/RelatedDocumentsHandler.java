@@ -10,6 +10,7 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
+import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.ViewHelper;
@@ -74,7 +75,7 @@ public class RelatedDocumentsHandler extends AbstractGridInterceptor {
       }
     }
 
-    RowFactory.createRow(info, docRow, new RowCallback() {
+    RowFactory.createRow(info, docRow, Modality.ENABLED, new RowCallback() {
       @Override
       public void onSuccess(final BeeRow result) {
         final long docId = result.getId();

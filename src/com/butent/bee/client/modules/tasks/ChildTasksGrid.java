@@ -8,6 +8,7 @@ import com.butent.bee.client.data.IdCallback;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
+import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.event.logical.RenderingEvent;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.view.ViewHelper;
@@ -81,7 +82,7 @@ class ChildTasksGrid extends TasksGrid {
           }
         }
 
-        RowFactory.createRow(childTaskDataInfo, childTaskRow, new RowCallback() {
+        RowFactory.createRow(childTaskDataInfo, childTaskRow, Modality.ENABLED, new RowCallback() {
           @Override
           public void onSuccess(BeeRow result) {
             presenter.handleAction(Action.REFRESH);
@@ -192,7 +193,7 @@ class ChildTasksGrid extends TasksGrid {
               }
             }
 
-            RowFactory.createRow(viewTasks, row, new RowCallback() {
+            RowFactory.createRow(viewTasks, row, Modality.ENABLED, new RowCallback() {
               @Override
               public void onSuccess(BeeRow createdTask) {
                 Queries.deleteRow(ProjectConstants.VIEW_PROJECT_TEMPLATE_TASK_COPY, templateId,

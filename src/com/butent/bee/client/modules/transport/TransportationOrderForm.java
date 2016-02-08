@@ -20,6 +20,7 @@ import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.ConfirmationCallback;
+import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.modules.transport.TransportHandler.Profit;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.Opener;
@@ -241,7 +242,7 @@ class TransportationOrderForm extends AbstractFormInterceptor implements ClickHa
               order.setValue(idx, getStringValue(col));
             }
           }
-          RowFactory.createRow(info, order, new RowCallback() {
+          RowFactory.createRow(info, order, Modality.ENABLED, new RowCallback() {
             @Override
             public void onSuccess(final BeeRow newOrder) {
               Filter orderFilter = Filter.equals(COL_ORDER, orderId);

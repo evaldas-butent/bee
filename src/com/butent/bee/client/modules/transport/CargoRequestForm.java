@@ -17,6 +17,7 @@ import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.ConfirmationCallback;
+import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.Opener;
@@ -242,7 +243,7 @@ class CargoRequestForm extends AbstractFormInterceptor {
       }
     }
 
-    RowFactory.createRow(tInfo, tRow, new RowCallback() {
+    RowFactory.createRow(tInfo, tRow, Modality.ENABLED, new RowCallback() {
       @Override
       public void onSuccess(BeeRow result) {
         DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_CARGO_REQUEST_TEMPLATES);

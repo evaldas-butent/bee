@@ -24,6 +24,7 @@ import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.data.RowUpdateCallback;
 import com.butent.bee.client.dialog.ConfirmationCallback;
+import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
@@ -285,7 +286,8 @@ public class RequestEditor extends AbstractFormInterceptor {
       files.put(f.getId(), f);
     }
 
-    RowFactory.createRow(taskDataInfo.getNewRowForm(), null, taskDataInfo, taskRow, null,
+    RowFactory.createRow(taskDataInfo.getNewRowForm(), null, taskDataInfo, taskRow,
+        Modality.ENABLED, null,
         new TaskBuilder(files, BeeUtils.toLongOrNull(managerSel.getValue()), true),
         new RowCallback() {
 

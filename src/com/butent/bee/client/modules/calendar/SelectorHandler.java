@@ -11,6 +11,7 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.ChoiceCallback;
+import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.view.DataView;
 import com.butent.bee.client.view.ViewHelper;
@@ -114,9 +115,9 @@ class SelectorHandler implements SelectorEvent.Handler {
           Data.getDataInfo(ClassifierConstants.VIEW_COMPANIES), owner, true);
     }
 
-    RowFactory.createRow(TransportConstants.FORM_NEW_VEHICLE, Localized.getConstants()
-        .trNewVehicle(),
-        vehiclesInfo, row, new RowCallback() {
+    RowFactory.createRow(TransportConstants.FORM_NEW_VEHICLE,
+        Localized.getConstants().trNewVehicle(), vehiclesInfo, row, Modality.ENABLED,
+        new RowCallback() {
           @Override
           public void onSuccess(BeeRow result) {
             RelationUtils.updateRow(CalendarKeeper.getAppointmentViewInfo(), COL_VEHICLE,

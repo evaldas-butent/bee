@@ -25,6 +25,7 @@ import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
+import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.ChildGrid;
 import com.butent.bee.client.modules.mail.Relations;
@@ -118,7 +119,7 @@ public class DocumentForm extends DocumentDataForm {
       .newDocumentTemplate(), new ClickHandler() {
     @Override
     public void onClick(ClickEvent event) {
-      RowFactory.createRow(VIEW_DOCUMENT_TEMPLATES, new RowCallback() {
+      RowFactory.createRow(VIEW_DOCUMENT_TEMPLATES, Modality.ENABLED, new RowCallback() {
         @Override
         public void onSuccess(final BeeRow row) {
           DocumentsHandler.copyDocumentData(getLongValue(COL_DOCUMENT_DATA), new IdCallback() {
