@@ -34,6 +34,7 @@ import com.butent.bee.client.dialog.CloseButton;
 import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.dialog.Icon;
+import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Selectors;
 import com.butent.bee.client.event.DndHelper;
@@ -924,8 +925,8 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
 
     String caption = getPartitionCaption(partId);
 
-    RowFactory.createRow(FORM_WORK_SCHEDULE_EDITOR, caption, dataInfo, row, contentPanel, wsEditor,
-        new RowCallback() {
+    RowFactory.createRow(FORM_WORK_SCHEDULE_EDITOR, caption, dataInfo, row, Modality.ENABLED,
+        contentPanel, wsEditor, new RowCallback() {
           @Override
           public void onSuccess(BeeRow result) {
             if (result != null) {

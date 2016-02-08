@@ -11,6 +11,7 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
+import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.modules.calendar.CalendarKeeper;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.view.grid.GridView;
@@ -177,7 +178,7 @@ class TodoListInterceptor extends AbstractGridInterceptor {
           dstInfo, ClassifierConstants.COL_CONTACT, task);
     }
 
-    RowFactory.createRow(dstInfo, task, new RowCallback() {
+    RowFactory.createRow(dstInfo, task, Modality.ENABLED, new RowCallback() {
       @Override
       public void onSuccess(BeeRow result) {
         Queries.deleteRowAndFire(getViewName(), item.getId());

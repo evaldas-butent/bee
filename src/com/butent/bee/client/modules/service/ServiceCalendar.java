@@ -21,6 +21,7 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
+import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Edges;
 import com.butent.bee.client.dom.Rectangle;
@@ -269,7 +270,7 @@ final class ServiceCalendar extends TimeBoard {
   public void handleAction(Action action) {
     switch (action) {
       case ADD:
-        RowFactory.createRow(VIEW_SERVICE_OBJECTS);
+        RowFactory.createRow(VIEW_SERVICE_OBJECTS, Modality.ENABLED);
         break;
 
       case EXPORT:

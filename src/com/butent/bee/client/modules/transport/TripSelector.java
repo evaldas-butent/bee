@@ -14,6 +14,7 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.DialogBox;
+import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.widget.Button;
@@ -127,7 +128,7 @@ final class TripSelector implements EditStopEvent.Handler, ClickHandler {
     DataInfo dataInfo = Data.getDataInfo(viewName);
 
     RowFactory.createRow(dataInfo.getEditForm(), dataInfo.getNewRowCaption(),
-        dataInfo, RowFactory.createEmptyRow(dataInfo, true), new RowCallback() {
+        dataInfo, RowFactory.createEmptyRow(dataInfo, true), Modality.ENABLED, new RowCallback() {
           @Override
           public void onSuccess(BeeRow row) {
             RowInsertEvent.fire(BeeKeeper.getBus(), viewName, row, null);

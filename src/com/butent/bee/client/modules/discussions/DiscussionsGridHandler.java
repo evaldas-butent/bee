@@ -12,6 +12,7 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
+import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.event.logical.RenderingEvent;
 import com.butent.bee.client.grid.ColumnHeader;
 import com.butent.bee.client.images.Images;
@@ -87,7 +88,7 @@ class DiscussionsGridHandler extends AbstractGridInterceptor {
         beeCol.setNullable(false);
       }
       RowFactory.createRow(FORM_NEW_DISCUSSION, Localized.getConstants().announcementNew(),
-          data, emptyRow, presenter.getMainView().asWidget(),
+          data, emptyRow, Modality.ENABLED, presenter.getMainView().asWidget(),
           new CreateDiscussionInterceptor(), new RowCallback() {
 
             @Override

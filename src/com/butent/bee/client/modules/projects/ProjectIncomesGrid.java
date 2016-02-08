@@ -14,6 +14,7 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
+import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.ColumnHeader;
@@ -194,7 +195,8 @@ public class ProjectIncomesGrid extends AbstractGridInterceptor {
               currency.getB());
         }
 
-        RowFactory.createRow(FORM_NEW_PROJECT_INVOICE, null, salesInfo, newSalesRow, null,
+        RowFactory.createRow(FORM_NEW_PROJECT_INVOICE, null, salesInfo, newSalesRow,
+            Modality.ENABLED, null,
             new AbstractFormInterceptor() {
 
               @Override

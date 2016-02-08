@@ -18,6 +18,7 @@ import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.ChoiceCallback;
 import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.Icon;
+import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.logical.ActiveRowChangeEvent;
@@ -427,7 +428,7 @@ public class TradeActGrid extends AbstractGridInterceptor {
 
     TradeActKeeper.setDefaultOperation(newRow, TradeActKind.RETURN);
 
-    RowFactory.createRow(dataInfo, newRow, new RowCallback() {
+    RowFactory.createRow(dataInfo, newRow, Modality.ENABLED, new RowCallback() {
       @Override
       public void onSuccess(BeeRow result) {
         getGridView().ensureRow(result, true);
@@ -535,7 +536,7 @@ public class TradeActGrid extends AbstractGridInterceptor {
 
     TradeActKeeper.setDefaultOperation(newRow, TradeActKind.SUPPLEMENT);
 
-    RowFactory.createRow(dataInfo, newRow, new RowCallback() {
+    RowFactory.createRow(dataInfo, newRow, Modality.ENABLED, new RowCallback() {
       @Override
       public void onSuccess(BeeRow result) {
         getGridView().ensureRow(result, true);

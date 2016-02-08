@@ -10,6 +10,7 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
+import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.validation.CellValidateEvent;
 import com.butent.bee.client.view.form.FormView;
@@ -104,7 +105,7 @@ public final class ProjectsHelper {
             .getDataIndex(COL_PROJECT_NAME))));
 
     RowFactory.createRow(FORM_NEW_PROJECT_REASON_COMMENT, caption, data, emptyRow,
-        null,
+        Modality.ENABLED, null,
         new NewReasonCommentForm(form, row, event), new RowCallback() {
 
           @Override
