@@ -47,6 +47,7 @@
     <SimpleColumn name="StartDate" />
     <SimpleColumn name="EndDate" />
     <SimpleColumn name="ExpectedDuration" />
+    <SimpleColumn name="Description" />
 
     <SimpleColumn name="ExpectedTasksDuration" label="=prjExpectedTaskDuration">
        <x:number>0</x:number>
