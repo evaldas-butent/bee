@@ -2,7 +2,7 @@ package com.butent.bee.server;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 
-import com.butent.bee.server.communication.Rooms;
+import com.butent.bee.server.communication.ChatBean;
 import com.butent.bee.server.data.DataServiceBean;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
@@ -75,6 +75,8 @@ public class DispatcherBean {
   QueryServiceBean qs;
   @EJB
   MailModuleBean mail;
+  @EJB
+  ChatBean chat;
 
   public void beforeLogout(RequestInfo reqInfo) {
     String workspace = reqInfo.getParameter(COL_LAST_WORKSPACE);
@@ -147,6 +149,16 @@ public class DispatcherBean {
               response.addMessagesFrom(acData);
               if (!acData.hasErrors() && acData.hasResponse()) {
                 data.put(component.key(), acData.getResponse());
+              }
+            }
+            break;
+
+          case CHATS:
+            ResponseObject chats = chat.getChats();
+            if (chats != null) {
+              response.addMessagesFrom(chats);
+              if (!chats.hasErrors() && chats.hasResponse()) {
+                data.put(component.key(), chats.getResponse());
               }
             }
             break;
@@ -280,6 +292,9 @@ public class DispatcherBean {
     } else if (Service.isDataService(svc)) {
       response = uiService.doService(reqInfo);
 
+    } else if (Service.isChatService(svc)) {
+      response = chat.doService(reqInfo);
+
     } else if (Service.isDbService(svc)) {
       response = dataService.doService(svc, reqInfo);
 
@@ -288,9 +303,6 @@ public class DispatcherBean {
 
     } else if (BeeUtils.same(svc, Service.GET_MENU)) {
       response = uiHolder.getMenu(reqInfo.hasParameter(Service.VAR_RIGHTS));
-
-    } else if (BeeUtils.same(svc, Service.GET_ROOM)) {
-      response = Rooms.getRoom(reqInfo);
 
     } else if (BeeUtils.same(svc, Service.WHERE_AM_I)) {
       response = ResponseObject.info(System.currentTimeMillis(), BeeConst.whereAmI());

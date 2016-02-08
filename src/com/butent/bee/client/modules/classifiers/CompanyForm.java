@@ -2,6 +2,7 @@ package com.butent.bee.client.modules.classifiers;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.shared.HasHandlers;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.xml.client.Element;
@@ -26,6 +27,7 @@ import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.HeaderView;
+import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
@@ -231,6 +233,19 @@ public class CompanyForm extends AbstractFormInterceptor {
   @Override
   public FormInterceptor getInstance() {
     return new CompanyForm();
+  }
+
+  @Override
+  public void onSaveChanges(HasHandlers listener, SaveChangesEvent event) {
+    FormView form = getFormView();
+    IsRow row = form.getActiveRow();
+    if (!BeeUtils.isEmpty(event.getColumns())) {
+      if (BeeUtils.isEmpty(row.getString(form.getDataIndex(COL_COMPANY_TYPE)))) {
+        event.consume();
+        BeeKeeper.getScreen().notifySevere(Localized.getConstants().companyStatus(),
+            Localized.getConstants().valueRequired());
+      }
+    }
   }
 
   private static void createQrButton(FormView form, IsRow row) {

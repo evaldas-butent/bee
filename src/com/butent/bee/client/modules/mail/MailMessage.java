@@ -53,7 +53,7 @@ import com.butent.bee.client.widget.DateTimeLabel;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.InlineLabel;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Consumer;
+import com.butent.bee.shared.BiConsumer;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
@@ -809,9 +809,9 @@ public class MailMessage extends AbstractFormInterceptor {
 
           if (mode == NewMailMode.FORWARD && !isDraft && DataUtils.isId(placeId)) {
             final Long place = placeId;
-            newMessage.setCallback(new Consumer<Boolean>() {
+            newMessage.setCallback(new BiConsumer<Long, Boolean>() {
               @Override
-              public void accept(Boolean save) {
+              public void accept(Long messageId, Boolean save) {
                 if (!save) {
                   ParameterList params = MailKeeper.createArgs(SVC_FLAG_MESSAGE);
                   params.addDataItem(COL_PLACE, place);
@@ -824,7 +824,7 @@ public class MailMessage extends AbstractFormInterceptor {
             });
           }
         } else {
-          NewMailMessage.create(to, cc, bcc, subject, content, attach, relatedId, isDraft);
+          NewMailMessage.create(to, cc, bcc, subject, content, attach, relatedId, isDraft, null);
         }
       }
     });

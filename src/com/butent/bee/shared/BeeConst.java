@@ -55,6 +55,7 @@ public final class BeeConst {
   public static final String DEFAULT_PROGRESS_SEPARATOR = "/";
 
   public static final String ELLIPSIS = "...";
+  public static final String DIGITS = "0123456789";
 
   public static final String STRING_EMPTY = "";
   public static final String STRING_SPACE = " ";

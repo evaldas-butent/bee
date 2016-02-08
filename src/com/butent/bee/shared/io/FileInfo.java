@@ -18,7 +18,7 @@ import java.util.List;
 public class FileInfo implements HasInfo, HasCaption, BeeSerializable, AutoCloseable {
 
   private enum Serial {
-    ID, NAME, SIZE, TYPE, ICON, DATE, VERSION, CAPTION, DESCRIPTION, RELATED
+    ID, NAME, SIZE, TYPE, ICON, DATE, VERSION, CAPTION, DESCRIPTION, RELATED, PATH, TEMPORARY
   }
 
   @Override
@@ -146,6 +146,14 @@ public class FileInfo implements HasInfo, HasCaption, BeeSerializable, AutoClose
         case RELATED:
           setRelatedId(BeeUtils.toLong(value));
           break;
+
+        case PATH:
+          setPath(value);
+          break;
+
+        case TEMPORARY:
+          setTemporary(BeeUtils.toBoolean(value));
+          break;
       }
     }
   }
@@ -203,7 +211,7 @@ public class FileInfo implements HasInfo, HasCaption, BeeSerializable, AutoClose
   }
 
   public File getFile() {
-    return new File(getPath());
+    return BeeUtils.isEmpty(getPath()) ? null : new File(getPath());
   }
 
   public DateTime getFileDate() {
@@ -317,6 +325,14 @@ public class FileInfo implements HasInfo, HasCaption, BeeSerializable, AutoClose
 
         case RELATED:
           arr[i++] = getRelatedId();
+          break;
+
+        case PATH:
+          arr[i++] = getPath();
+          break;
+
+        case TEMPORARY:
+          arr[i++] = isTemporary();
           break;
       }
     }

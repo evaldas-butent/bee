@@ -16,27 +16,28 @@ import java.util.Set;
  */
 
 public enum Action implements BeeSerializable, HasCaption {
-  ADD(FontAwesome.PLUS, Localized.getConstants().actionAdd(), "add"),
-  AUDIT(FontAwesome.HISTORY, Localized.getConstants().actionAudit(), "audit"),
-  AUTO_FIT(FontAwesome.ARROWS_H, Localized.getConstants().autoFit(), "auto-fit"),
-  BOOKMARK(FontAwesome.BOOKMARK_O, Localized.getConstants().actionBookmark(), "bookmark"),
-  CANCEL(FontAwesome.CLOSE, Localized.getConstants().actionCancel(), "cancel"),
-  CLOSE(FontAwesome.CLOSE, Localized.getConstants().actionClose(), "close"),
-  CONFIGURE(FontAwesome.COG, Localized.getConstants().actionConfigure(), "configure"),
-  COPY(FontAwesome.COPY, Localized.getConstants().actionCopy(), "copy"),
-  DELETE(FontAwesome.TRASH_O, Localized.getConstants().actionDelete(), "delete"),
-  EDIT(FontAwesome.EDIT, Localized.getConstants().actionEdit(), "edit"),
-  EXPORT(FontAwesome.FILE_EXCEL_O, Localized.getConstants().actionExport(), "export"),
-  FILTER(FontAwesome.FILTER, Localized.getConstants().actionFilter(), "filter"),
-  MENU(FontAwesome.NAVICON, Localized.getConstants().menu(), "menu"),
-  MERGE(FontAwesome.OBJECT_GROUP, Localized.getConstants().actionMerge(), "merge"),
-  PRINT(FontAwesome.PRINT, Localized.getConstants().actionPrint(), "print"),
-  REFRESH(FontAwesome.REFRESH, Localized.getConstants().actionRefresh(), "refresh"),
-  REMOVE_FILTER(FontAwesome.REMOVE, Localized.getConstants().actionRemoveFilter(), "removeFilter"),
+  ADD(FontAwesome.PLUS, Localized.getConstants().actionAdd(), "add", true),
+  AUDIT(FontAwesome.HISTORY, Localized.getConstants().actionAudit(), "audit", false),
+  AUTO_FIT(FontAwesome.ARROWS_H, Localized.getConstants().autoFit(), "auto-fit", false),
+  BOOKMARK(FontAwesome.BOOKMARK_O, Localized.getConstants().actionBookmark(), "bookmark", false),
+  CANCEL(FontAwesome.CLOSE, Localized.getConstants().actionCancel(), "cancel", false),
+  CLOSE(FontAwesome.CLOSE, Localized.getConstants().actionClose(), "close", false),
+  CONFIGURE(FontAwesome.COG, Localized.getConstants().actionConfigure(), "configure", false),
+  COPY(FontAwesome.COPY, Localized.getConstants().actionCopy(), "copy", true),
+  DELETE(FontAwesome.TRASH_O, Localized.getConstants().actionDelete(), "delete", true),
+  EDIT(FontAwesome.EDIT, Localized.getConstants().actionEdit(), "edit", true),
+  EXPORT(FontAwesome.FILE_EXCEL_O, Localized.getConstants().actionExport(), "export", false),
+  FILTER(FontAwesome.FILTER, Localized.getConstants().actionFilter(), "filter", false),
+  MENU(FontAwesome.NAVICON, Localized.getConstants().menu(), "menu", false),
+  MERGE(FontAwesome.OBJECT_GROUP, Localized.getConstants().actionMerge(), "merge", true),
+  PRINT(FontAwesome.PRINT, Localized.getConstants().actionPrint(), "print", false),
+  REFRESH(FontAwesome.REFRESH, Localized.getConstants().actionRefresh(), "refresh", false),
+  REMOVE_FILTER(FontAwesome.REMOVE, Localized.getConstants().actionRemoveFilter(), "removeFilter",
+      false),
   RESET_SETTINGS(FontAwesome.TIMES_CIRCLE_O, Localized.getConstants().actionResetSettings(),
-      "resetSettings"),
-  RIGHTS(FontAwesome.EYE, Localized.getConstants().rights(), "rights"),
-  SAVE(FontAwesome.SAVE, Localized.getConstants().actionSave(), "save");
+      "resetSettings", false),
+  RIGHTS(FontAwesome.EYE, Localized.getConstants().rights(), "rights", true),
+  SAVE(FontAwesome.SAVE, Localized.getConstants().actionSave(), "save", true);
 
   public static final Set<Action> NO_ACTIONS = new HashSet<>();
 
@@ -66,12 +67,15 @@ public enum Action implements BeeSerializable, HasCaption {
 
   private final FontAwesome icon;
   private final String caption;
-  private final String styleSuffix;
 
-  Action(FontAwesome icon, String caption, String styleSuffix) {
+  private final String styleSuffix;
+  private final boolean disablable;
+
+  Action(FontAwesome icon, String caption, String styleSuffix, boolean disablable) {
     this.icon = icon;
     this.caption = caption;
     this.styleSuffix = styleSuffix;
+    this.disablable = disablable;
   }
 
   @Override
@@ -94,6 +98,10 @@ public enum Action implements BeeSerializable, HasCaption {
 
   public String getStyleSuffix() {
     return styleSuffix;
+  }
+
+  public boolean isDisablable() {
+    return disablable;
   }
 
   @Override

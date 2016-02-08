@@ -3,14 +3,14 @@
 
   name="ExpeditionTypes"
   source="ExpeditionTypes"
-  newRowCaption="=trNewExpeditionTypes" 
+  newRowCaption="=trNewExpeditionTypes"
   >
   <Columns>
     <SimpleColumn name="Name" />
     <SimpleColumn name="SelfService" />
+    <SimpleColumn name="Logistics" />
   </Columns>
   <Order>
     <OrderBy column="Name" />
   </Order>
 </View>
- 

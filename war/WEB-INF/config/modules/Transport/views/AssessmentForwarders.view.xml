@@ -8,6 +8,8 @@
 
     <SimpleColumn name="CargoTrip" />
     <SimpleJoin name="CargoTrip" joinType="INNER">
+      <SimpleColumn name="Cargo" />
+
       <SimpleColumn name="CargoHandling" />
       <SimpleJoin name="CargoHandling" joinType="LEFT">
         <xi:include href="viewcolumns/Handling.viewcolumns.xml" />

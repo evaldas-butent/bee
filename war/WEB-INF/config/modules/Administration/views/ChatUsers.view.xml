@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="ChatUsers" source="ChatUsers" module="*"
+  caption="=chatUsers"
+  >
+  <Columns>
+    <SimpleColumn name="Chat" />
+    <SimpleColumn name="User" />
+
+    <SimpleColumn name="Registered" />
+    <SimpleColumn name="LastAccess" />
+  </Columns>
+  <Order>
+    <OrderBy column="Chat" />
+    <OrderBy column="Registered" />
+  </Order>
+</View>
+ 

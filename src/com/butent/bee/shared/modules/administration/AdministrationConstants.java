@@ -283,7 +283,7 @@ public final class AdministrationConstants {
   public static final String COL_CURRENCY_RATE_QUANTITY = "Quantity";
   public static final String COL_CURRENCY_RATE = "Rate";
 
-  public static final String COL_IP_FILTER_HOST = "Host";
+  public static final String COL_IP_FILTER_HOST = "BlockHost";
   public static final String COL_IP_FILTER_BLOCK_AFTER = "BlockAfter";
   public static final String COL_IP_FILTER_BLOCK_BEFORE = "BlockBefore";
 

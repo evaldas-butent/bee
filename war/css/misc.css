@@ -413,3 +413,9 @@
 .bee-EventsBoard-content-col.bee-EventsBoard-content-col-EventFiles.bee-prj-Events-content-col-EventFiles {
   width: calc(100% - 10px);
 }
+
+.bee-rtc-local,
+.bee-rtc-remote {
+  margin-left: 10px;
+  width: calc(50% - 10px);
+}

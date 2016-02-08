@@ -397,7 +397,7 @@ public final class BeeUtils {
   /**
    * Returns the result of applying {@code predicate} to {@code input}. If predicate is null,
    * returns true.
-   * 
+   *
    * @param predicate is the condition which should be checked.
    * @param input which should be checked.
    * @return true if {@code predicate} applies to {@code input}.
@@ -1053,6 +1053,29 @@ public final class BeeUtils {
     return BeeConst.UNDEF;
   }
 
+  @SafeVarargs
+  public static <T> boolean in(T x, T first, T second, T... rest) {
+    if (x == null) {
+      return false;
+    }
+    if (x.equals(first)) {
+      return true;
+    }
+    if (x.equals(second)) {
+      return true;
+    }
+
+    if (rest == null) {
+      return false;
+    }
+    for (T y : rest) {
+      if (x.equals(y)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   public static boolean inList(int x, int first, int second, int... rest) {
     if (x == first || x == second) {
       return true;
@@ -1335,10 +1358,10 @@ public final class BeeUtils {
   /**
    * Checks if Double from String {@code s} is between min and max.
    *
-   * @param s            String to be converted to Double and checked if it is between min and max values
-   * @param min          minimum value
+   * @param s String to be converted to Double and checked if it is between min and max values
+   * @param min minimum value
    * @param minInclusive true if minimum value should be included
-   * @param max          maximum value
+   * @param max maximum value
    * @param maxInclusive true if maximum value should be included
    * @return true if {@code s} is between min and max
    */
@@ -2062,10 +2085,6 @@ public final class BeeUtils {
 
   public static String progress(int pos, int tot, String message) {
     return joinWords(progress(pos, tot), message);
-  }
-
-  public static String proper(Enum<?> e) {
-    return (e == null) ? BeeConst.STRING_EMPTY : proper(e.name(), BeeConst.CHAR_UNDER);
   }
 
   public static String proper(String s) {
@@ -2979,6 +2998,10 @@ public final class BeeUtils {
     return result;
   }
 
+  public static String toLowerCase(String s) {
+    return (s == null) ? BeeConst.STRING_EMPTY : s.toLowerCase();
+  }
+
   public static int toNonNegativeInt(Double d) {
     return toNonNegativeInt(toInt(d));
   }
@@ -3033,10 +3056,6 @@ public final class BeeUtils {
     } else {
       return s;
     }
-  }
-
-  public static String toString(Enum<?> e) {
-    return (e == null) ? BeeConst.STRING_EMPTY : e.name();
   }
 
   /**

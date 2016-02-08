@@ -262,8 +262,6 @@ public interface LocalizableTransportConstants {
 
   String trLogistics();
 
-  String trLogisticsSelfService();
-
   String trNewAssessment();
 
   String trNewExpedition();
@@ -430,9 +428,13 @@ public interface LocalizableTransportConstants {
 
   String trRequestShippingTerms();
 
-  String trRequestStatusActive();
+  String trRequestStatusAnswered();
 
-  String trRequestStatusFinished();
+  String trRequestStatusApproved();
+
+  String trRequestStatusConfirmed();
+
+  String trRequestStatusLost();
 
   String trRequestStatusNew();
 

@@ -27,6 +27,8 @@ import com.google.gwt.user.client.ui.WidgetCollection;
 
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.DndWidget;
+import com.butent.bee.client.event.logical.MutationEvent;
+import com.butent.bee.client.event.logical.MutationEvent.Handler;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.widget.CustomDiv;
@@ -46,7 +48,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Split extends ComplexPanel implements RequiresResize, ProvidesResize,
-    HasExtendedInfo, DndWidget {
+    HasExtendedInfo, DndWidget, MutationEvent.HasMutationHandlers {
 
   protected static final class LayoutData {
 
@@ -368,6 +370,11 @@ public class Split extends ComplexPanel implements RequiresResize, ProvidesResiz
   @Override
   public HandlerRegistration addDropHandler(DropHandler handler) {
     return addBitlessDomHandler(handler, DropEvent.getType());
+  }
+
+  @Override
+  public HandlerRegistration addMutationHandler(Handler handler) {
+    return addHandler(handler, MutationEvent.getType());
   }
 
   public void addEast(IdentifiableWidget widget, int size) {
@@ -918,6 +925,7 @@ public class Split extends ComplexPanel implements RequiresResize, ProvidesResiz
     if (z != data.getSize()) {
       data.setSize(z);
       layoutChildren();
+      MutationEvent.fire(this);
     }
   }
 

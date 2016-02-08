@@ -490,8 +490,12 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
 
       try {
         SimpleRowSet payments = ButentWS.connect(remoteAddress, remoteLogin, remotePassword)
-            .getSQLData("SELECT extern_id AS id, apm_data AS data, apm_suma AS suma"
-                    + " FROM apyvarta WHERE pajamos=0 AND extern_id IN(" + ids.toString() + ")",
+            .getSQLData("SELECT extern_id AS id,"
+                    + " CASE WHEN oper_apm IS NULL THEN data ELSE apm_data END AS data,"
+                    + " CASE WHEN oper_apm IS NULL THEN viso ELSE apm_suma END AS suma"
+                    + " FROM apyvarta"
+                    + " INNER JOIN operac ON apyvarta.operacija = operac.operacija"
+                    + " WHERE pajamos=0 AND extern_id IN(" + ids.toString() + ")",
                 "id", "data", "suma");
 
         for (SimpleRow payment : payments) {

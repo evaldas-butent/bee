@@ -66,7 +66,7 @@ public abstract class PrintFormInterceptor extends AbstractFormInterceptor {
           FormFactory.getFormDescription(reports[i], new Callback<FormDescription>() {
             @Override
             public void onFailure(String... reason) {
-              super.onFailure(reason);
+              Callback.super.onFailure(reason);
               process();
             }
 

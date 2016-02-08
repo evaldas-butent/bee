@@ -176,6 +176,9 @@ public class FileGridInterceptor extends AbstractGridInterceptor {
       collector = FileCollector.headless(new Consumer<Collection<? extends FileInfo>>() {
         @Override
         public void accept(Collection<? extends FileInfo> input) {
+          if (!gridView.isEnabled()) {
+            return;
+          }
           final Collection<FileInfo> files = new HashSet<>();
 
           if (!BeeUtils.isEmpty(input)) {

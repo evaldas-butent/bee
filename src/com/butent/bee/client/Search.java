@@ -188,6 +188,11 @@ public class Search {
     }
 
     @Override
+    public String getViewKey() {
+      return getSupplierKey();
+    }
+
+    @Override
     public Presenter getViewPresenter() {
       return this;
     }

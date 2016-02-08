@@ -166,6 +166,11 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
   }
 
   @Override
+  public String getViewKey() {
+    return formContainer.getSupplierKey();
+  }
+
+  @Override
   public String getViewName() {
     if (getDataProvider() == null) {
       return null;

@@ -149,7 +149,7 @@ public class SystemServiceBean {
   }
 
   private ResponseObject getFiles(List<Long> fileIds) {
-    return ResponseObject.response(fs.getFiles(fileIds));
+    return ResponseObject.response(fs.getFileInfos(fileIds));
   }
 
   private static ResponseObject getFlags() {

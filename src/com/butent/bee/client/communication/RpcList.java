@@ -7,6 +7,7 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
+import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -103,7 +104,7 @@ public class RpcList extends LinkedHashMap<Integer, RpcInfo> {
         } else if (BeeUtils.same(cols[i], RpcInfo.COL_REQ_PARAMS)) {
           s = Codec.escapeUnicode(el.getReqParams().toString());
         } else if (BeeUtils.same(cols[i], RpcInfo.COL_REQ_TYPE)) {
-          s = BeeUtils.toString(el.getReqType());
+          s = EnumUtils.toString(el.getReqType());
         } else if (BeeUtils.same(cols[i], RpcInfo.COL_REQ_DATA)) {
           s = Codec.escapeUnicode(Codec.escapeHtml(el.getReqData()));
 
@@ -115,7 +116,7 @@ public class RpcList extends LinkedHashMap<Integer, RpcInfo> {
           s = el.getSizeString(el.getReqSize());
 
         } else if (BeeUtils.same(cols[i], RpcInfo.COL_RESP_TYPE)) {
-          s = BeeUtils.toString(el.getRespType());
+          s = EnumUtils.toString(el.getRespType());
         } else if (BeeUtils.same(cols[i], RpcInfo.COL_RESP_DATA)) {
           s = Codec.escapeUnicode(Codec.escapeHtml(el.getRespData()));
 

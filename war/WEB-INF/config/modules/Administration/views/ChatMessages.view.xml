@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="ChatMessages" source="ChatMessages" module="*"
+  caption="=chatMessages"
+  >
+  <Columns>
+    <SimpleColumn name="Chat" />
+    <SimpleColumn name="User" />
+
+    <SimpleColumn name="Time" />
+    <SimpleColumn name="Text" />
+  </Columns>
+  <Order>
+    <OrderBy column="Time" />
+  </Order>
+</View>
+ 

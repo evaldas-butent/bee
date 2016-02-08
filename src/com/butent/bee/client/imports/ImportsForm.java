@@ -85,18 +85,19 @@ public class ImportsForm extends AbstractFormInterceptor implements ClickHandler
       int r = 0;
       table.setColumnCellClasses(1, StyleUtils.className(TextAlign.CENTER));
       table.setColumnCellClasses(2, StyleUtils.className(TextAlign.CENTER));
-      table.setText(r, 1, Localized.getConstants().imported(),
-          StyleUtils.className(FontWeight.BOLD));
+      table.setText(r, 1, Localized.getConstants().imported() + " / "
+          + Localized.getConstants().updated(), StyleUtils.className(FontWeight.BOLD));
       table.setText(r, 2, Localized.getConstants().errors(), StyleUtils.className(FontWeight.BOLD));
 
       for (final String viewName : data.keySet()) {
         Pair<String, String> pair = Pair.restore(data.get(viewName));
+        Pair<String, String> counters = Pair.restore(pair.getA());
 
         final String cap = Data.getDataInfo(viewName, false) != null
             ? Data.getViewCaption(viewName) : viewName;
 
         table.setText(++r, 0, cap);
-        table.setText(r, 1, pair.getA());
+        table.setText(r, 1, counters.getA() + " / " + counters.getB());
 
         InternalLink lbl = null;
 
@@ -107,7 +108,7 @@ public class ImportsForm extends AbstractFormInterceptor implements ClickHandler
           lbl.addClickHandler(new ClickHandler() {
             @Override
             public void onClick(ClickEvent arg0) {
-              Global.showModalGrid(cap, rs);
+              Global.showModalGrid(cap, rs, StyleUtils.NAME_INFO_TABLE);
             }
           });
         }
@@ -191,7 +192,7 @@ public class ImportsForm extends AbstractFormInterceptor implements ClickHandler
             @Override
             public void onFailure(String... reason) {
               setImporting(false);
-              super.onFailure(reason);
+              Callback.super.onFailure(reason);
             }
 
             @Override

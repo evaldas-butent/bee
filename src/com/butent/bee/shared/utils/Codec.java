@@ -620,7 +620,7 @@ public final class Codec {
    * @param s a String to encode
    * @return encoded value
    */
-  public static String md5(String s) {
+  public static synchronized String md5(String s) {
     Assert.notNull(MD5);
     Assert.notEmpty(s);
 

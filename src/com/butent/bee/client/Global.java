@@ -97,7 +97,7 @@ public final class Global {
   private static final Filters filters = new Filters();
 
   private static final Users users = new Users();
-  private static final Rooms rooms = new Rooms();
+  private static final ChatManager chatManager = new ChatManager();
 
   private static final NewsAggregator newsAggregator = new NewsAggregator();
 
@@ -206,6 +206,10 @@ public final class Global {
     return cache;
   }
 
+  public static ChatManager getChatManager() {
+    return chatManager;
+  }
+
   public static Defaults getDefaults() {
     return defaults;
   }
@@ -275,10 +279,6 @@ public final class Global {
 
   public static ReportSettings getReportSettings() {
     return reportSettings;
-  }
-
-  public static Rooms getRooms() {
-    return rooms;
   }
 
   public static Search getSearch() {
@@ -549,8 +549,8 @@ public final class Global {
     msgBoxen.showInfo(caption, messages, dialogStyle, closeHtml);
   }
 
-  public static void showModalGrid(String caption, IsTable<?, ?> table) {
-    msgBoxen.showTable(caption, table);
+  public static void showModalGrid(String caption, IsTable<?, ?> table, String... styles) {
+    msgBoxen.showTable(caption, table, styles);
   }
 
   public static void showModalWidget(String caption, Widget widget) {

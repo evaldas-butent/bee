@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="Chats" source="Chats" module="*"
+  caption="=chats"
+  >
+  <Columns>
+    <SimpleColumn name="ChatName" />
+
+    <SimpleColumn name="Created" />
+    <SimpleColumn name="Creator" />
+  </Columns>
+</View>
+ 

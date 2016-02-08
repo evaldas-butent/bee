@@ -51,6 +51,10 @@ public final class Settings {
     return getInt("clickSensitivityMillis");
   }
 
+  public static int getDialogResizerWidth() {
+    return getInt("dialogResizerWidth");
+  }
+
   public static Double getDouble(String key) {
     JSONValue value = getValue(key);
     if (value != null) {
@@ -59,6 +63,14 @@ public final class Settings {
     } else {
       return null;
     }
+  }
+
+  public static String getIncomingChatMessageSound() {
+    return getString("incomingChatMessageSound");
+  }
+
+  public static Double getIncomingChatMessageVolume() {
+    return getDouble("incomingChatMessageVolume");
   }
 
   public static List<Property> getInfo() {
@@ -134,6 +146,10 @@ public final class Settings {
     return getInt("providerSensitivityMillis");
   }
 
+  public static int getReducedInteractionStatusMinutes() {
+    return getInt("reducedInteractionStatusMinutes");
+  }
+
   public static List<String> getScripts() {
     return getList("scripts");
   }
@@ -164,6 +180,10 @@ public final class Settings {
 
   public static boolean showLogout() {
     return getBoolean("showLogout");
+  }
+
+  public static boolean showUserPresence() {
+    return getBoolean("showUserPresence");
   }
 
   public static boolean showUserPhoto() {

@@ -8,6 +8,7 @@ import com.google.common.collect.HashBiMap;
 import com.google.common.collect.Iterables;
 
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -78,6 +79,14 @@ public final class EnumUtils {
     TradeConstants.register();
     OrdersConstants.register();
     PayrollConstants.register();
+  }
+
+  public static String getCaption(Enum<?> e) {
+    if (e instanceof HasCaption) {
+      return ((HasCaption) e).getCaption();
+    } else {
+      return proper(e);
+    }
   }
 
   public static String getCaption(Class<? extends Enum<?>> clazz, Integer index) {
@@ -215,7 +224,7 @@ public final class EnumUtils {
       } else if (constant instanceof HasCaption) {
         result.add(((HasCaption) constant).getCaption());
       } else {
-        result.add(BeeUtils.proper(constant));
+        result.add(proper(constant));
       }
     }
     return result;
@@ -371,6 +380,10 @@ public final class EnumUtils {
     return result;
   }
 
+  public static String proper(Enum<?> e) {
+    return (e == null) ? BeeConst.STRING_EMPTY : BeeUtils.proper(e.name(), BeeConst.CHAR_UNDER);
+  }
+
   public static <E extends Enum<?>> String register(Class<E> clazz) {
     Assert.notNull(clazz);
     return register(NameUtils.getClassName(clazz), clazz);
@@ -385,6 +398,18 @@ public final class EnumUtils {
 
     CLASSES.put(normalized, clazz);
     return normalized;
+  }
+
+  public static String toLowerCase(Enum<?> e) {
+    if (e == null) {
+      return null;
+    } else {
+      return e.name().toLowerCase();
+    }
+  }
+
+  public static String toString(Enum<?> e) {
+    return (e == null) ? BeeConst.STRING_EMPTY : e.name();
   }
 
   private EnumUtils() {

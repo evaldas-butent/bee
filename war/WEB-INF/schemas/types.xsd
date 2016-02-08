@@ -207,7 +207,6 @@
       <xs:enumeration value="Transport.Logistics" />
       <xs:enumeration value="Transport.SelfService" />
       <xs:enumeration value="Transport.Administration" />
-      <xs:enumeration value="Transport.LogisticsSelfService" />
       <xs:enumeration value="Service" />
       <xs:enumeration value="Administration" />
       <xs:enumeration value="Orders" />
@@ -260,12 +259,15 @@
       <xs:enumeration value="CargoPurchaseInvoices" />
       <xs:enumeration value="CargoPurchases" />
       <xs:enumeration value="CargoReqTemplates" />
-      <xs:enumeration value="CargoRequestFiles" />
       <xs:enumeration value="CargoRequests" />
       <xs:enumeration value="CargoSales" />
       <xs:enumeration value="CargoTrips" />
       <xs:enumeration value="CargoTypes" />
       <xs:enumeration value="CategoryTree" />
+      <xs:enumeration value="ChatFiles" />
+      <xs:enumeration value="ChatMessages" />
+      <xs:enumeration value="Chats" />
+      <xs:enumeration value="ChatUsers" />
       <xs:enumeration value="ChildAssessments" />
       <xs:enumeration value="Cities" />
       <xs:enumeration value="Colors" />
@@ -343,6 +345,7 @@
       <xs:enumeration value="EmployeeObjects" />
       <xs:enumeration value="Employees" />
       <xs:enumeration value="ERPTripCosts" />
+      <xs:enumeration value="EventDurations" />
       <xs:enumeration value="EventHistory" />
       <xs:enumeration value="ExpeditionTypes" />
       <xs:enumeration value="ExpeditionTrips" />
@@ -374,9 +377,6 @@
       <xs:enumeration value="Locations" />
       <xs:enumeration value="Maintenance" />
       <xs:enumeration value="Messages" />
-      <xs:enumeration value="Newsletters" />
-      <xs:enumeration value="NewsletterContacts" />
-      <xs:enumeration value="NewsletterFiles" />
       <xs:enumeration value="Objects" />
       <xs:enumeration value="ObjectEarnings" />
       <xs:enumeration value="ObjectSalaryFund" />
@@ -419,8 +419,6 @@
       <xs:enumeration value="PurchaseItems" />
       <xs:enumeration value="PurchaseOperations" />
       <xs:enumeration value="Purchases" />
-      <xs:enumeration value="RecipientsGroups" />
-      <xs:enumeration value="RcpsGroupsContacts" />
       <xs:enumeration value="RecurringTasks" />
       <xs:enumeration value="RejectionReasons" />
       <xs:enumeration value="RelatedDocuments" />
@@ -469,6 +467,7 @@
       <xs:enumeration value="ServiceSettings" />
       <xs:enumeration value="ServiceTree" />
       <xs:enumeration value="ServiceTypes" />
+      <xs:enumeration value="ShipmentRequestFiles" />
       <xs:enumeration value="ShipmentRequests" />
       <xs:enumeration value="ShippingTerms" />
       <xs:enumeration value="Signatures" />
@@ -524,7 +523,6 @@
       <xs:enumeration value="TransportationOrders" />
       <xs:enumeration value="TransportGroups" />
       <xs:enumeration value="TransportSettings" />
-      <xs:enumeration value="TranspRegistrations" />
       <xs:enumeration value="TreePrefixes" />
       <xs:enumeration value="TripCargo" />
       <xs:enumeration value="TripConstants" />

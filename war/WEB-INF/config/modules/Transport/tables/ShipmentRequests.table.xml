@@ -1,52 +1,35 @@
-<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <Table xmlns="http://www.butent.com/table"
-  
-  name="ShipmentRequests"
-  idName="ShipmentRequestID"
-  >
+
+       name="ShipmentRequests"
+       idName="ShipmentRequestID"
+    >
   <Fields>
     <DateTime name="Date" notNull="true" defExpr="CURRENT_TIME" label="=trRequestDate" />
-    <Enum name="Status" key="CargoRequestStatus" notNull="true" defValue="0" label="=trRequestStatus" />
-  
-    <String name="CustomerName" precision="100" notNull="true" label="=trRequestCustomerName" />
-    <String name="CustomerCode" precision="30" notNull="true" label="=trRequestCustomerCode" />
-    <String name="CustomerVatCode" precision="30" label="=trRequestCustomerVatCode" />
+    <Enum name="Status" key="CargoRequestStatus" notNull="true" defValue="0"
+          label="=trRequestStatus" />
 
-    <String name="CustomerAddress" precision="100" notNull="true"
-      label="=trRequestCustomerAddress" />
-    <String name="CustomerPhone" precision="50" notNull="true" label="=trRequestCustomerPhone" />
-    <String name="CustomerEmail" precision="255" notNull="true" label="=trRequestCustomerEmail" />
+    <Relation name="Registration" relation="Registrations" label="=registration"
+              unique="true" editable="true" />
 
-    <String name="CustomerContact" precision="50" notNull="true" 
-      label="=trRequestCustomerContact" />
-    <String name="CustomerContactPosition" precision="50" notNull="true"
-      label="=trRequestCustomerContactPosition" />
+    <Relation name="CompanyPerson" relation="CompanyPersons" label="=companyPerson" />
 
-    <String name="CustomerExchangeCode" precision="30" label="=trRequestCustomerExchangeCode" />
-
-    <String name="LoadingEmail" precision="255" label="=trLoadingEmail" />
-    <String name="LoadingCity" precision="30" notNull="true" label="=trLoadingCity" />
-
-    <String name="UnloadingEmail" precision="255" label="=trUnloadingEmail" />
-    <String name="UnloadingCity" precision="30" notNull="true" label="=trUnloadingCity" />
-
-    <Relation name="Expedition" relation="ExpeditionTypes" notNull="true"
-      label="=trRequestExpeditionType" />
-
-    <Date name="DeliveryDate" label="=trRequestDeliveryDate" />
-    <String name="DeliveryTime" precision="10" label="=trRequestDeliveryTime" />
-    <String name="TermsOfDelivery" precision="30" label="=trRequestTermsOfDelivery" />
-    
     <Boolean name="CustomsBrokerage" label="=trRequestCustomsBrokerage" />
     <Boolean name="FreightInsurance" label="=trRequestFreightInsurance" />
 
-    <Relation name="Cargo" relation="OrderCargo" cascade="DELETE" label="=cargo" />
+    <Relation name="Expedition" relation="ExpeditionTypes" notNull="true"
+              label="=trRequestExpeditionType" />
+
+    <Relation name="Cargo" relation="OrderCargo" unique="true" editable="true" label="=cargo" />
 
     <Relation name="Manager" relation="Users" label="=trRequestResponsibleManager" />
 
-    <Text name="Notes" label="=trRequestNotes" />
+    <Text name="LossReason" label="=reason" />
+
+    <Enum name="Locale" key="SupportedLocale" label="=userLocale" />
     <Text name="Host" label="=remoteHost" />
     <Text name="Agent" label="=userAgent" />
-    <Enum name="Interface" key="UserInterface" />
+
+    <Boolean name="Logistics" label="=trLogistics" />
   </Fields>
 </Table>

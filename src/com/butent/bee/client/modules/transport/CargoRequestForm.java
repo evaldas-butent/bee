@@ -37,8 +37,7 @@ import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.transport.TransportConstants;
-import com.butent.bee.shared.modules.transport.TransportConstants.AssessmentStatus;
-import com.butent.bee.shared.modules.transport.TransportConstants.CargoRequestStatus;
+import com.butent.bee.shared.modules.transport.TransportConstants.*;
 import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
@@ -209,7 +208,7 @@ class CargoRequestForm extends AbstractFormInterceptor {
                 break;
             }
 
-            CargoRequestStatus status = CargoRequestStatus.ACTIVE;
+            CargoRequestStatus status = CargoRequestStatus.CONFIRMED;
             SelfServiceUtils.updateStatus(getFormView(), COL_CARGO_REQUEST_STATUS, status);
             refreshCommands(status, fromUI);
 
@@ -276,8 +275,7 @@ class CargoRequestForm extends AbstractFormInterceptor {
         header.addCommandItem(this.activateCommand);
       }
 
-      if (Data.isViewEditable(VIEW_ASSESSMENTS)
-          && (UserInterface.SELF_SERVICE_LOG.equals(fromUI) || fromUI == null)) {
+      if (Data.isViewEditable(VIEW_ASSESSMENTS) && false) {
         Button newAssessment =
             new Button(Localized.getConstants().trNewAssessment(), new ClickHandler() {
               @Override
@@ -286,8 +284,8 @@ class CargoRequestForm extends AbstractFormInterceptor {
                 if (DataUtils.isId(getLongValue(COL_QUERY_MANAGER))) {
 
                   Queries.getRowSet(VIEW_ASSESSMENT_EXECUTORS, Lists
-                      .newArrayList(AdministrationConstants.COL_DEPARTMENT), Filter.equals(
-                      AdministrationConstants.COL_USER, getLongValue(COL_QUERY_MANAGER)),
+                          .newArrayList(AdministrationConstants.COL_DEPARTMENT), Filter.equals(
+                          AdministrationConstants.COL_USER, getLongValue(COL_QUERY_MANAGER)),
                       new RowSetCallback() {
 
                         @Override
