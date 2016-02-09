@@ -704,6 +704,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String reason();
 
+  String register();
+
   String registered();
 
   String relatedTo();

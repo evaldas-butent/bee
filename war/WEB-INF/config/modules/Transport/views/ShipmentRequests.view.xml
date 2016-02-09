@@ -32,6 +32,8 @@
       <SimpleColumn name="Register" alias="CustomerRegister" />
     </SimpleJoin>
 
+    <SimpleColumn name="CompanyPerson" />
+
     <SimpleColumn name="Expedition" />
     <SimpleJoin name="Expedition" joinType="LEFT">
       <SimpleColumn name="Name" alias="ExpeditionType" />

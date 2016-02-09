@@ -1,9 +1,9 @@
 package com.butent.bee.client.dialog;
 
-public abstract class ConfirmationCallback {
+public interface ConfirmationCallback {
 
-  public void onCancel() {
+  default void onCancel() {
   }
 
-  public abstract void onConfirm();
+  void onConfirm();
 }

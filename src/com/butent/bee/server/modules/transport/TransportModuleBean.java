@@ -2213,7 +2213,8 @@ public class TransportModuleBean implements BeeModule {
             sys.joinTables(TBL_CARGO_PLACES, loadAlias, TBL_CARGO_HANDLING, COL_LOADING_PLACE))
         .addFromLeft(TBL_CARGO_PLACES, unlAlias,
             sys.joinTables(TBL_CARGO_PLACES, unlAlias, TBL_CARGO_HANDLING, COL_UNLOADING_PLACE))
-        .addFields(TBL_CARGO_HANDLING, COL_CARGO, COL_CARGO_HANDLING_NOTES)
+        .addFields(TBL_CARGO_TRIPS, COL_CARGO)
+        .addFields(TBL_CARGO_HANDLING, COL_CARGO_HANDLING_NOTES)
         .addField(loadAlias, COL_PLACE_DATE, loadingColumnAlias(COL_PLACE_DATE))
         .addField(loadAlias, COL_PLACE_COUNTRY, loadingColumnAlias(COL_PLACE_COUNTRY))
         .addField(loadAlias, COL_PLACE_ADDRESS, loadingColumnAlias(COL_PLACE_ADDRESS))
@@ -2227,7 +2228,7 @@ public class TransportModuleBean implements BeeModule {
         .addField(unlAlias, COL_PLACE_CITY, unloadingColumnAlias(COL_PLACE_CITY))
         .addField(unlAlias, COL_PLACE_NUMBER, unloadingColumnAlias(COL_PLACE_NUMBER))
         .setWhere(SqlUtils.and(tripWhere, handlingWhere))
-        .addOrder(TBL_CARGO_HANDLING, COL_CARGO);
+        .addOrder(TBL_CARGO_TRIPS, COL_CARGO);
   }
 
   private SqlSelect getFreightQuery(IsCondition where) {
