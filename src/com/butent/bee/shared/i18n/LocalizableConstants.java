@@ -899,4 +899,6 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
   String yearMonth();
 
   String yes();
+
+  String yesterday();
 }

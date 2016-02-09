@@ -74,8 +74,9 @@ public class ChatView extends Flow implements Presenter, View, Printable,
       this.timeLabel = new Label();
       timeLabel.addStyleName(STYLE_MESSAGE_TIME);
       ChatUtils.updateTime(timeLabel, millis);
-
       add(timeLabel);
+
+      Flow body = new Flow(STYLE_MESSAGE_BODY);
 
       if (addPhoto) {
         Image photo = Global.getUsers().getPhoto(message.getUserId());
@@ -87,12 +88,14 @@ public class ChatView extends Flow implements Presenter, View, Printable,
 
         } else {
           photo.addStyleName(STYLE_MESSAGE_PHOTO);
-          add(photo);
+          body.add(photo);
         }
       }
 
-      Label body = new Label(message.getText());
-      body.addStyleName(STYLE_MESSAGE_BODY);
+      Label text = new Label(message.getText());
+      text.addStyleName(STYLE_MESSAGE_TEXT);
+      body.add(text);
+
       add(body);
     }
 
@@ -115,10 +118,11 @@ public class ChatView extends Flow implements Presenter, View, Printable,
   private static final String STYLE_MESSAGE_INCOMING = STYLE_MESSAGE_PREFIX + "incoming";
   private static final String STYLE_MESSAGE_OUTGOING = STYLE_MESSAGE_PREFIX + "outgoing";
 
-  private static final String STYLE_MESSAGE_PHOTO = STYLE_MESSAGE_PREFIX + "photo";
-  private static final String STYLE_MESSAGE_SIGNATURE = STYLE_MESSAGE_PREFIX + "signature";
-  private static final String STYLE_MESSAGE_BODY = STYLE_MESSAGE_PREFIX + "body";
   private static final String STYLE_MESSAGE_TIME = STYLE_MESSAGE_PREFIX + "time";
+  private static final String STYLE_MESSAGE_PHOTO = STYLE_MESSAGE_PREFIX + "photo";
+  private static final String STYLE_MESSAGE_BODY = STYLE_MESSAGE_PREFIX + "body";
+  private static final String STYLE_MESSAGE_SIGNATURE = STYLE_MESSAGE_PREFIX + "signature";
+  private static final String STYLE_MESSAGE_TEXT = STYLE_MESSAGE_PREFIX + "text";
 
   private static final String STYLE_AUTO_SCROLL_PREFIX = STYLE_PREFIX + "autoScroll-";
   private static final String STYLE_AUTO_SCROLL_ON = STYLE_AUTO_SCROLL_PREFIX + "on";

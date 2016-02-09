@@ -887,6 +887,14 @@ public final class TimeUtils {
         + padTwo(minutes % MINUTES_PER_HOUR);
   }
 
+  public static String renderMinutes(long time, boolean leadingZero) {
+    if (time < 0) {
+      return BeeConst.STRING_EMPTY;
+    } else {
+      return renderMinutes(BeeUtils.toInt(time % MILLIS_PER_DAY / MILLIS_PER_MINUTE), leadingZero);
+    }
+  }
+
   public static String renderMonthDay(HasDateValue date) {
     if (date == null) {
       return BeeConst.STRING_EMPTY;

@@ -7,7 +7,7 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
-import com.butent.bee.client.i18n.DateTimeFormat;
+import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.HasIndexedWidgets;
 import com.butent.bee.client.widget.CustomDiv;
@@ -17,6 +17,7 @@ import com.butent.bee.shared.HasHtml;
 import com.butent.bee.shared.communication.Presence;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.UserData;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -29,9 +30,6 @@ import java.util.List;
 import java.util.Objects;
 
 public final class ChatUtils {
-
-  private static final DateTimeFormat dateTimeFormat =
-      DateTimeFormat.getFormat(DateTimeFormat.PredefinedFormat.MONTH_DAY);
 
   public static void applyPresence(Widget widget, Multimap<Presence, Long> presence) {
     if (presence.keySet().size() == 1) {
@@ -90,19 +88,43 @@ public final class ChatUtils {
     }
 
     long time = System.currentTimeMillis() - start;
+    String minutes = TimeUtils.renderMinutes(start, true);
 
     if (time <= 0) {
       return BeeConst.STRING_EMPTY;
+
     } else if (time < TimeUtils.MILLIS_PER_SECOND) {
-      return BeeUtils.toString(time) + "ms";
+      return minutes;
+
     } else if (time < TimeUtils.MILLIS_PER_MINUTE) {
-      return BeeUtils.toString(time / TimeUtils.MILLIS_PER_SECOND) + "s";
+      return format(minutes, time / TimeUtils.MILLIS_PER_SECOND, "s");
+
     } else if (time < TimeUtils.MILLIS_PER_HOUR) {
-      return BeeUtils.toString(time / TimeUtils.MILLIS_PER_MINUTE) + "m";
+      return format(minutes, time / TimeUtils.MILLIS_PER_MINUTE, "m");
+
+    } else if (time < TimeUtils.MILLIS_PER_DAY / 2) {
+      return format(minutes, time / TimeUtils.MILLIS_PER_HOUR, "h");
+
+    } else if ((System.currentTimeMillis() / TimeUtils.MILLIS_PER_DAY
+        - start / TimeUtils.MILLIS_PER_DAY) == 1) {
+      return Localized.getConstants().yesterday() + BeeConst.STRING_SPACE + minutes;
+
     } else if (time < TimeUtils.MILLIS_PER_DAY) {
-      return BeeUtils.toString(time / TimeUtils.MILLIS_PER_HOUR) + "h";
+      return format(minutes, time / TimeUtils.MILLIS_PER_HOUR, "h");
+
     } else {
-      return dateTimeFormat.format(new DateTime(start));
+      DateTime dt = new DateTime(start - start % TimeUtils.MILLIS_PER_MINUTE);
+      return TimeUtils.renderCompact(dt, true);
+    }
+  }
+
+  public static String format(String label, long diff, String unit) {
+    if (diff > 0) {
+      return label + BeeConst.STRING_EMPTY + BeeConst.STRING_SPACE
+          + BeeConst.STRING_LEFT_PARENTHESIS + BeeUtils.toString(diff) + unit
+          + BeeConst.STRING_RIGHT_PARENTHESIS;
+    } else {
+      return label;
     }
   }
 
@@ -189,7 +211,7 @@ public final class ChatUtils {
   public static <T extends HasHtml & IsWidget> void updateTime(T widget, long time) {
     if (widget != null && time > 0) {
       widget.setText(elapsed(time));
-      widget.asWidget().setTitle(TimeUtils.renderDateTime(time));
+      widget.asWidget().setTitle(Format.renderDateTimeFull(new DateTime(time)));
     }
   }
 
