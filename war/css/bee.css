@@ -1581,7 +1581,7 @@
   border-collapse: collapse;
 }
 .bee-FileCollector-faceCell {
-  padding-top: 4px;
+  padding-top: 2px !important;
 }
 .bee-FileCollector-hiddenWidget {
   width: 1px;

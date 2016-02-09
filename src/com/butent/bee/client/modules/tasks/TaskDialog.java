@@ -8,7 +8,6 @@ import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
 
-import com.butent.bee.client.Global;
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.composite.FileCollector;
 import com.butent.bee.client.composite.UnboundSelector;
@@ -17,11 +16,11 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.DndTarget;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.style.StyleUtils;
+import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.edit.SimpleEditorHandler;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.CheckBox;
 import com.butent.bee.client.widget.FaLabel;
-import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.client.widget.InputDateTime;
 import com.butent.bee.client.widget.InputTime;
@@ -33,7 +32,6 @@ import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.time.DateTime;
-import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -109,6 +107,7 @@ class TaskDialog extends DialogBox {
 
     table.setWidget(row, col, input);
     table.getCellFormatter().addStyleName(row, col, styleName + STYLE_CELL);
+    table.getCellFormatter().setColSpan(row, col, 2);
 
     return input.getId();
   }
@@ -151,8 +150,6 @@ class TaskDialog extends DialogBox {
     result.put(COL_DURATION, addTime(Localized.getConstants().crmSpentTime()));
     result.put(COL_DURATION_TYPE, addSelector(Localized.getConstants().crmDurationType(),
         VIEW_DURATION_TYPES, Lists.newArrayList(COL_DURATION_TYPE_NAME), false, null, null));
-    result.put(COL_DURATION_DATE, addDateTime(Localized.getConstants().crmTaskFinishDate(),
-        false, TimeUtils.nowMinutes()));
 
     return result;
   }
@@ -171,7 +168,9 @@ class TaskDialog extends DialogBox {
     col++;
 
     styleName = STYLE_DIALOG + "-fileCollector";
-    FileCollector collector = new FileCollector(new Image(Global.getImages().attachment()));
+    // FileCollector collector = new FileCollector(new Image(Global.getImages().attachment()));
+    IdentifiableWidget identifiableWidget = new Button(Localized.getConstants().chooseFiles());
+    FileCollector collector = new FileCollector(identifiableWidget);
     collector.addStyleName(styleName);
 
     table.setWidget(row, col, collector);
@@ -187,8 +186,8 @@ class TaskDialog extends DialogBox {
 
   String addCheckBox(boolean checked) {
     HtmlTable table = getContainer();
-    int row = table.getRowCount();
-    int col = 0;
+    int row = table.getRowCount() - 1;
+    int col = 2;
 
     String styleName = STYLE_DIALOG + "-observerCheckbox";
     CheckBox chkBx = new CheckBox(Localized.getConstants().crmTaskAddSenderToObservers());

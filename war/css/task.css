@@ -54,23 +54,51 @@
 }
 
 .bee-crm-taskDialog-container td {
-  padding: 8px;
+  padding: 6px;
 }
 
 .bee-crm-taskDialog-commentLabelCell {
   vertical-align: top;
 }
 .bee-crm-taskDialog-commentArea {
-  width: 300px;
+  width: 400px;
   height: 100px;
+}
+
+.bee-crm-taskDialog-commentLabel{
+  float:right;
+}
+
+.bee-crm-taskDialog-dateLabel{
+  float:right;
+}
+
+.bee-crm-taskDialog-fileCollectorCell{
+  padding: 0px !important;
+}
+
+.bee-crm-taskDialog-filesLabel{
+  float:right;
+}
+
+td.bee-crm-taskDialog-filesLabelCell{
+  padding-top: 0px;
 }
 
 .bee-crm-taskDialog-timeInput {
   width: 60px;
 }
+
+.bee-crm-taskDialog-timeLabel{
+  float:right;
+}
 .bee-crm-taskDialog-selectorInput {
   width: 200px;
 }
+.bee-crm-taskDialog-selectorLabel{
+  float:right;
+}
+
 .bee-crm-taskDialog-dateInput {
   width: 120px;
 }
