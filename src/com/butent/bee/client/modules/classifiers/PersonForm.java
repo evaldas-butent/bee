@@ -18,6 +18,7 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.IdCallback;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
+import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.dom.Features;
 import com.butent.bee.client.event.Binder;
 import com.butent.bee.client.grid.ChildGrid;
@@ -147,8 +148,8 @@ class PersonForm extends AbstractFormInterceptor {
               Data.setValue(viewName, newRow, COL_PERSON, id);
 
               RowFactory.createRow(dataInfo.getNewRowForm(),
-                  Localized.getConstants().newPersonCompany(), dataInfo, newRow, null,
-                  new AbstractFormInterceptor() {
+                  Localized.getConstants().newPersonCompany(), dataInfo, newRow, Modality.ENABLED,
+                  null, new AbstractFormInterceptor() {
                     @Override
                     public boolean beforeCreateWidget(String widgetName, Element description) {
                       if (BeeUtils.startsWith(widgetName, COL_PERSON)) {

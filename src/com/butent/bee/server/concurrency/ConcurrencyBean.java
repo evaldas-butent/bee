@@ -54,15 +54,17 @@ public class ConcurrencyBean {
     TimerService getTimerService();
   }
 
-  public abstract static class AsynchronousRunnable implements Runnable {
+  public interface AsynchronousRunnable extends Runnable {
 
-    public abstract String getId();
+    default String getId() {
+      return null;
+    }
 
-    public long getTimeout() {
+    default long getTimeout() {
       return TimeUtils.MILLIS_PER_HOUR;
     }
 
-    public void onError() {
+    default void onError() {
     }
   }
 

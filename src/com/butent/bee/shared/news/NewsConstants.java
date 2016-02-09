@@ -104,8 +104,6 @@ public final class NewsConstants {
         TransportConstants.COL_CARGO_REQUEST_STATUS);
     observedColumns.put(TransportConstants.TBL_SHIPMENT_REQUESTS,
         TransportConstants.COL_QUERY_STATUS);
-    observedColumns.put(TransportConstants.TBL_REGISTRATIONS,
-        TransportConstants.COL_REGISTRATION_STATUS);
 
     observedColumns.put(TransportConstants.TBL_VEHICLES, TransportConstants.COL_VEHICLE_NUMBER);
 
@@ -155,7 +153,6 @@ public final class NewsConstants {
 
     usageTables.put(TransportConstants.TBL_CARGO_REQUESTS, "CargoRequestUsage");
     usageTables.put(TransportConstants.TBL_SHIPMENT_REQUESTS, "ShipmentReqUsage");
-    usageTables.put(TransportConstants.TBL_REGISTRATIONS, "TranspRegUsage");
 
     usageTables.put(TransportConstants.TBL_VEHICLES, "VehicleUsage");
     usageTables.put(TransportConstants.TBL_DRIVERS, "DriverUsage");

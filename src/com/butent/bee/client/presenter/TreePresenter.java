@@ -171,6 +171,11 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
   }
 
   @Override
+  public String getViewKey() {
+    return "tree_" + getViewName();
+  }
+
+  @Override
   public String getViewName() {
     return viewName;
   }

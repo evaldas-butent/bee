@@ -12,6 +12,7 @@ import com.butent.bee.client.event.logical.ActiveWidgetChangeEvent;
 import com.butent.bee.client.output.Printable;
 import com.butent.bee.client.style.ConditionalStyle;
 import com.butent.bee.client.ui.FormDescription;
+import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.HasDimensions;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.DataView;
@@ -31,6 +32,8 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RowChildren;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
+import com.butent.bee.shared.ui.HasWidgetSupplier;
+import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
 import java.util.List;
@@ -43,7 +46,7 @@ import java.util.Map;
 public interface FormView extends DataView, HasDataTable, ActiveWidgetChangeEvent.Handler,
     HasAddStartHandlers, HasAddEndHandlers, HasReadyForInsertHandlers, HasReadyForUpdateHandlers,
     HasDimensions, HasState, DndWidget, EditEndEvent.Handler, RequiresResize, Printable,
-    HasSaveChangesHandlers {
+    HasSaveChangesHandlers, HasWidgetSupplier {
 
   void addDynamicStyle(String widgetId, CellSource cellSource, ConditionalStyle conditionalStyle);
 
@@ -99,6 +102,18 @@ public interface FormView extends DataView, HasDataTable, ActiveWidgetChangeEven
   JavaScriptObject getRowJso();
 
   String getStringValue(String source);
+
+  @Override
+  default String getSupplierKey() {
+    FormInterceptor interceptor = getFormInterceptor();
+    String key = (interceptor == null) ? null : interceptor.getSupplierKey();
+
+    if (BeeUtils.isEmpty(key)) {
+      return FormFactory.getSupplierKey(getFormName());
+    } else {
+      return key;
+    }
+  }
 
   default Widget getWidgetByName(String name) {
     return getWidgetByName(name, true);

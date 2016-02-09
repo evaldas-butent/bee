@@ -20,6 +20,7 @@ import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
+import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.Opener;
@@ -144,7 +145,8 @@ public class CargoCreditSalesGrid extends AbstractGridInterceptor implements Cli
                 entry.getValue());
           }
         }
-        RowFactory.createRow(FORM_NEW_CARGO_CREDIT_INVOICE, null, purchaseInfo, newRow, null,
+        RowFactory.createRow(FORM_NEW_CARGO_CREDIT_INVOICE, null, purchaseInfo, newRow,
+            Modality.ENABLED, null,
             new AbstractFormInterceptor() {
               @Override
               public FormInterceptor getInstance() {

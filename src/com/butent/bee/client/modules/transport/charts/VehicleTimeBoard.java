@@ -14,6 +14,7 @@ import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.RowFactory;
+import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Edges;
 import com.butent.bee.client.dom.Rectangle;
@@ -138,7 +139,7 @@ abstract class VehicleTimeBoard extends ChartBase {
   @Override
   public void handleAction(Action action) {
     if (Action.ADD.equals(action)) {
-      RowFactory.createRow(VIEW_VEHICLES);
+      RowFactory.createRow(VIEW_VEHICLES, Modality.DISABLED);
     } else {
       super.handleAction(action);
     }
@@ -493,7 +494,7 @@ abstract class VehicleTimeBoard extends ChartBase {
       DataInfo dataInfo = Data.getDataInfo(VIEW_TRIPS);
       BeeRow newRow = createNewTripRow(dataInfo, row, date);
 
-      RowFactory.createRow(dataInfo, newRow);
+      RowFactory.createRow(dataInfo, newRow, Modality.DISABLED);
     }
   }
 
@@ -551,6 +552,7 @@ abstract class VehicleTimeBoard extends ChartBase {
     ChartData statusData = new ChartData(ChartData.Type.ORDER_STATUS);
 
     ChartData cargoData = new ChartData(ChartData.Type.CARGO);
+    ChartData cargoTypeData = new ChartData(ChartData.Type.CARGO_TYPE);
 
     ChartData tripData = new ChartData(ChartData.Type.TRIP);
     ChartData departureData = new ChartData(ChartData.Type.TRIP_DEPARTURE);
@@ -627,6 +629,9 @@ abstract class VehicleTimeBoard extends ChartBase {
           statusData.addNotNull(freight.getOrderStatus());
 
           cargoData.add(freight.getCargoDescription(), freight.getCargoId());
+          if (DataUtils.isId(freight.getCargoType())) {
+            cargoTypeData.add(getCargoTypeName(freight.getCargoType()), freight.getCargoType());
+          }
 
           String loading = Places.getLoadingPlaceInfo(freight);
           if (!BeeUtils.isEmpty(loading)) {
@@ -672,6 +677,7 @@ abstract class VehicleTimeBoard extends ChartBase {
     data.add(statusData);
 
     data.add(cargoData);
+    data.add(cargoTypeData);
 
     data.add(tripData);
     data.add(departureData);

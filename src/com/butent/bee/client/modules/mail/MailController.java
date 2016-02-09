@@ -259,26 +259,28 @@ public class MailController extends Flow implements HasDomain, HandlesStateChang
         row.add(actions);
 
         if (subFolder.isConnected()) {
-          final FaLabel disconnect = new FaLabel(FontAwesome.CHAIN_BROKEN,
-              BeeConst.CSS_CLASS_PREFIX + "mail-FolderAction");
-          disconnect.setTitle(Localized.getMessages()
-              .mailCancelFolderSynchronizationQuestion(BeeUtils.bracket(cap)));
+          if (Objects.equals(subFolder.getParent(), account.getRootFolder())) {
+            final FaLabel disconnect = new FaLabel(FontAwesome.CHAIN_BROKEN,
+                BeeConst.CSS_CLASS_PREFIX + "mail-FolderAction");
+            disconnect.setTitle(Localized.getMessages()
+                .mailCancelFolderSynchronizationQuestion(BeeUtils.bracket(cap)));
 
-          disconnect.addClickHandler(new ClickHandler() {
-            @Override
-            public void onClick(ClickEvent event) {
-              Global.confirmDelete(Settings.getAppName(), Icon.WARNING,
-                  Lists.newArrayList(disconnect.getTitle(), "(" + Localized.getConstants()
-                      .mailFolderContentsWillBeRemovedFromTheMailServer() + ")"),
-                  new ConfirmationCallback() {
-                    @Override
-                    public void onConfirm() {
-                      MailKeeper.disconnectFolder(account, folderId);
-                    }
-                  });
-            }
-          });
-          actions.add(disconnect);
+            disconnect.addClickHandler(new ClickHandler() {
+              @Override
+              public void onClick(ClickEvent event) {
+                Global.confirmDelete(Settings.getAppName(), Icon.WARNING,
+                    Lists.newArrayList(disconnect.getTitle(), "(" + Localized.getConstants()
+                        .mailFolderContentsWillBeRemovedFromTheMailServer() + ")"),
+                    new ConfirmationCallback() {
+                      @Override
+                      public void onConfirm() {
+                        MailKeeper.disconnectFolder(account, folderId);
+                      }
+                    });
+              }
+            });
+            actions.add(disconnect);
+          }
         } else {
           label.addStyleDependentName("disconnected");
         }

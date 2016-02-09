@@ -2,10 +2,9 @@ package com.butent.bee.client.modules.transport;
 
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
-import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
-import com.butent.bee.client.data.RowCallback;
+import com.butent.bee.client.data.RowUpdateCallback;
 import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.shared.data.BeeRow;
@@ -14,7 +13,6 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RelationUtils;
 import com.butent.bee.shared.data.cache.CachingPolicy;
-import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.io.FileInfo;
@@ -57,13 +55,13 @@ final class SelfServiceUtils {
   }
 
   static void sendFiles(Long reqId, Collection<FileInfo> files) {
-    FileUtils.commitFiles(files, VIEW_CARGO_REQUEST_FILES, COL_CRF_REQUEST, reqId,
+    FileUtils.commitFiles(files, VIEW_SHIPMENT_REQUEST_FILES, COL_SHIPMENT_REQUEST, reqId,
         AdministrationConstants.COL_FILE, AdministrationConstants.COL_FILE_CAPTION);
   }
 
   static void setDefaultExpeditionType(FormView form, IsRow newRow, String targetColumn) {
-    Filter filter = Filter.notNull(COL_EXPEDITION_TYPE_SELF_SERVICE);
-    Order order = Order.ascending(COL_EXPEDITION_TYPE_SELF_SERVICE, COL_EXPEDITION_TYPE_NAME);
+    Filter filter = Filter.notNull(COL_SELF_SERVICE);
+    Order order = Order.ascending(COL_SELF_SERVICE, COL_EXPEDITION_TYPE_NAME);
 
     RelatedValuesCallback callback = new RelatedValuesCallback(form, newRow, targetColumn);
 
@@ -75,8 +73,8 @@ final class SelfServiceUtils {
   }
 
   static void setDefaultShippingTerm(FormView form, IsRow newRow, String targetColumn) {
-    Filter filter = Filter.notNull(COL_SHIPPING_TERM_SELF_SERVICE);
-    Order order = Order.ascending(COL_SHIPPING_TERM_SELF_SERVICE, COL_SHIPPING_TERM_NAME);
+    Filter filter = Filter.notNull(COL_SELF_SERVICE);
+    Order order = Order.ascending(COL_SELF_SERVICE, COL_SHIPPING_TERM_NAME);
 
     RelatedValuesCallback callback = new RelatedValuesCallback(form, newRow, targetColumn);
 
@@ -87,25 +85,26 @@ final class SelfServiceUtils {
     }
   }
 
-  static void updateStatus(final FormView form, String column, final Enum<?> status) {
+  static void updateStatus(FormView form, String column, Enum<?> status) {
     BeeRow row = DataUtils.cloneRow(form.getActiveRow());
     row.setValue(form.getDataIndex(column), status.ordinal());
 
-    Queries.update(form.getViewName(), form.getDataColumns(), form.getOldRow(), row,
-        form.getChildrenForUpdate(), new RowCallback() {
-          @Override
-          public void onFailure(String... reason) {
-            form.notifySevere(reason);
-          }
+    update(form, DataUtils.getUpdated(form.getViewName(), form.getDataColumns(), form.getOldRow(),
+        row, form.getChildrenForUpdate()));
+  }
 
-          @Override
-          public void onSuccess(BeeRow result) {
-            if (DataUtils.sameId(result, form.getActiveRow()) && !form.observesData()) {
-              form.updateRow(result, false);
-            }
-            RowUpdateEvent.fire(BeeKeeper.getBus(), form.getViewName(), result);
+  static void update(FormView form, BeeRowSet rowSet) {
+    if (!DataUtils.isEmpty(rowSet)) {
+      Queries.updateRow(rowSet, new RowUpdateCallback(form.getViewName()) {
+        @Override
+        public void onSuccess(BeeRow result) {
+          if (DataUtils.sameId(result, form.getActiveRow()) && !form.observesData()) {
+            form.updateRow(result, false);
           }
-        });
+          super.onSuccess(result);
+        }
+      });
+    }
   }
 
   private SelfServiceUtils() {

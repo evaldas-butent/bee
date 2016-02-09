@@ -787,7 +787,7 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
             @Override
             public void onFailure(String... reason) {
               unlockValidationEvent(event.getColumnId());
-              super.onFailure(reason);
+              Callback.super.onFailure(reason);
             }
 
             @Override

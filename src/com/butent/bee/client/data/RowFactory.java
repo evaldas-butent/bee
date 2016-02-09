@@ -1,7 +1,5 @@
 package com.butent.bee.client.data;
 
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Event.NativePreviewEvent;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.UIObject;
@@ -14,6 +12,7 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.dialog.ModalForm;
+import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dialog.Popup.OutsideClick;
 import com.butent.bee.client.event.Previewer.PreviewConsumer;
@@ -81,6 +80,7 @@ public final class RowFactory {
   private static final int GENERATED_AREA_HEIGHT = 60;
 
   private static final String DEFAULT_CAPTION = Localized.getConstants().actionNew();
+  private static final Modality DEFAULT_MODALITY = Modality.ENABLED;
 
   private static final BeeLogger logger = LogUtils.getLogger(RowFactory.class);
 
@@ -145,7 +145,7 @@ public final class RowFactory {
     selector.setAdding(true);
 
     createRow(formName, selector.getNewRowCaption(), selector.getOracle().getDataInfo(), row,
-        selector, null, new RowCallback() {
+        Modality.ENABLED, selector, null, new RowCallback() {
           @Override
           public void onCancel() {
             selector.setAdding(false);
@@ -163,14 +163,20 @@ public final class RowFactory {
   }
 
   public static void createRow(String viewName) {
-    createRow(viewName, null, null);
+    createRow(viewName, DEFAULT_MODALITY);
   }
 
-  public static void createRow(String viewName, RowCallback rowCallback) {
-    createRow(viewName, null, rowCallback);
+  public static void createRow(String viewName, Modality modality) {
+    createRow(viewName, null, modality, null);
   }
 
-  public static void createRow(String viewName, String caption, RowCallback rowCallback) {
+  public static void createRow(String viewName, Modality modality, RowCallback rowCallback) {
+    createRow(viewName, null, modality, rowCallback);
+  }
+
+  public static void createRow(String viewName, String caption, Modality modality,
+      RowCallback rowCallback) {
+
     Assert.notEmpty(viewName);
 
     DataInfo dataInfo = Data.getDataInfo(viewName);
@@ -180,32 +186,37 @@ public final class RowFactory {
 
     BeeRow row = createEmptyRow(dataInfo, true);
     createRow(dataInfo.getNewRowForm(), BeeUtils.notEmpty(caption, dataInfo.getNewRowCaption()),
-        dataInfo, row, null, null, rowCallback);
+        dataInfo, row, modality, null, null, rowCallback);
   }
 
-  public static void createRow(DataInfo dataInfo, BeeRow row) {
-    createRow(dataInfo, row, null);
+  public static void createRow(DataInfo dataInfo, BeeRow row, Modality modality) {
+    createRow(dataInfo, row, modality, null);
   }
 
-  public static void createRow(DataInfo dataInfo, BeeRow row, RowCallback rowCallback) {
+  public static void createRow(DataInfo dataInfo, BeeRow row, Modality modality,
+      RowCallback rowCallback) {
+
     Assert.notNull(dataInfo);
-    createRow(dataInfo.getNewRowForm(), dataInfo.getNewRowCaption(), dataInfo, row, null, null,
-        rowCallback);
+    createRow(dataInfo.getNewRowForm(), dataInfo.getNewRowCaption(), dataInfo, row, modality,
+        null, null, rowCallback);
   }
 
   public static void createRow(String formName, String caption, DataInfo dataInfo, BeeRow row,
-      UIObject target, FormInterceptor formInterceptor, RowCallback rowCallback) {
+      Modality modality, UIObject target, FormInterceptor formInterceptor,
+      RowCallback rowCallback) {
+
     Assert.notEmpty(formName);
 
     Assert.notNull(dataInfo);
     Assert.notNull(row);
 
-    getForm(formName, caption, formInterceptor, dataInfo, row, target, rowCallback);
+    getForm(formName, caption, formInterceptor, dataInfo, row, modality, target, rowCallback);
   }
 
   public static void createRow(String formName, String caption, DataInfo dataInfo, BeeRow row,
-      RowCallback rowCallback) {
-    createRow(formName, caption, dataInfo, row, null, null, rowCallback);
+      Modality modality, RowCallback rowCallback) {
+
+    createRow(formName, caption, dataInfo, row, modality, null, null, rowCallback);
   }
 
   public static void showMenu(Widget target) {
@@ -240,7 +251,7 @@ public final class RowFactory {
             }
 
             RowFactory.createRow(DiscussionsConstants.FORM_NEW_DISCUSSION,
-                Localized.getConstants().announcementNew(), dataInfo, row, null);
+                Localized.getConstants().announcementNew(), dataInfo, row, DEFAULT_MODALITY, null);
           }
         });
 
@@ -258,15 +269,8 @@ public final class RowFactory {
     }
   }
 
-  private static void addMenuItem(HasWidgets panel, Module module, final String viewName,
-      String text) {
-
-    addMenuItem(panel, module, viewName, text, new Runnable() {
-      @Override
-      public void run() {
-        createRow(viewName);
-      }
-    });
+  private static void addMenuItem(HasWidgets panel, Module module, String viewName, String text) {
+    addMenuItem(panel, module, viewName, text, () -> createRow(viewName, DEFAULT_MODALITY));
   }
 
   private static void addMenuItem(HasWidgets panel, Module module, String viewName, String text,
@@ -278,12 +282,9 @@ public final class RowFactory {
       Label label = new Label(text);
       label.addStyleName(STYLE_MENU_ITEM);
 
-      label.addClickHandler(new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent event) {
-          UiHelper.closeDialog((Widget) event.getSource());
-          command.run();
-        }
+      label.addClickHandler(event -> {
+        UiHelper.closeDialog((Widget) event.getSource());
+        command.run();
       });
 
       panel.add(label);
@@ -312,6 +313,7 @@ public final class RowFactory {
 
   private static FormDescription createFormDescription(String formName, DataInfo dataInfo,
       List<BeeColumn> columns) {
+
     Document doc = XMLParser.createDocument();
     Element form = doc.createElement(FormFactory.TAG_FORM);
 
@@ -422,29 +424,35 @@ public final class RowFactory {
 
   private static void getForm(String formName, final String caption,
       FormInterceptor formInterceptor, final DataInfo dataInfo, final BeeRow row,
-      final UIObject target, final RowCallback rowCallback) {
+      Modality modality, final UIObject target, final RowCallback rowCallback) {
 
     FormInterceptor fcb =
         (formInterceptor == null) ? FormFactory.getFormInterceptor(formName) : formInterceptor;
 
     FormFactory.createFormView(formName, dataInfo.getViewName(), dataInfo.getColumns(), true, fcb,
-        new FormFactory.FormViewCallback() {
-          @Override
-          public void onSuccess(FormDescription formDescription, FormView result) {
-            if (result != null) {
-              result.setEditing(true);
-              result.start(null);
+        (formDescription, result) -> {
+          if (result != null) {
+            result.setEditing(true);
+            result.start(null);
 
-              openForm(result, caption, dataInfo, row, target, rowCallback);
-            }
+            openForm(result, caption, dataInfo, row, modality, target, rowCallback);
           }
         });
   }
 
   private static void openForm(final FormView formView, String caption, final DataInfo dataInfo,
-      final BeeRow row, UIObject target, final RowCallback callback) {
+      final BeeRow row, Modality modality, UIObject target, final RowCallback callback) {
 
     String cap = BeeUtils.notEmpty(caption, formView.getCaption(), DEFAULT_CAPTION);
+
+    boolean modal;
+    if (Popup.hasEventPreview()) {
+      modal = true;
+    } else if (modality == null) {
+      modal = DEFAULT_MODALITY == Modality.ENABLED;
+    } else {
+      modal = modality == Modality.ENABLED;
+    }
 
     final NewRowPresenter presenter = new NewRowPresenter(formView, dataInfo, cap);
     final ModalForm dialog = new ModalForm(presenter, formView, false);
@@ -537,6 +545,8 @@ public final class RowFactory {
         UiHelper.focus(formView.getRootWidget().asWidget());
       }
     });
+
+    dialog.setPreviewEnabled(modal);
 
     if (target == null) {
       dialog.center();

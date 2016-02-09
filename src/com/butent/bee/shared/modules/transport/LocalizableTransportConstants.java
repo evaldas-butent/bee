@@ -196,6 +196,8 @@ public interface LocalizableTransportConstants {
 
   String trCargoTripThereCargosAssignedInTripsAlarm();
 
+  String trCargoTypes();
+
   String trChildOrder();
 
   String trChooseForwarder();
@@ -263,8 +265,6 @@ public interface LocalizableTransportConstants {
   String trLoadingNumber();
 
   String trLogistics();
-
-  String trLogisticsSelfService();
 
   String trNewAssessment();
 
@@ -432,9 +432,13 @@ public interface LocalizableTransportConstants {
 
   String trRequestShippingTerms();
 
-  String trRequestStatusActive();
+  String trRequestStatusAnswered();
 
-  String trRequestStatusFinished();
+  String trRequestStatusApproved();
+
+  String trRequestStatusConfirmed();
+
+  String trRequestStatusLost();
 
   String trRequestStatusNew();
 

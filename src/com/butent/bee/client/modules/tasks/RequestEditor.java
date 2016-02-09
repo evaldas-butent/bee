@@ -24,6 +24,7 @@ import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.data.RowUpdateCallback;
 import com.butent.bee.client.dialog.ConfirmationCallback;
+import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
@@ -55,6 +56,7 @@ import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -284,7 +286,8 @@ public class RequestEditor extends AbstractFormInterceptor {
       files.put(f.getId(), f);
     }
 
-    RowFactory.createRow(taskDataInfo.getNewRowForm(), null, taskDataInfo, taskRow, null,
+    RowFactory.createRow(taskDataInfo.getNewRowForm(), null, taskDataInfo, taskRow,
+        Modality.ENABLED, null,
         new TaskBuilder(files, BeeUtils.toLongOrNull(managerSel.getValue()), true),
         new RowCallback() {
 
@@ -342,7 +345,8 @@ public class RequestEditor extends AbstractFormInterceptor {
         List<String> oldValues = Lists.newArrayList(row
             .getString(form.getDataIndex(TaskConstants.COL_REQUEST_FINISHED)));
 
-        List<String> newValues = Lists.newArrayList(BeeUtils.toString(null));
+        List<String> newValues = new ArrayList<>();
+        newValues.add(null);
 
         Queries.update(form.getViewName(), row.getId(), row.getVersion(), columns, oldValues,
             newValues, form.getChildrenForUpdate(), new FinishSaveCallback(form));

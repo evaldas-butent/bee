@@ -49,9 +49,9 @@ public class TransportReportsBean {
   /**
    * Return SqlSelect query, calculating cargo incomes from CargoServices table.
    *
-   * @param cargos   query filter with <b>unique</b> "Cargo" values.
+   * @param cargos query filter with <b>unique</b> "Cargo" values.
    * @param currency currency to convert to.
-   * @param woVat    exclude vat.
+   * @param woVat exclude vat.
    * @return query with columns: "Cargo", "CargoIncome", "ServicesIncome"
    */
   public SqlSelect getCargoIncomeQuery(SqlSelect cargos, Long currency, boolean woVat) {
@@ -193,7 +193,7 @@ public class TransportReportsBean {
   /**
    * Return SqlSelect query, calculating trip fuel consumptions from TripRoutes table.
    *
-   * @param routes    query filter with <b>unique</b> route values.
+   * @param routes query filter with <b>unique</b> route values.
    * @param routeMode if true, returns results, grouped by RouteID, else grouped by Trip
    * @return query with two columns: (RouteID or "Trip") and "Quantity"
    */
@@ -445,9 +445,9 @@ public class TransportReportsBean {
   /**
    * Returns Temporary table name with calculated trip incomes by each cargo.
    *
-   * @param trips    query filter with <b>unique</b> "Trip" values.
+   * @param trips query filter with <b>unique</b> "Trip" values.
    * @param currency currency to convert to.
-   * @param woVat    exclude vat.
+   * @param woVat exclude vat.
    * @return Temporary table name with following structure: <br>
    * "Trip" - trip ID <br>
    * "Cargo" - cargo ID <br>
@@ -718,13 +718,15 @@ public class TransportReportsBean {
           .addFields(TBL_CARGO_TRIPS, COL_CARGO)
           .addEmptyDouble(kilometers)
           .addExpr(SqlUtils.plus(
-                  SqlUtils.nvl(SqlUtils.field(TBL_ORDER_CARGO, COL_LOADED_KILOMETERS), 0),
-                  SqlUtils.nvl(SqlUtils.field(TBL_ORDER_CARGO, COL_EMPTY_KILOMETERS), 0)),
+                  SqlUtils.nvl(SqlUtils.field(TBL_CARGO_HANDLING, COL_LOADED_KILOMETERS), 0),
+                  SqlUtils.nvl(SqlUtils.field(TBL_CARGO_HANDLING, COL_EMPTY_KILOMETERS), 0)),
               plannedKilometers)
           .addFrom(TBL_CARGO_TRIPS)
           .addFromInner(tmp, SqlUtils.joinUsing(TBL_CARGO_TRIPS, tmp, COL_TRIP))
           .addFromInner(TBL_ORDER_CARGO,
-              sys.joinTables(TBL_ORDER_CARGO, TBL_CARGO_TRIPS, COL_CARGO)));
+              sys.joinTables(TBL_ORDER_CARGO, TBL_CARGO_TRIPS, COL_CARGO))
+          .addFromLeft(TBL_CARGO_HANDLING,
+              sys.joinTables(TBL_CARGO_HANDLING, TBL_ORDER_CARGO, COL_CARGO_HANDLING)));
 
       String als = SqlUtils.uniqueName();
 
@@ -1084,9 +1086,9 @@ public class TransportReportsBean {
   /**
    * Return SqlSelect query, calculating cargo costs from CargoServices table.
    *
-   * @param cargos   query filter with <b>unique</b> "Cargo" values.
+   * @param cargos query filter with <b>unique</b> "Cargo" values.
    * @param currency currency to convert to.
-   * @param woVat    exclude vat.
+   * @param woVat exclude vat.
    * @return query with columns: "Cargo", "Expense"
    */
   private SqlSelect getCargoCostQuery(SqlSelect cargos, Long currency, boolean woVat) {
@@ -1126,7 +1128,7 @@ public class TransportReportsBean {
   /**
    * Returns Temporary table name with calculated trip income or cargo cost percents.
    *
-   * @param key    "Cargo" or "Trip"
+   * @param key "Cargo" or "Trip"
    * @param filter query filter with <b>unique</b> key values.
    * @return Temporary table name with following structure: <br>
    * "Cargo" - cargo ID <br>
@@ -1250,9 +1252,9 @@ public class TransportReportsBean {
   /**
    * Return Temporary table name with calculated trip costs.
    *
-   * @param trips    query filter with <b>unique</b> "Trip" values.
+   * @param trips query filter with <b>unique</b> "Trip" values.
    * @param currency currency to convert to.
-   * @param woVat    exclude vat.
+   * @param woVat exclude vat.
    * @return Temporary table name with following structure: <br>
    * "Trip" - trip ID <br>
    * "DailyCosts" - total trip daily costs <br>

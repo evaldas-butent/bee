@@ -13,6 +13,7 @@ import com.butent.bee.client.cli.Shell;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
+import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.GridFactory.GridOptions;
@@ -70,10 +71,6 @@ public class SelfServiceScreen extends ScreenImpl {
 
   private final Map<String, String> activeViews = new HashMap<>();
 
-  public SelfServiceScreen() {
-    super();
-  }
-
   @Override
   public void closeAll() {
     super.closeAll();
@@ -89,10 +86,10 @@ public class SelfServiceScreen extends ScreenImpl {
   public void start(UserData userData) {
     super.start(userData);
 
-    Data.setVisibleViews(Sets.newHashSet(VIEW_CARGO_REQUESTS, VIEW_CARGO_REQUEST_FILES,
+    Data.setVisibleViews(Sets.newHashSet(VIEW_CARGO_REQUESTS, VIEW_SHIPMENT_REQUEST_FILES,
         VIEW_CARGO_REQUEST_TEMPLATES, VIEW_ORDERS, VIEW_CARGO_INVOICES,
         VIEW_CARGO_PURCHASE_INVOICES));
-    Data.setEditableViews(Sets.newHashSet(VIEW_CARGO_REQUESTS, VIEW_CARGO_REQUEST_FILES,
+    Data.setEditableViews(Sets.newHashSet(VIEW_CARGO_REQUESTS, VIEW_SHIPMENT_REQUEST_FILES,
         VIEW_CARGO_REQUEST_TEMPLATES));
 
     Data.setColumnReadOnly(VIEW_CARGO_REQUESTS, COL_CARGO_REQUEST_DATE);
@@ -123,7 +120,7 @@ public class SelfServiceScreen extends ScreenImpl {
             row.setValue(info.getColumnIndex(AdministrationConstants.COL_USER_INTERFACE),
                 UserInterface.normalize(getUserInterface()).ordinal());
 
-            RowFactory.createRow(info, row, new RowCallback() {
+            RowFactory.createRow(info, row, Modality.ENABLED, new RowCallback() {
 
               @Override
               public void onSuccess(BeeRow result) {
@@ -239,10 +236,6 @@ public class SelfServiceScreen extends ScreenImpl {
     switch (getUserInterface()) {
       case SELF_SERVICE:
         openGrid(GRID_CARGO_REQUESTS, true, COL_CARGO_REQUEST_USER);
-        break;
-
-      case SELF_SERVICE_LOG:
-        openGrid(GRID_LOGISTICS_CARGO_REQUESTS, true, COL_CARGO_REQUEST_USER);
         break;
 
       default:

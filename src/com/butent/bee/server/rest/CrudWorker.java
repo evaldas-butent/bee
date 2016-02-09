@@ -1,5 +1,8 @@
 package com.butent.bee.server.rest;
 
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
+
 import com.butent.bee.server.data.BeeView;
 import com.butent.bee.server.data.DataEditorBean;
 import com.butent.bee.server.data.QueryServiceBean;
@@ -25,6 +28,7 @@ import com.butent.bee.shared.data.view.ViewColumn;
 import com.butent.bee.shared.exceptions.BeeException;
 import com.butent.bee.shared.exceptions.BeeRuntimeException;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -186,63 +190,7 @@ public abstract class CrudWorker {
     return response;
   }
 
-  void commit(Runnable executor) throws BeeException {
-    try {
-      utx.begin();
-      executor.run();
-      utx.commit();
-    } catch (Throwable ex) {
-      try {
-        utx.rollback();
-      } catch (Throwable ex2) {
-      }
-      throw BeeException.error(ex);
-    }
-  }
-
-  static Collection<Map<String, Object>> getData(BeeRowSet rowSet, String child, String... cols) {
-    Map<Long, Map<String, Object>> data = new LinkedHashMap<>();
-    boolean hasChilds = !BeeUtils.isEmpty(child) && !ArrayUtils.isEmpty(cols);
-
-    for (int i = 0; i < rowSet.getNumberOfRows(); i++) {
-      BeeRow beeRow = rowSet.getRow(i);
-
-      if (!data.containsKey(beeRow.getId())) {
-        Map<String, Object> row = new LinkedHashMap<>();
-        row.put(ID, beeRow.getId());
-        row.put(VERSION, beeRow.getVersion());
-
-        for (int j = 0; j < rowSet.getNumberOfColumns(); j++) {
-          String col = rowSet.getColumnId(j);
-
-          if (!ArrayUtils.contains(cols, col)) {
-            row.put(col, getValue(rowSet, i, j));
-          }
-        }
-        if (hasChilds) {
-          row.put(child, new ArrayList<Map<String, Object>>());
-        }
-        data.put(beeRow.getId(), row);
-      }
-      if (hasChilds) {
-        Map<String, Object> row = new LinkedHashMap<>();
-
-        for (String col : cols) {
-          int j = rowSet.getColumnIndex(col);
-
-          if (!BeeConst.isUndef(j)) {
-            row.put(col, getValue(rowSet, i, j));
-          }
-        }
-        if (BeeUtils.anyNotNull(row.values())) {
-          ((Collection<Map<String, Object>>) data.get(beeRow.getId()).get(child)).add(row);
-        }
-      }
-    }
-    return data.values();
-  }
-
-  static String getValue(JsonObject data, String field) {
+  public static String getValue(JsonObject data, String field) {
     String value = null;
     JsonValue object = data.get(field);
 
@@ -252,7 +200,7 @@ public abstract class CrudWorker {
     return value;
   }
 
-  static Object getValue(BeeRowSet rowSet, int row, int col) {
+  public static Object getValue(BeeRowSet rowSet, int row, int col) {
     Object value = null;
 
     switch (rowSet.getColumnType(col)) {
@@ -274,6 +222,73 @@ public abstract class CrudWorker {
         break;
     }
     return value;
+  }
+
+  void commit(Runnable executor) throws BeeException {
+    try {
+      utx.begin();
+      executor.run();
+      utx.commit();
+    } catch (Throwable ex) {
+      try {
+        utx.rollback();
+      } catch (Throwable ex2) {
+      }
+      throw BeeException.error(ex);
+    }
+  }
+
+  static Collection<Map<String, Object>> getData(BeeRowSet rs, Multimap<String, String> children) {
+    Map<Long, Map<String, Object>> data = new LinkedHashMap<>();
+    boolean hasChildren = Objects.nonNull(children);
+    Multimap<String, Map<String, Object>> childData = HashMultimap.create();
+
+    for (int i = 0; i < rs.getNumberOfRows(); i++) {
+      BeeRow beeRow = rs.getRow(i);
+
+      if (!data.containsKey(beeRow.getId())) {
+        Map<String, Object> row = new LinkedHashMap<>();
+        row.put(ID, beeRow.getId());
+        row.put(VERSION, beeRow.getVersion());
+
+        for (int j = 0; j < rs.getNumberOfColumns(); j++) {
+          String col = rs.getColumnId(j);
+
+          if (!hasChildren || !children.containsValue(col)) {
+            row.put(col, getValue(rs, i, j));
+          }
+        }
+        data.put(beeRow.getId(), row);
+      }
+      if (hasChildren) {
+        for (String child : children.keySet()) {
+          Map<String, Object> row = new LinkedHashMap<>();
+
+          for (String col : children.get(child)) {
+            int j = rs.getColumnIndex(col);
+
+            if (!BeeConst.isUndef(j)) {
+              row.put(col, getValue(rs, i, j));
+            }
+          }
+          if (BeeUtils.anyNotNull(row.values())) {
+            String key = BeeUtils.joinWords(beeRow.getId(), child);
+
+            if (!childData.containsEntry(key, row)) {
+              childData.put(key, row);
+            }
+          }
+        }
+      }
+    }
+    if (hasChildren) {
+      for (Long id : data.keySet()) {
+        for (String child : children.keySet()) {
+          data.get(id).put(child, childData.get(BeeUtils.joinWords(id, child)));
+        }
+      }
+    }
+    return data.values();
   }
 
   abstract String getViewName();
@@ -372,6 +387,8 @@ public abstract class CrudWorker {
   }
 
   private Long insert(String viewName, JsonObject data) {
+    LogUtils.getRootLogger().debug(viewName, data);
+
     BeeView view = sys.getView(viewName);
     Map<String, BeeColumn> columns = new LinkedHashMap<>();
     List<String> values = new ArrayList<>();
@@ -418,6 +435,8 @@ public abstract class CrudWorker {
   }
 
   private BeeRowSet update(String viewName, Long id, Long version, JsonObject data) {
+    LogUtils.getRootLogger().debug(data);
+
     if (data.containsKey(OLD_VALUES) && data.get(OLD_VALUES) instanceof JsonObject) {
       JsonObject oldData = data.getJsonObject(OLD_VALUES);
       BeeView view = sys.getView(viewName);

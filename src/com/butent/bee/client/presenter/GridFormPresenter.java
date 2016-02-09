@@ -132,6 +132,11 @@ public class GridFormPresenter extends AbstractPresenter implements HasGridView,
   }
 
   @Override
+  public String getViewKey() {
+    return getForm().getSupplierKey();
+  }
+
+  @Override
   public void handleAction(Action action) {
     if (action == null) {
       return;

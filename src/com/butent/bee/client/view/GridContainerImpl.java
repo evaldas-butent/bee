@@ -26,7 +26,6 @@ import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.style.StyleUtils;
-import com.butent.bee.client.ui.FormWidget;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.ui.WidgetCreationCallback;
@@ -50,6 +49,7 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.ui.NavigationOrigin;
+import com.butent.bee.shared.ui.UiConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
@@ -263,7 +263,7 @@ public class GridContainerImpl extends Split implements GridContainerView,
             if (!BeeUtils.isEmpty(widgetName)) {
               String key = BeeUtils.join(BeeConst.STRING_MINUS,
                   BeeUtils.notEmpty(getSupplierKey(), gridDescription.getName()),
-                  BeeKeeper.getUser().getUserId(), widgetName, FormWidget.ATTR_SIZE);
+                  BeeKeeper.getUser().getUserId(), widgetName, UiConstants.ATTR_SIZE);
               extWidget.setStorageKey(key);
 
               Integer size = BeeKeeper.getStorage().getInteger(key);

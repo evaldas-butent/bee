@@ -4,6 +4,7 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.IdCallback;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
+import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.form.FormView;
@@ -51,7 +52,7 @@ class ChildRecurringTasksGrid extends RecurringTasksGrid {
   }
 
   private static void createRow(final GridPresenter presenter, DataInfo rowData, BeeRow row) {
-    RowFactory.createRow(rowData, row, new RowCallback() {
+    RowFactory.createRow(rowData, row, Modality.ENABLED, new RowCallback() {
       @Override
       public void onSuccess(BeeRow result) {
         presenter.handleAction(Action.REFRESH);

@@ -31,6 +31,7 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.Icon;
+import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dialog.Popup.OutsideClick;
 import com.butent.bee.client.dom.DomUtils;
@@ -38,11 +39,15 @@ import com.butent.bee.client.event.Binder;
 import com.butent.bee.client.event.DndHelper;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.logical.ActiveRowChangeEvent;
+import com.butent.bee.client.event.logical.MutationEvent;
+import com.butent.bee.client.event.logical.MutationEvent.Handler;
 import com.butent.bee.client.grid.GridPanel;
 import com.butent.bee.client.images.star.Stars;
+import com.butent.bee.client.layout.Direction;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.layout.Simple;
+import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.render.AbstractCellRenderer;
@@ -52,6 +57,7 @@ import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiHelper;
+import com.butent.bee.client.utils.XmlUtils;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.edit.Editor;
@@ -99,6 +105,7 @@ import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.GridDescription;
+import com.butent.bee.shared.ui.UiConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -584,8 +591,42 @@ public class MailPanel extends AbstractFormInterceptor {
 
     } else if (widget instanceof FaLabel && BeeUtils.same(name, "SearchOptions")) {
       searchPanel.setSearchOptionsWidget((FaLabel) widget);
+    } else if (widget instanceof Split) {
+      Split split = (Split) widget;
+      split.addMutationHandler(new Handler() {
+
+        @Override
+        public void onMutation(MutationEvent event) {
+          int size = split.getDirectionSize(Direction.WEST);
+
+          if (size > 0 && !BeeUtils.isEmpty(getStorageKey())) {
+            BeeKeeper.getStorage().set(getStorageKey(), size);
+          }
+        }
+      });
     }
     message.afterCreateWidget(name, widget, callback);
+  }
+
+  @Override
+  public boolean beforeCreateWidget(String name, com.google.gwt.xml.client.Element description) {
+
+    if (BeeUtils.same(name, "Split")) {
+      Integer size = BeeKeeper.getStorage().getInteger(getStorageKey());
+
+      if (BeeUtils.isPositive(size)) {
+
+        com.google.gwt.xml.client.Element west =
+            XmlUtils.getFirstChildElement(description, Direction.WEST.name()
+                .toLowerCase());
+
+        if (west != null) {
+          west.setAttribute(UiConstants.ATTR_SIZE, size.toString());
+        }
+
+      }
+    }
+    return super.beforeCreateWidget(name, description);
   }
 
   @Override
@@ -666,7 +707,7 @@ public class MailPanel extends AbstractFormInterceptor {
                   DataUtils.getString(grid.getDataColumns(), row, "SenderEmail"));
             }
           }
-          RowFactory.createRow(dataInfo, newRow);
+          RowFactory.createRow(dataInfo, newRow, Modality.ENABLED);
         }
       });
       header.addCommandItem(accountSettings);
@@ -915,6 +956,14 @@ public class MailPanel extends AbstractFormInterceptor {
     return cap;
   }
 
+  private static String getStorageKey() {
+    String key =
+        BeeUtils.join(BeeConst.STRING_MINUS, "MailTree", BeeKeeper.getUser().getUserId(),
+            UiConstants.ATTR_SIZE);
+
+    return key;
+  }
+
   private void initAccounts(final ListBox accountsWidget) {
     accountsWidget.clear();
 
@@ -952,7 +1001,7 @@ public class MailPanel extends AbstractFormInterceptor {
         || getCurrentAccount().isDraftsFolder(getCurrentFolder());
 
     Global.confirm(purge ? Localized.getConstants().delete()
-            : Localized.getConstants().mailActionMoveToTrash(), purge ? Icon.ALARM : Icon.WARNING,
+        : Localized.getConstants().mailActionMoveToTrash(), purge ? Icon.ALARM : Icon.WARNING,
         Collections.singletonList(Localized.getMessages().mailMessages(ids.size())),
         new ConfirmationCallback() {
           @Override

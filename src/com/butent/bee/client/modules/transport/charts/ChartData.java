@@ -98,6 +98,7 @@ class ChartData implements HasEnabled {
     DRIVER(Localized.getConstants().drivers()),
     DRIVER_GROUP(Localized.getConstants().driverGroupsShort()),
     CARGO(Localized.getConstants().cargos()),
+    CARGO_TYPE(Localized.getConstants().trCargoTypes()),
     CUSTOMER(Localized.getConstants().transportationCustomers()),
     MANAGER(Localized.getConstants().managers()),
     LOADING(Localized.getConstants().cargoLoading()),

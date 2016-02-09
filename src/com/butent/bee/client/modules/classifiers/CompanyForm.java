@@ -24,6 +24,7 @@ import com.butent.bee.client.data.Queries.IntCallback;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.ConfirmationCallback;
+import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.ChildGrid;
@@ -220,8 +221,8 @@ public class CompanyForm extends AbstractFormInterceptor implements ClickHandler
               Data.setValue(viewName, newRow, COL_COMPANY, id);
 
               RowFactory.createRow(dataInfo.getNewRowForm(),
-                  Localized.getConstants().newCompanyPerson(), dataInfo, newRow, null,
-                  new AbstractFormInterceptor() {
+                  Localized.getConstants().newCompanyPerson(), dataInfo, newRow, Modality.ENABLED,
+                  null, new AbstractFormInterceptor() {
                     @Override
                     public boolean beforeCreateWidget(String widgetName, Element description) {
                       if (BeeUtils.startsWith(widgetName, COL_COMPANY)) {
@@ -299,6 +300,19 @@ public class CompanyForm extends AbstractFormInterceptor implements ClickHandler
   @Override
   public FormInterceptor getInstance() {
     return new CompanyForm();
+  }
+
+  @Override
+  public void onSaveChanges(HasHandlers listener, SaveChangesEvent event) {
+    FormView form = getFormView();
+    IsRow row = form.getActiveRow();
+    if (!BeeUtils.isEmpty(event.getColumns())) {
+      if (BeeUtils.isEmpty(row.getString(form.getDataIndex(COL_COMPANY_TYPE)))) {
+        event.consume();
+        BeeKeeper.getScreen().notifySevere(Localized.getConstants().companyStatus(),
+            Localized.getConstants().valueRequired());
+      }
+    }
   }
 
   private static void createQrButton(FormView form, IsRow row) {

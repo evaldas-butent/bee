@@ -23,6 +23,7 @@ import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.ChoiceCallback;
 import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.Icon;
+import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.ColumnHeader;
@@ -470,7 +471,7 @@ class TasksGrid extends AbstractGridInterceptor {
     prjRow.setValue(idxPrjDescrition, selectedRow.getValue(idxTaskDescription));
     prjRow.setValue(idxPrjStartDate, new JustDate());
 
-    RowFactory.createRow(prjDataInfo, prjRow, new RowCallback() {
+    RowFactory.createRow(prjDataInfo, prjRow, Modality.ENABLED, new RowCallback() {
 
       @Override
       public void onSuccess(final BeeRow projectRow) {
@@ -716,7 +717,7 @@ class TasksGrid extends AbstractGridInterceptor {
       }
     }
 
-    RowFactory.createRow(targetInfo, newRow, new RowCallback() {
+    RowFactory.createRow(targetInfo, newRow, Modality.ENABLED, new RowCallback() {
       @Override
       public void onSuccess(BeeRow result) {
         afterCopyAsRecurringTask();
@@ -779,7 +780,7 @@ class TasksGrid extends AbstractGridInterceptor {
       }
     }
 
-    RowFactory.createRow(dataInfo, newRow, new RowCallback() {
+    RowFactory.createRow(dataInfo, newRow, Modality.ENABLED, new RowCallback() {
       @Override
       public void onSuccess(BeeRow result) {
         afterCopyTask();

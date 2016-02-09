@@ -14,6 +14,7 @@ import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.data.RowInsertCallback;
 import com.butent.bee.client.dialog.DialogBox;
+import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.view.edit.EditStopEvent;
@@ -95,7 +96,7 @@ class TripCargoGrid extends AbstractGridInterceptor {
 
     @Override
     public void onClick(ClickEvent clickEvent) {
-      RowFactory.createRow(TBL_ORDERS, new RowInsertCallback(TBL_ORDERS) {
+      RowFactory.createRow(TBL_ORDERS, Modality.ENABLED, new RowInsertCallback(TBL_ORDERS) {
         @Override
         public void onSuccess(BeeRow result) {
           super.onSuccess(result);

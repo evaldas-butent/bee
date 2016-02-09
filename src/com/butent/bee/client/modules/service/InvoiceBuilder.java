@@ -12,6 +12,7 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
+import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.ViewHelper;
@@ -157,8 +158,8 @@ final class InvoiceBuilder {
 
         final InvoiceInterceptor interceptor = new InvoiceInterceptor();
 
-        RowFactory.createRow("NewServiceInvoice", null, invInfo, invRow, null, interceptor,
-            new RowCallback() {
+        RowFactory.createRow("NewServiceInvoice", null, invInfo, invRow, Modality.ENABLED, null,
+            interceptor, new RowCallback() {
               @Override
               public void onSuccess(BeeRow result) {
                 ParameterList params = ServiceKeeper.createArgs(SVC_CREATE_INVOICE_ITEMS);

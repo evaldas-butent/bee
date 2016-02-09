@@ -19,12 +19,6 @@ public enum RegulatedWidget implements HasLocalizedCaption {
       return constants.domainOnline();
     }
   },
-  ROOMS {
-    @Override
-    public String getCaption(LocalizableConstants constants) {
-      return constants.domainRooms();
-    }
-  },
   ADMIN(ModuleAndSub.of(Module.ADMINISTRATION)) {
     @Override
     public String getCaption(LocalizableConstants constants) {

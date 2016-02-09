@@ -158,6 +158,7 @@ public abstract class ChartBase extends TimeBoard {
   private final Map<Long, String> transportGroups = new HashMap<>();
 
   private final Map<Long, Color> cargoTypeColors = new HashMap<>();
+  private final Map<Long, String> cargoTypeNames = new HashMap<>();
 
   private final Multimap<Long, CargoHandling> cargoHandling = ArrayListMultimap.create();
 
@@ -323,6 +324,10 @@ public abstract class ChartBase extends TimeBoard {
     }
 
     return Pair.of(minLoad, maxUnload);
+  }
+
+  protected String getCargoTypeName(Long id) {
+    return cargoTypeNames.get(id);
   }
 
   protected abstract String getDataService();
@@ -524,15 +529,23 @@ public abstract class ChartBase extends TimeBoard {
     }
 
     cargoTypeColors.clear();
+    cargoTypeNames.clear();
+
     serialized = rowSet.getTableProperty(PROP_CARGO_TYPES);
     if (!BeeUtils.isEmpty(serialized)) {
       BeeRowSet cargoTypes = BeeRowSet.restore(serialized);
 
+      int nameIndex = cargoTypes.getColumnIndex(COL_CARGO_TYPE_NAME);
       int colorIndex = cargoTypes.getColumnIndex(COL_CARGO_TYPE_COLOR);
       int bgIndex = cargoTypes.getColumnIndex(COL_BACKGROUND);
       int fgIndex = cargoTypes.getColumnIndex(COL_FOREGROUND);
 
       for (BeeRow cargoType : cargoTypes) {
+        String name = cargoType.getString(nameIndex);
+        if (!BeeUtils.isEmpty(name)) {
+          cargoTypeNames.put(cargoType.getId(), name);
+        }
+
         String bg = cargoType.getString(bgIndex);
         String fg = cargoType.getString(fgIndex);
 

@@ -4,7 +4,6 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
-import com.google.common.collect.Sets;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Style.Cursor;
@@ -1319,18 +1318,10 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
                         r++;
                       }
                     }
-                    Set<String> to = null;
-                    String addr = form.getStringValue("PersonEmail");
-
-                    if (addr == null) {
-                      addr = form.getStringValue("CustomerEmail");
-                    }
-                    if (addr != null) {
-                      to = Sets.newHashSet(addr);
-                    }
-                    NewMailMessage.create(to, null, null, null,
+                    NewMailMessage.create(BeeUtils.notEmpty(form.getStringValue("PersonEmail"),
+                            form.getStringValue("CustomerEmail")), null,
                         Document.get().createBRElement().getString() + table.toString(),
-                        null, null, false);
+                        null, null);
                   }
                 });
           }

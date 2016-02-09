@@ -1045,11 +1045,12 @@ public class UiServiceBean {
       tcd.suckButent(true);
       response = ResponseObject.info("Butent...");
 
-    } else if (BeeUtils.same(cmd, "handling")) {
+    } else if (BeeUtils.same(cmd, "handling")) { // TODO: remove in future
       int c = qs.updateData(new SqlUpdate(TransportConstants.TBL_CARGO_HANDLING)
           .addExpression(TransportConstants.COL_CARGO_TRIP,
               SqlUtils.field(TransportConstants.TBL_ASSESSMENT_FORWARDERS,
                   TransportConstants.COL_CARGO_TRIP))
+          .addExpression(TransportConstants.COL_CARGO, SqlUtils.constant(null))
           .setFrom(TransportConstants.TBL_ASSESSMENT_FORWARDERS,
               sys.joinTables(TransportConstants.TBL_ASSESSMENT_FORWARDERS,
                   TransportConstants.TBL_CARGO_HANDLING, TransportConstants.COL_FORWARDER)));

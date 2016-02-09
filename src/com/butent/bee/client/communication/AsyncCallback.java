@@ -21,6 +21,7 @@ import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.Collection;
@@ -110,7 +111,7 @@ public class AsyncCallback implements RequestCallback {
     if (Global.isDebug()) {
       logger.info("response", BeeUtils.joinOptions(Service.RPC_VAR_QID, id,
           Service.RPC_VAR_SVC, svc, Service.RPC_VAR_SUB, sub), summary);
-      logger.info(NameUtils.addName(Service.RPC_VAR_CTP, BeeUtils.toString(ctp)),
+      logger.info(NameUtils.addName(Service.RPC_VAR_CTP, EnumUtils.toString(ctp)),
           NameUtils.addName("len", len));
 
       Header[] headers = resp.getHeaders();

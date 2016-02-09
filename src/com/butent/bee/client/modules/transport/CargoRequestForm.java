@@ -17,6 +17,7 @@ import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.ConfirmationCallback;
+import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.Opener;
@@ -37,8 +38,7 @@ import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.transport.TransportConstants;
-import com.butent.bee.shared.modules.transport.TransportConstants.AssessmentStatus;
-import com.butent.bee.shared.modules.transport.TransportConstants.CargoRequestStatus;
+import com.butent.bee.shared.modules.transport.TransportConstants.*;
 import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
@@ -209,7 +209,7 @@ class CargoRequestForm extends AbstractFormInterceptor {
                 break;
             }
 
-            CargoRequestStatus status = CargoRequestStatus.ACTIVE;
+            CargoRequestStatus status = CargoRequestStatus.CONFIRMED;
             SelfServiceUtils.updateStatus(getFormView(), COL_CARGO_REQUEST_STATUS, status);
             refreshCommands(status, fromUI);
 
@@ -243,7 +243,7 @@ class CargoRequestForm extends AbstractFormInterceptor {
       }
     }
 
-    RowFactory.createRow(tInfo, tRow, new RowCallback() {
+    RowFactory.createRow(tInfo, tRow, Modality.ENABLED, new RowCallback() {
       @Override
       public void onSuccess(BeeRow result) {
         DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_CARGO_REQUEST_TEMPLATES);
@@ -276,8 +276,7 @@ class CargoRequestForm extends AbstractFormInterceptor {
         header.addCommandItem(this.activateCommand);
       }
 
-      if (Data.isViewEditable(VIEW_ASSESSMENTS)
-          && (UserInterface.SELF_SERVICE_LOG.equals(fromUI) || fromUI == null)) {
+      if (Data.isViewEditable(VIEW_ASSESSMENTS) && false) {
         Button newAssessment =
             new Button(Localized.getConstants().trNewAssessment(), new ClickHandler() {
               @Override
@@ -286,8 +285,8 @@ class CargoRequestForm extends AbstractFormInterceptor {
                 if (DataUtils.isId(getLongValue(COL_QUERY_MANAGER))) {
 
                   Queries.getRowSet(VIEW_ASSESSMENT_EXECUTORS, Lists
-                      .newArrayList(AdministrationConstants.COL_DEPARTMENT), Filter.equals(
-                      AdministrationConstants.COL_USER, getLongValue(COL_QUERY_MANAGER)),
+                          .newArrayList(AdministrationConstants.COL_DEPARTMENT), Filter.equals(
+                          AdministrationConstants.COL_USER, getLongValue(COL_QUERY_MANAGER)),
                       new RowSetCallback() {
 
                         @Override

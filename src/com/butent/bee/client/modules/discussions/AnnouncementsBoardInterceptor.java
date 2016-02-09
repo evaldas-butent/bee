@@ -20,6 +20,7 @@ import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.DialogBox;
+import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.grid.GridFactory.GridOptions;
 import com.butent.bee.client.grid.GridPanel;
@@ -101,7 +102,7 @@ class AnnouncementsBoardInterceptor extends AbstractFormInterceptor implements
         beeCol.setNullable(false);
       }
       RowFactory.createRow(FORM_NEW_DISCUSSION, Localized.getConstants().announcementNew(), data,
-          emptyRow, new RowCallback() {
+          emptyRow, Modality.ENABLED, new RowCallback() {
 
             @Override
             public void onCancel() {
@@ -386,7 +387,7 @@ class AnnouncementsBoardInterceptor extends AbstractFormInterceptor implements
 
       @Override
       public void execute() {
-        RowFactory.createRow(VIEW_DISCUSSIONS);
+        RowFactory.createRow(VIEW_DISCUSSIONS, Modality.ENABLED);
       }
     };
 

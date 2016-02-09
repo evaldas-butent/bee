@@ -274,14 +274,6 @@ public enum Feed implements HasLocalizedCaption {
     }
   },
 
-  TRANSPORT_REGISTRATIONS(ModuleAndSub.of(Module.TRANSPORT), TransportConstants.TBL_REGISTRATIONS,
-      TransportConstants.VIEW_REGISTRATIONS, TransportConstants.COL_REGISTRATION_COMPANY_NAME) {
-    @Override
-    public String getCaption(LocalizableConstants constants) {
-      return constants.feedTrRegistrations();
-    }
-  },
-
   VEHICLES(ModuleAndSub.of(Module.TRANSPORT), TransportConstants.TBL_VEHICLES,
       TransportConstants.VIEW_VEHICLES,
       Lists.newArrayList(TransportConstants.COL_VEHICLE_NUMBER, TransportConstants.COL_TYPE_NAME),

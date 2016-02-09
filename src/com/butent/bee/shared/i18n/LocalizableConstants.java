@@ -160,6 +160,26 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String changePassword();
 
+  String chatDeleteQuestion();
+
+  String chat();
+
+  String chatMessages();
+
+  String chatName();
+
+  String chatNew();
+
+  String chats();
+
+  String chatSettings();
+
+  String chatsShowAll();
+
+  String chatStartNew();
+
+  String chatUpdateTime();
+
   String chooseFiles();
 
   String chooseLanguage();
@@ -218,6 +238,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String createNewRow();
 
+  String creationDate();
+
   String creator();
 
   String customer();
@@ -266,17 +288,21 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String deselectAll();
 
+  String disabledShort();
+
   String doFilter();
 
   String domainNews();
 
   String domainOnline();
 
-  String domainRooms();
+  String editing();
 
   String email();
 
   String employment();
+
+  String enabledShort();
 
   String enterColor();
 
@@ -644,6 +670,16 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String precision();
 
+  String presenceAway();
+
+  String presenceChangeTooltip();
+
+  String presenceIdle();
+
+  String presenceOffline();
+
+  String presenceOnline();
+
   String price();
 
   String print();
@@ -707,26 +743,6 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
   String rows();
 
   String rowResults();
-
-  String roomDeleteQuestion();
-
-  String roomDwellers();
-
-  String roomName();
-
-  String roomNew();
-
-  String roomOwners();
-
-  String roomSettings();
-
-  String roomTypePrivate();
-
-  String roomTypePublic();
-
-  String roomUpdateTime();
-
-  String roomUsers();
 
   String rowIsNotRemovable();
 
@@ -813,6 +829,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
   String unitHourShort();
 
   String unitWeekShort();
+
+  String updated();
 
   String user();
 

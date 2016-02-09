@@ -6,10 +6,10 @@
   >
   <g:columns>
     <DataColumn name="Date" source="Date" visible="true" minWidth="100" />
-    <DataColumn name="Quantity" source="Quantity" visible="true" carry="true" minWidth="80" />
+    <DataColumn name="Quantity" source="Quantity" visible="true" carry="true" minWidth="60" />
 
-    <DataColumn name="Rate" source="Rate" visible="true" minWidth="200" format="#.###############" />
-    <CalcColumn name="Inverse" type="double" label="=currencyRateInverse" minWidth="140"
+    <DataColumn name="Rate" source="Rate" visible="true" minWidth="160" format="#.###############" />
+    <CalcColumn name="Inverse" type="double" label="=currencyRateInverse" minWidth="120"
       format="#.##########">
       <render><ui:expression>(row.Rate > 0) ? 1 / row.Rate : 0</ui:expression></render>
     </CalcColumn>
