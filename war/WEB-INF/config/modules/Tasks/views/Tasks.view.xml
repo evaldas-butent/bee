@@ -92,6 +92,9 @@
       <SimpleColumn name="Owner" alias="ProjectOwner" />
       <SimpleColumn name="Status" alias="ProjectStatus" />
       <SimpleColumn name="ProjectTemplate"  />
+      <ExternalJoin name="Project" source="ProjectUsers" joinType="LEFT" filter="FilteredProjectUser = {u}">
+        <SimpleColumn name="User" alias="FilteredProjectUser" />
+      </ExternalJoin>
     </SimpleJoin>
 
     <SimpleColumn name="ProjectStage" />

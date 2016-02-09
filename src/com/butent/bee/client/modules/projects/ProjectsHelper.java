@@ -26,6 +26,7 @@ import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.ViewColumn;
+import com.butent.bee.shared.exceptions.BeeRuntimeException;
 import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.projects.ProjectConstants.ProjectEvent;
@@ -39,7 +40,73 @@ import com.butent.bee.shared.utils.EnumUtils;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Auxiliary functions for project client-side operations.
+ */
 public final class ProjectsHelper {
+
+  /**
+   * Checks current online user of system is owner related row of Projects table. Returns true if
+   * {@code BeeKeeper.getUser().getUserId} are equals with Projects.Owner field relation.
+   * 
+   * @param form View of Form ({@code FormView}) has indexes (
+   *        {@code form.getDataIndex(String source)}}) of data source related with Projects.Owner
+   *        field. Name of data source index can be {@code ProjectConstants.COL_PROJECT_OWNER} if
+   *        FormView data source linked to Projects table or
+   *        {@code ProjectConstants.ALS_PROJECT_OWNER} if FormView data source linked to related
+   *        tables where has relations to Projects table.
+   * @param row Set of data where related with Project.Owner field.
+   * @return true if current system user equals with Project.Owner field.
+   * @throws BeeRuntimeException throws if form and row parameters is null or form data index of
+   *         Projects.Owner is undefined {@code BeeConst.isUndef(form.getDataIndex(source) == true}
+   */
+  public static boolean isProjectOwner(FormView form, IsRow row) {
+    int idxOwner = BeeConst.UNDEF;
+
+    Assert.notNull(form, "FormView containing project data must be not null");
+    Assert.notNull(row, "IsRow containing project data must be not null");
+
+    if (BeeUtils.same(form.getViewName(), VIEW_PROJECTS)) {
+      idxOwner = form.getDataIndex(COL_PROJECT_OWNER);
+    } else {
+      idxOwner = form.getDataIndex(ALS_PROJECT_OWNER);
+    }
+
+    Assert.nonNegative(idxOwner);
+
+    long currentUser = BeeUtils.unbox(BeeKeeper.getUser().getUserId());
+    long projectUser = BeeUtils.unbox(row.getLong(idxOwner));
+
+    return currentUser == projectUser;
+  }
+
+  /**
+   * Checks current online user of system is one of rows contains with ProjectUsers.User field
+   * filtered by ProjectUser.Project field. Returns true if {@code BeeKeeper.getUser().getUserId()}
+   * are match with one Projects.Owner field.
+   * 
+   * @param form View of Form ({@code FormView}) has indexes (
+   *        {@code form.getDataIndex(String source)}}) of data source related with filtered
+   *        ProjectUsers.User field by ProjectUsers.Project filed. Name of data source index can be
+   *        {@code ProjectConstants.ALS_FILTERED_PROJECT_USER}
+   * @param row Set of data where related with filtered ProjectUsers.User by ProjectUsers.Project
+   *        field.
+   * @return true if current system user match Project.Owner field.
+   * @throws BeeRuntimeException throws if form and row parameters is null
+   */
+  public static boolean isProjectUser(FormView form, IsRow row) {
+    Assert.notNull(form, "FormView containing project data must be not null");
+    Assert.notNull(row, "IsRow containing project data must be not null");
+
+    int idxProjectUser = form.getDataIndex(ALS_FILTERED_PROJECT_USER);
+
+    Assert.nonNegative(idxProjectUser);
+
+    long currentUser = BeeUtils.unbox(BeeKeeper.getUser().getUserId());
+    long projectUser = BeeUtils.unbox(row.getLong(idxProjectUser));
+
+    return currentUser == projectUser;
+  }
 
   public static void registerProjectEvent(String eventsViewName,
       ProjectEvent eventType, long projectId, String comment,
