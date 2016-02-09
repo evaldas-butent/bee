@@ -303,36 +303,6 @@ public class CompanyForm extends AbstractFormInterceptor implements ClickHandler
   }
 
   @Override
-  public void onSaveChanges(HasHandlers listener, SaveChangesEvent event) {
-    FormView form = getFormView();
-    IsRow row = form.getActiveRow();
-    if (!BeeUtils.isEmpty(event.getColumns())) {
-      if (BeeUtils.isEmpty(row.getString(form.getDataIndex(COL_COMPANY_TYPE)))) {
-        event.consume();
-        BeeKeeper.getScreen().notifySevere(Localized.getConstants().companyStatus(),
-            Localized.getConstants().valueRequired());
-      }
-    }
-  }
-
-  private static void createQrButton(FormView form, IsRow row) {
-    Widget widget = form.getWidgetByName(QR_FLOW_PANEL, false);
-
-    if (widget instanceof FlowPanel) {
-      FlowPanel qrFlowPanel = (FlowPanel) widget;
-      qrFlowPanel.clear();
-
-      FaLabel qrCodeLabel = new FaLabel(FontAwesome.QRCODE);
-      qrCodeLabel.setTitle(Localized.getConstants().qrCode());
-      qrCodeLabel.addStyleName(StyleUtils.className(FontSize.X_LARGE));
-
-      qrCodeLabel.addClickHandler(event -> ClassifierKeeper.generateQrCode(form, row));
-
-      qrFlowPanel.add(qrCodeLabel);
-    }
-  }
-
-  @Override
   public void onClick(ClickEvent event) {
     if (DataUtils.isNewRow(getActiveRow())) {
       return;
@@ -375,6 +345,15 @@ public class CompanyForm extends AbstractFormInterceptor implements ClickHandler
 
   @Override
   public void onSaveChanges(HasHandlers listener, SaveChangesEvent event) {
+    FormView form = getFormView();
+    IsRow row = form.getActiveRow();
+    if (!BeeUtils.isEmpty(event.getColumns())) {
+      if (BeeUtils.isEmpty(row.getString(form.getDataIndex(COL_COMPANY_TYPE)))) {
+        event.consume();
+        BeeKeeper.getScreen().notifySevere(Localized.getConstants().companyStatus(),
+            Localized.getConstants().valueRequired());
+      }
+    }
     if (!checkRequired()) {
       event.consume();
       return;
@@ -414,6 +393,23 @@ public class CompanyForm extends AbstractFormInterceptor implements ClickHandler
       }
     }
     return true;
+  }
+
+  private static void createQrButton(FormView form, IsRow row) {
+    Widget widget = form.getWidgetByName(QR_FLOW_PANEL, false);
+
+    if (widget instanceof FlowPanel) {
+      FlowPanel qrFlowPanel = (FlowPanel) widget;
+      qrFlowPanel.clear();
+
+      FaLabel qrCodeLabel = new FaLabel(FontAwesome.QRCODE);
+      qrCodeLabel.setTitle(Localized.getConstants().qrCode());
+      qrCodeLabel.addStyleName(StyleUtils.className(FontSize.X_LARGE));
+
+      qrCodeLabel.addClickHandler(event -> ClassifierKeeper.generateQrCode(form, row));
+
+      qrFlowPanel.add(qrCodeLabel);
+    }
   }
 
   private void refreshCreditInfo() {
