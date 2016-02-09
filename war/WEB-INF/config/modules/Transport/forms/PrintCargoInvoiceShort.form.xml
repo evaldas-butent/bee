@@ -13,7 +13,7 @@
   >
   <FlowPanel class="bee-PrintableForm" style="padding: 10px; background-color: white;">
     <HorizontalPanel>
-      <Image  url="images/logo.png" />
+      <Image url="images/hop_logo.png" style="width:250px;" />
       <cell width="100" widthUnit="%">
         <FlowPanel style="text-align:center; font-size:medium;">
           <TextLabel style="&bold;">
