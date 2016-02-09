@@ -35,6 +35,7 @@ import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
+import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.mail.MailConstants;
 import com.butent.bee.shared.modules.transport.TransportConstants.*;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -55,10 +56,10 @@ class ShipmentRequestForm extends AbstractFormInterceptor {
     }
   });
 
-  private Button blockCommand = new Button(loc.ipBlockCommand(), new ClickHandler() {
+  private Button registerCommand = new Button(loc.register(), new ClickHandler() {
     @Override
-    public void onClick(ClickEvent event) {
-      onBlock();
+    public void onClick(ClickEvent clickEvent) {
+      onRegister();
     }
   });
 
@@ -66,6 +67,13 @@ class ShipmentRequestForm extends AbstractFormInterceptor {
     @Override
     public void onClick(ClickEvent clickEvent) {
       onConfirm();
+    }
+  });
+
+  private Button blockCommand = new Button(loc.ipBlockCommand(), new ClickHandler() {
+    @Override
+    public void onClick(ClickEvent event) {
+      onBlock();
     }
   });
 
@@ -93,8 +101,12 @@ class ShipmentRequestForm extends AbstractFormInterceptor {
     if (status != CargoRequestStatus.LOST) {
       header.addCommandItem(mailCommand);
 
-      if (status != CargoRequestStatus.CONFIRMED) {
+      if (!DataUtils.isId(row.getLong(form.getDataIndex(ClassifierConstants.COL_COMPANY_PERSON)))) {
+        header.addCommandItem(registerCommand);
+      } else if (status != CargoRequestStatus.CONFIRMED) {
         header.addCommandItem(confirmCommand);
+      }
+      if (status != CargoRequestStatus.CONFIRMED) {
         header.addCommandItem(lostCommand);
 
         if (status == CargoRequestStatus.NEW
@@ -140,6 +152,9 @@ class ShipmentRequestForm extends AbstractFormInterceptor {
         });
   }
 
+  private void onRegister() {
+  }
+
   private void onConfirm() {
   }
 
@@ -148,16 +163,16 @@ class ShipmentRequestForm extends AbstractFormInterceptor {
     comment.setWidth("100%");
     comment.setVisibleLines(3);
 
-    UnboundSelector reason = UnboundSelector.create(TBL_SHIPPING_TERMS,
-        Collections.singletonList(COL_SHIPPING_TERM_NAME));
+    UnboundSelector reason = UnboundSelector.create(TBL_LOSS_REASONS,
+        Collections.singletonList(COL_LOSS_REASON_NAME));
 
     reason.addSelectorHandler(new SelectorEvent.Handler() {
       @Override
       public void onDataSelector(SelectorEvent event) {
         if (event.isChanged()) {
           reason.setOptions(event.getRelatedRow() != null
-              ? Data.getString(event.getRelatedViewName(), event.getRelatedRow(), COL_DESCRIPTION)
-              : null);
+              ? Data.getString(event.getRelatedViewName(), event.getRelatedRow(),
+              COL_LOSS_REASON_TEMPLATE) : null);
           comment.setValue(reason.getOptions());
         }
       }

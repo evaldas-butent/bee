@@ -111,7 +111,6 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
   private DataSelector owner;
   private ChildGrid tasks;
   private ChildGrid dates;
-  // private DataSelector projectTemplate;
 
   private BeeRowSet timeUnits;
 
@@ -208,10 +207,10 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
     }
 
     if (!DataUtils.isNewRow(row)) {
-      form.setEnabled(isOwner(form, row) && !isProjectApproved(form, row));
+      form.setEnabled(ProjectsHelper.isProjectOwner(form, row) && !isProjectApproved(form, row));
 
       if (status != null) {
-        status.setEnabled(isOwner(form, row));
+        status.setEnabled(ProjectsHelper.isProjectOwner(form, row));
       }
 
     } else {
@@ -223,7 +222,8 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
 
     }
 
-    if (isProjectUser(form, row) || BeeKeeper.getUser().isMenuVisible("Projects.AllProjects")
+    if (ProjectsHelper.isProjectUser(form, row) || BeeKeeper.getUser().isMenuVisible(
+        "Projects.AllProjects")
         || BeeKeeper.getUser().isAdministrator()) {
       documents.setEnabled(true);
     }
@@ -248,7 +248,7 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
     drawComments(form, row);
     drawChart(row);
     setCategory(form, row);
-    if (isOwner(form, row)) {
+    if (ProjectsHelper.isProjectOwner(form, row)) {
       ProjectsKeeper.createTemplateTasks(form, row, COL_PROJECT, tasks,
           Filter.isNull(COL_PROJECT_STAGE));
       createTemplateDates(form, row, COL_PROJECT_TEMPLATE, dates);
@@ -300,6 +300,8 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
 
       showComputedTimes(getFormView(), getActiveRow(), true);
     }
+
+    getFormView().refreshBySource(COL_PROJECT_STATUS);
   }
 
   @Override
@@ -327,8 +329,6 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
               CellSource.forColumn(Data.getColumn(VIEW_PROJECTS, ALS_FILTERED_OWNER_USER), form
                   .getDataIndex(ALS_FILTERED_OWNER_USER)),
               row.getString(form.getDataIndex(COL_PROJECT_OWNER)));
-
-          form.refresh();
         }
       });
     }
@@ -352,9 +352,6 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
               CellSource.forColumn(Data.getColumn(VIEW_PROJECTS, ALS_STAGES_COUNT), form
                   .getDataIndex(ALS_STAGES_COUNT)),
               BeeUtils.toString(BeeConst.INT_TRUE));
-
-          form.refresh();
-
         }
       });
     }
@@ -513,19 +510,6 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
     return super.beforeAction(action, presenter);
   }
 
-  private static boolean isOwner(FormView form, IsRow row) {
-    int idxOwner = form.getDataIndex(COL_PROJECT_OWNER);
-
-    if (BeeConst.isUndef(idxOwner)) {
-      return false;
-    }
-
-    long currentUser = BeeUtils.unbox(BeeKeeper.getUser().getUserId());
-    long projectUser = BeeUtils.unbox(row.getLong(idxOwner));
-
-    return currentUser == projectUser;
-  }
-
   private static AllProjectsGrid getProjectsGrid(FormView form) {
     if (form.getViewPresenter() instanceof GridFormPresenter) {
       GridInterceptor gic = ((GridFormPresenter) form.getViewPresenter()).getGridInterceptor();
@@ -556,7 +540,7 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
       return;
     }
 
-    final GridView tasksGrid = childGrid.getGridView();
+    final GridView datesGrid = childGrid.getGridView();
 
     Queries.getRowSet(VIEW_PROJECT_TEMPLATE_DATES,
         Data.getDataInfo(VIEW_PROJECT_TEMPLATE_DATES).getColumnNames(false),
@@ -571,8 +555,8 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
             }
             row.setProperty(VIEW_PROJECT_TEMPLATE_DATES, Codec.beeSerialize(result));
 
-            if (tasksGrid != null) {
-              tasksGrid.refresh(true, false);
+            if (datesGrid != null) {
+              datesGrid.refresh(true, false);
             }
           }
         });
@@ -600,19 +584,6 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
     int status = BeeUtils.unbox(row.getInteger(idxStatus));
 
     return ProjectStatus.APPROVED.ordinal() == status;
-  }
-
-  private static boolean isProjectUser(FormView form, IsRow row) {
-    int idxProjectUser = form.getDataIndex(ALS_FILTERED_PROJECT_USER);
-
-    if (BeeConst.isUndef(idxProjectUser)) {
-      return false;
-    }
-
-    long currentUser = BeeUtils.unbox(BeeKeeper.getUser().getUserId());
-    long projectUser = BeeUtils.unbox(row.getLong(idxProjectUser));
-
-    return currentUser == projectUser;
   }
 
   private static void resetData(FormView form, IsRow row, CellValidateEvent event) {
@@ -757,7 +728,7 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
     Set<Action> disabledActions = eventsHandler.getDisabledActions();
     disabledActions.clear();
 
-    if (isProjectUser(form, row)) {
+    if (ProjectsHelper.isProjectUser(form, row)) {
       eventActions.add(Action.ADD);
     } else {
       disabledActions.add(Action.ADD);

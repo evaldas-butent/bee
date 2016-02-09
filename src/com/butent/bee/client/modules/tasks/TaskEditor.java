@@ -1257,19 +1257,20 @@ class TaskEditor extends AbstractFormInterceptor {
   private void doComplete() {
     final TaskDialog dialog = new TaskDialog(Localized.getConstants().crmTaskFinishing());
 
-    final String did = dialog.addDateTime(Localized.getConstants().crmTaskCompleteDate(), true,
-        TimeUtils.nowMinutes());
-
     final String cid = dialog.addComment(false);
     final String fid = dialog.addFileCollector();
 
     final Map<String, String> durIds = dialog.addDuration();
+    final String dd =
+        dialog.addDateTime(Localized.getConstants().crmTaskFinishDate(), true, TimeUtils
+            .nowMinutes());
+    durIds.put(COL_DURATION_DATE, dd);
 
     dialog.addAction(Localized.getConstants().crmActionFinish(), new ScheduledCommand() {
       @Override
       public void execute() {
 
-        DateTime completed = dialog.getDateTime(did);
+        DateTime completed = dialog.getDateTime(dd);
         if (completed == null) {
           showError(Localized.getConstants().crmEnterCompleteDate());
           return;

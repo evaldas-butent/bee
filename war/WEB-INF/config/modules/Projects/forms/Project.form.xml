@@ -129,7 +129,7 @@
       </page>
       <page module="Tasks">
         <text>=crmTasks</text>
-        <ChildGrid name="ChildTasks" relColumn="Project" />
+        <ChildGrid name="ChildTasks" relColumn="Project" disablable="false" />
       </page>
       <page module="Documents">
         <text>=documents</text>

@@ -14,6 +14,7 @@
 
   <Item name="ExpeditionTypes" label="=trExpeditionTypes" service="grid"
         parameters="ExpeditionTypes" separator="true" />
+  <Item name="LossReasons" label="=trLossReasons" service="grid" parameters="LossReasons" />
 
   <Item name="VehicleTypes" label="=trVehicleTypes" service="grid" parameters="VehicleTypes"
         separator="true" />
