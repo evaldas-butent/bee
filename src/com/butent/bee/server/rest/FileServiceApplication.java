@@ -5,6 +5,7 @@ import com.google.common.net.UrlEscapers;
 import com.butent.bee.server.io.FileUtils;
 import com.butent.bee.server.modules.administration.FileStorageBean;
 import com.butent.bee.server.rest.annotations.Authorized;
+import com.butent.bee.server.rest.annotations.Trusted;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.io.FileInfo;
@@ -166,6 +167,7 @@ public class FileServiceApplication extends Application {
   @POST
   @Path("{name}")
   @Produces(RestResponse.JSON_TYPE)
+  @Trusted(secret = "B-NOVO File Upload")
   public RestResponse upload(@PathParam("name") String fileName,
       @HeaderParam(HttpHeaders.CONTENT_TYPE) String fileType, InputStream is) {
 

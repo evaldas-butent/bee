@@ -65,7 +65,7 @@ public class ShipmentRequestsWorker {
 
   @POST
   @Path("request")
-  @Trusted
+  @Trusted(secret = "B-NOVO Shipment Request")
   public RestResponse request(JsonObject data) {
     if (!usr.validateHost(CrudWorker.getValue(data, COL_QUERY_HOST))) {
       return RestResponse.error(Localized.getConstants().ipBlocked());
@@ -118,7 +118,7 @@ public class ShipmentRequestsWorker {
     } catch (BeeException e) {
       return RestResponse.error(e);
     }
-    return RestResponse.ok(data);
+    return RestResponse.empty();
   }
 
   private BeeRowSet buildRowSet(BeeView view, JsonObject json) throws BeeException {
@@ -181,7 +181,7 @@ public class ShipmentRequestsWorker {
         } else {
           switch (column.getType()) {
             case BOOLEAN:
-              val = !BeeUtils.isEmpty(value);
+              val = BeeUtils.toBoolean(value);
               break;
             case DATE:
               JustDate date = TimeUtils.parseDate(value);
