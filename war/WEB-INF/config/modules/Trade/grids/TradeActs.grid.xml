@@ -6,7 +6,7 @@
   <g:columns>
     <IdColumn name="Id" />
     <RelColumn name="Operation" renderColumns="OperationName" />
-    <RelColumn name="Company" visible="true" />
+    <RelColumn name="Company" visible="true" renderColumns="CompanyName TypeName" />
     <RelColumn name="Series" visible="true" />
     <DataColumn name="Number" visible="true" />
     <DataColumn name="ReturnedCount" />
