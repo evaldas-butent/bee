@@ -45,6 +45,7 @@ import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.HasWidgetSupplier;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -164,11 +165,11 @@ public class ChatView extends Flow implements Presenter, View, Printable,
 
     this.headerView = new HeaderImpl();
     headerView.create(caption, false, true, null, uiOptions,
-        EnumSet.of(Action.CLOSE), Action.NO_ACTIONS, Action.NO_ACTIONS);
+        EnumSet.of(Action.PRINT, Action.CONFIGURE, Action.MINIMIZE, Action.MAXIMIZE, Action.CLOSE),
+        Action.NO_ACTIONS, Action.NO_ACTIONS);
     headerView.setViewPresenter(this);
 
-    // EnumSet.of(Action.PRINT, Action.CONFIGURE, Action.CLOSE)
-    // headerView.addCommandItem(createAutoScrollToggle(autoScroll));
+    headerView.addCommandItem(createAutoScrollToggle(autoScroll));
     add(headerView);
 
     this.messagePanel = new Flow(STYLE_PREFIX + "messages");
@@ -494,19 +495,19 @@ public class ChatView extends Flow implements Presenter, View, Printable,
   }
 
   private void updateHeader(long maxTime) {
-    // List<String> list = new ArrayList<>();
-    //
-    // if (!messagePanel.isEmpty()) {
-    // list.add(BeeUtils.bracket(messagePanel.getWidgetCount()));
-    // }
-    // if (maxTime > 0) {
-    // list.add(ChatUtils.elapsed(maxTime));
-    // }
-    //
-    // headerView.setMessage(BeeUtils.join(BeeConst.STRING_SPACE, list));
-    // if (maxTime > 0) {
-    // headerView.setMessageTitle(TimeUtils.renderDateTime(maxTime));
-    // }
+    List<String> list = new ArrayList<>();
+
+    if (!messagePanel.isEmpty()) {
+      list.add(BeeUtils.bracket(messagePanel.getWidgetCount()));
+    }
+    if (maxTime > 0) {
+      list.add(ChatUtils.elapsed(maxTime));
+    }
+
+    headerView.setMessage(BeeUtils.join(BeeConst.STRING_SPACE, list));
+    if (maxTime > 0) {
+      headerView.setMessageTitle(TimeUtils.renderDateTime(maxTime));
+    }
   }
 
   private void updateOnlinePanel(Collection<Long> users) {

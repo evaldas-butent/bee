@@ -221,6 +221,13 @@ public class HeaderImpl extends Flow implements HeaderView {
       add(createFa(Action.MENU, hiddenActions));
     }
 
+    if (hasAction(Action.MINIMIZE, false, enabledActions, disabledActions)) {
+      add(createFa(Action.MINIMIZE, hiddenActions));
+    }
+    if (hasAction(Action.MAXIMIZE, false, enabledActions, disabledActions)) {
+      add(createFa(Action.MAXIMIZE, hiddenActions));
+    }
+
     if (hasAction(Action.CLOSE, UiOption.isClosable(options), enabledActions, disabledActions)) {
       add(createFa(Action.CLOSE, hiddenActions));
     }

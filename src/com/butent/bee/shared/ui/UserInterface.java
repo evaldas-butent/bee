@@ -153,7 +153,9 @@ public enum UserInterface implements HasCaption {
 
     @Override
     public List<String> getStyleSheets() {
-      return Lists.newArrayList(MAIN_STYLE_SHEET, EcConstants.CLIENT_STYLE_SHEET);
+      List<String> sheets = getMainStyleSheets();
+      sheets.add(EcConstants.CLIENT_STYLE_SHEET);
+      return sheets;
     }
 
     @Override
@@ -193,7 +195,9 @@ public enum UserInterface implements HasCaption {
 
     @Override
     public List<String> getStyleSheets() {
-      return Lists.newArrayList(MAIN_STYLE_SHEET, Module.TRANSPORT.getStyleSheet(null));
+      List<String> sheets = getMainStyleSheets();
+      sheets.add(Module.TRANSPORT.getStyleSheet(null));
+      return sheets;
     }
 
     @Override
@@ -233,7 +237,9 @@ public enum UserInterface implements HasCaption {
 
     @Override
     public List<String> getStyleSheets() {
-      return Lists.newArrayList(MAIN_STYLE_SHEET, Module.TRADE.getStyleSheet(SubModule.ACTS));
+      List<String> sheets = getMainStyleSheets();
+      sheets.add(Module.TRADE.getStyleSheet(SubModule.ACTS));
+      return sheets;
     }
 
     @Override
@@ -243,22 +249,9 @@ public enum UserInterface implements HasCaption {
   };
 
   public enum Component {
-    AUTOCOMPLETE(false),
-    CHATS(false),
-    DATA_INFO(false),
-    DECORATORS(false),
-    DICTIONARY(false),
-    FAVORITES(false),
-    FILTERS(false),
-    GRIDS(false),
-    MAIL(false),
-    MENU(false),
-    MONEY(false),
-    NEWS(false),
-    REPORTS(false),
-    SETTINGS(false),
-    USERS(true),
-    WORKSPACES(false);
+    AUTOCOMPLETE(false), CHATS(false), DATA_INFO(false), DECORATORS(false), DICTIONARY(
+        false), FAVORITES(false), FILTERS(false), GRIDS(false), MAIL(false), MENU(false), MONEY(
+            false), NEWS(false), REPORTS(false), SETTINGS(false), USERS(true), WORKSPACES(false);
 
     private final boolean required;
 
@@ -322,11 +315,9 @@ public enum UserInterface implements HasCaption {
   public abstract String getShortName();
 
   public List<String> getStyleSheets() {
-    List<String> sheets = new ArrayList<>();
+    List<String> sheets = getMainStyleSheets();
 
-    sheets.add(MAIN_STYLE_SHEET);
     sheets.add("misc");
-
     sheets.addAll(Module.getEnabledStyleSheets());
 
     return sheets;
@@ -340,5 +331,22 @@ public enum UserInterface implements HasCaption {
 
   public boolean hasMenu() {
     return getComponents().contains(Component.MENU);
+  }
+
+  private List<String> getComponentStyleSheets() {
+    List<String> sheets = new ArrayList<>();
+    if (getComponents().contains(Component.CHATS)) {
+      sheets.add("chat");
+    }
+    return sheets;
+  }
+
+  protected List<String> getMainStyleSheets() {
+    List<String> sheets = new ArrayList<>();
+
+    sheets.add(MAIN_STYLE_SHEET);
+    sheets.addAll(getComponentStyleSheets());
+
+    return sheets;
   }
 }

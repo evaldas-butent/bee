@@ -62,7 +62,11 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String actionImport();
 
+  String actionMaximize();
+
   String actionMerge();
+
+  String actionMinimize();
 
   String actionMove();
 
