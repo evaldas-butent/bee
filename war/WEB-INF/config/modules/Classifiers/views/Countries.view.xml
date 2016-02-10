@@ -9,6 +9,8 @@
   <Relation renderColumns="Name Code" />
   <Columns>
     <SimpleColumn name="Name" />
+    <SimpleColumn name="Name" alias="NameEN" locale="en" />
+    <SimpleColumn name="Name" alias="NameRU" locale="ru" />
     <SimpleColumn name="Code" />
     <SimpleColumn name="EUMember" />
   </Columns>
