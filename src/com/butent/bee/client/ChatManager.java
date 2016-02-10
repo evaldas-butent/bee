@@ -5,13 +5,13 @@ import com.google.common.collect.Multimap;
 import com.google.gwt.dom.client.AudioElement;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.user.client.Timer;
-import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.communication.ChatConstants.*;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 
+import com.butent.bee.client.communication.ChatPopup;
 import com.butent.bee.client.communication.ChatUtils;
 import com.butent.bee.client.communication.ChatView;
 import com.butent.bee.client.communication.ParameterList;
@@ -313,9 +313,6 @@ public class ChatManager implements HasInfo, HasEnabled {
   private static final String STYLE_CHAT_INFO_PREFIX = BeeConst.CSS_CLASS_PREFIX + "ChatInfo-";
   private static final String STYLE_CHAT_EDITOR_PREFIX = BeeConst.CSS_CLASS_PREFIX + "ChatEditor-";
 
-  private static final String STYLE_CHAT_POPUP = BeeConst.CSS_CLASS_PREFIX + "ChatPopup";
-  private static final String STYLE_CHAT_MODAL = BeeConst.CSS_CLASS_PREFIX + "ChatModal";
-
   private static final int TIMER_PERIOD = 10_000;
 
   private static ChatView findChatView(long chatId) {
@@ -334,23 +331,11 @@ public class ChatManager implements HasInfo, HasEnabled {
     return null;
   }
 
-  private static int getRightCoordinate() {
-    int x = Window.getClientWidth();
-
-    for (Popup popup : Popup.getVisiblePopups()) {
-      if (popup.getWidget() instanceof ChatView) {
-        x = Math.min(x, popup.getAbsoluteLeft());
-      }
-    }
-
-    return x - 20;
-  }
-
   private static boolean isChatView(Widget widget, long chatId) {
     return widget instanceof ChatView && Objects.equals(((ChatView) widget).getChatId(), chatId);
   }
 
-  private static void onDelete(final Chat chat) {
+  public static void onDelete(final Chat chat) {
     List<String> messages = Lists.newArrayList(Localized.getConstants().chatDeleteQuestion());
 
     Global.confirmDelete(chat.getName(), Icon.WARNING, messages, new ConfirmationCallback() {
@@ -459,22 +444,7 @@ public class ChatManager implements HasInfo, HasEnabled {
       }
 
     } else {
-      open(chatId, view -> {
-        view.addStyleName(STYLE_CHAT_MODAL);
-        final int right = getRightCoordinate();
-
-        final Popup popup = new Popup(OutsideClick.IGNORE, STYLE_CHAT_POPUP);
-        popup.setWidget(view);
-
-        popup.setPreviewEnabled(false);
-
-        popup.setPopupPositionAndShow((width, height) -> {
-          int left = Math.max(right - width, 0);
-          int top = Math.max(Window.getClientHeight() - height - 2, 0);
-
-          popup.setPopupPosition(left, top);
-        });
-      });
+      open(chatId, view -> ChatPopup.openNormal(view));
     }
   }
 
@@ -494,17 +464,14 @@ public class ChatManager implements HasInfo, HasEnabled {
     return info;
   }
 
-  public Long getMaxTime(long chatId) {
+  public int getUnreadCount(long chatId) {
     Chat chat = findChat(chatId);
-    return (chat == null) ? null : chat.getMaxTime();
+    return (chat == null) ? 0 : chat.getUnreadCount();
   }
 
   @Override
   public boolean isEnabled() {
     return enabled;
-  }
-
-  public void leaveChat(long chatId) {
   }
 
   public void load(String serialized) {

@@ -87,33 +87,34 @@ public final class ChatUtils {
       return null;
     }
 
-    long time = System.currentTimeMillis() - start;
-    String minutes = TimeUtils.renderMinutes(start, true);
+    long diff = System.currentTimeMillis() - start;
 
-    if (time <= 0) {
+    DateTime dt = new DateTime(start);
+    String time = TimeUtils.renderMinutes(TimeUtils.minutesSinceDayStarted(dt), true);
+
+    if (diff <= 0) {
       return BeeConst.STRING_EMPTY;
 
-    } else if (time < TimeUtils.MILLIS_PER_SECOND) {
-      return minutes;
+    } else if (diff < TimeUtils.MILLIS_PER_SECOND) {
+      return time;
 
-    } else if (time < TimeUtils.MILLIS_PER_MINUTE) {
-      return format(minutes, time / TimeUtils.MILLIS_PER_SECOND, "s");
+    } else if (diff < TimeUtils.MILLIS_PER_MINUTE) {
+      return format(time, diff / TimeUtils.MILLIS_PER_SECOND, "s");
 
-    } else if (time < TimeUtils.MILLIS_PER_HOUR) {
-      return format(minutes, time / TimeUtils.MILLIS_PER_MINUTE, "m");
+    } else if (diff < TimeUtils.MILLIS_PER_HOUR) {
+      return format(time, diff / TimeUtils.MILLIS_PER_MINUTE, "m");
 
-    } else if (time < TimeUtils.MILLIS_PER_DAY / 2) {
-      return format(minutes, time / TimeUtils.MILLIS_PER_HOUR, "h");
+    } else if (diff < TimeUtils.MILLIS_PER_DAY / 2) {
+      return format(time, diff / TimeUtils.MILLIS_PER_HOUR, "h");
 
     } else if ((System.currentTimeMillis() / TimeUtils.MILLIS_PER_DAY
         - start / TimeUtils.MILLIS_PER_DAY) == 1) {
-      return Localized.getConstants().yesterday() + BeeConst.STRING_SPACE + minutes;
+      return Localized.getConstants().yesterday() + BeeConst.STRING_SPACE + time;
 
-    } else if (time < TimeUtils.MILLIS_PER_DAY) {
-      return format(minutes, time / TimeUtils.MILLIS_PER_HOUR, "h");
+    } else if (diff < TimeUtils.MILLIS_PER_DAY) {
+      return format(time, diff / TimeUtils.MILLIS_PER_HOUR, "h");
 
     } else {
-      DateTime dt = new DateTime(start - start % TimeUtils.MILLIS_PER_MINUTE);
       return TimeUtils.renderCompact(dt, true);
     }
   }
@@ -176,8 +177,7 @@ public final class ChatUtils {
   }
 
   public static boolean needsRefresh(long millis) {
-    return System.currentTimeMillis() - millis < TimeUtils.MILLIS_PER_DAY
-        + TimeUtils.MILLIS_PER_HOUR;
+    return System.currentTimeMillis() - millis < TimeUtils.MILLIS_PER_DAY * 2;
   }
 
   public static void renderOtherUsers(HasIndexedWidgets container, Collection<Long> users,

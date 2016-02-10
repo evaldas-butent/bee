@@ -216,13 +216,19 @@ public class ScreenImpl implements Screen {
   }
 
   @Override
-  public void closeWidget(IdentifiableWidget widget) {
-    Assert.notNull(widget, "closeWidget: widget is null");
+  public boolean closeWidget(IdentifiableWidget widget) {
+    if (widget == null) {
+      logger.warning("closeWidget: widget is null");
+      return false;
 
-    if (UiHelper.isModal(widget.asWidget())) {
-      UiHelper.closeDialog(widget.asWidget());
+    } else if (UiHelper.isModal(widget.asWidget())) {
+      return UiHelper.closeDialog(widget.asWidget());
+
+    } else if (getWorkspace() != null) {
+      return getWorkspace().closeWidget(widget);
+
     } else {
-      getWorkspace().closeWidget(widget);
+      return false;
     }
   }
 

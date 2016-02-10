@@ -1,6 +1,5 @@
 package com.butent.bee.client.communication;
 
-import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.web.bindery.event.shared.HandlerRegistration;
@@ -10,16 +9,12 @@ import static com.butent.bee.shared.communication.ChatConstants.*;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.dom.DomUtils;
-import com.butent.bee.client.dom.ElementSize;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.logical.ReadyEvent;
 import com.butent.bee.client.event.logical.VisibilityChangeEvent;
 import com.butent.bee.client.layout.Flow;
-import com.butent.bee.client.output.Printable;
-import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.style.StyleUtils;
-import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.view.HeaderImpl;
@@ -27,13 +22,12 @@ import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.View;
 import com.butent.bee.client.view.ViewFactory;
 import com.butent.bee.client.websocket.Endpoint;
-import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Image;
-import com.butent.bee.client.widget.InlineLabel;
 import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.client.widget.Label;
+import com.butent.bee.client.widget.Toggle;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
@@ -45,7 +39,6 @@ import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
-import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.HasWidgetSupplier;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -58,7 +51,7 @@ import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
 
-public class ChatView extends Flow implements Presenter, View, Printable,
+public class ChatView extends Flow implements Presenter, View,
     VisibilityChangeEvent.Handler, HasWidgetSupplier {
 
   private static final class MessageWidget extends Flow {
@@ -109,9 +102,17 @@ public class ChatView extends Flow implements Presenter, View, Printable,
     }
   }
 
+  private enum WindowState {
+    NORMAL, MINIMIZED, MAXIMIZED, UNKNOWN
+  }
+
   private static final BeeLogger logger = LogUtils.getLogger(ChatView.class);
 
   private static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "Chat-";
+
+  private static final String STYLE_MAXIMIZED = STYLE_PREFIX + "maximized";
+  private static final String STYLE_VIEW = STYLE_PREFIX + "view";
+
   private static final String STYLE_MESSAGE_WRAPPER = STYLE_PREFIX + "message";
 
   private static final String STYLE_MESSAGE_PREFIX = STYLE_PREFIX + "message-";
@@ -125,14 +126,13 @@ public class ChatView extends Flow implements Presenter, View, Printable,
   private static final String STYLE_MESSAGE_TEXT = STYLE_MESSAGE_PREFIX + "text";
 
   private static final String STYLE_AUTO_SCROLL_PREFIX = STYLE_PREFIX + "autoScroll-";
-  private static final String STYLE_AUTO_SCROLL_ON = STYLE_AUTO_SCROLL_PREFIX + "on";
-  private static final String STYLE_AUTO_SCROLL_OFF = STYLE_AUTO_SCROLL_PREFIX + "off";
+  private static final String STYLE_AUTO_SCROLL_CONTAINER = STYLE_AUTO_SCROLL_PREFIX + "container";
+  private static final String STYLE_AUTO_SCROLL_LABEL = STYLE_AUTO_SCROLL_PREFIX + "label";
+  private static final String STYLE_AUTO_SCROLL_TOGGLE = STYLE_AUTO_SCROLL_PREFIX + "toggle";
 
   private static final String AUTO_SCROLL_LABEL = "Auto Scroll";
-  private static final String AUTO_SCROLL_ON = "On";
-  private static final String AUTO_SCROLL_OFF = "Off";
 
-  private static final int TIMER_PERIOD = 5000;
+  private static final int TIMER_PERIOD = 5_000;
 
   private static final EnumSet<UiOption> uiOptions = EnumSet.of(UiOption.VIEW);
 
@@ -140,6 +140,8 @@ public class ChatView extends Flow implements Presenter, View, Printable,
   private final List<Long> otherUsers;
 
   private final HeaderView headerView;
+  private final Toggle autoScrollToggle;
+
   private final Flow messagePanel;
   private final InputArea inputArea;
   private final Flow onlinePanel;
@@ -147,12 +149,11 @@ public class ChatView extends Flow implements Presenter, View, Printable,
   private final Timer timer;
 
   private boolean enabled = true;
-  private boolean autoScroll = true;
 
   private final List<HandlerRegistration> registry = new ArrayList<>();
 
   public ChatView(Chat chat) {
-    super(STYLE_PREFIX + "view");
+    super(STYLE_VIEW);
     addStyleName(UiOption.getStyleName(uiOptions));
 
     this.chatId = chat.getId();
@@ -169,11 +170,23 @@ public class ChatView extends Flow implements Presenter, View, Printable,
 
     this.headerView = new HeaderImpl();
     headerView.create(caption, false, true, null, uiOptions,
-        EnumSet.of(Action.PRINT, Action.CONFIGURE, Action.MINIMIZE, Action.MAXIMIZE, Action.CLOSE),
+        EnumSet.of(Action.CONFIGURE, Action.MINIMIZE, Action.MAXIMIZE, Action.CLOSE),
         Action.NO_ACTIONS, Action.NO_ACTIONS);
     headerView.setViewPresenter(this);
 
-    headerView.addCommandItem(createAutoScrollToggle(autoScroll));
+    Flow autoScrollContainer = new Flow(STYLE_AUTO_SCROLL_CONTAINER);
+
+    Label autoScrollLabel = new Label(AUTO_SCROLL_LABEL);
+    autoScrollLabel.addStyleName(STYLE_AUTO_SCROLL_LABEL);
+    autoScrollContainer.add(autoScrollLabel);
+
+    this.autoScrollToggle = new Toggle(FontAwesome.TOGGLE_OFF, FontAwesome.TOGGLE_ON,
+        STYLE_AUTO_SCROLL_TOGGLE, true);
+    autoScrollToggle.addStyleName(FaLabel.STYLE_NAME);
+    autoScrollToggle.addClickHandler(event -> maybeScroll(false));
+    autoScrollContainer.add(autoScrollToggle);
+
+    headerView.addCommandItem(autoScrollContainer);
     add(headerView);
 
     this.messagePanel = new Flow(STYLE_PREFIX + "messages");
@@ -215,7 +228,7 @@ public class ChatView extends Flow implements Presenter, View, Printable,
       for (ChatItem message : chat.getMessages()) {
         addMessage(message, false);
       }
-      updateHeader(chat.getMaxTime());
+      updateHeader(chat.getUnreadCount());
     }
 
     updateOnlinePanel(otherUsers);
@@ -226,7 +239,6 @@ public class ChatView extends Flow implements Presenter, View, Printable,
         onTimer();
       }
     };
-    timer.scheduleRepeating(TIMER_PERIOD);
   }
 
   public void addMessage(ChatItem message, boolean update) {
@@ -240,8 +252,6 @@ public class ChatView extends Flow implements Presenter, View, Printable,
       messagePanel.add(messageWidget);
 
       if (update) {
-        updateHeader(message.getTime());
-
         if (incoming) {
           maybeScroll(true);
         } else {
@@ -287,11 +297,6 @@ public class ChatView extends Flow implements Presenter, View, Printable,
   }
 
   @Override
-  public Element getPrintElement() {
-    return messagePanel.getElement();
-  }
-
-  @Override
   public String getSupplierKey() {
     return ViewFactory.SupplierKind.CHAT.getKey(BeeUtils.toString(chatId));
   }
@@ -318,8 +323,12 @@ public class ChatView extends Flow implements Presenter, View, Printable,
         Global.getChatManager().configure(getChatId());
         break;
 
-      case PRINT:
-        Printer.print(this);
+      case MINIMIZE:
+        minimize();
+        break;
+
+      case MAXIMIZE:
+        maximize();
         break;
 
       case CANCEL:
@@ -344,15 +353,6 @@ public class ChatView extends Flow implements Presenter, View, Printable,
     updateOnlinePanel(chat.getUsers());
 
     BeeKeeper.getScreen().onWidgetChange(this);
-  }
-
-  @Override
-  public boolean onPrint(Element source, Element target) {
-    if (messagePanel.getId().equals(source.getId())) {
-      ElementSize.copyScroll(source, target);
-      target.setClassName(BeeConst.STRING_EMPTY);
-    }
-    return true;
   }
 
   @Override
@@ -387,11 +387,13 @@ public class ChatView extends Flow implements Presenter, View, Printable,
   @Override
   protected void onLoad() {
     super.onLoad();
+    setStyleName(STYLE_MAXIMIZED, getWindowState() == WindowState.MAXIMIZED);
 
     EventUtils.clearRegistry(registry);
     registry.add(VisibilityChangeEvent.register(this));
 
     maybeScroll(false);
+    timer.scheduleRepeating(TIMER_PERIOD);
 
     ReadyEvent.fire(this);
   }
@@ -402,12 +404,10 @@ public class ChatView extends Flow implements Presenter, View, Printable,
     EventUtils.clearRegistry(registry);
 
     super.onUnload();
-
-    Global.getChatManager().leaveChat(getChatId());
   }
 
   private boolean autoScroll() {
-    return autoScroll;
+    return autoScrollToggle.isChecked() || getPopup() != null;
   }
 
   private boolean compose() {
@@ -439,36 +439,53 @@ public class ChatView extends Flow implements Presenter, View, Printable,
     return true;
   }
 
-  private IdentifiableWidget createAutoScrollToggle(boolean on) {
-    Flow container = new Flow(STYLE_AUTO_SCROLL_PREFIX + "container");
+  private ChatPopup getPopup() {
+    if (getParent() instanceof ChatPopup) {
+      return (ChatPopup) getParent();
+    } else {
+      return null;
+    }
+  }
 
-    InlineLabel label = new InlineLabel(AUTO_SCROLL_LABEL);
-    label.addStyleName(STYLE_AUTO_SCROLL_PREFIX + "label");
-    container.add(label);
+  private WindowState getWindowState() {
+    if (!isAttached()) {
+      return WindowState.UNKNOWN;
 
-    final Button toggle = new Button(on ? AUTO_SCROLL_ON : AUTO_SCROLL_OFF);
-    toggle.addStyleName(STYLE_AUTO_SCROLL_PREFIX + "toggle");
-    toggle.addStyleName(on ? STYLE_AUTO_SCROLL_ON : AUTO_SCROLL_OFF);
+    } else if (getPopup() == null) {
+      return WindowState.MAXIMIZED;
 
-    toggle.addClickHandler(event -> {
-      setAutoScroll(!autoScroll());
+    } else {
+      return getPopup().isMinimized() ? WindowState.MINIMIZED : WindowState.NORMAL;
+    }
+  }
 
-      toggle.setHtml(autoScroll() ? AUTO_SCROLL_ON : AUTO_SCROLL_OFF);
-      toggle.setStyleName(STYLE_AUTO_SCROLL_ON, autoScroll());
-      toggle.setStyleName(STYLE_AUTO_SCROLL_OFF, !autoScroll());
+  private void maximize() {
+    if (getPopup() != null) {
+      if (getPopup().isMinimized()) {
+        getPopup().setMinimized(false);
 
-      maybeScroll(false);
-    });
-
-    container.add(toggle);
-
-    return container;
+      } else {
+        getPopup().close();
+        BeeKeeper.getScreen().showInNewPlace(this);
+      }
+    }
   }
 
   private void maybeScroll(boolean checkVisibility) {
     if (autoScroll() && messagePanel.getWidgetCount() > 1
         && (!checkVisibility || DomUtils.isVisible(this))) {
       DomUtils.scrollToBottom(messagePanel);
+    }
+  }
+
+  private void minimize() {
+    if (getPopup() != null) {
+      getPopup().setMinimized(true);
+
+    } else if (getWindowState() == WindowState.MAXIMIZED
+        && BeeKeeper.getScreen().closeWidget(this)) {
+
+      ChatPopup.openMinimized(this);
     }
   }
 
@@ -487,31 +504,13 @@ public class ChatView extends Flow implements Presenter, View, Printable,
         }
       }
 
-      Long maxTime = Global.getChatManager().getMaxTime(chatId);
-      if (maxTime != null) {
-        updateHeader(maxTime);
-      }
+      updateHeader(Global.getChatManager().getUnreadCount(chatId));
     }
   }
 
-  private void setAutoScroll(boolean autoScroll) {
-    this.autoScroll = autoScroll;
-  }
-
-  private void updateHeader(long maxTime) {
-    List<String> list = new ArrayList<>();
-
-    if (!messagePanel.isEmpty()) {
-      list.add(BeeUtils.bracket(messagePanel.getWidgetCount()));
-    }
-    if (maxTime > 0) {
-      list.add(ChatUtils.elapsed(maxTime));
-    }
-
-    headerView.setMessage(BeeUtils.join(BeeConst.STRING_SPACE, list));
-    if (maxTime > 0) {
-      headerView.setMessageTitle(TimeUtils.renderDateTime(maxTime));
-    }
+  private void updateHeader(int unreadCount) {
+    String text = (unreadCount > 0) ? BeeUtils.toString(unreadCount) : BeeConst.STRING_EMPTY;
+    headerView.setMessage(text);
   }
 
   private void updateOnlinePanel(Collection<Long> users) {

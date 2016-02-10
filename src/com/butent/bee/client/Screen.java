@@ -37,7 +37,7 @@ public interface Screen extends NotificationListener, HasExtendedInfo {
 
   void closeAll();
 
-  void closeWidget(IdentifiableWidget widget);
+  boolean closeWidget(IdentifiableWidget widget);
 
   boolean containsDomainEntry(Domain domain, Long key);
 
