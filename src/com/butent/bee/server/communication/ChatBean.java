@@ -51,6 +51,10 @@ public class ChatBean {
     String svc = BeeUtils.trim(reqInfo.getService());
 
     switch (svc) {
+      case Service.GET_CHATS:
+        response = getChats();
+        break;
+
       case Service.CREATE_CHAT:
         response = createChat(reqInfo);
         break;
@@ -61,6 +65,10 @@ public class ChatBean {
 
       case Service.SEND_CHAT_MESSAGE:
         response = putMessage(reqInfo);
+        break;
+
+      case Service.ACCESS_CHAT:
+        response = accessChat(reqInfo);
         break;
 
       default:
@@ -155,6 +163,24 @@ public class ChatBean {
 
     logger.info(chats.size(), "chats found for user", userId);
     return ResponseObject.response(chats);
+  }
+
+  private ResponseObject accessChat(RequestInfo reqInfo) {
+    Long chatId = reqInfo.getParameterLong(COL_CHAT);
+    if (!DataUtils.isId(chatId)) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), COL_CHAT);
+    }
+
+    Long userId = usr.getCurrentUserId();
+    if (DataUtils.isId(userId)) {
+      return onAccess(chatId, userId);
+
+    } else {
+      String message = BeeUtils.joinWords(reqInfo.getService(), "current user not available");
+      logger.severe(message);
+
+      return ResponseObject.error(message);
+    }
   }
 
   private ResponseObject createChat(RequestInfo reqInfo) {
@@ -287,11 +313,13 @@ public class ChatBean {
       return ResponseObject.emptyResponse();
     }
 
-    Long userId = usr.getCurrentUserId();
-    if (DataUtils.isId(userId)) {
-      onAccess(chatId, userId);
-    } else {
-      logger.warning(reqInfo.getService(), "current user not available");
+    if (reqInfo.hasParameter(COL_CHAT_USER_LAST_ACCESS)) {
+      Long userId = usr.getCurrentUserId();
+      if (DataUtils.isId(userId)) {
+        onAccess(chatId, userId);
+      } else {
+        logger.warning(reqInfo.getService(), "current user not available");
+      }
     }
 
     List<ChatItem> messages = new ArrayList<>();
@@ -305,15 +333,12 @@ public class ChatBean {
     return ResponseObject.response(messages).setSize(messages.size());
   }
 
-  private void onAccess(long chatId, long userId) {
+  private ResponseObject onAccess(long chatId, long userId) {
     SqlUpdate update = new SqlUpdate(TBL_CHAT_USERS)
         .addConstant(COL_CHAT_USER_LAST_ACCESS, System.currentTimeMillis())
         .setWhere(SqlUtils.equals(TBL_CHAT_USERS, COL_CHAT, chatId, COL_CHAT_USER, userId));
 
-    int result = qs.updateData(update);
-    if (result != 1) {
-      logger.warning("cannot set last access: chat", chatId, "user", userId);
-    }
+    return qs.updateDataWithResponse(update);
   }
 
   private ResponseObject putMessage(RequestInfo reqInfo) {

@@ -89,7 +89,7 @@ public final class ChatUtils {
 
     long diff = System.currentTimeMillis() - start;
 
-    DateTime dt = new DateTime(start);
+    DateTime dt = new DateTime(start - start % TimeUtils.MILLIS_PER_MINUTE);
     String time = TimeUtils.renderMinutes(TimeUtils.minutesSinceDayStarted(dt), true);
 
     if (diff <= 0) {
@@ -107,8 +107,9 @@ public final class ChatUtils {
     } else if (diff < TimeUtils.MILLIS_PER_DAY / 2) {
       return format(time, diff / TimeUtils.MILLIS_PER_HOUR, "h");
 
-    } else if ((System.currentTimeMillis() / TimeUtils.MILLIS_PER_DAY
-        - start / TimeUtils.MILLIS_PER_DAY) == 1) {
+    } else if (diff < TimeUtils.MILLIS_PER_DAY * 2
+        && TimeUtils.dayDiff(dt, TimeUtils.today()) == 1) {
+
       return Localized.getConstants().yesterday() + BeeConst.STRING_SPACE + time;
 
     } else if (diff < TimeUtils.MILLIS_PER_DAY) {

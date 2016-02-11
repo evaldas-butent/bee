@@ -24,6 +24,7 @@ import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dialog.Popup.OutsideClick;
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.event.Previewer;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.screen.BodyPanel;
@@ -59,6 +60,7 @@ import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
+import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.websocket.messages.ChatMessage;
 import com.butent.bee.shared.websocket.messages.ChatStateMessage;
@@ -173,11 +175,45 @@ public class ChatManager implements HasInfo, HasEnabled {
 
     private ChatWidget(Chat chat) {
       super(STYLE_CHATS_ITEM_PREFIX + "container");
-      this.chatId = chat.getId();
 
-      if (chat.getUnreadCount() > 0) {
-        addStyleName(STYLE_CHATS_ITEM_PREFIX + "hasUnread");
+      this.chatId = chat.getId();
+      this.timeLabel = new CustomDiv(STYLE_CHATS_ITEM_PREFIX + "maxTime");
+
+      addClickHandler(event -> enterChat(chatId));
+
+      render(chat);
+    }
+
+    private Widget createPicture(List<Long> users) {
+      if (users.size() == 1 && Global.getUsers().hasPhoto(users.get(0))) {
+        Image photo = Global.getUsers().getPhoto(users.get(0));
+        if (photo != null) {
+          photo.addStyleName(STYLE_CHATS_ITEM_PREFIX + "photo");
+          return photo;
+        }
       }
+
+      CustomDiv badge = new CustomDiv(STYLE_CHATS_ITEM_PREFIX + "usersBadge");
+      badge.setText(BeeUtils.toString(users.size()));
+
+      String title = ChatUtils.buildUserTitle(users, true);
+      if (!BeeUtils.isEmpty(title)) {
+        badge.setTitle(title);
+      }
+
+      return badge;
+    }
+
+    private long getChatId() {
+      return chatId;
+    }
+
+    private void render(Chat chat) {
+      if (!isEmpty()) {
+        clear();
+      }
+
+      setStyleName(STYLE_CHATS_ITEM_PREFIX + "hasUnread", chat.getUnreadCount() > 0);
 
       List<Long> users = ChatUtils.getOtherUsers(chat.getUsers());
       Multimap<Presence, Long> presence = ChatUtils.getUserPresence(users);
@@ -231,10 +267,13 @@ public class ChatManager implements HasInfo, HasEnabled {
         headerPanel.add(nameWidget);
       }
 
-      this.timeLabel = new CustomDiv(STYLE_CHATS_ITEM_PREFIX + "maxTime");
       if (chat.getMaxTime() > 0) {
         ChatUtils.updateTime(timeLabel, chat.getMaxTime());
+      } else {
+        timeLabel.setText(BeeConst.STRING_EMPTY);
+        timeLabel.setTitle(BeeConst.STRING_EMPTY);
       }
+
       headerPanel.add(timeLabel);
       mainPanel.add(headerPanel);
 
@@ -252,38 +291,6 @@ public class ChatManager implements HasInfo, HasEnabled {
       mainPanel.add(infoPanel);
 
       add(mainPanel);
-
-      addClickHandler(event -> enterChat(chatId));
-    }
-
-    private Widget createPicture(List<Long> users) {
-      if (users.size() == 1 && Global.getUsers().hasPhoto(users.get(0))) {
-        Image photo = Global.getUsers().getPhoto(users.get(0));
-        if (photo != null) {
-          photo.addStyleName(STYLE_CHATS_ITEM_PREFIX + "photo");
-          return photo;
-        }
-      }
-
-      CustomDiv badge = new CustomDiv(STYLE_CHATS_ITEM_PREFIX + "usersBadge");
-      badge.setText(BeeUtils.toString(users.size()));
-
-      String title = ChatUtils.buildUserTitle(users, true);
-      if (!BeeUtils.isEmpty(title)) {
-        badge.setTitle(title);
-      }
-
-      return badge;
-    }
-
-    private long getChatId() {
-      return chatId;
-    }
-
-    private void update(Chat chat) {
-      if (chat != null) {
-        updateTime(chat.getMaxTime());
-      }
     }
 
     private void updateTime(long maxTime) {
@@ -379,17 +386,31 @@ public class ChatManager implements HasInfo, HasEnabled {
         chat.setLastAccess(System.currentTimeMillis());
       }
 
-      ChatWidget chatWidget = findChatWidget(chat.getId());
-      if (chatWidget != null) {
-        chatWidget.updateTime(chat.getMaxTime());
-      }
+      maybeRefreshChatWidget(chat);
 
       ChatView chatView = findChatView(chat.getId());
-      if (chatView != null) {
-        chatView.addMessage(chatMessage.getChatItem(), true);
+
+      if (incoming) {
+        if (chatView != null && chatView.isInteractive()) {
+          chat.setUnreadCount(0);
+        } else {
+          chat.incrementUnreadCount();
+        }
+        updateUnreadBadge();
       }
 
-      if (incoming && incomingSound != null) {
+      Presence presence = BeeKeeper.getUser().getPresence();
+
+      if (chatView != null) {
+        chatView.addMessage(chatMessage.getChatItem(), true);
+        chatView.updateUnreadCount(chat.getUnreadCount());
+
+      } else if (EnumUtils.in(presence, Presence.IDLE, Presence.AWAY)) {
+        open(chat.getId(), view -> ChatPopup.openMinimized(view), false);
+      }
+
+      if (incoming && incomingSound != null
+          && EnumUtils.in(presence, Presence.ONLINE, Presence.IDLE)) {
         incomingSound.play();
       }
     }
@@ -437,14 +458,18 @@ public class ChatManager implements HasInfo, HasEnabled {
     ChatView chatView = findChatView(chatId);
 
     if (chatView != null) {
-      if (UiHelper.isModal(chatView)) {
+      ChatPopup popup = chatView.getPopup();
+
+      if (popup != null) {
+        popup.setMinimized(false);
         UiHelper.focus(chatView);
+
       } else {
         BeeKeeper.getScreen().activateWidget(chatView);
       }
 
     } else {
-      open(chatId, view -> ChatPopup.openNormal(view));
+      open(chatId, view -> ChatPopup.openNormal(view), true);
     }
   }
 
@@ -493,6 +518,28 @@ public class ChatManager implements HasInfo, HasEnabled {
     updateUnreadBadge();
   }
 
+  public void markAsRead(long chatId) {
+    Chat chat = findChat(chatId);
+
+    if (chat != null && chat.getUnreadCount() != 0) {
+      chat.setUnreadCount(0);
+
+      maybeRefreshChatWidget(chat);
+
+      ChatView chatView = findChatView(chatId);
+      if (chatView != null) {
+        chatView.updateUnreadCount(0);
+      }
+
+      updateUnreadBadge();
+
+      ParameterList params = BeeKeeper.getRpc().createParameters(Service.ACCESS_CHAT);
+      params.addQueryItem(COL_CHAT, chat.getId());
+
+      BeeKeeper.getRpc().makeRequest(params);
+    }
+  }
+
   public void onChatState(ChatStateMessage stateMessage) {
     Assert.notNull(stateMessage);
     Assert.isTrue(stateMessage.isValid());
@@ -534,22 +581,50 @@ public class ChatManager implements HasInfo, HasEnabled {
     }
   }
 
+  public void onUserPresenceChange(Long userId) {
+    if (DataUtils.isId(userId) && !BeeKeeper.getUser().is(userId)) {
+      for (Chat chat : chats) {
+        if (chat.hasUser(userId)) {
+          maybeRefreshChatWidget(chat);
+
+          ChatView chatView = findChatView(chat.getId());
+          if (chatView != null) {
+            chatView.onUserPresenceChange();
+          }
+        }
+      }
+
+    }
+  }
+
   public void open(long chatId, final ViewCallback callback) {
+    open(chatId, callback, true);
+  }
+
+  private void open(long chatId, final ViewCallback callback, final boolean markAccess) {
     Assert.notNull(callback);
 
     final Chat chat = findChat(chatId);
 
     if (chat != null) {
-      chat.setLastAccess(System.currentTimeMillis());
+      if (markAccess) {
+        chat.setLastAccess(System.currentTimeMillis());
+      }
 
       ParameterList params = BeeKeeper.getRpc().createParameters(Service.GET_CHAT_MESSAGES);
       params.addQueryItem(COL_CHAT, chat.getId());
+      if (markAccess) {
+        params.addQueryItem(COL_CHAT_USER_LAST_ACCESS, System.currentTimeMillis());
+      }
 
       BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
         @Override
         public void onResponse(ResponseObject response) {
           if (response.hasResponse()) {
             chat.clearMessages();
+            if (markAccess) {
+              chat.setUnreadCount(0);
+            }
 
             String[] arr = Codec.beeDeserializeCollection(response.getResponseAsString());
             for (String s : arr) {
@@ -558,8 +633,11 @@ public class ChatManager implements HasInfo, HasEnabled {
 
             chat.setMessageCount(chat.getMessages().size());
             chat.setLastMessage(BeeUtils.getLast(chat.getMessages()));
+
+            maybeRefreshChatWidget(chat);
           }
 
+          updateUnreadBadge();
           callback.onSuccess(new ChatView(chat));
         }
       });
@@ -742,11 +820,27 @@ public class ChatManager implements HasInfo, HasEnabled {
     }
   }
 
+  private void maybeRefreshChatWidget(Chat chat) {
+    ChatWidget chatWidget = findChatWidget(chat.getId());
+    if (chatWidget != null) {
+      chatWidget.render(chat);
+    }
+  }
+
   private void onTimer() {
-    for (Chat chat : chats) {
-      ChatWidget widget = findChatWidget(chat.getId());
-      if (widget != null) {
-        widget.updateTime(chat.getMaxTime());
+    if (getChatsPanel() != null) {
+      if (Previewer.getIdleMillis() > TIMER_PERIOD * 10
+          && BeeKeeper.getUser().getPresence() != Presence.ONLINE) {
+
+        closeChatsPopup();
+
+      } else {
+        for (Chat chat : chats) {
+          ChatWidget widget = findChatWidget(chat.getId());
+          if (widget != null) {
+            widget.updateTime(chat.getMaxTime());
+          }
+        }
       }
     }
   }
@@ -967,10 +1061,7 @@ public class ChatManager implements HasInfo, HasEnabled {
       target.setMessageCount(source.getMessageCount());
       target.setLastMessage(source.getLastMessage());
 
-      ChatWidget widget = findChatWidget(source.getId());
-      if (widget != null) {
-        widget.update(source);
-      }
+      maybeRefreshChatWidget(target);
     }
   }
 }

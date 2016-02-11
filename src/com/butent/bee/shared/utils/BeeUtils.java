@@ -1885,6 +1885,10 @@ public final class BeeUtils {
     return prefix + padLeft(suffix, l, '0');
   }
 
+  public static int nonNegative(int x) {
+    return (x >= 0) ? x : 0;
+  }
+
   public static boolean nonZero(Double x) {
     return isDouble(x) && !isZero(x);
   }

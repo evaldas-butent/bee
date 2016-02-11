@@ -8,6 +8,7 @@ import static com.butent.bee.shared.communication.ChatConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
+import com.butent.bee.client.composite.FileCollector;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.logical.ReadyEvent;
@@ -22,6 +23,7 @@ import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.View;
 import com.butent.bee.client.view.ViewFactory;
 import com.butent.bee.client.websocket.Endpoint;
+import com.butent.bee.client.widget.Badge;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Image;
@@ -37,6 +39,8 @@ import com.butent.bee.shared.communication.Presence;
 import com.butent.bee.shared.communication.TextMessage;
 import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.font.FontAwesome;
+import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.Action;
@@ -56,17 +60,17 @@ public class ChatView extends Flow implements Presenter, View,
 
   private static final class MessageWidget extends Flow {
 
-    private final long millis;
+    private final long time;
     private final Label timeLabel;
 
     private MessageWidget(ChatItem message, boolean addPhoto) {
       super(STYLE_MESSAGE_WRAPPER);
 
-      this.millis = message.getTime();
+      this.time = message.getTime();
 
       this.timeLabel = new Label();
       timeLabel.addStyleName(STYLE_MESSAGE_TIME);
-      ChatUtils.updateTime(timeLabel, millis);
+      ChatUtils.updateTime(timeLabel, time);
       add(timeLabel);
 
       Flow body = new Flow(STYLE_MESSAGE_BODY);
@@ -93,8 +97,8 @@ public class ChatView extends Flow implements Presenter, View,
     }
 
     private boolean refresh() {
-      if (ChatUtils.needsRefresh(millis)) {
-        timeLabel.setText(ChatUtils.elapsed(millis));
+      if (ChatUtils.needsRefresh(time)) {
+        timeLabel.setText(ChatUtils.elapsed(time));
         return true;
       } else {
         return false;
@@ -112,12 +116,14 @@ public class ChatView extends Flow implements Presenter, View,
 
   private static final String STYLE_MAXIMIZED = STYLE_PREFIX + "maximized";
   private static final String STYLE_VIEW = STYLE_PREFIX + "view";
+  private static final String STYLE_HAS_UNREAD = STYLE_PREFIX + "hasUnread";
 
   private static final String STYLE_MESSAGE_WRAPPER = STYLE_PREFIX + "message";
 
   private static final String STYLE_MESSAGE_PREFIX = STYLE_PREFIX + "message-";
   private static final String STYLE_MESSAGE_INCOMING = STYLE_MESSAGE_PREFIX + "incoming";
   private static final String STYLE_MESSAGE_OUTGOING = STYLE_MESSAGE_PREFIX + "outgoing";
+  private static final String STYLE_MESSAGE_FAST = STYLE_MESSAGE_PREFIX + "fast";
 
   private static final String STYLE_MESSAGE_TIME = STYLE_MESSAGE_PREFIX + "time";
   private static final String STYLE_MESSAGE_PHOTO = STYLE_MESSAGE_PREFIX + "photo";
@@ -133,6 +139,7 @@ public class ChatView extends Flow implements Presenter, View,
   private static final String AUTO_SCROLL_LABEL = "Auto Scroll";
 
   private static final int TIMER_PERIOD = 5_000;
+  private static final long FAST_INTERVAL = 30_000;
 
   private static final EnumSet<UiOption> uiOptions = EnumSet.of(UiOption.VIEW);
 
@@ -144,9 +151,12 @@ public class ChatView extends Flow implements Presenter, View,
 
   private final Flow messagePanel;
   private final InputArea inputArea;
+  private final FileCollector fileCollector;
+  private final Badge fileBadge;
   private final Flow onlinePanel;
 
   private final Timer timer;
+  private long lastMessageTime;
 
   private boolean enabled = true;
 
@@ -194,7 +204,7 @@ public class ChatView extends Flow implements Presenter, View,
     add(messagePanel);
 
     this.inputArea = new InputArea();
-    inputArea.addStyleName(STYLE_PREFIX + "input");
+    inputArea.addStyleName(STYLE_PREFIX + "inputArea");
     inputArea.setMaxLength(TextMessage.MAX_LENGTH);
 
     inputArea.addKeyDownHandler(event -> {
@@ -206,8 +216,12 @@ public class ChatView extends Flow implements Presenter, View,
       }
     });
 
+    Flow inputPanel = new Flow(STYLE_PREFIX + "inputPanel");
+    inputPanel.add(inputArea);
+
     FaLabel submit = new FaLabel(FontAwesome.REPLY_ALL);
     submit.addStyleName(STYLE_PREFIX + "submit");
+    submit.setTitle(Localized.getConstants().send());
 
     submit.addClickHandler(event -> {
       if (compose()) {
@@ -215,11 +229,31 @@ public class ChatView extends Flow implements Presenter, View,
       }
     });
 
-    this.onlinePanel = new Flow(STYLE_PREFIX + "online");
+    Flow commandPanel = new Flow(STYLE_PREFIX + "commandPanel");
+    commandPanel.add(submit);
+
+    this.fileCollector = FileCollector.headless(fileInfos -> addFiles(fileInfos));
+    fileCollector.bindDnd(this);
+
+    FaLabel attach = new FaLabel(FontAwesome.PAPERCLIP);
+    attach.addStyleName(STYLE_PREFIX + "attach");
+    attach.setTitle(Localized.getConstants().chooseFiles());
+    attach.addClickHandler(event -> fileCollector.clickInput());
+
+    this.fileBadge = new Badge(0, STYLE_PREFIX + "fileBadge");
+    fileBadge.addClickHandler(event -> showFiles());
+
+    Flow filePanel = new Flow(STYLE_PREFIX + "filePanel");
+    filePanel.add(attach);
+    filePanel.add(fileBadge);
+    filePanel.add(fileCollector);
+
+    this.onlinePanel = new Flow(STYLE_PREFIX + "onlinePanel");
 
     Flow footer = new Flow(STYLE_PREFIX + "footer");
-    footer.add(inputArea);
-    footer.add(submit);
+    footer.add(inputPanel);
+    footer.add(commandPanel);
+    footer.add(filePanel);
     footer.add(onlinePanel);
 
     add(footer);
@@ -228,10 +262,11 @@ public class ChatView extends Flow implements Presenter, View,
       for (ChatItem message : chat.getMessages()) {
         addMessage(message, false);
       }
-      updateHeader(chat.getUnreadCount());
+
+      updateUnreadCount(chat.getUnreadCount());
     }
 
-    updateOnlinePanel(otherUsers);
+    updateOnlinePanel();
 
     this.timer = new Timer() {
       @Override
@@ -247,9 +282,14 @@ public class ChatView extends Flow implements Presenter, View,
       boolean addPhoto = incoming && otherUsers.size() > 1;
 
       MessageWidget messageWidget = new MessageWidget(message, addPhoto);
+
       messageWidget.addStyleName(incoming ? STYLE_MESSAGE_INCOMING : STYLE_MESSAGE_OUTGOING);
+      if (message.getTime() - getLastMessageTime() < FAST_INTERVAL) {
+        messageWidget.addStyleName(STYLE_MESSAGE_FAST);
+      }
 
       messagePanel.add(messageWidget);
+      setLastMessageTime(message.getTime());
 
       if (update) {
         if (incoming) {
@@ -294,6 +334,14 @@ public class ChatView extends Flow implements Presenter, View,
   @Override
   public View getMainView() {
     return this;
+  }
+
+  public ChatPopup getPopup() {
+    if (getParent() instanceof ChatPopup) {
+      return (ChatPopup) getParent();
+    } else {
+      return null;
+    }
   }
 
   @Override
@@ -346,17 +394,34 @@ public class ChatView extends Flow implements Presenter, View,
     return enabled;
   }
 
+  public boolean isInteractive() {
+    switch (getWindowState()) {
+      case MAXIMIZED:
+        return DomUtils.isVisible(this);
+      case NORMAL:
+        return true;
+      default:
+        return false;
+    }
+  }
+
   public void onChatUpdate(Chat chat) {
     Assert.notNull(chat);
 
     headerView.setCaption(chat.getName());
-    updateOnlinePanel(chat.getUsers());
+    updateOnlinePanel();
 
-    BeeKeeper.getScreen().onWidgetChange(this);
+    if (isMaximized()) {
+      BeeKeeper.getScreen().onWidgetChange(this);
+    }
   }
 
   @Override
   public void onViewUnload() {
+  }
+
+  public void onUserPresenceChange() {
+    updateOnlinePanel();
   }
 
   @Override
@@ -384,10 +449,17 @@ public class ChatView extends Flow implements Presenter, View,
   public void setViewPresenter(Presenter viewPresenter) {
   }
 
+  public void updateUnreadCount(int unreadCount) {
+    String text = (unreadCount > 0) ? BeeUtils.toString(unreadCount) : BeeConst.STRING_EMPTY;
+    headerView.setMessage(text);
+
+    setStyleName(STYLE_HAS_UNREAD, unreadCount > 0);
+  }
+
   @Override
   protected void onLoad() {
     super.onLoad();
-    setStyleName(STYLE_MAXIMIZED, getWindowState() == WindowState.MAXIMIZED);
+    setStyleName(STYLE_MAXIMIZED, isMaximized());
 
     EventUtils.clearRegistry(registry);
     registry.add(VisibilityChangeEvent.register(this));
@@ -404,6 +476,19 @@ public class ChatView extends Flow implements Presenter, View,
     EventUtils.clearRegistry(registry);
 
     super.onUnload();
+  }
+
+  private void addFiles(Collection<? extends FileInfo> input) {
+    logger.debug(fileCollector.getFiles().size(), input.size());
+    List<String> names = new ArrayList<>();
+    if (!BeeUtils.isEmpty(fileBadge.getTitle())) {
+      names.add(fileBadge.getTitle());
+    }
+    for (FileInfo fileInfo : input) {
+      names.add(fileInfo.getName());
+    }
+    fileBadge.setValue(input.size());
+    fileBadge.setTitle(BeeUtils.buildLines(names));
   }
 
   private boolean autoScroll() {
@@ -439,12 +524,8 @@ public class ChatView extends Flow implements Presenter, View,
     return true;
   }
 
-  private ChatPopup getPopup() {
-    if (getParent() instanceof ChatPopup) {
-      return (ChatPopup) getParent();
-    } else {
-      return null;
-    }
+  private long getLastMessageTime() {
+    return lastMessageTime;
   }
 
   private WindowState getWindowState() {
@@ -459,8 +540,14 @@ public class ChatView extends Flow implements Presenter, View,
     }
   }
 
+  private boolean isMaximized() {
+    return getWindowState() == WindowState.MAXIMIZED;
+  }
+
   private void maximize() {
     if (getPopup() != null) {
+      Global.getChatManager().markAsRead(chatId);
+
       if (getPopup().isMinimized()) {
         getPopup().setMinimized(false);
 
@@ -482,9 +569,7 @@ public class ChatView extends Flow implements Presenter, View,
     if (getPopup() != null) {
       getPopup().setMinimized(true);
 
-    } else if (getWindowState() == WindowState.MAXIMIZED
-        && BeeKeeper.getScreen().closeWidget(this)) {
-
+    } else if (isMaximized() && BeeKeeper.getScreen().closeWidget(this)) {
       ChatPopup.openMinimized(this);
     }
   }
@@ -503,22 +588,22 @@ public class ChatView extends Flow implements Presenter, View,
           }
         }
       }
-
-      updateHeader(Global.getChatManager().getUnreadCount(chatId));
     }
   }
 
-  private void updateHeader(int unreadCount) {
-    String text = (unreadCount > 0) ? BeeUtils.toString(unreadCount) : BeeConst.STRING_EMPTY;
-    headerView.setMessage(text);
+  private void setLastMessageTime(long lastMessageTime) {
+    this.lastMessageTime = lastMessageTime;
   }
 
-  private void updateOnlinePanel(Collection<Long> users) {
+  private void showFiles() {
+  }
+
+  private void updateOnlinePanel() {
     if (!onlinePanel.isEmpty()) {
       onlinePanel.clear();
     }
 
-    for (Long userId : users) {
+    for (Long userId : otherUsers) {
       UserData userData = Global.getUsers().getUserData(userId);
       if (userData != null) {
         CustomDiv label = new CustomDiv(STYLE_PREFIX + "userLabel");

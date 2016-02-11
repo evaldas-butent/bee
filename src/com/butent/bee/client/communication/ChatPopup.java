@@ -32,20 +32,45 @@ public final class ChatPopup extends Popup {
     chatPopup.setWidget(chatView);
 
     int x = Window.getClientWidth();
+    int y = Window.getClientHeight();
 
     for (Popup popup : getVisiblePopups()) {
       if (popup.getWidget() instanceof ChatView) {
-        x = Math.min(x, popup.getAbsoluteLeft());
+        x = Math.min(x, popup.getAbsoluteLeft() - 20);
+        y = Math.min(y, popup.getAbsoluteTop() - 20);
       }
     }
 
-    final int right = x - 20;
+    final int right = x;
+    final int bottom = y;
 
     chatPopup.setPopupPositionAndShow((width, height) -> {
-      int left = Math.max(right - width, 0);
-      int top = Math.max(Window.getClientHeight() - height - 2, 0);
+      int left;
+      int top;
 
-      chatPopup.setPopupPosition(left, top);
+      if (right >= width) {
+        left = right - width;
+        top = Window.getClientHeight() - height;
+
+      } else if (bottom >= height) {
+        top = bottom - height;
+        left = Window.getClientWidth() - width;
+
+      } else {
+        if (Window.getClientWidth() > width) {
+          left = BeeUtils.randomInt(0, Window.getClientWidth() - width);
+        } else {
+          left = 0;
+        }
+
+        if (Window.getClientHeight() > height) {
+          top = BeeUtils.randomInt(0, Window.getClientHeight() - height);
+        } else {
+          top = 0;
+        }
+      }
+
+      chatPopup.setPopupPosition(BeeUtils.nonNegative(left), BeeUtils.nonNegative(top));
     });
   }
 
@@ -69,31 +94,7 @@ public final class ChatPopup extends Popup {
     return !isMinimized() && super.isResizable();
   }
 
-  @Override
-  protected int getHeaderHeight() {
-    return ((ChatView) getWidget()).getHeader().getHeight();
-  }
-
-  @Override
-  protected boolean isCaptionEvent(NativeEvent event) {
-    EventTarget target = event.getEventTarget();
-
-    if (Element.is(target) && getWidget() instanceof ChatView) {
-      Element el = Element.as(target);
-      HeaderView header = ((ChatView) getWidget()).getHeader();
-
-      return header.getElement().isOrHasChild(el) && !header.isActionOrCommand(el);
-
-    } else {
-      return false;
-    }
-  }
-
-  boolean isMinimized() {
-    return minimized;
-  }
-
-  void setMinimized(boolean minimized) {
+  public void setMinimized(boolean minimized) {
     if (minimized != isMinimized()) {
       int wh = Window.getClientHeight();
       int hh = getHeaderHeight();
@@ -118,6 +119,30 @@ public final class ChatPopup extends Popup {
       setStyleName(STYLE_NORMAL, !minimized);
       setStyleName(STYLE_MINIMIZED, minimized);
     }
+  }
+
+  @Override
+  protected int getHeaderHeight() {
+    return ((ChatView) getWidget()).getHeader().getHeight();
+  }
+
+  @Override
+  protected boolean isCaptionEvent(NativeEvent event) {
+    EventTarget target = event.getEventTarget();
+
+    if (Element.is(target) && getWidget() instanceof ChatView) {
+      Element el = Element.as(target);
+      HeaderView header = ((ChatView) getWidget()).getHeader();
+
+      return header.getElement().isOrHasChild(el) && !header.isActionOrCommand(el);
+
+    } else {
+      return false;
+    }
+  }
+
+  boolean isMinimized() {
+    return minimized;
   }
 
   private int getNormalHeight() {

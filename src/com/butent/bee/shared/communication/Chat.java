@@ -76,9 +76,7 @@ public class Chat implements BeeSerializable, HasInfo, Comparable<Chat> {
 
   public void clearMessages() {
     getMessages().clear();
-
     setMessageCount(0);
-    setUnreadCount(0);
 
     setLastMessage(null);
   }
@@ -250,6 +248,10 @@ public class Chat implements BeeSerializable, HasInfo, Comparable<Chat> {
 
   public void incrementMessageCount() {
     setMessageCount(getMessageCount() + 1);
+  }
+
+  public void incrementUnreadCount() {
+    setUnreadCount(getUnreadCount() + 1);
   }
 
   public boolean is(Long chatId) {
