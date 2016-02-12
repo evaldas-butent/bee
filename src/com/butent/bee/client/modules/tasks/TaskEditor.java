@@ -1468,6 +1468,9 @@ class TaskEditor extends AbstractFormInterceptor {
       case OUT_OF_OBSERVERS:
         doOut();
         break;
+      case REFRESH:
+        onStartEdit(getFormView(), getActiveRow(), null);
+        break;
       case ACTIVATE:
       case VISIT:
       case EDIT:
@@ -1737,6 +1740,9 @@ class TaskEditor extends AbstractFormInterceptor {
 
     switch (event) {
       case COMMENT:
+        return true;
+
+      case REFRESH:
         return true;
 
       case RENEW:

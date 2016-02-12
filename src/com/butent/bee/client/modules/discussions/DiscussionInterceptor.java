@@ -1301,6 +1301,9 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
         break;
       case VISIT:
         break;
+      case REFRESH:
+        onStartEdit(form, row, null);
+        break;
       default:
         break;
     }
@@ -1414,6 +1417,8 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
             && !showInHeader;
       case VISIT:
         return false;
+      case REFRESH:
+        return true;
     }
 
     return false;
