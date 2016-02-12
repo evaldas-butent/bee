@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+
+  name="Chats" viewName="Chats" caption="=chats"
+  order="Created desc"
+  disabledActions="rights"
+  >
+  <g:columns>
+    <IdColumn name="Id" />
+    <DataColumn name="ChatName" visible="true" />
+
+    <DataColumn name="Created" readOnly="true" />
+    
+    <RelColumn name="Creator" renderColumns="CreatorFirstName CreatorLastName"
+      sortBy="CreatorLastName CreatorFirstName" readOnly="true" />
+  </g:columns>
+</g:Grid>

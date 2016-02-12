@@ -112,6 +112,7 @@ public final class Service {
   public static final String GET_CHATS = CHAT_SERVICE_PREFIX + "get_chats";
   public static final String CREATE_CHAT = CHAT_SERVICE_PREFIX + "create";
   public static final String ACCESS_CHAT = CHAT_SERVICE_PREFIX + "access";
+  public static final String UPDATE_CHAT = CHAT_SERVICE_PREFIX + "update";
   public static final String GET_CHAT_MESSAGES = CHAT_SERVICE_PREFIX + "get_messages";
   public static final String SEND_CHAT_MESSAGE = CHAT_SERVICE_PREFIX + "send_message";
 
@@ -209,6 +210,7 @@ public final class Service {
 
   public static final String VAR_DATA = RPC_VAR_PREFIX + "data";
   public static final String VAR_EXPLAIN = RPC_VAR_PREFIX + "explain";
+  public static final String VAR_CLEAR = RPC_VAR_PREFIX + "clear";
 
   public static final String VAR_TIME = RPC_VAR_PREFIX + "time";
   public static final String VAR_QTY = RPC_VAR_PREFIX + " qty";

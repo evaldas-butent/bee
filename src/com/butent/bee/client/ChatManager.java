@@ -11,6 +11,7 @@ import com.google.gwt.user.client.ui.Widget;
 import static com.butent.bee.shared.communication.ChatConstants.*;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 
+import com.butent.bee.client.communication.ChatGrid;
 import com.butent.bee.client.communication.ChatPopup;
 import com.butent.bee.client.communication.ChatUtils;
 import com.butent.bee.client.communication.ChatView;
@@ -25,6 +26,7 @@ import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dialog.Popup.OutsideClick;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.Previewer;
+import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.screen.BodyPanel;
@@ -106,7 +108,7 @@ public class ChatManager implements HasInfo, HasEnabled {
     }
 
     private boolean isValid() {
-      return !getUsers().isEmpty();
+      return getUsers().size() >= 2;
     }
 
     private void setName(String name) {
@@ -441,14 +443,13 @@ public class ChatManager implements HasInfo, HasEnabled {
 
   public void configure(long chatId) {
     Chat chat = findChat(chatId);
-    if (chat == null) {
-      return;
-    }
 
-    if (chat.isOwner(BeeKeeper.getUser().getUserId())) {
-      editSetting(chatId);
-    } else {
-      showInfo(chatId);
+    if (chat != null) {
+      if (chat.isOwner(BeeKeeper.getUser().getUserId())) {
+        editSettings(chat);
+      } else {
+        showInfo(chat);
+      }
     }
   }
 
@@ -729,39 +730,52 @@ public class ChatManager implements HasInfo, HasEnabled {
     });
   }
 
-  private void editSetting(final long chatId) {
-    Chat original = findChat(chatId);
-    if (original == null) {
-      return;
-    }
+  private void editSettings(final Chat chat) {
+    ChatSettings settings = new ChatSettings(chat);
 
-    ChatSettings settings = new ChatSettings(original);
-    openSettings(settings, false, new Consumer<ChatSettings>() {
-      @Override
-      public void accept(ChatSettings input) {
-        if (!input.isValid()) {
-          return;
-        }
+    openSettings(settings, false, input -> {
+      if (input.isValid() && contains(chat.getId())) {
 
-        Chat chat = findChat(chatId);
-        if (chat == null) {
-          return;
-        }
+        boolean nameChanged = !BeeUtils.equalsTrimRight(chat.getName(), input.getName());
+        boolean usersChanged = !BeeUtils.sameElements(chat.getUsers(), input.getUsers());
 
-        boolean changed = false;
+        if (nameChanged || usersChanged) {
+          ParameterList params = BeeKeeper.getRpc().createParameters(Service.UPDATE_CHAT);
+          params.addQueryItem(COL_CHAT, chat.getId());
 
-        if (!BeeUtils.equalsTrimRight(chat.getName(), input.getName())) {
-          chat.setName(input.getName());
-          changed = true;
-        }
+          if (nameChanged) {
+            if (BeeUtils.isEmpty(input.getName())) {
+              params.addDataItem(Service.VAR_CLEAR, COL_CHAT_NAME);
+            } else {
+              params.addDataItem(COL_CHAT_NAME, BeeUtils.trim(input.getName()));
+            }
+          }
 
-        if (!BeeUtils.sameElements(chat.getUsers(), input.getUsers())) {
-          BeeUtils.overwrite(chat.getUsers(), input.getUsers());
-          changed = true;
-        }
+          if (usersChanged) {
+            params.addDataItem(TBL_CHAT_USERS, DataUtils.buildIdList(input.getUsers()));
+          }
 
-        if (changed) {
-          Endpoint.send(ChatStateMessage.update(chat));
+          BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
+            @Override
+            public void onResponse(ResponseObject response) {
+              if (!response.hasErrors()) {
+                if (nameChanged) {
+                  chat.setName(input.getName());
+                }
+                if (usersChanged) {
+                  BeeUtils.overwrite(chat.getUsers(), input.getUsers());
+                }
+
+                maybeRefreshChatWidget(chat);
+
+                ChatView chatView = findChatView(chat.getId());
+                if (chatView != null) {
+                  chatView.onChatUpdate(chat);
+                }
+              }
+            }
+          });
+
         } else {
           logger.debug("settings not changed");
         }
@@ -961,6 +975,8 @@ public class ChatManager implements HasInfo, HasEnabled {
   }
 
   private void showAll() {
+    closeChatsPopup();
+    GridFactory.openGrid(GRID_CHATS, new ChatGrid());
   }
 
   private void showChats() {
@@ -984,17 +1000,12 @@ public class ChatManager implements HasInfo, HasEnabled {
     popup.showRelativeTo(getChatsCommand().getElement());
   }
 
-  private void showInfo(long chatId) {
-    Chat chat = findChat(chatId);
-    if (chat == null) {
-      return;
-    }
-
+  private static void showInfo(Chat chat) {
     HtmlTable table = new HtmlTable(STYLE_CHAT_INFO_PREFIX + "details");
     int row = 0;
 
     table.setText(row, 0, Localized.getConstants().captionId());
-    table.setText(row, 2, BeeUtils.toString(chatId));
+    table.setText(row, 2, BeeUtils.toString(chat.getId()));
 
     if (chat.getCreated() > 0) {
       row++;

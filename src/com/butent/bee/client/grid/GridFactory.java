@@ -416,7 +416,11 @@ public final class GridFactory {
   }
 
   public static void openGrid(String gridName) {
-    openGrid(gridName, getGridInterceptor(gridName), null, ViewHelper.getPresenterCallback());
+    openGrid(gridName, getGridInterceptor(gridName));
+  }
+
+  public static void openGrid(String gridName, GridInterceptor gridInterceptor) {
+    openGrid(gridName, gridInterceptor, null, ViewHelper.getPresenterCallback());
   }
 
   public static void openGrid(String gridName, GridInterceptor gridInterceptor,

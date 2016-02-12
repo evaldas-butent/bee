@@ -169,14 +169,7 @@ public class ChatView extends Flow implements Presenter, View,
     this.chatId = chat.getId();
     this.otherUsers = ChatUtils.getOtherUsers(chat.getUsers());
 
-    String caption;
-    if (!BeeUtils.isEmpty(chat.getName())) {
-      caption = chat.getName();
-    } else if (otherUsers.size() == 1) {
-      caption = Global.getUsers().getSignature(otherUsers.get(0));
-    } else {
-      caption = ChatUtils.getFirstNames(otherUsers);
-    }
+    String caption = ChatUtils.getChatCaption(chat.getName(), otherUsers);
 
     this.headerView = new HeaderImpl();
     headerView.create(caption, false, true, null, uiOptions,
@@ -408,7 +401,9 @@ public class ChatView extends Flow implements Presenter, View,
   public void onChatUpdate(Chat chat) {
     Assert.notNull(chat);
 
-    headerView.setCaption(chat.getName());
+    BeeUtils.overwrite(otherUsers, ChatUtils.getOtherUsers(chat.getUsers()));
+
+    headerView.setCaption(ChatUtils.getChatCaption(chat.getName(), otherUsers));
     updateOnlinePanel();
 
     if (isMaximized()) {
@@ -479,7 +474,6 @@ public class ChatView extends Flow implements Presenter, View,
   }
 
   private void addFiles(Collection<? extends FileInfo> input) {
-    logger.debug(fileCollector.getFiles().size(), input.size());
     List<String> names = new ArrayList<>();
     if (!BeeUtils.isEmpty(fileBadge.getTitle())) {
       names.add(fileBadge.getTitle());

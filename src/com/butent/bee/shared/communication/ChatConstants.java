@@ -23,6 +23,8 @@ public final class ChatConstants {
   public static final String COL_CHAT_FILE = "File";
   public static final String COL_CHAT_FILE_CAPTION = "Caption";
 
+  public static final String GRID_CHATS = "Chats";
+
   private ChatConstants() {
   }
 }

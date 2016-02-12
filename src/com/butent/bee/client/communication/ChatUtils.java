@@ -130,6 +130,18 @@ public final class ChatUtils {
     }
   }
 
+  public static String getChatCaption(String name, List<Long> otherUsers) {
+    if (!BeeUtils.isEmpty(name) || BeeUtils.isEmpty(otherUsers)) {
+      return name;
+
+    } else if (otherUsers.size() == 1) {
+      return Global.getUsers().getSignature(otherUsers.get(0));
+
+    } else {
+      return getFirstNames(otherUsers);
+    }
+  }
+
   public static String getFirstNames(Collection<Long> users) {
     List<String> names = new ArrayList<>();
 

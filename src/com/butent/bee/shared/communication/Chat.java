@@ -259,7 +259,8 @@ public class Chat implements BeeSerializable, HasInfo, Comparable<Chat> {
   }
 
   public boolean isOwner(Long userId) {
-    return userId != null && userId.equals(getCreator());
+    return userId != null
+        && (userId.equals(getCreator()) || users.size() <= 2 && users.contains(userId));
   }
 
   public boolean removeUser(Long userId) {

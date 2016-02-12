@@ -7,6 +7,7 @@ import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.sql.HasConditions;
+import com.butent.bee.server.sql.SqlDelete;
 import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
@@ -24,9 +25,12 @@ import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.websocket.messages.ChatMessage;
+import com.butent.bee.shared.websocket.messages.ChatStateMessage;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.ejb.EJB;
 import javax.ejb.LocalBean;
@@ -69,6 +73,10 @@ public class ChatBean {
 
       case Service.ACCESS_CHAT:
         response = accessChat(reqInfo);
+        break;
+
+      case Service.UPDATE_CHAT:
+        response = updateChat(reqInfo);
         break;
 
       default:
@@ -189,6 +197,8 @@ public class ChatBean {
     List<Long> users = DataUtils.parseIdList(reqInfo.getParameter(TBL_CHAT_USERS));
     if (BeeUtils.isEmpty(users)) {
       return ResponseObject.parameterNotFound(reqInfo.getService(), TBL_CHAT_USERS);
+    } else if (users.size() < 2) {
+      return ResponseObject.error(reqInfo.getService(), "insufficient", TBL_CHAT_USERS, users);
     }
 
     Long userId = usr.getCurrentUserId();
@@ -265,6 +275,74 @@ public class ChatBean {
     }
 
     return qs.sqlCount(TBL_CHAT_MESSAGES, where);
+  }
+
+  private Chat getChat(long chatId, long userId) {
+    SqlSelect chatQuery = new SqlSelect()
+        .addFields(TBL_CHATS, COL_CHAT_NAME, COL_CHAT_CREATED, COL_CHAT_CREATOR)
+        .addFields(TBL_CHAT_USERS, COL_CHAT, COL_CHAT_USER_REGISTERED, COL_CHAT_USER_LAST_ACCESS)
+        .addFrom(TBL_CHATS)
+        .addFromInner(TBL_CHAT_USERS, sys.joinTables(TBL_CHATS, TBL_CHAT_USERS, COL_CHAT))
+        .setWhere(SqlUtils.and(sys.idEquals(TBL_CHATS, chatId),
+            SqlUtils.equals(TBL_CHAT_USERS, COL_CHAT_USER, userId)));
+
+    SimpleRowSet chatData = qs.getData(chatQuery);
+    if (DataUtils.isEmpty(chatData)) {
+      logger.warning("chat", chatId, "not found for user", userId);
+      return null;
+    }
+
+    SimpleRow row = chatData.getRow(0);
+
+    Chat chat = new Chat(chatId, row.getValue(COL_CHAT_NAME));
+
+    Long created = row.getLong(COL_CHAT_CREATED);
+    if (BeeUtils.isPositive(created)) {
+      chat.setCreated(created);
+    }
+
+    Long creator = row.getLong(COL_CHAT_CREATOR);
+    if (DataUtils.isId(creator)) {
+      chat.setCreator(creator);
+    }
+
+    Long registered = row.getLong(COL_CHAT_USER_REGISTERED);
+    if (BeeUtils.isPositive(registered)) {
+      chat.setRegistered(registered);
+    }
+
+    Long lastAccess = row.getLong(COL_CHAT_USER_LAST_ACCESS);
+    if (BeeUtils.isPositive(lastAccess)) {
+      chat.setLastAccess(lastAccess);
+    }
+
+    List<Long> users = getChatUsers(chatId);
+    for (Long u : users) {
+      chat.addUser(u);
+    }
+
+    int messageCount = countMessages(chatId);
+    if (messageCount > 0) {
+      chat.setMessageCount(messageCount);
+
+      ChatItem lastMessage = getLastMessage(chatId);
+      chat.setLastMessage(lastMessage);
+
+      int unreadCount;
+      if (lastMessage != null && BeeUtils.isPositive(lastAccess)
+          && BeeUtils.isMore(lastAccess, lastMessage.getTime())) {
+
+        unreadCount = 0;
+      } else {
+        unreadCount = countUnread(chatId, userId, lastAccess);
+      }
+
+      if (unreadCount > 0) {
+        chat.setUnreadCount(unreadCount);
+      }
+    }
+
+    return chat;
   }
 
   private List<Long> getChatUsers(long chatId) {
@@ -388,5 +466,122 @@ public class ChatBean {
     }
 
     return response;
+  }
+
+  private ResponseObject updateChat(RequestInfo reqInfo) {
+    Long chatId = reqInfo.getParameterLong(COL_CHAT);
+    if (!DataUtils.isId(chatId)) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), COL_CHAT);
+    }
+
+    String chatName = null;
+    boolean nameChanged = false;
+
+    List<Long> users = null;
+    boolean usersChanged = false;
+
+    if (reqInfo.hasParameter(COL_CHAT_NAME)) {
+      chatName = reqInfo.getParameter(COL_CHAT_NAME);
+      nameChanged = true;
+    } else if (COL_CHAT_NAME.equals(reqInfo.getParameter(Service.VAR_CLEAR))) {
+      nameChanged = true;
+    }
+
+    if (reqInfo.hasParameter(TBL_CHAT_USERS)) {
+      users = DataUtils.parseIdList(reqInfo.getParameter(TBL_CHAT_USERS));
+
+      if (users.size() < 2) {
+        return ResponseObject.error(reqInfo.getService(), "insufficient", TBL_CHAT_USERS, users);
+      } else {
+        usersChanged = true;
+      }
+    }
+
+    if (!nameChanged && !usersChanged) {
+      return ResponseObject.warning(reqInfo.getService(), chatId, "nothing changed");
+    }
+
+    Long currentUser = usr.getCurrentUserId();
+    if (!DataUtils.isId(currentUser)) {
+      String message = BeeUtils.joinWords(reqInfo.getService(), "current user not available");
+      logger.severe(message);
+
+      return ResponseObject.error(message);
+    }
+
+    if (nameChanged) {
+      SqlUpdate update = new SqlUpdate(TBL_CHATS)
+          .addConstant(COL_CHAT_NAME, chatName)
+          .setWhere(sys.idEquals(TBL_CHATS, chatId));
+
+      ResponseObject updateResponse = qs.updateDataWithResponse(update);
+      if (updateResponse.hasErrors()) {
+        return updateResponse;
+      }
+    }
+
+    List<Long> oldUsers = getChatUsers(chatId);
+
+    Set<Long> addUsers = new HashSet<>();
+    Set<Long> removeUsers = new HashSet<>();
+
+    if (usersChanged) {
+      addUsers.addAll(users);
+      addUsers.removeAll(oldUsers);
+
+      removeUsers.addAll(oldUsers);
+      removeUsers.removeAll(users);
+    }
+
+    if (!removeUsers.isEmpty()) {
+      SqlDelete delete = new SqlDelete(TBL_CHAT_USERS)
+          .setWhere(SqlUtils.inList(TBL_CHAT_USERS, COL_CHAT_USER, removeUsers));
+
+      ResponseObject deleteResponse = qs.updateDataWithResponse(delete);
+      if (deleteResponse.hasErrors()) {
+        return deleteResponse;
+      }
+    }
+
+    if (!addUsers.isEmpty()) {
+      for (Long u : addUsers) {
+        SqlInsert insert = new SqlInsert(TBL_CHAT_USERS)
+            .addConstant(COL_CHAT, chatId)
+            .addConstant(COL_CHAT_USER_REGISTERED, System.currentTimeMillis())
+            .addConstant(COL_CHAT_USER, u);
+
+        ResponseObject insertResponse = qs.insertDataWithResponse(insert);
+        if (insertResponse.hasErrors()) {
+          return insertResponse;
+        }
+      }
+    }
+
+    if (!removeUsers.isEmpty()) {
+      ChatStateMessage removeMessage = ChatStateMessage.remove(new Chat(chatId, null));
+      for (Long u : removeUsers) {
+        Endpoint.sendToUser(u, removeMessage);
+      }
+    }
+
+    ChatStateMessage message;
+
+    for (Long u : users) {
+      if (!currentUser.equals(u)) {
+        Chat chat = getChat(chatId, u);
+
+        if (chat != null) {
+          if (oldUsers.contains(u)) {
+            message = ChatStateMessage.update(chat);
+          } else {
+            message = ChatStateMessage.add(chat);
+          }
+
+          Endpoint.sendToUser(u, message);
+        }
+      }
+    }
+
+    return ResponseObject.emptyResponse();
   }
 }
