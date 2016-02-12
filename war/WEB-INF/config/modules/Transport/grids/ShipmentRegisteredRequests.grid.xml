@@ -1,30 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
 
-        name="ShipmentRequests" viewName="ShipmentRequests"
-        caption="=trRequestsUnregistered"
-        filter="!(CompanyPerson)"
-        disabledActions="add"
+        name="ShipmentRegisteredRequests" viewName="ShipmentRequests"
+        caption="=trRequests"
+        enableCopy="- *Date, *Time, Status, Cargo, Order*"
+        filter="CompanyPerson"
     >
   <g:columns>
     <DataColumn name="Date" />
     <DataColumn name="Status" />
 
-    <DataColumn name="CustomerName" />
-    <DataColumn name="CustomerCode" />
-    <DataColumn name="CustomerVatCode" />
-
-    <DataColumn name="CustomerPhone" />
-    <DataColumn name="CustomerFax" />
-    <DataColumn name="CustomerEmail" />
-
-    <DataColumn name="CustomerContactPerson" />
-    <DataColumn name="CustomerPersonPosition" />
-
-    <DataColumn name="CustomerCountry" />
-    <DataColumn name="CustomerCity" />
-    <DataColumn name="CustomerAddress" />
-    <DataColumn name="CustomerPostIndex" />
+    <RelColumn name="CompanyPerson" renderColumns="PersonFirstName PersonLastName" />
+    <DataColumn name="CompanyName" />
 
     <DataColumn name="LoadingDate" />
     <DataColumn name="LoadingCompany" />

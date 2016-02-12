@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Form [
-  <!ENTITY summary "font-size: large; margin-left: 1em; margin-bottom: 5px; outline: none;">
-  <!ENTITY table "border-collapse: collapse;">
-  <!ENTITY colLabel "text-align: right; padding-left: 1em; padding-right: 1em; ">
-  <!ENTITY cols '<col index="0" cellStyle="&colLabel;" /><col index="2" cellStyle="&colLabel;" /><col index="4" cellStyle="&colLabel;" />'>
-  <!ENTITY cells "vertical-align: top; padding-bottom: 3px;">
-  <!ENTITY separator "<hr/>">
-  <!ENTITY area "width: 200px; height: 40px;">
-]>
+    <!ENTITY summary "font-size: large; margin-left: 1em; margin-bottom: 5px; outline: none;">
+    <!ENTITY table "border-collapse: collapse;">
+    <!ENTITY colLabel "text-align: right; padding-left: 1em; padding-right: 1em; ">
+    <!ENTITY cols '<col index="0" cellStyle="&colLabel;" /><col index="2" cellStyle="&colLabel;" /><col index="4" cellStyle="&colLabel;" />'>
+    <!ENTITY cells "vertical-align: top; padding-bottom: 3px;">
+    <!ENTITY separator "<hr/>">
+    <!ENTITY area "width: 200px; height: 40px;">
+    ]>
 <f:Form xmlns="http://www.butent.com/widget"
         xmlns:f="http://www.butent.com/form"
         xmlns:xi="http://www.w3.org/2001/XInclude"
 
-  name="ShipmentRequest" viewName="ShipmentRequests" caption="=trRequestUnregistered"
-  >
+        name="ShipmentRequest" viewName="ShipmentRequests"
+    >
   <FlowPanel>
     <Table kind="custom" style="&table; margin-top:10px;" cellStyle="&cells;">
       &cols;
@@ -40,16 +40,16 @@
     <Details open="true">
       <Summary text="=trRequestCustomerInfo" style="&summary;" />
 
-      <Table kind="controls" style="&table;" cellStyle="&cells;">
+      <Table name="Register" kind="controls" style="&table;" cellStyle="&cells;">
         &cols;
 
         <row>
           <Label for="CustomerName" />
           <cell colSpan="2">
             <FlowPanel>
-              <InputText source="CustomerName" style="width:20em;; margin-right:5px; display:inline;" />
-              <DataSelector source="CustomerType" valueSource="Name" viewName="CompanyTypes"
-                            choiceColumns="Name" style="width:5em;" placeholder="=companyStatus" />
+              <InputText source="CustomerName" style="width:20em; margin-right:5px;" />
+              <DataSelector source="CustomerCompanyType" valueSource="Name" viewName="CompanyTypes"
+                            style="width:5em; display:inline;" placeholder="=companyStatus" />
             </FlowPanel>
           </cell>
           <CheckBox source="CustomerRegister" />
@@ -66,7 +66,7 @@
           <Label for="CustomerContactPerson" />
           <InputText source="CustomerContactPerson" />
           <Label for="CustomerPersonPosition" />
-          <InputText source="CustomerPersonPosition" />
+          <DataSelector source="CustomerPersonPosition" valueSource="Name" viewName="Positions" />
         </row>
 
         <row>
@@ -93,15 +93,33 @@
           <DataSelector source="CustomerCity" valueSource="Name" viewName="Cities"
                         choiceColumns="Name CountryName" />
           <Label for="CustomerCountry" />
-          <DataSelector source="CustomerCountry" valueSource="Name" viewName="Countries"
-                        choiceColumns="Name" />
+          <DataSelector source="CustomerCountry" valueSource="Name" viewName="Countries" />
         </row>
 
         <row>
-        <Label for="CustomerNotes" />
+          <Label for="CustomerNotes" />
           <cell colSpan="3">
             <InputArea source="CustomerNotes" style="&area; width:100%;" />
           </cell>
+        </row>
+      </Table>
+
+      <Table name="CompanyPerson" kind="controls" style="&table;" cellStyle="&cells;">
+        &cols;
+
+        <row>
+          <Label for="CompanyPerson" class="bee-required" />
+          <DataSelector source="CompanyPerson" newRowEnabled="false" required="true"
+                        renderColumns="PersonFirstName PersonLastName" />
+          <Label for="CompanyName" />
+          <TextLabel source="CompanyName" />
+        </row>
+
+        <row>
+          <Label for="PersonPhone" />
+          <TextLabel source="PersonPhone" />
+          <Label for="PersonEmail" />
+          <TextLabel source="PersonEmail" />
         </row>
       </Table>
     </Details>
@@ -113,7 +131,7 @@
       <xi:include href="widgets/CargoPlaces.widget.xml" />
 
       <ChildGrid name="CargoHandling" relColumn="Cargo" source="Cargo"
-                 caption="=trAdditionalHandlingPlaces" style="margin-top:10px; height:200px;"/>
+                 caption="=trAdditionalHandlingPlaces" style="margin-top:10px; height:200px;" />
     </Details>
     &separator;
 
@@ -124,22 +142,24 @@
         &cols;
 
         <row>
-          <Label for="Expedition" class="bee-required" />
-          <DataSelector source="Expedition" filter="SelfService" order="SelfService, Name"
-            newRowEnabled="false" />
-          <Label for="ShippingTerm" class="bee-required" />
-          <DataSelector source="ShippingTerm" required="true" filter="SelfService"
-            order="SelfService, Name" newRowEnabled="false" />
-        </row>
-
-        <row>
-          <text />
+          <Label for="Expedition" />
+          <DataSelector source="Expedition" filter="SelfService" renderColumns="ExpeditionType"
+                        order="SelfService, Name" newRowEnabled="false" />
+          <CheckBox source="Logistics" readOnly="true" />
           <CheckBox source="CustomsBrokerage" />
         </row>
 
         <row>
+          <Label for="ShippingTerm" class="bee-required" />
+          <DataSelector source="ShippingTerm" required="true" filter="SelfService"
+                        order="SelfService, Name" newRowEnabled="false" />
           <text />
           <CheckBox source="FreightInsurance" />
+        </row>
+
+        <row>
+          <text />
+          <text />
           <Label for="Value" />
           <FlowPanel>
             <InputMoney source="Value" style="margin-right:5px; width:7em;" />
@@ -158,15 +178,15 @@
         &cols;
 
         <row>
-          <Label for="Description" class="bee-required bee-hasDefaults" />
+          <Label for="Description" />
           <InputArea source="Description" style="width: 100%; height: 40px;" />
           <Label for="Quantity" />
           <InputDecimal source="Quantity" />
         </row>
 
         <row>
-          <Label for="Weight" class="bee-required" />
-          <InputDecimal source="Weight" required="true" />
+          <Label for="Weight" />
+          <InputDecimal source="Weight" />
           <Label for="Volume" />
           <InputDecimal source="Volume" />
         </row>
@@ -212,7 +232,7 @@
         <row>
           <Label for="Manager" />
           <DataSelector source="Manager" newRowEnabled="false" editSource="ManagerPerson"
-                        style="width:15em;"/>
+                        style="width:15em;" />
           <Label text="=trRequestNotes" />
           <InputArea source="Notes" style="&area;" />
         </row>
@@ -229,12 +249,12 @@
 
     <TabbedPages style="height:300px;">
       <page>
-        <text>=mails</text>
-        <ChildGrid name="RelatedMessages" relColumn="ShipmentRequest" paging="true" />
-      </page>
-      <page>
         <text>=files</text>
         <ChildGrid name="ShipmentRequestFiles" relColumn="ShipmentRequest" />
+      </page>
+      <page>
+        <text>=mails</text>
+        <ChildGrid name="RelatedMessages" relColumn="ShipmentRequest" paging="true" />
       </page>
     </TabbedPages>
   </FlowPanel>

@@ -44,7 +44,7 @@ public final class TransportConstants {
     }
   }
 
-  public enum CargoRequestStatus implements HasLocalizedCaption {
+  public enum ShipmentRequestStatus implements HasLocalizedCaption {
     NEW {
       @Override
       public String getCaption(LocalizableConstants constants) {
@@ -85,6 +85,10 @@ public final class TransportConstants {
     @Override
     public String getCaption() {
       return getCaption(Localized.getConstants());
+    }
+
+    public boolean is(Integer status) {
+      return status != null && ordinal() == status;
     }
   }
 
@@ -230,7 +234,7 @@ public final class TransportConstants {
     EnumUtils.register(TripStatus.class);
     EnumUtils.register(OrderStatus.class);
 
-    EnumUtils.register(CargoRequestStatus.class);
+    EnumUtils.register(ShipmentRequestStatus.class);
 
     EnumUtils.register(FuelSeason.class);
     EnumUtils.register(TripConstant.class);
@@ -327,7 +331,6 @@ public final class TransportConstants {
   public static final String TBL_FUEL_TYPES = "FuelTypes";
 
   public static final String TBL_SHIPMENT_REQUESTS = "ShipmentRequests";
-  public static final String TBL_CARGO_REQUESTS = "CargoRequests";
   public static final String TBL_LOSS_REASONS = "LossReasons";
 
   public static final String TBL_COUNTRY_NORMS = "CountryNorms";
@@ -384,8 +387,6 @@ public final class TransportConstants {
 
   public static final String VIEW_SHIPMENT_REQUESTS = "ShipmentRequests";
   public static final String VIEW_SHIPMENT_REQUEST_FILES = "ShipmentRequestFiles";
-  public static final String VIEW_CARGO_REQUESTS = "CargoRequests";
-  public static final String VIEW_CARGO_REQUEST_TEMPLATES = "CargoReqTemplates";
 
   public static final String VIEW_EXPEDITION_TYPES = "ExpeditionTypes";
   public static final String VIEW_SHIPPING_TERMS = "ShippingTerms";
@@ -691,11 +692,6 @@ public final class TransportConstants {
   public static final String COL_CARGO_REQUEST_DATE = "Date";
   public static final String COL_CARGO_REQUEST_USER = "User";
   public static final String COL_CARGO_REQUEST_STATUS = "Status";
-  public static final String COL_CARGO_REQUEST_EXPEDITION = "Expedition";
-  public static final String COL_CARGO_REQUEST_CARGO = "Cargo";
-  public static final String COL_CARGO_REQUEST_MANAGER = "Manager";
-
-  public static final String COL_CARGO_REQUEST_TEMPLATE_NAME = "Name";
   public static final String COL_CARGO_REQUEST_TEMPLATE_USER = "User";
 
   public static final String COL_REGISTRATION_DATE = "Date";
@@ -718,19 +714,22 @@ public final class TransportConstants {
   public static final String COL_REGISTRATION_BANK_ACCOUNT = "BankAccount";
   public static final String COL_REGISTRATION_SWIFT = "Swift";
   public static final String COL_REGISTRATION_NOTES = "Notes";
-  public static final String COL_REGISTRATION_HOST = "Host";
-  public static final String COL_REGISTRATION_AGENT = "Agent";
+  public static final String COL_REGISTRATION_REGISTER = "Register";
 
   public static final String COL_QUERY_DATE = "Date";
   public static final String COL_QUERY_STATUS = "Status";
+  public static final String COL_QUERY_CUSTOMER_TYPE = "CustomerType";
   public static final String COL_QUERY_CUSTOMER_NAME = "CustomerName";
   public static final String COL_QUERY_CUSTOMER_CODE = "CustomerCode";
   public static final String COL_QUERY_CUSTOMER_VAT_CODE = "CustomerVatCode";
+  public static final String COL_QUERY_CUSTOMER_COUNTRY = "CustomerCountry";
+  public static final String COL_QUERY_CUSTOMER_CITY = "CustomerCity";
   public static final String COL_QUERY_CUSTOMER_ADDRESS = "CustomerAddress";
   public static final String COL_QUERY_CUSTOMER_PHONE = "CustomerPhone";
+  public static final String COL_QUERY_CUSTOMER_FAX = "CustomerFax";
   public static final String COL_QUERY_CUSTOMER_EMAIL = "CustomerEmail";
-  public static final String COL_QUERY_CUSTOMER_CONTACT = "CustomerContact";
-  public static final String COL_QUERY_CUSTOMER_CONTACT_POSITION = "CustomerContactPosition";
+  public static final String COL_QUERY_CUSTOMER_CONTACT = "CustomerContactPerson";
+  public static final String COL_QUERY_CUSTOMER_CONTACT_POSITION = "CustomerPersonPosition";
   public static final String COL_QUERY_CUSTOMER_EXCHANGE_CODE = "CustomerExchangeCode";
   public static final String COL_QUERY_LOADING_EMAIL = "LoadingEmail";
   public static final String COL_QUERY_LOADING_CITY = "LoadingCity";
@@ -749,15 +748,13 @@ public final class TransportConstants {
   public static final String COL_QUERY_AGENT = "Agent";
   public static final String COL_QUERY_REASON = "LossReason";
 
-  public static final String COL_EXPEDITION_LOGISTICS = "Logistics";
   public static final String COL_EXPEDITION_TYPE_NAME = "Name";
+  public static final String COL_EXPEDITION_LOGISTICS = "Logistics";
   public static final String COL_SHIPPING_TERM_NAME = "Name";
   public static final String COL_SELF_SERVICE = "SelfService";
   public static final String COL_SHIPMENT_REQUEST = "ShipmentRequest";
   public static final String COL_LOSS_REASON_NAME = "ReasonName";
   public static final String COL_LOSS_REASON_TEMPLATE = "Template";
-
-  public static final String COL_CRF_REQUEST = "CargoRequest";
 
   public static final String COL_CARGO_TYPE_NAME = "CargoTypeName";
   public static final String COL_CARGO_TYPE_COLOR = "Color";
@@ -786,12 +783,10 @@ public final class TransportConstants {
   public static final String FORM_TRAILER_SETTINGS = "TrailerTbSettings";
 
   public static final String FORM_SHIPMENT_REQUEST = "ShipmentRequest";
-  public static final String FORM_NEW_CARGO_REQUEST = "NewCargoRequest";
-  public static final String FORM_CARGO_REQUEST = "CargoRequest";
 
   public static final String GRID_ASSESSMENT_REQUESTS = "AssessmentRequests";
   public static final String GRID_ASSESSMENT_ORDERS = "AssessmentOrders";
-  public static final String GRID_CARGO_REQUESTS = "CargoRequests";
+  public static final String GRID_SHIPMENT_REQUESTS = "ShipmentRegisteredRequests";
 
   public static final String PROP_COLORS = "Colors";
   public static final String PROP_COUNTRIES = "Countries";

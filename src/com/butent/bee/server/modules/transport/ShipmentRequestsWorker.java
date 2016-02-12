@@ -165,18 +165,10 @@ public class ShipmentRequestsWorker {
           val = qs.getLong(new SqlSelect()
               .addFields(tbl, sys.getIdName(tbl))
               .addFrom(tbl)
-              .setWhere(SqlUtils.and(SqlUtils.startsWith(tbl, fld, value),
-                  SqlUtils.endsWith(tbl, fld, value))));
+              .setWhere(SqlUtils.same(tbl, fld, value)));
 
           if (Objects.isNull(val)) {
             throw new BeeException(BeeUtils.joinWords(col, value));
-          }
-          if (Objects.equals(col, COL_EXPEDITION)) {
-            columns.add(view.getBeeColumn(COL_EXPEDITION_LOGISTICS));
-            values.add(qs.getValue(new SqlSelect()
-                .addFields(tbl, COL_EXPEDITION_LOGISTICS)
-                .addFrom(tbl)
-                .setWhere(SqlUtils.equals(tbl, sys.getIdName(tbl), val))));
           }
         } else {
           switch (column.getType()) {

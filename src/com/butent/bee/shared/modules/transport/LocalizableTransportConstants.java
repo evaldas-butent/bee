@@ -348,6 +348,8 @@ public interface LocalizableTransportConstants {
 
   String trRegistrationVatPayer();
 
+  String trRequest();
+
   String trRequestActionSubmit();
 
   String trRequestAdditionalInfo();
@@ -451,6 +453,8 @@ public interface LocalizableTransportConstants {
   String trRequestTemplates();
 
   String trRequestTermsOfDelivery();
+
+  String trRequestUnregistered();
 
   String trRoadCosts();
 

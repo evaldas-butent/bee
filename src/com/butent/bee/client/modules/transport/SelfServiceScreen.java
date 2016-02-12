@@ -11,9 +11,6 @@ import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.cli.Shell;
 import com.butent.bee.client.data.Data;
-import com.butent.bee.client.data.RowCallback;
-import com.butent.bee.client.data.RowFactory;
-import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.GridFactory.GridOptions;
@@ -29,14 +26,12 @@ import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
-import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.value.Value;
-import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.modules.administration.AdministrationConstants;
+import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.documents.DocumentConstants;
 import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.ui.UserInterface;
@@ -86,20 +81,10 @@ public class SelfServiceScreen extends ScreenImpl {
   public void start(UserData userData) {
     super.start(userData);
 
-    Data.setVisibleViews(Sets.newHashSet(VIEW_CARGO_REQUESTS, VIEW_SHIPMENT_REQUEST_FILES,
-        VIEW_CARGO_REQUEST_TEMPLATES, VIEW_ORDERS, VIEW_CARGO_INVOICES,
-        VIEW_CARGO_PURCHASE_INVOICES));
-    Data.setEditableViews(Sets.newHashSet(VIEW_CARGO_REQUESTS, VIEW_SHIPMENT_REQUEST_FILES,
-        VIEW_CARGO_REQUEST_TEMPLATES));
+    Data.setVisibleViews(Sets.newHashSet(VIEW_SHIPMENT_REQUESTS, VIEW_CARGO_HANDLING,
+        VIEW_SHIPMENT_REQUEST_FILES));
 
-    Data.setColumnReadOnly(VIEW_CARGO_REQUESTS, COL_CARGO_REQUEST_DATE);
-    Data.setColumnReadOnly(VIEW_CARGO_REQUESTS, COL_CARGO_REQUEST_USER);
-    Data.setColumnReadOnly(VIEW_CARGO_REQUESTS, COL_CARGO_REQUEST_STATUS);
-
-    Data.setColumnReadOnly(VIEW_CARGO_REQUEST_TEMPLATES, COL_CARGO_REQUEST_TEMPLATE_USER);
-
-    GridFactory.hideColumn(VIEW_CARGO_REQUESTS, COL_CARGO_REQUEST_USER);
-    GridFactory.hideColumn(VIEW_CARGO_REQUEST_TEMPLATES, COL_CARGO_REQUEST_TEMPLATE_USER);
+    Data.setColumnReadOnly(VIEW_SHIPMENT_REQUESTS, ClassifierConstants.COL_COMPANY_PERSON);
 
     GridFactory.hideColumn(VIEW_CARGO_INVOICES, "Select");
     GridFactory.hideColumn(VIEW_CARGO_PURCHASE_INVOICES, "Select");
@@ -110,39 +95,12 @@ public class SelfServiceScreen extends ScreenImpl {
       getCommandPanel().clear();
     }
 
-    addCommandItem(new Button(Localized.getConstants().trSelfServiceCommandNewRequest(),
-        new ClickHandler() {
-          @Override
-          public void onClick(ClickEvent event) {
-            DataInfo info = Data.getDataInfo(VIEW_CARGO_REQUESTS);
-            BeeRow row = RowFactory.createEmptyRow(info, true);
-
-            row.setValue(info.getColumnIndex(AdministrationConstants.COL_USER_INTERFACE),
-                UserInterface.normalize(getUserInterface()).ordinal());
-
-            RowFactory.createRow(info, row, Modality.ENABLED, new RowCallback() {
-
-              @Override
-              public void onSuccess(BeeRow result) {
-                showCargoRequests();
-              }
-            });
-          }
-        }));
-
     addCommandItem(new Button(Localized.getConstants().trSelfServiceCommandRequests(),
         new ClickHandler() {
           @Override
           public void onClick(ClickEvent event) {
-            showCargoRequests();
-          }
-        }));
-
-    addCommandItem(new Button(Localized.getConstants().trSelfServiceCommandTemplates(),
-        new ClickHandler() {
-          @Override
-          public void onClick(ClickEvent event) {
-            openGrid(VIEW_CARGO_REQUEST_TEMPLATES, true, COL_CARGO_REQUEST_TEMPLATE_USER);
+            openGrid(GRID_SHIPMENT_REQUESTS, Filter.isEqual(ClassifierConstants.COL_COMPANY_PERSON,
+                Value.getValue(BeeKeeper.getUser().getUserData().getCompanyPerson())));
           }
         }));
 
@@ -210,11 +168,6 @@ public class SelfServiceScreen extends ScreenImpl {
     PasswordService.change();
   }
 
-  private void openGrid(String gridName, boolean intercept, Filter filter) {
-    GridOptions gridOptions = (filter == null) ? null : GridOptions.forFilter(filter);
-    openGrid(gridName, intercept, gridOptions);
-  }
-
   private void openGrid(String gridName, boolean intercept, GridOptions gridOptions) {
     GridInterceptor gridInterceptor = intercept ? GridFactory.getGridInterceptor(gridName) : null;
     ActivationCallback callback =
@@ -223,24 +176,8 @@ public class SelfServiceScreen extends ScreenImpl {
     GridFactory.openGrid(gridName, gridInterceptor, gridOptions, callback);
   }
 
-  private void openGrid(String gridName, boolean intercept, String userColumn) {
-    GridOptions gridOptions = GridOptions.forCurrentUserFilter(userColumn);
-    openGrid(gridName, intercept, gridOptions);
-  }
-
   private void openGrid(String gridName, Filter filter) {
-    openGrid(gridName, false, filter);
-  }
-
-  private void showCargoRequests() {
-    switch (getUserInterface()) {
-      case SELF_SERVICE:
-        openGrid(GRID_CARGO_REQUESTS, true, COL_CARGO_REQUEST_USER);
-        break;
-
-      default:
-        notifyInfo(Localized.getConstants().noData());
-        break;
-    }
+    GridOptions gridOptions = (filter == null) ? null : GridOptions.forFilter(filter);
+    openGrid(gridName, false, gridOptions);
   }
 }

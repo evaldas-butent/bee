@@ -4,19 +4,24 @@ import com.google.common.base.Strings;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.ui.Widget;
 
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowInsertCallback;
+import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.modules.administration.AdministrationUtils;
+import com.butent.bee.client.modules.classifiers.ClassifierUtils;
 import com.butent.bee.client.modules.mail.NewMailMessage;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.form.FormView;
@@ -34,15 +39,19 @@ import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.i18n.SupportedLocale;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
-import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.mail.MailConstants;
 import com.butent.bee.shared.modules.transport.TransportConstants.*;
+import com.butent.bee.shared.ui.UserInterface;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 class ShipmentRequestForm extends AbstractFormInterceptor {
@@ -87,36 +96,60 @@ class ShipmentRequestForm extends AbstractFormInterceptor {
   @Override
   public void afterRefresh(FormView form, IsRow row) {
     HeaderView header = getHeaderView();
+
     if (header == null) {
       return;
     }
     header.clearCommandPanel();
 
-    if (!DataUtils.hasId(row)) {
+    boolean registered = DataUtils.isId(row.getLong(form.getDataIndex(COL_COMPANY_PERSON)));
+
+    Widget widget = form.getWidgetByName(COL_REGISTRATION_REGISTER);
+
+    if (widget != null) {
+      widget.setVisible(!registered);
+    }
+    widget = form.getWidgetByName(COL_COMPANY_PERSON);
+
+    if (widget != null) {
+      widget.setVisible(registered);
+    }
+    if (DataUtils.isNewRow(row)) {
       return;
     }
-    CargoRequestStatus status = EnumUtils.getEnumByIndex(CargoRequestStatus.class,
-        row.getInteger(form.getDataIndex(COL_QUERY_STATUS)));
+    header.setCaption(registered ? loc.trRequest() : loc.trRequestUnregistered());
 
-    if (status != CargoRequestStatus.LOST) {
+    Integer status = row.getInteger(form.getDataIndex(COL_QUERY_STATUS));
+
+    if (!isSelfService() && !ShipmentRequestStatus.LOST.is(status)) {
       header.addCommandItem(mailCommand);
 
-      if (!DataUtils.isId(row.getLong(form.getDataIndex(ClassifierConstants.COL_COMPANY_PERSON)))) {
+      if (!registered) {
         header.addCommandItem(registerCommand);
-      } else if (status != CargoRequestStatus.CONFIRMED) {
+      } else if (!ShipmentRequestStatus.CONFIRMED.is(status)) {
         header.addCommandItem(confirmCommand);
       }
-      if (status != CargoRequestStatus.CONFIRMED) {
+      if (!ShipmentRequestStatus.CONFIRMED.is(status)) {
         header.addCommandItem(lostCommand);
 
-        if (status == CargoRequestStatus.NEW
+        if (ShipmentRequestStatus.NEW.is(status)
             && !BeeUtils.isEmpty(getStringValue(COL_QUERY_HOST))
             && Data.isViewEditable(AdministrationConstants.VIEW_IP_FILTERS)) {
           header.addCommandItem(blockCommand);
         }
       }
     }
-    form.setEnabled(status != CargoRequestStatus.LOST);
+  }
+
+  @Override
+  public void beforeRefresh(FormView form, IsRow row) {
+    if (!DataUtils.isNewRow(row)) {
+      Integer status = row.getInteger(form.getDataIndex(COL_QUERY_STATUS));
+
+      form.setEnabled(!ShipmentRequestStatus.LOST.is(status)
+          && (!isSelfService() || ShipmentRequestStatus.NEW.is(status)));
+    }
+    super.beforeRefresh(form, row);
   }
 
   @Override
@@ -126,8 +159,8 @@ class ShipmentRequestForm extends AbstractFormInterceptor {
 
   @Override
   public boolean onStartEdit(FormView form, IsRow row, Scheduler.ScheduledCommand focusCommand) {
-    if (EnumUtils.getEnumByIndex(CargoRequestStatus.class,
-        row.getInteger(form.getDataIndex(COL_QUERY_STATUS))) == CargoRequestStatus.LOST
+    if (EnumUtils.getEnumByIndex(ShipmentRequestStatus.class,
+        row.getInteger(form.getDataIndex(COL_QUERY_STATUS))) == ShipmentRequestStatus.LOST
         && BeeUtils.isEmpty(row.getString(form.getDataIndex(COL_QUERY_REASON)))) {
 
       onLoss(true);
@@ -137,9 +170,22 @@ class ShipmentRequestForm extends AbstractFormInterceptor {
 
   @Override
   public void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow) {
+    newRow.setValue(form.getDataIndex(COL_COMPANY_PERSON),
+        BeeKeeper.getUser().getUserData().getCompanyPerson());
+
+    SelfServiceUtils.setDefaultPerson(form, newRow, COL_COMPANY_PERSON);
     SelfServiceUtils.setDefaultExpeditionType(form, newRow, COL_QUERY_EXPEDITION);
     SelfServiceUtils.setDefaultShippingTerm(form, newRow, COL_CARGO_SHIPPING_TERM);
+
+    newRow.setValue(form.getDataIndex(AdministrationConstants.COL_USER_LOCALE),
+        SupportedLocale.getByLanguage(SupportedLocale.normalizeLanguage(loc.languageTag()))
+            .ordinal());
+
     super.onStartNewRow(form, oldRow, newRow);
+  }
+
+  private static boolean isSelfService() {
+    return Objects.equals(BeeKeeper.getScreen().getUserInterface(), UserInterface.SELF_SERVICE);
   }
 
   private void onBlock() {
@@ -153,6 +199,45 @@ class ShipmentRequestForm extends AbstractFormInterceptor {
   }
 
   private void onRegister() {
+    FormView form = getFormView();
+    BeeRow oldRow = DataUtils.cloneRow(form.getOldRow());
+    BeeRow row = DataUtils.cloneRow(form.getActiveRow());
+
+    Global.confirm(loc.register(), Icon.QUESTION, Arrays.asList("Lab", "dein"),
+        Localized.getConstants().actionCreate(), Localized.getConstants().actionCancel(), () -> {
+          Map<String, String> companyInfo = new HashMap<>();
+
+          for (String col : new String[] {
+              COL_COMPANY_TYPE, COL_COMPANY_NAME, COL_COMPANY_CODE, COL_COMPANY_VAT_CODE, COL_FAX,
+              COL_COUNTRY, COL_CITY, COL_ADDRESS, COL_POST_INDEX, COL_NOTES}) {
+
+            companyInfo.put(col, row.getString(form.getDataIndex("Customer" + col)));
+          }
+          ClassifierUtils.createCompany(companyInfo, (company) -> {
+            Map<String, String> personInfo = new HashMap<>();
+            personInfo.put(COL_COMPANY, BeeUtils.toString(company));
+
+            String contact = row.getString(form.getDataIndex(COL_QUERY_CUSTOMER_CONTACT));
+
+            if (!BeeUtils.isEmpty(contact)) {
+              String[] arr = contact.split(BeeConst.STRING_SPACE, 2);
+              personInfo.put(COL_FIRST_NAME, ArrayUtils.getQuietly(arr, 0));
+              personInfo.put(COL_LAST_NAME, ArrayUtils.getQuietly(arr, 1));
+            }
+            personInfo.put(COL_PHONE, row.getString(form.getDataIndex("Customer" + COL_PHONE)));
+            personInfo.put(ALS_EMAIL_ID, row.getString(form.getDataIndex("Customer" + COL_EMAIL)));
+            personInfo.put(COL_POSITION,
+                row.getString(form.getDataIndex(COL_QUERY_CUSTOMER_CONTACT_POSITION)));
+
+            ClassifierUtils.createCompanyPerson(personInfo, (person) -> {
+              row.setValue(getDataIndex(COL_COMPANY_PERSON), person);
+              row.setValue(getDataIndex(COL_QUERY_MANAGER), BeeKeeper.getUser().getUserId());
+
+              SelfServiceUtils.update(form, DataUtils.getUpdated(form.getViewName(),
+                  form.getDataColumns(), oldRow, row, null));
+            });
+          });
+        });
   }
 
   private void onConfirm() {
@@ -185,7 +270,7 @@ class ShipmentRequestForm extends AbstractFormInterceptor {
     layout.getCellFormatter().setColSpan(2, 0, 2);
     layout.setWidget(2, 0, comment);
 
-    Global.inputWidget(CargoRequestStatus.LOST.getCaption(loc), layout, new InputCallback() {
+    Global.inputWidget(ShipmentRequestStatus.LOST.getCaption(loc), layout, new InputCallback() {
       @Override
       public String getErrorMessage() {
         if (required && (BeeUtils.allEmpty(reason.getDisplayValue(), comment.getValue())
@@ -211,7 +296,7 @@ class ShipmentRequestForm extends AbstractFormInterceptor {
       public void onSuccess() {
         getActiveRow().setValue(getDataIndex(COL_QUERY_REASON),
             BeeUtils.join(BeeConst.STRING_EOL, reason.getDisplayValue(), comment.getValue()));
-        SelfServiceUtils.updateStatus(getFormView(), COL_QUERY_STATUS, CargoRequestStatus.LOST);
+        SelfServiceUtils.updateStatus(getFormView(), COL_QUERY_STATUS, ShipmentRequestStatus.LOST);
       }
     });
   }
@@ -219,12 +304,15 @@ class ShipmentRequestForm extends AbstractFormInterceptor {
   private void sendMail() {
     FormView form = getFormView();
     BeeRow row = DataUtils.cloneRow(form.getActiveRow());
-    row.setValue(getDataIndex(COL_QUERY_STATUS), CargoRequestStatus.ANSWERED.ordinal());
 
+    if (ShipmentRequestStatus.NEW.is(row.getInteger(form.getDataIndex(COL_QUERY_STATUS)))) {
+      row.setValue(form.getDataIndex(COL_QUERY_STATUS), ShipmentRequestStatus.ANSWERED.ordinal());
+    }
     BeeRowSet rs = DataUtils.getUpdated(form.getViewName(), form.getDataColumns(), form.getOldRow(),
         row, form.getChildrenForUpdate());
 
-    NewMailMessage.create(getStringValue(COL_QUERY_CUSTOMER_EMAIL), null, null, null,
+    NewMailMessage.create(BeeUtils.notEmpty(getStringValue(COL_PERSON + COL_EMAIL),
+            getStringValue(COL_QUERY_CUSTOMER_EMAIL)), null, null, null,
         new BiConsumer<Long, Boolean>() {
           @Override
           public void accept(Long messageId, Boolean saveMode) {

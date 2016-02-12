@@ -617,6 +617,14 @@ public final class SqlUtils {
     return round(field(source, field), precision);
   }
 
+  public static IsCondition same(IsExpression expr, String value) {
+    return and(startsWith(expr, value), endsWith(expr, value));
+  }
+
+  public static IsCondition same(String source, String field, String value) {
+    return same(field(source, field), value);
+  }
+
   public static IsQuery setSqlParameter(String prmName, Object value) {
     Map<String, Object> params = new HashMap<>();
     params.put("prmName", prmName);

@@ -15,7 +15,6 @@ import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.server.data.DataEditorBean;
-import com.butent.bee.server.data.DataEvent.ViewDeleteEvent;
 import com.butent.bee.server.data.DataEvent.ViewInsertEvent;
 import com.butent.bee.server.data.DataEvent.ViewQueryEvent;
 import com.butent.bee.server.data.DataEventHandler;
@@ -397,62 +396,6 @@ public class TransportModuleBean implements BeeModule {
 
       @Subscribe
       @AllowConcurrentEvents
-      public void deleteOrphanCargo(ViewDeleteEvent event) {
-        if (event.isTarget(VIEW_SHIPMENT_REQUESTS, VIEW_CARGO_REQUESTS)) {
-          if (event.isBefore()) {
-            String tableName;
-            String columnName;
-
-            if (BeeUtils.same(event.getTargetName(), VIEW_SHIPMENT_REQUESTS)) {
-              tableName = TBL_SHIPMENT_REQUESTS;
-              columnName = COL_QUERY_CARGO;
-            } else if (BeeUtils.same(event.getTargetName(), VIEW_CARGO_REQUESTS)) {
-              tableName = TBL_CARGO_REQUESTS;
-              columnName = COL_CARGO_REQUEST_CARGO;
-            } else {
-              tableName = null;
-              columnName = null;
-            }
-
-            if (tableName == null) {
-              return;
-            }
-
-            SqlSelect query = new SqlSelect().addFields(tableName, columnName).addFrom(tableName)
-                .addFromInner(TBL_ORDER_CARGO,
-                    sys.joinTables(TBL_ORDER_CARGO, tableName, columnName))
-                .setWhere(SqlUtils.and(
-                    SqlUtils.inList(tableName, sys.getIdName(tableName), event.getIds()),
-                    SqlUtils.isNull(TBL_ORDER_CARGO, COL_ORDER)));
-
-            Long[] cargos = qs.getLongColumn(query);
-            if (ArrayUtils.length(cargos) > 0) {
-              Set<Long> orphans = Sets.newHashSet(cargos);
-              event.setUserObject(orphans);
-            } else {
-              event.setUserObject(null);
-            }
-
-          } else if (event.isAfter() && event.getUserObject() instanceof Collection) {
-            Collection<?> orphans = (Collection<?>) event.getUserObject();
-
-            if (!BeeUtils.isEmpty(orphans)) {
-              SqlDelete delete =
-                  new SqlDelete(TBL_ORDER_CARGO)
-                      .setWhere(SqlUtils.inList(TBL_ORDER_CARGO, sys.getIdName(TBL_ORDER_CARGO),
-                          orphans));
-
-              int deleteCount = qs.updateData(delete);
-              if (deleteCount > 0) {
-                logger.debug("deleted", deleteCount, "orphan cargo");
-              }
-            }
-          }
-        }
-      }
-
-      @Subscribe
-      @AllowConcurrentEvents
       public void fillCargoIncomes(ViewQueryEvent event) {
         if (event.isAfter(VIEW_ORDER_CARGO) && event.hasData()) {
           SimpleRowSet rs = qs.getData(rep.getCargoIncomeQuery(event.getQuery()
@@ -643,19 +586,6 @@ public class TransportModuleBean implements BeeModule {
       @Override
       protected List<IsCondition> getConditions(long userId) {
         return NewsHelper.buildConditions(SqlUtils.isNull(TBL_TRIPS, COL_EXPEDITION));
-      }
-    });
-
-    news.registerUsageQueryProvider(Feed.CARGO_REQUESTS_MY, new ExtendedUsageQueryProvider() {
-      @Override
-      protected List<IsCondition> getConditions(long userId) {
-        return NewsHelper.buildConditions(SqlUtils.equals(TBL_CARGO_REQUESTS,
-            COL_CARGO_REQUEST_MANAGER, userId));
-      }
-
-      @Override
-      protected List<Pair<String, IsCondition>> getJoins() {
-        return NewsHelper.buildJoin(TBL_CARGO_REQUESTS, news.joinUsage(TBL_CARGO_REQUESTS));
       }
     });
 
