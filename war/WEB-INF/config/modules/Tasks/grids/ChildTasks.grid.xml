@@ -6,22 +6,31 @@
   name="ChildTasks" viewName="Tasks" enabledActions="copy"
   order="Status, FinishTime, TaskID desc" maxColumnWidth="160" caption="=crmTasks"
   >
+ 
 
   <xi:include href="columns/TaskMode.column.xml" />
   <xi:include href="columns/TaskStar.column.xml" />
   <g:columns>
-    <IdColumn name="Id" />
+    <IdColumn name="Id" >
+    <footer text="=totalOf" horizontalAlignment="right" />
+    </IdColumn>
     <RelColumn name="ProjectStage" label="=prjStage" />
   </g:columns>
 
   <xi:include href="columns/Task.columns.xml" />
 
   <g:columns>
-    <DataColumn name="ExpectedExpenses" scale="2" />
+    <DataColumn name="ExpectedExpenses" scale="2">
+    <footer aggregate="sum" />
+    </DataColumn>
+    <!--<CalcColumn name="ActualDuration" type="string" label="=prjActualTaskDuration" caption="=prjActualTaskDuration" filterOptions="ActualDuration">
+    <footer evaluator="actualDuration" aggregate="sum" />
+    </CalcColumn>  -->
+     
     <CalcColumn type="string" name="ActualDuration" label="=prjActualTaskDuration"
       caption="=prjActualTaskDuration" filterOptions="ActualDuration" >
       <render>
-          <ui:function>
+          <ui:function> 
             var diff = row.ActualDuration,
               seconds = 0,
               minutes = 0,
@@ -37,13 +46,16 @@
             return text;
           </ui:function>
         </render>
+        <footer evaluator="time" aggregate="sum" />
     </CalcColumn>
-    <DataColumn name="ActualExpenses" scale="2" />
+    <DataColumn name="ActualExpenses" scale="2">
+    <footer aggregate="sum" />
+    </DataColumn>
     <RelColumn name="Currency" />
   </g:columns>
-
   <g:rowStyle>
     <ui:inline>="font-style: italic;"</ui:inline>
     <ui:expression>row.StartTime == null</ui:expression>
   </g:rowStyle>
+  
 </g:Grid>

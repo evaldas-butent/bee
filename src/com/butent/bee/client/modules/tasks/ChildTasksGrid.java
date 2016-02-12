@@ -1,5 +1,6 @@
 package com.butent.bee.client.modules.tasks;
 
+import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 
 import com.butent.bee.client.BeeKeeper;
@@ -10,10 +11,14 @@ import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.event.logical.RenderingEvent;
+import com.butent.bee.client.grid.ColumnFooter;
+import com.butent.bee.client.grid.ColumnHeader;
+import com.butent.bee.client.grid.column.AbstractColumn;
 import com.butent.bee.client.modules.projects.ProjectsHelper;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.edit.EditStartEvent;
+import com.butent.bee.client.view.edit.EditableColumn;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
@@ -21,15 +26,18 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RelationUtils;
 import com.butent.bee.shared.data.event.DataChangeEvent;
+import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.projects.ProjectConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.modules.tasks.TaskType;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -49,6 +57,23 @@ class ChildTasksGrid extends TasksGrid {
 
   ChildTasksGrid() {
     super(TaskType.RELATED, null);
+  }
+
+  @Override
+  public boolean afterCreateColumn(String columnId, List<? extends IsColumn> dataColumns,
+      AbstractColumn<?> column, ColumnHeader header, ColumnFooter footer,
+      EditableColumn editableColumn) {
+    if (BeeUtils.same(columnId, TaskConstants.COL_ACTUAL_DURATION)) {
+      footer.setFormatter(new Function<Value, String>() {
+
+        @Override
+        public String apply(Value value) {
+          long millisecs = BeeUtils.toLong(value.toString());
+          return TimeUtils.renderTime(millisecs, false);
+        }
+      });
+    }
+    return true;
   }
 
   @Override

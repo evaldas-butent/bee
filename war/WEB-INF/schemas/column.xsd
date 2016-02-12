@@ -220,6 +220,7 @@
       <xs:enumeration value="total" />
       <xs:enumeration value="vat" />
       <xs:enumeration value="discount" />
+      <xs:enumeration value="time" />
     </xs:restriction>
   </xs:simpleType>
 
