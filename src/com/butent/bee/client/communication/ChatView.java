@@ -9,21 +9,23 @@ import static com.butent.bee.shared.communication.ChatConstants.*;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.composite.FileCollector;
+import com.butent.bee.client.composite.FileGroup;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.logical.ReadyEvent;
 import com.butent.bee.client.event.logical.VisibilityChangeEvent;
 import com.butent.bee.client.layout.Flow;
+import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.UiOption;
+import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.view.HeaderImpl;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.View;
 import com.butent.bee.client.view.ViewFactory;
 import com.butent.bee.client.websocket.Endpoint;
-import com.butent.bee.client.widget.Badge;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Image;
@@ -32,6 +34,7 @@ import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.Toggle;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Latch;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.Chat;
 import com.butent.bee.shared.communication.ChatItem;
@@ -94,6 +97,16 @@ public class ChatView extends Flow implements Presenter, View,
       body.add(text);
 
       add(body);
+
+      if (message.hasFiles()) {
+        Simple fileContainer = new Simple(STYLE_MESSAGE_FILES);
+
+        FileGroup fileGroup = new FileGroup();
+        fileGroup.addFiles(message.getFiles());
+
+        fileContainer.setWidget(fileGroup);
+        add(fileContainer);
+      }
     }
 
     private boolean refresh() {
@@ -130,6 +143,7 @@ public class ChatView extends Flow implements Presenter, View,
   private static final String STYLE_MESSAGE_BODY = STYLE_MESSAGE_PREFIX + "body";
   private static final String STYLE_MESSAGE_SIGNATURE = STYLE_MESSAGE_PREFIX + "signature";
   private static final String STYLE_MESSAGE_TEXT = STYLE_MESSAGE_PREFIX + "text";
+  private static final String STYLE_MESSAGE_FILES = STYLE_MESSAGE_PREFIX + "files";
 
   private static final String STYLE_AUTO_SCROLL_PREFIX = STYLE_PREFIX + "autoScroll-";
   private static final String STYLE_AUTO_SCROLL_CONTAINER = STYLE_AUTO_SCROLL_PREFIX + "container";
@@ -152,7 +166,6 @@ public class ChatView extends Flow implements Presenter, View,
   private final Flow messagePanel;
   private final InputArea inputArea;
   private final FileCollector fileCollector;
-  private final Badge fileBadge;
   private final Flow onlinePanel;
 
   private final Timer timer;
@@ -233,12 +246,8 @@ public class ChatView extends Flow implements Presenter, View,
     attach.setTitle(Localized.getConstants().chooseFiles());
     attach.addClickHandler(event -> fileCollector.clickInput());
 
-    this.fileBadge = new Badge(0, STYLE_PREFIX + "fileBadge");
-    fileBadge.addClickHandler(event -> showFiles());
-
     Flow filePanel = new Flow(STYLE_PREFIX + "filePanel");
     filePanel.add(attach);
-    filePanel.add(fileBadge);
     filePanel.add(fileCollector);
 
     this.onlinePanel = new Flow(STYLE_PREFIX + "onlinePanel");
@@ -322,6 +331,10 @@ public class ChatView extends Flow implements Presenter, View,
   @Override
   public String getIdPrefix() {
     return "chat";
+  }
+
+  public InputArea getInputArea() {
+    return inputArea;
   }
 
   @Override
@@ -474,33 +487,37 @@ public class ChatView extends Flow implements Presenter, View,
   }
 
   private void addFiles(Collection<? extends FileInfo> input) {
-    List<String> names = new ArrayList<>();
-    if (!BeeUtils.isEmpty(fileBadge.getTitle())) {
-      names.add(fileBadge.getTitle());
+    if (!BeeUtils.isEmpty(input)) {
+      Latch latch = new Latch(input.size());
+      List<FileInfo> files = new ArrayList<>();
+
+      for (final FileInfo fileInfo : input) {
+        FileUtils.uploadFile(fileInfo, id -> {
+          files.add(new FileInfo(id, fileInfo.getName(), fileInfo.getSize(), fileInfo.getType()));
+          latch.decrement();
+
+          if (latch.isOpen()) {
+            sendFiles(files);
+          }
+        });
+      }
+
+      fileCollector.clear();
     }
-    for (FileInfo fileInfo : input) {
-      names.add(fileInfo.getName());
-    }
-    fileBadge.setValue(input.size());
-    fileBadge.setTitle(BeeUtils.buildLines(names));
   }
 
-  private boolean autoScroll() {
-    return autoScrollToggle.isChecked() || getPopup() != null;
+  private void sendFiles(List<FileInfo> files) {
+    if (!BeeUtils.isEmpty(files)) {
+      ChatItem item = new ChatItem(BeeKeeper.getUser().getUserId(), files);
+      send(item);
+    }
   }
 
-  private boolean compose() {
-    String text = BeeUtils.trim(inputArea.getValue());
-    if (BeeUtils.isEmpty(text)) {
-      return false;
-    }
-
+  private void send(ChatItem item) {
     if (!Endpoint.isOpen()) {
       logger.warning("cannot send message");
-      return false;
     }
 
-    ChatItem item = new ChatItem(BeeKeeper.getUser().getUserId(), text);
     ChatMessage chatMessage = new ChatMessage(chatId, item);
 
     Global.getChatManager().addMessage(chatMessage);
@@ -514,6 +531,20 @@ public class ChatView extends Flow implements Presenter, View,
     }
 
     BeeKeeper.getRpc().makeRequest(params);
+  }
+
+  private boolean autoScroll() {
+    return autoScrollToggle.isChecked() || getPopup() != null;
+  }
+
+  private boolean compose() {
+    String text = BeeUtils.trim(inputArea.getValue());
+    if (BeeUtils.isEmpty(text)) {
+      return false;
+    }
+
+    ChatItem item = new ChatItem(BeeKeeper.getUser().getUserId(), text);
+    send(item);
 
     return true;
   }
@@ -587,9 +618,6 @@ public class ChatView extends Flow implements Presenter, View,
 
   private void setLastMessageTime(long lastMessageTime) {
     this.lastMessageTime = lastMessageTime;
-  }
-
-  private void showFiles() {
   }
 
   private void updateOnlinePanel() {

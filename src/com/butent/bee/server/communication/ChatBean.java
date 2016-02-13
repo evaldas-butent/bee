@@ -1,11 +1,13 @@
 package com.butent.bee.server.communication;
 
 import static com.butent.bee.shared.communication.ChatConstants.*;
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
+import com.butent.bee.server.modules.administration.ExtensionIcons;
 import com.butent.bee.server.sql.HasConditions;
 import com.butent.bee.server.sql.SqlDelete;
 import com.butent.bee.server.sql.SqlInsert;
@@ -20,6 +22,7 @@ import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
+import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -28,8 +31,10 @@ import com.butent.bee.shared.websocket.messages.ChatMessage;
 import com.butent.bee.shared.websocket.messages.ChatStateMessage;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.ejb.EJB;
@@ -113,55 +118,7 @@ public class ChatBean {
     List<Chat> chats = new ArrayList<>();
 
     for (SimpleRow row : chatData) {
-      long chatId = row.getLong(COL_CHAT);
-      Chat chat = new Chat(chatId, row.getValue(COL_CHAT_NAME));
-
-      Long created = row.getLong(COL_CHAT_CREATED);
-      if (BeeUtils.isPositive(created)) {
-        chat.setCreated(created);
-      }
-
-      Long creator = row.getLong(COL_CHAT_CREATOR);
-      if (DataUtils.isId(creator)) {
-        chat.setCreator(creator);
-      }
-
-      Long registered = row.getLong(COL_CHAT_USER_REGISTERED);
-      if (BeeUtils.isPositive(registered)) {
-        chat.setRegistered(registered);
-      }
-
-      Long lastAccess = row.getLong(COL_CHAT_USER_LAST_ACCESS);
-      if (BeeUtils.isPositive(lastAccess)) {
-        chat.setLastAccess(lastAccess);
-      }
-
-      List<Long> users = getChatUsers(chatId);
-      for (Long u : users) {
-        chat.addUser(u);
-      }
-
-      int messageCount = countMessages(chatId);
-      if (messageCount > 0) {
-        chat.setMessageCount(messageCount);
-
-        ChatItem lastMessage = getLastMessage(chatId);
-        chat.setLastMessage(lastMessage);
-
-        int unreadCount;
-        if (lastMessage != null && BeeUtils.isPositive(lastAccess)
-            && BeeUtils.isMore(lastAccess, lastMessage.getTime())) {
-
-          unreadCount = 0;
-        } else {
-          unreadCount = countUnread(chatId, userId, lastAccess);
-        }
-
-        if (unreadCount > 0) {
-          chat.setUnreadCount(unreadCount);
-        }
-      }
-
+      Chat chat = createChat(row, userId);
       chats.add(chat);
     }
 
@@ -262,6 +219,19 @@ public class ChatBean {
     return ResponseObject.response(chat);
   }
 
+  private Chat createChat(SimpleRow row, long userId) {
+    Chat chat = new Chat(row.getLong(COL_CHAT), row.getValue(COL_CHAT_NAME));
+
+    chat.setValues(row);
+
+    setUsers(chat);
+
+    setMessageStatistics(chat);
+    setUnreadCount(chat, userId);
+
+    return chat;
+  }
+
   private int countMessages(long chatId) {
     return qs.sqlCount(TBL_CHAT_MESSAGES, SqlUtils.equals(TBL_CHAT_MESSAGES, COL_CHAT, chatId));
   }
@@ -293,56 +263,29 @@ public class ChatBean {
     }
 
     SimpleRow row = chatData.getRow(0);
-
-    Chat chat = new Chat(chatId, row.getValue(COL_CHAT_NAME));
-
-    Long created = row.getLong(COL_CHAT_CREATED);
-    if (BeeUtils.isPositive(created)) {
-      chat.setCreated(created);
-    }
-
-    Long creator = row.getLong(COL_CHAT_CREATOR);
-    if (DataUtils.isId(creator)) {
-      chat.setCreator(creator);
-    }
-
-    Long registered = row.getLong(COL_CHAT_USER_REGISTERED);
-    if (BeeUtils.isPositive(registered)) {
-      chat.setRegistered(registered);
-    }
-
-    Long lastAccess = row.getLong(COL_CHAT_USER_LAST_ACCESS);
-    if (BeeUtils.isPositive(lastAccess)) {
-      chat.setLastAccess(lastAccess);
-    }
-
-    List<Long> users = getChatUsers(chatId);
-    for (Long u : users) {
-      chat.addUser(u);
-    }
-
-    int messageCount = countMessages(chatId);
-    if (messageCount > 0) {
-      chat.setMessageCount(messageCount);
-
-      ChatItem lastMessage = getLastMessage(chatId);
-      chat.setLastMessage(lastMessage);
-
-      int unreadCount;
-      if (lastMessage != null && BeeUtils.isPositive(lastAccess)
-          && BeeUtils.isMore(lastAccess, lastMessage.getTime())) {
-
-        unreadCount = 0;
-      } else {
-        unreadCount = countUnread(chatId, userId, lastAccess);
-      }
-
-      if (unreadCount > 0) {
-        chat.setUnreadCount(unreadCount);
-      }
-    }
+    Chat chat = createChat(row, userId);
 
     return chat;
+  }
+
+  private Map<Long, List<FileInfo>> getChatFiles(long chatId) {
+    String idName = sys.getIdName(TBL_CHAT_MESSAGES);
+
+    Map<Long, List<FileInfo>> result = new HashMap<>();
+
+    SqlSelect query = new SqlSelect().setDistinctMode(true)
+        .addFields(TBL_CHAT_MESSAGES, idName)
+        .addFrom(TBL_CHAT_MESSAGES)
+        .addFromInner(TBL_CHAT_FILES,
+            sys.joinTables(TBL_CHAT_MESSAGES, TBL_CHAT_FILES, COL_CHAT_MESSAGE))
+        .setWhere(SqlUtils.equals(TBL_CHAT_MESSAGES, COL_CHAT, chatId));
+
+    Set<Long> messageIds = qs.getLongSet(query);
+    for (Long messageId : messageIds) {
+      result.put(messageId, getMessageFiles(messageId));
+    }
+
+    return result;
   }
 
   private List<Long> getChatUsers(long chatId) {
@@ -356,8 +299,11 @@ public class ChatBean {
   }
 
   private ChatItem getLastMessage(long chatId) {
+    String idName = sys.getIdName(TBL_CHAT_MESSAGES);
+
     SqlSelect query = new SqlSelect()
-        .addFields(TBL_CHAT_MESSAGES, COL_CHAT_USER, COL_CHAT_MESSAGE_TIME, COL_CHAT_MESSAGE_TEXT)
+        .addFields(TBL_CHAT_MESSAGES, COL_CHAT_USER, COL_CHAT_MESSAGE_TIME, COL_CHAT_MESSAGE_TEXT,
+            idName)
         .addFrom(TBL_CHAT_MESSAGES)
         .setWhere(SqlUtils.equals(TBL_CHAT_MESSAGES, COL_CHAT, chatId))
         .addOrderDesc(TBL_CHAT_MESSAGES, COL_CHAT_MESSAGE_TIME)
@@ -369,9 +315,38 @@ public class ChatBean {
     }
 
     SimpleRow row = data.getRow(0);
+    List<FileInfo> files = getMessageFiles(row.getLong(idName));
 
     return new ChatItem(row.getLong(COL_CHAT_USER), row.getLong(COL_CHAT_MESSAGE_TIME),
-        row.getValue(COL_CHAT_MESSAGE_TEXT));
+        row.getValue(COL_CHAT_MESSAGE_TEXT), files);
+  }
+
+  private List<FileInfo> getMessageFiles(long messageId) {
+    List<FileInfo> files = new ArrayList<>();
+
+    SqlSelect query = new SqlSelect()
+        .addFields(TBL_CHAT_FILES, COL_CHAT_FILE, COL_CHAT_FILE_CAPTION)
+        .addFields(TBL_FILES, COL_FILE_NAME, COL_FILE_SIZE, COL_FILE_TYPE)
+        .addFrom(TBL_CHAT_FILES)
+        .addFromInner(TBL_FILES,
+            sys.joinTables(TBL_FILES, TBL_CHAT_FILES, COL_CHAT_FILE))
+        .setWhere(SqlUtils.equals(TBL_CHAT_FILES, COL_CHAT_MESSAGE, messageId))
+        .addOrder(TBL_CHAT_FILES, sys.getIdName(TBL_CHAT_FILES));
+
+    SimpleRowSet data = qs.getData(query);
+
+    if (!DataUtils.isEmpty(data)) {
+      for (SimpleRow row : data) {
+        FileInfo file = new FileInfo(row.getLong(COL_CHAT_FILE),
+            row.getValue(COL_FILE_NAME), row.getLong(COL_FILE_SIZE), row.getValue(COL_FILE_TYPE));
+
+        file.setCaption(row.getValue(COL_CHAT_FILE_CAPTION));
+        file.setIcon(ExtensionIcons.getIcon(file.getName()));
+        files.add(file);
+      }
+    }
+
+    return files;
   }
 
   private ResponseObject getMessages(RequestInfo reqInfo) {
@@ -380,8 +355,11 @@ public class ChatBean {
       return ResponseObject.parameterNotFound(reqInfo.getService(), COL_CHAT);
     }
 
+    String idName = sys.getIdName(TBL_CHAT_MESSAGES);
+
     SqlSelect query = new SqlSelect()
-        .addFields(TBL_CHAT_MESSAGES, COL_CHAT_USER, COL_CHAT_MESSAGE_TIME, COL_CHAT_MESSAGE_TEXT)
+        .addFields(TBL_CHAT_MESSAGES, COL_CHAT_USER, COL_CHAT_MESSAGE_TIME, COL_CHAT_MESSAGE_TEXT,
+            idName)
         .addFrom(TBL_CHAT_MESSAGES)
         .setWhere(SqlUtils.equals(TBL_CHAT_MESSAGES, COL_CHAT, chatId))
         .addOrder(TBL_CHAT_MESSAGES, COL_CHAT_MESSAGE_TIME);
@@ -400,11 +378,13 @@ public class ChatBean {
       }
     }
 
+    Map<Long, List<FileInfo>> files = getChatFiles(chatId);
+
     List<ChatItem> messages = new ArrayList<>();
 
     for (SimpleRow row : data) {
       messages.add(new ChatItem(row.getLong(COL_CHAT_USER), row.getLong(COL_CHAT_MESSAGE_TIME),
-          row.getValue(COL_CHAT_MESSAGE_TEXT)));
+          row.getValue(COL_CHAT_MESSAGE_TEXT), files.get(row.getLong(idName))));
     }
 
     logger.info(messages.size(), "messages found in chat", chatId);
@@ -468,33 +448,92 @@ public class ChatBean {
     return response;
   }
 
+  private void setMessageStatistics(Chat chat) {
+    int count = countMessages(chat.getId());
+    chat.setMessageCount(count);
+
+    if (count > 0) {
+      chat.setLastMessage(getLastMessage(chat.getId()));
+    } else {
+      chat.setLastMessage(null);
+    }
+  }
+
+  private void setUnreadCount(Chat chat, long userId) {
+    int count;
+
+    if (chat.getLastMessage() == null) {
+      count = 0;
+
+    } else if (BeeUtils.isMore(chat.getLastAccess(), chat.getLastMessage().getTime())) {
+      count = 0;
+
+    } else if (!BeeUtils.isPositive(chat.getLastAccess())) {
+      count = chat.getMessageCount();
+
+    } else {
+      count = countUnread(chat.getId(), userId, chat.getLastAccess());
+    }
+
+    chat.setUnreadCount(count);
+  }
+
+  private void setUsers(Chat chat) {
+    chat.setUsers(getChatUsers(chat.getId()));
+  }
+
+  private void setUserValues(Chat chat, long userId) {
+    SqlSelect query = new SqlSelect()
+        .addFields(TBL_CHAT_USERS, COL_CHAT_USER_REGISTERED, COL_CHAT_USER_LAST_ACCESS)
+        .addFrom(TBL_CHAT_USERS)
+        .setWhere(SqlUtils.equals(TBL_CHAT_USERS, COL_CHAT, chat.getId(), COL_CHAT_USER, userId));
+
+    SimpleRowSet data = qs.getData(query);
+    if (DataUtils.isEmpty(data)) {
+      logger.warning("chat", chat.getId(), "user", userId, "not found");
+      return;
+    }
+
+    chat.setUserValues(data.getRow(0));
+    setUnreadCount(chat, userId);
+  }
+
   private ResponseObject updateChat(RequestInfo reqInfo) {
     Long chatId = reqInfo.getParameterLong(COL_CHAT);
     if (!DataUtils.isId(chatId)) {
       return ResponseObject.parameterNotFound(reqInfo.getService(), COL_CHAT);
     }
 
-    String chatName = null;
-    boolean nameChanged = false;
+    String chatName;
+    boolean nameChanged;
 
-    List<Long> users = null;
-    boolean usersChanged = false;
+    List<Long> newUsers;
+    boolean usersChanged;
 
     if (reqInfo.hasParameter(COL_CHAT_NAME)) {
       chatName = reqInfo.getParameter(COL_CHAT_NAME);
       nameChanged = true;
+
     } else if (COL_CHAT_NAME.equals(reqInfo.getParameter(Service.VAR_CLEAR))) {
       nameChanged = true;
+      chatName = null;
+
+    } else {
+      nameChanged = false;
+      chatName = null;
     }
 
     if (reqInfo.hasParameter(TBL_CHAT_USERS)) {
-      users = DataUtils.parseIdList(reqInfo.getParameter(TBL_CHAT_USERS));
+      newUsers = DataUtils.parseIdList(reqInfo.getParameter(TBL_CHAT_USERS));
+      usersChanged = true;
 
-      if (users.size() < 2) {
-        return ResponseObject.error(reqInfo.getService(), "insufficient", TBL_CHAT_USERS, users);
-      } else {
-        usersChanged = true;
+      if (newUsers.size() < 2) {
+        return ResponseObject.error(reqInfo.getService(), "insufficient", TBL_CHAT_USERS, newUsers);
       }
+
+    } else {
+      newUsers = new ArrayList<>();
+      usersChanged = false;
     }
 
     if (!nameChanged && !usersChanged) {
@@ -504,6 +543,24 @@ public class ChatBean {
     Long currentUser = usr.getCurrentUserId();
     if (!DataUtils.isId(currentUser)) {
       String message = BeeUtils.joinWords(reqInfo.getService(), "current user not available");
+      logger.severe(message);
+
+      return ResponseObject.error(message);
+    }
+
+    List<Long> oldUsers = getChatUsers(chatId);
+
+    Long defUser;
+    if (!BeeUtils.isEmpty(newUsers)) {
+      defUser = newUsers.get(0);
+    } else if (!BeeUtils.isEmpty(oldUsers)) {
+      defUser = oldUsers.get(0);
+    } else {
+      defUser = null;
+    }
+
+    if (!DataUtils.isId(defUser)) {
+      String message = BeeUtils.joinWords(reqInfo.getService(), "chat", chatId, "no users found");
       logger.severe(message);
 
       return ResponseObject.error(message);
@@ -520,17 +577,15 @@ public class ChatBean {
       }
     }
 
-    List<Long> oldUsers = getChatUsers(chatId);
-
     Set<Long> addUsers = new HashSet<>();
     Set<Long> removeUsers = new HashSet<>();
 
     if (usersChanged) {
-      addUsers.addAll(users);
+      addUsers.addAll(newUsers);
       addUsers.removeAll(oldUsers);
 
       removeUsers.addAll(oldUsers);
-      removeUsers.removeAll(users);
+      removeUsers.removeAll(newUsers);
     }
 
     if (!removeUsers.isEmpty()) {
@@ -557,8 +612,17 @@ public class ChatBean {
       }
     }
 
+    Chat chat = getChat(chatId, defUser);
+    if (chat == null) {
+      String message = BeeUtils.joinWords(reqInfo.getService(), "cannot create chat", chatId,
+          "for user", defUser);
+      logger.warning(message);
+
+      return ResponseObject.warning(message);
+    }
+
     if (!removeUsers.isEmpty()) {
-      ChatStateMessage removeMessage = ChatStateMessage.remove(new Chat(chatId, null));
+      ChatStateMessage removeMessage = ChatStateMessage.remove(chat);
       for (Long u : removeUsers) {
         Endpoint.sendToUser(u, removeMessage);
       }
@@ -566,20 +630,19 @@ public class ChatBean {
 
     ChatStateMessage message;
 
-    for (Long u : users) {
-      if (!currentUser.equals(u)) {
-        Chat chat = getChat(chatId, u);
+    List<Long> recipients = new ArrayList<>(chat.getUsers());
+    recipients.remove(currentUser);
 
-        if (chat != null) {
-          if (oldUsers.contains(u)) {
-            message = ChatStateMessage.update(chat);
-          } else {
-            message = ChatStateMessage.add(chat);
-          }
+    for (Long u : recipients) {
+      setUserValues(chat, u);
 
-          Endpoint.sendToUser(u, message);
-        }
+      if (oldUsers.contains(u)) {
+        message = ChatStateMessage.update(chat);
+      } else {
+        message = ChatStateMessage.add(chat);
       }
+
+      Endpoint.sendToUser(u, message);
     }
 
     return ResponseObject.emptyResponse();

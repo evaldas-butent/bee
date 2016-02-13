@@ -31,6 +31,10 @@ public final class ChatPopup extends Popup {
     ChatPopup chatPopup = new ChatPopup(minimized);
     chatPopup.setWidget(chatView);
 
+    if (!minimized && chatView instanceof ChatView) {
+      chatPopup.focusOnOpen(((ChatView) chatView).getInputArea());
+    }
+
     int x = Window.getClientWidth();
     int y = Window.getClientHeight();
 
@@ -130,9 +134,9 @@ public final class ChatPopup extends Popup {
   protected boolean isCaptionEvent(NativeEvent event) {
     EventTarget target = event.getEventTarget();
 
-    if (Element.is(target) && getWidget() instanceof ChatView) {
+    if (Element.is(target) && getChatView() != null) {
       Element el = Element.as(target);
-      HeaderView header = ((ChatView) getWidget()).getHeader();
+      HeaderView header = getChatView().getHeader();
 
       return header.getElement().isOrHasChild(el) && !header.isActionOrCommand(el);
 
@@ -143,6 +147,14 @@ public final class ChatPopup extends Popup {
 
   boolean isMinimized() {
     return minimized;
+  }
+
+  private ChatView getChatView() {
+    if (getWidget() instanceof ChatView) {
+      return (ChatView) getWidget();
+    } else {
+      return null;
+    }
   }
 
   private int getNormalHeight() {

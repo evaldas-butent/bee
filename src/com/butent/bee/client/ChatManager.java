@@ -51,6 +51,7 @@ import com.butent.bee.shared.communication.ChatItem;
 import com.butent.bee.shared.communication.Presence;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.Paths;
@@ -108,7 +109,7 @@ public class ChatManager implements HasInfo, HasEnabled {
     }
 
     private boolean isValid() {
-      return getUsers().size() >= 2;
+      return !getUsers().isEmpty();
     }
 
     private void setName(String name) {
@@ -886,17 +887,26 @@ public class ChatManager implements HasInfo, HasEnabled {
     usersLabel.addStyleName(StyleUtils.NAME_REQUIRED);
     table.setWidgetAndStyle(row, 0, usersLabel, STYLE_CHAT_EDITOR_PREFIX + "usersLabel");
 
+    final Long userId = BeeKeeper.getUser().getUserId();
+
     Relation relation = Relation.create(AdministrationConstants.VIEW_USERS,
         Lists.newArrayList(COL_FIRST_NAME, COL_LAST_NAME, ALS_POSITION_NAME, ALS_COMPANY_NAME));
+
+    relation.setFilter(Filter.idNotIn(Collections.singleton(userId)));
     relation.disableNewRow();
 
     final MultiSelector usersWidget = MultiSelector.autonomous(relation,
         Lists.newArrayList(COL_FIRST_NAME, COL_LAST_NAME));
-    if (isNew) {
-      usersWidget.getOracle().setExclusions(Collections.singleton(BeeKeeper.getUser().getUserId()));
-    } else if (!BeeUtils.isEmpty(settings.getUsers())) {
-      usersWidget.setIds(settings.getUsers());
+
+    if (!isNew && !BeeUtils.isEmpty(settings.getUsers())) {
+      List<Long> ids = new ArrayList<>(settings.getUsers());
+      ids.remove(userId);
+
+      if (!ids.isEmpty()) {
+        usersWidget.setIds(ids);
+      }
     }
+
     table.setWidgetAndStyle(row, 1, usersWidget, STYLE_CHAT_EDITOR_PREFIX + "usersInput");
 
     row++;
@@ -907,14 +917,16 @@ public class ChatManager implements HasInfo, HasEnabled {
 
     save.addClickHandler(event -> {
       List<Long> users = usersWidget.getIds();
-      int minSize = isNew ? 1 : 2;
-
-      if (BeeUtils.size(users) < minSize) {
+      if (users.isEmpty()) {
         usersWidget.setFocus(true);
         return;
       }
 
       result.setName(BeeUtils.trim(nameInput.getValue()));
+
+      if (!users.contains(userId)) {
+        users.add(0, userId);
+      }
       BeeUtils.overwrite(result.getUsers(), users);
 
       dialog.close();

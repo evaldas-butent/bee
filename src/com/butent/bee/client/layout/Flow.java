@@ -48,7 +48,7 @@ public class Flow extends FlowPanel implements DndWidget, HasIndexedWidgets, Pro
   public Flow(String styleName) {
     this();
     if (!BeeUtils.isEmpty(styleName)) {
-      setStyleName(styleName);
+      addStyleName(styleName);
     }
   }
 
