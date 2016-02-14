@@ -1,8 +1,13 @@
 package com.butent.bee.server.communication;
 
+import com.google.common.eventbus.AllowConcurrentEvents;
+import com.google.common.eventbus.Subscribe;
+
 import static com.butent.bee.shared.communication.ChatConstants.*;
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 
+import com.butent.bee.server.data.DataEvent.ViewQueryEvent;
+import com.butent.bee.server.data.DataEventHandler;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
@@ -19,6 +24,7 @@ import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.Chat;
 import com.butent.bee.shared.communication.ChatItem;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
@@ -84,6 +90,10 @@ public class ChatBean {
         response = updateChat(reqInfo);
         break;
 
+      case Service.DELETE_CHAT:
+        response = deleteChat(reqInfo);
+        break;
+
       default:
         String msg = BeeUtils.joinWords("chat service not recognized:", svc);
         logger.warning(msg);
@@ -128,6 +138,42 @@ public class ChatBean {
 
     logger.info(chats.size(), "chats found for user", userId);
     return ResponseObject.response(chats);
+  }
+
+  public void init() {
+    sys.registerDataEventHandler(new DataEventHandler() {
+      @Subscribe
+      @AllowConcurrentEvents
+      public void setRowProperties(ViewQueryEvent event) {
+        if (event.isAfter(VIEW_CHATS) && event.hasData()) {
+          Long currentUser = usr.getCurrentUserId();
+
+          for (BeeRow row : event.getRowset()) {
+            List<Long> users = getChatUsers(row.getId());
+            if (BeeUtils.contains(users, currentUser)) {
+              users.remove(currentUser);
+            }
+
+            if (!BeeUtils.isEmpty(users)) {
+              if (users.size() == 1) {
+                String photoFileName = usr.getUserPhotoFileName(users.get(0));
+                if (!BeeUtils.isEmpty(photoFileName)) {
+                  row.setProperty(PROP_USER_PHOTO, photoFileName);
+                }
+              }
+
+              List<String> userNames = new ArrayList<>();
+              for (Long u : users) {
+                userNames.add(usr.getUserSign(u));
+              }
+
+              row.setProperty(PROP_OTHER_USERS, DataUtils.buildIdList(users));
+              row.setProperty(PROP_USER_NAMES, BeeUtils.joinItems(userNames));
+            }
+          }
+        }
+      }
+    });
   }
 
   private ResponseObject accessChat(RequestInfo reqInfo) {
@@ -198,6 +244,8 @@ public class ChatBean {
     chat.setCreated(created);
     chat.setCreator(userId);
 
+    chat.setUsers(users);
+
     chat.setRegistered(created);
 
     for (Long u : users) {
@@ -211,8 +259,6 @@ public class ChatBean {
         if (userResponse.hasErrors()) {
           return userResponse;
         }
-
-        chat.addUser(u);
       }
     }
 
@@ -245,6 +291,46 @@ public class ChatBean {
     }
 
     return qs.sqlCount(TBL_CHAT_MESSAGES, where);
+  }
+
+  private ResponseObject deleteChat(RequestInfo reqInfo) {
+    Long chatId = reqInfo.getParameterLong(COL_CHAT);
+    if (!DataUtils.isId(chatId)) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), COL_CHAT);
+    }
+
+    Long currentUser = usr.getCurrentUserId();
+    if (!DataUtils.isId(currentUser)) {
+      String message = BeeUtils.joinWords(reqInfo.getService(), "current user not available");
+      logger.severe(message);
+
+      return ResponseObject.error(message);
+    }
+
+    List<Long> users = getChatUsers(chatId);
+
+    SqlDelete delete = new SqlDelete(TBL_CHATS)
+        .setWhere(sys.idEquals(TBL_CHATS, chatId));
+
+    ResponseObject deleteResponse = qs.updateDataWithResponse(delete);
+    if (deleteResponse.hasErrors()) {
+      return deleteResponse;
+    }
+
+    if (!BeeUtils.isEmpty(users)) {
+      Chat chat = new Chat(chatId, null);
+      chat.setUsers(users);
+
+      ChatStateMessage removeMessage = ChatStateMessage.remove(chat);
+
+      for (Long u : users) {
+        if (!currentUser.equals(u)) {
+          Endpoint.sendToUser(u, removeMessage);
+        }
+      }
+    }
+
+    return ResponseObject.emptyResponse();
   }
 
   private Chat getChat(long chatId, long userId) {

@@ -1,5 +1,6 @@
 package com.butent.bee.server;
 
+import com.butent.bee.server.communication.ChatBean;
 import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.i18n.Localizations;
 import com.butent.bee.server.logging.LogbackFactory;
@@ -26,6 +27,8 @@ public class InitializationBean {
   UserServiceBean usr;
   @EJB
   ParamHolderBean prm;
+  @EJB
+  ChatBean chat;
 
   @PostConstruct
   public void init() {
@@ -39,6 +42,7 @@ public class InitializationBean {
     Localized.setDictionary(Localizations.getDictionary(locale));
 
     prm.init();
+    chat.init();
 
     moduleBean.initModules();
 

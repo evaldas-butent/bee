@@ -112,6 +112,7 @@ public final class Service {
   public static final String GET_CHATS = CHAT_SERVICE_PREFIX + "get_chats";
   public static final String CREATE_CHAT = CHAT_SERVICE_PREFIX + "create";
   public static final String ACCESS_CHAT = CHAT_SERVICE_PREFIX + "access";
+  public static final String DELETE_CHAT = CHAT_SERVICE_PREFIX + "delete";
   public static final String UPDATE_CHAT = CHAT_SERVICE_PREFIX + "update";
   public static final String GET_CHAT_MESSAGES = CHAT_SERVICE_PREFIX + "get_messages";
   public static final String SEND_CHAT_MESSAGE = CHAT_SERVICE_PREFIX + "send_message";

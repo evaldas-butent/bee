@@ -19,14 +19,13 @@ import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.MultiSelector;
 import com.butent.bee.client.data.Data;
-import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.DialogBox;
-import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dialog.Popup.OutsideClick;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.Previewer;
 import com.butent.bee.client.grid.GridFactory;
+import com.butent.bee.client.grid.GridFactory.GridOptions;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.screen.BodyPanel;
@@ -51,6 +50,7 @@ import com.butent.bee.shared.communication.ChatItem;
 import com.butent.bee.shared.communication.Presence;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
@@ -345,17 +345,6 @@ public class ChatManager implements HasInfo, HasEnabled {
     return widget instanceof ChatView && Objects.equals(((ChatView) widget).getChatId(), chatId);
   }
 
-  public static void onDelete(final Chat chat) {
-    List<String> messages = Lists.newArrayList(Localized.getConstants().chatDeleteQuestion());
-
-    Global.confirmDelete(chat.getName(), Icon.WARNING, messages, new ConfirmationCallback() {
-      @Override
-      public void onConfirm() {
-        Endpoint.send(ChatStateMessage.remove(chat));
-      }
-    });
-  }
-
   private final List<Chat> chats = new ArrayList<>();
 
   private Widget chatsCommand;
@@ -451,27 +440,6 @@ public class ChatManager implements HasInfo, HasEnabled {
       } else {
         showInfo(chat);
       }
-    }
-  }
-
-  private void enterChat(long chatId) {
-    closeChatsPopup();
-
-    ChatView chatView = findChatView(chatId);
-
-    if (chatView != null) {
-      ChatPopup popup = chatView.getPopup();
-
-      if (popup != null) {
-        popup.setMinimized(false);
-        UiHelper.focus(chatView);
-
-      } else {
-        BeeKeeper.getScreen().activateWidget(chatView);
-      }
-
-    } else {
-      open(chatId, view -> ChatPopup.openNormal(view), true);
     }
   }
 
@@ -646,6 +614,27 @@ public class ChatManager implements HasInfo, HasEnabled {
     }
   }
 
+  public void removeChat(long chatId) {
+    Chat chat = findChat(chatId);
+
+    if (chat != null) {
+      chats.remove(chat);
+
+      ChatWidget widget = findChatWidget(chatId);
+      if (widget != null) {
+        widget.removeFromParent();
+      }
+
+      ChatView chatView = findChatView(chatId);
+      if (chatView != null) {
+        BeeKeeper.getScreen().closeWidget(chatView);
+      }
+
+      updateUnreadBadge();
+      logger.info("removed chat", chat.getId(), chat.getName());
+    }
+  }
+
   @Override
   public void setEnabled(boolean enabled) {
     this.enabled = enabled;
@@ -724,6 +713,7 @@ public class ChatManager implements HasInfo, HasEnabled {
               addChat(chat);
 
               Endpoint.send(ChatStateMessage.add(chat));
+              DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_CHATS);
             }
           }
         });
@@ -773,6 +763,8 @@ public class ChatManager implements HasInfo, HasEnabled {
                 if (chatView != null) {
                   chatView.onChatUpdate(chat);
                 }
+
+                DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_CHATS);
               }
             }
           });
@@ -782,6 +774,27 @@ public class ChatManager implements HasInfo, HasEnabled {
         }
       }
     });
+  }
+
+  private void enterChat(long chatId) {
+    closeChatsPopup();
+
+    ChatView chatView = findChatView(chatId);
+
+    if (chatView != null) {
+      ChatPopup popup = chatView.getPopup();
+
+      if (popup != null) {
+        popup.setMinimized(false);
+        UiHelper.focus(chatView);
+
+      } else {
+        BeeKeeper.getScreen().activateWidget(chatView);
+      }
+
+    } else {
+      open(chatId, view -> ChatPopup.openNormal(view), true);
+    }
   }
 
   private Chat findChat(long chatId) {
@@ -953,27 +966,6 @@ public class ChatManager implements HasInfo, HasEnabled {
     dialog.center();
   }
 
-  private void removeChat(long chatId) {
-    Chat chat = findChat(chatId);
-
-    if (chat != null) {
-      chats.remove(chat);
-
-      ChatWidget widget = findChatWidget(chatId);
-      if (widget != null) {
-        widget.removeFromParent();
-      }
-
-      ChatView chatView = findChatView(chatId);
-      if (chatView != null) {
-        BeeKeeper.getScreen().closeWidget(chatView);
-      }
-
-      updateUnreadBadge();
-      logger.info("removed chat", chat.getId(), chat.getName());
-    }
-  }
-
   private void setChatsCommand(Widget chatsCommand) {
     this.chatsCommand = chatsCommand;
   }
@@ -988,7 +980,15 @@ public class ChatManager implements HasInfo, HasEnabled {
 
   private void showAll() {
     closeChatsPopup();
-    GridFactory.openGrid(GRID_CHATS, new ChatGrid());
+
+    Long userId = BeeKeeper.getUser().getUserId();
+    if (DataUtils.isId(userId)) {
+      Filter filter = Filter.or(Filter.equals(COL_CHAT_CREATOR, userId),
+          Filter.in(Data.getIdColumn(VIEW_CHATS), VIEW_CHAT_USERS, COL_CHAT,
+              Filter.equals(COL_CHAT_USER, userId)));
+
+      GridFactory.openGrid(GRID_CHATS, new ChatGrid(), GridOptions.forFilter(filter));
+    }
   }
 
   private void showChats() {

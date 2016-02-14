@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+
+  name="ChatMessages" viewName="ChatMessages"
+  order="Time desc" readOnly="true"
+  >
+  <g:body height="32" />
+  
+  <g:columns>
+    <DataColumn name="Photo" caption="-" cellType="html" sortable="false" width="40"
+      horizontalAlignment="center" filterOptions="-" autoFit="false" visible="false">
+      <renderer type="photo" />
+    </DataColumn>
+
+    <RelColumn name="User" renderColumns="FirstName LastName"
+      sortBy="LastName FirstName" visible="true" />
+
+    <DataColumn name="Time" />
+    <DataColumn name="Text" maxWidth="999" flexGrow="1" whiteSpace="normal" visible="true" />
+  </g:columns>
+</g:Grid>

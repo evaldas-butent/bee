@@ -6,7 +6,27 @@
   >
   <Columns>
     <SimpleColumn name="Chat" />
+
     <SimpleColumn name="User" />
+    <SimpleJoin name="User" joinType="LEFT">
+      <SimpleColumn name="CompanyPerson" />
+
+      <SimpleJoin name="CompanyPerson" joinType="LEFT">
+        <SimpleColumn name="Person" />
+      
+        <SimpleJoin name="Person" joinType="LEFT">
+          <SimpleColumn name="FirstName" />
+          <SimpleColumn name="LastName" />
+          <SimpleColumn name="Photo" />
+        </SimpleJoin>
+        <SimpleJoin name="Position" joinType="LEFT">
+          <SimpleColumn name="Name" alias="PositionName" />
+        </SimpleJoin>
+        <SimpleJoin name="Company" joinType="LEFT">
+          <SimpleColumn name="Name" alias="CompanyName" />
+        </SimpleJoin>
+      </SimpleJoin>
+    </SimpleJoin>
 
     <SimpleColumn name="Registered" />
     <SimpleColumn name="LastAccess" />

@@ -8,8 +8,8 @@
     <Relation name="Chat" notNull="true" relation="Chats" cascade="DELETE" label="=chat" />
     <Relation name="User" notNull="true" relation="Users" cascade="DELETE" label="=user" />
 
-    <Long name="Registered" notNull="true" label="=registered" />
-    <Long name="LastAccess" label="=lastAccess" />
+    <DateTime name="Registered" notNull="true" label="=registered" />
+    <DateTime name="LastAccess" label="=lastAccess" />
   </Fields>
 
   <Constraints>

@@ -641,12 +641,12 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     if (verticalAlign == null && renderer != null) {
       verticalAlign = renderer.getDefaultVerticalAlign();
     }
-    if (verticalAlign == null
-        && (cellType == CellType.HTML
-        || cellSource != null && cellSource.isText())) {
-      verticalAlign = VerticalAlign.TOP;
-    } else {
-      verticalAlign = VerticalAlign.MIDDLE;
+    if (verticalAlign == null) {
+      if (cellType == CellType.HTML || cellSource != null && cellSource.isText()) {
+        verticalAlign = VerticalAlign.TOP;
+      } else {
+        verticalAlign = VerticalAlign.MIDDLE;
+      }
     }
     column.setVerticalAlign(verticalAlign);
 
