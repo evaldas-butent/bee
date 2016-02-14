@@ -2403,9 +2403,10 @@ public final class BeeUtils {
    * @return a String with replaced phrases.
    */
   public static String replace(String text, String search, String replacement, int max) {
-    if (!hasLength(text) || !hasLength(search) || replacement == null || max == 0) {
+    if (!hasLength(text) || !hasLength(search) || max == 0) {
       return text;
     }
+
     int start = 0;
     int end = text.indexOf(search, start);
     if (end < 0) {
@@ -2417,7 +2418,11 @@ public final class BeeUtils {
     int cnt = max;
 
     while (end >= 0) {
-      sb.append(text.substring(start, end)).append(replacement);
+      sb.append(text.substring(start, end));
+      if (hasLength(replacement)) {
+        sb.append(replacement);
+      }
+
       start = end + len;
       if (--cnt == 0) {
         break;

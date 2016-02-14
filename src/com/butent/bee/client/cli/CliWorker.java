@@ -79,6 +79,7 @@ import com.butent.bee.client.i18n.LocaleUtils;
 import com.butent.bee.client.i18n.Money;
 import com.butent.bee.client.images.Flags;
 import com.butent.bee.client.images.Images;
+import com.butent.bee.client.js.Markdown;
 import com.butent.bee.client.layout.Direction;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Horizontal;
@@ -463,6 +464,11 @@ public final class CliWorker {
 
     } else if ("map".equals(z) && arr.length >= 3) {
       showMap(arr, errorPopup);
+
+    } else if ("md".equals(z) && !args.isEmpty()) {
+      CustomDiv widget = new CustomDiv();
+      widget.setHtml(Markdown.toHtml(args));
+      Global.showModalWidget(args, widget);
 
     } else if ("md5".equals(z)) {
       digest(v);

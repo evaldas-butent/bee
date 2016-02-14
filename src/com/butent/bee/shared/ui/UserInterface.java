@@ -34,7 +34,7 @@ public enum UserInterface implements HasCaption {
 
     @Override
     public List<String> getScripts() {
-      return Lists.newArrayList("settings", "js/tinymce/js/tinymce/tinymce.min.js", "rtcadapter");
+      return Lists.newArrayList("settings", "js/tinymce/js/tinymce/tinymce.min.js");
     }
 
     @Override
@@ -327,6 +327,10 @@ public enum UserInterface implements HasCaption {
 
   public abstract String getShortName();
 
+  public List<String> getExternalScripts() {
+    return Lists.newArrayList("rtcadapter", "micromarkdown");
+  }
+
   public List<String> getStyleSheets() {
     List<String> sheets = getMainStyleSheets();
 
@@ -346,20 +350,20 @@ public enum UserInterface implements HasCaption {
     return getComponents().contains(Component.MENU);
   }
 
-  private List<String> getComponentStyleSheets() {
-    List<String> sheets = new ArrayList<>();
-    if (getComponents().contains(Component.CHATS)) {
-      sheets.add("chat");
-    }
-    return sheets;
-  }
-
   protected List<String> getMainStyleSheets() {
     List<String> sheets = new ArrayList<>();
 
     sheets.add(MAIN_STYLE_SHEET);
     sheets.addAll(getComponentStyleSheets());
 
+    return sheets;
+  }
+
+  private List<String> getComponentStyleSheets() {
+    List<String> sheets = new ArrayList<>();
+    if (getComponents().contains(Component.CHATS)) {
+      sheets.add("chat");
+    }
     return sheets;
   }
 }

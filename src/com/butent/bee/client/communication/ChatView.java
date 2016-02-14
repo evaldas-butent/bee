@@ -14,6 +14,7 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.logical.ReadyEvent;
 import com.butent.bee.client.event.logical.VisibilityChangeEvent;
+import com.butent.bee.client.js.Markdown;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.presenter.Presenter;
@@ -92,9 +93,11 @@ public class ChatView extends Flow implements Presenter, View,
         }
       }
 
-      Label text = new Label(message.getText());
-      text.addStyleName(STYLE_MESSAGE_TEXT);
-      body.add(text);
+      if (message.hasText()) {
+        Label text = new Label(Markdown.toHtml(message.getText()));
+        text.addStyleName(STYLE_MESSAGE_TEXT);
+        body.add(text);
+      }
 
       add(body);
 
