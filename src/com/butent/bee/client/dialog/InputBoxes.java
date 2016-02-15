@@ -210,7 +210,7 @@ public class InputBoxes {
     inputWidget(caption, table, new InputCallback() {
       @Override
       public String getErrorMessage() {
-        String error = super.getErrorMessage();
+        String error = InputCallback.super.getErrorMessage();
 
         if (BeeUtils.isEmpty(error)) {
           Set<String> values = new HashSet<>();
@@ -309,7 +309,7 @@ public class InputBoxes {
     inputWidget(caption, table, new InputCallback() {
       @Override
       public String getErrorMessage() {
-        String error = super.getErrorMessage();
+        String error = InputCallback.super.getErrorMessage();
 
         if (BeeUtils.isEmpty(error)) {
           Set<String> values = new HashSet<>();

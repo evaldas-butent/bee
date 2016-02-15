@@ -574,7 +574,7 @@ public class DocumentDataForm extends AbstractFormInterceptor
                         UiHelper.focus(selector);
                         return Localized.getConstants().valueRequired();
                       }
-                      return super.getErrorMessage();
+                      return InputCallback.super.getErrorMessage();
                     }
 
                     @Override

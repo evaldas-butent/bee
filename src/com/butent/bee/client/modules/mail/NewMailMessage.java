@@ -57,7 +57,7 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.mail.AccountInfo;
-import com.butent.bee.shared.modules.mail.MailConstants.AddressType;
+import com.butent.bee.shared.modules.mail.MailConstants.*;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
@@ -76,7 +76,7 @@ import java.util.Set;
 public final class NewMailMessage extends AbstractFormInterceptor
     implements ClickHandler, SelectionHandler<FileInfo> {
 
-  private class DialogCallback extends InputCallback {
+  private class DialogCallback implements InputCallback {
     @Override
     public String getErrorMessage() {
       if (validate()) {

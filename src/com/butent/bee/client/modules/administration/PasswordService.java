@@ -157,8 +157,7 @@ public final class PasswordService {
           inpNew.setFocus(true);
           return Localized.getConstants().newPasswordsDoesNotMatch();
         }
-
-        return super.getErrorMessage();
+        return InputCallback.super.getErrorMessage();
       }
 
       @Override

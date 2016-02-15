@@ -71,7 +71,7 @@ public class InvoiceForm extends PrintFormInterceptor implements SelectorEvent.H
               if (!DataUtils.isId(item.getRelatedId())) {
                 return Localized.getConstants().valueRequired();
               }
-              return super.getErrorMessage();
+              return InputCallback.super.getErrorMessage();
             }
 
             @Override

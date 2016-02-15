@@ -2,25 +2,26 @@ package com.butent.bee.client.dialog;
 
 import com.butent.bee.client.view.form.CloseCallback;
 
-public abstract class InputCallback {
+@FunctionalInterface
+public interface InputCallback {
 
-  public String getErrorMessage() {
+  default String getErrorMessage() {
     return null;
   }
 
-  public void onAdd() {
+  default void onAdd() {
   }
 
-  public void onCancel() {
+  default void onCancel() {
   }
 
-  public void onClose(CloseCallback closeCallback) {
+  default void onClose(CloseCallback closeCallback) {
     closeCallback.onClose();
   }
 
-  public void onDelete(DialogBox dialog) {
+  default void onDelete(DialogBox dialog) {
     dialog.close();
   }
 
-  public abstract void onSuccess();
+  void onSuccess();
 }
