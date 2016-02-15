@@ -280,13 +280,13 @@ class ShipmentRequestForm extends AbstractFormInterceptor {
           comment.setFocus(true);
           return loc.valueRequired();
         }
-        return super.getErrorMessage();
+        return InputCallback.super.getErrorMessage();
       }
 
       @Override
       public void onCancel() {
         if (required) {
-          super.onCancel();
+          InputCallback.super.onCancel();
         } else {
           onSuccess();
         }

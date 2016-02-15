@@ -347,7 +347,8 @@
   margin-bottom: 2px;
 }
 
-.bee-Chat-message-body {
+.bee-Chat-message-body,
+.bee-Chat-message-files {
   display: flex;
   display: -webkit-flex;
   display: -ms-flexbox;
@@ -360,7 +361,8 @@
   position: relative;
   z-index: 1;
 }
-.bee-Chat-message-outgoing .bee-Chat-message-body {
+.bee-Chat-message-outgoing .bee-Chat-message-body,
+.bee-Chat-message-outgoing .bee-Chat-message-files {
   justify-content: flex-end;
   -webkit-justify-content: flex-end;
   -ms-flex-pack: end;
@@ -407,13 +409,27 @@
 .bee-Chat-message-incoming .bee-Chat-message-text {
   background-color: #e5e4e9;
   color: #363636;
+}
+.bee-Chat-message-incoming .bee-Chat-message-text,
+.bee-Chat-message-incoming .bee-Chat-message-files {
   margin-right: 80px;
 }
 
 .bee-Chat-message-outgoing .bee-Chat-message-text {
   background-color: #2095fe;
   color: white;
+}
+.bee-Chat-message-outgoing .bee-Chat-message-text,
+.bee-Chat-message-outgoing .bee-Chat-message-files {
   margin-left: 80px;
+}
+
+.bee-Chat-message-files .bee-FileGroup-Row td {
+  border-bottom: none;
+}
+.bee-Chat-message-files .bee-FileGroup-name {
+  max-width: none;
+  white-space: normal;
 }
 
 .bee-Chat-inputPanel {

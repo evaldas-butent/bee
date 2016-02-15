@@ -16,6 +16,9 @@
       sortBy="LastName FirstName" visible="true" />
 
     <DataColumn name="Time" />
-    <DataColumn name="Text" maxWidth="999" flexGrow="1" whiteSpace="normal" visible="true" />
+    <DataColumn name="Text" maxWidth="999" flexGrow="3" whiteSpace="normal" visible="true" />
+
+    <PropColumn name="FileNames" type="string" caption="=files"
+      verticalAlignment="top" flexGrow="1" />
   </g:columns>
 </g:Grid>

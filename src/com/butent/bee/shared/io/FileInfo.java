@@ -10,9 +10,11 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
+import com.butent.bee.shared.utils.StringList;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 public class FileInfo implements HasInfo, HasCaption, BeeSerializable, AutoCloseable {
@@ -26,6 +28,22 @@ public class FileInfo implements HasInfo, HasCaption, BeeSerializable, AutoClose
     if (isTemporary()) {
       LogUtils.getRootLogger().debug("File deleted:", getPath(), new File(getPath()).delete());
     }
+  }
+
+  public static String getCaptions(Collection<FileInfo> col) {
+    if (BeeUtils.isEmpty(col)) {
+      return null;
+    }
+
+    List<String> captions = StringList.uniqueCaseInsensitive();
+
+    for (FileInfo fileInfo : col) {
+      if (fileInfo != null) {
+        captions.add(BeeUtils.notEmpty(fileInfo.getCaption(), fileInfo.getName()));
+      }
+    }
+
+    return BeeUtils.joinItems(captions);
   }
 
   public static String getIconUrl(String icon) {

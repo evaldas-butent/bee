@@ -1,5 +1,7 @@
 package com.butent.bee.server.communication;
 
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
 import com.google.common.eventbus.AllowConcurrentEvents;
 import com.google.common.eventbus.Subscribe;
 
@@ -169,6 +171,38 @@ public class ChatBean {
 
               row.setProperty(PROP_OTHER_USERS, DataUtils.buildIdList(users));
               row.setProperty(PROP_USER_NAMES, BeeUtils.joinItems(userNames));
+            }
+          }
+
+        } else if (event.isAfter(VIEW_CHAT_MESSAGES) && event.hasData()) {
+          SqlSelect query = new SqlSelect()
+              .addFields(TBL_CHAT_FILES, COL_CHAT_MESSAGE, COL_CHAT_FILE_CAPTION)
+              .addFields(TBL_FILES, COL_FILE_NAME)
+              .addFrom(TBL_CHAT_FILES)
+              .addFromInner(TBL_FILES,
+                  sys.joinTables(TBL_FILES, TBL_CHAT_FILES, COL_CHAT_FILE))
+              .setWhere(SqlUtils.inList(TBL_CHAT_FILES, COL_CHAT_MESSAGE,
+                  event.getRowset().getRowIds()))
+              .addOrder(TBL_CHAT_FILES, sys.getIdName(TBL_CHAT_FILES));
+
+          SimpleRowSet data = qs.getData(query);
+
+          if (!DataUtils.isEmpty(data)) {
+            Multimap<Long, String> fileNames = ArrayListMultimap.create();
+
+            for (SimpleRow row : data) {
+              String caption = BeeUtils.notEmpty(row.getValue(COL_CHAT_FILE_CAPTION),
+                  row.getValue(COL_FILE_NAME));
+
+              if (!BeeUtils.isEmpty(caption)) {
+                fileNames.put(row.getLong(COL_CHAT_MESSAGE), caption);
+              }
+            }
+
+            for (BeeRow row : event.getRowset()) {
+              if (fileNames.containsKey(row.getId())) {
+                row.setProperty(PROP_FILE_NAMES, BeeUtils.joinItems(fileNames.get(row.getId())));
+              }
             }
           }
         }
@@ -516,6 +550,30 @@ public class ChatBean {
     ResponseObject response = qs.insertDataWithResponse(insert);
     if (response.hasErrors()) {
       return response;
+    }
+
+    if (message.getChatItem().hasFiles()) {
+      if (response.hasResponse(Long.class)) {
+        Long messageId = response.getResponseAsLong();
+
+        for (FileInfo fileInfo : message.getChatItem().getFiles()) {
+          if (DataUtils.isId(fileInfo.getId())) {
+            SqlInsert fileInsert = new SqlInsert(TBL_CHAT_FILES)
+                .addConstant(COL_CHAT_MESSAGE, messageId)
+                .addConstant(COL_CHAT_FILE, fileInfo.getId());
+
+            if (!BeeUtils.isEmpty(fileInfo.getCaption())) {
+              fileInsert.addConstant(COL_CHAT_FILE_CAPTION, fileInfo.getCaption());
+            }
+
+            qs.insertData(fileInsert);
+          }
+        }
+
+      } else {
+        logger.warning(reqInfo.getService(), "message id not available, cannot save",
+            TBL_CHAT_FILES);
+      }
     }
 
     onAccess(message.getChatId(), message.getChatItem().getUserId());

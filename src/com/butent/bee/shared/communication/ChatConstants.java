@@ -31,6 +31,7 @@ public final class ChatConstants {
   public static final String PROP_USER_PHOTO = "UserPhoto";
   public static final String PROP_USER_NAMES = "UserNames";
   public static final String PROP_OTHER_USERS = "OtherUsers";
+  public static final String PROP_FILE_NAMES = "FileNames";
 
   public static final String GRID_CHATS = "Chats";
   public static final String GRID_CHAT_USERS = "ChatUsers";

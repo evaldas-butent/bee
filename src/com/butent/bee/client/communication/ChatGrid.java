@@ -31,7 +31,7 @@ public class ChatGrid extends AbstractGridInterceptor {
       if (presenter.getMainView().isEnabled() && getActiveRow() != null) {
         final IsRow row = getActiveRow();
 
-        if (row.isRemovable() && getGridView().isRowEditable(row, null)) {
+        if (row.isRemovable() && getGridView().isRowEditable(row, null) && isOwner(row)) {
           String caption = ChatUtils.getChatCaption(getStringValue(COL_CHAT_NAME),
               DataUtils.parseIdList(row.getProperty(PROP_OTHER_USERS)));
 
@@ -66,7 +66,11 @@ public class ChatGrid extends AbstractGridInterceptor {
   }
 
   @Override
-  public boolean isRowEditable(IsRow row) {
+  public GridInterceptor getInstance() {
+    return new ChatGrid();
+  }
+
+  private boolean isOwner(IsRow row) {
     if (row == null) {
       return false;
     }
@@ -81,10 +85,5 @@ public class ChatGrid extends AbstractGridInterceptor {
     } else {
       return false;
     }
-  }
-
-  @Override
-  public GridInterceptor getInstance() {
-    return new ChatGrid();
   }
 }

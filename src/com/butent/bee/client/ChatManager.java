@@ -54,6 +54,7 @@ import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.io.Paths;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -283,6 +284,9 @@ public class ChatManager implements HasInfo, HasEnabled {
       Flow infoPanel = new Flow(STYLE_CHATS_ITEM_PREFIX + "infoPanel");
       if (chat.getLastMessage() != null) {
         String text = chat.getLastMessage().getText();
+        if (BeeUtils.isEmpty(text) && chat.getLastMessage().hasFiles()) {
+          text = FileInfo.getCaptions(chat.getLastMessage().getFiles());
+        }
 
         if (!BeeUtils.isEmpty(text)) {
           CustomDiv lastMessageWidget = new CustomDiv(STYLE_CHATS_ITEM_PREFIX + "lastMessage");
