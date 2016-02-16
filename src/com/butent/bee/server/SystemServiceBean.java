@@ -3,23 +3,26 @@ package com.butent.bee.server;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 
+import static com.butent.bee.shared.Service.*;
+
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.io.FileUtils;
 import com.butent.bee.server.io.Filter;
 import com.butent.bee.server.modules.administration.FileStorageBean;
+import com.butent.bee.server.ui.UiHolderBean;
 import com.butent.bee.server.utils.ClassUtils;
 import com.butent.bee.server.utils.JvmUtils;
 import com.butent.bee.server.utils.XmlUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Resource;
-import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.CommUtils;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.FileNameUtils;
 import com.butent.bee.shared.io.Paths;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -32,6 +35,16 @@ import com.butent.bee.shared.utils.ExtendedProperty;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
 
+import net.sf.jasperreports.engine.JREmptyDataSource;
+import net.sf.jasperreports.engine.JRException;
+import net.sf.jasperreports.engine.JRField;
+import net.sf.jasperreports.engine.JRRewindableDataSource;
+import net.sf.jasperreports.engine.JasperCompileManager;
+import net.sf.jasperreports.engine.JasperExportManager;
+import net.sf.jasperreports.engine.JasperFillManager;
+import net.sf.jasperreports.engine.JasperPrint;
+import net.sf.jasperreports.engine.JasperReport;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -39,11 +52,13 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.ProcessBuilder.Redirect;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import javax.ejb.EJB;
@@ -57,8 +72,34 @@ import javax.ejb.Stateless;
 @Stateless
 public class SystemServiceBean {
 
+  private static class RsDataSource implements JRRewindableDataSource {
+    private BeeRowSet rs;
+    private int index;
+
+    public RsDataSource(BeeRowSet rowSet) {
+      rs = Assert.notNull(rowSet);
+    }
+
+    @Override
+    public Object getFieldValue(JRField field) {
+      return rs.getString(index, field.getName());
+    }
+
+    @Override
+    public void moveFirst() {
+      index = 0;
+    }
+
+    @Override
+    public boolean next() {
+      return index++ < rs.getNumberOfRows();
+    }
+  }
+
   private static BeeLogger logger = LogUtils.getLogger(SystemServiceBean.class);
 
+  @EJB
+  UiHolderBean ui;
   @EJB
   FileStorageBean fs;
 
@@ -66,24 +107,32 @@ public class SystemServiceBean {
     Assert.notEmpty(svc);
     ResponseObject response;
 
-    if (BeeUtils.same(svc, Service.GET_CLASS_INFO)) {
+    if (BeeUtils.same(svc, GET_CLASS_INFO)) {
       response = classInfo(reqInfo);
 
-    } else if (BeeUtils.same(svc, Service.GET_RESOURCE)) {
+    } else if (BeeUtils.same(svc, GET_RESOURCE)) {
       response = getResource(reqInfo);
-    } else if (BeeUtils.same(svc, Service.SAVE_RESOURCE)) {
+    } else if (BeeUtils.same(svc, SAVE_RESOURCE)) {
       response = saveResource(reqInfo);
 
-    } else if (BeeUtils.same(svc, Service.GET_DIGEST)) {
+    } else if (BeeUtils.same(svc, GET_DIGEST)) {
       response = getDigest(reqInfo);
 
-    } else if (BeeUtils.same(svc, Service.GET_FILES)) {
-      response = getFiles(DataUtils.parseIdList(reqInfo.getParameter(Service.VAR_FILES)));
-    } else if (BeeUtils.same(svc, Service.GET_FLAGS)) {
+    } else if (BeeUtils.same(svc, GET_FILES)) {
+      response = getFiles(DataUtils.parseIdList(reqInfo.getParameter(VAR_FILES)));
+
+    } else if (BeeUtils.same(svc, GET_FLAGS)) {
       response = getFlags();
 
-    } else if (BeeUtils.same(svc, Service.RUN)) {
+    } else if (BeeUtils.same(svc, RUN)) {
       response = run(reqInfo);
+
+    } else if (BeeUtils.inListSame(svc, GET_REPORT, SHOW_REPORT)) {
+      String data = reqInfo.getParameter(VAR_REPORT_DATA);
+
+      response = doReport(svc, reqInfo.getParameter(VAR_REPORT),
+          Codec.deserializeMap(reqInfo.getParameter(VAR_REPORT_PARAMETERS)),
+          BeeUtils.isEmpty(data) ? null : BeeRowSet.restore(data));
 
     } else {
       String msg = BeeUtils.joinWords(svc, "system service not recognized");
@@ -183,6 +232,47 @@ public class SystemServiceBean {
 
     logger.info("loaded", flags.size(), "flags");
     return ResponseObject.response(flags);
+  }
+
+  private ResponseObject doReport(String svc, String reportName, Map<String, String> parameters,
+      BeeRowSet data) {
+
+    String reportFile = ui.getReport(reportName);
+
+    if (BeeUtils.isEmpty(reportFile)) {
+      return ResponseObject.error(Localized.getMessages().keyNotFound(reportName));
+    }
+    ResponseObject response;
+
+    try {
+      JasperReport report = JasperCompileManager.compileReport(reportFile);
+      Map<String, Object> params = new HashMap<>();
+
+      if (!BeeUtils.isEmpty(parameters)) {
+        params.putAll(parameters);
+      }
+      JasperPrint print = JasperFillManager.fillReport(report, params,
+          Objects.isNull(data) ? new JREmptyDataSource() : new RsDataSource(data));
+
+      File tmp = File.createTempFile("bee_", ".pdf");
+      tmp.deleteOnExit();
+      String path = tmp.getAbsolutePath();
+
+      JasperExportManager.exportReportToPdfFile(print, path);
+
+      if (BeeUtils.same(svc, GET_REPORT)) {
+        Long fileId = fs.storeFile(Files.newInputStream(tmp.toPath()), tmp.getName(), null);
+        tmp.delete();
+        response = ResponseObject.response(BeeUtils.peek(fs.getFileInfos(Collections
+            .singletonList(fileId))));
+      } else {
+        response = ResponseObject.response(path);
+      }
+    } catch (JRException | IOException e) {
+      logger.error(e);
+      response = ResponseObject.error(e);
+    }
+    return response;
   }
 
   private static ResponseObject getResource(RequestInfo reqInfo) {
@@ -446,11 +536,12 @@ public class SystemServiceBean {
         if (stream != null) {
           InputStreamReader isr = new InputStreamReader(stream);
           BufferedReader br = new BufferedReader(isr);
+          String line = br.readLine();
 
-          String line;
-          while ((line = br.readLine()) != null) {
+          while (line != null) {
             logger.info(line);
             response.addInfo(line);
+            line = br.readLine();
           }
         }
       }
@@ -466,14 +557,14 @@ public class SystemServiceBean {
   private static ResponseObject saveResource(RequestInfo reqInfo) {
     long start = System.currentTimeMillis();
 
-    String pUri = reqInfo.getParameter(Service.RPC_VAR_URI);
+    String pUri = reqInfo.getParameter(RPC_VAR_URI);
     if (BeeUtils.isEmpty(pUri)) {
-      return ResponseObject.parameterNotFound(Service.SAVE_RESOURCE, Service.RPC_VAR_URI);
+      return ResponseObject.parameterNotFound(SAVE_RESOURCE, RPC_VAR_URI);
     }
 
     String uri = Config.substitutePath(Codec.decodeBase64(pUri));
 
-    String md5 = reqInfo.getParameter(Service.RPC_VAR_MD5);
+    String md5 = reqInfo.getParameter(RPC_VAR_MD5);
 
     String content = reqInfo.getContent();
     if (BeeUtils.isEmpty(content)) {

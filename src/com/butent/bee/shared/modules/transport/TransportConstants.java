@@ -57,6 +57,12 @@ public final class TransportConstants {
         return constants.trRequestStatusAnswered();
       }
     },
+    CONTRACT_SENT {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.trRequestStatusContractSent();
+      }
+    },
     APPROVED {
       @Override
       public String getCaption(LocalizableConstants constants) {
@@ -865,7 +871,7 @@ public final class TransportConstants {
   public static final String DATA_TYPE_TRAILER = "Trailer";
   public static final String DATA_TYPE_DRIVER = "Driver";
 
-  public static final String DEFAULT_CARGO_DESCRIPTION = "*";
+  public static final String REP_CONTRACT = "Contract";
 
   public static final String AR_DEPARTMENT = "Department";
   public static final String AR_MANAGER = "Manager";

@@ -145,6 +145,7 @@ public class UiHolderBean {
   private final Map<String, UiObjectInfo> gridCache = new HashMap<>();
   private final Map<String, UiObjectInfo> formCache = new HashMap<>();
   private final Map<String, Menu> menuCache = new HashMap<>();
+  private final Map<String, UiObjectInfo> reportCache = new HashMap<>();
 
   public void checkWidgetChildrenVisibility(Element parent) {
     checkWidgetChildrenVisibility(parent, null);
@@ -245,6 +246,13 @@ public class UiHolderBean {
     return ResponseObject.response(menus.values());
   }
 
+  public String getReport(String reportName) {
+    if (!isReport(reportName)) {
+      return null;
+    }
+    return reportCache.get(key(reportName)).getResource();
+  }
+
   @Lock(LockType.WRITE)
   public void initForms() {
     initObjects(SysObject.FORM);
@@ -325,12 +333,21 @@ public class UiHolderBean {
     }
   }
 
+  @Lock(LockType.WRITE)
+  public void initReports() {
+    initObjects(SysObject.REPORT);
+  }
+
   public boolean isForm(String formName) {
     return !BeeUtils.isEmpty(formName) && formCache.containsKey(key(formName));
   }
 
   public boolean isGrid(String gridName) {
     return !BeeUtils.isEmpty(gridName) && gridCache.containsKey(key(gridName));
+  }
+
+  public boolean isReport(String reportName) {
+    return !BeeUtils.isEmpty(reportName) && reportCache.containsKey(key(reportName));
   }
 
   private void checkWidgetChildrenVisibility(Element parent, BeeView view) {
@@ -455,6 +472,7 @@ public class UiHolderBean {
     initGrids();
     initForms();
     initMenu();
+    initReports();
 
     MenuService.GRID.setDataNameProvider(getGridDataNameProvider());
     MenuService.FORM.setDataNameProvider(getFormDataNameProvider());
@@ -472,6 +490,9 @@ public class UiHolderBean {
         break;
       case MENU:
         menuCache.clear();
+        break;
+      case REPORT:
+        reportCache.clear();
         break;
       default:
         Assert.unsupported("Not an UI object: " + obj.getName());
@@ -540,6 +561,9 @@ public class UiHolderBean {
           }
         }
         return SysObject.register(menu, menuCache, initial, logger);
+      case REPORT:
+        UiObjectInfo report = new UiObjectInfo(moduleName, objectName, resource);
+        return SysObject.register(report, reportCache, initial, logger);
       default:
         return false;
     }

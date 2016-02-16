@@ -36,6 +36,9 @@ public final class Service {
   public static final String GET_FLAGS = SYS_SERVICE_PREFIX + "get_flags";
   public static final String RUN = SYS_SERVICE_PREFIX + "run";
 
+  public static final String GET_REPORT = SYS_SERVICE_PREFIX + "get_report";
+  public static final String SHOW_REPORT = SYS_SERVICE_PREFIX + "show_report";
+
   public static final String INVOKE = RPC_SERVICE_PREFIX + "invoke";
 
   public static final String LOGIN = RPC_SERVICE_PREFIX + "login";
@@ -195,6 +198,10 @@ public final class Service {
 
   public static final String VAR_OLD_VALUE = RPC_VAR_PREFIX + "old_value";
   public static final String VAR_OPTIONS = RPC_VAR_PREFIX + "options";
+
+  public static final String VAR_REPORT = RPC_VAR_PREFIX + "report";
+  public static final String VAR_REPORT_PARAMETERS = VAR_REPORT + "_params";
+  public static final String VAR_REPORT_DATA = VAR_REPORT + "_data";
 
   public static final String VAR_DSN = RPC_VAR_PREFIX + "dsn";
   public static final String VAR_UI = RPC_VAR_PREFIX + "ui";

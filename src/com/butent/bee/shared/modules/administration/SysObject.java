@@ -37,6 +37,17 @@ public enum SysObject {
     public String getPath() {
       return "forms";
     }
+  },
+  REPORT {
+    @Override
+    public String getPath() {
+      return "reports";
+    }
+
+    @Override
+    public String getSchemaName() {
+      return "jasperreport.xsd";
+    }
   };
 
   public String getFileExtension() {

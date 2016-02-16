@@ -23,6 +23,7 @@ import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.modules.administration.AdministrationUtils;
 import com.butent.bee.client.modules.classifiers.ClassifierUtils;
 import com.butent.bee.client.modules.mail.NewMailMessage;
+import com.butent.bee.client.output.ReportUtils;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
@@ -30,7 +31,7 @@ import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.BiConsumer;
+import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
@@ -40,15 +41,16 @@ import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.i18n.SupportedLocale;
+import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.mail.MailConstants;
-import com.butent.bee.shared.modules.transport.TransportConstants.*;
 import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -61,7 +63,7 @@ class ShipmentRequestForm extends AbstractFormInterceptor {
   private Button mailCommand = new Button(loc.trWriteEmail(), new ClickHandler() {
     @Override
     public void onClick(ClickEvent clickEvent) {
-      sendMail();
+      onAnswer();
     }
   });
 
@@ -69,6 +71,13 @@ class ShipmentRequestForm extends AbstractFormInterceptor {
     @Override
     public void onClick(ClickEvent clickEvent) {
       onRegister();
+    }
+  });
+
+  private Button contractCommand = new Button(loc.trContract(), new ClickHandler() {
+    @Override
+    public void onClick(ClickEvent clickEvent) {
+      sendContract(true);
     }
   });
 
@@ -124,12 +133,13 @@ class ShipmentRequestForm extends AbstractFormInterceptor {
     if (!isSelfService() && !ShipmentRequestStatus.LOST.is(status)) {
       header.addCommandItem(mailCommand);
 
-      if (!registered) {
-        header.addCommandItem(registerCommand);
-      } else if (!ShipmentRequestStatus.CONFIRMED.is(status)) {
-        header.addCommandItem(confirmCommand);
-      }
       if (!ShipmentRequestStatus.CONFIRMED.is(status)) {
+        if (!registered) {
+          header.addCommandItem(registerCommand);
+        } else {
+          header.addCommandItem(contractCommand);
+          header.addCommandItem(confirmCommand);
+        }
         header.addCommandItem(lostCommand);
 
         if (ShipmentRequestStatus.NEW.is(status)
@@ -186,6 +196,11 @@ class ShipmentRequestForm extends AbstractFormInterceptor {
 
   private static boolean isSelfService() {
     return Objects.equals(BeeKeeper.getScreen().getUserInterface(), UserInterface.SELF_SERVICE);
+  }
+
+  private void onAnswer() {
+    sendMail(ShipmentRequestStatus.NEW.is(getIntegerValue(COL_QUERY_STATUS))
+        ? ShipmentRequestStatus.ANSWERED : null, null, null, null);
   }
 
   private void onBlock() {
@@ -301,36 +316,50 @@ class ShipmentRequestForm extends AbstractFormInterceptor {
     });
   }
 
-  private void sendMail() {
+  private void sendContract(boolean preview) {
+    Map<String, String> params = new HashMap<>();
+
+    for (BeeColumn column : getFormView().getDataColumns()) {
+      params.put(column.getId(), getStringValue(column.getId()));
+    }
+    if (preview) {
+      ReportUtils.showReport(REP_CONTRACT, params, null, () -> sendContract(false));
+    } else {
+      ReportUtils.getReport(REP_CONTRACT, params, null, (fileInfo) ->
+          sendMail(ShipmentRequestStatus.CONTRACT_SENT, loc.trContract(), null,
+              Collections.singleton(fileInfo)));
+    }
+  }
+
+  private void sendMail(ShipmentRequestStatus status, String subject, String content,
+      Collection<FileInfo> attachments) {
+
     FormView form = getFormView();
     BeeRow row = DataUtils.cloneRow(form.getActiveRow());
 
-    if (ShipmentRequestStatus.NEW.is(row.getInteger(form.getDataIndex(COL_QUERY_STATUS)))) {
-      row.setValue(form.getDataIndex(COL_QUERY_STATUS), ShipmentRequestStatus.ANSWERED.ordinal());
+    if (status != null) {
+      row.setValue(form.getDataIndex(COL_QUERY_STATUS), status.ordinal());
     }
     BeeRowSet rs = DataUtils.getUpdated(form.getViewName(), form.getDataColumns(), form.getOldRow(),
         row, form.getChildrenForUpdate());
 
     NewMailMessage.create(BeeUtils.notEmpty(getStringValue(COL_PERSON + COL_EMAIL),
-            getStringValue(COL_QUERY_CUSTOMER_EMAIL)), null, null, null,
-        new BiConsumer<Long, Boolean>() {
-          @Override
-          public void accept(Long messageId, Boolean saveMode) {
-            DataInfo info = Data.getDataInfo(AdministrationConstants.VIEW_RELATIONS);
+            getStringValue(COL_QUERY_CUSTOMER_EMAIL)), subject, content, attachments,
+        (messageId, saveMode) -> {
+          DataInfo info = Data.getDataInfo(AdministrationConstants.VIEW_RELATIONS);
 
-            Queries.insert(info.getViewName(),
-                Arrays.asList(info.getColumn(COL_SHIPMENT_REQUEST),
-                    info.getColumn(MailConstants.COL_MESSAGE)),
-                Arrays.asList(BeeUtils.toString(row.getId()), BeeUtils.toString(messageId)), null,
-                new RowInsertCallback(info.getViewName()) {
-                  @Override
-                  public void onSuccess(BeeRow result) {
-                    Data.onTableChange(info.getTableName(), DataChangeEvent.RESET_REFRESH);
-                    super.onSuccess(result);
-                  }
-                });
-            SelfServiceUtils.update(form, rs);
-          }
+          Queries.insert(info.getViewName(),
+              Arrays.asList(info.getColumn(COL_SHIPMENT_REQUEST),
+                  info.getColumn(MailConstants.COL_MESSAGE)),
+              Arrays.asList(BeeUtils.toString(row.getId()), BeeUtils.toString(messageId)), null,
+              new RowInsertCallback(info.getViewName()) {
+                @Override
+                public void onSuccess(BeeRow result) {
+                  Data.onTableChange(info.getTableName(), DataChangeEvent.RESET_REFRESH);
+                  super.onSuccess(result);
+                }
+              });
+          SelfServiceUtils.update(form, rs);
         });
   }
 }

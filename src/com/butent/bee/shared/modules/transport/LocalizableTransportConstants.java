@@ -212,6 +212,8 @@ public interface LocalizableTransportConstants {
 
   String trConstantCosts();
 
+  String trContract();
+
   String trCreateTransportation();
 
   String trCreditInvoice();
@@ -437,6 +439,8 @@ public interface LocalizableTransportConstants {
   String trRequestStatusApproved();
 
   String trRequestStatusConfirmed();
+
+  String trRequestStatusContractSent();
 
   String trRequestStatusLost();
 
