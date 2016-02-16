@@ -90,8 +90,8 @@ public class FileServiceApplication extends Application {
   }
 
   @GET
-  @Path("{name}/{path}")
-  public Response getFile(@PathParam("name") String fileName, @PathParam("path") String filePath) {
+  @Path("{path}/{name}")
+  public Response getFile(@PathParam("path") String filePath, @PathParam("name") String fileName) {
     String path = Codec.decodeBase64(filePath);
 
     if (!FileUtils.isInputFile(path)) {
