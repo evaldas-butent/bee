@@ -915,8 +915,7 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
         }
       };
 
-      // TODO if (cause == CloseEvent.Cause.SCRIPT || !maybeAnimate(onClose)) {
-      if (!maybeAnimate(onClose)) {
+      if (cause == CloseEvent.Cause.SCRIPT || !maybeAnimate(onClose)) {
         onClose.run();
       }
     }

@@ -10,7 +10,6 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.event.dom.client.KeyDownHandler;
-import com.google.gwt.user.client.Event.NativePreviewEvent;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.HasWidgets;
@@ -19,7 +18,6 @@ import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.event.Previewer.PreviewConsumer;
 import com.butent.bee.client.event.logical.CloseEvent;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Flow;
@@ -510,146 +508,103 @@ public class InputBoxes {
         UiHelper.add(panel, errorDisplay, initializer, DialogConstants.WIDGET_ERROR);
       }
 
-      final ScheduledCommand onSave = new ScheduledCommand() {
-        @Override
-        public void execute() {
-          String message = callback.getErrorMessage();
-          if (BeeUtils.isEmpty(message)) {
-            dialog.close();
-            callback.onSuccess();
-          } else {
-            showError(errorDisplay.get(), message);
-          }
+      final ScheduledCommand onSave = () -> {
+        String message = callback.getErrorMessage();
+        if (BeeUtils.isEmpty(message)) {
+          dialog.close();
+          callback.onSuccess();
+        } else {
+          showError(errorDisplay.get(), message);
         }
       };
 
       FaLabel save = new FaLabel(FontAwesome.SAVE);
       save.addStyleName(STYLE_INPUT_SAVE);
-
-      save.addClickHandler(new ClickHandler() {
-
-        @Override
-        public void onClick(ClickEvent arg0) {
-          onSave.execute();
-        }
-      });
+      save.addClickHandler(event -> onSave.execute());
 
       UiHelper.initialize(save, initializer, DialogConstants.WIDGET_SAVE);
       dialog.addAction(Action.SAVE, save);
 
-      dialog.setOnSave(new PreviewConsumer() {
-        @Override
-        public void accept(NativePreviewEvent input) {
-          if (input != null) {
-            input.cancel();
-          }
-          onSave.execute();
+      dialog.setOnSave(input -> {
+        if (input != null) {
+          input.cancel();
         }
+        onSave.execute();
       });
 
-      onClose = new ScheduledCommand() {
-        @Override
-        public void execute() {
-          callback.onClose(new CloseCallback() {
-            @Override
-            public void onClose() {
-              dialog.close();
-              callback.onCancel();
-            }
+      onClose = () -> {
+        callback.onClose(new CloseCallback() {
+          @Override
+          public void onClose() {
+            dialog.close();
+            callback.onCancel();
+          }
 
-            @Override
-            public void onSave() {
-              onSave.execute();
-            }
-          });
-        }
+          @Override
+          public void onSave() {
+            onSave.execute();
+          }
+        });
       };
 
     } else {
-      onClose = new ScheduledCommand() {
-        @Override
-        public void execute() {
-          callback.onClose(new CloseCallback() {
-            @Override
-            public void onClose() {
-              dialog.close();
-              callback.onCancel();
-            }
+      onClose = () -> {
+        callback.onClose(new CloseCallback() {
+          @Override
+          public void onClose() {
+            dialog.close();
+            callback.onCancel();
+          }
 
-            @Override
-            public void onSave() {
-              onClose();
-            }
-          });
-        }
+          @Override
+          public void onSave() {
+            onClose();
+          }
+        });
       };
     }
 
     if (enabledActions != null) {
       if (enabled && enabledActions.contains(Action.ADD)) {
         FaLabel add = new FaLabel(FontAwesome.PLUS);
-        add.addClickHandler(new ClickHandler() {
-
-          @Override
-          public void onClick(ClickEvent arg0) {
-            callback.onAdd();
-          }
-        });
-
+        add.addClickHandler(event -> callback.onAdd());
         add.addStyleName(STYLE_INPUT_ADD);
+
         UiHelper.initialize(add, initializer, DialogConstants.WIDGET_ADD);
         dialog.addAction(Action.ADD, add);
       }
 
       if (enabled && enabledActions.contains(Action.DELETE)) {
         FaLabel delete = new FaLabel(FontAwesome.TRASH);
-        delete.addClickHandler(new ClickHandler() {
-          @Override
-          public void onClick(ClickEvent arg0) {
-            callback.onDelete(dialog);
-          }
-        });
-
+        delete.addClickHandler(event -> callback.onDelete(dialog));
         delete.addStyleName(STYLE_INPUT_DELETE);
+
         UiHelper.initialize(delete, initializer, DialogConstants.WIDGET_DELETE);
         dialog.addAction(Action.DELETE, delete);
       }
 
       if (enabledActions.contains(Action.PRINT)) {
         FaLabel print = new FaLabel(FontAwesome.PRINT);
-        print.addClickHandler(new ClickHandler() {
-          @Override
-          public void onClick(ClickEvent arg0) {
-            Printer.print(dialog);
-          }
-        });
-
+        print.addClickHandler(event -> Printer.print(dialog));
         print.addStyleName(STYLE_INPUT_PRINT);
+
         UiHelper.initialize(print, initializer, DialogConstants.WIDGET_PRINT);
         dialog.addAction(Action.PRINT, print);
       }
     }
 
     FaLabel close = new FaLabel(FontAwesome.CLOSE);
+    close.addClickHandler(event -> onClose.execute());
     close.addStyleName(STYLE_INPUT_CLOSE);
-    close.addClickHandler(new ClickHandler() {
 
-      @Override
-      public void onClick(ClickEvent arg0) {
-        onClose.execute();
-      }
-    });
     UiHelper.initialize(close, initializer, DialogConstants.WIDGET_CLOSE);
     dialog.addAction(Action.CLOSE, close);
 
-    dialog.setOnEscape(new PreviewConsumer() {
-      @Override
-      public void accept(NativePreviewEvent input) {
-        if (input != null) {
-          input.cancel();
-        }
-        onClose.execute();
+    dialog.setOnEscape(input -> {
+      if (input != null) {
+        input.cancel();
       }
+      onClose.execute();
     });
 
     UiHelper.setWidget(dialog, panel, initializer, DialogConstants.WIDGET_PANEL);
