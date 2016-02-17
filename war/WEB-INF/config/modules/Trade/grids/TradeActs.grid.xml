@@ -13,7 +13,7 @@
     <RelColumn name="Name" visible="true" />
     <DataColumn name="Date" visible="true" />
     <RelColumn name="Object" renderColumns="ObjectName" />
-    <RelColumn name="Status" renderColumns="StatusName" visible="true" />
+    <RelColumn name="Status" renderColumns="StatusName" visible="true" filterSupplier="list" />
     <RelColumn name="Manager" renderColumns="ManagerFirstName ManagerLastName" />
     <RelColumn name="Contact" renderColumns="ContactFirstName ContactLastName"
       choiceColumns="FirstName LastName CompanyName" />
