@@ -89,6 +89,8 @@ import com.butent.bee.shared.modules.documents.DocumentConstants;
 import com.butent.bee.shared.modules.projects.ProjectConstants;
 import com.butent.bee.shared.modules.projects.ProjectStatus;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
+import com.butent.bee.shared.modules.tasks.TaskConstants.TaskEvent;
+import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
 import com.butent.bee.shared.modules.tasks.TaskUtils;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
@@ -629,7 +631,6 @@ class TaskEditor extends AbstractFormInterceptor {
         public void onDataSelector(SelectorEvent event) {
 
           TasksKeeper.getProductRequired(getActiveRow(), productLabel, getViewName());
-          getFormView().refresh();
         }
       });
     } else if (BeeUtils.same("InputArea", name) && (widget instanceof InputArea)) {
@@ -970,7 +971,7 @@ class TaskEditor extends AbstractFormInterceptor {
 
         if (!BeeUtils.isEmpty(companyName)) {
           docRow.setValue(dataInfo
-                  .getColumnIndex(DocumentConstants.ALS_DOCUMENT_COMPANY_NAME),
+              .getColumnIndex(DocumentConstants.ALS_DOCUMENT_COMPANY_NAME),
               companyName);
           docRow.setValue(dataInfo
               .getColumnIndex(DocumentConstants.COL_DOCUMENT_COMPANY), row
@@ -1024,7 +1025,7 @@ class TaskEditor extends AbstractFormInterceptor {
                             DocumentConstants.COL_REGISTRATION_NUMBER)),
                         br.getDateTime(Data.getColumnIndex(DocumentConstants.VIEW_DOCUMENTS,
                             DocumentConstants.COL_DOCUMENT_DATE))
-                    )));
+                        )));
             sendRequest(prm, TaskEvent.EDIT);
           }
         });
@@ -1193,7 +1194,7 @@ class TaskEditor extends AbstractFormInterceptor {
           }
 
           Queries.update(VIEW_TASK_EVENTS, eventId, COL_EVENT_DATA, Value.getValue(Codec
-                  .beeSerialize(data)),
+              .beeSerialize(data)),
               new IntCallback() {
 
                 @Override
@@ -1212,7 +1213,7 @@ class TaskEditor extends AbstractFormInterceptor {
     relIds.addAll(DataUtils.parseIdList(taskIds));
 
     Queries.updateChildren(VIEW_TASKS, taskRow.getId(), Lists.newArrayList(RowChildren
-            .create(TBL_RELATIONS, COL_TASK, null, COL_TASK, DataUtils.buildIdList(relIds))),
+        .create(TBL_RELATIONS, COL_TASK, null, COL_TASK, DataUtils.buildIdList(relIds))),
         new RowCallback() {
 
           @Override
@@ -1402,16 +1403,16 @@ class TaskEditor extends AbstractFormInterceptor {
 
       if (event != null
           && Objects.equals(TaskEvent.COMMENT.ordinal(), event.getInteger(events
-          .getColumnIndex(TaskConstants.COL_EVENT)))) {
+              .getColumnIndex(TaskConstants.COL_EVENT)))) {
         description =
             BeeUtils.join(BeeConst.STRING_EOL
                 + BeeUtils.replicate(BeeConst.CHAR_MINUS, BeeConst.MAX_SCALE)
                 + BeeConst.STRING_EOL, description, BeeUtils
                 .joinWords(event.getDateTime(events.getColumnIndex(COL_PUBLISH_TIME)), BeeUtils
                     .nvl(event
-                            .getString(events.getColumnIndex(ALS_PUBLISHER_FIRST_NAME)),
+                        .getString(events.getColumnIndex(ALS_PUBLISHER_FIRST_NAME)),
                         BeeConst.STRING_EMPTY), BeeUtils.nvl(event
-                        .getString(events.getColumnIndex(ALS_PUBLISHER_LAST_NAME)),
+                    .getString(events.getColumnIndex(ALS_PUBLISHER_LAST_NAME)),
                     BeeConst.STRING_EMPTY)
                     + BeeConst.STRING_COLON, event
                     .getString(events
@@ -1421,16 +1422,16 @@ class TaskEditor extends AbstractFormInterceptor {
       for (IsRow event : events) {
         if (event != null
             && Objects.equals(TaskEvent.COMMENT.ordinal(), event.getInteger(events
-            .getColumnIndex(TaskConstants.COL_EVENT)))) {
+                .getColumnIndex(TaskConstants.COL_EVENT)))) {
           description =
               BeeUtils.join(BeeConst.STRING_EOL
                   + BeeUtils.replicate(BeeConst.CHAR_MINUS, BeeConst.MAX_SCALE)
                   + BeeConst.STRING_EOL, description, BeeUtils
                   .joinWords(event.getDateTime(events.getColumnIndex(COL_PUBLISH_TIME)), BeeUtils
                       .nvl(event
-                              .getString(events.getColumnIndex(ALS_PUBLISHER_FIRST_NAME)),
+                          .getString(events.getColumnIndex(ALS_PUBLISHER_FIRST_NAME)),
                           BeeConst.STRING_EMPTY), BeeUtils.nvl(event
-                          .getString(events.getColumnIndex(ALS_PUBLISHER_LAST_NAME)),
+                      .getString(events.getColumnIndex(ALS_PUBLISHER_LAST_NAME)),
                       BeeConst.STRING_EMPTY)
                       + BeeConst.STRING_COLON, event
                       .getString(events
@@ -1548,7 +1549,7 @@ class TaskEditor extends AbstractFormInterceptor {
 
     final String startId = isScheduled
         ? dialog.addDateTime(Localized.getConstants().crmStartDate(), true,
-        getDateTime(COL_START_TIME)) : null;
+            getDateTime(COL_START_TIME)) : null;
     final String endId = dialog.addDateTime(Localized.getConstants().crmFinishDate(), true, null);
 
     final String cid = dialog.addComment(false);
