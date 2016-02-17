@@ -123,6 +123,7 @@ public class GridLoaderBean {
   private static final String ATTR_MIN_WIDTH = "minWidth";
   private static final String ATTR_MAX_WIDTH = "maxWidth";
   private static final String ATTR_AUTO_FIT = "autoFit";
+  private static final String ATTR_AUTO_FLEX = "autoFlex";
 
   private static final String ATTR_SORTABLE = "sortable";
 
@@ -765,6 +766,10 @@ public class GridLoaderBean {
     String autoFit = src.getAttribute(ATTR_AUTO_FIT);
     if (!BeeUtils.isEmpty(autoFit)) {
       dst.setAutoFit(autoFit);
+    }
+    Boolean autoFlex = XmlUtils.getAttributeBoolean(src, ATTR_AUTO_FLEX);
+    if (autoFlex != null) {
+      dst.setAutoFlex(autoFlex);
     }
 
     String flexGrow = src.getAttribute(Flexibility.ATTR_GROW);

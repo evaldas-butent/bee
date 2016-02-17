@@ -3395,6 +3395,14 @@ textarea,
   color: red;
 }
 
+.bee-PopupUsersChat {
+  font-size: large;
+  color: #414142;
+}
+.bee-PopupUsersChat:hover {
+  color: black;
+}
+
 .bee-DataSelector,
 .bee-DataSelector-editableContainer,
 .bee-MultiSelector-container {

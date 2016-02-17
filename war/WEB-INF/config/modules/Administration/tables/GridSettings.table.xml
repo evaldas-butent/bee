@@ -35,6 +35,7 @@
     <String name="FooterMargin" precision="10" />
 
     <Boolean name="AutoFit" />
+    <Boolean name="AutoFlex" />
 
     <Integer name="MinColumnWidth" />
     <Integer name="MaxColumnWidth" />

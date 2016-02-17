@@ -27,7 +27,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 
 public final class ChatUtils {
 
@@ -193,7 +192,7 @@ public final class ChatUtils {
     return System.currentTimeMillis() - millis < TimeUtils.MILLIS_PER_DAY * 2;
   }
 
-  public static void renderOtherUsers(HasIndexedWidgets container, Collection<Long> users,
+  public static void renderUsers(HasIndexedWidgets container, List<Long> users,
       String itemStyleName) {
 
     Assert.notNull(container);
@@ -201,22 +200,22 @@ public final class ChatUtils {
       container.clear();
     }
 
-    if (BeeUtils.isEmpty(users)) {
-      return;
-    }
+    if (!BeeUtils.isEmpty(users)) {
+      for (int i = 0; i < users.size(); i++) {
+        UserData userData = Global.getUsers().getUserData(users.get(i));
 
-    for (Long userId : users) {
-      if (Objects.equals(userId, BeeKeeper.getUser().getUserId())) {
-        continue;
-      }
+        if (userData != null) {
+          String text = userData.getFirstName();
+          if (i < users.size() - 1) {
+            text = BeeUtils.trim(text) + BeeConst.DEFAULT_LIST_SEPARATOR;
+          }
 
-      UserData userData = Global.getUsers().getUserData(userId);
-      if (userData != null) {
-        CustomDiv widget = new CustomDiv(itemStyleName);
-        widget.setText(userData.getFirstName());
-        widget.setTitle(userData.getUserSign());
+          CustomDiv widget = new CustomDiv(itemStyleName);
+          widget.setText(text);
+          widget.setTitle(userData.getUserSign());
 
-        container.add(widget);
+          container.add(widget);
+        }
       }
     }
   }

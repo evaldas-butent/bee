@@ -1459,6 +1459,13 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
         DynamicColumnFactory.checkRightsColumns(getViewPresenter(), this, event);
       }
 
+      if (!event.canceled() && !event.dataChanged()
+          && BeeUtils.isTrue(getGridDescription().getAutoFlex())) {
+
+        getGrid().estimateColumnWidths(false);
+        getGrid().doFlexLayout();
+      }
+
     } else if (event.isAfter() && getState() == null) {
       setState(State.INITIALIZED);
 

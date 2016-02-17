@@ -1257,6 +1257,19 @@ public class ScreenImpl implements Screen {
           }
           c++;
 
+          if (Global.getChatManager().isEnabled()) {
+            FaLabel chat = new FaLabel(FontAwesome.COMMENT_O, STYLE_POPUP_USERS + "Chat");
+            chat.setTitle(Localized.getConstants().chat());
+
+            chat.addClickHandler(event -> {
+              UiHelper.closeDialog(table);
+              Global.getChatManager().chatWithUser(user.getUserId());
+            });
+
+            table.setWidget(r, c, chat);
+          }
+          c++;
+
           DomUtils.setDataIndex(table.getRow(r), user.getPerson());
           r++;
         }

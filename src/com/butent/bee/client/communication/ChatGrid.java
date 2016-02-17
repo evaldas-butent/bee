@@ -8,12 +8,14 @@ import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
+import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.RowDeleteEvent;
+import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.Action;
 
@@ -23,6 +25,24 @@ import java.util.List;
 public class ChatGrid extends AbstractGridInterceptor {
 
   public ChatGrid() {
+  }
+
+  @Override
+  public void afterCreatePresenter(final GridPresenter presenter) {
+    presenter.getHeader().clearCommandPanel();
+
+    FaLabel openChat = new FaLabel(FontAwesome.COMMENTS_O);
+    openChat.setTitle(Localized.getConstants().actionOpen());
+
+    openChat.addClickHandler(event -> {
+      long chatId = presenter.getActiveRowId();
+
+      if (DataUtils.isId(chatId)) {
+        Global.getChatManager().enterChat(chatId);
+      }
+    });
+
+    presenter.getHeader().addCommandItem(openChat);
   }
 
   @Override
@@ -58,6 +78,10 @@ public class ChatGrid extends AbstractGridInterceptor {
         }
       }
 
+      return false;
+
+    } else if (action == Action.ADD) {
+      Global.getChatManager().createChat();
       return false;
 
     } else {

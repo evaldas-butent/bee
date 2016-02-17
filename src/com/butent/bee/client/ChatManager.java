@@ -183,7 +183,10 @@ public class ChatManager implements HasInfo, HasEnabled {
       this.chatId = chat.getId();
       this.timeLabel = new CustomDiv(STYLE_CHATS_ITEM_PREFIX + "maxTime");
 
-      addClickHandler(event -> enterChat(chatId));
+      addClickHandler(event -> {
+        closeChatsPopup();
+        enterChat(chatId);
+      });
 
       render(chat);
     }
@@ -260,7 +263,7 @@ public class ChatManager implements HasInfo, HasEnabled {
 
         } else {
           Flow usersPanel = new Flow(STYLE_CHATS_ITEM_PREFIX + "usersPanel");
-          ChatUtils.renderOtherUsers(usersPanel, chat.getUsers(), STYLE_CHATS_ITEM_USER);
+          ChatUtils.renderUsers(usersPanel, users, STYLE_CHATS_ITEM_USER);
           headerPanel.add(usersPanel);
         }
 
@@ -412,6 +415,53 @@ public class ChatManager implements HasInfo, HasEnabled {
     }
   }
 
+  public boolean chatWithUser(Long userId) {
+    if (!DataUtils.isId(userId) || BeeKeeper.getUser().is(userId)) {
+      return false;
+    }
+
+    List<Long> users = new ArrayList<>();
+    users.add(BeeKeeper.getUser().getUserId());
+    users.add(userId);
+
+    for (Chat chat : chats) {
+      if (BeeUtils.sameElements(chat.getUsers(), users)) {
+        enterChat(chat.getId());
+        return true;
+      }
+    }
+
+    ChatSettings settings = new ChatSettings();
+    settings.getUsers().addAll(users);
+
+    createChat(settings);
+
+    return true;
+  }
+
+  public void configure(long chatId) {
+    Chat chat = findChat(chatId);
+
+    if (chat != null) {
+      if (chat.isOwner(BeeKeeper.getUser().getUserId())) {
+        editSettings(chat);
+      } else {
+        showInfo(chat);
+      }
+    }
+  }
+
+  public void createChat() {
+    ChatSettings settings = new ChatSettings();
+
+    openSettings(settings, true, input -> {
+      if (input.isValid()) {
+        closeChatsPopup();
+        createChat(input);
+      }
+    });
+  }
+
   public Widget createCommand() {
     Flow command = new Flow(STYLE_CHATS_COMMAND);
     command.setTitle(Localized.getConstants().chats());
@@ -435,15 +485,28 @@ public class ChatManager implements HasInfo, HasEnabled {
     return command;
   }
 
-  public void configure(long chatId) {
-    Chat chat = findChat(chatId);
+  public boolean enterChat(long chatId) {
+    if (contains(chatId)) {
+      ChatView chatView = findChatView(chatId);
 
-    if (chat != null) {
-      if (chat.isOwner(BeeKeeper.getUser().getUserId())) {
-        editSettings(chat);
+      if (chatView != null) {
+        ChatPopup popup = chatView.getPopup();
+
+        if (popup != null) {
+          popup.setMinimized(false);
+          UiHelper.focus(chatView);
+
+        } else {
+          BeeKeeper.getScreen().activateWidget(chatView);
+        }
+
       } else {
-        showInfo(chat);
+        open(chatId, view -> ChatPopup.openNormal(view), true);
       }
+      return true;
+
+    } else {
+      return false;
     }
   }
 
@@ -696,31 +759,25 @@ public class ChatManager implements HasInfo, HasEnabled {
     return false;
   }
 
-  private void createChat() {
-    ChatSettings settings = new ChatSettings();
+  private void createChat(ChatSettings settings) {
+    ParameterList params = BeeKeeper.getRpc().createParameters(Service.CREATE_CHAT);
+    if (!BeeUtils.isEmpty(settings.getName())) {
+      params.addDataItem(COL_CHAT_NAME, settings.getName());
+    }
+    params.addDataItem(TBL_CHAT_USERS, DataUtils.buildIdList(settings.getUsers()));
 
-    openSettings(settings, true, input -> {
-      if (input.isValid()) {
-        closeChatsPopup();
+    BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+        if (response.hasResponse(Chat.class)) {
+          Chat chat = Chat.restore(response.getResponseAsString());
+          addChat(chat);
 
-        ParameterList params = BeeKeeper.getRpc().createParameters(Service.CREATE_CHAT);
-        if (!BeeUtils.isEmpty(input.getName())) {
-          params.addDataItem(COL_CHAT_NAME, input.getName());
+          Endpoint.send(ChatStateMessage.add(chat));
+          DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_CHATS);
+
+          enterChat(chat.getId());
         }
-        params.addDataItem(TBL_CHAT_USERS, DataUtils.buildIdList(input.getUsers()));
-
-        BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
-          @Override
-          public void onResponse(ResponseObject response) {
-            if (response.hasResponse(Chat.class)) {
-              Chat chat = Chat.restore(response.getResponseAsString());
-              addChat(chat);
-
-              Endpoint.send(ChatStateMessage.add(chat));
-              DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_CHATS);
-            }
-          }
-        });
       }
     });
   }
@@ -778,27 +835,6 @@ public class ChatManager implements HasInfo, HasEnabled {
         }
       }
     });
-  }
-
-  private void enterChat(long chatId) {
-    closeChatsPopup();
-
-    ChatView chatView = findChatView(chatId);
-
-    if (chatView != null) {
-      ChatPopup popup = chatView.getPopup();
-
-      if (popup != null) {
-        popup.setMinimized(false);
-        UiHelper.focus(chatView);
-
-      } else {
-        BeeKeeper.getScreen().activateWidget(chatView);
-      }
-
-    } else {
-      open(chatId, view -> ChatPopup.openNormal(view), true);
-    }
   }
 
   private Chat findChat(long chatId) {

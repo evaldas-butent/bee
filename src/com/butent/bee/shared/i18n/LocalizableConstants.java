@@ -76,6 +76,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String actionNotAllowed();
 
+  String actionOpen();
+
   String actionPrint();
 
   String actionRefresh();

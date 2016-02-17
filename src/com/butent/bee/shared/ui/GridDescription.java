@@ -41,7 +41,8 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
     EDIT_FORM_IMMEDIATE, EDIT_IN_PLACE,
     ENABLED_ACTIONS, DISABLED_ACTIONS, STYLE_SHEETS, HEADER, BODY, FOOTER,
     ROW_STYLES, ROW_MESSAGE, ROW_EDITABLE, ROW_VALIDATION, MIN_COLUMN_WIDTH, MAX_COLUMN_WIDTH,
-    COLUMNS, WIDGETS, AUTO_FIT, FLEXIBILITY, FAVORITE, ENABLE_COPY, CACHE_DATA, CACHE_DESCRIPTION,
+    COLUMNS, WIDGETS, AUTO_FIT, AUTO_FLEX, FLEXIBILITY,
+    FAVORITE, ENABLE_COPY, CACHE_DATA, CACHE_DESCRIPTION,
     MIN_NUMBER_OF_ROWS, MAX_NUMBER_OF_ROWS, RENDER_MODE, ROW_CHANGE_SENSITIVITY_MILLIS,
     PREDEFINED_FILTERS, OPTIONS, PROPERTIES
   }
@@ -123,6 +124,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   private Integer minColumnWidth;
   private Integer maxColumnWidth;
   private String autoFit;
+  private Boolean autoFlex;
   private Flexibility flexibility;
 
   private final List<ColumnDescription> columns = new ArrayList<>();
@@ -373,6 +375,9 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         case AUTO_FIT:
           setAutoFit(value);
           break;
+        case AUTO_FLEX:
+          setAutoFlex(BeeUtils.toBooleanOrNull(value));
+          break;
         case FLEXIBILITY:
           setFlexibility(Flexibility.restore(value));
           break;
@@ -421,6 +426,10 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
 
   public String getAutoFit() {
     return autoFit;
+  }
+
+  public Boolean getAutoFlex() {
+    return autoFlex;
   }
 
   public GridComponentDescription getBody() {
@@ -548,6 +557,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         "Min Column Width", getMinColumnWidth(),
         "Max Column Width", getMaxColumnWidth(),
         "Auto Fit", getAutoFit(),
+        "Auto Flex", getAutoFlex(),
         "Favorite", getFavorite(),
         "Enable Copy", getEnableCopy(),
         "Min Number Of Rows", getMinNumberOfRows(),
@@ -964,6 +974,9 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         case AUTO_FIT:
           arr[i++] = getAutoFit();
           break;
+        case AUTO_FLEX:
+          arr[i++] = getAutoFlex();
+          break;
         case FLEXIBILITY:
           arr[i++] = getFlexibility();
           break;
@@ -1010,6 +1023,10 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
 
   public void setAutoFit(String autoFit) {
     this.autoFit = autoFit;
+  }
+
+  public void setAutoFlex(Boolean autoFlex) {
+    this.autoFlex = autoFlex;
   }
 
   public void setBody(GridComponentDescription body) {
