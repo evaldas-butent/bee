@@ -78,10 +78,16 @@
     <br />
     <FlowPanel name="TradeActServices" class="TradeActServices" style="&section;" />
 
-    <HtmlPanel style="&section;">
-      <span style="display:block; white-space:pre-wrap; border:1px solid silver; margin-top: 20px;">Pastabos: Grąžinama įranga turi būti nuvalyta ir išardyta taip, kaip buvo išduota. Įranga transporto priemonėje turi būti
-sukrauta taip, kad būtų galima iškrauti šakiniais krautuvais. Už iškrovimą rankomis apmokama papildomai.</span>
-    </HtmlPanel>
+    <FlowPanel style="&section;">
+      <TextLabel source="Notes" style="display:block; white-space:pre-wrap; border:1px solid silver;
+        margin-top: 20px; min-height: 2em;">
+        <dynStyle>
+          <ui:inline>display: none;</ui:inline>
+          <ui:expression>!row.Notes</ui:expression>
+        </dynStyle>
+        <renderToken source="Notes" prefix="Pastabos: " />
+      </TextLabel>
+    </FlowPanel>
     <br />
     <Label html="Asmuo (asmenys), įgaliotas(-­i) priimti įrangą ir pasirašyti įrangos priėmimo­-perdavimo dokumentuose:" />
     <Table style="width:100%; margin-top:10px;  border:1px solid silver; ">
