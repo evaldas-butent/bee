@@ -214,6 +214,8 @@ public interface LocalizableTransportConstants {
 
   String trContract();
 
+  String trContractMailContent();
+
   String trCreateTransportation();
 
   String trCreditInvoice();
@@ -325,6 +327,8 @@ public interface LocalizableTransportConstants {
   String trRegistrationFax();
 
   String trRegistrationFormCaption();
+
+  String trRegistrationMailContent();
 
   String trRegistrationMobile();
 
@@ -475,6 +479,8 @@ public interface LocalizableTransportConstants {
   String trSendToERP();
 
   String trSendToERPConfirm();
+
+  String trShippingTerms();
 
   String trTransportationOrders();
 

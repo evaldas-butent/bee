@@ -37,6 +37,7 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.DataChangeEvent;
+import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
@@ -325,9 +326,31 @@ class ShipmentRequestForm extends AbstractFormInterceptor {
     if (preview) {
       ReportUtils.showReport(REP_CONTRACT, params, null, () -> sendContract(false));
     } else {
-      ReportUtils.getReport(REP_CONTRACT, params, null, (fileInfo) ->
-          sendMail(ShipmentRequestStatus.CONTRACT_SENT, loc.trContract(), null,
-              Collections.singleton(fileInfo)));
+      Long id = getActiveRowId();
+      String localizedContent = COL_TEXT_CONTENT + EnumUtils.getEnumByIndex(SupportedLocale.class,
+          getIntegerValue(AdministrationConstants.COL_USER_LOCALE)).getLanguage();
+
+      Queries.getRowSet(VIEW_TEXT_CONSTANTS, null, Filter.equals(COL_TEXT_CONSTANT,
+          TextConstant.CONTRACT_MAIL_CONTENT), new Queries.RowSetCallback() {
+        @Override
+        public void onSuccess(BeeRowSet result) {
+          String text;
+
+          if (DataUtils.isEmpty(result)) {
+            text = TextConstant.CONTRACT_MAIL_CONTENT.getDefaultContent();
+          } else if (BeeConst.isUndef(DataUtils.getColumnIndex(localizedContent,
+              result.getColumns()))) {
+            text = result.getString(0, COL_TEXT_CONTENT);
+          } else {
+            text = BeeUtils.notEmpty(result.getString(0, localizedContent),
+                result.getString(0, COL_TEXT_CONTENT));
+          }
+          ReportUtils.getReport(REP_CONTRACT, params, null, (fileInfo) ->
+              sendMail(ShipmentRequestStatus.CONTRACT_SENT, null, BeeUtils.isEmpty(text)
+                      ? null : text.replace("{contract_path}", "rest/transport/confirm/" + id),
+                  Collections.singleton(fileInfo)));
+        }
+      });
     }
   }
 

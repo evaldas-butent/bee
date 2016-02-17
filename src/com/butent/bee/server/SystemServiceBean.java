@@ -76,7 +76,7 @@ public class SystemServiceBean {
     private BeeRowSet rs;
     private int index;
 
-    public RsDataSource(BeeRowSet rowSet) {
+    private RsDataSource(BeeRowSet rowSet) {
       rs = Assert.notNull(rowSet);
     }
 

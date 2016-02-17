@@ -290,6 +290,8 @@ public final class TransportHandler {
     FormFactory.registerFormInterceptor(FORM_TRIP, new TripForm());
     FormFactory.registerFormInterceptor(FORM_EXPEDITION_TRIP, new TripForm());
 
+    FormFactory.registerFormInterceptor(FORM_TEXT_CONSTANT, new TextConstantForm());
+
     FormFactory.registerFormInterceptor(FORM_CARGO, new OrderCargoForm());
 
     final Consumer<ScheduledCommand> assessmentConsumer = new Consumer<ScheduledCommand>() {

@@ -98,6 +98,43 @@ public final class TransportConstants {
     }
   }
 
+  public enum TextConstant implements HasLocalizedCaption {
+    SHIPPING_TERMS {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.trShippingTerms();
+      }
+    },
+    CONTRACT_MAIL_CONTENT {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.trContractMailContent();
+      }
+
+      @Override
+      public String getDefaultContent() {
+        return "Hello,<br><br>"
+            + "  For contract approval/rejection click "
+            + "<a href=\"http://127.0.0.1:8080/Bee/{contract_path}\">here</a>";
+      }
+    },
+    REGISTRATION_MAIL_CONTENT {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.trRegistrationMailContent();
+      }
+    };
+
+    @Override
+    public String getCaption() {
+      return getCaption(Localized.getConstants());
+    }
+
+    public String getDefaultContent() {
+      return null;
+    }
+  }
+
   public enum FuelSeason implements HasLocalizedCaption {
     SUMMER {
       @Override
@@ -244,6 +281,7 @@ public final class TransportConstants {
 
     EnumUtils.register(FuelSeason.class);
     EnumUtils.register(TripConstant.class);
+    EnumUtils.register(TextConstant.class);
   }
 
   public static final String SVC_GET_BEFORE = "GetBeforeData";
@@ -393,6 +431,8 @@ public final class TransportConstants {
 
   public static final String VIEW_SHIPMENT_REQUESTS = "ShipmentRequests";
   public static final String VIEW_SHIPMENT_REQUEST_FILES = "ShipmentRequestFiles";
+
+  public static final String VIEW_TEXT_CONSTANTS = "TextConstants";
 
   public static final String VIEW_EXPEDITION_TYPES = "ExpeditionTypes";
   public static final String VIEW_SHIPPING_TERMS = "ShippingTerms";
@@ -754,6 +794,9 @@ public final class TransportConstants {
   public static final String COL_QUERY_AGENT = "Agent";
   public static final String COL_QUERY_REASON = "LossReason";
 
+  public static final String COL_TEXT_CONSTANT = "Constant";
+  public static final String COL_TEXT_CONTENT = "Content";
+
   public static final String COL_EXPEDITION_TYPE_NAME = "Name";
   public static final String COL_EXPEDITION_LOGISTICS = "Logistics";
   public static final String COL_SHIPPING_TERM_NAME = "Name";
@@ -767,6 +810,7 @@ public final class TransportConstants {
 
   public static final String COL_TRANSPORTATION_ORDER = "TransportationOrder";
 
+  public static final String FORM_TEXT_CONSTANT = "TextConstant";
   public static final String FORM_NEW_VEHICLE = "NewVehicle";
   public static final String FORM_ORDER = "TransportationOrder";
   public static final String FORM_NEW_SIMPLE_ORDER = "NewSimpleTransportationOrder";

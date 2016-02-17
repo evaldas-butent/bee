@@ -182,7 +182,7 @@ public class FileStorageBean {
 
     if (System.currentTimeMillis() - cacheAge > TimeUtils.MILLIS_PER_DAY) {
       ConcurrentMap<Long, FileInfo> oldCache = cache;
-      cache = new ConcurrentHashMap();
+      cache = new ConcurrentHashMap<>();
       cacheAge = System.currentTimeMillis();
 
       if (!BeeUtils.isEmpty(oldCache)) {

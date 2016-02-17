@@ -11,6 +11,7 @@ import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.widget.Frame;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.css.CssUnit;
@@ -64,7 +65,12 @@ public final class ReportUtils {
   }
 
   private static void preview(String path, InputCallback callback) {
-    Frame frame = new Frame(FileUtils.getUrl(path, Localized.getConstants().print() + ".pdf"));
+    int idx = path.lastIndexOf(BeeConst.CHAR_SLASH);
+
+    if (BeeConst.isUndef(idx)) {
+      idx = path.lastIndexOf(BeeConst.CHAR_BACKSLASH);
+    }
+    Frame frame = new Frame(FileUtils.getUrl(path, path.substring(idx + 1)));
 
     StyleUtils.setWidth(frame, BeeKeeper.getScreen().getWidth() * 0.7, CssUnit.PX);
     StyleUtils.setHeight(frame, BeeKeeper.getScreen().getHeight() * 0.9, CssUnit.PX);

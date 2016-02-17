@@ -498,6 +498,7 @@
       <xs:enumeration value="TcdTypeArticles" />
       <xs:enumeration value="TcdTypes" />
       <xs:enumeration value="TemplateTree" />
+      <xs:enumeration value="TextConstants" />
       <xs:enumeration value="ThemeColors" />
       <xs:enumeration value="Themes" />
       <xs:enumeration value="TimeCardChanges" />

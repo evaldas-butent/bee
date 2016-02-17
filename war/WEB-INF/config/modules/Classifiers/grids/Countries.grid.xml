@@ -1,19 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
 
-  name="Countries" viewName="Countries" caption="=countries"
-  maxColumnWidth="300" newRowPopup="true" editPopup="true"
-  >
+        name="Countries" viewName="Countries" caption="=countries"
+        maxColumnWidth="300" newRowPopup="true" editPopup="true"
+    >
   <g:columns>
     <DataColumn name="Name" minWidth="100" visible="true" />
-    <DataColumn name="NameEN" visible="false" />
-    <DataColumn name="NameRU" visible="false" />
     <DataColumn name="Code" />
     <DataColumn name="EUMember" caption="=countryEUMemberShort" />
 
     <CalcColumn type="string" name="Flag" source="Code" cellType="html" width="30" caption="-"
-      label="=countryFlag" sortable="false" horizontalAlignment="center" filterOptions="-"
-      exportWidthFactor="0.5" >
+                label="=countryFlag" sortable="false" horizontalAlignment="center" filterOptions="-"
+                exportWidthFactor="0.5">
       <renderer type="flag" />
     </CalcColumn>
   </g:columns>
