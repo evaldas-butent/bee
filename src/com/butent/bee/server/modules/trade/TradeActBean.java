@@ -3633,7 +3633,13 @@ public class TradeActBean implements HasTimerService {
     try {
       SimpleRowSet erpCompanies =
           ButentWS.connect(remoteAddress, remoteLogin, remotePassword)
-              .getClients();
+              .getSQLData("SELECT klientai.klientas AS klientas, klientai.kodas AS kodas"
+                  + " FROM klientai"
+                  + " WHERE klientai.kodas IS NOT NULL",
+                  new String[] {"klientas", "kodas"});
+      // @deprecated due 24 month turnover limit
+      // ButentWS.connect(remoteAddress, remoteLogin, remotePassword)
+      // .getClients();
 
       if (erpCompanies.isEmpty()) {
         logger.info("Finish import Debts. Clients set from ERP is empty");
