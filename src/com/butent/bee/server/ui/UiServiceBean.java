@@ -1002,6 +1002,14 @@ public class UiServiceBean {
       ui.initMenu();
       response.addInfo("Menu OK");
 
+    } else if (BeeUtils.same(cmd, "reports")) {
+      ui.initReports();
+      response.addInfo("Reports OK");
+
+    } else if (BeeUtils.same(cmd, "system")) {
+      ib.init();
+      response.addInfo("System OK");
+
     } else if (BeeUtils.startsSame(cmd, "check")) {
       String err = null;
       List<String> tbls = new ArrayList<>();

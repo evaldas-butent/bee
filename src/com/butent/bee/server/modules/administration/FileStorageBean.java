@@ -60,7 +60,6 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
-import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.ejb.Lock;
 import javax.ejb.LockType;
@@ -82,8 +81,6 @@ public class FileStorageBean {
   ConcurrencyBean cb;
   @EJB
   ParamHolderBean prm;
-
-  private File repositoryDir;
 
   private ConcurrentMap<Long, FileInfo> cache;
   private long cacheAge;
@@ -295,6 +292,7 @@ public class FileStorageBean {
   }
 
   public Long storeFile(InputStream is, String fileName, String mimeType) throws IOException {
+    File repositoryDir = getRepositoryDir();
     boolean storeAsFile = Objects.nonNull(repositoryDir);
     String name = sys.clampValue(TBL_FILES, COL_FILE_NAME, BeeUtils.notEmpty(fileName, "unknown"));
     MessageDigest md = null;
@@ -450,18 +448,18 @@ public class FileStorageBean {
     return new File(Config.IMAGE_DIR, Paths.PHOTO_DIR);
   }
 
-  @PostConstruct
-  private void init() {
+  private static File getRepositoryDir() {
     String repo = Config.getProperty("RepositoryDir");
 
     if (!BeeUtils.isEmpty(repo)) {
       File repository = new File(repo);
 
       if (FileUtils.isDirectory(repository)) {
-        repositoryDir = repository;
+        return repository;
       } else {
         logger.warning("Wrong repository directory:", repo);
       }
     }
+    return null;
   }
 }

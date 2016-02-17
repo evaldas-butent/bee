@@ -47,8 +47,6 @@ public class ModuleHolderBean {
   @EJB
   SystemBean sys;
   @EJB
-  ParamHolderBean prm;
-  @EJB
   UserServiceBean usr;
 
   public ResponseObject doModule(String moduleName, RequestInfo reqInfo) {
@@ -96,12 +94,11 @@ public class ModuleHolderBean {
   }
 
   public void initModules() {
+    Module.setEnabledModules(Config.getProperty(Service.PROPERTY_MODULES));
+
     TableActivationMode mode = EnumUtils.getEnumByName(TableActivationMode.class,
         Config.getProperty("TableActivationMode"));
 
-    for (String mod : getModules()) {
-      prm.refreshParameters(mod);
-    }
     if (mode != null) {
       switch (mode) {
         case NEW:
@@ -130,39 +127,26 @@ public class ModuleHolderBean {
   @SuppressWarnings("unchecked")
   @PostConstruct
   private void init() {
-    Module.setEnabledModules(Config.getProperty(Service.PROPERTY_MODULES));
-
-    List<String> mods = new ArrayList<>();
-
-    for (Module modul : Module.values()) {
-      if (BeeUtils.isEmpty(modul.getName())) {
-        logger.severe("Module", BeeUtils.bracket(modul.name()), "does not have name");
-      } else {
-        mods.add(modul.getName());
-      }
+    for (Module module : Module.values()) {
+      String moduleName = module.getName();
+      registerModule(moduleName);
     }
-    for (String moduleName : mods) {
-      if (hasModule(moduleName)) {
-        logger.severe("Duplicate module name:", BeeUtils.bracket(moduleName));
-      } else {
-        try {
-          Class<BeeModule> clazz = (Class<BeeModule>) Class.forName(BeeUtils.join(".",
-              this.getClass().getPackage().getName(), moduleName.toLowerCase(),
-              moduleName + "ModuleBean"));
+  }
 
-          BeeModule module = Invocation.locateRemoteBean(clazz);
+  private void registerModule(String moduleName) {
+    try {
+      Class<BeeModule> clazz = (Class<BeeModule>) Class.forName(BeeUtils.join(".",
+          this.getClass().getPackage().getName(), moduleName.toLowerCase(),
+          moduleName + "ModuleBean"));
 
-          if (module != null) {
-            modules.put(moduleName, module);
-            logger.info("Registered module:", BeeUtils.bracket(moduleName));
-          }
-        } catch (ClassNotFoundException | ClassCastException e) {
-          logger.error(e);
-        }
+      BeeModule module = Invocation.locateRemoteBean(clazz);
+
+      if (module != null) {
+        modules.put(moduleName, module);
+        logger.info("Registered module:", BeeUtils.bracket(moduleName));
       }
-    }
-    if (modules.isEmpty()) {
-      logger.warning("No modules registered");
+    } catch (ClassNotFoundException | ClassCastException e) {
+      logger.error(e);
     }
   }
 }

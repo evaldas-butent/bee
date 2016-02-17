@@ -172,6 +172,7 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
     String module = getModule().getName();
 
     List<BeeParameter> params = Lists.newArrayList(
+        BeeParameter.createMap(module, PRM_SERVER_PROPERTIES),
         BeeParameter.createRelation(module, PRM_COMPANY, TBL_COMPANIES, COL_COMPANY_NAME),
         BeeParameter.createRelation(module, PRM_COUNTRY, TBL_COUNTRIES, COL_COUNTRY_NAME),
         BeeParameter.createRelation(module, PRM_CURRENCY, TBL_CURRENCIES, COL_CURRENCY_NAME),

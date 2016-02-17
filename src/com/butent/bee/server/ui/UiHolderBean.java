@@ -53,7 +53,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.ejb.Lock;
 import javax.ejb.LockType;
@@ -251,6 +250,17 @@ public class UiHolderBean {
       return null;
     }
     return reportCache.get(key(reportName)).getResource();
+  }
+
+  @Lock(LockType.WRITE)
+  public void init() {
+    initGrids();
+    initForms();
+    initMenu();
+    initReports();
+
+    MenuService.GRID.setDataNameProvider(getGridDataNameProvider());
+    MenuService.FORM.setDataNameProvider(getFormDataNameProvider());
   }
 
   @Lock(LockType.WRITE)
@@ -465,17 +475,6 @@ public class UiHolderBean {
       }
     }
     return true;
-  }
-
-  @PostConstruct
-  private void init() {
-    initGrids();
-    initForms();
-    initMenu();
-    initReports();
-
-    MenuService.GRID.setDataNameProvider(getGridDataNameProvider());
-    MenuService.FORM.setDataNameProvider(getFormDataNameProvider());
   }
 
   private void initObjects(SysObject obj) {

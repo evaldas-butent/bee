@@ -90,7 +90,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.ejb.Lock;
 import javax.ejb.LockType;
@@ -129,7 +128,7 @@ public class SystemBean {
   private final Map<String, BeeTable> tableCache = new HashMap<>();
   private final Map<String, BeeView> viewCache = new HashMap<>();
 
-  private final EventBus dataEventBus = new EventBus();
+  private EventBus dataEventBus;
 
   public List<Property> checkTables(List<String> tbls, String progressId) {
     List<Property> diff = new ArrayList<>();
@@ -378,6 +377,13 @@ public class SystemBean {
   }
 
   @Lock(LockType.WRITE)
+  public void init() {
+    auditOff = BeeUtils.toBoolean(Config.getProperty(Service.PROPERTY_AUDIT_OFF));
+    dataEventBus = new EventBus();
+    initTables();
+  }
+
+  @Lock(LockType.WRITE)
   public void initTables() {
     initTables(BeeUtils.notEmpty(SqlBuilderFactory.getDsn(), dsb.getDefaultDsn()));
   }
@@ -409,7 +415,6 @@ public class SystemBean {
     }
     initDbTables();
     initDbTriggers();
-    initViews();
   }
 
   @Lock(LockType.WRITE)
@@ -457,8 +462,8 @@ public class SystemBean {
   /**
    * Creates SQL joins between tables.
    *
-   * @param tblName  First table with represented own column Id name, where called
-   *                 {@link SystemBean#getIdName(String)}
+   * @param tblName First table with represented own column Id name, where called
+   * {@link SystemBean#getIdName(String)}
    * @param dstTable Second table
    * @param dstField Reference field name of second table
    * @return
@@ -1023,12 +1028,6 @@ public class SystemBean {
 
   public Collection<BeeTable> getTables() {
     return ImmutableList.copyOf(tableCache.values());
-  }
-
-  @PostConstruct
-  private void init() {
-    auditOff = BeeUtils.toBoolean(Config.getProperty(Service.PROPERTY_AUDIT_OFF));
-    initTables();
   }
 
   private boolean initDataObject(SysObject obj, String moduleName, String objectName,
