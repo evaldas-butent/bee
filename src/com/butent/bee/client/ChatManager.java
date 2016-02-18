@@ -494,7 +494,7 @@ public class ChatManager implements HasInfo, HasEnabled {
 
         if (popup != null) {
           popup.setMinimized(false);
-          UiHelper.focus(chatView);
+          chatView.getInputArea().setFocus(true);
 
         } else {
           BeeKeeper.getScreen().activateWidget(chatView);

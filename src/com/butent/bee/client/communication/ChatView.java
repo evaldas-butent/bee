@@ -9,14 +9,12 @@ import static com.butent.bee.shared.communication.ChatConstants.*;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.composite.FileCollector;
-import com.butent.bee.client.composite.FileGroup;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.logical.ReadyEvent;
 import com.butent.bee.client.event.logical.VisibilityChangeEvent;
 import com.butent.bee.client.js.Markdown;
 import com.butent.bee.client.layout.Flow;
-import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.UiHelper;
@@ -97,18 +95,17 @@ public class ChatView extends Flow implements Presenter, View,
         Label text = new Label(Markdown.toHtml(message.getText()));
         text.addStyleName(STYLE_MESSAGE_TEXT);
         body.add(text);
+
+      } else if (message.hasFiles()) {
+        body.add(renderFiles(message));
       }
 
       add(body);
 
-      if (message.hasFiles()) {
-        Simple fileContainer = new Simple(STYLE_MESSAGE_FILES);
-
-        FileGroup fileGroup = new FileGroup();
-        fileGroup.addFiles(message.getFiles());
-
-        fileContainer.setWidget(fileGroup);
-        add(fileContainer);
+      if (message.hasText() && message.hasFiles()) {
+        Flow fileBody = new Flow(STYLE_MESSAGE_BODY);
+        fileBody.add(renderFiles(message));
+        add(fileBody);
       }
     }
 
@@ -119,6 +116,21 @@ public class ChatView extends Flow implements Presenter, View,
       } else {
         return false;
       }
+    }
+
+    private static Widget renderFiles(ChatItem message) {
+      Flow fileContainer = new Flow(STYLE_MESSAGE_FILES);
+
+      for (FileInfo fileInfo : message.getFiles()) {
+        Widget link = FileUtils.getLink(fileInfo);
+        link.addStyleName(STYLE_MESSAGE_FILE);
+        link.setTitle(BeeUtils.buildLines(fileInfo.getName(),
+            FileUtils.sizeToText(fileInfo.getSize())));
+
+        fileContainer.add(link);
+      }
+
+      return fileContainer;
     }
   }
 
@@ -147,6 +159,7 @@ public class ChatView extends Flow implements Presenter, View,
   private static final String STYLE_MESSAGE_SIGNATURE = STYLE_MESSAGE_PREFIX + "signature";
   private static final String STYLE_MESSAGE_TEXT = STYLE_MESSAGE_PREFIX + "text";
   private static final String STYLE_MESSAGE_FILES = STYLE_MESSAGE_PREFIX + "files";
+  private static final String STYLE_MESSAGE_FILE = STYLE_MESSAGE_PREFIX + "file";
 
   private static final String STYLE_AUTO_SCROLL_PREFIX = STYLE_PREFIX + "autoScroll-";
   private static final String STYLE_AUTO_SCROLL_CONTAINER = STYLE_AUTO_SCROLL_PREFIX + "container";
@@ -206,6 +219,13 @@ public class ChatView extends Flow implements Presenter, View,
     autoScrollContainer.add(autoScrollToggle);
 
     headerView.addCommandItem(autoScrollContainer);
+
+//    headerView.addClickHandler(event -> {
+//      if (isMinimized()) {
+//        maximize();
+//      }
+//    });
+
     add(headerView);
 
     this.messagePanel = new Flow(STYLE_PREFIX + "messages");
@@ -238,9 +258,6 @@ public class ChatView extends Flow implements Presenter, View,
       }
     });
 
-    Flow commandPanel = new Flow(STYLE_PREFIX + "commandPanel");
-    commandPanel.add(submit);
-
     this.fileCollector = FileCollector.headless(fileInfos -> addFiles(fileInfos));
     fileCollector.bindDnd(this);
 
@@ -249,16 +266,15 @@ public class ChatView extends Flow implements Presenter, View,
     attach.setTitle(Localized.getConstants().chooseFiles());
     attach.addClickHandler(event -> fileCollector.clickInput());
 
-    Flow filePanel = new Flow(STYLE_PREFIX + "filePanel");
-    filePanel.add(attach);
-    filePanel.add(fileCollector);
+    Flow commandPanel = new Flow(STYLE_PREFIX + "commandPanel");
+    commandPanel.add(submit);
+    commandPanel.add(attach);
 
     this.onlinePanel = new Flow(STYLE_PREFIX + "onlinePanel");
 
     Flow footer = new Flow(STYLE_PREFIX + "footer");
     footer.add(inputPanel);
     footer.add(commandPanel);
-    footer.add(filePanel);
     footer.add(onlinePanel);
 
     add(footer);
@@ -571,6 +587,10 @@ public class ChatView extends Flow implements Presenter, View,
   private boolean isMaximized() {
     return getWindowState() == WindowState.MAXIMIZED;
   }
+
+//  private boolean isMinimized() {
+//    return getWindowState() == WindowState.MINIMIZED;
+//  }
 
   private void maximize() {
     if (getPopup() != null) {
