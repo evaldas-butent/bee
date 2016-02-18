@@ -8,10 +8,10 @@ import com.google.gwt.xml.client.Element;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.screen.Domain;
+import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.WidgetDescription;
-import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.view.HasGridView;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
@@ -116,6 +116,11 @@ public abstract class AbstractFormInterceptor implements FormInterceptor {
   @Override
   public long getActiveRowId() {
     return DataUtils.getId(getActiveRow());
+  }
+
+  @Override
+  public Boolean getBooleanValue(String source) {
+    return (getFormView() == null) ? null : getFormView().getBooleanValue(source);
   }
 
   @Override

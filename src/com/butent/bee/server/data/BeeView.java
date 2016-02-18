@@ -272,7 +272,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
     }
 
     public boolean isNullable() {
-      return field == null || !field.isNotNull();
+      return field == null || !field.isNotNull() || !BeeUtils.isEmpty(locale);
     }
 
     public boolean isReadOnly() {

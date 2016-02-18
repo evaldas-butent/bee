@@ -113,9 +113,11 @@ public final class TransportConstants {
 
       @Override
       public String getDefaultContent() {
-        return "Hello,<br><br>"
-            + "  For contract approval/rejection click "
-            + "<a href=\"http://127.0.0.1:8080/Bee/{contract_path}\">here</a>";
+        return "  Follow the link below to confirm or reject the agreement"
+            + " which is attached to this letter<br><br>"
+            + "http://127.0.0.1:8080/Bee/{contract_path}<br><br><br>"
+            + "  This message was created automatically by mail delivery software. "
+            + "Thank You for using our services.";
       }
     },
     REGISTRATION_MAIL_CONTENT {
