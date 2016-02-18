@@ -11,6 +11,7 @@ public final class Service {
   public static final String PROPERTY_AUDIT_OFF = "DisableAuditing";
   public static final String PROPERTY_MODULES = "Modules";
   public static final String PROPERTY_VIEW_MODULES = "ViewModules";
+  public static final String PROPERTY_ACTIVE_LOCALES = "ActiveLocales";
 
   public static final String RPC_SERVICE_PREFIX = "rpc_";
   public static final String COMPOSITE_SERVICE_PREFIX = "comp_";

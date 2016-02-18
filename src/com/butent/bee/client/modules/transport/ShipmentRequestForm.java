@@ -327,8 +327,9 @@ class ShipmentRequestForm extends AbstractFormInterceptor {
       ReportUtils.showReport(REP_CONTRACT, params, null, () -> sendContract(false));
     } else {
       Long id = getActiveRowId();
-      String localizedContent = COL_TEXT_CONTENT + EnumUtils.getEnumByIndex(SupportedLocale.class,
-          getIntegerValue(AdministrationConstants.COL_USER_LOCALE)).getLanguage();
+      String localizedContent = Localized.column(COL_TEXT_CONTENT,
+          EnumUtils.getEnumByIndex(SupportedLocale.class,
+              getIntegerValue(AdministrationConstants.COL_USER_LOCALE)).getLanguage());
 
       Queries.getRowSet(VIEW_TEXT_CONSTANTS, null, Filter.equals(COL_TEXT_CONSTANT,
           TextConstant.CONTRACT_MAIL_CONTENT), new Queries.RowSetCallback() {
