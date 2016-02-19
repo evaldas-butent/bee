@@ -1,16 +1,22 @@
 package com.butent.bee.client.communication;
 
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.EventTarget;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.user.client.Window;
 
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.dialog.Popup;
+import com.butent.bee.client.dom.ElementSize;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Size;
 import com.butent.bee.shared.utils.BeeUtils;
+
+import java.util.List;
 
 public final class ChatPopup extends Popup {
 
@@ -27,12 +33,48 @@ public final class ChatPopup extends Popup {
     open(chatView, false);
   }
 
-  private static void open(IdentifiableWidget chatView, boolean minimized) {
+  private static String getSizeKey(ChatView chatView) {
+    if (chatView == null) {
+      return null;
+    } else {
+      return ChatUtils.getSizeStorageKey(chatView.getChatId());
+    }
+  }
+
+  private static Size getStoredSize(ChatView chatView) {
+    String key = getSizeKey(chatView);
+    if (BeeUtils.isEmpty(key)) {
+      return null;
+    }
+
+    List<Integer> values = BeeUtils.toInts(BeeKeeper.getStorage().get(key));
+    if (values.size() == 2
+        && BeeUtils.isPositive(values.get(0)) && BeeUtils.isPositive(values.get(1))) {
+
+      return new Size(values.get(0), values.get(1));
+
+    } else {
+      return null;
+    }
+  }
+
+  private static void open(IdentifiableWidget widget, boolean minimized) {
+    if (!(widget instanceof ChatView)) {
+      return;
+    }
+
+    ChatView chatView = (ChatView) widget;
+
     ChatPopup chatPopup = new ChatPopup(minimized);
     chatPopup.setWidget(chatView);
 
-    if (!minimized && chatView instanceof ChatView) {
-      chatPopup.focusOnOpen(((ChatView) chatView).getInputArea());
+    if (!minimized) {
+      Size size = getStoredSize(chatView);
+      if (size != null) {
+        StyleUtils.setSize(chatPopup, size);
+      }
+
+      chatPopup.focusOnOpen(chatView.getInputArea());
     }
 
     int x = Window.getClientWidth();
@@ -79,7 +121,9 @@ public final class ChatPopup extends Popup {
   }
 
   private boolean minimized;
-  private int normalHeight;
+
+  private ElementSize clientSize;
+  private ElementSize offsetSize;
 
   private ChatPopup(boolean minimized) {
     super(OutsideClick.IGNORE, STYLE_MODAL);
@@ -100,28 +144,85 @@ public final class ChatPopup extends Popup {
 
   public void setMinimized(boolean minimized) {
     if (minimized != isMinimized()) {
+      int ww = Window.getClientWidth();
       int wh = Window.getClientHeight();
+
+      int left = getAbsoluteLeft();
+
       int hh = getHeaderHeight();
       int top = getAbsoluteTop();
 
       if (isMinimized()) {
-        int nh = BeeUtils.positive(getNormalHeight(), wh / 2);
+        int nw;
+        int nh;
+
+        Size size = null;
+
+        if (getOffsetSize() == null) {
+          size = getStoredSize(getChatView());
+
+          if (size == null) {
+            nw = getOffsetWidth();
+            nh = wh / 2;
+          } else {
+            nw = size.getWidth();
+            nh = size.getHeight();
+          }
+
+        } else {
+          nw = getOffsetSize().getWidth();
+          nh = getOffsetSize().getHeight();
+        }
+
+        left = Math.min(left, ww - nw);
+        StyleUtils.setLeft(this, BeeUtils.nonNegative(left));
+
         top += hh - nh;
         top = Math.min(top, wh - nh);
+        StyleUtils.setTop(this, BeeUtils.nonNegative(top));
+
+        if (getClientSize() != null) {
+          getClientSize().applyTo(getElement());
+        }
+
+        if (getOffsetSize() == null && size == null) {
+          Scheduler.get().scheduleDeferred(() -> {
+            StyleUtils.setLeft(getElement(), clampLeft(getAbsoluteLeft(), getOffsetWidth()));
+            StyleUtils.setTop(getElement(), clampLeft(getAbsoluteTop(), getOffsetHeight()));
+          });
+        }
 
       } else {
-        setNormalHeight(getOffsetHeight());
+        setOffsetSize(ElementSize.forOffset(this));
+        setClientSize(ElementSize.forClient(this));
+
+        StyleUtils.setMaxWidth(this, getClientSize().getWidth());
+
+        StyleUtils.clearWidth(this);
+        StyleUtils.clearHeight(this);
 
         top += getOffsetHeight() - hh;
         top = Math.min(top, wh - hh);
+        StyleUtils.setTop(this, BeeUtils.nonNegative(top));
       }
-
-      StyleUtils.setTop(this, BeeUtils.max(top, 0));
 
       this.minimized = minimized;
 
       setStyleName(STYLE_NORMAL, !minimized);
       setStyleName(STYLE_MINIMIZED, minimized);
+    }
+  }
+
+  @Override
+  protected void afterResize() {
+    super.afterResize();
+
+    String key = getSizeKey(getChatView());
+    if (!BeeUtils.isEmpty(key)) {
+      int width = getElement().getClientWidth();
+      int height = getElement().getClientHeight();
+
+      BeeKeeper.getStorage().set(key, BeeUtils.join(BeeConst.STRING_COMMA, width, height));
     }
   }
 
@@ -157,11 +258,19 @@ public final class ChatPopup extends Popup {
     }
   }
 
-  private int getNormalHeight() {
-    return normalHeight;
+  private ElementSize getClientSize() {
+    return clientSize;
   }
 
-  private void setNormalHeight(int normalHeight) {
-    this.normalHeight = normalHeight;
+  private ElementSize getOffsetSize() {
+    return offsetSize;
+  }
+
+  private void setClientSize(ElementSize clientSize) {
+    this.clientSize = clientSize;
+  }
+
+  private void setOffsetSize(ElementSize offsetSize) {
+    this.offsetSize = offsetSize;
   }
 }

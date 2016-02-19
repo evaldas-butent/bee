@@ -219,13 +219,6 @@ public class ChatView extends Flow implements Presenter, View,
     autoScrollContainer.add(autoScrollToggle);
 
     headerView.addCommandItem(autoScrollContainer);
-
-//    headerView.addClickHandler(event -> {
-//      if (isMinimized()) {
-//        maximize();
-//      }
-//    });
-
     add(headerView);
 
     this.messagePanel = new Flow(STYLE_PREFIX + "messages");
@@ -587,10 +580,6 @@ public class ChatView extends Flow implements Presenter, View,
   private boolean isMaximized() {
     return getWindowState() == WindowState.MAXIMIZED;
   }
-
-//  private boolean isMinimized() {
-//    return getWindowState() == WindowState.MINIMIZED;
-//  }
 
   private void maximize() {
     if (getPopup() != null) {

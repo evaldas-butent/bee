@@ -7,6 +7,7 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
+import com.butent.bee.client.Storage;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.HasIndexedWidgets;
@@ -165,6 +166,10 @@ public final class ChatUtils {
     }
 
     return result;
+  }
+
+  public static String getSizeStorageKey(long chatId) {
+    return Storage.getUserKey("chat-" + chatId, "size");
   }
 
   public static Multimap<Presence, Long> getUserPresence(Collection<Long> users) {

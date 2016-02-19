@@ -698,7 +698,10 @@ public class ChatManager implements HasInfo, HasEnabled {
       }
 
       updateUnreadBadge();
-      logger.info("removed chat", chat.getId(), chat.getName());
+
+      BeeKeeper.getStorage().remove(ChatUtils.getSizeStorageKey(chatId));
+
+      logger.info("removed chat", chatId, chat.getName());
     }
   }
 

@@ -240,12 +240,13 @@
   margin-left: 2em;
 }
 
-.bee-ChatModal {
+.bee-ChatNormal {
   width: 400px;
-}
-.bee-ChatModal.bee-ChatNormal {
   height: 50vh;
   border: 1px solid #ccc;
+}
+.bee-ChatMinimized {
+  width: 250px;
 }
 
 .bee-Chat-view {

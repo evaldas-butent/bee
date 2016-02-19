@@ -548,14 +548,14 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
     return false;
   }
 
-  private static int clampLeft(int left, int width) {
+  protected static int clampLeft(int left, int width) {
     int windowLeft = 0;
     int windowRight = Window.getClientWidth();
 
     return Math.max(Math.min(left, windowRight - width), windowLeft);
   }
 
-  private static int clampTop(int top, int height) {
+  protected static int clampTop(int top, int height) {
     int windowTop = 0;
     int windowBottom = Window.getClientHeight();
 

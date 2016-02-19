@@ -2,6 +2,7 @@ package com.butent.bee.client;
 
 import com.butent.bee.client.dom.Features;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -20,6 +21,10 @@ import java.util.Map;
  */
 
 public class Storage {
+
+  public static String getUserKey(String prefix, String suffix) {
+    return BeeUtils.join(BeeConst.STRING_MINUS, prefix, BeeKeeper.getUser().getUserId(), suffix);
+  }
 
   private final Map<String, String> items = new LinkedHashMap<>();
   private final boolean localStorage;
