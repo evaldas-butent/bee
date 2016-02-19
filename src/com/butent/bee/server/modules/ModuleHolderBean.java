@@ -124,7 +124,6 @@ public class ModuleHolderBean {
     return modules.get(moduleName);
   }
 
-  @SuppressWarnings("unchecked")
   @PostConstruct
   private void init() {
     for (Module module : Module.values()) {
@@ -133,6 +132,7 @@ public class ModuleHolderBean {
     }
   }
 
+  @SuppressWarnings("unchecked")
   private void registerModule(String moduleName) {
     try {
       Class<BeeModule> clazz = (Class<BeeModule>) Class.forName(BeeUtils.join(".",

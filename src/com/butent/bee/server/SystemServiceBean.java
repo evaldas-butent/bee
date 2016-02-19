@@ -72,7 +72,7 @@ import javax.ejb.Stateless;
 @Stateless
 public class SystemServiceBean {
 
-  private static class RsDataSource implements JRRewindableDataSource {
+  private static final class RsDataSource implements JRRewindableDataSource {
     private BeeRowSet rs;
     private int index;
 
