@@ -5,8 +5,9 @@
       caption="=trRequests" newRowCaption="=trRequestNew"
       newRowForm="ShipmentRequest" editForm="ShipmentRequest"
     >
-  <Relation renderColumns="Date CustomerName" choiceColumns="Date CustomerName" />
+  <Relation renderColumns="ID Date" />
   <Columns>
+    <IdColumn name="ID" />
     <SimpleColumn name="Date" />
     <SimpleColumn name="Status" />
 
@@ -34,6 +35,7 @@
 
     <SimpleColumn name="CompanyPerson" />
     <SimpleJoin name="CompanyPerson" joinType="LEFT">
+      <SimpleColumn name="Company" />
       <SimpleJoin name="Company" joinType="LEFT">
         <SimpleColumn name="Name" alias="CompanyName" label="=company" />
       </SimpleJoin>
@@ -63,6 +65,11 @@
 
     <SimpleColumn name="Cargo" />
     <SimpleJoin name="Cargo" joinType="LEFT">
+      <ExternalJoin name="Cargo" source="Assessments" joinType="LEFT">
+        <IdColumn name="Assessment" />
+      </ExternalJoin>
+
+      <SimpleColumn name="Order" />
       <xi:include href="viewcolumns/CargoInfo.viewcolumns.xml" />
     </SimpleJoin>
 

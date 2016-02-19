@@ -24,7 +24,7 @@
 
     <SimpleColumn name="Cargo" />
     <SimpleJoin name="Cargo" joinType="INNER">
-      <SimpleJoin name="Order" joinType="INNER">
+      <SimpleJoin name="Order" joinType="LEFT">
         <SimpleColumn name="Date" editable="true" />
         <SimpleColumn name="Status" alias="OrderStatus" editable="true" />
         <SimpleColumn name="Notes" alias="OrderNotes" label="=route" editable="true" />
@@ -57,7 +57,7 @@
         </SimpleJoin>
 
         <SimpleColumn name="Manager" editable="true" />
-        <SimpleJoin name="Manager" joinType="INNER">
+        <SimpleJoin name="Manager" joinType="LEFT">
           <SimpleColumn name="CompanyPerson" />
           <SimpleJoin name="CompanyPerson" joinType="LEFT">
             <SimpleJoin name="Person" joinType="LEFT">

@@ -13,6 +13,7 @@
         xmlns:xi="http://www.w3.org/2001/XInclude"
 
         name="ShipmentRequest" viewName="ShipmentRequests"
+        showRowId="true" width="70" widthUnit="%" height="80" heightUnit="%"
     >
   <FlowPanel>
     <Table kind="custom" style="&table; margin-top:10px;" cellStyle="&cells;">
@@ -28,7 +29,7 @@
       </row>
       <row>
         <cell colSpan="3">
-          <text />
+          <FlowPanel name="OrderID" style="cursor:pointer; font-weight:bold; color:blue;" />
         </cell>
         <cell colSpan="3">
           <TextLabel source="LossReason" style="color:red; white-space:pre-wrap;" />
