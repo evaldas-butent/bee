@@ -19,7 +19,8 @@ public final class Markdown {
     }
 
     String s = BeeUtils.removePrefixAndSuffix(parse(input), BeeConst.CHAR_EOL);
-    if (BeeUtils.equalsTrim(s, input)) {
+    if (BeeUtils.equalsTrim(s, input)
+        || BeeUtils.equalsTrim(BeeUtils.replace(s, LINE_BREAK, BeeConst.STRING_EOL), input)) {
       return input;
     }
 

@@ -454,6 +454,7 @@
   right: 0;
   width: 36px;
   height: 60px;
+  overflow: hidden;
 }
 .bee-Chat-submit,
 .bee-Chat-attach {

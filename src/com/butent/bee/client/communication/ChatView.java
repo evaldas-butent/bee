@@ -1,5 +1,7 @@
 package com.butent.bee.client.communication;
 
+import com.google.gwt.dom.client.NativeEvent;
+import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.web.bindery.event.shared.HandlerRegistration;
@@ -17,7 +19,6 @@ import com.butent.bee.client.js.Markdown;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.style.StyleUtils;
-import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.view.HeaderImpl;
@@ -230,7 +231,7 @@ public class ChatView extends Flow implements Presenter, View,
     inputArea.setMaxLength(TextMessage.MAX_LENGTH);
 
     inputArea.addKeyDownHandler(event -> {
-      if (UiHelper.isSave(event.getNativeEvent()) && compose()) {
+      if (isSubmit(event.getNativeEvent()) && compose()) {
         event.preventDefault();
         event.stopPropagation();
 
@@ -262,6 +263,7 @@ public class ChatView extends Flow implements Presenter, View,
     Flow commandPanel = new Flow(STYLE_PREFIX + "commandPanel");
     commandPanel.add(submit);
     commandPanel.add(attach);
+    commandPanel.add(fileCollector);
 
     this.onlinePanel = new Flow(STYLE_PREFIX + "onlinePanel");
 
@@ -579,6 +581,11 @@ public class ChatView extends Flow implements Presenter, View,
 
   private boolean isMaximized() {
     return getWindowState() == WindowState.MAXIMIZED;
+  }
+
+  public static boolean isSubmit(NativeEvent event) {
+    return event != null && event.getKeyCode() == KeyCodes.KEY_ENTER
+        && !EventUtils.hasModifierKey(event);
   }
 
   private void maximize() {
