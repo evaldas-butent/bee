@@ -1,5 +1,7 @@
 package com.butent.bee.server.data;
 
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
@@ -879,6 +881,18 @@ public class BeeView implements BeeObject, HasExtendedInfo {
 
   public String getSourceVersionName() {
     return source.getVersionName();
+  }
+
+  public ListMultimap<String, String> getTranslationColumns() {
+    ListMultimap<String, String> result = ArrayListMultimap.create();
+
+    columns.forEach((colName, columnInfo) -> {
+      if (!BeeUtils.isEmpty(columnInfo.getLocale()) && columnInfo.field.isTranslatable()) {
+        result.put(columnInfo.getField(), colName);
+      }
+    });
+
+    return result;
   }
 
   public List<ViewColumn> getViewColumns() {

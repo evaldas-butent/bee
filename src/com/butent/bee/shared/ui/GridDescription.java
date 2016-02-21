@@ -1,6 +1,7 @@
 package com.butent.bee.shared.ui;
 
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.HasExtendedInfo;
 import com.butent.bee.shared.data.HasViewName;
@@ -459,6 +460,15 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
 
   public int getColumnCount() {
     return getColumns().size();
+  }
+
+  public int getColumnIndex(String id) {
+    for (int i = 0; i < columns.size(); i++) {
+      if (columns.get(i).is(id)) {
+        return i;
+      }
+    }
+    return BeeConst.UNDEF;
   }
 
   public List<ColumnDescription> getColumns() {

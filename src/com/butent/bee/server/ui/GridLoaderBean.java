@@ -1,5 +1,6 @@
 package com.butent.bee.server.ui;
 
+import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
@@ -621,6 +622,42 @@ public class GridLoaderBean {
       logger.warning("grid", gridName, "has no columns");
       return null;
     }
+
+    if (view != null) {
+      ListMultimap<String, String> translationColumns = view.getTranslationColumns();
+
+      for (String original : translationColumns.keySet()) {
+        int index = grid.getColumnIndex(original);
+
+        if (!BeeConst.isUndef(index)) {
+          for (String translation : translationColumns.get(original)) {
+
+            if (!grid.hasColumn(translation) && usr.isColumnVisible(view, translation)) {
+              ColumnDescription column = grid.getColumn(original).copy();
+
+              column.setId(translation);
+              column.replaceSource(original, translation);
+
+              String label = view.getColumnLabel(translation);
+              if (!BeeUtils.isEmpty(label)) {
+                column.setLabel(label);
+
+                if (!BeeUtils.isEmpty(column.getCaption())) {
+                  column.setCaption(null);
+                }
+              }
+
+              column.setVisible(null);
+              column.setEditInPlace(true);
+
+              index++;
+              grid.getColumns().add(index, column);
+            }
+          }
+        }
+      }
+    }
+
     return grid;
   }
 
