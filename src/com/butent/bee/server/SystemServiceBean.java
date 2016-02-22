@@ -47,12 +47,12 @@ import net.sf.jasperreports.engine.JasperReport;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.ProcessBuilder.Redirect;
 import java.nio.charset.Charset;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -127,10 +127,11 @@ public class SystemServiceBean {
     } else if (BeeUtils.same(svc, RUN)) {
       response = run(reqInfo);
 
-    } else if (BeeUtils.inListSame(svc, GET_REPORT, SHOW_REPORT)) {
+    } else if (BeeUtils.same(svc, GET_REPORT)) {
       String data = reqInfo.getParameter(VAR_REPORT_DATA);
 
-      response = doReport(svc, reqInfo.getParameter(VAR_REPORT),
+      response = getReport(reqInfo.getParameter(VAR_REPORT),
+          reqInfo.getParameter(VAR_REPORT_FORMAT),
           Codec.deserializeMap(reqInfo.getParameter(VAR_REPORT_PARAMETERS)),
           BeeUtils.isEmpty(data) ? null : BeeRowSet.restore(data));
 
@@ -234,7 +235,7 @@ public class SystemServiceBean {
     return ResponseObject.response(flags);
   }
 
-  private ResponseObject doReport(String svc, String reportName, Map<String, String> parameters,
+  private ResponseObject getReport(String reportName, String format, Map<String, String> parameters,
       BeeRowSet data) {
 
     String reportFile = ui.getReport(reportName);
@@ -254,20 +255,19 @@ public class SystemServiceBean {
       JasperPrint print = JasperFillManager.fillReport(report, params,
           Objects.isNull(data) ? new JREmptyDataSource() : new RsDataSource(data));
 
-      File tmp = File.createTempFile("bee_", ".pdf");
+      File tmp = File.createTempFile("bee_", "." + BeeUtils.nvl(format, "pdf"));
       tmp.deleteOnExit();
       String path = tmp.getAbsolutePath();
 
-      JasperExportManager.exportReportToPdfFile(print, path);
-
-      if (BeeUtils.same(svc, GET_REPORT)) {
-        Long fileId = fs.storeFile(Files.newInputStream(tmp.toPath()), tmp.getName(), null);
-        tmp.delete();
-        response = ResponseObject.response(BeeUtils.peek(fs.getFileInfos(Collections
-            .singletonList(fileId))));
+      if (BeeUtils.same(format, "html")) {
+        JasperExportManager.exportReportToHtmlFile(print, path);
       } else {
-        response = ResponseObject.response(path);
+        JasperExportManager.exportReportToPdfFile(print, path);
       }
+      Long fileId = fs.storeFile(new FileInputStream(tmp), tmp.getName(), null);
+      tmp.delete();
+      response = ResponseObject.response(fs.getFile(fileId));
+
     } catch (JRException | IOException e) {
       logger.error(e);
       response = ResponseObject.error(e);

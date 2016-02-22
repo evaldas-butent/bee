@@ -71,13 +71,14 @@ public class FileServiceApplication extends Application {
 
   @GET
   @Path("{id:\\d+}")
-  public Response getFile(@PathParam("id") Long fileId) {
-    return getFile(fileId, null);
+  public Response getFile(@PathParam("id") Long fileId, @QueryParam("close") Boolean close) {
+    return getFile(fileId, null, close);
   }
 
   @GET
   @Path("{id:\\d+}/{name}")
-  public Response getFile(@PathParam("id") Long fileId, @PathParam("name") String fileName) {
+  public Response getFile(@PathParam("id") Long fileId, @PathParam("name") String fileName,
+      @QueryParam("close") Boolean close) {
     FileInfo fileInfo;
 
     try {
@@ -86,7 +87,7 @@ public class FileServiceApplication extends Application {
       logger.error(e);
       throw new InternalServerErrorException(e);
     }
-    return response(fileInfo, fileName, false);
+    return response(fileInfo, fileName, BeeUtils.unbox(close));
   }
 
   @GET

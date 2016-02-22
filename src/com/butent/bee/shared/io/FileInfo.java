@@ -20,13 +20,13 @@ import java.util.List;
 public class FileInfo implements HasInfo, HasCaption, BeeSerializable, AutoCloseable {
 
   private enum Serial {
-    ID, NAME, SIZE, TYPE, ICON, DATE, VERSION, CAPTION, DESCRIPTION, RELATED, PATH, TEMPORARY
+    ID, NAME, SIZE, TYPE, ICON, DATE, VERSION, CAPTION, DESCRIPTION, RELATED, PATH, HASH, TEMPORARY
   }
 
   @Override
   public void close() {
     if (isTemporary()) {
-      LogUtils.getRootLogger().debug("File deleted:", getPath(), new File(getPath()).delete());
+      LogUtils.getRootLogger().debug("File deleted:", getPath(), getFile().delete());
     }
   }
 
@@ -99,6 +99,7 @@ public class FileInfo implements HasInfo, HasCaption, BeeSerializable, AutoClose
   private Long relatedId;
 
   private String path;
+  private String hash;
   private boolean temporary;
 
   public FileInfo(Long fileId, String name, Long size, String type) {
@@ -167,6 +168,10 @@ public class FileInfo implements HasInfo, HasCaption, BeeSerializable, AutoClose
 
         case PATH:
           setPath(value);
+          break;
+
+        case HASH:
+          setHash(value);
           break;
 
         case TEMPORARY:
@@ -238,6 +243,10 @@ public class FileInfo implements HasInfo, HasCaption, BeeSerializable, AutoClose
 
   public String getFileVersion() {
     return fileVersion;
+  }
+
+  public String getHash() {
+    return hash;
   }
 
   public Long getId() {
@@ -349,6 +358,10 @@ public class FileInfo implements HasInfo, HasCaption, BeeSerializable, AutoClose
           arr[i++] = getPath();
           break;
 
+        case HASH:
+          arr[i++] = getHash();
+          break;
+
         case TEMPORARY:
           arr[i++] = isTemporary();
           break;
@@ -375,6 +388,10 @@ public class FileInfo implements HasInfo, HasCaption, BeeSerializable, AutoClose
 
   public void setFileVersion(String fileVersion) {
     this.fileVersion = fileVersion;
+  }
+
+  public void setHash(String hash) {
+    this.hash = hash;
   }
 
   public void setIcon(String icon) {
