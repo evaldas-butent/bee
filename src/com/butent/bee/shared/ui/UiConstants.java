@@ -92,7 +92,7 @@ public final class UiConstants {
   }
 
   public static String wtfplUrl() {
-    return "http://www.butent.com";
+    return "http://www.b-novo.lt";
   }
 
   public static String helpURL() {
