@@ -1,5 +1,6 @@
 package com.butent.bee.client.communication;
 
+import com.google.common.collect.Range;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.EventTarget;
@@ -8,6 +9,7 @@ import com.google.gwt.user.client.Window;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.dialog.Popup;
+import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.ElementSize;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
@@ -15,6 +17,7 @@ import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Size;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.IntRangeSet;
 
 import java.util.List;
 
@@ -24,6 +27,44 @@ public final class ChatPopup extends Popup {
   private static final String STYLE_MODAL = STYLE_PREFIX + "Modal";
   private static final String STYLE_NORMAL = STYLE_PREFIX + "Normal";
   private static final String STYLE_MINIMIZED = STYLE_PREFIX + "Minimized";
+
+  private static final int MARGIN_X = 20;
+
+  private static int getLeft(String ignoreId, int width) {
+    IntRangeSet ranges = new IntRangeSet();
+
+    for (Popup popup : getVisiblePopups()) {
+      if (popup.getWidget() instanceof ChatView && !DomUtils.idEquals(popup, ignoreId)) {
+        int left = popup.getAbsoluteLeft();
+        int right = popup.getElement().getAbsoluteRight();
+
+        ranges.addClosedOpen(left, right);
+      }
+    }
+
+    int ww = Window.getClientWidth();
+    if (ranges.isEmpty()) {
+      return ww - width;
+    }
+
+    List<Range<Integer>> free = ranges.complement(0, ww - 1).asList();
+
+    if (!free.isEmpty()) {
+      for (int i = free.size() - 1; i >= 0; i--) {
+        Range<Integer> range = free.get(i);
+
+        int lower = range.lowerEndpoint();
+        int upper = range.upperEndpoint() + 1;
+
+        if (upper - lower >= width) {
+          int margin = (upper >= ww) ? 0 : MARGIN_X;
+          return Math.max(upper - width - margin, lower);
+        }
+      }
+    }
+
+    return BeeConst.UNDEF;
+  }
 
   public static void openMinimized(IdentifiableWidget chatView) {
     open(chatView, true);
@@ -77,43 +118,16 @@ public final class ChatPopup extends Popup {
       chatPopup.focusOnOpen(chatView.getInputArea());
     }
 
-    int x = Window.getClientWidth();
-    int y = Window.getClientHeight();
-
-    for (Popup popup : getVisiblePopups()) {
-      if (popup.getWidget() instanceof ChatView) {
-        x = Math.min(x, popup.getAbsoluteLeft() - 20);
-        y = Math.min(y, popup.getAbsoluteTop() - 20);
-      }
-    }
-
-    final int right = x;
-    final int bottom = y;
-
     chatPopup.setPopupPositionAndShow((width, height) -> {
-      int left;
+      int left = getLeft(chatPopup.getId(), width);
       int top;
 
-      if (right >= width) {
-        left = right - width;
-        top = Window.getClientHeight() - height;
-
-      } else if (bottom >= height) {
-        top = bottom - height;
-        left = Window.getClientWidth() - width;
+      if (BeeConst.isUndef(left)) {
+        left = BeeUtils.randomInt(0, Window.getClientWidth() - width);
+        top = BeeUtils.randomInt(0, Window.getClientHeight() - height);
 
       } else {
-        if (Window.getClientWidth() > width) {
-          left = BeeUtils.randomInt(0, Window.getClientWidth() - width);
-        } else {
-          left = 0;
-        }
-
-        if (Window.getClientHeight() > height) {
-          top = BeeUtils.randomInt(0, Window.getClientHeight() - height);
-        } else {
-          top = 0;
-        }
+        top = Window.getClientHeight() - height;
       }
 
       chatPopup.setPopupPosition(BeeUtils.nonNegative(left), BeeUtils.nonNegative(top));
@@ -147,23 +161,21 @@ public final class ChatPopup extends Popup {
       int ww = Window.getClientWidth();
       int wh = Window.getClientHeight();
 
-      int left = getAbsoluteLeft();
-
       int hh = getHeaderHeight();
-      int top = getAbsoluteTop();
+
+      int right = Math.min(getElement().getAbsoluteRight(), ww);
+      int bottom = Math.min(getElement().getAbsoluteBottom(), wh);
 
       if (isMinimized()) {
         int nw;
         int nh;
 
-        Size size = null;
-
         if (getOffsetSize() == null) {
-          size = getStoredSize(getChatView());
+          Size size = getStoredSize(getChatView());
 
           if (size == null) {
-            nw = getOffsetWidth();
-            nh = wh / 2;
+            nw = BeeConst.UNDEF;
+            nh = BeeConst.UNDEF;
           } else {
             nw = size.getWidth();
             nh = size.getHeight();
@@ -174,21 +186,28 @@ public final class ChatPopup extends Popup {
           nh = getOffsetSize().getHeight();
         }
 
-        left = Math.min(left, ww - nw);
-        StyleUtils.setLeft(this, BeeUtils.nonNegative(left));
+        int left = BeeConst.UNDEF;
 
-        top += hh - nh;
-        top = Math.min(top, wh - nh);
-        StyleUtils.setTop(this, BeeUtils.nonNegative(top));
+        if (nw > 0) {
+          left = getLeft(getId(), nw);
+
+          if (!BeeConst.isUndef(left)) {
+            StyleUtils.setLeft(this, left);
+            StyleUtils.setTop(this, BeeUtils.nonNegative(wh - nh));
+          }
+        }
 
         if (getClientSize() != null) {
           getClientSize().applyTo(getElement());
         }
 
-        if (getOffsetSize() == null && size == null) {
+        if (BeeConst.isUndef(left)) {
           Scheduler.get().scheduleDeferred(() -> {
-            StyleUtils.setLeft(getElement(), clampLeft(getAbsoluteLeft(), getOffsetWidth()));
-            StyleUtils.setTop(getElement(), clampLeft(getAbsoluteTop(), getOffsetHeight()));
+            int width = getOffsetWidth();
+            int height = getOffsetHeight();
+
+            StyleUtils.setLeft(getElement(), clampLeft(right - width, width));
+            StyleUtils.setTop(getElement(), clampTop(bottom - height, height));
           });
         }
 
@@ -196,14 +215,23 @@ public final class ChatPopup extends Popup {
         setOffsetSize(ElementSize.forOffset(this));
         setClientSize(ElementSize.forClient(this));
 
-        StyleUtils.setMaxWidth(this, getClientSize().getWidth());
-
         StyleUtils.clearWidth(this);
         StyleUtils.clearHeight(this);
 
-        top += getOffsetHeight() - hh;
-        top = Math.min(top, wh - hh);
-        StyleUtils.setTop(this, BeeUtils.nonNegative(top));
+        Scheduler.get().scheduleDeferred(() -> {
+          int width = getOffsetWidth();
+          int left = getLeft(getId(), width);
+
+          if (BeeConst.isUndef(left)) {
+            left = Math.max(right - width, getAbsoluteLeft());
+            StyleUtils.setLeft(getElement(), clampLeft(left, width));
+            StyleUtils.setTop(this, BeeUtils.nonNegative(bottom - hh));
+
+          } else {
+            StyleUtils.setLeft(this, left);
+            StyleUtils.setTop(this, wh - hh);
+          }
+        });
       }
 
       this.minimized = minimized;
