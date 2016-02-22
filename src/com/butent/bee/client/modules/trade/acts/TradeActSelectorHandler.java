@@ -603,7 +603,7 @@ class TradeActSelectorHandler implements SelectorEvent.Handler {
               filter =
                   DataUtils.isId(company) ? Filter.and(Filter.equals(COL_COMPANY, company),
                       Filter.or(Filter.isMore(ClassifierConstants.COL_DATE_UNTIL,
-                              new DateTimeValue(timeFrom)),
+                          new DateTimeValue(timeFrom)),
                           Filter.isNull(ClassifierConstants.COL_DATE_UNTIL))) : null;
             } else {
               filter = DataUtils.isId(company) ? Filter.equals(COL_COMPANY, company) : null;
@@ -624,6 +624,15 @@ class TradeActSelectorHandler implements SelectorEvent.Handler {
             String name = Data.getString(relatedViewName, event.getRelatedRow(), ALS_COMPANY_NAME);
             form.getActiveRow().setValue(form.getDataIndex(ALS_COMPANY_NAME), name);
 
+            for (String col : new String[] {ALS_CONTACT_PHYSICAL, ALS_COMPANY_TYPE_NAME}) {
+
+              if (!BeeConst.isUndef(form.getDataIndex(col)) && Data.containsColumn(
+                  relatedViewName, col)) {
+                form.getActiveRow().setValue(form.getDataIndex(col), Data.getString(
+                    relatedViewName, event.getRelatedRow(), col));
+              }
+            }
+
             form.refreshBySource(COL_TA_COMPANY);
           }
         }
@@ -638,7 +647,7 @@ class TradeActSelectorHandler implements SelectorEvent.Handler {
 
           if (dst != null
               && (VIEW_TRADE_ACT_SERVICES.equals(viewName)
-              || VIEW_TRADE_ACT_TMPL_SERVICES.equals(viewName))) {
+                  || VIEW_TRADE_ACT_TMPL_SERVICES.equals(viewName))) {
 
             Integer oldDpw = Data.getInteger(viewName, dst, COL_TA_SERVICE_DAYS);
             Integer newDpw = Data.getInteger(relatedViewName, event.getRelatedRow(), COL_ITEM_DPW);

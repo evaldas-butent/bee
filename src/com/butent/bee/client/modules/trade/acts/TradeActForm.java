@@ -4,6 +4,7 @@ import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Widget;
+import com.google.web.bindery.event.shared.HandlerRegistration;
 
 import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
 
@@ -14,6 +15,7 @@ import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.ui.FormFactory;
@@ -32,6 +34,9 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.event.CellUpdateEvent;
+import com.butent.bee.shared.data.event.HandlesUpdateEvents;
+import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.i18n.Localized;
@@ -44,9 +49,11 @@ import com.butent.bee.shared.ui.Relation.Caching;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 
+import java.util.ArrayList;
 import java.util.Collection;
 
-public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.Handler {
+public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.Handler,
+    HandlesUpdateEvents {
 
   private static final String STYLE_PREFIX = TradeActKeeper.STYLE_PREFIX + "form-";
 
@@ -58,6 +65,8 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
 
   private static final String STYLE_HAS_INVOICES = STYLE_PREFIX + "has-invoices";
   private static final String STYLE_NO_INVOICES = STYLE_PREFIX + "no-invoices";
+
+  private final Collection<HandlerRegistration> dataHandlerRegistry = new ArrayList<>();
 
   private TradeActKind lastKind;
 
@@ -260,6 +269,48 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
   }
 
   @Override
+  public void onCellUpdate(CellUpdateEvent event) {
+    // if (event.hasView(ClassifierConstants.VIEW_COMPANIES) && companySelector != null) {
+    // companySelector.getOracle().onCellUpdate(event);
+    // }
+
+  }
+
+  @Override
+  public void onLoad(FormView form) {
+    dataHandlerRegistry.addAll(BeeKeeper.getBus().registerUpdateHandler(this, false));
+    super.onLoad(form);
+  }
+
+  @Override
+  public void onRowUpdate(RowUpdateEvent event) {
+    FormView form = getFormView();
+    if (form == null) {
+      return;
+    }
+
+    if (event.hasView(ClassifierConstants.VIEW_COMPANIES) && event.getRowId() == BeeUtils.unbox(form
+        .getLongValue(COL_TA_COMPANY))) {
+
+      String[][] cols = new String[][] {
+          {ClassifierConstants.ALS_COMPANY_NAME, ClassifierConstants.COL_COMPANY_NAME},
+          {ALS_CONTACT_PHYSICAL, "Physical"},
+          {ClassifierConstants.ALS_COMPANY_TYPE_NAME, ClassifierConstants.ALS_COMPANY_TYPE_NAME}
+      };
+
+      IsRow row = form.getActiveRow();
+      DataInfo eventData = Data.getDataInfo(event.getViewName());
+
+      for (String[] col : cols) {
+        row.setValue(form.getDataIndex(col[0]), event.getRow().getValue(eventData.getColumnIndex(
+            col[1])));
+
+        form.refreshBySource(col[0]);
+      }
+    }
+  }
+
+  @Override
   public boolean onStartEdit(final FormView form, final IsRow row,
       final ScheduledCommand focusCommand) {
 
@@ -314,31 +365,45 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
     }
 
     if (BeeUtils.same(event.getRelatedViewName(), ClassifierConstants.VIEW_COMPANIES)) {
-      Filter relDocFilter = getRelatedDocumentsFilter();
 
-      Filter relActiveDocFilter = Filter.and(relDocFilter,
-          Filter.notNull(DocumentConstants.ALS_STATUS_MAIN));
+      if (event.isChanged()) {
+        Filter relDocFilter = getRelatedDocumentsFilter();
 
-      DataInfo viewDocuments = Data.getDataInfo(DocumentConstants.VIEW_DOCUMENTS);
+        Filter relActiveDocFilter = Filter.and(relDocFilter,
+            Filter.notNull(DocumentConstants.ALS_STATUS_MAIN));
 
-      Queries.getRowSet(viewDocuments.getViewName(), viewDocuments.getColumnNames(false),
-          relActiveDocFilter, null, new Queries.RowSetCallback() {
-            @Override
-            public void onSuccess(BeeRowSet result) {
-              if (result.getNumberOfRows() != 1) {
-                return;
+        DataInfo viewDocuments = Data.getDataInfo(DocumentConstants.VIEW_DOCUMENTS);
+
+        Queries.getRowSet(viewDocuments.getViewName(), viewDocuments.getColumnNames(false),
+            relActiveDocFilter, null, new Queries.RowSetCallback() {
+              @Override
+              public void onSuccess(BeeRowSet result) {
+                if (result.getNumberOfRows() != 1) {
+                  if (companySelector != null) {
+                    contractSelector.clearValue();
+                  }
+                  return;
+                }
+
+                if (companySelector != null) {
+                  contractSelector.setSelection(result.getRow(0), null, true);
+                }
               }
+            });
 
-              if (companySelector != null) {
-                contractSelector.setSelection(result.getRow(0), null, true);
-              }
-            }
-          });
-
-      if (companySelector != null) {
-        contractSelector.getOracle().setAdditionalFilter(relDocFilter, true);
+        if (companySelector != null) {
+          contractSelector.getOracle().setAdditionalFilter(relDocFilter, true);
+        }
       }
     }
+  }
+
+  @Override
+  public void onUnload(FormView form) {
+
+    EventUtils.clearRegistry(dataHandlerRegistry);
+
+    super.onUnload(form);
   }
 
   private Filter getRelatedDocumentsFilter() {
