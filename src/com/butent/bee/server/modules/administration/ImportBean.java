@@ -520,11 +520,13 @@ public class ImportBean {
         SqlUtils.isNull(tmp, COL_REASON));
 
     // CHECK REQUIRED FIELDS
-    for (String col : cols.keySet()) {
-      if (cols.get(col).isNotNull()) {
-        qs.updateData(new SqlUpdate(tmp)
-            .addConstant(COL_REASON, msgs.valueEmpty(BeeUtils.join("_", parentName, col)) + "\n")
-            .setWhere(SqlUtils.isNull(tmp, col)));
+    if (!readOnly) {
+      for (String col : cols.keySet()) {
+        if (cols.get(col).isNotNull()) {
+          qs.updateData(new SqlUpdate(tmp)
+              .addConstant(COL_REASON, msgs.valueEmpty(BeeUtils.join("_", parentName, col)) + "\n")
+              .setWhere(SqlUtils.isNull(tmp, col)));
+        }
       }
     }
     // FIND MATCHING ROWS FROM DATABASE
