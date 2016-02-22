@@ -26,6 +26,8 @@ import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.grid.DynamicColumnEnumerator;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.search.AbstractFilterSupplier;
+import com.butent.bee.client.widget.FaLabel;
+import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -119,6 +121,10 @@ public interface GridInterceptor extends WidgetInterceptor, ActiveRowChangeEvent
   AbstractFilterSupplier getFilterSupplier(String columnName, ColumnDescription columnDescription);
 
   ColumnFooter getFooter(String columnName, ColumnDescription columnDescription);
+
+  FaLabel getGridMenuIcon();
+
+  Label getGridMenuLabel();
 
   GridPresenter getGridPresenter();
 

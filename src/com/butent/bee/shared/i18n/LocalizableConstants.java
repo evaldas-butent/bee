@@ -302,7 +302,7 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String domainOnline();
 
-  String editing();
+  String editMode();
 
   String email();
 
@@ -687,6 +687,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
   String presenceOnline();
 
   String preview();
+
+  String previewMode();
 
   String price();
 

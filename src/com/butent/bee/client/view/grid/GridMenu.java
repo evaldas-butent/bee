@@ -20,6 +20,7 @@ import com.butent.bee.client.rights.Roles;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.view.grid.GridView.SelectedRows;
+import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.BeeConst;
@@ -115,6 +116,23 @@ public class GridMenu {
       @Override
       void select(GridPresenter presenter) {
         presenter.handleAction(Action.EXPORT);
+      }
+    },
+
+    EDIT_MODE(Action.EDIT_MODE) {
+      @Override
+      boolean isEnabled(GridDescription gridDescription, Collection<UiOption> uiOptions) {
+        return false;
+      }
+
+      @Override
+      boolean isVisible(GridPresenter presenter) {
+        return false;
+      }
+
+      @Override
+      void select(GridPresenter presenter) {
+        presenter.handleAction(Action.EDIT_MODE);
       }
     },
 
@@ -405,7 +423,8 @@ public class GridMenu {
     return false;
   }
 
-  public void open(final GridPresenter presenter, boolean enabled) {
+  public void open(final GridPresenter presenter, boolean enabled,
+      GridInterceptor gridInterceptor) {
     final HtmlTable table = new HtmlTable(STYLE_TABLE);
     int r = 0;
 
@@ -428,18 +447,37 @@ public class GridMenu {
       }
     }
 
+    if (gridInterceptor != null && enabledItems.contains(Item.EDIT_MODE)) {
+      Widget label = gridInterceptor.getGridMenuLabel();
+      Widget icon = gridInterceptor.getGridMenuIcon();
+
+      if (icon != null) {
+        table.setWidgetAndStyle(r, 0, icon, STYLE_ICON);
+      }
+      if (label != null) {
+        table.setWidgetAndStyle(r, 1, label, STYLE_LABEL);
+      }
+      table.getRowFormatter().addStyleName(r, STYLE_PREFIX + Action.EDIT_MODE.getStyleSuffix());
+    }
+
     if (!table.isEmpty()) {
       table.addClickHandler(new ClickHandler() {
         @Override
         public void onClick(ClickEvent event) {
           Element targetElement = EventUtils.getEventTargetElement(event);
           TableRowElement rowElement = DomUtils.getParentRow(targetElement, true);
-          int index = DomUtils.getDataIndexInt(rowElement);
-          Item item = EnumUtils.getEnumByIndex(Item.class, index);
 
-          if (item != null) {
+          if (rowElement.hasClassName(STYLE_PREFIX + Action.EDIT_MODE.getStyleSuffix())) {
             UiHelper.closeDialog(table);
-            item.select(presenter);
+            gridInterceptor.beforeAction(Action.EDIT_MODE, presenter);
+          } else {
+            int index = DomUtils.getDataIndexInt(rowElement);
+            Item item = EnumUtils.getEnumByIndex(Item.class, index);
+
+            if (item != null) {
+              UiHelper.closeDialog(table);
+              item.select(presenter);
+            }
           }
         }
       });
