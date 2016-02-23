@@ -274,6 +274,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   margin-left: 15px;
+  cursor: default;
 }
 .bee-ChatMinimized .bee-Chat-hasUnread .bee-Header-message {
   position: absolute;

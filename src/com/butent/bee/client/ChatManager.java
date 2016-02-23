@@ -494,6 +494,8 @@ public class ChatManager implements HasInfo, HasEnabled {
 
         if (popup != null) {
           popup.setMinimized(false);
+
+          popup.maybeBringToFront();
           chatView.getInputArea().setFocus(true);
 
         } else {
