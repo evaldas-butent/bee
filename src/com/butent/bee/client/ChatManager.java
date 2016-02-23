@@ -424,7 +424,7 @@ public class ChatManager implements HasInfo, HasEnabled {
     users.add(BeeKeeper.getUser().getUserId());
     users.add(userId);
 
-    for (Chat chat : chats) {
+    for (Chat chat : getSortedChats()) {
       if (BeeUtils.sameElements(chat.getUsers(), users)) {
         enterChat(chat.getId());
         return true;
@@ -449,6 +449,15 @@ public class ChatManager implements HasInfo, HasEnabled {
         showInfo(chat);
       }
     }
+  }
+
+  public boolean contains(long chatId) {
+    for (Chat chat : chats) {
+      if (chat.is(chatId)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   public void createChat() {
@@ -510,6 +519,17 @@ public class ChatManager implements HasInfo, HasEnabled {
     } else {
       return false;
     }
+  }
+
+  public Chat findChat(long chatId) {
+    for (Chat chat : chats) {
+      if (chat.is(chatId)) {
+        return chat;
+      }
+    }
+
+    logger.warning("chat not found:", chatId);
+    return null;
   }
 
   @Override
@@ -683,10 +703,9 @@ public class ChatManager implements HasInfo, HasEnabled {
     }
   }
 
-  public void removeChat(long chatId) {
-    Chat chat = findChat(chatId);
-
-    if (chat != null) {
+  public boolean removeChat(long chatId) {
+    if (contains(chatId)) {
+      Chat chat = findChat(chatId);
       chats.remove(chat);
 
       ChatWidget widget = findChatWidget(chatId);
@@ -704,6 +723,10 @@ public class ChatManager implements HasInfo, HasEnabled {
       BeeKeeper.getStorage().remove(ChatUtils.getSizeStorageKey(chatId));
 
       logger.info("removed chat", chatId, chat.getName());
+      return true;
+
+    } else {
+      return false;
     }
   }
 
@@ -753,15 +776,6 @@ public class ChatManager implements HasInfo, HasEnabled {
     if (getChatsPanel() != null) {
       UiHelper.closeDialog(getChatsPanel());
     }
-  }
-
-  private boolean contains(long chatId) {
-    for (Chat chat : chats) {
-      if (chat.is(chatId)) {
-        return true;
-      }
-    }
-    return false;
   }
 
   private void createChat(ChatSettings settings) {
@@ -842,17 +856,6 @@ public class ChatManager implements HasInfo, HasEnabled {
     });
   }
 
-  private Chat findChat(long chatId) {
-    for (Chat chat : chats) {
-      if (chat.is(chatId)) {
-        return chat;
-      }
-    }
-
-    logger.warning("chat not found:", chatId);
-    return null;
-  }
-
   private ChatWidget findChatWidget(long chatId) {
     if (getChatsPanel() == null) {
       return null;
@@ -867,6 +870,20 @@ public class ChatManager implements HasInfo, HasEnabled {
 
   private ChatsPanel getChatsPanel() {
     return chatsPanel;
+  }
+
+  private List<Chat> getSortedChats() {
+    List<Chat> list = new ArrayList<>();
+
+    if (!chats.isEmpty()) {
+      list.addAll(chats);
+
+      if (list.size() > 1) {
+        Collections.sort(list);
+      }
+    }
+
+    return list;
   }
 
   private Widget getUnreadBadge() {
@@ -1037,15 +1054,7 @@ public class ChatManager implements HasInfo, HasEnabled {
   }
 
   private void showChats() {
-    List<Chat> list = new ArrayList<>();
-    if (!chats.isEmpty()) {
-      list.addAll(chats);
-
-      if (list.size() > 1) {
-        Collections.sort(list);
-      }
-    }
-
+    List<Chat> list = getSortedChats();
     setChatsPanel(new ChatsPanel(list));
 
     Popup popup = new Popup(OutsideClick.CLOSE, STYLE_CHATS_POPUP);

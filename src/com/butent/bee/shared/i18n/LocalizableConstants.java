@@ -166,9 +166,11 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String changePassword();
 
+  String chat();
+
   String chatDeleteQuestion();
 
-  String chat();
+  String chatLeaveQuestion();
 
   String chatMessages();
 

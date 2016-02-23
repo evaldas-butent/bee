@@ -734,7 +734,8 @@ public class ChatBean {
 
     if (!removeUsers.isEmpty()) {
       SqlDelete delete = new SqlDelete(TBL_CHAT_USERS)
-          .setWhere(SqlUtils.inList(TBL_CHAT_USERS, COL_CHAT_USER, removeUsers));
+          .setWhere(SqlUtils.and(SqlUtils.equals(TBL_CHAT_USERS, COL_CHAT, chatId),
+              SqlUtils.inList(TBL_CHAT_USERS, COL_CHAT_USER, removeUsers)));
 
       ResponseObject deleteResponse = qs.updateDataWithResponse(delete);
       if (deleteResponse.hasErrors()) {
