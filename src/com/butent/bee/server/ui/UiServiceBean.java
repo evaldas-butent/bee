@@ -875,7 +875,9 @@ public class UiServiceBean {
     }
 
     SimpleRowSet rs = existingStates.isEmpty() ? null : qs.getData(query);
+
     boolean value;
+    Long userId = usr.getCurrentUserId();
 
     for (BeeRow row : rowSet) {
       String rowKey = BeeUtils.toString(row.getId());
@@ -890,7 +892,7 @@ public class UiServiceBean {
             value = state.isChecked();
           }
 
-          row.setProperty(alias, Codec.pack(value));
+          row.setProperty(alias, userId, Codec.pack(value));
         }
       }
     }

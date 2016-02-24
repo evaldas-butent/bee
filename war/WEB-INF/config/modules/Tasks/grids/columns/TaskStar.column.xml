@@ -2,7 +2,7 @@
 <g:columns xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui">
 
-  <PropColumn name="Star" type="integer" cellType="html"
+  <PropColumn name="Star" type="integer" userMode="true" cellType="html"
     horizontalAlignment="center" width="20" label="=crmTaskColumnStar"
     exportWidthFactor="0.4">
 

@@ -1581,7 +1581,10 @@ public enum FormWidget {
 
           CellSource cellSource = null;
           if (!BeeUtils.isEmpty(property)) {
-            cellSource = CellSource.forProperty(property, ValueType.TEXT);
+            boolean userMode = BeeUtils.toBoolean(attributes.get(UiConstants.ATTR_USER_MODE));
+            cellSource = CellSource.forProperty(property, BeeKeeper.getUser().idOrNull(userMode),
+                ValueType.TEXT);
+
           } else if (column != null) {
             int columnIndex = DataUtils.getColumnIndex(column.getId(), columns);
             if (!BeeConst.isUndef(columnIndex)) {

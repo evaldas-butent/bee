@@ -107,21 +107,6 @@ public class TableCell implements IsCell {
   }
 
   @Override
-  public Double getPropertyDouble(String key) {
-    return BeeUtils.toDoubleOrNull(getProperty(key));
-  }
-
-  @Override
-  public Integer getPropertyInteger(String key) {
-    return BeeUtils.toIntOrNull(getProperty(key));
-  }
-
-  @Override
-  public Long getPropertyLong(String key) {
-    return BeeUtils.toLongOrNull(getProperty(key));
-  }
-
-  @Override
   public ValueType getType() {
     return value.getType();
   }
@@ -144,33 +129,6 @@ public class TableCell implements IsCell {
   @Override
   public void setProperties(CustomProperties properties) {
     this.properties = properties;
-  }
-
-  @Override
-  public void setProperty(String key, Double v) {
-    if (BeeUtils.isDouble(v)) {
-      setProperty(key, BeeUtils.toString(v));
-    } else {
-      clearProperty(key);
-    }
-  }
-
-  @Override
-  public void setProperty(String key, Integer v) {
-    if (v == null) {
-      clearProperty(key);
-    } else {
-      setProperty(key, BeeUtils.toString(v));
-    }
-  }
-
-  @Override
-  public void setProperty(String key, Long v) {
-    if (v == null) {
-      clearProperty(key);
-    } else {
-      setProperty(key, BeeUtils.toString(v));
-    }
   }
 
   @Override

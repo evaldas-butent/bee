@@ -84,8 +84,8 @@ class ProjectStageForm extends AbstractFormInterceptor implements DataChangeEven
 
   @Override
   public void afterRefresh(FormView form, IsRow row) {
-    if (!BeeUtils.isEmpty(row.getProperty(PROP_TIME_UNTIS))) {
-      String prop = row.getProperty(PROP_TIME_UNTIS);
+    if (!BeeUtils.isEmpty(row.getProperty(PROP_TIME_UNITS))) {
+      String prop = row.getProperty(PROP_TIME_UNITS);
       BeeRowSet unitsRows = BeeRowSet.maybeRestore(prop);
       setTimeUnits(unitsRows);
     }

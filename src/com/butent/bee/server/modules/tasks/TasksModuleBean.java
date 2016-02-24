@@ -275,10 +275,12 @@ public class TasksModuleBean implements BeeModule {
             }
           }
 
+          Long userId = usr.getCurrentUserId();
+
           SqlSelect tuQuery = new SqlSelect().addFrom(TBL_TASK_USERS)
               .addFields(TBL_TASK_USERS, COL_TASK, COL_LAST_ACCESS, COL_STAR);
 
-          IsCondition uwh = SqlUtils.equals(TBL_TASK_USERS, COL_USER, usr.getCurrentUserId());
+          IsCondition uwh = SqlUtils.equals(TBL_TASK_USERS, COL_USER, userId);
 
           if (taskIds.isEmpty()) {
             tuQuery.setWhere(uwh);
@@ -298,13 +300,13 @@ public class TasksModuleBean implements BeeModule {
                 ? rowSet.findRow(Filter.equals(COL_TASK, taskId)) : rowSet.getRowById(taskId);
 
             if (row != null) {
-              row.setProperty(PROP_USER, BeeConst.STRING_PLUS);
+              row.setProperty(PROP_USER, userId, BeeConst.STRING_PLUS);
 
               if (tuRow.getValue(accessIndex) != null) {
-                row.setProperty(PROP_LAST_ACCESS, tuRow.getValue(accessIndex));
+                row.setProperty(PROP_LAST_ACCESS, userId, tuRow.getValue(accessIndex));
               }
               if (tuRow.getValue(starIndex) != null) {
-                row.setProperty(PROP_STAR, tuRow.getValue(starIndex));
+                row.setProperty(PROP_STAR, userId, tuRow.getValue(starIndex));
               }
             }
           }

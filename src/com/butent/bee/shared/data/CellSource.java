@@ -23,7 +23,7 @@ public final class CellSource extends AbstractRenderer<IsRow> implements HasPrec
     HasValueType, BeeSerializable {
 
   private enum Serial {
-    SOURCE_TYPE, NAME, INDEX, VALUE_TYPE, PRECISION, SCALE, IS_TEXT
+    SOURCE_TYPE, USER_ID, NAME, INDEX, VALUE_TYPE, PRECISION, SCALE, IS_TEXT
   }
 
   private enum SourceType {
@@ -45,11 +45,14 @@ public final class CellSource extends AbstractRenderer<IsRow> implements HasPrec
     return source;
   }
 
-  public static CellSource forProperty(String name, ValueType valueType) {
+  public static CellSource forProperty(String name, Long userId, ValueType valueType) {
     Assert.notEmpty(name);
     Assert.notNull(valueType);
 
-    return new CellSource(SourceType.PROPERTY, name, null, valueType);
+    CellSource source = new CellSource(SourceType.PROPERTY, name, null, valueType);
+    source.setUserId(userId);
+
+    return source;
   }
 
   public static CellSource forRowId(String name) {
@@ -73,6 +76,7 @@ public final class CellSource extends AbstractRenderer<IsRow> implements HasPrec
 
   private String name;
   private Integer index;
+  private Long userId;
 
   private ValueType valueType;
 
@@ -103,7 +107,7 @@ public final class CellSource extends AbstractRenderer<IsRow> implements HasPrec
         break;
 
       case PROPERTY:
-        row.clearProperty(name);
+        row.clearProperty(name, userId);
         break;
 
       case ID:
@@ -151,6 +155,10 @@ public final class CellSource extends AbstractRenderer<IsRow> implements HasPrec
           this.sourceType = Codec.unpack(SourceType.class, value);
           break;
 
+        case USER_ID:
+          this.userId = BeeUtils.toLongOrNull(value);
+          break;
+
         case VALUE_TYPE:
           this.valueType = Codec.unpack(ValueType.class, value);
           break;
@@ -164,7 +172,7 @@ public final class CellSource extends AbstractRenderer<IsRow> implements HasPrec
         case COLUMN:
           return row.getBoolean(index);
         case PROPERTY:
-          return BeeUtils.toBooleanOrNull(row.getProperty(name));
+          return BeeUtils.toBooleanOrNull(row.getProperty(name, userId));
         case ID:
           return row.getId() != DataUtils.NEW_ROW_ID;
         case VERSION:
@@ -180,7 +188,7 @@ public final class CellSource extends AbstractRenderer<IsRow> implements HasPrec
         case COLUMN:
           return row.getDate(index);
         case PROPERTY:
-          return TimeUtils.toDateOrNull(row.getProperty(name));
+          return TimeUtils.toDateOrNull(row.getProperty(name, userId));
         case ID:
           return null;
         case VERSION:
@@ -196,7 +204,7 @@ public final class CellSource extends AbstractRenderer<IsRow> implements HasPrec
         case COLUMN:
           return row.getDateTime(index);
         case PROPERTY:
-          return TimeUtils.toDateTimeOrNull(row.getProperty(name));
+          return TimeUtils.toDateTimeOrNull(row.getProperty(name, userId));
         case ID:
           return null;
         case VERSION:
@@ -212,7 +220,7 @@ public final class CellSource extends AbstractRenderer<IsRow> implements HasPrec
         case COLUMN:
           return row.getDecimal(index);
         case PROPERTY:
-          return BeeUtils.toDecimalOrNull(row.getProperty(name));
+          return BeeUtils.toDecimalOrNull(row.getProperty(name, userId));
         case ID:
           return BigDecimal.valueOf(row.getId());
         case VERSION:
@@ -228,7 +236,7 @@ public final class CellSource extends AbstractRenderer<IsRow> implements HasPrec
         case COLUMN:
           return row.getDouble(index);
         case PROPERTY:
-          return BeeUtils.toDoubleOrNull(row.getProperty(name));
+          return row.getPropertyDouble(name, userId);
         case ID:
           return (double) row.getId();
         case VERSION:
@@ -248,7 +256,7 @@ public final class CellSource extends AbstractRenderer<IsRow> implements HasPrec
         case COLUMN:
           return row.getInteger(index);
         case PROPERTY:
-          return BeeUtils.toIntOrNull(row.getProperty(name));
+          return row.getPropertyInteger(name, userId);
         case ID:
           return BeeUtils.isInt(row.getId()) ? (int) row.getId() : null;
         case VERSION:
@@ -264,7 +272,7 @@ public final class CellSource extends AbstractRenderer<IsRow> implements HasPrec
         case COLUMN:
           return row.getLong(index);
         case PROPERTY:
-          return BeeUtils.toLongOrNull(row.getProperty(name));
+          return row.getPropertyLong(name, userId);
         case ID:
           return row.getId();
         case VERSION:
@@ -294,7 +302,7 @@ public final class CellSource extends AbstractRenderer<IsRow> implements HasPrec
         case COLUMN:
           return row.getString(index);
         case PROPERTY:
-          return row.getProperty(name);
+          return row.getProperty(name, userId);
         case ID:
           return BeeUtils.toString(row.getId());
         case VERSION:
@@ -310,7 +318,7 @@ public final class CellSource extends AbstractRenderer<IsRow> implements HasPrec
         case COLUMN:
           return row.getValue(index);
         case PROPERTY:
-          String s = row.getProperty(name);
+          String s = row.getProperty(name, userId);
           return BeeUtils.isEmpty(s) ? null : Value.parseValue(valueType, s, false);
         case ID:
           return new LongValue(row.getId());
@@ -326,6 +334,10 @@ public final class CellSource extends AbstractRenderer<IsRow> implements HasPrec
     return valueType;
   }
 
+  public Long getUserId() {
+    return userId;
+  }
+
   public boolean hasColumn() {
     return SourceType.COLUMN.equals(sourceType);
   }
@@ -336,7 +348,7 @@ public final class CellSource extends AbstractRenderer<IsRow> implements HasPrec
         case COLUMN:
           return row.isNull(index);
         case PROPERTY:
-          return BeeUtils.isEmpty(row.getProperty(name));
+          return BeeUtils.isEmpty(row.getProperty(name, userId));
         case ID:
           return row.getId() == DataUtils.NEW_ROW_ID;
         case VERSION:
@@ -437,6 +449,10 @@ public final class CellSource extends AbstractRenderer<IsRow> implements HasPrec
           arr[i++] = Codec.pack(sourceType);
           break;
 
+        case USER_ID:
+          arr[i++] = getUserId();
+          break;
+
         case VALUE_TYPE:
           arr[i++] = Codec.pack(getValueType());
           break;
@@ -454,7 +470,7 @@ public final class CellSource extends AbstractRenderer<IsRow> implements HasPrec
         break;
 
       case PROPERTY:
-        row.setProperty(name, (value == null) ? null : value.toString());
+        row.setProperty(name, userId, (value == null) ? null : value.toString());
         break;
 
       case ID:
@@ -476,7 +492,7 @@ public final class CellSource extends AbstractRenderer<IsRow> implements HasPrec
         break;
 
       case PROPERTY:
-        row.setProperty(name, value);
+        row.setProperty(name, userId, value);
         break;
 
       case ID:
@@ -501,5 +517,16 @@ public final class CellSource extends AbstractRenderer<IsRow> implements HasPrec
   @Override
   public void setScale(int scale) {
     this.scale = scale;
+  }
+
+  public void setUserId(Long userId) {
+    this.userId = userId;
+  }
+
+  @Override
+  public String toString() {
+    return "CellSource [sourceType=" + sourceType + ", name=" + name + ", index=" + index
+        + ", userId=" + userId + ", valueType=" + valueType + ", precision=" + precision
+        + ", scale=" + scale + ", isText=" + isText + "]";
   }
 }

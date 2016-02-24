@@ -110,21 +110,6 @@ public class TableColumn implements HasInfo, IsColumn {
   }
 
   @Override
-  public Double getPropertyDouble(String key) {
-    return BeeUtils.toDoubleOrNull(getProperty(key));
-  }
-
-  @Override
-  public Integer getPropertyInteger(String key) {
-    return BeeUtils.toIntOrNull(getProperty(key));
-  }
-
-  @Override
-  public Long getPropertyLong(String key) {
-    return BeeUtils.toLongOrNull(getProperty(key));
-  }
-
-  @Override
   public int getScale() {
     return scale;
   }
@@ -172,33 +157,6 @@ public class TableColumn implements HasInfo, IsColumn {
   @Override
   public void setProperties(CustomProperties properties) {
     this.properties = properties;
-  }
-
-  @Override
-  public void setProperty(String key, Double value) {
-    if (BeeUtils.isDouble(value)) {
-      setProperty(key, BeeUtils.toString(value));
-    } else {
-      clearProperty(key);
-    }
-  }
-
-  @Override
-  public void setProperty(String key, Integer value) {
-    if (value == null) {
-      clearProperty(key);
-    } else {
-      setProperty(key, BeeUtils.toString(value));
-    }
-  }
-
-  @Override
-  public void setProperty(String key, Long value) {
-    if (value == null) {
-      clearProperty(key);
-    } else {
-      setProperty(key, BeeUtils.toString(value));
-    }
   }
 
   @Override

@@ -487,7 +487,8 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
 
       case PROPERTY:
         String property = BeeUtils.notEmpty(cd.getProperty(), columnId);
-        cellSource = CellSource.forProperty(property, cd.getValueType());
+        cellSource = CellSource.forProperty(property,
+            BeeKeeper.getUser().idOrNull(cd.getUserMode()), cd.getValueType());
 
         if (cd.getPrecision() != null) {
           cellSource.setPrecision(cd.getPrecision());

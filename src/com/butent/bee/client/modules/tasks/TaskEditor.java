@@ -731,7 +731,9 @@ class TaskEditor extends AbstractFormInterceptor {
   @Override
   public boolean onStartEdit(final FormView form, final IsRow row, ScheduledCommand focusCommand) {
 
-    final Long lastAccess = BeeUtils.toLongOrNull(row.getProperty(PROP_LAST_ACCESS));
+    final Long lastAccess = BeeUtils.toLongOrNull(row.getProperty(PROP_LAST_ACCESS,
+        BeeKeeper.getUser().getUserId()));
+
     Long owner = row.getLong(form.getDataIndex(COL_OWNER));
     Long executor = row.getLong(form.getDataIndex(COL_EXECUTOR));
 
@@ -1805,7 +1807,8 @@ class TaskEditor extends AbstractFormInterceptor {
     RowUpdateEvent.fire(BeeKeeper.getBus(), VIEW_TASKS, data);
 
     FormView form = getFormView();
-    Long lastAccess = BeeUtils.toLongOrNull(data.getProperty(PROP_LAST_ACCESS));
+    Long lastAccess = BeeUtils.toLongOrNull(data.getProperty(PROP_LAST_ACCESS,
+        BeeKeeper.getUser().getUserId()));
 
     if (hasRelations(form.getOldRow()) || hasRelations(data)) {
       DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_RELATED_TASKS);

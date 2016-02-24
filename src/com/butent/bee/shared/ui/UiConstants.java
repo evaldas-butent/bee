@@ -51,6 +51,7 @@ public final class UiConstants {
   public static final String ATTR_EDIT_VIEW_NAME = "editViewName";
 
   public static final String ATTR_PROPERTY = "property";
+  public static final String ATTR_USER_MODE = "userMode";
 
   public static final String ATTR_VISIBLE = "visible";
   public static final String ATTR_MODULE = "module";

@@ -380,6 +380,8 @@ public class GridLoaderBean {
           dst.setSource(value.trim());
         } else if (BeeUtils.same(key, UiConstants.ATTR_PROPERTY)) {
           dst.setProperty(value.trim());
+        } else if (BeeUtils.same(key, UiConstants.ATTR_USER_MODE)) {
+          dst.setUserMode(BeeUtils.toBooleanOrNull(value));
 
         } else if (BeeUtils.same(key, ATTR_REQUIRED)) {
           dst.setRequired(BeeUtils.toBooleanOrNull(value));

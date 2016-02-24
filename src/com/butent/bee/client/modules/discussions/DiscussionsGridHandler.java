@@ -212,21 +212,22 @@ class DiscussionsGridHandler extends AbstractGridInterceptor {
   public void onEditStart(final EditStartEvent event) {
     IsRow row = event.getRowValue();
 
-    if (row == null) {
+    if (row == null || currentUser == null) {
       return;
     }
 
-    if (PROP_STAR.equals(event.getColumnId())) {
-      if (row.getProperty(PROP_USER) != null) {
+    if (PROP_STAR.equals(event.getColumnId())
+        && row.containsProperty(PROP_USER, currentUser.getUserId())) {
 
-        final CellSource source = CellSource.forProperty(PROP_STAR, ValueType.INTEGER);
-        EditorAssistant.editStarCell(DEFAULT_STAR_COUNT, event, source, new Consumer<Integer>() {
-          @Override
-          public void accept(Integer parameter) {
-            updateStar(event, source, parameter);
-          }
-        });
-      }
+      final CellSource source =
+          CellSource.forProperty(PROP_STAR, currentUser.getUserId(), ValueType.INTEGER);
+
+      EditorAssistant.editStarCell(DEFAULT_STAR_COUNT, event, source, new Consumer<Integer>() {
+        @Override
+        public void accept(Integer parameter) {
+          updateStar(event, source, parameter);
+        }
+      });
     }
   }
 

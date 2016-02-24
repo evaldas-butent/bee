@@ -794,7 +794,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
       int dataIndex = dataInfo.getColumnIndex(choiceColumns.get(0));
 
       if (BeeConst.isUndef(dataIndex)) {
-        cellSource = CellSource.forProperty(choiceColumns.get(0), ValueType.TEXT);
+        cellSource = CellSource.forProperty(choiceColumns.get(0), null, ValueType.TEXT);
       } else {
         dataColumn = dataInfo.getColumns().get(dataIndex);
         cellSource = CellSource.forColumn(dataColumn, dataIndex);
@@ -1734,7 +1734,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
 
         CellSource cellSource;
         if (BeeConst.isUndef(index)) {
-          cellSource = CellSource.forProperty(getChoiceColumns().get(i), ValueType.TEXT);
+          cellSource = CellSource.forProperty(getChoiceColumns().get(i), null, ValueType.TEXT);
         } else {
           cellSource = CellSource.forColumn(dataInfo.getColumns().get(index), index);
         }
