@@ -25,21 +25,12 @@
       <SimpleColumn name="Name" alias="CurrencyName" />
       <SimpleColumn name="MinorName" />
     </SimpleJoin>
-    
+
     <SimpleColumn name="PaymentTime" />
     <SimpleColumn name="Paid" />
 
-    <SimpleColumn name="Debt" label="=trdDebt" >
-      <x:minus>
-        <x:number>"Amount"</x:number>
-        <x:nvl type="DECIMAL">
-          <x:number>"Paid"</x:number>
-          <x:number>0</x:number>
-        </x:nvl>
-      </x:minus>
-    </SimpleColumn>
+    <SimpleColumn name="Debt" label="=trdDebt" />
 
-    
     <SimpleColumn name="Supplier" />
     <SimpleJoin joinType="LEFT" name="Supplier">
       <SimpleColumn name="Name" alias="SupplierName" />

@@ -22,6 +22,7 @@
     <Date name="Term" label="=trdTerm" />
     <DateTime name="PaymentTime" label="=trdPaymentTime" />
     <Numeric name="Paid" precision="12" scale="2" label="=trdPaid" />
+    <Numeric name="Debt" precision="12" scale="2" label="=trdDebt" />
 
     <Relation name="Manager" relation="Users" label="=trdManager" />
 

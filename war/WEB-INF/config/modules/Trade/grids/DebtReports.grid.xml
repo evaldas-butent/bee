@@ -22,13 +22,7 @@
         </bodyStyle>
       </style>
     </DataColumn>
-    <CalcColumn name="DebtAmount" type="decimal" format="0.00" label="=trdDebt" caption="=trdDebt">
-      <render>
-        <ui:function>
-          return row.AmountSum - row.PaidSum;
-        </ui:function>
-      </render>
-    </CalcColumn>
+    <DataColumn name="DebtSum" format="0.00" label="=trdDebt" caption="=trdDebt" />
     <DataColumn name="CurrencyName"/>
     <DataColumn name="ExternalAdvance" caption="=trdAdvance" scale="2" label="=trdAdvance"
                 visible="true"/>

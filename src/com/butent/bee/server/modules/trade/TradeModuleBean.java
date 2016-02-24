@@ -251,26 +251,25 @@ public class TradeModuleBean implements BeeModule {
               companyId),
               SqlUtils.and(SqlUtils.isNull(TBL_ERP_SALES, COL_SALE_PAYER),
                   SqlUtils.equals(TBL_ERP_SALES, COL_TRADE_CUSTOMER, companyId))),
-              SqlUtils.less(SqlUtils.nvl(SqlUtils.field(TBL_ERP_SALES, COL_TRADE_PAID), 0),
-                  SqlUtils.nvl(SqlUtils.field(TBL_ERP_SALES, COL_TRADE_AMOUNT), 0))));
+              SqlUtils.more(SqlUtils.nvl(SqlUtils.field(TBL_ERP_SALES, COL_TRADE_DEBT), 0), 0)));
 
       if (DataUtils.isId(curr)) {
-        query.addExpr(ExchangeUtils.exchangeFieldTo(query, TBL_ERP_SALES, COL_TRADE_AMOUNT,
-            COL_TRADE_CURRENCY, COL_TRADE_DATE, curr), COL_TRADE_AMOUNT)
-            .addExpr(ExchangeUtils.exchangeFieldTo(query, TBL_ERP_SALES, COL_TRADE_PAID,
-                COL_TRADE_CURRENCY, COL_TRADE_PAYMENT_TIME, curr), COL_TRADE_PAID);
+        query.addExpr(ExchangeUtils.exchangeFieldTo(query, TBL_ERP_SALES, COL_TRADE_DEBT,
+            COL_TRADE_CURRENCY, COL_TRADE_DATE, curr), COL_TRADE_DEBT);
+        // .addExpr(ExchangeUtils.exchangeFieldTo(query, TBL_ERP_SALES, COL_TRADE_PAID,
+        // COL_TRADE_CURRENCY, COL_TRADE_PAYMENT_TIME, curr), COL_TRADE_PAID);
       } else {
-        query.addExpr(ExchangeUtils.exchangeField(query, TBL_ERP_SALES, COL_TRADE_AMOUNT,
-            COL_TRADE_CURRENCY, COL_TRADE_DATE), COL_TRADE_AMOUNT)
-            .addExpr(ExchangeUtils.exchangeField(query, TBL_ERP_SALES, COL_TRADE_PAID,
-                COL_TRADE_CURRENCY, COL_TRADE_PAYMENT_TIME), COL_TRADE_PAID);
+        query.addExpr(ExchangeUtils.exchangeField(query, TBL_ERP_SALES, COL_TRADE_DEBT,
+            COL_TRADE_CURRENCY, COL_TRADE_DATE), COL_TRADE_DEBT);
+        // .addExpr(ExchangeUtils.exchangeField(query, TBL_ERP_SALES, COL_TRADE_PAID,
+        // COL_TRADE_CURRENCY, COL_TRADE_PAYMENT_TIME), COL_TRADE_PAID);
       }
       double debt = 0.0;
       double overdue = 0.0;
 
       for (SimpleRow row : qs.getData(query)) {
-        double xxx = BeeUtils.unbox(row.getDouble(COL_TRADE_AMOUNT))
-            - BeeUtils.unbox(row.getDouble(COL_TRADE_PAID));
+        double xxx = BeeUtils.unbox(row.getDouble(COL_TRADE_DEBT));
+        // - BeeUtils.unbox(row.getDouble(COL_TRADE_PAID));
 
         int dayDiff = TimeUtils.dayDiff(BeeUtils.nvl(row.getDateTime(COL_TRADE_TERM),
             TimeUtils.nextDay(row.getDateTime(COL_TRADE_DATE), days)), TimeUtils.nowMinutes());
@@ -768,16 +767,20 @@ public class TradeModuleBean implements BeeModule {
     }
 
     IsExpression amountXpr = ExchangeUtils.exchangeField(query,
-        SqlUtils.field(TBL_ERP_SALES, COL_TRADE_AMOUNT),
+        SqlUtils.nvl(SqlUtils.field(TBL_ERP_SALES, COL_TRADE_AMOUNT), 0),
         SqlUtils.field(TBL_ERP_SALES, COL_CURRENCY), SqlUtils.field(TBL_ERP_SALES, COL_TRADE_DATE));
 
     IsExpression paidXpr = ExchangeUtils.exchangeField(query,
-        SqlUtils.field(TBL_ERP_SALES, COL_TRADE_PAID),
+        SqlUtils.nvl(SqlUtils.field(TBL_ERP_SALES, COL_TRADE_PAID), 0),
+        SqlUtils.field(TBL_ERP_SALES, COL_CURRENCY), SqlUtils.field(TBL_ERP_SALES, COL_TRADE_DATE));
+
+    IsExpression debtXpr = ExchangeUtils.exchangeField(query,
+        SqlUtils.nvl(SqlUtils.field(TBL_ERP_SALES, COL_TRADE_DEBT), 0),
         SqlUtils.field(TBL_ERP_SALES, COL_CURRENCY), SqlUtils.field(TBL_ERP_SALES, COL_TRADE_DATE));
 
     query.addSum(amountXpr, VAR_AMOUNT);
     query.addSum(paidXpr, VAR_TOTAL);
-    query.addSum(SqlUtils.minus(amountXpr, paidXpr), VAR_DEBT);
+    query.addSum(debtXpr, VAR_DEBT);
     query.addCount("SalesCount");
 
     SimpleRowSet rs = qs.getData(query);
