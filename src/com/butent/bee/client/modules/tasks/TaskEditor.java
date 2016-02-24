@@ -274,8 +274,7 @@ class TaskEditor extends AbstractFormInterceptor {
 
       DateTime date = dialog.getDateTime(ids.get(COL_DURATION_DATE));
       if (date == null) {
-        showError(Localized.getConstants().crmEnterDueDate());
-        return false;
+        date = TimeUtils.nowMinutes();
       }
 
       params.addDataItem(VAR_TASK_DURATION_DATE, date.serialize());
