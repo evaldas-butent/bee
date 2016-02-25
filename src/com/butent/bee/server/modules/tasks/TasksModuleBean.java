@@ -302,12 +302,8 @@ public class TasksModuleBean implements BeeModule {
             if (row != null) {
               row.setProperty(PROP_USER, userId, BeeConst.STRING_PLUS);
 
-              if (tuRow.getValue(accessIndex) != null) {
-                row.setProperty(PROP_LAST_ACCESS, userId, tuRow.getValue(accessIndex));
-              }
-              if (tuRow.getValue(starIndex) != null) {
-                row.setProperty(PROP_STAR, userId, tuRow.getValue(starIndex));
-              }
+              row.setProperty(PROP_LAST_ACCESS, userId, tuRow.getValue(accessIndex));
+              row.setProperty(PROP_STAR, userId, tuRow.getValue(starIndex));
             }
           }
 

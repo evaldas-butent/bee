@@ -1,11 +1,12 @@
 package com.butent.bee.client.view.grid;
 
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.CustomProperties;
+import com.butent.bee.shared.data.HasCustomProperties;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
-import com.butent.bee.shared.rights.RightsUtils;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -68,16 +69,13 @@ final class GridUtils {
   }
 
   static void updateProperties(IsRow target, IsRow source) {
-    if (BeeUtils.isEmpty(target.getProperties())) {
-      if (!BeeUtils.isEmpty(source.getProperties())) {
-        target.setProperties(source.getProperties().copy());
-      }
-
-    } else {
+    if (!BeeUtils.isEmpty(target.getProperties())) {
+      Long userId = BeeKeeper.getUser().getUserId();
       CustomProperties retain = new CustomProperties();
-      for (Map.Entry<String, String> property : target.getProperties().entrySet()) {
-        if (RightsUtils.isStateRoleAlias(property.getKey())) {
-          retain.put(property.getKey(), property.getValue());
+
+      for (Map.Entry<String, String> entry : target.getProperties().entrySet()) {
+        if (HasCustomProperties.isUserPropertyName(entry.getKey(), userId)) {
+          retain.put(entry.getKey(), entry.getValue());
         }
       }
 
@@ -89,11 +87,23 @@ final class GridUtils {
         if (!retain.isEmpty()) {
           target.getProperties().putAll(retain);
         }
+      }
+    }
 
-        if (!BeeUtils.isEmpty(source.getProperties())) {
-          target.getProperties().putAll(source.getProperties());
+    if (!BeeUtils.isEmpty(source.getProperties())) {
+      for (Map.Entry<String, String> entry : source.getProperties().entrySet()) {
+        if (isPropertyRelevant(entry.getKey())) {
+          target.setProperty(entry.getKey(), entry.getValue());
         }
       }
+    }
+  }
+
+  private static boolean isPropertyRelevant(String key) {
+    if (HasCustomProperties.isUserPropertyName(key)) {
+      return BeeKeeper.getUser().is(HasCustomProperties.extractUserIdFromUserPropertyName(key));
+    } else {
+      return !BeeUtils.isEmpty(key);
     }
   }
 

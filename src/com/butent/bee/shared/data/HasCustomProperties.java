@@ -2,6 +2,8 @@ package com.butent.bee.shared.data;
 
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.Objects;
+
 /**
  * Specifies implementing classes to be able to set and get their properties.
  */
@@ -9,20 +11,6 @@ import com.butent.bee.shared.utils.BeeUtils;
 public interface HasCustomProperties {
 
   char USER_SEPARATOR = '¦';
-
-  void clearProperty(String key);
-
-  default void clearProperty(String key, Long userId) {
-    clearProperty(userPropertyName(key, userId));
-  }
-
-  default boolean containsProperty(String key) {
-    return !BeeUtils.isEmpty(getProperty(key));
-  }
-
-  default boolean containsProperty(String key, Long userId) {
-    return containsProperty(userPropertyName(key, userId));
-  }
 
   static String extractPropertyNameFromUserPropertyName(String key) {
     return BeeUtils.getPrefix(key, USER_SEPARATOR);
@@ -64,9 +52,28 @@ public interface HasCustomProperties {
     return getPropertyLong(userPropertyName(key, userId));
   }
 
+  default boolean hasPropertyValue(String key) {
+    return !BeeUtils.isEmpty(getProperty(key));
+  }
+
+  default boolean hasPropertyValue(String key, Long userId) {
+    return hasPropertyValue(userPropertyName(key, userId));
+  }
+
   static boolean isUserPropertyName(String key) {
     return BeeUtils.count(key, USER_SEPARATOR) == 1
         && DataUtils.isId(BeeUtils.getSuffix(key, USER_SEPARATOR));
+  }
+
+  static boolean isUserPropertyName(String key, Long userId) {
+    return isUserPropertyName(key)
+        && Objects.equals(extractUserIdFromUserPropertyName(key), userId);
+  }
+
+  void removeProperty(String key);
+
+  default void removeProperty(String key, Long userId) {
+    removeProperty(userPropertyName(key, userId));
   }
 
   void setProperties(CustomProperties properties);

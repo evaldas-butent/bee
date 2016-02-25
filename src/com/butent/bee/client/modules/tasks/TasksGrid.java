@@ -336,7 +336,7 @@ class TasksGrid extends AbstractGridInterceptor {
 
   protected boolean maybeEditStar(final EditStartEvent event) {
     if (event != null && PROP_STAR.equals(event.getColumnId()) && event.getRowValue() != null
-        && event.getRowValue().containsProperty(PROP_USER, userId)) {
+        && event.getRowValue().hasPropertyValue(PROP_USER, userId)) {
 
       final CellSource source = CellSource.forProperty(PROP_STAR, userId, ValueType.INTEGER);
 

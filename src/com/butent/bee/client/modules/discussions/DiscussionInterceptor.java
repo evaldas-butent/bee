@@ -321,7 +321,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
           if (value && ms != null) {
             ms.clearValue();
             ms.setValue(null);
-            getFormView().getActiveRow().clearProperty(PROP_MEMBERS);
+            getFormView().getActiveRow().removeProperty(PROP_MEMBERS);
           } else {
             getFormView().getActiveRow().setValue(getFormView().getDataIndex(COL_ACCESSIBILITY),
                 (Boolean) null);
@@ -573,7 +573,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
         if (!BeeUtils.isEmpty(members.getValue())) {
           members.clearDisplay();
           members.clearValue();
-          row.clearProperty(PROP_MEMBERS);
+          row.removeProperty(PROP_MEMBERS);
         }
       }
     }

@@ -107,7 +107,7 @@ public final class CellSource extends AbstractRenderer<IsRow> implements HasPrec
         break;
 
       case PROPERTY:
-        row.clearProperty(name, userId);
+        row.setProperty(name, userId, (String) null);
         break;
 
       case ID:

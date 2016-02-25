@@ -240,12 +240,8 @@ public class DiscussionsModuleBean implements BeeModule {
 
             row.setProperty(PROP_USER, userId, BeeConst.STRING_PLUS);
 
-            if (discussUserRow.getValue(accessIndex) != null) {
-              row.setProperty(PROP_LAST_ACCESS, userId, discussUserRow.getValue(starIndex));
-            }
-            if (discussUserRow.getValue(starIndex) != null) {
-              row.setProperty(PROP_STAR, userId, discussUserRow.getValue(starIndex));
-            }
+            row.setProperty(PROP_LAST_ACCESS, userId, discussUserRow.getValue(accessIndex));
+            row.setProperty(PROP_STAR, userId, discussUserRow.getValue(starIndex));
           }
 
           SqlSelect discussionsEvents = new SqlSelect()

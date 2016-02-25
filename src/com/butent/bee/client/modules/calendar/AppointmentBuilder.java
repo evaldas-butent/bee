@@ -1246,7 +1246,7 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
 
       Long serviceType = getSelectedId(getServiceTypeWidgetId(), serviceTypes);
       if (serviceType == null) {
-        row.clearProperty(TBL_APPOINTMENT_PROPS);
+        row.removeProperty(TBL_APPOINTMENT_PROPS);
       } else {
         row.setProperty(TBL_APPOINTMENT_PROPS, serviceType.toString());
       }
@@ -1264,7 +1264,7 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
         }
       }
 
-      row.clearProperty(TBL_APPOINTMENT_ATTENDEES);
+      row.removeProperty(TBL_APPOINTMENT_ATTENDEES);
       refreshResourceWidget(row);
 
       hideOverlap();
@@ -1290,7 +1290,7 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
       }
       listBox.deselect();
 
-      row.clearProperty(TBL_APPOINTMENT_REMINDERS);
+      row.removeProperty(TBL_APPOINTMENT_REMINDERS);
     }
 
     Widget widget = BeeUtils.isEmpty(getHourWidgetId()) ? null : getWidget(getHourWidgetId());

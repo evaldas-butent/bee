@@ -62,8 +62,22 @@ public class RowDeleteEvent extends ModificationEvent<RowDeleteEvent.Handler> im
   }
 
   @Override
+  public void deserialize(String s) {
+    String[] arr = Codec.beeDeserializeCollection(s);
+    Assert.lengthEquals(arr, 2);
+
+    this.viewName = arr[0];
+    this.rowId = BeeUtils.toLong(arr[1]);
+  }
+
+  @Override
   public Type<Handler> getAssociatedType() {
     return TYPE;
+  }
+
+  @Override
+  public Kind getKind() {
+    return Kind.DELETE_ROW;
   }
 
   @Override
@@ -91,14 +105,6 @@ public class RowDeleteEvent extends ModificationEvent<RowDeleteEvent.Handler> im
     handler.onRowDelete(this);
   }
 
-  @Override
-  public void deserialize(String s) {
-    String[] arr = Codec.beeDeserializeCollection(s);
-    Assert.lengthEquals(arr, 2);
-
-    this.viewName = arr[0];
-    this.rowId = BeeUtils.toLong(arr[1]);
-  }
 
   @Override
   public String serialize() {
@@ -107,7 +113,7 @@ public class RowDeleteEvent extends ModificationEvent<RowDeleteEvent.Handler> im
   }
 
   @Override
-  public Kind getKind() {
-    return Kind.DELETE_ROW;
+  public String toString() {
+    return BeeUtils.joinWords(getKind(), getViewName(), getRowId());
   }
 }

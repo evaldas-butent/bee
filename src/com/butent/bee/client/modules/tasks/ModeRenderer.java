@@ -27,7 +27,7 @@ class ModeRenderer extends AbstractCellRenderer {
     }
 
     Long userId = BeeKeeper.getUser().getUserId();
-    if (!row.containsProperty(PROP_USER, userId)) {
+    if (!row.hasPropertyValue(PROP_USER, userId)) {
       return null;
     }
 

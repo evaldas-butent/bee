@@ -217,7 +217,7 @@ class DiscussionsGridHandler extends AbstractGridInterceptor {
     }
 
     if (PROP_STAR.equals(event.getColumnId())
-        && row.containsProperty(PROP_USER, currentUser.getUserId())) {
+        && row.hasPropertyValue(PROP_USER, currentUser.getUserId())) {
 
       final CellSource source =
           CellSource.forProperty(PROP_STAR, currentUser.getUserId(), ValueType.INTEGER);

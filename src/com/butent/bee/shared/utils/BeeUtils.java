@@ -1025,6 +1025,19 @@ public final class BeeUtils {
     return (range != null && range.hasUpperBound()) ? range.upperEndpoint() : null;
   }
 
+  public static boolean hasDigit(String s) {
+    if (s == null || s.isEmpty()) {
+      return false;
+    }
+
+    for (int i = 0; i < s.length(); i++) {
+      if (isDigit(s.charAt(i))) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   public static boolean hasExponent(String s) {
     return contains(s, 'E') || contains(s, 'e');
   }
@@ -1337,7 +1350,7 @@ public final class BeeUtils {
    * @return true if {@code s} value can be cast to Double, false otherwise.
    */
   public static boolean isDouble(String s) {
-    if (isEmpty(s)) {
+    if (!hasDigit(s)) {
       return false;
     }
     boolean ok;
@@ -1367,7 +1380,7 @@ public final class BeeUtils {
    */
   public static boolean isDouble(String s, Double min, boolean minInclusive,
       Double max, boolean maxInclusive) {
-    if (isEmpty(s)) {
+    if (!hasDigit(s)) {
       return false;
     }
 
@@ -1469,7 +1482,7 @@ public final class BeeUtils {
    * @return true if the string has a correct number format, otherwise false.
    */
   public static boolean isInt(String s) {
-    if (isEmpty(s)) {
+    if (!hasDigit(s)) {
       return false;
     }
     boolean ok;
@@ -1502,7 +1515,7 @@ public final class BeeUtils {
   }
 
   public static boolean isLong(String s) {
-    if (isEmpty(s)) {
+    if (!hasDigit(s)) {
       return false;
     }
     boolean ok;
@@ -2814,7 +2827,7 @@ public final class BeeUtils {
    * @throws NumberFormatException ex
    */
   public static double toDouble(String s) {
-    if (isEmpty(s)) {
+    if (!hasDigit(s)) {
       return BeeConst.DOUBLE_ZERO;
     }
     double d;
@@ -2828,7 +2841,7 @@ public final class BeeUtils {
   }
 
   public static Double toDoubleOrNull(String s) {
-    if (isEmpty(s)) {
+    if (!hasDigit(s)) {
       return null;
     }
 
@@ -2877,7 +2890,7 @@ public final class BeeUtils {
    * @throws NumberFormatException ex
    */
   public static int toInt(String s) {
-    if (isEmpty(s)) {
+    if (!hasDigit(s)) {
       return 0;
     }
     int i;
@@ -2895,7 +2908,7 @@ public final class BeeUtils {
   }
 
   public static Integer toIntOrNull(String s) {
-    if (isEmpty(s)) {
+    if (!hasDigit(s)) {
       return null;
     }
 
@@ -2960,7 +2973,7 @@ public final class BeeUtils {
    * @throws NumberFormatException ex
    */
   public static long toLong(String s) {
-    if (isEmpty(s)) {
+    if (!hasDigit(s)) {
       return 0L;
     }
     long x;
@@ -2978,7 +2991,7 @@ public final class BeeUtils {
   }
 
   public static Long toLongOrNull(String s) {
-    if (isEmpty(s)) {
+    if (!hasDigit(s)) {
       return null;
     }
 
