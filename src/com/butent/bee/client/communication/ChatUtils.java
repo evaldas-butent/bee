@@ -172,6 +172,10 @@ public final class ChatUtils {
     return Storage.getUserKey("chat-" + chatId, "size");
   }
 
+  public static String getStyleStorageKey(long chatId) {
+    return Storage.getUserKey("chat-" + chatId, "style");
+  }
+
   public static Multimap<Presence, Long> getUserPresence(Collection<Long> users) {
     Multimap<Presence, Long> result = ArrayListMultimap.create();
     Presence p;

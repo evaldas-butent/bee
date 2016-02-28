@@ -3,6 +3,7 @@ package com.butent.bee.client.view;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.HasClickHandlers;
 import com.google.gwt.user.client.ui.IndexedPanel;
+import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.output.Printable;
 import com.butent.bee.client.ui.IdentifiableWidget;
@@ -33,6 +34,8 @@ public interface HeaderView extends View, IndexedPanel, Printable, HasClickHandl
   boolean hasAction(Action action);
 
   boolean hasCommands();
+
+  boolean insertControl(Widget w, int beforeIndex);
 
   boolean isActionEnabled(Action action);
 

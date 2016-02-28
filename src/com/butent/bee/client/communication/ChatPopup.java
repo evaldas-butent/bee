@@ -17,11 +17,24 @@ import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Size;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.IntRangeSet;
 
 import java.util.List;
 
 public final class ChatPopup extends Popup {
+
+  private enum MockStyle {
+    PHONE_0("phone-0", false), PHONE_1("phone-1", true), PHONE_2("phone-2", true);
+
+    private final String styleName;
+    private final boolean needsModifier;
+
+    MockStyle(String styleSuffix, boolean needsModifier) {
+      this.styleName = STYLE_PREFIX + BeeConst.STRING_MINUS + styleSuffix;
+      this.needsModifier = needsModifier;
+    }
+  }
 
   private static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "Chat";
   private static final String STYLE_MODAL = STYLE_PREFIX + "Modal";
@@ -99,6 +112,23 @@ public final class ChatPopup extends Popup {
     }
   }
 
+  private static MockStyle getStoredStyle(ChatView chatView) {
+    String key = getStyleKey(chatView);
+    if (BeeUtils.isEmpty(key)) {
+      return null;
+    }
+
+    return EnumUtils.getEnumByName(MockStyle.class, BeeKeeper.getStorage().get(key));
+  }
+
+  private static String getStyleKey(ChatView chatView) {
+    if (chatView == null) {
+      return null;
+    } else {
+      return ChatUtils.getStyleStorageKey(chatView.getChatId());
+    }
+  }
+
   private static void open(IdentifiableWidget widget, boolean minimized) {
     if (!(widget instanceof ChatView)) {
       return;
@@ -106,7 +136,7 @@ public final class ChatPopup extends Popup {
 
     ChatView chatView = (ChatView) widget;
 
-    ChatPopup chatPopup = new ChatPopup(minimized);
+    ChatPopup chatPopup = new ChatPopup(minimized, getStoredStyle(chatView));
     chatPopup.setWidget(chatView);
 
     if (!minimized) {
@@ -135,15 +165,21 @@ public final class ChatPopup extends Popup {
   }
 
   private boolean minimized;
+  private MockStyle mockStyle;
 
   private ElementSize clientSize;
   private ElementSize offsetSize;
 
-  private ChatPopup(boolean minimized) {
+  private ChatPopup(boolean minimized, MockStyle mockStyle) {
     super(OutsideClick.IGNORE, STYLE_MODAL);
 
     this.minimized = minimized;
+    this.mockStyle = mockStyle;
+
     addStyleName(minimized ? STYLE_MINIMIZED : STYLE_NORMAL);
+    if (mockStyle != null) {
+      addStyleName(mockStyle.styleName);
+    }
 
     if (!hasEventPreview()) {
       setPreviewEnabled(false);
@@ -267,11 +303,68 @@ public final class ChatPopup extends Popup {
       Element el = Element.as(target);
       HeaderView header = getChatView().getHeader();
 
-      return header.getElement().isOrHasChild(el) && !header.isActionOrCommand(el);
+      if (header.getElement().isOrHasChild(el)) {
+        return !header.isActionOrCommand(el);
+      } else {
+        return getMockStyle() != null && DomUtils.sameId(getChatView().getElement(), el);
+      }
 
     } else {
       return false;
     }
+  }
+
+  void handleStyle(boolean hasModifiers) {
+    MockStyle newStyle = null;
+    boolean found = false;
+
+    MockStyle[] values = MockStyle.values();
+
+    if (getMockStyle() == null) {
+      for (MockStyle ms : values) {
+        if (hasModifiers || !ms.needsModifier) {
+          newStyle = ms;
+          found = true;
+          break;
+        }
+      }
+
+      if (!found) {
+        newStyle = values[0];
+        found = true;
+      }
+
+    } else {
+      int index = getMockStyle().ordinal();
+
+      if (index < values.length - 1) {
+        if (hasModifiers) {
+          newStyle = values[index + 1];
+          found = true;
+
+        } else {
+          for (int i = index + 1; i < values.length; i++) {
+            if (!values[i].needsModifier) {
+              newStyle = values[i];
+              found = true;
+              break;
+            }
+          }
+        }
+      }
+
+      if (!found && hasModifiers && index > 0) {
+        newStyle = values[0];
+        found = true;
+      }
+
+      if (!found) {
+        newStyle = null;
+        found = true;
+      }
+    }
+
+    setMockStyle(newStyle);
   }
 
   boolean isMinimized() {
@@ -290,12 +383,40 @@ public final class ChatPopup extends Popup {
     return clientSize;
   }
 
+  private MockStyle getMockStyle() {
+    return mockStyle;
+  }
+
   private ElementSize getOffsetSize() {
     return offsetSize;
   }
 
   private void setClientSize(ElementSize clientSize) {
     this.clientSize = clientSize;
+  }
+
+  private void setMockStyle(MockStyle mockStyle) {
+    if (this.mockStyle != mockStyle) {
+      if (this.mockStyle != null) {
+        removeStyleName(this.mockStyle.styleName);
+      }
+
+      this.mockStyle = mockStyle;
+
+      if (mockStyle != null) {
+        addStyleName(mockStyle.styleName);
+      }
+
+      String key = getStyleKey(getChatView());
+
+      if (!BeeUtils.isEmpty(key)) {
+        if (mockStyle == null) {
+          BeeKeeper.getStorage().remove(key);
+        } else {
+          BeeKeeper.getStorage().set(key, mockStyle.name());
+        }
+      }
+    }
   }
 
   private void setOffsetSize(ElementSize offsetSize) {

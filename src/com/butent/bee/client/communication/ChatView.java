@@ -167,6 +167,8 @@ public class ChatView extends Flow implements Presenter, View,
   private static final String STYLE_AUTO_SCROLL_LABEL = STYLE_AUTO_SCROLL_PREFIX + "label";
   private static final String STYLE_AUTO_SCROLL_TOGGLE = STYLE_AUTO_SCROLL_PREFIX + "toggle";
 
+  private static final String STYLE_STYLE_CONTROL = STYLE_PREFIX + "style-control";
+
   private static final String AUTO_SCROLL_LABEL = "Auto Scroll";
 
   private static final int TIMER_PERIOD = 5_000;
@@ -220,6 +222,17 @@ public class ChatView extends Flow implements Presenter, View,
     autoScrollContainer.add(autoScrollToggle);
 
     headerView.addCommandItem(autoScrollContainer);
+
+    FaLabel styleControl = new FaLabel(FontAwesome.MOBILE, STYLE_STYLE_CONTROL);
+    styleControl.setTitle(Localized.getConstants().mobile());
+    styleControl.addClickHandler(event -> {
+      ChatPopup popup = getPopup();
+      if (popup != null) {
+        popup.handleStyle(EventUtils.hasModifierKey(event));
+      }
+    });
+    headerView.insertControl(styleControl, headerView.getWidgetCount() - 1);
+
     add(headerView);
 
     this.messagePanel = new Flow(STYLE_PREFIX + "messages");

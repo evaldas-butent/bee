@@ -263,13 +263,15 @@
 .bee-ChatModal .bee-Header-container:hover {
   background-color: #2c2c2c;
 }
-.bee-ChatModal .bee-Header-caption,
-.bee-ChatModal .bee-Header-control.bee-fa-label,
+.bee-ChatModal .bee-Header-control.bee-fa-label {
+  color: #ccc;
+}
 .bee-ChatModal .bee-Header-control.bee-fa-label:hover {
   color: white;
 }
 
 .bee-ChatModal .bee-Header-caption {
+  color: white;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -302,11 +304,17 @@
   display: inline-block;
 }
 
-.bee-Chat-maximized .bee-Action-maximize {
+.bee-ChatNormal .bee-Header-control.bee-Chat-style-control {
+  font-size: x-large;
+}
+
+.bee-Chat-maximized .bee-Action-maximize,
+.bee-Chat-maximized .bee-Chat-style-control {
   display: none;
 }
 .bee-ChatMinimized .bee-Action-configure,
-.bee-ChatMinimized .bee-Action-minimize {
+.bee-ChatMinimized .bee-Action-minimize,
+.bee-ChatMinimized .bee-Chat-style-control {
   display: none;
 }
 
@@ -504,4 +512,36 @@
 
 .bee-Chat-userPresence.bee-Presence-offline {
   color: red;
+}
+
+.bee-ChatNormal.bee-Chat-phone-0,
+.bee-ChatNormal.bee-Chat-phone-1,
+.bee-ChatNormal.bee-Chat-phone-2 {
+  border: none;
+}
+.bee-ChatNormal.bee-Chat-phone-1,
+.bee-ChatNormal.bee-Chat-phone-2 {
+  perspective: 1000px;
+}
+
+.bee-ChatNormal.bee-Chat-phone-0 .bee-Chat-view,
+.bee-ChatNormal.bee-Chat-phone-1 .bee-Chat-view,
+.bee-ChatNormal.bee-Chat-phone-2 .bee-Chat-view {
+  border-width: 55px 7px;
+  border-style: solid;
+  border-color: #ddd;
+  border-radius: 40px;
+  box-sizing: border-box;
+}
+
+.bee-ChatNormal.bee-Chat-phone-0 .bee-Chat-view {
+  box-shadow: 0px 3px 0 #bbb, 0px 4px 0 #bbb, 0px 5px 0 #bbb, 0px 7px 0 #bbb, 0px 10px 20px #666;
+}
+.bee-ChatNormal.bee-Chat-phone-1 .bee-Chat-view {
+  transform: rotateX(50deg) rotateY(0deg) rotateZ(-50deg);
+  box-shadow: -3px 3px 0 #bbb, -6px 6px 0 #bbb, -9px 9px 0 #bbb, -12px 12px 0 #bbb, -14px 10px 20px #666;
+}
+.bee-ChatNormal.bee-Chat-phone-2 .bee-Chat-view {
+  transform: rotateX(0deg) rotateY(-60deg) rotateZ(0deg);
+  box-shadow: 5px 1px 0 #BBB, 9px 2px 0 #BBB, 12px 3px 0 #BBB, 15px 4px 0 #BBB, 0 7px 20px #999;
 }
