@@ -830,6 +830,8 @@ public final class TransportConstants {
   public static final String FORM_TRAILER_SETTINGS = "TrailerTbSettings";
 
   public static final String FORM_SHIPMENT_REQUEST = "ShipmentRequest";
+  public static final String FORM_CARGO_PLACE_UNBOUND = "CargoPlaceUnbound";
+  public static final String GRID_CARGO_HANDLING_UNBOUND = "CargoHandlingUnbound";
 
   public static final String GRID_ASSESSMENT_REQUESTS = "AssessmentRequests";
   public static final String GRID_ASSESSMENT_ORDERS = "AssessmentOrders";
@@ -900,6 +902,7 @@ public final class TransportConstants {
   public static final String ALS_REQUEST_CUSTOMER_FIRST_NAME = "CustomerFirstName";
   public static final String ALS_REQUEST_CUSTOMER_LAST_NAME = "CustomerLastName";
   public static final String ALS_REQUEST_CUSTOMER_COMPANY = "CustomerCompany";
+  public static final String ALS_CARGO_HANDLING_NOTES = "HandlingNotes";
 
   public static final String ALS_CARGO_CMR_NUMBER = "CmrNumber";
 

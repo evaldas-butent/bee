@@ -182,7 +182,7 @@ public class ShipmentRequestsWorker {
     } catch (BeeException e) {
       return RestResponse.error(e);
     }
-    return RestResponse.empty();
+    return RestResponse.ok(Localized.getConstants().ok());
   }
 
   private BeeRowSet buildRowSet(BeeView view, JsonObject json) throws BeeException {
@@ -193,8 +193,7 @@ public class ShipmentRequestsWorker {
 
     List<BeeColumn> columns = new ArrayList<>();
     List<String> values = new ArrayList<>();
-    JsonObjectBuilder loading = null;
-    JsonObjectBuilder unloading = null;
+    JsonObjectBuilder handling = null;
 
     for (String col : json.keySet()) {
       if (view.hasColumn(col)) {
@@ -206,18 +205,11 @@ public class ShipmentRequestsWorker {
         }
         Object val = null;
 
-        if (BeeUtils.inList(col, VAR_LOADING + COL_PLACE_COUNTRY, VAR_LOADING + COL_PLACE_CITY)) {
-          if (Objects.isNull(loading)) {
-            loading = Json.createObjectBuilder();
+        if (BeeUtils.isSuffix(col, COL_PLACE_COUNTRY) || BeeUtils.isSuffix(col, COL_PLACE_CITY)) {
+          if (Objects.isNull(handling)) {
+            handling = Json.createObjectBuilder();
           }
-          loading.add(col, value);
-
-        } else if (BeeUtils.inList(col, VAR_UNLOADING + COL_PLACE_COUNTRY,
-            VAR_UNLOADING + COL_PLACE_CITY)) {
-          if (Objects.isNull(unloading)) {
-            unloading = Json.createObjectBuilder();
-          }
-          unloading.add(col, value);
+          handling.add(col, value);
 
         } else if (Objects.equals(col, COL_USER_LOCALE)) {
           val = SupportedLocale.getByLanguage(SupportedLocale.normalizeLanguage(value)).ordinal();
@@ -273,13 +265,9 @@ public class ShipmentRequestsWorker {
         }
       }
     }
-    if (Objects.nonNull(loading)) {
-      columns.add(view.getBeeColumn(VAR_LOADING + COL_PLACE_NOTE));
-      values.add(loading.build().toString());
-    }
-    if (Objects.nonNull(unloading)) {
-      columns.add(view.getBeeColumn(VAR_UNLOADING + COL_PLACE_NOTE));
-      values.add(unloading.build().toString());
+    if (Objects.nonNull(handling)) {
+      columns.add(view.getBeeColumn(ALS_CARGO_HANDLING_NOTES));
+      values.add(handling.build().toString());
     }
     return DataUtils.createRowSetForInsert(view.getName(), columns, values);
   }

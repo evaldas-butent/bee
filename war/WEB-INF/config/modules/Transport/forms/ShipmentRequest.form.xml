@@ -129,10 +129,11 @@
     <Details open="true">
       <Summary text="=cargoInformation" style="&summary;" />
 
-      <xi:include href="widgets/CargoPlaces.widget.xml" />
+      <xi:include href="widgets/CargoPlacesUnbound.widget.xml" />
 
-      <ChildGrid name="CargoHandling" relColumn="Cargo" source="Cargo"
-                 caption="=trAdditionalHandlingPlaces" style="margin-top:10px; height:200px;" />
+      <ChildGrid name="CargoHandling" gridName="CargoHandlingUnbound" relColumn="Cargo"
+                 source="Cargo" caption="=trAdditionalHandlingPlaces"
+                 style="margin-top:10px; height:200px;" />
     </Details>
     &separator;
 

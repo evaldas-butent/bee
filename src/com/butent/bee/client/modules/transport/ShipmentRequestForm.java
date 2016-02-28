@@ -1,9 +1,13 @@
 package com.butent.bee.client.modules.transport;
 
+import com.google.common.base.Function;
 import com.google.common.base.Strings;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -23,28 +27,34 @@ import com.butent.bee.client.data.RowInsertCallback;
 import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.event.logical.SelectorEvent;
+import com.butent.bee.client.grid.ChildGrid;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.modules.administration.AdministrationUtils;
 import com.butent.bee.client.modules.classifiers.ClassifierUtils;
 import com.butent.bee.client.modules.mail.NewMailMessage;
 import com.butent.bee.client.output.ReportUtils;
 import com.butent.bee.client.ui.Opener;
+import com.butent.bee.client.utils.JsonUtils;
 import com.butent.bee.client.view.HeaderView;
+import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.form.FormView;
-import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Holder;
+import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.data.event.DataChangeEvent;
+import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.i18n.LocalizableConstants;
@@ -57,14 +67,16 @@ import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-class ShipmentRequestForm extends AbstractFormInterceptor {
+class ShipmentRequestForm extends CargoPlaceUnboundForm {
 
   private final LocalizableConstants loc = Localized.getConstants();
 
@@ -204,31 +216,115 @@ class ShipmentRequestForm extends AbstractFormInterceptor {
     super.onStartNewRow(form, oldRow, newRow);
   }
 
-  private static boolean isSelfService() {
-    return Objects.equals(BeeKeeper.getScreen().getUserInterface(), UserInterface.SELF_SERVICE);
+  private static void checkOrphans(Map<String, String> relations, Map<String, String> views,
+      Map<String, Filter> data, Function<String, String> producer) {
+
+    for (Map.Entry<String, String> entry : relations.entrySet()) {
+      String col = entry.getKey();
+      String value = producer.apply(col);
+
+      if (!BeeUtils.isEmpty(value)) {
+        String viewName = entry.getValue();
+        String colName = views.get(viewName);
+
+        Filter flt = Filter.and(Filter.compareWithValue(colName, Operator.STARTS,
+            Value.getValue(value)), Filter.compareWithValue(colName, Operator.ENDS,
+            Value.getValue(value)));
+
+        if (!data.containsKey(viewName)) {
+          data.put(viewName, Filter.or());
+        }
+        data.put(viewName, ((CompoundFilter) data.get(viewName)).add(flt));
+      }
+    }
   }
 
-  private void onAnswer() {
-    sendMail(ShipmentRequestStatus.NEW.is(getIntegerValue(COL_QUERY_STATUS))
-        ? ShipmentRequestStatus.ANSWERED : null, null, null, null);
-  }
+  private void doConfirm(List<String> messages, Runnable onConfirm) {
+    boolean logistics = BeeUtils.unbox(getBooleanValue(COL_EXPEDITION_LOGISTICS));
 
-  private void onBlock() {
-    AdministrationUtils.blockHost(loc.ipBlockCommand(), getStringValue(COL_QUERY_HOST),
-        getFormView(), new Callback<String>() {
-          @Override
-          public void onSuccess(String result) {
-            onLoss(false);
-          }
-        });
-  }
-
-  private void onRegister() {
     FormView form = getFormView();
     BeeRow oldRow = DataUtils.cloneRow(form.getOldRow());
     BeeRow row = DataUtils.cloneRow(form.getActiveRow());
 
-    Global.confirm(loc.register(), Icon.QUESTION, Arrays.asList("Lab", "dein"),
+    Long manager = row.getLong(form.getDataIndex(COL_QUERY_MANAGER));
+    Holder<String> department = Holder.absent();
+
+    if (!DataUtils.isId(manager)) {
+      notifyRequired(loc.trRequestResponsibleManager());
+      return;
+    }
+    if (logistics) {
+      Queries.getValue(VIEW_ASSESSMENT_EXECUTORS, manager, COL_DEPARTMENT,
+          new RpcCallback<String>() {
+            @Override
+            public void onSuccess(String result) {
+              department.set(result);
+            }
+          });
+    }
+    messages.add(loc.trCommandCreateNewOrder());
+
+    Global.confirm(logistics ? loc.trLogistics() : loc.transport(), Icon.QUESTION, messages, () -> {
+      if (logistics && department.isNull()) {
+        notifyRequired(loc.department());
+        return;
+      }
+      if (onConfirm != null) {
+        onConfirm.run();
+      }
+      Queries.insert(VIEW_ORDERS, Data.getColumns(VIEW_ORDERS,
+              Arrays.asList(COL_CUSTOMER, COL_CUSTOMER + COL_PERSON, COL_ORDER_MANAGER)),
+          Arrays.asList(row.getString(form.getDataIndex(COL_COMPANY)),
+              row.getString(form.getDataIndex(COL_COMPANY_PERSON)), BeeUtils.toString(manager)),
+          null, new RowInsertCallback(VIEW_ORDERS) {
+            @Override
+            public void onSuccess(BeeRow order) {
+              super.onSuccess(order);
+
+              row.setValue(form.getDataIndex(COL_QUERY_STATUS),
+                  ShipmentRequestStatus.CONFIRMED.ordinal());
+
+              if (logistics) {
+                Long cargo = row.getLong(form.getDataIndex(COL_CARGO));
+
+                Queries.update(VIEW_ORDER_CARGO, cargo, COL_ORDER, Value.getValue(order.getId()),
+                    new Queries.IntCallback() {
+                      @Override
+                      public void onSuccess(Integer upd) {
+                        Queries.insert(VIEW_ASSESSMENTS, Data.getColumns(VIEW_ASSESSMENTS,
+                                Arrays.asList(COL_CARGO, COL_DEPARTMENT)),
+                            Arrays.asList(BeeUtils.toString(cargo), department.get()), null,
+                            new RowInsertCallback(VIEW_ASSESSMENTS) {
+                              @Override
+                              public void onSuccess(BeeRow assessment) {
+                                super.onSuccess(assessment);
+
+                                SelfServiceUtils.update(form,
+                                    DataUtils.getUpdated(form.getViewName(), form.getDataColumns(),
+                                        oldRow, row, null));
+                              }
+                            });
+                      }
+                    });
+              } else {
+                row.setValue(getDataIndex(COL_ORDER), order.getId());
+
+                SelfServiceUtils.update(form, DataUtils.getUpdated(form.getViewName(),
+                    form.getDataColumns(), oldRow, row, null));
+              }
+            }
+          });
+    });
+  }
+
+  private void doRegister(List<String> messages) {
+    FormView form = getFormView();
+    BeeRow oldRow = DataUtils.cloneRow(form.getOldRow());
+    BeeRow row = DataUtils.cloneRow(form.getActiveRow());
+
+    messages.add(loc.trCommandCreateNewUser());
+
+    Global.confirm(loc.register(), Icon.QUESTION, messages,
         Localized.getConstants().actionCreate(), Localized.getConstants().actionCancel(), () -> {
           Map<String, String> companyInfo = new HashMap<>();
 
@@ -265,78 +361,196 @@ class ShipmentRequestForm extends AbstractFormInterceptor {
         });
   }
 
-  private void onConfirm() {
-    boolean logistics = BeeUtils.unbox(getBooleanValue(COL_EXPEDITION_LOGISTICS));
+  private static boolean isSelfService() {
+    return Objects.equals(BeeKeeper.getScreen().getUserInterface(), UserInterface.SELF_SERVICE);
+  }
 
-    FormView form = getFormView();
-    BeeRow oldRow = DataUtils.cloneRow(form.getOldRow());
-    BeeRow row = DataUtils.cloneRow(form.getActiveRow());
+  private void onAnswer() {
+    sendMail(ShipmentRequestStatus.NEW.is(getIntegerValue(COL_QUERY_STATUS))
+        ? ShipmentRequestStatus.ANSWERED : null, null, null, null);
+  }
 
-    Long manager = row.getLong(form.getDataIndex(COL_QUERY_MANAGER));
-    Holder<String> department = Holder.absent();
-
-    if (!DataUtils.isId(manager)) {
-      notifyRequired(loc.trRequestResponsibleManager());
-      return;
-    }
-    if (logistics) {
-      Queries.getValue(VIEW_ASSESSMENT_EXECUTORS, manager, COL_DEPARTMENT,
-          new RpcCallback<String>() {
-            @Override
-            public void onSuccess(String result) {
-              department.set(result);
-            }
-          });
-    }
-    Global.confirm(logistics ? loc.trLogistics() : loc.transport(), Icon.QUESTION,
-        Collections.singletonList(loc.trCommandCreateNewOrder()), () -> {
-          if (logistics && department.isNull()) {
-            notifyRequired(loc.department());
-            return;
+  private void onBlock() {
+    AdministrationUtils.blockHost(loc.ipBlockCommand(), getStringValue(COL_QUERY_HOST),
+        getFormView(), new Callback<String>() {
+          @Override
+          public void onSuccess(String result) {
+            onLoss(false);
           }
-          Queries.insert(VIEW_ORDERS, Data.getColumns(VIEW_ORDERS,
-                  Arrays.asList(COL_CUSTOMER, COL_CUSTOMER + COL_PERSON, COL_ORDER_MANAGER)),
-              Arrays.asList(row.getString(form.getDataIndex(COL_COMPANY)),
-                  row.getString(form.getDataIndex(COL_COMPANY_PERSON)), BeeUtils.toString(manager)),
-              null, new RowInsertCallback(VIEW_ORDERS) {
-                @Override
-                public void onSuccess(BeeRow order) {
-                  super.onSuccess(order);
+        });
+  }
 
-                  row.setValue(form.getDataIndex(COL_QUERY_STATUS),
-                      ShipmentRequestStatus.CONFIRMED.ordinal());
+  private void onConfirm() {
+    Map<String, String> views = new HashMap<>();
+    views.put(VIEW_CITIES, COL_CITY_NAME);
+    views.put(VIEW_COUNTRIES, COL_COUNTRY_NAME);
 
-                  if (logistics) {
-                    Long cargo = row.getLong(form.getDataIndex(COL_CARGO));
+    Map<String, String> relations = new HashMap<>();
+    relations.put(VAR_LOADING + COL_CITY, VIEW_CITIES);
+    relations.put(VAR_LOADING + COL_COUNTRY, VIEW_COUNTRIES);
+    relations.put(VAR_UNLOADING + COL_CITY, VIEW_CITIES);
+    relations.put(VAR_UNLOADING + COL_COUNTRY, VIEW_COUNTRIES);
 
-                    Queries.update(VIEW_ORDER_CARGO, cargo, COL_ORDER,
-                        Value.getValue(order.getId()), new Queries.IntCallback() {
-                          @Override
-                          public void onSuccess(Integer upd) {
-                            Queries.insert(VIEW_ASSESSMENTS, Data.getColumns(VIEW_ASSESSMENTS,
-                                    Arrays.asList(COL_CARGO, COL_DEPARTMENT)),
-                                Arrays.asList(BeeUtils.toString(cargo), department.get()), null,
-                                new RowInsertCallback(VIEW_ASSESSMENTS) {
-                                  @Override
-                                  public void onSuccess(BeeRow assessment) {
-                                    super.onSuccess(assessment);
+    Map<String, Filter> data = new HashMap<>();
+    Multimap<Pair<String, Long>, Pair<String, Object>> updates = HashMultimap.create();
 
-                                    SelfServiceUtils.update(form,
-                                        DataUtils.getUpdated(form.getViewName(),
-                                            form.getDataColumns(), oldRow, row, null));
-                                  }
-                                });
-                          }
-                        });
-                  } else {
-                    row.setValue(getDataIndex(COL_ORDER), order.getId());
+    checkOrphans(relations, views, data, (col) -> {
+      UnboundSelector widget = unboundWidgets.get(col);
+      String value = null;
 
-                    SelfServiceUtils.update(form, DataUtils.getUpdated(form.getViewName(),
-                        form.getDataColumns(), oldRow, row, null));
+      if (widget != null) {
+        value = widget.getValue();
+
+        if (!BeeUtils.isEmpty(value)) {
+          updates.put(Pair.of(getViewName(), getActiveRowId()), Pair.of(col, value));
+        }
+      }
+      return value;
+    });
+    Widget grid = getFormView().getWidgetByName(TBL_CARGO_HANDLING);
+
+    if (grid != null && grid instanceof ChildGrid) {
+      for (IsRow row : ((ChildGrid) grid).getGridView().getRowData()) {
+        JSONObject json = JsonUtils.parseObject(
+            row.getString(Data.getColumnIndex(TBL_CARGO_HANDLING, ALS_CARGO_HANDLING_NOTES)));
+
+        checkOrphans(relations, views, data, (col) -> {
+          String value = JsonUtils.getString(json, col);
+
+          if (!BeeUtils.isEmpty(value)) {
+            updates.put(Pair.of(TBL_CARGO_HANDLING, row.getId()), Pair.of(col, value));
+          }
+          return value;
+        });
+      }
+    }
+    List<String> messages = new ArrayList<>();
+
+    if (!BeeUtils.isEmpty(data)) {
+      Queries.getData(data.keySet(), data, CachingPolicy.NONE, new Queries.DataCallback() {
+        @Override
+        public void onSuccess(Collection<BeeRowSet> result) {
+          for (BeeRowSet rs : result) {
+            for (Pair<String, Object> pair : updates.values()) {
+              if (!BeeUtils.same(relations.get(pair.getA()), rs.getViewName())) {
+                continue;
+              }
+              for (int i = 0; i < rs.getNumberOfRows(); i++) {
+                if (BeeUtils.same(rs.getString(i, views.get(rs.getViewName())),
+                    (String) pair.getB())) {
+                  pair.setB(rs.getRow(i).getId());
+                  break;
+                }
+              }
+            }
+          }
+          Map<String, Map<String, Object>> missing = new HashMap<>();
+
+          for (Pair<String, Long> key : updates.keySet()) {
+            for (Pair<String, Object> pair : updates.get(key)) {
+              String col = pair.getA();
+              Object value = pair.getB();
+              String relation = relations.get(col);
+
+              if (value instanceof String) {
+                if (!missing.containsKey(relation)) {
+                  missing.put(relation, new HashMap<>());
+                }
+                missing.get(relation).put((String) value, null);
+                messages.add(BeeUtils.join(": ",
+                    Data.getColumnLabel(getViewName(), col), value));
+
+                if (BeeUtils.same(relation, VIEW_CITIES)) {
+                  for (Pair<String, Object> x : updates.get(key)) {
+                    if (BeeUtils.same(x.getA(), col.replace(COL_CITY, COL_COUNTRY))) {
+                      missing.get(relation).put((String) value, x.getB());
+                      break;
+                    }
                   }
                 }
-              });
-        });
+              }
+            }
+          }
+          Runnable onSuccess = () -> {
+            for (Pair<String, Long> key : updates.keySet()) {
+              List<String> columns = new ArrayList<String>();
+              List<String> values = new ArrayList<String>();
+
+              for (Pair<String, Object> pair : updates.get(key)) {
+                String col = pair.getA();
+                Object value = pair.getB();
+
+                columns.add(col);
+                values.add((value instanceof String
+                    ? missing.get(relations.get(col)).get(value) : value).toString());
+              }
+              Queries.update(key.getA(), Filter.compareId(key.getB()), columns, values, null);
+            }
+          };
+          Runnable onConfirm;
+
+          if (!BeeUtils.isEmpty(missing)) {
+            List<Runnable> queue = new ArrayList();
+
+            onConfirm = () -> {
+              Runnable startup = null;
+
+              for (String relation : missing.keySet()) {
+                Runnable runnable = () -> {
+                  Holder<Integer> cnt = Holder.of(missing.get(relation).size());
+
+                  for (Map.Entry<String, Object> entry : missing.get(relation).entrySet()) {
+                    List<BeeColumn> cols = new ArrayList<>();
+                    List<String> vals = new ArrayList<>();
+
+                    cols.add(Data.getColumn(relation, views.get(relation)));
+                    vals.add(entry.getKey());
+
+                    if (BeeUtils.same(relation, VIEW_CITIES)) {
+                      Object val = entry.getValue();
+
+                      if (val instanceof String) {
+                        val = missing.get(VIEW_COUNTRIES).get(val);
+                      }
+                      cols.add(Data.getColumn(relation, COL_COUNTRY));
+                      vals.add(val.toString());
+                    }
+                    Queries.insert(relation, cols, vals, null, new RowInsertCallback(relation) {
+                      @Override
+                      public void onSuccess(BeeRow result) {
+                        super.onSuccess(result);
+                        entry.setValue(result.getId());
+                        cnt.set(cnt.get() - 1);
+
+                        if (!BeeUtils.isPositive(cnt.get())) {
+                          if (BeeUtils.isEmpty(queue)) {
+                            onSuccess.run();
+                          } else {
+                            queue.remove(0).run();
+                          }
+                        }
+                      }
+                    });
+                  }
+                };
+                if (BeeUtils.same(relation, VIEW_COUNTRIES)) {
+                  startup = runnable;
+                } else {
+                  queue.add(runnable);
+                }
+              }
+              (startup == null ? queue.remove(0) : startup).run();
+            };
+            messages.add(0, loc.errors());
+          } else {
+            onConfirm = onSuccess;
+          }
+          doConfirm(messages, onConfirm);
+        }
+      });
+    } else {
+      doConfirm(messages, null);
+    }
   }
 
   private void onLoss(boolean required) {
@@ -395,6 +609,59 @@ class ShipmentRequestForm extends AbstractFormInterceptor {
         SelfServiceUtils.updateStatus(getFormView(), COL_QUERY_STATUS, ShipmentRequestStatus.LOST);
       }
     });
+  }
+
+  private void onRegister() {
+    Map<String, String> views = new HashMap<>();
+    views.put(VIEW_CITIES, COL_CITY_NAME);
+    views.put(VIEW_COUNTRIES, COL_COUNTRY_NAME);
+    views.put(VIEW_COMPANY_TYPES, COL_COMPANY_TYPE_NAME);
+    views.put(VIEW_POSITIONS, COL_POSITION_NAME);
+
+    Map<String, String> relations = new HashMap<>();
+    relations.put("Customer" + COL_COUNTRY, VIEW_COUNTRIES);
+    relations.put("Customer" + COL_CITY, VIEW_CITIES);
+    relations.put("Customer" + COL_COMPANY_TYPE, VIEW_COMPANY_TYPES);
+    relations.put(COL_QUERY_CUSTOMER_CONTACT_POSITION, VIEW_POSITIONS);
+
+    Map<String, Pair<String, String>> values = new HashMap<>();
+    Map<String, Filter> data = new HashMap<>();
+
+    checkOrphans(relations, views, data, (col) -> {
+      Widget widget = getFormView().getWidgetBySource(col);
+      String value = null;
+
+      if (widget != null && widget instanceof Editor) {
+        value = ((Editor) widget).getValue();
+
+        if (!BeeUtils.isEmpty(value)) {
+          values.put(relations.get(col), Pair.of(col, value));
+        }
+      }
+      return value;
+    });
+    List<String> messages = new ArrayList<>();
+
+    if (!BeeUtils.isEmpty(data)) {
+      Queries.getData(data.keySet(), data, CachingPolicy.NONE, new Queries.DataCallback() {
+        @Override
+        public void onSuccess(Collection<BeeRowSet> result) {
+          for (BeeRowSet rs : result) {
+            if (DataUtils.isEmpty(rs)) {
+              Pair<String, String> pair = values.get(rs.getViewName());
+              messages.add(BeeUtils.join(": ", Data.getColumnLabel(getViewName(), pair.getA()),
+                  pair.getB()));
+            }
+          }
+          if (!BeeUtils.isEmpty(messages)) {
+            messages.add(0, loc.errors());
+          }
+          doRegister(messages);
+        }
+      });
+    } else {
+      doRegister(messages);
+    }
   }
 
   private void renderOrderId() {

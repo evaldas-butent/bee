@@ -236,6 +236,8 @@ public final class TransportHandler {
 
     RendererFactory.registerGcrProvider(VIEW_CARGO_HANDLING, loading, provider);
     RendererFactory.registerGcrProvider(VIEW_CARGO_HANDLING, unloading, provider);
+    RendererFactory.registerGcrProvider(GRID_CARGO_HANDLING_UNBOUND, loading, provider);
+    RendererFactory.registerGcrProvider(GRID_CARGO_HANDLING_UNBOUND, unloading, provider);
     RendererFactory.registerGcrProvider(VIEW_ALL_CARGO, loading, provider);
     RendererFactory.registerGcrProvider(VIEW_ALL_CARGO, unloading, provider);
     RendererFactory.registerGcrProvider(VIEW_ORDER_CARGO, loading, provider);
@@ -331,6 +333,7 @@ public final class TransportHandler {
     FormFactory.registerFormInterceptor(FORM_TRIP_PURCHASE_INVOICE, new InvoiceForm(null));
 
     FormFactory.registerFormInterceptor(FORM_SHIPMENT_REQUEST, new ShipmentRequestForm());
+    FormFactory.registerFormInterceptor(FORM_CARGO_PLACE_UNBOUND, new CargoPlaceUnboundForm());
 
     BeeKeeper.getBus().registerRowActionHandler(new TransportActionHandler());
 
