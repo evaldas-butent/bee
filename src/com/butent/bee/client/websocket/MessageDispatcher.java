@@ -451,6 +451,7 @@ class MessageDispatcher {
 
         if (su != null) {
           Global.getUsers().updateSession(su.getSessionId(), su.getUserId(), su.getPresence());
+          Global.getChatManager().onUserPresenceChange(su.getUserId());
         } else {
           WsUtils.onInvalidState(message);
         }

@@ -29,6 +29,7 @@ import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.sql.SqlDelete;
 import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
+import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.server.websocket.Endpoint;
 import com.butent.bee.shared.Assert;
@@ -172,6 +173,7 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
     String module = getModule().getName();
 
     List<BeeParameter> params = Lists.newArrayList(
+        BeeParameter.createMap(module, PRM_SERVER_PROPERTIES),
         BeeParameter.createRelation(module, PRM_COMPANY, TBL_COMPANIES, COL_COMPANY_NAME),
         BeeParameter.createRelation(module, PRM_COUNTRY, TBL_COUNTRIES, COL_COUNTRY_NAME),
         BeeParameter.createRelation(module, PRM_CURRENCY, TBL_CURRENCIES, COL_CURRENCY_NAME),
@@ -235,18 +237,14 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
     sys.registerDataEventHandler(new DataEventHandler() {
       @Subscribe
       @AllowConcurrentEvents
-      public void refreshIpFilterCache(TableModifyEvent event) {
-        if (event.isAfter(TBL_IP_FILTERS)) {
-          usr.initIpFilters();
-        }
-      }
+      public void normalizeFileReference(TableModifyEvent event) {
+        if (event.isBefore()) {
+          if (event.getQuery() instanceof SqlInsert) {
+            sys.normalizeFileReference((SqlInsert) event.getQuery());
 
-      @Subscribe
-      @AllowConcurrentEvents
-      public void refreshUsersCache(TableModifyEvent event) {
-        if (event.isAfter(TBL_USERS, TBL_ROLES, TBL_USER_ROLES)) {
-          usr.initUsers();
-          Endpoint.updateUserData(usr.getAllUserData());
+          } else if (event.getQuery() instanceof SqlUpdate) {
+            sys.normalizeFileReference((SqlUpdate) event.getQuery());
+          }
         }
       }
 
@@ -338,6 +336,23 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
               }
             });
           }
+        }
+      }
+
+      @Subscribe
+      @AllowConcurrentEvents
+      public void refreshIpFilterCache(TableModifyEvent event) {
+        if (event.isAfter(TBL_IP_FILTERS)) {
+          usr.initIpFilters();
+        }
+      }
+
+      @Subscribe
+      @AllowConcurrentEvents
+      public void refreshUsersCache(TableModifyEvent event) {
+        if (event.isAfter(TBL_USERS, TBL_ROLES, TBL_USER_ROLES)) {
+          usr.initUsers();
+          Endpoint.updateUserData(usr.getAllUserData());
         }
       }
     });

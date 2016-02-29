@@ -9,7 +9,7 @@
     <SimpleColumn name="CargoTrip" />
     <SimpleColumn name="Forwarder" />
 
-    <SimpleColumn name="Notes" />
+    <SimpleColumn name="Notes" alias="HandlingNotes" />
     <SimpleColumn name="EmptyKilometers" />
     <SimpleColumn name="LoadedKilometers" />
     <SimpleColumn name="Weight" alias="CargoWeight" />

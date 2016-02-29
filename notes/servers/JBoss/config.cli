@@ -16,8 +16,18 @@
 
 module add --name=org.postgres --resources=/opt/postgresql-9.4-1201.jdbc41.jar --dependencies=javax.api,javax.transaction.api
 /subsystem=datasources/jdbc-driver=postgres:add(driver-name="postgres",driver-module-name="org.postgres",driver-class-name=org.postgresql.Driver)
-data-source add --jndi-name=java:/jdbc/BeeDS --name=PostgrePool --connection-url=jdbc:postgresql://192.168.0.210/DB --driver-name=postgres --user-name=postgres --password=admin
-
+data-source add \
+  --jndi-name=java:/jdbc/BeeDS \
+  --name=PostgrePool \
+  --connection-url=jdbc:postgresql://192.168.0.210/DB \
+  --driver-name=postgres \
+  --user-name=postgres \
+  --password=admin \
+  --max-pool-size=50 \
+  --blocking-timeout-wait-millis=60000 \
+  --check-valid-connection-sql="SELECT 1" \
+  --background-validation=true \
+  --background-validation-millis=30000
 
 /subsystem=security/security-domain=Bee:add(cache-type="default")
 /subsystem=security/security-domain=Bee/authentication=classic:add()
@@ -30,8 +40,6 @@ data-source add --jndi-name=java:/jdbc/BeeDS --name=PostgrePool --connection-url
         ("rolesQuery"=>"SELECT ?, 'Roles'") \
     ])
 
-/subsystem=datasources/data-source=PostgrePool:write-attribute(name=max-pool-size,value=50)
-/subsystem=datasources/data-source=PostgrePool:write-attribute(name=blocking-timeout-wait-millis,value=60000)
 /subsystem=transactions:write-attribute(name=default-timeout,value=1800)
 /subsystem=ee/managed-executor-service=default:write-attribute(name=max-threads,value=250)
 /subsystem=undertow/server=default-server/http-listener=default:write-attribute(name=max-post-size,value=104857600)

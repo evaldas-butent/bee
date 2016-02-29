@@ -216,13 +216,19 @@ public class ScreenImpl implements Screen {
   }
 
   @Override
-  public void closeWidget(IdentifiableWidget widget) {
-    Assert.notNull(widget, "closeWidget: widget is null");
+  public boolean closeWidget(IdentifiableWidget widget) {
+    if (widget == null) {
+      logger.warning("closeWidget: widget is null");
+      return false;
 
-    if (UiHelper.isModal(widget.asWidget())) {
-      UiHelper.closeDialog(widget.asWidget());
+    } else if (UiHelper.isModal(widget.asWidget())) {
+      return UiHelper.closeDialog(widget.asWidget());
+
+    } else if (getWorkspace() != null) {
+      return getWorkspace().closeWidget(widget);
+
     } else {
-      getWorkspace().closeWidget(widget);
+      return false;
     }
   }
 
@@ -1248,6 +1254,19 @@ public class ScreenImpl implements Screen {
             presenceWidget.setTitle(presence.getCaption());
 
             table.setWidget(r, c, presenceWidget);
+          }
+          c++;
+
+          if (Global.getChatManager().isEnabled()) {
+            FaLabel chat = new FaLabel(FontAwesome.COMMENT_O, STYLE_POPUP_USERS + "Chat");
+            chat.setTitle(Localized.getConstants().chat());
+
+            chat.addClickHandler(event -> {
+              UiHelper.closeDialog(table);
+              Global.getChatManager().chatWithUser(user.getUserId());
+            });
+
+            table.setWidget(r, c, chat);
           }
           c++;
 

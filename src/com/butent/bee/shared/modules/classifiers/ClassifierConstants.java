@@ -6,6 +6,7 @@ import com.butent.bee.shared.utils.EnumUtils;
 public final class ClassifierConstants {
 
   public static final String SVC_CREATE_COMPANY = "create_company";
+  public static final String SVC_CREATE_COMPANY_PERSON = "create_company_person";
   public static final String SVC_COMPANY_INFO = "GetCompanyInfo";
   public static final String SVC_GENERATE_QR_CODE = "GenerateQrCode";
   public static final String SVC_GENERATE_QR_CODE_PERSON = "GenerateQrCodePerson";

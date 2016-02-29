@@ -183,8 +183,8 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
 
     contractSelector.getOracle().setAdditionalFilter(relDocFilter, true);
 
-    if (!BeeUtils.isEmpty(row.getProperty(PROP_TIME_UNTIS))) {
-      String prop = row.getProperty(PROP_TIME_UNTIS);
+    if (!BeeUtils.isEmpty(row.getProperty(PROP_TIME_UNITS))) {
+      String prop = row.getProperty(PROP_TIME_UNITS);
       BeeRowSet unitsRows = BeeRowSet.maybeRestore(prop);
       setTimeUnits(unitsRows);
     } else {
@@ -802,7 +802,7 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
         }
 
         if (row != null) {
-          row.setProperty(PROP_TIME_UNTIS, response.getResponseAsString());
+          row.setProperty(PROP_TIME_UNITS, response.getResponseAsString());
         }
 
         BeeRowSet rs = BeeRowSet.restore(response.getResponseAsString());

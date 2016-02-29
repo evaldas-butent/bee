@@ -76,7 +76,7 @@ import java.util.Set;
 public final class NewMailMessage extends AbstractFormInterceptor
     implements ClickHandler, SelectionHandler<FileInfo> {
 
-  private class DialogCallback extends InputCallback {
+  private class DialogCallback implements InputCallback {
     @Override
     public String getErrorMessage() {
       if (validate()) {

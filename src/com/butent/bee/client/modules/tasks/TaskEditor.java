@@ -274,8 +274,7 @@ class TaskEditor extends AbstractFormInterceptor {
 
       DateTime date = dialog.getDateTime(ids.get(COL_DURATION_DATE));
       if (date == null) {
-        showError(Localized.getConstants().crmEnterDueDate());
-        return false;
+        date = TimeUtils.nowMinutes();
       }
 
       params.addDataItem(VAR_TASK_DURATION_DATE, date.serialize());
@@ -732,7 +731,9 @@ class TaskEditor extends AbstractFormInterceptor {
   @Override
   public boolean onStartEdit(final FormView form, final IsRow row, ScheduledCommand focusCommand) {
 
-    final Long lastAccess = BeeUtils.toLongOrNull(row.getProperty(PROP_LAST_ACCESS));
+    final Long lastAccess = BeeUtils.toLongOrNull(row.getProperty(PROP_LAST_ACCESS,
+        BeeKeeper.getUser().getUserId()));
+
     Long owner = row.getLong(form.getDataIndex(COL_OWNER));
     Long executor = row.getLong(form.getDataIndex(COL_EXECUTOR));
 
@@ -1468,6 +1469,9 @@ class TaskEditor extends AbstractFormInterceptor {
       case OUT_OF_OBSERVERS:
         doOut();
         break;
+      case REFRESH:
+        onStartEdit(getFormView(), getActiveRow(), null);
+        break;
       case ACTIVATE:
       case VISIT:
       case EDIT:
@@ -1739,6 +1743,9 @@ class TaskEditor extends AbstractFormInterceptor {
       case COMMENT:
         return true;
 
+      case REFRESH:
+        return true;
+
       case RENEW:
         return TaskStatus.in(status, TaskStatus.SUSPENDED, TaskStatus.CANCELED,
             TaskStatus.COMPLETED, TaskStatus.APPROVED) && isOwner();
@@ -1800,7 +1807,8 @@ class TaskEditor extends AbstractFormInterceptor {
     RowUpdateEvent.fire(BeeKeeper.getBus(), VIEW_TASKS, data);
 
     FormView form = getFormView();
-    Long lastAccess = BeeUtils.toLongOrNull(data.getProperty(PROP_LAST_ACCESS));
+    Long lastAccess = BeeUtils.toLongOrNull(data.getProperty(PROP_LAST_ACCESS,
+        BeeKeeper.getUser().getUserId()));
 
     if (hasRelations(form.getOldRow()) || hasRelations(data)) {
       DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_RELATED_TASKS);

@@ -2,6 +2,7 @@ package com.butent.bee.server.modules.transport;
 
 import com.google.common.collect.ImmutableMap;
 
+import static com.butent.bee.shared.html.builder.Factory.*;
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
@@ -14,6 +15,7 @@ import com.butent.bee.server.rest.CrudWorker;
 import com.butent.bee.server.rest.RestResponse;
 import com.butent.bee.server.rest.annotations.Trusted;
 import com.butent.bee.server.sql.SqlSelect;
+import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -22,6 +24,10 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.exceptions.BeeException;
+import com.butent.bee.shared.html.builder.Document;
+import com.butent.bee.shared.html.builder.FertileElement;
+import com.butent.bee.shared.html.builder.elements.Form;
+import com.butent.bee.shared.html.builder.elements.Input;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.i18n.SupportedLocale;
 import com.butent.bee.shared.logging.LogUtils;
@@ -29,8 +35,10 @@ import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,13 +51,15 @@ import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
 @Path("transport")
-@Produces(RestResponse.JSON_TYPE)
 @Consumes(MediaType.APPLICATION_JSON)
 @Stateless
 public class ShipmentRequestsWorker {
@@ -63,8 +73,62 @@ public class ShipmentRequestsWorker {
   @EJB
   UserServiceBean usr;
 
+  @GET
+  @Path("confirm/{id:\\d+}")
+  @Trusted
+  public String confirm(@PathParam("id") Long requestId, @QueryParam("choice") String choice) {
+    FertileElement el = null;
+
+    Integer currentStatus = qs.getInt(new SqlSelect()
+        .addFields(TBL_SHIPMENT_REQUESTS, COL_QUERY_STATUS)
+        .addFrom(TBL_SHIPMENT_REQUESTS)
+        .setWhere(sys.idEquals(TBL_SHIPMENT_REQUESTS, requestId)));
+
+    if (ShipmentRequestStatus.CONTRACT_SENT.is(currentStatus)) {
+      ShipmentRequestStatus status = EnumUtils.getEnumByName(ShipmentRequestStatus.class, choice);
+
+      if (Objects.nonNull(status)) {
+        switch (status) {
+          case APPROVED:
+          case REJECTED:
+            qs.updateData(new SqlUpdate(TBL_SHIPMENT_REQUESTS)
+                .addConstant(COL_QUERY_STATUS, status)
+                .setWhere(sys.idEquals(TBL_SHIPMENT_REQUESTS, requestId)));
+
+            el = div().text(status.getCaption());
+            break;
+          default:
+            break;
+        }
+      }
+      if (Objects.isNull(el)) {
+        el = div().text(Localized.getConstants().crmTaskConfirm());
+
+        for (ShipmentRequestStatus s : Arrays.asList(ShipmentRequestStatus.APPROVED,
+            ShipmentRequestStatus.REJECTED)) {
+          Form form = form()
+              .methodGet()
+              .append(input().type(Input.Type.HIDDEN).name("choice").value(s.name()))
+              .append(input().type(Input.Type.SUBMIT).value(s.getCaption()));
+
+          el.appendChild(form);
+        }
+      }
+    } else {
+      el = div().text(BeeUtils.join(":", Localized.getConstants().status(),
+          EnumUtils.getLocalizedCaption(ShipmentRequestStatus.class, currentStatus,
+              Localized.getConstants())));
+    }
+    Document doc = new Document();
+    doc.getHead().append(meta().encodingDeclarationUtf8());
+    doc.getBody().append(el);
+
+    return doc.buildLines();
+  }
+
   @POST
   @Path("request")
+  @Produces(RestResponse.JSON_TYPE)
   @Trusted(secret = "B-NOVO Shipment Request")
   public RestResponse request(JsonObject data) {
     if (!usr.validateHost(CrudWorker.getValue(data, COL_QUERY_HOST))) {
@@ -118,7 +182,7 @@ public class ShipmentRequestsWorker {
     } catch (BeeException e) {
       return RestResponse.error(e);
     }
-    return RestResponse.empty();
+    return RestResponse.ok(Localized.getConstants().ok());
   }
 
   private BeeRowSet buildRowSet(BeeView view, JsonObject json) throws BeeException {
@@ -129,8 +193,7 @@ public class ShipmentRequestsWorker {
 
     List<BeeColumn> columns = new ArrayList<>();
     List<String> values = new ArrayList<>();
-    JsonObjectBuilder loading = null;
-    JsonObjectBuilder unloading = null;
+    JsonObjectBuilder handling = null;
 
     for (String col : json.keySet()) {
       if (view.hasColumn(col)) {
@@ -142,18 +205,11 @@ public class ShipmentRequestsWorker {
         }
         Object val = null;
 
-        if (BeeUtils.inList(col, VAR_LOADING + COL_PLACE_COUNTRY, VAR_LOADING + COL_PLACE_CITY)) {
-          if (Objects.isNull(loading)) {
-            loading = Json.createObjectBuilder();
+        if (BeeUtils.isSuffix(col, COL_PLACE_COUNTRY) || BeeUtils.isSuffix(col, COL_PLACE_CITY)) {
+          if (Objects.isNull(handling)) {
+            handling = Json.createObjectBuilder();
           }
-          loading.add(col, value);
-
-        } else if (BeeUtils.inList(col, VAR_UNLOADING + COL_PLACE_COUNTRY,
-            VAR_UNLOADING + COL_PLACE_CITY)) {
-          if (Objects.isNull(unloading)) {
-            unloading = Json.createObjectBuilder();
-          }
-          unloading.add(col, value);
+          handling.add(col, value);
 
         } else if (Objects.equals(col, COL_USER_LOCALE)) {
           val = SupportedLocale.getByLanguage(SupportedLocale.normalizeLanguage(value)).ordinal();
@@ -165,18 +221,10 @@ public class ShipmentRequestsWorker {
           val = qs.getLong(new SqlSelect()
               .addFields(tbl, sys.getIdName(tbl))
               .addFrom(tbl)
-              .setWhere(SqlUtils.and(SqlUtils.startsWith(tbl, fld, value),
-                  SqlUtils.endsWith(tbl, fld, value))));
+              .setWhere(SqlUtils.same(tbl, fld, value)));
 
           if (Objects.isNull(val)) {
             throw new BeeException(BeeUtils.joinWords(col, value));
-          }
-          if (Objects.equals(col, COL_EXPEDITION)) {
-            columns.add(view.getBeeColumn(COL_EXPEDITION_LOGISTICS));
-            values.add(qs.getValue(new SqlSelect()
-                .addFields(tbl, COL_EXPEDITION_LOGISTICS)
-                .addFrom(tbl)
-                .setWhere(SqlUtils.equals(tbl, sys.getIdName(tbl), val))));
           }
         } else {
           switch (column.getType()) {
@@ -217,13 +265,9 @@ public class ShipmentRequestsWorker {
         }
       }
     }
-    if (Objects.nonNull(loading)) {
-      columns.add(view.getBeeColumn(VAR_LOADING + COL_PLACE_NOTE));
-      values.add(loading.build().toString());
-    }
-    if (Objects.nonNull(unloading)) {
-      columns.add(view.getBeeColumn(VAR_UNLOADING + COL_PLACE_NOTE));
-      values.add(unloading.build().toString());
+    if (Objects.nonNull(handling)) {
+      columns.add(view.getBeeColumn(ALS_CARGO_HANDLING_NOTES));
+      values.add(handling.build().toString());
     }
     return DataUtils.createRowSetForInsert(view.getName(), columns, values);
   }

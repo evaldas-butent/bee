@@ -79,6 +79,7 @@ import com.butent.bee.client.i18n.LocaleUtils;
 import com.butent.bee.client.i18n.Money;
 import com.butent.bee.client.images.Flags;
 import com.butent.bee.client.images.Images;
+import com.butent.bee.client.js.Markdown;
 import com.butent.bee.client.layout.Direction;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Horizontal;
@@ -247,7 +248,7 @@ public final class CliWorker {
       doAdmin(z.substring(3), args, errorPopup);
 
     } else if ("audio".equals(z)) {
-      playAudio(args);
+      playAudio(arr);
 
     } else if (z.startsWith("autoc") && !args.isEmpty()) {
       AutocompleteProvider.switchTo(args);
@@ -463,6 +464,11 @@ public final class CliWorker {
 
     } else if ("map".equals(z) && arr.length >= 3) {
       showMap(arr, errorPopup);
+
+    } else if ("md".equals(z) && !args.isEmpty()) {
+      CustomDiv widget = new CustomDiv();
+      widget.setHtml(Markdown.toHtml(args));
+      Global.showModalWidget(args, widget);
 
     } else if ("md5".equals(z)) {
       digest(v);
@@ -1851,23 +1857,97 @@ public final class CliWorker {
     Global.showInfo(lst);
   }
 
-  private static void playAudio(final String src) {
+  private static void playAudio(String[] arr) {
+    String src = ArrayUtils.getQuietly(arr, 1);
     if (BeeUtils.isEmpty(src)) {
       logger.warning("source not specified");
       return;
     }
 
-    final Audio widget = new Audio();
+    boolean autoplay = false;
+    boolean controls = true;
+    boolean load = false;
+    boolean loop = false;
+    boolean play = false;
+    boolean muted = false;
+    Double volume = null;
+
+    int len = ArrayUtils.length(arr);
+    for (int i = 2; i < len; i++) {
+      String s = BeeUtils.toLowerCase(arr[i]);
+
+      boolean on = !BeeUtils.isPrefixOrSuffix(s, BeeConst.CHAR_MINUS);
+      if (!on) {
+        s = BeeUtils.removePrefixAndSuffix(s, BeeConst.CHAR_MINUS);
+      }
+
+      switch (s) {
+        case "a":
+          autoplay = on;
+          logger.debug("autoplay", on);
+          break;
+
+        case "c":
+          controls = on;
+          logger.debug("controls", on);
+          break;
+
+        case "l":
+          load = on;
+          logger.debug("load", on);
+          break;
+
+        case "m":
+          muted = on;
+          logger.debug("muted", on);
+          break;
+
+        case "o":
+          loop = on;
+          logger.debug("loop", on);
+          break;
+
+        case "p":
+          play = on;
+          logger.debug("play", on);
+          break;
+
+        default:
+          if (BeeUtils.isDouble(s)) {
+            volume = BeeUtils.toDouble(s);
+            logger.debug("volume", volume);
+          }
+      }
+    }
+
+    Audio widget = new Audio();
+
+    widget.getAudioElement().setAutoplay(autoplay);
+    widget.getAudioElement().setControls(controls);
+    widget.getAudioElement().setLoop(loop);
+    widget.getAudioElement().setMuted(muted);
+
+    if (volume != null) {
+      widget.setVolume(volume);
+    }
 
     widget.getAudioElement().setSrc(src);
-    widget.getAudioElement().setControls(true);
 
-    widget.addDomHandler(new ErrorHandler() {
-      @Override
-      public void onError(ErrorEvent event) {
-        BeeKeeper.getScreen().notifyWarning(src, EventUtils.transformMediaError(widget.getError()));
-      }
-    }, ErrorEvent.getType());
+    widget.addDomHandler(event -> BeeKeeper.getScreen().notifyWarning(src,
+        EventUtils.transformMediaError(widget.getError())), ErrorEvent.getType());
+
+    if (load) {
+      widget.addAttachHandler(event -> widget.load());
+    }
+    if (play) {
+      Timer timer = new Timer() {
+        @Override
+        public void run() {
+          widget.play();
+        }
+      };
+      timer.schedule(1_000);
+    }
 
     BeeKeeper.getScreen().show(widget);
   }

@@ -12,6 +12,6 @@
   <xi:include href="columns/Handling.columns.xml" />
 
   <g:columns>
-    <DataColumn name="Notes" editInPlace="true" visible="false" />
+    <DataColumn name="HandlingNotes" editInPlace="true" visible="false" />
   </g:columns>
 </g:Grid>

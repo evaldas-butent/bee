@@ -226,7 +226,7 @@ public class TransportSelfService extends LoginServlet {
             Filter filter = null;
             Order order = null;
 
-            String fldLoc = fld + locale.toUpperCase();
+            String fldLoc = Localized.column(fld, locale);
 
             if (view.hasColumn(fldLoc)) {
               columns.add(fldLoc);

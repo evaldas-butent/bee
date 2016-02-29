@@ -212,6 +212,10 @@ public interface LocalizableTransportConstants {
 
   String trConstantCosts();
 
+  String trContract();
+
+  String trContractMailContent();
+
   String trCreateTransportation();
 
   String trCreditInvoice();
@@ -324,6 +328,8 @@ public interface LocalizableTransportConstants {
 
   String trRegistrationFormCaption();
 
+  String trRegistrationMailContent();
+
   String trRegistrationMobile();
 
   String trRegistrationNew();
@@ -347,6 +353,8 @@ public interface LocalizableTransportConstants {
   String trRegistrationVatCode();
 
   String trRegistrationVatPayer();
+
+  String trRequest();
 
   String trRequestActionSubmit();
 
@@ -436,6 +444,8 @@ public interface LocalizableTransportConstants {
 
   String trRequestStatusConfirmed();
 
+  String trRequestStatusContractSent();
+
   String trRequestStatusLost();
 
   String trRequestStatusNew();
@@ -452,6 +462,8 @@ public interface LocalizableTransportConstants {
 
   String trRequestTermsOfDelivery();
 
+  String trRequestUnregistered();
+
   String trRoadCosts();
 
   String trSelfService();
@@ -467,6 +479,8 @@ public interface LocalizableTransportConstants {
   String trSendToERP();
 
   String trSendToERPConfirm();
+
+  String trShippingTerms();
 
   String trTransportationOrders();
 

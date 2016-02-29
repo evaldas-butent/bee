@@ -683,6 +683,11 @@
   background-color: #E3E3E3;
 }
 
+.bee-ModalForm-content > .bee-Header-container .bee-Label,
+.bee-ModalGrid-content > .bee-Header-container .bee-Label {
+  cursor: default;
+}
+
 .bee-Dialog-caption {
   padding-left: 8px;
   padding-right: 8px;
@@ -690,6 +695,7 @@
   -webkit-flex: 1;
   -ms-flex: 1;
   font-weight: bold;
+  cursor: default;
 }
 
 .bee-Dialog-header .bee-Dialog-action {
@@ -1760,7 +1766,7 @@
   outline: #555 solid 1px;
 }
 
-/*.bee-Form .bee-disabled,*/
+.bee-Form .bee-disabled,
 .bee-Form .bee-disabled input {
   background-color: #e8e8e8;
 }
@@ -3393,6 +3399,14 @@ textarea,
 }
 .bee-PopupUsersPresence.bee-Presence-offline {
   color: red;
+}
+
+.bee-PopupUsersChat {
+  font-size: large;
+  color: gray;
+}
+.bee-PopupUsersChat:hover {
+  color: black;
 }
 
 .bee-DataSelector,

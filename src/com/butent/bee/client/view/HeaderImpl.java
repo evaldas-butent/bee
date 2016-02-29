@@ -273,6 +273,19 @@ public class HeaderImpl extends Flow implements HeaderView {
   }
 
   @Override
+  public boolean insertControl(Widget w, int beforeIndex) {
+    if (w != null && beforeIndex >= 0 && beforeIndex <= getWidgetCount()) {
+      w.addStyleName(STYLE_CONTROL);
+      insert(w, beforeIndex);
+
+      return true;
+
+    } else {
+      return false;
+    }
+  }
+
+  @Override
   public boolean isActionEnabled(Action action) {
     if (action == null || !isEnabled() && action.isDisablable()) {
       return false;

@@ -416,7 +416,16 @@ public final class GridFactory {
   }
 
   public static void openGrid(String gridName) {
-    openGrid(gridName, getGridInterceptor(gridName), null, ViewHelper.getPresenterCallback());
+    openGrid(gridName, getGridInterceptor(gridName));
+  }
+
+  public static void openGrid(String gridName, GridInterceptor gridInterceptor) {
+    openGrid(gridName, gridInterceptor, null);
+  }
+
+  public static void openGrid(String gridName, GridInterceptor gridInterceptor,
+      GridOptions gridOptions) {
+    openGrid(gridName, gridInterceptor, gridOptions, ViewHelper.getPresenterCallback());
   }
 
   public static void openGrid(String gridName, GridInterceptor gridInterceptor,
@@ -559,7 +568,7 @@ public final class GridFactory {
     grid.setReadOnly(true);
 
     grid.estimateHeaderWidths();
-    grid.estimateColumnWidths(table.getRows(), 0, Math.min(r, 50));
+    grid.estimateColumnWidths(table.getRows(), 0, Math.min(r, 50), true);
 
     grid.setDefaultFlexibility(new Flexibility(1, -1, true));
     int distrWidth = containerWidth;

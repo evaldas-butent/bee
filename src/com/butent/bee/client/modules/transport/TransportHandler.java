@@ -236,6 +236,8 @@ public final class TransportHandler {
 
     RendererFactory.registerGcrProvider(VIEW_CARGO_HANDLING, loading, provider);
     RendererFactory.registerGcrProvider(VIEW_CARGO_HANDLING, unloading, provider);
+    RendererFactory.registerGcrProvider(GRID_CARGO_HANDLING_UNBOUND, loading, provider);
+    RendererFactory.registerGcrProvider(GRID_CARGO_HANDLING_UNBOUND, unloading, provider);
     RendererFactory.registerGcrProvider(VIEW_ALL_CARGO, loading, provider);
     RendererFactory.registerGcrProvider(VIEW_ALL_CARGO, unloading, provider);
     RendererFactory.registerGcrProvider(VIEW_ORDER_CARGO, loading, provider);
@@ -275,7 +277,6 @@ public final class TransportHandler {
     GridFactory.registerGridInterceptor(VIEW_TRIP_PURCHASE_INVOICES, new InvoicesGrid());
     GridFactory.registerGridInterceptor(VIEW_ERP_TRIP_COSTS, new ERPTripCostsGrid());
 
-    GridFactory.registerGridInterceptor(VIEW_CARGO_REQUESTS, new CargoRequestsGrid());
     GridFactory.registerGridInterceptor(VIEW_SHIPMENT_REQUEST_FILES,
         new FileGridInterceptor(COL_SHIPMENT_REQUEST, AdministrationConstants.COL_FILE,
             AdministrationConstants.COL_FILE_CAPTION, AdministrationConstants.ALS_FILE_NAME));
@@ -292,6 +293,8 @@ public final class TransportHandler {
     FormFactory.registerFormInterceptor(FORM_NEW_SIMPLE_ORDER, new NewSimpleTransportationOrder());
     FormFactory.registerFormInterceptor(FORM_TRIP, new TripForm());
     FormFactory.registerFormInterceptor(FORM_EXPEDITION_TRIP, new TripForm());
+
+    FormFactory.registerFormInterceptor(FORM_TEXT_CONSTANT, new TextConstantForm());
 
     FormFactory.registerFormInterceptor(FORM_CARGO, new OrderCargoForm());
 
@@ -332,8 +335,7 @@ public final class TransportHandler {
     FormFactory.registerFormInterceptor(FORM_TRIP_PURCHASE_INVOICE, new InvoiceForm(null));
 
     FormFactory.registerFormInterceptor(FORM_SHIPMENT_REQUEST, new ShipmentRequestForm());
-    FormFactory.registerFormInterceptor(FORM_NEW_CARGO_REQUEST, new CargoRequestForm());
-    FormFactory.registerFormInterceptor(FORM_CARGO_REQUEST, new CargoRequestForm());
+    FormFactory.registerFormInterceptor(FORM_CARGO_PLACE_UNBOUND, new CargoPlaceUnboundForm());
 
     FormFactory.registerFormInterceptor(FORM_VEHICLE, new VehicleForm());
 

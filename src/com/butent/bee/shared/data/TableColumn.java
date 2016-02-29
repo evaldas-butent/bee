@@ -4,7 +4,6 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasInfo;
 import com.butent.bee.shared.data.value.ValueType;
-import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
 
@@ -40,14 +39,6 @@ public class TableColumn implements HasInfo, IsColumn {
     this.label = label;
     this.id = id;
     this.pattern = null;
-  }
-
-  @Override
-  public void clearProperty(String key) {
-    Assert.notEmpty(key);
-    if (properties != null) {
-      properties.remove(key);
-    }
   }
 
   @Override
@@ -110,21 +101,6 @@ public class TableColumn implements HasInfo, IsColumn {
   }
 
   @Override
-  public Double getPropertyDouble(String key) {
-    return BeeUtils.toDoubleOrNull(getProperty(key));
-  }
-
-  @Override
-  public Integer getPropertyInteger(String key) {
-    return BeeUtils.toIntOrNull(getProperty(key));
-  }
-
-  @Override
-  public Long getPropertyLong(String key) {
-    return BeeUtils.toLongOrNull(getProperty(key));
-  }
-
-  @Override
   public int getScale() {
     return scale;
   }
@@ -142,6 +118,14 @@ public class TableColumn implements HasInfo, IsColumn {
   @Override
   public boolean isText() {
     return ValueType.TEXT.equals(getType()) && getPrecision() <= 0;
+  }
+
+  @Override
+  public void removeProperty(String key) {
+    Assert.notEmpty(key);
+    if (properties != null) {
+      properties.remove(key);
+    }
   }
 
   @Override
@@ -175,44 +159,13 @@ public class TableColumn implements HasInfo, IsColumn {
   }
 
   @Override
-  public void setProperty(String key, Double value) {
-    if (BeeUtils.isDouble(value)) {
-      setProperty(key, BeeUtils.toString(value));
-    } else {
-      clearProperty(key);
-    }
-  }
-
-  @Override
-  public void setProperty(String key, Integer value) {
-    if (value == null) {
-      clearProperty(key);
-    } else {
-      setProperty(key, BeeUtils.toString(value));
-    }
-  }
-
-  @Override
-  public void setProperty(String key, Long value) {
-    if (value == null) {
-      clearProperty(key);
-    } else {
-      setProperty(key, BeeUtils.toString(value));
-    }
-  }
-
-  @Override
   public void setProperty(String propertyKey, String propertyValue) {
     Assert.notEmpty(propertyKey);
 
-    if (BeeUtils.isEmpty(propertyValue)) {
-      clearProperty(propertyKey);
-    } else {
-      if (properties == null) {
-        properties = CustomProperties.create();
-      }
-      properties.put(propertyKey, propertyValue);
+    if (properties == null) {
+      properties = CustomProperties.create();
     }
+    properties.put(propertyKey, propertyValue);
   }
 
   @Override

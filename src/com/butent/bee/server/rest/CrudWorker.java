@@ -357,8 +357,7 @@ public abstract class CrudWorker {
 
     for (Map.Entry<String, Object> entry : fields.entrySet()) {
       if (entry.getValue() instanceof String) {
-        clause.add(SqlUtils.startsWith(table, entry.getKey(), (String) entry.getValue()))
-            .add(SqlUtils.endsWith(table, entry.getKey(), (String) entry.getValue()));
+        clause.add(SqlUtils.same(table, entry.getKey(), (String) entry.getValue()));
       } else {
         clause.add(SqlUtils.equals(table, entry.getKey(), entry.getValue()));
       }

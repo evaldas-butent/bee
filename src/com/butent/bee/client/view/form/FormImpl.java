@@ -157,9 +157,12 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
       CellSource cellSource;
       if (index >= 0) {
         cellSource = CellSource.forColumn(getDataColumns().get(index), index);
+
       } else if (!BeeUtils.isEmpty(result.getRowProperty()) && widget instanceof HasValueType) {
         cellSource = CellSource.forProperty(result.getRowProperty(),
+            BeeKeeper.getUser().idOrNull(result.getUserMode()),
             ((HasValueType) widget).getValueType());
+
       } else {
         cellSource = null;
       }
@@ -696,6 +699,16 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   @Override
   public long getActiveRowId() {
     return (getActiveRow() == null) ? BeeConst.LONG_UNDEF : getActiveRow().getId();
+  }
+
+  @Override
+  public Boolean getBooleanValue(String source) {
+    int index = getDataIndex(source);
+    if (getActiveRow() != null && index >= 0) {
+      return getActiveRow().getBoolean(index);
+    } else {
+      return null;
+    }
   }
 
   @Override
@@ -1265,11 +1278,13 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
     if (column == null) {
       if (source instanceof EditableWidget && ((EditableWidget) source).hasRowProperty()) {
         String propertyName = ((EditableWidget) source).getRowPropertyName();
-        String oldValue = rowValue.getProperty(propertyName);
+        Long userId = BeeKeeper.getUser().idOrNull(((EditableWidget) source).getUserMode());
+
+        String oldValue = rowValue.getProperty(propertyName, userId);
 
         if (!BeeUtils.equalsTrim(oldValue, newValue)) {
-          logger.debug(propertyName, "old:", oldValue, "new:", newValue);
-          rowValue.setProperty(propertyName, newValue);
+          logger.debug(propertyName, userId, "old:", oldValue, "new:", newValue);
+          rowValue.setProperty(propertyName, userId, newValue);
         }
       }
 

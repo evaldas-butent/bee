@@ -2,10 +2,10 @@ package com.butent.bee.client.modules.transport;
 
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowUpdateCallback;
-import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -15,8 +15,7 @@ import com.butent.bee.shared.data.RelationUtils;
 import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.Order;
-import com.butent.bee.shared.io.FileInfo;
-import com.butent.bee.shared.modules.administration.AdministrationConstants;
+import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 
 import java.util.Collection;
 
@@ -37,14 +36,14 @@ final class SelfServiceUtils {
 
     @Override
     public void onSuccess(BeeRowSet result) {
-      IsRow row = refresh ? formView.getActiveRow() : newRow;
-
-      if (!DataUtils.isEmpty(result) && DataUtils.isNewRow(row)) {
-        RelationUtils.updateRow(Data.getDataInfo(formView.getViewName()), targetColumn, row,
-            Data.getDataInfo(result.getViewName()), result.getRow(0), true);
+      if (!DataUtils.isEmpty(result)) {
+        Collection<String> items = RelationUtils.updateRow(Data.getDataInfo(formView.getViewName()),
+            targetColumn, newRow, Data.getDataInfo(result.getViewName()), result.getRow(0), true);
 
         if (refresh) {
-          formView.refreshBySource(targetColumn);
+          for (String item : items) {
+            formView.refreshBySource(item);
+          }
         }
       }
     }
@@ -54,32 +53,37 @@ final class SelfServiceUtils {
     }
   }
 
-  static void sendFiles(Long reqId, Collection<FileInfo> files) {
-    FileUtils.commitFiles(files, VIEW_SHIPMENT_REQUEST_FILES, COL_SHIPMENT_REQUEST, reqId,
-        AdministrationConstants.COL_FILE, AdministrationConstants.COL_FILE_CAPTION);
-  }
-
   static void setDefaultExpeditionType(FormView form, IsRow newRow, String targetColumn) {
-    Filter filter = Filter.notNull(COL_SELF_SERVICE);
-    Order order = Order.ascending(COL_SELF_SERVICE, COL_EXPEDITION_TYPE_NAME);
-
     RelatedValuesCallback callback = new RelatedValuesCallback(form, newRow, targetColumn);
 
-    int rpcId = Queries.getRowSet(VIEW_EXPEDITION_TYPES, null, filter, order, 0, 1,
+    int rpcId = Queries.getRowSet(VIEW_EXPEDITION_TYPES, null, Filter.notNull(COL_SELF_SERVICE),
+        Order.ascending(COL_SELF_SERVICE, COL_EXPEDITION_TYPE_NAME), 0, 1, CachingPolicy.FULL,
+        callback);
+
+    if (!Queries.isResponseFromCache(rpcId)) {
+      callback.setRefresh(true);
+    }
+  }
+
+  static void setDefaultPerson(FormView form, IsRow newRow, String targetColumn) {
+    RelatedValuesCallback callback = new RelatedValuesCallback(form, newRow, targetColumn);
+
+    int rpcId = Queries.getRowSet(ClassifierConstants.VIEW_COMPANY_PERSONS, null,
+        Filter.compareId(BeeKeeper.getUser().getUserData().getCompanyPerson()), null,
         CachingPolicy.FULL, callback);
+
     if (!Queries.isResponseFromCache(rpcId)) {
       callback.setRefresh(true);
     }
   }
 
   static void setDefaultShippingTerm(FormView form, IsRow newRow, String targetColumn) {
-    Filter filter = Filter.notNull(COL_SELF_SERVICE);
-    Order order = Order.ascending(COL_SELF_SERVICE, COL_SHIPPING_TERM_NAME);
-
     RelatedValuesCallback callback = new RelatedValuesCallback(form, newRow, targetColumn);
 
-    int rpcId = Queries.getRowSet(VIEW_SHIPPING_TERMS, null, filter, order, 0, 1,
-        CachingPolicy.FULL, callback);
+    int rpcId = Queries.getRowSet(VIEW_SHIPPING_TERMS, null, Filter.notNull(COL_SELF_SERVICE),
+        Order.ascending(COL_SELF_SERVICE, COL_SHIPPING_TERM_NAME), 0, 1, CachingPolicy.FULL,
+        callback);
+
     if (!Queries.isResponseFromCache(rpcId)) {
       callback.setRefresh(true);
     }

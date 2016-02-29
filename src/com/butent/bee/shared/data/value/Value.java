@@ -75,6 +75,9 @@ public abstract class Value implements Comparable<Value>, BeeSerializable {
       } else if (value instanceof DateTime) {
         val = new DateTimeValue((DateTime) value);
 
+      } else if (value instanceof Enum<?>) {
+        val = new IntegerValue(((Enum<?>) value).ordinal());
+
       } else {
         Assert.unsupported("Unsupported value type: " + NameUtils.getClassName(value.getClass()));
       }

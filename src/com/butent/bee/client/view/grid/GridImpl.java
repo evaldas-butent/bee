@@ -487,7 +487,8 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
 
       case PROPERTY:
         String property = BeeUtils.notEmpty(cd.getProperty(), columnId);
-        cellSource = CellSource.forProperty(property, cd.getValueType());
+        cellSource = CellSource.forProperty(property,
+            BeeKeeper.getUser().idOrNull(cd.getUserMode()), cd.getValueType());
 
         if (cd.getPrecision() != null) {
           cellSource.setPrecision(cd.getPrecision());
@@ -641,12 +642,12 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     if (verticalAlign == null && renderer != null) {
       verticalAlign = renderer.getDefaultVerticalAlign();
     }
-    if (verticalAlign == null
-        && (cellType == CellType.HTML
-        || cellSource != null && cellSource.isText())) {
-      verticalAlign = VerticalAlign.TOP;
-    } else {
-      verticalAlign = VerticalAlign.MIDDLE;
+    if (verticalAlign == null) {
+      if (cellType == CellType.HTML || cellSource != null && cellSource.isText()) {
+        verticalAlign = VerticalAlign.TOP;
+      } else {
+        verticalAlign = VerticalAlign.MIDDLE;
+      }
     }
     column.setVerticalAlign(verticalAlign);
 
@@ -1457,6 +1458,13 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
 
       if (!event.canceled() && getViewPresenter() != null) {
         DynamicColumnFactory.checkRightsColumns(getViewPresenter(), this, event);
+      }
+
+      if (!event.canceled() && !event.dataChanged()
+          && BeeUtils.isTrue(getGridDescription().getAutoFlex())) {
+
+        getGrid().estimateColumnWidths(false);
+        getGrid().doFlexLayout();
       }
 
     } else if (event.isAfter() && getState() == null) {

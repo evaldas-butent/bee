@@ -493,6 +493,11 @@ public class UserServiceBean {
     return userCache.get(userId);
   }
 
+  public String getUserPhotoFileName(Long userId) {
+    UserData userData = getUserData(userId);
+    return (userData == null) ? null : userData.getPhotoFileName();
+  }
+
   public long[] getUserRoles() {
     return getUserRoles(getCurrentUserId());
   }

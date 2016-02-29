@@ -875,7 +875,9 @@ public class UiServiceBean {
     }
 
     SimpleRowSet rs = existingStates.isEmpty() ? null : qs.getData(query);
+
     boolean value;
+    Long userId = usr.getCurrentUserId();
 
     for (BeeRow row : rowSet) {
       String rowKey = BeeUtils.toString(row.getId());
@@ -890,7 +892,7 @@ public class UiServiceBean {
             value = state.isChecked();
           }
 
-          row.setProperty(alias, Codec.pack(value));
+          row.setProperty(alias, userId, Codec.pack(value));
         }
       }
     }
@@ -1001,6 +1003,14 @@ public class UiServiceBean {
     } else if (BeeUtils.same(cmd, "menu")) {
       ui.initMenu();
       response.addInfo("Menu OK");
+
+    } else if (BeeUtils.same(cmd, "reports")) {
+      ui.initReports();
+      response.addInfo("Reports OK");
+
+    } else if (BeeUtils.same(cmd, "system")) {
+      ib.init();
+      response.addInfo("System OK");
 
     } else if (BeeUtils.startsSame(cmd, "check")) {
       String err = null;

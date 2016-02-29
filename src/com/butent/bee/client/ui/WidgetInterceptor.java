@@ -20,6 +20,8 @@ public interface WidgetInterceptor extends HasCaption, HasWidgetSupplier {
 
   IdentifiableWidget createCustomWidget(String name, Element description);
 
+  Boolean getBooleanValue(String source);
+
   int getDataIndex(String source);
 
   DateTime getDateTimeValue(String source);

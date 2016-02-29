@@ -208,13 +208,14 @@ public class DiscussionsModuleBean implements BeeModule {
             }
           }
 
+          Long userId = usr.getCurrentUserId();
+
           SqlSelect discussUsers = new SqlSelect()
               .addFields(TBL_DISCUSSIONS_USERS, COL_DISCUSSION, COL_LAST_ACCESS, COL_STAR)
               .addFrom(TBL_DISCUSSIONS_USERS);
 
           IsCondition usersWhere =
-              SqlUtils.equals(TBL_DISCUSSIONS_USERS, AdministrationConstants.COL_USER, usr
-                  .getCurrentUserId());
+              SqlUtils.equals(TBL_DISCUSSIONS_USERS, AdministrationConstants.COL_USER, userId);
 
           discussUsers.setWhere(usersWhere);
 
@@ -237,14 +238,10 @@ public class DiscussionsModuleBean implements BeeModule {
               continue;
             }
 
-            row.setProperty(PROP_USER, BeeConst.STRING_PLUS);
+            row.setProperty(PROP_USER, userId, BeeConst.STRING_PLUS);
 
-            if (discussUserRow.getValue(accessIndex) != null) {
-              row.setProperty(PROP_LAST_ACCESS, discussUserRow.getValue(starIndex));
-            }
-            if (discussUserRow.getValue(starIndex) != null) {
-              row.setProperty(PROP_STAR, discussUserRow.getValue(starIndex));
-            }
+            row.setProperty(PROP_LAST_ACCESS, userId, discussUserRow.getValue(accessIndex));
+            row.setProperty(PROP_STAR, userId, discussUserRow.getValue(starIndex));
           }
 
           SqlSelect discussionsEvents = new SqlSelect()
@@ -305,8 +302,8 @@ public class DiscussionsModuleBean implements BeeModule {
 
             row.setProperty(PROP_RELATIONS_COUNT, relValue);
 
-            if (BeeUtils.isEmpty(row.getProperty(PROP_USER))) {
-              row.setProperty(PROP_USER, BeeConst.STRING_PLUS);
+            if (BeeUtils.isEmpty(row.getProperty(PROP_USER, userId))) {
+              row.setProperty(PROP_USER, userId, BeeConst.STRING_PLUS);
               createDiscussionUser(row.getId(), usr.getCurrentUserId(), null, false);
             }
           }

@@ -173,7 +173,7 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
 
           if (checked) {
             ms.clearValue();
-            form.getActiveRow().clearProperty(PROP_MEMBERS);
+            form.getActiveRow().removeProperty(PROP_MEMBERS);
           } else {
             form.getActiveRow().setValue(form.getDataIndex(COL_ACCESSIBILITY), (Boolean) null);
           }
@@ -293,7 +293,7 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
     }
 
     if (discussPublic) {
-      newRow.clearProperty(PROP_MEMBERS);
+      newRow.removeProperty(PROP_MEMBERS);
     }
 
     newRow.setValue(getFormView().getDataIndex(COL_ACCESSIBILITY), discussPublic);

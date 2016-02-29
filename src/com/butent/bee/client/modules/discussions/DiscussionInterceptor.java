@@ -321,7 +321,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
           if (value && ms != null) {
             ms.clearValue();
             ms.setValue(null);
-            getFormView().getActiveRow().clearProperty(PROP_MEMBERS);
+            getFormView().getActiveRow().removeProperty(PROP_MEMBERS);
           } else {
             getFormView().getActiveRow().setValue(getFormView().getDataIndex(COL_ACCESSIBILITY),
                 (Boolean) null);
@@ -573,7 +573,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
         if (!BeeUtils.isEmpty(members.getValue())) {
           members.clearDisplay();
           members.clearValue();
-          row.clearProperty(PROP_MEMBERS);
+          row.removeProperty(PROP_MEMBERS);
         }
       }
     }
@@ -1301,6 +1301,9 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
         break;
       case VISIT:
         break;
+      case REFRESH:
+        onStartEdit(form, row, null);
+        break;
       default:
         break;
     }
@@ -1414,6 +1417,8 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
             && !showInHeader;
       case VISIT:
         return false;
+      case REFRESH:
+        return true;
     }
 
     return false;

@@ -7,7 +7,8 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
-import com.butent.bee.client.i18n.DateTimeFormat;
+import com.butent.bee.client.Storage;
+import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.HasIndexedWidgets;
 import com.butent.bee.client.widget.CustomDiv;
@@ -17,6 +18,7 @@ import com.butent.bee.shared.HasHtml;
 import com.butent.bee.shared.communication.Presence;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.UserData;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -26,12 +28,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 
 public final class ChatUtils {
-
-  private static final DateTimeFormat dateTimeFormat =
-      DateTimeFormat.getFormat(DateTimeFormat.PredefinedFormat.MONTH_DAY);
 
   public static void applyPresence(Widget widget, Multimap<Presence, Long> presence) {
     if (presence.keySet().size() == 1) {
@@ -89,20 +87,58 @@ public final class ChatUtils {
       return null;
     }
 
-    long time = System.currentTimeMillis() - start;
+    long diff = System.currentTimeMillis() - start;
 
-    if (time <= 0) {
+    DateTime dt = new DateTime(start - start % TimeUtils.MILLIS_PER_MINUTE);
+    String time = TimeUtils.renderMinutes(TimeUtils.minutesSinceDayStarted(dt), true);
+
+    if (diff <= 0) {
       return BeeConst.STRING_EMPTY;
-    } else if (time < TimeUtils.MILLIS_PER_SECOND) {
-      return BeeUtils.toString(time) + "ms";
-    } else if (time < TimeUtils.MILLIS_PER_MINUTE) {
-      return BeeUtils.toString(time / TimeUtils.MILLIS_PER_SECOND) + "s";
-    } else if (time < TimeUtils.MILLIS_PER_HOUR) {
-      return BeeUtils.toString(time / TimeUtils.MILLIS_PER_MINUTE) + "m";
-    } else if (time < TimeUtils.MILLIS_PER_DAY) {
-      return BeeUtils.toString(time / TimeUtils.MILLIS_PER_HOUR) + "h";
+
+    } else if (diff < TimeUtils.MILLIS_PER_SECOND) {
+      return time;
+
+    } else if (diff < TimeUtils.MILLIS_PER_MINUTE) {
+      return format(time, diff / TimeUtils.MILLIS_PER_SECOND, "s");
+
+    } else if (diff < TimeUtils.MILLIS_PER_HOUR) {
+      return format(time, diff / TimeUtils.MILLIS_PER_MINUTE, "m");
+
+    } else if (diff < TimeUtils.MILLIS_PER_DAY / 2) {
+      return format(time, diff / TimeUtils.MILLIS_PER_HOUR, "h");
+
+    } else if (diff < TimeUtils.MILLIS_PER_DAY * 2
+        && TimeUtils.dayDiff(dt, TimeUtils.today()) == 1) {
+
+      return Localized.getConstants().yesterday() + BeeConst.STRING_SPACE + time;
+
+    } else if (diff < TimeUtils.MILLIS_PER_DAY) {
+      return format(time, diff / TimeUtils.MILLIS_PER_HOUR, "h");
+
     } else {
-      return dateTimeFormat.format(new DateTime(start));
+      return TimeUtils.renderCompact(dt, true);
+    }
+  }
+
+  public static String format(String label, long diff, String unit) {
+    if (diff > 0) {
+      return label + BeeConst.STRING_EMPTY + BeeConst.STRING_SPACE
+          + BeeConst.STRING_LEFT_PARENTHESIS + BeeUtils.toString(diff) + unit
+          + BeeConst.STRING_RIGHT_PARENTHESIS;
+    } else {
+      return label;
+    }
+  }
+
+  public static String getChatCaption(String name, List<Long> otherUsers) {
+    if (!BeeUtils.isEmpty(name) || BeeUtils.isEmpty(otherUsers)) {
+      return name;
+
+    } else if (otherUsers.size() == 1) {
+      return Global.getUsers().getSignature(otherUsers.get(0));
+
+    } else {
+      return getFirstNames(otherUsers);
     }
   }
 
@@ -132,6 +168,14 @@ public final class ChatUtils {
     return result;
   }
 
+  public static String getSizeStorageKey(long chatId) {
+    return Storage.getUserKey("chat-" + chatId, "size");
+  }
+
+  public static String getStyleStorageKey(long chatId) {
+    return Storage.getUserKey("chat-" + chatId, "style");
+  }
+
   public static Multimap<Presence, Long> getUserPresence(Collection<Long> users) {
     Multimap<Presence, Long> result = ArrayListMultimap.create();
     Presence p;
@@ -154,11 +198,10 @@ public final class ChatUtils {
   }
 
   public static boolean needsRefresh(long millis) {
-    return System.currentTimeMillis() - millis < TimeUtils.MILLIS_PER_DAY
-        + TimeUtils.MILLIS_PER_HOUR;
+    return System.currentTimeMillis() - millis < TimeUtils.MILLIS_PER_DAY * 2;
   }
 
-  public static void renderOtherUsers(HasIndexedWidgets container, Collection<Long> users,
+  public static void renderUsers(HasIndexedWidgets container, List<Long> users,
       String itemStyleName) {
 
     Assert.notNull(container);
@@ -166,22 +209,22 @@ public final class ChatUtils {
       container.clear();
     }
 
-    if (BeeUtils.isEmpty(users)) {
-      return;
-    }
+    if (!BeeUtils.isEmpty(users)) {
+      for (int i = 0; i < users.size(); i++) {
+        UserData userData = Global.getUsers().getUserData(users.get(i));
 
-    for (Long userId : users) {
-      if (Objects.equals(userId, BeeKeeper.getUser().getUserId())) {
-        continue;
-      }
+        if (userData != null) {
+          String text = userData.getFirstName();
+          if (i < users.size() - 1) {
+            text = BeeUtils.trim(text) + BeeConst.DEFAULT_LIST_SEPARATOR;
+          }
 
-      UserData userData = Global.getUsers().getUserData(userId);
-      if (userData != null) {
-        CustomDiv widget = new CustomDiv(itemStyleName);
-        widget.setText(userData.getFirstName());
-        widget.setTitle(userData.getUserSign());
+          CustomDiv widget = new CustomDiv(itemStyleName);
+          widget.setText(text);
+          widget.setTitle(userData.getUserSign());
 
-        container.add(widget);
+          container.add(widget);
+        }
       }
     }
   }
@@ -189,7 +232,7 @@ public final class ChatUtils {
   public static <T extends HasHtml & IsWidget> void updateTime(T widget, long time) {
     if (widget != null && time > 0) {
       widget.setText(elapsed(time));
-      widget.asWidget().setTitle(TimeUtils.renderDateTime(time));
+      widget.asWidget().setTitle(Format.renderDateTimeFull(new DateTime(time)));
     }
   }
 

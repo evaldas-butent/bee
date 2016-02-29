@@ -184,7 +184,7 @@ public class EcOrphansGrid extends AbstractGridInterceptor implements ClickHandl
         if (idx == 0 && BeeUtils.isEmpty(name.getValue()) || idx == 1 && analog == null) {
           return Localized.getConstants().valueRequired();
         }
-        return super.getErrorMessage();
+        return InputCallback.super.getErrorMessage();
       }
 
       @Override

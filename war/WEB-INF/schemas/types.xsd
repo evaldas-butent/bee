@@ -258,8 +258,6 @@
       <xs:enumeration value="CargoInvoices" />
       <xs:enumeration value="CargoPurchaseInvoices" />
       <xs:enumeration value="CargoPurchases" />
-      <xs:enumeration value="CargoReqTemplates" />
-      <xs:enumeration value="CargoRequests" />
       <xs:enumeration value="CargoSales" />
       <xs:enumeration value="CargoTrips" />
       <xs:enumeration value="CargoTypes" />
@@ -501,6 +499,7 @@
       <xs:enumeration value="TcdTypeArticles" />
       <xs:enumeration value="TcdTypes" />
       <xs:enumeration value="TemplateTree" />
+      <xs:enumeration value="TextConstants" />
       <xs:enumeration value="ThemeColors" />
       <xs:enumeration value="Themes" />
       <xs:enumeration value="TimeCardChanges" />

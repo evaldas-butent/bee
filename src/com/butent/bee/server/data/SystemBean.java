@@ -22,8 +22,10 @@ import com.butent.bee.server.data.BeeTable.BeeUniqueKey;
 import com.butent.bee.server.io.FileUtils;
 import com.butent.bee.server.modules.ModuleHolderBean;
 import com.butent.bee.server.modules.ParamHolderBean;
+import com.butent.bee.server.modules.administration.FileStorageBean;
 import com.butent.bee.server.sql.HasFrom;
 import com.butent.bee.server.sql.IsCondition;
+import com.butent.bee.server.sql.IsExpression;
 import com.butent.bee.server.sql.IsQuery;
 import com.butent.bee.server.sql.SqlBuilderFactory;
 import com.butent.bee.server.sql.SqlCreate;
@@ -60,6 +62,7 @@ import com.butent.bee.shared.data.XmlView;
 import com.butent.bee.shared.data.XmlView.XmlColumn;
 import com.butent.bee.shared.data.XmlView.XmlColumns;
 import com.butent.bee.shared.data.XmlView.XmlSimpleColumn;
+import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.ViewColumn;
 import com.butent.bee.shared.io.FileNameUtils;
@@ -77,6 +80,7 @@ import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -90,7 +94,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.ejb.Lock;
 import javax.ejb.LockType;
@@ -116,9 +119,10 @@ public class SystemBean {
   UserServiceBean usr;
   @EJB
   ModuleHolderBean moduleBean;
-
   @EJB
   ParamHolderBean prm;
+  @EJB
+  FileStorageBean fs;
 
   private static final BeeLogger logger = LogUtils.getLogger(SystemBean.class);
   private static boolean auditOff;
@@ -129,7 +133,8 @@ public class SystemBean {
   private final Map<String, BeeTable> tableCache = new HashMap<>();
   private final Map<String, BeeView> viewCache = new HashMap<>();
 
-  private final EventBus dataEventBus = new EventBus();
+  private EventBus dataEventBus;
+  private final Multimap<String, String> fileReferences = HashMultimap.create();
 
   public List<Property> checkTables(List<String> tbls, String progressId) {
     List<Property> diff = new ArrayList<>();
@@ -378,6 +383,13 @@ public class SystemBean {
   }
 
   @Lock(LockType.WRITE)
+  public void init() {
+    auditOff = BeeUtils.toBoolean(Config.getProperty(Service.PROPERTY_AUDIT_OFF));
+    dataEventBus = new EventBus();
+    initTables();
+  }
+
+  @Lock(LockType.WRITE)
   public void initTables() {
     initTables(BeeUtils.notEmpty(SqlBuilderFactory.getDsn(), dsb.getDefaultDsn()));
   }
@@ -388,6 +400,7 @@ public class SystemBean {
     dbName = qs.dbName();
     dbSchema = qs.dbSchema();
     dbAuditSchema = BeeUtils.join("_", dbSchema, AUDIT_SUFFIX);
+    fileReferences.clear();
 
     initObjects(SysObject.TABLE);
 
@@ -405,11 +418,13 @@ public class SystemBean {
                 BeeUtils.joinWords("Unrecognized foreign key field:", refTable.getName(), fld));
           }
         }
+        if (Objects.equals(fKey.getRefTable(), TBL_FILES)) {
+          fileReferences.putAll(table.getName(), fKey.getFields());
+        }
       }
     }
     initDbTables();
     initDbTriggers();
-    initViews();
   }
 
   @Lock(LockType.WRITE)
@@ -457,8 +472,8 @@ public class SystemBean {
   /**
    * Creates SQL joins between tables.
    *
-   * @param tblName  First table with represented own column Id name, where called
-   *                 {@link SystemBean#getIdName(String)}
+   * @param tblName First table with represented own column Id name, where called
+   * {@link SystemBean#getIdName(String)}
    * @param dstTable Second table
    * @param dstField Reference field name of second table
    * @return
@@ -479,6 +494,47 @@ public class SystemBean {
     BeeField field = table.getField(fldName);
 
     return table.joinTranslationField(query, tblAlias, field, locale);
+  }
+
+  public void normalizeFileReference(SqlInsert insert) {
+    if (!insert.isMultipleInsert() && fileReferences.containsKey(insert.getTarget())) {
+      insert.getFields()
+          .stream()
+          .filter(f -> fileReferences.containsEntry(insert.getTarget(), f))
+          .forEach(f -> {
+            Object expr = insert.getValue(f).getValue();
+
+            if (expr instanceof Value) {
+              try {
+                insert.updExpression(f, SqlUtils.constant(fs.commitFile(((Value) expr).getLong())));
+              } catch (IOException e) {
+                logger.error(e);
+              }
+            }
+          });
+    }
+  }
+
+  public void normalizeFileReference(SqlUpdate update) {
+    if (fileReferences.containsKey(update.getTarget())) {
+      update.getUpdates().keySet()
+          .stream()
+          .filter(f -> fileReferences.containsEntry(update.getTarget(), f))
+          .forEach(f -> {
+            Object expr = update.getValue(f);
+
+            if (expr instanceof IsExpression) {
+              expr = ((IsExpression) expr).getValue();
+            }
+            if (expr instanceof Value) {
+              try {
+                update.updExpression(f, SqlUtils.constant(fs.commitFile(((Value) expr).getLong())));
+              } catch (IOException e) {
+                logger.error(e);
+              }
+            }
+          });
+    }
   }
 
   public void postDataEvent(DataEvent event) {
@@ -1023,12 +1079,6 @@ public class SystemBean {
 
   public Collection<BeeTable> getTables() {
     return ImmutableList.copyOf(tableCache.values());
-  }
-
-  @PostConstruct
-  private void init() {
-    auditOff = BeeUtils.toBoolean(Config.getProperty(Service.PROPERTY_AUDIT_OFF));
-    initTables();
   }
 
   private boolean initDataObject(SysObject obj, String moduleName, String objectName,

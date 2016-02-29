@@ -437,8 +437,8 @@ public class DocumentDataForm extends AbstractFormInterceptor
                   if (response.isEmpty()) {
                     Printer.print(input, null);
                   } else {
-                    BrowsingContext.open(FileUtils.getUrl(Localized.getConstants().print()
-                        + ".pdf", response.getResponseAsString()));
+                    BrowsingContext.open(FileUtils.getUrl(response.getResponseAsString(),
+                        Localized.getConstants().print() + ".pdf"));
                   }
                 }
               }
@@ -574,7 +574,7 @@ public class DocumentDataForm extends AbstractFormInterceptor
                         UiHelper.focus(selector);
                         return Localized.getConstants().valueRequired();
                       }
-                      return super.getErrorMessage();
+                      return InputCallback.super.getErrorMessage();
                     }
 
                     @Override
@@ -601,8 +601,7 @@ public class DocumentDataForm extends AbstractFormInterceptor
                                         DataUtils.getColumns(form.getDataColumns(),
                                             Lists.newArrayList(COL_DOCUMENT_DATA)),
                                         Arrays.asList(DataUtils.isId(oldDataId)
-                                            ? BeeUtils.toString(oldDataId)
-                                            : (String) null),
+                                            ? BeeUtils.toString(oldDataId) :  null),
                                         Arrays.asList(BeeUtils.toString(newDataId)),
                                         null, new RowUpdateCallback(form.getViewName()) {
                                           @Override
@@ -746,7 +745,7 @@ public class DocumentDataForm extends AbstractFormInterceptor
       callback.onSuccess(dataId);
     } else {
       Queries.insert(VIEW_DOCUMENT_DATA, Data.getColumns(VIEW_DOCUMENT_DATA,
-          Lists.newArrayList(COL_DOCUMENT_CONTENT)), Lists.newArrayList((String) null), null,
+              Lists.newArrayList(COL_DOCUMENT_CONTENT)), Lists.newArrayList((String) null), null,
           new RowCallback() {
             @Override
             public void onSuccess(final BeeRow dataRow) {
@@ -919,35 +918,29 @@ public class DocumentDataForm extends AbstractFormInterceptor
       }
     };
     if (!BeeUtils.isEmpty(newValues)) {
-      final Consumer<Long> consumer = new Consumer<Long>() {
-        @Override
-        public void accept(Long id) {
-          for (Entry<String, String> entry : newValues.entrySet()) {
-            Queries.insert(VIEW_CRITERIA, Data.getColumns(VIEW_CRITERIA,
-                Lists.newArrayList(COL_CRITERIA_GROUP, COL_CRITERION_NAME, COL_CRITERION_VALUE)),
-                Lists.newArrayList(BeeUtils.toString(id), entry.getKey(), entry.getValue()), null,
-                new RowCallback() {
-                  @Override
-                  public void onSuccess(BeeRow result) {
-                    scheduler.execute();
-                  }
-                });
-          }
+      final Consumer<Long> consumer = (id) -> {
+        for (Entry<String, String> entry : newValues.entrySet()) {
+          Queries.insert(VIEW_CRITERIA, Data.getColumns(VIEW_CRITERIA,
+                  Lists.newArrayList(COL_CRITERIA_GROUP, COL_CRITERION_NAME, COL_CRITERION_VALUE)),
+              Lists.newArrayList(BeeUtils.toString(id), entry.getKey(), entry.getValue()), null,
+              new RowCallback() {
+                @Override
+                public void onSuccess(BeeRow result) {
+                  scheduler.execute();
+                }
+              });
         }
       };
       if (!DataUtils.isId(groupId)) {
-        ensureDataId(row, new IdCallback() {
-          @Override
-          public void onSuccess(Long dataId) {
-            Queries.insert(VIEW_CRITERIA_GROUPS,
-                Data.getColumns(VIEW_CRITERIA_GROUPS, Lists.newArrayList(COL_DOCUMENT_DATA)),
-                Lists.newArrayList(BeeUtils.toString(dataId)), null, new RowCallback() {
-                  @Override
-                  public void onSuccess(BeeRow result) {
-                    consumer.accept(result.getId());
-                  }
-                });
-          }
+        ensureDataId(row, (dataId) -> {
+          Queries.insert(VIEW_CRITERIA_GROUPS,
+              Data.getColumns(VIEW_CRITERIA_GROUPS, Lists.newArrayList(COL_DOCUMENT_DATA)),
+              Lists.newArrayList(BeeUtils.toString(dataId)), null, new RowCallback() {
+                @Override
+                public void onSuccess(BeeRow result) {
+                  consumer.accept(result.getId());
+                }
+              });
         });
       } else {
         consumer.accept(groupId);

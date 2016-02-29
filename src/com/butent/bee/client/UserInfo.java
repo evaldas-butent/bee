@@ -201,6 +201,10 @@ public class UserInfo implements HasInfo {
     return userData.getUserSign();
   }
 
+  public Long idOrNull(Boolean userMode) {
+    return BeeUtils.isTrue(userMode) ? getUserId() : null;
+  }
+
   public boolean is(Long id) {
     return id != null && id.equals(getUserId());
   }

@@ -35,6 +35,7 @@ import java.util.List;
 
 public final class Previewer implements NativePreviewHandler, HasInfo {
 
+  @FunctionalInterface
   public interface PreviewConsumer extends Consumer<NativePreviewEvent> {
   }
 

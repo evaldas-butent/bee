@@ -907,11 +907,16 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
     getTabBar().add(widget);
   }
 
-  void closeWidget(IdentifiableWidget widget) {
+  boolean closeWidget(IdentifiableWidget widget) {
     Tile tile = TilePanel.getTile(widget.asWidget());
+
     if (tile != null) {
       close(tile);
       checkEmptiness();
+      return true;
+
+    } else {
+      return false;
     }
   }
 

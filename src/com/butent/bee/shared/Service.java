@@ -11,6 +11,7 @@ public final class Service {
   public static final String PROPERTY_AUDIT_OFF = "DisableAuditing";
   public static final String PROPERTY_MODULES = "Modules";
   public static final String PROPERTY_VIEW_MODULES = "ViewModules";
+  public static final String PROPERTY_ACTIVE_LOCALES = "ActiveLocales";
 
   public static final String RPC_SERVICE_PREFIX = "rpc_";
   public static final String COMPOSITE_SERVICE_PREFIX = "comp_";
@@ -35,6 +36,8 @@ public final class Service {
   public static final String GET_FILES = SYS_SERVICE_PREFIX + "get_files";
   public static final String GET_FLAGS = SYS_SERVICE_PREFIX + "get_flags";
   public static final String RUN = SYS_SERVICE_PREFIX + "run";
+
+  public static final String GET_REPORT = SYS_SERVICE_PREFIX + "get_report";
 
   public static final String INVOKE = RPC_SERVICE_PREFIX + "invoke";
 
@@ -109,7 +112,11 @@ public final class Service {
 
   public static final String CHAT_SERVICE_PREFIX = RPC_SERVICE_PREFIX + "chat_";
 
+  public static final String GET_CHATS = CHAT_SERVICE_PREFIX + "get_chats";
   public static final String CREATE_CHAT = CHAT_SERVICE_PREFIX + "create";
+  public static final String ACCESS_CHAT = CHAT_SERVICE_PREFIX + "access";
+  public static final String DELETE_CHAT = CHAT_SERVICE_PREFIX + "delete";
+  public static final String UPDATE_CHAT = CHAT_SERVICE_PREFIX + "update";
   public static final String GET_CHAT_MESSAGES = CHAT_SERVICE_PREFIX + "get_messages";
   public static final String SEND_CHAT_MESSAGE = CHAT_SERVICE_PREFIX + "send_message";
 
@@ -192,6 +199,11 @@ public final class Service {
   public static final String VAR_OLD_VALUE = RPC_VAR_PREFIX + "old_value";
   public static final String VAR_OPTIONS = RPC_VAR_PREFIX + "options";
 
+  public static final String VAR_REPORT = RPC_VAR_PREFIX + "report";
+  public static final String VAR_REPORT_PARAMETERS = VAR_REPORT + "_params";
+  public static final String VAR_REPORT_DATA = VAR_REPORT + "_data";
+  public static final String VAR_REPORT_FORMAT = VAR_REPORT + "_format";
+
   public static final String VAR_DSN = RPC_VAR_PREFIX + "dsn";
   public static final String VAR_UI = RPC_VAR_PREFIX + "ui";
 
@@ -207,6 +219,7 @@ public final class Service {
 
   public static final String VAR_DATA = RPC_VAR_PREFIX + "data";
   public static final String VAR_EXPLAIN = RPC_VAR_PREFIX + "explain";
+  public static final String VAR_CLEAR = RPC_VAR_PREFIX + "clear";
 
   public static final String VAR_TIME = RPC_VAR_PREFIX + "time";
   public static final String VAR_QTY = RPC_VAR_PREFIX + " qty";

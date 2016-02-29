@@ -152,7 +152,8 @@ class ChildTasksGrid extends TasksGrid {
       event.consume();
 
       IsRow templRow = event.getRowValue();
-      final Long templateId = BeeUtils.toLong(templRow.getProperty(ProjectConstants.PROP_TEMPLATE));
+      final Long templateId =
+          BeeUtils.toLong(templRow.getProperty(ProjectConstants.PROP_TEMPLATE));
 
       if (!DataUtils.isId(templateId)) {
         return;

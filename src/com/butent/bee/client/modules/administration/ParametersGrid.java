@@ -241,7 +241,7 @@ public final class ParametersGrid extends AbstractGridInterceptor {
         && BeeKeeper.getUser().isAdministrator()) {
 
       prm.setUserSupport(false);
-      row.clearProperty(COL_USER);
+      row.removeProperty(COL_USER);
       row.setProperty(COL_RELATION, row.getProperty(VAR_PARAMETER_DEFAULT + COL_RELATION));
 
       getGridView().refreshBySource(COL_PARAMETER_NAME);

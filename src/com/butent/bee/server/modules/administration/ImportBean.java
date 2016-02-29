@@ -19,6 +19,7 @@ import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
+import com.butent.bee.server.io.FileUtils;
 import com.butent.bee.server.sql.HasConditions;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.IsExpression;
@@ -519,11 +520,13 @@ public class ImportBean {
         SqlUtils.isNull(tmp, COL_REASON));
 
     // CHECK REQUIRED FIELDS
-    for (String col : cols.keySet()) {
-      if (cols.get(col).isNotNull()) {
-        qs.updateData(new SqlUpdate(tmp)
-            .addConstant(COL_REASON, msgs.valueEmpty(BeeUtils.join("_", parentName, col)) + "\n")
-            .setWhere(SqlUtils.isNull(tmp, col)));
+    if (!readOnly) {
+      for (String col : cols.keySet()) {
+        if (cols.get(col).isNotNull()) {
+          qs.updateData(new SqlUpdate(tmp)
+              .addConstant(COL_REASON, msgs.valueEmpty(BeeUtils.join("_", parentName, col)) + "\n")
+              .setWhere(SqlUtils.isNull(tmp, col)));
+        }
       }
     }
     // FIND MATCHING ROWS FROM DATABASE
@@ -1282,7 +1285,7 @@ public class ImportBean {
       String progress, Function<Map<String, String>, Boolean> rowValidator) {
     File file = new File(fileName);
 
-    if (!file.isFile() || !file.canRead()) {
+    if (!FileUtils.isInputFile(file)) {
       return usr.getLocalizableMesssages().fileNotFound(fileName);
     }
     Sheet shit;

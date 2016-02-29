@@ -72,7 +72,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
    */
 
   private enum Serial {
-    COL_TYPE, ID, CAPTION, LABEL, READ_ONLY, WIDTH, SOURCE, PROPERTY, RELATION,
+    COL_TYPE, ID, CAPTION, LABEL, READ_ONLY, WIDTH, SOURCE, PROPERTY, USER_MODE, RELATION,
     MIN_WIDTH, MAX_WIDTH, SORTABLE, VISIBLE, FORMAT, HOR_ALIGN, VERT_ALIGN, WHITE_SPACE,
     VALIDATION, EDITABLE, CARRY_CALC, CARRY_ON, EDITOR, MIN_VALUE, MAX_VALUE, REQUIRED, ENUM_KEY,
     RENDERER_DESCR, RENDER, RENDER_TOKENS, VALUE_TYPE, PRECISION, SCALE, RENDER_COLUMNS,
@@ -112,6 +112,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
 
   private String source;
   private String property;
+  private Boolean userMode;
   private Relation relation;
 
   private Integer minWidth;
@@ -237,6 +238,9 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
           break;
         case PROPERTY:
           setProperty(value);
+          break;
+        case USER_MODE:
+          setUserMode(BeeUtils.toBooleanOrNull(value));
           break;
         case RELATION:
           setRelation(Relation.restore(value));
@@ -513,6 +517,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
         "Width", getWidth(),
         "Source", getSource(),
         "Property", getProperty(),
+        "User Mode", getUserMode(),
         "Min Width", getMinWidth(),
         "Max Width", getMaxWidth(),
         "Auto Fit", getAutoFit(),
@@ -698,6 +703,10 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
     return updateMode;
   }
 
+  public Boolean getUserMode() {
+    return userMode;
+  }
+
   public Calculation getValidation() {
     return validation;
   }
@@ -819,6 +828,9 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
           break;
         case PROPERTY:
           arr[i++] = getProperty();
+          break;
+        case USER_MODE:
+          arr[i++] = getUserMode();
           break;
         case RELATION:
           arr[i++] = getRelation();
@@ -1157,6 +1169,10 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
 
   public void setUpdateMode(RefreshType updateMode) {
     this.updateMode = updateMode;
+  }
+
+  public void setUserMode(Boolean userMode) {
+    this.userMode = userMode;
   }
 
   public void setValidation(Calculation validation) {

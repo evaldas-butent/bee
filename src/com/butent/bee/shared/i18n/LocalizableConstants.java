@@ -76,6 +76,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String actionNotAllowed();
 
+  String actionOpen();
+
   String actionPrint();
 
   String actionRefresh();
@@ -164,9 +166,11 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String changePassword();
 
+  String chat();
+
   String chatDeleteQuestion();
 
-  String chat();
+  String chatLeaveQuestion();
 
   String chatMessages();
 
@@ -684,6 +688,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String presenceOnline();
 
+  String preview();
+
   String price();
 
   String print();
@@ -899,4 +905,6 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
   String yearMonth();
 
   String yes();
+
+  String yesterday();
 }
