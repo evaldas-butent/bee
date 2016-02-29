@@ -15,42 +15,34 @@
     <SimpleColumn name="InvoiceNo" />
 
     <SimpleColumn name="Term" />
-   
+
     <SimpleColumn name="Amount" />
     <SimpleColumn name="Currency" />
     <SimpleJoin joinType="LEFT" name="Currency">
       <SimpleColumn name="Name" alias="CurrencyName" />
       <SimpleColumn name="MinorName" />
     </SimpleJoin>
-    
+
     <SimpleColumn name="PaymentTime" />
     <SimpleColumn name="Paid" />
 
-    <SimpleColumn name="Debt" label="=trdDebt" >
-      <x:minus>
-        <x:number>"Amount"</x:number>
-        <x:nvl type="DECIMAL">
-          <x:number>"Paid"</x:number>
-          <x:number>0</x:number>
-        </x:nvl>
-      </x:minus>
-    </SimpleColumn>
-    
+    <SimpleColumn name="Debt" label="=trdDebt" />
+
     <SimpleColumn name="DaysForPayment" label="=trdDaysForPayment">
       <x:cast type="LONG">
         <x:divide>
-		      <x:minus>
-		        <x:nvl type="LONG">
-		          <x:number>"Term"</x:number>
-		          <x:number>"Date"</x:number>
-		        </x:nvl>
-		        <x:number>"Date"</x:number>
-		      </x:minus>
-		      <x:number>86400000</x:number>
-	     </x:divide>
+          <x:minus>
+           <x:nvl type="LONG">
+              <x:number>"Term"</x:number>
+              <x:number>"Date"</x:number>
+            </x:nvl>
+           <x:number>"Date"</x:number>
+         </x:minus>
+         <x:number>86400000</x:number>
+       </x:divide>
       </x:cast>
     </SimpleColumn>
-                          
+
     <SimpleColumn name="Customer" />
     <SimpleJoin joinType="LEFT" name="Customer">
       <SimpleColumn name="Name" alias="CustomerName" />
@@ -67,21 +59,15 @@
       <SimpleJoin name="DelayedPaymentRisk" joinType="LEFT">
         <SimpleColumn name="Name" alias="DelayedPaymentRiskName" />
       </SimpleJoin>
-      
+
       <SimpleColumn name="LastestPayment" />
-      
+
       <ExternalJoin name="Company" source="Appointments" joinType="LEFT">
         <AggregateColumn name="Created" alias="AppointmentsCount" aggregate="COUNT_DISTINCT" />
         <AggregateColumn name="Created" alias="LastAppointment" aggregate="MAX" />
       </ExternalJoin>
-<!--
-      <ExternalJoin name="Customer" source="ERPSales" joinType="LEFT">
-	      <AggregateColumn name="PaymentTime" alias="LastestPayment" aggregate="MAX" 
-	      label="=trdLatestSalePayment"/>
-      </ExternalJoin>
--->
     </SimpleJoin>
-        
+
     <SimpleColumn name="Manager" />
     <SimpleJoin name="Manager" joinType="LEFT">
       <SimpleColumn name="CompanyPerson" alias="ManagerPerson" />

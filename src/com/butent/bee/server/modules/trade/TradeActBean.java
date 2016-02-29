@@ -3681,8 +3681,7 @@ public class TradeActBean implements HasTimerService {
 
       SqlSelect salesSelect = new SqlSelect()
           .addFields(TBL_ERP_SALES, COL_TRADE_ERP_INVOICE)
-          .addExpr(SqlUtils.minus(SqlUtils.nvl(SqlUtils.field(TBL_ERP_SALES, COL_TRADE_PAID), 0),
-              SqlUtils.nvl(SqlUtils.field(TBL_ERP_SALES, COL_TRADE_AMOUNT), 0)), COL_TRADE_DEBT)
+          .addExpr(SqlUtils.nvl(SqlUtils.field(TBL_ERP_SALES, COL_TRADE_DEBT), 0), COL_TRADE_DEBT)
           .addFrom(TBL_ERP_SALES);
 
       SimpleRowSet sales = qs.getData(salesSelect);
@@ -3695,7 +3694,7 @@ public class TradeActBean implements HasTimerService {
         lastestPayments.put(erpInvoice.getValue("gavejas"), BeeUtils.max(lastestPayments.get(
             erpInvoice.getValue("gavejas")), TimeUtils.parseDate(erpInvoice.getValue("apm_data"))));
 
-        if (debt != null && debt == BeeConst.DOUBLE_ZERO) {
+        if (BeeUtils.unbox(debt) == BeeUtils.unbox(erpInvoice.getDouble("skola_w"))) {
           continue;
         }
 
@@ -3736,6 +3735,7 @@ public class TradeActBean implements HasTimerService {
                 .addConstant(COL_TRADE_CURRENCY, currencyId)
                 .addConstant(COL_TRADE_MANAGER, userId)
                 .addConstant(COL_TRADE_PAID, BeeUtils.unbox(erpInvoice.getDouble("apm_suma")))
+                .addConstant(COL_TRADE_DEBT, BeeUtils.unbox(erpInvoice.getDouble("skola_w")))
                 .addConstant(COL_TRADE_PAYMENT_TIME, TimeUtils.parseDate(erpInvoice.getValue(
                     "apm_data")))
                 .addConstant(COL_TRADE_TERM, TimeUtils.parseDate(erpInvoice.getValue(
@@ -3758,6 +3758,7 @@ public class TradeActBean implements HasTimerService {
                   .addConstant(COL_TRADE_CURRENCY, currencyId)
                   .addConstant(COL_TRADE_MANAGER, userId)
                   .addConstant(COL_TRADE_PAID, BeeUtils.unbox(erpInvoice.getDouble("apm_suma")))
+                  .addConstant(COL_TRADE_DEBT, BeeUtils.unbox(erpInvoice.getDouble("skola_w")))
                   .addConstant(COL_TRADE_PAYMENT_TIME, TimeUtils.parseDate(erpInvoice.getValue(
                       "apm_data")))
                   .addConstant(COL_TRADE_TERM, TimeUtils.parseDate(erpInvoice.getValue(
