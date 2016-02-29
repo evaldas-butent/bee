@@ -171,7 +171,7 @@ public class TripCostsGrid extends AbstractGridInterceptor
             if (!BeeUtils.isPositive(amount.getNumber())) {
               return Localized.getConstants().valueRequired();
             }
-            return super.getErrorMessage();
+            return InputCallback.super.getErrorMessage();
           }
 
           @Override
