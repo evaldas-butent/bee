@@ -8,9 +8,9 @@
   <SplitPanel splitterSize="1" style="margin:5px;" name="Split" >
     <west size="300" >
       <FlowPanel class="flexBox-vertical">
-        <FlowPanel style="background:white; border:1px solid silver; border-radius:4px;">
+        <FlowPanel style="background:white; border:1px solid silver; border-radius:4px; width: calc(100% - 7px);">
           <InputText name="Search" placeholder="=search"
-                     style="width:280px; margin:1px; border:none; outline:none;" />
+                     style="width:calc(100% - 20px); margin:1px; border:none; outline:none;" />
           <FaLabel name="SearchOptions" char="chevron_down" style="display:inline-block" />
         </FlowPanel>
         <GridPanel name="Places" class="bee-mail-Headers flexible" />
