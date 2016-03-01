@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+
+  name="TradeDocumentTypes" viewName="TradeDocumentTypes" caption="=trdDocumentTypes"
+  >
+  <g:columns>
+    <DataColumn name="Ordinal" visible="true" />
+    <DataColumn name="DocumentTypeName" minWidth="150" visible="true" />
+
+    <DataColumn name="Description" minWidth="150" visible="false" />
+  </g:columns>
+</g:Grid>

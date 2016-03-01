@@ -11,4 +11,6 @@
   <Item name="TradeNotes" label="=trdNoteTemplates" service="grid" parameters="TradeNotes" />
 
   <Item name="TradeTags" label="=tags" service="grid" parameters="TradeTags" />
+  <Item name="TradeDocumentTypes" label="=trdDocumentTypes" service="grid"
+    parameters="TradeDocumentTypes" />
 </Entry>
