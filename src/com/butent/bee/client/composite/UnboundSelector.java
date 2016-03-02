@@ -1,10 +1,5 @@
 package com.butent.bee.client.composite;
 
-import com.google.gwt.event.dom.client.BlurEvent;
-import com.google.gwt.event.dom.client.BlurHandler;
-import com.google.gwt.event.dom.client.FocusEvent;
-import com.google.gwt.event.dom.client.FocusHandler;
-
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.render.AbstractCellRenderer;
@@ -12,7 +7,6 @@ import com.butent.bee.client.render.HandlesRendering;
 import com.butent.bee.client.render.RendererFactory;
 import com.butent.bee.client.ui.FormWidget;
 import com.butent.bee.client.ui.UiHelper;
-import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Launchable;
 import com.butent.bee.shared.data.BeeRow;
@@ -105,19 +99,24 @@ public final class UnboundSelector extends DataSelector implements HandlesRender
   }
 
   @Override
+  public void normalizeDisplay(String normalizedValue) {
+    updateDisplay(getRenderedValue());
+  }
+
+  @Override
   public void setRenderer(AbstractCellRenderer renderer) {
     this.renderer = renderer;
   }
 
   @Override
   public void setSelection(BeeRow row, Value value, boolean fire) {
-    super.setSelection(row, value, fire);
-
     if (value == null) {
       render(row);
     } else {
       setRenderedValue(value.getString());
     }
+
+    super.setSelection(row, value, fire);
   }
 
   public void setValue(Long id, final boolean fire) {
@@ -163,40 +162,29 @@ public final class UnboundSelector extends DataSelector implements HandlesRender
     super.onLoad();
 
     if (!isHandledByForm()) {
-      addFocusHandler(new FocusHandler() {
-        @Override
-        public void onFocus(FocusEvent event) {
-          setEditing(true);
-        }
-      });
+      addFocusHandler(event -> setEditing(true));
     }
 
-    addBlurHandler(new BlurHandler() {
-      @Override
-      public void onBlur(BlurEvent event) {
-        if (isStrict()) {
-          updateDisplay(getRenderedValue());
-        }
-        if (!isHandledByForm()) {
-          setEditing(false);
-        }
+    addBlurHandler(event -> {
+      if (isStrict()) {
+        updateDisplay(getRenderedValue());
+      }
+      if (!isHandledByForm()) {
+        setEditing(false);
       }
     });
 
-    addEditStopHandler(new EditStopEvent.Handler() {
-      @Override
-      public void onEditStop(EditStopEvent event) {
-        if (getRenderer() != null) {
-          if (getRelatedRow() != null || isStrict()) {
-            if (event.isChanged()) {
-              render(getRelatedRow());
-            }
-            updateDisplay(getRenderedValue());
+    addEditStopHandler(event -> {
+      if (getRenderer() != null) {
+        if (getRelatedRow() != null || isStrict()) {
+          if (event.isChanged()) {
+            render(getRelatedRow());
           }
+          updateDisplay(getRenderedValue());
+        }
 
-          if (!isHandledByForm()) {
-            UiHelper.moveFocus(getParent(), getElement(), true);
-          }
+        if (!isHandledByForm()) {
+          UiHelper.moveFocus(getParent(), getElement(), true);
         }
       }
     });
