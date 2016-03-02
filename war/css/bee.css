@@ -201,6 +201,11 @@
   animation: blinker 0.5s linear infinite;
 }
 
+.bee-Relations-newRel {
+  font-size: 16px;
+  color: #63a140;
+}
+
 .bee-UserContainer {
   position: absolute;
   right: 20px;
