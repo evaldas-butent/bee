@@ -555,7 +555,11 @@
             <input id="UploadCounter" type="hidden" value="1" disabled="disabled" />
           </fieldset>
         </div>
-        <button style="display:block; margin:auto;" type="submit">=trRequestActionSubmit</button>
+        <div style="text-align:center;margin-bottom:10px;">
+          <label for="terms">=trAgreeWithConditions</label>
+          <input type="checkbox" id="terms" onchange="document.getElementById('submit').disabled=this.checked ? '' : 'disabled'" />
+        </div>
+        <button id="submit" style="display:block; margin:auto;" type="submit" disabled="disabled">=trRequestActionSubmit</button>
       </form>
       <datalist id="Positions-Name" />
       <datalist id="Countries-Name" />

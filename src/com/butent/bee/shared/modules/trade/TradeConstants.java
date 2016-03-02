@@ -70,6 +70,7 @@ public final class TradeConstants {
   public static final String VIEW_TRADE_OPERATIONS = "TradeOperations";
   public static final String VIEW_TRADE_SERIES = "TradeSeries";
   public static final String VIEW_TRADE_STATUSES = "TradeStatuses";
+  public static final String VIEW_TRADE_TAGS = "TradeTags";
 
   public static final String VIEW_SERIES_MANAGERS = "SeriesManagers";
 
@@ -141,6 +142,7 @@ public final class TradeConstants {
 
   public static final String GRID_TRADE_OPERATIONS = "TradeOperations";
   public static final String GRID_TRADE_STATUSES = "TradeStatuses";
+  public static final String GRID_TRADE_TAGS = "TradeTags";
 
   public static final String GRID_SERIES_MANAGERS = "SeriesManagers";
 

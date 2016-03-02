@@ -125,7 +125,8 @@ public final class NewsHelper {
 
   public static IsCondition getUpdatesCondition(String usageTable, long userId,
       DateTime startDate) {
-    return SqlUtils.and(SqlUtils.notEqual(usageTable, NewsConstants.COL_USAGE_USER, userId),
+    return SqlUtils.and(SqlUtils.or(SqlUtils.isNull(usageTable, NewsConstants.COL_USAGE_USER),
+            SqlUtils.notEqual(usageTable, NewsConstants.COL_USAGE_USER, userId)),
         SqlUtils.more(usageTable, NewsConstants.COL_USAGE_UPDATE, getStartTime(startDate)));
   }
 

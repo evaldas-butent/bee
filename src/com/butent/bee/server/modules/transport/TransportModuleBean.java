@@ -18,6 +18,7 @@ import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 import com.butent.bee.server.concurrency.ConcurrencyBean;
 import com.butent.bee.server.concurrency.ConcurrencyBean.HasTimerService;
 import com.butent.bee.server.data.DataEditorBean;
+import com.butent.bee.server.data.DataEvent;
 import com.butent.bee.server.data.DataEvent.ViewInsertEvent;
 import com.butent.bee.server.data.DataEvent.ViewQueryEvent;
 import com.butent.bee.server.data.DataEventHandler;
@@ -29,6 +30,7 @@ import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.modules.administration.ExchangeUtils;
 import com.butent.bee.server.modules.administration.ExtensionIcons;
+import com.butent.bee.server.modules.mail.MailModuleBean;
 import com.butent.bee.server.modules.trade.TradeModuleBean;
 import com.butent.bee.server.news.ExtendedUsageQueryProvider;
 import com.butent.bee.server.news.NewsBean;
@@ -43,6 +45,7 @@ import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.server.utils.XmlUtils;
+import com.butent.bee.server.websocket.Endpoint;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
@@ -57,17 +60,21 @@ import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.SqlConstants.SqlFunction;
+import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.view.Order;
+import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.exceptions.BeeException;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.i18n.SupportedLocale;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.documents.DocumentConstants;
+import com.butent.bee.shared.modules.mail.MailConstants;
 import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.news.Headline;
@@ -84,6 +91,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.NameUtils;
+import com.butent.bee.shared.websocket.messages.ModificationMessage;
 import com.butent.webservice.ButentWS;
 
 import java.io.BufferedReader;
@@ -109,6 +117,7 @@ import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.ejb.EJBContext;
 import javax.ejb.LocalBean;
+import javax.ejb.Schedule;
 import javax.ejb.Stateless;
 import javax.ejb.Timer;
 import javax.ejb.TimerService;
@@ -163,6 +172,8 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
   NewsBean news;
   @EJB
   TransportReportsBean rep;
+  @EJB
+  MailModuleBean mail;
   @EJB
   ConcurrencyBean cb;
 
@@ -529,6 +540,62 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
 
       @Subscribe
       @AllowConcurrentEvents
+      public void informShipmentRequestCustomer(DataEvent.ViewUpdateEvent event) {
+        if (event.isAfter(VIEW_SHIPMENT_REQUESTS)) {
+          int col = DataUtils.getColumnIndex(COL_QUERY_STATUS, event.getColumns());
+
+          if (!BeeConst.isUndef(col)) {
+            Integer status = event.getRow().getInteger(col);
+            TextConstant constant = null;
+
+            if (ShipmentRequestStatus.CONFIRMED.is(status)) {
+              constant = TextConstant.REQUEST_CONFIRMED_MAIL_CONTENT;
+            } else if (ShipmentRequestStatus.LOST.is(status)) {
+              constant = TextConstant.REQUEST_LOST_MAIL_CONTENT;
+            }
+            if (Objects.isNull(constant)) {
+              return;
+            }
+            BeeRowSet info = qs.getViewData(VIEW_SHIPMENT_REQUESTS,
+                Filter.compareId(event.getRow().getId()));
+
+            String email = BeeUtils.notEmpty(info.getString(0, COL_PERSON + COL_EMAIL),
+                info.getString(0, COL_QUERY_CUSTOMER_EMAIL));
+
+            if (BeeUtils.isEmpty(email)) {
+              return;
+            }
+            Long accountId = prm.getRelation(MailConstants.PRM_DEFAULT_ACCOUNT);
+
+            if (!DataUtils.isId(accountId)) {
+              logger.warning("Default mail account not found");
+              return;
+            }
+
+            BeeRowSet data = qs.getViewData(VIEW_TEXT_CONSTANTS,
+                Filter.equals(COL_TEXT_CONSTANT, status));
+
+            String localizedContent = Localized.column(COL_TEXT_CONTENT,
+                EnumUtils.getEnumByIndex(SupportedLocale.class, info.getInteger(0, COL_USER_LOCALE))
+                    .getLanguage());
+            String text;
+
+            if (DataUtils.isEmpty(data)) {
+              text = constant.getDefaultContent();
+            } else if (BeeConst.isUndef(DataUtils.getColumnIndex(localizedContent,
+                data.getColumns()))) {
+              text = data.getString(0, COL_TEXT_CONTENT);
+            } else {
+              text = BeeUtils.notEmpty(data.getString(0, localizedContent),
+                  data.getString(0, COL_TEXT_CONTENT));
+            }
+            cb.asynchronousCall(() -> mail.sendMail(accountId, email, null, text));
+          }
+        }
+      }
+
+      @Subscribe
+      @AllowConcurrentEvents
       public void updateAssessmentRelations(ViewInsertEvent event) {
         String tbl = sys.getViewSource(event.getTargetName());
 
@@ -632,11 +699,32 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
       }
     });
 
-    news.registerUsageQueryProvider(Feed.SHIPMENT_REQUESTS_MY, new ExtendedUsageQueryProvider() {
+    news.registerUsageQueryProvider(Feed.SHIPMENT_REQUESTS_UNREGISTERED_MY,
+        new ShipmentRequestsUsageQueryProvider());
+
+    news.registerUsageQueryProvider(Feed.SHIPMENT_REQUESTS_MY,
+        new ShipmentRequestsUsageQueryProvider());
+
+    news.registerUsageQueryProvider(Feed.SHIPMENT_REQUESTS_UNREGISTERED_ALL,
+        new ExtendedUsageQueryProvider() {
+          @Override
+          protected List<IsCondition> getConditions(long userId) {
+            return NewsHelper.buildConditions(SqlUtils.isNull(TBL_SHIPMENT_REQUESTS,
+                COL_COMPANY_PERSON));
+          }
+
+          @Override
+          protected List<Pair<String, IsCondition>> getJoins() {
+            return NewsHelper.buildJoin(TBL_SHIPMENT_REQUESTS,
+                news.joinUsage(TBL_SHIPMENT_REQUESTS));
+          }
+        });
+
+    news.registerUsageQueryProvider(Feed.SHIPMENT_REQUESTS_ALL, new ExtendedUsageQueryProvider() {
       @Override
       protected List<IsCondition> getConditions(long userId) {
-        return NewsHelper.buildConditions(SqlUtils.equals(TBL_SHIPMENT_REQUESTS,
-            COL_QUERY_MANAGER, userId));
+        return NewsHelper.buildConditions(SqlUtils.notNull(TBL_SHIPMENT_REQUESTS,
+            COL_COMPANY_PERSON));
       }
 
       @Override
@@ -814,6 +902,50 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
         return select;
       }
     });
+  }
+
+  @Schedule
+  private void checkRequestStatus() {
+    DateTime date = TimeUtils.startOfDay(1);
+
+    SqlSelect query = new SqlSelect()
+        .addField(TBL_SHIPMENT_REQUESTS, sys.getIdName(TBL_SHIPMENT_REQUESTS), "id")
+        .addField(TBL_SHIPMENT_REQUESTS, sys.getVersionName(TBL_SHIPMENT_REQUESTS), "version")
+        .addFields(TBL_SHIPMENT_REQUESTS, COL_QUERY_STATUS)
+        .addFrom(TBL_SHIPMENT_REQUESTS)
+        .addFromInner(TBL_ORDER_CARGO,
+            sys.joinTables(TBL_ORDER_CARGO, TBL_SHIPMENT_REQUESTS, COL_CARGO))
+        .setWhere(SqlUtils.and(SqlUtils.not(SqlUtils.inList(TBL_SHIPMENT_REQUESTS, COL_QUERY_STATUS,
+                ShipmentRequestStatus.CONFIRMED, ShipmentRequestStatus.LOST)),
+            SqlUtils.less(TBL_CARGO_PLACES, COL_PLACE_DATE, date)));
+
+    SimpleRowSet expired = qs.getData(query.copyOf()
+        .addFromInner(TBL_CARGO_HANDLING,
+            sys.joinTables(TBL_CARGO_HANDLING, TBL_ORDER_CARGO, COL_CARGO_HANDLING))
+        .addFromInner(TBL_CARGO_PLACES,
+            sys.joinTables(TBL_CARGO_PLACES, TBL_CARGO_HANDLING, COL_LOADING_PLACE))
+        .setUnionAllMode(false)
+        .addUnion(query.copyOf()
+            .addFromInner(TBL_CARGO_HANDLING,
+                sys.joinTables(TBL_ORDER_CARGO, TBL_CARGO_HANDLING, COL_CARGO))
+            .addFromInner(TBL_CARGO_PLACES,
+                sys.joinTables(TBL_CARGO_PLACES, TBL_CARGO_HANDLING, COL_LOADING_PLACE))));
+
+    if (!DataUtils.isEmpty(expired)) {
+      BeeColumn col = DataUtils.getColumn(COL_QUERY_STATUS,
+          sys.getView(VIEW_SHIPMENT_REQUESTS).getRowSetColumns());
+
+      for (SimpleRow row : expired) {
+        BeeRowSet rs = DataUtils.getUpdated(VIEW_SHIPMENT_REQUESTS, row.getLong("id"),
+            row.getLong("version"), col, row.getValue(COL_QUERY_STATUS),
+            BeeUtils.toString(ShipmentRequestStatus.LOST.ordinal()));
+
+        deb.commitRow(rs, RowInfo.class);
+      }
+      DataChangeEvent.fireRefresh(
+          (event, locality) -> Endpoint.sendToAll(new ModificationMessage(event)),
+          VIEW_SHIPMENT_REQUESTS);
+    }
   }
 
   private ResponseObject costsToERP(Set<Long> ids) {

@@ -57,6 +57,7 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.menu.MenuHandler;
 import com.butent.bee.shared.menu.MenuService;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
+import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -215,6 +216,16 @@ public final class TransportHandler {
         });
 
     SelectorEvent.register(new TransportSelectorHandler());
+
+    Global.getNewsAggregator().registerFilterHandler(Feed.SHIPMENT_REQUESTS_MY,
+        (gridOptions, presenterCallback) -> GridFactory.openGrid(GRID_SHIPMENT_REQUESTS,
+            GridFactory.getGridInterceptor(GRID_SHIPMENT_REQUESTS), gridOptions,
+            presenterCallback));
+
+    Global.getNewsAggregator().registerFilterHandler(Feed.SHIPMENT_REQUESTS_ALL,
+        (gridOptions, presenterCallback) -> GridFactory.openGrid(GRID_SHIPMENT_REQUESTS,
+            GridFactory.getGridInterceptor(GRID_SHIPMENT_REQUESTS), gridOptions,
+            presenterCallback));
 
     GridFactory.registerGridInterceptor(VIEW_SPARE_PARTS, new SparePartsGridHandler());
 

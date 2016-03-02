@@ -641,15 +641,14 @@ public class GridLoaderBean {
               column.replaceSource(original, translation);
 
               String label = view.getColumnLabel(translation);
-              if (!BeeUtils.isEmpty(label)) {
+              if (!BeeUtils.isEmpty(label) && !BeeUtils.equalsTrim(label, column.getLabel())) {
                 column.setLabel(label);
-
-                if (!BeeUtils.isEmpty(column.getCaption())) {
-                  column.setCaption(null);
-                }
+              } else {
+                column.setLabel(null);
               }
+              column.setCaption(null);
 
-              column.setVisible(null);
+              column.setVisible(false);
               column.setEditInPlace(true);
 
               index++;

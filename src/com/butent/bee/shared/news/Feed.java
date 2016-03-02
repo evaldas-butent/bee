@@ -26,6 +26,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashSet;
@@ -237,20 +238,43 @@ public enum Feed implements HasLocalizedCaption {
     }
   },
 
-  SHIPMENT_REQUESTS_MY(ModuleAndSub.of(Module.TRANSPORT), TransportConstants.TBL_SHIPMENT_REQUESTS,
-      TransportConstants.VIEW_SHIPMENT_REQUESTS, TransportConstants.COL_QUERY_CUSTOMER_NAME) {
+  SHIPMENT_REQUESTS_UNREGISTERED_MY(ModuleAndSub.of(Module.TRANSPORT, SubModule.SELFSERVICE),
+      TransportConstants.TBL_SHIPMENT_REQUESTS, TransportConstants.VIEW_SHIPMENT_REQUESTS,
+      Arrays.asList(TransportConstants.COL_QUERY_STATUS, TransportConstants.COL_QUERY_DATE,
+          TransportConstants.COL_QUERY_CUSTOMER_NAME)) {
     @Override
     public String getCaption(LocalizableConstants constants) {
       return constants.feedTrRequestsUnregisteredMy();
     }
   },
 
-  SHIPMENT_REQUESTS_ALL(ModuleAndSub.of(Module.TRANSPORT),
-      TransportConstants.TBL_SHIPMENT_REQUESTS,
-      TransportConstants.VIEW_SHIPMENT_REQUESTS, TransportConstants.COL_QUERY_CUSTOMER_NAME) {
+  SHIPMENT_REQUESTS_UNREGISTERED_ALL(ModuleAndSub.of(Module.TRANSPORT, SubModule.SELFSERVICE),
+      TransportConstants.TBL_SHIPMENT_REQUESTS, TransportConstants.VIEW_SHIPMENT_REQUESTS,
+      Arrays.asList(TransportConstants.COL_QUERY_STATUS, TransportConstants.COL_QUERY_DATE,
+          TransportConstants.COL_QUERY_CUSTOMER_NAME)) {
     @Override
     public String getCaption(LocalizableConstants constants) {
       return constants.feedTrRequestsUnregisteredAll();
+    }
+  },
+
+  SHIPMENT_REQUESTS_MY(ModuleAndSub.of(Module.TRANSPORT, SubModule.SELFSERVICE),
+      TransportConstants.TBL_SHIPMENT_REQUESTS, TransportConstants.VIEW_SHIPMENT_REQUESTS,
+      Arrays.asList(TransportConstants.COL_QUERY_STATUS, TransportConstants.COL_QUERY_DATE,
+          ALS_COMPANY_NAME)) {
+    @Override
+    public String getCaption(LocalizableConstants constants) {
+      return constants.feedTrRequestsMy();
+    }
+  },
+
+  SHIPMENT_REQUESTS_ALL(ModuleAndSub.of(Module.TRANSPORT, SubModule.SELFSERVICE),
+      TransportConstants.TBL_SHIPMENT_REQUESTS, TransportConstants.VIEW_SHIPMENT_REQUESTS,
+      Arrays.asList(TransportConstants.COL_QUERY_STATUS, TransportConstants.COL_QUERY_DATE,
+          ALS_COMPANY_NAME)) {
+    @Override
+    public String getCaption(LocalizableConstants constants) {
+      return constants.feedTrRequestsAll();
     }
   },
 

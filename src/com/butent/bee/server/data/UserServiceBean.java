@@ -281,8 +281,7 @@ public class UserServiceBean {
 
   public String getCurrentUser() {
     Principal p = ctx.getCallerPrincipal();
-    Assert.notNull(p);
-    return p.getName().toLowerCase();
+    return Objects.nonNull(p) ? p.getName().toLowerCase() : null;
   }
 
   public Filter getCurrentUserFilter(String column) {

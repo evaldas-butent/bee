@@ -384,6 +384,8 @@ public interface LocalizableTransportConstants {
 
   String trRequestCargoWidth();
 
+  String trRequestConfirmedMailContent();
+
   String trRequestCustomerAddress();
 
   String trRequestCustomerCode();
@@ -417,6 +419,8 @@ public interface LocalizableTransportConstants {
   String trRequestExpeditionType();
 
   String trRequestFreightInsurance();
+
+  String trRequestLostMailContent();
 
   String trRequestNew();
 

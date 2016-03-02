@@ -1,11 +1,11 @@
 package com.butent.bee.server.news;
 
+import com.butent.bee.server.data.BeeTable.BeeField;
+import com.butent.bee.server.data.BeeTable.BeeRelation;
 import com.butent.bee.server.data.BeeView;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
-import com.butent.bee.server.data.BeeTable.BeeField;
-import com.butent.bee.server.data.BeeTable.BeeRelation;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.SqlInsert;
@@ -237,28 +237,22 @@ public class NewsBean {
     }
 
     Long userId = usr.getCurrentUserId();
-    if (!DataUtils.isId(userId)) {
-      return;
-    }
-
     long now = System.currentTimeMillis();
 
     IsCondition where = SqlUtils.equals(usageTable, relationColumn, rowId,
         NewsConstants.COL_USAGE_USER, userId);
 
-    if (qs.sqlExists(usageTable, where)) {
-      qs.updateData(new SqlUpdate(usageTable)
-          .addConstant(NewsConstants.COL_USAGE_ACCESS, now)
-          .addConstant(NewsConstants.COL_USAGE_UPDATE, now)
-          .setWhere(where));
+    int cnt = qs.updateData(new SqlUpdate(usageTable)
+        .addConstant(NewsConstants.COL_USAGE_ACCESS, now)
+        .addConstant(NewsConstants.COL_USAGE_UPDATE, now)
+        .setWhere(where));
 
-    } else {
+    if (!BeeUtils.isPositive(cnt)) {
       qs.insertData(new SqlInsert(usageTable)
           .addFields(relationColumn, NewsConstants.COL_USAGE_USER, NewsConstants.COL_USAGE_ACCESS,
               NewsConstants.COL_USAGE_UPDATE)
           .addValues(rowId, userId, now, now));
     }
-
     logger.debug("news on update", userId, table, rowId, usageTable);
   }
 
