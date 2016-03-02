@@ -15,14 +15,17 @@ import com.butent.bee.server.rest.CrudWorker;
 import com.butent.bee.server.rest.RestResponse;
 import com.butent.bee.server.rest.annotations.Trusted;
 import com.butent.bee.server.sql.SqlSelect;
-import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
+import com.butent.bee.server.websocket.Endpoint;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.SimpleRowSet;
+import com.butent.bee.shared.data.event.DataChangeEvent;
+import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.exceptions.BeeException;
 import com.butent.bee.shared.html.builder.Document;
 import com.butent.bee.shared.html.builder.FertileElement;
@@ -36,6 +39,7 @@ import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
+import com.butent.bee.shared.websocket.messages.ModificationMessage;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -79,10 +83,13 @@ public class ShipmentRequestsWorker {
   public String confirm(@PathParam("id") Long requestId, @QueryParam("choice") String choice) {
     FertileElement el = null;
 
-    Integer currentStatus = qs.getInt(new SqlSelect()
+    SimpleRowSet.SimpleRow row = qs.getRow(new SqlSelect()
+        .addField(TBL_SHIPMENT_REQUESTS, sys.getVersionName(TBL_SHIPMENT_REQUESTS), "version")
         .addFields(TBL_SHIPMENT_REQUESTS, COL_QUERY_STATUS)
         .addFrom(TBL_SHIPMENT_REQUESTS)
         .setWhere(sys.idEquals(TBL_SHIPMENT_REQUESTS, requestId)));
+
+    Integer currentStatus = row.getInt(COL_QUERY_STATUS);
 
     if (ShipmentRequestStatus.CONTRACT_SENT.is(currentStatus)) {
       ShipmentRequestStatus status = EnumUtils.getEnumByName(ShipmentRequestStatus.class, choice);
@@ -91,9 +98,16 @@ public class ShipmentRequestsWorker {
         switch (status) {
           case APPROVED:
           case REJECTED:
-            qs.updateData(new SqlUpdate(TBL_SHIPMENT_REQUESTS)
-                .addConstant(COL_QUERY_STATUS, status)
-                .setWhere(sys.idEquals(TBL_SHIPMENT_REQUESTS, requestId)));
+            BeeRowSet rs = DataUtils.getUpdated(VIEW_SHIPMENT_REQUESTS, requestId,
+                row.getLong("version"), DataUtils.getColumn(COL_QUERY_STATUS,
+                    sys.getView(VIEW_SHIPMENT_REQUESTS).getRowSetColumns()),
+                BeeUtils.toString(currentStatus), BeeUtils.toString(status.ordinal()));
+
+            deb.commitRow(rs, RowInfo.class);
+
+            DataChangeEvent.fireRefresh(
+                (event, locality) -> Endpoint.sendToAll(new ModificationMessage(event)),
+                VIEW_SHIPMENT_REQUESTS);
 
             el = div().text(status.getCaption());
             break;
@@ -182,6 +196,10 @@ public class ShipmentRequestsWorker {
     } catch (BeeException e) {
       return RestResponse.error(e);
     }
+    DataChangeEvent.fireRefresh(
+        (event, locality) -> Endpoint.sendToAll(new ModificationMessage(event)),
+        VIEW_SHIPMENT_REQUESTS);
+
     return RestResponse.ok(Localized.getConstants().ok());
   }
 

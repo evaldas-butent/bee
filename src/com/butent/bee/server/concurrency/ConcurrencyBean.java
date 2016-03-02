@@ -336,6 +336,7 @@ public class ConcurrencyBean {
       logger.info("Queuing:", worker);
       waitingThreads.offer(worker);
     } else {
+      logger.info("Waiting:", worker);
       worker.onError();
     }
   }

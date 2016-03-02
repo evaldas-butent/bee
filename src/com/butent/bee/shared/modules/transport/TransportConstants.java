@@ -113,10 +113,10 @@ public final class TransportConstants {
 
       @Override
       public String getDefaultContent() {
-        return "  Follow the link below to confirm or reject the agreement"
+        return "Follow the link below to confirm or reject the agreement"
             + " which is attached to this letter<br><br>"
             + "http://127.0.0.1:8080/Bee/{contract_path}<br><br><br>"
-            + "  This message was created automatically by mail delivery software. "
+            + "This message was created automatically by mail delivery software. "
             + "Thank You for using our services.";
       }
     },
@@ -124,6 +124,32 @@ public final class TransportConstants {
       @Override
       public String getCaption(LocalizableConstants constants) {
         return constants.trRegistrationMailContent();
+      }
+    },
+    REQUEST_CONFIRMED_MAIL_CONTENT {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.trRequestConfirmedMailContent();
+      }
+
+      @Override
+      public String getDefaultContent() {
+        return "Your order is in progress!<br><br><br>"
+            + "This message was created automatically by mail delivery software. "
+            + "Thank You for using our services.";
+      }
+    },
+    REQUEST_LOST_MAIL_CONTENT {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.trRequestLostMailContent();
+      }
+
+      @Override
+      public String getDefaultContent() {
+        return "Your inquiry is denied.<br><br><br>"
+            + "This message was created automatically by mail delivery software. "
+            + "Thank You for using our services.";
       }
     };
 

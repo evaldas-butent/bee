@@ -195,7 +195,9 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
     if (ShipmentRequestStatus.LOST.is(row.getInteger(form.getDataIndex(COL_QUERY_STATUS)))
         && BeeUtils.isEmpty(row.getString(form.getDataIndex(COL_QUERY_REASON)))) {
 
-      onLoss(true);
+      if (!isSelfService()) {
+        onLoss(true);
+      }
     }
     return super.onStartEdit(form, row, focusCommand);
   }
