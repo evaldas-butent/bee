@@ -62,6 +62,8 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.i18n.SupportedLocale;
 import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.modules.mail.MailConstants;
+import com.butent.bee.shared.modules.transport.TransportConstants.ShipmentRequestStatus;
+import com.butent.bee.shared.modules.transport.TransportConstants.TextConstant;
 import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -397,7 +399,7 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
     Multimap<Pair<String, Long>, Pair<String, Object>> updates = HashMultimap.create();
 
     checkOrphans(relations, views, data, (col) -> {
-      UnboundSelector widget = unboundWidgets.get(col);
+      UnboundSelector widget = getUnboundWidget(col);
       String value = null;
 
       if (widget != null) {
@@ -475,8 +477,8 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
           }
           Runnable onSuccess = () -> {
             for (Pair<String, Long> key : updates.keySet()) {
-              List<String> columns = new ArrayList<String>();
-              List<String> values = new ArrayList<String>();
+              List<String> columns = new ArrayList<>();
+              List<String> values = new ArrayList<>();
 
               for (Pair<String, Object> pair : updates.get(key)) {
                 String col = pair.getA();
@@ -492,7 +494,7 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
           Runnable onConfirm;
 
           if (!BeeUtils.isEmpty(missing)) {
-            List<Runnable> queue = new ArrayList();
+            List<Runnable> queue = new ArrayList<>();
 
             onConfirm = () -> {
               Runnable startup = null;
@@ -519,9 +521,9 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
                     }
                     Queries.insert(relation, cols, vals, null, new RowInsertCallback(relation) {
                       @Override
-                      public void onSuccess(BeeRow result) {
-                        super.onSuccess(result);
-                        entry.setValue(result.getId());
+                      public void onSuccess(BeeRow r) {
+                        super.onSuccess(r);
+                        entry.setValue(r.getId());
                         cnt.set(cnt.get() - 1);
 
                         if (!BeeUtils.isPositive(cnt.get())) {

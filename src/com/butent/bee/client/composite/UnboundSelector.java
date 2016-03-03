@@ -13,6 +13,7 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.value.Value;
+import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -132,6 +133,16 @@ public final class UnboundSelector extends DataSelector implements HandlesRender
     } else {
       setSelection(null, null, fire);
       updateDisplay(getRenderedValue());
+    }
+  }
+
+  @Override
+  public void setValue(String value) {
+    super.setValue(value);
+
+    if (getValueType() == ValueType.TEXT) {
+      setRenderedValue(value);
+      updateDisplay(value);
     }
   }
 
