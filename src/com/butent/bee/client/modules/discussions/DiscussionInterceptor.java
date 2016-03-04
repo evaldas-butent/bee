@@ -271,6 +271,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
   private static final String STYLE_REPLY = "-reply";
   private static final String STYLE_TRASH = "-trash";
   private static final String STYLE_CHATTER = "-chatter";
+  private static final String STYLE_PHOTO = "Photo";
 
   private static final String WIDGET_DESCRIPTION_EDITOR = COL_DESCRIPTION + "Editor";
 
@@ -802,7 +803,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
   }
 
   private static boolean isPhoto(BeeRow row, BeeRowSet rowSet) {
-    return !BeeUtils.isEmpty(row.getString(rowSet.getColumnIndex(COL_PHOTO)));
+    return DataUtils.isId(row.getLong(rowSet.getColumnIndex(COL_PHOTO)));
   }
 
   private static void sendRequest(ParameterList params,
@@ -870,10 +871,10 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
     }
 
     Flow colPhoto = new Flow();
-    colPhoto.addStyleName(STYLE_COMMENT_ROW + COL_PHOTO);
+    colPhoto.addStyleName(STYLE_COMMENT_ROW + STYLE_PHOTO);
 
     if (paddingLeft > MAX_COMMENT_ROW_PADDING_LEFT) {
-      colPhoto.addStyleName(STYLE_COMMENT_ROW + COL_PHOTO + STYLE_CHATTER);
+      colPhoto.addStyleName(STYLE_COMMENT_ROW + STYLE_PHOTO + STYLE_CHATTER);
     }
 
     if (renderPhoto) {
@@ -1392,7 +1393,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
       case ACTIVATE:
         return (DiscussionStatus.in(status, DiscussionStatus.INACTIVE) && isAdmin(adminLogin))
             || (DiscussionStatus.in(status, DiscussionStatus.CLOSED, DiscussionStatus.INACTIVE)
-            && (isOwner(userId, owner) || isAdmin(adminLogin)));
+                && (isOwner(userId, owner) || isAdmin(adminLogin)));
       case CLOSE:
         return DiscussionStatus.in(status, DiscussionStatus.ACTIVE, DiscussionStatus.INACTIVE)
             && (isOwner(userId, owner) || isAdmin(adminLogin));
@@ -1534,11 +1535,11 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
 
   private static void renderPhoto(IsRow commentRow, List<BeeColumn> commentColumns,
       Flow container) {
-    String photo =
-        commentRow.getString(DataUtils.getColumnIndex(COL_PHOTO, commentColumns));
-    if (!BeeUtils.isEmpty(photo)) {
+    Long photo =
+        commentRow.getLong(DataUtils.getColumnIndex(COL_PHOTO, commentColumns));
+    if (DataUtils.isId(photo)) {
       Image image = new Image(PhotoRenderer.getUrl(photo));
-      image.addStyleName(STYLE_COMMENT + COL_PHOTO);
+      image.addStyleName(STYLE_COMMENT + STYLE_PHOTO);
       container.add(image);
     }
   }

@@ -119,6 +119,7 @@ public final class FileUtils {
     }
   }
 
+  @Deprecated
   public static void deletePhoto(final String photoFileName, final Callback<String> callback) {
     Assert.notEmpty(photoFileName);
 
@@ -339,6 +340,7 @@ public final class FileUtils {
     }
   }
 
+  @Deprecated
   public static void uploadPhoto(NewFileInfo fileInfo, final String photoFileName, String oldPhoto,
       final Callback<String> callback) {
 

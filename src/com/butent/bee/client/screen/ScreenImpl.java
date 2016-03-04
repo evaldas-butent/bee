@@ -523,9 +523,9 @@ public class ScreenImpl implements Screen {
       getUserPhotoContainer().clear();
       final Image image;
 
-      String photoFileName = userData.getPhotoFileName();
-      if (!BeeUtils.isEmpty(photoFileName)) {
-        image = new Image(PhotoRenderer.getUrl(photoFileName));
+      Long photoFile = userData.getPhotoFile();
+      if (DataUtils.isId(photoFile)) {
+        image = new Image(PhotoRenderer.getUrl(photoFile));
       } else {
         image = new Image(DEFAULT_PHOTO_IMAGE);
       }
@@ -1232,7 +1232,7 @@ public class ScreenImpl implements Screen {
 
           Image img;
           if (user.hasPhoto()) {
-            img = new Image(PhotoRenderer.getUrl(user.getPhotoFileName()));
+            img = new Image(PhotoRenderer.getUrl(user.getPhotoFile()));
           } else {
             img = new Image(DEFAULT_PHOTO_IMAGE);
           }
@@ -1507,8 +1507,8 @@ public class ScreenImpl implements Screen {
     exitContainer.add(exit);
 
     Image image;
-    String photoFileName = BeeKeeper.getUser().getUserData().getPhotoFileName();
-    if (!BeeUtils.isEmpty(photoFileName)) {
+    Long photoFileName = BeeKeeper.getUser().getUserData().getPhotoFile();
+    if (DataUtils.isId(photoFileName)) {
       image = new Image(PhotoRenderer.getUrl(photoFileName));
     } else {
       image = new Image(DEFAULT_PHOTO_IMAGE);
