@@ -8,7 +8,6 @@ import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.i18n.LocalizableConstants;
-import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.calendar.CalendarConstants;
 import com.butent.bee.shared.modules.discussions.DiscussionsConstants;
 import com.butent.bee.shared.modules.documents.DocumentConstants;
@@ -529,11 +528,6 @@ public enum Feed implements HasLocalizedCaption {
 
     this.labelColumns = labelColumns;
     this.titleColumns = titleColumns;
-  }
-
-  @Override
-  public String getCaption() {
-    return getCaption(Localized.getConstants());
   }
 
   public String getHeadlineView() {

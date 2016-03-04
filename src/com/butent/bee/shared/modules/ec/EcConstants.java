@@ -46,11 +46,6 @@ public final class EcConstants {
         return constants.ecClientTypePerson();
       }
     };
-
-    @Override
-    public String getCaption() {
-      return getCaption(Localized.getConstants());
-    }
   }
 
   public enum EcDisplayedPrice implements HasCaption {
@@ -70,7 +65,7 @@ public final class EcConstants {
     }
   }
 
-  public enum EcOrderStatus implements HasCaption {
+  public enum EcOrderStatus implements HasLocalizedCaption {
     NEW {
       @Override
       public String getCaption(LocalizableConstants constants) {
@@ -135,13 +130,6 @@ public final class EcConstants {
       }
       return false;
     }
-
-    @Override
-    public String getCaption() {
-      return getCaption(Localized.getConstants());
-    }
-
-    public abstract String getCaption(LocalizableConstants constants);
 
     public abstract String getSubject(LocalizableConstants constants);
   }

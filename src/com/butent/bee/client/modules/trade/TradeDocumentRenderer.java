@@ -205,11 +205,6 @@ public class TradeDocumentRenderer extends AbstractFormInterceptor {
       this.hasCurency = hasCurency;
     }
 
-    @Override
-    public String getCaption() {
-      return getCaption(Localized.getConstants());
-    }
-
     abstract String render(BeeRowSet rowSet, int rowIndex, double vat, double total);
   }
 

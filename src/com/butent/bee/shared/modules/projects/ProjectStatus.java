@@ -1,7 +1,6 @@
 package com.butent.bee.shared.modules.projects;
 
 import com.butent.bee.shared.i18n.LocalizableConstants;
-import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.HasLocalizedCaption;
 
 /**
@@ -35,9 +34,4 @@ public enum ProjectStatus implements HasLocalizedCaption {
       return constants.prjStatusApproved();
     }
   };
-
-  @Override
-  public String getCaption() {
-    return getCaption(Localized.getConstants());
-  }
 }

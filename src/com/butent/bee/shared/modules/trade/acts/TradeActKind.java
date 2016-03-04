@@ -4,7 +4,6 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.i18n.LocalizableConstants;
-import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.HasLocalizedCaption;
 
 import java.util.EnumSet;
@@ -150,11 +149,6 @@ public enum TradeActKind implements HasLocalizedCaption {
 
   public boolean enableTemplate() {
     return options.contains(Option.SAVE_AS_TEMPLATE);
-  }
-
-  @Override
-  public String getCaption() {
-    return getCaption(Localized.getConstants());
   }
 
   public Filter getFilter() {

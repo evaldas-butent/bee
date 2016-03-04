@@ -34,11 +34,6 @@ public final class TransportConstants {
       }
     };
 
-    @Override
-    public String getCaption() {
-      return getCaption(Localized.getConstants());
-    }
-
     public boolean is(Integer status) {
       return status != null && ordinal() == status;
     }
@@ -87,11 +82,6 @@ public final class TransportConstants {
         return constants.trRequestStatusLost();
       }
     };
-
-    @Override
-    public String getCaption() {
-      return getCaption(Localized.getConstants());
-    }
 
     public boolean is(Integer status) {
       return status != null && ordinal() == status;
@@ -153,11 +143,6 @@ public final class TransportConstants {
       }
     };
 
-    @Override
-    public String getCaption() {
-      return getCaption(Localized.getConstants());
-    }
-
     public String getDefaultContent() {
       return null;
     }
@@ -176,11 +161,6 @@ public final class TransportConstants {
         return constants.winter();
       }
     };
-
-    @Override
-    public String getCaption() {
-      return getCaption(Localized.getConstants());
-    }
   }
 
   public enum OrderStatus implements HasLocalizedCaption {
@@ -208,11 +188,6 @@ public final class TransportConstants {
         return constants.trOrderStatusCompleted();
       }
     };
-
-    @Override
-    public String getCaption() {
-      return getCaption(Localized.getConstants());
-    }
 
     public boolean is(Integer status) {
       return status != null && ordinal() == status;
@@ -264,11 +239,6 @@ public final class TransportConstants {
         return constants.trConstantCosts();
       }
     };
-
-    @Override
-    public String getCaption() {
-      return getCaption(Localized.getConstants());
-    }
   }
 
   public enum VehicleType {
