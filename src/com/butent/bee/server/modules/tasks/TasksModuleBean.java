@@ -1752,7 +1752,7 @@ public class TasksModuleBean implements BeeModule {
     long totalTimeMls = 0;
 
     result.addRow(new String[] {
-        constants.userFullName(), constants.crmSpentTime()});
+        constants.executorFullName(), constants.crmSpentTime()});
 
     for (int i = 0; i < usersListSet.getNumberOfRows(); i++) {
       String userFullName =
