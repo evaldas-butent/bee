@@ -26,6 +26,7 @@ import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.io.ExtensionFilter;
 import com.butent.bee.server.io.FileUtils;
 import com.butent.bee.server.modules.ModuleHolderBean;
+import com.butent.bee.server.modules.administration.FileStorageBean;
 import com.butent.bee.server.modules.ec.TecDocBean;
 import com.butent.bee.server.modules.mail.MailModuleBean;
 import com.butent.bee.server.news.NewsBean;
@@ -54,6 +55,7 @@ import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.data.view.RowInfoList;
 import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogLevel;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.news.Feed;
@@ -129,6 +131,8 @@ public class UiServiceBean {
   TecDocBean tcd;
   @EJB
   NewsBean news;
+  @EJB
+  FileStorageBean fs;
 
   public ResponseObject doService(RequestInfo reqInfo) {
     ResponseObject response;
@@ -1007,6 +1011,17 @@ public class UiServiceBean {
     } else if (BeeUtils.same(cmd, "reports")) {
       ui.initReports();
       response.addInfo("Reports OK");
+
+    } else if (BeeUtils.same(cmd, "cacheinfo")) {
+      response.addInfo(fs.getCacheStats());
+
+    } else if (BeeUtils.startsSame(cmd, "logger")) {
+      if (BeeUtils.isSuffix(cmd, "on")) {
+        LogUtils.getRootLogger().setLevel(LogLevel.DEBUG);
+      } else if (BeeUtils.isSuffix(cmd, "off")) {
+        LogUtils.getRootLogger().setLevel(LogLevel.INFO);
+      }
+      response.addInfo(LogUtils.getRootLogger().getLevel());
 
     } else if (BeeUtils.same(cmd, "system")) {
       ib.init();

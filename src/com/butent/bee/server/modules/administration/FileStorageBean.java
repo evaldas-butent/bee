@@ -85,8 +85,8 @@ public class FileStorageBean {
   @EJB
   ParamHolderBean prm;
 
-  private final LoadingCache<Long, FileInfo> cacheNew = CacheBuilder.newBuilder()
-      .maximumSize(100000)
+  private final LoadingCache<Long, FileInfo> cache = CacheBuilder.newBuilder()
+      .recordStats()
       .expireAfterAccess(1, TimeUnit.DAYS)
       .removalListener((removalNotification) -> ((FileInfo) removalNotification.getValue()).close())
       .build(new CacheLoader<Long, FileInfo>() {
@@ -103,7 +103,7 @@ public class FileStorageBean {
     FileInfo storedFile;
 
     try {
-      storedFile = cacheNew.get(fileId);
+      storedFile = cache.get(fileId);
     } catch (ExecutionException e) {
       throw e.getCause() instanceof IOException
           ? (IOException) e.getCause() : new IOException(e.getCause());
@@ -195,7 +195,7 @@ public class FileStorageBean {
         tmp.delete();
       }
     }
-    cacheNew.invalidate(storedFile.getId());
+    cache.invalidate(storedFile.getId());
     return id.get();
   }
 
@@ -288,9 +288,13 @@ public class FileStorageBean {
     return file.exists() && file.delete();
   }
 
+  public String getCacheStats() {
+    return BeeUtils.joinWords(cache.stats().toString(), "size", cache.size());
+  }
+
   public FileInfo getFile(Long fileId) throws IOException {
     try {
-      return cacheNew.get(fileId);
+      return cache.get(fileId);
     } catch (ExecutionException e) {
       throw e.getCause() instanceof IOException
           ? (IOException) e.getCause() : new IOException(e.getCause());
@@ -371,7 +375,7 @@ public class FileStorageBean {
       fileInfo.setHash(hash);
       fileInfo.setTemporary(true);
 
-      cacheNew.put(id, fileInfo);
+      cache.put(id, fileInfo);
     }
     return id;
   }

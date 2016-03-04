@@ -54,6 +54,7 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -86,6 +87,29 @@ import javax.ws.rs.core.MediaType;
 @LocalBean
 @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
 public class MailStorageBean {
+
+  private static class Profile {
+    private BeeLogger beeLogger;
+    private long millis = System.currentTimeMillis();
+    private Map<String, Long> history = new LinkedHashMap<>();
+
+    public Profile(BeeLogger logger) {
+      this.beeLogger = logger;
+    }
+
+    public void set(String note) {
+      history.put(note, System.currentTimeMillis() - millis);
+      millis = System.currentTimeMillis();
+    }
+
+    public void log(String caption) {
+      long time = history.values().stream().mapToLong(Long::longValue).sum();
+
+      if (time >= 1000) {
+        beeLogger.info(caption, time, history);
+      }
+    }
+  }
 
   private static final BeeLogger logger = LogUtils.getLogger(MailStorageBean.class);
 
@@ -241,9 +265,13 @@ public class MailStorageBean {
   public Pair<Long, Long> storeMail(MailAccount account, Message message, Long folderId,
       Long messageUID) throws MessagingException {
 
+    Profile p = new Profile(logger);
+
     MailEnvelope envelope = new MailEnvelope(message);
     Pair<Long, Long> messageId = Pair.empty();
     Holder<Boolean> finished = Holder.of(false);
+
+    p.set("envelope");
 
     cb.synchronizedCall(new Runnable() {
       @Override
@@ -258,15 +286,22 @@ public class MailStorageBean {
           messageId.setA(row.getLong(COL_MESSAGE));
           finished.set(DataUtils.isId(row.getLong(COL_RAW_CONTENT)));
         } else {
+          String subj;
+
+          try {
+            subj = getStringContent(envelope.getSubject());
+          } catch (IOException e) {
+            subj = null;
+          }
           messageId.setA(qs.insertData(new SqlInsert(TBL_MESSAGES)
               .addConstant(COL_UNIQUE_ID, envelope.getUniqueId())
               .addConstant(COL_DATE, envelope.getDate())
-              .addNotEmpty(COL_SUBJECT,
-                  sys.clampValue(TBL_MESSAGES, COL_SUBJECT, envelope.getSubject()))
+              .addNotEmpty(COL_SUBJECT, sys.clampValue(TBL_MESSAGES, COL_SUBJECT, subj))
               .addNotEmpty(COL_IN_REPLY_TO, envelope.getInReplyTo())));
         }
       }
     });
+    p.set("check");
     boolean hasPlace = false;
 
     if (finished.get()) {
@@ -274,6 +309,7 @@ public class MailStorageBean {
         hasPlace = qs.sqlExists(TBL_PLACES,
             SqlUtils.and(SqlUtils.equals(TBL_PLACES, COL_MESSAGE_UID, messageUID),
                 SqlUtils.equals(TBL_PLACES, COL_MESSAGE, messageId.getA(), COL_FOLDER, folderId)));
+        p.set("check2");
       }
     } else {
       Holder<Long> senderId = Holder.absent();
@@ -283,8 +319,9 @@ public class MailStorageBean {
         try {
           senderId.set(storeAddress(account.getUserId(), sender));
         } catch (AddressException e) {
-          logger.warning("(MessageID=", messageId.getA(), ") Error storing address:", e);
+          logger.warning("(MessageID =", messageId.getA(), ") Error storing address:", e);
         }
+        p.set("sender");
       }
       Long fileId;
       InputStream is;
@@ -293,12 +330,14 @@ public class MailStorageBean {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         message.writeTo(bos);
         bos.close();
+        p.set("download");
         is = new SharedByteArrayInputStream(bos.toByteArray());
         fileId = fs.storeFile(is, "mail@" + envelope.getUniqueId(), MediaType.TEXT_PLAIN);
+        p.set("file");
       } catch (IOException | MessagingException e) {
         qs.updateData(new SqlDelete(TBL_MESSAGES)
             .setWhere(sys.idEquals(TBL_MESSAGES, messageId.getA())));
-        throw new MessagingException("(MessageID=" + messageId.getA() + ") Error getting content",
+        throw new MessagingException("(MessageID =" + messageId.getA() + ") Error getting content",
             e);
       }
       cb.synchronizedCall(new Runnable() {
@@ -311,6 +350,7 @@ public class MailStorageBean {
                   SqlUtils.isNull(TBL_MESSAGES, COL_RAW_CONTENT))))));
         }
       });
+      p.set("update");
       if (!finished.get()) {
         Set<Long> allAddresses = new HashSet<>();
 
@@ -318,19 +358,21 @@ public class MailStorageBean {
           try {
             Long adr = storeAddress(account.getUserId(), entry.getValue());
 
-            if (allAddresses.add(adr)) {
+            if (DataUtils.isId(adr) && allAddresses.add(adr)) {
               qs.insertData(new SqlInsert(TBL_RECIPIENTS)
                   .addConstant(COL_MESSAGE, messageId.getA())
                   .addConstant(MailConstants.COL_ADDRESS, adr)
                   .addConstant(COL_ADDRESS_TYPE, entry.getKey().name()));
             }
           } catch (AddressException e) {
-            logger.warning("(MessageID=", messageId.getA(), ") Error storing address:", e);
+            logger.warning("(MessageID =", messageId.getA(), ") Error storing address:", e);
           }
         }
+        p.set("recipients" + BeeUtils.parenthesize(envelope.getRecipients().size()));
         try {
           is.reset();
           Multimap<String, String> parsed = parsePart(messageId.getA(), new MimeMessage(null, is));
+          p.set("parse");
 
           for (Entry<String, String> entry : parsed.entries()) {
             String content = entry.getValue();
@@ -359,8 +401,9 @@ public class MailStorageBean {
                 break;
             }
           }
+          p.set("parts" + BeeUtils.parenthesize(parsed.size()));
         } catch (MessagingException | IOException e) {
-          logger.error(e, "(MessageID=", messageId.getA(), ") Error parsing content");
+          logger.error(e, "(MessageID =", messageId.getA(), ") Error parsing content");
         }
         if (!ArrayUtils.contains(new Long[] {
             account.getDraftsFolder().getId(), account.getTrashFolder().getId()}, folderId)) {
@@ -369,12 +412,15 @@ public class MailStorageBean {
             allAddresses.add(senderId.get());
           }
           setRelations(messageId.getA(), allAddresses);
+          p.set("relations");
         }
       }
     }
     if (!hasPlace && (Objects.isNull(messageUID) || !BeeConst.isUndef(messageUID))) {
       messageId.setB(storePlace(messageId.getA(), folderId, envelope.getFlagMask(), messageUID));
+      p.set("place");
     }
+    p.log("Message=" + messageId.getA());
     return messageId;
   }
 
@@ -512,7 +558,9 @@ public class MailStorageBean {
   private static String getStringContent(Object enigma) throws IOException {
     InputStream stream;
 
-    if (enigma instanceof InputStream) {
+    if (Objects.isNull(enigma)) {
+      return null;
+    } else if (enigma instanceof InputStream) {
       stream = (InputStream) enigma;
     } else {
       stream = new ByteArrayInputStream(enigma.toString().getBytes(BeeConst.CHARSET_UTF8));
@@ -634,7 +682,8 @@ public class MailStorageBean {
           || !part.isMimeType("text/*")) {
 
         List<String> fileInfo = new ArrayList<>();
-        fileInfo.add(BeeUtils.toString(fs.storeFile(part.getInputStream(), fileName, contentType)));
+        fileInfo.add(BeeUtils.toString(fs.commitFile(fs.storeFile(part.getInputStream(), fileName,
+            contentType))));
         fileInfo.add(fileName);
 
         String[] ids = part.getHeader("Content-ID");
@@ -647,7 +696,7 @@ public class MailStorageBean {
         parsedPart.put(COL_FILE, Codec.beeSerialize(fileInfo));
 
       } else if (part.isMimeType("text/calendar")) {
-        Long fileId = fs.storeFile(part.getInputStream(), fileName, contentType);
+        Long fileId = fs.commitFile(fs.storeFile(part.getInputStream(), fileName, contentType));
 
         StringBuilder sb = new StringBuilder("<table>");
 
@@ -755,12 +804,8 @@ public class MailStorageBean {
   private Long storeAddress(Long userId, InternetAddress address) throws AddressException {
     InternetAddress adr = Assert.notNull(address);
 
-    if (adr.isGroup()) {
-      adr = ArrayUtils.getQuietly(adr.getGroup(true), 0);
-
-      if (Objects.isNull(adr)) {
-        throw new AddressException(address.toString());
-      }
+    if (adr.isGroup() || BeeUtils.startsWith(adr.getAddress(), "undisclosed-recipients:")) {
+      return null;
     }
     adr.validate();
     String label = adr.getPersonal();
