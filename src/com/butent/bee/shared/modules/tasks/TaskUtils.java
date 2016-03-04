@@ -215,6 +215,7 @@ public final class TaskUtils {
     return notes;
   }
 
+  @Deprecated
   public static boolean isScheduled(DateTime start) {
     return start != null && TimeUtils.dayDiff(TimeUtils.today(), start) > 0;
   }

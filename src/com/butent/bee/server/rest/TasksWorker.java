@@ -29,6 +29,8 @@ import com.butent.bee.shared.exceptions.BeeException;
 import com.butent.bee.shared.exceptions.BeeRuntimeException;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.modules.tasks.TaskConstants.TaskEvent;
+import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
 import com.butent.bee.shared.modules.tasks.TaskUtils;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -67,6 +69,7 @@ public class TasksWorker extends CrudWorker {
 
   @GET
   @Path("{" + ID + ":\\d+}/access")
+  @SuppressWarnings("deprecation")
   public RestResponse access(@PathParam(ID) Long taskId) {
     ResponseObject response = task.accessTask(taskId);
 
@@ -83,7 +86,7 @@ public class TasksWorker extends CrudWorker {
 
     if (Objects.equals(row.getLong(COL_EXECUTOR), usr.getCurrentUserId())
         && (TaskStatus.NOT_VISITED == oldStatus || TaskStatus.SCHEDULED == oldStatus
-        && !TaskUtils.isScheduled(row.getDateTime(COL_START_TIME)))) {
+            && !TaskUtils.isScheduled(row.getDateTime(COL_START_TIME)))) {
 
       return update(taskId, row.getLong(VERSION), Json.createObjectBuilder()
           .add(COL_STATUS, TaskStatus.ACTIVE.ordinal())

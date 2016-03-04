@@ -11,10 +11,10 @@ import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.calendar.CalendarConstants.ItemType;
-import com.butent.bee.shared.modules.tasks.TaskType;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants.TaskPriority;
 import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
+import com.butent.bee.shared.modules.tasks.TaskType;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -394,7 +394,7 @@ public class CalendarTask extends CalendarItem implements BeeSerializable {
 
   @Override
   public boolean isMovable(Long userId) {
-    return isWhole() && isOwner(userId) && getStatus() == TaskStatus.SCHEDULED;
+    return isWhole() && isOwner(userId);
   }
 
   @Override
@@ -405,8 +405,8 @@ public class CalendarTask extends CalendarItem implements BeeSerializable {
   @Override
   public boolean isResizable(Long userId) {
     return isWhole() && isOwner(userId) && getStatus() != null
-        && TaskStatus.in(getStatus().ordinal(), TaskStatus.NOT_VISITED, TaskStatus.ACTIVE,
-            TaskStatus.SCHEDULED);
+        && TaskStatus.in(getStatus().ordinal(), TaskStatus.NOT_VISITED, TaskStatus.VISITED,
+            TaskStatus.ACTIVE);
   }
 
   @Override

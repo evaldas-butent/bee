@@ -1097,6 +1097,8 @@ public interface Dictionary {
 
   default String crmTaskDescription() {return g("crmTaskDescription");}
 
+  default String crmTaskDoExecute() {return g("crmTaskDoExecute");}
+
   default String crmTaskDuration() {return g("crmTaskDuration");}
 
   default String crmTaskDurationTypes() {return g("crmTaskDurationTypes");}
@@ -1111,11 +1113,15 @@ public interface Dictionary {
 
   default String crmTaskEventEdited() {return g("crmTaskEventEdited");}
 
+  default String crmTaskEventExecuted() {return g("crmTaskEventExecuted");}
+
   default String crmTaskEventExtended() {return g("crmTaskEventExtended");}
 
   default String crmTaskEventForwarded() {return g("crmTaskEventForwarded");}
 
   default String crmTaskEventNote() {return g("crmTaskEventNote");}
+
+  default String crmTaskEventOutOfObservers() {return g("crmTaskEventOutOfObservers");}
 
   default String crmTaskEventRenewed() {return g("crmTaskEventRenewed");}
 
@@ -1148,6 +1154,8 @@ public interface Dictionary {
   default String crmTaskFilterNotVisitedOrActive() {return g("crmTaskFilterNotVisitedOrActive");}
 
   default String crmTaskFilterNotVisitedOrActiveOrCompleted() {return g("crmTaskFilterNotVisitedOrActiveOrCompleted");}
+
+  default String crmTaskFilterNotVisitedOrActiveOrVisited() {return g("crmTaskFilterNotVisitedOrActiveOrVisited");}
 
   default String crmTaskFilterScheduled() {return g("crmTaskFilterScheduled");}
 
@@ -1228,6 +1236,10 @@ public interface Dictionary {
   default String crmTaskStatusScheduled() {return g("crmTaskStatusScheduled");}
 
   default String crmTaskStatusSuspended() {return g("crmTaskStatusSuspended");}
+
+  default String crmTaskStatusVisited() {return g("crmTaskStatusVisited");}
+
+  default String crmTaskStopExecute() {return g("crmTaskStopExecute");}
 
   default String crmTaskSubject() {return g("crmTaskSubject");}
 

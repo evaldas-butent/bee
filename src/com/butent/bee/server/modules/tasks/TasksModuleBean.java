@@ -72,8 +72,11 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
+import com.butent.bee.shared.modules.administration.AdministrationConstants.ReminderMethod;
 import com.butent.bee.shared.modules.projects.ProjectConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
+import com.butent.bee.shared.modules.tasks.TaskConstants.TaskEvent;
+import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
 import com.butent.bee.shared.modules.tasks.TaskUtils;
 import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.news.Headline;
@@ -249,8 +252,7 @@ public class TasksModuleBean implements BeeModule {
     String module = getModule().getName();
     List<BeeParameter> params = Lists.newArrayList(
         BeeParameter.createTimeOfDay(module, PRM_END_OF_WORK_DAY),
-        BeeParameter.createTimeOfDay(module, PRM_START_OF_WORK_DAY)
-        );
+        BeeParameter.createTimeOfDay(module, PRM_START_OF_WORK_DAY));
     return params;
   }
 
@@ -630,6 +632,7 @@ public class TasksModuleBean implements BeeModule {
   }
 
   @Schedule(hour = "5", persistent = false)
+  @Deprecated
   private void checkTaskStatus() {
     if (!Config.isInitialized()) {
       return;
@@ -863,20 +866,13 @@ public class TasksModuleBean implements BeeModule {
       }
     }
 
-    DateTime start = row.getDateTime(data.getColumnIndex(COL_START_TIME));
-
     List<Long> tasks = new ArrayList<>();
 
     for (long executor : executors) {
       BeeRow newRow = DataUtils.cloneRow(row);
       newRow.setValue(data.getColumnIndex(COL_EXECUTOR), executor);
+      TaskStatus status = (executor == owner) ? TaskStatus.VISITED : TaskStatus.NOT_VISITED;
 
-      TaskStatus status;
-      if (TaskUtils.isScheduled(start)) {
-        status = TaskStatus.SCHEDULED;
-      } else {
-        status = (executor == owner) ? TaskStatus.ACTIVE : TaskStatus.NOT_VISITED;
-      }
       newRow.setValue(data.getColumnIndex(COL_STATUS), status.ordinal());
 
       BeeRowSet rowSet = new BeeRowSet(data.getViewName(), data.getColumns());
@@ -969,7 +965,6 @@ public class TasksModuleBean implements BeeModule {
     long currentUser = usr.getCurrentUserId();
     long now = System.currentTimeMillis();
 
-    Long eventId = null;
     String eventNote;
 
     String notes = reqInfo.get(VAR_TASK_NOTES);
@@ -1004,9 +999,16 @@ public class TasksModuleBean implements BeeModule {
       case VISIT:
         if (reqInfo.containsKey(VAR_TASK_VISITED)) {
           response = registerTaskEvent(taskId, currentUser, event, now);
+
+        } else if (reqInfo.containsKey(VAR_TASK_VISITED_STATE)) {
+          response =
+              updateTaskData(reqInfo, taskData, taskRow, event, updatedRelations, currentUser,
+                  eventNote, now);
+          break;
+
         }
         if (response == null || !response.hasErrors()) {
-          response = commitTaskData(taskData, null, updatedRelations, eventId);
+          response = commitTaskData(taskData, null, updatedRelations, null);
         }
         break;
 
@@ -1022,31 +1024,10 @@ public class TasksModuleBean implements BeeModule {
       case RENEW:
       case ACTIVATE:
       case OUT_OF_OBSERVERS:
-        Long finishTime = BeeUtils.toLongOrNull(reqInfo.get(VAR_TASK_FINISH_TIME));
 
-        response = registerTaskEvent(taskId, currentUser, event, reqInfo, eventNote, finishTime,
-            now);
-        if (response.hasResponse(Long.class)) {
-          eventId = (Long) response.getResponse();
-        }
-        if (!response.hasErrors()) {
-          response = registerTaskVisit(taskId, currentUser, now);
-        }
-
-        if (!response.hasErrors()) {
-          response = commitTaskData(taskData, DataUtils.parseIdSet(reqInfo.get(VAR_TASK_USERS)),
-              updatedRelations, eventId);
-        }
-
-        if (!response.hasErrors() && event == TaskEvent.FORWARD
-            && !Objects.equals(currentUser, DataUtils.getLong(taskData, taskRow, COL_EXECUTOR))) {
-          Long senderAccountId = mail.getSenderAccountId("forward task:");
-
-          if (senderAccountId != null) {
-            ResponseObject mailResponse = mailNewTask(senderAccountId, taskId, true, false);
-            response.addMessagesFrom(mailResponse);
-          }
-        }
+        response =
+            updateTaskData(reqInfo, taskData, taskRow, event, updatedRelations, currentUser,
+                eventNote, now);
         break;
     }
 
@@ -1211,7 +1192,7 @@ public class TasksModuleBean implements BeeModule {
       String compFullName =
           companiesListSet.getValue(i, COL_COMPANY_NAME)
               + (!BeeUtils.isEmpty(companiesListSet.getValue(i, ALS_COMPANY_TYPE))
-              ? ", " + companiesListSet.getValue(i, ALS_COMPANY_TYPE) : "");
+                  ? ", " + companiesListSet.getValue(i, ALS_COMPANY_TYPE) : "");
 
       SqlSelect companyTimesQuery = new SqlSelect()
           .addFields(TBL_EVENT_DURATIONS, COL_DURATION)
@@ -1781,7 +1762,7 @@ public class TasksModuleBean implements BeeModule {
           (!BeeUtils.isEmpty(usersListSet.getValue(i, COL_FIRST_NAME))
               ? usersListSet.getValue(i, COL_FIRST_NAME) : "") + " "
               + (!BeeUtils.isEmpty(usersListSet.getValue(i, COL_LAST_NAME))
-              ? usersListSet.getValue(i, COL_LAST_NAME) : "");
+                  ? usersListSet.getValue(i, COL_LAST_NAME) : "");
 
       userFullName = BeeUtils.isEmpty(userFullName) ? "—" : userFullName;
 
@@ -1977,6 +1958,7 @@ public class TasksModuleBean implements BeeModule {
     }
   }
 
+  @Deprecated
   private int maybeUpdateTaskStatus() {
     int updated = 0;
 
@@ -2269,7 +2251,7 @@ public class TasksModuleBean implements BeeModule {
       return count;
     }
     Set<Integer> statusValues = Sets.newHashSet(TaskStatus.NOT_VISITED.ordinal(),
-        TaskStatus.ACTIVE.ordinal(), TaskStatus.SCHEDULED.ordinal(),
+        TaskStatus.VISITED.ordinal(), TaskStatus.ACTIVE.ordinal(),
         TaskStatus.SUSPENDED.ordinal());
 
     SqlSelect query = new SqlSelect()
@@ -2666,6 +2648,42 @@ public class TasksModuleBean implements BeeModule {
     panel.append(table().append(fields));
 
     return doc;
+  }
+
+  private ResponseObject updateTaskData(Map<String, String> reqInfo, BeeRowSet taskData,
+      BeeRow taskRow, TaskEvent event, Set<String> updatedRelations, Long currentUser,
+      String eventNote, long now) {
+
+    long taskId = taskRow.getId();
+    Long finishTime = BeeUtils.toLongOrNull(reqInfo.get(VAR_TASK_FINISH_TIME));
+    Long eventId = null;
+
+    ResponseObject response =
+        registerTaskEvent(taskId, currentUser, event, reqInfo, eventNote, finishTime,
+            now);
+    if (response.hasResponse(Long.class)) {
+      eventId = (Long) response.getResponse();
+    }
+    if (!response.hasErrors()) {
+      response = registerTaskVisit(taskId, currentUser, now);
+    }
+
+    if (!response.hasErrors()) {
+      response = commitTaskData(taskData, DataUtils.parseIdSet(reqInfo.get(VAR_TASK_USERS)),
+          updatedRelations, eventId);
+    }
+
+    if (!response.hasErrors() && event == TaskEvent.FORWARD
+        && !Objects.equals(currentUser, DataUtils.getLong(taskData, taskRow, COL_EXECUTOR))) {
+      Long senderAccountId = mail.getSenderAccountId("forward task:");
+
+      if (senderAccountId != null) {
+        ResponseObject mailResponse = mailNewTask(senderAccountId, taskId, true, false);
+        response.addMessagesFrom(mailResponse);
+      }
+    }
+
+    return response;
   }
 
   private ResponseObject updateTaskRelations(long taskId, Set<String> updatedRelations,
