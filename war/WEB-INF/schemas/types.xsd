@@ -515,7 +515,9 @@
       <xs:enumeration value="TradeActTemplates" />
       <xs:enumeration value="TradeActTmplItems" />
       <xs:enumeration value="TradeActTmplServices" />
+      <xs:enumeration value="TradeDocumentItems" />
       <xs:enumeration value="TradeDocuments" />
+      <xs:enumeration value="TradeDocumentTags" />
       <xs:enumeration value="TradeDocumentTypes" />
       <xs:enumeration value="TradeNotes" />
       <xs:enumeration value="TradeOperations" />
