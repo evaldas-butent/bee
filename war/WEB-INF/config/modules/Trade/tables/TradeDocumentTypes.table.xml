@@ -10,5 +10,10 @@
 
     <Integer name="Ordinal" label="=ordinal" />
     <Text name="Description" label="=description" />
+    
+    <Boolean name="StatusOrder" label="=trdDocumentStatusOrder" />
+    <Boolean name="StatusPending" label="=trdDocumentStatusPending" />
+    <Boolean name="StatusSimple" label="=trdDocumentStatusSimple" />
+    <Boolean name="StatusApproved" label="=trdDocumentStatusApproved" />
   </Fields>
 </Table>

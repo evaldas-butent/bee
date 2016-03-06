@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Table xmlns="http://www.butent.com/table"
+  
+  name="TradeTypeOperations"
+  idName="TradeTypeOperationID"
+  >
+  <Fields>
+    <Relation name="DocumentType" notNull="true" relation="TradeDocumentTypes" cascade="DELETE"
+      label="=trdDocumentType" />
+    <Relation name="Operation" notNull="true" relation="TradeOperations" label="=trdOperation" />
+  </Fields>
+
+  <Constraints>
+    <Unique fields="DocumentType Operation" />
+  </Constraints>
+</Table>
