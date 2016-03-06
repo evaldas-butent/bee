@@ -21,6 +21,6 @@
 
     <Text name="Note" label="=trdNote" />
 
-    <Relation name="Parent" relation="TradeDocumentItems" />
+    <Relation name="Parent" relation="TradeDocumentItems" label="=captionPid" />
   </Fields>
 </Table>

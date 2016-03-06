@@ -50,6 +50,9 @@ public final class TradeConstants {
   public static final String TBL_TRADE_SERIES = "TradeSeries";
   public static final String TBL_TRADE_STATUSES = "TradeStatuses";
 
+  public static final String TBL_TRADE_DOCUMENTS = "TradeDocuments";
+  public static final String TBL_TRADE_DOCUMENT_ITEMS = "TradeDocumentItems";
+
   public static final String VAR_VIEW_NAME = "view_name";
   public static final String VAR_ID_LIST = "IdList";
 
@@ -68,6 +71,9 @@ public final class TradeConstants {
   public static final String VIEW_TRADE_TAGS = "TradeTags";
 
   public static final String VIEW_SERIES_MANAGERS = "SeriesManagers";
+
+  public static final String VIEW_TRADE_DOCUMENTS = "TradeDocuments";
+  public static final String VIEW_TRADE_DOCUMENT_ITEMS = "TradeDocumentItems";
 
   public static final String COL_PURCHASE = "Purchase";
   public static final String COL_PURCHASE_WAREHOUSE_TO = "WarehouseTo";
@@ -123,6 +129,8 @@ public final class TradeConstants {
   public static final String COL_STATUS_NAME = "StatusName";
   public static final String COL_STATUS_ACTIVE = "StatusActive";
 
+  public static final String COL_TRADE_DOCUMENT = "TradeDocument";
+
   public static final String ALS_CUSTOMER_NAME = "CustomerName";
   public static final String ALS_SUPPLIER_NAME = "SupplierName";
 
@@ -141,8 +149,14 @@ public final class TradeConstants {
 
   public static final String GRID_SERIES_MANAGERS = "SeriesManagers";
 
+  public static final String GRID_TRADE_DOCUMENTS = "TradeDocuments";
+  public static final String GRID_TRADE_DOCUMENT_ITEMS = "TradeDocumentItems";
+  public static final String GRID_TRADE_DOCUMENT_FILES = "TradeDocumentFiles";
+
   public static final String FORM_SALES_INVOICE = "SalesInvoice";
   public static final String FORM_PRINT_SALES_INVOICE = "PrintSalesInvoice";
+
+  public static final String FORM_TRADE_DOCUMENT = "TradeDocument";
 
   private TradeConstants() {
   }
