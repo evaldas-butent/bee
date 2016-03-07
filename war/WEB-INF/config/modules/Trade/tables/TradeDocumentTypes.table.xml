@@ -13,7 +13,8 @@
     
     <Boolean name="StatusOrder" label="=trdDocumentStatusOrder" />
     <Boolean name="StatusPending" label="=trdDocumentStatusPending" />
-    <Boolean name="StatusSimple" label="=trdDocumentStatusSimple" />
+    <Boolean name="StatusActive" label="=trdDocumentStatusActive" />
+    <Boolean name="StatusCompleted" label="=trdDocumentStatusCompleted" />
     <Boolean name="StatusApproved" label="=trdDocumentStatusApproved" />
   </Fields>
 </Table>

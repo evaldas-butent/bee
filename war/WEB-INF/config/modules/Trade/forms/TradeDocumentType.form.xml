@@ -12,7 +12,7 @@
       <Label for="Ordinal" />
       <InputInteger source="Ordinal" style="width: 4em;" visible="true" />
       <Label for="DocumentTypeName" />
-      <InputText source="DocumentTypeName" style="width: 18em;" visible="true" />
+      <InputText source="DocumentTypeName" style="width: 24em;" visible="true" />
     </row>
 
     <row>
@@ -30,7 +30,8 @@
         <FlowPanel class="flexBox-horizontal-space-between">
           <CheckBox source="StatusOrder" />
           <CheckBox source="StatusPending" />
-          <CheckBox source="StatusSimple" />
+          <CheckBox source="StatusActive" />
+          <CheckBox source="StatusCompleted" />
           <CheckBox source="StatusApproved" />
         </FlowPanel>
       </cell>

@@ -8,10 +8,10 @@
     <DateTime name="Date" notNull="true" defExpr="CURRENT_TIME" label="=trdDate" />
 
     <String name="Series" precision="10" label="=trdSeries" />
-    <String name="Number" precision="30" label="=trdNumber" />
+    <String name="Number" precision="50" label="=trdNumber" />
 
-    <String name="Number1" precision="30" />
-    <String name="Number2" precision="30" />
+    <String name="Number1" precision="50" />
+    <String name="Number2" precision="50" />
 
     <Relation name="Operation" notNull="true" relation="TradeOperations" label="=trdOperation" />
     <Enum name="Status" notNull="true" key="TradeDocumentStatus" label="=status" />

@@ -13,7 +13,8 @@
 
     <SimpleColumn name="StatusOrder" />
     <SimpleColumn name="StatusPending" />
-    <SimpleColumn name="StatusSimple" />
+    <SimpleColumn name="StatusActive" />
+    <SimpleColumn name="StatusCompleted" />
     <SimpleColumn name="StatusApproved" />
   </Columns>
 

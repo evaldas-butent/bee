@@ -15,7 +15,8 @@
 
     <DataColumn name="StatusOrder" visible="false" />
     <DataColumn name="StatusPending" visible="false" />
-    <DataColumn name="StatusSimple" visible="false" />
+    <DataColumn name="StatusActive" visible="false" />
+    <DataColumn name="StatusCompleted" visible="false" />
     <DataColumn name="StatusApproved" visible="false" />
   </g:columns>
 </g:Grid>

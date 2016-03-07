@@ -26,15 +26,26 @@ public enum TradeDocumentStatus implements HasLocalizedCaption {
       return "StatusPending";
     }
   },
-  SIMPLE {
+  ACTIVE {
     @Override
     public String getCaption(LocalizableConstants constants) {
-      return constants.trdDocumentStatusSimple();
+      return constants.trdDocumentStatusActive();
     }
 
     @Override
     public String getDocumentTypeColumnName() {
-      return "StatusSimple";
+      return "StatusActive";
+    }
+  },
+  COMPLETED {
+    @Override
+    public String getCaption(LocalizableConstants constants) {
+      return constants.trdDocumentStatusCompleted();
+    }
+
+    @Override
+    public String getDocumentTypeColumnName() {
+      return "StatusCompleted";
     }
   },
   APPROVED {

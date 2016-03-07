@@ -60,13 +60,15 @@ public interface LocalizableTradeConstants {
 
   String trdDebt();
 
+  String trdDocumentStatusActive();
+
   String trdDocumentStatusApproved();
+
+  String trdDocumentStatusCompleted();
 
   String trdDocumentStatusOrder();
 
   String trdDocumentStatusPending();
-
-  String trdDocumentStatusSimple();
 
   String trdInvoice();
 
