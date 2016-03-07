@@ -18,6 +18,8 @@ import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
+import com.butent.bee.client.communication.ParameterList;
+import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.communication.RpcCallback;
 import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.data.Data;
@@ -45,6 +47,7 @@ import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.Pair;
+import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -62,8 +65,7 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.i18n.SupportedLocale;
 import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.modules.mail.MailConstants;
-import com.butent.bee.shared.modules.transport.TransportConstants.ShipmentRequestStatus;
-import com.butent.bee.shared.modules.transport.TransportConstants.TextConstant;
+import com.butent.bee.shared.modules.transport.TransportConstants.*;
 import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -141,6 +143,8 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
 
     if (widget != null) {
       widget.setVisible(!registered);
+
+
     }
     widget = form.getWidgetByName(COL_COMPANY_PERSON);
 
@@ -328,6 +332,18 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
 
     messages.add(loc.trCommandCreateNewUser());
 
+    String login = row.getString(form.getDataIndex(COL_QUERY_CUSTOMER_EMAIL));
+    String password;
+
+    if (BeeUtils.unbox(row.getBoolean(form.getDataIndex("Customer" + COL_REGISTRATION_REGISTER)))
+        && !BeeUtils.isEmpty(login)) {
+      password = BeeUtils.randomString(6);
+
+      messages.add("Login: " + login);
+      messages.add("Password: " + password);
+    } else {
+      password = null;
+    }
     Global.confirm(loc.register(), Icon.QUESTION, messages,
         Localized.getConstants().actionCreate(), Localized.getConstants().actionCancel(), () -> {
           Map<String, String> companyInfo = new HashMap<>();
@@ -349,12 +365,28 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
               personInfo.put(COL_FIRST_NAME, ArrayUtils.getQuietly(arr, 0));
               personInfo.put(COL_LAST_NAME, ArrayUtils.getQuietly(arr, 1));
             }
-            personInfo.put(COL_PHONE, row.getString(form.getDataIndex("Customer" + COL_PHONE)));
-            personInfo.put(ALS_EMAIL_ID, row.getString(form.getDataIndex("Customer" + COL_EMAIL)));
+            personInfo.put(COL_PHONE, row.getString(form.getDataIndex(COL_QUERY_CUSTOMER_PHONE)));
+            personInfo.put(ALS_EMAIL_ID, login);
             personInfo.put(COL_POSITION,
                 row.getString(form.getDataIndex(COL_QUERY_CUSTOMER_CONTACT_POSITION)));
 
             ClassifierUtils.createCompanyPerson(personInfo, (person) -> {
+              if (!BeeUtils.isEmpty(password)) {
+                ParameterList args = TransportHandler.createArgs(SVC_CREATE_USER);
+                args.addDataItem(COL_LOGIN, login);
+                args.addDataItem(COL_PASSWORD, password);
+                args.addDataItem(COL_COMPANY_PERSON, person);
+                args.addDataItem(COL_USER_LOCALE,
+                    row.getInteger(form.getDataIndex(COL_USER_LOCALE)));
+                args.addNotEmptyData(COL_EMAIL, login);
+
+                BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
+                  @Override
+                  public void onResponse(ResponseObject response) {
+                    response.notify(form);
+                  }
+                });
+              }
               row.setValue(getDataIndex(COL_COMPANY_PERSON), person);
               row.setValue(getDataIndex(COL_QUERY_MANAGER), BeeKeeper.getUser().getUserId());
 

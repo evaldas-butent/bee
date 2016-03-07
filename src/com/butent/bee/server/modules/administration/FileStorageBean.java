@@ -194,8 +194,8 @@ public class FileStorageBean {
         in.close();
         tmp.delete();
       }
+      cache.invalidate(storedFile.getId());
     }
-    cache.invalidate(storedFile.getId());
     return id.get();
   }
 
