@@ -864,7 +864,7 @@ public class TransportModuleBean implements BeeModule {
     });
   }
 
-  @Schedule
+  @Schedule(persistent = false)
   private void checkRequestStatus() {
     DateTime date = TimeUtils.startOfDay(1);
 
