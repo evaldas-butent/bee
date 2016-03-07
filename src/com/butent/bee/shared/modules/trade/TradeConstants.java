@@ -74,6 +74,7 @@ public final class TradeConstants {
 
   public static final String VIEW_TRADE_DOCUMENTS = "TradeDocuments";
   public static final String VIEW_TRADE_DOCUMENT_ITEMS = "TradeDocumentItems";
+  public static final String VIEW_TRADE_DOCUMENT_TYPES = "TradeDocumentTypes";
 
   public static final String COL_PURCHASE = "Purchase";
   public static final String COL_PURCHASE_WAREHOUSE_TO = "WarehouseTo";
@@ -130,6 +131,7 @@ public final class TradeConstants {
   public static final String COL_STATUS_ACTIVE = "StatusActive";
 
   public static final String COL_TRADE_DOCUMENT = "TradeDocument";
+  public static final String COL_DOCUMENT_TYPE_NAME = "DocumentTypeName";
 
   public static final String ALS_CUSTOMER_NAME = "CustomerName";
   public static final String ALS_SUPPLIER_NAME = "SupplierName";

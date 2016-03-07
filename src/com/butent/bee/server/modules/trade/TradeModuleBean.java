@@ -29,6 +29,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
@@ -40,6 +41,9 @@ import com.butent.bee.shared.exceptions.BeeException;
 import com.butent.bee.shared.exceptions.BeeRuntimeException;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.menu.Menu;
+import com.butent.bee.shared.menu.MenuItem;
+import com.butent.bee.shared.menu.MenuService;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.payroll.PayrollConstants;
 import com.butent.bee.shared.modules.trade.TradeDocumentData;
@@ -215,8 +219,8 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
           .addFields(TBL_SALES, COL_TRADE_DATE, COL_TRADE_TERM)
           .addFrom(TBL_SALES)
           .setWhere(SqlUtils.and(SqlUtils.or(SqlUtils.equals(TBL_SALES, COL_SALE_PAYER, companyId),
-                  SqlUtils.and(SqlUtils.isNull(TBL_SALES, COL_SALE_PAYER),
-                      SqlUtils.equals(TBL_SALES, COL_TRADE_CUSTOMER, companyId))),
+              SqlUtils.and(SqlUtils.isNull(TBL_SALES, COL_SALE_PAYER),
+                  SqlUtils.equals(TBL_SALES, COL_TRADE_CUSTOMER, companyId))),
               SqlUtils.less(SqlUtils.nvl(SqlUtils.field(TBL_SALES, COL_TRADE_PAID), 0),
                   SqlUtils.nvl(SqlUtils.field(TBL_SALES, COL_TRADE_AMOUNT), 0))));
 
@@ -362,6 +366,31 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
       }
     });
 
+    MenuService.TRADE_DOCUMENTS.setTransformer(input -> {
+      List<Menu> result = new ArrayList<>();
+
+      if (input instanceof MenuItem) {
+        BeeRowSet data = qs.getViewData(VIEW_TRADE_DOCUMENT_TYPES);
+
+        if (!DataUtils.isEmpty(data)) {
+          for (BeeRow row : data) {
+            long id = row.getId();
+
+            MenuItem item = (MenuItem) input.copy();
+
+            item.setName(BeeUtils.join(BeeConst.STRING_UNDER, input.getName(), id));
+            item.setLabel(DataUtils.getString(data, row, COL_DOCUMENT_TYPE_NAME));
+
+            item.setParameters(BeeUtils.toString(id));
+
+            result.add(item);
+          }
+        }
+      }
+
+      return result;
+    });
+
     act.init();
   }
 
@@ -404,7 +433,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
       String currAlias = SqlUtils.uniqueName();
 
       IsExpression xpr = ExchangeUtils.exchangeFieldTo(query.addFromLeft(TBL_CURRENCIES, currAlias,
-              SqlUtils.equals(currAlias, COL_CURRENCY_NAME, currencyTo)),
+          SqlUtils.equals(currAlias, COL_CURRENCY_NAME, currencyTo)),
           SqlUtils.constant(1),
           SqlUtils.field(trade, COL_CURRENCY),
           SqlUtils.field(trade, COL_TRADE_DATE),
@@ -492,11 +521,11 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
       try {
         SimpleRowSet payments = ButentWS.connect(remoteAddress, remoteLogin, remotePassword)
             .getSQLData("SELECT extern_id AS id,"
-                    + " CASE WHEN oper_apm IS NULL THEN data ELSE apm_data END AS data,"
-                    + " CASE WHEN oper_apm IS NULL THEN viso ELSE apm_suma END AS suma"
-                    + " FROM apyvarta"
-                    + " INNER JOIN operac ON apyvarta.operacija = operac.operacija"
-                    + " WHERE pajamos=0 AND extern_id IN(" + ids.toString() + ")",
+                + " CASE WHEN oper_apm IS NULL THEN data ELSE apm_data END AS data,"
+                + " CASE WHEN oper_apm IS NULL THEN viso ELSE apm_suma END AS suma"
+                + " FROM apyvarta"
+                + " INNER JOIN operac ON apyvarta.operacija = operac.operacija"
+                + " WHERE pajamos=0 AND extern_id IN(" + ids.toString() + ")",
                 "id", "data", "suma");
 
         for (SimpleRow payment : payments) {

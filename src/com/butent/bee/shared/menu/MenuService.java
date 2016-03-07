@@ -102,6 +102,8 @@ public enum MenuService {
   private final Set<RightsState> dataRightsStates;
   private DataNameProvider dataNameProvider;
 
+  private MenuTransformer transformer;
+
   private MenuHandler handler;
 
   MenuService(RightsState dataRightsState) {
@@ -153,26 +155,20 @@ public enum MenuService {
     return dataNameProvider == null ? null : dataNameProvider.apply(parameter);
   }
 
+  public MenuTransformer getTransformer() {
+    return transformer;
+  }
+
   public void setDataName(final String dataName) {
     setDataNames(Sets.newHashSet(dataName));
   }
 
   public void setDataNames(final Set<String> dataNames) {
-    this.dataNameProvider = new DataNameProvider() {
-      @Override
-      public Set<String> apply(String input) {
-        return dataNames;
-      }
-    };
+    this.dataNameProvider = input -> dataNames;
   }
 
   public void setDataIsParameter() {
-    this.dataNameProvider = new DataNameProvider() {
-      @Override
-      public Set<String> apply(String input) {
-        return Sets.newHashSet(input);
-      }
-    };
+    this.dataNameProvider = input -> Sets.newHashSet(input);
   }
 
   public void setDataNameProvider(DataNameProvider dataNameProvider) {
@@ -181,5 +177,9 @@ public enum MenuService {
 
   public void setHandler(MenuHandler handler) {
     this.handler = handler;
+  }
+
+  public void setTransformer(MenuTransformer transformer) {
+    this.transformer = transformer;
   }
 }
