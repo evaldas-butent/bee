@@ -11,6 +11,7 @@ import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.cli.Shell;
 import com.butent.bee.client.data.Data;
+import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.Modality;
@@ -20,24 +21,32 @@ import com.butent.bee.client.grid.GridFactory.GridOptions;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.logging.ClientLogManager;
 import com.butent.bee.client.modules.administration.PasswordService;
+import com.butent.bee.client.output.ReportUtils;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.presenter.PresenterCallback;
 import com.butent.bee.client.screen.ScreenImpl;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.client.view.edit.EditStartEvent;
+import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.BeeRow;
+import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.io.FileInfo;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.ui.UserInterface;
+import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -130,8 +139,39 @@ public class SelfServiceScreen extends ScreenImpl {
             Value company = Value.getValue(BeeKeeper.getUser().getCompany());
 
             openGrid(VIEW_CARGO_INVOICES, Filter.or(
-                Filter.isEqual(TradeConstants.COL_TRADE_CUSTOMER, company),
-                Filter.isEqual(TradeConstants.COL_SALE_PAYER, company)));
+                    Filter.isEqual(TradeConstants.COL_TRADE_CUSTOMER, company),
+                    Filter.isEqual(TradeConstants.COL_SALE_PAYER, company)),
+                new AbstractGridInterceptor() {
+                  @Override
+                  public GridInterceptor getInstance() {
+                    return null;
+                  }
+
+                  @Override
+                  public void onEditStart(EditStartEvent ev) {
+                    ev.consume();
+                    Queries.getRowSet(TradeConstants.VIEW_SALE_FILES, null,
+                        Filter.equals(TradeConstants.COL_SALE, ev.getRowValue().getId()),
+                        new Queries.RowSetCallback() {
+                          @Override
+                          public void onSuccess(BeeRowSet result) {
+                            if (!DataUtils.isEmpty(result)) {
+                              int r = result.getNumberOfRows() - 1;
+                              FileInfo fileInfo = new FileInfo(
+                                  result.getLong(r, AdministrationConstants.COL_FILE),
+                                  result.getString(r, AdministrationConstants.ALS_FILE_NAME),
+                                  result.getLong(r, AdministrationConstants.ALS_FILE_SIZE),
+                                  result.getString(r, AdministrationConstants.ALS_FILE_TYPE));
+
+                              fileInfo.setCaption(result.getString(r,
+                                  AdministrationConstants.COL_FILE_CAPTION));
+
+                              ReportUtils.preview(fileInfo);
+                            }
+                          }
+                        });
+                  }
+                });
           }
         }));
   }
@@ -178,9 +218,10 @@ public class SelfServiceScreen extends ScreenImpl {
     PasswordService.change();
   }
 
-  private void openGrid(String gridName, Filter filter) {
+  private void openGrid(String gridName, Filter filter, GridInterceptor interceptor) {
     GridOptions gridOptions = (filter == null) ? null : GridOptions.forFilter(filter);
-    GridInterceptor gridInterceptor = GridFactory.getGridInterceptor(gridName);
+    GridInterceptor gridInterceptor = BeeUtils.nvl(interceptor,
+        GridFactory.getGridInterceptor(gridName));
     ActivationCallback callback = new ActivationCallback(GridFactory.getSupplierKey(gridName,
         gridInterceptor));
 
@@ -189,6 +230,6 @@ public class SelfServiceScreen extends ScreenImpl {
 
   private void openRequests() {
     openGrid(GRID_SHIPMENT_REQUESTS, Filter.isEqual(ClassifierConstants.COL_COMPANY_PERSON,
-        Value.getValue(BeeKeeper.getUser().getUserData().getCompanyPerson())));
+        Value.getValue(BeeKeeper.getUser().getUserData().getCompanyPerson())), null);
   }
 }

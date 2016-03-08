@@ -69,6 +69,7 @@ public final class TradeConstants {
   public static final String VIEW_PURCHASE_ITEMS = "PurchaseItems";
   public static final String VIEW_SALES = "Sales";
   public static final String VIEW_SALE_ITEMS = "SaleItems";
+  public static final String VIEW_SALE_FILES = "SaleFiles";
 
   public static final String VIEW_TRADE_NOTES = "TradeNotes";
   public static final String VIEW_TRADE_OPERATIONS = "TradeOperations";

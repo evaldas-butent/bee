@@ -26,8 +26,6 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.UserInfo;
-import com.butent.bee.client.communication.ParameterList;
-import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.Autocomplete;
 import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.data.Data;
@@ -46,13 +44,12 @@ import com.butent.bee.client.grid.ChildGrid;
 import com.butent.bee.client.layout.TabbedPages;
 import com.butent.bee.client.layout.TabbedPages.SelectionOrigin;
 import com.butent.bee.client.output.Printer;
+import com.butent.bee.client.output.ReportUtils;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiHelper;
-import com.butent.bee.client.utils.BrowsingContext;
-import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.utils.JsFunction;
 import com.butent.bee.client.utils.JsUtils;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
@@ -71,7 +68,6 @@ import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.State;
-import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.css.values.TextAlign;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
@@ -425,22 +421,11 @@ public class DocumentDataForm extends AbstractFormInterceptor
         parseContent(content, getLongValue(COL_DOCUMENT_DATA), new Consumer<String>() {
           @Override
           public void accept(final String input) {
-            ParameterList args = DocumentsHandler.createArgs(SVC_CREATE_PDF_DOCUMENT);
-            args.addDataItem(COL_DOCUMENT_CONTENT, input);
-
-            BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
-              @Override
-              public void onResponse(ResponseObject response) {
-                response.notify(getFormView());
-
-                if (!response.hasErrors()) {
-                  if (response.isEmpty()) {
-                    Printer.print(input, null);
-                  } else {
-                    BrowsingContext.open(FileUtils.getUrl(response.getResponseAsString(),
-                        Localized.getConstants().print() + ".pdf"));
-                  }
-                }
+            Global.getParameter(PRM_PRINT_AS_PDF, (asPdf) -> {
+              if (BeeUtils.toBoolean(asPdf)) {
+                ReportUtils.getPdf(input, (fileInfo) -> ReportUtils.preview(fileInfo));
+              } else {
+                Printer.print(input, null);
               }
             });
           }
@@ -601,7 +586,7 @@ public class DocumentDataForm extends AbstractFormInterceptor
                                         DataUtils.getColumns(form.getDataColumns(),
                                             Lists.newArrayList(COL_DOCUMENT_DATA)),
                                         Arrays.asList(DataUtils.isId(oldDataId)
-                                            ? BeeUtils.toString(oldDataId) :  null),
+                                            ? BeeUtils.toString(oldDataId) : null),
                                         Arrays.asList(BeeUtils.toString(newDataId)),
                                         null, new RowUpdateCallback(form.getViewName()) {
                                           @Override

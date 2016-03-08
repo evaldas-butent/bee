@@ -221,12 +221,6 @@ public final class FileUtils {
     return getUrl(fileId) + "/" + URL.encodePathSegment(Assert.notEmpty(fileName));
   }
 
-  public static String getUrl(String filePath, String fileName) {
-    return BeeUtils.join("/", getUrl(null),
-        URL.encodePathSegment(Codec.encodeBase64(Assert.notEmpty(filePath))),
-        URL.encodePathSegment(Assert.notEmpty(fileName)));
-  }
-
   public static String getUrl(String fileName, Map<Long, String> files) {
     return CommUtils.getPath(getUrl((Long) null, fileName),
         Collections.singletonMap(Service.VAR_FILES, Codec.beeSerialize(Assert.notEmpty(files))),

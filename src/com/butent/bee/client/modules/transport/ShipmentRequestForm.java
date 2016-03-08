@@ -65,8 +65,7 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.i18n.SupportedLocale;
 import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.modules.mail.MailConstants;
-import com.butent.bee.shared.modules.transport.TransportConstants.ShipmentRequestStatus;
-import com.butent.bee.shared.modules.transport.TransportConstants.TextConstant;
+import com.butent.bee.shared.modules.transport.TransportConstants.*;
 import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -144,7 +143,6 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
 
     if (widget != null) {
       widget.setVisible(!registered);
-
 
     }
     widget = form.getWidgetByName(COL_COMPANY_PERSON);
@@ -372,6 +370,11 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
                 row.getString(form.getDataIndex(COL_QUERY_CUSTOMER_CONTACT_POSITION)));
 
             ClassifierUtils.createCompanyPerson(personInfo, (person) -> {
+              row.setValue(form.getDataIndex(COL_COMPANY_PERSON), person);
+
+              if (BeeUtils.isEmpty(row.getString(form.getDataIndex(COL_QUERY_MANAGER)))) {
+                row.setValue(form.getDataIndex(COL_QUERY_MANAGER), BeeKeeper.getUser().getUserId());
+              }
               if (!BeeUtils.isEmpty(password)) {
                 ParameterList args = TransportHandler.createArgs(SVC_CREATE_USER);
                 args.addDataItem(COL_LOGIN, login);
@@ -385,14 +388,17 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
                   @Override
                   public void onResponse(ResponseObject response) {
                     response.notify(form);
+
+                    if (!response.hasErrors()) {
+                      SelfServiceUtils.update(form, DataUtils.getUpdated(form.getViewName(),
+                          form.getDataColumns(), oldRow, row, null));
+                    }
                   }
                 });
+              } else {
+                SelfServiceUtils.update(form, DataUtils.getUpdated(form.getViewName(),
+                    form.getDataColumns(), oldRow, row, null));
               }
-              row.setValue(getDataIndex(COL_COMPANY_PERSON), person);
-              row.setValue(getDataIndex(COL_QUERY_MANAGER), BeeKeeper.getUser().getUserId());
-
-              SelfServiceUtils.update(form, DataUtils.getUpdated(form.getViewName(),
-                  form.getDataColumns(), oldRow, row, null));
             });
           });
         });
