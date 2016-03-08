@@ -31,6 +31,9 @@ import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.mail.MailConstants;
+import com.butent.bee.shared.modules.mail.MailConstants.AddressType;
+import com.butent.bee.shared.modules.mail.MailConstants.MessageFlag;
+import com.butent.bee.shared.modules.mail.MailConstants.SystemFolder;
 import com.butent.bee.shared.modules.mail.MailFolder;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.ArrayUtils;
@@ -88,21 +91,21 @@ import javax.ws.rs.core.MediaType;
 @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
 public class MailStorageBean {
 
-  private static class Profile {
+  private static final class Profile {
     private BeeLogger beeLogger;
     private long millis = System.currentTimeMillis();
     private Map<String, Long> history = new LinkedHashMap<>();
 
-    public Profile(BeeLogger logger) {
+    private Profile(BeeLogger logger) {
       this.beeLogger = logger;
     }
 
-    public void set(String note) {
+    private void set(String note) {
       history.put(note, System.currentTimeMillis() - millis);
       millis = System.currentTimeMillis();
     }
 
-    public void log(String caption) {
+    private void log(String caption) {
       long time = history.values().stream().mapToLong(Long::longValue).sum();
 
       if (time >= 1000) {

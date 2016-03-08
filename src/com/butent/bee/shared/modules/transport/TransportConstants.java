@@ -119,9 +119,9 @@ public final class TransportConstants {
       @Override
       public String getDefaultContent() {
         return "The login which is given below is to connect to Your user account<br><br>"
-            +"Address: http://127.0.0.1:8080/Bee<br>"
-            +"Login: {login}<br>"
-            +"Password: {password}<br><br>"
+            + "Address: http://127.0.0.1:8080/Bee<br>"
+            + "Login: {login}<br>"
+            + "Password: {password}<br><br>"
             + "This message was created automatically by mail delivery software. "
             + "Thank You for using our services.";
       }
