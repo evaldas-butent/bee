@@ -42,6 +42,7 @@ import com.butent.bee.client.view.grid.ColumnInfo;
 import com.butent.bee.client.view.grid.GridFilterManager;
 import com.butent.bee.client.view.grid.GridImpl;
 import com.butent.bee.client.view.grid.GridSettings;
+import com.butent.bee.client.view.grid.GridUtils;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.shared.Assert;
@@ -618,6 +619,8 @@ public final class GridFactory {
       return;
     }
 
+    boolean hasPaging = GridUtils.hasPaging(gridDescription, uiOptions, gridOptions);
+
     final ProviderType providerType;
     final CachingPolicy cachingPolicy;
 
@@ -625,9 +628,10 @@ public final class GridFactory {
       providerType = ProviderType.LOCAL;
       cachingPolicy = CachingPolicy.NONE;
     } else {
-      providerType = BeeUtils.nvl(gridDescription.getDataProvider(), ProviderType.DEFAULT);
-      cachingPolicy = BeeUtils.isFalse(gridDescription.getCacheData())
-          ? CachingPolicy.NONE : CachingPolicy.FULL;
+      providerType = BeeUtils.nvl(gridDescription.getDataProvider(),
+          hasPaging ? ProviderType.ASYNC : ProviderType.CACHED);
+      cachingPolicy = BeeUtils.nvl(gridDescription.getCacheData(), hasPaging)
+          ? CachingPolicy.FULL : CachingPolicy.NONE;
     }
 
     if (brs != null) {
@@ -644,7 +648,7 @@ public final class GridFactory {
     }
 
     int limit;
-    if (providerType == ProviderType.CACHED) {
+    if (providerType == ProviderType.CACHED || !hasPaging) {
       limit = BeeConst.UNDEF;
     } else if (gridDescription.getInitialRowSetSize() != null) {
       limit = gridDescription.getInitialRowSetSize();
