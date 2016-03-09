@@ -1470,6 +1470,7 @@ public final class CliWorker {
           case TRAILER_TIME_BOARD:
           case TRUCK_TIME_BOARD:
           case TRADE_ACT_LIST:
+          case TRADE_DOCUMENTS:
             commands.add(command);
             break;
 

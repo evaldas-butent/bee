@@ -2,7 +2,6 @@ package com.butent.bee.shared.rights;
 
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.i18n.LocalizableConstants;
-import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.HasLocalizedCaption;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -259,11 +258,6 @@ public enum Module implements HasLocalizedCaption {
         }
       }
     }
-  }
-
-  @Override
-  public String getCaption() {
-    return getCaption(Localized.getConstants());
   }
 
   public String getName() {

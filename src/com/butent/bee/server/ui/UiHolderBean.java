@@ -38,16 +38,16 @@ import com.butent.bee.shared.rights.RightsUtils;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.ui.UiConstants;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.Codec;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -130,6 +130,21 @@ public class UiHolderBean {
     return BeeUtils.normalize(name);
   }
 
+  private static List<Menu> maybeTransform(Menu item) {
+    MenuService service;
+    if (item instanceof MenuItem) {
+      service = ((MenuItem) item).getService();
+    } else {
+      service = null;
+    }
+
+    if (service != null && service.getTransformer() != null) {
+      return service.getTransformer().apply(item);
+    } else {
+      return Collections.singletonList(item);
+    }
+  }
+
   @EJB
   ModuleHolderBean moduleBean;
   @EJB
@@ -171,16 +186,13 @@ public class UiHolderBean {
   }
 
   public DataNameProvider getFormDataNameProvider() {
-    return new DataNameProvider() {
-      @Override
-      public Set<String> apply(String input) {
-        Set<String> result = new HashSet<>();
-        String viewName = getFormViewName(input);
-        if (!BeeUtils.isEmpty(viewName)) {
-          result.add(viewName);
-        }
-        return result;
+    return input -> {
+      Set<String> result = new HashSet<>();
+      String viewName = getFormViewName(input);
+      if (!BeeUtils.isEmpty(viewName)) {
+        result.add(viewName);
       }
+      return result;
     };
   }
 
@@ -219,16 +231,13 @@ public class UiHolderBean {
   }
 
   public DataNameProvider getGridDataNameProvider() {
-    return new DataNameProvider() {
-      @Override
-      public Set<String> apply(String input) {
-        Set<String> result = new HashSet<>();
-        String viewName = getGridViewName(input);
-        if (!BeeUtils.isEmpty(viewName)) {
-          result.add(viewName);
-        }
-        return result;
+    return input -> {
+      Set<String> result = new HashSet<>();
+      String viewName = getGridViewName(input);
+      if (!BeeUtils.isEmpty(viewName)) {
+        result.add(viewName);
       }
+      return result;
     };
   }
 
@@ -236,7 +245,7 @@ public class UiHolderBean {
     Map<Integer, Menu> menus = new TreeMap<>();
 
     for (Menu menu : menuCache.values()) {
-      Menu entry = getMenu(null, Menu.restore(Codec.beeSerialize(menu)), checkRights);
+      Menu entry = getMenu(null, menu.copy(), checkRights);
 
       if (entry != null) {
         menus.put(Assert.notContain(menus, entry.getOrder()), entry);
@@ -436,16 +445,24 @@ public class UiHolderBean {
     } else {
       visible = Module.isAnyEnabled(entry.getModule());
     }
+
     if (visible) {
       if (entry instanceof MenuEntry) {
-        List<Menu> items = ((MenuEntry) entry).getItems();
+        List<Menu> input = ((MenuEntry) entry).getItems();
 
-        if (!BeeUtils.isEmpty(items)) {
-          for (Iterator<Menu> iterator = items.iterator(); iterator.hasNext(); ) {
-            if (getMenu(ref, iterator.next(), checkRights) == null) {
-              iterator.remove();
+        if (!BeeUtils.isEmpty(input)) {
+          List<Menu> output = new ArrayList<>();
+
+          for (Menu item : input) {
+            if (getMenu(ref, item, checkRights) != null) {
+              List<Menu> list = maybeTransform(item);
+              if (list != null) {
+                output.addAll(list);
+              }
             }
           }
+
+          ((MenuEntry) entry).setItems(output);
         }
       }
       return entry;

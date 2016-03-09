@@ -1,6 +1,8 @@
 package com.butent.bee.client.view.grid;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.grid.GridFactory;
+import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.CustomProperties;
 import com.butent.bee.shared.data.HasCustomProperties;
@@ -8,15 +10,31 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.ColumnDescription;
+import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-final class GridUtils {
+public final class GridUtils {
 
   private static final BeeLogger logger = LogUtils.getLogger(GridUtils.class);
+
+  public static boolean hasPaging(GridDescription gridDescription, Collection<UiOption> uiOptions,
+      GridFactory.GridOptions gridOptions) {
+
+    Boolean paging = (gridDescription == null) ? null : gridDescription.getPaging();
+    if (gridOptions != null && gridOptions.getPaging() != null) {
+      paging = gridOptions.getPaging();
+    }
+
+    if (UiOption.hasPaging(uiOptions)) {
+      return !BeeUtils.isFalse(paging);
+    } else {
+      return BeeUtils.isTrue(paging);
+    }
+  }
 
   static boolean containsColumn(Collection<ColumnDescription> columnDescriptions, String id) {
     return getColumnDescription(columnDescriptions, id) != null;

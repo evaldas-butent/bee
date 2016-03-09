@@ -1,12 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+  xmlns:ui="http://www.butent.com/ui"
 
   name="TradeDocumentTypes" viewName="TradeDocumentTypes" caption="=trdDocumentTypes"
   >
   <g:columns>
-    <DataColumn name="Ordinal" visible="true" />
+    <DataColumn name="Ordinal" visible="true">
+      <carry><ui:expression>cell.value + 1</ui:expression></carry>
+    </DataColumn>
+
     <DataColumn name="DocumentTypeName" minWidth="150" visible="true" />
 
-    <DataColumn name="Description" minWidth="150" visible="false" />
+    <DataColumn name="Description" minWidth="150" />
+
+    <DataColumn name="StatusOrder" visible="false" />
+    <DataColumn name="StatusPending" visible="false" />
+    <DataColumn name="StatusActive" visible="false" />
+    <DataColumn name="StatusCompleted" visible="false" />
+    <DataColumn name="StatusApproved" visible="false" />
   </g:columns>
 </g:Grid>

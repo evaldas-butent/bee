@@ -52,11 +52,6 @@ public final class CalendarConstants {
         return constants.calAppointmentStatusCompleted();
       }
     };
-
-    @Override
-    public String getCaption() {
-      return getCaption(Localized.getConstants());
-    }
   }
 
   public enum ItemType {

@@ -12,19 +12,28 @@ import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.widget.Frame;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Consumer;
-import com.butent.bee.shared.communication.CommUtils;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.css.CssUnit;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.FileInfo;
-import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
-import java.util.Collections;
 import java.util.Map;
 
 public final class ReportUtils {
+
+  public static void getPdf(String html, Consumer<FileInfo> responseConsumer) {
+    ParameterList args = new ParameterList(CREATE_PDF);
+    args.addDataItem(VAR_REPORT_DATA, Assert.notEmpty(html));
+
+    BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+        responseConsumer.accept(FileInfo.restore(response.getResponseAsString()));
+      }
+    });
+  }
 
   public static void getPdfReport(String report, Map<String, String> parameters, BeeRowSet data,
       Consumer<FileInfo> reportConsumer) {
@@ -33,9 +42,12 @@ public final class ReportUtils {
     makeRequest(report, "pdf", parameters, data, (repInfo) -> reportConsumer.accept(repInfo));
   }
 
+  public static void preview(FileInfo repInfo) {
+    preview(repInfo, null);
+  }
+
   public static void preview(FileInfo repInfo, InputCallback callback) {
-    String url = CommUtils.getPath(FileUtils.getUrl(repInfo.getId(), repInfo.getName()),
-        Collections.singletonMap("close", BeeUtils.toString(callback == null)), false);
+    String url = FileUtils.getUrl(repInfo.getId(), repInfo.getName());
 
     Frame frame = new Frame(url);
 
@@ -50,7 +62,7 @@ public final class ReportUtils {
   }
 
   public static void showReport(String report, Map<String, String> parameters, BeeRowSet data) {
-    makeRequest(report, "pdf", parameters, data, (repInfo) -> preview(repInfo, null));
+    makeRequest(report, "pdf", parameters, data, (repInfo) -> preview(repInfo));
   }
 
   private static void makeRequest(String report, String format,

@@ -32,6 +32,7 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.lowagie.text.DocumentException;
@@ -85,8 +86,8 @@ public class FileStorageBean {
   @EJB
   ParamHolderBean prm;
 
-  private final LoadingCache<Long, FileInfo> cacheNew = CacheBuilder.newBuilder()
-      .maximumSize(100000)
+  private final LoadingCache<Long, FileInfo> cache = CacheBuilder.newBuilder()
+      .recordStats()
       .expireAfterAccess(1, TimeUnit.DAYS)
       .removalListener((removalNotification) -> ((FileInfo) removalNotification.getValue()).close())
       .build(new CacheLoader<Long, FileInfo>() {
@@ -103,7 +104,7 @@ public class FileStorageBean {
     FileInfo storedFile;
 
     try {
-      storedFile = cacheNew.get(fileId);
+      storedFile = cache.get(fileId);
     } catch (ExecutionException e) {
       throw e.getCause() instanceof IOException
           ? (IOException) e.getCause() : new IOException(e.getCause());
@@ -194,12 +195,12 @@ public class FileStorageBean {
         in.close();
         tmp.delete();
       }
+      cache.invalidate(storedFile.getId());
     }
-    cacheNew.invalidate(storedFile.getId());
     return id.get();
   }
 
-  public String createPdf(String content, String... styleSheets) {
+  public Long createPdf(String content, String... styleSheets) {
     StringBuilder sb = new StringBuilder();
 
     for (String name : new String[] {PRM_PRINT_HEADER, PRM_PRINT_FOOTER}) {
@@ -221,21 +222,26 @@ public class FileStorageBean {
     String parsed = HtmlUtils.cleanXml(sb.append(content).toString());
 
     Map<Long, String> files = HtmlUtils.getFileReferences(parsed);
-    String path = null;
+    Long file = null;
 
     try {
       for (Long fileId : files.keySet()) {
         FileInfo fileInfo = getFile(fileId);
         parsed = parsed.replace(files.get(fileId), fileInfo.getFile().toURI().toString());
       }
+      parsed = parsed.replace("src=\"" + Paths.IMAGE_DIR, "src=\"" + Config.IMAGE_DIR.toURI());
+
       StringBuilder html = new StringBuilder("<?xml version=\"1.0\" encoding=\"utf-8\"?>")
           .append("<!DOCTYPE html [<!ENTITY nbsp \"&#160;\">]>")
           .append("<html xmlns=\"http://www.w3.org/1999/xhtml\"><head>")
           .append("<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\"/>");
 
-      List<String> styles = Arrays.asList("print");
+      List<String> styles = new ArrayList<>();
+      styles.add("print");
+      styles.add("commons");
+      styles.add("trade");
 
-      if (styleSheets != null) {
+      if (!ArrayUtils.isEmpty(styleSheets)) {
         styles.addAll(Arrays.asList(styleSheets));
       }
       for (String style : styles) {
@@ -271,12 +277,13 @@ public class FileStorageBean {
       renderer.createPDF(os);
       os.close();
 
-      path = tmp.getPath();
+      file = storeFile(new FileInputStream(tmp), tmp.getName(), null);
+      tmp.delete();
 
     } catch (IOException | DocumentException e) {
       logger.error(e);
     }
-    return path;
+    return file;
   }
 
   public static boolean deletePhoto(String fileName) {
@@ -288,9 +295,13 @@ public class FileStorageBean {
     return file.exists() && file.delete();
   }
 
+  public String getCacheStats() {
+    return BeeUtils.joinWords(cache.stats().toString(), "size", cache.size());
+  }
+
   public FileInfo getFile(Long fileId) throws IOException {
     try {
-      return cacheNew.get(fileId);
+      return cache.get(fileId);
     } catch (ExecutionException e) {
       throw e.getCause() instanceof IOException
           ? (IOException) e.getCause() : new IOException(e.getCause());
@@ -371,7 +382,7 @@ public class FileStorageBean {
       fileInfo.setHash(hash);
       fileInfo.setTemporary(true);
 
-      cacheNew.put(id, fileInfo);
+      cache.put(id, fileInfo);
     }
     return id;
   }

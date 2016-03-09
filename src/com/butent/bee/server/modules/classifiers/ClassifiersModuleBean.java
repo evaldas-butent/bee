@@ -111,6 +111,7 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -212,16 +213,26 @@ public class ClassifiersModuleBean implements BeeModule {
 
     } else if (BeeUtils.same(svc, SVC_CREATE_COMPANY)) {
       Map<String, String> info = new HashMap<>();
-      info.putAll(reqInfo.getParams());
-      info.putAll(reqInfo.getHeaders());
-      info.putAll(reqInfo.getVars());
+
+      for (Map<String, String> map : Arrays.asList(reqInfo.getParams(), reqInfo.getHeaders(),
+          reqInfo.getVars())) {
+
+        if (!BeeUtils.isEmpty(map)) {
+          info.putAll(map);
+        }
+      }
       response = createCompany(info);
 
     } else if (BeeUtils.same(svc, SVC_CREATE_COMPANY_PERSON)) {
       Map<String, String> info = new HashMap<>();
-      info.putAll(reqInfo.getParams());
-      info.putAll(reqInfo.getHeaders());
-      info.putAll(reqInfo.getVars());
+
+      for (Map<String, String> map : Arrays.asList(reqInfo.getParams(), reqInfo.getHeaders(),
+          reqInfo.getVars())) {
+
+        if (!BeeUtils.isEmpty(map)) {
+          info.putAll(map);
+        }
+      }
       response = createCompanyPerson(info);
 
     } else if (BeeUtils.same(svc, SVC_GET_COMPANY_TYPE_REPORT)) {

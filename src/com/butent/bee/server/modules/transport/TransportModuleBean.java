@@ -86,6 +86,7 @@ import com.butent.bee.shared.rights.SubModule;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Color;
+import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -121,6 +122,8 @@ import javax.ejb.Schedule;
 import javax.ejb.Stateless;
 import javax.ejb.Timer;
 import javax.ejb.TimerService;
+import javax.mail.internet.AddressException;
+import javax.mail.internet.InternetAddress;
 import javax.servlet.http.HttpServletResponse;
 
 @Stateless
@@ -344,6 +347,9 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
           BeeUtils.toLongOrNull(reqInfo.getParameter(COL_TRIP_DATE_FROM)),
           BeeUtils.toLongOrNull(reqInfo.getParameter(COL_TRIP_DATE_TO)));
 
+    } else if (BeeUtils.same(svc, SVC_CREATE_USER)) {
+      response = createUser(reqInfo);
+
     } else if (BeeUtils.same(svc, SVC_GET_TRIP_INFO)) {
       response = rep.getTripInfo(reqInfo);
 
@@ -379,10 +385,10 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
         BeeParameter.createText(module, "SmsPassword"),
         BeeParameter.createText(module, "SmsServiceId"),
         BeeParameter.createText(module, "SmsDisplayText"),
+        BeeParameter.createRelation(module, PRM_SELF_SERVICE_ROLE, TBL_ROLES, COL_ROLE_NAME),
         BeeParameter.createRelation(module, PRM_CARGO_TYPE, true, TBL_CARGO_TYPES,
             COL_CARGO_TYPE_NAME),
-        BeeParameter.createRelation(module, PRM_CARGO_SERVICE, false, TBL_SERVICES,
-            COL_SERVICE_NAME),
+        BeeParameter.createRelation(module, PRM_CARGO_SERVICE, TBL_SERVICES, COL_SERVICE_NAME),
         BeeParameter.createText(module, PRM_SYNC_ERP_VEHICLES),
         BeeParameter.createText(module, PRM_SYNC_ERP_EMPLOYEES),
         BeeParameter.createRelation(module, PRM_ERP_DRIVER_POSITION, TBL_POSITIONS,
@@ -904,7 +910,7 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
     });
   }
 
-  @Schedule
+  @Schedule(persistent = false)
   private void checkRequestStatus() {
     DateTime date = TimeUtils.startOfDay(1);
 
@@ -1481,6 +1487,72 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
     return response.addErrorsFrom(qs.updateDataWithResponse(new SqlUpdate(TBL_TRIP_COSTS)
         .addConstant(COL_PURCHASE, purchaseId)
         .setWhere(wh)));
+  }
+
+  private ResponseObject createUser(RequestInfo reqInfo) {
+    String login = reqInfo.getParameter(COL_LOGIN);
+    if (BeeUtils.isEmpty(login)) {
+      return ResponseObject.parameterNotFound(SVC_CREATE_USER, COL_LOGIN);
+    }
+    String password = reqInfo.getParameter(COL_PASSWORD);
+    if (BeeUtils.isEmpty(password)) {
+      return ResponseObject.parameterNotFound(SVC_CREATE_USER, COL_PASSWORD);
+    }
+    if (usr.isUser(login)) {
+      return ResponseObject.warning(usr.getLocalizableMesssages()
+          .valueExists(BeeUtils.joinWords(usr.getLocalizableConstants().user(), login)));
+    }
+    Long role = prm.getRelation(PRM_SELF_SERVICE_ROLE);
+
+    if (!DataUtils.isId(role)) {
+      return ResponseObject.parameterNotFound(SVC_CREATE_USER, PRM_SELF_SERVICE_ROLE);
+    }
+    ResponseObject resp = ResponseObject.info(usr.getLocalizableConstants().newUser(), login);
+    String email;
+
+    try {
+      email = new InternetAddress(reqInfo.getParameter(COL_EMAIL), true).getAddress();
+    } catch (AddressException e) {
+      return ResponseObject.error(e);
+    }
+    Long accountId = prm.getRelation(MailConstants.PRM_DEFAULT_ACCOUNT);
+
+    if (!DataUtils.isId(accountId)) {
+      return ResponseObject.parameterNotFound(SVC_CREATE_USER, MailConstants.PRM_DEFAULT_ACCOUNT);
+    }
+    Long user = qs.insertData(new SqlInsert(TBL_USERS)
+        .addConstant(COL_LOGIN, login)
+        .addConstant(COL_PASSWORD, Codec.encodePassword(password))
+        .addConstant(COL_COMPANY_PERSON, reqInfo.getParameter(COL_COMPANY_PERSON))
+        .addConstant(COL_USER_INTERFACE, UserInterface.SELF_SERVICE));
+
+    qs.insertData(new SqlInsert(TBL_USER_ROLES)
+        .addConstant(COL_USER, user)
+        .addConstant(COL_ROLE, role));
+
+    TextConstant constant = TextConstant.REGISTRATION_MAIL_CONTENT;
+
+    BeeRowSet data = qs.getViewData(VIEW_TEXT_CONSTANTS,
+        Filter.equals(COL_TEXT_CONSTANT, constant));
+
+    String localizedContent = Localized.column(COL_TEXT_CONTENT,
+        EnumUtils.getEnumByIndex(SupportedLocale.class, reqInfo.getParameterInt(COL_USER_LOCALE))
+            .getLanguage());
+    String text;
+
+    if (DataUtils.isEmpty(data)) {
+      text = constant.getDefaultContent();
+    } else if (BeeConst.isUndef(DataUtils.getColumnIndex(localizedContent, data.getColumns()))) {
+      text = data.getString(0, COL_TEXT_CONTENT);
+    } else {
+      text = BeeUtils.notEmpty(data.getString(0, localizedContent),
+          data.getString(0, COL_TEXT_CONTENT));
+    }
+    if (!BeeUtils.isEmpty(text)) {
+      cb.asynchronousCall(() -> mail.sendMail(accountId, email, null,
+          text.replace("{login}", login).replace("{password}", password)));
+    }
+    return resp;
   }
 
   private ResponseObject generateDailyCosts(long tripId) {

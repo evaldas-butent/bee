@@ -1,7 +1,6 @@
 package com.butent.bee.shared.rights;
 
 import com.butent.bee.shared.i18n.LocalizableConstants;
-import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.HasLocalizedCaption;
 
 import java.util.EnumSet;
@@ -43,11 +42,6 @@ public enum RightsObjectType implements HasLocalizedCaption {
 
   RightsObjectType(Set<RightsState> states) {
     this.registeredStates = states;
-  }
-
-  @Override
-  public String getCaption() {
-    return getCaption(Localized.getConstants());
   }
 
   public Set<RightsState> getRegisteredStates() {

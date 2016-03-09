@@ -16,6 +16,7 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.ui.HasCaption;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
@@ -49,20 +50,48 @@ public class Worker {
   FileStorageBean fs;
 
   @GET
+  @Path("companytypes")
+  public RestResponse getCompanyTypes(@HeaderParam(RestResponse.LAST_SYNC_TIME) Long lastSynced) {
+    long time = System.currentTimeMillis();
+
+    return RestResponse.ok(rsToMap(getRowSet(TBL_COMPANY_TYPES, COL_COMPANY_TYPE_NAME, lastSynced)))
+        .setLastSync(time);
+  }
+
+  @GET
+  @Path("cities")
+  public RestResponse getCities(@HeaderParam(RestResponse.LAST_SYNC_TIME) Long lastSynced) {
+    long time = System.currentTimeMillis();
+
+    return RestResponse.ok(rsToMap(getRowSet(TBL_CITIES, COL_CITY_NAME, lastSynced, COL_COUNTRY)))
+        .setLastSync(time);
+  }
+
+  @GET
+  @Path("countries")
+  public RestResponse getCountries(@HeaderParam(RestResponse.LAST_SYNC_TIME) Long lastSynced) {
+    long time = System.currentTimeMillis();
+
+    return RestResponse.ok(rsToMap(getRowSet(TBL_COUNTRIES, COL_COUNTRY_NAME, lastSynced)))
+        .setLastSync(time);
+  }
+
+  @GET
   @Path("durationtypes")
   public RestResponse getDurationTypes(@HeaderParam(RestResponse.LAST_SYNC_TIME) Long lastSynced) {
     long time = System.currentTimeMillis();
 
-    BeeRowSet rowSet = (BeeRowSet) qs.doSql(new SqlSelect()
-        .addField(TBL_DURATION_TYPES, sys.getIdName(TBL_DURATION_TYPES), ID)
-        .addField(TBL_DURATION_TYPES, sys.getVersionName(TBL_DURATION_TYPES), VERSION)
-        .addField(TBL_DURATION_TYPES, COL_DURATION_TYPE_NAME, COL_DURATION_TYPE)
-        .addFrom(TBL_DURATION_TYPES)
-        .setWhere(Objects.nonNull(lastSynced)
-            ? SqlUtils.more(TBL_DURATION_TYPES, sys.getVersionName(TBL_DURATION_TYPES), lastSynced)
-            : null).getQuery());
+    return RestResponse.ok(rsToMap(getRowSet(TBL_DURATION_TYPES, COL_DURATION_TYPE_NAME,
+        lastSynced))).setLastSync(time);
+  }
 
-    return RestResponse.ok(rsToMap(rowSet)).setLastSync(time);
+  @GET
+  @Path("tasktypes")
+  public RestResponse getTaskTypes(@HeaderParam(RestResponse.LAST_SYNC_TIME) Long lastSynced) {
+    long time = System.currentTimeMillis();
+
+    return RestResponse.ok(rsToMap(getRowSet(TBL_TASK_TYPES, COL_TASK_TYPE_NAME, lastSynced)))
+        .setLastSync(time);
   }
 
   @GET
@@ -144,6 +173,22 @@ public class Worker {
     resp.put(COL_USER, map);
 
     return RestResponse.ok(resp);
+  }
+
+  private BeeRowSet getRowSet(String table, String field, Long lastSynced, String... fields) {
+    SqlSelect select = new SqlSelect()
+        .addField(table, sys.getIdName(table), ID)
+        .addField(table, sys.getVersionName(table), VERSION)
+        .addField(table, field, "Name")
+        .addFrom(table)
+        .setWhere(Objects.nonNull(lastSynced)
+            ? SqlUtils.more(table, sys.getVersionName(table), lastSynced)
+            : null);
+
+    if (!ArrayUtils.isEmpty(fields)) {
+      select.addFields(table, fields);
+    }
+    return (BeeRowSet) qs.doSql(select.getQuery());
   }
 
   private static Collection<Map<String, Object>> rsToMap(BeeRowSet rowSet) {

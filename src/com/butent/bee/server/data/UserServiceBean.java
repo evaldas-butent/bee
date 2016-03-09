@@ -492,9 +492,9 @@ public class UserServiceBean {
     return userCache.get(userId);
   }
 
-  public String getUserPhotoFileName(Long userId) {
+  public Long getUserPhotoFile(Long userId) {
     UserData userData = getUserData(userId);
-    return (userData == null) ? null : userData.getPhotoFileName();
+    return (userData == null) ? null : userData.getPhotoFile();
   }
 
   public long[] getUserRoles() {
@@ -957,7 +957,7 @@ public class UserServiceBean {
 
         userData.setFirstName(row.getValue(COL_FIRST_NAME));
         userData.setLastName(row.getValue(COL_LAST_NAME));
-        userData.setPhotoFileName(row.getValue(COL_PHOTO));
+        userData.setPhotoFile(row.getLong(COL_PHOTO));
         userData.setCompanyName(row.getValue(COL_COMPANY_NAME));
         userData.setCompanyPerson(row.getLong(COL_COMPANY_PERSON));
         userData.setCompany(row.getLong(COL_COMPANY));

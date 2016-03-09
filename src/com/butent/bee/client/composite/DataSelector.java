@@ -1393,6 +1393,10 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     }
   }
 
+  protected ValueType getValueType() {
+    return valueType;
+  }
+
   protected boolean hasValueSource() {
     return !BeeConst.isUndef(valueSourceIndex);
   }

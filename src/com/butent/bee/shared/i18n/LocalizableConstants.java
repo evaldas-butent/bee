@@ -324,6 +324,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String exchangeCode();
 
+  String executorFullName();
+
   String expenses();
 
   String exportToMsExcel();

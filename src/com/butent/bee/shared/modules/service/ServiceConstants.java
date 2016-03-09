@@ -1,7 +1,6 @@
 package com.butent.bee.shared.modules.service;
 
 import com.butent.bee.shared.i18n.LocalizableConstants;
-import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.HasLocalizedCaption;
 import com.butent.bee.shared.utils.EnumUtils;
 
@@ -22,11 +21,6 @@ public final class ServiceConstants {
     };
 
     public static final ServiceCompanyKind DETAULT = CUSTOMER;
-
-    @Override
-    public String getCaption() {
-      return getCaption(Localized.getConstants());
-    }
   }
 
   public static final String SVC_CREATE_INVOICE_ITEMS = "CreateInvoiceItems";

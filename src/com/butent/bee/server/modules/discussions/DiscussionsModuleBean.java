@@ -825,8 +825,7 @@ public class DiscussionsModuleBean implements BeeModule {
             COL_FIRST_NAME)
         .addField(TBL_PERSONS, COL_LAST_NAME,
             COL_LAST_NAME)
-        .addField(TBL_PERSONS, COL_PHOTO,
-            COL_PHOTO)
+        .addField(TBL_PERSONS, COL_PHOTO, COL_PHOTO)
         .addCount(TBL_DISCUSSIONS_FILES, AdministrationConstants.COL_FILE,
             AdministrationConstants.COL_FILE)
         .addCount(TBL_DISCUSSIONS_COMMENTS, COL_DISCUSSION,
@@ -897,9 +896,8 @@ public class DiscussionsModuleBean implements BeeModule {
         .addGroup(TBL_DISCUSSIONS, sys.getIdName(TBL_DISCUSSIONS))
         .addGroup(TBL_ADS_TOPICS, COL_NAME, COL_ORDINAL)
         .addGroup(TBL_DISCUSSIONS_USAGE, NewsConstants.COL_USAGE_ACCESS)
-        .addGroup(TBL_PERSONS, COL_FIRST_NAME,
-            COL_LAST_NAME, COL_PHOTO);
-    // logger.info(select.getQuery());
+        .addGroup(TBL_PERSONS, COL_FIRST_NAME, COL_LAST_NAME, COL_PHOTO);
+
     SimpleRowSet rs = qs.getData(select);
 
     if (DataUtils.isId(birthTopic)) {

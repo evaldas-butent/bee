@@ -119,6 +119,7 @@ public final class FileUtils {
     }
   }
 
+  @Deprecated
   public static void deletePhoto(final String photoFileName, final Callback<String> callback) {
     Assert.notEmpty(photoFileName);
 
@@ -218,12 +219,6 @@ public final class FileUtils {
 
   public static String getUrl(Long fileId, String fileName) {
     return getUrl(fileId) + "/" + URL.encodePathSegment(Assert.notEmpty(fileName));
-  }
-
-  public static String getUrl(String filePath, String fileName) {
-    return BeeUtils.join("/", getUrl(null),
-        URL.encodePathSegment(Codec.encodeBase64(Assert.notEmpty(filePath))),
-        URL.encodePathSegment(Assert.notEmpty(fileName)));
   }
 
   public static String getUrl(String fileName, Map<Long, String> files) {
@@ -339,6 +334,7 @@ public final class FileUtils {
     }
   }
 
+  @Deprecated
   public static void uploadPhoto(NewFileInfo fileInfo, final String photoFileName, String oldPhoto,
       final Callback<String> callback) {
 

@@ -12,6 +12,7 @@ import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.Order;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.time.DateTime;
@@ -662,6 +663,28 @@ public final class DataUtils {
     } else {
       return null;
     }
+  }
+
+  public static String getTranslation(BeeRowSet rowSet, IsRow row, String columnId,
+      String language) {
+    return getTranslation(rowSet.getColumns(), row, columnId, language);
+  }
+
+  public static String getTranslation(List<? extends IsColumn> columns, IsRow row, String columnId,
+      String language) {
+
+    if (!BeeUtils.isEmpty(language)) {
+      int index = getColumnIndex(Localized.column(columnId, language), columns);
+
+      if (!BeeConst.isUndef(index)) {
+        String value = row.getString(index);
+        if (!BeeUtils.isEmpty(value)) {
+          return value;
+        }
+      }
+    }
+
+    return getString(columns, row, columnId);
   }
 
   public static BeeRowSet getUpdated(String viewName, List<BeeColumn> columns, IsRow oldRow,

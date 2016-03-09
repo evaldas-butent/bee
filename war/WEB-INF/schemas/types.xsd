@@ -445,6 +445,7 @@
       <xs:enumeration value="RTDates" />
       <xs:enumeration value="RTFiles" />
       <xs:enumeration value="Rules" />
+      <xs:enumeration value="SaleFiles" />
       <xs:enumeration value="SaleItems" />
       <xs:enumeration value="SaleOperations" />
       <xs:enumeration value="Sales" />
@@ -516,7 +517,10 @@
       <xs:enumeration value="TradeActTemplates" />
       <xs:enumeration value="TradeActTmplItems" />
       <xs:enumeration value="TradeActTmplServices" />
+      <xs:enumeration value="TradeDocumentFiles" />
+      <xs:enumeration value="TradeDocumentItems" />
       <xs:enumeration value="TradeDocuments" />
+      <xs:enumeration value="TradeDocumentTags" />
       <xs:enumeration value="TradeDocumentTypes" />
       <xs:enumeration value="TradeNotes" />
       <xs:enumeration value="TradeOperations" />

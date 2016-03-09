@@ -1,7 +1,6 @@
 package com.butent.bee.shared.report;
 
 import com.butent.bee.shared.i18n.LocalizableConstants;
-import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.HasLocalizedCaption;
 
 public enum DateTimeFunction implements HasLocalizedCaption {
@@ -59,9 +58,4 @@ public enum DateTimeFunction implements HasLocalizedCaption {
       return constants.minute();
     }
   };
-
-  @Override
-  public String getCaption() {
-    return getCaption(Localized.getConstants());
-  }
 }

@@ -133,11 +133,6 @@ public final class TaskConstants {
       return false;
     }
 
-    @Override
-    public String getCaption() {
-      return getCaption(Localized.getConstants());
-    }
-
     public boolean is(Integer status) {
       return status != null && ordinal() == status;
     }

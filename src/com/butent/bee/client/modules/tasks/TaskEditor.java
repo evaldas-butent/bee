@@ -117,6 +117,7 @@ class TaskEditor extends AbstractFormInterceptor {
   private static final String STYLE_DURATION = CRM_STYLE_PREFIX + "taskDuration-";
   private static final String STYLE_DURATION_CELL = "Cell";
   private static final String WIDGET_PROJECT_DATA_SUFFIX = "Data";
+  private static final String STYLE_PHOTO = "Photo";
 
   private static final String STYLE_EXTENSION = CRM_STYLE_PREFIX + "taskExtension";
   private static final String NAME_OBSERVERS = "Observers";
@@ -370,12 +371,12 @@ class TaskEditor extends AbstractFormInterceptor {
 
     if (renderPhoto) {
       Flow colPhoto = new Flow();
-      colPhoto.addStyleName(STYLE_EVENT_COL + COL_PHOTO);
+      colPhoto.addStyleName(STYLE_EVENT_COL + STYLE_PHOTO);
 
-      String photo = row.getString(DataUtils.getColumnIndex(COL_PHOTO, columns));
-      if (!BeeUtils.isEmpty(photo)) {
+      Long photo = row.getLong(DataUtils.getColumnIndex(COL_PHOTO, columns));
+      if (DataUtils.isId(photo)) {
         Image image = new Image(PhotoRenderer.getUrl(photo));
-        image.addStyleName(STYLE_EVENT + COL_PHOTO);
+        image.addStyleName(STYLE_EVENT + STYLE_PHOTO);
         colPhoto.add(image);
       }
 
@@ -522,7 +523,7 @@ class TaskEditor extends AbstractFormInterceptor {
     int photoIndex = rowSet.getColumnIndex(COL_PHOTO);
     if (photoIndex >= 0) {
       for (BeeRow row : rowSet.getRows()) {
-        if (!BeeUtils.isEmpty(row.getString(photoIndex))) {
+        if (DataUtils.isId(row.getString(photoIndex))) {
           hasPhoto = true;
           break;
         }
@@ -927,7 +928,7 @@ class TaskEditor extends AbstractFormInterceptor {
               companyName);
           docRow.setValue(dataInfo
               .getColumnIndex(DocumentConstants.COL_DOCUMENT_COMPANY), row
-              .getLong(idxCompany));
+                  .getLong(idxCompany));
         }
 
         FileCollector.pushFiles(Lists.newArrayList(fileInfo));
@@ -1134,11 +1135,11 @@ class TaskEditor extends AbstractFormInterceptor {
               .beeSerialize(data)),
               new IntCallback() {
 
-                @Override
-                public void onSuccess(Integer updateCount) {
-                  consumer.accept(null);
-                }
-              });
+            @Override
+            public void onSuccess(Integer updateCount) {
+              consumer.accept(null);
+            }
+          });
 
         }
       });
@@ -1326,7 +1327,7 @@ class TaskEditor extends AbstractFormInterceptor {
 
     newTaskRow.setValue(idxSummary, Data.clamp(VIEW_TASKS, COL_SUMMARY, BeeUtils.joinWords(taskRow
         .getString(idxSummary), BeeUtils
-        .parenthesize(taskRow.getId()))));
+            .parenthesize(taskRow.getId()))));
 
     String description = taskRow.getString(idxDescription);
 
@@ -1342,15 +1343,15 @@ class TaskEditor extends AbstractFormInterceptor {
             BeeUtils.join(BeeConst.STRING_EOL
                 + BeeUtils.replicate(BeeConst.CHAR_MINUS, BeeConst.MAX_SCALE)
                 + BeeConst.STRING_EOL, description, BeeUtils
-                .joinWords(event.getDateTime(events.getColumnIndex(COL_PUBLISH_TIME)), BeeUtils
-                    .nvl(event
-                        .getString(events.getColumnIndex(ALS_PUBLISHER_FIRST_NAME)),
-                        BeeConst.STRING_EMPTY), BeeUtils.nvl(event
-                    .getString(events.getColumnIndex(ALS_PUBLISHER_LAST_NAME)),
-                    BeeConst.STRING_EMPTY)
-                    + BeeConst.STRING_COLON, event
-                    .getString(events
-                        .getColumnIndex(COL_COMMENT))));
+                    .joinWords(event.getDateTime(events.getColumnIndex(COL_PUBLISH_TIME)), BeeUtils
+                        .nvl(event
+                            .getString(events.getColumnIndex(ALS_PUBLISHER_FIRST_NAME)),
+                            BeeConst.STRING_EMPTY), BeeUtils.nvl(event
+                                .getString(events.getColumnIndex(ALS_PUBLISHER_LAST_NAME)),
+                                BeeConst.STRING_EMPTY)
+                                + BeeConst.STRING_COLON, event
+                                    .getString(events
+                                        .getColumnIndex(COL_COMMENT))));
       }
     } else if (!events.isEmpty()) {
       for (IsRow event : events) {
@@ -1361,15 +1362,16 @@ class TaskEditor extends AbstractFormInterceptor {
               BeeUtils.join(BeeConst.STRING_EOL
                   + BeeUtils.replicate(BeeConst.CHAR_MINUS, BeeConst.MAX_SCALE)
                   + BeeConst.STRING_EOL, description, BeeUtils
-                  .joinWords(event.getDateTime(events.getColumnIndex(COL_PUBLISH_TIME)), BeeUtils
-                      .nvl(event
-                          .getString(events.getColumnIndex(ALS_PUBLISHER_FIRST_NAME)),
-                          BeeConst.STRING_EMPTY), BeeUtils.nvl(event
-                      .getString(events.getColumnIndex(ALS_PUBLISHER_LAST_NAME)),
-                      BeeConst.STRING_EMPTY)
-                      + BeeConst.STRING_COLON, event
-                      .getString(events
-                          .getColumnIndex(COL_COMMENT))));
+                      .joinWords(event.getDateTime(events.getColumnIndex(COL_PUBLISH_TIME)),
+                          BeeUtils
+                              .nvl(event
+                                  .getString(events.getColumnIndex(ALS_PUBLISHER_FIRST_NAME)),
+                                  BeeConst.STRING_EMPTY), BeeUtils.nvl(event
+                                      .getString(events.getColumnIndex(ALS_PUBLISHER_LAST_NAME)),
+                                      BeeConst.STRING_EMPTY)
+                                      + BeeConst.STRING_COLON, event
+                                          .getString(events
+                                              .getColumnIndex(COL_COMMENT))));
         }
       }
     }
@@ -1946,34 +1948,34 @@ class TaskEditor extends AbstractFormInterceptor {
 
     Queries.getRowSet(ProjectConstants.VIEW_PROJECT_USERS, Lists
         .newArrayList(COL_USER), Filter.isEqual(
-        ProjectConstants.COL_PROJECT, Value.getValue(projectId)), new RowSetCallback() {
+            ProjectConstants.COL_PROJECT, Value.getValue(projectId)), new RowSetCallback() {
 
-      @Override
-      public void onSuccess(BeeRowSet result) {
-        List<Long> userIds = Lists.newArrayList(projectOwner);
-        int idxUser = result.getColumnIndex(COL_USER);
+              @Override
+              public void onSuccess(BeeRowSet result) {
+                List<Long> userIds = Lists.newArrayList(projectOwner);
+                int idxUser = result.getColumnIndex(COL_USER);
 
-        if (BeeConst.isUndef(idxUser)) {
-          Assert.untouchable();
-          return;
-        }
+                if (BeeConst.isUndef(idxUser)) {
+                  Assert.untouchable();
+                  return;
+                }
 
-        for (IsRow userRow : result) {
-          long projectUser = BeeUtils.unbox(userRow.getLong(idxUser));
+                for (IsRow userRow : result) {
+                  long projectUser = BeeUtils.unbox(userRow.getLong(idxUser));
 
-          if (DataUtils.isId(projectUser)) {
-            userIds.add(projectUser);
-          }
-        }
+                  if (DataUtils.isId(projectUser)) {
+                    userIds.add(projectUser);
+                  }
+                }
 
-        if (observers != null) {
-          observers.getOracle().setAdditionalFilter(Filter.idIn(userIds), true);
-          observers.setEnabled(true);
-        }
+                if (observers != null) {
+                  observers.getOracle().setAdditionalFilter(Filter.idIn(userIds), true);
+                  observers.setEnabled(true);
+                }
 
-        setProjectUsers(userIds);
-      }
-    });
+                setProjectUsers(userIds);
+              }
+            });
   }
 
   private void setEnabledRelations() {

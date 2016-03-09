@@ -34,11 +34,6 @@ public final class TransportConstants {
       }
     };
 
-    @Override
-    public String getCaption() {
-      return getCaption(Localized.getConstants());
-    }
-
     public boolean is(Integer status) {
       return status != null && ordinal() == status;
     }
@@ -88,11 +83,6 @@ public final class TransportConstants {
       }
     };
 
-    @Override
-    public String getCaption() {
-      return getCaption(Localized.getConstants());
-    }
-
     public boolean is(Integer status) {
       return status != null && ordinal() == status;
     }
@@ -125,6 +115,16 @@ public final class TransportConstants {
       public String getCaption(LocalizableConstants constants) {
         return constants.trRegistrationMailContent();
       }
+
+      @Override
+      public String getDefaultContent() {
+        return "The login which is given below is to connect to Your user account<br><br>"
+            + "Address: http://127.0.0.1:8080/Bee<br>"
+            + "Login: {login}<br>"
+            + "Password: {password}<br><br>"
+            + "This message was created automatically by mail delivery software. "
+            + "Thank You for using our services.";
+      }
     },
     REQUEST_CONFIRMED_MAIL_CONTENT {
       @Override
@@ -153,11 +153,6 @@ public final class TransportConstants {
       }
     };
 
-    @Override
-    public String getCaption() {
-      return getCaption(Localized.getConstants());
-    }
-
     public String getDefaultContent() {
       return null;
     }
@@ -176,11 +171,6 @@ public final class TransportConstants {
         return constants.winter();
       }
     };
-
-    @Override
-    public String getCaption() {
-      return getCaption(Localized.getConstants());
-    }
   }
 
   public enum OrderStatus implements HasLocalizedCaption {
@@ -208,11 +198,6 @@ public final class TransportConstants {
         return constants.trOrderStatusCompleted();
       }
     };
-
-    @Override
-    public String getCaption() {
-      return getCaption(Localized.getConstants());
-    }
 
     public boolean is(Integer status) {
       return status != null && ordinal() == status;
@@ -264,11 +249,6 @@ public final class TransportConstants {
         return constants.trConstantCosts();
       }
     };
-
-    @Override
-    public String getCaption() {
-      return getCaption(Localized.getConstants());
-    }
   }
 
   public enum VehicleType {
@@ -351,6 +331,7 @@ public final class TransportConstants {
   public static final String PRM_SYNC_ERP_EMPLOYEES = "ERPSyncEmployeesOnHours";
   public static final String PRM_ERP_DRIVER_POSITION = "ERPDriverPosition";
   public static final String PRM_EXCLUDE_VAT = "ExcludeVAT";
+  public static final String PRM_SELF_SERVICE_ROLE = "SelfServiceRole";
 
   public static final String VAR_INCOME = "Income";
   public static final String VAR_EXPENSE = "Expense";

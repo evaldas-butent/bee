@@ -34,6 +34,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Locality;
 import com.butent.bee.shared.communication.TextMessage;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.PropertiesData;
 import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.data.event.ModificationEvent;
@@ -210,8 +211,8 @@ class MessageDispatcher {
 
         if (icon != null) {
           options.setIcon(icon.getImageResource().getSafeUri().asString());
-        } else if (userData != null && !BeeUtils.isEmpty(userData.getPhotoFileName())) {
-          options.setIcon(PhotoRenderer.getUrl(userData.getPhotoFileName()));
+        } else if (userData != null && DataUtils.isId(userData.getPhotoFile())) {
+          options.setIcon(PhotoRenderer.getUrl(userData.getPhotoFile()));
         }
 
         WebNotification.create(title, options, null);

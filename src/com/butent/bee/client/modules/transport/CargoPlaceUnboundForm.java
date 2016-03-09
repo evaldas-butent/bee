@@ -5,7 +5,7 @@ import com.google.gwt.event.shared.HasHandlers;
 import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONString;
 
-import static com.butent.bee.shared.modules.transport.TransportConstants.ALS_CARGO_HANDLING_NOTES;
+import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.data.Data;
@@ -27,7 +27,7 @@ import java.util.Objects;
 
 public class CargoPlaceUnboundForm extends AbstractFormInterceptor {
 
-  protected Map<String, UnboundSelector> unboundWidgets = new HashMap<>();
+  private Map<String, UnboundSelector> unboundWidgets = new HashMap<>();
 
   @Override
   public void afterCreateWidget(String name, IdentifiableWidget widget,
@@ -75,7 +75,6 @@ public class CargoPlaceUnboundForm extends AbstractFormInterceptor {
 
     for (String key : unboundWidgets.keySet()) {
       unboundWidgets.get(key).setValue(JsonUtils.getString(json, key));
-      unboundWidgets.get(key).setDisplayValue(JsonUtils.getString(json, key));
     }
     return super.onStartEdit(form, row, focusCommand);
   }
@@ -86,6 +85,10 @@ public class CargoPlaceUnboundForm extends AbstractFormInterceptor {
       unboundWidgets.get(key).clearValue();
     }
     super.onStartNewRow(form, oldRow, newRow);
+  }
+
+  protected UnboundSelector getUnboundWidget(String col) {
+    return unboundWidgets.get(col);
   }
 
   private String prepareJson() {

@@ -94,11 +94,6 @@ public enum ImportType implements HasLocalizedCaption {
     properties.add(new ImportProperty(name, caption, false));
   }
 
-  @Override
-  public String getCaption() {
-    return getCaption(Localized.getConstants());
-  }
-
   public Collection<ImportProperty> getProperties() {
     return Collections.unmodifiableCollection(properties);
   }

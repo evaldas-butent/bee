@@ -158,9 +158,9 @@ public class ChatBean {
 
             if (!BeeUtils.isEmpty(users)) {
               if (users.size() == 1) {
-                String photoFileName = usr.getUserPhotoFileName(users.get(0));
-                if (!BeeUtils.isEmpty(photoFileName)) {
-                  row.setProperty(PROP_USER_PHOTO, photoFileName);
+                Long photoFile = usr.getUserPhotoFile(users.get(0));
+                if (DataUtils.isId(photoFile)) {
+                  row.setProperty(PROP_USER_PHOTO, photoFile);
                 }
               }
 

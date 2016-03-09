@@ -36,6 +36,7 @@ import com.butent.bee.client.view.edit.EditFormEvent;
 import com.butent.bee.client.view.edit.HasEditState;
 import com.butent.bee.client.view.grid.CellGrid;
 import com.butent.bee.client.view.grid.ExtWidget;
+import com.butent.bee.client.view.grid.GridUtils;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.view.navigation.PagerView;
@@ -145,16 +146,7 @@ public class GridContainerImpl extends Split implements GridContainerView,
       addStyleName(UiOption.getStyleName(uiOptions));
     }
 
-    Boolean paging = gridDescription.getPaging();
-    if (gridOptions != null && gridOptions.getPaging() != null) {
-      paging = gridOptions.getPaging();
-    }
-
-    if (UiOption.hasPaging(uiOptions)) {
-      setHasPaging(!BeeUtils.isFalse(paging));
-    } else {
-      setHasPaging(BeeUtils.isTrue(paging));
-    }
+    setHasPaging(GridUtils.hasPaging(gridDescription, uiOptions, gridOptions));
 
     setHasSearch(UiOption.hasSearch(uiOptions)
         && !gridDescription.getDisabledActions().contains(Action.FILTER));

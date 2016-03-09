@@ -135,6 +135,14 @@ public class SystemServiceBean {
           Codec.deserializeMap(reqInfo.getParameter(VAR_REPORT_PARAMETERS)),
           BeeUtils.isEmpty(data) ? null : BeeRowSet.restore(data));
 
+    } else if (BeeUtils.same(svc, CREATE_PDF)) {
+      Long fileId = fs.createPdf(reqInfo.getParameter(VAR_REPORT_DATA));
+
+      try {
+        response = ResponseObject.response(fs.getFile(fileId));
+      } catch (IOException e) {
+        response = ResponseObject.error(e);
+      }
     } else {
       String msg = BeeUtils.joinWords(svc, "system service not recognized");
       logger.warning(msg);

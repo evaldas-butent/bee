@@ -11,6 +11,7 @@ import com.butent.bee.shared.modules.documents.DocumentConstants;
 import com.butent.bee.shared.modules.ec.EcConstants;
 import com.butent.bee.shared.modules.service.ServiceConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
+import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.modules.trade.acts.TradeActConstants;
 import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.rights.RightsState;
@@ -93,10 +94,15 @@ public enum MenuService {
   @XmlEnumValue("trade_act_new")
   TRADE_ACT_NEW(RightsState.CREATE, TradeActConstants.VIEW_TRADE_ACTS),
   @XmlEnumValue("trade_act_list")
-  TRADE_ACT_LIST(RightsState.VIEW, TradeActConstants.VIEW_TRADE_ACTS);
+  TRADE_ACT_LIST(RightsState.VIEW, TradeActConstants.VIEW_TRADE_ACTS),
+
+  @XmlEnumValue("trade_documents")
+  TRADE_DOCUMENTS(RightsState.VIEW, TradeConstants.VIEW_TRADE_DOCUMENTS);
 
   private final Set<RightsState> dataRightsStates;
   private DataNameProvider dataNameProvider;
+
+  private MenuTransformer transformer;
 
   private MenuHandler handler;
 
@@ -149,26 +155,20 @@ public enum MenuService {
     return dataNameProvider == null ? null : dataNameProvider.apply(parameter);
   }
 
+  public MenuTransformer getTransformer() {
+    return transformer;
+  }
+
   public void setDataName(final String dataName) {
     setDataNames(Sets.newHashSet(dataName));
   }
 
   public void setDataNames(final Set<String> dataNames) {
-    this.dataNameProvider = new DataNameProvider() {
-      @Override
-      public Set<String> apply(String input) {
-        return dataNames;
-      }
-    };
+    this.dataNameProvider = input -> dataNames;
   }
 
   public void setDataIsParameter() {
-    this.dataNameProvider = new DataNameProvider() {
-      @Override
-      public Set<String> apply(String input) {
-        return Sets.newHashSet(input);
-      }
-    };
+    this.dataNameProvider = input -> Sets.newHashSet(input);
   }
 
   public void setDataNameProvider(DataNameProvider dataNameProvider) {
@@ -177,5 +177,9 @@ public enum MenuService {
 
   public void setHandler(MenuHandler handler) {
     this.handler = handler;
+  }
+
+  public void setTransformer(MenuTransformer transformer) {
+    this.transformer = transformer;
   }
 }

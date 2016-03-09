@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+  xmlns:ui="http://www.butent.com/ui"
+
+  name="TradeDocumentItems" viewName="TradeDocumentItems"
+  flexGrow="1"
+  newRowCaption="=newItem"
+  >
+  <g:columns>
+    <RelColumn name="Item" renderColumns="ItemName" choiceColumns="Name Article" visible="true">
+      <footer text="=totalOf" horizontalAlignment="right" />
+    </RelColumn>
+    <DataColumn name="Article" />
+
+    <DataColumn name="Quantity" visible="true">
+      <footer aggregate="sum" />
+    </DataColumn>
+    <DataColumn name="UnitName" flexGrow="0" caption="=unitShort" />
+
+    <DataColumn name="Price">
+      <footer expression="row.Quantity * row.Price" />
+    </DataColumn>
+
+    <DataColumn name="DiscountPercent" carry="true" flexGrow="0" />
+    <DataColumn name="VatPercent" carry="true" flexGrow="0" />
+
+    <RelColumn name="Warehouse" choiceColumns="Code Name" renderColumns="WarehouseCode"
+      flexGrow="0" />
+
+    <DataColumn name="Note" maxWidth="300" />
+    
+    <IdColumn name="Id" flexGrow="0" visible="false" />
+    <DataColumn name="Parent" flexGrow="0" visible="false" />
+  </g:columns>
+</g:Grid>
