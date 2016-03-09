@@ -28,8 +28,6 @@
 
     <SimpleColumn name="BlockAfter" />
     <SimpleColumn name="BlockBefore" />
-
-    <SimpleColumn name="EmployerId" />
   </Columns>
 
   <Order>

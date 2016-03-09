@@ -105,8 +105,6 @@ import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.LogUtils;
-import com.butent.bee.shared.modules.transport.TransportConstants.AssessmentStatus;
-import com.butent.bee.shared.modules.transport.TransportConstants.OrderStatus;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
@@ -917,7 +915,7 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
     Queries.getRowSet(TBL_CARGO_EXPENSES,
         Lists.newArrayList(COL_AMOUNT, COL_CURRENCY, COL_SERVICE_PERCENT,
             ALS_CARGO_INCOME_CURRENCY), Filter.and(Filter.equals(COL_CARGO, cargoId), Filter.isNull(
-                COL_PURCHASE), Filter.notNull(COL_SERVICE_PERCENT)),
+            COL_PURCHASE), Filter.notNull(COL_SERVICE_PERCENT)),
         new RowSetCallback() {
           @Override
           public void onSuccess(BeeRowSet expenses) {
@@ -1215,7 +1213,8 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
           public void onSuccess(BeeRow result) {
             for (String prop : new String[] {VAR_INCOME, VAR_EXPENSE}) {
               CellUpdateEvent.fire(BeeKeeper.getBus(), form.getViewName(), result.getId(),
-                  result.getVersion(), CellSource.forProperty(prop, ValueType.DECIMAL),
+                  result.getVersion(),
+                  CellSource.forProperty(prop, BeeKeeper.getUser().getUserId(), ValueType.DECIMAL),
                   result.getProperty(prop));
             }
           }

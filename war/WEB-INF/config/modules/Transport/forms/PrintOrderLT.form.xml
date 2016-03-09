@@ -52,7 +52,7 @@
         </cell>
 
         <FlowPanel>
-
+          <Label html="Ekspeditorius:" />
           <FlowPanel name="Forwarder" class="&form;-forwarder" />
           <br />
           <Label html="Ekspeditoriaus atstovas" style="&bold;" />

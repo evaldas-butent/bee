@@ -168,7 +168,7 @@ public class CargoPurchaseInvoiceForm extends InvoiceForm implements ClickHandle
             return Localized.getConstants().valueRequired();
           }
         }
-        return super.getErrorMessage();
+        return InputCallback.super.getErrorMessage();
       }
 
       @Override
