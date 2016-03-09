@@ -379,13 +379,15 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
         BeeRowSet data = qs.getViewData(VIEW_TRADE_DOCUMENT_TYPES);
 
         if (!DataUtils.isEmpty(data)) {
+          String language = usr.getLanguage();
+
           for (BeeRow row : data) {
             long id = row.getId();
 
             MenuItem item = (MenuItem) input.copy();
 
             item.setName(BeeUtils.join(BeeConst.STRING_UNDER, input.getName(), id));
-            item.setLabel(DataUtils.getString(data, row, COL_DOCUMENT_TYPE_NAME));
+            item.setLabel(DataUtils.getTranslation(data, row, COL_DOCUMENT_TYPE_NAME, language));
 
             item.setParameters(BeeUtils.toString(id));
 
@@ -413,7 +415,8 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
 
     BeeRow typeRow = typeData.getRow(0);
 
-    String caption = DataUtils.getString(typeData, typeRow, COL_DOCUMENT_TYPE_NAME);
+    String caption = DataUtils.getTranslation(typeData, typeRow, COL_DOCUMENT_TYPE_NAME,
+        usr.getLanguage());
     CompoundFilter filter = Filter.and();
 
     CompoundFilter statusFilter = Filter.or();
