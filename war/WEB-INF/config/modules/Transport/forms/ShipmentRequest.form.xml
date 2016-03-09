@@ -160,8 +160,8 @@
         </row>
 
         <row>
-          <text />
-          <text />
+          <Label text="=trRequestNotes" />
+          <InputArea source="Notes" style="&area;" />
           <Label for="Value" />
           <FlowPanel>
             <InputMoney source="Value" style="margin-right:5px; width:7em;" />
@@ -235,14 +235,14 @@
           <Label for="Manager" />
           <DataSelector source="Manager" newRowEnabled="false" editSource="ManagerPerson"
                         style="width:15em;" />
-          <Label text="=trRequestNotes" />
-          <InputArea source="Notes" style="&area;" />
+          <Label for="Host" />
+          <TextLabel source="Host" />
         </row>
 
         <row>
-          <Label for="Host" />
-          <TextLabel source="Host" />
-          <Label for="Agent" />
+          <cell colSpan="3">
+            <Label for="Agent" />
+          </cell>
           <TextLabel source="Agent" />
         </row>
       </Table>
