@@ -76,6 +76,7 @@ class AnnouncementsBoardInterceptor extends AbstractFormInterceptor implements
   private static final String STYLE_ACTION = "action";
   private static final String STYLE_CHAT_BALLOON = "chatBalloon";
   private static final String LOCALE_NAME_LT = "lt";
+  private static final String STYLE_PHOTO = "Photo";
 
   private static final String DAY = Localized.getConstants().unitDayShort().toLowerCase();
 
@@ -523,7 +524,7 @@ class AnnouncementsBoardInterceptor extends AbstractFormInterceptor implements
     container.add(colPublisher);
 
     Flow colPhoto = new Flow();
-    colPhoto.addStyleName(stylePref + COL_PHOTO);
+    colPhoto.addStyleName(stylePref + STYLE_PHOTO);
 
     if (!BeeUtils.isEmpty(rsRow[rs.getColumnIndex(COL_PHOTO)])) {
       renderPhoto(rsRow, rs, stylePref, colPhoto);
@@ -538,8 +539,8 @@ class AnnouncementsBoardInterceptor extends AbstractFormInterceptor implements
     String photo =
         rsRow[rs.getColumnIndex(COL_PHOTO)];
     if (!BeeUtils.isEmpty(photo)) {
-      Image image = new Image(PhotoRenderer.getUrl(photo));
-      image.addStyleName(stylePref + COL_PHOTO);
+      Image image = new Image(PhotoRenderer.getUrl(BeeUtils.toLongOrNull(photo)));
+      image.addStyleName(stylePref + STYLE_PHOTO);
       container.add(image);
     }
   }

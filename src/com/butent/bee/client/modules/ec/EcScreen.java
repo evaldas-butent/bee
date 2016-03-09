@@ -129,14 +129,15 @@ public class EcScreen extends ScreenImpl {
   }
 
   @Override
-  public void closeWidget(IdentifiableWidget widget) {
+  public boolean closeWidget(IdentifiableWidget widget) {
     if (widget != null) {
       if (UiHelper.isModal(widget.asWidget())) {
-        UiHelper.closeDialog(widget.asWidget());
+        return UiHelper.closeDialog(widget.asWidget());
       } else if (Objects.equals(widget, getActiveWidget())) {
-        getScreenPanel().remove(widget);
+        return getScreenPanel().remove(widget);
       }
     }
+    return false;
   }
 
   @Override

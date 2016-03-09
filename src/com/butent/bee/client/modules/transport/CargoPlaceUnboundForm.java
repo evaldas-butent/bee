@@ -1,0 +1,106 @@
+package com.butent.bee.client.modules.transport;
+
+import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.event.shared.HasHandlers;
+import com.google.gwt.json.client.JSONObject;
+import com.google.gwt.json.client.JSONString;
+
+import static com.butent.bee.shared.modules.transport.TransportConstants.*;
+
+import com.butent.bee.client.composite.UnboundSelector;
+import com.butent.bee.client.data.Data;
+import com.butent.bee.client.ui.FormFactory;
+import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.client.utils.JsonUtils;
+import com.butent.bee.client.view.add.ReadyForInsertEvent;
+import com.butent.bee.client.view.edit.SaveChangesEvent;
+import com.butent.bee.client.view.form.FormView;
+import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
+import com.butent.bee.client.view.form.interceptor.FormInterceptor;
+import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
+import com.butent.bee.shared.utils.BeeUtils;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+
+public class CargoPlaceUnboundForm extends AbstractFormInterceptor {
+
+  private Map<String, UnboundSelector> unboundWidgets = new HashMap<>();
+
+  @Override
+  public void afterCreateWidget(String name, IdentifiableWidget widget,
+      FormFactory.WidgetDescriptionCallback callback) {
+
+    for (String col : new String[] {
+        ClassifierConstants.COL_COUNTRY, ClassifierConstants.COL_CITY}) {
+
+      if (widget instanceof UnboundSelector && BeeUtils.isSuffix(name, col)) {
+        unboundWidgets.put(name, (UnboundSelector) widget);
+      }
+    }
+    super.afterCreateWidget(name, widget, callback);
+  }
+
+  @Override
+  public FormInterceptor getInstance() {
+    return new CargoPlaceUnboundForm();
+  }
+
+  @Override
+  public void onReadyForInsert(HasHandlers listener, ReadyForInsertEvent event) {
+    event.getColumns().add(Data.getColumn(getViewName(), ALS_CARGO_HANDLING_NOTES));
+    event.getValues().add(prepareJson());
+    super.onReadyForInsert(listener, event);
+  }
+
+  @Override
+  public void onSaveChanges(HasHandlers listener, SaveChangesEvent event) {
+    String oldValue = getStringValue(ALS_CARGO_HANDLING_NOTES);
+    String newValue = prepareJson();
+
+    if (!Objects.equals(oldValue, newValue)) {
+      event.getColumns().add(Data.getColumn(getViewName(), ALS_CARGO_HANDLING_NOTES));
+      event.getOldValues().add(oldValue);
+      event.getNewValues().add(newValue);
+    }
+    super.onSaveChanges(listener, event);
+  }
+
+  @Override
+  public boolean onStartEdit(FormView form, IsRow row, Scheduler.ScheduledCommand focusCommand) {
+    JSONObject json = JsonUtils
+        .parseObject(row.getString(form.getDataIndex(ALS_CARGO_HANDLING_NOTES)));
+
+    for (String key : unboundWidgets.keySet()) {
+      unboundWidgets.get(key).setValue(JsonUtils.getString(json, key));
+    }
+    return super.onStartEdit(form, row, focusCommand);
+  }
+
+  @Override
+  public void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow) {
+    for (String key : unboundWidgets.keySet()) {
+      unboundWidgets.get(key).clearValue();
+    }
+    super.onStartNewRow(form, oldRow, newRow);
+  }
+
+  protected UnboundSelector getUnboundWidget(String col) {
+    return unboundWidgets.get(col);
+  }
+
+  private String prepareJson() {
+    JSONObject json = new JSONObject();
+
+    for (String key : unboundWidgets.keySet()) {
+      String value = unboundWidgets.get(key).getValue();
+
+      if (!BeeUtils.isEmpty(value)) {
+        json.put(key, new JSONString(value));
+      }
+    }
+    return json.toString();
+  }
+}

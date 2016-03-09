@@ -98,11 +98,15 @@ public class RightsCell extends AbstractCell<String> implements HasViewName {
   private final String viewName;
   private final long roleId;
 
+  private final Long userId;
+
   public RightsCell(String viewName, long roleId) {
     super(EventUtils.EVENT_TYPE_CLICK);
 
     this.viewName = viewName;
     this.roleId = roleId;
+
+    this.userId = BeeKeeper.getUser().getUserId();
   }
 
   @Override
@@ -139,7 +143,7 @@ public class RightsCell extends AbstractCell<String> implements HasViewName {
 
   private void render(IsRow row, SafeHtmlBuilder sb) {
     for (RightsState state : GridMenu.ALL_STATES) {
-      String value = row.getProperty(RightsUtils.getAlias(state, roleId));
+      String value = row.getProperty(RightsUtils.getAlias(state, roleId), userId);
 
       if (!BeeUtils.isEmpty(value)) {
         boolean on = Codec.unpack(value);
@@ -153,7 +157,7 @@ public class RightsCell extends AbstractCell<String> implements HasViewName {
   }
 
   private void update(IsRow row, RightsState state, boolean value, Element cellElement) {
-    row.setProperty(RightsUtils.getAlias(state, roleId), Codec.pack(value));
+    row.setProperty(RightsUtils.getAlias(state, roleId), userId, Codec.pack(value));
 
     SafeHtmlBuilder sb = new SafeHtmlBuilder();
     render(row, sb);

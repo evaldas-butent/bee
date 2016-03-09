@@ -53,7 +53,7 @@
         <cell style="vertical-align:top;">
           <FlowPanel>
             <Label html="Forwarder:" />
-            <FlowPanel name="Forwarder">
+            <FlowPanel name="Forwarder" class="&form;-forwarder">
               <properties locale="en" />
             </FlowPanel>
             <br />

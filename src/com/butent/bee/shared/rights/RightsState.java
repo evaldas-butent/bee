@@ -1,7 +1,6 @@
 package com.butent.bee.shared.rights;
 
 import com.butent.bee.shared.i18n.LocalizableConstants;
-import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.HasLocalizedCaption;
 
 public enum RightsState implements HasLocalizedCaption {
@@ -40,11 +39,6 @@ public enum RightsState implements HasLocalizedCaption {
 
   RightsState(boolean checked) {
     this.checked = checked;
-  }
-
-  @Override
-  public String getCaption() {
-    return getCaption(Localized.getConstants());
   }
 
   public boolean isChecked() {

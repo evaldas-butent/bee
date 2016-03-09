@@ -11,8 +11,8 @@
            xmlns:ui="http://www.butent.com/ui"
 >
   <FlowPanel style="&section;">
-    <Label text="=route" style="&labelLeft; vertical-align:top;" />
-    <InputArea source="OrderNotes" visibleLines="6" style="width:400px;" />
+    <Label text="=route" class="bee-required" style="&labelLeft; vertical-align:top;" />
+    <InputArea source="OrderNotes" required="true" visibleLines="6" style="width:400px;" />
   </FlowPanel>
 
   <FlowPanel style="&section;">
@@ -32,7 +32,7 @@
     <Label text="=date" class="bee-required" style="&labelRight;" />
     <InputDateTime source="UnloadingDate" style="&inline; width:11em;" required="true" />
   </FlowPanel>
-  
+
   <FlowPanel style="&section;">
     <Label text="=company" style="&labelLeft;" />
     <DataSelector source="LoadingCompany" viewName="DistinctPlaceCompanies" valueSource="Company"
@@ -107,6 +107,8 @@
     <InputArea source="Documents" style="width:400px;" />
   </FlowPanel>
 
+  <ChildGrid name="CargoHandling" relColumn="Cargo" source="Cargo"
+             caption="=trAdditionalHandlingPlaces" style="margin-top:10px; height:200px;" />
   &separator;
   <FlowPanel style="&section;">
     <Label text="=cargo" class="bee-hasDefaults bee-required" style="&labelLeft; vertical-align:top;" />

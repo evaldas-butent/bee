@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+  name="TradeDocumentItems"
+  idName="TradeDocumentItemID"
+  >
+  <Fields>
+    <Relation name="TradeDocument" notNull="true" relation="TradeDocuments" cascade="DELETE"
+      label="=trdDocument" />
+    <Relation name="Item" notNull="true" relation="Items" label="=item" />
+
+    <String name="Article" precision="30" label="=article" />
+
+    <Numeric name="Quantity" precision="15" scale="5" notNull="true" label="=trdQuantity" />
+    <Numeric name="Price" precision="18" scale="8" label="=trdPrice" />
+
+    <Numeric name="DiscountPercent" precision="7" scale="3" label="=discountPercent" />
+    <Numeric name="VatPercent" precision="12" scale="7" label="=vat" />
+
+    <Relation name="Warehouse" relation="Warehouses" label="=trdWarehouseTo" />
+
+    <Text name="Note" label="=trdNote" />
+
+    <Relation name="Parent" relation="TradeDocumentItems" label="=captionPid" />
+  </Fields>
+</Table>

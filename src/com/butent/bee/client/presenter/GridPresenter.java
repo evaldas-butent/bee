@@ -105,7 +105,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
     ReadyForUpdateEvent.Handler, SaveChangesEvent.Handler, HasDataProvider, HasActiveRow,
     HasGridView, HasViewName, FilterConsumer, ReadyEvent.Handler {
 
-  private final class DeleteCallback extends ConfirmationCallback {
+  private final class DeleteCallback implements ConfirmationCallback {
     private final IsRow activeRow;
     private final Collection<RowInfo> rows;
 

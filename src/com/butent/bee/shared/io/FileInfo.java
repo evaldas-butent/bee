@@ -10,22 +10,40 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
+import com.butent.bee.shared.utils.StringList;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 public class FileInfo implements HasInfo, HasCaption, BeeSerializable, AutoCloseable {
 
   private enum Serial {
-    ID, NAME, SIZE, TYPE, ICON, DATE, VERSION, CAPTION, DESCRIPTION, RELATED, PATH, TEMPORARY
+    ID, NAME, SIZE, TYPE, ICON, DATE, VERSION, CAPTION, DESCRIPTION, RELATED, PATH, HASH, TEMPORARY
   }
 
   @Override
   public void close() {
     if (isTemporary()) {
-      LogUtils.getRootLogger().debug("File deleted:", getPath(), new File(getPath()).delete());
+      LogUtils.getRootLogger().debug("File deleted:", getId(), getPath(), getFile().delete());
     }
+  }
+
+  public static String getCaptions(Collection<FileInfo> col) {
+    if (BeeUtils.isEmpty(col)) {
+      return null;
+    }
+
+    List<String> captions = StringList.uniqueCaseInsensitive();
+
+    for (FileInfo fileInfo : col) {
+      if (fileInfo != null) {
+        captions.add(BeeUtils.notEmpty(fileInfo.getCaption(), fileInfo.getName()));
+      }
+    }
+
+    return BeeUtils.joinItems(captions);
   }
 
   public static String getIconUrl(String icon) {
@@ -81,6 +99,7 @@ public class FileInfo implements HasInfo, HasCaption, BeeSerializable, AutoClose
   private Long relatedId;
 
   private String path;
+  private String hash;
   private boolean temporary;
 
   public FileInfo(Long fileId, String name, Long size, String type) {
@@ -149,6 +168,10 @@ public class FileInfo implements HasInfo, HasCaption, BeeSerializable, AutoClose
 
         case PATH:
           setPath(value);
+          break;
+
+        case HASH:
+          setHash(value);
           break;
 
         case TEMPORARY:
@@ -220,6 +243,10 @@ public class FileInfo implements HasInfo, HasCaption, BeeSerializable, AutoClose
 
   public String getFileVersion() {
     return fileVersion;
+  }
+
+  public String getHash() {
+    return hash;
   }
 
   public Long getId() {
@@ -331,6 +358,10 @@ public class FileInfo implements HasInfo, HasCaption, BeeSerializable, AutoClose
           arr[i++] = getPath();
           break;
 
+        case HASH:
+          arr[i++] = getHash();
+          break;
+
         case TEMPORARY:
           arr[i++] = isTemporary();
           break;
@@ -357,6 +388,10 @@ public class FileInfo implements HasInfo, HasCaption, BeeSerializable, AutoClose
 
   public void setFileVersion(String fileVersion) {
     this.fileVersion = fileVersion;
+  }
+
+  public void setHash(String hash) {
+    this.hash = hash;
   }
 
   public void setIcon(String icon) {

@@ -3,6 +3,7 @@
   <SimpleColumn name="Description" />
 
   <SimpleJoin name="CargoHandling" joinType="LEFT">
+    <SimpleColumn name="Notes" alias="HandlingNotes" />
     <SimpleColumn name="EmptyKilometers" />
     <SimpleColumn name="LoadedKilometers" />
     <SimpleColumn name="Weight" alias="CargoWeight" />

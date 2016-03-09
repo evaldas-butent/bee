@@ -14,9 +14,10 @@ import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
+import com.butent.bee.server.concurrency.ConcurrencyBean;
 import com.butent.bee.server.data.BeeView;
 import com.butent.bee.server.data.DataEditorBean;
-import com.butent.bee.server.data.DataEvent.ViewDeleteEvent;
+import com.butent.bee.server.data.DataEvent;
 import com.butent.bee.server.data.DataEvent.ViewInsertEvent;
 import com.butent.bee.server.data.DataEvent.ViewQueryEvent;
 import com.butent.bee.server.data.DataEventHandler;
@@ -28,6 +29,7 @@ import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.modules.administration.ExchangeUtils;
 import com.butent.bee.server.modules.administration.ExtensionIcons;
+import com.butent.bee.server.modules.mail.MailModuleBean;
 import com.butent.bee.server.modules.trade.TradeModuleBean;
 import com.butent.bee.server.news.ExtendedUsageQueryProvider;
 import com.butent.bee.server.news.NewsBean;
@@ -42,6 +44,7 @@ import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.server.utils.XmlUtils;
+import com.butent.bee.server.websocket.Endpoint;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
@@ -56,17 +59,21 @@ import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.SqlConstants.SqlFunction;
+import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.view.Order;
+import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.i18n.SupportedLocale;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.documents.DocumentConstants;
 import com.butent.bee.shared.modules.ec.EcConstants;
+import com.butent.bee.shared.modules.mail.MailConstants;
 import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.news.Headline;
@@ -78,11 +85,13 @@ import com.butent.bee.shared.rights.SubModule;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Color;
+import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.NameUtils;
+import com.butent.bee.shared.websocket.messages.ModificationMessage;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -105,7 +114,10 @@ import java.util.Set;
 
 import javax.ejb.EJB;
 import javax.ejb.LocalBean;
+import javax.ejb.Schedule;
 import javax.ejb.Stateless;
+import javax.mail.internet.AddressException;
+import javax.mail.internet.InternetAddress;
 import javax.servlet.http.HttpServletResponse;
 
 @Stateless
@@ -157,6 +169,10 @@ public class TransportModuleBean implements BeeModule {
   NewsBean news;
   @EJB
   TransportReportsBean rep;
+  @EJB
+  MailModuleBean mail;
+  @EJB
+  ConcurrencyBean cb;
 
   @Override
   public List<SearchResult> doSearch(String query) {
@@ -321,6 +337,9 @@ public class TransportModuleBean implements BeeModule {
           BeeUtils.toLongOrNull(reqInfo.getParameter(COL_TRIP_DATE_FROM)),
           BeeUtils.toLongOrNull(reqInfo.getParameter(COL_TRIP_DATE_TO)));
 
+    } else if (BeeUtils.same(svc, SVC_CREATE_USER)) {
+      response = createUser(reqInfo);
+
     } else if (BeeUtils.same(svc, SVC_GET_TRIP_INFO)) {
       response = rep.getTripInfo(reqInfo);
 
@@ -355,10 +374,10 @@ public class TransportModuleBean implements BeeModule {
         BeeParameter.createText(module, "SmsPassword"),
         BeeParameter.createText(module, "SmsServiceId"),
         BeeParameter.createText(module, "SmsDisplayText"),
+        BeeParameter.createRelation(module, PRM_SELF_SERVICE_ROLE, TBL_ROLES, COL_ROLE_NAME),
         BeeParameter.createRelation(module, PRM_CARGO_TYPE, true, TBL_CARGO_TYPES,
             COL_CARGO_TYPE_NAME),
-        BeeParameter.createRelation(module, PRM_CARGO_SERVICE, false, TBL_SERVICES,
-            COL_SERVICE_NAME),
+        BeeParameter.createRelation(module, PRM_CARGO_SERVICE, TBL_SERVICES, COL_SERVICE_NAME),
         BeeParameter.createBoolean(module, PRM_BIND_EXPENSES_TO_INCOMES, false, true));
   }
 
@@ -441,62 +460,6 @@ public class TransportModuleBean implements BeeModule {
           for (BeeRow row : event.getRowset().getRows()) {
             row.setProperty(COL_TRADE_VAT,
                 rs.getValueByKey(fld, BeeUtils.toString(row.getId()), COL_TRADE_VAT));
-          }
-        }
-      }
-
-      @Subscribe
-      @AllowConcurrentEvents
-      public void deleteOrphanCargo(ViewDeleteEvent event) {
-        if (event.isTarget(VIEW_SHIPMENT_REQUESTS, VIEW_CARGO_REQUESTS)) {
-          if (event.isBefore()) {
-            String tableName;
-            String columnName;
-
-            if (BeeUtils.same(event.getTargetName(), VIEW_SHIPMENT_REQUESTS)) {
-              tableName = TBL_SHIPMENT_REQUESTS;
-              columnName = COL_QUERY_CARGO;
-            } else if (BeeUtils.same(event.getTargetName(), VIEW_CARGO_REQUESTS)) {
-              tableName = TBL_CARGO_REQUESTS;
-              columnName = COL_CARGO_REQUEST_CARGO;
-            } else {
-              tableName = null;
-              columnName = null;
-            }
-
-            if (tableName == null) {
-              return;
-            }
-
-            SqlSelect query = new SqlSelect().addFields(tableName, columnName).addFrom(tableName)
-                .addFromInner(TBL_ORDER_CARGO,
-                    sys.joinTables(TBL_ORDER_CARGO, tableName, columnName))
-                .setWhere(SqlUtils.and(
-                    SqlUtils.inList(tableName, sys.getIdName(tableName), event.getIds()),
-                    SqlUtils.isNull(TBL_ORDER_CARGO, COL_ORDER)));
-
-            Long[] cargos = qs.getLongColumn(query);
-            if (ArrayUtils.length(cargos) > 0) {
-              Set<Long> orphans = Sets.newHashSet(cargos);
-              event.setUserObject(orphans);
-            } else {
-              event.setUserObject(null);
-            }
-
-          } else if (event.isAfter() && event.getUserObject() instanceof Collection) {
-            Collection<?> orphans = (Collection<?>) event.getUserObject();
-
-            if (!BeeUtils.isEmpty(orphans)) {
-              SqlDelete delete =
-                  new SqlDelete(TBL_ORDER_CARGO)
-                      .setWhere(SqlUtils.inList(TBL_ORDER_CARGO, sys.getIdName(TBL_ORDER_CARGO),
-                          orphans));
-
-              int deleteCount = qs.updateData(delete);
-              if (deleteCount > 0) {
-                logger.debug("deleted", deleteCount, "orphan cargo");
-              }
-            }
           }
         }
       }
@@ -587,6 +550,62 @@ public class TransportModuleBean implements BeeModule {
           if (!BeeUtils.isEmpty(prefix)) {
             event.addValue(new BeeColumn(COL_TRIP_NO),
                 Value.getValue(qs.getNextNumber(TBL_TRIPS, COL_TRIP_NO, prefix, null)));
+          }
+        }
+      }
+
+      @Subscribe
+      @AllowConcurrentEvents
+      public void informShipmentRequestCustomer(DataEvent.ViewUpdateEvent event) {
+        if (event.isAfter(VIEW_SHIPMENT_REQUESTS)) {
+          int col = DataUtils.getColumnIndex(COL_QUERY_STATUS, event.getColumns());
+
+          if (!BeeConst.isUndef(col)) {
+            Integer status = event.getRow().getInteger(col);
+            TextConstant constant = null;
+
+            if (ShipmentRequestStatus.CONFIRMED.is(status)) {
+              constant = TextConstant.REQUEST_CONFIRMED_MAIL_CONTENT;
+            } else if (ShipmentRequestStatus.LOST.is(status)) {
+              constant = TextConstant.REQUEST_LOST_MAIL_CONTENT;
+            }
+            if (Objects.isNull(constant)) {
+              return;
+            }
+            BeeRowSet info = qs.getViewData(VIEW_SHIPMENT_REQUESTS,
+                Filter.compareId(event.getRow().getId()));
+
+            String email = BeeUtils.notEmpty(info.getString(0, COL_PERSON + COL_EMAIL),
+                info.getString(0, COL_QUERY_CUSTOMER_EMAIL));
+
+            if (BeeUtils.isEmpty(email)) {
+              return;
+            }
+            Long accountId = prm.getRelation(MailConstants.PRM_DEFAULT_ACCOUNT);
+
+            if (!DataUtils.isId(accountId)) {
+              logger.warning("Default mail account not found");
+              return;
+            }
+
+            BeeRowSet data = qs.getViewData(VIEW_TEXT_CONSTANTS,
+                Filter.equals(COL_TEXT_CONSTANT, status));
+
+            String localizedContent = Localized.column(COL_TEXT_CONTENT,
+                EnumUtils.getEnumByIndex(SupportedLocale.class, info.getInteger(0, COL_USER_LOCALE))
+                    .getLanguage());
+            String text;
+
+            if (DataUtils.isEmpty(data)) {
+              text = constant.getDefaultContent();
+            } else if (BeeConst.isUndef(DataUtils.getColumnIndex(localizedContent,
+                data.getColumns()))) {
+              text = data.getString(0, COL_TEXT_CONTENT);
+            } else {
+              text = BeeUtils.notEmpty(data.getString(0, localizedContent),
+                  data.getString(0, COL_TEXT_CONTENT));
+            }
+            cb.asynchronousCall(() -> mail.sendMail(accountId, email, null, text));
           }
         }
       }
@@ -696,24 +715,32 @@ public class TransportModuleBean implements BeeModule {
       }
     });
 
-    news.registerUsageQueryProvider(Feed.CARGO_REQUESTS_MY, new ExtendedUsageQueryProvider() {
+    news.registerUsageQueryProvider(Feed.SHIPMENT_REQUESTS_UNREGISTERED_MY,
+        new ShipmentRequestsUsageQueryProvider());
+
+    news.registerUsageQueryProvider(Feed.SHIPMENT_REQUESTS_MY,
+        new ShipmentRequestsUsageQueryProvider());
+
+    news.registerUsageQueryProvider(Feed.SHIPMENT_REQUESTS_UNREGISTERED_ALL,
+        new ExtendedUsageQueryProvider() {
+          @Override
+          protected List<IsCondition> getConditions(long userId) {
+            return NewsHelper.buildConditions(SqlUtils.isNull(TBL_SHIPMENT_REQUESTS,
+                COL_COMPANY_PERSON));
+          }
+
+          @Override
+          protected List<Pair<String, IsCondition>> getJoins() {
+            return NewsHelper.buildJoin(TBL_SHIPMENT_REQUESTS,
+                news.joinUsage(TBL_SHIPMENT_REQUESTS));
+          }
+        });
+
+    news.registerUsageQueryProvider(Feed.SHIPMENT_REQUESTS_ALL, new ExtendedUsageQueryProvider() {
       @Override
       protected List<IsCondition> getConditions(long userId) {
-        return NewsHelper.buildConditions(SqlUtils.equals(TBL_CARGO_REQUESTS,
-            COL_CARGO_REQUEST_MANAGER, userId));
-      }
-
-      @Override
-      protected List<Pair<String, IsCondition>> getJoins() {
-        return NewsHelper.buildJoin(TBL_CARGO_REQUESTS, news.joinUsage(TBL_CARGO_REQUESTS));
-      }
-    });
-
-    news.registerUsageQueryProvider(Feed.SHIPMENT_REQUESTS_MY, new ExtendedUsageQueryProvider() {
-      @Override
-      protected List<IsCondition> getConditions(long userId) {
-        return NewsHelper.buildConditions(SqlUtils.equals(TBL_SHIPMENT_REQUESTS,
-            COL_QUERY_MANAGER, userId));
+        return NewsHelper.buildConditions(SqlUtils.notNull(TBL_SHIPMENT_REQUESTS,
+            COL_COMPANY_PERSON));
       }
 
       @Override
@@ -891,6 +918,50 @@ public class TransportModuleBean implements BeeModule {
         return select;
       }
     });
+  }
+
+  @Schedule(persistent = false)
+  private void checkRequestStatus() {
+    DateTime date = TimeUtils.startOfDay(1);
+
+    SqlSelect query = new SqlSelect()
+        .addField(TBL_SHIPMENT_REQUESTS, sys.getIdName(TBL_SHIPMENT_REQUESTS), "id")
+        .addField(TBL_SHIPMENT_REQUESTS, sys.getVersionName(TBL_SHIPMENT_REQUESTS), "version")
+        .addFields(TBL_SHIPMENT_REQUESTS, COL_QUERY_STATUS)
+        .addFrom(TBL_SHIPMENT_REQUESTS)
+        .addFromInner(TBL_ORDER_CARGO,
+            sys.joinTables(TBL_ORDER_CARGO, TBL_SHIPMENT_REQUESTS, COL_CARGO))
+        .setWhere(SqlUtils.and(SqlUtils.not(SqlUtils.inList(TBL_SHIPMENT_REQUESTS, COL_QUERY_STATUS,
+                ShipmentRequestStatus.CONFIRMED, ShipmentRequestStatus.LOST)),
+            SqlUtils.less(TBL_CARGO_PLACES, COL_PLACE_DATE, date)));
+
+    SimpleRowSet expired = qs.getData(query.copyOf()
+        .addFromInner(TBL_CARGO_HANDLING,
+            sys.joinTables(TBL_CARGO_HANDLING, TBL_ORDER_CARGO, COL_CARGO_HANDLING))
+        .addFromInner(TBL_CARGO_PLACES,
+            sys.joinTables(TBL_CARGO_PLACES, TBL_CARGO_HANDLING, COL_LOADING_PLACE))
+        .setUnionAllMode(false)
+        .addUnion(query.copyOf()
+            .addFromInner(TBL_CARGO_HANDLING,
+                sys.joinTables(TBL_ORDER_CARGO, TBL_CARGO_HANDLING, COL_CARGO))
+            .addFromInner(TBL_CARGO_PLACES,
+                sys.joinTables(TBL_CARGO_PLACES, TBL_CARGO_HANDLING, COL_LOADING_PLACE))));
+
+    if (!DataUtils.isEmpty(expired)) {
+      BeeColumn col = DataUtils.getColumn(COL_QUERY_STATUS,
+          sys.getView(VIEW_SHIPMENT_REQUESTS).getRowSetColumns());
+
+      for (SimpleRow row : expired) {
+        BeeRowSet rs = DataUtils.getUpdated(VIEW_SHIPMENT_REQUESTS, row.getLong("id"),
+            row.getLong("version"), col, row.getValue(COL_QUERY_STATUS),
+            BeeUtils.toString(ShipmentRequestStatus.LOST.ordinal()));
+
+        deb.commitRow(rs, RowInfo.class);
+      }
+      DataChangeEvent.fireRefresh(
+          (event, locality) -> Endpoint.sendToAll(new ModificationMessage(event)),
+          VIEW_SHIPMENT_REQUESTS);
+    }
   }
 
   private ResponseObject createCreditInvoiceItems(Long purchaseId, Long currency, Set<Long> idList,
@@ -1335,6 +1406,72 @@ public class TransportModuleBean implements BeeModule {
     return response.addErrorsFrom(qs.updateDataWithResponse(new SqlUpdate(TBL_TRIP_COSTS)
         .addConstant(COL_PURCHASE, purchaseId)
         .setWhere(wh)));
+  }
+
+  private ResponseObject createUser(RequestInfo reqInfo) {
+    String login = reqInfo.getParameter(COL_LOGIN);
+    if (BeeUtils.isEmpty(login)) {
+      return ResponseObject.parameterNotFound(SVC_CREATE_USER, COL_LOGIN);
+    }
+    String password = reqInfo.getParameter(COL_PASSWORD);
+    if (BeeUtils.isEmpty(password)) {
+      return ResponseObject.parameterNotFound(SVC_CREATE_USER, COL_PASSWORD);
+    }
+    if (usr.isUser(login)) {
+      return ResponseObject.warning(usr.getLocalizableMesssages()
+          .valueExists(BeeUtils.joinWords(usr.getLocalizableConstants().user(), login)));
+    }
+    Long role = prm.getRelation(PRM_SELF_SERVICE_ROLE);
+
+    if (!DataUtils.isId(role)) {
+      return ResponseObject.parameterNotFound(SVC_CREATE_USER, PRM_SELF_SERVICE_ROLE);
+    }
+    ResponseObject resp = ResponseObject.info(usr.getLocalizableConstants().newUser(), login);
+    String email;
+
+    try {
+      email = new InternetAddress(reqInfo.getParameter(COL_EMAIL), true).getAddress();
+    } catch (AddressException e) {
+      return ResponseObject.error(e);
+    }
+    Long accountId = prm.getRelation(MailConstants.PRM_DEFAULT_ACCOUNT);
+
+    if (!DataUtils.isId(accountId)) {
+      return ResponseObject.parameterNotFound(SVC_CREATE_USER, MailConstants.PRM_DEFAULT_ACCOUNT);
+    }
+    Long user = qs.insertData(new SqlInsert(TBL_USERS)
+        .addConstant(COL_LOGIN, login)
+        .addConstant(COL_PASSWORD, Codec.encodePassword(password))
+        .addConstant(COL_COMPANY_PERSON, reqInfo.getParameter(COL_COMPANY_PERSON))
+        .addConstant(COL_USER_INTERFACE, UserInterface.SELF_SERVICE));
+
+    qs.insertData(new SqlInsert(TBL_USER_ROLES)
+        .addConstant(COL_USER, user)
+        .addConstant(COL_ROLE, role));
+
+    TextConstant constant = TextConstant.REGISTRATION_MAIL_CONTENT;
+
+    BeeRowSet data = qs.getViewData(VIEW_TEXT_CONSTANTS,
+        Filter.equals(COL_TEXT_CONSTANT, constant));
+
+    String localizedContent = Localized.column(COL_TEXT_CONTENT,
+        EnumUtils.getEnumByIndex(SupportedLocale.class, reqInfo.getParameterInt(COL_USER_LOCALE))
+            .getLanguage());
+    String text;
+
+    if (DataUtils.isEmpty(data)) {
+      text = constant.getDefaultContent();
+    } else if (BeeConst.isUndef(DataUtils.getColumnIndex(localizedContent, data.getColumns()))) {
+      text = data.getString(0, COL_TEXT_CONTENT);
+    } else {
+      text = BeeUtils.notEmpty(data.getString(0, localizedContent),
+          data.getString(0, COL_TEXT_CONTENT));
+    }
+    if (!BeeUtils.isEmpty(text)) {
+      cb.asynchronousCall(() -> mail.sendMail(accountId, email, null,
+          text.replace("{login}", login).replace("{password}", password)));
+    }
+    return resp;
   }
 
   private ResponseObject generateDailyCosts(long tripId) {
@@ -2332,7 +2469,8 @@ public class TransportModuleBean implements BeeModule {
             sys.joinTables(TBL_CARGO_PLACES, loadAlias, TBL_CARGO_HANDLING, COL_LOADING_PLACE))
         .addFromLeft(TBL_CARGO_PLACES, unlAlias,
             sys.joinTables(TBL_CARGO_PLACES, unlAlias, TBL_CARGO_HANDLING, COL_UNLOADING_PLACE))
-        .addFields(TBL_CARGO_HANDLING, COL_CARGO, COL_CARGO_HANDLING_NOTES)
+        .addFields(TBL_CARGO_TRIPS, COL_CARGO)
+        .addFields(TBL_CARGO_HANDLING, COL_CARGO_HANDLING_NOTES)
         .addField(loadAlias, COL_PLACE_DATE, loadingColumnAlias(COL_PLACE_DATE))
         .addField(loadAlias, COL_PLACE_COUNTRY, loadingColumnAlias(COL_PLACE_COUNTRY))
         .addField(loadAlias, COL_PLACE_ADDRESS, loadingColumnAlias(COL_PLACE_ADDRESS))
@@ -2346,7 +2484,7 @@ public class TransportModuleBean implements BeeModule {
         .addField(unlAlias, COL_PLACE_CITY, unloadingColumnAlias(COL_PLACE_CITY))
         .addField(unlAlias, COL_PLACE_NUMBER, unloadingColumnAlias(COL_PLACE_NUMBER))
         .setWhere(SqlUtils.and(tripWhere, handlingWhere))
-        .addOrder(TBL_CARGO_HANDLING, COL_CARGO);
+        .addOrder(TBL_CARGO_TRIPS, COL_CARGO);
   }
 
   private SqlSelect getFreightQuery(IsCondition where) {

@@ -37,6 +37,7 @@ import com.butent.bee.shared.testutils.TestValueType;
 import com.butent.bee.shared.testutils.TestWildcards;
 import com.butent.bee.shared.testutils.TestWildcardsPattern;
 import com.butent.bee.shared.utils.TestBeeUtils;
+import com.butent.bee.shared.utils.TestIntRangeSet;
 
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite.SuiteClasses;
@@ -58,6 +59,7 @@ import org.junit.runners.Suite.SuiteClasses;
     TestService.class, TestStringArray.class,
     TestBooleanValue.class, TestDateTimeValue.class,
     TestDateValue.class, TestNumberValue.class, TestTextValue.class,
-    TestTimeOfDayValue.class, TestDataUtils.class, TestBuilder.class, TestBeeUtils.class})
+    TestTimeOfDayValue.class, TestDataUtils.class, TestBuilder.class,
+    TestBeeUtils.class, TestIntRangeSet.class})
 public class AllTests {
 }

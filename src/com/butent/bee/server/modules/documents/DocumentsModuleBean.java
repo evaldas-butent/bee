@@ -105,9 +105,6 @@ public class DocumentsModuleBean implements BeeModule {
     if (BeeUtils.same(svc, SVC_COPY_DOCUMENT_DATA)) {
       response = copyDocumentData(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_DOCUMENT_DATA)));
 
-    } else if (BeeUtils.same(svc, SVC_CREATE_PDF_DOCUMENT)) {
-      response = createPdf(reqInfo.getParameter(COL_DOCUMENT_CONTENT));
-
     } else if (BeeUtils.same(svc, SVC_SET_CATEGORY_STATE)) {
       response = setCategoryState(BeeUtils.toLongOrNull(reqInfo.getParameter("id")),
           BeeUtils.toLongOrNull(reqInfo.getParameter(AdministrationConstants.COL_ROLE)),
@@ -388,13 +385,6 @@ public class DocumentsModuleBean implements BeeModule {
         }
       }
     });
-  }
-
-  private ResponseObject createPdf(String content, String... styleSheets) {
-    if (!BeeUtils.unbox(prm.getBoolean(PRM_PRINT_AS_PDF))) {
-      return ResponseObject.emptyResponse();
-    }
-    return ResponseObject.response(fs.createPdf(content, styleSheets));
   }
 
   private ResponseObject copyDocumentData(Long data) {

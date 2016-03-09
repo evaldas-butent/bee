@@ -133,8 +133,6 @@ public class QueryServiceBean {
 
   public static void registerViewDataProvider(String viewName, ViewDataProvider provider) {
     Assert.notEmpty(viewName);
-    Assert.state(!viewDataProviders.containsKey(viewName),
-        "View data provider for view \"" + viewName + "\" already registered");
     viewDataProviders.put(viewName, Assert.notNull(provider));
   }
 

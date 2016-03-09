@@ -2,7 +2,6 @@ package com.butent.bee.server.rest;
 
 import com.google.common.net.UrlEscapers;
 
-import com.butent.bee.server.io.FileUtils;
 import com.butent.bee.server.modules.administration.FileStorageBean;
 import com.butent.bee.server.rest.annotations.Authorized;
 import com.butent.bee.server.rest.annotations.Trusted;
@@ -35,7 +34,6 @@ import javax.ws.rs.BadRequestException;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.InternalServerErrorException;
-import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -87,22 +85,6 @@ public class FileServiceApplication extends Application {
       throw new InternalServerErrorException(e);
     }
     return response(fileInfo, fileName, false);
-  }
-
-  @GET
-  @Path("{name}/{path}")
-  public Response getFile(@PathParam("name") String fileName, @PathParam("path") String filePath) {
-    String path = Codec.decodeBase64(filePath);
-
-    if (!FileUtils.isInputFile(path)) {
-      throw new NotFoundException(path);
-    }
-    FileInfo fileInfo = new FileInfo(null, fileName, new File(path).length(),
-        URLConnection.guessContentTypeFromName(fileName));
-    fileInfo.setPath(path);
-    fileInfo.setTemporary(true);
-
-    return response(fileInfo, null, true);
   }
 
   @GET

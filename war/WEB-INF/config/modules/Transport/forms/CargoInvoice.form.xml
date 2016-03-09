@@ -24,6 +24,10 @@
           <InputArea source="Notes" class="occupy-1" summarize="true" disablable="false" />
         </SimplePanel>
       </page>
+      <page>
+        <text>=files</text>
+        <ChildGrid name="SaleFiles" relColumn="Sale" />
+      </page>
       <page module="Transport">
         <text>=transportIncomes</text>
         <ChildGrid name="CargoSales" relColumn="Sale" />

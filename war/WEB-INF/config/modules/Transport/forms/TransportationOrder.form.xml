@@ -6,7 +6,7 @@
         xmlns:f="http://www.butent.com/form"
 
         name="TransportationOrder" viewName="TransportationOrders" caption="=trOrder"
-        width="900" height="900"
+        showRowId="true" width="70" widthUnit="%" height="80" heightUnit="%"
     >
   <FlowPanel class="flexBox-vertical">
     <FlowPanel class="flexBox-horizontal">

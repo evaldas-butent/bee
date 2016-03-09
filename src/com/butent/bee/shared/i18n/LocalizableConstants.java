@@ -62,7 +62,11 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String actionImport();
 
+  String actionMaximize();
+
   String actionMerge();
+
+  String actionMinimize();
 
   String actionMove();
 
@@ -71,6 +75,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
   String actionNew1();
 
   String actionNotAllowed();
+
+  String actionOpen();
 
   String actionPrint();
 
@@ -160,9 +166,11 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String changePassword();
 
+  String chat();
+
   String chatDeleteQuestion();
 
-  String chat();
+  String chatLeaveQuestion();
 
   String chatMessages();
 
@@ -315,6 +323,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
   String errors();
 
   String exchangeCode();
+
+  String executorFullName();
 
   String expenses();
 
@@ -680,6 +690,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String presenceOnline();
 
+  String preview();
+
   String price();
 
   String print();
@@ -699,6 +711,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
   String questionLogout();
 
   String reason();
+
+  String register();
 
   String registered();
 
@@ -893,4 +907,6 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
   String yearMonth();
 
   String yes();
+
+  String yesterday();
 }

@@ -10,12 +10,14 @@ import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.event.logical.RenderingEvent;
+import com.butent.bee.client.modules.projects.ProjectsHelper;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
@@ -115,6 +117,8 @@ class ChildTasksGrid extends TasksGrid {
       return;
     }
 
+    setEnabled(form, formRow);
+
     String prop = formRow.getProperty(ProjectConstants.VIEW_PROJECT_TEMPLATE_TASK_COPY);
 
     if (BeeUtils.isEmpty(prop)) {
@@ -148,7 +152,8 @@ class ChildTasksGrid extends TasksGrid {
       event.consume();
 
       IsRow templRow = event.getRowValue();
-      final Long templateId = BeeUtils.toLong(templRow.getProperty(ProjectConstants.PROP_TEMPLATE));
+      final Long templateId =
+          BeeUtils.toLong(templRow.getProperty(ProjectConstants.PROP_TEMPLATE));
 
       if (!DataUtils.isId(templateId)) {
         return;
@@ -287,13 +292,39 @@ class ChildTasksGrid extends TasksGrid {
 
     /* Fill project info */
     int idxTaskProject = taskData.getColumnIndex(ProjectConstants.COL_PROJECT);
+    int idxTaskStageName = taskData.getColumnIndex(ProjectConstants.ALS_PROJECT_NAME);
     int idxStageProject = parentFormData.getColumnIndex(ProjectConstants.COL_PROJECT);
+    int idxStageProjectName = parentFormData.getColumnIndex(ProjectConstants.ALS_PROJECT_NAME);
 
-    if (BeeUtils.isNegative(idxTaskProject) && BeeUtils.isNegative(idxStageProject)) {
+    if (BeeConst.isUndef(idxTaskProject) && BeeConst.isUndef(idxStageProject)) {
       return;
     }
 
     taskRow.setValue(idxTaskProject, parentRowData.getValue(idxStageProject));
+
+    if (!BeeConst.isUndef(idxTaskStageName) && !BeeConst.isUndef(idxStageProjectName)) {
+      taskRow.setValue(idxTaskStageName, parentRowData.getValue(idxStageProjectName));
+    }
+  }
+
+  private void setEnabled(FormView form, IsRow formRow) {
+    if (form == null && formRow == null) {
+      return;
+    }
+
+    if (!BeeUtils.inListSame(form.getViewName(), ProjectConstants.VIEW_PROJECTS,
+        ProjectConstants.VIEW_PROJECT_STAGES)) {
+      return;
+    }
+
+    if (DataUtils.isNewRow(formRow)) {
+      getGridPresenter().getMainView().setEnabled(true);
+      return;
+    }
+
+    getGridPresenter().getMainView().setEnabled(ProjectsHelper.isProjectOwner(form, formRow)
+        || ProjectsHelper.isProjectUser(form, formRow));
+
   }
 
 }

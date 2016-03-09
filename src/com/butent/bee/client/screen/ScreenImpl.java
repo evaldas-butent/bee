@@ -216,13 +216,19 @@ public class ScreenImpl implements Screen {
   }
 
   @Override
-  public void closeWidget(IdentifiableWidget widget) {
-    Assert.notNull(widget, "closeWidget: widget is null");
+  public boolean closeWidget(IdentifiableWidget widget) {
+    if (widget == null) {
+      logger.warning("closeWidget: widget is null");
+      return false;
 
-    if (UiHelper.isModal(widget.asWidget())) {
-      UiHelper.closeDialog(widget.asWidget());
+    } else if (UiHelper.isModal(widget.asWidget())) {
+      return UiHelper.closeDialog(widget.asWidget());
+
+    } else if (getWorkspace() != null) {
+      return getWorkspace().closeWidget(widget);
+
     } else {
-      getWorkspace().closeWidget(widget);
+      return false;
     }
   }
 
@@ -517,9 +523,9 @@ public class ScreenImpl implements Screen {
       getUserPhotoContainer().clear();
       final Image image;
 
-      String photoFileName = userData.getPhotoFileName();
-      if (!BeeUtils.isEmpty(photoFileName)) {
-        image = new Image(PhotoRenderer.getUrl(photoFileName));
+      Long photoFile = userData.getPhotoFile();
+      if (DataUtils.isId(photoFile)) {
+        image = new Image(PhotoRenderer.getUrl(photoFile));
       } else {
         image = new Image(DEFAULT_PHOTO_IMAGE);
       }
@@ -1226,7 +1232,7 @@ public class ScreenImpl implements Screen {
 
           Image img;
           if (user.hasPhoto()) {
-            img = new Image(PhotoRenderer.getUrl(user.getPhotoFileName()));
+            img = new Image(PhotoRenderer.getUrl(user.getPhotoFile()));
           } else {
             img = new Image(DEFAULT_PHOTO_IMAGE);
           }
@@ -1248,6 +1254,19 @@ public class ScreenImpl implements Screen {
             presenceWidget.setTitle(presence.getCaption());
 
             table.setWidget(r, c, presenceWidget);
+          }
+          c++;
+
+          if (Global.getChatManager().isEnabled()) {
+            FaLabel chat = new FaLabel(FontAwesome.COMMENT_O, STYLE_POPUP_USERS + "Chat");
+            chat.setTitle(Localized.getConstants().chat());
+
+            chat.addClickHandler(event -> {
+              UiHelper.closeDialog(table);
+              Global.getChatManager().chatWithUser(user.getUserId());
+            });
+
+            table.setWidget(r, c, chat);
           }
           c++;
 
@@ -1488,8 +1507,8 @@ public class ScreenImpl implements Screen {
     exitContainer.add(exit);
 
     Image image;
-    String photoFileName = BeeKeeper.getUser().getUserData().getPhotoFileName();
-    if (!BeeUtils.isEmpty(photoFileName)) {
+    Long photoFileName = BeeKeeper.getUser().getUserData().getPhotoFile();
+    if (DataUtils.isId(photoFileName)) {
       image = new Image(PhotoRenderer.getUrl(photoFileName));
     } else {
       image = new Image(DEFAULT_PHOTO_IMAGE);

@@ -197,6 +197,10 @@ public class LoginServlet extends HttpServlet {
     return strWriter.toString();
   }
 
+  private static boolean isUrl(String s) {
+    return s != null && s.contains("://");
+  }
+
   private static String render(String contextPath, UserInterface ui, SupportedLocale locale) {
     Document doc = new Document();
 
@@ -224,8 +228,14 @@ public class LoginServlet extends HttpServlet {
     }
 
     for (String script : ui.getScripts()) {
-      String src = script.contains("://") ? script
+      String src = isUrl(script) ? script
           : resource(contextPath, Paths.getScriptPath(script));
+      doc.getHead().append(script().src(src));
+    }
+
+    for (String script : ui.getExternalScripts()) {
+      String src = isUrl(script) ? script
+          : resource(contextPath, Paths.getExternalScriptPath(script));
       doc.getHead().append(script().src(src));
     }
 

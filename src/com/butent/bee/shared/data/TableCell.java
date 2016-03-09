@@ -3,7 +3,6 @@ package com.butent.bee.shared.data;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.value.ValueType;
-import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Comparator;
 
@@ -66,14 +65,6 @@ public class TableCell implements IsCell {
   }
 
   @Override
-  public void clearProperty(String key) {
-    Assert.notEmpty(key);
-    if (properties != null) {
-      properties.remove(key);
-    }
-  }
-
-  @Override
   public void clearValue() {
     setValue(Value.getNullValueFromValueType(getType()));
   }
@@ -107,21 +98,6 @@ public class TableCell implements IsCell {
   }
 
   @Override
-  public Double getPropertyDouble(String key) {
-    return BeeUtils.toDoubleOrNull(getProperty(key));
-  }
-
-  @Override
-  public Integer getPropertyInteger(String key) {
-    return BeeUtils.toIntOrNull(getProperty(key));
-  }
-
-  @Override
-  public Long getPropertyLong(String key) {
-    return BeeUtils.toLongOrNull(getProperty(key));
-  }
-
-  @Override
   public ValueType getType() {
     return value.getType();
   }
@@ -137,6 +113,14 @@ public class TableCell implements IsCell {
   }
 
   @Override
+  public void removeProperty(String key) {
+    Assert.notEmpty(key);
+    if (properties != null) {
+      properties.remove(key);
+    }
+  }
+
+  @Override
   public void setFormattedValue(String formattedValue) {
     this.formattedValue = formattedValue;
   }
@@ -147,44 +131,13 @@ public class TableCell implements IsCell {
   }
 
   @Override
-  public void setProperty(String key, Double v) {
-    if (BeeUtils.isDouble(v)) {
-      setProperty(key, BeeUtils.toString(v));
-    } else {
-      clearProperty(key);
-    }
-  }
-
-  @Override
-  public void setProperty(String key, Integer v) {
-    if (v == null) {
-      clearProperty(key);
-    } else {
-      setProperty(key, BeeUtils.toString(v));
-    }
-  }
-
-  @Override
-  public void setProperty(String key, Long v) {
-    if (v == null) {
-      clearProperty(key);
-    } else {
-      setProperty(key, BeeUtils.toString(v));
-    }
-  }
-
-  @Override
   public void setProperty(String propertyKey, String propertyValue) {
     Assert.notEmpty(propertyKey);
 
-    if (BeeUtils.isEmpty(propertyValue)) {
-      clearProperty(propertyKey);
-    } else {
-      if (properties == null) {
-        properties = CustomProperties.create();
-      }
-      properties.put(propertyKey, propertyValue);
+    if (properties == null) {
+      properties = CustomProperties.create();
     }
+    properties.put(propertyKey, propertyValue);
   }
 
   @Override

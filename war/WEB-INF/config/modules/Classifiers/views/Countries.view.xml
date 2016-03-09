@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-  name="Countries" source="Countries" module="Classifiers"
-  caption="=countries" newRowCaption="=newCountry"
-  newRowColumns="Name Code EUMember"
-  newRowForm="Country"
-  >
+      name="Countries" source="Countries" module="Classifiers"
+      caption="=countries" newRowCaption="=newCountry"
+      newRowColumns="Name Code EUMember"
+      newRowForm="Country"
+    >
   <Relation renderColumns="Name Code" />
   <Columns>
     <SimpleColumn name="Name" />

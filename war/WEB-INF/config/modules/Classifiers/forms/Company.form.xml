@@ -242,7 +242,7 @@
         <ChildGrid name="RelatedMessages" relColumn="Company" paging="true" />
       </page>
       <page for="CompActionList" module="Calendar">
-        <text>=calListOfActions</text>
+        <text>=calAppointments</text>
         <ChildGrid name="CompActionList" relColumn="Company" paging="true" />
       </page>
       <page for="Tasks">

@@ -319,6 +319,12 @@ public final class Config {
     Config.initialized = initialized;
   }
 
+  public static void setProperty(String property, String value) {
+    if (!BeeUtils.isEmpty(property)) {
+      properties.setProperty(property, value);
+    }
+  }
+
   public static String substitutePath(String input) {
     if (!BeeUtils.isEmpty(input) && input.startsWith(BeeConst.STRING_LEFT_BRACE)
         && input.contains(BeeConst.STRING_RIGHT_BRACE)) {

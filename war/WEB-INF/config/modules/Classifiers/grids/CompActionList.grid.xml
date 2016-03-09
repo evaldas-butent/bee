@@ -2,7 +2,7 @@
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
 
   name="CompActionList" viewName="Appointments"
-  newRowCaption="=calNewAction" newRowForm="CompanyAction" editForm="CompanyAction"
+  newRowCaption="=calNewAppointment" newRowForm="CompanyAction" editForm="CompanyAction"
   flexGrow="1"
   >
   <g:columns>

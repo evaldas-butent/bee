@@ -514,6 +514,21 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
   private static final int MIN_HEIGHT = RESIZER_WIDTH * 3;
 
   public static Popup getActivePopup() {
+    if (!hasEventPreview()) {
+      String id = Stacking.peek();
+
+      if (!BeeUtils.isEmpty(id)) {
+        for (Widget child : BodyPanel.get()) {
+          if (child instanceof Popup) {
+            Popup popup = (Popup) child;
+            if (popup.isShowing() && BeeUtils.same(popup.getId(), id)) {
+              return popup;
+            }
+          }
+        }
+      }
+    }
+
     int widgetCount = BodyPanel.get().getWidgetCount();
 
     for (int i = widgetCount - 1; i >= 0; i--) {
@@ -548,14 +563,14 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
     return false;
   }
 
-  private static int clampLeft(int left, int width) {
+  protected static int clampLeft(int left, int width) {
     int windowLeft = 0;
     int windowRight = Window.getClientWidth();
 
     return Math.max(Math.min(left, windowRight - width), windowLeft);
   }
 
-  private static int clampTop(int top, int height) {
+  protected static int clampTop(int top, int height) {
     int windowTop = 0;
     int windowBottom = Window.getClientHeight();
 
@@ -714,9 +729,15 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
     return showing;
   }
 
+  public void maybeBringToFront() {
+    if (isShowing() && !isPreviewEnabled() && Stacking.size() > 1 && !hasEventPreview()) {
+      Stacking.bringToFront(this);
+    }
+  }
+
   @Override
   public void onEventPreview(NativePreviewEvent event, Node targetNode) {
-    if (!isPreviewEnabled() || !isShowing() || DOM.getCaptureElement() != null) {
+    if (!isShowing() || DOM.getCaptureElement() != null) {
       return;
     }
 
@@ -724,6 +745,14 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
     boolean eventTargetsPopup = (targetNode != null) && getElement().isOrHasChild(targetNode);
 
     String type = nativeEvent.getType();
+
+    if (!isPreviewEnabled()) {
+      if (EventUtils.isMouseDown(type) && eventTargetsPopup) {
+        maybeBringToFront();
+      }
+
+      return;
+    }
 
     if (EventUtils.isMouseDown(type)) {
       if (eventTargetsPopup) {
@@ -915,7 +944,7 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
         }
       };
 
-      if (!maybeAnimate(onClose)) {
+      if (cause == CloseEvent.Cause.SCRIPT || !maybeAnimate(onClose)) {
         onClose.run();
       }
     }

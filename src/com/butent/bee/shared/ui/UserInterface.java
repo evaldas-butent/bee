@@ -34,7 +34,7 @@ public enum UserInterface implements HasCaption {
 
     @Override
     public List<String> getScripts() {
-      return Lists.newArrayList("settings", "js/tinymce/js/tinymce/tinymce.min.js", "rtcadapter");
+      return Lists.newArrayList("settings", "js/tinymce/js/tinymce/tinymce.min.js");
     }
 
     @Override
@@ -153,7 +153,9 @@ public enum UserInterface implements HasCaption {
 
     @Override
     public List<String> getStyleSheets() {
-      return Lists.newArrayList(MAIN_STYLE_SHEET, EcConstants.CLIENT_STYLE_SHEET);
+      List<String> sheets = getMainStyleSheets();
+      sheets.add(EcConstants.CLIENT_STYLE_SHEET);
+      return sheets;
     }
 
     @Override
@@ -193,7 +195,9 @@ public enum UserInterface implements HasCaption {
 
     @Override
     public List<String> getStyleSheets() {
-      return Lists.newArrayList(MAIN_STYLE_SHEET, Module.TRANSPORT.getStyleSheet(null));
+      List<String> sheets = getMainStyleSheets();
+      sheets.add(Module.TRANSPORT.getStyleSheet(null));
+      return sheets;
     }
 
     @Override
@@ -233,7 +237,9 @@ public enum UserInterface implements HasCaption {
 
     @Override
     public List<String> getStyleSheets() {
-      return Lists.newArrayList(MAIN_STYLE_SHEET, Module.TRADE.getStyleSheet(SubModule.ACTS));
+      List<String> sheets = getMainStyleSheets();
+      sheets.add(Module.TRADE.getStyleSheet(SubModule.ACTS));
+      return sheets;
     }
 
     @Override
@@ -321,12 +327,14 @@ public enum UserInterface implements HasCaption {
 
   public abstract String getShortName();
 
+  public List<String> getExternalScripts() {
+    return Lists.newArrayList("rtcadapter", "micromarkdown");
+  }
+
   public List<String> getStyleSheets() {
-    List<String> sheets = new ArrayList<>();
+    List<String> sheets = getMainStyleSheets();
 
-    sheets.add(MAIN_STYLE_SHEET);
     sheets.add("misc");
-
     sheets.addAll(Module.getEnabledStyleSheets());
 
     return sheets;
@@ -340,5 +348,22 @@ public enum UserInterface implements HasCaption {
 
   public boolean hasMenu() {
     return getComponents().contains(Component.MENU);
+  }
+
+  protected List<String> getMainStyleSheets() {
+    List<String> sheets = new ArrayList<>();
+
+    sheets.add(MAIN_STYLE_SHEET);
+    sheets.addAll(getComponentStyleSheets());
+
+    return sheets;
+  }
+
+  private List<String> getComponentStyleSheets() {
+    List<String> sheets = new ArrayList<>();
+    if (getComponents().contains(Component.CHATS)) {
+      sheets.add("chat");
+    }
+    return sheets;
   }
 }

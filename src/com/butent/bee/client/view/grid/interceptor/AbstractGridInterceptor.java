@@ -202,6 +202,16 @@ public abstract class AbstractGridInterceptor implements GridInterceptor {
   }
 
   @Override
+  public Boolean getBooleanValue(String source) {
+    int index = getDataIndex(source);
+    if (getActiveRow() != null && index >= 0) {
+      return getActiveRow().getBoolean(index);
+    } else {
+      return null;
+    }
+  }
+
+  @Override
   public String getCaption() {
     return null;
   }

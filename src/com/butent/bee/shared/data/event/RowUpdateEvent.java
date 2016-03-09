@@ -106,6 +106,16 @@ public class RowUpdateEvent extends ModificationEvent<RowUpdateEvent.Handler> im
   }
 
   @Override
+  public String toString() {
+    if (getRow() == null) {
+      return BeeUtils.joinWords(getKind(), getViewName(), "row is null");
+    } else {
+      return BeeUtils.joinWords(getKind(), getViewName(), getRowId(), getRow().getVersion(),
+          getRow().getValues(), getRow().getShadow());
+    }
+  }
+
+  @Override
   protected void dispatch(Handler handler) {
     handler.onRowUpdate(this);
   }

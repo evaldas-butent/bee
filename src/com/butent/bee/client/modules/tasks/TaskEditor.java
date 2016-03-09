@@ -117,6 +117,7 @@ class TaskEditor extends AbstractFormInterceptor {
   private static final String STYLE_DURATION = CRM_STYLE_PREFIX + "taskDuration-";
   private static final String STYLE_DURATION_CELL = "Cell";
   private static final String WIDGET_PROJECT_DATA_SUFFIX = "Data";
+  private static final String STYLE_PHOTO = "Photo";
 
   private static final String STYLE_EXTENSION = CRM_STYLE_PREFIX + "taskExtension";
   private static final String NAME_OBSERVERS = "Observers";
@@ -274,8 +275,7 @@ class TaskEditor extends AbstractFormInterceptor {
 
       DateTime date = dialog.getDateTime(ids.get(COL_DURATION_DATE));
       if (date == null) {
-        showError(Localized.getConstants().crmEnterDueDate());
-        return false;
+        date = TimeUtils.nowMinutes();
       }
 
       params.addDataItem(VAR_TASK_DURATION_DATE, date.serialize());
@@ -371,12 +371,12 @@ class TaskEditor extends AbstractFormInterceptor {
 
     if (renderPhoto) {
       Flow colPhoto = new Flow();
-      colPhoto.addStyleName(STYLE_EVENT_COL + COL_PHOTO);
+      colPhoto.addStyleName(STYLE_EVENT_COL + STYLE_PHOTO);
 
-      String photo = row.getString(DataUtils.getColumnIndex(COL_PHOTO, columns));
-      if (!BeeUtils.isEmpty(photo)) {
+      Long photo = row.getLong(DataUtils.getColumnIndex(COL_PHOTO, columns));
+      if (DataUtils.isId(photo)) {
         Image image = new Image(PhotoRenderer.getUrl(photo));
-        image.addStyleName(STYLE_EVENT + COL_PHOTO);
+        image.addStyleName(STYLE_EVENT + STYLE_PHOTO);
         colPhoto.add(image);
       }
 
@@ -523,7 +523,7 @@ class TaskEditor extends AbstractFormInterceptor {
     int photoIndex = rowSet.getColumnIndex(COL_PHOTO);
     if (photoIndex >= 0) {
       for (BeeRow row : rowSet.getRows()) {
-        if (!BeeUtils.isEmpty(row.getString(photoIndex))) {
+        if (DataUtils.isId(row.getString(photoIndex))) {
           hasPhoto = true;
           break;
         }
@@ -732,7 +732,9 @@ class TaskEditor extends AbstractFormInterceptor {
   @Override
   public boolean onStartEdit(final FormView form, final IsRow row, ScheduledCommand focusCommand) {
 
-    final Long lastAccess = BeeUtils.toLongOrNull(row.getProperty(PROP_LAST_ACCESS));
+    final Long lastAccess = BeeUtils.toLongOrNull(row.getProperty(PROP_LAST_ACCESS,
+        BeeKeeper.getUser().getUserId()));
+
     Long owner = row.getLong(form.getDataIndex(COL_OWNER));
     Long executor = row.getLong(form.getDataIndex(COL_EXECUTOR));
 
@@ -926,7 +928,7 @@ class TaskEditor extends AbstractFormInterceptor {
               companyName);
           docRow.setValue(dataInfo
               .getColumnIndex(DocumentConstants.COL_DOCUMENT_COMPANY), row
-              .getLong(idxCompany));
+                  .getLong(idxCompany));
         }
 
         FileCollector.pushFiles(Lists.newArrayList(fileInfo));
@@ -1133,11 +1135,11 @@ class TaskEditor extends AbstractFormInterceptor {
               .beeSerialize(data)),
               new IntCallback() {
 
-                @Override
-                public void onSuccess(Integer updateCount) {
-                  consumer.accept(null);
-                }
-              });
+            @Override
+            public void onSuccess(Integer updateCount) {
+              consumer.accept(null);
+            }
+          });
 
         }
       });
@@ -1257,19 +1259,20 @@ class TaskEditor extends AbstractFormInterceptor {
   private void doComplete() {
     final TaskDialog dialog = new TaskDialog(Localized.getConstants().crmTaskFinishing());
 
-    final String did = dialog.addDateTime(Localized.getConstants().crmTaskCompleteDate(), true,
-        TimeUtils.nowMinutes());
-
     final String cid = dialog.addComment(false);
     final String fid = dialog.addFileCollector();
 
     final Map<String, String> durIds = dialog.addDuration();
+    final String dd =
+        dialog.addDateTime(Localized.getConstants().crmTaskFinishDate(), true, TimeUtils
+            .nowMinutes());
+    durIds.put(COL_DURATION_DATE, dd);
 
     dialog.addAction(Localized.getConstants().crmActionFinish(), new ScheduledCommand() {
       @Override
       public void execute() {
 
-        DateTime completed = dialog.getDateTime(did);
+        DateTime completed = dialog.getDateTime(dd);
         if (completed == null) {
           showError(Localized.getConstants().crmEnterCompleteDate());
           return;
@@ -1324,7 +1327,7 @@ class TaskEditor extends AbstractFormInterceptor {
 
     newTaskRow.setValue(idxSummary, Data.clamp(VIEW_TASKS, COL_SUMMARY, BeeUtils.joinWords(taskRow
         .getString(idxSummary), BeeUtils
-        .parenthesize(taskRow.getId()))));
+            .parenthesize(taskRow.getId()))));
 
     String description = taskRow.getString(idxDescription);
 
@@ -1340,15 +1343,15 @@ class TaskEditor extends AbstractFormInterceptor {
             BeeUtils.join(BeeConst.STRING_EOL
                 + BeeUtils.replicate(BeeConst.CHAR_MINUS, BeeConst.MAX_SCALE)
                 + BeeConst.STRING_EOL, description, BeeUtils
-                .joinWords(event.getDateTime(events.getColumnIndex(COL_PUBLISH_TIME)), BeeUtils
-                    .nvl(event
-                        .getString(events.getColumnIndex(ALS_PUBLISHER_FIRST_NAME)),
-                        BeeConst.STRING_EMPTY), BeeUtils.nvl(event
-                    .getString(events.getColumnIndex(ALS_PUBLISHER_LAST_NAME)),
-                    BeeConst.STRING_EMPTY)
-                    + BeeConst.STRING_COLON, event
-                    .getString(events
-                        .getColumnIndex(COL_COMMENT))));
+                    .joinWords(event.getDateTime(events.getColumnIndex(COL_PUBLISH_TIME)), BeeUtils
+                        .nvl(event
+                            .getString(events.getColumnIndex(ALS_PUBLISHER_FIRST_NAME)),
+                            BeeConst.STRING_EMPTY), BeeUtils.nvl(event
+                                .getString(events.getColumnIndex(ALS_PUBLISHER_LAST_NAME)),
+                                BeeConst.STRING_EMPTY)
+                                + BeeConst.STRING_COLON, event
+                                    .getString(events
+                                        .getColumnIndex(COL_COMMENT))));
       }
     } else if (!events.isEmpty()) {
       for (IsRow event : events) {
@@ -1359,15 +1362,16 @@ class TaskEditor extends AbstractFormInterceptor {
               BeeUtils.join(BeeConst.STRING_EOL
                   + BeeUtils.replicate(BeeConst.CHAR_MINUS, BeeConst.MAX_SCALE)
                   + BeeConst.STRING_EOL, description, BeeUtils
-                  .joinWords(event.getDateTime(events.getColumnIndex(COL_PUBLISH_TIME)), BeeUtils
-                      .nvl(event
-                          .getString(events.getColumnIndex(ALS_PUBLISHER_FIRST_NAME)),
-                          BeeConst.STRING_EMPTY), BeeUtils.nvl(event
-                      .getString(events.getColumnIndex(ALS_PUBLISHER_LAST_NAME)),
-                      BeeConst.STRING_EMPTY)
-                      + BeeConst.STRING_COLON, event
-                      .getString(events
-                          .getColumnIndex(COL_COMMENT))));
+                      .joinWords(event.getDateTime(events.getColumnIndex(COL_PUBLISH_TIME)),
+                          BeeUtils
+                              .nvl(event
+                                  .getString(events.getColumnIndex(ALS_PUBLISHER_FIRST_NAME)),
+                                  BeeConst.STRING_EMPTY), BeeUtils.nvl(event
+                                      .getString(events.getColumnIndex(ALS_PUBLISHER_LAST_NAME)),
+                                      BeeConst.STRING_EMPTY)
+                                      + BeeConst.STRING_COLON, event
+                                          .getString(events
+                                              .getColumnIndex(COL_COMMENT))));
         }
       }
     }
@@ -1466,6 +1470,9 @@ class TaskEditor extends AbstractFormInterceptor {
         break;
       case OUT_OF_OBSERVERS:
         doOut();
+        break;
+      case REFRESH:
+        onStartEdit(getFormView(), getActiveRow(), null);
         break;
       case ACTIVATE:
       case VISIT:
@@ -1738,6 +1745,9 @@ class TaskEditor extends AbstractFormInterceptor {
       case COMMENT:
         return true;
 
+      case REFRESH:
+        return true;
+
       case RENEW:
         return TaskStatus.in(status, TaskStatus.SUSPENDED, TaskStatus.CANCELED,
             TaskStatus.COMPLETED, TaskStatus.APPROVED) && isOwner();
@@ -1799,7 +1809,8 @@ class TaskEditor extends AbstractFormInterceptor {
     RowUpdateEvent.fire(BeeKeeper.getBus(), VIEW_TASKS, data);
 
     FormView form = getFormView();
-    Long lastAccess = BeeUtils.toLongOrNull(data.getProperty(PROP_LAST_ACCESS));
+    Long lastAccess = BeeUtils.toLongOrNull(data.getProperty(PROP_LAST_ACCESS,
+        BeeKeeper.getUser().getUserId()));
 
     if (hasRelations(form.getOldRow()) || hasRelations(data)) {
       DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_RELATED_TASKS);
@@ -1937,34 +1948,34 @@ class TaskEditor extends AbstractFormInterceptor {
 
     Queries.getRowSet(ProjectConstants.VIEW_PROJECT_USERS, Lists
         .newArrayList(COL_USER), Filter.isEqual(
-        ProjectConstants.COL_PROJECT, Value.getValue(projectId)), new RowSetCallback() {
+            ProjectConstants.COL_PROJECT, Value.getValue(projectId)), new RowSetCallback() {
 
-      @Override
-      public void onSuccess(BeeRowSet result) {
-        List<Long> userIds = Lists.newArrayList(projectOwner);
-        int idxUser = result.getColumnIndex(COL_USER);
+              @Override
+              public void onSuccess(BeeRowSet result) {
+                List<Long> userIds = Lists.newArrayList(projectOwner);
+                int idxUser = result.getColumnIndex(COL_USER);
 
-        if (BeeConst.isUndef(idxUser)) {
-          Assert.untouchable();
-          return;
-        }
+                if (BeeConst.isUndef(idxUser)) {
+                  Assert.untouchable();
+                  return;
+                }
 
-        for (IsRow userRow : result) {
-          long projectUser = BeeUtils.unbox(userRow.getLong(idxUser));
+                for (IsRow userRow : result) {
+                  long projectUser = BeeUtils.unbox(userRow.getLong(idxUser));
 
-          if (DataUtils.isId(projectUser)) {
-            userIds.add(projectUser);
-          }
-        }
+                  if (DataUtils.isId(projectUser)) {
+                    userIds.add(projectUser);
+                  }
+                }
 
-        if (observers != null) {
-          observers.getOracle().setAdditionalFilter(Filter.idIn(userIds), true);
-          observers.setEnabled(true);
-        }
+                if (observers != null) {
+                  observers.getOracle().setAdditionalFilter(Filter.idIn(userIds), true);
+                  observers.setEnabled(true);
+                }
 
-        setProjectUsers(userIds);
-      }
-    });
+                setProjectUsers(userIds);
+              }
+            });
   }
 
   private void setEnabledRelations() {

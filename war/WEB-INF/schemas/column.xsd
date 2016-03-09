@@ -148,6 +148,7 @@
         <xs:attribute name="type" type="tp:valueType" use="required" />
         <xs:attribute name="precision" type="xs:positiveInteger" />
         <xs:attribute name="property" type="tp:nameType" />
+        <xs:attribute name="userMode" type="xs:boolean" />
         <xs:attribute name="enumKey" type="xs:normalizedString" />
         <xs:attribute name="dynamic" type="xs:boolean" />
       </xs:extension>

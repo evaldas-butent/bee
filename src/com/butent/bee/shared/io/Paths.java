@@ -25,6 +25,7 @@ public final class Paths {
   private static final String CSS_EXT = "css";
 
   private static final String JS_DIR = "js";
+  private static final String JS_LIB = "lib";
   private static final String JS_EXT = "js";
 
   private static final String LANG_DIR = "lang";
@@ -47,6 +48,14 @@ public final class Paths {
       return segment.trim();
     } else {
       return segment.trim() + SEGMENT_SEPARATOR;
+    }
+  }
+
+  public static String getExternalScriptPath(String fileName) {
+    if (BeeUtils.isEmpty(fileName)) {
+      return null;
+    } else {
+      return normalizePath(buildPath(JS_DIR, JS_LIB), fileName, JS_EXT);
     }
   }
 

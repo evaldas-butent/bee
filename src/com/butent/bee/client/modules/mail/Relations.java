@@ -380,7 +380,7 @@ public class Relations extends Flow implements Editor, ClickHandler, SelectorEve
                 }
               }, DialogConstants.DECISION_YES);
         } else {
-          super.onClose(closeCallback);
+          InputCallback.super.onClose(closeCallback);
         }
       }
 

@@ -100,8 +100,6 @@ public final class NewsConstants {
     observedColumns.put(TransportConstants.TBL_TRIPS, TransportConstants.COL_TRIP_STATUS);
     observedColumns.put(TransportConstants.TBL_TRIPS, TransportConstants.COL_TRIP_NO);
 
-    observedColumns.put(TransportConstants.TBL_CARGO_REQUESTS,
-        TransportConstants.COL_CARGO_REQUEST_STATUS);
     observedColumns.put(TransportConstants.TBL_SHIPMENT_REQUESTS,
         TransportConstants.COL_QUERY_STATUS);
 
@@ -151,7 +149,6 @@ public final class NewsConstants {
     usageTables.put(TransportConstants.TBL_ORDERS, "TranspOrderUsage");
     usageTables.put(TransportConstants.TBL_TRIPS, TransportConstants.TBL_TRIP_USAGE);
 
-    usageTables.put(TransportConstants.TBL_CARGO_REQUESTS, "CargoRequestUsage");
     usageTables.put(TransportConstants.TBL_SHIPMENT_REQUESTS, "ShipmentReqUsage");
 
     usageTables.put(TransportConstants.TBL_VEHICLES, "VehicleUsage");

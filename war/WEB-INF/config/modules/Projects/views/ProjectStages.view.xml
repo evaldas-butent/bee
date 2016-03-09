@@ -9,10 +9,17 @@
   <Columns>
     <SimpleColumn name="Project" />
     <SimpleJoin name="Project" joinType="LEFT">
+      <SimpleColumn name="Name" alias="ProjectName" />
+      <SimpleColumn alias="ProjectOwner" name="Owner"/>
+      <SimpleColumn alias="ProjectStatus" name="Status"/>
+      <SimpleColumn name="ProjectTemplate" />
+      <SimpleColumn name="Owner" />
+      <ExternalJoin name="Project" source="ProjectUsers" joinType="LEFT" filter="FilteredProjectUser={u}">
+        <SimpleColumn name="User" alias="FilteredProjectUser" />
+      </ExternalJoin>
       <ExternalJoin name="Project" source="ProjectStages" joinType="LEFT" >
         <IdColumn  name="StagesCount" aggregate="COUNT"></IdColumn>
       </ExternalJoin>
-      <SimpleColumn name="ProjectTemplate" />
     </SimpleJoin>
 
     <ExternalJoin name="ProjectStage" source="Tasks" joinType="LEFT">
@@ -40,6 +47,7 @@
     <SimpleColumn name="StartDate" />
     <SimpleColumn name="EndDate" />
     <SimpleColumn name="ExpectedDuration" />
+    <SimpleColumn name="Description" />
 
     <SimpleColumn name="ExpectedTasksDuration" label="=prjExpectedTaskDuration">
        <x:number>0</x:number>
@@ -73,12 +81,6 @@
       {...}.fillProjectsTimeData(ViewQueryEvent event)
       -->
     </SimpleColumn>
-
-    <SimpleJoin name="Project" joinType="LEFT">
-      <SimpleColumn name="Name" alias="ProjectName" />
-      <SimpleColumn alias="ProjectOwner" name="Owner"/>
-      <SimpleColumn alias="ProjectStatus" name="Status"/>
-    </SimpleJoin>
 
     <SimpleColumn name="StageTemplate" />
 

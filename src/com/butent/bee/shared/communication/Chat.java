@@ -1,10 +1,13 @@
 package com.butent.bee.shared.communication;
 
+import static com.butent.bee.shared.communication.ChatConstants.*;
+
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.HasInfo;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -76,9 +79,7 @@ public class Chat implements BeeSerializable, HasInfo, Comparable<Chat> {
 
   public void clearMessages() {
     getMessages().clear();
-
     setMessageCount(0);
-    setUnreadCount(0);
 
     setLastMessage(null);
   }
@@ -252,12 +253,17 @@ public class Chat implements BeeSerializable, HasInfo, Comparable<Chat> {
     setMessageCount(getMessageCount() + 1);
   }
 
+  public void incrementUnreadCount() {
+    setUnreadCount(getUnreadCount() + 1);
+  }
+
   public boolean is(Long chatId) {
     return Objects.equals(chatId, getId());
   }
 
   public boolean isOwner(Long userId) {
-    return userId != null && userId.equals(getCreator());
+    return userId != null
+        && (userId.equals(getCreator()) || users.size() <= 2 && users.contains(userId));
   }
 
   public boolean removeUser(Long userId) {
@@ -347,8 +353,38 @@ public class Chat implements BeeSerializable, HasInfo, Comparable<Chat> {
     this.registered = registered;
   }
 
+  public void setValues(SimpleRow row) {
+    Long value = row.getLong(COL_CHAT_CREATED);
+    if (BeeUtils.isPositive(value)) {
+      setCreated(value);
+    }
+
+    value = row.getLong(COL_CHAT_CREATOR);
+    if (DataUtils.isId(value)) {
+      setCreator(value);
+    }
+
+    setUserValues(row);
+  }
+
   public void setUnreadCount(int unreadCount) {
     this.unreadCount = unreadCount;
+  }
+
+  public void setUsers(List<Long> users) {
+    BeeUtils.overwrite(this.users, users);
+  }
+
+  public void setUserValues(SimpleRow row) {
+    if (row.hasColumn(COL_CHAT_USER_REGISTERED)) {
+      Long value = row.getLong(COL_CHAT_USER_REGISTERED);
+      setRegistered(BeeUtils.unbox(value));
+    }
+
+    if (row.hasColumn(COL_CHAT_USER_LAST_ACCESS)) {
+      Long value = row.getLong(COL_CHAT_USER_LAST_ACCESS);
+      setLastAccess(BeeUtils.unbox(value));
+    }
   }
 
   @Override

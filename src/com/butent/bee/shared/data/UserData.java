@@ -54,7 +54,7 @@ public class UserData implements BeeSerializable, HasInfo {
 
   private String firstName;
   private String lastName;
-  private String photoFileName;
+  private Long photoFile;
 
   private String companyName;
 
@@ -124,7 +124,7 @@ public class UserData implements BeeSerializable, HasInfo {
           break;
 
         case PHOTO_FILE_NAME:
-          setPhotoFileName(value);
+          setPhotoFile(BeeUtils.toLongOrNull(value));
           break;
 
         case COMPANY_NAME:
@@ -200,7 +200,7 @@ public class UserData implements BeeSerializable, HasInfo {
         "User Id", getUserId(),
         "First Name", getFirstName(),
         "Last Name", getLastName(),
-        "Photo File Name", getPhotoFileName(),
+        "Photo File Name", getPhotoFile(),
         "Company Name", getCompanyName(),
         "Company Person ID", getCompanyPerson(),
         "Company ID", getCompany(),
@@ -234,8 +234,8 @@ public class UserData implements BeeSerializable, HasInfo {
     return person;
   }
 
-  public String getPhotoFileName() {
-    return photoFileName;
+  public Long getPhotoFile() {
+    return photoFile;
   }
 
   public Map<String, String> getProperties() {
@@ -267,7 +267,7 @@ public class UserData implements BeeSerializable, HasInfo {
   }
 
   public boolean hasPhoto() {
-    return !BeeUtils.isEmpty(getPhotoFileName());
+    return DataUtils.isId(getPhotoFile());
   }
 
   public boolean isAnyModuleVisible(String input) {
@@ -340,7 +340,7 @@ public class UserData implements BeeSerializable, HasInfo {
           arr[i++] = lastName;
           break;
         case PHOTO_FILE_NAME:
-          arr[i++] = photoFileName;
+          arr[i++] = photoFile;
           break;
         case COMPANY_NAME:
           arr[i++] = companyName;
@@ -403,8 +403,8 @@ public class UserData implements BeeSerializable, HasInfo {
     this.person = person;
   }
 
-  public void setPhotoFileName(String photoFileName) {
-    this.photoFileName = photoFileName;
+  public void setPhotoFile(Long photoFile) {
+    this.photoFile = photoFile;
   }
 
   public void setProperties(Map<String, String> properties) {

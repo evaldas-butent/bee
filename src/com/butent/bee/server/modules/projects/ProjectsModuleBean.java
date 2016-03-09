@@ -227,7 +227,7 @@ public class ProjectsModuleBean implements BeeModule {
           BeeRowSet unitsRs = (BeeRowSet) units.getResponse();
 
           for (BeeRow row : viewRows) {
-            row.setProperty(PROP_TIME_UNTIS, unitsRs.serialize());
+            row.setProperty(PROP_TIME_UNITS, unitsRs.serialize());
           }
         }
       }

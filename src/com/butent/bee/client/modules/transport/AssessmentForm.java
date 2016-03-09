@@ -180,7 +180,7 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
             user.setFocus(true);
             return loc.valueRequired();
           }
-          return super.getErrorMessage();
+          return InputCallback.super.getErrorMessage();
         }
 
         @Override

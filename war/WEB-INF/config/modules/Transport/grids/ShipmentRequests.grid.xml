@@ -1,10 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
 
-  name="ShipmentRequests" viewName="ShipmentRequests"
-  caption="=trRequestsUnregistered"
-  >
+        name="ShipmentRequests" viewName="ShipmentRequests"
+        caption="=trRequestsUnregistered"
+        filter="!(CompanyPerson)"
+        disabledActions="add"
+    >
   <g:columns>
+    <IdColumn name="ID" width="40" />
     <DataColumn name="Date" />
     <DataColumn name="Status" />
 
@@ -17,7 +20,7 @@
     <DataColumn name="CustomerEmail" />
 
     <DataColumn name="CustomerContactPerson" />
-    <DataColumn name="CustomerPersonPosition"  />
+    <DataColumn name="CustomerPersonPosition" />
 
     <DataColumn name="CustomerCountry" />
     <DataColumn name="CustomerCity" />
@@ -38,7 +41,8 @@
     <DataColumn name="UnloadingAddress" />
     <DataColumn name="UnloadingNumber" />
 
-    <RelColumn name="Expedition" />
+    <RelColumn name="Expedition" renderColumns="ExpeditionType" />
+    <DataColumn name="Logistics" />
     <RelColumn name="ShippingTerm" />
 
     <DataColumn name="CustomsBrokerage" />
@@ -63,7 +67,5 @@
     <DataColumn name="LossReason" />
     <DataColumn name="Host" />
     <DataColumn name="Agent" />
-
-    <DataColumn name="Logistics" />
   </g:columns>
 </g:Grid>

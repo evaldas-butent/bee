@@ -570,9 +570,9 @@ public abstract class EventsBoard extends Flow implements Presenter, RowInsertEv
       return;
     }
 
-    String photo = row.getString(idxPhoto);
+    Long photo = row.getLong(idxPhoto);
 
-    if (BeeUtils.isEmpty(photo)) {
+    if (!DataUtils.isId(photo)) {
       return;
     }
 
@@ -648,8 +648,8 @@ public abstract class EventsBoard extends Flow implements Presenter, RowInsertEv
         logger.debug("parse event data from", getEventsDataViewName());
         if (!clearCache && getOldData() != null && result != null) {
           if (getOldData().getNumberOfRows() == result.getNumberOfRows()
-              && getOldData().getRow(getOldData().getNumberOfRows() - 1).getId()
-                == result.getRow(result.getNumberOfRows() - 1).getId()) {
+              && getOldData().getRow(getOldData().getNumberOfRows() - 1).getId() == result.getRow(
+                  result.getNumberOfRows() - 1).getId()) {
             // TODO: create some methods validate that data is same;
             return;
           }

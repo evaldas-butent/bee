@@ -9,9 +9,10 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement(name = "Item", namespace = DataUtils.MENU_NAMESPACE)
 public class MenuItem extends Menu {
+
   @XmlAttribute
   private MenuService service;
-  @XmlAttribute
+
   private String parameters;
 
   @Override
@@ -38,5 +39,10 @@ public class MenuItem extends Menu {
   @Override
   public String serialize() {
     return super.serialize(new Object[] {Codec.pack(service), parameters});
+  }
+
+  @XmlAttribute
+  public void setParameters(String parameters) {
+    this.parameters = parameters;
   }
 }

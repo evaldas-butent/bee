@@ -1,7 +1,6 @@
 package com.butent.bee.shared.modules.orders;
 
 import com.butent.bee.shared.i18n.LocalizableConstants;
-import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.HasLocalizedCaption;
 import com.butent.bee.shared.utils.EnumUtils;
 
@@ -37,11 +36,6 @@ public final class OrdersConstants {
         return constants.prjStatusApproved();
       }
     };
-
-    @Override
-    public String getCaption() {
-      return getCaption(Localized.getConstants());
-    }
 
     public boolean is(Integer status) {
       return status != null && ordinal() == status;

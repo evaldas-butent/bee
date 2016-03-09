@@ -53,6 +53,7 @@ public final class ProjectConstants {
   public static final String ALS_TERM = "Term";
   public static final String ALS_PROFIT = "Profit";
   public static final String ALS_STAGES_COUNT = "StagesCount";
+  public static final String ALS_PROJECT_NAME = "ProjectName";
   public static final String ALS_PROJECT_OWNER = "ProjectOwner";
   public static final String ALS_PROJECT_STATUS = "ProjectStatus";
 
@@ -174,7 +175,7 @@ public final class ProjectConstants {
   public static final String PROP_DOCUMENT_LINK = "DocumentLink";
   public static final String PROP_REASON_DATA = "ReasonData";
   public static final String PROP_REAL_FACTOR = "RealFactor";
-  public static final String PROP_TIME_UNTIS = "TimeUnits";
+  public static final String PROP_TIME_UNITS = "TimeUnits";
   public static final String PROP_ITEM_PRICES = "ItemPrices";
   public static final String PROP_SELECT = "Select";
   public static final String PROP_RS = "RowSet";

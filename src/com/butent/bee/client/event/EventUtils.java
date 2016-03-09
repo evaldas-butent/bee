@@ -770,6 +770,10 @@ public final class EventUtils {
     return Event.getTypeInt(ev.getType());
   }
 
+  public static boolean hasModifierKey(HasNativeEvent ev) {
+    return ev != null && hasModifierKey(ev.getNativeEvent());
+  }
+
   public static boolean hasModifierKey(NativeEvent ev) {
     if (ev == null) {
       return false;

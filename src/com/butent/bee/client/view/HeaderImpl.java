@@ -221,6 +221,13 @@ public class HeaderImpl extends Flow implements HeaderView {
       add(createFa(Action.MENU, hiddenActions));
     }
 
+    if (hasAction(Action.MINIMIZE, false, enabledActions, disabledActions)) {
+      add(createFa(Action.MINIMIZE, hiddenActions));
+    }
+    if (hasAction(Action.MAXIMIZE, false, enabledActions, disabledActions)) {
+      add(createFa(Action.MAXIMIZE, hiddenActions));
+    }
+
     if (hasAction(Action.CLOSE, UiOption.isClosable(options), enabledActions, disabledActions)) {
       add(createFa(Action.CLOSE, hiddenActions));
     }
@@ -263,6 +270,19 @@ public class HeaderImpl extends Flow implements HeaderView {
   @Override
   public boolean hasCommands() {
     return !commandPanel.isEmpty();
+  }
+
+  @Override
+  public boolean insertControl(Widget w, int beforeIndex) {
+    if (w != null && beforeIndex >= 0 && beforeIndex <= getWidgetCount()) {
+      w.addStyleName(STYLE_CONTROL);
+      insert(w, beforeIndex);
+
+      return true;
+
+    } else {
+      return false;
+    }
   }
 
   @Override

@@ -41,6 +41,7 @@ public class WidgetDescription implements HasInfo {
 
   private String source;
   private String rowProperty;
+  private Boolean userMode;
   private Relation relation;
 
   private RendererDescription rendererDescription;
@@ -126,6 +127,7 @@ public class WidgetDescription implements HasInfo {
         "Read Only", getReadOnly(),
         "Source", getSource(),
         "Row Property", getRowProperty(),
+        "User Mode", getUserMode(),
         "Required", getRequired(),
         "Nullable", getNullable(),
         "Has Defaults", getHasDefaults(),
@@ -228,6 +230,10 @@ public class WidgetDescription implements HasInfo {
     return updateMode;
   }
 
+  public Boolean getUserMode() {
+    return userMode;
+  }
+
   public Calculation getValidation() {
     return validation;
   }
@@ -274,8 +280,11 @@ public class WidgetDescription implements HasInfo {
         setReadOnly(BeeUtils.toBooleanOrNull(value));
       } else if (BeeUtils.same(key, UiConstants.ATTR_SOURCE)) {
         setSource(value.trim());
+
       } else if (BeeUtils.same(key, UiConstants.ATTR_PROPERTY)) {
         setRowProperty(value.trim());
+      } else if (BeeUtils.same(key, UiConstants.ATTR_USER_MODE)) {
+        setUserMode(BeeUtils.toBooleanOrNull(value));
 
       } else if (BeeUtils.same(key, ATTR_REQUIRED)) {
         setRequired(BeeUtils.toBooleanOrNull(value));
@@ -367,6 +376,10 @@ public class WidgetDescription implements HasInfo {
 
   public void setUpdateMode(RefreshType updateMode) {
     this.updateMode = updateMode;
+  }
+
+  public void setUserMode(Boolean userMode) {
+    this.userMode = userMode;
   }
 
   public void setValidation(Calculation validation) {

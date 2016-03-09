@@ -208,13 +208,14 @@ public class DiscussionsModuleBean implements BeeModule {
             }
           }
 
+          Long userId = usr.getCurrentUserId();
+
           SqlSelect discussUsers = new SqlSelect()
               .addFields(TBL_DISCUSSIONS_USERS, COL_DISCUSSION, COL_LAST_ACCESS, COL_STAR)
               .addFrom(TBL_DISCUSSIONS_USERS);
 
           IsCondition usersWhere =
-              SqlUtils.equals(TBL_DISCUSSIONS_USERS, AdministrationConstants.COL_USER, usr
-                  .getCurrentUserId());
+              SqlUtils.equals(TBL_DISCUSSIONS_USERS, AdministrationConstants.COL_USER, userId);
 
           discussUsers.setWhere(usersWhere);
 
@@ -237,14 +238,10 @@ public class DiscussionsModuleBean implements BeeModule {
               continue;
             }
 
-            row.setProperty(PROP_USER, BeeConst.STRING_PLUS);
+            row.setProperty(PROP_USER, userId, BeeConst.STRING_PLUS);
 
-            if (discussUserRow.getValue(accessIndex) != null) {
-              row.setProperty(PROP_LAST_ACCESS, discussUserRow.getValue(starIndex));
-            }
-            if (discussUserRow.getValue(starIndex) != null) {
-              row.setProperty(PROP_STAR, discussUserRow.getValue(starIndex));
-            }
+            row.setProperty(PROP_LAST_ACCESS, userId, discussUserRow.getValue(accessIndex));
+            row.setProperty(PROP_STAR, userId, discussUserRow.getValue(starIndex));
           }
 
           SqlSelect discussionsEvents = new SqlSelect()
@@ -305,8 +302,8 @@ public class DiscussionsModuleBean implements BeeModule {
 
             row.setProperty(PROP_RELATIONS_COUNT, relValue);
 
-            if (BeeUtils.isEmpty(row.getProperty(PROP_USER))) {
-              row.setProperty(PROP_USER, BeeConst.STRING_PLUS);
+            if (BeeUtils.isEmpty(row.getProperty(PROP_USER, userId))) {
+              row.setProperty(PROP_USER, userId, BeeConst.STRING_PLUS);
               createDiscussionUser(row.getId(), usr.getCurrentUserId(), null, false);
             }
           }
@@ -828,8 +825,7 @@ public class DiscussionsModuleBean implements BeeModule {
             COL_FIRST_NAME)
         .addField(TBL_PERSONS, COL_LAST_NAME,
             COL_LAST_NAME)
-        .addField(TBL_PERSONS, COL_PHOTO,
-            COL_PHOTO)
+        .addField(TBL_PERSONS, COL_PHOTO, COL_PHOTO)
         .addCount(TBL_DISCUSSIONS_FILES, AdministrationConstants.COL_FILE,
             AdministrationConstants.COL_FILE)
         .addCount(TBL_DISCUSSIONS_COMMENTS, COL_DISCUSSION,
@@ -900,9 +896,8 @@ public class DiscussionsModuleBean implements BeeModule {
         .addGroup(TBL_DISCUSSIONS, sys.getIdName(TBL_DISCUSSIONS))
         .addGroup(TBL_ADS_TOPICS, COL_NAME, COL_ORDINAL)
         .addGroup(TBL_DISCUSSIONS_USAGE, NewsConstants.COL_USAGE_ACCESS)
-        .addGroup(TBL_PERSONS, COL_FIRST_NAME,
-            COL_LAST_NAME, COL_PHOTO);
-    // logger.info(select.getQuery());
+        .addGroup(TBL_PERSONS, COL_FIRST_NAME, COL_LAST_NAME, COL_PHOTO);
+
     SimpleRowSet rs = qs.getData(select);
 
     if (DataUtils.isId(birthTopic)) {

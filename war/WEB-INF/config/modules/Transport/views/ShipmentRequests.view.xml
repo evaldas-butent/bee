@@ -2,16 +2,17 @@
 <View xmlns="http://www.butent.com/view" xmlns:xi="http://www.w3.org/2001/XInclude"
 
       name="ShipmentRequests" source="ShipmentRequests" module="Transport.SelfService"
-      caption="=trRequestsUnregistered" newRowCaption="=trRequestUnregisteredNew"
+      caption="=trRequests" newRowCaption="=trRequestNew"
       newRowForm="ShipmentRequest" editForm="ShipmentRequest"
     >
-  <Relation renderColumns="Date CustomerName" choiceColumns="Date CustomerName" />
+  <Relation renderColumns="ID Date" />
   <Columns>
+    <IdColumn name="ID" />
     <SimpleColumn name="Date" />
     <SimpleColumn name="Status" />
 
     <SimpleJoin name="Registration" joinType="LEFT">
-      <SimpleColumn name="Type" alias="CustomerType" />
+      <SimpleColumn name="Type" alias="CustomerCompanyType" />
       <SimpleColumn name="Name" alias="CustomerName" />
       <SimpleColumn name="Code" alias="CustomerCode" />
       <SimpleColumn name="VatCode" alias="CustomerVatCode" />
@@ -32,9 +33,31 @@
       <SimpleColumn name="Register" alias="CustomerRegister" />
     </SimpleJoin>
 
+    <SimpleColumn name="CompanyPerson" />
+    <SimpleJoin name="CompanyPerson" joinType="LEFT">
+      <SimpleColumn name="Company" />
+      <SimpleJoin name="Company" joinType="LEFT">
+        <SimpleColumn name="Name" alias="CompanyName" label="=company" />
+      </SimpleJoin>
+
+      <SimpleJoin name="Person" joinType="LEFT">
+        <SimpleColumn name="FirstName" alias="PersonFirstName" />
+        <SimpleColumn name="LastName" alias="PersonLastName" />
+      </SimpleJoin>
+
+      <SimpleJoin name="Contact" joinType="LEFT">
+        <SimpleColumn name="Phone" alias="PersonPhone" />
+
+        <SimpleJoin name="Email" joinType="LEFT">
+          <SimpleColumn name="Email" alias="PersonEmail" />
+        </SimpleJoin>
+      </SimpleJoin>
+    </SimpleJoin>
+
     <SimpleColumn name="Expedition" />
     <SimpleJoin name="Expedition" joinType="LEFT">
       <SimpleColumn name="Name" alias="ExpeditionType" />
+      <SimpleColumn name="Logistics" />
     </SimpleJoin>
 
     <SimpleColumn name="CustomsBrokerage" />
@@ -42,6 +65,11 @@
 
     <SimpleColumn name="Cargo" />
     <SimpleJoin name="Cargo" joinType="LEFT">
+      <ExternalJoin name="Cargo" source="Assessments" joinType="LEFT">
+        <IdColumn name="Assessment" />
+      </ExternalJoin>
+
+      <SimpleColumn name="Order" />
       <xi:include href="viewcolumns/CargoInfo.viewcolumns.xml" />
     </SimpleJoin>
 
@@ -61,8 +89,6 @@
     <SimpleColumn name="Locale" />
     <SimpleColumn name="Host" />
     <SimpleColumn name="Agent" />
-
-    <SimpleColumn name="Logistics" />
   </Columns>
 
   <Order>

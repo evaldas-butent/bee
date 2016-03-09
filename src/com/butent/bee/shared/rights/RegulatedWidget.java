@@ -1,7 +1,6 @@
 package com.butent.bee.shared.rights;
 
 import com.butent.bee.shared.i18n.LocalizableConstants;
-import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.HasLocalizedCaption;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -58,11 +57,6 @@ public enum RegulatedWidget implements HasLocalizedCaption {
 
   RegulatedWidget(ModuleAndSub moduleAndSub) {
     this.moduleAndSub = moduleAndSub;
-  }
-
-  @Override
-  public String getCaption() {
-    return getCaption(Localized.getConstants());
   }
 
   public ModuleAndSub getModuleAndSub() {

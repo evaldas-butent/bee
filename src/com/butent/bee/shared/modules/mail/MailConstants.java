@@ -1,7 +1,6 @@
 package com.butent.bee.shared.modules.mail;
 
 import com.butent.bee.shared.i18n.LocalizableConstants;
-import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.HasLocalizedCaption;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
@@ -81,11 +80,6 @@ public final class MailConstants {
         return constants.mailRuleConditionAll();
       }
     };
-
-    @Override
-    public String getCaption() {
-      return getCaption(Localized.getConstants());
-    }
   }
 
   public enum RuleAction implements HasLocalizedCaption {
@@ -131,11 +125,6 @@ public final class MailConstants {
         return constants.mailRuleActionForward();
       }
     };
-
-    @Override
-    public String getCaption() {
-      return getCaption(Localized.getConstants());
-    }
   }
 
   public static final String SIGNATURE_SEPARATOR = "<br><br><br>";

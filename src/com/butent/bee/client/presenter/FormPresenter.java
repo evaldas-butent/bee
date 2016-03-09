@@ -69,7 +69,7 @@ import java.util.Set;
 public class FormPresenter extends AbstractPresenter implements ReadyForInsertEvent.Handler,
     ReadyForUpdateEvent.Handler, HasViewName, HasSearch, HasDataProvider, HasActiveRow {
 
-  private final class DeleteCallback extends ConfirmationCallback {
+  private final class DeleteCallback implements ConfirmationCallback {
     private final long rowId;
     private final long version;
 

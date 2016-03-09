@@ -422,6 +422,7 @@ public class MessageBoxes {
 
   public void pickStar(int starCount, Integer defaultValue, Element target,
       final ChoiceCallback callback) {
+
     Assert.notNull(callback);
 
     final Popup popup = new Popup(OutsideClick.CLOSE, STYLE_STAR_PICKER);
@@ -439,39 +440,24 @@ public class MessageBoxes {
 
     final Holder<Integer> selectedIndex = Holder.absent();
 
-    cluster.addSelectionHandler(new SelectionHandler<Integer>() {
-      @Override
-      public void onSelection(SelectionEvent<Integer> event) {
-        selectedIndex.set(event.getSelectedItem());
-        popup.close();
-      }
+    cluster.addSelectionHandler(event -> {
+      selectedIndex.set(event.getSelectedItem());
+      popup.close();
     });
 
     popup.setHideOnEscape(true);
 
-    popup.addCloseHandler(new CloseEvent.Handler() {
-      @Override
-      public void onClose(CloseEvent event) {
-        if (selectedIndex.isNotNull()) {
-          callback.onSuccess(selectedIndex.get());
-        } else {
-          callback.onCancel();
-        }
+    popup.addCloseHandler(event -> {
+      if (selectedIndex.isNotNull()) {
+        callback.onSuccess(selectedIndex.get());
+      } else {
+        callback.onCancel();
       }
     });
 
     popup.setWidget(cluster);
 
-    popup.setAnimationEnabled(true);
-
-    if (target == null) {
-      popup.center();
-    } else {
-      popup.showRelativeTo(target);
-    }
-
     int focusIndex;
-
     if (defaultValue != null && cluster.isIndex(defaultValue + 1)) {
       cluster.selectTab(defaultValue + 1, false);
       focusIndex = defaultValue + 1;
@@ -479,7 +465,13 @@ public class MessageBoxes {
       focusIndex = 0;
     }
 
-    cluster.focusTab(focusIndex);
+    popup.addOpenHandler(event -> cluster.focusTab(focusIndex));
+
+    if (target == null) {
+      popup.center();
+    } else {
+      popup.showRelativeTo(target);
+    }
   }
 
   public void showError(String caption, List<String> messages, String dialogStyle,

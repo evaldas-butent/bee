@@ -4,7 +4,7 @@
 
   name="AssessmentTransportations" viewName="AssessmentTransportations"
   editForm="AssessmentTransportation" editShowId="true" disabledActions="add"
-  flexGrow="1"
+  flexGrow="1" caption="=trAssessmentTransportations"
   >
   <g:columns>
     <IdColumn name="ID" />
@@ -17,10 +17,10 @@
         <ui:function>
           if (!row.MinOrder) {
             return row.MaxOrder;
-          
+
           } else if(!row.MaxOrder || row.MinOrder == row.MaxOrder) {
             return row.MinOrder;
-          
+
           } else {
             return row.MinOrder + ", " + row.MaxOrder + (row.CntOrder > 2 ? ", ...": "");
           }

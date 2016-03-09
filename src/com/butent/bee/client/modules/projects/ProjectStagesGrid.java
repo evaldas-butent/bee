@@ -108,8 +108,8 @@ class ProjectStagesGrid extends AbstractGridInterceptor {
           return BeeConst.STRING_EMPTY;
         }
 
-        if (!BeeUtils.isEmpty(row.getProperty(PROP_TIME_UNTIS))) {
-          String prop = row.getProperty(PROP_TIME_UNTIS);
+        if (!BeeUtils.isEmpty(row.getProperty(PROP_TIME_UNITS))) {
+          String prop = row.getProperty(PROP_TIME_UNITS);
           unitsRows = BeeRowSet.maybeRestore(prop);
         }
 

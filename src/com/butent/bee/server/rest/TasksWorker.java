@@ -251,7 +251,7 @@ public class TasksWorker extends CrudWorker {
             }
           }
           BeeRowSet rs = DataUtils.createRowSetForInsert(view.getName(), cols, vals);
-          rs.setRowProperty(0, PROP_EXECUTORS, getValue(data, COL_EXECUTOR));
+          rs.getRow(0).setProperty(PROP_EXECUTORS, getValue(data, COL_EXECUTOR));
 
           JsonArray observers = data.getJsonArray(PROP_OBSERVERS);
 
@@ -261,7 +261,7 @@ public class TasksWorker extends CrudWorker {
             for (JsonObject observer : observers.getValuesAs(JsonObject.class)) {
               ids.add(BeeUtils.toLongOrNull(getValue(observer, COL_USER)));
             }
-            rs.setRowProperty(0, PROP_OBSERVERS, DataUtils.buildIdList(ids));
+            rs.getRow(0).setProperty(PROP_OBSERVERS, DataUtils.buildIdList(ids));
           }
           Map<String, String> params = new HashMap<>();
           params.put(VAR_TASK_DATA, Codec.beeSerialize(rs));
@@ -375,7 +375,8 @@ public class TasksWorker extends CrudWorker {
                     .setWhere(sys.idEquals(TBL_TASK_USERS, userId)));
               }
             }
-            events.storeFiles(id, ((BeeRow) resp.getResponse()).getPropertyLong(PROP_LAST_EVENT_ID),
+            events.storeFiles(id, ((BeeRow) resp.getResponse())
+                .getPropertyLong(PROP_LAST_EVENT_ID),
                 taskEvent.getJsonArray(TBL_FILES));
           } else {
             error.set(RestResponse.error(Localized.getConstants().noData()));

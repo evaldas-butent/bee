@@ -115,11 +115,6 @@ public enum ItemPrice implements HasLocalizedCaption {
     }
   };
 
-  @Override
-  public String getCaption() {
-    return getCaption(Localized.getConstants());
-  }
-
   public String getCurrencyAlias() {
     return "Item" + getCurrencyColumn();
   }

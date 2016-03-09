@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="content-type" content="text/html; charset=utf-8" />
@@ -120,7 +121,7 @@
                     <label for="Status">=companyStatus</label>
                   </td>
                   <td>
-                    <input id="Status" name="CustomerType" type="text" maxlength="100"
+                    <input id="Status" name="CustomerCompanyType" type="text" maxlength="100"
                            placeholder="UAB, LTD, LLC, ..." disabled="disabled" />
                   </td>
                 </tr>
@@ -163,7 +164,8 @@
                   </td>
                   <td>
                     <input id="Position" name="CustomerPersonPosition" type="text"
-                           maxlength="100" required="required" disabled="disabled" />
+                           maxlength="100" required="required" disabled="disabled"
+                           list="Positions-Name" />
                   </td>
                 </tr>
                 <tr>
@@ -553,8 +555,13 @@
             <input id="UploadCounter" type="hidden" value="1" disabled="disabled" />
           </fieldset>
         </div>
-        <button style="display:block; margin:auto;" type="submit">=trRequestActionSubmit</button>
+        <div style="text-align:center;margin-bottom:10px;">
+          <label for="terms">=trAgreeWithConditions</label>
+          <input type="checkbox" id="terms" onchange="document.getElementById('submit').disabled=this.checked ? '' : 'disabled'" />
+        </div>
+        <button id="submit" style="display:block; margin:auto;" type="submit" disabled="disabled">=trRequestActionSubmit</button>
       </form>
+      <datalist id="Positions-Name" />
       <datalist id="Countries-Name" />
       <datalist id="Cities-Name" />
       <datalist id="Units-Name" />
