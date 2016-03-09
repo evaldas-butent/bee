@@ -241,7 +241,6 @@ class TaskBuilder extends AbstractFormInterceptor {
         public void onDataSelector(SelectorEvent event) {
 
           TasksKeeper.getProductRequired(getActiveRow(), productLabel, getViewName());
-          getFormView().refresh();
         }
       });
     }
