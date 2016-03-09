@@ -21,6 +21,14 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.event.CellUpdateEvent;
+import com.butent.bee.shared.data.event.DataChangeEvent;
+import com.butent.bee.shared.data.event.DataEvent;
+import com.butent.bee.shared.data.event.HandlesAllDataEvents;
+import com.butent.bee.shared.data.event.MultiDeleteEvent;
+import com.butent.bee.shared.data.event.RowDeleteEvent;
+import com.butent.bee.shared.data.event.RowInsertEvent;
+import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.menu.MenuItem;
@@ -35,9 +43,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public final class TradeKeeper {
+public final class TradeKeeper implements HandlesAllDataEvents {
 
   public static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "trade-";
+
+  private static final TradeKeeper INSTANCE = new TradeKeeper();
 
   public static ParameterList createArgs(String method) {
     return BeeKeeper.getRpc().createParameters(Module.TRADE, method);
@@ -72,6 +82,7 @@ public final class TradeKeeper {
     ConditionalStyle.registerGridColumnStyleProvider(GRID_TRADE_TAGS, COL_FOREGROUND, csp);
 
     registerDocumentViews();
+    BeeKeeper.getBus().registerDataHandler(INSTANCE, false);
 
     if (ModuleAndSub.of(Module.TRADE, SubModule.ACTS).isEnabled()) {
       TradeActKeeper.register();
@@ -80,6 +91,14 @@ public final class TradeKeeper {
 
   private static String getDocumentGridSupplierKey(long typeId) {
     return BeeUtils.join(BeeConst.STRING_UNDER, GRID_TRADE_DOCUMENTS, typeId);
+  }
+
+  private static void onDataEvent(DataEvent event) {
+    if (event.hasView(VIEW_TRADE_DOCUMENT_TYPES)
+        && BeeKeeper.getUser().isModuleVisible(ModuleAndSub.of(Module.TRADE))) {
+
+      BeeKeeper.getMenu().loadMenu(() -> registerDocumentViews());
+    }
   }
 
   private static void openDocumentGrid(final long typeId, final PresenterCallback callback) {
@@ -120,19 +139,55 @@ public final class TradeKeeper {
 
     if (!typeIds.isEmpty()) {
       for (long typeId : typeIds) {
-        ViewFactory.registerSupplier(getDocumentGridSupplierKey(typeId),
-            callback -> openDocumentGrid(typeId, ViewFactory.getPresenterCallback(callback)));
+        String key = getDocumentGridSupplierKey(typeId);
+
+        if (!ViewFactory.hasSupplier(key)) {
+          ViewFactory.registerSupplier(key,
+              callback -> openDocumentGrid(typeId, ViewFactory.getPresenterCallback(callback)));
+        }
       }
 
-      MenuService.TRADE_DOCUMENTS.setHandler(parameters -> {
-        if (DataUtils.isId(parameters)) {
-          long typeId = BeeUtils.toLong(parameters);
-          ViewFactory.createAndShow(getDocumentGridSupplierKey(typeId));
-        }
-      });
+      if (MenuService.TRADE_DOCUMENTS.getHandler() == null) {
+        MenuService.TRADE_DOCUMENTS.setHandler(parameters -> {
+          if (DataUtils.isId(parameters)) {
+            long typeId = BeeUtils.toLong(parameters);
+            ViewFactory.createAndShow(getDocumentGridSupplierKey(typeId));
+          }
+        });
+      }
     }
   }
 
   private TradeKeeper() {
+  }
+
+  @Override
+  public void onCellUpdate(CellUpdateEvent event) {
+    onDataEvent(event);
+  }
+
+  @Override
+  public void onDataChange(DataChangeEvent event) {
+    onDataEvent(event);
+  }
+
+  @Override
+  public void onMultiDelete(MultiDeleteEvent event) {
+    onDataEvent(event);
+  }
+
+  @Override
+  public void onRowDelete(RowDeleteEvent event) {
+    onDataEvent(event);
+  }
+
+  @Override
+  public void onRowInsert(RowInsertEvent event) {
+    onDataEvent(event);
+  }
+
+  @Override
+  public void onRowUpdate(RowUpdateEvent event) {
+    onDataEvent(event);
   }
 }

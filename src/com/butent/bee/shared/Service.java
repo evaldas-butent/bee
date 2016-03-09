@@ -212,6 +212,7 @@ public final class Service {
   public static final String VAR_FEED = RPC_VAR_PREFIX + "feed";
 
   public static final String VAR_RIGHTS = RPC_VAR_PREFIX + "rights";
+  public static final String VAR_TRANSFORM = RPC_VAR_PREFIX + "transform";
 
   public static final String VAR_FROM = RPC_VAR_PREFIX + "from";
   public static final String VAR_TO = RPC_VAR_PREFIX + "to";

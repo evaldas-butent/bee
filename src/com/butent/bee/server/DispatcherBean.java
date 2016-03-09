@@ -211,7 +211,7 @@ public class DispatcherBean {
             break;
 
           case MENU:
-            ResponseObject menuData = uiHolder.getMenu(true);
+            ResponseObject menuData = uiHolder.getMenu(true, true);
             if (menuData != null) {
               response.addMessagesFrom(menuData);
               if (!menuData.hasErrors() && menuData.hasResponse()) {
@@ -302,7 +302,8 @@ public class DispatcherBean {
       response = systemService.doService(svc, reqInfo);
 
     } else if (BeeUtils.same(svc, Service.GET_MENU)) {
-      response = uiHolder.getMenu(reqInfo.hasParameter(Service.VAR_RIGHTS));
+      response = uiHolder.getMenu(reqInfo.hasParameter(Service.VAR_RIGHTS),
+          reqInfo.hasParameter(Service.VAR_TRANSFORM));
 
     } else if (BeeUtils.same(svc, Service.WHERE_AM_I)) {
       response = ResponseObject.info(System.currentTimeMillis(), BeeConst.whereAmI());
