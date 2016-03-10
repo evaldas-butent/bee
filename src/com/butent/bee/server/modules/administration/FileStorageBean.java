@@ -62,6 +62,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
@@ -86,6 +87,10 @@ public class FileStorageBean {
   @EJB
   ParamHolderBean prm;
 
+  private static final long idLimit = 10000000000l;
+  private final AtomicLong idGenerator = new AtomicLong(Math.max(idLimit,
+      System.currentTimeMillis()));
+
   private final LoadingCache<Long, FileInfo> cache = CacheBuilder.newBuilder()
       .recordStats()
       .expireAfterAccess(1, TimeUnit.DAYS)
@@ -98,7 +103,7 @@ public class FileStorageBean {
       });
 
   public Long commitFile(Long fileId) throws IOException {
-    if (fileId < 1e10) {
+    if (fileId < idLimit) {
       return fileId;
     }
     FileInfo storedFile;
@@ -376,7 +381,7 @@ public class FileStorageBean {
       String type = BeeUtils.notEmpty(URLConnection.guessContentTypeFromStream(header), mimeType,
           URLConnection.guessContentTypeFromName(name));
 
-      id = System.currentTimeMillis();
+      id = idGenerator.incrementAndGet();
       FileInfo fileInfo = new FileInfo(id, name, size, type);
       fileInfo.setPath(tmp.getAbsolutePath());
       fileInfo.setHash(hash);

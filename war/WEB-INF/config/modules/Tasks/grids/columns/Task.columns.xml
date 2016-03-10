@@ -15,7 +15,7 @@ xmlns:ui="http://www.butent.com/ui" >
      </dynStyle>
   </DataColumn>
 
-  <DataColumn name="Summary" visible="true" minWidth="150" maxWidth="500"/>
+  <DataColumn name="Summary" visible="true" minWidth="150" maxWidth="500" />
   <DataColumn name="Description" visible="false" />
 
   <RelColumn name="Company" />

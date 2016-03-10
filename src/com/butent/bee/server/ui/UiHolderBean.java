@@ -241,11 +241,11 @@ public class UiHolderBean {
     };
   }
 
-  public ResponseObject getMenu(boolean checkRights) {
+  public ResponseObject getMenu(boolean checkRights, boolean transform) {
     Map<Integer, Menu> menus = new TreeMap<>();
 
     for (Menu menu : menuCache.values()) {
-      Menu entry = getMenu(null, menu.copy(), checkRights);
+      Menu entry = getMenu(null, menu.copy(), checkRights, transform);
 
       if (entry != null) {
         menus.put(Assert.notContain(menus, entry.getOrder()), entry);
@@ -426,7 +426,7 @@ public class UiHolderBean {
     return gridInfo.getViewName();
   }
 
-  private Menu getMenu(String parent, Menu entry, boolean checkRights) {
+  private Menu getMenu(String parent, Menu entry, boolean checkRights, boolean transform) {
     boolean visible;
     String ref = RightsUtils.NAME_JOINER.join(parent, entry.getName());
 
@@ -454,10 +454,15 @@ public class UiHolderBean {
           List<Menu> output = new ArrayList<>();
 
           for (Menu item : input) {
-            if (getMenu(ref, item, checkRights) != null) {
-              List<Menu> list = maybeTransform(item);
-              if (list != null) {
-                output.addAll(list);
+            if (getMenu(ref, item, checkRights, transform) != null) {
+              if (transform) {
+                List<Menu> list = maybeTransform(item);
+                if (list != null) {
+                  output.addAll(list);
+                }
+
+              } else {
+                output.add(item);
               }
             }
           }
