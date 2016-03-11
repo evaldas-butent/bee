@@ -87,7 +87,7 @@ public class FileStorageBean {
   @EJB
   ParamHolderBean prm;
 
-  private static final long idLimit = 10000000000l;
+  private static final long idLimit = 10000000000L;
   private final AtomicLong idGenerator = new AtomicLong(Math.max(idLimit,
       System.currentTimeMillis()));
 
