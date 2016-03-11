@@ -205,7 +205,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
         mailMessage.setMessagesUpdated(c > 0);
         mailMessage.setFoldersUpdated(f > 0);
         mailMessage.setError(error);
-        Endpoint.sendToUser(account.getUserId(), mailMessage);
+        Endpoint.sendToUsers(account.getUsers(), mailMessage, null);
       }
     }
     if (!BeeUtils.isEmpty(progressId)) {
@@ -224,6 +224,8 @@ public class MailModuleBean implements BeeModule, HasTimerService {
 
     try {
       if (BeeUtils.same(svc, SVC_GET_ACCOUNTS)) {
+        long userId = BeeUtils.toLongOrNull(reqInfo.getParameter(COL_USER));
+
         response = ResponseObject.response(qs.getData(new SqlSelect()
             .addField(TBL_ACCOUNTS, sys.getIdName(TBL_ACCOUNTS), COL_ACCOUNT)
             .addFields(TBL_ACCOUNTS, MailConstants.COL_ADDRESS, COL_USER, COL_ACCOUNT_DESCRIPTION,
@@ -236,8 +238,11 @@ public class MailModuleBean implements BeeModule, HasTimerService {
             .addFrom(TBL_ACCOUNTS)
             .addFromInner(TBL_EMAILS,
                 sys.joinTables(TBL_EMAILS, TBL_ACCOUNTS, MailConstants.COL_ADDRESS))
-            .setWhere(SqlUtils.equals(TBL_ACCOUNTS, COL_USER,
-                BeeUtils.toLongOrNull(reqInfo.getParameter(COL_USER))))
+            .addFromLeft(TBL_ACCOUNT_USERS,
+                SqlUtils.and(sys.joinTables(TBL_ACCOUNTS, TBL_ACCOUNT_USERS, COL_ACCOUNT),
+                    SqlUtils.equals(TBL_ACCOUNT_USERS, COL_USER, userId)))
+            .setWhere(SqlUtils.or(SqlUtils.equals(TBL_ACCOUNTS, COL_USER, userId),
+                SqlUtils.equals(TBL_ACCOUNT_USERS, COL_USER, userId)))
             .addOrder(TBL_ACCOUNTS, COL_ACCOUNT_DESCRIPTION)));
 
       } else if (BeeUtils.same(svc, SVC_GET_MESSAGE)) {
@@ -450,11 +455,17 @@ public class MailModuleBean implements BeeModule, HasTimerService {
   }
 
   public int countUnread() {
+    long userId = usr.getCurrentUserId();
+
     return qs.sqlCount(new SqlSelect()
         .addFrom(TBL_PLACES)
         .addFromInner(TBL_FOLDERS, sys.joinTables(TBL_FOLDERS, TBL_PLACES, COL_FOLDER))
         .addFromInner(TBL_ACCOUNTS, sys.joinTables(TBL_ACCOUNTS, TBL_FOLDERS, COL_ACCOUNT))
-        .setWhere(SqlUtils.and(SqlUtils.equals(TBL_ACCOUNTS, COL_USER, usr.getCurrentUserId()),
+        .addFromLeft(TBL_ACCOUNT_USERS,
+            SqlUtils.and(sys.joinTables(TBL_ACCOUNTS, TBL_ACCOUNT_USERS, COL_ACCOUNT),
+                SqlUtils.equals(TBL_ACCOUNT_USERS, COL_USER, userId)))
+        .setWhere(SqlUtils.and(SqlUtils.or(SqlUtils.equals(TBL_ACCOUNTS, COL_USER, userId),
+                SqlUtils.equals(TBL_ACCOUNT_USERS, COL_USER, userId)),
             SqlUtils.or(SqlUtils.isNull(TBL_PLACES, COL_FLAGS),
                 SqlUtils.equals(SqlUtils.bitAnd(TBL_PLACES, COL_FLAGS,
                     MessageFlag.SEEN.getMask()), 0)))));
@@ -472,9 +483,9 @@ public class MailModuleBean implements BeeModule, HasTimerService {
     String module = getModule().getName();
 
     List<BeeParameter> params = Lists.newArrayList(
-        BeeParameter.createRelation(module, PRM_DEFAULT_ACCOUNT, false,
-            TBL_ACCOUNTS, COL_ACCOUNT_DESCRIPTION),
-        BeeParameter.createNumber(module, PRM_MAIL_CHECK_INTERVAL, false, null));
+        BeeParameter.createRelation(module, PRM_DEFAULT_ACCOUNT, TBL_ACCOUNTS,
+            COL_ACCOUNT_DESCRIPTION),
+        BeeParameter.createNumber(module, PRM_MAIL_CHECK_INTERVAL));
 
     return params;
   }
@@ -748,7 +759,11 @@ public class MailModuleBean implements BeeModule, HasTimerService {
             .addFrom(TBL_PLACES)
             .addFromInner(TBL_FOLDERS, sys.joinTables(TBL_FOLDERS, TBL_PLACES, COL_FOLDER))
             .addFromInner(TBL_ACCOUNTS, sys.joinTables(TBL_ACCOUNTS, TBL_FOLDERS, COL_ACCOUNT))
-            .setWhere(SqlUtils.and(SqlUtils.equals(TBL_ACCOUNTS, COL_USER, userId),
+            .addFromLeft(TBL_ACCOUNT_USERS,
+                SqlUtils.and(sys.joinTables(TBL_ACCOUNTS, TBL_ACCOUNT_USERS, COL_ACCOUNT),
+                    SqlUtils.equals(TBL_ACCOUNT_USERS, COL_USER, userId)))
+            .setWhere(SqlUtils.and(SqlUtils.or(SqlUtils.equals(TBL_ACCOUNTS, COL_USER, userId),
+                    SqlUtils.equals(TBL_ACCOUNT_USERS, COL_USER, userId)),
                 SqlUtils.or(SqlUtils.isNull(TBL_PLACES, COL_FLAGS),
                     SqlUtils.equals(SqlUtils.bitAnd(TBL_PLACES, COL_FLAGS,
                         MessageFlag.SEEN.getMask()), 0))));
@@ -1484,7 +1499,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
 
         MailMessage mailMessage = new MailMessage(target.getId());
         mailMessage.setMessagesUpdated(true);
-        Endpoint.sendToUser(account.getUserId(), mailMessage);
+        Endpoint.sendToUsers(account.getUsers(), mailMessage, null);
       }
     }
     if (move) {
@@ -1498,7 +1513,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
 
       MailMessage mailMessage = new MailMessage(source.getId());
       mailMessage.setMessagesUpdated(true);
-      Endpoint.sendToUser(account.getUserId(), mailMessage);
+      Endpoint.sendToUsers(account.getUsers(), mailMessage, null);
     }
     if (checkMail) {
       checkMail(account, target, false);
@@ -1571,7 +1586,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
 
     MailMessage mailMessage = new MailMessage(folder.getId());
     mailMessage.setFlag(flag);
-    Endpoint.sendToUser(account.getUserId(), mailMessage);
+    Endpoint.sendToUsers(account.getUsers(), mailMessage, null);
 
     return response;
   }
@@ -1589,7 +1604,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
 
       MailMessage mailMessage = new MailMessage(folder.getId());
       mailMessage.setMessagesUpdated(true);
-      Endpoint.sendToUser(account.getUserId(), mailMessage);
+      Endpoint.sendToUsers(account.getUsers(), mailMessage, null);
     }
     return messageId;
   }

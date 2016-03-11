@@ -18,7 +18,9 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
 
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -143,6 +145,7 @@ public class MailAccount {
   private final Map<String, String> transportProperties;
 
   private final AccountInfo accountInfo;
+  private Collection<Long> accountUsers = new HashSet<>();
 
   MailAccount(SimpleRow data) {
     Assert.notNull(data);
@@ -262,6 +265,10 @@ public class MailAccount {
 
   public Long getUserId() {
     return accountInfo.getUserId();
+  }
+
+  public Collection<Long> getUsers() {
+    return accountUsers;
   }
 
   public boolean isStoredRemotedly(MailFolder folder) {
@@ -669,5 +676,16 @@ public class MailAccount {
   void setFolders(Multimap<Long, SimpleRow> folders) {
     getRootFolder().getSubFolders().clear();
     fillTree(getRootFolder(), folders);
+  }
+
+  void setUsers(Long... users) {
+    accountUsers.clear();
+    accountUsers.add(getUserId());
+
+    if (!ArrayUtils.isEmpty(users)) {
+      for (Long user : users) {
+        accountUsers.add(user);
+      }
+    }
   }
 }

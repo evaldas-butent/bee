@@ -688,6 +688,10 @@ public class MailPanel extends AbstractFormInterceptor {
       accountSettings.addClickHandler(new ClickHandler() {
         @Override
         public void onClick(ClickEvent ev) {
+          if (!Objects.equals(getCurrentAccount().getUserId(), BeeKeeper.getUser().getUserId())) {
+            getFormView().notifyWarning(Localized.getConstants().actionNotAllowed());
+            return;
+          }
           DataInfo dataInfo = Data.getDataInfo(TBL_RULES);
           BeeRow newRow = RowFactory.createEmptyRow(dataInfo, true);
           Data.setValue(TBL_RULES, newRow, COL_ACCOUNT, getCurrentAccount().getAccountId());
@@ -1001,7 +1005,7 @@ public class MailPanel extends AbstractFormInterceptor {
         || getCurrentAccount().isDraftsFolder(getCurrentFolder());
 
     Global.confirm(purge ? Localized.getConstants().delete()
-        : Localized.getConstants().mailActionMoveToTrash(), purge ? Icon.ALARM : Icon.WARNING,
+            : Localized.getConstants().mailActionMoveToTrash(), purge ? Icon.ALARM : Icon.WARNING,
         Collections.singletonList(Localized.getMessages().mailMessages(ids.size())),
         new ConfirmationCallback() {
           @Override

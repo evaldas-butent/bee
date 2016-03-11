@@ -149,6 +149,7 @@ public final class MailConstants {
   public static final String TBL_ADDRESSBOOK = "Addressbook";
   public static final String TBL_FOLDERS = "Folders";
   public static final String TBL_RULES = "Rules";
+  public static final String TBL_ACCOUNT_USERS = "AccountUsers";
 
   public static final String TBL_MESSAGES = "Messages";
   public static final String TBL_PARTS = "Parts";

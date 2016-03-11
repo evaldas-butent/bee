@@ -222,6 +222,7 @@
     <xs:restriction base="xs:string">
       <xs:enumeration value="AbsenceTypes" />
       <xs:enumeration value="Accounts" />
+      <xs:enumeration value="AccountUsers" />
       <xs:enumeration value="ActiveTrips" />
       <xs:enumeration value="ActivityTypes" />
       <xs:enumeration value="Addressbook" />
