@@ -447,16 +447,19 @@ public class MailAccount {
         }
       }
       if (disconnect) {
-        try {
-          logger.debug("Disconnecting from store...");
-          store.close();
-        } catch (MessagingException e) {
-          logger.warning(e);
-        }
+        logger.debug("Disconnecting from store...");
       } else {
         logger.debug("Leaving connected store...");
       }
       storesLock.unlock();
+
+      if (disconnect) {
+        try {
+          store.close();
+        } catch (MessagingException e) {
+          logger.warning(e);
+        }
+      }
     }
   }
 
