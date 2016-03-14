@@ -15,10 +15,11 @@
       </SimpleJoin>
     </SimpleJoin>
 
-    <ExternalJoin name="Customer" source="ERPSales" joinType="INNER" filter="Debt > 0" >
+    <ExternalJoin name="Customer" source="ERPSales" joinType="INNER" filter="!Debt" >
       <AggregateColumn name="Customer" aggregate="COUNT" alias="DebtCount"  label="=trInvoices" />
       <AggregateColumn name="Amount" aggregate="SUM" alias="AmountSum" />
       <AggregateColumn name="Debt" aggregate="SUM" alias="DebtSum" />
+      <HiddenColumn name="Term" />
       <SimpleColumn name="Currency" />
       <SimpleJoin name="Currency" joinType="LEFT">
         <SimpleColumn name="Name" alias="CurrencyName"/>

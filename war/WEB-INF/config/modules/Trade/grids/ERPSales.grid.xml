@@ -42,6 +42,6 @@
   </g:rowStyle>
   <g:rowStyle>
     <ui:inline>="color:green"</ui:inline>
-    <ui:expression>row.Debt == 0</ui:expression>
+    <ui:expression>!(row.Debt)</ui:expression>
   </g:rowStyle>
 </g:Grid>
