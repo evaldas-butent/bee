@@ -439,7 +439,7 @@ public class FileStorageBean {
     FileInfo storedFile = BeeUtils.peek(getFileInfos(Collections.singletonList(fileId)));
 
     if (Objects.isNull(storedFile)) {
-      throw new FileNotFoundException("File not found: id =" + fileId);
+      throw new FileNotFoundException("File not found: id=" + fileId);
     }
     if (BeeUtils.isEmpty(storedFile.getPath())) {
       SqlSelect query = new SqlSelect().setLimit(10)

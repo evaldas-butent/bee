@@ -313,8 +313,8 @@ public class MailStorageBean {
     if (finished.get()) {
       if (Objects.isNull(messageUID) || !BeeConst.isUndef(messageUID)) {
         hasPlace = qs.sqlExists(TBL_PLACES,
-            SqlUtils.and(SqlUtils.equals(TBL_PLACES, COL_MESSAGE_UID, messageUID),
-                SqlUtils.equals(TBL_PLACES, COL_MESSAGE, messageId.getA(), COL_FOLDER, folderId)));
+            SqlUtils.equals(TBL_PLACES, COL_MESSAGE_UID, messageUID,
+                COL_MESSAGE, messageId.getA(), COL_FOLDER, folderId));
         p.set("check2");
       }
     } else {
@@ -343,7 +343,8 @@ public class MailStorageBean {
         p.set("file");
       } catch (IOException | MessagingException e) {
         qs.updateData(new SqlDelete(TBL_MESSAGES)
-            .setWhere(sys.idEquals(TBL_MESSAGES, messageId.getA())));
+            .setWhere(SqlUtils.and(sys.idEquals(TBL_MESSAGES, messageId.getA()),
+                SqlUtils.isNull(TBL_MESSAGES, COL_RAW_CONTENT))));
         throw new MessagingException("MessageID = " + messageId.getA() + " Error getting content",
             e);
       }

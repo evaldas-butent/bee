@@ -283,6 +283,17 @@
                   </tr>
                   <tr>
                     <td>
+                      <label>=time</label>
+                    </td>
+                    <td>
+                      <input name="LoadingTime" type="time" />
+                    </td>
+                    <td>
+                      <input name="UnloadingTime" type="time" />
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
                       <label>=country</label>
                     </td>
                     <td>

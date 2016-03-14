@@ -18,7 +18,10 @@ import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
+import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.HashMap;
@@ -50,6 +53,10 @@ public class CargoPlaceUnboundForm extends AbstractFormInterceptor {
 
   @Override
   public void onReadyForInsert(HasHandlers listener, ReadyForInsertEvent event) {
+    if (!checkDates()) {
+      event.consume();
+      return;
+    }
     event.getColumns().add(Data.getColumn(getViewName(), ALS_CARGO_HANDLING_NOTES));
     event.getValues().add(prepareJson());
     super.onReadyForInsert(listener, event);
@@ -57,6 +64,10 @@ public class CargoPlaceUnboundForm extends AbstractFormInterceptor {
 
   @Override
   public void onSaveChanges(HasHandlers listener, SaveChangesEvent event) {
+    if (!checkDates()) {
+      event.consume();
+      return;
+    }
     String oldValue = getStringValue(ALS_CARGO_HANDLING_NOTES);
     String newValue = prepareJson();
 
@@ -89,6 +100,18 @@ public class CargoPlaceUnboundForm extends AbstractFormInterceptor {
 
   protected UnboundSelector getUnboundWidget(String col) {
     return unboundWidgets.get(col);
+  }
+
+  private boolean checkDates() {
+    DateTime start = getDateTimeValue(ALS_LOADING_DATE);
+    DateTime end = getDateTimeValue(ALS_UNLOADING_DATE);
+
+    if (TimeUtils.isMeq(start, end)) {
+      getFormView().notifyWarning(Localized.getConstants().invalidRange(),
+          TimeUtils.renderPeriod(start, end));
+      return false;
+    }
+    return true;
   }
 
   private String prepareJson() {

@@ -143,12 +143,21 @@ public class TransportSelfService extends LoginServlet {
       if (!BeeUtils.isEmpty(value)) {
         if (BeeUtils.startsWith(key, VAR_LOADING) || BeeUtils.startsWith(key, VAR_UNLOADING)) {
           String[] arr = key.split("-", 2);
+          key = arr[0];
           Integer idx = BeeUtils.toInt(ArrayUtils.getQuietly(arr, 1));
 
           if (!handling.containsKey(idx)) {
             handling.put(idx, new HashMap<>());
           }
-          handling.get(idx).put(arr[0], value);
+          if (BeeUtils.isSuffix(key, "Time")) {
+            key = key.replace("Time", COL_DATE);
+            value = BeeUtils.joinWords(parameters.get(BeeUtils.join("-", key,
+                idx == 0 ? null : idx)), value);
+            handling.get(idx).remove(key);
+          }
+          if (!handling.get(idx).containsKey(key)) {
+            handling.get(idx).put(key, value);
+          }
         } else {
           json.add(key, value);
         }
