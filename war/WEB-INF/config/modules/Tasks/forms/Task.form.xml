@@ -22,7 +22,7 @@
 
   <SplitPanel splitterSize="1" style="margin:5px;" name="Split" >
     <west size="590">
-      <TabbedPages resizable="false">
+      <TabbedPages resizable="false" name="TabbedPages" >
         <page>
           <text>=mainInformation</text>
     

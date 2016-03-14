@@ -45,7 +45,9 @@ import com.butent.bee.client.layout.Direction;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.layout.Split;
+import com.butent.bee.client.layout.TabbedPages;
 import com.butent.bee.client.render.PhotoRenderer;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.Opener;
@@ -437,8 +439,10 @@ class TaskEditor extends AbstractFormInterceptor {
     if (!BeeUtils.isEmpty(comment)) {
       col1.add(createEventCell(COL_COMMENT, comment));
       int idxOwner = Data.getColumnIndex(VIEW_TASKS, COL_OWNER);
-
-      if (event == TaskEvent.COMMENT && Objects.equals(taskRow.getLong(idxOwner), userId)) {
+      int idxExecutor = Data.getColumnIndex(VIEW_TASKS, COL_EXECUTOR);
+      if (event == TaskEvent.COMMENT
+          && (Objects.equals(taskRow.getLong(idxOwner), userId) || Objects.equals(taskRow
+              .getLong(idxExecutor), userId))) {
         FaLabel createTask = new FaLabel(TaskEvent.CREATE.getCommandIcon());
         createTask.setTitle(TaskEvent.CREATE.getCommandLabel());
         createTask.addClickHandler(new ClickHandler() {
@@ -588,8 +592,15 @@ class TaskEditor extends AbstractFormInterceptor {
   private MultiSelector observers;
   private List<Long> projectUsers;
 
+  Split split;
+  com.google.gwt.xml.client.Element west;
+  IdentifiableWidget taskWidget;
+  IdentifiableWidget taskEventsWidget;
+  private boolean isDefaultLayout;
+
   TaskEditor() {
     super();
+    this.isDefaultLayout = BeeKeeper.getUser().getCommentsLayout();
     this.userId = BeeKeeper.getUser().getUserId();
   }
 
@@ -601,9 +612,7 @@ class TaskEditor extends AbstractFormInterceptor {
 
       if (BeeUtils.isPositive(size)) {
 
-        com.google.gwt.xml.client.Element west =
-            XmlUtils.getFirstChildElement(description, Direction.WEST.name()
-                .toLowerCase());
+        west = XmlUtils.getFirstChildElement(description, Direction.WEST.name().toLowerCase());
 
         if (west != null) {
           west.setAttribute(UiConstants.ATTR_SIZE, size.toString());
@@ -619,8 +628,14 @@ class TaskEditor extends AbstractFormInterceptor {
 
     if (BeeUtils.same(name, NAME_OBSERVERS) && widget instanceof MultiSelector) {
       observers = (MultiSelector) widget;
+    } else if (BeeUtils.same(name, "TabbedPages") && widget instanceof TabbedPages) {
+      taskWidget = widget;
+
+    } else if (BeeUtils.same(name, "TaskEvents") && widget instanceof Flow) {
+      taskEventsWidget = widget;
+
     } else if (BeeUtils.same(name, "Split") && widget instanceof Split) {
-      Split split = (Split) widget;
+      split = (Split) widget;
       split.addMutationHandler(new Handler() {
 
         @Override
@@ -644,6 +659,7 @@ class TaskEditor extends AbstractFormInterceptor {
       return;
     }
 
+    setCommentsLayout(header);
     Integer status = row.getInteger(form.getDataIndex(COL_STATUS));
 
     for (final TaskEvent event : TaskEvent.values()) {
@@ -928,7 +944,7 @@ class TaskEditor extends AbstractFormInterceptor {
               companyName);
           docRow.setValue(dataInfo
               .getColumnIndex(DocumentConstants.COL_DOCUMENT_COMPANY), row
-                  .getLong(idxCompany));
+              .getLong(idxCompany));
         }
 
         FileCollector.pushFiles(Lists.newArrayList(fileInfo));
@@ -1135,11 +1151,11 @@ class TaskEditor extends AbstractFormInterceptor {
               .beeSerialize(data)),
               new IntCallback() {
 
-            @Override
-            public void onSuccess(Integer updateCount) {
-              consumer.accept(null);
-            }
-          });
+                @Override
+                public void onSuccess(Integer updateCount) {
+                  consumer.accept(null);
+                }
+              });
 
         }
       });
@@ -1327,7 +1343,7 @@ class TaskEditor extends AbstractFormInterceptor {
 
     newTaskRow.setValue(idxSummary, Data.clamp(VIEW_TASKS, COL_SUMMARY, BeeUtils.joinWords(taskRow
         .getString(idxSummary), BeeUtils
-            .parenthesize(taskRow.getId()))));
+        .parenthesize(taskRow.getId()))));
 
     String description = taskRow.getString(idxDescription);
 
@@ -1343,15 +1359,15 @@ class TaskEditor extends AbstractFormInterceptor {
             BeeUtils.join(BeeConst.STRING_EOL
                 + BeeUtils.replicate(BeeConst.CHAR_MINUS, BeeConst.MAX_SCALE)
                 + BeeConst.STRING_EOL, description, BeeUtils
-                    .joinWords(event.getDateTime(events.getColumnIndex(COL_PUBLISH_TIME)), BeeUtils
-                        .nvl(event
-                            .getString(events.getColumnIndex(ALS_PUBLISHER_FIRST_NAME)),
-                            BeeConst.STRING_EMPTY), BeeUtils.nvl(event
-                                .getString(events.getColumnIndex(ALS_PUBLISHER_LAST_NAME)),
-                                BeeConst.STRING_EMPTY)
-                                + BeeConst.STRING_COLON, event
-                                    .getString(events
-                                        .getColumnIndex(COL_COMMENT))));
+                .joinWords(event.getDateTime(events.getColumnIndex(COL_PUBLISH_TIME)), BeeUtils
+                    .nvl(event
+                        .getString(events.getColumnIndex(ALS_PUBLISHER_FIRST_NAME)),
+                        BeeConst.STRING_EMPTY), BeeUtils.nvl(event
+                    .getString(events.getColumnIndex(ALS_PUBLISHER_LAST_NAME)),
+                    BeeConst.STRING_EMPTY)
+                    + BeeConst.STRING_COLON, event
+                    .getString(events
+                        .getColumnIndex(COL_COMMENT))));
       }
     } else if (!events.isEmpty()) {
       for (IsRow event : events) {
@@ -1362,16 +1378,16 @@ class TaskEditor extends AbstractFormInterceptor {
               BeeUtils.join(BeeConst.STRING_EOL
                   + BeeUtils.replicate(BeeConst.CHAR_MINUS, BeeConst.MAX_SCALE)
                   + BeeConst.STRING_EOL, description, BeeUtils
-                      .joinWords(event.getDateTime(events.getColumnIndex(COL_PUBLISH_TIME)),
-                          BeeUtils
-                              .nvl(event
-                                  .getString(events.getColumnIndex(ALS_PUBLISHER_FIRST_NAME)),
-                                  BeeConst.STRING_EMPTY), BeeUtils.nvl(event
-                                      .getString(events.getColumnIndex(ALS_PUBLISHER_LAST_NAME)),
-                                      BeeConst.STRING_EMPTY)
-                                      + BeeConst.STRING_COLON, event
-                                          .getString(events
-                                              .getColumnIndex(COL_COMMENT))));
+                  .joinWords(event.getDateTime(events.getColumnIndex(COL_PUBLISH_TIME)),
+                      BeeUtils
+                          .nvl(event
+                              .getString(events.getColumnIndex(ALS_PUBLISHER_FIRST_NAME)),
+                              BeeConst.STRING_EMPTY), BeeUtils.nvl(event
+                          .getString(events.getColumnIndex(ALS_PUBLISHER_LAST_NAME)),
+                          BeeConst.STRING_EMPTY)
+                          + BeeConst.STRING_COLON, event
+                          .getString(events
+                              .getColumnIndex(COL_COMMENT))));
         }
       }
     }
@@ -1777,8 +1793,7 @@ class TaskEditor extends AbstractFormInterceptor {
       case ACTIVATE:
         return false;
       case CREATE:
-        return isOwner() || (TaskStatus.in(status, TaskStatus.NOT_VISITED, TaskStatus.SCHEDULED,
-            TaskStatus.SUSPENDED, TaskStatus.CANCELED) && isExecutor());
+        return isOwner() || isExecutor();
 
       case OUT_OF_OBSERVERS:
         return TaskStatus.in(status, TaskStatus.ACTIVE, TaskStatus.NOT_VISITED,
@@ -1948,34 +1963,34 @@ class TaskEditor extends AbstractFormInterceptor {
 
     Queries.getRowSet(ProjectConstants.VIEW_PROJECT_USERS, Lists
         .newArrayList(COL_USER), Filter.isEqual(
-            ProjectConstants.COL_PROJECT, Value.getValue(projectId)), new RowSetCallback() {
+        ProjectConstants.COL_PROJECT, Value.getValue(projectId)), new RowSetCallback() {
 
-              @Override
-              public void onSuccess(BeeRowSet result) {
-                List<Long> userIds = Lists.newArrayList(projectOwner);
-                int idxUser = result.getColumnIndex(COL_USER);
+      @Override
+      public void onSuccess(BeeRowSet result) {
+        List<Long> userIds = Lists.newArrayList(projectOwner);
+        int idxUser = result.getColumnIndex(COL_USER);
 
-                if (BeeConst.isUndef(idxUser)) {
-                  Assert.untouchable();
-                  return;
-                }
+        if (BeeConst.isUndef(idxUser)) {
+          Assert.untouchable();
+          return;
+        }
 
-                for (IsRow userRow : result) {
-                  long projectUser = BeeUtils.unbox(userRow.getLong(idxUser));
+        for (IsRow userRow : result) {
+          long projectUser = BeeUtils.unbox(userRow.getLong(idxUser));
 
-                  if (DataUtils.isId(projectUser)) {
-                    userIds.add(projectUser);
-                  }
-                }
+          if (DataUtils.isId(projectUser)) {
+            userIds.add(projectUser);
+          }
+        }
 
-                if (observers != null) {
-                  observers.getOracle().setAdditionalFilter(Filter.idIn(userIds), true);
-                  observers.setEnabled(true);
-                }
+        if (observers != null) {
+          observers.getOracle().setAdditionalFilter(Filter.idIn(userIds), true);
+          observers.setEnabled(true);
+        }
 
-                setProjectUsers(userIds);
-              }
-            });
+        setProjectUsers(userIds);
+      }
+    });
   }
 
   private void setEnabledRelations() {
@@ -1984,6 +1999,54 @@ class TaskEditor extends AbstractFormInterceptor {
       if (selector != null) {
         selector.setEnabled(true);
       }
+    }
+  }
+
+  private void setCommentsLayout(final HeaderView header) {
+    final FormView form = getFormView();
+    FaLabel labelVer = new FaLabel(FontAwesome.LIST_ALT);
+    FaLabel labelHor = new FaLabel(FontAwesome.COLUMNS);
+    labelVer.addStyleName(BeeConst.CSS_CLASS_PREFIX + "crm-commentLayout-label");
+    labelVer.setTitle(Localized.getConstants().crmTaskShowCommentsBelow());
+    labelHor.addStyleName(BeeConst.CSS_CLASS_PREFIX + "crm-commentLayout-label");
+    labelHor.setTitle(Localized.getConstants().crmTaskShowCommentsRight());
+
+    labelVer.addClickHandler(new ClickHandler() {
+
+      @Override
+      public void onClick(ClickEvent arg0) {
+        BeeKeeper.getUser().setCommentsLayout(true);
+        isDefaultLayout = true;
+        form.refresh();
+      }
+    });
+
+    labelHor.addClickHandler(new ClickHandler() {
+
+      @Override
+      public void onClick(ClickEvent arg0) {
+        BeeKeeper.getUser().setCommentsLayout(false);
+        isDefaultLayout = false;
+        form.refresh();
+      }
+    });
+
+    if (isDefaultLayout) {
+      split.remove(taskWidget);
+      split.remove(taskEventsWidget);
+      split.addNorth(taskWidget, 575);
+      split.updateCenter(taskEventsWidget);
+      header.addCommandItem(labelHor);
+
+    } else {
+
+      Integer size = BeeKeeper.getStorage().getInteger(getStorageKey());
+      split.remove(taskWidget);
+      split.remove(taskEventsWidget);
+      split.addWest(taskWidget, size == null ? 590 : size);
+      StyleUtils.autoHeight(taskWidget.getElement());
+      split.updateCenter(taskEventsWidget);
+      header.addCommandItem(labelVer);
     }
   }
 }
