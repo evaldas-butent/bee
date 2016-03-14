@@ -205,6 +205,10 @@ public class UserInfo implements HasInfo {
     return BeeUtils.isTrue(userMode) ? getUserId() : null;
   }
 
+  public boolean getCommentsLayout() {
+    return getBooleanSetting(COL_COMMENTS_LAYOUT);
+  }
+
   public boolean is(Long id) {
     return id != null && id.equals(getUserId());
   }
@@ -286,6 +290,21 @@ public class UserInfo implements HasInfo {
 
   public boolean openInNewTab() {
     return openInNewTab;
+  }
+
+  public void setCommentsLayout(boolean isDefault) {
+    if (!DataUtils.isEmpty(settings)) {
+      int index = getSettingsIndex(COL_COMMENTS_LAYOUT);
+
+      if (!BeeConst.isUndef(index)) {
+
+        BeeRow row = getSettingsRow();
+        row.setValue(index, isDefault);
+
+        Queries.update(settings.getViewName(), row.getId(), COL_COMMENTS_LAYOUT, BooleanValue
+            .of(isDefault));
+      }
+    }
   }
 
   public void setSessionId(String sessionId) {

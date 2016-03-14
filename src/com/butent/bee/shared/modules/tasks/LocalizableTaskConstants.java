@@ -98,6 +98,10 @@ public interface LocalizableTaskConstants {
 
   String crmTaskCommentTimeRegistration();
 
+  String crmTaskShowCommentsBelow();
+
+  String crmTaskShowCommentsRight();
+
   String crmTaskCompleteDate();
 
   String crmTaskConfirm();

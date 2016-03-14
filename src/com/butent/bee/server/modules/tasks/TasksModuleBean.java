@@ -997,6 +997,7 @@ public class TasksModuleBean implements BeeModule {
       case CANCEL:
       case COMPLETE:
       case APPROVE:
+      case REFRESH:
       case RENEW:
       case ACTIVATE:
       case OUT_OF_OBSERVERS:

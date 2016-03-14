@@ -337,6 +337,7 @@ public final class AdministrationConstants {
   public static final String COL_CONFIG_DATA = "ObjectData";
 
   public static final String COL_MENU_HIDE = "MenuHide";
+  public static final String COL_COMMENTS_LAYOUT = "CommentsLayout";
 
   public static final String COL_EVENT = "Event";
   public static final String COL_EVENT_STARTED = "Started";
