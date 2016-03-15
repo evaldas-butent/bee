@@ -134,6 +134,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String actionWorkspaceRestoreSize();
 
+  String additionalContacts();
+
   String additionalInfo();
 
   String address();
@@ -188,6 +190,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String chatUpdateTime();
 
+  String chooseContactSource();
+
   String chooseFiles();
 
   String chooseLanguage();
@@ -217,6 +221,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
   String companies();
 
   String company();
+
+  String companyPersons();
 
   String companyActivities();
 

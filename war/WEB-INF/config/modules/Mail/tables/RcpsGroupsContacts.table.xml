@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table" 
+    
+    name="RcpsGroupsContacts" 
+    idName="RcpsGroupsContactID">
+    
+  <Fields>
+    <Relation name="RecipientsGroup" notNull="true" relation="RecipientsGroups" cascade="DELETE" />
+    <Relation name="Company" relation="Companies" cascade="DELETE" />
+    <Relation name="Person" relation="Persons" cascade="DELETE" />
+    <Relation name="CompanyPerson" relation="CompanyPersons" cascade="DELETE" />
+    <Relation name="CompanyContact" relation="CompanyContacts" cascade="DELETE" />
+  </Fields>
+</Table>

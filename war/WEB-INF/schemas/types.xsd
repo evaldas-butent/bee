@@ -377,6 +377,13 @@
       <xs:enumeration value="LossReasons" />
       <xs:enumeration value="Maintenance" />
       <xs:enumeration value="Messages" />
+      <xs:enumeration value="Newsletters" />
+      <xs:enumeration value="NewsletterContacts" />
+      <xs:enumeration value="NewsCompanies" />
+      <xs:enumeration value="NewsCompanyContacts" />
+      <xs:enumeration value="NewsCompanyPersons" />
+      <xs:enumeration value="NewsPersons" />
+      <xs:enumeration value="NewsletterFiles" />
       <xs:enumeration value="Objects" />
       <xs:enumeration value="ObjectEarnings" />
       <xs:enumeration value="ObjectSalaryFund" />
@@ -419,6 +426,8 @@
       <xs:enumeration value="PurchaseItems" />
       <xs:enumeration value="PurchaseOperations" />
       <xs:enumeration value="Purchases" />
+      <xs:enumeration value="RecipientsGroups" />
+      <xs:enumeration value="RcpsGroupsContacts" />
       <xs:enumeration value="RecurringTasks" />
       <xs:enumeration value="RejectionReasons" />
       <xs:enumeration value="RelatedDocuments" />
@@ -451,6 +460,10 @@
       <xs:enumeration value="SaleOperations" />
       <xs:enumeration value="Sales" />
       <xs:enumeration value="SaleSeries" />
+      <xs:enumeration value="SelectCompanies" />
+      <xs:enumeration value="SelectCompanyContacts" />
+      <xs:enumeration value="SelectCompanyPersons" />
+      <xs:enumeration value="SelectPersons" />
       <xs:enumeration value="SeriesManagers" />
       <xs:enumeration value="ServiceCriteria" />
       <xs:enumeration value="ServiceCritGroups" />

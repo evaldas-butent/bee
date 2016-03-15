@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table" name="RecipientsGroups" idName="RecipientGroupID">
+  <Fields>
+    <String name="GroupName" precision="30" notNull="true" label="=name" />
+    <Enum name="Visibility" key="RecipientsGroupsVisibility" notNull="true" defValue="0" />
+    <Relation name="Creator" relation="Users" defExpr="CURRENT_USER" label="=creator" />
+  </Fields>
+</Table>

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View 
+  xmlns="http://www.butent.com/view" 
+  name="RecipientsGroups" source="RecipientsGroups" 
+  caption="=mailRecipientsGroups" newRowCaption="=mailNewRecipientsGroup"
+  editForm="RecipientsGroup" newRowForm="RecipientsGroup" filter="Creator {u} or Visibility = 0" >
+  <Columns>
+    <SimpleColumn name="GroupName" />
+
+    <SimpleColumn name="Visibility" />
+
+    <SimpleColumn name="Creator" />
+    <SimpleJoin name="Creator" joinType="LEFT">
+      <SimpleColumn alias="CreatorCompanyPerson" name="CompanyPerson" />
+      <SimpleJoin name="CompanyPerson" joinType="LEFT">
+        <SimpleJoin name="Person" joinType="LEFT">
+          <SimpleColumn alias="CreatorFirstName" name="FirstName" />
+          <SimpleColumn alias="CreatorLastName" name="LastName" />
+        </SimpleJoin>
+      </SimpleJoin>
+    </SimpleJoin>
+
+  </Columns>
+</View>
+ 
