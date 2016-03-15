@@ -354,3 +354,8 @@
   height: calc(100% - 3px);
 }
 
+.bee-ta-picker-dialog {
+  max-height: 90%;
+  max-width: 90%;
+}
+
