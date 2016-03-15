@@ -153,15 +153,15 @@ public class PrintActForm extends AbstractFormInterceptor {
 
     if (BeeUtils.same(col, "AmountTotal") && (BeeUtils.same(widgetName, ITEMS_WIDGET_NAME)
         && BeeUtils.inList(formName,
-            FORM_PRINT_TA_SALE, FORM_PRINT_TA_NO_STOCK, FORM_PRINT_TA_SALE_RENT,
-            FORM_PRINT_TA_SALE_ADDITION))) {
+        FORM_PRINT_TA_SALE, FORM_PRINT_TA_NO_STOCK, FORM_PRINT_TA_SALE_RENT,
+        FORM_PRINT_TA_SALE_ADDITION))) {
       return false;
     }
 
     if (BeeUtils.same(col, "Vat") && (BeeUtils.same(widgetName, SERVICES_WIDGET_NAME) || (BeeUtils
         .same(widgetName, ITEMS_WIDGET_NAME) && BeeUtils.inList(formName,
-            FORM_PRINT_TA_SALE, FORM_PRINT_TA_NO_STOCK, FORM_PRINT_TA_SALE_RENT,
-            FORM_PRINT_TA_SALE_ADDITION)))) {
+        FORM_PRINT_TA_SALE, FORM_PRINT_TA_NO_STOCK, FORM_PRINT_TA_SALE_RENT,
+        FORM_PRINT_TA_SALE_ADDITION)))) {
       return false;
     }
 
@@ -256,10 +256,8 @@ public class PrintActForm extends AbstractFormInterceptor {
                   break;
 
                 case COL_TRADE_ITEM_NOTE:
-                  if (BeeUtils.same(typeTable, ITEMS_WIDGET_NAME)) {
-                    data.put(id, COL_ITEM_NAME, BeeUtils.join("/", row.getValue(COL_ITEM_NAME),
-                        row.getValue(COL_TRADE_ITEM_NOTE)));
-                  }
+                  data.put(id, COL_ITEM_NAME, BeeUtils.join("/", row.getValue(COL_ITEM_NAME),
+                      row.getValue(COL_TRADE_ITEM_NOTE)));
                   break;
 
                 case COL_TA_SERVICE_MIN:
