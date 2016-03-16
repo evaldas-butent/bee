@@ -494,7 +494,7 @@ public class TradeActBean implements HasTimerService {
 
     if (DataUtils.isId(returnedStatusId) && DataUtils
         .isId(approvedStatusId) && !BeeUtils
-            .isEmpty(reqInfo.getParameter(VAR_ID_LIST))) {
+        .isEmpty(reqInfo.getParameter(VAR_ID_LIST))) {
 
       List<Long> acts = DataUtils.parseIdList(reqInfo.getParameter(VAR_ID_LIST));
 
@@ -822,7 +822,7 @@ public class TradeActBean implements HasTimerService {
         SqlUtils.and(SqlUtils.equals(TBL_TRADE_ACTS, COL_TA_SERIES, seriesId),
             SqlUtils.notNull(TBL_TRADE_ACTS, columnName), SqlUtils.equals(TBL_TRADE_ACTS,
                 COL_TA_KIND, TradeActKind.RETURN.ordinal()), SqlUtils.equals(TBL_TRADE_ACTS,
-                    COL_TA_PARENT, parentId));
+                COL_TA_PARENT, parentId));
 
     SqlSelect query = new SqlSelect()
         .addFields(TBL_TRADE_ACTS, columnName)
@@ -1928,7 +1928,7 @@ public class TradeActBean implements HasTimerService {
     IsCondition condition = BeeUtils.isEmpty(items)
         ? null : SqlUtils.inList(TBL_TRADE_ACT_ITEMS, COL_TA_ITEM, items);
 
-    SqlSelect plusQuery = getStockQuery(condition, true);
+    SqlSelect plusQuery = getStockQuery(TBL_TRADE_ACT_ITEMS, condition, true);
     SimpleRowSet plusData = qs.getData(plusQuery);
 
     if (!DataUtils.isEmpty(plusData)) {
@@ -1940,77 +1940,101 @@ public class TradeActBean implements HasTimerService {
       }
     }
 
-    SqlSelect minusQuery = getStockQuery(condition, false);
+    SqlSelect minusQuery = getStockQuery(TBL_TRADE_ACT_ITEMS, condition, false);
     SimpleRowSet minusData = qs.getData(minusQuery);
 
-    if (!DataUtils.isEmpty(minusData)) {
-      for (SimpleRow row : minusData) {
-        Double qty = row.getDouble(COL_TRADE_ITEM_QUANTITY);
+    pushStock(result, minusData, COL_OPERATION_WAREHOUSE_FROM);
 
-        if (BeeUtils.nonZero(qty)) {
-          Long item = row.getLong(COL_TA_ITEM);
-          Long warehouse = row.getLong(COL_OPERATION_WAREHOUSE_FROM);
+    condition = BeeUtils.isEmpty(items)
+        ? null : SqlUtils.inList(TBL_TRADE_ACT_SERVICES, COL_TA_ITEM, items);
 
-          Double stock = result.get(item, warehouse);
+    condition = SqlUtils.and(condition, SqlUtils.isNull(TBL_ITEMS, COL_ITEM_IS_SERVICE),
+        SqlUtils.notNull(TBL_TRADE_ACT_SERVICES, COL_SERVICE_DATE_FROM));
 
-          if (stock == null) {
-            result.put(item, warehouse, -qty);
-          } else if (stock.equals(qty)) {
-            result.remove(item, warehouse);
-          } else {
-            result.put(item, warehouse, stock - qty);
-          }
-        }
-      }
-    }
+    SqlSelect minusServicesQuery = getStockQuery(TBL_TRADE_ACT_SERVICES, condition, false);
+    SimpleRowSet minusServicesData = qs.getData(minusServicesQuery);
+
+    pushStock(result, minusServicesData, COL_OPERATION_WAREHOUSE_FROM);
 
     return result;
   }
 
   private String getStock(IsCondition actCondition, IsCondition itemCondition, Long time,
-      Collection<Long> warehouses, String colPrefix) {
+      Collection<Long> warehouses, Set<Long> categories, Set<Long> items, String colPrefix) {
 
-    SqlSelect query = new SqlSelect()
-        .addFields(TBL_TRADE_ACT_ITEMS, COL_TA_ITEM)
-        .addFields(TBL_TRADE_OPERATIONS, COL_OPERATION_WAREHOUSE_FROM, COL_OPERATION_WAREHOUSE_TO)
-        .addSum(TBL_TRADE_ACT_ITEMS, COL_TRADE_ITEM_QUANTITY)
-        .addFrom(TBL_TRADE_ACT_ITEMS)
-        .addFromInner(TBL_TRADE_ACTS,
-            sys.joinTables(TBL_TRADE_ACTS, TBL_TRADE_ACT_ITEMS, COL_TRADE_ACT))
-        .addFromInner(TBL_TRADE_OPERATIONS,
-            sys.joinTables(TBL_TRADE_OPERATIONS, TBL_TRADE_ACTS, COL_TA_OPERATION));
+    /** Selects all items items from */
+    SqlSelect itemsQuery = getStockQuery(TBL_TRADE_ACT_ITEMS, true);
+    SqlSelect servicesQuery = getStockQuery(TBL_TRADE_ACT_SERVICES, false);
+
+    servicesQuery.addFromInner(TBL_ITEMS,
+        sys.joinTables(TBL_ITEMS, TBL_TRADE_ACT_SERVICES, COL_TA_ITEM));
 
     HasConditions where = SqlUtils.and();
+    HasConditions servicesWhere = SqlUtils.and();
+    servicesWhere.add(SqlUtils.and(SqlUtils.isNull(TBL_ITEMS, COL_ITEM_IS_SERVICE), SqlUtils
+        .notNull(TBL_TRADE_ACT_SERVICES, COL_SERVICE_DATE_FROM)));
 
     if (actCondition != null) {
       where.add(actCondition);
+      servicesWhere.add(actCondition);
     }
+
+    if (!BeeUtils.isEmpty(categories)) {
+      where.add(SqlUtils.in(TBL_TRADE_ACT_ITEMS, COL_TA_ITEM, TBL_ITEM_CATEGORIES, COL_ITEM,
+          SqlUtils.inList(TBL_ITEM_CATEGORIES, COL_CATEGORY, categories)));
+
+      servicesWhere.add(SqlUtils.in(TBL_TRADE_ACT_SERVICES, COL_TA_ITEM, TBL_ITEM_CATEGORIES,
+          COL_ITEM,
+          SqlUtils.inList(TBL_ITEM_CATEGORIES, COL_CATEGORY, categories)));
+    }
+
+    if (!BeeUtils.isEmpty(items)) {
+      where.add(SqlUtils.inList(TBL_TRADE_ACT_ITEMS, COL_TA_ITEM, items));
+      servicesWhere.add(SqlUtils.inList(TBL_TRADE_ACT_SERVICES, COL_TA_ITEM, items));
+    }
+
     if (itemCondition != null) {
-      query.addFromInner(TBL_ITEMS,
+      itemsQuery.addFromInner(TBL_ITEMS,
           sys.joinTables(TBL_ITEMS, TBL_TRADE_ACT_ITEMS, COL_TA_ITEM));
       where.add(itemCondition);
+
     }
 
     if (time != null) {
       where.add(SqlUtils.less(TBL_TRADE_ACTS, COL_TA_DATE, time));
+      servicesWhere.add(SqlUtils.less(TBL_TRADE_ACTS, COL_TA_DATE, time));
     }
 
     if (BeeUtils.isEmpty(warehouses)) {
       where.add(SqlUtils.or(
           SqlUtils.notNull(TBL_TRADE_OPERATIONS, COL_OPERATION_WAREHOUSE_FROM),
           SqlUtils.notNull(TBL_TRADE_OPERATIONS, COL_OPERATION_WAREHOUSE_TO)));
+      servicesWhere.add(SqlUtils.notNull(TBL_TRADE_OPERATIONS, COL_OPERATION_WAREHOUSE_FROM));
     } else {
       where.add(SqlUtils.or(
           SqlUtils.inList(TBL_TRADE_OPERATIONS, COL_OPERATION_WAREHOUSE_FROM, warehouses),
           SqlUtils.inList(TBL_TRADE_OPERATIONS, COL_OPERATION_WAREHOUSE_TO, warehouses)));
+      servicesWhere.add(SqlUtils.inList(TBL_TRADE_OPERATIONS, COL_OPERATION_WAREHOUSE_FROM,
+          warehouses));
     }
 
-    query.setWhere(where);
+    itemsQuery.setWhere(where);
+    servicesQuery.setWhere(servicesWhere);
 
-    query.addGroup(TBL_TRADE_ACT_ITEMS, COL_TA_ITEM);
-    query.addGroup(TBL_TRADE_OPERATIONS, COL_OPERATION_WAREHOUSE_FROM, COL_OPERATION_WAREHOUSE_TO);
+    itemsQuery.addGroup(TBL_TRADE_ACT_ITEMS, COL_TA_ITEM);
+    itemsQuery.addGroup(TBL_TRADE_OPERATIONS, COL_OPERATION_WAREHOUSE_FROM,
+        COL_OPERATION_WAREHOUSE_TO);
 
-    String tmp = qs.sqlCreateTemp(query);
+    servicesQuery.addGroup(TBL_TRADE_ACT_SERVICES, COL_TA_ITEM);
+    servicesQuery.addGroup(TBL_TRADE_OPERATIONS, COL_OPERATION_WAREHOUSE_FROM);
+
+    String tmp = qs.sqlCreateTemp(itemsQuery);
+
+    SqlInsert insertServices = new SqlInsert(tmp)
+        .addFields(COL_TA_ITEM, COL_OPERATION_WAREHOUSE_FROM, COL_TRADE_ITEM_QUANTITY)
+        .setDataSource(servicesQuery);
+
+    qs.insertData(insertServices);
 
     Set<Long> ids = qs.getNotNullLongSet(tmp, COL_OPERATION_WAREHOUSE_FROM);
     ids.addAll(qs.getNotNullLongSet(tmp, COL_OPERATION_WAREHOUSE_TO));
@@ -2024,7 +2048,7 @@ public class TradeActBean implements HasTimerService {
       return null;
     }
 
-    query = new SqlSelect()
+    SqlSelect query = new SqlSelect()
         .addFields(tmp, COL_TA_ITEM);
 
     int precision = sys.getFieldPrecision(TBL_TRADE_ACT_ITEMS, COL_TRADE_ITEM_QUANTITY);
@@ -2123,7 +2147,8 @@ public class TradeActBean implements HasTimerService {
   }
 
   private String getMovement(IsCondition actCondition, IsCondition itemCondition,
-      Long startTime, Long endTime, Collection<Long> warehouses) {
+      Long startTime, Long endTime, Collection<Long> warehouses, Set<Long> categories,
+      Set<Long> items) {
 
     SqlSelect query = new SqlSelect()
         .addFields(TBL_TRADE_ACT_ITEMS, COL_TA_ITEM)
@@ -2140,6 +2165,16 @@ public class TradeActBean implements HasTimerService {
     if (actCondition != null) {
       where.add(actCondition);
     }
+
+    if (!BeeUtils.isEmpty(categories)) {
+      where.add(SqlUtils.in(TBL_TRADE_ACT_ITEMS, COL_TA_ITEM, TBL_ITEM_CATEGORIES, COL_ITEM,
+          SqlUtils.inList(TBL_ITEM_CATEGORIES, COL_CATEGORY, categories)));
+    }
+
+    if (!BeeUtils.isEmpty(items)) {
+      where.add(SqlUtils.inList(TBL_TRADE_ACT_ITEMS, COL_TA_ITEM, items));
+    }
+
     if (itemCondition != null) {
       query.addFromInner(TBL_ITEMS,
           sys.joinTables(TBL_ITEMS, TBL_TRADE_ACT_ITEMS, COL_TA_ITEM));
@@ -2201,20 +2236,21 @@ public class TradeActBean implements HasTimerService {
     return movement;
   }
 
-  private SqlSelect getStockQuery(IsCondition condition, boolean plus) {
+  private SqlSelect getStockQuery(String source, IsCondition condition, boolean plus) {
     String colWarehouse = plus ? COL_OPERATION_WAREHOUSE_TO : COL_OPERATION_WAREHOUSE_FROM;
 
     return new SqlSelect()
-        .addFields(TBL_TRADE_ACT_ITEMS, COL_TA_ITEM)
+        .addFields(source, COL_TA_ITEM)
         .addFields(TBL_TRADE_OPERATIONS, colWarehouse)
-        .addSum(TBL_TRADE_ACT_ITEMS, COL_TRADE_ITEM_QUANTITY)
-        .addFrom(TBL_TRADE_ACT_ITEMS)
+        .addSum(source, COL_TRADE_ITEM_QUANTITY)
+        .addFrom(source)
         .addFromInner(TBL_TRADE_ACTS,
-            sys.joinTables(TBL_TRADE_ACTS, TBL_TRADE_ACT_ITEMS, COL_TRADE_ACT))
+            sys.joinTables(TBL_TRADE_ACTS, source, COL_TRADE_ACT))
         .addFromInner(TBL_TRADE_OPERATIONS,
             sys.joinTables(TBL_TRADE_OPERATIONS, TBL_TRADE_ACTS, COL_TA_OPERATION))
+        .addFromInner(TBL_ITEMS, sys.joinTables(TBL_ITEMS, source, COL_TA_ITEM))
         .setWhere(SqlUtils.and(SqlUtils.notNull(TBL_TRADE_OPERATIONS, colWarehouse), condition))
-        .addGroup(TBL_TRADE_ACT_ITEMS, COL_TA_ITEM)
+        .addGroup(source, COL_TA_ITEM)
         .addGroup(TBL_TRADE_OPERATIONS, colWarehouse);
   }
 
@@ -2248,14 +2284,6 @@ public class TradeActBean implements HasTimerService {
       actCondition.add(SqlUtils.inList(TBL_TRADE_ACTS, COL_TA_OBJECT, objects));
     }
 
-    if (!categories.isEmpty()) {
-      actCondition.add(SqlUtils.in(TBL_TRADE_ACT_ITEMS, COL_TA_ITEM, TBL_ITEM_CATEGORIES, COL_ITEM,
-          SqlUtils.inList(TBL_ITEM_CATEGORIES, COL_CATEGORY, categories)));
-    }
-    if (!items.isEmpty()) {
-      actCondition.add(SqlUtils.inList(TBL_TRADE_ACT_ITEMS, COL_TA_ITEM, items));
-    }
-
     IsCondition itemCondition;
     if (!showQuantity && showWeight) {
       itemCondition = SqlUtils.positive(TBL_ITEMS, COL_ITEM_WEIGHT);
@@ -2268,18 +2296,29 @@ public class TradeActBean implements HasTimerService {
     String endStock = null;
 
     if (startDate == null && endDate == null) {
-      endStock = getStock(actCondition, itemCondition, null, warehouses, PFX_END_STOCK);
+      endStock =
+          getStock(actCondition, itemCondition, null, warehouses, categories, items, PFX_END_STOCK);
 
     } else if (startDate == null) {
-      endStock = getStock(actCondition, itemCondition, endDate, warehouses, PFX_END_STOCK);
+      endStock =
+          getStock(actCondition, itemCondition, endDate, warehouses, categories, items,
+              PFX_END_STOCK);
 
     } else if (endDate == null) {
-      startStock = getStock(actCondition, itemCondition, startDate, warehouses, PFX_START_STOCK);
+      startStock =
+          getStock(actCondition, itemCondition, startDate, warehouses, categories, items,
+              PFX_START_STOCK);
 
     } else {
-      startStock = getStock(actCondition, itemCondition, startDate, warehouses, PFX_START_STOCK);
-      movement = getMovement(actCondition, itemCondition, startDate, endDate, warehouses);
-      endStock = getStock(actCondition, itemCondition, endDate, warehouses, PFX_END_STOCK);
+      startStock =
+          getStock(actCondition, itemCondition, startDate, warehouses, categories, items,
+              PFX_START_STOCK);
+      movement =
+          getMovement(actCondition, itemCondition, startDate, endDate, warehouses, categories,
+              items);
+      endStock =
+          getStock(actCondition, itemCondition, endDate, warehouses, categories, items,
+              PFX_END_STOCK);
     }
 
     if (BeeUtils.allEmpty(startStock, movement, endStock)) {
@@ -3034,6 +3073,51 @@ public class TradeActBean implements HasTimerService {
     }
   }
 
+  private SqlSelect getStockQuery(String source, boolean requireWarehouseTo) {
+    SqlSelect query = new SqlSelect()
+        .addFields(source, COL_TA_ITEM)
+        .addFields(TBL_TRADE_OPERATIONS, COL_OPERATION_WAREHOUSE_FROM);
+
+    if (requireWarehouseTo) {
+      query.addFields(TBL_TRADE_OPERATIONS, COL_OPERATION_WAREHOUSE_TO);
+    }
+
+    query.addSum(source, COL_TRADE_ITEM_QUANTITY)
+        .addFrom(source)
+        .addFromInner(TBL_TRADE_ACTS,
+            sys.joinTables(TBL_TRADE_ACTS, source, COL_TRADE_ACT))
+        .addFromInner(TBL_TRADE_OPERATIONS,
+            sys.joinTables(TBL_TRADE_OPERATIONS, TBL_TRADE_ACTS, COL_TA_OPERATION));
+
+    return query;
+  }
+
+  private static void pushStock(Table<Long, Long, Double> result, SimpleRowSet minusData,
+      String warehouseFrom) {
+
+    if (!DataUtils.isEmpty(minusData)) {
+      for (SimpleRow row : minusData) {
+        Double qty = row.getDouble(COL_TRADE_ITEM_QUANTITY);
+
+        if (BeeUtils.nonZero(qty)) {
+          Long item = row.getLong(COL_TA_ITEM);
+          Long warehouse = row.getLong(warehouseFrom);
+
+          Double stock = result.get(item, warehouse);
+
+          if (stock == null) {
+            result.put(item, warehouse, -qty);
+          } else if (stock.equals(qty)) {
+            result.remove(item, warehouse);
+          } else {
+            result.put(item, warehouse, stock - qty);
+          }
+        }
+      }
+    }
+
+  }
+
   private ResponseObject getTemplateItemsAndServices(RequestInfo reqInfo) {
     Long templateId = reqInfo.getParameterLong(COL_TRADE_ACT_TEMPLATE);
     if (!DataUtils.isId(templateId)) {
@@ -3646,8 +3730,9 @@ public class TradeActBean implements HasTimerService {
         return;
       }
 
-      Map<String, Long> companies = getReferences(TBL_COMPANIES, COL_COMPANY_CODE, SqlUtils.notNull(
-          TBL_COMPANIES, COL_COMPANY_CODE));
+      Map<String, Long> companies =
+          getReferences(TBL_COMPANIES, COL_COMPANY_CODE, SqlUtils.notNull(
+              TBL_COMPANIES, COL_COMPANY_CODE));
 
       if (companies.isEmpty()) {
         logger.info("Finish import Debts. Clients set from system by code is empty");
@@ -3740,8 +3825,9 @@ public class TradeActBean implements HasTimerService {
                     "apm_data")))
                 .addConstant(COL_TRADE_TERM, TimeUtils.parseDate(erpInvoice.getValue(
                     "terminas")))
-                .setWhere(SqlUtils.equals(TBL_ERP_SALES, COL_TRADE_ERP_INVOICE, erpInvoice.getValue(
-                    "dokumentas")));
+                .setWhere(
+                    SqlUtils.equals(TBL_ERP_SALES, COL_TRADE_ERP_INVOICE, erpInvoice.getValue(
+                        "dokumentas")));
         int updateCount = qs.updateData(updateRow);
 
         if (updateCount == 0) {
