@@ -326,6 +326,9 @@ public final class CliWorker {
     } else if (z.startsWith("df")) {
       showDateFormat(args);
 
+    } else if (z.startsWith("dict") && !args.isEmpty()) {
+      doDictionary(args, errorPopup);
+
     } else if (z.startsWith("dim")) {
       showDimensions(args);
 
@@ -1194,6 +1197,41 @@ public final class CliWorker {
     }
     logger.debug("msl", System.currentTimeMillis() - start, x);
     logger.addSeparator();
+  }
+
+  private static void doDictionary(String args, boolean errorPopup) {
+    final String service;
+
+    if (BeeUtils.startsSame(args, "get", "load")) {
+      service = SVC_GET_DICTIONARY;
+
+    } else if (BeeUtils.startsSame(args, "p2d", "p2b")) {
+      service = SVC_DICTIONARY_PROPERTIES_TO_DATABASE;
+
+    } else if (BeeUtils.startsSame(args, "d2p", "b2p")) {
+      service = SVC_DICTIONARY_DATABASE_TO_PROPERTIES;
+
+    } else {
+      showError(errorPopup, "dictionary service not recognized:", args);
+      service = null;
+      return;
+    }
+
+    BeeKeeper.getRpc().makeRequest(AdministrationKeeper.createArgs(service),
+        new ResponseCallback() {
+          @Override
+          public void onResponse(ResponseObject response) {
+            if (!response.hasErrors()) {
+              if (SVC_GET_DICTIONARY.equals(service)) {
+                Localized.setDictionary(Codec.deserializeMap(response.getResponseAsString()));
+                logger.debug(service, Localized.getDictionary().size());
+
+              } else {
+                logger.debug(service, response.getResponse());
+              }
+            }
+          }
+        });
   }
 
   private static void doDsn() {

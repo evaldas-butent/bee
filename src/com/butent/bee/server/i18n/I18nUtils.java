@@ -3,14 +3,21 @@ package com.butent.bee.server.i18n;
 import com.google.gwt.i18n.client.Constants;
 import com.google.gwt.i18n.client.Messages;
 
+import com.butent.bee.server.Config;
+import com.butent.bee.server.io.FileUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.i18n.SupportedLocale;
+import com.butent.bee.shared.io.FileNameUtils;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.ExtendedProperty;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
 
+import java.io.File;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Proxy;
 import java.text.BreakIterator;
@@ -22,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -33,14 +41,15 @@ import java.util.TreeMap;
  * Contains internationalization and localization related utility functions like
  * <code>getAvailableLocales</code> and <code>getIso3Language</code>.
  */
-
 public final class I18nUtils {
+
   public static final char LOCALE_SEPARATOR = '_';
+
+  private static BeeLogger logger = LogUtils.getLogger(I18nUtils.class);
 
   /**
    * Compares two locales and returns the result of the comparison.
    */
-
   public static class LocaleComparator implements Comparator<Locale> {
     @Override
     public int compare(Locale o1, Locale o2) {
@@ -71,6 +80,21 @@ public final class I18nUtils {
 
     InvocationHandler ih = new GwtMessages(properties);
     return createProxy(itf, ih);
+  }
+
+  public static File getDictionaryDir() {
+    return new File(Config.CONFIG_DIR, "dictionaries");
+  }
+
+  public static File getDictionaryFile(SupportedLocale supportedLocale) {
+    if (supportedLocale == null) {
+      logger.severe("getDictionaryFile: locale is null");
+      return null;
+    } else {
+      return new File(getDictionaryDir(),
+          FileNameUtils.defaultExtension(supportedLocale.getDictionaryFileName(),
+              FileUtils.EXT_PROPERTIES));
+    }
   }
 
   public static List<ExtendedProperty> getExtendedInfo() {
@@ -177,6 +201,21 @@ public final class I18nUtils {
       lang = BeeConst.STRING_EMPTY;
     }
     return lang;
+  }
+
+  public static Map<String, String> readProperties(SupportedLocale supportedLocale) {
+    Map<String, String> dictionary = new HashMap<>();
+
+    File file = getDictionaryFile(supportedLocale);
+    if (file != null) {
+      Properties properties = FileUtils.readProperties(file);
+
+      for (String name : properties.stringPropertyNames()) {
+        dictionary.put(name, properties.getProperty(name));
+      }
+    }
+
+    return dictionary;
   }
 
   public static Locale toLocale(String s) {

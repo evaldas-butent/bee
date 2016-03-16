@@ -87,6 +87,12 @@ public final class AdministrationConstants {
 
   public static final String SVC_NUMBER_TO_WORDS = "GetNumberInWords";
 
+  public static final String SVC_GET_DICTIONARY = "get_dictionary";
+  public static final String SVC_DICTIONARY_PROPERTIES_TO_DATABASE =
+      "dictionary_properties_to_database";
+  public static final String SVC_DICTIONARY_DATABASE_TO_PROPERTIES =
+      "dictionary_database_to_properties";
+
   public static final String VAR_AMOUNT = Service.RPC_VAR_PREFIX + "amount";
   public static final String VAR_LOCALE = Service.RPC_VAR_PREFIX + "locale";
 
@@ -170,6 +176,8 @@ public final class AdministrationConstants {
   public static final String TBL_CUSTOM_CONFIG = "CustomConfig";
 
   public static final String TBL_EVENT_HISTORY = "EventHistory";
+
+  public static final String TBL_DICTIONARY = "Dictionary";
 
   public static final String VIEW_USERS = "Users";
   public static final String VIEW_USER_SETTINGS = "UserSettings";
@@ -343,6 +351,8 @@ public final class AdministrationConstants {
   public static final String COL_EVENT_STARTED = "Started";
   public static final String COL_EVENT_ENDED = "Ended";
   public static final String COL_EVENT_RESULT = "Result";
+
+  public static final String COL_DICTIONARY_KEY = "Key";
 
   public static final String ALS_FILE_NAME = "FileName";
   public static final String ALS_FILE_SIZE = "FileSize";

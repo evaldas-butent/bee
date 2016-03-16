@@ -2719,6 +2719,28 @@ public final class BeeUtils {
     }
   }
 
+  public static boolean startsSame(String x, String first, String second, String... rest) {
+    if (isEmpty(x)) {
+      return false;
+    }
+    if (startsSame(x, first)) {
+      return true;
+    }
+    if (startsSame(x, second)) {
+      return true;
+    }
+
+    if (rest == null) {
+      return false;
+    }
+    for (String y : rest) {
+      if (startsSame(x, y)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   public static boolean startsWith(String s, char c) {
     if (s == null || s.trim().length() <= 0) {
       return false;

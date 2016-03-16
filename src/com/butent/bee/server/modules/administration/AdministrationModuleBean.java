@@ -24,8 +24,10 @@ import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.i18n.I18nUtils;
+import com.butent.bee.server.io.FileUtils;
 import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.modules.ParamHolderBean;
+import com.butent.bee.server.sql.IsQuery;
 import com.butent.bee.server.sql.SqlDelete;
 import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
@@ -49,6 +51,7 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.ViewColumn;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.i18n.SupportedLocale;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
@@ -58,6 +61,7 @@ import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
 import com.ibm.icu.text.RuleBasedNumberFormat;
 
@@ -66,7 +70,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -153,6 +159,19 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
     } else if (BeeUtils.same(svc, SVC_DO_IMPORT)) {
       response = imp.doImport(reqInfo);
 
+    } else if (BeeUtils.same(svc, SVC_GET_DICTIONARY)) {
+      Map<String, String> dictionary = getDictionary(usr.getCurrentUserLocale());
+      if (BeeUtils.isEmpty(dictionary)) {
+        response = ResponseObject.error(svc, "dictionary not available");
+      } else {
+        response = ResponseObject.response(dictionary).setSize(dictionary.size());
+      }
+
+    } else if (BeeUtils.same(svc, SVC_DICTIONARY_PROPERTIES_TO_DATABASE)) {
+      response = dictionaryPropertiesToDatabase();
+    } else if (BeeUtils.same(svc, SVC_DICTIONARY_DATABASE_TO_PROPERTIES)) {
+      response = dictionaryDatabaseToProperties();
+
     } else {
       String msg = BeeUtils.joinWords("Commons service not recognized:", svc);
       logger.warning(msg);
@@ -186,6 +205,27 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
 
     params.addAll(getSqlEngineParameters());
     return params;
+  }
+
+  public Map<String, String> getDictionary(SupportedLocale supportedLocale) {
+    Assert.notNull(supportedLocale, "getDictionary: locale is null");
+
+    Map<String, String> dictionary = I18nUtils.readProperties(supportedLocale);
+
+    SimpleRowSet data = getDictionaryData(supportedLocale);
+
+    if (!DataUtils.isEmpty(data)) {
+      for (SimpleRow row : data) {
+        String key = BeeUtils.trim(row.getValue(0));
+        String value = BeeUtils.trim(Codec.unescapePropertyValue(row.getValue(1)));
+
+        if (!key.isEmpty() && !value.isEmpty()) {
+          dictionary.put(key, value);
+        }
+      }
+    }
+
+    return dictionary;
   }
 
   @Override
@@ -587,6 +627,110 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
     return ResponseObject.emptyResponse();
   }
 
+  private ResponseObject dictionaryDatabaseToProperties() {
+    EnumMap<SupportedLocale, Integer> sizes = new EnumMap<>(SupportedLocale.class);
+
+    for (SupportedLocale supportedLocale : SupportedLocale.values()) {
+      SimpleRowSet data = getDictionaryData(supportedLocale);
+      if (DataUtils.isEmpty(data)) {
+        logger.warning(TBL_DICTIONARY, supportedLocale, "is empty");
+
+      } else {
+        StringBuilder sb = new StringBuilder();
+        for (SimpleRow row : data) {
+          sb.append(BeeUtils.trim(row.getValue(0))).append(" = ")
+              .append(BeeUtils.trim(row.getValue(1))).append(BeeConst.CHAR_EOL);
+        }
+
+        String src = sb.toString();
+        String dst = I18nUtils.getDictionaryFile(supportedLocale).getAbsolutePath();
+
+        String path = FileUtils.saveToFile(src, dst);
+
+        if (BeeUtils.isEmpty(path)) {
+          String message = BeeUtils.joinWords(TBL_DICTIONARY, supportedLocale, "cannot write to",
+              dst);
+          logger.severe(message);
+          return ResponseObject.error(message);
+
+        } else {
+          int len = src.length();
+          sizes.put(supportedLocale, len);
+
+          logger.info(SVC_DICTIONARY_DATABASE_TO_PROPERTIES, supportedLocale, len, path);
+        }
+      }
+    }
+
+    return ResponseObject.response(sizes.toString());
+  }
+
+  private ResponseObject dictionaryPropertiesToDatabase() {
+    Map<String, String> defaultDictionary =
+        I18nUtils.readProperties(SupportedLocale.DICTIONARY_DEFAULT);
+    if (BeeUtils.isEmpty(defaultDictionary)) {
+      return ResponseObject.error(SupportedLocale.DICTIONARY_DEFAULT, "dictionary not found");
+    }
+
+    List<String> dictionaryKeys = new ArrayList<>(defaultDictionary.keySet());
+
+    EnumMap<SupportedLocale, Map<String, String>> dictionaries =
+        new EnumMap<>(SupportedLocale.class);
+
+    for (SupportedLocale supportedLocale : SupportedLocale.values()) {
+      if (supportedLocale != SupportedLocale.DICTIONARY_DEFAULT) {
+        Map<String, String> dictionary = I18nUtils.readProperties(supportedLocale);
+        if (BeeUtils.isEmpty(dictionary)) {
+          return ResponseObject.error(supportedLocale, "dictionary not found");
+        }
+
+        Set<String> keys = new HashSet<>(dictionary.keySet());
+        keys.removeAll(dictionaryKeys);
+
+        if (!keys.isEmpty()) {
+          logger.warning(supportedLocale, keys.size(), "keys not in",
+              SupportedLocale.DICTIONARY_DEFAULT, "dictionary:", keys);
+        }
+
+        dictionaries.put(supportedLocale, dictionary);
+      }
+    }
+
+    IsQuery truncate = SqlUtils.truncateTable(TBL_DICTIONARY);
+    ResponseObject response = qs.updateDataWithResponse(truncate);
+    if (response.hasErrors()) {
+      return response;
+    }
+
+    dictionaryKeys.sort(null);
+
+    String defaultColumnName = SupportedLocale.DICTIONARY_DEFAULT.getDictionaryColumnName();
+
+    SqlInsert insert = new SqlInsert(TBL_DICTIONARY);
+
+    for (String key : dictionaryKeys) {
+      insert.reset();
+
+      insert.addConstant(COL_DICTIONARY_KEY, key);
+      insert.addConstant(defaultColumnName, Codec.escapePropertyValue(defaultDictionary.get(key)));
+
+      dictionaries.forEach((supportedLocale, dictionary) -> {
+        String value = dictionary.get(key);
+        if (value != null) {
+          insert.addConstant(supportedLocale.getDictionaryColumnName(),
+              Codec.escapePropertyValue(value));
+        }
+      });
+
+      response = qs.insertDataWithResponse(insert);
+      if (response.hasErrors()) {
+        return response;
+      }
+    }
+
+    return ResponseObject.response(dictionaryKeys.size());
+  }
+
   private ResponseObject getCurrentExchangeRate(RequestInfo reqInfo) {
     String type = reqInfo.getParameter(Service.VAR_TYPE);
     String currency = reqInfo.getParameter(COL_CURRENCY_NAME);
@@ -594,6 +738,18 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
     String address = getExchangeRatesRemoteAddress();
 
     return ExchangeRatesWS.getCurrentExchangeRates(address, type, currency);
+  }
+
+  private SimpleRowSet getDictionaryData(SupportedLocale supportedLocale) {
+    String valueColumn = supportedLocale.getDictionaryColumnName();
+
+    SqlSelect query = new SqlSelect()
+        .addFields(TBL_DICTIONARY, COL_DICTIONARY_KEY, valueColumn)
+        .addFrom(TBL_DICTIONARY)
+        .setWhere(SqlUtils.notNull(TBL_DICTIONARY, valueColumn))
+        .addOrder(TBL_DICTIONARY, COL_DICTIONARY_KEY);
+
+    return qs.getData(query);
   }
 
   private ResponseObject getExchangeRate(RequestInfo reqInfo) {

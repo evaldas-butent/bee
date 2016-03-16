@@ -292,6 +292,10 @@ public class UserServiceBean {
     return getUserId(getCurrentUser());
   }
 
+  public SupportedLocale getCurrentUserLocale() {
+    return getUserLocale(getCurrentUserId());
+  }
+
   public String getCurrentUserSign() {
     return getUserSign(getCurrentUserId());
   }
@@ -470,7 +474,7 @@ public class UserServiceBean {
 
   public SupportedLocale getUserLocale(Long userId) {
     if (userId == null) {
-      return SupportedLocale.DEFAULT;
+      return SupportedLocale.USER_DEFAULT;
     }
 
     SqlSelect query = new SqlSelect()
@@ -481,7 +485,7 @@ public class UserServiceBean {
     Integer value = qs.getInt(query);
     SupportedLocale locale = EnumUtils.getEnumByIndex(SupportedLocale.class, value);
 
-    return (locale == null) ? SupportedLocale.DEFAULT : locale;
+    return (locale == null) ? SupportedLocale.USER_DEFAULT : locale;
   }
 
   public SupportedLocale getUserLocale(String user) {

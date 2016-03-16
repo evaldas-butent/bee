@@ -107,7 +107,8 @@ public enum SupportedLocale implements HasCaption {
     }
   };
 
-  public static final SupportedLocale DEFAULT = LT;
+  public static final SupportedLocale DICTIONARY_DEFAULT = EN;
+  public static final SupportedLocale USER_DEFAULT = LT;
 
   public static SupportedLocale getByLanguage(String language) {
     for (SupportedLocale locale : values()) {
@@ -119,7 +120,15 @@ public enum SupportedLocale implements HasCaption {
   }
 
   public static String normalizeLanguage(String language) {
-    return BeeUtils.nvl(getByLanguage(language), DEFAULT).getLanguage();
+    return BeeUtils.nvl(getByLanguage(language), USER_DEFAULT).getLanguage();
+  }
+
+  public String getDictionaryColumnName() {
+    return getLanguage().toUpperCase();
+  }
+
+  public String getDictionaryFileName() {
+    return "dictionary_" + getLanguage().toLowerCase();
   }
 
   public abstract String getIconName();
