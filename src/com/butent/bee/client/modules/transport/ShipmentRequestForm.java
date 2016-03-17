@@ -100,7 +100,7 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
   private Button contractCommand = new Button(loc.trContract(), new ClickHandler() {
     @Override
     public void onClick(ClickEvent clickEvent) {
-      sendContract(clickEvent.isShiftKeyDown());
+      sendContract();
     }
   });
 
@@ -727,43 +727,37 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
     }
   }
 
-  private void sendContract(boolean show) {
+  private void sendContract() {
     Map<String, String> params = new HashMap<>();
 
     for (BeeColumn column : getFormView().getDataColumns()) {
       params.put(column.getId(), getStringValue(column.getId()));
     }
-    if (show) {
-      ReportUtils.showReport(REP_CONTRACT, params, null);
-      return;
-    }
-    ReportUtils.getPdfReport(REP_CONTRACT, params, null,
-        (fileInfo) -> ReportUtils.preview(fileInfo, () -> {
-          Queries.getRowSet(VIEW_TEXT_CONSTANTS, null, Filter.equals(COL_TEXT_CONSTANT,
-              TextConstant.CONTRACT_MAIL_CONTENT), new Queries.RowSetCallback() {
-            @Override
-            public void onSuccess(BeeRowSet result) {
-              String text;
-              String localizedContent = Localized.column(COL_TEXT_CONTENT,
-                  EnumUtils.getEnumByIndex(SupportedLocale.class, getIntegerValue(COL_USER_LOCALE))
-                      .getLanguage());
+    ReportUtils.getPdfReport(REP_CONTRACT, (fileInfo) -> ReportUtils.preview(fileInfo, () -> {
+      Queries.getRowSet(VIEW_TEXT_CONSTANTS, null, Filter.equals(COL_TEXT_CONSTANT,
+          TextConstant.CONTRACT_MAIL_CONTENT), new Queries.RowSetCallback() {
+        @Override
+        public void onSuccess(BeeRowSet result) {
+          String text;
+          String localizedContent = Localized.column(COL_TEXT_CONTENT,
+              EnumUtils.getEnumByIndex(SupportedLocale.class, getIntegerValue(COL_USER_LOCALE))
+                  .getLanguage());
 
-              if (DataUtils.isEmpty(result)) {
-                text = TextConstant.CONTRACT_MAIL_CONTENT.getDefaultContent();
-              } else if (BeeConst.isUndef(DataUtils.getColumnIndex(localizedContent,
-                  result.getColumns()))) {
-                text = result.getString(0, COL_TEXT_CONTENT);
-              } else {
-                text = BeeUtils.notEmpty(result.getString(0, localizedContent),
-                    result.getString(0, COL_TEXT_CONTENT));
-              }
-              sendMail(ShipmentRequestStatus.CONTRACT_SENT, null, BeeUtils.isEmpty(text)
-                  ? null : text.replace("{contract_path}",
-                  "rest/transport/confirm/" + getActiveRowId()), Collections.singleton(fileInfo));
-            }
-          });
-        })
-    );
+          if (DataUtils.isEmpty(result)) {
+            text = TextConstant.CONTRACT_MAIL_CONTENT.getDefaultContent();
+          } else if (BeeConst.isUndef(DataUtils.getColumnIndex(localizedContent,
+              result.getColumns()))) {
+            text = result.getString(0, COL_TEXT_CONTENT);
+          } else {
+            text = BeeUtils.notEmpty(result.getString(0, localizedContent),
+                result.getString(0, COL_TEXT_CONTENT));
+          }
+          sendMail(ShipmentRequestStatus.CONTRACT_SENT, null, BeeUtils.isEmpty(text)
+              ? null : text.replace("{contract_path}",
+              "rest/transport/confirm/" + getActiveRowId()), Collections.singleton(fileInfo));
+        }
+      });
+    }), params);
   }
 
   private void sendMail(ShipmentRequestStatus status, String subject, String content,

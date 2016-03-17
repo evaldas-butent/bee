@@ -405,8 +405,6 @@
                   </td>
                   <td>
                     <input id="Quantity" name="Quantity" type="number" maxlength="8" step="0.01" />
-                    <input name="QuantityUnit" type="text" maxlength="10" placeholder="=unitShort"
-                           list="Units-Name" style="display:inline; width: 6em;" />
                   </td>
                 </tr>
                 <tr>

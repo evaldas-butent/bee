@@ -80,7 +80,7 @@ public class CargoInvoiceForm extends InvoiceForm implements ClickHandler {
           mail.addClickHandler((clickEvent) -> {
             Long id = form.getActiveRowId();
 
-            ReportUtils.getPdf(form.getPrintElement().toString(), (fileInfo) -> {
+            ReportUtils.getPdf(form.getPrintElement().getString(), (fileInfo) -> {
               String invoice = BeeUtils.join("", form.getStringValue(COL_TRADE_INVOICE_PREFIX),
                   form.getStringValue(COL_TRADE_INVOICE_NO));
 

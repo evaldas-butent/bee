@@ -16,6 +16,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.ExtendedProperty;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
+import com.ibm.icu.text.RuleBasedNumberFormat;
 
 import java.io.File;
 import java.lang.reflect.InvocationHandler;
@@ -201,6 +202,22 @@ public final class I18nUtils {
       lang = BeeConst.STRING_EMPTY;
     }
     return lang;
+  }
+
+  public static String getNumberInWords(Number number, Locale locale) {
+    return new RuleBasedNumberFormat(locale, RuleBasedNumberFormat.SPELLOUT).format(number);
+  }
+
+  public static String getTotalInWords(Double amount, String currencyName, String minorName,
+      String locale) {
+    if (!BeeUtils.isPositive(amount)) {
+      return null;
+    }
+    long number = BeeUtils.toLong(Math.floor(amount));
+    int fraction = BeeUtils.round((amount - number) * 100);
+
+    return BeeUtils.joinWords(getNumberInWords(number, toLocale(locale)), currencyName, fraction,
+        minorName);
   }
 
   public static Map<String, String> readProperties(SupportedLocale supportedLocale) {

@@ -63,7 +63,6 @@ import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
-import com.ibm.icu.text.RuleBasedNumberFormat;
 
 import java.text.Collator;
 import java.util.ArrayList;
@@ -74,7 +73,6 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -152,9 +150,11 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
       response = copyRights(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_ROLE)),
           BeeUtils.toLongOrNull(reqInfo.getParameter(VAR_BASE_ROLE)));
 
-    } else if (BeeUtils.same(svc, SVC_NUMBER_TO_WORDS)) {
-      response = getNumberInWords(BeeUtils.toLongOrNull(reqInfo.getParameter(VAR_AMOUNT)),
-          reqInfo.getParameter(VAR_LOCALE));
+    } else if (BeeUtils.same(svc, SVC_TOTAL_TO_WORDS)) {
+      response = ResponseObject
+          .response(getTotalInWords(BeeUtils.toDoubleOrNull(reqInfo.getParameter(VAR_AMOUNT)),
+              BeeUtils.toLongOrNull(reqInfo.getParameter(COL_CURRENCY)),
+              reqInfo.getParameter(VAR_LOCALE)));
 
     } else if (BeeUtils.same(svc, SVC_DO_IMPORT)) {
       response = imp.doImport(reqInfo);
@@ -268,6 +268,17 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
   @Override
   public TimerService getTimerService() {
     return timerService;
+  }
+
+  public String getTotalInWords(Double amount, Long currency, String locale) {
+    SimpleRow row = qs.getRow(new SqlSelect()
+        .addFields(TBL_CURRENCIES, COL_CURRENCY_NAME, COL_CURRENCY_MINOR_NAME)
+        .addFrom(TBL_CURRENCIES)
+        .setWhere(sys.idEquals(TBL_CURRENCIES, currency)));
+
+    return I18nUtils.getTotalInWords(amount,
+        row.getValue(COL_CURRENCY_NAME), row.getValue(COL_CURRENCY_MINOR_NAME),
+        BeeUtils.isEmpty(locale) ? usr.getLocale().getLanguage() : locale);
   }
 
   @Override
@@ -934,18 +945,6 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
   private ResponseObject getListOfCurrencies() {
     String address = getExchangeRatesRemoteAddress();
     return ExchangeRatesWS.getListOfCurrencies(address);
-  }
-
-  private ResponseObject getNumberInWords(Long number, String locale) {
-    Assert.notNull(number);
-
-    Locale loc = I18nUtils.toLocale(locale);
-
-    if (loc == null) {
-      loc = usr.getLocale();
-    }
-    return ResponseObject.response(new RuleBasedNumberFormat(loc, RuleBasedNumberFormat.SPELLOUT)
-        .format(number));
   }
 
   private Collection<? extends BeeParameter> getSqlEngineParameters() {

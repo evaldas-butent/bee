@@ -85,7 +85,7 @@ public final class AdministrationConstants {
 
   public static final String SVC_DO_IMPORT = "DoImport";
 
-  public static final String SVC_NUMBER_TO_WORDS = "GetNumberInWords";
+  public static final String SVC_TOTAL_TO_WORDS = "GetTotalInWords";
 
   public static final String SVC_GET_DICTIONARY = "get_dictionary";
   public static final String SVC_DICTIONARY_PROPERTIES_TO_DATABASE =
