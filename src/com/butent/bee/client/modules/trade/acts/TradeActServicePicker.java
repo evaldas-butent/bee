@@ -129,6 +129,11 @@ class TradeActServicePicker extends TradeActItemPicker {
     return false;
   }
 
+  @Override
+  protected String getSource() {
+    return TradeActConstants.TBL_TRADE_ACT_SERVICES;
+  }
+
   public Map<Long, JustDate> getDatesFrom() {
     Map<Long, JustDate> result = new HashMap<>();
 

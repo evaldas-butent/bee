@@ -36,6 +36,7 @@ import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
+import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -1482,6 +1483,9 @@ public class TradeActBean implements HasTimerService {
 
     Long actId = reqInfo.getParameterLong(COL_TRADE_ACT);
     Long warehouse = reqInfo.getParameterLong(COL_WAREHOUSE);
+    String source = reqInfo.getParameter(Service.VAR_TABLE);
+
+    Assert.notEmpty(source);
 
     String where = reqInfo.getParameter(Service.VAR_VIEW_WHERE);
 
@@ -1489,7 +1493,8 @@ public class TradeActBean implements HasTimerService {
 
     // filter.add(Filter.isNull(COL_ITEM_IS_SERVICE));
 
-    Set<Long> actItems = getActItems(actId);
+    Set<Long> actItems =
+        BeeUtils.same(source, TBL_TRADE_ACT_SERVICES) ? getActServices(actId) : getActItems(actId);
     if (!actItems.isEmpty()) {
       filter.add(Filter.idNotIn(actItems));
     }
