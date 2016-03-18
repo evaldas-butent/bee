@@ -119,6 +119,27 @@ public final class Localized {
     return translate(key, dictionary);
   }
 
+  static String format(String message, Map<String, Object> parameters) {
+    if (BeeUtils.isEmpty(message)) {
+      return BeeConst.STRING_EMPTY;
+
+    } else if (BeeUtils.isEmpty(parameters)) {
+      return message;
+
+    } else {
+      String s = message;
+
+      for (Map.Entry<String, Object> parameter : parameters.entrySet()) {
+        String value = (parameter.getValue() == null)
+            ? BeeConst.NULL : parameter.getValue().toString();
+
+        s = BeeUtils.replace(s, parameter.getKey(), value);
+      }
+
+      return s;
+    }
+  }
+
   private static String translate(String key, Map<String, String> dict) {
     return (dict == null) ? null : dict.get(key);
   }
