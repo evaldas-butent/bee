@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.2.0.final using JasperReports Library version 6.2.0  -->
-<!-- 2016-03-18T14:36:41 -->
+<!-- 2016-03-18T16:40:43 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="SalesInvoice" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="30" bottomMargin="30" isSummaryWithPageHeaderAndFooter="true" uuid="c8648f9a-efc1-466e-be02-a124c2efc4a2">
 	<import value="com.butent.bee.shared.i18n.Localized"/>
 	<import value="com.butent.bee.shared.utils.BeeUtils"/>
@@ -112,7 +112,7 @@
 				<textElement textAlignment="Right"/>
 				<textFieldExpression><![CDATA[$V{loc}.captionId() + ": " + $P{ID}]]></textFieldExpression>
 			</textField>
-			<image onErrorType="Blank">
+			<image isLazy="true" onErrorType="Blank">
 				<reportElement x="0" y="0" width="130" height="39" uuid="62e09256-1805-4db9-b3b2-d7d83a84c738"/>
 				<imageExpression><![CDATA["http://b-novo.com/wp-content/uploads/2015/05/bnovo-tech-logo-baltam-01.png"]]></imageExpression>
 			</image>

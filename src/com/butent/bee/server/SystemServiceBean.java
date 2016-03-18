@@ -253,6 +253,9 @@ public class SystemServiceBean {
           }
         }
       }
+      if (BeeUtils.same(format, "html")) {
+        params.put("IS_IGNORE_PAGINATION", true);
+      }
       JasperPrint print = JasperFillManager.fillReport(report, params,
           Objects.isNull(mainDataSet) ? new JREmptyDataSource() : new RsDataSource(mainDataSet));
 
