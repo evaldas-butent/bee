@@ -129,7 +129,11 @@ public abstract class PrintFormInterceptor extends AbstractFormInterceptor {
     Map<String, String> params = new HashMap<>();
 
     for (BeeColumn column : getFormView().getDataColumns()) {
-      params.put(column.getId(), getStringValue(column.getId()));
+      String value = getStringValue(column.getId());
+
+      if (!BeeUtils.isEmpty(value)) {
+        params.put(column.getId(), value);
+      }
     }
     params.put("ID", BeeUtils.toString(getActiveRowId()));
     parametersConsumer.accept(params);
