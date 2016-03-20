@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view" xmlns:xpr="http://www.butent.com/expression"
+
+  name="SelectPersons" source="Persons" module="Classifiers.Contacts"
+  caption="=persons">
+  <Columns>
+
+    <SimpleColumn name="FirstName" />
+    <SimpleColumn name="LastName" />
+
+    <SimpleJoin name="Contact" joinType="LEFT">
+      <SimpleColumn name="Email" alias="EmailId" />
+      <SimpleJoin name="Email" joinType="LEFT">
+        <SimpleColumn name="Email" />
+      </SimpleJoin>
+    </SimpleJoin>
+
+  </Columns>
+  <Order>
+    <OrderBy column="LastName" />
+    <OrderBy column="FirstName" />
+  </Order>
+</View>

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view" name="NewsCompanies" source="RcpsGroupsContacts" caption="=clients"
+  module="Classifiers.Contacts">
+  <Columns>
+    <SimpleColumn name="RecipientsGroup" />
+    <SimpleColumn name="Company" />
+    <SimpleJoin joinType="LEFT" name="Company">
+      <SimpleColumn name="Name" />
+
+      <SimpleColumn name="CompanyType" />
+      <SimpleJoin joinType="LEFT" name="CompanyType">
+        <SimpleColumn alias="TypeName" name="Name" />
+      </SimpleJoin>
+
+      <SimpleColumn name="CompanyGroup" />
+      <SimpleJoin joinType="LEFT" name="CompanyGroup">
+        <SimpleColumn alias="GroupName" name="Name" />
+      </SimpleJoin>
+
+      <SimpleColumn name="CompanyPriority" />
+      <SimpleJoin joinType="LEFT" name="CompanyPriority">
+        <SimpleColumn alias="PriorityName" name="Name" />
+      </SimpleJoin>
+
+      <SimpleJoin name="Contact" joinType="LEFT">
+        <SimpleColumn name="Email" />
+        <SimpleJoin name="Email" joinType="LEFT">
+          <SimpleColumn name="Email" alias="EmailId" />
+        </SimpleJoin>
+      </SimpleJoin>
+
+      <SimpleColumn name="CompanySize" />
+      <SimpleJoin joinType="LEFT" name="CompanySize">
+        <SimpleColumn alias="CompanySizeName" name="SizeName" />
+      </SimpleJoin>
+
+      <SimpleColumn name="CompanyRelationTypeState" />
+      <SimpleJoin joinType="LEFT" name="CompanyRelationTypeState">
+        <SimpleColumn alias="RelationTypeStateName" name="Name" />
+      </SimpleJoin>
+    </SimpleJoin>
+
+  </Columns>
+  <Order>
+    <OrderBy column="Name" />
+  </Order>
+</View>

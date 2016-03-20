@@ -8,6 +8,8 @@ public interface LocalizableMailConstants {
 
   String mailActionMoveToTrash();
 
+  String mailAddContacts();
+
   String mailAttachments();
 
   String mails();
@@ -61,6 +63,8 @@ public interface LocalizableMailConstants {
   String mailPrivate();
 
   String mailPublic();
+
+  String mailRecipientsGroups();
 
   String mailReplayPrefix();
 
