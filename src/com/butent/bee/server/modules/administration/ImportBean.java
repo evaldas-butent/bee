@@ -47,8 +47,7 @@ import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.data.view.ViewColumn;
 import com.butent.bee.shared.exceptions.BeeRuntimeException;
-import com.butent.bee.shared.i18n.LocalizableConstants;
-import com.butent.bee.shared.i18n.LocalizableMessages;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.imports.ImportProperty;
 import com.butent.bee.shared.imports.ImportType;
@@ -399,7 +398,7 @@ public class ImportBean {
       String progress, Map<String, Pair<Pair<Integer, Integer>, BeeRowSet>> status,
       boolean readOnly) {
 
-    Map<String, String> dict = usr.getLocalizableDictionary();
+    Map<String, String> dict = usr.getGlossary();
     String idName = SqlUtils.uniqueName();
     HasConditions clause = SqlUtils.or();
     HasConditions updateClause = SqlUtils.and();
@@ -514,8 +513,7 @@ public class ImportBean {
         }
       }
     }
-    LocalizableConstants consts = usr.getLocalizableConstants();
-    LocalizableMessages msgs = usr.getLocalizableMesssages();
+    Dictionary consts = usr.getDictionary();
     IsCondition validClause = SqlUtils.and(SqlUtils.isNull(tmp, idName),
         SqlUtils.isNull(tmp, COL_REASON));
 
@@ -524,7 +522,8 @@ public class ImportBean {
       for (String col : cols.keySet()) {
         if (cols.get(col).isNotNull()) {
           qs.updateData(new SqlUpdate(tmp)
-              .addConstant(COL_REASON, msgs.valueEmpty(BeeUtils.join("_", parentName, col)) + "\n")
+              .addConstant(COL_REASON,
+                  consts.valueEmpty(BeeUtils.join("_", parentName, col)) + "\n")
               .setWhere(SqlUtils.isNull(tmp, col)));
         }
       }
@@ -710,7 +709,7 @@ public class ImportBean {
             condition.add(wh);
           }
           qs.updateData(new SqlUpdate(tmp)
-              .addConstant(COL_REASON, msgs.valueNotUnique(BeeUtils.join("+", flds)) + "\n")
+              .addConstant(COL_REASON, consts.valueNotUnique(BeeUtils.join("+", flds)) + "\n")
               .setFrom(ins, SqlUtils.joinUsing(tmp, ins, COL_REC_NO))
               .setWhere(condition));
 
@@ -832,7 +831,7 @@ public class ImportBean {
   }
 
   private ResponseObject importCosts(Long optId, String fileName, String progress) {
-    Map<String, String> dict = usr.getLocalizableDictionary();
+    Map<String, String> dict = usr.getGlossary();
     ImportObject io = initImport(optId, dict);
     final DateFormat dtf;
 
@@ -946,8 +945,8 @@ public class ImportBean {
         }
       }
     }
-    LocalizableMessages msgs = usr.getLocalizableMesssages();
-    LocalizableConstants consts = usr.getLocalizableConstants();
+
+    Dictionary consts = usr.getDictionary();
 
     SqlSelect select = new SqlSelect().addAllFields(tmp).addFrom(tmp);
 
@@ -957,7 +956,7 @@ public class ImportBean {
 
       if (rs.getNumberOfRows() > 0) {
         qs.updateData(new SqlDelete(tmp).setWhere(wh));
-        status.put(msgs.valueEmpty(col), Pair.of(null, rs));
+        status.put(consts.valueEmpty(col), Pair.of(null, rs));
       }
     }
     qs.updateData(new SqlUpdate(tmp)
@@ -1081,7 +1080,7 @@ public class ImportBean {
   }
 
   private ResponseObject importData(Long optionId, String fileName, String progress) {
-    ImportObject io = initImport(optionId, usr.getLocalizableDictionary());
+    ImportObject io = initImport(optionId, usr.getGlossary());
 
     SqlCreate create = io.createStructure(sys, null, null);
     String tmp = create.getTarget();
@@ -1122,7 +1121,7 @@ public class ImportBean {
   }
 
   private ResponseObject importTracking(Long optionId, Integer from, Integer to, String progress) {
-    ImportObject io = initImport(optionId, usr.getLocalizableDictionary());
+    ImportObject io = initImport(optionId, usr.getGlossary());
 
     SimpleRowSet objects = qs.getData(new SqlSelect()
         .addField(TBL_VEHICLES, sys.getIdName(TBL_VEHICLES), COL_VEHICLE)
@@ -1131,7 +1130,7 @@ public class ImportBean {
         .setWhere(SqlUtils.notNull(TBL_VEHICLES, COL_VEHICLE_NUMBER)));
 
     if (DataUtils.isEmpty(objects)) {
-      return ResponseObject.error(usr.getLocalizableConstants().noData());
+      return ResponseObject.error(usr.getDictionary().noData());
     }
     SqlCreate create = io.createStructure(sys, null, null);
     String tmp = create.getTarget();
@@ -1163,7 +1162,7 @@ public class ImportBean {
           && !Endpoint.updateProgress(progress, ++c / (double) objects.getNumberOfRows())) {
 
         qs.sqlDropTemp(tmp);
-        return ResponseObject.error(usr.getLocalizableConstants().canceled());
+        return ResponseObject.error(usr.getDictionary().canceled());
       }
       boolean exists = true;
 
@@ -1286,7 +1285,7 @@ public class ImportBean {
     File file = new File(fileName);
 
     if (!FileUtils.isInputFile(file)) {
-      return usr.getLocalizableMesssages().fileNotFound(fileName);
+      return usr.getDictionary().fileNotFound(fileName);
     }
     Sheet shit;
 
@@ -1319,7 +1318,7 @@ public class ImportBean {
       if (!BeeUtils.isEmpty(progress) && !Endpoint.updateProgress(progress,
           (i - startRow + 1) / (double) (endRow - startRow + 1))) {
         file.delete();
-        return usr.getLocalizableConstants().canceled();
+        return usr.getDictionary().canceled();
       }
       Row row = shit.getRow(i);
       if (row == null) {

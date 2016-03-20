@@ -485,11 +485,11 @@ public abstract class AbstractFilterSupplier implements HasViewName, HasOptions,
   }
 
   protected String messageAllEmpty(String count) {
-    return Localized.getMessages().allValuesEmpty(getColumnLabel(), count);
+    return Localized.getConstants().allValuesEmpty(getColumnLabel(), count);
   }
 
   protected String messageOneValue(String value, String count) {
-    return Localized.getMessages().allValuesIdentical(getColumnLabel(), value, count);
+    return Localized.getConstants().allValuesIdentical(getColumnLabel(), value, count);
   }
 
   protected void onDialogCancel() {

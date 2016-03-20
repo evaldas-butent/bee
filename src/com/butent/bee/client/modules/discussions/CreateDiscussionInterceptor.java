@@ -126,7 +126,7 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
               BeeUtils.toLongOrNull(discussParams.get(PRM_MAX_UPLOAD_FILE_SIZE)))) {
 
             BeeKeeper.getScreen().notifyWarning(
-                Localized.getMessages().fileSizeExceeded(fileInfo.getSize(),
+                Localized.getConstants().fileSizeExceeded(fileInfo.getSize(),
                     BeeUtils.toLong(discussParams.get(PRM_MAX_UPLOAD_FILE_SIZE)) * 1024 * 1024),
                 "("
                     + fileInfo.getName() + ")");

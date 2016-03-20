@@ -143,7 +143,7 @@ public class BooleanFilterSupplier extends AbstractFilterSupplier {
 
   private String getLabelForEmpty() {
     return BeeUtils.isEmpty(getColumnLabel())
-        ? NULL_VALUE_LABEL : Localized.getMessages().not(getColumnLabel());
+        ? NULL_VALUE_LABEL : Localized.getConstants().not(getColumnLabel());
   }
 
   private String getLabelForNotEmpty() {

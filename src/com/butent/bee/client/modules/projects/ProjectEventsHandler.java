@@ -23,7 +23,7 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.html.builder.Factory;
 import com.butent.bee.shared.html.builder.elements.B;
-import com.butent.bee.shared.i18n.LocalizableConstants;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.documents.DocumentConstants;
@@ -38,7 +38,7 @@ import java.util.Map;
 import java.util.Set;
 
 class ProjectEventsHandler extends EventsBoard {
-  private static final LocalizableConstants LC = Localized.getConstants();
+  private static final Dictionary LC = Localized.getConstants();
   private static final String STYLE_PREFIX = ProjectsKeeper.STYLE_PREFIX + "Events-";
 
   private final Set<Action> enabledActions = Sets.newHashSet(Action.REFRESH);

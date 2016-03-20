@@ -143,7 +143,7 @@ public class TradeActServicesGrid extends AbstractGridInterceptor {
     }
 
     if (count > 0) {
-      gridView.notifyInfo(Localized.getMessages().taRecalculatedPrices(count));
+      gridView.notifyInfo(Localized.getConstants().taRecalculatedPrices(count));
     } else {
       gridView.notifyWarning(Data.getColumnLabel(getViewName(), COL_TA_SERVICE_TARIFF),
           Localized.getConstants().noData());

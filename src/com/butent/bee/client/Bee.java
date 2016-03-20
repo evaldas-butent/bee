@@ -38,8 +38,6 @@ import com.butent.bee.shared.Service;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.UserData;
-import com.butent.bee.shared.i18n.LocalizableConstants;
-import com.butent.bee.shared.i18n.LocalizableMessages;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.rights.Module;
@@ -203,7 +201,7 @@ public class Bee implements EntryPoint, ClosingHandler {
             break;
 
           case DICTIONARY:
-            Localized.setDictionary(Codec.deserializeMap(serialized));
+            Localized.setGlossary(Codec.deserializeMap(serialized));
             break;
 
           case DECORATORS:
@@ -318,9 +316,6 @@ public class Bee implements EntryPoint, ClosingHandler {
 
     BeeConst.setClient();
     LogUtils.setLoggerFactory(new ClientLogManager());
-
-    Localized.setConstants((LocalizableConstants) GWT.create(LocalizableConstants.class));
-    Localized.setMessages((LocalizableMessages) GWT.create(LocalizableMessages.class));
 
     LayoutEngine layoutEngine = LayoutEngine.detect();
     if (layoutEngine != null && layoutEngine.hasStyleSheet()) {

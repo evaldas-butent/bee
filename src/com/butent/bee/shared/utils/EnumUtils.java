@@ -9,7 +9,7 @@ import com.google.common.collect.Iterables;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.i18n.LocalizableConstants;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -174,7 +174,7 @@ public final class EnumUtils {
   }
 
   public static String getLocalizedCaption(Class<? extends Enum<?>> clazz, Integer index,
-      LocalizableConstants constants) {
+      Dictionary constants) {
 
     if (index == null) {
       return null;
@@ -190,8 +190,7 @@ public final class EnumUtils {
     }
   }
 
-  public static String getLocalizedCaption(String key, Integer index,
-      LocalizableConstants constants) {
+  public static String getLocalizedCaption(String key, Integer index, Dictionary constants) {
 
     if (BeeUtils.isEmpty(key)) {
       logger.severe("Caption key not specified");
@@ -212,7 +211,8 @@ public final class EnumUtils {
   }
 
   public static List<String> getLocalizedCaptions(Class<? extends Enum<?>> clazz,
-      LocalizableConstants constants) {
+      Dictionary constants) {
+
     Assert.notNull(clazz);
     Assert.notNull(constants);
 
@@ -230,7 +230,7 @@ public final class EnumUtils {
     return result;
   }
 
-  public static List<String> getLocalizedCaptions(String key, LocalizableConstants constants) {
+  public static List<String> getLocalizedCaptions(String key, Dictionary constants) {
     Assert.notEmpty(key);
     Class<? extends Enum<?>> clazz = CLASSES.get(BeeUtils.normalize(key));
 

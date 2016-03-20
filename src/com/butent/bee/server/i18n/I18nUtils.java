@@ -1,11 +1,7 @@
 package com.butent.bee.server.i18n;
 
-import com.google.gwt.i18n.client.Constants;
-import com.google.gwt.i18n.client.Messages;
-
 import com.butent.bee.server.Config;
 import com.butent.bee.server.io.FileUtils;
-import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.i18n.SupportedLocale;
 import com.butent.bee.shared.io.FileNameUtils;
@@ -19,8 +15,6 @@ import com.butent.bee.shared.utils.PropertyUtils;
 import com.ibm.icu.text.RuleBasedNumberFormat;
 
 import java.io.File;
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Proxy;
 import java.text.BreakIterator;
 import java.text.Collator;
 import java.text.DateFormat;
@@ -38,10 +32,6 @@ import java.util.MissingResourceException;
 import java.util.Properties;
 import java.util.TreeMap;
 
-/**
- * Contains internationalization and localization related utility functions like
- * <code>getAvailableLocales</code> and <code>getIso3Language</code>.
- */
 public final class I18nUtils {
 
   public static final char LOCALE_SEPARATOR = '_';
@@ -65,22 +55,6 @@ public final class I18nUtils {
       }
       return BeeUtils.compareNullsFirst(o1.toString(), o2.toString());
     }
-  }
-
-  public static <T extends Constants> T createConstants(Class<T> itf, Properties properties) {
-    Assert.notNull(itf);
-    Assert.notNull(properties);
-
-    InvocationHandler ih = new GwtConstants(properties);
-    return createProxy(itf, ih);
-  }
-
-  public static <T extends Messages> T createMessages(Class<T> itf, Properties properties) {
-    Assert.notNull(itf);
-    Assert.notNull(properties);
-
-    InvocationHandler ih = new GwtMessages(properties);
-    return createProxy(itf, ih);
   }
 
   public static File getDictionaryDir() {
@@ -245,7 +219,7 @@ public final class I18nUtils {
         return lc;
       }
     }
-    return null;
+    return Locale.getDefault();
   }
 
   public static String toString(Locale locale) {
@@ -256,11 +230,6 @@ public final class I18nUtils {
     } else {
       return locale.toString();
     }
-  }
-
-  @SuppressWarnings("unchecked")
-  private static <T> T createProxy(Class<T> itf, InvocationHandler ih) {
-    return (T) Proxy.newProxyInstance(itf.getClassLoader(), new Class[] {itf}, ih);
   }
 
   private I18nUtils() {

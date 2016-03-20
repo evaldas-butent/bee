@@ -854,7 +854,7 @@ public class ScreenImpl implements Screen {
       exit.addClickHandler(new ClickHandler() {
         @Override
         public void onClick(ClickEvent event) {
-          Global.getMsgBoxen().confirm(Localized.getMessages().endSession(Settings.getAppName()),
+          Global.getMsgBoxen().confirm(Localized.getConstants().endSession(Settings.getAppName()),
               Icon.QUESTION, Lists.newArrayList(Localized.getConstants().questionLogout()),
               Localized.getConstants().yes(), Localized.getConstants().no(),
               new ConfirmationCallback() {

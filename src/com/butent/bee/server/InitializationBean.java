@@ -8,12 +8,10 @@ import com.butent.bee.server.logging.LogbackFactory;
 import com.butent.bee.server.modules.ModuleHolderBean;
 import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.ui.UiHolderBean;
-import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 
-import java.util.Locale;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
@@ -46,11 +44,7 @@ public class InitializationBean {
     LogUtils.setLoggerFactory(new LogbackFactory());
     Config.init();
 
-    Locale locale = Localizations.getDefaultLocale();
-
-    Localized.setConstants(Localizations.getConstants(locale));
-    Localized.setMessages(Localizations.getMessages(locale));
-    Localized.setDictionary(Localizations.getDictionary(locale));
+    Localizations.init();
 
     sys.init();
 

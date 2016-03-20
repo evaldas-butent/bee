@@ -424,7 +424,7 @@ class TaskBuilder extends AbstractFormInterceptor {
             event.getCallback().onSuccess(row);
           }
 
-          String message = Localized.getMessages().crmCreatedNewTasks(tasks.getNumberOfRows());
+          String message = Localized.getConstants().crmCreatedNewTasks(tasks.getNumberOfRows());
           BeeKeeper.getScreen().notifyInfo(message);
 
           if (!taskIdsCallback) {

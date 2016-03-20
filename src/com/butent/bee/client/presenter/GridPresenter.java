@@ -178,7 +178,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
             public void onSuccess(Integer result) {
               MultiDeleteEvent.fire(BeeKeeper.getBus(), getViewName(), rows);
               afterMulti(rowIds);
-              showInfo(Localized.getMessages().deletedRows(result));
+              showInfo(Localized.getConstants().deletedRows(result));
             }
           });
         }

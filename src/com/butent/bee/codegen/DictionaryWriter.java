@@ -23,9 +23,6 @@ public final class DictionaryWriter {
     run();
   }
 
-  /**
-   * 
-   */
   public static void run() {
     Map<String, String> properties =
         readProperties("war/WEB-INF/config/dictionaries/dictionary_en.properties");

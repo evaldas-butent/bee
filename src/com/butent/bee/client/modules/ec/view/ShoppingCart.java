@@ -160,8 +160,8 @@ public class ShoppingCart extends Split {
           EcKeeper.closeView(ShoppingCart.this);
 
           Global.showInfo(Localized.getConstants().ecOrderSubmitted(),
-              Lists.newArrayList(Localized.getMessages().ecOrderId(response.getResponseAsString()),
-                  Localized.getMessages().ecOrderTotal(amount, EcConstants.CURRENCY)));
+              Lists.newArrayList(Localized.getConstants().ecOrderId(response.getResponseAsString()),
+                  Localized.getConstants().ecOrderTotal(amount, EcConstants.CURRENCY)));
         }
       }
     });
@@ -525,7 +525,7 @@ public class ShoppingCart extends Split {
     item.setQuantity(value);
 
     BeeKeeper.getScreen().clearNotifications();
-    BeeKeeper.getScreen().notifyInfo(Localized.getMessages()
+    BeeKeeper.getScreen().notifyInfo(Localized.getConstants()
         .ecUpdateCartItem(cartType.getCaption(), item.getEcItem().getName(), value));
 
     Cart cart = EcKeeper.refreshCart(cartType);

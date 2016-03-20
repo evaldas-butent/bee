@@ -55,7 +55,7 @@ import com.butent.bee.shared.html.builder.Element;
 import com.butent.bee.shared.html.builder.elements.Div;
 import com.butent.bee.shared.html.builder.elements.H2;
 import com.butent.bee.shared.html.builder.elements.Tbody;
-import com.butent.bee.shared.i18n.LocalizableConstants;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -518,7 +518,7 @@ public class DiscussionsModuleBean implements BeeModule {
   private ResponseObject deleteDiscussionComment(long discussionId, long commentId) {
 
     String reasonText = BeeUtils.joinWords("<i style=\"font-size: smaller; color:red\">(", usr
-        .getLocalizableConstants().discussEventCommentDeleted()
+        .getDictionary().discussEventCommentDeleted()
         + " )</i>:", new DateTime().toString() + ",", usr.getCurrentUserSign());
 
     SqlUpdate update =
@@ -631,7 +631,7 @@ public class DiscussionsModuleBean implements BeeModule {
 
         if (!response.hasErrors()) {
           if (discussions.isEmpty()) {
-            response = ResponseObject.error(usr.getLocalizableConstants().discussNotCreated());
+            response = ResponseObject.error(usr.getDictionary().discussNotCreated());
           } else {
             response = ResponseObject.response(DataUtils.buildIdList(discussions));
           }
@@ -1261,7 +1261,7 @@ public class DiscussionsModuleBean implements BeeModule {
   }
 
   private Document renderDiscussionDocument(long discussionId, boolean typeAnnoucement,
-      String anouncmentTopic, SimpleRow discussMailRow, LocalizableConstants constants,
+      String anouncmentTopic, SimpleRow discussMailRow, Dictionary constants,
       boolean isPublic) {
 
     String discussSubject = BeeUtils.joinWords(
@@ -1475,7 +1475,7 @@ public class DiscussionsModuleBean implements BeeModule {
         continue;
       }
 
-      LocalizableConstants constants = usr.getLocalizableConstants(member);
+      Dictionary constants = usr.getDictionary(member);
 
       if (constants == null) {
         logger.warning(label, discussionId, "member", member, "localization not available");

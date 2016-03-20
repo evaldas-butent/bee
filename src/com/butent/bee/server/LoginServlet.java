@@ -21,7 +21,7 @@ import com.butent.bee.shared.html.builder.elements.Input.Type;
 import com.butent.bee.shared.html.builder.elements.Link.Rel;
 import com.butent.bee.shared.html.builder.elements.Meta;
 import com.butent.bee.shared.html.builder.elements.Script;
-import com.butent.bee.shared.i18n.LocalizableConstants;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.SupportedLocale;
 import com.butent.bee.shared.io.FileNameUtils;
 import com.butent.bee.shared.io.Paths;
@@ -173,8 +173,7 @@ public class LoginServlet extends HttpServlet {
   }
 
   private static String generateDictionary(SupportedLocale locale) {
-    String language = locale.getLanguage();
-    LocalizableConstants constants = Localizations.getPreferredConstants(language);
+    Dictionary constants = Localizations.getDictionary(locale);
 
     JsonObject dictionary = Json.createObjectBuilder()
         .add(USER_NAME_LABEL_ID, constants.loginUserName())
@@ -488,7 +487,7 @@ public class LoginServlet extends HttpServlet {
   }
 
   private SupportedLocale getUserLocale(String userName) {
-    return usr.isUser(userName) ? usr.getUserLocale(userName) : null;
+    return usr.isUser(userName) ? usr.getSupportedLocale(userName) : null;
   }
 
   private boolean isBlocked(String userName) {

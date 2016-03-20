@@ -78,7 +78,7 @@ import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.TextValue;
 import com.butent.bee.shared.data.value.Value;
-import com.butent.bee.shared.i18n.LocalizableConstants;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.rights.ModuleAndSub;
@@ -148,7 +148,7 @@ public class DocumentDataForm extends AbstractFormInterceptor
       Assert.state(!isActive());
       Assert.notEmpty(editorId);
 
-      LocalizableConstants loc = Localized.getConstants();
+      Dictionary loc = Localized.getConstants();
 
       JavaScriptObject jso = JavaScriptObject.createObject();
       JsUtils.setProperty(jso, "mode", "exact");
@@ -230,7 +230,7 @@ public class DocumentDataForm extends AbstractFormInterceptor
 
     public void saveTemplate() {
       final String content = getContent();
-      LocalizableConstants loc = Localized.getConstants();
+      Dictionary loc = Localized.getConstants();
 
       if (BeeUtils.isEmpty(content)) {
         Global.showError(loc.noData());
@@ -455,7 +455,7 @@ public class DocumentDataForm extends AbstractFormInterceptor
     if (!getActiveRow().isEditable()) {
       return;
     }
-    LocalizableConstants loc = Localized.getConstants();
+    Dictionary loc = Localized.getConstants();
 
     Global.inputCollection(loc.mainCriteria(), loc.name(), true,
         criteria.keySet(), new Consumer<Collection<String>>() {
@@ -486,7 +486,7 @@ public class DocumentDataForm extends AbstractFormInterceptor
 
   @Override
   public void onClose(List<String> messages, IsRow oldRow, IsRow newRow) {
-    LocalizableConstants loc = Localized.getConstants();
+    Dictionary loc = Localized.getConstants();
     List<String> warnings = new ArrayList<>();
 
     if (save(null)) {

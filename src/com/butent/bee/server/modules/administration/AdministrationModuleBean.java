@@ -49,7 +49,7 @@ import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.ViewColumn;
-import com.butent.bee.shared.i18n.LocalizableConstants;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.i18n.SupportedLocale;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -160,7 +160,7 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
       response = imp.doImport(reqInfo);
 
     } else if (BeeUtils.same(svc, SVC_GET_DICTIONARY)) {
-      Map<String, String> dictionary = getDictionary(usr.getCurrentUserLocale());
+      Map<String, String> dictionary = getDictionary(usr.getSupportedLocale());
       if (BeeUtils.isEmpty(dictionary)) {
         response = ResponseObject.error(svc, "dictionary not available");
       } else {
@@ -278,7 +278,7 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
 
     return I18nUtils.getTotalInWords(amount,
         row.getValue(COL_CURRENCY_NAME), row.getValue(COL_CURRENCY_MINOR_NAME),
-        BeeUtils.isEmpty(locale) ? usr.getLocale().getLanguage() : locale);
+        BeeUtils.isEmpty(locale) ? usr.getLanguage() : locale);
   }
 
   @Override
@@ -454,14 +454,14 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
     }
 
     if (usr.isUser(login)) {
-      return ResponseObject.warning(usr.getLocalizableMesssages()
-          .valueExists(BeeUtils.joinWords(usr.getLocalizableConstants().user(), login)));
+      return ResponseObject.warning(usr.getDictionary()
+          .valueExists(BeeUtils.joinWords(usr.getDictionary().user(), login)));
     }
 
     String email = reqInfo.getParameter(COL_EMAIL);
     if (!BeeUtils.isEmpty(email) && qs.sqlExists(TBL_EMAILS, COL_EMAIL_ADDRESS, email)) {
-      return ResponseObject.warning(usr.getLocalizableMesssages()
-          .valueExists(BeeUtils.joinWords(usr.getLocalizableConstants().email(), email)));
+      return ResponseObject.warning(usr.getDictionary()
+          .valueExists(BeeUtils.joinWords(usr.getDictionary().email(), email)));
     }
 
     UserInterface userInterface = EnumUtils.getEnumByIndex(UserInterface.class,
@@ -796,7 +796,7 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
   }
 
   private ResponseObject getHistory(String viewName, Collection<Long> idList) {
-    LocalizableConstants loc = usr.getLocalizableConstants();
+    Dictionary loc = usr.getDictionary();
 
     if (BeeUtils.isEmpty(idList)) {
       return ResponseObject.error(loc.selectAtLeastOneRow());
@@ -891,7 +891,7 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
       int fldIdx = rs.getColumnIndex(AUDIT_FLD_FIELD);
       int valIdx = rs.getColumnIndex(AUDIT_FLD_VALUE);
       int relIdx = rs.getColumnIndex(COL_RELATION);
-      Map<String, String> dict = usr.getLocalizableDictionary();
+      Map<String, String> dict = usr.getGlossary();
 
       for (SimpleRow row : qs.getData(query)) {
         String[] values = new String[rs.getNumberOfColumns()];
@@ -993,7 +993,7 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
     JustDate dateHigh = new JustDate(BeeUtils.toInt(high));
 
     if (TimeUtils.isMore(dateLow, dateHigh)) {
-      return ResponseObject.error(usr.getLocalizableConstants().invalidRange(), dateLow, dateHigh);
+      return ResponseObject.error(usr.getDictionary().invalidRange(), dateLow, dateHigh);
     }
 
     String currencyIdName = sys.getIdName(TBL_CURRENCIES);
@@ -1007,7 +1007,7 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
     SimpleRowSet currencies = qs.getData(currencyQuery);
     if (DataUtils.isEmpty(currencies)) {
       return ResponseObject
-          .warning(usr.getLocalizableConstants().updateExchangeRatesNoCurrencies());
+          .warning(usr.getDictionary().updateExchangeRatesNoCurrencies());
     }
 
     String address = getExchangeRatesRemoteAddress();
@@ -1034,14 +1034,14 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
       }
 
       if (DataUtils.isEmpty(rates)) {
-        response.addInfo(currencyName, usr.getLocalizableConstants().noData());
+        response.addInfo(currencyName, usr.getDictionary().noData());
         continue;
       }
 
       String value = rates.getValue(0, ExchangeRatesWS.COL_DT);
       JustDate min = TimeUtils.parseDate(value);
       if (min == null) {
-        response.addWarning(currencyName, usr.getLocalizableConstants().invalidDate(), value);
+        response.addWarning(currencyName, usr.getDictionary().invalidDate(), value);
         continue;
       }
 

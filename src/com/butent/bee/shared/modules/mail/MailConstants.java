@@ -1,7 +1,7 @@
 package com.butent.bee.shared.modules.mail;
 
-import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.ui.HasLocalizedCaption;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
@@ -59,13 +59,13 @@ public final class MailConstants {
   public enum RecipientsGroupsVisibility implements HasLocalizedCaption {
     PUBLIC {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.mailPublic();
       }
     },
     PRIVATE {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.mailPrivate();
       }
     };
@@ -79,25 +79,25 @@ public final class MailConstants {
   public enum RuleCondition implements HasLocalizedCaption {
     SENDER {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.mailRuleConditionSender();
       }
     },
     RECIPIENTS {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.mailRuleConditionRecipients();
       }
     },
     SUBJECT {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.mailRuleConditionSubject();
       }
     },
     ALL {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.mailRuleConditionAll();
       }
     };
@@ -106,43 +106,43 @@ public final class MailConstants {
   public enum RuleAction implements HasLocalizedCaption {
     MOVE {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.mailRuleActionMove();
       }
     },
     COPY {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.mailRuleActionCopy();
       }
     },
     DELETE {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.mailRuleActionDelete();
       }
     },
     READ {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.mailRuleActionRead();
       }
     },
     FLAG {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.mailRuleActionFlag();
       }
     },
     REPLY {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.mailRuleActionReply();
       }
     },
     FORWARD {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.mailRuleActionForward();
       }
     };

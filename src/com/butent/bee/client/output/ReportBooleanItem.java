@@ -6,7 +6,7 @@ import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.butent.bee.client.composite.TabBar;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
-import com.butent.bee.shared.i18n.LocalizableConstants;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.Orientation;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -61,7 +61,7 @@ public class ReportBooleanItem extends ReportItem {
   @Override
   public TabBar getFilterWidget() {
     if (filterWidget == null) {
-      LocalizableConstants loc = Localized.getConstants();
+      Dictionary loc = Localized.getConstants();
       filterWidget = new TabBar(Orientation.HORIZONTAL);
       filterWidget.addStyleName(getStyle() + "-filter");
 

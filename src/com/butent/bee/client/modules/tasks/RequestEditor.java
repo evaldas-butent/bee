@@ -408,7 +408,7 @@ public class RequestEditor extends AbstractFormInterceptor {
 
       if (BeeUtils.isSuffix(key, TaskConstants.FORM_TASK)) {
         CustomDiv div = new CustomDiv(STYLE_PROPERTY_CAPTION);
-        div.setText(Localized.getMessages().crmCreatedNewTasks(rowIds.size()));
+        div.setText(Localized.getConstants().crmCreatedNewTasks(rowIds.size()));
         resultProperties.add(div);
       }
 

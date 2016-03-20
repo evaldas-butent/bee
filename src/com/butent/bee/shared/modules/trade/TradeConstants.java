@@ -1,6 +1,6 @@
 package com.butent.bee.shared.modules.trade;
 
-import com.butent.bee.shared.i18n.LocalizableConstants;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.ui.HasLocalizedCaption;
 import com.butent.bee.shared.utils.EnumUtils;
 
@@ -9,19 +9,19 @@ public final class TradeConstants {
   public enum OperationType implements HasLocalizedCaption {
     PURCHASE {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.trdTypePurchase();
       }
     },
     SALE {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.trdTypeSale();
       }
     },
     TRANSFER {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.trdTypeTransfer();
       }
     };

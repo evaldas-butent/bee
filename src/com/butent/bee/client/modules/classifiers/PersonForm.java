@@ -102,11 +102,11 @@ class PersonForm extends AbstractFormInterceptor {
 
             if (!BeeUtils.containsSame(type, "image")) {
               BeeKeeper.getScreen().notifyWarning(
-                  Localized.getMessages().invalidImageFileType(fileInfo.getName(), type));
+                  Localized.getConstants().invalidImageFileType(fileInfo.getName(), type));
 
             } else if (size > Images.MAX_SIZE_FOR_DATA_URL) {
               BeeKeeper.getScreen().notifyWarning(
-                  Localized.getMessages().fileSizeExceeded(size, Images.MAX_SIZE_FOR_DATA_URL));
+                  Localized.getConstants().fileSizeExceeded(size, Images.MAX_SIZE_FOR_DATA_URL));
 
             } else {
               setPhotoImageAttachment(fileInfo);

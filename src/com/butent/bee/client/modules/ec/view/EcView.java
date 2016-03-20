@@ -67,7 +67,7 @@ public abstract class EcView extends Flow {
   }
 
   protected Widget renderNoData(String key) {
-    Label label = new Label(Localized.getMessages().dataNotAvailable(key));
+    Label label = new Label(Localized.getConstants().dataNotAvailable(key));
     EcStyles.add(label, "noData");
     return label;
   }

@@ -168,8 +168,7 @@ public class DispatcherBean {
             break;
 
           case DICTIONARY:
-            data.put(component.key(),
-                Localizations.getPreferredDictionary(userService.getLanguage()));
+            data.put(component.key(), Localizations.getGlossary(userService.getSupportedLocale()));
             break;
 
           case DECORATORS:

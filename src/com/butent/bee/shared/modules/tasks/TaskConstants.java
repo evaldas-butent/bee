@@ -3,7 +3,7 @@ package com.butent.bee.shared.modules.tasks;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.font.FontAwesome;
-import com.butent.bee.shared.i18n.LocalizableConstants;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.ui.HasLocalizedCaption;
@@ -83,43 +83,43 @@ public final class TaskConstants {
   public enum TaskStatus implements HasLocalizedCaption {
     NOT_VISITED {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.crmTaskStatusNotVisited();
       }
     },
     ACTIVE {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.crmTaskStatusActive();
       }
     },
     SCHEDULED {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.crmTaskStatusScheduled();
       }
     },
     SUSPENDED {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.crmTaskStatusSuspended();
       }
     },
     COMPLETED {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.crmTaskStatusCompleted();
       }
     },
     APPROVED {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.crmTaskStatusApproved();
       }
     },
     CANCELED {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.crmTaskStatusCanceled();
       }
     };

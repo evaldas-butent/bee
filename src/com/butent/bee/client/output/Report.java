@@ -20,7 +20,7 @@ import com.butent.bee.client.view.form.interceptor.ExtendedReportInterceptor;
 import com.butent.bee.client.view.form.interceptor.ReportInterceptor;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.i18n.LocalizableConstants;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -109,7 +109,7 @@ public enum Report implements HasWidgetSupplier {
   TRANSPORT_TRIP_PROFIT(ModuleAndSub.of(Module.TRANSPORT), SVC_TRIP_PROFIT_REPORT) {
     @Override
     public List<ReportItem> getItems() {
-      LocalizableConstants loc = Localized.getConstants();
+      Dictionary loc = Localized.getConstants();
       String plan = BeeUtils.parenthesize(loc.plan());
 
       return Arrays.asList(
@@ -209,7 +209,7 @@ public enum Report implements HasWidgetSupplier {
   PROJECT_REPORT(ModuleAndSub.of(Module.PROJECTS), ProjectConstants.SVC_PROJECT_REPORT) {
     @Override
     public List<ReportItem> getItems() {
-      LocalizableConstants loc = Localized.getConstants();
+      Dictionary loc = Localized.getConstants();
 
       return Arrays.asList(
           new ReportTextItem(ProjectConstants.COL_PROJECT_NAME, Data.getColumnLabel(

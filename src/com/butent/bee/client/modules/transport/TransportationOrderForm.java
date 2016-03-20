@@ -89,7 +89,7 @@ class TransportationOrderForm extends AbstractFormInterceptor implements ClickHa
         String[] cargos = Codec.beeDeserializeCollection(response.getResponseAsString());
 
         if (ArrayUtils.isEmpty(cargos)) {
-          form.notifyWarning(Localized.getMessages()
+          form.notifyWarning(Localized.getConstants()
               .dataNotAvailable(Localized.getConstants().cargos()));
           return;
         }

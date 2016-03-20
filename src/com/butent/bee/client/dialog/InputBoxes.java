@@ -220,7 +220,7 @@ public class InputBoxes {
             if (BeeUtils.isEmpty(value)) {
               error = Localized.getConstants().valueRequired();
             } else if (unique && values.contains(BeeUtils.normalize(value))) {
-              error = Localized.getMessages().valueExists(value);
+              error = Localized.getConstants().valueExists(value);
             } else {
               values.add(BeeUtils.normalize(value));
               continue;
@@ -318,7 +318,7 @@ public class InputBoxes {
             if (BeeUtils.isEmpty(input.getValue())) {
               error = Localized.getConstants().valueRequired();
             } else if (values.contains(BeeUtils.normalize(input.getValue()))) {
-              error = Localized.getMessages().valueExists(input.getValue());
+              error = Localized.getConstants().valueExists(input.getValue());
             } else {
               values.add(BeeUtils.normalize(input.getValue()));
               continue;

@@ -785,7 +785,7 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
                       }
 
                       String message =
-                          Localized.getMessages().crmCreatedNewTasks(taskData.getNumberOfRows());
+                          Localized.getConstants().crmCreatedNewTasks(taskData.getNumberOfRows());
                       BeeKeeper.getScreen().notifyInfo(message);
 
                       DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_TASKS);

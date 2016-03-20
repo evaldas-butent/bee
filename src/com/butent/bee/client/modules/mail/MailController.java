@@ -262,7 +262,7 @@ public class MailController extends Flow implements HasDomain, HandlesStateChang
           if (Objects.equals(subFolder.getParent(), account.getRootFolder())) {
             final FaLabel disconnect = new FaLabel(FontAwesome.CHAIN_BROKEN,
                 BeeConst.CSS_CLASS_PREFIX + "mail-FolderAction");
-            disconnect.setTitle(Localized.getMessages()
+            disconnect.setTitle(Localized.getConstants()
                 .mailCancelFolderSynchronizationQuestion(BeeUtils.bracket(cap)));
 
             disconnect.addClickHandler(new ClickHandler() {
@@ -286,7 +286,7 @@ public class MailController extends Flow implements HasDomain, HandlesStateChang
         }
         final FaLabel edit = new FaLabel(FontAwesome.EDIT,
             BeeConst.CSS_CLASS_PREFIX + "mail-FolderAction");
-        edit.setTitle(Localized.getMessages().mailRenameFolder(BeeUtils.bracket(cap)));
+        edit.setTitle(Localized.getConstants().mailRenameFolder(BeeUtils.bracket(cap)));
 
         edit.addClickHandler(new ClickHandler() {
           @Override
@@ -305,7 +305,7 @@ public class MailController extends Flow implements HasDomain, HandlesStateChang
 
         final FaLabel delete = new FaLabel(FontAwesome.TRASH_O,
             BeeConst.CSS_CLASS_PREFIX + "mail-FolderAction");
-        delete.setTitle(Localized.getMessages()
+        delete.setTitle(Localized.getConstants()
             .mailDeleteFolderQuestion(BeeUtils.bracket(cap)));
 
         delete.addClickHandler(new ClickHandler() {

@@ -289,7 +289,7 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
           }
         }
         if (rep == null) {
-          getFormView().notifyWarning(Localized.getMessages().keyNotFound(target));
+          getFormView().notifyWarning(Localized.getConstants().keyNotFound(target));
           return;
         }
         rep.getFilterItems().clear();
@@ -452,7 +452,7 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
               }
               if (reports.contains(rep)) {
                 Global.confirm(Localized.getConstants().reports(), Icon.QUESTION,
-                    Arrays.asList(Localized.getMessages().valueExists(value),
+                    Arrays.asList(Localized.getConstants().valueExists(value),
                         Localized.getConstants().actionChange()), new ConfirmationCallback() {
                       @Override
                       public void onConfirm() {

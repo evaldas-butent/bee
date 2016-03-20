@@ -1223,8 +1223,8 @@ public final class CliWorker {
           public void onResponse(ResponseObject response) {
             if (!response.hasErrors()) {
               if (SVC_GET_DICTIONARY.equals(service)) {
-                Localized.setDictionary(Codec.deserializeMap(response.getResponseAsString()));
-                logger.debug(service, Localized.getDictionary().size());
+                Localized.setGlossary(Codec.deserializeMap(response.getResponseAsString()));
+                logger.debug(service, Localized.getGlossary().size());
 
               } else {
                 logger.debug(service, response.getResponse());
@@ -4422,7 +4422,7 @@ public final class CliWorker {
       } else {
         String z = BeeKeeper.getStorage().get(key);
         if (z == null) {
-          showError(errorPopup, Localized.getMessages().keyNotFound(key));
+          showError(errorPopup, Localized.getConstants().keyNotFound(key));
         } else {
           inform(key, z);
         }

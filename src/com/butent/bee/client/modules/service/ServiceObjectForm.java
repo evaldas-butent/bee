@@ -55,7 +55,7 @@ import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.TextValue;
 import com.butent.bee.shared.data.value.Value;
-import com.butent.bee.shared.i18n.LocalizableConstants;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
@@ -201,7 +201,7 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
 
   @Override
   public void onClick(ClickEvent event) {
-    LocalizableConstants loc = Localized.getConstants();
+    Dictionary loc = Localized.getConstants();
 
     Global.inputCollection(loc.mainCriteria(), loc.name(), true, criteriaEditors.keySet(),
         new Consumer<Collection<String>>() {

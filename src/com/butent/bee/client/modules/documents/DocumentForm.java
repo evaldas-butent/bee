@@ -51,7 +51,7 @@ import com.butent.bee.shared.data.RowChildren;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.view.DataInfo;
-import com.butent.bee.shared.i18n.LocalizableConstants;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.service.ServiceConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
@@ -229,7 +229,7 @@ public class DocumentForm extends DocumentDataForm {
     } else {
       templates = new LinkedHashMap<>();
     }
-    LocalizableConstants loc = Localized.getConstants();
+    Dictionary loc = Localized.getConstants();
 
     StringBuilder sb = new StringBuilder("<table style=\"border-collapse:collapse;")
         .append(" border:1px solid black; text-align:right;\">")

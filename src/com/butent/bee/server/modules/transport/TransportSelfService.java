@@ -91,7 +91,7 @@ public class TransportSelfService extends LoginServlet {
       Map<String, String> parameters = HttpUtils.getParameters(req, false);
 
       String language = getLanguage(req);
-      Map<String, String> dictionary = Localizations.getPreferredDictionary(language);
+      Map<String, String> dictionary = Localizations.getGlossary(language);
 
       if (parameters.containsKey(COL_QUERY_EXPEDITION)) {
         html = doQuery(req, parameters);

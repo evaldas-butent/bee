@@ -2641,6 +2641,10 @@ public final class BeeUtils {
     return (col == null) ? 0 : col.size();
   }
 
+  public static int size(Map<?, ?> map) {
+    return (map == null) ? 0 : map.size();
+  }
+
   public static int snap(int x, int to) {
     if (x == 0 || to <= 1) {
       return x;

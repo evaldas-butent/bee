@@ -60,7 +60,7 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.view.DataInfo;
-import com.butent.bee.shared.i18n.LocalizableConstants;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.i18n.SupportedLocale;
 import com.butent.bee.shared.io.FileInfo;
@@ -81,7 +81,7 @@ import java.util.Objects;
 
 class ShipmentRequestForm extends CargoPlaceUnboundForm {
 
-  private final LocalizableConstants loc = Localized.getConstants();
+  private final Dictionary loc = Localized.getConstants();
 
   private Button mailCommand = new Button(loc.trWriteEmail(), new ClickHandler() {
     @Override

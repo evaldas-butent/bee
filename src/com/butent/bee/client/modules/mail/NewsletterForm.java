@@ -27,7 +27,7 @@ import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.css.CssUnit;
 import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.filter.Filter;
-import com.butent.bee.shared.i18n.LocalizableConstants;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.calendar.CalendarConstants;
 import com.butent.bee.shared.modules.mail.MailConstants.RecipientsGroupsVisibility;
@@ -58,7 +58,7 @@ public class NewsletterForm extends AbstractFormInterceptor {
             @Override
             public void onSuccess(final Long result) {
 
-              LocalizableConstants lc = Localized.getConstants();
+              Dictionary lc = Localized.getConstants();
               List<String> captions =
                   Arrays.asList(lc.mailRecipientsGroups(), lc.companies(), lc.persons(), lc
                       .companyPersons(), lc.additionalContacts());

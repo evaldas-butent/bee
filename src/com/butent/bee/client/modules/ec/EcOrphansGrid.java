@@ -103,7 +103,7 @@ public class EcOrphansGrid extends AbstractGridInterceptor implements ClickHandl
 
   @Override
   public void onClick(ClickEvent event) {
-    Global.confirm(Localized.getMessages().ecLocateAnalogs(getGridView().getGrid().getRowCount()),
+    Global.confirm(Localized.getConstants().ecLocateAnalogs(getGridView().getGrid().getRowCount()),
         new ConfirmationCallback() {
           @Override
           public void onConfirm() {

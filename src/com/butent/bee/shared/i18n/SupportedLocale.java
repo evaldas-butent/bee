@@ -120,7 +120,11 @@ public enum SupportedLocale implements HasCaption {
   }
 
   public static String normalizeLanguage(String language) {
-    return BeeUtils.nvl(getByLanguage(language), USER_DEFAULT).getLanguage();
+    return parse(language).getLanguage();
+  }
+
+  public static SupportedLocale parse(String language) {
+    return BeeUtils.nvl(getByLanguage(language), USER_DEFAULT);
   }
 
   public String getDictionaryColumnName() {

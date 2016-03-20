@@ -63,7 +63,7 @@ public abstract class AbstractGridInterceptor implements GridInterceptor {
 
     String m2 = (selectedRows == 1)
         ? Localized.getConstants().deleteSelectedRow()
-        : Localized.getMessages().deleteSelectedRows(selectedRows);
+        : Localized.getConstants().deleteSelectedRows(selectedRows);
 
     return Pair.of(m1, m2);
   }

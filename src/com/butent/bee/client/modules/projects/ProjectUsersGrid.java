@@ -10,7 +10,7 @@ import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.view.RowInfo;
-import com.butent.bee.shared.i18n.LocalizableConstants;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -18,7 +18,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.Collection;
 
 class ProjectUsersGrid extends AbstractGridInterceptor {
-  private static final LocalizableConstants LC = Localized.getConstants();
+  private static final Dictionary LC = Localized.getConstants();
 
   @Override
   public DeleteMode getDeleteMode(GridPresenter presenter, IsRow activeRow,

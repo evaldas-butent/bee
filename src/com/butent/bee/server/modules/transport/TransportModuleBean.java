@@ -64,7 +64,7 @@ import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
-import com.butent.bee.shared.i18n.LocalizableConstants;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.i18n.SupportedLocale;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -595,7 +595,7 @@ public class TransportModuleBean implements BeeModule {
     HeadlineProducer assessmentsHeadlineProducer = new HeadlineProducer() {
       @Override
       public Headline produce(Feed feed, long userId, BeeRowSet rowSet, IsRow row, boolean isNew,
-          LocalizableConstants constants) {
+          Dictionary constants) {
 
         String caption = "";
         String pid = DataUtils.getString(rowSet, row, COL_ASSESSMENT);
@@ -1335,15 +1335,15 @@ public class TransportModuleBean implements BeeModule {
       return ResponseObject.parameterNotFound(SVC_CREATE_USER, COL_PASSWORD);
     }
     if (usr.isUser(login)) {
-      return ResponseObject.warning(usr.getLocalizableMesssages()
-          .valueExists(BeeUtils.joinWords(usr.getLocalizableConstants().user(), login)));
+      return ResponseObject.warning(usr.getDictionary()
+          .valueExists(BeeUtils.joinWords(usr.getDictionary().user(), login)));
     }
     Long role = prm.getRelation(PRM_SELF_SERVICE_ROLE);
 
     if (!DataUtils.isId(role)) {
       return ResponseObject.parameterNotFound(SVC_CREATE_USER, PRM_SELF_SERVICE_ROLE);
     }
-    ResponseObject resp = ResponseObject.info(usr.getLocalizableConstants().newUser(), login);
+    ResponseObject resp = ResponseObject.info(usr.getDictionary().newUser(), login);
     String email;
 
     try {
@@ -1503,7 +1503,7 @@ public class TransportModuleBean implements BeeModule {
         qs.insertData(insert);
       }
     }
-    return ResponseObject.info(Localized.getMessages().createdRows(drivers.length * map.size()));
+    return ResponseObject.info(Localized.getConstants().createdRows(drivers.length * map.size()));
   }
 
   private ResponseObject generateTripRoute(long tripId) {
@@ -2207,7 +2207,7 @@ public class TransportModuleBean implements BeeModule {
             Objects.nonNull(to) ? SqlUtils.less(TBL_DRIVER_ABSENCE, COL_ABSENCE_FROM, to) : null)));
 
     List<String> messages = new ArrayList<>();
-    LocalizableConstants loc = usr.getLocalizableConstants();
+    Dictionary loc = usr.getDictionary();
 
     for (SimpleRow row : qs.getData(query)) {
       messages.add(BeeUtils.joinWords(loc.dateFromShort(), row.getDate(COL_ABSENCE_FROM),
@@ -2776,7 +2776,7 @@ public class TransportModuleBean implements BeeModule {
       }
     }
     List<String> messages = new ArrayList<>();
-    LocalizableConstants loc = usr.getLocalizableConstants();
+    Dictionary loc = usr.getDictionary();
 
     for (SimpleRow row : qs.getData(select
         .addOrder(null, COL_VEHICLE_NUMBER, COL_ABSENCE_FROM, COL_ABSENCE_TO))) {

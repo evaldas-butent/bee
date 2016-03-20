@@ -774,7 +774,7 @@ public final class EcKeeper {
       return true;
     } else {
       BeeKeeper.getScreen().notifyWarning(
-          Localized.getMessages().searchQueryRestriction(MIN_SEARCH_QUERY_LENGTH));
+          Localized.getConstants().searchQueryRestriction(MIN_SEARCH_QUERY_LENGTH));
       return false;
     }
   }

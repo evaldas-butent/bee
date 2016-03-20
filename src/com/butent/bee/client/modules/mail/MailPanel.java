@@ -93,8 +93,7 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.font.FontAwesome;
-import com.butent.bee.shared.i18n.LocalizableConstants;
-import com.butent.bee.shared.i18n.LocalizableMessages;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
@@ -270,7 +269,7 @@ public class MailPanel extends AbstractFormInterceptor {
             ids.clear();
             ids.add(placeId);
           } else {
-            label = Localized.getConstants().mailMessages() + " (" + ids.size() + ")";
+            label = Localized.getConstants().mailMessages(ids.size());
           }
           Label dragLabel = new Label(label);
 
@@ -390,7 +389,7 @@ public class MailPanel extends AbstractFormInterceptor {
 
     private SearchPanel() {
       setStyleName(CSS_SEARCH_PREFIX + "Panel");
-      LocalizableConstants loc = Localized.getConstants();
+      Dictionary loc = Localized.getConstants();
 
       add(new Label(loc.mailFrom()));
       InputText from = new InputText();
@@ -499,7 +498,7 @@ public class MailPanel extends AbstractFormInterceptor {
 
           if (DataUtils.isId(getCurrentFolder())) {
             if (!searchInCurrentFolder()) {
-              folderContainer.setWidget(new InputBoolean(Localized.getMessages()
+              folderContainer.setWidget(new InputBoolean(Localized.getConstants()
                   .mailOnlyInFolder(getFolderCaption(getCurrentFolder()))));
             }
           } else {
@@ -1006,7 +1005,7 @@ public class MailPanel extends AbstractFormInterceptor {
 
     Global.confirm(purge ? Localized.getConstants().delete()
             : Localized.getConstants().mailActionMoveToTrash(), purge ? Icon.ALARM : Icon.WARNING,
-        Collections.singletonList(Localized.getMessages().mailMessages(ids.size())),
+        Collections.singletonList(Localized.getConstants().mailMessages(ids.size())),
         new ConfirmationCallback() {
           @Override
           public void onConfirm() {
@@ -1021,7 +1020,7 @@ public class MailPanel extends AbstractFormInterceptor {
 
                 if (!response.hasErrors()) {
                   String msg = response.getResponseAsString();
-                  LocalizableMessages loc = Localized.getMessages();
+                  Dictionary loc = Localized.getConstants();
 
                   getFormView().notifyInfo(purge ? loc.mailDeletedMessages(msg)
                       : loc.mailMovedMessagesToTrash(msg));

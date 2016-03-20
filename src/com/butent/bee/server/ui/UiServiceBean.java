@@ -509,7 +509,7 @@ public class UiServiceBean {
     if (res instanceof BeeRowSet) {
       ResponseObject resp = ResponseObject.response(res);
       int rc = ((BeeRowSet) res).getNumberOfRows();
-      resp.addWarning(usr.getLocalizableMesssages().rowsRetrieved(rc));
+      resp.addWarning(usr.getDictionary().rowsRetrieved(rc));
       return resp;
     } else if (res instanceof Number) {
       return ResponseObject.warning("Affected rows:", res);

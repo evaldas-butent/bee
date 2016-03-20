@@ -48,7 +48,7 @@ import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.filter.Filter;
-import com.butent.bee.shared.i18n.LocalizableConstants;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -424,7 +424,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
           try {
             message = sendMail(account, to, cc, bcc, subject, content, attachments, inReplyTo);
             response.setResponse(storeMessage(account, message, account.getSentFolder()));
-            response.addInfo(usr.getLocalizableConstants().mailMessageSent());
+            response.addInfo(usr.getDictionary().mailMessageSent());
 
           } catch (MessagingException e) {
             save = true;
@@ -437,7 +437,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
             message = buildMessage(account, to, cc, bcc, subject, content, attachments, inReplyTo);
           }
           response.setResponse(storeMessage(account, message, account.getDraftsFolder()));
-          response.addInfo(usr.getLocalizableConstants().mailMessageIsSavedInDraft());
+          response.addInfo(usr.getDictionary().mailMessageIsSavedInDraft());
 
         } else if (DataUtils.isId(relatedId)) {
           setMessageFlag(relatedId, MessageFlag.ANSWERED, true);
@@ -961,7 +961,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
               .addFromInner(TBL_PLACES, sys.joinTables(TBL_MESSAGES, TBL_PLACES, COL_MESSAGE))
               .setWhere(sys.idEquals(TBL_PLACES, placeId)));
 
-          LocalizableConstants loc = Localized.getConstants();
+          Dictionary loc = Localized.getConstants();
 
           String content = BeeUtils.join("<br>", "---------- "
                   + loc.mailForwardedMessage() + " ----------",
@@ -1346,7 +1346,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
     SimpleRow msg = qs.getRow(query);
 
     if (Objects.isNull(msg)) {
-      return ResponseObject.error(usr.getLocalizableConstants().nothingFound());
+      return ResponseObject.error(usr.getDictionary().nothingFound());
     }
     packet.put(TBL_MESSAGES, msg.getRowSet());
 
@@ -1772,7 +1772,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
         .setWhere(sys.idEquals(TBL_PLACES, placeId)));
 
     if (Objects.isNull(row)) {
-      return ResponseObject.error(usr.getLocalizableConstants().nothingFound());
+      return ResponseObject.error(usr.getDictionary().nothingFound());
     }
     int oldValue = BeeUtils.unbox(row.getInt(COL_FLAGS));
     int value;

@@ -655,6 +655,8 @@ public interface Dictionary {
 
   default String chief() {return g("chief");}
 
+  default String chooseContactSource() {return g("chooseContactSource");}
+
   default String chooseFiles() {return g("chooseFiles");}
 
   default String chooseLanguage() {return g("chooseLanguage");}
@@ -2789,6 +2791,8 @@ public interface Dictionary {
 
   default String mailActionMoveToTrash() {return g("mailActionMoveToTrash");}
 
+  default String mailAddContacts() {return g("mailAddContacts");}
+
   default String mailAddress() {return g("mailAddress");}
 
   default String mailAddressbook() {return g("mailAddressbook");}
@@ -2900,6 +2904,8 @@ public interface Dictionary {
   default String mailNewMessage() {return g("mailNewMessage");}
 
   default String mailNewNewsletter() {return g("mailNewNewsletter");}
+
+  default String mailNewRecipientsGroup() {return g("mailNewRecipientsGroup");}
 
   default String mailNewRule() {return g("mailNewRule");}
 

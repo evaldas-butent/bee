@@ -27,7 +27,7 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.DataInfo;
-import com.butent.bee.shared.i18n.LocalizableConstants;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.time.DateTime;
@@ -93,7 +93,7 @@ public class AssessmentTransportationForm extends PrintFormInterceptor {
             int colUnloadingPostIndex = result.getColumnIndex("UnloadingPostIndex");
             int colUnloadingDate = result.getColumnIndex("UnloadingDate");
 
-            LocalizableConstants loc = Localized.getConstants();
+            Dictionary loc = Localized.getConstants();
             Map<Integer, Pair<Integer, String>> map = new HashMap<>();
 
             map.put(colLoadingAddress, Pair.of(0, loc.trLoadingAddress()));

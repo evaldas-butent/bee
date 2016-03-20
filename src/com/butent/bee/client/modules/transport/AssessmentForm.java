@@ -94,7 +94,7 @@ import com.butent.bee.shared.data.value.IntegerValue;
 import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.font.FontAwesome;
-import com.butent.bee.shared.i18n.LocalizableConstants;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
@@ -438,7 +438,7 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
               @Override
               public void onSuccess(Integer result) {
                 if (BeeUtils.isPositive(result)) {
-                  Global.showError(Localized.getMessages().trAssessmentInvalidStatusError(result,
+                  Global.showError(Localized.getConstants().trAssessmentInvalidStatusError(result,
                       request ? status.getCaption() : orderStatus.getCaption()));
                 } else {
                   process();
@@ -535,7 +535,7 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
   }
 
   private FormView form;
-  private final LocalizableConstants loc = Localized.getConstants();
+  private final Dictionary loc = Localized.getConstants();
 
   private final Button reqNew = new Button(loc.trAssessmentToRequests(),
       new StatusUpdater(AssessmentStatus.NEW, loc.trAssessmentAskRequest()));

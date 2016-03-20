@@ -392,14 +392,14 @@ class TasksGrid extends AbstractGridInterceptor {
     }
 
     if (!BeeUtils.isEmpty(selectedRow.getString(idxTaskProject))) {
-      gridView.notifyWarning(Localized.getMessages().taskAssignedToProject(selectedRow.getId(),
+      gridView.notifyWarning(Localized.getConstants().taskAssignedToProject(selectedRow.getId(),
           selectedRow.getLong(idxTaskProject)));
       return;
     }
 
     if (!userId.equals(selectedRow.getLong(idxTaskOwner))) {
       gridView
-          .notifyWarning(Localized.getMessages().projectCanCreateTaskOwner(selectedRow.getId()));
+          .notifyWarning(Localized.getConstants().projectCanCreateTaskOwner(selectedRow.getId()));
       return;
     }
 
@@ -491,7 +491,7 @@ class TasksGrid extends AbstractGridInterceptor {
           public void onSuccess(Integer result) {
             if (getGridView() != null) {
               getGridView().notifyInfo(
-                  Localized.getMessages().newProjectCreated(projectRow.getId()));
+                  Localized.getConstants().newProjectCreated(projectRow.getId()));
             }
           }
         });
@@ -518,7 +518,7 @@ class TasksGrid extends AbstractGridInterceptor {
           @Override
           public void onSuccess(Integer result) {
             if (getGridView() != null) {
-              getGridView().notifyInfo(Localized.getMessages()
+              getGridView().notifyInfo(Localized.getConstants()
                   .newProjectCreated(projectRow.getId()));
             }
           }

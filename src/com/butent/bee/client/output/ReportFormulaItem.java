@@ -162,7 +162,7 @@ public class ReportFormulaItem extends ReportNumericItem {
   @Override
   public String saveOptions() {
     if (BeeUtils.isEmpty(temporaryExpression)) {
-      return Localized.getMessages().dataNotAvailable(Localized.getConstants().expression());
+      return Localized.getConstants().dataNotAvailable(Localized.getConstants().expression());
     }
     expression.clear();
     expression.addAll(temporaryExpression);

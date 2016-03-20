@@ -367,7 +367,7 @@ public final class TransportHandler {
         break;
 
       default:
-        Global.showError(Localized.getMessages().dataNotAvailable(gridName));
+        Global.showError(Localized.getConstants().dataNotAvailable(gridName));
         return;
     }
     final Long userPerson = BeeKeeper.getUser().getUserData().getCompanyPerson();

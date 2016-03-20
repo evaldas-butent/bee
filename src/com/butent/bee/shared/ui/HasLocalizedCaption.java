@@ -1,6 +1,6 @@
 package com.butent.bee.shared.ui;
 
-import com.butent.bee.shared.i18n.LocalizableConstants;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 
 @FunctionalInterface
@@ -11,5 +11,5 @@ public interface HasLocalizedCaption extends HasCaption {
     return getCaption(Localized.getConstants());
   }
 
-  String getCaption(LocalizableConstants constants);
+  String getCaption(Dictionary dictionary);
 }

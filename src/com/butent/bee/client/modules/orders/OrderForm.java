@@ -48,7 +48,7 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.NumberValue;
-import com.butent.bee.shared.i18n.LocalizableConstants;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.time.TimeUtils;
@@ -60,7 +60,7 @@ import java.util.Objects;
 
 public class OrderForm extends AbstractFormInterceptor {
 
-  private final LocalizableConstants loc = Localized.getConstants();
+  private final Dictionary loc = Localized.getConstants();
   private Label warehouseLabel;
 
   @Override

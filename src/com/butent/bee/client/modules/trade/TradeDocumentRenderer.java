@@ -28,7 +28,7 @@ import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.i18n.LocalizableConstants;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.trade.TradeDocumentData;
@@ -52,7 +52,7 @@ public class TradeDocumentRenderer extends AbstractFormInterceptor {
   private enum ItemColumn implements HasLocalizedCaption {
     ORDINAL("ordinal", false) {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.printItemOrdinal();
       }
 
@@ -64,7 +64,7 @@ public class TradeDocumentRenderer extends AbstractFormInterceptor {
 
     NAME("name", false) {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.printInvoiceItemName();
       }
 
@@ -76,7 +76,7 @@ public class TradeDocumentRenderer extends AbstractFormInterceptor {
 
     ARTICLE("article", false) {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.article();
       }
 
@@ -88,7 +88,7 @@ public class TradeDocumentRenderer extends AbstractFormInterceptor {
 
     QUANTITY("quantity", false) {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.printItemQuantity();
       }
 
@@ -100,7 +100,7 @@ public class TradeDocumentRenderer extends AbstractFormInterceptor {
 
     UNIT("unit", false) {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.printItemUom();
       }
 
@@ -112,7 +112,7 @@ public class TradeDocumentRenderer extends AbstractFormInterceptor {
 
     PRICE("price", true) {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.price();
       }
 
@@ -125,7 +125,7 @@ public class TradeDocumentRenderer extends AbstractFormInterceptor {
 
     AMOUNT("amount", true) {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.amount();
       }
 
@@ -137,7 +137,7 @@ public class TradeDocumentRenderer extends AbstractFormInterceptor {
 
     TOTAL_WITHOUT_VAT("total-without-vat", true) {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.printItemTotalWithoutVat();
       }
 
@@ -149,7 +149,7 @@ public class TradeDocumentRenderer extends AbstractFormInterceptor {
 
     VAT_RATE("vat-rate", false) {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.printItemVatRate();
       }
 
@@ -175,7 +175,7 @@ public class TradeDocumentRenderer extends AbstractFormInterceptor {
 
     VAT_AMOUNT("vat-amount", true) {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.printItemVatAmount();
       }
 
@@ -187,7 +187,7 @@ public class TradeDocumentRenderer extends AbstractFormInterceptor {
 
     TOTAL_WITH_VAT("total-with-vat", true) {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.printItemTotalWithVat();
       }
 
@@ -521,7 +521,7 @@ public class TradeDocumentRenderer extends AbstractFormInterceptor {
     } else if (BeeUtils.isEmpty(series)) {
       return join(Localized.getConstants().printDocumentNumber(), number);
     } else {
-      return Localized.getMessages().printDocumentSeriesAndNumber(series, number);
+      return Localized.getConstants().printDocumentSeriesAndNumber(series, number);
     }
   }
 

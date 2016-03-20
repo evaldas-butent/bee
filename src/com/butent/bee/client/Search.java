@@ -613,7 +613,7 @@ public class Search {
     if (!BeeUtils.isEmpty(value)) {
       if (value.length() < MIN_SEARCH_PHRASE_LENGTH && !BeeUtils.isDigit(value)) {
         BeeKeeper.getScreen().notifyWarning(
-            Localized.getMessages().searchQueryRestriction(MIN_SEARCH_PHRASE_LENGTH));
+            Localized.getConstants().searchQueryRestriction(MIN_SEARCH_PHRASE_LENGTH));
 
       } else {
         doSearch(getInput(), value, null);

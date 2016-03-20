@@ -300,7 +300,7 @@ final class TradeActItemImporter {
 
       if (duplicate) {
         table.getRowFormatter().addStyleName(r, STYLE_DUPLICATE_ROW);
-        table.getRow(r).setTitle(Localized.getMessages().valueExists(entry.article));
+        table.getRow(r).setTitle(Localized.getConstants().valueExists(entry.article));
 
       } else if (entry.item != null) {
         table.getRowFormatter().addStyleName(r, STYLE_SELECTED_ROW);

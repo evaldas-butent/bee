@@ -2,7 +2,7 @@ package com.butent.bee.shared.modules.calendar;
 
 import com.google.common.collect.ImmutableMap;
 
-import com.butent.bee.shared.i18n.LocalizableConstants;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -18,37 +18,37 @@ public final class CalendarConstants {
   public enum AppointmentStatus implements HasLocalizedCaption {
     TENTATIVE {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.calAppointmentStatusTentative();
       }
     },
     CONFIRMED {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.calAppointmentStatusConfirmed();
       }
     },
     DELAYED {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.calAppointmentStatusDelayed();
       }
     },
     CANCELED {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.calAppointmentStatusCanceled();
       }
     },
     RUNNING {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.calAppointmentStatusRunning();
       }
     },
     COMPLETED {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.calAppointmentStatusCompleted();
       }
     };

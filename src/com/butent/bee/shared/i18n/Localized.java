@@ -10,6 +10,7 @@ import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -22,21 +23,20 @@ public final class Localized {
 
   public static final Splitter L10N_SPLITTER = Splitter.on(L10N_SEPARATOR);
 
-  private static LocalizableConstants constants;
-  private static LocalizableMessages messages;
+  private static final Map<String, String> glossary = new HashMap<>();
 
-  private static Map<String, String> dictionary;
+  private static final Dictionary dictionary = key -> BeeUtils.nvl(glossary.get(key), key);
 
   public static String column(String colName, String locale) {
     return BeeUtils.join(BeeConst.STRING_UNDER, Assert.notEmpty(colName), Assert.notEmpty(locale));
   }
 
-  public static LocalizableConstants getConstants() {
-    return constants;
+  public static Dictionary getConstants() {
+    return dictionary;
   }
 
-  public static Map<String, String> getDictionary() {
-    return dictionary;
+  public static Map<String, String> getGlossary() {
+    return glossary;
   }
 
   public static String getLabel(IsColumn column) {
@@ -51,20 +51,16 @@ public final class Localized {
     return labels;
   }
 
-  public static LocalizableMessages getMessages() {
-    return messages;
-  }
-
   public static List<String> maybeTranslate(List<String> items) {
-    return maybeTranslate(items, dictionary);
+    return maybeTranslate(items, glossary);
   }
 
-  public static List<String> maybeTranslate(List<String> items, Map<String, String> dict) {
+  public static List<String> maybeTranslate(List<String> items, Map<String, String> data) {
     List<String> result = new ArrayList<>();
 
     if (items != null) {
       for (String item : items) {
-        result.add(maybeTranslate(item, dict));
+        result.add(maybeTranslate(item, data));
       }
     }
 
@@ -72,10 +68,10 @@ public final class Localized {
   }
 
   public static String maybeTranslate(String text) {
-    return maybeTranslate(text, dictionary);
+    return maybeTranslate(text, glossary);
   }
 
-  public static String maybeTranslate(String text, Map<String, String> dict) {
+  public static String maybeTranslate(String text, Map<String, String> data) {
     if (text == null || text.length() < 3 || text.charAt(0) != L10N_PREFIX) {
       return text;
     }
@@ -86,13 +82,13 @@ public final class Localized {
       StringBuilder sb = new StringBuilder();
 
       for (String s : L10N_SPLITTER.split(text)) {
-        sb.append(maybeTranslate(s, dict));
+        sb.append(maybeTranslate(s, data));
       }
 
       localized = sb.toString();
 
     } else {
-      localized = translate(text.substring(1), dict);
+      localized = translate(text.substring(1), data);
     }
 
     if (localized == null) {
@@ -103,20 +99,21 @@ public final class Localized {
     }
   }
 
-  public static void setConstants(LocalizableConstants constants) {
-    Localized.constants = constants;
-  }
+  public static void setGlossary(Map<String, String> glossary) {
+    if (BeeUtils.isEmpty(glossary)) {
+      logger.severe("glossary is empty");
 
-  public static void setDictionary(Map<String, String> dictionary) {
-    Localized.dictionary = dictionary;
-  }
+    } else {
+      if (!Localized.glossary.isEmpty()) {
+        Localized.glossary.clear();
+      }
 
-  public static void setMessages(LocalizableMessages messages) {
-    Localized.messages = messages;
+      Localized.glossary.putAll(glossary);
+    }
   }
 
   public static String translate(String key) {
-    return translate(key, dictionary);
+    return translate(key, glossary);
   }
 
   static String format(String message, Map<String, Object> parameters) {
@@ -140,8 +137,8 @@ public final class Localized {
     }
   }
 
-  private static String translate(String key, Map<String, String> dict) {
-    return (dict == null) ? null : dict.get(key);
+  private static String translate(String key, Map<String, String> data) {
+    return (data == null) ? null : data.get(key);
   }
 
   private Localized() {

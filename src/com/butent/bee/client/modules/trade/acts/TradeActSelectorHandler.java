@@ -378,7 +378,7 @@ class TradeActSelectorHandler implements SelectorEvent.Handler {
 
     if (!actItems.isEmpty() || !actServices.isEmpty()) {
       Global.confirm(null, Icon.QUESTION,
-          Collections.singletonList(Localized.getMessages().exchangeFromTo(fromName, toName)),
+          Collections.singletonList(Localized.getConstants().exchangeFromTo(fromName, toName)),
           Localized.getConstants().actionExchange(), Localized.getConstants().actionCancel(),
           new ConfirmationCallback() {
             @Override

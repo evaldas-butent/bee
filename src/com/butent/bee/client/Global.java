@@ -187,7 +187,7 @@ public final class Global {
 
   public static void confirmRemove(String caption, String item, ConfirmationCallback callback,
       Element target) {
-    List<String> messages = Lists.newArrayList(Localized.getMessages().removeQuestion(item));
+    List<String> messages = Lists.newArrayList(Localized.getConstants().removeQuestion(item));
     msgBoxen.confirm(caption, Icon.WARNING, messages, Localized.getConstants().actionRemove(),
         Localized.getConstants().cancel(), callback, null,
         StyleUtils.className(FontSize.MEDIUM), StyleUtils.className(FontSize.MEDIUM), target);
