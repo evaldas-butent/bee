@@ -40,6 +40,7 @@ public final class Service {
   public static final String GET_REPORT = SYS_SERVICE_PREFIX + "get_report";
   public static final String CREATE_PDF = SYS_SERVICE_PREFIX + "create_pdf";
 
+  public static final String INIT = RPC_SERVICE_PREFIX + "init";
   public static final String INVOKE = RPC_SERVICE_PREFIX + "invoke";
 
   public static final String LOGIN = RPC_SERVICE_PREFIX + "login";

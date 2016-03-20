@@ -95,7 +95,9 @@ public class DispatcherBean {
     if (userData.hasErrors()) {
       return response;
     }
+
     data.put(Service.VAR_USER, userData.getResponse());
+
     data.put(Service.PROPERTY_MODULES, Module.getEnabledModulesAsString());
     data.put(Service.PROPERTY_VIEW_MODULES, RightsUtils.getViewModulesAsString());
 
@@ -112,6 +114,62 @@ public class DispatcherBean {
     if (DataUtils.isId(company)) {
       data.put(PRM_COMPANY, company);
     }
+
+    data.put(TBL_DICTIONARY, Localizations.getGlossary(userService.getSupportedLocale()));
+
+    return response.setResponse(data);
+  }
+
+  public void doLogout(long userId, long historyId) {
+    userService.logout(userId, historyId);
+  }
+
+  public ResponseObject doService(String svc, RequestInfo reqInfo) {
+    ResponseObject response;
+
+    if (moduleHolder.hasModule(svc)) {
+      response = moduleHolder.doModule(svc, reqInfo);
+
+    } else if (Service.isDataService(svc)) {
+      response = uiService.doService(reqInfo);
+
+    } else if (Service.isChatService(svc)) {
+      response = chat.doService(reqInfo);
+
+    } else if (Service.isDbService(svc)) {
+      response = dataService.doService(svc, reqInfo);
+
+    } else if (Service.isSysService(svc)) {
+      response = systemService.doService(svc, reqInfo);
+
+    } else if (BeeUtils.same(svc, Service.INIT)) {
+      response = doInit(reqInfo);
+
+    } else if (BeeUtils.same(svc, Service.GET_MENU)) {
+      response = uiHolder.getMenu(reqInfo.hasParameter(Service.VAR_RIGHTS),
+          reqInfo.hasParameter(Service.VAR_TRANSFORM));
+
+    } else if (BeeUtils.same(svc, Service.WHERE_AM_I)) {
+      response = ResponseObject.info(System.currentTimeMillis(), BeeConst.whereAmI());
+
+    } else if (BeeUtils.same(svc, Service.INVOKE)) {
+      response = Reflection.invoke(invocation, reqInfo.getSubService(), reqInfo);
+
+    } else if (BeeUtils.same(svc, Service.RESPECT_MY_AUTHORITAH)) {
+      response = userService.respectMyAuthoritah();
+
+    } else {
+      String msg = BeeUtils.joinWords(svc, "service not recognized");
+      logger.warning(msg);
+      response = ResponseObject.error(msg);
+    }
+
+    return response;
+  }
+
+  private ResponseObject doInit(RequestInfo reqInfo) {
+    ResponseObject response = new ResponseObject();
+    Map<String, Object> data = new HashMap<>();
 
     UserInterface userInterface = null;
 
@@ -165,10 +223,6 @@ public class DispatcherBean {
 
           case DATA_INFO:
             data.put(component.key(), sys.getDataInfo());
-            break;
-
-          case DICTIONARY:
-            data.put(component.key(), Localizations.getGlossary(userService.getSupportedLocale()));
             break;
 
           case DECORATORS:
@@ -275,50 +329,9 @@ public class DispatcherBean {
       }
     }
 
-    return response.setResponse(data);
-  }
-
-  public void doLogout(long userId, long historyId) {
-    userService.logout(userId, historyId);
-  }
-
-  public ResponseObject doService(String svc, RequestInfo reqInfo) {
-    ResponseObject response;
-
-    if (moduleHolder.hasModule(svc)) {
-      response = moduleHolder.doModule(svc, reqInfo);
-
-    } else if (Service.isDataService(svc)) {
-      response = uiService.doService(reqInfo);
-
-    } else if (Service.isChatService(svc)) {
-      response = chat.doService(reqInfo);
-
-    } else if (Service.isDbService(svc)) {
-      response = dataService.doService(svc, reqInfo);
-
-    } else if (Service.isSysService(svc)) {
-      response = systemService.doService(svc, reqInfo);
-
-    } else if (BeeUtils.same(svc, Service.GET_MENU)) {
-      response = uiHolder.getMenu(reqInfo.hasParameter(Service.VAR_RIGHTS),
-          reqInfo.hasParameter(Service.VAR_TRANSFORM));
-
-    } else if (BeeUtils.same(svc, Service.WHERE_AM_I)) {
-      response = ResponseObject.info(System.currentTimeMillis(), BeeConst.whereAmI());
-
-    } else if (BeeUtils.same(svc, Service.INVOKE)) {
-      response = Reflection.invoke(invocation, reqInfo.getSubService(), reqInfo);
-
-    } else if (BeeUtils.same(svc, Service.RESPECT_MY_AUTHORITAH)) {
-      response = userService.respectMyAuthoritah();
-
-    } else {
-      String msg = BeeUtils.joinWords(svc, "service not recognized");
-      logger.warning(msg);
-      response = ResponseObject.error(msg);
+    if (!data.isEmpty()) {
+      response.setResponse(data);
     }
-
     return response;
   }
 }

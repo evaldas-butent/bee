@@ -8,6 +8,8 @@ import com.butent.bee.server.logging.LogbackFactory;
 import com.butent.bee.server.modules.ModuleHolderBean;
 import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.ui.UiHolderBean;
+import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.i18n.SupportedLocale;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -45,6 +47,7 @@ public class InitializationBean {
     Config.init();
 
     Localizations.init();
+    Localized.setGlossary(Localizations.getGlossary(SupportedLocale.USER_DEFAULT));
 
     sys.init();
 
@@ -52,10 +55,10 @@ public class InitializationBean {
     moduleBean.getModules().forEach((moduleName) -> prm.refreshParameters(moduleName));
 
     Map<String, String> props = prm.getMap(AdministrationConstants.PRM_SERVER_PROPERTIES);
-
     if (!BeeUtils.isEmpty(props)) {
       props.forEach((prop, value) -> Config.setProperty(prop, value));
     }
+
     sys.initViews();
     chat.init();
 

@@ -8,6 +8,7 @@ import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -109,6 +110,7 @@ public final class Localized {
       }
 
       Localized.glossary.putAll(glossary);
+      logger.info(NameUtils.getClassName(Localized.class), "glossary", glossary.size());
     }
   }
 
