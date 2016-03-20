@@ -12,10 +12,9 @@
   <parameter name="CompanyName" class="java.lang.String" />
   <parameter name="Locale" class="java.lang.String" />
 
-  <variable name="loc" class="com.butent.bee.shared.i18n.LocalizableConstants">
+  <variable name="loc" class="com.butent.bee.shared.i18n.Dictionary">
     <initialValueExpression>
-      Localizations.getConstants(Locale.forLanguageTag(EnumUtils.getEnumByIndex(SupportedLocale.class,
-      $P{Locale}).getLanguage()))
+      Localizations.getDictionary(EnumUtils.getEnumByIndex(SupportedLocale.class, $P{Locale}))
     </initialValueExpression>
   </variable>
   <title>

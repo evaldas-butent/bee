@@ -19,7 +19,7 @@
 		<box leftPadding="3" rightPadding="3"/>
 	</style>
 	<subDataset name="SaleItems" uuid="98f3f5b7-8ff1-4380-abb9-dfb33d21039a">
-		<parameter name="loc" class="com.butent.bee.shared.i18n.LocalizableConstants"/>
+		<parameter name="loc" class="com.butent.bee.shared.i18n.Dictionary"/>
 		<parameter name="currency" class="java.lang.String"/>
 		<parameter name="SaleItemsDataSet" class="com.butent.bee.server.RsDataSource"/>
 		<field name="ItemName" class="java.lang.String"/>
@@ -78,9 +78,9 @@
 	<parameter name="PayerFax" class="java.lang.String"/>
 	<parameter name="ManagerFirstName" class="java.lang.String"/>
 	<parameter name="ManagerLastName" class="java.lang.String"/>
-	<variable name="loc" class="com.butent.bee.shared.i18n.LocalizableConstants">
+	<variable name="loc" class="com.butent.bee.shared.i18n.Dictionary">
 		<variableExpression><![CDATA[$V{loc}]]></variableExpression>
-		<initialValueExpression><![CDATA[Localized.getConstants()]]></initialValueExpression>
+		<initialValueExpression><![CDATA[Localized.dictionary()]]></initialValueExpression>
 	</variable>
 	<variable name="docNo" class="java.lang.String">
 		<variableExpression><![CDATA[$V{docNo}]]></variableExpression>
