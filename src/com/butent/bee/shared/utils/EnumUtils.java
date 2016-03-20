@@ -90,19 +90,19 @@ public final class EnumUtils {
   }
 
   public static String getCaption(Class<? extends Enum<?>> clazz, Integer index) {
-    return getLocalizedCaption(clazz, index, Localized.getConstants());
+    return getLocalizedCaption(clazz, index, Localized.dictionary());
   }
 
   public static String getCaption(String key, Integer index) {
-    return getLocalizedCaption(key, index, Localized.getConstants());
+    return getLocalizedCaption(key, index, Localized.dictionary());
   }
 
   public static List<String> getCaptions(Class<? extends Enum<?>> clazz) {
-    return getLocalizedCaptions(clazz, Localized.getConstants());
+    return getLocalizedCaptions(clazz, Localized.dictionary());
   }
 
   public static List<String> getCaptions(String key) {
-    return getLocalizedCaptions(key, Localized.getConstants());
+    return getLocalizedCaptions(key, Localized.dictionary());
   }
 
   public static <E extends Enum<?>> E getEnumByIndex(Class<E> clazz, Integer idx) {

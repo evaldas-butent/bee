@@ -897,7 +897,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
       }
       RuleAction action = EnumUtils.getEnumByIndex(RuleAction.class, row.getInt(COL_RULE_ACTION));
 
-      String log = BeeUtils.joinWords(Localized.getConstants().mailRule() + ":",
+      String log = BeeUtils.joinWords(Localized.dictionary().mailRule() + ":",
           condition.getCaption(), row.getValue(COL_RULE_CONDITION_OPTIONS), action.getCaption());
 
       switch (action) {
@@ -961,7 +961,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
               .addFromInner(TBL_PLACES, sys.joinTables(TBL_MESSAGES, TBL_PLACES, COL_MESSAGE))
               .setWhere(sys.idEquals(TBL_PLACES, placeId)));
 
-          Dictionary loc = Localized.getConstants();
+          Dictionary loc = Localized.dictionary();
 
           String content = BeeUtils.join("<br>", "---------- "
                   + loc.mailForwardedMessage() + " ----------",
@@ -1009,7 +1009,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
                         .setWhere(sys.idEquals(TBL_SIGNATURES, signatureId))));
               }
               sendMail(account, new String[] {sender}, null, null,
-                  BeeUtils.joinWords(Localized.getConstants().mailReplayPrefix(),
+                  BeeUtils.joinWords(Localized.dictionary().mailReplayPrefix(),
                       envelope.getSubject()), content, null, null);
 
               mail.setAutoReply(info.getLong(TBL_ADDRESSBOOK));

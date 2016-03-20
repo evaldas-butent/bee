@@ -538,7 +538,7 @@ public final class FileUtils {
 
       if (size > maxSize) {
         errors.add(BeeUtils.join(BeeConst.STRING_COLON + BeeConst.STRING_SPACE, fileInfo.getName(),
-            Localized.getConstants().fileSizeExceeded(size, maxSize)));
+            Localized.dictionary().fileSizeExceeded(size, maxSize)));
       } else {
         result.add(fileInfo);
       }

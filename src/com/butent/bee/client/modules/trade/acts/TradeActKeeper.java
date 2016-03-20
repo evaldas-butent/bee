@@ -541,18 +541,18 @@ public final class TradeActKeeper {
               supplierKey = GRID_ALL_ACTS_KEY;
 
               if (isClientArea()) {
-                caption = BeeUtils.join(" - ", Localized.getConstants().tradeActs(),
+                caption = BeeUtils.join(" - ", Localized.dictionary().tradeActs(),
                     BeeKeeper.getUser().getCompanyName());
                 filter = Filter.equals(COL_TA_COMPANY, BeeKeeper.getUser().getCompany());
               } else {
-                caption = Localized.getConstants().tradeActsAll();
+                caption = Localized.dictionary().tradeActsAll();
                 filter = null;
               }
 
             } else {
               supplierKey = kind.getGridSupplierKey();
 
-              caption = Localized.getConstants().tradeActs() + " - " + kind.getCaption();
+              caption = Localized.dictionary().tradeActs() + " - " + kind.getCaption();
               filter = kind.getFilter();
             }
 

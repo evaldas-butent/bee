@@ -72,9 +72,9 @@ class Trip extends Filterable implements HasColorSource, HasDateRange, HasItemNa
     }
 
     List<String> messages = Lists.newArrayList(cargoTitle, truck.getMessage(truckLabel),
-        Localized.getConstants().createTripForCargoQuestion());
+        Localized.dictionary().createTripForCargoQuestion());
 
-    Global.confirm(Localized.getConstants().createTripForCargoCaption(), Icon.QUESTION, messages,
+    Global.confirm(Localized.dictionary().createTripForCargoCaption(), Icon.QUESTION, messages,
         new ConfirmationCallback() {
           @Override
           public void onConfirm() {
@@ -184,9 +184,9 @@ class Trip extends Filterable implements HasColorSource, HasDateRange, HasItemNa
       return;
     }
 
-    Global.confirm(Localized.getConstants().assignCargoToTripCaption(), Icon.QUESTION,
+    Global.confirm(Localized.dictionary().assignCargoToTripCaption(), Icon.QUESTION,
         Lists.newArrayList(cargoMessage, tripMessage,
-            Localized.getConstants().assignCargoToTripQuestion()), callback);
+            Localized.dictionary().assignCargoToTripQuestion()), callback);
   }
 
   private final Long tripId;
@@ -254,8 +254,8 @@ class Trip extends Filterable implements HasColorSource, HasDateRange, HasItemNa
     String rangeLabel = TimeBoardHelper.getRangeLabel(this.range);
 
     this.title = TimeBoardHelper.buildTitle(
-        Localized.getConstants().tripDuration(), rangeLabel,
-        Localized.getConstants().status(), (this.status == null) ? null : this.status.getCaption(),
+        Localized.dictionary().tripDuration(), rangeLabel,
+        Localized.dictionary().status(), (this.status == null) ? null : this.status.getCaption(),
         tripNoLabel, this.tripNo,
         truckLabel, this.truckNumber,
         trailerLabel, this.trailerNumber,
@@ -429,9 +429,9 @@ class Trip extends Filterable implements HasColorSource, HasDateRange, HasItemNa
     String driverTitle = TimeBoardHelper.join(Data.getColumnLabel(viewName, COL_DRIVER),
         driver.getItemName());
 
-    Global.confirm(Localized.getConstants().assignDriverToTripCaption(), Icon.QUESTION,
+    Global.confirm(Localized.dictionary().assignDriverToTripCaption(), Icon.QUESTION,
         Lists.newArrayList(driverTitle, getTitle(),
-            Localized.getConstants().assignDriverToTripQuestion()),
+            Localized.dictionary().assignDriverToTripQuestion()),
         new ConfirmationCallback() {
           @Override
           public void onConfirm() {
@@ -464,15 +464,15 @@ class Trip extends Filterable implements HasColorSource, HasDateRange, HasItemNa
 
     switch (vehicleType) {
       case TRUCK:
-        caption = Localized.getConstants().assignTruckToTripCaption();
-        messages.add(Localized.getConstants().assignTruckToTripQuestion());
+        caption = Localized.dictionary().assignTruckToTripCaption();
+        messages.add(Localized.dictionary().assignTruckToTripQuestion());
 
         columns.add(Data.getColumn(VIEW_NAME, COL_VEHICLE));
         break;
 
       case TRAILER:
-        caption = Localized.getConstants().assignTrailerToTripCaption();
-        messages.add(Localized.getConstants().assignTrailerToTripQuestion());
+        caption = Localized.dictionary().assignTrailerToTripCaption();
+        messages.add(Localized.dictionary().assignTrailerToTripQuestion());
 
         columns.add(Data.getColumn(VIEW_NAME, COL_TRAILER));
         break;

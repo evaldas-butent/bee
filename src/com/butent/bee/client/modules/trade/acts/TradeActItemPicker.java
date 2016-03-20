@@ -48,7 +48,7 @@ class TradeActItemPicker extends ItemsPicker {
         (response.hasResponse(BeeRowSet.class)) {
           callback.onSuccess(BeeRowSet.restore(response.getResponseAsString()));
         } else {
-          BeeKeeper.getScreen().notifyWarning(Localized.getConstants().nothingFound());
+          BeeKeeper.getScreen().notifyWarning(Localized.dictionary().nothingFound());
         }
       }
     });

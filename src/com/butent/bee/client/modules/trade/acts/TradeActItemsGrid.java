@@ -169,7 +169,7 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
     if (gridView != null && !gridView.isReadOnly()
         && BeeKeeper.getUser().canCreateData(gridView.getViewName())) {
 
-      Button command = new Button(Localized.getConstants().actionImport());
+      Button command = new Button(Localized.dictionary().actionImport());
       command.addStyleName(STYLE_COMMAND_IMPORT);
 
       command.addClickHandler(new ClickHandler() {
@@ -241,7 +241,7 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
                   });
 
             } else {
-              getGridView().notifyWarning(Localized.getConstants().noData());
+              getGridView().notifyWarning(Localized.dictionary().noData());
             }
           }
         });
@@ -514,7 +514,7 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
               @Override
               public void accept(final List<String> lines) {
                 if (lines.isEmpty()) {
-                  getGridView().notifyWarning(importCaption, Localized.getConstants().noData());
+                  getGridView().notifyWarning(importCaption, Localized.dictionary().noData());
 
                 } else {
                   Global.getParameter(PRM_IMPORT_TA_ITEM_RX, new Consumer<String>() {
@@ -525,7 +525,7 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
 
                       if (importEntries.isEmpty()) {
                         getGridView().notifyWarning(importCaption,
-                            Localized.getConstants().nothingFound());
+                            Localized.dictionary().nothingFound());
 
                       } else {
                         IsRow parentRow = getParentRow();
@@ -577,7 +577,7 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
     }
 
     if (files.isEmpty()) {
-      getGridView().notifyWarning(Localized.getConstants().noData());
+      getGridView().notifyWarning(Localized.dictionary().noData());
 
     } else {
       final List<String> lines = new ArrayList<>();

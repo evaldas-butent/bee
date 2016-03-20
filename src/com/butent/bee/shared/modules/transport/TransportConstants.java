@@ -205,10 +205,10 @@ public final class TransportConstants {
   }
 
   public enum TripStatus implements HasCaption {
-    NEW(Localized.getConstants().trTripStatusNew(), true),
-    ACTIVE(Localized.getConstants().trTripStatusActive(), true),
-    CANCELED(Localized.getConstants().trTripStatusCanceled(), false),
-    COMPLETED(Localized.getConstants().trTripStatusCompleted(), false);
+    NEW(Localized.dictionary().trTripStatusNew(), true),
+    ACTIVE(Localized.dictionary().trTripStatusActive(), true),
+    CANCELED(Localized.dictionary().trTripStatusCanceled(), false),
+    COMPLETED(Localized.dictionary().trTripStatusCompleted(), false);
 
     private final String caption;
     private final boolean editable;

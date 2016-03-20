@@ -419,7 +419,7 @@ public abstract class CrudWorker {
         values);
 
     if (Objects.isNull(rs)) {
-      throw new BeeRuntimeException(Localized.getConstants().noData());
+      throw new BeeRuntimeException(Localized.dictionary().noData());
     }
     ResponseObject response = deb.commitRow(rs, RowInfo.class);
 

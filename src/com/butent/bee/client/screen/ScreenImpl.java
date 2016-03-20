@@ -849,14 +849,14 @@ public class ScreenImpl implements Screen {
 
       FaLabel exit = new FaLabel(FontAwesome.SIGN_OUT);
       exit.addStyleName(BeeConst.CSS_CLASS_PREFIX + "Logout");
-      exit.setTitle(Localized.getConstants().signOut());
+      exit.setTitle(Localized.dictionary().signOut());
 
       exit.addClickHandler(new ClickHandler() {
         @Override
         public void onClick(ClickEvent event) {
-          Global.getMsgBoxen().confirm(Localized.getConstants().endSession(Settings.getAppName()),
-              Icon.QUESTION, Lists.newArrayList(Localized.getConstants().questionLogout()),
-              Localized.getConstants().yes(), Localized.getConstants().no(),
+          Global.getMsgBoxen().confirm(Localized.dictionary().endSession(Settings.getAppName()),
+              Icon.QUESTION, Lists.newArrayList(Localized.dictionary().questionLogout()),
+              Localized.dictionary().yes(), Localized.dictionary().no(),
               new ConfirmationCallback() {
                 @Override
                 public void onConfirm() {
@@ -965,7 +965,7 @@ public class ScreenImpl implements Screen {
   protected Pair<? extends IdentifiableWidget, Integer> initWest() {
     setCentralScrutinizer(new CentralScrutinizer());
 
-    final Label createButton = new Label("+ " + Localized.getConstants().create());
+    final Label createButton = new Label("+ " + Localized.dictionary().create());
     createButton.addStyleName(BeeConst.CSS_CLASS_PREFIX + "CreateButton");
 
     createButton.addClickHandler(new ClickHandler() {
@@ -977,7 +977,7 @@ public class ScreenImpl implements Screen {
 
     Flow myEnv = new Flow(BeeConst.CSS_CLASS_PREFIX + "MyEnvironment");
     myEnv.add(new FaLabel(FontAwesome.BOOKMARK));
-    myEnv.add(new Label(Localized.getConstants().myEnvironment()));
+    myEnv.add(new Label(Localized.dictionary().myEnvironment()));
 
     Flow panel = new Flow(BeeConst.CSS_CLASS_PREFIX + "WestContainer");
 
@@ -1128,8 +1128,8 @@ public class ScreenImpl implements Screen {
           || hiddenDirections.contains(Direction.WEST);
 
       title = checked
-          ? Localized.getConstants().actionWorkspaceRestoreSize()
-          : Localized.getConstants().actionWorkspaceEnlargeToLeft();
+          ? Localized.dictionary().actionWorkspaceRestoreSize()
+          : Localized.dictionary().actionWorkspaceEnlargeToLeft();
       getEastWestToggle().setTitle(title);
 
       if (getEastWestToggle().isChecked() != checked) {
@@ -1141,8 +1141,8 @@ public class ScreenImpl implements Screen {
       checked = hiddenDirections.contains(Direction.NORTH);
 
       title = checked
-          ? Localized.getConstants().actionWorkspaceRestoreSize()
-          : Localized.getConstants().actionWorkspaceEnlargeUp();
+          ? Localized.dictionary().actionWorkspaceRestoreSize()
+          : Localized.dictionary().actionWorkspaceEnlargeUp();
       getNorthToggle().setTitle(title);
 
       if (getNorthToggle().isChecked() != checked) {
@@ -1160,8 +1160,8 @@ public class ScreenImpl implements Screen {
       }
 
       title = checked
-          ? Localized.getConstants().actionWorkspaceRestoreSize()
-          : Localized.getConstants().actionWorkspaceMaxSize();
+          ? Localized.dictionary().actionWorkspaceRestoreSize()
+          : Localized.dictionary().actionWorkspaceMaxSize();
       getMaximizer().setTitle(title);
 
       if (getMaximizer().isChecked() != checked) {
@@ -1259,7 +1259,7 @@ public class ScreenImpl implements Screen {
 
           if (Global.getChatManager().isEnabled()) {
             FaLabel chat = new FaLabel(FontAwesome.COMMENT_O, STYLE_POPUP_USERS + "Chat");
-            chat.setTitle(Localized.getConstants().chat());
+            chat.setTitle(Localized.dictionary().chat());
 
             chat.addClickHandler(event -> {
               UiHelper.closeDialog(table);
@@ -1382,7 +1382,7 @@ public class ScreenImpl implements Screen {
 
       FaLabel presenceWidget = new FaLabel(presence.getIcon(), presence.getStyleName());
       presenceWidget.addStyleName(BeeConst.CSS_CLASS_PREFIX + "UserPresenceIcon");
-      presenceWidget.setTitle(Localized.getConstants().presenceChangeTooltip());
+      presenceWidget.setTitle(Localized.dictionary().presenceChangeTooltip());
 
       if (presence != Presence.IDLE) {
         presenceWidget.addClickHandler(event -> {
@@ -1450,9 +1450,9 @@ public class ScreenImpl implements Screen {
     sett.addStyleName(BeeConst.CSS_CLASS_PREFIX + "UserControlIcon");
     help.addStyleName(BeeConst.CSS_CLASS_PREFIX + "UserControlIcon");
 
-    sett.setTitle(Localized.getConstants().settings());
-    help.setTitle(Localized.getConstants().help());
-    menuHide.setTitle(Localized.getConstants().hideOrShowMenu());
+    sett.setTitle(Localized.dictionary().settings());
+    help.setTitle(Localized.dictionary().help());
+    menuHide.setTitle(Localized.dictionary().hideOrShowMenu());
 
     styleMenuToggle(menuHide, BeeKeeper.getUser().isMenuVisible());
 
@@ -1492,9 +1492,9 @@ public class ScreenImpl implements Screen {
     Flow exitContainer = new Flow();
     exitContainer.addStyleName(BeeConst.CSS_CLASS_PREFIX + "UserExitContainer");
 
-    Label exit = new Label(Localized.getConstants().signOut());
+    Label exit = new Label(Localized.dictionary().signOut());
     exit.addStyleName(BeeConst.CSS_CLASS_PREFIX + "UserExit");
-    exit.setTitle(Localized.getConstants().signOut());
+    exit.setTitle(Localized.dictionary().signOut());
 
     exit.addClickHandler(new ClickHandler() {
       @Override
@@ -1587,7 +1587,7 @@ public class ScreenImpl implements Screen {
 
       FaLabel command = new FaLabel(FontAwesome.SITEMAP,
           BeeConst.CSS_CLASS_PREFIX + "CompanyStructure-command");
-      command.setTitle(Localized.getConstants().companyStructure());
+      command.setTitle(Localized.dictionary().companyStructure());
 
       command.addClickHandler(new ClickHandler() {
         @Override

@@ -51,12 +51,12 @@ public class EcScreen extends ScreenImpl {
     EcStyles.add(info, panelStyle, "info");
 
     info.add(createCommandWidget(EcConstants.SVC_FINANCIAL_INFORMATION,
-        Localized.getConstants().ecFinancialInformation(), Type.LINK));
+        Localized.dictionary().ecFinancialInformation(), Type.LINK));
 
     info.add(createCommandWidget(EcConstants.SVC_SHOW_TERMS_OF_DELIVERY,
-        Localized.getConstants().ecTermsOfDelivery(), Type.LINK));
+        Localized.dictionary().ecTermsOfDelivery(), Type.LINK));
     info.add(createCommandWidget(EcConstants.SVC_SHOW_CONTACTS,
-        Localized.getConstants().ecContacts(), Type.LINK));
+        Localized.dictionary().ecContacts(), Type.LINK));
 
     container.add(info);
 
@@ -66,23 +66,23 @@ public class EcScreen extends ScreenImpl {
     EcStyles.add(searchBy, panelStyle);
     EcStyles.add(searchBy, panelStyle, styleName);
 
-    Label label = new Label(Localized.getConstants().ecSearchBy());
+    Label label = new Label(Localized.dictionary().ecSearchBy());
     EcStyles.add(label, styleName, "label");
     searchBy.add(label);
 
     searchBy.add(createCommandWidget(EcConstants.SVC_SEARCH_BY_ITEM_CODE,
-        Localized.getConstants().ecSearchByItemCode(), Type.LABEL));
+        Localized.dictionary().ecSearchByItemCode(), Type.LABEL));
     searchBy.add(createCommandWidget(EcConstants.SVC_SEARCH_BY_OE_NUMBER,
-        Localized.getConstants().ecSearchByOeNumber(), Type.LABEL));
+        Localized.dictionary().ecSearchByOeNumber(), Type.LABEL));
     searchBy.add(createCommandWidget(EcConstants.SVC_SEARCH_BY_CAR,
-        Localized.getConstants().ecSearchByCar(), Type.LABEL));
+        Localized.dictionary().ecSearchByCar(), Type.LABEL));
     searchBy.add(createCommandWidget(EcConstants.SVC_SEARCH_BY_BRAND,
-        Localized.getConstants().ecSearchByBrand(), Type.LABEL));
+        Localized.dictionary().ecSearchByBrand(), Type.LABEL));
 
     searchBy.add(createCommandWidget(EcConstants.SVC_GENERAL_ITEMS,
-        Localized.getConstants().ecSearchByItemGroup(), Type.LABEL));
+        Localized.dictionary().ecSearchByItemGroup(), Type.LABEL));
     searchBy.add(createCommandWidget(EcConstants.SVC_BIKE_ITEMS,
-        Localized.getConstants().ecBikeItemsShort(), Type.LABEL));
+        Localized.dictionary().ecBikeItemsShort(), Type.LABEL));
 
     container.add(searchBy);
 
@@ -306,7 +306,7 @@ public class EcScreen extends ScreenImpl {
     final InputText input = EcKeeper.getSearchBox();
 
     DomUtils.setSearch(input);
-    DomUtils.setPlaceholder(input, Localized.getConstants().ecGlobalSearchPlaceholder());
+    DomUtils.setPlaceholder(input, Localized.dictionary().ecGlobalSearchPlaceholder());
     EcStyles.add(input, styleName, "input");
 
     AutocompleteProvider.enableAutocomplete(input, EcConstants.NAME_PREFIX + styleName);

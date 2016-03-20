@@ -11,9 +11,9 @@ import com.butent.bee.shared.utils.EnumUtils;
 public final class ProjectConstants {
 
   public enum ProjectEvent implements HasCaption {
-    COMMENT(Localized.getConstants().comment(), Localized.getConstants().crmActionComment(),
+    COMMENT(Localized.dictionary().comment(), Localized.dictionary().crmActionComment(),
         FontAwesome.COMMENT_O),
-    EDIT(Localized.getConstants().prjEventEdited(), null, null);
+    EDIT(Localized.dictionary().prjEventEdited(), null, null);
 
     private final String caption;
     private final String commandLabel;

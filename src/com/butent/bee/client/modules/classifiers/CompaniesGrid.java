@@ -53,7 +53,7 @@ public class CompaniesGrid extends AbstractGridInterceptor {
     header.clearCommandPanel();
 
     Flow inputPanel = new Flow(STYLE_INPUT_PANEL);
-    Label disabled = new Label(Localized.getConstants().disabledShort());
+    Label disabled = new Label(Localized.dictionary().disabledShort());
     disabled.addStyleName(STYLE_LABEL_DISABLED);
 
     disabled.addClickHandler(new ClickHandler() {
@@ -65,7 +65,7 @@ public class CompaniesGrid extends AbstractGridInterceptor {
       }
     });
 
-    Label enabled = new Label(Localized.getConstants().enabledShort());
+    Label enabled = new Label(Localized.dictionary().enabledShort());
     enabled.addStyleName(STYLE_LABEL_ENABLED);
 
     enabled.addClickHandler(new ClickHandler() {
@@ -79,7 +79,7 @@ public class CompaniesGrid extends AbstractGridInterceptor {
     editFormToggle = new Toggle(FontAwesome.TOGGLE_OFF, FontAwesome.TOGGLE_ON,
         STYLE_INPUT_TOGGLE, readBoolean(NAME_INPUT_MODE));
 
-    editFormToggle.setTitle(Localized.getConstants().editMode());
+    editFormToggle.setTitle(Localized.dictionary().editMode());
 
     editFormToggle.addClickHandler(new ClickHandler() {
       @Override
@@ -93,7 +93,7 @@ public class CompaniesGrid extends AbstractGridInterceptor {
     } else {
       StyleUtils.setStyleName(disabled.getElement(), STYLE_LABEL_ACTIVE, true);
     }
-    inputPanel.add(new Label(Localized.getConstants().editing()));
+    inputPanel.add(new Label(Localized.dictionary().editing()));
     inputPanel.add(disabled);
     inputPanel.add(editFormToggle);
     inputPanel.add(enabled);

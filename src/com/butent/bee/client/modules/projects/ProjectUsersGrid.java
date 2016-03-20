@@ -18,7 +18,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.Collection;
 
 class ProjectUsersGrid extends AbstractGridInterceptor {
-  private static final Dictionary LC = Localized.getConstants();
+  private static final Dictionary LC = Localized.dictionary();
 
   @Override
   public DeleteMode getDeleteMode(GridPresenter presenter, IsRow activeRow,

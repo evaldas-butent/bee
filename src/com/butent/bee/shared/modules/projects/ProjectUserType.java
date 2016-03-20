@@ -11,12 +11,12 @@ public enum ProjectUserType implements HasCaption {
   /**
    * The team members of project.
    */
-  PARTICIPANT(Localized.getConstants().prjParticipant()),
+  PARTICIPANT(Localized.dictionary().prjParticipant()),
 
   /**
    * Read-only access members of project.
    */
-  OBSERVER(Localized.getConstants().prjObserver());
+  OBSERVER(Localized.dictionary().prjObserver());
 
   private final String caption;
 

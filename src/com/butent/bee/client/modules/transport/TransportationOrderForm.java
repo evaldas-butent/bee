@@ -89,8 +89,8 @@ class TransportationOrderForm extends AbstractFormInterceptor implements ClickHa
         String[] cargos = Codec.beeDeserializeCollection(response.getResponseAsString());
 
         if (ArrayUtils.isEmpty(cargos)) {
-          form.notifyWarning(Localized.getConstants()
-              .dataNotAvailable(Localized.getConstants().cargos()));
+          form.notifyWarning(Localized.dictionary()
+              .dataNotAvailable(Localized.dictionary().cargos()));
           return;
         }
         TripSelector.select(cargos, null, form.getElement());
@@ -156,7 +156,7 @@ class TransportationOrderForm extends AbstractFormInterceptor implements ClickHa
     }
     if (Data.isViewEditable(VIEW_CARGO_TRIPS)) {
       Image button = new Image(Global.getImages().silverTruck());
-      button.setTitle(Localized.getConstants().trAssignTrip());
+      button.setTitle(Localized.dictionary().trAssignTrip());
       button.setAlt(button.getTitle());
       button.addClickHandler(this);
 
@@ -196,18 +196,18 @@ class TransportationOrderForm extends AbstractFormInterceptor implements ClickHa
           String cap = result.get(ClassifierConstants.COL_COMPANY_NAME);
           List<String> msgs = new ArrayList<>();
 
-          msgs.add(BeeUtils.join(": ", Localized.getConstants().creditLimit(),
+          msgs.add(BeeUtils.join(": ", Localized.dictionary().creditLimit(),
               BeeUtils.joinWords(limit, result.get(AdministrationConstants.COL_CURRENCY))));
-          msgs.add(BeeUtils.join(": ", Localized.getConstants().trdDebt(), debt));
+          msgs.add(BeeUtils.join(": ", Localized.dictionary().trdDebt(), debt));
 
           if (overdue > 0) {
-            msgs.add(BeeUtils.join(": ", Localized.getConstants().trdOverdue(), overdue));
+            msgs.add(BeeUtils.join(": ", Localized.dictionary().trdOverdue(), overdue));
           }
           if (income > 0) {
-            msgs.add(BeeUtils.join(": ", Localized.getConstants().trOrders(), income));
+            msgs.add(BeeUtils.join(": ", Localized.dictionary().trOrders(), income));
           }
-          Global.confirm(cap, null, msgs, Localized.getConstants().ok(),
-              Localized.getConstants().cancel(), new ConfirmationCallback() {
+          Global.confirm(cap, null, msgs, Localized.dictionary().ok(),
+              Localized.dictionary().cancel(), new ConfirmationCallback() {
                 @Override
                 public void onConfirm() {
                   listener.fireEvent(event);
@@ -223,7 +223,7 @@ class TransportationOrderForm extends AbstractFormInterceptor implements ClickHa
   private IdentifiableWidget getCopyAction() {
     if (copyAction == null) {
       copyAction = new FaLabel(FontAwesome.COPY);
-      copyAction.setTitle(Localized.getConstants().actionCopy());
+      copyAction.setTitle(Localized.dictionary().actionCopy());
 
       copyAction.addClickHandler(new ClickHandler() {
         @Override

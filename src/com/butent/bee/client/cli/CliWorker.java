@@ -3135,8 +3135,8 @@ public final class CliWorker {
     double width = BeeConst.DOUBLE_UNDEF;
     CssUnit widthUnit = null;
     int timeout = BeeConst.UNDEF;
-    String confirmHtml = Localized.getConstants().ok();
-    String cancelHtml = Localized.getConstants().cancel();
+    String confirmHtml = Localized.dictionary().ok();
+    String cancelHtml = Localized.dictionary().cancel();
 
     boolean required = true;
 
@@ -3657,7 +3657,7 @@ public final class CliWorker {
             String right = StyleUtils.className(TextAlign.RIGHT);
             String bold = StyleUtils.className(FontWeight.BOLD);
 
-            table.setText(0, 0, Localized.getConstants().currency());
+            table.setText(0, 0, Localized.dictionary().currency());
 
             for (int i = 0; i < currencies.size(); i++) {
               String name = currencies.get(i).getB();
@@ -3677,7 +3677,7 @@ public final class CliWorker {
               }
             }
 
-            table.setCaption(BeeUtils.joinWords(Localized.getConstants().currencyRates(), dt));
+            table.setCaption(BeeUtils.joinWords(Localized.dictionary().currencyRates(), dt));
             BeeKeeper.getScreen().show(table);
           }
         });
@@ -4422,7 +4422,7 @@ public final class CliWorker {
       } else {
         String z = BeeKeeper.getStorage().get(key);
         if (z == null) {
-          showError(errorPopup, Localized.getConstants().keyNotFound(key));
+          showError(errorPopup, Localized.dictionary().keyNotFound(key));
         } else {
           inform(key, z);
         }

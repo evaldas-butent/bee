@@ -32,7 +32,7 @@ public final class Localized {
     return BeeUtils.join(BeeConst.STRING_UNDER, Assert.notEmpty(colName), Assert.notEmpty(locale));
   }
 
-  public static Dictionary getConstants() {
+  public static Dictionary dictionary() {
     return dictionary;
   }
 

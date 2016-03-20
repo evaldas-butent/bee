@@ -58,9 +58,9 @@ public final class ReportUtils {
     StyleUtils.setHeight(frame, BeeKeeper.getScreen().getHeight() * 0.9, CssUnit.PX);
 
     if (callback != null) {
-      Global.inputWidget(Localized.getConstants().preview(), frame, callback);
+      Global.inputWidget(Localized.dictionary().preview(), frame, callback);
     } else {
-      Global.showModalWidget(Localized.getConstants().preview(), frame);
+      Global.showModalWidget(Localized.dictionary().preview(), frame);
     }
   }
 

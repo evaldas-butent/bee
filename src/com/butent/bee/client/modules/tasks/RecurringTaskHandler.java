@@ -372,7 +372,7 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
     if (header != null && !header.hasCommands()) {
       FaLabel schedule = new FaLabel(FontAwesome.CALENDAR);
       schedule.addStyleName(STYLE_PREFIX + "actionSchedule");
-      schedule.setTitle(Localized.getConstants().crmRTActionSchedule());
+      schedule.setTitle(Localized.dictionary().crmRTActionSchedule());
 
       schedule.addClickHandler(new ClickHandler() {
         @Override
@@ -502,7 +502,7 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
 
     panel.add(table);
 
-    String caption = BeeUtils.joinWords(Localized.getConstants().crmTasks(),
+    String caption = BeeUtils.joinWords(Localized.dictionary().crmTasks(),
         new JustDate(dayNumber).toString());
 
     DialogBox dialog = DialogBox.create(caption, STYLE_OFFSPRING_DIALOG);
@@ -672,7 +672,7 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
 
       case DELETE:
         Global.confirmDelete(getOffspringLabel(dataId), Icon.WARNING,
-            Collections.singletonList(Localized.getConstants().crmTaskDeleteQuestion()),
+            Collections.singletonList(Localized.dictionary().crmTaskDeleteQuestion()),
             new ConfirmationCallback() {
               @Override
               public void onConfirm() {
@@ -752,13 +752,13 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
     }
 
     if (size > 1) {
-      messages.add(Localized.getConstants().crmRTSpawnTasksQuestion());
+      messages.add(Localized.dictionary().crmRTSpawnTasksQuestion());
     } else {
-      messages.add(Localized.getConstants().crmRTSpawnTaskQuestion());
+      messages.add(Localized.dictionary().crmRTSpawnTaskQuestion());
     }
 
     Global.confirm(caption, Icon.QUESTION, messages,
-        Localized.getConstants().actionCreate(), Localized.getConstants().actionCancel(),
+        Localized.dictionary().actionCreate(), Localized.dictionary().actionCancel(),
         new ConfirmationCallback() {
           @Override
           public void onConfirm() {
@@ -785,7 +785,7 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
                       }
 
                       String message =
-                          Localized.getConstants().crmCreatedNewTasks(taskData.getNumberOfRows());
+                          Localized.dictionary().crmCreatedNewTasks(taskData.getNumberOfRows());
                       BeeKeeper.getScreen().notifyInfo(message);
 
                       DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_TASKS);
@@ -959,7 +959,7 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
             STYLE_OFFSPRING_STATUS);
 
         FaLabel open = new FaLabel(FontAwesome.EDIT);
-        open.setTitle(Localized.getConstants().actionEdit());
+        open.setTitle(Localized.dictionary().actionEdit());
 
         open.addClickHandler(new ClickHandler() {
           @Override
@@ -974,7 +974,7 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
 
         if (BeeKeeper.getUser().is(taskRow.getLong(ownerIndex))) {
           FaLabel delete = new FaLabel(FontAwesome.TRASH_O);
-          delete.setTitle(Localized.getConstants().actionDelete());
+          delete.setTitle(Localized.dictionary().actionDelete());
 
           delete.addClickHandler(new ClickHandler() {
             @Override
@@ -1009,7 +1009,7 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
             STYLE_OFFSPRING_LAST_NAME);
 
         FaLabel create = new FaLabel(FontAwesome.PLUS_SQUARE_O);
-        create.setTitle(Localized.getConstants().actionCreate());
+        create.setTitle(Localized.dictionary().actionCreate());
 
         create.addClickHandler(new ClickHandler() {
           @Override
@@ -1249,14 +1249,14 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
 
     JustDate from = getDateValue(COL_RT_SCHEDULE_FROM);
     if (from == null) {
-      getFormView().notifyWarning(Localized.getConstants().valueRequired());
+      getFormView().notifyWarning(Localized.dictionary().valueRequired());
       focusSource(COL_RT_SCHEDULE_FROM);
       return false;
     }
 
     JustDate until = getDateValue(COL_RT_SCHEDULE_UNTIL);
     if (until != null && TimeUtils.isMore(from, until)) {
-      getFormView().notifyWarning(Localized.getConstants().invalidRange(),
+      getFormView().notifyWarning(Localized.dictionary().invalidRange(),
           BeeUtils.joinWords(from, until));
       focusSource(COL_RT_SCHEDULE_UNTIL);
       return false;

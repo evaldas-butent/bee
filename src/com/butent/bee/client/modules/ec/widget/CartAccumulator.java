@@ -149,7 +149,7 @@ public class CartAccumulator extends HtmlTable implements HasKeyDownHandlers {
 
     CustomDiv widget = new CustomDiv();
     if (count > 0) {
-      widget.setText(Localized.getConstants().ecInMyCart(count));
+      widget.setText(Localized.dictionary().ecInMyCart(count));
     }
 
     if (getRowCount() > row) {

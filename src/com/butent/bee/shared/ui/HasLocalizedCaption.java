@@ -8,7 +8,7 @@ public interface HasLocalizedCaption extends HasCaption {
 
   @Override
   default String getCaption() {
-    return getCaption(Localized.getConstants());
+    return getCaption(Localized.dictionary());
   }
 
   String getCaption(Dictionary dictionary);

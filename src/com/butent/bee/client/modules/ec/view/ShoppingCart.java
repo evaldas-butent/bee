@@ -137,7 +137,7 @@ public class ShoppingCart extends Split {
     }
 
     if (cart.getDeliveryMethod() == null) {
-      BeeKeeper.getScreen().notifyWarning(Localized.getConstants().ecDeliveryMethodRequired());
+      BeeKeeper.getScreen().notifyWarning(Localized.dictionary().ecDeliveryMethodRequired());
       return;
     }
 
@@ -159,9 +159,9 @@ public class ShoppingCart extends Split {
           EcKeeper.resetCart(cartType);
           EcKeeper.closeView(ShoppingCart.this);
 
-          Global.showInfo(Localized.getConstants().ecOrderSubmitted(),
-              Lists.newArrayList(Localized.getConstants().ecOrderId(response.getResponseAsString()),
-                  Localized.getConstants().ecOrderTotal(amount, EcConstants.CURRENCY)));
+          Global.showInfo(Localized.dictionary().ecOrderSubmitted(),
+              Lists.newArrayList(Localized.dictionary().ecOrderId(response.getResponseAsString()),
+                  Localized.dictionary().ecOrderTotal(amount, EcConstants.CURRENCY)));
         }
       }
     });
@@ -203,11 +203,11 @@ public class ShoppingCart extends Split {
         panel.add(commentWidget);
       }
 
-      final CheckBox copyByMail = new CheckBox(Localized.getConstants().ecOrderCopyByMail());
+      final CheckBox copyByMail = new CheckBox(Localized.dictionary().ecOrderCopyByMail());
       copyByMail.addStyleName(STYLE_COPY_BY_MAIL);
       panel.add(copyByMail);
 
-      Button submitWidget = new Button(Localized.getConstants().ecShoppingCartSubmit());
+      Button submitWidget = new Button(Localized.dictionary().ecShoppingCartSubmit());
       submitWidget.addStyleName(STYLE_PRIMARY + "-submit");
       submitWidget.addClickHandler(new ClickHandler() {
         @Override
@@ -229,7 +229,7 @@ public class ShoppingCart extends Split {
   private static Widget renderComment(final Cart cart) {
     Flow panel = new Flow(STYLE_COMMENT + STYLE_PANEL);
 
-    Label label = new Label(Localized.getConstants().comment());
+    Label label = new Label(Localized.dictionary().comment());
     label.addStyleName(STYLE_COMMENT + STYLE_LABEL);
     panel.add(label);
 
@@ -254,7 +254,7 @@ public class ShoppingCart extends Split {
   private static Widget renderDeliveryAddress(final Cart cart) {
     Flow panel = new Flow(STYLE_DELIVERY_ADDRESS + STYLE_PANEL);
 
-    Label label = new Label(Localized.getConstants().ecDeliveryAddress());
+    Label label = new Label(Localized.dictionary().ecDeliveryAddress());
     label.addStyleName(STYLE_DELIVERY_ADDRESS + STYLE_LABEL);
     panel.add(label);
 
@@ -279,7 +279,7 @@ public class ShoppingCart extends Split {
   private Widget renderDeliveryMethod(final Cart cart) {
     Flow panel = new Flow(STYLE_DELIVERY_METHOD + STYLE_PANEL);
 
-    Label label = new Label(Localized.getConstants().ecDeliveryMethod());
+    Label label = new Label(Localized.dictionary().ecDeliveryMethod());
     label.addStyleName(STYLE_DELIVERY_METHOD + STYLE_LABEL);
     panel.add(label);
 
@@ -365,27 +365,27 @@ public class ShoppingCart extends Split {
     if (!BeeUtils.isEmpty(items)) {
       int row = 0;
 
-      Label nameLabel = new Label(Localized.getConstants().ecItemName());
+      Label nameLabel = new Label(Localized.dictionary().ecItemName());
       nameLabel.addStyleName(STYLE_NAME + STYLE_LABEL);
       itemTable.setWidget(row, COL_NAME, nameLabel);
 
-      Label codeLabel = new Label(Localized.getConstants().ecItemCode());
+      Label codeLabel = new Label(Localized.dictionary().ecItemCode());
       codeLabel.addStyleName(STYLE_CODE + STYLE_LABEL);
       itemTable.setWidget(row, COL_CODE, codeLabel);
 
-      Label brandLabel = new Label(Localized.getConstants().ecItemBrand());
+      Label brandLabel = new Label(Localized.dictionary().ecItemBrand());
       brandLabel.addStyleName(STYLE_BRAND + STYLE_LABEL);
       itemTable.setWidget(row, COL_BRAND, brandLabel);
 
-      Label qtyLabel = new Label(Localized.getConstants().ecItemQuantity());
+      Label qtyLabel = new Label(Localized.dictionary().ecItemQuantity());
       qtyLabel.addStyleName(STYLE_QUANTITY + STYLE_LABEL);
       itemTable.setWidget(row, COL_QUANTITY, qtyLabel);
 
-      Label priceLabel = new Label(Localized.getConstants().ecItemPrice());
+      Label priceLabel = new Label(Localized.dictionary().ecItemPrice());
       priceLabel.addStyleName(STYLE_PRICE + STYLE_LABEL);
       itemTable.setWidget(row, COL_PRICE, priceLabel);
 
-      Label removeLabel = new Label(Localized.getConstants().ecShoppingCartRemove());
+      Label removeLabel = new Label(Localized.dictionary().ecShoppingCartRemove());
       removeLabel.addStyleName(STYLE_REMOVE + STYLE_LABEL);
       itemTable.setWidget(row, COL_REMOVE, removeLabel);
 
@@ -517,7 +517,7 @@ public class ShoppingCart extends Split {
   }
 
   private static String renderTotal(Cart cart) {
-    return BeeUtils.joinWords(Localized.getConstants().ecShoppingCartTotal(),
+    return BeeUtils.joinWords(Localized.dictionary().ecShoppingCartTotal(),
         EcUtils.formatCents(cart.totalCents()), EcConstants.CURRENCY);
   }
 
@@ -525,7 +525,7 @@ public class ShoppingCart extends Split {
     item.setQuantity(value);
 
     BeeKeeper.getScreen().clearNotifications();
-    BeeKeeper.getScreen().notifyInfo(Localized.getConstants()
+    BeeKeeper.getScreen().notifyInfo(Localized.dictionary()
         .ecUpdateCartItem(cartType.getCaption(), item.getEcItem().getName(), value));
 
     Cart cart = EcKeeper.refreshCart(cartType);

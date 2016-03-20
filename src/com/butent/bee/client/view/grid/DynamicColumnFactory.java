@@ -121,7 +121,7 @@ public final class DynamicColumnFactory {
       String viewName = gridView.getViewName();
 
       ColumnInfo columnInfo = createRoleColumnInfo(viewName, 0L,
-          Localized.getConstants().rightsDefault());
+          Localized.dictionary().rightsDefault());
       gridView.getGrid().addColumn(columnInfo);
 
       for (String roleName : roleNames) {

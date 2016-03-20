@@ -265,11 +265,11 @@ public class MailPanel extends AbstractFormInterceptor {
           String label;
 
           if (!ids.contains(placeId)) {
-            label = Localized.getConstants().mailMessage();
+            label = Localized.dictionary().mailMessage();
             ids.clear();
             ids.add(placeId);
           } else {
-            label = Localized.getConstants().mailMessages(ids.size());
+            label = Localized.dictionary().mailMessages(ids.size());
           }
           Label dragLabel = new Label(label);
 
@@ -389,7 +389,7 @@ public class MailPanel extends AbstractFormInterceptor {
 
     private SearchPanel() {
       setStyleName(CSS_SEARCH_PREFIX + "Panel");
-      Dictionary loc = Localized.getConstants();
+      Dictionary loc = Localized.dictionary();
 
       add(new Label(loc.mailFrom()));
       InputText from = new InputText();
@@ -498,7 +498,7 @@ public class MailPanel extends AbstractFormInterceptor {
 
           if (DataUtils.isId(getCurrentFolder())) {
             if (!searchInCurrentFolder()) {
-              folderContainer.setWidget(new InputBoolean(Localized.getConstants()
+              folderContainer.setWidget(new InputBoolean(Localized.dictionary()
                   .mailOnlyInFolder(getFolderCaption(getCurrentFolder()))));
             }
           } else {
@@ -683,12 +683,12 @@ public class MailPanel extends AbstractFormInterceptor {
         && BeeKeeper.getUser().canCreateData(TBL_RULES)) {
       FaLabel accountSettings = new FaLabel(FontAwesome.MAGIC);
 
-      accountSettings.setTitle(Localized.getConstants().mailRule());
+      accountSettings.setTitle(Localized.dictionary().mailRule());
       accountSettings.addClickHandler(new ClickHandler() {
         @Override
         public void onClick(ClickEvent ev) {
           if (!Objects.equals(getCurrentAccount().getUserId(), BeeKeeper.getUser().getUserId())) {
-            getFormView().notifyWarning(Localized.getConstants().actionNotAllowed());
+            getFormView().notifyWarning(Localized.dictionary().actionNotAllowed());
             return;
           }
           DataInfo dataInfo = Data.getDataInfo(TBL_RULES);
@@ -717,7 +717,7 @@ public class MailPanel extends AbstractFormInterceptor {
     }
     FaLabel refreshWidget = new FaLabel(FontAwesome.REFRESH);
 
-    refreshWidget.setTitle(Localized.getConstants().actionRefresh());
+    refreshWidget.setTitle(Localized.dictionary().actionRefresh());
     refreshWidget.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent clickEvent) {
@@ -728,7 +728,7 @@ public class MailPanel extends AbstractFormInterceptor {
 
     FaLabel unseenWidget = new FaLabel(FontAwesome.EYE_SLASH);
 
-    unseenWidget.setTitle(Localized.getConstants().mailMarkAsUnread());
+    unseenWidget.setTitle(Localized.dictionary().mailMarkAsUnread());
     unseenWidget.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent ev) {
@@ -746,7 +746,7 @@ public class MailPanel extends AbstractFormInterceptor {
     });
     header.addCommandItem(unseenWidget);
 
-    purgeWidget.setTitle(Localized.getConstants().mailEmptyTrashFolder());
+    purgeWidget.setTitle(Localized.dictionary().mailEmptyTrashFolder());
     purgeWidget.setVisible(false);
     purgeWidget.addClickHandler(new ClickHandler() {
       @Override
@@ -946,13 +946,13 @@ public class MailPanel extends AbstractFormInterceptor {
     AccountInfo account = getCurrentAccount();
 
     if (account.isDraftsFolder(folderId)) {
-      cap = Localized.getConstants().mailFolderDrafts();
+      cap = Localized.dictionary().mailFolderDrafts();
     } else if (account.isInboxFolder(folderId)) {
-      cap = Localized.getConstants().mailFolderInbox();
+      cap = Localized.dictionary().mailFolderInbox();
     } else if (account.isSentFolder(folderId)) {
-      cap = Localized.getConstants().mailFolderSent();
+      cap = Localized.dictionary().mailFolderSent();
     } else if (account.isTrashFolder(folderId)) {
-      cap = Localized.getConstants().mailFolderTrash();
+      cap = Localized.dictionary().mailFolderTrash();
     } else {
       cap = account.findFolder(folderId).getName();
     }
@@ -1003,9 +1003,9 @@ public class MailPanel extends AbstractFormInterceptor {
     final boolean purge = getCurrentAccount().isTrashFolder(getCurrentFolder())
         || getCurrentAccount().isDraftsFolder(getCurrentFolder());
 
-    Global.confirm(purge ? Localized.getConstants().delete()
-            : Localized.getConstants().mailActionMoveToTrash(), purge ? Icon.ALARM : Icon.WARNING,
-        Collections.singletonList(Localized.getConstants().mailMessages(ids.size())),
+    Global.confirm(purge ? Localized.dictionary().delete()
+            : Localized.dictionary().mailActionMoveToTrash(), purge ? Icon.ALARM : Icon.WARNING,
+        Collections.singletonList(Localized.dictionary().mailMessages(ids.size())),
         new ConfirmationCallback() {
           @Override
           public void onConfirm() {
@@ -1020,7 +1020,7 @@ public class MailPanel extends AbstractFormInterceptor {
 
                 if (!response.hasErrors()) {
                   String msg = response.getResponseAsString();
-                  Dictionary loc = Localized.getConstants();
+                  Dictionary loc = Localized.dictionary();
 
                   getFormView().notifyInfo(purge ? loc.mailDeletedMessages(msg)
                       : loc.mailMovedMessagesToTrash(msg));

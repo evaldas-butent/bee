@@ -127,7 +127,7 @@ public class ReportExpressionItem extends ReportItem {
   @Override
   public String saveOptions() {
     if (BeeUtils.isEmpty(temporaryExpression)) {
-      return Localized.getConstants().dataNotAvailable(Localized.getConstants().expression());
+      return Localized.dictionary().dataNotAvailable(Localized.dictionary().expression());
     }
     expression.clear();
     expression.addAll(temporaryExpression);
@@ -176,7 +176,7 @@ public class ReportExpressionItem extends ReportItem {
             final InputText input = new InputText();
             input.setValue(pair.getA());
 
-            Global.inputWidget(Localized.getConstants().separator(), input, new InputCallback() {
+            Global.inputWidget(Localized.dictionary().separator(), input, new InputCallback() {
               @Override
               public void onSuccess() {
                 pair.setA(encodeSpaces(input.getValue()));

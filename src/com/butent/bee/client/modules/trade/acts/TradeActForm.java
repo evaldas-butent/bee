@@ -52,14 +52,14 @@ public class TradeActForm extends AbstractFormInterceptor {
       form.removeStyleName(STYLE_EDIT);
       form.addStyleName(STYLE_CREATE);
 
-      caption = BeeUtils.join(" - ", Localized.getConstants().tradeActNew(),
+      caption = BeeUtils.join(" - ", Localized.dictionary().tradeActNew(),
           (kind == null) ? null : kind.getCaption());
 
     } else {
       form.removeStyleName(STYLE_CREATE);
       form.addStyleName(STYLE_EDIT);
 
-      caption = (kind == null) ? Localized.getConstants().tradeAct() : kind.getCaption();
+      caption = (kind == null) ? Localized.dictionary().tradeAct() : kind.getCaption();
     }
 
     if (lastKind != kind) {

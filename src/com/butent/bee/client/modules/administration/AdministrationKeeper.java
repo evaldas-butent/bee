@@ -77,14 +77,14 @@ public final class AdministrationKeeper {
         GridOptions.forCurrentUserFilter(NewsConstants.COL_UF_USER));
 
     GridFactory.registerGridInterceptor(GRID_USER_GROUP_MEMBERS,
-        UniqueChildInterceptor.forUsers(Localized.getConstants().userGroupAddMembers(),
+        UniqueChildInterceptor.forUsers(Localized.dictionary().userGroupAddMembers(),
             COL_UG_GROUP, COL_UG_USER));
     GridFactory.registerGridInterceptor(GRID_ROLE_USERS,
-        UniqueChildInterceptor.forUsers(Localized.getConstants().roleAddUsers(),
+        UniqueChildInterceptor.forUsers(Localized.dictionary().roleAddUsers(),
             COL_ROLE, COL_USER));
 
     GridFactory.registerGridInterceptor(GRID_THEME_COLORS,
-        new UniqueChildInterceptor(Localized.getConstants().newThemeColors(),
+        new UniqueChildInterceptor(Localized.dictionary().newThemeColors(),
             COL_THEME, COL_COLOR, VIEW_COLORS, Lists.newArrayList(COL_COLOR_NAME),
             Lists.newArrayList(COL_COLOR_NAME, COL_BACKGROUND, COL_FOREGROUND)));
 

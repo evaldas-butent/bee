@@ -230,7 +230,7 @@ public class SystemServiceBean {
     String reportFile = ui.getReport(reportName);
 
     if (BeeUtils.isEmpty(reportFile)) {
-      return ResponseObject.error(Localized.getConstants().keyNotFound(reportName));
+      return ResponseObject.error(Localized.dictionary().keyNotFound(reportName));
     }
     ResponseObject response;
 

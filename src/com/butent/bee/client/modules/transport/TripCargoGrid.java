@@ -54,13 +54,13 @@ class TripCargoGrid extends AbstractGridInterceptor {
       this.cargoIndex = DataUtils.getColumnIndex(COL_CARGO, gridView.getDataColumns());
       this.tripIndex = DataUtils.getColumnIndex(COL_TRIP, gridView.getDataColumns());
 
-      this.dialog = DialogBox.create(Localized.getConstants().trAssignCargo());
+      this.dialog = DialogBox.create(Localized.dictionary().trAssignCargo());
       dialog.setHideOnEscape(true);
 
       HtmlTable container = new HtmlTable();
       container.setBorderSpacing(5);
 
-      container.setText(0, 0, Localized.getConstants().trCargoSelectCargo());
+      container.setText(0, 0, Localized.dictionary().trCargoSelectCargo());
 
       Relation relation = Relation.create(VIEW_WAITING_CARGO,
           Lists.newArrayList("OrderNo", "CustomerName", "LoadingPostIndex", "LoadingCountryName",
@@ -88,7 +88,7 @@ class TripCargoGrid extends AbstractGridInterceptor {
       });
       container.setWidget(0, 1, selector);
 
-      Button orderButton = new Button(Localized.getConstants().newTransportationOrder(), this);
+      Button orderButton = new Button(Localized.dictionary().newTransportationOrder(), this);
       container.setWidget(1, 0, orderButton);
 
       dialog.setWidget(container);
@@ -108,7 +108,7 @@ class TripCargoGrid extends AbstractGridInterceptor {
                 public void onSuccess(final BeeRowSet res) {
                   if (DataUtils.isEmpty(res)) {
                     Queries.deleteRow(TBL_ORDERS, orderId);
-                    gridView.notifyWarning(Localized.getConstants().noData());
+                    gridView.notifyWarning(Localized.dictionary().noData());
                     return;
                   }
                   gridView.ensureRelId(new IdCallback() {

@@ -134,7 +134,7 @@ public class ProjectIncomesGrid extends AbstractGridInterceptor {
       ids.add(row.getId());
     }
     if (ids.isEmpty()) {
-      presenter.getGridView().notifyWarning(Localized.getConstants().selectAtLeastOneRow());
+      presenter.getGridView().notifyWarning(Localized.dictionary().selectAtLeastOneRow());
       return;
     }
 
@@ -144,7 +144,7 @@ public class ProjectIncomesGrid extends AbstractGridInterceptor {
       @Override
       public void onSuccess(final BeeRowSet result) {
         if (result.isEmpty()) {
-          presenter.getGridView().notifyWarning(Localized.getConstants().selectAtLeastOneRow());
+          presenter.getGridView().notifyWarning(Localized.dictionary().selectAtLeastOneRow());
         }
 
         final FormView parentForm = ViewHelper.getForm(presenter.getMainView());
@@ -273,7 +273,7 @@ public class ProjectIncomesGrid extends AbstractGridInterceptor {
       return;
     }
     FaLabel createInvoiceButton = new FaLabel(FontAwesome.LIST_ALT);
-    createInvoiceButton.setTitle(Localized.getConstants().createInvoice());
+    createInvoiceButton.setTitle(Localized.dictionary().createInvoice());
 
     createInvoiceButton.addClickHandler(new ClickHandler() {
 

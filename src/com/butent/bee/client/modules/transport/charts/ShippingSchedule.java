@@ -68,7 +68,7 @@ final class ShippingSchedule extends VehicleTimeBoard {
 
   @Override
   public String getCaption() {
-    return Localized.getConstants().shippingSchedule();
+    return Localized.dictionary().shippingSchedule();
   }
 
   @Override

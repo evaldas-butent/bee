@@ -93,7 +93,7 @@ public class AssessmentTransportationForm extends PrintFormInterceptor {
             int colUnloadingPostIndex = result.getColumnIndex("UnloadingPostIndex");
             int colUnloadingDate = result.getColumnIndex("UnloadingDate");
 
-            Dictionary loc = Localized.getConstants();
+            Dictionary loc = Localized.dictionary();
             Map<Integer, Pair<Integer, String>> map = new HashMap<>();
 
             map.put(colLoadingAddress, Pair.of(0, loc.trLoadingAddress()));
@@ -174,9 +174,9 @@ public class AssessmentTransportationForm extends PrintFormInterceptor {
     forwarderDetails = new Flow();
     customerDetails = new Flow();
     firstParagraph = new Flow();
-    DomUtils.setDataProperty(forwarderDetails.getElement(), "locale", Localized.getConstants()
+    DomUtils.setDataProperty(forwarderDetails.getElement(), "locale", Localized.dictionary()
         .languageTag());
-    DomUtils.setDataProperty(customerDetails.getElement(), "locale", Localized.getConstants()
+    DomUtils.setDataProperty(customerDetails.getElement(), "locale", Localized.dictionary()
         .languageTag());
 
     ClassifierUtils.getCompanyInfo(row.getLong(form.getDataIndex(COL_FORWARDER)),

@@ -146,7 +146,7 @@ public final class MailKeeper {
     if (controller == null) {
       controller = new MailController();
       BeeKeeper.getScreen().addDomainEntry(Domain.MAIL, controller, null,
-          Localized.getConstants().mails());
+          Localized.dictionary().mails());
     }
     activePanel = mailPanel;
     rebuildController();
@@ -184,7 +184,7 @@ public final class MailKeeper {
         response.notify(panel.getFormView());
 
         if (!response.hasErrors()) {
-          Dictionary loc = Localized.getConstants();
+          Dictionary loc = Localized.dictionary();
 
           panel.getFormView().notifyInfo(move
               ? loc.mailMovedMessagesToFolder(response.getResponseAsString())
@@ -210,7 +210,7 @@ public final class MailKeeper {
     String caption = null;
 
     if (isParent) {
-      caption = Localized.getConstants().mailInFolder() + " "
+      caption = Localized.dictionary().mailInFolder() + " "
           + BeeUtils.bracket(account.findFolder(parentId).getName());
     }
     Global.inputString(title, caption, new StringCallback() {

@@ -304,7 +304,7 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
       if (Global.isDebug()) {
         notificationListener.notifyWarning("no rows found", filter.toString());
       } else {
-        notificationListener.notifyWarning(Localized.getConstants().nothingFound());
+        notificationListener.notifyWarning(Localized.dictionary().nothingFound());
       }
     }
   }

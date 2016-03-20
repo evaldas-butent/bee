@@ -102,7 +102,7 @@ public abstract class PrintFormInterceptor extends AbstractFormInterceptor {
 
                 if (captions.size() > 1) {
                   Global.choice(null,
-                      Localized.getConstants().choosePrintingForm(), captions, choice);
+                      Localized.dictionary().choosePrintingForm(), captions, choice);
 
                 } else if (captions.size() == 1) {
                   choice.onSuccess(0);
@@ -157,7 +157,7 @@ public abstract class PrintFormInterceptor extends AbstractFormInterceptor {
         ReportUtils.showReport(report, parameters, data));
 
     if (reports.length > 1) {
-      Global.choice(null, Localized.getConstants().choosePrintingForm(), Arrays.asList(reports),
+      Global.choice(null, Localized.dictionary().choosePrintingForm(), Arrays.asList(reports),
           (idx) -> consumer.accept(reports[idx]));
     } else {
       consumer.accept(reports[0]);

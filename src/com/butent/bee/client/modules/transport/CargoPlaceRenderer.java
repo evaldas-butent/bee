@@ -43,26 +43,26 @@ public class CargoPlaceRenderer extends AbstractCellRenderer {
     super(null);
 
     data.put(COL_PLACE_DATE, Pair.of(DataUtils.getColumnIndex(prefix + COL_PLACE_DATE, columns),
-        Localized.getConstants().date()));
+        Localized.dictionary().date()));
     data.put(COL_PLACE_NOTE, Pair.of(DataUtils.getColumnIndex(prefix + COL_PLACE_NOTE, columns),
-        Localized.getConstants().note()));
+        Localized.dictionary().note()));
     data.put(COL_PLACE_COMPANY,
         Pair.of(DataUtils.getColumnIndex(prefix + COL_PLACE_COMPANY, columns),
-            Localized.getConstants().company()));
+            Localized.dictionary().company()));
     data.put(COL_PLACE_CONTACT,
         Pair.of(DataUtils.getColumnIndex(prefix + COL_PLACE_CONTACT, columns),
-            Localized.getConstants().contact()));
+            Localized.dictionary().contact()));
     data.put(COL_PLACE_ADDRESS,
         Pair.of(DataUtils.getColumnIndex(prefix + COL_PLACE_ADDRESS, columns),
-            Localized.getConstants().address()));
+            Localized.dictionary().address()));
     data.put(COL_PLACE_CITY, Pair.of(DataUtils.getColumnIndex(prefix + "CityName", columns),
-        Localized.getConstants().city()));
+        Localized.dictionary().city()));
     data.put(COL_PLACE_COUNTRY,
         Pair.of(DataUtils.getColumnIndex(prefix + "CountryName", columns),
-            Localized.getConstants().country()));
+            Localized.dictionary().country()));
     data.put(COL_PLACE_NUMBER,
         Pair.of(DataUtils.getColumnIndex(prefix + COL_PLACE_NUMBER, columns),
-            Localized.getConstants().ref()));
+            Localized.dictionary().ref()));
 
     int codeIndex = DataUtils.getColumnIndex(prefix + "CountryCode", columns);
 

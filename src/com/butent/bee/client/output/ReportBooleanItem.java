@@ -46,9 +46,9 @@ public class ReportBooleanItem extends ReportItem {
     boolean on = BeeUtils.unbox(row.getBoolean(getName()));
 
     if (on) {
-      display = Localized.getConstants().yes();
+      display = Localized.dictionary().yes();
     } else {
-      display = Localized.getConstants().no();
+      display = Localized.dictionary().no();
     }
     return ReportValue.of(Boolean.toString(on)).setDisplay(display);
   }
@@ -61,7 +61,7 @@ public class ReportBooleanItem extends ReportItem {
   @Override
   public TabBar getFilterWidget() {
     if (filterWidget == null) {
-      Dictionary loc = Localized.getConstants();
+      Dictionary loc = Localized.dictionary();
       filterWidget = new TabBar(Orientation.HORIZONTAL);
       filterWidget.addStyleName(getStyle() + "-filter");
 

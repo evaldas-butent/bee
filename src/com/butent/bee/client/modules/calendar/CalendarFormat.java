@@ -30,7 +30,7 @@ public final class CalendarFormat {
     if (date == null) {
       return BeeConst.STRING_EMPTY;
     } else {
-      return BeeUtils.joinWords(TimeUtils.weekOfYear(date), Localized.getConstants()
+      return BeeUtils.joinWords(TimeUtils.weekOfYear(date), Localized.dictionary()
           .unitWeekShort());
     }
   }

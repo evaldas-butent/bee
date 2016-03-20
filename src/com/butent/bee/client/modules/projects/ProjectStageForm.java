@@ -124,7 +124,7 @@ class ProjectStageForm extends AbstractFormInterceptor implements DataChangeEven
           valid = true;
         } else {
           form.notifySevere(
-              Localized.getConstants().crmFinishDateMustBeGreaterThanStart());
+              Localized.dictionary().crmFinishDateMustBeGreaterThanStart());
           valid = false;
         }
       }

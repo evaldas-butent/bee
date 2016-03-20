@@ -126,7 +126,7 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
               BeeUtils.toLongOrNull(discussParams.get(PRM_MAX_UPLOAD_FILE_SIZE)))) {
 
             BeeKeeper.getScreen().notifyWarning(
-                Localized.getConstants().fileSizeExceeded(fileInfo.getSize(),
+                Localized.dictionary().fileSizeExceeded(fileInfo.getSize(),
                     BeeUtils.toLong(discussParams.get(PRM_MAX_UPLOAD_FILE_SIZE)) * 1024 * 1024),
                 "("
                     + fileInfo.getName() + ")");
@@ -138,7 +138,7 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
           if (DiscussionsUtils.isForbiddenExtention(BeeUtils.getSuffix(fileInfo.getName(),
               BeeConst.STRING_POINT), discussParams.get(PRM_FORBIDDEN_FILES_EXTENTIONS))) {
 
-            BeeKeeper.getScreen().notifyWarning(Localized.getConstants().discussInvalidFile(),
+            BeeKeeper.getScreen().notifyWarning(Localized.dictionary().discussInvalidFile(),
                 fileInfo.getName());
             fc.clear();
             return;
@@ -282,7 +282,7 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
     }
 
     if (!discussPublic && BeeUtils.isEmpty(activeRow.getProperty(PROP_MEMBERS))) {
-      event.getCallback().onFailure(Localized.getConstants().discussSelectMembers());
+      event.getCallback().onFailure(Localized.dictionary().discussSelectMembers());
       return;
     }
 
@@ -325,7 +325,7 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
           List<Long> discussions = DataUtils.parseIdList((String) response.getResponse());
 
           if (discussions.isEmpty()) {
-            event.getCallback().onFailure(Localized.getConstants().discussNotCreated());
+            event.getCallback().onFailure(Localized.dictionary().discussNotCreated());
             return;
           }
 
@@ -336,9 +336,9 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
           String message;
 
           if (BeeUtils.isEmpty(activeRow.getString(form.getDataIndex(ALS_TOPIC_NAME)))) {
-            message = Localized.getConstants().discussCreatedNewDiscussion();
+            message = Localized.dictionary().discussCreatedNewDiscussion();
           } else {
-            message = Localized.getConstants().discussCreatedNewAnnouncement();
+            message = Localized.dictionary().discussCreatedNewAnnouncement();
           }
 
           BeeKeeper.getScreen().notifyInfo(message);
@@ -421,7 +421,7 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
 
     if (from == null && to == null) {
       event.getCallback().onFailure(
-          BeeUtils.joinWords(Localized.getConstants().displayInBoard(), Localized.getConstants()
+          BeeUtils.joinWords(Localized.dictionary().displayInBoard(), Localized.dictionary()
               .enterDate()));
       return false;
     }
@@ -443,8 +443,8 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
         return true;
       } else {
         event.getCallback().onFailure(
-            BeeUtils.joinWords(Localized.getConstants().displayInBoard(),
-                Localized.getConstants().crmFinishDateMustBeGreaterThanStart()));
+            BeeUtils.joinWords(Localized.dictionary().displayInBoard(),
+                Localized.dictionary().crmFinishDateMustBeGreaterThanStart()));
         return false;
       }
     }

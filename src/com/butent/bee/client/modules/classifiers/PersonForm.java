@@ -102,11 +102,11 @@ class PersonForm extends AbstractFormInterceptor {
 
             if (!BeeUtils.containsSame(type, "image")) {
               BeeKeeper.getScreen().notifyWarning(
-                  Localized.getConstants().invalidImageFileType(fileInfo.getName(), type));
+                  Localized.dictionary().invalidImageFileType(fileInfo.getName(), type));
 
             } else if (size > Images.MAX_SIZE_FOR_DATA_URL) {
               BeeKeeper.getScreen().notifyWarning(
-                  Localized.getConstants().fileSizeExceeded(size, Images.MAX_SIZE_FOR_DATA_URL));
+                  Localized.dictionary().fileSizeExceeded(size, Images.MAX_SIZE_FOR_DATA_URL));
 
             } else {
               setPhotoImageAttachment(fileInfo);
@@ -150,7 +150,7 @@ class PersonForm extends AbstractFormInterceptor {
               Data.setValue(viewName, newRow, COL_PERSON, id);
 
               RowFactory.createRow(dataInfo.getNewRowForm(),
-                  Localized.getConstants().newPersonCompany(), dataInfo, newRow, Modality.ENABLED,
+                  Localized.dictionary().newPersonCompany(), dataInfo, newRow, Modality.ENABLED,
                   null, new AbstractFormInterceptor() {
                 @Override
                 public boolean beforeCreateWidget(String widgetName, Element description) {
@@ -178,7 +178,7 @@ class PersonForm extends AbstractFormInterceptor {
 
         @Override
         public String getCaption() {
-          return Localized.getConstants().personCompanies();
+          return Localized.dictionary().personCompanies();
         }
 
         @Override
@@ -245,7 +245,7 @@ class PersonForm extends AbstractFormInterceptor {
     FlowPanel qrFlowPanel = (FlowPanel) Assert.notNull(form.getWidgetByName(QR_FLOW_PANEL));
     qrFlowPanel.clear();
     FaLabel qrCodeLabel = new FaLabel(FontAwesome.QRCODE);
-    qrCodeLabel.setTitle(Localized.getConstants().qrCode());
+    qrCodeLabel.setTitle(Localized.dictionary().qrCode());
     qrCodeLabel.addStyleName("bee-FontSize-x-large");
     qrFlowPanel.add(qrCodeLabel);
 

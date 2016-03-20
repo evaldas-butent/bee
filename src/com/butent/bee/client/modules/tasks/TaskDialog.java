@@ -87,7 +87,7 @@ class TaskDialog extends DialogBox {
 
   String addComment(boolean required) {
     String styleName = STYLE_DIALOG + "-commentLabel";
-    Label label = new Label(Localized.getConstants().crmTaskComment());
+    Label label = new Label(Localized.dictionary().crmTaskComment());
     label.addStyleName(styleName);
     if (required) {
       label.addStyleName(StyleUtils.NAME_REQUIRED);
@@ -147,8 +147,8 @@ class TaskDialog extends DialogBox {
   Map<String, String> addDuration() {
     Map<String, String> result = new HashMap<>();
 
-    result.put(COL_DURATION, addTime(Localized.getConstants().crmSpentTime()));
-    result.put(COL_DURATION_TYPE, addSelector(Localized.getConstants().crmDurationType(),
+    result.put(COL_DURATION, addTime(Localized.dictionary().crmSpentTime()));
+    result.put(COL_DURATION_TYPE, addSelector(Localized.dictionary().crmDurationType(),
         VIEW_DURATION_TYPES, Lists.newArrayList(COL_DURATION_TYPE_NAME), false, null, null));
 
     return result;
@@ -160,7 +160,7 @@ class TaskDialog extends DialogBox {
     int col = 0;
 
     String styleName = STYLE_DIALOG + "-filesLabel";
-    Label label = new Label(Localized.getConstants().files());
+    Label label = new Label(Localized.dictionary().files());
     label.addStyleName(styleName);
 
     table.setWidget(row, col, label);
@@ -169,7 +169,7 @@ class TaskDialog extends DialogBox {
 
     styleName = STYLE_DIALOG + "-fileCollector";
     // FileCollector collector = new FileCollector(new Image(Global.getImages().attachment()));
-    IdentifiableWidget identifiableWidget = new Button(Localized.getConstants().chooseFiles());
+    IdentifiableWidget identifiableWidget = new Button(Localized.dictionary().chooseFiles());
     FileCollector collector = new FileCollector(identifiableWidget);
     collector.addStyleName(styleName);
 
@@ -190,7 +190,7 @@ class TaskDialog extends DialogBox {
     int col = 2;
 
     String styleName = STYLE_DIALOG + "-observerCheckbox";
-    CheckBox chkBx = new CheckBox(Localized.getConstants().crmTaskAddSenderToObservers());
+    CheckBox chkBx = new CheckBox(Localized.dictionary().crmTaskAddSenderToObservers());
     chkBx.setChecked(checked);
     chkBx.addStyleName(styleName);
 

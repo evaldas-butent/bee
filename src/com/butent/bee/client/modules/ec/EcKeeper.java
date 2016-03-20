@@ -237,7 +237,7 @@ public final class EcKeeper {
 
   public static String formatStock(double stock) {
     if (stock <= 0) {
-      return Localized.getConstants().ecStockAsk();
+      return Localized.dictionary().ecStockAsk();
     } else if (isStockLimited() && MAX_VISIBLE_STOCK > 0 && stock > MAX_VISIBLE_STOCK) {
       return BeeConst.STRING_GT + MAX_VISIBLE_STOCK;
     } else {
@@ -774,7 +774,7 @@ public final class EcKeeper {
       return true;
     } else {
       BeeKeeper.getScreen().notifyWarning(
-          Localized.getConstants().searchQueryRestriction(MIN_SEARCH_QUERY_LENGTH));
+          Localized.dictionary().searchQueryRestriction(MIN_SEARCH_QUERY_LENGTH));
       return false;
     }
   }
@@ -832,12 +832,12 @@ public final class EcKeeper {
   }
 
   private static void editEcContacts(ViewCallback callback) {
-    editConfigurationHtml(KEY_EC_CONTACTS, Localized.getConstants().ecContacts(),
+    editConfigurationHtml(KEY_EC_CONTACTS, Localized.dictionary().ecContacts(),
         COL_CONFIG_CONTACTS_URL, COL_CONFIG_CONTACTS_HTML, callback);
   }
 
   private static void editTermsOfDelivery(ViewCallback callback) {
-    editConfigurationHtml(KEY_TERMS_OF_DELIVERY, Localized.getConstants().ecTermsOfDelivery(),
+    editConfigurationHtml(KEY_TERMS_OF_DELIVERY, Localized.dictionary().ecTermsOfDelivery(),
         COL_CONFIG_TOD_URL, COL_CONFIG_TOD_HTML, callback);
   }
 

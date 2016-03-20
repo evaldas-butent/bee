@@ -127,10 +127,10 @@ public class ImportConditionsGrid extends AbstractGridInterceptor {
               }
             }
             if (choices.isEmpty()) {
-              getGridView().notifyWarning(Localized.getConstants().noData());
+              getGridView().notifyWarning(Localized.dictionary().noData());
               return;
             }
-            Global.choice(Data.getViewCaption(data), Localized.getConstants().trImportProperty(),
+            Global.choice(Data.getViewCaption(data), Localized.dictionary().trImportProperty(),
                 new ArrayList<>(choices.values()), new ChoiceCallback() {
                   @Override
                   public void onSuccess(int value) {

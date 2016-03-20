@@ -126,7 +126,7 @@ public enum ItemPrice implements HasLocalizedCaption {
   }
 
   public String getLabel() {
-    return getLabel(Localized.getConstants());
+    return getLabel(Localized.dictionary());
   }
 
   public abstract String getLabel(Dictionary constants);

@@ -81,7 +81,7 @@ import java.util.Objects;
 
 class ShipmentRequestForm extends CargoPlaceUnboundForm {
 
-  private final Dictionary loc = Localized.getConstants();
+  private final Dictionary loc = Localized.dictionary();
 
   private Button mailCommand = new Button(loc.trWriteEmail(), new ClickHandler() {
     @Override
@@ -343,7 +343,7 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
       password = null;
     }
     Global.confirm(loc.register(), Icon.QUESTION, messages,
-        Localized.getConstants().actionCreate(), Localized.getConstants().actionCancel(), () -> {
+        Localized.dictionary().actionCreate(), Localized.dictionary().actionCancel(), () -> {
           Map<String, String> companyInfo = new HashMap<>();
 
           for (String col : new String[] {

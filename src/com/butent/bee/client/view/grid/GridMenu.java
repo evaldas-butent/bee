@@ -289,7 +289,7 @@ public class GridMenu {
 
       @Override
       Widget renderLabel() {
-        return new Label(Localized.getConstants().rightsAll());
+        return new Label(Localized.dictionary().rightsAll());
       }
 
       @Override
@@ -351,7 +351,7 @@ public class GridMenu {
 
     Widget renderLabel() {
       if (rightsState != null) {
-        return new Label(Localized.getConstants().rights() + " - " + rightsState.getCaption());
+        return new Label(Localized.dictionary().rights() + " - " + rightsState.getCaption());
       } else if (action != null) {
         return new Label(action.getCaption());
       } else {

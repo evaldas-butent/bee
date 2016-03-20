@@ -115,7 +115,7 @@ public class DocumentForm extends DocumentDataForm {
     }
   }
 
-  private final Button newTemplateButton = new Button(Localized.getConstants()
+  private final Button newTemplateButton = new Button(Localized.dictionary()
       .newDocumentTemplate(), new ClickHandler() {
     @Override
     public void onClick(ClickEvent event) {
@@ -229,7 +229,7 @@ public class DocumentForm extends DocumentDataForm {
     } else {
       templates = new LinkedHashMap<>();
     }
-    Dictionary loc = Localized.getConstants();
+    Dictionary loc = Localized.dictionary();
 
     StringBuilder sb = new StringBuilder("<table style=\"border-collapse:collapse;")
         .append(" border:1px solid black; text-align:right;\">")
@@ -331,7 +331,7 @@ public class DocumentForm extends DocumentDataForm {
               switch (column.getType()) {
                 case BOOLEAN:
                   val = BeeUtils.unbox(Data.getBoolean(viewName, row, column.getId()))
-                      ? Localized.getConstants().yes() : Localized.getConstants().no();
+                      ? Localized.dictionary().yes() : Localized.dictionary().no();
                   break;
 
                 case DATE:
@@ -356,7 +356,7 @@ public class DocumentForm extends DocumentDataForm {
                   if (!BeeUtils.isEmpty(enumKey)) {
                     val = EnumUtils.getLocalizedCaption(enumKey,
                         Data.getInteger(viewName, row, column.getId()),
-                        Localized.getConstants());
+                        Localized.dictionary());
                   } else {
                     val = Data.getString(viewName, row, column.getId());
                   }

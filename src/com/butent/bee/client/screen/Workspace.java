@@ -226,7 +226,7 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
   }
 
   private enum TabAction {
-    CREATE(Localized.getConstants().actionWorkspaceNewTab(), GROUP_NEW) {
+    CREATE(Localized.dictionary().actionWorkspaceNewTab(), GROUP_NEW) {
       @Override
       void execute(Workspace workspace, int index) {
         workspace.insertEmptyPanel(index + 1);
@@ -238,7 +238,7 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
       }
     },
 
-    NORTH(Localized.getConstants().actionWorkspaceNewTop(), GROUP_SPLIT) {
+    NORTH(Localized.dictionary().actionWorkspaceNewTop(), GROUP_SPLIT) {
       @Override
       void execute(Workspace workspace, int index) {
         workspace.splitActiveTile(Direction.NORTH);
@@ -250,7 +250,7 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
       }
     },
 
-    SOUTH(Localized.getConstants().actionWorkspaceNewBottom(), GROUP_SPLIT) {
+    SOUTH(Localized.dictionary().actionWorkspaceNewBottom(), GROUP_SPLIT) {
       @Override
       void execute(Workspace workspace, int index) {
         workspace.splitActiveTile(Direction.SOUTH);
@@ -262,7 +262,7 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
       }
     },
 
-    WEST(Localized.getConstants().actionWorkspaceNewLeft(), GROUP_SPLIT) {
+    WEST(Localized.dictionary().actionWorkspaceNewLeft(), GROUP_SPLIT) {
       @Override
       void execute(Workspace workspace, int index) {
         workspace.splitActiveTile(Direction.WEST);
@@ -274,7 +274,7 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
       }
     },
 
-    EAST(Localized.getConstants().actionWorkspaceNewRight(), GROUP_SPLIT) {
+    EAST(Localized.dictionary().actionWorkspaceNewRight(), GROUP_SPLIT) {
       @Override
       void execute(Workspace workspace, int index) {
         workspace.splitActiveTile(Direction.EAST);
@@ -286,7 +286,7 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
       }
     },
 
-    CLOSE_TILE(Localized.getConstants().actionWorkspaceCloseTile(), GROUP_CLOSE) {
+    CLOSE_TILE(Localized.dictionary().actionWorkspaceCloseTile(), GROUP_CLOSE) {
       @Override
       void execute(Workspace workspace, int index) {
         workspace.close(workspace.getActiveTile());
@@ -303,7 +303,7 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
       }
     },
 
-    CLOSE_TAB(Localized.getConstants().actionWorkspaceCloseTab(), GROUP_CLOSE) {
+    CLOSE_TAB(Localized.dictionary().actionWorkspaceCloseTab(), GROUP_CLOSE) {
       @Override
       void execute(Workspace workspace, int index) {
         if (workspace.getPageCount() > 1) {
@@ -325,7 +325,7 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
       }
     },
 
-    CLOSE_OTHER(Localized.getConstants().actionWorkspaceCloseOther(), GROUP_CLOSE) {
+    CLOSE_OTHER(Localized.dictionary().actionWorkspaceCloseOther(), GROUP_CLOSE) {
       @Override
       void execute(Workspace workspace, int index) {
         while (workspace.getPageCount() > index + 1) {
@@ -342,7 +342,7 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
       }
     },
 
-    CLOSE_RIGHT(Localized.getConstants().actionWorkspaceCloseRight(), GROUP_CLOSE) {
+    CLOSE_RIGHT(Localized.dictionary().actionWorkspaceCloseRight(), GROUP_CLOSE) {
       @Override
       void execute(Workspace workspace, int index) {
         while (workspace.getPageCount() > index + 1) {
@@ -356,7 +356,7 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
       }
     },
 
-    CLOSE_ALL(Localized.getConstants().actionWorkspaceCloseAll(), GROUP_CLOSE) {
+    CLOSE_ALL(Localized.dictionary().actionWorkspaceCloseAll(), GROUP_CLOSE) {
       @Override
       void execute(Workspace workspace, int index) {
         workspace.clear();
@@ -369,7 +369,7 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
       }
     },
 
-    BOOKMARK_TAB(Localized.getConstants().actionWorkspaceBookmarkTab(), GROUP_BOOKMARK) {
+    BOOKMARK_TAB(Localized.dictionary().actionWorkspaceBookmarkTab(), GROUP_BOOKMARK) {
       @Override
       void execute(Workspace workspace, int index) {
         TilePanel panel = workspace.getActivePanel();
@@ -392,7 +392,7 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
       }
     },
 
-    BOOKMARK_ALL(Localized.getConstants().actionWorkspaceBookmarkAll(), GROUP_BOOKMARK) {
+    BOOKMARK_ALL(Localized.dictionary().actionWorkspaceBookmarkAll(), GROUP_BOOKMARK) {
       @Override
       void execute(Workspace workspace, int index) {
         List<String> labels = new ArrayList<>();
@@ -443,7 +443,7 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
 
       CustomDiv dropDown = new CustomDiv(STYLE_DROP_DOWN);
       dropDown.setText(String.valueOf(BeeConst.DROP_DOWN));
-      dropDown.setTitle(Localized.getConstants().tabControl());
+      dropDown.setTitle(Localized.dictionary().tabControl());
       add(dropDown);
 
       dropDown.addClickHandler(new ClickHandler() {
@@ -460,7 +460,7 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
 
       CustomDiv closeTab = new CustomDiv(STYLE_CLOSE);
       closeTab.setText(String.valueOf(BeeConst.CHAR_TIMES));
-      closeTab.setTitle(Localized.getConstants().actionWorkspaceCloseTab());
+      closeTab.setTitle(Localized.dictionary().actionWorkspaceCloseTab());
       add(closeTab);
 
       closeTab.addClickHandler(new ClickHandler() {
@@ -666,7 +666,7 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
 
     CustomHasHtml newTab = new CustomHasHtml(DomUtils.createElement(Tags.ASIDE), STYLE_NEW_TAB);
     newTab.setText(BeeConst.STRING_PLUS);
-    newTab.setTitle(Localized.getConstants().newTab());
+    newTab.setTitle(Localized.dictionary().newTab());
 
     newTab.addClickHandler(new ClickHandler() {
       @Override
@@ -1060,7 +1060,7 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
 
   private void clearCaption(int index) {
     TabWidget tab = (TabWidget) getTabWidget(index);
-    tab.setCaption(Localized.getConstants().newTab());
+    tab.setCaption(Localized.dictionary().newTab());
   }
 
   private void clearPage(int index) {
@@ -1132,7 +1132,7 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
   private TilePanel insertEmptyPanel(int before) {
     TilePanel panel = new TilePanel(this);
 
-    TabWidget tab = new TabWidget(Localized.getConstants().newTab());
+    TabWidget tab = new TabWidget(Localized.dictionary().newTab());
     maybeSetHeight(tab);
 
     insert(panel, tab, null, null, before);
@@ -1326,7 +1326,7 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
       caption = tile.getPanel().getCaption();
     }
     if (BeeUtils.isEmpty(caption)) {
-      caption = Localized.getConstants().newTab();
+      caption = Localized.dictionary().newTab();
     }
 
     int index = getPageIndex(tile);

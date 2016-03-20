@@ -10,10 +10,10 @@ import com.butent.bee.shared.utils.EnumUtils;
 public final class EcConstants {
 
   public enum CartType implements HasCaption {
-    MAIN(Localized.getConstants().ecShoppingCartMain(),
-        Localized.getConstants().ecShoppingCartMainShort()),
-    ALTERNATIVE(Localized.getConstants().ecShoppingCartAlternative(),
-        Localized.getConstants().ecShoppingCartAlternativeShort());
+    MAIN(Localized.dictionary().ecShoppingCartMain(),
+        Localized.dictionary().ecShoppingCartMainShort()),
+    ALTERNATIVE(Localized.dictionary().ecShoppingCartAlternative(),
+        Localized.dictionary().ecShoppingCartAlternativeShort());
 
     private final String caption;
     private final String label;

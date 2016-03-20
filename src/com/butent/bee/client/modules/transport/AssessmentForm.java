@@ -438,7 +438,7 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
               @Override
               public void onSuccess(Integer result) {
                 if (BeeUtils.isPositive(result)) {
-                  Global.showError(Localized.getConstants().trAssessmentInvalidStatusError(result,
+                  Global.showError(Localized.dictionary().trAssessmentInvalidStatusError(result,
                       request ? status.getCaption() : orderStatus.getCaption()));
                 } else {
                   process();
@@ -535,7 +535,7 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
   }
 
   private FormView form;
-  private final Dictionary loc = Localized.getConstants();
+  private final Dictionary loc = Localized.dictionary();
 
   private final Button reqNew = new Button(loc.trAssessmentToRequests(),
       new StatusUpdater(AssessmentStatus.NEW, loc.trAssessmentAskRequest()));
@@ -999,7 +999,7 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
                         if (!BeeUtils.isEmpty(vat)) {
                           boolean percent = BeeUtils.unbox(Data.getBoolean(VIEW_CARGO_INCOMES, row,
                               "VatPercent"));
-                          amount += " (" + Localized.getConstants().vat() + " " + vat
+                          amount += " (" + Localized.dictionary().vat() + " " + vat
                               + (percent ? "%" : " " + currency) + ")";
                         }
                         table.setText(r, 1, amount);

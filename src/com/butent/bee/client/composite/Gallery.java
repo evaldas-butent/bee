@@ -458,7 +458,7 @@ public class Gallery extends Flow implements HasViewName, HasFosterParent, Paren
 
   private void delete(final RowInfo rowInfo) {
     Global.confirmDelete(Data.getViewCaption(viewName), Icon.WARNING,
-        Collections.singletonList(Localized.getConstants().deletePictureQuestion()),
+        Collections.singletonList(Localized.dictionary().deletePictureQuestion()),
         new ConfirmationCallback() {
 
           @Override

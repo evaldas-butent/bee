@@ -72,7 +72,7 @@ public final class MailConstants {
 
     @Override
     public String getCaption() {
-      return getCaption(Localized.getConstants());
+      return getCaption(Localized.dictionary());
     }
   }
 

@@ -34,7 +34,7 @@ import java.util.List;
 
 class ProjectStagesGrid extends AbstractGridInterceptor {
 
-  private static final Dictionary LC = Localized.getConstants();
+  private static final Dictionary LC = Localized.dictionary();
 
   @Override
   public DeleteMode getDeleteMode(GridPresenter presenter, IsRow activeRow,

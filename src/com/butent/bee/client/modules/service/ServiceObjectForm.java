@@ -201,7 +201,7 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
 
   @Override
   public void onClick(ClickEvent event) {
-    Dictionary loc = Localized.getConstants();
+    Dictionary loc = Localized.dictionary();
 
     Global.inputCollection(loc.mainCriteria(), loc.name(), true, criteriaEditors.keySet(),
         new Consumer<Collection<String>>() {
@@ -237,13 +237,13 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
   public void onClose(List<String> messages, IsRow oldRow, IsRow newRow) {
     if (save(null)) {
       if (messages.size() == 1) {
-        String msg = BeeUtils.joinItems(messages.get(0), Localized.getConstants().mainCriteria());
+        String msg = BeeUtils.joinItems(messages.get(0), Localized.dictionary().mainCriteria());
         messages.clear();
         messages.add(msg);
 
       } else {
-        messages.add(BeeUtils.joinWords(Localized.getConstants().changedValues(),
-            Localized.getConstants().mainCriteria()));
+        messages.add(BeeUtils.joinWords(Localized.dictionary().changedValues(),
+            Localized.dictionary().mainCriteria()));
       }
     }
   }

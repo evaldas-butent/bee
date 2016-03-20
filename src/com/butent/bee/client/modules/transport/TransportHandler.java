@@ -90,7 +90,7 @@ public final class TransportHandler {
 
     Profit(String idName, long id) {
       super(Global.getImages().silverProfit());
-      setTitle(Localized.getConstants().profit());
+      setTitle(Localized.dictionary().profit());
       addClickHandler(this);
       this.idName = idName;
       this.id = id;
@@ -367,7 +367,7 @@ public final class TransportHandler {
         break;
 
       default:
-        Global.showError(Localized.getConstants().dataNotAvailable(gridName));
+        Global.showError(Localized.dictionary().dataNotAvailable(gridName));
         return;
     }
     final Long userPerson = BeeKeeper.getUser().getUserData().getCompanyPerson();

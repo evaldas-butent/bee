@@ -203,9 +203,9 @@ public class AssessmentQuantityReport extends ReportInterceptor {
       params.addDataItem(AR_DEPARTMENT, departments);
 
       if (DataUtils.parseIdSet(departments).size() > 1) {
-        label = Localized.getConstants().departments();
+        label = Localized.dictionary().departments();
       } else {
-        label = Localized.getConstants().department();
+        label = Localized.dictionary().department();
       }
       headers.add(BeeUtils.joinWords(label, getFilterLabel(NAME_DEPARTMENTS)));
     }
@@ -215,9 +215,9 @@ public class AssessmentQuantityReport extends ReportInterceptor {
       params.addDataItem(AR_MANAGER, managers);
 
       if (DataUtils.parseIdSet(managers).size() > 1) {
-        label = Localized.getConstants().managers();
+        label = Localized.dictionary().managers();
       } else {
-        label = Localized.getConstants().manager();
+        label = Localized.dictionary().manager();
       }
       headers.add(BeeUtils.joinWords(label, getFilterLabel(NAME_MANAGERS)));
     }
@@ -267,7 +267,7 @@ public class AssessmentQuantityReport extends ReportInterceptor {
           sheet.autoSizeAll();
 
         } else {
-          getFormView().notifyWarning(Localized.getConstants().nothingFound());
+          getFormView().notifyWarning(Localized.dictionary().nothingFound());
         }
       }
     });
@@ -379,7 +379,7 @@ public class AssessmentQuantityReport extends ReportInterceptor {
         case BeeConst.YEAR:
           colYear = col;
 
-          text = Localized.getConstants().year();
+          text = Localized.dictionary().year();
           table.setText(row, c1, text, STYLE_HEADER);
           table.getCellFormatter().setRowSpan(row, c1, 2);
 
@@ -394,7 +394,7 @@ public class AssessmentQuantityReport extends ReportInterceptor {
         case BeeConst.MONTH:
           colMonth = col;
 
-          text = Localized.getConstants().month();
+          text = Localized.dictionary().month();
           table.setText(row, c1, text, STYLE_HEADER);
           table.getCellFormatter().setRowSpan(row, c1, 2);
 
@@ -409,7 +409,7 @@ public class AssessmentQuantityReport extends ReportInterceptor {
         case AdministrationConstants.COL_DEPARTMENT:
           colDepartment = col;
 
-          text = Localized.getConstants().department();
+          text = Localized.dictionary().department();
           table.setText(row, c1, text, STYLE_HEADER);
           table.getCellFormatter().setRowSpan(row, c1, 2);
 
@@ -427,7 +427,7 @@ public class AssessmentQuantityReport extends ReportInterceptor {
         case ClassifierConstants.COL_COMPANY_PERSON:
           colManager = col;
 
-          text = Localized.getConstants().manager();
+          text = Localized.dictionary().manager();
           table.setText(row, c1, text, STYLE_HEADER);
           table.getCellFormatter().setRowSpan(row, c1, 2);
 
@@ -446,7 +446,7 @@ public class AssessmentQuantityReport extends ReportInterceptor {
         case AR_RECEIVED:
           colReceived = col;
 
-          text = Localized.getConstants().trAssessmentReportReceived();
+          text = Localized.dictionary().trAssessmentReportReceived();
           table.setText(row, c1, text, STYLE_HEADER);
           table.getCellFormatter().setRowSpan(row, c1, 2);
 
@@ -461,7 +461,7 @@ public class AssessmentQuantityReport extends ReportInterceptor {
         case AR_ANSWERED:
           colAnswered = col;
 
-          text = Localized.getConstants().trAssessmentReportAnswered();
+          text = Localized.dictionary().trAssessmentReportAnswered();
           table.setText(row, c1, text, STYLE_HEADER_1);
           table.getCellFormatter().setColSpan(row, c1, 2);
 
@@ -469,11 +469,11 @@ public class AssessmentQuantityReport extends ReportInterceptor {
           xc.setColSpan(2);
           xr1.add(xc);
 
-          text = Localized.getConstants().trAssessmentReportQuantity();
+          text = Localized.dictionary().trAssessmentReportQuantity();
           table.setText(row + 1, c2, text, STYLE_HEADER_2);
           xr2.add(new XCell(col, text, styleRef));
 
-          text = Localized.getConstants().trAssessmentReportPercent();
+          text = Localized.dictionary().trAssessmentReportPercent();
           table.setText(row + 1, c2 + 1, text, STYLE_HEADER_2);
           xr2.add(new XCell(col + 1, text, styleRef));
 
@@ -485,7 +485,7 @@ public class AssessmentQuantityReport extends ReportInterceptor {
         case AR_LOST:
           colLost = col;
 
-          text = Localized.getConstants().trAssessmentReportLost();
+          text = Localized.dictionary().trAssessmentReportLost();
           table.setText(row, c1, text, STYLE_HEADER_1);
           table.getCellFormatter().setColSpan(row, c1, 2);
 
@@ -493,11 +493,11 @@ public class AssessmentQuantityReport extends ReportInterceptor {
           xc.setColSpan(2);
           xr1.add(xc);
 
-          text = Localized.getConstants().trAssessmentReportQuantity();
+          text = Localized.dictionary().trAssessmentReportQuantity();
           table.setText(row + 1, c2, text, STYLE_HEADER_2);
           xr2.add(new XCell(col, text, styleRef));
 
-          text = Localized.getConstants().trAssessmentReportPercent();
+          text = Localized.dictionary().trAssessmentReportPercent();
           table.setText(row + 1, c2 + 1, text, STYLE_HEADER_2);
           xr2.add(new XCell(col + 1, text, styleRef));
 
@@ -509,7 +509,7 @@ public class AssessmentQuantityReport extends ReportInterceptor {
         case AR_APPROVED:
           colApproved = col;
 
-          text = Localized.getConstants().trAssessmentReportApproved();
+          text = Localized.dictionary().trAssessmentReportApproved();
           table.setText(row, c1, text, STYLE_HEADER_1);
           table.getCellFormatter().setColSpan(row, c1, 3);
 
@@ -517,15 +517,15 @@ public class AssessmentQuantityReport extends ReportInterceptor {
           xc.setColSpan(3);
           xr1.add(xc);
 
-          text = Localized.getConstants().trAssessmentReportQuantity();
+          text = Localized.dictionary().trAssessmentReportQuantity();
           table.setText(row + 1, c2, text, STYLE_HEADER_2);
           xr2.add(new XCell(col, text, styleRef));
 
-          text = Localized.getConstants().trAssessmentReportApprovedToReceived();
+          text = Localized.dictionary().trAssessmentReportApprovedToReceived();
           table.setText(row + 1, c2 + 1, text, STYLE_HEADER_2);
           xr2.add(new XCell(col + 1, text, styleRef));
 
-          text = Localized.getConstants().trAssessmentReportApprovedToAnswered();
+          text = Localized.dictionary().trAssessmentReportApprovedToAnswered();
           table.setText(row + 1, c2 + 2, text, STYLE_HEADER_2);
           xr2.add(new XCell(col + 2, text, styleRef));
 
@@ -537,7 +537,7 @@ public class AssessmentQuantityReport extends ReportInterceptor {
         case AR_SECONDARY:
           colSecondary = col;
 
-          text = Localized.getConstants().trAssessmentReportSecondary();
+          text = Localized.dictionary().trAssessmentReportSecondary();
           table.setText(row, c1, text, STYLE_HEADER_1);
           table.getCellFormatter().setColSpan(row, c1, 2);
 
@@ -545,11 +545,11 @@ public class AssessmentQuantityReport extends ReportInterceptor {
           xc.setColSpan(2);
           xr1.add(xc);
 
-          text = Localized.getConstants().trAssessmentReportQuantity();
+          text = Localized.dictionary().trAssessmentReportQuantity();
           table.setText(row + 1, c2, text, STYLE_HEADER_2);
           xr2.add(new XCell(col, text, styleRef));
 
-          text = Localized.getConstants().trAssessmentReportPercent();
+          text = Localized.dictionary().trAssessmentReportPercent();
           table.setText(row + 1, c2 + 1, text, STYLE_HEADER_2);
           xr2.add(new XCell(col + 1, text, styleRef));
 
@@ -866,19 +866,19 @@ public class AssessmentQuantityReport extends ReportInterceptor {
 
     if (cellElement.hasClassName(STYLE_ANSWERED)) {
       status = AssessmentStatus.ANSWERED;
-      captions.add(Localized.getConstants().trAssessmentReportAnswered());
+      captions.add(Localized.dictionary().trAssessmentReportAnswered());
 
     } else if (cellElement.hasClassName(STYLE_LOST)) {
       status = AssessmentStatus.LOST;
-      captions.add(Localized.getConstants().trAssessmentReportLost());
+      captions.add(Localized.dictionary().trAssessmentReportLost());
 
     } else if (cellElement.hasClassName(STYLE_APPROVED)) {
       status = AssessmentStatus.APPROVED;
-      captions.add(Localized.getConstants().trAssessmentReportApproved());
+      captions.add(Localized.dictionary().trAssessmentReportApproved());
 
     } else if (cellElement.hasClassName(STYLE_SECONDARY)) {
       filter.add(Filter.notNull(COL_ASSESSMENT));
-      captions.add(Localized.getConstants().trAssessmentReportSecondary());
+      captions.add(Localized.dictionary().trAssessmentReportSecondary());
     }
 
     if (status == null) {
@@ -888,7 +888,7 @@ public class AssessmentQuantityReport extends ReportInterceptor {
     }
 
     String caption = BeeUtils.notEmpty(BeeUtils.joinItems(captions),
-        Localized.getConstants().trAssessmentRequests());
+        Localized.dictionary().trAssessmentRequests());
 
     drillDown(DRILL_DOWN_GRID_NAME, caption, filter);
   }

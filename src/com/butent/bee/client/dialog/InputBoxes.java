@@ -183,7 +183,7 @@ public class InputBoxes {
         table.setWidget(row, 0, input.asWidget());
 
         final FaLabel delete = new FaLabel(FontAwesome.TRASH_O);
-        delete.setTitle(Localized.getConstants().delete());
+        delete.setTitle(Localized.dictionary().delete());
         delete.getElement().getStyle().setCursor(Cursor.POINTER);
 
         delete.addClickHandler(new ClickHandler() {
@@ -218,9 +218,9 @@ public class InputBoxes {
             String value = input.getNormalizedValue();
 
             if (BeeUtils.isEmpty(value)) {
-              error = Localized.getConstants().valueRequired();
+              error = Localized.dictionary().valueRequired();
             } else if (unique && values.contains(BeeUtils.normalize(value))) {
-              error = Localized.getConstants().valueExists(value);
+              error = Localized.dictionary().valueExists(value);
             } else {
               values.add(BeeUtils.normalize(value));
               continue;
@@ -284,7 +284,7 @@ public class InputBoxes {
           input.setValue(value);
         }
         final FaLabel delete = new FaLabel(FontAwesome.TRASH_O);
-        delete.setTitle(Localized.getConstants().delete());
+        delete.setTitle(Localized.dictionary().delete());
         delete.getElement().getStyle().setCursor(Cursor.POINTER);
 
         delete.addClickHandler(new ClickHandler() {
@@ -316,9 +316,9 @@ public class InputBoxes {
             InputText input = (InputText) table.getWidget(i, 0);
 
             if (BeeUtils.isEmpty(input.getValue())) {
-              error = Localized.getConstants().valueRequired();
+              error = Localized.dictionary().valueRequired();
             } else if (values.contains(BeeUtils.normalize(input.getValue()))) {
-              error = Localized.getConstants().valueExists(input.getValue());
+              error = Localized.dictionary().valueExists(input.getValue());
             } else {
               values.add(BeeUtils.normalize(input.getValue()));
               continue;

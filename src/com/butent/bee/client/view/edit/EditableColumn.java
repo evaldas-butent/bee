@@ -391,7 +391,7 @@ public class EditableColumn implements BlurHandler, EditChangeHandler, EditStopE
     boolean ok = BeeUtils.toBoolean(getEditable().evaluate());
 
     if (!ok && warn && getNotificationListener() != null) {
-      getNotificationListener().notifyWarning(Localized.getConstants().cellIsReadOnly());
+      getNotificationListener().notifyWarning(Localized.dictionary().cellIsReadOnly());
     }
     return ok;
   }

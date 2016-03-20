@@ -28,7 +28,7 @@ public class EcCostChangesHandler extends AbstractGridInterceptor {
   @Override
   public void afterCreatePresenter(final GridPresenter presenter) {
     presenter.getHeader().clearCommandPanel();
-    presenter.getHeader().addCommandItem(new Button(Localized.getConstants().ecUpdateCosts(),
+    presenter.getHeader().addCommandItem(new Button(Localized.dictionary().ecUpdateCosts(),
         new ClickHandler() {
           @Override
           public void onClick(ClickEvent event) {
@@ -38,7 +38,7 @@ public class EcCostChangesHandler extends AbstractGridInterceptor {
               idList.add(row.getId());
             }
             if (idList.isEmpty()) {
-              presenter.getGridView().notifyWarning(Localized.getConstants().selectAtLeastOneRow());
+              presenter.getGridView().notifyWarning(Localized.dictionary().selectAtLeastOneRow());
               return;
             }
             ParameterList args = EcKeeper.createArgs(SVC_UPDATE_COSTS);

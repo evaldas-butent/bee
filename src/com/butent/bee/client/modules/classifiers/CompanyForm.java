@@ -71,7 +71,7 @@ public class CompanyForm extends AbstractFormInterceptor {
           header.clearCommandPanel();
 
           FaLabel setDefault = new FaLabel(FontAwesome.CHECK);
-          setDefault.setTitle(Localized.getConstants().setAsPrimary());
+          setDefault.setTitle(Localized.dictionary().setAsPrimary());
           setDefault.addClickHandler(new ClickHandler() {
 
             @Override
@@ -80,7 +80,7 @@ public class CompanyForm extends AbstractFormInterceptor {
 
               IsRow selectedRow = gridView.getActiveRow();
               if (selectedRow == null) {
-                gridView.notifyWarning(Localized.getConstants().selectAtLeastOneRow());
+                gridView.notifyWarning(Localized.dictionary().selectAtLeastOneRow());
                 return;
               } else {
                 setAsPrimary(selectedRow.getId());
@@ -189,7 +189,7 @@ public class CompanyForm extends AbstractFormInterceptor {
               Data.setValue(viewName, newRow, COL_COMPANY, id);
 
               RowFactory.createRow(dataInfo.getNewRowForm(),
-                  Localized.getConstants().newCompanyPerson(), dataInfo, newRow, Modality.ENABLED,
+                  Localized.dictionary().newCompanyPerson(), dataInfo, newRow, Modality.ENABLED,
                   null, new AbstractFormInterceptor() {
                     @Override
                     public boolean beforeCreateWidget(String widgetName, Element description) {
@@ -243,8 +243,8 @@ public class CompanyForm extends AbstractFormInterceptor {
     if (!BeeUtils.isEmpty(event.getColumns())) {
       if (BeeUtils.isEmpty(row.getString(form.getDataIndex(COL_COMPANY_TYPE)))) {
         event.consume();
-        BeeKeeper.getScreen().notifySevere(Localized.getConstants().companyStatus(),
-            Localized.getConstants().valueRequired());
+        BeeKeeper.getScreen().notifySevere(Localized.dictionary().companyStatus(),
+            Localized.dictionary().valueRequired());
       }
     }
   }
@@ -257,7 +257,7 @@ public class CompanyForm extends AbstractFormInterceptor {
       qrFlowPanel.clear();
 
       FaLabel qrCodeLabel = new FaLabel(FontAwesome.QRCODE);
-      qrCodeLabel.setTitle(Localized.getConstants().qrCode());
+      qrCodeLabel.setTitle(Localized.dictionary().qrCode());
       qrCodeLabel.addStyleName(StyleUtils.className(FontSize.X_LARGE));
 
       qrCodeLabel.addClickHandler(event -> ClassifierKeeper.generateQrCode(form, row));
@@ -294,7 +294,7 @@ public class CompanyForm extends AbstractFormInterceptor {
             String amount = result.get(VAR_DEBT);
 
             if (BeeUtils.isPositiveDouble(amount)) {
-              table.setHtml(c, 0, Localized.getConstants().trdDebt());
+              table.setHtml(c, 0, Localized.dictionary().trdDebt());
               table.setHtml(c, 1, amount);
               double limit = BeeUtils.toDouble(result.get(COL_COMPANY_CREDIT_LIMIT));
 
@@ -306,7 +306,7 @@ public class CompanyForm extends AbstractFormInterceptor {
             amount = result.get(VAR_OVERDUE);
 
             if (BeeUtils.isPositiveDouble(amount)) {
-              table.setHtml(c, 0, Localized.getConstants().trdOverdue());
+              table.setHtml(c, 0, Localized.dictionary().trdOverdue());
               table.setHtml(c, 1, amount);
             }
             widget.getElement().setInnerHTML(table.getElement().getString());

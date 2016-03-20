@@ -224,7 +224,7 @@ public class ChatView extends Flow implements Presenter, View,
     headerView.addCommandItem(autoScrollContainer);
 
     FaLabel styleControl = new FaLabel(FontAwesome.MOBILE, STYLE_STYLE_CONTROL);
-    styleControl.setTitle(Localized.getConstants().mobile());
+    styleControl.setTitle(Localized.dictionary().mobile());
     styleControl.addClickHandler(event -> {
       ChatPopup popup = getPopup();
       if (popup != null) {
@@ -257,7 +257,7 @@ public class ChatView extends Flow implements Presenter, View,
 
     FaLabel submit = new FaLabel(FontAwesome.REPLY_ALL);
     submit.addStyleName(STYLE_PREFIX + "submit");
-    submit.setTitle(Localized.getConstants().send());
+    submit.setTitle(Localized.dictionary().send());
 
     submit.addClickHandler(event -> {
       if (compose()) {
@@ -270,7 +270,7 @@ public class ChatView extends Flow implements Presenter, View,
 
     FaLabel attach = new FaLabel(FontAwesome.PAPERCLIP);
     attach.addStyleName(STYLE_PREFIX + "attach");
-    attach.setTitle(Localized.getConstants().chooseFiles());
+    attach.setTitle(Localized.dictionary().chooseFiles());
     attach.addClickHandler(event -> fileCollector.clickInput());
 
     Flow commandPanel = new Flow(STYLE_PREFIX + "commandPanel");

@@ -1503,7 +1503,7 @@ public class TransportModuleBean implements BeeModule {
         qs.insertData(insert);
       }
     }
-    return ResponseObject.info(Localized.getConstants().createdRows(drivers.length * map.size()));
+    return ResponseObject.info(Localized.dictionary().createdRows(drivers.length * map.size()));
   }
 
   private ResponseObject generateTripRoute(long tripId) {
@@ -1656,7 +1656,7 @@ public class TransportModuleBean implements BeeModule {
       }
     }
     if (data.isEmpty()) {
-      return ResponseObject.warning(Localized.getConstants().noData());
+      return ResponseObject.warning(Localized.dictionary().noData());
     }
     qs.updateData(new SqlDelete(TBL_TRIP_ROUTES)
         .setWhere(SqlUtils.equals(TBL_TRIP_ROUTES, COL_TRIP, tripId)));
@@ -2988,7 +2988,7 @@ public class TransportModuleBean implements BeeModule {
     xml.append("</sms-messages>")
         .append("</sms-send>");
 
-    ResponseObject response = ResponseObject.info(Localized.getConstants().messageSent());
+    ResponseObject response = ResponseObject.info(Localized.dictionary().messageSent());
     BufferedWriter wr = null;
     BufferedReader in = null;
     HttpURLConnection conn = null;
@@ -3004,7 +3004,7 @@ public class TransportModuleBean implements BeeModule {
       wr.close();
 
       if (conn.getResponseCode() != HttpServletResponse.SC_OK) {
-        response = ResponseObject.error(Localized.getConstants().error(), conn.getResponseCode(),
+        response = ResponseObject.error(Localized.dictionary().error(), conn.getResponseCode(),
             conn.getResponseMessage());
       } else {
         in = new BufferedReader(new InputStreamReader(conn.getInputStream()));

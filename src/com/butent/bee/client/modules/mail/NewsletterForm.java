@@ -58,13 +58,13 @@ public class NewsletterForm extends AbstractFormInterceptor {
             @Override
             public void onSuccess(final Long result) {
 
-              Dictionary lc = Localized.getConstants();
+              Dictionary lc = Localized.dictionary();
               List<String> captions =
                   Arrays.asList(lc.mailRecipientsGroups(), lc.companies(), lc.persons(), lc
                       .companyPersons(), lc.additionalContacts());
 
               Global.choice(null,
-                  Localized.getConstants().chooseContactSource(), captions, new ChoiceCallback() {
+                  Localized.dictionary().chooseContactSource(), captions, new ChoiceCallback() {
 
                     @Override
                     public void onSuccess(int value) {
@@ -82,7 +82,7 @@ public class NewsletterForm extends AbstractFormInterceptor {
 
                           multi.getOracle().setAdditionalFilter(filter, true);
 
-                          Global.inputWidget(Localized.getConstants().mailRecipientsGroups(),
+                          Global.inputWidget(Localized.dictionary().mailRecipientsGroups(),
                               multi, new InputCallback() {
 
                                 @Override
@@ -106,7 +106,7 @@ public class NewsletterForm extends AbstractFormInterceptor {
                                 @Override
                                 public String getErrorMessage() {
                                   if (BeeUtils.isEmpty(multi.getIds())) {
-                                    return Localized.getConstants().valueRequired();
+                                    return Localized.dictionary().valueRequired();
                                   }
                                   return InputCallback.super.getErrorMessage();
                                 }

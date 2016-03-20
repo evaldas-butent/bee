@@ -24,7 +24,7 @@ public enum ImportType implements HasLocalizedCaption {
 
     @Override
     protected void init() {
-      Dictionary locale = Localized.getConstants();
+      Dictionary locale = Localized.dictionary();
 
       addSimpleProperty(VAR_IMPORT_SHEET, locale.sheetName());
       addSimpleProperty(VAR_IMPORT_START_ROW, locale.startRow());
@@ -54,7 +54,7 @@ public enum ImportType implements HasLocalizedCaption {
 
     @Override
     protected void init() {
-      Dictionary locale = Localized.getConstants();
+      Dictionary locale = Localized.dictionary();
 
       addSimpleProperty(VAR_IMPORT_LOGIN, locale.loginUserName());
       addSimpleProperty(VAR_IMPORT_PASSWORD, locale.loginPassword());
@@ -68,8 +68,8 @@ public enum ImportType implements HasLocalizedCaption {
 
     @Override
     protected void init() {
-      addSimpleProperty(VAR_IMPORT_SHEET, Localized.getConstants().sheetName());
-      addSimpleProperty(VAR_IMPORT_START_ROW, Localized.getConstants().startRow());
+      addSimpleProperty(VAR_IMPORT_SHEET, Localized.dictionary().sheetName());
+      addSimpleProperty(VAR_IMPORT_START_ROW, Localized.dictionary().startRow());
     }
   };
 

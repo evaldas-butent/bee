@@ -949,7 +949,7 @@ public class EcModuleBean implements BeeModule {
         reqInfo.getParameter(COL_TCD_ARTICLE_NR), reqInfo.getParameterLong(COL_TCD_BRAND));
 
     if (!DataUtils.isId(newArt)) {
-      return ResponseObject.error(Localized.getConstants()
+      return ResponseObject.error(Localized.dictionary()
           .dataNotAvailable(COL_TCD_ARTICLE + "=" + reqInfo.getParameterLong(COL_TCD_ARTICLE)));
     }
     qs.insertData(new SqlInsert(TBL_TCD_ARTICLE_SUPPLIERS)

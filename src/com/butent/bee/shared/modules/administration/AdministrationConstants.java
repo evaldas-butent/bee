@@ -43,8 +43,8 @@ public final class AdministrationConstants {
   }
 
   public enum UserGroupVisibility implements HasCaption {
-    PRIVATE(Localized.getConstants().userGroupPrivate()),
-    PUBLIC(Localized.getConstants().userGroupPublic());
+    PRIVATE(Localized.dictionary().userGroupPrivate()),
+    PUBLIC(Localized.dictionary().userGroupPublic());
 
     private final String caption;
 

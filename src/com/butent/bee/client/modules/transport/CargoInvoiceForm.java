@@ -52,11 +52,11 @@ public class CargoInvoiceForm extends InvoiceForm implements ClickHandler {
     boolean proforma = !BeeConst.isUndef(idx) && row != null && BeeUtils.unbox(row.getBoolean(idx));
 
     form.getViewPresenter().getHeader().setCaption(proforma
-        ? Localized.getConstants().trProformaInvoice()
-        : Localized.getConstants().trdInvoice());
+        ? Localized.dictionary().trProformaInvoice()
+        : Localized.dictionary().trdInvoice());
 
     if (confirmAction == null) {
-      confirmAction = new Button(Localized.getConstants().trdInvoice(), this);
+      confirmAction = new Button(Localized.dictionary().trdInvoice(), this);
       form.getViewPresenter().getHeader().addCommandItem(confirmAction);
     }
     confirmAction.setVisible(proforma && form.isEnabled());
@@ -91,7 +91,7 @@ public class CargoInvoiceForm extends InvoiceForm implements ClickHandler {
                   COL_EMAIL, new RpcCallback<String>() {
                     @Override
                     public void onSuccess(String email) {
-                      NewMailMessage.create(email, invoice, Localized.getConstants().trdInvoice(),
+                      NewMailMessage.create(email, invoice, Localized.dictionary().trdInvoice(),
                           Collections.singleton(fileInfo), (messageId, saveMode) -> {
                             DataInfo info = Data.getDataInfo(VIEW_SALE_FILES);
 
@@ -123,7 +123,7 @@ public class CargoInvoiceForm extends InvoiceForm implements ClickHandler {
 
   @Override
   public void onClick(ClickEvent event) {
-    Global.confirm(Localized.getConstants().trConfirmProforma(), new ConfirmationCallback() {
+    Global.confirm(Localized.dictionary().trConfirmProforma(), new ConfirmationCallback() {
       @Override
       public void onConfirm() {
         Queries.update(getViewName(), IdFilter.compareId(getActiveRowId()),
