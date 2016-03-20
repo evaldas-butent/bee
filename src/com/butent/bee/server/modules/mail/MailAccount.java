@@ -42,6 +42,9 @@ import javax.mail.internet.MimeMessage;
 
 public class MailAccount {
 
+  private static final long CONNECTION_TIMEOUT = TimeUtils.MILLIS_PER_MINUTE;
+  private static final long TIMEOUT = TimeUtils.MILLIS_PER_MINUTE * 10L;
+
   private static final class MailStore {
     final Store store;
     final long start;
@@ -57,7 +60,7 @@ public class MailAccount {
     }
 
     private boolean expired() {
-      return BeeUtils.isMore(System.currentTimeMillis() - start, TimeUtils.MILLIS_PER_MINUTE * 10L);
+      return BeeUtils.isMore(System.currentTimeMillis() - start, TIMEOUT);
     }
 
     private Store getStore() {
@@ -347,6 +350,9 @@ public class MailAccount {
       Properties props = new Properties();
       String pfx = "mail." + protocol + ".";
 
+      props.put(pfx + "connectiontimeout", BeeUtils.toString(CONNECTION_TIMEOUT));
+      props.put(pfx + "timeout", BeeUtils.toString(TIMEOUT));
+
       if (isStoreSSL()) {
         props.put(pfx + "ssl.enable", "true");
       }
@@ -383,6 +389,9 @@ public class MailAccount {
     String protocol = getTransportProtocol().name().toLowerCase();
     Properties props = new Properties();
     String pfx = "mail." + protocol + ".";
+
+    props.put(pfx + "connectiontimeout", BeeUtils.toString(CONNECTION_TIMEOUT));
+    props.put(pfx + "timeout", BeeUtils.toString(TIMEOUT));
 
     if (!BeeUtils.isEmpty(getTransportPassword())) {
       props.put(pfx + "auth", "true");
