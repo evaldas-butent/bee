@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
-  xmlns:ui="http://www.butent.com/ui"
+  xmlns:ui="http://www.butent.com/ui" xmlns:xi="http://www.w3.org/2001/XInclude"
 
   name="TradeDocumentItems" viewName="TradeDocumentItems"
   flexGrow="1"
@@ -12,12 +12,12 @@
     </RelColumn>
     <DataColumn name="Article" />
 
-    <DataColumn name="Quantity" visible="true">
+    <DataColumn name="Quantity" format="0.#####" visible="true">
       <footer aggregate="sum" />
     </DataColumn>
     <DataColumn name="UnitName" flexGrow="0" caption="=unitShort" />
 
-    <DataColumn name="Price">
+    <DataColumn name="Price" format="0.00######">
       <footer expression="row.Quantity * row.Price" />
     </DataColumn>
 
@@ -26,7 +26,11 @@
 
     <RelColumn name="Warehouse" choiceColumns="Code Name" renderColumns="WarehouseCode"
       flexGrow="0" />
+  </g:columns>
 
+  <xi:include href="../../Administration/grids/columns/ExtraDimensions.columns.xml" />
+
+  <g:columns>
     <DataColumn name="Note" maxWidth="300" />
     
     <IdColumn name="Id" flexGrow="0" visible="false" />
