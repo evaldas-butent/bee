@@ -33,6 +33,9 @@
     <Numeric name="Discount" precision="10" scale="2" label="=discount" />
     <Enum name="PriceName" key="ItemPrice" label="=priceName" />
 
+    <Relation name="Dimensions" unique="true" relation="Dimensions" editable="true"
+      label="=dimensions" />
+
     <Text name="Notes" label="=trdNotes" />
   </Fields>
 </Table>

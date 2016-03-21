@@ -1393,6 +1393,8 @@ public interface Dictionary {
 
   default String dictionary() {return g("dictionary");}
 
+  default String dimensions() {return g("dimensions");}
+
   default String disabled() {return g("disabled");}
 
   default String disabledShort() {return g("disabledShort");}

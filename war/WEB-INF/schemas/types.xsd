@@ -300,6 +300,7 @@
       <xs:enumeration value="DepartmentEmployees" />
       <xs:enumeration value="DepartmentPositions" />
       <xs:enumeration value="Dictionary" />
+      <xs:enumeration value="Dimensions" />
       <xs:enumeration value="Discounts" />
       <xs:enumeration value="Discussions" />
       <xs:enumeration value="DiscussionsComments" />
