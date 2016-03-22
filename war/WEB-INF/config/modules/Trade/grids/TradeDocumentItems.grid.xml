@@ -12,17 +12,17 @@
     </RelColumn>
     <DataColumn name="Article" />
 
-    <DataColumn name="Quantity" format="0.#####" visible="true">
+    <DataColumn name="Quantity" scale="0" visible="true">
       <footer aggregate="sum" />
     </DataColumn>
     <DataColumn name="UnitName" flexGrow="0" caption="=unitShort" />
 
-    <DataColumn name="Price" format="0.00######">
-      <footer expression="row.Quantity * row.Price" />
+    <DataColumn name="Price" scale="2">
+      <footer expression="row.Quantity * row.Price" scale="2" />
     </DataColumn>
 
-    <DataColumn name="DiscountPercent" carry="true" flexGrow="0" />
-    <DataColumn name="VatPercent" carry="true" flexGrow="0" />
+    <DataColumn name="DiscountPercent" scale="0" carry="true" flexGrow="0" />
+    <DataColumn name="VatPercent" scale="0" carry="true" flexGrow="0" />
 
     <RelColumn name="Warehouse" choiceColumns="Code Name" renderColumns="WarehouseCode"
       flexGrow="0" />
