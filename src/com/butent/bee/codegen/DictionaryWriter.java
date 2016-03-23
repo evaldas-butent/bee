@@ -1,11 +1,15 @@
 package com.butent.bee.codegen;
 
+import com.google.common.io.CharSink;
+import com.google.common.io.Files;
+
+import com.butent.bee.shared.BeeConst;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -63,9 +67,10 @@ public final class DictionaryWriter {
     lines.add("//@formatter:on");
 
     Path out = Paths.get("src/com/butent/bee/shared/i18n/Dictionary.java");
+    CharSink sink = Files.asCharSink(out.toFile(), Charset.defaultCharset());
 
     try {
-      Files.write(out, lines, Charset.defaultCharset());
+      sink.writeLines(lines, BeeConst.STRING_CR + BeeConst.STRING_EOL);
       System.out.println("" + lines.size() + "  " + out.toString());
     } catch (IOException ex) {
       ex.printStackTrace();
