@@ -9,7 +9,7 @@
   caption="=trdInvoice" showRowId="true"
   width="840" height="600"
   >
-  <f:properties reports="PrintTradeInvoice"/>
+  <f:properties reports="PrintTransrifusSalesInvoice"/>
   <FlowPanel class="flexBox-vertical">
     <br/>
     <Table>
