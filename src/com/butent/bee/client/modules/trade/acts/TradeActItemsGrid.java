@@ -215,6 +215,7 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
       final Long parent = Data.getLong(VIEW_TRADE_ACTS, parentRow, COL_TA_PARENT);
       final DateTime date = Data.getDateTime(VIEW_TRADE_ACTS, parentRow, COL_TA_DATE);
 
+      /** If trade act is Return */
       if (kind == TradeActKind.RETURN && DataUtils.isId(parent)) {
         ParameterList params = TradeActKeeper.createArgs(SVC_GET_ITEMS_FOR_RETURN);
         params.addQueryItem(COL_TRADE_ACT, parent);
@@ -233,54 +234,55 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
 
               final Map<Long, Double> quantities = TradeActUtils.getItemQuantities(parentItems);
 
+              /** Shows dialog of items for return */
               TradeActItemReturn.show(kind.getCaption(), parentActs, parentItems, false,
                   new Consumer<BeeRowSet>() {
-                @Override
-                public void accept(BeeRowSet actItems) {
-                  final boolean allReturned = quantities.equals(TradeActUtils
-                      .getItemQuantities(actItems));
-                  addActItems(parentAct, actItems, new Scheduler.ScheduledCommand() {
-
                     @Override
-                    public void execute() {
-                      if (!allReturned) {
-                        ParameterList ps = TradeActKeeper.createArgs(SVC_SPLIT_ACT_SERVICES);
-                        ps.addQueryItem(COL_TRADE_ACT, parent);
-                        ps.addQueryItem(COL_TA_DATE, date.getTime());
+                    public void accept(BeeRowSet actItems) {
+                      final boolean allReturned = quantities.equals(TradeActUtils
+                          .getItemQuantities(actItems));
+                      addActItems(parentAct, actItems, new Scheduler.ScheduledCommand() {
 
-                        BeeKeeper.getRpc().makeRequest(ps, new ResponseCallback() {
-                          @Override
-                          public void onResponse(ResponseObject rsp) {
-                            DataChangeEvent.fireRefresh(BeeKeeper.getBus(),
-                                VIEW_TRADE_ACT_SERVICES);
-                          }
-                        });
-                      } else {
+                        @Override
+                        public void execute() {
+                          if (!allReturned) {
+                            ParameterList ps = TradeActKeeper.createArgs(SVC_SPLIT_ACT_SERVICES);
+                            ps.addQueryItem(COL_TRADE_ACT, parent);
+                            ps.addQueryItem(COL_TA_DATE, date.getTime());
 
-                        Filter flt =
-                            Filter.and(Filter.equals("TradeAct", parentAct.getId()), Filter
-                                .notNull(COL_TIME_UNIT), Filter
+                            BeeKeeper.getRpc().makeRequest(ps, new ResponseCallback() {
+                              @Override
+                              public void onResponse(ResponseObject rsp) {
+                                DataChangeEvent.fireRefresh(BeeKeeper.getBus(),
+                                    VIEW_TRADE_ACT_SERVICES);
+                              }
+                            });
+                          } else {
+
+                            Filter flt =
+                                Filter.and(Filter.equals("TradeAct", parentAct.getId()), Filter
+                                    .notNull(COL_TIME_UNIT), Filter
                                     .isNull(TradeActConstants.COL_TA_SERVICE_TO));
 
-                        Queries.update(VIEW_TRADE_ACT_SERVICES, flt, COL_TA_SERVICE_TO,
-                            new DateValue(TimeUtils.today()), new IntCallback() {
+                            Queries.update(VIEW_TRADE_ACT_SERVICES, flt, COL_TA_SERVICE_TO,
+                                new DateValue(TimeUtils.today()), new IntCallback() {
 
-                          @Override
-                          public void onSuccess(Integer result) {
-                            DataChangeEvent.fireRefresh(BeeKeeper.getBus(),
-                                VIEW_TRADE_ACT_SERVICES);
+                                  @Override
+                                  public void onSuccess(Integer result) {
+                                    DataChangeEvent.fireRefresh(BeeKeeper.getBus(),
+                                        VIEW_TRADE_ACT_SERVICES);
+                                  }
+                                });
                           }
-                        });
+                        }
+                      });
+
+                      if ((parentAct != null)
+                          && allReturned) {
+                        maybeMarkAsReturned(parentAct.getId(), parentAct.getVersion());
                       }
                     }
                   });
-
-                  if ((parentAct != null)
-                      && allReturned) {
-                    maybeMarkAsReturned(parentAct.getId(), parentAct.getVersion());
-                  }
-                }
-              });
 
             } else {
               getGridView().notifyWarning(Localized.getConstants().noData());
@@ -628,46 +630,46 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
     Queries.getRowSet(VIEW_TRADE_ACT_ITEMS, null, Filter.and(Filter.idIn(ids), Filter
         .isNull(TradeConstants.COL_SALE)), new RowSetCallback() {
 
-          @Override
-          public void onSuccess(final BeeRowSet result) {
-            if (result.isEmpty()) {
-              presenter.getGridView().notifyWarning(Localized.getConstants().rowIsReadOnly());
-              return;
-            }
+      @Override
+      public void onSuccess(final BeeRowSet result) {
+        if (result.isEmpty()) {
+          presenter.getGridView().notifyWarning(Localized.getConstants().rowIsReadOnly());
+          return;
+        }
 
-            final FormView pForm = ViewHelper.getForm(presenter.getMainView());
-            final IsRow pRow = getParentRow(presenter.getGridView());
+        final FormView pForm = ViewHelper.getForm(presenter.getMainView());
+        final IsRow pRow = getParentRow(presenter.getGridView());
 
-            final DataInfo salesInfo = Data.getDataInfo(VIEW_SALES);
-            final BeeRow newSalesRow = RowFactory.createEmptyRow(salesInfo, true);
+        final DataInfo salesInfo = Data.getDataInfo(VIEW_SALES);
+        final BeeRow newSalesRow = RowFactory.createEmptyRow(salesInfo, true);
 
-            newSalesRow.setValue(salesInfo.getColumnIndex(TradeConstants.COL_TRADE_MANAGER
-                + ClassifierConstants.COL_FIRST_NAME), BeeKeeper.getUser().getFirstName());
+        newSalesRow.setValue(salesInfo.getColumnIndex(TradeConstants.COL_TRADE_MANAGER
+            + ClassifierConstants.COL_FIRST_NAME), BeeKeeper.getUser().getFirstName());
 
-            newSalesRow.setValue(salesInfo.getColumnIndex(TradeConstants.COL_TRADE_MANAGER
-                + ClassifierConstants.COL_LAST_NAME), BeeKeeper.getUser().getLastName());
+        newSalesRow.setValue(salesInfo.getColumnIndex(TradeConstants.COL_TRADE_MANAGER
+            + ClassifierConstants.COL_LAST_NAME), BeeKeeper.getUser().getLastName());
 
-            if (pForm != null && pRow != null) {
-              newSalesRow.setValue(salesInfo.getColumnIndex(COL_TRADE_OPERATION), pRow.getLong(pForm
-                  .getDataIndex(COL_TA_OPERATION)));
-              newSalesRow.setValue(salesInfo.getColumnIndex("OperationName"), pRow.getString(pForm
-                  .getDataIndex("OperationName")));
+        if (pForm != null && pRow != null) {
+          newSalesRow.setValue(salesInfo.getColumnIndex(COL_TRADE_OPERATION), pRow.getLong(pForm
+              .getDataIndex(COL_TA_OPERATION)));
+          newSalesRow.setValue(salesInfo.getColumnIndex("OperationName"), pRow.getString(pForm
+              .getDataIndex("OperationName")));
 
-              newSalesRow.setValue(salesInfo.getColumnIndex(COL_TRADE_CUSTOMER), pRow.getLong(pForm
-                  .getDataIndex(COL_TA_COMPANY)));
-              newSalesRow.setValue(salesInfo.getColumnIndex(ALS_CUSTOMER_NAME), pRow.getString(pForm
-                  .getDataIndex(ALS_COMPANY_NAME)));
+          newSalesRow.setValue(salesInfo.getColumnIndex(COL_TRADE_CUSTOMER), pRow.getLong(pForm
+              .getDataIndex(COL_TA_COMPANY)));
+          newSalesRow.setValue(salesInfo.getColumnIndex(ALS_CUSTOMER_NAME), pRow.getString(pForm
+              .getDataIndex(ALS_COMPANY_NAME)));
 
-              newSalesRow.setValue(salesInfo.getColumnIndex(COL_TRADE_CURRENCY), pRow.getLong(pForm
-                  .getDataIndex(COL_TA_CURRENCY)));
-              newSalesRow.setValue(salesInfo.getColumnIndex("CurrencyName"), pRow.getString(pForm
-                  .getDataIndex("CurrencyName")));
-              newSalesRow.setValue(salesInfo.getColumnIndex("MinorName"), pRow.getString(pForm
-                  .getDataIndex("CurrencyMinorName")));
-            }
+          newSalesRow.setValue(salesInfo.getColumnIndex(COL_TRADE_CURRENCY), pRow.getLong(pForm
+              .getDataIndex(COL_TA_CURRENCY)));
+          newSalesRow.setValue(salesInfo.getColumnIndex("CurrencyName"), pRow.getString(pForm
+              .getDataIndex("CurrencyName")));
+          newSalesRow.setValue(salesInfo.getColumnIndex("MinorName"), pRow.getString(pForm
+              .getDataIndex("CurrencyMinorName")));
+        }
 
-            RowFactory.createRow(FORM_NEW_TA_INVOICE, null, salesInfo, newSalesRow, null,
-                new AbstractFormInterceptor() {
+        RowFactory.createRow(FORM_NEW_TA_INVOICE, null, salesInfo, newSalesRow, null,
+            new AbstractFormInterceptor() {
 
               @Override
               public FormInterceptor getInstance() {
@@ -707,8 +709,8 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
 
               }
             });
-          }
-        });
+      }
+    });
   }
 
   private FileCollector ensureCollector() {
@@ -759,11 +761,11 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
 
                         TradeActItemImporter.queryItems(importCaption, importEntries,
                             kind, wFrom, itemIds, new Consumer<BeeRowSet>() {
-                          @Override
-                          public void accept(BeeRowSet items) {
-                            addItems(items);
-                          }
-                        });
+                              @Override
+                              public void accept(BeeRowSet items) {
+                                addItems(items);
+                              }
+                            });
                       }
                     }
                   });

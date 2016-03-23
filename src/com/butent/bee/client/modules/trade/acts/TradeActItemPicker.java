@@ -60,6 +60,8 @@ class TradeActItemPicker extends ItemsPicker {
       params.addDataItem(Service.VAR_VIEW_WHERE, defFilter.serialize());
     }
 
+    params.addDataItem(Service.VAR_TABLE, getSource());
+
     BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
 
       @Override
@@ -89,7 +91,8 @@ class TradeActItemPicker extends ItemsPicker {
   }
 
   @Override
-  protected void renderItems(Map<Long, Double> quantities, Map<Long, String> warehouses, Flow panel,
+  protected void renderItems(Map<Long, Double> quantities, Map<Long, String> warehouses,
+      Flow panel,
       BeeRowSet itemList) {
     super.renderItems(quantities, warehouses, panel, itemList);
 
@@ -147,5 +150,9 @@ class TradeActItemPicker extends ItemsPicker {
 
   protected Filter getDefaultItemFilter() {
     return Filter.isNull(ClassifierConstants.COL_ITEM_IS_SERVICE);
+  }
+
+  protected String getSource() {
+    return TBL_TRADE_ACT_ITEMS;
   }
 }

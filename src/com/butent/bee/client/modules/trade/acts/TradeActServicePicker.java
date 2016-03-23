@@ -4,6 +4,7 @@ import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.user.client.ui.Widget;
 
+import com.butent.bee.client.data.Data;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.style.StyleUtils;
@@ -19,6 +20,7 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.modules.trade.acts.TradeActConstants;
+import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -38,13 +40,15 @@ class TradeActServicePicker extends TradeActItemPicker {
 
   @Override
   protected Filter getDefaultItemFilter() {
-    return Filter.notNull(ClassifierConstants.COL_ITEM_IS_SERVICE);
+    return Filter.isTrue();
   }
 
   @Override
   protected void renderItems(Map<Long, Double> quantities, Map<Long, String> warehouses,
       Flow panel, BeeRowSet itemList) {
     super.renderItems(quantities, warehouses, panel, itemList);
+
+    IsRow formRow = getLastRow();
 
     HtmlTable table = null;
 
@@ -95,8 +99,16 @@ class TradeActServicePicker extends TradeActItemPicker {
         continue;
       }
 
-      table.setWidget(i, c++, renderDate(datesFrom, itemId));
-      table.setWidget(i, c++, renderDate(datesTo, itemId));
+      DateTime dateFrom = null;
+
+      if (!BeeUtils.isTrue(itemList.getBoolean(itemList.getRowIndex(itemId),
+          ClassifierConstants.COL_ITEM_IS_SERVICE)) && formRow != null) {
+        dateFrom = Data.getDateTime(TradeActConstants.VIEW_TRADE_ACTS, formRow,
+            TradeActConstants.COL_TA_DATE);
+      }
+
+      table.setWidget(i, c++, renderDate(datesFrom, itemId, dateFrom));
+      table.setWidget(i, c++, renderDate(datesTo, itemId, null));
       table.setWidget(i, c++, renderNumber(tariffs, itemId));
       table.setWidget(i, c++, renderNumber(discounts, itemId));
     }
@@ -115,6 +127,11 @@ class TradeActServicePicker extends TradeActItemPicker {
   @Override
   public boolean setIsOrder() {
     return false;
+  }
+
+  @Override
+  protected String getSource() {
+    return TradeActConstants.TBL_TRADE_ACT_SERVICES;
   }
 
   public Map<Long, JustDate> getDatesFrom() {
@@ -145,9 +162,14 @@ class TradeActServicePicker extends TradeActItemPicker {
     return discounts;
   }
 
-  private static Widget renderDate(final Map<Long, InputDate> store, final long id) {
+  private static Widget renderDate(final Map<Long, InputDate> store, final long id,
+      DateTime defValue) {
     final InputDate input = new InputDate();
     input.addStyleName(STYLE_DATE_INPUT);
+
+    if (defValue != null) {
+      input.setDate(defValue);
+    }
 
     if (store == null) {
       return input;
