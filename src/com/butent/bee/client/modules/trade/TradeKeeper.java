@@ -11,7 +11,6 @@ import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.modules.trade.acts.TradeActKeeper;
-import com.butent.bee.client.modules.trade.acts.TradeSaleInvoiceForm;
 import com.butent.bee.client.style.ColorStyleProvider;
 import com.butent.bee.client.style.ConditionalStyle;
 import com.butent.bee.client.ui.FormFactory;
@@ -116,7 +115,7 @@ public final class TradeKeeper {
     ConditionalStyle.registerGridColumnStyleProvider(GRID_TRADE_STATUSES, COL_BACKGROUND, csp);
     ConditionalStyle.registerGridColumnStyleProvider(GRID_TRADE_STATUSES, COL_FOREGROUND, csp);
 
-    FormFactory.registerFormInterceptor(FORM_SALES_INVOICE, new TradeSaleInvoiceForm());
+    // FormFactory.registerFormInterceptor(FORM_SALES_INVOICE, new TradeSaleInvoiceForm());
 
     if (ModuleAndSub.of(Module.TRADE, SubModule.ACTS).isEnabled()) {
       TradeActKeeper.register();
