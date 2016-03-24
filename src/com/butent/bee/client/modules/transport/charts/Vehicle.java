@@ -20,6 +20,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BiConsumer;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.data.BeeRow;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.time.HasDateRange;
 import com.butent.bee.shared.time.JustDate;
@@ -63,6 +64,8 @@ class Vehicle extends Filterable implements HasDateRange, HasItemName {
   private final String model;
   private final String type;
 
+  private final Set<Long> groups;
+
   private final Range<JustDate> range;
 
   private final String itemName;
@@ -75,6 +78,8 @@ class Vehicle extends Filterable implements HasDateRange, HasItemName {
     this.model = BeeUtils.joinWords(row.getString(parentModelNameIndex),
         row.getString(modelNameIndex));
     this.type = BeeUtils.trim(row.getString(typeNameIndex));
+
+    this.groups = DataUtils.parseIdSet(row.getProperty(PROP_VEHICLE_GROUPS));
 
     this.range = TimeBoardHelper.getActivity(row.getDate(startIndex), row.getDate(endIndex));
 
@@ -89,6 +94,10 @@ class Vehicle extends Filterable implements HasDateRange, HasItemName {
   @Override
   public Range<JustDate> getRange() {
     return range;
+  }
+
+  Set<Long> getGroups() {
+    return groups;
   }
 
   Long getId() {

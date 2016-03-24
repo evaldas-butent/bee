@@ -50,12 +50,13 @@ import java.util.Map;
 
 public final class FormFactory {
 
-  public abstract static class FormViewCallback {
-    public void onFailure(String... reason) {
+  @FunctionalInterface
+  public interface FormViewCallback {
+    default void onFailure(String... reason) {
       BeeKeeper.getScreen().notifyWarning(reason);
     }
 
-    public abstract void onSuccess(FormDescription formDescription, FormView result);
+    void onSuccess(FormDescription formDescription, FormView result);
   }
 
   public interface WidgetDescriptionCallback {

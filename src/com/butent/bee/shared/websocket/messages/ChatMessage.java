@@ -1,7 +1,8 @@
 package com.butent.bee.shared.websocket.messages;
 
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.communication.TextMessage;
+import com.butent.bee.shared.communication.ChatItem;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -10,42 +11,52 @@ import java.util.List;
 
 public class ChatMessage extends Message {
 
-  private long roomId;
-  private TextMessage textMessage;
+  public static ChatMessage restore(String s) {
+    Message message = decode(s);
 
-  public ChatMessage(long roomId, TextMessage textMessage) {
+    if (message != null && message.getType() == Type.CHAT_MESSAGE && message.isValid()) {
+      return (ChatMessage) message;
+    } else {
+      return null;
+    }
+  }
+
+  private long chatId;
+  private ChatItem chatItem;
+
+  public ChatMessage(long chatId, ChatItem chatItem) {
     this();
 
-    this.roomId = roomId;
-    this.textMessage = textMessage;
+    this.chatId = chatId;
+    this.chatItem = chatItem;
   }
 
   ChatMessage() {
-    super(Type.CHAT);
+    super(Type.CHAT_MESSAGE);
   }
 
   @Override
   public String brief() {
-    return (getTextMessage() == null) ? null : getTextMessage().getText();
+    return (getChatItem() == null) ? null : getChatItem().getText();
   }
 
-  public long getRoomId() {
-    return roomId;
+  public long getChatId() {
+    return chatId;
   }
 
-  public TextMessage getTextMessage() {
-    return textMessage;
+  public ChatItem getChatItem() {
+    return chatItem;
   }
 
   @Override
   public boolean isValid() {
-    return getTextMessage() != null && getTextMessage().isValid();
+    return DataUtils.isId(getChatId()) && getChatItem() != null && getChatItem().isValid();
   }
 
   @Override
   public String toString() {
-    return BeeUtils.joinOptions("roomId", BeeUtils.toString(getRoomId()),
-        "message", (getTextMessage() == null) ? null : getTextMessage().toString());
+    return BeeUtils.joinOptions("chatId", getChatId(),
+        "message", (getChatItem() == null) ? null : getChatItem().toString());
   }
 
   @Override
@@ -53,25 +64,25 @@ public class ChatMessage extends Message {
     String[] arr = Codec.beeDeserializeCollection(s);
     Assert.lengthEquals(arr, 2);
 
-    setRoomId(BeeUtils.toLong(arr[0]));
-    setTextMessage(TextMessage.restore(arr[1]));
+    setChatId(BeeUtils.toLong(arr[0]));
+    setChatItem(ChatItem.restore(arr[1]));
   }
 
   @Override
   protected String serialize() {
     List<Object> values = new ArrayList<>();
 
-    values.add(getRoomId());
-    values.add(getTextMessage());
+    values.add(getChatId());
+    values.add(getChatItem());
 
     return Codec.beeSerialize(values);
   }
 
-  private void setRoomId(long roomId) {
-    this.roomId = roomId;
+  private void setChatId(long chatId) {
+    this.chatId = chatId;
   }
 
-  private void setTextMessage(TextMessage textMessage) {
-    this.textMessage = textMessage;
+  private void setChatItem(ChatItem chatItem) {
+    this.chatItem = chatItem;
   }
 }

@@ -76,10 +76,9 @@ public abstract class Menu implements BeeSerializable, BeeObject {
     return menu;
   }
 
-  @XmlAttribute
   private String name;
-  @XmlAttribute
   private String label;
+
   @XmlAttribute
   private Boolean separator;
   @XmlAttribute
@@ -90,6 +89,10 @@ public abstract class Menu implements BeeSerializable, BeeObject {
   private String module;
   @XmlAttribute
   private String data;
+
+  public Menu copy() {
+    return restore(serialize());
+  }
 
   public String getData() {
     return data;
@@ -123,8 +126,18 @@ public abstract class Menu implements BeeSerializable, BeeObject {
     return BeeUtils.isTrue(separator);
   }
 
+  @XmlAttribute
+  public void setLabel(String label) {
+    this.label = label;
+  }
+
   public void setModuleName(String moduleName) {
     this.module = moduleName;
+  }
+
+  @XmlAttribute
+  public void setName(String name) {
+    this.name = name;
   }
 
   protected String serialize(Object obj) {

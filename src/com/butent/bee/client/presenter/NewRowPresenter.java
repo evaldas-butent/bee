@@ -129,6 +129,11 @@ public class NewRowPresenter extends AbstractPresenter implements ParentRowCreat
   }
 
   @Override
+  public String getViewKey() {
+    return formView.getSupplierKey();
+  }
+
+  @Override
   public void handleAction(Action action) {
     if (getActionDelegate() != null) {
       getActionDelegate().handleAction(action);
@@ -242,8 +247,8 @@ public class NewRowPresenter extends AbstractPresenter implements ParentRowCreat
     }
 
     if (columns.isEmpty()) {
-      callback.onFailure(Localized.getConstants().newRow(),
-          Localized.getConstants().allValuesCannotBeEmpty());
+      callback.onFailure(Localized.dictionary().newRow(),
+          Localized.dictionary().allValuesCannotBeEmpty());
       return;
     }
 

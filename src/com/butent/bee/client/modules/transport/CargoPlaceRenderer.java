@@ -6,7 +6,7 @@ import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.render.FlagRenderer;
 import com.butent.bee.client.render.ProvidesGridColumnRenderer;
-import com.butent.bee.client.widget.DateLabel;
+import com.butent.bee.client.widget.DateTimeLabel;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.CellSource;
@@ -14,7 +14,7 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.time.JustDate;
+import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -43,26 +43,26 @@ public class CargoPlaceRenderer extends AbstractCellRenderer {
     super(null);
 
     data.put(COL_PLACE_DATE, Pair.of(DataUtils.getColumnIndex(prefix + COL_PLACE_DATE, columns),
-        Localized.getConstants().date()));
+        Localized.dictionary().date()));
     data.put(COL_PLACE_NOTE, Pair.of(DataUtils.getColumnIndex(prefix + COL_PLACE_NOTE, columns),
-        Localized.getConstants().note()));
+        Localized.dictionary().note()));
     data.put(COL_PLACE_COMPANY,
         Pair.of(DataUtils.getColumnIndex(prefix + COL_PLACE_COMPANY, columns),
-            Localized.getConstants().company()));
+            Localized.dictionary().company()));
     data.put(COL_PLACE_CONTACT,
         Pair.of(DataUtils.getColumnIndex(prefix + COL_PLACE_CONTACT, columns),
-            Localized.getConstants().contact()));
+            Localized.dictionary().contact()));
     data.put(COL_PLACE_ADDRESS,
         Pair.of(DataUtils.getColumnIndex(prefix + COL_PLACE_ADDRESS, columns),
-            Localized.getConstants().address()));
+            Localized.dictionary().address()));
     data.put(COL_PLACE_CITY, Pair.of(DataUtils.getColumnIndex(prefix + "CityName", columns),
-        Localized.getConstants().city()));
+        Localized.dictionary().city()));
     data.put(COL_PLACE_COUNTRY,
         Pair.of(DataUtils.getColumnIndex(prefix + "CountryName", columns),
-            Localized.getConstants().country()));
+            Localized.dictionary().country()));
     data.put(COL_PLACE_NUMBER,
         Pair.of(DataUtils.getColumnIndex(prefix + COL_PLACE_NUMBER, columns),
-            Localized.getConstants().ref()));
+            Localized.dictionary().ref()));
 
     int codeIndex = DataUtils.getColumnIndex(prefix + "CountryCode", columns);
 
@@ -91,8 +91,8 @@ public class CargoPlaceRenderer extends AbstractCellRenderer {
           table.setHtml(r, 0, itemInfo.getB(), STYLE_PREFIX + "caption");
 
           if (BeeUtils.same(item, COL_PLACE_DATE)) {
-            DateLabel dt = new DateLabel(false);
-            dt.setValue(new JustDate(BeeUtils.toLong(txt)));
+            DateTimeLabel dt = new DateTimeLabel(false);
+            dt.setValue(new DateTime(BeeUtils.toLong(txt)));
             table.setWidget(r, 1, dt);
 
           } else if (BeeUtils.same(item, COL_PLACE_COUNTRY)) {

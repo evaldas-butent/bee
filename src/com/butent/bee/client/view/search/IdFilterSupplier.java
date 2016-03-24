@@ -108,7 +108,7 @@ public class IdFilterSupplier extends AbstractFilterSupplier {
     } else {
       Long id = BeeUtils.toLongOrNull(value);
       if (id == null) {
-        Global.showError(Lists.newArrayList(Localized.getConstants().invalidIdValue(), value));
+        Global.showError(Lists.newArrayList(Localized.dictionary().invalidIdValue(), value));
       } else {
         update(!id.equals(getOldValue()));
       }

@@ -60,7 +60,7 @@ public class ImportOptionsGrid extends AbstractGridInterceptor {
               listBox.addItem(BeeUtils.joinWords(Data.getViewCaption(entry.getValue()),
                   entry.getKey()), entry.getValue());
             }
-            Global.inputWidget(Localized.getConstants().data(), listBox, new InputCallback() {
+            Global.inputWidget(Localized.dictionary().data(), listBox, new InputCallback() {
               @Override
               public void onSuccess() {
                 String viewName = listBox.getValue();

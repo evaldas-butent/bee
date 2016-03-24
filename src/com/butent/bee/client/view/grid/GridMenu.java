@@ -289,7 +289,7 @@ public class GridMenu {
 
       @Override
       Widget renderLabel() {
-        return new Label(Localized.getConstants().rightsAll());
+        return new Label(Localized.dictionary().rightsAll());
       }
 
       @Override
@@ -351,7 +351,7 @@ public class GridMenu {
 
     Widget renderLabel() {
       if (rightsState != null) {
-        return new Label(Localized.getConstants().rights() + " - " + rightsState.getCaption());
+        return new Label(Localized.dictionary().rights() + " - " + rightsState.getCaption());
       } else if (action != null) {
         return new Label(action.getCaption());
       } else {
@@ -405,12 +405,12 @@ public class GridMenu {
     return false;
   }
 
-  public void open(final GridPresenter presenter) {
+  public void open(final GridPresenter presenter, boolean enabled) {
     final HtmlTable table = new HtmlTable(STYLE_TABLE);
     int r = 0;
 
     for (Item item : enabledItems) {
-      if (item.isVisible(presenter)) {
+      if ((enabled || !item.action.isDisablable()) && item.isVisible(presenter)) {
         Widget icon = item.renderIcon(presenter);
         if (icon != null) {
           table.setWidgetAndStyle(r, 0, icon, STYLE_ICON);

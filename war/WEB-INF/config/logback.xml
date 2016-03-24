@@ -33,7 +33,7 @@
       <maxHistory>12</maxHistory>
     </rollingPolicy>
     <encoder>
-      <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%.-1level] \(%thread\) %class.%method:%line - %msg%ex%n</pattern>
+      <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%.-1level] \(%thread\) - %msg%ex%n</pattern>
     </encoder>
   </appender>
 
@@ -82,14 +82,52 @@
     </encoder>
   </appender>
 
+  <appender name="STDOUTAsync" class="ch.qos.logback.classic.AsyncAppender">
+    <queueSize>1000</queueSize>
+    <discardingThreshold>0</discardingThreshold>
+    <appender-ref ref="STDOUT" />
+  </appender>
+
+  <appender name="STDERRAsync" class="ch.qos.logback.classic.AsyncAppender">
+    <queueSize>1000</queueSize>
+    <discardingThreshold>0</discardingThreshold>
+    <appender-ref ref="STDERR" />
+  </appender>
+
+  <appender name="debugAsync" class="ch.qos.logback.classic.AsyncAppender">
+    <queueSize>1000</queueSize>
+    <discardingThreshold>0</discardingThreshold>
+    <appender-ref ref="debugLogger" />
+  </appender>
+
+  <appender name="infoAsync" class="ch.qos.logback.classic.AsyncAppender">
+    <queueSize>1000</queueSize>
+    <discardingThreshold>0</discardingThreshold>
+    <appender-ref ref="infoLogger" />
+  </appender>
+
+  <appender name="warningAsync" class="ch.qos.logback.classic.AsyncAppender">
+    <queueSize>1000</queueSize>
+    <discardingThreshold>0</discardingThreshold>
+    <includeCallerData>true</includeCallerData>
+    <appender-ref ref="warningLogger" />
+  </appender>
+
+  <appender name="errorAsync" class="ch.qos.logback.classic.AsyncAppender">
+    <queueSize>1000</queueSize>
+    <discardingThreshold>0</discardingThreshold>
+    <includeCallerData>true</includeCallerData>
+    <appender-ref ref="errorLogger" />
+  </appender>
+
   <logger name="net.fortuna.ical4j" level="INFO" />
 
   <root level="INFO">
-    <appender-ref ref="STDOUT" />
-    <appender-ref ref="STDERR" />
-    <appender-ref ref="debugLogger" />
-    <appender-ref ref="infoLogger" />
-    <appender-ref ref="warningLogger" />
-    <appender-ref ref="errorLogger" />
+    <appender-ref ref="STDOUTAsync" />
+    <appender-ref ref="STDERRAsync" />
+    <appender-ref ref="debugAsync" />
+    <appender-ref ref="infoAsync" />
+    <appender-ref ref="warningAsync" />
+    <appender-ref ref="errorAsync" />
   </root>
 </configuration>

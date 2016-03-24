@@ -12,6 +12,8 @@ import java.util.List;
 public final class Paths {
 
   public static final String IMAGE_DIR = "images";
+  public static final String CUSTOM_DIR = "custom";
+  public static final String SOUND_DIR = "sounds";
 
   public static final String FILE_ICON_DIR = "fileicons";
   public static final String PHOTO_DIR = "photo";
@@ -23,6 +25,7 @@ public final class Paths {
   private static final String CSS_EXT = "css";
 
   private static final String JS_DIR = "js";
+  private static final String JS_LIB = "lib";
   private static final String JS_EXT = "js";
 
   private static final String LANG_DIR = "lang";
@@ -45,6 +48,14 @@ public final class Paths {
       return segment.trim();
     } else {
       return segment.trim() + SEGMENT_SEPARATOR;
+    }
+  }
+
+  public static String getExternalScriptPath(String fileName) {
+    if (BeeUtils.isEmpty(fileName)) {
+      return null;
+    } else {
+      return normalizePath(buildPath(JS_DIR, JS_LIB), fileName, JS_EXT);
     }
   }
 
@@ -77,6 +88,14 @@ public final class Paths {
       return null;
     } else {
       return normalizePath(JS_DIR, fileName, JS_EXT);
+    }
+  }
+
+  public static String getSoundPath(String fileName) {
+    if (BeeUtils.isEmpty(fileName)) {
+      return null;
+    } else {
+      return buildPath(SOUND_DIR, fileName);
     }
   }
 

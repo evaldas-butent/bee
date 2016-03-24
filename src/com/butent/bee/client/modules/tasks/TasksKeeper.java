@@ -13,8 +13,11 @@ import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
+import com.butent.bee.client.data.RowEditor;
+import com.butent.bee.client.event.logical.RowActionEvent;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.GridFactory;
+import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.modules.tasks.TasksReportsInterceptor.ReportType;
 import com.butent.bee.client.style.ColorStyleProvider;
 import com.butent.bee.client.style.ConditionalStyle;
@@ -62,7 +65,7 @@ public final class TasksKeeper {
 
   private static class RowTransformHandler implements RowTransformEvent.Handler {
 
-    private final List<String> taskColumns = Lists.newArrayList(COL_SUMMARY,
+    private final List<String> taskColumns = Lists.newArrayList(COL_ID, COL_SUMMARY,
         ClassifierConstants.ALS_COMPANY_NAME, ALS_EXECUTOR_FIRST_NAME, ALS_EXECUTOR_LAST_NAME,
         COL_FINISH_TIME, COL_STATUS);
 
@@ -73,6 +76,15 @@ public final class TasksKeeper {
       if (event.hasView(VIEW_TASKS)) {
         event.setResult(DataUtils.join(getTaskViewInfo(), event.getRow(), taskColumns,
             BeeConst.STRING_SPACE));
+
+      } else if (event.hasView(VIEW_TASK_EVENTS)) {
+        event.setResult(BeeUtils.joinWords(
+            Data.getLong(event.getViewName(), event.getRow(), COL_TASK),
+            Data.getString(event.getViewName(), event.getRow(), ALS_PUBLISHER_FIRST_NAME),
+            Data.getString(event.getViewName(), event.getRow(), ALS_PUBLISHER_LAST_NAME),
+            Format.getDefaultDateTimeFormat().format(Data.getDateTime(event.getViewName(),
+                event.getRow(), COL_PUBLISH_TIME)),
+            Data.getString(event.getViewName(), event.getRow(), COL_COMMENT)));
       }
     }
 
@@ -88,20 +100,20 @@ public final class TasksKeeper {
     Queries.getRow(VIEW_TASKS, taskId, new RowCallback() {
       @Override
       public void onSuccess(final BeeRow row) {
-        final TaskDialog dialog = new TaskDialog(Localized.getConstants().crmTaskTermChange());
+        final TaskDialog dialog = new TaskDialog(Localized.dictionary().crmTaskTermChange());
 
         TaskStatus status = EnumUtils.getEnumByIndex(TaskStatus.class,
             Data.getInteger(VIEW_TASKS, row, COL_STATUS));
         final boolean isScheduled = status == TaskStatus.SCHEDULED;
 
         final String startId = isScheduled
-            ? dialog.addDateTime(Localized.getConstants().crmStartDate(), true, start) : null;
-        final String endId = dialog.addDateTime(Localized.getConstants().crmFinishDate(), true,
+            ? dialog.addDateTime(Localized.dictionary().crmStartDate(), true, start) : null;
+        final String endId = dialog.addDateTime(Localized.dictionary().crmFinishDate(), true,
             finish);
 
         final String cid = dialog.addComment(false);
 
-        dialog.addAction(Localized.getConstants().crmTaskChangeTerm(), new ScheduledCommand() {
+        dialog.addAction(Localized.dictionary().crmTaskChangeTerm(), new ScheduledCommand() {
           @Override
           public void execute() {
             DateTime oldStart = Data.getDateTime(VIEW_TASKS, row, COL_START_TIME);
@@ -112,24 +124,24 @@ public final class TasksKeeper {
             DateTime newEnd = dialog.getDateTime(endId);
 
             if (newEnd == null) {
-              Global.showError(Localized.getConstants().crmEnterFinishDate());
+              Global.showError(Localized.dictionary().crmEnterFinishDate());
               return;
             }
 
             if (Objects.equals(newStart, oldStart) && Objects.equals(newEnd, oldEnd)) {
-              Global.showError(Localized.getConstants().crmTermNotChanged());
+              Global.showError(Localized.dictionary().crmTermNotChanged());
               return;
             }
 
             if (TimeUtils.isLeq(newEnd, newStart)) {
-              Global.showError(Localized.getConstants().crmFinishDateMustBeGreaterThanStart());
+              Global.showError(Localized.dictionary().crmFinishDateMustBeGreaterThanStart());
               return;
             }
 
             DateTime now = TimeUtils.nowMinutes();
             if (TimeUtils.isLess(newEnd, TimeUtils.nowMinutes())) {
               Global.showError("Time travel not supported",
-                  Lists.newArrayList(Localized.getConstants().crmFinishDateMustBeGreaterThan()
+                  Lists.newArrayList(Localized.dictionary().crmFinishDateMustBeGreaterThan()
                       + " "
                       + now.toCompactString()));
               return;
@@ -142,13 +154,13 @@ public final class TasksKeeper {
 
             if (startId != null && newStart != null && !Objects.equals(newStart, oldStart)) {
               params.addQueryItem(COL_START_TIME, newStart.getTime());
-              notes.add(TaskUtils.getUpdateNote(Localized.getConstants().crmStartDate(),
+              notes.add(TaskUtils.getUpdateNote(Localized.dictionary().crmStartDate(),
                   TimeUtils.renderCompact(oldStart), TimeUtils.renderCompact(newStart)));
             }
 
             if (!Objects.equals(newEnd, oldEnd)) {
               params.addQueryItem(COL_FINISH_TIME, newEnd.getTime());
-              notes.add(TaskUtils.getUpdateNote(Localized.getConstants().crmFinishDate(),
+              notes.add(TaskUtils.getUpdateNote(Localized.dictionary().crmFinishDate(),
                   TimeUtils.renderCompact(oldEnd), TimeUtils.renderCompact(newEnd)));
             }
 
@@ -248,7 +260,21 @@ public final class TasksKeeper {
 
     SelectorEvent.register(new TaskSelectorHandler());
 
-    BeeKeeper.getBus().registerRowTransformHandler(new RowTransformHandler(), false);
+    BeeKeeper.getBus().registerRowTransformHandler(new RowTransformHandler());
+
+    BeeKeeper.getBus().registerRowActionHandler(new RowActionEvent.Handler() {
+      @Override
+      public void onRowAction(RowActionEvent event) {
+        if (event.isEditRow() && event.hasView(VIEW_TASK_EVENTS)) {
+          event.consume();
+
+          if (event.hasRow() && event.getOpener() != null) {
+            Long taskId = Data.getLong(event.getViewName(), event.getRow(), COL_TASK);
+            RowEditor.open(VIEW_TASKS, taskId, event.getOpener());
+          }
+        }
+      }
+    });
 
     Global.getNewsAggregator().registerFilterHandler(Feed.TASKS_ASSIGNED,
         TasksGrid.getFeedFilterHandler(Feed.TASKS_ASSIGNED));

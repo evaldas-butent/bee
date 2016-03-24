@@ -6,7 +6,7 @@
   >
   <Fields>
     <Relation name="ProjectTemplate" notNull="true" relation="ProjectTemplates" cascade="DELETE"
-      label="=projTemplate" />
+      label="=prjTemplate" />
 
     <String name="Color" precision="100" label="=color" />
     <String name="Note" precision="100" label="=note" />

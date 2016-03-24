@@ -20,10 +20,12 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.HasAnimation;
 import com.google.gwt.user.client.ui.Widget;
 
+import com.butent.bee.client.Settings;
 import com.butent.bee.client.animation.AnimationState;
 import com.butent.bee.client.animation.RafCallback;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Edges;
+import com.butent.bee.client.dom.Rectangle;
 import com.butent.bee.client.dom.Stacking;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.PreviewHandler;
@@ -36,7 +38,9 @@ import com.butent.bee.client.screen.BodyPanel;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.css.values.Cursor;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,8 +52,197 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
     CLOSE, IGNORE
   }
 
+  @FunctionalInterface
   public interface PositionCallback {
     void setPosition(int offsetWidth, int offsetHeight);
+  }
+
+  private static final class Bounds {
+
+    private final int minWidth;
+    private final int minHeight;
+
+    private final int maxWidth;
+    private final int maxHeight;
+
+    private Bounds(int minWidth, int minHeight, int maxWidth, int maxHeight) {
+      this.minWidth = minWidth;
+      this.minHeight = minHeight;
+      this.maxWidth = maxWidth;
+      this.maxHeight = maxHeight;
+    }
+
+    private int clampDx(int width, int dx) {
+      if (width + dx < minWidth) {
+        return minWidth - width;
+      } else if (width + dx > maxWidth) {
+        return maxWidth - width;
+      } else {
+        return dx;
+      }
+    }
+
+    private int clampDy(int height, int dy) {
+      if (height + dy < minHeight) {
+        return minHeight - height;
+      } else if (height + dy > maxHeight) {
+        return maxHeight - height;
+      } else {
+        return dy;
+      }
+    }
+  }
+
+  private enum ResizeDirection {
+    TOP {
+      @Override
+      Cursor getCursor() {
+        return Cursor.NS_RESIZE;
+      }
+
+      @Override
+      boolean resize(Style style, Rectangle rectangle, Bounds bounds, int x, int y) {
+        int top = rectangle.getIntTop();
+        int height = rectangle.getIntHeight();
+
+        int z = bounds.clampDy(height, top - y);
+
+        if (z != 0) {
+          StyleUtils.setTop(style, top - z);
+          StyleUtils.setHeight(style, height + z);
+          return true;
+
+        } else {
+          return false;
+        }
+      }
+    },
+
+    TOP_RIGHT {
+      @Override
+      Cursor getCursor() {
+        return Cursor.NESW_RESIZE;
+      }
+
+      @Override
+      boolean resize(Style style, Rectangle rectangle, Bounds bounds, int x, int y) {
+        return TOP.resize(style, rectangle, bounds, x, y)
+            | RIGHT.resize(style, rectangle, bounds, x, y);
+      }
+    },
+
+    RIGHT {
+      @Override
+      Cursor getCursor() {
+        return Cursor.EW_RESIZE;
+      }
+
+      @Override
+      boolean resize(Style style, Rectangle rectangle, Bounds bounds, int x, int y) {
+        int width = rectangle.getIntWidth();
+        int z = bounds.clampDx(width, x - rectangle.getIntLeft() - width);
+
+        if (z != 0) {
+          StyleUtils.setWidth(style, width + z);
+          return true;
+
+        } else {
+          return false;
+        }
+      }
+    },
+
+    BOTTOM_RIGHT {
+      @Override
+      Cursor getCursor() {
+        return Cursor.NWSE_RESIZE;
+      }
+
+      @Override
+      boolean resize(Style style, Rectangle rectangle, Bounds bounds, int x, int y) {
+        return BOTTOM.resize(style, rectangle, bounds, x, y)
+            | RIGHT.resize(style, rectangle, bounds, x, y);
+      }
+    },
+
+    BOTTOM {
+      @Override
+      Cursor getCursor() {
+        return Cursor.NS_RESIZE;
+      }
+
+      @Override
+      boolean resize(Style style, Rectangle rectangle, Bounds bounds, int x, int y) {
+        int height = rectangle.getIntHeight();
+        int z = bounds.clampDy(height, y - rectangle.getIntTop() - height);
+
+        if (z != 0) {
+          StyleUtils.setHeight(style, height + z);
+          return true;
+
+        } else {
+          return false;
+        }
+      }
+    },
+
+    BOTTOM_LEFT {
+      @Override
+      Cursor getCursor() {
+        return Cursor.NESW_RESIZE;
+      }
+
+      @Override
+      boolean resize(Style style, Rectangle rectangle, Bounds bounds, int x, int y) {
+        return BOTTOM.resize(style, rectangle, bounds, x, y)
+            | LEFT.resize(style, rectangle, bounds, x, y);
+      }
+    },
+
+    LEFT {
+      @Override
+      Cursor getCursor() {
+        return Cursor.EW_RESIZE;
+      }
+
+      @Override
+      boolean resize(Style style, Rectangle rectangle, Bounds bounds, int x, int y) {
+        int left = rectangle.getIntLeft();
+        int width = rectangle.getIntWidth();
+
+        int z = bounds.clampDx(width, left - x);
+
+        if (z != 0) {
+          StyleUtils.setLeft(style, left - z);
+          StyleUtils.setWidth(style, width + z);
+          return true;
+
+        } else {
+          return false;
+        }
+      }
+    },
+
+    TOP_LEFT {
+      @Override
+      Cursor getCursor() {
+        return Cursor.NWSE_RESIZE;
+      }
+
+      @Override
+      boolean resize(Style style, Rectangle rectangle, Bounds bounds, int x, int y) {
+        return TOP.resize(style, rectangle, bounds, x, y)
+            | LEFT.resize(style, rectangle, bounds, x, y);
+      }
+    };
+
+    abstract Cursor getCursor();
+
+    abstract boolean resize(Style style, Rectangle rectangle, Bounds bounds, int x, int y);
+  }
+
+  private enum WindowState {
+    MOVING, RESIZING
   }
 
   private final class MouseHandler implements MouseDownHandler, MouseUpHandler, MouseMoveHandler {
@@ -60,36 +253,74 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
     private int maxX;
     private int maxY;
 
+    private Bounds bounds;
+
+    private WindowState windowState;
+    private ResizeDirection resizeDirection;
+
     private MouseHandler() {
     }
 
     @Override
     public void onMouseDown(MouseDownEvent event) {
-      if (DOM.getCaptureElement() == null && isCaptionEvent(event.getNativeEvent())) {
-        event.preventDefault();
-        DOM.setCapture(getElement());
+      if (windowState == null && DOM.getCaptureElement() == null) {
+        if (resizeDirection != null) {
+          this.windowState = WindowState.RESIZING;
+        } else if (isCaptionEvent(event.getNativeEvent())) {
+          this.windowState = WindowState.MOVING;
+        }
 
-        setDragging(true);
+        if (windowState != null) {
+          event.preventDefault();
+          DOM.setCapture(getElement());
 
-        this.startX = event.getX();
-        this.startY = event.getY();
+          int clientHeight = DomUtils.getClientHeight();
+          int headerHeight = getHeaderHeight();
 
-        this.maxX = DomUtils.getClientWidth() - getOffsetWidth();
+          switch (windowState) {
+            case MOVING:
+              this.startX = event.getX();
+              this.startY = event.getY();
 
-        int clientHeight = DomUtils.getClientHeight();
-        int headerHeight = getHeaderHeight();
+              this.maxX = DomUtils.getClientWidth() - getOffsetWidth();
 
-        if (headerHeight > 0) {
-          this.maxY = clientHeight - headerHeight;
-        } else {
-          this.maxY = clientHeight - getOffsetHeight();
+              if (headerHeight > 0) {
+                this.maxY = clientHeight - headerHeight;
+              } else {
+                this.maxY = clientHeight - getOffsetHeight();
+              }
+              break;
+
+            case RESIZING:
+              this.maxX = DomUtils.getClientWidth();
+
+              if (EnumUtils.in(resizeDirection,
+                  ResizeDirection.TOP_LEFT, ResizeDirection.TOP, ResizeDirection.TOP_RIGHT)
+                  && headerHeight > 0) {
+                this.maxY = clientHeight - headerHeight;
+              } else {
+                this.maxY = clientHeight;
+              }
+
+              int w = getElement().getClientWidth();
+              int h = getElement().getClientHeight();
+
+              int minWidth = Math.min(MIN_WIDTH, w);
+              int minHeight = Math.min(Math.max(MIN_HEIGHT, headerHeight), h);
+
+              int maxWidth = DomUtils.getClientWidth() + w - getElement().getOffsetWidth();
+              int maxHeight = clientHeight + h - getElement().getOffsetHeight();
+
+              this.bounds = new Bounds(minWidth, minHeight, maxWidth, maxHeight);
+              break;
+          }
         }
       }
     }
 
     @Override
     public void onMouseMove(MouseMoveEvent event) {
-      if (isDragging()) {
+      if (windowState == WindowState.MOVING) {
         int x = getAbsoluteLeft() + event.getX() - startX;
         int y = getAbsoluteTop() + event.getY() - startY;
 
@@ -97,14 +328,71 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
         y = BeeUtils.clamp(y, 0, maxY);
 
         setPopupPosition(x, y);
+
+      } else if (windowState == WindowState.RESIZING) {
+        int x = BeeUtils.clamp(event.getClientX(), 0, maxX);
+        int y = BeeUtils.clamp(event.getClientY(), 0, maxY);
+
+        Rectangle rectangle = new Rectangle(getAbsoluteLeft(), getAbsoluteTop(),
+            getElement().getClientWidth(), getElement().getClientHeight());
+        resizeDirection.resize(getElement().getStyle(), rectangle, bounds, x, y);
+
+      } else if (isResizable()) {
+        ResizeDirection rd = getResizeDirection(event.getX(), event.getY(),
+            getOffsetWidth(), getOffsetHeight());
+
+        if (rd != resizeDirection) {
+          this.resizeDirection = rd;
+
+          Cursor cursor = (rd == null) ? Cursor.AUTO : rd.getCursor();
+          StyleUtils.setProperty(getElement(), StyleUtils.STYLE_CURSOR, cursor);
+        }
       }
     }
 
     @Override
     public void onMouseUp(MouseUpEvent event) {
-      if (isDragging()) {
-        setDragging(false);
+      if (windowState != null) {
+        boolean wasResizing = windowState == WindowState.RESIZING;
+
+        this.windowState = null;
         DOM.releaseCapture(getElement());
+
+        if (wasResizing) {
+          afterResize();
+        }
+      }
+    }
+
+    private ResizeDirection getResizeDirection(int x, int y, int width, int height) {
+      if (x < 0 || x > width || y < 0 || y > height) {
+        return null;
+
+      } else if (x <= RESIZER_WIDTH) {
+        if (y <= RESIZER_WIDTH) {
+          return ResizeDirection.TOP_LEFT;
+        } else if (y >= height - RESIZER_WIDTH) {
+          return ResizeDirection.BOTTOM_LEFT;
+        } else {
+          return ResizeDirection.LEFT;
+        }
+
+      } else if (x >= width - RESIZER_WIDTH) {
+        if (y <= RESIZER_WIDTH) {
+          return ResizeDirection.TOP_RIGHT;
+        } else if (y >= height - RESIZER_WIDTH) {
+          return ResizeDirection.BOTTOM_RIGHT;
+        } else {
+          return ResizeDirection.RIGHT;
+        }
+
+      } else if (y <= RESIZER_WIDTH) {
+        return ResizeDirection.TOP;
+
+      } else if (y >= height - RESIZER_WIDTH) {
+        return ResizeDirection.BOTTOM;
+      } else {
+        return null;
       }
     }
   }
@@ -113,6 +401,8 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
 
     private Popup popup;
     private AnimationState state;
+
+    private Runnable onClose;
 
     protected Animation(double duration) {
       super(duration);
@@ -135,6 +425,10 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
       }
     }
 
+    protected Runnable getOnClose() {
+      return onClose;
+    }
+
     protected Popup getPopup() {
       return popup;
     }
@@ -155,11 +449,19 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
     protected void onComplete() {
       setState(AnimationState.FINISHED);
 
-      if (popup.isShowing()) {
+      if (onClose != null) {
+        onClose.run();
+
+      } else if (popup.isShowing()) {
         OpenEvent.fire(popup);
+
       } else {
         BodyPanel.get().remove(popup);
       }
+    }
+
+    protected void setOnClose(Runnable onClose) {
+      this.onClose = onClose;
     }
 
     private void setPopup(Popup popup) {
@@ -206,7 +508,27 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
 
   private static final double DEFAULT_ANIMATION_DURATION = 250;
 
+  private static final int RESIZER_WIDTH = BeeUtils.positive(Settings.getDialogResizerWidth(), 10);
+
+  private static final int MIN_WIDTH = RESIZER_WIDTH * 3;
+  private static final int MIN_HEIGHT = RESIZER_WIDTH * 3;
+
   public static Popup getActivePopup() {
+    if (!hasEventPreview()) {
+      String id = Stacking.peek();
+
+      if (!BeeUtils.isEmpty(id)) {
+        for (Widget child : BodyPanel.get()) {
+          if (child instanceof Popup) {
+            Popup popup = (Popup) child;
+            if (popup.isShowing() && BeeUtils.same(popup.getId(), id)) {
+              return popup;
+            }
+          }
+        }
+      }
+    }
+
     int widgetCount = BodyPanel.get().getWidgetCount();
 
     for (int i = widgetCount - 1; i >= 0; i--) {
@@ -241,14 +563,14 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
     return false;
   }
 
-  private static int clampLeft(int left, int width) {
+  protected static int clampLeft(int left, int width) {
     int windowLeft = 0;
     int windowRight = Window.getClientWidth();
 
     return Math.max(Math.min(left, windowRight - width), windowLeft);
   }
 
-  private static int clampTop(int top, int height) {
+  protected static int clampTop(int top, int height) {
     int windowTop = 0;
     int windowBottom = Window.getClientHeight();
 
@@ -268,12 +590,12 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
   private double animationDuration = DEFAULT_ANIMATION_DURATION;
   private Animation animation;
 
-  private boolean dragging;
-
   private MouseHandler mouseHandler;
 
   private Element keyboardPartner;
   private boolean previewEnabled = true;
+
+  private boolean resizable;
 
   public Popup(OutsideClick onOutsideClick) {
     this(onOutsideClick, STYLE_POPUP);
@@ -399,13 +721,23 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
     return previewEnabled;
   }
 
+  public boolean isResizable() {
+    return resizable;
+  }
+
   public boolean isShowing() {
     return showing;
   }
 
+  public void maybeBringToFront() {
+    if (isShowing() && !isPreviewEnabled() && Stacking.size() > 1 && !hasEventPreview()) {
+      Stacking.bringToFront(this);
+    }
+  }
+
   @Override
   public void onEventPreview(NativePreviewEvent event, Node targetNode) {
-    if (!isPreviewEnabled() || !isShowing() || DOM.getCaptureElement() != null) {
+    if (!isShowing() || DOM.getCaptureElement() != null) {
       return;
     }
 
@@ -413,6 +745,14 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
     boolean eventTargetsPopup = (targetNode != null) && getElement().isOrHasChild(targetNode);
 
     String type = nativeEvent.getType();
+
+    if (!isPreviewEnabled()) {
+      if (EventUtils.isMouseDown(type) && eventTargetsPopup) {
+        maybeBringToFront();
+      }
+
+      return;
+    }
 
     if (EventUtils.isMouseDown(type)) {
       if (eventTargetsPopup) {
@@ -527,6 +867,14 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
     this.previewEnabled = previewEnabled;
   }
 
+  public void setResizable(boolean resizable) {
+    this.resizable = resizable;
+
+    if (resizable) {
+      enableDragging();
+    }
+  }
+
   public void showAt(final int x, final int y) {
     setPopupPositionAndShow(new PositionCallback() {
       @Override
@@ -575,14 +923,8 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
     }
   }
 
-  protected void enableDragging() {
-    if (getMouseHandler() == null) {
-      setMouseHandler(new MouseHandler());
-
-      addDomHandler(getMouseHandler(), MouseDownEvent.getType());
-      addDomHandler(getMouseHandler(), MouseUpEvent.getType());
-      addDomHandler(getMouseHandler(), MouseMoveEvent.getType());
-    }
+  protected void afterResize() {
+    super.onResize();
   }
 
   protected int getHeaderHeight() {
@@ -595,12 +937,15 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
 
       Stacking.removeContext(this);
 
-      if (!maybeAnimate()) {
-        BodyPanel.get().remove(this);
-      }
+      Runnable onClose = () -> {
+        BodyPanel.get().remove(Popup.this);
+        if (fireEvent) {
+          CloseEvent.fire(Popup.this, cause, target);
+        }
+      };
 
-      if (fireEvent) {
-        CloseEvent.fire(this, cause, target);
+      if (cause == CloseEvent.Cause.SCRIPT || !maybeAnimate(onClose)) {
+        onClose.run();
       }
     }
   }
@@ -626,6 +971,16 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
     if (isShowing()) {
       setShowing(false);
       Stacking.removeContext(this);
+    }
+  }
+
+  private void enableDragging() {
+    if (getMouseHandler() == null) {
+      setMouseHandler(new MouseHandler());
+
+      addDomHandler(getMouseHandler(), MouseDownEvent.getType());
+      addDomHandler(getMouseHandler(), MouseUpEvent.getType());
+      addDomHandler(getMouseHandler(), MouseMoveEvent.getType());
     }
   }
 
@@ -660,11 +1015,7 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
     hide(CloseEvent.Cause.SCRIPT, null, fireEvent);
   }
 
-  private boolean isDragging() {
-    return dragging;
-  }
-
-  private boolean maybeAnimate() {
+  private boolean maybeAnimate(Runnable onClose) {
     if (isAnimationEnabled()) {
       if (getAnimation() == null) {
         setAnimation(new DefaultAnimation(getAnimationDuration()));
@@ -674,6 +1025,8 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
       }
 
       getAnimation().setPopup(this);
+      getAnimation().setOnClose(onClose);
+
       getAnimation().start();
       return true;
 
@@ -730,10 +1083,6 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
     setPopupPosition(left, top);
   }
 
-  private void setDragging(boolean dragging) {
-    this.dragging = dragging;
-  }
-
   private void setMouseHandler(MouseHandler mouseHandler) {
     this.mouseHandler = mouseHandler;
   }
@@ -755,17 +1104,16 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
       getElement().getStyle().setVisibility(Visibility.HIDDEN);
       BodyPanel.get().add(this);
 
-      Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
-        @Override
-        public void execute() {
-          if (callback != null) {
-            callback.setPosition(getOffsetWidth(), getOffsetHeight());
-          }
+      Scheduler.get().scheduleDeferred(() -> {
+        if (callback != null) {
+          callback.setPosition(getOffsetWidth(), getOffsetHeight());
+        }
 
-          if (!maybeAnimate()) {
-            getElement().getStyle().clearVisibility();
-            OpenEvent.fire(Popup.this);
-          }
+        Runnable onClose = () -> OpenEvent.fire(Popup.this);
+
+        if (!maybeAnimate(onClose)) {
+          getElement().getStyle().clearVisibility();
+          onClose.run();
         }
       });
     }

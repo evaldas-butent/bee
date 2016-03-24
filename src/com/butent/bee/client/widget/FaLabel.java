@@ -12,7 +12,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 public class FaLabel extends Label implements EnablableWidget {
 
-  private static final String STYLE_NAME = BeeConst.CSS_CLASS_PREFIX + "fa-label";
+  public static final String STYLE_NAME = BeeConst.CSS_CLASS_PREFIX + "fa-label";
   private static final String STYLE_DISABLED = STYLE_NAME + "-" + StyleUtils.SUFFIX_DISABLED;
 
   private boolean enabled = true;

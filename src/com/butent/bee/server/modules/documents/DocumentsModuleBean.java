@@ -10,6 +10,7 @@ import static com.butent.bee.shared.modules.documents.DocumentConstants.*;
 import com.butent.bee.server.data.BeeTable;
 import com.butent.bee.server.data.BeeView;
 import com.butent.bee.server.data.DataEditorBean;
+import com.butent.bee.server.data.DataEvent;
 import com.butent.bee.server.data.DataEvent.ViewInsertEvent;
 import com.butent.bee.server.data.DataEvent.ViewQueryEvent;
 import com.butent.bee.server.data.DataEventHandler;
@@ -29,6 +30,7 @@ import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
@@ -39,6 +41,7 @@ import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.value.TextValue;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -102,9 +105,6 @@ public class DocumentsModuleBean implements BeeModule {
     if (BeeUtils.same(svc, SVC_COPY_DOCUMENT_DATA)) {
       response = copyDocumentData(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_DOCUMENT_DATA)));
 
-    } else if (BeeUtils.same(svc, SVC_CREATE_PDF_DOCUMENT)) {
-      response = createPdf(reqInfo.getParameter(COL_DOCUMENT_CONTENT));
-
     } else if (BeeUtils.same(svc, SVC_SET_CATEGORY_STATE)) {
       response = setCategoryState(BeeUtils.toLongOrNull(reqInfo.getParameter("id")),
           BeeUtils.toLongOrNull(reqInfo.getParameter(AdministrationConstants.COL_ROLE)),
@@ -125,11 +125,12 @@ public class DocumentsModuleBean implements BeeModule {
     String module = getModule().getName();
 
     return Arrays.asList(BeeParameter.createBoolean(module, PRM_PRINT_AS_PDF, true, null),
+        BeeParameter.createText(module, PRM_PRINT_SIZE, true, "A4 portrait"),
         BeeParameter.createRelation(module, PRM_PRINT_HEADER, true, TBL_EDITOR_TEMPLATES,
             COL_EDITOR_TEMPLATE_NAME),
         BeeParameter.createRelation(module, PRM_PRINT_FOOTER, true, TBL_EDITOR_TEMPLATES,
             COL_EDITOR_TEMPLATE_NAME),
-        BeeParameter.createText(module, PRM_PRINT_MARGINS, true, null));
+        BeeParameter.createText(module, PRM_PRINT_MARGINS, true, "2em 1em"));
   }
 
   @Override
@@ -228,6 +229,55 @@ public class DocumentsModuleBean implements BeeModule {
                 prefix.replace("{year}", TimeUtils.yearToString(date.getYear()))
                     .replace("{month}", TimeUtils.monthToString(date.getMonth()))
                     .replace("{day}", TimeUtils.dayOfMonthToString(date.getDom())), null)));
+          }
+        }
+      }
+
+      /**
+       * Fills sent/received document numbers.
+       *
+       * Data modify handler checks document sent/received date field changes. If sent/received date
+       * was modified then sent/received number field will be changed. New sent/received number
+       * value is latest numbers of documents max value. Changes of sent/received number not
+       * applying when sent/received date field is empty or sent/received number has own input
+       * value.
+       *
+       * @param event listener of Data modify handler
+       */
+      @Subscribe
+      @AllowConcurrentEvents
+      public void fillDocumentSentReceivedNumber(DataEvent.ViewModifyEvent event) {
+        if (event.isBefore(TBL_DOCUMENTS)) {
+          final IsRow row;
+          final List<BeeColumn> columns;
+
+          if (event instanceof ViewInsertEvent) {
+            row = ((ViewInsertEvent) event).getRow();
+            columns = ((ViewInsertEvent) event).getColumns();
+
+          } else if (event instanceof DataEvent.ViewUpdateEvent) {
+            row = ((DataEvent.ViewUpdateEvent) event).getRow();
+            columns = ((DataEvent.ViewUpdateEvent) event).getColumns();
+
+          } else {
+            return;
+          }
+          for (Pair<String, String> pair : Arrays.asList(Pair.of(COL_DOCUMENT_SENT_NUMBER,
+              COL_DOCUMENT_SENT), Pair.of(COL_DOCUMENT_RECEIVED_NUMBER, COL_DOCUMENT_RECEIVED))) {
+
+            String number = pair.getA();
+            String date = pair.getB();
+
+            if (!DataUtils.contains(columns, number) && DataUtils.contains(columns, date)) {
+              int idxDate = DataUtils.getColumnIndex(date, columns);
+
+              if (!BeeUtils.isEmpty(row.getString(idxDate))) {
+                /** Write values in derived references of instances */
+                columns.add(sys.getView(TBL_DOCUMENTS).getBeeColumn(number));
+                row.addValue(new TextValue(qs.getNextNumber(event.getTargetName(), number, null,
+                    null)));
+              }
+            }
           }
         }
       }
@@ -335,13 +385,6 @@ public class DocumentsModuleBean implements BeeModule {
         }
       }
     });
-  }
-
-  private ResponseObject createPdf(String content, String... styleSheets) {
-    if (!BeeUtils.unbox(prm.getBoolean(PRM_PRINT_AS_PDF))) {
-      return ResponseObject.emptyResponse();
-    }
-    return ResponseObject.response(fs.createPdf(content, styleSheets));
   }
 
   private ResponseObject copyDocumentData(Long data) {

@@ -100,7 +100,7 @@ public class BooleanFilterSupplier extends AbstractFilterSupplier {
 
     container.setWidget(0, 1, empty);
 
-    Button all = new Button(Localized.getConstants().filterAll());
+    Button all = new Button(Localized.dictionary().filterAll());
     all.addStyleName(getStylePrefix() + "all");
 
     all.addClickHandler(new ClickHandler() {
@@ -114,7 +114,7 @@ public class BooleanFilterSupplier extends AbstractFilterSupplier {
 
     container.setWidget(1, 0, all);
 
-    Button cancel = new Button(Localized.getConstants().cancel());
+    Button cancel = new Button(Localized.dictionary().cancel());
     cancel.addStyleName(getStylePrefix() + "cancel");
 
     cancel.addClickHandler(new ClickHandler() {
@@ -143,7 +143,7 @@ public class BooleanFilterSupplier extends AbstractFilterSupplier {
 
   private String getLabelForEmpty() {
     return BeeUtils.isEmpty(getColumnLabel())
-        ? NULL_VALUE_LABEL : Localized.getMessages().not(getColumnLabel());
+        ? NULL_VALUE_LABEL : Localized.dictionary().not(getColumnLabel());
   }
 
   private String getLabelForNotEmpty() {

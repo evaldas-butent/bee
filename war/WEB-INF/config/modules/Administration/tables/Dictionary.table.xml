@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+  name="Dictionary"
+  idName="DictionaryID"
+  >
+  <Fields>
+    <String name="Key" precision="100" notNull="true" unique="true" label="=key" />
+
+    <String name="EN" precision="200" notNull="true" label="English" />
+
+    <String name="LT" precision="200" label="Lietuviškai" />
+    <String name="RU" precision="200" label="Русский" />
+    <String name="FI" precision="200" label="Suomi" />
+    <String name="LV" precision="200" label="Latviešu" />
+    <String name="DE" precision="200" label="Deutsch" />
+  </Fields>
+</Table>

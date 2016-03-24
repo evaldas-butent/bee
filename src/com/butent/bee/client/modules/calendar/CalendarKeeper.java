@@ -345,24 +345,24 @@ public final class CalendarKeeper {
 
   public static void register() {
     GridFactory.registerGridInterceptor(GRID_CALENDAR_EXECUTORS,
-        UniqueChildInterceptor.forUsers(Localized.getConstants().calAddExecutors(),
+        UniqueChildInterceptor.forUsers(Localized.dictionary().calAddExecutors(),
             COL_CALENDAR, COL_EXECUTOR_USER));
 
     GridFactory.registerGridInterceptor(GRID_CAL_EXECUTOR_GROUPS,
-        UniqueChildInterceptor.forUserGroups(Localized.getConstants().calAddExecutorGroups(),
+        UniqueChildInterceptor.forUserGroups(Localized.dictionary().calAddExecutorGroups(),
             COL_CALENDAR, COL_EXECUTOR_GROUP));
 
     GridFactory.registerGridInterceptor(GRID_APPOINTMENT_ATTENDEES, new UniqueChildInterceptor(
-        Localized.getConstants().calAddAttendees(), COL_APPOINTMENT, COL_ATTENDEE, VIEW_ATTENDEES,
+        Localized.dictionary().calAddAttendees(), COL_APPOINTMENT, COL_ATTENDEE, VIEW_ATTENDEES,
         Lists.newArrayList(COL_ATTENDEE_NAME),
         Lists.newArrayList(COL_ATTENDEE_NAME, ALS_ATTENDEE_TYPE_NAME)));
 
     GridFactory.registerGridInterceptor(GRID_APPOINTMENT_OWNERS,
-        UniqueChildInterceptor.forUsers(Localized.getConstants().calAddOwners(),
+        UniqueChildInterceptor.forUsers(Localized.dictionary().calAddOwners(),
             COL_APPOINTMENT, COL_APPOINTMENT_OWNER));
 
     GridFactory.registerGridInterceptor(GRID_APPOINTMENT_PROPS, new UniqueChildInterceptor(
-        Localized.getConstants().calAddParameters(), COL_APPOINTMENT, COL_APPOINTMENT_PROPERTY,
+        Localized.dictionary().calAddParameters(), COL_APPOINTMENT, COL_APPOINTMENT_PROPERTY,
         VIEW_EXTENDED_PROPERTIES, Lists.newArrayList(COL_PROPERTY_NAME),
         Lists.newArrayList(COL_PROPERTY_NAME, ALS_PROPERTY_GROUP_NAME)));
 
@@ -384,8 +384,8 @@ public final class CalendarKeeper {
         COL_FOREGROUND, styleProvider);
 
     BeeKeeper.getBus().registerDataHandler(CACHE, true);
-    BeeKeeper.getBus().registerRowActionHandler(new RowActionHandler(), false);
-    BeeKeeper.getBus().registerRowTransformHandler(new RowTransformHandler(), false);
+    BeeKeeper.getBus().registerRowActionHandler(new RowActionHandler());
+    BeeKeeper.getBus().registerRowTransformHandler(new RowTransformHandler());
 
     SelectorEvent.register(SELECTOR_HANDLER);
 
@@ -635,7 +635,7 @@ public final class CalendarKeeper {
 
               String caption = result.isEnabled() ? result.getCaption()
                   : BeeUtils.joinWords(result.getCaption(),
-                      BeeUtils.bracket(Localized.getConstants().rowIsReadOnly().trim()));
+                      BeeUtils.bracket(Localized.dictionary().rowIsReadOnly().trim()));
 
               Global.inputWidget(caption, result, builder.getModalCallback(null),
                   RowEditor.DIALOG_STYLE, null, enabledActions);

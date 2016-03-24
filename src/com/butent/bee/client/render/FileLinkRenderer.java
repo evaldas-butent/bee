@@ -48,18 +48,17 @@ public class FileLinkRenderer extends AbstractCellRenderer {
     if (row == null) {
       return null;
     }
-
     Long id = row.getLong(idIndex);
+
     if (!DataUtils.isId(id)) {
       return null;
     }
-
     String text = getText(row);
+
     if (BeeUtils.isEmpty(text)) {
       return null;
     }
-
-    anchorElement.setHref(FileUtils.getUrl(text, id));
+    anchorElement.setHref(FileUtils.getUrl(id, text));
     anchorElement.setInnerText(text);
 
     return anchorElement.getString();
@@ -69,15 +68,17 @@ public class FileLinkRenderer extends AbstractCellRenderer {
     if (row == null) {
       return null;
     }
-
     String text = null;
+
     if (BeeUtils.isNonNegative(captionIndex)) {
       text = row.getString(captionIndex);
     }
     if (BeeUtils.isEmpty(text) && BeeUtils.isNonNegative(nameIndex)) {
       text = row.getString(nameIndex);
     }
-
+    if (BeeUtils.isEmpty(text) && BeeUtils.isNonNegative(idIndex)) {
+      text = row.getString(idIndex);
+    }
     return text;
   }
 }

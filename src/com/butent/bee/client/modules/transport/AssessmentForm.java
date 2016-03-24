@@ -4,7 +4,6 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
-import com.google.common.collect.Sets;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Style.Cursor;
@@ -95,7 +94,7 @@ import com.butent.bee.shared.data.value.IntegerValue;
 import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.font.FontAwesome;
-import com.butent.bee.shared.i18n.LocalizableConstants;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
@@ -170,7 +169,7 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
             user.setFocus(true);
             return loc.valueRequired();
           }
-          return super.getErrorMessage();
+          return InputCallback.super.getErrorMessage();
         }
 
         @Override
@@ -275,7 +274,7 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
                       String oldLog = Data.getString(view, row, COL_ASSESSMENT_LOG);
 
                       Queries.update(view, row.getId(), row.getVersion(), Data.getColumns(view,
-                          Lists.newArrayList(COL_ASSESSMENT_STATUS, COL_ASSESSMENT_LOG)),
+                              Lists.newArrayList(COL_ASSESSMENT_STATUS, COL_ASSESSMENT_LOG)),
                           Lists.newArrayList(BeeUtils.toString(status.ordinal()), oldLog),
                           Lists.newArrayList(BeeUtils.toString(AssessmentStatus.NEW.ordinal()),
                               buildLog(loc.trAssessmentRejection(), value, oldLog)), null,
@@ -439,7 +438,7 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
               @Override
               public void onSuccess(Integer result) {
                 if (BeeUtils.isPositive(result)) {
-                  Global.showError(Localized.getMessages().trAssessmentInvalidStatusError(result,
+                  Global.showError(Localized.dictionary().trAssessmentInvalidStatusError(result,
                       request ? status.getCaption() : orderStatus.getCaption()));
                 } else {
                   process();
@@ -536,7 +535,7 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
   }
 
   private FormView form;
-  private final LocalizableConstants loc = Localized.getConstants();
+  private final Dictionary loc = Localized.dictionary();
 
   private final Button reqNew = new Button(loc.trAssessmentToRequests(),
       new StatusUpdater(AssessmentStatus.NEW, loc.trAssessmentAskRequest()));
@@ -1000,25 +999,17 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
                         if (!BeeUtils.isEmpty(vat)) {
                           boolean percent = BeeUtils.unbox(Data.getBoolean(VIEW_CARGO_INCOMES, row,
                               "VatPercent"));
-                          amount += " (" + Localized.getConstants().vat() + " " + vat
+                          amount += " (" + Localized.dictionary().vat() + " " + vat
                               + (percent ? "%" : " " + currency) + ")";
                         }
                         table.setText(r, 1, amount);
                         r++;
                       }
                     }
-                    Set<String> to = null;
-                    String addr = form.getStringValue("PersonEmail");
-
-                    if (addr == null) {
-                      addr = form.getStringValue("CustomerEmail");
-                    }
-                    if (addr != null) {
-                      to = Sets.newHashSet(addr);
-                    }
-                    NewMailMessage.create(to, null, null, null,
+                    NewMailMessage.create(BeeUtils.notEmpty(form.getStringValue("PersonEmail"),
+                            form.getStringValue("CustomerEmail")), null,
                         Document.get().createBRElement().getString() + table.toString(),
-                        null, null, false);
+                        null, null);
                   }
                 });
           }

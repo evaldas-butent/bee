@@ -22,6 +22,7 @@ import com.butent.bee.client.composite.MultiSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.Queries.RowSetCallback;
+import com.butent.bee.client.modules.projects.ProjectsHelper;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
@@ -101,6 +102,8 @@ class TaskBuilder extends AbstractFormInterceptor {
   private final Map<Long, FileInfo> filesToUpload = new HashMap<>();
   private Long executor;
   private boolean taskIdsCallback;
+
+  String startTime;
 
   TaskBuilder() {
     super();
@@ -261,10 +264,6 @@ class TaskBuilder extends AbstractFormInterceptor {
     if (widget instanceof InputDate) {
       ((InputDate) widget).setDate(start);
     }
-    widget = getFormView().getWidgetByName(NAME_START_TIME);
-    if (widget instanceof InputTime) {
-      ((InputTime) widget).setTime(start);
-    }
 
     DateTime end = newRow.getDateTime(getDataIndex(COL_FINISH_TIME));
     DateTime endTime = newRow.getDateTime(getDataIndex(COL_FINISH_TIME));
@@ -291,6 +290,12 @@ class TaskBuilder extends AbstractFormInterceptor {
       }
     });
 
+    Global.getParameter(TaskConstants.PRM_START_OF_WORK_DAY, new Consumer<String>() {
+      @Override
+      public void accept(String input) {
+        startTime = input;
+      }
+    });
   }
 
   @Override
@@ -301,18 +306,34 @@ class TaskBuilder extends AbstractFormInterceptor {
 
     DateTime start = getStart();
     if (start == null) {
-      event.getCallback().onFailure(Localized.getConstants().crmEnterStartDate());
+      event.getCallback().onFailure(Localized.dictionary().crmEnterStartDate());
       return;
     }
 
+    DateTime nowTime = TimeUtils.nowMillis();
+    InputTime widget = (InputTime) getFormView().getWidgetByName(NAME_START_TIME);
+    if (widget != null) {
+      String time = widget.getValue();
+
+      if (BeeUtils.isEmpty(time)) {
+        if (nowTime.getDate().getDays() < start.getDate().getDays()) {
+          widget.setValue(startTime);
+        } else {
+          widget.setTime(TimeUtils.nowMillis());
+        }
+      }
+    }
+
+    start = getStart();
+
     DateTime end = getEnd(start, Data.getString(VIEW_TASKS, activeRow, COL_EXPECTED_DURATION));
     if (end == null) {
-      event.getCallback().onFailure(Localized.getConstants().crmEnterFinishDateOrEstimatedTime());
+      event.getCallback().onFailure(Localized.dictionary().crmEnterFinishDateOrEstimatedTime());
       return;
     }
 
     if (TimeUtils.isLeq(end, start)) {
-      event.getCallback().onFailure(Localized.getConstants().crmFinishTimeMustBeGreaterThanStart());
+      event.getCallback().onFailure(Localized.dictionary().crmFinishTimeMustBeGreaterThanStart());
       return;
     }
 
@@ -321,32 +342,35 @@ class TaskBuilder extends AbstractFormInterceptor {
       DateTime now = TimeUtils.nowMinutes();
       if (TimeUtils.isLess(reminderTime, now)) {
         event.getCallback().onFailure(BeeUtils.joinWords(
-            Localized.getConstants().crmReminderTimeMustBeGreaterThan(), now));
+            Localized.dictionary().crmReminderTimeMustBeGreaterThan(), now));
         return;
       }
 
       if (TimeUtils.isMeq(reminderTime, end)) {
         event.getCallback().onFailure(BeeUtils.joinWords(
-            Localized.getConstants().crmReminderTimeMustBeLessThan(), end));
+            Localized.dictionary().crmReminderTimeMustBeLessThan(), end));
         return;
       }
     }
 
     if (Data.isNull(VIEW_TASKS, activeRow, COL_SUMMARY)) {
-      event.getCallback().onFailure(Localized.getConstants().crmEnterSubject());
+      event.getCallback().onFailure(Localized.dictionary().crmEnterSubject());
       return;
     }
 
     if (BeeUtils.allEmpty(activeRow.getProperty(PROP_EXECUTORS),
         activeRow.getProperty(PROP_EXECUTOR_GROUPS))) {
-      event.getCallback().onFailure(Localized.getConstants().crmSelectExecutor());
+      event.getCallback().onFailure(Localized.dictionary().crmSelectExecutor());
       return;
     }
+
+    String summary = activeRow.getString(Data.getColumnIndex(VIEW_TASKS, COL_SUMMARY)).trim();
 
     BeeRow newRow = DataUtils.cloneRow(activeRow);
 
     Data.setValue(VIEW_TASKS, newRow, COL_START_TIME, start);
     Data.setValue(VIEW_TASKS, newRow, COL_FINISH_TIME, end);
+    Data.setValue(VIEW_TASKS, newRow, COL_SUMMARY, summary);
 
     if (reminderTime != null) {
       Data.setValue(VIEW_TASKS, newRow, COL_REMINDER_TIME, reminderTime);
@@ -400,7 +424,7 @@ class TaskBuilder extends AbstractFormInterceptor {
             event.getCallback().onSuccess(row);
           }
 
-          String message = Localized.getMessages().crmCreatedNewTasks(tasks.getNumberOfRows());
+          String message = Localized.dictionary().crmCreatedNewTasks(tasks.getNumberOfRows());
           BeeKeeper.getScreen().notifyInfo(message);
 
           if (!taskIdsCallback) {
@@ -419,12 +443,10 @@ class TaskBuilder extends AbstractFormInterceptor {
   private static void setProjectStagesFilter(FormView form, IsRow row) {
     int idxProjectOwner = form.getDataIndex(ALS_PROJECT_OWNER);
     int idxProject = form.getDataIndex(ProjectConstants.COL_PROJECT);
+    int idxProjectUser = form.getDataIndex(ProjectConstants.ALS_FILTERED_PROJECT_USER);
 
-    if (BeeConst.isUndef(idxProjectOwner)) {
-      return;
-    }
-
-    if (BeeConst.isUndef(idxProject)) {
+    if (BeeConst.isUndef(idxProjectOwner) || BeeConst.isUndef(idxProject) || BeeConst.isUndef(
+        idxProjectUser)) {
       return;
     }
 
@@ -436,8 +458,6 @@ class TaskBuilder extends AbstractFormInterceptor {
       return;
     }
 
-    long currentUser = BeeUtils.unbox(BeeKeeper.getUser().getUserId());
-    long projectOwner = BeeUtils.unbox(row.getLong(idxProjectOwner));
     long projectId = BeeUtils.unbox(row.getLong(idxProject));
 
     if (DataUtils.isId(projectId)) {
@@ -446,7 +466,7 @@ class TaskBuilder extends AbstractFormInterceptor {
       setVisibleProjectData(form, false);
     }
 
-    if (currentUser != projectOwner) {
+    if (!ProjectsHelper.isProjectOwner(form, row) || !ProjectsHelper.isProjectUser(form, row)) {
       return;
     }
 

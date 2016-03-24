@@ -40,7 +40,7 @@
       <footer aggregate="sum" />
     </CalcColumn>
     
-    <DataColumn name="ApprovedAmount" visible="false">
+    <DataColumn name="ApprovedAmount">
       <footer aggregate="sum" />
     </DataColumn>
     <DataColumn name="ExportedAmount" visible="false">

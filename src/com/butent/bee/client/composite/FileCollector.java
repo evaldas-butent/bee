@@ -68,7 +68,7 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
     DragEnterHandler, DragLeaveHandler, HasSelectionHandlers<FileInfo>, HasOptions {
 
   public enum Column implements HasCaption {
-    DATE("date", Localized.getConstants().date(), false, false) {
+    DATE("date", Localized.dictionary().date(), false, false) {
       @Override
       Widget createDisplay() {
         return new DateTimeLabel(false);
@@ -103,7 +103,7 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
       }
     },
 
-    VERSION("version", Localized.getConstants().fileVersion(), false, false) {
+    VERSION("version", Localized.dictionary().fileVersion(), false, false) {
       @Override
       Widget createDisplay() {
         return new Label();
@@ -136,7 +136,7 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
       }
     },
 
-    NAME("name", Localized.getConstants().fileName(), true, false) {
+    NAME("name", Localized.dictionary().fileName(), true, false) {
       @Override
       Widget createDisplay() {
         return new Simple();
@@ -160,6 +160,7 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
             w = new Label(BeeUtils.notEmpty(fileInfo.getCaption(), fileInfo.getName()));
           }
           ((Simple) widget).setWidget(w);
+          ((Simple) widget).setTitle(BeeUtils.notEmpty(fileInfo.getCaption(), fileInfo.getName()));
         }
       }
 
@@ -181,7 +182,7 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
       }
     },
 
-    DESCRIPTION("description", Localized.getConstants().fileDescription(), false, false) {
+    DESCRIPTION("description", Localized.dictionary().fileDescription(), false, false) {
       @Override
       Widget createDisplay() {
         return new Label();
@@ -214,7 +215,7 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
       }
     },
 
-    SIZE("size", Localized.getConstants().fileSize(), false, true) {
+    SIZE("size", Localized.dictionary().fileSize(), false, true) {
       @Override
       Widget createDisplay() {
         return new Label();
@@ -238,7 +239,7 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
       }
     },
 
-    TYPE("type", Localized.getConstants().fileType(), false, false) {
+    TYPE("type", Localized.dictionary().fileType(), false, false) {
       @Override
       Widget createDisplay() {
         return new Label();
@@ -271,7 +272,7 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
       }
     },
 
-    EDIT("edit", Localized.getConstants().actionEdit(), false, true) {
+    EDIT("edit", Localized.dictionary().actionEdit(), false, true) {
       @Override
       Widget createDisplay() {
         FaLabel widget = new FaLabel(FontAwesome.EDIT);
@@ -294,7 +295,7 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
       }
     },
 
-    DELETE("delete", Localized.getConstants().actionRemove(), false, true) {
+    DELETE("delete", Localized.dictionary().actionRemove(), false, true) {
       @Override
       Widget createDisplay() {
         FaLabel widget = new FaLabel(FontAwesome.MINUS);
@@ -383,7 +384,7 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
   private static final List<Column> DEFAULT_EDITABLE_COLUMNS = Lists.newArrayList(Column.NAME);
 
   public static IdentifiableWidget getDefaultFace() {
-    return new Button(Localized.getConstants().chooseFiles());
+    return new Button(Localized.dictionary().chooseFiles());
   }
 
   public static FileCollector headless(Consumer<Collection<? extends FileInfo>> consumer) {
@@ -733,7 +734,7 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
       row++;
     }
 
-    Global.inputWidget(Localized.getConstants().fileDataCorrection(), panel, new InputCallback() {
+    Global.inputWidget(Localized.dictionary().fileDataCorrection(), panel, new InputCallback() {
       @Override
       public void onCancel() {
         getRowFormatter().removeStyleName(index, STYLE_EDITING);

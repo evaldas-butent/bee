@@ -573,7 +573,7 @@ public class MultiSelector extends DataSelector implements HandlesRendering, Han
       if (!BeeUtils.isEmpty(getLabel())) {
         messages.add(getLabel());
       }
-      messages.add(Localized.getConstants().valueRequired());
+      messages.add(Localized.dictionary().valueRequired());
     }
     return messages;
   }
@@ -608,7 +608,7 @@ public class MultiSelector extends DataSelector implements HandlesRendering, Han
 
     if (isNewRowEnabled()) {
       FaLabel plusWidget = new FaLabel(FontAwesome.PLUS_CIRCLE, STYLE_PLUS);
-      plusWidget.setTitle(BeeUtils.buildLines(Localized.getConstants().actionCreate(),
+      plusWidget.setTitle(BeeUtils.buildLines(Localized.dictionary().actionCreate(),
           BeeUtils.bracket(getLabel())));
 
       plusWidget.addMouseDownHandler(new MouseDownHandler() {

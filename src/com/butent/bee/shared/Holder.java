@@ -18,6 +18,10 @@ public class Holder<T> {
     this.value = value;
   }
 
+  public void clear() {
+    this.value = null;
+  }
+
   public boolean contains(T object) {
     return Objects.equals(get(), object);
   }

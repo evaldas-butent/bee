@@ -53,7 +53,7 @@ public final class DiscussionsKeeper {
     });
 
     /* Row handlers */
-    BeeKeeper.getBus().registerRowTransformHandler(new RowTransformHandler(), false);
+    BeeKeeper.getBus().registerRowTransformHandler(new RowTransformHandler());
 
     Global.getNewsAggregator().registerFilterHandler(Feed.ANNOUNCEMENTS,
         getAnnouncementsFilterHandler());

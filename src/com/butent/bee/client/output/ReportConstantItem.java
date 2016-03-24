@@ -66,7 +66,7 @@ public class ReportConstantItem extends ReportNumericItem {
   @Override
   public String saveOptions() {
     if (BeeUtils.isEmpty(expressionWidget.getValue())) {
-      return Localized.getConstants().valueRequired();
+      return Localized.dictionary().valueRequired();
     }
     setExpression(expressionWidget.getValue());
     return null;

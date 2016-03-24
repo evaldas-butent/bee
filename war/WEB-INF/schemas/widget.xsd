@@ -105,6 +105,7 @@
         </xs:choice>
         <xs:attribute name="source" type="tp:fieldNameType" />
         <xs:attribute name="property" type="tp:nameType" />
+        <xs:attribute name="userMode" type="xs:boolean" />
         <xs:attribute name="format" type="xs:normalizedString" />
         <xs:attribute name="enumKey" type="xs:normalizedString" />
         <xs:attribute name="renderColumns" type="tp:fieldNames" />
@@ -130,6 +131,7 @@
         </xs:sequence>
         <xs:attribute name="source" type="tp:fieldNameType" />
         <xs:attribute name="property" type="tp:nameType" />
+        <xs:attribute name="userMode" type="xs:boolean" />
         <xs:attribute name="caption" type="xs:string" />
         <xs:attribute name="readOnly" type="xs:boolean" />
         <xs:attribute name="format" type="xs:normalizedString" />
@@ -538,6 +540,7 @@
         <xs:attribute name="filter" type="xs:normalizedString" />
         <xs:attribute name="currentUserFilter" type="tp:fieldNameType" />
         <xs:attribute name="summarize" type="xs:boolean" />
+        <xs:attribute name="paging" type="xs:boolean" />
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
@@ -904,6 +907,7 @@
       <xs:complexContent>
         <xs:extension base="fileList">
           <xs:attribute name="property" type="tp:nameType" />
+          <xs:attribute name="userMode" type="xs:boolean" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>

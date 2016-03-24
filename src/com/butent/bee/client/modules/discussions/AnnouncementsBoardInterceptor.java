@@ -20,6 +20,7 @@ import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.DialogBox;
+import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.grid.GridFactory.GridOptions;
 import com.butent.bee.client.grid.GridPanel;
@@ -75,8 +76,9 @@ class AnnouncementsBoardInterceptor extends AbstractFormInterceptor implements
   private static final String STYLE_ACTION = "action";
   private static final String STYLE_CHAT_BALLOON = "chatBalloon";
   private static final String LOCALE_NAME_LT = "lt";
+  private static final String STYLE_PHOTO = "Photo";
 
-  private static final String DAY = Localized.getConstants().unitDayShort().toLowerCase();
+  private static final String DAY = Localized.dictionary().unitDayShort().toLowerCase();
 
   private final Collection<HandlerRegistration> registry = new ArrayList<>();
 
@@ -100,8 +102,8 @@ class AnnouncementsBoardInterceptor extends AbstractFormInterceptor implements
       if (beeCol != null) {
         beeCol.setNullable(false);
       }
-      RowFactory.createRow(FORM_NEW_DISCUSSION, Localized.getConstants().announcementNew(), data,
-          emptyRow, new RowCallback() {
+      RowFactory.createRow(FORM_NEW_DISCUSSION, Localized.dictionary().announcementNew(), data,
+          emptyRow, Modality.ENABLED, new RowCallback() {
 
             @Override
             public void onCancel() {
@@ -313,7 +315,7 @@ class AnnouncementsBoardInterceptor extends AbstractFormInterceptor implements
           new FaLabel(FontAwesome.SQUARE_O).toString());
 
       Button moreButton = new Button(btnCaption, command);
-      moreButton.setTitle(Localized.getConstants().more());
+      moreButton.setTitle(Localized.dictionary().more());
       moreButton.addStyleName(STYLE_PREFIX + STYLE_ACTION + COL_DISCUSSION);
       adsTable.setText(row, 0, BeeConst.STRING_EMPTY);
       adsTable.setWidget(row, 1, moreButton);
@@ -339,7 +341,7 @@ class AnnouncementsBoardInterceptor extends AbstractFormInterceptor implements
     adsTable.setWidget(row, 0, img, STYLE_PREFIX + COL_OWNER);
     adsTable.getCellFormatter().setRowSpan(row, 0, 2);
 
-    adsTable.setHtml(row, 1, Localized.getConstants().birthdaysParties(), STYLE_PREFIX
+    adsTable.setHtml(row, 1, Localized.dictionary().birthdaysParties(), STYLE_PREFIX
         + COL_SUBJECT);
     adsTable.getRow(row).addClassName(STYLE_PREFIX + ALS_BIRTHDAY);
     StyleUtils.setDisplay(adsTable.getRow(row), Display.NONE);
@@ -361,7 +363,7 @@ class AnnouncementsBoardInterceptor extends AbstractFormInterceptor implements
   protected static void renderWelcomeSection(HtmlTable adsTable) {
 
     int row = adsTable.getRowCount();
-    adsTable.setHtml(row, 0, Localized.getConstants().welcome());
+    adsTable.setHtml(row, 0, Localized.dictionary().welcome());
     adsTable.getCellFormatter().setColSpan(row, 0, 2);
     adsTable.getRow(row).addClassName(STYLE_PREFIX + ALS_TOPIC_NAME);
 
@@ -377,7 +379,7 @@ class AnnouncementsBoardInterceptor extends AbstractFormInterceptor implements
     StyleUtils.setMaxHeight(img, 90);
     adsTable.setWidget(row, 0, img, STYLE_PREFIX + COL_OWNER);
 
-    adsTable.setHtml(row, 1, Localized.getConstants().welcomeMessage(), STYLE_PREFIX
+    adsTable.setHtml(row, 1, Localized.dictionary().welcomeMessage(), STYLE_PREFIX
         + COL_DESCRIPTION);
 
     row++;
@@ -386,7 +388,7 @@ class AnnouncementsBoardInterceptor extends AbstractFormInterceptor implements
 
       @Override
       public void execute() {
-        RowFactory.createRow(VIEW_DISCUSSIONS);
+        RowFactory.createRow(VIEW_DISCUSSIONS, Modality.ENABLED);
       }
     };
 
@@ -396,7 +398,7 @@ class AnnouncementsBoardInterceptor extends AbstractFormInterceptor implements
         new FaLabel(FontAwesome.SQUARE_O).toString());
 
     Button moreButton = new Button(btnCaption, command);
-    moreButton.setTitle(Localized.getConstants().more());
+    moreButton.setTitle(Localized.dictionary().more());
     moreButton.addStyleName(STYLE_PREFIX + STYLE_ACTION + COL_DISCUSSION);
     adsTable.setText(row, 0, BeeConst.STRING_EMPTY);
     // adsTable.setWidget(row, 1, moreButton);
@@ -449,12 +451,12 @@ class AnnouncementsBoardInterceptor extends AbstractFormInterceptor implements
       @Override
       public void onResponse(ResponseObject response) {
         if (response.isEmpty()) {
-          adsTable.setHtml(contentRow, 0, Localized.getConstants().noData());
+          adsTable.setHtml(contentRow, 0, Localized.dictionary().noData());
           return;
         }
 
         if (!response.hasResponse(SimpleRowSet.class)) {
-          adsTable.setHtml(contentRow, 0, Localized.getConstants().actionCanNotBeExecuted());
+          adsTable.setHtml(contentRow, 0, Localized.dictionary().actionCanNotBeExecuted());
           return;
         }
 
@@ -522,7 +524,7 @@ class AnnouncementsBoardInterceptor extends AbstractFormInterceptor implements
     container.add(colPublisher);
 
     Flow colPhoto = new Flow();
-    colPhoto.addStyleName(stylePref + COL_PHOTO);
+    colPhoto.addStyleName(stylePref + STYLE_PHOTO);
 
     if (!BeeUtils.isEmpty(rsRow[rs.getColumnIndex(COL_PHOTO)])) {
       renderPhoto(rsRow, rs, stylePref, colPhoto);
@@ -537,8 +539,8 @@ class AnnouncementsBoardInterceptor extends AbstractFormInterceptor implements
     String photo =
         rsRow[rs.getColumnIndex(COL_PHOTO)];
     if (!BeeUtils.isEmpty(photo)) {
-      Image image = new Image(PhotoRenderer.getUrl(photo));
-      image.addStyleName(stylePref + COL_PHOTO);
+      Image image = new Image(PhotoRenderer.getUrl(BeeUtils.toLongOrNull(photo)));
+      image.addStyleName(stylePref + STYLE_PHOTO);
       container.add(image);
     }
   }

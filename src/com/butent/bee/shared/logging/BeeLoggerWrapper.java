@@ -45,6 +45,15 @@ public class BeeLoggerWrapper implements BeeLogger {
   }
 
   @Override
+  public String getName() {
+    if (initLogger()) {
+      return logger.getName();
+    } else {
+      return null;
+    }
+  }
+
+  @Override
   public void info(Object... messages) {
     if (initLogger()) {
       logger.info(messages);

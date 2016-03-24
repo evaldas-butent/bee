@@ -79,8 +79,8 @@ import com.butent.bee.client.utils.XmlUtils;
 import com.butent.bee.client.view.TreeContainer;
 import com.butent.bee.client.view.TreeView;
 import com.butent.bee.client.view.edit.Editor;
-import com.butent.bee.client.widget.BeeAudio;
-import com.butent.bee.client.widget.BeeVideo;
+import com.butent.bee.client.widget.Audio;
+import com.butent.bee.client.widget.Video;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.Canvas;
 import com.butent.bee.client.widget.CustomDiv;
@@ -929,9 +929,6 @@ public enum FormWidget {
 
   private static final BeeLogger logger = LogUtils.getLogger(FormWidget.class);
 
-  public static final String ATTR_SPLITTER_SIZE = "splitterSize";
-  public static final String ATTR_SIZE = "size";
-
   private static final String ATTR_STYLE_PREFIX = "stylePrefix";
 
   private static final String ATTR_TITLE = "title";
@@ -1112,8 +1109,8 @@ public enum FormWidget {
         break;
 
       case AUDIO:
-        widget = new BeeAudio();
-        initMedia((BeeAudio) widget, attributes);
+        widget = new Audio();
+        initMedia((Audio) widget, attributes);
         break;
 
       case BR:
@@ -1584,7 +1581,10 @@ public enum FormWidget {
 
           CellSource cellSource = null;
           if (!BeeUtils.isEmpty(property)) {
-            cellSource = CellSource.forProperty(property, ValueType.TEXT);
+            boolean userMode = BeeUtils.toBoolean(attributes.get(UiConstants.ATTR_USER_MODE));
+            cellSource = CellSource.forProperty(property, BeeKeeper.getUser().idOrNull(userMode),
+                ValueType.TEXT);
+
           } else if (column != null) {
             int columnIndex = DataUtils.getColumnIndex(column.getId(), columns);
             if (!BeeConst.isUndef(columnIndex)) {
@@ -1703,7 +1703,7 @@ public enum FormWidget {
         break;
 
       case SPLIT_PANEL:
-        String ss = attributes.get(ATTR_SPLITTER_SIZE);
+        String ss = attributes.get(UiConstants.ATTR_SPLITTER_SIZE);
         if (BeeUtils.isDigit(ss)) {
           widget = new Split(BeeUtils.toInt(ss));
         } else {
@@ -1789,8 +1789,8 @@ public enum FormWidget {
         break;
 
       case VIDEO:
-        widget = new BeeVideo();
-        initMedia((BeeVideo) widget, attributes);
+        widget = new Video();
+        initMedia((Video) widget, attributes);
         break;
 
       case VOLUME_SLIDER:
@@ -2005,7 +2005,7 @@ public enum FormWidget {
         if (BeeUtils.toBoolean(attributes.get(ATTR_ALL_ITEMS_VISIBLE))) {
           cnt = ((ListBox) widget).getItemCount();
         } else {
-          cnt = BeeUtils.toInt(attributes.get(ATTR_SIZE));
+          cnt = BeeUtils.toInt(attributes.get(UiConstants.ATTR_SIZE));
         }
         if (cnt > 0) {
           ((ListBox) widget).setVisibleItemCount(cnt);
@@ -2302,8 +2302,9 @@ public enum FormWidget {
           ((Split) parent).add(w);
 
         } else if (Split.validDirection(direction, false)) {
-          Integer size = XmlUtils.getAttributeInteger(child, ATTR_SIZE);
-          Integer splitterSize = XmlUtils.getAttributeInteger(child, ATTR_SPLITTER_SIZE);
+          Integer size = XmlUtils.getAttributeInteger(child, UiConstants.ATTR_SIZE);
+          Integer splitterSize =
+              XmlUtils.getAttributeInteger(child, UiConstants.ATTR_SPLITTER_SIZE);
 
           if (BeeUtils.isPositive(size)) {
             ((Split) parent).add(w, direction, size, splitterSize);

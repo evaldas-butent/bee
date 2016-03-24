@@ -30,8 +30,7 @@ import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.data.filter.Filter;
-import com.butent.bee.shared.i18n.LocalizableConstants;
-import com.butent.bee.shared.i18n.LocalizableMessages;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.SupportedLocale;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -65,7 +64,6 @@ import javax.ejb.EJBContext;
 import javax.ejb.Lock;
 import javax.ejb.LockType;
 import javax.ejb.Singleton;
-import javax.servlet.http.HttpServletRequest;
 
 /**
  * Responsible for users system, their login status, localization, user and roles cache etc.
@@ -238,6 +236,16 @@ public class UserServiceBean {
     return (info == null) ? false : info.getUserData().canEditColumn(viewName, column);
   }
 
+  public boolean canDeleteData(String viewName) {
+    UserInfo info = getCurrentUserInfo();
+    return (info == null) ? false : info.getUserData().canDeleteData(viewName);
+  }
+
+  public boolean canEditData(String viewName) {
+    UserInfo info = getCurrentUserInfo();
+    return (info == null) ? false : info.getUserData().canEditData(viewName);
+  }
+
   public BeeRowSet ensureUserSettings() {
     Long userId = getCurrentUserId();
 
@@ -272,8 +280,7 @@ public class UserServiceBean {
 
   public String getCurrentUser() {
     Principal p = ctx.getCallerPrincipal();
-    Assert.notNull(p);
-    return p.getName().toLowerCase();
+    return Objects.nonNull(p) ? p.getName().toLowerCase() : null;
   }
 
   public Filter getCurrentUserFilter(String column) {
@@ -288,41 +295,36 @@ public class UserServiceBean {
     return getUserSign(getCurrentUserId());
   }
 
+  public Dictionary getDictionary() {
+    return getDictionary(getCurrentUserId());
+  }
+
+  public Dictionary getDictionary(Long userId) {
+    return Localizations.getDictionary(getSupportedLocale(userId));
+  }
+
+  public Map<String, String> getGlossary() {
+    return getGlossary(getCurrentUserId());
+  }
+
+  public Map<String, String> getGlossary(Long userId) {
+    return Localizations.getGlossary(getSupportedLocale(userId));
+  }
+
   public String getLanguage() {
     return getLanguage(getCurrentUserId());
   }
 
   public String getLanguage(Long userId) {
-    return getUserLocale(userId).getLanguage();
+    return getSupportedLocale(userId).getLanguage();
   }
 
   public Locale getLocale() {
-    return BeeUtils.nvl(I18nUtils.toLocale(getLanguage(getCurrentUserId())),
-        Localizations.getDefaultLocale());
+    return getLocale(getCurrentUserId());
   }
 
-  public LocalizableConstants getLocalizableConstants() {
-    return getLocalizableConstants(getCurrentUserId());
-  }
-
-  public LocalizableConstants getLocalizableConstants(Long userId) {
-    return Localizations.getPreferredConstants(getLanguage(userId));
-  }
-
-  public Map<String, String> getLocalizableDictionary() {
-    return getLocalizableDictionary(getCurrentUserId());
-  }
-
-  public Map<String, String> getLocalizableDictionary(Long userId) {
-    return Localizations.getPreferredDictionary(getLanguage(userId));
-  }
-
-  public LocalizableMessages getLocalizableMesssages() {
-    return getLocalizableMesssages(getCurrentUserId());
-  }
-
-  public LocalizableMessages getLocalizableMesssages(Long userId) {
-    return Localizations.getPreferredMessages(getLanguage(userId));
+  public Locale getLocale(Long userId) {
+    return I18nUtils.toLocale(getLanguage(userId));
   }
 
   public String getRoleName(Long roleId) {
@@ -357,7 +359,7 @@ public class UserServiceBean {
       Map<String, String> result = new HashMap<>();
 
       for (String object : objectStates.keySet()) {
-        result.put(object, EnumUtils.buildIndexList(objectStates.get(object)));
+        result.put(object, EnumUtils.joinIndexes(objectStates.get(object)));
       }
 
       return ResponseObject.response(result);
@@ -396,6 +398,30 @@ public class UserServiceBean {
 
       return ResponseObject.response(result);
     }
+  }
+
+  public SupportedLocale getSupportedLocale() {
+    return getSupportedLocale(getCurrentUserId());
+  }
+
+  public SupportedLocale getSupportedLocale(Long userId) {
+    if (userId == null) {
+      return SupportedLocale.USER_DEFAULT;
+    }
+
+    SqlSelect query = new SqlSelect()
+        .addFields(TBL_USER_SETTINGS, COL_USER_LOCALE)
+        .addFrom(TBL_USER_SETTINGS)
+        .setWhere(SqlUtils.equals(TBL_USER_SETTINGS, COL_USER, userId));
+
+    Integer value = qs.getInt(query);
+    SupportedLocale locale = EnumUtils.getEnumByIndex(SupportedLocale.class, value);
+
+    return (locale == null) ? SupportedLocale.USER_DEFAULT : locale;
+  }
+
+  public SupportedLocale getSupportedLocale(String user) {
+    return getSupportedLocale(getUserId(user));
   }
 
   public String getUserEmail(Long userId, boolean checkCompany) {
@@ -460,28 +486,13 @@ public class UserServiceBean {
     return (userInfo == null) ? null : userInfo.getUserInterface();
   }
 
-  public SupportedLocale getUserLocale(Long userId) {
-    if (userId == null) {
-      return SupportedLocale.DEFAULT;
-    }
-
-    SqlSelect query = new SqlSelect()
-        .addFields(TBL_USER_SETTINGS, COL_USER_LOCALE)
-        .addFrom(TBL_USER_SETTINGS)
-        .setWhere(SqlUtils.equals(TBL_USER_SETTINGS, COL_USER, userId));
-
-    Integer value = qs.getInt(query);
-    SupportedLocale locale = EnumUtils.getEnumByIndex(SupportedLocale.class, value);
-
-    return (locale == null) ? SupportedLocale.DEFAULT : locale;
-  }
-
-  public SupportedLocale getUserLocale(String user) {
-    return getUserLocale(getUserId(user));
-  }
-
   public String getUserName(Long userId) {
     return userCache.get(userId);
+  }
+
+  public Long getUserPhotoFile(Long userId) {
+    UserData userData = getUserData(userId);
+    return (userData == null) ? null : userData.getPhotoFile();
   }
 
   public long[] getUserRoles() {
@@ -604,7 +615,7 @@ public class UserServiceBean {
     SqlSelect ss = new SqlSelect()
         .addField(TBL_USERS, sys.getIdName(TBL_USERS), COL_USER)
         .addFields(TBL_USERS, COL_LOGIN, COL_PASSWORD, COL_USER_INTERFACE,
-            COL_USER_BLOCK_AFTER, COL_USER_BLOCK_BEFORE)
+            COL_USER_BLOCK_FROM, COL_USER_BLOCK_UNTIL)
         .addFrom(TBL_USERS);
 
     for (SimpleRow row : qs.getData(ss)) {
@@ -618,8 +629,8 @@ public class UserServiceBean {
           .setRoles(userRoles.get(userId))
           .setUserInterface(EnumUtils.getEnumByIndex(UserInterface.class,
               row.getInt(COL_USER_INTERFACE)))
-          .setBlockAfter(TimeUtils.toDateTimeOrNull(row.getLong(COL_USER_BLOCK_AFTER)))
-          .setBlockBefore(TimeUtils.toDateTimeOrNull(row.getLong(COL_USER_BLOCK_BEFORE)));
+          .setBlockAfter(TimeUtils.toDateTimeOrNull(row.getLong(COL_USER_BLOCK_FROM)))
+          .setBlockBefore(TimeUtils.toDateTimeOrNull(row.getLong(COL_USER_BLOCK_UNTIL)));
 
       UserInfo oldInfo = expiredCache.get(login);
 
@@ -629,6 +640,11 @@ public class UserServiceBean {
       infoCache.put(login, userInfo);
       userData.setRights(getUserRights(userId));
     }
+  }
+
+  public boolean isActive(Long userId) {
+    UserInfo userInfo = getUserInfo(userId);
+    return (userInfo == null) ? false : !userInfo.isBlocked(System.currentTimeMillis());
   }
 
   public boolean isAdministrator() {
@@ -704,7 +720,7 @@ public class UserServiceBean {
           .addConstant(COL_LOGGED_IN, System.currentTimeMillis())
           .addConstant(COL_REMOTE_HOST, host)
           .addConstant(COL_USER_AGENT, agent)
-          .addConstant(sys.getVersionName(TBL_USER_HISTORY),  //TODO backward compatibility
+          .addConstant(sys.getVersionName(TBL_USER_HISTORY), // TODO backward compatibility
               System.currentTimeMillis()));
 
       UserInfo info = getUserInfo(userId);
@@ -736,6 +752,9 @@ public class UserServiceBean {
           .setWhere(sys.idEquals(TBL_USER_HISTORY, historyId)));
 
       UserData userData = getUserData(userId);
+      if (userData.hasAuthoritah()) {
+        userData.respectMyAuthoritah();
+      }
 
       String sign = userData.getLogin() + " "
           + BeeUtils.parenthesize(userData.getUserSign());
@@ -750,6 +769,16 @@ public class UserServiceBean {
 
     } else {
       logger.severe("Logout attempt by an unauthorized user:", getCurrentUser());
+    }
+  }
+
+  public ResponseObject respectMyAuthoritah() {
+    UserInfo info = getCurrentUserInfo();
+
+    if (info == null) {
+      return ResponseObject.error("current user info not available");
+    } else {
+      return ResponseObject.response(info.getUserData().respectMyAuthoritah());
     }
   }
 
@@ -868,12 +897,11 @@ public class UserServiceBean {
     }
   }
 
-  public boolean validateHost(HttpServletRequest request) {
+  public boolean validateHost(String addr) {
     if (ipFilters.isEmpty()) {
       return true;
     }
-    Assert.notNull(request);
-    String addr = request.getRemoteAddr();
+    Assert.notEmpty(addr);
     DateTime now = TimeUtils.nowMinutes();
 
     for (IpFilter ipFilter : ipFilters) {
@@ -927,7 +955,7 @@ public class UserServiceBean {
 
         userData.setFirstName(row.getValue(COL_FIRST_NAME));
         userData.setLastName(row.getValue(COL_LAST_NAME));
-        userData.setPhotoFileName(row.getValue(COL_PHOTO));
+        userData.setPhotoFile(row.getLong(COL_PHOTO));
         userData.setCompanyName(row.getValue(COL_COMPANY_NAME));
         userData.setCompanyPerson(row.getLong(COL_COMPANY_PERSON));
         userData.setCompany(row.getLong(COL_COMPANY));

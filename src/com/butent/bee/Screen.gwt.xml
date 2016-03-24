@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <module>
-  <define-property name="screen" values="desktop,tablet,mobile,ec,trss,logss,acts" />
+  <define-property name="screen" values="desktop,tablet,mobile,ec,trss,acts" />
   <collapse-property name="screen" values="*" />
 
   <property-provider name="screen">
@@ -16,7 +16,7 @@
         }
         return value.substring(begin, end);
       }
-      
+
       var mp = __gwt_getMetaProperty("screen");
       if (mp != null) {
         return mp;
@@ -38,7 +38,7 @@
         var size = Math.sqrt(width*width + height*height);
         return (size < 6) ? "mobile" : "tablet";
       }
-      
+
       return "desktop";
   ]]>
   </property-provider>

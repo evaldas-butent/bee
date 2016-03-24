@@ -129,7 +129,7 @@ abstract class MultiRoleForm extends RightsForm {
       userSelector.setEditing(true);
       userSelector.addStyleName(STYLE_USER_SELECTOR);
 
-      final Button userCommand = new Button(Localized.getConstants().user());
+      final Button userCommand = new Button(Localized.dictionary().user());
       userCommand.addStyleName(STYLE_USER_COMMAND);
       userCommand.addStyleName(STYLE_USER_EMPTY);
 
@@ -177,7 +177,7 @@ abstract class MultiRoleForm extends RightsForm {
           if (getUserId() != null) {
             setUserId(null);
 
-            userCommand.setHtml(Localized.getConstants().user());
+            userCommand.setHtml(Localized.dictionary().user());
             userCommand.removeStyleName(STYLE_USER_NOT_EMPTY);
             userCommand.addStyleName(STYLE_USER_EMPTY);
 

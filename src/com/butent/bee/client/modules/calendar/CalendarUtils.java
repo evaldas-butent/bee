@@ -10,6 +10,7 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
+import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.shared.Assert;
@@ -85,7 +86,7 @@ public final class CalendarUtils {
           dstInfo, ClassifierConstants.COL_CONTACT, dstRow);
     }
 
-    RowFactory.createRow(dstInfo, dstRow, new RowCallback() {
+    RowFactory.createRow(dstInfo, dstRow, Modality.ENABLED, new RowCallback() {
       @Override
       public void onSuccess(BeeRow result) {
         Queries.deleteRowAndFire(VIEW_APPOINTMENTS, appointment.getId());

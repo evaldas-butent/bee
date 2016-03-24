@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+
+  name="Dictionary" viewName="Dictionary" caption="=dictionary"
+  >
+  <g:columns>
+    <IdColumn name="Id" visible="false" />
+
+    <DataColumn name="Key" visible="true" />
+
+    <DataColumn name="EN" visible="true" />
+
+    <DataColumn name="LT" />
+    <DataColumn name="RU" />
+    <DataColumn name="FI" />
+    <DataColumn name="LV" />
+    <DataColumn name="DE" />
+  </g:columns>
+</g:Grid>

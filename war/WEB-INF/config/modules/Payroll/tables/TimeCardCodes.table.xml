@@ -5,7 +5,7 @@
   idName="TimeCardCodeID"
   >
   <Fields>
-    <Char name="TcCode" precision="2" notNull="true" unique="true" label="=code" />
+    <String name="TcCode" precision="2" notNull="true" unique="true" label="=code" />
     <String name="TcName" precision="100" label="=name" />
 
     <String name="Background" precision="100" label="=backgroundColor" />

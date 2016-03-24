@@ -19,7 +19,7 @@
   
   name="NewDiscussion" caption="=discussNew" width="700" height="700">
 
-  <FlowPanel style="padding: 10px 2px 2px 10px; min-width: 660px; min-height: 590px">
+  <FlowPanel style="padding: 10px 10px 2px 10px; min-width: 660px; min-height: 590px">
     
     <FlowPanel for="Subject" style="&section;" class="flexBox-horizontal">
       <Label text="=discussSubject" class="bee-required" style="&lbl1; min-width:80px; &bold;" />

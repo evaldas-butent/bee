@@ -166,10 +166,10 @@ public class ImportPropertiesGrid extends AbstractGridInterceptor {
       }
     }
     if (choices.isEmpty()) {
-      getGridView().notifyWarning(Localized.getConstants().noData());
+      getGridView().notifyWarning(Localized.dictionary().noData());
       return;
     }
-    Global.choice(Localized.getConstants().trImportNewProperty(), null,
+    Global.choice(Localized.dictionary().trImportNewProperty(), null,
         new ArrayList<>(choices.values()), new ChoiceCallback() {
           @Override
           public void onSuccess(int value) {

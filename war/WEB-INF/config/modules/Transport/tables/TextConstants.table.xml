@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+       name="TextConstants"
+       idName="ConstantID"
+    >
+  <Fields>
+    <Enum name="Constant" key="TextConstant" notNull="true" unique="true" label="=constant" />
+    <Text name="Content" notNull="true" label="=text" translatable="true" />
+  </Fields>
+</Table>

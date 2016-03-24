@@ -96,7 +96,7 @@ class BannerGridInterceptor extends AbstractGridInterceptor {
       collector = FileCollector.headless(new Consumer<Collection<? extends FileInfo>>() {
         @Override
         public void accept(Collection<? extends FileInfo> input) {
-          Collection<FileInfo> files = Images.sanitizeInput(input, getGridView());
+          Collection<? extends FileInfo> files = Images.sanitizeInput(input, getGridView());
           if (!files.isEmpty()) {
             uploadBanners(files);
           }
@@ -110,7 +110,7 @@ class BannerGridInterceptor extends AbstractGridInterceptor {
     return collector;
   }
 
-  private void uploadBanners(Collection<FileInfo> files) {
+  private void uploadBanners(Collection<? extends FileInfo> files) {
     final Holder<Integer> latch = Holder.of(files.size());
 
     for (FileInfo fileInfo : files) {

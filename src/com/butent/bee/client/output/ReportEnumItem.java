@@ -111,7 +111,7 @@ public class ReportEnumItem extends ReportItem implements ClickHandler {
     }
     list.setAllVisible();
 
-    Global.inputWidget(Localized.getConstants().values(), list, new InputCallback() {
+    Global.inputWidget(Localized.dictionary().values(), list, new InputCallback() {
       @Override
       public void onSuccess() {
         filter = new HashSet<>();

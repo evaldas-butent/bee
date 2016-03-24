@@ -39,12 +39,14 @@ public class LogbackLogger implements BeeLogger {
   @Override
   public void error(Throwable ex, Object... messages) {
     if (isErrorEnabled()) {
-      if (ArrayUtils.length(messages) > 0) {
-        severe(messages);
-      }
+      StringBuilder sb = new StringBuilder(ArrayUtils.joinWords(messages));
+
       if (ex != null) {
         String sep = System.getProperty("line.separator");
-        StringBuilder sb = new StringBuilder(ex.toString());
+        if (sb.length() > 0) {
+          sb.append(sep);
+        }
+        sb.append(ex.toString());
         int i = 0;
         boolean skip = false;
 
@@ -64,9 +66,10 @@ public class LogbackLogger implements BeeLogger {
                 .append(BeeUtils.space(5)).append("[...]");
           }
         }
+      }
+      if (sb.length() > 0) {
         severe(sb.toString());
       }
-      // logInternal(LocationAwareLogger.ERROR_INT, ex, messages);
     }
   }
 
@@ -83,6 +86,11 @@ public class LogbackLogger implements BeeLogger {
     } else {
       return null;
     }
+  }
+
+  @Override
+  public String getName() {
+    return logger.getName();
   }
 
   @Override

@@ -29,7 +29,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.locks.ReentrantLock;
 
-import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.ejb.Lock;
@@ -54,15 +53,17 @@ public class ConcurrencyBean {
     TimerService getTimerService();
   }
 
-  public abstract static class AsynchronousRunnable implements Runnable {
+  public interface AsynchronousRunnable extends Runnable {
 
-    public abstract String getId();
+    default String getId() {
+      return null;
+    }
 
-    public long getTimeout() {
+    default long getTimeout() {
       return TimeUtils.MILLIS_PER_HOUR;
     }
 
-    public void onError() {
+    default void onError() {
     }
   }
 
@@ -110,12 +111,11 @@ public class ConcurrencyBean {
 
     @Override
     public String toString() {
-      return BeeUtils.joinWords(getId(), Integer.toHexString(hashCode()));
+      return BeeUtils.joinWords(getId(), Integer.toHexString(System.identityHashCode(this)));
     }
 
     public boolean zombie() {
       if (BeeUtils.isLess(System.currentTimeMillis() - start, runnable.getTimeout())) {
-        logger.info("Running:", this, TimeUtils.elapsedSeconds(start));
         return false;
       }
       if (!cancel(true)) {
@@ -160,7 +160,6 @@ public class ConcurrencyBean {
 
   private static final BeeLogger logger = LogUtils.getLogger(ConcurrencyBean.class);
 
-  private int maxActiveThreads = 200;
   private final Map<String, Worker> asyncThreads = new ConcurrentHashMap<>();
   private final Queue<Worker> waitingThreads = new ConcurrentLinkedQueue<>();
 
@@ -319,7 +318,7 @@ public class ConcurrencyBean {
       worker.onError();
       return;
     }
-    if (asyncThreads.size() < maxActiveThreads) {
+    if (asyncThreads.size() < maxActiveThreads()) {
       asyncThreads.put(id, worker);
 
       try {
@@ -332,23 +331,25 @@ public class ConcurrencyBean {
           finish(worker);
         }
       }
-    } else if (!waitingThreads.contains(worker)) {
-      logger.info("Queuing:", worker);
-      waitingThreads.offer(worker);
     } else {
-      worker.onError();
+      if (!waitingThreads.contains(worker)) {
+        logger.info("Queuing:", worker);
+        waitingThreads.offer(worker);
+      } else {
+        logger.info("Waiting:", worker);
+        worker.onError();
+      }
+      asyncThreads.values().forEach(Worker::zombie);
     }
   }
 
-  @PostConstruct
-  private void init() {
-    String prop = "MaxActiveThreads";
-    Integer maxThreads = BeeUtils.toInt(Config.getProperty(prop));
+  private static int maxActiveThreads() {
+    Integer maxThreads = BeeUtils.toInt(Config.getProperty("MaxActiveThreads"));
 
-    if (BeeUtils.betweenInclusive(maxThreads, 1, maxActiveThreads)) {
-      maxActiveThreads = maxThreads;
+    if (BeeUtils.betweenInclusive(maxThreads, 1, 1000)) {
+      return maxThreads;
     }
-    logger.info(prop, maxActiveThreads);
+    return 25;
   }
 
   private <T extends HasTimerService> TimerService removeTimer(Class<T> handler,

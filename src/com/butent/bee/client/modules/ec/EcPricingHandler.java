@@ -79,7 +79,7 @@ class EcPricingHandler extends AbstractGridInterceptor {
 
         presenter.getHeader().clearCommandPanel();
 
-        Label label = new Label(Localized.getConstants().ecMarginDefaultPercent());
+        Label label = new Label(Localized.dictionary().ecMarginDefaultPercent());
         label.addStyleName(stylePrefix + "label");
         presenter.getHeader().addCommandItem(label);
 

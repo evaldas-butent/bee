@@ -30,6 +30,7 @@ import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
+import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.widget.InputBoolean;
 import com.butent.bee.client.widget.InputDateTime;
 import com.butent.bee.client.widget.Label;
@@ -57,6 +58,7 @@ import com.butent.bee.shared.utils.Codec;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 class CreateDiscussionInterceptor extends AbstractFormInterceptor {
 
@@ -74,13 +76,25 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
 
   @Override
   public void afterRefresh(FormView form, IsRow row) {
+    boolean isPublic = true;
+    GridView parentGrid = getGridView();
+
+    if (parentGrid != null) {
+      String gridKey = parentGrid.getGridKey();
+
+      if (Objects.equals(gridKey, "Discussions_observed")) {
+        isPublic = false;
+      }
+    }
+
     Widget widget = getFormView().getWidgetByName(WIDGET_ACCESSIBILITY);
     if (widget instanceof InputBoolean) {
       InputBoolean ac = (InputBoolean) widget;
+      ac.setValue(Boolean.toString(isPublic));
       MultiSelector ms = getMultiSelector(getFormView(), PROP_MEMBERS);
 
       if (ms != null) {
-        ms.setEnabled(!BeeUtils.toBoolean(ac.getValue()));
+        ms.setEnabled(!isPublic);
       }
     }
   }
@@ -112,7 +126,7 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
               BeeUtils.toLongOrNull(discussParams.get(PRM_MAX_UPLOAD_FILE_SIZE)))) {
 
             BeeKeeper.getScreen().notifyWarning(
-                Localized.getMessages().fileSizeExceeded(fileInfo.getSize(),
+                Localized.dictionary().fileSizeExceeded(fileInfo.getSize(),
                     BeeUtils.toLong(discussParams.get(PRM_MAX_UPLOAD_FILE_SIZE)) * 1024 * 1024),
                 "("
                     + fileInfo.getName() + ")");
@@ -124,7 +138,7 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
           if (DiscussionsUtils.isForbiddenExtention(BeeUtils.getSuffix(fileInfo.getName(),
               BeeConst.STRING_POINT), discussParams.get(PRM_FORBIDDEN_FILES_EXTENTIONS))) {
 
-            BeeKeeper.getScreen().notifyWarning(Localized.getConstants().discussInvalidFile(),
+            BeeKeeper.getScreen().notifyWarning(Localized.dictionary().discussInvalidFile(),
                 fileInfo.getName());
             fc.clear();
             return;
@@ -159,7 +173,7 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
 
           if (checked) {
             ms.clearValue();
-            form.getActiveRow().clearProperty(PROP_MEMBERS);
+            form.getActiveRow().removeProperty(PROP_MEMBERS);
           } else {
             form.getActiveRow().setValue(form.getDataIndex(COL_ACCESSIBILITY), (Boolean) null);
           }
@@ -203,6 +217,7 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
   @Override
   public void onReadyForInsert(HasHandlers listener, final ReadyForInsertEvent event) {
     event.consume();
+    FormView form = getFormView();
     IsRow activeRow = getFormView().getActiveRow();
 
     boolean discussPublic = true;
@@ -211,8 +226,8 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
     String description = "";
 
     HasCheckedness wIsPublic = (HasCheckedness) getFormView().getWidgetByName(WIDGET_ACCESSIBILITY);
-    HasCheckedness wPermitComment = (HasCheckedness) getFormView().
-        getWidgetByName(COL_PERMIT_COMMENT);
+    HasCheckedness wPermitComment = (HasCheckedness) getFormView().getWidgetByName(
+        COL_PERMIT_COMMENT);
 
     Editor wDescription = (Editor) getFormView().getWidgetByName(WIDGET_DESCRIPTION);
     DataSelector wTopic = (DataSelector) getFormView().getWidgetBySource(COL_TOPIC);
@@ -267,7 +282,7 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
     }
 
     if (!discussPublic && BeeUtils.isEmpty(activeRow.getProperty(PROP_MEMBERS))) {
-      event.getCallback().onFailure(Localized.getConstants().discussSelectMembers());
+      event.getCallback().onFailure(Localized.dictionary().discussSelectMembers());
       return;
     }
 
@@ -278,7 +293,7 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
     }
 
     if (discussPublic) {
-      newRow.clearProperty(PROP_MEMBERS);
+      newRow.removeProperty(PROP_MEMBERS);
     }
 
     newRow.setValue(getFormView().getDataIndex(COL_ACCESSIBILITY), discussPublic);
@@ -310,7 +325,7 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
           List<Long> discussions = DataUtils.parseIdList((String) response.getResponse());
 
           if (discussions.isEmpty()) {
-            event.getCallback().onFailure(Localized.getConstants().discussNotCreated());
+            event.getCallback().onFailure(Localized.dictionary().discussNotCreated());
             return;
           }
 
@@ -318,7 +333,13 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
 
           event.getCallback().onSuccess(null);
 
-          String message = Localized.getConstants().discussCreatedNewDiscussion();
+          String message;
+
+          if (BeeUtils.isEmpty(activeRow.getString(form.getDataIndex(ALS_TOPIC_NAME)))) {
+            message = Localized.dictionary().discussCreatedNewDiscussion();
+          } else {
+            message = Localized.dictionary().discussCreatedNewAnnouncement();
+          }
 
           BeeKeeper.getScreen().notifyInfo(message);
 
@@ -400,7 +421,7 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
 
     if (from == null && to == null) {
       event.getCallback().onFailure(
-          BeeUtils.joinWords(Localized.getConstants().displayInBoard(), Localized.getConstants()
+          BeeUtils.joinWords(Localized.dictionary().displayInBoard(), Localized.dictionary()
               .enterDate()));
       return false;
     }
@@ -422,8 +443,8 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
         return true;
       } else {
         event.getCallback().onFailure(
-            BeeUtils.joinWords(Localized.getConstants().displayInBoard(),
-                Localized.getConstants().crmFinishDateMustBeGreaterThanStart()));
+            BeeUtils.joinWords(Localized.dictionary().displayInBoard(),
+                Localized.dictionary().crmFinishDateMustBeGreaterThanStart()));
         return false;
       }
     }

@@ -117,22 +117,22 @@ public class TradeActStockReport extends ReportInterceptor {
     String h2;
 
     if (start == null || end == null) {
-      h1 = Localized.getConstants().trdRemainders();
+      h1 = Localized.dictionary().trdRemainders();
       h2 = Format.renderDateLong(BeeUtils.nvl(start, end));
 
     } else {
-      h1 = Localized.getConstants().trdMovementOfGoods();
+      h1 = Localized.dictionary().trdMovementOfGoods();
       h2 = Format.renderPeriod(start, end);
     }
 
     if (weight) {
       String units;
       if (qty) {
-        units = BeeUtils.joinItems(Localized.getConstants().quantity(),
-            Localized.getConstants().weight());
+        units = BeeUtils.joinItems(Localized.dictionary().quantity(),
+            Localized.dictionary().weight());
 
       } else {
-        units = Localized.getConstants().weight();
+        units = Localized.dictionary().weight();
       }
 
       captions.add(BeeUtils.joinWords(h1, BeeUtils.parenthesize(units)));
@@ -362,7 +362,7 @@ public class TradeActStockReport extends ReportInterceptor {
           });
 
         } else {
-          getFormView().notifyWarning(Localized.getConstants().nothingFound());
+          getFormView().notifyWarning(Localized.dictionary().nothingFound());
         }
       }
     });
@@ -376,9 +376,9 @@ public class TradeActStockReport extends ReportInterceptor {
 
       String fileName;
       if (start == null || end == null) {
-        fileName = Localized.getConstants().trdRemainders();
+        fileName = Localized.dictionary().trdRemainders();
       } else {
-        fileName = Localized.getConstants().trdMovementOfGoods();
+        fileName = Localized.dictionary().trdMovementOfGoods();
       }
 
       Exporter.maybeExport(sheet, fileName);
@@ -516,7 +516,7 @@ public class TradeActStockReport extends ReportInterceptor {
       String colName = data.getColumnName(j);
 
       if (weightColumns.contains(j) && !quantityColumns.isEmpty()) {
-        text = Localized.getConstants().kilogramShort();
+        text = Localized.dictionary().kilogramShort();
 
       } else if (quantityColumns.contains(j) || weightColumns.contains(j)) {
         if (movementColumns.contains(j)) {
@@ -687,7 +687,7 @@ public class TradeActStockReport extends ReportInterceptor {
 
       Integer first = indexes.get(0);
       if (BeeUtils.isPositive(first)) {
-        text = Localized.getConstants().totalOf();
+        text = Localized.dictionary().totalOf();
 
         table.setText(r, first - 1, text);
 

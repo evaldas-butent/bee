@@ -319,9 +319,9 @@ class OrderCargo extends Filterable implements HasDateRange, HasColorSource, Has
 
   String getTitle() {
     return TimeBoardHelper.buildTitle(/* cargoLabel, cargoDescription, */
-        Localized.getConstants().cargoLoading(), Places.getLoadingInfo(this),
-        Localized.getConstants().cargoUnloading(), Places.getUnloadingInfo(this),
-        Localized.getConstants().trOrder(), orderNo,
+        Localized.dictionary().cargoLoading(), Places.getLoadingInfo(this),
+        Localized.dictionary().cargoUnloading(), Places.getUnloadingInfo(this),
+        Localized.dictionary().trOrder(), orderNo,
         customerLabel, customerName,
         managerLabel, getManagerName(),
         notesLabel, notes);

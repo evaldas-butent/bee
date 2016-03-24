@@ -123,8 +123,8 @@ public final class Exporter {
 
     int width = BeeUtils.resize(BeeUtils.trim(fileName).length(), 20, 100, 300, 600);
 
-    Global.inputString(Localized.getConstants().exportToMsExcel(),
-        Localized.getConstants().fileName(), callback, null, fileName, 200, null,
+    Global.inputString(Localized.dictionary().exportToMsExcel(),
+        Localized.dictionary().fileName(), callback, null, fileName, 200, null,
         width, CssUnit.PX, BeeConst.UNDEF,
         Action.EXPORT.getCaption(), Action.CANCEL.getCaption(), null);
   }

@@ -108,7 +108,7 @@ public class AccountEditor extends AbstractFormInterceptor implements SelectorEv
         ((HasClickHandlers) widget).addClickHandler(new ClickHandler() {
           @Override
           public void onClick(ClickEvent event) {
-            Global.inputString(Localized.getConstants().mailNewAccountPassword(), null,
+            Global.inputString(Localized.dictionary().mailNewAccountPassword(), null,
                 new StringCallback(false) {
                   @Override
                   public void onSuccess(String value) {
@@ -116,7 +116,7 @@ public class AccountEditor extends AbstractFormInterceptor implements SelectorEv
                         BeeUtils.isEmpty(value) ? null : Codec.encodeBase64(value));
                   }
                 }, null, null, BeeConst.UNDEF, null, BeeConst.DOUBLE_UNDEF, null, BeeConst.UNDEF,
-                Localized.getConstants().ok(), Localized.getConstants().cancel(),
+                Localized.dictionary().ok(), Localized.dictionary().cancel(),
                 new WidgetInitializer() {
                   @Override
                   public Widget initialize(Widget inputWidget, String widgetName) {
@@ -137,10 +137,10 @@ public class AccountEditor extends AbstractFormInterceptor implements SelectorEv
             if (index == BeeConst.UNDEF) {
               return;
             }
-            Global.inputMap(BeeUtils.joinWords(Localized.getConstants().properties(),
+            Global.inputMap(BeeUtils.joinWords(Localized.dictionary().properties(),
                 BeeUtils.parenthesize(BeeUtils.same(name, COL_TRANSPORT_PROPERTIES)
                     ? Protocol.SMTP.name() : row.getString(getDataIndex(COL_STORE_TYPE)))),
-                Localized.getConstants().property(), Localized.getConstants().value(),
+                Localized.dictionary().property(), Localized.dictionary().value(),
                 Codec.deserializeMap(row.getString(index)),
                 new Consumer<Map<String, String>>() {
                   @Override

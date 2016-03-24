@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Table xmlns="http://www.butent.com/table"
+  
+  name="ChatUsers"
+  idName="ChatUserID"
+  >
+  <Fields>
+    <Relation name="Chat" notNull="true" relation="Chats" cascade="DELETE" label="=chat" />
+    <Relation name="User" notNull="true" relation="Users" cascade="DELETE" label="=user" />
+
+    <DateTime name="Registered" notNull="true" label="=registered" />
+    <DateTime name="LastAccess" label="=lastAccess" />
+  </Fields>
+
+  <Constraints>
+    <Unique fields="Chat User" />
+  </Constraints>
+</Table>

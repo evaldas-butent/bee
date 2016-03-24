@@ -3,7 +3,7 @@
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
   xmlns:xi="http://www.w3.org/2001/XInclude"
-  
+
   name="NewDocument" width="700" height="700"
   >
   <TabbedPages resizable="false">
@@ -17,7 +17,9 @@
 
     <page data="Relations" for="Document">
       <text>=relations</text>
-       <xi:include href="widgets/DocumentRelations.widget.xml" />
+      <Relations relColumn="Document" inline="true"
+                 defaultRelations="Companies Persons Requests Tasks"
+                 style="margin-left: 15px; min-width:300px;" />
     </page>
   </TabbedPages>
 </f:Form>

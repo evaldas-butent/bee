@@ -64,34 +64,28 @@ public class MenuBar extends Widget implements IdentifiableWidget, CloseEvent.Ha
   private final ItemType itemType;
   private final String name = NameUtils.createUniqueName("mb-");
 
-  public MenuBar() {
-    this(0);
-  }
-
-  public MenuBar(int level) {
-    this(level, false);
-  }
-
-  public MenuBar(int level, boolean vert) {
-    this(level, vert, null);
-  }
-
-  public MenuBar(int level, boolean vert, BarType bt) {
-    this(level, vert, bt, null);
+  public MenuBar(int level, boolean vert, String styleName) {
+    this(level, vert, null, null, styleName);
   }
 
   public MenuBar(int level, boolean vert, BarType bt, ItemType it) {
-    this(level, vert, bt, it, false);
+    this(level, vert, bt, it, null);
   }
 
-  public MenuBar(int level, boolean vert, BarType bt, ItemType it, boolean wheel) {
+  public MenuBar(int level, boolean vert, BarType bt, ItemType it, String styleName) {
+    this(level, vert, bt, it, false, styleName);
+  }
+
+  private MenuBar(int level, boolean vert, BarType bt, ItemType it, boolean wheel,
+      String styleName) {
+
     this.level = level;
     this.vertical = vert;
 
     this.barType = (bt == null) ? BarType.TABLE : bt;
     this.itemType = (it == null) ? MenuItem.DEFAULT_TYPE : it;
 
-    init(wheel);
+    init(wheel, styleName);
     DomUtils.createId(this, getIdPrefix());
   }
 
@@ -171,10 +165,6 @@ public class MenuBar extends Widget implements IdentifiableWidget, CloseEvent.Ha
 
   public ItemType getItemType() {
     return itemType;
-  }
-
-  public int getLevel() {
-    return level;
   }
 
   public String getName() {
@@ -580,9 +570,9 @@ public class MenuBar extends Widget implements IdentifiableWidget, CloseEvent.Ha
     }
   }
 
-  private void init(boolean wheel) {
-
+  private void init(boolean wheel, String styleName) {
     Element elem;
+
     switch (barType) {
       case FLOW:
         elem = DOM.createDiv();
@@ -630,9 +620,13 @@ public class MenuBar extends Widget implements IdentifiableWidget, CloseEvent.Ha
       sinkEvents(Event.ONMOUSEWHEEL);
     }
 
-    setStyleName(MenuConstants.isRootLevel(getLevel()) ? STYLENAME_ROOT : STYLENAME_DEFAULT);
-    if (getLevel() > 0) {
-      addStyleDependentName("level-" + getLevel());
+    if (BeeUtils.isEmpty(styleName)) {
+      setStyleName(MenuConstants.isRootLevel(level) ? STYLENAME_ROOT : STYLENAME_DEFAULT);
+    } else {
+      setStyleName(styleName);
+    }
+    if (level > 0) {
+      addStyleDependentName("level-" + level);
     }
     if (isVertical()) {
       addStyleDependentName(StyleUtils.SUFFIX_VERTICAL);

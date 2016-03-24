@@ -12,6 +12,7 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
+import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.event.logical.RenderingEvent;
 import com.butent.bee.client.grid.ColumnHeader;
 import com.butent.bee.client.images.Images;
@@ -45,6 +46,7 @@ import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
+import com.butent.bee.shared.modules.discussions.DiscussionsConstants.DiscussionStatus;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.GridDescription;
@@ -86,8 +88,8 @@ class DiscussionsGridHandler extends AbstractGridInterceptor {
       if (beeCol != null) {
         beeCol.setNullable(false);
       }
-      RowFactory.createRow(FORM_NEW_DISCUSSION, Localized.getConstants().announcementNew(),
-          data, emptyRow, presenter.getMainView().asWidget(),
+      RowFactory.createRow(FORM_NEW_DISCUSSION, Localized.dictionary().announcementNew(),
+          data, emptyRow, Modality.ENABLED, null,
           new CreateDiscussionInterceptor(), new RowCallback() {
 
             @Override
@@ -112,10 +114,10 @@ class DiscussionsGridHandler extends AbstractGridInterceptor {
 
   @Override
   public String getCaption() {
-    if (type.getCaption() == Localized.getConstants().announcements()) {
+    if (type.getCaption() == Localized.dictionary().announcements()) {
       return type.getCaption();
     } else {
-      return BeeUtils.joinWords(Localized.getConstants().discussions(),
+      return BeeUtils.joinWords(Localized.dictionary().discussions(),
           BeeUtils.parenthesize(type.getCaption()));
     }
   }
@@ -139,8 +141,8 @@ class DiscussionsGridHandler extends AbstractGridInterceptor {
     boolean isOwner = currentUser.getUserId().longValue() == discussOwner;
 
     if (!isAdmin && !isOwner) {
-      gridView.notifyWarning(BeeUtils.joinWords(Localized.getConstants().discussion(),
-          activeRow.getId(), Localized.getConstants().discussDeleteCanOwnerOrAdmin()));
+      gridView.notifyWarning(BeeUtils.joinWords(Localized.dictionary().discussion(),
+          activeRow.getId(), Localized.dictionary().discussDeleteCanOwnerOrAdmin()));
       return DeleteMode.CANCEL;
     }
 
@@ -154,9 +156,9 @@ class DiscussionsGridHandler extends AbstractGridInterceptor {
       return super.getDeleteRowMessage(row);
     }
 
-    String m1 = BeeUtils.joinWords(Localized.getConstants().discussion(),
+    String m1 = BeeUtils.joinWords(Localized.dictionary().discussion(),
         row.getValue(gridView.getDataIndex(COL_SUBJECT)));
-    String m2 = Localized.getConstants().discussDeleteQuestion();
+    String m2 = Localized.dictionary().discussDeleteQuestion();
 
     return Lists.newArrayList(m1, m2);
   }
@@ -210,21 +212,22 @@ class DiscussionsGridHandler extends AbstractGridInterceptor {
   public void onEditStart(final EditStartEvent event) {
     IsRow row = event.getRowValue();
 
-    if (row == null) {
+    if (row == null || currentUser == null) {
       return;
     }
 
-    if (PROP_STAR.equals(event.getColumnId())) {
-      if (row.getProperty(PROP_USER) != null) {
+    if (PROP_STAR.equals(event.getColumnId())
+        && row.hasPropertyValue(PROP_USER, currentUser.getUserId())) {
 
-        final CellSource source = CellSource.forProperty(PROP_STAR, ValueType.INTEGER);
-        EditorAssistant.editStarCell(DEFAULT_STAR_COUNT, event, source, new Consumer<Integer>() {
-          @Override
-          public void accept(Integer parameter) {
-            updateStar(event, source, parameter);
-          }
-        });
-      }
+      final CellSource source =
+          CellSource.forProperty(PROP_STAR, currentUser.getUserId(), ValueType.INTEGER);
+
+      EditorAssistant.editStarCell(DEFAULT_STAR_COUNT, event, source, new Consumer<Integer>() {
+        @Override
+        public void accept(Integer parameter) {
+          updateStar(event, source, parameter);
+        }
+      });
     }
   }
 

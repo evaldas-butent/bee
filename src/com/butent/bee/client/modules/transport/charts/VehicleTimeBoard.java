@@ -14,6 +14,7 @@ import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.RowFactory;
+import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Edges;
 import com.butent.bee.client.dom.Rectangle;
@@ -27,9 +28,9 @@ import com.butent.bee.client.timeboard.TimeBoardHelper;
 import com.butent.bee.client.timeboard.TimeBoardRowLayout;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiHelper;
-import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.DndDiv;
+import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.Mover;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -42,6 +43,7 @@ import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
+import com.butent.bee.shared.modules.transport.TransportConstants.VehicleType;
 import com.butent.bee.shared.time.HasDateRange;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -137,7 +139,7 @@ abstract class VehicleTimeBoard extends ChartBase {
   @Override
   public void handleAction(Action action) {
     if (Action.ADD.equals(action)) {
-      RowFactory.createRow(VIEW_VEHICLES);
+      RowFactory.createRow(VIEW_VEHICLES, Modality.DISABLED);
     } else {
       super.handleAction(action);
     }
@@ -194,22 +196,29 @@ abstract class VehicleTimeBoard extends ChartBase {
     ChartData otherVehicleData = FilterHelper.getDataByType(selectedData,
         isTrailerPark() ? ChartData.Type.TRUCK : ChartData.Type.TRAILER);
 
+    ChartData groupData = FilterHelper.getDataByType(selectedData, ChartData.Type.VEHICLE_GROUP);
+
     ChartData typeData = FilterHelper.getDataByType(selectedData, ChartData.Type.VEHICLE_TYPE);
     ChartData modelData = FilterHelper.getDataByType(selectedData, ChartData.Type.VEHICLE_MODEL);
 
     CargoMatcher cargoMatcher = CargoMatcher.maybeCreate(selectedData);
 
     ChartData tripData = FilterHelper.getDataByType(selectedData, ChartData.Type.TRIP);
+    ChartData departureData = FilterHelper.getDataByType(selectedData,
+        ChartData.Type.TRIP_DEPARTURE);
+    ChartData arrivalData = FilterHelper.getDataByType(selectedData, ChartData.Type.TRIP_ARRIVAL);
+
     ChartData driverData = FilterHelper.getDataByType(selectedData, ChartData.Type.DRIVER);
 
     PlaceMatcher placeMatcher = PlaceMatcher.maybeCreate(selectedData);
 
     boolean freightRequired = cargoMatcher != null || placeMatcher != null;
     boolean tripRequired = freightRequired || otherVehicleData != null || tripData != null
-        || driverData != null;
+        || departureData != null || arrivalData != null || driverData != null;
 
     for (Vehicle vehicle : vehicles) {
       boolean vehicleMatch = FilterHelper.matches(vehicleData, vehicle.getId())
+          && FilterHelper.matchesAny(groupData, vehicle.getGroups())
           && FilterHelper.matches(typeData, vehicle.getType())
           && FilterHelper.matches(modelData, vehicle.getModel());
 
@@ -223,6 +232,8 @@ abstract class VehicleTimeBoard extends ChartBase {
 
         for (Trip trip : trips.get(vehicle.getId())) {
           boolean tripMatch = FilterHelper.matches(tripData, trip.getTripId())
+              && FilterHelper.matches(departureData, trip.getTripDeparture())
+              && FilterHelper.matches(arrivalData, trip.getTripArrival())
               && FilterHelper.matches(otherVehicleData, trip.getVehicleId(otherVehicleType))
               && trip.matchesDrivers(driverData);
 
@@ -483,7 +494,7 @@ abstract class VehicleTimeBoard extends ChartBase {
       DataInfo dataInfo = Data.getDataInfo(VIEW_TRIPS);
       BeeRow newRow = createNewTripRow(dataInfo, row, date);
 
-      RowFactory.createRow(dataInfo, newRow);
+      RowFactory.createRow(dataInfo, newRow, Modality.DISABLED);
     }
   }
 
@@ -529,6 +540,8 @@ abstract class VehicleTimeBoard extends ChartBase {
     ChartData truckData = new ChartData(ChartData.Type.TRUCK);
     ChartData trailerData = new ChartData(ChartData.Type.TRAILER);
 
+    ChartData groupData = new ChartData(ChartData.Type.VEHICLE_GROUP);
+
     ChartData modelData = new ChartData(ChartData.Type.VEHICLE_MODEL);
     ChartData typeData = new ChartData(ChartData.Type.VEHICLE_TYPE);
 
@@ -539,8 +552,11 @@ abstract class VehicleTimeBoard extends ChartBase {
     ChartData statusData = new ChartData(ChartData.Type.ORDER_STATUS);
 
     ChartData cargoData = new ChartData(ChartData.Type.CARGO);
+    ChartData cargoTypeData = new ChartData(ChartData.Type.CARGO_TYPE);
 
     ChartData tripData = new ChartData(ChartData.Type.TRIP);
+    ChartData departureData = new ChartData(ChartData.Type.TRIP_DEPARTURE);
+    ChartData arrivalData = new ChartData(ChartData.Type.TRIP_ARRIVAL);
 
     ChartData loadData = new ChartData(ChartData.Type.LOADING);
     ChartData unloadData = new ChartData(ChartData.Type.UNLOADING);
@@ -560,6 +576,12 @@ abstract class VehicleTimeBoard extends ChartBase {
         truckData.add(vehicleName, vehicle.getId());
       }
 
+      if (!BeeUtils.isEmpty(vehicle.getGroups())) {
+        for (Long group : vehicle.getGroups()) {
+          groupData.add(getTransportGroupName(group), group);
+        }
+      }
+
       modelData.add(vehicle.getModel());
       typeData.add(vehicle.getType());
 
@@ -572,7 +594,9 @@ abstract class VehicleTimeBoard extends ChartBase {
           continue;
         }
 
-        tripData.add(trip.getItemName(), trip.getTripId());
+        tripData.add(trip.getTripNo(), trip.getTripId());
+        departureData.addNotNull(trip.getTripDeparture());
+        arrivalData.addNotNull(trip.getTripArrival());
 
         String otherVehicleNumber = trip.getVehicleNumber(otherVehicleType);
         if (!BeeUtils.isEmpty(otherVehicleNumber)) {
@@ -605,6 +629,9 @@ abstract class VehicleTimeBoard extends ChartBase {
           statusData.addNotNull(freight.getOrderStatus());
 
           cargoData.add(freight.getCargoDescription(), freight.getCargoId());
+          if (DataUtils.isId(freight.getCargoType())) {
+            cargoTypeData.add(getCargoTypeName(freight.getCargoType()), freight.getCargoType());
+          }
 
           String loading = Places.getLoadingPlaceInfo(freight);
           if (!BeeUtils.isEmpty(loading)) {
@@ -638,6 +665,8 @@ abstract class VehicleTimeBoard extends ChartBase {
     }
 
     data.add(isTrailerPark() ? trailerData : truckData);
+    data.add(groupData);
+
     data.add(modelData);
     data.add(typeData);
 
@@ -648,8 +677,11 @@ abstract class VehicleTimeBoard extends ChartBase {
     data.add(statusData);
 
     data.add(cargoData);
+    data.add(cargoTypeData);
 
     data.add(tripData);
+    data.add(departureData);
+    data.add(arrivalData);
 
     data.add(loadData);
     data.add(unloadData);

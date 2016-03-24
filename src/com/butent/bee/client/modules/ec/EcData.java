@@ -95,7 +95,7 @@ class EcData {
 
     Tree tree = new Tree();
 
-    TreeItem rootItem = new TreeItem(Localized.getConstants().ecSelectCategory());
+    TreeItem rootItem = new TreeItem(Localized.dictionary().ecSelectCategory());
     tree.addItem(rootItem);
 
     if (roots.size() > 1) {

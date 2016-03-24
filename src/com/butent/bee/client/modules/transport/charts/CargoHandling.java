@@ -120,8 +120,8 @@ class CargoHandling implements HasDateRange, HasShipmentInfo {
   }
 
   String getTitle(String loadInfo, String unloadInfo) {
-    return TimeBoardHelper.buildTitle(Localized.getConstants().intermediateLoading(), loadInfo,
-        Localized.getConstants().intermediateUnloading(), unloadInfo,
+    return TimeBoardHelper.buildTitle(Localized.dictionary().intermediateLoading(), loadInfo,
+        Localized.dictionary().intermediateUnloading(), unloadInfo,
         notesLabel, notes);
   }
 }

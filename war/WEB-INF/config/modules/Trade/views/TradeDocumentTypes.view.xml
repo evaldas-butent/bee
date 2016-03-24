@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="TradeDocumentTypes" source="TradeDocumentTypes"
+  caption="=trdDocumentTypes" newRowCaption="=trdNewDocumentType"
+  editForm="TradeDocumentType" newRowForm="TradeDocumentType"
+  >
+  <Columns>
+    <SimpleColumn name="DocumentTypeName" />
+
+    <SimpleColumn name="Ordinal" />
+    <SimpleColumn name="Description" />
+
+    <SimpleColumn name="StatusOrder" />
+    <SimpleColumn name="StatusPending" />
+    <SimpleColumn name="StatusActive" />
+    <SimpleColumn name="StatusCompleted" />
+    <SimpleColumn name="StatusApproved" />
+  </Columns>
+
+  <Order>
+    <OrderBy column="Ordinal" />
+  </Order>
+</View>

@@ -913,6 +913,9 @@ public abstract class SqlBuilder {
       } else if (val instanceof Number) {
         s = BeeUtils.removeTrailingZeros(val.toString());
 
+      } else if (val instanceof Enum<?>) {
+        s = BeeUtils.toString(((Enum<?>) val).ordinal());
+
       } else {
         s = (val == null) ? "null" : val.toString();
 

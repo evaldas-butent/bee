@@ -2,7 +2,7 @@
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui"
 
-  name="RelatedMessages" viewName="RelatedMessages" readOnly="true"
+  name="RelatedMessages" viewName="RelatedMessages" caption="=mails" readOnly="true"
   >
   <g:columns>
     <DataColumn name="Date" />
@@ -11,9 +11,9 @@
       <render>
         <ui:function>
           if (!row.RecipientMin || row.RecipientMin == row.RecipientMax) {
-            return row.RecipientMax;          
+            return row.RecipientMax;
           } else {
-            return row.RecipientMin + ", " + row.RecipientMax 
+            return row.RecipientMin + ", " + row.RecipientMax
               + (row.RecipientCnt > 2 ? ", (" + (row.RecipientCnt - 2) + "+)": "");
           }
         </ui:function>

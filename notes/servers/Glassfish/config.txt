@@ -1,3 +1,6 @@
+copy genson-1.3.jar to war/WEB-INF/lib
+gitignore genson-1.3.jar
+
 #/glassfish4/glassfish/bin/asadmin
 
 create-jdbc-connection-pool --restype=javax.sql.DataSource --datasourceclassname=org.postgresql.ds.PGSimpleDataSource --property=user=postgres:password=admin:serverName=192.168.0.210:portNumber=5432:databaseName=postgres postgreSQLJDBCPool

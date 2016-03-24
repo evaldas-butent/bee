@@ -25,7 +25,6 @@ import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
-import com.butent.bee.shared.ui.HandlesActions;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
@@ -49,29 +48,32 @@ public class CachedProvider extends Provider {
   private final Set<Long> filteredRowIds = new HashSet<>();
   private final List<BeeRow> viewRows = new ArrayList<>();
 
-  public CachedProvider(HasDataTable display, HandlesActions actionHandler,
+  public CachedProvider(HasDataTable display, HasDataProvider presenter,
       NotificationListener notificationListener,
       String viewName, List<BeeColumn> columns, BeeRowSet table) {
-    this(display, actionHandler, notificationListener,
+
+    this(display, presenter, notificationListener,
         viewName, columns, null, null,
         null, table, null, null);
   }
 
-  public CachedProvider(HasDataTable display, HandlesActions actionHandler,
+  public CachedProvider(HasDataTable display, HasDataProvider presenter,
       NotificationListener notificationListener,
       String viewName, List<BeeColumn> columns, Filter immutableFilter, BeeRowSet table,
       Map<String, Filter> parentFilters, Filter userFilter) {
-    this(display, actionHandler, notificationListener,
+
+    this(display, presenter, notificationListener,
         viewName, columns, null, null,
         immutableFilter, table, parentFilters, userFilter);
   }
 
-  public CachedProvider(HasDataTable display, HandlesActions actionHandler,
+  public CachedProvider(HasDataTable display, HasDataProvider presenter,
       NotificationListener notificationListener,
       String viewName, List<BeeColumn> columns, String idColumnName, String versionColumnName,
       Filter immutableFilter, BeeRowSet table, Map<String, Filter> parentFilters,
       Filter userFilter) {
-    super(display, actionHandler, notificationListener,
+
+    super(display, presenter, notificationListener,
         viewName, columns, idColumnName, versionColumnName,
         immutableFilter, parentFilters, userFilter);
 

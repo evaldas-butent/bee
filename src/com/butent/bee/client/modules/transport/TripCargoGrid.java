@@ -14,6 +14,7 @@ import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.data.RowInsertCallback;
 import com.butent.bee.client.dialog.DialogBox;
+import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.view.edit.EditStopEvent;
@@ -53,13 +54,13 @@ class TripCargoGrid extends AbstractGridInterceptor {
       this.cargoIndex = DataUtils.getColumnIndex(COL_CARGO, gridView.getDataColumns());
       this.tripIndex = DataUtils.getColumnIndex(COL_TRIP, gridView.getDataColumns());
 
-      this.dialog = DialogBox.create(Localized.getConstants().trAssignCargo());
+      this.dialog = DialogBox.create(Localized.dictionary().trAssignCargo());
       dialog.setHideOnEscape(true);
 
       HtmlTable container = new HtmlTable();
       container.setBorderSpacing(5);
 
-      container.setText(0, 0, Localized.getConstants().trCargoSelectCargo());
+      container.setText(0, 0, Localized.dictionary().trCargoSelectCargo());
 
       Relation relation = Relation.create(VIEW_WAITING_CARGO,
           Lists.newArrayList("OrderNo", "CustomerName", "LoadingPostIndex", "LoadingCountryName",
@@ -87,7 +88,7 @@ class TripCargoGrid extends AbstractGridInterceptor {
       });
       container.setWidget(0, 1, selector);
 
-      Button orderButton = new Button(Localized.getConstants().newTransportationOrder(), this);
+      Button orderButton = new Button(Localized.dictionary().newTransportationOrder(), this);
       container.setWidget(1, 0, orderButton);
 
       dialog.setWidget(container);
@@ -95,7 +96,7 @@ class TripCargoGrid extends AbstractGridInterceptor {
 
     @Override
     public void onClick(ClickEvent clickEvent) {
-      RowFactory.createRow(TBL_ORDERS, new RowInsertCallback(TBL_ORDERS) {
+      RowFactory.createRow(TBL_ORDERS, Modality.ENABLED, new RowInsertCallback(TBL_ORDERS) {
         @Override
         public void onSuccess(BeeRow result) {
           super.onSuccess(result);
@@ -107,7 +108,7 @@ class TripCargoGrid extends AbstractGridInterceptor {
                 public void onSuccess(final BeeRowSet res) {
                   if (DataUtils.isEmpty(res)) {
                     Queries.deleteRow(TBL_ORDERS, orderId);
-                    gridView.notifyWarning(Localized.getConstants().noData());
+                    gridView.notifyWarning(Localized.dictionary().noData());
                     return;
                   }
                   gridView.ensureRelId(new IdCallback() {

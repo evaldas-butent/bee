@@ -35,10 +35,10 @@ public final class ValidationHelper {
     List<String> result = new ArrayList<>();
 
     if (!BeeUtils.isEmpty(minValue)) {
-      result.add(BeeUtils.joinWords(Localized.getConstants().minValue(), minValue));
+      result.add(BeeUtils.joinWords(Localized.dictionary().minValue(), minValue));
     }
     if (!BeeUtils.isEmpty(maxValue)) {
-      result.add(BeeUtils.joinWords(Localized.getConstants().maxValue(), maxValue));
+      result.add(BeeUtils.joinWords(Localized.dictionary().maxValue(), maxValue));
     }
 
     return result;
@@ -142,7 +142,7 @@ public final class ValidationHelper {
     }
 
     if (messages.isEmpty() && !cv.isNullable() && BeeUtils.isEmpty(cv.getNewValue())) {
-      messages.add(Localized.getConstants().valueRequired());
+      messages.add(Localized.dictionary().valueRequired());
     }
 
     if (messages.isEmpty()) {

@@ -47,7 +47,7 @@ public class TripCostsGrid extends AbstractGridInterceptor
   public void afterCreatePresenter(GridPresenter presenter) {
     presenter.getHeader().addCommandItem(invoice);
 
-    dailyCosts.setTitle(Localized.getConstants().trGenerateDailyCosts());
+    dailyCosts.setTitle(Localized.dictionary().trGenerateDailyCosts());
     dailyCosts.addClickHandler(this);
     presenter.getHeader().addCommandItem(dailyCosts);
 
@@ -61,7 +61,7 @@ public class TripCostsGrid extends AbstractGridInterceptor
 
   @Override
   public void onClick(ClickEvent clickEvent) {
-    Global.confirm(Localized.getConstants().trGenerateDailyCosts(), new ConfirmationCallback() {
+    Global.confirm(Localized.dictionary().trGenerateDailyCosts(), new ConfirmationCallback() {
       @Override
       public void onConfirm() {
         ParameterList args = TransportHandler.createArgs(SVC_GENERATE_DAILY_COSTS);

@@ -20,6 +20,7 @@ import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.output.Printer;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.view.FormContainerImpl;
 import com.butent.bee.client.view.FormContainerView;
@@ -35,6 +36,7 @@ import com.butent.bee.client.view.search.FilterHandler;
 import com.butent.bee.client.view.search.SearchView;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.NotificationListener;
+import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -67,7 +69,7 @@ import java.util.Set;
 public class FormPresenter extends AbstractPresenter implements ReadyForInsertEvent.Handler,
     ReadyForUpdateEvent.Handler, HasViewName, HasSearch, HasDataProvider, HasActiveRow {
 
-  private final class DeleteCallback extends ConfirmationCallback {
+  private final class DeleteCallback implements ConfirmationCallback {
     private final long rowId;
     private final long version;
 
@@ -164,6 +166,11 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
   }
 
   @Override
+  public String getViewKey() {
+    return formContainer.getSupplierKey();
+  }
+
+  @Override
   public String getViewName() {
     if (getDataProvider() == null) {
       return null;
@@ -220,6 +227,10 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
         } else {
           Printer.print(form);
         }
+        break;
+
+      case BOOKMARK:
+        getFormView().bookmark();
         break;
 
       default:
@@ -295,6 +306,12 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
       Queries.updateCell(rowSet, rowCallback);
     }
     return true;
+  }
+
+  @Override
+  public void onStateChange(State state) {
+    getMainView().setStyleName(StyleUtils.NAME_LOADING,
+        state == State.LOADING || state == State.PENDING);
   }
 
   @Override
@@ -383,7 +400,7 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
 
   private void deleteRow(long rowId, long version) {
     Global.confirmDelete(getCaption(), Icon.WARNING,
-        Collections.singletonList(Localized.getConstants().deleteRecordQuestion()),
+        Collections.singletonList(Localized.dictionary().deleteRecordQuestion()),
         new DeleteCallback(rowId, version));
   }
 

@@ -539,7 +539,7 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
     if (header != null && !header.hasCommands()) {
       if (commandCompose == null) {
         commandCompose =
-            new Button(Localized.getConstants().taInvoiceCompose(), new ClickHandler() {
+            new Button(Localized.dictionary().taInvoiceCompose(), new ClickHandler() {
               @Override
               public void onClick(ClickEvent event) {
                 ClassifierKeeper.getHolidays(new Consumer<Set<Integer>>() {
@@ -558,7 +558,7 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
       header.addCommandItem(commandCompose);
 
       if (commandSave == null) {
-        commandSave = new Button(Localized.getConstants().taInvoiceSave(), new ClickHandler() {
+        commandSave = new Button(Localized.dictionary().taInvoiceSave(), new ClickHandler() {
           @Override
           public void onClick(ClickEvent event) {
             doSave();
@@ -584,13 +584,13 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
     final Range<DateTime> builderRange = TradeActUtils.convertRange(range);
     final int builderDays = TradeActUtils.countServiceDays(builderRange, holidays);
     if (builderDays <= 0) {
-      getFormView().notifyWarning(Localized.getConstants().holidays());
+      getFormView().notifyWarning(Localized.dictionary().holidays());
       return;
     }
 
     Collection<Long> actIds = getSelectedActs(STYLE_ACT_SELECTED);
     if (actIds.isEmpty()) {
-      getFormView().notifyWarning(Localized.getConstants().selectAtLeastOneRow());
+      getFormView().notifyWarning(Localized.dictionary().selectAtLeastOneRow());
       return;
     }
 
@@ -765,7 +765,7 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
 
         } else {
           getServiceContainer().clear();
-          getFormView().notifyWarning(Localized.getConstants().noData());
+          getFormView().notifyWarning(Localized.dictionary().noData());
         }
       }
     });
@@ -1053,15 +1053,15 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
     List<String> messages = new ArrayList<>();
 
     if (start == null) {
-      Collections.addAll(messages, Localized.getConstants().dateFrom(),
-          Localized.getConstants().valueRequired());
+      Collections.addAll(messages, Localized.dictionary().dateFrom(),
+          Localized.dictionary().valueRequired());
 
     } else if (end == null) {
-      Collections.addAll(messages, Localized.getConstants().dateTo(),
-          Localized.getConstants().valueRequired());
+      Collections.addAll(messages, Localized.dictionary().dateTo(),
+          Localized.dictionary().valueRequired());
 
     } else if (TimeUtils.isMeq(start, end)) {
-      Collections.addAll(messages, Localized.getConstants().invalidRange(),
+      Collections.addAll(messages, Localized.dictionary().invalidRange(),
           TimeUtils.renderPeriod(start, end));
     }
 
@@ -1145,8 +1145,8 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
     Long company = getCompany();
     if (!DataUtils.isId(company)) {
       if (notify) {
-        List<String> messages = Lists.newArrayList(Localized.getConstants().client(),
-            Localized.getConstants().valueRequired());
+        List<String> messages = Lists.newArrayList(Localized.dictionary().client(),
+            Localized.dictionary().valueRequired());
         Global.showError(messages);
       }
       return;
@@ -1195,7 +1195,7 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
           renderActs();
 
         } else if (notify) {
-          getFormView().notifyWarning(Localized.getConstants().noData());
+          getFormView().notifyWarning(Localized.dictionary().noData());
         }
       }
     });
@@ -1260,7 +1260,7 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
       c++;
     }
 
-    table.setText(r, c++, Localized.getConstants().captionId(),
+    table.setText(r, c++, Localized.dictionary().captionId(),
         STYLE_ACT_ID_PREFIX + STYLE_LABEL_CELL_SUFFIX);
     table.setText(r, c++, Localized.getLabel(columns.get(nameIndex)),
         STYLE_ACT_NAME_PREFIX + STYLE_LABEL_CELL_SUFFIX);
@@ -1283,9 +1283,9 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
     table.setText(r, c++, Data.getColumnLabel(dataInfo.getViewName(), COL_TA_OBJECT),
         STYLE_ACT_OBJECT_PREFIX + STYLE_LABEL_CELL_SUFFIX);
 
-    table.setText(r, c++, Localized.getConstants().goods(),
+    table.setText(r, c++, Localized.dictionary().goods(),
         STYLE_ACT_TOTAL_PREFIX + STYLE_LABEL_CELL_SUFFIX);
-    table.setText(r, c++, Localized.getConstants().currencyShort(),
+    table.setText(r, c++, Localized.dictionary().currencyShort(),
         STYLE_ACT_CURRENCY_PREFIX + STYLE_LABEL_CELL_SUFFIX);
 
     table.getRowFormatter().addStyleName(r, STYLE_ACT_HEADER);
@@ -1439,19 +1439,19 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
 
     table.setText(r, c++, Localized.getLabel(dataInfo.getColumn(COL_TRADE_ITEM_QUANTITY)),
         STYLE_SVC_QTY_PREFIX + STYLE_LABEL_CELL_SUFFIX);
-    table.setText(r, c++, Localized.getConstants().unitShort(),
+    table.setText(r, c++, Localized.dictionary().unitShort(),
         STYLE_SVC_UNIT_PREFIX + STYLE_LABEL_CELL_SUFFIX);
 
     table.setText(r, c++, Localized.getLabel(dataInfo.getColumn(COL_TRADE_ITEM_PRICE)),
         STYLE_SVC_PRICE_PREFIX + STYLE_LABEL_CELL_SUFFIX);
-    table.setText(r, c++, Localized.getConstants().currencyShort(),
+    table.setText(r, c++, Localized.dictionary().currencyShort(),
         STYLE_SVC_CURRENCY_PREFIX + STYLE_LABEL_CELL_SUFFIX);
 
-    table.setText(r, c++, Localized.getConstants().taFactorShort(),
+    table.setText(r, c++, Localized.dictionary().taFactorShort(),
         STYLE_SVC_FACTOR_PREFIX + STYLE_LABEL_CELL_SUFFIX);
-    table.setText(r, c++, Localized.getConstants().taDaysPerWeekShort(),
+    table.setText(r, c++, Localized.dictionary().taDaysPerWeekShort(),
         STYLE_SVC_DPW_PREFIX + STYLE_LABEL_CELL_SUFFIX);
-    table.setText(r, c++, Localized.getConstants().taMinTermShort(),
+    table.setText(r, c++, Localized.dictionary().taMinTermShort(),
         STYLE_SVC_MIN_TERM_PREFIX + STYLE_LABEL_CELL_SUFFIX);
 
     table.setText(r, c++, Localized.getLabel(dataInfo.getColumn(COL_TRADE_DISCOUNT)),
@@ -1565,7 +1565,7 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
     }
 
     c = 0;
-    table.setText(r, c, Localized.getConstants().totalOf(),
+    table.setText(r, c, Localized.dictionary().totalOf(),
         STYLE_SVC_TOTAL_PREFIX + STYLE_LABEL_CELL_SUFFIX);
     table.getCellFormatter().setColSpan(r, c, totalCol);
 
@@ -1653,7 +1653,7 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
     widget.addStyleName(STYLE_SVC_DPW_PREFIX + STYLE_INPUT_SUFFIX);
 
     for (int i = DPW_MIN; i <= DPW_MAX; i++) {
-      widget.addItem(BeeUtils.joinWords(i, Localized.getConstants().dayShort()));
+      widget.addItem(BeeUtils.joinWords(i, Localized.dictionary().dayShort()));
     }
 
     if (TradeActUtils.validDpw(initialValue)) {
@@ -1756,7 +1756,7 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
   }
 
   private String getAmountLabel() {
-    return BeeUtils.joinWords(Localized.getConstants().amount(), getCurrencyName());
+    return BeeUtils.joinWords(Localized.dictionary().amount(), getCurrencyName());
   }
 
   private void refreshAmounts() {

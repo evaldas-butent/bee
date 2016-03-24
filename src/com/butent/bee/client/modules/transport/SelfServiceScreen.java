@@ -11,35 +11,44 @@ import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.cli.Shell;
 import com.butent.bee.client.data.Data;
+import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
+import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.GridFactory.GridOptions;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.logging.ClientLogManager;
 import com.butent.bee.client.modules.administration.PasswordService;
+import com.butent.bee.client.output.ReportUtils;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.presenter.PresenterCallback;
 import com.butent.bee.client.screen.ScreenImpl;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.client.view.edit.EditStartEvent;
+import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.BeeRow;
+import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.data.filter.Filter;
-import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
-import com.butent.bee.shared.modules.documents.DocumentConstants;
+import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.ui.UserInterface;
+import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -70,10 +79,6 @@ public class SelfServiceScreen extends ScreenImpl {
 
   private final Map<String, String> activeViews = new HashMap<>();
 
-  public SelfServiceScreen() {
-    super();
-  }
-
   @Override
   public void closeAll() {
     super.closeAll();
@@ -89,84 +94,84 @@ public class SelfServiceScreen extends ScreenImpl {
   public void start(UserData userData) {
     super.start(userData);
 
-    Data.setVisibleViews(Sets.newHashSet(VIEW_CARGO_REQUESTS, VIEW_CARGO_REQUEST_FILES,
-        VIEW_CARGO_REQUEST_TEMPLATES, VIEW_ORDERS, VIEW_CARGO_INVOICES,
-        VIEW_CARGO_PURCHASE_INVOICES));
-    Data.setEditableViews(Sets.newHashSet(VIEW_CARGO_REQUESTS, VIEW_CARGO_REQUEST_FILES,
-        VIEW_CARGO_REQUEST_TEMPLATES));
+    Data.setVisibleViews(Sets.newHashSet(VIEW_SHIPMENT_REQUESTS, VIEW_CARGO_HANDLING,
+        VIEW_SHIPMENT_REQUEST_FILES, VIEW_CARGO_INVOICES));
 
-    Data.setColumnReadOnly(VIEW_CARGO_REQUESTS, COL_CARGO_REQUEST_DATE);
-    Data.setColumnReadOnly(VIEW_CARGO_REQUESTS, COL_CARGO_REQUEST_USER);
-    Data.setColumnReadOnly(VIEW_CARGO_REQUESTS, COL_CARGO_REQUEST_STATUS);
+    Data.setReadOnlyViews(Collections.singleton(VIEW_CARGO_INVOICES));
 
-    Data.setColumnReadOnly(VIEW_CARGO_REQUEST_TEMPLATES, COL_CARGO_REQUEST_TEMPLATE_USER);
-
-    GridFactory.hideColumn(VIEW_CARGO_REQUESTS, COL_CARGO_REQUEST_USER);
-    GridFactory.hideColumn(VIEW_CARGO_REQUEST_TEMPLATES, COL_CARGO_REQUEST_TEMPLATE_USER);
+    Data.setColumnReadOnly(VIEW_SHIPMENT_REQUESTS, ClassifierConstants.COL_COMPANY_PERSON);
 
     GridFactory.hideColumn(VIEW_CARGO_INVOICES, "Select");
-    GridFactory.hideColumn(VIEW_CARGO_PURCHASE_INVOICES, "Select");
 
-    FormFactory.hideWidget(DocumentConstants.FORM_DOCUMENT, "DocumentRelations");
+    FormFactory.hideWidget(FORM_SHIPMENT_REQUEST, "RelatedMessages");
+    FormFactory.hideWidget(FORM_SHIPMENT_REQUEST, COL_ORDER_ID);
 
     if (getCommandPanel() != null) {
       getCommandPanel().clear();
     }
-
-    addCommandItem(new Button(Localized.getConstants().trSelfServiceCommandNewRequest(),
+    addCommandItem(new Button(Localized.dictionary().trSelfServiceCommandNewRequest(),
         new ClickHandler() {
           @Override
           public void onClick(ClickEvent event) {
-            DataInfo info = Data.getDataInfo(VIEW_CARGO_REQUESTS);
+            DataInfo info = Data.getDataInfo(VIEW_SHIPMENT_REQUESTS);
             BeeRow row = RowFactory.createEmptyRow(info, true);
 
-            row.setValue(info.getColumnIndex(AdministrationConstants.COL_USER_INTERFACE),
-                UserInterface.normalize(getUserInterface()).ordinal());
-
-            RowFactory.createRow(info, row, new RowCallback() {
-
+            RowFactory.createRow(info, row, Modality.ENABLED, new RowCallback() {
               @Override
               public void onSuccess(BeeRow result) {
-                showCargoRequests();
+                openRequests();
               }
             });
           }
         }));
-
-    addCommandItem(new Button(Localized.getConstants().trSelfServiceCommandRequests(),
+    addCommandItem(new Button(Localized.dictionary().trSelfServiceCommandRequests(),
         new ClickHandler() {
           @Override
           public void onClick(ClickEvent event) {
-            showCargoRequests();
+            openRequests();
           }
         }));
 
-    addCommandItem(new Button(Localized.getConstants().trSelfServiceCommandTemplates(),
+    addCommandItem(new Button(Localized.dictionary().ecInvoices(),
         new ClickHandler() {
           @Override
           public void onClick(ClickEvent event) {
-            openGrid(VIEW_CARGO_REQUEST_TEMPLATES, true, COL_CARGO_REQUEST_TEMPLATE_USER);
-          }
-        }));
+            Value company = Value.getValue(BeeKeeper.getUser().getCompany());
 
-    addCommandItem(new Button(Localized.getConstants().trSelfServiceCommandHistory(),
-        new ClickHandler() {
-          @Override
-          public void onClick(ClickEvent event) {
-            Value company = new LongValue(BeeKeeper.getUser().getCompany());
+            openGrid(VIEW_CARGO_INVOICES, Filter.or(
+                    Filter.isEqual(TradeConstants.COL_TRADE_CUSTOMER, company),
+                    Filter.isEqual(TradeConstants.COL_SALE_PAYER, company)),
+                new AbstractGridInterceptor() {
+                  @Override
+                  public GridInterceptor getInstance() {
+                    return null;
+                  }
 
-            Filter orderFilter = Filter.or(Filter.isEqual(COL_CUSTOMER, company),
-                Filter.isEqual(COL_PAYER, company));
-            openGrid(VIEW_ORDERS, orderFilter);
+                  @Override
+                  public void onEditStart(EditStartEvent ev) {
+                    ev.consume();
+                    Queries.getRowSet(TradeConstants.VIEW_SALE_FILES, null,
+                        Filter.equals(TradeConstants.COL_SALE, ev.getRowValue().getId()),
+                        new Queries.RowSetCallback() {
+                          @Override
+                          public void onSuccess(BeeRowSet result) {
+                            if (!DataUtils.isEmpty(result)) {
+                              int r = result.getNumberOfRows() - 1;
+                              FileInfo fileInfo = new FileInfo(
+                                  result.getLong(r, AdministrationConstants.COL_FILE),
+                                  result.getString(r, AdministrationConstants.ALS_FILE_NAME),
+                                  result.getLong(r, AdministrationConstants.ALS_FILE_SIZE),
+                                  result.getString(r, AdministrationConstants.ALS_FILE_TYPE));
 
-            Filter saleFilter = Filter.or(
-                Filter.isEqual(TradeConstants.COL_TRADE_CUSTOMER, company),
-                Filter.isEqual(TradeConstants.COL_SALE_PAYER, company));
-            openGrid("CargoProformaInvoices", saleFilter);
-            openGrid(VIEW_CARGO_INVOICES, saleFilter);
+                              fileInfo.setCaption(result.getString(r,
+                                  AdministrationConstants.COL_FILE_CAPTION));
 
-            Filter purchaseFilter = Filter.isEqual(TradeConstants.COL_TRADE_SUPPLIER, company);
-            openGrid(VIEW_CARGO_PURCHASE_INVOICES, purchaseFilter);
+                              ReportUtils.preview(fileInfo);
+                            }
+                          }
+                        });
+                  }
+                });
           }
         }));
   }
@@ -213,41 +218,18 @@ public class SelfServiceScreen extends ScreenImpl {
     PasswordService.change();
   }
 
-  private void openGrid(String gridName, boolean intercept, Filter filter) {
+  private void openGrid(String gridName, Filter filter, GridInterceptor interceptor) {
     GridOptions gridOptions = (filter == null) ? null : GridOptions.forFilter(filter);
-    openGrid(gridName, intercept, gridOptions);
-  }
-
-  private void openGrid(String gridName, boolean intercept, GridOptions gridOptions) {
-    GridInterceptor gridInterceptor = intercept ? GridFactory.getGridInterceptor(gridName) : null;
-    ActivationCallback callback =
-        new ActivationCallback(GridFactory.getSupplierKey(gridName, gridInterceptor));
+    GridInterceptor gridInterceptor = BeeUtils.nvl(interceptor,
+        GridFactory.getGridInterceptor(gridName));
+    ActivationCallback callback = new ActivationCallback(GridFactory.getSupplierKey(gridName,
+        gridInterceptor));
 
     GridFactory.openGrid(gridName, gridInterceptor, gridOptions, callback);
   }
 
-  private void openGrid(String gridName, boolean intercept, String userColumn) {
-    GridOptions gridOptions = GridOptions.forCurrentUserFilter(userColumn);
-    openGrid(gridName, intercept, gridOptions);
-  }
-
-  private void openGrid(String gridName, Filter filter) {
-    openGrid(gridName, false, filter);
-  }
-
-  private void showCargoRequests() {
-    switch (getUserInterface()) {
-      case SELF_SERVICE:
-        openGrid(GRID_CARGO_REQUESTS, true, COL_CARGO_REQUEST_USER);
-        break;
-
-      case SELF_SERVICE_LOG:
-        openGrid(GRID_LOGISTICS_CARGO_REQUESTS, true, COL_CARGO_REQUEST_USER);
-        break;
-
-      default:
-        notifyInfo(Localized.getConstants().noData());
-        break;
-    }
+  private void openRequests() {
+    openGrid(GRID_SHIPMENT_REQUESTS, Filter.isEqual(ClassifierConstants.COL_COMPANY_PERSON,
+        Value.getValue(BeeKeeper.getUser().getUserData().getCompanyPerson())), null);
   }
 }

@@ -9,4 +9,8 @@
   <Item name="SaleSeries" label="=trdSaleSeries" service="grid" parameters="SaleSeries" />
   <Item name="TradeStatuses" label="=trdStatuses" service="grid" parameters="TradeStatuses" />
   <Item name="TradeNotes" label="=trdNoteTemplates" service="grid" parameters="TradeNotes" />
+
+  <Item name="TradeTags" label="=tags" service="grid" parameters="TradeTags" />
+  <Item name="TradeDocumentTypes" label="=trdDocumentTypes" service="grid"
+    parameters="TradeDocumentTypes" />
 </Entry>

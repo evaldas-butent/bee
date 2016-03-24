@@ -1,79 +1,71 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
 
-  name="ShipmentRequests" viewName="ShipmentRequests"
-  caption="=trRequestsUnregistered" filter="Interface = 4 OR !(Interface)"
-  >
+        name="ShipmentRequests" viewName="ShipmentRequests"
+        caption="=trRequestsUnregistered"
+        filter="!(CompanyPerson)"
+        disabledActions="add"
+    >
   <g:columns>
-    <DataColumn name="Date" visible="true" />
-    <DataColumn name="Status" visible="true" />
-    <RelColumn name="Order" editEnabled="true" />
+    <IdColumn name="ID" width="40" />
+    <DataColumn name="Date" />
+    <DataColumn name="Status" />
 
-    <DataColumn name="CustomerName" visible="true" />
-    <DataColumn name="CustomerCode" visible="false" />
-    <DataColumn name="CustomerVatCode" visible="false" />
+    <DataColumn name="CustomerName" />
+    <DataColumn name="CustomerCode" />
+    <DataColumn name="CustomerVatCode" />
 
-    <DataColumn name="CustomerAddress" visible="false" />
     <DataColumn name="CustomerPhone" />
+    <DataColumn name="CustomerFax" />
     <DataColumn name="CustomerEmail" />
 
-    <DataColumn name="CustomerContact" />
-    <DataColumn name="CustomerContactPosition" visible="false" />
+    <DataColumn name="CustomerContactPerson" />
+    <DataColumn name="CustomerPersonPosition" />
 
-    <DataColumn name="CustomerExchangeCode" visible="false" />
-    
+    <DataColumn name="CustomerCountry" />
+    <DataColumn name="CustomerCity" />
+    <DataColumn name="CustomerAddress" />
+    <DataColumn name="CustomerPostIndex" />
+
     <DataColumn name="LoadingDate" />
-    <DataColumn name="LoadingCompany" visible="false" />
-    <DataColumn name="LoadingContact" visible="false" />
-
+    <DataColumn name="LoadingCompany" />
+    <DataColumn name="LoadingContact" />
     <DataColumn name="LoadingCity" />
-
-    <DataColumn name="LoadingAddress" visible="false" />
-    <DataColumn name="LoadingEmail" visible="false" />
-    <DataColumn name="LoadingPhone" visible="false" />
-    <DataColumn name="LoadingFax" visible="false" />
-    <DataColumn name="LoadingNumber" visible="false" />
+    <DataColumn name="LoadingAddress" />
+    <DataColumn name="LoadingNumber" />
 
     <DataColumn name="UnloadingDate" />
-    <DataColumn name="UnloadingCompany" visible="false" />
-    <DataColumn name="UnloadingContact" visible="false" />
-
+    <DataColumn name="UnloadingCompany" />
+    <DataColumn name="UnloadingContact" />
     <DataColumn name="UnloadingCity" />
+    <DataColumn name="UnloadingAddress" />
+    <DataColumn name="UnloadingNumber" />
 
-    <DataColumn name="UnloadingAddress" visible="false" />
-    <DataColumn name="UnloadingEmail" visible="false" />
-    <DataColumn name="UnloadingPhone" visible="false" />
-    <DataColumn name="UnloadingFax" visible="false" />
-    <DataColumn name="UnloadingNumber" visible="false" />
-    
-    <RelColumn name="Expedition" visible="false" />
-    <RelColumn name="ShippingTerm" visible="false" />
+    <RelColumn name="Expedition" renderColumns="ExpeditionType" />
+    <DataColumn name="Logistics" />
+    <RelColumn name="ShippingTerm" />
 
-    <DataColumn name="DeliveryDate" visible="false" />
-    <DataColumn name="DeliveryTime" visible="false" />
-    <DataColumn name="TermsOfDelivery" visible="false" />
+    <DataColumn name="CustomsBrokerage" />
+    <DataColumn name="FreightInsurance" />
 
-    <DataColumn name="CustomsBrokerage" visible="false" />
-    <DataColumn name="FreightInsurance" visible="false" />
+    <DataColumn name="Description" />
+    <DataColumn name="Quantity" />
 
-    <DataColumn name="CargoDescription" whiteSpace="nowrap" />
-    <DataColumn name="Quantity" visible="false" />
-
-    <DataColumn name="Weight" visible="false" />
-    <DataColumn name="Volume" visible="false" />
-    <DataColumn name="LDM" visible="false" />
-    <DataColumn name="Length" visible="false" />
-    <DataColumn name="Width" visible="false" />
-    <DataColumn name="Height" visible="false" />
-    <DataColumn name="Palettes" visible="false" />
+    <DataColumn name="Weight" />
+    <DataColumn name="Volume" />
+    <DataColumn name="LDM" />
+    <DataColumn name="Length" />
+    <DataColumn name="Width" />
+    <DataColumn name="Height" />
 
     <DataColumn name="Value" />
     <RelColumn name="ValueCurrency" />
-    
+
     <RelColumn name="Manager" />
 
-    <DataColumn name="Notes" visible="false" />
-    <DataColumn name="Host" visible="false" />
-    <DataColumn name="Agent" visible="false" />
+    <DataColumn name="Notes" />
+    <DataColumn name="LossReason" />
+    <DataColumn name="Host" />
+    <DataColumn name="Agent" />
   </g:columns>
 </g:Grid>

@@ -5,6 +5,8 @@
   source="CompanyContacts"
   module="Classifiers.Contacts"
   caption="=additionalContacts"
+  editForm="CompanyContact" newRowForm="CompanyContact"
+  newRowCaption="=contact"
   >
   <Columns>
     <SimpleColumn name="Company" />
