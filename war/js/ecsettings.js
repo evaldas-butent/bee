@@ -3,6 +3,7 @@ var BeeSettings = {
   "logoImage": "images/logo.png",
   "logCapacity": 1000,
   "showGlobalSearch": true,
+  "showLogout": true,
   "showItemSuppliers": false,
   "webSocketUrl": "-"
 };

@@ -6,8 +6,8 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
-import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
-import static com.butent.bee.shared.modules.trade.TradeConstants.*;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.COL_COMPANY_PERSON;
+import static com.butent.bee.shared.modules.trade.TradeConstants.VAR_TOTAL;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
@@ -57,6 +57,7 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.menu.MenuHandler;
 import com.butent.bee.shared.menu.MenuService;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
+import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -89,7 +90,7 @@ public final class TransportHandler {
 
     Profit(String idName, long id) {
       super(Global.getImages().silverProfit());
-      setTitle(Localized.getConstants().profit());
+      setTitle(Localized.dictionary().profit());
       addClickHandler(this);
       this.idName = idName;
       this.id = id;
@@ -216,6 +217,16 @@ public final class TransportHandler {
 
     SelectorEvent.register(new TransportSelectorHandler());
 
+    Global.getNewsAggregator().registerFilterHandler(Feed.SHIPMENT_REQUESTS_MY,
+        (gridOptions, presenterCallback) -> GridFactory.openGrid(GRID_SHIPMENT_REQUESTS,
+            GridFactory.getGridInterceptor(GRID_SHIPMENT_REQUESTS), gridOptions,
+            presenterCallback));
+
+    Global.getNewsAggregator().registerFilterHandler(Feed.SHIPMENT_REQUESTS_ALL,
+        (gridOptions, presenterCallback) -> GridFactory.openGrid(GRID_SHIPMENT_REQUESTS,
+            GridFactory.getGridInterceptor(GRID_SHIPMENT_REQUESTS), gridOptions,
+            presenterCallback));
+
     GridFactory.registerGridInterceptor(VIEW_SPARE_PARTS, new SparePartsGridHandler());
 
     GridFactory.registerGridInterceptor(VIEW_ORDERS, new CargoTripChecker());
@@ -223,15 +234,12 @@ public final class TransportHandler {
     GridFactory.registerGridInterceptor(VIEW_EXPEDITION_TRIPS, new CargoTripChecker());
 
     GridFactory.registerGridInterceptor(VIEW_ORDER_CARGO, new CargoGridHandler());
+    GridFactory.registerGridInterceptor(VIEW_CARGO_HANDLING, new CargoHandlingGrid());
 
     GridFactory.registerGridInterceptor("CargoDocuments", new TransportDocumentsGrid(COL_CARGO));
     GridFactory.registerGridInterceptor("TranspOrderDocuments",
         new TransportDocumentsGrid(COL_TRANSPORTATION_ORDER));
     GridFactory.registerGridInterceptor("TripDocuments", new TransportDocumentsGrid(COL_TRIP));
-
-    GridFactory.registerGridInterceptor(GRID_SHIPMENT_REQUESTS, new ShipmentRequestsGrid());
-    GridFactory.registerGridInterceptor(GRID_LOGISTICS_CARGO_REQUESTS,
-        new LogisticsShipmentRequestsGrid());
 
     ProvidesGridColumnRenderer provider = new CargoPlaceRenderer.Provider();
     String loading = "Loading";
@@ -239,6 +247,8 @@ public final class TransportHandler {
 
     RendererFactory.registerGcrProvider(VIEW_CARGO_HANDLING, loading, provider);
     RendererFactory.registerGcrProvider(VIEW_CARGO_HANDLING, unloading, provider);
+    RendererFactory.registerGcrProvider(GRID_CARGO_HANDLING_UNBOUND, loading, provider);
+    RendererFactory.registerGcrProvider(GRID_CARGO_HANDLING_UNBOUND, unloading, provider);
     RendererFactory.registerGcrProvider(VIEW_ALL_CARGO, loading, provider);
     RendererFactory.registerGcrProvider(VIEW_ALL_CARGO, unloading, provider);
     RendererFactory.registerGcrProvider(VIEW_ORDER_CARGO, loading, provider);
@@ -247,6 +257,8 @@ public final class TransportHandler {
     RendererFactory.registerGcrProvider(VIEW_CARGO_TRIPS, unloading, provider);
     RendererFactory.registerGcrProvider(VIEW_TRIP_CARGO, loading, provider);
     RendererFactory.registerGcrProvider(VIEW_TRIP_CARGO, unloading, provider);
+    RendererFactory.registerGcrProvider(TBL_ASSESSMENT_FORWARDERS, loading, provider);
+    RendererFactory.registerGcrProvider(TBL_ASSESSMENT_FORWARDERS, unloading, provider);
 
     ConditionalStyle.registerGridColumnStyleProvider(VIEW_ABSENCE_TYPES, COL_ABSENCE_COLOR,
         ColorStyleProvider.createDefault(VIEW_ABSENCE_TYPES));
@@ -274,9 +286,8 @@ public final class TransportHandler {
     GridFactory.registerGridInterceptor(VIEW_CARGO_PURCHASE_INVOICES, new InvoicesGrid());
     GridFactory.registerGridInterceptor(VIEW_TRIP_PURCHASE_INVOICES, new InvoicesGrid());
 
-    GridFactory.registerGridInterceptor(VIEW_CARGO_REQUESTS, new CargoRequestsGrid());
-    GridFactory.registerGridInterceptor(VIEW_CARGO_REQUEST_FILES,
-        new FileGridInterceptor(COL_CRF_REQUEST, AdministrationConstants.COL_FILE,
+    GridFactory.registerGridInterceptor(VIEW_SHIPMENT_REQUEST_FILES,
+        new FileGridInterceptor(COL_SHIPMENT_REQUEST, AdministrationConstants.COL_FILE,
             AdministrationConstants.COL_FILE_CAPTION, AdministrationConstants.ALS_FILE_NAME));
 
     if (!BeeKeeper.getUser().isAdministrator()) {
@@ -291,6 +302,8 @@ public final class TransportHandler {
     FormFactory.registerFormInterceptor(FORM_NEW_SIMPLE_ORDER, new NewSimpleTransportationOrder());
     FormFactory.registerFormInterceptor(FORM_TRIP, new TripForm());
     FormFactory.registerFormInterceptor(FORM_EXPEDITION_TRIP, new TripForm());
+
+    FormFactory.registerFormInterceptor(FORM_TEXT_CONSTANT, new TextConstantForm());
 
     FormFactory.registerFormInterceptor(FORM_CARGO, new OrderCargoForm());
 
@@ -330,14 +343,12 @@ public final class TransportHandler {
         new CargoPurchaseInvoiceForm());
     FormFactory.registerFormInterceptor(FORM_TRIP_PURCHASE_INVOICE, new InvoiceForm(null));
 
-    FormFactory.registerFormInterceptor(FORM_REGISTRATION, new TransportRegistrationForm());
     FormFactory.registerFormInterceptor(FORM_SHIPMENT_REQUEST, new ShipmentRequestForm());
-    FormFactory.registerFormInterceptor(FORM_NEW_CARGO_REQUEST, new CargoRequestForm());
-    FormFactory.registerFormInterceptor(FORM_CARGO_REQUEST, new CargoRequestForm());
+    FormFactory.registerFormInterceptor(FORM_CARGO_PLACE_UNBOUND, new CargoPlaceUnboundForm());
 
-    BeeKeeper.getBus().registerRowActionHandler(new TransportActionHandler(), false);
+    BeeKeeper.getBus().registerRowActionHandler(new TransportActionHandler());
 
-    BeeKeeper.getBus().registerRowTransformHandler(new RowTransformHandler(), false);
+    BeeKeeper.getBus().registerRowTransformHandler(new RowTransformHandler());
 
     ChartBase.registerBoards();
     CargoIncomesObserver.register();
@@ -356,7 +367,7 @@ public final class TransportHandler {
         break;
 
       default:
-        Global.showError(Localized.getMessages().dataNotAvailable(gridName));
+        Global.showError(Localized.dictionary().dataNotAvailable(gridName));
         return;
     }
     final Long userPerson = BeeKeeper.getUser().getUserData().getCompanyPerson();

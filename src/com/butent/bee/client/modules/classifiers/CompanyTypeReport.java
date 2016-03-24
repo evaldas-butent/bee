@@ -148,7 +148,7 @@ public class CompanyTypeReport extends ReportInterceptor {
   private static void showDetails(YearMonth ym, Column column, DateTime start, DateTime end,
       String types, String typesLabel) {
 
-    List<String> labels = Lists.newArrayList(Localized.getConstants().clients());
+    List<String> labels = Lists.newArrayList(Localized.dictionary().clients());
     List<String> filterArgs = new ArrayList<>();
 
     DateTime lower = (ym == null) ? start : BeeUtils.max(ym.getDate().getDateTime(), start);
@@ -307,9 +307,9 @@ public class CompanyTypeReport extends ReportInterceptor {
           if (!BeeUtils.isEmpty(typesLabel)) {
             String label;
             if (DataUtils.parseIdSet(types).size() > 1) {
-              label = Localized.getConstants().types();
+              label = Localized.dictionary().types();
             } else {
-              label = Localized.getConstants().type();
+              label = Localized.dictionary().type();
             }
 
             headers.add(BeeUtils.joinWords(label, typesLabel));
@@ -319,7 +319,7 @@ public class CompanyTypeReport extends ReportInterceptor {
           sheet.autoSizeAll();
 
         } else {
-          getFormView().notifyWarning(Localized.getConstants().nothingFound());
+          getFormView().notifyWarning(Localized.dictionary().nothingFound());
         }
       }
     });
@@ -404,11 +404,11 @@ public class CompanyTypeReport extends ReportInterceptor {
 
     int styleRef = sheet.registerStyle(xs);
 
-    table.setText(row, YEAR_COL, Localized.getConstants().year(), STYLE_HEADER);
-    table.setText(row, MONTH_COL, Localized.getConstants().month(), STYLE_HEADER);
+    table.setText(row, YEAR_COL, Localized.dictionary().year(), STYLE_HEADER);
+    table.setText(row, MONTH_COL, Localized.dictionary().month(), STYLE_HEADER);
 
-    xr.add(new XCell(YEAR_COL, Localized.getConstants().year(), styleRef));
-    xr.add(new XCell(MONTH_COL, Localized.getConstants().month(), styleRef));
+    xr.add(new XCell(YEAR_COL, Localized.dictionary().year(), styleRef));
+    xr.add(new XCell(MONTH_COL, Localized.dictionary().month(), styleRef));
 
     for (int j = 0; j < columns.size(); j++) {
       Column column = columns.get(j);

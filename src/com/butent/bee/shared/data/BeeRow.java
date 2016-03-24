@@ -173,7 +173,7 @@ public class BeeRow extends StringRow implements BeeSerializable {
 
   public void setChildren(Collection<RowChildren> children) {
     if (BeeUtils.isEmpty(children)) {
-      clearProperty(PROPERTY_CHILDREN);
+      removeProperty(PROPERTY_CHILDREN);
     } else {
       setProperty(PROPERTY_CHILDREN, Codec.beeSerialize(children));
     }

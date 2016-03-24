@@ -26,22 +26,30 @@ import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
+import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.exceptions.BeeException;
 import com.butent.bee.shared.exceptions.BeeRuntimeException;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.menu.Menu;
+import com.butent.bee.shared.menu.MenuItem;
+import com.butent.bee.shared.menu.MenuService;
 import com.butent.bee.shared.modules.BeeParameter;
+import com.butent.bee.shared.modules.payroll.PayrollConstants;
 import com.butent.bee.shared.modules.trade.TradeDocumentData;
+import com.butent.bee.shared.modules.trade.TradeDocumentStatus;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.rights.ModuleAndSub;
 import com.butent.bee.shared.rights.SubModule;
@@ -150,6 +158,9 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
       response = sendToERP(reqInfo.getParameter(VAR_VIEW_NAME),
           DataUtils.parseIdSet(reqInfo.getParameter(VAR_ID_LIST)));
 
+    } else if (BeeUtils.same(svc, SVC_GET_DOCUMENT_TYPE_CAPTION_AND_FILTER)) {
+      response = getDocumentTypeCaptionAndFilter(reqInfo);
+
     } else {
       String msg = BeeUtils.joinWords("Trade service not recognized:", svc);
       logger.warning(msg);
@@ -214,8 +225,8 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
           .addFields(TBL_SALES, COL_TRADE_DATE, COL_TRADE_TERM)
           .addFrom(TBL_SALES)
           .setWhere(SqlUtils.and(SqlUtils.or(SqlUtils.equals(TBL_SALES, COL_SALE_PAYER, companyId),
-                  SqlUtils.and(SqlUtils.isNull(TBL_SALES, COL_SALE_PAYER),
-                      SqlUtils.equals(TBL_SALES, COL_TRADE_CUSTOMER, companyId))),
+              SqlUtils.and(SqlUtils.isNull(TBL_SALES, COL_SALE_PAYER),
+                  SqlUtils.equals(TBL_SALES, COL_TRADE_CUSTOMER, companyId))),
               SqlUtils.less(SqlUtils.nvl(SqlUtils.field(TBL_SALES, COL_TRADE_PAID), 0),
                   SqlUtils.nvl(SqlUtils.field(TBL_SALES, COL_TRADE_AMOUNT), 0))));
 
@@ -361,7 +372,90 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
       }
     });
 
+    MenuService.TRADE_DOCUMENTS.setTransformer(input -> {
+      List<Menu> result = new ArrayList<>();
+
+      if (input instanceof MenuItem) {
+        BeeRowSet data = qs.getViewData(VIEW_TRADE_DOCUMENT_TYPES);
+
+        if (!DataUtils.isEmpty(data)) {
+          String language = usr.getLanguage();
+
+          for (BeeRow row : data) {
+            long id = row.getId();
+
+            MenuItem item = (MenuItem) input.copy();
+
+            item.setName(BeeUtils.join(BeeConst.STRING_UNDER, input.getName(), id));
+            item.setLabel(DataUtils.getTranslation(data, row, COL_DOCUMENT_TYPE_NAME, language));
+
+            item.setParameters(BeeUtils.toString(id));
+
+            result.add(item);
+          }
+        }
+      }
+
+      return result;
+    });
+
     act.init();
+  }
+
+  private ResponseObject getDocumentTypeCaptionAndFilter(RequestInfo reqInfo) {
+    Long typeId = reqInfo.getParameterLong(COL_DOCUMENT_TYPE);
+    if (!DataUtils.isId(typeId)) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), COL_DOCUMENT_TYPE);
+    }
+
+    BeeRowSet typeData = qs.getViewData(VIEW_TRADE_DOCUMENT_TYPES, Filter.compareId(typeId));
+    if (DataUtils.isEmpty(typeData)) {
+      return ResponseObject.error(reqInfo.getService(), typeId, "not found");
+    }
+
+    BeeRow typeRow = typeData.getRow(0);
+
+    String caption = DataUtils.getTranslation(typeData, typeRow, COL_DOCUMENT_TYPE_NAME,
+        usr.getLanguage());
+    CompoundFilter filter = Filter.and();
+
+    CompoundFilter statusFilter = Filter.or();
+
+    for (TradeDocumentStatus status : TradeDocumentStatus.values()) {
+      Boolean v = DataUtils.getBoolean(typeData, typeRow, status.getDocumentTypeColumnName());
+      if (BeeUtils.isTrue(v)) {
+        statusFilter.add(Filter.equals(COL_TRADE_DOCUMENT_STATUS, status));
+      }
+    }
+
+    if (!statusFilter.isEmpty()) {
+      filter.add(statusFilter);
+    }
+
+    Set<Long> operations = qs.getLongSet(new SqlSelect()
+        .addFields(TBL_TRADE_TYPE_OPERATIONS, COL_TRADE_OPERATION)
+        .addFrom(TBL_TRADE_TYPE_OPERATIONS)
+        .setWhere(SqlUtils.equals(TBL_TRADE_TYPE_OPERATIONS, COL_DOCUMENT_TYPE, typeId)));
+
+    if (!BeeUtils.isEmpty(operations)) {
+      filter.add(Filter.any(COL_TRADE_OPERATION, operations));
+    }
+
+    Set<Long> tags = qs.getLongSet(new SqlSelect()
+        .addFields(TBL_TRADE_TYPE_TAGS, COL_TRADE_TAG)
+        .addFrom(TBL_TRADE_TYPE_TAGS)
+        .setWhere(SqlUtils.equals(TBL_TRADE_TYPE_TAGS, COL_DOCUMENT_TYPE, typeId)));
+
+    if (!BeeUtils.isEmpty(tags)) {
+      filter.add(Filter.in(sys.getIdName(VIEW_TRADE_DOCUMENTS), VIEW_TRADE_DOCUMENT_TAGS,
+          COL_TRADE_DOCUMENT, Filter.any(COL_TRADE_TAG, tags)));
+    }
+
+    if (filter.isEmpty()) {
+      filter = null;
+    }
+
+    return ResponseObject.response(Pair.of(caption, filter));
   }
 
   private ResponseObject getItemsInfo(String viewName, Long id, String currencyTo) {
@@ -403,7 +497,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
       String currAlias = SqlUtils.uniqueName();
 
       IsExpression xpr = ExchangeUtils.exchangeFieldTo(query.addFromLeft(TBL_CURRENCIES, currAlias,
-              SqlUtils.equals(currAlias, COL_CURRENCY_NAME, currencyTo)),
+          SqlUtils.equals(currAlias, COL_CURRENCY_NAME, currencyTo)),
           SqlUtils.constant(1),
           SqlUtils.field(trade, COL_CURRENCY),
           SqlUtils.field(trade, COL_TRADE_DATE),
@@ -490,8 +584,12 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
 
       try {
         SimpleRowSet payments = ButentWS.connect(remoteAddress, remoteLogin, remotePassword)
-            .getSQLData("SELECT extern_id AS id, apm_data AS data, apm_suma AS suma"
-                    + " FROM apyvarta WHERE pajamos=0 AND extern_id IN(" + ids.toString() + ")",
+            .getSQLData("SELECT extern_id AS id,"
+                + " CASE WHEN oper_apm IS NULL THEN data ELSE apm_data END AS data,"
+                + " CASE WHEN oper_apm IS NULL THEN viso ELSE apm_suma END AS suma"
+                + " FROM apyvarta"
+                + " INNER JOIN operac ON apyvarta.operacija = operac.operacija"
+                + " WHERE pajamos=0 AND extern_id IN(" + ids.toString() + ")",
                 "id", "data", "suma");
 
         for (SimpleRow payment : payments) {
@@ -531,6 +629,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
         .addFields(TBL_TRADE_OPERATIONS, COL_OPERATION_NAME)
         .addField(TBL_CURRENCIES, COL_CURRENCY_NAME, COL_CURRENCY)
         .addField(COL_TRADE_WAREHOUSE_FROM, COL_WAREHOUSE_CODE, COL_TRADE_WAREHOUSE_FROM)
+        .addFields(PayrollConstants.TBL_EMPLOYEES, PayrollConstants.COL_TAB_NUMBER)
         .addFrom(trade)
         .addFromLeft(TBL_TRADE_OPERATIONS,
             sys.joinTables(TBL_TRADE_OPERATIONS, trade, COL_TRADE_OPERATION))
@@ -538,6 +637,9 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
         .addFromLeft(TBL_WAREHOUSES, COL_TRADE_WAREHOUSE_FROM,
             sys.joinTables(TBL_WAREHOUSES, COL_TRADE_WAREHOUSE_FROM, trade,
                 COL_TRADE_WAREHOUSE_FROM))
+        .addFromLeft(TBL_USERS, sys.joinTables(TBL_USERS, trade, COL_TRADE_MANAGER))
+        .addFromLeft(PayrollConstants.TBL_EMPLOYEES,
+            SqlUtils.joinUsing(TBL_USERS, PayrollConstants.TBL_EMPLOYEES, COL_COMPANY_PERSON))
         .setWhere(sys.idInList(trade, ids));
 
     switch (trade) {
@@ -637,6 +739,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
       doc.setCustomer(companies.get(invoice.getLong(COL_TRADE_CUSTOMER)));
       doc.setTerm(invoice.getDate(COL_TRADE_TERM));
       doc.setCurrency(invoice.getValue(COL_CURRENCY));
+      doc.setManager(invoice.getValue(PayrollConstants.COL_TAB_NUMBER));
 
       SimpleRowSet items = qs.getData(new SqlSelect()
           .addFields(TBL_ITEMS, COL_ITEM_NAME, COL_ITEM_EXTERNAL_CODE)

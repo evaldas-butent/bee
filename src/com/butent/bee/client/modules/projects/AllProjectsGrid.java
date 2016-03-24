@@ -40,14 +40,14 @@ class AllProjectsGrid extends TreeGridInterceptor {
 
     if (active) {
       presenter.getGridView().notifyWarning(
-          BeeUtils.joinWords(Localized.getConstants().project(), activeRow.getId(),
-              Localized.getConstants().prjStatusActive())
+          BeeUtils.joinWords(Localized.dictionary().project(), activeRow.getId(),
+              Localized.dictionary().prjStatusActive())
           );
       return GridInterceptor.DeleteMode.CANCEL;
     } else if (owner) {
       return GridInterceptor.DeleteMode.SINGLE;
     } else {
-      presenter.getGridView().notifyWarning(Localized.getConstants().prjDeleteCanManager());
+      presenter.getGridView().notifyWarning(Localized.dictionary().prjDeleteCanManager());
       return GridInterceptor.DeleteMode.CANCEL;
     }
   }

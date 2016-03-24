@@ -32,7 +32,7 @@ final class TruckTimeBoard extends VehicleTimeBoard {
 
   @Override
   public String getCaption() {
-    return Localized.getConstants().truckTimeBoard();
+    return Localized.dictionary().truckTimeBoard();
   }
 
   @Override
@@ -64,6 +64,11 @@ final class TruckTimeBoard extends VehicleTimeBoard {
   @Override
   protected String getDayWidthColumnName() {
     return COL_TRUCK_PIXELS_PER_DAY;
+  }
+
+  @Override
+  protected String getFilterDataTypesColumnName() {
+    return COL_TRUCK_FILTER_DATA_TYPES;
   }
 
   @Override

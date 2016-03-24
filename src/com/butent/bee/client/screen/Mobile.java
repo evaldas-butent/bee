@@ -9,10 +9,7 @@ import com.butent.bee.client.Bee;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.cli.CliWidget;
 import com.butent.bee.client.cli.CliWorker;
-import com.butent.bee.client.dialog.Notification;
 import com.butent.bee.client.dom.DomUtils;
-import com.butent.bee.client.layout.Complex;
-import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.layout.LayoutPanel;
 import com.butent.bee.client.logging.ClientLogManager;
@@ -26,7 +23,6 @@ import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.css.CssUnit;
 import com.butent.bee.shared.ui.UserInterface;
@@ -69,15 +65,18 @@ public class Mobile extends ScreenImpl {
   }
 
   @Override
-  public void closeWidget(IdentifiableWidget widget) {
+  public boolean closeWidget(IdentifiableWidget widget) {
     Assert.notNull(widget, "closeWidget: widget is null");
 
     if (UiHelper.isModal(widget.asWidget())) {
-      UiHelper.closeDialog(widget.asWidget());
+      return UiHelper.closeDialog(widget.asWidget());
+
     } else if (Objects.equals(widget, getActiveWidget())) {
-      getScreenPanel().remove(widget);
+      return getScreenPanel().remove(widget);
+
     } else {
       notifyWarning("closeWidget: widget not found");
+      return false;
     }
   }
 
@@ -167,24 +166,6 @@ public class Mobile extends ScreenImpl {
   @Override
   protected IdentifiableWidget initCenter() {
     return new CustomDiv();
-  }
-
-  @Override
-  protected Pair<? extends IdentifiableWidget, Integer> initNorth() {
-    Complex panel = new Complex();
-    panel.addStyleName(BeeConst.CSS_CLASS_PREFIX + "NorthContainer");
-
-    panel.addLeftTop(Global.getSearchWidget(), 40, 2);
-
-    Flow menuContainer = new Flow();
-    menuContainer.addStyleName(BeeConst.CSS_CLASS_PREFIX + "MainMenu");
-    panel.addLeftTop(menuContainer, 10, 30);
-    setMenuPanel(menuContainer);
-
-    setNotification(new Notification());
-    panel.addRightTop(getNotification(), 1, 1);
-
-    return Pair.of(panel, 60);
   }
 
   @Override

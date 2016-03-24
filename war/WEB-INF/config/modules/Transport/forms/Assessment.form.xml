@@ -12,6 +12,7 @@
   xmlns:xi="http://www.w3.org/2001/XInclude"
 
   name="Assessment" viewName="Assessments" showRowId="true"
+        width="70" widthUnit="%" height="80" heightUnit="%"
   >
   <f:properties reports="PrintOrderLT, PrintOrderEN, PrintOrderRU" />
 

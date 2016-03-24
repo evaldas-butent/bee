@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+      xmlns:x="http://www.butent.com/expression"
+
+      name="RestTasks" source="Tasks"
+    >
+  <Columns>
+    <SimpleColumn name="Summary" />
+    <SimpleColumn name="Description" />
+
+    <SimpleColumn name="Status" />
+    <SimpleColumn name="Priority" />
+
+    <SimpleColumn name="Type" alias="TypeID" />
+    <SimpleJoin name="Type" joinType="LEFT">
+      <SimpleColumn name="Name" alias="Type" />
+    </SimpleJoin>
+
+    <SimpleColumn name="StartTime" />
+    <SimpleColumn name="FinishTime" />
+
+    <SimpleColumn name="Completed" />
+    <SimpleColumn name="Approved" />
+
+    <SimpleColumn name="Owner" />
+    <SimpleJoin name="Owner" joinType="LEFT">
+      <SimpleJoin name="CompanyPerson" joinType="LEFT">
+        <SimpleJoin name="Person" joinType="LEFT">
+          <SimpleColumn name="FirstName" alias="OwnerFirstName" />
+          <SimpleColumn name="LastName" alias="OwnerLastName" />
+        </SimpleJoin>
+      </SimpleJoin>
+    </SimpleJoin>
+
+    <SimpleColumn name="Executor" />
+    <SimpleJoin name="Executor" joinType="LEFT">
+      <SimpleJoin name="CompanyPerson" joinType="LEFT">
+        <SimpleJoin name="Person" joinType="LEFT">
+          <SimpleColumn name="FirstName" alias="ExecutorFirstName" />
+          <SimpleColumn name="LastName" alias="ExecutorLastName" />
+        </SimpleJoin>
+      </SimpleJoin>
+    </SimpleJoin>
+
+    <ExternalJoin source="TaskUsers" name="Task" joinType="INNER" filter="UserID={u}">
+      <HiddenColumn name="User" alias="UserID" />
+      <SimpleColumn name="LastAccess" />
+    </ExternalJoin>
+
+    <ExternalJoin source="TaskEvents" name="Task" joinType="LEFT" filter="Publisher!={u}">
+      <HiddenColumn name="Publisher" />
+      <AggregateColumn name="PublishTime" aggregate="MAX" />
+    </ExternalJoin>
+
+    <SimpleColumn name="Company" alias="CompanyID" />
+    <SimpleJoin name="Company" joinType="LEFT">
+      <SimpleColumn name="Name" alias="Company" />
+    </SimpleJoin>
+
+    <SimpleColumn name="Contact" alias="CompanyPersonID" />
+    <SimpleJoin name="Contact" joinType="LEFT">
+      <SimpleJoin name="Person" joinType="LEFT">
+        <SimpleColumn name="FirstName" alias="PersonFirstName" />
+        <SimpleColumn name="LastName" alias="PersonLastName" />
+      </SimpleJoin>
+    </SimpleJoin>
+
+    <ExternalJoin source="TaskUsers" name="Task" joinType="LEFT"
+                  filter="User!=Owner AND User!=Executor">
+      <SimpleColumn name="User" />
+      <SimpleColumn name="Task" />
+      <IdColumn name="ID" />
+    </ExternalJoin>
+
+    <ExternalJoin name="Task" joinType="LEFT" source="TaskFiles" filter="!(TaskEvent)">
+      <HiddenColumn name="TaskEvent" />
+      <HiddenColumn name="Caption" />
+
+      <SimpleColumn name="File" />
+      <SimpleJoin name="File" joinType="LEFT">
+        <HiddenColumn name="Name" />
+      </SimpleJoin>
+
+      <AggregateColumn name="FileName" aggregate="MAX">
+        <x:nvl type="STRING">
+          <x:number>"Caption"</x:number>
+          <x:number>"Name"</x:number>
+        </x:nvl>
+      </AggregateColumn>
+    </ExternalJoin>
+  </Columns>
+</View>

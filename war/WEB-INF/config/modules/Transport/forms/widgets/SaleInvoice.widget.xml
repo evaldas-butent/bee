@@ -18,8 +18,9 @@
     </cell>
   </row>
   <row>
-    <Label for="InvoicePrefix" />
-    <InputText source="InvoicePrefix" upperCase="true" style="width:7em" />
+    <Label for="SaleSeries" />
+    <DataSelector source="SaleSeries" editEnabled="false" newRowEnabled="false"
+                  style="width:7em;" />
     <InlineLabel for="InvoiceNo" />
     <InputText source="InvoiceNo" />
   </row>

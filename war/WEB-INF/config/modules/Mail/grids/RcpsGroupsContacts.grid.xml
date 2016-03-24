@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid" 
+    name="RcpsGroupsContacts" viewName="RcpsGroupsContacts"
+    caption="=contacts">
+  <g:columns>
+    <DataColumn name="Company" />
+    <DataColumn name="CompanyPerson" />
+    <DataColumn name="CompanyContact" />
+  </g:columns>
+</g:Grid>

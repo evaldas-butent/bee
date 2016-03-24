@@ -138,12 +138,12 @@ public class TripRoutesGrid extends AbstractGridInterceptor {
 
   @Override
   public void afterCreatePresenter(final GridPresenter presenter) {
-    road.setTitle(Localized.getConstants().trGenerateRoute());
+    road.setTitle(Localized.dictionary().trGenerateRoute());
 
     road.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent clickEvent) {
-        Global.confirm(Localized.getConstants().trGenerateRoute(), new ConfirmationCallback() {
+        Global.confirm(Localized.dictionary().trGenerateRoute(), new ConfirmationCallback() {
           @Override
           public void onConfirm() {
             ParameterList args = TransportHandler.createArgs(SVC_GENERATE_ROUTE);

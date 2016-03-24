@@ -63,7 +63,7 @@ public class ImportDataForm extends AbstractFormInterceptor {
     Map<String, ImportProperty> props = new LinkedHashMap<>();
 
     for (ViewColumn col : Data.getDataInfo(viewName).getViewColumns()) {
-      if (col.isReadOnly() || !BeeUtils.unbox(col.getEditable())
+      if (col.isHidden() || col.isReadOnly() || !BeeUtils.unbox(col.getEditable())
           && BeeUtils.isPositive(col.getLevel())) {
         continue;
       }

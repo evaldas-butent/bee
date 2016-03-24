@@ -7,6 +7,7 @@ import com.google.gwt.user.client.ui.UIObject;
 
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.ui.HasIdentity;
+import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.menu.MenuConstants.ItemType;
@@ -181,6 +182,8 @@ public class MenuItem extends UIObject implements HasIdentity {
     addStyleDependentName(type.toString().toLowerCase());
 
     DomUtils.createId(this, getIdPrefix());
+
+    UiHelper.makePotentiallyBold(elem, text);
 
     setParentMenu(parent);
     setItemType(type);

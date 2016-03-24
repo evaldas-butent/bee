@@ -21,6 +21,7 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
+import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Edges;
 import com.butent.bee.client.dom.Rectangle;
@@ -252,7 +253,7 @@ final class ServiceCalendar extends TimeBoard {
 
   @Override
   public String getCaption() {
-    return Localized.getConstants().svcCalendar();
+    return Localized.dictionary().svcCalendar();
   }
 
   @Override
@@ -269,7 +270,7 @@ final class ServiceCalendar extends TimeBoard {
   public void handleAction(Action action) {
     switch (action) {
       case ADD:
-        RowFactory.createRow(VIEW_SERVICE_OBJECTS);
+        RowFactory.createRow(VIEW_SERVICE_OBJECTS, Modality.ENABLED);
         break;
 
       case EXPORT:
@@ -728,7 +729,7 @@ final class ServiceCalendar extends TimeBoard {
   private void doExport(String fileName, List<String> filterLabels) {
     List<TimeBoardRowLayout> boardLayout = doLayout();
     if (boardLayout.isEmpty()) {
-      BeeKeeper.getScreen().notifyWarning(Localized.getConstants().noData());
+      BeeKeeper.getScreen().notifyWarning(Localized.dictionary().noData());
       return;
     }
 
@@ -779,7 +780,7 @@ final class ServiceCalendar extends TimeBoard {
 
     row.add(new XCell(colIndex++, companyKind.getCaption(), headerStyleRef));
     if (separateObjects()) {
-      row.add(new XCell(colIndex++, Localized.getConstants().address(), headerStyleRef));
+      row.add(new XCell(colIndex++, Localized.dictionary().address(), headerStyleRef));
     }
 
     XStyle dayStyle = XStyle.center();
@@ -860,7 +861,7 @@ final class ServiceCalendar extends TimeBoard {
 
   private void export() {
     if (!hasContent()) {
-      BeeKeeper.getScreen().notifyWarning(Localized.getConstants().noData());
+      BeeKeeper.getScreen().notifyWarning(Localized.dictionary().noData());
       return;
     }
 

@@ -1,7 +1,6 @@
 package com.butent.bee.shared.modules.trade;
 
-import com.butent.bee.shared.i18n.LocalizableConstants;
-import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.ui.HasLocalizedCaption;
 import com.butent.bee.shared.utils.EnumUtils;
 
@@ -10,31 +9,27 @@ public final class TradeConstants {
   public enum OperationType implements HasLocalizedCaption {
     PURCHASE {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.trdTypePurchase();
       }
     },
     SALE {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.trdTypeSale();
       }
     },
     TRANSFER {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.trdTypeTransfer();
       }
     };
-
-    @Override
-    public String getCaption() {
-      return getCaption(Localized.getConstants());
-    }
   }
 
   public static void register() {
     EnumUtils.register(OperationType.class);
+    EnumUtils.register(TradeDocumentStatus.class);
   }
 
   public static final String PRM_ERP_REFRESH_INTERVAL = "ERPRefreshIntervalInMinutes";
@@ -43,6 +38,9 @@ public final class TradeConstants {
   public static final String SVC_CREDIT_INFO = "CreditInfo";
   public static final String SVC_GET_DOCUMENT_DATA = "getTradeDocumentData";
   public static final String SVC_SEND_TO_ERP = "SendToERP";
+
+  public static final String SVC_GET_DOCUMENT_TYPE_CAPTION_AND_FILTER =
+      "getTradeDocumentTypeCaptionAndFilter";
 
   public static final String TBL_PURCHASES = "Purchases";
   public static final String TBL_PURCHASE_USAGE = "PurchaseUsage";
@@ -55,6 +53,12 @@ public final class TradeConstants {
   public static final String TBL_TRADE_SERIES = "TradeSeries";
   public static final String TBL_TRADE_STATUSES = "TradeStatuses";
 
+  public static final String TBL_TRADE_DOCUMENTS = "TradeDocuments";
+  public static final String TBL_TRADE_DOCUMENT_ITEMS = "TradeDocumentItems";
+
+  public static final String TBL_TRADE_TYPE_OPERATIONS = "TradeTypeOperations";
+  public static final String TBL_TRADE_TYPE_TAGS = "TradeTypeTags";
+
   public static final String VAR_VIEW_NAME = "view_name";
   public static final String VAR_ID_LIST = "IdList";
 
@@ -65,13 +69,20 @@ public final class TradeConstants {
   public static final String VIEW_PURCHASE_ITEMS = "PurchaseItems";
   public static final String VIEW_SALES = "Sales";
   public static final String VIEW_SALE_ITEMS = "SaleItems";
+  public static final String VIEW_SALE_FILES = "SaleFiles";
 
   public static final String VIEW_TRADE_NOTES = "TradeNotes";
   public static final String VIEW_TRADE_OPERATIONS = "TradeOperations";
   public static final String VIEW_TRADE_SERIES = "TradeSeries";
   public static final String VIEW_TRADE_STATUSES = "TradeStatuses";
+  public static final String VIEW_TRADE_TAGS = "TradeTags";
 
   public static final String VIEW_SERIES_MANAGERS = "SeriesManagers";
+
+  public static final String VIEW_TRADE_DOCUMENTS = "TradeDocuments";
+  public static final String VIEW_TRADE_DOCUMENT_ITEMS = "TradeDocumentItems";
+  public static final String VIEW_TRADE_DOCUMENT_TYPES = "TradeDocumentTypes";
+  public static final String VIEW_TRADE_DOCUMENT_TAGS = "TradeDocumentTags";
 
   public static final String COL_PURCHASE = "Purchase";
   public static final String COL_PURCHASE_WAREHOUSE_TO = "WarehouseTo";
@@ -127,6 +138,14 @@ public final class TradeConstants {
   public static final String COL_STATUS_NAME = "StatusName";
   public static final String COL_STATUS_ACTIVE = "StatusActive";
 
+  public static final String COL_TRADE_DOCUMENT_STATUS = "Status";
+  public static final String COL_TRADE_DOCUMENT = "TradeDocument";
+
+  public static final String COL_DOCUMENT_TYPE_NAME = "DocumentTypeName";
+  public static final String COL_DOCUMENT_TYPE = "DocumentType";
+
+  public static final String COL_TRADE_TAG = "TradeTag";
+
   public static final String ALS_CUSTOMER_NAME = "CustomerName";
   public static final String ALS_SUPPLIER_NAME = "SupplierName";
 
@@ -141,11 +160,18 @@ public final class TradeConstants {
 
   public static final String GRID_TRADE_OPERATIONS = "TradeOperations";
   public static final String GRID_TRADE_STATUSES = "TradeStatuses";
+  public static final String GRID_TRADE_TAGS = "TradeTags";
 
   public static final String GRID_SERIES_MANAGERS = "SeriesManagers";
 
+  public static final String GRID_TRADE_DOCUMENTS = "TradeDocuments";
+  public static final String GRID_TRADE_DOCUMENT_ITEMS = "TradeDocumentItems";
+  public static final String GRID_TRADE_DOCUMENT_FILES = "TradeDocumentFiles";
+
   public static final String FORM_SALES_INVOICE = "SalesInvoice";
   public static final String FORM_PRINT_SALES_INVOICE = "PrintSalesInvoice";
+
+  public static final String FORM_TRADE_DOCUMENT = "TradeDocument";
 
   private TradeConstants() {
   }

@@ -146,9 +146,9 @@ class WorkScheduleEditor extends AbstractFormInterceptor {
 
       String message;
       if (tr || tc || fr || to || du) {
-        message = Localized.getConstants().error();
+        message = Localized.dictionary().error();
       } else {
-        message = Localized.getConstants().allValuesCannotBeEmpty();
+        message = Localized.dictionary().allValuesCannotBeEmpty();
       }
 
       event.getCallback().onFailure(message);

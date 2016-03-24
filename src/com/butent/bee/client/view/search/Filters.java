@@ -355,7 +355,7 @@ public class Filters implements HasExtendedInfo {
       final long id = item.getId();
 
       final Initial initial = new Initial(STYLE_INITIAL, id, item.isInitial());
-      initial.setTitle(Localized.getConstants().initialFilter());
+      initial.setTitle(Localized.dictionary().initialFilter());
 
       initial.addClickHandler(new ClickHandler() {
         @Override
@@ -393,7 +393,7 @@ public class Filters implements HasExtendedInfo {
       if (item.isEditable()) {
         Image edit = new Image(Global.getImages().silverEdit());
         edit.addStyleName(STYLE_EDIT);
-        edit.setTitle(Localized.getConstants().actionRenameFilter());
+        edit.setTitle(Localized.dictionary().actionRenameFilter());
 
         edit.addClickHandler(new ClickHandler() {
           @Override
@@ -401,7 +401,7 @@ public class Filters implements HasExtendedInfo {
             final Item editItem = getItem(items, id);
             final String oldLabel = normalizeLabel(Localized.maybeTranslate(editItem.getLabel()));
 
-            Global.inputString(Localized.getConstants().actionRenameFilter(), null,
+            Global.inputString(Localized.dictionary().actionRenameFilter(), null,
                 new StringCallback() {
                   @Override
                   public void onSuccess(String newValue) {
@@ -426,17 +426,17 @@ public class Filters implements HasExtendedInfo {
 
       if (item.isRemovable()) {
         Image delete = new Image(Global.getImages().silverMinus());
-        delete.setTitle(Localized.getConstants().actionRemove());
+        delete.setTitle(Localized.dictionary().actionRemove());
 
         delete.addClickHandler(new ClickHandler() {
           @Override
           public void onClick(ClickEvent event) {
             final Item delItem = getItem(items, id);
             List<String> messages =
-                Lists.newArrayList(Localized.getConstants().actionDeleteFilter(),
+                Lists.newArrayList(Localized.dictionary().actionDeleteFilter(),
                     BeeUtils.joinWords(delItem.getLabel(), "?"));
 
-            Global.confirmDelete(Localized.getConstants().filterRemove(), Icon.WARNING, messages,
+            Global.confirmDelete(Localized.dictionary().filterRemove(), Icon.WARNING, messages,
                 new ConfirmationCallback() {
                   @Override
                   public void onConfirm() {

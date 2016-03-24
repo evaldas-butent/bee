@@ -122,13 +122,13 @@ public abstract class ReportItem implements BeeSerializable {
       }
     }
     if (other) {
-      options.add(Localized.getConstants().expression() + "...");
+      options.add(Localized.dictionary().expression() + "...");
     }
     if (number) {
-      options.add(Localized.getConstants().formula() + "...");
+      options.add(Localized.dictionary().formula() + "...");
 
       if (!other) {
-        options.add(Localized.getConstants().constant() + "...");
+        options.add(Localized.dictionary().constant() + "...");
       }
     }
     Global.choice(null, null, options, new ChoiceCallback() {
@@ -139,9 +139,9 @@ public abstract class ReportItem implements BeeSerializable {
         } else {
           final ReportItem item;
 
-          if (options.get(value).equals(Localized.getConstants().formula() + "...")) {
+          if (options.get(value).equals(Localized.dictionary().formula() + "...")) {
             item = new ReportFormulaItem(null);
-          } else if (options.get(value).equals(Localized.getConstants().constant() + "...")) {
+          } else if (options.get(value).equals(Localized.dictionary().constant() + "...")) {
             item = new ReportConstantItem(null, null);
           } else {
             item = new ReportExpressionItem(null);
@@ -177,13 +177,13 @@ public abstract class ReportItem implements BeeSerializable {
     final InputText cap = new InputText();
     cap.setValue(getCaption());
 
-    table.setText(c, 0, Localized.getConstants().name());
+    table.setText(c, 0, Localized.dictionary().name());
     table.setWidget(c++, 1, cap);
 
     Widget expr = getExpressionWidget(report);
 
     if (expr != null) {
-      table.setText(c, 0, Localized.getConstants().expression());
+      table.setText(c, 0, Localized.dictionary().expression());
       table.setWidget(c++, 1, expr);
     }
 

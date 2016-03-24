@@ -40,7 +40,7 @@ class StarFilterSupplier extends AbstractFilterSupplier {
 
   @Override
   public String getLabel() {
-    return isStarred() ? Localized.getConstants().crmTaskFilterStarred() : null;
+    return isStarred() ? Localized.dictionary().crmTaskFilterStarred() : null;
   }
 
   @Override
@@ -73,7 +73,7 @@ class StarFilterSupplier extends AbstractFilterSupplier {
     Flow container = new Flow();
     container.addStyleName(getStylePrefix() + "container");
 
-    Button star = new Button(Localized.getConstants().crmTaskFilterStarred());
+    Button star = new Button(Localized.dictionary().crmTaskFilterStarred());
     star.addStyleName(getStylePrefix() + "starred");
 
     star.addClickHandler(new ClickHandler() {
@@ -87,7 +87,7 @@ class StarFilterSupplier extends AbstractFilterSupplier {
 
     container.add(star);
 
-    Button all = new Button(Localized.getConstants().crmTaskFilterAll());
+    Button all = new Button(Localized.dictionary().crmTaskFilterAll());
     all.addStyleName(getStylePrefix() + "all");
 
     all.addClickHandler(new ClickHandler() {
@@ -101,7 +101,7 @@ class StarFilterSupplier extends AbstractFilterSupplier {
 
     container.add(all);
 
-    Button cancel = new Button(Localized.getConstants().cancel());
+    Button cancel = new Button(Localized.dictionary().cancel());
     cancel.addStyleName(getStylePrefix() + "cancel");
 
     cancel.addClickHandler(new ClickHandler() {

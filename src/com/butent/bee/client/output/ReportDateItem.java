@@ -135,7 +135,7 @@ public class ReportDateItem extends ReportItem {
 
   @Override
   public String getOptionsCaption() {
-    return Localized.getConstants().dateFormat();
+    return Localized.dictionary().dateFormat();
   }
 
   @Override
@@ -396,7 +396,7 @@ public class ReportDateItem extends ReportItem {
         for (Operator o : operators) {
           options.add(o.toTextString());
         }
-        Global.choice(Localized.getConstants().operator(), null, options, new ChoiceCallback() {
+        Global.choice(Localized.dictionary().operator(), null, options, new ChoiceCallback() {
           @Override
           public void onSuccess(int value) {
             filterOperator = operators.get(value);

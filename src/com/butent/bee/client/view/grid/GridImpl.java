@@ -6,6 +6,7 @@ import com.google.common.collect.Lists;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.shared.HandlerRegistration;
+import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.Event.NativePreviewEvent;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -36,6 +37,7 @@ import com.butent.bee.client.event.logical.SummaryChangeEvent;
 import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.ColumnHeader;
 import com.butent.bee.client.grid.GridFactory;
+import com.butent.bee.client.grid.GridFactory.GridOptions;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.grid.cell.AbstractCell;
 import com.butent.bee.client.grid.cell.ActionCell;
@@ -98,6 +100,7 @@ import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.view.search.AbstractFilterSupplier;
 import com.butent.bee.client.view.search.FilterSupplierFactory;
+import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -123,10 +126,12 @@ import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
+import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogLevel;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.Captions;
 import com.butent.bee.shared.ui.CellType;
@@ -192,6 +197,12 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
   private static final BeeLogger logger = LogUtils.getLogger(GridImpl.class);
 
   private static final String STYLE_NAME = BeeConst.CSS_CLASS_PREFIX + "GridView";
+  private static final String STYLE_SPINNER = BeeConst.CSS_CLASS_PREFIX + "Grid-Spinner";
+
+  private static Widget createSpinner() {
+    FaLabel widget = new FaLabel(FontAwesome.SPINNER, STYLE_SPINNER);
+    return widget;
+  }
 
   private static boolean isColumnReadOnly(String viewName, String source,
       ColumnDescription columnDescription) {
@@ -307,9 +318,11 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
 
   private boolean summarize;
 
+  private final Feed feed;
+
   public GridImpl(GridDescription gridDescription, String gridKey,
       List<BeeColumn> dataColumns, String relColumn,
-      Collection<UiOption> uiOptions, GridInterceptor gridInterceptor) {
+      Collection<UiOption> uiOptions, GridInterceptor gridInterceptor, GridOptions gridOptions) {
 
     super();
     addStyleName(STYLE_NAME);
@@ -330,6 +343,8 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     this.relColumn = relColumn;
 
     this.gridInterceptor = gridInterceptor;
+
+    this.feed = gridOptions == null ? null : gridOptions.getFeed();
   }
 
   @Override
@@ -441,7 +456,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
         label = Localized.getLabel(dataColumns.get(index));
       } else if (colType == ColType.ID
           || !BeeUtils.isEmpty(source) && BeeUtils.same(source, gridDescription.getIdName())) {
-        label = Localized.getConstants().captionId();
+        label = Localized.dictionary().captionId();
       }
     }
 
@@ -473,7 +488,8 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
 
       case PROPERTY:
         String property = BeeUtils.notEmpty(cd.getProperty(), columnId);
-        cellSource = CellSource.forProperty(property, cd.getValueType());
+        cellSource = CellSource.forProperty(property,
+            BeeKeeper.getUser().idOrNull(cd.getUserMode()), cd.getValueType());
 
         if (cd.getPrecision() != null) {
           cellSource.setPrecision(cd.getPrecision());
@@ -560,7 +576,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
         column = new SelectionColumn(getGrid());
         source = null;
         if (BeeUtils.isEmpty(label)) {
-          label = Localized.getConstants().selectionColumnLabel();
+          label = Localized.dictionary().selectionColumnLabel();
         }
         break;
 
@@ -612,8 +628,15 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
       } else {
         Format.setFormat(column, column.getValueType(), cd.getFormat());
       }
+
     } else if (BeeUtils.isNonNegative(cd.getScale()) && (column instanceof HasNumberFormat)) {
-      ((HasNumberFormat) column).setNumberFormat(Format.getDecimalFormat(cd.getScale()));
+      NumberFormat nf;
+      if (cellSource != null && cellSource.getScale() > cd.getScale()) {
+        nf = Format.getDecimalFormat(cd.getScale(), cellSource.getScale());
+      } else {
+        nf = Format.getDecimalFormat(cd.getScale());
+      }
+      ((HasNumberFormat) column).setNumberFormat(nf);
     }
 
     if (!BeeUtils.isEmpty(cd.getHorAlign())) {
@@ -627,12 +650,12 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     if (verticalAlign == null && renderer != null) {
       verticalAlign = renderer.getDefaultVerticalAlign();
     }
-    if (verticalAlign == null
-        && (cellType == CellType.HTML
-        || cellSource != null && cellSource.isText())) {
-      verticalAlign = VerticalAlign.TOP;
-    } else {
-      verticalAlign = VerticalAlign.MIDDLE;
+    if (verticalAlign == null) {
+      if (cellType == CellType.HTML || cellSource != null && cellSource.isText()) {
+        verticalAlign = VerticalAlign.TOP;
+      } else {
+        verticalAlign = VerticalAlign.MIDDLE;
+      }
     }
     column.setVerticalAlign(verticalAlign);
 
@@ -825,6 +848,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     initOrder(order);
 
     add(getGrid());
+    add(createSpinner());
     add(getNotification());
 
     setEditMode(BeeUtils.unbox(gridDescription.getEditMode()));
@@ -1312,7 +1336,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     }
 
     if (!ok && notificationListener != null) {
-      notificationListener.notifyWarning(Localized.getConstants().rowIsReadOnly());
+      notificationListener.notifyWarning(Localized.dictionary().rowIsReadOnly());
     }
     return ok;
   }
@@ -1364,9 +1388,25 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
       }
 
       if (event.getKeyCode() != null) {
-        int keyCode = BeeUtils.unbox(event.getKeyCode());
-        if (BeeUtils.inList(keyCode, KeyCodes.KEY_TAB, KeyCodes.KEY_UP, KeyCodes.KEY_DOWN)) {
-          getGrid().handleKeyboardNavigation(keyCode, event.hasModifiers());
+        int keyCode;
+
+        switch (BeeUtils.unbox(event.getKeyCode())) {
+          case KeyCodes.KEY_ENTER:
+          case KeyCodes.KEY_TAB:
+            keyCode = event.hasModifiers() ? KeyCodes.KEY_LEFT : KeyCodes.KEY_RIGHT;
+            break;
+
+          case KeyCodes.KEY_UP:
+          case KeyCodes.KEY_DOWN:
+            keyCode = event.getKeyCode();
+            break;
+
+          default:
+            keyCode = BeeConst.UNDEF;
+        }
+
+        if (!BeeConst.isUndef(keyCode)) {
+          getGrid().handleKeyboardNavigation(keyCode, false);
         }
       }
     }
@@ -1426,6 +1466,13 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
 
       if (!event.canceled() && getViewPresenter() != null) {
         DynamicColumnFactory.checkRightsColumns(getViewPresenter(), this, event);
+      }
+
+      if (!event.canceled() && !event.dataChanged()
+          && BeeUtils.isTrue(getGridDescription().getAutoFlex())) {
+
+        getGrid().estimateColumnWidths(false);
+        getGrid().doFlexLayout();
       }
 
     } else if (event.isAfter() && getState() == null) {
@@ -1742,6 +1789,11 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     showForm(true, false);
     fireEvent(new EditFormEvent(State.CLOSED, showEditPopup()));
 
+    if (feed != null) {
+      getGrid().getRowData().remove(getActiveRow());
+      getGrid().refresh();
+    }
+
     maybeResizeGrid();
     getGrid().refocus();
   }
@@ -2009,7 +2061,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
           }
         });
 
-    form.setCaption(Localized.getConstants().actionNew());
+    form.setCaption(Localized.dictionary().actionNew());
 
     embraceNewRowForm(form);
   }
@@ -2727,8 +2779,8 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     }
 
     if (columns.isEmpty()) {
-      callback.onFailure(getViewName(), Localized.getConstants().newRow(),
-          Localized.getConstants().allValuesCannotBeEmpty());
+      callback.onFailure(getViewName(), Localized.dictionary().newRow(),
+          Localized.dictionary().allValuesCannotBeEmpty());
       return;
     }
 

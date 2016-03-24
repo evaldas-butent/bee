@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-  name="AssessmentTransportations" source="Trips" filter="!(AssessmentForwarder) AND Assessment"
+  name="AssessmentTransportations" source="Trips" caption="=trAssessmentTransportations"
+      filter="!(AssessmentForwarder) AND Assessment"
   >
   <Columns>
     <IdColumn name="ID" />
@@ -27,7 +28,7 @@
     <ExternalJoin name="Trip" source="AssessmentForwarders" joinType="LEFT">
       <HiddenColumn name="Trip" alias="AssessmentForwarder" />
     </ExternalJoin>
-    
+
     <ExternalJoin name="Trip" source="CargoTrips" joinType="LEFT">
       <SimpleJoin name="Cargo" joinType="LEFT">
         <ExternalJoin name="Cargo" source="Assessments" joinType="LEFT">

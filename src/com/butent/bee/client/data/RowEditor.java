@@ -148,7 +148,7 @@ public final class RowEditor {
     Assert.notNull(row);
     Assert.notNull(opener);
 
-    if (!RowActionEvent.fireEditRow(dataInfo.getViewName(), row)) {
+    if (!RowActionEvent.fireEditRow(dataInfo.getViewName(), row, opener)) {
       return;
     }
 
@@ -325,6 +325,10 @@ public final class RowEditor {
             } else {
               Printer.print(formView);
             }
+            break;
+
+          case BOOKMARK:
+            formView.bookmark();
             break;
 
           default:

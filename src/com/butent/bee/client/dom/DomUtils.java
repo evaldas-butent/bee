@@ -62,6 +62,7 @@ public final class DomUtils {
   public static final String ATTRIBUTE_DATA_ROW = Attributes.DATA_PREFIX + "row";
   public static final String ATTRIBUTE_ROLE = Attributes.DATA_PREFIX + "role";
   public static final String ATTRIBUTE_DATA_SIZE = Attributes.DATA_PREFIX + "size";
+  public static final String ATTRIBUTE_DATA_TEXT = Attributes.DATA_PREFIX + "text";
 
   public static final String VALUE_TRUE = "true";
 
@@ -861,18 +862,6 @@ public final class DomUtils {
     } else {
       return null;
     }
-  }
-
-  public static int getParentClientHeight(Widget widget) {
-    Assert.notNull(widget);
-    Assert.notNull(widget.getParent(), "Widget is orphan");
-    return widget.getParent().getElement().getClientHeight();
-  }
-
-  public static int getParentClientWidth(Widget widget) {
-    Assert.notNull(widget);
-    Assert.notNull(widget.getParent(), "Widget is orphan");
-    return widget.getParent().getElement().getClientWidth();
   }
 
   public static Element getParentElement(Element child, Collection<String> tagNames, boolean incl) {
@@ -1759,6 +1748,16 @@ public final class DomUtils {
   public static void setDataSize(Element elem, int size) {
     Assert.notNull(elem);
     elem.setAttribute(ATTRIBUTE_DATA_SIZE, Integer.toString(size));
+  }
+
+  public static void setDataText(Element elem, String text) {
+    Assert.notNull(elem);
+
+    if (text == null) {
+      elem.removeAttribute(ATTRIBUTE_DATA_TEXT);
+    } else {
+      elem.setAttribute(ATTRIBUTE_DATA_TEXT, text);
+    }
   }
 
   public static void setDraggable(Element elem) {

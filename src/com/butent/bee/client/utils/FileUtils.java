@@ -8,6 +8,7 @@ import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.http.client.RequestBuilder;
 import com.google.gwt.http.client.Response;
 import com.google.gwt.http.client.URL;
+import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
@@ -50,6 +51,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import elemental.client.Browser;
 import elemental.events.Event;
@@ -117,6 +119,7 @@ public final class FileUtils {
     }
   }
 
+  @Deprecated
   public static void deletePhoto(final String photoFileName, final Callback<String> callback) {
     Assert.notEmpty(photoFileName);
 
@@ -190,7 +193,7 @@ public final class FileUtils {
     String name = BeeUtils.notEmpty(fileInfo.getCaption(), fileInfo.getName());
 
     simple.setWidget(new Link(BeeUtils.notEmpty(ArrayUtils.joinWords(caption), name),
-        getUrl(fileInfo.getId()) + "/" + URL.encode(name)));
+        getUrl(fileInfo.getId(), name)));
 
     DndHelper.makeSource(simple, NameUtils.getClassName(FileInfo.class), fileInfo, null);
 
@@ -214,21 +217,14 @@ public final class FileUtils {
         + (DataUtils.isId(fileId) ? "/" + BeeUtils.toString(fileId) : "");
   }
 
-  public static String getUrl(String fileName, Long fileId) {
-    Assert.notEmpty(fileName);
-    return getUrl(fileId) + "/" + URL.encode(fileName);
-  }
-
-  public static String getUrl(String fileName, String filePath) {
-    Assert.notEmpty(filePath);
-    return getUrl(fileName, (Long) null) + "/" + Codec.encodeBase64(filePath);
+  public static String getUrl(Long fileId, String fileName) {
+    return getUrl(fileId) + "/" + URL.encodePathSegment(Assert.notEmpty(fileName));
   }
 
   public static String getUrl(String fileName, Map<Long, String> files) {
-    Assert.notEmpty(files);
-    return CommUtils.addQueryString(getUrl(fileName, (Long) null),
-        CommUtils.buildQueryString(Collections.singletonMap(Service.VAR_FILES,
-            Codec.beeSerialize(files)), true));
+    return CommUtils.getPath(getUrl((Long) null, fileName),
+        Collections.singletonMap(Service.VAR_FILES, Codec.beeSerialize(Assert.notEmpty(files))),
+        true);
   }
 
   public static void readAsDataURL(File file, final Consumer<String> consumer) {
@@ -338,6 +334,7 @@ public final class FileUtils {
     }
   }
 
+  @Deprecated
   public static void uploadPhoto(NewFileInfo fileInfo, final String photoFileName, String oldPhoto,
       final Callback<String> callback) {
 
@@ -481,7 +478,8 @@ public final class FileUtils {
     final String progressId = maybeCreateProgress(fileName, fileSize);
 
     final XMLHttpRequest xhr = RpcUtils.createXhr();
-    xhr.open(RequestBuilder.POST.toString(), getUploadUrl(parameters), true);
+    xhr.open(RequestBuilder.POST.toString(), Objects.equals(srv, Service.UPLOAD_FILE)
+        ? getUrl((Long) null, fileName) : getUploadUrl(parameters), true);
 
     RpcUtils.addSessionId(xhr);
 
@@ -494,13 +492,26 @@ public final class FileUtils {
         String msg = BeeUtils.joinWords("upload", fileName, "response status:");
 
         if (xhr.getStatus() == Response.SC_OK) {
-          ResponseObject resp = ResponseObject.restore(xhr.getResponseText());
+          String response = xhr.getResponseText();
 
-          if (!resp.hasErrors()) {
-            callback.onSuccess(resp.getResponseAsString());
-            return;
+          if (JsonUtils.isJson(response)) {
+            JSONObject json = JsonUtils.parseObject(response);
+            JSONObject status = (JSONObject) json.get("Status");
+
+            if (BeeUtils.toBoolean(JsonUtils.toString(status.get("Success")))) {
+              callback.onSuccess(JsonUtils.toString(json.get("Result")));
+              return;
+            }
+            msg = BeeUtils.joinWords(msg, status.toString());
+          } else {
+            ResponseObject resp = ResponseObject.restore(response);
+
+            if (!resp.hasErrors()) {
+              callback.onSuccess(resp.getResponseAsString());
+              return;
+            }
+            msg = BeeUtils.joinWords(msg, resp.getErrors());
           }
-          msg = BeeUtils.joinWords(msg, resp.getErrors());
         } else {
           msg = BeeUtils.joinWords(msg, BeeUtils.bracket(xhr.getStatus()), xhr.getStatusText());
         }
@@ -512,22 +523,22 @@ public final class FileUtils {
     xhr.send(fileInfo.getNewFile());
   }
 
-  public static List<FileInfo> validateFileSize(Collection<? extends FileInfo> input,
+  public static <T extends FileInfo> List<T> validateFileSize(Collection<T> input,
       long maxSize, NotificationListener notificationListener) {
 
-    List<FileInfo> result = new ArrayList<>();
+    List<T> result = new ArrayList<>();
     if (BeeUtils.isEmpty(input)) {
       return result;
     }
 
     List<String> errors = new ArrayList<>();
 
-    for (FileInfo fileInfo : input) {
+    for (T fileInfo : input) {
       long size = fileInfo.getSize();
 
       if (size > maxSize) {
         errors.add(BeeUtils.join(BeeConst.STRING_COLON + BeeConst.STRING_SPACE, fileInfo.getName(),
-            Localized.getMessages().fileSizeExceeded(size, maxSize)));
+            Localized.dictionary().fileSizeExceeded(size, maxSize)));
       } else {
         result.add(fileInfo);
       }

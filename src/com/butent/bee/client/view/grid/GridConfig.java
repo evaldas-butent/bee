@@ -60,6 +60,7 @@ class GridConfig {
   private static int footerMarginIndex;
 
   private static int autoFitIndex;
+  private static int autoFlexIndex;
 
   private static int minColumnWidthIndex;
 
@@ -107,6 +108,7 @@ class GridConfig {
       footerMarginIndex = GridUtils.getIndex(names, "FooterMargin");
 
       autoFitIndex = GridUtils.getIndex(names, "AutoFit");
+      autoFlexIndex = GridUtils.getIndex(names, "AutoFlex");
       minColumnWidthIndex = GridUtils.getIndex(names, "MinColumnWidth");
       maxColumnWidthIndex = GridUtils.getIndex(names, "MaxColumnWidth");
 
@@ -230,6 +232,11 @@ class GridConfig {
     Boolean autoFit = getAutoFit();
     if (BeeUtils.isTrue(autoFit)) {
       gridDescription.setAutoFit(BeeConst.STRING_TRUE);
+    }
+
+    Boolean autoFlex = getAutoFlex();
+    if (BeeUtils.isTrue(autoFlex)) {
+      gridDescription.setAutoFlex(true);
     }
 
     Integer minColumnWidth = getMinColumnWidth();
@@ -365,7 +372,7 @@ class GridConfig {
         && getFooterHeight() == null && getFooterStyle() == null
         && getFooterFont() == null && getFooterPadding() == null
         && getFooterBorderWidth() == null && getFooterMargin() == null
-        && getAutoFit() == null
+        && getAutoFit() == null && getAutoFlex() == null
         && getMinColumnWidth() == null && getMaxColumnWidth() == null
         && getFlexGrow() == null && getFlexShrink() == null
         && getFlexBasis() == null && getFlexBasisUnit() == null;
@@ -454,6 +461,11 @@ class GridConfig {
   private Boolean getAutoFit() {
     ensureFields();
     return row.getBoolean(autoFitIndex);
+  }
+
+  private Boolean getAutoFlex() {
+    ensureFields();
+    return row.getBoolean(autoFlexIndex);
   }
 
   private String getBodyBorderWidth() {

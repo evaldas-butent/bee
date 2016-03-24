@@ -73,7 +73,7 @@ public class CartList extends HtmlTable implements ValueChangeHandler<Boolean> {
         sb.append(BeeConst.CHAR_EOL);
       }
 
-      sb.append(Localized.getConstants().ecShoppingCartTotal()).append(BeeConst.CHAR_SPACE);
+      sb.append(Localized.dictionary().ecShoppingCartTotal()).append(BeeConst.CHAR_SPACE);
       sb.append(EcUtils.formatCents(cart.totalCents())).append(BeeConst.CHAR_SPACE);
       sb.append(EcConstants.CURRENCY);
 
@@ -130,7 +130,7 @@ public class CartList extends HtmlTable implements ValueChangeHandler<Boolean> {
     CartItem cartItem = carts.get(cartType).add(ecItem, quantity);
 
     if (cartItem != null) {
-      BeeKeeper.getScreen().notifyInfo(Localized.getMessages()
+      BeeKeeper.getScreen().notifyInfo(Localized.dictionary()
           .ecUpdateCartItem(cartType.getCaption(), ecItem.getName(), cartItem.getQuantity()));
 
       refresh(cartType);
@@ -197,7 +197,7 @@ public class CartList extends HtmlTable implements ValueChangeHandler<Boolean> {
 
   public boolean removeFromCart(CartType cartType, EcItem ecItem) {
     if (cartType != null && carts.get(cartType).remove(ecItem)) {
-      BeeKeeper.getScreen().notifyInfo(Localized.getMessages()
+      BeeKeeper.getScreen().notifyInfo(Localized.dictionary()
           .ecRemoveCartItem(cartType.getCaption(), ecItem.getName()));
 
       refresh(cartType);

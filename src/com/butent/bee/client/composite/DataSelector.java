@@ -426,9 +426,8 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     private Boolean pendingSelection;
 
     private Selector(ItemType itemType, Element partner, String selectorClass) {
-      this.menu = new MenuBar(MenuConstants.ROOT_MENU_INDEX, true, BarType.TABLE, itemType);
-
-      menu.addStyleName(STYLE_MENU);
+      this.menu = new MenuBar(MenuConstants.ROOT_MENU_INDEX, true, BarType.TABLE, itemType,
+          STYLE_MENU);
 
       this.popup = new Popup(OutsideClick.CLOSE, STYLE_POPUP);
       if (!BeeUtils.isEmpty(selectorClass)) {
@@ -795,7 +794,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
       int dataIndex = dataInfo.getColumnIndex(choiceColumns.get(0));
 
       if (BeeConst.isUndef(dataIndex)) {
-        cellSource = CellSource.forProperty(choiceColumns.get(0), ValueType.TEXT);
+        cellSource = CellSource.forProperty(choiceColumns.get(0), null, ValueType.TEXT);
       } else {
         dataColumn = dataInfo.getColumns().get(dataIndex);
         cellSource = CellSource.forColumn(dataColumn, dataIndex);
@@ -1394,6 +1393,10 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     }
   }
 
+  protected ValueType getValueType() {
+    return valueType;
+  }
+
   protected boolean hasValueSource() {
     return !BeeConst.isUndef(valueSourceIndex);
   }
@@ -1576,7 +1579,10 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     getInput().addStyleName(STYLE_WAITING);
     setWaiting(true);
 
-    getOracle().requestSuggestions(request, getCallback());
+    SelectorEvent event = SelectorEvent.fireRequest(this, request, getCallback());
+    if (!event.isConsumed()) {
+      getOracle().requestSuggestions(request, getCallback());
+    }
   }
 
   private void editRow() {
@@ -1732,7 +1738,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
 
         CellSource cellSource;
         if (BeeConst.isUndef(index)) {
-          cellSource = CellSource.forProperty(getChoiceColumns().get(i), ValueType.TEXT);
+          cellSource = CellSource.forProperty(getChoiceColumns().get(i), null, ValueType.TEXT);
         } else {
           cellSource = CellSource.forColumn(dataInfo.getColumns().get(index), index);
         }

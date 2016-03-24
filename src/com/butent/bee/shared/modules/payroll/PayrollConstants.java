@@ -1,7 +1,6 @@
 package com.butent.bee.shared.modules.payroll;
 
-import com.butent.bee.shared.i18n.LocalizableConstants;
-import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.ui.HasLocalizedCaption;
 import com.butent.bee.shared.utils.EnumUtils;
 
@@ -10,21 +9,16 @@ public final class PayrollConstants {
   public enum ObjectStatus implements HasLocalizedCaption {
     INACTIVE {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.objectStatusInactive();
       }
     },
     ACTIVE {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.objectStatusActive();
       }
     };
-
-    @Override
-    public String getCaption() {
-      return getCaption(Localized.getConstants());
-    }
   }
 
   public static final String SVC_GET_SCHEDULE_OVERLAP = "getScheduleOverlap";
@@ -42,6 +36,7 @@ public final class PayrollConstants {
 
   public static final String TBL_OBJECT_SALARY_FUND = "ObjectSalaryFund";
 
+  public static final String TBL_TIME_CARD_CODES = "TimeCardCodes";
   public static final String TBL_TIME_RANGES = "TimeRanges";
 
   public static final String VIEW_EMPLOYEES = "Employees";

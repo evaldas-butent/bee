@@ -6,15 +6,19 @@ import com.google.gwt.event.dom.client.HasClickHandlers;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.Widget;
 
+import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
+
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.MultiSelector;
+import com.butent.bee.client.event.logical.SelectorEvent;
+import com.butent.bee.client.event.logical.SelectorEvent.Handler;
 import com.butent.bee.client.grid.HtmlTable;
-import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory;
+import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.ViewCallback;
@@ -30,12 +34,16 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.SimpleRowSet;
+import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.modules.projects.ProjectConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.ui.HasWidgetSupplier;
 import com.butent.bee.shared.utils.BeeUtils;
+
+import java.util.List;
 
 public class TasksReportsInterceptor extends AbstractFormInterceptor {
 
@@ -98,6 +106,12 @@ public class TasksReportsInterceptor extends AbstractFormInterceptor {
 
       if (durationTId != null) {
         durationTId.clearValue();
+      }
+
+      MultiSelector projectId = (MultiSelector) form.getWidgetByName(WIDGET_PROJECT);
+
+      if (projectId != null) {
+        projectId.clearValue();
       }
     }
   }
@@ -179,6 +193,13 @@ public class TasksReportsInterceptor extends AbstractFormInterceptor {
         }
       }
 
+      MultiSelector projectId = (MultiSelector) form.getWidgetByName(WIDGET_PROJECT);
+
+      if (projectId != null) {
+        if (!BeeUtils.isEmpty(projectId.getValue())) {
+          params.addQueryItem(TaskConstants.VAR_TASK_PROJECT, projectId.getValue().trim());
+        }
+      }
       BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
 
         @Override
@@ -212,7 +233,7 @@ public class TasksReportsInterceptor extends AbstractFormInterceptor {
           HtmlTable g = new HtmlTable();
 
           if (gridRows < MIN_ROW_SET) {
-            g.setHtml(0, 0, Localized.getConstants().noData());
+            g.setHtml(0, 0, Localized.dictionary().noData());
             reportPanel.add(g);
             return;
           }
@@ -244,6 +265,7 @@ public class TasksReportsInterceptor extends AbstractFormInterceptor {
   private static final String WIDGET_CLEAR_FILTER_NAME = "ClearFilter";
   private static final String WIDGET_REPORT_TABLE_NAME = "reportTable";
   private static final String WIDGET_USER_NAME = "User";
+  private static final String WIDGET_PROJECT = "Project";
 
   private static final String WIDGET_COMPANY_NAME = "Company";
   private static final String WIDGET_DURATION_TYPE_NAME = "DurationType";
@@ -257,6 +279,9 @@ public class TasksReportsInterceptor extends AbstractFormInterceptor {
   private static final int MIN_ROW_SET = 3;
 
   private final ReportType reportType;
+  private MultiSelector companySelector;
+  private MultiSelector typeSelector;
+  private MultiSelector projectSelector;
 
   TasksReportsInterceptor(ReportType rt) {
     this.reportType = rt;
@@ -285,6 +310,18 @@ public class TasksReportsInterceptor extends AbstractFormInterceptor {
       ((HasClickHandlers) widget)
           .addClickHandler(new ClearReportsFilter());
     }
+    if (BeeUtils.same(name, WIDGET_COMPANY_NAME) && (widget instanceof MultiSelector)) {
+      companySelector = (MultiSelector) widget;
+      setCompanySelectorHandler();
+    }
+    if (BeeUtils.same(name, WIDGET_DURATION_TYPE_NAME) && (widget instanceof MultiSelector)) {
+      typeSelector = (MultiSelector) widget;
+      setTypeSelectorHandler();
+    }
+    if (BeeUtils.same(name, WIDGET_PROJECT) && (widget instanceof MultiSelector)) {
+      projectSelector = (MultiSelector) widget;
+      setProjectSelectorHandler();
+    }
   }
 
   @Override
@@ -305,16 +342,16 @@ public class TasksReportsInterceptor extends AbstractFormInterceptor {
 
     switch (reportType) {
       case TYPE_HOURS:
-        reportCaption = Localized.getConstants().hoursByTypes();
+        reportCaption = Localized.dictionary().hoursByTypes();
         break;
       case COMPANY_TIMES:
-        reportCaption = Localized.getConstants().hoursByCompanies();
+        reportCaption = Localized.dictionary().hoursByCompanies();
         break;
       case USERS_HOURS:
-        reportCaption = Localized.getConstants().hoursByUsers();
+        reportCaption = Localized.dictionary().hoursByUsers();
         break;
       default:
-        reportCaption = Localized.getConstants().hoursByTypes();
+        reportCaption = Localized.dictionary().hoursByTypes();
         break;
     }
 
@@ -324,5 +361,93 @@ public class TasksReportsInterceptor extends AbstractFormInterceptor {
       Button btn = (Button) widget;
       btn.click();
     }
+  }
+
+  private void setCompanySelectorHandler() {
+    companySelector.addSelectorHandler(new Handler() {
+
+      @Override
+      public void onDataSelector(SelectorEvent event) {
+        if (event.isOpened()) {
+
+          event.getSelector().setAdditionalFilter(null);
+          MultiSelector userSelector =
+              (MultiSelector) getFormView().getWidgetByName(WIDGET_USER_NAME);
+
+          List<Long> users = userSelector.getIds();
+
+          if (!BeeUtils.isEmpty(users)) {
+            Filter isUserFilter = Filter.any(COL_PUBLISHER, users);
+            Filter tymeDurationFilter = Filter.notNull(COL_EVENT_DURATION);
+            Filter filter =
+                Filter.in("TaskID", VIEW_TASK_DURATIONS, COL_TASK, Filter.and(
+                    isUserFilter, tymeDurationFilter));
+
+            Filter flt = Filter.in("CompanyID", VIEW_TASKS, COL_TASK_COMPANY, filter);
+
+            event.getSelector().setAdditionalFilter(flt);
+          }
+        }
+      }
+    });
+  }
+
+  private void setTypeSelectorHandler() {
+    typeSelector.addSelectorHandler(new Handler() {
+
+      @Override
+      public void onDataSelector(SelectorEvent event) {
+        if (event.isOpened()) {
+
+          event.getSelector().setAdditionalFilter(null);
+          MultiSelector userSelector =
+              (MultiSelector) getFormView().getWidgetByName(WIDGET_USER_NAME);
+
+          List<Long> users = userSelector.getIds();
+
+          if (!BeeUtils.isEmpty(users)) {
+            Filter isUserFilter = Filter.any(COL_PUBLISHER, users);
+            Filter tymeDurationFilter = Filter.notNull(COL_EVENT_DURATION);
+            Filter filter =
+                Filter.in("EventDurationID", VIEW_TASK_DURATIONS, COL_EVENT_DURATION, Filter.and(
+                    isUserFilter, tymeDurationFilter));
+
+            Filter flt =
+                Filter.in("DurationTypeID", TBL_EVENT_DURATIONS, COL_DURATION_TYPE, filter);
+
+            event.getSelector().setAdditionalFilter(flt);
+          }
+        }
+      }
+    });
+  }
+
+  private void setProjectSelectorHandler() {
+    projectSelector.addSelectorHandler(new Handler() {
+
+      @Override
+      public void onDataSelector(SelectorEvent event) {
+        if (event.isOpened()) {
+
+          event.getSelector().setAdditionalFilter(null);
+          MultiSelector userSelector =
+              (MultiSelector) getFormView().getWidgetByName(WIDGET_USER_NAME);
+
+          List<Long> users = userSelector.getIds();
+
+          if (!BeeUtils.isEmpty(users)) {
+            Filter isUserFilter = Filter.any(COL_PUBLISHER, users);
+            Filter tymeDurationFilter = Filter.notNull(COL_EVENT_DURATION);
+            Filter filter =
+                Filter.in("TaskID", VIEW_TASK_DURATIONS, COL_TASK, Filter.and(
+                    isUserFilter, tymeDurationFilter));
+
+            Filter flt = Filter.in("ProjectID", VIEW_TASKS, ProjectConstants.COL_PROJECT, filter);
+
+            event.getSelector().setAdditionalFilter(flt);
+          }
+        }
+      }
+    });
   }
 }

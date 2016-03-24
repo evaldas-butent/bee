@@ -167,6 +167,9 @@ public final class StyleUtils {
   public static final String NAME_RESIZABLE = BeeConst.CSS_CLASS_PREFIX + "resizable";
   public static final String NAME_FOCUSABLE = BeeConst.CSS_CLASS_PREFIX + "focusable";
   public static final String NAME_DISABLED = BeeConst.CSS_CLASS_PREFIX + SUFFIX_DISABLED;
+  public static final String NAME_LOADING = BeeConst.CSS_CLASS_PREFIX + "loading";
+  public static final String NAME_POTENTIALLY_BOLD = BeeConst.CSS_CLASS_PREFIX + "potentially-bold";
+  public static final String NAME_EMPTY = BeeConst.CSS_CLASS_PREFIX + "empty";
 
   public static final String NAME_TEXT_BOX = BeeConst.CSS_CLASS_PREFIX + "TextBox";
   public static final String NAME_FORM = BeeConst.CSS_CLASS_PREFIX + "Form";
@@ -1577,6 +1580,20 @@ public final class StyleUtils {
   public static void setDisplay(UIObject obj, Display value) {
     Assert.notNull(obj);
     setDisplay(obj.getElement(), value);
+  }
+
+  public static void setEmptiness(Element el, boolean empty) {
+    Assert.notNull(el);
+    if (empty) {
+      el.addClassName(NAME_EMPTY);
+    } else {
+      el.removeClassName(NAME_EMPTY);
+    }
+  }
+
+  public static void setEmptiness(UIObject obj, boolean empty) {
+    Assert.notNull(obj);
+    setEmptiness(obj.getElement(), empty);
   }
 
   public static void setFontFamily(Element el, String family) {

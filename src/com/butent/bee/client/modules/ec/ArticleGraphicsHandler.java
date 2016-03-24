@@ -99,7 +99,7 @@ class ArticleGraphicsHandler extends AbstractGridInterceptor {
       collector = FileCollector.headless(new Consumer<Collection<? extends FileInfo>>() {
         @Override
         public void accept(Collection<? extends FileInfo> input) {
-          final Collection<FileInfo> files = Images.sanitizeInput(input, getGridView());
+          final Collection<? extends FileInfo> files = Images.sanitizeInput(input, getGridView());
           if (!files.isEmpty()) {
             getGridView().ensureRelId(new IdCallback() {
               @Override
@@ -132,7 +132,7 @@ class ArticleGraphicsHandler extends AbstractGridInterceptor {
     return result;
   }
 
-  private void uploadGraphics(final Long articleId, Collection<FileInfo> files) {
+  private void uploadGraphics(final Long articleId, Collection<? extends FileInfo> files) {
     final Holder<Integer> latch = Holder.of(files.size());
     final Holder<Integer> sort = Holder.of(getMaxSort());
 

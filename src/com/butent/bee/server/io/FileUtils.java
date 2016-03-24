@@ -442,7 +442,7 @@ public final class FileUtils {
       fr = new InputStreamReader(new FileInputStream(fl), cs);
       prp.load(fr);
       cnt = prp.size() - size;
-      logger.debug(cnt, "properties loaded from", fl.getAbsolutePath());
+      logger.info(cnt, "properties loaded from", fl.getAbsolutePath());
     } catch (IOException ex) {
       logger.error(ex, fl.getAbsolutePath());
       cnt = -1;

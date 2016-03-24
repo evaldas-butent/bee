@@ -14,6 +14,7 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
+import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.ColumnHeader;
@@ -133,7 +134,7 @@ public class ProjectIncomesGrid extends AbstractGridInterceptor {
       ids.add(row.getId());
     }
     if (ids.isEmpty()) {
-      presenter.getGridView().notifyWarning(Localized.getConstants().selectAtLeastOneRow());
+      presenter.getGridView().notifyWarning(Localized.dictionary().selectAtLeastOneRow());
       return;
     }
 
@@ -143,7 +144,7 @@ public class ProjectIncomesGrid extends AbstractGridInterceptor {
       @Override
       public void onSuccess(final BeeRowSet result) {
         if (result.isEmpty()) {
-          presenter.getGridView().notifyWarning(Localized.getConstants().selectAtLeastOneRow());
+          presenter.getGridView().notifyWarning(Localized.dictionary().selectAtLeastOneRow());
         }
 
         final FormView parentForm = ViewHelper.getForm(presenter.getMainView());
@@ -194,7 +195,8 @@ public class ProjectIncomesGrid extends AbstractGridInterceptor {
               currency.getB());
         }
 
-        RowFactory.createRow(FORM_NEW_PROJECT_INVOICE, null, salesInfo, newSalesRow, null,
+        RowFactory.createRow(FORM_NEW_PROJECT_INVOICE, null, salesInfo, newSalesRow,
+            Modality.ENABLED, null,
             new AbstractFormInterceptor() {
 
               @Override
@@ -271,7 +273,7 @@ public class ProjectIncomesGrid extends AbstractGridInterceptor {
       return;
     }
     FaLabel createInvoiceButton = new FaLabel(FontAwesome.LIST_ALT);
-    createInvoiceButton.setTitle(Localized.getConstants().createInvoice());
+    createInvoiceButton.setTitle(Localized.dictionary().createInvoice());
 
     createInvoiceButton.addClickHandler(new ClickHandler() {
 

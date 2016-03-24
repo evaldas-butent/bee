@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
-  xmlns:xpr="http://www.butent.com/expression"
-  
-  name="CompanyPersons" source="CompanyPersons" module="Classifiers.Contacts"
-  caption="=companyPersons"
-  newRowForm="CompanyPerson" newRowCaption="=newCompanyPerson"
-  editForm="CompanyPerson"
-  >
+
+      name="CompanyPersons" source="CompanyPersons" module="Classifiers.Contacts"
+      caption="=companyPersons"
+      newRowForm="CompanyPerson" newRowCaption="=newCompanyPerson"
+      editForm="CompanyPerson"
+    >
   <Columns>
     <SimpleColumn name="Company" />
     <SimpleJoin name="Company" joinType="LEFT">
@@ -21,10 +20,10 @@
       <SimpleColumn name="FirstName" />
       <SimpleColumn name="LastName" />
     </SimpleJoin>
-    
+
     <SimpleColumn name="Department" />
     <SimpleJoin name="Department" joinType="LEFT">
-        <SimpleColumn name="Name" alias="DepartmentName" />
+      <SimpleColumn name="Name" alias="DepartmentName" />
     </SimpleJoin>
 
     <SimpleColumn name="Position" />
@@ -60,7 +59,7 @@
         <SimpleColumn alias="CountryCode" name="Code" />
       </SimpleJoin>
 
-      <SimpleColumn name="SocialContacts" /> 
+      <SimpleColumn name="SocialContacts" />
     </SimpleJoin>
   </Columns>
   <Order>

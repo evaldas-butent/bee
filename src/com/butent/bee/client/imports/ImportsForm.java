@@ -85,18 +85,19 @@ public class ImportsForm extends AbstractFormInterceptor implements ClickHandler
       int r = 0;
       table.setColumnCellClasses(1, StyleUtils.className(TextAlign.CENTER));
       table.setColumnCellClasses(2, StyleUtils.className(TextAlign.CENTER));
-      table.setText(r, 1, Localized.getConstants().imported(),
-          StyleUtils.className(FontWeight.BOLD));
-      table.setText(r, 2, Localized.getConstants().errors(), StyleUtils.className(FontWeight.BOLD));
+      table.setText(r, 1, Localized.dictionary().imported() + " / "
+          + Localized.dictionary().updated(), StyleUtils.className(FontWeight.BOLD));
+      table.setText(r, 2, Localized.dictionary().errors(), StyleUtils.className(FontWeight.BOLD));
 
       for (final String viewName : data.keySet()) {
         Pair<String, String> pair = Pair.restore(data.get(viewName));
+        Pair<String, String> counters = Pair.restore(pair.getA());
 
         final String cap = Data.getDataInfo(viewName, false) != null
             ? Data.getViewCaption(viewName) : viewName;
 
         table.setText(++r, 0, cap);
-        table.setText(r, 1, pair.getA());
+        table.setText(r, 1, counters.getA() + " / " + counters.getB());
 
         InternalLink lbl = null;
 
@@ -107,7 +108,7 @@ public class ImportsForm extends AbstractFormInterceptor implements ClickHandler
           lbl.addClickHandler(new ClickHandler() {
             @Override
             public void onClick(ClickEvent arg0) {
-              Global.showModalGrid(cap, rs);
+              Global.showModalGrid(cap, rs, StyleUtils.NAME_INFO_TABLE);
             }
           });
         }
@@ -155,7 +156,7 @@ public class ImportsForm extends AbstractFormInterceptor implements ClickHandler
     IsRow row = grid.getActiveRow();
 
     if (row == null) {
-      getFormView().notifyWarning(Localized.getConstants().selectImport());
+      getFormView().notifyWarning(Localized.dictionary().selectImport());
     } else {
       final ParameterList args = AdministrationKeeper.createArgs(SVC_DO_IMPORT);
       args.addDataItem(COL_IMPORT_OPTION, row.getId());
@@ -181,7 +182,7 @@ public class ImportsForm extends AbstractFormInterceptor implements ClickHandler
             cap = row.getString(grid.getDataIndex(COL_IMPORT_DESCRIPTION));
 
             if (!BeeKeeper.getUser().canCreateData(viewName)) {
-              getFormView().notifyWarning(Localized.getConstants().actionNotAllowed());
+              getFormView().notifyWarning(Localized.dictionary().actionNotAllowed());
               return;
             }
           } else {
@@ -191,7 +192,7 @@ public class ImportsForm extends AbstractFormInterceptor implements ClickHandler
             @Override
             public void onFailure(String... reason) {
               setImporting(false);
-              super.onFailure(reason);
+              Callback.super.onFailure(reason);
             }
 
             @Override
@@ -218,7 +219,7 @@ public class ImportsForm extends AbstractFormInterceptor implements ClickHandler
   private void importTracking(final ParameterList args) {
     Flow panel = new Flow(STYLE_PREFIX + "panel");
 
-    Label lowLabel = new Label(Localized.getConstants().dateFromShort());
+    Label lowLabel = new Label(Localized.dictionary().dateFromShort());
     lowLabel.addStyleName(STYLE_PREFIX + "lowLabel");
     panel.add(lowLabel);
 
@@ -231,7 +232,7 @@ public class ImportsForm extends AbstractFormInterceptor implements ClickHandler
     CustomDiv rangeSeparator = new CustomDiv(STYLE_PREFIX + "rangeSeparator");
     panel.add(rangeSeparator);
 
-    Label highLabel = new Label(Localized.getConstants().dateToShort());
+    Label highLabel = new Label(Localized.dictionary().dateToShort());
     highLabel.addStyleName(STYLE_PREFIX + "highLabel");
     panel.add(highLabel);
 
@@ -244,7 +245,7 @@ public class ImportsForm extends AbstractFormInterceptor implements ClickHandler
     CustomDiv actionSeparator = new CustomDiv(STYLE_PREFIX + "actionSeparator");
     panel.add(actionSeparator);
 
-    Button submit = new Button(Localized.getConstants().actionImport());
+    Button submit = new Button(Localized.dictionary().actionImport());
     submit.addStyleName(STYLE_PREFIX + "submit");
     panel.add(submit);
 
@@ -261,20 +262,20 @@ public class ImportsForm extends AbstractFormInterceptor implements ClickHandler
       public void onClick(ClickEvent event) {
         JustDate lowDate = lowInput.getDate();
         if (lowDate == null) {
-          BeeKeeper.getScreen().notifyWarning(Localized.getConstants().valueRequired());
+          BeeKeeper.getScreen().notifyWarning(Localized.dictionary().valueRequired());
           lowInput.setFocus(true);
           return;
         }
 
         JustDate hightDate = highInput.getDate();
         if (hightDate == null) {
-          BeeKeeper.getScreen().notifyWarning(Localized.getConstants().valueRequired());
+          BeeKeeper.getScreen().notifyWarning(Localized.dictionary().valueRequired());
           highInput.setFocus(true);
           return;
         }
 
         if (TimeUtils.isMeq(lowDate, hightDate)) {
-          BeeKeeper.getScreen().notifyWarning(Localized.getConstants().invalidRange(),
+          BeeKeeper.getScreen().notifyWarning(Localized.dictionary().invalidRange(),
               BeeUtils.joinWords(lowDate, hightDate));
           return;
         }
@@ -301,7 +302,7 @@ public class ImportsForm extends AbstractFormInterceptor implements ClickHandler
     if (action != null) {
       action.setEnabled(!importing);
       action.setText(importing
-          ? Localized.getConstants().importing() : Localized.getConstants().actionImport());
+          ? Localized.dictionary().importing() : Localized.dictionary().actionImport());
     }
   }
 

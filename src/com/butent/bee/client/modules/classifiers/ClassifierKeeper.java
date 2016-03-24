@@ -253,7 +253,7 @@ public final class ClassifierKeeper {
       public void onResponse(ResponseObject response) {
         String qrBase64 = response.getResponseAsString();
         qrCodeImage.setUrl("data:image/png;base64," + qrBase64);
-        Global.showModalWidget(Localized.getConstants().qrCode(), qrCodeImage);
+        Global.showModalWidget(Localized.dictionary().qrCode(), qrCodeImage);
       }
     });
 
@@ -274,6 +274,7 @@ public final class ClassifierKeeper {
     });
 
     GridFactory.registerGridInterceptor(VIEW_VEHICLES, new VehiclesGridHandler());
+    GridFactory.registerGridInterceptor(VIEW_COMPANIES, new CompaniesGrid());
 
     FormFactory.registerFormInterceptor("Item", new ItemForm());
     FormFactory.registerFormInterceptor(FORM_PERSON, new PersonForm());
@@ -285,7 +286,7 @@ public final class ClassifierKeeper {
 
     SelectorEvent.register(new ClassifierSelector());
 
-    BeeKeeper.getBus().registerRowTransformHandler(new RowTransformHandler(), false);
+    BeeKeeper.getBus().registerRowTransformHandler(new RowTransformHandler());
   }
 
   private ClassifierKeeper() {

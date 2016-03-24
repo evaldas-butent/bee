@@ -1,6 +1,7 @@
 package com.butent.bee.shared.ui;
 
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.HasExtendedInfo;
 import com.butent.bee.shared.data.HasViewName;
@@ -34,14 +35,15 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
 
   private enum Serial {
     NAME, PARENT, CAPTION, VIEW, ID_NAME, VERSION_NAME, FILTER, CURRENT_USER_FILTER, ORDER,
-    HEADER_MODE, FOOTER_MODE, DATA_PROVIDER, INITIAL_ROW_SET_SIZE, READONLY,
+    HEADER_MODE, FOOTER_MODE, DATA_PROVIDER, INITIAL_ROW_SET_SIZE, PAGING, READONLY,
     NEW_ROW_FORM, NEW_ROW_COLUMNS, NEW_ROW_DEFAULTS, NEW_ROW_CAPTION, NEW_ROW_POPUP,
     NEW_ROW_FORM_IMMEDIATE,
     EDIT_FORM, EDIT_MODE, EDIT_SAVE, EDIT_MESSAGE, EDIT_SHOW_ID, EDIT_POPUP,
     EDIT_FORM_IMMEDIATE, EDIT_IN_PLACE,
     ENABLED_ACTIONS, DISABLED_ACTIONS, STYLE_SHEETS, HEADER, BODY, FOOTER,
     ROW_STYLES, ROW_MESSAGE, ROW_EDITABLE, ROW_VALIDATION, MIN_COLUMN_WIDTH, MAX_COLUMN_WIDTH,
-    COLUMNS, WIDGETS, AUTO_FIT, FLEXIBILITY, FAVORITE, ENABLE_COPY, CACHE_DATA, CACHE_DESCRIPTION,
+    COLUMNS, WIDGETS, AUTO_FIT, AUTO_FLEX, FLEXIBILITY,
+    FAVORITE, ENABLE_COPY, CACHE_DATA, CACHE_DESCRIPTION,
     MIN_NUMBER_OF_ROWS, MAX_NUMBER_OF_ROWS, RENDER_MODE, ROW_CHANGE_SENSITIVITY_MILLIS,
     PREDEFINED_FILTERS, OPTIONS, PROPERTIES
   }
@@ -88,6 +90,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
 
   private ProviderType dataProvider;
   private Integer initialRowSetSize;
+  private Boolean paging;
 
   private Boolean readOnly;
 
@@ -122,6 +125,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   private Integer minColumnWidth;
   private Integer maxColumnWidth;
   private String autoFit;
+  private Boolean autoFlex;
   private Flexibility flexibility;
 
   private final List<ColumnDescription> columns = new ArrayList<>();
@@ -289,6 +293,9 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         case INITIAL_ROW_SET_SIZE:
           setInitialRowSetSize(BeeUtils.toIntOrNull(value));
           break;
+        case PAGING:
+          setPaging(BeeUtils.toBooleanOrNull(value));
+          break;
         case FILTER:
           setFilter(Filter.restore(value));
           break;
@@ -369,6 +376,9 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         case AUTO_FIT:
           setAutoFit(value);
           break;
+        case AUTO_FLEX:
+          setAutoFlex(BeeUtils.toBooleanOrNull(value));
+          break;
         case FLEXIBILITY:
           setFlexibility(Flexibility.restore(value));
           break;
@@ -419,6 +429,10 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
     return autoFit;
   }
 
+  public Boolean getAutoFlex() {
+    return autoFlex;
+  }
+
   public GridComponentDescription getBody() {
     return body;
   }
@@ -446,6 +460,15 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
 
   public int getColumnCount() {
     return getColumns().size();
+  }
+
+  public int getColumnIndex(String id) {
+    for (int i = 0; i < columns.size(); i++) {
+      if (columns.get(i).is(id)) {
+        return i;
+      }
+    }
+    return BeeConst.UNDEF;
   }
 
   public List<ColumnDescription> getColumns() {
@@ -524,6 +547,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         "Cache Description", getCacheDescription(),
         "Data Provider", getDataProvider(),
         "Initial Row Set Size", getInitialRowSetSize(),
+        "Paging", getPaging(),
         "Read Only", isReadOnly(),
         "New Row Form", getNewRowForm(),
         "New Row Columns", getNewRowColumns(),
@@ -543,6 +567,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         "Min Column Width", getMinColumnWidth(),
         "Max Column Width", getMaxColumnWidth(),
         "Auto Fit", getAutoFit(),
+        "Auto Flex", getAutoFlex(),
         "Favorite", getFavorite(),
         "Enable Copy", getEnableCopy(),
         "Min Number Of Rows", getMinNumberOfRows(),
@@ -730,6 +755,10 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
     return order;
   }
 
+  public Boolean getPaging() {
+    return paging;
+  }
+
   public String getParent() {
     return parent;
   }
@@ -907,6 +936,9 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         case INITIAL_ROW_SET_SIZE:
           arr[i++] = getInitialRowSetSize();
           break;
+        case PAGING:
+          arr[i++] = getPaging();
+          break;
         case FILTER:
           arr[i++] = getFilter();
           break;
@@ -951,6 +983,9 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
           break;
         case AUTO_FIT:
           arr[i++] = getAutoFit();
+          break;
+        case AUTO_FLEX:
+          arr[i++] = getAutoFlex();
           break;
         case FLEXIBILITY:
           arr[i++] = getFlexibility();
@@ -998,6 +1033,10 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
 
   public void setAutoFit(String autoFit) {
     this.autoFit = autoFit;
+  }
+
+  public void setAutoFlex(Boolean autoFlex) {
+    this.autoFlex = autoFlex;
   }
 
   public void setBody(GridComponentDescription body) {
@@ -1151,6 +1190,10 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
 
   public void setOrder(Order order) {
     this.order = order;
+  }
+
+  public void setPaging(Boolean paging) {
+    this.paging = paging;
   }
 
   public void setParent(String parent) {

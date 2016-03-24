@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:columns xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid">
+  <RelColumn name="Department" visible="false" />
+  <RelColumn name="ActivityType" visible="false" />
+  <RelColumn name="CostCenter" visible="false" />
+</g:columns>

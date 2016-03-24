@@ -147,8 +147,8 @@ public class ReportTextItem extends ReportItem {
   }
 
   private void renderFilter(final Flow container) {
-    final Toggle toggle = new Toggle(Localized.getConstants().is(),
-        Localized.getConstants().isNot(), null, filterNegation);
+    final Toggle toggle = new Toggle(Localized.dictionary().is(),
+        Localized.dictionary().isNot(), null, filterNegation);
     toggle.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent clickEvent) {

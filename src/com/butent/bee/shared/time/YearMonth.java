@@ -49,6 +49,17 @@ public class YearMonth implements Comparable<YearMonth>, BeeSerializable, HasYea
     }
   }
 
+  public static YearMonth parse(String ys, String ms) {
+    Integer y = TimeUtils.parseYear(ys);
+    Integer m = TimeUtils.parseMonth(ms);
+
+    if (TimeUtils.isYear(y) && TimeUtils.isMonth(m)) {
+      return new YearMonth(y, m);
+    } else {
+      return null;
+    }
+  }
+
   private int year;
   private int month;
 

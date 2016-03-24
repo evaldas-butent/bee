@@ -391,7 +391,7 @@ public class EditableColumn implements BlurHandler, EditChangeHandler, EditStopE
     boolean ok = BeeUtils.toBoolean(getEditable().evaluate());
 
     if (!ok && warn && getNotificationListener() != null) {
-      getNotificationListener().notifyWarning(Localized.getConstants().cellIsReadOnly());
+      getNotificationListener().notifyWarning(Localized.dictionary().cellIsReadOnly());
     }
     return ok;
   }
@@ -457,7 +457,7 @@ public class EditableColumn implements BlurHandler, EditChangeHandler, EditStopE
 
   @Override
   public void onValueChange(ValueChangeEvent<String> event) {
-    endEdit(null, false);
+    endEdit(KeyCodes.KEY_TAB, false);
   }
 
   public void openEditor(HasWidgets editorContainer, EditorConsumer editorConsumer,

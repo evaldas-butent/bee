@@ -19,6 +19,7 @@ import org.w3c.dom.Attr;
 import org.w3c.dom.CDATASection;
 import org.w3c.dom.Comment;
 import org.w3c.dom.DOMConfiguration;
+import org.w3c.dom.DOMException;
 import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.DOMStringList;
 import org.w3c.dom.Document;
@@ -166,6 +167,18 @@ public final class XmlUtils {
       logger.error(ex);
     }
     schemaFactory = sf;
+  }
+
+  public static void appendElementWithText(Document doc, Element parent, String tag, String txt) {
+    Assert.notNull(doc);
+    Assert.notNull(parent);
+    Assert.notEmpty(tag);
+
+    Element el = doc.createElement(tag);
+    Text x = doc.createTextNode(BeeUtils.trim(txt));
+
+    el.appendChild(x);
+    parent.appendChild(el);
   }
 
   public static Document createDoc(String rootName, String... nodes) {
@@ -903,8 +916,10 @@ public final class XmlUtils {
     builderFactory.setXIncludeAware(true);
 
     try {
-      Schema schema = schemaFactory.newSchema(new StreamSource(resourceSchema));
-      builderFactory.setSchema(schema);
+      if (!BeeUtils.isEmpty(resourceSchema)) {
+        Schema schema = schemaFactory.newSchema(new StreamSource(resourceSchema));
+        builderFactory.setSchema(schema);
+      }
       DocumentBuilder builder = builderFactory.newDocumentBuilder();
       builder.setErrorHandler(new SAXErrorHandler());
 
@@ -991,6 +1006,23 @@ public final class XmlUtils {
     }
   }
 
+  public static void setAttribute(Element element, String name, String value) {
+    Assert.notNull(element);
+    Assert.notEmpty(name);
+
+    try {
+      element.setAttribute(name, value);
+    } catch (DOMException ex) {
+      logger.error(ex);
+    }
+  }
+
+  public static void setNotEmptyAttribute(Element element, String name, String value) {
+    if (!BeeUtils.isEmpty(value)) {
+      setAttribute(element, name, value);
+    }
+  }
+
   public static String tag(String tagName, Object value) {
     if (value == null) {
       return "";
@@ -1046,21 +1078,12 @@ public final class XmlUtils {
         if (BeeUtils.isEmpty(schemaPath)) {
           result = (T) unmarshaller.unmarshal(source);
         } else {
-          DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
-          builderFactory.setNamespaceAware(true);
-          builderFactory.setXIncludeAware(true);
-          builderFactory.setSchema(schemaFactory.newSchema(new File(schemaPath)));
-          DocumentBuilder builder = builderFactory.newDocumentBuilder();
-          builder.setErrorHandler(new SAXErrorHandler());
-          result = (T) unmarshaller.unmarshal(builder.parse(source));
+          result = (T) unmarshaller.unmarshal(getXmlResource(resource, schemaPath));
         }
       } catch (JAXBException e) {
         throw new BeeRuntimeException(e.getLinkedException() == null ? e : e.getLinkedException());
 
-      } catch (SAXException e) {
-        throw new BeeRuntimeException(e.getException() == null ? e : e.getException());
-
-      } catch (ParserConfigurationException | IOException e) {
+      } catch (IOException e) {
         throw new BeeRuntimeException(e);
       }
     }
@@ -1126,14 +1149,6 @@ public final class XmlUtils {
     } else {
       return BeeConst.STRING_EMPTY;
     }
-  }
-
-  private static void appendElementWithText(Document doc, Element root, String tag, String txt) {
-    Element el = doc.createElement(tag);
-    Text x = doc.createTextNode(txt);
-
-    el.appendChild(x);
-    root.appendChild(el);
   }
 
   private static Document asDocument(Node nd) {

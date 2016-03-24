@@ -12,6 +12,7 @@ import com.butent.bee.client.data.Queries.IntCallback;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
+import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.widget.Button;
@@ -24,11 +25,11 @@ import com.butent.bee.shared.i18n.Localized;
 
 public class DocumentTemplateForm extends DocumentDataForm {
 
-  private final Button newDocumentButton = new Button(Localized.getConstants().documentNew(),
+  private final Button newDocumentButton = new Button(Localized.dictionary().documentNew(),
       new ClickHandler() {
         @Override
         public void onClick(ClickEvent event) {
-          RowFactory.createRow(TBL_DOCUMENTS, new RowCallback() {
+          RowFactory.createRow(TBL_DOCUMENTS, Modality.ENABLED, new RowCallback() {
             @Override
             public void onSuccess(final BeeRow row) {
               DocumentsHandler.copyDocumentData(getLongValue(COL_DOCUMENT_DATA), new IdCallback() {

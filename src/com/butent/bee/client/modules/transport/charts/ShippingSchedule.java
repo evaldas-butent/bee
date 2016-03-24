@@ -8,6 +8,7 @@ import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.RowFactory;
+import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.modules.transport.TransportHandler;
 import com.butent.bee.client.timeboard.TimeBoardHelper;
@@ -67,7 +68,7 @@ final class ShippingSchedule extends VehicleTimeBoard {
 
   @Override
   public String getCaption() {
-    return Localized.getConstants().shippingSchedule();
+    return Localized.dictionary().shippingSchedule();
   }
 
   @Override
@@ -83,7 +84,7 @@ final class ShippingSchedule extends VehicleTimeBoard {
   @Override
   public void handleAction(Action action) {
     if (Action.ADD.equals(action)) {
-      RowFactory.createRow(VIEW_TRIPS);
+      RowFactory.createRow(VIEW_TRIPS, Modality.DISABLED);
     } else {
       super.handleAction(action);
     }
@@ -124,6 +125,11 @@ final class ShippingSchedule extends VehicleTimeBoard {
   @Override
   protected String getDayWidthColumnName() {
     return COL_SS_PIXELS_PER_DAY;
+  }
+
+  @Override
+  protected String getFilterDataTypesColumnName() {
+    return COL_SS_FILTER_DATA_TYPES;
   }
 
   @Override

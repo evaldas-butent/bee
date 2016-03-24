@@ -8,6 +8,7 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RowFilter;
+import com.butent.bee.shared.data.value.DateTimeValue;
 import com.butent.bee.shared.data.value.DateValue;
 import com.butent.bee.shared.data.value.IntegerValue;
 import com.butent.bee.shared.data.value.LongValue;
@@ -25,6 +26,7 @@ import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.List;
 
 /**
@@ -72,6 +74,18 @@ public abstract class Filter implements BeeSerializable, RowFilter {
 
   public static Filter and(Filter f1, Filter f2, Filter f3, Filter f4) {
     return and(and(f1, f2), and(f3, f4));
+  }
+
+  public static Filter any(String column, EnumSet<? extends Enum<?>> enums) {
+    Assert.notEmpty(column);
+    Assert.notNull(enums);
+
+    CompoundFilter filter = Filter.or();
+
+    for (Enum<?> e : enums) {
+      filter.add(equals(column, e));
+    }
+    return filter;
   }
 
   public static Filter any(String column, Collection<Long> values) {
@@ -240,6 +254,10 @@ public abstract class Filter implements BeeSerializable, RowFilter {
   public static Filter custom(String key, String arg1, String arg2) {
     Assert.notEmpty(key);
     return new CustomFilter(key, Lists.newArrayList(arg1, arg2));
+  }
+
+  public static Filter equals(String column, DateTime value) {
+    return compareWithValue(column, Operator.EQ, new DateTimeValue(value));
   }
 
   public static Filter equals(String column, Integer value) {

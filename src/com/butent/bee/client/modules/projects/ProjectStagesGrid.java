@@ -20,7 +20,7 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.view.RowInfo;
-import com.butent.bee.shared.i18n.LocalizableConstants;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.projects.ProjectConstants;
@@ -34,7 +34,7 @@ import java.util.List;
 
 class ProjectStagesGrid extends AbstractGridInterceptor {
 
-  private static final LocalizableConstants LC = Localized.getConstants();
+  private static final Dictionary LC = Localized.dictionary();
 
   @Override
   public DeleteMode getDeleteMode(GridPresenter presenter, IsRow activeRow,
@@ -108,8 +108,8 @@ class ProjectStagesGrid extends AbstractGridInterceptor {
           return BeeConst.STRING_EMPTY;
         }
 
-        if (!BeeUtils.isEmpty(row.getProperty(PROP_TIME_UNTIS))) {
-          String prop = row.getProperty(PROP_TIME_UNTIS);
+        if (!BeeUtils.isEmpty(row.getProperty(PROP_TIME_UNITS))) {
+          String prop = row.getProperty(PROP_TIME_UNITS);
           unitsRows = BeeRowSet.maybeRestore(prop);
         }
 

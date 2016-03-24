@@ -16,7 +16,6 @@
     <SimpleColumn name="Driver" />
     <SimpleColumn name="TransportationOrder" />
     <SimpleColumn name="Trip" />
-    <SimpleColumn name="CargoRequest" />
     <SimpleColumn name="Discussion" />
     <SimpleColumn name="ServiceObject" />
     <SimpleColumn name="Message" />
@@ -63,4 +62,3 @@
     </SimpleJoin>
   </Columns>
 </View>
- 

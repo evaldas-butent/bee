@@ -20,7 +20,7 @@ public class InvoiceCreator extends Image implements ClickHandler {
 
   public InvoiceCreator(String viewName, Filter filter) {
     super(Global.getImages().silverInvoice());
-    setTitle(Localized.getConstants().createInvoice());
+    setTitle(Localized.dictionary().createInvoice());
     setAlt(getTitle());
     addClickHandler(this);
 

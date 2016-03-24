@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+       name="Registrations"
+       idName="RegistrationID"
+    >
+  <Fields>
+    <String name="Type" precision="100" label="=companyStatus" />
+    <String name="Name" precision="100" label="=trRequestCustomerName" />
+    <String name="Code" precision="30" label="=trRequestCustomerCode" />
+    <String name="VatCode" precision="30" label="=trRequestCustomerVatCode" />
+
+    <String name="Phone" precision="50" label="=phone" />
+    <String name="Fax" precision="50" label="=fax" />
+    <String name="Email" precision="255" label="=email" />
+
+    <String name="ContactPerson" precision="60" label="=trRequestCustomerContact" />
+    <String name="ContactPersonPosition" precision="100"
+            label="=trRequestCustomerContactPosition" />
+
+    <String name="Country" precision="60" label="=country" />
+    <String name="City" precision="30" label="=city" />
+    <String name="Address" precision="100" label="=address" />
+    <String name="PostIndex" precision="20" label="=postIndex" />
+
+    <Text name="Notes" label="=additionalInfo" />
+
+    <Boolean name="Register" label="=loginCommandRegister" />
+  </Fields>
+</Table>

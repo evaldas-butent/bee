@@ -196,6 +196,7 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
 
   private Filter additionalFilter;
   private final Set<Long> exclusions = new HashSet<>();
+  private Filter responseFilter;
 
   public SelectionOracle(Relation relation, DataInfo dataInfo) {
     Assert.notNull(relation);
@@ -398,6 +399,13 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
     }
   }
 
+  public void setResponseFilter(Filter responseFilter) {
+    if (!Objects.equals(getResponseFilter(), responseFilter)) {
+      this.responseFilter = responseFilter;
+      resetState();
+    }
+  }
+
   private void checkPendingRequest() {
     if (getPendingRequest() != null) {
       Request request = getPendingRequest().getRequest();
@@ -407,15 +415,32 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
     }
   }
 
-  private Filter getFilter(Filter queryFilter, boolean checkExclusions) {
+  private boolean filterResponse(List<BeeColumn> columns, BeeRow row) {
+    if (!exclusions.isEmpty() && exclusions.contains(row.getId())) {
+      return false;
+    }
+    if (getResponseFilter() != null && !getResponseFilter().isMatch(columns, row)) {
+      return false;
+    }
+
+    return true;
+  }
+
+  private Filter getFilter(Filter queryFilter, boolean addResponseFilters) {
     CompoundFilter result = Filter.and();
 
     result.add(immutableFilter);
     result.add(getAdditionalFilter());
     result.add(queryFilter);
 
-    if (checkExclusions && !exclusions.isEmpty()) {
-      result.add(Filter.idNotIn(exclusions));
+    if (addResponseFilters) {
+      if (!exclusions.isEmpty()) {
+        result.add(Filter.idNotIn(exclusions));
+      }
+
+      if (getResponseFilter() != null) {
+        result.add(getResponseFilter());
+      }
     }
 
     return result;
@@ -446,6 +471,14 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
 
   private BeeRowSet getRequestData() {
     return requestData;
+  }
+
+  private Filter getResponseFilter() {
+    return responseFilter;
+  }
+
+  private boolean hasResponseFilters() {
+    return !exclusions.isEmpty() || getResponseFilter() != null;
   }
 
   private void initViewData() {
@@ -532,15 +565,18 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
         return true;
       }
 
+      List<BeeColumn> columns = getViewData().getColumns();
+
       if (queryParts.isEmpty()) {
-        if (exclusions.isEmpty()) {
-          getRequestData().setRows(getViewData().getRows());
-        } else {
-          for (BeeRow row : getViewData().getRows()) {
-            if (!exclusions.contains(row.getId())) {
+        if (hasResponseFilters()) {
+          for (BeeRow row : getViewData()) {
+            if (filterResponse(columns, row)) {
               getRequestData().addRow(row);
             }
           }
+
+        } else {
+          getRequestData().setRows(getViewData().getRows());
         }
 
       } else {
@@ -552,7 +588,7 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
             values[i] = queryParts.get(i).toLowerCase();
           }
 
-          if (qc == 1 && exclusions.isEmpty()) {
+          if (qc == 1 && !hasResponseFilters()) {
             String v = values[0];
 
             for (BeeRow row : getViewData()) {
@@ -584,7 +620,7 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
                 }
               }
 
-              if (ok && !exclusions.contains(row.getId())) {
+              if (ok && filterResponse(columns, row)) {
                 getRequestData().addRow(row);
               }
             }
@@ -592,10 +628,9 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
 
         } else {
           Filter filter = getQueryFilter(queryParts);
-          List<BeeColumn> columns = getViewData().getColumns();
 
           for (BeeRow row : getViewData()) {
-            if (filter.isMatch(columns, row) && !exclusions.contains(row.getId())) {
+            if (filter.isMatch(columns, row) && filterResponse(columns, row)) {
               getRequestData().addRow(row);
             }
           }

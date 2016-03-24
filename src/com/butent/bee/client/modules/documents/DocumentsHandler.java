@@ -4,10 +4,11 @@ import com.google.common.collect.Lists;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 
 import static com.butent.bee.shared.modules.documents.DocumentConstants.*;
-import static com.butent.bee.shared.modules.trade.TradeConstants.VAR_TOTAL;
+import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
+import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.FileCollector;
@@ -17,15 +18,22 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.Queries.IntCallback;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.grid.GridFactory;
+import com.butent.bee.client.grid.GridFactory.GridOptions;
 import com.butent.bee.client.modules.trade.TradeUtils;
+import com.butent.bee.client.presenter.PresenterCallback;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.utils.FileUtils;
+import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.grid.interceptor.FileGridInterceptor;
+import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.BiConsumer;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
@@ -33,13 +41,18 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.FileInfo;
+import com.butent.bee.shared.menu.MenuHandler;
+import com.butent.bee.shared.menu.MenuService;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
+import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.List;
 
 public final class DocumentsHandler {
@@ -95,6 +108,53 @@ public final class DocumentsHandler {
     FormFactory.registerFormInterceptor("NewDocument", new DocumentBuilder());
 
     TradeUtils.registerTotalRenderer(VIEW_DOCUMENT_ITEMS, VAR_TOTAL);
+
+     MenuService.DOCUMENTS.setHandler(new MenuHandler() {
+
+      @Override
+      public void onSelection(String parameters) {
+        GridOptions options = null;
+        GridInterceptor interceptor = GridFactory.getGridInterceptor(VIEW_DOCUMENTS);
+        String key = GridFactory.getSupplierKey(VIEW_DOCUMENTS, interceptor);
+
+        if (!BeeUtils.isEmpty(parameters)) {
+          options = GridOptions.forCaptionAndFilter(getCaption(parameters), getFilter(parameters));
+          key = BeeUtils.join(BeeConst.STRING_UNDER, key, parameters);
+        }
+
+        GridFactory.createGrid(VIEW_DOCUMENTS, key, interceptor, EnumSet.of(UiOption.GRID),
+            options, ViewHelper.getPresenterCallback());
+      }
+
+      private String getCaption(String parameters) {
+        switch (parameters) {
+          case COL_DOCUMENT_SENT:
+            return Localized.dictionary().documentFilterSent();
+          case COL_DOCUMENT_RECEIVED:
+            return Localized.dictionary().documentFilterReceived();
+
+          default:
+            return Data.getViewCaption(VIEW_DOCUMENTS);
+        }
+      }
+
+      private Filter getFilter(String parameters) {
+
+        if (Data.containsColumn(VIEW_DOCUMENTS, parameters)) {
+          return Filter.notNull(parameters);
+        }
+
+        return Filter.isTrue();
+      }
+    });
+
+    Global.getNewsAggregator().registerFilterHandler(Feed.DOCUMENTS,
+        new BiConsumer<GridFactory.GridOptions, PresenterCallback>() {
+          @Override
+          public void accept(GridOptions gridOptions, PresenterCallback callback) {
+            GridFactory.openGrid("NewsDocuments", null, gridOptions, callback);
+          }
+        });
   }
 
   static void copyDocumentData(Long dataId, final IdCallback callback) {

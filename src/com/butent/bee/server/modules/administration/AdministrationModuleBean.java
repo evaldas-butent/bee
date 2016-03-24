@@ -24,11 +24,14 @@ import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.i18n.I18nUtils;
+import com.butent.bee.server.io.FileUtils;
 import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.modules.ParamHolderBean;
+import com.butent.bee.server.sql.IsQuery;
 import com.butent.bee.server.sql.SqlDelete;
 import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
+import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.server.websocket.Endpoint;
 import com.butent.bee.shared.Assert;
@@ -46,8 +49,9 @@ import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.ViewColumn;
-import com.butent.bee.shared.i18n.LocalizableConstants;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.i18n.SupportedLocale;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
@@ -57,17 +61,18 @@ import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
-import com.ibm.icu.text.RuleBasedNumberFormat;
 
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -145,12 +150,27 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
       response = copyRights(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_ROLE)),
           BeeUtils.toLongOrNull(reqInfo.getParameter(VAR_BASE_ROLE)));
 
-    } else if (BeeUtils.same(svc, SVC_NUMBER_TO_WORDS)) {
-      response = getNumberInWords(BeeUtils.toLongOrNull(reqInfo.getParameter(VAR_AMOUNT)),
-          reqInfo.getParameter(VAR_LOCALE));
+    } else if (BeeUtils.same(svc, SVC_TOTAL_TO_WORDS)) {
+      response = ResponseObject
+          .response(getTotalInWords(BeeUtils.toDoubleOrNull(reqInfo.getParameter(VAR_AMOUNT)),
+              BeeUtils.toLongOrNull(reqInfo.getParameter(COL_CURRENCY)),
+              reqInfo.getParameter(VAR_LOCALE)));
 
     } else if (BeeUtils.same(svc, SVC_DO_IMPORT)) {
       response = imp.doImport(reqInfo);
+
+    } else if (BeeUtils.same(svc, SVC_GET_DICTIONARY)) {
+      Map<String, String> dictionary = getDictionary(usr.getSupportedLocale());
+      if (BeeUtils.isEmpty(dictionary)) {
+        response = ResponseObject.error(svc, "dictionary not available");
+      } else {
+        response = ResponseObject.response(dictionary).setSize(dictionary.size());
+      }
+
+    } else if (BeeUtils.same(svc, SVC_DICTIONARY_PROPERTIES_TO_DATABASE)) {
+      response = dictionaryPropertiesToDatabase();
+    } else if (BeeUtils.same(svc, SVC_DICTIONARY_DATABASE_TO_PROPERTIES)) {
+      response = dictionaryDatabaseToProperties();
 
     } else {
       String msg = BeeUtils.joinWords("Commons service not recognized:", svc);
@@ -172,6 +192,7 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
     String module = getModule().getName();
 
     List<BeeParameter> params = Lists.newArrayList(
+        BeeParameter.createMap(module, PRM_SERVER_PROPERTIES),
         BeeParameter.createRelation(module, PRM_COMPANY, TBL_COMPANIES, COL_COMPANY_NAME),
         BeeParameter.createRelation(module, PRM_COUNTRY, TBL_COUNTRIES, COL_COUNTRY_NAME),
         BeeParameter.createRelation(module, PRM_CURRENCY, TBL_CURRENCIES, COL_CURRENCY_NAME),
@@ -184,6 +205,27 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
 
     params.addAll(getSqlEngineParameters());
     return params;
+  }
+
+  public Map<String, String> getDictionary(SupportedLocale supportedLocale) {
+    Assert.notNull(supportedLocale, "getDictionary: locale is null");
+
+    Map<String, String> dictionary = I18nUtils.readProperties(supportedLocale);
+
+    SimpleRowSet data = getDictionaryData(supportedLocale);
+
+    if (!DataUtils.isEmpty(data)) {
+      for (SimpleRow row : data) {
+        String key = BeeUtils.trim(row.getValue(0));
+        String value = BeeUtils.trim(Codec.unescapePropertyValue(row.getValue(1)));
+
+        if (!key.isEmpty() && !value.isEmpty()) {
+          dictionary.put(key, value);
+        }
+      }
+    }
+
+    return dictionary;
   }
 
   @Override
@@ -228,6 +270,17 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
     return timerService;
   }
 
+  public String getTotalInWords(Double amount, Long currency, String locale) {
+    SimpleRow row = qs.getRow(new SqlSelect()
+        .addFields(TBL_CURRENCIES, COL_CURRENCY_NAME, COL_CURRENCY_MINOR_NAME)
+        .addFrom(TBL_CURRENCIES)
+        .setWhere(sys.idEquals(TBL_CURRENCIES, currency)));
+
+    return I18nUtils.getTotalInWords(amount,
+        row.getValue(COL_CURRENCY_NAME), row.getValue(COL_CURRENCY_MINOR_NAME),
+        BeeUtils.isEmpty(locale) ? usr.getLanguage() : locale);
+  }
+
   @Override
   public void init() {
     cb.createCalendarTimer(this.getClass(), PRM_REFRESH_CURRENCY_HOURS);
@@ -235,18 +288,14 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
     sys.registerDataEventHandler(new DataEventHandler() {
       @Subscribe
       @AllowConcurrentEvents
-      public void refreshIpFilterCache(TableModifyEvent event) {
-        if (event.isAfter(TBL_IP_FILTERS)) {
-          usr.initIpFilters();
-        }
-      }
+      public void normalizeFileReference(TableModifyEvent event) {
+        if (event.isBefore()) {
+          if (event.getQuery() instanceof SqlInsert) {
+            sys.normalizeFileReference((SqlInsert) event.getQuery());
 
-      @Subscribe
-      @AllowConcurrentEvents
-      public void refreshUsersCache(TableModifyEvent event) {
-        if (event.isAfter(TBL_USERS, TBL_ROLES, TBL_USER_ROLES)) {
-          usr.initUsers();
-          Endpoint.updateUserData(usr.getAllUserData());
+          } else if (event.getQuery() instanceof SqlUpdate) {
+            sys.normalizeFileReference((SqlUpdate) event.getQuery());
+          }
         }
       }
 
@@ -340,6 +389,23 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
           }
         }
       }
+
+      @Subscribe
+      @AllowConcurrentEvents
+      public void refreshIpFilterCache(TableModifyEvent event) {
+        if (event.isAfter(TBL_IP_FILTERS)) {
+          usr.initIpFilters();
+        }
+      }
+
+      @Subscribe
+      @AllowConcurrentEvents
+      public void refreshUsersCache(TableModifyEvent event) {
+        if (event.isAfter(TBL_USERS, TBL_ROLES, TBL_USER_ROLES)) {
+          usr.initUsers();
+          Endpoint.updateUserData(usr.getAllUserData());
+        }
+      }
     });
   }
 
@@ -388,14 +454,14 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
     }
 
     if (usr.isUser(login)) {
-      return ResponseObject.warning(usr.getLocalizableMesssages()
-          .valueExists(BeeUtils.joinWords(usr.getLocalizableConstants().user(), login)));
+      return ResponseObject.warning(usr.getDictionary()
+          .valueExists(BeeUtils.joinWords(usr.getDictionary().user(), login)));
     }
 
     String email = reqInfo.getParameter(COL_EMAIL);
     if (!BeeUtils.isEmpty(email) && qs.sqlExists(TBL_EMAILS, COL_EMAIL_ADDRESS, email)) {
-      return ResponseObject.warning(usr.getLocalizableMesssages()
-          .valueExists(BeeUtils.joinWords(usr.getLocalizableConstants().email(), email)));
+      return ResponseObject.warning(usr.getDictionary()
+          .valueExists(BeeUtils.joinWords(usr.getDictionary().email(), email)));
     }
 
     UserInterface userInterface = EnumUtils.getEnumByIndex(UserInterface.class,
@@ -572,6 +638,110 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
     return ResponseObject.emptyResponse();
   }
 
+  private ResponseObject dictionaryDatabaseToProperties() {
+    EnumMap<SupportedLocale, Integer> sizes = new EnumMap<>(SupportedLocale.class);
+
+    for (SupportedLocale supportedLocale : SupportedLocale.values()) {
+      SimpleRowSet data = getDictionaryData(supportedLocale);
+      if (DataUtils.isEmpty(data)) {
+        logger.warning(TBL_DICTIONARY, supportedLocale, "is empty");
+
+      } else {
+        StringBuilder sb = new StringBuilder();
+        for (SimpleRow row : data) {
+          sb.append(BeeUtils.trim(row.getValue(0))).append(" = ")
+              .append(BeeUtils.trim(row.getValue(1))).append(BeeConst.CHAR_EOL);
+        }
+
+        String src = sb.toString();
+        String dst = I18nUtils.getDictionaryFile(supportedLocale).getAbsolutePath();
+
+        String path = FileUtils.saveToFile(src, dst);
+
+        if (BeeUtils.isEmpty(path)) {
+          String message = BeeUtils.joinWords(TBL_DICTIONARY, supportedLocale, "cannot write to",
+              dst);
+          logger.severe(message);
+          return ResponseObject.error(message);
+
+        } else {
+          int len = src.length();
+          sizes.put(supportedLocale, len);
+
+          logger.info(SVC_DICTIONARY_DATABASE_TO_PROPERTIES, supportedLocale, len, path);
+        }
+      }
+    }
+
+    return ResponseObject.response(sizes.toString());
+  }
+
+  private ResponseObject dictionaryPropertiesToDatabase() {
+    Map<String, String> defaultDictionary =
+        I18nUtils.readProperties(SupportedLocale.DICTIONARY_DEFAULT);
+    if (BeeUtils.isEmpty(defaultDictionary)) {
+      return ResponseObject.error(SupportedLocale.DICTIONARY_DEFAULT, "dictionary not found");
+    }
+
+    List<String> dictionaryKeys = new ArrayList<>(defaultDictionary.keySet());
+
+    EnumMap<SupportedLocale, Map<String, String>> dictionaries =
+        new EnumMap<>(SupportedLocale.class);
+
+    for (SupportedLocale supportedLocale : SupportedLocale.values()) {
+      if (supportedLocale != SupportedLocale.DICTIONARY_DEFAULT) {
+        Map<String, String> dictionary = I18nUtils.readProperties(supportedLocale);
+        if (BeeUtils.isEmpty(dictionary)) {
+          return ResponseObject.error(supportedLocale, "dictionary not found");
+        }
+
+        Set<String> keys = new HashSet<>(dictionary.keySet());
+        keys.removeAll(dictionaryKeys);
+
+        if (!keys.isEmpty()) {
+          logger.warning(supportedLocale, keys.size(), "keys not in",
+              SupportedLocale.DICTIONARY_DEFAULT, "dictionary:", keys);
+        }
+
+        dictionaries.put(supportedLocale, dictionary);
+      }
+    }
+
+    IsQuery truncate = SqlUtils.truncateTable(TBL_DICTIONARY);
+    ResponseObject response = qs.updateDataWithResponse(truncate);
+    if (response.hasErrors()) {
+      return response;
+    }
+
+    dictionaryKeys.sort(null);
+
+    String defaultColumnName = SupportedLocale.DICTIONARY_DEFAULT.getDictionaryColumnName();
+
+    SqlInsert insert = new SqlInsert(TBL_DICTIONARY);
+
+    for (String key : dictionaryKeys) {
+      insert.reset();
+
+      insert.addConstant(COL_DICTIONARY_KEY, key);
+      insert.addConstant(defaultColumnName, Codec.escapePropertyValue(defaultDictionary.get(key)));
+
+      dictionaries.forEach((supportedLocale, dictionary) -> {
+        String value = dictionary.get(key);
+        if (value != null) {
+          insert.addConstant(supportedLocale.getDictionaryColumnName(),
+              Codec.escapePropertyValue(value));
+        }
+      });
+
+      response = qs.insertDataWithResponse(insert);
+      if (response.hasErrors()) {
+        return response;
+      }
+    }
+
+    return ResponseObject.response(dictionaryKeys.size());
+  }
+
   private ResponseObject getCurrentExchangeRate(RequestInfo reqInfo) {
     String type = reqInfo.getParameter(Service.VAR_TYPE);
     String currency = reqInfo.getParameter(COL_CURRENCY_NAME);
@@ -579,6 +749,18 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
     String address = getExchangeRatesRemoteAddress();
 
     return ExchangeRatesWS.getCurrentExchangeRates(address, type, currency);
+  }
+
+  private SimpleRowSet getDictionaryData(SupportedLocale supportedLocale) {
+    String valueColumn = supportedLocale.getDictionaryColumnName();
+
+    SqlSelect query = new SqlSelect()
+        .addFields(TBL_DICTIONARY, COL_DICTIONARY_KEY, valueColumn)
+        .addFrom(TBL_DICTIONARY)
+        .setWhere(SqlUtils.notNull(TBL_DICTIONARY, valueColumn))
+        .addOrder(TBL_DICTIONARY, COL_DICTIONARY_KEY);
+
+    return qs.getData(query);
   }
 
   private ResponseObject getExchangeRate(RequestInfo reqInfo) {
@@ -614,7 +796,7 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
   }
 
   private ResponseObject getHistory(String viewName, Collection<Long> idList) {
-    LocalizableConstants loc = usr.getLocalizableConstants();
+    Dictionary loc = usr.getDictionary();
 
     if (BeeUtils.isEmpty(idList)) {
       return ResponseObject.error(loc.selectAtLeastOneRow());
@@ -709,7 +891,7 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
       int fldIdx = rs.getColumnIndex(AUDIT_FLD_FIELD);
       int valIdx = rs.getColumnIndex(AUDIT_FLD_VALUE);
       int relIdx = rs.getColumnIndex(COL_RELATION);
-      Map<String, String> dict = usr.getLocalizableDictionary();
+      Map<String, String> dict = usr.getGlossary();
 
       for (SimpleRow row : qs.getData(query)) {
         String[] values = new String[rs.getNumberOfColumns()];
@@ -765,18 +947,6 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
     return ExchangeRatesWS.getListOfCurrencies(address);
   }
 
-  private ResponseObject getNumberInWords(Long number, String locale) {
-    Assert.notNull(number);
-
-    Locale loc = I18nUtils.toLocale(locale);
-
-    if (loc == null) {
-      loc = usr.getLocale();
-    }
-    return ResponseObject.response(new RuleBasedNumberFormat(loc, RuleBasedNumberFormat.SPELLOUT)
-        .format(number));
-  }
-
   private Collection<? extends BeeParameter> getSqlEngineParameters() {
     List<BeeParameter> params = new ArrayList<>();
 
@@ -823,7 +993,7 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
     JustDate dateHigh = new JustDate(BeeUtils.toInt(high));
 
     if (TimeUtils.isMore(dateLow, dateHigh)) {
-      return ResponseObject.error(usr.getLocalizableConstants().invalidRange(), dateLow, dateHigh);
+      return ResponseObject.error(usr.getDictionary().invalidRange(), dateLow, dateHigh);
     }
 
     String currencyIdName = sys.getIdName(TBL_CURRENCIES);
@@ -837,7 +1007,7 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
     SimpleRowSet currencies = qs.getData(currencyQuery);
     if (DataUtils.isEmpty(currencies)) {
       return ResponseObject
-          .warning(usr.getLocalizableConstants().updateExchangeRatesNoCurrencies());
+          .warning(usr.getDictionary().updateExchangeRatesNoCurrencies());
     }
 
     String address = getExchangeRatesRemoteAddress();
@@ -864,14 +1034,14 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
       }
 
       if (DataUtils.isEmpty(rates)) {
-        response.addInfo(currencyName, usr.getLocalizableConstants().noData());
+        response.addInfo(currencyName, usr.getDictionary().noData());
         continue;
       }
 
       String value = rates.getValue(0, ExchangeRatesWS.COL_DT);
       JustDate min = TimeUtils.parseDate(value);
       if (min == null) {
-        response.addWarning(currencyName, usr.getLocalizableConstants().invalidDate(), value);
+        response.addWarning(currencyName, usr.getDictionary().invalidDate(), value);
         continue;
       }
 

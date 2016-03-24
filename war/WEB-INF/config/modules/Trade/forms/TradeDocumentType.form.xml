@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<f:Form xmlns="http://www.butent.com/widget"
+  xmlns:f="http://www.butent.com/form"
+
+  name="TradeDocumentType" viewName="TradeDocumentTypes" caption="=trdDocumentType">
+
+  <Table kind="controls">
+    <col index="0" kind="label" />
+    <col index="2" kind="label" />
+
+    <row>
+      <Label for="Ordinal" />
+      <InputInteger source="Ordinal" style="width: 4em;" visible="true" />
+      <Label for="DocumentTypeName" />
+      <InputText source="DocumentTypeName" style="width: 24em;" visible="true" />
+    </row>
+
+    <row>
+      <Label for="Description" />
+      <cell colSpan="3">
+        <InputArea source="Description" visibleLines="3" style="width: 100%" />
+      </cell>
+    </row>
+    
+    <div style="height: 2vh; "/>
+
+    <row>
+      <Label text="=statuses" />
+      <cell colSpan="3">
+        <FlowPanel class="flexBox-horizontal-space-between">
+          <CheckBox source="StatusOrder" />
+          <CheckBox source="StatusPending" />
+          <CheckBox source="StatusActive" />
+          <CheckBox source="StatusCompleted" />
+          <CheckBox source="StatusApproved" />
+        </FlowPanel>
+      </cell>
+    </row>
+
+    <div style="height: 1vh; "/>
+
+    <row>
+      <Label text="=trdOperationsShort" />
+      <cell colSpan="3">
+      <ChildSelector childTable="TradeTypeOperations" viewName="TradeOperations"
+        targetRelColumn="DocumentType" sourceRelColumn="Operation" renderColumns="OperationName"
+        newRowEnabled="false" style="width: 100%" />
+      </cell>
+    </row>
+
+    <row>
+      <Label text="=tags" />
+      <cell colSpan="3">
+      <ChildSelector childTable="TradeTypeTags" viewName="TradeTags"
+        targetRelColumn="DocumentType" sourceRelColumn="TradeTag" renderColumns="TagName"
+        newRowEnabled="false" style="width: 100%;" />
+      </cell>
+    </row>
+  </Table>
+</f:Form>

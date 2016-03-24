@@ -18,6 +18,7 @@
     <Boolean name="OpenInNewTab" label="=openInNewTab" />
 
     <Boolean name="WorkspaceContinue" label="=workspaceContinue" />
+    <Boolean name="CommentsLayout" />
     <Text name="LastWorkspace" />
     
     <Integer name="ClickSensitivityMillis" label="=clickSensitivityMillis" />
@@ -25,6 +26,7 @@
 
     <Integer name="CompanyActionRemindBefore" label="=crmRTRemindBefore" />
     <Integer name="NewsRefreshIntervalSeconds" label="=newsRefreshIntervalSeconds" />
+    <Integer name="LoadingStateDelayMillis" label="=loadingStateDelayMillis" />
 
     <Relation name="UiTheme" relation="UiThemes" label="=uiTheme" />
 

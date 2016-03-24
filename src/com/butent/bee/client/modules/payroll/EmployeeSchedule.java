@@ -205,7 +205,7 @@ class EmployeeSchedule extends WorkScheduleWidget {
         Lists.newArrayList(COL_LOCATION_NAME));
 
     selector.addStyleName(selectorStyleName);
-    DomUtils.setPlaceholder(selector, Localized.getConstants().newObject());
+    DomUtils.setPlaceholder(selector, Localized.dictionary().newObject());
 
     if (!BeeUtils.isEmpty(partIds)) {
       selector.getOracle().setExclusions(partIds);

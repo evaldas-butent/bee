@@ -1,5 +1,6 @@
 package com.butent.bee.client.modules.transport.charts;
 
+import com.google.common.base.Strings;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Multimap;
@@ -51,6 +52,7 @@ import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.Color;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -153,7 +155,10 @@ public abstract class ChartBase extends TimeBoard {
     });
   }
 
+  private final Map<Long, String> transportGroups = new HashMap<>();
+
   private final Map<Long, Color> cargoTypeColors = new HashMap<>();
+  private final Map<Long, String> cargoTypeNames = new HashMap<>();
 
   private final Multimap<Long, CargoHandling> cargoHandling = ArrayListMultimap.create();
 
@@ -167,7 +172,7 @@ public abstract class ChartBase extends TimeBoard {
 
   private final Set<String> relevantDataViews = Sets.newHashSet(VIEW_ORDER_CARGO,
       VIEW_CARGO_TYPES, VIEW_CARGO_HANDLING, VIEW_CARGO_TRIPS, VIEW_TRIP_CARGO,
-      ClassifierConstants.VIEW_COUNTRIES,
+      VIEW_TRANSPORT_GROUPS, ClassifierConstants.VIEW_COUNTRIES,
       AdministrationConstants.VIEW_COLORS, AdministrationConstants.VIEW_THEME_COLORS);
 
   private final List<ChartData> filterData = new ArrayList<>();
@@ -180,10 +185,18 @@ public abstract class ChartBase extends TimeBoard {
   public void handleAction(Action action) {
     switch (action) {
       case FILTER:
+        FilterHelper.enableDataTypes(filterData, getEnabledFilterDataTypes());
+
         FilterHelper.openDialog(filterData, new FilterHelper.DialogCallback() {
           @Override
           public void onClear() {
             resetFilter(FilterType.TENTATIVE);
+          }
+
+          @Override
+          public void onDataTypesChange(Set<ChartData.Type> types) {
+            updateEnabledFilterDataTypes(types);
+            handleAction(Action.FILTER);
           }
 
           @Override
@@ -313,6 +326,10 @@ public abstract class ChartBase extends TimeBoard {
     return Pair.of(minLoad, maxUnload);
   }
 
+  protected String getCargoTypeName(Long id) {
+    return cargoTypeNames.get(id);
+  }
+
   protected abstract String getDataService();
 
   protected int getDefaultDayColumnWidth(int chartWidth) {
@@ -328,6 +345,8 @@ public abstract class ChartBase extends TimeBoard {
     return filterData;
   }
 
+  protected abstract String getFilterDataTypesColumnName();
+
   protected abstract String getSettingsFormName();
 
   protected abstract String getShowAdditionalInfoColumnName();
@@ -341,6 +360,10 @@ public abstract class ChartBase extends TimeBoard {
   protected abstract String getShowPlaceInfoColumnName();
 
   protected abstract String getThemeColumnName();
+
+  protected String getTransportGroupName(Long id) {
+    return transportGroups.get(id);
+  }
 
   protected boolean hasCargoHandling(Long cargoId) {
     return cargoId != null && cargoHandling.containsKey(cargoId);
@@ -491,16 +514,38 @@ public abstract class ChartBase extends TimeBoard {
       restoreColors(serialized);
     }
 
+    transportGroups.clear();
+    serialized = rowSet.getTableProperty(PROP_TRANSPORT_GROUPS);
+    if (!BeeUtils.isEmpty(serialized)) {
+      BeeRowSet groups = BeeRowSet.restore(serialized);
+      int nameIndex = groups.getColumnIndex(COL_GROUP_NAME);
+
+      for (BeeRow group : groups) {
+        String name = group.getString(nameIndex);
+        if (!BeeUtils.isEmpty(name)) {
+          transportGroups.put(group.getId(), name);
+        }
+      }
+    }
+
     cargoTypeColors.clear();
+    cargoTypeNames.clear();
+
     serialized = rowSet.getTableProperty(PROP_CARGO_TYPES);
     if (!BeeUtils.isEmpty(serialized)) {
       BeeRowSet cargoTypes = BeeRowSet.restore(serialized);
 
+      int nameIndex = cargoTypes.getColumnIndex(COL_CARGO_TYPE_NAME);
       int colorIndex = cargoTypes.getColumnIndex(COL_CARGO_TYPE_COLOR);
       int bgIndex = cargoTypes.getColumnIndex(COL_BACKGROUND);
       int fgIndex = cargoTypes.getColumnIndex(COL_FOREGROUND);
 
       for (BeeRow cargoType : cargoTypes) {
+        String name = cargoType.getString(nameIndex);
+        if (!BeeUtils.isEmpty(name)) {
+          cargoTypeNames.put(cargoType.getId(), name);
+        }
+
         String bg = cargoType.getString(bgIndex);
         String fg = cargoType.getString(fgIndex);
 
@@ -744,6 +789,17 @@ public abstract class ChartBase extends TimeBoard {
     }
   }
 
+  private Set<ChartData.Type> getEnabledFilterDataTypes() {
+    Set<ChartData.Type> types = EnumSet.noneOf(ChartData.Type.class);
+
+    String s = TimeBoardHelper.getString(getSettings(), getFilterDataTypesColumnName());
+    if (!BeeUtils.isEmpty(s)) {
+      types.addAll(EnumUtils.parseNameSet(ChartData.Type.class, s));
+    }
+
+    return types;
+  }
+
   private void refreshFilterInfo() {
     if (isFiltered()) {
       List<String> selection = new ArrayList<>();
@@ -818,6 +874,19 @@ public abstract class ChartBase extends TimeBoard {
         render(false);
       }
     });
+  }
+
+  private boolean updateEnabledFilterDataTypes(Set<ChartData.Type> types) {
+    if (!DataUtils.isEmpty(getSettings())
+        && getSettings().containsColumn(getFilterDataTypesColumnName())
+        && !BeeUtils.sameElements(types, getEnabledFilterDataTypes())) {
+
+      return TimeBoardHelper.updateSettings(getSettings(), getFilterDataTypesColumnName(),
+          Strings.emptyToNull(EnumUtils.joinNames(types)));
+
+    } else {
+      return false;
+    }
   }
 
   private void updateFilterData() {

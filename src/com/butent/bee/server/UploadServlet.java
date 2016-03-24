@@ -126,7 +126,7 @@ public class UploadServlet extends LoginServlet {
     }
   }
 
-  private String deletePhoto(Map<String, String> parameters) {
+  private static String deletePhoto(Map<String, String> parameters) {
     String fileName = parameters.get(Service.VAR_FILE_NAME);
 
     if (BeeUtils.isEmpty(fileName)) {
@@ -134,8 +134,8 @@ public class UploadServlet extends LoginServlet {
       logger.severe(message);
       return message;
 
-    } else if (fs.photoExists(fileName)) {
-      boolean deleted = fs.deletePhoto(fileName);
+    } else if (FileStorageBean.photoExists(fileName)) {
+      boolean deleted = FileStorageBean.deletePhoto(fileName);
 
       if (deleted) {
         logger.info("photo deleted:", fileName);
@@ -190,7 +190,7 @@ public class UploadServlet extends LoginServlet {
     return response;
   }
 
-  private String uploadPhoto(HttpServletRequest req, Map<String, String> parameters) {
+  private static String uploadPhoto(HttpServletRequest req, Map<String, String> parameters) {
     String fileName = parameters.get(Service.VAR_FILE_NAME);
     if (BeeUtils.isEmpty(fileName)) {
       String message = "photo file name not specified";
@@ -200,7 +200,7 @@ public class UploadServlet extends LoginServlet {
 
     String oldPhoto = parameters.get(Service.VAR_OLD_VALUE);
     if (!BeeUtils.isEmpty(oldPhoto)) {
-      boolean deleted = fs.deletePhoto(oldPhoto);
+      boolean deleted = FileStorageBean.deletePhoto(oldPhoto);
       if (deleted) {
         logger.info("old photo deleted:", oldPhoto);
       } else {
@@ -208,8 +208,8 @@ public class UploadServlet extends LoginServlet {
       }
     }
 
-    if (fs.photoExists(fileName)) {
-      boolean deleted = fs.deletePhoto(fileName);
+    if (FileStorageBean.photoExists(fileName)) {
+      boolean deleted = FileStorageBean.deletePhoto(fileName);
       if (deleted) {
         logger.info("existing photo deleted:", fileName);
       } else {
@@ -223,7 +223,7 @@ public class UploadServlet extends LoginServlet {
     String response;
 
     try {
-      boolean stored = fs.storePhoto(req.getInputStream(), fileName);
+      boolean stored = FileStorageBean.storePhoto(req.getInputStream(), fileName);
       if (stored) {
         logger.info(TimeUtils.elapsedSeconds(start), "stored photo:", fileName);
         response = fileName.trim();

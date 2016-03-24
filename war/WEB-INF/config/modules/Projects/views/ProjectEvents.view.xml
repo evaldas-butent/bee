@@ -12,7 +12,10 @@
         <SimpleJoin name="Person" joinType="LEFT">
           <SimpleColumn alias="PublisherFirstName" name="FirstName" />
           <SimpleColumn alias="PublisherLastName" name="LastName" />
+          <SimpleColumn name="PhotoFile" />
+          <!-- @DEPRECATED { -->
           <SimpleColumn name="Photo" />
+          <!-- } -->
         </SimpleJoin>
       </SimpleJoin>
     </SimpleJoin>

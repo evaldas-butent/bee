@@ -6,7 +6,7 @@ import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 
-import static com.butent.bee.shared.modules.administration.AdministrationConstants.COL_RELATION;
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
@@ -37,6 +37,7 @@ import com.butent.bee.client.widget.InputText;
 import com.butent.bee.client.widget.InputTime;
 import com.butent.bee.client.widget.InputTimeOfDay;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.CellSource;
@@ -62,6 +63,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 public final class ParametersGrid extends AbstractGridInterceptor {
 
@@ -85,11 +87,13 @@ public final class ParametersGrid extends AbstractGridInterceptor {
       }
       BeeParameter prm = params.get(prmName);
       String value = null;
+      row.setProperty("IsDefault", Objects.equals(prm.supportsUsers() ? prm.getValue(userId)
+          : prm.getValue(), prm.getDefValue()) ? "1" : null);
 
       switch (prm.getType()) {
         case BOOLEAN:
           value = BeeUtils.unbox(prm.supportsUsers() ? prm.getBoolean(userId) : prm.getBoolean())
-              ? Localized.getConstants().yes() : Localized.getConstants().no();
+              ? Localized.dictionary().yes() : Localized.dictionary().no();
           break;
 
         case COLLECTION:
@@ -154,10 +158,6 @@ public final class ParametersGrid extends AbstractGridInterceptor {
 
   }
 
-  private static final String TBL_NAME = "Parameters";
-  private static final String COL_NAME = "Name";
-  private static final String COL_VALUE = "Value";
-
   public static void open(String module) {
     Assert.notEmpty(module);
     openGrid(module, ViewHelper.getPresenterCallback());
@@ -170,7 +170,7 @@ public final class ParametersGrid extends AbstractGridInterceptor {
   }
 
   private static void openGrid(String module, PresenterCallback callback) {
-    GridFactory.openGrid(TBL_NAME, new ParametersGrid(module), null, callback);
+    GridFactory.openGrid(TBL_PARAMETERS, new ParametersGrid(module), null, callback);
   }
 
   private final String module;
@@ -199,7 +199,7 @@ public final class ParametersGrid extends AbstractGridInterceptor {
       message = BeeUtils.joinWords(ms.getModule().getCaption(),
           (ms.getSubModule() == null) ? null : ms.getSubModule().getCaption());
     }
-    return BeeUtils.joinWords(Localized.getConstants().parameters(),
+    return BeeUtils.joinWords(Localized.dictionary().parameters(),
         BeeUtils.parenthesize(message));
   }
 
@@ -212,9 +212,9 @@ public final class ParametersGrid extends AbstractGridInterceptor {
   public AbstractCellRenderer getRenderer(String columnName, List<? extends IsColumn> dataColumns,
       ColumnDescription columnDescription, CellSource cellSource) {
 
-    if (BeeUtils.same(columnName, COL_VALUE)) {
-      return new ValueRenderer(DataUtils.getColumnIndex(COL_NAME, dataColumns),
-          DataUtils.getColumnIndex(COL_VALUE, dataColumns), cellSource);
+    if (BeeUtils.same(columnName, COL_PARAMETER_VALUE)) {
+      return new ValueRenderer(DataUtils.getColumnIndex(COL_PARAMETER_NAME, dataColumns),
+          DataUtils.getColumnIndex(COL_PARAMETER_VALUE, dataColumns), cellSource);
     }
     return super.getRenderer(columnName, dataColumns, columnDescription, cellSource);
   }
@@ -226,7 +226,7 @@ public final class ParametersGrid extends AbstractGridInterceptor {
 
   @Override
   public boolean initDescription(GridDescription gridDescription) {
-    gridDescription.setFilter(Filter.custom(TBL_NAME, module));
+    gridDescription.setFilter(Filter.custom(VAR_PARAMETERS_MODULE, module));
     return true;
   }
 
@@ -234,26 +234,37 @@ public final class ParametersGrid extends AbstractGridInterceptor {
   public void onEditStart(EditStartEvent event) {
     event.consume();
     final String column = event.getColumnId();
+    final IsRow row = event.getRowValue();
+    final BeeParameter prm = params.get(row.getString(getDataIndex(COL_PARAMETER_NAME)));
 
-    if (!BeeUtils.same(column, COL_VALUE) || event.isReadOnly()) {
+    if (BeeUtils.same(column, COL_PARAMETER_NAME) && prm.supportsUsers()
+        && BeeKeeper.getUser().isAdministrator()) {
+
+      prm.setUserSupport(false);
+      row.removeProperty(COL_USER);
+      row.setProperty(COL_RELATION, row.getProperty(VAR_PARAMETER_DEFAULT + COL_RELATION));
+
+      getGridView().refreshBySource(COL_PARAMETER_NAME);
+      getGridView().refreshBySource(COL_PARAMETER_VALUE);
       return;
     }
-    final IsRow row = event.getRowValue();
-    final BeeParameter prm = params.get(row.getString(getDataIndex(COL_NAME)));
-
+    if (!BeeUtils.same(column, COL_PARAMETER_VALUE) || event.isReadOnly()) {
+      return;
+    }
     if (event.isDelete()) {
-      set(prm, null, null);
+      set(prm, prm.getDefValue(),
+          prm.supportsUsers() ? row.getProperty(VAR_PARAMETER_DEFAULT + COL_RELATION) : null);
     } else {
       switch (prm.getType()) {
         case BOOLEAN:
           if (EditStartEvent.isClickOrEnter(event.getCharCode())) {
-            set(prm, BeeUtils.toString(!BeeUtils.unbox(prm.supportsUsers()
-                ? prm.getBoolean(userId) : prm.getBoolean())), null);
+            set(prm, BeeUtils.isTrue(prm.supportsUsers() ? prm.getBoolean(userId)
+                : prm.getBoolean()) ? null : BeeConst.STRING_TRUE, null);
           }
           break;
 
         case COLLECTION:
-          Global.inputCollection(prm.getName(), Localized.getConstants().parameter(),
+          Global.inputCollection(prm.getName(), Localized.dictionary().parameter(),
               BeeUtils.toBoolean(prm.getOptions()),
               prm.supportsUsers() ? prm.getCollection(userId) : prm.getCollection(),
               new Consumer<Collection<String>>() {
@@ -265,8 +276,8 @@ public final class ParametersGrid extends AbstractGridInterceptor {
           break;
 
         case MAP:
-          Global.inputMap(prm.getName(), Localized.getConstants().parameter(),
-              Localized.getConstants().value(),
+          Global.inputMap(prm.getName(), Localized.dictionary().parameter(),
+              Localized.dictionary().value(),
               prm.supportsUsers() ? prm.getMap(userId) : prm.getMap(),
               new Consumer<Map<String, String>>() {
                 @Override
@@ -437,14 +448,10 @@ public final class ParametersGrid extends AbstractGridInterceptor {
       } else {
         param.setValue(value);
       }
-      Global.setParameter(param.getName(), value);
+      Global.setParameter(param.getName(), value, !param.supportsUsers());
 
-      IsRow row = getGridView().getActiveRow();
-      row.setProperty(COL_RELATION, selection);
-      row.setProperty("HasValue", BeeUtils.unbox(param.supportsUsers()
-          ? param.hasValue(userId) : param.hasValue()) ? "1" : null);
-
-      getGridView().refreshBySource(COL_VALUE);
+      getGridView().getActiveRow().setProperty(COL_RELATION, selection);
+      getGridView().refreshBySource(COL_PARAMETER_VALUE);
     }
   }
 }

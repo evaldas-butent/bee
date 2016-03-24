@@ -15,7 +15,6 @@ import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.screen.Domain;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormDescription;
-import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.utils.Command;
@@ -117,6 +116,10 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
 
     Set<Action> enabledActions = formDescription.getEnabledActions();
     Set<Action> disabledActions = formDescription.getDisabledActions();
+
+    if (!BeeUtils.isEmpty(formDescription.getFavorite())) {
+      enabledActions.add(Action.BOOKMARK);
+    }
 
     if (!disabledActions.contains(Action.PRINT)) {
       enabledActions.add(Action.PRINT);
@@ -289,14 +292,7 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
 
   @Override
   public String getSupplierKey() {
-    FormInterceptor interceptor = getForm().getFormInterceptor();
-    String key = (interceptor == null) ? null : interceptor.getSupplierKey();
-
-    if (BeeUtils.isEmpty(key)) {
-      return FormFactory.getSupplierKey(getForm().getFormName());
-    } else {
-      return key;
-    }
+    return getForm().getSupplierKey();
   }
 
   @Override

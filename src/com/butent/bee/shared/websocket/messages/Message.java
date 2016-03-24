@@ -18,22 +18,28 @@ public abstract class Message {
         return new AdminMessage();
       }
     },
-    CHAT {
+    CHAT_MESSAGE {
       @Override
       Message createMessage() {
         return new ChatMessage();
       }
     },
-    ECHO {
+    CHAT_STATE {
       @Override
       Message createMessage() {
-        return new EchoMessage();
+        return new ChatStateMessage();
       }
     },
     CONFIG {
       @Override
       Message createMessage() {
         return new ConfigMessage();
+      }
+    },
+    ECHO {
+      @Override
+      Message createMessage() {
+        return new EchoMessage();
       }
     },
     INFO {
@@ -78,40 +84,28 @@ public abstract class Message {
         return new OnlineMessage();
       }
     },
+    PRESENCE {
+      @Override
+      Message createMessage() {
+        return new PresenceMessage();
+      }
+    },
     PROGRESS {
       @Override
       Message createMessage() {
         return new ProgressMessage();
       }
     },
-    ROOM_STATE {
-      @Override
-      Message createMessage() {
-        return new RoomStateMessage();
-      }
-    },
-    ROOM_USER {
-      @Override
-      Message createMessage() {
-        return new RoomUserMessage();
-      }
-    },
-    ROOMS {
-      @Override
-      Message createMessage() {
-        return new RoomsMessage();
-      }
-    },
-    SESSION {
-      @Override
-      Message createMessage() {
-        return new SessionMessage();
-      }
-    },
     SHOW {
       @Override
       Message createMessage() {
         return new ShowMessage();
+      }
+    },
+    SIGNALING {
+      @Override
+      Message createMessage() {
+        return new SignalingMessage();
       }
     },
     USERS {

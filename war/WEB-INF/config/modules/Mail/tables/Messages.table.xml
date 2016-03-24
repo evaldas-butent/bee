@@ -11,9 +11,10 @@
     <String name="Subject" precision="255" label="=mailSubject" />
     <Numeric name="AttachmentCount" precision="3" />
     <Relation name="RawContent" relation="Files" editable="true" />
+    <String name="InReplyTo" precision="32" />
   </Fields>
 
   <Indexes>
-    <Index fields="Date" />
+    <Index fields="InReplyTo" />
   </Indexes>
 </Table>

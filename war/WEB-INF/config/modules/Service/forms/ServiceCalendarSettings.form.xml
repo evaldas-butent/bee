@@ -2,21 +2,21 @@
 <!DOCTYPE Form [
   <!ENTITY tbl "border-collapse: collapse; margin-top: 2ex; margin-left: 1em;">
   <!ENTITY cell "padding: 3px 0 3px 1em;">
-  <!ENTITY lbl "text-align: right; max-width: 180px;">
-  <!ENTITY spin "width: 50px;">
+  <!ENTITY lbl "text-align: right; max-width: 200px;">
+  <!ENTITY spin "width: 70px;">
   <!ENTITY color "width: 120px;">
   <!ENTITY slider_inp "width: 100px;">
   <!ENTITY cb_inp "margin: 0;">
-  <!ENTITY dt_inp "width: 80px;">
+  <!ENTITY dt_inp "width: 100px;">
 ]>
 <f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form"
  
   name="ServiceCalendarSettings" viewName="ServiceSettings" caption="=settings"
-  width="800" height="500"
+  width="840" height="540"
   >
 
   <FlowPanel style="background-color: WhiteSmoke;" class="flexBox-horizontal">
-    <Table kind="controls" style="&tbl;" cellStyle="&cell;">
+    <Table kind="custom" style="&tbl;" cellStyle="&cell;">
       <row>
         <Label for="CalendarTaskTypes" style="&lbl;" />
         <MultiSelector source="CalendarTaskTypes" viewName="TaskTypes"
@@ -77,7 +77,7 @@
       </row>
     </Table>
     
-    <Table kind="controls" style="&tbl;" cellStyle="&cell;">
+    <Table kind="custom" style="&tbl;" cellStyle="&cell;">
       <row>
         <text />
         <Label text="=color" />
