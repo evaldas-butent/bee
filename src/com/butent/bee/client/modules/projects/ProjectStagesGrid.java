@@ -113,10 +113,6 @@ class ProjectStagesGrid extends AbstractGridInterceptor {
           unitsRows = BeeRowSet.maybeRestore(prop);
         }
 
-        if (unitsRows == null) {
-          return BeeConst.STRING_EMPTY;
-        }
-
         String colName = null;
         switch (calcColName) {
           case NAME_ACTUAL_TASKS_DURATION:
@@ -140,7 +136,7 @@ class ProjectStagesGrid extends AbstractGridInterceptor {
 
         if (!BeeConst.isUndef(idxUnit)) {
           long idValue = BeeUtils.unbox(row.getLong(idxUnit));
-          BeeRow unitRow = unitsRows.getRowById(idValue);
+          BeeRow unitRow = unitsRows != null ? unitsRows.getRowById(idValue) : null;
 
           if (unitRow != null) {
             String prop = unitRow.getProperty(PROP_REAL_FACTOR);
