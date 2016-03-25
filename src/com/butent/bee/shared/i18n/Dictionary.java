@@ -1195,6 +1195,8 @@ public interface Dictionary {
 
   default String crmTaskPriorityMedium() {return g("crmTaskPriorityMedium");}
 
+  default String crmTaskPrivate() {return g("crmTaskPrivate");}
+
   default String crmTaskPublishTime() {return g("crmTaskPublishTime");}
 
   default String crmTaskReminder() {return g("crmTaskReminder");}

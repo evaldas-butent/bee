@@ -23,6 +23,7 @@ import com.butent.bee.shared.modules.discussions.DiscussionsConstants;
 import com.butent.bee.shared.modules.documents.DocumentConstants;
 import com.butent.bee.shared.modules.projects.ProjectConstants;
 import com.butent.bee.shared.modules.service.ServiceConstants;
+import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.ScheduleDateMode;
@@ -33,6 +34,7 @@ import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 public final class TaskUtils {
@@ -57,7 +59,7 @@ public final class TaskUtils {
       }
 
       if (BeeUtils.unbox(row.getInteger(info.getColumnIndex(COL_STATUS)))
-          != TaskStatus.COMPLETED.ordinal()) {
+        != TaskStatus.COMPLETED.ordinal()) {
         if (resp != null) {
           resp.addWarning(
               BeeUtils.joinWords(Localized.dictionary().crmTask(), row.getId()),
@@ -192,9 +194,17 @@ public final class TaskUtils {
         String note;
 
         if (BeeUtils.isEmpty(oldValue)) {
-          note = getInsertNote(label, renderColumn(dataInfo, newRow, column, i));
+          if (Objects.equals(oldRow.getBoolean(i), Boolean.TRUE)) {
+            note = getInsertNote(label, "");
+          } else {
+            note = getInsertNote(label, renderColumn(dataInfo, oldRow, column, i));
+          }
         } else if (BeeUtils.isEmpty(newValue)) {
-          note = getDeleteNote(label, renderColumn(dataInfo, oldRow, column, i));
+          if (Objects.equals(oldRow.getBoolean(i), Boolean.TRUE)) {
+            note = getDeleteNote(label, "");
+          } else {
+            note = getDeleteNote(label, renderColumn(dataInfo, oldRow, column, i));
+          }
         } else {
           note = getUpdateNote(label, renderColumn(dataInfo, oldRow, column, i),
               renderColumn(dataInfo, newRow, column, i));

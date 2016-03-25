@@ -86,7 +86,10 @@
           <InputTimeOfDay name="Reminder_Time" step="&timeStep;" style="&timeStyle;" />
         </FlowPanel>
         <cell colSpan="2" horizontalAlignment="left" style="padding-left: 2em;" module="Mail">
-          <CheckBox name="Mail" text="=mailNotify" />
+          <FlowPanel>
+            <CheckBox name="Mail" text="=mailNotify" />
+            <CheckBox source="PrivateTask" style="padding-left: 2em;" />
+          </FlowPanel>
         </cell>
       </row>
     </Table>

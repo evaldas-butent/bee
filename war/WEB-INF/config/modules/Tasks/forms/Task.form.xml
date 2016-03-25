@@ -125,6 +125,13 @@
                 label="=crmTaskObservers" />
             </FlowPanel>
     
+            &separator;
+            <FlowPanel>
+              <Label style="&lbl1;" />
+              <CheckBox source="PrivateTask" />
+            </FlowPanel>
+        
+            &separator;
             <FlowPanel style="&section;" module="Projects" name="ProjectData" >
               <Label text="=project" style="&top1;" />
               <DataSelector source="Project" renderColumns="ProjectName"

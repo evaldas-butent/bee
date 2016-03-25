@@ -283,6 +283,7 @@ public final class TaskConstants {
   public static final String COL_DESCRIPTION = "Description";
   public static final String COL_CAPTION = "Caption";
   public static final String COL_TASK_COMPANY = "Company";
+  public static final String COL_PRIVATE_TASK = "PrivateTask";
 
   public static final String COL_PARENT = "Parent";
   public static final String COL_ORDER = "Order";
@@ -399,6 +400,8 @@ public final class TaskConstants {
   public static final String ALS_REMINDER_NAME = "ReminderName";
 
   public static final String ALS_LAST_SPAWN = "LastSpawn";
+
+  public static final String MENU_TASKS = "Tasks";
 
   public static final String PROP_EXECUTORS = "Executors";
   public static final String PROP_EXECUTOR_GROUPS = "ExecutorGroups";
