@@ -88,8 +88,6 @@ public final class AdministrationConstants {
   public static final String SVC_TOTAL_TO_WORDS = "GetTotalInWords";
 
   public static final String SVC_GET_DICTIONARY = "get_dictionary";
-  public static final String SVC_DICTIONARY_PROPERTIES_TO_DATABASE =
-      "dictionary_properties_to_database";
   public static final String SVC_DICTIONARY_DATABASE_TO_PROPERTIES =
       "dictionary_database_to_properties";
 
@@ -223,6 +221,8 @@ public final class AdministrationConstants {
   public static final String GRID_COLORS = "Colors";
   public static final String GRID_THEMES = "Themes";
   public static final String GRID_THEME_COLORS = "ThemeColors";
+
+  public static final String GRID_DICTIONARY = "Dictionary";
 
   public static final String COL_PARAMETER = "Parameter";
   public static final String COL_PARAMETER_NAME = "Name";

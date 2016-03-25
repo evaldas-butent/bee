@@ -1205,9 +1205,6 @@ public final class CliWorker {
     if (BeeUtils.startsSame(args, "get", "load")) {
       service = SVC_GET_DICTIONARY;
 
-    } else if (BeeUtils.startsSame(args, "p2d", "p2b")) {
-      service = SVC_DICTIONARY_PROPERTIES_TO_DATABASE;
-
     } else if (BeeUtils.startsSame(args, "d2p", "b2p")) {
       service = SVC_DICTIONARY_DATABASE_TO_PROPERTIES;
 
@@ -1411,12 +1408,12 @@ public final class CliWorker {
   }
 
   private static void doLocale(String[] arr, String args) {
-    if (BeeUtils.isEmpty(args)) {
-      showExtData("Locale info", LocaleUtils.getInfo());
-
-    } else if (BeeUtils.contains(arr[0], 's')) {
+    if (BeeUtils.contains(arr[0], 's')) {
       BeeKeeper.getRpc().invoke("localeInfo", args,
           ResponseHandler.callback(ArrayUtils.joinWords(arr)));
+
+    } else if (BeeUtils.isEmpty(args)) {
+      showExtData("Locale info", LocaleUtils.getInfo());
 
     } else {
       List<Property> info = new ArrayList<>();

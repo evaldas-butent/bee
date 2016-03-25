@@ -8,12 +8,22 @@
 
     <DataColumn name="Key" visible="true" />
 
-    <DataColumn name="EN" visible="true" />
+    <DataColumn name="DefaultEN" visible="true" />
+    <DataColumn name="CustomEN" />
 
-    <DataColumn name="LT" />
-    <DataColumn name="RU" />
-    <DataColumn name="FI" />
-    <DataColumn name="LV" />
-    <DataColumn name="DE" />
+    <DataColumn name="DefaultLT" />
+    <DataColumn name="CustomLT" />
+
+    <DataColumn name="DefaultRU" />
+    <DataColumn name="CustomRU" />
+
+    <DataColumn name="DefaultFI" />
+    <DataColumn name="CustomFI" />
+
+    <DataColumn name="DefaultLV" />
+    <DataColumn name="CustomLV" />
+
+    <DataColumn name="DefaultDE" />
+    <DataColumn name="CustomDE" />
   </g:columns>
 </g:Grid>

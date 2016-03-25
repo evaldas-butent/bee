@@ -110,7 +110,8 @@ public final class Localized {
       }
 
       Localized.glossary.putAll(glossary);
-      logger.info(NameUtils.getClassName(Localized.class), "glossary", glossary.size());
+      logger.info(NameUtils.getClassName(Localized.class), "glossary",
+          dictionary().languageTag(), glossary.size());
     }
   }
 

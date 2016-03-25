@@ -730,6 +730,23 @@ public final class BeeUtils {
     return src.substring(0, start) + src.substring(end);
   }
 
+  public static <T> Set<T> difference(Collection<? extends T> col1, Collection<? extends T> col2) {
+    Set<T> result;
+
+    if (isEmpty(col1)) {
+      result = new HashSet<>();
+
+    } else {
+      result = new HashSet<>(col1);
+
+      if (!isEmpty(col2)) {
+        result.removeAll(col2);
+      }
+    }
+
+    return result;
+  }
+
   public static double distance(double x1, double y1, double x2, double y2) {
     double dx = x2 - x1;
     double dy = y2 - y1;
@@ -966,6 +983,14 @@ public final class BeeUtils {
     }
   }
 
+  public static <K, V> V getQuietly(Map<? extends K, ? extends V> map, K key) {
+    if (map == null) {
+      return null;
+    } else {
+      return map.get(key);
+    }
+  }
+
   public static String getSame(Collection<String> col, String s) {
     if (isEmpty(col)) {
       return null;
@@ -1162,6 +1187,25 @@ public final class BeeUtils {
     Assert.isTrue(pos <= src.length());
 
     return new StringBuilder(src).insert(pos, c).toString();
+  }
+
+  public static <T> Set<T> intersection(Collection<? extends T> col1,
+      Collection<? extends T> col2) {
+
+    Set<T> result;
+
+    if (isEmpty(col1)) {
+      result = new HashSet<>();
+
+    } else {
+      result = new HashSet<>(col1);
+
+      if (!isEmpty(col2)) {
+        result.retainAll(col2);
+      }
+    }
+
+    return result;
   }
 
   public static <C extends Comparable<C>> boolean intersects(Collection<? extends HasRange<C>> col,

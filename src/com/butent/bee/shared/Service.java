@@ -122,6 +122,10 @@ public final class Service {
   public static final String GET_CHAT_MESSAGES = CHAT_SERVICE_PREFIX + "get_messages";
   public static final String SEND_CHAT_MESSAGE = CHAT_SERVICE_PREFIX + "send_message";
 
+  public static final String L10N_SERVICE_PREFIX = RPC_SERVICE_PREFIX + "l10n_";
+
+  public static final String PREPARE_DICTIONARY = L10N_SERVICE_PREFIX + "prepare_dictionary";
+
   public static final String RPC_VAR_PREFIX = "bee_";
   public static final String RPC_VAR_SYS_PREFIX = RPC_VAR_PREFIX + "sys_";
 
@@ -230,8 +234,7 @@ public final class Service {
   public static final String VIEW_COLUMN_SEPARATOR = " ";
 
   public static boolean isChatService(String svc) {
-    Assert.notEmpty(svc);
-    return svc.startsWith(CHAT_SERVICE_PREFIX);
+    return svc != null && svc.startsWith(CHAT_SERVICE_PREFIX);
   }
 
   /**
@@ -241,8 +244,7 @@ public final class Service {
    * @return true if name of service starts with {@link #DATA_SERVICE_PREFIX}
    */
   public static boolean isDataService(String svc) {
-    Assert.notEmpty(svc);
-    return svc.startsWith(DATA_SERVICE_PREFIX);
+    return svc != null && svc.startsWith(DATA_SERVICE_PREFIX);
   }
 
   /**
@@ -252,8 +254,7 @@ public final class Service {
    * @return true if name of service starts with {@link #DB_META_SERVICE_PREFIX}
    */
   public static boolean isDbMetaService(String svc) {
-    Assert.notEmpty(svc);
-    return svc.startsWith(DB_META_SERVICE_PREFIX);
+    return svc != null && svc.startsWith(DB_META_SERVICE_PREFIX);
   }
 
   /**
@@ -263,8 +264,7 @@ public final class Service {
    * @return true if name of service starts with {@link #DB_SERVICE_PREFIX}
    */
   public static boolean isDbService(String svc) {
-    Assert.notEmpty(svc);
-    return svc.startsWith(DB_SERVICE_PREFIX);
+    return svc != null && svc.startsWith(DB_SERVICE_PREFIX);
   }
 
   /**
@@ -277,6 +277,10 @@ public final class Service {
     return BeeUtils.same(svc, INVOKE);
   }
 
+  public static boolean isL10nService(String svc) {
+    return svc != null && svc.startsWith(L10N_SERVICE_PREFIX);
+  }
+
   /**
    * Returns true if {@code svc} value starts with {@link #SYS_SERVICE_PREFIX}.
    *
@@ -284,8 +288,7 @@ public final class Service {
    * @return true if name of service starts with {@link #SYS_SERVICE_PREFIX};
    */
   public static boolean isSysService(String svc) {
-    Assert.notEmpty(svc);
-    return svc.startsWith(SYS_SERVICE_PREFIX);
+    return svc != null && svc.startsWith(SYS_SERVICE_PREFIX);
   }
 
   private Service() {

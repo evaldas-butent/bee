@@ -59,6 +59,7 @@ import com.butent.bee.shared.menu.MenuService;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.rights.Module;
+import com.butent.bee.shared.ui.Preloader;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -307,28 +308,22 @@ public final class TransportHandler {
 
     FormFactory.registerFormInterceptor(FORM_CARGO, new OrderCargoForm());
 
-    final Consumer<ScheduledCommand> assessmentConsumer = new Consumer<ScheduledCommand>() {
-      @Override
-      public void accept(final ScheduledCommand command) {
-        Global.getParameter(PRM_BIND_EXPENSES_TO_INCOMES, new Consumer<String>() {
-          @Override
-          public void accept(String prm) {
-            bindExpensesToIncomes = BeeUtils.unbox(BeeUtils.toBoolean(prm));
-            command.execute();
-          }
-        });
-      }
+    final Preloader assessmentConsumer = command -> {
+      Global.getParameter(PRM_BIND_EXPENSES_TO_INCOMES, new Consumer<String>() {
+        @Override
+        public void accept(String prm) {
+          bindExpensesToIncomes = BeeUtils.unbox(BeeUtils.toBoolean(prm));
+          command.run();
+        }
+      });
     };
-    FormFactory.registerPreloader(FORM_CARGO, new Consumer<ScheduledCommand>() {
-      @Override
-      public void accept(final ScheduledCommand command) {
-        OrderCargoForm.preload(new ScheduledCommand() {
-          @Override
-          public void execute() {
-            assessmentConsumer.accept(command);
-          }
-        });
-      }
+    FormFactory.registerPreloader(FORM_CARGO, command -> {
+      OrderCargoForm.preload(new ScheduledCommand() {
+        @Override
+        public void execute() {
+          assessmentConsumer.accept(command);
+        }
+      });
     });
     FormFactory.registerPreloader(FORM_ASSESSMENT, assessmentConsumer);
     FormFactory.registerPreloader(FORM_ASSESSMENT_FORWARDER, assessmentConsumer);

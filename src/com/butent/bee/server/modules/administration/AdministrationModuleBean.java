@@ -24,10 +24,10 @@ import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.i18n.I18nUtils;
+import com.butent.bee.server.i18n.Localizations;
 import com.butent.bee.server.io.FileUtils;
 import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.modules.ParamHolderBean;
-import com.butent.bee.server.sql.IsQuery;
 import com.butent.bee.server.sql.SqlDelete;
 import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
@@ -61,7 +61,6 @@ import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
 
 import java.text.Collator;
@@ -71,7 +70,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -160,20 +158,18 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
       response = imp.doImport(reqInfo);
 
     } else if (BeeUtils.same(svc, SVC_GET_DICTIONARY)) {
-      Map<String, String> dictionary = getDictionary(usr.getSupportedLocale());
+      Map<String, String> dictionary = Localizations.getGlossary(usr.getSupportedLocale());
       if (BeeUtils.isEmpty(dictionary)) {
         response = ResponseObject.error(svc, "dictionary not available");
       } else {
         response = ResponseObject.response(dictionary).setSize(dictionary.size());
       }
 
-    } else if (BeeUtils.same(svc, SVC_DICTIONARY_PROPERTIES_TO_DATABASE)) {
-      response = dictionaryPropertiesToDatabase();
     } else if (BeeUtils.same(svc, SVC_DICTIONARY_DATABASE_TO_PROPERTIES)) {
       response = dictionaryDatabaseToProperties();
 
     } else {
-      String msg = BeeUtils.joinWords("Commons service not recognized:", svc);
+      String msg = BeeUtils.joinWords("Administration service not recognized:", svc);
       logger.warning(msg);
       response = ResponseObject.error(msg);
     }
@@ -205,27 +201,6 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
 
     params.addAll(getSqlEngineParameters());
     return params;
-  }
-
-  public Map<String, String> getDictionary(SupportedLocale supportedLocale) {
-    Assert.notNull(supportedLocale, "getDictionary: locale is null");
-
-    Map<String, String> dictionary = I18nUtils.readProperties(supportedLocale);
-
-    SimpleRowSet data = getDictionaryData(supportedLocale);
-
-    if (!DataUtils.isEmpty(data)) {
-      for (SimpleRow row : data) {
-        String key = BeeUtils.trim(row.getValue(0));
-        String value = BeeUtils.trim(Codec.unescapePropertyValue(row.getValue(1)));
-
-        if (!key.isEmpty() && !value.isEmpty()) {
-          dictionary.put(key, value);
-        }
-      }
-    }
-
-    return dictionary;
   }
 
   @Override
@@ -676,72 +651,6 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
     return ResponseObject.response(sizes.toString());
   }
 
-  private ResponseObject dictionaryPropertiesToDatabase() {
-    Map<String, String> defaultDictionary =
-        I18nUtils.readProperties(SupportedLocale.DICTIONARY_DEFAULT);
-    if (BeeUtils.isEmpty(defaultDictionary)) {
-      return ResponseObject.error(SupportedLocale.DICTIONARY_DEFAULT, "dictionary not found");
-    }
-
-    List<String> dictionaryKeys = new ArrayList<>(defaultDictionary.keySet());
-
-    EnumMap<SupportedLocale, Map<String, String>> dictionaries =
-        new EnumMap<>(SupportedLocale.class);
-
-    for (SupportedLocale supportedLocale : SupportedLocale.values()) {
-      if (supportedLocale != SupportedLocale.DICTIONARY_DEFAULT) {
-        Map<String, String> dictionary = I18nUtils.readProperties(supportedLocale);
-        if (BeeUtils.isEmpty(dictionary)) {
-          return ResponseObject.error(supportedLocale, "dictionary not found");
-        }
-
-        Set<String> keys = new HashSet<>(dictionary.keySet());
-        keys.removeAll(dictionaryKeys);
-
-        if (!keys.isEmpty()) {
-          logger.warning(supportedLocale, keys.size(), "keys not in",
-              SupportedLocale.DICTIONARY_DEFAULT, "dictionary:", keys);
-        }
-
-        dictionaries.put(supportedLocale, dictionary);
-      }
-    }
-
-    IsQuery truncate = SqlUtils.truncateTable(TBL_DICTIONARY);
-    ResponseObject response = qs.updateDataWithResponse(truncate);
-    if (response.hasErrors()) {
-      return response;
-    }
-
-    dictionaryKeys.sort(null);
-
-    String defaultColumnName = SupportedLocale.DICTIONARY_DEFAULT.getDictionaryColumnName();
-
-    SqlInsert insert = new SqlInsert(TBL_DICTIONARY);
-
-    for (String key : dictionaryKeys) {
-      insert.reset();
-
-      insert.addConstant(COL_DICTIONARY_KEY, key);
-      insert.addConstant(defaultColumnName, Codec.escapePropertyValue(defaultDictionary.get(key)));
-
-      dictionaries.forEach((supportedLocale, dictionary) -> {
-        String value = dictionary.get(key);
-        if (value != null) {
-          insert.addConstant(supportedLocale.getDictionaryColumnName(),
-              Codec.escapePropertyValue(value));
-        }
-      });
-
-      response = qs.insertDataWithResponse(insert);
-      if (response.hasErrors()) {
-        return response;
-      }
-    }
-
-    return ResponseObject.response(dictionaryKeys.size());
-  }
-
   private ResponseObject getCurrentExchangeRate(RequestInfo reqInfo) {
     String type = reqInfo.getParameter(Service.VAR_TYPE);
     String currency = reqInfo.getParameter(COL_CURRENCY_NAME);
@@ -752,7 +661,7 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
   }
 
   private SimpleRowSet getDictionaryData(SupportedLocale supportedLocale) {
-    String valueColumn = supportedLocale.getDictionaryColumnName();
+    String valueColumn = supportedLocale.getDictionaryDefaultColumnName();
 
     SqlSelect query = new SqlSelect()
         .addFields(TBL_DICTIONARY, COL_DICTIONARY_KEY, valueColumn)

@@ -812,6 +812,19 @@ public class QueryServiceBean {
     return getSingleValue(query).getValue(0, 0);
   }
 
+  public Set<String> getValueSet(IsQuery query) {
+    Set<String> result = new HashSet<>();
+
+    String[] arr = getColumn(query);
+    if (arr != null && arr.length > 0) {
+      for (String value : arr) {
+        result.add(value);
+      }
+    }
+
+    return result;
+  }
+
   public BeeRowSet getViewData(String viewName) {
     return getViewData(viewName, null);
   }
