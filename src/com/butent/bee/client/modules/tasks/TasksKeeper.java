@@ -12,6 +12,7 @@ import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.data.Queries.IntCallback;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.event.logical.RowActionEvent;
@@ -29,9 +30,11 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.event.RowTransformEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
+import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.menu.MenuHandler;
@@ -271,6 +274,47 @@ public final class TasksKeeper {
           if (event.hasRow() && event.getOpener() != null) {
             Long taskId = Data.getLong(event.getViewName(), event.getRow(), COL_TASK);
             RowEditor.open(VIEW_TASKS, taskId, event.getOpener());
+          }
+        } else if (event.isEditRow() && event.hasView(VIEW_TASKS)) {
+
+          int ownerIdx = Data.getColumnIndex(VIEW_TASKS, COL_OWNER);
+          int executorIdx = Data.getColumnIndex(VIEW_TASKS, COL_EXECUTOR);
+          int privateTaskIdx = Data.getColumnIndex(VIEW_TASKS, COL_PRIVATE_TASK);
+          Long userId = BeeKeeper.getUser().getUserId();
+          IsRow row = event.getRow();
+
+          if (BeeUtils.unbox(row.getBoolean(privateTaskIdx))
+              && row.getProperty(COL_PRIVATE_TASK) != COL_PRIVATE_TASK) {
+
+            event.consume();
+
+            Filter filter =
+                Filter.and(Filter.equals(COL_TASK, row.getId()), Filter.equals(
+                    AdministrationConstants.COL_USER, userId));
+
+            Queries.getRowCount(VIEW_TASK_USERS, filter, new IntCallback() {
+
+              @Override
+              public void onSuccess(Integer result) {
+                boolean hasUser = false;
+
+                if (BeeUtils.isPositive(result)) {
+                  hasUser = true;
+                }
+
+                if (Objects.equals(userId, row.getLong(ownerIdx))
+                    || Objects.equals(userId, row.getLong(executorIdx))) {
+                  hasUser = true;
+                }
+
+                if (!hasUser) {
+                  BeeKeeper.getScreen().notifySevere(Localized.dictionary().crmTaskPrivate());
+                } else {
+                  row.setProperty(COL_PRIVATE_TASK, COL_PRIVATE_TASK);
+                  RowEditor.open(VIEW_TASKS, row, event.getOpener());
+                }
+              }
+            });
           }
         }
       }

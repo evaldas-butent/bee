@@ -71,6 +71,7 @@ import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.administration.AdministrationConstants.ReminderMethod;
 import com.butent.bee.shared.modules.projects.ProjectConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
@@ -144,13 +145,37 @@ public class TasksModuleBean implements BeeModule {
   public List<SearchResult> doSearch(String query) {
     List<SearchResult> result = new ArrayList<>();
 
-    List<SearchResult> tasksSr = qs.getSearchResults(VIEW_TASKS,
-        src.buildSearchFilter(VIEW_TASKS, Sets.newHashSet(COL_ID, COL_SUMMARY, COL_DESCRIPTION,
-            ALS_COMPANY_NAME, ALS_EXECUTOR_FIRST_NAME, ALS_EXECUTOR_LAST_NAME), query));
-    result.addAll(tasksSr);
+    if (!usr.isMenuVisible(MENU_TASKS)) {
+      return result;
+    }
 
-    result.addAll(qs.getSearchResults(VIEW_TASK_EVENTS, src.buildSearchFilter(VIEW_TASK_EVENTS,
-        Collections.singleton(COL_COMMENT), query)));
+    Filter queryTaskSearch = src.buildSearchFilter(VIEW_TASKS, Sets.newHashSet(COL_ID, COL_SUMMARY,
+        COL_DESCRIPTION, ALS_COMPANY_NAME, ALS_EXECUTOR_FIRST_NAME, ALS_EXECUTOR_LAST_NAME), query);
+
+    Filter queryTaskEventSearch =
+        src.buildSearchFilter(VIEW_TASK_EVENTS, Collections.singleton(COL_COMMENT), query);
+
+    Long userId = usr.getCurrentUserId();
+
+    Filter taskFilter =
+        Filter.or(Filter.and(queryTaskSearch, Filter.isNull(COL_PRIVATE_TASK)), Filter.and(
+            queryTaskSearch, Filter.notNull(COL_PRIVATE_TASK), Filter.or(Filter.equals(COL_OWNER,
+                userId), Filter.equals(COL_EXECUTOR, userId), Filter.in(COL_TASK_ID,
+                VIEW_TASK_USERS, COL_TASK, Filter
+                    .equals(AdministrationConstants.COL_USER, userId)))));
+
+    result.addAll(qs.getSearchResults(VIEW_TASKS, taskFilter));
+
+    Filter taskEventFilter =
+        Filter.or(Filter.and(queryTaskEventSearch, Filter.in(COL_TASK, VIEW_TASKS, COL_TASK_ID,
+            Filter.isNull(COL_PRIVATE_TASK))), Filter.and(
+            queryTaskEventSearch, Filter.in(COL_TASK, VIEW_TASKS, COL_TASK_ID, Filter.and(Filter
+                .notNull(COL_PRIVATE_TASK), Filter.or(Filter.equals(COL_OWNER,
+                userId), Filter.equals(COL_EXECUTOR, userId), Filter.in(COL_TASK_ID,
+                VIEW_TASK_USERS, COL_TASK, Filter
+                    .equals(AdministrationConstants.COL_USER, userId)))))));
+
+    result.addAll(qs.getSearchResults(VIEW_TASK_EVENTS, taskEventFilter));
 
     List<SearchResult> rtSr = qs.getSearchResults(VIEW_RECURRING_TASKS,
         Filter.anyContains(Sets.newHashSet(COL_SUMMARY, COL_DESCRIPTION, ALS_COMPANY_NAME), query));
