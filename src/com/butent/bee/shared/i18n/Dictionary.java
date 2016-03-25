@@ -3487,6 +3487,8 @@ public interface Dictionary {
 
   default String preview() {return g("preview");}
 
+  default String previewMode() {return g("previewMode");}
+
   default String price() {return g("price");}
 
   default String price1() {return g("price1");}
