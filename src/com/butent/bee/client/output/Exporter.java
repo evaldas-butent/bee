@@ -15,6 +15,7 @@ import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.grid.CellContext;
 import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.ColumnHeader;
+import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.screen.BodyPanel;
 import com.butent.bee.client.view.grid.CellGrid;
@@ -440,7 +441,11 @@ public final class Exporter {
 
       form.appendChild(createFormParameter(Service.RPC_VAR_SVC, Service.EXPORT_WORKBOOK));
       form.appendChild(createFormParameter(Service.VAR_FILE_NAME, sanitizeFileName(fileName)));
-      form.appendChild(createFormParameter(Service.VAR_DATA, wb.serialize()));
+
+      String serialized = wb.serialize();
+      form.appendChild(createFormParameter(Service.VAR_DATA, serialized));
+      logger.debug(Service.EXPORT_WORKBOOK, fileName,
+          Format.getDefaultLongFormat().format(serialized.length()));
 
       BodyPanel.conceal(form);
       form.submit();

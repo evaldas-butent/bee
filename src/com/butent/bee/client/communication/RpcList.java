@@ -5,6 +5,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
@@ -180,6 +181,21 @@ public class RpcList extends LinkedHashMap<Integer, RpcInfo> {
 
   @Override
   protected boolean removeEldestEntry(Entry<Integer, RpcInfo> eldest) {
-    return getMaxSize() > 0 && size() > getMaxSize();
+    if (getMaxSize() > 0 && size() > getMaxSize()) {
+      if (eldest == null || eldest.getValue() == null) {
+        return true;
+      }
+
+      RpcInfo rpcInfo = eldest.getValue();
+      if (!rpcInfo.isPending()) {
+        return true;
+      }
+
+      if (System.currentTimeMillis() - rpcInfo.getStartMillis() > TimeUtils.MILLIS_PER_HOUR) {
+        return true;
+      }
+    }
+
+    return false;
   }
 }

@@ -249,9 +249,7 @@ public class ExportServlet extends LoginServlet {
       return null;
 
     } else {
-      XSSFColor color = new XSSFColor();
-      color.setRgb(rgb);
-      return color;
+      return new XSSFColor(rgb);
     }
   }
 
@@ -263,7 +261,7 @@ public class ExportServlet extends LoginServlet {
     anchor.setCol1(colIndex);
     anchor.setRow2(rowIndex);
     anchor.setCol2(colIndex);
-    anchor.setAnchorType(ClientAnchor.MOVE_DONT_RESIZE);
+    anchor.setAnchorType(ClientAnchor.AnchorType.MOVE_DONT_RESIZE);
 
     Picture picture = drawing.createPicture(anchor, pictureIndex);
     picture.resize();
