@@ -7,7 +7,7 @@
 
   <g:columns>
     <DataColumn name="PhotoFile" caption="-" readOnly="true" cellType="html" sortable="false"
-      width="30" horizontalAlignment="center" filterOptions="-" autoFit="false">
+      width="30" horizontalAlignment="center" filterOptions="-" autoFit="false" exportable="false">
       <renderer type="photo" />
     </DataColumn>
 

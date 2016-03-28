@@ -8,7 +8,8 @@
   
   <g:columns>
     <DataColumn name="Photo" caption="-" cellType="html" sortable="false" width="40"
-      horizontalAlignment="center" filterOptions="-" autoFit="false" visible="false">
+      horizontalAlignment="center" filterOptions="-" autoFit="false" exportable="false"
+      visible="false">
       <renderer type="photo" />
     </DataColumn>
 

@@ -10,7 +10,7 @@
     <IdColumn name="Id" visible="false" />
 
     <PropColumn name="UserPhoto" type="string" caption="-" cellType="html"
-      width="40" horizontalAlignment="center" autoFit="false">
+      width="40" horizontalAlignment="center" autoFit="false" exportable="false">
       <renderer type="photo" />
     </PropColumn>
     <PropColumn name="UserNames" type="string" caption="=chatUsers"

@@ -116,6 +116,11 @@ public class XSheet implements BeeSerializable {
     }
   }
 
+  public void addRows(List<XRow> input) {
+    Assert.notNull(input);
+    rows.addAll(input);
+  }
+
   public void autoSizeAll() {
     if (!autoSize.isEmpty()) {
       autoSize.clear();
@@ -140,6 +145,10 @@ public class XSheet implements BeeSerializable {
     styles.clear();
 
     autoSize.clear();
+  }
+
+  public void clearRows() {
+    rows.clear();
   }
 
   @Override
@@ -277,6 +286,10 @@ public class XSheet implements BeeSerializable {
 
   public List<XPicture> getPictures() {
     return pictures;
+  }
+
+  public int getRowCount() {
+    return rows.size();
   }
 
   public Double getRowHeightFactor() {

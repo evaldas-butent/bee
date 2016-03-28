@@ -22,6 +22,9 @@ var BeeSettings = {
   "reducedInteractionStatusMinutes": 15,
   "incomingChatMessageSound": "notification.wav",
   "incomingChatMessageVolume": 0.5,
+  "exporterInputStepRows": 100,
+  "exporterOutputStepRows": 1000,
+  "exporterSplitRowsThreshold": 1000,
   "theme" : {
     "WorkspaceMarginRight": 25,
     "ViewHeaderHeight": "600, 30, 1200, 52",
