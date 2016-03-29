@@ -419,11 +419,14 @@
 }
 
 .bee-Header-caption {
-  color: #414142;
+  color: black;
   margin-left: 30px;
 }
 .bee-Header-message {
-  padding-left: 8px;
+  padding: 0 8px 0 8px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
 }
 
 .bee-Header-commandPanel {

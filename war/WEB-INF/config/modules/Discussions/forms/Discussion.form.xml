@@ -177,4 +177,7 @@
 
     <FlowPanel data="DiscussionsComments" name="DiscussionsComments" class="flexible bee-discuss-comment-container" />
   </FlowPanel>
+  <f:rowMessage>
+    <ui:function>return "&lt;span style&#61;\"font-weight:bold; font-size:23px;\"&gt;" + row.Subject + "&lt;&#47;span&gt;";</ui:function>
+  </f:rowMessage>
 </f:Form>
