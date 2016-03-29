@@ -119,53 +119,6 @@ public final class FileUtils {
     }
   }
 
-  @Deprecated
-  public static void deletePhoto(final String photoFileName, final Callback<String> callback) {
-    Assert.notEmpty(photoFileName);
-
-    Map<String, String> parameters = createParameters(Service.DELETE_PHOTO, photoFileName);
-
-    final XMLHttpRequest xhr = RpcUtils.createXhr();
-    xhr.open(RequestBuilder.POST.toString(), getUploadUrl(parameters), true);
-
-    RpcUtils.addSessionId(xhr);
-
-    xhr.setOnload(new EventListener() {
-      @Override
-      public void handleEvent(Event evt) {
-        if (xhr.getStatus() == Response.SC_OK) {
-          String response = ResponseObject.restore(xhr.getResponseText()).getResponseAsString();
-
-          if (BeeUtils.same(response, photoFileName)) {
-            logger.info("deleted photo", photoFileName);
-            logger.addSeparator();
-
-            if (callback != null) {
-              callback.onSuccess(photoFileName);
-            }
-
-          } else {
-            String msg = BeeUtils.joinWords("delete", photoFileName, "response:", response);
-            logger.warning(msg);
-            if (callback != null) {
-              callback.onFailure(msg);
-            }
-          }
-
-        } else {
-          String msg = BeeUtils.joinWords("delete", photoFileName, "response status:",
-              BeeUtils.bracket(xhr.getStatus()), xhr.getStatusText());
-          logger.severe(msg);
-          if (callback != null) {
-            callback.onFailure(msg);
-          }
-        }
-      }
-    });
-
-    xhr.send();
-  }
-
   public static String generatePhotoFileName(String originalFileName) {
     String name = BeeUtils.join(BeeConst.STRING_UNDER, BeeUtils.randomString(6),
         System.currentTimeMillis());
@@ -332,69 +285,6 @@ public final class FileUtils {
         }
       });
     }
-  }
-
-  @Deprecated
-  public static void uploadPhoto(NewFileInfo fileInfo, final String photoFileName, String oldPhoto,
-      final Callback<String> callback) {
-
-    Assert.notNull(fileInfo);
-    Assert.notEmpty(photoFileName);
-    Assert.notNull(callback);
-
-    final String originalFileName = fileInfo.getName();
-    final long fileSize = fileInfo.getSize();
-
-    Map<String, String> parameters = createParameters(Service.UPLOAD_PHOTO, photoFileName);
-
-    parameters.put(Service.VAR_FILE_SIZE, BeeUtils.toString(fileSize));
-    if (!BeeUtils.isEmpty(oldPhoto)) {
-      parameters.put(Service.VAR_OLD_VALUE, oldPhoto.trim());
-    }
-
-    final String progressId = maybeCreateProgress(originalFileName, fileSize);
-
-    final XMLHttpRequest xhr = RpcUtils.createXhr();
-    xhr.open(RequestBuilder.POST.toString(), getUploadUrl(parameters), true);
-
-    RpcUtils.addSessionId(xhr);
-
-    final long start = System.currentTimeMillis();
-
-    xhr.setOnload(new EventListener() {
-      @Override
-      public void handleEvent(Event evt) {
-        if (progressId != null) {
-          BeeKeeper.getScreen().removeProgress(progressId);
-        }
-
-        if (xhr.getStatus() == Response.SC_OK) {
-          String response = ResponseObject.restore(xhr.getResponseText()).getResponseAsString();
-
-          if (BeeUtils.same(response, photoFileName)) {
-            logger.info(TimeUtils.elapsedSeconds(start), originalFileName, "size:", fileSize);
-            logger.info("uploaded as:", photoFileName);
-            logger.addSeparator();
-
-            callback.onSuccess(photoFileName);
-
-          } else {
-            String msg = BeeUtils.joinWords("upload", originalFileName, "response:", response);
-            logger.warning(msg);
-            callback.onFailure(msg);
-          }
-
-        } else {
-          String msg = BeeUtils.joinWords("upload", originalFileName, "response status:",
-              BeeUtils.bracket(xhr.getStatus()), xhr.getStatusText());
-          logger.severe(msg);
-          callback.onFailure(msg);
-        }
-      }
-    });
-
-    addProgressListener(xhr, progressId);
-    xhr.send(fileInfo.getNewFile());
   }
 
   public static void uploadTempFile(NewFileInfo fileInfo, final Callback<String> callback) {

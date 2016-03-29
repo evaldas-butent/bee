@@ -278,6 +278,8 @@ public class ExportServlet extends LoginServlet {
   }
 
   private static Workbook createWorkbook(XWorkbook inputBook) {
+    long start = System.currentTimeMillis();
+
     XSSFWorkbook wb = new XSSFWorkbook();
 
     CreationHelper creationHelper = null;
@@ -487,6 +489,7 @@ public class ExportServlet extends LoginServlet {
       }
     }
 
+    logger.info("create workbook in", TimeUtils.elapsedMillis(start), "ms");
     return wb;
   }
 
@@ -535,6 +538,8 @@ public class ExportServlet extends LoginServlet {
   }
 
   private static synchronized int pushRows(String id, String serialized) {
+    long start = System.currentTimeMillis();
+
     int count = 0;
     String[] arr = Codec.beeDeserializeCollection(serialized);
 
@@ -544,14 +549,15 @@ public class ExportServlet extends LoginServlet {
         count++;
       }
 
-      logger.info(NameUtils.getClassName(ExportServlet.class), id, "push", count, "rows,",
-          "stack has", exportedRows.keySet().size(), "keys", exportedRows.size(), "values");
+      logger.info("export", id, "push", count, "rows in", TimeUtils.elapsedMillis(start), "ms,",
+          "exported rows:", exportedRows.keySet().size(), "keys", exportedRows.size(), "values");
     }
 
     return count;
   }
 
   private static synchronized int maybePopRows(String id, XWorkbook workbook) {
+    long start = System.currentTimeMillis();
     int count = 0;
 
     if (exportedRows.containsKey(id) && workbook.getSheetCount() == 1) {
@@ -561,10 +567,9 @@ public class ExportServlet extends LoginServlet {
       workbook.getSheets().get(0).addRows(rows);
       exportedRows.removeAll(id);
 
-      logger.info(NameUtils.getClassName(ExportServlet.class), id, "pop", count, "rows,",
-          "stack has", exportedRows.keySet().size(), "keys", exportedRows.size(), "values");
-
       count = rows.size();
+      logger.info("export", id, "pop", count, "rows in", TimeUtils.elapsedMillis(start), "ms,",
+          "exported rows:", exportedRows.keySet().size(), "keys", exportedRows.size(), "values");
     }
 
     return count;
@@ -608,12 +613,12 @@ public class ExportServlet extends LoginServlet {
       String name = Codec.rfc5987(FileNameUtils.defaultExtension(fileName, EXT_WORKBOOK));
       resp.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename*=" + name);
 
-      logger.info(">", svc, fileName, TimeUtils.elapsedSeconds(start));
-
       try {
         OutputStream output = resp.getOutputStream();
         workbook.write(output);
         output.flush();
+
+        logger.info(">", svc, fileName, TimeUtils.elapsedSeconds(start));
 
       } catch (IOException ex) {
         logger.error(ex);

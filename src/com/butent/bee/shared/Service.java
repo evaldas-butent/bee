@@ -107,8 +107,6 @@ public final class Service {
 
   public static final String UPLOAD_FILE = UPLOAD_SERVICE_PREFIX + "file";
   public static final String UPLOAD_TEMP_FILE = UPLOAD_SERVICE_PREFIX + "temp_file";
-  public static final String UPLOAD_PHOTO = UPLOAD_SERVICE_PREFIX + "photo";
-  public static final String DELETE_PHOTO = UPLOAD_SERVICE_PREFIX + "delete_photo";
 
   public static final String EXPORT_WORKBOOK = EXPORT_SERVICE_PREFIX + "workbook";
   public static final String EXPORT_ROWS = EXPORT_SERVICE_PREFIX + "rows";

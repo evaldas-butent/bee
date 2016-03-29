@@ -571,7 +571,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
 
       Calculation rmc = formDescription.getRowMessage();
       if (rmc != null) {
-        setRowMessage(Evaluator.create(rmc, null, dataColumns));
+        setRowMessage(Evaluator.create(rmc, null, dataCols));
       }
     }
 
