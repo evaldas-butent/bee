@@ -391,6 +391,15 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
 
     final Integer status = row.getInteger(form.getDataIndex(COL_STATUS));
     final Long owner = row.getLong(form.getDataIndex(COL_OWNER));
+    String caption = BeeConst.STRING_EMPTY;
+
+    if (BeeUtils.isEmpty(row.getString(form.getDataIndex(COL_TOPIC)))) {
+      caption = Localized.dictionary().discussion() + ":";
+    } else {
+      caption = Localized.dictionary().announcement() + ":";
+    }
+
+    header.setCaption(caption);
 
     final Map<String, String> discussParameters = DiscussionsUtils.getDiscussionsParameters(row);
     header.clearCommandPanel();
@@ -425,7 +434,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
 
     widget = form.getWidgetByName(VIEW_DISCUSSIONS_MARK_TYPES);
     if (widget instanceof Panel) {
-      createMarkPanel((Flow) widget, form, row, null, true);
+      createMarkPanel((Flow) widget, form, row, null);
     }
 
     widget = form.getWidgetByName(COL_PERMIT_COMMENT);
@@ -694,11 +703,6 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
 
   private void createMarkPanel(final Flow flowWidget, final FormView form, final IsRow formRow,
       final Long commentId) {
-    createMarkPanel(flowWidget, form, formRow, commentId, false);
-  }
-
-  private void createMarkPanel(final Flow flowWidget, final FormView form, final IsRow formRow,
-      final Long commentId, final boolean renderHeader) {
     flowWidget.clear();
 
     if (form == null || formRow == null) {
@@ -713,8 +717,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
     if (markTypes != null) {
       flowWidget.clear();
       if (!markTypes.isEmpty()) {
-        showDiscussionMarkData(flowWidget, form, formRow, commentId, owner, status, markTypes,
-            renderHeader);
+        showDiscussionMarkData(flowWidget, form, formRow, commentId, owner, status, markTypes);
       }
     }
   }
@@ -1051,21 +1054,12 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
 
   private void showDiscussionMarkData(final Flow flowWidget, final FormView form,
       final IsRow formRow, final Long commentId, final Long owner, final Integer status,
-      final BeeRowSet result, final boolean renderHeaderInfo) {
+      final BeeRowSet result) {
 
     final SimpleRowSet markData = DiscussionsUtils.getMarkData(formRow);
 
     if (markData == null) {
       return;
-    }
-
-    if (renderHeaderInfo) {
-      HeaderView header = form.getViewPresenter().getHeader();
-      String caption = form.getCaption();
-      caption =
-          BeeUtils.joinWords(caption, "[" + Localized.dictionary().discussMarked(),
-              DiscussionsUtils.getDiscussMarkCountTotal(markData) + "]");
-      header.setCaption(caption);
     }
 
     boolean enabled =
@@ -1393,7 +1387,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
       case ACTIVATE:
         return (DiscussionStatus.in(status, DiscussionStatus.INACTIVE) && isAdmin(adminLogin))
             || (DiscussionStatus.in(status, DiscussionStatus.CLOSED, DiscussionStatus.INACTIVE)
-                && (isOwner(userId, owner) || isAdmin(adminLogin)));
+            && (isOwner(userId, owner) || isAdmin(adminLogin)));
       case CLOSE:
         return DiscussionStatus.in(status, DiscussionStatus.ACTIVE, DiscussionStatus.INACTIVE)
             && (isOwner(userId, owner) || isAdmin(adminLogin));
