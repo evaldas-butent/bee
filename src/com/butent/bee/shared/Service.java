@@ -105,9 +105,6 @@ public final class Service {
   public static final String ENSURE_GRID_SETTINGS = DATA_SERVICE_PREFIX + "ensure_grid_settings";
   public static final String COPY_GRID_SETTINGS = DATA_SERVICE_PREFIX + "copy_grid_settings";
 
-  public static final String UPLOAD_FILE = UPLOAD_SERVICE_PREFIX + "file";
-  public static final String UPLOAD_TEMP_FILE = UPLOAD_SERVICE_PREFIX + "temp_file";
-
   public static final String EXPORT_WORKBOOK = EXPORT_SERVICE_PREFIX + "workbook";
   public static final String EXPORT_ROWS = EXPORT_SERVICE_PREFIX + "rows";
 
@@ -198,8 +195,6 @@ public final class Service {
   public static final String VAR_FILE_ID = RPC_VAR_PREFIX + "file_id";
   public static final String VAR_FILES = RPC_VAR_PREFIX + "files";
   public static final String VAR_FILE_NAME = RPC_VAR_PREFIX + "file_name";
-  public static final String VAR_FILE_TYPE = RPC_VAR_PREFIX + "file_type";
-  public static final String VAR_FILE_SIZE = RPC_VAR_PREFIX + "file_size";
 
   public static final String VAR_OLD_VALUE = RPC_VAR_PREFIX + "old_value";
   public static final String VAR_OPTIONS = RPC_VAR_PREFIX + "options";
