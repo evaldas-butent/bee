@@ -30,7 +30,7 @@ import java.util.Set;
 
 public class CargoInvoicesGrid extends AbstractGridInterceptor implements ClickHandler {
 
-  private final Button action = new Button(Localized.getConstants().trSendToERP(), this);
+  private final Button action = new Button(Localized.dictionary().trSendToERP(), this);
 
   @Override
   public void afterCreatePresenter(GridPresenter presenter) {
@@ -55,10 +55,10 @@ public class CargoInvoicesGrid extends AbstractGridInterceptor implements ClickH
       ids.add(row.getId());
     }
     if (ids.isEmpty()) {
-      presenter.getGridView().notifyWarning(Localized.getConstants().selectAtLeastOneRow());
+      presenter.getGridView().notifyWarning(Localized.dictionary().selectAtLeastOneRow());
       return;
     }
-    Global.confirm(Localized.getConstants().trSendToERPConfirm(), new ConfirmationCallback() {
+    Global.confirm(Localized.dictionary().trSendToERPConfirm(), new ConfirmationCallback() {
       @Override
       public void onConfirm() {
         final HeaderView header = presenter.getHeader();

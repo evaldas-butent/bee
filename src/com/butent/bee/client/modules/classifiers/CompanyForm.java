@@ -1,6 +1,5 @@
 package com.butent.bee.client.modules.classifiers;
 
-import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.shared.HasHandlers;
@@ -48,9 +47,8 @@ import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.FaLabel;
-import com.butent.bee.client.widget.Image;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.css.values.FontSize;
 import com.butent.bee.shared.data.BeeRow;
@@ -70,8 +68,8 @@ import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
-import java.util.HashSet;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -81,7 +79,7 @@ public class CompanyForm extends AbstractFormInterceptor implements ClickHandler
   private static final String NAME_INPUT_MODE = "InputMode";
   private List<Long> rowIds = new ArrayList<>();
 
-  private final Button toErp = new Button(Localized.getConstants().trSendToERP(), this);
+  private final Button toErp = new Button(Localized.dictionary().trSendToERP(), this);
 
   private Long company;
 
@@ -300,13 +298,16 @@ public class CompanyForm extends AbstractFormInterceptor implements ClickHandler
 
   @Override
   public void afterRefresh(FormView form, IsRow row) {
+    HeaderView header = form.getViewPresenter().getHeader();
+    header.clearCommandPanel();
+
     if (DataUtils.hasId(row)) {
       refreshCreditInfo();
       createQrButton(form, row);
 
-      HeaderView header = form.getViewPresenter().getHeader();
-      header.clearCommandPanel();
-
+      if (BeeKeeper.getUser().isWidgetVisible(RegulatedWidget.TO_ERP)) {
+        header.addCommandItem(toErp);
+      }
       FaLabel input = getFormIcon();
       input.setTitle(getFormIconTitle());
       input.addClickHandler(new ClickHandler() {
@@ -323,7 +324,6 @@ public class CompanyForm extends AbstractFormInterceptor implements ClickHandler
           }
         }
       });
-
       header.addCommandItem(input);
     }
   }
@@ -338,12 +338,10 @@ public class CompanyForm extends AbstractFormInterceptor implements ClickHandler
     if (DataUtils.isNewRow(getActiveRow())) {
       return;
     }
-    Global.confirm(Localized.getConstants().trSendToERP() + "?", new ConfirmationCallback() {
+    Global.confirm(Localized.dictionary().trSendToERP() + "?", new ConfirmationCallback() {
       @Override
       public void onConfirm() {
-        final HeaderView header = getHeaderView();
-        header.clearCommandPanel();
-        header.addCommandItem(new Image(Global.getImages().loading()));
+        toErp.setVisible(false);
 
         ParameterList args = TradeKeeper.createArgs(TradeConstants.SVC_SEND_COMPANY_TO_ERP);
         args.addDataItem(COL_COMPANY, getActiveRowId());
@@ -351,12 +349,11 @@ public class CompanyForm extends AbstractFormInterceptor implements ClickHandler
         BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
           @Override
           public void onResponse(ResponseObject response) {
-            header.clearCommandPanel();
-            header.addCommandItem(toErp);
+            toErp.setVisible(true);
             response.notify(getFormView());
 
             if (!response.hasErrors()) {
-              getFormView().notifyInfo(Localized.getConstants().ok() + ":",
+              getFormView().notifyInfo(Localized.dictionary().ok() + ":",
                   response.getResponseAsString());
             }
           }
@@ -392,22 +389,6 @@ public class CompanyForm extends AbstractFormInterceptor implements ClickHandler
     super.onSaveChanges(listener, event);
   }
 
-  @Override
-  public boolean onStartEdit(FormView form, IsRow row, ScheduledCommand focusCommand) {
-    if (BeeKeeper.getUser().isWidgetVisible(RegulatedWidget.TO_ERP)) {
-      HeaderView header = form.getViewPresenter().getHeader();
-      header.clearCommandPanel();
-      header.addCommandItem(toErp);
-    }
-    return super.onStartEdit(form, row, focusCommand);
-  }
-
-  @Override
-  public void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow) {
-    form.getViewPresenter().getHeader().clearCommandPanel();
-    super.onStartNewRow(form, oldRow, newRow);
-  }
-
   private boolean checkRequired() {
     if (!BeeUtils.toBoolean(getStringValue("Offshore"))) {
       for (String field : new String[] {
@@ -417,7 +398,7 @@ public class CompanyForm extends AbstractFormInterceptor implements ClickHandler
           DomUtils.setFocus(getFormView().getWidgetBySource(field), true);
 
           getFormView().notifySevere(Data.getColumnLabel(getViewName(), field),
-              Localized.getConstants().valueRequired());
+              Localized.dictionary().valueRequired());
 
           return false;
         }

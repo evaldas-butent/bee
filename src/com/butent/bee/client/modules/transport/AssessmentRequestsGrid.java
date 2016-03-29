@@ -23,7 +23,7 @@ public class AssessmentRequestsGrid extends AbstractGridInterceptor {
   @Override
   public void afterCreatePresenter(final GridPresenter presenter) {
     FaLabel summary = new FaLabel(FontAwesome.LINE_CHART);
-    summary.setTitle(Localized.getConstants().totalOf());
+    summary.setTitle(Localized.dictionary().totalOf());
 
     summary.addClickHandler(new ClickHandler() {
       @Override

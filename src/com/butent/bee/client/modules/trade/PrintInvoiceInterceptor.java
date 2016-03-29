@@ -115,7 +115,7 @@ public class PrintInvoiceInterceptor extends AbstractFormInterceptor {
         relation.disableNewRow();
 
         final UnboundSelector selector = UnboundSelector.create(relation);
-        final CheckBox enableGrouping = new CheckBox(Localized.getConstants().primaryOnly());
+        final CheckBox enableGrouping = new CheckBox("Tik pirminiai");
         enableGrouping.setChecked(false);
         enableGrouping.addClickHandler(new ClickHandler() {
 
@@ -135,7 +135,7 @@ public class PrintInvoiceInterceptor extends AbstractFormInterceptor {
         flow.add(selector);
         flow.add(enableGrouping);
 
-        Global.inputWidget(Localized.getConstants().itemOrService(), flow,
+        Global.inputWidget(Localized.dictionary().itemOrService(), flow,
             new InputCallback() {
               @Override
               public void onCancel() {

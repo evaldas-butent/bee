@@ -117,7 +117,7 @@ public class CargoPurchaseInvoiceForm extends InvoiceForm implements ClickHandle
     final UnboundSelector selector = UnboundSelector.create(relation);
     Flow flow = new Flow();
     Horizontal panel = new Horizontal();
-    panel.add(new Label(Localized.getConstants().trdOperation()));
+    panel.add(new Label(Localized.dictionary().trdOperation()));
     panel.add(selector);
     flow.add(panel);
 
@@ -157,7 +157,7 @@ public class CargoPurchaseInvoiceForm extends InvoiceForm implements ClickHandle
       public String getErrorMessage() {
         if (!DataUtils.isId(selector.getRelatedId())) {
           selector.setFocus(true);
-          return Localized.getConstants().valueRequired();
+          return Localized.dictionary().valueRequired();
         } else if (Objects.equals(selector.getRelatedId(), accumulation)) {
           selector.setFocus(true);
           return "Neteisinga operacija";
@@ -165,7 +165,7 @@ public class CargoPurchaseInvoiceForm extends InvoiceForm implements ClickHandle
         for (Pair<IsRow, InputNumber> pair : values) {
           if (pair.getB().isEmpty()) {
             pair.getB().setFocus(true);
-            return Localized.getConstants().valueRequired();
+            return Localized.dictionary().valueRequired();
           }
         }
         return InputCallback.super.getErrorMessage();

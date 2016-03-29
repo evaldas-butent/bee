@@ -211,7 +211,7 @@ public enum Report implements HasWidgetSupplier {
   INCOME_INVOICES_REPORT(ModuleAndSub.of(Module.TRANSPORT), SVC_INCOME_INVOICES_REPORT) {
     @Override
     public List<ReportItem> getItems() {
-      LocalizableConstants loc = Localized.getConstants();
+      Dictionary loc = Localized.dictionary();
       return Arrays.asList(
           new ReportTextItem(COL_ASSESSMENT, "Užsakymo Nr."),
           new ReportDateTimeItem(COL_ORDER + COL_DATE, "Užsakymo data"),
@@ -313,9 +313,9 @@ public enum Report implements HasWidgetSupplier {
           new ReportNumericItem(ProjectConstants.ALS_PROFIT, loc.profit()).setPrecision(2),
 
           new ReportEnumItem(ProjectConstants.ALS_TASK_STATUS, BeeUtils.joinWords(Data
-              .getColumnLabel(TaskConstants.VIEW_TASKS, TaskConstants.COL_STATUS),
+                  .getColumnLabel(TaskConstants.VIEW_TASKS, TaskConstants.COL_STATUS),
               BeeUtils.parenthesize(loc.crmTasks())), TaskStatus.class)
-          );
+      );
     }
 
     @Override

@@ -1787,7 +1787,7 @@ public class TransportModuleBean implements BeeModule {
 
       result.put(tbl, qs.getDouble(query.addSum(xpr, VAR_TOTAL)));
     }
-    LocalizableConstants loc = usr.getLocalizableConstants();
+    Dictionary loc = usr.getDictionary();
 
     return ResponseObject.info(BeeUtils.joinWords(loc.incomes(),
             BeeUtils.round(BeeUtils.unbox(result.get(TBL_CARGO_INCOMES)), 2)),

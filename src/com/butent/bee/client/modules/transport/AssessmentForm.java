@@ -443,8 +443,8 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
         return;
       }
 
-      pForm.notifySevere(Localized.getConstants().cargoValue(),
-          Localized.getConstants().valueRequired());
+      pForm.notifySevere(Localized.dictionary().cargoValue(),
+          Localized.dictionary().valueRequired());
 
       event.consume();
     }
@@ -1039,8 +1039,8 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
         return;
       }
 
-      getFormView().notifySevere(Localized.getConstants().cargoValue(),
-          Localized.getConstants().valueRequired());
+      getFormView().notifySevere(Localized.dictionary().cargoValue(),
+          Localized.dictionary().valueRequired());
     } else if (BeeUtils.same(event.getRelatedViewName(), TBL_CARGO_INCOMES)) {
       if (event.isOpened()) {
         event.getSelector().setAdditionalFilter(Filter.equals(COL_CARGO, getLongValue(COL_CARGO)));
