@@ -16,23 +16,18 @@
     <Table kind="controls">
       <col index="0" kind="label" />
       <col index="2" kind="label" />
+      <col index="4" kind="label" />
 
       <row>
         <Label for="Date" />
         <InputDateTime source="Date" style="&inpdt;" visible="true" />
 
-        <Label text="=tags" />
-        <ChildSelector childTable="TradeDocumentTags" viewName="TradeTags"
-          targetRelColumn="TradeDocument" sourceRelColumn="TradeTag" renderColumns="TagName"
-          newRowEnabled="false" style="&inpw;" />
-      </row>
-
-      <row>
         <Label for="Series" />
         <InputText source="Series" upperCase="true" style="width: &inpdt;" />
 
         <Label for="Number" />
         <InputText source="Number" style="&inpw;" />
+
       </row>
 
       <row>
@@ -41,6 +36,11 @@
 
         <Label for="Number2" />
         <InputText source="Number2" style="&inpw;" />
+
+        <Label text="=tags" />
+        <ChildSelector childTable="TradeDocumentTags" viewName="TradeTags"
+          targetRelColumn="TradeDocument" sourceRelColumn="TradeTag" renderColumns="TagName"
+          newRowEnabled="false" style="&inpw;" />
       </row>
 
       <row>
@@ -50,6 +50,10 @@
 
         <Label for="Status" />
         <ListBox source="Status" visible="true" />
+
+        <Label for="Manager" />
+        <DataSelector source="Manager" editSource="ManagerPerson" 
+          renderColumns="ManagerFirstName ManagerLastName" newRowEnabled="false" style="&inpw;" />
       </row>
 
       <row>
@@ -60,6 +64,10 @@
         <Label for="Customer" />
         <DataSelector source="Customer" style="&inpw;" visible="true" choiceColumns="Name TypeName" 
           renderColumns="CustomerName CustomerTypeName"/>
+
+        <Label for="Payer" />
+        <DataSelector source="Payer" style="&inpw;" visible="true" choiceColumns="Name TypeName" 
+          renderColumns="PayerName PayerTypeName"/>
       </row>
 
       <row>
@@ -70,25 +78,9 @@
         <Label for="WarehouseTo" />
         <DataSelector source="WarehouseTo" style="&inpw;" visible="true" choiceColumns="Code Name" 
           renderColumns="WarehouseToCode WarehouseToName"/>
-      </row>
 
-      <row>
-        <Label for="Manager" />
-        <DataSelector source="Manager" editSource="ManagerPerson" 
-          renderColumns="ManagerFirstName ManagerLastName" newRowEnabled="false" style="&inpw;" />
-
-        <Label for="Currency" />
-        <DataSelector source="Currency" renderColumns="CurrencyName" editEnabled="false"
-          newRowEnabled="false" style="width: 5em;" />
-      </row>
-
-      <row>
         <Label for="Term" />
         <InputDateTime source="Term" style="&inpdt;" />
-        
-        <Label for="Payer" />
-        <DataSelector source="Payer" style="&inpw;" visible="true" choiceColumns="Name TypeName" 
-          renderColumns="PayerName PayerTypeName"/>
       </row>
 
       <row>
@@ -97,6 +89,25 @@
 
         <Label for="Discount" />
         <InputDecimal source="Discount" style="&inpdt;" />
+
+        <Label for="Currency" />
+        <DataSelector source="Currency" renderColumns="CurrencyName" editEnabled="false"
+          newRowEnabled="false" style="width: 5em;" />
+      </row>
+
+      <row>
+        <Label for="Department" />
+        <DataSelector source="Department" renderColumns="DepartmentName"
+          choiceColumns="FullName" searchableColumns="DepartmentName" visibleLines="7"
+          selectorClass="bee-BranchSelector" newRowEnabled="false" style="&inpw;">
+          <ui:rowRenderer type="branch" />
+        </DataSelector>
+
+        <Label for="ActivityType" />
+        <DataSelector source="ActivityType" style="&inpw;"/>
+
+        <Label for="CostCenter" />
+        <DataSelector source="CostCenter" style="&inpw;"/>
       </row>
     </Table>
 

@@ -178,7 +178,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
             public void onSuccess(Integer result) {
               MultiDeleteEvent.fire(BeeKeeper.getBus(), getViewName(), rows);
               afterMulti(rowIds);
-              showInfo(Localized.getMessages().deletedRows(result));
+              showInfo(Localized.dictionary().deletedRows(result));
             }
           });
         }
@@ -323,10 +323,10 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
       deleteCallback.onConfirm();
 
     } else {
-      options.add(Localized.getConstants().cancel());
+      options.add(Localized.dictionary().cancel());
 
       Global.getMsgBoxen().display(getCaption(), Icon.ALARM,
-          Collections.singletonList(Localized.getConstants().deleteQuestion()), options, 2,
+          Collections.singletonList(Localized.dictionary().deleteQuestion()), options, 2,
           new ChoiceCallback() {
             @Override
             public void onSuccess(int value) {
@@ -468,7 +468,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
         }
         if (ids.isEmpty()) {
           if (BeeUtils.isPositive(getGridView().getGrid().getDataSize())) {
-            getGridView().notifyWarning(Localized.getConstants().selectAtLeastOneRow());
+            getGridView().notifyWarning(Localized.dictionary().selectAtLeastOneRow());
           }
           return;
         }
@@ -499,7 +499,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
           IsRow row = getActiveRow();
 
           if (!row.isRemovable()) {
-            getGridView().notifyWarning(Localized.getConstants().rowIsNotRemovable());
+            getGridView().notifyWarning(Localized.dictionary().rowIsNotRemovable());
 
           } else if (getGridView().isRowEditable(row, getGridView())) {
             Collection<RowInfo> selectedRows =
@@ -529,7 +529,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
         break;
 
       case MENU:
-        menu.open(this, getMainView().isEnabled());
+        menu.open(this, getMainView().isEnabled(), getGridInterceptor());
         break;
 
       case MERGE:
@@ -981,20 +981,20 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
       return;
     }
 
-    Global.choiceWithCancel(getCaption(), Localized.getConstants().mergeInto(), labels,
+    Global.choiceWithCancel(getCaption(), Localized.dictionary().mergeInto(), labels,
         new ChoiceCallback() {
           @Override
           public void onSuccess(final int index) {
             if (BeeUtils.isIndex(rows, index)) {
               List<String> messages = new ArrayList<>(labels);
               messages.add(BeeConst.STRING_EMPTY);
-              messages.add(Localized.getConstants().mergeInto());
+              messages.add(Localized.dictionary().mergeInto());
               messages.add(BeeConst.STRING_EMPTY);
               messages.add(labels.get(index));
 
               List<String> options = new ArrayList<>();
-              options.add(Localized.getConstants().actionMerge());
-              options.add(Localized.getConstants().cancel());
+              options.add(Localized.dictionary().actionMerge());
+              options.add(Localized.dictionary().cancel());
 
               Global.getMsgBoxen().display(getCaption(), Icon.ALARM, messages, options, 1,
                   new ChoiceCallback() {
@@ -1085,7 +1085,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
       result.clear();
 
       for (IsRow row : rows) {
-        String idLabel = BeeUtils.joinWords(Localized.getConstants().captionId(), row.getId());
+        String idLabel = BeeUtils.joinWords(Localized.dictionary().captionId(), row.getId());
 
         if (indexes.isEmpty()) {
           result.add(idLabel);

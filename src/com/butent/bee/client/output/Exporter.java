@@ -6,23 +6,32 @@ import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.FormElement;
 import com.google.gwt.dom.client.IFrameElement;
 import com.google.gwt.dom.client.InputElement;
+import com.google.gwt.http.client.RequestBuilder;
+import com.google.gwt.http.client.Response;
 import com.google.gwt.user.client.Timer;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
+import com.butent.bee.client.Settings;
+import com.butent.bee.client.communication.RpcUtils;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.grid.CellContext;
 import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.ColumnHeader;
+import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.screen.BodyPanel;
+import com.butent.bee.client.utils.Duration;
 import com.butent.bee.client.view.grid.CellGrid;
 import com.butent.bee.client.view.grid.ColumnInfo;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Holder;
+import com.butent.bee.shared.Latch;
 import com.butent.bee.shared.Service;
+import com.butent.bee.shared.communication.CommUtils;
 import com.butent.bee.shared.css.Colors;
 import com.butent.bee.shared.css.CssUnit;
 import com.butent.bee.shared.css.values.TextAlign;
@@ -49,12 +58,15 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import elemental.xml.XMLHttpRequest;
 
 public final class Exporter {
 
@@ -71,7 +83,9 @@ public final class Exporter {
 
   private static final int SUBMIT_TIMEOUT = 60_000;
 
-  private static final int DEFAULT_STEP_SIZE = 100;
+  private static final int INPUT_STEP_SIZE = 100;
+  private static final int OUTPUT_STEP_SIZE = 1_000;
+  private static final int SPLIT_ROWS_THRESHOLD = 1_000;
 
   private static final double PARENT_LABEL_HEIGHT_FACTOR = 1.1;
   private static final double CAPTION_HEIGHT_FACTOR = 1.5;
@@ -123,8 +137,8 @@ public final class Exporter {
 
     int width = BeeUtils.resize(BeeUtils.trim(fileName).length(), 20, 100, 300, 600);
 
-    Global.inputString(Localized.getConstants().exportToMsExcel(),
-        Localized.getConstants().fileName(), callback, null, fileName, 200, null,
+    Global.inputString(Localized.dictionary().exportToMsExcel(),
+        Localized.dictionary().fileName(), callback, null, fileName, 200, null,
         width, CssUnit.PX, BeeConst.UNDEF,
         Action.EXPORT.getCaption(), Action.CANCEL.getCaption(), null);
   }
@@ -358,7 +372,7 @@ public final class Exporter {
       export(sheet, fileName);
 
     } else {
-      int stepSize = Math.min(rowCount, DEFAULT_STEP_SIZE);
+      int stepSize = getInputStep(rowCount);
       int numberOfSteps = rowCount / stepSize;
       if (rowCount % stepSize > 0) {
         numberOfSteps++;
@@ -411,7 +425,7 @@ public final class Exporter {
     }
   }
 
-  public static void export(XWorkbook wb, String fileName) {
+  public static void export(final XWorkbook wb, final String fileName) {
     if (wb == null || wb.isEmpty()) {
       logger.severe(NameUtils.getClassName(Exporter.class), "workbook is empty");
 
@@ -422,38 +436,46 @@ public final class Exporter {
       logger.severe(NameUtils.getClassName(Exporter.class), "invalid file name", fileName);
 
     } else {
-      String frameName = NameUtils.createUniqueName("frame");
+      final String exportId = createId();
 
-      final IFrameElement frame = Document.get().createIFrameElement();
+      if (splitRows(wb)) {
+        int rowCount = wb.getRowCount();
+        int stepSize = getOutputStep(rowCount);
 
-      frame.setName(frameName);
-      frame.setSrc(Keywords.URL_ABOUT_BLANK);
-
-      BodyPanel.conceal(frame);
-
-      final FormElement form = Document.get().createFormElement();
-
-      form.setAcceptCharset(BeeConst.CHARSET_UTF8);
-      form.setMethod(Keywords.METHOD_POST);
-      form.setAction(GWT.getHostPageBaseURL() + EXPORT_URL);
-      form.setTarget(frameName);
-
-      form.appendChild(createFormParameter(Service.RPC_VAR_SVC, Service.EXPORT_WORKBOOK));
-      form.appendChild(createFormParameter(Service.VAR_FILE_NAME, sanitizeFileName(fileName)));
-      form.appendChild(createFormParameter(Service.VAR_DATA, wb.serialize()));
-
-      BodyPanel.conceal(form);
-      form.submit();
-
-      Timer timer = new Timer() {
-        @Override
-        public void run() {
-          form.removeFromParent();
-          frame.removeFromParent();
+        int numberOfSteps = rowCount / stepSize;
+        if (rowCount % stepSize > 0) {
+          numberOfSteps++;
         }
-      };
 
-      timer.schedule(SUBMIT_TIMEOUT);
+        final Latch latch = new Latch(numberOfSteps);
+        final Holder<Boolean> success = Holder.of(true);
+
+        for (int offset = 0; offset < rowCount; offset += stepSize) {
+          if (!BeeUtils.isTrue(success.get())) {
+            break;
+          }
+
+          int toIndex = Math.min(offset + stepSize, rowCount);
+          List<XRow> rows = wb.getSheets().get(0).getRows().subList(offset, toIndex);
+
+          sendRows(exportId, offset, rows, ok -> {
+            if (ok) {
+              latch.decrement();
+
+              if (latch.isOpen()) {
+                wb.clearRows();
+                submit(exportId, wb, fileName);
+              }
+
+            } else {
+              success.set(false);
+            }
+          });
+        }
+
+      } else {
+        submit(exportId, wb, fileName);
+      }
     }
   }
 
@@ -478,6 +500,11 @@ public final class Exporter {
         sheet.autoSizeColumn(i);
       }
     }
+  }
+
+  private static String createId() {
+    return BeeUtils.join(BeeConst.STRING_UNDER, System.currentTimeMillis(),
+        BeeUtils.randomString(10));
   }
 
   private static InputElement createFormParameter(String name, String value) {
@@ -519,6 +546,16 @@ public final class Exporter {
     sheet.add(row);
   }
 
+  private static int getInputStep(int rowCount) {
+    int step = BeeUtils.positive(Settings.getExporterInputStepRows(), INPUT_STEP_SIZE);
+    return Math.min(rowCount, step);
+  }
+
+  private static int getOutputStep(int rowCount) {
+    int step = BeeUtils.positive(Settings.getExporterOutputStepRows(), OUTPUT_STEP_SIZE);
+    return Math.min(rowCount, step);
+  }
+
   private static Double getRowHeightFactor(CellGrid grid) {
     int height = grid.getBodyCellHeight();
     if (height >= 30) {
@@ -528,8 +565,99 @@ public final class Exporter {
     }
   }
 
+  private static String getUrl() {
+    return GWT.getHostPageBaseURL() + EXPORT_URL;
+  }
+
   private static String sanitizeFileName(String input) {
     return FileNameUtils.sanitize(input, BeeConst.STRING_POINT);
+  }
+
+  private static void sendRows(String id, final int offset, List<XRow> rows,
+      final Consumer<Boolean> callback) {
+
+    Map<String, String> parameters = new HashMap<>();
+    parameters.put(Service.RPC_VAR_SVC, Service.EXPORT_ROWS);
+    parameters.put(Service.VAR_ID, id);
+    parameters.put(Service.VAR_FROM, BeeUtils.toString(offset));
+
+    String url = CommUtils.addQueryString(getUrl(), CommUtils.buildQueryString(parameters, false));
+
+    final XMLHttpRequest xhr = RpcUtils.createXhr();
+    xhr.open(RequestBuilder.POST.toString(), url);
+    RpcUtils.addSessionId(xhr);
+
+    final Duration duration = new Duration();
+
+    xhr.setOnload(event -> {
+      if (xhr.getStatus() == Response.SC_OK) {
+        duration.finish();
+        logger.debug("<", Service.EXPORT_ROWS, offset,
+            BeeUtils.bracket(duration.getCompletedTime()));
+
+        callback.accept(true);
+
+      } else {
+        String msg = BeeUtils.joinWords(Service.EXPORT_ROWS, offset, "response status:",
+            BeeUtils.bracket(xhr.getStatus()), xhr.getStatusText());
+
+        logger.severe(msg);
+        BeeKeeper.getScreen().notifySevere(msg);
+
+        callback.accept(false);
+      }
+    });
+
+    String data = Codec.beeSerialize(rows);
+    logger.debug(">", Service.EXPORT_ROWS, offset, rows.size(), data.length());
+
+    duration.restart(null);
+    xhr.send(data);
+  }
+
+  private static boolean splitRows(XWorkbook wb) {
+    int x = BeeUtils.positive(Settings.getExporterSplitRowsThreshold(), SPLIT_ROWS_THRESHOLD);
+    return wb.getSheetCount() == 1 && wb.getRowCount() >= x;
+  }
+
+  private static void submit(String id, XWorkbook wb, String fileName) {
+    String frameName = NameUtils.createUniqueName("frame");
+
+    final IFrameElement frame = Document.get().createIFrameElement();
+
+    frame.setName(frameName);
+    frame.setSrc(Keywords.URL_ABOUT_BLANK);
+
+    BodyPanel.conceal(frame);
+
+    final FormElement form = Document.get().createFormElement();
+
+    form.setAcceptCharset(BeeConst.CHARSET_UTF8);
+    form.setMethod(Keywords.METHOD_POST);
+    form.setAction(getUrl());
+    form.setTarget(frameName);
+
+    form.appendChild(createFormParameter(Service.RPC_VAR_SVC, Service.EXPORT_WORKBOOK));
+    form.appendChild(createFormParameter(Service.VAR_ID, id));
+    form.appendChild(createFormParameter(Service.VAR_FILE_NAME, sanitizeFileName(fileName)));
+
+    String serialized = wb.serialize();
+    form.appendChild(createFormParameter(Service.VAR_DATA, serialized));
+    logger.debug(Service.EXPORT_WORKBOOK, fileName,
+        Format.getDefaultLongFormat().format(serialized.length()));
+
+    BodyPanel.conceal(form);
+    form.submit();
+
+    Timer timer = new Timer() {
+      @Override
+      public void run() {
+        form.removeFromParent();
+        frame.removeFromParent();
+      }
+    };
+
+    timer.schedule(SUBMIT_TIMEOUT);
   }
 
   private Exporter() {

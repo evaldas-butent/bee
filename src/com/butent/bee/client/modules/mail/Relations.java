@@ -133,7 +133,7 @@ public class Relations extends Flow implements Editor, ClickHandler, SelectorEve
 
     } else {
       FaLabel face = new FaLabel(FontAwesome.CHAIN);
-      face.setTitle(Localized.getConstants().relations());
+      face.setTitle(Localized.dictionary().relations());
       face.addClickHandler(this);
       add(face);
       table.setWidth("600px");
@@ -356,7 +356,7 @@ public class Relations extends Flow implements Editor, ClickHandler, SelectorEve
     }
     refresh();
 
-    Global.inputWidget(Localized.getConstants().relations(), table, new InputCallback() {
+    Global.inputWidget(Localized.dictionary().relations(), table, new InputCallback() {
       @Override
       public void onAdd() {
         addRelations();
@@ -365,9 +365,9 @@ public class Relations extends Flow implements Editor, ClickHandler, SelectorEve
       @Override
       public void onClose(final CloseCallback closeCallback) {
         if (isValueChanged()) {
-          Global.decide(Localized.getConstants().relations(),
-              Lists.newArrayList(Localized.getConstants().changedValues() + BeeConst.CHAR_SPACE
-                  + getLabel(), Localized.getConstants().saveChanges()),
+          Global.decide(Localized.dictionary().relations(),
+              Lists.newArrayList(Localized.dictionary().changedValues() + BeeConst.CHAR_SPACE
+                  + getLabel(), Localized.dictionary().saveChanges()),
               new DecisionCallback() {
                 @Override
                 public void onConfirm() {
@@ -621,14 +621,14 @@ public class Relations extends Flow implements Editor, ClickHandler, SelectorEve
       }
     }
     if (listBox.isEmpty()) {
-      Global.showInfo(Localized.getConstants().noData());
+      Global.showInfo(Localized.dictionary().noData());
       return;
     } else if (listBox.getItemCount() > 30) {
       listBox.setVisibleItemCount(30);
     } else {
       listBox.setAllVisible();
     }
-    Global.inputWidget(Localized.getConstants().newRelation(), listBox, new InputCallback() {
+    Global.inputWidget(Localized.dictionary().newRelation(), listBox, new InputCallback() {
       @Override
       public void onSuccess() {
         for (int i = 0; i < listBox.getItemCount(); i++) {

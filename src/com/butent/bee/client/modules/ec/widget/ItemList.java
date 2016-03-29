@@ -160,14 +160,14 @@ public class ItemList extends Flow implements KeyDownHandler {
 
     String code = item.getCode();
     if (!BeeUtils.isEmpty(code)) {
-      Widget codeWidget = EcWidgetFactory.renderField(Localized.getConstants().ecItemCode(), code,
+      Widget codeWidget = EcWidgetFactory.renderField(Localized.dictionary().ecItemCode(), code,
           STYLE_ITEM_CODE);
       panel.add(codeWidget);
       codeWidget.setTitle(BeeUtils.joinWords("ArticleID:", item.getArticleId()));
     }
 
     if (item.getAnalogCount() > 0) {
-      String analogLabel = BeeUtils.joinWords(Localized.getConstants().ecItemAnalogs(),
+      String analogLabel = BeeUtils.joinWords(Localized.dictionary().ecItemAnalogs(),
           BeeUtils.parenthesize(item.getAnalogCount()));
       InternalLink analogs = new InternalLink(analogLabel);
       analogs.addStyleName(STYLE_ITEM_ANALOGS);
@@ -195,7 +195,7 @@ public class ItemList extends Flow implements KeyDownHandler {
                   Simple analogPanel = new Simple(analogList);
                   analogPanel.addStyleName(STYLE_ITEM_ANALOGS + "-panel");
 
-                  String caption = BeeUtils.joinWords(Localized.getConstants().ecItemAnalogs(),
+                  String caption = BeeUtils.joinWords(Localized.dictionary().ecItemAnalogs(),
                       item.getName(), item.getCode(), EcKeeper.getBrandName(item.getBrand()));
                   DialogBox dialog = DialogBox.create(caption, STYLE_ITEM_ANALOGS + "-dialog");
 
@@ -207,7 +207,7 @@ public class ItemList extends Flow implements KeyDownHandler {
                   dialog.cascade();
 
                 } else {
-                  BeeKeeper.getScreen().notifyWarning(Localized.getConstants().noData());
+                  BeeKeeper.getScreen().notifyWarning(Localized.dictionary().noData());
                 }
               }
             }
@@ -218,7 +218,7 @@ public class ItemList extends Flow implements KeyDownHandler {
 
     Long brand = item.getBrand();
     if (brand != null) {
-      Widget brandWidget = EcWidgetFactory.renderField(Localized.getConstants().ecItemBrand(),
+      Widget brandWidget = EcWidgetFactory.renderField(Localized.dictionary().ecItemBrand(),
           EcKeeper.getBrandName(brand), STYLE_ITEM_BRAND);
       if (brandWidget != null) {
         panel.add(brandWidget);
@@ -296,7 +296,7 @@ public class ItemList extends Flow implements KeyDownHandler {
     EcStyles.add(table, STYLE_PRIMARY, "table");
     add(table);
 
-    this.moreWidget = new Button(Localized.getConstants().ecMoreItems());
+    this.moreWidget = new Button(Localized.dictionary().ecMoreItems());
     EcStyles.add(moreWidget, STYLE_PRIMARY, "more");
     moreWidget.addClickHandler(new ClickHandler() {
       @Override
@@ -413,7 +413,7 @@ public class ItemList extends Flow implements KeyDownHandler {
       int col = 0;
 
       if (items.size() > 1) {
-        Label caption = new Label(BeeUtils.joinWords(Localized.getConstants().ecFoundItems(),
+        Label caption = new Label(BeeUtils.joinWords(Localized.dictionary().ecFoundItems(),
             BeeUtils.bracket(items.size())));
         EcStyles.add(caption, STYLE_PRIMARY, "caption");
         table.setWidget(row, col, caption);
@@ -443,12 +443,12 @@ public class ItemList extends Flow implements KeyDownHandler {
         table.setWidget(row, col++, wrh);
       }
 
-      Label listPriceLabel = new Label(Localized.getConstants().ecListPrice());
+      Label listPriceLabel = new Label(Localized.dictionary().ecListPrice());
       listPriceLabel.addStyleName(STYLE_LIST_PRICE + STYLE_LABEL);
       EcStyles.markListPrice(listPriceLabel.getElement());
       table.setWidget(row, col++, listPriceLabel);
 
-      Label priceLabel = new Label(Localized.getConstants().ecClientPrice());
+      Label priceLabel = new Label(Localized.dictionary().ecClientPrice());
       priceLabel.addStyleName(STYLE_PRICE + STYLE_LABEL);
       EcStyles.markPrice(priceLabel.getElement());
 

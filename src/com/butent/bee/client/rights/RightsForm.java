@@ -499,7 +499,7 @@ public abstract class RightsForm extends AbstractFormInterceptor {
   protected void onClose(final Runnable runnable) {
     Set<String> changedNames = getChangedNames();
 
-    String message = BeeUtils.joinWords(Localized.getConstants().changedValues(),
+    String message = BeeUtils.joinWords(Localized.dictionary().changedValues(),
         BeeUtils.bracket(changedNames.size()));
     List<String> messages = Lists.newArrayList(message);
 
@@ -522,7 +522,7 @@ public abstract class RightsForm extends AbstractFormInterceptor {
           BeeConst.ELLIPSIS));
     }
 
-    messages.add(Localized.getConstants().saveChanges());
+    messages.add(Localized.dictionary().saveChanges());
 
     DecisionCallback callback = new DecisionCallback() {
       @Override

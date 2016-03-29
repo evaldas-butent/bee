@@ -48,7 +48,7 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.NumberValue;
-import com.butent.bee.shared.i18n.LocalizableConstants;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.time.TimeUtils;
@@ -60,7 +60,7 @@ import java.util.Objects;
 
 public class OrderForm extends AbstractFormInterceptor {
 
-  private final LocalizableConstants loc = Localized.getConstants();
+  private final Dictionary loc = Localized.dictionary();
   private Label warehouseLabel;
 
   @Override
@@ -112,8 +112,8 @@ public class OrderForm extends AbstractFormInterceptor {
           public void onConfirm() {
             String id = row.getString(Data.getColumnIndex(VIEW_ORDERS, COL_WAREHOUSE));
             if (BeeUtils.isEmpty(id)) {
-              form.notifySevere(Localized.getConstants().warehouse() + " "
-                  + Localized.getConstants().valueRequired());
+              form.notifySevere(Localized.dictionary().warehouse() + " "
+                  + Localized.dictionary().valueRequired());
               return;
             }
 
@@ -193,13 +193,13 @@ public class OrderForm extends AbstractFormInterceptor {
 
     if (DataUtils.isNewRow(row)) {
       caption = isOrder
-          ? Localized.getConstants().newOrder() : Localized.getConstants().newOffer();
+          ? Localized.dictionary().newOrder() : Localized.dictionary().newOffer();
 
       UnboundSelector template = (UnboundSelector) form.getWidgetByName(COL_TEMPLATE);
       template.clearValue();
     } else {
       caption = isOrder
-          ? Localized.getConstants().order() : Localized.getConstants().offer();
+          ? Localized.dictionary().order() : Localized.dictionary().offer();
     }
 
     if (!BeeUtils.isEmpty(caption)) {
@@ -253,15 +253,15 @@ public class OrderForm extends AbstractFormInterceptor {
 
       if (Objects.equals(status, OrdersStatus.APPROVED.ordinal())) {
         if (!BeeUtils.isPositive(warehouse)) {
-          getFormView().notifySevere(Localized.getConstants().warehouse() + " "
-              + Localized.getConstants().valueRequired());
+          getFormView().notifySevere(Localized.dictionary().warehouse() + " "
+              + Localized.dictionary().valueRequired());
           return false;
         }
       }
 
       if (!BeeUtils.isPositive(company)) {
-        getFormView().notifySevere(Localized.getConstants().client() + " "
-            + Localized.getConstants().valueRequired());
+        getFormView().notifySevere(Localized.dictionary().client() + " "
+            + Localized.dictionary().valueRequired());
         return false;
       }
     }
@@ -292,8 +292,8 @@ public class OrderForm extends AbstractFormInterceptor {
             && Objects.equals(getActiveRow().getInteger(Data.getColumnIndex(VIEW_ORDERS,
             COL_ORDERS_STATUS)), OrdersStatus.APPROVED.ordinal())) {
 
-          Global.confirm(Localized.getConstants().ordAskChangeWarehouse() + " "
-              + Localized.getConstants().saveChanges(), new ConfirmationCallback() {
+          Global.confirm(Localized.dictionary().ordAskChangeWarehouse() + " "
+              + Localized.dictionary().saveChanges(), new ConfirmationCallback() {
 
             @Override
             public void onConfirm() {
@@ -381,7 +381,7 @@ public class OrderForm extends AbstractFormInterceptor {
           for (IsRow row : result) {
             Long value = row.getLong(invcIdx);
             if (BeeUtils.unbox(value) <= 0) {
-              form.notifySevere(Localized.getConstants().ordEmptyInvoice());
+              form.notifySevere(Localized.dictionary().ordEmptyInvoice());
               return;
             }
           }

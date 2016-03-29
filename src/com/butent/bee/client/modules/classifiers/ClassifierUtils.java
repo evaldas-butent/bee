@@ -55,7 +55,7 @@ public final class ClassifierUtils {
     String locale = DomUtils.getDataProperty(target.getElement(), KEY_LOCALE);
 
     if (BeeUtils.isEmpty(locale)) {
-      locale = Localized.getConstants().languageTag();
+      locale = Localized.dictionary().languageTag();
     }
     if (!BeeUtils.isEmpty(locale)) {
       args.addDataItem(AdministrationConstants.VAR_LOCALE, locale);

@@ -10,25 +10,25 @@ import com.butent.bee.shared.utils.EnumUtils;
 public final class DiscussionsConstants {
 
   public enum DiscussionEvent implements HasCaption {
-    CREATE(Localized.getConstants().discussEventCreated(), null, null),
-    CREATE_MAIL(Localized.getConstants().mailNotify(), null, null),
-    VISIT(Localized.getConstants().discussEventVisited(), null, null),
-    ACTIVATE(Localized.getConstants().discussEventActivated(), Localized.getConstants()
+    CREATE(Localized.dictionary().discussEventCreated(), null, null),
+    CREATE_MAIL(Localized.dictionary().mailNotify(), null, null),
+    VISIT(Localized.dictionary().discussEventVisited(), null, null),
+    ACTIVATE(Localized.dictionary().discussEventActivated(), Localized.dictionary()
         .discussActionActivate(), FontAwesome.ARROW_CIRCLE_RIGHT),
-    DEACTIVATE(Localized.getConstants().discussEventDeactivated(), Localized.getConstants()
+    DEACTIVATE(Localized.dictionary().discussEventDeactivated(), Localized.dictionary()
         .discussActionDeactivate(), null),
-    CLOSE(Localized.getConstants().discussEventClosed(), Localized.getConstants()
+    CLOSE(Localized.dictionary().discussEventClosed(), Localized.dictionary()
         .discussActionClose(), FontAwesome.CHECK_CIRCLE_O),
-    COMMENT(Localized.getConstants().discussEventCommented(), Localized.getConstants()
+    COMMENT(Localized.dictionary().discussEventCommented(), Localized.dictionary()
         .discussActionComment(), FontAwesome.COMMENT_O),
-    COMMENT_DELETE(Localized.getConstants().discussEventCommentDeleted(), Localized.getConstants()
+    COMMENT_DELETE(Localized.dictionary().discussEventCommentDeleted(), Localized.dictionary()
         .actionDelete(), FontAwesome.TRASH),
-    REPLY(Localized.getConstants().discussEventReplied(), Localized.getConstants()
+    REPLY(Localized.dictionary().discussEventReplied(), Localized.dictionary()
         .discussActionReply(), FontAwesome.REPLY),
-    MARK(Localized.getConstants().discussEventMarked(), Localized.getConstants()
+    MARK(Localized.dictionary().discussEventMarked(), Localized.dictionary()
         .discussActionMark(), FontAwesome.TAG),
-    MODIFY(Localized.getConstants().discussEventModified(), null, null),
-    REFRESH(Localized.getConstants().actionRefresh(), Localized.getConstants().actionRefresh(),
+    MODIFY(Localized.dictionary().discussEventModified(), null, null),
+    REFRESH(Localized.dictionary().actionRefresh(), Localized.dictionary().actionRefresh(),
         FontAwesome.REFRESH);
 
     private final String caption;
@@ -65,9 +65,9 @@ public final class DiscussionsConstants {
   }
 
   public enum DiscussionStatus implements HasCaption {
-    ACTIVE(Localized.getConstants().discussStatusActive()),
-    CLOSED(Localized.getConstants().discussStatusClosed()),
-    INACTIVE(Localized.getConstants().discussStatusInactive());
+    ACTIVE(Localized.dictionary().discussStatusActive()),
+    CLOSED(Localized.dictionary().discussStatusClosed()),
+    INACTIVE(Localized.dictionary().discussStatusInactive());
 
     private final String caption;
 

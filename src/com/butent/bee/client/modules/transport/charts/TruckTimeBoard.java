@@ -32,7 +32,7 @@ final class TruckTimeBoard extends VehicleTimeBoard {
 
   @Override
   public String getCaption() {
-    return Localized.getConstants().truckTimeBoard();
+    return Localized.dictionary().truckTimeBoard();
   }
 
   @Override

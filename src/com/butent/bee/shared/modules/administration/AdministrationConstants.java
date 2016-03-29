@@ -43,8 +43,8 @@ public final class AdministrationConstants {
   }
 
   public enum UserGroupVisibility implements HasCaption {
-    PRIVATE(Localized.getConstants().userGroupPrivate()),
-    PUBLIC(Localized.getConstants().userGroupPublic());
+    PRIVATE(Localized.dictionary().userGroupPrivate()),
+    PUBLIC(Localized.dictionary().userGroupPublic());
 
     private final String caption;
 
@@ -85,7 +85,11 @@ public final class AdministrationConstants {
 
   public static final String SVC_DO_IMPORT = "DoImport";
 
-  public static final String SVC_NUMBER_TO_WORDS = "GetNumberInWords";
+  public static final String SVC_TOTAL_TO_WORDS = "GetTotalInWords";
+
+  public static final String SVC_GET_DICTIONARY = "get_dictionary";
+  public static final String SVC_DICTIONARY_DATABASE_TO_PROPERTIES =
+      "dictionary_database_to_properties";
 
   public static final String VAR_AMOUNT = Service.RPC_VAR_PREFIX + "amount";
   public static final String VAR_LOCALE = Service.RPC_VAR_PREFIX + "locale";
@@ -171,6 +175,8 @@ public final class AdministrationConstants {
 
   public static final String TBL_EVENT_HISTORY = "EventHistory";
 
+  public static final String TBL_DICTIONARY = "Dictionary";
+
   public static final String VIEW_USERS = "Users";
   public static final String VIEW_USER_SETTINGS = "UserSettings";
   public static final String VIEW_USER_GROUP_SETTINGS = "UserGroupSettings";
@@ -215,6 +221,8 @@ public final class AdministrationConstants {
   public static final String GRID_COLORS = "Colors";
   public static final String GRID_THEMES = "Themes";
   public static final String GRID_THEME_COLORS = "ThemeColors";
+
+  public static final String GRID_DICTIONARY = "Dictionary";
 
   public static final String COL_PARAMETER = "Parameter";
   public static final String COL_PARAMETER_NAME = "Name";
@@ -337,11 +345,14 @@ public final class AdministrationConstants {
   public static final String COL_CONFIG_DATA = "ObjectData";
 
   public static final String COL_MENU_HIDE = "MenuHide";
+  public static final String COL_COMMENTS_LAYOUT = "CommentsLayout";
 
   public static final String COL_EVENT = "Event";
   public static final String COL_EVENT_STARTED = "Started";
   public static final String COL_EVENT_ENDED = "Ended";
   public static final String COL_EVENT_RESULT = "Result";
+
+  public static final String COL_DICTIONARY_KEY = "Key";
 
   public static final String ALS_FILE_NAME = "FileName";
   public static final String ALS_FILE_SIZE = "FileSize";

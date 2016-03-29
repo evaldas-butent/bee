@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-  name="Accounts" source="Accounts" caption="=mailAccounts"
-  >
+      name="Accounts" source="Accounts" caption="=mailAccounts"
+    >
   <Columns>
     <SimpleColumn name="User" />
     <SimpleColumn name="Description" />
@@ -63,6 +63,10 @@
         <SimpleColumn name="Name" alias="TrashParent" />
       </SimpleJoin>
     </SimpleJoin>
+
+    <ExternalJoin name="Account" source="AccountUsers" joinType="LEFT" filter="AccountUser={u}">
+      <HiddenColumn name="User" alias="AccountUser" />
+    </ExternalJoin>
   </Columns>
   <Order>
     <OrderBy column="Description" />

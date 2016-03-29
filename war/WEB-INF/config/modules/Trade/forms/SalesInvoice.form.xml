@@ -9,7 +9,7 @@
   caption="=trdInvoice" showRowId="true"
   width="840" height="600"
   >
-  <f:properties reports="PrintSalesInvoice" />
+  <f:properties reports="PrintSalesInvoice" jasperReports="SalesInvoice" />
   <FlowPanel class="flexBox-vertical">
     <br/>
     <Table kind="controls">

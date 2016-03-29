@@ -34,6 +34,12 @@ public class XWorkbook implements BeeSerializable {
     sheets.add(sheet);
   }
 
+  public void clearRows() {
+    for (XSheet sheet : sheets) {
+      sheet.clearRows();
+    }
+  }
+
   @Override
   public void deserialize(String s) {
     String[] arr = Codec.beeDeserializeCollection(s);
@@ -55,6 +61,20 @@ public class XWorkbook implements BeeSerializable {
 
   public String getName() {
     return name;
+  }
+
+  public int getRowCount() {
+    int count = 0;
+
+    for (XSheet sheet : sheets) {
+      count += sheet.getRowCount();
+    }
+
+    return count;
+  }
+
+  public int getSheetCount() {
+    return sheets.size();
   }
 
   public List<XSheet> getSheets() {

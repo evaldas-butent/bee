@@ -1,5 +1,6 @@
 package com.butent.bee.client.modules.mail;
 
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.presenter.GridPresenter;
@@ -14,6 +15,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Objects;
 
 public class AccountsGrid extends AbstractGridInterceptor {
 
@@ -45,5 +47,11 @@ public class AccountsGrid extends AbstractGridInterceptor {
   @Override
   public GridInterceptor getInstance() {
     return new AccountsGrid();
+  }
+
+  @Override
+  public boolean isRowEditable(IsRow row) {
+    return Objects.equals(row.getLong(getDataIndex(MailConstants.COL_USER)),
+        BeeKeeper.getUser().getUserId()) && super.isRowEditable(row);
   }
 }

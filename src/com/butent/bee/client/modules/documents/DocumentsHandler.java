@@ -129,9 +129,9 @@ public final class DocumentsHandler {
       private String getCaption(String parameters) {
         switch (parameters) {
           case COL_DOCUMENT_SENT:
-            return Localized.getConstants().documentFilterSent();
+            return Localized.dictionary().documentFilterSent();
           case COL_DOCUMENT_RECEIVED:
-            return Localized.getConstants().documentFilterReceived();
+            return Localized.dictionary().documentFilterReceived();
 
           default:
             return Data.getViewCaption(VIEW_DOCUMENTS);

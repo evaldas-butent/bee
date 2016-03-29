@@ -65,6 +65,18 @@ public final class Settings {
     }
   }
 
+  public static int getExporterInputStepRows() {
+    return getInt("exporterInputStepRows");
+  }
+
+  public static int getExporterOutputStepRows() {
+    return getInt("exporterOutputStepRows");
+  }
+
+  public static int getExporterSplitRowsThreshold() {
+    return getInt("exporterSplitRowsThreshold");
+  }
+
   public static String getIncomingChatMessageSound() {
     return getString("incomingChatMessageSound");
   }

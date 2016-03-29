@@ -65,7 +65,7 @@ import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.font.FontAwesome;
-import com.butent.bee.shared.i18n.LocalizableConstants;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
@@ -315,12 +315,12 @@ public class MailMessage extends AbstractFormInterceptor {
 
             if (DataUtils.isId(rawId)) {
               ft.setWidget(r, 0, new FaLabel(FontAwesome.FILE_TEXT_O));
-              ft.setText(r, 1, Localized.getConstants().mailShowOriginal());
+              ft.setText(r, 1, Localized.dictionary().mailShowOriginal());
               DomUtils.setDataProperty(ft.getRow(r++), CONTAINER, COL_RAW_CONTENT);
             }
             if (!BeeUtils.isEmpty(attachments)) {
               ft.setWidget(r, 0, new FaLabel(FontAwesome.FILE_ZIP_O));
-              ft.setText(r, 1, Localized.getConstants().mailGetAllAttachments());
+              ft.setText(r, 1, Localized.dictionary().mailGetAllAttachments());
               DomUtils.setDataProperty(ft.getRow(r++), CONTAINER, ATTACHMENTS);
             }
             if (!BeeUtils.isEmpty(related)) {
@@ -354,7 +354,7 @@ public class MailMessage extends AbstractFormInterceptor {
                             BeeUtils.notEmpty(fileInfo.getCaption(), fileInfo.getName()));
                       }
                       BrowsingContext.open(FileUtils
-                          .getUrl(Localized.getConstants().mailAttachments() + ".zip", files));
+                          .getUrl(Localized.dictionary().mailAttachments() + ".zip", files));
                       break;
 
                     default:
@@ -380,7 +380,7 @@ public class MailMessage extends AbstractFormInterceptor {
                 new Popup(OutsideClick.CLOSE, BeeConst.CSS_CLASS_PREFIX + "mail-RecipientsPopup");
             HtmlTable ft = new HtmlTable();
             ft.setBorderSpacing(5);
-            LocalizableConstants loc = Localized.getConstants();
+            Dictionary loc = Localized.dictionary();
 
             for (Entry<AddressType, String> entry : ImmutableMap.of(AddressType.TO, loc.mailTo(),
                 AddressType.CC, loc.mailCc(), AddressType.BCC, loc.mailBcc()).entrySet()) {
@@ -589,7 +589,7 @@ public class MailMessage extends AbstractFormInterceptor {
           recipients.put(address.getValue(COL_ADDRESS_TYPE), Pair.of(email, label));
           txt = BeeUtils.joinItems(txt, BeeUtils.notEmpty(label, email));
         }
-        setWidgetText(RECIPIENTS, BeeUtils.joinWords(Localized.getConstants().mailTo() + ":", txt));
+        setWidgetText(RECIPIENTS, BeeUtils.joinWords(Localized.dictionary().mailTo() + ":", txt));
 
         int cnt = 0;
         long size = 0;
@@ -741,7 +741,7 @@ public class MailMessage extends AbstractFormInterceptor {
         List<FileInfo> attach = null;
         Long relatedId = null;
 
-        LocalizableConstants loc = Localized.getConstants();
+        Dictionary loc = Localized.dictionary();
 
         switch (mode) {
           case REPLY:

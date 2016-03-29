@@ -5,13 +5,13 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.HasCaption;
 
 public enum Domain implements HasCaption {
-  NEWS(FontAwesome.RSS, Localized.getConstants().domainNews(), false, false, 100),
+  NEWS(FontAwesome.RSS, Localized.dictionary().domainNews(), false, false, 100),
   FAVORITES(FontAwesome.BOOKMARK_O, null, false, false, 60),
-  WORKSPACES(FontAwesome.NEWSPAPER_O, Localized.getConstants().workspaces(), false, false, 100),
-  REPORTS(FontAwesome.FILE_TEXT_O, Localized.getConstants().reports(), false, false, 100),
+  WORKSPACES(FontAwesome.NEWSPAPER_O, Localized.dictionary().workspaces(), false, false, 100),
+  REPORTS(FontAwesome.FILE_TEXT_O, Localized.dictionary().reports(), false, false, 100),
   CALENDAR(FontAwesome.CALENDAR, null, true, true, 400),
   MAIL(FontAwesome.ENVELOPE_O, null, true, true, 200),
-  ONLINE(FontAwesome.USERS, Localized.getConstants().domainOnline(), false, false, 100),
+  ONLINE(FontAwesome.USERS, Localized.dictionary().domainOnline(), false, false, 100),
   ADMIN(FontAwesome.MAGIC, "Admin", false, true, 300);
 
   private final FontAwesome icon;

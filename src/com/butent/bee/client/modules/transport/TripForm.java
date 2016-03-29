@@ -126,7 +126,7 @@ public class TripForm extends PrintFormInterceptor {
                   String route = response.getResponseAsString();
 
                   if (BeeUtils.isEmpty(route)) {
-                    getFormView().notifyWarning(Localized.getConstants().noData());
+                    getFormView().notifyWarning(Localized.dictionary().noData());
                     return;
                   }
                   Data.setValue(getViewName(), row, COL_TRIP_ROUTE, route);
@@ -238,7 +238,7 @@ public class TripForm extends PrintFormInterceptor {
               ClassifierConstants.COL_LAST_NAME), new RowCallback() {
             @Override
             public void onSuccess(BeeRow result) {
-              Global.confirm(Localized.getConstants().employment()
+              Global.confirm(Localized.dictionary().employment()
                       + " (" + BeeUtils.joinWords(result.getValues()) + ")", Icon.WARNING, messages,
                   new ConfirmationCallback() {
                     @Override
@@ -315,7 +315,7 @@ public class TripForm extends PrintFormInterceptor {
           if (BeeUtils.isEmpty(messages)) {
             checkDriver(listener, event, driverId);
           } else {
-            Global.confirm(Localized.getConstants().employment(), Icon.WARNING, messages,
+            Global.confirm(Localized.dictionary().employment(), Icon.WARNING, messages,
                 new ConfirmationCallback() {
                   @Override
                   public void onConfirm() {
@@ -359,7 +359,7 @@ public class TripForm extends PrintFormInterceptor {
   private IdentifiableWidget getCopyAction() {
     if (copyAction == null) {
       copyAction = new FaLabel(FontAwesome.COPY);
-      copyAction.setTitle(Localized.getConstants().actionCopy());
+      copyAction.setTitle(Localized.dictionary().actionCopy());
 
       copyAction.addClickHandler(new ClickHandler() {
         @Override

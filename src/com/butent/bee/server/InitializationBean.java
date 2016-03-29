@@ -3,17 +3,19 @@ package com.butent.bee.server;
 import com.butent.bee.server.communication.ChatBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
+import com.butent.bee.server.i18n.LocalizationBean;
 import com.butent.bee.server.i18n.Localizations;
 import com.butent.bee.server.logging.LogbackFactory;
 import com.butent.bee.server.modules.ModuleHolderBean;
 import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.ui.UiHolderBean;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.i18n.SupportedLocale;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 
-import java.util.Locale;
+import java.util.Collection;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
@@ -38,6 +40,8 @@ public class InitializationBean {
   ChatBean chat;
   @EJB
   UiHolderBean ui;
+  @EJB
+  LocalizationBean loc;
 
   @PostConstruct
   public void init() {
@@ -46,11 +50,8 @@ public class InitializationBean {
     LogUtils.setLoggerFactory(new LogbackFactory());
     Config.init();
 
-    Locale locale = Localizations.getDefaultLocale();
-
-    Localized.setConstants(Localizations.getConstants(locale));
-    Localized.setMessages(Localizations.getMessages(locale));
-    Localized.setDictionary(Localizations.getDictionary(locale));
+    Localizations.init();
+    Localized.setGlossary(Localizations.getGlossary(SupportedLocale.USER_DEFAULT));
 
     sys.init();
 
@@ -58,10 +59,10 @@ public class InitializationBean {
     moduleBean.getModules().forEach((moduleName) -> prm.refreshParameters(moduleName));
 
     Map<String, String> props = prm.getMap(AdministrationConstants.PRM_SERVER_PROPERTIES);
-
     if (!BeeUtils.isEmpty(props)) {
       props.forEach((prop, value) -> Config.setProperty(prop, value));
     }
+
     sys.initViews();
     chat.init();
 
@@ -70,6 +71,11 @@ public class InitializationBean {
     usr.initRights();
     usr.initUsers();
     usr.initIpFilters();
+
+    Collection<SupportedLocale> customizedLocales = loc.customizeGlossaries();
+    if (BeeUtils.contains(customizedLocales, SupportedLocale.USER_DEFAULT)) {
+      Localized.setGlossary(Localizations.getGlossary(SupportedLocale.USER_DEFAULT));
+    }
 
     ui.init();
 

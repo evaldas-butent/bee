@@ -1,6 +1,6 @@
 package com.butent.bee.shared.modules.service;
 
-import com.butent.bee.shared.i18n.LocalizableConstants;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.ui.HasLocalizedCaption;
 import com.butent.bee.shared.utils.EnumUtils;
 
@@ -9,13 +9,13 @@ public final class ServiceConstants {
   public enum ServiceCompanyKind implements HasLocalizedCaption {
     CUSTOMER {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.customer();
       }
     },
     CONTRACTOR {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.svcContractor();
       }
     };

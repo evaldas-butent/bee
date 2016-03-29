@@ -74,6 +74,7 @@ public final class BeeConst {
   public static final String STRING_EQ = "=";
   public static final String STRING_LT = "<";
   public static final String STRING_GT = ">";
+  public static final String STRING_CR = "\r";
   public static final String STRING_EOL = "\n";
   public static final String STRING_MINUS = "-";
   public static final String STRING_PLUS = "+";

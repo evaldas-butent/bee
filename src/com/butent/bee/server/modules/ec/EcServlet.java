@@ -33,7 +33,7 @@ import com.butent.bee.shared.html.builder.elements.Input.Type;
 import com.butent.bee.shared.html.builder.elements.Select;
 import com.butent.bee.shared.html.builder.elements.Span;
 import com.butent.bee.shared.html.builder.elements.Tbody;
-import com.butent.bee.shared.i18n.LocalizableConstants;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.i18n.SupportedLocale;
 import com.butent.bee.shared.io.Paths;
@@ -68,7 +68,7 @@ public class EcServlet extends LoginServlet {
 
   private static final String REG_STYLE_TYPE_PREFIX = REG_STYLE_PREFIX + "type-";
 
-  private static Node clientTypeSelector(LocalizableConstants constants, EcClientType defaultType) {
+  private static Node clientTypeSelector(Dictionary constants, EcClientType defaultType) {
     String name = COL_REGISTRATION_TYPE;
 
     Div container = div().addClass(REG_STYLE_TYPE_PREFIX + "container");
@@ -147,10 +147,10 @@ public class EcServlet extends LoginServlet {
       Map<String, String> parameters = HttpUtils.getParameters(req, false);
 
       String language = getLanguage(req);
-      LocalizableConstants constants = Localizations.getPreferredConstants(language);
+      Dictionary constants = Localizations.getDictionary(language);
 
       if (parameters.containsKey(COL_REGISTRATION_BRANCH)) {
-        Map<String, String> dictionary = Localizations.getPreferredDictionary(language);
+        Map<String, String> dictionary = Localizations.getGlossary(language);
         html = register(req, parameters, constants, dictionary);
       } else {
         html = getRegistrationForm(req.getServletContext().getContextPath(), constants);
@@ -201,7 +201,7 @@ public class EcServlet extends LoginServlet {
         td().addClass(REG_STYLE_INPUT_CELL).append(select));
   }
 
-  private String getRegistrationForm(String contextPath, LocalizableConstants constants) {
+  private String getRegistrationForm(String contextPath, Dictionary constants) {
     Document doc = new Document();
 
     doc.getHead().append(
@@ -268,7 +268,7 @@ public class EcServlet extends LoginServlet {
   }
 
   private String register(HttpServletRequest req, Map<String, String> parameters,
-      LocalizableConstants constants, Map<String, String> dictionary) {
+      Dictionary constants, Map<String, String> dictionary) {
 
     Document doc = new Document();
 

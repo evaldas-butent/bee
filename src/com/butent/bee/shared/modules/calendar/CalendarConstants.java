@@ -2,7 +2,7 @@ package com.butent.bee.shared.modules.calendar;
 
 import com.google.common.collect.ImmutableMap;
 
-import com.butent.bee.shared.i18n.LocalizableConstants;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -18,37 +18,37 @@ public final class CalendarConstants {
   public enum AppointmentStatus implements HasLocalizedCaption {
     TENTATIVE {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.calAppointmentStatusTentative();
       }
     },
     CONFIRMED {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.calAppointmentStatusConfirmed();
       }
     },
     DELAYED {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.calAppointmentStatusDelayed();
       }
     },
     CANCELED {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.calAppointmentStatusCanceled();
       }
     },
     RUNNING {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.calAppointmentStatusRunning();
       }
     },
     COMPLETED {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.calAppointmentStatusCompleted();
       }
     };
@@ -59,10 +59,10 @@ public final class CalendarConstants {
   }
 
   public enum MultidayLayout implements HasCaption {
-    HORIZONTAL(Localized.getConstants().calMultidayLayoutHorizontal()),
-    VERTICAL(Localized.getConstants().calMultidayLayoutVertical()),
-    WORKING_HOURS(Localized.getConstants().calMultidayLayoutWorkingHours()),
-    LAST_DAY(Localized.getConstants().calMultidayLayoutLastDay());
+    HORIZONTAL(Localized.dictionary().calMultidayLayoutHorizontal()),
+    VERTICAL(Localized.dictionary().calMultidayLayoutVertical()),
+    WORKING_HOURS(Localized.dictionary().calMultidayLayoutWorkingHours()),
+    LAST_DAY(Localized.dictionary().calMultidayLayoutLastDay());
 
     private final String caption;
 
@@ -77,10 +77,10 @@ public final class CalendarConstants {
   }
 
   public enum Report implements HasCaption {
-    BUSY_MONTHS(Localized.getConstants().calReportTypeBusyMonths()),
-    BUSY_HOURS(Localized.getConstants().calReportTypeBusyHours()),
-    CANCEL_MONTHS(Localized.getConstants().calReportTypeCancelMonths()),
-    CANCEL_HOURS(Localized.getConstants().calReportTypeCancelHours());
+    BUSY_MONTHS(Localized.dictionary().calReportTypeBusyMonths()),
+    BUSY_HOURS(Localized.dictionary().calReportTypeBusyHours()),
+    CANCEL_MONTHS(Localized.dictionary().calReportTypeCancelMonths()),
+    CANCEL_HOURS(Localized.dictionary().calReportTypeCancelHours());
 
     private final String caption;
 
@@ -95,8 +95,8 @@ public final class CalendarConstants {
   }
 
   public enum Transparency implements HasCaption {
-    OPAQUE(Localized.getConstants().calOpaque()),
-    TRANSPARENT(Localized.getConstants().calTransparent());
+    OPAQUE(Localized.dictionary().calOpaque()),
+    TRANSPARENT(Localized.dictionary().calTransparent());
 
     public static boolean isOpaque(Integer value) {
       return (value == null) ? false : value == OPAQUE.ordinal();
@@ -115,9 +115,9 @@ public final class CalendarConstants {
   }
 
   public enum CalendarVisibility implements HasCaption {
-    PUBLIC(Localized.getConstants().calPublic()),
-    PRIVATE(Localized.getConstants().calPrivate()),
-    EDITABLE(Localized.getConstants().calEditable());
+    PUBLIC(Localized.dictionary().calPublic()),
+    PRIVATE(Localized.dictionary().calPrivate()),
+    EDITABLE(Localized.dictionary().calEditable());
 
     private final String caption;
 
@@ -141,12 +141,12 @@ public final class CalendarConstants {
   }
 
   public enum ViewType implements HasCaption {
-    DAY("DayView", Localized.getConstants().calDayView()),
-    DAYS("DaysView", Localized.getConstants().calDaysView()),
-    WORK_WEEK("WorkWeekView", Localized.getConstants().calWorkWeekView()),
-    WEEK("WeekView", Localized.getConstants().calWeekView()),
-    MONTH("MonthView", Localized.getConstants().calMonthView()),
-    RESOURCES("ResourceView", Localized.getConstants().calResourceView());
+    DAY("DayView", Localized.dictionary().calDayView()),
+    DAYS("DaysView", Localized.dictionary().calDaysView()),
+    WORK_WEEK("WorkWeekView", Localized.dictionary().calWorkWeekView()),
+    WEEK("WeekView", Localized.dictionary().calWeekView()),
+    MONTH("MonthView", Localized.dictionary().calMonthView()),
+    RESOURCES("ResourceView", Localized.dictionary().calResourceView());
 
     private final String columnId;
     private final String caption;
@@ -164,8 +164,8 @@ public final class CalendarConstants {
     public String getCaption(int days) {
       if (this == DAYS) {
         return BeeUtils.toString(days)
-            + ((days < 10) ? " " + Localized.getConstants().unitDays().toLowerCase() : " "
-                + Localized.getConstants().unitDaysShort().toLowerCase());
+            + ((days < 10) ? " " + Localized.dictionary().unitDays().toLowerCase() : " "
+                + Localized.dictionary().unitDaysShort().toLowerCase());
       } else {
         return caption;
       }

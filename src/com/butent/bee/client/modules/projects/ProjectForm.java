@@ -338,7 +338,7 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
           Data.getColumns(VIEW_PROJECT_STAGES, Lists.newArrayList(COL_PROJECT,
               COL_STAGE_NAME, COL_STAGE_START_DATE, COL_STAGE_END_DATE));
       List<String> stgValues =
-          Lists.newArrayList(BeeUtils.toString(row.getId()), Localized.getConstants()
+          Lists.newArrayList(BeeUtils.toString(row.getId()), Localized.dictionary()
               .prjInitialStage(),
               row.getString(form.getDataIndex(COL_PROJECT_START_DATE)),
               row.getString(form.getDataIndex(COL_PROJECT_END_DATE)));
@@ -501,7 +501,7 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
           valid = true;
         } else {
           form.notifySevere(
-              Localized.getConstants().crmFinishDateMustBeGreaterThanStart());
+              Localized.dictionary().crmFinishDateMustBeGreaterThanStart());
           valid = false;
         }
       }

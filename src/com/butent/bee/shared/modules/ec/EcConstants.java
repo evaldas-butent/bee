@@ -1,7 +1,7 @@
 package com.butent.bee.shared.modules.ec;
 
 import com.butent.bee.shared.Service;
-import com.butent.bee.shared.i18n.LocalizableConstants;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.ui.HasLocalizedCaption;
@@ -10,10 +10,10 @@ import com.butent.bee.shared.utils.EnumUtils;
 public final class EcConstants {
 
   public enum CartType implements HasCaption {
-    MAIN(Localized.getConstants().ecShoppingCartMain(),
-        Localized.getConstants().ecShoppingCartMainShort()),
-    ALTERNATIVE(Localized.getConstants().ecShoppingCartAlternative(),
-        Localized.getConstants().ecShoppingCartAlternativeShort());
+    MAIN(Localized.dictionary().ecShoppingCartMain(),
+        Localized.dictionary().ecShoppingCartMainShort()),
+    ALTERNATIVE(Localized.dictionary().ecShoppingCartAlternative(),
+        Localized.dictionary().ecShoppingCartAlternativeShort());
 
     private final String caption;
     private final String label;
@@ -36,13 +36,13 @@ public final class EcConstants {
   public enum EcClientType implements HasLocalizedCaption {
     COMPANY {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.ecClientTypeCompany();
       }
     },
     PERSON {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.ecClientTypePerson();
       }
     };
@@ -68,48 +68,48 @@ public final class EcConstants {
   public enum EcOrderStatus implements HasLocalizedCaption {
     NEW {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.ecOrderStatusNew();
       }
 
       @Override
-      public String getSubject(LocalizableConstants constants) {
+      public String getSubject(Dictionary constants) {
         return constants.ecOrderStatusNewSubject();
       }
     },
 
     ACTIVE {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.ecOrderStatusActive();
       }
 
       @Override
-      public String getSubject(LocalizableConstants constants) {
+      public String getSubject(Dictionary constants) {
         return constants.ecOrderStatusActiveSubject();
       }
     },
 
     REJECTED {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.ecOrderStatusRejected();
       }
 
       @Override
-      public String getSubject(LocalizableConstants constants) {
+      public String getSubject(Dictionary constants) {
         return constants.ecOrderStatusRejectedSubject();
       }
     },
 
     FINISHED {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.ecOrderStatusFinished();
       }
 
       @Override
-      public String getSubject(LocalizableConstants constants) {
+      public String getSubject(Dictionary constants) {
         return constants.ecOrderStatusFinishedSubject();
       }
     };
@@ -131,7 +131,7 @@ public final class EcConstants {
       return false;
     }
 
-    public abstract String getSubject(LocalizableConstants constants);
+    public abstract String getSubject(Dictionary constants);
   }
 
   public enum EcSupplier implements HasCaption {

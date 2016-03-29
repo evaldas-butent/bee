@@ -22,6 +22,7 @@ import com.butent.bee.client.data.IdCallback;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.Queries.IntCallback;
 import com.butent.bee.client.data.RowCallback;
+import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.Modality;
@@ -34,6 +35,7 @@ import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.Editor;
@@ -48,6 +50,7 @@ import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.shared.Consumer;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.css.values.FontSize;
 import com.butent.bee.shared.data.BeeRow;
@@ -62,15 +65,21 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.rights.RegulatedWidget;
+import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
 import java.util.HashSet;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 public class CompanyForm extends AbstractFormInterceptor implements ClickHandler {
+
+  private static final String NAME_INPUT_MODE = "InputMode";
+  private List<Long> rowIds = new ArrayList<>();
 
   private final Button toErp = new Button(Localized.getConstants().trSendToERP(), this);
 
@@ -103,7 +112,7 @@ public class CompanyForm extends AbstractFormInterceptor implements ClickHandler
           header.clearCommandPanel();
 
           FaLabel setDefault = new FaLabel(FontAwesome.CHECK);
-          setDefault.setTitle(Localized.getConstants().setAsPrimary());
+          setDefault.setTitle(Localized.dictionary().setAsPrimary());
           setDefault.addClickHandler(new ClickHandler() {
 
             @Override
@@ -112,7 +121,7 @@ public class CompanyForm extends AbstractFormInterceptor implements ClickHandler
 
               IsRow selectedRow = gridView.getActiveRow();
               if (selectedRow == null) {
-                gridView.notifyWarning(Localized.getConstants().selectAtLeastOneRow());
+                gridView.notifyWarning(Localized.dictionary().selectAtLeastOneRow());
                 return;
               } else {
                 setAsPrimary(selectedRow.getId());
@@ -221,7 +230,7 @@ public class CompanyForm extends AbstractFormInterceptor implements ClickHandler
               Data.setValue(viewName, newRow, COL_COMPANY, id);
 
               RowFactory.createRow(dataInfo.getNewRowForm(),
-                  Localized.getConstants().newCompanyPerson(), dataInfo, newRow, Modality.ENABLED,
+                  Localized.dictionary().newCompanyPerson(), dataInfo, newRow, Modality.ENABLED,
                   null, new AbstractFormInterceptor() {
                     @Override
                     public boolean beforeCreateWidget(String widgetName, Element description) {
@@ -294,6 +303,28 @@ public class CompanyForm extends AbstractFormInterceptor implements ClickHandler
     if (DataUtils.hasId(row)) {
       refreshCreditInfo();
       createQrButton(form, row);
+
+      HeaderView header = form.getViewPresenter().getHeader();
+      header.clearCommandPanel();
+
+      FaLabel input = getFormIcon();
+      input.setTitle(getFormIconTitle());
+      input.addClickHandler(new ClickHandler() {
+
+        @Override
+        public void onClick(ClickEvent event) {
+          if (DataUtils.equals(form.getOldRow(), row)) {
+            BeeKeeper.getScreen().closeWidget(form);
+            RowEditor.openForm(getInputFormName(), Data.getDataInfo(VIEW_COMPANIES), row.getId(),
+                Opener.NEW_TAB);
+          } else {
+            rowIds.add(row.getId());
+            form.getViewPresenter().handleAction(Action.CLOSE);
+          }
+        }
+      });
+
+      header.addCommandItem(input);
     }
   }
 
@@ -350,8 +381,8 @@ public class CompanyForm extends AbstractFormInterceptor implements ClickHandler
     if (!BeeUtils.isEmpty(event.getColumns())) {
       if (BeeUtils.isEmpty(row.getString(form.getDataIndex(COL_COMPANY_TYPE)))) {
         event.consume();
-        BeeKeeper.getScreen().notifySevere(Localized.getConstants().companyStatus(),
-            Localized.getConstants().valueRequired());
+        BeeKeeper.getScreen().notifySevere(Localized.dictionary().companyStatus(),
+            Localized.dictionary().valueRequired());
       }
     }
     if (!checkRequired()) {
@@ -395,6 +426,15 @@ public class CompanyForm extends AbstractFormInterceptor implements ClickHandler
     return true;
   }
 
+  @Override
+  public void onUnload(FormView form) {
+    if (rowIds.contains(getActiveRowId())) {
+      RowEditor.openForm(getInputFormName(), Data.getDataInfo(VIEW_COMPANIES), getActiveRowId(),
+          Opener.NEW_TAB);
+      rowIds.remove(getActiveRowId());
+    }
+  }
+
   private static void createQrButton(FormView form, IsRow row) {
     Widget widget = form.getWidgetByName(QR_FLOW_PANEL, false);
 
@@ -403,12 +443,41 @@ public class CompanyForm extends AbstractFormInterceptor implements ClickHandler
       qrFlowPanel.clear();
 
       FaLabel qrCodeLabel = new FaLabel(FontAwesome.QRCODE);
-      qrCodeLabel.setTitle(Localized.getConstants().qrCode());
+      qrCodeLabel.setTitle(Localized.dictionary().qrCode());
       qrCodeLabel.addStyleName(StyleUtils.className(FontSize.X_LARGE));
 
       qrCodeLabel.addClickHandler(event -> ClassifierKeeper.generateQrCode(form, row));
 
       qrFlowPanel.add(qrCodeLabel);
+    }
+  }
+
+  private static FaLabel getFormIcon() {
+
+    if (!readBoolean(NAME_INPUT_MODE)) {
+      return new FaLabel(FontAwesome.TOGGLE_ON);
+    } else {
+      return new FaLabel(FontAwesome.TOGGLE_OFF);
+    }
+  }
+
+  private static String getInputFormName() {
+
+    if (readBoolean(NAME_INPUT_MODE)) {
+      BeeKeeper.getStorage().set(storageKey(NAME_INPUT_MODE), false);
+      return FORM_COMPANY;
+    } else {
+      BeeKeeper.getStorage().set(storageKey(NAME_INPUT_MODE), true);
+      return FORM_NEW_COMPANY;
+    }
+  }
+
+  private static String getFormIconTitle() {
+
+    if (!readBoolean(NAME_INPUT_MODE)) {
+      return Localized.dictionary().previewMode();
+    } else {
+      return Localized.dictionary().editMode();
     }
   }
 
@@ -440,7 +509,7 @@ public class CompanyForm extends AbstractFormInterceptor implements ClickHandler
             String amount = result.get(VAR_DEBT);
 
             if (BeeUtils.isPositiveDouble(amount)) {
-              table.setHtml(c, 0, Localized.getConstants().trdDebt());
+              table.setHtml(c, 0, Localized.dictionary().trdDebt());
               table.setHtml(c, 1, amount);
               double limit = BeeUtils.toDouble(result.get(COL_COMPANY_CREDIT_LIMIT));
 
@@ -452,7 +521,7 @@ public class CompanyForm extends AbstractFormInterceptor implements ClickHandler
             amount = result.get(VAR_OVERDUE);
 
             if (BeeUtils.isPositiveDouble(amount)) {
-              table.setHtml(c, 0, Localized.getConstants().trdOverdue());
+              table.setHtml(c, 0, Localized.dictionary().trdOverdue());
               table.setHtml(c, 1, amount);
             }
             widget.getElement().setInnerHTML(table.getElement().getString());
@@ -460,5 +529,15 @@ public class CompanyForm extends AbstractFormInterceptor implements ClickHandler
         }
       });
     }
+  }
+
+  private static boolean readBoolean(String name) {
+    String key = storageKey(name);
+    return BeeKeeper.getStorage().hasItem(key);
+  }
+
+  private static String storageKey(String name) {
+    Long userId = BeeKeeper.getUser().getUserId();
+    return BeeUtils.join(BeeConst.STRING_MINUS, "Companies_EditForm", userId, name);
   }
 }

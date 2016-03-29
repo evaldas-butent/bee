@@ -118,7 +118,7 @@ public abstract class InvoiceBuilder extends AbstractGridInterceptor
   @Override
   public void afterCreatePresenter(GridPresenter presenter) {
     if (!isChild) {
-      presenter.getHeader().addCommandItem(new Button(Localized.getConstants().createInvoice(),
+      presenter.getHeader().addCommandItem(new Button(Localized.dictionary().createInvoice(),
           this));
     }
   }
@@ -145,7 +145,7 @@ public abstract class InvoiceBuilder extends AbstractGridInterceptor
       ids.add(row.getId());
     }
     if (ids.isEmpty()) {
-      getGridView().notifyWarning(Localized.getConstants().selectAtLeastOneRow());
+      getGridView().notifyWarning(Localized.dictionary().selectAtLeastOneRow());
       return;
     }
     Queries.getRowSet(getViewName(), null, Filter.idIn(ids), new Queries.RowSetCallback() {

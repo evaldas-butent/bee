@@ -78,7 +78,7 @@ import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.TextValue;
 import com.butent.bee.shared.data.value.Value;
-import com.butent.bee.shared.i18n.LocalizableConstants;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.rights.ModuleAndSub;
@@ -148,7 +148,7 @@ public class DocumentDataForm extends AbstractFormInterceptor
       Assert.state(!isActive());
       Assert.notEmpty(editorId);
 
-      LocalizableConstants loc = Localized.getConstants();
+      Dictionary loc = Localized.dictionary();
 
       JavaScriptObject jso = JavaScriptObject.createObject();
       JsUtils.setProperty(jso, "mode", "exact");
@@ -230,7 +230,7 @@ public class DocumentDataForm extends AbstractFormInterceptor
 
     public void saveTemplate() {
       final String content = getContent();
-      LocalizableConstants loc = Localized.getConstants();
+      Dictionary loc = Localized.dictionary();
 
       if (BeeUtils.isEmpty(content)) {
         Global.showError(loc.noData());
@@ -416,7 +416,7 @@ public class DocumentDataForm extends AbstractFormInterceptor
           ? tinyEditor.getContent() : getStringValue(COL_DOCUMENT_CONTENT);
 
       if (BeeUtils.isEmpty(content)) {
-        getFormView().notifyWarning(Localized.getConstants().documentContentIsEmpty());
+        getFormView().notifyWarning(Localized.dictionary().documentContentIsEmpty());
       } else {
         parseContent(content, getLongValue(COL_DOCUMENT_DATA), new Consumer<String>() {
           @Override
@@ -455,7 +455,7 @@ public class DocumentDataForm extends AbstractFormInterceptor
     if (!getActiveRow().isEditable()) {
       return;
     }
-    LocalizableConstants loc = Localized.getConstants();
+    Dictionary loc = Localized.dictionary();
 
     Global.inputCollection(loc.mainCriteria(), loc.name(), true,
         criteria.keySet(), new Consumer<Collection<String>>() {
@@ -486,7 +486,7 @@ public class DocumentDataForm extends AbstractFormInterceptor
 
   @Override
   public void onClose(List<String> messages, IsRow oldRow, IsRow newRow) {
-    LocalizableConstants loc = Localized.getConstants();
+    Dictionary loc = Localized.dictionary();
     List<String> warnings = new ArrayList<>();
 
     if (save(null)) {
@@ -537,7 +537,7 @@ public class DocumentDataForm extends AbstractFormInterceptor
     UserInfo user = BeeKeeper.getUser();
 
     if (user.isModuleVisible(ModuleAndSub.of(Module.DOCUMENTS, SubModule.TEMPLATES))) {
-      getHeaderView().addCommandItem(new Button(Localized.getConstants().selectDocumentTemplate(),
+      getHeaderView().addCommandItem(new Button(Localized.dictionary().selectDocumentTemplate(),
           new ClickHandler() {
             @Override
             public void onClick(ClickEvent event) {
@@ -551,13 +551,13 @@ public class DocumentDataForm extends AbstractFormInterceptor
 
               final UnboundSelector selector = UnboundSelector.create(relation);
 
-              Global.inputWidget(Localized.getConstants().documentTemplateName(), selector,
+              Global.inputWidget(Localized.dictionary().documentTemplateName(), selector,
                   new InputCallback() {
                     @Override
                     public String getErrorMessage() {
                       if (selector.getRelatedRow() == null) {
                         UiHelper.focus(selector);
-                        return Localized.getConstants().valueRequired();
+                        return Localized.dictionary().valueRequired();
                       }
                       return InputCallback.super.getErrorMessage();
                     }
@@ -633,7 +633,7 @@ public class DocumentDataForm extends AbstractFormInterceptor
   }
 
   protected Map<String, String> getTemplates() {
-    return Collections.singletonMap(Localized.getConstants().criteriaGroups(),
+    return Collections.singletonMap(Localized.dictionary().criteriaGroups(),
         new StringBuilder("<table style=\"border-collapse:collapse;\"><tbody>")
             .append("<!--{CriteriaGroups}-->")
             .append("<tr>")

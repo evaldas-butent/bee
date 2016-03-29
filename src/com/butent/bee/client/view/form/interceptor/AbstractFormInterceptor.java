@@ -231,7 +231,7 @@ public abstract class AbstractFormInterceptor implements FormInterceptor {
   @Override
   public void notifyRequired(String message) {
     if (getFormView() != null) {
-      getFormView().notifyWarning(message, Localized.getConstants().valueRequired());
+      getFormView().notifyWarning(message, Localized.dictionary().valueRequired());
     }
   }
 

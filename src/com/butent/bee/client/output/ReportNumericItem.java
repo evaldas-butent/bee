@@ -75,7 +75,7 @@ public class ReportNumericItem extends ReportItem {
 
   @Override
   public String getOptionsCaption() {
-    return Localized.getConstants().precision();
+    return Localized.dictionary().precision();
   }
 
   @Override

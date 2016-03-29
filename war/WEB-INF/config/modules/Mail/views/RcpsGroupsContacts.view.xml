@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view" name="RcpsGroupsContacts" source="RcpsGroupsContacts">
+  <Columns>
+    <SimpleColumn name="RecipientsGroup" />
+
+    <SimpleColumn name="Company" />
+    <SimpleColumn name="Person" />
+    <SimpleColumn name="CompanyPerson" />
+    <SimpleColumn name="CompanyContact" />
+  </Columns>
+</View>
+ 

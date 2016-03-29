@@ -412,7 +412,7 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
   }
 
   private void editSettings() {
-    final DialogBox dialog = DialogBox.create(Localized.getConstants().settings(),
+    final DialogBox dialog = DialogBox.create(Localized.dictionary().settings(),
         STYLE_SETTINGS_DIALOG);
 
     HtmlTable table = new HtmlTable(STYLE_SETTINGS_TABLE);
@@ -527,7 +527,7 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
     row++;
     Flow commands = new Flow();
 
-    Button save = new Button(Localized.getConstants().actionSave());
+    Button save = new Button(Localized.dictionary().actionSave());
     save.addStyleName(STYLE_SETTINGS_SAVE);
 
     save.addClickHandler(new ClickHandler() {
@@ -618,7 +618,7 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
 
     commands.add(save);
 
-    Button cancel = new Button(Localized.getConstants().actionCancel());
+    Button cancel = new Button(Localized.dictionary().actionCancel());
     cancel.addStyleName(STYLE_SETTINGS_CANCEL);
 
     cancel.addClickHandler(new ClickHandler() {
@@ -640,7 +640,7 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
   }
 
   private void addCommands(HeaderView header) {
-    CheckBox positionToggle = new CheckBox(Localized.getConstants().personPositions());
+    CheckBox positionToggle = new CheckBox(Localized.dictionary().personPositions());
     positionToggle.addStyleName(STYLE_TOGGLE_POSITIONS);
 
     positionToggle.setValue(showPositions);
@@ -657,7 +657,7 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
 
     header.addCommandItem(positionToggle);
 
-    CheckBox employeeToggle = new CheckBox(Localized.getConstants().employees());
+    CheckBox employeeToggle = new CheckBox(Localized.dictionary().employees());
     employeeToggle.addStyleName(STYLE_TOGGLE_EMPLOYEES);
 
     employeeToggle.setValue(showEmployees);
@@ -1651,7 +1651,7 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
     } else {
       table.addStyleName(STYLE_EMPLOYEE_SUMMARY);
 
-      Label label = new Label(Localized.getConstants().employees());
+      Label label = new Label(Localized.dictionary().employees());
 
       label.addClickHandler(new ClickHandler() {
         @Override

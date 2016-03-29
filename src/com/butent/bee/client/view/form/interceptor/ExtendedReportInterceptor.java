@@ -289,7 +289,7 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
           }
         }
         if (rep == null) {
-          getFormView().notifyWarning(Localized.getMessages().keyNotFound(target));
+          getFormView().notifyWarning(Localized.dictionary().keyNotFound(target));
           return;
         }
         rep.getFilterItems().clear();
@@ -438,7 +438,7 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
     switch (action) {
       case SAVE:
         if (activeReport != null && !activeReport.isEmpty()) {
-          Global.inputString(Localized.getConstants().name(), null, new StringCallback() {
+          Global.inputString(Localized.dictionary().name(), null, new StringCallback() {
             @Override
             public void onSuccess(String value) {
               final ReportInfo rep = new ReportInfo(value);
@@ -451,9 +451,9 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
                 }
               }
               if (reports.contains(rep)) {
-                Global.confirm(Localized.getConstants().reports(), Icon.QUESTION,
-                    Arrays.asList(Localized.getMessages().valueExists(value),
-                        Localized.getConstants().actionChange()), new ConfirmationCallback() {
+                Global.confirm(Localized.dictionary().reports(), Icon.QUESTION,
+                    Arrays.asList(Localized.dictionary().valueExists(value),
+                        Localized.dictionary().actionChange()), new ConfirmationCallback() {
                       @Override
                       public void onConfirm() {
                         saveReport(rep);
@@ -628,7 +628,7 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
           remove.addClickHandler(new ClickHandler() {
             @Override
             public void onClick(ClickEvent event) {
-              Global.confirmRemove(Localized.getConstants().reports(), rep.getCaption(),
+              Global.confirmRemove(Localized.dictionary().reports(), rep.getCaption(),
                   new ConfirmationCallback() {
                     @Override
                     public void onConfirm() {
@@ -676,7 +676,7 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
     final boolean on = !BeeUtils.isEmpty(infoItem.getRelation());
     final InlineLabel cap = new InlineLabel(infoItem.getItem().getFormatedCaption());
     cap.addStyleName(on ? STYLE_DRILLDOWN_ON : STYLE_DRILLDOWN_OFF);
-    cap.setTitle(BeeUtils.join(": ", Localized.getConstants().relation(), infoItem.getRelation()));
+    cap.setTitle(BeeUtils.join(": ", Localized.dictionary().relation(), infoItem.getRelation()));
 
     cap.addClickHandler(new ClickHandler() {
       @Override
@@ -689,7 +689,7 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
           }
         }
         if (on) {
-          options.add(Localized.getConstants().clear() + "...");
+          options.add(Localized.dictionary().clear() + "...");
         }
         Global.choice(cap.getTitle(), null, options, new ChoiceCallback() {
           @Override
@@ -837,7 +837,7 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
       return;
     }
     if (DataUtils.isEmpty(rowSet)) {
-      getFormView().notifyWarning(Localized.getConstants().nothingFound());
+      getFormView().notifyWarning(Localized.dictionary().nothingFound());
       return;
     }
     ResultHolder result = new ResultHolder();
@@ -891,7 +891,7 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
     Collection<ReportValue> colGroups = result.getColGroups();
 
     if (BeeUtils.isEmpty(rowGroups)) {
-      getFormView().notifyWarning(Localized.getConstants().nothingFound());
+      getFormView().notifyWarning(Localized.dictionary().nothingFound());
       return;
     }
     ReportInfo activeCopy = ReportInfo.restore(activeReport.serialize());
@@ -950,7 +950,7 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
       }
       if (x > c) {
         table.getCellFormatter().setColSpan(0, colGroups.size() + 1, x - c);
-        table.setText(0, colGroups.size() + 1, Localized.getConstants().total(),
+        table.setText(0, colGroups.size() + 1, Localized.dictionary().total(),
             STYLE_COLGROUP_SUMMARY_HEADER);
       }
     }
@@ -1114,7 +1114,7 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
         if (!BeeUtils.isEmpty(rowItems)) {
           table.getCellFormatter().setColSpan(r, c, rowItems.size());
         }
-        table.setText(r, c++, Localized.getConstants().totalOf(), STYLE_SUMMARY_HEADER);
+        table.setText(r, c++, Localized.dictionary().totalOf(), STYLE_SUMMARY_HEADER);
         break;
       }
     }
@@ -1208,7 +1208,7 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
         cont.add(rowAdd);
         rowAdd = cont;
       } else {
-        table.setText(rIdx - 1, 0, Localized.getConstants().rows(), STYLE_ROW_HEADER);
+        table.setText(rIdx - 1, 0, Localized.dictionary().rows(), STYLE_ROW_HEADER);
         rCnt++;
       }
       table.setWidget(rIdx, rCnt - 1, rowAdd, STYLE_ROW);
@@ -1252,7 +1252,7 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
           CustomSpan sort = new CustomSpan(infoItem.isSorted()
               ? (infoItem.getDescending() ? STYLE_SORT_DESC : STYLE_SORT_ASC)
               : STYLE_SORT);
-          sort.setTitle(Localized.getConstants().sort());
+          sort.setTitle(Localized.dictionary().sort());
 
           sort.addClickHandler(new ClickHandler() {
             @Override
@@ -1284,7 +1284,7 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
 
         CustomSpan colResult = new CustomSpan(infoItem.isColSummary()
             ? STYLE_SUMMARY_ON : STYLE_SUMMARY_OFF);
-        colResult.setTitle(Localized.getConstants().columnResults());
+        colResult.setTitle(Localized.dictionary().columnResults());
 
         colResult.addClickHandler(new ClickHandler() {
           @Override
@@ -1312,7 +1312,7 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
       });
       if (cCnt > 0) {
         table.getCellFormatter().setColSpan(rIdx + 1, 0, rCnt);
-        table.setText(rIdx + 1, 0, Localized.getConstants().totalOf(), STYLE_SUMMARY_HEADER);
+        table.setText(rIdx + 1, 0, Localized.dictionary().totalOf(), STYLE_SUMMARY_HEADER);
 
         // COL GROUPING
         table.insertRow(0);
@@ -1332,7 +1332,7 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
             }
           }, refresh).asWidget();
           table.getCellFormatter().setColSpan(0, 2, cCnt);
-          table.setText(0, 2, Localized.getConstants().total(), STYLE_COLGROUP_SUMMARY_HEADER);
+          table.setText(0, 2, Localized.dictionary().total(), STYLE_COLGROUP_SUMMARY_HEADER);
           int idx = rCnt + cCnt;
 
           for (final ReportInfoItem infoItem : activeReport.getColItems()) {
@@ -1341,7 +1341,7 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
             final int i = idx - (rCnt + cCnt);
             CustomSpan rowResult = new CustomSpan(infoItem.isRowSummary()
                 ? STYLE_SUMMARY_ON : STYLE_SUMMARY_OFF);
-            rowResult.setTitle(Localized.getConstants().rowResults());
+            rowResult.setTitle(Localized.dictionary().rowResults());
 
             rowResult.addClickHandler(new ClickHandler() {
               @Override
@@ -1357,7 +1357,7 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
           table.getCellFormatter().setColSpan(rIdx + 1, 1 + cCnt, cCnt);
           table.getCellFormatter().addStyleName(rIdx + 1, 1 + cCnt, STYLE_SUMMARY);
         } else {
-          table.setText(0, 0, Localized.getConstants().groupBy(), STYLE_COLGROUP_HEADER);
+          table.setText(0, 0, Localized.dictionary().groupBy(), STYLE_COLGROUP_HEADER);
           cGroup = new CustomSpan(STYLE_ADD);
           ((CustomSpan) cGroup).addClickHandler(new ClickHandler() {
             @Override
@@ -1379,7 +1379,7 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
         cont.add(colAdd);
         colAdd = cont;
       } else {
-        table.setText(0, rCnt, Localized.getConstants().columns(), STYLE_COL_HEADER);
+        table.setText(0, rCnt, Localized.dictionary().columns(), STYLE_COL_HEADER);
         cCnt++;
       }
       table.setWidget(rIdx, rCnt + cCnt - 1, colAdd, STYLE_COL);
@@ -1400,7 +1400,7 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
             }
           }, refresh));
         } else {
-          rGroup.add(new Label(Localized.getConstants().groupBy()));
+          rGroup.add(new Label(Localized.dictionary().groupBy()));
           CustomSpan rGroupAdd = new CustomSpan(STYLE_ADD);
           rGroupAdd.addClickHandler(new ClickHandler() {
             @Override
@@ -1427,7 +1427,7 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
               final int i = idx - 1;
               CustomSpan groupResult = new CustomSpan(infoItem.isGroupSummary()
                   ? STYLE_SUMMARY_ON : STYLE_SUMMARY_OFF);
-              groupResult.setTitle(Localized.getConstants().groupResults());
+              groupResult.setTitle(Localized.dictionary().groupResults());
 
               groupResult.addClickHandler(new ClickHandler() {
                 @Override

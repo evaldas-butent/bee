@@ -37,8 +37,6 @@ import com.butent.bee.shared.utils.PropertyUtils;
 
 import net.sf.jasperreports.engine.JREmptyDataSource;
 import net.sf.jasperreports.engine.JRException;
-import net.sf.jasperreports.engine.JRField;
-import net.sf.jasperreports.engine.JRRewindableDataSource;
 import net.sf.jasperreports.engine.JasperCompileManager;
 import net.sf.jasperreports.engine.JasperExportManager;
 import net.sf.jasperreports.engine.JasperFillManager;
@@ -72,30 +70,6 @@ import javax.ejb.Stateless;
 @Stateless
 public class SystemServiceBean {
 
-  private static final class RsDataSource implements JRRewindableDataSource {
-    private BeeRowSet rs;
-    private int index;
-
-    private RsDataSource(BeeRowSet rowSet) {
-      rs = Assert.notNull(rowSet);
-    }
-
-    @Override
-    public Object getFieldValue(JRField field) {
-      return rs.getString(index, field.getName());
-    }
-
-    @Override
-    public void moveFirst() {
-      index = 0;
-    }
-
-    @Override
-    public boolean next() {
-      return index++ < rs.getNumberOfRows();
-    }
-  }
-
   private static BeeLogger logger = LogUtils.getLogger(SystemServiceBean.class);
 
   @EJB
@@ -128,12 +102,19 @@ public class SystemServiceBean {
       response = run(reqInfo);
 
     } else if (BeeUtils.same(svc, GET_REPORT)) {
-      String data = reqInfo.getParameter(VAR_REPORT_DATA);
+      BeeRowSet[] dataSets = null;
+      String[] data = Codec.beeDeserializeCollection(reqInfo.getParameter(VAR_REPORT_DATA));
 
+      if (!ArrayUtils.isEmpty(data)) {
+        dataSets = new BeeRowSet[data.length];
+
+        for (int i = 0; i < data.length; i++) {
+          dataSets[i] = BeeRowSet.restore(data[i]);
+        }
+      }
       response = getReport(reqInfo.getParameter(VAR_REPORT),
           reqInfo.getParameter(VAR_REPORT_FORMAT),
-          Codec.deserializeMap(reqInfo.getParameter(VAR_REPORT_PARAMETERS)),
-          BeeUtils.isEmpty(data) ? null : BeeRowSet.restore(data));
+          Codec.deserializeMap(reqInfo.getParameter(VAR_REPORT_PARAMETERS)), dataSets);
 
     } else if (BeeUtils.same(svc, CREATE_PDF)) {
       Long fileId = fs.createPdf(reqInfo.getParameter(VAR_REPORT_DATA));
@@ -244,12 +225,12 @@ public class SystemServiceBean {
   }
 
   private ResponseObject getReport(String reportName, String format, Map<String, String> parameters,
-      BeeRowSet data) {
+      BeeRowSet... dataSets) {
 
     String reportFile = ui.getReport(reportName);
 
     if (BeeUtils.isEmpty(reportFile)) {
-      return ResponseObject.error(Localized.getMessages().keyNotFound(reportName));
+      return ResponseObject.error(Localized.dictionary().keyNotFound(reportName));
     }
     ResponseObject response;
 
@@ -260,8 +241,23 @@ public class SystemServiceBean {
       if (!BeeUtils.isEmpty(parameters)) {
         params.putAll(parameters);
       }
+      BeeRowSet mainDataSet = null;
+
+      if (!ArrayUtils.isEmpty(dataSets)) {
+        for (BeeRowSet dataSet : dataSets) {
+          if (Objects.isNull(mainDataSet)) {
+            mainDataSet = dataSet;
+          }
+          if (!BeeUtils.isEmpty(dataSet.getViewName())) {
+            params.put(dataSet.getViewName() + "DataSet", new RsDataSource(dataSet));
+          }
+        }
+      }
+      if (BeeUtils.same(format, "html")) {
+        params.put("IS_IGNORE_PAGINATION", true);
+      }
       JasperPrint print = JasperFillManager.fillReport(report, params,
-          Objects.isNull(data) ? new JREmptyDataSource() : new RsDataSource(data));
+          Objects.isNull(mainDataSet) ? new JREmptyDataSource() : new RsDataSource(mainDataSet));
 
       File tmp = File.createTempFile("bee_", "." + BeeUtils.nvl(format, "pdf"));
       tmp.deleteOnExit();

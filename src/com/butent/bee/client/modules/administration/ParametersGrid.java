@@ -93,7 +93,7 @@ public final class ParametersGrid extends AbstractGridInterceptor {
       switch (prm.getType()) {
         case BOOLEAN:
           value = BeeUtils.unbox(prm.supportsUsers() ? prm.getBoolean(userId) : prm.getBoolean())
-              ? Localized.getConstants().yes() : Localized.getConstants().no();
+              ? Localized.dictionary().yes() : Localized.dictionary().no();
           break;
 
         case COLLECTION:
@@ -199,7 +199,7 @@ public final class ParametersGrid extends AbstractGridInterceptor {
       message = BeeUtils.joinWords(ms.getModule().getCaption(),
           (ms.getSubModule() == null) ? null : ms.getSubModule().getCaption());
     }
-    return BeeUtils.joinWords(Localized.getConstants().parameters(),
+    return BeeUtils.joinWords(Localized.dictionary().parameters(),
         BeeUtils.parenthesize(message));
   }
 
@@ -264,7 +264,7 @@ public final class ParametersGrid extends AbstractGridInterceptor {
           break;
 
         case COLLECTION:
-          Global.inputCollection(prm.getName(), Localized.getConstants().parameter(),
+          Global.inputCollection(prm.getName(), Localized.dictionary().parameter(),
               BeeUtils.toBoolean(prm.getOptions()),
               prm.supportsUsers() ? prm.getCollection(userId) : prm.getCollection(),
               new Consumer<Collection<String>>() {
@@ -276,8 +276,8 @@ public final class ParametersGrid extends AbstractGridInterceptor {
           break;
 
         case MAP:
-          Global.inputMap(prm.getName(), Localized.getConstants().parameter(),
-              Localized.getConstants().value(),
+          Global.inputMap(prm.getName(), Localized.dictionary().parameter(),
+              Localized.dictionary().value(),
               prm.supportsUsers() ? prm.getMap(userId) : prm.getMap(),
               new Consumer<Map<String, String>>() {
                 @Override

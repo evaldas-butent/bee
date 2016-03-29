@@ -134,14 +134,14 @@ public class ChatManager implements HasInfo, HasEnabled {
       Flow actions = new Flow(STYLE_CHATS_ACTIONS);
 
       CustomDiv plus = new CustomDiv(STYLE_CHATS_PLUS);
-      plus.setText(Localized.getConstants().chatStartNew());
+      plus.setText(Localized.dictionary().chatStartNew());
 
       plus.addClickHandler(event -> createChat());
       actions.add(plus);
 
       if (!list.isEmpty()) {
         CustomDiv showAll = new CustomDiv(STYLE_CHATS_SHOW);
-        showAll.setText(Localized.getConstants().chatsShowAll());
+        showAll.setText(Localized.dictionary().chatsShowAll());
 
         showAll.addClickHandler(event -> showAll());
         actions.add(showAll);
@@ -473,7 +473,7 @@ public class ChatManager implements HasInfo, HasEnabled {
 
   public Widget createCommand() {
     Flow command = new Flow(STYLE_CHATS_COMMAND);
-    command.setTitle(Localized.getConstants().chats());
+    command.setTitle(Localized.dictionary().chats());
 
     CustomDiv unread = new CustomDiv(STYLE_CHATS_UNREAD);
     StyleUtils.setEmptiness(unread, true);
@@ -941,14 +941,14 @@ public class ChatManager implements HasInfo, HasEnabled {
 
     final ChatSettings result = new ChatSettings(settings);
 
-    String caption = isNew ? Localized.getConstants().chatNew()
-        : Localized.getConstants().chatSettings();
+    String caption = isNew ? Localized.dictionary().chatNew()
+        : Localized.dictionary().chatSettings();
     final DialogBox dialog = DialogBox.create(caption, STYLE_CHAT_EDITOR_PREFIX + "dialog");
 
     HtmlTable table = new HtmlTable(STYLE_CHAT_EDITOR_PREFIX + "table");
     int row = 0;
 
-    Label nameLabel = new Label(Localized.getConstants().chatName());
+    Label nameLabel = new Label(Localized.dictionary().chatName());
     table.setWidgetAndStyle(row, 0, nameLabel, STYLE_CHAT_EDITOR_PREFIX + "nameLabel");
 
     final InputText nameInput = new InputText();
@@ -959,7 +959,7 @@ public class ChatManager implements HasInfo, HasEnabled {
     table.setWidgetAndStyle(row, 1, nameInput, STYLE_CHAT_EDITOR_PREFIX + "nameInput");
 
     row++;
-    Label usersLabel = new Label(Localized.getConstants().users());
+    Label usersLabel = new Label(Localized.dictionary().users());
     usersLabel.addStyleName(StyleUtils.NAME_REQUIRED);
     table.setWidgetAndStyle(row, 0, usersLabel, STYLE_CHAT_EDITOR_PREFIX + "usersLabel");
 
@@ -988,7 +988,7 @@ public class ChatManager implements HasInfo, HasEnabled {
     row++;
     Flow commands = new Flow();
 
-    Button save = new Button(Localized.getConstants().actionSave());
+    Button save = new Button(Localized.dictionary().actionSave());
     save.addStyleName(STYLE_CHAT_EDITOR_PREFIX + "save");
 
     save.addClickHandler(event -> {
@@ -1011,7 +1011,7 @@ public class ChatManager implements HasInfo, HasEnabled {
 
     commands.add(save);
 
-    Button cancel = new Button(Localized.getConstants().actionCancel());
+    Button cancel = new Button(Localized.dictionary().actionCancel());
     cancel.addStyleName(STYLE_CHAT_EDITOR_PREFIX + "cancel");
 
     cancel.addClickHandler(event -> dialog.close());
@@ -1071,29 +1071,29 @@ public class ChatManager implements HasInfo, HasEnabled {
     HtmlTable table = new HtmlTable(STYLE_CHAT_INFO_PREFIX + "details");
     int row = 0;
 
-    table.setText(row, 0, Localized.getConstants().captionId());
+    table.setText(row, 0, Localized.dictionary().captionId());
     table.setText(row, 2, BeeUtils.toString(chat.getId()));
 
     if (chat.getCreated() > 0) {
       row++;
-      table.setText(row, 0, Localized.getConstants().creationDate());
+      table.setText(row, 0, Localized.dictionary().creationDate());
       table.setText(row, 2, TimeUtils.renderDateTime(chat.getCreated()));
     }
 
     if (DataUtils.isId(chat.getCreator())) {
       row++;
-      table.setText(row, 0, Localized.getConstants().creator());
+      table.setText(row, 0, Localized.dictionary().creator());
       table.setText(row, 2, Global.getUsers().getSignature(chat.getCreator()));
     }
 
     if (!BeeUtils.isEmpty(chat.getName())) {
       row++;
-      table.setText(row, 0, Localized.getConstants().chatName());
+      table.setText(row, 0, Localized.dictionary().chatName());
       table.setText(row, 2, chat.getName());
     }
 
     row++;
-    table.setText(row, 0, Localized.getConstants().users());
+    table.setText(row, 0, Localized.dictionary().users());
     table.setText(row, 1, BeeUtils.bracket(BeeUtils.size(chat.getUsers())));
     if (!BeeUtils.isEmpty(chat.getUsers())) {
       table.setText(row, 2, BeeUtils.join(BeeConst.DEFAULT_LIST_SEPARATOR,
@@ -1101,14 +1101,14 @@ public class ChatManager implements HasInfo, HasEnabled {
     }
 
     row++;
-    table.setText(row, 0, Localized.getConstants().chatUpdateTime());
+    table.setText(row, 0, Localized.dictionary().chatUpdateTime());
     table.setText(row, 1, BeeUtils.bracket(chat.getMessageCount()));
     if (chat.getMaxTime() > 0) {
       table.setText(row, 2, BeeUtils.joinWords(ChatUtils.elapsed(chat.getMaxTime()),
           TimeUtils.renderDateTime(chat.getMaxTime(), true)));
     }
 
-    Global.showModalWidget(Localized.getConstants().chat(), table);
+    Global.showModalWidget(Localized.dictionary().chat(), table);
   }
 
   private void updateUnreadBadge() {

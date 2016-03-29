@@ -162,7 +162,7 @@ public class ReportFormulaItem extends ReportNumericItem {
   @Override
   public String saveOptions() {
     if (BeeUtils.isEmpty(temporaryExpression)) {
-      return Localized.getMessages().dataNotAvailable(Localized.getConstants().expression());
+      return Localized.dictionary().dataNotAvailable(Localized.dictionary().expression());
     }
     expression.clear();
     expression.addAll(temporaryExpression);
@@ -206,7 +206,7 @@ public class ReportFormulaItem extends ReportNumericItem {
             final List<String> options = Arrays.asList(BeeConst.STRING_PLUS, BeeConst.STRING_MINUS,
                 BeeConst.STRING_ASTERISK, BeeConst.STRING_SLASH);
 
-            Global.choice(Localized.getConstants().operator(), null, options, new ChoiceCallback() {
+            Global.choice(Localized.dictionary().operator(), null, options, new ChoiceCallback() {
               @Override
               public void onSuccess(int value) {
                 pair.setA(options.get(value));

@@ -20,7 +20,7 @@ import com.butent.bee.client.view.form.interceptor.ExtendedReportInterceptor;
 import com.butent.bee.client.view.form.interceptor.ReportInterceptor;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.i18n.LocalizableConstants;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -111,7 +111,7 @@ public enum Report implements HasWidgetSupplier {
   TRANSPORT_TRIP_PROFIT(ModuleAndSub.of(Module.TRANSPORT), SVC_TRIP_PROFIT_REPORT) {
     @Override
     public List<ReportItem> getItems() {
-      LocalizableConstants loc = Localized.getConstants();
+      Dictionary loc = Localized.dictionary();
       String plan = BeeUtils.parenthesize(loc.plan());
 
       return Arrays.asList(
@@ -177,7 +177,7 @@ public enum Report implements HasWidgetSupplier {
       ReportItem income = items.get("TripIncome");
       report.addColItem(income);
 
-      ReportFormulaItem costs = new ReportFormulaItem(Localized.getConstants().expenses());
+      ReportFormulaItem costs = new ReportFormulaItem(Localized.dictionary().expenses());
       costs.setPrecision(2);
 
       for (String item : new String[] {"FuelCosts", "DailyCosts", "RoadCosts", "OtherCosts"}) {
@@ -186,8 +186,8 @@ public enum Report implements HasWidgetSupplier {
       report.addColItem(costs);
 
       ReportFormulaItem plannedCosts = new ReportFormulaItem(
-          BeeUtils.joinWords(Localized.getConstants().expenses(),
-              BeeUtils.parenthesize(Localized.getConstants().plan())));
+          BeeUtils.joinWords(Localized.dictionary().expenses(),
+              BeeUtils.parenthesize(Localized.dictionary().plan())));
       plannedCosts.setPrecision(2);
 
       for (String item : new String[] {"FuelCosts", "DailyCosts", "RoadCosts", "OtherCosts"}) {
@@ -198,7 +198,7 @@ public enum Report implements HasWidgetSupplier {
       ReportItem constantCosts = items.get("ConstantCosts");
       report.addColItem(constantCosts);
 
-      report.addColItem(new ReportFormulaItem(Localized.getConstants().profit())
+      report.addColItem(new ReportFormulaItem(Localized.dictionary().profit())
           .plus(income).minus(costs).minus(constantCosts).setPrecision(2));
 
       report.getFilterItems().add(items.get(COL_TRIP_STATUS)
@@ -272,7 +272,7 @@ public enum Report implements HasWidgetSupplier {
   PROJECT_REPORT(ModuleAndSub.of(Module.PROJECTS), ProjectConstants.SVC_PROJECT_REPORT) {
     @Override
     public List<ReportItem> getItems() {
-      LocalizableConstants loc = Localized.getConstants();
+      Dictionary loc = Localized.dictionary();
 
       return Arrays.asList(
           new ReportTextItem(ProjectConstants.COL_PROJECT_NAME, Data.getColumnLabel(

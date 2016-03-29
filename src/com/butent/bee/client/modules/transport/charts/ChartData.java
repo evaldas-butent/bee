@@ -95,25 +95,25 @@ class ChartData implements HasEnabled {
   }
 
   enum Type implements HasCaption {
-    DRIVER(Localized.getConstants().drivers()),
-    DRIVER_GROUP(Localized.getConstants().driverGroupsShort()),
-    CARGO(Localized.getConstants().cargos()),
-    CARGO_TYPE(Localized.getConstants().trCargoTypes()),
-    CUSTOMER(Localized.getConstants().transportationCustomers()),
-    MANAGER(Localized.getConstants().managers()),
-    LOADING(Localized.getConstants().cargoLoading()),
-    ORDER(Localized.getConstants().trOrders()),
-    ORDER_STATUS(Localized.getConstants().trOrderStatus()),
-    PLACE(Localized.getConstants().cargoHandlingPlaces()),
-    TRAILER(Localized.getConstants().trailers()),
-    TRIP(Localized.getConstants().trips()),
-    TRIP_ARRIVAL(Localized.getConstants().transportArrival()),
-    TRIP_DEPARTURE(Localized.getConstants().transportDeparture()),
-    TRUCK(Localized.getConstants().trucks()),
-    UNLOADING(Localized.getConstants().cargoUnloading()),
-    VEHICLE_GROUP(Localized.getConstants().vehicleGroupsShort()),
-    VEHICLE_MODEL(Localized.getConstants().vehicleModelsShort()),
-    VEHICLE_TYPE(Localized.getConstants().trVehicleTypesShort());
+    DRIVER(Localized.dictionary().drivers()),
+    DRIVER_GROUP(Localized.dictionary().driverGroupsShort()),
+    CARGO(Localized.dictionary().cargos()),
+    CARGO_TYPE(Localized.dictionary().trCargoTypes()),
+    CUSTOMER(Localized.dictionary().transportationCustomers()),
+    MANAGER(Localized.dictionary().managers()),
+    LOADING(Localized.dictionary().cargoLoading()),
+    ORDER(Localized.dictionary().trOrders()),
+    ORDER_STATUS(Localized.dictionary().trOrderStatus()),
+    PLACE(Localized.dictionary().cargoHandlingPlaces()),
+    TRAILER(Localized.dictionary().trailers()),
+    TRIP(Localized.dictionary().trips()),
+    TRIP_ARRIVAL(Localized.dictionary().transportArrival()),
+    TRIP_DEPARTURE(Localized.dictionary().transportDeparture()),
+    TRUCK(Localized.dictionary().trucks()),
+    UNLOADING(Localized.dictionary().cargoUnloading()),
+    VEHICLE_GROUP(Localized.dictionary().vehicleGroupsShort()),
+    VEHICLE_MODEL(Localized.dictionary().vehicleModelsShort()),
+    VEHICLE_TYPE(Localized.dictionary().trVehicleTypesShort());
 
     private final String caption;
 

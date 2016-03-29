@@ -7,6 +7,7 @@ import com.google.common.io.CharStreams;
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.mail.MailConstants.*;
+import static com.butent.bee.shared.modules.mail.MailConstants.COL_USER;
 
 import com.butent.bee.server.Invocation;
 import com.butent.bee.server.concurrency.ConcurrencyBean;
@@ -219,6 +220,11 @@ public class MailStorageBean {
     }
     account.setFolders(folders);
 
+    account.setUsers(qs.getLongColumn(new SqlSelect()
+        .addFields(TBL_ACCOUNT_USERS, COL_USER)
+        .addFrom(TBL_ACCOUNT_USERS)
+        .setWhere(SqlUtils.equals(TBL_ACCOUNT_USERS, COL_ACCOUNT, account.getAccountId()))));
+
     return account;
   }
 
@@ -307,8 +313,8 @@ public class MailStorageBean {
     if (finished.get()) {
       if (Objects.isNull(messageUID) || !BeeConst.isUndef(messageUID)) {
         hasPlace = qs.sqlExists(TBL_PLACES,
-            SqlUtils.and(SqlUtils.equals(TBL_PLACES, COL_MESSAGE_UID, messageUID),
-                SqlUtils.equals(TBL_PLACES, COL_MESSAGE, messageId.getA(), COL_FOLDER, folderId)));
+            SqlUtils.equals(TBL_PLACES, COL_MESSAGE_UID, messageUID,
+                COL_MESSAGE, messageId.getA(), COL_FOLDER, folderId));
         p.set("check2");
       }
     } else {
@@ -337,7 +343,8 @@ public class MailStorageBean {
         p.set("file");
       } catch (IOException | MessagingException e) {
         qs.updateData(new SqlDelete(TBL_MESSAGES)
-            .setWhere(sys.idEquals(TBL_MESSAGES, messageId.getA())));
+            .setWhere(SqlUtils.and(sys.idEquals(TBL_MESSAGES, messageId.getA()),
+                SqlUtils.isNull(TBL_MESSAGES, COL_RAW_CONTENT))));
         throw new MessagingException("MessageID = " + messageId.getA() + " Error getting content",
             e);
       }
@@ -453,68 +460,70 @@ public class MailStorageBean {
       if (lastUid == 0) {
         lastUid = to;
       }
-      Message[] msgs = ((UIDFolder) remoteFolder).getMessagesByUID(from, to);
-      FetchProfile fp = new FetchProfile();
-      fp.add(FetchProfile.Item.FLAGS);
-      remoteFolder.fetch(msgs, fp);
+      if (size > 0) {
+        Message[] msgs = ((UIDFolder) remoteFolder).getMessagesByUID(from, to);
+        FetchProfile fp = new FetchProfile();
+        fp.add(FetchProfile.Item.FLAGS);
+        remoteFolder.fetch(msgs, fp);
 
-      Map<Long, Holder<Integer>> syncedMsgs = new HashMap<>();
-      long l = msgs.length;
-      long progressUpdated = System.currentTimeMillis();
+        Map<Long, Holder<Integer>> syncedMsgs = new HashMap<>();
+        long l = msgs.length;
+        long progressUpdated = System.currentTimeMillis();
 
-      for (Message message : msgs) {
-        long uid = ((UIDFolder) remoteFolder).getUID(message);
-        SimpleRow row = data.getRowByKey(COL_MESSAGE_UID, BeeUtils.toString(uid));
+        for (Message message : msgs) {
+          long uid = ((UIDFolder) remoteFolder).getUID(message);
+          SimpleRow row = data.getRowByKey(COL_MESSAGE_UID, BeeUtils.toString(uid));
 
-        if (row != null) {
-          Integer flags = MailEnvelope.getFlagMask(message);
-          Holder<Integer> hasFlags = null;
+          if (row != null) {
+            Integer flags = MailEnvelope.getFlagMask(message);
+            Holder<Integer> hasFlags = null;
 
-          if (BeeUtils.unbox(row.getInt(COL_FLAGS)) != BeeUtils.unbox(flags)) {
-            hasFlags = Holder.of(flags);
-          }
-          syncedMsgs.put(row.getLong(COL_PLACE), hasFlags);
-        } else {
-          try {
-            ctx.getBusinessObject(MailStorageBean.class)
-                .storeMail(account, message, localFolder.getId(), uid);
-            cnt++;
-          } catch (MessagingException e) {
-            logger.error(e);
-          }
-        }
-        if (!BeeUtils.isEmpty(progressId)) {
-          l--;
-
-          if ((System.currentTimeMillis() - progressUpdated) > 10) {
-            if (!Endpoint.updateProgress(progressId, l / (double) msgs.length)) {
-              return null;
+            if (BeeUtils.unbox(row.getInt(COL_FLAGS)) != BeeUtils.unbox(flags)) {
+              hasFlags = Holder.of(flags);
             }
-            progressUpdated = System.currentTimeMillis();
+            syncedMsgs.put(row.getLong(COL_PLACE), hasFlags);
+          } else {
+            try {
+              ctx.getBusinessObject(MailStorageBean.class)
+                  .storeMail(account, message, localFolder.getId(), uid);
+              cnt++;
+            } catch (MessagingException e) {
+              logger.error(e);
+            }
+          }
+          if (!BeeUtils.isEmpty(progressId)) {
+            l--;
+
+            if ((System.currentTimeMillis() - progressUpdated) > 10) {
+              if (!Endpoint.updateProgress(progressId, l / (double) msgs.length)) {
+                return null;
+              }
+              progressUpdated = System.currentTimeMillis();
+            }
           }
         }
-      }
-      for (Entry<Long, Holder<Integer>> entry : syncedMsgs.entrySet()) {
-        if (entry.getValue() != null) {
-          cnt += qs.updateData(new SqlUpdate(TBL_PLACES)
-              .addConstant(COL_FLAGS, entry.getValue().get())
-              .setWhere(sys.idEquals(TBL_PLACES, entry.getKey())));
+        for (Entry<Long, Holder<Integer>> entry : syncedMsgs.entrySet()) {
+          if (entry.getValue() != null) {
+            cnt += qs.updateData(new SqlUpdate(TBL_PLACES)
+                .addConstant(COL_FLAGS, entry.getValue().get())
+                .setWhere(sys.idEquals(TBL_PLACES, entry.getKey())));
+          }
         }
-      }
-      List<Long> deletedMsgs = new ArrayList<>();
+        List<Long> deletedMsgs = new ArrayList<>();
 
-      for (int i = 0; i < size; i++) {
-        Long id = data.getLong(i, COL_PLACE);
+        for (int i = 0; i < size; i++) {
+          Long id = data.getLong(i, COL_PLACE);
 
-        if (!syncedMsgs.containsKey(id)) {
-          deletedMsgs.add(id);
+          if (!syncedMsgs.containsKey(id)) {
+            deletedMsgs.add(id);
+          }
         }
+        if (!deletedMsgs.isEmpty()) {
+          cnt += qs.updateData(new SqlDelete(TBL_PLACES)
+              .setWhere(sys.idInList(TBL_PLACES, deletedMsgs)));
+        }
+        offset += query.getLimit();
       }
-      if (!deletedMsgs.isEmpty()) {
-        cnt += qs.updateData(new SqlDelete(TBL_PLACES)
-            .setWhere(sys.idInList(TBL_PLACES, deletedMsgs)));
-      }
-      offset += query.getLimit();
     } while (syncAll && size == query.getLimit());
 
     return Pair.of(lastUid, cnt);

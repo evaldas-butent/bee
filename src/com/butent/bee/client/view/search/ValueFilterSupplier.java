@@ -300,7 +300,7 @@ public class ValueFilterSupplier extends AbstractFilterSupplier {
       update(changed);
 
     } else {
-      errorMessage.setHtml(Localized.getConstants().error());
+      errorMessage.setHtml(Localized.dictionary().error());
     }
   }
 

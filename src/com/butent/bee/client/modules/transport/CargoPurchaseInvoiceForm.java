@@ -62,10 +62,10 @@ public class CargoPurchaseInvoiceForm extends InvoiceForm implements ClickHandle
       Widget child;
 
       if (DataUtils.isId(form.getLongValue(COL_SALE))) {
-        caption = Localized.getConstants().trCreditInvoice();
+        caption = Localized.dictionary().trCreditInvoice();
         child = form.getWidgetByName(TransportConstants.VIEW_CARGO_PURCHASES);
       } else {
-        caption = Localized.getConstants().trPurchaseInvoice();
+        caption = Localized.dictionary().trPurchaseInvoice();
         child = form.getWidgetByName(TransportConstants.VIEW_CARGO_SALES);
 
         accumulationButton.setVisible(false);

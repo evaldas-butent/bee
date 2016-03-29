@@ -19,6 +19,9 @@
 
     <Relation name="Warehouse" relation="Warehouses" label="=trdWarehouseTo" />
 
+    <Relation name="Dimensions" unique="true" relation="Dimensions" editable="true"
+      label="=dimensions" />
+
     <Text name="Note" label="=trdNote" />
 
     <Relation name="Parent" relation="TradeDocumentItems" label="=captionPid" />

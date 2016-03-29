@@ -57,13 +57,13 @@ final class TripSelector implements EditStopEvent.Handler, ClickHandler {
 
   private TripSelector(String[] cargos, Filter tripFilter, List<String> columns) {
     this.cargos = cargos;
-    this.dialog = DialogBox.create(Localized.getConstants().trAssignTrip());
+    this.dialog = DialogBox.create(Localized.dictionary().trAssignTrip());
     dialog.setHideOnEscape(true);
 
     HtmlTable container = new HtmlTable();
     container.setBorderSpacing(5);
 
-    container.setHtml(0, 0, Localized.getConstants().trCargoSelectTrip());
+    container.setHtml(0, 0, Localized.dictionary().trCargoSelectTrip());
 
     Relation relation = Relation.create(VIEW_ACTIVE_TRIPS, columns);
     relation.disableNewRow();
@@ -74,10 +74,10 @@ final class TripSelector implements EditStopEvent.Handler, ClickHandler {
     selector.addEditStopHandler(this);
     container.setWidget(0, 1, selector);
 
-    tripButton = new Button(Localized.getConstants().trNewTrip(), this);
+    tripButton = new Button(Localized.dictionary().trNewTrip(), this);
     container.setWidget(1, 0, tripButton);
 
-    expeditionTripButton = new Button(Localized.getConstants().trNewExpedition(), this);
+    expeditionTripButton = new Button(Localized.dictionary().trNewExpedition(), this);
     container.setWidget(1, 1, expeditionTripButton);
 
     dialog.setWidget(container);

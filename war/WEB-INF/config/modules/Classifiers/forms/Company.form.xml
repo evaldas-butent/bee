@@ -171,6 +171,15 @@
               </cell>
             </row>
             <row>
+              <Label text="=mailRecipientsGroups" style="&lbl;" />
+              <cell colSpan="3">
+                <ChildSelector name="RecipientsGroup" viewName="RecipientsGroups" childTable="RcpsGroupsContacts"
+                  targetRelColumn="Company" sourceRelColumn="RecipientsGroup" renderColumns="GroupName"
+                  choiceColumns="GroupName" label="=mailRecipientsGroups" style="width: 100%;" summarize="true" 
+                  filter="Creator {u} or Visibility = 0" />
+              </cell>
+            </row>
+            <row>
               <Label text="=trdTurnover" style="&lbl;"/>
               <DataSelector source="Turnover" summarize="true" />
               <DataSelector source="TurnoverCurrency" editEnabled="false"

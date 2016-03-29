@@ -74,7 +74,7 @@ public class MailController extends Flow implements HasDomain, HandlesStateChang
     Flow captionPanel = new Flow(BeeConst.CSS_CLASS_PREFIX + "mail-FolderRow");
     panel.add(captionPanel);
 
-    Label caption = new Label(Localized.getConstants().mailFolders());
+    Label caption = new Label(Localized.dictionary().mailFolders());
     caption.setStyleName(BeeConst.CSS_CLASS_PREFIX + "mail-FolderCaption");
     captionPanel.add(caption);
 
@@ -83,7 +83,7 @@ public class MailController extends Flow implements HasDomain, HandlesStateChang
 
     final FaLabel create = new FaLabel(FontAwesome.PLUS,
         BeeConst.CSS_CLASS_PREFIX + "mail-FolderAction");
-    create.setTitle(Localized.getConstants().mailCreateNewFolder());
+    create.setTitle(Localized.dictionary().mailCreateNewFolder());
 
     create.addClickHandler(new ClickHandler() {
       @Override
@@ -147,16 +147,16 @@ public class MailController extends Flow implements HasDomain, HandlesStateChang
 
       switch (sysFolder) {
         case Drafts:
-          cap = Localized.getConstants().mailFolderDrafts();
+          cap = Localized.dictionary().mailFolderDrafts();
           break;
         case Inbox:
-          cap = Localized.getConstants().mailFolderInbox();
+          cap = Localized.dictionary().mailFolderInbox();
           break;
         case Sent:
-          cap = Localized.getConstants().mailFolderSent();
+          cap = Localized.dictionary().mailFolderSent();
           break;
         case Trash:
-          cap = Localized.getConstants().mailFolderTrash();
+          cap = Localized.dictionary().mailFolderTrash();
           break;
       }
       final Long folderId = account.getSystemFolder(sysFolder);
@@ -262,14 +262,14 @@ public class MailController extends Flow implements HasDomain, HandlesStateChang
           if (Objects.equals(subFolder.getParent(), account.getRootFolder())) {
             final FaLabel disconnect = new FaLabel(FontAwesome.CHAIN_BROKEN,
                 BeeConst.CSS_CLASS_PREFIX + "mail-FolderAction");
-            disconnect.setTitle(Localized.getMessages()
+            disconnect.setTitle(Localized.dictionary()
                 .mailCancelFolderSynchronizationQuestion(BeeUtils.bracket(cap)));
 
             disconnect.addClickHandler(new ClickHandler() {
               @Override
               public void onClick(ClickEvent event) {
                 Global.confirmDelete(Settings.getAppName(), Icon.WARNING,
-                    Lists.newArrayList(disconnect.getTitle(), "(" + Localized.getConstants()
+                    Lists.newArrayList(disconnect.getTitle(), "(" + Localized.dictionary()
                         .mailFolderContentsWillBeRemovedFromTheMailServer() + ")"),
                     new ConfirmationCallback() {
                       @Override
@@ -286,7 +286,7 @@ public class MailController extends Flow implements HasDomain, HandlesStateChang
         }
         final FaLabel edit = new FaLabel(FontAwesome.EDIT,
             BeeConst.CSS_CLASS_PREFIX + "mail-FolderAction");
-        edit.setTitle(Localized.getMessages().mailRenameFolder(BeeUtils.bracket(cap)));
+        edit.setTitle(Localized.dictionary().mailRenameFolder(BeeUtils.bracket(cap)));
 
         edit.addClickHandler(new ClickHandler() {
           @Override
@@ -305,7 +305,7 @@ public class MailController extends Flow implements HasDomain, HandlesStateChang
 
         final FaLabel delete = new FaLabel(FontAwesome.TRASH_O,
             BeeConst.CSS_CLASS_PREFIX + "mail-FolderAction");
-        delete.setTitle(Localized.getMessages()
+        delete.setTitle(Localized.dictionary()
             .mailDeleteFolderQuestion(BeeUtils.bracket(cap)));
 
         delete.addClickHandler(new ClickHandler() {

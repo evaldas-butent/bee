@@ -226,8 +226,8 @@ public class ParamHolderBean {
                     ? param.getValue(userId) : param.getValue());
 
                 if (DataUtils.isId(id) && event.getIds().contains(id)) {
-                  event.addErrorMessage(Localized.getMessages()
-                      .recordIsInUse(BeeUtils.joinWords(Localized.getConstants().parameter(),
+                  event.addErrorMessage(Localized.dictionary()
+                      .recordIsInUse(BeeUtils.joinWords(Localized.dictionary().parameter(),
                           param.getModule(), param.getName())));
                   return;
                 }

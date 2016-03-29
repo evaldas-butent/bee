@@ -45,12 +45,15 @@ import com.butent.bee.client.layout.Direction;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.layout.Split;
+import com.butent.bee.client.layout.TabbedPages;
 import com.butent.bee.client.render.PhotoRenderer;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.utils.XmlUtils;
+import com.butent.bee.client.validation.CellValidateEvent;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.FormView;
@@ -82,6 +85,7 @@ import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.FileInfo;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.documents.DocumentConstants;
 import com.butent.bee.shared.modules.projects.ProjectConstants;
 import com.butent.bee.shared.modules.projects.ProjectStatus;
@@ -91,6 +95,7 @@ import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
 import com.butent.bee.shared.modules.tasks.TaskUtils;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
+import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.UiConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -121,6 +126,7 @@ class TaskEditor extends AbstractFormInterceptor {
 
   private static final String STYLE_EXTENSION = CRM_STYLE_PREFIX + "taskExtension";
   private static final String NAME_OBSERVERS = "Observers";
+  private static final String NAME_PRIVATE_TASK = "PrivateTask";
 
   private static final List<String> relations = Lists.newArrayList(PROP_COMPANIES, PROP_PERSONS,
       PROP_DOCUMENTS, PROP_APPOINTMENTS, PROP_DISCUSSIONS, PROP_SERVICE_OBJECTS, PROP_TASKS);
@@ -157,7 +163,7 @@ class TaskEditor extends AbstractFormInterceptor {
       List<Long> extTasks =
           DataUtils.parseIdList(data.get(BeeUtils.toString(TaskEvent.CREATE.ordinal())));
 
-      widget.getElement().setInnerHTML(Localized.getConstants().crmTasksDelegatedTasks());
+      widget.getElement().setInnerHTML(Localized.dictionary().crmTasksDelegatedTasks());
 
       for (final Long extTaskId : extTasks) {
         InternalLink url = new InternalLink(BeeUtils.toString(extTaskId));
@@ -269,7 +275,7 @@ class TaskEditor extends AbstractFormInterceptor {
     if (!BeeUtils.isEmpty(time)) {
       Long type = dialog.getSelector(ids.get(COL_DURATION_TYPE)).getRelatedId();
       if (!DataUtils.isId(type)) {
-        showError(Localized.getConstants().crmEnterDurationType());
+        showError(Localized.dictionary().crmEnterDurationType());
         return false;
       }
 
@@ -307,7 +313,7 @@ class TaskEditor extends AbstractFormInterceptor {
     int r = 0;
     int c = 0;
 
-    addDurationCell(display, r, c++, Localized.getConstants().crmSpentTime(), "caption");
+    addDurationCell(display, r, c++, Localized.dictionary().crmSpentTime(), "caption");
     for (String column : columns) {
       addDurationCell(display, r, c++, column, "colLabel");
     }
@@ -359,7 +365,7 @@ class TaskEditor extends AbstractFormInterceptor {
   }
 
   private static void showError(String message) {
-    Global.showError(Localized.getConstants().error(), Collections.singletonList(message));
+    Global.showError(Localized.dictionary().error(), Collections.singletonList(message));
   }
 
   private void showEvent(Flow panel, final BeeRow row, List<BeeColumn> columns,
@@ -437,8 +443,10 @@ class TaskEditor extends AbstractFormInterceptor {
     if (!BeeUtils.isEmpty(comment)) {
       col1.add(createEventCell(COL_COMMENT, comment));
       int idxOwner = Data.getColumnIndex(VIEW_TASKS, COL_OWNER);
-
-      if (event == TaskEvent.COMMENT && Objects.equals(taskRow.getLong(idxOwner), userId)) {
+      int idxExecutor = Data.getColumnIndex(VIEW_TASKS, COL_EXECUTOR);
+      if (event == TaskEvent.COMMENT
+          && (Objects.equals(taskRow.getLong(idxOwner), userId) || Objects.equals(taskRow
+              .getLong(idxExecutor), userId))) {
         FaLabel createTask = new FaLabel(TaskEvent.CREATE.getCommandIcon());
         createTask.setTitle(TaskEvent.CREATE.getCommandLabel());
         createTask.addClickHandler(new ClickHandler() {
@@ -461,7 +469,7 @@ class TaskEditor extends AbstractFormInterceptor {
       Flow col2 = new Flow();
       col2.addStyleName(STYLE_EVENT_COL + BeeUtils.toString(c));
 
-      col2.add(createEventCell(COL_DURATION, Localized.getConstants().crmSpentTime() + " "
+      col2.add(createEventCell(COL_DURATION, Localized.dictionary().crmSpentTime() + " "
           + duration));
 
       String durType = row.getString(DataUtils.getColumnIndex(COL_DURATION_TYPE, columns));
@@ -588,8 +596,15 @@ class TaskEditor extends AbstractFormInterceptor {
   private MultiSelector observers;
   private List<Long> projectUsers;
 
+  Split split;
+  com.google.gwt.xml.client.Element west;
+  IdentifiableWidget taskWidget;
+  IdentifiableWidget taskEventsWidget;
+  private boolean isDefaultLayout;
+
   TaskEditor() {
     super();
+    this.isDefaultLayout = BeeKeeper.getUser().getCommentsLayout();
     this.userId = BeeKeeper.getUser().getUserId();
   }
 
@@ -601,9 +616,7 @@ class TaskEditor extends AbstractFormInterceptor {
 
       if (BeeUtils.isPositive(size)) {
 
-        com.google.gwt.xml.client.Element west =
-            XmlUtils.getFirstChildElement(description, Direction.WEST.name()
-                .toLowerCase());
+        west = XmlUtils.getFirstChildElement(description, Direction.WEST.name().toLowerCase());
 
         if (west != null) {
           west.setAttribute(UiConstants.ATTR_SIZE, size.toString());
@@ -619,8 +632,14 @@ class TaskEditor extends AbstractFormInterceptor {
 
     if (BeeUtils.same(name, NAME_OBSERVERS) && widget instanceof MultiSelector) {
       observers = (MultiSelector) widget;
+    } else if (BeeUtils.same(name, "TabbedPages") && widget instanceof TabbedPages) {
+      taskWidget = widget;
+
+    } else if (BeeUtils.same(name, "TaskEvents") && widget instanceof Flow) {
+      taskEventsWidget = widget;
+
     } else if (BeeUtils.same(name, "Split") && widget instanceof Split) {
-      Split split = (Split) widget;
+      split = (Split) widget;
       split.addMutationHandler(new Handler() {
 
         @Override
@@ -644,6 +663,7 @@ class TaskEditor extends AbstractFormInterceptor {
       return;
     }
 
+    setCommentsLayout(header);
     Integer status = row.getInteger(form.getDataIndex(COL_STATUS));
 
     for (final TaskEvent event : TaskEvent.values()) {
@@ -695,6 +715,34 @@ class TaskEditor extends AbstractFormInterceptor {
   }
 
   @Override
+  public void onSetActiveRow(IsRow row) {
+
+    boolean privateTask =
+        BeeUtils.unbox(row.getBoolean(Data.getColumnIndex(TaskConstants.VIEW_TASKS,
+            COL_PRIVATE_TASK)));
+
+    if (privateTask) {
+      Filter filter =
+          Filter.and(Filter.notNull(COL_PRIVATE_TASK), Filter.or(Filter.equals(COL_OWNER,
+              userId), Filter.equals(COL_EXECUTOR, userId), Filter.in("TaskID",
+              VIEW_TASK_USERS, COL_TASK, Filter.equals(AdministrationConstants.COL_USER,
+                  userId))));
+      Queries.getRowSet(TaskConstants.VIEW_TASKS, null, filter, new RowSetCallback() {
+
+        @Override
+        public void onSuccess(BeeRowSet result) {
+          if (!result.getRowIds().contains(row.getId())) {
+            getFormView().getViewPresenter().handleAction(Action.CLOSE);
+            getFormView().notifySevere(Localized.dictionary().crmTaskPrivate());
+          }
+        }
+      });
+    } else {
+      super.onSetActiveRow(row);
+    }
+  }
+
+  @Override
   public void onSaveChanges(HasHandlers listener, SaveChangesEvent event) {
     final IsRow oldRow = event.getOldRow();
     IsRow newRow = event.getNewRow();
@@ -737,6 +785,8 @@ class TaskEditor extends AbstractFormInterceptor {
 
     Long owner = row.getLong(form.getDataIndex(COL_OWNER));
     Long executor = row.getLong(form.getDataIndex(COL_EXECUTOR));
+
+    createCellValidationHandler(form, row);
 
     TaskStatus oldStatus = EnumUtils.getEnumByIndex(TaskStatus.class,
         row.getInteger(form.getDataIndex(COL_STATUS)));
@@ -928,7 +978,7 @@ class TaskEditor extends AbstractFormInterceptor {
               companyName);
           docRow.setValue(dataInfo
               .getColumnIndex(DocumentConstants.COL_DOCUMENT_COMPANY), row
-                  .getLong(idxCompany));
+              .getLong(idxCompany));
         }
 
         FileCollector.pushFiles(Lists.newArrayList(fileInfo));
@@ -987,6 +1037,24 @@ class TaskEditor extends AbstractFormInterceptor {
     return FileInfo.restoreCollection(row.getProperty(PROP_FILES));
   }
 
+  private void createCellValidationHandler(FormView form, IsRow row) {
+
+    if (form == null || row == null) {
+      return;
+    }
+
+    form.addCellValidationHandler(NAME_PRIVATE_TASK, new CellValidateEvent.Handler() {
+
+      @Override
+      public Boolean validateCell(CellValidateEvent event) {
+        if (isOwner()) {
+          return true;
+        }
+        return false;
+      }
+    });
+  }
+
   private ParameterList createParams(TaskEvent event, BeeRow newRow, String comment) {
     FormView form = getFormView();
     String viewName = form.getViewName();
@@ -1031,7 +1099,7 @@ class TaskEditor extends AbstractFormInterceptor {
         for (long id : removed) {
           String label = selector.getRowLabel(id);
           if (!BeeUtils.isEmpty(label)) {
-            notes.add(TaskUtils.getDeleteNote(Localized.getConstants().crmTaskObservers(), label));
+            notes.add(TaskUtils.getDeleteNote(Localized.dictionary().crmTaskObservers(), label));
           }
         }
 
@@ -1039,7 +1107,7 @@ class TaskEditor extends AbstractFormInterceptor {
         for (long id : added) {
           String label = selector.getRowLabel(id);
           if (!BeeUtils.isEmpty(label)) {
-            notes.add(TaskUtils.getInsertNote(Localized.getConstants().crmTaskObservers(), label));
+            notes.add(TaskUtils.getInsertNote(Localized.dictionary().crmTaskObservers(), label));
           }
         }
       }
@@ -1135,11 +1203,11 @@ class TaskEditor extends AbstractFormInterceptor {
               .beeSerialize(data)),
               new IntCallback() {
 
-            @Override
-            public void onSuccess(Integer updateCount) {
-              consumer.accept(null);
-            }
-          });
+                @Override
+                public void onSuccess(Integer updateCount) {
+                  consumer.accept(null);
+                }
+              });
 
         }
       });
@@ -1167,19 +1235,19 @@ class TaskEditor extends AbstractFormInterceptor {
   }
 
   private void doApprove() {
-    final TaskDialog dialog = new TaskDialog(Localized.getConstants().crmTaskConfirmation());
+    final TaskDialog dialog = new TaskDialog(Localized.dictionary().crmTaskConfirmation());
 
-    final String did = dialog.addDateTime(Localized.getConstants().crmTaskConfirmDate(), true,
+    final String did = dialog.addDateTime(Localized.dictionary().crmTaskConfirmDate(), true,
         TimeUtils.nowMinutes());
     final String cid = dialog.addComment(false);
 
-    dialog.addAction(Localized.getConstants().crmTaskConfirm(), new ScheduledCommand() {
+    dialog.addAction(Localized.dictionary().crmTaskConfirm(), new ScheduledCommand() {
       @Override
       public void execute() {
 
         DateTime approved = dialog.getDateTime(did);
         if (approved == null) {
-          showError(Localized.getConstants().crmEnterConfirmDate());
+          showError(Localized.dictionary().crmEnterConfirmDate());
           return;
         }
 
@@ -1198,17 +1266,17 @@ class TaskEditor extends AbstractFormInterceptor {
   }
 
   private void doCancel() {
-    final TaskDialog dialog = new TaskDialog(Localized.getConstants().crmTaskCancellation());
+    final TaskDialog dialog = new TaskDialog(Localized.dictionary().crmTaskCancellation());
 
     final String cid = dialog.addComment(true);
 
-    dialog.addAction(Localized.getConstants().crmTaskCancel(), new ScheduledCommand() {
+    dialog.addAction(Localized.dictionary().crmTaskCancel(), new ScheduledCommand() {
       @Override
       public void execute() {
 
         String comment = dialog.getComment(cid);
         if (BeeUtils.isEmpty(comment)) {
-          showError(Localized.getConstants().crmEnterComment());
+          showError(Localized.dictionary().crmEnterComment());
           return;
         }
 
@@ -1225,14 +1293,14 @@ class TaskEditor extends AbstractFormInterceptor {
 
   private void doComment() {
     final TaskDialog dialog =
-        new TaskDialog(Localized.getConstants().crmTaskCommentTimeRegistration());
+        new TaskDialog(Localized.dictionary().crmTaskCommentTimeRegistration());
 
     final String cid = dialog.addComment(false);
     final String fid = dialog.addFileCollector();
 
     final Map<String, String> durIds = dialog.addDuration();
 
-    dialog.addAction(Localized.getConstants().actionSave(), new ScheduledCommand() {
+    dialog.addAction(Localized.dictionary().actionSave(), new ScheduledCommand() {
       @Override
       public void execute() {
 
@@ -1240,7 +1308,7 @@ class TaskEditor extends AbstractFormInterceptor {
         String time = dialog.getTime(durIds.get(COL_DURATION));
 
         if (BeeUtils.allEmpty(comment, time)) {
-          showError(Localized.getConstants().crmEnterCommentOrDuration());
+          showError(Localized.dictionary().crmEnterCommentOrDuration());
           return;
         }
 
@@ -1257,24 +1325,24 @@ class TaskEditor extends AbstractFormInterceptor {
   }
 
   private void doComplete() {
-    final TaskDialog dialog = new TaskDialog(Localized.getConstants().crmTaskFinishing());
+    final TaskDialog dialog = new TaskDialog(Localized.dictionary().crmTaskFinishing());
 
     final String cid = dialog.addComment(false);
     final String fid = dialog.addFileCollector();
 
     final Map<String, String> durIds = dialog.addDuration();
     final String dd =
-        dialog.addDateTime(Localized.getConstants().crmTaskFinishDate(), true, TimeUtils
+        dialog.addDateTime(Localized.dictionary().crmTaskFinishDate(), true, TimeUtils
             .nowMinutes());
     durIds.put(COL_DURATION_DATE, dd);
 
-    dialog.addAction(Localized.getConstants().crmActionFinish(), new ScheduledCommand() {
+    dialog.addAction(Localized.dictionary().crmActionFinish(), new ScheduledCommand() {
       @Override
       public void execute() {
 
         DateTime completed = dialog.getDateTime(dd);
         if (completed == null) {
-          showError(Localized.getConstants().crmEnterCompleteDate());
+          showError(Localized.dictionary().crmEnterCompleteDate());
           return;
         }
 
@@ -1327,7 +1395,7 @@ class TaskEditor extends AbstractFormInterceptor {
 
     newTaskRow.setValue(idxSummary, Data.clamp(VIEW_TASKS, COL_SUMMARY, BeeUtils.joinWords(taskRow
         .getString(idxSummary), BeeUtils
-            .parenthesize(taskRow.getId()))));
+        .parenthesize(taskRow.getId()))));
 
     String description = taskRow.getString(idxDescription);
 
@@ -1343,15 +1411,15 @@ class TaskEditor extends AbstractFormInterceptor {
             BeeUtils.join(BeeConst.STRING_EOL
                 + BeeUtils.replicate(BeeConst.CHAR_MINUS, BeeConst.MAX_SCALE)
                 + BeeConst.STRING_EOL, description, BeeUtils
-                    .joinWords(event.getDateTime(events.getColumnIndex(COL_PUBLISH_TIME)), BeeUtils
-                        .nvl(event
-                            .getString(events.getColumnIndex(ALS_PUBLISHER_FIRST_NAME)),
-                            BeeConst.STRING_EMPTY), BeeUtils.nvl(event
-                                .getString(events.getColumnIndex(ALS_PUBLISHER_LAST_NAME)),
-                                BeeConst.STRING_EMPTY)
-                                + BeeConst.STRING_COLON, event
-                                    .getString(events
-                                        .getColumnIndex(COL_COMMENT))));
+                .joinWords(event.getDateTime(events.getColumnIndex(COL_PUBLISH_TIME)), BeeUtils
+                    .nvl(event
+                        .getString(events.getColumnIndex(ALS_PUBLISHER_FIRST_NAME)),
+                        BeeConst.STRING_EMPTY), BeeUtils.nvl(event
+                    .getString(events.getColumnIndex(ALS_PUBLISHER_LAST_NAME)),
+                    BeeConst.STRING_EMPTY)
+                    + BeeConst.STRING_COLON, event
+                    .getString(events
+                        .getColumnIndex(COL_COMMENT))));
       }
     } else if (!events.isEmpty()) {
       for (IsRow event : events) {
@@ -1362,16 +1430,16 @@ class TaskEditor extends AbstractFormInterceptor {
               BeeUtils.join(BeeConst.STRING_EOL
                   + BeeUtils.replicate(BeeConst.CHAR_MINUS, BeeConst.MAX_SCALE)
                   + BeeConst.STRING_EOL, description, BeeUtils
-                      .joinWords(event.getDateTime(events.getColumnIndex(COL_PUBLISH_TIME)),
-                          BeeUtils
-                              .nvl(event
-                                  .getString(events.getColumnIndex(ALS_PUBLISHER_FIRST_NAME)),
-                                  BeeConst.STRING_EMPTY), BeeUtils.nvl(event
-                                      .getString(events.getColumnIndex(ALS_PUBLISHER_LAST_NAME)),
-                                      BeeConst.STRING_EMPTY)
-                                      + BeeConst.STRING_COLON, event
-                                          .getString(events
-                                              .getColumnIndex(COL_COMMENT))));
+                  .joinWords(event.getDateTime(events.getColumnIndex(COL_PUBLISH_TIME)),
+                      BeeUtils
+                          .nvl(event
+                              .getString(events.getColumnIndex(ALS_PUBLISHER_FIRST_NAME)),
+                              BeeConst.STRING_EMPTY), BeeUtils.nvl(event
+                          .getString(events.getColumnIndex(ALS_PUBLISHER_LAST_NAME)),
+                          BeeConst.STRING_EMPTY)
+                          + BeeConst.STRING_COLON, event
+                          .getString(events
+                              .getColumnIndex(COL_COMMENT))));
         }
       }
     }
@@ -1429,7 +1497,7 @@ class TaskEditor extends AbstractFormInterceptor {
 
   private void doEvent(TaskEvent event) {
     if (!isEventEnabled(event, getStatus())) {
-      showError(Localized.getConstants().actionNotAllowed());
+      showError(Localized.dictionary().actionNotAllowed());
     }
 
     switch (event) {
@@ -1482,18 +1550,18 @@ class TaskEditor extends AbstractFormInterceptor {
   }
 
   private void doExtend() {
-    final TaskDialog dialog = new TaskDialog(Localized.getConstants().crmTaskTermChange());
+    final TaskDialog dialog = new TaskDialog(Localized.dictionary().crmTaskTermChange());
 
     final boolean isScheduled = TaskStatus.SCHEDULED.is(getStatus());
 
     final String startId = isScheduled
-        ? dialog.addDateTime(Localized.getConstants().crmStartDate(), true,
+        ? dialog.addDateTime(Localized.dictionary().crmStartDate(), true,
             getDateTime(COL_START_TIME)) : null;
-    final String endId = dialog.addDateTime(Localized.getConstants().crmFinishDate(), true, null);
+    final String endId = dialog.addDateTime(Localized.dictionary().crmFinishDate(), true, null);
 
     final String cid = dialog.addComment(false);
 
-    dialog.addAction(Localized.getConstants().crmTaskChangeTerm(), new ScheduledCommand() {
+    dialog.addAction(Localized.dictionary().crmTaskChangeTerm(), new ScheduledCommand() {
       @Override
       public void execute() {
 
@@ -1505,24 +1573,24 @@ class TaskEditor extends AbstractFormInterceptor {
         DateTime newEnd = dialog.getDateTime(endId);
 
         if (newEnd == null) {
-          showError(Localized.getConstants().crmEnterFinishDate());
+          showError(Localized.dictionary().crmEnterFinishDate());
           return;
         }
 
         if (Objects.equals(newStart, oldStart) && Objects.equals(newEnd, oldEnd)) {
-          showError(Localized.getConstants().crmTermNotChanged());
+          showError(Localized.dictionary().crmTermNotChanged());
           return;
         }
 
         if (TimeUtils.isLeq(newEnd, newStart)) {
-          showError(Localized.getConstants().crmFinishDateMustBeGreaterThanStart());
+          showError(Localized.dictionary().crmFinishDateMustBeGreaterThanStart());
           return;
         }
 
         DateTime now = TimeUtils.nowMinutes();
         if (TimeUtils.isLess(newEnd, TimeUtils.nowMinutes())) {
           Global.showError("Time travel not supported",
-              Collections.singletonList(Localized.getConstants().crmFinishDateMustBeGreaterThan()
+              Collections.singletonList(Localized.dictionary().crmFinishDateMustBeGreaterThan()
                   + " " + now.toCompactString()));
           return;
         }
@@ -1560,10 +1628,10 @@ class TaskEditor extends AbstractFormInterceptor {
       filter.addAll(getProjectUsers());
     }
 
-    final TaskDialog dialog = new TaskDialog(Localized.getConstants().crmTaskForwarding());
+    final TaskDialog dialog = new TaskDialog(Localized.dictionary().crmTaskForwarding());
 
     final String sid =
-        dialog.addSelector(Localized.getConstants().crmTaskExecutor(), VIEW_USERS,
+        dialog.addSelector(Localized.dictionary().crmTaskExecutor(), VIEW_USERS,
             Lists.newArrayList(COL_FIRST_NAME, COL_LAST_NAME),
             true, exclusions, filter);
     final String obs = dialog.addCheckBox(true);
@@ -1571,7 +1639,7 @@ class TaskEditor extends AbstractFormInterceptor {
     final String cid = dialog.addComment(true);
     final String fid = dialog.addFileCollector();
 
-    dialog.addAction(Localized.getConstants().crmActionForward(), new ScheduledCommand() {
+    dialog.addAction(Localized.dictionary().crmActionForward(), new ScheduledCommand() {
       @Override
       public void execute() {
 
@@ -1579,17 +1647,17 @@ class TaskEditor extends AbstractFormInterceptor {
 
         Long newUser = selector.getRelatedId();
         if (newUser == null) {
-          showError(Localized.getConstants().crmEnterExecutor());
+          showError(Localized.dictionary().crmEnterExecutor());
           return;
         }
         if (Objects.equals(newUser, oldUser)) {
-          showError(Localized.getConstants().crmSelectedSameExecutor());
+          showError(Localized.dictionary().crmSelectedSameExecutor());
           return;
         }
 
         String comment = dialog.getComment(cid);
         if (BeeUtils.isEmpty(comment)) {
-          showError(Localized.getConstants().crmEnterComment());
+          showError(Localized.dictionary().crmEnterComment());
           return;
         }
 
@@ -1630,11 +1698,11 @@ class TaskEditor extends AbstractFormInterceptor {
 
   private void doRenew() {
     final TaskDialog dialog =
-        new TaskDialog(Localized.getConstants().crmTaskReturningForExecution());
+        new TaskDialog(Localized.dictionary().crmTaskReturningForExecution());
 
     final String cid = dialog.addComment(false);
 
-    dialog.addAction(Localized.getConstants().crmTaskReturnExecution(), new ScheduledCommand() {
+    dialog.addAction(Localized.dictionary().crmTaskReturnExecution(), new ScheduledCommand() {
       @Override
       public void execute() {
 
@@ -1655,17 +1723,17 @@ class TaskEditor extends AbstractFormInterceptor {
   }
 
   private void doSuspend() {
-    final TaskDialog dialog = new TaskDialog(Localized.getConstants().crmTaskSuspension());
+    final TaskDialog dialog = new TaskDialog(Localized.dictionary().crmTaskSuspension());
 
     final String cid = dialog.addComment(true);
 
-    dialog.addAction(Localized.getConstants().crmActionSuspend(), new ScheduledCommand() {
+    dialog.addAction(Localized.dictionary().crmActionSuspend(), new ScheduledCommand() {
       @Override
       public void execute() {
 
         String comment = dialog.getComment(cid);
         if (BeeUtils.isEmpty(comment)) {
-          showError(Localized.getConstants().crmEnterComment());
+          showError(Localized.dictionary().crmEnterComment());
           return;
         }
 
@@ -1777,8 +1845,7 @@ class TaskEditor extends AbstractFormInterceptor {
       case ACTIVATE:
         return false;
       case CREATE:
-        return isOwner() || (TaskStatus.in(status, TaskStatus.NOT_VISITED, TaskStatus.SCHEDULED,
-            TaskStatus.SUSPENDED, TaskStatus.CANCELED) && isExecutor());
+        return isOwner() || isExecutor();
 
       case OUT_OF_OBSERVERS:
         return TaskStatus.in(status, TaskStatus.ACTIVE, TaskStatus.NOT_VISITED,
@@ -1948,34 +2015,34 @@ class TaskEditor extends AbstractFormInterceptor {
 
     Queries.getRowSet(ProjectConstants.VIEW_PROJECT_USERS, Lists
         .newArrayList(COL_USER), Filter.isEqual(
-            ProjectConstants.COL_PROJECT, Value.getValue(projectId)), new RowSetCallback() {
+        ProjectConstants.COL_PROJECT, Value.getValue(projectId)), new RowSetCallback() {
 
-              @Override
-              public void onSuccess(BeeRowSet result) {
-                List<Long> userIds = Lists.newArrayList(projectOwner);
-                int idxUser = result.getColumnIndex(COL_USER);
+      @Override
+      public void onSuccess(BeeRowSet result) {
+        List<Long> userIds = Lists.newArrayList(projectOwner);
+        int idxUser = result.getColumnIndex(COL_USER);
 
-                if (BeeConst.isUndef(idxUser)) {
-                  Assert.untouchable();
-                  return;
-                }
+        if (BeeConst.isUndef(idxUser)) {
+          Assert.untouchable();
+          return;
+        }
 
-                for (IsRow userRow : result) {
-                  long projectUser = BeeUtils.unbox(userRow.getLong(idxUser));
+        for (IsRow userRow : result) {
+          long projectUser = BeeUtils.unbox(userRow.getLong(idxUser));
 
-                  if (DataUtils.isId(projectUser)) {
-                    userIds.add(projectUser);
-                  }
-                }
+          if (DataUtils.isId(projectUser)) {
+            userIds.add(projectUser);
+          }
+        }
 
-                if (observers != null) {
-                  observers.getOracle().setAdditionalFilter(Filter.idIn(userIds), true);
-                  observers.setEnabled(true);
-                }
+        if (observers != null) {
+          observers.getOracle().setAdditionalFilter(Filter.idIn(userIds), true);
+          observers.setEnabled(true);
+        }
 
-                setProjectUsers(userIds);
-              }
-            });
+        setProjectUsers(userIds);
+      }
+    });
   }
 
   private void setEnabledRelations() {
@@ -1984,6 +2051,54 @@ class TaskEditor extends AbstractFormInterceptor {
       if (selector != null) {
         selector.setEnabled(true);
       }
+    }
+  }
+
+  private void setCommentsLayout(final HeaderView header) {
+    final FormView form = getFormView();
+    FaLabel labelVer = new FaLabel(FontAwesome.LIST_ALT);
+    FaLabel labelHor = new FaLabel(FontAwesome.COLUMNS);
+    labelVer.addStyleName(BeeConst.CSS_CLASS_PREFIX + "crm-commentLayout-label");
+    labelVer.setTitle(Localized.dictionary().crmTaskShowCommentsBelow());
+    labelHor.addStyleName(BeeConst.CSS_CLASS_PREFIX + "crm-commentLayout-label");
+    labelHor.setTitle(Localized.dictionary().crmTaskShowCommentsRight());
+
+    labelVer.addClickHandler(new ClickHandler() {
+
+      @Override
+      public void onClick(ClickEvent arg0) {
+        BeeKeeper.getUser().setCommentsLayout(true);
+        isDefaultLayout = true;
+        form.refresh();
+      }
+    });
+
+    labelHor.addClickHandler(new ClickHandler() {
+
+      @Override
+      public void onClick(ClickEvent arg0) {
+        BeeKeeper.getUser().setCommentsLayout(false);
+        isDefaultLayout = false;
+        form.refresh();
+      }
+    });
+
+    if (isDefaultLayout) {
+      split.remove(taskWidget);
+      split.remove(taskEventsWidget);
+      split.addNorth(taskWidget, 575);
+      split.updateCenter(taskEventsWidget);
+      header.addCommandItem(labelHor);
+
+    } else {
+
+      Integer size = BeeKeeper.getStorage().getInteger(getStorageKey());
+      split.remove(taskWidget);
+      split.remove(taskEventsWidget);
+      split.addWest(taskWidget, size == null ? 590 : size);
+      StyleUtils.autoHeight(taskWidget.getElement());
+      split.updateCenter(taskEventsWidget);
+      header.addCommandItem(labelVer);
     }
   }
 }

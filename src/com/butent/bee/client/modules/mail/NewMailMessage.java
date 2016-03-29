@@ -91,8 +91,8 @@ public final class NewMailMessage extends AbstractFormInterceptor
       Assert.notNull(closeCallback);
 
       if (hasChanges()) {
-        Global.decide(null, Lists.newArrayList(Localized.getConstants().mailMessageWasNotSent(),
-            Localized.getConstants().mailQuestionSaveToDraft()), new DecisionCallback() {
+        Global.decide(null, Lists.newArrayList(Localized.dictionary().mailMessageWasNotSent(),
+            Localized.dictionary().mailQuestionSaveToDraft()), new DecisionCallback() {
           @Override
           public void onCancel() {
             UiHelper.focus(getFormView().asWidget());
@@ -140,7 +140,7 @@ public final class NewMailMessage extends AbstractFormInterceptor
           create(availableAccounts, defaultAccount, to, cc, bcc, subject, content, attachments,
               relatedId, isDraft).setCallback(callback);
         } else {
-          BeeKeeper.getScreen().notifyWarning(Localized.getConstants().mailNoAccountsFound());
+          BeeKeeper.getScreen().notifyWarning(Localized.dictionary().mailNoAccountsFound());
         }
       }
     });
@@ -322,8 +322,8 @@ public final class NewMailMessage extends AbstractFormInterceptor
       if (currentContent.contains(oldSignature)) {
         currentContent = currentContent.replace(oldSignature, newSignature);
       } else {
-        if (BeeUtils.startsWith(subject, Localized.getConstants().mailReplayPrefix())
-            || BeeUtils.startsWith(subject, Localized.getConstants().mailForwardedPrefix())) {
+        if (BeeUtils.startsWith(subject, Localized.dictionary().mailReplayPrefix())
+            || BeeUtils.startsWith(subject, Localized.dictionary().mailForwardedPrefix())) {
 
           currentContent = SIGNATURE_SEPARATOR + newSignature + currentContent;
         } else {
@@ -359,7 +359,7 @@ public final class NewMailMessage extends AbstractFormInterceptor
 
   private void initHeader(DialogBox dialog) {
     FaLabel send = new FaLabel(FontAwesome.PAPER_PLANE);
-    send.setTitle(Localized.getConstants().send());
+    send.setTitle(Localized.dictionary().send());
     send.addClickHandler(this);
 
     dialog.insertAction(1, send);
@@ -386,7 +386,7 @@ public final class NewMailMessage extends AbstractFormInterceptor
           }
         });
     dialog.insertAction(1, signaturesWidget);
-    dialog.getHeader().insert(new Label(Localized.getConstants().mailSignature() + ":"), 1);
+    dialog.getHeader().insert(new Label(Localized.dictionary().mailSignature() + ":"), 1);
 
     final ListBox accountsWidget = new ListBox();
 
@@ -465,18 +465,18 @@ public final class NewMailMessage extends AbstractFormInterceptor
       }
     }
     if (!hasRecipients) {
-      error = Localized.getConstants().mailSpecifyRecipient();
+      error = Localized.dictionary().mailSpecifyRecipient();
 
     } else if (subjectWidget == null || BeeUtils.isEmpty(subjectWidget.getValue())) {
-      error = Localized.getConstants().mailSpecifySubject();
+      error = Localized.dictionary().mailSpecifySubject();
 
     } else if (contentWidget == null || BeeUtils.isEmpty(contentWidget.getValue())) {
-      error = Localized.getConstants().mailMessageBodyIsEmpty();
+      error = Localized.dictionary().mailMessageBodyIsEmpty();
 
     } else {
       for (FileInfo file : attachmentsWidget.getFiles()) {
         if (!DataUtils.isId(file.getId())) {
-          error = Localized.getConstants().mailThereIsStackOfUnfinishedAttachments();
+          error = Localized.dictionary().mailThereIsStackOfUnfinishedAttachments();
           break;
         }
       }

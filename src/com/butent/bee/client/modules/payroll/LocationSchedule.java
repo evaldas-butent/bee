@@ -223,7 +223,7 @@ class LocationSchedule extends WorkScheduleWidget {
         Lists.newArrayList(COL_FIRST_NAME, COL_LAST_NAME));
 
     selector.addStyleName(selectorStyleName);
-    DomUtils.setPlaceholder(selector, Localized.getConstants().newEmployee());
+    DomUtils.setPlaceholder(selector, Localized.dictionary().newEmployee());
 
     if (!BeeUtils.isEmpty(partIds)) {
       selector.getOracle().setExclusions(partIds);

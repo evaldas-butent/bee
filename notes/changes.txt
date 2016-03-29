@@ -52,3 +52,4 @@
 2015.08.26 ical4j-2.0-beta1 (commons-lang3-3.4, commons-codec-1.10)
 2015.12.07 gwt-2.8.0-beta1, guava-gwt-18 patched
 2016.02.16 jasperreports-*-6.2.0 (commons-beanutils, commons-collections, commons-digester, ecj)
+2016.03.27 poi-3.14, xmlbeans 2.6.0, removed stax, dom4j

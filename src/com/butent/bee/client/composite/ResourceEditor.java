@@ -257,7 +257,7 @@ public class ResourceEditor extends Flow implements Presenter, View, Printable, 
     }
 
     Global.confirm(getCaption(), Icon.QUESTION, Lists.newArrayList(uri,
-        Localized.getConstants().saveChanges()), new ConfirmationCallback() {
+        Localized.dictionary().saveChanges()), new ConfirmationCallback() {
       @Override
       public void onConfirm() {
         final String digest = Codec.md5(v);

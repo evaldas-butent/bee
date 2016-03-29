@@ -88,7 +88,7 @@ class DiscussionsGridHandler extends AbstractGridInterceptor {
       if (beeCol != null) {
         beeCol.setNullable(false);
       }
-      RowFactory.createRow(FORM_NEW_DISCUSSION, Localized.getConstants().announcementNew(),
+      RowFactory.createRow(FORM_NEW_DISCUSSION, Localized.dictionary().announcementNew(),
           data, emptyRow, Modality.ENABLED, null,
           new CreateDiscussionInterceptor(), new RowCallback() {
 
@@ -114,10 +114,10 @@ class DiscussionsGridHandler extends AbstractGridInterceptor {
 
   @Override
   public String getCaption() {
-    if (type.getCaption() == Localized.getConstants().announcements()) {
+    if (type.getCaption() == Localized.dictionary().announcements()) {
       return type.getCaption();
     } else {
-      return BeeUtils.joinWords(Localized.getConstants().discussions(),
+      return BeeUtils.joinWords(Localized.dictionary().discussions(),
           BeeUtils.parenthesize(type.getCaption()));
     }
   }
@@ -141,8 +141,8 @@ class DiscussionsGridHandler extends AbstractGridInterceptor {
     boolean isOwner = currentUser.getUserId().longValue() == discussOwner;
 
     if (!isAdmin && !isOwner) {
-      gridView.notifyWarning(BeeUtils.joinWords(Localized.getConstants().discussion(),
-          activeRow.getId(), Localized.getConstants().discussDeleteCanOwnerOrAdmin()));
+      gridView.notifyWarning(BeeUtils.joinWords(Localized.dictionary().discussion(),
+          activeRow.getId(), Localized.dictionary().discussDeleteCanOwnerOrAdmin()));
       return DeleteMode.CANCEL;
     }
 
@@ -156,9 +156,9 @@ class DiscussionsGridHandler extends AbstractGridInterceptor {
       return super.getDeleteRowMessage(row);
     }
 
-    String m1 = BeeUtils.joinWords(Localized.getConstants().discussion(),
+    String m1 = BeeUtils.joinWords(Localized.dictionary().discussion(),
         row.getValue(gridView.getDataIndex(COL_SUBJECT)));
-    String m2 = Localized.getConstants().discussDeleteQuestion();
+    String m2 = Localized.dictionary().discussDeleteQuestion();
 
     return Lists.newArrayList(m1, m2);
   }

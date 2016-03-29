@@ -28,7 +28,7 @@ import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.i18n.LocalizableConstants;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.trade.TradeDocumentData;
@@ -52,7 +52,7 @@ public class TradeDocumentRenderer extends AbstractFormInterceptor {
   private enum ItemColumn implements HasLocalizedCaption {
     ORDINAL("ordinal", false) {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.printItemOrdinal();
       }
 
@@ -64,7 +64,7 @@ public class TradeDocumentRenderer extends AbstractFormInterceptor {
 
     NAME("name", false) {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.printInvoiceItemName();
       }
 
@@ -76,7 +76,7 @@ public class TradeDocumentRenderer extends AbstractFormInterceptor {
 
     ARTICLE("article", false) {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.article();
       }
 
@@ -88,7 +88,7 @@ public class TradeDocumentRenderer extends AbstractFormInterceptor {
 
     QUANTITY("quantity", false) {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.printItemQuantity();
       }
 
@@ -100,7 +100,7 @@ public class TradeDocumentRenderer extends AbstractFormInterceptor {
 
     UNIT("unit", false) {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.printItemUom();
       }
 
@@ -112,7 +112,7 @@ public class TradeDocumentRenderer extends AbstractFormInterceptor {
 
     PRICE("price", true) {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.price();
       }
 
@@ -125,7 +125,7 @@ public class TradeDocumentRenderer extends AbstractFormInterceptor {
 
     AMOUNT("amount", true) {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.amount();
       }
 
@@ -137,7 +137,7 @@ public class TradeDocumentRenderer extends AbstractFormInterceptor {
 
     TOTAL_WITHOUT_VAT("total-without-vat", true) {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.printItemTotalWithoutVat();
       }
 
@@ -149,7 +149,7 @@ public class TradeDocumentRenderer extends AbstractFormInterceptor {
 
     VAT_RATE("vat-rate", false) {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.printItemVatRate();
       }
 
@@ -175,7 +175,7 @@ public class TradeDocumentRenderer extends AbstractFormInterceptor {
 
     VAT_AMOUNT("vat-amount", true) {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.printItemVatAmount();
       }
 
@@ -187,7 +187,7 @@ public class TradeDocumentRenderer extends AbstractFormInterceptor {
 
     TOTAL_WITH_VAT("total-with-vat", true) {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.printItemTotalWithVat();
       }
 
@@ -286,10 +286,10 @@ public class TradeDocumentRenderer extends AbstractFormInterceptor {
 
       for (IsRow row : bankAccounts) {
         info.add(BeeUtils.joinItems(
-            join(Localized.getConstants().printBankAccount(), row.getString(accountIndex)),
+            join(Localized.dictionary().printBankAccount(), row.getString(accountIndex)),
             row.getString(nameIndex),
-            join(Localized.getConstants().printBankCode(), row.getString(codeIndex)),
-            join(Localized.getConstants().printBankSwift(), row.getString(swiftIndex))));
+            join(Localized.dictionary().printBankCode(), row.getString(codeIndex)),
+            join(Localized.dictionary().printBankSwift(), row.getString(swiftIndex))));
       }
 
       return BeeUtils.buildLines(info);
@@ -306,13 +306,13 @@ public class TradeDocumentRenderer extends AbstractFormInterceptor {
 
     widget = widgets.get(prefix + SUFFIX_CODE);
     if (widget != null) {
-      setHtml(widget, join(Localized.getConstants().companyCode(),
+      setHtml(widget, join(Localized.dictionary().companyCode(),
           tdd.getCompanyValue(id, COL_COMPANY_CODE)));
     }
 
     widget = widgets.get(prefix + SUFFIX_VAT_CODE);
     if (widget != null) {
-      setHtml(widget, join(Localized.getConstants().companyVATCode(),
+      setHtml(widget, join(Localized.dictionary().companyVATCode(),
           tdd.getCompanyValue(id, COL_COMPANY_VAT_CODE)));
     }
 
@@ -326,9 +326,9 @@ public class TradeDocumentRenderer extends AbstractFormInterceptor {
     widget = widgets.get(prefix + SUFFIX_PHONE);
     if (widget != null) {
       setHtml(widget, BeeUtils.joinItems(
-          join(Localized.getConstants().phone(), tdd.getCompanyValue(id, COL_PHONE)),
-          join(Localized.getConstants().mobile(), tdd.getCompanyValue(id, COL_MOBILE)),
-          join(Localized.getConstants().fax(), tdd.getCompanyValue(id, COL_FAX))));
+          join(Localized.dictionary().phone(), tdd.getCompanyValue(id, COL_PHONE)),
+          join(Localized.dictionary().mobile(), tdd.getCompanyValue(id, COL_MOBILE)),
+          join(Localized.dictionary().fax(), tdd.getCompanyValue(id, COL_FAX))));
     }
 
     widget = widgets.get(prefix + SUFFIX_WEBSITE);
@@ -352,7 +352,7 @@ public class TradeDocumentRenderer extends AbstractFormInterceptor {
   }
 
   private static String renderDocId(long id) {
-    return join(Localized.getConstants().captionId(), BeeUtils.toString(id));
+    return join(Localized.dictionary().captionId(), BeeUtils.toString(id));
   }
 
   private static void setHtml(Widget widget, String html) {
@@ -519,9 +519,9 @@ public class TradeDocumentRenderer extends AbstractFormInterceptor {
     if (BeeUtils.isEmpty(number)) {
       return BeeConst.STRING_EMPTY;
     } else if (BeeUtils.isEmpty(series)) {
-      return join(Localized.getConstants().printDocumentNumber(), number);
+      return join(Localized.dictionary().printDocumentNumber(), number);
     } else {
-      return Localized.getMessages().printDocumentSeriesAndNumber(series, number);
+      return Localized.dictionary().printDocumentSeriesAndNumber(series, number);
     }
   }
 
@@ -532,10 +532,10 @@ public class TradeDocumentRenderer extends AbstractFormInterceptor {
 
     } else if (BeeUtils.isEmpty(tdd.getCompanyValue(companies.get(COL_TRADE_SUPPLIER),
         COL_COMPANY_VAT_CODE))) {
-      return Localized.getConstants().printInvoice();
+      return Localized.dictionary().printInvoice();
 
     } else {
-      return Localized.getConstants().printInvoiceVat();
+      return Localized.dictionary().printInvoiceVat();
     }
   }
 
@@ -577,19 +577,19 @@ public class TradeDocumentRenderer extends AbstractFormInterceptor {
 
     if (columns.size() > 1) {
       r++;
-      table.setText(r, columns.size() - 2, Localized.getConstants().printDocumentSubtotal(),
+      table.setText(r, columns.size() - 2, Localized.dictionary().printDocumentSubtotal(),
           STYLE_PREFIX + "items-total-label");
       table.setText(r, columns.size() - 1, AMOUNT_FORMAT.format(totSum - vatSum),
           STYLE_PREFIX + "items-total-value");
 
       r++;
-      table.setText(r, columns.size() - 2, Localized.getConstants().printDocumentVat(),
+      table.setText(r, columns.size() - 2, Localized.dictionary().printDocumentVat(),
           STYLE_PREFIX + "items-total-label");
       table.setText(r, columns.size() - 1, AMOUNT_FORMAT.format(vatSum),
           STYLE_PREFIX + "items-total-value");
 
       r++;
-      table.setText(r, columns.size() - 2, Localized.getConstants().printDocumentTotal(),
+      table.setText(r, columns.size() - 2, Localized.dictionary().printDocumentTotal(),
           STYLE_PREFIX + "items-total-label");
       table.setText(r, columns.size() - 1, AMOUNT_FORMAT.format(totSum),
           STYLE_PREFIX + "items-total-value");

@@ -284,14 +284,14 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
 
     for (String column : SEARCH_COLUMNS) {
       if (COL_CATEGORY.equals(column)) {
-        label = Localized.getConstants().category();
+        label = Localized.dictionary().category();
       } else {
         label = Data.getColumnLabel(VIEW_ITEMS, column);
       }
 
       searchBy.addItem(label, column);
     }
-    searchBy.addItem(Localized.getConstants().captionId(), COL_ITEM);
+    searchBy.addItem(Localized.dictionary().captionId(), COL_ITEM);
 
     panel.add(searchBy);
 
@@ -337,7 +337,7 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
 
     } else if (COL_ITEM.equals(by) && !DataUtils.isId(query)) {
       BeeKeeper.getScreen().notifyWarning(
-          BeeUtils.joinWords(Localized.getConstants().invalidIdValue(), query));
+          BeeUtils.joinWords(Localized.dictionary().invalidIdValue(), query));
       ok = false;
 
     } else {
@@ -533,7 +533,7 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
   }
 
   private void openDialog(Element target) {
-    final DialogBox dialog = DialogBox.withoutCloseBox(Localized.getConstants().goods(),
+    final DialogBox dialog = DialogBox.withoutCloseBox(Localized.dictionary().goods(),
         STYLE_DIALOG);
 
     FaLabel save = new FaLabel(FontAwesome.SAVE);
@@ -564,8 +564,8 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
           dialog.close();
 
         } else {
-          Global.decide(Localized.getConstants().goods(),
-              Lists.newArrayList(Localized.getConstants().taSaveSelectedItems()),
+          Global.decide(Localized.dictionary().goods(),
+              Lists.newArrayList(Localized.dictionary().taSaveSelectedItems()),
               new DecisionCallback() {
                 @Override
                 public void onConfirm() {
@@ -614,17 +614,17 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
 
     String pfx;
 
-    table.setText(r, c++, Localized.getConstants().captionId(),
+    table.setText(r, c++, Localized.dictionary().captionId(),
         STYLE_ID_PREFIX + STYLE_HEADER_CELL_SUFFIX);
 
-    table.setText(r, c++, Localized.getConstants().type(),
+    table.setText(r, c++, Localized.dictionary().type(),
         STYLE_TYPE_PREFIX + STYLE_HEADER_CELL_SUFFIX);
-    table.setText(r, c++, Localized.getConstants().group(),
+    table.setText(r, c++, Localized.dictionary().group(),
         STYLE_GROUP_PREFIX + STYLE_HEADER_CELL_SUFFIX);
 
-    table.setText(r, c++, Localized.getConstants().name(),
+    table.setText(r, c++, Localized.dictionary().name(),
         STYLE_NAME_PREFIX + STYLE_HEADER_CELL_SUFFIX);
-    table.setText(r, c++, Localized.getConstants().article(),
+    table.setText(r, c++, Localized.dictionary().article(),
         STYLE_ARTICLE_PREFIX + STYLE_HEADER_CELL_SUFFIX);
 
     for (ItemPrice ip : ItemPrice.values()) {
@@ -644,13 +644,13 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
       table.setText(r, c++, items.getRow(0).getString(
           DataUtils.getColumnIndex(ALS_WAREHOUSE_CODE, items.getColumns())),
           STYLE_FROM_PREFIX + STYLE_HEADER_CELL_SUFFIX);
-      table.setText(r, c++, Localized.getConstants().ordFreeRemainder(),
+      table.setText(r, c++, Localized.dictionary().ordFreeRemainder(),
           STYLE_FREE_PREFIX + STYLE_HEADER_CELL_SUFFIX);
-      table.setText(r, c++, Localized.getConstants().ordResRemainder(),
+      table.setText(r, c++, Localized.dictionary().ordResRemainder(),
           STYLE_RESERVED_PREFIX + STYLE_HEADER_CELL_SUFFIX);
     }
 
-    table.setText(r, c++, Localized.getConstants().quantity(),
+    table.setText(r, c++, Localized.dictionary().quantity(),
         STYLE_QTY_PREFIX + STYLE_HEADER_CELL_SUFFIX);
 
     table.getRowFormatter().addStyleName(r, STYLE_HEADER_ROW);
@@ -806,7 +806,7 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
     if (BeeUtils.isPositive(stock)) {
       div.addClass(STYLE_STOCK_POSITIVE);
       if (isFrom(warehouse)) {
-        div.title(Localized.getConstants().actionSelect());
+        div.title(Localized.dictionary().actionSelect());
       }
 
     } else if (BeeUtils.isNegative(stock)) {

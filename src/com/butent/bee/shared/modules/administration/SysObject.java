@@ -45,6 +45,11 @@ public enum SysObject {
     }
 
     @Override
+    public String getFileExtension() {
+      return BeeUtils.join(".", getName(), "jrxml");
+    }
+
+    @Override
     public String getSchemaName() {
       return "jasperreport.xsd";
     }

@@ -95,12 +95,12 @@ public class InvoiceForm extends PrintFormInterceptor implements SelectorEvent.H
       relation.disableNewRow();
       final UnboundSelector item = UnboundSelector.create(relation);
 
-      Global.inputWidget(Localized.getConstants().transportMainItemCaption(), item,
+      Global.inputWidget(Localized.dictionary().transportMainItemCaption(), item,
           new InputCallback() {
             @Override
             public String getErrorMessage() {
               if (!DataUtils.isId(item.getRelatedId())) {
-                return Localized.getConstants().valueRequired();
+                return Localized.dictionary().valueRequired();
               }
               return InputCallback.super.getErrorMessage();
             }

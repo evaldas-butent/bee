@@ -1124,7 +1124,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
             for (String locale : Config.getList(Service.PROPERTY_ACTIVE_LOCALES)) {
               addColumn(alias, field, Localized.column(colName, locale), locale, aggregate, hidden,
                   parent, null, Localized.maybeTranslate(BeeUtils.notEmpty(col.label,
-                      field.getLabel()), Localizations.getPreferredDictionary(locale)),
+                      field.getLabel()), Localizations.getGlossary(locale)),
                   col.editable);
             }
           }

@@ -31,7 +31,7 @@ public final class RestResponse {
   }
 
   public static RestResponse forbidden() {
-    return error(Localized.getConstants().actionNotAllowed());
+    return error(Localized.dictionary().actionNotAllowed());
   }
 
   public static RestResponse error(Throwable ex) {

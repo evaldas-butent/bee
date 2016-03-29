@@ -58,11 +58,11 @@ final class DefectBuilder {
       @Override
       public void onSuccess(BeeRowSet result) {
         if (DataUtils.isEmpty(result)) {
-          form.notifyInfo(Localized.getConstants().noData());
+          form.notifyInfo(Localized.dictionary().noData());
 
         } else {
           ServiceHelper.selectMaintenanceItems(objId, result,
-              Localized.getConstants().svcNewDefect(), Localized.getConstants().actionCreate(),
+              Localized.dictionary().svcNewDefect(), Localized.dictionary().actionCreate(),
               STYLE_PREFIX, new BiConsumer<Long, BeeRowSet>() {
                 @Override
                 public void accept(Long t, BeeRowSet u) {

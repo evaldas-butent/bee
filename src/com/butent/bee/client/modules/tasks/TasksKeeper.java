@@ -12,6 +12,7 @@ import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.data.Queries.IntCallback;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.event.logical.RowActionEvent;
@@ -29,9 +30,11 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.event.RowTransformEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
+import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.menu.MenuHandler;
@@ -100,20 +103,20 @@ public final class TasksKeeper {
     Queries.getRow(VIEW_TASKS, taskId, new RowCallback() {
       @Override
       public void onSuccess(final BeeRow row) {
-        final TaskDialog dialog = new TaskDialog(Localized.getConstants().crmTaskTermChange());
+        final TaskDialog dialog = new TaskDialog(Localized.dictionary().crmTaskTermChange());
 
         TaskStatus status = EnumUtils.getEnumByIndex(TaskStatus.class,
             Data.getInteger(VIEW_TASKS, row, COL_STATUS));
         final boolean isScheduled = status == TaskStatus.SCHEDULED;
 
         final String startId = isScheduled
-            ? dialog.addDateTime(Localized.getConstants().crmStartDate(), true, start) : null;
-        final String endId = dialog.addDateTime(Localized.getConstants().crmFinishDate(), true,
+            ? dialog.addDateTime(Localized.dictionary().crmStartDate(), true, start) : null;
+        final String endId = dialog.addDateTime(Localized.dictionary().crmFinishDate(), true,
             finish);
 
         final String cid = dialog.addComment(false);
 
-        dialog.addAction(Localized.getConstants().crmTaskChangeTerm(), new ScheduledCommand() {
+        dialog.addAction(Localized.dictionary().crmTaskChangeTerm(), new ScheduledCommand() {
           @Override
           public void execute() {
             DateTime oldStart = Data.getDateTime(VIEW_TASKS, row, COL_START_TIME);
@@ -124,24 +127,24 @@ public final class TasksKeeper {
             DateTime newEnd = dialog.getDateTime(endId);
 
             if (newEnd == null) {
-              Global.showError(Localized.getConstants().crmEnterFinishDate());
+              Global.showError(Localized.dictionary().crmEnterFinishDate());
               return;
             }
 
             if (Objects.equals(newStart, oldStart) && Objects.equals(newEnd, oldEnd)) {
-              Global.showError(Localized.getConstants().crmTermNotChanged());
+              Global.showError(Localized.dictionary().crmTermNotChanged());
               return;
             }
 
             if (TimeUtils.isLeq(newEnd, newStart)) {
-              Global.showError(Localized.getConstants().crmFinishDateMustBeGreaterThanStart());
+              Global.showError(Localized.dictionary().crmFinishDateMustBeGreaterThanStart());
               return;
             }
 
             DateTime now = TimeUtils.nowMinutes();
             if (TimeUtils.isLess(newEnd, TimeUtils.nowMinutes())) {
               Global.showError("Time travel not supported",
-                  Lists.newArrayList(Localized.getConstants().crmFinishDateMustBeGreaterThan()
+                  Lists.newArrayList(Localized.dictionary().crmFinishDateMustBeGreaterThan()
                       + " "
                       + now.toCompactString()));
               return;
@@ -154,13 +157,13 @@ public final class TasksKeeper {
 
             if (startId != null && newStart != null && !Objects.equals(newStart, oldStart)) {
               params.addQueryItem(COL_START_TIME, newStart.getTime());
-              notes.add(TaskUtils.getUpdateNote(Localized.getConstants().crmStartDate(),
+              notes.add(TaskUtils.getUpdateNote(Localized.dictionary().crmStartDate(),
                   TimeUtils.renderCompact(oldStart), TimeUtils.renderCompact(newStart)));
             }
 
             if (!Objects.equals(newEnd, oldEnd)) {
               params.addQueryItem(COL_FINISH_TIME, newEnd.getTime());
-              notes.add(TaskUtils.getUpdateNote(Localized.getConstants().crmFinishDate(),
+              notes.add(TaskUtils.getUpdateNote(Localized.dictionary().crmFinishDate(),
                   TimeUtils.renderCompact(oldEnd), TimeUtils.renderCompact(newEnd)));
             }
 
@@ -271,6 +274,47 @@ public final class TasksKeeper {
           if (event.hasRow() && event.getOpener() != null) {
             Long taskId = Data.getLong(event.getViewName(), event.getRow(), COL_TASK);
             RowEditor.open(VIEW_TASKS, taskId, event.getOpener());
+          }
+        } else if (event.isEditRow() && event.hasView(VIEW_TASKS)) {
+
+          int ownerIdx = Data.getColumnIndex(VIEW_TASKS, COL_OWNER);
+          int executorIdx = Data.getColumnIndex(VIEW_TASKS, COL_EXECUTOR);
+          int privateTaskIdx = Data.getColumnIndex(VIEW_TASKS, COL_PRIVATE_TASK);
+          Long userId = BeeKeeper.getUser().getUserId();
+          IsRow row = event.getRow();
+
+          if (BeeUtils.unbox(row.getBoolean(privateTaskIdx))
+              && row.getProperty(COL_PRIVATE_TASK) != COL_PRIVATE_TASK) {
+
+            event.consume();
+
+            Filter filter =
+                Filter.and(Filter.equals(COL_TASK, row.getId()), Filter.equals(
+                    AdministrationConstants.COL_USER, userId));
+
+            Queries.getRowCount(VIEW_TASK_USERS, filter, new IntCallback() {
+
+              @Override
+              public void onSuccess(Integer result) {
+                boolean hasUser = false;
+
+                if (BeeUtils.isPositive(result)) {
+                  hasUser = true;
+                }
+
+                if (Objects.equals(userId, row.getLong(ownerIdx))
+                    || Objects.equals(userId, row.getLong(executorIdx))) {
+                  hasUser = true;
+                }
+
+                if (!hasUser) {
+                  BeeKeeper.getScreen().notifySevere(Localized.dictionary().crmTaskPrivate());
+                } else {
+                  row.setProperty(COL_PRIVATE_TASK, COL_PRIVATE_TASK);
+                  RowEditor.open(VIEW_TASKS, row, event.getOpener());
+                }
+              }
+            });
           }
         }
       }

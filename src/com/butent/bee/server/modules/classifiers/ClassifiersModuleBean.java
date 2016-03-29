@@ -32,7 +32,6 @@ import com.butent.bee.server.data.SearchBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
-import com.butent.bee.server.i18n.I18nUtils;
 import com.butent.bee.server.i18n.Localizations;
 import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.modules.ParamHolderBean;
@@ -76,8 +75,9 @@ import com.butent.bee.shared.html.builder.elements.Table;
 import com.butent.bee.shared.html.builder.elements.Td;
 import com.butent.bee.shared.html.builder.elements.Th;
 import com.butent.bee.shared.html.builder.elements.Tr;
-import com.butent.bee.shared.i18n.LocalizableConstants;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.i18n.SupportedLocale;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
@@ -120,7 +120,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -796,8 +795,8 @@ public class ClassifiersModuleBean implements BeeModule {
       return;
     }
 
-    String subject = usr.getLocalizableConstants().calMailPlannedActionSubject();
-    String reminderText = usr.getLocalizableConstants().calMailPlannedActionText();
+    String subject = usr.getDictionary().calMailPlannedActionSubject();
+    String reminderText = usr.getDictionary().calMailPlannedActionText();
 
     Document doc = new Document();
     doc.getHead().append(meta().encodingDeclarationUtf8(), title().text(subject));
@@ -809,12 +808,11 @@ public class ClassifiersModuleBean implements BeeModule {
       String label = BeeConst.STRING_EMPTY;
 
       if (BeeUtils.same(appointments.getColumnId(i), CalendarConstants.ALS_ATTENDEE_TYPE_NAME)) {
-        label = usr.getLocalizableConstants().type();
+        label = usr.getDictionary().type();
       } else if (BeeUtils.same(appointments.getColumnId(i), ClassifierConstants.ALS_COMPANY_NAME)) {
-        label = usr.getLocalizableConstants().customer();
+        label = usr.getDictionary().customer();
       } else {
-        label = Localized.maybeTranslate(appointments.getColumnLabel(i),
-            usr.getLocalizableDictionary());
+        label = Localized.maybeTranslate(appointments.getColumnLabel(i), usr.getGlossary());
       }
 
       Th th = th().text(label);
@@ -850,7 +848,7 @@ public class ClassifiersModuleBean implements BeeModule {
           }
         } else if (!BeeUtils.isEmpty(appointments.getColumn(i).getEnumKey())) {
           value = EnumUtils.getLocalizedCaption(appointments.getColumn(i).getEnumKey(),
-              row.getInteger(i), usr.getLocalizableConstants(userId));
+              row.getInteger(i), usr.getDictionary(userId));
         }
 
         Td td = td();
@@ -1040,9 +1038,7 @@ public class ClassifiersModuleBean implements BeeModule {
         .addFromLeft(TBL_BANKS, sys.joinTables(TBL_BANKS, TBL_COMPANY_BANK_ACCOUNTS, COL_BANK))
         .setWhere(sys.idEquals(TBL_COMPANIES, companyId)));
 
-    Locale loc = I18nUtils.toLocale(locale);
-    LocalizableConstants constants = (loc == null)
-        ? Localized.getConstants() : Localizations.getConstants(loc);
+    Dictionary constants = Localizations.getDictionary(SupportedLocale.parse(locale));
 
     Map<String, String> translations = new HashMap<>();
     translations.put(COL_COMPANY_NAME, constants.company());

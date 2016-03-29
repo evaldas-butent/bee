@@ -58,7 +58,7 @@ public final class TradeKeeper implements HandlesAllDataEvents {
     GridFactory.registerGridInterceptor(VIEW_SALE_ITEMS, new TradeItemsGrid());
 
     GridFactory.registerGridInterceptor(GRID_SERIES_MANAGERS,
-        UniqueChildInterceptor.forUsers(Localized.getConstants().managers(),
+        UniqueChildInterceptor.forUsers(Localized.dictionary().managers(),
             COL_SERIES, COL_TRADE_MANAGER));
 
     GridFactory.registerGridInterceptor(GRID_TRADE_DOCUMENT_FILES,

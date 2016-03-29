@@ -27,6 +27,8 @@ import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.grid.DynamicColumnIdentity;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.search.AbstractFilterSupplier;
+import com.butent.bee.client.widget.FaLabel;
+import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.BeeColumn;
@@ -56,14 +58,14 @@ import java.util.Map;
 public abstract class AbstractGridInterceptor implements GridInterceptor {
 
   public static final List<String> DELETE_ROW_MESSAGE =
-      Lists.newArrayList(Localized.getConstants().deleteRowQuestion());
+      Lists.newArrayList(Localized.dictionary().deleteRowQuestion());
 
   public static Pair<String, String> deleteRowsMessage(int selectedRows) {
-    String m1 = Localized.getConstants().deleteActiveRow();
+    String m1 = Localized.dictionary().deleteActiveRow();
 
     String m2 = (selectedRows == 1)
-        ? Localized.getConstants().deleteSelectedRow()
-        : Localized.getMessages().deleteSelectedRows(selectedRows);
+        ? Localized.dictionary().deleteSelectedRow()
+        : Localized.dictionary().deleteSelectedRows(selectedRows);
 
     return Pair.of(m1, m2);
   }
@@ -280,6 +282,16 @@ public abstract class AbstractGridInterceptor implements GridInterceptor {
 
   @Override
   public ColumnFooter getFooter(String columnName, ColumnDescription columnDescription) {
+    return null;
+  }
+
+  @Override
+  public FaLabel getGridMenuIcon() {
+    return null;
+  }
+
+  @Override
+  public Label getGridMenuLabel() {
     return null;
   }
 

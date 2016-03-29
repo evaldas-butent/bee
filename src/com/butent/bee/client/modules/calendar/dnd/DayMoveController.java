@@ -480,7 +480,7 @@ public class DayMoveController implements MoveEvent.Handler {
 
       } else if (column == SELECTED_TODO) {
         if (getPositioner() != null) {
-          getPositioner().setInnerText(Localized.getConstants().crmTodoItem());
+          getPositioner().setInnerText(Localized.dictionary().crmTodoItem());
         }
 
         targetTodo(true);

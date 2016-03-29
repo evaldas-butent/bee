@@ -18,7 +18,9 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
 
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -40,6 +42,9 @@ import javax.mail.internet.MimeMessage;
 
 public class MailAccount {
 
+  private static final long CONNECTION_TIMEOUT = TimeUtils.MILLIS_PER_MINUTE;
+  private static final long TIMEOUT = TimeUtils.MILLIS_PER_MINUTE * 10L;
+
   private static final class MailStore {
     final Store store;
     final long start;
@@ -55,7 +60,7 @@ public class MailAccount {
     }
 
     private boolean expired() {
-      return BeeUtils.isMore(System.currentTimeMillis() - start, TimeUtils.MILLIS_PER_MINUTE * 10L);
+      return BeeUtils.isMore(System.currentTimeMillis() - start, TIMEOUT);
     }
 
     private Store getStore() {
@@ -143,6 +148,7 @@ public class MailAccount {
   private final Map<String, String> transportProperties;
 
   private final AccountInfo accountInfo;
+  private Collection<Long> accountUsers = new HashSet<>();
 
   MailAccount(SimpleRow data) {
     Assert.notNull(data);
@@ -264,6 +270,10 @@ public class MailAccount {
     return accountInfo.getUserId();
   }
 
+  public Collection<Long> getUsers() {
+    return accountUsers;
+  }
+
   public boolean isStoredRemotedly(MailFolder folder) {
     Assert.notNull(folder);
     return (getStoreProtocol() == Protocol.IMAP) && folder.isConnected();
@@ -340,6 +350,9 @@ public class MailAccount {
       Properties props = new Properties();
       String pfx = "mail." + protocol + ".";
 
+      props.put(pfx + "connectiontimeout", BeeUtils.toString(CONNECTION_TIMEOUT));
+      props.put(pfx + "timeout", BeeUtils.toString(TIMEOUT));
+
       if (isStoreSSL()) {
         props.put(pfx + "ssl.enable", "true");
       }
@@ -376,6 +389,9 @@ public class MailAccount {
     String protocol = getTransportProtocol().name().toLowerCase();
     Properties props = new Properties();
     String pfx = "mail." + protocol + ".";
+
+    props.put(pfx + "connectiontimeout", BeeUtils.toString(CONNECTION_TIMEOUT));
+    props.put(pfx + "timeout", BeeUtils.toString(TIMEOUT));
 
     if (!BeeUtils.isEmpty(getTransportPassword())) {
       props.put(pfx + "auth", "true");
@@ -440,16 +456,19 @@ public class MailAccount {
         }
       }
       if (disconnect) {
-        try {
-          logger.debug("Disconnecting from store...");
-          store.close();
-        } catch (MessagingException e) {
-          logger.warning(e);
-        }
+        logger.debug("Disconnecting from store...");
       } else {
         logger.debug("Leaving connected store...");
       }
       storesLock.unlock();
+
+      if (disconnect) {
+        try {
+          store.close();
+        } catch (MessagingException e) {
+          logger.warning(e);
+        }
+      }
     }
   }
 
@@ -669,5 +688,16 @@ public class MailAccount {
   void setFolders(Multimap<Long, SimpleRow> folders) {
     getRootFolder().getSubFolders().clear();
     fillTree(getRootFolder(), folders);
+  }
+
+  void setUsers(Long... users) {
+    accountUsers.clear();
+    accountUsers.add(getUserId());
+
+    if (!ArrayUtils.isEmpty(users)) {
+      for (Long user : users) {
+        accountUsers.add(user);
+      }
+    }
   }
 }

@@ -21,7 +21,7 @@ public class OrdersGrid extends AbstractGridInterceptor {
     Long orderSales = row.getLong(index);
 
     if (BeeUtils.isPositive(orderSales)) {
-      getGridView().notifySevere(Localized.getConstants().rowIsNotRemovable());
+      getGridView().notifySevere(Localized.dictionary().rowIsNotRemovable());
       return DeleteMode.CANCEL;
     } else {
       return DeleteMode.SINGLE;

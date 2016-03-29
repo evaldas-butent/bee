@@ -51,7 +51,7 @@ class TodoListInterceptor extends AbstractGridInterceptor {
       }
 
       if (BeeKeeper.getUser().canCreateData(VIEW_TASKS)) {
-        Button taskCommand = new Button(Localized.getConstants().crmTodoCreateTask(),
+        Button taskCommand = new Button(Localized.dictionary().crmTodoCreateTask(),
             new ClickHandler() {
               @Override
               public void onClick(ClickEvent event) {
@@ -68,7 +68,7 @@ class TodoListInterceptor extends AbstractGridInterceptor {
       if (BeeKeeper.getUser().isModuleVisible(ModuleAndSub.of(Module.CALENDAR))
           && BeeKeeper.getUser().canCreateData(CalendarConstants.VIEW_APPOINTMENTS)) {
 
-        Button appointmentCommand = new Button(Localized.getConstants().crmTodoCreateAppointment(),
+        Button appointmentCommand = new Button(Localized.dictionary().crmTodoCreateAppointment(),
             new ClickHandler() {
               @Override
               public void onClick(ClickEvent event) {

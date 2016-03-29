@@ -153,7 +153,7 @@ abstract class MultiStateForm extends RightsForm {
         roleCommand.setHtml(getRoleName());
         roleCommand.addStyleName(STYLE_ROLE_NOT_EMPTY);
       } else {
-        roleCommand.setHtml(Localized.getConstants().selectRole());
+        roleCommand.setHtml(Localized.dictionary().selectRole());
         roleCommand.addStyleName(STYLE_ROLE_EMPTY);
       }
 

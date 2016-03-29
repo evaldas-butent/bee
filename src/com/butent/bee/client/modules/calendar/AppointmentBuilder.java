@@ -167,31 +167,31 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
       }
 
       if (!Objects.equals(oldService, newService)) {
-        changes.add(Localized.getConstants().calServiceType());
+        changes.add(Localized.dictionary().calServiceType());
       }
       if (!Objects.equals(oldRepair, newRepair)) {
-        changes.add(Localized.getConstants().calRepairType());
+        changes.add(Localized.dictionary().calRepairType());
       }
 
       if (!isNew && !DataUtils.sameIdSet(oldRow.getProperty(TBL_APPOINTMENT_ATTENDEES),
           newRow.getProperty(TBL_APPOINTMENT_ATTENDEES))) {
-        changes.add(Localized.getConstants().calAttendees());
+        changes.add(Localized.dictionary().calAttendees());
       }
       if (!DataUtils.sameIdSet(oldRow.getProperty(TBL_APPOINTMENT_OWNERS),
           newRow.getProperty(TBL_APPOINTMENT_OWNERS))) {
-        changes.add(Localized.getConstants().responsiblePersons());
+        changes.add(Localized.dictionary().responsiblePersons());
       }
 
       DateTime oldStart = Data.getDateTime(VIEW_APPOINTMENTS, oldRow, COL_START_DATE_TIME);
       DateTime newStart = getStart();
       if (!Objects.equals(oldStart, newStart)) {
-        changes.add(Localized.getConstants().calAppointmentStart());
+        changes.add(Localized.dictionary().calAppointmentStart());
       }
 
       DateTime oldEnd = Data.getDateTime(VIEW_APPOINTMENTS, oldRow, COL_END_DATE_TIME);
       DateTime newEnd = getEnd(newStart);
       if (!Objects.equals(oldEnd, newEnd) && !isNew) {
-        changes.add(Localized.getConstants().calAppointmentEnd());
+        changes.add(Localized.dictionary().calAppointmentEnd());
       }
 
       List<Long> reminders = new ArrayList<>();
@@ -200,13 +200,13 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
         reminders.add(reminderType);
       }
       if (!DataUtils.sameIdSet(oldRow.getProperty(TBL_APPOINTMENT_REMINDERS), reminders)) {
-        changes.add(Localized.getConstants().calReminder());
+        changes.add(Localized.dictionary().calReminder());
       }
 
       Long oldColor = Data.getLong(VIEW_APPOINTMENTS, oldRow, AdministrationConstants.COL_COLOR);
       Long newColor = BeeUtils.getQuietly(colors, colorWidget.getSelectedTab());
       if (oldColor != null && newColor != null && !oldColor.equals(newColor)) {
-        changes.add(Localized.getConstants().color());
+        changes.add(Localized.dictionary().color());
       }
 
       if (changes.isEmpty()) {
@@ -216,13 +216,13 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
 
       List<String> messages = new ArrayList<>();
 
-      String msg = isNew ? Localized.getConstants().newValues()
-          : Localized.getConstants().changedValues();
+      String msg = isNew ? Localized.dictionary().newValues()
+          : Localized.dictionary().changedValues();
       messages.add(msg + BeeConst.STRING_SPACE
           + BeeUtils.join(BeeConst.DEFAULT_LIST_SEPARATOR, changes));
 
-      messages.add(isNew ? Localized.getConstants().calCreateNewAppointment()
-          : Localized.getConstants().saveChanges());
+      messages.add(isNew ? Localized.dictionary().calCreateNewAppointment()
+          : Localized.dictionary().saveChanges());
 
       DecisionCallback callback = new DecisionCallback() {
         @Override
@@ -261,7 +261,7 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
       }
 
       Global.confirmDelete(Data.getString(VIEW_APPOINTMENTS, row, COL_SUMMARY), Icon.WARNING,
-          Collections.singletonList(Localized.getConstants().calDeleteAppointment()),
+          Collections.singletonList(Localized.dictionary().calDeleteAppointment()),
           new ConfirmationCallback() {
             @Override
             public void onConfirm() {
@@ -1542,7 +1542,7 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
       panel.add(widget);
     }
 
-    DialogBox dialog = DialogBox.create(Localized.getConstants().calOverlappingAppointments(),
+    DialogBox dialog = DialogBox.create(Localized.dictionary().calOverlappingAppointments(),
         CalendarStyleManager.MORE_POPUP);
     dialog.setWidget(panel);
 
@@ -1605,27 +1605,27 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
 
     if (isRequired(ClassifierConstants.COL_COMPANY)
         && isEmpty(row, ClassifierConstants.COL_COMPANY)) {
-      getFormView().notifySevere(Localized.getConstants().calEnterClient());
+      getFormView().notifySevere(Localized.dictionary().calEnterClient());
       return false;
     }
     if (isRequired(COL_VEHICLE) && isEmpty(row, COL_VEHICLE)) {
-      getFormView().notifySevere(Localized.getConstants().calEnterVehicle());
+      getFormView().notifySevere(Localized.dictionary().calEnterVehicle());
       return false;
     }
 
     if (!BeeUtils.isEmpty(getServiceTypeWidgetId()) && isRequired(NAME_SERVICE_TYPE)
         && !hasValue(getServiceTypeWidgetId())) {
-      getFormView().notifySevere(Localized.getConstants().calEnterServiceType());
+      getFormView().notifySevere(Localized.dictionary().calEnterServiceType());
       return false;
     }
     if (!BeeUtils.isEmpty(getRepairTypeWidgetId()) && isRequired(NAME_REPAIR_TYPE)
         && !hasValue(getRepairTypeWidgetId())) {
-      getFormView().notifySevere(Localized.getConstants().calEnterRepairType());
+      getFormView().notifySevere(Localized.dictionary().calEnterRepairType());
       return false;
     }
 
     if (isRequired(NAME_RESOURCES) && getResources(row).isEmpty()) {
-      getFormView().notifySevere(Localized.getConstants().calEnterAttendees());
+      getFormView().notifySevere(Localized.dictionary().calEnterAttendees());
       return false;
     }
 
@@ -1633,15 +1633,15 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
     DateTime end = getEnd(start);
 
     if (start == null) {
-      getFormView().notifySevere(Localized.getConstants().calEnterPlannedStartTime());
+      getFormView().notifySevere(Localized.dictionary().calEnterPlannedStartTime());
       return false;
     }
     if (end == null) {
-      getFormView().notifySevere(Localized.getConstants().calEnterDurationOrPlannedEndDate());
+      getFormView().notifySevere(Localized.dictionary().calEnterDurationOrPlannedEndDate());
       return false;
     }
     if (TimeUtils.isLeq(end, start)) {
-      getFormView().notifySevere(Localized.getConstants().calPlannedEndDateMustBeGreater());
+      getFormView().notifySevere(Localized.dictionary().calPlannedEndDateMustBeGreater());
       return false;
     }
 

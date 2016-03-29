@@ -1,5 +1,8 @@
 package com.butent.bee.server;
 
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ListMultimap;
+import com.google.common.collect.Multimaps;
 import com.google.common.net.HttpHeaders;
 import com.google.common.net.MediaType;
 
@@ -47,6 +50,8 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -62,6 +67,9 @@ public class ExportServlet extends LoginServlet {
   private static BeeLogger logger = LogUtils.getLogger(ExportServlet.class);
 
   private static final String EXT_WORKBOOK = "xlsx";
+
+  private static ListMultimap<String, XRow> exportedRows =
+      Multimaps.synchronizedListMultimap(ArrayListMultimap.create());
 
   private static short convertBorderStyle(BorderStyle input) {
     if (input == null) {
@@ -249,9 +257,7 @@ public class ExportServlet extends LoginServlet {
       return null;
 
     } else {
-      XSSFColor color = new XSSFColor();
-      color.setRgb(rgb);
-      return color;
+      return new XSSFColor(rgb);
     }
   }
 
@@ -263,7 +269,7 @@ public class ExportServlet extends LoginServlet {
     anchor.setCol1(colIndex);
     anchor.setRow2(rowIndex);
     anchor.setCol2(colIndex);
-    anchor.setAnchorType(ClientAnchor.MOVE_DONT_RESIZE);
+    anchor.setAnchorType(ClientAnchor.AnchorType.MOVE_DONT_RESIZE);
 
     Picture picture = drawing.createPicture(anchor, pictureIndex);
     picture.resize();
@@ -272,6 +278,8 @@ public class ExportServlet extends LoginServlet {
   }
 
   private static Workbook createWorkbook(XWorkbook inputBook) {
+    long start = System.currentTimeMillis();
+
     XSSFWorkbook wb = new XSSFWorkbook();
 
     CreationHelper creationHelper = null;
@@ -481,6 +489,7 @@ public class ExportServlet extends LoginServlet {
       }
     }
 
+    logger.info("create workbook in", TimeUtils.elapsedMillis(start), "ms");
     return wb;
   }
 
@@ -528,12 +537,52 @@ public class ExportServlet extends LoginServlet {
     return result;
   }
 
+  private static synchronized int pushRows(String id, String serialized) {
+    long start = System.currentTimeMillis();
+
+    int count = 0;
+    String[] arr = Codec.beeDeserializeCollection(serialized);
+
+    if (arr != null) {
+      for (String s : arr) {
+        exportedRows.put(id, XRow.restore(s));
+        count++;
+      }
+
+      logger.info("export", id, "push", count, "rows in", TimeUtils.elapsedMillis(start), "ms,",
+          "exported rows:", exportedRows.keySet().size(), "keys", exportedRows.size(), "values");
+    }
+
+    return count;
+  }
+
+  private static synchronized int maybePopRows(String id, XWorkbook workbook) {
+    long start = System.currentTimeMillis();
+    int count = 0;
+
+    if (exportedRows.containsKey(id) && workbook.getSheetCount() == 1) {
+      List<XRow> rows = new ArrayList<>(exportedRows.get(id));
+      rows.sort(null);
+
+      workbook.getSheets().get(0).addRows(rows);
+      exportedRows.removeAll(id);
+
+      count = rows.size();
+      logger.info("export", id, "pop", count, "rows in", TimeUtils.elapsedMillis(start), "ms,",
+          "exported rows:", exportedRows.keySet().size(), "keys", exportedRows.size(), "values");
+    }
+
+    return count;
+  }
+
   @Override
   protected void doService(HttpServletRequest req, HttpServletResponse resp) {
     long start = System.currentTimeMillis();
 
     RequestInfo reqInfo = new RequestInfo(req, false);
+
     String svc = reqInfo.getService();
+    String id = reqInfo.getParameter(Service.VAR_ID);
 
     if (Service.EXPORT_WORKBOOK.equals(svc)) {
       String fileName = reqInfo.getParameter(Service.VAR_FILE_NAME);
@@ -554,6 +603,8 @@ public class ExportServlet extends LoginServlet {
         return;
       }
 
+      maybePopRows(id, input);
+
       Workbook workbook = createWorkbook(input);
 
       resp.reset();
@@ -562,11 +613,37 @@ public class ExportServlet extends LoginServlet {
       String name = Codec.rfc5987(FileNameUtils.defaultExtension(fileName, EXT_WORKBOOK));
       resp.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename*=" + name);
 
-      logger.info(">", svc, fileName, TimeUtils.elapsedSeconds(start));
-
       try {
         OutputStream output = resp.getOutputStream();
         workbook.write(output);
+        output.flush();
+
+        logger.info(">", svc, fileName, TimeUtils.elapsedSeconds(start));
+
+      } catch (IOException ex) {
+        logger.error(ex);
+      }
+
+    } else if (Service.EXPORT_ROWS.equals(svc)) {
+      if (BeeUtils.isEmpty(id)) {
+        HttpUtils.badRequest(resp, svc, "parameter not found:", Service.VAR_ID);
+        return;
+      }
+
+      String content = reqInfo.getContent();
+      if (BeeUtils.isEmpty(content)) {
+        HttpUtils.badRequest(resp, svc, "content not available");
+        return;
+      }
+
+      String from = reqInfo.getParameter(Service.VAR_FROM);
+      int count = pushRows(id, content);
+
+      logger.info("<", svc, id, from, content.length(), count, TimeUtils.elapsedSeconds(start));
+
+      try {
+        PrintWriter output = resp.getWriter();
+        output.print(BeeConst.STRING_EMPTY);
         output.flush();
 
       } catch (IOException ex) {

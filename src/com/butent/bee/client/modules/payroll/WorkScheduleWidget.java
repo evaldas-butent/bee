@@ -872,7 +872,7 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
     if (hasSchedule(partId, range)) {
       String caption = getPartitionCaption(partId);
       List<String> messages = Lists.newArrayList(PayrollHelper.format(activeMonth),
-          Localized.getConstants().clearWorkScheduleQuestion());
+          Localized.dictionary().clearWorkScheduleQuestion());
 
       Global.confirmDelete(caption, Icon.WARNING, messages, new ConfirmationCallback() {
         @Override
@@ -893,7 +893,7 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
       });
 
     } else {
-      BeeKeeper.getScreen().notifyWarning(Localized.getConstants().noData());
+      BeeKeeper.getScreen().notifyWarning(Localized.dictionary().noData());
     }
   }
 
@@ -1093,7 +1093,7 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
 
       Flow inputContainer = new Flow(STYLE_TRC_INPUT_CONTAINER);
 
-      Label inputLabel = new Label(Localized.getConstants().timeRangeCode());
+      Label inputLabel = new Label(Localized.dictionary().timeRangeCode());
       inputLabel.addStyleName(STYLE_TRC_INPUT_LABEL);
       inputContainer.add(inputLabel);
 
@@ -1172,7 +1172,7 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
       optionsContainer.add(options);
       panel.add(optionsContainer);
 
-      Button cancel = new CloseButton(Localized.getConstants().cancel());
+      Button cancel = new CloseButton(Localized.dictionary().cancel());
       cancel.addStyleName(STYLE_TRC_CANCEL);
 
       Flow controls = new Flow(STYLE_TRC_CONTROLS);
@@ -1307,7 +1307,7 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
   private Widget renderDndMode() {
     Flow panel = new Flow(STYLE_DND_MODE_PANEL);
 
-    Label modeMove = new Label(Localized.getConstants().actionMove());
+    Label modeMove = new Label(Localized.dictionary().actionMove());
     modeMove.addStyleName(STYLE_DND_MODE_MOVE);
 
     modeMove.addClickHandler(new ClickHandler() {
@@ -1319,7 +1319,7 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
       }
     });
 
-    Label modeCopy = new Label(Localized.getConstants().actionCopy());
+    Label modeCopy = new Label(Localized.dictionary().actionCopy());
     modeCopy.addStyleName(STYLE_DND_MODE_COPY);
 
     modeCopy.addClickHandler(new ClickHandler() {
@@ -1421,7 +1421,7 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
   private Widget renderInputMode() {
     Flow panel = new Flow(STYLE_INPUT_MODE_PANEL);
 
-    Label modeSimple = new Label(Localized.getConstants().inputSimple());
+    Label modeSimple = new Label(Localized.dictionary().inputSimple());
     modeSimple.addStyleName(STYLE_INPUT_MODE_SIMPLE);
 
     modeSimple.addClickHandler(new ClickHandler() {
@@ -1433,7 +1433,7 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
       }
     });
 
-    Label modeFull = new Label(Localized.getConstants().inputFull());
+    Label modeFull = new Label(Localized.dictionary().inputFull());
     modeFull.addStyleName(STYLE_INPUT_MODE_FULL);
 
     modeFull.addClickHandler(new ClickHandler() {
@@ -1507,7 +1507,7 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
           labels.add(PayrollHelper.format(ym));
         }
 
-        Global.choiceWithCancel(Localized.getConstants().yearMonth(), null, labels,
+        Global.choiceWithCancel(Localized.dictionary().yearMonth(), null, labels,
             new ChoiceCallback() {
               @Override
               public void onSuccess(int value) {

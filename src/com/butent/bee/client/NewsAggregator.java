@@ -173,7 +173,7 @@ public class NewsAggregator implements HandlesAllDataEvents {
       header.add(disclosureWidget);
 
       FaLabel refreshWidget = new FaLabel(FontAwesome.REFRESH);
-      refreshWidget.setTitle(Localized.getConstants().actionRefresh());
+      refreshWidget.setTitle(Localized.dictionary().actionRefresh());
       refreshWidget.addStyleName(STYLE_PREFIX + "refresh");
 
       refreshWidget.addClickHandler(new ClickHandler() {
@@ -187,7 +187,7 @@ public class NewsAggregator implements HandlesAllDataEvents {
       header.add(refreshWidget);
 
       FaLabel dismissAllhWidget = new FaLabel(FontAwesome.CLOSE);
-      dismissAllhWidget.setTitle(Localized.getConstants().clearNews());
+      dismissAllhWidget.setTitle(Localized.dictionary().clearNews());
       dismissAllhWidget.addStyleName(STYLE_PREFIX + "dismissAll");
 
       dismissAllhWidget.addClickHandler(new ClickHandler() {
@@ -395,7 +395,7 @@ public class NewsAggregator implements HandlesAllDataEvents {
 
       FaLabel filter = new FaLabel(FontAwesome.FILTER);
       filter.addStyleName(STYLE_SUBSCRIPTION_PREFIX + "filter");
-      filter.setTitle(Localized.getConstants().actionFilter());
+      filter.setTitle(Localized.dictionary().actionFilter());
 
       filter.addClickHandler(new ClickHandler() {
         @Override

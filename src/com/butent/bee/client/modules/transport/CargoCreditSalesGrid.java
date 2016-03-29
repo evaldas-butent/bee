@@ -65,7 +65,7 @@ public class CargoCreditSalesGrid extends AbstractGridInterceptor implements Cli
   public void afterCreatePresenter(GridPresenter presenter) {
     presenter.getHeader().clearCommandPanel();
     presenter.getHeader()
-        .addCommandItem(new Button(Localized.getConstants().createCreditInvoice(), this));
+        .addCommandItem(new Button(Localized.dictionary().createCreditInvoice(), this));
   }
 
   @Override
@@ -88,7 +88,7 @@ public class CargoCreditSalesGrid extends AbstractGridInterceptor implements Cli
       ids.add(row.getId());
     }
     if (ids.isEmpty()) {
-      presenter.getGridView().notifyWarning(Localized.getConstants().selectAtLeastOneRow());
+      presenter.getGridView().notifyWarning(Localized.dictionary().selectAtLeastOneRow());
       return;
     }
     Queries.getRowSet(VIEW_CARGO_CREDIT_SALES, null, Filter.idIn(ids), new RowSetCallback() {

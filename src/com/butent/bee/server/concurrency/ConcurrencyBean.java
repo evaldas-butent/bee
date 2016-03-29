@@ -111,12 +111,11 @@ public class ConcurrencyBean {
 
     @Override
     public String toString() {
-      return BeeUtils.joinWords(getId(), Integer.toHexString(hashCode()));
+      return BeeUtils.joinWords(getId(), Integer.toHexString(System.identityHashCode(this)));
     }
 
     public boolean zombie() {
       if (BeeUtils.isLess(System.currentTimeMillis() - start, runnable.getTimeout())) {
-        logger.info("Running:", this, TimeUtils.elapsedSeconds(start));
         return false;
       }
       if (!cancel(true)) {
@@ -332,12 +331,15 @@ public class ConcurrencyBean {
           finish(worker);
         }
       }
-    } else if (!waitingThreads.contains(worker)) {
-      logger.info("Queuing:", worker);
-      waitingThreads.offer(worker);
     } else {
-      logger.info("Waiting:", worker);
-      worker.onError();
+      if (!waitingThreads.contains(worker)) {
+        logger.info("Queuing:", worker);
+        waitingThreads.offer(worker);
+      } else {
+        logger.info("Waiting:", worker);
+        worker.onError();
+      }
+      asyncThreads.values().forEach(Worker::zombie);
     }
   }
 

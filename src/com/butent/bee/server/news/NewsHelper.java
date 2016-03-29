@@ -8,7 +8,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.i18n.LocalizableConstants;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.news.Channel;
@@ -180,7 +180,7 @@ public final class NewsHelper {
   }
 
   static Headline getHeadline(Feed feed, long userId, BeeRowSet rowSet, IsRow row, boolean isNew,
-      LocalizableConstants constants) {
+      Dictionary constants) {
 
     return registeredHeadlineProducers.get(feed).produce(feed, userId, rowSet, row, isNew,
         constants);

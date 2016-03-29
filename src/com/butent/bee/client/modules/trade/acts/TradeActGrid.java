@@ -112,7 +112,7 @@ public class TradeActGrid extends AbstractGridInterceptor {
         options.add(k.getCaption());
       }
 
-      Global.choice(Localized.getConstants().tradeActNew(), null, options, new ChoiceCallback() {
+      Global.choice(Localized.dictionary().tradeActNew(), null, options, new ChoiceCallback() {
         @Override
         public void onSuccess(int value) {
           if (BeeUtils.isIndex(kinds, value)) {
@@ -228,7 +228,7 @@ public class TradeActGrid extends AbstractGridInterceptor {
 
   private Button ensureCopyCommand() {
     if (copyCommand == null) {
-      copyCommand = new Button(Localized.getConstants().actionCopy(),
+      copyCommand = new Button(Localized.dictionary().actionCopy(),
           new ClickHandler() {
             @Override
             public void onClick(ClickEvent event) {
@@ -246,10 +246,10 @@ public class TradeActGrid extends AbstractGridInterceptor {
                       row.getString(getDataIndex(TradeConstants.COL_SERIES_NAME)), number));
                 }
 
-                messages.add(Localized.getConstants().tradeActCopyQuestion());
+                messages.add(Localized.dictionary().tradeActCopyQuestion());
 
                 Global.confirm(tak.getCaption(), Icon.QUESTION, messages,
-                    Localized.getConstants().actionCopy(), Localized.getConstants().actionCancel(),
+                    Localized.dictionary().actionCopy(), Localized.dictionary().actionCancel(),
                     new ConfirmationCallback() {
                       @Override
                       public void onConfirm() {
@@ -293,7 +293,7 @@ public class TradeActGrid extends AbstractGridInterceptor {
 
   private Button ensureReturnCommand() {
     if (returnCommand == null) {
-      returnCommand = new Button(Localized.getConstants().taKindReturn(),
+      returnCommand = new Button(Localized.dictionary().taKindReturn(),
           new ClickHandler() {
             @Override
             public void onClick(ClickEvent event) {
@@ -325,7 +325,7 @@ public class TradeActGrid extends AbstractGridInterceptor {
 
   private Button ensureAlterCommand() {
     if (alterCommand == null) {
-      alterCommand = new Button(Localized.getConstants().taAlterKind(),
+      alterCommand = new Button(Localized.dictionary().taAlterKind(),
           new ClickHandler() {
             @Override
             public void onClick(ClickEvent event) {
@@ -358,7 +358,7 @@ public class TradeActGrid extends AbstractGridInterceptor {
 
       final long actId = row.getId();
 
-      Global.getMsgBoxen().choice(Localized.getConstants().taAlterKind(),
+      Global.getMsgBoxen().choice(Localized.dictionary().taAlterKind(),
           BeeUtils.joinWords(tak.getCaption(), row.getString(getDataIndex(COL_TRADE_ACT_NAME))),
           choices, new ChoiceCallback() {
             @Override
@@ -390,7 +390,7 @@ public class TradeActGrid extends AbstractGridInterceptor {
                 });
               }
             }
-          }, BeeConst.UNDEF, BeeConst.UNDEF, Localized.getConstants().cancel(), null);
+          }, BeeConst.UNDEF, BeeConst.UNDEF, Localized.dictionary().cancel(), null);
     }
   }
 
@@ -451,7 +451,7 @@ public class TradeActGrid extends AbstractGridInterceptor {
             parentActs.addRow(DataUtils.cloneRow(parent));
           }
 
-          TradeActItemReturn.show(Localized.getConstants().taKindReturn(), parentActs, parentItems,
+          TradeActItemReturn.show(Localized.dictionary().taKindReturn(), parentActs, parentItems,
               true, new Consumer<BeeRowSet>() {
                 @Override
                 public void accept(BeeRowSet selectedItems) {
@@ -472,7 +472,7 @@ public class TradeActGrid extends AbstractGridInterceptor {
               });
 
         } else {
-          getGridView().notifyWarning(Localized.getConstants().noData());
+          getGridView().notifyWarning(Localized.dictionary().noData());
         }
       }
     });
@@ -480,7 +480,7 @@ public class TradeActGrid extends AbstractGridInterceptor {
 
   private Button ensureSupplementCommand() {
     if (supplementCommand == null) {
-      supplementCommand = new Button(Localized.getConstants().taKindSupplement(),
+      supplementCommand = new Button(Localized.dictionary().taKindSupplement(),
           new ClickHandler() {
             @Override
             public void onClick(ClickEvent event) {
@@ -546,14 +546,14 @@ public class TradeActGrid extends AbstractGridInterceptor {
 
   private Button ensureTemplateCommand() {
     if (templateCommand == null) {
-      templateCommand = new Button(Localized.getConstants().tradeActSaveAsTemplate(),
+      templateCommand = new Button(Localized.dictionary().tradeActSaveAsTemplate(),
           new ClickHandler() {
             @Override
             public void onClick(ClickEvent event) {
               int maxLen = Data.getColumnPrecision(VIEW_TRADE_ACT_TEMPLATES, COL_TA_TEMPLATE_NAME);
 
-              Global.inputString(Localized.getConstants().tradeActNewTemplate(),
-                  Localized.getConstants().name(), new StringCallback() {
+              Global.inputString(Localized.dictionary().tradeActNewTemplate(),
+                  Localized.dictionary().name(), new StringCallback() {
                     @Override
                     public void onSuccess(String value) {
                       if (!BeeUtils.isEmpty(value)) {

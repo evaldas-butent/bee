@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+       name="AccountUsers"
+       idName="AccountUserID"
+    >
+  <Fields>
+    <Relation name="Account" relation="Accounts" notNull="true" cascade="DELETE" label="=mailAccount" />
+    <Relation name="User" relation="Users" notNull="true" cascade="DELETE" label="=user"/>
+  </Fields>
+
+  <Constraints>
+    <Unique fields="Account User" />
+  </Constraints>
+</Table>

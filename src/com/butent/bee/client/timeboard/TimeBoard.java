@@ -968,7 +968,7 @@ public abstract class TimeBoard extends Flow implements Presenter, View, Printab
     if (setData(response)) {
       callback.onSuccess(this);
     } else {
-      callback.onFailure(getCaption(), Localized.getConstants().nothingFound());
+      callback.onFailure(getCaption(), Localized.dictionary().nothingFound());
     }
   }
 

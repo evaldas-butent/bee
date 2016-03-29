@@ -1,13 +1,13 @@
 package com.butent.bee.shared.modules.classifiers;
 
-import com.butent.bee.shared.i18n.LocalizableConstants;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.HasLocalizedCaption;
 
 public enum ItemPrice implements HasLocalizedCaption {
   SALE {
     @Override
-    public String getCaption(LocalizableConstants constants) {
+    public String getCaption(Dictionary constants) {
       return constants.salePrice();
     }
 
@@ -17,7 +17,7 @@ public enum ItemPrice implements HasLocalizedCaption {
     }
 
     @Override
-    public String getLabel(LocalizableConstants constants) {
+    public String getLabel(Dictionary constants) {
       return constants.salePriceLabel();
     }
 
@@ -29,7 +29,7 @@ public enum ItemPrice implements HasLocalizedCaption {
 
   COST {
     @Override
-    public String getCaption(LocalizableConstants constants) {
+    public String getCaption(Dictionary constants) {
       return constants.cost();
     }
 
@@ -39,7 +39,7 @@ public enum ItemPrice implements HasLocalizedCaption {
     }
 
     @Override
-    public String getLabel(LocalizableConstants constants) {
+    public String getLabel(Dictionary constants) {
       return constants.costLabel();
     }
 
@@ -51,7 +51,7 @@ public enum ItemPrice implements HasLocalizedCaption {
 
   PRICE_1 {
     @Override
-    public String getCaption(LocalizableConstants constants) {
+    public String getCaption(Dictionary constants) {
       return constants.price1();
     }
 
@@ -61,7 +61,7 @@ public enum ItemPrice implements HasLocalizedCaption {
     }
 
     @Override
-    public String getLabel(LocalizableConstants constants) {
+    public String getLabel(Dictionary constants) {
       return constants.price1Label();
     }
 
@@ -73,7 +73,7 @@ public enum ItemPrice implements HasLocalizedCaption {
 
   PRICE_2 {
     @Override
-    public String getCaption(LocalizableConstants constants) {
+    public String getCaption(Dictionary constants) {
       return constants.price2();
     }
 
@@ -83,7 +83,7 @@ public enum ItemPrice implements HasLocalizedCaption {
     }
 
     @Override
-    public String getLabel(LocalizableConstants constants) {
+    public String getLabel(Dictionary constants) {
       return constants.price2Label();
     }
 
@@ -95,7 +95,7 @@ public enum ItemPrice implements HasLocalizedCaption {
 
   PRICE_3 {
     @Override
-    public String getCaption(LocalizableConstants constants) {
+    public String getCaption(Dictionary constants) {
       return constants.price3();
     }
 
@@ -105,7 +105,7 @@ public enum ItemPrice implements HasLocalizedCaption {
     }
 
     @Override
-    public String getLabel(LocalizableConstants constants) {
+    public String getLabel(Dictionary constants) {
       return constants.price3Label();
     }
 
@@ -126,10 +126,10 @@ public enum ItemPrice implements HasLocalizedCaption {
   }
 
   public String getLabel() {
-    return getLabel(Localized.getConstants());
+    return getLabel(Localized.dictionary());
   }
 
-  public abstract String getLabel(LocalizableConstants constants);
+  public abstract String getLabel(Dictionary constants);
 
   public String getPriceAlias() {
     return "Item" + getPriceColumn();

@@ -109,7 +109,7 @@ public class TasksWorker extends CrudWorker {
           @Override
           public void run() {
             task.createTaskUser(taskId, user, null);
-            notes.add(TaskUtils.getInsertNote(Localized.getConstants().crmTaskObservers(),
+            notes.add(TaskUtils.getInsertNote(Localized.dictionary().crmTaskObservers(),
                 BeeUtils.joinWords(getValue(observer, COL_FIRST_NAME),
                     getValue(observer, COL_LAST_NAME))));
           }
@@ -148,7 +148,7 @@ public class TasksWorker extends CrudWorker {
 
     for (JsonObject observer : observers.getValuesAs(JsonObject.class)) {
       users.add(BeeUtils.toLongOrNull(getValue(observer, COL_USER)));
-      notes.add(TaskUtils.getDeleteNote(Localized.getConstants().crmTaskObservers(),
+      notes.add(TaskUtils.getDeleteNote(Localized.dictionary().crmTaskObservers(),
           BeeUtils.joinWords(getValue(observer, COL_FIRST_NAME),
               getValue(observer, COL_LAST_NAME))));
     }
@@ -379,7 +379,7 @@ public class TasksWorker extends CrudWorker {
                 .getPropertyLong(PROP_LAST_EVENT_ID),
                 taskEvent.getJsonArray(TBL_FILES));
           } else {
-            error.set(RestResponse.error(Localized.getConstants().noData()));
+            error.set(RestResponse.error(Localized.dictionary().noData()));
           }
         }
       });
