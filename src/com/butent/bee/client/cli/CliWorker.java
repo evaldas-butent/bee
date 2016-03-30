@@ -100,6 +100,7 @@ import com.butent.bee.client.menu.MenuCommand;
 import com.butent.bee.client.modules.administration.AdministrationKeeper;
 import com.butent.bee.client.modules.ec.EcKeeper;
 import com.butent.bee.client.modules.tasks.TasksKeeper;
+import com.butent.bee.client.output.Exporter;
 import com.butent.bee.client.output.Printable;
 import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.style.Axis;
@@ -847,6 +848,9 @@ public final class CliWorker {
     } else if (BeeUtils.startsSame(args, "widget")) {
       ViewFactory.clear();
       debugWithSeparator("widget factory cleared");
+
+    } else if (BeeUtils.startsSame(args, "export")) {
+      Exporter.clearServerCache(null);
     }
   }
 

@@ -107,6 +107,7 @@ public final class Service {
 
   public static final String EXPORT_WORKBOOK = EXPORT_SERVICE_PREFIX + "workbook";
   public static final String EXPORT_ROWS = EXPORT_SERVICE_PREFIX + "rows";
+  public static final String EXPORT_CLEAR = EXPORT_SERVICE_PREFIX + "clear";
 
   public static final String CHAT_SERVICE_PREFIX = RPC_SERVICE_PREFIX + "chat_";
 

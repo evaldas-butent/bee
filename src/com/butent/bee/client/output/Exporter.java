@@ -2,15 +2,11 @@ package com.butent.bee.client.output;
 
 import com.google.common.base.Strings;
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.dom.client.Document;
-import com.google.gwt.dom.client.FormElement;
-import com.google.gwt.dom.client.IFrameElement;
-import com.google.gwt.dom.client.InputElement;
 import com.google.gwt.http.client.RequestBuilder;
 import com.google.gwt.http.client.Response;
-import com.google.gwt.user.client.Timer;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.Settings;
 import com.butent.bee.client.communication.RpcUtils;
@@ -19,10 +15,10 @@ import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.grid.CellContext;
 import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.ColumnHeader;
-import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.presenter.GridPresenter;
-import com.butent.bee.client.screen.BodyPanel;
+import com.butent.bee.client.utils.BrowsingContext;
 import com.butent.bee.client.utils.Duration;
+import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.view.grid.CellGrid;
 import com.butent.bee.client.view.grid.ColumnInfo;
 import com.butent.bee.shared.Assert;
@@ -37,6 +33,7 @@ import com.butent.bee.shared.css.CssUnit;
 import com.butent.bee.shared.css.values.TextAlign;
 import com.butent.bee.shared.css.values.VerticalAlign;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.data.filter.Filter;
@@ -51,7 +48,6 @@ import com.butent.bee.shared.export.XRow;
 import com.butent.bee.shared.export.XSheet;
 import com.butent.bee.shared.export.XStyle;
 import com.butent.bee.shared.export.XWorkbook;
-import com.butent.bee.shared.html.Keywords;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.FileNameUtils;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -78,10 +74,6 @@ public final class Exporter {
   }
 
   private static final BeeLogger logger = LogUtils.getLogger(Exporter.class);
-
-  private static final String EXPORT_URL = "export";
-
-  private static final int SUBMIT_TIMEOUT = 60_000;
 
   private static final int INPUT_STEP_SIZE = 100;
   private static final int OUTPUT_STEP_SIZE = 1_000;
@@ -130,6 +122,10 @@ public final class Exporter {
 
     row.add(cell);
     sheet.add(row);
+  }
+
+  public static void clearServerCache(final String id) {
+    doRequest(Service.EXPORT_CLEAR, id, null, null, result -> logger.debug(result));
   }
 
   public static void confirm(String fileName, FileNameCallback callback) {
@@ -378,7 +374,7 @@ public final class Exporter {
         numberOfSteps++;
       }
 
-      final Holder<Integer> chunks = Holder.of(numberOfSteps);
+      final Latch latch = new Latch(numberOfSteps);
 
       final int firstRowIndex = rowIndex;
 
@@ -391,7 +387,7 @@ public final class Exporter {
               @Override
               public void onSuccess(BeeRowSet result) {
                 String respOffset = result.getTableProperty(Service.VAR_VIEW_OFFSET);
-                Integer remaining = chunks.get();
+                Integer remaining = latch.get();
                 logger.debug(remaining, respOffset);
 
                 if (BeeUtils.isDigit(respOffset)) {
@@ -401,8 +397,10 @@ public final class Exporter {
                   }
                 }
 
-                chunks.set(remaining - 1);
+                latch.decrement();
                 if (remaining <= 1) {
+                  BeeKeeper.getRpc().getRpcList().tryCompress();
+
                   if (rowCount <= MAX_NUMBER_OF_ROWS_FOR_AUTOSIZE) {
                     autosizeNoPictures(sheet, columns.size());
                   }
@@ -507,13 +505,54 @@ public final class Exporter {
         BeeUtils.randomString(10));
   }
 
-  private static InputElement createFormParameter(String name, String value) {
-    InputElement inputElement = Document.get().createHiddenInputElement();
+  private static void doRequest(String svc, String id, Map<String, String> parameters, String data,
+      final Callback<String> callback) {
 
-    inputElement.setName(name);
-    inputElement.setValue(value);
+    final Map<String, String> qp = new HashMap<>();
+    qp.put(Service.RPC_VAR_SVC, svc);
+    if (!BeeUtils.isEmpty(id)) {
+      qp.put(Service.VAR_ID, id);
+    }
+    if (!BeeUtils.isEmpty(parameters)) {
+      qp.putAll(parameters);
+    }
 
-    return inputElement;
+    boolean hasData = !BeeUtils.isEmpty(data);
+
+    String url = CommUtils.addQueryString(getUrl(), CommUtils.buildQueryString(qp, false));
+    RequestBuilder.Method method = hasData ? RequestBuilder.POST : RequestBuilder.GET;
+
+    final XMLHttpRequest xhr = RpcUtils.createXhr();
+    xhr.open(method.toString(), url);
+    RpcUtils.addSessionId(xhr);
+
+    final Duration duration = new Duration();
+
+    xhr.setOnload(event -> {
+      if (xhr.getStatus() == Response.SC_OK) {
+        duration.finish();
+        logger.info("<", qp, BeeUtils.bracket(duration.getCompletedTime()));
+        logger.addSeparator();
+
+        callback.onSuccess(xhr.getResponseText());
+
+      } else {
+        String msg = BeeUtils.joinWords("response status:",
+            BeeUtils.bracket(xhr.getStatus()), xhr.getStatusText());
+
+        logger.severe(qp, msg);
+        callback.onFailure(qp.toString(), msg);
+      }
+    });
+
+    logger.info(">", qp, hasData ? BeeUtils.toString(data.length()) : BeeConst.STRING_EMPTY);
+
+    duration.restart(null);
+    if (hasData) {
+      xhr.send(data);
+    } else {
+      xhr.send();
+    }
   }
 
   private static void exportRow(CellContext context, IsRow dataRow, List<ColumnInfo> columns,
@@ -566,53 +605,32 @@ public final class Exporter {
   }
 
   private static String getUrl() {
-    return GWT.getHostPageBaseURL() + EXPORT_URL;
+    return GWT.getHostPageBaseURL() + "export";
   }
 
   private static String sanitizeFileName(String input) {
     return FileNameUtils.sanitize(input, BeeConst.STRING_POINT);
   }
 
-  private static void sendRows(String id, final int offset, List<XRow> rows,
-      final Consumer<Boolean> callback) {
+  private static void sendRows(String id, int offset, List<XRow> rows,
+      final Consumer<Boolean> consumer) {
 
     Map<String, String> parameters = new HashMap<>();
-    parameters.put(Service.RPC_VAR_SVC, Service.EXPORT_ROWS);
-    parameters.put(Service.VAR_ID, id);
     parameters.put(Service.VAR_FROM, BeeUtils.toString(offset));
 
-    String url = CommUtils.addQueryString(getUrl(), CommUtils.buildQueryString(parameters, false));
+    doRequest(Service.EXPORT_ROWS, id, parameters, Codec.beeSerialize(rows),
+        new Callback<String>() {
+          @Override
+          public void onFailure(String... reason) {
+            Callback.super.onFailure(reason);
+            consumer.accept(false);
+          }
 
-    final XMLHttpRequest xhr = RpcUtils.createXhr();
-    xhr.open(RequestBuilder.POST.toString(), url);
-    RpcUtils.addSessionId(xhr);
-
-    final Duration duration = new Duration();
-
-    xhr.setOnload(event -> {
-      if (xhr.getStatus() == Response.SC_OK) {
-        duration.finish();
-        logger.debug("<", Service.EXPORT_ROWS, offset,
-            BeeUtils.bracket(duration.getCompletedTime()));
-
-        callback.accept(true);
-
-      } else {
-        String msg = BeeUtils.joinWords(Service.EXPORT_ROWS, offset, "response status:",
-            BeeUtils.bracket(xhr.getStatus()), xhr.getStatusText());
-
-        logger.severe(msg);
-        BeeKeeper.getScreen().notifySevere(msg);
-
-        callback.accept(false);
-      }
-    });
-
-    String data = Codec.beeSerialize(rows);
-    logger.debug(">", Service.EXPORT_ROWS, offset, rows.size(), data.length());
-
-    duration.restart(null);
-    xhr.send(data);
+          @Override
+          public void onSuccess(String result) {
+            consumer.accept(true);
+          }
+        });
   }
 
   private static boolean splitRows(XWorkbook wb) {
@@ -620,44 +638,27 @@ public final class Exporter {
     return wb.getSheetCount() == 1 && wb.getRowCount() >= x;
   }
 
-  private static void submit(String id, XWorkbook wb, String fileName) {
-    String frameName = NameUtils.createUniqueName("frame");
+  private static void submit(final String id, XWorkbook wb, final String fileName) {
+    Map<String, String> parameters = new HashMap<>();
+    parameters.put(Service.VAR_FILE_NAME, sanitizeFileName(fileName));
 
-    final IFrameElement frame = Document.get().createIFrameElement();
+    doRequest(Service.EXPORT_WORKBOOK, id, parameters, wb.serialize(),
+        new Callback<String>() {
+          @Override
+          public void onFailure(String... reason) {
+            Callback.super.onFailure(reason);
+            clearServerCache(id);
+          }
 
-    frame.setName(frameName);
-    frame.setSrc(Keywords.URL_ABOUT_BLANK);
-
-    BodyPanel.conceal(frame);
-
-    final FormElement form = Document.get().createFormElement();
-
-    form.setAcceptCharset(BeeConst.CHARSET_UTF8);
-    form.setMethod(Keywords.METHOD_POST);
-    form.setAction(getUrl());
-    form.setTarget(frameName);
-
-    form.appendChild(createFormParameter(Service.RPC_VAR_SVC, Service.EXPORT_WORKBOOK));
-    form.appendChild(createFormParameter(Service.VAR_ID, id));
-    form.appendChild(createFormParameter(Service.VAR_FILE_NAME, sanitizeFileName(fileName)));
-
-    String serialized = wb.serialize();
-    form.appendChild(createFormParameter(Service.VAR_DATA, serialized));
-    logger.debug(Service.EXPORT_WORKBOOK, fileName,
-        Format.getDefaultLongFormat().format(serialized.length()));
-
-    BodyPanel.conceal(form);
-    form.submit();
-
-    Timer timer = new Timer() {
-      @Override
-      public void run() {
-        form.removeFromParent();
-        frame.removeFromParent();
-      }
-    };
-
-    timer.schedule(SUBMIT_TIMEOUT);
+          @Override
+          public void onSuccess(String result) {
+            if (DataUtils.isId(result)) {
+              BrowsingContext.open(FileUtils.getUrl(BeeUtils.toLong(result)));
+            } else {
+              onFailure(Service.EXPORT_WORKBOOK, id, fileName, "response", result, "not an id");
+            }
+          }
+        });
   }
 
   private Exporter() {
