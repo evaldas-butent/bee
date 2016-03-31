@@ -5,7 +5,6 @@ import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.rights.ModuleAndSub;
 import com.butent.bee.shared.rights.RightsObjectType;
-import com.butent.bee.shared.rights.RightsState;
 import com.butent.bee.shared.rights.SubModule;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -13,9 +12,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 final class ModuleRightsHandler extends MultiRoleForm {
-
-  ModuleRightsHandler() {
-  }
 
   @Override
   public FormInterceptor getInstance() {
@@ -25,11 +21,6 @@ final class ModuleRightsHandler extends MultiRoleForm {
   @Override
   protected RightsObjectType getObjectType() {
     return RightsObjectType.MODULE;
-  }
-
-  @Override
-  protected RightsState getRightsState() {
-    return RightsState.VIEW;
   }
 
   @Override

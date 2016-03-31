@@ -397,7 +397,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
 
     column.setType(info.getType().toValueType());
 
-    column.setNullable(info.isNullable() ? required : info.isNullable());
+    column.setNullable(info.isNullable() ? !required : false);
 
     column.setPrecision(info.getPrecision());
     column.setScale(info.getScale());

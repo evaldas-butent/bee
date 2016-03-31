@@ -69,9 +69,7 @@ public class RightsCell extends AbstractCell<String> implements HasViewName {
           faOff = FontAwesome.TRASH_O;
           break;
 
-        case CREATE:
-        case REQUIRED:
-        case MERGE:
+        default:
           Assert.unsupported();
           break;
       }

@@ -3281,8 +3281,6 @@ public interface Dictionary {
 
   default String notANumber() {return g("notANumber");}
 
-  default String notRequired() {return g("notRequired");}
-
   default String note() {return g("note");}
 
   default String notes() {return g("notes");}
@@ -3991,6 +3989,8 @@ public interface Dictionary {
   default String rightStateEdit() {return g("rightStateEdit");}
 
   default String rightStateMerge() {return g("rightStateMerge");}
+
+  default String rightStateRequired() {return g("rightStateRequired");}
 
   default String rightStateView() {return g("rightStateView");}
 

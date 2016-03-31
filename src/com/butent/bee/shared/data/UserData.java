@@ -287,7 +287,7 @@ public class UserData implements BeeSerializable, HasInfo {
   public boolean isColumnRequired(String viewName, String column) {
     return BeeUtils.anyEmpty(viewName, column)
         || hasRight(RightsObjectType.FIELD, RightsUtils.buildName(viewName, column),
-            RightsState.REQUIRED);
+        RightsState.REQUIRED);
   }
 
   public boolean isColumnVisible(String viewName, String column) {
@@ -437,7 +437,7 @@ public class UserData implements BeeSerializable, HasInfo {
   private boolean hasRight(RightsObjectType type, String object, RightsState state) {
     Assert.notNull(state);
 
-    if (!BeeUtils.contains(type.getRegisteredStates(), state)) {
+    if (!type.getRegisteredStates().contains(state)) {
       logger.severe("State", BeeUtils.bracket(state.name()),
           "is not registered for type", BeeUtils.bracket(type.name()));
       return false;
@@ -448,17 +448,22 @@ public class UserData implements BeeSerializable, HasInfo {
     boolean checked;
 
     if (rights != null && rights.contains(state, type)) {
-      String obj = null;
-      checked = true;
       Collection<String> objects = rights.get(state, type);
 
-      for (String part : RightsUtils.NAME_SPLITTER.split(object)) {
-        obj = RightsUtils.NAME_JOINER.join(obj, part);
+      if (type.isHierarchical()) {
+        String obj = null;
+        checked = true;
 
-        if (objects.contains(obj) == state.isChecked()) {
-          checked = false;
-          break;
+        for (String part : RightsUtils.NAME_SPLITTER.split(object)) {
+          obj = RightsUtils.NAME_JOINER.join(obj, part);
+
+          if (objects.contains(obj) == state.isChecked()) {
+            checked = false;
+            break;
+          }
         }
+      } else {
+        checked = (objects.contains(object) != state.isChecked());
       }
     } else {
       checked = state.isChecked();
