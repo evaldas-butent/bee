@@ -70,6 +70,7 @@ public class RightsCell extends AbstractCell<String> implements HasViewName {
           break;
 
         case CREATE:
+        case REQUIRED:
         case MERGE:
           Assert.unsupported();
           break;

@@ -3281,6 +3281,8 @@ public interface Dictionary {
 
   default String notANumber() {return g("notANumber");}
 
+  default String notRequired() {return g("notRequired");}
+
   default String note() {return g("note");}
 
   default String notes() {return g("notes");}

@@ -284,6 +284,12 @@ public class UserData implements BeeSerializable, HasInfo {
     }
   }
 
+  public boolean isColumnRequired(String viewName, String column) {
+    return BeeUtils.anyEmpty(viewName, column)
+        || hasRight(RightsObjectType.FIELD, RightsUtils.buildName(viewName, column),
+            RightsState.REQUIRED);
+  }
+
   public boolean isColumnVisible(String viewName, String column) {
     return BeeUtils.anyEmpty(viewName, column) || hasFieldRight(viewName, column, RightsState.VIEW);
   }

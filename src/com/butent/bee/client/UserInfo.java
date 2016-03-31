@@ -221,6 +221,10 @@ public class UserInfo implements HasInfo {
     return isLoggedIn() && userData.isAnyModuleVisible(input);
   }
 
+  public boolean isColumnRequired(String viewName, String column) {
+    return isLoggedIn() && userData.isColumnRequired(viewName, column);
+  }
+
   public boolean isColumnVisible(DataInfo dataInfo, String column) {
     if (!isLoggedIn()) {
       return false;

@@ -33,6 +33,12 @@ public enum RightsState implements HasLocalizedCaption {
     public String getCaption(Dictionary constants) {
       return constants.rightStateMerge();
     }
+  },
+  REQUIRED(true) {
+    @Override
+    public String getCaption(Dictionary constants) {
+      return constants.notRequired();
+    }
   };
 
   private final boolean checked;
