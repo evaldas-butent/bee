@@ -10,21 +10,26 @@ import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.Settings;
 import com.butent.bee.client.communication.RpcUtils;
+import com.butent.bee.client.composite.Thermometer;
 import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.dialog.CloseButton;
+import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.grid.CellContext;
 import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.ColumnHeader;
+import com.butent.bee.client.layout.Vertical;
 import com.butent.bee.client.presenter.GridPresenter;
-import com.butent.bee.client.utils.BrowsingContext;
 import com.butent.bee.client.utils.Duration;
 import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.view.grid.CellGrid;
 import com.butent.bee.client.view.grid.ColumnInfo;
+import com.butent.bee.client.widget.Button;
+import com.butent.bee.client.widget.Label;
+import com.butent.bee.client.widget.Link;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
-import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.Latch;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.CommUtils;
@@ -70,6 +75,87 @@ public final class Exporter {
     @Override
     public boolean validate(String value) {
       return validateFileName(value);
+    }
+  }
+
+  private static final class ExportController extends DialogBox {
+
+    private static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "ExportController-";
+
+    private static final String STYLE_THERMOMETER_ENABLED = STYLE_PREFIX + "thermometer-enabled";
+    private static final String STYLE_THERMOMETER_DISABLED = STYLE_PREFIX + "thermometer-disabled";
+
+    private final Vertical panel;
+
+    private final Thermometer inputThermometer;
+    private final Thermometer outputThermometer;
+
+    private ExportController(String fileName) {
+      super(Localized.dictionary().exportToMsExcel(), STYLE_PREFIX + "dialog");
+      addDefaultCloseBox();
+
+      setPreviewEnabled(false);
+      setResizable(false);
+      setAnimationEnabled(false);
+
+      this.panel = new Vertical(STYLE_PREFIX + "panel");
+
+      Label label = new Label(fileName);
+      panel.addWidgetAndStyle(label, STYLE_PREFIX + "label");
+
+      this.inputThermometer = new Thermometer(Localized.dictionary().data());
+      panel.addWidgetAndStyle(inputThermometer, STYLE_PREFIX + "input");
+      inputThermometer.addStyleName(STYLE_THERMOMETER_DISABLED);
+
+      this.outputThermometer = new Thermometer(Localized.dictionary().rows());
+      panel.addWidgetAndStyle(outputThermometer, STYLE_PREFIX + "output");
+      outputThermometer.addStyleName(STYLE_THERMOMETER_DISABLED);
+
+      Button cancel = new CloseButton(Localized.dictionary().cancel());
+      panel.addWidgetAndStyle(cancel, STYLE_PREFIX + "cancel");
+
+      setWidget(panel);
+    }
+
+    private void incrementInput() {
+      updateInput(BeeUtils.toInt(inputThermometer.getValue()) + 1);
+    }
+
+    private void incrementOutput(int incr) {
+      updateOutput(BeeUtils.toInt(outputThermometer.getValue()) + incr);
+    }
+
+    private void setInputSize(int size) {
+      inputThermometer.setMax(size);
+
+      inputThermometer.removeStyleName(STYLE_THERMOMETER_DISABLED);
+      inputThermometer.addStyleName(STYLE_THERMOMETER_ENABLED);
+    }
+
+    private void setOutputSize(int size) {
+      outputThermometer.setMax(size);
+
+      outputThermometer.removeStyleName(STYLE_THERMOMETER_DISABLED);
+      outputThermometer.addStyleName(STYLE_THERMOMETER_ENABLED);
+    }
+
+    private void showResult(long fileId, String fileName) {
+      panel.clear();
+
+      Link link = new Link(fileName, FileUtils.getUrl(fileId));
+      panel.addWidgetAndStyle(link, STYLE_PREFIX + "link");
+
+      if (!isShowing()) {
+        center();
+      }
+    }
+
+    private void updateInput(int value) {
+      inputThermometer.update(BeeUtils.toString(value), value);
+    }
+
+    private void updateOutput(int value) {
+      outputThermometer.update(BeeUtils.toString(value), value);
     }
   }
 
@@ -186,7 +272,7 @@ public final class Exporter {
 
     final int rowCount = grid.getRowCount();
     if (rowCount <= 0) {
-      String message = "grid is empty";
+      String message = Localized.dictionary().noData();
       logger.warning(message);
       BeeKeeper.getScreen().notifyWarning(message);
       return;
@@ -318,15 +404,26 @@ public final class Exporter {
     int dataSize = grid.getDataSize();
     String viewName = presenter.getViewName();
 
+    final ExportController controller = openController(fileName);
+    controller.setInputSize(rowCount);
+
     if (dataSize >= rowCount || BeeUtils.isEmpty(viewName)) {
+      boolean proceed = true;
+
       for (int i = 0; i < dataSize; i++) {
         IsRow dataRow = BeeUtils.getQuietly(grid.getRowData(), i);
         if (dataRow != null) {
           exportRow(context, dataRow, columns, rowIndex++, sheet, bodyStyles);
         }
+        controller.updateInput(i);
+
+        proceed = controller.isShowing();
+        if (!proceed) {
+          break;
+        }
       }
 
-      if (grid.hasFooters()) {
+      if (proceed && grid.hasFooters()) {
         row = createFooterRow(rowIndex++);
 
         style = XStyle.background(Colors.LIGHTGRAY);
@@ -364,8 +461,10 @@ public final class Exporter {
         sheet.add(row);
       }
 
-      autosizeNoPictures(sheet, columns.size());
-      export(sheet, fileName);
+      if (proceed) {
+        autosizeNoPictures(sheet, columns.size());
+        export(sheet, fileName, controller);
+      }
 
     } else {
       int stepSize = getInputStep(rowCount);
@@ -381,111 +480,70 @@ public final class Exporter {
       filter = presenter.getDataProvider().getFilter();
       Order order = presenter.getDataProvider().getOrder();
 
+      controller.addCloseHandler(event -> BeeKeeper.getRpc().getRpcList().tryCompress());
+
       for (int offset = 0; offset < rowCount; offset += stepSize) {
-        Queries.getRowSet(viewName, null, filter, order, offset, stepSize, CachingPolicy.NONE,
-            new Queries.RowSetCallback() {
-              @Override
-              public void onSuccess(BeeRowSet result) {
-                String respOffset = result.getTableProperty(Service.VAR_VIEW_OFFSET);
-                Integer remaining = latch.get();
-                logger.debug(remaining, respOffset);
-
-                if (BeeUtils.isDigit(respOffset)) {
-                  int index = BeeUtils.toInt(respOffset) + firstRowIndex;
-                  for (IsRow dataRow : result) {
-                    exportRow(context, dataRow, columns, index++, sheet, bodyStyles);
-                  }
+        if (controller.isShowing()) {
+          Queries.getRowSet(viewName, null, filter, order, offset, stepSize, CachingPolicy.NONE,
+              new Queries.RowSetCallback() {
+                @Override
+                public void onFailure(String... reason) {
+                  controller.close();
+                  super.onFailure(reason);
                 }
 
-                latch.decrement();
-                if (remaining <= 1) {
-                  BeeKeeper.getRpc().getRpcList().tryCompress();
+                @Override
+                public void onSuccess(BeeRowSet result) {
+                  String respOffset = result.getTableProperty(Service.VAR_VIEW_OFFSET);
 
-                  if (rowCount <= MAX_NUMBER_OF_ROWS_FOR_AUTOSIZE) {
-                    autosizeNoPictures(sheet, columns.size());
+                  if (controller.isShowing() && BeeUtils.isDigit(respOffset)) {
+                    int index = BeeUtils.toInt(respOffset) + firstRowIndex;
+                    for (IsRow dataRow : result) {
+                      exportRow(context, dataRow, columns, index++, sheet, bodyStyles);
+                      controller.incrementInput();
+
+                      if (!controller.isShowing()) {
+                        break;
+                      }
+                    }
                   }
-                  export(sheet, fileName);
+
+                  latch.decrement();
+                  if (controller.isShowing() && latch.isOpen()) {
+                    if (rowCount <= MAX_NUMBER_OF_ROWS_FOR_AUTOSIZE) {
+                      autosizeNoPictures(sheet, columns.size());
+                    }
+                    export(sheet, fileName, controller);
+                  }
                 }
-              }
-            });
+              });
+        }
       }
     }
   }
 
   public static void export(XSheet sheet, String fileName) {
-    if (sheet == null || sheet.isEmpty()) {
-      logger.severe(NameUtils.getClassName(Exporter.class), "sheet is empty");
-
-    } else {
+    if (isValidSource(sheet) && isValidDestination(fileName)) {
       XWorkbook wb = new XWorkbook();
       wb.add(sheet);
-      export(wb, fileName);
-    }
-  }
 
-  public static void export(final XWorkbook wb, final String fileName) {
-    if (wb == null || wb.isEmpty()) {
-      logger.severe(NameUtils.getClassName(Exporter.class), "workbook is empty");
-
-    } else if (BeeUtils.isEmpty(fileName)) {
-      logger.severe(NameUtils.getClassName(Exporter.class), "file name not specified");
-
-    } else if (!validateFileName(fileName)) {
-      logger.severe(NameUtils.getClassName(Exporter.class), "invalid file name", fileName);
-
-    } else {
-      final String exportId = createId();
-
-      if (splitRows(wb)) {
-        int rowCount = wb.getRowCount();
-        int stepSize = getOutputStep(rowCount);
-
-        int numberOfSteps = rowCount / stepSize;
-        if (rowCount % stepSize > 0) {
-          numberOfSteps++;
-        }
-
-        final Latch latch = new Latch(numberOfSteps);
-        final Holder<Boolean> success = Holder.of(true);
-
-        for (int offset = 0; offset < rowCount; offset += stepSize) {
-          if (!BeeUtils.isTrue(success.get())) {
-            break;
-          }
-
-          int toIndex = Math.min(offset + stepSize, rowCount);
-          List<XRow> rows = wb.getSheets().get(0).getRows().subList(offset, toIndex);
-
-          sendRows(exportId, offset, rows, ok -> {
-            if (ok) {
-              latch.decrement();
-
-              if (latch.isOpen()) {
-                wb.clearRows();
-                submit(exportId, wb, fileName);
-              }
-
-            } else {
-              success.set(false);
-            }
-          });
-        }
-
-      } else {
-        submit(exportId, wb, fileName);
-      }
+      ExportController controller = openController(fileName);
+      export(wb, fileName, controller);
     }
   }
 
   public static void maybeExport(final XSheet sheet, String fileName) {
-    FileNameCallback callback = new FileNameCallback() {
-      @Override
-      public void onSuccess(String value) {
-        export(sheet, BeeUtils.trim(value));
-      }
-    };
+    if (isValidSource(sheet)) {
+      FileNameCallback callback = new FileNameCallback() {
+        @Override
+        public void onSuccess(String value) {
+          ExportController controller = openController(value);
+          export(sheet, BeeUtils.trim(value), controller);
+        }
+      };
 
-    confirm(fileName, callback);
+      confirm(fileName, callback);
+    }
   }
 
   public static boolean validateFileName(String input) {
@@ -555,6 +613,58 @@ public final class Exporter {
     }
   }
 
+  private static void export(XSheet sheet, String fileName, ExportController controller) {
+    XWorkbook wb = new XWorkbook();
+    wb.add(sheet);
+
+    export(wb, fileName, controller);
+  }
+
+  private static void export(final XWorkbook wb, final String fileName,
+      final ExportController controller) {
+
+    final String exportId = createId();
+
+    if (splitRows(wb)) {
+      int rowCount = wb.getRowCount();
+      int stepSize = getOutputStep(rowCount);
+
+      int numberOfSteps = rowCount / stepSize;
+      if (rowCount % stepSize > 0) {
+        numberOfSteps++;
+      }
+
+      final Latch latch = new Latch(numberOfSteps);
+
+      controller.setOutputSize(rowCount);
+
+      for (int offset = 0; offset < rowCount; offset += stepSize) {
+        if (controller.isShowing()) {
+          int toIndex = Math.min(offset + stepSize, rowCount);
+          List<XRow> rows = wb.getSheets().get(0).getRows().subList(offset, toIndex);
+
+          sendRows(exportId, offset, rows, ok -> {
+            if (ok) {
+              controller.incrementOutput(rows.size());
+              latch.decrement();
+
+              if (latch.isOpen()) {
+                wb.clearRows();
+                submit(exportId, wb, fileName, controller);
+              }
+
+            } else {
+              controller.close();
+            }
+          });
+        }
+      }
+
+    } else {
+      submit(exportId, wb, fileName, controller);
+    }
+  }
+
   private static void exportRow(CellContext context, IsRow dataRow, List<ColumnInfo> columns,
       int rowIndex, XSheet sheet, Map<Integer, Integer> styles) {
 
@@ -608,6 +718,41 @@ public final class Exporter {
     return GWT.getHostPageBaseURL() + "export";
   }
 
+  private static boolean isValidDestination(String fileName) {
+    if (BeeUtils.isEmpty(fileName)) {
+      logger.severe(NameUtils.getClassName(Exporter.class), "file name not specified");
+      return false;
+
+    } else if (!validateFileName(fileName)) {
+      logger.severe(NameUtils.getClassName(Exporter.class), "invalid file name", fileName);
+      return false;
+
+    } else {
+      return true;
+    }
+  }
+
+  private static boolean isValidSource(XSheet sheet) {
+    if (sheet == null) {
+      logger.severe(NameUtils.getClassName(Exporter.class), "sheet is null");
+      return false;
+
+    } else if (sheet.isEmpty()) {
+      logger.warning(NameUtils.getClassName(Exporter.class), "sheet is empty");
+      return false;
+
+    } else {
+      return true;
+    }
+  }
+
+  private static ExportController openController(String fileName) {
+    ExportController controller = new ExportController(fileName);
+    controller.center();
+
+    return controller;
+  }
+
   private static String sanitizeFileName(String input) {
     return FileNameUtils.sanitize(input, BeeConst.STRING_POINT);
   }
@@ -638,7 +783,9 @@ public final class Exporter {
     return wb.getSheetCount() == 1 && wb.getRowCount() >= x;
   }
 
-  private static void submit(final String id, XWorkbook wb, final String fileName) {
+  private static void submit(final String id, XWorkbook wb, final String fileName,
+      final ExportController controller) {
+
     Map<String, String> parameters = new HashMap<>();
     parameters.put(Service.VAR_FILE_NAME, sanitizeFileName(fileName));
 
@@ -646,14 +793,16 @@ public final class Exporter {
         new Callback<String>() {
           @Override
           public void onFailure(String... reason) {
-            Callback.super.onFailure(reason);
+            controller.close();
             clearServerCache(id);
+
+            Callback.super.onFailure(reason);
           }
 
           @Override
           public void onSuccess(String result) {
             if (DataUtils.isId(result)) {
-              BrowsingContext.open(FileUtils.getUrl(BeeUtils.toLong(result)));
+              controller.showResult(BeeUtils.toLong(result), fileName);
             } else {
               onFailure(Service.EXPORT_WORKBOOK, id, fileName, "response", result, "not an id");
             }

@@ -15,6 +15,7 @@ public class CloseEvent extends GwtEvent<CloseEvent.Handler> {
     KEYBOARD_ESCAPE, KEYBOARD_SAVE, MOUSE_CLOSE_BOX, MOUSE_OUTSIDE, SCRIPT
   }
 
+  @FunctionalInterface
   public interface Handler extends EventHandler {
     void onClose(CloseEvent event);
   }
