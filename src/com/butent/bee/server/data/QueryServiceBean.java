@@ -88,6 +88,9 @@ import javax.sql.DataSource;
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
 public class QueryServiceBean {
 
+  @EJB
+  UserServiceBean usr;
+
   public interface ViewDataProvider {
     BeeRowSet getViewData(BeeView view, SqlSelect query, Filter filter);
 
@@ -138,7 +141,7 @@ public class QueryServiceBean {
 
   private static BeeLogger logger = LogUtils.getLogger(QueryServiceBean.class);
 
-  private static BeeRowSet rsToBeeRowSet(ResultSet rs, BeeView view) throws SQLException {
+  private BeeRowSet rsToBeeRowSet(ResultSet rs, BeeView view) throws SQLException {
     List<BeeColumn> rsCols = JdbcUtils.getColumns(rs);
 
     int idIndex = BeeConst.UNDEF;
@@ -164,7 +167,7 @@ public class QueryServiceBean {
         int colIndex = i + 1;
 
         if (view.hasColumn(colName)) {
-          view.initColumn(colName, column);
+          view.initColumn(colName, column, usr.isColumnRequired(view, colName));
           result.addColumn(column);
           indexes.add(colIndex);
 
@@ -298,8 +301,6 @@ public class QueryServiceBean {
   IdGeneratorBean ig;
   @EJB
   SystemBean sys;
-  @EJB
-  UserServiceBean usr;
   @EJB
   ParamHolderBean prm;
 

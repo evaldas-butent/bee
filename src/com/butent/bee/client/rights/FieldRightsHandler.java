@@ -52,7 +52,7 @@ final class FieldRightsHandler extends MultiStateForm {
 
   @Override
   protected List<RightsState> getRightsStates() {
-    return Lists.newArrayList(RightsState.VIEW, RightsState.EDIT);
+    return Lists.newArrayList(RightsState.VIEW, RightsState.EDIT, RightsState.REQUIRED);
   }
 
   @Override

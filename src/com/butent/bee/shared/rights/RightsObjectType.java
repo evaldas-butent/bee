@@ -7,7 +7,7 @@ import java.util.EnumSet;
 import java.util.Set;
 
 public enum RightsObjectType implements HasLocalizedCaption {
-  FIELD(EnumSet.of(RightsState.VIEW, RightsState.EDIT)) {
+  FIELD(EnumSet.of(RightsState.VIEW, RightsState.EDIT, RightsState.REQUIRED)) {
     @Override
     public String getCaption(Dictionary constants) {
       return constants.objectField();
@@ -19,7 +19,7 @@ public enum RightsObjectType implements HasLocalizedCaption {
       return constants.objectWidget();
     }
   },
-  DATA(EnumSet.allOf(RightsState.class)) {
+  DATA(EnumSet.complementOf(EnumSet.of(RightsState.REQUIRED))) {
     @Override
     public String getCaption(Dictionary constants) {
       return constants.objectData();
