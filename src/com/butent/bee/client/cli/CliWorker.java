@@ -3743,7 +3743,10 @@ public final class CliWorker {
     if (BeeKeeper.getRpc().getRpcList().isEmpty()) {
       inform("RpcList empty");
 
-    } else if (BeeUtils.contains(args, 'p')) {
+    } else if (BeeUtils.startsWith(args, 'c')) {
+      BeeKeeper.getRpc().getRpcList().tryCompress();
+
+    } else if (BeeUtils.startsWith(args, 'p')) {
       List<RpcInfo> requests = BeeKeeper.getRpc().getPendingRequests();
 
       if (requests.isEmpty()) {

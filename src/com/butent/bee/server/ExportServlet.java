@@ -3,7 +3,6 @@ package com.butent.bee.server;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Multimaps;
-import com.google.common.net.MediaType;
 
 import com.butent.bee.server.http.HttpUtils;
 import com.butent.bee.server.http.RequestInfo;
@@ -69,8 +68,6 @@ import javax.servlet.http.HttpServletResponse;
 public class ExportServlet extends LoginServlet {
 
   private static BeeLogger logger = LogUtils.getLogger(ExportServlet.class);
-
-  private static final String EXT_WORKBOOK = "xlsx";
 
   private static ListMultimap<String, XRow> exportedRows =
       Multimaps.synchronizedListMultimap(ArrayListMultimap.create());
@@ -711,7 +708,7 @@ public class ExportServlet extends LoginServlet {
     Long fileId = null;
 
     try {
-      File tmp = File.createTempFile("bee_", "." + EXT_WORKBOOK);
+      File tmp = File.createTempFile("bee_", null);
       tmp.deleteOnExit();
 
       FileOutputStream fos = new FileOutputStream(tmp);
@@ -719,10 +716,9 @@ public class ExportServlet extends LoginServlet {
       fos.close();
 
       FileInputStream fis = new FileInputStream(tmp);
-      String name = FileNameUtils.defaultExtension(fileName, EXT_WORKBOOK);
-      String type = MediaType.MICROSOFT_EXCEL.toString();
+      String name = FileNameUtils.defaultExtension(fileName, XWorkbook.FILE_EXTENSION);
 
-      fileId = fs.storeFile(fis, name, type);
+      fileId = fs.storeFile(fis, name, null);
       tmp.delete();
 
       logger.info("store workbook", name, "in", TimeUtils.elapsedMillis(start), "ms");

@@ -4,6 +4,8 @@ import com.google.common.base.Strings;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.http.client.RequestBuilder;
 import com.google.gwt.http.client.Response;
+import com.google.gwt.user.client.Timer;
+import com.google.gwt.user.client.ui.InlineLabel;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
@@ -18,6 +20,7 @@ import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.grid.CellContext;
 import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.ColumnHeader;
+import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Vertical;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.utils.Duration;
@@ -25,13 +28,14 @@ import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.view.grid.CellGrid;
 import com.butent.bee.client.view.grid.ColumnInfo;
 import com.butent.bee.client.widget.Button;
+import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.Link;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
-import com.butent.bee.shared.Latch;
 import com.butent.bee.shared.Service;
+import com.butent.bee.shared.State;
 import com.butent.bee.shared.communication.CommUtils;
 import com.butent.bee.shared.css.Colors;
 import com.butent.bee.shared.css.CssUnit;
@@ -57,6 +61,7 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.FileNameUtils;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -85,10 +90,20 @@ public final class Exporter {
     private static final String STYLE_THERMOMETER_ENABLED = STYLE_PREFIX + "thermometer-enabled";
     private static final String STYLE_THERMOMETER_DISABLED = STYLE_PREFIX + "thermometer-disabled";
 
+    private static final String STYLE_SUBMITTING = STYLE_PREFIX + "submitting";
+
     private final Vertical panel;
 
     private final Thermometer inputThermometer;
     private final Thermometer outputThermometer;
+    private final Thermometer submitThermometer;
+
+    private final long startMillis;
+
+    private final CustomDiv clock;
+    private final Timer timer;
+
+    private Consumer<Integer> outputLooper;
 
     private ExportController(String fileName) {
       super(Localized.dictionary().exportToMsExcel(), STYLE_PREFIX + "dialog");
@@ -99,6 +114,9 @@ public final class Exporter {
       setAnimationEnabled(false);
 
       this.panel = new Vertical(STYLE_PREFIX + "panel");
+
+      this.clock = new CustomDiv();
+      panel.addWidgetAndStyle(clock, STYLE_PREFIX + "clock");
 
       Label label = new Label(fileName);
       panel.addWidgetAndStyle(label, STYLE_PREFIX + "label");
@@ -111,18 +129,48 @@ public final class Exporter {
       panel.addWidgetAndStyle(outputThermometer, STYLE_PREFIX + "output");
       outputThermometer.addStyleName(STYLE_THERMOMETER_DISABLED);
 
+      this.submitThermometer = new Thermometer(Localized.dictionary().exporting());
+      panel.addWidgetAndStyle(submitThermometer, STYLE_PREFIX + "submit");
+      submitThermometer.addStyleName(STYLE_THERMOMETER_DISABLED);
+
       Button cancel = new CloseButton(Localized.dictionary().cancel());
       panel.addWidgetAndStyle(cancel, STYLE_PREFIX + "cancel");
 
       setWidget(panel);
+
+      this.startMillis = System.currentTimeMillis();
+
+      this.timer = new Timer() {
+        @Override
+        public void run() {
+          updateClock();
+        }
+      };
+
+      timer.scheduleRepeating(100);
+    }
+
+    @Override
+    protected void onUnload() {
+      stopTimer();
+      super.onUnload();
+    }
+
+    private Consumer<Integer> getOutputLooper() {
+      return outputLooper;
     }
 
     private void incrementInput() {
       updateInput(BeeUtils.toInt(inputThermometer.getValue()) + 1);
     }
 
-    private void incrementOutput(int incr) {
-      updateOutput(BeeUtils.toInt(outputThermometer.getValue()) + incr);
+    private void initOutput(int size, Consumer<Integer> looper) {
+      outputThermometer.setMax(size);
+
+      outputThermometer.removeStyleName(STYLE_THERMOMETER_DISABLED);
+      outputThermometer.addStyleName(STYLE_THERMOMETER_ENABLED);
+
+      setOutputLooper(looper);
     }
 
     private void setInputSize(int size) {
@@ -132,30 +180,59 @@ public final class Exporter {
       inputThermometer.addStyleName(STYLE_THERMOMETER_ENABLED);
     }
 
-    private void setOutputSize(int size) {
-      outputThermometer.setMax(size);
-
-      outputThermometer.removeStyleName(STYLE_THERMOMETER_DISABLED);
-      outputThermometer.addStyleName(STYLE_THERMOMETER_ENABLED);
+    private void setOutputLooper(Consumer<Integer> outputLooper) {
+      this.outputLooper = outputLooper;
     }
 
     private void showResult(long fileId, String fileName) {
-      panel.clear();
+      stopTimer();
+      updateClock();
 
-      Link link = new Link(fileName, FileUtils.getUrl(fileId));
-      panel.addWidgetAndStyle(link, STYLE_PREFIX + "link");
+      panel.addStyleName(STYLE_PREFIX + "completed");
+      panel.removeStyleName(STYLE_SUBMITTING);
+
+      Flow linkContainer = new Flow();
+
+      InlineLabel linkLabel = new InlineLabel(Localized.dictionary().createdFile());
+      linkLabel.addStyleName(STYLE_PREFIX + "link-label");
+      linkContainer.add(linkLabel);
+
+      String name = FileNameUtils.defaultExtension(fileName, XWorkbook.FILE_EXTENSION);
+      Link link = new Link(fileName, FileUtils.getUrl(fileId, name));
+      link.addStyleName(STYLE_PREFIX + "link");
+      linkContainer.add(link);
+
+      panel.addWidgetAndStyle(linkContainer, STYLE_PREFIX + "link-container");
 
       if (!isShowing()) {
         center();
       }
     }
 
+    private void startSubmit() {
+      submitThermometer.removeStyleName(STYLE_THERMOMETER_DISABLED);
+      submitThermometer.addStyleName(STYLE_THERMOMETER_ENABLED);
+
+      panel.addStyleName(STYLE_SUBMITTING);
+    }
+
+    private void stopTimer() {
+      if (timer != null && timer.isRunning()) {
+        timer.cancel();
+      }
+    }
+
+    private void updateClock() {
+      long elapsed = System.currentTimeMillis() - startMillis;
+      clock.setText(TimeUtils.renderMillis(elapsed - elapsed % 100));
+    }
+
     private void updateInput(int value) {
-      inputThermometer.update(BeeUtils.toString(value), value);
+      inputThermometer.update(value);
     }
 
     private void updateOutput(int value) {
-      outputThermometer.update(BeeUtils.toString(value), value);
+      outputThermometer.update(value);
     }
   }
 
@@ -171,7 +248,7 @@ public final class Exporter {
   private static final double HEADER_HEIGHT_FACTOR = 1.2;
   private static final double FOOTER_HEIGHT_FACTOR = 1.1;
 
-  private static final int MAX_NUMBER_OF_ROWS_FOR_AUTOSIZE = 1_000;
+  private static final int MAX_NUMBER_OF_ROWS_FOR_AUTOSIZE = 5_000;
 
   public static void addCaption(XSheet sheet, String caption, int rowIndex, int columnCount) {
     Assert.notNull(sheet);
@@ -415,7 +492,7 @@ public final class Exporter {
         if (dataRow != null) {
           exportRow(context, dataRow, columns, rowIndex++, sheet, bodyStyles);
         }
-        controller.updateInput(i);
+        controller.updateInput(i + 1);
 
         proceed = controller.isShowing();
         if (!proceed) {
@@ -467,58 +544,89 @@ public final class Exporter {
       }
 
     } else {
-      int stepSize = getInputStep(rowCount);
-      int numberOfSteps = rowCount / stepSize;
-      if (rowCount % stepSize > 0) {
-        numberOfSteps++;
-      }
-
-      final Latch latch = new Latch(numberOfSteps);
-
+      final int stepSize = getInputStep(rowCount);
       final int firstRowIndex = rowIndex;
 
-      filter = presenter.getDataProvider().getFilter();
-      Order order = presenter.getDataProvider().getOrder();
+      if (stepSize < rowCount) {
+        controller.addCloseHandler(event -> BeeKeeper.getRpc().getRpcList().tryCompress());
+      }
 
-      controller.addCloseHandler(event -> BeeKeeper.getRpc().getRpcList().tryCompress());
+      Timer runner = new Timer() {
+        private int position;
+        private State state;
 
-      for (int offset = 0; offset < rowCount; offset += stepSize) {
-        if (controller.isShowing()) {
-          Queries.getRowSet(viewName, null, filter, order, offset, stepSize, CachingPolicy.NONE,
+        private Filter flt = presenter.getDataProvider().getFilter();
+        private Order order = presenter.getDataProvider().getOrder();
+
+        @Override
+        public void run() {
+          if (controller.isShowing()) {
+            if ((state == null || state == State.LOADED || state == State.INSERTED)
+                && position < rowCount) {
+
+              setState(State.PENDING);
+
+              query(position);
+              this.position += stepSize;
+            }
+
+            if (state == State.INSERTED && position >= rowCount) {
+              cancel();
+
+              if (rowCount <= MAX_NUMBER_OF_ROWS_FOR_AUTOSIZE) {
+                autosizeNoPictures(sheet, columns.size());
+              }
+              export(sheet, fileName, controller);
+            }
+
+          } else if (isRunning()) {
+            cancel();
+          }
+        }
+
+        private void query(final int offset) {
+          Queries.getRowSet(viewName, null, flt, order, offset, stepSize, CachingPolicy.NONE,
               new Queries.RowSetCallback() {
                 @Override
                 public void onFailure(String... reason) {
+                  cancel();
                   controller.close();
+
                   super.onFailure(reason);
                 }
 
                 @Override
                 public void onSuccess(BeeRowSet result) {
-                  String respOffset = result.getTableProperty(Service.VAR_VIEW_OFFSET);
+                  if (controller.isShowing()) {
+                    setState(State.LOADED);
+                    int index = firstRowIndex + offset;
 
-                  if (controller.isShowing() && BeeUtils.isDigit(respOffset)) {
-                    int index = BeeUtils.toInt(respOffset) + firstRowIndex;
                     for (IsRow dataRow : result) {
                       exportRow(context, dataRow, columns, index++, sheet, bodyStyles);
-                      controller.incrementInput();
 
-                      if (!controller.isShowing()) {
+                      if (controller.isShowing()) {
+                        controller.incrementInput();
+                      } else {
                         break;
                       }
                     }
                   }
 
-                  latch.decrement();
-                  if (controller.isShowing() && latch.isOpen()) {
-                    if (rowCount <= MAX_NUMBER_OF_ROWS_FOR_AUTOSIZE) {
-                      autosizeNoPictures(sheet, columns.size());
-                    }
-                    export(sheet, fileName, controller);
+                  if (controller.isShowing()) {
+                    setState(State.INSERTED);
+                  } else {
+                    cancel();
                   }
                 }
               });
         }
-      }
+
+        private void setState(State state) {
+          this.state = state;
+        }
+      };
+
+      runner.scheduleRepeating(60);
     }
   }
 
@@ -626,39 +734,26 @@ public final class Exporter {
     final String exportId = createId();
 
     if (splitRows(wb)) {
-      int rowCount = wb.getRowCount();
-      int stepSize = getOutputStep(rowCount);
+      final int rowCount = wb.getRowCount();
+      final int stepSize = getOutputStep(rowCount);
 
-      int numberOfSteps = rowCount / stepSize;
-      if (rowCount % stepSize > 0) {
-        numberOfSteps++;
-      }
+      final Consumer<Integer> looper = offset -> {
+        if (BeeUtils.isNonNegative(offset)) {
+          if (offset + stepSize >= rowCount) {
+            wb.clearRows();
+            submit(exportId, wb, fileName, controller);
+          } else {
+            sendRows(exportId, wb, offset + stepSize, stepSize, controller);
+          }
 
-      final Latch latch = new Latch(numberOfSteps);
-
-      controller.setOutputSize(rowCount);
-
-      for (int offset = 0; offset < rowCount; offset += stepSize) {
-        if (controller.isShowing()) {
-          int toIndex = Math.min(offset + stepSize, rowCount);
-          List<XRow> rows = wb.getSheets().get(0).getRows().subList(offset, toIndex);
-
-          sendRows(exportId, offset, rows, ok -> {
-            if (ok) {
-              controller.incrementOutput(rows.size());
-              latch.decrement();
-
-              if (latch.isOpen()) {
-                wb.clearRows();
-                submit(exportId, wb, fileName, controller);
-              }
-
-            } else {
-              controller.close();
-            }
-          });
+        } else {
+          controller.close();
+          clearServerCache(exportId);
         }
-      }
+      };
+
+      controller.initOutput(rowCount, looper);
+      sendRows(exportId, wb, 0, stepSize, controller);
 
     } else {
       submit(exportId, wb, fileName, controller);
@@ -757,8 +852,11 @@ public final class Exporter {
     return FileNameUtils.sanitize(input, BeeConst.STRING_POINT);
   }
 
-  private static void sendRows(String id, int offset, List<XRow> rows,
-      final Consumer<Boolean> consumer) {
+  private static void sendRows(String id, XWorkbook wb, final int offset, int step,
+      final ExportController controller) {
+
+    final int toIndex = Math.min(offset + step, wb.getRowCount());
+    List<XRow> rows = wb.getSheets().get(0).getRows().subList(offset, toIndex);
 
     Map<String, String> parameters = new HashMap<>();
     parameters.put(Service.VAR_FROM, BeeUtils.toString(offset));
@@ -768,14 +866,21 @@ public final class Exporter {
           @Override
           public void onFailure(String... reason) {
             Callback.super.onFailure(reason);
-            consumer.accept(false);
+            controller.getOutputLooper().accept(null);
           }
 
           @Override
           public void onSuccess(String result) {
-            consumer.accept(true);
+            if (controller.isShowing()) {
+              controller.updateOutput(toIndex);
+              controller.getOutputLooper().accept(offset);
+            } else {
+              controller.getOutputLooper().accept(null);
+            }
           }
         });
+
+    controller.updateOutput(toIndex - rows.size() / 10);
   }
 
   private static boolean splitRows(XWorkbook wb) {
@@ -785,6 +890,8 @@ public final class Exporter {
 
   private static void submit(final String id, XWorkbook wb, final String fileName,
       final ExportController controller) {
+
+    controller.startSubmit();
 
     Map<String, String> parameters = new HashMap<>();
     parameters.put(Service.VAR_FILE_NAME, sanitizeFileName(fileName));
