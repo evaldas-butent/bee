@@ -463,7 +463,7 @@ public class UserData implements BeeSerializable, HasInfo {
           }
         }
       } else {
-        checked = (objects.contains(object) != state.isChecked());
+        checked = objects.contains(object) != state.isChecked();
       }
     } else {
       checked = state.isChecked();
