@@ -851,6 +851,10 @@ public final class CliWorker {
 
     } else if (BeeUtils.startsSame(args, "export")) {
       Exporter.clearServerCache(null);
+
+    } else if (BeeUtils.startsSame(args, "size")) {
+      Data.clearApproximateSizes();
+      debugWithSeparator("approximate sizes cleared");
     }
   }
 
@@ -2562,6 +2566,15 @@ public final class CliWorker {
   private static void showDataInfo(String viewName, boolean errorPopup) {
     if (BeeUtils.inListSame(viewName, "load", "refresh", "+", "x")) {
       Data.getDataInfoProvider().load();
+
+    } else if (BeeUtils.inListSame(viewName, "size", "s", "c", "r", "rc")) {
+      Map<String, Integer> sizes = new TreeMap<>(Data.getApproximateSizes());
+
+      if (sizes.isEmpty()) {
+        logger.debug("data sizes are empty");
+      } else {
+        showPropData("approximate sizes", PropertyUtils.createProperties(sizes));
+      }
 
     } else {
       if (!BeeUtils.isEmpty(viewName)) {

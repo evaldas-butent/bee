@@ -4,6 +4,7 @@ import com.google.common.base.Splitter;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Settings;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -29,6 +30,7 @@ import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.ui.Relation;
+import com.butent.bee.shared.ui.Relation.Caching;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
@@ -41,21 +43,12 @@ import java.util.Set;
 /**
  * Provides suggestions data management functionality for data changing events.
  */
-
 public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
 
-  /**
-   * Requires implementing classes to have a method to handle suggestions events with requests and
-   * responses.
-   */
-
+  @FunctionalInterface
   public interface Callback {
     void onSuggestionsReady(Request request, Response response);
   }
-
-  /**
-   * Contains fields and methods to handle suggestion related data queries.
-   */
 
   public static class Request {
 
@@ -168,7 +161,28 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
     }
   }
 
-  public static final Relation.Caching DEFAULT_CACHING = Relation.Caching.GLOBAL;
+  public static final Caching DEFAULT_CACHING = Caching.GLOBAL;
+  private static final int DEFAULT_MAX_ROW_COUNT_FOR_CACHING = 1_000;
+
+  private static Caching determineCaching(Relation relation, int dataSize) {
+    if (relation.getCaching() == null) {
+      if (dataSize > 0) {
+        Integer max = Settings.getDataSelectorCachingMaxRows();
+        if (max == null) {
+          max = DEFAULT_MAX_ROW_COUNT_FOR_CACHING;
+        }
+
+        if (dataSize <= max) {
+          return DEFAULT_CACHING;
+        }
+      }
+
+      return Caching.NONE;
+
+    } else {
+      return relation.getCaching();
+    }
+  }
 
   private final DataInfo dataInfo;
 
@@ -180,7 +194,7 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
   private final Filter immutableFilter;
   private final Order viewOrder;
 
-  private final Relation.Caching caching;
+  private Caching caching;
 
   private BeeRowSet viewData;
   private BeeRowSet requestData;
@@ -227,8 +241,6 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
         : Filter.and(relation.getFilter(), BeeKeeper.getUser().getFilter(cuf));
 
     this.viewOrder = relation.getOrder();
-
-    this.caching = (relation.getCaching() == null) ? DEFAULT_CACHING : relation.getCaching();
 
     this.handlerRegistry.addAll(BeeKeeper.getBus().registerDataHandler(this, false));
   }
@@ -294,8 +306,12 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
     return viewOrder;
   }
 
+  public void init(Relation relation, int dataSize) {
+    setCaching(determineCaching(relation, dataSize));
+  }
+
   public boolean isCachingEnabled() {
-    return !Relation.Caching.NONE.equals(caching);
+    return getCaching() != null && getCaching() != Caching.NONE;
   }
 
   @Override
@@ -426,6 +442,10 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
     return true;
   }
 
+  private Caching getCaching() {
+    return caching;
+  }
+
   private Filter getFilter(Filter queryFilter, boolean addResponseFilters) {
     CompoundFilter result = Filter.and();
 
@@ -482,8 +502,8 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
   }
 
   private void initViewData() {
-    CachingPolicy cachingPolicy =
-        Relation.Caching.GLOBAL.equals(caching) ? CachingPolicy.FULL : CachingPolicy.NONE;
+    CachingPolicy cachingPolicy = (getCaching() == Caching.GLOBAL)
+        ? CachingPolicy.FULL : CachingPolicy.NONE;
 
     Queries.getRowSet(getViewName(), null, getFilter(null, false), viewOrder, cachingPolicy,
         new Queries.RowSetCallback() {
@@ -506,7 +526,7 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
   }
 
   private boolean isFullCaching() {
-    return Relation.Caching.LOCAL.equals(caching) || Relation.Caching.GLOBAL.equals(caching);
+    return getCaching() == Caching.LOCAL || getCaching() == Caching.GLOBAL;
   }
 
   private void onDataReceived(BeeRowSet rowSet) {
@@ -698,6 +718,10 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
 
   private void resetState() {
     setLastRequest(null);
+  }
+
+  private void setCaching(Caching caching) {
+    this.caching = caching;
   }
 
   private void setDataInitialized(boolean dataInitialized) {

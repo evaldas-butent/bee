@@ -25,6 +25,8 @@ var BeeSettings = {
   "exporterInputStepRows": 100,
   "exporterOutputStepRows": 1000,
   "exporterSplitRowsThreshold": 1000,
+  "dataSelectorInstantSearchMaxRows": 1000,
+  "dataSelectorCachingMaxRows": 1000,
   "theme" : {
     "WorkspaceMarginRight": 25,
     "ViewHeaderHeight": "600, 30, 1200, 52",

@@ -51,6 +51,14 @@ public final class Settings {
     return getInt("clickSensitivityMillis");
   }
 
+  public static Integer getDataSelectorCachingMaxRows() {
+    return getInteger("dataSelectorCachingMaxRows");
+  }
+
+  public static Integer getDataSelectorInstantSearchMaxRows() {
+    return getInteger("dataSelectorInstantSearchMaxRows");
+  }
+
   public static int getDialogResizerWidth() {
     return getInt("dialogResizerWidth");
   }
@@ -98,6 +106,11 @@ public final class Settings {
   public static int getInt(String key) {
     Double d = getDouble(key);
     return (d == null) ? BeeConst.UNDEF : BeeUtils.toInt(d);
+  }
+
+  public static Integer getInteger(String key) {
+    Double d = getDouble(key);
+    return BeeUtils.isDouble(d) ? BeeUtils.round(d) : null;
   }
 
   public static int getLoadingStateDelayMillis() {
