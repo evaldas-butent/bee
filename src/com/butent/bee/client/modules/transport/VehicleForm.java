@@ -34,7 +34,7 @@ public class VehicleForm extends AbstractFormInterceptor implements ClickHandler
   public void beforeRefresh(FormView form, IsRow row) {
     if (service == null) {
       service = new FaLabel(FontAwesome.WRENCH);
-      service.setTitle(Localized.getConstants().vehicleRepairs());
+      service.setTitle(Localized.dictionary().vehicleRepairs());
       service.addClickHandler(this);
       form.getViewPresenter().getHeader().addCommandItem(service);
     }
@@ -67,7 +67,7 @@ public class VehicleForm extends AbstractFormInterceptor implements ClickHandler
         SimpleRowSet simple = SimpleRowSet.restore(response.getResponseAsString());
 
         if (DataUtils.isEmpty(simple)) {
-          getFormView().notifyInfo(Localized.getConstants().noData());
+          getFormView().notifyInfo(Localized.dictionary().noData());
         } else {
           BeeRowSet rs = new BeeRowSet();
 
@@ -79,7 +79,7 @@ public class VehicleForm extends AbstractFormInterceptor implements ClickHandler
           for (SimpleRow row : simple) {
             rs.addRow(++c, row.getValues());
           }
-          Global.showModalGrid(Localized.getConstants().vehicleRepairs(), rs);
+          Global.showModalGrid(Localized.dictionary().vehicleRepairs(), rs);
         }
       }
     });

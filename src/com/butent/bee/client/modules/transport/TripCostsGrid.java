@@ -98,7 +98,7 @@ public class TripCostsGrid extends AbstractGridInterceptor
     if (activeRow.getDateTime(DataUtils.getColumnIndex("Exported",
         presenter.getDataColumns())) != null && !BeeKeeper.getUser().isAdministrator()) {
 
-      presenter.getGridView().notifyWarning(Localized.getConstants().rowIsNotRemovable());
+      presenter.getGridView().notifyWarning(Localized.dictionary().rowIsNotRemovable());
       return DeleteMode.CANCEL;
     }
     return DeleteMode.SINGLE;
@@ -165,11 +165,11 @@ public class TripCostsGrid extends AbstractGridInterceptor
       if (BeeUtils.isPositive(qty)) {
         final InputNumber amount = new InputNumber();
 
-        Global.inputWidget(Localized.getConstants().amount(), amount, new InputCallback() {
+        Global.inputWidget(Localized.dictionary().amount(), amount, new InputCallback() {
           @Override
           public String getErrorMessage() {
             if (!BeeUtils.isPositive(amount.getNumber())) {
-              return Localized.getConstants().valueRequired();
+              return Localized.dictionary().valueRequired();
             }
             return InputCallback.super.getErrorMessage();
           }

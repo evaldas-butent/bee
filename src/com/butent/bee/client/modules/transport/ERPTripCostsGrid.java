@@ -34,7 +34,7 @@ import java.util.Set;
 
 public class ERPTripCostsGrid extends AbstractGridInterceptor implements ClickHandler {
 
-  private final Button action = new Button(Localized.getConstants().trSendToERP(), this);
+  private final Button action = new Button(Localized.dictionary().trSendToERP(), this);
 
   @Override
   public void afterCreatePresenter(GridPresenter presenter) {
@@ -56,11 +56,11 @@ public class ERPTripCostsGrid extends AbstractGridInterceptor implements ClickHa
       ids.add(row.getId());
     }
     if (ids.isEmpty()) {
-      presenter.getGridView().notifyWarning(Localized.getConstants().selectAtLeastOneRow());
+      presenter.getGridView().notifyWarning(Localized.dictionary().selectAtLeastOneRow());
       return;
     }
 
-    Global.confirm(Localized.getConstants().trSendToERPConfirm(), new ConfirmationCallback() {
+    Global.confirm(Localized.dictionary().trSendToERPConfirm(), new ConfirmationCallback() {
       @Override
       public void onConfirm() {
         final HeaderView header = presenter.getHeader();
@@ -96,7 +96,7 @@ public class ERPTripCostsGrid extends AbstractGridInterceptor implements ClickHa
         SimpleRowSet simple = SimpleRowSet.restore(response.getResponseAsString());
 
         if (simple.isEmpty()) {
-          getGridView().notifyInfo(Localized.getConstants().ok());
+          getGridView().notifyInfo(Localized.dictionary().ok());
         } else {
           BeeRowSet rs = new BeeRowSet();
 
@@ -108,7 +108,7 @@ public class ERPTripCostsGrid extends AbstractGridInterceptor implements ClickHa
           for (SimpleRowSet.SimpleRow row : simple) {
             rs.addRow(++c, row.getValues());
           }
-          Global.showModalGrid(Localized.getConstants().errors(), rs);
+          Global.showModalGrid(Localized.dictionary().errors(), rs);
         }
       }
     };
