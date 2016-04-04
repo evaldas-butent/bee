@@ -29,7 +29,7 @@ public final class TradeConstants {
 
   public static void register() {
     EnumUtils.register(OperationType.class);
-    EnumUtils.register(TradeDocumentStatus.class);
+    EnumUtils.register(TradeDocumentPhase.class);
   }
 
   public static final String PRM_ERP_REFRESH_INTERVAL = "ERPRefreshIntervalInMinutes";
@@ -138,7 +138,9 @@ public final class TradeConstants {
   public static final String COL_STATUS_NAME = "StatusName";
   public static final String COL_STATUS_ACTIVE = "StatusActive";
 
+  public static final String COL_TRADE_DOCUMENT_PHASE = "Phase";
   public static final String COL_TRADE_DOCUMENT_STATUS = "Status";
+
   public static final String COL_TRADE_DOCUMENT = "TradeDocument";
 
   public static final String COL_DOCUMENT_TYPE_NAME = "DocumentTypeName";

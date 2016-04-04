@@ -17,7 +17,7 @@
     <DataColumn name="Number2" />
 
     <RelColumn name="Operation" renderColumns="OperationName" visible="true" />
-    <DataColumn name="Status" visible="true" />
+    <DataColumn name="Phase" visible="true" />
 
     <RelColumn name="Supplier" renderColumns="SupplierName" />
     <RelColumn name="Customer" renderColumns="CustomerName" />

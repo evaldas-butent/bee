@@ -25,14 +25,14 @@
     <div style="height: 2vh; "/>
 
     <row>
-      <Label text="=statuses" />
+      <Label text="=trdDocumentPhases" />
       <cell colSpan="3">
         <FlowPanel class="flexBox-horizontal-space-between">
-          <CheckBox source="StatusOrder" />
-          <CheckBox source="StatusPending" />
-          <CheckBox source="StatusActive" />
-          <CheckBox source="StatusCompleted" />
-          <CheckBox source="StatusApproved" />
+          <CheckBox source="PhaseOrder" />
+          <CheckBox source="PhasePending" />
+          <CheckBox source="PhaseActive" />
+          <CheckBox source="PhaseCompleted" />
+          <CheckBox source="PhaseApproved" />
         </FlowPanel>
       </cell>
     </row>

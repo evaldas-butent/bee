@@ -3,60 +3,60 @@ package com.butent.bee.shared.modules.trade;
 import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.ui.HasLocalizedCaption;
 
-public enum TradeDocumentStatus implements HasLocalizedCaption {
+public enum TradeDocumentPhase implements HasLocalizedCaption {
   ORDER {
     @Override
     public String getCaption(Dictionary constants) {
-      return constants.trdDocumentStatusOrder();
+      return constants.trdDocumentPhaseOrder();
     }
 
     @Override
     public String getDocumentTypeColumnName() {
-      return "StatusOrder";
+      return "PhaseOrder";
     }
   },
   PENDING {
     @Override
     public String getCaption(Dictionary constants) {
-      return constants.trdDocumentStatusPending();
+      return constants.trdDocumentPhasePending();
     }
 
     @Override
     public String getDocumentTypeColumnName() {
-      return "StatusPending";
+      return "PhasePending";
     }
   },
   ACTIVE {
     @Override
     public String getCaption(Dictionary constants) {
-      return constants.trdDocumentStatusActive();
+      return constants.trdDocumentPhaseActive();
     }
 
     @Override
     public String getDocumentTypeColumnName() {
-      return "StatusActive";
+      return "PhaseActive";
     }
   },
   COMPLETED {
     @Override
     public String getCaption(Dictionary constants) {
-      return constants.trdDocumentStatusCompleted();
+      return constants.trdDocumentPhaseCompleted();
     }
 
     @Override
     public String getDocumentTypeColumnName() {
-      return "StatusCompleted";
+      return "PhaseCompleted";
     }
   },
   APPROVED {
     @Override
     public String getCaption(Dictionary constants) {
-      return constants.trdDocumentStatusApproved();
+      return constants.trdDocumentPhaseApproved();
     }
 
     @Override
     public String getDocumentTypeColumnName() {
-      return "StatusApproved";
+      return "PhaseApproved";
     }
   };
 

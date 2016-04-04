@@ -14,7 +14,7 @@
     <String name="Number2" precision="50" label="=trdNumber2" />
 
     <Relation name="Operation" notNull="true" relation="TradeOperations" label="=trdOperation" />
-    <Enum name="Status" notNull="true" key="TradeDocumentStatus" label="=status" />
+    <Enum name="Phase" notNull="true" key="TradeDocumentPhase" label="=trdDocumentPhase" />
 
     <Relation name="Supplier" relation="Companies" label="=trdSupplier" />
     <Relation name="Customer" relation="Companies" label="=trdCustomer" />

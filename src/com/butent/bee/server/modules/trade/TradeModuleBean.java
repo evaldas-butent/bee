@@ -49,7 +49,7 @@ import com.butent.bee.shared.menu.MenuService;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.payroll.PayrollConstants;
 import com.butent.bee.shared.modules.trade.TradeDocumentData;
-import com.butent.bee.shared.modules.trade.TradeDocumentStatus;
+import com.butent.bee.shared.modules.trade.TradeDocumentPhase;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.rights.ModuleAndSub;
 import com.butent.bee.shared.rights.SubModule;
@@ -421,10 +421,10 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
 
     CompoundFilter statusFilter = Filter.or();
 
-    for (TradeDocumentStatus status : TradeDocumentStatus.values()) {
-      Boolean v = DataUtils.getBoolean(typeData, typeRow, status.getDocumentTypeColumnName());
+    for (TradeDocumentPhase phase : TradeDocumentPhase.values()) {
+      Boolean v = DataUtils.getBoolean(typeData, typeRow, phase.getDocumentTypeColumnName());
       if (BeeUtils.isTrue(v)) {
-        statusFilter.add(Filter.equals(COL_TRADE_DOCUMENT_STATUS, status));
+        statusFilter.add(Filter.equals(COL_TRADE_DOCUMENT_PHASE, phase));
       }
     }
 

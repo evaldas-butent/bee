@@ -49,8 +49,8 @@
         <DataSelector source="Operation" renderColumns="OperationName" newRowEnabled="false"
           style="&inpw;" visible="true" />
 
-        <Label for="Status" />
-        <ListBox source="Status" visible="true" />
+        <Label for="Phase" />
+        <ListBox source="Phase" visible="true" />
 
         <Label for="Manager" />
         <DataSelector source="Manager" renderColumns="ManagerFirstName ManagerLastName"

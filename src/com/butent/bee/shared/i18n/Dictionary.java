@@ -5358,15 +5358,19 @@ public interface Dictionary {
 
   default String trdDocumentItems() {return g("trdDocumentItems");}
 
-  default String trdDocumentStatusActive() {return g("trdDocumentStatusActive");}
+  default String trdDocumentPhase() {return g("trdDocumentPhase");}
 
-  default String trdDocumentStatusApproved() {return g("trdDocumentStatusApproved");}
+  default String trdDocumentPhaseActive() {return g("trdDocumentPhaseActive");}
 
-  default String trdDocumentStatusCompleted() {return g("trdDocumentStatusCompleted");}
+  default String trdDocumentPhaseApproved() {return g("trdDocumentPhaseApproved");}
 
-  default String trdDocumentStatusOrder() {return g("trdDocumentStatusOrder");}
+  default String trdDocumentPhaseCompleted() {return g("trdDocumentPhaseCompleted");}
 
-  default String trdDocumentStatusPending() {return g("trdDocumentStatusPending");}
+  default String trdDocumentPhaseOrder() {return g("trdDocumentPhaseOrder");}
+
+  default String trdDocumentPhasePending() {return g("trdDocumentPhasePending");}
+
+  default String trdDocumentPhases() {return g("trdDocumentPhases");}
 
   default String trdDocumentTags() {return g("trdDocumentTags");}
 

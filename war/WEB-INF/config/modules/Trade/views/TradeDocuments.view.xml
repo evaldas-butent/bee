@@ -21,7 +21,7 @@
       <SimpleColumn name="Foreground" alias="OperationForeground" />
     </SimpleJoin>
 
-    <SimpleColumn name="Status" />
+    <SimpleColumn name="Phase" />
     
     <SimpleColumn name="Supplier" />
     <SimpleJoin joinType="LEFT" name="Supplier">
