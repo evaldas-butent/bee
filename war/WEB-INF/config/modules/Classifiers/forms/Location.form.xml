@@ -42,22 +42,22 @@
     <br/>
 
     <TabbedPages class="flexible">
-      <page>
+      <page module="Payroll">
         <text>=objectSalaryFund</text>
         <ChildGrid name="ObjectSalaryFund" relColumn="Object" />
       </page>
 
-      <page>
+      <page module="Payroll">
         <text>=employees</text>
         <ChildGrid name="ObjectEmployees" relColumn="Object" />
       </page>
 
       <page>
         <text>=contactInfo</text>
-        <xi:include href="../../Classifiers/forms/widgets/ContactDetails.widget.xml" />  
+        <xi:include href="widgets/ContactDetails.widget.xml" />  
       </page>
 
-      <page>
+      <page module="Payroll">
         <text>=workSchedule</text>
         <SummaryProxy name="WorkSchedule" summarize="true" />
       </page>
