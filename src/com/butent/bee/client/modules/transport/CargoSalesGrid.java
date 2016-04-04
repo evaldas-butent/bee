@@ -75,7 +75,7 @@ public class CargoSalesGrid extends InvoiceBuilder {
     }
     newRow.setValue(targetInfo.getColumnIndex(COL_VEHICLE), BeeUtils.joinItems(vehicles));
     newRow.setValue(targetInfo.getColumnIndex(COL_DRIVER), BeeUtils.joinItems(drivers));
-    newRow.setValue(targetInfo.getColumnIndex(COL_TRADE_NOTES), BeeUtils.joinItems(orders));
+    newRow.setValue(targetInfo.getColumnIndex(COL_TRADE_NUMBER), BeeUtils.joinItems(orders));
 
     newRow.setValue(targetInfo.getColumnIndex(COL_TRADE_MANAGER), BeeKeeper.getUser().getUserId());
     newRow.setValue(targetInfo.getColumnIndex(COL_TRADE_MANAGER + COL_PERSON),

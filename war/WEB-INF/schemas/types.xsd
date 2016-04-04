@@ -311,6 +311,8 @@
       <xs:enumeration value="DistinctCriteriaGroups" />
       <xs:enumeration value="DistinctCriterionValues" />
       <xs:enumeration value="DistinctDocumentItems" />
+      <xs:enumeration value="DistinctERPGroups" />
+      <xs:enumeration value="DistinctERPTypes" />
       <xs:enumeration value="DistinctForwarderVehicles" />
       <xs:enumeration value="DocumentData" />
       <xs:enumeration value="DocumentFiles" />

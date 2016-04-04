@@ -41,6 +41,9 @@
     <Relation name="DiscountParent" relation="Companies" label="=discountParent" />
     <Enum name="PriceName" key="ItemPrice" label="=priceName" />
 
+    <String name="ERPType" precision="30" label="Būtent tipas" />
+    <String name="ERPGroup" precision="60" label="Būtent grupė" />
+
     <Text name="Notes" label="=notes" />
   </Fields>
 </Table>

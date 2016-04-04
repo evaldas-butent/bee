@@ -138,6 +138,16 @@
               <Label text="=supplierCreditDays" style="&lbl;"/>
               <InputDecimal source="SupplierCreditDays" style="width: 60px;" summarize="true" />
             </row>
+
+            <row for="ERPType">
+              <Label for="ERPType" style="&lbl;"/>
+              <DataSelector source="ERPType" viewName="DistinctERPTypes" valueSource="ERPType" />
+            </row>
+
+            <row for="ERPGroup">
+              <Label for="ERPGroup" style="&lbl;"/>
+              <DataSelector source="ERPGroup" viewName="DistinctERPGroups" valueSource="ERPGroup" />
+            </row>
           </Table>
         </FlowPanel>
       </page>
@@ -175,7 +185,7 @@
               <cell colSpan="3">
                 <ChildSelector name="RecipientsGroup" viewName="RecipientsGroups" childTable="RcpsGroupsContacts"
                   targetRelColumn="Company" sourceRelColumn="RecipientsGroup" renderColumns="GroupName"
-                  choiceColumns="GroupName" label="=mailRecipientsGroups" style="width: 100%;" summarize="true" 
+                  choiceColumns="GroupName" label="=mailRecipientsGroups" style="width: 100%;" summarize="true"
                   filter="Creator {u} or Visibility = 0" />
               </cell>
             </row>

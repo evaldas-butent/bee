@@ -108,7 +108,8 @@ public class TransportSelectorHandler implements Handler {
     boolean vatPerc = vat != null;
 
     Map<String, Value> updatedColumns = ImmutableMap
-        .of(COL_TRADE_VAT, vatPerc ? Value.getValue(vat) : DecimalValue.getNullValue(),
+        .of(COL_TRADE_VAT_PLUS, vatPerc ? Value.getValue(vatPerc) : BooleanValue.getNullValue(),
+            COL_TRADE_VAT, vatPerc ? Value.getValue(vat) : DecimalValue.getNullValue(),
             COL_TRADE_VAT_PERC, vatPerc ? Value.getValue(vatPerc) : BooleanValue.getNullValue());
 
     for (String targetColumn : updatedColumns.keySet()) {
