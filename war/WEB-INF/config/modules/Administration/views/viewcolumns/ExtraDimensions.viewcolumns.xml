@@ -14,4 +14,9 @@
   <SimpleJoin joinType="LEFT" name="CostCenter">
     <SimpleColumn name="CostCenterName" />
   </SimpleJoin>
+
+  <SimpleColumn name="Object" />
+  <SimpleJoin name="Object" joinType="LEFT">
+    <SimpleColumn name="LocationName" />
+  </SimpleJoin>
 </Columns>

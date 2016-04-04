@@ -38,6 +38,11 @@
             <Label for="CostCenter" />
             <DataSelector source="CostCenter" />
           </row>
+
+          <row data="Locations">
+            <Label for="Object" />
+            <DataSelector source="Object" />
+          </row>
         </Table>
 
         <ChildGrid name="CategoryDiscounts" relColumn="Category" style="height: 150px;" 

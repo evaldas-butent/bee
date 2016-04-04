@@ -3,4 +3,5 @@
   <RelColumn name="Department" visible="false" />
   <RelColumn name="ActivityType" visible="false" />
   <RelColumn name="CostCenter" visible="false" />
+  <RelColumn name="Object" visible="false" />
 </g:columns>
