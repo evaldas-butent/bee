@@ -9,6 +9,8 @@ import java.util.List;
 
 public class XWorkbook implements BeeSerializable {
 
+  public static final String FILE_EXTENSION = "xlsx";
+
   public static XWorkbook restore(String s) {
     Assert.notEmpty(s);
     XWorkbook workbook = new XWorkbook();

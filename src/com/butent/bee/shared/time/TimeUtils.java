@@ -881,6 +881,55 @@ public final class TimeUtils {
     return new DateTime(showMillis ? time : (time - time % MILLIS_PER_SECOND)).toString();
   }
 
+  public static String renderMillis(long millis) {
+    if (millis < 0) {
+      return BeeConst.STRING_EMPTY;
+    } else if (millis == 0) {
+      return BeeConst.STRING_ZERO;
+    }
+
+    int hours = (int) (millis / MILLIS_PER_HOUR);
+    int remaining = (int) (millis % MILLIS_PER_HOUR);
+
+    int minutes = remaining / MILLIS_PER_MINUTE;
+    remaining %= MILLIS_PER_MINUTE;
+
+    int seconds = remaining / MILLIS_PER_SECOND;
+    remaining %= MILLIS_PER_SECOND;
+
+    StringBuilder sb = new StringBuilder();
+
+    if (hours > 0) {
+      sb.append(hours).append(TIME_FIELD_SEPARATOR);
+    }
+
+    if (hours > 0) {
+      sb.append(padTwo(minutes)).append(TIME_FIELD_SEPARATOR);
+    } else if (minutes > 0) {
+      sb.append(minutes).append(TIME_FIELD_SEPARATOR);
+    }
+
+    if (hours > 0 || minutes > 0) {
+      sb.append(padTwo(seconds)).append(MILLIS_SEPARATOR);
+    } else {
+      sb.append(seconds).append(MILLIS_SEPARATOR);
+    }
+
+    String ms = millisToString(remaining);
+
+    if (ms.length() == 3 && ms.charAt(2) == BeeConst.CHAR_ZERO) {
+      if (ms.charAt(1) == BeeConst.CHAR_ZERO) {
+        sb.append(ms.charAt(0));
+      } else {
+        sb.append(ms.substring(0, 2));
+      }
+    } else {
+      sb.append(ms);
+    }
+
+    return sb.toString();
+  }
+
   public static String renderMinutes(int minutes, boolean leadingZero) {
     int hours = minutes / MINUTES_PER_HOUR;
     return (leadingZero ? padTwo(hours) : BeeUtils.toString(hours)) + TIME_FIELD_SEPARATOR

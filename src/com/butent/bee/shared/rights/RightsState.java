@@ -4,44 +4,54 @@ import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.ui.HasLocalizedCaption;
 
 public enum RightsState implements HasLocalizedCaption {
-  VIEW(true) {
+  VIEW {
     @Override
     public String getCaption(Dictionary constants) {
       return constants.rightStateView();
     }
   },
-  CREATE(true) {
+  CREATE {
     @Override
     public String getCaption(Dictionary constants) {
       return constants.rightStateCreate();
     }
   },
-  EDIT(true) {
+  EDIT {
     @Override
     public String getCaption(Dictionary constants) {
       return constants.rightStateEdit();
     }
   },
-  DELETE(true) {
+  DELETE {
     @Override
     public String getCaption(Dictionary constants) {
       return constants.rightStateDelete();
     }
   },
-  MERGE(false) {
+  MERGE {
     @Override
     public String getCaption(Dictionary constants) {
       return constants.rightStateMerge();
     }
+
+    @Override
+    public boolean isChecked() {
+      return false;
+    }
+  },
+  REQUIRED {
+    @Override
+    public String getCaption(Dictionary constants) {
+      return constants.rightStateRequired();
+    }
+
+    @Override
+    public boolean isChecked() {
+      return false;
+    }
   };
 
-  private final boolean checked;
-
-  RightsState(boolean checked) {
-    this.checked = checked;
-  }
-
   public boolean isChecked() {
-    return checked;
+    return true;
   }
 }

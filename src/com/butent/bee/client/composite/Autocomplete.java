@@ -54,7 +54,6 @@ import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.filter.Filter;
-import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.view.DataInfo;
@@ -551,7 +550,7 @@ public final class Autocomplete extends Composite implements Editor, HasVisibleL
   private final Selector selector;
 
   private final InputEvents inputEvents = new InputEvents();
-  private final boolean instant;
+  private boolean instant;
 
   private final boolean embedded;
   private final int columnIdx;
@@ -573,21 +572,18 @@ public final class Autocomplete extends Composite implements Editor, HasVisibleL
 
   private boolean summarize;
 
-  private Autocomplete(Relation relation, boolean embedded) {
+  private Autocomplete(final Relation relation, boolean embedded) {
     super();
 
     this.embedded = embedded;
 
     DataInfo dataInfo = Data.getDataInfo(relation.getViewName());
-    this.columnIdx = dataInfo.getColumnIndex(relation.getSearchableColumns().get(0));
-
     this.oracle = new SelectionOracle(relation, dataInfo);
+
+    this.columnIdx = dataInfo.getColumnIndex(relation.getSearchableColumns().get(0));
 
     this.input = new InputWidget();
     this.selector = new Selector(input.getElement(), relation.getSelectorClass());
-
-    Operator operator = relation.nvlOperator();
-    this.instant = operator == Operator.CONTAINS || operator == Operator.STARTS;
 
     oracle.addRowCountChangeHandler(new Consumer<Integer>() {
       @Override
@@ -609,6 +605,11 @@ public final class Autocomplete extends Composite implements Editor, HasVisibleL
     Binder.addMouseWheelHandler(selector.getPopup(), inputEvents);
 
     init(input, embedded);
+
+    Data.estimateSize(relation.getViewName(), dataSize -> {
+      setInstant(DataSelector.determineInstantSearch(relation, dataSize));
+      oracle.init(relation, dataSize);
+    });
   }
 
   public HandlerRegistration addAutocompleteHandler(AutocompleteEvent.Handler handler) {
@@ -1104,6 +1105,10 @@ public final class Autocomplete extends Composite implements Editor, HasVisibleL
 
   private void setHasMore(boolean hasMore) {
     this.hasMore = hasMore;
+  }
+
+  private void setInstant(boolean instant) {
+    this.instant = instant;
   }
 
   private void setLastRequest(Request lastRequest) {

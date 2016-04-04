@@ -197,8 +197,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
           }
         }
       } catch (Throwable e) {
-        logger.error(e, account.getStoreProtocol(), account.getStoreHost(),
-            account.getStoreLogin(),
+        logger.error(e, account.getStoreProtocol(), account.getStoreHost(), account.getStoreLogin(),
             localFolder.getName());
         error = BeeUtils.joinWords(account.getStoreProtocol(), e.getMessage());
       } finally {
@@ -428,7 +427,8 @@ public class MailModuleBean implements BeeModule, HasTimerService {
 
           } catch (MessagingException e) {
             save = true;
-            logger.error(e);
+            logger.error(e, account.getTransportProtocol(), account.getTransportHost(),
+                account.getTransportLogin());
             response.addError(e);
           }
         }

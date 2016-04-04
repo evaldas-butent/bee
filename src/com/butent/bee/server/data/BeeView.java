@@ -391,12 +391,13 @@ public class BeeView implements BeeObject, HasExtendedInfo {
     conditionProviders.put(key, provider);
   }
 
-  private static void initColumn(ColumnInfo info, BeeColumn column) {
+  private static void initColumn(ColumnInfo info, BeeColumn column, boolean required) {
     column.setId(info.getName());
     column.setLabel(BeeUtils.notEmpty(info.getLabel(), info.getName()));
 
     column.setType(info.getType().toValueType());
-    column.setNullable(info.isNullable());
+
+    column.setNullable(info.isNullable() ? !required : false);
 
     column.setPrecision(info.getPrecision());
     column.setScale(info.getScale());
@@ -505,7 +506,9 @@ public class BeeView implements BeeObject, HasExtendedInfo {
 
   public BeeColumn getBeeColumn(String colName) {
     BeeColumn column = new BeeColumn();
-    initColumn(colName, column);
+    UserServiceBean usr = Invocation.locateRemoteBean(UserServiceBean.class);
+
+    initColumn(colName, column, usr.isColumnRequired(this, colName));
     return column;
   }
 
@@ -839,11 +842,12 @@ public class BeeView implements BeeObject, HasExtendedInfo {
 
   public List<BeeColumn> getRowSetColumns() {
     List<BeeColumn> result = new ArrayList<>();
+    UserServiceBean usr = Invocation.locateRemoteBean(UserServiceBean.class);
 
     for (ColumnInfo info : columns.values()) {
       if (!info.isHidden()) {
         BeeColumn column = new BeeColumn();
-        initColumn(info, column);
+        initColumn(info, column, usr.isColumnRequired(this, info.getName()));
         result.add(column);
       }
     }
@@ -910,8 +914,8 @@ public class BeeView implements BeeObject, HasExtendedInfo {
     return !BeeUtils.isEmpty(colName) && columns.containsKey(BeeUtils.normalize(colName));
   }
 
-  public void initColumn(String colName, BeeColumn column) {
-    initColumn(getColumnInfo(colName), column);
+  public void initColumn(String colName, BeeColumn column, boolean required) {
+    initColumn(getColumnInfo(colName), column, required);
   }
 
   public boolean isColAggregate(String colName) {

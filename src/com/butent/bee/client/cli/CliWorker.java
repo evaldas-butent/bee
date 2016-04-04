@@ -100,6 +100,7 @@ import com.butent.bee.client.menu.MenuCommand;
 import com.butent.bee.client.modules.administration.AdministrationKeeper;
 import com.butent.bee.client.modules.ec.EcKeeper;
 import com.butent.bee.client.modules.tasks.TasksKeeper;
+import com.butent.bee.client.output.Exporter;
 import com.butent.bee.client.output.Printable;
 import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.style.Axis;
@@ -847,6 +848,13 @@ public final class CliWorker {
     } else if (BeeUtils.startsSame(args, "widget")) {
       ViewFactory.clear();
       debugWithSeparator("widget factory cleared");
+
+    } else if (BeeUtils.startsSame(args, "export")) {
+      Exporter.clearServerCache(null);
+
+    } else if (BeeUtils.startsSame(args, "size")) {
+      Data.clearApproximateSizes();
+      debugWithSeparator("approximate sizes cleared");
     }
   }
 
@@ -2559,6 +2567,15 @@ public final class CliWorker {
     if (BeeUtils.inListSame(viewName, "load", "refresh", "+", "x")) {
       Data.getDataInfoProvider().load();
 
+    } else if (BeeUtils.inListSame(viewName, "size", "s", "c", "r", "rc")) {
+      Map<String, Integer> sizes = new TreeMap<>(Data.getApproximateSizes());
+
+      if (sizes.isEmpty()) {
+        logger.debug("data sizes are empty");
+      } else {
+        showPropData("approximate sizes", PropertyUtils.createProperties(sizes));
+      }
+
     } else {
       if (!BeeUtils.isEmpty(viewName)) {
         DataInfo dataInfo = Data.getDataInfo(viewName, false);
@@ -3739,7 +3756,10 @@ public final class CliWorker {
     if (BeeKeeper.getRpc().getRpcList().isEmpty()) {
       inform("RpcList empty");
 
-    } else if (BeeUtils.contains(args, 'p')) {
+    } else if (BeeUtils.startsWith(args, 'c')) {
+      BeeKeeper.getRpc().getRpcList().tryCompress();
+
+    } else if (BeeUtils.startsWith(args, 'p')) {
       List<RpcInfo> requests = BeeKeeper.getRpc().getPendingRequests();
 
       if (requests.isEmpty()) {
