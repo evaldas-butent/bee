@@ -1,12 +1,12 @@
 package com.butent.bee.shared.modules.trade;
 
-import com.butent.bee.shared.i18n.LocalizableConstants;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.ui.HasLocalizedCaption;
 
 public enum TradeDocumentStatus implements HasLocalizedCaption {
   ORDER {
     @Override
-    public String getCaption(LocalizableConstants constants) {
+    public String getCaption(Dictionary constants) {
       return constants.trdDocumentStatusOrder();
     }
 
@@ -17,7 +17,7 @@ public enum TradeDocumentStatus implements HasLocalizedCaption {
   },
   PENDING {
     @Override
-    public String getCaption(LocalizableConstants constants) {
+    public String getCaption(Dictionary constants) {
       return constants.trdDocumentStatusPending();
     }
 
@@ -28,7 +28,7 @@ public enum TradeDocumentStatus implements HasLocalizedCaption {
   },
   ACTIVE {
     @Override
-    public String getCaption(LocalizableConstants constants) {
+    public String getCaption(Dictionary constants) {
       return constants.trdDocumentStatusActive();
     }
 
@@ -39,7 +39,7 @@ public enum TradeDocumentStatus implements HasLocalizedCaption {
   },
   COMPLETED {
     @Override
-    public String getCaption(LocalizableConstants constants) {
+    public String getCaption(Dictionary constants) {
       return constants.trdDocumentStatusCompleted();
     }
 
@@ -50,7 +50,7 @@ public enum TradeDocumentStatus implements HasLocalizedCaption {
   },
   APPROVED {
     @Override
-    public String getCaption(LocalizableConstants constants) {
+    public String getCaption(Dictionary constants) {
       return constants.trdDocumentStatusApproved();
     }
 

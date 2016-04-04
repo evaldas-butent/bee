@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form [
+  <!ENTITY inline "display: inline-block;">
+  <!ENTITY inpw "width: 200px;">
+  <!ENTITY lbl "margin-right: 1em; text-align: right; padding-left: 30px">
+  <!ENTITY tab "margin-top: 1ex; height: 600px;">
+]>
+<f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form" name="RecipientsGroup" caption="=mailRecipientsGroup"
+  viewName="RecipientsGroups">
+  <FlowPanel>
+
+    <br />
+    <HorizontalPanel>
+      <Label for="GroupName" style="&lbl;" />
+      <InputText source="GroupName" style="&inpw;" />
+
+      <Radio source="Visibility" style="&inline; font-size: 12px; margin-left: 8px;" />
+    </HorizontalPanel>
+
+    <TabbedPages style="&tab;">
+      <page>
+        <text>=companies</text>
+        <ChildGrid name="NewsCompanies" relColumn="RecipientsGroup" />
+      </page>
+
+      <page>
+        <text>=persons</text>
+        <ChildGrid name="NewsPersons" relColumn="RecipientsGroup" />
+      </page>
+      
+      <page>
+        <text>=companyPersons</text>
+        <ChildGrid name="NewsCompanyPersons" relColumn="RecipientsGroup" />
+      </page>
+
+      <page>
+        <text>=additionalContacts</text>
+        <ChildGrid name="NewsCompanyContacts" relColumn="RecipientsGroup" />
+      </page>
+    </TabbedPages>
+  </FlowPanel>
+</f:Form>

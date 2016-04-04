@@ -257,12 +257,12 @@ public class Favorites implements HandlesDeleteEvents {
     display.setWidget(row, ITEM_COLUMN, widget);
 
     FaLabel edit = new FaLabel(FontAwesome.EDIT, EDIT_STYLE);
-    edit.setTitle(Localized.getConstants().actionRename());
+    edit.setTitle(Localized.dictionary().actionRename());
 
     edit.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
-        Global.inputString(Localized.getConstants().actionRename(), null, new StringCallback() {
+        Global.inputString(Localized.dictionary().actionRename(), null, new StringCallback() {
           @Override
           public void onSuccess(String value) {
             updateItem(group, key, item.getId(), value);
@@ -274,7 +274,7 @@ public class Favorites implements HandlesDeleteEvents {
     display.setWidget(row, EDIT_COLUMN, edit);
 
     FaLabel delete = new FaLabel(FontAwesome.TRASH_O, DELETE_STYLE);
-    delete.setTitle(Localized.getConstants().actionRemove());
+    delete.setTitle(Localized.dictionary().actionRemove());
 
     delete.addClickHandler(new ClickHandler() {
       @Override
@@ -394,7 +394,7 @@ public class Favorites implements HandlesDeleteEvents {
     List<String> values = DataUtils.translate(expressions, sourceColumns, row);
     String html = BeeUtils.join(exprSep, values);
 
-    Global.inputString(Localized.getConstants().bookmarkName(), null, new StringCallback() {
+    Global.inputString(Localized.dictionary().bookmarkName(), null, new StringCallback() {
       @Override
       public void onSuccess(String value) {
         addItem(group, viewName, row.getId(), value);

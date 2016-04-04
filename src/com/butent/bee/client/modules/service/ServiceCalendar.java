@@ -253,7 +253,7 @@ final class ServiceCalendar extends TimeBoard {
 
   @Override
   public String getCaption() {
-    return Localized.getConstants().svcCalendar();
+    return Localized.dictionary().svcCalendar();
   }
 
   @Override
@@ -729,7 +729,7 @@ final class ServiceCalendar extends TimeBoard {
   private void doExport(String fileName, List<String> filterLabels) {
     List<TimeBoardRowLayout> boardLayout = doLayout();
     if (boardLayout.isEmpty()) {
-      BeeKeeper.getScreen().notifyWarning(Localized.getConstants().noData());
+      BeeKeeper.getScreen().notifyWarning(Localized.dictionary().noData());
       return;
     }
 
@@ -780,7 +780,7 @@ final class ServiceCalendar extends TimeBoard {
 
     row.add(new XCell(colIndex++, companyKind.getCaption(), headerStyleRef));
     if (separateObjects()) {
-      row.add(new XCell(colIndex++, Localized.getConstants().address(), headerStyleRef));
+      row.add(new XCell(colIndex++, Localized.dictionary().address(), headerStyleRef));
     }
 
     XStyle dayStyle = XStyle.center();
@@ -861,7 +861,7 @@ final class ServiceCalendar extends TimeBoard {
 
   private void export() {
     if (!hasContent()) {
-      BeeKeeper.getScreen().notifyWarning(Localized.getConstants().noData());
+      BeeKeeper.getScreen().notifyWarning(Localized.dictionary().noData());
       return;
     }
 

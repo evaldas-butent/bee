@@ -312,7 +312,7 @@ public class MonthView extends CalendarView {
           CustomDiv woyDiv = new CustomDiv(CalendarStyleManager.MONTH_CELL_LABEL);
           woyDiv.addStyleName(CalendarStyleManager.DAY_CELL);
           woyDiv.setText(BeeUtils.joinWords(BeeUtils.toString(TimeUtils.weekOfYear(tmpDate)),
-              Localized.getConstants().unitWeekShort()));
+              Localized.dictionary().unitWeekShort()));
 
           dayCaption = woyDiv.toString() + BeeUtils.toString(tmpDate.getDom());
 
@@ -547,7 +547,7 @@ public class MonthView extends CalendarView {
       panel.add(widget);
     }
 
-    final DialogBox dialog = DialogBox.create(Localized.getConstants().calSelectAppointment(),
+    final DialogBox dialog = DialogBox.create(Localized.dictionary().calSelectAppointment(),
         CalendarStyleManager.MORE_POPUP);
 
     Binder.addMouseDownHandler(panel, new MouseDownHandler() {

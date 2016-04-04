@@ -355,13 +355,13 @@ public class ColorEditor extends Flow implements Editor, HasTextBox, HasKeyDownH
 
     if (BeeUtils.isEmpty(normalizedValue)) {
       if (checkForNull && !isNullable()) {
-        messages.add(Localized.getConstants().enterColor());
+        messages.add(Localized.dictionary().enterColor());
       }
       return messages;
     }
 
     if (!Color.validate(normalizedValue)) {
-      messages.add(BeeUtils.joinWords(Localized.getConstants().colorIsInvalid(), normalizedValue));
+      messages.add(BeeUtils.joinWords(Localized.dictionary().colorIsInvalid(), normalizedValue));
     }
     return messages;
   }

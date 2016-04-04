@@ -262,8 +262,8 @@ public class ItemPanel extends Flow implements SelectionHandler<TreeItem> {
     }
 
     if (!input.isEmpty()) {
-      String caption = selectable ? Localized.getConstants().ecSelectBrand()
-          : Localized.getConstants().ecItemBrand();
+      String caption = selectable ? Localized.dictionary().ecSelectBrand()
+          : Localized.dictionary().ecItemBrand();
       Label label = new Label(caption);
       EcStyles.add(label, STYLE_BRANDS, STYLE_CAPTION);
       brandWrapper.add(label);
@@ -303,7 +303,7 @@ public class ItemPanel extends Flow implements SelectionHandler<TreeItem> {
     }
 
     if (!selectable) {
-      Label caption = new Label(Localized.getConstants().ecItemCategory());
+      Label caption = new Label(Localized.dictionary().ecItemCategory());
       EcStyles.add(caption, STYLE_CATEGORIES, STYLE_CAPTION);
       panel.add(caption);
     }

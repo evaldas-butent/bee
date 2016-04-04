@@ -83,7 +83,7 @@ public class MessageBuilder extends FaLabel implements ClickHandler {
     private final TabBar tabs = new TabBar(Orientation.HORIZONTAL);
 
     protected MessageDialog(Set<Long> driverIds, Set<Long> cargoIds, Set<Long> ids) {
-      super(Localized.getConstants().message());
+      super(Localized.dictionary().message());
 
       setAnimationEnabled(true);
       setHideOnEscape(true);
@@ -93,7 +93,7 @@ public class MessageBuilder extends FaLabel implements ClickHandler {
       panel.add(driverPanel);
 
       Horizontal hor = new Horizontal();
-      hor.add(new Button(Localized.getConstants().template(), this));
+      hor.add(new Button(Localized.dictionary().template(), this));
       hor.add(tabs);
       tabs.addSelectionHandler(new SelectionHandler<Integer>() {
         @Override
@@ -116,7 +116,7 @@ public class MessageBuilder extends FaLabel implements ClickHandler {
       });
       panel.add(messagePanel);
 
-      SimplePanel simple = new SimplePanel(new Button(Localized.getConstants().send(),
+      SimplePanel simple = new SimplePanel(new Button(Localized.dictionary().send(),
           new ClickHandler() {
             @Override
             public void onClick(ClickEvent arg) {
@@ -187,7 +187,7 @@ public class MessageBuilder extends FaLabel implements ClickHandler {
         caption = null;
         template = null;
       }
-      Global.inputCollection(Localized.getConstants().template(),
+      Global.inputCollection(Localized.dictionary().template(),
           caption, false, template, new Consumer<Collection<String>>() {
             @Override
             public void accept(final Collection<String> input) {
@@ -195,7 +195,7 @@ public class MessageBuilder extends FaLabel implements ClickHandler {
                 templates.remove(caption);
                 renderTemplates(null);
               } else {
-                Global.inputString(Localized.getConstants().name(), null, new StringCallback() {
+                Global.inputString(Localized.dictionary().name(), null, new StringCallback() {
                   @Override
                   public void onSuccess(String name) {
                     templates.put(name, input);
@@ -222,7 +222,7 @@ public class MessageBuilder extends FaLabel implements ClickHandler {
                     keys.add(col.getId());
                   }
                 }
-                Global.choice(Localized.getConstants().value(), null, caps, new ChoiceCallback() {
+                Global.choice(Localized.dictionary().value(), null, caps, new ChoiceCallback() {
                   @Override
                   public void onSuccess(int item) {
                     editor.setValue(caps.get(item) + ": {" + keys.get(item) + "}");
@@ -261,7 +261,7 @@ public class MessageBuilder extends FaLabel implements ClickHandler {
                   switch (cargoInfo.getColumn(idx).getType()) {
                     case BOOLEAN:
                       value = BeeUtils.unbox(cargoInfo.getBoolean(i, idx))
-                          ? Localized.getConstants().yes() : Localized.getConstants().no();
+                          ? Localized.dictionary().yes() : Localized.dictionary().no();
                       break;
 
                     case DATE:
@@ -333,15 +333,15 @@ public class MessageBuilder extends FaLabel implements ClickHandler {
         }
       }
       if (BeeUtils.isEmpty(phones)) {
-        errors.add(Localized.getConstants().mobile());
+        errors.add(Localized.dictionary().mobile());
       }
       final String msg = messagePanel.getValue();
 
       if (BeeUtils.isEmpty(msg)) {
-        errors.add(Localized.getConstants().message());
+        errors.add(Localized.dictionary().message());
       }
       if (!BeeUtils.isEmpty(errors)) {
-        Global.showError(Localized.getConstants().noData(), errors);
+        Global.showError(Localized.dictionary().noData(), errors);
         return;
       }
       ParameterList args = TransportHandler.createArgs(SVC_SEND_MESSAGE);
@@ -377,7 +377,7 @@ public class MessageBuilder extends FaLabel implements ClickHandler {
 
     private void setDrivers(Map<String, String> drivers) {
       driverPanel.clear();
-      drivers.put(Localized.getConstants().mobile(), null);
+      drivers.put(Localized.dictionary().mobile(), null);
       int c = 0;
 
       for (Map.Entry<String, String> driver : drivers.entrySet()) {
@@ -405,7 +405,7 @@ public class MessageBuilder extends FaLabel implements ClickHandler {
   public MessageBuilder(GridView gridView) {
     super(FontAwesome.WHATSAPP);
 
-    setTitle(Localized.getConstants().message());
+    setTitle(Localized.dictionary().message());
     addClickHandler(this);
 
     this.gridView = Assert.notNull(gridView);
@@ -423,7 +423,7 @@ public class MessageBuilder extends FaLabel implements ClickHandler {
       ids.add(gridView.getActiveRow().getId());
     }
     if (BeeUtils.isEmpty(ids)) {
-      gridView.notifyWarning(Localized.getConstants().selectAtLeastOneRow());
+      gridView.notifyWarning(Localized.dictionary().selectAtLeastOneRow());
       return;
     }
     Set<Long> tripIds = new HashSet<>();

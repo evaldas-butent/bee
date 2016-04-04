@@ -179,7 +179,7 @@ public class PrintTripForm extends AbstractFormInterceptor {
                     total += BeeUtils.round(BeeUtils.unbox(cost.getDouble(COL_AMOUNT)), 2);
                   }
                   driverCosts.setText(r, index.get(COL_COSTS_ITEM),
-                      Localized.getConstants().total());
+                      Localized.dictionary().total());
                   driverCosts.setText(r, index.get(COL_DRIVER), drivers.get(driver));
                   driverCosts.setText(r, index.get(COL_AMOUNT),
                       BeeUtils.toString(BeeUtils.round(total, 2)));
@@ -189,7 +189,7 @@ public class PrintTripForm extends AbstractFormInterceptor {
                 driverTotal = BeeUtils.round(driverTotal, 2);
                 driverCosts.getRowFormatter().addStyleName(r, "footer");
                 driverCosts.setText(r, index.get(COL_COSTS_ITEM),
-                    BeeUtils.joinWords(Localized.getConstants().totalOf(),
+                    BeeUtils.joinWords(Localized.dictionary().totalOf(),
                         BeeUtils.parenthesize(pack.get(AdministrationConstants.COL_CURRENCY))));
                 driverCosts.setText(r, index.get(COL_AMOUNT), BeeUtils.toString(driverTotal));
               }
@@ -222,7 +222,7 @@ public class PrintTripForm extends AbstractFormInterceptor {
                 }
                 otherTotal = BeeUtils.round(otherTotal, 2);
                 otherCosts.getRowFormatter().addStyleName(r, "footer");
-                otherCosts.setText(r, 0, BeeUtils.joinWords(Localized.getConstants().totalOf(),
+                otherCosts.setText(r, 0, BeeUtils.joinWords(Localized.dictionary().totalOf(),
                     BeeUtils.parenthesize(pack.get(AdministrationConstants.COL_CURRENCY))));
                 otherCosts.setText(r, 1, BeeUtils.toString(otherTotal));
 
@@ -279,7 +279,7 @@ public class PrintTripForm extends AbstractFormInterceptor {
                   total -= amount;
 
                   driverAdvances.setText(r, index.get(COL_COSTS_ITEM),
-                      Localized.getConstants().advance());
+                      Localized.dictionary().advance());
                   driverAdvances.setText(r, index.get(COL_DATE),
                       TimeUtils.dateToString(advance.getDate(COL_DATE)));
                   driverAdvances.setText(r, index.get(COL_AMOUNT), BeeUtils.toString(amount));
@@ -301,7 +301,7 @@ public class PrintTripForm extends AbstractFormInterceptor {
                 }
                 total += daily;
                 driverAdvances.setText(r, index.get(COL_COSTS_ITEM),
-                    Localized.getConstants().trDailyCosts());
+                    Localized.dictionary().trDailyCosts());
                 driverAdvances.setText(r, index.get(COL_AMOUNT),
                     BeeUtils.toString(BeeUtils.round(daily * (-1), 2)));
                 driverAdvances.setText(r, index.get(remainder),
@@ -309,7 +309,7 @@ public class PrintTripForm extends AbstractFormInterceptor {
                 r++;
                 total += other;
                 driverAdvances.setText(r, index.get(COL_COSTS_ITEM),
-                    Localized.getConstants().trOtherCosts());
+                    Localized.dictionary().trOtherCosts());
                 driverAdvances.setText(r, index.get(COL_AMOUNT),
                     BeeUtils.toString(BeeUtils.round(other * (-1), 2)));
                 driverAdvances.setText(r, index.get(remainder),
@@ -317,7 +317,7 @@ public class PrintTripForm extends AbstractFormInterceptor {
                 r++;
                 driverAdvances.getRowFormatter().addStyleName(r, "footer");
                 driverAdvances.setText(r, index.get(COL_COSTS_ITEM),
-                    BeeUtils.joinWords(Localized.getConstants().total(),
+                    BeeUtils.joinWords(Localized.dictionary().total(),
                         BeeUtils.parenthesize(pack.get(AdministrationConstants.COL_CURRENCY))));
                 driverAdvances.setText(r, index.get(remainder),
                     BeeUtils.toString(BeeUtils.round(total, 2)));
@@ -368,7 +368,7 @@ public class PrintTripForm extends AbstractFormInterceptor {
                 }
               };
               if (drivers.size() > 1) {
-                Global.choice(Localized.getConstants().drivers(), null,
+                Global.choice(Localized.dictionary().drivers(), null,
                     new ArrayList<>(drivers.values()), choice);
               } else {
                 choice.onSuccess(0);

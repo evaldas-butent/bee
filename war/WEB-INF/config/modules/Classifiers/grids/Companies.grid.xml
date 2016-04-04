@@ -2,7 +2,7 @@
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
 
   name="Companies" viewName="Companies" caption="=clients" editShowId="true"
-  favorite="Name" flexGrow="1"
+  favorite="Name" flexGrow="1" enabledActions="edit_mode"
   >
   <g:columns>
     <IdColumn name="Id" visible="false" />

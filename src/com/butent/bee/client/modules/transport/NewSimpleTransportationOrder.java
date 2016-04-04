@@ -177,7 +177,7 @@ class NewSimpleTransportationOrder extends AbstractFormInterceptor {
 
     if (!DataUtils.isId(customer)) {
       getFormView().notifySevere(Data.getColumnLabel(VIEW_ORDERS, COL_CUSTOMER),
-          Localized.getConstants().valueRequired());
+          Localized.dictionary().valueRequired());
       return;
     }
 

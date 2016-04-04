@@ -66,16 +66,14 @@ import com.butent.bee.shared.html.builder.Element;
 import com.butent.bee.shared.html.builder.elements.Div;
 import com.butent.bee.shared.html.builder.elements.Tbody;
 import com.butent.bee.shared.html.builder.elements.Td;
-import com.butent.bee.shared.i18n.LocalizableConstants;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
-import com.butent.bee.shared.modules.administration.AdministrationConstants.ReminderMethod;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.projects.ProjectConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
-import com.butent.bee.shared.modules.tasks.TaskConstants.TaskEvent;
-import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
 import com.butent.bee.shared.modules.tasks.TaskUtils;
 import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.news.Headline;
@@ -144,13 +142,37 @@ public class TasksModuleBean implements BeeModule {
   public List<SearchResult> doSearch(String query) {
     List<SearchResult> result = new ArrayList<>();
 
-    List<SearchResult> tasksSr = qs.getSearchResults(VIEW_TASKS,
-        src.buildSearchFilter(VIEW_TASKS, Sets.newHashSet(COL_ID, COL_SUMMARY, COL_DESCRIPTION,
-            ALS_COMPANY_NAME, ALS_EXECUTOR_FIRST_NAME, ALS_EXECUTOR_LAST_NAME), query));
-    result.addAll(tasksSr);
+    if (!usr.isMenuVisible(MENU_TASKS)) {
+      return result;
+    }
 
-    result.addAll(qs.getSearchResults(VIEW_TASK_EVENTS, src.buildSearchFilter(VIEW_TASK_EVENTS,
-        Collections.singleton(COL_COMMENT), query)));
+    Filter queryTaskSearch = src.buildSearchFilter(VIEW_TASKS, Sets.newHashSet(COL_ID, COL_SUMMARY,
+        COL_DESCRIPTION, ALS_COMPANY_NAME, ALS_EXECUTOR_FIRST_NAME, ALS_EXECUTOR_LAST_NAME), query);
+
+    Filter queryTaskEventSearch =
+        src.buildSearchFilter(VIEW_TASK_EVENTS, Collections.singleton(COL_COMMENT), query);
+
+    Long userId = usr.getCurrentUserId();
+
+    Filter taskFilter =
+        Filter.or(Filter.and(queryTaskSearch, Filter.isNull(COL_PRIVATE_TASK)), Filter.and(
+            queryTaskSearch, Filter.notNull(COL_PRIVATE_TASK), Filter.or(Filter.equals(COL_OWNER,
+                userId), Filter.equals(COL_EXECUTOR, userId), Filter.in(COL_TASK_ID,
+                VIEW_TASK_USERS, COL_TASK, Filter
+                    .equals(AdministrationConstants.COL_USER, userId)))));
+
+    result.addAll(qs.getSearchResults(VIEW_TASKS, taskFilter));
+
+    Filter taskEventFilter =
+        Filter.or(Filter.and(queryTaskEventSearch, Filter.in(COL_TASK, VIEW_TASKS, COL_TASK_ID,
+            Filter.isNull(COL_PRIVATE_TASK))), Filter.and(
+            queryTaskEventSearch, Filter.in(COL_TASK, VIEW_TASKS, COL_TASK_ID, Filter.and(Filter
+                .notNull(COL_PRIVATE_TASK), Filter.or(Filter.equals(COL_OWNER,
+                userId), Filter.equals(COL_EXECUTOR, userId), Filter.in(COL_TASK_ID,
+                VIEW_TASK_USERS, COL_TASK, Filter
+                    .equals(AdministrationConstants.COL_USER, userId)))))));
+
+    result.addAll(qs.getSearchResults(VIEW_TASK_EVENTS, taskEventFilter));
 
     List<SearchResult> rtSr = qs.getSearchResults(VIEW_RECURRING_TASKS,
         Filter.anyContains(Sets.newHashSet(COL_SUMMARY, COL_DESCRIPTION, ALS_COMPANY_NAME), query));
@@ -397,7 +419,7 @@ public class TasksModuleBean implements BeeModule {
     HeadlineProducer headlineProducer = new HeadlineProducer() {
       @Override
       public Headline produce(Feed feed, long userId, BeeRowSet rowSet, IsRow row, boolean isNew,
-          LocalizableConstants constants) {
+          Dictionary constants) {
 
         String caption = DataUtils.getString(rowSet, row, COL_SUMMARY);
         if (BeeUtils.isEmpty(caption)) {
@@ -502,13 +524,12 @@ public class TasksModuleBean implements BeeModule {
 
     for (IsRow row : taskEvents) {
       Long id = row.getLong(idxId);
-      String newTime = row.getString(idxEventDuration);
+      Long newTimeMls = TimeUtils.parseTime(row.getString(idxEventDuration));
 
-      if (BeeUtils.isEmpty(newTime)) {
+      if (Objects.isNull(newTimeMls)) {
         continue;
       }
 
-      Long newTimeMls = TimeUtils.parseTime(newTime);
       Long currentTime = times.get(id);
 
       if (currentTime == null) {
@@ -997,6 +1018,7 @@ public class TasksModuleBean implements BeeModule {
       case CANCEL:
       case COMPLETE:
       case APPROVE:
+      case REFRESH:
       case RENEW:
       case ACTIVATE:
       case OUT_OF_OBSERVERS:
@@ -1152,7 +1174,7 @@ public class TasksModuleBean implements BeeModule {
   }
 
   private ResponseObject getCompanyTimesReport(RequestInfo reqInfo) {
-    LocalizableConstants constants = usr.getLocalizableConstants();
+    Dictionary constants = usr.getDictionary();
     boolean hideZeroTimes = false;
 
     SqlSelect companiesListQuery =
@@ -1189,7 +1211,7 @@ public class TasksModuleBean implements BeeModule {
       String compFullName =
           companiesListSet.getValue(i, COL_COMPANY_NAME)
               + (!BeeUtils.isEmpty(companiesListSet.getValue(i, ALS_COMPANY_TYPE))
-                  ? ", " + companiesListSet.getValue(i, ALS_COMPANY_TYPE) : "");
+              ? ", " + companiesListSet.getValue(i, ALS_COMPANY_TYPE) : "");
 
       SqlSelect companyTimesQuery = new SqlSelect()
           .addFields(TBL_EVENT_DURATIONS, COL_DURATION)
@@ -1578,7 +1600,7 @@ public class TasksModuleBean implements BeeModule {
   }
 
   private ResponseObject getTypeHoursReport(RequestInfo reqInfo) {
-    LocalizableConstants constants = usr.getLocalizableConstants();
+    Dictionary constants = usr.getDictionary();
     SqlSelect durationTypes = new SqlSelect()
         .addFrom(TBL_DURATION_TYPES)
         .addFields(TBL_DURATION_TYPES, COL_DURATION_TYPE_NAME)
@@ -1715,7 +1737,7 @@ public class TasksModuleBean implements BeeModule {
   }
 
   private ResponseObject getUsersHoursReport(RequestInfo reqInfo) {
-    LocalizableConstants constants = usr.getLocalizableConstants();
+    Dictionary constants = usr.getDictionary();
     SqlSelect userListQuery =
         new SqlSelect()
             .addFields(TBL_USERS, sys.getIdName(TBL_USERS))
@@ -1759,7 +1781,7 @@ public class TasksModuleBean implements BeeModule {
           (!BeeUtils.isEmpty(usersListSet.getValue(i, COL_FIRST_NAME))
               ? usersListSet.getValue(i, COL_FIRST_NAME) : "") + " "
               + (!BeeUtils.isEmpty(usersListSet.getValue(i, COL_LAST_NAME))
-                  ? usersListSet.getValue(i, COL_LAST_NAME) : "");
+              ? usersListSet.getValue(i, COL_LAST_NAME) : "");
 
       userFullName = BeeUtils.isEmpty(userFullName) ? "—" : userFullName;
 
@@ -1891,7 +1913,7 @@ public class TasksModuleBean implements BeeModule {
       return response;
     }
 
-    LocalizableConstants constants = usr.getLocalizableConstants(executor);
+    Dictionary constants = usr.getDictionary(executor);
     if (constants == null) {
       logger.warning(label, taskId, "executor", executor, "localization not available");
       return response;
@@ -2325,7 +2347,7 @@ public class TasksModuleBean implements BeeModule {
         continue;
       }
 
-      LocalizableConstants constants = usr.getLocalizableConstants(executor);
+      Dictionary constants = usr.getDictionary(executor);
       if (constants == null) {
         logger.warning(label, "task", taskId, "executor", executor, "localization not available");
         continue;
@@ -2577,7 +2599,7 @@ public class TasksModuleBean implements BeeModule {
 
   private Document taskToHtml(long taskId, DateTime startTime, DateTime finishTime,
       String summary, String description, String company, Long owner, Long executor,
-      LocalizableConstants constants) {
+      Dictionary constants) {
 
     String caption = BeeUtils.joinWords(constants.crmTask(), taskId);
 

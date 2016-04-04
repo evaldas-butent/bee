@@ -110,7 +110,7 @@ public final class ChatUtils {
     } else if (diff < TimeUtils.MILLIS_PER_DAY * 2
         && TimeUtils.dayDiff(dt, TimeUtils.today()) == 1) {
 
-      return Localized.getConstants().yesterday() + BeeConst.STRING_SPACE + time;
+      return Localized.dictionary().yesterday() + BeeConst.STRING_SPACE + time;
 
     } else if (diff < TimeUtils.MILLIS_PER_DAY) {
       return format(time, diff / TimeUtils.MILLIS_PER_HOUR, "h");

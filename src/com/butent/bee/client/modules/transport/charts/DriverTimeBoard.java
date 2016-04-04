@@ -197,7 +197,7 @@ final class DriverTimeBoard extends ChartBase {
 
   @Override
   public String getCaption() {
-    return Localized.getConstants().driverTimeBoard();
+    return Localized.dictionary().driverTimeBoard();
   }
 
   @Override

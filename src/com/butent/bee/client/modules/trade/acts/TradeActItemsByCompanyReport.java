@@ -210,7 +210,7 @@ public class TradeActItemsByCompanyReport extends ReportInterceptor {
           sheet.autoSizeAll();
 
         } else {
-          getFormView().notifyWarning(Localized.getConstants().nothingFound());
+          getFormView().notifyWarning(Localized.dictionary().nothingFound());
         }
       }
     });
@@ -405,7 +405,7 @@ public class TradeActItemsByCompanyReport extends ReportInterceptor {
 
       Integer first = indexes.get(0);
       if (BeeUtils.isPositive(first)) {
-        text = Localized.getConstants().totalOf();
+        text = Localized.dictionary().totalOf();
 
         table.setText(r, first - 1, text);
 

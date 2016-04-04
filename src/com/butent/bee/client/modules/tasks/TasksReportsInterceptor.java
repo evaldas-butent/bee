@@ -233,7 +233,7 @@ public class TasksReportsInterceptor extends AbstractFormInterceptor {
           HtmlTable g = new HtmlTable();
 
           if (gridRows < MIN_ROW_SET) {
-            g.setHtml(0, 0, Localized.getConstants().noData());
+            g.setHtml(0, 0, Localized.dictionary().noData());
             reportPanel.add(g);
             return;
           }
@@ -342,16 +342,16 @@ public class TasksReportsInterceptor extends AbstractFormInterceptor {
 
     switch (reportType) {
       case TYPE_HOURS:
-        reportCaption = Localized.getConstants().hoursByTypes();
+        reportCaption = Localized.dictionary().hoursByTypes();
         break;
       case COMPANY_TIMES:
-        reportCaption = Localized.getConstants().hoursByCompanies();
+        reportCaption = Localized.dictionary().hoursByCompanies();
         break;
       case USERS_HOURS:
-        reportCaption = Localized.getConstants().hoursByUsers();
+        reportCaption = Localized.dictionary().hoursByUsers();
         break;
       default:
-        reportCaption = Localized.getConstants().hoursByTypes();
+        reportCaption = Localized.dictionary().hoursByTypes();
         break;
     }
 

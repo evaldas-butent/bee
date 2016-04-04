@@ -89,6 +89,11 @@ public class LogbackLogger implements BeeLogger {
   }
 
   @Override
+  public String getName() {
+    return logger.getName();
+  }
+
+  @Override
   public void info(Object... messages) {
     if (isInfoEnabled()) {
       logInternal(LocationAwareLogger.INFO_INT, null, messages);

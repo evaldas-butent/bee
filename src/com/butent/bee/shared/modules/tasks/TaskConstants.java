@@ -3,7 +3,7 @@ package com.butent.bee.shared.modules.tasks;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.font.FontAwesome;
-import com.butent.bee.shared.i18n.LocalizableConstants;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.ui.HasLocalizedCaption;
@@ -12,31 +12,31 @@ import com.butent.bee.shared.utils.EnumUtils;
 public final class TaskConstants {
 
   public enum TaskEvent implements HasCaption {
-    CREATE(Localized.getConstants().crmTaskEventCreated(), Localized.getConstants().crmNewTask(),
+    CREATE(Localized.dictionary().crmTaskEventCreated(), Localized.dictionary().crmNewTask(),
         FontAwesome.CODE_FORK),
-    VISIT(Localized.getConstants().crmTaskEventVisited(), null, null),
-    ACTIVATE(Localized.getConstants().crmTaskForwardedForExecution(),
-        Localized.getConstants().crmTaskForwardForExecution(), FontAwesome.ARROW_CIRCLE_RIGHT),
-    COMMENT(Localized.getConstants().crmTaskComment(), Localized.getConstants().crmActionComment(),
+    VISIT(Localized.dictionary().crmTaskEventVisited(), null, null),
+    ACTIVATE(Localized.dictionary().crmTaskForwardedForExecution(),
+        Localized.dictionary().crmTaskForwardForExecution(), FontAwesome.ARROW_CIRCLE_RIGHT),
+    COMMENT(Localized.dictionary().crmTaskComment(), Localized.dictionary().crmActionComment(),
         FontAwesome.COMMENT_O),
-    EXTEND(Localized.getConstants().crmTaskEventExtended(),
-        Localized.getConstants().crmTaskChangeTerm(), FontAwesome.CLOCK_O),
-    SUSPEND(Localized.getConstants().crmTaskStatusSuspended(),
-        Localized.getConstants().crmActionSuspend(), FontAwesome.MINUS_CIRCLE),
-    RENEW(Localized.getConstants().crmTaskEventRenewed(),
-        Localized.getConstants().crmTaskReturnExecution(), FontAwesome.ARROW_CIRCLE_RIGHT),
-    FORWARD(Localized.getConstants().crmTaskEventForwarded(),
-        Localized.getConstants().crmActionForward(), FontAwesome.ARROW_CIRCLE_O_RIGHT),
-    CANCEL(Localized.getConstants().crmTaskStatusCanceled(),
-        Localized.getConstants().crmTaskCancel(), FontAwesome.BAN),
-    COMPLETE(Localized.getConstants().crmTaskStatusCompleted(),
-        Localized.getConstants().crmActionFinish(), FontAwesome.CHECK_CIRCLE_O),
-    APPROVE(Localized.getConstants().crmTaskEventApproved(),
-        Localized.getConstants().crmTaskConfirm(), FontAwesome.CHECK_SQUARE_O),
-    EDIT(Localized.getConstants().crmTaskEventEdited(), null, null),
-    OUT_OF_OBSERVERS(Localized.getConstants().crmTaskOutOfObservers(),
-        Localized.getConstants().crmTaskOutOfObservers(), FontAwesome.USER_TIMES),
-    REFRESH(Localized.getConstants().actionRefresh(), Localized.getConstants().actionRefresh(),
+    EXTEND(Localized.dictionary().crmTaskEventExtended(),
+        Localized.dictionary().crmTaskChangeTerm(), FontAwesome.CLOCK_O),
+    SUSPEND(Localized.dictionary().crmTaskStatusSuspended(),
+        Localized.dictionary().crmActionSuspend(), FontAwesome.MINUS_CIRCLE),
+    RENEW(Localized.dictionary().crmTaskEventRenewed(),
+        Localized.dictionary().crmTaskReturnExecution(), FontAwesome.ARROW_CIRCLE_RIGHT),
+    FORWARD(Localized.dictionary().crmTaskEventForwarded(),
+        Localized.dictionary().crmActionForward(), FontAwesome.ARROW_CIRCLE_O_RIGHT),
+    CANCEL(Localized.dictionary().crmTaskStatusCanceled(),
+        Localized.dictionary().crmTaskCancel(), FontAwesome.BAN),
+    COMPLETE(Localized.dictionary().crmTaskStatusCompleted(),
+        Localized.dictionary().crmActionFinish(), FontAwesome.CHECK_CIRCLE_O),
+    APPROVE(Localized.dictionary().crmTaskEventApproved(),
+        Localized.dictionary().crmTaskConfirm(), FontAwesome.CHECK_SQUARE_O),
+    EDIT(Localized.dictionary().crmTaskEventEdited(), null, null),
+    OUT_OF_OBSERVERS(Localized.dictionary().crmTaskOutOfObservers(),
+        Localized.dictionary().crmTaskOutOfObservers(), FontAwesome.USER_TIMES),
+    REFRESH(Localized.dictionary().actionRefresh(), Localized.dictionary().actionRefresh(),
         FontAwesome.REFRESH);
 
     private final String caption;
@@ -64,9 +64,9 @@ public final class TaskConstants {
   }
 
   public enum TaskPriority implements HasCaption {
-    LOW(Localized.getConstants().crmTaskPriorityLow()),
-    MEDIUM(Localized.getConstants().crmTaskPriorityMedium()),
-    HIGH(Localized.getConstants().crmTaskPriorityHigh());
+    LOW(Localized.dictionary().crmTaskPriorityLow()),
+    MEDIUM(Localized.dictionary().crmTaskPriorityMedium()),
+    HIGH(Localized.dictionary().crmTaskPriorityHigh());
 
     private final String caption;
 
@@ -83,43 +83,43 @@ public final class TaskConstants {
   public enum TaskStatus implements HasLocalizedCaption {
     NOT_VISITED {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.crmTaskStatusNotVisited();
       }
     },
     ACTIVE {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.crmTaskStatusActive();
       }
     },
     SCHEDULED {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.crmTaskStatusScheduled();
       }
     },
     SUSPENDED {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.crmTaskStatusSuspended();
       }
     },
     COMPLETED {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.crmTaskStatusCompleted();
       }
     },
     APPROVED {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.crmTaskStatusApproved();
       }
     },
     CANCELED {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.crmTaskStatusCanceled();
       }
     };
@@ -139,8 +139,8 @@ public final class TaskConstants {
   }
 
   public enum ToDoVisibility implements HasCaption {
-    PUBLIC(Localized.getConstants().calPublic()),
-    PRIVATE(Localized.getConstants().calPrivate());
+    PUBLIC(Localized.dictionary().calPublic()),
+    PRIVATE(Localized.dictionary().calPrivate());
 
     private final String caption;
 
@@ -283,6 +283,7 @@ public final class TaskConstants {
   public static final String COL_DESCRIPTION = "Description";
   public static final String COL_CAPTION = "Caption";
   public static final String COL_TASK_COMPANY = "Company";
+  public static final String COL_PRIVATE_TASK = "PrivateTask";
 
   public static final String COL_PARENT = "Parent";
   public static final String COL_ORDER = "Order";
@@ -399,6 +400,8 @@ public final class TaskConstants {
   public static final String ALS_REMINDER_NAME = "ReminderName";
 
   public static final String ALS_LAST_SPAWN = "LastSpawn";
+
+  public static final String MENU_TASKS = "Tasks";
 
   public static final String PROP_EXECUTORS = "Executors";
   public static final String PROP_EXECUTOR_GROUPS = "ExecutorGroups";

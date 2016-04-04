@@ -168,11 +168,11 @@ public class DateTimeFilterSupplier extends AbstractFilterSupplier {
         return null;
 
       } else if (start == null) {
-        return BeeUtils.joinWords(Localized.getConstants().dateToShort().toLowerCase(),
+        return BeeUtils.joinWords(Localized.dictionary().dateToShort().toLowerCase(),
             end.toCompactString());
 
       } else if (end == null) {
-        return BeeUtils.joinWords(Localized.getConstants().dateFromShort().toLowerCase(),
+        return BeeUtils.joinWords(Localized.dictionary().dateFromShort().toLowerCase(),
             start.toCompactString());
 
       } else {
@@ -264,7 +264,7 @@ public class DateTimeFilterSupplier extends AbstractFilterSupplier {
     DateTime end = getInputEndValue(start);
 
     if (start != null && end != null && TimeUtils.isMeq(start, end)) {
-      List<String> messages = Lists.newArrayList(Localized.getConstants().invalidRange(),
+      List<String> messages = Lists.newArrayList(Localized.dictionary().invalidRange(),
           start.toString(), end.toString());
       Global.showError(messages);
       return;
@@ -306,7 +306,7 @@ public class DateTimeFilterSupplier extends AbstractFilterSupplier {
 
     HtmlTable display = createDisplay(false);
 
-    Label labelFrom = new Label(Localized.getConstants().dateFromShort());
+    Label labelFrom = new Label(Localized.dictionary().dateFromShort());
     display.setWidgetAndStyle(START_ROW, LABEL_COL, labelFrom, STYLE_LABEL);
 
     InputDate dateFrom = new InputDate();
@@ -321,7 +321,7 @@ public class DateTimeFilterSupplier extends AbstractFilterSupplier {
       SimpleEditorHandler.observe(null, timeFrom);
     }
 
-    Label labelTo = new Label(Localized.getConstants().dateToShort());
+    Label labelTo = new Label(Localized.dictionary().dateToShort());
     display.setWidgetAndStyle(END_ROW, LABEL_COL, labelTo, STYLE_LABEL);
 
     InputDate dateTo = new InputDate();

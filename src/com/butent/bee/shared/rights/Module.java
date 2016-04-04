@@ -1,7 +1,7 @@
 package com.butent.bee.shared.rights;
 
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.i18n.LocalizableConstants;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.ui.HasLocalizedCaption;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -12,7 +12,7 @@ public enum Module implements HasLocalizedCaption {
 
   CLASSIFIERS(SubModule.CONTACTS) {
     @Override
-    public String getCaption(LocalizableConstants constants) {
+    public String getCaption(Dictionary constants) {
       return constants.references();
     }
 
@@ -24,7 +24,7 @@ public enum Module implements HasLocalizedCaption {
 
   CALENDAR {
     @Override
-    public String getCaption(LocalizableConstants constants) {
+    public String getCaption(Dictionary constants) {
       return constants.calendar();
     }
 
@@ -36,7 +36,7 @@ public enum Module implements HasLocalizedCaption {
 
   DOCUMENTS(SubModule.TEMPLATES) {
     @Override
-    public String getCaption(LocalizableConstants constants) {
+    public String getCaption(Dictionary constants) {
       return constants.documents();
     }
 
@@ -48,7 +48,7 @@ public enum Module implements HasLocalizedCaption {
 
   TASKS {
     @Override
-    public String getCaption(LocalizableConstants constants) {
+    public String getCaption(Dictionary constants) {
       return constants.crmTasks();
     }
 
@@ -60,7 +60,7 @@ public enum Module implements HasLocalizedCaption {
 
   PROJECTS {
     @Override
-    public String getCaption(LocalizableConstants constants) {
+    public String getCaption(Dictionary constants) {
       return constants.projects();
     }
 
@@ -72,7 +72,7 @@ public enum Module implements HasLocalizedCaption {
 
   DISCUSSIONS {
     @Override
-    public String getCaption(LocalizableConstants constants) {
+    public String getCaption(Dictionary constants) {
       return constants.discussions();
     }
 
@@ -84,7 +84,7 @@ public enum Module implements HasLocalizedCaption {
 
   MAIL(SubModule.ADMINISTRATION) {
     @Override
-    public String getCaption(LocalizableConstants constants) {
+    public String getCaption(Dictionary constants) {
       return constants.mail();
     }
 
@@ -96,7 +96,7 @@ public enum Module implements HasLocalizedCaption {
 
   ECOMMERCE(SubModule.ADMINISTRATION, SubModule.CLASSIFIERS) {
     @Override
-    public String getCaption(LocalizableConstants constants) {
+    public String getCaption(Dictionary constants) {
       return constants.ecModule();
     }
 
@@ -113,7 +113,7 @@ public enum Module implements HasLocalizedCaption {
 
   TRADE(SubModule.ACTS) {
     @Override
-    public String getCaption(LocalizableConstants constants) {
+    public String getCaption(Dictionary constants) {
       return constants.trade();
     }
 
@@ -125,7 +125,7 @@ public enum Module implements HasLocalizedCaption {
 
   TRANSPORT(SubModule.SELFSERVICE, SubModule.LOGISTICS, SubModule.ADMINISTRATION) {
     @Override
-    public String getCaption(LocalizableConstants constants) {
+    public String getCaption(Dictionary constants) {
       return constants.transport();
     }
 
@@ -137,7 +137,7 @@ public enum Module implements HasLocalizedCaption {
 
   SERVICE {
     @Override
-    public String getCaption(LocalizableConstants constants) {
+    public String getCaption(Dictionary constants) {
       return constants.svcModule();
     }
 
@@ -149,7 +149,7 @@ public enum Module implements HasLocalizedCaption {
 
   ORDERS {
     @Override
-    public String getCaption(LocalizableConstants constants) {
+    public String getCaption(Dictionary constants) {
       return constants.orders();
     }
 
@@ -161,7 +161,7 @@ public enum Module implements HasLocalizedCaption {
 
   PAYROLL {
     @Override
-    public String getCaption(LocalizableConstants constants) {
+    public String getCaption(Dictionary constants) {
       return constants.payroll();
     }
 
@@ -173,7 +173,7 @@ public enum Module implements HasLocalizedCaption {
 
   ADMINISTRATION {
     @Override
-    public String getCaption(LocalizableConstants constants) {
+    public String getCaption(Dictionary constants) {
       return constants.administration();
     }
 

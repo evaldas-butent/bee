@@ -88,9 +88,9 @@ class SelectorHandler implements SelectorEvent.Handler {
       options.add(BeeUtils.joinWords(row.getString(numberIndex),
           row.getString(parentModelIndex), row.getString(modelIndex)));
     }
-    options.add(Localized.getConstants().actionNew1());
+    options.add(Localized.dictionary().actionNew1());
 
-    Global.choice(Localized.getConstants().calSelectVehicle(), companyName, options,
+    Global.choice(Localized.dictionary().calSelectVehicle(), companyName, options,
         new ChoiceCallback() {
           @Override
           public void onSuccess(int value) {
@@ -116,7 +116,7 @@ class SelectorHandler implements SelectorEvent.Handler {
     }
 
     RowFactory.createRow(TransportConstants.FORM_NEW_VEHICLE,
-        Localized.getConstants().trNewVehicle(), vehiclesInfo, row, Modality.ENABLED,
+        Localized.dictionary().trNewVehicle(), vehiclesInfo, row, Modality.ENABLED,
         new RowCallback() {
           @Override
           public void onSuccess(BeeRow result) {

@@ -116,7 +116,7 @@ public class ShipmentRequestsWorker {
         }
       }
       if (Objects.isNull(el)) {
-        el = div().text(Localized.getConstants().crmTaskConfirm());
+        el = div().text(Localized.dictionary().crmTaskConfirm());
 
         for (ShipmentRequestStatus s : Arrays.asList(ShipmentRequestStatus.APPROVED,
             ShipmentRequestStatus.REJECTED)) {
@@ -129,9 +129,9 @@ public class ShipmentRequestsWorker {
         }
       }
     } else {
-      el = div().text(BeeUtils.join(":", Localized.getConstants().status(),
+      el = div().text(BeeUtils.join(":", Localized.dictionary().status(),
           EnumUtils.getLocalizedCaption(ShipmentRequestStatus.class, currentStatus,
-              Localized.getConstants())));
+              Localized.dictionary())));
     }
     Document doc = new Document();
     doc.getHead().append(meta().encodingDeclarationUtf8());
@@ -146,7 +146,7 @@ public class ShipmentRequestsWorker {
   @Trusted(secret = "B-NOVO Shipment Request")
   public RestResponse request(JsonObject data) {
     if (!usr.validateHost(CrudWorker.getValue(data, COL_QUERY_HOST))) {
-      return RestResponse.error(Localized.getConstants().ipBlocked());
+      return RestResponse.error(Localized.dictionary().ipBlocked());
     }
     LogUtils.getRootLogger().debug(data);
 
@@ -200,7 +200,7 @@ public class ShipmentRequestsWorker {
         (event, locality) -> Endpoint.sendToAll(new ModificationMessage(event)),
         VIEW_SHIPMENT_REQUESTS);
 
-    return RestResponse.ok(Localized.getConstants().ok());
+    return RestResponse.ok(Localized.dictionary().ok());
   }
 
   private BeeRowSet buildRowSet(BeeView view, JsonObject json) throws BeeException {

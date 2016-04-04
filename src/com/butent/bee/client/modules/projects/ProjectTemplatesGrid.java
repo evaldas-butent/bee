@@ -50,7 +50,7 @@ public class ProjectTemplatesGrid extends AbstractGridInterceptor {
     if (BeeKeeper.getUser().canCreateData(ProjectConstants.VIEW_PROJECTS)
         && !presenter.getGridView().isChild()) {
       FaLabel createProject = new FaLabel(FontAwesome.ROCKET);
-      createProject.setTitle(Localized.getConstants().prjCreateFromTasks());
+      createProject.setTitle(Localized.dictionary().prjCreateFromTasks());
       createProject.addClickHandler(new ClickHandler() {
 
         @Override
@@ -76,7 +76,7 @@ public class ProjectTemplatesGrid extends AbstractGridInterceptor {
     final IsRow selectedRow = gridView.getActiveRow();
 
     if (selectedRow == null) {
-      gridView.notifyWarning(Localized.getConstants().selectAtLeastOneRow());
+      gridView.notifyWarning(Localized.dictionary().selectAtLeastOneRow());
       return;
     }
 

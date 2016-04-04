@@ -28,7 +28,7 @@ import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.event.FiresModificationEvents;
 import com.butent.bee.shared.data.event.ModificationEvent;
 import com.butent.bee.shared.data.filter.Filter;
-import com.butent.bee.shared.i18n.LocalizableConstants;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.news.Channel;
@@ -97,7 +97,7 @@ public class NewsBean {
     String s = BeeUtils.sameElements(feeds, Feed.ALL) ? BeeConst.ALL : feeds.toString();
     logger.info("user", userId, "feeds", s);
 
-    LocalizableConstants constants = usr.getLocalizableConstants(userId);
+    Dictionary constants = usr.getDictionary(userId);
 
     List<Subscription> subscriptions = new ArrayList<>();
     int countHeadlines = 0;
@@ -346,7 +346,7 @@ public class NewsBean {
   }
 
   private List<Headline> getHeadlines(Feed feed, long userId, DateTime startDate,
-      LocalizableConstants constants) {
+      Dictionary constants) {
 
     List<Headline> result = new ArrayList<>();
 
@@ -449,7 +449,7 @@ public class NewsBean {
   }
 
   private List<Headline> produceHeadlines(Feed feed, long userId, Collection<Long> newIds,
-      Collection<Long> updIds, LocalizableConstants constants) {
+      Collection<Long> updIds, Dictionary constants) {
 
     List<Headline> headlines = new ArrayList<>();
 

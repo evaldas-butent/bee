@@ -189,7 +189,7 @@ class EcOrderForm extends AbstractFormInterceptor {
 
   private void finishOrder() {
     List<String> messages =
-        Collections.singletonList(Localized.getConstants().ecOrderFinishConfirm());
+        Collections.singletonList(Localized.dictionary().ecOrderFinishConfirm());
 
     Global.confirm(null, Icon.QUESTION, messages, new ConfirmationCallback() {
       @Override
@@ -213,7 +213,7 @@ class EcOrderForm extends AbstractFormInterceptor {
       @Override
       public void onSuccess(BeeRowSet result) {
         if (DataUtils.isEmpty(result)) {
-          Global.showInfo(Localized.getConstants().ecUnsuppliedItemsNotFound());
+          Global.showInfo(Localized.dictionary().ecUnsuppliedItemsNotFound());
         } else {
           showUnsuppliedItems(result);
         }
@@ -228,7 +228,7 @@ class EcOrderForm extends AbstractFormInterceptor {
         row.getString(getDataIndex(ALS_ORDER_CLIENT_COMPANY_NAME)));
 
     List<String> messages =
-        Collections.singletonList(Localized.getConstants().ecOrderMailConfirm());
+        Collections.singletonList(Localized.dictionary().ecOrderMailConfirm());
 
     Global.confirm(caption, Icon.QUESTION, messages, new ConfirmationCallback() {
       @Override
@@ -270,7 +270,7 @@ class EcOrderForm extends AbstractFormInterceptor {
     int row = 0;
 
     String styleName = stylePrefix + "reason";
-    Label label = new Label(Localized.getConstants().ecRejectionReason());
+    Label label = new Label(Localized.dictionary().ecRejectionReason());
     label.addStyleName(StyleUtils.NAME_REQUIRED);
     table.setWidgetAndStyle(row, 0, label, styleName + STYLE_SUFFIX_LABEL);
 
@@ -280,7 +280,7 @@ class EcOrderForm extends AbstractFormInterceptor {
     row++;
 
     styleName = stylePrefix + "comment";
-    label = new Label(Localized.getConstants().comment());
+    label = new Label(Localized.dictionary().comment());
     table.setWidgetAndStyle(row, 0, label, styleName + STYLE_SUFFIX_LABEL);
 
     final InputArea inputArea = new InputArea();
@@ -297,13 +297,13 @@ class EcOrderForm extends AbstractFormInterceptor {
     row++;
 
     int col = 0;
-    Button confirm = new Button(Localized.getConstants().ecOrderRejectConfirm());
+    Button confirm = new Button(Localized.dictionary().ecOrderRejectConfirm());
     table.setWidgetAndStyle(row, col, confirm, stylePrefix + "confirm");
 
     table.getCellFormatter().setHorizontalAlignment(row, col, TextAlign.CENTER);
     table.getCellFormatter().setColSpan(row, col, 2);
 
-    final DialogBox dialog = DialogBox.create(Localized.getConstants().ecOrderRejectCaption(),
+    final DialogBox dialog = DialogBox.create(Localized.dictionary().ecOrderRejectCaption(),
         stylePrefix + "dialog");
     dialog.setWidget(table);
 
@@ -322,7 +322,7 @@ class EcOrderForm extends AbstractFormInterceptor {
           dialog.close();
           updateStatus(EcOrderStatus.REJECTED, rrId, inputArea.getValue(), true);
         } else {
-          getFormView().notifySevere(Localized.getConstants().ecRejectionReasonRequired());
+          getFormView().notifySevere(Localized.dictionary().ecRejectionReasonRequired());
           selector.setFocus(true);
         }
       }
@@ -331,7 +331,7 @@ class EcOrderForm extends AbstractFormInterceptor {
 
   private void sendToErp() {
     List<String> messages =
-        Collections.singletonList(Localized.getConstants().ecOrderSendToERPConfirm());
+        Collections.singletonList(Localized.dictionary().ecOrderSendToERPConfirm());
 
     Global.confirm(null, Icon.QUESTION, messages, new ConfirmationCallback() {
       @Override
@@ -426,22 +426,22 @@ class EcOrderForm extends AbstractFormInterceptor {
     });
     table.setWidgetAndStyle(row, col++, selectAll, STYLE_UNSUPPLIED + "selectAll");
 
-    Label dateLabel = new Label(Localized.getConstants().ecOrderDate());
+    Label dateLabel = new Label(Localized.dictionary().ecOrderDate());
     table.setWidgetAndStyle(row, col++, dateLabel, STYLE_UNSUPPLIED_DATE + STYLE_SUFFIX_LABEL);
 
-    Label nameLabel = new Label(Localized.getConstants().ecItemName());
+    Label nameLabel = new Label(Localized.dictionary().ecItemName());
     table.setWidgetAndStyle(row, col++, nameLabel, STYLE_UNSUPPLIED_NAME + STYLE_SUFFIX_LABEL);
 
-    Label brandLabel = new Label(Localized.getConstants().ecItemBrand());
+    Label brandLabel = new Label(Localized.dictionary().ecItemBrand());
     table.setWidgetAndStyle(row, col++, brandLabel, STYLE_UNSUPPLIED_BRAND + STYLE_SUFFIX_LABEL);
 
-    Label codeLabel = new Label(Localized.getConstants().ecItemCode());
+    Label codeLabel = new Label(Localized.dictionary().ecItemCode());
     table.setWidgetAndStyle(row, col++, codeLabel, STYLE_UNSUPPLIED_CODE + STYLE_SUFFIX_LABEL);
 
-    Label qtyLabel = new Label(Localized.getConstants().ecItemQuantity());
+    Label qtyLabel = new Label(Localized.dictionary().ecItemQuantity());
     table.setWidgetAndStyle(row, col++, qtyLabel, STYLE_UNSUPPLIED_QUANTITY + STYLE_SUFFIX_LABEL);
 
-    Label priceLabel = new Label(Localized.getConstants().ecItemPrice());
+    Label priceLabel = new Label(Localized.dictionary().ecItemPrice());
     table.setWidgetAndStyle(row, col++, priceLabel, STYLE_UNSUPPLIED_PRICE + STYLE_SUFFIX_LABEL);
 
     table.getRowFormatter().addStyleName(row, STYLE_UNSUPPLIED + "header");
@@ -499,11 +499,11 @@ class EcOrderForm extends AbstractFormInterceptor {
 
     container.add(wrapper);
 
-    Button append = new Button(Localized.getConstants().ecUnsuppliedItemsAppend());
+    Button append = new Button(Localized.dictionary().ecUnsuppliedItemsAppend());
     append.addStyleName(STYLE_UNSUPPLIED + "append");
     container.add(append);
 
-    final DialogBox dialog = DialogBox.create(Localized.getConstants().ecUnsuppliedItems(),
+    final DialogBox dialog = DialogBox.create(Localized.dictionary().ecUnsuppliedItems(),
         STYLE_UNSUPPLIED + "dialog");
     dialog.setWidget(container);
 
@@ -516,7 +516,7 @@ class EcOrderForm extends AbstractFormInterceptor {
       @Override
       public void onClick(ClickEvent event) {
         if (selectedIds.isEmpty()) {
-          Global.showInfo(Localized.getConstants().selectAtLeastOneRow());
+          Global.showInfo(Localized.dictionary().selectAtLeastOneRow());
         } else {
           appendUnsuppliedItems(rowSet, selectedIds);
           dialog.close();
@@ -539,7 +539,7 @@ class EcOrderForm extends AbstractFormInterceptor {
 
     if (status == EcOrderStatus.NEW) {
       if (this.unsupplied == null) {
-        this.unsupplied = new Button(Localized.getConstants().ecOrderCommandUnsuppliedItems(),
+        this.unsupplied = new Button(Localized.dictionary().ecOrderCommandUnsuppliedItems(),
             new ClickHandler() {
               @Override
               public void onClick(ClickEvent event) {
@@ -552,7 +552,7 @@ class EcOrderForm extends AbstractFormInterceptor {
     }
 
     if (this.mail == null) {
-      this.mail = new Button(Localized.getConstants().ecOrderCommandMail(),
+      this.mail = new Button(Localized.dictionary().ecOrderCommandMail(),
           new ClickHandler() {
             @Override
             public void onClick(ClickEvent event) {
@@ -565,7 +565,7 @@ class EcOrderForm extends AbstractFormInterceptor {
 
     if (status == EcOrderStatus.NEW) {
       if (this.erp == null) {
-        this.erp = new Button(Localized.getConstants().ecOrderCommandSendToERP(),
+        this.erp = new Button(Localized.dictionary().ecOrderCommandSendToERP(),
             new ClickHandler() {
               @Override
               public void onClick(ClickEvent event) {
@@ -577,7 +577,7 @@ class EcOrderForm extends AbstractFormInterceptor {
       header.addCommandItem(this.erp);
 
       if (this.reject == null) {
-        this.reject = new Button(Localized.getConstants().ecOrderCommandReject(),
+        this.reject = new Button(Localized.dictionary().ecOrderCommandReject(),
             new ClickHandler() {
               @Override
               public void onClick(ClickEvent event) {
@@ -591,7 +591,7 @@ class EcOrderForm extends AbstractFormInterceptor {
 
     if (status == EcOrderStatus.ACTIVE) {
       if (this.finish == null) {
-        this.finish = new Button(Localized.getConstants().ecOrderCommandFinish(),
+        this.finish = new Button(Localized.dictionary().ecOrderCommandFinish(),
             new ClickHandler() {
               @Override
               public void onClick(ClickEvent event) {

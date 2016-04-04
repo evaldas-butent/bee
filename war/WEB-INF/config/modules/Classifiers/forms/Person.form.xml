@@ -55,6 +55,15 @@
               <DataSelector style="width: 220px" source="EmailId"
                 maxLength="50" />
             </row>
+            <row>
+              <Label text="=mailRecipientsGroups" style="&lbl;" />
+              <cell colSpan="6">
+                <ChildSelector viewName="RecipientsGroups" childTable="RcpsGroupsContacts"
+                  targetRelColumn="Person" sourceRelColumn="RecipientsGroup" renderColumns="GroupName"
+                  choiceColumns="GroupName" label="=mailRecipientsGroups" style="width: 100%;" summarize="true"
+                  filter="Creator {u} or Visibility = 0" />
+              </cell>
+            </row>
             <row for="Address">
               <Label text="=address" style="&lbl;" />
               <cell colSpan="6">

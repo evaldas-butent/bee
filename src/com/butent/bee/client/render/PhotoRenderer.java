@@ -9,9 +9,6 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.export.XCell;
-import com.butent.bee.shared.export.XPicture;
-import com.butent.bee.shared.export.XSheet;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.HashMap;
@@ -49,27 +46,6 @@ public class PhotoRenderer extends AbstractCellRenderer {
 
   public PhotoRenderer(CellSource cellSource) {
     super(cellSource);
-  }
-
-  @Override
-  public XCell export(IsRow row, int cellIndex, Integer styleRef, XSheet sheet) {
-    String src = getSrc(row);
-    if (BeeUtils.isEmpty(src) || sheet == null) {
-      return null;
-    }
-
-    XPicture picture = XPicture.create(src);
-
-    if (picture == null) {
-      return null;
-
-    } else {
-      int ref = sheet.registerPicture(picture);
-      XCell cell = XCell.forPicture(cellIndex, ref);
-      cell.setPictureLayout(XPicture.Layout.RESIZE);
-
-      return cell;
-    }
   }
 
   @Override

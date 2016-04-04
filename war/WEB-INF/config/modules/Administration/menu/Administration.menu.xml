@@ -37,4 +37,7 @@ name="Administration" label="=administration" order="1000" module="Administratio
 
   <Item name="GridSettings" label="=gridSettings" service="grid" parameters="GridSettings"
     separator="true" />
+
+  <Item name="Dictionary" label="=dictionary" service="grid" parameters="Dictionary"
+    separator="true" />
 </Entry>

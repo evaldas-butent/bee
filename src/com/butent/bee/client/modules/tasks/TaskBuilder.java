@@ -306,7 +306,7 @@ class TaskBuilder extends AbstractFormInterceptor {
 
     DateTime start = getStart();
     if (start == null) {
-      event.getCallback().onFailure(Localized.getConstants().crmEnterStartDate());
+      event.getCallback().onFailure(Localized.dictionary().crmEnterStartDate());
       return;
     }
 
@@ -328,12 +328,12 @@ class TaskBuilder extends AbstractFormInterceptor {
 
     DateTime end = getEnd(start, Data.getString(VIEW_TASKS, activeRow, COL_EXPECTED_DURATION));
     if (end == null) {
-      event.getCallback().onFailure(Localized.getConstants().crmEnterFinishDateOrEstimatedTime());
+      event.getCallback().onFailure(Localized.dictionary().crmEnterFinishDateOrEstimatedTime());
       return;
     }
 
     if (TimeUtils.isLeq(end, start)) {
-      event.getCallback().onFailure(Localized.getConstants().crmFinishTimeMustBeGreaterThanStart());
+      event.getCallback().onFailure(Localized.dictionary().crmFinishTimeMustBeGreaterThanStart());
       return;
     }
 
@@ -342,25 +342,25 @@ class TaskBuilder extends AbstractFormInterceptor {
       DateTime now = TimeUtils.nowMinutes();
       if (TimeUtils.isLess(reminderTime, now)) {
         event.getCallback().onFailure(BeeUtils.joinWords(
-            Localized.getConstants().crmReminderTimeMustBeGreaterThan(), now));
+            Localized.dictionary().crmReminderTimeMustBeGreaterThan(), now));
         return;
       }
 
       if (TimeUtils.isMeq(reminderTime, end)) {
         event.getCallback().onFailure(BeeUtils.joinWords(
-            Localized.getConstants().crmReminderTimeMustBeLessThan(), end));
+            Localized.dictionary().crmReminderTimeMustBeLessThan(), end));
         return;
       }
     }
 
     if (Data.isNull(VIEW_TASKS, activeRow, COL_SUMMARY)) {
-      event.getCallback().onFailure(Localized.getConstants().crmEnterSubject());
+      event.getCallback().onFailure(Localized.dictionary().crmEnterSubject());
       return;
     }
 
     if (BeeUtils.allEmpty(activeRow.getProperty(PROP_EXECUTORS),
         activeRow.getProperty(PROP_EXECUTOR_GROUPS))) {
-      event.getCallback().onFailure(Localized.getConstants().crmSelectExecutor());
+      event.getCallback().onFailure(Localized.dictionary().crmSelectExecutor());
       return;
     }
 
@@ -424,7 +424,7 @@ class TaskBuilder extends AbstractFormInterceptor {
             event.getCallback().onSuccess(row);
           }
 
-          String message = Localized.getMessages().crmCreatedNewTasks(tasks.getNumberOfRows());
+          String message = Localized.dictionary().crmCreatedNewTasks(tasks.getNumberOfRows());
           BeeKeeper.getScreen().notifyInfo(message);
 
           if (!taskIdsCallback) {

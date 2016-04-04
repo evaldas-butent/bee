@@ -183,7 +183,7 @@ public class TecDocBean implements HasTimerService {
         .addFrom(TBL_TCD_BRANDS)
         .setWhere(SqlUtils.sqlFalse()));
 
-    boolean isDebugEnabled = qs.debugOff();
+    boolean isDebugEnabled = QueryServiceBean.debugOff();
 
     SqlInsert insert = new SqlInsert(tmp)
         .addFields(COL_TCD_ARTICLE, COL_TCD_BRAND, COL_TCD_ARTICLE_NR, COL_TCD_BRAND_NAME);
@@ -202,7 +202,7 @@ public class TecDocBean implements HasTimerService {
       qs.insertData(insert);
       logger.debug(tmp, "Inserted", c, "records");
     }
-    qs.debugOn(isDebugEnabled);
+    QueryServiceBean.debugOn(isDebugEnabled);
 
     String tcdArticles = SqlUtils.table(TCD_SCHEMA, TBL_TCD_ARTICLES);
 
@@ -1048,7 +1048,7 @@ public class TecDocBean implements HasTimerService {
 
     qs.sqlIndex(categ, TCD_CATEGORY_ID);
     qs.sqlIndex(categ, TCD_PARENT_ID);
-    boolean isDebugEnabled = qs.debugOff();
+    boolean isDebugEnabled = QueryServiceBean.debugOff();
 
     for (SimpleRow row : qs.getData(new SqlSelect()
         .addFields(categ, COL_TCD_CATEGORY_NAME, TCD_CATEGORY_ID)
@@ -1059,7 +1059,7 @@ public class TecDocBean implements HasTimerService {
               .addConstant(COL_TCD_CATEGORY_NAME, row.getValue(COL_TCD_CATEGORY_NAME))))
           .addConstant(TCD_TECDOC_ID, row.getLong(TCD_CATEGORY_ID)));
     }
-    qs.debugOn(isDebugEnabled);
+    QueryServiceBean.debugOn(isDebugEnabled);
 
     qs.updateData(new SqlUpdate(categ)
         .addExpression(COL_TCD_CATEGORY_PARENT,
@@ -1262,7 +1262,7 @@ public class TecDocBean implements HasTimerService {
 
       do {
         data = qs.getData(sql.setOffset(offset));
-        qs.debugOff();
+        QueryServiceBean.debugOff();
 
         for (SimpleRow row : data) {
           String type = row.getValue(COL_TCD_GRAPHICS_TYPE);
@@ -1305,7 +1305,7 @@ public class TecDocBean implements HasTimerService {
           qs.insertData(insert);
           logger.debug("Inserted", tot, "records into table", TBL_TCD_GRAPHICS);
         }
-        qs.debugOn(isDebugEnabled);
+        QueryServiceBean.debugOn(isDebugEnabled);
         offset += chunk;
       } while (data.getNumberOfRows() == chunk);
     }
@@ -1394,7 +1394,7 @@ public class TecDocBean implements HasTimerService {
     }
     SqlInsert insert = new SqlInsert(tmp).addFields(fields.keySet().toArray(new String[0]));
     int tot = 0;
-    boolean isDebugEnabled = qs.debugOff();
+    boolean isDebugEnabled = QueryServiceBean.debugOff();
 
     for (RemoteItem info : data) {
       String searchNr = EcUtils.normalizeCode(info.articleNr);
@@ -1426,7 +1426,7 @@ public class TecDocBean implements HasTimerService {
       }
       logger.debug(log, "Processed", tot, "records");
     }
-    qs.debugOn(isDebugEnabled);
+    QueryServiceBean.debugOn(isDebugEnabled);
 
     IsCondition join = SqlUtils.and(SqlUtils.joinUsing(tmp, TBL_TCD_ARTICLE_SUPPLIERS,
         COL_TCD_SUPPLIER_ID), SqlUtils.equals(TBL_TCD_ARTICLE_SUPPLIERS, COL_TCD_SUPPLIER,
@@ -1606,7 +1606,7 @@ public class TecDocBean implements HasTimerService {
         .addFrom(TBL_WAREHOUSES)
         .setWhere(SqlUtils.sqlFalse()));
 
-    boolean isDebugEnabled = qs.debugOff();
+    boolean isDebugEnabled = QueryServiceBean.debugOff();
 
     SqlInsert insert = new SqlInsert(tmp)
         .addFields(COL_TCD_SUPPLIER_ID, supplierWarehouse, COL_TCD_REMAINDER);
@@ -1627,7 +1627,7 @@ public class TecDocBean implements HasTimerService {
       }
       logger.debug(log, "Processed", tot, "records");
     }
-    qs.debugOn(isDebugEnabled);
+    QueryServiceBean.debugOn(isDebugEnabled);
 
     qs.sqlIndex(rem, COL_TCD_SUPPLIER_ID, supplierWarehouse);
 

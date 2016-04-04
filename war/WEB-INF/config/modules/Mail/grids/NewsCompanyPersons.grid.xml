@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<g:Grid 
+  xmlns="http://www.butent.com/column"
+  xmlns:g="http://www.butent.com/grid"
+  xmlns:xi="http://www.w3.org/2001/XInclude"
+  
+  name="NewsCompanyPersons" viewName="NewsCompanyPersons" 
+  caption="=companyPersons" filter="CompanyPerson"
+  >
+  <g:columns>
+    <DataColumn name="FirstName" />
+    <DataColumn name="LastName" />
+    <DataColumn name="PositionName" />
+  </g:columns>
+  <xi:include href="columns/CompanyName.columns.xml" />
+  <xi:include href="columns/CompanyIndicators.columns.xml" />
+</g:Grid>

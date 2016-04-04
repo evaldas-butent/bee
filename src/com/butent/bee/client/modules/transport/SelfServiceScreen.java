@@ -109,7 +109,7 @@ public class SelfServiceScreen extends ScreenImpl {
     if (getCommandPanel() != null) {
       getCommandPanel().clear();
     }
-    addCommandItem(new Button(Localized.getConstants().trSelfServiceCommandNewRequest(),
+    addCommandItem(new Button(Localized.dictionary().trSelfServiceCommandNewRequest(),
         new ClickHandler() {
           @Override
           public void onClick(ClickEvent event) {
@@ -124,7 +124,7 @@ public class SelfServiceScreen extends ScreenImpl {
             });
           }
         }));
-    addCommandItem(new Button(Localized.getConstants().trSelfServiceCommandRequests(),
+    addCommandItem(new Button(Localized.dictionary().trSelfServiceCommandRequests(),
         new ClickHandler() {
           @Override
           public void onClick(ClickEvent event) {
@@ -132,7 +132,7 @@ public class SelfServiceScreen extends ScreenImpl {
           }
         }));
 
-    addCommandItem(new Button(Localized.getConstants().ecInvoices(),
+    addCommandItem(new Button(Localized.dictionary().ecInvoices(),
         new ClickHandler() {
           @Override
           public void onClick(ClickEvent event) {

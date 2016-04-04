@@ -115,7 +115,7 @@ public class GridSettingsInterceptor extends AbstractGridInterceptor {
     int width = getGridView().asWidget().getOffsetWidth();
     StyleUtils.setWidth(selector, BeeUtils.clamp(width - 50, 300, 600));
 
-    String caption = BeeUtils.joinWords(key, Localized.getConstants().users());
+    String caption = BeeUtils.joinWords(key, Localized.dictionary().users());
     Global.inputWidget(caption, selector, new InputCallback() {
       @Override
       public void onSuccess() {

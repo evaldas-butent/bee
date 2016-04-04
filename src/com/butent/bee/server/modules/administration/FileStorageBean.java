@@ -62,6 +62,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
@@ -86,6 +87,10 @@ public class FileStorageBean {
   @EJB
   ParamHolderBean prm;
 
+  private static final long idLimit = 10000000000L;
+  private final AtomicLong idGenerator = new AtomicLong(Math.max(idLimit,
+      System.currentTimeMillis()));
+
   private final LoadingCache<Long, FileInfo> cache = CacheBuilder.newBuilder()
       .recordStats()
       .expireAfterAccess(1, TimeUnit.DAYS)
@@ -98,7 +103,7 @@ public class FileStorageBean {
       });
 
   public Long commitFile(Long fileId) throws IOException {
-    if (fileId < 1e10) {
+    if (fileId < idLimit) {
       return fileId;
     }
     FileInfo storedFile;
@@ -286,15 +291,6 @@ public class FileStorageBean {
     return file;
   }
 
-  public static boolean deletePhoto(String fileName) {
-    if (BeeUtils.isEmpty(fileName)) {
-      return false;
-    }
-
-    File file = new File(getPhotoDir(), BeeUtils.trim(fileName));
-    return file.exists() && file.delete();
-  }
-
   public String getCacheStats() {
     return BeeUtils.joinWords(cache.stats().toString(), "size", cache.size());
   }
@@ -334,15 +330,6 @@ public class FileStorageBean {
     return files;
   }
 
-  public static boolean photoExists(String fileName) {
-    if (BeeUtils.isEmpty(fileName)) {
-      return false;
-    }
-
-    File file = new File(getPhotoDir(), BeeUtils.trim(fileName));
-    return file.exists();
-  }
-
   public Long storeFile(InputStream is, String fileName, String mimeType) throws IOException {
     MessageDigest md = null;
 
@@ -376,7 +363,7 @@ public class FileStorageBean {
       String type = BeeUtils.notEmpty(URLConnection.guessContentTypeFromStream(header), mimeType,
           URLConnection.guessContentTypeFromName(name));
 
-      id = System.currentTimeMillis();
+      id = idGenerator.incrementAndGet();
       FileInfo fileInfo = new FileInfo(id, name, size, type);
       fileInfo.setPath(tmp.getAbsolutePath());
       fileInfo.setHash(hash);
@@ -385,33 +372,6 @@ public class FileStorageBean {
       cache.put(id, fileInfo);
     }
     return id;
-  }
-
-  public static boolean storePhoto(InputStream is, String fileName) {
-    File dir = getPhotoDir();
-    if (!dir.exists() && !dir.mkdirs()) {
-      logger.severe("cannot create", dir.getPath());
-      return false;
-    }
-
-    File file = new File(dir, BeeUtils.trim(fileName));
-    boolean ok = true;
-
-    try {
-      Files.copy(is, file.toPath(), StandardCopyOption.REPLACE_EXISTING);
-
-    } catch (IOException ex) {
-      logger.severe(ex);
-      ok = false;
-    }
-    if (!ok && file.exists()) {
-      file.delete();
-    }
-    return ok;
-  }
-
-  private static File getPhotoDir() {
-    return new File(Config.IMAGE_DIR, Paths.PHOTO_DIR);
   }
 
   private static File getRepositoryDir() {
@@ -434,7 +394,7 @@ public class FileStorageBean {
     FileInfo storedFile = BeeUtils.peek(getFileInfos(Collections.singletonList(fileId)));
 
     if (Objects.isNull(storedFile)) {
-      throw new FileNotFoundException("File not found: id =" + fileId);
+      throw new FileNotFoundException("File not found: id=" + fileId);
     }
     if (BeeUtils.isEmpty(storedFile.getPath())) {
       SqlSelect query = new SqlSelect().setLimit(10)

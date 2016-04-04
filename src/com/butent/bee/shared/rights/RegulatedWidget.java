@@ -1,6 +1,6 @@
 package com.butent.bee.shared.rights;
 
-import com.butent.bee.shared.i18n.LocalizableConstants;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.ui.HasLocalizedCaption;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -8,37 +8,37 @@ public enum RegulatedWidget implements HasLocalizedCaption {
 
   NEWS {
     @Override
-    public String getCaption(LocalizableConstants constants) {
+    public String getCaption(Dictionary constants) {
       return constants.domainNews();
     }
   },
   ONLINE {
     @Override
-    public String getCaption(LocalizableConstants constants) {
+    public String getCaption(Dictionary constants) {
       return constants.domainOnline();
     }
   },
   ADMIN(ModuleAndSub.of(Module.ADMINISTRATION)) {
     @Override
-    public String getCaption(LocalizableConstants constants) {
+    public String getCaption(Dictionary constants) {
       return "Admin";
     }
   },
   AUDIT {
     @Override
-    public String getCaption(LocalizableConstants constants) {
+    public String getCaption(Dictionary constants) {
       return constants.actionAudit();
     }
   },
   DOCUMENT_TREE {
     @Override
-    public String getCaption(LocalizableConstants constants) {
+    public String getCaption(Dictionary constants) {
       return constants.documentTree();
     }
   },
   COMPANY_STRUCTURE {
     @Override
-    public String getCaption(LocalizableConstants constants) {
+    public String getCaption(Dictionary constants) {
       return constants.companyStructure();
     }
   };

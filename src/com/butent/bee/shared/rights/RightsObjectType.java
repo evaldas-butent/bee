@@ -1,50 +1,70 @@
 package com.butent.bee.shared.rights;
 
-import com.butent.bee.shared.i18n.LocalizableConstants;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.ui.HasLocalizedCaption;
+import com.butent.bee.shared.utils.ArrayUtils;
 
-import java.util.EnumSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 public enum RightsObjectType implements HasLocalizedCaption {
-  FIELD(EnumSet.of(RightsState.VIEW, RightsState.EDIT)) {
+  FIELD(RightsState.VIEW, RightsState.EDIT, RightsState.REQUIRED) {
     @Override
-    public String getCaption(LocalizableConstants constants) {
+    public String getCaption(Dictionary constants) {
       return constants.objectField();
     }
   },
-  WIDGET(EnumSet.of(RightsState.VIEW)) {
+  WIDGET(RightsState.VIEW) {
     @Override
-    public String getCaption(LocalizableConstants constants) {
+    public String getCaption(Dictionary constants) {
       return constants.objectWidget();
     }
   },
-  DATA(EnumSet.allOf(RightsState.class)) {
+  DATA(RightsState.VIEW, RightsState.CREATE, RightsState.EDIT, RightsState.DELETE,
+      RightsState.MERGE) {
     @Override
-    public String getCaption(LocalizableConstants constants) {
+    public String getCaption(Dictionary constants) {
       return constants.objectData();
     }
   },
-  MENU(EnumSet.of(RightsState.VIEW)) {
+  MENU(RightsState.VIEW) {
     @Override
-    public String getCaption(LocalizableConstants constants) {
+    public String getCaption(Dictionary constants) {
       return constants.objectMenu();
     }
-  },
-  MODULE(EnumSet.of(RightsState.VIEW)) {
+
     @Override
-    public String getCaption(LocalizableConstants constants) {
+    public boolean isHierarchical() {
+      return true;
+    }
+  },
+  MODULE(RightsState.VIEW) {
+    @Override
+    public String getCaption(Dictionary constants) {
       return constants.objectModule();
+    }
+
+    @Override
+    public boolean isHierarchical() {
+      return true;
     }
   };
 
-  private final Set<RightsState> registeredStates;
+  private final Set<RightsState> registeredStates = new LinkedHashSet<>();
 
-  RightsObjectType(Set<RightsState> states) {
-    this.registeredStates = states;
+  RightsObjectType(RightsState... states) {
+    if (!ArrayUtils.isEmpty(states)) {
+      for (RightsState state : states) {
+        registeredStates.add(state);
+      }
+    }
   }
 
   public Set<RightsState> getRegisteredStates() {
     return registeredStates;
+  }
+
+  public boolean isHierarchical() {
+    return false;
   }
 }

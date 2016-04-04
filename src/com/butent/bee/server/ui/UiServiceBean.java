@@ -509,7 +509,7 @@ public class UiServiceBean {
     if (res instanceof BeeRowSet) {
       ResponseObject resp = ResponseObject.response(res);
       int rc = ((BeeRowSet) res).getNumberOfRows();
-      resp.addWarning(usr.getLocalizableMesssages().rowsRetrieved(rc));
+      resp.addWarning(usr.getDictionary().rowsRetrieved(rc));
       return resp;
     } else if (res instanceof Number) {
       return ResponseObject.warning("Affected rows:", res);
@@ -1016,12 +1016,16 @@ public class UiServiceBean {
       response.addInfo(fs.getCacheStats());
 
     } else if (BeeUtils.startsSame(cmd, "logger")) {
-      if (BeeUtils.isSuffix(cmd, "on")) {
-        LogUtils.getRootLogger().setLevel(LogLevel.DEBUG);
-      } else if (BeeUtils.isSuffix(cmd, "off")) {
-        LogUtils.getRootLogger().setLevel(LogLevel.INFO);
+      List<String> args = NameUtils.NAME_SPLITTER.splitToList(cmd);
+      String name = BeeUtils.getQuietly(args, 1);
+      BeeLogger currentLogger = BeeUtils.isEmpty(name)
+          ? LogUtils.getLogger(QueryServiceBean.class) : LogUtils.getLogger(name);
+      LogLevel level = EnumUtils.getEnumByName(LogLevel.class, BeeUtils.getQuietly(args, 2));
+
+      if (Objects.nonNull(level)) {
+        currentLogger.setLevel(level);
       }
-      response.addInfo(LogUtils.getRootLogger().getLevel());
+      response.addInfo(currentLogger.getName(), currentLogger.getLevel());
 
     } else if (BeeUtils.same(cmd, "system")) {
       ib.init();

@@ -56,9 +56,9 @@ class ItemsGrid extends TreeGridInterceptor {
   @Override
   public String getCaption() {
     if (showServices()) {
-      return Localized.getConstants().services();
+      return Localized.dictionary().services();
     } else {
-      return Localized.getConstants().goods();
+      return Localized.dictionary().goods();
     }
   }
 

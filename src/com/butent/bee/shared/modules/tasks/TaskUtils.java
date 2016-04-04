@@ -23,6 +23,7 @@ import com.butent.bee.shared.modules.discussions.DiscussionsConstants;
 import com.butent.bee.shared.modules.documents.DocumentConstants;
 import com.butent.bee.shared.modules.projects.ProjectConstants;
 import com.butent.bee.shared.modules.service.ServiceConstants;
+import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.ScheduleDateMode;
@@ -33,6 +34,7 @@ import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 public final class TaskUtils {
@@ -50,18 +52,18 @@ public final class TaskUtils {
       if (BeeUtils.unbox(row.getLong(info.getColumnIndex(COL_OWNER))) != userId) {
         if (resp != null) {
           resp.addWarning(
-              BeeUtils.joinWords(Localized.getConstants().crmTask(), row.getId()),
-              Localized.getConstants().crmTaskConfirmCanManager());
+              BeeUtils.joinWords(Localized.dictionary().crmTask(), row.getId()),
+              Localized.dictionary().crmTaskConfirmCanManager());
         }
         return false;
       }
 
       if (BeeUtils.unbox(row.getInteger(info.getColumnIndex(COL_STATUS)))
-          != TaskStatus.COMPLETED.ordinal()) {
+        != TaskStatus.COMPLETED.ordinal()) {
         if (resp != null) {
           resp.addWarning(
-              BeeUtils.joinWords(Localized.getConstants().crmTask(), row.getId()),
-              Localized.getConstants().crmTaskMustBePerformed());
+              BeeUtils.joinWords(Localized.dictionary().crmTask(), row.getId()),
+              Localized.dictionary().crmTaskMustBePerformed());
         }
         return false;
       }
@@ -76,12 +78,12 @@ public final class TaskUtils {
 
   public static String getDeleteNote(String label, String value) {
     return BeeUtils.join(NOTE_LABEL_SEPARATOR, label,
-        BeeUtils.joinWords(Localized.getConstants().crmDeleted().toLowerCase(), value));
+        BeeUtils.joinWords(Localized.dictionary().crmDeleted().toLowerCase(), value));
   }
 
   public static String getInsertNote(String label, String value) {
     return BeeUtils.join(NOTE_LABEL_SEPARATOR, label, BeeUtils
-        .joinWords(Localized.getConstants().crmAdded().toLowerCase(), value));
+        .joinWords(Localized.dictionary().crmAdded().toLowerCase(), value));
   }
 
   public static Set<String> getRelationPropertyNames() {
@@ -192,9 +194,17 @@ public final class TaskUtils {
         String note;
 
         if (BeeUtils.isEmpty(oldValue)) {
-          note = getInsertNote(label, renderColumn(dataInfo, newRow, column, i));
+          if (Objects.equals(oldRow.getBoolean(i), Boolean.TRUE)) {
+            note = getInsertNote(label, "");
+          } else {
+            note = getInsertNote(label, renderColumn(dataInfo, oldRow, column, i));
+          }
         } else if (BeeUtils.isEmpty(newValue)) {
-          note = getDeleteNote(label, renderColumn(dataInfo, oldRow, column, i));
+          if (Objects.equals(oldRow.getBoolean(i), Boolean.TRUE)) {
+            note = getDeleteNote(label, "");
+          } else {
+            note = getDeleteNote(label, renderColumn(dataInfo, oldRow, column, i));
+          }
         } else {
           note = getUpdateNote(label, renderColumn(dataInfo, oldRow, column, i),
               renderColumn(dataInfo, newRow, column, i));

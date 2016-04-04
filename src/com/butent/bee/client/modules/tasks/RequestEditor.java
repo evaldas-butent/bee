@@ -113,7 +113,7 @@ public class RequestEditor extends AbstractFormInterceptor {
 
     if (!finished) {
       FaLabel btnFinish = new FaLabel(FontAwesome.CHECK_CIRCLE_O);
-      btnFinish.setTitle(Localized.getConstants().requestFinish());
+      btnFinish.setTitle(Localized.dictionary().requestFinish());
       btnFinish.addClickHandler(new ClickHandler() {
 
         @Override
@@ -128,7 +128,7 @@ public class RequestEditor extends AbstractFormInterceptor {
 
     if (currentUser.canCreateData(TaskConstants.VIEW_TASKS) && !finished) {
       FaLabel btnFinishToTask = new FaLabel(FontAwesome.LIST);
-      btnFinishToTask.setTitle(Localized.getConstants().requestFinishToTask());
+      btnFinishToTask.setTitle(Localized.dictionary().requestFinishToTask());
       btnFinishToTask.addClickHandler(new ClickHandler() {
 
         @Override
@@ -199,7 +199,7 @@ public class RequestEditor extends AbstractFormInterceptor {
 
   private static void createUpdateButton(final FormView form, final IsRow row, HeaderView header) {
     FaLabel updateRequestBtn = new FaLabel(FontAwesome.RETWEET);
-    updateRequestBtn.setTitle(Localized.getConstants().actionUpdate());
+    updateRequestBtn.setTitle(Localized.dictionary().actionUpdate());
     updateRequestBtn.addClickHandler(new ClickHandler() {
 
       @Override
@@ -219,7 +219,7 @@ public class RequestEditor extends AbstractFormInterceptor {
       oldValue = row.getString(idxResult);
     }
 
-    Global.inputString(Localized.getConstants().requestFinishing(), Localized.getConstants()
+    Global.inputString(Localized.dictionary().requestFinishing(), Localized.dictionary()
         .specifyResult(), new StringCallback(true) {
       @Override
       public void onSuccess(String value) {
@@ -246,7 +246,7 @@ public class RequestEditor extends AbstractFormInterceptor {
     boolean edited = (reqRow != null) && form.isEditing();
 
     if (!edited) {
-      Global.showError(Localized.getConstants().actionCanNotBeExecuted());
+      Global.showError(Localized.dictionary().actionCanNotBeExecuted());
       return;
     }
 
@@ -336,7 +336,7 @@ public class RequestEditor extends AbstractFormInterceptor {
   }
 
   private static void updateRequest(final FormView form, final IsRow row) {
-    Global.confirm(Localized.getConstants().requestUpdatingQuestion(), new ConfirmationCallback() {
+    Global.confirm(Localized.dictionary().requestUpdatingQuestion(), new ConfirmationCallback() {
 
       @Override
       public void onConfirm() {
@@ -370,7 +370,7 @@ public class RequestEditor extends AbstractFormInterceptor {
 
           @Override
           public void onFailure(String... reason) {
-            getFormView().notifySevere(Localized.getConstants().crmTaskNotFound());
+            getFormView().notifySevere(Localized.dictionary().crmTaskNotFound());
             logger.warning("Error open task:", reason);
           }
 
@@ -408,7 +408,7 @@ public class RequestEditor extends AbstractFormInterceptor {
 
       if (BeeUtils.isSuffix(key, TaskConstants.FORM_TASK)) {
         CustomDiv div = new CustomDiv(STYLE_PROPERTY_CAPTION);
-        div.setText(Localized.getMessages().crmCreatedNewTasks(rowIds.size()));
+        div.setText(Localized.dictionary().crmCreatedNewTasks(rowIds.size()));
         resultProperties.add(div);
       }
 

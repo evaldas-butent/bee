@@ -24,17 +24,20 @@ import com.butent.bee.client.view.ViewCallback;
 import com.butent.bee.client.view.ViewFactory;
 import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.ViewSupplier;
+import com.butent.bee.client.view.grid.interceptor.FileGridInterceptor;
 import com.butent.bee.shared.BiConsumer;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
-import com.butent.bee.shared.i18n.LocalizableMessages;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.menu.MenuHandler;
 import com.butent.bee.shared.menu.MenuService;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.mail.AccountInfo;
+import com.butent.bee.shared.modules.mail.MailConstants.MessageFlag;
 import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -96,6 +99,12 @@ public final class MailKeeper {
     FormFactory.registerFormInterceptor(FORM_NEW_ACCOUNT, new AccountEditor());
     FormFactory.registerFormInterceptor(FORM_MAIL_MESSAGE, new MailMessage());
     FormFactory.registerFormInterceptor(FORM_RULE, new RuleForm());
+    FormFactory.registerFormInterceptor(FORM_RECIPIENTS_GROUP, new RecipientsGroupForm());
+    FormFactory.registerFormInterceptor(COL_NEWSLETTER, new NewsletterForm());
+
+    GridFactory.registerGridInterceptor(VIEW_NEWSLETTER_FILES,
+        new FileGridInterceptor(COL_NEWSLETTER, AdministrationConstants.COL_FILE,
+            AdministrationConstants.COL_FILE_CAPTION, AdministrationConstants.ALS_FILE_NAME));
 
     Global.getNewsAggregator().registerFilterHandler(Feed.MAIL,
         new BiConsumer<GridFactory.GridOptions, PresenterCallback>() {
@@ -137,7 +146,7 @@ public final class MailKeeper {
     if (controller == null) {
       controller = new MailController();
       BeeKeeper.getScreen().addDomainEntry(Domain.MAIL, controller, null,
-          Localized.getConstants().mails());
+          Localized.dictionary().mails());
     }
     activePanel = mailPanel;
     rebuildController();
@@ -175,11 +184,11 @@ public final class MailKeeper {
         response.notify(panel.getFormView());
 
         if (!response.hasErrors()) {
-          LocalizableMessages loc = Localized.getMessages();
+          Dictionary loc = Localized.dictionary();
 
           panel.getFormView().notifyInfo(move
-                  ? loc.mailMovedMessagesToFolder(response.getResponseAsString())
-                  : loc.mailCopiedMessagesToFolder(response.getResponseAsString()),
+              ? loc.mailMovedMessagesToFolder(response.getResponseAsString())
+              : loc.mailCopiedMessagesToFolder(response.getResponseAsString()),
               BeeUtils.bracket(panel.getCurrentAccount().findFolder(folderTo).getName()));
         }
       }
@@ -201,7 +210,7 @@ public final class MailKeeper {
     String caption = null;
 
     if (isParent) {
-      caption = Localized.getConstants().mailInFolder() + " "
+      caption = Localized.dictionary().mailInFolder() + " "
           + BeeUtils.bracket(account.findFolder(parentId).getName());
     }
     Global.inputString(title, caption, new StringCallback() {

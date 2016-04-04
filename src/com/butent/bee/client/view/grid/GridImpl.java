@@ -6,6 +6,7 @@ import com.google.common.collect.Lists;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.shared.HandlerRegistration;
+import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.Event.NativePreviewEvent;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -455,7 +456,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
         label = Localized.getLabel(dataColumns.get(index));
       } else if (colType == ColType.ID
           || !BeeUtils.isEmpty(source) && BeeUtils.same(source, gridDescription.getIdName())) {
-        label = Localized.getConstants().captionId();
+        label = Localized.dictionary().captionId();
       }
     }
 
@@ -575,7 +576,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
         column = new SelectionColumn(getGrid());
         source = null;
         if (BeeUtils.isEmpty(label)) {
-          label = Localized.getConstants().selectionColumnLabel();
+          label = Localized.dictionary().selectionColumnLabel();
         }
         break;
 
@@ -627,8 +628,15 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
       } else {
         Format.setFormat(column, column.getValueType(), cd.getFormat());
       }
+
     } else if (BeeUtils.isNonNegative(cd.getScale()) && (column instanceof HasNumberFormat)) {
-      ((HasNumberFormat) column).setNumberFormat(Format.getDecimalFormat(cd.getScale()));
+      NumberFormat nf;
+      if (cellSource != null && cellSource.getScale() > cd.getScale()) {
+        nf = Format.getDecimalFormat(cd.getScale(), cellSource.getScale());
+      } else {
+        nf = Format.getDecimalFormat(cd.getScale());
+      }
+      ((HasNumberFormat) column).setNumberFormat(nf);
     }
 
     if (!BeeUtils.isEmpty(cd.getHorAlign())) {
@@ -1328,7 +1336,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     }
 
     if (!ok && notificationListener != null) {
-      notificationListener.notifyWarning(Localized.getConstants().rowIsReadOnly());
+      notificationListener.notifyWarning(Localized.dictionary().rowIsReadOnly());
     }
     return ok;
   }
@@ -2053,7 +2061,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
           }
         });
 
-    form.setCaption(Localized.getConstants().actionNew());
+    form.setCaption(Localized.dictionary().actionNew());
 
     embraceNewRowForm(form);
   }
@@ -2771,8 +2779,8 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     }
 
     if (columns.isEmpty()) {
-      callback.onFailure(getViewName(), Localized.getConstants().newRow(),
-          Localized.getConstants().allValuesCannotBeEmpty());
+      callback.onFailure(getViewName(), Localized.dictionary().newRow(),
+          Localized.dictionary().allValuesCannotBeEmpty());
       return;
     }
 

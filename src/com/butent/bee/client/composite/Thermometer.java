@@ -24,6 +24,10 @@ public class Thermometer extends Flow implements HasProgress {
   private final Progress progress;
   private final DoubleLabel percentLabel;
 
+  public Thermometer(String label) {
+    this(label, null);
+  }
+
   public Thermometer(String label, Double max) {
     this(label, max, null);
   }
@@ -50,6 +54,14 @@ public class Thermometer extends Flow implements HasProgress {
     this.percentLabel = new DoubleLabel(Format.getDefaultPercentFormat(), true);
     percentLabel.addStyleName(STYLE_PERCENT);
     add(percentLabel);
+  }
+
+  public double getValue() {
+    return progress.getValue();
+  }
+
+  public void setMax(double max) {
+    progress.setMax(max);
   }
 
   @Override

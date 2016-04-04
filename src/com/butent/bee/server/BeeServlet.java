@@ -1,7 +1,6 @@
 package com.butent.bee.server;
 
-import com.google.common.net.HttpHeaders;
-
+import com.butent.bee.server.http.HttpUtils;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
@@ -140,14 +139,9 @@ public class BeeServlet extends LoginServlet {
       resp.setHeader(Service.RPC_VAR_QID, rid);
     }
 
-    resp.setHeader(HttpHeaders.CACHE_CONTROL, "no-cache");
-    resp.setHeader(HttpHeaders.PRAGMA, "no-cache");
-    resp.setHeader(HttpHeaders.EXPIRES, "Thu, 01 Dec 1994 16:00:00 GMT");
-
     ContentType ctp = CommUtils.DEFAULT_RESPONSE_CONTENT_TYPE;
 
-    resp.setContentType(CommUtils.getMediaType(ctp));
-    resp.setCharacterEncoding(CommUtils.getCharacterEncoding(ctp));
+    HttpUtils.setDefaultHeaders(resp, ctp);
     resp.setHeader(Service.RPC_VAR_CTP, ctp.name());
 
     String s;

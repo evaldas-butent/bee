@@ -61,7 +61,7 @@ import java.util.List;
 
 public class EcOrphansGrid extends AbstractGridInterceptor implements ClickHandler {
 
-  Button button = new Button(Localized.getConstants().ecAnalogBinding(), this);
+  Button button = new Button(Localized.dictionary().ecAnalogBinding(), this);
   Image loading = new Image(Global.getImages().loading());
 
   @Override
@@ -103,7 +103,7 @@ public class EcOrphansGrid extends AbstractGridInterceptor implements ClickHandl
 
   @Override
   public void onClick(ClickEvent event) {
-    Global.confirm(Localized.getMessages().ecLocateAnalogs(getGridView().getGrid().getRowCount()),
+    Global.confirm(Localized.dictionary().ecLocateAnalogs(getGridView().getGrid().getRowCount()),
         new ConfirmationCallback() {
           @Override
           public void onConfirm() {
@@ -114,7 +114,7 @@ public class EcOrphansGrid extends AbstractGridInterceptor implements ClickHandl
             if (filter != null) {
               args.addDataItem("filter", filter.serialize());
             }
-            Endpoint.initProgress(Localized.getConstants().ecAnalogBinding(),
+            Endpoint.initProgress(Localized.dictionary().ecAnalogBinding(),
                 new Consumer<String>() {
                   @Override
                   public void accept(String progress) {
@@ -144,8 +144,8 @@ public class EcOrphansGrid extends AbstractGridInterceptor implements ClickHandl
     Flow panel = new Flow();
 
     final TabBar tabs = new TabBar(Orientation.HORIZONTAL);
-    tabs.addItem(Localized.getConstants().ecItemName());
-    tabs.addItem(Localized.getConstants().ecItemAnalog());
+    tabs.addItem(Localized.dictionary().ecItemName());
+    tabs.addItem(Localized.dictionary().ecItemAnalog());
     StyleUtils.setWidth(tabs, 100, CssUnit.PCT);
     tabs.getElement().getStyle().setMarginBottom(5, Unit.PX);
     panel.add(tabs);
@@ -175,14 +175,14 @@ public class EcOrphansGrid extends AbstractGridInterceptor implements ClickHandl
     });
     tabs.selectTab(0, true);
 
-    Global.inputWidget(Localized.getConstants().ecItemNew(), panel, new InputCallback() {
+    Global.inputWidget(Localized.dictionary().ecItemNew(), panel, new InputCallback() {
       @Override
       public String getErrorMessage() {
         int idx = tabs.getSelectedTab();
         BeeRow analog = selector.getRelatedRow();
 
         if (idx == 0 && BeeUtils.isEmpty(name.getValue()) || idx == 1 && analog == null) {
-          return Localized.getConstants().valueRequired();
+          return Localized.dictionary().valueRequired();
         }
         return InputCallback.super.getErrorMessage();
       }

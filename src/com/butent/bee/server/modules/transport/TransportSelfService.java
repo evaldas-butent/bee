@@ -91,7 +91,7 @@ public class TransportSelfService extends LoginServlet {
       Map<String, String> parameters = HttpUtils.getParameters(req, false);
 
       String language = getLanguage(req);
-      Map<String, String> dictionary = Localizations.getPreferredDictionary(language);
+      Map<String, String> dictionary = Localizations.getGlossary(language);
 
       if (parameters.containsKey(COL_QUERY_EXPEDITION)) {
         html = doQuery(req, parameters);
@@ -143,12 +143,20 @@ public class TransportSelfService extends LoginServlet {
       if (!BeeUtils.isEmpty(value)) {
         if (BeeUtils.startsWith(key, VAR_LOADING) || BeeUtils.startsWith(key, VAR_UNLOADING)) {
           String[] arr = key.split("-", 2);
+          String subKey = arr[0];
           Integer idx = BeeUtils.toInt(ArrayUtils.getQuietly(arr, 1));
 
           if (!handling.containsKey(idx)) {
             handling.put(idx, new HashMap<>());
           }
-          handling.get(idx).put(arr[0], value);
+          if (BeeUtils.isSuffix(subKey, "Time")) {
+            subKey = subKey.replace("Time", COL_DATE);
+            value = BeeUtils.joinWords(parameters.get(key.replace("Time", COL_DATE)), value);
+            handling.get(idx).remove(subKey);
+          }
+          if (!handling.get(idx).containsKey(subKey)) {
+            handling.get(idx).put(subKey, value);
+          }
         } else {
           json.add(key, value);
         }

@@ -140,7 +140,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
 
     private String addComment(boolean required) {
       String styleName = STYLE_DIALOG + "commentLabel";
-      Label label = new Label(Localized.getConstants().discussComment());
+      Label label = new Label(Localized.dictionary().discussComment());
       label.addStyleName(styleName);
       if (required) {
         label.addStyleName(StyleUtils.NAME_REQUIRED);
@@ -169,7 +169,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
       int col = 0;
 
       String styleName = STYLE_DIALOG + "-filesLabel";
-      Label label = new Label(Localized.getConstants().discussFiles());
+      Label label = new Label(Localized.dictionary().discussFiles());
       label.addStyleName(styleName);
 
       table.setWidget(row, col, label);
@@ -192,7 +192,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
                 BeeUtils.toLongOrNull(discussParams.get(PRM_MAX_UPLOAD_FILE_SIZE)))) {
 
               BeeKeeper.getScreen().notifyWarning(
-                  Localized.getMessages().fileSizeExceeded(fileInfo.getSize(),
+                  Localized.dictionary().fileSizeExceeded(fileInfo.getSize(),
                       BeeUtils.toLong(discussParams.get(PRM_MAX_UPLOAD_FILE_SIZE)) * 1024 * 1024),
                   "("
                       + fileInfo.getName() + ")");
@@ -204,7 +204,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
             if (DiscussionsUtils.isForbiddenExtention(BeeUtils.getSuffix(fileInfo.getName(),
                 BeeConst.STRING_POINT), discussParams.get(PRM_FORBIDDEN_FILES_EXTENTIONS))) {
 
-              BeeKeeper.getScreen().notifyWarning(Localized.getConstants().discussInvalidFile(),
+              BeeKeeper.getScreen().notifyWarning(Localized.dictionary().discussInvalidFile(),
                   fileInfo.getName());
               collector.clear();
               return;
@@ -391,6 +391,15 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
 
     final Integer status = row.getInteger(form.getDataIndex(COL_STATUS));
     final Long owner = row.getLong(form.getDataIndex(COL_OWNER));
+    String caption = BeeConst.STRING_EMPTY;
+
+    if (BeeUtils.isEmpty(row.getString(form.getDataIndex(COL_TOPIC)))) {
+      caption = Localized.dictionary().discussion() + ":";
+    } else {
+      caption = Localized.dictionary().announcement() + ":";
+    }
+
+    header.setCaption(caption);
 
     final Map<String, String> discussParameters = DiscussionsUtils.getDiscussionsParameters(row);
     header.clearCommandPanel();
@@ -425,7 +434,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
 
     widget = form.getWidgetByName(VIEW_DISCUSSIONS_MARK_TYPES);
     if (widget instanceof Panel) {
-      createMarkPanel((Flow) widget, form, row, null, true);
+      createMarkPanel((Flow) widget, form, row, null);
     }
 
     widget = form.getWidgetByName(COL_PERMIT_COMMENT);
@@ -694,11 +703,6 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
 
   private void createMarkPanel(final Flow flowWidget, final FormView form, final IsRow formRow,
       final Long commentId) {
-    createMarkPanel(flowWidget, form, formRow, commentId, false);
-  }
-
-  private void createMarkPanel(final Flow flowWidget, final FormView form, final IsRow formRow,
-      final Long commentId, final boolean renderHeader) {
     flowWidget.clear();
 
     if (form == null || formRow == null) {
@@ -713,8 +717,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
     if (markTypes != null) {
       flowWidget.clear();
       if (!markTypes.isEmpty()) {
-        showDiscussionMarkData(flowWidget, form, formRow, commentId, owner, status, markTypes,
-            renderHeader);
+        showDiscussionMarkData(flowWidget, form, formRow, commentId, owner, status, markTypes);
       }
     }
   }
@@ -1051,21 +1054,12 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
 
   private void showDiscussionMarkData(final Flow flowWidget, final FormView form,
       final IsRow formRow, final Long commentId, final Long owner, final Integer status,
-      final BeeRowSet result, final boolean renderHeaderInfo) {
+      final BeeRowSet result) {
 
     final SimpleRowSet markData = DiscussionsUtils.getMarkData(formRow);
 
     if (markData == null) {
       return;
-    }
-
-    if (renderHeaderInfo) {
-      HeaderView header = form.getViewPresenter().getHeader();
-      String caption = form.getCaption();
-      caption =
-          BeeUtils.joinWords(caption, "[" + Localized.getConstants().discussMarked(),
-              DiscussionsUtils.getDiscussMarkCountTotal(markData) + "]");
-      header.setCaption(caption);
     }
 
     boolean enabled =
@@ -1086,7 +1080,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
     FaLabel imgStats = new FaLabel(FontAwesome.BAR_CHART);
     imgStats.addStyleName(DISCUSSIONS_STYLE_PREFIX + STYLE_ACTIONS);
     imgStats.addStyleName(DISCUSSIONS_STYLE_PREFIX + STYLE_ACTIONS + STYLE_STATS);
-    imgStats.setTitle(Localized.getConstants().discussMarkStats());
+    imgStats.setTitle(Localized.dictionary().discussMarkStats());
 
     imgStats.addClickHandler(new ClickHandler() {
 
@@ -1095,7 +1089,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
         List<String> stats = DiscussionsUtils.getMarkStats(commentId, markData);
 
         if (BeeUtils.isEmpty(stats)) {
-          BeeKeeper.getScreen().notifyInfo(Localized.getConstants().noData());
+          BeeKeeper.getScreen().notifyInfo(Localized.dictionary().noData());
           return;
         }
 
@@ -1118,7 +1112,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
   }
 
   private static void showError(String message) {
-    BeeKeeper.getScreen().notifySevere(Localized.getConstants().error(), message);
+    BeeKeeper.getScreen().notifySevere(Localized.dictionary().error(), message);
   }
 
   private static void clearCommentsCache(FormView form) {
@@ -1171,7 +1165,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
   }
 
   private void doActivate() {
-    Global.confirm(Localized.getConstants().discussActivationQuestion(),
+    Global.confirm(Localized.dictionary().discussActivationQuestion(),
         new ConfirmationCallback() {
 
           @Override
@@ -1185,7 +1179,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
   }
 
   private void doClose() {
-    Global.confirm(Localized.getConstants().discussCloseQuestion(), new ConfirmationCallback() {
+    Global.confirm(Localized.dictionary().discussCloseQuestion(), new ConfirmationCallback() {
 
       @Override
       public void onConfirm() {
@@ -1199,7 +1193,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
   private void doComment(IsRow formRow, final Long replayedCommentId) {
     final CommentDialog dialog =
         new CommentDialog(replayedCommentId == null
-            ? Localized.getConstants().discussComment() : Localized.getConstants()
+            ? Localized.dictionary().discussComment() : Localized.dictionary()
                 .discussActionReply());
 
     final String cid = dialog.addComment(true);
@@ -1212,7 +1206,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
         String comment = dialog.getComment(cid);
 
         if (BeeUtils.isEmpty(comment)) {
-          showError(Localized.getConstants().crmEnterComment());
+          showError(Localized.dictionary().crmEnterComment());
           return;
         }
 
@@ -1263,7 +1257,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
   }
 
   private void doCommentDelete(final long commentId) {
-    Global.confirm(Localized.getConstants().deleteQuestion(), new ConfirmationCallback() {
+    Global.confirm(Localized.dictionary().deleteQuestion(), new ConfirmationCallback() {
 
       @Override
       public void onConfirm() {
@@ -1276,7 +1270,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
 
   private void doEvent(FormView form, IsRow row, DiscussionEvent event, String adminLogin) {
     if (!isEventEnabled(form, row, event, getStatus(), getOwner(), adminLogin)) {
-      showError(Localized.getConstants().actionNotAllowed());
+      showError(Localized.dictionary().actionNotAllowed());
     }
 
     switch (event) {
@@ -1393,7 +1387,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
       case ACTIVATE:
         return (DiscussionStatus.in(status, DiscussionStatus.INACTIVE) && isAdmin(adminLogin))
             || (DiscussionStatus.in(status, DiscussionStatus.CLOSED, DiscussionStatus.INACTIVE)
-                && (isOwner(userId, owner) || isAdmin(adminLogin)));
+            && (isOwner(userId, owner) || isAdmin(adminLogin)));
       case CLOSE:
         return DiscussionStatus.in(status, DiscussionStatus.ACTIVE, DiscussionStatus.INACTIVE)
             && (isOwner(userId, owner) || isAdmin(adminLogin));
@@ -1559,7 +1553,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
     }
     widgetReply.addStyleName(DISCUSSIONS_STYLE_PREFIX + STYLE_ACTIONS);
     widgetReply.addStyleName(STYLE_COMMENT_COL + STYLE_ACTIONS + STYLE_REPLY);
-    widgetReply.setTitle(Localized.getConstants().discussActionReply());
+    widgetReply.setTitle(Localized.dictionary().discussActionReply());
 
     final long commentId = commentRow.getId();
 
@@ -1593,7 +1587,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
 
     widgetTrash.addStyleName(DISCUSSIONS_STYLE_PREFIX + STYLE_ACTIONS);
     widgetTrash.addStyleName(STYLE_COMMENT_COL + STYLE_ACTIONS + STYLE_TRASH);
-    widgetTrash.setTitle(Localized.getConstants().actionDelete());
+    widgetTrash.setTitle(Localized.dictionary().actionDelete());
     final long commentId = commentRow.getId();
 
     if (widgetTrash instanceof HasClickHandlers) {
@@ -1674,7 +1668,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
 
     if (from == null && to == null) {
       event.getCallback().onFailure(
-          BeeUtils.joinWords(Localized.getConstants().displayInBoard(), Localized.getConstants()
+          BeeUtils.joinWords(Localized.dictionary().displayInBoard(), Localized.dictionary()
               .enterDate()));
       return false;
     }
@@ -1696,8 +1690,8 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
         return true;
       } else {
         event.getCallback().onFailure(
-            BeeUtils.joinWords(Localized.getConstants().displayInBoard(),
-                Localized.getConstants().crmFinishDateMustBeGreaterThanStart()));
+            BeeUtils.joinWords(Localized.dictionary().displayInBoard(),
+                Localized.dictionary().crmFinishDateMustBeGreaterThanStart()));
         return false;
       }
     }

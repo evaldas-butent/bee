@@ -94,11 +94,11 @@ final class InvoiceBuilder {
       @Override
       public void onSuccess(BeeRowSet result) {
         if (DataUtils.isEmpty(result)) {
-          form.notifyInfo(Localized.getConstants().noData());
+          form.notifyInfo(Localized.dictionary().noData());
 
         } else {
           ServiceHelper.selectMaintenanceItems(objId, result,
-              Localized.getConstants().trdNewInvoice(), Localized.getConstants().createInvoice(),
+              Localized.dictionary().trdNewInvoice(), Localized.dictionary().createInvoice(),
               STYLE_PREFIX, new BiConsumer<Long, BeeRowSet>() {
                 @Override
                 public void accept(Long t, BeeRowSet u) {

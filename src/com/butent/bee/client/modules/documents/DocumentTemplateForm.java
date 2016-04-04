@@ -25,7 +25,7 @@ import com.butent.bee.shared.i18n.Localized;
 
 public class DocumentTemplateForm extends DocumentDataForm {
 
-  private final Button newDocumentButton = new Button(Localized.getConstants().documentNew(),
+  private final Button newDocumentButton = new Button(Localized.dictionary().documentNew(),
       new ClickHandler() {
         @Override
         public void onClick(ClickEvent event) {

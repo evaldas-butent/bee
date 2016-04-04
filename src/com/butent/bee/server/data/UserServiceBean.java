@@ -30,8 +30,7 @@ import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.data.filter.Filter;
-import com.butent.bee.shared.i18n.LocalizableConstants;
-import com.butent.bee.shared.i18n.LocalizableMessages;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.SupportedLocale;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -296,41 +295,36 @@ public class UserServiceBean {
     return getUserSign(getCurrentUserId());
   }
 
+  public Dictionary getDictionary() {
+    return getDictionary(getCurrentUserId());
+  }
+
+  public Dictionary getDictionary(Long userId) {
+    return Localizations.getDictionary(getSupportedLocale(userId));
+  }
+
+  public Map<String, String> getGlossary() {
+    return getGlossary(getCurrentUserId());
+  }
+
+  public Map<String, String> getGlossary(Long userId) {
+    return Localizations.getGlossary(getSupportedLocale(userId));
+  }
+
   public String getLanguage() {
     return getLanguage(getCurrentUserId());
   }
 
   public String getLanguage(Long userId) {
-    return getUserLocale(userId).getLanguage();
+    return getSupportedLocale(userId).getLanguage();
   }
 
   public Locale getLocale() {
-    return BeeUtils.nvl(I18nUtils.toLocale(getLanguage(getCurrentUserId())),
-        Localizations.getDefaultLocale());
+    return getLocale(getCurrentUserId());
   }
 
-  public LocalizableConstants getLocalizableConstants() {
-    return getLocalizableConstants(getCurrentUserId());
-  }
-
-  public LocalizableConstants getLocalizableConstants(Long userId) {
-    return Localizations.getPreferredConstants(getLanguage(userId));
-  }
-
-  public Map<String, String> getLocalizableDictionary() {
-    return getLocalizableDictionary(getCurrentUserId());
-  }
-
-  public Map<String, String> getLocalizableDictionary(Long userId) {
-    return Localizations.getPreferredDictionary(getLanguage(userId));
-  }
-
-  public LocalizableMessages getLocalizableMesssages() {
-    return getLocalizableMesssages(getCurrentUserId());
-  }
-
-  public LocalizableMessages getLocalizableMesssages(Long userId) {
-    return Localizations.getPreferredMessages(getLanguage(userId));
+  public Locale getLocale(Long userId) {
+    return I18nUtils.toLocale(getLanguage(userId));
   }
 
   public String getRoleName(Long roleId) {
@@ -406,6 +400,30 @@ public class UserServiceBean {
     }
   }
 
+  public SupportedLocale getSupportedLocale() {
+    return getSupportedLocale(getCurrentUserId());
+  }
+
+  public SupportedLocale getSupportedLocale(Long userId) {
+    if (userId == null) {
+      return SupportedLocale.USER_DEFAULT;
+    }
+
+    SqlSelect query = new SqlSelect()
+        .addFields(TBL_USER_SETTINGS, COL_USER_LOCALE)
+        .addFrom(TBL_USER_SETTINGS)
+        .setWhere(SqlUtils.equals(TBL_USER_SETTINGS, COL_USER, userId));
+
+    Integer value = qs.getInt(query);
+    SupportedLocale locale = EnumUtils.getEnumByIndex(SupportedLocale.class, value);
+
+    return (locale == null) ? SupportedLocale.USER_DEFAULT : locale;
+  }
+
+  public SupportedLocale getSupportedLocale(String user) {
+    return getSupportedLocale(getUserId(user));
+  }
+
   public String getUserEmail(Long userId, boolean checkCompany) {
     if (userId == null) {
       return null;
@@ -466,26 +484,6 @@ public class UserServiceBean {
   public UserInterface getUserInterface(String user) {
     UserInfo userInfo = getUserInfo(getUserId(user));
     return (userInfo == null) ? null : userInfo.getUserInterface();
-  }
-
-  public SupportedLocale getUserLocale(Long userId) {
-    if (userId == null) {
-      return SupportedLocale.DEFAULT;
-    }
-
-    SqlSelect query = new SqlSelect()
-        .addFields(TBL_USER_SETTINGS, COL_USER_LOCALE)
-        .addFrom(TBL_USER_SETTINGS)
-        .setWhere(SqlUtils.equals(TBL_USER_SETTINGS, COL_USER, userId));
-
-    Integer value = qs.getInt(query);
-    SupportedLocale locale = EnumUtils.getEnumByIndex(SupportedLocale.class, value);
-
-    return (locale == null) ? SupportedLocale.DEFAULT : locale;
-  }
-
-  public SupportedLocale getUserLocale(String user) {
-    return getUserLocale(getUserId(user));
   }
 
   public String getUserName(Long userId) {
@@ -661,6 +659,11 @@ public class UserServiceBean {
   public Boolean isBlocked(String user) {
     UserInfo userInfo = getUserInfo(getUserId(user));
     return (userInfo == null) ? null : userInfo.isBlocked(System.currentTimeMillis());
+  }
+
+  public boolean isColumnRequired(BeeView viewName, String column) {
+    UserInfo info = getCurrentUserInfo();
+    return (info == null) ? false : info.getUserData().isColumnRequired(viewName.getName(), column);
   }
 
   public boolean isColumnVisible(BeeView view, String column) {

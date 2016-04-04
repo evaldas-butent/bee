@@ -338,6 +338,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   private Evaluator rowValidation;
 
   private final Notification notification = new Notification();
+  private Evaluator rowMessage;
 
   private boolean enabled = true;
 
@@ -566,6 +567,11 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
       calc = formDescription.getRowValidation();
       if (calc != null) {
         setRowValidation(Evaluator.create(calc, null, dataCols));
+      }
+
+      Calculation rmc = formDescription.getRowMessage();
+      if (rmc != null) {
+        setRowMessage(Evaluator.create(rmc, null, dataCols));
       }
     }
 
@@ -1054,7 +1060,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
     }
 
     if (!ok && warn) {
-      notifyWarning(Localized.getConstants().rowIsReadOnly());
+      notifyWarning(Localized.dictionary().rowIsReadOnly());
     }
     return ok;
   }
@@ -1210,8 +1216,8 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
     }
 
     if (!updatedLabels.isEmpty()) {
-      String msg = isNew ? Localized.getConstants().newValues()
-          : Localized.getConstants().changedValues();
+      String msg = isNew ? Localized.dictionary().newValues()
+          : Localized.dictionary().changedValues();
       messages.add(msg + BeeConst.STRING_SPACE
           + BeeUtils.join(BeeConst.DEFAULT_LIST_SEPARATOR, updatedLabels));
     }
@@ -1225,8 +1231,8 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
       return;
     }
 
-    messages.add(isNew ? Localized.getConstants().createNewRow()
-        : Localized.getConstants().saveChanges());
+    messages.add(isNew ? Localized.dictionary().createNewRow()
+        : Localized.dictionary().saveChanges());
 
     DecisionCallback callback = new DecisionCallback() {
       @Override
@@ -1412,8 +1418,8 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
     }
 
     if (columns.isEmpty()) {
-      notifySevere(Localized.getConstants().newRow(),
-          Localized.getConstants().allValuesCannotBeEmpty());
+      notifySevere(Localized.dictionary().newRow(),
+          Localized.dictionary().allValuesCannotBeEmpty());
       return;
     }
 
@@ -1695,7 +1701,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   @Override
   public void startNewRow(boolean copy) {
     setAdding(true);
-    fireEvent(new AddStartEvent(Localized.getConstants().actionNew(), false));
+    fireEvent(new AddStartEvent(Localized.dictionary().actionNew(), false));
 
     IsRow row = getActiveRow();
     setRowBuffer(row);
@@ -1959,6 +1965,10 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
     return rowEditable;
   }
 
+  private Evaluator getRowMessage() {
+    return rowMessage;
+  }
+
   private Evaluator getRowValidation() {
     return rowValidation;
   }
@@ -2178,10 +2188,18 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
       getFormInterceptor().afterRefresh(this, getActiveRow());
     }
 
+    String message = BeeConst.STRING_EMPTY;
     if (showRowId() && getViewPresenter() != null) {
       long rowId = (getActiveRow() == null) ? BeeConst.UNDEF : getActiveRow().getId();
-      String message = DataUtils.isId(rowId) ? BeeUtils.bracket(rowId) : BeeConst.STRING_EMPTY;
+      message = DataUtils.isId(rowId) ? BeeUtils.bracket(rowId) : BeeConst.STRING_EMPTY;
+    }
 
+    if (getActiveRow() != null && getRowMessage() != null) {
+      getRowMessage().update(getActiveRow());
+      message = BeeUtils.joinWords(message, getRowMessage().evaluate());
+    }
+
+    if (!BeeUtils.isEmpty(message) && getViewPresenter() != null) {
       getViewPresenter().getHeader().setMessage(message);
     }
   }
@@ -2272,6 +2290,10 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
 
   private void setRowJso(JavaScriptObject rowJso) {
     this.rowJso = rowJso;
+  }
+
+  private void setRowMessage(Evaluator rowMessage) {
+    this.rowMessage = rowMessage;
   }
 
   private void setRowValidation(Evaluator rowValidation) {

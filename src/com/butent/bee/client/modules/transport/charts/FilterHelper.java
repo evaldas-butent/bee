@@ -289,7 +289,7 @@ final class FilterHelper {
     }
 
     if (dataCounter <= 0) {
-      BeeKeeper.getScreen().notifyWarning(Localized.getConstants().tooLittleData());
+      BeeKeeper.getScreen().notifyWarning(Localized.dictionary().tooLittleData());
       return;
     }
 
@@ -320,7 +320,7 @@ final class FilterHelper {
     int contentWidth = dataWrapperWidth;
     int contentHeight = dataWrapperHeight + COMMAND_GROUP_HEIGHT;
 
-    final DialogBox dialog = DialogBox.create(Localized.getConstants().filter(), STYLE_DIALOG);
+    final DialogBox dialog = DialogBox.create(Localized.dictionary().filter(), STYLE_DIALOG);
 
     final Split dataContainer = new Split(DATA_SPLITTER_WIDTH);
     dataContainer.addStyleName(STYLE_DATA_CONTAINER);
@@ -353,7 +353,7 @@ final class FilterHelper {
     Flow commands = new Flow();
     commands.addStyleName(STYLE_COMMAND_GROUP);
 
-    Button filter = new Button(Localized.getConstants().doFilter(), new ClickHandler() {
+    Button filter = new Button(Localized.dictionary().doFilter(), new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
         dialog.close();
@@ -363,7 +363,7 @@ final class FilterHelper {
     filter.addStyleName(STYLE_COMMAND_FILTER);
     commands.add(filter);
 
-    Button clear = new Button(Localized.getConstants().clear(), new ClickHandler() {
+    Button clear = new Button(Localized.dictionary().clear(), new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
         for (Widget widget : dataContainer) {
@@ -377,7 +377,7 @@ final class FilterHelper {
     clear.addStyleName(STYLE_COMMAND_CLEAR);
     commands.add(clear);
 
-    Button configure = new Button(Localized.getConstants().actionConfigure(), new ClickHandler() {
+    Button configure = new Button(Localized.dictionary().actionConfigure(), new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
         configureDataTypes(filterData, EventUtils.getEventTargetElement(event),
@@ -496,7 +496,7 @@ final class FilterHelper {
       newTypes.addAll(oldTypes);
     }
 
-    Global.inputWidget(Localized.getConstants().actionConfigure(), panel,
+    Global.inputWidget(Localized.dictionary().actionConfigure(), panel,
         new InputCallback() {
           @Override
           public void onSuccess() {

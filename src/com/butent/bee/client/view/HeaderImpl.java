@@ -152,7 +152,7 @@ public class HeaderImpl extends Flow implements HeaderView {
       }
 
       if (createNew) {
-        Label control = new Label("+ " + Localized.getConstants().createNew());
+        Label control = new Label("+ " + Localized.dictionary().createNew());
         control.addStyleName(BeeConst.CSS_CLASS_PREFIX + "CreateNew");
 
         initControl(control, Action.ADD, hiddenActions);

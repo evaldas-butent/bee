@@ -79,7 +79,7 @@ public final class RowFactory {
 
   private static final int GENERATED_AREA_HEIGHT = 60;
 
-  private static final String DEFAULT_CAPTION = Localized.getConstants().actionNew();
+  private static final String DEFAULT_CAPTION = Localized.dictionary().actionNew();
   private static final Modality DEFAULT_MODALITY = Modality.ENABLED;
 
   private static final BeeLogger logger = LogUtils.getLogger(RowFactory.class);
@@ -224,22 +224,22 @@ public final class RowFactory {
     panel.addStyleName(STYLE_MENU_PANEL);
 
     addMenuItem(panel, Module.TASKS, TaskConstants.VIEW_TASKS,
-        Localized.getConstants().crmNewTask());
+        Localized.dictionary().crmNewTask());
 
     addMenuItem(panel, Module.CLASSIFIERS, ClassifierConstants.VIEW_COMPANIES,
-        Localized.getConstants().newClient());
+        Localized.dictionary().newClient());
 
     addMenuItem(panel, Module.DOCUMENTS, DocumentConstants.VIEW_DOCUMENTS,
-        Localized.getConstants().documentNew());
+        Localized.dictionary().documentNew());
 
     addMenuItem(panel, Module.TASKS, TaskConstants.VIEW_TODO_LIST,
-        Localized.getConstants().crmNewTodoItem());
+        Localized.dictionary().crmNewTodoItem());
 
     addMenuItem(panel, Module.TASKS, TaskConstants.TBL_REQUESTS,
-        Localized.getConstants().crmNewRequest());
+        Localized.dictionary().crmNewRequest());
 
     addMenuItem(panel, Module.DISCUSSIONS, DiscussionsConstants.VIEW_DISCUSSIONS,
-        Localized.getConstants().announcementNew(), new Runnable() {
+        Localized.dictionary().announcementNew(), new Runnable() {
           @Override
           public void run() {
             DataInfo dataInfo = Data.getDataInfo(DiscussionsConstants.VIEW_DISCUSSIONS);
@@ -251,7 +251,7 @@ public final class RowFactory {
             }
 
             RowFactory.createRow(DiscussionsConstants.FORM_NEW_DISCUSSION,
-                Localized.getConstants().announcementNew(), dataInfo, row, DEFAULT_MODALITY, null);
+                Localized.dictionary().announcementNew(), dataInfo, row, DEFAULT_MODALITY, null);
           }
         });
 

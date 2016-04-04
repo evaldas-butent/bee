@@ -342,7 +342,7 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
         }
 
         if (addMode && BeeUtils.isEmpty(columns)) {
-          return Localized.getConstants().allValuesCannotBeEmpty();
+          return Localized.dictionary().allValuesCannotBeEmpty();
         }
         return null;
       }
@@ -401,7 +401,7 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
     final IsRow data = getView().getSelectedItem();
 
     if (data != null) {
-      String message = BeeUtils.joinWords(Localized.getConstants().delete(),
+      String message = BeeUtils.joinWords(Localized.dictionary().delete(),
           BeeUtils.bracket(evaluate(data)), "?");
 
       Global.confirmDelete(getCaption(), Icon.WARNING, Lists.newArrayList(message),

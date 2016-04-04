@@ -7,12 +7,17 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.dialog.ChoiceCallback;
+import com.butent.bee.client.output.ReportUtils;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.Opener;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.BiConsumer;
+import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Holder;
+import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.i18n.Localized;
@@ -21,7 +26,10 @@ import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public abstract class PrintFormInterceptor extends AbstractFormInterceptor {
 
@@ -31,11 +39,11 @@ public abstract class PrintFormInterceptor extends AbstractFormInterceptor {
       if (DataUtils.isNewRow(getActiveRow())) {
         return false;
       }
-      String[] reports = getReports();
-
-      if (ArrayUtils.isEmpty(reports)) {
-        reports = BeeUtils.split(getFormView().getProperty("reports"), BeeConst.CHAR_COMMA);
+      if (printJasperReport()) {
+        return false;
       }
+      String[] reports = BeeUtils.split(getFormView().getProperty("reports"), BeeConst.CHAR_COMMA);
+
       if (!ArrayUtils.isEmpty(reports)) {
         final List<FormDescription> forms = Lists.newArrayListWithCapacity(reports.length);
         for (int i = 0; i < reports.length; i++) {
@@ -94,7 +102,7 @@ public abstract class PrintFormInterceptor extends AbstractFormInterceptor {
 
                 if (captions.size() > 1) {
                   Global.choice(null,
-                      Localized.getConstants().choosePrintingForm(), captions, choice);
+                      Localized.dictionary().choosePrintingForm(), captions, choice);
 
                 } else if (captions.size() == 1) {
                   choice.onSuccess(0);
@@ -109,9 +117,51 @@ public abstract class PrintFormInterceptor extends AbstractFormInterceptor {
     return super.beforeAction(action, presenter);
   }
 
-  public abstract FormInterceptor getPrintFormInterceptor();
-
-  public String[] getReports() {
+  public FormInterceptor getPrintFormInterceptor() {
     return null;
+  }
+
+  protected void getReportData(Consumer<BeeRowSet[]> dataConsumer) {
+    dataConsumer.accept(null);
+  }
+
+  protected void getReportParameters(Consumer<Map<String, String>> parametersConsumer) {
+    Map<String, String> params = new HashMap<>();
+
+    for (BeeColumn column : getFormView().getDataColumns()) {
+      String value = getStringValue(column.getId());
+
+      if (!BeeUtils.isEmpty(value)) {
+        params.put(column.getId(), value);
+      }
+    }
+    params.put("ID", BeeUtils.toString(getActiveRowId()));
+    parametersConsumer.accept(params);
+  }
+
+  protected String[] getReports() {
+    return BeeUtils.split(getFormView().getProperty("jasperReports"), BeeConst.CHAR_COMMA);
+  }
+
+  protected void print(BiConsumer<Map<String, String>, BeeRowSet[]> consumer) {
+    getReportParameters((parameters) -> getReportData((data) -> consumer.accept(parameters, data)));
+  }
+
+  private boolean printJasperReport() {
+    String[] reports = getReports();
+
+    if (ArrayUtils.isEmpty(reports)) {
+      return false;
+    }
+    Consumer<String> consumer = (report) -> print((parameters, data) ->
+        ReportUtils.showReport(report, parameters, data));
+
+    if (reports.length > 1) {
+      Global.choice(null, Localized.dictionary().choosePrintingForm(), Arrays.asList(reports),
+          (idx) -> consumer.accept(reports[idx]));
+    } else {
+      consumer.accept(reports[0]);
+    }
+    return true;
   }
 }

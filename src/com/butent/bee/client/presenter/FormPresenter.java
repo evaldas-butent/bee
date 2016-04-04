@@ -400,7 +400,7 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
 
   private void deleteRow(long rowId, long version) {
     Global.confirmDelete(getCaption(), Icon.WARNING,
-        Collections.singletonList(Localized.getConstants().deleteRecordQuestion()),
+        Collections.singletonList(Localized.dictionary().deleteRecordQuestion()),
         new DeleteCallback(rowId, version));
   }
 

@@ -25,7 +25,7 @@ class ModeFilterSupplier extends AbstractFilterSupplier {
     NEW {
       @Override
       String getLabel() {
-        return Localized.getConstants().crmTaskFilterNew();
+        return Localized.dictionary().crmTaskFilterNew();
       }
 
       @Override
@@ -37,7 +37,7 @@ class ModeFilterSupplier extends AbstractFilterSupplier {
     UPDATED {
       @Override
       String getLabel() {
-        return Localized.getConstants().crmTaskFilterUpdated();
+        return Localized.dictionary().crmTaskFilterUpdated();
       }
 
       @Override
@@ -49,7 +49,7 @@ class ModeFilterSupplier extends AbstractFilterSupplier {
     NEW_OR_UPDATED {
       @Override
       String getLabel() {
-        return Localized.getConstants().crmTaskFilterNewOrUpdated();
+        return Localized.dictionary().crmTaskFilterNewOrUpdated();
       }
 
       @Override
@@ -142,7 +142,7 @@ class ModeFilterSupplier extends AbstractFilterSupplier {
 
     int row = 0;
 
-    Button bNew = new Button(Localized.getConstants().crmTaskFilterNew());
+    Button bNew = new Button(Localized.dictionary().crmTaskFilterNew());
     bNew.addStyleName(getStylePrefix() + "new");
 
     bNew.addClickHandler(new ClickHandler() {
@@ -161,7 +161,7 @@ class ModeFilterSupplier extends AbstractFilterSupplier {
 
     row++;
 
-    Button bUpd = new Button(Localized.getConstants().crmTaskFilterUpdated());
+    Button bUpd = new Button(Localized.dictionary().crmTaskFilterUpdated());
     bUpd.addStyleName(getStylePrefix() + "upd");
 
     bUpd.addClickHandler(new ClickHandler() {
@@ -180,7 +180,7 @@ class ModeFilterSupplier extends AbstractFilterSupplier {
 
     row++;
 
-    Button both = new Button(Localized.getConstants().crmTaskFilterNewOrUpdated());
+    Button both = new Button(Localized.dictionary().crmTaskFilterNewOrUpdated());
     both.addStyleName(getStylePrefix() + "both");
 
     both.addClickHandler(new ClickHandler() {
@@ -202,7 +202,7 @@ class ModeFilterSupplier extends AbstractFilterSupplier {
 
     row++;
 
-    Button all = new Button(Localized.getConstants().crmTaskFilterAll());
+    Button all = new Button(Localized.dictionary().crmTaskFilterAll());
     all.addStyleName(getStylePrefix() + "all");
 
     all.addClickHandler(new ClickHandler() {
@@ -216,7 +216,7 @@ class ModeFilterSupplier extends AbstractFilterSupplier {
 
     container.setWidget(row, 0, all);
 
-    Button cancel = new Button(Localized.getConstants().cancel());
+    Button cancel = new Button(Localized.dictionary().cancel());
     cancel.addStyleName(getStylePrefix() + "cancel");
 
     cancel.addClickHandler(new ClickHandler() {

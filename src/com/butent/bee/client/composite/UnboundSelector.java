@@ -163,7 +163,7 @@ public final class UnboundSelector extends DataSelector implements HandlesRender
       if (!BeeUtils.isEmpty(getRelationLabel())) {
         messages.add(getRelationLabel());
       }
-      messages.add(Localized.getConstants().valueRequired());
+      messages.add(Localized.dictionary().valueRequired());
     }
     return messages;
   }

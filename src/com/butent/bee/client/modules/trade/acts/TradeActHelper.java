@@ -41,126 +41,126 @@ final class TradeActHelper {
   static String getLabel(String name) {
     switch (name) {
       case COL_TRADE_ACT:
-        return Localized.getConstants().tradeAct();
+        return Localized.dictionary().tradeAct();
 
       case COL_TA_NAME:
       case COL_TRADE_ACT_NAME:
-        return Localized.getConstants().tradeActName();
+        return Localized.dictionary().tradeActName();
 
       case COL_TA_DATE:
-        return Localized.getConstants().taDate();
+        return Localized.dictionary().taDate();
       case COL_TA_UNTIL:
-        return Localized.getConstants().taUntil();
+        return Localized.dictionary().taUntil();
 
       case COL_TA_SERIES:
       case COL_SERIES_NAME:
-        return Localized.getConstants().trdSeries();
+        return Localized.dictionary().trdSeries();
 
       case COL_TA_NUMBER:
-        return Localized.getConstants().number();
+        return Localized.dictionary().number();
 
       case COL_TA_OPERATION:
       case COL_OPERATION_NAME:
-        return Localized.getConstants().trdOperation();
+        return Localized.dictionary().trdOperation();
 
       case COL_TA_STATUS:
       case COL_STATUS_NAME:
-        return Localized.getConstants().status();
+        return Localized.dictionary().status();
 
       case COL_TA_COMPANY:
       case ALS_COMPANY_NAME:
-        return Localized.getConstants().client();
+        return Localized.dictionary().client();
 
       case COL_TA_OBJECT:
       case COL_COMPANY_OBJECT_NAME:
-        return Localized.getConstants().object();
+        return Localized.dictionary().object();
 
       case COL_TA_MANAGER:
-        return Localized.getConstants().manager();
+        return Localized.dictionary().manager();
 
       case COL_FIRST_NAME:
-        return Localized.getConstants().firstName();
+        return Localized.dictionary().firstName();
       case COL_LAST_NAME:
-        return Localized.getConstants().lastName();
+        return Localized.dictionary().lastName();
 
       case COL_WAREHOUSE:
       case ALS_WAREHOUSE_CODE:
-        return Localized.getConstants().warehouse();
+        return Localized.dictionary().warehouse();
 
       case COL_ITEM_TYPE:
       case ALS_ITEM_TYPE_NAME:
-        return Localized.getConstants().type();
+        return Localized.dictionary().type();
 
       case COL_ITEM_GROUP:
       case ALS_ITEM_GROUP_NAME:
-        return Localized.getConstants().group();
+        return Localized.dictionary().group();
 
       case COL_TA_ITEM:
-        return Localized.getConstants().item();
+        return Localized.dictionary().item();
 
       case ALS_ITEM_NAME:
-        return Localized.getConstants().itemName();
+        return Localized.dictionary().itemName();
       case COL_ITEM_ARTICLE:
-        return Localized.getConstants().article();
+        return Localized.dictionary().article();
       case COL_ITEM_WEIGHT:
-        return Localized.getConstants().weight();
+        return Localized.dictionary().weight();
 
       case COL_UNIT:
       case ALS_UNIT_NAME:
-        return Localized.getConstants().unitShort();
+        return Localized.dictionary().unitShort();
       case COL_TIME_UNIT:
-        return Localized.getConstants().taTimeUnit();
+        return Localized.dictionary().taTimeUnit();
 
       case COL_TRADE_ITEM_QUANTITY:
-        return Localized.getConstants().quantity();
+        return Localized.dictionary().quantity();
       case ALS_RETURNED_QTY:
-        return Localized.getConstants().taQuantityReturned();
+        return Localized.dictionary().taQuantityReturned();
       case ALS_REMAINING_QTY:
-        return Localized.getConstants().taQuantityRemained();
+        return Localized.dictionary().taQuantityRemained();
 
       case COL_TRADE_ITEM_PRICE:
-        return Localized.getConstants().price();
+        return Localized.dictionary().price();
 
       case ALS_BASE_AMOUNT:
-        return Localized.getConstants().amount();
+        return Localized.dictionary().amount();
 
       case COL_TRADE_DISCOUNT:
-        return Localized.getConstants().discountPercent();
+        return Localized.dictionary().discountPercent();
       case ALS_DISCOUNT_AMOUNT:
-        return Localized.getConstants().discount();
+        return Localized.dictionary().discount();
 
       case ALS_WITHOUT_VAT:
-        return Localized.getConstants().trdAmountWoVat();
+        return Localized.dictionary().trdAmountWoVat();
       case ALS_VAT_AMOUNT:
-        return Localized.getConstants().vatAmount();
+        return Localized.dictionary().vatAmount();
 
       case ALS_TOTAL_AMOUNT:
-        return Localized.getConstants().total();
+        return Localized.dictionary().total();
 
       case COL_SALE:
-        return Localized.getConstants().trdInvoiceId();
+        return Localized.dictionary().trdInvoiceId();
 
       case COL_TRADE_INVOICE_PREFIX:
-        return Localized.getConstants().trdInvoicePrefix();
+        return Localized.dictionary().trdInvoicePrefix();
       case COL_TRADE_INVOICE_NO:
-        return Localized.getConstants().trdInvoiceNo();
+        return Localized.dictionary().trdInvoiceNo();
 
       case COL_TA_INVOICE_FROM:
-        return Localized.getConstants().dateFrom();
+        return Localized.dictionary().dateFrom();
       case COL_TA_INVOICE_TO:
-        return Localized.getConstants().dateTo();
+        return Localized.dictionary().dateTo();
 
       case ALS_ITEM_TOTAL:
-        return Localized.getConstants().goods();
+        return Localized.dictionary().goods();
       case COL_TA_SERVICE_TARIFF:
-        return Localized.getConstants().taTariff();
+        return Localized.dictionary().taTariff();
 
       case COL_TA_SERVICE_FACTOR:
-        return Localized.getConstants().taFactorShort();
+        return Localized.dictionary().taFactorShort();
       case COL_TA_SERVICE_DAYS:
-        return Localized.getConstants().taDaysPerWeekShort();
+        return Localized.dictionary().taDaysPerWeekShort();
       case COL_TA_SERVICE_MIN:
-        return Localized.getConstants().taMinTermShort();
+        return Localized.dictionary().taMinTermShort();
 
       default:
         logger.warning(NameUtils.getClassName(TradeActHelper.class), name, "label not defined");
@@ -171,34 +171,34 @@ final class TradeActHelper {
   static String getLabel(String name, boolean plural) {
     switch (name) {
       case COL_TA_COMPANY:
-        return plural ? Localized.getConstants().clients() : Localized.getConstants().client();
+        return plural ? Localized.dictionary().clients() : Localized.dictionary().client();
 
       case COL_TA_OBJECT:
-        return plural ? Localized.getConstants().objects() : Localized.getConstants().object();
+        return plural ? Localized.dictionary().objects() : Localized.dictionary().object();
 
       case COL_TA_OPERATION:
-        return plural ? Localized.getConstants().trdOperationsShort()
-            : Localized.getConstants().trdOperation();
+        return plural ? Localized.dictionary().trdOperationsShort()
+            : Localized.dictionary().trdOperation();
 
       case COL_TA_STATUS:
-        return plural ? Localized.getConstants().trdStatuses() : Localized.getConstants().status();
+        return plural ? Localized.dictionary().trdStatuses() : Localized.dictionary().status();
 
       case COL_TA_SERIES:
-        return plural ? Localized.getConstants().seriesPlural()
-            : Localized.getConstants().trdSeries();
+        return plural ? Localized.dictionary().seriesPlural()
+            : Localized.dictionary().trdSeries();
 
       case COL_TA_MANAGER:
-        return plural ? Localized.getConstants().managers() : Localized.getConstants().manager();
+        return plural ? Localized.dictionary().managers() : Localized.dictionary().manager();
 
       case COL_WAREHOUSE:
-        return plural ? Localized.getConstants().warehouses()
-            : Localized.getConstants().warehouse();
+        return plural ? Localized.dictionary().warehouses()
+            : Localized.dictionary().warehouse();
 
       case COL_CATEGORY:
-        return plural ? Localized.getConstants().categories() : Localized.getConstants().category();
+        return plural ? Localized.dictionary().categories() : Localized.dictionary().category();
 
       case COL_TA_ITEM:
-        return plural ? Localized.getConstants().goods() : Localized.getConstants().item();
+        return plural ? Localized.dictionary().goods() : Localized.dictionary().item();
 
       default:
         logger.warning(NameUtils.getClassName(TradeActHelper.class), name, plural,

@@ -51,7 +51,7 @@ public final class AdministrationUtils {
     }
 
     Global.confirm(caption, Icon.WARNING, Lists.newArrayList(host),
-        Localized.getConstants().actionBlock(), Localized.getConstants().actionCancel(),
+        Localized.dictionary().actionBlock(), Localized.dictionary().actionCancel(),
         new ConfirmationCallback() {
           @Override
           public void onConfirm() {
@@ -71,7 +71,7 @@ public final class AdministrationUtils {
 
                 if (response.is(host)) {
                   if (notificationListener != null) {
-                    notificationListener.notifyInfo(Localized.getConstants().ipBlocked(), host);
+                    notificationListener.notifyInfo(Localized.dictionary().ipBlocked(), host);
                   }
                   if (callback != null) {
                     callback.onSuccess(host);
@@ -97,11 +97,11 @@ public final class AdministrationUtils {
     final String pswd = BeeUtils.notEmpty(password, login.trim().substring(0, 1));
 
     String separator = BeeConst.STRING_COLON + BeeConst.STRING_SPACE;
-    final String msgLogin = Localized.getConstants().userLogin() + separator + login.trim();
-    final String msgPswd = Localized.getConstants().password() + separator + pswd.trim();
+    final String msgLogin = Localized.dictionary().userLogin() + separator + login.trim();
+    final String msgPswd = Localized.dictionary().password() + separator + pswd.trim();
 
     Global.confirm(caption, Icon.QUESTION, Lists.newArrayList(msgLogin, msgPswd),
-        Localized.getConstants().actionCreate(), Localized.getConstants().actionCancel(),
+        Localized.dictionary().actionCreate(), Localized.dictionary().actionCancel(),
         new ConfirmationCallback() {
           @Override
           public void onConfirm() {
@@ -131,7 +131,7 @@ public final class AdministrationUtils {
                   DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_USERS);
 
                   if (notificationListener != null) {
-                    notificationListener.notifyInfo(Localized.getConstants().newUser(), msgLogin,
+                    notificationListener.notifyInfo(Localized.dictionary().newUser(), msgLogin,
                         msgPswd);
                   }
                   if (callback != null) {
@@ -147,7 +147,7 @@ public final class AdministrationUtils {
   public static void updateExchangeRates() {
     Flow panel = new Flow(STYLE_UPDATE_RATES_PREFIX + "panel");
 
-    Label lowLabel = new Label(Localized.getConstants().updateExchangeRatesDateLow());
+    Label lowLabel = new Label(Localized.dictionary().updateExchangeRatesDateLow());
     lowLabel.addStyleName(STYLE_UPDATE_RATES_PREFIX + "lowLabel");
     panel.add(lowLabel);
 
@@ -160,7 +160,7 @@ public final class AdministrationUtils {
     CustomDiv rangeSeparator = new CustomDiv(STYLE_UPDATE_RATES_PREFIX + "rangeSeparator");
     panel.add(rangeSeparator);
 
-    Label highLabel = new Label(Localized.getConstants().updateExchangeRatesDateHigh());
+    Label highLabel = new Label(Localized.dictionary().updateExchangeRatesDateHigh());
     highLabel.addStyleName(STYLE_UPDATE_RATES_PREFIX + "highLabel");
     panel.add(highLabel);
 
@@ -176,15 +176,15 @@ public final class AdministrationUtils {
     CustomDiv actionSeparator = new CustomDiv(STYLE_UPDATE_RATES_PREFIX + "actionSeparator");
     panel.add(actionSeparator);
 
-    final Button submit = new Button(Localized.getConstants().actionUpdate());
+    final Button submit = new Button(Localized.dictionary().actionUpdate());
     submit.addStyleName(STYLE_UPDATE_RATES_PREFIX + "submit");
     panel.add(submit);
 
-    Button cancel = new Button(Localized.getConstants().actionCancel());
+    Button cancel = new Button(Localized.dictionary().actionCancel());
     cancel.addStyleName(STYLE_UPDATE_RATES_PREFIX + "cancel");
     panel.add(cancel);
 
-    String caption = Localized.getConstants().updateExchangeRatesDialogCaption();
+    String caption = Localized.dictionary().updateExchangeRatesDialogCaption();
     final DialogBox dialog = DialogBox.create(caption, STYLE_UPDATE_RATES_PREFIX + "dialog");
     dialog.setWidget(panel);
 
@@ -198,20 +198,20 @@ public final class AdministrationUtils {
       public void onClick(ClickEvent event) {
         JustDate lowDate = lowInput.getDate();
         if (lowDate == null) {
-          BeeKeeper.getScreen().notifyWarning(Localized.getConstants().valueRequired());
+          BeeKeeper.getScreen().notifyWarning(Localized.dictionary().valueRequired());
           lowInput.setFocus(true);
           return;
         }
 
         JustDate hightDate = highInput.getDate();
         if (hightDate == null) {
-          BeeKeeper.getScreen().notifyWarning(Localized.getConstants().valueRequired());
+          BeeKeeper.getScreen().notifyWarning(Localized.dictionary().valueRequired());
           highInput.setFocus(true);
           return;
         }
 
         if (TimeUtils.isMore(lowDate, hightDate)) {
-          BeeKeeper.getScreen().notifyWarning(Localized.getConstants().invalidRange(),
+          BeeKeeper.getScreen().notifyWarning(Localized.dictionary().invalidRange(),
               BeeUtils.joinWords(lowDate, hightDate));
           return;
         }

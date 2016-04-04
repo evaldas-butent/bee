@@ -35,7 +35,7 @@ public class ChatGrid extends AbstractGridInterceptor {
     presenter.getHeader().clearCommandPanel();
 
     FaLabel openChat = new FaLabel(FontAwesome.COMMENTS_O);
-    openChat.setTitle(Localized.getConstants().actionOpen());
+    openChat.setTitle(Localized.dictionary().actionOpen());
 
     openChat.addClickHandler(event -> {
       long chatId = presenter.getActiveRowId();
@@ -66,7 +66,7 @@ public class ChatGrid extends AbstractGridInterceptor {
 
         if (row.isRemovable() && owner) {
           List<String> messages =
-              Collections.singletonList(Localized.getConstants().chatDeleteQuestion());
+              Collections.singletonList(Localized.dictionary().chatDeleteQuestion());
 
           Global.confirmDelete(caption, Icon.WARNING, messages, () -> {
             ParameterList params = BeeKeeper.getRpc().createParameters(Service.DELETE_CHAT);
@@ -85,7 +85,7 @@ public class ChatGrid extends AbstractGridInterceptor {
 
         } else if (!owner && chat != null && chat.getUsers().size() > 2 && chat.hasUser(userId)) {
           List<String> messages =
-              Collections.singletonList(Localized.getConstants().chatLeaveQuestion());
+              Collections.singletonList(Localized.dictionary().chatLeaveQuestion());
 
           Global.confirm(caption, Icon.WARNING, messages, () -> {
             ParameterList params = BeeKeeper.getRpc().createParameters(Service.UPDATE_CHAT);
@@ -106,7 +106,7 @@ public class ChatGrid extends AbstractGridInterceptor {
           });
 
         } else {
-          getGridView().notifyWarning(Localized.getConstants().rowIsNotRemovable());
+          getGridView().notifyWarning(Localized.dictionary().rowIsNotRemovable());
         }
       }
 

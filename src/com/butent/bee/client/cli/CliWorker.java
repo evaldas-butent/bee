@@ -100,6 +100,7 @@ import com.butent.bee.client.menu.MenuCommand;
 import com.butent.bee.client.modules.administration.AdministrationKeeper;
 import com.butent.bee.client.modules.ec.EcKeeper;
 import com.butent.bee.client.modules.tasks.TasksKeeper;
+import com.butent.bee.client.output.Exporter;
 import com.butent.bee.client.output.Printable;
 import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.style.Axis;
@@ -325,6 +326,9 @@ public final class CliWorker {
 
     } else if (z.startsWith("df")) {
       showDateFormat(args);
+
+    } else if (z.startsWith("dict") && !args.isEmpty()) {
+      doDictionary(args, errorPopup);
 
     } else if (z.startsWith("dim")) {
       showDimensions(args);
@@ -844,6 +848,13 @@ public final class CliWorker {
     } else if (BeeUtils.startsSame(args, "widget")) {
       ViewFactory.clear();
       debugWithSeparator("widget factory cleared");
+
+    } else if (BeeUtils.startsSame(args, "export")) {
+      Exporter.clearServerCache(null);
+
+    } else if (BeeUtils.startsSame(args, "size")) {
+      Data.clearApproximateSizes();
+      debugWithSeparator("approximate sizes cleared");
     }
   }
 
@@ -1196,6 +1207,38 @@ public final class CliWorker {
     logger.addSeparator();
   }
 
+  private static void doDictionary(String args, boolean errorPopup) {
+    final String service;
+
+    if (BeeUtils.startsSame(args, "get", "load")) {
+      service = SVC_GET_DICTIONARY;
+
+    } else if (BeeUtils.startsSame(args, "d2p", "b2p")) {
+      service = SVC_DICTIONARY_DATABASE_TO_PROPERTIES;
+
+    } else {
+      showError(errorPopup, "dictionary service not recognized:", args);
+      service = null;
+      return;
+    }
+
+    BeeKeeper.getRpc().makeRequest(AdministrationKeeper.createArgs(service),
+        new ResponseCallback() {
+          @Override
+          public void onResponse(ResponseObject response) {
+            if (!response.hasErrors()) {
+              if (SVC_GET_DICTIONARY.equals(service)) {
+                Localized.setGlossary(Codec.deserializeMap(response.getResponseAsString()));
+                logger.debug(service, Localized.getGlossary().size());
+
+              } else {
+                logger.debug(service, response.getResponse());
+              }
+            }
+          }
+        });
+  }
+
   private static void doDsn() {
     BeeKeeper.getRpc().makeGetRequest(Service.GET_DSNS, new ResponseCallback() {
       @Override
@@ -1373,12 +1416,12 @@ public final class CliWorker {
   }
 
   private static void doLocale(String[] arr, String args) {
-    if (BeeUtils.isEmpty(args)) {
-      showExtData("Locale info", LocaleUtils.getInfo());
-
-    } else if (BeeUtils.contains(arr[0], 's')) {
+    if (BeeUtils.contains(arr[0], 's')) {
       BeeKeeper.getRpc().invoke("localeInfo", args,
           ResponseHandler.callback(ArrayUtils.joinWords(arr)));
+
+    } else if (BeeUtils.isEmpty(args)) {
+      showExtData("Locale info", LocaleUtils.getInfo());
 
     } else {
       List<Property> info = new ArrayList<>();
@@ -2524,6 +2567,15 @@ public final class CliWorker {
     if (BeeUtils.inListSame(viewName, "load", "refresh", "+", "x")) {
       Data.getDataInfoProvider().load();
 
+    } else if (BeeUtils.inListSame(viewName, "size", "s", "c", "r", "rc")) {
+      Map<String, Integer> sizes = new TreeMap<>(Data.getApproximateSizes());
+
+      if (sizes.isEmpty()) {
+        logger.debug("data sizes are empty");
+      } else {
+        showPropData("approximate sizes", PropertyUtils.createProperties(sizes));
+      }
+
     } else {
       if (!BeeUtils.isEmpty(viewName)) {
         DataInfo dataInfo = Data.getDataInfo(viewName, false);
@@ -3097,8 +3149,8 @@ public final class CliWorker {
     double width = BeeConst.DOUBLE_UNDEF;
     CssUnit widthUnit = null;
     int timeout = BeeConst.UNDEF;
-    String confirmHtml = Localized.getConstants().ok();
-    String cancelHtml = Localized.getConstants().cancel();
+    String confirmHtml = Localized.dictionary().ok();
+    String cancelHtml = Localized.dictionary().cancel();
 
     boolean required = true;
 
@@ -3619,7 +3671,7 @@ public final class CliWorker {
             String right = StyleUtils.className(TextAlign.RIGHT);
             String bold = StyleUtils.className(FontWeight.BOLD);
 
-            table.setText(0, 0, Localized.getConstants().currency());
+            table.setText(0, 0, Localized.dictionary().currency());
 
             for (int i = 0; i < currencies.size(); i++) {
               String name = currencies.get(i).getB();
@@ -3639,7 +3691,7 @@ public final class CliWorker {
               }
             }
 
-            table.setCaption(BeeUtils.joinWords(Localized.getConstants().currencyRates(), dt));
+            table.setCaption(BeeUtils.joinWords(Localized.dictionary().currencyRates(), dt));
             BeeKeeper.getScreen().show(table);
           }
         });
@@ -3704,7 +3756,10 @@ public final class CliWorker {
     if (BeeKeeper.getRpc().getRpcList().isEmpty()) {
       inform("RpcList empty");
 
-    } else if (BeeUtils.contains(args, 'p')) {
+    } else if (BeeUtils.startsWith(args, 'c')) {
+      BeeKeeper.getRpc().getRpcList().tryCompress();
+
+    } else if (BeeUtils.startsWith(args, 'p')) {
       List<RpcInfo> requests = BeeKeeper.getRpc().getPendingRequests();
 
       if (requests.isEmpty()) {
@@ -4384,7 +4439,7 @@ public final class CliWorker {
       } else {
         String z = BeeKeeper.getStorage().get(key);
         if (z == null) {
-          showError(errorPopup, Localized.getMessages().keyNotFound(key));
+          showError(errorPopup, Localized.dictionary().keyNotFound(key));
         } else {
           inform(key, z);
         }

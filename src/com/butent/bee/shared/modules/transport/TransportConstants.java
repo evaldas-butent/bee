@@ -1,6 +1,6 @@
 package com.butent.bee.shared.modules.transport;
 
-import com.butent.bee.shared.i18n.LocalizableConstants;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.ui.HasLocalizedCaption;
@@ -11,25 +11,25 @@ public final class TransportConstants {
   public enum AssessmentStatus implements HasLocalizedCaption {
     NEW {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.trAssessmentStatusNew();
       }
     },
     ANSWERED {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.trAssessmentStatusAnswered();
       }
     },
     LOST {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.trAssessmentStatusLost();
       }
     },
     APPROVED {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.trAssessmentStatusApproved();
       }
     };
@@ -42,43 +42,43 @@ public final class TransportConstants {
   public enum ShipmentRequestStatus implements HasLocalizedCaption {
     NEW {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.trRequestStatusNew();
       }
     },
     ANSWERED {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.trRequestStatusAnswered();
       }
     },
     CONTRACT_SENT {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.trRequestStatusContractSent();
       }
     },
     APPROVED {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.trRequestStatusApproved();
       }
     },
     REJECTED {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.trRequestStatusRejected();
       }
     },
     CONFIRMED {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.trRequestStatusConfirmed();
       }
     },
     LOST {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.trRequestStatusLost();
       }
     };
@@ -91,13 +91,13 @@ public final class TransportConstants {
   public enum TextConstant implements HasLocalizedCaption {
     SHIPPING_TERMS {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.trShippingTerms();
       }
     },
     CONTRACT_MAIL_CONTENT {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.trContractMailContent();
       }
 
@@ -112,7 +112,7 @@ public final class TransportConstants {
     },
     REGISTRATION_MAIL_CONTENT {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.trRegistrationMailContent();
       }
 
@@ -128,7 +128,7 @@ public final class TransportConstants {
     },
     REQUEST_CONFIRMED_MAIL_CONTENT {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.trRequestConfirmedMailContent();
       }
 
@@ -141,7 +141,7 @@ public final class TransportConstants {
     },
     REQUEST_LOST_MAIL_CONTENT {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.trRequestLostMailContent();
       }
 
@@ -161,13 +161,13 @@ public final class TransportConstants {
   public enum FuelSeason implements HasLocalizedCaption {
     SUMMER {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.summer();
       }
     },
     WINTER {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.winter();
       }
     };
@@ -176,25 +176,25 @@ public final class TransportConstants {
   public enum OrderStatus implements HasLocalizedCaption {
     REQUEST {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.trOrderStatusRequest();
       }
     },
     ACTIVE {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.trOrderStatusActive();
       }
     },
     CANCELED {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.trOrderStatusCanceled();
       }
     },
     COMPLETED {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.trOrderStatusCompleted();
       }
     };
@@ -205,10 +205,10 @@ public final class TransportConstants {
   }
 
   public enum TripStatus implements HasCaption {
-    NEW(Localized.getConstants().trTripStatusNew(), true),
-    ACTIVE(Localized.getConstants().trTripStatusActive(), true),
-    CANCELED(Localized.getConstants().trTripStatusCanceled(), false),
-    COMPLETED(Localized.getConstants().trTripStatusCompleted(), false);
+    NEW(Localized.dictionary().trTripStatusNew(), true),
+    ACTIVE(Localized.dictionary().trTripStatusActive(), true),
+    CANCELED(Localized.dictionary().trTripStatusCanceled(), false),
+    COMPLETED(Localized.dictionary().trTripStatusCompleted(), false);
 
     private final String caption;
     private final boolean editable;
@@ -231,21 +231,21 @@ public final class TransportConstants {
   public enum TripConstant implements HasLocalizedCaption {
     AVERAGE_KM_COST {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.trAverageKilometerCost();
       }
     },
 
     AVERAGE_FUEL_COST {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.trAverageFuelCost();
       }
     },
 
     CONSTANT_COSTS {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.trConstantCosts();
       }
     };

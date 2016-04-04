@@ -243,8 +243,8 @@ public class MessageBoxes {
     Assert.notEmpty(messages);
     Assert.notNull(callback);
 
-    List<String> options = Lists.newArrayList(Localized.getConstants().yes(),
-        Localized.getConstants().no(), Localized.getConstants().cancel());
+    List<String> options = Lists.newArrayList(Localized.dictionary().yes(),
+        Localized.dictionary().no(), Localized.dictionary().cancel());
 
     ChoiceCallback choice = new ChoiceCallback() {
       @Override
@@ -478,7 +478,7 @@ public class MessageBoxes {
       String closeHtml) {
 
     List<String> options = Lists.newArrayList(BeeUtils.notEmpty(closeHtml,
-        Localized.getConstants().ok()));
+        Localized.dictionary().ok()));
 
     display(caption, Icon.ERROR, messages, options, 0, null, BeeConst.UNDEF, dialogStyle, null,
         null, null, null);
@@ -488,7 +488,7 @@ public class MessageBoxes {
       String closeHtml) {
 
     List<String> options = Lists.newArrayList(BeeUtils.notEmpty(closeHtml,
-        Localized.getConstants().ok()));
+        Localized.dictionary().ok()));
 
     display(caption, Icon.INFORMATION, messages, options, 0, null, BeeConst.UNDEF, dialogStyle,
         null, null, null, null);
@@ -540,7 +540,7 @@ public class MessageBoxes {
       index++;
     }
 
-    CloseButton close = new CloseButton(Localized.getConstants().ok());
+    CloseButton close = new CloseButton(Localized.dictionary().ok());
     grid.setWidget(index, 0, close);
     grid.alignCenter(index, 0);
     if (c > 1) {

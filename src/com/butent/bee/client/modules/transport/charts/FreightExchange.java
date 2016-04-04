@@ -139,7 +139,7 @@ final class FreightExchange extends ChartBase {
 
   @Override
   public String getCaption() {
-    return Localized.getConstants().freightExchange();
+    return Localized.dictionary().freightExchange();
   }
 
   @Override
@@ -155,9 +155,9 @@ final class FreightExchange extends ChartBase {
   @Override
   public void handleAction(Action action) {
     if (Action.ADD.equals(action)) {
-      Global.choiceWithCancel(Localized.getConstants().newTransportationOrder(), null,
-          Lists.newArrayList(Localized.getConstants().inputFull(),
-              Localized.getConstants().inputSimple()), new ChoiceCallback() {
+      Global.choiceWithCancel(Localized.dictionary().newTransportationOrder(), null,
+          Lists.newArrayList(Localized.dictionary().inputFull(),
+              Localized.dictionary().inputSimple()), new ChoiceCallback() {
 
             @Override
             public void onSuccess(int value) {
@@ -170,7 +170,7 @@ final class FreightExchange extends ChartBase {
                   DataInfo dataInfo = Data.getDataInfo(VIEW_ORDER_CARGO);
                   BeeRow row = RowFactory.createEmptyRow(dataInfo, true);
                   RowFactory.createRow(FORM_NEW_SIMPLE_ORDER,
-                      Localized.getConstants().newTransportationOrder(), dataInfo, row,
+                      Localized.dictionary().newTransportationOrder(), dataInfo, row,
                       Modality.DISABLED, null);
                   break;
               }

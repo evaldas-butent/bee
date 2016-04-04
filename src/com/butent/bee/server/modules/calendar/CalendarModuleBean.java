@@ -58,7 +58,7 @@ import com.butent.bee.shared.data.value.IntegerValue;
 import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.Order;
-import com.butent.bee.shared.i18n.LocalizableConstants;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
@@ -618,7 +618,7 @@ public class CalendarModuleBean implements BeeModule {
     HeadlineProducer headlineProducer = new HeadlineProducer() {
       @Override
       public Headline produce(Feed feed, long userId, BeeRowSet rowSet, IsRow row, boolean isNew,
-          LocalizableConstants constants) {
+          Dictionary constants) {
 
         String caption = DataUtils.getString(rowSet, row, COL_SUMMARY);
         if (BeeUtils.isEmpty(caption)) {
@@ -890,7 +890,7 @@ public class CalendarModuleBean implements BeeModule {
     }
 
     if (hours.size() > 1) {
-      result.addColumn(ValueType.TEXT, usr.getLocalizableConstants().calTotal());
+      result.addColumn(ValueType.TEXT, usr.getDictionary().calTotal());
     }
     int columnCount = result.getNumberOfColumns();
 
@@ -915,7 +915,7 @@ public class CalendarModuleBean implements BeeModule {
       totalColumns(result, 2, columnCount - 2, columnCount - 1);
     }
     if (result.getNumberOfRows() > 1) {
-      totalRows(result, 2, columnCount - 1, 0, usr.getLocalizableConstants().totalOf() + ":", 0);
+      totalRows(result, 2, columnCount - 1, 0, usr.getDictionary().totalOf() + ":", 0);
     }
     formatTimeColumns(result, 2, columnCount - 1);
 
@@ -977,7 +977,7 @@ public class CalendarModuleBean implements BeeModule {
     }
 
     if (months.size() > 1) {
-      result.addColumn(ValueType.TEXT, usr.getLocalizableConstants().calTotal());
+      result.addColumn(ValueType.TEXT, usr.getDictionary().calTotal());
     }
     int columnCount = result.getNumberOfColumns();
 
@@ -1002,7 +1002,7 @@ public class CalendarModuleBean implements BeeModule {
       totalColumns(result, 2, columnCount - 2, columnCount - 1);
     }
     if (result.getNumberOfRows() > 1) {
-      totalRows(result, 2, columnCount - 1, 0, usr.getLocalizableConstants().totalOf() + ":", 0);
+      totalRows(result, 2, columnCount - 1, 0, usr.getDictionary().totalOf() + ":", 0);
     }
     formatTimeColumns(result, 2, columnCount - 1);
 

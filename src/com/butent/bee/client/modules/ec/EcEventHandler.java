@@ -58,19 +58,19 @@ class EcEventHandler implements KeyPressHandler {
 
         if (isListPriceEnabled()) {
           table.setHtml(row, 0, "B");
-          table.setHtml(row, 1, Localized.getConstants().ecToggleListPrice());
+          table.setHtml(row, 1, Localized.dictionary().ecToggleListPrice());
           row++;
         }
 
         if (isPriceEnabled()) {
           table.setHtml(row, 0, "K");
-          table.setHtml(row, 1, Localized.getConstants().ecTogglePrice());
+          table.setHtml(row, 1, Localized.dictionary().ecTogglePrice());
           row++;
         }
 
         if (isStockLimitEnabled()) {
           table.setHtml(row, 0, "S");
-          table.setHtml(row, 1, Localized.getConstants().ecToggleStockLimit());
+          table.setHtml(row, 1, Localized.dictionary().ecToggleStockLimit());
         }
 
         Popup popup = new Popup(OutsideClick.CLOSE);

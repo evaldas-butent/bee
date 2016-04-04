@@ -19,7 +19,6 @@ import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
-import com.butent.bee.server.io.FileUtils;
 import com.butent.bee.server.sql.HasConditions;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.IsExpression;
@@ -47,11 +46,11 @@ import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.data.view.ViewColumn;
 import com.butent.bee.shared.exceptions.BeeRuntimeException;
-import com.butent.bee.shared.i18n.LocalizableConstants;
-import com.butent.bee.shared.i18n.LocalizableMessages;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.imports.ImportProperty;
 import com.butent.bee.shared.imports.ImportType;
+import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -70,6 +69,7 @@ import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.poi.ss.util.CellReference;
 
 import java.io.File;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -325,7 +325,8 @@ public class ImportBean {
       switch (type) {
         case COSTS:
           response = importCosts(BeeUtils.toLong(reqInfo.getParameter(COL_IMPORT_OPTION)),
-              reqInfo.getParameter(VAR_IMPORT_FILE), reqInfo.getParameter(Service.VAR_PROGRESS));
+              BeeUtils.toLongOrNull(reqInfo.getParameter(VAR_IMPORT_FILE)),
+              reqInfo.getParameter(Service.VAR_PROGRESS));
           break;
 
         case TRACKING:
@@ -337,7 +338,8 @@ public class ImportBean {
 
         default:
           response = importData(BeeUtils.toLong(reqInfo.getParameter(COL_IMPORT_OPTION)),
-              reqInfo.getParameter(VAR_IMPORT_FILE), reqInfo.getParameter(Service.VAR_PROGRESS));
+              BeeUtils.toLongOrNull(reqInfo.getParameter(VAR_IMPORT_FILE)),
+              reqInfo.getParameter(Service.VAR_PROGRESS));
           break;
       }
       if (response.hasErrors() || BeeUtils.toBoolean(reqInfo.getParameter(VAR_IMPORT_TEST))) {
@@ -399,7 +401,7 @@ public class ImportBean {
       String progress, Map<String, Pair<Pair<Integer, Integer>, BeeRowSet>> status,
       boolean readOnly) {
 
-    Map<String, String> dict = usr.getLocalizableDictionary();
+    Map<String, String> dict = usr.getGlossary();
     String idName = SqlUtils.uniqueName();
     HasConditions clause = SqlUtils.or();
     HasConditions updateClause = SqlUtils.and();
@@ -514,8 +516,7 @@ public class ImportBean {
         }
       }
     }
-    LocalizableConstants consts = usr.getLocalizableConstants();
-    LocalizableMessages msgs = usr.getLocalizableMesssages();
+    Dictionary consts = usr.getDictionary();
     IsCondition validClause = SqlUtils.and(SqlUtils.isNull(tmp, idName),
         SqlUtils.isNull(tmp, COL_REASON));
 
@@ -524,7 +525,8 @@ public class ImportBean {
       for (String col : cols.keySet()) {
         if (cols.get(col).isNotNull()) {
           qs.updateData(new SqlUpdate(tmp)
-              .addConstant(COL_REASON, msgs.valueEmpty(BeeUtils.join("_", parentName, col)) + "\n")
+              .addConstant(COL_REASON,
+                  consts.valueEmpty(BeeUtils.join("_", parentName, col)) + "\n")
               .setWhere(SqlUtils.isNull(tmp, col)));
         }
       }
@@ -710,7 +712,7 @@ public class ImportBean {
             condition.add(wh);
           }
           qs.updateData(new SqlUpdate(tmp)
-              .addConstant(COL_REASON, msgs.valueNotUnique(BeeUtils.join("+", flds)) + "\n")
+              .addConstant(COL_REASON, consts.valueNotUnique(BeeUtils.join("+", flds)) + "\n")
               .setFrom(ins, SqlUtils.joinUsing(tmp, ins, COL_REC_NO))
               .setWhere(condition));
 
@@ -831,8 +833,8 @@ public class ImportBean {
     return null;
   }
 
-  private ResponseObject importCosts(Long optId, String fileName, String progress) {
-    Map<String, String> dict = usr.getLocalizableDictionary();
+  private ResponseObject importCosts(Long optId, Long fileId, String progress) {
+    Map<String, String> dict = usr.getGlossary();
     ImportObject io = initImport(optId, dict);
     final DateFormat dtf;
 
@@ -851,84 +853,79 @@ public class ImportBean {
     String tmp = create.getTarget();
     qs.updateData(create);
 
-    String error = loadXLSData(io, fileName, tmp, progress,
-        new Function<Map<String, String>, Boolean>() {
-          @Override
-          public Boolean apply(Map<String, String> values) {
-            double qty = toDouble(values.get(COL_COSTS_QUANTITY));
-            double prc = toDouble(values.get(COL_COSTS_PRICE));
+    String error = null;
 
-            if (!BeeUtils.isPositive(qty)) {
-              return false;
+    try (FileInfo fileInfo = fs.getFile(fileId)) {
+      error = loadXLSData(io, fileInfo.getFile(), tmp, progress, (values) -> {
+        double qty = toDouble(values.get(COL_COSTS_QUANTITY));
+        double prc = toDouble(values.get(COL_COSTS_PRICE));
+
+        if (!BeeUtils.isPositive(qty)) {
+          return false;
+        }
+        if (BeeUtils.isZero(prc)) {
+          prc = BeeUtils.round(toDouble(values.get(COL_AMOUNT)) / qty, 5);
+        }
+        if (!BeeUtils.isZero(prc)) {
+          values.put(COL_COSTS_PRICE, BeeUtils.toString(prc));
+        } else {
+          return false;
+        }
+        String value = values.get(COL_COSTS_DATE);
+
+        if (!BeeUtils.isEmpty(value)) {
+          DateTime date;
+
+          if (BeeUtils.isLong(value)) {
+            date = TimeUtils.toDateTimeOrNull(value);
+          } else if (dtf != null) {
+            try {
+              date = new DateTime(dtf.parse(value));
+            } catch (ParseException e) {
+              date = null;
             }
-            if (BeeUtils.isZero(prc)) {
-              prc = BeeUtils.round(toDouble(values.get(COL_AMOUNT)) / qty, 5);
-            }
-            if (!BeeUtils.isZero(prc)) {
-              values.put(COL_COSTS_PRICE, BeeUtils.toString(prc));
+          } else {
+            date = TimeUtils.parseDateTime(value);
+          }
+          if (Objects.nonNull(date)) {
+            JustDate dt = date.getDate();
+            dt.increment();
+            values.put(COL_COSTS_DATE, BeeUtils.toString(dt.getTime() - 1));
+          } else {
+            values.put(COL_COSTS_DATE, null);
+          }
+        }
+        value = values.get(COL_COSTS_EXTERNAL_ID);
+
+        if (BeeUtils.isEmpty(value)) {
+          StringBuilder sb = new StringBuilder();
+
+          for (String rel : new String[] {
+              COL_VEHICLE, COL_COSTS_ITEM, COL_COSTS_SUPPLIER,
+              COL_COSTS_DATE, COL_NUMBER, COL_COSTS_NOTE}) {
+            ImportObject ro = io.getPropertyRelation(rel);
+
+            if (ro != null) {
+              for (ImportProperty prop : ro.getProperties()) {
+                if (prop.isDataProperty()) {
+                  sb.append(values.get(rel + "_" + prop.getName()));
+                }
+              }
             } else {
-              return false;
+              sb.append(values.get(rel));
             }
-            String value = values.get(COL_COSTS_DATE);
-
-            if (!BeeUtils.isEmpty(value)) {
-              DateTime date;
-
-              if (BeeUtils.isLong(value)) {
-                date = TimeUtils.toDateTimeOrNull(value);
-              } else if (dtf != null) {
-                try {
-                  date = new DateTime(dtf.parse(value));
-                } catch (ParseException e) {
-                  date = null;
-                }
-              } else {
-                date = TimeUtils.parseDateTime(value);
-              }
-              if (Objects.nonNull(date)) {
-                JustDate dt = date.getDate();
-                dt.increment();
-                values.put(COL_COSTS_DATE, BeeUtils.toString(dt.getTime() - 1));
-              } else {
-                values.put(COL_COSTS_DATE, null);
-              }
-            }
-            value = values.get(COL_COSTS_EXTERNAL_ID);
-
-            if (BeeUtils.isEmpty(value)) {
-              StringBuilder sb = new StringBuilder();
-
-              for (String rel : new String[] {
-                  COL_VEHICLE, COL_COSTS_ITEM, COL_COSTS_SUPPLIER,
-                  COL_COSTS_DATE, COL_NUMBER, COL_COSTS_NOTE}) {
-                ImportObject ro = io.getPropertyRelation(rel);
-
-                if (ro != null) {
-                  for (ImportProperty prop : ro.getProperties()) {
-                    if (prop.isDataProperty()) {
-                      sb.append(values.get(rel + "_" + prop.getName()));
-                    }
-                  }
-                } else {
-                  sb.append(values.get(rel));
-                }
-              }
-              values.put(COL_COSTS_EXTERNAL_ID, Codec.md5(sb.toString()));
-            }
-            return true;
           }
-
-          private double toDouble(String number) {
-            return BeeUtils.toDouble(number != null
-                ? number.replace(BeeConst.CHAR_COMMA, BeeConst.CHAR_POINT) : number);
-          }
-        });
-
+          values.put(COL_COSTS_EXTERNAL_ID, Codec.md5(sb.toString()));
+        }
+        return true;
+      });
+    } catch (IOException e) {
+      error = e.toString();
+    }
     if (!BeeUtils.isEmpty(error)) {
       qs.sqlDropTemp(tmp);
       return ResponseObject.error(error);
     }
-
     Map<String, Pair<Pair<Integer, Integer>, BeeRowSet>> status = new LinkedHashMap<>();
 
     for (ImportProperty prop : io.getProperties()) {
@@ -946,8 +943,7 @@ public class ImportBean {
         }
       }
     }
-    LocalizableMessages msgs = usr.getLocalizableMesssages();
-    LocalizableConstants consts = usr.getLocalizableConstants();
+    Dictionary consts = usr.getDictionary();
 
     SqlSelect select = new SqlSelect().addAllFields(tmp).addFrom(tmp);
 
@@ -957,7 +953,7 @@ public class ImportBean {
 
       if (rs.getNumberOfRows() > 0) {
         qs.updateData(new SqlDelete(tmp).setWhere(wh));
-        status.put(msgs.valueEmpty(col), Pair.of(null, rs));
+        status.put(consts.valueEmpty(col), Pair.of(null, rs));
       }
     }
     qs.updateData(new SqlUpdate(tmp)
@@ -1080,31 +1076,33 @@ public class ImportBean {
     return ResponseObject.response(status);
   }
 
-  private ResponseObject importData(Long optionId, String fileName, String progress) {
-    ImportObject io = initImport(optionId, usr.getLocalizableDictionary());
+  private ResponseObject importData(Long optionId, Long fileId, String progress) {
+    ImportObject io = initImport(optionId, usr.getGlossary());
 
     SqlCreate create = io.createStructure(sys, null, null);
     String tmp = create.getTarget();
     qs.updateData(create);
 
-    String error = loadXLSData(io, fileName, tmp, progress,
-        new Function<Map<String, String>, Boolean>() {
-          @Override
-          public Boolean apply(Map<String, String> values) {
-            BeeView view = sys.getView(io.getViewName());
+    String error = null;
 
-            for (Entry<String, String> entry : values.entrySet()) {
-              if (view.hasColumn(entry.getKey())
-                  && view.getColumnType(entry.getKey()) == SqlDataType.DATE
-                  && !BeeUtils.isEmpty(entry.getValue())) {
+    try (FileInfo fileInfo = fs.getFile(fileId)) {
+      error = loadXLSData(io, fileInfo.getFile(), tmp, progress, (values) -> {
+        BeeView view = sys.getView(io.getViewName());
 
-                entry.setValue(BeeUtils.toString(TimeUtils.toDateTimeOrNull(entry.getValue())
-                    .getDate().getTime()));
-              }
-            }
-            return true;
+        for (Entry<String, String> entry : values.entrySet()) {
+          if (view.hasColumn(entry.getKey())
+              && view.getColumnType(entry.getKey()) == SqlDataType.DATE
+              && !BeeUtils.isEmpty(entry.getValue())) {
+
+            entry.setValue(BeeUtils.toString(TimeUtils.toDateTimeOrNull(entry.getValue())
+                .getDate().getTime()));
           }
-        });
+        }
+        return true;
+      });
+    } catch (IOException e) {
+      error = e.toString();
+    }
     if (!BeeUtils.isEmpty(error)) {
       qs.sqlDropTemp(tmp);
       return ResponseObject.error(error);
@@ -1122,7 +1120,7 @@ public class ImportBean {
   }
 
   private ResponseObject importTracking(Long optionId, Integer from, Integer to, String progress) {
-    ImportObject io = initImport(optionId, usr.getLocalizableDictionary());
+    ImportObject io = initImport(optionId, usr.getGlossary());
 
     SimpleRowSet objects = qs.getData(new SqlSelect()
         .addField(TBL_VEHICLES, sys.getIdName(TBL_VEHICLES), COL_VEHICLE)
@@ -1131,7 +1129,7 @@ public class ImportBean {
         .setWhere(SqlUtils.notNull(TBL_VEHICLES, COL_VEHICLE_NUMBER)));
 
     if (DataUtils.isEmpty(objects)) {
-      return ResponseObject.error(usr.getLocalizableConstants().noData());
+      return ResponseObject.error(usr.getDictionary().noData());
     }
     SqlCreate create = io.createStructure(sys, null, null);
     String tmp = create.getTarget();
@@ -1163,7 +1161,7 @@ public class ImportBean {
           && !Endpoint.updateProgress(progress, ++c / (double) objects.getNumberOfRows())) {
 
         qs.sqlDropTemp(tmp);
-        return ResponseObject.error(usr.getLocalizableConstants().canceled());
+        return ResponseObject.error(usr.getDictionary().canceled());
       }
       boolean exists = true;
 
@@ -1281,13 +1279,9 @@ public class ImportBean {
     return io;
   }
 
-  private String loadXLSData(ImportObject io, String fileName, String target,
+  private String loadXLSData(ImportObject io, File file, String target,
       String progress, Function<Map<String, String>, Boolean> rowValidator) {
-    File file = new File(fileName);
 
-    if (!FileUtils.isInputFile(file)) {
-      return usr.getLocalizableMesssages().fileNotFound(fileName);
-    }
     Sheet shit;
 
     try {
@@ -1297,7 +1291,6 @@ public class ImportBean {
       String shitName = io.getPropertyValue(VAR_IMPORT_SHEET);
       shit = wb.getSheetAt(BeeUtils.isEmpty(shitName) ? 0 : wb.getSheetIndex(shitName));
     } catch (Exception e) {
-      file.delete();
       return e.getMessage();
     }
     Map<String, Integer> indexes = new HashMap<>();
@@ -1318,8 +1311,7 @@ public class ImportBean {
     for (int i = startRow; i <= endRow; i++) {
       if (!BeeUtils.isEmpty(progress) && !Endpoint.updateProgress(progress,
           (i - startRow + 1) / (double) (endRow - startRow + 1))) {
-        file.delete();
-        return usr.getLocalizableConstants().canceled();
+        return usr.getDictionary().canceled();
       }
       Row row = shit.getRow(i);
       if (row == null) {
@@ -1376,13 +1368,16 @@ public class ImportBean {
             errorHandler);
 
         if (response.hasErrors()) {
-          file.delete();
           throw new BeeRuntimeException(BeeUtils.join("\n", response.getErrors(),
               insert.getQuery()));
         }
       }
     }
-    file.delete();
     return null;
+  }
+
+  private static double toDouble(String number) {
+    return BeeUtils.toDouble(number != null
+        ? number.replace(BeeConst.CHAR_COMMA, BeeConst.CHAR_POINT) : number);
   }
 }

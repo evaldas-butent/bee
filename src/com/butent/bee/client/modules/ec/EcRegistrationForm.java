@@ -61,7 +61,7 @@ class EcRegistrationForm extends AbstractFormInterceptor {
       return;
     }
 
-    String caption = Localized.getConstants().ipBlockCommand();
+    String caption = Localized.dictionary().ipBlockCommand();
     AdministrationUtils.blockHost(caption, host, getFormView(), new Callback<String>() {
       @Override
       public void onSuccess(String result) {
@@ -75,13 +75,13 @@ class EcRegistrationForm extends AbstractFormInterceptor {
   private void onCreateUser() {
     String email = BeeUtils.trim(getStringValue(COL_REGISTRATION_EMAIL));
     if (BeeUtils.isEmpty(email)) {
-      notifyRequired(Localized.getConstants().email());
+      notifyRequired(Localized.dictionary().email());
       return;
     }
 
     String firstName = getStringValue(COL_REGISTRATION_FIRST_NAME);
     if (BeeUtils.isEmpty(firstName)) {
-      notifyRequired(Localized.getConstants().ecClientFirstName());
+      notifyRequired(Localized.dictionary().ecClientFirstName());
       return;
     }
 
@@ -93,13 +93,13 @@ class EcRegistrationForm extends AbstractFormInterceptor {
     final EcClientType type = EnumUtils.getEnumByIndex(EcClientType.class,
         getIntegerValue(COL_REGISTRATION_TYPE));
     if (type == null) {
-      notifyRequired(Localized.getConstants().ecClientType());
+      notifyRequired(Localized.dictionary().ecClientType());
       return;
     }
 
     final Long branch = getLongValue(COL_REGISTRATION_BRANCH);
     if (!DataUtils.isId(branch)) {
-      notifyRequired(Localized.getConstants().branch());
+      notifyRequired(Localized.dictionary().branch());
       return;
     }
 
@@ -128,7 +128,7 @@ class EcRegistrationForm extends AbstractFormInterceptor {
 
     final Integer locale = getIntegerValue(COL_REGISTRATION_LANGUAGE);
 
-    String caption = Localized.getConstants().ecRegistrationCommandCreate();
+    String caption = Localized.dictionary().ecRegistrationCommandCreate();
     AdministrationUtils.createUser(caption, login, password, UserInterface.E_COMMERCE, userFields,
         getFormView(), new IdCallback() {
           @Override
@@ -187,7 +187,7 @@ class EcRegistrationForm extends AbstractFormInterceptor {
       if (Data.isViewEditable(AdministrationConstants.VIEW_USERS)) {
         if (this.registerCommand == null) {
           this.registerCommand =
-              new Button(Localized.getConstants().ecRegistrationCommandCreate(),
+              new Button(Localized.dictionary().ecRegistrationCommandCreate(),
                   new ClickHandler() {
                     @Override
                     public void onClick(ClickEvent event) {
@@ -202,7 +202,7 @@ class EcRegistrationForm extends AbstractFormInterceptor {
           && Data.isViewEditable(AdministrationConstants.VIEW_IP_FILTERS)) {
         if (this.blockCommand == null) {
           this.blockCommand =
-              new Button(Localized.getConstants().ipBlockCommand(), new ClickHandler() {
+              new Button(Localized.dictionary().ipBlockCommand(), new ClickHandler() {
                 @Override
                 public void onClick(ClickEvent event) {
                   onBlock();

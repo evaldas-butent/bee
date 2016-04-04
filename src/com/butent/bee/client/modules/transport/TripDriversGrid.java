@@ -31,7 +31,7 @@ public class TripDriversGrid extends AbstractGridInterceptor implements ClickHan
 
   @Override
   public void afterCreatePresenter(GridPresenter presenter) {
-    main.setTitle(Localized.getConstants().setAsPrimary());
+    main.setTitle(Localized.dictionary().setAsPrimary());
     main.addClickHandler(this);
     presenter.getHeader().addCommandItem(main);
 
@@ -58,7 +58,7 @@ public class TripDriversGrid extends AbstractGridInterceptor implements ClickHan
     IsRow row = getGridView().getActiveRow();
 
     if (row == null) {
-      getGridView().notifyWarning(Localized.getConstants().selectAtLeastOneRow());
+      getGridView().notifyWarning(Localized.dictionary().selectAtLeastOneRow());
       return;
     }
     tripForm.setMainDriver(tripForm.getActiveRow(), row.getId());

@@ -6,8 +6,6 @@ import com.google.gwt.dom.client.Node;
 import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.event.dom.client.BlurEvent;
 import com.google.gwt.event.dom.client.BlurHandler;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.FocusEvent;
 import com.google.gwt.event.dom.client.FocusHandler;
 import com.google.gwt.event.dom.client.HasKeyDownHandlers;
@@ -24,6 +22,7 @@ import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Settings;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.HasRelatedRow;
 import com.butent.bee.client.data.RowCallback;
@@ -41,7 +40,6 @@ import com.butent.bee.client.event.Binder;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.InputEvent;
 import com.butent.bee.client.event.InputHandler;
-import com.butent.bee.client.event.logical.CloseEvent;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.event.logical.SummaryChangeEvent;
 import com.butent.bee.client.layout.Flow;
@@ -64,11 +62,9 @@ import com.butent.bee.client.widget.InlineLabel;
 import com.butent.bee.client.widget.InputText;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumable;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
-import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
@@ -94,6 +90,7 @@ import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.ui.SelectorColumn;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
+import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -438,13 +435,10 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
 
       popup.setKeyboardPartner(partner);
 
-      popup.addCloseHandler(new CloseEvent.Handler() {
-        @Override
-        public void onClose(CloseEvent event) {
-          if (event.userCaused()) {
-            getMenu().clearItems();
-            exit(false, State.CANCELED);
-          }
+      popup.addCloseHandler(event -> {
+        if (event.userCaused()) {
+          getMenu().clearItems();
+          exit(false, State.CANCELED);
         }
       });
     }
@@ -456,19 +450,9 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     private MenuItem createNavigationItem(boolean next) {
       Scheduler.ScheduledCommand command;
       if (next) {
-        command = new Scheduler.ScheduledCommand() {
-          @Override
-          public void execute() {
-            nextPage();
-          }
-        };
+        command = () -> nextPage();
       } else {
-        command = new Scheduler.ScheduledCommand() {
-          @Override
-          public void execute() {
-            prevPage();
-          }
-        };
+        command = () -> prevPage();
       }
 
       MenuItem item = new MenuItem(menu, next ? ITEM_NEXT : ITEM_PREV, ItemType.LABEL, command);
@@ -662,6 +646,26 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
   private static final int DEFAULT_MAX_INPUT_LENGTH = 30;
   private static final int DEFAULT_VISIBLE_LINES = 10;
 
+  private static final int DEFAULT_MAX_ROW_COUNT_FOR_INSTANT_SEARCH = 1_000;
+
+  static boolean determineInstantSearch(Relation relation, int dataSize) {
+    if (relation.getInstant() != null) {
+      return relation.getInstant();
+    }
+
+    Operator operator = relation.nvlOperator();
+    if (!EnumUtils.in(operator, Operator.STARTS, Operator.CONTAINS)) {
+      return false;
+    }
+
+    Integer max = Settings.getDataSelectorInstantSearchMaxRows();
+    if (max == null) {
+      max = DEFAULT_MAX_ROW_COUNT_FOR_INSTANT_SEARCH;
+    }
+
+    return dataSize <= max;
+  }
+
   private static void addClassToCell(MenuItem item, String className) {
     TableCellElement cell = DomUtils.getParentCell(item, true);
     if (cell != null) {
@@ -669,30 +673,27 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     }
   }
 
-  private final Callback callback = new Callback() {
-    @Override
-    public void onSuggestionsReady(Request request, Response response) {
-      DataSelector.this.getInput().removeStyleName(STYLE_WAITING);
+  private final Callback callback = (request, response) -> {
+    DataSelector.this.getInput().removeStyleName(STYLE_WAITING);
 
-      boolean found = !response.isEmpty();
-      DataSelector.this.setFound(found);
-      if (request.isEmpty()) {
-        DataSelector.this.setAlive(found);
-      }
-
-      if (isEditing()) {
-        setHasMore(response.hasMoreSuggestions());
-        getSelector().showSuggestions(response, DataSelector.this);
-      }
-      DataSelector.this.setWaiting(false);
+    boolean found = !response.isEmpty();
+    DataSelector.this.setFound(found);
+    if (request.isEmpty()) {
+      DataSelector.this.setAlive(found);
     }
+
+    if (isEditing()) {
+      setHasMore(response.hasMoreSuggestions());
+      getSelector().showSuggestions(response, DataSelector.this);
+    }
+    DataSelector.this.setWaiting(false);
   };
 
   private int visibleLines = DEFAULT_VISIBLE_LINES;
   private final SelectionOracle oracle;
 
   private final int minQueryLength;
-  private final boolean instant;
+  private boolean instant;
 
   private final InputWidget input;
   private final Selector selector;
@@ -753,7 +754,9 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
 
   private boolean summarize;
 
-  public DataSelector(Relation relation, boolean embedded) {
+  private State initialState;
+
+  public DataSelector(final Relation relation, boolean embedded) {
     super();
 
     this.embedded = embedded;
@@ -762,13 +765,6 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     this.oracle = new SelectionOracle(relation, dataInfo);
 
     this.minQueryLength = BeeUtils.unbox(relation.getMinQueryLength());
-
-    if (relation.getInstant() == null) {
-      Operator operator = relation.nvlOperator();
-      this.instant = operator == Operator.CONTAINS || operator == Operator.STARTS;
-    } else {
-      this.instant = relation.getInstant();
-    }
 
     ItemType itemType = relation.getItemType();
 
@@ -805,19 +801,11 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
         relation.getRowRender(), relation.getRowRenderTokens(), null,
         choiceColumns, dataInfo.getColumns(), cellSource);
 
-    oracle.addRowCountChangeHandler(new Consumer<Integer>() {
-      @Override
-      public void accept(Integer parameter) {
-        DataSelector.this.setAlive(parameter > 0);
-      }
-    });
+    oracle.addRowCountChangeHandler(parameter -> setAlive(parameter > 0));
 
-    oracle.addDataReceivedHandler(new Consumer<BeeRowSet>() {
-      @Override
-      public void accept(BeeRowSet rowSet) {
-        if (!DataUtils.isEmpty(rowSet)) {
-          SelectorEvent.fire(DataSelector.this, State.LOADED);
-        }
+    oracle.addDataReceivedHandler(rowSet -> {
+      if (!DataUtils.isEmpty(rowSet)) {
+        SelectorEvent.fire(DataSelector.this, State.LOADED);
       }
     });
 
@@ -948,6 +936,18 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     if (strict) {
       input.addStyleName(STYLE_STRICT);
     }
+
+    Data.estimateSize(relation.getViewName(), dataSize -> {
+      setInstant(determineInstantSearch(relation, dataSize));
+      oracle.init(relation, dataSize);
+
+      State state = getInitialState();
+      setInitialState(State.INITIALIZED);
+
+      if (state == State.PENDING) {
+        askOracle();
+      }
+    });
   }
 
   @Override
@@ -1417,18 +1417,8 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
 
       inputWidget.addStyleName(STYLE_EDITABLE_INPUT);
 
-      inputWidget.addFocusHandler(new FocusHandler() {
-        @Override
-        public void onFocus(FocusEvent event) {
-          container.addStyleName(STYLE_EDITABLE_ACTIVE);
-        }
-      });
-      inputWidget.addBlurHandler(new BlurHandler() {
-        @Override
-        public void onBlur(BlurEvent event) {
-          container.removeStyleName(STYLE_EDITABLE_ACTIVE);
-        }
-      });
+      inputWidget.addFocusHandler(event -> container.addStyleName(STYLE_EDITABLE_ACTIVE));
+      inputWidget.addBlurHandler(event -> container.removeStyleName(STYLE_EDITABLE_ACTIVE));
 
       container.add(inputWidget);
 
@@ -1436,12 +1426,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
       label.addStyleName(STYLE_DRILL);
       label.addStyleName(STYLE_DRILL_DISABBLED);
 
-      label.addClickHandler(new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent event) {
-          editRow();
-        }
-      });
+      label.addClickHandler(event -> editRow());
 
       setDrill(label);
       container.add(label);
@@ -1538,12 +1523,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
   }
 
   private void addItem(MenuBar menu, final BeeRow row) {
-    Scheduler.ScheduledCommand menuCommand = new Scheduler.ScheduledCommand() {
-      @Override
-      public void execute() {
-        setSelection(row, null, true);
-      }
-    };
+    Scheduler.ScheduledCommand menuCommand = () -> setSelection(row, null, true);
 
     MenuItem item;
     if (isTableMode()) {
@@ -1564,24 +1544,29 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
   }
 
   private void askOracle() {
-    String query = BeeUtils.trim(getDisplayValue());
-    int start = getOffset();
-    int size = getVisibleLines();
+    if (getInitialState() == State.INITIALIZED) {
+      String query = BeeUtils.trim(getDisplayValue());
+      int start = getOffset();
+      int size = getVisibleLines();
 
-    if (getLastRequest() != null && !Objects.equals(query, getLastRequest().getQuery())) {
-      start = 0;
-      setOffset(start);
-    }
+      if (getLastRequest() != null && !Objects.equals(query, getLastRequest().getQuery())) {
+        start = 0;
+        setOffset(start);
+      }
 
-    Request request = new Request(query, start, size);
-    setLastRequest(request);
+      Request request = new Request(query, start, size);
+      setLastRequest(request);
 
-    getInput().addStyleName(STYLE_WAITING);
-    setWaiting(true);
+      getInput().addStyleName(STYLE_WAITING);
+      setWaiting(true);
 
-    SelectorEvent event = SelectorEvent.fireRequest(this, request, getCallback());
-    if (!event.isConsumed()) {
-      getOracle().requestSuggestions(request, getCallback());
+      SelectorEvent event = SelectorEvent.fireRequest(this, request, getCallback());
+      if (!event.isConsumed()) {
+        getOracle().requestSuggestions(request, getCallback());
+      }
+
+    } else {
+      setInitialState(State.PENDING);
     }
   }
 
@@ -1677,6 +1662,10 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
 
   private int getEditTargetIndex() {
     return editTargetIndex;
+  }
+
+  private State getInitialState() {
+    return initialState;
   }
 
   private Request getLastRequest() {
@@ -1834,6 +1823,14 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
 
   private void setHasMore(boolean hasMore) {
     this.hasMore = hasMore;
+  }
+
+  private void setInitialState(State initialState) {
+    this.initialState = initialState;
+  }
+
+  private void setInstant(boolean instant) {
+    this.instant = instant;
   }
 
   private void setLastRequest(Request lastRequest) {

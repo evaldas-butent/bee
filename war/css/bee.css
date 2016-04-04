@@ -419,11 +419,14 @@
 }
 
 .bee-Header-caption {
-  color: #414142;
+  color: black;
   margin-left: 30px;
 }
 .bee-Header-message {
-  padding-left: 8px;
+  padding: 0 8px 0 8px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
 }
 
 .bee-Header-commandPanel {
@@ -923,7 +926,7 @@
 }
 
 .bee-InputCommand {
-  width: 80px;
+  min-width: 80px;
 }
 
 .bee-InputCancel {
@@ -3701,4 +3704,42 @@ textarea,
 }
 .bee-PresenceChangeIcon {
   font-size: large;
+}
+
+.bee-ExportController-panel {
+  border-collapse: collapse;
+}
+.bee-ExportController-panel > tbody > tr > td {
+  padding: 5px 1em;
+}
+
+.bee-ExportController-clock-cell {
+  text-align: right;
+}
+.bee-ExportController-label {
+  text-align: center;
+  font-size: larger;
+}
+.bee-ExportController-panel .bee-Thermometer-label {
+  display: inline-block;
+  min-width: 10em;
+}
+.bee-ExportController-cancel-cell {
+  text-align: right;
+}
+.bee-ExportController-cancel {
+  margin-top: 1em;
+}
+.bee-ExportController-link-label {
+  padding-right: 1em;
+}
+
+.bee-ExportController-thermometer-disabled {
+  display: none;
+}
+.bee-ExportController-completed .bee-ExportController-label,
+.bee-ExportController-completed .bee-Thermometer-container,
+.bee-ExportController-submitting .bee-ExportController-cancel,
+.bee-ExportController-completed .bee-ExportController-cancel {
+  display: none;
 }

@@ -301,19 +301,27 @@ public class MenuManager {
     return roots.isEmpty();
   }
 
-  public boolean loadMenu() {
+  public void loadMenu() {
+    loadMenu(null);
+  }
+
+  public void loadMenu(final Runnable callback) {
     ParameterList params = BeeKeeper.getRpc().createParameters(Service.GET_MENU);
     params.addQueryItem(Service.VAR_RIGHTS, 1);
+    params.addQueryItem(Service.VAR_TRANSFORM, 1);
 
     BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
       @Override
       public void onResponse(ResponseObject response) {
         if (response.hasResponse()) {
-          restore((String) response.getResponse());
+          restore(response.getResponseAsString());
+
+          if (callback != null) {
+            callback.run();
+          }
         }
       }
     });
-    return true;
   }
 
   public void restore(String data) {

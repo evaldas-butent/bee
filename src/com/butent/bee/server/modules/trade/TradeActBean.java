@@ -2624,7 +2624,7 @@ public class TradeActBean {
     }
 
     if (qs.sqlExists(TBL_TRADE_ACT_TEMPLATES, COL_TA_TEMPLATE_NAME, name)) {
-      return ResponseObject.error(usr.getLocalizableMesssages().valueExists(name));
+      return ResponseObject.error(usr.getDictionary().valueExists(name));
     }
 
     SimpleRow actRow = qs.getRow(TBL_TRADE_ACTS, actId);
