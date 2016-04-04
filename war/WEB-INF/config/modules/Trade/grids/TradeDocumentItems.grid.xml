@@ -25,10 +25,13 @@
     <DataColumn name="VatPercent" scale="0" carry="true" flexGrow="0" />
 
     <RelColumn name="Warehouse" choiceColumns="Code Name" renderColumns="WarehouseCode"
-      flexGrow="0" />
+      flexGrow="0" visible="false" />
+      
+    <RelColumn name="Employee" renderColumns="EmployeeFirstName EmployeeLastName"
+      sortBy="EmployeeLastName EmployeeFirstName" visible="false" />
   </g:columns>
 
-  <xi:include href="../../Administration/grids/columns/ExtraDimensions.columns.xml" />
+  <xi:include href="../../Administration/grids/columns/HiddenDimensions.columns.xml" />
 
   <g:columns>
     <DataColumn name="Note" maxWidth="300" />

@@ -28,6 +28,19 @@
       <SimpleColumn name="Name" alias="WarehouseName" />
     </SimpleJoin>
 
+    <SimpleColumn name="Employee" />
+    <SimpleJoin name="Employee" joinType="LEFT">
+      <SimpleColumn name="CompanyPerson" alias="EmployeeCompanyPerson" />
+      <SimpleJoin name="CompanyPerson" joinType="LEFT">
+        <SimpleJoin name="Person" joinType="LEFT">
+          <SimpleColumn name="FirstName" alias="EmployeeFirstName" />
+          <SimpleColumn name="LastName" alias="EmployeeLastName" />
+        </SimpleJoin>
+      </SimpleJoin>
+      
+      <SimpleColumn name="TabNumber" alias="EmployeeTabNumber" />
+    </SimpleJoin>
+
     <SimpleJoin name="Dimensions" joinType="LEFT">
       <xi:include href="../../Administration/views/viewcolumns/ExtraDimensions.viewcolumns.xml" />
     </SimpleJoin>
