@@ -28,7 +28,7 @@
     <Relation name="Payer" relation="Companies" label="=trdPayer" />
     <DateTime name="Term" label="=trdTerm" />
 
-    <Relation name="Manager" relation="Users" label="=trdManager" />
+    <Relation name="Manager" relation="Employees" label="=trdManager" />
 
     <Numeric name="Discount" precision="10" scale="2" label="=discount" />
     <Enum name="PriceName" key="ItemPrice" label="=priceName" />

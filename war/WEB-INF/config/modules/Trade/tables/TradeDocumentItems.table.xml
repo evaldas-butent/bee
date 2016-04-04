@@ -19,6 +19,8 @@
 
     <Relation name="Warehouse" relation="Warehouses" label="=trdWarehouseTo" />
 
+    <Relation name="Employee" relation="Employees" label="=employee" />
+
     <Relation name="Dimensions" unique="true" relation="Dimensions" editable="true"
       label="=dimensions" />
 

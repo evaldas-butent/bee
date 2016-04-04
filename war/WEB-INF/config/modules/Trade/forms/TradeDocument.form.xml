@@ -52,8 +52,8 @@
         <ListBox source="Status" visible="true" />
 
         <Label for="Manager" />
-        <DataSelector source="Manager" editSource="ManagerPerson" 
-          renderColumns="ManagerFirstName ManagerLastName" newRowEnabled="false" style="&inpw;" />
+        <DataSelector source="Manager" renderColumns="ManagerFirstName ManagerLastName"
+          newRowEnabled="false" style="&inpw;" />
       </row>
 
       <row>

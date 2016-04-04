@@ -76,6 +76,8 @@
           <SimpleColumn name="LastName" alias="ManagerLastName" />
         </SimpleJoin>
       </SimpleJoin>
+      
+      <SimpleColumn name="TabNumber" alias="ManagerTabNumber" />
     </SimpleJoin>
 
     <SimpleColumn name="Discount" />
