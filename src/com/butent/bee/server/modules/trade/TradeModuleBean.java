@@ -441,6 +441,15 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
       filter.add(Filter.any(COL_TRADE_OPERATION, operations));
     }
 
+    Set<Long> statuses = qs.getLongSet(new SqlSelect()
+        .addFields(TBL_TRADE_TYPE_STATUSES, COL_TRADE_DOCUMENT_STATUS)
+        .addFrom(TBL_TRADE_TYPE_STATUSES)
+        .setWhere(SqlUtils.equals(TBL_TRADE_TYPE_STATUSES, COL_DOCUMENT_TYPE, typeId)));
+
+    if (!BeeUtils.isEmpty(statuses)) {
+      filter.add(Filter.any(COL_TRADE_DOCUMENT_STATUS, statuses));
+    }
+
     Set<Long> tags = qs.getLongSet(new SqlSelect()
         .addFields(TBL_TRADE_TYPE_TAGS, COL_TRADE_TAG)
         .addFrom(TBL_TRADE_TYPE_TAGS)

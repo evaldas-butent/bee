@@ -18,6 +18,7 @@
 
     <RelColumn name="Operation" renderColumns="OperationName" visible="true" />
     <DataColumn name="Phase" visible="true" />
+    <RelColumn name="Status" renderColumns="StatusName" />
 
     <RelColumn name="Supplier" renderColumns="SupplierName" />
     <RelColumn name="Customer" renderColumns="CustomerName" />

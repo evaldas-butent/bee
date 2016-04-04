@@ -28,7 +28,6 @@
 
         <Label for="Number" />
         <InputText source="Number" style="&inpw;" />
-
       </row>
 
       <row>
@@ -52,9 +51,9 @@
         <Label for="Phase" />
         <ListBox source="Phase" visible="true" />
 
-        <Label for="Manager" />
-        <DataSelector source="Manager" renderColumns="ManagerFirstName ManagerLastName"
-          newRowEnabled="false" style="&inpw;" />
+        <Label for="Status" />
+        <DataSelector source="Status" renderColumns="StatusName" newRowEnabled="false"
+          style="&inpw;" />
       </row>
 
       <row>
@@ -85,15 +84,21 @@
       </row>
 
       <row>
+        <Label for="Manager" />
+        <DataSelector source="Manager" renderColumns="ManagerFirstName ManagerLastName"
+          newRowEnabled="false" style="&inpw;" />
+
+        <Label for="Currency" />
+        <DataSelector source="Currency" renderColumns="CurrencyName" editEnabled="false"
+          newRowEnabled="false" style="width: 5em;" />
+      </row>
+
+      <row>
         <Label for="PriceName" />
         <ListBox source="PriceName" />
 
         <Label for="Discount" />
         <InputDecimal source="Discount" style="&inpdt;" />
-
-        <Label for="Currency" />
-        <DataSelector source="Currency" renderColumns="CurrencyName" editEnabled="false"
-          newRowEnabled="false" style="width: 5em;" />
       </row>
     </Table>
 

@@ -49,6 +49,15 @@
     </row>
 
     <row>
+      <Label text="=statuses" />
+      <cell colSpan="3">
+      <ChildSelector childTable="TradeTypeStatuses" viewName="TradeStatuses"
+        targetRelColumn="DocumentType" sourceRelColumn="Status" renderColumns="StatusName"
+        newRowEnabled="false" style="width: 100%" />
+      </cell>
+    </row>
+
+    <row>
       <Label text="=tags" />
       <cell colSpan="3">
       <ChildSelector childTable="TradeTypeTags" viewName="TradeTags"

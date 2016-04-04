@@ -57,6 +57,7 @@ public final class TradeConstants {
   public static final String TBL_TRADE_DOCUMENT_ITEMS = "TradeDocumentItems";
 
   public static final String TBL_TRADE_TYPE_OPERATIONS = "TradeTypeOperations";
+  public static final String TBL_TRADE_TYPE_STATUSES = "TradeTypeStatuses";
   public static final String TBL_TRADE_TYPE_TAGS = "TradeTypeTags";
 
   public static final String VAR_VIEW_NAME = "view_name";

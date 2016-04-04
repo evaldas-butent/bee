@@ -81,6 +81,14 @@ public final class TradeKeeper implements HandlesAllDataEvents {
     ConditionalStyle.registerGridColumnStyleProvider(GRID_TRADE_TAGS, COL_BACKGROUND, csp);
     ConditionalStyle.registerGridColumnStyleProvider(GRID_TRADE_TAGS, COL_FOREGROUND, csp);
 
+    ConditionalStyle.registerGridColumnStyleProvider(GRID_TRADE_DOCUMENTS, COL_TRADE_OPERATION,
+        ColorStyleProvider.create(VIEW_TRADE_DOCUMENTS,
+            ALS_OPERATION_BACKGROUND, ALS_OPERATION_FOREGROUND));
+    ConditionalStyle.registerGridColumnStyleProvider(GRID_TRADE_DOCUMENTS,
+        COL_TRADE_DOCUMENT_STATUS,
+        ColorStyleProvider.create(VIEW_TRADE_DOCUMENTS,
+            ALS_STATUS_BACKGROUND, ALS_STATUS_FOREGROUND));
+
     registerDocumentViews();
     BeeKeeper.getBus().registerDataHandler(INSTANCE, false);
 

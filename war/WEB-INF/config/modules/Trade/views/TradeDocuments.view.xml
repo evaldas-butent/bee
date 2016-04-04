@@ -23,6 +23,13 @@
 
     <SimpleColumn name="Phase" />
     
+    <SimpleColumn name="Status" />
+    <SimpleJoin joinType="LEFT" name="Status">
+      <SimpleColumn name="StatusName" />
+      <SimpleColumn name="Background" alias="StatusBackground" />
+      <SimpleColumn name="Foreground" alias="StatusForeground" />
+    </SimpleJoin>
+    
     <SimpleColumn name="Supplier" />
     <SimpleJoin joinType="LEFT" name="Supplier">
       <SimpleColumn name="Name" alias="SupplierName" />
