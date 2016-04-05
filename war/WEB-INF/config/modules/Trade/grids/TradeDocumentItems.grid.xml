@@ -15,7 +15,7 @@
     <DataColumn name="Quantity" scale="0" visible="true">
       <footer aggregate="sum" />
     </DataColumn>
-    <DataColumn name="UnitName" flexGrow="0" caption="=unitShort" />
+    <DataColumn name="UnitName" flexGrow="0" label="=unitShort" />
 
     <DataColumn name="Price" scale="2">
       <footer expression="row.Quantity * row.Price" scale="2" />

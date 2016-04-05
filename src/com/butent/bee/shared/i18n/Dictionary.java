@@ -5356,6 +5356,8 @@ public interface Dictionary {
 
   default String trdDocumentFiles() {return g("trdDocumentFiles");}
 
+  default String trdDocumentItem() {return g("trdDocumentItem");}
+
   default String trdDocumentItems() {return g("trdDocumentItems");}
 
   default String trdDocumentPhase() {return g("trdDocumentPhase");}
@@ -5452,6 +5454,12 @@ public interface Dictionary {
 
   default String trdPrice() {return g("trdPrice");}
 
+  default String trdPrimaryDate() {return g("trdPrimaryDate");}
+
+  default String trdPrimaryDocument() {return g("trdPrimaryDocument");}
+
+  default String trdPrimaryDocumentItem() {return g("trdPrimaryDocumentItem");}
+
   default String trdProformaInvoice() {return g("trdProformaInvoice");}
 
   default String trdPurchase() {return g("trdPurchase");}
@@ -5481,6 +5489,8 @@ public interface Dictionary {
   default String trdStatusActive() {return g("trdStatusActive");}
 
   default String trdStatuses() {return g("trdStatuses");}
+
+  default String trdStock() {return g("trdStock");}
 
   default String trdSupplier() {return g("trdSupplier");}
 
