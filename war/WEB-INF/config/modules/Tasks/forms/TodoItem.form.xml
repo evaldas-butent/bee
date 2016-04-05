@@ -17,23 +17,33 @@
 
       <row>
         <Label for="Summary" visible="true" />
-        <cell verticalAlignment="top">
-          <InputText source="Summary" style="&inp;"
+        <cell colSpan="3">
+          <InputText source="Summary" style="width: 500px;"
             visible="true" />
         </cell>
-
+      </row>
+      <row>
         <Label for="Description" />
-        <InputArea source="Description" style="&inp; height: 60px;" />
+        <cell verticalAlignment="top" colSpan="3">
+          <InputArea source="Description" style="width: 500px; height: 60px;" />
+        </cell>
       </row>
 
       <row module="Classifiers.Contacts">
         <Label for="Company" />
-        <DataSelector source="Company" renderColumns="CompanyName CompanyTypeName" choiceColumns="Name TypeName" style="&inp;" />
-
+        <cell colSpan="3">
+          <DataSelector source="Company" renderColumns="CompanyName CompanyTypeName" choiceColumns="Name TypeName" style="width: 500px;" />
+        </cell>
+        
+      </row>
+      
+      <row module="Classifiers.Contacts">
         <Label for="Contact" />
-        <DataSelector source="Contact" newRowEnabled="false" style="&inp;"
+        <cell colSpan="3">
+          <DataSelector source="Contact" newRowEnabled="false" style="width: 500px;"
           renderColumns="ContactFirstName ContactLastName"
           choiceColumns="FirstName LastName CompanyName" options="Company" />
+        </cell>
       </row>
 
       <row>
@@ -47,19 +57,18 @@
       <row>
         <Label for="ExpectedDuration" />
         <InputTime source="ExpectedDuration" step="30" style="width: 60px;" />
-        <Label text="=calVisibility" />
+        <Label text="=calVisibility" style="margin-top: 4px;"/>
         <cell colSpan="2">
           <Radio source="Visibility" vertical="false" />
         </cell>
       </row>
 
       <row>
-        <Label for="Created" />
-        <InputDateTime source="Created" />
-
-        <Label for="Creator" />
-        <DataSelector source="Creator" editSource="CreatorCompanyPerson"
-          renderColumns="CreatorFirstName CreatorLastName" style="&inp;"/>
+        <DateTimeLabel source="Created" style="color: #ababab;"/>
+        <TextLabel style="color: #ababab;">
+          <renderToken source="CreatorFirstName"/>
+          <renderToken source="CreatorLastName"/>
+      </TextLabel>
       </row>
     </Table>
   </FlowPanel>
