@@ -4,7 +4,7 @@ import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.ui.HasLocalizedCaption;
 
 public enum TradeDocumentPhase implements HasLocalizedCaption {
-  ORDER {
+  ORDER(false) {
     @Override
     public String getCaption(Dictionary constants) {
       return constants.trdDocumentPhaseOrder();
@@ -15,7 +15,7 @@ public enum TradeDocumentPhase implements HasLocalizedCaption {
       return "PhaseOrder";
     }
   },
-  PENDING {
+  PENDING(false) {
     @Override
     public String getCaption(Dictionary constants) {
       return constants.trdDocumentPhasePending();
@@ -26,7 +26,7 @@ public enum TradeDocumentPhase implements HasLocalizedCaption {
       return "PhasePending";
     }
   },
-  ACTIVE {
+  ACTIVE(true) {
     @Override
     public String getCaption(Dictionary constants) {
       return constants.trdDocumentPhaseActive();
@@ -37,7 +37,7 @@ public enum TradeDocumentPhase implements HasLocalizedCaption {
       return "PhaseActive";
     }
   },
-  COMPLETED {
+  COMPLETED(true) {
     @Override
     public String getCaption(Dictionary constants) {
       return constants.trdDocumentPhaseCompleted();
@@ -48,7 +48,7 @@ public enum TradeDocumentPhase implements HasLocalizedCaption {
       return "PhaseCompleted";
     }
   },
-  APPROVED {
+  APPROVED(true) {
     @Override
     public String getCaption(Dictionary constants) {
       return constants.trdDocumentPhaseApproved();
@@ -60,5 +60,15 @@ public enum TradeDocumentPhase implements HasLocalizedCaption {
     }
   };
 
+  private final boolean modifyStock;
+
+  TradeDocumentPhase(boolean modifyStock) {
+    this.modifyStock = modifyStock;
+  }
+
   public abstract String getDocumentTypeColumnName();
+
+  public boolean modifyStock() {
+    return modifyStock;
+  }
 }

@@ -17,6 +17,7 @@
     <SimpleColumn name="Operation" />
     <SimpleJoin name="Operation" joinType="LEFT">
       <SimpleColumn name="OperationName" />
+      <SimpleColumn name="OperationType" />
       <SimpleColumn name="Background" alias="OperationBackground" />
       <SimpleColumn name="Foreground" alias="OperationForeground" />
     </SimpleJoin>
