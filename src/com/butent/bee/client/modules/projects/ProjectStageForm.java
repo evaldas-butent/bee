@@ -90,9 +90,7 @@ class ProjectStageForm extends AbstractFormInterceptor implements DataChangeEven
       setTimeUnits(unitsRows);
     }
 
-    if (getTimeUnits() != null) {
-      showComputedTimes(form, row, false);
-    }
+    showComputedTimes(form, row, false);
 
     if (form.isEnabled()) {
       ProjectsKeeper.createTemplateTasks(form, row, COL_PROJECT_STAGE, wTasksGrid, null);
