@@ -357,7 +357,7 @@ public class EditableWidget implements EditChangeHandler, FocusHandler, BlurHand
 
         if (!BeeUtils.isEmpty(currencySource)) {
           return RelationUtils.maybeUpdateCurrency(Data.getDataInfo(viewName), row, currencySource,
-              !BeeUtils.isEmpty(getEditor().getNormalizedValue()));
+              getEditor().getNormalizedValue() != null);
         }
       }
     }
