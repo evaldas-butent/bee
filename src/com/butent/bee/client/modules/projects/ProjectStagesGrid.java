@@ -47,13 +47,8 @@ class ProjectStagesGrid extends AbstractGridInterceptor {
     int idxOwner = provider.getColumnIndex(ProjectConstants.ALS_PROJECT_OWNER);
     int idxStatus = provider.getColumnIndex(ProjectConstants.ALS_PROJECT_STATUS);
 
-    if (BeeUtils.unbox(activeRow.getLong(idxOwner)) == BeeKeeper.getUser().getUserId()
-        && ProjectStatus.SCHEDULED.ordinal() == BeeUtils
-            .unbox(activeRow.getInteger(idxStatus))) {
-      if (BeeUtils.unbox(activeRow.getLong(idxStagesCount)) == 1) {
-        presenter.getGridView().notifySevere(LC.prjMustBeOneStage());
-        return GridInterceptor.DeleteMode.CANCEL;
-      } else if (BeeUtils.unbox(activeRow.getLong(idxTaskCount)) > 0) {
+    if (BeeUtils.unbox(activeRow.getLong(idxOwner)) == BeeKeeper.getUser().getUserId()) {
+      if (BeeUtils.unbox(activeRow.getLong(idxTaskCount)) > 0) {
         presenter.getGridView().notifySevere(LC.prjStageHasTasks());
         return GridInterceptor.DeleteMode.CANCEL;
       } else {
