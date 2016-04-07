@@ -26,7 +26,6 @@ import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -49,22 +48,19 @@ public abstract class PrintFormInterceptor extends AbstractFormInterceptor {
         for (int i = 0; i < reports.length; i++) {
           forms.add(null);
         }
-        final ChoiceCallback choice = new ChoiceCallback() {
-          @Override
-          public void onSuccess(int value) {
-            FormDescription form = forms.get(value);
-            String viewName = form.getViewName();
-            IsRow row = getFormView().getActiveRow();
+        final ChoiceCallback choice = value -> {
+          FormDescription form = forms.get(value);
+          String viewName = form.getViewName();
+          IsRow row = getFormView().getActiveRow();
 
-            if (BeeUtils.isEmpty(viewName)
-                || BeeUtils.same(viewName, getFormView().getViewName())) {
+          if (BeeUtils.isEmpty(viewName)
+              || BeeUtils.same(viewName, getFormView().getViewName())) {
 
-              RowEditor.openForm(form.getName(), Data.getDataInfo(getFormView().getViewName()),
-                  row, Opener.MODAL, null, getPrintFormInterceptor());
-            } else {
-              RowEditor.openForm(form.getName(), Data.getDataInfo(viewName), row.getId(),
-                  Opener.MODAL, null, getPrintFormInterceptor());
-            }
+            RowEditor.openForm(form.getName(), Data.getDataInfo(getFormView().getViewName()),
+                row, Opener.MODAL, null, getPrintFormInterceptor());
+          } else {
+            RowEditor.openForm(form.getName(), Data.getDataInfo(viewName), row.getId(),
+                Opener.MODAL, null, getPrintFormInterceptor());
           }
         };
         final Holder<Integer> counter = Holder.of(0);
@@ -153,14 +149,30 @@ public abstract class PrintFormInterceptor extends AbstractFormInterceptor {
     if (ArrayUtils.isEmpty(reports)) {
       return false;
     }
-    Consumer<String> consumer = (report) -> print((parameters, data) ->
+    List<String> reps = new ArrayList<>();
+    List<String> caps = new ArrayList<>();
+
+    for (String report : reports) {
+      String[] arr = BeeUtils.split(report, BeeConst.CHAR_COLON);
+      String rep = arr[0];
+      String cap = ArrayUtils.getQuietly(arr, 1);
+
+      if (BeeUtils.isEmpty(cap)) {
+        cap = BeeUtils.notEmpty(Localized.translate("report" + rep), rep);
+      } else {
+        cap = Localized.maybeTranslate(cap);
+      }
+      reps.add(rep);
+      caps.add(cap);
+    }
+    Consumer<String> consumer = report -> print((parameters, data) ->
         ReportUtils.showReport(report, parameters, data));
 
-    if (reports.length > 1) {
-      Global.choice(null, Localized.dictionary().choosePrintingForm(), Arrays.asList(reports),
-          (idx) -> consumer.accept(reports[idx]));
+    if (reps.size() > 1) {
+      Global.choice(null, Localized.dictionary().choosePrintingForm(), caps,
+          idx -> consumer.accept(reps.get(idx)));
     } else {
-      consumer.accept(reports[0]);
+      consumer.accept(reps.get(0));
     }
     return true;
   }
