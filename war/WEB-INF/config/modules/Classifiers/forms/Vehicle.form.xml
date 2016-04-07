@@ -63,6 +63,11 @@
         <text>=trVehiclePartUsage</text>
         <ChildGrid name="VehiclePartUsage" relColumn="Vehicle" />
       </page>
+      <page>
+      <text>=relatedInformation</text>
+      <Relations relColumn="Vehicle" inline="true"
+                 defaultRelations="Companies Persons Requests Tasks" style="margin: 0px 15px 0px 15px; min-width:300px;" />
+      </page>
     </TabbedPages>
   </FlowPanel>
 </f:Form>
