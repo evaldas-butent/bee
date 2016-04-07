@@ -515,6 +515,15 @@ public class QueryServiceBean {
     return getSingleValue(query).getLong(0, 0);
   }
 
+  public Long getLong(String tableName, String fieldName, String filterColumn, Object filterValue) {
+    SqlSelect query = new SqlSelect()
+        .addFields(tableName, fieldName)
+        .addFrom(tableName)
+        .setWhere(SqlUtils.equals(tableName, filterColumn, filterValue));
+
+    return getLong(query);
+  }
+
   public Long[] getLongColumn(IsQuery query) {
     return getSingleColumn(query).getLongColumn(0);
   }

@@ -85,6 +85,8 @@ public final class TradeConstants {
 
   public static final String VIEW_TRADE_DOCUMENTS = "TradeDocuments";
   public static final String VIEW_TRADE_DOCUMENT_ITEMS = "TradeDocumentItems";
+  public static final String VIEW_TRADE_STOCK = "TradeStock";
+
   public static final String VIEW_TRADE_DOCUMENT_TYPES = "TradeDocumentTypes";
   public static final String VIEW_TRADE_DOCUMENT_TAGS = "TradeDocumentTags";
 
@@ -126,6 +128,7 @@ public final class TradeConstants {
   public static final String COL_TRADE_ITEM_PRICE = "Price";
   public static final String COL_TRADE_ITEM_NOTE = "Note";
   public static final String COL_TRADE_ITEM_PARENT = "Parent";
+  public static final String COL_TRADE_ITEM_WAREHOUSE = "Warehouse";
 
   public static final String COL_SERIES = "Series";
   public static final String COL_SERIES_NAME = "SeriesName";

@@ -21,6 +21,8 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.event.DataChangeEvent;
+import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.trade.TradeDocumentPhase;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -93,7 +95,6 @@ public class TradeDocumentForm extends AbstractFormInterceptor {
 
       Global.confirm(getShortCaption(), Icon.ALARM, Collections.singletonList(message),
           Localized.dictionary().actionChange(), Localized.dictionary().actionCancel(), () -> {
-
             if (DataUtils.sameId(row, getActiveRow())) {
               BeeRow newRow = DataUtils.cloneRow(getActiveRow());
               setPhase(newRow, to);
@@ -107,11 +108,13 @@ public class TradeDocumentForm extends AbstractFormInterceptor {
               BeeKeeper.getRpc().sendText(params, rowSet.serialize(), new ResponseCallback() {
                 @Override
                 public void onResponse(ResponseObject response) {
-                  if (Queries.checkResponse(SVC_DOCUMENT_PHASE_TRANSITION, getRpcId(),
-                      getViewName(), response, BeeRow.class, null)) {
+                  if (Queries.checkRowResponse(SVC_DOCUMENT_PHASE_TRANSITION, getViewName(),
+                      response)) {
 
                     BeeRow r = BeeRow.restore(response.getResponseAsString());
-                    getFormView().updateRow(r, true);
+
+                    RowUpdateEvent.fire(BeeKeeper.getBus(), getViewName(), r);
+                    DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_TRADE_STOCK);
                   }
                 }
               });

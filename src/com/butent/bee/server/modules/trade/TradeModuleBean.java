@@ -21,8 +21,11 @@ import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.modules.administration.ExchangeUtils;
+import com.butent.bee.server.sql.HasConditions;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.IsExpression;
+import com.butent.bee.server.sql.SqlDelete;
+import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
@@ -845,9 +848,237 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
         return ResponseObject.error(reqInfo.getService(), docId, errorMessage);
       }
 
+      ResponseObject response = doPhaseTransition(docId, operationType, warehouseFrom, warehouseTo,
+          newStock);
+      if (response != null && response.hasErrors()) {
+        return response;
+      }
     }
 
     return commitRow(oldRowSet.getViewName(), oldRowSet.getColumns(), oldRow, newRow);
+  }
+
+  private ResponseObject doPhaseTransition(long docId, OperationType operationType,
+      Long warehouseFrom, Long warehouseTo, boolean toStock) {
+
+    IsCondition itemCondition = SqlUtils.equals(TBL_TRADE_DOCUMENT_ITEMS, COL_TRADE_DOCUMENT,
+        docId);
+
+    ResponseObject response;
+
+    switch (operationType) {
+      case PURCHASE:
+        if (toStock) {
+          response = insertStock(itemCondition, warehouseTo);
+        } else {
+          response = deleteStock(itemCondition);
+        }
+        break;
+
+      case SALE:
+        if (toStock) {
+          response = adoptItems(itemCondition, warehouseFrom);
+        } else {
+          response = leaveParents(itemCondition);
+        }
+        break;
+
+      case TRANSFER:
+        if (toStock) {
+          response = adoptItems(itemCondition, warehouseFrom);
+          if (!response.hasErrors()) {
+            response = insertStock(itemCondition, warehouseTo);
+          }
+
+        } else {
+          response = leaveParents(itemCondition);
+          if (!response.hasErrors()) {
+            response = deleteStock(itemCondition);
+          }
+        }
+        break;
+    }
+
+    return ResponseObject.emptyResponse();
+  }
+
+  private ResponseObject adoptItems(IsCondition itemCondition, Long warehouseFrom) {
+    int count = 0;
+
+    String idName = sys.getIdName(TBL_TRADE_DOCUMENT_ITEMS);
+
+    SqlSelect itemQuery = new SqlSelect()
+        .addFields(TBL_TRADE_DOCUMENT_ITEMS, idName, COL_ITEM, COL_TRADE_ITEM_QUANTITY)
+        .addFrom(TBL_TRADE_DOCUMENT_ITEMS)
+        .setWhere(itemCondition);
+
+    SimpleRowSet itemData = qs.getData(itemQuery);
+    if (!DataUtils.isEmpty(itemData)) {
+      ResponseObject response;
+
+      for (SimpleRow itemRow : itemData) {
+        Long id = itemRow.getLong(idName);
+        Long item = itemRow.getLong(COL_ITEM);
+
+        Double qty = itemRow.getDouble(COL_TRADE_ITEM_QUANTITY);
+
+        Long parent = findParent(item, warehouseFrom, qty);
+        if (!DataUtils.isId(parent)) {
+          return ResponseObject.error("parent not found for id", id, "item", item, "qty", qty,
+              "warehouse", warehouseFrom);
+        }
+
+        SqlUpdate stockUpdate = new SqlUpdate(TBL_TRADE_STOCK)
+            .addExpression(COL_STOCK_QUANTITY,
+                SqlUtils.minus(SqlUtils.field(TBL_TRADE_STOCK, COL_STOCK_QUANTITY), qty))
+            .setWhere(SqlUtils.equals(TBL_TRADE_STOCK, COL_TRADE_DOCUMENT_ITEM, parent));
+
+        response = qs.updateDataWithResponse(stockUpdate);
+        if (response.hasErrors()) {
+          return response;
+        }
+
+        SqlUpdate itemUpdate = new SqlUpdate(TBL_TRADE_DOCUMENT_ITEMS)
+            .addConstant(COL_TRADE_ITEM_PARENT, parent)
+            .setWhere(SqlUtils.equals(TBL_TRADE_DOCUMENT_ITEMS, idName, id));
+
+        response = qs.updateDataWithResponse(itemUpdate);
+        if (response.hasErrors()) {
+          return response;
+        }
+
+        count++;
+      }
+    }
+
+    return ResponseObject.response(count);
+  }
+
+  private Long findParent(Long item, Long warehouse, Double qty) {
+    SqlSelect query = new SqlSelect()
+        .addFields(TBL_TRADE_STOCK, COL_TRADE_DOCUMENT_ITEM)
+        .addFrom(TBL_TRADE_STOCK)
+        .addFromInner(TBL_TRADE_DOCUMENT_ITEMS, sys.joinTables(TBL_TRADE_DOCUMENT_ITEMS,
+            TBL_TRADE_STOCK, COL_TRADE_DOCUMENT_ITEM));
+
+    HasConditions where = SqlUtils.and(
+        SqlUtils.equals(TBL_TRADE_DOCUMENT_ITEMS, COL_ITEM, item),
+        SqlUtils.moreEqual(TBL_TRADE_STOCK, COL_STOCK_QUANTITY, qty));
+
+    if (DataUtils.isId(warehouse)) {
+      where.add(SqlUtils.equals(TBL_TRADE_STOCK, COL_STOCK_WAREHOUSE, warehouse));
+    }
+
+    query.setWhere(where);
+
+    return BeeUtils.getQuietly(qs.getLongList(query), 0);
+  }
+
+  private ResponseObject leaveParents(IsCondition itemCondition) {
+    int count = 0;
+
+    String idName = sys.getIdName(TBL_TRADE_DOCUMENT_ITEMS);
+    String itemQty = SqlUtils.uniqueName();
+    String stockQty = SqlUtils.uniqueName();
+
+    SqlSelect query = new SqlSelect()
+        .addFields(TBL_TRADE_DOCUMENT_ITEMS, idName, COL_TRADE_ITEM_PARENT)
+        .addField(TBL_TRADE_DOCUMENT_ITEMS, COL_TRADE_ITEM_QUANTITY, itemQty)
+        .addField(TBL_TRADE_STOCK, COL_STOCK_QUANTITY, stockQty)
+        .addFrom(TBL_TRADE_DOCUMENT_ITEMS)
+        .addFromInner(TBL_TRADE_STOCK,
+            SqlUtils.join(TBL_TRADE_DOCUMENT_ITEMS, COL_TRADE_ITEM_PARENT,
+                TBL_TRADE_STOCK, COL_TRADE_DOCUMENT_ITEM))
+        .setWhere(itemCondition);
+
+    SimpleRowSet data = qs.getData(query);
+
+    if (!DataUtils.isEmpty(data)) {
+      ResponseObject response;
+
+      for (SimpleRow row : data) {
+        Long id = row.getLong(idName);
+        Long parent = row.getLong(COL_TRADE_ITEM_PARENT);
+
+        double qty = BeeUtils.unbox(row.getDouble(stockQty))
+            + BeeUtils.unbox(row.getDouble(itemQty));
+
+        SqlUpdate stockUpdate = new SqlUpdate(TBL_TRADE_STOCK)
+            .addConstant(COL_STOCK_QUANTITY, qty)
+            .setWhere(SqlUtils.equals(TBL_TRADE_STOCK, COL_TRADE_DOCUMENT_ITEM, parent));
+
+        response = qs.updateDataWithResponse(stockUpdate);
+        if (response.hasErrors()) {
+          return response;
+        }
+
+        SqlUpdate itemUpdate = new SqlUpdate(TBL_TRADE_DOCUMENT_ITEMS)
+            .addConstant(COL_TRADE_ITEM_PARENT, null)
+            .setWhere(SqlUtils.equals(TBL_TRADE_DOCUMENT_ITEMS, idName, id));
+
+        response = qs.updateDataWithResponse(itemUpdate);
+        if (response.hasErrors()) {
+          return response;
+        }
+
+        count++;
+      }
+    }
+
+    return ResponseObject.response(count);
+  }
+
+  private ResponseObject deleteStock(IsCondition itemCondition) {
+    SqlDelete delete = new SqlDelete(TBL_TRADE_STOCK)
+        .setWhere(SqlUtils.in(TBL_TRADE_STOCK, COL_TRADE_DOCUMENT_ITEM,
+            TBL_TRADE_DOCUMENT_ITEMS, sys.getIdName(TBL_TRADE_DOCUMENT_ITEMS), itemCondition));
+
+    return qs.updateDataWithResponse(delete);
+  }
+
+  private ResponseObject insertStock(IsCondition itemCondition, Long warehouseTo) {
+    int count = 0;
+
+    String idName = sys.getIdName(TBL_TRADE_DOCUMENT_ITEMS);
+
+    SqlSelect query = new SqlSelect()
+        .addFields(TBL_TRADE_DOCUMENT_ITEMS, idName, COL_TRADE_ITEM_PARENT,
+            COL_TRADE_ITEM_WAREHOUSE, COL_TRADE_ITEM_QUANTITY)
+        .addFrom(TBL_TRADE_DOCUMENT_ITEMS)
+        .setWhere(itemCondition);
+
+    SimpleRowSet data = qs.getData(query);
+
+    if (!DataUtils.isEmpty(data)) {
+      for (SimpleRow row : data) {
+        Long id = row.getLong(idName);
+
+        Long parent = row.getLong(COL_TRADE_ITEM_PARENT);
+        Long primary = DataUtils.isId(parent) ? getPrimary(parent) : id;
+
+        Long warehouse = BeeUtils.nvl(row.getLong(COL_TRADE_ITEM_WAREHOUSE), warehouseTo);
+        Double qty = row.getDouble(COL_TRADE_ITEM_QUANTITY);
+
+        SqlInsert insert = new SqlInsert(TBL_TRADE_STOCK)
+            .addConstant(COL_PRIMARY_DOCUMENT_ITEM, primary)
+            .addConstant(COL_TRADE_DOCUMENT_ITEM, id)
+            .addConstant(COL_STOCK_WAREHOUSE, warehouse)
+            .addConstant(COL_STOCK_QUANTITY, qty);
+
+        ResponseObject response = qs.insertDataWithResponse(insert);
+        if (response.hasErrors()) {
+          return response;
+        }
+
+        count++;
+      }
+    }
+
+    return ResponseObject.response(count);
+  }
+
+  private Long getPrimary(long parent) {
+    return qs.getLong(TBL_TRADE_STOCK, COL_PRIMARY_DOCUMENT_ITEM, COL_TRADE_DOCUMENT_ITEM, parent);
   }
 
   private String verifyPhaseTransition(long docId, OperationType operationType,
@@ -871,16 +1102,21 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
 
     switch (operationType) {
       case PURCHASE:
-        if (!toStock && hasChildren(itemCondition)) {
+        if (toStock && hasChildren(itemCondition)) {
           errorMessage = "illegal";
         }
         break;
 
       case SALE:
-        verifyStock(itemCondition, warehouseFrom);
+        if (toStock && !verifyStock(itemCondition, warehouseFrom)) {
+          errorMessage = "never enough";
+        }
         break;
 
       case TRANSFER:
+        if (toStock && !verifyStock(itemCondition, warehouseFrom)) {
+          errorMessage = "it's never enough";
+        }
         if (!toStock && hasChildren(itemCondition)) {
           errorMessage = "taboo";
         }
@@ -920,8 +1156,12 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
       return false;
     }
 
-    inputQuantities.forEach((item, quantity) -> {
-    });
+    for (Map.Entry<Long, Double> entry : inputQuantities.entrySet()) {
+      Double qty = stockQuantities.get(entry.getKey());
+      if (qty == null || BeeUtils.isMore(entry.getValue(), qty)) {
+        return false;
+      }
+    }
 
     return true;
   }
