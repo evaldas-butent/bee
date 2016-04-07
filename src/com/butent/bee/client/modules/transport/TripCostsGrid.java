@@ -148,7 +148,7 @@ public class TripCostsGrid extends AbstractGridInterceptor
     super.onReadyForUpdate(gridView, event);
   }
 
-  private String amountEntry(Double qty, Consumer<String> amountConsumer) {
+  private static void amountEntry(Double qty, Consumer<String> amountConsumer) {
     InputNumber input = new InputNumber();
 
     Global.inputWidget(Localized.dictionary().amount(), input, new InputCallback() {
@@ -166,6 +166,5 @@ public class TripCostsGrid extends AbstractGridInterceptor
             .accept(BeeUtils.toString(input.getNumber() / (BeeUtils.isPositive(qty) ? qty : 1), 5));
       }
     });
-    return null;
   }
 }

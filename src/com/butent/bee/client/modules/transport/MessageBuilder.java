@@ -1,12 +1,9 @@
 package com.butent.bee.client.modules.transport;
 
-import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.logical.shared.SelectionEvent;
-import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.regexp.shared.MatchResult;
 import com.google.gwt.regexp.shared.RegExp;
 import com.google.gwt.regexp.shared.SplitResult;
@@ -22,15 +19,11 @@ import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.TabBar;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
-import com.butent.bee.client.dialog.ChoiceCallback;
 import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.dialog.StringCallback;
-import com.butent.bee.client.event.InputEvent;
-import com.butent.bee.client.event.InputHandler;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Horizontal;
-import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.FaLabel;
@@ -40,9 +33,9 @@ import com.butent.bee.client.widget.InputText;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
@@ -63,6 +56,7 @@ import com.butent.bee.shared.utils.Codec;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -77,12 +71,16 @@ public class MessageBuilder extends FaLabel implements ClickHandler {
     private final HtmlTable driverPanel = new HtmlTable();
     private final Label characterCount = new Label();
     private final InputArea messagePanel = new InputArea();
-    private Map<String, Collection<String>> templates = new LinkedHashMap<>();
+    private final Map<String, Collection<String>> templates = new LinkedHashMap<>();
+
     private BeeRowSet cargoInfo;
+    private final Map<Long, Map<String, String>> additionalPlaces = new HashMap<>();
+    private final Map<Long, Map<String, String>> revisedPlaces = new HashMap<>();
+
     private final Collection<Long> selectedIds = new HashSet<>();
     private final TabBar tabs = new TabBar(Orientation.HORIZONTAL);
 
-    protected MessageDialog(Set<Long> driverIds, Set<Long> cargoIds, Set<Long> ids) {
+    private MessageDialog(Set<Long> driverIds, Set<Long> cargoIds, Set<Long> ids) {
       super(Localized.dictionary().message());
 
       setAnimationEnabled(true);
@@ -95,12 +93,7 @@ public class MessageBuilder extends FaLabel implements ClickHandler {
       Horizontal hor = new Horizontal();
       hor.add(new Button(Localized.dictionary().template(), this));
       hor.add(tabs);
-      tabs.addSelectionHandler(new SelectionHandler<Integer>() {
-        @Override
-        public void onSelection(SelectionEvent<Integer> selectionEvent) {
-          renderMessage();
-        }
-      });
+      tabs.addSelectionHandler(selectionEvent -> renderMessage());
       panel.add(hor);
 
       characterCount.getElement().getStyle().setTextAlign(Style.TextAlign.RIGHT);
@@ -108,43 +101,30 @@ public class MessageBuilder extends FaLabel implements ClickHandler {
 
       messagePanel.setVisibleLines(15);
       messagePanel.setWidth("100%");
-      messagePanel.addInputHandler(new InputHandler() {
-        @Override
-        public void onInput(InputEvent event) {
-          updateCharacterCount();
-        }
-      });
+      messagePanel.addInputHandler(event -> updateCharacterCount());
       panel.add(messagePanel);
 
       SimplePanel simple = new SimplePanel(new Button(Localized.dictionary().send(),
-          new ClickHandler() {
-            @Override
-            public void onClick(ClickEvent arg) {
-              sendMessage();
-            }
-          }));
+          handler -> sendMessage()));
       simple.getElement().getStyle().setTextAlign(Style.TextAlign.CENTER);
       panel.add(simple);
 
       setWidget(panel);
 
-      Global.getParameter(PRM_MESSAGE_TEMPLATE, new Consumer<String>() {
-        @Override
-        public void accept(String parameter) {
-          for (Map.Entry<String, String> entry : Codec.deserializeMap(parameter).entrySet()) {
-            String[] items;
+      Global.getParameter(PRM_MESSAGE_TEMPLATE, parameter -> {
+        for (Map.Entry<String, String> entry : Codec.deserializeMap(parameter).entrySet()) {
+          String[] items;
 
-            try {
-              items = Codec.beeDeserializeCollection(entry.getValue());
-            } catch (Exception e) {
-              items = null;
-            }
-            if (!ArrayUtils.isEmpty(items)) {
-              templates.put(entry.getKey(), Arrays.asList(items));
-            }
+          try {
+            items = Codec.beeDeserializeCollection(entry.getValue());
+          } catch (Exception e) {
+            items = null;
           }
-          renderTemplates(null);
+          if (!ArrayUtils.isEmpty(items)) {
+            templates.put(entry.getKey(), Arrays.asList(items));
+          }
         }
+        renderTemplates(null);
       });
       Queries.getRowSet(TBL_DRIVERS,
           Lists.newArrayList(COL_FIRST_NAME, COL_LAST_NAME, COL_MOBILE),
@@ -161,17 +141,39 @@ public class MessageBuilder extends FaLabel implements ClickHandler {
               setDrivers(drivers);
             }
           });
-      setCargoInfo(Data.createRowSet(TBL_ORDER_CARGO));
+      setCargoInfo(Data.createRowSet(TBL_ORDER_CARGO), Data.createRowSet(VIEW_CARGO_HANDLING));
 
-      if (!BeeUtils.isEmpty(cargoIds)) {
-        Queries.getRowSet(TBL_ORDER_CARGO, null, Filter.idIn(cargoIds),
-            new Queries.RowSetCallback() {
-              @Override
-              public void onSuccess(BeeRowSet result) {
-                setCargoInfo(result);
+      Queries.getRowSet(TBL_ORDER_CARGO, null, Filter.idIn(cargoIds), new Queries.RowSetCallback() {
+        @Override
+        public void onSuccess(BeeRowSet cargo) {
+          Queries.getRowSet(VIEW_CARGO_HANDLING, null, Filter.or(Filter.any(COL_CARGO_TRIP, ids),
+              Filter.any(COL_CARGO, cargoIds)), new Queries.RowSetCallback() {
+            @Override
+            public void onSuccess(BeeRowSet handling) {
+              if (!DataUtils.isEmpty(handling)) {
+                Queries.getRowSet(VIEW_CARGO_TRIPS, Collections.singletonList(COL_CARGO),
+                    Filter.idIn(handling.getDistinctLongs(handling.getColumnIndex(COL_CARGO_TRIP))),
+                    new Queries.RowSetCallback() {
+                      @Override
+                      public void onSuccess(BeeRowSet result) {
+                        for (BeeRow row : handling) {
+                          Long id = row.getLong(handling.getColumnIndex(COL_CARGO_TRIP));
+
+                          if (DataUtils.isId(id) && !BeeConst.isUndef(result.getRowIndex(id))) {
+                            row.setValue(handling.getColumnIndex(COL_CARGO),
+                                result.getStringByRowId(id, COL_CARGO));
+                          }
+                        }
+                        setCargoInfo(cargo, handling);
+                      }
+                    });
+              } else {
+                setCargoInfo(cargo, handling);
               }
-            });
-      }
+            }
+          });
+        }
+      });
       selectedIds.addAll(ids);
     }
 
@@ -188,49 +190,39 @@ public class MessageBuilder extends FaLabel implements ClickHandler {
         template = null;
       }
       Global.inputCollection(Localized.dictionary().template(),
-          caption, false, template, new Consumer<Collection<String>>() {
-            @Override
-            public void accept(final Collection<String> input) {
-              if (BeeUtils.isEmpty(input)) {
-                templates.remove(caption);
-                renderTemplates(null);
-              } else {
-                Global.inputString(Localized.dictionary().name(), null, new StringCallback() {
-                  @Override
-                  public void onSuccess(String name) {
-                    templates.put(name, input);
-                    renderTemplates(name);
-                  }
-                }, null, caption);
-              }
-            }
-          }, new Function<String, Editor>() {
-            @Override
-            public Editor apply(String value) {
-              final InputText editor = new InputText();
-              editor.setWidth("30em");
-
-              if (!BeeUtils.isEmpty(value)) {
-                editor.setValue(value);
-              } else {
-                final List<String> caps = new ArrayList<>();
-                final List<String> keys = new ArrayList<>();
-
-                for (BeeColumn col : cargoInfo.getColumns()) {
-                  if (col.getType() != ValueType.LONG) {
-                    caps.add(Localized.getLabel(col));
-                    keys.add(col.getId());
-                  }
+          caption, false, template, input -> {
+            if (BeeUtils.isEmpty(input)) {
+              templates.remove(caption);
+              renderTemplates(null);
+            } else {
+              Global.inputString(Localized.dictionary().name(), null, new StringCallback() {
+                @Override
+                public void onSuccess(String name) {
+                  templates.put(name, input);
+                  renderTemplates(name);
                 }
-                Global.choice(Localized.dictionary().value(), null, caps, new ChoiceCallback() {
-                  @Override
-                  public void onSuccess(int item) {
-                    editor.setValue(caps.get(item) + ": {" + keys.get(item) + "}");
-                  }
-                });
-              }
-              return editor;
+              }, null, caption);
             }
+          }, value -> {
+            final InputText editor = new InputText();
+            editor.setWidth("30em");
+
+            if (!BeeUtils.isEmpty(value)) {
+              editor.setValue(value);
+            } else {
+              final List<String> caps = new ArrayList<>();
+              final List<String> keys = new ArrayList<>();
+
+              for (BeeColumn col : cargoInfo.getColumns()) {
+                if (col.getType() != ValueType.LONG) {
+                  caps.add(Localized.getLabel(col));
+                  keys.add(col.getId());
+                }
+              }
+              Global.choice(Localized.dictionary().value(), null, caps,
+                  item -> editor.setValue(caps.get(item) + ": {" + keys.get(item) + "}"));
+            }
+            return editor;
           });
     }
 
@@ -254,38 +246,25 @@ public class MessageBuilder extends FaLabel implements ClickHandler {
 
               if (m != null) {
                 String chunk = m.getGroup(0);
-                String value = null;
-                int idx = cargoInfo.getColumnIndex(chunk.substring(1, chunk.length() - 1));
+                String col = chunk.substring(1, chunk.length() - 1);
+                int idx = cargoInfo.getColumnIndex(col);
+                String value;
 
-                if (idx != BeeConst.UNDEF) {
-                  switch (cargoInfo.getColumn(idx).getType()) {
-                    case BOOLEAN:
-                      value = BeeUtils.unbox(cargoInfo.getBoolean(i, idx))
-                          ? Localized.dictionary().yes() : Localized.dictionary().no();
-                      break;
-
-                    case DATE:
-                      JustDate date = cargoInfo.getDate(i, idx);
-
-                      if (date != null) {
-                        value = date.toString();
-                      }
-                      break;
-
-                    case DATE_TIME:
-                      DateTime dateTime = cargoInfo.getDateTime(i, idx);
-
-                      if (dateTime != null) {
-                        value = dateTime.toCompactString();
-                      }
-                      break;
-
-                    default:
-                      value = cargoInfo.getString(i, idx);
-                      break;
-                  }
-                } else {
+                if (BeeConst.isUndef(idx)) {
                   value = chunk;
+                } else {
+                  Long cargoId = cargoInfo.getRow(i).getId();
+
+                  if (revisedPlaces.containsKey(cargoId)
+                      && revisedPlaces.get(cargoId).containsKey(col)) {
+                    value = revisedPlaces.get(cargoId).get(col);
+                  } else {
+                    value = parseValue(cargoInfo, i, idx);
+
+                    if (additionalPlaces.containsKey(cargoId)) {
+                      value = BeeUtils.joinItems(value, additionalPlaces.get(cargoId).get(col));
+                    }
+                  }
                 }
                 sb.append(BeeUtils.nvl(value, ""));
               }
@@ -359,19 +338,42 @@ public class MessageBuilder extends FaLabel implements ClickHandler {
           if (!BeeUtils.isEmpty(selectedIds)) {
             Queries.update(gridView.getViewName(), Filter.idIn(selectedIds), COL_CARGO_MESSAGE,
                 Value.getValue(msg), new Queries.IntCallback() {
-              @Override
-              public void onSuccess(Integer result) {
-                DataChangeEvent.fireRefresh(BeeKeeper.getBus(), gridView.getViewName());
-              }
-            });
+                  @Override
+                  public void onSuccess(Integer result) {
+                    DataChangeEvent.fireRefresh(BeeKeeper.getBus(), gridView.getViewName());
+                  }
+                });
           }
         }
       });
       close();
     }
 
-    private void setCargoInfo(BeeRowSet cargo) {
-      this.cargoInfo = cargo;
+    private void setCargoInfo(BeeRowSet cargo, BeeRowSet handling) {
+      cargoInfo = cargo;
+      additionalPlaces.clear();
+      revisedPlaces.clear();
+
+      for (int i = 0; i < handling.getNumberOfRows(); i++) {
+        Long cargoId = handling.getLong(i, COL_CARGO);
+        Map<String, String> map;
+
+        if (DataUtils.isId(handling.getLong(i, COL_CARGO_TRIP))) {
+          if (!revisedPlaces.containsKey(cargoId)) {
+            revisedPlaces.put(cargoId, new HashMap<>());
+          }
+          map = revisedPlaces.get(cargoId);
+        } else {
+          if (!additionalPlaces.containsKey(cargoId)) {
+            additionalPlaces.put(cargoId, new HashMap<>());
+          }
+          map = additionalPlaces.get(cargoId);
+        }
+        for (int j = 0; j < handling.getNumberOfColumns(); j++) {
+          String col = handling.getColumnId(j);
+          map.put(col, BeeUtils.joinItems(map.get(col), parseValue(handling, i, j)));
+        }
+      }
       renderMessage();
     }
 
@@ -414,7 +416,7 @@ public class MessageBuilder extends FaLabel implements ClickHandler {
 
   @Override
   public void onClick(ClickEvent clickEvent) {
-    final Set<Long> ids = new HashSet<>();
+    Set<Long> ids = new HashSet<>();
 
     for (RowInfo rowInfo : gridView.getSelectedRows(GridView.SelectedRows.ALL)) {
       ids.add(rowInfo.getId());
@@ -427,7 +429,7 @@ public class MessageBuilder extends FaLabel implements ClickHandler {
       return;
     }
     Set<Long> tripIds = new HashSet<>();
-    final Set<Long> cargoIds = new HashSet<>();
+    Set<Long> cargoIds = new HashSet<>();
 
     for (IsRow row : gridView.getRowData()) {
       if (ids.contains(row.getId())) {
@@ -437,11 +439,42 @@ public class MessageBuilder extends FaLabel implements ClickHandler {
     }
     Queries.getRowSet(TBL_TRIP_DRIVERS, Lists.newArrayList(COL_DRIVER),
         Filter.any(COL_TRIP, tripIds), new Queries.RowSetCallback() {
-          @SuppressWarnings("unused")
           @Override
           public void onSuccess(BeeRowSet result) {
             new MessageDialog(result.getDistinctLongs(0), cargoIds, ids);
           }
         });
+  }
+
+  private static String parseValue(BeeRowSet rs, int row, int col) {
+    String value = null;
+
+    switch (rs.getColumn(col).getType()) {
+      case BOOLEAN:
+        value = BeeUtils.unbox(rs.getBoolean(row, col))
+            ? Localized.dictionary().yes() : Localized.dictionary().no();
+        break;
+
+      case DATE:
+        JustDate date = rs.getDate(row, col);
+
+        if (date != null) {
+          value = date.toString();
+        }
+        break;
+
+      case DATE_TIME:
+        DateTime dateTime = rs.getDateTime(row, col);
+
+        if (dateTime != null) {
+          value = dateTime.toCompactString();
+        }
+        break;
+
+      default:
+        value = rs.getString(row, col);
+        break;
+    }
+    return value;
   }
 }
