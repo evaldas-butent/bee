@@ -3,13 +3,13 @@ package com.butent.bee.client.modules.trade;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 
-public class TradeDocumentGrid extends AbstractGridInterceptor {
+public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
 
-  TradeDocumentGrid() {
+  TradeDocumentItemsGrid() {
   }
 
   @Override
   public GridInterceptor getInstance() {
-    return new TradeDocumentGrid();
+    return new TradeDocumentItemsGrid();
   }
 }

@@ -14,7 +14,9 @@
     <String name="Number2" precision="50" label="=trdNumber2" />
 
     <Relation name="Operation" notNull="true" relation="TradeOperations" label="=trdOperation" />
-    <Enum name="Status" notNull="true" key="TradeDocumentStatus" label="=status" />
+    <Enum name="Phase" notNull="true" key="TradeDocumentPhase" defValue="2" 
+      label="=trdDocumentPhase" />
+    <Relation name="Status" relation="TradeStatuses" label="=status" />
 
     <Relation name="Supplier" relation="Companies" label="=trdSupplier" />
     <Relation name="Customer" relation="Companies" label="=trdCustomer" />
@@ -28,7 +30,7 @@
     <Relation name="Payer" relation="Companies" label="=trdPayer" />
     <DateTime name="Term" label="=trdTerm" />
 
-    <Relation name="Manager" relation="Users" label="=trdManager" />
+    <Relation name="Manager" relation="Employees" label="=trdManager" />
 
     <Numeric name="Discount" precision="10" scale="2" label="=discount" />
     <Enum name="PriceName" key="ItemPrice" label="=priceName" />

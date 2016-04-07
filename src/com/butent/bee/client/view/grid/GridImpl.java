@@ -3064,17 +3064,15 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
       final IsColumn dataColumn, final String oldValue, final String newValue,
       final boolean rowMode) {
 
-    getGrid().preliminaryUpdate(rowValue.getId(), dataColumn.getId(), newValue);
-
     String currencySource = (editableColumn == null) ? null : editableColumn.getCurrencySource();
     int currencyIndex = BeeUtils.isEmpty(currencySource)
         ? BeeConst.UNDEF : getDataIndex(currencySource);
 
     if (!BeeConst.isUndef(currencyIndex)) {
       Long oldCurrency = rowValue.getLong(currencyIndex);
-
       Long newCurrency;
-      if (BeeUtils.isEmpty(newValue) || BeeUtils.isZero(BeeUtils.toDoubleOrNull(newValue))) {
+
+      if (newValue == null) {
         newCurrency = null;
       } else if (!DataUtils.isId(oldCurrency) && DataUtils.isId(ClientDefaults.getCurrency())) {
         newCurrency = ClientDefaults.getCurrency();
@@ -3112,6 +3110,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
         return;
       }
     }
+    getGrid().preliminaryUpdate(rowValue.getId(), dataColumn.getId(), event.getNewValue());
 
     fireEvent(event);
   }

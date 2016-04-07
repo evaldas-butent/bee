@@ -546,6 +546,7 @@
       <xs:enumeration value="TradeOperations" />
       <xs:enumeration value="TradeSeries" />
       <xs:enumeration value="TradeStatuses" />
+      <xs:enumeration value="TradeStock" />
       <xs:enumeration value="TradeTags" />
       <xs:enumeration value="TransportationOrders" />
       <xs:enumeration value="TransportGroups" />

@@ -6,12 +6,16 @@
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
   xmlns:ui="http://www.butent.com/ui"
+  xmlns:xi="http://www.w3.org/2001/XInclude"
   
   name="TradeDocument" viewName="TradeDocuments"
   caption="=trdDocument" showRowId="true"
   width="80" widthUnit="vw" height="60" heightUnit="vh"
   >
-  <FlowPanel >
+  <FlowPanel class="flexBox-vertical">
+    <br/>
+    <TabBar name="Phase" source="Phase" class="bee-trade-document-phase" />
+    
     <br/>
     <Table kind="controls">
       <col index="0" kind="label" />
@@ -27,7 +31,6 @@
 
         <Label for="Number" />
         <InputText source="Number" style="&inpw;" />
-
       </row>
 
       <row>
@@ -49,11 +52,12 @@
           style="&inpw;" visible="true" />
 
         <Label for="Status" />
-        <ListBox source="Status" visible="true" />
+        <DataSelector source="Status" renderColumns="StatusName" newRowEnabled="false"
+          style="&inpw;" />
 
         <Label for="Manager" />
-        <DataSelector source="Manager" editSource="ManagerPerson" 
-          renderColumns="ManagerFirstName ManagerLastName" newRowEnabled="false" style="&inpw;" />
+        <DataSelector source="Manager" renderColumns="ManagerFirstName ManagerLastName"
+          newRowEnabled="false" style="&inpw;" />
       </row>
 
       <row>
@@ -94,28 +98,18 @@
         <DataSelector source="Currency" renderColumns="CurrencyName" editEnabled="false"
           newRowEnabled="false" style="width: 5em;" />
       </row>
-
-      <row>
-        <Label for="Department" />
-        <DataSelector source="Department" renderColumns="DepartmentName"
-          choiceColumns="FullName" searchableColumns="DepartmentName" visibleLines="7"
-          selectorClass="bee-BranchSelector" newRowEnabled="false" style="&inpw;">
-          <ui:rowRenderer type="branch" />
-        </DataSelector>
-
-        <Label for="ActivityType" />
-        <DataSelector source="ActivityType" style="&inpw;"/>
-
-        <Label for="CostCenter" />
-        <DataSelector source="CostCenter" style="&inpw;"/>
-      </row>
     </Table>
 
     <br/>
-    <TabbedPages class="flexible" style="min-height: 200px;">
+    <TabbedPages class="flexible" style="min-height: 240px;">
       <page>
         <text>=goods</text>
         <ChildGrid name="TradeDocumentItems" relColumn="TradeDocument" />
+      </page>
+
+      <page data="Dimensions">
+        <text>=dimensions</text>
+        <xi:include href="../../Administration/forms/widgets/ExtraDimensions.widget.xml" />
       </page>
 
       <page>

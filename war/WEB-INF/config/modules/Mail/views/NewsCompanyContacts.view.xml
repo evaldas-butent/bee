@@ -32,6 +32,11 @@
         <SimpleJoin joinType="LEFT" name="CompanyType">
           <SimpleColumn name="Name" alias="TypeName" />
         </SimpleJoin>
+        
+        <SimpleColumn name="InformationSource" />
+        <SimpleJoin joinType="LEFT" name="InformationSource">
+          <SimpleColumn alias="InformationSourceName" name="Name" />
+        </SimpleJoin>
       </SimpleJoin>
 
       <SimpleColumn name="Contact" />

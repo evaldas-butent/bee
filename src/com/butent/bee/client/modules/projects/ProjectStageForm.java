@@ -90,9 +90,7 @@ class ProjectStageForm extends AbstractFormInterceptor implements DataChangeEven
       setTimeUnits(unitsRows);
     }
 
-    if (getTimeUnits() != null) {
-      showComputedTimes(form, row, false);
-    }
+    showComputedTimes(form, row, false);
 
     if (form.isEnabled()) {
       ProjectsKeeper.createTemplateTasks(form, row, COL_PROJECT_STAGE, wTasksGrid, null);
@@ -102,9 +100,9 @@ class ProjectStageForm extends AbstractFormInterceptor implements DataChangeEven
 
   @Override
   public boolean beforeAction(Action action, Presenter presenter) {
-    if (action.equals(Action.SAVE) && getFormView() != null && getActiveRow() != null) {
+    if (action.equals(Action.SAVE) && getFormView() != null && getFormView().getActiveRow() != null) {
       FormView form = getFormView();
-      IsRow row = getActiveRow();
+      IsRow row = form.getActiveRow();
       boolean valid = true;
       Long startDate = null;
       Long endDate = null;
@@ -140,38 +138,43 @@ class ProjectStageForm extends AbstractFormInterceptor implements DataChangeEven
 
   @Override
   public void onCellUpdate(CellUpdateEvent event) {
-
-    if (getFormView() == null) {
+    FormView form = getFormView();
+    if (form == null) {
       return;
     }
 
-    if (getActiveRow() == null) {
+    IsRow row = form.getActiveRow();
+    if (row == null) {
       return;
     }
 
     if (event.hasView(TaskConstants.VIEW_TASKS)
         || event.hasView(TaskConstants.VIEW_TASK_EVENTS)
         || event.hasView(TaskConstants.VIEW_RELATED_TASKS)) {
-
-      showComputedTimes(getFormView(), getActiveRow(), true);
+      if (!DataUtils.isNewRow(row)) {
+        showComputedTimes(form, row, true);
+      }
     }
   }
 
   @Override
   public void onDataChange(DataChangeEvent event) {
-    if (getFormView() == null) {
+    FormView form = getFormView();
+    if (form == null) {
       return;
     }
 
-    if (getActiveRow() == null) {
+    IsRow row = form.getActiveRow();
+    if (row == null) {
       return;
     }
 
     if (event.hasView(TaskConstants.VIEW_TASKS)
         || event.hasView(TaskConstants.VIEW_TASK_EVENTS)
         || event.hasView(TaskConstants.VIEW_RELATED_TASKS)) {
-
-      showComputedTimes(getFormView(), getActiveRow(), true);
+      if (!DataUtils.isNewRow(row)) {
+        showComputedTimes(form, row, true);
+      }
     }
   }
 
@@ -184,30 +187,35 @@ class ProjectStageForm extends AbstractFormInterceptor implements DataChangeEven
 
   @Override
   public void onRowInsert(RowInsertEvent event) {
-    if (getFormView() == null) {
+    FormView form = getFormView();
+    if (form == null) {
       return;
     }
 
-    if (getActiveRow() == null) {
+    IsRow row = form.getActiveRow();
+    if (row == null) {
       return;
     }
 
     if (event.hasView(TaskConstants.VIEW_TASKS)
         || event.hasView(TaskConstants.VIEW_TASK_EVENTS)
         || event.hasView(TaskConstants.VIEW_RELATED_TASKS)) {
-
-      showComputedTimes(getFormView(), getActiveRow(), true);
+      if (!DataUtils.isNewRow(row)) {
+        showComputedTimes(form, row, true);
+      }
 
     }
   }
 
   @Override
   public void onRowUpdate(RowUpdateEvent event) {
-    if (getFormView() == null) {
+    FormView form = getFormView();
+    if (form == null) {
       return;
     }
 
-    if (getActiveRow() == null) {
+    IsRow row = form.getActiveRow();
+    if (row == null) {
       return;
     }
 
@@ -215,7 +223,9 @@ class ProjectStageForm extends AbstractFormInterceptor implements DataChangeEven
         || event.hasView(TaskConstants.VIEW_TASK_EVENTS)
         || event.hasView(TaskConstants.VIEW_RELATED_TASKS)) {
 
-      showComputedTimes(getFormView(), getActiveRow(), true);
+      if (!DataUtils.isNewRow(row)) {
+        showComputedTimes(form, row, true);
+      }
     }
   }
 
@@ -253,7 +263,6 @@ class ProjectStageForm extends AbstractFormInterceptor implements DataChangeEven
     String unitName = BeeConst.STRING_EMPTY;
 
     if (requery) {
-
       Queries.getRow(form.getViewName(), row.getId(), new RowCallback() {
 
         @Override

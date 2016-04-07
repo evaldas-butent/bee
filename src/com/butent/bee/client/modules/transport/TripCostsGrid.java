@@ -11,21 +11,29 @@ import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.data.Data;
-import com.butent.bee.client.dialog.ConfirmationCallback;
+import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.event.logical.ParentRowEvent;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.presenter.GridPresenter;
+import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.Editor;
+import com.butent.bee.client.view.edit.ReadyForUpdateEvent;
+import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.FaLabel;
+import com.butent.bee.client.widget.InputNumber;
+import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.utils.BeeUtils;
+
+import java.util.Objects;
 
 public class TripCostsGrid extends AbstractGridInterceptor
     implements ClickHandler, SelectorEvent.Handler {
@@ -61,24 +69,21 @@ public class TripCostsGrid extends AbstractGridInterceptor
 
   @Override
   public void onClick(ClickEvent clickEvent) {
-    Global.confirm(Localized.dictionary().trGenerateDailyCosts(), new ConfirmationCallback() {
-      @Override
-      public void onConfirm() {
-        ParameterList args = TransportHandler.createArgs(SVC_GENERATE_DAILY_COSTS);
-        args.addDataItem(COL_TRIP, trip);
+    Global.confirm(Localized.dictionary().trGenerateDailyCosts(), () -> {
+      ParameterList args = TransportHandler.createArgs(SVC_GENERATE_DAILY_COSTS);
+      args.addDataItem(COL_TRIP, trip);
 
-        BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
-          @Override
-          public void onResponse(ResponseObject response) {
-            response.notify(getGridView());
+      BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
+        @Override
+        public void onResponse(ResponseObject response) {
+          response.notify(getGridView());
 
-            if (response.hasErrors()) {
-              return;
-            }
-            getGridPresenter().refresh(false, false);
+          if (response.hasErrors()) {
+            return;
           }
-        });
-      }
+          getGridPresenter().refresh(false, false);
+        }
+      });
     });
   }
 
@@ -101,5 +106,65 @@ public class TripCostsGrid extends AbstractGridInterceptor
     dailyCosts.setVisible(DataUtils.isId(trip));
 
     super.onParentRow(event);
+  }
+
+  @Override
+  public void onReadyForInsert(GridView gridView, ReadyForInsertEvent event) {
+    int idx = DataUtils.getColumnIndex(COL_COSTS_PRICE, event.getColumns());
+
+    if (!BeeConst.isUndef(idx)
+        && BeeUtils.isZero(BeeUtils.toDoubleOrNull(event.getValues().get(idx)))) {
+
+      event.consume();
+
+      amountEntry(BeeUtils.toDoubleOrNull(event.getValues()
+              .get(DataUtils.getColumnIndex(COL_COSTS_QUANTITY, event.getColumns()))),
+          (newPrice) -> {
+            event.getValues().set(idx, newPrice);
+            event.setConsumed(false);
+            gridView.fireEvent(event);
+          });
+      return;
+    }
+    super.onReadyForInsert(gridView, event);
+  }
+
+  @Override
+  public void onReadyForUpdate(GridView gridView, ReadyForUpdateEvent event) {
+    if (Objects.equals(event.getColumn().getId(), COL_COSTS_PRICE)
+        && BeeUtils.isZero(BeeUtils.toDoubleOrNull(event.getNewValue()))) {
+
+      event.consume();
+
+      amountEntry(DataUtils.getDouble(gridView.getDataColumns(), event.getRowValue(),
+          COL_COSTS_QUANTITY),
+          (price) -> {
+            event.setNewValue(price);
+            event.setConsumed(false);
+            gridView.fireEvent(event);
+          });
+      return;
+    }
+    super.onReadyForUpdate(gridView, event);
+  }
+
+  private static void amountEntry(Double qty, Consumer<String> amountConsumer) {
+    InputNumber input = new InputNumber();
+
+    Global.inputWidget(Localized.dictionary().amount(), input, new InputCallback() {
+      @Override
+      public String getErrorMessage() {
+        if (!BeeUtils.isPositive(input.getNumber())) {
+          return Localized.dictionary().valueRequired();
+        }
+        return InputCallback.super.getErrorMessage();
+      }
+
+      @Override
+      public void onSuccess() {
+        amountConsumer
+            .accept(BeeUtils.toString(input.getNumber() / (BeeUtils.isPositive(qty) ? qty : 1), 5));
+      }
+    });
   }
 }

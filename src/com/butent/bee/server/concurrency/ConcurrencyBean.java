@@ -349,7 +349,7 @@ public class ConcurrencyBean {
     if (BeeUtils.betweenInclusive(maxThreads, 1, 1000)) {
       return maxThreads;
     }
-    return 25;
+    return 10;
   }
 
   private <T extends HasTimerService> TimerService removeTimer(Class<T> handler,
