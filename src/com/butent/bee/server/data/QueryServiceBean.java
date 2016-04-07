@@ -445,6 +445,26 @@ public class QueryServiceBean {
     return getSingleValue(query).getDouble(0, 0);
   }
 
+  public Double getDouble(String tableName, String fieldName, IsCondition where) {
+    SqlSelect query = new SqlSelect()
+        .addFields(tableName, fieldName)
+        .addFrom(tableName)
+        .setWhere(where);
+
+    return getDouble(query);
+  }
+
+  public Double getDouble(String tableName, String fieldName, String filterColumn,
+      Object filterValue) {
+
+    SqlSelect query = new SqlSelect()
+        .addFields(tableName, fieldName)
+        .addFrom(tableName)
+        .setWhere(SqlUtils.equals(tableName, filterColumn, filterValue));
+
+    return getDouble(query);
+  }
+
   public Double[] getDoubleColumn(IsQuery query) {
     return getSingleColumn(query).getDoubleColumn(0);
   }

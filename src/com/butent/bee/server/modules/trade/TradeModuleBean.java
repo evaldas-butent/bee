@@ -9,10 +9,10 @@ import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
 import com.butent.bee.server.concurrency.ConcurrencyBean;
+import com.butent.bee.server.data.DataEditorBean;
 import com.butent.bee.server.data.DataEvent.ViewInsertEvent;
 import com.butent.bee.server.data.DataEvent.ViewModifyEvent;
 import com.butent.bee.server.data.DataEvent.ViewUpdateEvent;
-import com.butent.bee.server.data.DataEditorBean;
 import com.butent.bee.server.data.DataEventHandler;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
@@ -53,6 +53,7 @@ import com.butent.bee.shared.menu.MenuItem;
 import com.butent.bee.shared.menu.MenuService;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.payroll.PayrollConstants;
+import com.butent.bee.shared.modules.trade.TradeConstants.OperationType;
 import com.butent.bee.shared.modules.trade.TradeDocumentData;
 import com.butent.bee.shared.modules.trade.TradeDocumentPhase;
 import com.butent.bee.shared.rights.Module;
@@ -378,6 +379,35 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
             }
             row.setValue(numberIdx, qs.getNextNumber(TBL_SALES, COL_TRADE_INVOICE_NO, prefix,
                 COL_TRADE_SALE_SERIES));
+          }
+        }
+      }
+
+      @Subscribe
+      @AllowConcurrentEvents
+      public void modifyTradeStock(ViewModifyEvent event) {
+        if (event.isTarget(VIEW_TRADE_DOCUMENT_ITEMS)) {
+          List<BeeColumn> columns;
+          BeeRow row;
+
+          if (event instanceof ViewInsertEvent) {
+            columns = ((ViewInsertEvent) event).getColumns();
+            row = ((ViewInsertEvent) event).getRow();
+
+//            if (event.isBefore()) {
+//            }
+
+          } else if (event.isBefore() && event instanceof ViewUpdateEvent) {
+            columns = ((ViewUpdateEvent) event).getColumns();
+            row = ((ViewUpdateEvent) event).getRow();
+
+            int index = DataUtils.getColumnIndex(COL_TRADE_ITEM_QUANTITY, columns);
+            if (row != null && !BeeConst.isUndef(index)) {
+              event.addErrors(onTradeItemQuantityUpdate(row.getId(), row.getDouble(index)));
+            }
+
+//          } else if (event.isBefore() && event instanceof ViewDeleteEvent) {
+
           }
         }
       }
@@ -1196,5 +1226,93 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     } else {
       return deb.commitRow(updated);
     }
+  }
+
+  private boolean modifyItemStock(long itemId) {
+    SqlSelect query = new SqlSelect()
+        .addFields(TBL_TRADE_DOCUMENTS, COL_TRADE_DOCUMENT_PHASE)
+        .addFrom(TBL_TRADE_DOCUMENT_ITEMS)
+        .addFromInner(TBL_TRADE_DOCUMENTS, sys.joinTables(TBL_TRADE_DOCUMENTS,
+            TBL_TRADE_DOCUMENT_ITEMS, COL_TRADE_DOCUMENT))
+        .setWhere(sys.idEquals(TBL_TRADE_DOCUMENT_ITEMS, itemId));
+
+    TradeDocumentPhase phase = EnumUtils.getEnumByIndex(TradeDocumentPhase.class, qs.getInt(query));
+    return phase != null && phase.modifyStock();
+  }
+
+  private ResponseObject onTradeItemQuantityUpdate(long itemId, Double newQty) {
+    if (!BeeUtils.isPositive(newQty)) {
+      return ResponseObject.error("invalid quantity", newQty);
+    }
+
+    if (modifyItemStock(itemId)) {
+      String idName = sys.getIdName(TBL_TRADE_DOCUMENT_ITEMS);
+
+      Double oldQty = qs.getDouble(TBL_TRADE_DOCUMENT_ITEMS, COL_TRADE_ITEM_QUANTITY,
+          idName, itemId);
+
+      if (BeeUtils.isDouble(oldQty) && !newQty.equals(oldQty)) {
+        IsCondition itemWhere = SqlUtils.equals(TBL_TRADE_STOCK, COL_TRADE_DOCUMENT_ITEM, itemId);
+        IsCondition parentWhere = null;
+
+        boolean updateItemStock = qs.sqlExists(TBL_TRADE_STOCK, itemWhere);
+        boolean updateParentStock = false;
+
+        Double itemStock = null;
+        Double parentStock = null;
+
+        if (updateItemStock) {
+          Double stock = qs.getDouble(TBL_TRADE_STOCK, COL_STOCK_QUANTITY, itemWhere);
+          itemStock = BeeUtils.unbox(stock) - oldQty + newQty;
+
+          if (BeeUtils.isNegative(itemStock)) {
+            return ResponseObject.error("item stock", stock, "-", oldQty, "+", newQty,
+                "=", itemStock);
+          }
+        }
+
+        Long parent = qs.getLong(TBL_TRADE_DOCUMENT_ITEMS, COL_TRADE_ITEM_PARENT,
+            idName, itemId);
+
+        if (DataUtils.isId(parent)) {
+          parentWhere = SqlUtils.equals(TBL_TRADE_STOCK, COL_TRADE_DOCUMENT_ITEM, parent);
+          updateParentStock = qs.sqlExists(TBL_TRADE_STOCK, parentWhere);
+
+          if (updateParentStock) {
+            Double stock = qs.getDouble(TBL_TRADE_STOCK, COL_STOCK_QUANTITY, parentWhere);
+            parentStock = BeeUtils.unbox(stock) + oldQty - newQty;
+
+            if (BeeUtils.isNegative(parentStock)) {
+              return ResponseObject.error("parent stock", stock, "+", oldQty, "-", newQty,
+                  "=", parentStock);
+            }
+          }
+        }
+
+        if (updateItemStock) {
+          SqlUpdate update = new SqlUpdate(TBL_TRADE_STOCK)
+              .addConstant(COL_STOCK_QUANTITY, itemStock)
+              .setWhere(itemWhere);
+
+          ResponseObject response = qs.updateDataWithResponse(update);
+          if (response.hasErrors()) {
+            return response;
+          }
+        }
+
+        if (updateParentStock) {
+          SqlUpdate update = new SqlUpdate(TBL_TRADE_STOCK)
+              .addConstant(COL_STOCK_QUANTITY, parentStock)
+              .setWhere(parentWhere);
+
+          ResponseObject response = qs.updateDataWithResponse(update);
+          if (response.hasErrors()) {
+            return response;
+          }
+        }
+      }
+    }
+
+    return ResponseObject.emptyResponse();
   }
 }
