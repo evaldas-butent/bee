@@ -222,11 +222,15 @@ public enum Report implements HasWidgetSupplier {
           new ReportDateTimeItem(TradeConstants.COL_TRADE_DATE, "Sąsk.data"),
           new ReportTextItem(TradeConstants.COL_SALE + COL_ORDER_MANAGER, "Sąskaitą išrašė"),
           new ReportTextItem(COL_ORDER_MANAGER, loc.manager()),
+          new ReportTextItem(TradeConstants.COL_TRADE_INVOICE_PREFIX,
+              Data.getColumnLabel(TradeConstants.TBL_SALES, TradeConstants.COL_TRADE_SALE_SERIES)),
           new ReportTextItem(TradeConstants.COL_TRADE_INVOICE_NO,
               Data.getColumnLabel(TradeConstants.TBL_SALES, TradeConstants.COL_TRADE_INVOICE_NO)),
           new ReportTextItem(TradeConstants.COL_TRADE_CUSTOMER, loc.customer()),
           new ReportTextItem(VAR_EXPENSE + COL_SERVICE_NAME, "Sąnaudų paslauga"),
           new ReportDateTimeItem(VAR_EXPENSE + TradeConstants.COL_TRADE_DATE, "Sąnaudų sąsk.data"),
+          new ReportTextItem(VAR_EXPENSE + TradeConstants.COL_TRADE_INVOICE_PREFIX,
+              "Sąnaudų sąsk.Ser."),
           new ReportTextItem(VAR_EXPENSE + TradeConstants.COL_TRADE_INVOICE_NO, "Sąnaudų sąsk.Nr."),
           new ReportNumericItem(VAR_INCOME, loc.income()).setPrecision(2),
           new ReportNumericItem(VAR_EXPENSE, "Sąnaudos").setPrecision(2));
@@ -241,21 +245,32 @@ public enum Report implements HasWidgetSupplier {
       }
       ReportInfo report = new ReportInfo(getReportCaption());
 
-      for (String item : new String[] {
-          COL_ASSESSMENT, COL_SERVICE_NAME, COL_ORDER_MANAGER,
-          TradeConstants.COL_TRADE_INVOICE_NO, TradeConstants.COL_TRADE_CUSTOMER,
-          TradeConstants.COL_SALE + COL_ORDER_MANAGER}) {
-        report.addRowItem(items.get(item));
-      }
+      report.addRowItem(items.get(COL_ASSESSMENT));
+      report.addRowItem(items.get(COL_SERVICE_NAME));
+      report.addRowItem(items.get(COL_ORDER_MANAGER));
+
+      ReportExpressionItem invoice = new ReportExpressionItem("Sąskaita");
+      invoice.addExpressionItem(null, items.get(TradeConstants.COL_TRADE_INVOICE_PREFIX));
+      invoice.addExpressionItem(" ", items.get(TradeConstants.COL_TRADE_INVOICE_NO));
+
+      report.addRowItem(invoice);
+      report.addRowItem(items.get(TradeConstants.COL_TRADE_CUSTOMER));
+      report.addRowItem(items.get(TradeConstants.COL_SALE + COL_ORDER_MANAGER));
+
       report.setRowGrouping(items.get(AdministrationConstants.COL_DEPARTMENT_NAME));
 
-      for (String item : new String[] {
-          VAR_EXPENSE + COL_SERVICE_NAME,
-          VAR_EXPENSE + TradeConstants.COL_TRADE_DATE,
-          VAR_EXPENSE + TradeConstants.COL_TRADE_INVOICE_NO,
-          VAR_INCOME, VAR_EXPENSE}) {
-        report.addColItem(items.get(item));
-      }
+      report.addColItem(items.get(VAR_EXPENSE + COL_SERVICE_NAME));
+      report.addColItem(items.get(VAR_EXPENSE + TradeConstants.COL_TRADE_DATE));
+
+      invoice = new ReportExpressionItem("Sąnaudų sąskaita");
+      invoice.addExpressionItem(null,
+          items.get(VAR_EXPENSE + TradeConstants.COL_TRADE_INVOICE_PREFIX));
+      invoice.addExpressionItem(" ", items.get(VAR_EXPENSE + TradeConstants.COL_TRADE_INVOICE_NO));
+
+      report.addColItem(invoice);
+      report.addColItem(items.get(VAR_INCOME));
+      report.addColItem(items.get(VAR_EXPENSE));
+
       report.addColItem(new ReportFormulaItem("Pelnas")
           .plus(items.get(VAR_INCOME))
           .minus(items.get(VAR_EXPENSE)).setPrecision(2));

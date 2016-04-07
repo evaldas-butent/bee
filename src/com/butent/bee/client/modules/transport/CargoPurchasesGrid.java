@@ -135,9 +135,9 @@ public class CargoPurchasesGrid extends InvoiceBuilder {
                 @Override
                 public void onSuccess(BeeRow result) {
                   if (result != null) {
-                    newRow.setValue(targetInfo.getColumnIndex(COL_PURCHASE_WAREHOUSE_TO),
+                    newRow.setValue(targetInfo.getColumnIndex(COL_TRADE_WAREHOUSE_TO),
                         result.getLong(0));
-                    newRow.setValue(targetInfo.getColumnIndex(COL_PURCHASE_WAREHOUSE_TO + "Code"),
+                    newRow.setValue(targetInfo.getColumnIndex(COL_TRADE_WAREHOUSE_TO + "Code"),
                         result.getString(1));
                   }
                   consumer.accept(data, newRow);
