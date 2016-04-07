@@ -12,6 +12,7 @@ import com.butent.bee.server.concurrency.ConcurrencyBean;
 import com.butent.bee.server.data.DataEvent.ViewInsertEvent;
 import com.butent.bee.server.data.DataEvent.ViewModifyEvent;
 import com.butent.bee.server.data.DataEvent.ViewUpdateEvent;
+import com.butent.bee.server.data.DataEditorBean;
 import com.butent.bee.server.data.DataEventHandler;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
@@ -20,6 +21,7 @@ import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.modules.administration.ExchangeUtils;
+import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.IsExpression;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
@@ -56,6 +58,7 @@ import com.butent.bee.shared.rights.SubModule;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
+import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.webservice.ButentWS;
 import com.butent.webservice.WSDocument;
 import com.butent.webservice.WSDocument.WSDocumentItem;
@@ -94,6 +97,8 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
   ConcurrencyBean cb;
   @EJB
   TradeActBean act;
+  @EJB
+  DataEditorBean deb;
 
   @Resource
   TimerService timerService;
@@ -160,6 +165,9 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
 
     } else if (BeeUtils.same(svc, SVC_GET_DOCUMENT_TYPE_CAPTION_AND_FILTER)) {
       response = getDocumentTypeCaptionAndFilter(reqInfo);
+
+    } else if (BeeUtils.same(svc, SVC_DOCUMENT_PHASE_TRANSITION)) {
+      response = tryPhaseTransition(reqInfo);
 
     } else {
       String msg = BeeUtils.joinWords("Trade service not recognized:", svc);
@@ -667,10 +675,10 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
         itemsRelation = COL_PURCHASE;
 
         query.addFields(trade, COL_TRADE_INVOICE_PREFIX)
-            .addField(COL_PURCHASE_WAREHOUSE_TO, COL_WAREHOUSE_CODE, COL_PURCHASE_WAREHOUSE_TO)
-            .addFromLeft(TBL_WAREHOUSES, COL_PURCHASE_WAREHOUSE_TO,
-                sys.joinTables(TBL_WAREHOUSES, COL_PURCHASE_WAREHOUSE_TO, trade,
-                    COL_PURCHASE_WAREHOUSE_TO));
+            .addField(COL_TRADE_WAREHOUSE_TO, COL_WAREHOUSE_CODE, COL_TRADE_WAREHOUSE_TO)
+            .addFromLeft(TBL_WAREHOUSES, COL_TRADE_WAREHOUSE_TO,
+                sys.joinTables(TBL_WAREHOUSES, COL_TRADE_WAREHOUSE_TO, trade,
+                    COL_TRADE_WAREHOUSE_TO));
         break;
 
       default:
@@ -727,8 +735,8 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
       String warehouse;
       String client;
 
-      if (invoices.hasColumn(COL_PURCHASE_WAREHOUSE_TO)) {
-        warehouse = invoice.getValue(COL_PURCHASE_WAREHOUSE_TO);
+      if (invoices.hasColumn(COL_TRADE_WAREHOUSE_TO)) {
+        warehouse = invoice.getValue(COL_TRADE_WAREHOUSE_TO);
         client = companies.get(invoice.getLong(COL_TRADE_SUPPLIER));
       } else {
         warehouse = invoice.getValue(COL_TRADE_WAREHOUSE_FROM);
@@ -791,5 +799,162 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
       response.log(logger);
     }
     return response;
+  }
+
+  private ResponseObject tryPhaseTransition(RequestInfo reqInfo) {
+    BeeRowSet newRowSet = BeeRowSet.restore(reqInfo.getContent());
+    if (DataUtils.isEmpty(newRowSet)) {
+      return ResponseObject.error(reqInfo.getService(), "content not available");
+    }
+
+    BeeRow newRow = newRowSet.getRow(0);
+    long docId = newRow.getId();
+
+    BeeRowSet oldRowSet = qs.getViewData(VIEW_TRADE_DOCUMENTS, Filter.compareId(docId));
+    if (DataUtils.isEmpty(oldRowSet)) {
+      return ResponseObject.error(reqInfo.getService(), "row", docId, "not found");
+    }
+
+    BeeRow oldRow = oldRowSet.getRow(0);
+
+    TradeDocumentPhase oldPhase = EnumUtils.getEnumByIndex(TradeDocumentPhase.class,
+        oldRow.getInteger(oldRowSet.getColumnIndex(COL_TRADE_DOCUMENT_PHASE)));
+    TradeDocumentPhase newPhase = EnumUtils.getEnumByIndex(TradeDocumentPhase.class,
+        newRow.getInteger(newRowSet.getColumnIndex(COL_TRADE_DOCUMENT_PHASE)));
+
+    if (newPhase == null) {
+      return ResponseObject.error(reqInfo.getService(), docId, "new phase not specified");
+    }
+    if (newPhase == oldPhase) {
+      return ResponseObject.warning(reqInfo.getService(), docId, "phase not changed");
+    }
+
+    boolean oldStock = oldPhase != null && oldPhase.modifyStock();
+    boolean newStock = newPhase.modifyStock();
+
+    if (oldStock != newStock) {
+      OperationType operationType = EnumUtils.getEnumByIndex(OperationType.class,
+          newRow.getInteger(newRowSet.getColumnIndex(COL_OPERATION_TYPE)));
+
+      Long warehouseFrom = newRow.getLong(newRowSet.getColumnIndex(COL_TRADE_WAREHOUSE_FROM));
+      Long warehouseTo = newRow.getLong(newRowSet.getColumnIndex(COL_TRADE_WAREHOUSE_TO));
+
+      String errorMessage = verifyPhaseTransition(docId, operationType, warehouseFrom, warehouseTo,
+          newStock);
+      if (!BeeUtils.isEmpty(errorMessage)) {
+        return ResponseObject.error(reqInfo.getService(), docId, errorMessage);
+      }
+
+    }
+
+    return commitRow(oldRowSet.getViewName(), oldRowSet.getColumns(), oldRow, newRow);
+  }
+
+  private String verifyPhaseTransition(long docId, OperationType operationType,
+      Long warehouseFrom, Long warehouseTo, boolean toStock) {
+
+    IsCondition itemCondition = SqlUtils.equals(TBL_TRADE_DOCUMENT_ITEMS, COL_TRADE_DOCUMENT,
+        docId);
+    if (!qs.sqlExists(TBL_TRADE_DOCUMENT_ITEMS, itemCondition)) {
+      return null;
+    }
+
+    if (operationType == null) {
+      return "operation type not specified";
+    }
+    if (toStock && EnumUtils.in(operationType, OperationType.PURCHASE, OperationType.TRANSFER)
+        && !DataUtils.isId(warehouseTo)) {
+      return "warehouse-receiver not specified";
+    }
+
+    String errorMessage = null;
+
+    switch (operationType) {
+      case PURCHASE:
+        if (!toStock && hasChildren(itemCondition)) {
+          errorMessage = "illegal";
+        }
+        break;
+
+      case SALE:
+        verifyStock(itemCondition, warehouseFrom);
+        break;
+
+      case TRANSFER:
+        if (!toStock && hasChildren(itemCondition)) {
+          errorMessage = "taboo";
+        }
+        break;
+    }
+
+    return errorMessage;
+  }
+
+  private boolean verifyStock(IsCondition itemCondition, Long warehouseFrom) {
+    SqlSelect inputQuery = new SqlSelect()
+        .addFields(TBL_TRADE_DOCUMENT_ITEMS, COL_ITEM)
+        .addSum(TBL_TRADE_DOCUMENT_ITEMS, COL_TRADE_ITEM_QUANTITY)
+        .addFrom(TBL_TRADE_DOCUMENT_ITEMS)
+        .setWhere(itemCondition)
+        .addGroup(TBL_TRADE_DOCUMENT_ITEMS, COL_ITEM);
+
+    Map<Long, Double> inputQuantities = getQuantities(inputQuery);
+    if (BeeUtils.isEmpty(inputQuantities)) {
+      return true;
+    }
+
+    SqlSelect stockQuery = new SqlSelect()
+        .addFields(TBL_TRADE_DOCUMENT_ITEMS, COL_ITEM)
+        .addSum(TBL_TRADE_STOCK, COL_STOCK_QUANTITY)
+        .addFrom(TBL_TRADE_STOCK)
+        .addFromInner(TBL_TRADE_DOCUMENT_ITEMS, sys.joinTables(TBL_TRADE_DOCUMENT_ITEMS,
+            TBL_TRADE_STOCK, COL_TRADE_DOCUMENT_ITEM))
+        .addGroup(TBL_TRADE_DOCUMENT_ITEMS, COL_ITEM);
+
+    if (DataUtils.isId(warehouseFrom)) {
+      stockQuery.setWhere(SqlUtils.equals(TBL_TRADE_STOCK, COL_STOCK_WAREHOUSE, warehouseFrom));
+    }
+
+    Map<Long, Double> stockQuantities = getQuantities(stockQuery);
+    if (stockQuantities.isEmpty()) {
+      return false;
+    }
+
+    inputQuantities.forEach((item, quantity) -> {
+    });
+
+    return true;
+  }
+
+  private Map<Long, Double> getQuantities(SqlSelect query) {
+    Map<Long, Double> quantities = new HashMap<>();
+
+    SimpleRowSet data = qs.getData(query);
+
+    if (!DataUtils.isEmpty(data)) {
+      for (SimpleRow row : data) {
+        quantities.put(row.getLong(0), row.getDouble(1));
+      }
+    }
+
+    return quantities;
+  }
+
+  private boolean hasChildren(IsCondition itemCondition) {
+    return qs.sqlExists(TBL_TRADE_DOCUMENT_ITEMS,
+        SqlUtils.in(TBL_TRADE_DOCUMENT_ITEMS, COL_TRADE_ITEM_PARENT,
+            TBL_TRADE_DOCUMENT_ITEMS, sys.getIdName(TBL_TRADE_DOCUMENT_ITEMS), itemCondition));
+  }
+
+  private ResponseObject commitRow(String viewName, List<BeeColumn> columns, BeeRow oldRow,
+      BeeRow newRow) {
+
+    BeeRowSet updated = DataUtils.getUpdated(viewName, columns, oldRow, newRow, null);
+
+    if (DataUtils.isEmpty(updated)) {
+      return ResponseObject.response(newRow);
+    } else {
+      return deb.commitRow(updated);
+    }
   }
 }

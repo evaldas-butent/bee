@@ -5372,6 +5372,13 @@ public interface Dictionary {
 
   default String trdDocumentPhasePending() {return g("trdDocumentPhasePending");}
 
+  default String trdDocumentPhaseTransitionQuestion(Object from, Object to) {
+    Map<String, Object> _m = new HashMap<>();
+    _m.put("{from}", from);
+    _m.put("{to}", to);
+    return Localized.format(g("trdDocumentPhaseTransitionQuestion"), _m);
+  }
+
   default String trdDocumentPhases() {return g("trdDocumentPhases");}
 
   default String trdDocumentTags() {return g("trdDocumentTags");}
