@@ -66,7 +66,7 @@ import java.util.Set;
 
 public class MessageBuilder extends FaLabel implements ClickHandler {
 
-  private class MessageDialog extends DialogBox implements ClickHandler {
+  private final class MessageDialog extends DialogBox implements ClickHandler {
 
     private final HtmlTable driverPanel = new HtmlTable();
     private final Label characterCount = new Label();

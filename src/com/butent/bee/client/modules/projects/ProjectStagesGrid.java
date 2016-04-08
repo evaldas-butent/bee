@@ -42,7 +42,6 @@ class ProjectStagesGrid extends AbstractGridInterceptor {
 
     Provider provider = presenter.getDataProvider();
 
-    int idxStagesCount = provider.getColumnIndex(ProjectConstants.ALS_STAGES_COUNT);
     int idxTaskCount = provider.getColumnIndex(ALS_TASK_COUNT);
     int idxOwner = provider.getColumnIndex(ProjectConstants.ALS_PROJECT_OWNER);
     int idxStatus = provider.getColumnIndex(ProjectConstants.ALS_PROJECT_STATUS);
