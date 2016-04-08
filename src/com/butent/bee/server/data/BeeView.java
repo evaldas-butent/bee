@@ -868,6 +868,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
       }
     }
 
+    logger.warning("view", getName(), "column", colName, "not found");
     return BeeConst.UNDEF;
   }
 

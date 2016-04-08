@@ -29,6 +29,7 @@ import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
+import com.butent.bee.server.websocket.Endpoint;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
@@ -37,11 +38,14 @@ import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
+import com.butent.bee.shared.data.event.CellUpdateEvent;
+import com.butent.bee.shared.data.event.FiresModificationEvents;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.exceptions.BeeException;
@@ -63,6 +67,7 @@ import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
+import com.butent.bee.shared.websocket.messages.ModificationMessage;
 import com.butent.webservice.ButentWS;
 import com.butent.webservice.WSDocument;
 import com.butent.webservice.WSDocument.WSDocumentItem;
@@ -394,8 +399,8 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
             columns = ((ViewInsertEvent) event).getColumns();
             row = ((ViewInsertEvent) event).getRow();
 
-//            if (event.isBefore()) {
-//            }
+            // if (event.isBefore()) {
+            // }
 
           } else if (event.isBefore() && event instanceof ViewUpdateEvent) {
             columns = ((ViewUpdateEvent) event).getColumns();
@@ -406,7 +411,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
               event.addErrors(onTradeItemQuantityUpdate(row.getId(), row.getDouble(index)));
             }
 
-//          } else if (event.isBefore() && event instanceof ViewDeleteEvent) {
+            // } else if (event.isBefore() && event instanceof ViewDeleteEvent) {
 
           }
         }
@@ -1228,6 +1233,27 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     }
   }
 
+  private void fireStockUpdate(IsCondition where, String fieldName) {
+    SqlSelect query = new SqlSelect()
+        .addFields(TBL_TRADE_STOCK,
+            sys.getIdName(TBL_TRADE_STOCK), sys.getVersionName(TBL_TRADE_STOCK), fieldName)
+        .addFrom(TBL_TRADE_STOCK)
+        .setWhere(where);
+
+    SimpleRowSet data = qs.getData(query);
+
+    if (!DataUtils.isEmpty(data)) {
+      FiresModificationEvents fme =
+          (event, locality) -> Endpoint.sendToAll(new ModificationMessage(event));
+      CellSource source = sys.getCellSource(VIEW_TRADE_STOCK, fieldName);
+
+      for (SimpleRow row : data) {
+        CellUpdateEvent.fire(fme, VIEW_TRADE_STOCK, row.getLong(0), row.getLong(1), source,
+            row.getValue(fieldName));
+      }
+    }
+  }
+
   private boolean modifyItemStock(long itemId) {
     SqlSelect query = new SqlSelect()
         .addFields(TBL_TRADE_DOCUMENTS, COL_TRADE_DOCUMENT_PHASE)
@@ -1309,6 +1335,13 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
           if (response.hasErrors()) {
             return response;
           }
+        }
+
+        if (updateItemStock) {
+          fireStockUpdate(itemWhere, COL_STOCK_QUANTITY);
+        }
+        if (updateParentStock) {
+          fireStockUpdate(parentWhere, COL_STOCK_QUANTITY);
         }
       }
     }

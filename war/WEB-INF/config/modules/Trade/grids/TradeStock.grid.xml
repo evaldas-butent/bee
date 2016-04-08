@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
 
-  name="TradeStock" viewName="TradeStock" caption="=trdStock" readOnly="true"
-  
+  name="TradeStock" viewName="TradeStock" caption="=trdStock"
+  filter="Quantity > 0" readOnly="true"
   >
   <g:columns>
     <DataColumn name="PrimaryDocumentItem" visible="false" />
-    <DataColumn name="PrimaryDocument" />
+    <DataColumn name="PrimaryDocument" visible="false" />
 
     <DataColumn name="PrimaryDate" />
     <DataColumn name="SupplierName" flexGrow="1" />
 
     <DataColumn name="TradeDocumentItem" visible="false" />
-    <DataColumn name="TradeDocument" />
+    <DataColumn name="TradeDocument" visible="false" />
     <DataColumn name="Date" />
 
     <DataColumn name="ItemName" flexGrow="2" visible="true" />
