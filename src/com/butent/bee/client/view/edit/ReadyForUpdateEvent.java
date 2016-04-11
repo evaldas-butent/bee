@@ -42,7 +42,7 @@ public class ReadyForUpdateEvent extends GwtEvent<ReadyForUpdateEvent.Handler> i
   private final IsColumn column;
 
   private final String oldValue;
-  private final String newValue;
+  private String newValue;
 
   private final boolean rowMode;
 
@@ -146,6 +146,10 @@ public class ReadyForUpdateEvent extends GwtEvent<ReadyForUpdateEvent.Handler> i
   @Override
   public void setConsumed(boolean consumed) {
     this.consumed = consumed;
+  }
+
+  public void setNewValue(String newValue) {
+    this.newValue = newValue;
   }
 
   @Override

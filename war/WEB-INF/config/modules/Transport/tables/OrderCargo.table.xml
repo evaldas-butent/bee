@@ -42,7 +42,7 @@
     <Text name="Directions" label="=trDirections" />
     <Relation name="Currency" relation="Currencies" label="=currency" defExpr="MAIN_CURRENCY" />
 
-    <Relation name="CargoType" relation="CargoTypes" label="=type" />
+    <Relation name="CargoType" relation="CargoTypes" label="=trCargoType" />
     <Relation name="CargoGroup" relation="CargoGroups" label="=group" />
   </Fields>
 </Table>

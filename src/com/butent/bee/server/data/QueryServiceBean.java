@@ -445,6 +445,26 @@ public class QueryServiceBean {
     return getSingleValue(query).getDouble(0, 0);
   }
 
+  public Double getDouble(String tableName, String fieldName, IsCondition where) {
+    SqlSelect query = new SqlSelect()
+        .addFields(tableName, fieldName)
+        .addFrom(tableName)
+        .setWhere(where);
+
+    return getDouble(query);
+  }
+
+  public Double getDouble(String tableName, String fieldName, String filterColumn,
+      Object filterValue) {
+
+    SqlSelect query = new SqlSelect()
+        .addFields(tableName, fieldName)
+        .addFrom(tableName)
+        .setWhere(SqlUtils.equals(tableName, filterColumn, filterValue));
+
+    return getDouble(query);
+  }
+
   public Double[] getDoubleColumn(IsQuery query) {
     return getSingleColumn(query).getDoubleColumn(0);
   }
@@ -513,6 +533,15 @@ public class QueryServiceBean {
 
   public Long getLong(IsQuery query) {
     return getSingleValue(query).getLong(0, 0);
+  }
+
+  public Long getLong(String tableName, String fieldName, String filterColumn, Object filterValue) {
+    SqlSelect query = new SqlSelect()
+        .addFields(tableName, fieldName)
+        .addFrom(tableName)
+        .setWhere(SqlUtils.equals(tableName, filterColumn, filterValue));
+
+    return getLong(query);
   }
 
   public Long[] getLongColumn(IsQuery query) {
@@ -1054,6 +1083,9 @@ public class QueryServiceBean {
   }
 
   public void sqlDropTemp(String tmp) {
+    if (BeeUtils.isEmpty(tmp)) {
+      return;
+    }
     Assert.state(!sys.isTable(tmp), "Can't drop a base table: " + tmp);
     updateData(SqlUtils.dropTable(tmp));
   }

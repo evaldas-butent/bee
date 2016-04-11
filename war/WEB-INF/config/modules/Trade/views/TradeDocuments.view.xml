@@ -17,11 +17,19 @@
     <SimpleColumn name="Operation" />
     <SimpleJoin name="Operation" joinType="LEFT">
       <SimpleColumn name="OperationName" />
+      <SimpleColumn name="OperationType" />
       <SimpleColumn name="Background" alias="OperationBackground" />
       <SimpleColumn name="Foreground" alias="OperationForeground" />
     </SimpleJoin>
 
+    <SimpleColumn name="Phase" />
+    
     <SimpleColumn name="Status" />
+    <SimpleJoin joinType="LEFT" name="Status">
+      <SimpleColumn name="StatusName" />
+      <SimpleColumn name="Background" alias="StatusBackground" />
+      <SimpleColumn name="Foreground" alias="StatusForeground" />
+    </SimpleJoin>
     
     <SimpleColumn name="Supplier" />
     <SimpleJoin joinType="LEFT" name="Supplier">
@@ -76,6 +84,8 @@
           <SimpleColumn name="LastName" alias="ManagerLastName" />
         </SimpleJoin>
       </SimpleJoin>
+      
+      <SimpleColumn name="TabNumber" alias="ManagerTabNumber" />
     </SimpleJoin>
 
     <SimpleColumn name="Discount" />

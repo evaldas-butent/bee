@@ -26,9 +26,9 @@
         <Label text="=company" />
         <TextLabel source="CompanyName" class="bee-output" style="&w1;" />
 
-        <Label for="Salary" />
-        <InputDecimal source="Salary" currencySource="Currency" style="&w2;" />
-        <cell style="padding-left: 6px;">
+        <Label for="Salary" module="Payroll" />
+        <InputDecimal source="Salary" currencySource="Currency" style="&w2;" module="Payroll" />
+        <cell style="padding-left: 6px;" module="Payroll">
           <DataSelector source="Currency" for="Salary" newRowEnabled="false" editEnabled="false"
             style="width: 5em;" />
         </cell>
@@ -38,8 +38,8 @@
         <Label text="=department" />
         <TextLabel source="DepartmentName" class="bee-output" style="&w1;" />
 
-        <Label for="PartTime" />
-        <InputDecimal source="PartTime" style="&w2;" />
+        <Label for="PartTime" module="Payroll" />
+        <InputDecimal source="PartTime" style="&w2;" module="Payroll" />
       </row>
 
       <row>
@@ -66,17 +66,17 @@
     <br/>
 
     <TabbedPages class="flexible">
-      <page>
+      <page module="Payroll">
         <text>=objects</text>
         <ChildGrid name="EmployeeObjects" relColumn="Employee" />
       </page>
 
-      <page>
+      <page module="Payroll">
         <text>=timeCardChanges</text>
         <ChildGrid name="TimeCardChanges" relColumn="Employee" />
       </page>
 
-      <page>
+      <page module="Payroll">
         <text>=workSchedule</text>
         <SummaryProxy name="WorkSchedule" summarize="true" />
       </page>

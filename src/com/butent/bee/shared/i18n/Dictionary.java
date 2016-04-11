@@ -4536,6 +4536,8 @@ public interface Dictionary {
 
   default String trCargoTripThereCargosAssignedInTripsAlarm() {return g("trCargoTripThereCargosAssignedInTripsAlarm");}
 
+  default String trCargoType() {return g("trCargoType");}
+
   default String trCargoTypes() {return g("trCargoTypes");}
 
   default String trCargoValueCurrency() {return g("trCargoValueCurrency");}
@@ -5356,17 +5358,30 @@ public interface Dictionary {
 
   default String trdDocumentFiles() {return g("trdDocumentFiles");}
 
+  default String trdDocumentItem() {return g("trdDocumentItem");}
+
   default String trdDocumentItems() {return g("trdDocumentItems");}
 
-  default String trdDocumentStatusActive() {return g("trdDocumentStatusActive");}
+  default String trdDocumentPhase() {return g("trdDocumentPhase");}
 
-  default String trdDocumentStatusApproved() {return g("trdDocumentStatusApproved");}
+  default String trdDocumentPhaseActive() {return g("trdDocumentPhaseActive");}
 
-  default String trdDocumentStatusCompleted() {return g("trdDocumentStatusCompleted");}
+  default String trdDocumentPhaseApproved() {return g("trdDocumentPhaseApproved");}
 
-  default String trdDocumentStatusOrder() {return g("trdDocumentStatusOrder");}
+  default String trdDocumentPhaseCompleted() {return g("trdDocumentPhaseCompleted");}
 
-  default String trdDocumentStatusPending() {return g("trdDocumentStatusPending");}
+  default String trdDocumentPhaseOrder() {return g("trdDocumentPhaseOrder");}
+
+  default String trdDocumentPhasePending() {return g("trdDocumentPhasePending");}
+
+  default String trdDocumentPhaseTransitionQuestion(Object from, Object to) {
+    Map<String, Object> _m = new HashMap<>();
+    _m.put("{from}", from);
+    _m.put("{to}", to);
+    return Localized.format(g("trdDocumentPhaseTransitionQuestion"), _m);
+  }
+
+  default String trdDocumentPhases() {return g("trdDocumentPhases");}
 
   default String trdDocumentTags() {return g("trdDocumentTags");}
 
@@ -5448,6 +5463,12 @@ public interface Dictionary {
 
   default String trdPrice() {return g("trdPrice");}
 
+  default String trdPrimaryDate() {return g("trdPrimaryDate");}
+
+  default String trdPrimaryDocument() {return g("trdPrimaryDocument");}
+
+  default String trdPrimaryDocumentItem() {return g("trdPrimaryDocumentItem");}
+
   default String trdProformaInvoice() {return g("trdProformaInvoice");}
 
   default String trdPurchase() {return g("trdPurchase");}
@@ -5477,6 +5498,8 @@ public interface Dictionary {
   default String trdStatusActive() {return g("trdStatusActive");}
 
   default String trdStatuses() {return g("trdStatuses");}
+
+  default String trdStock() {return g("trdStock");}
 
   default String trdSupplier() {return g("trdSupplier");}
 

@@ -25,10 +25,10 @@
     <DataColumn name="DateOfEmployment" />
     <DataColumn name="DateOfDismissal" />
 
-    <DataColumn name="Salary" visible="false" />
-    <DataColumn name="CurrencyName" visible="false" />
+    <DataColumn name="Salary" module="Payroll" visible="false" />
+    <DataColumn name="CurrencyName" module="Payroll" visible="false" />
 
-    <DataColumn name="PartTime" visible="false" />
+    <DataColumn name="PartTime" module="Payroll" visible="false" />
 
     <DataColumn name="Notes" />
   </g:columns>

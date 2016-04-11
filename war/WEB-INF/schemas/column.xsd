@@ -51,6 +51,13 @@
     <xs:attribute ref="xml:base" />
   </xs:complexType>
 
+  <xs:complexType name="columnList">
+    <xs:sequence>
+      <xs:element ref="column" maxOccurs="unbounded" />
+    </xs:sequence>
+    <xs:attribute ref="xml:base" />
+  </xs:complexType>
+
   <xs:element name="column" type="columnType" abstract="true" />
 
   <xs:element name="IdColumn" type="columnType" substitutionGroup="column" />
@@ -213,6 +220,7 @@
       <xs:enumeration value="total" />
       <xs:enumeration value="vat" />
       <xs:enumeration value="discount" />
+      <xs:enumeration value="time" />
     </xs:restriction>
   </xs:simpleType>
 

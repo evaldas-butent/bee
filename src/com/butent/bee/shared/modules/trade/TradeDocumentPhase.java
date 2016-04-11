@@ -3,62 +3,72 @@ package com.butent.bee.shared.modules.trade;
 import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.ui.HasLocalizedCaption;
 
-public enum TradeDocumentStatus implements HasLocalizedCaption {
-  ORDER {
+public enum TradeDocumentPhase implements HasLocalizedCaption {
+  ORDER(false) {
     @Override
     public String getCaption(Dictionary constants) {
-      return constants.trdDocumentStatusOrder();
+      return constants.trdDocumentPhaseOrder();
     }
 
     @Override
     public String getDocumentTypeColumnName() {
-      return "StatusOrder";
+      return "PhaseOrder";
     }
   },
-  PENDING {
+  PENDING(false) {
     @Override
     public String getCaption(Dictionary constants) {
-      return constants.trdDocumentStatusPending();
+      return constants.trdDocumentPhasePending();
     }
 
     @Override
     public String getDocumentTypeColumnName() {
-      return "StatusPending";
+      return "PhasePending";
     }
   },
-  ACTIVE {
+  ACTIVE(true) {
     @Override
     public String getCaption(Dictionary constants) {
-      return constants.trdDocumentStatusActive();
+      return constants.trdDocumentPhaseActive();
     }
 
     @Override
     public String getDocumentTypeColumnName() {
-      return "StatusActive";
+      return "PhaseActive";
     }
   },
-  COMPLETED {
+  COMPLETED(true) {
     @Override
     public String getCaption(Dictionary constants) {
-      return constants.trdDocumentStatusCompleted();
+      return constants.trdDocumentPhaseCompleted();
     }
 
     @Override
     public String getDocumentTypeColumnName() {
-      return "StatusCompleted";
+      return "PhaseCompleted";
     }
   },
-  APPROVED {
+  APPROVED(true) {
     @Override
     public String getCaption(Dictionary constants) {
-      return constants.trdDocumentStatusApproved();
+      return constants.trdDocumentPhaseApproved();
     }
 
     @Override
     public String getDocumentTypeColumnName() {
-      return "StatusApproved";
+      return "PhaseApproved";
     }
   };
 
+  private final boolean modifyStock;
+
+  TradeDocumentPhase(boolean modifyStock) {
+    this.modifyStock = modifyStock;
+  }
+
   public abstract String getDocumentTypeColumnName();
+
+  public boolean modifyStock() {
+    return modifyStock;
+  }
 }

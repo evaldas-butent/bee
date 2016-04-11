@@ -14,6 +14,7 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.HasViewName;
 import com.butent.bee.shared.data.IsColumn;
+import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
 import com.butent.bee.shared.data.event.DataChangeEvent;
@@ -354,7 +355,10 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
 
   @Override
   public void onRowInsert(RowInsertEvent event) {
-    if (isEventRelevant(event) && !getViewData().containsRow(event.getRowId())) {
+    if (isEventRelevant(event) && isFullCaching() && !getViewData().containsRow(event.getRowId())
+        && matches(immutableFilter, event.getRow())
+        && matches(getAdditionalFilter(), event.getRow())) {
+
       getViewData().addRow(event.getRow());
       resetState();
       onRowCountChange(getViewData().getNumberOfRows());
@@ -527,6 +531,16 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
 
   private boolean isFullCaching() {
     return getCaching() == Caching.LOCAL || getCaching() == Caching.GLOBAL;
+  }
+
+  private boolean matches(Filter filter, IsRow row) {
+    if (row == null || getViewData() == null) {
+      return false;
+    } else if (filter == null) {
+      return true;
+    } else {
+      return filter.isMatch(getViewData().getColumns(), row);
+    }
   }
 
   private void onDataReceived(BeeRowSet rowSet) {

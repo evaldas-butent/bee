@@ -488,7 +488,10 @@ public abstract class Filter implements BeeSerializable, RowFilter {
   public abstract boolean involvesColumn(String colName);
 
   @Override
-  public abstract boolean isMatch(List<? extends IsColumn> columns, IsRow row);
+  public boolean isMatch(List<? extends IsColumn> columns, IsRow row) {
+    LogUtils.getRootLogger().warning(NameUtils.getName(this), "isMatch not supported");
+    return false;
+  }
 
   protected int getColumnIndex(String colName, List<? extends IsColumn> columns) {
     return DataUtils.getColumnIndex(colName, columns);

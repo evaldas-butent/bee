@@ -3,7 +3,7 @@
 
       name="TripCargo"
       source="CargoTrips"
-    >
+>
   <Columns>
     <SimpleColumn name="Trip" />
     <SimpleColumn name="Ordinal" />
@@ -16,6 +16,11 @@
       <SimpleColumn name="Order" />
       <SimpleJoin name="Order" joinType="LEFT">
         <SimpleColumn name="OrderNo" />
+
+        <SimpleColumn name="Customer" />
+        <SimpleJoin name="Customer" joinType="LEFT">
+          <SimpleColumn name="Name" alias="CustomerName" />
+        </SimpleJoin>
       </SimpleJoin>
 
       <SimpleColumn name="Description" />

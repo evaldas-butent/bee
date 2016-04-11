@@ -3,6 +3,7 @@ package com.butent.bee.server.data;
 import com.butent.bee.server.sql.IsQuery;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -166,6 +167,14 @@ public abstract class DataEvent {
       errors = new ArrayList<>();
     }
     errors.add(message);
+  }
+
+  public void addErrors(ResponseObject response) {
+    if (response != null && response.hasErrors()) {
+      for (String message : response.getErrors()) {
+        addErrorMessage(message);
+      }
+    }
   }
 
   public String getTargetName() {

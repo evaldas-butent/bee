@@ -41,6 +41,7 @@ import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.Defaults.DefaultExpression;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
@@ -261,6 +262,18 @@ public class SystemBean {
   public String getAuditSource(String tableName) {
     return BeeUtils.join(".", dbAuditSchema, BeeUtils.join("_", tableName,
         AUDIT_SUFFIX));
+  }
+
+  public CellSource getCellSource(String viewName, String colName) {
+    BeeView view = getView(viewName);
+
+    int index = view.getRowSetIndex(colName);
+
+    if (BeeConst.isUndef(index)) {
+      return null;
+    } else {
+      return CellSource.forColumn(view.getBeeColumn(colName), index);
+    }
   }
 
   public List<DataInfo> getDataInfo() {
