@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<View xmlns="http://www.butent.com/view" xmlns:xpr="http://www.butent.com/expression" name="NewsCompanyPersons"
-  source="RcpsGroupsContacts" module="Classifiers.Contacts" caption="=companyPersons">
+<View xmlns="http://www.butent.com/view" name="NewsCompanyPersons"
+      source="RcpsGroupsContacts" module="Classifiers.Contacts" caption="=companyPersons">
   <Columns>
 
     <SimpleColumn name="RecipientsGroup" />
@@ -33,7 +33,7 @@
         <SimpleJoin joinType="LEFT" name="CompanyType">
           <SimpleColumn name="Name" alias="TypeName" />
         </SimpleJoin>
-        
+
         <SimpleColumn name="InformationSource" />
         <SimpleJoin joinType="LEFT" name="InformationSource">
           <SimpleColumn alias="InformationSourceName" name="Name" />

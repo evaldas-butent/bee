@@ -11,6 +11,7 @@ import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.data.Data;
+import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.event.logical.ParentRowEvent;
 import com.butent.bee.client.event.logical.SelectorEvent;
@@ -18,9 +19,12 @@ import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.GridPanel;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.presenter.GridPresenter;
+import com.butent.bee.client.style.StyleUtils;
+import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.edit.ReadyForUpdateEvent;
+import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
@@ -39,6 +43,7 @@ import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.Collection;
 import java.util.Objects;
 
 public class TripCostsGrid extends AbstractGridInterceptor
@@ -63,20 +68,17 @@ public class TripCostsGrid extends AbstractGridInterceptor
     presenter.getHeader().addCommandItem(invoice);
 
     finance.setTitle("Reiso išlaidos apskaitai");
-    finance.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent clickEvent) {
-        GridPanel grid = new GridPanel(VIEW_ERP_TRIP_COSTS,
-            GridFactory.GridOptions.forFilter(Filter.equals(COL_TRIP, trip)), false);
+    finance.addClickHandler(clickEvent -> {
+      GridPanel grid = new GridPanel(VIEW_ERP_TRIP_COSTS,
+          GridFactory.GridOptions.forFilter(Filter.equals(COL_TRIP, trip)), false);
 
-        StyleUtils.setSize(grid, 800, 600);
+      StyleUtils.setSize(grid, 800, 600);
 
-        DialogBox dialog = DialogBox.create(null);
-        dialog.setWidget(grid);
-        dialog.setAnimationEnabled(true);
-        dialog.setHideOnEscape(true);
-        dialog.center();
-      }
+      DialogBox dialog = DialogBox.create(null);
+      dialog.setWidget(grid);
+      dialog.setAnimationEnabled(true);
+      dialog.setHideOnEscape(true);
+      dialog.center();
     });
     presenter.getHeader().addCommandItem(finance);
 
@@ -148,50 +150,6 @@ public class TripCostsGrid extends AbstractGridInterceptor
   }
 
   @Override
-  public void onEditStart(EditStartEvent event) {
-    if (BeeUtils.same(event.getColumnId(), "Ratio") && BeeUtils.isPositive(event.getRowValue()
-        .getDouble(getDataIndex("Old" + COL_COSTS_PRICE)))) {
-
-      final IsRow row = event.getRowValue();
-      final Double qty = row.getDouble(getDataIndex(COL_COSTS_QUANTITY));
-
-      if (BeeUtils.isPositive(qty)) {
-        final InputNumber amount = new InputNumber();
-
-        Global.inputWidget(Localized.dictionary().amount(), amount, new InputCallback() {
-          @Override
-          public String getErrorMessage() {
-            if (!BeeUtils.isPositive(amount.getNumber())) {
-              return Localized.dictionary().valueRequired();
-            }
-            return InputCallback.super.getErrorMessage();
-          }
-
-          @Override
-          public void onSuccess() {
-            Queries.updateCellAndFire(getViewName(), row.getId(), row.getVersion(), COL_COSTS_PRICE,
-                row.getString(getDataIndex(COL_COSTS_PRICE)),
-                BeeUtils.toString(BeeUtils.round(amount.getNumber() / qty, 2)));
-          }
-        });
-      }
-    }
-    super.onEditStart(event);
-  }
-
-  @Override
-  public boolean onStartNewRow(GridView gridView, IsRow oldRow, IsRow newRow) {
-    FormView tripForm = ViewHelper.getForm(gridView);
-    JustDate date = TimeUtils.today();
-
-    if (tripForm != null && !BeeConst.isUndef(tripForm.getDataIndex(COL_TRIP_DATE_TO))) {
-      date = BeeUtils.nvl(tripForm.getDateValue(COL_TRIP_DATE_TO), date);
-    }
-    newRow.setValue(gridView.getDataIndex(COL_DATE), date);
-    return super.onStartNewRow(gridView, oldRow, newRow);
-  }
-
-  @Override
   public void onReadyForInsert(GridView gridView, ReadyForInsertEvent event) {
     int idx = DataUtils.getColumnIndex(COL_COSTS_PRICE, event.getColumns());
 
@@ -229,6 +187,18 @@ public class TripCostsGrid extends AbstractGridInterceptor
       return;
     }
     super.onReadyForUpdate(gridView, event);
+  }
+
+  @Override
+  public boolean onStartNewRow(GridView gridView, IsRow oldRow, IsRow newRow) {
+    FormView tripForm = ViewHelper.getForm(gridView);
+    JustDate date = TimeUtils.today();
+
+    if (tripForm != null && !BeeConst.isUndef(tripForm.getDataIndex(COL_TRIP_DATE_TO))) {
+      date = BeeUtils.nvl(tripForm.getDateValue(COL_TRIP_DATE_TO), date);
+    }
+    newRow.setValue(gridView.getDataIndex(COL_DATE), date);
+    return super.onStartNewRow(gridView, oldRow, newRow);
   }
 
   private static void amountEntry(Double qty, Consumer<String> amountConsumer) {

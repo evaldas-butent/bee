@@ -8,18 +8,17 @@
   <!ENTITY currencystyle "width: 50px;">
 ]>
 <f:Form xmlns="http://www.butent.com/widget"
-  xmlns:f="http://www.butent.com/form"
-  xmlns:ui="http://www.butent.com/ui"
-  xmlns:xi="http://www.w3.org/2001/XInclude"
-  
-  name="Item" viewName="Items" caption="=item"
-  width="700" height="720"
-  >
+        xmlns:f="http://www.butent.com/form"
+        xmlns:xi="http://www.w3.org/2001/XInclude"
+
+        name="Item" viewName="Items" caption="=item"
+        width="700" height="720"
+>
   <FlowPanel class="flexBox-vertical">
     <Table kind="controls" style="margin-top: 1ex;">
       <col index="0" kind="label" />
       <col index="2" kind="label" />
-      
+
       <row>
         <Label for="Type" />
         <DataSelector source="Type" />
@@ -66,13 +65,13 @@
       <row data="ItemCategories">
         <Label text="=itemCategories" />
         <cell colSpan="5">
-          <ChildSelector name="Categories" childTable="ItemCategories" viewName="CategoryTree" 
+          <ChildSelector name="Categories" childTable="ItemCategories" viewName="CategoryTree"
             targetRelColumn="Item" sourceRelColumn="Category" newRowEnabled="false"
             renderColumns="ParentName Name" label="=categories" style="width: 100%;" />
         </cell>
       </row>
     </Table>
-    
+
     <br/>
     <TabbedPages class="flexible">
       <page>
@@ -120,7 +119,7 @@
                 editEnabled="false" style="&currencystyle;" />
             </row>
           </Table>
-          
+
           <ChildGrid name="ItemDiscounts" relColumn="Item" class="flexible" />
         </FlowPanel>
       </page>
@@ -130,7 +129,7 @@
         <Table kind="controls" style="margin-top: 1ex;">
           <col index="0" kind="label" />
           <col index="2" kind="label" />
-      
+
           <row>
             <Label for="Name2" />
             <cell colSpan="3">
@@ -153,7 +152,7 @@
               <InputText source="Link" style="width: 100%;" summarize="true">
                 &foritem;
               </InputText>
-            </cell>  
+            </cell>
           </row>
           <row>
             <Label for="Article2" />
@@ -227,14 +226,14 @@
         <SimplePanel>
            <ChildGrid name="ItemRemainders" relColumn="Item" class="occupy-1" summarize="true" />
         </SimplePanel>
-      </page> 
-      
+      </page>
+
       <page for="Notes">
         <text>=notes</text>
         <SimplePanel>
           <InputArea source="Notes" class="occupy-1" summarize="true" />
         </SimplePanel>
-      </page>  
+      </page>
     </TabbedPages>
   </FlowPanel>
-</f:Form>  
+</f:Form>

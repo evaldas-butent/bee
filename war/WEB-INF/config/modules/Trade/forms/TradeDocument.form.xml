@@ -4,18 +4,17 @@
   <!ENTITY inpdt "width: 10em;">
 ]>
 <f:Form xmlns="http://www.butent.com/widget"
-  xmlns:f="http://www.butent.com/form"
-  xmlns:ui="http://www.butent.com/ui"
-  xmlns:xi="http://www.w3.org/2001/XInclude"
-  
-  name="TradeDocument" viewName="TradeDocuments"
-  caption="=trdDocument" showRowId="true"
-  width="80" widthUnit="vw" height="60" heightUnit="vh"
-  >
+        xmlns:f="http://www.butent.com/form"
+        xmlns:xi="http://www.w3.org/2001/XInclude"
+
+        name="TradeDocument" viewName="TradeDocuments"
+        caption="=trdDocument" showRowId="true"
+        width="80" widthUnit="vw" height="60" heightUnit="vh"
+>
   <FlowPanel class="flexBox-vertical">
     <br/>
     <TabBar name="Phase" source="Phase" class="bee-trade-document-phase" />
-    
+
     <br/>
     <Table kind="controls">
       <col index="0" kind="label" />
@@ -62,15 +61,15 @@
 
       <row>
         <Label for="Supplier" />
-        <DataSelector source="Supplier" style="&inpw;" visible="true" choiceColumns="Name TypeName" 
+        <DataSelector source="Supplier" style="&inpw;" visible="true" choiceColumns="Name TypeName"
           renderColumns="SupplierName SupplierTypeName"/>
 
         <Label for="Customer" />
-        <DataSelector source="Customer" style="&inpw;" visible="true" choiceColumns="Name TypeName" 
+        <DataSelector source="Customer" style="&inpw;" visible="true" choiceColumns="Name TypeName"
           renderColumns="CustomerName CustomerTypeName"/>
 
         <Label for="Payer" />
-        <DataSelector source="Payer" style="&inpw;" visible="true" choiceColumns="Name TypeName" 
+        <DataSelector source="Payer" style="&inpw;" visible="true" choiceColumns="Name TypeName"
           renderColumns="PayerName PayerTypeName"/>
       </row>
 
@@ -80,7 +79,7 @@
           choiceColumns="Code Name" renderColumns="WarehouseFromCode WarehouseFromName"/>
 
         <Label for="WarehouseTo" />
-        <DataSelector source="WarehouseTo" style="&inpw;" visible="true" choiceColumns="Code Name" 
+        <DataSelector source="WarehouseTo" style="&inpw;" visible="true" choiceColumns="Code Name"
           renderColumns="WarehouseToCode WarehouseToName"/>
 
         <Label for="Term" />

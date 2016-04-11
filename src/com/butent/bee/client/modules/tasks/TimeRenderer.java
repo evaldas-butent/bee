@@ -1,6 +1,6 @@
 package com.butent.bee.client.modules.tasks;
 
-import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
+import static com.butent.bee.shared.modules.tasks.TaskConstants.COL_ACTUAL_DURATION;
 
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.render.AbstractCellRenderer;
