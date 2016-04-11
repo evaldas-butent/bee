@@ -4536,6 +4536,8 @@ public interface Dictionary {
 
   default String trCargoTripThereCargosAssignedInTripsAlarm() {return g("trCargoTripThereCargosAssignedInTripsAlarm");}
 
+  default String trCargoType() {return g("trCargoType");}
+
   default String trCargoTypes() {return g("trCargoTypes");}
 
   default String trCargoValueCurrency() {return g("trCargoValueCurrency");}

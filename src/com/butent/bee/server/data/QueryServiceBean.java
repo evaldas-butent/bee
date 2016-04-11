@@ -1083,6 +1083,9 @@ public class QueryServiceBean {
   }
 
   public void sqlDropTemp(String tmp) {
+    if (BeeUtils.isEmpty(tmp)) {
+      return;
+    }
     Assert.state(!sys.isTable(tmp), "Can't drop a base table: " + tmp);
     updateData(SqlUtils.dropTable(tmp));
   }
