@@ -51,6 +51,31 @@ public final class Settings {
     return getInt("clickSensitivityMillis");
   }
 
+  public static List<Integer> getDataSelectorInputDelayMillis() {
+    List<Integer> result = new ArrayList<>();
+
+    String key = "dataSelectorInputDelayMillis";
+
+    String s = getString(key);
+
+    if (BeeUtils.isEmpty(s)) {
+      Integer millis = getInteger(key);
+      if (BeeUtils.isPositive(millis)) {
+        result.add(millis);
+      }
+
+    } else {
+      List<Integer> ints = BeeUtils.toInts(s);
+      for (Integer millis : ints) {
+        if (BeeUtils.isPositive(millis)) {
+          result.add(millis);
+        }
+      }
+    }
+
+    return result;
+  }
+
   public static Integer getDataSelectorCachingMaxRows() {
     return getInteger("dataSelectorCachingMaxRows");
   }
