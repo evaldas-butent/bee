@@ -1,5 +1,6 @@
 package com.butent.bee.client.grid;
 
+import com.google.common.base.Function;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 
@@ -9,6 +10,7 @@ import com.butent.bee.client.i18n.DateTimeFormat;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.i18n.HasDateTimeFormat;
 import com.butent.bee.client.i18n.HasNumberFormat;
+import com.butent.bee.client.modules.tasks.TimeRenderer;
 import com.butent.bee.client.modules.trade.DiscountRenderer;
 import com.butent.bee.client.modules.trade.TotalRenderer;
 import com.butent.bee.client.modules.trade.VatRenderer;
@@ -73,6 +75,12 @@ public class ColumnFooter extends Header<String> implements HasTextAlign, HasVer
       HasRowValue getFunction(List<? extends IsColumn> columns) {
         return new DiscountRenderer(columns);
       }
+    },
+    TIME {
+      @Override
+      HasRowValue getFunction(List<? extends IsColumn> columns) {
+        return new TimeRenderer(columns);
+      }
     };
 
     abstract HasRowValue getFunction(List<? extends IsColumn> columns);
@@ -80,6 +88,8 @@ public class ColumnFooter extends Header<String> implements HasTextAlign, HasVer
 
   private static final Aggregate DEFAULT_AGGREGATE = Aggregate.SUM;
   private static final ValueType DEFAULT_VALUE_TYPE = ValueType.NUMBER;
+
+  private Function<Value, String> formatter;
 
   private String html;
 
@@ -195,8 +205,12 @@ public class ColumnFooter extends Header<String> implements HasTextAlign, HasVer
       }
 
       if (value != null) {
-        return Format.render(value.getString(), getValueType(),
-            getDateTimeFormat(), getNumberFormat(), getScale());
+        if (formatter != null) {
+          return formatter.apply(value);
+        } else {
+          return Format.render(value.getString(), getValueType(),
+              getDateTimeFormat(), getNumberFormat(), getScale());
+        }
       }
     }
 
@@ -223,6 +237,10 @@ public class ColumnFooter extends Header<String> implements HasTextAlign, HasVer
   @Override
   public void setDateTimeFormat(DateTimeFormat dateTimeFormat) {
     this.dateTimeFormat = dateTimeFormat;
+  }
+
+  public void setFormatter(Function<Value, String> formatter) {
+    this.formatter = formatter;
   }
 
   public void setHtml(String html) {
