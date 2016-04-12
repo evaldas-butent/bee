@@ -163,7 +163,7 @@ class ChildTasksGrid extends TasksGrid {
       }
 
       row.setValue(viewTasks.getColumnIndex(TaskConstants.COL_STATUS),
-          TaskConstants.TaskStatus.SCHEDULED.ordinal());
+          TaskConstants.TaskStatus.NOT_VISITED.ordinal());
 
       row.setProperty(ProjectConstants.PROP_TEMPLATE, BeeUtils.toString(templRow.getId()));
 

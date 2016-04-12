@@ -160,7 +160,7 @@ public class DayMoveController implements MoveEvent.Handler {
           break;
 
         case TASK:
-          TasksKeeper.extendTask(item.getId(), range.lowerEndpoint(), range.upperEndpoint());
+          TasksKeeper.extendTask(item.getId(), range.upperEndpoint());
           break;
       }
 
