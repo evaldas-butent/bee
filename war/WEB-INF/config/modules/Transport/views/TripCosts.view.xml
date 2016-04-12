@@ -7,6 +7,7 @@
     >
   <Columns>
     <SimpleColumn name="Trip" />
+    <SimpleColumn name="Cargo" />
     <SimpleColumn name="Date" />
 
     <SimpleColumn name="Item" />

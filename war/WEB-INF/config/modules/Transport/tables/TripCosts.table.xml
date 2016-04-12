@@ -6,6 +6,8 @@
     >
   <Fields>
     <Relation name="Trip" relation="Trips" cascade="DELETE" label="=trip" />
+    <Relation name="Cargo" relation="OrderCargo" cascade="DELETE" label="=cargo"/>
+
     <Date name="Date" notNull="true" defExpr="CURRENT_DATE" label="=date" />
 
     <Relation name="Item" notNull="true" relation="Items" label="=productService" />

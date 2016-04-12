@@ -3,7 +3,7 @@
   xmlns:ui="http://www.butent.com/ui"
 
   name="UnassignedTripCosts" viewName="TripCosts" caption="=trUnassignedTripCosts"
-  filter="!(Trip)" disabledActions="add"
+  filter="!(Trip) AND !(Cargo)" disabledActions="add"
   >
 
   <g:columns>

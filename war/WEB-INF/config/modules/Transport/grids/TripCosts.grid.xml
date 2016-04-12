@@ -6,6 +6,7 @@
   >
 
   <g:columns>
+    <RelColumn name="Trip" caption="=trip" caching="none" newRowEnabled="false" />
     <DataColumn name="Date" caption="=date" />
 
     <RelColumn name="Item" renderColumns="ItemName" />

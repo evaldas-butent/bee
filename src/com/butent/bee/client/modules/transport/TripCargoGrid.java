@@ -26,6 +26,7 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
@@ -137,6 +138,17 @@ class TripCargoGrid extends AbstractGridInterceptor {
         public void onSuccess(BeeRow row) {
           RowInsertEvent.fire(BeeKeeper.getBus(), gridView.getViewName(), row, gridView.getId());
           gridView.getGrid().insertRow(row, false);
+
+          Queries.update(VIEW_TRIP_COSTS, Filter.and(Filter.equals(COL_CARGO, cargoId),
+              Filter.isNull(COL_TRIP)), COL_TRIP, BeeUtils.toString(tripId),
+              new Queries.IntCallback() {
+                @Override
+                public void onSuccess(Integer result) {
+                  if (BeeUtils.isPositive(result)) {
+                    DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_TRIP_COSTS);
+                  }
+                }
+              });
         }
       });
     }

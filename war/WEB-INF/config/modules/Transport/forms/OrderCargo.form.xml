@@ -153,7 +153,10 @@
       </page>
       <page>
         <text>=trips</text>
-        <ChildGrid name="CargoTrips" relColumn="Cargo" />
+        <FlowPanel class="flexBox-vertical">
+          <ChildGrid name="CargoTrips" relColumn="Cargo" class="flexible" />
+          <ChildGrid name="TripCosts" relColumn="Cargo" class="flexible" />
+        </FlowPanel>
       </page>
       <page>
         <text>=otherCosts</text>

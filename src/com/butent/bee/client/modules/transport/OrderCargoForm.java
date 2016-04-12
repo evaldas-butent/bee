@@ -179,6 +179,10 @@ class OrderCargoForm extends AbstractFormInterceptor implements SelectorEvent.Ha
         case VIEW_CARGO_TRIPS:
           ((ChildGrid) widget).setGridInterceptor(new CargoTripsGrid());
           break;
+
+        case VIEW_TRIP_COSTS:
+          ((ChildGrid) widget).setGridInterceptor(new TripCostsGrid());
+          break;
       }
     } else if (widget instanceof InputBoolean
         && (BeeUtils.inListSame(name, "Partial", "Outsized"))) {

@@ -3,9 +3,10 @@
 
       name="TripPurchases" source="TripCosts" caption="=trTripCosts"
       readOnly="true"
-      filter="Prefix AND Number"
+      filter="Prefix AND Number AND !(Cargo)"
     >
   <Columns>
+    <HiddenColumn name="Cargo" />
     <SimpleColumn name="Trip" />
     <SimpleJoin name="Trip" joinType="INNER">
       <SimpleColumn name="Status" />

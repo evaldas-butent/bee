@@ -22,6 +22,7 @@ import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
+import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.edit.ReadyForUpdateEvent;
 import com.butent.bee.client.view.form.FormView;
@@ -50,6 +51,7 @@ public class TripCostsGrid extends AbstractGridInterceptor
     implements ClickHandler, SelectorEvent.Handler {
 
   Long trip;
+  Long cargo;
 
   final Flow invoice = new Flow();
   final FaLabel finance = new FaLabel(FontAwesome.CLOUD_UPLOAD);
@@ -57,7 +59,7 @@ public class TripCostsGrid extends AbstractGridInterceptor
 
   @Override
   public void afterCreateEditor(String source, Editor editor, boolean embedded) {
-    if (BeeUtils.same(source, COL_DRIVER) && editor instanceof DataSelector) {
+    if (editor instanceof DataSelector) {
       ((DataSelector) editor).addSelectorHandler(this);
     }
     super.afterCreateEditor(source, editor, embedded);
@@ -104,7 +106,7 @@ public class TripCostsGrid extends AbstractGridInterceptor
 
   @Override
   public GridInterceptor getInstance() {
-    return null;
+    return new TripCostsGrid();
   }
 
   @Override
@@ -131,13 +133,32 @@ public class TripCostsGrid extends AbstractGridInterceptor
   public void onDataSelector(SelectorEvent event) {
     if (BeeUtils.same(event.getRelatedViewName(), TBL_TRIP_DRIVERS) && event.isOpened()) {
       event.getSelector().setAdditionalFilter(Filter.equals(COL_TRIP, trip));
+
+    } else if (BeeUtils.same(event.getRelatedViewName(), VIEW_TRIPS) && event.isOpened()) {
+      event.getSelector().setAdditionalFilter(Filter.in(COL_TRIP_ID, VIEW_CARGO_TRIPS, COL_TRIP,
+          Filter.equals(COL_CARGO, cargo)));
     }
   }
 
   @Override
-  public void onParentRow(ParentRowEvent event) {
-    trip = event.getRowId();
+  public void onEditStart(EditStartEvent event) {
+    if (DataUtils.isId(trip) && Objects.equals(event.getColumnId(), COL_TRIP)) {
+      event.consume();
+      return;
+    }
+    super.onEditStart(event);
+  }
 
+  @Override
+  public void onParentRow(ParentRowEvent event) {
+    switch (event.getViewName()) {
+      case VIEW_TRIPS:
+        trip = event.getRowId();
+        break;
+      case VIEW_ORDER_CARGO:
+        cargo = event.getRowId();
+        break;
+    }
     invoice.clear();
 
     if (DataUtils.isId(trip) && Data.isViewEditable(VIEW_TRIP_PURCHASE_INVOICES)) {
