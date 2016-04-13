@@ -128,9 +128,6 @@ class TaskEditor extends AbstractFormInterceptor {
   private static final String NAME_OBSERVERS = "Observers";
   private static final String NAME_PRIVATE_TASK = "PrivateTask";
 
-  private static final List<String> relations = Lists.newArrayList(PROP_COMPANIES, PROP_PERSONS,
-      PROP_DOCUMENTS, PROP_APPOINTMENTS, PROP_DISCUSSIONS, PROP_SERVICE_OBJECTS, PROP_TASKS);
-
   private static void addDurationCell(HtmlTable display, int row, int col, String value,
       String style) {
     Widget widget = new CustomDiv(STYLE_DURATION + style);
@@ -216,33 +213,6 @@ class TaskEditor extends AbstractFormInterceptor {
 
   private static String getTaskUsers(FormView form, IsRow row) {
     return DataUtils.buildIdList(TaskUtils.getTaskUsers(row, form.getDataColumns()));
-  }
-
-  private static List<String> getUpdatedRelations(IsRow oldRow, IsRow newRow) {
-    List<String> updatedRelations = new ArrayList<>();
-    if (oldRow == null || newRow == null) {
-      return updatedRelations;
-    }
-
-    for (String relation : relations) {
-      if (!DataUtils.sameIdSet(oldRow.getProperty(relation), newRow.getProperty(relation))) {
-        updatedRelations.add(relation);
-      }
-    }
-    return updatedRelations;
-  }
-
-  private static boolean hasRelations(IsRow row) {
-    if (row == null) {
-      return false;
-    }
-
-    for (String relation : relations) {
-      if (!BeeUtils.isEmpty(row.getProperty(relation))) {
-        return true;
-      }
-    }
-    return false;
   }
 
   private static String renderDuration(long millis) {
@@ -757,7 +727,7 @@ class TaskEditor extends AbstractFormInterceptor {
     }
 
     if (event.isEmpty() && TaskUtils.sameObservers(oldRow, newRow)
-        && getUpdatedRelations(oldRow, newRow).isEmpty()) {
+        && TaskUtils.getUpdatedRelations(oldRow, newRow).isEmpty()) {
       return;
     }
 
@@ -772,7 +742,7 @@ class TaskEditor extends AbstractFormInterceptor {
         if (data != null) {
           RowUpdateEvent.fire(BeeKeeper.getBus(), VIEW_TASKS, data);
 
-          if (hasRelations(oldRow) || hasRelations(data)) {
+          if (TaskUtils.hasRelations(oldRow) || TaskUtils.hasRelations(data)) {
             DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_RELATED_TASKS);
           }
         }
@@ -837,7 +807,7 @@ class TaskEditor extends AbstractFormInterceptor {
         }
 
         RowUpdateEvent.fire(BeeKeeper.getBus(), VIEW_TASKS, data);
-        if (hasRelations(data)) {
+        if (TaskUtils.hasRelations(data)) {
           DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_RELATED_TASKS);
         }
 
@@ -846,7 +816,7 @@ class TaskEditor extends AbstractFormInterceptor {
           ((FileGroup) fileWidget).clear();
         }
 
-        List<FileInfo> files = getFiles(data);
+        List<FileInfo> files = TaskUtils.getFiles(data);
         if (!files.isEmpty()) {
           if (fileWidget instanceof FileGroup) {
             for (FileInfo file : files) {
@@ -1029,14 +999,6 @@ class TaskEditor extends AbstractFormInterceptor {
     return Data.createRowSet(VIEW_TASK_EVENTS);
   }
 
-  private static List<FileInfo> getFiles(IsRow row) {
-    if (BeeUtils.isEmpty(row.getProperty(PROP_FILES))) {
-      return Lists.newArrayList();
-    }
-
-    return FileInfo.restoreCollection(row.getProperty(PROP_FILES));
-  }
-
   private void createCellValidationHandler(FormView form, IsRow row) {
 
     if (form == null || row == null) {
@@ -1088,7 +1050,7 @@ class TaskEditor extends AbstractFormInterceptor {
 
     List<String> notes = TaskUtils.getUpdateNotes(Data.getDataInfo(viewName), oldRow, newRow);
 
-    if (form.isEnabled() || !getUpdatedRelations(oldRow, newRow).isEmpty()) {
+    if (form.isEnabled() || !TaskUtils.getUpdatedRelations(oldRow, newRow).isEmpty()) {
       if (!TaskUtils.sameObservers(oldRow, newRow)) {
         String oldObservers = oldRow.getProperty(PROP_OBSERVERS);
         String newObservers = newRow.getProperty(PROP_OBSERVERS);
@@ -1112,7 +1074,7 @@ class TaskEditor extends AbstractFormInterceptor {
         }
       }
 
-      List<String> updatedRelations = getUpdatedRelations(oldRow, newRow);
+      List<String> updatedRelations = TaskUtils.getUpdatedRelations(oldRow, newRow);
       if (!updatedRelations.isEmpty()) {
         params.addDataItem(VAR_TASK_RELATIONS, NameUtils.join(updatedRelations));
 
@@ -1481,7 +1443,7 @@ class TaskEditor extends AbstractFormInterceptor {
 
     Map<Long, FileInfo> files = Maps.newLinkedHashMap();
 
-    for (FileInfo file : getFiles(taskRow)) {
+    for (FileInfo file : TaskUtils.getFiles(taskRow)) {
       files.put(file.getId(), file);
     }
 
@@ -1551,6 +1513,7 @@ class TaskEditor extends AbstractFormInterceptor {
       case VISIT:
         doVisit();
         break;
+      case CREATE_NOT_SCHEDULED:
       case EDIT:
         Assert.untouchable();
     }
@@ -1841,12 +1804,12 @@ class TaskEditor extends AbstractFormInterceptor {
     Long lastAccess = BeeUtils.toLongOrNull(data.getProperty(PROP_LAST_ACCESS,
         BeeKeeper.getUser().getUserId()));
 
-    if (hasRelations(form.getOldRow()) || hasRelations(data)) {
+    if (TaskUtils.hasRelations(form.getOldRow()) || TaskUtils.hasRelations(data)) {
       DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_RELATED_TASKS);
     }
 
     if (!getEvents(data).isEmpty()) {
-      showEventsAndDuration(form, form.getActiveRow(), getEvents(data), getFiles(data),
+      showEventsAndDuration(form, form.getActiveRow(), getEvents(data), TaskUtils.getFiles(data),
           lastAccess);
     }
 
@@ -2008,7 +1971,7 @@ class TaskEditor extends AbstractFormInterceptor {
   }
 
   private void setEnabledRelations() {
-    for (String relation : relations) {
+    for (String relation : TaskUtils.TASK_RELATIONS) {
       MultiSelector selector = getMultiSelector(getFormView(), relation);
       if (selector != null) {
         selector.setEnabled(true);

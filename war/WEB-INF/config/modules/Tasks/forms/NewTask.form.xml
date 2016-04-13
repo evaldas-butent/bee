@@ -47,7 +47,7 @@
       <row>
         <Label for="StartTime" />
         <FlowPanel>
-          <InputDate name="Start_Date" style="&dateStyle;" required="true" />
+          <InputDate name="Start_Date" style="&dateStyle;" />
           <InputTimeOfDay name="Start_Time" step="&timeStep;" style="&timeStyle;" />
         </FlowPanel>
         <Label for="ExpectedDuration" />
@@ -59,7 +59,7 @@
       </row>
 
       <row>
-        <Label name="EndDateLabel" text="=endingDate" class="bee-required" />
+        <Label name="EndDateLabel" text="=endingDate" />
         <FlowPanel>
           <InputDate name="End_Date" style="&dateStyle;" />
           <InputTimeOfDay name="End_Time" step="&timeStep;" style="&timeStyle;" />
@@ -122,7 +122,7 @@
       <col index="0" cellStyle="&col1;" />
 
       <row>
-        <Label name="ExecutorsLabel" class="bee-required" text="=crmTaskExecutors" />
+        <Label name="ExecutorsLabel" text="=crmTaskExecutors" />
         <MultiSelector name="Executors"
           viewName="Users" property="Executors" renderColumns="FirstName LastName"
           editPopup="true" newRowEnabled="false" editSource="CompanyPerson" style="&inp2x;"

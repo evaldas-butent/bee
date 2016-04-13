@@ -815,6 +815,73 @@ public class TasksModuleBean implements BeeModule {
     return response;
   }
 
+  private ResponseObject createNotScheduledTask(BeeRowSet data, BeeRow row, long owner) {
+    ResponseObject response = null;
+
+    Map<String, String> properties = BeeUtils.isEmpty(row.getProperties()) ? new HashMap<>() : row
+        .getProperties();
+
+    List<Long> observers = DataUtils.parseIdList(properties.get(PROP_OBSERVERS));
+
+    Set<Long> observerMembers = getUserGroupMembers(properties.get(PROP_OBSERVER_GROUPS));
+    if (!observerMembers.isEmpty()) {
+      for (Long member : observerMembers) {
+        if (!observers.contains(member)) {
+          observers.add(member);
+        }
+      }
+    }
+
+    List<Long> tasks = new ArrayList<>();
+    BeeRow newRow = DataUtils.cloneRow(row);
+
+    TaskStatus status = TaskStatus.NOT_SCHEDULED;
+    newRow.setValue(data.getColumnIndex(COL_STATUS), status.ordinal());
+
+    BeeRowSet rowSet = new BeeRowSet(data.getViewName(), data.getColumns());
+    rowSet.addRow(newRow);
+
+    response = deb.commitRow(rowSet, RowInfo.class);
+    if (response.hasErrors()) {
+      return response;
+    }
+
+    long taskId = ((RowInfo) response.getResponse()).getId();
+
+    response = registerTaskEvent(taskId, owner, TaskEvent.CREATE_NOT_SCHEDULED, System
+        .currentTimeMillis());
+    if (!response.hasErrors()) {
+      createTaskUser(taskId, owner, System.currentTimeMillis());
+    }
+
+    if (!response.hasErrors()) {
+      for (long obsId : observers) {
+
+        response = createTaskUser(taskId, obsId, null);
+        if (response.hasErrors()) {
+          break;
+        }
+
+      }
+    }
+
+    if (!response.hasErrors()) {
+      response = createTaskRelations(taskId, properties);
+    }
+
+    if (!response.hasErrors()) {
+      tasks.add(taskId);
+    }
+
+    if (response.hasErrors()) {
+      return response;
+    }
+
+    response = ResponseObject.response(DataUtils.buildIdList(tasks));
+
+    return response;
+  }
+
   private ResponseObject createTaskRelations(long taskId, Map<String, String> properties) {
     int count = 0;
     if (BeeUtils.isEmpty(properties)) {
@@ -964,6 +1031,9 @@ public class TasksModuleBean implements BeeModule {
 
     long currentUser = usr.getCurrentUserId();
     long now = System.currentTimeMillis();
+    TaskStatus status =
+        EnumUtils.getEnumByIndex(TaskStatus.class, taskRow.getInteger(taskData
+            .getColumnIndex(COL_STATUS)));
 
     String eventNote;
 
@@ -976,6 +1046,13 @@ public class TasksModuleBean implements BeeModule {
     Set<String> updatedRelations = NameUtils.toSet(reqInfo.get(VAR_TASK_RELATIONS));
 
     switch (event) {
+      case CREATE_NOT_SCHEDULED:
+        response = createNotScheduledTask(taskData, taskRow, currentUser);
+
+        Set<Long> notSheduledTask = DataUtils.parseIdSet(response.getResponseAsString());
+
+        response.setResponse(qs.getViewData(taskData.getViewName(), Filter.idIn(notSheduledTask)));
+        break;
       case CREATE:
         response = createTasks(taskData, taskRow, currentUser);
 
@@ -1005,7 +1082,6 @@ public class TasksModuleBean implements BeeModule {
               updateTaskData(reqInfo, taskData, taskRow, event, updatedRelations, currentUser,
                   eventNote, now);
           break;
-
         }
         if (response == null || !response.hasErrors()) {
           response = commitTaskData(taskData, null, updatedRelations, null);
@@ -1025,9 +1101,13 @@ public class TasksModuleBean implements BeeModule {
       case ACTIVATE:
       case OUT_OF_OBSERVERS:
 
-        response =
+        if (TaskEvent.EDIT.equals(event) && TaskStatus.NOT_SCHEDULED.equals(status)) {
+          response = ResponseObject.emptyResponse();
+        } else {
+          response =
             updateTaskData(reqInfo, taskData, taskRow, event, updatedRelations, currentUser,
                 eventNote, now);
+        }
         break;
     }
 

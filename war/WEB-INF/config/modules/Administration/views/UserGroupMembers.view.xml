@@ -23,6 +23,8 @@
           <SimpleColumn name="Name" alias="CompanyName" />
         </SimpleJoin>
       </SimpleJoin>
+      <SimpleColumn name="BlockAfter"/>
+      <SimpleColumn name="BlockBefore"/>
     </SimpleJoin>
   </Columns>
 

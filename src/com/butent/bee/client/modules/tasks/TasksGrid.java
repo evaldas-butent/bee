@@ -19,6 +19,7 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.Queries.IntCallback;
 import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.data.RowCallback;
+import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.ChoiceCallback;
 import com.butent.bee.client.dialog.ConfirmationCallback;
@@ -38,6 +39,7 @@ import com.butent.bee.client.render.HasCellRenderer;
 import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.validation.ValidationHelper;
 import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.edit.EditableColumn;
@@ -91,6 +93,7 @@ import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
+import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -329,7 +332,33 @@ class TasksGrid extends AbstractGridInterceptor {
 
   @Override
   public void onEditStart(final EditStartEvent event) {
-    maybeEditStar(event);
+    if (!maybeEditStar(event)) {
+      IsRow row = event.getRowValue();
+
+      TaskStatus status = EnumUtils.getEnumByIndex(TaskStatus.class, row.getInteger(getDataIndex(
+          COL_STATUS)));
+
+      if (Objects.equals(TaskStatus.NOT_SCHEDULED, status) && BeeKeeper.getUser().canCreateData(
+          getViewName())) {
+        event.consume();
+
+        RowEditor.openForm(FORM_NEW_TASK, Data.getDataInfo(getViewName()), row.getId(),
+            Opener.MODAL);
+      } else if (Objects.equals(TaskStatus.NOT_SCHEDULED, status)) {
+        event.consume();
+        getGridView().notifySevere(Localized.dictionary().actionCanNotBeExecuted(), BeeUtils
+            .bracket(Localized.dictionary().createNewRow()));
+      }
+
+    }
+  }
+
+  @Override
+  public boolean onStartNewRow(GridView gridView, IsRow oldRow, IsRow newRow) {
+    if (TaskType.NOT_SCHEDULED.equals(type)) {
+      newRow.setValue(gridView.getDataIndex(COL_STATUS), TaskStatus.NOT_SCHEDULED.ordinal());
+    }
+    return super.onStartNewRow(gridView, oldRow, newRow);
   }
 
   protected void afterCopyAsRecurringTask() {
