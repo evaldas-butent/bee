@@ -1231,6 +1231,8 @@ public interface Dictionary {
 
   default String crmTaskStatusCompleted() {return g("crmTaskStatusCompleted");}
 
+  default String crmTaskStatusNotScheduled() {return g("crmTaskStatusNotScheduled");}
+
   default String crmTaskStatusNotVisited() {return g("crmTaskStatusNotVisited");}
 
   default String crmTaskStatusScheduled() {return g("crmTaskStatusScheduled");}
@@ -1272,6 +1274,8 @@ public interface Dictionary {
   default String crmTasksConfirmQuestion() {return g("crmTasksConfirmQuestion");}
 
   default String crmTasksDelegated() {return g("crmTasksDelegated");}
+  
+  default String crmTasksNotScheduledTasks() {return g("crmTasksNotScheduledTasks");}
 
   default String crmTasksDelegatedTasks() {return g("crmTasksDelegatedTasks");}
 

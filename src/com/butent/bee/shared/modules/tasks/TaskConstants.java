@@ -277,7 +277,11 @@ public final class TaskConstants {
             TaskWorkflowAction.canExecutor(),
             TaskWorkflowAction.canObserver(),
             TaskWorkflowAction.canOwner(),
-            TaskWorkflowAction.canUser()));
+            TaskWorkflowAction.canUser())),
+    CREATE_NOT_SCHEDULED(Localized.dictionary().crmTaskEventCreated(),
+        Localized.dictionary().crmTasksNotScheduledTasks(),
+        null,
+        TaskWorkflowAction.hidden());
 
     private final String caption;
     private final String commandLabel;
@@ -444,6 +448,19 @@ public final class TaskConstants {
       @Override
       public String getCaption(Dictionary constants) {
         return constants.crmTaskStatusVisited();
+      }
+    },
+
+    /**
+     * Task status when Task is created without executor and start/end dates.
+     * 
+     * DataStore ID 8.
+     */
+    NOT_SCHEDULED {
+
+      @Override
+      public String getCaption(Dictionary constants) {
+        return constants.crmTaskStatusNotScheduled();
       }
     };
 
