@@ -315,6 +315,10 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
     return getCaching() != null && getCaching() != Caching.NONE;
   }
 
+  public boolean isFullCaching() {
+    return getCaching() == Caching.LOCAL || getCaching() == Caching.GLOBAL;
+  }
+
   @Override
   public void onCellUpdate(CellUpdateEvent event) {
     if (isEventRelevant(event) && event.applyTo(getViewData())) {
@@ -527,10 +531,6 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
   private boolean isEventRelevant(DataEvent event) {
     return event != null && event.hasView(getViewName())
         && getViewData() != null && isCachingEnabled();
-  }
-
-  private boolean isFullCaching() {
-    return getCaching() == Caching.LOCAL || getCaching() == Caching.GLOBAL;
   }
 
   private boolean matches(Filter filter, IsRow row) {

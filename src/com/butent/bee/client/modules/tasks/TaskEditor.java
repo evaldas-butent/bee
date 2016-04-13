@@ -666,6 +666,11 @@ class TaskEditor extends AbstractFormInterceptor {
     Integer status = row.getInteger(form.getDataIndex(COL_STATUS));
 
     for (final TaskEvent event : TaskEvent.values()) {
+
+      if (!event.canExecute(getExecutor(), getOwner(), getObservers(), EnumUtils.getEnumByIndex(
+          TaskStatus.class, status))) {
+        continue;
+      }
       String label = event.getCommandLabel();
       FontAwesome icon = event.getCommandIcon();
 
@@ -682,7 +687,7 @@ class TaskEditor extends AbstractFormInterceptor {
         ((FaLabel) button).setTitle(label);
       }
 
-      if (!BeeUtils.isEmpty(label) && isEventEnabled(event, status)) {
+      if (!BeeUtils.isEmpty(label)) {
         header.addCommandItem(button);
       }
     }
@@ -791,18 +796,12 @@ class TaskEditor extends AbstractFormInterceptor {
     TaskStatus oldStatus = EnumUtils.getEnumByIndex(TaskStatus.class,
         row.getInteger(form.getDataIndex(COL_STATUS)));
 
-    DateTime start = row.getDateTime(form.getDataIndex(COL_START_TIME));
-
     form.setEnabled(Objects.equals(owner, userId));
 
-    TaskStatus newStatus = null;
+    TaskStatus newStatus = oldStatus;
 
-    if (TaskStatus.NOT_VISITED.equals(oldStatus)) {
-      if (Objects.equals(executor, userId)) {
-        newStatus = TaskStatus.ACTIVE;
-      }
-    } else if (TaskStatus.SCHEDULED.equals(oldStatus) && !TaskUtils.isScheduled(start)) {
-      newStatus = Objects.equals(executor, userId) ? TaskStatus.ACTIVE : TaskStatus.NOT_VISITED;
+    if (TaskStatus.NOT_VISITED.equals(oldStatus) && Objects.equals(executor, userId)) {
+      newStatus = TaskStatus.VISITED;
     }
 
     BeeRow visitedRow = DataUtils.cloneRow(row);
@@ -816,7 +815,7 @@ class TaskEditor extends AbstractFormInterceptor {
 
     ParameterList params = TasksKeeper.createTaskRequestParameters(TaskEvent.VISIT);
 
-    if (newStatus == TaskStatus.ACTIVE) {
+    if (newStatus == TaskStatus.VISITED && oldStatus != newStatus) {
       params.addQueryItem(VAR_TASK_VISITED, 1);
     }
 
@@ -1496,8 +1495,11 @@ class TaskEditor extends AbstractFormInterceptor {
   }
 
   private void doEvent(TaskEvent event) {
-    if (!isEventEnabled(event, getStatus())) {
+
+    if (!event.canExecute(getExecutor(), getOwner(), getObservers(), EnumUtils.getEnumByIndex(
+        TaskStatus.class, getStatus()))) {
       showError(Localized.dictionary().actionNotAllowed());
+      return;
     }
 
     switch (event) {
@@ -1543,20 +1545,28 @@ class TaskEditor extends AbstractFormInterceptor {
         onStartEdit(getFormView(), getActiveRow(), null);
         break;
       case ACTIVATE:
+        doExecute();
+        break;
       case VISIT:
+        doVisit();
+        break;
       case EDIT:
         Assert.untouchable();
     }
   }
 
+  private void doExecute() {
+    TaskStatus newStatus = TaskStatus.ACTIVE;
+
+    BeeRow newRow = getNewRow(newStatus);
+    ParameterList params = createParams(TaskEvent.ACTIVATE, newRow, BeeConst.STRING_EMPTY);
+
+    sendRequest(params, TaskEvent.ACTIVATE);
+  }
+
   private void doExtend() {
     final TaskDialog dialog = new TaskDialog(Localized.dictionary().crmTaskTermChange());
 
-    final boolean isScheduled = TaskStatus.SCHEDULED.is(getStatus());
-
-    final String startId = isScheduled
-        ? dialog.addDateTime(Localized.dictionary().crmStartDate(), true,
-            getDateTime(COL_START_TIME)) : null;
     final String endId = dialog.addDateTime(Localized.dictionary().crmFinishDate(), true, null);
 
     final String cid = dialog.addComment(false);
@@ -1565,11 +1575,9 @@ class TaskEditor extends AbstractFormInterceptor {
       @Override
       public void execute() {
 
-        DateTime oldStart = getDateTime(COL_START_TIME);
+        DateTime newStart = getDateTime(COL_START_TIME);
         DateTime oldEnd = getDateTime(COL_FINISH_TIME);
 
-        DateTime newStart = (startId == null) ? oldStart
-            : BeeUtils.nvl(dialog.getDateTime(startId), oldStart);
         DateTime newEnd = dialog.getDateTime(endId);
 
         if (newEnd == null) {
@@ -1577,7 +1585,7 @@ class TaskEditor extends AbstractFormInterceptor {
           return;
         }
 
-        if (Objects.equals(newStart, oldStart) && Objects.equals(newEnd, oldEnd)) {
+        if (Objects.equals(newEnd, oldEnd)) {
           showError(Localized.dictionary().crmTermNotChanged());
           return;
         }
@@ -1596,7 +1604,7 @@ class TaskEditor extends AbstractFormInterceptor {
         }
 
         BeeRow newRow = getNewRow();
-        if (startId != null && newStart != null && !Objects.equals(newStart, oldStart)) {
+        if (newStart != null) {
           newRow.setValue(getFormView().getDataIndex(COL_START_TIME), newStart);
         }
         if (!Objects.equals(newEnd, oldEnd)) {
@@ -1665,19 +1673,14 @@ class TaskEditor extends AbstractFormInterceptor {
         RelationUtils.updateRow(Data.getDataInfo(VIEW_TASKS), COL_EXECUTOR, newRow,
             Data.getDataInfo(VIEW_USERS), selector.getRelatedRow(), true);
 
-        TaskStatus oldStatus = EnumUtils.getEnumByIndex(TaskStatus.class,
-            newRow.getInteger(getDataIndex(COL_STATUS)));
-        TaskStatus newStatus = null;
+        TaskStatus newStatus = TaskStatus.NOT_VISITED;
 
-        if (oldStatus == TaskStatus.ACTIVE && !Objects.equals(newUser, userId)) {
-          newStatus = TaskStatus.NOT_VISITED;
-        } else if (oldStatus == TaskStatus.NOT_VISITED && Objects.equals(newUser, userId)) {
-          newStatus = TaskStatus.ACTIVE;
+        /** Forward task itself */
+        if (Objects.equals(newUser, userId)) {
+          newStatus = TaskStatus.VISITED;
         }
 
-        if (newStatus != null) {
-          newRow.setValue(getDataIndex(COL_STATUS), newStatus.ordinal());
-        }
+        newRow.setValue(getDataIndex(COL_STATUS), newStatus.ordinal());
 
         if (dialog.isChecked(obs)) {
           List<Long> obsUsers = DataUtils.parseIdList(newRow.getProperty(PROP_OBSERVERS));
@@ -1696,6 +1699,20 @@ class TaskEditor extends AbstractFormInterceptor {
     dialog.display();
   }
 
+  private void doOut() {
+    BeeRow row = getNewRow();
+    List<Long> obsIds = DataUtils.parseIdList(row.getProperty(PROP_OBSERVERS));
+
+    obsIds.remove(userId);
+
+    row.setProperty(PROP_OBSERVERS,
+        DataUtils.buildIdList(obsIds));
+
+    ParameterList params =
+        createParams(TaskEvent.OUT_OF_OBSERVERS, row, BeeConst.STRING_EMPTY);
+    sendRequest(params, TaskEvent.OUT_OF_OBSERVERS);
+  }
+
   private void doRenew() {
     final TaskDialog dialog =
         new TaskDialog(Localized.dictionary().crmTaskReturningForExecution());
@@ -1706,7 +1723,7 @@ class TaskEditor extends AbstractFormInterceptor {
       @Override
       public void execute() {
 
-        TaskStatus newStatus = isExecutor() ? TaskStatus.ACTIVE : TaskStatus.NOT_VISITED;
+        TaskStatus newStatus = isExecutor() ? TaskStatus.VISITED : TaskStatus.NOT_VISITED;
 
         BeeRow newRow = getNewRow(newStatus);
         newRow.clearCell(getFormView().getDataIndex(COL_COMPLETED));
@@ -1720,6 +1737,16 @@ class TaskEditor extends AbstractFormInterceptor {
     });
 
     dialog.display();
+  }
+
+  private void doVisit() {
+    TaskStatus newStatus = TaskStatus.VISITED;
+
+    BeeRow newRow = getNewRow(newStatus);
+    ParameterList params = createParams(TaskEvent.VISIT, newRow, BeeConst.STRING_EMPTY);
+    params.addDataItem(VAR_TASK_VISITED_STATE, 1);
+
+    sendRequest(params, TaskEvent.VISIT);
   }
 
   private void doSuspend() {
@@ -1748,20 +1775,6 @@ class TaskEditor extends AbstractFormInterceptor {
     dialog.display();
   }
 
-  private void doOut() {
-    BeeRow row = getNewRow();
-    List<Long> obsIds = DataUtils.parseIdList(row.getProperty(PROP_OBSERVERS));
-
-    obsIds.remove(userId);
-
-    row.setProperty(PROP_OBSERVERS,
-        DataUtils.buildIdList(obsIds));
-
-    ParameterList params =
-        createParams(TaskEvent.OUT_OF_OBSERVERS, row, BeeConst.STRING_EMPTY);
-    sendRequest(params, TaskEvent.OUT_OF_OBSERVERS);
-  }
-
   private DateTime getDateTime(String colName) {
     return getFormView().getActiveRow().getDateTime(getFormView().getDataIndex(colName));
   }
@@ -1784,6 +1797,10 @@ class TaskEditor extends AbstractFormInterceptor {
     return row;
   }
 
+  private List<Long> getObservers() {
+    return DataUtils.parseIdList(getFormView().getActiveRow().getProperty(PROP_OBSERVERS));
+  }
+
   private Long getOwner() {
     return getLong(COL_OWNER);
   }
@@ -1804,69 +1821,13 @@ class TaskEditor extends AbstractFormInterceptor {
     return key;
   }
 
-  private boolean isEventEnabled(TaskEvent event, Integer status) {
-    if (event == null || status == null || getOwner() == null || getExecutor() == null) {
-      return false;
-    }
-
-    switch (event) {
-      case COMMENT:
-        return true;
-
-      case REFRESH:
-        return true;
-
-      case RENEW:
-        return TaskStatus.in(status, TaskStatus.SUSPENDED, TaskStatus.CANCELED,
-            TaskStatus.COMPLETED, TaskStatus.APPROVED) && isOwner();
-
-      case FORWARD:
-        return TaskStatus.in(status, TaskStatus.NOT_VISITED, TaskStatus.ACTIVE,
-            TaskStatus.SCHEDULED) && (isOwner() || isExecutor());
-
-      case EXTEND:
-        return TaskStatus.in(status, TaskStatus.NOT_VISITED, TaskStatus.ACTIVE,
-            TaskStatus.SCHEDULED) && isOwner();
-
-      case SUSPEND:
-        return TaskStatus.in(status, TaskStatus.NOT_VISITED, TaskStatus.ACTIVE,
-            TaskStatus.SCHEDULED) && isOwner();
-      case COMPLETE:
-        return TaskStatus.in(status, TaskStatus.NOT_VISITED, TaskStatus.ACTIVE,
-            TaskStatus.SCHEDULED) && (isOwner() || isExecutor());
-
-      case CANCEL:
-        return TaskStatus.in(status, TaskStatus.NOT_VISITED, TaskStatus.ACTIVE,
-            TaskStatus.SCHEDULED) && isOwner();
-
-      case APPROVE:
-        return TaskStatus.in(status, TaskStatus.COMPLETED) && isOwner();
-
-      case ACTIVATE:
-        return false;
-      case CREATE:
-        return isOwner() || isExecutor();
-
-      case OUT_OF_OBSERVERS:
-        return TaskStatus.in(status, TaskStatus.ACTIVE, TaskStatus.NOT_VISITED,
-            TaskStatus.SCHEDULED)
-            && isObserver();
-      case EDIT:
-      case VISIT:
-        return false;
-    }
-
-    return false;
-  }
-
   private boolean isExecutor() {
     return Objects.equals(userId, getExecutor());
   }
 
-  private boolean isObserver() {
-    List<Long> obsUsers = DataUtils.parseIdList(getActiveRow().getProperty(PROP_OBSERVERS));
-    return obsUsers.contains(userId);
-  }
+  // private boolean isObserver() {
+  // return getObservers().contains(userId);
+  // }
 
   private boolean isOwner() {
     return Objects.equals(userId, getOwner());

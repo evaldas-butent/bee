@@ -14,7 +14,6 @@ import com.butent.bee.shared.export.XSheet;
 import com.butent.bee.shared.export.XStyle;
 import com.butent.bee.shared.html.builder.elements.Div;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
-import com.butent.bee.shared.modules.tasks.TaskUtils;
 import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
@@ -57,10 +56,6 @@ class SlackRenderer extends AbstractCellRenderer {
 
     if (finish != null && TimeUtils.isLess(finish, now)) {
       return Kind.LATE;
-
-    } else if (TaskUtils.isScheduled(start)) {
-      return Kind.SCHEDULED;
-
     } else if (start != null && TimeUtils.isMore(finish, start) && TimeUtils.isMeq(now, start)
         && TimeUtils.isLess(now, finish)) {
       if (now.getTime() - start.getTime() < (finish.getTime() - start.getTime()) / 2) {

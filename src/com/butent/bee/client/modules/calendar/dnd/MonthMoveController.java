@@ -8,9 +8,9 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.logical.MoveEvent;
 import com.butent.bee.client.modules.calendar.Appointment;
 import com.butent.bee.client.modules.calendar.CalendarPanel;
-import com.butent.bee.client.modules.calendar.ItemWidget;
 import com.butent.bee.client.modules.calendar.CalendarStyleManager;
 import com.butent.bee.client.modules.calendar.CalendarUtils;
+import com.butent.bee.client.modules.calendar.ItemWidget;
 import com.butent.bee.client.modules.calendar.view.MonthView;
 import com.butent.bee.client.modules.tasks.TasksKeeper;
 import com.butent.bee.client.style.StyleUtils;
@@ -149,7 +149,7 @@ public class MonthMoveController implements MoveEvent.Handler {
             break;
 
           case TASK:
-            TasksKeeper.extendTask(item.getId(), start, end);
+            TasksKeeper.extendTask(item.getId(), end);
             break;
         }
       }

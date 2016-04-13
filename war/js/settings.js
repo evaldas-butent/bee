@@ -25,6 +25,7 @@ var BeeSettings = {
   "exporterInputStepRows": 100,
   "exporterOutputStepRows": 1000,
   "exporterSplitRowsThreshold": 1000,
+  "dataSelectorInputDelayMillis": "500, 500, 400, 300, 200",
   "dataSelectorInstantSearchMaxRows": 1000,
   "dataSelectorCachingMaxRows": 1000,
   "theme" : {
