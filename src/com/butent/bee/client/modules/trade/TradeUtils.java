@@ -1,5 +1,6 @@
 package com.butent.bee.client.modules.trade;
 
+import com.google.common.base.Function;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.gwt.dom.client.Element;
@@ -49,7 +50,7 @@ public final class TradeUtils {
   private static ProvidesGridColumnRenderer totalRenderer;
 
   public static void getDocumentItems(String viewName, long tradeId, String currencyName,
-      final HtmlTable table) {
+      final HtmlTable table, Function<SimpleRowSet, SimpleRowSet> processor) {
     Assert.notNull(table);
 
     if (BeeUtils.isEmpty(viewName) || !DataUtils.isId(tradeId)) {
@@ -97,6 +98,15 @@ public final class TradeUtils {
         double currSumTotal = 0;
 
         SimpleRowSet rs = SimpleRowSet.restore((String) response.getResponse());
+
+        if (processor != null) {
+          SimpleRowSet originalRs = rs;
+          rs = processor.apply(originalRs);
+
+          if (rs == null) {
+            rs = originalRs;
+          }
+        }
         int ordinal = 0;
 
         for (SimpleRow row : rs) {
