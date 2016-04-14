@@ -4,8 +4,9 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.Callback;
-import com.butent.bee.client.data.IdCallback;
+import com.butent.bee.client.Global;
 import com.butent.bee.client.data.ParentRowCreator;
+import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.ElementSize;
 import com.butent.bee.client.output.Printable;
 import com.butent.bee.client.output.Printer;
@@ -14,6 +15,7 @@ import com.butent.bee.client.view.HasGridView;
 import com.butent.bee.client.view.HeaderImpl;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.View;
+import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.form.CloseCallback;
 import com.butent.bee.client.view.form.FormAndHeader;
 import com.butent.bee.client.view.form.FormView;
@@ -21,10 +23,14 @@ import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.NotificationListener;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.StringList;
 
 import java.util.EnumSet;
 import java.util.HashSet;
@@ -81,13 +87,7 @@ public class GridFormPresenter extends AbstractPresenter implements HasGridView,
       final Callback<IsRow> callback) {
 
     if (gridView.isAdding() && gridView.likeAMotherlessChild()) {
-      gridView.ensureRelId(new IdCallback() {
-        @Override
-        public void onSuccess(Long result) {
-          gridView.createParentRow(notificationListener, callback);
-        }
-      });
-
+      gridView.ensureRelId(result -> gridView.createParentRow(notificationListener, callback));
     } else {
       gridView.createParentRow(notificationListener, callback);
     }
@@ -175,14 +175,14 @@ public class GridFormPresenter extends AbstractPresenter implements HasGridView,
         break;
 
       case SAVE:
-        save();
+        save(null);
         break;
 
       case PRINT:
-        if (getForm().printHeader()) {
-          Printer.print(this);
+        if (gridView.isAdding() && !BeeUtils.isEmpty(gridView.getEditFormName())) {
+          maybeSaveAndPrint();
         } else {
-          Printer.print(getForm());
+          print();
         }
         break;
 
@@ -192,6 +192,7 @@ public class GridFormPresenter extends AbstractPresenter implements HasGridView,
 
       default:
     }
+
     if (interceptor != null) {
       interceptor.afterAction(action, this);
     }
@@ -276,22 +277,63 @@ public class GridFormPresenter extends AbstractPresenter implements HasGridView,
     return formHeader;
   }
 
-  private void save() {
+  private void maybeSaveAndPrint() {
+    Global.choiceWithCancel(getCaption(), Localized.dictionary().saveAndPrintQuestion(),
+        StringList.of(Localized.dictionary().saveAndPrintAction(),
+            Localized.dictionary().actionPrint()),
+        value -> {
+          switch (value) {
+            case 0:
+              saveAndPrint();
+              break;
+
+            case 1:
+              print();
+              break;
+          }
+        });
+  }
+
+  private void print() {
+    if (getForm().printHeader()) {
+      Printer.print(this);
+    } else {
+      Printer.print(getForm());
+    }
+  }
+
+  private void save(Consumer<IsRow> consumer) {
     final FormView form = getForm();
     if (!form.validate(form, true)) {
       return;
     }
 
     if (gridView.isAdding() && gridView.likeAMotherlessChild()) {
-      gridView.ensureRelId(new IdCallback() {
-        @Override
-        public void onSuccess(Long result) {
-          gridView.formConfirm();
-        }
-      });
-
+      gridView.ensureRelId(result -> gridView.formConfirm(consumer));
     } else {
-      gridView.formConfirm();
+      gridView.formConfirm(consumer);
+    }
+  }
+
+  private void saveAndPrint() {
+    FormInterceptor interceptor = getForm().getFormInterceptor();
+    if (interceptor != null && !interceptor.beforeAction(Action.SAVE, this)) {
+      return;
+    }
+
+    save(row -> {
+      if (DomUtils.isVisible(gridView.getGrid())
+          && DataUtils.sameId(row, gridView.getActiveRow())) {
+
+        EditStartEvent event = new EditStartEvent(row, gridView.isReadOnly());
+        event.setOnFormFocus(form -> form.getViewPresenter().handleAction(Action.PRINT));
+
+        gridView.onEditStart(event);
+      }
+    });
+
+    if (interceptor != null) {
+      interceptor.afterAction(Action.SAVE, this);
     }
   }
 }
