@@ -30,6 +30,7 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.HandlesActions;
 import com.butent.bee.shared.ui.HasCaption;
+import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -45,12 +46,17 @@ public class NewRowPresenter extends AbstractPresenter implements ParentRowCreat
 
   private static final EnumSet<UiOption> uiOptions = EnumSet.of(UiOption.EDITOR);
 
-  private static HeaderView createHeader(String caption) {
+  private static HeaderView createHeader(DataInfo dataInfo, String caption) {
     HeaderView formHeader = new HeaderImpl();
     formHeader.asWidget().addStyleName(STYLE_HEADER);
 
+    EnumSet<Action> actions = EnumSet.of(Action.SAVE, Action.CLOSE);
+    if (!BeeUtils.isEmpty(dataInfo.getEditForm())) {
+      actions.add(Action.PRINT);
+    }
+
     formHeader.create(caption, false, false, null, uiOptions,
-        EnumSet.of(Action.SAVE, Action.CLOSE), Action.NO_ACTIONS, Action.NO_ACTIONS);
+        actions, Action.NO_ACTIONS, Action.NO_ACTIONS);
     formHeader.addCaptionStyle(STYLE_CAPTION);
 
     return formHeader;
@@ -67,7 +73,7 @@ public class NewRowPresenter extends AbstractPresenter implements ParentRowCreat
     this.formView = formView;
     this.dataInfo = dataInfo;
 
-    HeaderView header = createHeader(caption);
+    HeaderView header = createHeader(dataInfo, caption);
     this.container = createContainer(header);
 
     container.setViewPresenter(this);

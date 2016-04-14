@@ -10,6 +10,7 @@ import com.google.gwt.xml.client.XMLParser;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.composite.DataSelector;
+import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dialog.ModalForm;
 import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.dialog.Popup;
@@ -22,6 +23,7 @@ import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.FormWidget;
 import com.butent.bee.client.ui.HasDimensions;
+import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.form.CloseCallback;
 import com.butent.bee.client.view.form.FormView;
@@ -52,6 +54,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public final class RowFactory {
@@ -443,7 +446,7 @@ public final class RowFactory {
       final BeeRow row, Modality modality, UIObject target,
       final Consumer<FormView> onOpen, final RowCallback callback) {
 
-    String cap = BeeUtils.notEmpty(caption, formView.getCaption(), DEFAULT_CAPTION);
+    final String cap = BeeUtils.notEmpty(caption, formView.getCaption(), DEFAULT_CAPTION);
 
     boolean modal;
     if (Popup.hasEventPreview()) {
@@ -478,7 +481,7 @@ public final class RowFactory {
     presenter.setActionDelegate(new HandlesActions() {
       @Override
       public void handleAction(Action action) {
-        FormInterceptor interceptor = formView.getFormInterceptor();
+        final FormInterceptor interceptor = formView.getFormInterceptor();
         if (interceptor != null && !interceptor.beforeAction(action, presenter)) {
           return;
         }
@@ -500,6 +503,36 @@ public final class RowFactory {
                 handleAction(Action.SAVE);
               }
             });
+            break;
+
+          case PRINT:
+            Global.confirm(cap, Icon.QUESTION,
+                Collections.singletonList(Localized.dictionary().saveAndPrintQuestion()),
+                Localized.dictionary().saveAndPrintAction(), Localized.dictionary().cancel(),
+                () -> {
+                  if (interceptor != null && !interceptor.beforeAction(Action.SAVE, presenter)) {
+                    return;
+                  }
+
+                  presenter.save(new RowCallback() {
+                    @Override
+                    public void onCancel() {
+                      closer.onCancel();
+                    }
+
+                    @Override
+                    public void onSuccess(BeeRow result) {
+                      closer.onSuccess(result);
+
+                      RowEditor.open(dataInfo.getViewName(), result,
+                          Opener.modal(fv -> fv.getViewPresenter().handleAction(Action.PRINT)));
+                    }
+                  });
+
+                  if (interceptor != null) {
+                    interceptor.afterAction(Action.SAVE, presenter);
+                  }
+                });
             break;
 
           case SAVE:
