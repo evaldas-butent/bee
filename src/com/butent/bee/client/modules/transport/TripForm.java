@@ -381,7 +381,7 @@ public class TripForm extends PrintFormInterceptor {
           interceptor.defaultDriver = getLongValue(COL_DRIVER);
 
           RowFactory.createRow(info.getNewRowForm(), info.getNewRowCaption(), info, newRow,
-              Modality.ENABLED, null, interceptor, null);
+              Modality.ENABLED, null, interceptor, null, null);
         }
       });
     }

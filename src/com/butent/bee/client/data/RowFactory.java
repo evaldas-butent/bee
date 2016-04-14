@@ -1,6 +1,5 @@
 package com.butent.bee.client.data;
 
-import com.google.gwt.user.client.Event.NativePreviewEvent;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.Widget;
@@ -15,8 +14,6 @@ import com.butent.bee.client.dialog.ModalForm;
 import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dialog.Popup.OutsideClick;
-import com.butent.bee.client.event.Previewer.PreviewConsumer;
-import com.butent.bee.client.event.logical.OpenEvent;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.layout.Vertical;
 import com.butent.bee.client.presenter.NewRowPresenter;
@@ -32,6 +29,7 @@ import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
@@ -133,11 +131,13 @@ public final class RowFactory {
         }
       }
 
-      createRelatedRow(formName, row, selector);
+      createRelatedRow(formName, row, selector, event.getOnOpenNewRow());
     }
   }
 
-  public static void createRelatedRow(String formName, BeeRow row, final DataSelector selector) {
+  public static void createRelatedRow(String formName, BeeRow row, final DataSelector selector,
+      final Consumer<FormView> onOpen) {
+
     Assert.notEmpty(formName);
     Assert.notNull(row);
     Assert.notNull(selector);
@@ -145,7 +145,7 @@ public final class RowFactory {
     selector.setAdding(true);
 
     createRow(formName, selector.getNewRowCaption(), selector.getOracle().getDataInfo(), row,
-        Modality.ENABLED, selector, null, new RowCallback() {
+        Modality.ENABLED, selector, null, onOpen, new RowCallback() {
           @Override
           public void onCancel() {
             selector.setAdding(false);
@@ -186,7 +186,7 @@ public final class RowFactory {
 
     BeeRow row = createEmptyRow(dataInfo, true);
     createRow(dataInfo.getNewRowForm(), BeeUtils.notEmpty(caption, dataInfo.getNewRowCaption()),
-        dataInfo, row, modality, null, null, rowCallback);
+        dataInfo, row, modality, null, null, null, rowCallback);
   }
 
   public static void createRow(DataInfo dataInfo, BeeRow row, Modality modality) {
@@ -198,25 +198,26 @@ public final class RowFactory {
 
     Assert.notNull(dataInfo);
     createRow(dataInfo.getNewRowForm(), dataInfo.getNewRowCaption(), dataInfo, row, modality,
-        null, null, rowCallback);
+        null, null, null, rowCallback);
   }
 
   public static void createRow(String formName, String caption, DataInfo dataInfo, BeeRow row,
       Modality modality, UIObject target, FormInterceptor formInterceptor,
-      RowCallback rowCallback) {
+      Consumer<FormView> onOpen, RowCallback rowCallback) {
 
     Assert.notEmpty(formName);
 
     Assert.notNull(dataInfo);
     Assert.notNull(row);
 
-    getForm(formName, caption, formInterceptor, dataInfo, row, modality, target, rowCallback);
+    getForm(formName, caption, formInterceptor, dataInfo, row, modality, target, onOpen,
+        rowCallback);
   }
 
   public static void createRow(String formName, String caption, DataInfo dataInfo, BeeRow row,
       Modality modality, RowCallback rowCallback) {
 
-    createRow(formName, caption, dataInfo, row, modality, null, null, rowCallback);
+    createRow(formName, caption, dataInfo, row, modality, null, null, null, rowCallback);
   }
 
   public static void showMenu(Widget target) {
@@ -239,20 +240,17 @@ public final class RowFactory {
         Localized.dictionary().crmNewRequest());
 
     addMenuItem(panel, Module.DISCUSSIONS, DiscussionsConstants.VIEW_DISCUSSIONS,
-        Localized.dictionary().announcementNew(), new Runnable() {
-          @Override
-          public void run() {
-            DataInfo dataInfo = Data.getDataInfo(DiscussionsConstants.VIEW_DISCUSSIONS);
-            BeeRow row = createEmptyRow(dataInfo, true);
+        Localized.dictionary().announcementNew(), () -> {
+          DataInfo dataInfo = Data.getDataInfo(DiscussionsConstants.VIEW_DISCUSSIONS);
+          BeeRow row = createEmptyRow(dataInfo, true);
 
-            BeeColumn column = dataInfo.getColumn(DiscussionsConstants.COL_TOPIC);
-            if (column != null) {
-              column.setNullable(false);
-            }
-
-            RowFactory.createRow(DiscussionsConstants.FORM_NEW_DISCUSSION,
-                Localized.dictionary().announcementNew(), dataInfo, row, DEFAULT_MODALITY, null);
+          BeeColumn column = dataInfo.getColumn(DiscussionsConstants.COL_TOPIC);
+          if (column != null) {
+            column.setNullable(false);
           }
+
+          RowFactory.createRow(DiscussionsConstants.FORM_NEW_DISCUSSION,
+              Localized.dictionary().announcementNew(), dataInfo, row, DEFAULT_MODALITY, null);
         });
 
     if (!panel.isEmpty()) {
@@ -424,7 +422,8 @@ public final class RowFactory {
 
   private static void getForm(String formName, final String caption,
       FormInterceptor formInterceptor, final DataInfo dataInfo, final BeeRow row,
-      Modality modality, final UIObject target, final RowCallback rowCallback) {
+      Modality modality, final UIObject target, final Consumer<FormView> onOpen,
+      final RowCallback rowCallback) {
 
     FormInterceptor fcb =
         (formInterceptor == null) ? FormFactory.getFormInterceptor(formName) : formInterceptor;
@@ -435,13 +434,14 @@ public final class RowFactory {
             result.setEditing(true);
             result.start(null);
 
-            openForm(result, caption, dataInfo, row, modality, target, rowCallback);
+            openForm(result, caption, dataInfo, row, modality, target, onOpen, rowCallback);
           }
         });
   }
 
   private static void openForm(final FormView formView, String caption, final DataInfo dataInfo,
-      final BeeRow row, Modality modality, UIObject target, final RowCallback callback) {
+      final BeeRow row, Modality modality, UIObject target,
+      final Consumer<FormView> onOpen, final RowCallback callback) {
 
     String cap = BeeUtils.notEmpty(caption, formView.getCaption(), DEFAULT_CAPTION);
 
@@ -516,33 +516,28 @@ public final class RowFactory {
       }
     });
 
-    dialog.setOnSave(new PreviewConsumer() {
-      @Override
-      public void accept(NativePreviewEvent input) {
-        if (formView.checkOnSave(input)) {
-          presenter.handleAction(Action.SAVE);
-        }
+    dialog.setOnSave(input -> {
+      if (formView.checkOnSave(input)) {
+        presenter.handleAction(Action.SAVE);
       }
     });
 
-    dialog.setOnEscape(new PreviewConsumer() {
-      @Override
-      public void accept(NativePreviewEvent input) {
-        if (formView.checkOnClose(input)) {
-          presenter.handleAction(Action.CLOSE);
-        }
+    dialog.setOnEscape(input -> {
+      if (formView.checkOnClose(input)) {
+        presenter.handleAction(Action.CLOSE);
       }
     });
 
-    dialog.addOpenHandler(new OpenEvent.Handler() {
-      @Override
-      public void onOpen(OpenEvent event) {
-        if (formView.getFormInterceptor() != null) {
-          formView.getFormInterceptor().onStartNewRow(formView, null, row);
-        }
-        formView.updateRow(row, true);
+    dialog.addOpenHandler(event -> {
+      if (formView.getFormInterceptor() != null) {
+        formView.getFormInterceptor().onStartNewRow(formView, null, row);
+      }
+      formView.updateRow(row, true);
 
-        UiHelper.focus(formView.getRootWidget().asWidget());
+      UiHelper.focus(formView.getRootWidget().asWidget());
+
+      if (onOpen != null) {
+        onOpen.accept(formView);
       }
     });
 

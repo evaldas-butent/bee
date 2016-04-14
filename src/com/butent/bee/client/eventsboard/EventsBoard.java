@@ -248,7 +248,7 @@ public abstract class EventsBoard extends Flow implements Presenter, RowInsertEv
 
     BeeRow row = RowFactory.createEmptyRow(data, true);
     RowFactory.createRow(data.getNewRowForm(), data.getCaption(), data, row, null, null,
-        getNewEventFormInterceptor(), null);
+        getNewEventFormInterceptor(), null, null);
   }
 
   public void create(HasWidgets widget, long relId) {

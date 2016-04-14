@@ -1448,8 +1448,8 @@ class TaskEditor extends AbstractFormInterceptor {
     }
 
     RowFactory.createRow(newTaskInfo.getNewRowForm(), newTaskInfo.getNewRowCaption(), newTaskInfo,
-        newTaskRow, Modality.ENABLED, null, new TaskBuilder(files, null, true), new RowCallback() {
-
+        newTaskRow, Modality.ENABLED, null, new TaskBuilder(files, null, true), null,
+        new RowCallback() {
           @Override
           public void onSuccess(BeeRow result) {
             createRelations(taskRow, eventId, result.getString(0));

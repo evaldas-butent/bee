@@ -616,6 +616,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
   }
 
   public static final char SHOW_SELECTOR = '*';
+  public static final char ASK_ORACLE = BeeConst.CHAR_EOL;
   private static final char CREATE_NEW = '+';
 
   private static final String ITEM_PREV = String.valueOf('\u25b2');
@@ -1340,6 +1341,9 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
         getInput().selectAll();
         setWaiting(true);
       }
+
+    } else if (charCode == ASK_ORACLE) {
+      askOrSchedule();
     }
 
     inputEvents.consume();
