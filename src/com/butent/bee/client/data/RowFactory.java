@@ -55,7 +55,9 @@ import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 
 public final class RowFactory {
 
@@ -434,6 +436,7 @@ public final class RowFactory {
     FormFactory.createFormView(formName, dataInfo.getViewName(), dataInfo.getColumns(), true, fcb,
         (formDescription, result) -> {
           if (result != null) {
+            result.setAdding(true);
             result.setEditing(true);
             result.start(null);
 
@@ -457,7 +460,14 @@ public final class RowFactory {
       modal = modality == Modality.ENABLED;
     }
 
-    final NewRowPresenter presenter = new NewRowPresenter(formView, dataInfo, cap);
+    final FormInterceptor interceptor = formView.getFormInterceptor();
+
+    Set<Action> enabledActions = EnumSet.noneOf(Action.class);
+    if (interceptor != null && interceptor.saveOnPrintNewRow()) {
+      enabledActions.add(Action.PRINT);
+    }
+
+    final NewRowPresenter presenter = new NewRowPresenter(formView, dataInfo, cap, enabledActions);
     final ModalForm dialog = new ModalForm(presenter, formView, false);
 
     final RowCallback closer = new RowCallback() {
@@ -481,7 +491,6 @@ public final class RowFactory {
     presenter.setActionDelegate(new HandlesActions() {
       @Override
       public void handleAction(Action action) {
-        final FormInterceptor interceptor = formView.getFormInterceptor();
         if (interceptor != null && !interceptor.beforeAction(action, presenter)) {
           return;
         }

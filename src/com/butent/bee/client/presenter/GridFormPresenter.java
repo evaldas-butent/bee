@@ -6,6 +6,7 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.data.ParentRowCreator;
+import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.ElementSize;
 import com.butent.bee.client.output.Printable;
@@ -30,8 +31,8 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.StringList;
 
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
@@ -179,7 +180,7 @@ public class GridFormPresenter extends AbstractPresenter implements HasGridView,
         break;
 
       case PRINT:
-        if (gridView.isAdding() && !BeeUtils.isEmpty(gridView.getEditFormName())) {
+        if (gridView.isAdding() && interceptor != null && interceptor.saveOnPrintNewRow()) {
           maybeSaveAndPrint();
         } else {
           print();
@@ -274,20 +275,10 @@ public class GridFormPresenter extends AbstractPresenter implements HasGridView,
   }
 
   private void maybeSaveAndPrint() {
-    Global.choiceWithCancel(getCaption(), Localized.dictionary().saveAndPrintQuestion(),
-        StringList.of(Localized.dictionary().saveAndPrintAction(),
-            Localized.dictionary().actionPrint()),
-        value -> {
-          switch (value) {
-            case 0:
-              saveAndPrint();
-              break;
-
-            case 1:
-              print();
-              break;
-          }
-        });
+    Global.confirm(getCaption(), Icon.QUESTION,
+        Collections.singletonList(Localized.dictionary().saveAndPrintQuestion()),
+        Localized.dictionary().saveAndPrintAction(), Localized.dictionary().cancel(),
+        () -> saveAndPrint());
   }
 
   private void print() {

@@ -204,6 +204,11 @@ public class TripForm extends PrintFormInterceptor {
     getBeforeInfo(DataUtils.getStringQuietly(newRow, form.getDataIndex(COL_VEHICLE)), newRow);
   }
 
+  @Override
+  public boolean saveOnPrintNewRow() {
+    return true;
+  }
+
   void checkDriver(final HasHandlers listener, final GwtEvent<?> event, final Long driverId) {
     if (!DataUtils.isId(driverId)) {
       listener.fireEvent(event);

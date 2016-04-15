@@ -36,6 +36,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 
 public class NewRowPresenter extends AbstractPresenter implements ParentRowCreator,
     ReadyForInsertEvent.Handler {
@@ -46,13 +47,13 @@ public class NewRowPresenter extends AbstractPresenter implements ParentRowCreat
 
   private static final EnumSet<UiOption> uiOptions = EnumSet.of(UiOption.EDITOR);
 
-  private static HeaderView createHeader(DataInfo dataInfo, String caption) {
+  private static HeaderView createHeader(String caption, Set<Action> enabledActions) {
     HeaderView formHeader = new HeaderImpl();
     formHeader.asWidget().addStyleName(STYLE_HEADER);
 
-    EnumSet<Action> actions = EnumSet.of(Action.SAVE, Action.CLOSE);
-    if (!BeeUtils.isEmpty(dataInfo.getEditForm())) {
-      actions.add(Action.PRINT);
+    Set<Action> actions = EnumSet.of(Action.SAVE, Action.CLOSE);
+    if (!BeeUtils.isEmpty(enabledActions)) {
+      actions.addAll(enabledActions);
     }
 
     formHeader.create(caption, false, false, null, uiOptions,
@@ -69,11 +70,13 @@ public class NewRowPresenter extends AbstractPresenter implements ParentRowCreat
 
   private HandlesActions actionDelegate;
 
-  public NewRowPresenter(FormView formView, DataInfo dataInfo, String caption) {
+  public NewRowPresenter(FormView formView, DataInfo dataInfo, String caption,
+      Set<Action> enabledActions) {
+
     this.formView = formView;
     this.dataInfo = dataInfo;
 
-    HeaderView header = createHeader(dataInfo, caption);
+    HeaderView header = createHeader(caption, enabledActions);
     this.container = createContainer(header);
 
     container.setViewPresenter(this);

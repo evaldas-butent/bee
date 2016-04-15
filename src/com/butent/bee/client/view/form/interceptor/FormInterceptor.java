@@ -92,5 +92,7 @@ public interface FormInterceptor extends WidgetInterceptor, HasGridView, Handles
 
   void onUnload(FormView form);
 
+  boolean saveOnPrintNewRow();
+
   void setFormView(FormView form);
 }

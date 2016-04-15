@@ -281,6 +281,11 @@ public abstract class AbstractFormInterceptor implements FormInterceptor {
   }
 
   @Override
+  public boolean saveOnPrintNewRow() {
+    return false;
+  }
+
+  @Override
   public void setFormView(FormView formView) {
     this.formView = formView;
   }

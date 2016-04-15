@@ -3018,6 +3018,8 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
       setActiveFormContainerId(null);
     }
 
+    form.setAdding(!edit && show);
+
     form.setState(formState);
     if (form.getFormInterceptor() != null) {
       form.getFormInterceptor().afterStateChange(formState, modal);
