@@ -528,10 +528,6 @@ public final class RowFactory {
                           Opener.modal(fv -> fv.getViewPresenter().handleAction(Action.PRINT)));
                     }
                   });
-
-                  if (interceptor != null) {
-                    interceptor.afterAction(Action.SAVE, presenter);
-                  }
                 });
             break;
 
@@ -541,10 +537,6 @@ public final class RowFactory {
 
           default:
             logger.warning(NameUtils.getName(this), action, "not implemented");
-        }
-
-        if (interceptor != null) {
-          interceptor.afterAction(action, presenter);
         }
       }
     });

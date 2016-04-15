@@ -573,10 +573,6 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
       default:
         logger.warning(NameUtils.getName(this), action, "not implemented");
     }
-
-    if (getGridInterceptor() != null) {
-      getGridInterceptor().afterAction(action, this);
-    }
   }
 
   public void handleRights(RightsState rightsState) {
@@ -589,10 +585,6 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
     if (!BeeUtils.isEmpty(getRoles())) {
       getDataProvider().toggleRightsState(rightsState);
       refresh(true, false);
-    }
-
-    if (getGridInterceptor() != null) {
-      getGridInterceptor().afterAction(Action.RIGHTS, this);
     }
   }
 

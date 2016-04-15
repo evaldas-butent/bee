@@ -192,10 +192,6 @@ public class GridFormPresenter extends AbstractPresenter implements HasGridView,
 
       default:
     }
-
-    if (interceptor != null) {
-      interceptor.afterAction(action, this);
-    }
   }
 
   public boolean hasAction(Action action) {
@@ -331,9 +327,5 @@ public class GridFormPresenter extends AbstractPresenter implements HasGridView,
         gridView.onEditStart(event);
       }
     });
-
-    if (interceptor != null) {
-      interceptor.afterAction(Action.SAVE, this);
-    }
   }
 }

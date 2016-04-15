@@ -328,10 +328,6 @@ public final class RowEditor {
           default:
             logger.warning(NameUtils.getName(this), action, "not implemented");
         }
-
-        if (interceptor != null) {
-          interceptor.afterAction(action, presenter);
-        }
       }
     });
 

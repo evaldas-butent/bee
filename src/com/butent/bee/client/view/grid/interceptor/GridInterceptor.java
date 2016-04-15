@@ -57,8 +57,6 @@ public interface GridInterceptor extends WidgetInterceptor, ActiveRowChangeEvent
     CANCEL, DEFAULT, SILENT, CONFIRM, SINGLE, MULTI;
   }
 
-  void afterAction(Action action, GridPresenter presenter);
-
   void afterCreate(GridView gridView);
 
   boolean afterCreateColumn(String columnName, List<? extends IsColumn> dataColumns,

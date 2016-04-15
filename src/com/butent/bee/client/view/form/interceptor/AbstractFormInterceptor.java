@@ -39,10 +39,6 @@ public abstract class AbstractFormInterceptor implements FormInterceptor {
   private FormView formView;
 
   @Override
-  public void afterAction(Action action, Presenter presenter) {
-  }
-
-  @Override
   public void afterCreate(FormView form) {
   }
 

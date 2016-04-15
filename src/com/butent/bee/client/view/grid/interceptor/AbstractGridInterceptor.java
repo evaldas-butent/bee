@@ -73,10 +73,6 @@ public abstract class AbstractGridInterceptor implements GridInterceptor {
   private GridPresenter gridPresenter;
 
   @Override
-  public void afterAction(Action action, GridPresenter presenter) {
-  }
-
-  @Override
   public void afterCreate(GridView gridView) {
   }
 
