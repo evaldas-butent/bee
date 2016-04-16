@@ -272,6 +272,10 @@ public final class RendererFactory {
         renderer = new BranchRenderer(source, description.getSeparator(), description.getOptions());
         break;
 
+      case TIME:
+        renderer = new TimeRenderer(source, description.getOptions());
+        break;
+
       case TOKEN:
         logger.severe("renderer", type.name(), "not supported");
         break;

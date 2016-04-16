@@ -10,7 +10,6 @@ import com.butent.bee.client.i18n.DateTimeFormat;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.i18n.HasDateTimeFormat;
 import com.butent.bee.client.i18n.HasNumberFormat;
-import com.butent.bee.client.modules.tasks.TimeRenderer;
 import com.butent.bee.client.modules.trade.DiscountRenderer;
 import com.butent.bee.client.modules.trade.TotalRenderer;
 import com.butent.bee.client.modules.trade.VatRenderer;
@@ -45,13 +44,15 @@ import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.ui.Calculation;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.FooterDescription;
+import com.butent.bee.shared.ui.HasValueFormatter;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.List;
 
 public class ColumnFooter extends Header<String> implements HasTextAlign, HasVerticalAlign,
-    HasWhiteSpace, HasDateTimeFormat, HasNumberFormat, HasScale, HasOptions, HasValueType {
+    HasWhiteSpace, HasDateTimeFormat, HasNumberFormat, HasScale, HasOptions, HasValueType,
+    HasValueFormatter {
 
   public enum Aggregate {
     SUM, COUNT, MIN, MAX, AVG
@@ -75,12 +76,6 @@ public class ColumnFooter extends Header<String> implements HasTextAlign, HasVer
       HasRowValue getFunction(List<? extends IsColumn> columns) {
         return new DiscountRenderer(columns);
       }
-    },
-    TIME {
-      @Override
-      HasRowValue getFunction(List<? extends IsColumn> columns) {
-        return new TimeRenderer(columns);
-      }
     };
 
     abstract HasRowValue getFunction(List<? extends IsColumn> columns);
@@ -88,8 +83,6 @@ public class ColumnFooter extends Header<String> implements HasTextAlign, HasVer
 
   private static final Aggregate DEFAULT_AGGREGATE = Aggregate.SUM;
   private static final ValueType DEFAULT_VALUE_TYPE = ValueType.NUMBER;
-
-  private Function<Value, String> formatter;
 
   private String html;
 
@@ -105,6 +98,8 @@ public class ColumnFooter extends Header<String> implements HasTextAlign, HasVer
   private DateTimeFormat dateTimeFormat;
   private NumberFormat numberFormat;
 
+  private Function<Value, String> valueFormatter;
+
   private int scale = BeeConst.UNDEF;
 
   private String options;
@@ -113,6 +108,7 @@ public class ColumnFooter extends Header<String> implements HasTextAlign, HasVer
 
   public ColumnFooter(CellSource cellSource, AbstractColumn<?> column,
       ColumnDescription columnDescription, List<? extends IsColumn> dataColumns) {
+
     this(cellSource);
     init(column, columnDescription, dataColumns);
   }
@@ -183,6 +179,11 @@ public class ColumnFooter extends Header<String> implements HasTextAlign, HasVer
   }
 
   @Override
+  public Function<Value, String> getValueFormatter() {
+    return valueFormatter;
+  }
+
+  @Override
   public ValueType getValueType() {
     return valueType;
   }
@@ -205,8 +206,8 @@ public class ColumnFooter extends Header<String> implements HasTextAlign, HasVer
       }
 
       if (value != null) {
-        if (formatter != null) {
-          return formatter.apply(value);
+        if (getValueFormatter() != null) {
+          return getValueFormatter().apply(value);
         } else {
           return Format.render(value.getString(), getValueType(),
               getDateTimeFormat(), getNumberFormat(), getScale());
@@ -239,10 +240,6 @@ public class ColumnFooter extends Header<String> implements HasTextAlign, HasVer
     this.dateTimeFormat = dateTimeFormat;
   }
 
-  public void setFormatter(Function<Value, String> formatter) {
-    this.formatter = formatter;
-  }
-
   public void setHtml(String html) {
     this.html = html;
   }
@@ -269,6 +266,10 @@ public class ColumnFooter extends Header<String> implements HasTextAlign, HasVer
   @Override
   public void setTextAlign(TextAlign textAlign) {
     this.textAlign = textAlign;
+  }
+
+  public void setValueFormatter(Function<Value, String> valueFormatter) {
+    this.valueFormatter = valueFormatter;
   }
 
   public void setValueType(ValueType valueType) {
@@ -364,6 +365,7 @@ public class ColumnFooter extends Header<String> implements HasTextAlign, HasVer
 
   protected void init(AbstractColumn<?> column, ColumnDescription columnDescription,
       List<? extends IsColumn> dataColumns) {
+
     Assert.notNull(column);
     Assert.notNull(columnDescription);
 
@@ -501,6 +503,13 @@ public class ColumnFooter extends Header<String> implements HasTextAlign, HasVer
       if (getNumberFormat() == null && column instanceof HasNumberFormat
           && (footerDescription == null || footerDescription.getScale() == null)) {
         setNumberFormat(((HasNumberFormat) column).getNumberFormat());
+      }
+    }
+
+    if (column instanceof HasCellRenderer) {
+      AbstractCellRenderer renderer = ((HasCellRenderer) column).getRenderer();
+      if (renderer instanceof HasValueFormatter) {
+        setValueFormatter(((HasValueFormatter) renderer).getValueFormatter());
       }
     }
   }
