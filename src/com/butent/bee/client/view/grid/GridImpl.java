@@ -841,13 +841,6 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
       setEditShowId(BeeUtils.unbox(gridDescription.getEditShowId()));
     }
 
-    if (BeeUtils.isTrue(gridDescription.getEditFormImmediate())) {
-      createEditForm();
-    }
-    if (BeeUtils.isTrue(gridDescription.getNewRowFormImmediate())) {
-      createNewRowForm();
-    }
-
     String viewName = gridDescription.getViewName();
     if (BeeUtils.isEmpty(getNewRowFormName()) && !BeeUtils.isEmpty(viewName) && !isReadOnly()
         && BeeKeeper.getUser().canCreateData(viewName)) {
