@@ -27,8 +27,6 @@ import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.grid.DynamicColumnIdentity;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.search.AbstractFilterSupplier;
-import com.butent.bee.client.widget.FaLabel;
-import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.BeeColumn;
@@ -278,16 +276,6 @@ public abstract class AbstractGridInterceptor implements GridInterceptor {
 
   @Override
   public ColumnFooter getFooter(String columnName, ColumnDescription columnDescription) {
-    return null;
-  }
-
-  @Override
-  public FaLabel getGridMenuIcon() {
-    return null;
-  }
-
-  @Override
-  public Label getGridMenuLabel() {
     return null;
   }
 

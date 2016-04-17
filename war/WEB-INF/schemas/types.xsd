@@ -124,6 +124,10 @@
     </xs:union>
   </xs:simpleType>
 
+  <xs:simpleType name="nameList">
+    <xs:list itemType="nameType" />
+  </xs:simpleType>
+
   <xs:simpleType name="fieldNames">
     <xs:list itemType="fieldNameType" />
   </xs:simpleType>

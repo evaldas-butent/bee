@@ -50,6 +50,10 @@ public interface GridView extends DataView, HasAddStartHandlers, HasAddEndHandle
 
   boolean addColumn(ColumnDescription columnDescription, String dynGroup, int beforeIndex);
 
+  int countEditForms();
+
+  int countNewRowForms();
+
   void create(Order order);
 
   void ensureRelId(IdCallback callback);
@@ -65,8 +69,6 @@ public interface GridView extends DataView, HasAddStartHandlers, HasAddEndHandle
   FormView getActiveForm();
 
   List<String> getDynamicColumnGroups();
-
-  String getEditFormName();
 
   Set<String> getEditInPlace();
 
@@ -105,6 +107,10 @@ public interface GridView extends DataView, HasAddStartHandlers, HasAddEndHandle
   int refreshCell(long rowId, String columnSource);
 
   void reset(GridDescription gridDescription);
+
+  void selectEditForm(int index);
+
+  void selectNewRowForm(int index);
 
   void setRelId(Long relId);
 

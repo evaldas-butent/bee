@@ -529,7 +529,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
         break;
 
       case MENU:
-        menu.open(this, getMainView().isEnabled(), getGridInterceptor());
+        menu.open(this, getMainView().isEnabled());
         break;
 
       case MERGE:
