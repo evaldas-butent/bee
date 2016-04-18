@@ -29,6 +29,8 @@
     <Boolean name="Dangerous" label="=dangerous" />
     <Numeric name="ExchangeOfPalettes" precision="2" label="=cargoChangeOfPallets" />
 
+    <Boolean name="MultipleSegments" label="Kelios atkarpos" />
+
     <Relation name="CargoHandling" unique="true" relation="CargoHandling" cascade="SET_NULL" editable="true" label="=cargoHandlingPlaces" />
 
     <!--TODO: drop LoadingPlace, UnloadingPlace, EmptyKilometers, LoadedKilometers-->

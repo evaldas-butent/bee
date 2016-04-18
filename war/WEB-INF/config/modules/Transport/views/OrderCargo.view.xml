@@ -13,6 +13,8 @@
 
     <xi:include href="viewcolumns/CargoInfo.viewcolumns.xml" />
 
+    <SimpleColumn name="MultipleSegments" />
+
     <SimpleColumn name="Number" />
     <SimpleColumn name="Cmr" />
     <SimpleJoin name="Cmr" joinType="LEFT">

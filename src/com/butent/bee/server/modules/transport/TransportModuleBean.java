@@ -2655,7 +2655,8 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
     Set<Integer> statuses = Sets.newHashSet(OrderStatus.REQUEST.ordinal(),
         OrderStatus.ACTIVE.ordinal());
     IsCondition cargoWhere = SqlUtils.and(SqlUtils.inList(TBL_ORDERS, COL_STATUS, statuses),
-        SqlUtils.isNull(TBL_CARGO_TRIPS, COL_CARGO));
+        SqlUtils.or(SqlUtils.notNull(TBL_ORDER_CARGO, "MultipleSegments"),
+            SqlUtils.isNull(TBL_CARGO_TRIPS, COL_CARGO)));
 
     query.setWhere(cargoWhere);
 
@@ -3226,7 +3227,7 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
               .addMax(TBL_EVENT_HISTORY, COL_EVENT_STARTED)
               .addFrom(TBL_EVENT_HISTORY)
               .setWhere(SqlUtils.and(SqlUtils.equals(TBL_EVENT_HISTORY, COL_EVENT,
-                      PRM_SYNC_ERP_EMPLOYEES),
+                  PRM_SYNC_ERP_EMPLOYEES),
                   SqlUtils.startsWith(TBL_EVENT_HISTORY, COL_EVENT_RESULT, "OK")))));
     } catch (BeeException e) {
       sys.eventError(historyId, e);
@@ -3435,7 +3436,7 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
             .addMax(TBL_EVENT_HISTORY, COL_EVENT_STARTED)
             .addFrom(TBL_EVENT_HISTORY)
             .setWhere(SqlUtils.and(SqlUtils.equals(TBL_EVENT_HISTORY, COL_EVENT,
-                    PRM_SYNC_ERP_EMPLOYEES),
+                PRM_SYNC_ERP_EMPLOYEES),
                 SqlUtils.startsWith(TBL_EVENT_HISTORY, COL_EVENT_RESULT, "OK")))));
 
     SimpleRowSet drivers = qs.getData(new SqlSelect()
@@ -3513,7 +3514,7 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
               .addMax(TBL_EVENT_HISTORY, COL_EVENT_STARTED)
               .addFrom(TBL_EVENT_HISTORY)
               .setWhere(SqlUtils.and(SqlUtils.equals(TBL_EVENT_HISTORY, COL_EVENT,
-                      PRM_SYNC_ERP_VEHICLES),
+                  PRM_SYNC_ERP_VEHICLES),
                   SqlUtils.startsWith(TBL_EVENT_HISTORY, COL_EVENT_RESULT, "OK")))));
     } catch (BeeException e) {
       logger.error(e);

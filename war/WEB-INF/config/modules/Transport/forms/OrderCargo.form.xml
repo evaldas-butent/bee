@@ -61,6 +61,11 @@
             <FlowPanel>
               <Table kind="custom">
                 <row>
+                  <cell colSpan="2" style="padding-bottom: calc(2vh - 6px);">
+                    <CheckBox source="MultipleSegments" />
+                  </cell>
+                </row>
+                <row>
                   <Label text="=cargoChangeOfPallets" style="&lbl1;" />
                   <InputInteger source="ExchangeOfPalettes" style="width:70px" />
                 </row>
