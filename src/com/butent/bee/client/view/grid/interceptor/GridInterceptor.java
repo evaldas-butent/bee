@@ -136,7 +136,7 @@ public interface GridInterceptor extends WidgetInterceptor, ActiveRowChangeEvent
 
   List<FilterDescription> getPredefinedFilters(List<FilterDescription> defaultFilters);
 
-  String getRowCaption(IsRow row, boolean edit);
+  String getRowCaption(IsRow row);
 
   /**
    * Enables conditional styles for rows.

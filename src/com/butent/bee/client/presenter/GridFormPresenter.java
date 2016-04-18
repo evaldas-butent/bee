@@ -21,6 +21,7 @@ import com.butent.bee.client.view.form.CloseCallback;
 import com.butent.bee.client.view.form.FormAndHeader;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
+import com.butent.bee.client.view.grid.GridFormKind;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.shared.BeeConst;
@@ -168,7 +169,7 @@ public class GridFormPresenter extends AbstractPresenter implements HasGridView,
         break;
 
       case EDIT:
-        gridView.getForm(true).setEnabled(true);
+        gridView.getForm(GridFormKind.EDIT).setEnabled(true);
         hideAction(action);
         if (editSave) {
           showAction(Action.SAVE);

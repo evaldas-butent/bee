@@ -50,10 +50,6 @@ public interface GridView extends DataView, HasAddStartHandlers, HasAddEndHandle
 
   boolean addColumn(ColumnDescription columnDescription, String dynGroup, int beforeIndex);
 
-  int countEditForms();
-
-  int countNewRowForms();
-
   void create(Order order);
 
   void ensureRelId(IdCallback callback);
@@ -72,7 +68,13 @@ public interface GridView extends DataView, HasAddStartHandlers, HasAddEndHandle
 
   Set<String> getEditInPlace();
 
-  FormView getForm(boolean edit);
+  FormView getForm(GridFormKind kind);
+
+  int getFormCount(GridFormKind kind);
+
+  int getFormIndex(GridFormKind kind);
+
+  List<String> getFormLabels(GridFormKind kind);
 
   CellGrid getGrid();
 
@@ -108,9 +110,7 @@ public interface GridView extends DataView, HasAddStartHandlers, HasAddEndHandle
 
   void reset(GridDescription gridDescription);
 
-  void selectEditForm(int index);
-
-  void selectNewRowForm(int index);
+  void selectForm(GridFormKind kind, int index);
 
   void setRelId(Long relId);
 

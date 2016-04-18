@@ -59,6 +59,9 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
 
   public static final String FOOTER_MODE_NONE = "none";
 
+  public static final char FORM_ITEM_SEPARATOR = BeeConst.CHAR_COMMA;
+  public static final char FORM_LABEL_SEPARATOR = BeeConst.CHAR_COLON;
+
   public static GridDescription restore(String s) {
     if (BeeUtils.isEmpty(s)) {
       return null;
