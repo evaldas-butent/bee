@@ -288,7 +288,7 @@ public class RequestEditor extends AbstractFormInterceptor {
 
     RowFactory.createRow(taskDataInfo.getNewRowForm(), null, taskDataInfo, taskRow,
         Modality.ENABLED, null,
-        new TaskBuilder(files, BeeUtils.toLongOrNull(managerSel.getValue()), true),
+        new TaskBuilder(files, BeeUtils.toLongOrNull(managerSel.getValue()), true), null,
         new RowCallback() {
 
           @Override

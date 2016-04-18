@@ -1,13 +1,10 @@
 package com.butent.bee.client.data;
 
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
-import com.google.gwt.user.client.Event.NativePreviewEvent;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.dialog.ModalForm;
 import com.butent.bee.client.dialog.Popup;
-import com.butent.bee.client.event.Previewer.PreviewConsumer;
-import com.butent.bee.client.event.logical.OpenEvent;
 import com.butent.bee.client.event.logical.RowActionEvent;
 import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.presenter.RowPresenter;
@@ -193,27 +190,24 @@ public final class RowEditor {
 
     FormFactory.createFormView(formName, dataInfo.getViewName(), dataInfo.getColumns(), true,
         (formInterceptor == null) ? FormFactory.getFormInterceptor(formName) : formInterceptor,
-        new FormFactory.FormViewCallback() {
-          @Override
-          public void onSuccess(FormDescription formDescription, FormView result) {
-            if (result != null) {
-              result.setEditing(true);
-              result.start(null);
-              result.observeData();
+        (formDescription, result) -> {
+          if (result != null) {
+            result.setEditing(true);
+            result.start(null);
+            result.observeData();
 
-              if (!Data.isViewEditable(dataInfo.getViewName())) {
-                result.setEnabled(false);
-              }
-
-              Opener formOpener;
-              if (!opener.isModal() && Popup.getActivePopup() != null) {
-                formOpener = Opener.MODAL;
-              } else {
-                formOpener = opener;
-              }
-
-              launch(formDescription, result, dataInfo, row, formOpener, rowCallback);
+            if (!Data.isViewEditable(dataInfo.getViewName())) {
+              result.setEnabled(false);
             }
+
+            Opener formOpener;
+            if (!opener.isModal() && Popup.getActivePopup() != null) {
+              formOpener = Opener.modal(opener.getOnOpen());
+            } else {
+              formOpener = opener;
+            }
+
+            launch(formDescription, result, dataInfo, row, formOpener, rowCallback);
           }
         });
   }
@@ -334,49 +328,35 @@ public final class RowEditor {
           default:
             logger.warning(NameUtils.getName(this), action, "not implemented");
         }
-
-        if (interceptor != null) {
-          interceptor.afterAction(action, presenter);
-        }
       }
     });
 
-    final ScheduledCommand focusCommand = new ScheduledCommand() {
-      @Override
-      public void execute() {
-        UiHelper.focus(formView.asWidget());
+    final ScheduledCommand focusCommand = () -> {
+      UiHelper.focus(formView.asWidget());
+
+      if (opener.getOnOpen() != null) {
+        opener.getOnOpen().accept(formView);
       }
     };
 
     if (opener.isModal()) {
       if (enabledActions.contains(Action.SAVE)) {
-        dialog.setOnSave(new PreviewConsumer() {
-          @Override
-          public void accept(NativePreviewEvent input) {
-            if (formView.checkOnSave(input)) {
-              presenter.handleAction(Action.SAVE);
-            }
+        dialog.setOnSave(input -> {
+          if (formView.checkOnSave(input)) {
+            presenter.handleAction(Action.SAVE);
           }
         });
       }
 
       if (enabledActions.contains(Action.CLOSE)) {
-        dialog.setOnEscape(new PreviewConsumer() {
-          @Override
-          public void accept(NativePreviewEvent input) {
-            if (formView.checkOnClose(input)) {
-              presenter.handleAction(Action.CLOSE);
-            }
+        dialog.setOnEscape(input -> {
+          if (formView.checkOnClose(input)) {
+            presenter.handleAction(Action.CLOSE);
           }
         });
       }
 
-      dialog.addOpenHandler(new OpenEvent.Handler() {
-        @Override
-        public void onOpen(OpenEvent event) {
-          formView.editRow(oldRow, focusCommand);
-        }
-      });
+      dialog.addOpenHandler(event -> formView.editRow(oldRow, focusCommand));
 
       if (opener.getTarget() == null) {
         dialog.center();

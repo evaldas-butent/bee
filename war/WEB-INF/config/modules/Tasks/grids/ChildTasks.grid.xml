@@ -6,13 +6,12 @@
   name="ChildTasks" viewName="Tasks" enabledActions="copy"
   order="Status, FinishTime, TaskID desc" maxColumnWidth="160" caption="=crmTasks"
   >
- 
 
   <xi:include href="columns/TaskMode.column.xml" />
   <xi:include href="columns/TaskStar.column.xml" />
   <g:columns>
     <IdColumn name="Id" >
-    <footer text="=totalOf" horizontalAlignment="right" />
+      <footer text="=totalOf" horizontalAlignment="right" />
     </IdColumn>
     <RelColumn name="ProjectStage" label="=prjStage" />
   </g:columns>
@@ -21,41 +20,22 @@
 
   <g:columns>
     <DataColumn name="ExpectedExpenses" scale="2">
-    <footer aggregate="sum" />
+      <footer aggregate="sum" />
     </DataColumn>
-    <!--<CalcColumn name="ActualDuration" type="string" label="=prjActualTaskDuration" caption="=prjActualTaskDuration" filterOptions="ActualDuration">
-    <footer evaluator="actualDuration" aggregate="sum" />
-    </CalcColumn>  -->
-     
-    <CalcColumn type="string" name="ActualDuration" label="=prjActualTaskDuration"
-      caption="=prjActualTaskDuration" filterOptions="ActualDuration" >
-      <render>
-          <ui:function> 
-            var diff = row.ActualDuration,
-              seconds = 0,
-              minutes = 0,
-              hours = 0,
-              days = 0,
 
+    <DataColumn name="ActualDuration" label="=prjActualTaskDuration" horizontalAlignment="right">
+      <renderer type="time" />
+      <footer aggregate="sum" />
+    </DataColumn>
 
-            seconds = parseInt(diff / 1000 % 60, 10);
-            minutes = parseInt(diff / 1000 / 60 % 60, 10);
-            hours = parseInt(diff / 1000 / 60 / 60, 10);
-            text = (hours > 9 ? hours : ('0' + hours)) + ':'
-            + (minutes > 9 ? minutes : ('0' + minutes));
-            return text;
-          </ui:function>
-        </render>
-        <footer evaluator="time" aggregate="sum" />
-    </CalcColumn>
     <DataColumn name="ActualExpenses" scale="2">
-    <footer aggregate="sum" />
+      <footer aggregate="sum" />
     </DataColumn>
     <RelColumn name="Currency" />
   </g:columns>
+
   <g:rowStyle>
     <ui:inline>="font-style: italic;"</ui:inline>
     <ui:expression>row.StartTime == null</ui:expression>
   </g:rowStyle>
-  
 </g:Grid>

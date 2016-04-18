@@ -1231,6 +1231,8 @@ public interface Dictionary {
 
   default String crmTaskStatusCompleted() {return g("crmTaskStatusCompleted");}
 
+  default String crmTaskStatusNotScheduled() {return g("crmTaskStatusNotScheduled");}
+
   default String crmTaskStatusNotVisited() {return g("crmTaskStatusNotVisited");}
 
   default String crmTaskStatusScheduled() {return g("crmTaskStatusScheduled");}
@@ -1274,6 +1276,8 @@ public interface Dictionary {
   default String crmTasksDelegated() {return g("crmTasksDelegated");}
 
   default String crmTasksDelegatedTasks() {return g("crmTasksDelegatedTasks");}
+
+  default String crmTasksNotScheduledTasks() {return g("crmTasksNotScheduledTasks");}
 
   default String crmTasksObserved() {return g("crmTasksObserved");}
 
@@ -4059,6 +4063,10 @@ public interface Dictionary {
   default String salePriceLabel() {return g("salePriceLabel");}
 
   default String salePriceShort() {return g("salePriceShort");}
+
+  default String saveAndPrintAction() {return g("saveAndPrintAction");}
+
+  default String saveAndPrintQuestion() {return g("saveAndPrintQuestion");}
 
   default String saveAsEditorTemplate() {return g("saveAsEditorTemplate");}
 

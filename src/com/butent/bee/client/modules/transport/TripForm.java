@@ -204,6 +204,11 @@ public class TripForm extends PrintFormInterceptor {
     getBeforeInfo(DataUtils.getStringQuietly(newRow, form.getDataIndex(COL_VEHICLE)), newRow);
   }
 
+  @Override
+  public boolean saveOnPrintNewRow() {
+    return true;
+  }
+
   void checkDriver(final HasHandlers listener, final GwtEvent<?> event, final Long driverId) {
     if (!DataUtils.isId(driverId)) {
       listener.fireEvent(event);
@@ -381,7 +386,7 @@ public class TripForm extends PrintFormInterceptor {
           interceptor.defaultDriver = getLongValue(COL_DRIVER);
 
           RowFactory.createRow(info.getNewRowForm(), info.getNewRowCaption(), info, newRow,
-              Modality.ENABLED, null, interceptor, null);
+              Modality.ENABLED, null, interceptor, null, null);
         }
       });
     }

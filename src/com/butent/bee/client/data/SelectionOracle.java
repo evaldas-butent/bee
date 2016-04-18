@@ -510,7 +510,7 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
   }
 
   private void initViewData() {
-    CachingPolicy cachingPolicy = (getCaching() == Caching.GLOBAL)
+    CachingPolicy cachingPolicy = (getCaching() == Caching.GLOBAL && getAdditionalFilter() == null)
         ? CachingPolicy.FULL : CachingPolicy.NONE;
 
     Queries.getRowSet(getViewName(), null, getFilter(null, false), viewOrder, cachingPolicy,

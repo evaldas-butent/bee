@@ -1018,6 +1018,11 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   }
 
   @Override
+  public boolean isAdding() {
+    return adding;
+  }
+
+  @Override
   public boolean isEditing() {
     return editing;
   }
@@ -1535,6 +1540,11 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   }
 
   @Override
+  public void setAdding(boolean adding) {
+    this.adding = adding;
+  }
+
+  @Override
   public void setCaption(String caption) {
     this.caption = caption;
   }
@@ -1989,10 +1999,6 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
     return hasReadyDelegates;
   }
 
-  private boolean isAdding() {
-    return adding;
-  }
-
   private boolean isChildEditing() {
     for (GridView gridView : ViewHelper.getGrids(getRootWidget().asWidget())) {
       if (gridView.getGrid().isEditing()) {
@@ -2214,10 +2220,6 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
     }
     setOldRow((activeRow == null) ? null : DataUtils.cloneRow(activeRow));
     this.activeRow = activeRow;
-  }
-
-  private void setAdding(boolean adding) {
-    this.adding = adding;
   }
 
   private void setDataColumns(List<BeeColumn> dataColumns) {

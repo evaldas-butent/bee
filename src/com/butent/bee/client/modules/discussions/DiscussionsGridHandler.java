@@ -90,7 +90,7 @@ class DiscussionsGridHandler extends AbstractGridInterceptor {
       }
       RowFactory.createRow(FORM_NEW_DISCUSSION, Localized.dictionary().announcementNew(),
           data, emptyRow, Modality.ENABLED, null,
-          new CreateDiscussionInterceptor(), new RowCallback() {
+          new CreateDiscussionInterceptor(), null, new RowCallback() {
 
             @Override
             public void onCancel() {

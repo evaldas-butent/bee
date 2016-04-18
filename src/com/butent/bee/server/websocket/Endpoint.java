@@ -14,6 +14,7 @@ import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogLevel;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.utils.Property;
@@ -750,6 +751,7 @@ public class Endpoint {
   public void onOpen(@PathParam("user-id") Long userId, Session session) {
     setUserId(session, userId);
     setUserPresence(session, Presence.ONLINE);
+    session.setMaxIdleTimeout(Config.getDefaultSessionTimeout() * TimeUtils.MILLIS_PER_MINUTE);
 
     SessionUser sessionUser = getSessionUser(session);
     PresenceMessage message = new PresenceMessage(sessionUser);

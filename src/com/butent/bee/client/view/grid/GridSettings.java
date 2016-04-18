@@ -325,7 +325,7 @@ public final class GridSettings implements HandlesAllDataEvents {
 
   private static boolean canEditInPlace(GridView gridView) {
     return gridView != null && !gridView.isReadOnly()
-        && !BeeUtils.isEmpty(gridView.getEditFormName())
+        && gridView.countEditForms() > 0
         && gridView.getGridDescription() != null
         && BeeUtils.isTrue(gridView.getGridDescription().getEditInPlace());
   }

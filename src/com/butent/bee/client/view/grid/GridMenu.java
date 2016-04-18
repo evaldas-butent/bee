@@ -3,8 +3,6 @@ package com.butent.bee.client.view.grid;
 import com.google.common.collect.Lists;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.TableRowElement;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
@@ -20,7 +18,6 @@ import com.butent.bee.client.rights.Roles;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.view.grid.GridView.SelectedRows;
-import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.BeeConst;
@@ -116,23 +113,6 @@ public class GridMenu {
       @Override
       void select(GridPresenter presenter) {
         presenter.handleAction(Action.EXPORT);
-      }
-    },
-
-    EDIT_MODE(Action.EDIT_MODE) {
-      @Override
-      boolean isEnabled(GridDescription gridDescription, Collection<UiOption> uiOptions) {
-        return false;
-      }
-
-      @Override
-      boolean isVisible(GridPresenter presenter) {
-        return false;
-      }
-
-      @Override
-      void select(GridPresenter presenter) {
-        presenter.handleAction(Action.EDIT_MODE);
       }
     },
 
@@ -325,13 +305,10 @@ public class GridMenu {
     };
 
     private static void handleRights(final GridPresenter presenter, final RightsState rightsState) {
-      Roles.getData(new Consumer<Map<Long, String>>() {
-        @Override
-        public void accept(Map<Long, String> input) {
-          if (!BeeUtils.isEmpty(input)) {
-            presenter.setRoles(input);
-            presenter.handleRights(rightsState);
-          }
+      Roles.getData(input -> {
+        if (!BeeUtils.isEmpty(input)) {
+          presenter.setRoles(input);
+          presenter.handleRights(rightsState);
         }
       });
     }
@@ -423,8 +400,8 @@ public class GridMenu {
     return false;
   }
 
-  public void open(final GridPresenter presenter, boolean enabled,
-      GridInterceptor gridInterceptor) {
+  public void open(final GridPresenter presenter, boolean enabled) {
+
     final HtmlTable table = new HtmlTable(STYLE_TABLE);
     int r = 0;
 
@@ -447,38 +424,17 @@ public class GridMenu {
       }
     }
 
-    if (gridInterceptor != null && enabledItems.contains(Item.EDIT_MODE)) {
-      Widget label = gridInterceptor.getGridMenuLabel();
-      Widget icon = gridInterceptor.getGridMenuIcon();
-
-      if (icon != null) {
-        table.setWidgetAndStyle(r, 0, icon, STYLE_ICON);
-      }
-      if (label != null) {
-        table.setWidgetAndStyle(r, 1, label, STYLE_LABEL);
-      }
-      table.getRowFormatter().addStyleName(r, STYLE_PREFIX + Action.EDIT_MODE.getStyleSuffix());
-    }
-
     if (!table.isEmpty()) {
-      table.addClickHandler(new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent event) {
-          Element targetElement = EventUtils.getEventTargetElement(event);
-          TableRowElement rowElement = DomUtils.getParentRow(targetElement, true);
+      table.addClickHandler(event -> {
+        Element targetElement = EventUtils.getEventTargetElement(event);
+        TableRowElement rowElement = DomUtils.getParentRow(targetElement, true);
 
-          if (rowElement.hasClassName(STYLE_PREFIX + Action.EDIT_MODE.getStyleSuffix())) {
-            UiHelper.closeDialog(table);
-            gridInterceptor.beforeAction(Action.EDIT_MODE, presenter);
-          } else {
-            int index = DomUtils.getDataIndexInt(rowElement);
-            Item item = EnumUtils.getEnumByIndex(Item.class, index);
+        int index = DomUtils.getDataIndexInt(rowElement);
+        Item item = EnumUtils.getEnumByIndex(Item.class, index);
 
-            if (item != null) {
-              UiHelper.closeDialog(table);
-              item.select(presenter);
-            }
-          }
+        if (item != null) {
+          UiHelper.closeDialog(table);
+          item.select(presenter);
         }
       });
 

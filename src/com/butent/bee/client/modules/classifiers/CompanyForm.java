@@ -212,7 +212,7 @@ public class CompanyForm extends AbstractFormInterceptor {
                     public FormInterceptor getInstance() {
                       return null;
                     }
-                  },
+                  }, null,
                   new RowCallback() {
                     @Override
                     public void onSuccess(BeeRow result) {

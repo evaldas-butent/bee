@@ -105,6 +105,9 @@ public class BeeServlet extends LoginServlet {
         logout(req, session);
 
       } else {
+        session.setMaxInactiveInterval(Config.getDefaultSessionTimeout()
+            * TimeUtils.SECONDS_PER_MINUTE);
+
         Object userData = ((Map<?, ?>) response.getResponse()).get(Service.VAR_USER);
 
         if (userData instanceof UserData) {
