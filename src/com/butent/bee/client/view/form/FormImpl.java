@@ -1590,6 +1590,11 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   }
 
   @Override
+  public void setOldRow(IsRow oldRow) {
+    this.oldRow = oldRow;
+  }
+
+  @Override
   public void setPageSize(int size, boolean fireScopeChange) {
   }
 
@@ -2248,10 +2253,6 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
 
   private void setHasReadyDelegates(boolean hasReadyDelegates) {
     this.hasReadyDelegates = hasReadyDelegates;
-  }
-
-  private void setOldRow(IsRow oldRow) {
-    this.oldRow = oldRow;
   }
 
   private void setOptions(String options) {

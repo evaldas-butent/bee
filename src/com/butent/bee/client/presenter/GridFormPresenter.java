@@ -224,6 +224,19 @@ public class GridFormPresenter extends AbstractPresenter implements HasGridView,
     return ok;
   }
 
+  public void save(Consumer<IsRow> consumer) {
+    final FormView form = getForm();
+    if (!form.validate(form, true)) {
+      return;
+    }
+
+    if (gridView.isAdding() && gridView.likeAMotherlessChild()) {
+      gridView.ensureRelId(result -> gridView.formConfirm(consumer));
+    } else {
+      gridView.formConfirm(consumer);
+    }
+  }
+
   public void setCaption(String caption) {
     header.setCaption(caption);
   }
@@ -287,19 +300,6 @@ public class GridFormPresenter extends AbstractPresenter implements HasGridView,
       Printer.print(this);
     } else {
       Printer.print(getForm());
-    }
-  }
-
-  private void save(Consumer<IsRow> consumer) {
-    final FormView form = getForm();
-    if (!form.validate(form, true)) {
-      return;
-    }
-
-    if (gridView.isAdding() && gridView.likeAMotherlessChild()) {
-      gridView.ensureRelId(result -> gridView.formConfirm(consumer));
-    } else {
-      gridView.formConfirm(consumer);
     }
   }
 
