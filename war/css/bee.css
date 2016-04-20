@@ -113,6 +113,12 @@
   -ms-flex-align: center;
 }
 
+.flexBox-vertical > hr,
+.flexBox-vertical-center > hr {
+  margin-left: 0;
+  margin-right: 0;
+}
+
 .flexible,
 .bee-TreeView-tree,
 .bee-TabbedPages-contentPanel,
