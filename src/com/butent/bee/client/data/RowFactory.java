@@ -249,12 +249,7 @@ public final class RowFactory {
           DataInfo dataInfo = Data.getDataInfo(DiscussionsConstants.VIEW_DISCUSSIONS);
           BeeRow row = createEmptyRow(dataInfo, true);
 
-          BeeColumn column = dataInfo.getColumn(DiscussionsConstants.COL_TOPIC);
-          if (column != null) {
-            column.setNullable(false);
-          }
-
-          RowFactory.createRow(DiscussionsConstants.FORM_NEW_DISCUSSION,
+          RowFactory.createRow(DiscussionsConstants.FORM_NEW_ANNOUNCEMENT,
               Localized.dictionary().announcementNew(), dataInfo, row, DEFAULT_MODALITY, null);
         });
 

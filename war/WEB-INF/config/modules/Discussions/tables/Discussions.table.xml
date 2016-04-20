@@ -6,8 +6,8 @@
   >
   <Fields>
     <String name="Subject" notNull="true" precision="255" label="=discussSubject" />
-    <Text name="Description" label="=discussDescription"/>
     <Text name="Summary" label="=discussSummary"/>
+    <Text name="Description" label="=discussDescription"/>
 
     <Relation name="Owner" notNull="true" relation="Users" defExpr="CURRENT_USER" label="=discussOwner" />
 

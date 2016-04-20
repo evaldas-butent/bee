@@ -1489,9 +1489,15 @@ public interface Dictionary {
 
   default String discussComment() {return g("discussComment");}
 
+  default String discussCommentCount() {return g("discussCommentCount");}
+
   default String discussCommentMarkImageName() {return g("discussCommentMarkImageName");}
 
   default String discussCommentMarkName() {return g("discussCommentMarkName");}
+
+  default String discussCommentPermit() {return g("discussCommentPermit");}
+
+  default String discussCommentPlaceholder() {return g("discussCommentPlaceholder");}
 
   default String discussCommentPublished() {return g("discussCommentPublished");}
 
