@@ -21,6 +21,8 @@
       <SimpleColumn name="ForwarderVehicle" />
       <SimpleColumn name="ForwarderDriver" />
 
+      <SimpleColumn name="Manager" />
+
       <SimpleJoin joinType="LEFT" name="Expedition">
         <SimpleColumn name="Name" alias="ExpeditionType" />
       </SimpleJoin>
