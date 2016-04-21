@@ -1315,6 +1315,8 @@ public interface Dictionary {
 
   default String currencyUpdateTag() {return g("currencyUpdateTag");}
 
+  default String customConfig() {return g("customConfig");}
+
   default String customer() {return g("customer");}
 
   default String customerPrice() {return g("customerPrice");}
@@ -2330,6 +2332,8 @@ public interface Dictionary {
 
   default String ecWarehousesSecondary() {return g("ecWarehousesSecondary");}
 
+  default String editForm() {return g("editForm");}
+
   default String editMode() {return g("editMode");}
 
   default String editing() {return g("editing");}
@@ -2495,7 +2499,9 @@ public interface Dictionary {
 
   default String feedTrTripCosts() {return g("feedTrTripCosts");}
 
-  default String feedTrTrips() {return g("feedTrTrips");}
+  default String feedTrTripsAll() {return g("feedTrTripsAll");}
+
+  default String feedTrTripsMy() {return g("feedTrTripsMy");}
 
   default String feedTrVehicles() {return g("feedTrVehicles");}
 
@@ -2655,6 +2661,8 @@ public interface Dictionary {
   default String informationSourceName() {return g("informationSourceName");}
 
   default String initialFilter() {return g("initialFilter");}
+
+  default String inputForm() {return g("inputForm");}
 
   default String inputFull() {return g("inputFull");}
 

@@ -47,6 +47,7 @@ import net.sf.jasperreports.engine.JasperReport;
 import net.sf.jasperreports.engine.util.LocalJasperReportsContext;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -238,7 +239,11 @@ public class SystemServiceBean {
     ResponseObject response;
 
     try {
-      JasperReport report = JasperCompileManager.compileReport(reportFile);
+      if (FileUtils.isInputFile(reportFile)) {
+        reportFile = FileUtils.fileToString(reportFile);
+      }
+      JasperReport report = JasperCompileManager
+          .compileReport(new ByteArrayInputStream(reportFile.getBytes(BeeConst.CHARSET_UTF8)));
       Map<String, Object> params = new HashMap<>();
 
       if (!BeeUtils.isEmpty(parameters)) {
@@ -318,7 +323,7 @@ public class SystemServiceBean {
           CommUtils.rpcParamName(1), ") not specified");
     }
 
-    File resFile = null;
+    File resFile;
     if (FileUtils.isFile(search)) {
       resFile = new File(search);
 
@@ -402,7 +407,7 @@ public class SystemServiceBean {
 
         List<String> totals = Lists.newArrayList(null, mode, search, String.valueOf(totSize),
             String.valueOf(lastMod));
-        rowSet.addRow(rc++, 0, totals);
+        rowSet.addRow(rc, 0, totals);
 
         ResponseObject response = ResponseObject.response(rowSet);
         response.addInfo(mode, search, "found", files.size(), "files");

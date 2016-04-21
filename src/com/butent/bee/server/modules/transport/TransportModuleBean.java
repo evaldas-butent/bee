@@ -684,7 +684,6 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
         });
 
     news.registerUsageQueryProvider(Feed.TRIPS, new ExtendedUsageQueryProvider() {
-
       @Override
       protected List<Pair<String, IsCondition>> getJoins() {
         return NewsHelper.buildJoin(TBL_TRIPS, news.joinUsage(TBL_TRIPS));
@@ -693,6 +692,30 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
       @Override
       protected List<IsCondition> getConditions(long userId) {
         return NewsHelper.buildConditions(SqlUtils.isNull(TBL_TRIPS, COL_EXPEDITION));
+      }
+    });
+
+    news.registerUsageQueryProvider(Feed.TRIPS_MY, new ExtendedUsageQueryProvider() {
+      @Override
+      protected List<Pair<String, IsCondition>> getJoins() {
+        return NewsHelper.buildJoin(TBL_TRIPS, news.joinUsage(TBL_TRIPS));
+      }
+
+      @Override
+      protected List<IsCondition> getConditions(long userId) {
+        SqlSelect vehicleQuery = new SqlSelect().setDistinctMode(true)
+            .addFields(TBL_VEHICLE_GROUPS, COL_VEHICLE)
+            .addFrom(TBL_VEHICLE_GROUPS)
+            .addFromInner(TBL_TRANSPORT_GROUPS,
+                sys.joinTables(TBL_TRANSPORT_GROUPS, TBL_VEHICLE_GROUPS, COL_GROUP))
+            .setWhere(SqlUtils.equals(TBL_TRANSPORT_GROUPS, COL_GROUP_MANAGER, userId));
+
+        IsCondition userCondition = SqlUtils.or(
+            SqlUtils.equals(TBL_TRIPS, COL_TRIP_MANAGER, userId),
+            SqlUtils.in(TBL_TRIPS, COL_VEHICLE, vehicleQuery));
+
+        return NewsHelper.buildConditions(SqlUtils.isNull(TBL_TRIPS, COL_EXPEDITION),
+            userCondition);
       }
     });
 

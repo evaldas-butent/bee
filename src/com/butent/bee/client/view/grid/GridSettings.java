@@ -164,7 +164,7 @@ public final class GridSettings implements HandlesAllDataEvents {
           }
         });
 
-    Global.inputWidget(Localized.dictionary().settings(), wrapper, new InputCallback() {
+    Global.inputWidget(Localized.dictionary().columns(), wrapper, new InputCallback() {
       @Override
       public void onSuccess() {
         List<Integer> selectedColumns = getSelectedColumns(table, predefinedColumns);
@@ -325,7 +325,7 @@ public final class GridSettings implements HandlesAllDataEvents {
 
   private static boolean canEditInPlace(GridView gridView) {
     return gridView != null && !gridView.isReadOnly()
-        && gridView.countEditForms() > 0
+        && gridView.getFormCount(GridFormKind.EDIT) > 0
         && gridView.getGridDescription() != null
         && BeeUtils.isTrue(gridView.getGridDescription().getEditInPlace());
   }

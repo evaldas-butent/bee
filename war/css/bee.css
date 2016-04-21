@@ -113,6 +113,12 @@
   -ms-flex-align: center;
 }
 
+.flexBox-vertical > hr,
+.flexBox-vertical-center > hr {
+  margin-left: 0;
+  margin-right: 0;
+}
+
 .flexible,
 .bee-TreeView-tree,
 .bee-TabbedPages-contentPanel,
@@ -2998,8 +3004,19 @@
   background-color: #f2f2f2;
   cursor: pointer;
 }
+.bee-GridMenu-table .bee-GridMenu-section-header:hover {
+  cursor: auto;
+}
+.bee-GridMenu-table .bee-GridMenu-separator-cell:hover {
+  background-color: white;
+  cursor: auto;
+}
 .bee-GridMenu-table td {
   padding: 4px 10px;
+}
+.bee-GridMenu-table .bee-GridMenu-separator-cell {
+  padding-left: 0;
+  padding-right: 0;
 }
 .bee-GridMenu-popup .bee-fa-label {
   font-size: large;
@@ -3010,6 +3027,13 @@
 }
 .bee-GridMenu-label-cell:hover {
   font-weight: bold;
+}
+.bee-GridMenu-section-header .bee-GridMenu-label-cell:hover {
+  font-weight: normal;
+}
+.bee-GridMenu-separator {
+  height: 1px;
+  background-color: #ccc;
 }
 
 .bee-CellGridColumn-rights {
@@ -3669,7 +3693,8 @@ textarea,
 }
 
 .bee-MenuRoot .bee-potentially-bold::after,
-.bee-TabbedPages-tab .bee-potentially-bold::after {
+.bee-TabbedPages-tab .bee-potentially-bold::after,
+.bee-GridMenu-table .bee-potentially-bold::after {
   content: attr(data-text);
   font-weight: bold;
   display: block;

@@ -30,6 +30,7 @@ import com.butent.bee.server.news.NewsBean;
 import com.butent.bee.server.news.UsageQueryProvider;
 import com.butent.bee.server.sql.HasConditions;
 import com.butent.bee.server.sql.IsCondition;
+import com.butent.bee.server.sql.IsExpression;
 import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
@@ -47,6 +48,8 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
+import com.butent.bee.shared.data.filter.ColumnValueFilter;
+import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
@@ -476,7 +479,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
             SqlUtils.and(sys.joinTables(TBL_ACCOUNTS, TBL_ACCOUNT_USERS, COL_ACCOUNT),
                 SqlUtils.equals(TBL_ACCOUNT_USERS, COL_USER, userId)))
         .setWhere(SqlUtils.and(SqlUtils.or(SqlUtils.equals(TBL_ACCOUNTS, COL_USER, userId),
-                SqlUtils.equals(TBL_ACCOUNT_USERS, COL_USER, userId)),
+            SqlUtils.equals(TBL_ACCOUNT_USERS, COL_USER, userId)),
             SqlUtils.or(SqlUtils.isNull(TBL_PLACES, COL_FLAGS),
                 SqlUtils.equals(SqlUtils.bitAnd(TBL_PLACES, COL_FLAGS,
                     MessageFlag.SEEN.getMask()), 0)))));
@@ -707,45 +710,97 @@ public class MailModuleBean implements BeeModule, HasTimerService {
     QueryServiceBean.registerViewDataProvider(VIEW_USER_EMAILS, new ViewDataProvider() {
       @Override
       public BeeRowSet getViewData(BeeView view, SqlSelect query, Filter filter) {
-        SqlSelect select = new SqlSelect().setUnionAllMode(true)
+        return qs.getViewData(getQuery(filter)
+            .setLimit(query.getLimit())
+            .setOffset(query.getOffset()), sys.getView(view.getName()), false);
+      }
+
+      @Override
+      public int getViewSize(BeeView view, SqlSelect query, Filter filter) {
+        return qs.sqlCount(getQuery(filter));
+      }
+
+      private Set<String> getFilterValues(Filter filter) {
+        Set<String> values = new HashSet<>();
+
+        if (filter instanceof CompoundFilter) {
+          for (Filter subFilter : ((CompoundFilter) filter).getSubFilters()) {
+            values.addAll(getFilterValues(subFilter));
+          }
+        } else if (filter instanceof ColumnValueFilter) {
+          ((ColumnValueFilter) filter).getValue().forEach(v -> values.add(v.getString()));
+        }
+        return values;
+      }
+
+      private SqlSelect getQuery(Filter filter) {
+        Set<String> values = getFilterValues(filter);
+        HasConditions whAddressbook = SqlUtils.and();
+        HasConditions whCompanies = SqlUtils.and();
+        HasConditions whCompanyContacts = SqlUtils.and();
+        HasConditions whPersons = SqlUtils.and();
+        HasConditions whCompanyPersons = SqlUtils.and();
+        IsExpression emailFld = SqlUtils.field(TBL_EMAILS, COL_EMAIL_ADDRESS);
+
+        values.forEach(v -> {
+          whAddressbook.add(SqlUtils.containsAny(v, emailFld,
+              SqlUtils.field(TBL_ADDRESSBOOK, COL_ADDRESSBOOK_LABEL)));
+          whCompanies.add(SqlUtils.containsAny(v, emailFld,
+              SqlUtils.field(TBL_COMPANIES, COL_COMPANY_NAME)));
+          whCompanyContacts.add(SqlUtils.containsAny(v, emailFld,
+              SqlUtils.field(TBL_COMPANIES, COL_COMPANY_NAME),
+              SqlUtils.field(TBL_CONTACTS, COL_NOTES)));
+          whPersons.add(SqlUtils.containsAny(v, emailFld,
+              SqlUtils.field(TBL_PERSONS, COL_FIRST_NAME),
+              SqlUtils.field(TBL_PERSONS, COL_LAST_NAME)));
+          whCompanyPersons.add(SqlUtils.containsAny(v, emailFld,
+              SqlUtils.field(TBL_PERSONS, COL_FIRST_NAME),
+              SqlUtils.field(TBL_PERSONS, COL_LAST_NAME),
+              SqlUtils.field(TBL_POSITIONS, COL_POSITION_NAME)));
+        });
+        return new SqlSelect().setUnionAllMode(true)
             .addFields(TBL_EMAILS, COL_EMAIL_ADDRESS)
             .addFields(TBL_ADDRESSBOOK, COL_ADDRESSBOOK_LABEL)
             .addFrom(TBL_EMAILS)
             .addFromInner(TBL_ADDRESSBOOK,
                 SqlUtils.and(sys.joinTables(TBL_EMAILS, TBL_ADDRESSBOOK, COL_EMAIL),
                     SqlUtils.equals(TBL_ADDRESSBOOK, COL_USER, usr.getCurrentUserId())))
+            .setWhere(whAddressbook)
             .addUnion(new SqlSelect()
                 .addFields(TBL_EMAILS, COL_EMAIL_ADDRESS)
                 .addField(TBL_COMPANIES, COL_COMPANY_NAME, COL_ADDRESSBOOK_LABEL)
                 .addFrom(TBL_EMAILS)
                 .addFromInner(TBL_CONTACTS, sys.joinTables(TBL_EMAILS, TBL_CONTACTS, COL_EMAIL))
                 .addFromInner(TBL_COMPANIES,
-                    sys.joinTables(TBL_CONTACTS, TBL_COMPANIES, COL_CONTACT)))
+                    sys.joinTables(TBL_CONTACTS, TBL_COMPANIES, COL_CONTACT))
+                .setWhere(whCompanies))
             .addUnion(new SqlSelect()
                 .addFields(TBL_EMAILS, COL_EMAIL_ADDRESS)
                 .addExpr(SqlUtils.concat(SqlUtils.field(TBL_COMPANIES, COL_COMPANY_NAME), "' '",
-                        SqlUtils.nvl(SqlUtils.field(TBL_CONTACTS, COL_NOTES), "''")),
+                    SqlUtils.nvl(SqlUtils.field(TBL_CONTACTS, COL_NOTES), "''")),
                     COL_ADDRESSBOOK_LABEL)
                 .addFrom(TBL_EMAILS)
                 .addFromInner(TBL_CONTACTS, sys.joinTables(TBL_EMAILS, TBL_CONTACTS, COL_EMAIL))
                 .addFromInner(TBL_COMPANY_CONTACTS,
                     sys.joinTables(TBL_CONTACTS, TBL_COMPANY_CONTACTS, COL_CONTACT))
                 .addFromInner(TBL_COMPANIES,
-                    sys.joinTables(TBL_COMPANIES, TBL_COMPANY_CONTACTS, COL_COMPANY)))
+                    sys.joinTables(TBL_COMPANIES, TBL_COMPANY_CONTACTS, COL_COMPANY))
+                .setWhere(whCompanyContacts))
             .addUnion(new SqlSelect()
                 .addFields(TBL_EMAILS, COL_EMAIL_ADDRESS)
                 .addExpr(SqlUtils.concat(SqlUtils.field(TBL_PERSONS, COL_FIRST_NAME), "' '",
-                        SqlUtils.nvl(SqlUtils.field(TBL_PERSONS, COL_LAST_NAME), "''")),
+                    SqlUtils.nvl(SqlUtils.field(TBL_PERSONS, COL_LAST_NAME), "''")),
                     COL_ADDRESSBOOK_LABEL)
                 .addFrom(TBL_EMAILS)
                 .addFromInner(TBL_CONTACTS, sys.joinTables(TBL_EMAILS, TBL_CONTACTS, COL_EMAIL))
                 .addFromInner(TBL_PERSONS,
-                    sys.joinTables(TBL_CONTACTS, TBL_PERSONS, COL_CONTACT)))
+                    sys.joinTables(TBL_CONTACTS, TBL_PERSONS, COL_CONTACT))
+                .setWhere(whPersons))
             .addUnion(new SqlSelect()
                 .addFields(TBL_EMAILS, COL_EMAIL_ADDRESS)
                 .addExpr(SqlUtils.concat(SqlUtils.field(TBL_PERSONS, COL_FIRST_NAME), "' '",
-                        SqlUtils.nvl(SqlUtils.field(TBL_PERSONS, COL_LAST_NAME), "''"), "' '",
-                        SqlUtils.nvl(SqlUtils.field(TBL_POSITIONS, COL_POSITION_NAME), "''")),
+                    SqlUtils.nvl(SqlUtils.field(TBL_PERSONS, COL_LAST_NAME), "''"), "' '",
+                    SqlUtils.nvl(SqlUtils.field(TBL_POSITIONS, COL_POSITION_NAME), "''")),
                     COL_ADDRESSBOOK_LABEL)
                 .addFrom(TBL_EMAILS)
                 .addFromInner(TBL_CONTACTS, sys.joinTables(TBL_EMAILS, TBL_CONTACTS, COL_EMAIL))
@@ -754,15 +809,9 @@ public class MailModuleBean implements BeeModule, HasTimerService {
                 .addFromInner(TBL_PERSONS,
                     sys.joinTables(TBL_PERSONS, TBL_COMPANY_PERSONS, COL_PERSON))
                 .addFromLeft(TBL_POSITIONS,
-                    sys.joinTables(TBL_POSITIONS, TBL_COMPANY_PERSONS, COL_POSITION)))
+                    sys.joinTables(TBL_POSITIONS, TBL_COMPANY_PERSONS, COL_POSITION))
+                .setWhere(whCompanyPersons))
             .addOrder(null, COL_EMAIL_ADDRESS);
-
-        return qs.getViewData(select, sys.getView(VIEW_USER_EMAILS), false);
-      }
-
-      @Override
-      public int getViewSize(BeeView view, SqlSelect query, Filter filter) {
-        return getViewData(view, query, filter).getNumberOfRows();
       }
     });
 
@@ -781,7 +830,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
                 SqlUtils.and(sys.joinTables(TBL_ACCOUNTS, TBL_ACCOUNT_USERS, COL_ACCOUNT),
                     SqlUtils.equals(TBL_ACCOUNT_USERS, COL_USER, userId)))
             .setWhere(SqlUtils.and(SqlUtils.or(SqlUtils.equals(TBL_ACCOUNTS, COL_USER, userId),
-                    SqlUtils.equals(TBL_ACCOUNT_USERS, COL_USER, userId)),
+                SqlUtils.equals(TBL_ACCOUNT_USERS, COL_USER, userId)),
                 SqlUtils.or(SqlUtils.isNull(TBL_PLACES, COL_FLAGS),
                     SqlUtils.equals(SqlUtils.bitAnd(TBL_PLACES, COL_FLAGS,
                         MessageFlag.SEEN.getMask()), 0))));

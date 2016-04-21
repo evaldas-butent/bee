@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+
+        name="CustomConfig" viewName="CustomConfig" caption="=customConfig"
+>
+  <g:columns>
+    <DataColumn name="ObjectModule" />
+    <DataColumn name="ObjectType" visible="true" />
+    <DataColumn name="ObjectName" visible="true" />
+  </g:columns>
+</g:Grid>

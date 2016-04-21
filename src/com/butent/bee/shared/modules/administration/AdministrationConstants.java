@@ -10,6 +10,7 @@ import com.butent.bee.shared.i18n.SupportedLocale;
 import com.butent.bee.shared.imports.ImportType;
 import com.butent.bee.shared.modules.ParameterType;
 import com.butent.bee.shared.news.Feed;
+import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.rights.RightsObjectType;
 import com.butent.bee.shared.rights.RightsState;
 import com.butent.bee.shared.time.ScheduleDateMode;
@@ -72,6 +73,7 @@ public final class AdministrationConstants {
     EnumUtils.register(WorkdayTransition.class);
 
     EnumUtils.register(ImportType.class);
+    EnumUtils.register(Module.class);
     EnumUtils.register(SysObject.class);
   }
 
@@ -84,6 +86,9 @@ public final class AdministrationConstants {
   public static final String SVC_SET_PARAMETER = PARAMETERS_PREFIX + "set";
 
   public static final String SVC_DO_IMPORT = "DoImport";
+
+  public static final String SVC_GET_CONFIG_OBJECT = "GetConfigObject";
+  public static final String SVC_GET_CONFIG_OBJECTS = "GetConfigObjects";
 
   public static final String SVC_TOTAL_TO_WORDS = "GetTotalInWords";
 

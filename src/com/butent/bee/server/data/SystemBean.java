@@ -21,7 +21,6 @@ import com.butent.bee.server.data.BeeTable.BeeTrigger;
 import com.butent.bee.server.data.BeeTable.BeeUniqueKey;
 import com.butent.bee.server.io.FileUtils;
 import com.butent.bee.server.modules.ModuleHolderBean;
-import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.modules.administration.FileStorageBean;
 import com.butent.bee.server.sql.HasFrom;
 import com.butent.bee.server.sql.IsCondition;
@@ -70,6 +69,7 @@ import com.butent.bee.shared.io.FileNameUtils;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.administration.SysObject;
+import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.rights.RightsState;
 import com.butent.bee.shared.rights.RightsUtils;
 import com.butent.bee.shared.utils.ArrayUtils;
@@ -120,8 +120,6 @@ public class SystemBean {
   UserServiceBean usr;
   @EJB
   ModuleHolderBean moduleBean;
-  @EJB
-  ParamHolderBean prm;
   @EJB
   FileStorageBean fs;
 
@@ -482,15 +480,6 @@ public class SystemBean {
     return table.joinExtField(query, tblAlias, field);
   }
 
-  /**
-   * Creates SQL joins between tables.
-   *
-   * @param tblName First table with represented own column Id name, where called
-   * {@link SystemBean#getIdName(String)}
-   * @param dstTable Second table
-   * @param dstField Reference field name of second table
-   * @return
-   */
   public IsCondition joinTables(String tblName, String dstTable, String dstField) {
     return joinTables(tblName, null, dstTable, dstField);
   }
@@ -1099,19 +1088,24 @@ public class SystemBean {
 
     String schema = Config.getSchemaPath(obj.getSchemaName());
 
-    switch (obj) {
-      case TABLE:
-        BeeTable table = initTable(moduleName, objectName,
-            XmlUtils.unmarshal(XmlTable.class, resource, schema));
+    try {
+      switch (obj) {
+        case TABLE:
+          BeeTable table = initTable(moduleName, objectName,
+              XmlUtils.unmarshal(XmlTable.class, resource, schema));
 
-        return SysObject.register(table, tableCache, initial, logger);
-      case VIEW:
-        BeeView view = initView(moduleName, objectName,
-            XmlUtils.unmarshal(XmlView.class, resource, schema));
+          return SysObject.register(table, tableCache, initial, logger);
+        case VIEW:
+          BeeView view = initView(moduleName, objectName,
+              XmlUtils.unmarshal(XmlView.class, resource, schema));
 
-        return SysObject.register(view, viewCache, initial, logger);
-      default:
-        return false;
+          return SysObject.register(view, viewCache, initial, logger);
+        default:
+          return false;
+      }
+    } catch (Throwable e) {
+      logger.error(e);
+      return false;
     }
   }
 
@@ -1212,7 +1206,7 @@ public class SystemBean {
 
     for (String moduleName : moduleBean.getModules()) {
       List<File> resources = FileUtils.findFiles("*" + ext,
-          Arrays.asList(new File(Config.CONFIG_DIR,
+          Collections.singleton(new File(Config.CONFIG_DIR,
               moduleBean.getResourcePath(moduleName, obj.getPath()))), null, null, false, true);
 
       if (!BeeUtils.isEmpty(resources)) {
@@ -1231,11 +1225,15 @@ public class SystemBean {
     BeeRowSet rs = (BeeRowSet) qs.doSql(new SqlSelect()
         .addFields(TBL_CUSTOM_CONFIG, COL_CONFIG_MODULE, COL_CONFIG_OBJECT, COL_CONFIG_DATA)
         .addFrom(TBL_CUSTOM_CONFIG)
-        .setWhere(SqlUtils.equals(TBL_CUSTOM_CONFIG, COL_CONFIG_TYPE, obj.ordinal())).getQuery());
+        .setWhere(SqlUtils.equals(TBL_CUSTOM_CONFIG, COL_CONFIG_TYPE, obj)).getQuery());
 
     for (int i = 0; i < rs.getNumberOfRows(); i++) {
-      custom.put(rs.getString(i, COL_CONFIG_MODULE),
-          Pair.of(rs.getString(i, COL_CONFIG_OBJECT), rs.getString(i, COL_CONFIG_DATA)));
+      Module module = EnumUtils.getEnumByIndex(Module.class, rs.getInteger(i, COL_CONFIG_MODULE));
+
+      if (Objects.nonNull(module)) {
+        custom.put(module.getName(),
+            Pair.of(rs.getString(i, COL_CONFIG_OBJECT), rs.getString(i, COL_CONFIG_DATA)));
+      }
     }
     for (String moduleName : moduleBean.getModules()) {
       for (Pair<String, String> pair : custom.get(moduleName)) {

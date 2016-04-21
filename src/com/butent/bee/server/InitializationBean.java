@@ -60,7 +60,7 @@ public class InitializationBean {
 
     Map<String, String> props = prm.getMap(AdministrationConstants.PRM_SERVER_PROPERTIES);
     if (!BeeUtils.isEmpty(props)) {
-      props.forEach((prop, value) -> Config.setProperty(prop, value));
+      props.forEach(Config::setProperty);
     }
 
     sys.initViews();

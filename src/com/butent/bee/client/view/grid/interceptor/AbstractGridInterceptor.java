@@ -346,7 +346,7 @@ public abstract class AbstractGridInterceptor implements GridInterceptor {
   }
 
   @Override
-  public String getRowCaption(IsRow row, boolean edit) {
+  public String getRowCaption(IsRow row) {
     return null;
   }
 

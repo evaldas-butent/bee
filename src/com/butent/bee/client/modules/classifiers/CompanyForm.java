@@ -24,21 +24,27 @@ import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.grid.ChildGrid;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.modules.trade.TradeKeeper;
+import com.butent.bee.client.presenter.GridFormPresenter;
 import com.butent.bee.client.presenter.GridPresenter;
+import com.butent.bee.client.presenter.Presenter;
+import com.butent.bee.client.presenter.RowPresenter;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.Opener;
+import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.HeaderView;
+import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
+import com.butent.bee.client.view.grid.GridFormKind;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.FaLabel;
-import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.css.values.FontSize;
 import com.butent.bee.shared.data.BeeRow;
@@ -55,14 +61,12 @@ import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
-public class CompanyForm extends AbstractFormInterceptor {
+class CompanyForm extends AbstractFormInterceptor {
 
-  private static final String NAME_INPUT_MODE = "InputMode";
-  private List<Long> rowIds = new ArrayList<>();
+  CompanyForm() {
+  }
 
   @Override
   public void afterCreateWidget(String name, IdentifiableWidget widget,
@@ -238,27 +242,19 @@ public class CompanyForm extends AbstractFormInterceptor {
       refreshCreditInfo();
       createQrButton(form, row);
 
-      HeaderView header = form.getViewPresenter().getHeader();
-      header.clearCommandPanel();
+      Presenter presenter = form.getViewPresenter();
+      HeaderView header = presenter.getHeader();
 
-      FaLabel input = getFormIcon();
-      input.setTitle(getFormIconTitle());
-      input.addClickHandler(new ClickHandler() {
+      if (!form.isAdding() && !header.hasCommands()
+          && (presenter instanceof GridFormPresenter || presenter instanceof RowPresenter)) {
 
-        @Override
-        public void onClick(ClickEvent event) {
-          if (DataUtils.equals(form.getOldRow(), row)) {
-            BeeKeeper.getScreen().closeWidget(form);
-            RowEditor.openForm(getInputFormName(), Data.getDataInfo(VIEW_COMPANIES), row.getId(),
-                Opener.NEW_TAB);
-          } else {
-            rowIds.add(row.getId());
-            form.getViewPresenter().handleAction(Action.CLOSE);
-          }
-        }
-      });
+        FaLabel command = getFormIcon();
+        command.setTitle(getFormIconTitle());
 
-      header.addCommandItem(input);
+        command.addClickHandler(event -> switchForm());
+
+        header.addCommandItem(command);
+      }
     }
   }
 
@@ -280,15 +276,6 @@ public class CompanyForm extends AbstractFormInterceptor {
     }
   }
 
-  @Override
-  public void onUnload(FormView form) {
-    if (rowIds.contains(getActiveRowId())) {
-      RowEditor.openForm(getInputFormName(), Data.getDataInfo(VIEW_COMPANIES), getActiveRowId(),
-          Opener.NEW_TAB);
-      rowIds.remove(getActiveRowId());
-    }
-  }
-
   private static void createQrButton(FormView form, IsRow row) {
     Widget widget = form.getWidgetByName(QR_FLOW_PANEL, false);
 
@@ -306,33 +293,24 @@ public class CompanyForm extends AbstractFormInterceptor {
     }
   }
 
-  private static FaLabel getFormIcon() {
-
-    if (!readBoolean(NAME_INPUT_MODE)) {
-      return new FaLabel(FontAwesome.TOGGLE_ON);
-    } else {
+  private FaLabel getFormIcon() {
+    if (isFormSimple()) {
       return new FaLabel(FontAwesome.TOGGLE_OFF);
+    } else {
+      return new FaLabel(FontAwesome.TOGGLE_ON);
     }
   }
 
-  private static String getInputFormName() {
-
-    if (readBoolean(NAME_INPUT_MODE)) {
-      BeeKeeper.getStorage().set(storageKey(NAME_INPUT_MODE), false);
-      return FORM_COMPANY;
-    } else {
-      BeeKeeper.getStorage().set(storageKey(NAME_INPUT_MODE), true);
-      return FORM_NEW_COMPANY;
-    }
-  }
-
-  private static String getFormIconTitle() {
-
-    if (!readBoolean(NAME_INPUT_MODE)) {
-      return Localized.dictionary().previewMode();
-    } else {
+  private String getFormIconTitle() {
+    if (isFormSimple()) {
       return Localized.dictionary().editMode();
+    } else {
+      return Localized.dictionary().previewMode();
     }
+  }
+
+  private boolean isFormSimple() {
+    return FORM_NEW_COMPANY.equals(getFormView().getFormName());
   }
 
   private void refreshCreditInfo() {
@@ -385,13 +363,35 @@ public class CompanyForm extends AbstractFormInterceptor {
     }
   }
 
-  private static boolean readBoolean(String name) {
-    String key = storageKey(name);
-    return BeeKeeper.getStorage().hasItem(key);
-  }
+  private void switchForm() {
+    if (getFormView().getViewPresenter() instanceof GridFormPresenter) {
+      final GridFormPresenter presenter = (GridFormPresenter) getFormView().getViewPresenter();
 
-  private static String storageKey(String name) {
-    Long userId = BeeKeeper.getUser().getUserId();
-    return BeeUtils.join(BeeConst.STRING_MINUS, "Companies_EditForm", userId, name);
+      presenter.save(row -> {
+        GridView gridView = presenter.getGridView();
+
+        int index = gridView.getFormIndex(GridFormKind.EDIT);
+        gridView.selectForm(GridFormKind.EDIT, 1 - index);
+
+        EditStartEvent event = new EditStartEvent(row, gridView.isReadOnly());
+        gridView.onEditStart(event);
+      });
+
+    } else if (getFormView().getViewPresenter() instanceof RowPresenter) {
+      String switchTo = isFormSimple() ? FORM_COMPANY : FORM_NEW_COMPANY;
+      String viewName = getViewName();
+
+      IsRow oldRow = getFormView().getOldRow();
+      IsRow newRow = getActiveRow();
+
+      boolean modal = UiHelper.isModal(getFormView().asWidget());
+
+      getFormView().getViewPresenter().handleAction(Action.CANCEL);
+
+      Consumer<FormView> onOpen = form -> form.setOldRow(oldRow);
+      Opener opener = modal ? Opener.modal(onOpen) : Opener.newTab(onOpen);
+
+      RowEditor.openForm(switchTo, viewName, newRow, opener, null);
+    }
   }
 }

@@ -149,6 +149,8 @@ public interface FormView extends DataView, HasDataTable, ActiveWidgetChangeEven
 
   void setCaption(String caption);
 
+  void setOldRow(IsRow oldRow);
+
   void start(Integer rowCount);
 
   void updateCell(String columnId, String newValue);

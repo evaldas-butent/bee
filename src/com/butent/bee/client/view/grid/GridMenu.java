@@ -18,10 +18,10 @@ import com.butent.bee.client.rights.Roles;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.view.grid.GridView.SelectedRows;
+import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.font.FontAwesome;
@@ -37,7 +37,6 @@ import com.butent.bee.shared.utils.EnumUtils;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 public class GridMenu {
@@ -56,11 +55,6 @@ public class GridMenu {
         return DataUtils.hasId(row)
             && !Global.getFavorites().isBookmarked(presenter.getViewName(), row);
       }
-
-      @Override
-      void select(GridPresenter presenter) {
-        presenter.handleAction(Action.BOOKMARK);
-      }
     },
 
     COPY(Action.COPY) {
@@ -73,11 +67,6 @@ public class GridMenu {
       @Override
       boolean isVisible(GridPresenter presenter) {
         return presenter.getMainView().isEnabled() && presenter.getActiveRow() != null;
-      }
-
-      @Override
-      void select(GridPresenter presenter) {
-        presenter.handleAction(Action.COPY);
       }
     },
 
@@ -92,11 +81,6 @@ public class GridMenu {
       boolean isVisible(GridPresenter presenter) {
         return presenter.getGridView().getSelectedRows(SelectedRows.MERGEABLE).size() == 2;
       }
-
-      @Override
-      void select(GridPresenter presenter) {
-        presenter.handleAction(Action.MERGE);
-      }
     },
 
     EXPORT(Action.EXPORT) {
@@ -109,14 +93,14 @@ public class GridMenu {
       boolean isVisible(GridPresenter presenter) {
         return presenter.getGridView().getGrid().getRowCount() > 0;
       }
-
-      @Override
-      void select(GridPresenter presenter) {
-        presenter.handleAction(Action.EXPORT);
-      }
     },
 
     CONFIGURE(Action.CONFIGURE) {
+      @Override
+      String getLabel() {
+        return Localized.dictionary().columns();
+      }
+
       @Override
       boolean isEnabled(GridDescription gridDescription, Collection<UiOption> uiOptions) {
         return UiOption.hasSettings(uiOptions);
@@ -125,11 +109,6 @@ public class GridMenu {
       @Override
       boolean isVisible(GridPresenter presenter) {
         return !presenter.getGridView().isEmpty();
-      }
-
-      @Override
-      void select(GridPresenter presenter) {
-        presenter.handleAction(Action.CONFIGURE);
       }
     },
 
@@ -143,11 +122,6 @@ public class GridMenu {
       boolean isVisible(GridPresenter presenter) {
         return !presenter.getGridView().isEmpty()
             && GridSettings.contains(presenter.getGridView().getGridKey());
-      }
-
-      @Override
-      void select(GridPresenter presenter) {
-        presenter.handleAction(Action.RESET_SETTINGS);
       }
     },
 
@@ -163,11 +137,6 @@ public class GridMenu {
         return !presenter.getGridView().getSelectedRows(SelectedRows.ALL).isEmpty()
             || presenter.getActiveRow() != null;
       }
-
-      @Override
-      void select(GridPresenter presenter) {
-        presenter.handleAction(Action.AUDIT);
-      }
     },
 
     PRINT(Action.PRINT) {
@@ -180,10 +149,63 @@ public class GridMenu {
       boolean isVisible(GridPresenter presenter) {
         return !presenter.getGridView().isEmpty();
       }
+    },
+
+    NEW_ROW_FORM(GridFormKind.NEW_ROW) {
+      @Override
+      String getLabel() {
+        return Localized.dictionary().inputForm();
+      }
 
       @Override
-      void select(GridPresenter presenter) {
-        presenter.handleAction(Action.PRINT);
+      boolean isEnabled(GridDescription gridDescription, Collection<UiOption> uiOptions) {
+        return BeeUtils.contains(gridDescription.getNewRowForm(),
+            GridDescription.FORM_ITEM_SEPARATOR)
+            && isEditable(gridDescription)
+            && BeeKeeper.getUser().canCreateData(gridDescription.getViewName());
+      }
+
+      @Override
+      boolean isVisible(GridPresenter presenter) {
+        return presenter.getGridView().getFormCount(GridFormKind.NEW_ROW) > 1;
+      }
+
+      @Override
+      Widget renderIcon(GridPresenter presenter) {
+        return new FaLabel(FontAwesome.PLUS);
+      }
+
+      @Override
+      boolean separatorBefore() {
+        return true;
+      }
+    },
+
+    EDIT_FORM(GridFormKind.EDIT) {
+      @Override
+      String getLabel() {
+        return Localized.dictionary().editForm();
+      }
+
+      @Override
+      boolean isEnabled(GridDescription gridDescription, Collection<UiOption> uiOptions) {
+        return BeeUtils.contains(gridDescription.getEditForm(),
+            GridDescription.FORM_ITEM_SEPARATOR);
+      }
+
+      @Override
+      boolean isVisible(GridPresenter presenter) {
+        return presenter.getGridView().getFormCount(GridFormKind.EDIT) > 1;
+      }
+
+      @Override
+      Widget renderIcon(GridPresenter presenter) {
+        return new FaLabel(FontAwesome.EDIT);
+      }
+
+      @Override
+      boolean separatorBefore() {
+        return true;
       }
     },
 
@@ -208,8 +230,8 @@ public class GridMenu {
       }
 
       @Override
-      void select(GridPresenter presenter) {
-        handleRights(presenter, RightsState.VIEW);
+      boolean separatorBefore() {
+        return true;
       }
     },
 
@@ -232,11 +254,6 @@ public class GridMenu {
           return null;
         }
       }
-
-      @Override
-      void select(GridPresenter presenter) {
-        handleRights(presenter, RightsState.EDIT);
-      }
     },
 
     RIGHTS_DELETE(RightsState.DELETE) {
@@ -258,14 +275,14 @@ public class GridMenu {
           return null;
         }
       }
-
-      @Override
-      void select(GridPresenter presenter) {
-        handleRights(presenter, RightsState.DELETE);
-      }
     },
 
     RIGHTS_ALL(Action.RIGHTS) {
+      @Override
+      String getLabel() {
+        return Localized.dictionary().rightsAll();
+      }
+
       @Override
       boolean isEnabled(GridDescription gridDescription, Collection<UiOption> uiOptions) {
         return BeeKeeper.getUser().isAdministrator() && isEditable(gridDescription);
@@ -286,19 +303,11 @@ public class GridMenu {
       }
 
       @Override
-      Widget renderLabel() {
-        return new Label(Localized.dictionary().rightsAll());
-      }
-
-      @Override
-      void select(final GridPresenter presenter) {
-        Roles.getData(new Consumer<Map<Long, String>>() {
-          @Override
-          public void accept(Map<Long, String> input) {
-            if (!BeeUtils.isEmpty(input)) {
-              presenter.setRoles(input);
-              presenter.handleAction(Action.RIGHTS);
-            }
+      void select(final GridPresenter presenter, Integer subIndex) {
+        Roles.getData(input -> {
+          if (!BeeUtils.isEmpty(input)) {
+            presenter.setRoles(input);
+            presenter.handleAction(Action.RIGHTS);
           }
         });
       }
@@ -320,15 +329,34 @@ public class GridMenu {
 
     private final Action action;
     private final RightsState rightsState;
+    private final GridFormKind formKind;
 
     Item(Action action) {
       this.action = action;
       this.rightsState = null;
+      this.formKind = null;
     }
 
     Item(RightsState rightsState) {
       this.action = Action.RIGHTS;
       this.rightsState = rightsState;
+      this.formKind = null;
+    }
+
+    Item(GridFormKind formKind) {
+      this.action = null;
+      this.rightsState = null;
+      this.formKind = formKind;
+    }
+
+    String getLabel() {
+      if (rightsState != null) {
+        return Localized.dictionary().rights() + " - " + rightsState.getCaption();
+      } else if (action != null) {
+        return action.getCaption();
+      } else {
+        return null;
+      }
     }
 
     abstract boolean isEnabled(GridDescription gridDescription, Collection<UiOption> uiOptions);
@@ -339,23 +367,37 @@ public class GridMenu {
      * @param presenter
      */
     Widget renderIcon(GridPresenter presenter) {
-      return new FaLabel(action.getIcon());
+      if (action == null) {
+        return null;
+      } else {
+        return new FaLabel(action.getIcon());
+      }
     }
 
-    abstract void select(GridPresenter presenter);
-
-    Widget renderLabel() {
+    void select(GridPresenter presenter, Integer subIndex) {
       if (rightsState != null) {
-        return new Label(Localized.dictionary().rights() + " - " + rightsState.getCaption());
+        handleRights(presenter, rightsState);
       } else if (action != null) {
-        return new Label(action.getCaption());
-      } else {
-        return null;
+        presenter.handleAction(action);
+      } else if (formKind != null && subIndex != null) {
+        presenter.getGridView().selectForm(formKind, subIndex);
       }
+    }
+
+    boolean separatorBefore() {
+      return false;
     }
 
     private String getStyleSuffix() {
       return name().toLowerCase().replace(BeeConst.CHAR_UNDER, BeeConst.CHAR_MINUS);
+    }
+
+    private boolean isDisablable() {
+      if (action == null) {
+        return false;
+      } else {
+        return action.isDisablable();
+      }
     }
   }
 
@@ -369,6 +411,14 @@ public class GridMenu {
   private static final String STYLE_ICON = STYLE_PREFIX + "icon";
   private static final String STYLE_LABEL = STYLE_PREFIX + "label";
 
+  private static final String STYLE_FORM_ITEM = STYLE_PREFIX + "form-item";
+  private static final String STYLE_FORM_SELECTED = STYLE_PREFIX + "form-selected";
+
+  private static final String STYLE_SECTION_HEADER = STYLE_PREFIX + "section-header";
+  private static final String STYLE_SEPARATOR = STYLE_PREFIX + "separator";
+
+  private static final String KEY_SUB_INDEX = "sub";
+
   private final List<Item> enabledItems = new ArrayList<>();
 
   public GridMenu(GridDescription gridDescription, Collection<UiOption> uiOptions) {
@@ -377,9 +427,9 @@ public class GridMenu {
 
     boolean ok;
     for (Item item : Item.values()) {
-      if (disabledActions.contains(item.action)) {
+      if (item.action != null && disabledActions.contains(item.action)) {
         ok = false;
-      } else if (enabledActions.contains(item.action)) {
+      } else if (item.action != null && enabledActions.contains(item.action)) {
         ok = true;
       } else {
         ok = item.isEnabled(gridDescription, uiOptions);
@@ -392,35 +442,76 @@ public class GridMenu {
   }
 
   public boolean isActionVisible(GridPresenter presenter, Action action) {
-    for (Item item : enabledItems) {
-      if (item.action == action) {
-        return item.isVisible(presenter);
+    if (action != null) {
+      for (Item item : enabledItems) {
+        if (item.action == action) {
+          return item.isVisible(presenter);
+        }
       }
     }
     return false;
   }
 
   public void open(final GridPresenter presenter, boolean enabled) {
-
     final HtmlTable table = new HtmlTable(STYLE_TABLE);
     int r = 0;
 
     for (Item item : enabledItems) {
-      if ((enabled || !item.action.isDisablable()) && item.isVisible(presenter)) {
+      if ((enabled || !item.isDisablable()) && item.isVisible(presenter)) {
+        if (item.separatorBefore() && r > 0) {
+          CustomDiv separator = new CustomDiv();
+          table.setWidgetAndStyle(r, 0, separator, STYLE_SEPARATOR);
+
+          table.getCellFormatter().setColSpan(r, 0, 2);
+          r++;
+        }
+
         Widget icon = item.renderIcon(presenter);
         if (icon != null) {
           table.setWidgetAndStyle(r, 0, icon, STYLE_ICON);
         }
 
-        Widget label = item.renderLabel();
-        if (label != null) {
+        String text = item.getLabel();
+        if (!BeeUtils.isEmpty(text)) {
+          Label label = new Label(text);
+          UiHelper.makePotentiallyBold(label.getElement(), text);
+
           table.setWidgetAndStyle(r, 1, label, STYLE_LABEL);
         }
 
         table.getRowFormatter().addStyleName(r, STYLE_PREFIX + item.getStyleSuffix());
+        if (item.formKind != null) {
+          table.getRowFormatter().addStyleName(r, STYLE_SECTION_HEADER);
+        }
+
         DomUtils.setDataIndex(table.getRow(r), item.ordinal());
 
         r++;
+
+        if (item.formKind != null) {
+          List<String> formLabels = presenter.getGridView().getFormLabels(item.formKind);
+
+          for (int formIndex = 0; formIndex < formLabels.size(); formIndex++) {
+            boolean selected = formIndex == presenter.getGridView().getFormIndex(item.formKind);
+            if (selected) {
+              table.setWidgetAndStyle(r, 0, new FaLabel(FontAwesome.CHECK), STYLE_ICON);
+            }
+
+            String formText = formLabels.get(formIndex);
+            Label label = new Label(formText);
+            UiHelper.makePotentiallyBold(label.getElement(), formText);
+
+            table.setWidgetAndStyle(r, 1, label, STYLE_LABEL);
+
+            Element rowElement = table.getRow(r);
+            rowElement.addClassName(selected ? STYLE_FORM_ITEM : STYLE_FORM_SELECTED);
+
+            DomUtils.setDataIndex(rowElement, item.ordinal());
+            DomUtils.setDataProperty(rowElement, KEY_SUB_INDEX, formIndex);
+
+            r++;
+          }
+        }
       }
     }
 
@@ -430,11 +521,15 @@ public class GridMenu {
         TableRowElement rowElement = DomUtils.getParentRow(targetElement, true);
 
         int index = DomUtils.getDataIndexInt(rowElement);
-        Item item = EnumUtils.getEnumByIndex(Item.class, index);
 
-        if (item != null) {
-          UiHelper.closeDialog(table);
-          item.select(presenter);
+        if (!BeeConst.isUndef(index)) {
+          Item item = EnumUtils.getEnumByIndex(Item.class, index);
+          Integer subIndex = DomUtils.getDataPropertyInt(rowElement, KEY_SUB_INDEX);
+
+          if (item != null && (item.formKind == null || subIndex != null)) {
+            UiHelper.closeDialog(table);
+            item.select(presenter, subIndex);
+          }
         }
       });
 

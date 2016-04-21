@@ -33,6 +33,9 @@ name="Administration" label="=administration" order="1000" module="Administratio
   <Item name="Autocomplete" label="=autocompletion" service="grid" parameters="Autocomplete"
     separator="true" />
 
+  <Item name="CustomConfig" label="=customConfig" service="grid" parameters="CustomConfig"
+        separator="true" />
+
   <Item name="Imports" label="=dataImport" service="form" parameters="Imports" separator="true" />
 
   <Item name="GridSettings" label="=gridSettings" service="grid" parameters="GridSettings"

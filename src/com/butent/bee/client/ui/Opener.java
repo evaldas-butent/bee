@@ -32,6 +32,14 @@ public final class Opener {
     }
   }
 
+  public static Opener newTab(Consumer<FormView> onOpen) {
+    if (onOpen == null) {
+      return NEW_TAB;
+    } else {
+      return new Opener(false, null, NEW_TAB.getPresenterCallback(), onOpen);
+    }
+  }
+
   public static Opener relativeTo(Element element) {
     return new Opener(true, element);
   }

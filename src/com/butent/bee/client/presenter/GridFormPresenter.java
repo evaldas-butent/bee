@@ -21,6 +21,7 @@ import com.butent.bee.client.view.form.CloseCallback;
 import com.butent.bee.client.view.form.FormAndHeader;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
+import com.butent.bee.client.view.grid.GridFormKind;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.shared.BeeConst;
@@ -168,7 +169,7 @@ public class GridFormPresenter extends AbstractPresenter implements HasGridView,
         break;
 
       case EDIT:
-        gridView.getForm(true).setEnabled(true);
+        gridView.getForm(GridFormKind.EDIT).setEnabled(true);
         hideAction(action);
         if (editSave) {
           showAction(Action.SAVE);
@@ -221,6 +222,19 @@ public class GridFormPresenter extends AbstractPresenter implements HasGridView,
     }
 
     return ok;
+  }
+
+  public void save(Consumer<IsRow> consumer) {
+    final FormView form = getForm();
+    if (!form.validate(form, true)) {
+      return;
+    }
+
+    if (gridView.isAdding() && gridView.likeAMotherlessChild()) {
+      gridView.ensureRelId(result -> gridView.formConfirm(consumer));
+    } else {
+      gridView.formConfirm(consumer);
+    }
   }
 
   public void setCaption(String caption) {
@@ -286,19 +300,6 @@ public class GridFormPresenter extends AbstractPresenter implements HasGridView,
       Printer.print(this);
     } else {
       Printer.print(getForm());
-    }
-  }
-
-  private void save(Consumer<IsRow> consumer) {
-    final FormView form = getForm();
-    if (!form.validate(form, true)) {
-      return;
-    }
-
-    if (gridView.isAdding() && gridView.likeAMotherlessChild()) {
-      gridView.ensureRelId(result -> gridView.formConfirm(consumer));
-    } else {
-      gridView.formConfirm(consumer);
     }
   }
 
