@@ -121,7 +121,6 @@ class TaskEditor extends AbstractFormInterceptor {
 
   private static final String STYLE_DURATION = CRM_STYLE_PREFIX + "taskDuration-";
   private static final String STYLE_DURATION_CELL = "Cell";
-  private static final String WIDGET_PROJECT_DATA_SUFFIX = "Data";
   private static final String STYLE_PHOTO = "Photo";
 
   private static final String STYLE_EXTENSION = CRM_STYLE_PREFIX + "taskExtension";
@@ -880,12 +879,6 @@ class TaskEditor extends AbstractFormInterceptor {
     /* int state = BeeUtils.unbox(row.getInteger(idxTaskState)); */
     int projectStatus = BeeUtils.unbox(row.getInteger(idxProjectStatus));
 
-    if (DataUtils.isId(projectId)) {
-      setVisibleProjectData(form, true);
-    } else {
-      setVisibleProjectData(form, false);
-    }
-
     if (currentUser != projectOwner) {
       return;
     }
@@ -902,31 +895,6 @@ class TaskEditor extends AbstractFormInterceptor {
         Filter.equals(ProjectConstants.COL_PROJECT, projectId), true);
     ((DataSelector) wProjectStage).setEnabled(true);
 
-  }
-
-  private static void setVisibleProjectData(FormView form, boolean visible) {
-    Widget widget = form.getWidgetBySource(ProjectConstants.COL_PROJECT);
-    if (widget != null) {
-      widget.setVisible(visible);
-    }
-
-    widget = form.getWidgetBySource(ProjectConstants.COL_PROJECT_STAGE);
-
-    if (widget != null) {
-      widget.setVisible(visible);
-    }
-
-    widget = form.getWidgetByName(ProjectConstants.COL_PROJECT + WIDGET_PROJECT_DATA_SUFFIX);
-
-    if (widget != null) {
-      widget.setVisible(visible);
-    }
-
-    widget = form.getWidgetByName(ProjectConstants.COL_PROJECT_STAGE + WIDGET_PROJECT_DATA_SUFFIX);
-
-    if (widget != null) {
-      widget.setVisible(visible);
-    }
   }
 
   public static void createDocumentFromFile(final FileInfo fileInfo, final IsRow row) {

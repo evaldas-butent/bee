@@ -4,6 +4,7 @@
   
   name="Tasks" viewName="Tasks" caption="=crmTasks"
   cacheData="false" favorite="Summary" enabledActions="copy"
+  editForm="Task:=inputFull, TaskPreview:=inputSimple"
   order="Status, FinishTime, TaskID desc" maxColumnWidth="160"
   >
 

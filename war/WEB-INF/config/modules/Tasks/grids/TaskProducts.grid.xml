@@ -1,20 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   
-  name="TaskTypes" viewName="TaskTypes" caption="=crmTaskTypes"
-  minColumnWidth="120"
+  name="TaskProducts" viewName="TaskProducts" caption="=crmTaskProducts"
+  minColumnWidth="200"
   >
   <g:columns>
-    <DataColumn name="Ordinal" width="20" />
+    <DataColumn name="Ordinal"  visible="true" />
     <DataColumn name="Name" visible="true" />
-
+    <DataColumn name="Visible" visible="true"/>
+    
     <DataColumn name="Background" updateMode="row">
       <editor type="color" />
     </DataColumn>
     <DataColumn name="Foreground" updateMode="row">
       <editor type="color" />
     </DataColumn>
-    
-    <DataColumn name="ProductRequired" />
   </g:columns>
 </g:Grid>
