@@ -1315,6 +1315,8 @@ public interface Dictionary {
 
   default String currencyUpdateTag() {return g("currencyUpdateTag");}
 
+  default String customConfig() {return g("customConfig");}
+
   default String customer() {return g("customer");}
 
   default String customerPrice() {return g("customerPrice");}

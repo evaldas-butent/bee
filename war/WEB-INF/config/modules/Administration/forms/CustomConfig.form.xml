@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<f:Form xmlns="http://www.butent.com/widget"
+        xmlns:f="http://www.butent.com/form"
+
+        name="CustomConfig" viewName="CustomConfig" caption="=customConfig"
+        width="600" height="400"
+>
+  <FlowPanel class="flexBox-vertical">
+    <Table kind="controls" style="width:100%">
+      <col index="0" kind="label" />
+      <col index="2" kind="label" />
+      <col index="4" kind="label" />
+      <row>
+        <Label for="ObjectModule" />
+        <ListBox source="ObjectModule" />
+        <Label for="ObjectType" />
+        <ListBox source="ObjectType" />
+        <Label name="ObjectName" for="ObjectName" style="color:blue; cursor:pointer;" />
+        <InputText source="ObjectName" />
+      </row>
+    </Table>
+    <br />
+    <InputArea class="flexible" source="ObjectData"
+               style="width:100%; font-family:Courier New; white-space:pre; word-wrap:normal;" />
+  </FlowPanel>
+</f:Form>

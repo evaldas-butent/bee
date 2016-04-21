@@ -923,10 +923,10 @@ public final class XmlUtils {
       DocumentBuilder builder = builderFactory.newDocumentBuilder();
       builder.setErrorHandler(new SAXErrorHandler());
 
-      if (FileUtils.isFile(resource)) {
+      if (FileUtils.isInputFile(resource)) {
         ret = builder.parse(new InputSource(resource));
       } else {
-        ret = builder.parse(new ByteArrayInputStream(resource.getBytes()));
+        ret = builder.parse(new ByteArrayInputStream(resource.getBytes(BeeConst.CHARSET_UTF8)));
       }
     } catch (SAXException e) {
       error = e.getException() == null ? e.getMessage() : e.getException().getMessage();
@@ -1070,10 +1070,10 @@ public final class XmlUtils {
         Unmarshaller unmarshaller = JAXBContext.newInstance(clazz).createUnmarshaller();
         InputStream source;
 
-        if (FileUtils.isFile(resource)) {
+        if (FileUtils.isInputFile(resource)) {
           source = new FileInputStream(resource);
         } else {
-          source = new ByteArrayInputStream(resource.getBytes());
+          source = new ByteArrayInputStream(resource.getBytes(BeeConst.CHARSET_UTF8));
         }
         if (BeeUtils.isEmpty(schemaPath)) {
           result = (T) unmarshaller.unmarshal(source);
