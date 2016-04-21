@@ -46,6 +46,7 @@ import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.layout.TabbedPages;
+import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.render.PhotoRenderer;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
@@ -57,7 +58,6 @@ import com.butent.bee.client.validation.CellValidateEvent;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.FormView;
-import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.CustomDiv;
@@ -111,7 +111,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-class TaskEditor extends AbstractFormInterceptor {
+class TaskEditor extends ProductSupportInterceptor {
 
   private static final String STYLE_EVENT = CRM_STYLE_PREFIX + "taskEvent-";
   private static final String STYLE_EVENT_ROW = STYLE_EVENT + "row";
@@ -578,6 +578,17 @@ class TaskEditor extends AbstractFormInterceptor {
   }
 
   @Override
+  public boolean beforeAction(Action action, Presenter presenter) {
+    if (action == Action.SAVE && isProductRequired(getActiveRow(), getViewName())
+        && Data.isNull(VIEW_TASKS, getActiveRow(), COL_PRODUCT)) {
+      getFormView().notifySevere(Localized.dictionary().crmTaskProduct() + " "
+          + Localized.dictionary().valueRequired());
+      return false;
+    }
+    return true;
+  }
+
+  @Override
   public boolean beforeCreateWidget(String name, com.google.gwt.xml.client.Element description) {
 
     if (BeeUtils.same(name, "Split")) {
@@ -621,6 +632,7 @@ class TaskEditor extends AbstractFormInterceptor {
         }
       });
     }
+    super.afterCreateWidget(name, widget, callback);
   }
 
   @Override
@@ -675,6 +687,8 @@ class TaskEditor extends AbstractFormInterceptor {
     if (isExecutor()) {
       setEnabledRelations();
     }
+
+    setProductStyle();
   }
 
   @Override

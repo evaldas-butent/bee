@@ -37,7 +37,6 @@ import com.butent.bee.client.view.edit.EditableWidget;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.FormView;
-import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.widget.InputDate;
 import com.butent.bee.client.widget.InputTime;
@@ -81,7 +80,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-class TaskBuilder extends AbstractFormInterceptor {
+class TaskBuilder extends ProductSupportInterceptor {
 
   private static final String NAME_START_DATE = "Start_Date";
   private static final String NAME_START_TIME = "Start_Time";
@@ -241,12 +240,19 @@ class TaskBuilder extends AbstractFormInterceptor {
     } else if (BeeUtils.same(NAME_OBSERVER_GROUPS, name) && (widget instanceof MultiSelector)) {
       observerGroups = (MultiSelector) widget;
     }
+
+    super.afterCreateWidget(name, widget, callback);
   }
 
   @Override
   public void afterRefresh(FormView form, IsRow row) {
     setProjectStagesFilter(form, row);
     setProjectUsersFilter(form, row);
+  }
+
+  @Override
+  public void beforeRefresh(FormView form, IsRow row) {
+    setProductStyle();
   }
 
   @Override
@@ -732,6 +738,13 @@ class TaskBuilder extends AbstractFormInterceptor {
 
     if (notScheduledTaskUdateEvent != null) {
       startNotScheduledTask(activeRow, start, end, notScheduledTaskUdateEvent);
+      return;
+    }
+
+    if (isProductRequired(activeRow, getViewName())
+        && Data.isNull(VIEW_TASKS, activeRow, COL_PRODUCT)) {
+      callback.onFailure(Localized.dictionary().crmTaskProduct() + " "
+          + Localized.dictionary().valueRequired());
       return;
     }
 
