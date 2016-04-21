@@ -2499,7 +2499,9 @@ public interface Dictionary {
 
   default String feedTrTripCosts() {return g("feedTrTripCosts");}
 
-  default String feedTrTrips() {return g("feedTrTrips");}
+  default String feedTrTripsAll() {return g("feedTrTripsAll");}
+
+  default String feedTrTripsMy() {return g("feedTrTripsMy");}
 
   default String feedTrVehicles() {return g("feedTrVehicles");}
 
