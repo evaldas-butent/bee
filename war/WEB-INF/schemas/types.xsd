@@ -498,6 +498,8 @@
       <xs:enumeration value="TaskEvents" />
       <xs:enumeration value="TaskFiles" />
       <xs:enumeration value="Tasks" />
+      <xs:enumeration value="TaskDurationTypes" />
+      <xs:enumeration value="TaskProducts" />
       <xs:enumeration value="TaskTemplates" />
       <xs:enumeration value="TaskTypes" />
       <xs:enumeration value="TaskUsers" />

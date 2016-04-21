@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Form [
     <!ENTITY lbl1 "text-align: right; padding: 0 10px 0 30px;">
-    <!ENTITY lbl2 "padding-left: 25px; font-size: 14px; text-align: right; padding-right: 10px; padding-left: 30px">
+    <!ENTITY lbl2 "padding-left: 25px; text-align: right; padding-right: 10px; padding-left: 30px">
     <!ENTITY inp1 "width: 280px;">
     ]>
 <f:Form xmlns="http://www.butent.com/widget"

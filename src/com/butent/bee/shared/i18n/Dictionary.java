@@ -1187,6 +1187,8 @@ public interface Dictionary {
 
   default String crmTaskMustBePerformed() {return g("crmTaskMustBePerformed");}
 
+  default String crmTaskNewProduct() {return g("crmTaskNewProduct");}
+
   default String crmTaskNotFound() {return g("crmTaskNotFound");}
 
   default String crmTaskObserverGroups() {return g("crmTaskObserverGroups");}
@@ -1206,6 +1208,12 @@ public interface Dictionary {
   default String crmTaskPriorityMedium() {return g("crmTaskPriorityMedium");}
 
   default String crmTaskPrivate() {return g("crmTaskPrivate");}
+
+  default String crmTaskProduct() {return g("crmTaskProduct");}
+
+  default String crmTaskProductRequired() {return g("crmTaskProductRequired");}
+
+  default String crmTaskProducts() {return g("crmTaskProducts");}
 
   default String crmTaskPublishTime() {return g("crmTaskPublishTime");}
 
