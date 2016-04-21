@@ -710,6 +710,30 @@ public class MailModuleBean implements BeeModule, HasTimerService {
     QueryServiceBean.registerViewDataProvider(VIEW_USER_EMAILS, new ViewDataProvider() {
       @Override
       public BeeRowSet getViewData(BeeView view, SqlSelect query, Filter filter) {
+        return qs.getViewData(getQuery(filter)
+            .setLimit(query.getLimit())
+            .setOffset(query.getOffset()), sys.getView(view.getName()), false);
+      }
+
+      @Override
+      public int getViewSize(BeeView view, SqlSelect query, Filter filter) {
+        return qs.sqlCount(getQuery(filter));
+      }
+
+      private Set<String> getFilterValues(Filter filter) {
+        Set<String> values = new HashSet<>();
+
+        if (filter instanceof CompoundFilter) {
+          for (Filter subFilter : ((CompoundFilter) filter).getSubFilters()) {
+            values.addAll(getFilterValues(subFilter));
+          }
+        } else if (filter instanceof ColumnValueFilter) {
+          ((ColumnValueFilter) filter).getValue().forEach(v -> values.add(v.getString()));
+        }
+        return values;
+      }
+
+      private SqlSelect getQuery(Filter filter) {
         Set<String> values = getFilterValues(filter);
         HasConditions whAddressbook = SqlUtils.and();
         HasConditions whCompanies = SqlUtils.and();
@@ -734,8 +758,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
               SqlUtils.field(TBL_PERSONS, COL_LAST_NAME),
               SqlUtils.field(TBL_POSITIONS, COL_POSITION_NAME)));
         });
-
-        SqlSelect select = new SqlSelect().setUnionAllMode(true)
+        return new SqlSelect().setUnionAllMode(true)
             .addFields(TBL_EMAILS, COL_EMAIL_ADDRESS)
             .addFields(TBL_ADDRESSBOOK, COL_ADDRESSBOOK_LABEL)
             .addFrom(TBL_EMAILS)
@@ -789,26 +812,6 @@ public class MailModuleBean implements BeeModule, HasTimerService {
                     sys.joinTables(TBL_POSITIONS, TBL_COMPANY_PERSONS, COL_POSITION))
                 .setWhere(whCompanyPersons))
             .addOrder(null, COL_EMAIL_ADDRESS);
-
-        return qs.getViewData(select, sys.getView(view.getName()), false);
-      }
-
-      @Override
-      public int getViewSize(BeeView view, SqlSelect query, Filter filter) {
-        return getViewData(view, query, filter).getNumberOfRows();
-      }
-
-      private Set<String> getFilterValues(Filter filter) {
-        Set<String> values = new HashSet<>();
-
-        if (filter instanceof CompoundFilter) {
-          for (Filter subFilter : ((CompoundFilter) filter).getSubFilters()) {
-            values.addAll(getFilterValues(subFilter));
-          }
-        } else if (filter instanceof ColumnValueFilter) {
-          ((ColumnValueFilter) filter).getValue().forEach(v -> values.add(v.getString()));
-        }
-        return values;
       }
     });
 
