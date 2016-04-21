@@ -90,6 +90,18 @@ public final class SqlUtils {
     return contains(field(source, field), value);
   }
 
+  public static IsCondition containsAny(String value, IsExpression... expressions) {
+    if (ArrayUtils.isEmpty(expressions)) {
+      return null;
+    }
+    HasConditions clause = or();
+
+    for (IsExpression expr : expressions) {
+      clause.add(contains(expr, value));
+    }
+    return clause;
+  }
+
   public static IsQuery createCheck(String table, String name, String expression) {
     return new SqlCommand(SqlKeyword.ADD_CONSTRAINT,
         ImmutableMap.of("table", name(table), "name", name(name), "type", SqlKeyword.CHECK,
