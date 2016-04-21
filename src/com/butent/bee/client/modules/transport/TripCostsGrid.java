@@ -36,6 +36,7 @@ import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.font.FontAwesome;
@@ -44,12 +45,15 @@ import com.butent.bee.shared.modules.trade.Totalizer;
 import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 public class TripCostsGrid extends AbstractGridInterceptor
     implements ClickHandler, SelectorEvent.Handler {
@@ -162,6 +166,7 @@ public class TripCostsGrid extends AbstractGridInterceptor
   public void onParentRow(ParentRowEvent event) {
     switch (event.getViewName()) {
       case VIEW_TRIPS:
+      case VIEW_EXPEDITION_TRIPS:
         trip = event.getRowId();
         break;
       case VIEW_ORDER_CARGO:
@@ -189,6 +194,27 @@ public class TripCostsGrid extends AbstractGridInterceptor
     }
     newRow.setValue(gridView.getDataIndex(COL_DATE), date);
     return super.onStartNewRow(gridView, oldRow, newRow);
+  }
+
+  public static void assignTrip(Long tripId, String... cargos) {
+    if (ArrayUtils.isEmpty(cargos)) {
+      return;
+    }
+    Set<Long> cargoIds = new HashSet<>();
+
+    for (String cargo : cargos) {
+      cargoIds.add(BeeUtils.toLong(cargo));
+    }
+    Queries.update(VIEW_TRIP_COSTS, Filter.and(Filter.any(COL_CARGO, cargoIds),
+        Filter.isNull(COL_TRIP)), COL_TRIP, BeeUtils.toString(tripId),
+        new Queries.IntCallback() {
+          @Override
+          public void onSuccess(Integer result) {
+            if (BeeUtils.isPositive(result)) {
+              DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_TRIP_COSTS);
+            }
+          }
+        });
   }
 
   private void amountEntry(IsRow row) {

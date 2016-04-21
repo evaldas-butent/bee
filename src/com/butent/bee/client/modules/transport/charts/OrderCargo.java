@@ -9,10 +9,12 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
+import com.butent.bee.client.modules.transport.TripCostsGrid;
 import com.butent.bee.client.timeboard.HasColorSource;
 import com.butent.bee.client.timeboard.TimeBoardHelper;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.value.LongValue;
@@ -252,7 +254,13 @@ class OrderCargo extends Filterable implements HasDateRange, HasColorSource, Has
       List<BeeColumn> columns = Data.getColumns(viewName, Lists.newArrayList(COL_CARGO, COL_TRIP));
       List<String> values = Queries.asList(getCargoId(), tripId);
 
-      Queries.insert(viewName, columns, values, null, callback);
+      Queries.insert(viewName, columns, values, null, new RowCallback() {
+        @Override
+        public void onSuccess(BeeRow result) {
+          TripCostsGrid.assignTrip(tripId, BeeUtils.toString(getCargoId()));
+          callback.onSuccess(result);
+        }
+      });
     }
   }
 

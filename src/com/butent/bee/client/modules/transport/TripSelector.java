@@ -122,6 +122,7 @@ final class TripSelector implements EditStopEvent.Handler, ClickHandler {
             }
           });
     }
+    TripCostsGrid.assignTrip(tripId, cargos);
   }
 
   private void createNewTrip(final String viewName) {
