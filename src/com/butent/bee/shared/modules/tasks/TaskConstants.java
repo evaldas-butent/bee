@@ -584,6 +584,7 @@ public final class TaskConstants {
   public static final String VIEW_TASK_USERS = "TaskUsers";
   public static final String VIEW_TASK_EVENTS = "TaskEvents";
   public static final String VIEW_TASK_DURATIONS = "TaskDurations";
+  public static final String VIEW_TASK_DURATION_TYPES = "TaskDurationTypes";
   public static final String VIEW_TASK_PRODUCTS = "TaskProducts";
 
   public static final String VIEW_TASK_TEMPLATES = "TaskTemplates";
@@ -723,6 +724,8 @@ public final class TaskConstants {
   public static final String ALS_CONTACT_FIRST_NAME = "ContactFirstName";
   public static final String ALS_CONTACT_LAST_NAME = "ContactLastName";
 
+  public static final String ALS_DURATION_TYPE_NAME = "DurationTypeName";
+
   public static final String ALS_EXECUTOR_FIRST_NAME = "ExecutorFirstName";
   public static final String ALS_EXECUTOR_LAST_NAME = "ExecutorLastName";
 
@@ -765,6 +768,7 @@ public final class TaskConstants {
 
   public static final String PROP_FILES = "Files";
   public static final String PROP_EVENTS = "Events";
+  public static final String PROP_DESCENDING = "Descending";
 
   public static final String PROP_USER = "User";
   public static final String PROP_STAR = "Star";

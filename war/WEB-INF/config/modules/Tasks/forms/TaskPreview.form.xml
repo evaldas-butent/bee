@@ -20,8 +20,8 @@
   xmlns:f="http://www.butent.com/form"
   xmlns:ui="http://www.butent.com/ui"
         
-  name="TaskPreview" viewName="Tasks"
-  caption="=crmTask" showRowId="true" printHeader="true" width="1024" height="768">
+  name="TaskPreview" viewName="Tasks" caption="=crmTask" showRowId="true" printHeader="true" 
+  width="1024" height="768" favorite="Summary">
     <SplitPanel splitterSize="1" style="margin:5px;" name="Split" >
     <west size="650">
     <TabbedPages resizable="false" name="TabbedPages">

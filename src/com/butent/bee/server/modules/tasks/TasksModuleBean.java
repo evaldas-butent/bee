@@ -620,7 +620,9 @@ public class TasksModuleBean implements BeeModule {
     }
 
     if (propNames.contains(PROP_EVENTS)) {
-      BeeRowSet events = qs.getViewData(VIEW_TASK_EVENTS, Filter.equals(COL_TASK, taskId));
+      BeeRowSet events =
+          qs.getViewData(VIEW_TASK_EVENTS, Filter.equals(COL_TASK, taskId), new Order(
+              COL_PUBLISH_TIME, !propNames.contains(PROP_DESCENDING)));
       if (!DataUtils.isEmpty(events)) {
         row.setProperty(PROP_EVENTS, events.serialize());
       }
@@ -664,6 +666,10 @@ public class TasksModuleBean implements BeeModule {
     }
 
     Set<String> propNames = Sets.newHashSet(PROP_OBSERVERS, PROP_FILES, PROP_EVENTS);
+    if (row.hasPropertyValue(PROP_DESCENDING)) {
+      propNames.add(PROP_DESCENDING);
+    }
+
     boolean addRelations = true;
 
     Map<Integer, String> shadow = row.getShadow();
@@ -1105,8 +1111,8 @@ public class TasksModuleBean implements BeeModule {
           response = ResponseObject.emptyResponse();
         } else {
           response =
-            updateTaskData(reqInfo, taskData, taskRow, event, updatedRelations, currentUser,
-                eventNote, now);
+              updateTaskData(reqInfo, taskData, taskRow, event, updatedRelations, currentUser,
+                  eventNote, now);
         }
         break;
     }
