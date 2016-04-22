@@ -93,7 +93,7 @@
 
 .bee-discuss-Actions {
   padding: 4px;
-  margin: 4px;
+  margin: 3px;
   display: inline-block;
   font-size: 15px;
 }
@@ -119,6 +119,21 @@
   display: inline-block;
   width: 100%;
   margin-top: 2px;
+  min-height: 5ex;
+  }
+.bee-discuss-comment-col-Mark .bee-discuss-Actions,
+.bee-discuss-comment-col-Mark .bee-discuss-Actions-mark-label {
+  display: none;
+}
+
+.bee-discuss-comment-col-Mark.bee-discuss-markTypes-hasMarks .bee-discuss-Actions,
+.bee-discuss-comment-col-Mark.bee-discuss-markTypes-hasMarks .bee-discuss-Actions-mark-label {
+  display: inline-block;
+}
+
+.bee-discuss-comment-row:hover .bee-discuss-comment-col-Mark .bee-discuss-Actions, 
+.bee-discuss-comment-row:hover .bee-discuss-comment-col-Mark .bee-discuss-Actions-mark-label {
+  display: inline-block;
 }
 
 .bee-discuss-commentDialog {
@@ -150,10 +165,18 @@
 }
 
 .bee-discuss-markTypes-container {
-  display: inline-block;
+  display: none;
   text-align: right;
   margin-right: 2em;
   min-height: 2em;
+}
+
+.bee-discuss-markTypes-container.bee-discuss-markTypes-hasMarks {
+  display: inline-block;
+}
+
+.bee-disscuss-top:hover .bee-discuss-markTypes-container {
+  display: inline-block;
 }
 
 .bee-discuss-Actions-mark-label {

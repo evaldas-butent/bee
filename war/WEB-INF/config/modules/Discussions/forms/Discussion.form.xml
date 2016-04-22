@@ -26,16 +26,16 @@
 
   <FlowPanel class="flexBox-vertical">
 
-    <FlowPanel name="DiscussionTop" style="float: right;">
+    <FlowPanel name="DiscussionTop" class="bee-disscuss-top" style="float: right; min-height: 7ex;">
 
       <Image name="OwnerPhoto" style="max-height: 45px; max-width: 45px; cursor: default; float: left; 
         margin-top: 17px; margin-left: 30px; border-radius: 50%;" />
 
       <TextLabel  renderColumns="OwnerFirstName OwnerLastName" style="font-size: small; font-weight: bold; float: left;
-        margin-top: 20px; margin-left: 5px; margin-right: 20px;" />
+        margin-top: 2ex; margin-left: 5px; margin-right: 20px;" />
 
       <FlowPanel data="DiscussMarkTypes" name="DiscussMarkTypes"
-      class="flexBox-horizontal bee-discuss-markTypes-container" style="margin-top: 10px; text-align: left;"/>
+      class="flexBox-horizontal bee-discuss-markTypes-container" style="margin-top: 1ex; text-align: left;"/>
 
        <FlowPanel style="float:right; margin-right:50px; margin-top:20px;">
          <Label text="=status" style="font-size: 11px; color: #C0C0C0; float: left;"/>
