@@ -584,6 +584,7 @@ public final class TaskConstants {
   public static final String VIEW_TASK_USERS = "TaskUsers";
   public static final String VIEW_TASK_EVENTS = "TaskEvents";
   public static final String VIEW_TASK_DURATIONS = "TaskDurations";
+  public static final String VIEW_TASK_PRODUCTS = "TaskProducts";
 
   public static final String VIEW_TASK_TEMPLATES = "TaskTemplates";
   public static final String VIEW_TASK_TYPES = "TaskTypes";
@@ -644,6 +645,9 @@ public final class TaskConstants {
   public static final String COL_PUBLISHER = "Publisher";
 
   public static final String COL_COMMENT = "Comment";
+
+  public static final String COL_PRODUCT = "Product";
+  public static final String COL_PRODUCT_REQUIRED = "ProductRequired";
 
   public static final String COL_TASK_EVENT = "TaskEvent";
 
@@ -790,6 +794,7 @@ public final class TaskConstants {
 
   public static final String GRID_TASK_TYPES = "TaskTypes";
   public static final String GRID_TASK_TEMPLATES = "TaskTemplates";
+  public static final String GRID_TASK_PRODUCTS = "TaskProducts";
 
   public static final String FORM_NEW_TASK = "NewTask";
   public static final String FORM_TASK = "Task";
