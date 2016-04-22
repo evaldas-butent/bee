@@ -104,6 +104,8 @@ public class Relations extends Flow implements Editor, ClickHandler, SelectorEve
   private final Map<MultiSelector, HandlerRegistration> registry = new HashMap<>();
   private final Set<String> blockedRelations = new HashSet<>();
 
+  private static final String RELATIONS_PLUS_ADD_RELATION = "bee-Relations-newRel";
+
   private Long id;
   private SelectorEvent.Handler handler;
 
@@ -119,7 +121,7 @@ public class Relations extends Flow implements Editor, ClickHandler, SelectorEve
     table.setKind(TableKind.CONTROLS);
 
     if (inline) {
-      FaLabel add = new FaLabel(FontAwesome.PLUS);
+      FaLabel add = new FaLabel(FontAwesome.PLUS_CIRCLE, RELATIONS_PLUS_ADD_RELATION);
 
       add.addClickHandler(new ClickHandler() {
         @Override
