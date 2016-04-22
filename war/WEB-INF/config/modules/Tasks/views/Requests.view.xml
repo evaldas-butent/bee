@@ -5,8 +5,9 @@
   name="Requests" source="Requests" caption="=crmRequests"
   newRowForm="NewRequest" editForm="Request"
   >
-  <Relation renderColumns="Date CustomerName" />
+  <Relation renderColumns="Id Date CustomerName" />
   <Columns>
+    <IdColumn name="Id"/>
     <SimpleColumn name="Date" />
     <SimpleColumn name="Content" />
     <SimpleColumn name="Contacts" />
@@ -26,6 +27,8 @@
       <SimpleColumn name="RequestType" />
       <SimpleJoin joinType="LEFT" name="RequestType" >
         <SimpleColumn name="Name" alias="RequestTypeName" />
+        <SimpleColumn name="ProductRequired" />
+        <SimpleColumn name="TaskType" />
       </SimpleJoin>
       
       <SimpleColumn name="RequestForm" />
@@ -61,5 +64,10 @@
           </SimpleJoin>
         </SimpleJoin>
       </SimpleJoin>
+      
+    <SimpleColumn name="Product" />
+    <SimpleJoin name="Product" joinType="LEFT">
+      <SimpleColumn name="Name" alias="ProductName"/>
+    </SimpleJoin>
   </Columns>
 </View>
