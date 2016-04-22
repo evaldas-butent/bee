@@ -572,14 +572,9 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
   }
 
   private boolean prepareData(final Request request) {
-    if (getLastRequest() != null) {
-      if (isCachingEnabled()) {
-        if (BeeUtils.equalsTrim(request.getQuery(), getLastRequest().getQuery())) {
-          return true;
-        }
-      } else if (request.equals(getLastRequest())) {
-        return true;
-      }
+    if (getLastRequest() != null && isCachingEnabled()
+        && BeeUtils.equalsTrim(request.getQuery(), getLastRequest().getQuery())) {
+      return true;
     }
 
     List<String> queryParts = parseQuery(request.getQuery());
