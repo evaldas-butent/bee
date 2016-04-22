@@ -16,7 +16,6 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
-import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.DialogBox;
@@ -43,7 +42,6 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.css.values.Display;
-import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
@@ -97,28 +95,10 @@ class AnnouncementsBoardInterceptor extends AbstractFormInterceptor implements
     if (action.compareTo(Action.ADD) == 0) {
 
       DataInfo data = Data.getDataInfo(VIEW_DISCUSSIONS);
-      final BeeColumn beeCol = data.getColumn(COL_TOPIC);
       BeeRow emptyRow = RowFactory.createEmptyRow(data, true);
-      if (beeCol != null) {
-        beeCol.setNullable(false);
-      }
-      RowFactory.createRow(FORM_NEW_DISCUSSION, Localized.dictionary().announcementNew(), data,
-          emptyRow, Modality.ENABLED, new RowCallback() {
-
-            @Override
-            public void onCancel() {
-              if (beeCol != null) {
-                beeCol.setNullable(true);
-              }
-            }
-
-            @Override
-            public void onSuccess(BeeRow result) {
-              if (beeCol != null) {
-                beeCol.setNullable(true);
-              }
-            }
-          });
+      RowFactory.createRow(FORM_NEW_ANNOUNCEMENT, Localized.dictionary().announcementNew(), data,
+          emptyRow, Modality.ENABLED, presenter.getMainView().asWidget(),
+          new CreateDiscussionInterceptor(), null, null);
 
       return false;
     }
@@ -242,7 +222,7 @@ class AnnouncementsBoardInterceptor extends AbstractFormInterceptor implements
         int fileCount = BeeUtils.toInt(rsRow[rs.getColumnIndex(AdministrationConstants.COL_FILE)]);
 
         if (BeeUtils.isPositive(fileCount)) {
-           attachmentLabel = new FaLabel(FontAwesome.PAPERCLIP);
+          attachmentLabel = new FaLabel(FontAwesome.PAPERCLIP);
 
           if (DataUtils.isId(rowId)) {
             openFileList(attachmentLabel, rowId);

@@ -105,6 +105,7 @@ public final class DiscussionsConstants {
   public static final String ALS_BIRTHDAY_VALID = "BirthdayValid";
   public static final String ALS_OWNER_FIRST_NAME = "OwnerFirstName";
   public static final String ALS_OWNER_LAST_NAME = "OwnerLastName";
+  public static final String ALS_OWNER_PHOTO = "OwnerPhoto";
   public static final String ALS_LAST_COMMET = "LastComment";
   public static final String ALS_FILES_COUNT = "FilesCount";
   public static final String ALS_RELATIONS_COUNT = "RelCount";
@@ -119,6 +120,7 @@ public final class DiscussionsConstants {
   public static final String COL_DISCUSSION = "Discussion";
   public static final String COL_DISCUSSION_ID = "DiscussionID";
   public static final String COL_DESCRIPTION = "Description";
+  public static final String COL_SUMMARY = "Summary";
   public static final String COL_DELETED = "Deleted";
   public static final String COL_IMAGE_RESOURCE_NAME = "ImageResourceName";
   public static final String COL_IMPORTANT = "Important";
@@ -154,6 +156,7 @@ public final class DiscussionsConstants {
   public static final String FORM_NEW_DISCUSSION = "NewDiscussion";
   public static final String FORM_DISCUSSION = "Discussion";
   public static final String FORM_ANNOUNCEMENTS_BOARD = "AnnouncementsBoard";
+  public static final String FORM_NEW_ANNOUNCEMENT = "NewAnnouncement";
 
   public static final String GRID_DISCUSSIONS = "Discussions";
   public static final String GRID_DISCUSSION_FILES = "DiscussionFiles";

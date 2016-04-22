@@ -55,7 +55,6 @@
 
 .bee-discuss-comment-Comment {
   display: inline-block;
-  min-height: 35px;
   width: 100%;
   max-height: 9em;
   margin-top: 10px;
@@ -63,11 +62,7 @@
 
 .bee-discuss-comment-files {
   overflow: auto;
-  max-height: 6em;
   display: block;
-  border-top: 1px dotted #ccc;
-  margin-left: 2em;
-  margin-left: 2em;
 }
 
 .bee-discuss-comment-row {
@@ -77,11 +72,11 @@
 
 .bee-discuss-comment-col-Actions {
   display: inline-block;
-  min-width: 95px;
   vertical-align: top;
   margin: -1px -1px -3px 0px;
   text-align: center;
   font-size: 17px;
+  padding: 4px 0px 4px 0px;
 }
 
 .bee-discuss-comment-col-Mark>.bee-discuss-Actions-mark {
@@ -104,6 +99,12 @@
 }
 
 .bee-discuss-Actions:hover {
+  color: gray;
+}
+
+.bee-discuss-comment-col-Mark button:hover{
+  color: black !important;
+  background-color: gray !important;
 }
 
 .bee-discuss-comment-col-Actions-reply {
@@ -115,9 +116,9 @@
 }
 
 .bee-discuss-comment-col-Mark {
-  text-align: right;
   display: inline-block;
   width: 100%;
+  margin-top: 2px;
 }
 
 .bee-discuss-commentDialog {
@@ -161,7 +162,7 @@
   margin-left: -1em;
   font-size: smaller;
   font-weight: bolder;
-  background-color: whitesmoke;
+  background-color: transparent;
 }
 
 .bee-discuss-Actions-mark {

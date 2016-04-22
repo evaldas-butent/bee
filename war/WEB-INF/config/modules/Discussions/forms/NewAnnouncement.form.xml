@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form [
+  <!ENTITY inline "display: inline-block;">
+
+  <!ENTITY section "margin-top: 4px;">
+  <!ENTITY header "font-size: 20px;">
+  <!ENTITY separator "<hr/>">
+
+  <!ENTITY lbl1 "&inline; max-width: 128px; min-width: 110px; text-align: right; padding-right: 28px; min-height: 20px; max-height: 20px; padding-top: 1px;">
+  <!ENTITY top1 "text-align: right; padding-right: 28px; max-width: 128px; padding-top: 1px;">
+  <!ENTITY inp1x "&inline; width: 450px;">
+  <!ENTITY inp2x "&inline; width: 710px;">
+  <!ENTITY bold "font-weight: bold;">
+]>
+<f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form"
+ xmlns:xi="http://www.w3.org/2001/XInclude" name="NewAnnouncement" caption="=announcementNew"
+ width="700" height="700">
+
+ <FlowPanel
+  style="padding: 10px 2px 2px 10px; min-width: 660px; min-height: 590px">
+  <xi:include href="widgets/DiscussHeader.widget.xml" />
+
+  <FlowPanel style="margin-top:10px;">
+   <FlowPanel for="Topic" style="&section;" class="flexBox-horizontal">
+    <Label for="Topic" text="=adTopic" style="&lbl1; min-width:102px; &bold;" class="bee-required" />
+    <DataSelector name="Topic" source="Topic" required="true"
+     style="&inp2x; width: 250px" choiceColumns="Name" filter="Visible" />
+   </FlowPanel>
+
+   <FlowPanel for="Topic" style="&section;" class="flexBox-horizontal">
+    <Label for="Topic" name="DisplayInBoard" text="=displayInBoard" class="bee-required"
+     style="&lbl1; min-width:102px; &bold;" />
+    <InputDateTime source="VisibleFrom"
+     style="&inp2x; width: 120px; margin-right:10px" placeholder="=dateFromShort" />
+    <InputDateTime source="VisibleTo" style="&inp2x; width: 120px"
+     placeholder="=dateToShort" />
+   </FlowPanel>
+
+   <FlowPanel style="margin-top:20px;" class="flexBox-horizontal">
+    <CheckBox name="Important" source="Important" text="=important"
+     style="&top1; min-width:70px; padding-right:40px; margin-left: 125px;" />
+    <CheckBox name="PermitComment" text="=prohibitComment"
+     style="min-width: 135px;" />
+   </FlowPanel>
+  </FlowPanel>
+ </FlowPanel>
+</f:Form>
