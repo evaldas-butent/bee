@@ -4682,6 +4682,8 @@ public interface Dictionary {
 
   default String trFuelConsumptions() {return g("trFuelConsumptions");}
 
+  default String trFuelConsumptionsAverage() {return g("trFuelConsumptionsAverage");}
+
   default String trFuelConsumptionsSummer() {return g("trFuelConsumptionsSummer");}
 
   default String trFuelConsumptionsWinter() {return g("trFuelConsumptionsWinter");}
