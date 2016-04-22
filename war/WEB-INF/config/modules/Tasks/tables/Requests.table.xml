@@ -19,5 +19,6 @@
     <Relation name="RequestForm" relation="RequestForms" label="=crmRequestForm" />
     <DateTime name="Created" notNull="true" defExpr="CURRENT_TIME" label="=createdOn" />
     <DateTime name="Finished" label="=crmRequestCompleted" />
+    <Relation name="Product" relation="TaskProducts" label="=crmTaskProduct" />
   </Fields>
 </Table>
