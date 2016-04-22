@@ -251,11 +251,6 @@ class TaskBuilder extends ProductSupportInterceptor {
   }
 
   @Override
-  public void beforeRefresh(FormView form, IsRow row) {
-    setProductStyle();
-  }
-
-  @Override
   public void beforeStateChange(State state, boolean modal) {
     if (state == State.OPEN && mailToggle != null && mailToggle.isChecked()) {
       mailToggle.setChecked(false);
@@ -741,10 +736,7 @@ class TaskBuilder extends ProductSupportInterceptor {
       return;
     }
 
-    if (isProductRequired(activeRow, getViewName())
-        && Data.isNull(VIEW_TASKS, activeRow, COL_PRODUCT)) {
-      callback.onFailure(Localized.dictionary().crmTaskProduct() + " "
-          + Localized.dictionary().valueRequired());
+    if (maybeNotifyEmptyProduct(callback)) {
       return;
     }
 

@@ -579,10 +579,7 @@ class TaskEditor extends ProductSupportInterceptor {
 
   @Override
   public boolean beforeAction(Action action, Presenter presenter) {
-    if (action == Action.SAVE && isProductRequired(getActiveRow(), getViewName())
-        && Data.isNull(VIEW_TASKS, getActiveRow(), COL_PRODUCT)) {
-      getFormView().notifySevere(Localized.dictionary().crmTaskProduct() + " "
-          + Localized.dictionary().valueRequired());
+    if (action == Action.SAVE && maybeNotifyEmptyProduct(null)) {
       return false;
     }
     return true;
@@ -687,8 +684,7 @@ class TaskEditor extends ProductSupportInterceptor {
     if (isExecutor()) {
       setEnabledRelations();
     }
-
-    setProductStyle();
+    super.beforeRefresh(form, row);
   }
 
   @Override
