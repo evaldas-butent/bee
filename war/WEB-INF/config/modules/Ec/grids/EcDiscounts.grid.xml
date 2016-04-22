@@ -16,7 +16,7 @@
 
     <DataColumn name="Supplier" flexGrow="0" flexShrink="0" />
 
-    <RelColumn name="Article" caption="=ecItem" minWidth="150" caching="none"
+    <RelColumn name="Article" caption="=ecItem" minWidth="150"
         searchableColumns="ArticleName ArticleNr"
         choiceColumns="ArticleName BrandName ArticleNr" newRowEnabled="false">
       <renderToken source="ArticleName" />
