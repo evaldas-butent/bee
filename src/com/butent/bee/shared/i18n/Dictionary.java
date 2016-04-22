@@ -1075,6 +1075,10 @@ public interface Dictionary {
 
   default String crmTaskCommentTimeRegistration() {return g("crmTaskCommentTimeRegistration");}
 
+  default String crmTaskCommentsAsc() {return g("crmTaskCommentsAsc");}
+
+  default String crmTaskCommentsDesc() {return g("crmTaskCommentsDesc");}
+
   default String crmTaskCompleteDate() {return g("crmTaskCompleteDate");}
 
   default String crmTaskConfirm() {return g("crmTaskConfirm");}

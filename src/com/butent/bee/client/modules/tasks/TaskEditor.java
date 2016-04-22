@@ -6,6 +6,8 @@ import com.google.common.collect.Table;
 import com.google.common.collect.TreeBasedTable;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
+import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.TableRowElement;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.HasClickHandlers;
@@ -36,7 +38,10 @@ import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.Modality;
+import com.butent.bee.client.dialog.Popup;
+import com.butent.bee.client.dialog.Popup.OutsideClick;
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.logical.MutationEvent;
 import com.butent.bee.client.event.logical.MutationEvent.Handler;
 import com.butent.bee.client.grid.HtmlTable;
@@ -52,6 +57,7 @@ import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.Opener;
+import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.utils.XmlUtils;
 import com.butent.bee.client.validation.CellValidateEvent;
@@ -105,6 +111,7 @@ import com.butent.bee.shared.utils.NameUtils;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -126,6 +133,9 @@ class TaskEditor extends ProductSupportInterceptor {
   private static final String STYLE_EXTENSION = CRM_STYLE_PREFIX + "taskExtension";
   private static final String NAME_OBSERVERS = "Observers";
   private static final String NAME_PRIVATE_TASK = "PrivateTask";
+
+  private static final String NAME_TASK_TREE = "TaskTree";
+  private static final String NAME_ORDER = "TaskEventsOrder";
 
   private static void addDurationCell(HtmlTable display, int row, int col, String value,
       String style) {
@@ -210,8 +220,26 @@ class TaskEditor extends ProductSupportInterceptor {
     return row;
   }
 
+  private static String getStorageKey(String name) {
+
+    switch (name) {
+      case NAME_TASK_TREE:
+        return BeeUtils.join(BeeConst.STRING_MINUS, name, BeeKeeper.getUser().getUserId(),
+            UiConstants.ATTR_SIZE);
+
+      case NAME_ORDER:
+        return BeeUtils.join(BeeConst.STRING_MINUS, name, BeeKeeper.getUser().getUserId());
+    }
+    return name;
+  }
+
   private static String getTaskUsers(FormView form, IsRow row) {
     return DataUtils.buildIdList(TaskUtils.getTaskUsers(row, form.getDataColumns()));
+  }
+
+  private static boolean readBoolean(String name) {
+    String key = getStorageKey(name);
+    return BeeKeeper.getStorage().hasItem(key);
   }
 
   private static String renderDuration(long millis) {
@@ -515,7 +543,8 @@ class TaskEditor extends ProductSupportInterceptor {
     showExtensions(form, rowSet);
     showDurations(form, durations);
 
-    if (panel.getWidgetCount() > 1 && DomUtils.isVisible(form.getElement())) {
+    if (panel.getWidgetCount() > 1 && DomUtils.isVisible(form.getElement())
+        && !readBoolean(NAME_ORDER)) {
       final Widget last = panel.getWidget(panel.getWidgetCount() - 1);
       Scheduler.get().scheduleDeferred(new ScheduledCommand() {
         @Override
@@ -592,7 +621,7 @@ class TaskEditor extends ProductSupportInterceptor {
   public boolean beforeCreateWidget(String name, com.google.gwt.xml.client.Element description) {
 
     if (BeeUtils.same(name, "Split")) {
-      Integer size = BeeKeeper.getStorage().getInteger(getStorageKey());
+      Integer size = BeeKeeper.getStorage().getInteger(getStorageKey(NAME_TASK_TREE));
 
       if (BeeUtils.isPositive(size)) {
 
@@ -626,8 +655,9 @@ class TaskEditor extends ProductSupportInterceptor {
         public void onMutation(MutationEvent event) {
           int size = split.getDirectionSize(Direction.WEST);
 
-          if (size > 0 && !BeeUtils.isEmpty(getStorageKey())) {
-            BeeKeeper.getStorage().set(getStorageKey(), size);
+          String key = getStorageKey(NAME_TASK_TREE);
+          if (size > 0 && !BeeUtils.isEmpty(key)) {
+            BeeKeeper.getStorage().set(key, size);
           }
         }
       });
@@ -644,7 +674,8 @@ class TaskEditor extends ProductSupportInterceptor {
       return;
     }
 
-    setCommentsLayout(header);
+    setCommentsLayout();
+
     Integer status = row.getInteger(form.getDataIndex(COL_STATUS));
 
     for (final TaskEvent event : TaskEvent.values()) {
@@ -680,6 +711,8 @@ class TaskEditor extends ProductSupportInterceptor {
     if (isExecutor()) {
       setEnabledRelations();
     }
+
+    header.addCommandItem(setMenuLabel());
   }
 
   @Override
@@ -792,6 +825,12 @@ class TaskEditor extends ProductSupportInterceptor {
     if (newStatus != null) {
       visitedRow.preliminaryUpdate(form.getDataIndex(COL_STATUS),
           BeeUtils.toString(newStatus.ordinal()));
+    }
+
+    if (readBoolean(NAME_ORDER)) {
+      visitedRow.setProperty(PROP_DESCENDING, BeeConst.INT_TRUE);
+    } else {
+      visitedRow.removeProperty(PROP_DESCENDING);
     }
 
     BeeRowSet rowSet = new BeeRowSet(form.getViewName(), form.getDataColumns());
@@ -1019,6 +1058,12 @@ class TaskEditor extends ProductSupportInterceptor {
       }
     }
 
+    if (readBoolean(NAME_ORDER)) {
+      newRow.setProperty(PROP_DESCENDING, BeeConst.INT_TRUE);
+    } else {
+      newRow.removeProperty(PROP_DESCENDING);
+    }
+
     BeeRowSet rowSet = new BeeRowSet(viewName, form.getDataColumns());
     rowSet.addRow(newRow);
 
@@ -1241,8 +1286,7 @@ class TaskEditor extends ProductSupportInterceptor {
 
     final String cid = dialog.addComment(false);
     final String fid = dialog.addFileCollector();
-
-    final Map<String, String> durIds = dialog.addDuration();
+    Map<String, String> durIds = setDurations(dialog);
 
     dialog.addAction(Localized.dictionary().actionSave(), new ScheduledCommand() {
       @Override
@@ -1274,7 +1318,7 @@ class TaskEditor extends ProductSupportInterceptor {
     final String cid = dialog.addComment(false);
     final String fid = dialog.addFileCollector();
 
-    final Map<String, String> durIds = dialog.addDuration();
+    final Map<String, String> durIds = setDurations(dialog);
     final String dd =
         dialog.addDateTime(Localized.dictionary().crmTaskFinishDate(), true, TimeUtils
             .nowMinutes());
@@ -1587,7 +1631,7 @@ class TaskEditor extends ProductSupportInterceptor {
     final String sid =
         dialog.addSelector(Localized.dictionary().crmTaskExecutor(), VIEW_USERS,
             Lists.newArrayList(COL_FIRST_NAME, COL_LAST_NAME),
-            true, exclusions, filter);
+            true, exclusions, filter, null);
     final String obs = dialog.addCheckBox(true);
 
     final String cid = dialog.addComment(true);
@@ -1721,6 +1765,26 @@ class TaskEditor extends ProductSupportInterceptor {
     dialog.display();
   }
 
+  private FaLabel getCommentsLabelInfo() {
+    FaLabel label =
+        isDefaultLayout ? new FaLabel(FontAwesome.COLUMNS) : new FaLabel(FontAwesome.LIST_ALT);
+    label.addStyleName(BeeConst.CSS_CLASS_PREFIX + "crm-commentLayout-label");
+    label.setTitle(isDefaultLayout ? Localized.dictionary().crmTaskShowCommentsRight() : Localized
+        .dictionary().crmTaskShowCommentsBelow());
+
+    return label;
+  }
+
+  private static FaLabel getOrderLabelInfo() {
+    FaLabel label =
+        readBoolean(NAME_ORDER) ? new FaLabel(FontAwesome.SORT_NUMERIC_ASC) : new FaLabel(
+            FontAwesome.SORT_NUMERIC_DESC);
+    label.setTitle(readBoolean(NAME_ORDER) ? Localized.dictionary().crmTaskCommentsAsc()
+        : Localized.dictionary().crmTaskCommentsDesc());
+
+    return label;
+  }
+
   private DateTime getDateTime(String colName) {
     return getFormView().getActiveRow().getDateTime(getFormView().getDataIndex(colName));
   }
@@ -1759,14 +1823,6 @@ class TaskEditor extends ProductSupportInterceptor {
     return getFormView().getActiveRow().getInteger(getFormView().getDataIndex(COL_STATUS));
   }
 
-  private static String getStorageKey() {
-    String key =
-        BeeUtils.join(BeeConst.STRING_MINUS, "TaskTree", BeeKeeper.getUser().getUserId(),
-            UiConstants.ATTR_SIZE);
-
-    return key;
-  }
-
   private boolean isExecutor() {
     return Objects.equals(userId, getExecutor());
   }
@@ -1801,9 +1857,15 @@ class TaskEditor extends ProductSupportInterceptor {
   private void requeryEvents(final long taskId) {
     ParameterList params = TasksKeeper.createArgs(SVC_GET_TASK_DATA);
     params.addDataItem(VAR_TASK_ID, taskId);
-    params.addDataItem(VAR_TASK_PROPERTIES, BeeUtils.join(BeeConst.STRING_COMMA,
-        PROP_OBSERVERS, PROP_FILES, PROP_EVENTS));
     params.addDataItem(VAR_TASK_RELATIONS, BeeConst.STRING_ASTERISK);
+
+    String properties =
+        BeeUtils.join(BeeConst.STRING_COMMA, PROP_OBSERVERS, PROP_FILES, PROP_EVENTS);
+
+    if (readBoolean(NAME_ORDER)) {
+      properties = BeeUtils.join(BeeConst.STRING_COMMA, properties, PROP_DESCENDING);
+    }
+    params.addDataItem(VAR_TASK_PROPERTIES, properties);
 
     RpcCallback<ResponseObject> callback = new RpcCallback<ResponseObject>() {
       @Override
@@ -1891,6 +1953,100 @@ class TaskEditor extends ProductSupportInterceptor {
     sendRequest(params, callback);
   }
 
+  private Map<String, String> setDurations(TaskDialog dialog) {
+    final String durId = dialog.addTime(Localized.dictionary().crmSpentTime());
+    String durTypeId = dialog.addSelector(Localized.dictionary().crmDurationType(),
+        VIEW_TASK_DURATION_TYPES, Lists.newArrayList(ALS_DURATION_TYPE_NAME), false, null, null,
+        COL_DURATION_TYPE);
+
+    Filter filter = Filter.equals(COL_TASK_TYPE,
+        getActiveRow().getLong(Data.getColumnIndex(VIEW_TASKS, COL_TASK_TYPE)));
+
+    dialog.getSelector(durTypeId).getOracle().setAdditionalFilter(filter, true);
+
+    final Map<String, String> durIds = new HashMap<>();
+    durIds.put(COL_DURATION, durId);
+    durIds.put(COL_DURATION_TYPE, durTypeId);
+
+    return durIds;
+  }
+
+  private void setCommentsLayout() {
+    if (isDefaultLayout) {
+      split.remove(taskWidget);
+      split.remove(taskEventsWidget);
+      split.addNorth(taskWidget, 575);
+      split.updateCenter(taskEventsWidget);
+
+    } else {
+      Integer size = BeeKeeper.getStorage().getInteger(getStorageKey(NAME_TASK_TREE));
+      split.remove(taskWidget);
+      split.remove(taskEventsWidget);
+      split.addWest(taskWidget, size == null ? 650 : size);
+      StyleUtils.autoHeight(taskWidget.getElement());
+      split.updateCenter(taskEventsWidget);
+    }
+  }
+
+  private FaLabel setMenuLabel() {
+    FaLabel menu = new FaLabel(FontAwesome.NAVICON);
+    menu.addClickHandler(new ClickHandler() {
+
+      @Override
+      public void onClick(ClickEvent arg0) {
+        final HtmlTable tb = new HtmlTable(BeeConst.CSS_CLASS_PREFIX + "GridMenu-table");
+        FaLabel commentLbl = getCommentsLabelInfo();
+        FaLabel orderLbl = getOrderLabelInfo();
+
+        tb.setWidget(0, 0, commentLbl);
+        tb.setText(0, 1, commentLbl.getTitle());
+        tb.setWidget(1, 0, orderLbl);
+        tb.setText(1, 1, orderLbl.getTitle());
+
+        tb.addClickHandler(new ClickHandler() {
+
+          @Override
+          public void onClick(ClickEvent ev) {
+            Element targetElement = EventUtils.getEventTargetElement(ev);
+            TableRowElement rowElement = DomUtils.getParentRow(targetElement, true);
+            int index = rowElement.getRowIndex();
+
+            switch (index) {
+              case 0:
+                BeeKeeper.getUser().setCommentsLayout(!isDefaultLayout);
+                isDefaultLayout = !isDefaultLayout;
+                UiHelper.closeDialog(tb);
+                setCommentsLayout();
+                break;
+
+              case 1:
+                if (readBoolean(NAME_ORDER)) {
+                  BeeKeeper.getStorage().remove(getStorageKey(NAME_ORDER));
+                  getActiveRow().removeProperty(PROP_DESCENDING);
+                } else {
+                  BeeKeeper.getStorage().set(getStorageKey(NAME_ORDER), true);
+                  getActiveRow().setProperty(PROP_DESCENDING, BeeConst.INT_TRUE);
+                }
+
+                UiHelper.closeDialog(tb);
+                doEvent(TaskEvent.REFRESH);
+                break;
+
+              default:
+            }
+          }
+        });
+
+        Popup popup = new Popup(OutsideClick.CLOSE, BeeConst.CSS_CLASS_PREFIX + "GridMenu-popup");
+        popup.setWidget(tb);
+        popup.setHideOnEscape(true);
+        popup.showRelativeTo(menu.getElement());
+      }
+    });
+
+    return menu;
+  }
+
   private void setProjectUsers(List<Long> projectUsers) {
     this.projectUsers = projectUsers;
   }
@@ -1958,54 +2114,6 @@ class TaskEditor extends ProductSupportInterceptor {
       if (selector != null) {
         selector.setEnabled(true);
       }
-    }
-  }
-
-  private void setCommentsLayout(final HeaderView header) {
-    final FormView form = getFormView();
-    FaLabel labelVer = new FaLabel(FontAwesome.LIST_ALT);
-    FaLabel labelHor = new FaLabel(FontAwesome.COLUMNS);
-    labelVer.addStyleName(BeeConst.CSS_CLASS_PREFIX + "crm-commentLayout-label");
-    labelVer.setTitle(Localized.dictionary().crmTaskShowCommentsBelow());
-    labelHor.addStyleName(BeeConst.CSS_CLASS_PREFIX + "crm-commentLayout-label");
-    labelHor.setTitle(Localized.dictionary().crmTaskShowCommentsRight());
-
-    labelVer.addClickHandler(new ClickHandler() {
-
-      @Override
-      public void onClick(ClickEvent arg0) {
-        BeeKeeper.getUser().setCommentsLayout(true);
-        isDefaultLayout = true;
-        form.refresh();
-      }
-    });
-
-    labelHor.addClickHandler(new ClickHandler() {
-
-      @Override
-      public void onClick(ClickEvent arg0) {
-        BeeKeeper.getUser().setCommentsLayout(false);
-        isDefaultLayout = false;
-        form.refresh();
-      }
-    });
-
-    if (isDefaultLayout) {
-      split.remove(taskWidget);
-      split.remove(taskEventsWidget);
-      split.addNorth(taskWidget, 575);
-      split.updateCenter(taskEventsWidget);
-      header.addCommandItem(labelHor);
-
-    } else {
-
-      Integer size = BeeKeeper.getStorage().getInteger(getStorageKey());
-      split.remove(taskWidget);
-      split.remove(taskEventsWidget);
-      split.addWest(taskWidget, size == null ? 590 : size);
-      StyleUtils.autoHeight(taskWidget.getElement());
-      split.updateCenter(taskEventsWidget);
-      header.addCommandItem(labelVer);
     }
   }
 }
