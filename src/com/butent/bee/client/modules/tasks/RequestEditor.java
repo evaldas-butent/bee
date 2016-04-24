@@ -26,13 +26,13 @@ import com.butent.bee.client.data.RowUpdateCallback;
 import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.dialog.StringCallback;
+import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.ViewFactory.SupplierKind;
 import com.butent.bee.client.view.form.FormView;
-import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.FaLabel;
@@ -53,6 +53,7 @@ import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -60,7 +61,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class RequestEditor extends AbstractFormInterceptor {
+public class RequestEditor extends ProductSupportInterceptor {
 
   private static final String WIDGET_MANGAER_NAME = "Manager";
   private static final String WIDGET_FILES_NAME = "Files";
@@ -147,6 +148,14 @@ public class RequestEditor extends AbstractFormInterceptor {
 
     showResultProperties(form, row);
 
+  }
+
+  @Override
+  public boolean beforeAction(Action action, Presenter presenter) {
+    if (action == Action.SAVE && maybeNotifyEmptyProduct(null)) {
+      return false;
+    }
+    return true;
   }
 
   @Override

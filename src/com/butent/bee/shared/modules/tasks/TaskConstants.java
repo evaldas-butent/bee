@@ -683,6 +683,7 @@ public final class TaskConstants {
   public static final String COL_REQUEST_RESULT = "Result";
   public static final String COL_REQUEST_RESULT_PROPERTIES = "ResultProperties";
   public static final String COL_REQUEST_FINISHED = "Finished";
+  public static final String COL_REQUEST_TYPE = "RequestType";
 
   public static final String COL_RECURRING_TASK = "RecurringTask";
 
