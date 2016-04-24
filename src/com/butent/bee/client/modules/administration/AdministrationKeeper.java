@@ -68,6 +68,8 @@ public final class AdministrationKeeper {
     FormFactory.registerFormInterceptor(FORM_IMPORTS, new ImportsForm());
     FormFactory.registerFormInterceptor(TBL_CUSTOM_CONFIG, new CustomConfigForm());
 
+    GridFactory.registerGridInterceptor(TBL_CUSTOM_CONFIG, new CustomConfigGrid());
+
     GridFactory.registerGridInterceptor(NewsConstants.GRID_USER_FEEDS, new UserFeedsInterceptor());
 
     GridFactory.registerGridSupplier(

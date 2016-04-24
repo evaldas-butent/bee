@@ -1427,6 +1427,8 @@ public interface Dictionary {
 
   default String dictionary() {return g("dictionary");}
 
+  default String differences() {return g("differences");}
+
   default String dimensions() {return g("dimensions");}
 
   default String disabled() {return g("disabled");}

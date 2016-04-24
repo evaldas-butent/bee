@@ -87,6 +87,7 @@ public final class AdministrationConstants {
 
   public static final String SVC_DO_IMPORT = "DoImport";
 
+  public static final String SVC_GET_CONFIG_DIFF = "GetConfigDiff";
   public static final String SVC_GET_CONFIG_OBJECT = "GetConfigObject";
   public static final String SVC_GET_CONFIG_OBJECTS = "GetConfigObjects";
 
