@@ -96,8 +96,7 @@ import com.butent.bee.shared.modules.documents.DocumentConstants;
 import com.butent.bee.shared.modules.projects.ProjectConstants;
 import com.butent.bee.shared.modules.projects.ProjectStatus;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
-import com.butent.bee.shared.modules.tasks.TaskConstants.TaskEvent;
-import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
+import com.butent.bee.shared.modules.tasks.TaskConstants.*;
 import com.butent.bee.shared.modules.tasks.TaskUtils;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
@@ -443,7 +442,7 @@ class TaskEditor extends ProductSupportInterceptor {
       int idxExecutor = Data.getColumnIndex(VIEW_TASKS, COL_EXECUTOR);
       if (event == TaskEvent.COMMENT
           && (Objects.equals(taskRow.getLong(idxOwner), userId) || Objects.equals(taskRow
-              .getLong(idxExecutor), userId))) {
+          .getLong(idxExecutor), userId))) {
         FaLabel createTask = new FaLabel(TaskEvent.CREATE.getCommandIcon());
         createTask.setTitle(TaskEvent.CREATE.getCommandLabel());
         createTask.addClickHandler(new ClickHandler() {
@@ -608,7 +607,7 @@ class TaskEditor extends ProductSupportInterceptor {
 
   @Override
   public boolean beforeAction(Action action, Presenter presenter) {
-    if (action == Action.SAVE && maybeNotifyEmptyProduct(null)) {
+    if (action == Action.SAVE && maybeNotifyEmptyProduct(msg -> getFormView().notifySevere(msg))) {
       return false;
     }
     return true;
@@ -961,7 +960,7 @@ class TaskEditor extends ProductSupportInterceptor {
 
         if (!BeeUtils.isEmpty(companyName)) {
           docRow.setValue(dataInfo
-              .getColumnIndex(DocumentConstants.ALS_DOCUMENT_COMPANY_NAME),
+                  .getColumnIndex(DocumentConstants.ALS_DOCUMENT_COMPANY_NAME),
               companyName);
           docRow.setValue(dataInfo
               .getColumnIndex(DocumentConstants.COL_DOCUMENT_COMPANY), row
@@ -1185,7 +1184,7 @@ class TaskEditor extends ProductSupportInterceptor {
           }
 
           Queries.update(VIEW_TASK_EVENTS, eventId, COL_EVENT_DATA, Value.getValue(Codec
-              .beeSerialize(data)),
+                  .beeSerialize(data)),
               new IntCallback() {
 
                 @Override
@@ -1204,7 +1203,7 @@ class TaskEditor extends ProductSupportInterceptor {
     relIds.addAll(DataUtils.parseIdList(taskIds));
 
     Queries.updateChildren(VIEW_TASKS, taskRow.getId(), Lists.newArrayList(RowChildren
-        .create(TBL_RELATIONS, COL_TASK, null, COL_TASK, DataUtils.buildIdList(relIds))),
+            .create(TBL_RELATIONS, COL_TASK, null, COL_TASK, DataUtils.buildIdList(relIds))),
         new RowCallback() {
 
           @Override
@@ -1390,40 +1389,31 @@ class TaskEditor extends ProductSupportInterceptor {
 
       if (event != null
           && Objects.equals(TaskEvent.COMMENT.ordinal(), event.getInteger(events
-              .getColumnIndex(TaskConstants.COL_EVENT)))) {
-        description =
-            BeeUtils.join(BeeConst.STRING_EOL
+          .getColumnIndex(TaskConstants.COL_EVENT)))) {
+        description = BeeUtils.join(BeeConst.STRING_EOL
                 + BeeUtils.replicate(BeeConst.CHAR_MINUS, BeeConst.MAX_SCALE)
-                + BeeConst.STRING_EOL, description, BeeUtils
-                .joinWords(event.getDateTime(events.getColumnIndex(COL_PUBLISH_TIME)), BeeUtils
-                    .nvl(event
-                        .getString(events.getColumnIndex(ALS_PUBLISHER_FIRST_NAME)),
-                        BeeConst.STRING_EMPTY), BeeUtils.nvl(event
-                    .getString(events.getColumnIndex(ALS_PUBLISHER_LAST_NAME)),
-                    BeeConst.STRING_EMPTY)
-                    + BeeConst.STRING_COLON, event
-                    .getString(events
-                        .getColumnIndex(COL_COMMENT))));
+                + BeeConst.STRING_EOL, description,
+            BeeUtils.joinWords(event.getDateTime(events.getColumnIndex(COL_PUBLISH_TIME)),
+                BeeUtils.nvl(event.getString(events.getColumnIndex(ALS_PUBLISHER_FIRST_NAME)),
+                    BeeConst.STRING_EMPTY),
+                BeeUtils.nvl(event.getString(events.getColumnIndex(ALS_PUBLISHER_LAST_NAME)),
+                    BeeConst.STRING_EMPTY) + BeeConst.STRING_COLON,
+                event.getString(events.getColumnIndex(COL_COMMENT))));
       }
     } else if (!events.isEmpty()) {
       for (IsRow event : events) {
         if (event != null
             && Objects.equals(TaskEvent.COMMENT.ordinal(), event.getInteger(events
-                .getColumnIndex(TaskConstants.COL_EVENT)))) {
-          description =
-              BeeUtils.join(BeeConst.STRING_EOL
+            .getColumnIndex(TaskConstants.COL_EVENT)))) {
+          description = BeeUtils.join(BeeConst.STRING_EOL
                   + BeeUtils.replicate(BeeConst.CHAR_MINUS, BeeConst.MAX_SCALE)
-                  + BeeConst.STRING_EOL, description, BeeUtils
-                  .joinWords(event.getDateTime(events.getColumnIndex(COL_PUBLISH_TIME)),
-                      BeeUtils
-                          .nvl(event
-                              .getString(events.getColumnIndex(ALS_PUBLISHER_FIRST_NAME)),
-                              BeeConst.STRING_EMPTY), BeeUtils.nvl(event
-                          .getString(events.getColumnIndex(ALS_PUBLISHER_LAST_NAME)),
-                          BeeConst.STRING_EMPTY)
-                          + BeeConst.STRING_COLON, event
-                          .getString(events
-                              .getColumnIndex(COL_COMMENT))));
+                  + BeeConst.STRING_EOL, description,
+              BeeUtils.joinWords(event.getDateTime(events.getColumnIndex(COL_PUBLISH_TIME)),
+                  BeeUtils.nvl(event.getString(events.getColumnIndex(ALS_PUBLISHER_FIRST_NAME)),
+                      BeeConst.STRING_EMPTY),
+                  BeeUtils.nvl(event.getString(events.getColumnIndex(ALS_PUBLISHER_LAST_NAME)),
+                      BeeConst.STRING_EMPTY) + BeeConst.STRING_COLON,
+                  event.getString(events.getColumnIndex(COL_COMMENT))));
         }
       }
     }

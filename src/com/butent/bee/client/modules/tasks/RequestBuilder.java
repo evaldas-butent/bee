@@ -37,19 +37,17 @@ public class RequestBuilder extends ProductSupportInterceptor {
     event.consume();
     String viewName = getFormView().getViewName();
 
-    if (maybeNotifyEmptyProduct(event.getCallback())) {
-      return;
+    if (!maybeNotifyEmptyProduct(msg -> event.getCallback().onFailure(msg))) {
+      Queries.insert(viewName, event.getColumns(), event.getValues(), event.getChildren(),
+          new RowInsertCallback(viewName, event.getSourceId()) {
+            @Override
+            public void onSuccess(BeeRow result) {
+              super.onSuccess(result);
+              event.getCallback().onSuccess(result);
+              createFiles(result.getId());
+            }
+          });
     }
-
-    Queries.insert(viewName, event.getColumns(), event.getValues(), event.getChildren(),
-        new RowInsertCallback(viewName, event.getSourceId()) {
-          @Override
-          public void onSuccess(BeeRow result) {
-            super.onSuccess(result);
-            event.getCallback().onSuccess(result);
-            createFiles(result.getId());
-          }
-        });
   }
 
   private void createFiles(Long requestId) {

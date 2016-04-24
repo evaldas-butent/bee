@@ -61,8 +61,7 @@ import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.projects.ProjectConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
-import com.butent.bee.shared.modules.tasks.TaskConstants.TaskEvent;
-import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
+import com.butent.bee.shared.modules.tasks.TaskConstants.*;
 import com.butent.bee.shared.modules.tasks.TaskUtils;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.HasDateValue;
@@ -736,7 +735,7 @@ class TaskBuilder extends ProductSupportInterceptor {
       return;
     }
 
-    if (maybeNotifyEmptyProduct(callback)) {
+    if (maybeNotifyEmptyProduct(callback::onFailure)) {
       return;
     }
 
@@ -1002,8 +1001,8 @@ class TaskBuilder extends ProductSupportInterceptor {
     }
 
     if (event.isEmpty() && TaskUtils.sameObservers(oldRow, newRow)
-        && TaskUtils.getUpdatedRelations(oldRow, newRow).isEmpty() && !DataUtils.isId(
-            newExecutor)) {
+        && TaskUtils.getUpdatedRelations(oldRow, newRow).isEmpty()
+        && !DataUtils.isId(newExecutor)) {
       return;
     }
 

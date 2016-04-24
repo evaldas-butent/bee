@@ -152,7 +152,7 @@ public class RequestEditor extends ProductSupportInterceptor {
 
   @Override
   public boolean beforeAction(Action action, Presenter presenter) {
-    if (action == Action.SAVE && maybeNotifyEmptyProduct(null)) {
+    if (action == Action.SAVE && maybeNotifyEmptyProduct(msg -> getFormView().notifySevere(msg))) {
       return false;
     }
     return true;
