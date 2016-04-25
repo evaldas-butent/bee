@@ -15,7 +15,6 @@ import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HasHandlers;
-import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
@@ -262,6 +261,8 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
   private static final String STYLE_COMMENT_ROW = STYLE_COMMENT + "row";
   private static final String STYLE_COMMENT_COL = STYLE_COMMENT + "col-";
   private static final String STYLE_COMMENT_FILES = STYLE_COMMENT + "files";
+  private static final String STYLE_MARK_TYPES = DISCUSSIONS_STYLE_PREFIX + "markTypes";
+  private static final String STYLE_HAS_MARKS = STYLE_MARK_TYPES + "-hasMarks";
   private static final String STYLE_ACTIONS = "Actions";
   private static final String STYLE_MARKED = "-marked";
   private static final String STYLE_MARK = "-mark";
@@ -294,6 +295,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
       PROP_APPOINTMENTS, PROP_TASKS, PROP_DOCUMENTS);
   private final long userId;
   private Image discussOwnerPhoto;
+  private Flow markPanel;
 
   DiscussionInterceptor() {
     super();
@@ -399,6 +401,10 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
       discussOwnerPhoto = (Image) widget;
       discussOwnerPhoto.setUrl(DEFAULT_PHOTO);
     }
+
+    if (BeeUtils.same(name, VIEW_DISCUSSIONS_MARK_TYPES) && widget instanceof Flow) {
+      markPanel = (Flow) widget;
+    }
   }
 
   @Override
@@ -452,9 +458,8 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
       }
     }
 
-    widget = form.getWidgetByName(VIEW_DISCUSSIONS_MARK_TYPES);
-    if (widget instanceof Panel) {
-      createMarkPanel((Flow) widget, form, row, null);
+    if (markPanel != null) {
+      createMarkPanel(markPanel, form, row, null);
     }
 
     widget = form.getWidgetByName(COL_PERMIT_COMMENT);
@@ -1094,6 +1099,12 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
       return;
     }
 
+    if (!BeeUtils.isEmpty(DiscussionsUtils.getMarkStats(commentId, markData))) {
+      flowWidget.addStyleName(STYLE_HAS_MARKS);
+    } else {
+      flowWidget.removeStyleName(STYLE_HAS_MARKS);
+    }
+
     boolean enabled =
         isEventEnabled(form, formRow, DiscussionEvent.MARK, status, owner, false)
             && !DiscussionsUtils.hasOneMark(userId, commentId, markData);
@@ -1113,6 +1124,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
     imgStats.addStyleName(DISCUSSIONS_STYLE_PREFIX + STYLE_ACTIONS);
     imgStats.addStyleName(DISCUSSIONS_STYLE_PREFIX + STYLE_ACTIONS + STYLE_STATS);
     imgStats.setTitle(Localized.dictionary().discussMarkStats());
+    imgStats.setVisible(!BeeUtils.isEmpty(DiscussionsUtils.getMarkStats(commentId, markData)));
 
     imgStats.addClickHandler(new ClickHandler() {
 
