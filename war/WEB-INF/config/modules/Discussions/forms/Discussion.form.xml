@@ -68,11 +68,11 @@
   <FileGroup style="margin-left: 60px; margin-bottom: 30px;"
    data="DiscussionsFiles" name="Files" />
 
-  <Disclosure open="false">
+  <Disclosure open="false" name="DescriptionDisclosure">
    <Label text="=discussDescription" style="text-transform: uppercase;" />
 
    <FlowPanel>
-    <Label class="bee-InputArea bee-discuss-Description" name="Description"
+    <TextLabel name="Description" class="bee-InputArea bee-discuss-Description" source="Description"
      style="&descriptionInp; width:80%; min-width: 640px; min-height: 390px" />
 
     <RichTextEditor class="bee-discuss-DescriptionEditor"
@@ -83,14 +83,14 @@
   </Disclosure>
 
   <Disclosure xmlns="http://www.butent.com/widget" xmlns:xi="http://www.w3.org/2001/XInclude"
-   open="false">
+   open="false" name="RelDisclosure">
    <Label data="Relations" text="=discussRelatedInformation"
     style="text-transform: uppercase;" />
 
    <FlowPanel class="flexBox-vertical" style="&discussDataPanel;">
     <FlowPanel data="Users">
      <Label name="membersLabel" text="=discussMembers" style="&lblRight;" />
-     <MultiSelector viewName="Users" property="Members"
+     <MultiSelector viewName="Users" property="Members" newRowEnabled="false"
       renderColumns="FirstName LastName" editSource="CompanyPerson"
       style="&inpLeft400p;" label="=discussMembers" disablable="false" />
      <CheckBox for="Accessibility" data="Users" name="Accessibility"
@@ -133,7 +133,7 @@
     </FlowPanel>
    </FlowPanel>
   </Disclosure>
-  <FlowPanel style="background-color:#E3E3E3; height: 5px;" />
+  <FlowPanel style="background-color:#E3E3E3; min-height: 5px; max-height: 5px" />
   <FlowPanel data="DiscussionsComments" name="DiscussionsComments"
    class="flexible bee-discuss-comment-container" />
 
