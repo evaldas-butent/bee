@@ -39,53 +39,11 @@
   <Label text="=relatedTo" style="text-transform: uppercase; " />
   <FlowPanel style="padding-bottom: 10px;">
 
-   <FlowPanel data="Relations" for="Company" module="Classifiers.Contacts"
-    style="&section; &bold;" class="flexBox-horizontal">
-    <Label text="=companies"
-     style="&top1;min-width:80px; padding-right:0px; padding-left:24px;" />
-    <MultiSelector viewName="Companies" property="Companies"
-     choiceColumns="Name TypeName" renderColumns="Name TypeName"
-     editPopup="true" style="&inp2x; margin-left: 15px;" />
+   <FlowPanel data="Relations" style="&section; &bold;" class="flexBox-horizontal">
+    <Relations name="Relations" relColumn="Discussion" inline="true"
+     disablable="false" defaultRelations="Companies Persons Appointments Tasks Documents"
+     style="&inline; width:815px; margin-left: 15px;" />
    </FlowPanel>
-
-   <FlowPanel data="Relations" for="Person" module="Classifiers.Contacts"
-    style="&section;" class="flexBox-horizontal">
-    <Label text="=persons"
-     style="&top1;min-width:80px; padding-right:0px; padding-left:24px; &bold;" />
-    <MultiSelector viewName="Persons" property="Persons"
-     renderColumns="FirstName LastName" editPopup="true"
-     style="&inp2x; margin-left: 15px;" />
-   </FlowPanel>
-
-   <FlowPanel data="Relations" for="Appointment" module="Calendar"
-    style="&section;" class="flexBox-horizontal">
-    <Label text="=calAppointments"
-     style="&top1;min-width:93px; padding-right:0px; padding-left:11px; &bold;" />
-    <MultiSelector viewName="Appointments" property="Appointments"
-     renderColumns="Summary" choiceColumns="Summary StartDateTime EndDateTime"
-     newRowEnabled="false" editPopup="true" style="&inp2x; margin-left: 15px;" />
-   </FlowPanel>
-
-   <FlowPanel data="Relations" for="Task" module="Tasks"
-    style="&section;" class="flexBox-horizontal">
-    <Label text="=crmTasks"
-     style="&top1;min-width:80px; padding-right:0px; padding-left:24px; &bold;" />
-    <MultiSelector viewName="Tasks" property="Tasks"
-     renderColumns="Id Summary ExecutorFirstName ExecutorLastName"
-     choiceColumns="Id Summary ExecutorFirstName ExecutorLastName StartTime FinishTime"
-     newRowEnabled="false" editPopup="true" style="&inp2x; margin-left: 15px;" />
-   </FlowPanel>
-
-   <FlowPanel data="Relations" for="Document" module="Documents"
-    style="&section;" class="flexBox-horizontal">
-    <Label text="=documents"
-     style="&top1;min-width:80px; padding-right:0px; padding-left:24px; &bold;" />
-    <MultiSelector viewName="Documents" property="Documents"
-     renderColumns="Name Number RegistrationNumber DocumentDate"
-     choiceColumns="Name Number RegistrationNumber DocumentDate"
-     newRowEnabled="false" editPopup="true" style="&inp2x; margin-left: 15px;" />
-   </FlowPanel>
-
   </FlowPanel>
  </Disclosure>
 

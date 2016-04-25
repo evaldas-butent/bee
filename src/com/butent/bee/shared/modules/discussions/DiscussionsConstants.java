@@ -179,12 +179,6 @@ public final class DiscussionsConstants {
   public static final String PROP_MARKS = "Marks";
   public static final String PROP_MAIL = "Mail";
 
-  public static final String PROP_COMPANIES = "Companies";
-  public static final String PROP_PERSONS = "Persons";
-  public static final String PROP_APPOINTMENTS = "Appointments";
-  public static final String PROP_TASKS = "Tasks";
-  public static final String PROP_DOCUMENTS = "Documents";
-
   public static final String PROP_ANNOUNCMENT = "Announcement";
   public static final String PROP_MARK_COUNT = "MarkCount";
   public static final String PROP_MARK_TYPES = "MarkTypes";

@@ -21,6 +21,7 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.event.logical.SelectorEvent.Handler;
+import com.butent.bee.client.modules.mail.Relations;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
@@ -43,6 +44,7 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.RowChildren;
 import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.i18n.Localized;
@@ -56,6 +58,8 @@ import com.butent.bee.shared.ui.HasCheckedness;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -70,7 +74,9 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
   private static final String WIDGET_LABEL_DISPLAY_IN_BOARD = "DisplayInBoard";
 
   private HasCheckedness mailToggle;
+  HasCheckedness wPermitComment;
   private Editor summaryEditor;
+  private Relations relations;
 
   CreateDiscussionInterceptor() {
     super();
@@ -210,6 +216,15 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
     if (BeeUtils.same(name, WIDGET_SUMMARY) && widget instanceof Editor) {
       summaryEditor = (Editor) widget;
     }
+
+    if (BeeUtils.same(name, AdministrationConstants.TBL_RELATIONS) && widget instanceof Relations) {
+      relations = (Relations) widget;
+    }
+
+    if (BeeUtils.same(name, COL_PERMIT_COMMENT) && widget instanceof HasCheckedness) {
+      wPermitComment = (HasCheckedness) widget;
+    }
+
   }
 
   @Override
@@ -237,8 +252,6 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
     String summary = "";
 
     HasCheckedness wIsPublic = (HasCheckedness) getFormView().getWidgetByName(WIDGET_ACCESSIBILITY);
-    HasCheckedness wPermitComment = (HasCheckedness) getFormView().getWidgetByName(
-        COL_PERMIT_COMMENT);
 
     Editor wDescription = (Editor) getFormView().getWidgetByName(WIDGET_DESCRIPTION);
     DataSelector wTopic = (DataSelector) getFormView().getWidgetBySource(COL_TOPIC);
@@ -349,6 +362,17 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
           }
 
           createFiles(discussions);
+          final Collection<RowChildren> relData = new ArrayList<>();
+
+          if (relations != null) {
+            BeeUtils.overwrite(relData, relations.getRowChildren(true));
+          }
+
+          for (Long id : discussions) {
+            if (!BeeUtils.isEmpty(relData)) {
+              Queries.updateChildren(VIEW_DISCUSSIONS, id, relData, null);
+            }
+          }
 
           event.getCallback().onSuccess(null);
 
