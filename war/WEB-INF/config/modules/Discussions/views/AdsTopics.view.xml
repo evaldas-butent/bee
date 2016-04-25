@@ -1,19 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<View xmlns="http://www.butent.com/view"
-
-  name="AdsTopics"
-  source="AdsTopics"
-  newRowForm="AdTopic"
-  >
-  <Columns>
-
-    <SimpleColumn name="Ordinal" />
-    <SimpleColumn name="Name" />
-    <SimpleColumn name="Visible" />   
-  </Columns>
-  <Order>
-    <OrderBy column="Ordinal" />
-    <OrderBy column="Visible" />
-  </Order>
+<View xmlns="http://www.butent.com/view" name="AdsTopics" source="AdsTopics"
+ newRowForm="AdTopic">
+ <Columns>
+  <SimpleColumn name="Ordinal" />
+  <SimpleColumn name="Name" />
+  <SimpleColumn name="Visible" />
+  <SimpleColumn name="BackgroundColor" />
+  <SimpleColumn name="Color" />
+ </Columns>
+ <Order>
+  <OrderBy column="Ordinal" />
+  <OrderBy column="Visible" />
+ </Order>
 </View>
  

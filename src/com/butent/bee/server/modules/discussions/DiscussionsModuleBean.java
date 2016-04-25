@@ -46,7 +46,6 @@ import com.butent.bee.shared.data.RowChildren;
 import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
-import com.butent.bee.shared.data.SqlConstants.SqlDataType;
 import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.html.Tags;
@@ -813,90 +812,113 @@ public class DiscussionsModuleBean implements BeeModule {
     nowFinish.setSecond(59);
     nowFinish.setMillis(999);
 
-    SqlSelect select = new SqlSelect()
-        .addField(TBL_DISCUSSIONS, sys.getIdName(TBL_DISCUSSIONS), COL_DISCUSSION)
-        .addField(TBL_ADS_TOPICS, COL_NAME, ALS_TOPIC_NAME)
-        .addField(TBL_ADS_TOPICS, COL_ORDINAL, COL_ORDINAL)
-        .addField(TBL_DISCUSSIONS, COL_CREATED, COL_CREATED)
-        .addField(TBL_DISCUSSIONS, COL_SUBJECT, COL_SUBJECT)
-        .addField(TBL_DISCUSSIONS, COL_IMPORTANT, COL_IMPORTANT)
-        .addField(TBL_DISCUSSIONS, COL_DESCRIPTION, COL_DESCRIPTION)
-        .addField(TBL_PERSONS, COL_FIRST_NAME,
-            COL_FIRST_NAME)
-        .addField(TBL_PERSONS, COL_LAST_NAME,
-            COL_LAST_NAME)
-        .addField(TBL_PERSONS, COL_PHOTO, COL_PHOTO)
-        .addCount(TBL_DISCUSSIONS_FILES, AdministrationConstants.COL_FILE,
-            AdministrationConstants.COL_FILE)
-        .addCount(TBL_DISCUSSIONS_COMMENTS, COL_DISCUSSION,
-            COL_DISCUSSION_COMMENTS)
-        .addExpr(
-            SqlUtils.sqlIf(
-                SqlUtils.isNull(TBL_DISCUSSIONS_USAGE, NewsConstants.COL_USAGE_ACCESS),
-                true, null), ALS_NEW_ANNOUCEMENT)
-        .addEmptyField(ALS_BIRTHDAY, SqlDataType.BOOLEAN, 1, 0, false)
-        .addFrom(TBL_DISCUSSIONS)
-        .addFromInner(TBL_ADS_TOPICS, sys.joinTables(TBL_ADS_TOPICS, TBL_DISCUSSIONS, COL_TOPIC))
-        .addFromLeft(TBL_DISCUSSIONS_USAGE, SqlUtils.and(SqlUtils.equals(TBL_DISCUSSIONS_USAGE,
-            COL_DISCUSSION, SqlUtils.field(TBL_DISCUSSIONS, sys
-                .getIdName(TBL_DISCUSSIONS))),
-            SqlUtils.equals(TBL_DISCUSSIONS_USAGE, AdministrationConstants.COL_USER, usr
-                .getCurrentUserId())))
-        .addFromLeft(AdministrationConstants.TBL_USERS,
-            sys.joinTables(AdministrationConstants.TBL_USERS, TBL_DISCUSSIONS, COL_OWNER))
-        .addFromLeft(
-            TBL_COMPANY_PERSONS,
-            sys.joinTables(TBL_COMPANY_PERSONS, AdministrationConstants.TBL_USERS,
-                COL_COMPANY_PERSON))
-        .addFromLeft(
-            TBL_PERSONS,
-            sys.joinTables(TBL_PERSONS, TBL_COMPANY_PERSONS,
-                COL_PERSON))
-        .addFromLeft(TBL_DISCUSSIONS_FILES,
-            sys.joinTables(TBL_DISCUSSIONS, TBL_DISCUSSIONS_FILES, COL_DISCUSSION))
-        .addFromLeft(TBL_DISCUSSIONS_COMMENTS,
-            sys.joinTables(TBL_DISCUSSIONS, TBL_DISCUSSIONS_COMMENTS, COL_DISCUSSION))
-        .addFromLeft(TBL_DISCUSSIONS_USERS,
-            sys.joinTables(TBL_DISCUSSIONS, TBL_DISCUSSIONS_USERS, COL_DISCUSSION))
-        .setWhere(SqlUtils.and(
-            SqlUtils.notNull(TBL_ADS_TOPICS, COL_VISIBLE),
-            SqlUtils.notNull(TBL_DISCUSSIONS, sys.getIdName(TBL_DISCUSSIONS)),
-            SqlUtils.or(
-                SqlUtils.and(
-                    SqlUtils.moreEqual(TBL_DISCUSSIONS, COL_VISIBLE_TO, System
-                        .currentTimeMillis()),
-                    SqlUtils.lessEqual(TBL_DISCUSSIONS, COL_VISIBLE_FROM, System
-                        .currentTimeMillis())
-                    ),
+    String colMaxPublishTime = SqlUtils.uniqueName();
+    String colMaxCommentId = SqlUtils.uniqueName();
+    String tblMaxComments = SqlUtils.uniqueName();
+    String alsDiscussComments = SqlUtils.uniqueName();
+
+    SqlSelect maxCommentQuery = new SqlSelect()
+        .addField(TBL_DISCUSSIONS_COMMENTS, COL_DISCUSSION, COL_DISCUSSION)
+        .addMax(TBL_DISCUSSIONS_COMMENTS, COL_PUBLISH_TIME, colMaxPublishTime)
+        .addMax(TBL_DISCUSSIONS_COMMENTS, COL_DISCUSSION_COMMENT_ID, colMaxCommentId)
+        .addFrom(TBL_DISCUSSIONS_COMMENTS)
+        .setWhere(SqlUtils.notEqual(TBL_DISCUSSIONS_COMMENTS, DiscussionsConstants.COL_PUBLISHER,
+            usr.getCurrentUserId()))
+        .addGroup(TBL_DISCUSSIONS_COMMENTS, COL_DISCUSSION, COL_PUBLISHER);
+
+    SqlSelect select =
+        new SqlSelect()
+            .addField(TBL_DISCUSSIONS, sys.getIdName(TBL_DISCUSSIONS), COL_DISCUSSION)
+            .addField(TBL_DISCUSSIONS, COL_DISCUSSION_ID, COL_DISCUSSION_ID)
+            .addField(TBL_ADS_TOPICS, COL_NAME, ALS_TOPIC_NAME)
+            .addField(TBL_ADS_TOPICS, COL_ORDINAL, COL_ORDINAL)
+            .addFields(TBL_ADS_TOPICS, COL_BACKGROUND_COLOR)
+            .addFields(TBL_ADS_TOPICS, COL_TEXT_COLOR)
+            .addField(TBL_DISCUSSIONS, COL_CREATED, COL_CREATED)
+            .addField(TBL_DISCUSSIONS, COL_SUBJECT, COL_SUBJECT)
+            .addField(TBL_DISCUSSIONS, COL_SUMMARY, COL_SUMMARY)
+            .addField(TBL_DISCUSSIONS, COL_STATUS, COL_STATUS)
+            .addField(TBL_DISCUSSIONS, COL_IMPORTANT, COL_IMPORTANT)
+            .addField(TBL_DISCUSSIONS, COL_DESCRIPTION, COL_DESCRIPTION)
+            .addFields(TBL_DISCUSSIONS_USAGE, NewsConstants.COL_USAGE_ACCESS)
+            .addField(TBL_PERSONS, COL_FIRST_NAME, COL_FIRST_NAME)
+            .addField(TBL_PERSONS, COL_LAST_NAME, COL_LAST_NAME)
+            .addField(TBL_PERSONS, COL_PHOTO, COL_PHOTO)
+            .addMax(TBL_DISCUSSIONS_COMMENTS, COL_PUBLISH_TIME, COL_PUBLISH_TIME)
+            .addMax(tblMaxComments, colMaxPublishTime, ALS_MAX_PUBLISH_TIME)
+            .addCount(TBL_DISCUSSIONS_FILES, AdministrationConstants.COL_FILE,
+                AdministrationConstants.COL_FILE)
+            .addCountDistinct(TBL_DISCUSSIONS_COMMENTS, COL_DISCUSSION_COMMENT_ID,
+                COL_DISCUSSION_COMMENT_ID)
+            .addExpr(
+                SqlUtils.sqlIf(
+                    SqlUtils.isNull(TBL_DISCUSSIONS_USAGE, NewsConstants.COL_USAGE_ACCESS),
+                    true, null), ALS_NEW_ANNOUCEMENT)
+            .addEmptyText(ALS_BIRTHDAY)
+            .addFrom(TBL_DISCUSSIONS)
+            .addFromInner(TBL_ADS_TOPICS,
+                sys.joinTables(TBL_ADS_TOPICS, TBL_DISCUSSIONS, COL_TOPIC))
+            .addFromLeft(maxCommentQuery, tblMaxComments,
+                SqlUtils.join(TBL_DISCUSSIONS, COL_DISCUSSION_ID,
+                    tblMaxComments, COL_DISCUSSION))
+            .addFromLeft(TBL_DISCUSSIONS_COMMENTS, alsDiscussComments,
+                SqlUtils.join(tblMaxComments,
+                    colMaxCommentId,
+                    alsDiscussComments, COL_DISCUSSION_COMMENT_ID))
+            .addFromLeft(TBL_DISCUSSIONS_USAGE, SqlUtils.and(SqlUtils.equals(TBL_DISCUSSIONS_USAGE,
+                COL_DISCUSSION, SqlUtils.field(TBL_DISCUSSIONS, sys
+                    .getIdName(TBL_DISCUSSIONS))),
+                SqlUtils.equals(TBL_DISCUSSIONS_USAGE, AdministrationConstants.COL_USER, usr
+                    .getCurrentUserId())))
+            .addFromLeft(AdministrationConstants.TBL_USERS,
+                sys.joinTables(AdministrationConstants.TBL_USERS, TBL_DISCUSSIONS, COL_OWNER))
+            .addFromLeft(
+                TBL_COMPANY_PERSONS,
+                sys.joinTables(TBL_COMPANY_PERSONS, AdministrationConstants.TBL_USERS,
+                    COL_COMPANY_PERSON))
+            .addFromLeft(
+                TBL_PERSONS,
+                sys.joinTables(TBL_PERSONS, TBL_COMPANY_PERSONS,
+                    COL_PERSON))
+            .addFromLeft(TBL_DISCUSSIONS_FILES,
+                sys.joinTables(TBL_DISCUSSIONS, TBL_DISCUSSIONS_FILES, COL_DISCUSSION))
+            .addFromLeft(TBL_DISCUSSIONS_COMMENTS,
+                sys.joinTables(TBL_DISCUSSIONS, TBL_DISCUSSIONS_COMMENTS, COL_DISCUSSION))
+            .addFromLeft(TBL_DISCUSSIONS_USERS,
+                sys.joinTables(TBL_DISCUSSIONS, TBL_DISCUSSIONS_USERS, COL_DISCUSSION))
+            .setWhere(SqlUtils.and(
+                SqlUtils.notNull(TBL_ADS_TOPICS, COL_VISIBLE),
+                SqlUtils.notNull(TBL_DISCUSSIONS, sys.getIdName(TBL_DISCUSSIONS)),
                 SqlUtils.or(
-                    SqlUtils.equals(TBL_DISCUSSIONS, COL_VISIBLE_TO, nowStart),
-                    SqlUtils.equals(TBL_DISCUSSIONS, COL_VISIBLE_FROM, nowStart)
+                    SqlUtils.and(
+                        SqlUtils.moreEqual(TBL_DISCUSSIONS, COL_VISIBLE_TO, System
+                            .currentTimeMillis()),
+                        SqlUtils.lessEqual(TBL_DISCUSSIONS, COL_VISIBLE_FROM, System
+                            .currentTimeMillis())),
+                    SqlUtils.or(
+                        SqlUtils.equals(TBL_DISCUSSIONS, COL_VISIBLE_TO, nowStart),
+                        SqlUtils.equals(TBL_DISCUSSIONS, COL_VISIBLE_FROM, nowStart)),
+                    SqlUtils.and(
+                        SqlUtils.lessEqual(TBL_DISCUSSIONS, COL_VISIBLE_FROM, System
+                            .currentTimeMillis()),
+                        SqlUtils.isNull(TBL_DISCUSSIONS, COL_VISIBLE_TO)),
+                    SqlUtils.and(
+                        SqlUtils.isNull(TBL_DISCUSSIONS, COL_VISIBLE_FROM),
+                        SqlUtils.moreEqual(TBL_DISCUSSIONS, COL_VISIBLE_TO, nowFinish)
+                        )
                     ),
-                SqlUtils.and(
-                    SqlUtils.lessEqual(TBL_DISCUSSIONS, COL_VISIBLE_FROM, System
-                        .currentTimeMillis()),
-                    SqlUtils.isNull(TBL_DISCUSSIONS, COL_VISIBLE_TO)
-                    ),
-                SqlUtils.and(
-                    SqlUtils.isNull(TBL_DISCUSSIONS, COL_VISIBLE_FROM),
-                    SqlUtils.moreEqual(TBL_DISCUSSIONS, COL_VISIBLE_TO, nowFinish)
-                    )
-                ),
-            SqlUtils.or(SqlUtils.or(SqlUtils.and(SqlUtils.equals(TBL_DISCUSSIONS_USERS,
-                AdministrationConstants.COL_USER,
-                usr.getCurrentUserId()),
-                SqlUtils.notNull(TBL_DISCUSSIONS_USERS, COL_MEMBER)),
-                SqlUtils.equals(TBL_DISCUSSIONS, COL_OWNER, usr.getCurrentUserId())
-                ),
-                SqlUtils.notNull(TBL_DISCUSSIONS, COL_ACCESSIBILITY)
-                ))
-        )
-        .addOrder(TBL_ADS_TOPICS, COL_ORDINAL)
-        .addOrderDesc(TBL_DISCUSSIONS, COL_CREATED)
-        .addGroup(TBL_DISCUSSIONS, sys.getIdName(TBL_DISCUSSIONS))
-        .addGroup(TBL_ADS_TOPICS, COL_NAME, COL_ORDINAL)
-        .addGroup(TBL_DISCUSSIONS_USAGE, NewsConstants.COL_USAGE_ACCESS)
-        .addGroup(TBL_PERSONS, COL_FIRST_NAME, COL_LAST_NAME, COL_PHOTO);
+                SqlUtils.or(SqlUtils.or(SqlUtils.and(SqlUtils.equals(TBL_DISCUSSIONS_USERS,
+                    AdministrationConstants.COL_USER,
+                    usr.getCurrentUserId()), SqlUtils.notNull(TBL_DISCUSSIONS_USERS, COL_MEMBER)),
+                    SqlUtils.equals(TBL_DISCUSSIONS, COL_OWNER, usr.getCurrentUserId())),
+                    SqlUtils.notNull(TBL_DISCUSSIONS, COL_ACCESSIBILITY))))
+            .addOrder(TBL_ADS_TOPICS, COL_ORDINAL)
+            .addOrderDesc(TBL_DISCUSSIONS, COL_CREATED)
+            .addGroup(TBL_DISCUSSIONS, sys.getIdName(TBL_DISCUSSIONS))
+            .addGroup(TBL_ADS_TOPICS, COL_NAME, COL_ORDINAL, COL_BACKGROUND_COLOR, COL_TEXT_COLOR)
+            .addGroup(TBL_DISCUSSIONS_COMMENTS, COL_DISCUSSION)
+            .addGroup(TBL_DISCUSSIONS_USAGE, NewsConstants.COL_USAGE_ACCESS)
+            .addGroup(TBL_PERSONS, COL_FIRST_NAME, COL_LAST_NAME, COL_PHOTO);
 
     SimpleRowSet rs = qs.getData(select);
 
@@ -905,7 +927,9 @@ public class DiscussionsModuleBean implements BeeModule {
           qs.getViewData(VIEW_ADS_TOPICS, Filter.and(Filter.compareId(birthTopic), Filter
               .isNot(Filter.isNull(COL_VISIBLE))));
 
-      if (!topicRows.isEmpty()) {
+      ResponseObject birthResp = getBirthdays();
+
+      if (!topicRows.isEmpty() && birthResp.hasResponse(SimpleRowSet.class)) {
         BeeRow tRow = topicRows.getRow(topicRows.getNumberOfRows() - 1);
         Integer ordinal =
             tRow.getInteger(topicRows.getColumnIndex(COL_ORDINAL));
@@ -914,9 +938,13 @@ public class DiscussionsModuleBean implements BeeModule {
 
         topicData[rs.getColumnIndex(ALS_TOPIC_NAME)] =
             tRow.getString(topicRows.getColumnIndex(COL_NAME));
+        topicData[rs.getColumnIndex(COL_BACKGROUND_COLOR)] =
+            tRow.getString(topicRows.getColumnIndex(COL_BACKGROUND_COLOR));
+        topicData[rs.getColumnIndex(COL_TEXT_COLOR)] =
+            tRow.getString(topicRows.getColumnIndex(COL_TEXT_COLOR));
         topicData[rs.getColumnIndex(COL_ORDINAL)] =
             tRow.getString(topicRows.getColumnIndex(COL_ORDINAL));
-        topicData[rs.getColumnIndex(ALS_BIRTHDAY)] = BeeUtils.toString(true);
+        topicData[rs.getColumnIndex(ALS_BIRTHDAY)] = Codec.beeSerialize(birthResp.getResponse());
 
         int placeId = rs.getNumberOfRows() - 1;
         for (int i = 0; i < rs.getNumberOfRows(); i++) {
@@ -970,6 +998,8 @@ public class DiscussionsModuleBean implements BeeModule {
             COL_FIRST_NAME)
         .addField(TBL_PERSONS, COL_LAST_NAME,
             COL_LAST_NAME)
+        .addField(TBL_PERSONS, COL_PHOTO,
+            COL_PHOTO)
         .addField(TBL_PERSONS, COL_DATE_OF_BIRTH,
             COL_DATE_OF_BIRTH)
         .addFrom(TBL_PERSONS)
@@ -981,7 +1011,7 @@ public class DiscussionsModuleBean implements BeeModule {
 
     SimpleRowSet up = qs.getData(select);
     SimpleRowSet birthdays =
-        new SimpleRowSet(new String[] {COL_NAME, COL_DATE_OF_BIRTH, COL_ORDINAL});
+        new SimpleRowSet(new String[] {COL_NAME, COL_PHOTO, COL_DATE_OF_BIRTH, COL_ORDINAL});
 
     for (String[] upRow : up.getRows()) {
       if (!BeeUtils.isLong(upRow[up.getColumnIndex(COL_DATE_OF_BIRTH)])) {
@@ -994,8 +1024,9 @@ public class DiscussionsModuleBean implements BeeModule {
 
       if (availableDays.contains(Integer.valueOf(date.getDoy()))) {
         String[] birthdaysRow = new String[] {
-            BeeUtils.joinWords(upRow[up.getColumnIndex(COL_FIRST_NAME)],
-                upRow[up.getColumnIndex(COL_LAST_NAME)]),
+            BeeUtils.joinWords(upRow[up.getColumnIndex(COL_FIRST_NAME)], upRow[up.getColumnIndex(
+                COL_LAST_NAME)]),
+            upRow[up.getColumnIndex(COL_PHOTO)],
             upRow[up.getColumnIndex(COL_DATE_OF_BIRTH)],
             BeeUtils.toString(date.getDoy())
         };
