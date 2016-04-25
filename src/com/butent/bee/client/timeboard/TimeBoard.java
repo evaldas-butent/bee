@@ -61,6 +61,7 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.Paths;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.time.DateRange;
 import com.butent.bee.shared.time.HasDateRange;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -1159,10 +1160,16 @@ public abstract class TimeBoard extends Flow implements Presenter, View, Printab
 
     long endMillis = System.currentTimeMillis();
 
-    logger.debug(getVisibleRange(), headerMillis - startMillis,
-        BeeConst.STRING_PLUS, contentMillis - headerMillis,
-        BeeConst.STRING_PLUS, endMillis - contentMillis,
-        BeeConst.STRING_EQ, endMillis - startMillis);
+    DateRange vr = DateRange.closed(getVisibleRange().lowerEndpoint(),
+        getVisibleRange().upperEndpoint());
+
+    logger.debug(vr.toCompactString(true),
+        BeeUtils.parenthesize(BeeUtils.joinWords(content.getWidgetCount(),
+            DomUtils.countDescendants(canvas))),
+        BeeUtils.bracket(BeeUtils.joinWords(headerMillis - startMillis,
+            BeeConst.STRING_PLUS, contentMillis - headerMillis,
+            BeeConst.STRING_PLUS, endMillis - contentMillis,
+            BeeConst.STRING_EQ, endMillis - startMillis)));
   }
 
   protected abstract void renderContent(ComplexPanel panel);

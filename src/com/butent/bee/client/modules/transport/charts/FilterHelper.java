@@ -247,6 +247,16 @@ final class FilterHelper {
     }
   }
 
+  static boolean matches(ChartData data, Enum<?> e) {
+    if (data == null) {
+      return true;
+    } else if (e == null) {
+      return false;
+    } else {
+      return data.contains(e);
+    }
+  }
+
   static boolean matches(ChartData data, String name) {
     if (data == null) {
       return true;

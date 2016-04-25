@@ -1619,9 +1619,13 @@ public interface Dictionary {
 
   default String discussSubject() {return g("discussSubject");}
 
+  default String discussSummary() {return g("discussSummary");}
+
   default String discussTotalComments() {return g("discussTotalComments");}
 
   default String discussTotalMarks() {return g("discussTotalMarks");}
+
+  default String discussUserGroup() {return g("discussUserGroup");}
 
   default String discussion() {return g("discussion");}
 
@@ -5221,6 +5225,8 @@ public interface Dictionary {
   default String trTripPurchaseInvoices() {return g("trTripPurchaseInvoices");}
 
   default String trTripRoutes() {return g("trTripRoutes");}
+
+  default String trTripStatus() {return g("trTripStatus");}
 
   default String trTripStatusActive() {return g("trTripStatusActive");}
 
