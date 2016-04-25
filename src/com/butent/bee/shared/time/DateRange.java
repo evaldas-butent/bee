@@ -11,7 +11,6 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 public final class DateRange implements HasDateRange, BeeSerializable {
 
@@ -87,14 +86,10 @@ public final class DateRange implements HasDateRange, BeeSerializable {
 
   public Filter getFilter(String colName) {
     JustDate minDate = getMinDate();
-    JustDate maxDate = getMaxDate();
+    JustDate maxDate = new JustDate(getMaxDays() + 1);
 
-    if (Objects.equals(minDate, maxDate)) {
-      return Filter.equals(colName, minDate);
-    } else {
-      return Filter.and(Filter.isMoreEqual(colName, new DateValue(minDate)),
-          Filter.isLessEqual(colName, new DateValue(maxDate)));
-    }
+    return Filter.and(Filter.isMoreEqual(colName, new DateValue(minDate)),
+        Filter.isLess(colName, new DateValue(maxDate)));
   }
 
   public JustDate getMaxDate() {

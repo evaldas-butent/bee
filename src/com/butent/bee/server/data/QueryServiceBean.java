@@ -441,6 +441,15 @@ public class QueryServiceBean {
     return result;
   }
 
+  public Set<Long> getDistinctLongs(String tableName, String fieldName, IsCondition where) {
+    SqlSelect query = new SqlSelect().setDistinctMode(true)
+        .addFields(tableName, fieldName)
+        .addFrom(tableName)
+        .setWhere(where);
+
+    return getLongSet(query);
+  }
+
   public Double getDouble(IsQuery query) {
     return getSingleValue(query).getDouble(0, 0);
   }

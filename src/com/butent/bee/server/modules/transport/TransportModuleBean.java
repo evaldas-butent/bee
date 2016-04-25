@@ -60,6 +60,7 @@ import com.butent.bee.shared.data.SqlConstants.SqlFunction;
 import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.Operator;
+import com.butent.bee.shared.data.value.DateValue;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
@@ -80,6 +81,7 @@ import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.rights.ModuleAndSub;
 import com.butent.bee.shared.rights.SubModule;
 import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Color;
 import com.butent.bee.shared.ui.UserInterface;
@@ -164,6 +166,21 @@ public class TransportModuleBean implements BeeModule {
       return ExchangeUtils.exchangeField(query, amountExpr, SqlUtils.field(source, COL_CURRENCY),
           SqlUtils.nvl(SqlUtils.field(source, COL_DATE),
               SqlUtils.field(defDateSource, defDateAlias)));
+    }
+  }
+
+  @SuppressWarnings("unused")
+  private static Filter getTripPeriodFilter(JustDate from, JustDate to) {
+    if (from == null && to == null) {
+      return null;
+
+    } else {
+      DateValue minValue = (from == null) ? null : new DateValue(from);
+      DateValue maxValue = (to == null) ? null : new DateValue(to);
+
+      return Filter.anyBetweenExclusive(minValue, maxValue,
+          Lists.newArrayList(COL_TRIP_DATE, COL_TRIP_DATE_FROM, COL_TRIP_DATE_TO,
+              COL_TRIP_PLANNED_END_DATE));
     }
   }
 
@@ -414,9 +431,9 @@ public class TransportModuleBean implements BeeModule {
       public void fillCargoIncomes(ViewQueryEvent event) {
         if (event.isAfter(VIEW_ORDER_CARGO) && event.hasData()) {
           SimpleRowSet rs = qs.getData(rep.getCargoIncomeQuery(event.getQuery()
-                  .resetFields().resetOrder().resetGroup()
-                  .addField(TBL_ORDER_CARGO, sys.getIdName(TBL_ORDER_CARGO), COL_CARGO)
-                  .addGroup(TBL_ORDER_CARGO, sys.getIdName(TBL_ORDER_CARGO)), null,
+              .resetFields().resetOrder().resetGroup()
+              .addField(TBL_ORDER_CARGO, sys.getIdName(TBL_ORDER_CARGO), COL_CARGO)
+              .addGroup(TBL_ORDER_CARGO, sys.getIdName(TBL_ORDER_CARGO)), null,
               BeeUtils.unbox(prm.getBoolean(PRM_EXCLUDE_VAT))));
 
           for (BeeRow row : event.getRowset().getRows()) {
@@ -463,7 +480,7 @@ public class TransportModuleBean implements BeeModule {
             return;
           }
           String crs = rep.getTripIncomes(event.getQuery().resetFields().resetOrder().resetGroup()
-                  .addFields(VIEW_CARGO_TRIPS, COL_TRIP).addGroup(VIEW_CARGO_TRIPS, COL_TRIP),
+              .addFields(VIEW_CARGO_TRIPS, COL_TRIP).addGroup(VIEW_CARGO_TRIPS, COL_TRIP),
               null, BeeUtils.unbox(prm.getBoolean(PRM_EXCLUDE_VAT)));
 
           SimpleRowSet rs = qs.getData(new SqlSelect().addAllFields(crs).addFrom(crs));
@@ -536,9 +553,11 @@ public class TransportModuleBean implements BeeModule {
             BeeRowSet data = qs.getViewData(VIEW_TEXT_CONSTANTS,
                 Filter.equals(COL_TEXT_CONSTANT, status));
 
-            String localizedContent = Localized.column(COL_TEXT_CONTENT,
-                EnumUtils.getEnumByIndex(SupportedLocale.class, info.getInteger(0, COL_USER_LOCALE))
-                    .getLanguage());
+            String localizedContent =
+                Localized.column(COL_TEXT_CONTENT,
+                    EnumUtils.getEnumByIndex(SupportedLocale.class,
+                        info.getInteger(0, COL_USER_LOCALE))
+                        .getLanguage());
             String text;
 
             if (DataUtils.isEmpty(data)) {
@@ -886,16 +905,18 @@ public class TransportModuleBean implements BeeModule {
   private void checkRequestStatus() {
     DateTime date = TimeUtils.startOfDay(1);
 
-    SqlSelect query = new SqlSelect()
-        .addField(TBL_SHIPMENT_REQUESTS, sys.getIdName(TBL_SHIPMENT_REQUESTS), "id")
-        .addField(TBL_SHIPMENT_REQUESTS, sys.getVersionName(TBL_SHIPMENT_REQUESTS), "version")
-        .addFields(TBL_SHIPMENT_REQUESTS, COL_QUERY_STATUS)
-        .addFrom(TBL_SHIPMENT_REQUESTS)
-        .addFromInner(TBL_ORDER_CARGO,
-            sys.joinTables(TBL_ORDER_CARGO, TBL_SHIPMENT_REQUESTS, COL_CARGO))
-        .setWhere(SqlUtils.and(SqlUtils.not(SqlUtils.inList(TBL_SHIPMENT_REQUESTS, COL_QUERY_STATUS,
-            ShipmentRequestStatus.CONFIRMED, ShipmentRequestStatus.LOST)),
-            SqlUtils.less(TBL_CARGO_PLACES, COL_PLACE_DATE, date)));
+    SqlSelect query =
+        new SqlSelect()
+            .addField(TBL_SHIPMENT_REQUESTS, sys.getIdName(TBL_SHIPMENT_REQUESTS), "id")
+            .addField(TBL_SHIPMENT_REQUESTS, sys.getVersionName(TBL_SHIPMENT_REQUESTS), "version")
+            .addFields(TBL_SHIPMENT_REQUESTS, COL_QUERY_STATUS)
+            .addFrom(TBL_SHIPMENT_REQUESTS)
+            .addFromInner(TBL_ORDER_CARGO,
+                sys.joinTables(TBL_ORDER_CARGO, TBL_SHIPMENT_REQUESTS, COL_CARGO))
+            .setWhere(
+                SqlUtils.and(SqlUtils.not(SqlUtils.inList(TBL_SHIPMENT_REQUESTS, COL_QUERY_STATUS,
+                    ShipmentRequestStatus.CONFIRMED, ShipmentRequestStatus.LOST)),
+                    SqlUtils.less(TBL_CARGO_PLACES, COL_PLACE_DATE, date)));
 
     SimpleRowSet expired = qs.getData(query.copyOf()
         .addFromInner(TBL_CARGO_HANDLING,
@@ -1177,7 +1198,7 @@ public class TransportModuleBean implements BeeModule {
       if (BeeUtils.unbox(row.getBoolean(COL_TRANSPORTATION))) {
         String value = BeeUtils.join("\n", row.getValue(COL_ORDER_NOTES),
             BeeUtils.join("-", row.getValue(ALS_LOADING_COUNTRY_CODE)
-                    + " (" + row.getValue(ALS_LOADING_COUNTRY_NAME) + ")",
+                + " (" + row.getValue(ALS_LOADING_COUNTRY_NAME) + ")",
                 row.getValue(ALS_UNLOADING_COUNTRY_CODE)
                     + " (" + row.getValue(ALS_UNLOADING_COUNTRY_NAME) + ")"));
 
@@ -1475,12 +1496,12 @@ public class TransportModuleBean implements BeeModule {
       values.put(COL_COSTS_QUANTITY,
           BeeUtils.toString(BeeUtils.toInt(values.get(COL_COSTS_QUANTITY))
               + Math.max(TimeUtils.dayDiff(row.getDateTime(COL_ROUTE_DEPARTURE_DATE),
-              row.getDateTime(COL_ROUTE_ARRIVAL_DATE)), 1)));
+                  row.getDateTime(COL_ROUTE_ARRIVAL_DATE)), 1)));
     }
     if (!BeeUtils.isEmpty(lastKey)
         && BeeUtils.isPositive(TimeUtils.dayDiff(rs.getDateTime(rs.getNumberOfRows() - 1,
-        COL_ROUTE_DEPARTURE_DATE), rs.getDateTime(rs.getNumberOfRows() - 1,
-        COL_ROUTE_ARRIVAL_DATE)))) {
+            COL_ROUTE_DEPARTURE_DATE), rs.getDateTime(rs.getNumberOfRows() - 1,
+            COL_ROUTE_ARRIVAL_DATE)))) {
 
       Map<String, String> values = map.get(lastKey);
       values.put(COL_COSTS_QUANTITY,
@@ -2078,7 +2099,7 @@ public class TransportModuleBean implements BeeModule {
   private ResponseObject getCargoTotal(long cargoId, Long currency) {
     String val = null;
     SimpleRow row = qs.getRow(rep.getCargoIncomeQuery(new SqlSelect()
-            .addConstant(cargoId, COL_CARGO), currency,
+        .addConstant(cargoId, COL_CARGO), currency,
         BeeUtils.unbox(prm.getBoolean(PRM_EXCLUDE_VAT))));
 
     if (row != null) {
@@ -2255,9 +2276,19 @@ public class TransportModuleBean implements BeeModule {
 
   private ResponseObject getDtbData() {
     BeeRowSet settings = getSettings();
-    if (settings == null) {
+    if (DataUtils.isEmpty(settings)) {
       return ResponseObject.error("user settings not available");
     }
+
+    JustDate minDate = settings.getDate(0, COL_DTB_MIN_DATE);
+    JustDate maxDate = settings.getDate(0, COL_DTB_MAX_DATE);
+
+    if (minDate == null && maxDate == null) {
+      minDate = TimeUtils.nextDay(TimeUtils.today(), -100);
+    }
+
+    String filterGroups = settings.getString(0, COL_DTB_TRANSPORT_GROUPS);
+    // Boolean completedTrips = settings.getBoolean(0, COL_DTB_COMPLETED_TRIPS);
 
     List<Color> colors = getThemeColors(null);
     settings.setTableProperty(PROP_COLORS, Codec.beeSerialize(colors));
@@ -2278,9 +2309,26 @@ public class TransportModuleBean implements BeeModule {
     BeeRowSet cities = qs.getViewData(VIEW_CITIES, Filter.any(COL_COUNTRY, countries.getRowIds()));
     settings.setTableProperty(PROP_CITIES, cities.serialize());
 
-    BeeRowSet drivers = qs.getViewData(VIEW_DRIVERS);
+    Filter driverFilter = null;
+    if (!BeeUtils.isEmpty(filterGroups) && !DataUtils.isEmpty(transportGroups)) {
+      Set<Long> groups = DataUtils.parseIdSet(filterGroups);
+      groups.retainAll(transportGroups.getRowIds());
+
+      if (!groups.isEmpty()) {
+        Set<Long> ids = qs.getDistinctLongs(TBL_DRIVER_GROUPS, COL_DRIVER,
+            SqlUtils.inList(TBL_DRIVER_GROUPS, COL_GROUP, groups));
+
+        if (BeeUtils.isEmpty(ids)) {
+          driverFilter = Filter.isFalse();
+        } else {
+          driverFilter = Filter.idIn(ids);
+        }
+      }
+    }
+
+    BeeRowSet drivers = qs.getViewData(VIEW_DRIVERS, driverFilter);
     if (DataUtils.isEmpty(drivers)) {
-      logger.warning(SVC_GET_DTB_DATA, "drivers not available");
+      logger.warning(SVC_GET_DTB_DATA, filterGroups, "drivers not available");
       return ResponseObject.response(settings);
     }
 
@@ -2658,9 +2706,9 @@ public class TransportModuleBean implements BeeModule {
               .setWhere(SqlUtils.equals(TBL_TRIP_FUEL_COSTS, COL_TRIP, tripId)));
 
           SimpleRow cons = qs.getRow(rep.getFuelConsumptionsQuery(new SqlSelect()
-                  .addFields(TBL_TRIP_ROUTES, sys.getIdName(TBL_TRIP_ROUTES))
-                  .addFrom(TBL_TRIP_ROUTES)
-                  .setWhere(SqlUtils.equals(TBL_TRIP_ROUTES, COL_TRIP, tripId)),
+              .addFields(TBL_TRIP_ROUTES, sys.getIdName(TBL_TRIP_ROUTES))
+              .addFrom(TBL_TRIP_ROUTES)
+              .setWhere(SqlUtils.equals(TBL_TRIP_ROUTES, COL_TRIP, tripId)),
               false));
 
           Double consume = Objects.isNull(cons) ? null : cons.getDouble(COL_COSTS_QUANTITY);
