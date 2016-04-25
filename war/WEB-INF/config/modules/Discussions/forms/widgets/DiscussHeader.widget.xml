@@ -8,21 +8,20 @@
   <!ENTITY lbl1 "&inline; max-width: 128px; min-width: 110px; text-align: right; padding-right: 28px; min-height: 20px; max-height: 20px; padding-top: 1px;">
   <!ENTITY top1 "text-align: right; padding-right: 28px; max-width: 128px; padding-top: 1px;">
   <!ENTITY inp2x "&inline; width: 710px;">
-  <!ENTITY bold "font-weight: bold;">
- 
+  
 ]>
 <FlowPanel xmlns="http://www.butent.com/widget"
  style="padding: 10px 10px 2px 10px; min-width: 660px; min-height: 450px">
 
  <FlowPanel for="Subject" style="&section;" class="flexBox-horizontal">
   <Label text="=discussSubject" class="bee-required"
-   style="&lbl1; min-width:80px; &bold; padding-left: 11px;" />
+   style="&lbl1; min-width:80px; padding-left: 11px;" />
   <InputText source="Subject" style="&inp2x;" />
  </FlowPanel>
 
  <FlowPanel for="Summary" style="&section;" class="flexBox-horizontal">
   <Label text="=discussSummary"
-   style="&top1; padding-right: 28px; min-width:80px; &bold; padding-left: 11px;" />
+   style="&top1; padding-right: 28px; min-width:80px; padding-left: 11px;" />
   <RichTextEditor name="Summary" style="width: 710px; height: 200px;" />
  </FlowPanel>
 
@@ -30,7 +29,7 @@
   <Label text="=discussDescription" style="text-transform: uppercase; " />
   <FlowPanel for="Description" style="&section;" class="flexBox-horizontal">
    <Label text="=discussDescription"
-    style="&top1; padding-right: 28px; min-width:80px; &bold; padding-left: 11px;" />
+    style="&top1; padding-right: 28px; min-width:80px; padding-left: 11px;" />
    <RichTextEditor name="Description" style="width: 710px; height: 200px;" />
   </FlowPanel>
  </Disclosure>
@@ -39,9 +38,9 @@
   <Label text="=relatedTo" style="text-transform: uppercase; " />
   <FlowPanel style="padding-bottom: 10px;">
 
-   <FlowPanel data="Relations" style="&section; &bold;" class="flexBox-horizontal">
+   <FlowPanel data="Relations" style="&section;" class="flexBox-horizontal">
     <Relations name="Relations" relColumn="Discussion" inline="true"
-     disablable="false" defaultRelations="Companies Persons Appointments Tasks Documents"
+     disablable="false" defaultRelations="Documents Discussions"
      style="&inline; width:815px; margin-left: 15px;" />
    </FlowPanel>
   </FlowPanel>
@@ -51,9 +50,7 @@
 
  <FlowPanel data="DiscussionsFiles" style="&section;" class="flexBox-horizontal">
   <Label text="=discussFiles" style="&top1; min-width:104px;" />
-  <FileCollector name="Files" editableColumns="name">
-   <face resource="attachment" />
-  </FileCollector>
+  <FileCollector name="Files" editableColumns="name" style="margin-left: -15px;" />
  </FlowPanel>
 
  <FlowPanel data="Users" style="&section;" class="flexBox-horizontal">

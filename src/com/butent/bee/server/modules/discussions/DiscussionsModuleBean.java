@@ -534,6 +534,7 @@ public class DiscussionsModuleBean implements BeeModule {
     Set<Long> oldMembers = DataUtils.parseIdSet(reqInfo.getParameter(VAR_DISCUSSION_USERS));
     switch (event) {
       case CREATE:
+        discussionId = BeeConst.UNDEF;
         Map<String, String> properties = discussRow.getProperties();
 
         if (properties == null) {
@@ -541,8 +542,6 @@ public class DiscussionsModuleBean implements BeeModule {
         }
 
         List<Long> members = DataUtils.parseIdList(properties.get(PROP_MEMBERS));
-        List<Long> discussions = new ArrayList<>();
-
         Long[] groupMembers =
             adm.getUserGroupMembers(properties.get(PROP_MEMBER_GROUP)).getLongColumn(COL_UG_USER);
 
@@ -589,19 +588,15 @@ public class DiscussionsModuleBean implements BeeModule {
           }
         }
 
-        if (!response.hasErrors()) {
-          discussions.add(discussionId);
-        }
-
         if (response.hasErrors()) {
           break;
         }
 
         if (!response.hasErrors()) {
-          if (discussions.isEmpty()) {
+          if (!DataUtils.isId(discussionId)) {
             response = ResponseObject.error(usr.getDictionary().discussNotCreated());
           } else {
-            response = ResponseObject.response(DataUtils.buildIdList(discussions));
+            response = ResponseObject.response(discussionId);
           }
         }
         break;

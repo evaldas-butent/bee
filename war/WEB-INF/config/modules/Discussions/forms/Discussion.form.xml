@@ -11,7 +11,6 @@
   <!ENTITY ownerInp "&inpLeft; width: 180px;">
   <!ENTITY descriptionInp "&inpLeft;  min-height: 1.5em; max-height: 9em; overflow: auto;">
 
-  <!ENTITY separator "<hr/>">
   <!ENTITY header "font-size: 20px;">
   <!ENTITY lbl1 "&inline; max-width: 128px; min-width: 110px; text-align: right; padding-right: 18px; min-height: 20px; max-height: 20px; padding-top: 1px;"> 
   <!ENTITY top1 "text-align: right; padding-right: 18px; max-width: 128px; padding-top: 1px;">
@@ -74,10 +73,6 @@
    <FlowPanel>
     <TextLabel name="Description" class="bee-InputArea bee-discuss-Description" source="Description"
      style="&descriptionInp; width:80%; min-width: 640px; min-height: 390px" />
-
-    <RichTextEditor class="bee-discuss-DescriptionEditor"
-     name="DescriptionEditor" source="Description"
-     style="&descriptionInp; width:80%; min-width: 640px; min-height: 390px" />
    </FlowPanel>
 
   </Disclosure>
@@ -102,7 +97,7 @@
       disablable="false" defaultRelations="Documents Discussions"
       style="&inpLeft; width: 500px;"  />
     </FlowPanel>
-       &separator;
+
     <FlowPanel for="Topic" class="flexBox-horizontal">
      <Label text="=announcement" style="&header;" />
     </FlowPanel>

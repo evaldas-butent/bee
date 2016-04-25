@@ -10,7 +10,6 @@
   <!ENTITY top1 "text-align: right; padding-right: 28px; max-width: 128px; padding-top: 1px;">
   <!ENTITY inp1x "&inline; width: 450px;">
   <!ENTITY inp2x "&inline; width: 710px;">
-  <!ENTITY bold "font-weight: bold;">
 ]>
 <f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form"
  xmlns:xi="http://www.w3.org/2001/XInclude" name="NewAnnouncement" caption="=announcementNew"
@@ -22,14 +21,14 @@
 
   <FlowPanel style="margin-top:10px;">
    <FlowPanel for="Topic" style="&section;" class="flexBox-horizontal">
-    <Label for="Topic" text="=adTopic" style="&lbl1; min-width:102px; &bold;" class="bee-required" />
+    <Label for="Topic" text="=adTopic" style="&lbl1; min-width:102px;" class="bee-required" />
     <DataSelector name="Topic" source="Topic" required="true"
      style="&inp2x; width: 250px" choiceColumns="Name" filter="Visible" />
    </FlowPanel>
 
    <FlowPanel for="Topic" style="&section;" class="flexBox-horizontal">
     <Label for="Topic" name="DisplayInBoard" text="=displayInBoard" class="bee-required"
-     style="&lbl1; min-width:102px; &bold;" />
+     style="&lbl1; min-width:102px;" />
     <InputDateTime source="VisibleFrom"
      style="&inp2x; width: 120px; margin-right:10px" placeholder="=dateFromShort" />
     <InputDateTime source="VisibleTo" style="&inp2x; width: 120px"

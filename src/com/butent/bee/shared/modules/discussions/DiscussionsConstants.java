@@ -27,7 +27,8 @@ public final class DiscussionsConstants {
         .discussActionReply(), FontAwesome.REPLY),
     MARK(Localized.dictionary().discussEventMarked(), Localized.dictionary()
         .discussActionMark(), FontAwesome.TAG),
-    MODIFY(Localized.dictionary().discussEventModified(), null, null),
+    MODIFY(Localized.dictionary().discussEventModified(), Localized.dictionary().actionEdit(),
+        FontAwesome.PENCIL),
     REFRESH(Localized.dictionary().actionRefresh(), Localized.dictionary().actionRefresh(),
         FontAwesome.REFRESH);
 

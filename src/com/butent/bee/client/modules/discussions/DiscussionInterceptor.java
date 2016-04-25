@@ -34,6 +34,7 @@ import com.butent.bee.client.composite.MultiSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
+import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.dom.DomUtils;
@@ -50,6 +51,7 @@ import com.butent.bee.client.richtext.RichTextEditor;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.edit.EditableWidget;
@@ -66,7 +68,6 @@ import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.client.widget.InputBoolean;
 import com.butent.bee.client.widget.InputDateTime;
 import com.butent.bee.client.widget.Label;
-import com.butent.bee.client.widget.TextLabel;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -280,14 +281,8 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
   private static final String STYLE_CHATTER = "-chatter";
   private static final String STYLE_PHOTO = "Photo";
 
-  private static final String WIDGET_DESCRIPTION_EDITOR = COL_DESCRIPTION + "Editor";
   private static final String WIDGET_RELATIONS_DISCLOSURE = "RelDisclosure";
   private static final String WIDGET_DESCRIPTION_DISCLOSURE = "DescriptionDisclosure";
-  private static final String STYLE_DESCRIPTION_DISABLED = DISCUSSIONS_STYLE_PREFIX
-      + COL_DESCRIPTION + STYLE_DISABLED;
-
-  private static final String STYLE_DESCRIPTION_EDITOR_DISABLED = DISCUSSIONS_STYLE_PREFIX
-      + WIDGET_DESCRIPTION_EDITOR + STYLE_DISABLED;
 
   private static final String WIDGET_LABEL_MEMBERS = "membersLabel";
   private static final String WIDGET_LABEL_DISPLAY_IN_BOARD = "DisplayInBoard";
@@ -305,8 +300,6 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
   private InputBoolean isPublic;
   private InputBoolean isPermitComment;
   private MultiSelector membersSelector;
-  private TextLabel description;
-  private Editor descriptionEditor;
   private Label membersLabel;
   private Label displayInBoardLabel;
   private Disclosure relationsDisclosure;
@@ -396,14 +389,6 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
       tds.addSelectorHandler(selHandler);
     }
 
-    if (BeeUtils.same(name, COL_DESCRIPTION) && widget instanceof TextLabel) {
-      description = (TextLabel) widget;
-    }
-
-    if (BeeUtils.same(name, WIDGET_DESCRIPTION_EDITOR) && widget != null && getFormView() != null) {
-      descriptionEditor = (Editor) widget;
-    }
-
     if (BeeUtils.same(name, WIDGET_FALABEL_REPLY) && widget instanceof FaLabel) {
       FaLabel replyf = (FaLabel) widget;
       replyf.addClickHandler(new ClickHandler() {
@@ -490,7 +475,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
     final Long owner = row.getLong(form.getDataIndex(COL_OWNER));
     String caption = BeeConst.STRING_EMPTY;
 
-    if (BeeUtils.isEmpty(row.getString(form.getDataIndex(COL_TOPIC)))) {
+    if (!DiscussionsUtils.isAnnouncement(form, row)) {
       caption = Localized.dictionary().discussion() + ":";
     } else {
       caption = Localized.dictionary().announcement() + ":";
@@ -618,18 +603,6 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
       }
     }
 
-    Editor wDescription = (Editor) getFormView().getWidgetByName(WIDGET_DESCRIPTION_EDITOR);
-
-    if (wDescription != null && getFormView() != null) {
-      /* Don't change description data if form disabled ! */
-      if (getFormView().isEnabled()) {
-        newRow.setValue(getFormView().getDataIndex(COL_DESCRIPTION), wDescription.getValue());
-      } else {
-        newRow.setValue(getFormView().getDataIndex(COL_DESCRIPTION),
-            oldRow.getValue(getFormView().getDataIndex(COL_DESCRIPTION)));
-      }
-    }
-
     ParameterList params = createParams(DiscussionEvent.MODIFY, null);
 
     sendRequest(params, new RpcCallback<ResponseObject>() {
@@ -729,10 +702,6 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
 
         if (!BeeUtils.isEmpty(comments)) {
           showCommentsAndMarks(form, data, BeeRowSet.restore(comments), files);
-        }
-
-        if (descriptionEditor != null) {
-          descriptionEditor.setValue(data.getString(form.getDataIndex(COL_DESCRIPTION)));
         }
 
         form.updateRow(data, true);
@@ -1000,39 +969,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
       return;
     }
 
-    boolean maybeAdmin = false;
-    boolean hasComments = true;
-    boolean hasMarks = true;
-
-    if (row != null) {
-      Map<String, String> parameters = DiscussionsUtils.getDiscussionsParameters(row);
-      if (!BeeUtils.isEmpty(parameters)) {
-        maybeAdmin = isAdmin(parameters.get(PRM_DISCUSS_ADMIN));
-      }
-
-      hasComments = BeeUtils.isPositive(row.getInteger(form.getDataIndex(COL_COMMENT_COUNT)));
-      hasMarks = BeeUtils.isPositiveInt(row.getProperty(PROP_MARK_COUNT));
-    }
-
     form.setEnabled(enabled);
-
-    boolean maybeCanEdit = maybeAdmin || (enabled && !(hasComments || hasMarks));
-
-    if (description != null) {
-      if (maybeCanEdit) {
-        description.getElement().addClassName(STYLE_DESCRIPTION_DISABLED);
-      } else {
-        description.getElement().removeClassName(STYLE_DESCRIPTION_DISABLED);
-      }
-    }
-
-    if (descriptionEditor != null) {
-      if (maybeCanEdit) {
-        descriptionEditor.getElement().removeClassName(STYLE_DESCRIPTION_EDITOR_DISABLED);
-      } else {
-        descriptionEditor.getElement().addClassName(STYLE_DESCRIPTION_EDITOR_DISABLED);
-      }
-    }
 
     if (relations != null) {
       relations.setEnabled(enabled);
@@ -1051,7 +988,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
       }
 
       if (isPublic != null) {
-        isPublic.setEnabled(enabled);
+        isPublic.setEnabled(isOwner(form, row));
         isPublic.setVisible(isOwner(form, row));
 
       }
@@ -1352,6 +1289,23 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
     });
   }
 
+  private void doEdit(FormView form, IsRow row) {
+    String formName =
+        DiscussionsUtils.isAnnouncement(form, row) ? FORM_NEW_ANNOUNCEMENT : FORM_NEW_DISCUSSION;
+
+    RowEditor.openForm(formName, form.getViewName(), row, Opener.MODAL,
+        new RowCallback() {
+
+          @Override
+          public void onSuccess(BeeRow result) {
+            if (result != null) {
+              form.updateRow(result, true);
+              onStartEdit(form, result, null);
+            }
+          }
+        });
+  }
+
   private void doEvent(FormView form, IsRow row, DiscussionEvent event, String adminLogin) {
     if (!isEventEnabled(form, row, event, getStatus(), getOwner(), adminLogin)) {
       showError(Localized.dictionary().actionNotAllowed());
@@ -1375,6 +1329,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
         // doMark(null, null);
         break;
       case MODIFY:
+        doEdit(form, row);
         break;
       case REPLY:
         break;
@@ -1411,7 +1366,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
     }
 
     if (isPublic != null) {
-      isPublic.setEnabled(BeeUtils.unbox(publicValue));
+      isPublic.setEnabled(BeeUtils.unbox(publicValue) || isOwner(form, row));
     }
 
     if (BeeUtils.isTrue(publicValue)) {
@@ -1493,7 +1448,10 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
         return DiscussionStatus.in(status, DiscussionStatus.ACTIVE, DiscussionStatus.INACTIVE)
             && !showInHeader;
       case MODIFY:
-        return isOwner(form, row) || isAdmin(adminLogin);
+        boolean hasComments =
+            BeeUtils.isPositive(row.getInteger(form.getDataIndex(COL_COMMENT_COUNT)));
+        boolean hasMarks = BeeUtils.isPositiveInt(row.getProperty(PROP_MARK_COUNT));
+        return (isOwner(form, row) || isAdmin(adminLogin)) && !(hasComments || hasMarks);
       case REPLY:
         return DiscussionStatus.in(status, DiscussionStatus.ACTIVE, DiscussionStatus.INACTIVE)
             && !showInHeader;

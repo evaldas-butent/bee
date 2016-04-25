@@ -24,6 +24,7 @@ public final class DiscussionsKeeper {
   public static void register() {
     /* Form interceptors */
     FormFactory.registerFormInterceptor(FORM_NEW_DISCUSSION, new CreateDiscussionInterceptor());
+    FormFactory.registerFormInterceptor(FORM_NEW_ANNOUNCEMENT, new CreateDiscussionInterceptor());
     FormFactory.registerFormInterceptor(FORM_DISCUSSION, new DiscussionInterceptor());
     FormFactory.registerFormInterceptor(FORM_ANNOUNCEMENTS_BOARD,
         new AnnouncementsBoardInterceptor());
