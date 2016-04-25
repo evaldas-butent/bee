@@ -2,6 +2,7 @@ package com.butent.bee.shared.modules.discussions;
 
 import static com.butent.bee.shared.modules.discussions.DiscussionsConstants.*;
 
+import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -147,6 +148,10 @@ public final class DiscussionsUtils {
     return BeeRowSet.restore(formRow.getProperty(PROP_MARK_TYPES));
   }
 
+  public static boolean isAnnouncement(FormView form, IsRow row) {
+    return !BeeUtils.isEmpty(row.getString(form.getDataIndex(COL_TOPIC)));
+  }
+
   public static boolean isFileSizeLimitExceeded(long uploadFileSize, Long checkParam) {
     if (checkParam == null) {
       return false;
@@ -183,7 +188,7 @@ public final class DiscussionsUtils {
                   && (userId == BeeUtils.unbox(BeeUtils.toLongOrNull(row[marksStats
                       .getColumnIndex(AdministrationConstants.COL_USER)])))
                   && (BeeUtils.unbox(commentId) == BeeUtils.unbox(BeeUtils
-                      .toLongOrNull(row[marksStats.getColumnIndex(COL_COMMENT)]))));
+                  .toLongOrNull(row[marksStats.getColumnIndex(COL_COMMENT)]))));
     }
 
     return result;
@@ -201,9 +206,9 @@ public final class DiscussionsUtils {
           result
               || ((BeeUtils.unbox(userId) == BeeUtils.unbox(BeeUtils.toLongOrNull(row[marksStats
                   .getColumnIndex(AdministrationConstants.COL_USER)])))
-                  && (BeeUtils.unbox(commentId) == BeeUtils.unbox(BeeUtils.toLongOrNull(
-                      row[marksStats
-                          .getColumnIndex(COL_COMMENT)]))));
+              && (BeeUtils.unbox(commentId) == BeeUtils.unbox(BeeUtils.toLongOrNull(
+                  row[marksStats
+                      .getColumnIndex(COL_COMMENT)]))));
     }
 
     return result;
