@@ -61,7 +61,6 @@ import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.projects.ProjectConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
-import com.butent.bee.shared.modules.tasks.TaskConstants.*;
 import com.butent.bee.shared.modules.tasks.TaskUtils;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.HasDateValue;

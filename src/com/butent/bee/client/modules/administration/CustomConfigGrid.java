@@ -15,7 +15,6 @@ import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.shared.communication.ResponseObject;
-import com.butent.bee.shared.css.CssUnit;
 import com.butent.bee.shared.css.values.Overflow;
 import com.butent.bee.shared.i18n.Localized;
 

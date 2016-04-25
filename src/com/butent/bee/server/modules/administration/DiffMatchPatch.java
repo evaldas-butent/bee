@@ -1,3 +1,4 @@
+// CHECKSTYLE:OFF
 /*
  * Diff Match and Patch
  *
@@ -45,6 +46,7 @@ import java.util.regex.Pattern;
  * Class containing the diff, match and patch methods.
  * Also contains the behaviour settings.
  */
+@SuppressWarnings("unused")
 public class DiffMatchPatch {
 
   // Defaults.
@@ -531,6 +533,7 @@ public class DiffMatchPatch {
    * @param lineHash Map of strings to indices.
    * @return Encoded string.
    */
+  @SuppressWarnings("static-method")
   private String diff_linesToCharsMunge(String text, List<String> lineArray,
       Map<String, Integer> lineHash) {
     int lineStart = 0;
@@ -751,6 +754,7 @@ public class DiffMatchPatch {
    * Reduce the number of edits by eliminating semantically trivial equalities.
    * @param diffs LinkedList of Diff objects.
    */
+  @SuppressWarnings("null")
   public void diff_cleanupSemantic(LinkedList<Diff> diffs) {
     if (diffs.isEmpty()) {
       return;
@@ -1803,6 +1807,7 @@ public class DiffMatchPatch {
    * @return LinkedList of Patch objects.
    * @deprecated Prefer patch_make(String text1, LinkedList<Diff> diffs).
    */
+  @SuppressWarnings("dep-ann")
   public LinkedList<Patch> patch_make(String text1, String text2,
       LinkedList<Diff> diffs) {
     return patch_make(text1, diffs);
@@ -2330,6 +2335,7 @@ public class DiffMatchPatch {
      * Display a human-readable version of this Diff.
      * @return text version.
      */
+    @Override
     public String toString() {
       String prettyText = this.text.replace('\n', '\u00b6');
       return "Diff(" + this.operation + ",\"" + prettyText + "\")";
@@ -2403,6 +2409,7 @@ public class DiffMatchPatch {
      * Indicies are printed as 1-based, not 0-based.
      * @return The GNU diff string.
      */
+    @Override
     public String toString() {
       String coords1, coords2;
       if (this.length1 == 0) {
