@@ -43,6 +43,7 @@ import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
+import com.butent.bee.client.modules.mail.Relations;
 import com.butent.bee.client.render.PhotoRenderer;
 import com.butent.bee.client.richtext.RichTextEditor;
 import com.butent.bee.client.style.StyleUtils;
@@ -72,7 +73,9 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.RowChildren;
 import com.butent.bee.shared.data.SimpleRowSet;
+import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
@@ -88,6 +91,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -291,11 +295,10 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
   private static final int MAX_COMMENT_ROW_PADDING_LEFT = COMMENT_ROW_PADDING_FACTOR * 5;
   private static final String DEFAULT_PHOTO = "images/bs-logo.png";
 
-  private final List<String> relations = Lists.newArrayList(PROP_COMPANIES, PROP_PERSONS,
-      PROP_APPOINTMENTS, PROP_TASKS, PROP_DOCUMENTS);
   private final long userId;
   private Image discussOwnerPhoto;
   private Flow markPanel;
+  private Relations relations;
 
   DiscussionInterceptor() {
     super();
@@ -405,6 +408,10 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
     if (BeeUtils.same(name, VIEW_DISCUSSIONS_MARK_TYPES) && widget instanceof Flow) {
       markPanel = (Flow) widget;
     }
+
+    if (BeeUtils.same(name, AdministrationConstants.TBL_RELATIONS) && widget instanceof Relations) {
+      relations = (Relations) widget;
+    }
   }
 
   @Override
@@ -510,8 +517,14 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
       return;
     }
 
+    final Collection<RowChildren> relData = new ArrayList<>();
+
+    if (relations != null) {
+      BeeUtils.overwrite(relData, relations.getRowChildren(true));
+    }
+
     if (event.isEmpty() && DiscussionsUtils.sameMembers(oldRow, newRow)
-        && getUpdatedRelations(oldRow, newRow).isEmpty()) {
+        && relData.isEmpty()) {
       return;
     }
 
@@ -577,10 +590,26 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
 
       @Override
       public void onSuccess(ResponseObject result) {
-        BeeRow data = getResponseRow(DiscussionEvent.MODIFY.getCaption(), result, this);
+        final BeeRow data = getResponseRow(DiscussionEvent.MODIFY.getCaption(), result, this);
 
-        if (data != null) {
-          RowUpdateEvent.fire(BeeKeeper.getBus(), VIEW_DISCUSSIONS, data);
+        if (data == null) {
+          event.getCallback().onFailure(BeeUtils.joinWords(DiscussionEvent.MODIFY.getCaption(),
+              Localized.dictionary().noData()));
+          return;
+        }
+
+        event.getCallback().onSuccess(data);
+        RowUpdateEvent.fire(BeeKeeper.getBus(), VIEW_DISCUSSIONS, data);
+
+        if (!relData.isEmpty()) {
+          Queries.updateChildren(VIEW_DISCUSSIONS, data.getId(), relData, new RowCallback() {
+
+            @Override
+            public void onSuccess(BeeRow relResult) {
+              event.getCallback().onSuccess(data);
+              DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_DISCUSSIONS);
+            }
+          });
         }
       }
     });
@@ -699,7 +728,6 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
         }
 
         form.updateRow(data, true);
-        form.refresh();
       }
     });
     return false;
@@ -1024,7 +1052,9 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
       }
     }
 
-    form.refresh();
+    if (relations != null) {
+      relations.setEnabled(enabled);
+    }
   }
 
   private void showCommentsAndMarks(final FormView form, final IsRow formRow,
@@ -1393,21 +1423,6 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
     return getFormView().getActiveRow().getInteger(getFormView().getDataIndex(COL_STATUS));
   }
 
-  private List<String> getUpdatedRelations(IsRow oldRow, IsRow newRow) {
-    List<String> updatedRelations = new ArrayList<>();
-
-    if (oldRow == null || newRow == null) {
-      return updatedRelations;
-    }
-
-    for (String relation : relations) {
-      if (!DataUtils.sameIdSet(oldRow.getProperty(relation), newRow.getProperty(relation))) {
-        updatedRelations.add(relation);
-      }
-    }
-    return updatedRelations;
-  }
-
   private boolean isEventEnabled(FormView form, IsRow row, DiscussionEvent event, Integer status,
       Long owner, String adminLogin) {
     return isEventEnabled(form, row, event, status, owner, true, adminLogin, false);
@@ -1431,7 +1446,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
       case ACTIVATE:
         return (DiscussionStatus.in(status, DiscussionStatus.INACTIVE) && isAdmin(adminLogin))
             || (DiscussionStatus.in(status, DiscussionStatus.CLOSED, DiscussionStatus.INACTIVE)
-                && (isOwner(form, row) || isAdmin(adminLogin)));
+            && (isOwner(form, row) || isAdmin(adminLogin)));
       case CLOSE:
         return DiscussionStatus.in(status, DiscussionStatus.ACTIVE, DiscussionStatus.INACTIVE)
             && (isOwner(form, row) || isAdmin(adminLogin));
@@ -1500,6 +1515,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
       List<FileInfo> files = FileInfo.restoreCollection(data.getProperty(PROP_FILES));
       showCommentsAndMarks(form, form.getActiveRow(), BeeRowSet.restore(comments), files);
     }
+
   }
 
   private static void renderFiles(List<FileInfo> files, Flow container) {

@@ -1,8 +1,6 @@
 package com.butent.bee.server.modules.discussions;
 
-import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import com.google.common.eventbus.AllowConcurrentEvents;
 import com.google.common.eventbus.Subscribe;
@@ -42,7 +40,6 @@ import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
-import com.butent.bee.shared.data.RowChildren;
 import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
@@ -73,7 +70,6 @@ import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
-import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -348,11 +344,6 @@ public class DiscussionsModuleBean implements BeeModule {
     SimpleRowSet markData = getDiscussionMarksData((List<Long>) discussionMarks);
     row.setProperty(PROP_MARK_DATA, markData.serialize());
 
-    Multimap<String, Long> discussionRelations = getDiscussionRelations(discussionId);
-    for (String property : discussionRelations.keySet()) {
-      row.setProperty(property, DataUtils.buildIdList(discussionRelations.get(property)));
-    }
-
     List<FileInfo> files = getDiscussionFiles(discussionId);
     if (!files.isEmpty()) {
       row.setProperty(PROP_FILES, Codec.beeSerialize(files));
@@ -383,34 +374,6 @@ public class DiscussionsModuleBean implements BeeModule {
 
       row.setProperty(PROP_PARAMETERS, Codec.beeSerialize(paramsMap));
     }
-  }
-
-  private ResponseObject createDiscussionRelations(long discussionId,
-      Map<String, String> properties) {
-    int count = 0;
-
-    if (BeeUtils.isEmpty(properties)) {
-      return ResponseObject.response(count);
-    }
-
-    ResponseObject response = new ResponseObject();
-    List<RowChildren> children = new ArrayList<>();
-
-    for (Map.Entry<String, String> entry : properties.entrySet()) {
-      String relation = DiscussionsUtils.translateDiscussionPropertyToRelation(entry.getKey());
-
-      if (BeeUtils.allNotEmpty(relation, entry.getValue())) {
-        children.add(RowChildren.create(AdministrationConstants.TBL_RELATIONS, COL_DISCUSSION,
-            null,
-            relation, entry.getValue()));
-      }
-    }
-
-    if (!BeeUtils.isEmpty(children)) {
-      count = deb.commitChildren(discussionId, children, response);
-    }
-
-    return response.setResponse(count);
   }
 
   private ResponseObject createDiscussionUser(long discussionId, long userId, Long time,
@@ -460,7 +423,7 @@ public class DiscussionsModuleBean implements BeeModule {
   }
 
   private ResponseObject commitDiscussionData(BeeRowSet data, Collection<Long> oldUsers,
-      boolean checkUsers, Set<String> updatedRelations, Long commentId) {
+      boolean checkUsers, Long commentId) {
 
     ResponseObject response;
     BeeRow row = data.getRow(0);
@@ -475,10 +438,6 @@ public class DiscussionsModuleBean implements BeeModule {
       }
     } else {
       newUsers = new ArrayList<>(oldUsers);
-    }
-
-    if (!BeeUtils.isEmpty(updatedRelations)) {
-      updateDiscussionRelations(row.getId(), updatedRelations, row);
     }
 
     Map<Integer, String> shadow = row.getShadow();
@@ -569,7 +528,6 @@ public class DiscussionsModuleBean implements BeeModule {
     Long markedComment = BeeUtils.toLongOrNull(reqInfo.getParameter(VAR_DISCUSSION_MARKED_COMMENT));
 
     Set<Long> oldMembers = DataUtils.parseIdSet(reqInfo.getParameter(VAR_DISCUSSION_USERS));
-    Set<String> updatedRelations = NameUtils.toSet(reqInfo.getParameter(VAR_DISCUSSION_USERS));
     switch (event) {
       case CREATE:
         Map<String, String> properties = discussRow.getProperties();
@@ -614,10 +572,6 @@ public class DiscussionsModuleBean implements BeeModule {
               }
             }
           }
-        }
-
-        if (!response.hasErrors()) {
-          response = createDiscussionRelations(discussionId, properties);
         }
 
         if (!response.hasErrors()) {
@@ -681,7 +635,7 @@ public class DiscussionsModuleBean implements BeeModule {
 
         if (response == null || !response.hasErrors()) {
           response =
-              commitDiscussionData(discussData, oldMembers, false, updatedRelations, commentId);
+              commitDiscussionData(discussData, oldMembers, false, commentId);
         }
 
         break;
@@ -713,7 +667,7 @@ public class DiscussionsModuleBean implements BeeModule {
 
         if (response == null || !response.hasErrors()) {
           response =
-              commitDiscussionData(discussData, oldMembers, true, updatedRelations, commentId);
+              commitDiscussionData(discussData, oldMembers, true, commentId);
         }
 
         break;
@@ -1271,26 +1225,6 @@ public class DiscussionsModuleBean implements BeeModule {
     return Lists.newArrayList(qs.getLongColumn(query));
   }
 
-  private Multimap<String, Long> getDiscussionRelations(long discussionId) {
-    Multimap<String, Long> res = HashMultimap.create();
-
-    for (String relation : DiscussionsUtils.getRelations()) {
-      Long[] ids =
-          qs.getRelatedValues(AdministrationConstants.TBL_RELATIONS, COL_DISCUSSION, discussionId,
-              relation);
-
-      if (ids != null) {
-        String property = DiscussionsUtils.translateRelationToDiscussionProperty(relation);
-
-        for (Long id : ids) {
-          res.put(property, id);
-        }
-      }
-    }
-
-    return res;
-  }
-
   private Document renderDiscussionDocument(long discussionId, boolean typeAnnoucement,
       String anouncmentTopic, SimpleRow discussMailRow, Dictionary constants,
       boolean isPublic) {
@@ -1534,29 +1468,6 @@ public class DiscussionsModuleBean implements BeeModule {
     }
 
     return response;
-  }
-
-  private ResponseObject updateDiscussionRelations(long discussionId, Set<String> updatedRelations,
-      BeeRow row) {
-    ResponseObject response = new ResponseObject();
-    List<RowChildren> children = new ArrayList<>();
-
-    for (String property : updatedRelations) {
-      String relation = DiscussionsUtils.translateDiscussionPropertyToRelation(property);
-
-      if (!BeeUtils.isEmpty(relation)) {
-        children.add(RowChildren.create(AdministrationConstants.TBL_RELATIONS, COL_DISCUSSION,
-            discussionId, relation, row.getProperty(property)));
-      }
-    }
-
-    int count = 0;
-
-    if (!BeeUtils.isEmpty(children)) {
-      count = deb.commitChildren(discussionId, children, response);
-    }
-
-    return response.setResponse(count);
   }
 
   private void updateDiscussionUsers(long discussionId, Collection<Long> oldUsers,
