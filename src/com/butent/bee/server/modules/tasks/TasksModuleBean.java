@@ -25,6 +25,7 @@ import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.modules.ParamHolderBean;
+import com.butent.bee.server.modules.administration.AdministrationModuleBean;
 import com.butent.bee.server.modules.administration.ExtensionIcons;
 import com.butent.bee.server.modules.administration.FileStorageBean;
 import com.butent.bee.server.modules.mail.MailModuleBean;
@@ -89,6 +90,7 @@ import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.ScheduleDateRange;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.time.WorkdayTransition;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
@@ -134,6 +136,8 @@ public class TasksModuleBean implements BeeModule {
   ParamHolderBean prm;
   @EJB
   MailModuleBean mail;
+  @EJB
+  AdministrationModuleBean adm;
 
   @EJB
   SearchBean src;
@@ -829,8 +833,9 @@ public class TasksModuleBean implements BeeModule {
 
     List<Long> observers = DataUtils.parseIdList(properties.get(PROP_OBSERVERS));
 
-    Set<Long> observerMembers = getUserGroupMembers(properties.get(PROP_OBSERVER_GROUPS));
-    if (!observerMembers.isEmpty()) {
+    Long[] observerMembers =
+        adm.getUserGroupMembers(properties.get(PROP_OBSERVER_GROUPS)).getLongColumn(COL_UG_USER);
+    if (!ArrayUtils.isEmpty(observerMembers)) {
       for (Long member : observerMembers) {
         if (!observers.contains(member)) {
           observers.add(member);
@@ -921,8 +926,9 @@ public class TasksModuleBean implements BeeModule {
     List<Long> executors = DataUtils.parseIdList(properties.get(PROP_EXECUTORS));
     List<Long> observers = DataUtils.parseIdList(properties.get(PROP_OBSERVERS));
 
-    Set<Long> executorMembers = getUserGroupMembers(properties.get(PROP_EXECUTOR_GROUPS));
-    if (!executorMembers.isEmpty()) {
+    Long[] executorMembers =
+        adm.getUserGroupMembers(properties.get(PROP_EXECUTOR_GROUPS)).getLongColumn(COL_UG_USER);
+    if (!ArrayUtils.isEmpty(executorMembers)) {
       for (Long member : executorMembers) {
         if (!executors.contains(member) && !observers.contains(member)) {
           executors.add(member);
@@ -930,8 +936,9 @@ public class TasksModuleBean implements BeeModule {
       }
     }
 
-    Set<Long> observerMembers = getUserGroupMembers(properties.get(PROP_OBSERVER_GROUPS));
-    if (!observerMembers.isEmpty()) {
+    Long[] observerMembers =
+        adm.getUserGroupMembers(properties.get(PROP_OBSERVER_GROUPS)).getLongColumn(COL_UG_USER);
+    if (!ArrayUtils.isEmpty(observerMembers)) {
       for (Long member : observerMembers) {
         if (!observers.contains(member)) {
           observers.add(member);
@@ -1775,32 +1782,6 @@ public class TasksModuleBean implements BeeModule {
 
     ResponseObject resp = ResponseObject.response(result);
     return resp;
-  }
-
-  private Set<Long> getUserGroupMembers(String groupList) {
-    Set<Long> users = new HashSet<>();
-
-    Set<Long> groups = DataUtils.parseIdSet(groupList);
-    if (groups.isEmpty()) {
-      return users;
-    }
-
-    SqlSelect query = new SqlSelect()
-        .setDistinctMode(true)
-        .addFields(TBL_USER_GROUPS, COL_UG_USER)
-        .addFrom(TBL_USER_GROUPS)
-        .setWhere(SqlUtils.inList(TBL_USER_GROUPS, COL_UG_GROUP, groups));
-
-    Long[] members = qs.getLongColumn(query);
-    if (members != null) {
-      for (Long member : members) {
-        if (member != null && usr.isActive(member)) {
-          users.add(member);
-        }
-      }
-    }
-
-    return users;
   }
 
   private ResponseObject getUsersHoursReport(RequestInfo reqInfo) {

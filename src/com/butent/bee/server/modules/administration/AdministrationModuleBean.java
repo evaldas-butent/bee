@@ -408,6 +408,32 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
     });
   }
 
+  public SimpleRowSet getUserGroupMembers(String groupList) {
+    SimpleRowSet users = new SimpleRowSet(new String[] {COL_UG_USER, COL_UG_GROUP});
+
+    Set<Long> groups = DataUtils.parseIdSet(groupList);
+    if (groups.isEmpty()) {
+      return users;
+    }
+
+    SqlSelect query = new SqlSelect()
+        .setDistinctMode(true)
+        .addFields(TBL_USER_GROUPS, COL_UG_USER, COL_UG_GROUP)
+        .addFrom(TBL_USER_GROUPS)
+        .setWhere(SqlUtils.inList(TBL_USER_GROUPS, COL_UG_GROUP, groups));
+
+    SimpleRowSet members = qs.getData(query);
+    if (!members.isEmpty()) {
+      for (Long member : members.getLongColumn(COL_UG_USER)) {
+        if (usr.isActive(member)) {
+          users.addRow(members.getRowByKey(COL_UG_USER, member.toString()).getValues());
+        }
+      }
+    }
+
+    return users;
+  }
+
   public Double maybeExchange(Long from, Long to, Double v, DateTime dt) {
     if (from == null || to == null || Objects.equals(from, to) || !BeeUtils.nonZero(v)) {
       return v;

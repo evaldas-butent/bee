@@ -21,6 +21,7 @@ import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.modules.ParamHolderBean;
+import com.butent.bee.server.modules.administration.AdministrationModuleBean;
 import com.butent.bee.server.modules.administration.ExtensionIcons;
 import com.butent.bee.server.modules.mail.MailModuleBean;
 import com.butent.bee.server.news.NewsBean;
@@ -67,6 +68,7 @@ import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
@@ -125,6 +127,8 @@ public class DiscussionsModuleBean implements BeeModule {
   MailModuleBean mail;
   @EJB
   ConcurrencyBean cb;
+  @EJB
+  AdministrationModuleBean adm;
 
   @Resource
   EJBContext ctx;
@@ -538,6 +542,17 @@ public class DiscussionsModuleBean implements BeeModule {
 
         List<Long> members = DataUtils.parseIdList(properties.get(PROP_MEMBERS));
         List<Long> discussions = new ArrayList<>();
+
+        Long[] groupMembers =
+            adm.getUserGroupMembers(properties.get(PROP_MEMBER_GROUP)).getLongColumn(COL_UG_USER);
+
+        if (!ArrayUtils.isEmpty(groupMembers)) {
+          for (Long member : groupMembers) {
+            if (!members.contains(member)) {
+              members.add(member);
+            }
+          }
+        }
 
         BeeRow newRow = DataUtils.cloneRow(discussRow);
         DiscussionStatus status = DiscussionStatus.ACTIVE;

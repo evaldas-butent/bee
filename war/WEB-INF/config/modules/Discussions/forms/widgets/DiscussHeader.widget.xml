@@ -65,11 +65,11 @@
  </FlowPanel>
 
  <FlowPanel data="Users" style="&section;" class="flexBox-horizontal">
-  <Label name="groupsLable" text="=discussUserGroup"
+  <Label name="groupsLabel" text="=discussUserGroup"
    style="&top1;min-width:104px; padding-right: 0px;" />
-  <MultiSelector name="ObserverGroups" viewName="UserGroupSettings"
-   property="ObserverGroups" renderColumns="Name" editPopup="true"
-   style="&inp2x; margin-left: 15px;" label="=discussMembers" filter="Owner {u} or Visibility 1" />
+  <MultiSelector name="UserGroups" viewName="UserGroupSettings"
+   property="MemeberGroup" renderColumns="Name" editPopup="true"
+   style="&inp2x; margin-left: 15px;" label="=discussMembers" filter="Owner={u} OR Visibility=1" />
  </FlowPanel>
 
  <FlowPanel style="&section; margin-left: 110px; margin-top: 10px;"
