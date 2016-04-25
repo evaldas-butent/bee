@@ -99,7 +99,7 @@
 
     <FlowPanel data="Relations">
      <Relations name="Relations" relColumn="Discussion" inline="true"
-      disablable="false" defaultRelations="Companies Persons Appointments Tasks Documents"
+      disablable="false" defaultRelations="Documents Discussions"
       style="&inpLeft; width: 500px;"  />
     </FlowPanel>
        &separator;

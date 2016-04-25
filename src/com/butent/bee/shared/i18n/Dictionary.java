@@ -1591,6 +1591,8 @@ public interface Dictionary {
 
   default String discussPrivate() {return g("discussPrivate");}
 
+  default String discussPrivateDiscussion() {return g("discussPrivateDiscussion");}
+
   default String discussPrivateShort() {return g("discussPrivateShort");}
 
   default String discussPublic() {return g("discussPublic");}

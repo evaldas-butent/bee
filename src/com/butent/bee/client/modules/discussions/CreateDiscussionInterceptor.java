@@ -100,9 +100,14 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
       InputBoolean ac = (InputBoolean) widget;
       ac.setValue(Boolean.toString(isPublic));
       MultiSelector ms = getMultiSelector(getFormView(), PROP_MEMBERS);
+      MultiSelector mg = getMultiSelector(getFormView(), PROP_MEMBER_GROUP);
 
       if (ms != null) {
         ms.setEnabled(!isPublic);
+      }
+
+      if (mg != null) {
+        mg.setEnabled(!isPublic);
       }
     }
 
@@ -168,26 +173,31 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
         @Override
         public void onValueChange(ValueChangeEvent<String> event) {
           MultiSelector ms = getMultiSelector(form, PROP_MEMBERS);
+          MultiSelector mg = getMultiSelector(form, PROP_MEMBER_GROUP);
 
           Label lbl = getLabel(form, WIDGET_LABEL_MEMBERS);
-          boolean checked = BeeUtils.toBoolean(ac.getValue());
 
           if (lbl != null) {
             lbl.setStyleName(StyleUtils.NAME_REQUIRED, !BeeUtils.toBoolean(ac.getValue()));
           }
 
-          if (ms == null) {
-            return;
-          }
+          setSelectorState(ms);
+          setSelectorState(mg);
 
-          ms.setEnabled(!checked);
-          ms.setNullable(checked);
+        }
 
-          if (checked) {
-            ms.clearValue();
-            form.getActiveRow().removeProperty(PROP_MEMBERS);
-          } else {
-            form.getActiveRow().setValue(form.getDataIndex(COL_ACCESSIBILITY), (Boolean) null);
+        void setSelectorState(MultiSelector ms) {
+          boolean checked = BeeUtils.toBoolean(ac.getValue());
+
+          if (ms != null) {
+            ms.setEnabled(!checked);
+            if (checked) {
+              ms.clearValue();
+              form.getActiveRow().removeProperty(PROP_MEMBERS);
+              form.getActiveRow().removeProperty(PROP_MEMBER_GROUP);
+            } else {
+              form.getActiveRow().setValue(form.getDataIndex(COL_ACCESSIBILITY), (Boolean) null);
+            }
           }
         }
       });
@@ -309,7 +319,8 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
       summary = summaryEditor.getValue();
     }
 
-    if (!discussPublic && BeeUtils.isEmpty(activeRow.getProperty(PROP_MEMBERS))) {
+    if (!discussPublic && BeeUtils.isEmpty(activeRow.getProperty(PROP_MEMBERS))
+        && BeeUtils.isEmpty(activeRow.getProperty(PROP_MEMBER_GROUP))) {
       event.getCallback().onFailure(Localized.dictionary().discussSelectMembers());
       return;
     }
@@ -326,6 +337,7 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
 
     if (discussPublic) {
       newRow.removeProperty(PROP_MEMBERS);
+      newRow.removeProperty(PROP_MEMBER_GROUP);
     }
 
     newRow.setValue(getFormView().getDataIndex(COL_ACCESSIBILITY), discussPublic);
