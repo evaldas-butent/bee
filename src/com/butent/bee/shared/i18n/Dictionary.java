@@ -5162,6 +5162,8 @@ public interface Dictionary {
 
   default String trTbSettingsAdditionalInfo() {return g("trTbSettingsAdditionalInfo");}
 
+  default String trTbSettingsCompletedTrips() {return g("trTbSettingsCompletedTrips");}
+
   default String trTbSettingsCountryFlags() {return g("trTbSettingsCountryFlags");}
 
   default String trTbSettingsPixelsPerCustomer() {return g("trTbSettingsPixelsPerCustomer");}
