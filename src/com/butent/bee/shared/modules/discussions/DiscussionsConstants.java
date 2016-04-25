@@ -115,6 +115,7 @@ public final class DiscussionsConstants {
   public static final String COL_ACCESSIBILITY = "Accessibility";
   public static final String COL_CAPTION = "Caption";
   public static final String COL_COMMENT = "Comment";
+  public static final String COL_COMMENT_COUNT = "CommentCount";
   public static final String COL_COMMENT_TEXT = "CommentText";
   public static final String COL_CREATED = "Created";
   public static final String COL_DISCUSSION = "Discussion";
