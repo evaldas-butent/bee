@@ -329,6 +329,9 @@ public class TransportModuleBean implements BeeModule {
     } else if (BeeUtils.same(svc, SVC_TRIP_PROFIT_REPORT)) {
       response = rep.getTripProfitReport(reqInfo);
 
+    } else if (BeeUtils.same(svc, SVC_FUEL_USAGE_REPORT)) {
+      response = rep.getFuelUsageReport(reqInfo);
+
     } else if (BeeUtils.same(svc, SVC_GET_VEHICLE_BUSY_DATES)) {
       response = getVehicleBusyDates(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_VEHICLE)),
           BeeUtils.toLongOrNull(reqInfo.getParameter(COL_TRAILER)),
@@ -452,7 +455,7 @@ public class TransportModuleBean implements BeeModule {
       public void fillFuelConsumptions(ViewQueryEvent event) {
         if (event.isAfter(TBL_TRIP_ROUTES) && event.hasData()) {
           BeeRowSet rowset = event.getRowset();
-          int colIndex = DataUtils.getColumnIndex("Consumption", rowset.getColumns(), false);
+          int colIndex = DataUtils.getColumnIndex(COL_ROUTE_CONSUMPTION, rowset.getColumns());
 
           if (BeeConst.isUndef(colIndex)) {
             return;
@@ -464,7 +467,7 @@ public class TransportModuleBean implements BeeModule {
 
           for (BeeRow row : rowset.getRows()) {
             row.setValue(colIndex, rs.getValueByKey(sys.getIdName(TBL_TRIP_ROUTES),
-                BeeUtils.toString(row.getId()), "Quantity"));
+                BeeUtils.toString(row.getId()), COL_ROUTE_CONSUMPTION));
           }
         }
       }
@@ -2708,10 +2711,9 @@ public class TransportModuleBean implements BeeModule {
           SimpleRow cons = qs.getRow(rep.getFuelConsumptionsQuery(new SqlSelect()
               .addFields(TBL_TRIP_ROUTES, sys.getIdName(TBL_TRIP_ROUTES))
               .addFrom(TBL_TRIP_ROUTES)
-              .setWhere(SqlUtils.equals(TBL_TRIP_ROUTES, COL_TRIP, tripId)),
-              false));
+              .setWhere(SqlUtils.equals(TBL_TRIP_ROUTES, COL_TRIP, tripId)), false));
 
-          Double consume = Objects.isNull(cons) ? null : cons.getDouble(COL_COSTS_QUANTITY);
+          Double consume = Objects.isNull(cons) ? null : cons.getDouble(COL_ROUTE_CONSUMPTION);
 
           Double addit = qs.getDouble(new SqlSelect()
               .addSum(TBL_TRIP_FUEL_CONSUMPTIONS, COL_COSTS_QUANTITY)

@@ -318,6 +318,7 @@ public final class TransportConstants {
   public static final String SVC_SEND_MESSAGE = "SendMessage";
 
   public static final String SVC_TRIP_PROFIT_REPORT = "TripProfitReport";
+  public static final String SVC_FUEL_USAGE_REPORT = "FuelUsageReport";
 
   public static final String PRM_MESSAGE_TEMPLATE = "MessageTemplate";
   public static final String PRM_TRIP_PREFIX = "DefaultTripPrefix";
@@ -563,6 +564,7 @@ public final class TransportConstants {
   public static final String COL_ROUTE_KILOMETERS = "Kilometers";
   public static final String COL_ROUTE_WEIGHT = "CargoWeight";
   public static final String COL_ROUTE_SEASON = "Season";
+  public static final String COL_ROUTE_CONSUMPTION = "Consumption";
 
   public static final String COL_LOADED_KILOMETERS = "LoadedKilometers";
   public static final String COL_EMPTY_KILOMETERS = "EmptyKilometers";

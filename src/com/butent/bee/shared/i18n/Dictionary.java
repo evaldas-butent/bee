@@ -1371,6 +1371,8 @@ public interface Dictionary {
 
   default String days() {return g("days");}
 
+  default String debt() {return g("debt");}
+
   default String defaultBankAccount() {return g("defaultBankAccount");}
 
   default String defaultBankAccountShort() {return g("defaultBankAccountShort");}
@@ -3449,6 +3451,8 @@ public interface Dictionary {
 
   default String outsizedShort() {return g("outsizedShort");}
 
+  default String overpayment() {return g("overpayment");}
+
   default String owner() {return g("owner");}
 
   default String pallets() {return g("pallets");}
@@ -4971,6 +4975,8 @@ public interface Dictionary {
   default String trRegistrations() {return g("trRegistrations");}
 
   default String trRepairsHistory() {return g("trRepairsHistory");}
+
+  default String trReportFuelUsage() {return g("trReportFuelUsage");}
 
   default String trReportTripProfit() {return g("trReportTripProfit");}
 
