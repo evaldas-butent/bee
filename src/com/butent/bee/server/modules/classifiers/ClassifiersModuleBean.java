@@ -72,6 +72,7 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.html.builder.Document;
 import com.butent.bee.shared.html.builder.elements.Table;
@@ -85,11 +86,13 @@ import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.calendar.CalendarConstants;
 import com.butent.bee.shared.modules.calendar.CalendarConstants.AppointmentStatus;
+import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.classifiers.ItemPrice;
 import com.butent.bee.shared.modules.classifiers.PriceInfo;
 import com.butent.bee.shared.modules.documents.DocumentConstants;
 import com.butent.bee.shared.modules.service.ServiceConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
+import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
 import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.news.Feed;
@@ -100,6 +103,11 @@ import com.butent.bee.shared.rights.SubModule;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
+import com.butent.bee.shared.utils.ArrayUtils;
+import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
+import com.butent.bee.shared.utils.EnumUtils;
+import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.websocket.messages.LogMessage;
 
 import java.awt.*;
@@ -268,6 +276,8 @@ public class ClassifiersModuleBean implements BeeModule {
 
   @Override
   public void init() {
+    initTasksReminderTimer();
+
     sys.registerDataEventHandler(new DataEventHandler() {
       @Subscribe
       @AllowConcurrentEvents
@@ -750,6 +760,29 @@ public class ClassifiersModuleBean implements BeeModule {
     });
   }
 
+  public void initTasksReminderTimer() {
+    Timer tasksReminderTimer = null;
+
+    for (Timer timer : timerService.getTimers()) {
+      if (Objects.equals(timer.getInfo(), TIMER_REMIND_TASKS_SUMMARY)) {
+        tasksReminderTimer = timer;
+        break;
+      }
+    }
+
+    if (tasksReminderTimer != null) {
+      tasksReminderTimer.cancel();
+    }
+
+    long startDelay = TimeUtils.MILLIS_PER_MINUTE;
+
+    tasksReminderTimer = timerService.createIntervalTimer(startDelay,
+            DEFAULT_REMIND_TASKS_TIMER_TIMEOUT, new TimerConfig(TIMER_REMIND_TASKS_SUMMARY, false));
+
+    logger.info("Created CLASSIFIERS tasks reminder timer. Timer starts at",
+            tasksReminderTimer.getNextTimeout());
+  }
+
   public Document createRemindTemplate(SimpleRowSet data, Map<String, String> labels,
                                        Map<String, ValueType> format, Map<String, String> enumKeys,
                                        String subject, String reminderText, Long userId) {
@@ -827,7 +860,6 @@ public class ClassifiersModuleBean implements BeeModule {
             value = BeeUtils.nvl(row.getValue(i), BeeConst.STRING_EMPTY);
         }
 
-
         Td td = td();
         tr.append(td);
         td.text(value);
@@ -879,6 +911,158 @@ public class ClassifiersModuleBean implements BeeModule {
     setRemindedAppointments(Lists.newArrayList(appointments.getLongColumn(appointmentIdName)));
     logger.info(TIMER_REMIND_COMPANY_ACTIONS, "mail send, user id", userId,
             ", company action count", appointments.getRows().size());
+  }
+
+  private void createTasksSummaryRemindMail(Long userId, BeeRowSet tasks) {
+    Long accountId = mail.getSenderAccountId(TIMER_REMIND_TASKS_SUMMARY);
+    String to = usr.getUserEmail(userId, false);
+
+    if (!DataUtils.isId(accountId) && BeeUtils.isEmpty(to)) {
+      return;
+    }
+
+    String dateNow = TimeUtils.today().toString();
+    String subject = BeeUtils.joinWords(usr.getDictionary().crmMailTasksSummarySubject(), dateNow);
+    String reminderText = usr.getDictionary().crmMailTasksSummaryText();
+    String scheduledTasksText = usr.getDictionary().crmTaskLabelScheduled();
+    String activeTasksText = usr.getDictionary().crmTaskStatusActive();
+    String lateTasksText = usr.getDictionary().crmTaskLabelLate();
+    int scheduledCount = 0;
+    int activeCount = 0;
+    int lateCount = 0;
+    DateTime now = new DateTime();
+    long nowTime = now.getTime();
+
+    List<IsRow> lateTasks = new ArrayList<>();
+
+    for (IsRow row : tasks) {
+      TaskStatus status = EnumUtils.getEnumByIndex(TaskStatus.class,
+          DataUtils.getInteger(tasks, row, COL_STATUS));
+      if (status != null) {
+        if (status == TaskStatus.VISITED) {
+          scheduledCount++;
+        } else if (status == TaskStatus.ACTIVE) {
+          activeCount++;
+        }
+        long finishTime = row.getLong(tasks.getColumnIndex(COL_FINISH_TIME));
+        if ((finishTime - nowTime) < 0) {
+          lateCount++;
+          lateTasks.add(row);
+        }
+      }
+    }
+
+    Document doc = new Document();
+    doc.getHead().append(meta().encodingDeclarationUtf8(), title().text(BeeUtils.joinWords(
+        subject,
+        now.getDate().toString())));
+    doc.getBody().append(p().text(reminderText));
+    doc.getBody().append(p().text(BeeUtils.joinWords(scheduledTasksText, scheduledCount)));
+    doc.getBody().append(p().text(BeeUtils.joinWords(activeTasksText, activeCount)));
+    doc.getBody().append(p().text(BeeUtils.joinWords(lateTasksText, lateCount)));
+
+    if (lateCount > 0) {
+      Table table = table();
+      Tr trHead = tr();
+      Th th = th().text(usr.getDictionary().crmTaskSubject());
+      th.setBorderWidth("1px");
+      th.setBorderStyle(BorderStyle.SOLID);
+      th.setBorderColor("black");
+      trHead.append(th);
+
+      th = th().text(usr.getDictionary().calClient());
+      th.setBorderWidth("1px");
+      th.setBorderStyle(BorderStyle.SOLID);
+      th.setBorderColor("black");
+      trHead.append(th);
+
+      th = th().text(usr.getDictionary().crmStartDate());
+      th.setBorderWidth("1px");
+      th.setBorderStyle(BorderStyle.SOLID);
+      th.setBorderColor("black");
+      trHead.append(th);
+
+      th = th().text(usr.getDictionary().crmFinishDate());
+      th.setBorderWidth("1px");
+      th.setBorderStyle(BorderStyle.SOLID);
+      th.setBorderColor("black");
+      trHead.append(th);
+
+      th = th().text(usr.getDictionary().crmTaskLabelDelayedHours());
+      th.setBorderWidth("1px");
+      th.setBorderStyle(BorderStyle.SOLID);
+      th.setBorderColor("black");
+      trHead.append(th);
+
+      table.append(trHead);
+
+      Range<Long> maybeTime = Range.closed(
+          TimeUtils.startOfYear(TimeUtils.today(), -10).getTime(),
+          TimeUtils.startOfYear(TimeUtils.today(), 100).getTime());
+
+      for (int j = 0; j < lateTasks.size(); j++) {
+        IsRow row = lateTasks.get(j);
+        Tr tr = tr();
+
+        for (int i = 0; i < tasks.getNumberOfColumns() - 1; i++) {
+          if (row.isNull(i)) {
+            Td td = td();
+            td.setBorderWidth("1px");
+            td.setBorderStyle(BorderStyle.SOLID);
+            td.setBorderColor("black");
+            tr.append(td);
+            continue;
+          }
+
+          ValueType type = tasks.getColumnType(i);
+          String value = DataUtils.render(tasks.getColumn(i), row, i);
+
+          if (type == ValueType.LONG) {
+            Long x = row.getLong(i);
+            if (x != null && maybeTime.contains(x)) {
+              type = ValueType.DATE_TIME;
+              value = new DateTime(x).toCompactString();
+            }
+          } else if (!BeeUtils.isEmpty(tasks.getColumn(i).getEnumKey())) {
+            value = EnumUtils.getLocalizedCaption(tasks.getColumn(i).getEnumKey(),
+                row.getInteger(i), usr.getDictionary(userId));
+          }
+
+          Td td = td();
+          td.setBorderWidth("1px");
+          td.setBorderStyle(BorderStyle.SOLID);
+          td.setBorderColor("black");
+          tr.append(td);
+          td.text(value);
+
+          if (ValueType.isNumeric(type) || ValueType.TEXT == type
+              && CharMatcher.DIGIT.matchesAnyOf(value) && BeeUtils.isDouble(value)) {
+            td.setTextAlign(TextAlign.RIGHT);
+          }
+        }
+
+        long finishTime = row.getLong(tasks.getColumnIndex(COL_FINISH_TIME));
+        long diff = (nowTime - finishTime) / TimeUtils.MILLIS_PER_HOUR;
+
+        Td td = td();
+        td.setBorderWidth("1px");
+        td.setBorderStyle(BorderStyle.SOLID);
+        td.setBorderColor("black");
+        tr.append(td);
+        td.text(BeeUtils.toString(diff));
+        table.append(tr);
+      }
+
+      table.setBorderWidth("1px;");
+      table.setBorderStyle(BorderStyle.SOLID);
+      table.setBorderSpacing("0px;");
+
+      doc.getBody().append(table);
+    }
+
+    mail.sendMail(accountId, to, subject, doc.buildLines());
+    logger.info(TIMER_REMIND_TASKS_SUMMARY, "mail send, user id", userId,
+        ", reminded tasks count", tasks.getRows().size());
   }
 
   private ResponseObject createCompany(Map<String, String> companyInfo) {
@@ -1993,6 +2177,25 @@ public class ClassifiersModuleBean implements BeeModule {
     return userSettings;
   }
 
+  private Map<Long, String> getRemindTasksUserSettings() {
+    Map<Long, String> userSettings = Maps.newHashMap();
+    Filter isSetReminder = Filter.notNull(COL_REMIND_TASKS);
+    Filter timeIsSet = Filter.notNull(COL_TASKS_MAILING_TIME);
+
+    BeeRowSet rows = qs.getViewData(VIEW_USER_SETTINGS, Filter.and(isSetReminder, timeIsSet));
+
+    for (IsRow row : rows) {
+      Long userId = row.getLong(rows.getColumnIndex(COL_USER));
+      String parameter = row.getString(rows.getColumnIndex(COL_TASKS_MAILING_TIME));
+      if (!usr.isBlocked(usr.getUserName(userId))
+              && !BeeUtils.isEmpty(usr.getUserEmail(userId, false))) {
+        userSettings.put(userId, parameter);
+      }
+    }
+
+    return userSettings;
+  }
+
   @Schedule(hour = "*/1", persistent = false)
   private void notifyCompanyActions() {
     logger.info("Timer", TIMER_REMIND_COMPANY_ACTIONS, "started");
@@ -2009,6 +2212,50 @@ public class ClassifiersModuleBean implements BeeModule {
     }
 
     logger.info("Timer", TIMER_REMIND_COMPANY_ACTIONS, "ended");
+  }
+
+  private void notifyTasksSummary(Timer timer) {
+    if (!BeeUtils.same((String) timer.getInfo(), TIMER_REMIND_TASKS_SUMMARY)) {
+      return;
+    }
+
+    logger.info("Timer", TIMER_REMIND_TASKS_SUMMARY, "started");
+
+    if (TimeUtils.isWeekend(TimeUtils.today())) {
+      return;
+    }
+
+    if (!DataUtils.isId(mail.getSenderAccountId(TIMER_REMIND_TASKS_SUMMARY))) {
+      return;
+    }
+
+    Map<Long, String> userSettings = getRemindTasksUserSettings();
+    int nowHour = TimeUtils.nowHours().getHour();
+    int nowMinute = TimeUtils.nowMinutes().getMinute();
+
+    for (Long userId : userSettings.keySet()) {
+      logger.debug("try to send tasks to user", userId);
+
+      DateTime reminderTime = TimeUtils.toDateTimeOrNull(TimeUtils.parseTime(userSettings.get(
+          userId)));
+      if (reminderTime == null) {
+        continue;
+      }
+
+      int hour = reminderTime.getUtcHour();
+      int minute = reminderTime.getUtcMinute();
+
+      int diff = nowMinute - minute;
+
+      if ((nowHour == hour) && (diff > 0) && (diff <= (DEFAULT_REMIND_TASKS_TIMER_TIMEOUT
+          / TimeUtils.MILLIS_PER_MINUTE))) {
+
+        sendTasksSummaryReminder(userId);
+      }
+    }
+
+    logger.info("Timer", TIMER_REMIND_TASKS_SUMMARY, "ended, Next start time",
+        timer.getNextTimeout());
   }
 
   private void sendCompanyActionsReminder(Long user, Integer remindBefore) {
@@ -2060,6 +2307,37 @@ public class ClassifiersModuleBean implements BeeModule {
     } else {
       logger.info("no actions remind for user", user);
     }
+  }
+
+  private void sendTasksSummaryReminder(Long userID) {
+    if (!DataUtils.isId(userID)) {
+      return;
+    }
+
+    Order sortBy = Order.ascending(TaskConstants.COL_SUMMARY);
+
+    Filter isCompleted = Filter.equals(TaskConstants.COL_STATUS,
+            TaskConstants.TaskStatus.COMPLETED);
+    Filter isActive = Filter.or(
+            Filter.equals(TaskConstants.COL_STATUS, TaskConstants.TaskStatus.ACTIVE),
+            Filter.equals(TaskConstants.COL_STATUS, TaskConstants.TaskStatus.VISITED));
+    isActive = Filter.and(Filter.isNot(isCompleted), isActive);
+
+    Filter clause = Filter.and(Filter.equals(TaskConstants.COL_EXECUTOR, userID), isActive);
+
+    List<String> cols = Lists.newArrayList(TaskConstants.COL_SUMMARY,
+            ClassifierConstants.ALS_COMPANY_NAME,
+            TaskConstants.COL_START_TIME, TaskConstants.COL_FINISH_TIME, TaskConstants.COL_STATUS);
+
+    BeeRowSet tasks = qs.getViewData(TaskConstants.VIEW_TASKS,
+            clause, sortBy, cols);
+
+    logger.debug("current tasks count", tasks.getNumberOfRows());
+
+    if (tasks.getNumberOfRows() > 0) {
+      createTasksSummaryRemindMail(userID, tasks);
+    }
+
   }
 
   public void setRemindedAppointments(List<Long> appointments) {

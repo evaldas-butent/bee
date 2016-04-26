@@ -75,6 +75,11 @@
               </InputInteger>
               <Label text="=unitHourShort" />
             </row>
+            <row module="Tasks">
+                <CheckBox name="MailTasksSummary" source="MailTasksSummary" summarize="true" />
+                <InputTimeOfDay name="TasksMailingTime" source="TasksMailingTime" style="width: 80px;"/>
+                <Label text="=unitHourShort" />
+            </row>
           </Table>
         </FlowPanel>
       </page>
