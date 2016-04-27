@@ -11,6 +11,7 @@ import com.google.common.eventbus.Subscribe;
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 
+import com.butent.bee.server.Config;
 import com.butent.bee.server.concurrency.ConcurrencyBean;
 import com.butent.bee.server.concurrency.ConcurrencyBean.HasTimerService;
 import com.butent.bee.server.data.BeeTable;
@@ -27,12 +28,14 @@ import com.butent.bee.server.i18n.I18nUtils;
 import com.butent.bee.server.i18n.Localizations;
 import com.butent.bee.server.io.FileUtils;
 import com.butent.bee.server.modules.BeeModule;
+import com.butent.bee.server.modules.ModuleHolderBean;
 import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.sql.SqlDelete;
 import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
+import com.butent.bee.server.ui.UiHolderBean;
 import com.butent.bee.server.websocket.Endpoint;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -41,6 +44,7 @@ import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.data.BeeObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
@@ -55,7 +59,9 @@ import com.butent.bee.shared.i18n.SupportedLocale;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
+import com.butent.bee.shared.modules.administration.SysObject;
 import com.butent.bee.shared.rights.Module;
+import com.butent.bee.shared.rights.ModuleAndSub;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -63,17 +69,19 @@ import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 
+import java.io.File;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 import javax.ejb.EJB;
@@ -104,20 +112,23 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
   ImportBean imp;
   @EJB
   ConcurrencyBean cb;
+  @EJB
+  UiHolderBean ui;
+  @EJB
+  ModuleHolderBean mod;
 
   @Resource
   TimerService timerService;
 
   @Override
   public List<SearchResult> doSearch(String query) {
-    List<SearchResult> usersSr = qs.getSearchResults(VIEW_USERS,
+    return qs.getSearchResults(VIEW_USERS,
         Filter.anyContains(Sets.newHashSet(COL_LOGIN, COL_FIRST_NAME, COL_LAST_NAME), query));
-    return usersSr;
   }
 
   @Override
   public ResponseObject doService(String svc, RequestInfo reqInfo) {
-    ResponseObject response = null;
+    ResponseObject response;
 
     if (BeeUtils.isPrefix(svc, PARAMETERS_PREFIX)) {
       response = prm.doService(svc, reqInfo);
@@ -156,6 +167,22 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
 
     } else if (BeeUtils.same(svc, SVC_DO_IMPORT)) {
       response = imp.doImport(reqInfo);
+
+    } else if (BeeUtils.same(svc, SVC_GET_CONFIG_DIFF)) {
+      response = getConfigDiff(EnumUtils.getEnumByIndex(Module.class,
+          reqInfo.getParameter(COL_CONFIG_MODULE)), EnumUtils.getEnumByIndex(SysObject.class,
+          reqInfo.getParameter(COL_CONFIG_TYPE)), reqInfo.getParameter(COL_CONFIG_OBJECT),
+          reqInfo.getParameter(COL_CONFIG_DATA));
+
+    } else if (BeeUtils.same(svc, SVC_GET_CONFIG_OBJECT)) {
+      response = ResponseObject.response(getConfigObject(EnumUtils.getEnumByIndex(Module.class,
+          reqInfo.getParameter(COL_CONFIG_MODULE)), EnumUtils.getEnumByIndex(SysObject.class,
+          reqInfo.getParameter(COL_CONFIG_TYPE)), reqInfo.getParameter(COL_CONFIG_OBJECT)));
+
+    } else if (BeeUtils.same(svc, SVC_GET_CONFIG_OBJECTS)) {
+      response = getConfigObjects(EnumUtils.getEnumByIndex(Module.class,
+          reqInfo.getParameter(COL_CONFIG_MODULE)), EnumUtils.getEnumByIndex(SysObject.class,
+          reqInfo.getParameter(COL_CONFIG_TYPE)));
 
     } else if (BeeUtils.same(svc, SVC_GET_DICTIONARY)) {
       Map<String, String> dictionary = Localizations.getGlossary(usr.getSupportedLocale());
@@ -340,26 +367,23 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
             final Collator collator = Collator.getInstance(usr.getLocale());
             collator.setStrength(Collator.IDENTICAL);
 
-            Collections.sort(rowSet.getRows(), new Comparator<BeeRow>() {
-              @Override
-              public int compare(BeeRow row1, BeeRow row2) {
-                String name1 = row1.getProperty(PROP_DEPARTMENT_FULL_NAME);
-                if (BeeUtils.isEmpty(name1)) {
-                  name1 = row1.getString(nameIndex);
-                }
-
-                String name2 = row2.getProperty(PROP_DEPARTMENT_FULL_NAME);
-                if (BeeUtils.isEmpty(name2)) {
-                  name2 = row2.getString(nameIndex);
-                }
-
-                int result = collator.compare(BeeUtils.normalize(name1), BeeUtils.normalize(name2));
-                if (result == BeeConst.COMPARE_EQUAL) {
-                  result = Long.compare(row1.getId(), row2.getId());
-                }
-
-                return result;
+            Collections.sort(rowSet.getRows(), (row1, row2) -> {
+              String name1 = row1.getProperty(PROP_DEPARTMENT_FULL_NAME);
+              if (BeeUtils.isEmpty(name1)) {
+                name1 = row1.getString(nameIndex);
               }
+
+              String name2 = row2.getProperty(PROP_DEPARTMENT_FULL_NAME);
+              if (BeeUtils.isEmpty(name2)) {
+                name2 = row2.getString(nameIndex);
+              }
+
+              int result = collator.compare(BeeUtils.normalize(name1), BeeUtils.normalize(name2));
+              if (result == BeeConst.COMPARE_EQUAL) {
+                result = Long.compare(row1.getId(), row2.getId());
+              }
+
+              return result;
             });
           }
         }
@@ -382,6 +406,32 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
         }
       }
     });
+  }
+
+  public SimpleRowSet getUserGroupMembers(String groupList) {
+    SimpleRowSet users = new SimpleRowSet(new String[] {COL_UG_USER, COL_UG_GROUP});
+
+    Set<Long> groups = DataUtils.parseIdSet(groupList);
+    if (groups.isEmpty()) {
+      return users;
+    }
+
+    SqlSelect query = new SqlSelect()
+        .setDistinctMode(true)
+        .addFields(TBL_USER_GROUPS, COL_UG_USER, COL_UG_GROUP)
+        .addFrom(TBL_USER_GROUPS)
+        .setWhere(SqlUtils.inList(TBL_USER_GROUPS, COL_UG_GROUP, groups));
+
+    SimpleRowSet members = qs.getData(query);
+    if (!members.isEmpty()) {
+      for (Long member : members.getLongColumn(COL_UG_USER)) {
+        if (usr.isActive(member)) {
+          users.addRow(members.getRowByKey(COL_UG_USER, member.toString()).getValues());
+        }
+      }
+    }
+
+    return users;
   }
 
   public Double maybeExchange(Long from, Long to, Double v, DateTime dt) {
@@ -649,6 +699,64 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
     }
 
     return ResponseObject.response(sizes.toString());
+  }
+
+  private ResponseObject getConfigDiff(Module module, SysObject type, String name,
+      String data) {
+
+    DiffMatchPatch dmp = new DiffMatchPatch();
+
+    LinkedList<DiffMatchPatch.Diff> diff = dmp.diff_main(BeeUtils.nvl(getConfigObject(module, type,
+        name), ""), BeeUtils.nvl(data, ""));
+
+    dmp.diff_cleanupSemantic(diff);
+
+    return ResponseObject.response(dmp.diff_prettyHtml(diff));
+  }
+
+  private String getConfigObject(Module module, SysObject type, String name) {
+    String object = null;
+
+    if (BeeUtils.allNotNull(module, type, name) && mod.hasModule(module.getName())) {
+      File dir = new File(Config.CONFIG_DIR, mod.getResourcePath(module.getName(), type.getPath()));
+      File resource = new File(dir, BeeUtils.join(".", name, type.getFileExtension()));
+
+      if (FileUtils.isInputFile(resource)) {
+        object = FileUtils.fileToString(resource);
+      }
+    }
+    return object;
+  }
+
+  private ResponseObject getConfigObjects(Module module, SysObject type) {
+    Collection<String> resp = new ArrayList<>();
+
+    if (BeeUtils.allNotNull(module, type)) {
+      Collection<? extends BeeObject> list = new ArrayList<>();
+
+      switch (type) {
+        case TABLE:
+          list = sys.getTables();
+          break;
+        case VIEW:
+          list = sys.getViews();
+          break;
+        case MENU:
+        case GRID:
+        case FORM:
+        case REPORT:
+          list = ui.getObjects(type);
+      }
+      resp.addAll(list.stream()
+          .filter(o -> {
+            ModuleAndSub mas = ModuleAndSub.parse(o.getModule());
+            return Objects.nonNull(mas) && Objects.equals(mas.getModule(), module);
+          })
+          .map(BeeObject::getName)
+          .sorted()
+          .collect(Collectors.toList()));
+    }
+    return ResponseObject.response(resp);
   }
 
   private ResponseObject getCurrentExchangeRate(RequestInfo reqInfo) {

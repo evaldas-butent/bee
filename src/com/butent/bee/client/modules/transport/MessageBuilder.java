@@ -66,7 +66,7 @@ import java.util.Set;
 
 public class MessageBuilder extends FaLabel implements ClickHandler {
 
-  private class MessageDialog extends DialogBox implements ClickHandler {
+  private final class MessageDialog extends DialogBox implements ClickHandler {
 
     private final HtmlTable driverPanel = new HtmlTable();
     private final Label characterCount = new Label();
@@ -439,6 +439,7 @@ public class MessageBuilder extends FaLabel implements ClickHandler {
     }
     Queries.getRowSet(TBL_TRIP_DRIVERS, Lists.newArrayList(COL_DRIVER),
         Filter.any(COL_TRIP, tripIds), new Queries.RowSetCallback() {
+          @SuppressWarnings("unused")
           @Override
           public void onSuccess(BeeRowSet result) {
             new MessageDialog(result.getDistinctLongs(0), cargoIds, ids);

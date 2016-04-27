@@ -38,18 +38,20 @@ import com.butent.bee.shared.rights.RightsUtils;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.ui.UiConstants;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.EnumUtils;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 
@@ -252,6 +254,22 @@ public class UiHolderBean {
       }
     }
     return ResponseObject.response(menus.values());
+  }
+
+  public Collection<? extends BeeObject> getObjects(SysObject type) {
+    switch (type) {
+      case MENU:
+        return menuCache.values();
+      case GRID:
+        return gridCache.values();
+      case FORM:
+        return formCache.values();
+      case REPORT:
+        return reportCache.values();
+      default:
+        Assert.unsupported();
+        return null;
+    }
   }
 
   public String getReport(String reportName) {
@@ -523,7 +541,7 @@ public class UiHolderBean {
 
     for (String moduleName : moduleBean.getModules()) {
       List<File> resources = FileUtils.findFiles("*" + ext,
-          Arrays.asList(new File(Config.CONFIG_DIR,
+          Collections.singleton(new File(Config.CONFIG_DIR,
               moduleBean.getResourcePath(moduleName, obj.getPath()))), null, null, false, true);
 
       if (!BeeUtils.isEmpty(resources)) {
@@ -539,11 +557,15 @@ public class UiHolderBean {
     SimpleRowSet rs = qs.getData(new SqlSelect()
         .addFields(TBL_CUSTOM_CONFIG, COL_CONFIG_MODULE, COL_CONFIG_OBJECT, COL_CONFIG_DATA)
         .addFrom(TBL_CUSTOM_CONFIG)
-        .setWhere(SqlUtils.equals(TBL_CUSTOM_CONFIG, COL_CONFIG_TYPE, obj.ordinal())));
+        .setWhere(SqlUtils.equals(TBL_CUSTOM_CONFIG, COL_CONFIG_TYPE, obj)));
 
     for (SimpleRow row : rs) {
-      custom.put(row.getValue(COL_CONFIG_MODULE),
-          Pair.of(row.getValue(COL_CONFIG_OBJECT), row.getValue(COL_CONFIG_DATA)));
+      Module module = EnumUtils.getEnumByIndex(Module.class, row.getInt(COL_CONFIG_MODULE));
+
+      if (Objects.nonNull(module)) {
+        custom.put(module.getName(),
+            Pair.of(row.getValue(COL_CONFIG_OBJECT), row.getValue(COL_CONFIG_DATA)));
+      }
     }
     for (String moduleName : moduleBean.getModules()) {
       for (Pair<String, String> pair : custom.get(moduleName)) {
@@ -568,9 +590,15 @@ public class UiHolderBean {
         UiObjectInfo form = new UiObjectInfo(moduleName, objectName, resource);
         return SysObject.register(form, formCache, initial, logger);
       case MENU:
-        Menu menu = XmlUtils.unmarshal(Menu.class, resource,
-            Config.getSchemaPath(obj.getSchemaName()));
+        Menu menu;
 
+        try {
+          menu = XmlUtils.unmarshal(Menu.class, resource,
+              Config.getSchemaPath(obj.getSchemaName()));
+        } catch (Throwable e) {
+          logger.error(e);
+          menu = null;
+        }
         if (menu != null) {
           if (!BeeUtils.same(menu.getName(), objectName)) {
             logger.warning("Menu name doesn't match resource name:", menu.getName(), "!=",

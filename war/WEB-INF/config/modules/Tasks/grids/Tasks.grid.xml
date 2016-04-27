@@ -4,6 +4,7 @@
   
   name="Tasks" viewName="Tasks" caption="=crmTasks"
   cacheData="false" favorite="Summary" enabledActions="copy"
+  editForm="Task:=inputFull, TaskPreview:=inputSimple"
   order="Status, FinishTime, TaskID desc" maxColumnWidth="160"
   >
 
@@ -16,7 +17,7 @@
 
   <xi:include href="columns/Task.columns.xml" />
   
-  <g:predefinedFilter name="new" label="=crmTaskFilterNew">
+  <g:predefinedFilter name="new" label="=crmTaskFilterNew" >
     <g:column name="Mode" value="0" />
   </g:predefinedFilter>
   <g:predefinedFilter name="updated" label="=crmTaskFilterUpdated">
@@ -29,9 +30,9 @@
   <g:predefinedFilter name="starred" label="=crmTaskFilterStarred">
     <g:column name="Star" emptyValues="false" />
   </g:predefinedFilter>
-  
-  <g:predefinedFilter name="nv_a" label="=crmTaskFilterNotVisitedOrActive">
-    <g:column name="Status" value="0,1" />
+
+  <g:predefinedFilter name="nv_a" label="=crmTaskFilterNotVisitedOrActiveOrVisited">
+    <g:column name="Status" value="0,1,7" />
   </g:predefinedFilter>  
   <g:predefinedFilter name="nv_a_c" label="=crmTaskFilterNotVisitedOrActiveOrCompleted">
     <g:column name="Status" value="0,1,4" />
@@ -40,7 +41,9 @@
   <g:predefinedFilter name="late" label="=crmTaskFilterLate">
     <g:column name="Slack" value="late" />
   </g:predefinedFilter>  
-  <g:predefinedFilter name="scheduled" label="=crmTaskFilterScheduled">
-    <g:column name="Slack" value="scheduled" />
-  </g:predefinedFilter>  
+  <!-- @Deperecated { 
+   <g:predefinedFilter name="scheduled" label="=crmTaskFilterScheduled">
+     <g:column name="Slack" value="scheduled" />
+   </g:predefinedFilter>
+   } -->  
 </g:Grid>

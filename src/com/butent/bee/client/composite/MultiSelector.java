@@ -2,17 +2,7 @@ package com.butent.bee.client.composite;
 
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Node;
-import com.google.gwt.event.dom.client.BlurEvent;
-import com.google.gwt.event.dom.client.BlurHandler;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.dom.client.FocusEvent;
-import com.google.gwt.event.dom.client.FocusHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
-import com.google.gwt.event.dom.client.KeyDownEvent;
-import com.google.gwt.event.dom.client.KeyDownHandler;
-import com.google.gwt.event.dom.client.MouseDownEvent;
-import com.google.gwt.event.dom.client.MouseDownHandler;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.data.Data;
@@ -22,8 +12,6 @@ import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.Binder;
-import com.butent.bee.client.event.InputEvent;
-import com.butent.bee.client.event.InputHandler;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.event.logical.SummaryChangeEvent;
 import com.butent.bee.client.layout.Flow;
@@ -139,12 +127,10 @@ public class MultiSelector extends DataSelector implements HandlesRendering, Han
 
       if (MultiSelector.this.isEditEnabled() && DataUtils.isId(choice.getRowId())) {
         label.addStyleName(RowEditor.EDITABLE_RELATION_STYLE);
-        label.addClickHandler(new ClickHandler() {
-          @Override
-          public void onClick(ClickEvent event) {
-            event.stopPropagation();
-            MultiSelector.this.editChoice(getRowId());
-          }
+
+        label.addClickHandler(event -> {
+          event.stopPropagation();
+          MultiSelector.this.editChoice(getRowId());
         });
       }
 
@@ -154,12 +140,9 @@ public class MultiSelector extends DataSelector implements HandlesRendering, Han
       CustomDiv close = new CustomDiv(STYLE_CLOSE);
       close.setText(String.valueOf(BeeConst.CHAR_TIMES));
 
-      close.addClickHandler(new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent event) {
-          event.stopPropagation();
-          MultiSelector.this.removeChoice(getChoice());
-        }
+      close.addClickHandler(event -> {
+        event.stopPropagation();
+        MultiSelector.this.removeChoice(getChoice());
       });
 
       add(close);
@@ -209,19 +192,8 @@ public class MultiSelector extends DataSelector implements HandlesRendering, Han
     final MultiSelector selector = new MultiSelector(relation, true, null);
     selector.setRenderer(renderer);
 
-    selector.addFocusHandler(new FocusHandler() {
-      @Override
-      public void onFocus(FocusEvent event) {
-        selector.setEditing(true);
-      }
-    });
-
-    selector.addBlurHandler(new BlurHandler() {
-      @Override
-      public void onBlur(BlurEvent event) {
-        selector.setEditing(false);
-      }
-    });
+    selector.addFocusHandler(event -> selector.setEditing(true));
+    selector.addBlurHandler(event -> selector.setEditing(false));
 
     return selector;
   }
@@ -294,6 +266,8 @@ public class MultiSelector extends DataSelector implements HandlesRendering, Han
   private final int emptyContainerSize;
 
   private String separators;
+
+  private boolean effectivelyActive;
 
   public MultiSelector(Relation relation, boolean embedded, CellSource cellSource) {
     super(relation, embedded);
@@ -509,6 +483,8 @@ public class MultiSelector extends DataSelector implements HandlesRendering, Han
 
       DomUtils.scrollIntoView(getElement());
       setFocus(true);
+
+      setActive(true);
     }
   }
 
@@ -611,58 +587,44 @@ public class MultiSelector extends DataSelector implements HandlesRendering, Han
       plusWidget.setTitle(BeeUtils.buildLines(Localized.dictionary().actionCreate(),
           BeeUtils.bracket(getLabel())));
 
-      plusWidget.addMouseDownHandler(new MouseDownHandler() {
-        @Override
-        public void onMouseDown(MouseDownEvent event) {
-          event.stopPropagation();
-          RowFactory.createRelatedRow(MultiSelector.this, getDisplayValue());
-        }
+      plusWidget.addMouseDownHandler(event -> {
+        event.stopPropagation();
+        RowFactory.createRelatedRow(MultiSelector.this, getDisplayValue());
       });
 
       container.add(plusWidget);
     }
 
-    inputWidget.addFocusHandler(new FocusHandler() {
-      @Override
-      public void onFocus(FocusEvent event) {
-        container.addStyleName(STYLE_CONTAINER_ACTIVE);
-      }
+    inputWidget.addFocusHandler(event -> container.addStyleName(STYLE_CONTAINER_ACTIVE));
+    inputWidget.addBlurHandler(event -> {
+      container.removeStyleName(STYLE_CONTAINER_ACTIVE);
+      clearInput();
     });
-    inputWidget.addBlurHandler(new BlurHandler() {
-      @Override
-      public void onBlur(BlurEvent event) {
-        container.removeStyleName(STYLE_CONTAINER_ACTIVE);
-        clearInput();
+
+    inputWidget.addKeyDownHandler(event -> {
+      if (event.getNativeKeyCode() == KeyCodes.KEY_BACKSPACE) {
+        onBackSpace();
       }
     });
 
-    inputWidget.addKeyDownHandler(new KeyDownHandler() {
-      @Override
-      public void onKeyDown(KeyDownEvent event) {
-        if (event.getNativeKeyCode() == KeyCodes.KEY_BACKSPACE) {
-          onBackSpace();
-        }
-      }
-    });
-
-    inputWidget.addInputHandler(new InputHandler() {
-      @Override
-      public void onInput(InputEvent event) {
-        inputResizer.accept(inputWidget);
-      }
-    });
+    inputWidget.addInputHandler(event -> inputResizer.accept(inputWidget));
 
     StyleUtils.setWidth(inputWidget, MIN_INPUT_WIDTH);
 
     DomUtils.makeFocusable(container);
 
-    Binder.addClickHandler(container, new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        if (!isEditing() && isEnabled()) {
+    Binder.addMouseDownHandler(container, event -> setEffectivelyActive(isActive()));
+
+    container.addClickHandler(event -> {
+      if (isEnabled()) {
+        if (!isEditing()) {
           inputWidget.setFocus(true);
-          inputWidget.onMouseClick(true);
         }
+
+        if (!isActive() && isEffectivelyActive()) {
+          setActive(true);
+        }
+        inputWidget.onMouseClick();
       }
     });
 
@@ -886,6 +848,8 @@ public class MultiSelector extends DataSelector implements HandlesRendering, Han
     DomUtils.scrollIntoView(getElement());
     setFocus(true);
 
+    setActive(true);
+
     if (removed) {
       SelectorEvent.fire(this, State.REMOVED);
       SummaryChangeEvent.maybeFire(this);
@@ -960,6 +924,14 @@ public class MultiSelector extends DataSelector implements HandlesRendering, Han
 
   private boolean selectsIds() {
     return !hasValueSource();
+  }
+
+  private boolean isEffectivelyActive() {
+    return effectivelyActive;
+  }
+
+  private void setEffectivelyActive(boolean effectivelyActive) {
+    this.effectivelyActive = effectivelyActive;
   }
 
   private void setExclusions(Collection<Choice> choices) {

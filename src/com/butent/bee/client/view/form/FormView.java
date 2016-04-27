@@ -123,6 +123,8 @@ public interface FormView extends DataView, HasDataTable, ActiveWidgetChangeEven
 
   Widget getWidgetBySource(String source);
 
+  boolean isAdding();
+
   boolean isInteractive();
 
   boolean isRowEditable(IsRow rowValue, boolean warn);
@@ -143,7 +145,11 @@ public interface FormView extends DataView, HasDataTable, ActiveWidgetChangeEven
 
   void refreshChildWidgets(IsRow row);
 
+  void setAdding(boolean adding);
+
   void setCaption(String caption);
+
+  void setOldRow(IsRow oldRow);
 
   void start(Integer rowCount);
 

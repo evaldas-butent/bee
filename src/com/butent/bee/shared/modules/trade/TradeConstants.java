@@ -7,24 +7,40 @@ import com.butent.bee.shared.utils.EnumUtils;
 public final class TradeConstants {
 
   public enum OperationType implements HasLocalizedCaption {
-    PURCHASE {
+    PURCHASE(false, true) {
       @Override
       public String getCaption(Dictionary constants) {
         return constants.trdTypePurchase();
       }
     },
-    SALE {
+    SALE(true, false) {
       @Override
       public String getCaption(Dictionary constants) {
         return constants.trdTypeSale();
       }
     },
-    TRANSFER {
+    TRANSFER(true, true) {
       @Override
       public String getCaption(Dictionary constants) {
         return constants.trdTypeTransfer();
       }
     };
+
+    private final boolean consumesStock;
+    private final boolean producesStock;
+
+    OperationType(boolean consumesStock, boolean producesStock) {
+      this.consumesStock = consumesStock;
+      this.producesStock = producesStock;
+    }
+
+    public boolean consumesStock() {
+      return consumesStock;
+    }
+
+    public boolean producesStock() {
+      return producesStock;
+    }
   }
 
   public static void register() {

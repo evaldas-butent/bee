@@ -236,10 +236,6 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
       default:
         logger.warning(NameUtils.getName(this), action, "not implemented");
     }
-
-    if (getFormInterceptor() != null) {
-      getFormInterceptor().afterAction(action, this);
-    }
   }
 
   @Override

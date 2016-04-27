@@ -100,7 +100,9 @@ class ProjectStageForm extends AbstractFormInterceptor implements DataChangeEven
 
   @Override
   public boolean beforeAction(Action action, Presenter presenter) {
-    if (action.equals(Action.SAVE) && getFormView() != null && getFormView().getActiveRow() != null) {
+    if (action.equals(Action.SAVE) && getFormView() != null
+        && getFormView().getActiveRow() != null) {
+
       FormView form = getFormView();
       IsRow row = form.getActiveRow();
       boolean valid = true;

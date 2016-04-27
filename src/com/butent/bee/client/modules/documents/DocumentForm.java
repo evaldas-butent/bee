@@ -419,7 +419,7 @@ public class DocumentForm extends DocumentDataForm {
               ServiceConstants.COL_SERVICE_CUSTOMER, row,
               Data.getDataInfo(TBL_COMPANIES), result, true);
 
-          RowFactory.createRelatedRow(formName, row, selector);
+          RowFactory.createRelatedRow(formName, row, selector, null);
         }
       });
     }
@@ -482,7 +482,7 @@ public class DocumentForm extends DocumentDataForm {
 
             latch.set(latch.get() - 1);
             if (latch.get() <= 0) {
-              RowFactory.createRelatedRow(formName, row, selector);
+              RowFactory.createRelatedRow(formName, row, selector, null);
             }
           }
         });
@@ -525,7 +525,7 @@ public class DocumentForm extends DocumentDataForm {
 
                 latch.set(latch.get() - 1);
                 if (latch.get() <= 0) {
-                  RowFactory.createRelatedRow(formName, row, selector);
+                  RowFactory.createRelatedRow(formName, row, selector, null);
                 }
               }
             });

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+        xmlns:ui="http://www.butent.com/ui"
+
+        name="CustomConfig" viewName="CustomConfig"
+        caption="=customConfig"
+>
+  <g:columns>
+    <DataColumn name="ObjectModule" />
+    <DataColumn name="ObjectType" visible="true" />
+    <DataColumn name="ObjectName" visible="true" />
+    <CalcColumn name="ObjectDiff" type="string" caption="=differences" sortable="false"
+                horizontalAlignment="center">
+      <style>
+        <bodyStyle>
+          <ui:class>bee-fa-label</ui:class>
+        </bodyStyle>
+      </style>
+      <render>
+        <ui:expression>"&#xf126;"</ui:expression>
+      </render>
+    </CalcColumn>
+  </g:columns>
+</g:Grid>

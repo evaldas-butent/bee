@@ -302,6 +302,10 @@ class Trip extends Filterable implements HasColorSource, HasDateRange, HasItemNa
     return drivers;
   }
 
+  TripStatus getStatus() {
+    return status;
+  }
+
   String getTitle() {
     return title;
   }

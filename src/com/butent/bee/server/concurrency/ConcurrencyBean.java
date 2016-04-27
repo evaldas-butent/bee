@@ -352,13 +352,13 @@ public class ConcurrencyBean {
     return 10;
   }
 
-  private <T extends HasTimerService> TimerService removeTimer(Class<T> handler,
+  private static <T extends HasTimerService> TimerService removeTimer(Class<T> handler,
       String parameter) {
     T bean = Assert.notNull(Invocation.locateRemoteBean(handler));
     TimerService timerService = Assert.notNull(bean.getTimerService());
 
     for (Timer timer : timerService.getTimers()) {
-      if (isParameterTimer(timer, parameter)) {
+      if (Objects.equals(timer.getInfo(), parameter)) {
         timer.cancel();
         logger.info("Removed", NameUtils.getClassName(handler), parameter, "timer");
         break;

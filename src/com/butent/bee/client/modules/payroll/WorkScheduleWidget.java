@@ -926,7 +926,7 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
     String caption = getPartitionCaption(partId);
 
     RowFactory.createRow(FORM_WORK_SCHEDULE_EDITOR, caption, dataInfo, row, Modality.ENABLED,
-        contentPanel, wsEditor, new RowCallback() {
+        contentPanel, wsEditor, null, new RowCallback() {
           @Override
           public void onSuccess(BeeRow result) {
             if (result != null) {

@@ -124,6 +124,10 @@
     </xs:union>
   </xs:simpleType>
 
+  <xs:simpleType name="nameList">
+    <xs:list itemType="nameType" />
+  </xs:simpleType>
+
   <xs:simpleType name="fieldNames">
     <xs:list itemType="fieldNameType" />
   </xs:simpleType>
@@ -296,6 +300,7 @@
       <xs:enumeration value="CriteriaGroups" />
       <xs:enumeration value="Currencies" />
       <xs:enumeration value="CurrencyRates" />
+      <xs:enumeration value="CustomConfig" />
       <xs:enumeration value="DataCriteria" />
       <xs:enumeration value="DeliveryMethods" />
       <xs:enumeration value="Departments" />
@@ -446,6 +451,7 @@
       <xs:enumeration value="Repairs" />
       <xs:enumeration value="ReportOptions" />
       <xs:enumeration value="ReportSettings" />
+      <xs:enumeration value="RequestDurationTypes" />
       <xs:enumeration value="RequestFiles" />
       <xs:enumeration value="Requests" />
       <xs:enumeration value="RequestTypes" />
@@ -498,6 +504,8 @@
       <xs:enumeration value="TaskEvents" />
       <xs:enumeration value="TaskFiles" />
       <xs:enumeration value="Tasks" />
+      <xs:enumeration value="TaskDurationTypes" />
+      <xs:enumeration value="TaskProducts" />
       <xs:enumeration value="TaskTemplates" />
       <xs:enumeration value="TaskTypes" />
       <xs:enumeration value="TaskUsers" />

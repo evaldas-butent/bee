@@ -236,6 +236,7 @@ final class DriverTimeBoard extends ChartBase {
     ChartData trailerData = FilterHelper.getDataByType(selectedData, ChartData.Type.TRAILER);
 
     ChartData tripData = FilterHelper.getDataByType(selectedData, ChartData.Type.TRIP);
+    ChartData tripStatusData = FilterHelper.getDataByType(selectedData, ChartData.Type.TRIP_STATUS);
     ChartData departureData = FilterHelper.getDataByType(selectedData,
         ChartData.Type.TRIP_DEPARTURE);
     ChartData arrivalData = FilterHelper.getDataByType(selectedData, ChartData.Type.TRIP_ARRIVAL);
@@ -245,7 +246,8 @@ final class DriverTimeBoard extends ChartBase {
 
     boolean freightRequired = cargoMatcher != null || placeMatcher != null;
     boolean tripRequired = freightRequired || truckData != null || trailerData != null
-        || tripData != null || departureData != null || arrivalData != null;
+        || tripData != null || tripStatusData != null
+        || departureData != null || arrivalData != null;
 
     for (Driver driver : drivers) {
       boolean driverMatch = FilterHelper.matches(driverData, driver.getItemName())
@@ -267,6 +269,7 @@ final class DriverTimeBoard extends ChartBase {
           }
 
           boolean tripMatch = FilterHelper.matches(tripData, tripId)
+              && FilterHelper.matches(tripStatusData, trip.getStatus())
               && FilterHelper.matches(departureData, trip.getTripDeparture())
               && FilterHelper.matches(arrivalData, trip.getTripArrival())
               && FilterHelper.matches(truckData, trip.getTruckId())
@@ -606,6 +609,7 @@ final class DriverTimeBoard extends ChartBase {
     ChartData trailerData = new ChartData(ChartData.Type.TRAILER);
 
     ChartData tripData = new ChartData(ChartData.Type.TRIP);
+    ChartData tripStatusData = new ChartData(ChartData.Type.TRIP_STATUS);
     ChartData departureData = new ChartData(ChartData.Type.TRIP_DEPARTURE);
     ChartData arrivalData = new ChartData(ChartData.Type.TRIP_ARRIVAL);
 
@@ -613,7 +617,7 @@ final class DriverTimeBoard extends ChartBase {
     ChartData managerData = new ChartData(ChartData.Type.MANAGER);
 
     ChartData orderData = new ChartData(ChartData.Type.ORDER);
-    ChartData statusData = new ChartData(ChartData.Type.ORDER_STATUS);
+    ChartData orderStatusData = new ChartData(ChartData.Type.ORDER_STATUS);
 
     ChartData cargoData = new ChartData(ChartData.Type.CARGO);
     ChartData cargoTypeData = new ChartData(ChartData.Type.CARGO_TYPE);
@@ -664,6 +668,7 @@ final class DriverTimeBoard extends ChartBase {
         }
 
         tripData.add(trip.getTripNo(), tripId);
+        tripStatusData.addNotNull(trip.getStatus());
         departureData.addNotNull(trip.getTripDeparture());
         arrivalData.addNotNull(trip.getTripArrival());
 
@@ -680,7 +685,7 @@ final class DriverTimeBoard extends ChartBase {
           managerData.addUser(freight.getManager());
 
           orderData.add(freight.getOrderName(), freight.getOrderId());
-          statusData.addNotNull(freight.getOrderStatus());
+          orderStatusData.addNotNull(freight.getOrderStatus());
 
           cargoData.add(freight.getCargoDescription(), freight.getCargoId());
           if (DataUtils.isId(freight.getCargoType())) {
@@ -725,6 +730,7 @@ final class DriverTimeBoard extends ChartBase {
     data.add(trailerData);
 
     data.add(tripData);
+    data.add(tripStatusData);
     data.add(departureData);
     data.add(arrivalData);
 
@@ -732,7 +738,7 @@ final class DriverTimeBoard extends ChartBase {
     data.add(managerData);
 
     data.add(orderData);
-    data.add(statusData);
+    data.add(orderStatusData);
 
     data.add(cargoData);
     data.add(cargoTypeData);

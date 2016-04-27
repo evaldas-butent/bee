@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+      name="CustomConfig" source="CustomConfig" module="Administration"
+      caption="=customConfig" editForm="CustomConfig" newRowForm="CustomConfig"
+>
+  <Columns>
+    <SimpleColumn name="ObjectModule" />
+    <SimpleColumn name="ObjectType" />
+    <SimpleColumn name="ObjectName" />
+    <SimpleColumn name="ObjectData" />
+  </Columns>
+
+  <Order>
+    <OrderBy column="ObjectModule" />
+    <OrderBy column="ObjectType" />
+    <OrderBy column="ObjectName" />
+  </Order>
+</View>

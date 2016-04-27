@@ -26,8 +26,6 @@ import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.grid.DynamicColumnEnumerator;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.search.AbstractFilterSupplier;
-import com.butent.bee.client.widget.FaLabel;
-import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -56,8 +54,6 @@ public interface GridInterceptor extends WidgetInterceptor, ActiveRowChangeEvent
   enum DeleteMode {
     CANCEL, DEFAULT, SILENT, CONFIRM, SINGLE, MULTI;
   }
-
-  void afterAction(Action action, GridPresenter presenter);
 
   void afterCreate(GridView gridView);
 
@@ -122,10 +118,6 @@ public interface GridInterceptor extends WidgetInterceptor, ActiveRowChangeEvent
 
   ColumnFooter getFooter(String columnName, ColumnDescription columnDescription);
 
-  FaLabel getGridMenuIcon();
-
-  Label getGridMenuLabel();
-
   GridPresenter getGridPresenter();
 
   GridView getGridView();
@@ -144,7 +136,7 @@ public interface GridInterceptor extends WidgetInterceptor, ActiveRowChangeEvent
 
   List<FilterDescription> getPredefinedFilters(List<FilterDescription> defaultFilters);
 
-  String getRowCaption(IsRow row, boolean edit);
+  String getRowCaption(IsRow row);
 
   /**
    * Enables conditional styles for rows.

@@ -17,6 +17,7 @@ import com.google.gwt.event.dom.client.MouseWheelEvent;
 import com.google.gwt.event.dom.client.MouseWheelHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.Widget;
@@ -116,7 +117,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
       addInputHandler(inputEvents);
       addMouseWheelHandler(inputEvents);
 
-      sinkEvents(Event.ONBLUR | Event.ONCLICK | Event.KEYEVENTS);
+      sinkEvents(Event.ONBLUR | Event.ONMOUSEDOWN | Event.ONCLICK | Event.KEYEVENTS);
     }
 
     @Override
@@ -134,17 +135,24 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
       switch (type) {
         case Event.ONBLUR:
           if (showing || isAdding()) {
+            cancelInputTimer();
             return;
           } else {
             reset();
           }
           break;
 
+        case Event.ONMOUSEDOWN:
+          cancelInputTimer();
+          break;
+
         case Event.ONCLICK:
-          onMouseClick(false);
+          onMouseClick();
           break;
 
         case Event.ONKEYDOWN:
+          cancelInputTimer();
+
           inputEvents.setConsumed(false);
           inputEvents.setLastEventType(type);
 
@@ -155,7 +163,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
             setSelection(null, null, true);
 
           } else if (isEmbedded() && !isActive()) {
-            if (event.getKeyCode() == KeyCodes.KEY_BACKSPACE && isInstant()
+            if (event.getKeyCode() == KeyCodes.KEY_BACKSPACE
                 && !BeeUtils.isEmpty(getDisplayValue())) {
 
               consumed = true;
@@ -169,6 +177,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
           break;
 
         case Event.ONKEYPRESS:
+          cancelInputTimer();
           inputEvents.setLastEventType(type);
 
           if (isEmbedded() && !isActive()) {
@@ -210,17 +219,13 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
       }
     }
 
-    protected void onMouseClick(boolean alwaysAsk) {
+    protected void onMouseClick() {
       if (isEmbedded() && !isActive()) {
         start(EditStartEvent.CLICK);
-        if (!alwaysAsk) {
-          return;
-        }
-      }
 
-      if (!getSelector().isShowing() && isInstant() && getMinQueryLength() <= 0) {
+      } else if (!getSelector().isShowing() && getMinQueryLength() <= 0) {
         clearDisplay();
-        askOracle();
+        askOrSchedule();
       }
     }
   }
@@ -253,8 +258,8 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
             start(BeeConst.UNDEF);
           }
 
-          if (isInstant() && isQueryValid()) {
-            askOracle();
+          if (isQueryValid()) {
+            askOrSchedule();
           }
         }
       }
@@ -384,10 +389,8 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
       boolean changed = queryChanged();
 
       if (isQueryValid()) {
-        if (isInstant()) {
-          consume();
-          askOracle();
-        }
+        consume();
+        askOrSchedule();
 
       } else {
         setFound(true);
@@ -609,6 +612,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
   }
 
   public static final char SHOW_SELECTOR = '*';
+  public static final char ASK_ORACLE = BeeConst.CHAR_EOL;
   private static final char CREATE_NEW = '+';
 
   private static final String ITEM_PREV = String.valueOf('\u25b2');
@@ -647,6 +651,9 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
   private static final int DEFAULT_VISIBLE_LINES = 10;
 
   private static final int DEFAULT_MAX_ROW_COUNT_FOR_INSTANT_SEARCH = 1_000;
+  private static final int DEFAULT_INPUT_DELAY_MILLIS = 500;
+
+  private static final List<Integer> inputDelayMillis = new ArrayList<>();
 
   static boolean determineInstantSearch(Relation relation, int dataSize) {
     if (relation.getInstant() != null) {
@@ -693,7 +700,6 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
   private final SelectionOracle oracle;
 
   private final int minQueryLength;
-  private boolean instant;
 
   private final InputWidget input;
   private final Selector selector;
@@ -730,6 +736,9 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
   private final ValueType valueType;
   private final int valueSourceIndex;
   private final boolean strict;
+
+  private boolean instant;
+  private Timer inputTimer;
 
   private Long editRowId;
 
@@ -946,6 +955,10 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
 
       if (state == State.PENDING) {
         askOracle();
+      }
+
+      if (!isInstant()) {
+        initInputTimer();
       }
     });
   }
@@ -1300,7 +1313,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     if (charCode != BeeConst.CHAR_SPACE && Codec.isValidUnicodeChar(charCode)) {
       if (charCode == SHOW_SELECTOR) {
         clearDisplay();
-        askOracle();
+        askOrSchedule();
 
       } else if (charCode == CREATE_NEW && isNewRowEnabled()) {
         if (!isEmbedded() && sourceElement != null) {
@@ -1310,8 +1323,8 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
 
       } else {
         setDisplayValue(BeeUtils.toString(charCode));
-        if (isInstant() && isQueryValid()) {
-          askOracle();
+        if (isQueryValid()) {
+          askOrSchedule();
         }
       }
 
@@ -1324,6 +1337,9 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
         getInput().selectAll();
         setWaiting(true);
       }
+
+    } else if (charCode == ASK_ORACLE) {
+      askOrSchedule();
     }
 
     inputEvents.consume();
@@ -1450,6 +1466,8 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
 
   @Override
   protected void onUnload() {
+    cancelInputTimer();
+
     SelectorEvent.fire(this, State.UNLOADING);
 
     getOracle().onUnload();
@@ -1467,6 +1485,8 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
   }
 
   protected void reset() {
+    cancelInputTimer();
+
     setActive(false);
     setWaiting(false);
 
@@ -1570,6 +1590,20 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     }
   }
 
+  private void askOrSchedule() {
+    if (isInstant()) {
+      askOracle();
+    } else {
+      scheduleRequest();
+    }
+  }
+
+  private void cancelInputTimer() {
+    if (getInputTimer() != null) {
+      getInputTimer().cancel();
+    }
+  }
+
   private void editRow() {
     Long rowId;
 
@@ -1668,6 +1702,10 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     return initialState;
   }
 
+  private Timer getInputTimer() {
+    return inputTimer;
+  }
+
   private Request getLastRequest() {
     return lastRequest;
   }
@@ -1738,6 +1776,26 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     }
   }
 
+  private void initInputTimer() {
+    this.inputTimer = new Timer() {
+      @Override
+      public void run() {
+        if (!isWaiting() || queryChanged()) {
+          askOracle();
+        }
+      }
+    };
+
+    if (inputDelayMillis.isEmpty()) {
+      List<Integer> delayMillis = Settings.getDataSelectorInputDelayMillis();
+      if (BeeUtils.isEmpty(delayMillis)) {
+        inputDelayMillis.add(DEFAULT_INPUT_DELAY_MILLIS);
+      } else {
+        inputDelayMillis.addAll(delayMillis);
+      }
+    }
+  }
+
   private boolean isAlive() {
     return alive;
   }
@@ -1793,6 +1851,17 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
 
   private String renderItem(BeeRow row) {
     return getRowRenderer().render(row);
+  }
+
+  private void scheduleRequest() {
+    if (getInputTimer() != null) {
+      int index = BeeUtils.length(BeeUtils.trim(getDisplayValue()));
+      if (index >= inputDelayMillis.size()) {
+        index = inputDelayMillis.size() - 1;
+      }
+
+      getInputTimer().schedule(inputDelayMillis.get(index));
+    }
   }
 
   private void setAlive(boolean alive) {

@@ -221,10 +221,20 @@ public final class TimeUtils {
   }
 
   public static String dateToString(HasDateValue date) {
+    return dateToString(date, false);
+  }
+
+  public static String dateToString(HasDateValue date, boolean dropCentury) {
     if (date == null) {
       return BeeConst.STRING_EMPTY;
+
     } else {
-      return dateToString(date.getYear(), date.getMonth(), date.getDom());
+      int year = date.getYear();
+      if (dropCentury) {
+        year %= 100;
+      }
+
+      return dateToString(year, date.getMonth(), date.getDom());
     }
   }
 
@@ -1016,11 +1026,15 @@ public final class TimeUtils {
     }
   }
 
-  public static String renderTime(int hour, int minute, int second, int millis,
-      boolean leadingZero) {
+  public static String renderTime(int days, String dayLabel, int hour, int minute, int second,
+      int millis, boolean leadingZero) {
 
     StringBuilder sb = new StringBuilder();
-    sb.append(leadingZero ? padTwo(hour) : BeeUtils.toString(hour));
+    if (days > 0) {
+      sb.append(days).append(BeeUtils.trim(dayLabel)).append(DATE_TIME_SEPARATOR);
+    }
+
+    sb.append((days > 0 || leadingZero) ? padTwo(hour) : BeeUtils.toString(hour));
     sb.append(TIME_FIELD_SEPARATOR).append(padTwo(minute));
 
     if (second > 0 || millis > 0) {
@@ -1046,7 +1060,40 @@ public final class TimeUtils {
     int second = remaining / MILLIS_PER_SECOND;
     remaining %= MILLIS_PER_SECOND;
 
-    return renderTime(hour, minute, second, remaining, leadingZero);
+    return renderTime(0, null, hour, minute, second, remaining, leadingZero);
+  }
+
+  public static String renderTime(long time, String dayLabel, boolean showSeconds,
+      boolean showMillis) {
+
+    if (time < 0) {
+      return BeeConst.STRING_EMPTY;
+    }
+
+    int days;
+    int remaining;
+
+    if (time >= MILLIS_PER_DAY && !BeeUtils.isEmpty(dayLabel)) {
+      days = (int) (time / MILLIS_PER_DAY);
+      remaining = (int) (time % MILLIS_PER_DAY);
+    } else {
+      days = 0;
+      remaining = (int) time;
+    }
+
+    int hour = (int) (remaining / MILLIS_PER_HOUR);
+    remaining %= MILLIS_PER_HOUR;
+
+    int minute = remaining / MILLIS_PER_MINUTE;
+    remaining %= MILLIS_PER_MINUTE;
+
+    int second = remaining / MILLIS_PER_SECOND;
+    remaining %= MILLIS_PER_SECOND;
+
+    int millis = remaining;
+
+    return renderTime(days, dayLabel, hour, minute,
+        (showSeconds || showMillis) ? second : 0, showMillis ? millis : 0, true);
   }
 
   public static boolean sameDate(HasDateValue x, HasDateValue y) {

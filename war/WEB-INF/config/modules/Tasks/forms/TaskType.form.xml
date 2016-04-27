@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form [
+  <!ENTITY inp "width: 15em;">
+]>
+<f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form"
+
+        name="TaskType" viewName="TaskTypes" caption="=crmTaskType">
+  <FlowPanel>
+    <FlowPanel>
+      <Table kind="controls" style="margin-top: 2ex; margin-left: 1em;">
+        <col index="0" kind="label" />
+        
+        <row>
+          <Label for="Name" />
+          <InputText source="Name" style="&inp;" />
+
+          <CheckBox source="ProductRequired" style="margin-left: 50px;" />
+        </row>
+
+        <row>
+          <Label for="Background" />
+          <ColorEditor source="Background" />
+        </row>
+
+        <row>
+          <Label for="Foreground" />
+          <ColorEditor source="Foreground" />
+        </row>
+        
+        <row>
+          <Label for="Ordinal" />
+          <InputInteger source="Ordinal" style="width:90px;"/>
+        </row>
+      </Table>
+    </FlowPanel>
+    <ChildGrid name="TaskDurationTypes" relColumn="Type" style="margin-top: 1ex; height: 400px;"/>
+  </FlowPanel>
+</f:Form>

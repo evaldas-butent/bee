@@ -93,7 +93,7 @@ public class TradeDocumentForm extends AbstractFormInterceptor {
       String toLabel = to.getCaption();
       String message = Localized.dictionary().trdDocumentPhaseTransitionQuestion(frLabel, toLabel);
 
-      Global.confirm(getShortCaption(), Icon.ALARM, Collections.singletonList(message),
+      Global.confirm(getShortCaption(), Icon.QUESTION, Collections.singletonList(message),
           Localized.dictionary().actionChange(), Localized.dictionary().actionCancel(), () -> {
             if (DataUtils.sameId(row, getActiveRow())) {
               BeeRow newRow = DataUtils.cloneRow(getActiveRow());

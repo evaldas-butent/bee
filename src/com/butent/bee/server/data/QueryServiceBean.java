@@ -441,8 +441,37 @@ public class QueryServiceBean {
     return result;
   }
 
+  public Set<Long> getDistinctLongs(String tableName, String fieldName, IsCondition where) {
+    SqlSelect query = new SqlSelect().setDistinctMode(true)
+        .addFields(tableName, fieldName)
+        .addFrom(tableName)
+        .setWhere(where);
+
+    return getLongSet(query);
+  }
+
   public Double getDouble(IsQuery query) {
     return getSingleValue(query).getDouble(0, 0);
+  }
+
+  public Double getDouble(String tableName, String fieldName, IsCondition where) {
+    SqlSelect query = new SqlSelect()
+        .addFields(tableName, fieldName)
+        .addFrom(tableName)
+        .setWhere(where);
+
+    return getDouble(query);
+  }
+
+  public Double getDouble(String tableName, String fieldName, String filterColumn,
+      Object filterValue) {
+
+    SqlSelect query = new SqlSelect()
+        .addFields(tableName, fieldName)
+        .addFrom(tableName)
+        .setWhere(SqlUtils.equals(tableName, filterColumn, filterValue));
+
+    return getDouble(query);
   }
 
   public Double[] getDoubleColumn(IsQuery query) {
@@ -1063,6 +1092,9 @@ public class QueryServiceBean {
   }
 
   public void sqlDropTemp(String tmp) {
+    if (BeeUtils.isEmpty(tmp)) {
+      return;
+    }
     Assert.state(!sys.isTable(tmp), "Can't drop a base table: " + tmp);
     updateData(SqlUtils.dropTable(tmp));
   }

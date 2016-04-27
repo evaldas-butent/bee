@@ -199,7 +199,7 @@ public class CargoCreditSalesGrid extends AbstractGridInterceptor implements Cli
                   creditAmount = (InputNumber) w;
                 }
               }
-            },
+            }, null,
             new RowCallback() {
               @Override
               public void onCancel() {

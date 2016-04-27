@@ -21,6 +21,7 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -35,6 +36,9 @@ public abstract class PrintFormInterceptor extends AbstractFormInterceptor {
   @Override
   public boolean beforeAction(Action action, Presenter presenter) {
     if (action == Action.PRINT) {
+      if (getFormView().isAdding()) {
+        return saveOnPrintNewRow() || DataUtils.hasId(getActiveRow());
+      }
       if (DataUtils.isNewRow(getActiveRow())) {
         return false;
       }
@@ -117,6 +121,10 @@ public abstract class PrintFormInterceptor extends AbstractFormInterceptor {
     return null;
   }
 
+  protected Consumer<FileInfo> getReportCallback() {
+    return null;
+  }
+
   protected void getReportData(Consumer<BeeRowSet[]> dataConsumer) {
     dataConsumer.accept(null);
   }
@@ -166,7 +174,7 @@ public abstract class PrintFormInterceptor extends AbstractFormInterceptor {
       caps.add(cap);
     }
     Consumer<String> consumer = report -> print((parameters, data) ->
-        ReportUtils.showReport(report, parameters, data));
+        ReportUtils.showReport(report, getReportCallback(), parameters, data));
 
     if (reps.size() > 1) {
       Global.choice(null, Localized.dictionary().choosePrintingForm(), caps,

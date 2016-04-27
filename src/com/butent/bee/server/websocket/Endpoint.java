@@ -4,10 +4,17 @@ import com.butent.bee.server.Config;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.Chat;
 import com.butent.bee.shared.communication.Presence;
+import com.butent.bee.shared.data.BeeRow;
+import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.UserData;
+import com.butent.bee.shared.data.event.DataChangeEvent;
+import com.butent.bee.shared.data.event.FiresModificationEvents;
+import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogLevel;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.utils.Property;
@@ -68,6 +75,9 @@ public class Endpoint {
   private static final Class<? extends RemoteEndpoint> DEFAULT_REMOTE_ENDPOINT_TYPE =
       RemoteEndpoint.Async.class;
 
+  private static final FiresModificationEvents MODIFICATION_SHOOTER =
+      (event, locality) -> sendToAll(new ModificationMessage(event));
+
   private static BeeLogger logger = LogUtils.getLogger(Endpoint.class);
 
   private static Queue<Session> openSessions = new ConcurrentLinkedQueue<>();
@@ -90,6 +100,46 @@ public class Endpoint {
       }
     }
     return ok;
+  }
+
+  public static FiresModificationEvents getModificationShooter() {
+    return MODIFICATION_SHOOTER;
+  }
+
+  public static int refreshRows(BeeRowSet rowSet) {
+    int count = 0;
+
+    if (!DataUtils.isEmpty(rowSet) && !BeeUtils.isEmpty(rowSet.getViewName())) {
+      for (BeeRow row : rowSet) {
+        RowUpdateEvent.fire(MODIFICATION_SHOOTER, rowSet.getViewName(), row);
+        count++;
+      }
+    }
+
+    return count;
+  }
+
+  public static int refreshViews(String viewName, String... rest) {
+    Set<String> viewNames = new HashSet<>();
+    if (!BeeUtils.isEmpty(viewName)) {
+      viewNames.add(viewName);
+    }
+
+    if (rest != null) {
+      for (String s : rest) {
+        if (!BeeUtils.isEmpty(s)) {
+          viewNames.add(s);
+        }
+      }
+    }
+
+    if (viewNames.isEmpty()) {
+      logger.warning("refreshViews: view names not specified");
+    } else {
+      DataChangeEvent.fireRefresh(MODIFICATION_SHOOTER, viewNames);
+    }
+
+    return viewNames.size();
   }
 
   public static void sendToAll(Message message) {
@@ -701,6 +751,7 @@ public class Endpoint {
   public void onOpen(@PathParam("user-id") Long userId, Session session) {
     setUserId(session, userId);
     setUserPresence(session, Presence.ONLINE);
+    session.setMaxIdleTimeout(Config.getDefaultSessionTimeout() * TimeUtils.MILLIS_PER_MINUTE);
 
     SessionUser sessionUser = getSessionUser(session);
     PresenceMessage message = new PresenceMessage(sessionUser);

@@ -14,6 +14,7 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.HasViewName;
 import com.butent.bee.shared.data.IsColumn;
+import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
 import com.butent.bee.shared.data.event.DataChangeEvent;
@@ -314,6 +315,10 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
     return getCaching() != null && getCaching() != Caching.NONE;
   }
 
+  public boolean isFullCaching() {
+    return getCaching() == Caching.LOCAL || getCaching() == Caching.GLOBAL;
+  }
+
   @Override
   public void onCellUpdate(CellUpdateEvent event) {
     if (isEventRelevant(event) && event.applyTo(getViewData())) {
@@ -354,7 +359,10 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
 
   @Override
   public void onRowInsert(RowInsertEvent event) {
-    if (isEventRelevant(event) && !getViewData().containsRow(event.getRowId())) {
+    if (isEventRelevant(event) && isFullCaching() && !getViewData().containsRow(event.getRowId())
+        && matches(immutableFilter, event.getRow())
+        && matches(getAdditionalFilter(), event.getRow())) {
+
       getViewData().addRow(event.getRow());
       resetState();
       onRowCountChange(getViewData().getNumberOfRows());
@@ -502,7 +510,7 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
   }
 
   private void initViewData() {
-    CachingPolicy cachingPolicy = (getCaching() == Caching.GLOBAL)
+    CachingPolicy cachingPolicy = (getCaching() == Caching.GLOBAL && getAdditionalFilter() == null)
         ? CachingPolicy.FULL : CachingPolicy.NONE;
 
     Queries.getRowSet(getViewName(), null, getFilter(null, false), viewOrder, cachingPolicy,
@@ -525,8 +533,14 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
         && getViewData() != null && isCachingEnabled();
   }
 
-  private boolean isFullCaching() {
-    return getCaching() == Caching.LOCAL || getCaching() == Caching.GLOBAL;
+  private boolean matches(Filter filter, IsRow row) {
+    if (row == null || getViewData() == null) {
+      return false;
+    } else if (filter == null) {
+      return true;
+    } else {
+      return filter.isMatch(getViewData().getColumns(), row);
+    }
   }
 
   private void onDataReceived(BeeRowSet rowSet) {
@@ -558,14 +572,9 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
   }
 
   private boolean prepareData(final Request request) {
-    if (getLastRequest() != null) {
-      if (isCachingEnabled()) {
-        if (BeeUtils.equalsTrim(request.getQuery(), getLastRequest().getQuery())) {
-          return true;
-        }
-      } else if (request.equals(getLastRequest())) {
-        return true;
-      }
+    if (getLastRequest() != null && isCachingEnabled()
+        && BeeUtils.equalsTrim(request.getQuery(), getLastRequest().getQuery())) {
+      return true;
     }
 
     List<String> queryParts = parseQuery(request.getQuery());

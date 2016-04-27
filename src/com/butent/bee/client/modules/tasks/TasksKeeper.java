@@ -42,7 +42,6 @@ import com.butent.bee.shared.menu.MenuService;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants.TaskEvent;
-import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
 import com.butent.bee.shared.modules.tasks.TaskType;
 import com.butent.bee.shared.modules.tasks.TaskUtils;
 import com.butent.bee.shared.news.Feed;
@@ -52,7 +51,6 @@ import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
-import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -99,31 +97,22 @@ public final class TasksKeeper {
     }
   }
 
-  public static void extendTask(final long taskId, final DateTime start, final DateTime finish) {
+  public static void extendTask(final long taskId, final DateTime finish) {
     Queries.getRow(VIEW_TASKS, taskId, new RowCallback() {
       @Override
       public void onSuccess(final BeeRow row) {
         final TaskDialog dialog = new TaskDialog(Localized.dictionary().crmTaskTermChange());
-
-        TaskStatus status = EnumUtils.getEnumByIndex(TaskStatus.class,
-            Data.getInteger(VIEW_TASKS, row, COL_STATUS));
-        final boolean isScheduled = status == TaskStatus.SCHEDULED;
-
-        final String startId = isScheduled
-            ? dialog.addDateTime(Localized.dictionary().crmStartDate(), true, start) : null;
         final String endId = dialog.addDateTime(Localized.dictionary().crmFinishDate(), true,
             finish);
+
 
         final String cid = dialog.addComment(false);
 
         dialog.addAction(Localized.dictionary().crmTaskChangeTerm(), new ScheduledCommand() {
           @Override
           public void execute() {
-            DateTime oldStart = Data.getDateTime(VIEW_TASKS, row, COL_START_TIME);
+            DateTime newStart = Data.getDateTime(VIEW_TASKS, row, COL_START_TIME);
             DateTime oldEnd = Data.getDateTime(VIEW_TASKS, row, COL_FINISH_TIME);
-
-            DateTime newStart = (startId == null) ? oldStart
-                : BeeUtils.nvl(dialog.getDateTime(startId), oldStart);
             DateTime newEnd = dialog.getDateTime(endId);
 
             if (newEnd == null) {
@@ -131,7 +120,7 @@ public final class TasksKeeper {
               return;
             }
 
-            if (Objects.equals(newStart, oldStart) && Objects.equals(newEnd, oldEnd)) {
+            if (Objects.equals(newEnd, oldEnd)) {
               Global.showError(Localized.dictionary().crmTermNotChanged());
               return;
             }
@@ -154,12 +143,6 @@ public final class TasksKeeper {
 
             ParameterList params = createArgs(SVC_EXTEND_TASK);
             params.addQueryItem(VAR_TASK_ID, taskId);
-
-            if (startId != null && newStart != null && !Objects.equals(newStart, oldStart)) {
-              params.addQueryItem(COL_START_TIME, newStart.getTime());
-              notes.add(TaskUtils.getUpdateNote(Localized.dictionary().crmStartDate(),
-                  TimeUtils.renderCompact(oldStart), TimeUtils.renderCompact(newStart)));
-            }
 
             if (!Objects.equals(newEnd, oldEnd)) {
               params.addQueryItem(COL_FINISH_TIME, newEnd.getTime());
@@ -198,6 +181,7 @@ public final class TasksKeeper {
   public static void register() {
     FormFactory.registerFormInterceptor(FORM_NEW_TASK, new TaskBuilder());
     FormFactory.registerFormInterceptor(FORM_TASK, new TaskEditor());
+    FormFactory.registerFormInterceptor(FORM_TASK_PREVIEW, new TaskEditor());
 
     FormFactory.registerFormInterceptor(FORM_RECURRING_TASK, new RecurringTaskHandler());
 

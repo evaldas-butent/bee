@@ -3,6 +3,7 @@ package com.butent.bee.shared.modules.tasks;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
@@ -18,6 +19,7 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.modules.calendar.CalendarConstants;
 import com.butent.bee.shared.modules.discussions.DiscussionsConstants;
 import com.butent.bee.shared.modules.documents.DocumentConstants;
@@ -42,6 +44,9 @@ public final class TaskUtils {
   private static final String NOTE_LABEL_SEPARATOR = ": ";
 
   private static final BiMap<String, String> taskPropertyToRelation = HashBiMap.create();
+
+  public static final List<String> TASK_RELATIONS = Lists.newArrayList(PROP_COMPANIES, PROP_PERSONS,
+      PROP_DOCUMENTS, PROP_APPOINTMENTS, PROP_DISCUSSIONS, PROP_SERVICE_OBJECTS, PROP_TASKS);
 
   public static boolean canConfirmTasks(final DataInfo info, final List<BeeRow> rows,
       long userId, ResponseObject resp) {
@@ -79,6 +84,14 @@ public final class TaskUtils {
   public static String getDeleteNote(String label, String value) {
     return BeeUtils.join(NOTE_LABEL_SEPARATOR, label,
         BeeUtils.joinWords(Localized.dictionary().crmDeleted().toLowerCase(), value));
+  }
+
+  public static List<FileInfo> getFiles(IsRow row) {
+    if (BeeUtils.isEmpty(row.getProperty(PROP_FILES))) {
+      return Lists.newArrayList();
+    }
+
+    return FileInfo.restoreCollection(row.getProperty(PROP_FILES));
   }
 
   public static String getInsertNote(String label, String value) {
@@ -215,6 +228,34 @@ public final class TaskUtils {
     return notes;
   }
 
+  public static List<String> getUpdatedRelations(IsRow oldRow, IsRow newRow) {
+    List<String> updatedRelations = new ArrayList<>();
+    if (oldRow == null || newRow == null) {
+      return updatedRelations;
+    }
+
+    for (String relation : TASK_RELATIONS) {
+      if (!DataUtils.sameIdSet(oldRow.getProperty(relation), newRow.getProperty(relation))) {
+        updatedRelations.add(relation);
+      }
+    }
+    return updatedRelations;
+  }
+
+  public static boolean hasRelations(IsRow row) {
+    if (row == null) {
+      return false;
+    }
+
+    for (String relation : TaskUtils.TASK_RELATIONS) {
+      if (!BeeUtils.isEmpty(row.getProperty(relation))) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  @Deprecated
   public static boolean isScheduled(DateTime start) {
     return start != null && TimeUtils.dayDiff(TimeUtils.today(), start) > 0;
   }

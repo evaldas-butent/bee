@@ -219,7 +219,8 @@ public class TimeOfDayValue extends Value {
     if (isNull()) {
       return BeeConst.NULL;
     } else {
-      return TimeUtils.renderTime(getHours(), getMinutes(), getSeconds(), getMilliseconds(), true);
+      return TimeUtils.renderTime(0, null, getHours(), getMinutes(), getSeconds(),
+          getMilliseconds(), true);
     }
   }
 

@@ -2,7 +2,6 @@ package com.butent.bee.client.output;
 
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
-import com.butent.bee.client.Callback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.modules.classifiers.CompanyTypeReport;
 import com.butent.bee.client.modules.classifiers.CompanyUsageReport;
@@ -12,7 +11,6 @@ import com.butent.bee.client.modules.trade.acts.TradeActStockReport;
 import com.butent.bee.client.modules.trade.acts.TradeActTransferReport;
 import com.butent.bee.client.modules.transport.AssessmentQuantityReport;
 import com.butent.bee.client.modules.transport.AssessmentTurnoverReport;
-import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.view.ViewCallback;
 import com.butent.bee.client.view.ViewFactory;
@@ -153,7 +151,7 @@ public enum Report implements HasWidgetSupplier {
 
     @Override
     public String getReportCaption() {
-      return Localized.maybeTranslate("=trReportTripProfit");
+      return Localized.dictionary().trReportTripProfit();
     }
 
     @Override
@@ -203,6 +201,75 @@ public enum Report implements HasWidgetSupplier {
 
       report.getFilterItems().add(items.get(COL_TRIP_STATUS)
           .setFilter(BeeUtils.toString(TripStatus.COMPLETED.ordinal())));
+
+      return Collections.singletonList(report);
+    }
+  },
+
+  TRANSPORT_FUEL_USAGE(ModuleAndSub.of(Module.TRANSPORT), SVC_FUEL_USAGE_REPORT) {
+    @Override
+    public List<ReportItem> getItems() {
+      Dictionary loc = Localized.dictionary();
+
+      return Arrays.asList(
+          new ReportTextItem(COL_TRIP, Data.getColumnLabel(TBL_TRIP_COSTS, COL_TRIP)),
+          new ReportTextItem(COL_TRIP_NO, Data.getColumnLabel(TBL_TRIPS, COL_TRIP_NO)),
+          new ReportDateTimeItem(COL_TRIP_DATE, loc.date()),
+          new ReportDateItem(COL_TRIP_DATE_FROM, loc.dateFrom()),
+          new ReportDateItem(COL_TRIP_DATE_TO, loc.dateTo()),
+          new ReportTextItem(COL_VEHICLE, Data.getColumnLabel(TBL_TRIPS, COL_VEHICLE)),
+          new ReportTextItem(COL_TRAILER, Data.getColumnLabel(TBL_TRIPS, COL_TRAILER)),
+          new ReportTextItem(COL_DRIVER, loc.vehicleDriver()),
+          new ReportEnumItem(COL_TRIP_STATUS, Data.getColumnLabel(TBL_TRIPS, COL_TRIP_STATUS),
+              TripStatus.class),
+          new ReportTextItem(COL_CARGO, loc.cargo()),
+          new ReportTextItem(COL_TRIP_ROUTE, loc.route()),
+
+          new ReportNumericItem(COL_ROUTE_KILOMETERS, loc.kilometers()).setPrecision(1),
+          new ReportNumericItem(COL_EMPTY_KILOMETERS, loc.trEmptyKilometers()),
+          new ReportNumericItem(COL_ROUTE_WEIGHT, loc.trWeightInTons()).setPrecision(2),
+          new ReportNumericItem(COL_ROUTE_CONSUMPTION, loc.trFuelConsumptions()).setPrecision(2),
+          new ReportNumericItem("Norm" + COL_ROUTE_CONSUMPTION,
+              BeeUtils.joinWords(loc.trFuelConsumptions(), BeeUtils.parenthesize(loc.plan())))
+              .setPrecision(2),
+          new ReportNumericItem(COL_COSTS_PRICE, loc.price()).setPrecision(2));
+    }
+
+    @Override
+    public String getReportCaption() {
+      return Localized.dictionary().trReportFuelUsage();
+    }
+
+    @Override
+    public Collection<ReportInfo> getReports() {
+      Map<String, ReportItem> items = new HashMap<>();
+
+      for (ReportItem item : getItems()) {
+        items.put(item.getName(), item);
+      }
+      ReportInfo report = new ReportInfo(getReportCaption());
+
+      report.setRowGrouping(items.get(COL_DRIVER));
+
+      for (String item : new String[] {
+          COL_TRIP_NO, COL_TRIP_DATE_FROM, COL_TRIP_DATE_TO, COL_VEHICLE}) {
+        report.addRowItem(items.get(item));
+      }
+      for (String item : new String[] {
+          COL_ROUTE_KILOMETERS, COL_ROUTE_WEIGHT, COL_ROUTE_CONSUMPTION,
+          "Norm" + COL_ROUTE_CONSUMPTION}) {
+        report.addColItem(items.get(item));
+      }
+      for (int i = 0; i < report.getColItems().size(); i++) {
+        report.setGroupSummary(i, false);
+        report.setColSummary(i, false);
+      }
+      report.addColItem(new ReportFormulaItem(Localized.dictionary().debt() + " / -"
+          + Localized.dictionary().overpayment())
+          .plus(new ReportFormulaItem(null)
+              .plus(items.get("Norm" + COL_ROUTE_CONSUMPTION))
+              .minus(items.get(COL_ROUTE_CONSUMPTION)).setPrecision(2))
+          .multiply(items.get(COL_COSTS_PRICE)).setPrecision(2));
 
       return Collections.singletonList(report);
     }
@@ -327,9 +394,10 @@ public enum Report implements HasWidgetSupplier {
           new ReportNumericItem(TaskConstants.COL_TASK, loc.crmTask()),
           new ReportNumericItem(ProjectConstants.ALS_PROFIT, loc.profit()).setPrecision(2),
 
-          new ReportEnumItem(ProjectConstants.ALS_TASK_STATUS, BeeUtils.joinWords(Data
-                  .getColumnLabel(TaskConstants.VIEW_TASKS, TaskConstants.COL_STATUS),
-              BeeUtils.parenthesize(loc.crmTasks())), TaskStatus.class)
+          new ReportEnumItem(ProjectConstants.ALS_TASK_STATUS,
+              BeeUtils.joinWords(Data.getColumnLabel(TaskConstants.VIEW_TASKS,
+                  TaskConstants.COL_STATUS), BeeUtils.parenthesize(loc.crmTasks())),
+              TaskStatus.class)
       );
     }
 
@@ -362,7 +430,7 @@ public enum Report implements HasWidgetSupplier {
         report.addColItem(items.get(item));
       }
       report.setColGrouping(items.get(ProjectConstants.ALS_TASK_STATUS));
-      return Arrays.asList(report);
+      return Collections.singletonList(report);
     }
   };
 
@@ -380,13 +448,9 @@ public enum Report implements HasWidgetSupplier {
 
     final Report report = parse(reportName);
     if (report != null) {
-      FormFactory.getFormDescription(report.getFormName(), new Callback<FormDescription>() {
-        @Override
-        public void onSuccess(FormDescription result) {
-          FormFactory.openForm(result, report.getInterceptor(),
-              ViewFactory.getPresenterCallback(callback));
-        }
-      });
+      FormFactory.getFormDescription(report.getFormName(),
+          result -> FormFactory.openForm(result, report.getInterceptor(),
+              ViewFactory.getPresenterCallback(callback)));
     }
   }
 

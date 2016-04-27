@@ -9,13 +9,10 @@ import com.google.gwt.xml.client.Element;
 
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
-import static com.butent.bee.shared.modules.transport.TransportConstants.COL_SERVICE;
 
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
-import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.IdCallback;
 import com.butent.bee.client.data.Queries;
@@ -23,31 +20,30 @@ import com.butent.bee.client.data.Queries.IntCallback;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
-import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.Modality;
-import com.butent.bee.client.dom.DomUtils;
-import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.ChildGrid;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.modules.trade.TradeKeeper;
+import com.butent.bee.client.presenter.GridFormPresenter;
 import com.butent.bee.client.presenter.GridPresenter;
+import com.butent.bee.client.presenter.Presenter;
+import com.butent.bee.client.presenter.RowPresenter;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.Opener;
+import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.HeaderView;
-import com.butent.bee.client.view.add.ReadyForInsertEvent;
-import com.butent.bee.client.view.edit.Editor;
+import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
+import com.butent.bee.client.view.grid.GridFormKind;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
-import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.FaLabel;
-import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.css.values.FontSize;
@@ -60,38 +56,16 @@ import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.modules.administration.AdministrationConstants;
-import com.butent.bee.shared.modules.trade.TradeConstants;
-import com.butent.bee.shared.rights.RegulatedWidget;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
-public class CompanyForm extends AbstractFormInterceptor implements ClickHandler {
+class CompanyForm extends AbstractFormInterceptor {
 
-  private static final String NAME_INPUT_MODE = "InputMode";
-  private List<Long> rowIds = new ArrayList<>();
-
-  private final Button toErp = new Button(Localized.dictionary().trSendToERP(), this);
-
-  private Long company;
-
-  @Override
-  public void afterCreate(FormView form) {
-    Global.getParameter(AdministrationConstants.PRM_COMPANY, new Consumer<String>() {
-      @Override
-      public void accept(String input) {
-        company = BeeUtils.toLongOrNull(input);
-      }
-    });
-    super.afterCreate(form);
+  CompanyForm() {
   }
 
   @Override
@@ -242,7 +216,7 @@ public class CompanyForm extends AbstractFormInterceptor implements ClickHandler
                     public FormInterceptor getInstance() {
                       return null;
                     }
-                  },
+                  }, null,
                   new RowCallback() {
                     @Override
                     public void onSuccess(BeeRow result) {
@@ -259,116 +233,34 @@ public class CompanyForm extends AbstractFormInterceptor implements ClickHandler
           return null;
         }
       });
-    } else if (BeeUtils.same(name, "CompanyPayAccounts") && widget instanceof ChildGrid) {
-      ((ChildGrid) widget).setGridInterceptor(new AbstractGridInterceptor() {
-        @Override
-        public void afterCreateEditor(String source, Editor editor, boolean embedded) {
-          if ((BeeUtils.same(source, "Account") || BeeUtils.same(source, COL_SERVICE))
-              && editor instanceof DataSelector) {
-
-            ((DataSelector) editor).addSelectorHandler(new SelectorEvent.Handler() {
-              @Override
-              public void onDataSelector(SelectorEvent event) {
-                if (BeeUtils.same(event.getRelatedViewName(), TBL_COMPANY_BANK_ACCOUNTS)) {
-                  if (event.isOpened()) {
-                    int idx = getDataIndex("Account");
-                    Set<Long> ids = new HashSet<>();
-
-                    for (IsRow row : getGridView().getRowData()) {
-                      ids.add(row.getLong(idx));
-                    }
-                    event.getSelector()
-                        .setAdditionalFilter(Filter.and(Filter.equals(COL_COMPANY, company),
-                            Filter.idNotIn(ids)));
-                  }
-                }
-              }
-            });
-          }
-          super.afterCreateEditor(source, editor, embedded);
-        }
-
-        @Override
-        public GridInterceptor getInstance() {
-          return null;
-        }
-      });
     }
   }
 
   @Override
   public void afterRefresh(FormView form, IsRow row) {
-    HeaderView header = form.getViewPresenter().getHeader();
-    header.clearCommandPanel();
-
     if (DataUtils.hasId(row)) {
       refreshCreditInfo();
       createQrButton(form, row);
 
-      if (BeeKeeper.getUser().isWidgetVisible(RegulatedWidget.TO_ERP)) {
-        header.addCommandItem(toErp);
-      }
-      FaLabel input = getFormIcon();
-      input.setTitle(getFormIconTitle());
-      input.addClickHandler(new ClickHandler() {
+      Presenter presenter = form.getViewPresenter();
+      HeaderView header = presenter.getHeader();
 
-        @Override
-        public void onClick(ClickEvent event) {
-          if (DataUtils.equals(form.getOldRow(), row)) {
-            BeeKeeper.getScreen().closeWidget(form);
-            RowEditor.openForm(getInputFormName(), Data.getDataInfo(VIEW_COMPANIES), row.getId(),
-                Opener.NEW_TAB);
-          } else {
-            rowIds.add(row.getId());
-            form.getViewPresenter().handleAction(Action.CLOSE);
-          }
-        }
-      });
-      header.addCommandItem(input);
+      if (!form.isAdding() && !header.hasCommands()
+          && (presenter instanceof GridFormPresenter || presenter instanceof RowPresenter)) {
+
+        FaLabel command = getFormIcon();
+        command.setTitle(getFormIconTitle());
+
+        command.addClickHandler(event -> switchForm());
+
+        header.addCommandItem(command);
+      }
     }
   }
 
   @Override
   public FormInterceptor getInstance() {
     return new CompanyForm();
-  }
-
-  @Override
-  public void onClick(ClickEvent event) {
-    if (DataUtils.isNewRow(getActiveRow())) {
-      return;
-    }
-    Global.confirm(Localized.dictionary().trSendToERP() + "?", new ConfirmationCallback() {
-      @Override
-      public void onConfirm() {
-        toErp.setVisible(false);
-
-        ParameterList args = TradeKeeper.createArgs(TradeConstants.SVC_SEND_COMPANY_TO_ERP);
-        args.addDataItem(COL_COMPANY, getActiveRowId());
-
-        BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
-          @Override
-          public void onResponse(ResponseObject response) {
-            toErp.setVisible(true);
-            response.notify(getFormView());
-
-            if (!response.hasErrors()) {
-              getFormView().notifyInfo(Localized.dictionary().ok() + ":",
-                  response.getResponseAsString());
-            }
-          }
-        });
-      }
-    });
-  }
-
-  @Override
-  public void onReadyForInsert(HasHandlers listener, ReadyForInsertEvent event) {
-    if (!checkRequired()) {
-      event.consume();
-      return;
-    }
-    super.onReadyForInsert(listener, event);
   }
 
   @Override
@@ -381,38 +273,6 @@ public class CompanyForm extends AbstractFormInterceptor implements ClickHandler
         BeeKeeper.getScreen().notifySevere(Localized.dictionary().companyStatus(),
             Localized.dictionary().valueRequired());
       }
-    }
-    if (!checkRequired()) {
-      event.consume();
-      return;
-    }
-    super.onSaveChanges(listener, event);
-  }
-
-  private boolean checkRequired() {
-    if (!BeeUtils.toBoolean(getStringValue("Offshore"))) {
-      for (String field : new String[] {
-          COL_COMPANY_CODE, COL_COMPANY_VAT_CODE, COL_ADDRESS,
-          COL_CITY, COL_COUNTRY}) {
-        if (BeeUtils.isEmpty(getStringValue(field))) {
-          DomUtils.setFocus(getFormView().getWidgetBySource(field), true);
-
-          getFormView().notifySevere(Data.getColumnLabel(getViewName(), field),
-              Localized.dictionary().valueRequired());
-
-          return false;
-        }
-      }
-    }
-    return true;
-  }
-
-  @Override
-  public void onUnload(FormView form) {
-    if (rowIds.contains(getActiveRowId())) {
-      RowEditor.openForm(getInputFormName(), Data.getDataInfo(VIEW_COMPANIES), getActiveRowId(),
-          Opener.NEW_TAB);
-      rowIds.remove(getActiveRowId());
     }
   }
 
@@ -433,33 +293,24 @@ public class CompanyForm extends AbstractFormInterceptor implements ClickHandler
     }
   }
 
-  private static FaLabel getFormIcon() {
-
-    if (!readBoolean(NAME_INPUT_MODE)) {
-      return new FaLabel(FontAwesome.TOGGLE_ON);
-    } else {
+  private FaLabel getFormIcon() {
+    if (isFormSimple()) {
       return new FaLabel(FontAwesome.TOGGLE_OFF);
+    } else {
+      return new FaLabel(FontAwesome.TOGGLE_ON);
     }
   }
 
-  private static String getInputFormName() {
-
-    if (readBoolean(NAME_INPUT_MODE)) {
-      BeeKeeper.getStorage().set(storageKey(NAME_INPUT_MODE), false);
-      return FORM_COMPANY;
-    } else {
-      BeeKeeper.getStorage().set(storageKey(NAME_INPUT_MODE), true);
-      return FORM_NEW_COMPANY;
-    }
-  }
-
-  private static String getFormIconTitle() {
-
-    if (!readBoolean(NAME_INPUT_MODE)) {
-      return Localized.dictionary().previewMode();
-    } else {
+  private String getFormIconTitle() {
+    if (isFormSimple()) {
       return Localized.dictionary().editMode();
+    } else {
+      return Localized.dictionary().previewMode();
     }
+  }
+
+  private boolean isFormSimple() {
+    return FORM_NEW_COMPANY.equals(getFormView().getFormName());
   }
 
   private void refreshCreditInfo() {
@@ -512,13 +363,35 @@ public class CompanyForm extends AbstractFormInterceptor implements ClickHandler
     }
   }
 
-  private static boolean readBoolean(String name) {
-    String key = storageKey(name);
-    return BeeKeeper.getStorage().hasItem(key);
-  }
+  private void switchForm() {
+    if (getFormView().getViewPresenter() instanceof GridFormPresenter) {
+      final GridFormPresenter presenter = (GridFormPresenter) getFormView().getViewPresenter();
 
-  private static String storageKey(String name) {
-    Long userId = BeeKeeper.getUser().getUserId();
-    return BeeUtils.join(BeeConst.STRING_MINUS, "Companies_EditForm", userId, name);
+      presenter.save(row -> {
+        GridView gridView = presenter.getGridView();
+
+        int index = gridView.getFormIndex(GridFormKind.EDIT);
+        gridView.selectForm(GridFormKind.EDIT, 1 - index);
+
+        EditStartEvent event = new EditStartEvent(row, gridView.isReadOnly());
+        gridView.onEditStart(event);
+      });
+
+    } else if (getFormView().getViewPresenter() instanceof RowPresenter) {
+      String switchTo = isFormSimple() ? FORM_COMPANY : FORM_NEW_COMPANY;
+      String viewName = getViewName();
+
+      IsRow oldRow = getFormView().getOldRow();
+      IsRow newRow = getActiveRow();
+
+      boolean modal = UiHelper.isModal(getFormView().asWidget());
+
+      getFormView().getViewPresenter().handleAction(Action.CANCEL);
+
+      Consumer<FormView> onOpen = form -> form.setOldRow(oldRow);
+      Opener opener = modal ? Opener.modal(onOpen) : Opener.newTab(onOpen);
+
+      RowEditor.openForm(switchTo, viewName, newRow, opener, null);
+    }
   }
 }

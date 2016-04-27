@@ -172,7 +172,7 @@ public final class ProjectsHelper {
 
     RowFactory.createRow(FORM_NEW_PROJECT_REASON_COMMENT, caption, data, emptyRow,
         Modality.ENABLED, null,
-        new NewReasonCommentForm(form, row, event), new RowCallback() {
+        new NewReasonCommentForm(form, row, event), null, new RowCallback() {
 
           @Override
           public void onSuccess(BeeRow result) {

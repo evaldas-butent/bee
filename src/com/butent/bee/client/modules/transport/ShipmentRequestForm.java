@@ -5,8 +5,6 @@ import com.google.common.base.Strings;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.gwt.core.client.Scheduler;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Widget;
@@ -16,7 +14,6 @@ import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
@@ -28,7 +25,6 @@ import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowInsertCallback;
 import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dialog.InputCallback;
-import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.ChildGrid;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.modules.administration.AdministrationUtils;
@@ -83,47 +79,18 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
 
   private final Dictionary loc = Localized.dictionary();
 
-  private Button mailCommand = new Button(loc.trWriteEmail(), new ClickHandler() {
-    @Override
-    public void onClick(ClickEvent clickEvent) {
-      onAnswer();
-    }
-  });
+  private Button mailCommand = new Button(loc.trWriteEmail(), clickEvent -> onAnswer());
 
-  private Button registerCommand = new Button(loc.register(), new ClickHandler() {
-    @Override
-    public void onClick(ClickEvent clickEvent) {
-      onRegister();
-    }
-  });
+  private Button registerCommand = new Button(loc.register(), clickEvent -> onRegister());
 
-  private Button contractCommand = new Button(loc.trContract(), new ClickHandler() {
-    @Override
-    public void onClick(ClickEvent clickEvent) {
-      sendContract();
-    }
-  });
+  private Button contractCommand = new Button(loc.trContract(), clickEvent -> sendContract());
 
-  private Button confirmCommand = new Button(loc.trRequestStatusConfirmed(), new ClickHandler() {
-    @Override
-    public void onClick(ClickEvent clickEvent) {
-      onConfirm();
-    }
-  });
+  private Button confirmCommand = new Button(loc.trRequestStatusConfirmed(),
+      clickEvent -> onConfirm());
 
-  private Button blockCommand = new Button(loc.ipBlockCommand(), new ClickHandler() {
-    @Override
-    public void onClick(ClickEvent event) {
-      onBlock();
-    }
-  });
+  private Button blockCommand = new Button(loc.ipBlockCommand(), event -> onBlock());
 
-  private Button lostCommand = new Button(loc.trRequestStatusLost(), new ClickHandler() {
-    @Override
-    public void onClick(ClickEvent clickEvent) {
-      onLoss(true);
-    }
-  });
+  private Button lostCommand = new Button(loc.trRequestStatusLost(), clickEvent -> onLoss(true));
 
   @Override
   public void afterRefresh(FormView form, IsRow row) {
@@ -279,7 +246,7 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
         onConfirm.run();
       }
       Queries.insert(VIEW_ORDERS, Data.getColumns(VIEW_ORDERS,
-              Arrays.asList(COL_CUSTOMER, COL_CUSTOMER + COL_PERSON, COL_ORDER_MANAGER)),
+          Arrays.asList(COL_CUSTOMER, COL_CUSTOMER + COL_PERSON, COL_ORDER_MANAGER)),
           Arrays.asList(row.getString(form.getDataIndex(COL_COMPANY)),
               row.getString(form.getDataIndex(COL_COMPANY_PERSON)), BeeUtils.toString(manager)),
           null, new RowInsertCallback(VIEW_ORDERS) {
@@ -298,7 +265,7 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
                       @Override
                       public void onSuccess(Integer upd) {
                         Queries.insert(VIEW_ASSESSMENTS, Data.getColumns(VIEW_ASSESSMENTS,
-                                Arrays.asList(COL_CARGO, COL_DEPARTMENT)),
+                            Arrays.asList(COL_CARGO, COL_DEPARTMENT)),
                             Arrays.asList(BeeUtils.toString(cargo), department.get()), null,
                             new RowInsertCallback(VIEW_ASSESSMENTS) {
                               @Override
@@ -414,12 +381,7 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
 
   private void onBlock() {
     AdministrationUtils.blockHost(loc.ipBlockCommand(), getStringValue(COL_QUERY_HOST),
-        getFormView(), new Callback<String>() {
-          @Override
-          public void onSuccess(String result) {
-            onLoss(false);
-          }
-        });
+        getFormView(), result -> onLoss(false));
   }
 
   private void onConfirm() {
@@ -603,15 +565,12 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
     UnboundSelector reason = UnboundSelector.create(TBL_LOSS_REASONS,
         Collections.singletonList(COL_LOSS_REASON_NAME));
 
-    reason.addSelectorHandler(new SelectorEvent.Handler() {
-      @Override
-      public void onDataSelector(SelectorEvent event) {
-        if (event.isChanged()) {
-          reason.setOptions(event.getRelatedRow() != null
-              ? Data.getString(event.getRelatedViewName(), event.getRelatedRow(),
-              COL_LOSS_REASON_TEMPLATE) : null);
-          comment.setValue(reason.getOptions());
-        }
+    reason.addSelectorHandler(event -> {
+      if (event.isChanged()) {
+        reason.setOptions(event.getRelatedRow() != null
+            ? Data.getString(event.getRelatedViewName(), event.getRelatedRow(),
+            COL_LOSS_REASON_TEMPLATE) : null);
+        comment.setValue(reason.getOptions());
       }
     });
     HtmlTable layout = new HtmlTable();
@@ -733,31 +692,30 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
     for (BeeColumn column : getFormView().getDataColumns()) {
       params.put(column.getId(), getStringValue(column.getId()));
     }
-    ReportUtils.getPdfReport(REP_CONTRACT, (fileInfo) -> ReportUtils.preview(fileInfo, () -> {
-      Queries.getRowSet(VIEW_TEXT_CONSTANTS, null, Filter.equals(COL_TEXT_CONSTANT,
-          TextConstant.CONTRACT_MAIL_CONTENT), new Queries.RowSetCallback() {
-        @Override
-        public void onSuccess(BeeRowSet result) {
-          String text;
-          String localizedContent = Localized.column(COL_TEXT_CONTENT,
-              EnumUtils.getEnumByIndex(SupportedLocale.class, getIntegerValue(COL_USER_LOCALE))
-                  .getLanguage());
+    ReportUtils.showReport(REP_CONTRACT, fileInfo ->
+        Queries.getRowSet(VIEW_TEXT_CONSTANTS, null, Filter.equals(COL_TEXT_CONSTANT,
+            TextConstant.CONTRACT_MAIL_CONTENT), new Queries.RowSetCallback() {
+          @Override
+          public void onSuccess(BeeRowSet result) {
+            String text;
+            String localizedContent = Localized.column(COL_TEXT_CONTENT,
+                EnumUtils.getEnumByIndex(SupportedLocale.class, getIntegerValue(COL_USER_LOCALE))
+                    .getLanguage());
 
-          if (DataUtils.isEmpty(result)) {
-            text = TextConstant.CONTRACT_MAIL_CONTENT.getDefaultContent();
-          } else if (BeeConst.isUndef(DataUtils.getColumnIndex(localizedContent,
-              result.getColumns()))) {
-            text = result.getString(0, COL_TEXT_CONTENT);
-          } else {
-            text = BeeUtils.notEmpty(result.getString(0, localizedContent),
-                result.getString(0, COL_TEXT_CONTENT));
+            if (DataUtils.isEmpty(result)) {
+              text = TextConstant.CONTRACT_MAIL_CONTENT.getDefaultContent();
+            } else if (BeeConst.isUndef(DataUtils.getColumnIndex(localizedContent,
+                result.getColumns()))) {
+              text = result.getString(0, COL_TEXT_CONTENT);
+            } else {
+              text = BeeUtils.notEmpty(result.getString(0, localizedContent),
+                  result.getString(0, COL_TEXT_CONTENT));
+            }
+            sendMail(ShipmentRequestStatus.CONTRACT_SENT, null, BeeUtils.isEmpty(text)
+                ? null : text.replace("{contract_path}",
+                "rest/transport/confirm/" + getActiveRowId()), Collections.singleton(fileInfo));
           }
-          sendMail(ShipmentRequestStatus.CONTRACT_SENT, null, BeeUtils.isEmpty(text)
-              ? null : text.replace("{contract_path}",
-              "rest/transport/confirm/" + getActiveRowId()), Collections.singleton(fileInfo));
-        }
-      });
-    }), params);
+        }), params);
   }
 
   private void sendMail(ShipmentRequestStatus status, String subject, String content,
@@ -773,7 +731,7 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
         row, form.getChildrenForUpdate());
 
     NewMailMessage.create(BeeUtils.notEmpty(getStringValue(COL_PERSON + COL_EMAIL),
-            getStringValue(COL_QUERY_CUSTOMER_EMAIL)), subject, content, attachments,
+        getStringValue(COL_QUERY_CUSTOMER_EMAIL)), subject, content, attachments,
         (messageId, saveMode) -> {
           DataInfo info = Data.getDataInfo(VIEW_RELATIONS);
 
