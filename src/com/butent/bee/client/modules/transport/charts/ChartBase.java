@@ -2,6 +2,7 @@ package com.butent.bee.client.modules.transport.charts;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.BoundType;
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Range;
@@ -43,12 +44,15 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.event.ModificationEvent;
+import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.menu.MenuHandler;
 import com.butent.bee.shared.menu.MenuService;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
+import com.butent.bee.shared.modules.transport.TransportUtils;
 import com.butent.bee.shared.time.HasDateRange;
 import com.butent.bee.shared.time.JustDate;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.Color;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -235,6 +239,27 @@ public abstract class ChartBase extends TimeBoard {
     }
   }
 
+  protected void clampMaxRange(String minDateColumn, String maxDateColumn) {
+    JustDate from = TimeBoardHelper.getDate(getSettings(), minDateColumn);
+    JustDate to = TimeBoardHelper.getDate(getSettings(), maxDateColumn);
+
+    Range<Value> period = TransportUtils.getChartPeriod(from, to);
+
+    if (period != null) {
+      JustDate min = period.hasLowerBound() ? period.lowerEndpoint().getDate() : null;
+      if (min != null && period.lowerBoundType() == BoundType.OPEN) {
+        min = TimeUtils.nextDay(min);
+      }
+
+      JustDate max = period.hasUpperBound() ? period.upperEndpoint().getDate() : null;
+      if (max != null && period.upperBoundType() == BoundType.OPEN) {
+        max = TimeUtils.previousDay(max);
+      }
+
+      clampMaxRange(min, max);
+    }
+  }
+
   protected void clearFilter() {
     resetFilter(FilterType.TENTATIVE);
     resetFilter(FilterType.PERSISTENT);
@@ -280,6 +305,8 @@ public abstract class ChartBase extends TimeBoard {
     }
 
     BeeRow oldSettings = getSettings().getRow(0);
+
+    final BeeRow oldRow = DataUtils.cloneRow(oldSettings);
     final Long oldTheme = getColorTheme(oldSettings);
 
     RowEditor.openForm(getSettingsFormName(), getSettings().getViewName(), oldSettings,
@@ -290,8 +317,24 @@ public abstract class ChartBase extends TimeBoard {
               getSettings().clearRows();
               getSettings().addRow(DataUtils.cloneRow(result));
 
-              if (BeeUtils.isEmpty(getThemeColumnName())) {
-                render(false);
+              boolean refresh = oldRow == null;
+              Collection<String> colNames = getSettingsColumnsTriggeringRefresh();
+
+              if (!refresh && !BeeUtils.isEmpty(colNames)) {
+                for (String colName : colNames) {
+                  int index = getSettings().getColumnIndex(colName);
+                  if (!BeeConst.isUndef(index)
+                      && !BeeUtils.equalsTrimRight(oldRow.getString(index),
+                          result.getString(index))) {
+
+                    refresh = true;
+                    break;
+                  }
+                }
+              }
+
+              if (refresh) {
+                refresh();
 
               } else {
                 Long newTheme = getColorTheme(result);
@@ -346,6 +389,8 @@ public abstract class ChartBase extends TimeBoard {
   }
 
   protected abstract String getFilterDataTypesColumnName();
+
+  protected abstract Collection<String> getSettingsColumnsTriggeringRefresh();
 
   protected abstract String getSettingsFormName();
 

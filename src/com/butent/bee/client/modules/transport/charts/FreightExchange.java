@@ -253,6 +253,11 @@ final class FreightExchange extends ChartBase {
   }
 
   @Override
+  protected Collection<String> getSettingsColumnsTriggeringRefresh() {
+    return BeeConst.EMPTY_IMMUTABLE_STRING_SET;
+  }
+
+  @Override
   protected String getSettingsFormName() {
     return FORM_FX_SETTINGS;
   }

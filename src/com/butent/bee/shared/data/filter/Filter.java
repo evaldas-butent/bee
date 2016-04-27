@@ -1,6 +1,8 @@
 package com.butent.bee.shared.data.filter;
 
+import com.google.common.collect.BoundType;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Range;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeSerializable;
@@ -104,42 +106,6 @@ public abstract class Filter implements BeeSerializable, RowFilter {
     return new ColumnValueFilter(column, vals);
   }
 
-  public static Filter anyBetweenExclusive(Value minValue, Value maxValue,
-      Collection<String> columns) {
-
-    Assert.notEmpty(columns);
-
-    CompoundFilter minFilter;
-    CompoundFilter maxFilter;
-
-    if (minValue == null) {
-      minFilter = null;
-    } else {
-      minFilter = or();
-
-      for (String column : columns) {
-        if (!BeeUtils.isEmpty(column)) {
-          minFilter.add(isMoreEqual(column, minValue));
-        }
-      }
-    }
-
-    if (maxValue == null) {
-      maxFilter = null;
-
-    } else {
-      maxFilter = or();
-
-      for (String column : columns) {
-        if (!BeeUtils.isEmpty(columns)) {
-          maxFilter.add(Filter.isLess(column, maxValue));
-        }
-      }
-    }
-
-    return and(minFilter, maxFilter);
-  }
-
   public static Filter anyContains(Collection<String> columns, String value) {
     Assert.notEmpty(columns);
     Assert.notEmpty(value);
@@ -149,6 +115,53 @@ public abstract class Filter implements BeeSerializable, RowFilter {
       filter.add(contains(column, value));
     }
     return filter;
+  }
+
+  public static Filter anyIntersects(Collection<String> columns, Range<Value> range) {
+    Assert.notEmpty(columns);
+
+    CompoundFilter lowerFilter;
+    CompoundFilter upperFilter;
+
+    Filter filter;
+
+    if (range != null && range.hasLowerBound()) {
+      lowerFilter = or();
+
+      for (String column : columns) {
+        if (!BeeUtils.isEmpty(column)) {
+          if (range.lowerBoundType() == BoundType.OPEN) {
+            filter = isMore(column, range.lowerEndpoint());
+          } else {
+            filter = isMoreEqual(column, range.lowerEndpoint());
+          }
+
+          lowerFilter.add(filter);
+        }
+      }
+    } else {
+      lowerFilter = null;
+    }
+
+    if (range != null && range.hasUpperBound()) {
+      upperFilter = or();
+
+      for (String column : columns) {
+        if (!BeeUtils.isEmpty(columns)) {
+          if (range.upperBoundType() == BoundType.OPEN) {
+            filter = isLess(column, range.upperEndpoint());
+          } else {
+            filter = isLessEqual(column, range.upperEndpoint());
+          }
+
+          upperFilter.add(filter);
+        }
+      }
+    } else {
+      upperFilter = null;
+    }
+
+    return and(lowerFilter, upperFilter);
   }
 
   public static Filter anyItemContains(String column, Class<? extends Enum<?>> clazz,
@@ -397,8 +410,20 @@ public abstract class Filter implements BeeSerializable, RowFilter {
     return new IsTrueFilter();
   }
 
+  public static Filter notEquals(String column, Enum<?> value) {
+    if (value == null) {
+      return notNull(column);
+    } else {
+      return compareWithValue(column, Operator.NE, new IntegerValue(value.ordinal()));
+    }
+  }
+
   public static Filter notEquals(String column, Long value) {
-    return compareWithValue(column, Operator.NE, new LongValue(value));
+    if (value == null) {
+      return notNull(column);
+    } else {
+      return compareWithValue(column, Operator.NE, new LongValue(value));
+    }
   }
 
   public static Filter notNull(String column) {
