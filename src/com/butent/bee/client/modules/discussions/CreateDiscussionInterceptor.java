@@ -289,6 +289,7 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
     }
 
     row.setValue(form.getDataIndex(COL_ACCESSIBILITY), isPublic);
+    form.getOldRow().setValue(form.getDataIndex(COL_ACCESSIBILITY), isPublic);
     form.refreshBySource(COL_ACCESSIBILITY);
     MultiSelector ms = getMultiSelector(getFormView(), PROP_MEMBERS);
     MultiSelector mg = getMultiSelector(getFormView(), PROP_MEMBER_GROUP);
@@ -638,13 +639,7 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
     String description = "";
     String summary = "";
 
-    // HasCheckedness wIsPublic = (HasCheckedness)
-    // getFormView().getWidgetByName(WIDGET_ACCESSIBILITY);
     DataSelector wTopic = (DataSelector) getFormView().getWidgetBySource(COL_TOPIC);
-
-    // if (wIsPublic != null) {
-    // discussPublic =
-    // }
 
     if (wPermitComment != null) {
       discussClosed = wPermitComment.isChecked();

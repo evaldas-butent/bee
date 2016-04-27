@@ -174,7 +174,6 @@ class AnnouncementsBoardInterceptor extends AbstractFormInterceptor implements
       eventContainer.add(containerSubject);
 
       subject.setStyleName(STYLE_SUBJECT);
-      // containerSubject.add(moreButton);
       containerSubject.add(subject);
 
       Flow container4 = new Flow();

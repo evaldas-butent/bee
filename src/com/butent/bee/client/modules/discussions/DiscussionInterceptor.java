@@ -999,7 +999,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
     if (relationsDisclosure != null) {
       relationsDisclosure.setVisible(enabled
           || (hasRelData || !BeeUtils.isEmpty(DataUtils.parseIdList(row
-              .getProperty(PROP_MEMBERS)))));
+              .getProperty(PROP_MEMBERS))) || isOwner(form, row)));
     }
 
     if (descriptionDisclosure != null) {

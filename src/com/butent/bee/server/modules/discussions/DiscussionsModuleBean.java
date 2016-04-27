@@ -877,6 +877,7 @@ public class DiscussionsModuleBean implements BeeModule {
                     SqlUtils.equals(TBL_DISCUSSIONS, COL_OWNER, usr.getCurrentUserId())),
                     SqlUtils.notNull(TBL_DISCUSSIONS, COL_ACCESSIBILITY))))
             .addOrder(TBL_ADS_TOPICS, COL_ORDINAL)
+            .addOrder(TBL_DISCUSSIONS, COL_IMPORTANT)
             .addOrderDesc(TBL_DISCUSSIONS, COL_CREATED)
             .addGroup(TBL_DISCUSSIONS, sys.getIdName(TBL_DISCUSSIONS))
             .addGroup(TBL_ADS_TOPICS, COL_NAME, COL_ORDINAL, COL_BACKGROUND_COLOR, COL_TEXT_COLOR)
@@ -950,9 +951,8 @@ public class DiscussionsModuleBean implements BeeModule {
     }
 
     List<Long> activeUsers = new ArrayList<>();
-
     for (UserData userData : usr.getAllUserData()) {
-      if (!usr.isBlocked(userData.getLogin())) {
+      if (usr.isActive(userData.getUserId())) {
         activeUsers.add(userData.getPerson());
       }
     }
