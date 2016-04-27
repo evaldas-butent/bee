@@ -28,6 +28,13 @@
     <Integer name="FxStripOpacity" />
     
     <Text name="FxFilterDataTypes" />
+    <Text name="FxFilters" />
+
+    <Date name="SsMinDate" />
+    <Date name="SsMaxDate" />
+
+    <Text name="SsTransportGroups" />
+    <Boolean name="SsCompletedTrips" />
 
     <Integer name="SsPixelsPerTruck" />
     <Integer name="SsPixelsPerTrip" />
@@ -55,7 +62,14 @@
     <Relation name="SsTheme" relation="Themes" />
 
     <Text name="SsFilterDataTypes" />
+    <Text name="SsFilters" />
     
+    <Date name="DtbMinDate" />
+    <Date name="DtbMaxDate" />
+    
+    <Text name="DtbTransportGroups" />
+    <Boolean name="DtbCompletedTrips" />
+
     <Integer name="DtbPixelsPerDriver" />
 
     <Boolean name="DtbCountryFlags" />
@@ -78,6 +92,13 @@
     <Relation name="DtbColor" relation="Colors" />
 
     <Text name="DtbFilterDataTypes" />
+    <Text name="DtbFilters" />
+
+    <Date name="TruckMinDate" />
+    <Date name="TruckMaxDate" />
+
+    <Text name="TruckTransportGroups" />
+    <Boolean name="TruckCompletedTrips" />
 
     <Integer name="TruckPixelsPerNumber" />
     <Integer name="TruckPixelsPerInfo" />
@@ -104,6 +125,13 @@
     <Relation name="TruckTheme" relation="Themes" />
 
     <Text name="TruckFilterDataTypes" />
+    <Text name="TruckFilters" />
+
+    <Date name="TrailerMinDate" />
+    <Date name="TrailerMaxDate" />
+
+    <Text name="TrailerTransportGroups" />
+    <Boolean name="TrailerCompletedTrips" />
 
     <Integer name="TrailerPixelsPerNumber" />
     <Integer name="TrailerPixelsPerInfo" />
@@ -130,5 +158,6 @@
     <Relation name="TrailerTheme" relation="Themes" />
 
     <Text name="TrailerFilterDataTypes" />
+    <Text name="TrailerFilters" />
   </Fields>
 </Table>

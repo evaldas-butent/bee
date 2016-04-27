@@ -584,6 +584,8 @@ public final class TaskConstants {
   public static final String VIEW_TASK_USERS = "TaskUsers";
   public static final String VIEW_TASK_EVENTS = "TaskEvents";
   public static final String VIEW_TASK_DURATIONS = "TaskDurations";
+  public static final String VIEW_TASK_DURATION_TYPES = "TaskDurationTypes";
+  public static final String VIEW_TASK_PRODUCTS = "TaskProducts";
 
   public static final String VIEW_TASK_TEMPLATES = "TaskTemplates";
   public static final String VIEW_TASK_TYPES = "TaskTypes";
@@ -645,6 +647,9 @@ public final class TaskConstants {
 
   public static final String COL_COMMENT = "Comment";
 
+  public static final String COL_PRODUCT = "Product";
+  public static final String COL_PRODUCT_REQUIRED = "ProductRequired";
+
   public static final String COL_TASK_EVENT = "TaskEvent";
 
   public static final String COL_DURATION_DATE = "DurationDate";
@@ -678,6 +683,7 @@ public final class TaskConstants {
   public static final String COL_REQUEST_RESULT = "Result";
   public static final String COL_REQUEST_RESULT_PROPERTIES = "ResultProperties";
   public static final String COL_REQUEST_FINISHED = "Finished";
+  public static final String COL_REQUEST_TYPE = "RequestType";
 
   public static final String COL_RECURRING_TASK = "RecurringTask";
 
@@ -718,6 +724,8 @@ public final class TaskConstants {
 
   public static final String ALS_CONTACT_FIRST_NAME = "ContactFirstName";
   public static final String ALS_CONTACT_LAST_NAME = "ContactLastName";
+
+  public static final String ALS_DURATION_TYPE_NAME = "DurationTypeName";
 
   public static final String ALS_EXECUTOR_FIRST_NAME = "ExecutorFirstName";
   public static final String ALS_EXECUTOR_LAST_NAME = "ExecutorLastName";
@@ -761,6 +769,7 @@ public final class TaskConstants {
 
   public static final String PROP_FILES = "Files";
   public static final String PROP_EVENTS = "Events";
+  public static final String PROP_DESCENDING = "Descending";
 
   public static final String PROP_USER = "User";
   public static final String PROP_STAR = "Star";
@@ -790,9 +799,11 @@ public final class TaskConstants {
 
   public static final String GRID_TASK_TYPES = "TaskTypes";
   public static final String GRID_TASK_TEMPLATES = "TaskTemplates";
+  public static final String GRID_TASK_PRODUCTS = "TaskProducts";
 
   public static final String FORM_NEW_TASK = "NewTask";
   public static final String FORM_TASK = "Task";
+  public static final String FORM_TASK_PREVIEW = "TaskPreview";
 
   public static final String FORM_RECURRING_TASK = "RecurringTask";
 

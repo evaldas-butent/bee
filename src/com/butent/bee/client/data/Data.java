@@ -54,6 +54,7 @@ public final class Data {
   private static final Multimap<String, String> readOnlyColumns = HashMultimap.create();
 
   private static final Map<String, Integer> approximateSizes = new HashMap<>();
+  private static final Multimap<String, Consumer<Integer>> sizeConsumers = HashMultimap.create();
 
   public static String clamp(String viewName, String colName, String value) {
     if (BeeUtils.isEmpty(value)) {
@@ -89,26 +90,41 @@ public final class Data {
     return Objects.equals(getLong(viewName, row, colName), value);
   }
 
-  public static void estimateSize(final String viewName, final Consumer<Integer> consumer) {
+  public static void estimateSize(final String viewName, Consumer<Integer> consumer) {
     Assert.notEmpty(viewName);
     Assert.notNull(consumer);
 
     Integer size = approximateSizes.get(viewName);
 
     if (size == null) {
-      Queries.getRowCount(viewName, null, new Queries.IntCallback() {
-        @Override
-        public void onFailure(String... reason) {
-          consumer.accept(BeeConst.UNDEF);
-          super.onFailure(reason);
-        }
+      boolean pending = sizeConsumers.containsKey(viewName);
+      sizeConsumers.put(viewName, consumer);
 
-        @Override
-        public void onSuccess(Integer result) {
-          consumer.accept(result);
-          approximateSizes.put(viewName, result);
-        }
-      });
+      if (!pending) {
+        Queries.getRowCount(viewName, null, new Queries.IntCallback() {
+          @Override
+          public void onFailure(String... reason) {
+            consumeSize(BeeConst.UNDEF);
+            super.onFailure(reason);
+          }
+
+          @Override
+          public void onSuccess(Integer result) {
+            approximateSizes.put(viewName, result);
+            consumeSize(result);
+          }
+
+          private void consumeSize(Integer result) {
+            Collection<Consumer<Integer>> consumers = sizeConsumers.removeAll(viewName);
+
+            if (!BeeUtils.isEmpty(consumers)) {
+              for (Consumer<Integer> c : consumers) {
+                c.accept(result);
+              }
+            }
+          }
+        });
+      }
 
     } else {
       consumer.accept(size);

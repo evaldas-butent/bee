@@ -17,7 +17,7 @@
 
     <RelColumn name="Manager" caption="=responsiblePerson" minWidth="100" />
     <DataColumn name="Result" visible="false" />
-    <RelColumn name="RequestType" visible="true" />
+    <RelColumn name="RequestType" renderColumns="RequestTypeName" visible="true" />
     <RelColumn name="RequestForm" visible="true" />
   </g:columns>
   

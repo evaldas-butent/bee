@@ -14,18 +14,23 @@ import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.edit.EditEndEvent;
 import com.butent.bee.client.view.edit.EditableWidget;
+import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
+import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 public class CustomConfigForm extends AbstractFormInterceptor implements ClickHandler {
@@ -41,6 +46,29 @@ public class CustomConfigForm extends AbstractFormInterceptor implements ClickHa
       ((HasClickHandlers) widget).addClickHandler(this);
     }
     super.afterCreateWidget(name, widget, callback);
+  }
+
+  @Override
+  public void beforeRefresh(FormView form, IsRow row) {
+    form.getViewPresenter().getHeader().clearCommandPanel();
+
+    if (!DataUtils.isNewRow(row)) {
+      FaLabel diff = new FaLabel(FontAwesome.CODE_FORK);
+      diff.setTitle(Localized.dictionary().differences());
+
+      diff.addClickHandler(clickEvent -> {
+        Map<String, String> data = new HashMap<>();
+
+        for (String obj : OBJECTS) {
+          data.put(obj, getStringValue(obj));
+        }
+        data.put(COL_CONFIG_DATA, getStringValue(COL_CONFIG_DATA));
+
+        CustomConfigGrid.showDiff(data);
+      });
+      form.getViewPresenter().getHeader().addCommandItem(diff);
+    }
+    super.beforeRefresh(form, row);
   }
 
   @Override

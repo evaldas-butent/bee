@@ -147,7 +147,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
           break;
 
         case Event.ONCLICK:
-          onMouseClick(false);
+          onMouseClick();
           break;
 
         case Event.ONKEYDOWN:
@@ -219,15 +219,11 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
       }
     }
 
-    protected void onMouseClick(boolean alwaysAsk) {
+    protected void onMouseClick() {
       if (isEmbedded() && !isActive()) {
         start(EditStartEvent.CLICK);
-        if (!alwaysAsk) {
-          return;
-        }
-      }
 
-      if (!getSelector().isShowing() && getMinQueryLength() <= 0) {
+      } else if (!getSelector().isShowing() && getMinQueryLength() <= 0) {
         clearDisplay();
         askOrSchedule();
       }

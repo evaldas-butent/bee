@@ -221,10 +221,20 @@ public final class TimeUtils {
   }
 
   public static String dateToString(HasDateValue date) {
+    return dateToString(date, false);
+  }
+
+  public static String dateToString(HasDateValue date, boolean dropCentury) {
     if (date == null) {
       return BeeConst.STRING_EMPTY;
+
     } else {
-      return dateToString(date.getYear(), date.getMonth(), date.getDom());
+      int year = date.getYear();
+      if (dropCentury) {
+        year %= 100;
+      }
+
+      return dateToString(year, date.getMonth(), date.getDom());
     }
   }
 

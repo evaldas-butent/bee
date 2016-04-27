@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="TaskProducts" source="TaskProducts"
+  caption="=crmTaskProducts" newRowCaption="=crmTaskNewProduct"
+  newRowForm="TaskProduct" editForm="TaskProduct"
+  >
+  <Columns>
+    <SimpleColumn name="Ordinal" />
+    <SimpleColumn name="Name" />
+    <SimpleColumn name="Visible" /> 
+    <SimpleColumn name="Background" />
+    <SimpleColumn name="Foreground" />  
+  </Columns>
+  <Order>
+    <OrderBy column="Ordinal" />
+    <OrderBy column="Visible" />
+  </Order>
+</View>
+ 

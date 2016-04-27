@@ -449,6 +449,7 @@
       <xs:enumeration value="Repairs" />
       <xs:enumeration value="ReportOptions" />
       <xs:enumeration value="ReportSettings" />
+      <xs:enumeration value="RequestDurationTypes" />
       <xs:enumeration value="RequestFiles" />
       <xs:enumeration value="Requests" />
       <xs:enumeration value="RequestTypes" />
@@ -501,6 +502,8 @@
       <xs:enumeration value="TaskEvents" />
       <xs:enumeration value="TaskFiles" />
       <xs:enumeration value="Tasks" />
+      <xs:enumeration value="TaskDurationTypes" />
+      <xs:enumeration value="TaskProducts" />
       <xs:enumeration value="TaskTemplates" />
       <xs:enumeration value="TaskTypes" />
       <xs:enumeration value="TaskUsers" />

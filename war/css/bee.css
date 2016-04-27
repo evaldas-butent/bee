@@ -201,6 +201,11 @@
   animation: blinker 0.5s linear infinite;
 }
 
+.bee-Relations-newRel {
+  font-size: 16px;
+  color: #63a140;
+}
+
 .bee-UserContainer {
   position: absolute;
   right: 20px;
@@ -1517,8 +1522,9 @@
 .bee-MultiSelector-close {
   position: absolute;
   right: 3px;
-  top: -3px;
+  top: 2px;
   font-size: 15px;
+  line-height: 15px;
 }
 .bee-MultiSelector-close:hover {
   color: red;

@@ -33,6 +33,7 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.ui.Action;
+import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
@@ -149,7 +150,7 @@ class TaskDialog extends DialogBox {
 
     result.put(COL_DURATION, addTime(Localized.dictionary().crmSpentTime()));
     result.put(COL_DURATION_TYPE, addSelector(Localized.dictionary().crmDurationType(),
-        VIEW_DURATION_TYPES, Lists.newArrayList(COL_DURATION_TYPE_NAME), false, null, null));
+        VIEW_DURATION_TYPES, Lists.newArrayList(COL_DURATION_TYPE_NAME), false, null, null, null));
 
     return result;
   }
@@ -201,7 +202,7 @@ class TaskDialog extends DialogBox {
   }
 
   String addSelector(String caption, String relView, List<String> relColumns,
-      boolean required, Collection<Long> exclusions, Collection<Long> filter) {
+      boolean required, Collection<Long> exclusions, Collection<Long> filter, String valueSource) {
     HtmlTable table = getContainer();
     int row = table.getRowCount();
     int col = 0;
@@ -217,8 +218,14 @@ class TaskDialog extends DialogBox {
     table.getCellFormatter().addStyleName(row, col, styleName + STYLE_CELL);
     col++;
 
+    Relation relation = Relation.create(relView, relColumns);
+
+    if (!BeeUtils.isEmpty(valueSource)) {
+      relation.setValueSource(valueSource);
+    }
+
     styleName = STYLE_DIALOG + "-selectorInput";
-    UnboundSelector selector = UnboundSelector.create(relView, relColumns);
+    UnboundSelector selector = UnboundSelector.create(relation);
     selector.addStyleName(styleName);
 
     if (!BeeUtils.isEmpty(exclusions)) {
@@ -235,6 +242,31 @@ class TaskDialog extends DialogBox {
     table.getCellFormatter().addStyleName(row, col, styleName + STYLE_CELL);
 
     return selector.getId();
+  }
+
+  String addTime(String caption) {
+    HtmlTable table = getContainer();
+    int row = table.getRowCount();
+    int col = 0;
+
+    String styleName = STYLE_DIALOG + "-timeLabel";
+    Label label = new Label(caption);
+    label.addStyleName(styleName);
+
+    table.setWidget(row, col, label);
+    table.getCellFormatter().addStyleName(row, col, styleName + STYLE_CELL);
+    col++;
+
+    styleName = STYLE_DIALOG + "-timeInput";
+    InputTime input = new InputTime();
+    input.addStyleName(styleName);
+
+    SimpleEditorHandler.observe(caption, input);
+
+    table.setWidget(row, col, input);
+    table.getCellFormatter().addStyleName(row, col, styleName + STYLE_CELL);
+
+    return input.getId();
   }
 
   void display() {
@@ -299,31 +331,6 @@ class TaskDialog extends DialogBox {
     } else {
       return false;
     }
-  }
-
-  private String addTime(String caption) {
-    HtmlTable table = getContainer();
-    int row = table.getRowCount();
-    int col = 0;
-
-    String styleName = STYLE_DIALOG + "-timeLabel";
-    Label label = new Label(caption);
-    label.addStyleName(styleName);
-
-    table.setWidget(row, col, label);
-    table.getCellFormatter().addStyleName(row, col, styleName + STYLE_CELL);
-    col++;
-
-    styleName = STYLE_DIALOG + "-timeInput";
-    InputTime input = new InputTime();
-    input.addStyleName(styleName);
-
-    SimpleEditorHandler.observe(caption, input);
-
-    table.setWidget(row, col, input);
-    table.getCellFormatter().addStyleName(row, col, styleName + STYLE_CELL);
-
-    return input.getId();
   }
 
   private Widget getChild(String id) {

@@ -76,6 +76,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -167,10 +168,16 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
     } else if (BeeUtils.same(svc, SVC_DO_IMPORT)) {
       response = imp.doImport(reqInfo);
 
-    } else if (BeeUtils.same(svc, SVC_GET_CONFIG_OBJECT)) {
-      response = getConfigObject(EnumUtils.getEnumByIndex(Module.class,
+    } else if (BeeUtils.same(svc, SVC_GET_CONFIG_DIFF)) {
+      response = getConfigDiff(EnumUtils.getEnumByIndex(Module.class,
           reqInfo.getParameter(COL_CONFIG_MODULE)), EnumUtils.getEnumByIndex(SysObject.class,
-          reqInfo.getParameter(COL_CONFIG_TYPE)), reqInfo.getParameter(COL_CONFIG_OBJECT));
+          reqInfo.getParameter(COL_CONFIG_TYPE)), reqInfo.getParameter(COL_CONFIG_OBJECT),
+          reqInfo.getParameter(COL_CONFIG_DATA));
+
+    } else if (BeeUtils.same(svc, SVC_GET_CONFIG_OBJECT)) {
+      response = ResponseObject.response(getConfigObject(EnumUtils.getEnumByIndex(Module.class,
+          reqInfo.getParameter(COL_CONFIG_MODULE)), EnumUtils.getEnumByIndex(SysObject.class,
+          reqInfo.getParameter(COL_CONFIG_TYPE)), reqInfo.getParameter(COL_CONFIG_OBJECT)));
 
     } else if (BeeUtils.same(svc, SVC_GET_CONFIG_OBJECTS)) {
       response = getConfigObjects(EnumUtils.getEnumByIndex(Module.class,
@@ -399,6 +406,32 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
         }
       }
     });
+  }
+
+  public SimpleRowSet getUserGroupMembers(String groupList) {
+    SimpleRowSet users = new SimpleRowSet(new String[] {COL_UG_USER, COL_UG_GROUP});
+
+    Set<Long> groups = DataUtils.parseIdSet(groupList);
+    if (groups.isEmpty()) {
+      return users;
+    }
+
+    SqlSelect query = new SqlSelect()
+        .setDistinctMode(true)
+        .addFields(TBL_USER_GROUPS, COL_UG_USER, COL_UG_GROUP)
+        .addFrom(TBL_USER_GROUPS)
+        .setWhere(SqlUtils.inList(TBL_USER_GROUPS, COL_UG_GROUP, groups));
+
+    SimpleRowSet members = qs.getData(query);
+    if (!members.isEmpty()) {
+      for (Long member : members.getLongColumn(COL_UG_USER)) {
+        if (usr.isActive(member)) {
+          users.addRow(members.getRowByKey(COL_UG_USER, member.toString()).getValues());
+        }
+      }
+    }
+
+    return users;
   }
 
   public Double maybeExchange(Long from, Long to, Double v, DateTime dt) {
@@ -668,18 +701,31 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
     return ResponseObject.response(sizes.toString());
   }
 
-  private ResponseObject getConfigObject(Module module, SysObject type, String name) {
-    String resp = null;
+  private ResponseObject getConfigDiff(Module module, SysObject type, String name,
+      String data) {
+
+    DiffMatchPatch dmp = new DiffMatchPatch();
+
+    LinkedList<DiffMatchPatch.Diff> diff = dmp.diff_main(BeeUtils.nvl(getConfigObject(module, type,
+        name), ""), BeeUtils.nvl(data, ""));
+
+    dmp.diff_cleanupSemantic(diff);
+
+    return ResponseObject.response(dmp.diff_prettyHtml(diff));
+  }
+
+  private String getConfigObject(Module module, SysObject type, String name) {
+    String object = null;
 
     if (BeeUtils.allNotNull(module, type, name) && mod.hasModule(module.getName())) {
       File dir = new File(Config.CONFIG_DIR, mod.getResourcePath(module.getName(), type.getPath()));
       File resource = new File(dir, BeeUtils.join(".", name, type.getFileExtension()));
 
       if (FileUtils.isInputFile(resource)) {
-        resp = FileUtils.fileToString(resource);
+        object = FileUtils.fileToString(resource);
       }
     }
-    return ResponseObject.response(resp);
+    return object;
   }
 
   private ResponseObject getConfigObjects(Module module, SysObject type) {

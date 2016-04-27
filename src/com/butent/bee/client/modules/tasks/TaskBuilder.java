@@ -37,7 +37,6 @@ import com.butent.bee.client.view.edit.EditableWidget;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.FormView;
-import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.widget.InputDate;
 import com.butent.bee.client.widget.InputTime;
@@ -62,8 +61,6 @@ import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.projects.ProjectConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
-import com.butent.bee.shared.modules.tasks.TaskConstants.TaskEvent;
-import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
 import com.butent.bee.shared.modules.tasks.TaskUtils;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.HasDateValue;
@@ -81,7 +78,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-class TaskBuilder extends AbstractFormInterceptor {
+class TaskBuilder extends ProductSupportInterceptor {
 
   private static final String NAME_START_DATE = "Start_Date";
   private static final String NAME_START_TIME = "Start_Time";
@@ -241,6 +238,8 @@ class TaskBuilder extends AbstractFormInterceptor {
     } else if (BeeUtils.same(NAME_OBSERVER_GROUPS, name) && (widget instanceof MultiSelector)) {
       observerGroups = (MultiSelector) widget;
     }
+
+    super.afterCreateWidget(name, widget, callback);
   }
 
   @Override
@@ -735,6 +734,10 @@ class TaskBuilder extends AbstractFormInterceptor {
       return;
     }
 
+    if (maybeNotifyEmptyProduct(callback::onFailure)) {
+      return;
+    }
+
     BeeRow newRow = createNewRow(activeRow, start, end, callback);
     BeeRowSet rowSet = DataUtils.createRowSetForInsert(VIEW_TASKS, getFormView().getDataColumns(),
         newRow, Sets.newHashSet(COL_EXECUTOR, COL_STATUS), true);
@@ -997,8 +1000,8 @@ class TaskBuilder extends AbstractFormInterceptor {
     }
 
     if (event.isEmpty() && TaskUtils.sameObservers(oldRow, newRow)
-        && TaskUtils.getUpdatedRelations(oldRow, newRow).isEmpty() && !DataUtils.isId(
-            newExecutor)) {
+        && TaskUtils.getUpdatedRelations(oldRow, newRow).isEmpty()
+        && !DataUtils.isId(newExecutor)) {
       return;
     }
 

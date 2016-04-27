@@ -117,6 +117,15 @@ public final class DomUtils {
     }
   }
 
+  public static int countDescendants(Element parent) {
+    return getChildren(parent).getLength();
+  }
+
+  public static int countDescendants(UIObject obj) {
+    Assert.notNull(obj);
+    return countDescendants(obj.getElement());
+  }
+
   public static Element createButton(String html) {
     ButtonElement elem = Document.get().createPushButtonElement();
     if (!BeeUtils.isEmpty(html)) {

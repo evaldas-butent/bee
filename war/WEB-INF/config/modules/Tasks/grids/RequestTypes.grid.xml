@@ -2,10 +2,10 @@
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   
   name="RequestTypes" viewName="RequestTypes" caption="=crmRequestTypes"
-  minColumnWidth="120"
-  newRowPopup="true"
+  minColumnWidth="120" newRowPopup="true"
   >
   <g:columns>
+    <DataColumn name="Ordinal" width="20" />
     <DataColumn name="Name" visible="true" />
 
     <DataColumn name="Background" updateMode="row">
@@ -14,5 +14,7 @@
     <DataColumn name="Foreground" updateMode="row">
       <editor type="color" />
     </DataColumn>
+    
+    <DataColumn name="ProductRequired" />
   </g:columns>
 </g:Grid>

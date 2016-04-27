@@ -5,6 +5,7 @@
   minColumnWidth="120"
   >
   <g:columns>
+    <DataColumn name="Ordinal" width="20" />
     <DataColumn name="Name" visible="true" />
 
     <DataColumn name="Background" updateMode="row">
@@ -13,5 +14,7 @@
     <DataColumn name="Foreground" updateMode="row">
       <editor type="color" />
     </DataColumn>
+    
+    <DataColumn name="ProductRequired" />
   </g:columns>
 </g:Grid>

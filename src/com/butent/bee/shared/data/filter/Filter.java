@@ -104,20 +104,40 @@ public abstract class Filter implements BeeSerializable, RowFilter {
     return new ColumnValueFilter(column, vals);
   }
 
-  public static Filter anyString(String column, Collection<String> values) {
-    Assert.notEmpty(column);
-    Assert.notNull(values);
+  public static Filter anyBetweenExclusive(Value minValue, Value maxValue,
+      Collection<String> columns) {
 
-    if (values.isEmpty()) {
-      return null;
+    Assert.notEmpty(columns);
+
+    CompoundFilter minFilter;
+    CompoundFilter maxFilter;
+
+    if (minValue == null) {
+      minFilter = null;
+    } else {
+      minFilter = or();
+
+      for (String column : columns) {
+        if (!BeeUtils.isEmpty(column)) {
+          minFilter.add(isMoreEqual(column, minValue));
+        }
+      }
     }
 
-    List<Value> vals = new ArrayList<>();
-    for (String value : values) {
-      vals.add(new TextValue(value));
+    if (maxValue == null) {
+      maxFilter = null;
+
+    } else {
+      maxFilter = or();
+
+      for (String column : columns) {
+        if (!BeeUtils.isEmpty(columns)) {
+          maxFilter.add(Filter.isLess(column, maxValue));
+        }
+      }
     }
 
-    return new ColumnValueFilter(column, vals);
+    return and(minFilter, maxFilter);
   }
 
   public static Filter anyContains(Collection<String> columns, String value) {
@@ -153,6 +173,22 @@ public abstract class Filter implements BeeSerializable, RowFilter {
     }
 
     return or(filters);
+  }
+
+  public static Filter anyString(String column, Collection<String> values) {
+    Assert.notEmpty(column);
+    Assert.notNull(values);
+
+    if (values.isEmpty()) {
+      return null;
+    }
+
+    List<Value> vals = new ArrayList<>();
+    for (String value : values) {
+      vals.add(new TextValue(value));
+    }
+
+    return new ColumnValueFilter(column, vals);
   }
 
   public static Filter compareId(long value) {

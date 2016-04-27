@@ -30,6 +30,13 @@
     <SimpleColumn name="FxStripOpacity" />
 
     <SimpleColumn name="FxFilterDataTypes" />
+    <SimpleColumn name="FxFilters" />
+
+    <SimpleColumn name="SsMinDate" />
+    <SimpleColumn name="SsMaxDate" />
+
+    <SimpleColumn name="SsTransportGroups" />
+    <SimpleColumn name="SsCompletedTrips" />
 
     <SimpleColumn name="SsPixelsPerTruck" />
     <SimpleColumn name="SsPixelsPerTrip" />
@@ -60,6 +67,13 @@
     <SimpleColumn name="SsStripOpacity" />
 
     <SimpleColumn name="SsFilterDataTypes" />
+    <SimpleColumn name="SsFilters" />
+
+    <SimpleColumn name="DtbMinDate" />
+    <SimpleColumn name="DtbMaxDate" />
+
+    <SimpleColumn name="DtbTransportGroups" />
+    <SimpleColumn name="DtbCompletedTrips" />
 
     <SimpleColumn name="DtbPixelsPerDriver" />
 
@@ -86,6 +100,13 @@
     </SimpleJoin>
 
     <SimpleColumn name="DtbFilterDataTypes" />
+    <SimpleColumn name="DtbFilters" />
+
+    <SimpleColumn name="TruckMinDate" />
+    <SimpleColumn name="TruckMaxDate" />
+
+    <SimpleColumn name="TruckTransportGroups" />
+    <SimpleColumn name="TruckCompletedTrips" />
 
     <SimpleColumn name="TruckPixelsPerNumber" />
     <SimpleColumn name="TruckPixelsPerInfo" />
@@ -115,6 +136,13 @@
     <SimpleColumn name="TruckStripOpacity" />
 
     <SimpleColumn name="TruckFilterDataTypes" />
+    <SimpleColumn name="TruckFilters" />
+
+    <SimpleColumn name="TrailerMinDate" />
+    <SimpleColumn name="TrailerMaxDate" />
+
+    <SimpleColumn name="TrailerTransportGroups" />
+    <SimpleColumn name="TrailerCompletedTrips" />
 
     <SimpleColumn name="TrailerPixelsPerNumber" />
     <SimpleColumn name="TrailerPixelsPerInfo" />
@@ -144,6 +172,6 @@
     <SimpleColumn name="TrailerStripOpacity" />
 
     <SimpleColumn name="TrailerFilterDataTypes" />
-    
+    <SimpleColumn name="TrailerFilters" />
   </Columns>
 </View>
