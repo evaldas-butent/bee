@@ -4,6 +4,7 @@
   name="CargoIncomes" source="CargoIncomes"
   >
   <Columns>
+    <IdColumn name="ID" />
     <SimpleColumn name="Cargo" />
     <SimpleColumn name="Date" />
 

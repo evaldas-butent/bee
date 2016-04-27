@@ -46,7 +46,7 @@
         </ui:expression>
       </render>
     </RelColumn>
-    <RelColumn name="Income" required="true" />
+    <RelColumn name="Income" required="true" choiceColumns="ID Date ServiceName Amount CurrencyName" />
   </g:columns>
 
   <g:rowEditable>

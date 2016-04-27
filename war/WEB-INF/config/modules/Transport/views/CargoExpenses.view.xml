@@ -55,6 +55,7 @@
 
     <SimpleColumn name="Income" />
     <SimpleJoin name="Income" joinType="LEFT">
+      <IdColumn name="IncomeID" />
       <SimpleColumn name="Date" alias="IncomeDate" />
 
       <SimpleJoin joinType="LEFT" name="Service">

@@ -63,7 +63,7 @@ import com.butent.bee.shared.utils.Codec;
 
 import java.util.Map;
 
-class CompanyForm extends AbstractFormInterceptor {
+class CompanyForm extends CustomCompanyForm {
 
   CompanyForm() {
   }
@@ -234,6 +234,7 @@ class CompanyForm extends AbstractFormInterceptor {
         }
       });
     }
+    super.afterCreateWidget(name, widget, callback);
   }
 
   @Override
@@ -256,6 +257,7 @@ class CompanyForm extends AbstractFormInterceptor {
         header.addCommandItem(command);
       }
     }
+    super.afterRefresh(form, row);
   }
 
   @Override
@@ -274,6 +276,7 @@ class CompanyForm extends AbstractFormInterceptor {
             Localized.dictionary().valueRequired());
       }
     }
+    super.onSaveChanges(listener, event);
   }
 
   private static void createQrButton(FormView form, IsRow row) {

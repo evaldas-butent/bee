@@ -304,6 +304,11 @@ public enum Report implements HasWidgetSupplier {
     }
 
     @Override
+    public String getReportCaption() {
+      return "Pajamų sąskaitos";
+    }
+
+    @Override
     public Collection<ReportInfo> getReports() {
       Map<String, ReportItem> items = new HashMap<>();
 
@@ -342,12 +347,7 @@ public enum Report implements HasWidgetSupplier {
           .plus(items.get(VAR_INCOME))
           .minus(items.get(VAR_EXPENSE)).setPrecision(2));
 
-      return Arrays.asList(report);
-    }
-
-    @Override
-    public String getReportCaption() {
-      return "Pajamų sąskaitos";
+      return Collections.singletonList(report);
     }
   },
 

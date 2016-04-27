@@ -484,9 +484,9 @@ public class TransportModuleBean implements BeeModule {
       public void fillCargoIncomes(ViewQueryEvent event) {
         if (event.isAfter(VIEW_ORDER_CARGO) && event.hasData()) {
           SimpleRowSet rs = qs.getData(rep.getCargoIncomeQuery(event.getQuery()
-              .resetFields().resetOrder().resetGroup()
-              .addField(TBL_ORDER_CARGO, sys.getIdName(TBL_ORDER_CARGO), COL_CARGO)
-              .addGroup(TBL_ORDER_CARGO, sys.getIdName(TBL_ORDER_CARGO)), null,
+                  .resetFields().resetOrder().resetGroup()
+                  .addField(TBL_ORDER_CARGO, sys.getIdName(TBL_ORDER_CARGO), COL_CARGO)
+                  .addGroup(TBL_ORDER_CARGO, sys.getIdName(TBL_ORDER_CARGO)), null,
               BeeUtils.unbox(prm.getBoolean(PRM_EXCLUDE_VAT))));
 
           for (BeeRow row : event.getRowset().getRows()) {
@@ -533,7 +533,7 @@ public class TransportModuleBean implements BeeModule {
             return;
           }
           String crs = rep.getTripIncomes(event.getQuery().resetFields().resetOrder().resetGroup()
-              .addFields(VIEW_CARGO_TRIPS, COL_TRIP).addGroup(VIEW_CARGO_TRIPS, COL_TRIP),
+                  .addFields(VIEW_CARGO_TRIPS, COL_TRIP).addGroup(VIEW_CARGO_TRIPS, COL_TRIP),
               null, BeeUtils.unbox(prm.getBoolean(PRM_EXCLUDE_VAT)));
 
           SimpleRowSet rs = qs.getData(new SqlSelect().addAllFields(crs).addFrom(crs));
@@ -1117,9 +1117,9 @@ public class TransportModuleBean implements BeeModule {
             COL_CARGO, COL_TRADE_VAT_PLUS, COL_TRADE_VAT, COL_TRADE_VAT_PERC,
             COL_SHOW_ADDITIONAL_ROUTE, COL_ADDITIONAL_ROUTE)
         .addExpr(SqlUtils.concat(
-                SqlUtils.field(TBL_ASSESSMENTS, sys.getIdName(TBL_ASSESSMENTS)),
-                SqlUtils.constant("_"),
-                SqlUtils.field(TBL_CARGO_INCOMES, sys.getIdName(TBL_CARGO_INCOMES))),
+            SqlUtils.field(TBL_ASSESSMENTS, sys.getIdName(TBL_ASSESSMENTS)),
+            SqlUtils.constant("_"),
+            SqlUtils.field(TBL_CARGO_INCOMES, sys.getIdName(TBL_CARGO_INCOMES))),
             COL_TRADE_ITEM_ARTICLE)
         .addField(loadPlace, COL_DATE, ALS_LOADING_DATE)
         .addField(unloadPlace, COL_DATE, ALS_UNLOADING_DATE)
@@ -1582,12 +1582,12 @@ public class TransportModuleBean implements BeeModule {
       values.put(COL_COSTS_QUANTITY,
           BeeUtils.toString(BeeUtils.toInt(values.get(COL_COSTS_QUANTITY))
               + Math.max(TimeUtils.dayDiff(row.getDateTime(COL_ROUTE_DEPARTURE_DATE),
-                  row.getDateTime(COL_ROUTE_ARRIVAL_DATE)), 1)));
+              row.getDateTime(COL_ROUTE_ARRIVAL_DATE)), 1)));
     }
     if (!BeeUtils.isEmpty(lastKey)
         && BeeUtils.isPositive(TimeUtils.dayDiff(rs.getDateTime(rs.getNumberOfRows() - 1,
-            COL_ROUTE_DEPARTURE_DATE), rs.getDateTime(rs.getNumberOfRows() - 1,
-            COL_ROUTE_ARRIVAL_DATE)))) {
+        COL_ROUTE_DEPARTURE_DATE), rs.getDateTime(rs.getNumberOfRows() - 1,
+        COL_ROUTE_ARRIVAL_DATE)))) {
 
       Map<String, String> values = map.get(lastKey);
       values.put(COL_COSTS_QUANTITY,
@@ -1830,7 +1830,7 @@ public class TransportModuleBean implements BeeModule {
     Dictionary loc = usr.getDictionary();
 
     return ResponseObject.info(BeeUtils.joinWords(loc.incomes(),
-            BeeUtils.round(BeeUtils.unbox(result.get(TBL_CARGO_INCOMES)), 2)),
+        BeeUtils.round(BeeUtils.unbox(result.get(TBL_CARGO_INCOMES)), 2)),
         BeeUtils.joinWords(loc.expenses(),
             BeeUtils.round(BeeUtils.unbox(result.get(TBL_CARGO_EXPENSES)), 2)),
         BeeUtils.joinWords(loc.profit(),
@@ -2221,7 +2221,7 @@ public class TransportModuleBean implements BeeModule {
   private ResponseObject getCargoTotal(long cargoId, Long currency) {
     String val = null;
     SimpleRow row = qs.getRow(rep.getCargoIncomeQuery(new SqlSelect()
-        .addConstant(cargoId, COL_CARGO), currency,
+            .addConstant(cargoId, COL_CARGO), currency,
         BeeUtils.unbox(prm.getBoolean(PRM_EXCLUDE_VAT))));
 
     if (row != null) {

@@ -44,6 +44,9 @@
         <SimpleColumn name="PostIndex" alias="SupplierPostIndex" />
         <SimpleColumn name="Phone" alias="SupplierPhone" />
         <SimpleColumn name="Fax" alias="SupplierFax" />
+        <SimpleJoin name="Email" joinType="LEFT">
+          <SimpleColumn name="Email" alias="SupplierEmail" />
+        </SimpleJoin>
       </SimpleJoin>
     </SimpleJoin>
 
@@ -74,6 +77,9 @@
         <SimpleColumn name="PostIndex" alias="CustomerPostIndex" />
         <SimpleColumn name="Phone" alias="CustomerPhone" />
         <SimpleColumn name="Fax" alias="CustomerFax" />
+        <SimpleJoin name="Email" joinType="LEFT">
+          <SimpleColumn name="Email" alias="CustomerEmail" />
+        </SimpleJoin>
       </SimpleJoin>
     </SimpleJoin>
 

@@ -81,6 +81,9 @@
               <TextLabel source="SupplierFax">
                 <renderToken source="SupplierFax" prefix="Faksas / Факс: " />
               </TextLabel>
+              <TextLabel source="SupplierEmail">
+                <renderToken source="SupplierEmail" prefix="El.paštas / Эл.почта: " />
+              </TextLabel>
               <Label name="BankAccount" class="&form;-bank" />
             </FlowPanel>
           </cell>
@@ -112,6 +115,9 @@
               </TextLabel>
               <TextLabel source="CustomerFax">
                 <renderToken source="CustomerFax" prefix="Faksas / Факс: " />
+              </TextLabel>
+              <TextLabel source="CustomerEmail">
+                <renderToken source="CustomerEmail" prefix="El.paštas / Эл.почта: " />
               </TextLabel>
             </FlowPanel>
           </cell>
