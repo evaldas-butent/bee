@@ -286,6 +286,12 @@
   -webkit-filter: grayscale(50%);
 }
 
+.bee-tr-chart-filter-savedContainer {
+  margin-top: 2px;
+  height: 30px;
+  overflow: auto;
+}
+
 .bee-tr-chart-filter-commandGroup {
   margin-top: 2px;
   display: flex;
@@ -295,8 +301,7 @@
   -webkit-justify-content: center;
   -ms-flex-pack: center;
 }
-.bee-tr-chart-filter-commandClear,
-.bee-tr-chart-filter-commandConfigure {
+.bee-tr-chart-filter-commandGroup > button:not(:first-child) {
   margin-left: 2em;
 }
 

@@ -1,9 +1,6 @@
 package com.butent.bee.client.modules.transport.charts;
 
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Widget;
@@ -12,14 +9,11 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.dialog.DialogBox;
-import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
-import com.butent.bee.client.event.logical.CloseEvent;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.layout.Split;
-import com.butent.bee.client.modules.transport.charts.ChartData.Type;
 import com.butent.bee.client.modules.transport.charts.Filterable.FilterType;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.widget.Button;
@@ -49,6 +43,8 @@ final class FilterHelper {
 
     void onFilter();
 
+    void onSave();
+
     void onSelectionChange(HasWidgets dataContainer);
   }
 
@@ -63,10 +59,13 @@ final class FilterHelper {
   private static final String STYLE_DATA_WRAPPER = STYLE_DATA_PREFIX + "wrapper";
   private static final String STYLE_DATA_CONTAINER = STYLE_DATA_PREFIX + "container";
 
+  private static final String STYLE_SAVED_CONTAINER = STYLE_PREFIX + "savedContainer";
+
   private static final String STYLE_COMMAND_GROUP = STYLE_PREFIX + "commandGroup";
   private static final String STYLE_COMMAND_CLEAR = STYLE_PREFIX + "commandClear";
   private static final String STYLE_COMMAND_CONFIGURE = STYLE_PREFIX + "commandConfigure";
   private static final String STYLE_COMMAND_FILTER = STYLE_PREFIX + "commandFilter";
+  private static final String STYLE_COMMAND_SAVE = STYLE_PREFIX + "commandSave";
 
   private static final String STYLE_CONFIGURE_DIALOG = STYLE_PREFIX + "configure-dialog";
   private static final String STYLE_CONFIGURE_PANEL = STYLE_PREFIX + "configure-panel";
@@ -78,6 +77,7 @@ final class FilterHelper {
   private static final int DATA_PANEL_MIN_HEIGHT = 200;
   private static final int DATA_PANEL_MAX_HEIGHT = 400;
 
+  private static final int SAVED_FILTERS_HEIGHT = 32;
   private static final int COMMAND_GROUP_HEIGHT = 32;
 
   private static final double DIALOG_MAX_WIDTH_FACTOR = 0.8;
@@ -309,8 +309,8 @@ final class FilterHelper {
         * DIALOG_MAX_HEIGHT_FACTOR);
 
     int dataPanelWidth = (dialogMaxWidth - DATA_SPLITTER_WIDTH * (dataCounter - 1)) / dataCounter;
-    int dataPanelHeight = dialogMaxHeight - DialogBox.HEADER_HEIGHT - COMMAND_GROUP_HEIGHT
-        - DomUtils.getScrollBarHeight();
+    int dataPanelHeight = dialogMaxHeight - DialogBox.HEADER_HEIGHT
+        - SAVED_FILTERS_HEIGHT - COMMAND_GROUP_HEIGHT - DomUtils.getScrollBarHeight();
 
     if (dialogMaxWidth < DATA_PANEL_MIN_WIDTH || dataPanelHeight < DATA_PANEL_MIN_HEIGHT) {
       logger.warning("get a real computer", BeeKeeper.getScreen().getWidth(),
@@ -328,7 +328,7 @@ final class FilterHelper {
     int dataWrapperHeight = dataContainerHeight + DomUtils.getScrollBarHeight();
 
     int contentWidth = dataWrapperWidth;
-    int contentHeight = dataWrapperHeight + COMMAND_GROUP_HEIGHT;
+    int contentHeight = dataWrapperHeight + SAVED_FILTERS_HEIGHT + COMMAND_GROUP_HEIGHT;
 
     final DialogBox dialog = DialogBox.create(Localized.dictionary().filter(), STYLE_DIALOG);
 
@@ -336,12 +336,8 @@ final class FilterHelper {
     dataContainer.addStyleName(STYLE_DATA_CONTAINER);
     StyleUtils.setSize(dataContainer, dataContainerWidth, dataContainerHeight);
 
-    SelectionHandler<ChartData.Type> selectionHandler = new SelectionHandler<ChartData.Type>() {
-      @Override
-      public void onSelection(SelectionEvent<ChartData.Type> event) {
-        callback.onSelectionChange(dataContainer);
-      }
-    };
+    SelectionHandler<ChartData.Type> selectionHandler =
+        event -> callback.onSelectionChange(dataContainer);
 
     int dataIndex = 0;
     for (ChartData data : filterData) {
@@ -360,57 +356,46 @@ final class FilterHelper {
       }
     }
 
-    Flow commands = new Flow();
-    commands.addStyleName(STYLE_COMMAND_GROUP);
+    Flow savedFilters = new Flow(STYLE_SAVED_CONTAINER);
 
-    Button filter = new Button(Localized.dictionary().doFilter(), new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        dialog.close();
-        callback.onFilter();
-      }
+    Flow commands = new Flow(STYLE_COMMAND_GROUP);
+
+    Button filter = new Button(Localized.dictionary().doFilter(), event -> {
+      dialog.close();
+      callback.onFilter();
     });
     filter.addStyleName(STYLE_COMMAND_FILTER);
     commands.add(filter);
 
-    Button clear = new Button(Localized.dictionary().clear(), new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        for (Widget widget : dataContainer) {
-          if (widget instanceof FilterDataWidget) {
-            ((FilterDataWidget) widget).reset(true);
-          }
+    Button clear = new Button(Localized.dictionary().clear(), event -> {
+      for (Widget widget : dataContainer) {
+        if (widget instanceof FilterDataWidget) {
+          ((FilterDataWidget) widget).reset(true);
         }
-        callback.onClear();
       }
+      callback.onClear();
     });
     clear.addStyleName(STYLE_COMMAND_CLEAR);
     commands.add(clear);
 
-    Button configure = new Button(Localized.dictionary().actionConfigure(), new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        configureDataTypes(filterData, EventUtils.getEventTargetElement(event),
-            new Callback<Set<ChartData.Type>>() {
-              @Override
-              public void onSuccess(Set<Type> result) {
-                dialog.setAnimationEnabled(false);
-                dialog.close();
-                callback.onDataTypesChange(result);
-              }
-            });
-      }
+    Button configure = new Button(Localized.dictionary().actionConfigure(), event -> {
+      configureDataTypes(filterData, EventUtils.getEventTargetElement(event), result -> {
+        dialog.setAnimationEnabled(false);
+        dialog.close();
+        callback.onDataTypesChange(result);
+      });
     });
     configure.addStyleName(STYLE_COMMAND_CONFIGURE);
     commands.add(configure);
 
-    dialog.addCloseHandler(new CloseEvent.Handler() {
-      @Override
-      public void onClose(CloseEvent event) {
-        if (event.userCaused()) {
-          for (ChartData data : filterData) {
-            data.restoreState();
-          }
+    Button save = new Button(Localized.dictionary().saveFilter(), event -> callback.onSave());
+    save.addStyleName(STYLE_COMMAND_SAVE);
+    commands.add(save);
+
+    dialog.addCloseHandler(event -> {
+      if (event.userCaused()) {
+        for (ChartData data : filterData) {
+          data.restoreState();
         }
       }
     });
@@ -419,11 +404,11 @@ final class FilterHelper {
     dataWrapper.addStyleName(STYLE_DATA_WRAPPER);
     StyleUtils.setSize(dataWrapper, dataWrapperWidth, dataWrapperHeight);
 
-    Flow content = new Flow();
-    content.addStyleName(STYLE_CONTENT);
+    Flow content = new Flow(STYLE_CONTENT);
     StyleUtils.setSize(content, contentWidth, contentHeight);
 
     content.add(dataWrapper);
+    content.add(savedFilters);
     content.add(commands);
 
     dialog.setWidget(content);
@@ -476,20 +461,17 @@ final class FilterHelper {
 
       item.addStyleName(STYLE_CONFIGURE_ITEM);
 
-      item.addClickHandler(new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent event) {
-          if (event.getSource() instanceof CheckBox) {
-            CheckBox source = (CheckBox) event.getSource();
-            ChartData.Type tp = EnumUtils.getEnumByIndex(ChartData.Type.class,
-                DomUtils.getDataIndexInt(source.getElement()));
+      item.addClickHandler(event -> {
+        if (event.getSource() instanceof CheckBox) {
+          CheckBox source = (CheckBox) event.getSource();
+          ChartData.Type tp = EnumUtils.getEnumByIndex(ChartData.Type.class,
+              DomUtils.getDataIndexInt(source.getElement()));
 
-            if (tp != null) {
-              if (source.isChecked()) {
-                newTypes.add(tp);
-              } else {
-                newTypes.remove(tp);
-              }
+          if (tp != null) {
+            if (source.isChecked()) {
+              newTypes.add(tp);
+            } else {
+              newTypes.remove(tp);
             }
           }
         }
@@ -506,15 +488,11 @@ final class FilterHelper {
       newTypes.addAll(oldTypes);
     }
 
-    Global.inputWidget(Localized.dictionary().actionConfigure(), panel,
-        new InputCallback() {
-          @Override
-          public void onSuccess() {
-            if (!oldTypes.equals(newTypes)) {
-              callback.onSuccess(newTypes);
-            }
-          }
-        }, STYLE_CONFIGURE_DIALOG, target);
+    Global.inputWidget(Localized.dictionary().actionConfigure(), panel, () -> {
+      if (!oldTypes.equals(newTypes)) {
+        callback.onSuccess(newTypes);
+      }
+    }, STYLE_CONFIGURE_DIALOG, target);
   }
 
   private FilterHelper() {

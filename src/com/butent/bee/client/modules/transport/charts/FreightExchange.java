@@ -238,6 +238,11 @@ final class FreightExchange extends ChartBase {
   }
 
   @Override
+  protected String getFiltersColumnName() {
+    return COL_FX_FILTERS;
+  }
+
+  @Override
   protected String getFooterHeightColumnName() {
     return COL_FX_FOOTER_HEIGHT;
   }

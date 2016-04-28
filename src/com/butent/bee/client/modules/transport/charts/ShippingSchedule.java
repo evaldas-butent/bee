@@ -140,6 +140,11 @@ final class ShippingSchedule extends VehicleTimeBoard {
   }
 
   @Override
+  protected String getFiltersColumnName() {
+    return COL_SS_FILTERS;
+  }
+
+  @Override
   protected String getFooterHeightColumnName() {
     return COL_SS_FOOTER_HEIGHT;
   }

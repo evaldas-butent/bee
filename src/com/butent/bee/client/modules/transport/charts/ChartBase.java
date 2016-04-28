@@ -28,10 +28,8 @@ import com.butent.bee.client.timeboard.TimeBoard;
 import com.butent.bee.client.timeboard.TimeBoardHelper;
 import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.ui.UiHelper;
-import com.butent.bee.client.view.View;
 import com.butent.bee.client.view.ViewCallback;
 import com.butent.bee.client.view.ViewFactory;
-import com.butent.bee.client.view.ViewSupplier;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
@@ -45,7 +43,6 @@ import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.event.ModificationEvent;
 import com.butent.bee.shared.data.value.Value;
-import com.butent.bee.shared.menu.MenuHandler;
 import com.butent.bee.shared.menu.MenuService;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
@@ -81,82 +78,22 @@ public abstract class ChartBase extends TimeBoard {
   public static void registerBoards() {
     ensureStyleSheet();
 
-    final ViewCallback showCallback = new ViewCallback() {
-      @Override
-      public void onSuccess(View result) {
-        BeeKeeper.getScreen().show(result);
-      }
-    };
+    final ViewCallback showCallback = result -> BeeKeeper.getScreen().show(result);
 
-    MenuService.FREIGHT_EXCHANGE.setHandler(new MenuHandler() {
-      @Override
-      public void onSelection(String parameters) {
-        FreightExchange.open(showCallback);
-      }
-    });
+    MenuService.FREIGHT_EXCHANGE.setHandler(parameters -> FreightExchange.open(showCallback));
+    ViewFactory.registerSupplier(FreightExchange.SUPPLIER_KEY, cb -> FreightExchange.open(cb));
 
-    ViewFactory.registerSupplier(FreightExchange.SUPPLIER_KEY, new ViewSupplier() {
-      @Override
-      public void create(ViewCallback callback) {
-        FreightExchange.open(callback);
-      }
-    });
+    MenuService.SHIPPING_SCHEDULE.setHandler(parameters -> ShippingSchedule.open(showCallback));
+    ViewFactory.registerSupplier(ShippingSchedule.SUPPLIER_KEY, cb -> ShippingSchedule.open(cb));
 
-    MenuService.SHIPPING_SCHEDULE.setHandler(new MenuHandler() {
-      @Override
-      public void onSelection(String parameters) {
-        ShippingSchedule.open(showCallback);
-      }
-    });
+    MenuService.DRIVER_TIME_BOARD.setHandler(parameters -> DriverTimeBoard.open(showCallback));
+    ViewFactory.registerSupplier(DriverTimeBoard.SUPPLIER_KEY, cb -> DriverTimeBoard.open(cb));
 
-    ViewFactory.registerSupplier(ShippingSchedule.SUPPLIER_KEY, new ViewSupplier() {
-      @Override
-      public void create(ViewCallback callback) {
-        ShippingSchedule.open(callback);
-      }
-    });
+    MenuService.TRUCK_TIME_BOARD.setHandler(parameters -> TruckTimeBoard.open(showCallback));
+    ViewFactory.registerSupplier(TruckTimeBoard.SUPPLIER_KEY, cb -> TruckTimeBoard.open(cb));
 
-    MenuService.DRIVER_TIME_BOARD.setHandler(new MenuHandler() {
-      @Override
-      public void onSelection(String parameters) {
-        DriverTimeBoard.open(showCallback);
-      }
-    });
-
-    ViewFactory.registerSupplier(DriverTimeBoard.SUPPLIER_KEY, new ViewSupplier() {
-      @Override
-      public void create(ViewCallback callback) {
-        DriverTimeBoard.open(callback);
-      }
-    });
-
-    MenuService.TRUCK_TIME_BOARD.setHandler(new MenuHandler() {
-      @Override
-      public void onSelection(String parameters) {
-        TruckTimeBoard.open(showCallback);
-      }
-    });
-
-    ViewFactory.registerSupplier(TruckTimeBoard.SUPPLIER_KEY, new ViewSupplier() {
-      @Override
-      public void create(ViewCallback callback) {
-        TruckTimeBoard.open(callback);
-      }
-    });
-
-    MenuService.TRAILER_TIME_BOARD.setHandler(new MenuHandler() {
-      @Override
-      public void onSelection(String parameters) {
-        TrailerTimeBoard.open(showCallback);
-      }
-    });
-
-    ViewFactory.registerSupplier(TrailerTimeBoard.SUPPLIER_KEY, new ViewSupplier() {
-      @Override
-      public void create(ViewCallback callback) {
-        TrailerTimeBoard.open(callback);
-      }
-    });
+    MenuService.TRAILER_TIME_BOARD.setHandler(parameters -> TrailerTimeBoard.open(showCallback));
+    ViewFactory.registerSupplier(TrailerTimeBoard.SUPPLIER_KEY, cb -> TrailerTimeBoard.open(cb));
   }
 
   private final Map<Long, String> transportGroups = new HashMap<>();
@@ -208,6 +145,10 @@ public abstract class ChartBase extends TimeBoard {
             setFiltered(persistFilter());
             refreshFilterInfo();
             render(false);
+          }
+
+          @Override
+          public void onSave() {
           }
 
           @Override
@@ -389,6 +330,8 @@ public abstract class ChartBase extends TimeBoard {
   }
 
   protected abstract String getFilterDataTypesColumnName();
+
+  protected abstract String getFiltersColumnName();
 
   protected abstract Collection<String> getSettingsColumnsTriggeringRefresh();
 
