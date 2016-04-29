@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+      name="CompanyLicences" source="CompanyLicences" module="Administration" caption="Licencijos"
+    >
+  <Columns>
+    <SimpleColumn name="Company" />
+    <SimpleColumn name="Licence" />
+    <SimpleColumn name="Endpoint" />
+  </Columns>
+</View>

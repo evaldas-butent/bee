@@ -237,6 +237,10 @@
         <text>=mails</text>
         <ChildGrid name="RelatedMessages" relColumn="Company" paging="true" />
       </page>
+      <page for="CompanyLicences">
+        <text>Licencijos</text>
+        <ChildGrid name="CompanyLicences" relColumn="Company" />
+      </page>
       <page for="CompActionList" module="Calendar">
         <text>=calAppointments</text>
         <ChildGrid name="CompActionList" relColumn="Company" paging="true" />
