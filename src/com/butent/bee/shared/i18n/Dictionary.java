@@ -68,6 +68,8 @@ public interface Dictionary {
 
   default String actionRefresh() {return g("actionRefresh");}
 
+  default String actionRefreshComments() {return g("actionRefreshComments");}
+
   default String actionRemove() {return g("actionRemove");}
 
   default String actionRemoveFilter() {return g("actionRemoveFilter");}
