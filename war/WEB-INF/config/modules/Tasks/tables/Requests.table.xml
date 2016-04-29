@@ -5,12 +5,13 @@
   idName="RequestID"
   >
   <Fields>
-    <DateTime name="Date" notNull="true" defExpr="CURRENT_TIME" label="=date" />
-    <Relation name="Customer" relation="Companies" notNull="true" label="=customer" />
+    <String name="Summary" notNull="true" precision="100" label="=crmTaskSubject" />
+    <Enum name="Priority" key="TaskPriority" defValue="1" label="=crmTaskPriority" />
+    <DateTime name="Date" notNull="true" defExpr="CURRENT_TIME" label="=crmStartDate" />
+    <Relation name="Customer" relation="Companies" notNull="true" label="=company" />
     <Relation name="CustomerPerson" relation="CompanyPersons" label="=personContact" />
     <String name="Contacts" precision="50" label="=contacts" />
-    <Relation name="Payer" relation="Companies" label="=payer" />
-    <Relation name="Manager" relation="Users" label="=responsiblePerson" />
+    <Relation name="Manager" relation="Users" label="=crmTaskExecutor" />
     <Text name="Content" notNull="true" label="=crmRequest" />
     <Text name="Result" label="=result" />
     <Text name="ResultProperties" label="=result" />

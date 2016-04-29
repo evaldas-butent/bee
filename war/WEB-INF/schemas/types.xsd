@@ -447,6 +447,7 @@
       <xs:enumeration value="ReportOptions" />
       <xs:enumeration value="ReportSettings" />
       <xs:enumeration value="RequestDurationTypes" />
+      <xs:enumeration value="RequestEvents" />
       <xs:enumeration value="RequestFiles" />
       <xs:enumeration value="Requests" />
       <xs:enumeration value="RequestTypes" />
