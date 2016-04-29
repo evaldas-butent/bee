@@ -3894,6 +3894,10 @@ public interface Dictionary {
 
   default String prmAllowDeleteOwnComments() {return g("prmAllowDeleteOwnComments");}
 
+  default String prmDefaultRestRequestForm() {return g("prmDefaultRestRequestForm");}
+
+  default String prmDefaultRestRequestType() {return g("prmDefaultRestRequestType");}
+
   default String prmDiscussBirthdays() {return g("prmDiscussBirthdays");}
 
   default String prmDiscussInactiveTimeInDays() {return g("prmDiscussInactiveTimeInDays");}

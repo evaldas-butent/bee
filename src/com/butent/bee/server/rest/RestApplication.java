@@ -1,5 +1,6 @@
 package com.butent.bee.server.rest;
 
+import com.butent.bee.server.modules.tasks.RestfulTaskBuilder;
 import com.butent.bee.server.modules.transport.ShipmentRequestsWorker;
 
 import java.util.HashSet;
@@ -22,6 +23,8 @@ public class RestApplication extends Application {
     classes.add(TasksWorker.class);
     classes.add(TaskEventsWorker.class);
     classes.add(PayrollWorker.class);
+
+    classes.add(RestfulTaskBuilder.class);
     classes.add(ShipmentRequestsWorker.class);
 
     return classes;
