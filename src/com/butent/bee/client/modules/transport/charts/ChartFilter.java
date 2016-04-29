@@ -10,10 +10,11 @@ import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 class ChartFilter implements BeeSerializable {
 
-  private static final class FilterValue implements BeeSerializable {
+  static final class FilterValue implements BeeSerializable {
 
     private static FilterValue restore(String s) {
       if (!BeeUtils.isEmpty(s)) {
@@ -34,10 +35,24 @@ class ChartFilter implements BeeSerializable {
     private FilterValue() {
     }
 
-    private FilterValue(Type type, String name, Long id) {
+    FilterValue(Type type, String name, Long id) {
       this.type = type;
       this.name = name;
       this.id = id;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (obj instanceof FilterValue) {
+        FilterValue other = (FilterValue) obj;
+
+        return Objects.equals(type, other.type)
+            && Objects.equals(name, other.name)
+            && Objects.equals(id, other.id);
+
+      } else {
+        return false;
+      }
     }
 
     @Override
@@ -53,6 +68,16 @@ class ChartFilter implements BeeSerializable {
     }
 
     @Override
+    public int hashCode() {
+      final int prime = 31;
+      int result = 1;
+      result = prime * result + ((id == null) ? 0 : id.hashCode());
+      result = prime * result + ((name == null) ? 0 : name.hashCode());
+      result = prime * result + ((type == null) ? 0 : type.hashCode());
+      return result;
+    }
+
+    @Override
     public String serialize() {
       List<String> list = new ArrayList<>();
       list.add(type.name());
@@ -62,8 +87,8 @@ class ChartFilter implements BeeSerializable {
       return Codec.beeSerialize(list);
     }
 
-    private boolean isValid() {
-      return type != null && (!BeeUtils.isEmpty(name) || id != null);
+    boolean isValid() {
+      return type != null && !BeeUtils.isEmpty(name);
     }
   }
 
@@ -84,10 +109,20 @@ class ChartFilter implements BeeSerializable {
     return result;
   }
 
+  static final int MAX_LABEL_LENGTH = 200;
+
   private String label;
   private boolean initial;
 
   private final List<FilterValue> values = new ArrayList<>();
+
+  private ChartFilter() {
+  }
+
+  ChartFilter(String label, List<FilterValue> values) {
+    this.label = label;
+    this.values.addAll(values);
+  }
 
   @Override
   public void deserialize(String s) {
@@ -126,6 +161,10 @@ class ChartFilter implements BeeSerializable {
     return label;
   }
 
+  List<FilterValue> getValues() {
+    return values;
+  }
+
   boolean isInitial() {
     return initial;
   }
@@ -134,7 +173,7 @@ class ChartFilter implements BeeSerializable {
     return !BeeUtils.isEmpty(getLabel()) && !values.isEmpty();
   }
 
-  private void setInitial(boolean initial) {
+  void setInitial(boolean initial) {
     this.initial = initial;
   }
 

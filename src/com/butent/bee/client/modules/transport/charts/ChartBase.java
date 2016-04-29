@@ -14,14 +14,19 @@ import static com.butent.bee.shared.modules.administration.AdministrationConstan
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Callback;
+import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
+import com.butent.bee.client.dialog.Icon;
+import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.modules.transport.TransportHandler;
 import com.butent.bee.client.modules.transport.charts.CargoEvent.Type;
+import com.butent.bee.client.modules.transport.charts.ChartFilter.FilterValue;
 import com.butent.bee.client.modules.transport.charts.Filterable.FilterType;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.timeboard.TimeBoard;
@@ -36,6 +41,7 @@ import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.Size;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.css.CssUnit;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
@@ -43,6 +49,7 @@ import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.event.ModificationEvent;
 import com.butent.bee.shared.data.value.Value;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.menu.MenuService;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
@@ -53,10 +60,12 @@ import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.Color;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
@@ -126,38 +135,50 @@ public abstract class ChartBase extends TimeBoard {
   public void handleAction(Action action) {
     switch (action) {
       case FILTER:
-        FilterHelper.enableDataTypes(filterData, getEnabledFilterDataTypes());
+        FilterHelper.enableDataTypes(getFilterData(), getEnabledFilterDataTypes());
 
-        FilterHelper.openDialog(filterData, new FilterHelper.DialogCallback() {
-          @Override
-          public void onClear() {
-            resetFilter(FilterType.TENTATIVE);
-          }
+        FilterHelper.openDialog(getFilterData(), getSavedFilters(),
+            new FilterHelper.DialogCallback() {
+              @Override
+              public void onClear() {
+                resetFilter(FilterType.TENTATIVE);
+              }
 
-          @Override
-          public void onDataTypesChange(Set<ChartData.Type> types) {
-            updateEnabledFilterDataTypes(types);
-            handleAction(Action.FILTER);
-          }
+              @Override
+              public void onDataTypesChange(Set<ChartData.Type> types) {
+                updateEnabledFilterDataTypes(types);
+                handleAction(Action.FILTER);
+              }
 
-          @Override
-          public void onFilter() {
-            setFiltered(persistFilter());
-            refreshFilterInfo();
-            render(false);
-          }
+              @Override
+              public void onFilter() {
+                setFiltered(persistFilter());
+                refreshFilterInfo();
+                render(false);
+              }
 
-          @Override
-          public void onSave() {
-          }
+              @Override
+              public void onSave(Callback<List<ChartFilter>> callback) {
+                onSaveFilter(callback);
+              }
 
-          @Override
-          public void onSelectionChange(HasWidgets dataContainer) {
-            filter(FilterType.TENTATIVE);
-            FilterHelper.enableData(getFilterData(), prepareFilterData(FilterType.TENTATIVE),
-                dataContainer);
-          }
-        });
+              @Override
+              public void onSelectionChange(HasWidgets dataContainer) {
+                filter(FilterType.TENTATIVE);
+                FilterHelper.enableData(getFilterData(), prepareFilterData(FilterType.TENTATIVE),
+                    dataContainer);
+              }
+
+              @Override
+              public void removeSavedFilter(int index, Callback<List<ChartFilter>> callback) {
+                onRemoveFilter(index, callback);
+              }
+
+              @Override
+              public void setInitial(int index, boolean initial, Runnable callback) {
+                onSetInitialFilter(index, initial, callback);
+              }
+            });
         break;
 
       case REMOVE_FILTER:
@@ -207,7 +228,7 @@ public abstract class ChartBase extends TimeBoard {
 
     setFiltered(false);
 
-    for (ChartData data : filterData) {
+    for (ChartData data : getFilterData()) {
       if (data != null) {
         data.enableAll();
         data.deselectAll();
@@ -788,25 +809,82 @@ public abstract class ChartBase extends TimeBoard {
     return types;
   }
 
-  private void refreshFilterInfo() {
-    if (isFiltered()) {
-      List<String> selection = new ArrayList<>();
-      for (ChartData data : filterData) {
-        Collection<String> selectedNames = data.getSelectedNames();
-        if (!selectedNames.isEmpty()) {
-          selection.addAll(selectedNames);
-        }
-      }
+  private List<ChartFilter> getSavedFilters() {
+    List<ChartFilter> filters = new ArrayList<>();
 
-      if (!selection.isEmpty()) {
-        getFilterLabel().getElement().setInnerText(BeeUtils.join(BeeConst.STRING_COMMA, selection));
-        getRemoveFilter().setVisible(true);
-        return;
-      }
+    String s = TimeBoardHelper.getString(getSettings(), getFiltersColumnName());
+    if (!BeeUtils.isEmpty(s)) {
+      filters.addAll(ChartFilter.restoreList(s));
     }
 
-    getFilterLabel().getElement().setInnerText(BeeConst.STRING_EMPTY);
-    getRemoveFilter().setVisible(false);
+    return filters;
+  }
+
+  private void onRemoveFilter(final int index, final Callback<List<ChartFilter>> callback) {
+    final List<ChartFilter> filters = getSavedFilters();
+
+    if (BeeUtils.isIndex(filters, index)) {
+      Global.confirmDelete(Localized.dictionary().removeFilter(), Icon.QUESTION,
+          Collections.singletonList(filters.get(index).getLabel()), () -> {
+            filters.remove(index);
+            String serialized = filters.isEmpty() ? null : Codec.beeSerialize(filters);
+
+            TimeBoardHelper.updateSettings(getSettings(), getFiltersColumnName(), serialized,
+                () -> callback.onSuccess(filters));
+          });
+    }
+  }
+
+  private void onSaveFilter(final Callback<List<ChartFilter>> callback) {
+    final List<FilterValue> filterValues = FilterHelper.getSelectedValues(getFilterData());
+
+    if (BeeUtils.isEmpty(filterValues)) {
+      BeeKeeper.getScreen().notifyWarning(Localized.dictionary().noData());
+
+    } else {
+      String label = BeeUtils.left(FilterHelper.getSelectionLabel(getFilterData()),
+          ChartFilter.MAX_LABEL_LENGTH);
+
+      Global.inputString(Localized.dictionary().saveFilter(), Localized.dictionary().name(),
+          new StringCallback() {
+            @Override
+            public void onSuccess(String value) {
+              ChartFilter filter = new ChartFilter(BeeUtils.trim(value), filterValues);
+              List<ChartFilter> filters = getSavedFilters();
+              FilterHelper.addFilter(filters, filter);
+
+              TimeBoardHelper.updateSettings(getSettings(), getFiltersColumnName(),
+                  Codec.beeSerialize(filters), () -> callback.onSuccess(filters));
+            }
+          }, null, label, ChartFilter.MAX_LABEL_LENGTH, null, 40, CssUnit.EM);
+    }
+  }
+
+  private void onSetInitialFilter(int index, boolean initial, final Runnable callback) {
+    List<ChartFilter> filters = getSavedFilters();
+
+    if (BeeUtils.isIndex(filters, index) && filters.get(index).isInitial() != initial) {
+      filters.get(index).setInitial(initial);
+      TimeBoardHelper.updateSettings(getSettings(), getFiltersColumnName(),
+          Codec.beeSerialize(filters), callback);
+    }
+  }
+
+  private void refreshFilterInfo() {
+    String label;
+    if (isFiltered()) {
+      label = FilterHelper.getSelectionLabel(getFilterData());
+    } else {
+      label = null;
+    }
+
+    if (BeeUtils.isEmpty(label)) {
+      getFilterLabel().getElement().setInnerText(BeeConst.STRING_EMPTY);
+      getRemoveFilter().setVisible(false);
+    } else {
+      getFilterLabel().getElement().setInnerText(label);
+      getRemoveFilter().setVisible(true);
+    }
   }
 
   private void setShowAdditionalInfo(boolean showAdditionalInfo) {
@@ -870,7 +948,7 @@ public abstract class ChartBase extends TimeBoard {
         && !BeeUtils.sameElements(types, getEnabledFilterDataTypes())) {
 
       return TimeBoardHelper.updateSettings(getSettings(), getFilterDataTypesColumnName(),
-          Strings.emptyToNull(EnumUtils.joinNames(types)));
+          Strings.emptyToNull(EnumUtils.joinNames(types)), null);
 
     } else {
       return false;
@@ -888,17 +966,17 @@ public abstract class ChartBase extends TimeBoard {
     boolean wasFiltered = isFiltered();
 
     if (BeeUtils.isEmpty(newData)) {
-      filterData.clear();
+      getFilterData().clear();
       if (wasFiltered) {
         clearFilter();
       }
 
-    } else if (filterData.isEmpty()) {
-      filterData.addAll(newData);
+    } else if (getFilterData().isEmpty()) {
+      getFilterData().addAll(newData);
 
     } else {
       if (wasFiltered) {
-        for (ChartData ocd : filterData) {
+        for (ChartData ocd : getFilterData()) {
           ChartData ncd = FilterHelper.getDataByType(newData, ocd.getType());
 
           if (ncd != null) {
@@ -910,8 +988,8 @@ public abstract class ChartBase extends TimeBoard {
         }
       }
 
-      filterData.clear();
-      filterData.addAll(newData);
+      getFilterData().clear();
+      getFilterData().addAll(newData);
 
       if (wasFiltered) {
         setFiltered(filter(FilterType.TENTATIVE));

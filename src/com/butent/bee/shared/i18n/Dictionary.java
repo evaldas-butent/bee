@@ -4000,6 +4000,8 @@ public interface Dictionary {
 
   default String removeCargoFromTripQuestion() {return g("removeCargoFromTripQuestion");}
 
+  default String removeFilter() {return g("removeFilter");}
+
   default String removeQuestion(Object p0) {
     Map<String, Object> _m = new HashMap<>();
     _m.put("{0}", p0);

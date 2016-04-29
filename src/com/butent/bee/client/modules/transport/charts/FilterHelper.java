@@ -1,6 +1,7 @@
 package com.butent.bee.client.modules.transport.charts;
 
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.event.dom.client.HasNativeEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Widget;
@@ -14,10 +15,16 @@ import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.layout.Split;
+import com.butent.bee.client.modules.transport.charts.ChartData.Item;
+import com.butent.bee.client.modules.transport.charts.ChartData.Type;
+import com.butent.bee.client.modules.transport.charts.ChartFilter.FilterValue;
 import com.butent.bee.client.modules.transport.charts.Filterable.FilterType;
 import com.butent.bee.client.style.StyleUtils;
+import com.butent.bee.client.ui.HasIndexedWidgets;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.CheckBox;
+import com.butent.bee.client.widget.CustomDiv;
+import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -26,6 +33,7 @@ import com.butent.bee.shared.time.HasDateRange;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
+import com.butent.bee.shared.utils.StringList;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -43,9 +51,13 @@ final class FilterHelper {
 
     void onFilter();
 
-    void onSave();
+    void onSave(Callback<List<ChartFilter>> callback);
 
     void onSelectionChange(HasWidgets dataContainer);
+
+    void removeSavedFilter(int index, Callback<List<ChartFilter>> callback);
+
+    void setInitial(int index, boolean initial, Runnable callback);
   }
 
   static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "tr-chart-filter-";
@@ -60,6 +72,13 @@ final class FilterHelper {
   private static final String STYLE_DATA_CONTAINER = STYLE_DATA_PREFIX + "container";
 
   private static final String STYLE_SAVED_CONTAINER = STYLE_PREFIX + "savedContainer";
+  private static final String STYLE_SAVED_ITEM = STYLE_PREFIX + "savedItem";
+  private static final String STYLE_SAVED_INITIAL = STYLE_PREFIX + "savedInitial";
+  private static final String STYLE_SAVED_LABEL = STYLE_PREFIX + "savedLabel";
+  private static final String STYLE_SAVED_REMOVE = STYLE_PREFIX + "savedRemove";
+
+  private static final String STYLE_INITIAL_CHECKED = STYLE_SAVED_INITIAL + "-checked";
+  private static final String STYLE_INITIAL_UNCHECKED = STYLE_SAVED_INITIAL + "-unchecked";
 
   private static final String STYLE_COMMAND_GROUP = STYLE_PREFIX + "commandGroup";
   private static final String STYLE_COMMAND_CLEAR = STYLE_PREFIX + "commandClear";
@@ -82,6 +101,31 @@ final class FilterHelper {
 
   private static final double DIALOG_MAX_WIDTH_FACTOR = 0.8;
   private static final double DIALOG_MAX_HEIGHT_FACTOR = 0.8;
+
+  static void addFilter(List<ChartFilter> filters, ChartFilter filter) {
+    int index = BeeConst.UNDEF;
+
+    if (!filters.isEmpty()) {
+      for (int i = 0; i < filters.size(); i++) {
+        ChartFilter cf = filters.get(i);
+
+        if (BeeUtils.sameElements(cf.getValues(), filter.getValues())) {
+          if (cf.isInitial()) {
+            filter.setInitial(cf.isInitial());
+          }
+
+          index = i;
+          break;
+        }
+      }
+    }
+
+    if (!BeeConst.isUndef(index)) {
+      filters.remove(index);
+    }
+
+    filters.add(filter);
+  }
 
   static void enableData(List<ChartData> allData, List<ChartData> tentativeData,
       HasWidgets dataContainer) {
@@ -229,6 +273,45 @@ final class FilterHelper {
     return result;
   }
 
+  static List<FilterValue> getSelectedValues(Collection<ChartData> data) {
+    List<FilterValue> result = new ArrayList<>();
+
+    if (data != null) {
+      for (ChartData cd : data) {
+        if (cd != null && cd.hasSelection()) {
+          Type type = cd.getType();
+          List<Item> selectedItems = cd.getSelectedItems();
+
+          for (Item item : selectedItems) {
+            FilterValue fv = new FilterValue(type, item.getName(), item.getId());
+            if (fv.isValid()) {
+              result.add(fv);
+            }
+          }
+        }
+      }
+    }
+
+    return result;
+  }
+
+  static String getSelectionLabel(Collection<ChartData> data) {
+    StringList labels = StringList.uniqueCaseInsensitive();
+
+    for (ChartData cd : data) {
+      Collection<String> selectedNames = cd.getSelectedNames();
+      if (!selectedNames.isEmpty()) {
+        labels.addAll(selectedNames);
+      }
+    }
+
+    if (labels.isEmpty()) {
+      return null;
+    } else {
+      return BeeUtils.join(BeeConst.STRING_COMMA, labels);
+    }
+  }
+
   static boolean matches(ChartData data, JustDate date) {
     if (data == null) {
       return true;
@@ -289,7 +372,9 @@ final class FilterHelper {
     return result;
   }
 
-  static void openDialog(final List<ChartData> filterData, final DialogCallback callback) {
+  static void openDialog(final List<ChartData> filterData, List<ChartFilter> savedFilters,
+      final DialogCallback callback) {
+
     int dataCounter = 0;
 
     for (ChartData data : filterData) {
@@ -356,7 +441,8 @@ final class FilterHelper {
       }
     }
 
-    Flow savedFilters = new Flow(STYLE_SAVED_CONTAINER);
+    Flow savedContainer = new Flow(STYLE_SAVED_CONTAINER);
+    renderSavedFilters(savedContainer, savedFilters, callback);
 
     Flow commands = new Flow(STYLE_COMMAND_GROUP);
 
@@ -388,7 +474,8 @@ final class FilterHelper {
     configure.addStyleName(STYLE_COMMAND_CONFIGURE);
     commands.add(configure);
 
-    Button save = new Button(Localized.dictionary().saveFilter(), event -> callback.onSave());
+    Button save = new Button(Localized.dictionary().saveFilter(),
+        event -> callback.onSave(filters -> renderSavedFilters(savedContainer, filters, callback)));
     save.addStyleName(STYLE_COMMAND_SAVE);
     commands.add(save);
 
@@ -408,7 +495,7 @@ final class FilterHelper {
     StyleUtils.setSize(content, contentWidth, contentHeight);
 
     content.add(dataWrapper);
-    content.add(savedFilters);
+    content.add(savedContainer);
     content.add(commands);
 
     dialog.setWidget(content);
@@ -431,6 +518,20 @@ final class FilterHelper {
       }
     }
     return filtered;
+  }
+
+  static void renderSavedFilters(HasIndexedWidgets container, List<ChartFilter> filters,
+      DialogCallback callback) {
+
+    if (!container.isEmpty()) {
+      container.clear();
+    }
+
+    if (!BeeUtils.isEmpty(filters)) {
+      for (ChartFilter cf : filters) {
+        renderSavedFilter(container, cf, callback);
+      }
+    }
   }
 
   static void resetFilter(Collection<? extends Filterable> items, FilterType filterType) {
@@ -493,6 +594,63 @@ final class FilterHelper {
         callback.onSuccess(newTypes);
       }
     }, STYLE_CONFIGURE_DIALOG, target);
+  }
+
+  private static int getSaveFilterIndex(HasNativeEvent event) {
+    Element item = DomUtils.getParentByClassName(EventUtils.getEventTargetElement(event),
+        STYLE_SAVED_ITEM, true);
+
+    if (item == null) {
+      return BeeConst.UNDEF;
+    } else {
+      return DomUtils.getElementIndex(item);
+    }
+  }
+
+  private static void renderSavedFilter(HasIndexedWidgets container, ChartFilter cf,
+      DialogCallback callback) {
+
+    Flow panel = new Flow(STYLE_SAVED_ITEM);
+
+    CustomDiv initial = new CustomDiv(STYLE_SAVED_INITIAL);
+    initial.addStyleName(cf.isInitial() ? STYLE_INITIAL_CHECKED : STYLE_INITIAL_UNCHECKED);
+    initial.setTitle(Localized.dictionary().initialFilter());
+
+    initial.addClickHandler(event -> {
+      Object source = event.getSource();
+      int index = getSaveFilterIndex(event);
+
+      if (source instanceof Widget && !BeeConst.isUndef(index)) {
+        Element element = ((Widget) source).getElement();
+        boolean value = StyleUtils.hasClassName(element, STYLE_INITIAL_UNCHECKED);
+
+        callback.setInitial(index, value, () -> {
+          element.removeClassName(STYLE_INITIAL_CHECKED);
+          element.removeClassName(STYLE_INITIAL_UNCHECKED);
+
+          element.addClassName(value ? STYLE_INITIAL_CHECKED : STYLE_INITIAL_UNCHECKED);
+        });
+      }
+    });
+
+    panel.add(initial);
+
+    Label label = new Label(cf.getLabel());
+    label.addStyleName(STYLE_SAVED_LABEL);
+
+    label.addClickHandler(event -> {
+    });
+
+    panel.add(label);
+
+    CustomDiv remove = new CustomDiv(STYLE_SAVED_REMOVE);
+    remove.setText(String.valueOf(BeeConst.CHAR_TIMES));
+
+    remove.addClickHandler(event -> callback.removeSavedFilter(getSaveFilterIndex(event),
+        savedFilters -> renderSavedFilters(container, savedFilters, callback)));
+
+    panel.add(remove);
+    container.add(panel);
   }
 
   private FilterHelper() {
