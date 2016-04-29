@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
-  xmlns:w="http://www.butent.com/widget"
+<g:Grid xmlns="http://www.butent.com/column"
+        xmlns:g="http://www.butent.com/grid"
+        xmlns:w="http://www.butent.com/widget"
+        xmlns:ui="http://www.butent.com/ui"
 
   name="Requests" viewName="Requests" caption="=crmRequests"
   flexGrow="1" order="RequestID desc"
@@ -17,8 +19,21 @@
 
     <RelColumn name="Manager" caption="=responsiblePerson" minWidth="100" />
     <DataColumn name="Result" visible="false" />
-    <RelColumn name="RequestType" renderColumns="RequestTypeName" visible="true" />
+    <RelColumn name="RequestType" renderColumns="RequestTypeName">
+      <dynStyle>
+        <ui:inline>color:[row.TypeForeground];
+          background-color:[row.TypeBackground];
+        </ui:inline>
+      </dynStyle>
+    </RelColumn>
     <RelColumn name="RequestForm" visible="true" />
+    <RelColumn name="Product" renderColumns="ProductName">
+      <dynStyle>
+        <ui:inline>color:[row.ProductForeground];
+          background-color:[row.ProductBackground];
+        </ui:inline>
+      </dynStyle>
+    </RelColumn>
   </g:columns>
   
   <g:predefinedFilter name="request_registred" label="=requestShowRegistered" initial="true" >

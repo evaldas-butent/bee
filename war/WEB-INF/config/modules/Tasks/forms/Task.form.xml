@@ -235,6 +235,13 @@
                   choiceColumns="Id Summary ExecutorFirstName ExecutorLastName StartTime FinishTime"
                   newRowEnabled="true" style="&inp2x;" disablable="true" summarize="true"/>
               </FlowPanel>
+              <FlowPanel style="&section;" data="Relations" for="Request" module="Tasks">
+                <Label text="=crmRequests" style="&top1;" />
+                <MultiSelector viewName="Requests" property="Requests"
+                  renderColumns="Id Summary FirstName LastName" 
+                  choiceColumns="Id Summary FirstName LastName"
+                  newRowEnabled="false" style="&inp2x;" disablable="true" summarize="true"/>
+              </FlowPanel>
             </FlowPanel>
           </FlowPanel>
         </page>

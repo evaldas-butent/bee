@@ -6,6 +6,7 @@
   >
   <Columns>
     <SimpleColumn name="Request" />
+    <SimpleColumn name="RequestEvent" />
 
     <SimpleColumn name="File" />
     <SimpleJoin name="File" joinType="LEFT">

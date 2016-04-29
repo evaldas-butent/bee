@@ -8,6 +8,7 @@
   <Relation renderColumns="Id Date CustomerName" />
   <Columns>
     <IdColumn name="Id"/>
+    <SimpleColumn name="Summary" />
     <SimpleColumn name="Date" />
     <SimpleColumn name="Content" />
     <SimpleColumn name="Contacts" />
@@ -15,6 +16,7 @@
     <SimpleColumn name="Finished" />
     <SimpleColumn name="Result" />
     <SimpleColumn name="ResultProperties" />
+    <SimpleColumn name="Priority" />
       
     <SimpleColumn name="Customer" />
     <SimpleJoin joinType="LEFT" name="Customer">
@@ -29,6 +31,8 @@
         <SimpleColumn name="Name" alias="RequestTypeName" />
         <SimpleColumn name="ProductRequired" />
         <SimpleColumn name="TaskType" />
+        <SimpleColumn name="Background" alias="TypeBackground"/>
+        <SimpleColumn name="Foreground" alias="TypeForeground"/>
       </SimpleJoin>
       
       <SimpleColumn name="RequestForm" />
@@ -68,6 +72,8 @@
     <SimpleColumn name="Product" />
     <SimpleJoin name="Product" joinType="LEFT">
       <SimpleColumn name="Name" alias="ProductName"/>
+      <SimpleColumn name="Background" alias="ProductBackground"/>
+      <SimpleColumn name="Foreground" alias="ProductForeground"/>
     </SimpleJoin>
   </Columns>
 </View>
