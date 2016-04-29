@@ -74,6 +74,7 @@ import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.administration.AdministrationConstants.ReminderMethod;
+import com.butent.bee.shared.modules.documents.DocumentConstants;
 import com.butent.bee.shared.modules.projects.ProjectConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants.TaskEvent;
@@ -256,7 +257,13 @@ public class TasksModuleBean implements BeeModule {
     String module = getModule().getName();
     List<BeeParameter> params = Lists.newArrayList(
         BeeParameter.createTimeOfDay(module, PRM_END_OF_WORK_DAY),
-        BeeParameter.createTimeOfDay(module, PRM_START_OF_WORK_DAY));
+        BeeParameter.createTimeOfDay(module, PRM_START_OF_WORK_DAY),
+        BeeParameter.createRelation(module, PRM_DEFAULT_DBA_TEMPLATE,
+            DocumentConstants.VIEW_DOCUMENT_TEMPLATES,
+            DocumentConstants.COL_DOCUMENT_TEMPLATE_NAME),
+        BeeParameter.createRelation(module, PRM_DEFAULT_DBA_DOCUMENT_TYPE,
+            DocumentConstants.VIEW_DOCUMENT_TYPES, DocumentConstants.COL_DOCUMENT_TYPE_NAME));
+
     return params;
   }
 
