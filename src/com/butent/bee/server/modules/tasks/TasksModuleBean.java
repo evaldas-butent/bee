@@ -229,6 +229,9 @@ public class TasksModuleBean implements BeeModule {
     } else if (BeeUtils.same(svc, SVC_GET_REQUEST_FILES)) {
       response = getRequestFiles(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_REQUEST)));
 
+    } else if (BeeUtils.same(svc, SVC_FINISH_REQUEST_WITH_TASK)) {
+      response = finishRequestWithTask(reqInfo);
+
     } else if (BeeUtils.same(svc, SVC_RT_GET_SCHEDULING_DATA)) {
       response = getSchedulingData(reqInfo);
 
@@ -1194,6 +1197,43 @@ public class TasksModuleBean implements BeeModule {
 
     if (!response.hasErrors()) {
       response = commitTaskData(data, null, null, eventId);
+    }
+
+    return response;
+  }
+
+  private ResponseObject finishRequestWithTask(RequestInfo reqInfo) {
+    String comment = reqInfo.getParameter(VAR_TASK_COMMENT);
+    Long type = reqInfo.getParameterLong(VAR_TASK_DURATION_TYPE);
+    String time = reqInfo.getParameter(VAR_TASK_DURATION_TIME);
+
+    if (BeeUtils.isEmpty(comment)) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), VAR_TASK_COMMENT);
+    }
+    if (!DataUtils.isId(type)) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), VAR_TASK_DURATION_TYPE);
+    }
+    if (BeeUtils.isEmpty(time)) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), VAR_TASK_DURATION_TIME);
+    }
+
+    Map<String, String> reqMap = new HashMap<>();
+
+    if (!BeeUtils.isEmpty(reqInfo.getParams())) {
+      reqMap.putAll(reqInfo.getParams());
+    }
+    if (!BeeUtils.isEmpty(reqInfo.getVars())) {
+      reqMap.putAll(reqInfo.getVars());
+    }
+    ResponseObject response = doTaskEvent(TaskEvent.CREATE.name(), reqMap);
+
+    if (!response.hasErrors()) {
+      BeeRowSet rowSet = (BeeRowSet) response.getResponse();
+      rowSet.getRow(0).preliminaryUpdate(DataUtils.getColumnIndex(COL_STATUS, rowSet.getColumns()),
+          BeeUtils.toString(TaskStatus.APPROVED.ordinal()));
+
+      reqMap.put(VAR_TASK_DATA, Codec.beeSerialize(rowSet));
+      response = doTaskEvent(TaskEvent.APPROVE.name(), reqMap);
     }
 
     return response;
