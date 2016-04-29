@@ -392,11 +392,11 @@
   width: 40% !important;
 }
 .bee-discuss-adsFormContent-fa{
-  float: right; 
   font-size: 18px; 
   color: gray; 
-  margin-top: 11px; 
+  position: absolute;
   margin-right: 30px;
+  right: 30px;
 }
 .bee-discuss-adsFormContent-fa-send{
   margin-top: 11px; 
@@ -406,8 +406,8 @@
 }
 .bee-discuss-adsFormContent-file-collector{
   padding-top: 0px !important;
-  float: right;
   margin-right: 20px;
+  margin-bottom: 10px;
 }
 .bee-discuss-adsFormContent-line{
   background-color:#e8e8e8; 

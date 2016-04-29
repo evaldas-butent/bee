@@ -18,11 +18,11 @@
    </dynStyle>
    <dynStyle>
     <ui:inline>color: [row.Color];</ui:inline>
-    <ui:expression>row.Color &amp;&amp; row.BackgroundColor != null</ui:expression>
+    <ui:expression>row.Color &amp;&amp; row.BackgroundColor == null</ui:expression>
    </dynStyle>
    <dynStyle>
-    <ui:inline>background-color: [row.Background];</ui:inline>
-    <ui:expression>row.Color == null &amp;&amp; row.Background</ui:expression>
+    <ui:inline>background-color: [row.BackgroundColor];</ui:inline>
+    <ui:expression>row.Color == null &amp;&amp; row.BackgroundColor</ui:expression>
    </dynStyle>
    <editor type="color" />
   </DataColumn>
@@ -35,11 +35,11 @@
    </dynStyle>
    <dynStyle>
     <ui:inline>color: [row.Color];</ui:inline>
-    <ui:expression>row.Color &amp;&amp; row.BackgroundColor != null</ui:expression>
+    <ui:expression>row.Color &amp;&amp; row.BackgroundColor == null</ui:expression>
    </dynStyle>
    <dynStyle>
-    <ui:inline>background-color: [row.Background];</ui:inline>
-    <ui:expression>row.Color == null &amp;&amp; row.Background</ui:expression>
+    <ui:inline>background-color: [row.BackgroundColor];</ui:inline>
+    <ui:expression>row.Color == null &amp;&amp; row.BackgroundColor</ui:expression>
    </dynStyle>
    <editor type="color" />
   </DataColumn>

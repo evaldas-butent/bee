@@ -102,13 +102,13 @@
      <Label text="=announcement" style="&header;" />
     </FlowPanel>
 
-    <FlowPanel for="Topic" class="flexBox-horizontal">
-     <Label text="=adTopic" style="&lbl1; min-width:150px;" />
+    <FlowPanel for="Topic" style="margin-top: 4px;" class="flexBox-horizontal">
+     <Label for="Topic" text="=adTopic" style="&lbl1; min-width:150px;" />
      <DataSelector name="Topic" source="Topic" disablable="false"
       style="&inlineInp540p; width: 250px" choiceColumns="Name" filter="Visible" />
     </FlowPanel>
 
-    <FlowPanel for="Topic" class="flexBox-horizontal">
+    <FlowPanel for="Topic" style="margin-top: 4px;" class="flexBox-horizontal">
      <Label for="Topic" name="DisplayInBoard" text="=displayInBoard"
       style="&lbl1; min-width:150px;" />
      <InputDateTime source="VisibleFrom"
