@@ -1,13 +1,9 @@
 package com.butent.bee.client.output;
 
 import com.google.common.base.Predicates;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.dom.client.DropEvent;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.Global;
-import com.butent.bee.client.dialog.ChoiceCallback;
 import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.event.DndHelper;
 import com.butent.bee.client.event.DndWidget;
@@ -20,7 +16,6 @@ import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeSerializable;
-import com.butent.bee.shared.BiConsumer;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.i18n.Localized;
@@ -30,7 +25,6 @@ import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -131,29 +125,20 @@ public abstract class ReportItem implements BeeSerializable {
         options.add(Localized.dictionary().constant() + "...");
       }
     }
-    Global.choice(null, null, options, new ChoiceCallback() {
-      @Override
-      public void onSuccess(int value) {
-        if (BeeUtils.isIndex(items, value)) {
-          consumer.accept(items.get(value));
-        } else {
-          final ReportItem item;
+    Global.choice(null, null, options, value -> {
+      if (BeeUtils.isIndex(items, value)) {
+        consumer.accept(items.get(value));
+      } else {
+        final ReportItem item;
 
-          if (options.get(value).equals(Localized.dictionary().formula() + "...")) {
-            item = new ReportFormulaItem(null);
-          } else if (options.get(value).equals(Localized.dictionary().constant() + "...")) {
-            item = new ReportConstantItem(null, null);
-          } else {
-            item = new ReportExpressionItem(null);
-          }
-          item.edit(report, new Runnable() {
-            @Override
-            public void run() {
-              consumer.accept(item);
-            }
-          });
-          return;
+        if (options.get(value).equals(Localized.dictionary().formula() + "...")) {
+          item = new ReportFormulaItem(null);
+        } else if (options.get(value).equals(Localized.dictionary().constant() + "...")) {
+          item = new ReportConstantItem(null, null);
+        } else {
+          item = new ReportExpressionItem(null);
         }
+        item.edit(report, () -> consumer.accept(item));
       }
     });
   }
@@ -183,13 +168,14 @@ public abstract class ReportItem implements BeeSerializable {
     Widget expr = getExpressionWidget(report);
 
     if (expr != null) {
-      table.setText(c, 0, Localized.dictionary().expression());
+      table.setText(c, 0, getExpressionCaption());
       table.setWidget(c++, 1, expr);
     }
+    expr = getOptionsWidget();
 
-    if (getOptionsWidget() != null) {
+    if (expr != null) {
       table.setText(c, 0, getOptionsCaption());
-      table.setWidget(c++, 1, getOptionsWidget());
+      table.setWidget(c, 1, getOptionsWidget());
     }
     Global.inputWidget(getCaption(), table, new InputCallback() {
       @Override
@@ -231,6 +217,10 @@ public abstract class ReportItem implements BeeSerializable {
 
   public String getCaption() {
     return BeeUtils.notEmpty(caption, getExpression());
+  }
+
+  public String getExpressionCaption() {
+    return Localized.dictionary().expression();
   }
 
   public String getExpression() {
@@ -290,53 +280,37 @@ public abstract class ReportItem implements BeeSerializable {
       CustomDiv remove = new CustomDiv(STYLE_REMOVE);
       remove.setText(String.valueOf(BeeConst.CHAR_TIMES));
 
-      remove.addClickHandler(new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent event) {
-          onRemove.run();
-        }
-      });
+      remove.addClickHandler(event -> onRemove.run());
       box.add(remove);
     }
-    box.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        edit(report, onSave);
-      }
-    });
+    box.addClickHandler(event -> edit(report, onSave));
     return box;
   }
 
   public static <T> Widget renderDnd(ReportItem item, final List<T> collection, final int idx,
       Report report, final Runnable onUpdate) {
 
-    DndWidget widget = item.render(report, new Runnable() {
-      @Override
-      public void run() {
-        collection.remove(idx);
+    DndWidget widget = item.render(report, () -> {
+      collection.remove(idx);
 
-        if (onUpdate != null) {
-          onUpdate.run();
-        }
+      if (onUpdate != null) {
+        onUpdate.run();
       }
     }, onUpdate);
     String contentType = Integer.toHexString(collection.hashCode());
 
     DndHelper.makeSource(widget, contentType, idx, null);
-    DndHelper.makeTarget(widget, Arrays.asList(contentType), STYLE_ITEM + "-over",
-        Predicates.not(Predicates.equalTo((Object) idx)), new BiConsumer<DropEvent, Object>() {
-          @Override
-          public void accept(DropEvent ev, Object index) {
-            T element = collection.remove((int) index);
+    DndHelper.makeTarget(widget, Collections.singletonList(contentType), STYLE_ITEM + "-over",
+        Predicates.not(Predicates.equalTo((Object) idx)), (ev, index) -> {
+          T element = collection.remove((int) index);
 
-            if (idx > collection.size()) {
-              collection.add(element);
-            } else {
-              collection.add(idx, element);
-            }
-            if (onUpdate != null) {
-              onUpdate.run();
-            }
+          if (idx > collection.size()) {
+            collection.add(element);
+          } else {
+            collection.add(idx, element);
+          }
+          if (onUpdate != null) {
+            onUpdate.run();
           }
         });
     return widget.asWidget();

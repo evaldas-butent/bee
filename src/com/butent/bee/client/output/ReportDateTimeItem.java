@@ -67,7 +67,7 @@ public class ReportDateTimeItem extends ReportDateItem {
 
   @Override
   protected Editor createFilterEditor() {
-    int limit = 0;
+    int limit;
 
     switch (getFormat()) {
       case DATETIME:
