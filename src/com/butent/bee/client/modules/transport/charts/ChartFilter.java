@@ -9,6 +9,7 @@ import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 
@@ -157,6 +158,23 @@ class ChartFilter implements BeeSerializable {
     return Codec.beeSerialize(list);
   }
 
+  boolean applyTo(Collection<ChartData> data) {
+    boolean result = false;
+
+    if (!BeeUtils.isEmpty(data) && !values.isEmpty()) {
+      for (FilterValue fv : values) {
+        for (ChartData cd : data) {
+          if (cd != null && cd.getType() == fv.type) {
+            result |= cd.setSelected(fv.name, true);
+            break;
+          }
+        }
+      }
+    }
+
+    return result;
+  }
+
   String getLabel() {
     return label;
   }
@@ -171,6 +189,22 @@ class ChartFilter implements BeeSerializable {
 
   boolean isValid() {
     return !BeeUtils.isEmpty(getLabel()) && !values.isEmpty();
+  }
+
+  boolean matches(Collection<ChartData> data) {
+    if (!BeeUtils.isEmpty(data) && !values.isEmpty()) {
+      for (FilterValue fv : values) {
+        for (ChartData cd : data) {
+          if (cd != null && cd.getType() == fv.type) {
+            if (cd.contains(fv.name)) {
+              return true;
+            }
+            break;
+          }
+        }
+      }
+    }
+    return false;
   }
 
   void setInitial(boolean initial) {

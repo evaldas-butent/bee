@@ -10,6 +10,7 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.dialog.DialogBox;
+import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.layout.Flow;
@@ -21,6 +22,7 @@ import com.butent.bee.client.modules.transport.charts.ChartFilter.FilterValue;
 import com.butent.bee.client.modules.transport.charts.Filterable.FilterType;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.HasIndexedWidgets;
+import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.CheckBox;
 import com.butent.bee.client.widget.CustomDiv;
@@ -44,6 +46,8 @@ import java.util.Set;
 final class FilterHelper {
 
   interface DialogCallback {
+
+    void applySavedFilter(int index, Popup popup);
 
     void onClear();
 
@@ -312,6 +316,17 @@ final class FilterHelper {
     }
   }
 
+  static boolean hasSelection(Collection<ChartData> data) {
+    if (data != null) {
+      for (ChartData cd : data) {
+        if (cd != null && cd.hasSelection()) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
   static boolean matches(ChartData data, JustDate date) {
     if (data == null) {
       return true;
@@ -520,20 +535,6 @@ final class FilterHelper {
     return filtered;
   }
 
-  static void renderSavedFilters(HasIndexedWidgets container, List<ChartFilter> filters,
-      DialogCallback callback) {
-
-    if (!container.isEmpty()) {
-      container.clear();
-    }
-
-    if (!BeeUtils.isEmpty(filters)) {
-      for (ChartFilter cf : filters) {
-        renderSavedFilter(container, cf, callback);
-      }
-    }
-  }
-
   static void resetFilter(Collection<? extends Filterable> items, FilterType filterType) {
     if (items != null && filterType != null) {
       for (Filterable item : items) {
@@ -638,19 +639,34 @@ final class FilterHelper {
     Label label = new Label(cf.getLabel());
     label.addStyleName(STYLE_SAVED_LABEL);
 
-    label.addClickHandler(event -> {
-    });
+    label.addClickHandler(event -> callback.applySavedFilter(getSaveFilterIndex(event),
+        UiHelper.getParentPopup(container.asWidget())));
 
     panel.add(label);
 
     CustomDiv remove = new CustomDiv(STYLE_SAVED_REMOVE);
     remove.setText(String.valueOf(BeeConst.CHAR_TIMES));
+    remove.setTitle(Localized.dictionary().removeFilter());
 
     remove.addClickHandler(event -> callback.removeSavedFilter(getSaveFilterIndex(event),
         savedFilters -> renderSavedFilters(container, savedFilters, callback)));
 
     panel.add(remove);
     container.add(panel);
+  }
+
+  private static void renderSavedFilters(HasIndexedWidgets container, List<ChartFilter> filters,
+      DialogCallback callback) {
+
+    if (!container.isEmpty()) {
+      container.clear();
+    }
+
+    if (!BeeUtils.isEmpty(filters)) {
+      for (ChartFilter cf : filters) {
+        renderSavedFilter(container, cf, callback);
+      }
+    }
   }
 
   private FilterHelper() {

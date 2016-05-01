@@ -300,12 +300,13 @@
   display: inline-block;
   width: 10px;
   height: 10px;
-  border: 2px solid #e8e8e8;
+  border: 2px solid gray;
   border-radius: 50%;
   cursor: pointer;
 }
 .bee-tr-chart-filter-savedInitial-checked {
   background-color: #1eb2d8;
+  border-color: #1eb2d8;
 }
 
 .bee-tr-chart-filter-savedLabel {

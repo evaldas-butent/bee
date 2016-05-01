@@ -22,6 +22,7 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.dialog.Icon;
+import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.modules.transport.TransportHandler;
@@ -139,6 +140,11 @@ public abstract class ChartBase extends TimeBoard {
 
         FilterHelper.openDialog(getFilterData(), getSavedFilters(),
             new FilterHelper.DialogCallback() {
+              @Override
+              public void applySavedFilter(int index, Popup popup) {
+                onApplyFilter(index, popup);
+              }
+
               @Override
               public void onClear() {
                 resetFilter(FilterType.TENTATIVE);
@@ -415,7 +421,7 @@ public abstract class ChartBase extends TimeBoard {
         new ResponseCallback() {
           @Override
           public void onResponse(ResponseObject response) {
-            if (setData(response)) {
+            if (setData(response, false)) {
               render(false);
             }
           }
@@ -500,7 +506,7 @@ public abstract class ChartBase extends TimeBoard {
   protected abstract void resetFilter(FilterType filterType);
 
   @Override
-  protected boolean setData(ResponseObject response) {
+  protected boolean setData(ResponseObject response, boolean init) {
     if (!Queries.checkResponse(getCaption(), null, response, BeeRowSet.class)) {
       return false;
     }
@@ -577,7 +583,11 @@ public abstract class ChartBase extends TimeBoard {
     initData(rowSet.getTableProperties());
     updateMaxRange();
 
-    updateFilterData();
+    if (init) {
+      initFilterData();
+    } else {
+      updateFilterData();
+    }
 
     return true;
   }
@@ -640,6 +650,25 @@ public abstract class ChartBase extends TimeBoard {
     }
 
     return result;
+  }
+
+  private void applyFilterData() {
+    setFiltered(filter(FilterType.TENTATIVE));
+
+    if (isFiltered()) {
+      FilterHelper.enableData(getFilterData(), prepareFilterData(FilterType.TENTATIVE), null);
+
+      if (FilterHelper.hasSelection(getFilterData())) {
+        persistFilter();
+        refreshFilterInfo();
+
+      } else {
+        clearFilter();
+      }
+
+    } else {
+      clearFilter();
+    }
   }
 
   private Widget createShipmentDayWidget(Long countryId, Collection<CargoEvent> events,
@@ -820,6 +849,62 @@ public abstract class ChartBase extends TimeBoard {
     return filters;
   }
 
+  private void initFilterData() {
+    if (!getFilterData().isEmpty()) {
+      getFilterData().clear();
+    }
+    if (isFiltered()) {
+      clearFilter();
+    }
+
+    List<ChartData> data = FilterHelper.notEmptyData(prepareFilterData(null));
+
+    if (!BeeUtils.isEmpty(data)) {
+      for (ChartData cd : data) {
+        cd.prepare();
+      }
+
+      List<ChartFilter> savedFilters = getSavedFilters();
+      boolean filter = false;
+
+      for (ChartFilter cf : savedFilters) {
+        if (cf.isInitial()) {
+          filter |= cf.applyTo(data);
+        }
+      }
+
+      getFilterData().addAll(data);
+
+      if (filter) {
+        applyFilterData();
+      }
+    }
+  }
+
+  private void onApplyFilter(int index, Popup popup) {
+    List<ChartFilter> filters = getSavedFilters();
+
+    if (BeeUtils.isIndex(filters, index)) {
+      ChartFilter cf = filters.get(index);
+
+      if (cf.matches(getFilterData())) {
+        if (popup != null) {
+          popup.close();
+        }
+
+        clearFilter();
+
+        if (cf.applyTo(getFilterData())) {
+          applyFilterData();
+        }
+        render(false);
+
+      } else {
+        BeeKeeper.getScreen().notifyWarning(cf.getLabel(), Localized.dictionary().nothingFound());
+      }
+    }
+  }
+
   private void onRemoveFilter(final int index, final Callback<List<ChartFilter>> callback) {
     final List<ChartFilter> filters = getSavedFilters();
 
@@ -992,17 +1077,7 @@ public abstract class ChartBase extends TimeBoard {
       getFilterData().addAll(newData);
 
       if (wasFiltered) {
-        setFiltered(filter(FilterType.TENTATIVE));
-
-        if (isFiltered()) {
-          FilterHelper.enableData(getFilterData(), prepareFilterData(FilterType.TENTATIVE), null);
-
-          persistFilter();
-          refreshFilterInfo();
-
-        } else {
-          clearFilter();
-        }
+        applyFilterData();
       }
     }
   }
