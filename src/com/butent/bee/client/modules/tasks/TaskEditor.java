@@ -268,7 +268,8 @@ class TaskEditor extends ProductSupportInterceptor {
     String time = dialog.getTime(ids.get(COL_DURATION));
 
     if (!BeeUtils.isEmpty(time)) {
-      Long type = dialog.getSelector(ids.get(COL_DURATION_TYPE)).getRelatedId();
+      BeeRow durType = dialog.getSelector(ids.get(COL_DURATION_TYPE)).getRelatedRow();
+      Long type = durType.getLong(Data.getColumnIndex(VIEW_TASK_DURATION_TYPES, COL_DURATION_TYPE));
       if (!DataUtils.isId(type)) {
         showError(Localized.dictionary().crmEnterDurationType());
         return false;

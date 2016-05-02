@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form [
+  <!ENTITY separator "<hr/>">
+
+  <!ENTITY tbl "border-collapse: collapse;">
+  <!ENTITY cell "vertical-align: top; padding-bottom: 2px;">
+  <!ENTITY col1 "text-align: left; padding-right: 8px; width: 128px;">
+   
+  <!ENTITY inp2x "max-width: 580px; min-width: 580px;">
+]>
+<f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form"
+
+  name="NewRequestComment" caption="=crmTaskComment" viewName="RequestEvents" width="610" height="310">
+
+  <FlowPanel style="padding: 10px 2px 2px 10px;">
+    <Table kind="controls" style="&tbl;" cellStyle="&cell;">
+      <col index="0" cellStyle="&col1;" />
+      
+      <row for="Comment">
+        <Label for="Comment" class="bee-required" style="text-align: left;"/>
+      </row>
+      <row for="Comment">
+        <InputArea source="Comment" required="true"
+          style="&inp2x; height: 120px; max-height: 150px;" />
+      </row>
+    </Table>
+ 
+    <FlowPanel class="flexBox-horizontal-top">
+      <FileCollector name="Files" editableColumns="name" />
+    </FlowPanel>
+  </FlowPanel>
+</f:Form>

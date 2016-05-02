@@ -21,8 +21,6 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.data.RowCallback;
-import com.butent.bee.client.dialog.ChoiceCallback;
-import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.grid.HtmlTable;
@@ -43,7 +41,6 @@ import com.butent.bee.client.widget.InlineLabel;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
@@ -74,7 +71,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -95,7 +91,7 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
 
     private final Multimap<ReportValue, ReportValue> rowGroups = TreeMultimap.create();
     private final Set<ReportValue> colGroups = new TreeSet<>();
-    private final Table<ReportValue, ReportItem, Object> values = HashBasedTable.create();
+    private final Table<ReportValue, String, Object> values = HashBasedTable.create();
 
     public void addValues(ReportValue rowGroup, ReportValue[] rowValues, ReportValue colGroup,
         SimpleRow row, ReportInfoItem infoItem) {
@@ -214,46 +210,42 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
     }
 
     private Object getValue(ReportValue row, ReportItem col) {
-      return values.get(row, col);
+      return values.get(row, Integer.toHexString(System.identityHashCode(col)));
     }
 
     private void putValue(ReportValue row, ReportItem col, Object value) {
       if (value != null) {
-        values.put(row, col, value);
+        values.put(row, Integer.toHexString(System.identityHashCode(col)), value);
       }
     }
 
     private static void sort(List<ReportValue> result, final Map<ReportValue, Object> items,
         final boolean descending) {
 
-      Collections.sort(result, new Comparator<ReportValue>() {
-        @SuppressWarnings("unchecked")
-        @Override
-        public int compare(ReportValue value1, ReportValue value2) {
-          Object item1;
-          Object item2;
+      Collections.sort(result, (value1, value2) -> {
+        Object item1;
+        Object item2;
 
-          if (descending) {
-            item1 = items.get(value2);
-            item2 = items.get(value1);
-          } else {
-            item1 = items.get(value1);
-            item2 = items.get(value2);
-          }
+        if (descending) {
+          item1 = items.get(value2);
+          item2 = items.get(value1);
+        } else {
+          item1 = items.get(value1);
+          item2 = items.get(value2);
+        }
 
-          if (item1 == null) {
-            if (item2 == null) {
-              return BeeConst.COMPARE_EQUAL;
-            } else {
-              return BeeConst.COMPARE_LESS;
-            }
-          } else if (item2 == null) {
-            return BeeConst.COMPARE_MORE;
-          } else if (item1 instanceof Comparable) {
-            return ((Comparable<Object>) item1).compareTo(item2);
-          } else {
+        if (item1 == null) {
+          if (item2 == null) {
             return BeeConst.COMPARE_EQUAL;
+          } else {
+            return BeeConst.COMPARE_LESS;
           }
+        } else if (item2 == null) {
+          return BeeConst.COMPARE_MORE;
+        } else if (item1 instanceof Comparable) {
+          return ((Comparable<Object>) item1).compareTo(item2);
+        } else {
+          return BeeConst.COMPARE_EQUAL;
         }
       });
     }
@@ -421,12 +413,7 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
     if (widget instanceof HasClickHandlers) {
       switch (name) {
         case NAME_FILTER_CONTAINER + "Add":
-          ((HasClickHandlers) widget).addClickHandler(new ClickHandler() {
-            @Override
-            public void onClick(ClickEvent event) {
-              addFilterItem();
-            }
-          });
+          ((HasClickHandlers) widget).addClickHandler(event -> addFilterItem());
           break;
       }
     }
@@ -453,12 +440,7 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
               if (reports.contains(rep)) {
                 Global.confirm(Localized.dictionary().reports(), Icon.QUESTION,
                     Arrays.asList(Localized.dictionary().valueExists(value),
-                        Localized.dictionary().actionChange()), new ConfirmationCallback() {
-                      @Override
-                      public void onConfirm() {
-                        saveReport(rep);
-                      }
-                    });
+                        Localized.dictionary().actionChange()), () -> saveReport(rep));
               } else {
                 saveReport(rep);
               }
@@ -612,12 +594,9 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
           ft.getRowFormatter().addStyleName(r, STYLE_REPORT_NORMAL);
         }
         Label name = new Label(rep.getCaption());
-        name.addClickHandler(new ClickHandler() {
-          @Override
-          public void onClick(ClickEvent event) {
-            if (!Objects.equals(rep, activeReport)) {
-              activateReport(rep);
-            }
+        name.addClickHandler(event -> {
+          if (!Objects.equals(rep, activeReport)) {
+            activateReport(rep);
           }
         });
         ft.setWidget(r, 0, name);
@@ -625,21 +604,14 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
 
         if (DataUtils.isId(rep.getId())) {
           remove.setText(String.valueOf(BeeConst.CHAR_TIMES));
-          remove.addClickHandler(new ClickHandler() {
-            @Override
-            public void onClick(ClickEvent event) {
-              Global.confirmRemove(Localized.dictionary().reports(), rep.getCaption(),
-                  new ConfirmationCallback() {
-                    @Override
-                    public void onConfirm() {
-                      Queries.deleteRow(VIEW_REPORT_SETTINGS, rep.getId());
-                      reports.remove(rep);
-                      activateReport(Objects.equals(rep, activeReport)
-                          ? BeeUtils.peek(reports) : activeReport);
-                    }
-                  });
-            }
-          });
+          remove.addClickHandler(
+              event -> Global.confirmRemove(Localized.dictionary().reports(), rep.getCaption(),
+                  () -> {
+                    Queries.deleteRow(VIEW_REPORT_SETTINGS, rep.getId());
+                    reports.remove(rep);
+                    activateReport(Objects.equals(rep, activeReport)
+                        ? BeeUtils.peek(reports) : activeReport);
+                  }));
         }
         ft.setWidget(r, 1, remove);
         r++;
@@ -662,12 +634,9 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
           options.add(item.getCaption());
         }
       }
-      Global.choice(null, null, options, new ChoiceCallback() {
-        @Override
-        public void onSuccess(int value) {
-          activeReport.getFilterItems().add(items.get(value));
-          renderFilters();
-        }
+      Global.choice(null, null, options, value -> {
+        activeReport.getFilterItems().add(items.get(value));
+        renderFilters();
       });
     }
   }
@@ -678,27 +647,21 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
     cap.addStyleName(on ? STYLE_DRILLDOWN_ON : STYLE_DRILLDOWN_OFF);
     cap.setTitle(BeeUtils.join(": ", Localized.dictionary().relation(), infoItem.getRelation()));
 
-    cap.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        final List<String> options = new ArrayList<>();
+    cap.addClickHandler(event -> {
+      final List<String> options = new ArrayList<>();
 
-        for (ReportInfo rep : reports) {
-          if (!on || !Objects.equals(rep.getCaption(), infoItem.getRelation())) {
-            options.add(rep.getCaption());
-          }
+      for (ReportInfo rep : reports) {
+        if (!on || !Objects.equals(rep.getCaption(), infoItem.getRelation())) {
+          options.add(rep.getCaption());
         }
-        if (on) {
-          options.add(Localized.dictionary().clear() + "...");
-        }
-        Global.choice(cap.getTitle(), null, options, new ChoiceCallback() {
-          @Override
-          public void onSuccess(int value) {
-            infoItem.setRelation(on && (value == options.size() - 1) ? null : options.get(value));
-            onUpdate.run();
-          }
-        });
       }
+      if (on) {
+        options.add(Localized.dictionary().clear() + "...");
+      }
+      Global.choice(cap.getTitle(), null, options, value -> {
+        infoItem.setRelation(on && (value == options.size() - 1) ? null : options.get(value));
+        onUpdate.run();
+      });
     });
     return cap;
   }
@@ -714,7 +677,7 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
   private void getReports(final ReportInfo initialReport) {
     reports.clear();
 
-    Queries.getRowSet(VIEW_REPORT_SETTINGS, Arrays.asList(COL_RS_PARAMETERS),
+    Queries.getRowSet(VIEW_REPORT_SETTINGS, Collections.singletonList(COL_RS_PARAMETERS),
         Filter.and(Filter.equals(COL_RS_USER, BeeKeeper.getUser().getUserId()),
             Filter.equals(COL_RS_REPORT, getReport().getReportName()),
             Filter.isNull(COL_RS_CAPTION)), new RowSetCallback() {
@@ -1170,12 +1133,7 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
     container.clear();
 
     if (activeReport != null) {
-      final Runnable refresh = new Runnable() {
-        @Override
-        public void run() {
-          renderLayout();
-        }
-      };
+      final Runnable refresh = this::renderLayout;
       HtmlTable table = new HtmlTable(STYLE_PREFIX);
 
       // ROWS
@@ -1190,18 +1148,11 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
         rCnt++;
       }
       Widget rowAdd = new CustomSpan(STYLE_ADD);
-      ((CustomSpan) rowAdd).addClickHandler(new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent event) {
-          ReportItem.chooseItem(getReport(), false, new Consumer<ReportItem>() {
-            @Override
-            public void accept(ReportItem item) {
-              activeReport.addRowItem(item);
-              refresh.run();
-            }
-          });
-        }
-      });
+      ((CustomSpan) rowAdd)
+          .addClickHandler(event -> ReportItem.chooseItem(getReport(), false, item -> {
+            activeReport.addRowItem(item);
+            refresh.run();
+          }));
       if (rCnt > 0) {
         Horizontal cont = new Horizontal();
         cont.add(table.getWidget(rIdx, rCnt - 1));
@@ -1225,24 +1176,18 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
 
         InlineLabel agg = new InlineLabel(infoItem.getFunction().getCaption());
         agg.addStyleName(STYLE_FUNCTION);
-        agg.addClickHandler(new ClickHandler() {
-          @Override
-          public void onClick(ClickEvent event) {
-            List<String> options = new ArrayList<>();
-            final List<ReportFunction> values = new ArrayList<>();
+        agg.addClickHandler(event -> {
+          List<String> options = new ArrayList<>();
+          final List<ReportFunction> values = new ArrayList<>();
 
-            for (ReportFunction fnc : item.getAvailableFunctions()) {
-              options.add(fnc.getCaption());
-              values.add(fnc);
-            }
-            Global.choice(null, null, options, new ChoiceCallback() {
-              @Override
-              public void onSuccess(int value) {
-                activeReport.setFunction(idx, values.get(value));
-                refresh.run();
-              }
-            });
+          for (ReportFunction fnc : item.getAvailableFunctions()) {
+            options.add(fnc.getCaption());
+            values.add(fnc);
           }
+          Global.choice(null, null, options, value -> {
+            activeReport.setFunction(idx, values.get(value));
+            refresh.run();
+          });
         });
         flow.add(agg);
 
@@ -1254,24 +1199,21 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
               : STYLE_SORT);
           sort.setTitle(Localized.dictionary().sort());
 
-          sort.addClickHandler(new ClickHandler() {
-            @Override
-            public void onClick(ClickEvent event) {
-              Boolean descending;
+          sort.addClickHandler(event -> {
+            Boolean descending;
 
-              if (!infoItem.isSorted()) {
-                descending = false;
-              } else if (infoItem.getDescending()) {
-                descending = null;
-              } else {
-                descending = true;
-              }
-              for (int i = 0; i < activeReport.getColItems().size(); i++) {
-                activeReport.setDescending(i, null);
-              }
-              activeReport.setDescending(idx, descending);
-              refresh.run();
+            if (!infoItem.isSorted()) {
+              descending = false;
+            } else if (infoItem.getDescending()) {
+              descending = null;
+            } else {
+              descending = true;
             }
+            for (int i = 0; i < activeReport.getColItems().size(); i++) {
+              activeReport.setDescending(i, null);
+            }
+            activeReport.setDescending(idx, descending);
+            refresh.run();
           });
           flow.add(sort);
         }
@@ -1286,30 +1228,20 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
             ? STYLE_SUMMARY_ON : STYLE_SUMMARY_OFF);
         colResult.setTitle(Localized.dictionary().columnResults());
 
-        colResult.addClickHandler(new ClickHandler() {
-          @Override
-          public void onClick(ClickEvent event) {
-            activeReport.setColSummary(idx, !infoItem.isColSummary());
-            refresh.run();
-          }
+        colResult.addClickHandler(event -> {
+          activeReport.setColSummary(idx, !infoItem.isColSummary());
+          refresh.run();
         });
         table.setWidget(rIdx + 1, 1 + cCnt, colResult, STYLE_COL_SUMMARY);
         table.getCellFormatter().addStyleName(rIdx + 1, 1 + cCnt, infoItem.getStyle());
         cCnt++;
       }
       Widget colAdd = new CustomSpan(STYLE_ADD);
-      ((CustomSpan) colAdd).addClickHandler(new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent event) {
-          ReportItem.chooseItem(getReport(), null, new Consumer<ReportItem>() {
-            @Override
-            public void accept(ReportItem item) {
-              activeReport.addColItem(item);
-              refresh.run();
-            }
-          });
-        }
-      });
+      ((CustomSpan) colAdd)
+          .addClickHandler(event -> ReportItem.chooseItem(getReport(), null, item -> {
+            activeReport.addColItem(item);
+            refresh.run();
+          }));
       if (cCnt > 0) {
         table.getCellFormatter().setColSpan(rIdx + 1, 0, rCnt);
         table.setText(rIdx + 1, 0, Localized.dictionary().totalOf(), STYLE_SUMMARY_HEADER);
@@ -1324,12 +1256,9 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
         if (activeReport.getColGrouping() != null) {
           table.setWidget(0, 0, buildCaption(activeReport.getColGrouping(), refresh),
               STYLE_COLGROUP_HEADER);
-          cGroup = activeReport.getColGrouping().getItem().render(getReport(), new Runnable() {
-            @Override
-            public void run() {
-              activeReport.setColGrouping(null);
-              refresh.run();
-            }
+          cGroup = activeReport.getColGrouping().getItem().render(getReport(), () -> {
+            activeReport.setColGrouping(null);
+            refresh.run();
           }, refresh).asWidget();
           table.getCellFormatter().setColSpan(0, 2, cCnt);
           table.setText(0, 2, Localized.dictionary().total(), STYLE_COLGROUP_SUMMARY_HEADER);
@@ -1343,12 +1272,9 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
                 ? STYLE_SUMMARY_ON : STYLE_SUMMARY_OFF);
             rowResult.setTitle(Localized.dictionary().rowResults());
 
-            rowResult.addClickHandler(new ClickHandler() {
-              @Override
-              public void onClick(ClickEvent event) {
-                activeReport.setRowSummary(i, !infoItem.isRowSummary());
-                refresh.run();
-              }
+            rowResult.addClickHandler(event -> {
+              activeReport.setRowSummary(i, !infoItem.isRowSummary());
+              refresh.run();
             });
             table.setWidget(rIdx, idx, rowResult, STYLE_ROW_SUMMARY);
             table.getCellFormatter().addStyleName(rIdx, idx, infoItem.getStyle());
@@ -1359,18 +1285,11 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
         } else {
           table.setText(0, 0, Localized.dictionary().groupBy(), STYLE_COLGROUP_HEADER);
           cGroup = new CustomSpan(STYLE_ADD);
-          ((CustomSpan) cGroup).addClickHandler(new ClickHandler() {
-            @Override
-            public void onClick(ClickEvent event) {
-              ReportItem.chooseItem(getReport(), false, new Consumer<ReportItem>() {
-                @Override
-                public void accept(ReportItem item) {
-                  activeReport.setColGrouping(item);
-                  refresh.run();
-                }
-              });
-            }
-          });
+          ((CustomSpan) cGroup).addClickHandler(
+              event -> ReportItem.chooseItem(getReport(), false, item -> {
+                activeReport.setColGrouping(item);
+                refresh.run();
+              }));
         }
         table.setWidget(0, 1, cGroup, STYLE_COLGROUP);
 
@@ -1387,40 +1306,28 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
       // ROW GROUPING
       if (activeReport.getRowItems().size() > 0) {
         table.insertRow(rIdx);
-        int gIdx = rIdx++;
         Horizontal rGroup = new Horizontal();
 
         if (activeReport.getRowGrouping() != null) {
           rGroup.add(buildCaption(activeReport.getRowGrouping(), refresh));
-          rGroup.add(activeReport.getRowGrouping().getItem().render(getReport(), new Runnable() {
-            @Override
-            public void run() {
-              activeReport.setRowGrouping(null);
-              refresh.run();
-            }
+          rGroup.add(activeReport.getRowGrouping().getItem().render(getReport(), () -> {
+            activeReport.setRowGrouping(null);
+            refresh.run();
           }, refresh));
         } else {
           rGroup.add(new Label(Localized.dictionary().groupBy()));
           CustomSpan rGroupAdd = new CustomSpan(STYLE_ADD);
-          rGroupAdd.addClickHandler(new ClickHandler() {
-            @Override
-            public void onClick(ClickEvent event) {
-              ReportItem.chooseItem(getReport(), false, new Consumer<ReportItem>() {
-                @Override
-                public void accept(ReportItem item) {
-                  activeReport.setRowGrouping(item);
-                  refresh.run();
-                }
-              });
-            }
-          });
+          rGroupAdd.addClickHandler(event -> ReportItem.chooseItem(getReport(), false, item -> {
+            activeReport.setRowGrouping(item);
+            refresh.run();
+          }));
           rGroup.add(rGroupAdd);
         }
-        table.setWidget(gIdx, 0, rGroup, STYLE_ROWGROUP);
+        table.setWidget(rIdx, 0, rGroup, STYLE_ROWGROUP);
 
         if (activeReport.getColItems().size() > 0) {
           if (activeReport.getRowGrouping() != null) {
-            table.getCellFormatter().setColSpan(gIdx, 0, rCnt);
+            table.getCellFormatter().setColSpan(rIdx, 0, rCnt);
             int idx = 1;
 
             for (final ReportInfoItem infoItem : activeReport.getColItems()) {
@@ -1429,27 +1336,24 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
                   ? STYLE_SUMMARY_ON : STYLE_SUMMARY_OFF);
               groupResult.setTitle(Localized.dictionary().groupResults());
 
-              groupResult.addClickHandler(new ClickHandler() {
-                @Override
-                public void onClick(ClickEvent event) {
-                  activeReport.setGroupSummary(i, !infoItem.isGroupSummary());
-                  refresh.run();
-                }
+              groupResult.addClickHandler(event -> {
+                activeReport.setGroupSummary(i, !infoItem.isGroupSummary());
+                refresh.run();
               });
-              table.setWidget(gIdx, idx, groupResult, STYLE_ROWGROUP_COL_SUMMARY);
-              table.getCellFormatter().addStyleName(gIdx, idx, infoItem.getStyle());
+              table.setWidget(rIdx, idx, groupResult, STYLE_ROWGROUP_COL_SUMMARY);
+              table.getCellFormatter().addStyleName(rIdx, idx, infoItem.getStyle());
               idx++;
             }
             if (activeReport.getColGrouping() != null) {
-              table.getCellFormatter().setColSpan(gIdx, 1 + cCnt, cCnt);
-              table.getCellFormatter().addStyleName(gIdx, 1 + cCnt, STYLE_ROWGROUP_SUMMARY);
+              table.getCellFormatter().setColSpan(rIdx, 1 + cCnt, cCnt);
+              table.getCellFormatter().addStyleName(rIdx, 1 + cCnt, STYLE_ROWGROUP_SUMMARY);
             }
           } else {
-            table.getCellFormatter().setColSpan(gIdx, 0,
+            table.getCellFormatter().setColSpan(rIdx, 0,
                 rCnt + cCnt + (activeReport.getColGrouping() != null ? cCnt : 0));
           }
         } else {
-          table.getCellFormatter().setColSpan(gIdx, 0, rCnt + cCnt);
+          table.getCellFormatter().setColSpan(rIdx, 0, rCnt + cCnt);
         }
       }
       container.add(table);
@@ -1478,12 +1382,9 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
 
         CustomDiv remove = new CustomDiv(STYLE_REMOVE);
         remove.setText(String.valueOf(BeeConst.CHAR_TIMES));
-        remove.addClickHandler(new ClickHandler() {
-          @Override
-          public void onClick(ClickEvent event) {
-            filterItems.remove(idx);
-            renderFilters();
-          }
+        remove.addClickHandler(event -> {
+          filterItems.remove(idx);
+          renderFilters();
         });
         table.setWidget(idx, 2, remove);
         c++;

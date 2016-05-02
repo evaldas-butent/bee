@@ -86,6 +86,7 @@ class DiscussionsGridHandler extends AbstractGridInterceptor {
       RowFactory.createRow(FORM_NEW_ANNOUNCEMENT, Localized.dictionary().announcementNew(),
           data, emptyRow, Modality.ENABLED, null,
           new CreateDiscussionInterceptor(), null, null);
+      return false;
     }
     return super.beforeAddRow(presenter, copy);
   }

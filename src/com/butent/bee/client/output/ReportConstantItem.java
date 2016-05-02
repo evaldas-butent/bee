@@ -40,6 +40,11 @@ public class ReportConstantItem extends ReportNumericItem {
   }
 
   @Override
+  public String getExpressionCaption() {
+    return Localized.dictionary().constant();
+  }
+
+  @Override
   public Widget getExpressionWidget(Report report) {
     if (expressionWidget == null) {
       expressionWidget = new InputNumber();

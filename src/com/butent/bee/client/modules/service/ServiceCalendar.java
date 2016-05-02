@@ -412,7 +412,7 @@ final class ServiceCalendar extends TimeBoard {
         new ResponseCallback() {
           @Override
           public void onResponse(ResponseObject response) {
-            if (setData(response)) {
+            if (setData(response, false)) {
               render(false);
             }
           }
@@ -561,7 +561,7 @@ final class ServiceCalendar extends TimeBoard {
   }
 
   @Override
-  protected boolean setData(ResponseObject response) {
+  protected boolean setData(ResponseObject response, boolean init) {
     if (!Queries.checkResponse(getCaption(), VIEW_SERVICE_SETTINGS, response, BeeRowSet.class)) {
       return false;
     }

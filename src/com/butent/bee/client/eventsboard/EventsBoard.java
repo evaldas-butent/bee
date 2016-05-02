@@ -141,6 +141,8 @@ public abstract class EventsBoard extends Flow implements Presenter, RowInsertEv
   private static final String CONTENT_COL_EVENT_NOTE = "EventNote";
   private static final String CONTENT_COL_EVENT_FILES = "EventFiles";
 
+  private static final String DEFAULT_PHOTO_IMAGE = "images/defaultUser.png";
+
   private static final int MAX_PADDING_LEFT = 5;
 
   private final BeeLogger logger = LogUtils.getLogger(EventsBoard.class);
@@ -524,7 +526,7 @@ public abstract class EventsBoard extends Flow implements Presenter, RowInsertEv
     afterCreateEventNoteCell(rs, row, widget, cell);
   }
 
-  private void createHeaderView() {
+  public void createHeaderView() {
     headerView = new HeaderImpl();
     headerView.setViewPresenter(this);
     IdentifiableWidget add = null;
@@ -572,11 +574,15 @@ public abstract class EventsBoard extends Flow implements Presenter, RowInsertEv
 
     Long photo = row.getLong(idxPhoto);
 
+    String photoUrl;
+
     if (!DataUtils.isId(photo)) {
-      return;
+      photoUrl = DEFAULT_PHOTO_IMAGE;
+    } else {
+      photoUrl = PhotoRenderer.getUrl(photo);
     }
 
-    Image image = new Image(PhotoRenderer.getUrl(photo));
+    Image image = new Image(photoUrl);
     image.addStyleName(STYLE_PREFIX + STYLE_CONTENT_PHOTO);
 
     if (BeeUtils.isEmpty(getStylePrefix())) {

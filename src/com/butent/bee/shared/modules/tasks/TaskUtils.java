@@ -45,8 +45,9 @@ public final class TaskUtils {
 
   private static final BiMap<String, String> taskPropertyToRelation = HashBiMap.create();
 
-  public static final List<String> TASK_RELATIONS = Lists.newArrayList(PROP_COMPANIES, PROP_PERSONS,
-      PROP_DOCUMENTS, PROP_APPOINTMENTS, PROP_DISCUSSIONS, PROP_SERVICE_OBJECTS, PROP_TASKS);
+  public static final List<String> TASK_RELATIONS = Lists.newArrayList(PROP_COMPANIES,
+      PROP_PERSONS, PROP_DOCUMENTS, PROP_APPOINTMENTS, PROP_DISCUSSIONS, PROP_SERVICE_OBJECTS,
+      PROP_TASKS, PROP_REQUESTS);
 
   public static boolean canConfirmTasks(final DataInfo info, final List<BeeRow> rows,
       long userId, ResponseObject resp) {
@@ -298,6 +299,7 @@ public final class TaskUtils {
       taskPropertyToRelation.put(PROP_SERVICE_OBJECTS, ServiceConstants.COL_SERVICE_OBJECT);
       taskPropertyToRelation.put(PROP_PROJECTS, ProjectConstants.COL_PROJECT);
       taskPropertyToRelation.put(PROP_TASKS, COL_TASK);
+      taskPropertyToRelation.put(PROP_REQUESTS, COL_REQUEST);
     }
     return taskPropertyToRelation;
   }

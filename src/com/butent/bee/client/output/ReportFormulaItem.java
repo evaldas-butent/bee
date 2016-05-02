@@ -1,16 +1,12 @@
 package com.butent.bee.client.output;
 
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.Global;
-import com.butent.bee.client.dialog.ChoiceCallback;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.widget.CustomSpan;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
@@ -111,6 +107,11 @@ public class ReportFormulaItem extends ReportNumericItem {
   }
 
   @Override
+  public String getExpressionCaption() {
+    return Localized.dictionary().formula();
+  }
+
+  @Override
   public Widget getExpressionWidget(Report report) {
     Flow container = new Flow(getStyle() + "-expression");
     temporaryExpression.clear();
@@ -186,12 +187,7 @@ public class ReportFormulaItem extends ReportNumericItem {
   }
 
   private void render(final Flow container, final Report report) {
-    final Runnable refresh = new Runnable() {
-      @Override
-      public void run() {
-        render(container, report);
-      }
-    };
+    final Runnable refresh = () -> render(container, report);
     container.clear();
 
     for (int i = 0; i < temporaryExpression.size(); i++) {
@@ -200,38 +196,24 @@ public class ReportFormulaItem extends ReportNumericItem {
       if (i > 0) {
         Label sep = new Label(pair.getA());
         sep.addStyleName(getStyle() + "-operator");
-        sep.addClickHandler(new ClickHandler() {
-          @Override
-          public void onClick(ClickEvent event) {
-            final List<String> options = Arrays.asList(BeeConst.STRING_PLUS, BeeConst.STRING_MINUS,
-                BeeConst.STRING_ASTERISK, BeeConst.STRING_SLASH);
+        sep.addClickHandler(event -> {
+          final List<String> options = Arrays.asList(BeeConst.STRING_PLUS, BeeConst.STRING_MINUS,
+              BeeConst.STRING_ASTERISK, BeeConst.STRING_SLASH);
 
-            Global.choice(Localized.dictionary().operator(), null, options, new ChoiceCallback() {
-              @Override
-              public void onSuccess(int value) {
-                pair.setA(options.get(value));
-                render(container, report);
-              }
-            });
-          }
+          Global.choice(Localized.dictionary().operator(), null, options, value -> {
+            pair.setA(options.get(value));
+            render(container, report);
+          });
         });
         container.add(sep);
       }
       container.add(ReportItem.renderDnd(pair.getB(), temporaryExpression, i, report, refresh));
     }
     CustomSpan add = new CustomSpan(STYLE_ADD);
-    add.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        chooseItem(report, true, new Consumer<ReportItem>() {
-          @Override
-          public void accept(ReportItem item) {
-            addItem(temporaryExpression, null, item);
-            refresh.run();
-          }
-        });
-      }
-    });
+    add.addClickHandler(event -> chooseItem(report, true, item -> {
+      addItem(temporaryExpression, null, item);
+      refresh.run();
+    }));
     container.add(add);
   }
 }

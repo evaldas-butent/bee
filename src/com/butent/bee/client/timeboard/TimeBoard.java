@@ -4,10 +4,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Range;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.dom.client.DoubleClickEvent;
-import com.google.gwt.event.dom.client.DoubleClickHandler;
 import com.google.gwt.event.dom.client.HasClickHandlers;
 import com.google.gwt.event.dom.client.HasNativeEvent;
 import com.google.gwt.user.client.ui.ComplexPanel;
@@ -234,15 +230,9 @@ public abstract class TimeBoard extends Flow implements Presenter, View, Printab
 
       this.removeFilter = new CustomDiv(STYLE_ACTION_REMOVE_FILTER);
       removeFilter.setText(String.valueOf(BeeConst.CHAR_TIMES));
-
-      removeFilter.addClickHandler(new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent event) {
-          handleAction(Action.REMOVE_FILTER);
-        }
-      });
-
       removeFilter.setTitle(Action.REMOVE_FILTER.getCaption());
+
+      removeFilter.addClickHandler(event -> handleAction(Action.REMOVE_FILTER));
       removeFilter.setVisible(false);
 
       headerView.addCommandItem(removeFilter);
@@ -643,19 +633,16 @@ public abstract class TimeBoard extends Flow implements Presenter, View, Printab
   }
 
   protected void addContentHandlers(Widget content) {
-    Binder.addDoubleClickHandler(content, new DoubleClickHandler() {
-      @Override
-      public void onDoubleClick(DoubleClickEvent event) {
-        int x = event.getX();
-        int y = event.getY();
+    Binder.addDoubleClickHandler(content, event -> {
+      int x = event.getX();
+      int y = event.getY();
 
-        if (x >= getChartLeft() && getVisibleRange() != null && getDayColumnWidth() > 0) {
-          JustDate date = TimeUtils.nextDay(getVisibleRange().lowerEndpoint(),
-              (x - getChartLeft()) / getDayColumnWidth());
+      if (x >= getChartLeft() && getVisibleRange() != null && getDayColumnWidth() > 0) {
+        JustDate date = TimeUtils.nextDay(getVisibleRange().lowerEndpoint(),
+            (x - getChartLeft()) / getDayColumnWidth());
 
-          if (getVisibleRange().contains(date)) {
-            onDoubleClickChart(y / getRowHeight(), date);
-          }
+        if (getVisibleRange().contains(date)) {
+          onDoubleClickChart(y / getRowHeight(), date);
         }
       }
     });
@@ -670,12 +657,7 @@ public abstract class TimeBoard extends Flow implements Presenter, View, Printab
 
   protected void bindOpener(HasClickHandlers widget, final String viewName, final Long id) {
     if (widget != null && id != null) {
-      widget.addClickHandler(new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent event) {
-          openDataRow(event, viewName, id);
-        }
-      });
+      widget.addClickHandler(event -> openDataRow(event, viewName, id));
     }
   }
 
@@ -966,7 +948,7 @@ public abstract class TimeBoard extends Flow implements Presenter, View, Printab
   }
 
   protected void onCreate(ResponseObject response, ViewCallback callback) {
-    if (setData(response)) {
+    if (setData(response, true)) {
       callback.onSuccess(this);
     } else {
       callback.onFailure(getCaption(), Localized.dictionary().nothingFound());
@@ -1203,13 +1185,7 @@ public abstract class TimeBoard extends Flow implements Presenter, View, Printab
       mover.addStyleName(STYLE_FOOTER_SPLITTER);
       StyleUtils.setBottom(mover, Math.max(getFooterHeight(), 0));
 
-      mover.addMoveHandler(new MoveEvent.Handler() {
-        @Override
-        public void onMove(MoveEvent event) {
-          onFooterSplitterMove(event);
-        }
-      });
-
+      mover.addMoveHandler(event -> onFooterSplitterMove(event));
       canvas.add(mover);
     }
   }
@@ -1234,13 +1210,7 @@ public abstract class TimeBoard extends Flow implements Presenter, View, Printab
       mover.addStyleName(STYLE_HEADER_SPLITTER);
       StyleUtils.setTop(mover, Math.max(getHeaderHeight(), 0));
 
-      mover.addMoveHandler(new MoveEvent.Handler() {
-        @Override
-        public void onMove(MoveEvent event) {
-          onHeaderSplitterMove(event);
-        }
-      });
-
+      mover.addMoveHandler(event -> onHeaderSplitterMove(event));
       canvas.add(mover);
     }
   }
@@ -1273,13 +1243,7 @@ public abstract class TimeBoard extends Flow implements Presenter, View, Printab
       StyleUtils.setWidth(mover, getChartLeft() + getCalendarWidth());
       StyleUtils.setTop(mover, getContentHeight());
 
-      mover.addMoveHandler(new MoveEvent.Handler() {
-        @Override
-        public void onMove(MoveEvent event) {
-          onRowResizerMove(event);
-        }
-      });
-
+      mover.addMoveHandler(event -> onRowResizerMove(event));
       panel.add(mover);
     }
   }
@@ -1447,7 +1411,7 @@ public abstract class TimeBoard extends Flow implements Presenter, View, Printab
     this.chartWidth = chartWidth;
   }
 
-  protected abstract boolean setData(ResponseObject response);
+  protected abstract boolean setData(ResponseObject response, boolean init);
 
   protected void setDayColumnWidth(int dayColumnWidth) {
     this.dayColumnWidth = dayColumnWidth;

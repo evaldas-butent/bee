@@ -31,6 +31,18 @@
       <SimpleColumn name="Salary" />
       <SimpleColumn name="PartTime" />
     </SimpleJoin>
+
+    <SimpleColumn name="SubstituteFor" />
+    <SimpleJoin name="SubstituteFor" joinType="LEFT">
+      <SimpleJoin name="CompanyPerson" joinType="LEFT">
+        <SimpleJoin name="Person" joinType="LEFT">
+          <SimpleColumn name="FirstName" alias="ForFirstName" />
+          <SimpleColumn name="LastName" alias="ForLastName" />
+        </SimpleJoin>
+      </SimpleJoin>
+  
+      <SimpleColumn name="TabNumber" alias="ForTabNumber" />
+    </SimpleJoin>
     
     <SimpleColumn name="Object" />
     <SimpleJoin name="Object" joinType="LEFT">
@@ -48,6 +60,7 @@
     <SimpleColumn name="DateFrom" />
     <SimpleColumn name="DateUntil" />
 
+    <SimpleColumn name="Fund" />
     <SimpleColumn name="Wage" />
     <SimpleColumn name="Currency" />
     <SimpleJoin name="Currency" joinType="LEFT">
@@ -63,6 +76,7 @@
     <OrderBy column="LastName" />
     <OrderBy column="FirstName" />
     <OrderBy column="EmployeeCompanyName" />
+    <OrderBy column="TabNumber" />
     <OrderBy column="LocationName" />
   </Order>
 </View>

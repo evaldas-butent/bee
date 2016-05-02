@@ -1,8 +1,5 @@
 package com.butent.bee.client.output;
 
-import com.google.gwt.event.logical.shared.SelectionEvent;
-import com.google.gwt.event.logical.shared.SelectionHandler;
-
 import com.butent.bee.client.composite.TabBar;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
@@ -67,13 +64,8 @@ public class ReportBooleanItem extends ReportItem {
 
       filterWidget.addItems(Arrays.asList(loc.noMatter(), loc.yes(), loc.no()));
 
-      filterWidget.addSelectionHandler(new SelectionHandler<Integer>() {
-        @Override
-        public void onSelection(SelectionEvent<Integer> event) {
-          filter = event.getSelectedItem() == 0
-              ? null : BeeUtils.toBoolean(event.getSelectedItem());
-        }
-      });
+      filterWidget.addSelectionHandler(event -> filter = event.getSelectedItem() == 0
+          ? null : BeeUtils.toBoolean(event.getSelectedItem()));
       filterWidget.selectTab(filter == null ? 0 : (filter ? 1 : 2));
     }
     return filterWidget;

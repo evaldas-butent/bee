@@ -1,11 +1,8 @@
 package com.butent.bee.client.output;
 
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.composite.MultiSelector;
-import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.style.StyleUtils;
@@ -124,7 +121,7 @@ public class ReportTextItem extends ReportItem {
     filterNegation = false;
 
     if (!BeeUtils.isEmpty(value)) {
-      filter = Arrays.asList(value);
+      filter = Collections.singletonList(value);
     } else {
       filter = null;
     }
@@ -149,12 +146,7 @@ public class ReportTextItem extends ReportItem {
   private void renderFilter(final Flow container) {
     final Toggle toggle = new Toggle(Localized.dictionary().is(),
         Localized.dictionary().isNot(), null, filterNegation);
-    toggle.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent clickEvent) {
-        filterNegation = toggle.isChecked();
-      }
-    });
+    toggle.addClickHandler(clickEvent -> filterNegation = toggle.isChecked());
     container.add(toggle);
 
     if (filterWidget == null) {
@@ -169,12 +161,9 @@ public class ReportTextItem extends ReportItem {
       filterWidget = MultiSelector.autonomous(relation, (AbstractCellRenderer) null);
       filterWidget.addStyleName(StyleUtils.NAME_FLEX_BOX_CENTER);
 
-      filterWidget.addSelectorHandler(new SelectorEvent.Handler() {
-        @Override
-        public void onDataSelector(SelectorEvent event) {
-          if (EnumUtils.in(event.getState(), State.INSERTED, State.REMOVED)) {
-            filter = filterWidget.getValues();
-          }
+      filterWidget.addSelectorHandler(event -> {
+        if (EnumUtils.in(event.getState(), State.INSERTED, State.REMOVED)) {
+          filter = filterWidget.getValues();
         }
       });
       filterWidget.setValues(filter);
