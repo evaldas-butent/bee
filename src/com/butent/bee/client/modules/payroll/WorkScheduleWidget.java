@@ -22,6 +22,7 @@ import static com.butent.bee.shared.modules.payroll.PayrollConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
+import com.butent.bee.client.Storage;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
@@ -76,6 +77,7 @@ import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.html.builder.elements.Span;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
+import com.butent.bee.shared.modules.payroll.PayrollConstants.WorkScheduleKind;
 import com.butent.bee.shared.time.DateRange;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeRange;
@@ -280,20 +282,7 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
     return BeeUtils.parenthesize(duration);
   }
 
-  private static boolean readBoolean(String name) {
-    String key = storageKey(name);
-    if (BeeKeeper.getStorage().hasItem(key)) {
-      return BeeKeeper.getStorage().getBoolean(key);
-    } else {
-      return false;
-    }
-  }
-
-  private static String storageKey(String name) {
-    Long userId = BeeKeeper.getUser().getUserId();
-    return BeeUtils.join(BeeConst.STRING_MINUS, "WorkSchedule", userId, name);
-  }
-
+  private final WorkScheduleKind kind;
   private final ScheduleParent scheduleParent;
 
   private BeeRowSet emData;
@@ -317,10 +306,13 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
 
   private boolean summarize = true;
 
-  WorkScheduleWidget(ScheduleParent scheduleParent) {
+  WorkScheduleWidget(WorkScheduleKind kind, ScheduleParent scheduleParent) {
     super(STYLE_CONTAINER);
 
+    this.kind = kind;
     this.scheduleParent = scheduleParent;
+
+    addStyleName(STYLE_PREFIX + kind.getStyleSuffix());
     addStyleName(STYLE_PREFIX + scheduleParent.getStyleSuffix());
 
     this.table = new HtmlTable(STYLE_TABLE);
@@ -872,7 +864,7 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
     if (hasSchedule(partId, range)) {
       String caption = getPartitionCaption(partId);
       List<String> messages = Lists.newArrayList(PayrollHelper.format(activeMonth),
-          Localized.dictionary().clearWorkScheduleQuestion());
+          kind.getClearDataQuestion(Localized.dictionary()));
 
       Global.confirmDelete(caption, Icon.WARNING, messages, new ConfirmationCallback() {
         @Override
@@ -1246,6 +1238,15 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
               }
             });
       }
+    }
+  }
+
+  private boolean readBoolean(String name) {
+    String key = storageKey(name);
+    if (BeeKeeper.getStorage().hasItem(key)) {
+      return BeeKeeper.getStorage().getBoolean(key);
+    } else {
+      return false;
     }
   }
 
@@ -1772,6 +1773,10 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
 
   private void setActiveMonth(YearMonth activeMonth) {
     this.activeMonth = activeMonth;
+  }
+
+  private String storageKey(String name) {
+    return Storage.getUserKey(kind.getStorageKeyPrefix(), name);
   }
 
   private boolean updateDayContent(long partId, JustDate date) {

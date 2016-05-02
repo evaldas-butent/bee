@@ -22,6 +22,7 @@ import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.payroll.PayrollConstants.ObjectStatus;
+import com.butent.bee.shared.modules.payroll.PayrollConstants.WorkScheduleKind;
 import com.butent.bee.shared.time.DateRange;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.YearMonth;
@@ -42,8 +43,8 @@ class EmployeeSchedule extends WorkScheduleWidget {
 
   private final long employeeId;
 
-  EmployeeSchedule(long employeeId) {
-    super(ScheduleParent.EMPLOYEE);
+  EmployeeSchedule(long employeeId, WorkScheduleKind kind) {
+    super(kind, ScheduleParent.EMPLOYEE);
 
     this.employeeId = employeeId;
   }

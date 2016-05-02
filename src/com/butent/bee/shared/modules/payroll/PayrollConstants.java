@@ -9,14 +9,14 @@ public final class PayrollConstants {
   public enum ObjectStatus implements HasLocalizedCaption {
     INACTIVE {
       @Override
-      public String getCaption(Dictionary constants) {
-        return constants.objectStatusInactive();
+      public String getCaption(Dictionary dictionary) {
+        return dictionary.objectStatusInactive();
       }
     },
     ACTIVE {
       @Override
-      public String getCaption(Dictionary constants) {
-        return constants.objectStatusActive();
+      public String getCaption(Dictionary dictionary) {
+        return dictionary.objectStatusActive();
       }
     };
   }
@@ -24,16 +24,57 @@ public final class PayrollConstants {
   public enum WorkScheduleKind implements HasLocalizedCaption {
     PLANNED {
       @Override
-      public String getCaption(Dictionary constants) {
-        return constants.workSchedulePlanned();
+      public String getCaption(Dictionary dictionary) {
+        return dictionary.workSchedulePlanned();
+      }
+
+      @Override
+      public String getClearDataQuestion(Dictionary dictionary) {
+        return dictionary.clearWorkScheduleQuestion();
+      }
+
+      @Override
+      public String getStorageKeyPrefix() {
+        return "WorkSchedule";
+      }
+
+      @Override
+      public String getTccColumnName() {
+        return COL_TC_WS_PLANNED;
       }
     },
+
     ACTUAL {
       @Override
-      public String getCaption(Dictionary constants) {
-        return constants.workScheduleActual();
+      public String getCaption(Dictionary dictionary) {
+        return dictionary.workScheduleActual();
       }
+
+      @Override
+      public String getClearDataQuestion(Dictionary dictionary) {
+        return dictionary.clearTimeSheetQuestion();
+      }
+
+      @Override
+      public String getStorageKeyPrefix() {
+        return "TimeSheet";
+      }
+
+      @Override
+      public String getTccColumnName() {
+        return COL_TC_WS_ACTUAL;
+      }
+    };
+
+    public abstract String getClearDataQuestion(Dictionary dictionary);
+
+    public abstract String getStorageKeyPrefix();
+
+    public String getStyleSuffix() {
+      return name().toLowerCase();
     }
+
+    public abstract String getTccColumnName();
   }
 
   public static final String SVC_GET_SCHEDULE_OVERLAP = "getScheduleOverlap";
@@ -166,6 +207,7 @@ public final class PayrollConstants {
   public static final String FORM_LOCATION = "Location";
   public static final String FORM_EMPLOYEE = "Employee";
   public static final String FORM_WORK_SCHEDULE = "WorkSchedule";
+  public static final String FORM_TIME_SHEET = "TimeSheet";
   public static final String FORM_WORK_SCHEDULE_EDITOR = "WorkScheduleEditor";
   public static final String FORM_EARNINGS = "Earnings";
   public static final String FORM_OBJECT_EARNINGS = "ObjectEarnings";

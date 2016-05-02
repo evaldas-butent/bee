@@ -677,6 +677,8 @@ public interface Dictionary {
 
   default String clearNews() {return g("clearNews");}
 
+  default String clearTimeSheetQuestion() {return g("clearTimeSheetQuestion");}
+
   default String clearWorkScheduleQuestion() {return g("clearWorkScheduleQuestion");}
 
   default String clickSensitivityDistance() {return g("clickSensitivityDistance");}
