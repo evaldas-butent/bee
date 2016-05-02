@@ -69,6 +69,7 @@ import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Image;
+import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.client.widget.InternalLink;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
@@ -663,6 +664,17 @@ class TaskEditor extends ProductSupportInterceptor {
 
   @Override
   public void afterRefresh(FormView form, IsRow row) {
+    Widget area = form.getWidgetBySource(COL_DESCRIPTION);
+
+    if (area != null && area instanceof InputArea) {
+      StyleUtils.setHeight(area, 60);
+      int scroll = area.getElement().getScrollHeight();
+
+      if (scroll > 60) {
+        StyleUtils.setHeight(area, scroll + 2);
+      }
+    }
+
     HeaderView header = form.getViewPresenter().getHeader();
     header.clearCommandPanel();
 

@@ -44,7 +44,7 @@
           
                 <row for="Description">
                   <Label for="Description" />
-                  <InputArea source="Description" style="&inp2x; height: 60px;" name="InputArea" />
+                  <InputArea source="Description" style="&inp2x; height: 60px;" />
                 </row>
               </Table>
           
@@ -53,6 +53,12 @@
               <Table kind="controls" style="&tbl;" cellStyle="&cell;">
                 <col index="0" cellStyle="&col1;" />
           
+                <row>
+                  <Label for="Owner" />
+                  <DataSelector source="Owner" editSource="OwnerPerson" style="&inp2x;" 
+                    readOnly="true" />
+                </row>
+                
                 <row>
                   <Label for="Executor" />
                   <DataSelector source="Executor" editSource="ExecutorPerson" style="&inp2x;" 
