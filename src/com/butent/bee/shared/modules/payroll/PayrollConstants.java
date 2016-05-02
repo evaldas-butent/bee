@@ -21,6 +21,21 @@ public final class PayrollConstants {
     };
   }
 
+  public enum WorkScheduleKind implements HasLocalizedCaption {
+    PLANNED {
+      @Override
+      public String getCaption(Dictionary constants) {
+        return constants.workSchedulePlanned();
+      }
+    },
+    ACTUAL {
+      @Override
+      public String getCaption(Dictionary constants) {
+        return constants.workScheduleActual();
+      }
+    }
+  }
+
   public static final String SVC_GET_SCHEDULE_OVERLAP = "getScheduleOverlap";
   public static final String SVC_GET_SCHEDULED_MONTHS = "getScheduledMonths";
   public static final String SVC_INIT_EARNINGS = "initEarnings";
@@ -66,8 +81,10 @@ public final class PayrollConstants {
 
   public static final String COL_EMPLOYEE_OBJECT_FROM = "DateFrom";
   public static final String COL_EMPLOYEE_OBJECT_UNTIL = "DateUntil";
+  public static final String COL_EMPLOYEE_OBJECT_FUND = "Fund";
   public static final String COL_EMPLOYEE_OBJECT_NOTE = "Note";
 
+  public static final String COL_SUBSTITUTE_FOR = "SubstituteFor";
   public static final String COL_WAGE = "Wage";
 
   public static final String COL_TIME_CARD_CHANGES_FROM = "DateFrom";
@@ -76,6 +93,7 @@ public final class PayrollConstants {
   public static final String COL_DATE_OF_EMPLOYMENT = "DateOfEmployment";
   public static final String COL_DATE_OF_DISMISSAL = "DateOfDismissal";
 
+  public static final String COL_WORK_SCHEDULE_KIND = "Kind";
   public static final String COL_WORK_SCHEDULE_DATE = "Date";
   public static final String COL_WORK_SCHEDULE_FROM = "TimeFrom";
   public static final String COL_WORK_SCHEDULE_UNTIL = "TimeUntil";
@@ -87,6 +105,8 @@ public final class PayrollConstants {
 
   public static final String COL_TC_CODE = "TcCode";
   public static final String COL_TC_NAME = "TcName";
+  public static final String COL_TC_WS_PLANNED = "WsPlanned";
+  public static final String COL_TC_WS_ACTUAL = "WsActual";
   public static final String COL_TC_DESCRIPTION = "Description";
 
   public static final String COL_TR_CODE = "TrCode";
@@ -160,6 +180,7 @@ public final class PayrollConstants {
 
   public static void register() {
     EnumUtils.register(ObjectStatus.class);
+    EnumUtils.register(WorkScheduleKind.class);
   }
 
   private PayrollConstants() {
