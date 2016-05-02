@@ -5,7 +5,7 @@
   idName="WorkScheduleID"
   >
   <Fields>
-    <Enum name="Kind" key="WorkScheduleKind" label="=kind" />
+    <Enum name="Kind" notNull="true" key="WorkScheduleKind" label="=kind" />
 
     <Relation name="Employee" notNull="true" relation="Employees" cascade="DELETE"
       label="=employee" />

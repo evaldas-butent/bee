@@ -175,7 +175,7 @@ class LocationSchedule extends WorkScheduleWidget {
   }
 
   @Override
-  protected Filter getWorkScheduleFilter() {
+  protected Filter getWorkScheduleRelationFilter() {
     return Filter.equals(COL_PAYROLL_OBJECT, objectId);
   }
 
@@ -274,7 +274,7 @@ class LocationSchedule extends WorkScheduleWidget {
     filters.put(VIEW_LOCATIONS, Filter.compareId(objectId));
 
     viewNames.add(VIEW_WORK_SCHEDULE);
-    filters.put(VIEW_WORK_SCHEDULE, Filter.equals(COL_PAYROLL_OBJECT, objectId));
+    filters.put(VIEW_WORK_SCHEDULE, getWorkScheduleFilter());
 
     viewNames.add(VIEW_EMPLOYEE_OBJECTS);
     filters.put(VIEW_EMPLOYEE_OBJECTS, Filter.equals(COL_PAYROLL_OBJECT, objectId));
@@ -324,8 +324,11 @@ class LocationSchedule extends WorkScheduleWidget {
                   render();
 
                 } else {
-                  Queries.getRowSet(VIEW_TIME_CARD_CHANGES, null,
-                      Filter.any(COL_EMPLOYEE, employees), new Queries.RowSetCallback() {
+                  Filter tccFilter = Filter.and(Filter.any(COL_EMPLOYEE, employees),
+                      getTimeCardChangesFilter());
+
+                  Queries.getRowSet(VIEW_TIME_CARD_CHANGES, null, tccFilter,
+                      new Queries.RowSetCallback() {
                         @Override
                         public void onSuccess(BeeRowSet tcRowSet) {
                           setTcData(tcRowSet);

@@ -52,6 +52,7 @@ import com.butent.bee.shared.time.TimeRange;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.time.YearMonth;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -210,12 +211,17 @@ public class PayrollModuleBean implements BeeModule {
     return getModule().getName();
   }
 
-  public ResponseObject getWorkSchedule(String companyCode, Integer tabNumber, DateRange range) {
+  public ResponseObject getWorkSchedule(String companyCode, Integer tabNumber, DateRange range,
+      WorkScheduleKind kind) {
+
     if (BeeUtils.isEmpty(companyCode)) {
       return ResponseObject.error("company code not specified");
     }
     if (range == null) {
       return ResponseObject.error("date range not specified");
+    }
+    if (kind == null) {
+      return ResponseObject.error("schedule kind not specified");
     }
 
     ResponseObject ecr = getEmployeeCondition(companyCode, tabNumber);
@@ -252,6 +258,7 @@ public class PayrollModuleBean implements BeeModule {
             sys.joinTables(TBL_COMPANY_PERSONS, TBL_EMPLOYEES, COL_COMPANY_PERSON))
         .setWhere(
             SqlUtils.and(employeeCondition,
+                SqlUtils.equals(TBL_WORK_SCHEDULE, COL_WORK_SCHEDULE_KIND, kind),
                 SqlUtils.moreEqual(TBL_WORK_SCHEDULE, COL_WORK_SCHEDULE_DATE, from),
                 SqlUtils.lessEqual(TBL_WORK_SCHEDULE, COL_WORK_SCHEDULE_DATE, until)));
 
@@ -387,7 +394,7 @@ public class PayrollModuleBean implements BeeModule {
             sys.joinTables(TBL_TIME_RANGES, TBL_WORK_SCHEDULE, COL_TIME_RANGE_CODE))
         .setWhere(
             SqlUtils.and(
-                SqlUtils.equals(TBL_WORK_SCHEDULE,
+                SqlUtils.equals(TBL_WORK_SCHEDULE, COL_WORK_SCHEDULE_KIND, WorkScheduleKind.ACTUAL,
                     COL_EMPLOYEE, employee, COL_PAYROLL_OBJECT, object),
                 SqlUtils.moreEqual(TBL_WORK_SCHEDULE, COL_WORK_SCHEDULE_DATE, from),
                 SqlUtils.lessEqual(TBL_WORK_SCHEDULE, COL_WORK_SCHEDULE_DATE, until)));
@@ -555,12 +562,17 @@ public class PayrollModuleBean implements BeeModule {
         .addFields(TBL_WORK_SCHEDULE, COL_WORK_SCHEDULE_DATE, COL_PAYROLL_OBJECT)
         .addFrom(TBL_WORK_SCHEDULE);
 
+    HasConditions where = SqlUtils.and();
+    where.add(SqlUtils.equals(TBL_WORK_SCHEDULE, COL_WORK_SCHEDULE_KIND, WorkScheduleKind.ACTUAL));
+
     if (DataUtils.isId(manager)) {
-      query
-          .addFromInner(TBL_LOCATIONS,
-              sys.joinTables(TBL_LOCATIONS, TBL_WORK_SCHEDULE, COL_PAYROLL_OBJECT))
-          .setWhere(SqlUtils.equals(TBL_LOCATIONS, COL_LOCATION_MANAGER, manager));
+      query.addFromInner(TBL_LOCATIONS,
+          sys.joinTables(TBL_LOCATIONS, TBL_WORK_SCHEDULE, COL_PAYROLL_OBJECT));
+
+      where.add(SqlUtils.equals(TBL_LOCATIONS, COL_LOCATION_MANAGER, manager));
     }
+
+    query.setWhere(where);
 
     SimpleRowSet data = qs.getData(query);
     if (DataUtils.isEmpty(data)) {
@@ -610,6 +622,12 @@ public class PayrollModuleBean implements BeeModule {
       return ResponseObject.parameterNotFound(reqInfo.getSubService(), Service.VAR_VALUE);
     }
 
+    WorkScheduleKind kind = EnumUtils.getEnumByIndex(WorkScheduleKind.class,
+        reqInfo.getParameter(COL_WORK_SCHEDULE_KIND));
+    if (kind == null) {
+      return ResponseObject.parameterNotFound(reqInfo.getSubService(), COL_WORK_SCHEDULE_KIND);
+    }
+
     String partitionColumn;
     switch (relationColumn) {
       case COL_PAYROLL_OBJECT:
@@ -631,12 +649,14 @@ public class PayrollModuleBean implements BeeModule {
     Integer to = reqInfo.getParameterInt(Service.VAR_TO);
     JustDate dateUntil = (to == null) ? null : new JustDate(to);
 
-    HasConditions dateWhere = SqlUtils.and();
+    HasConditions wsWhere = SqlUtils.and();
+    wsWhere.add(SqlUtils.equals(TBL_WORK_SCHEDULE, COL_WORK_SCHEDULE_KIND, kind));
+
     if (dateFrom != null) {
-      dateWhere.add(SqlUtils.moreEqual(TBL_WORK_SCHEDULE, COL_WORK_SCHEDULE_DATE, dateFrom));
+      wsWhere.add(SqlUtils.moreEqual(TBL_WORK_SCHEDULE, COL_WORK_SCHEDULE_DATE, dateFrom));
     }
     if (dateUntil != null) {
-      dateWhere.add(SqlUtils.lessEqual(TBL_WORK_SCHEDULE, COL_WORK_SCHEDULE_DATE, dateUntil));
+      wsWhere.add(SqlUtils.lessEqual(TBL_WORK_SCHEDULE, COL_WORK_SCHEDULE_DATE, dateUntil));
     }
 
     IsCondition relWhere = SqlUtils.equals(TBL_WORK_SCHEDULE, relationColumn, relId);
@@ -654,15 +674,15 @@ public class PayrollModuleBean implements BeeModule {
     switch (relationColumn) {
       case COL_PAYROLL_OBJECT:
         subQuery.setWhere(SqlUtils.and(SqlUtils.notEqual(TBL_WORK_SCHEDULE, relationColumn, relId),
-            dateWhere));
+            wsWhere));
 
         query.addFromInner(subQuery, subAlias, SqlUtils.joinUsing(TBL_WORK_SCHEDULE, subAlias,
             partitionColumn, COL_WORK_SCHEDULE_DATE));
-        query.setWhere(SqlUtils.and(relWhere, dateWhere));
+        query.setWhere(SqlUtils.and(relWhere, wsWhere));
         break;
 
       case COL_EMPLOYEE:
-        subQuery.setWhere(SqlUtils.and(relWhere, dateWhere));
+        subQuery.setWhere(SqlUtils.and(relWhere, wsWhere));
 
         SqlSelect datesQuery = new SqlSelect()
             .addFields(subAlias, COL_WORK_SCHEDULE_DATE)
@@ -713,7 +733,7 @@ public class PayrollModuleBean implements BeeModule {
             break;
         }
 
-        if (overlaps(objId, emplId, date)) {
+        if (overlaps(objId, emplId, date, kind)) {
           overlap.put(partId, -date.getDays());
         } else {
           overlap.put(partId, date.getDays());
@@ -805,6 +825,7 @@ public class PayrollModuleBean implements BeeModule {
 
     HasConditions scheduleWhere =
         SqlUtils.and(
+            SqlUtils.equals(TBL_WORK_SCHEDULE, COL_WORK_SCHEDULE_KIND, WorkScheduleKind.ACTUAL),
             SqlUtils.moreEqual(TBL_WORK_SCHEDULE, COL_WORK_SCHEDULE_DATE, from),
             SqlUtils.lessEqual(TBL_WORK_SCHEDULE, COL_WORK_SCHEDULE_DATE, until),
             SqlUtils.or(
@@ -899,7 +920,7 @@ public class PayrollModuleBean implements BeeModule {
     return ResponseObject.response(result);
   }
 
-  private boolean overlaps(long objId, long emplId, JustDate date) {
+  private boolean overlaps(long objId, long emplId, JustDate date, WorkScheduleKind kind) {
     Set<TimeRange> objRanges = new HashSet<>();
     Set<TimeRange> otherRanges = new HashSet<>();
 
@@ -907,7 +928,8 @@ public class PayrollModuleBean implements BeeModule {
     Set<Long> otherTrIds = new HashSet<>();
 
     Filter filter = Filter.and(Filter.equals(COL_EMPLOYEE, emplId),
-        Filter.equals(COL_WORK_SCHEDULE_DATE, date));
+        Filter.equals(COL_WORK_SCHEDULE_DATE, date),
+        Filter.equals(COL_WORK_SCHEDULE_KIND, kind));
 
     BeeRowSet rowSet = qs.getViewData(VIEW_WORK_SCHEDULE, filter);
 

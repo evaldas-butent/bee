@@ -164,7 +164,7 @@ class EmployeeSchedule extends WorkScheduleWidget {
   }
 
   @Override
-  protected Filter getWorkScheduleFilter() {
+  protected Filter getWorkScheduleRelationFilter() {
     return Filter.equals(COL_EMPLOYEE, employeeId);
   }
 
@@ -238,13 +238,14 @@ class EmployeeSchedule extends WorkScheduleWidget {
     filters.put(VIEW_EMPLOYEES, Filter.compareId(employeeId));
 
     viewNames.add(VIEW_WORK_SCHEDULE);
-    filters.put(VIEW_WORK_SCHEDULE, Filter.equals(COL_EMPLOYEE, employeeId));
+    filters.put(VIEW_WORK_SCHEDULE, getWorkScheduleFilter());
 
     viewNames.add(VIEW_EMPLOYEE_OBJECTS);
     filters.put(VIEW_EMPLOYEE_OBJECTS, Filter.equals(COL_EMPLOYEE, employeeId));
 
     viewNames.add(VIEW_TIME_CARD_CHANGES);
-    filters.put(VIEW_TIME_CARD_CHANGES, Filter.equals(COL_EMPLOYEE, employeeId));
+    filters.put(VIEW_TIME_CARD_CHANGES, Filter.and(Filter.equals(COL_EMPLOYEE, employeeId),
+        getTimeCardChangesFilter()));
 
     viewNames.add(VIEW_TIME_CARD_CODES);
     viewNames.add(VIEW_TIME_RANGES);
