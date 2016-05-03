@@ -72,7 +72,7 @@
                     label="=crmTaskObservers" />
                 </row>
                 <row>
-                  <Label text="=project" style="&top1;">
+                  <Label text="=project">
                     &forProject;
                   </Label>
                   <DataSelector source="Project" renderColumns="ProjectName"
@@ -81,7 +81,7 @@
                   </DataSelector>
                 </row>
                 <row>
-                  <Label text="=prjStage" style="&top1;">
+                  <Label text="=prjStage">
                     &forProject;
                   </Label>
                   <DataSelector source="ProjectStage" renderColumns="StageName" 
@@ -259,6 +259,6 @@
     </center>
   </SplitPanel>
   <f:rowMessage>
-    <ui:function>return "&lt;span style&#61;\"font-weight:bold; font-size:23px;\"&gt;" + row.Summary + "&lt;&#47;span&gt;";</ui:function>
+    <ui:function>return "&lt;span style&#61;\"font-size:23px; color: #484849; font-weight: lighter;\"&gt;" + row.Summary + "&lt;&#47;span&gt;";</ui:function>
   </f:rowMessage>
 </f:Form>
