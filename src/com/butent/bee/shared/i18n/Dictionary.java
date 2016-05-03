@@ -3804,9 +3804,13 @@ public interface Dictionary {
 
   default String prjFilterAll() {return g("prjFilterAll");}
 
+  default String prjFilterNotLate() {return g("prjFilterNotLate");}
+
   default String prjIncomePlan() {return g("prjIncomePlan");}
 
   default String prjInitialStage() {return g("prjInitialStage");}
+
+  default String prjLabelNotLate() {return g("prjLabelNotLate");}
 
   default String prjManager() {return g("prjManager");}
 
@@ -3829,6 +3833,8 @@ public interface Dictionary {
   default String prjOtherExpenses() {return g("prjOtherExpenses");}
 
   default String prjOverdue() {return g("prjOverdue");}
+
+  default String prjOverduePercent() {return g("prjOverduePercent");}
 
   default String prjParticipant() {return g("prjParticipant");}
 
