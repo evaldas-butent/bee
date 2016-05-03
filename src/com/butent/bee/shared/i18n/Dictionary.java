@@ -2543,6 +2543,8 @@ public interface Dictionary {
 
   default String feeds() {return g("feeds");}
 
+  default String fetchWorkSchedule() {return g("fetchWorkSchedule");}
+
   default String fields() {return g("fields");}
 
   default String file() {return g("file");}

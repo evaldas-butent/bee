@@ -10,6 +10,7 @@
 
   <g:columns>
     <IdColumn name="ID" width="50" />
+
     <DataColumn name="Date" width="100" visible="true" />
     <DataColumn name="Finished" width="100" format="DATE_TIME_SHORT" />
     <RelColumn name="Customer" minWidth="100" visible="true" />
@@ -17,6 +18,7 @@
     <DataColumn name="Content" minWidth="100" flexShrink="1" whiteSpace="nowrap" visible="true" />
 
     <RelColumn name="Manager" minWidth="100" />
+
     <DataColumn name="Result" visible="false" />
     <RelColumn name="RequestType" renderColumns="RequestTypeName">
       <dynStyle>

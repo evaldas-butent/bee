@@ -487,6 +487,9 @@ public class RequestEditor extends ProductSupportInterceptor {
 
     taskRow.setValue(taskDataInfo.getColumnIndex(COL_OWNER), user);
 
+    taskRow.setValue(taskDataInfo.getColumnIndex(COL_START_TIME), TimeUtils.nowMinutes());
+    taskRow.setValue(taskDataInfo.getColumnIndex(COL_FINISH_TIME), TimeUtils.nowMinutes());
+
     if (!BeeUtils.isEmpty(reqRow.getString(form.getDataIndex(COL_PRODUCT)))) {
       taskRow.setValue(taskDataInfo.getColumnIndex(COL_PRODUCT), reqRow
           .getString(form.getDataIndex(COL_PRODUCT)));
