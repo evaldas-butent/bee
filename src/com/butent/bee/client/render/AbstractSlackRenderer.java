@@ -1,6 +1,8 @@
-package com.butent.bee.client.modules.tasks;
+package com.butent.bee.client.render;
 
-import com.butent.bee.client.render.AbstractCellRenderer;
+import static com.butent.bee.shared.modules.projects.ProjectConstants.*;
+
+import com.butent.bee.client.data.Data;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.css.Colors;
@@ -13,16 +15,15 @@ import com.butent.bee.shared.export.XFont;
 import com.butent.bee.shared.export.XSheet;
 import com.butent.bee.shared.export.XStyle;
 import com.butent.bee.shared.html.builder.elements.Div;
+import com.butent.bee.shared.modules.projects.ProjectStatus;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
-import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.List;
 
-class SlackRenderer extends AbstractCellRenderer {
+public abstract class AbstractSlackRenderer extends AbstractCellRenderer {
 
   private enum Kind {
     LATE, OPENING, ENDGAME, SCHEDULED;
@@ -46,13 +47,7 @@ class SlackRenderer extends AbstractCellRenderer {
     return bar.toString();
   }
 
-  private static Kind getKind(TaskStatus status, DateTime start, DateTime finish) {
-    if (status == null || status == TaskStatus.COMPLETED || status == TaskStatus.CANCELED
-        || status == TaskStatus.APPROVED) {
-      return null;
-    }
-
-    DateTime now = TimeUtils.nowMinutes();
+  private static Kind getKind(DateTime start, DateTime finish, DateTime now) {
 
     if (finish != null && TimeUtils.isLess(finish, now)) {
       return Kind.LATE;
@@ -81,8 +76,7 @@ class SlackRenderer extends AbstractCellRenderer {
     }
   }
 
-  private static long getMinutes(Kind kind, DateTime start, DateTime finish) {
-    DateTime now = TimeUtils.nowMinutes();
+  private static long getMinutes(Kind kind, DateTime start, DateTime finish, DateTime now) {
 
     switch (kind) {
       case LATE:
@@ -101,36 +95,69 @@ class SlackRenderer extends AbstractCellRenderer {
     }
   }
 
-  private final int statusIndex;
+  private final List<? extends IsColumn> isColumns;
 
-  private final int startIndex;
-  private final int finishIndex;
-
-  SlackRenderer(List<? extends IsColumn> columns) {
+  protected AbstractSlackRenderer(List<? extends IsColumn> columns) {
     super(null);
 
-    this.statusIndex = DataUtils.getColumnIndex(TaskConstants.COL_STATUS, columns);
-    this.startIndex = DataUtils.getColumnIndex(TaskConstants.COL_START_TIME, columns);
-    this.finishIndex = DataUtils.getColumnIndex(TaskConstants.COL_FINISH_TIME, columns);
+    this.isColumns = columns;
   }
+
+  /**
+   * This method must return start DateTime which will be used in
+   * {@code export(IsRow, int, Integer, XSheet}, {@code render(IsRow)} and
+   * {@code getKind(DateTime, DateTime)} methods.
+   * 
+   * If null is returned then the calculations won't work.
+   * 
+   * @param columns are IsColumn columns.
+   * @param row is provided current IsRow.
+   * @return start DateTime which will be used for calculations.
+   */
+  public abstract DateTime getStartDateTime(List<? extends IsColumn> columns, IsRow row);
+
+  /**
+   * This method must return end DateTime which will be used in
+   * {@code export(IsRow, int, Integer, XSheet}, {@code render(IsRow)} and
+   * {@code getKind(DateTime, DateTime)} methods.
+   * 
+   * If null is returned then the calculations won't work.
+   * 
+   * @param columns are IsColumn columns.
+   * @param row is provided current IsRow.
+   * @return end DateTime which will be used for calculations.
+   */
+  public abstract DateTime getFinishDateTime(List<? extends IsColumn> columns, IsRow row);
 
   @Override
   public XCell export(IsRow row, int cellIndex, Integer styleRef, XSheet sheet) {
     if (row == null || sheet == null) {
       return null;
     }
+    DateTime now = TimeUtils.nowMinutes();
+    if (row.getInteger(Data.getColumnIndex(VIEW_PROJECTS, COL_PROJECT_STATUS)) != null) {
+      int projectStatus =
+          BeeUtils.unbox(row.getInteger(Data.getColumnIndex(VIEW_PROJECTS, COL_PROJECT_STATUS)));
+      if (projectStatus == ProjectStatus.APPROVED.ordinal()
+          || projectStatus == ProjectStatus.SUSPENDED.ordinal()) {
+        if (row.getDateTime(DataUtils.getColumnIndex(COL_PROJECT_APPROVED_DATE, isColumns))
+        != null) {
+          now =
+              row.getDateTime(DataUtils.getColumnIndex(COL_PROJECT_APPROVED_DATE,
+                  isColumns));
+        }
+      }
+    }
 
-    TaskStatus status = EnumUtils.getEnumByIndex(TaskStatus.class, row.getInteger(statusIndex));
+    DateTime start = getStartDateTime(isColumns, row);
+    DateTime finish = getFinishDateTime(isColumns, row);
 
-    DateTime start = row.getDateTime(startIndex);
-    DateTime finish = row.getDateTime(finishIndex);
-
-    Kind kind = getKind(status, start, finish);
+    Kind kind = getKind(start, finish, now);
     if (kind == null) {
       return null;
     }
 
-    long minutes = getMinutes(kind, start, finish);
+    long minutes = getMinutes(kind, start, finish, now);
     String text = (minutes == 0L) ? BeeConst.STRING_EMPTY : getLabel(minutes);
 
     XStyle style = new XStyle();
@@ -177,18 +204,30 @@ class SlackRenderer extends AbstractCellRenderer {
     if (row == null) {
       return null;
     }
+    DateTime now = TimeUtils.nowMinutes();
+    if (row.getInteger(Data.getColumnIndex(VIEW_PROJECTS, COL_PROJECT_STATUS)) != null) {
+      int projectStatus =
+          BeeUtils.unbox(row.getInteger(Data.getColumnIndex(VIEW_PROJECTS, COL_PROJECT_STATUS)));
+      if (projectStatus == ProjectStatus.APPROVED.ordinal()
+          || projectStatus == ProjectStatus.SUSPENDED.ordinal()) {
+        if (row.getDateTime(DataUtils.getColumnIndex(COL_PROJECT_APPROVED_DATE, isColumns))
+        != null) {
+          now =
+              row.getDateTime(DataUtils.getColumnIndex(COL_PROJECT_APPROVED_DATE,
+                  isColumns));
+        }
+      }
+    }
 
-    TaskStatus status = EnumUtils.getEnumByIndex(TaskStatus.class, row.getInteger(statusIndex));
+    DateTime start = getStartDateTime(isColumns, row);
+    DateTime finish = getFinishDateTime(isColumns, row);
 
-    DateTime start = row.getDateTime(startIndex);
-    DateTime finish = row.getDateTime(finishIndex);
-
-    Kind kind = getKind(status, start, finish);
+    Kind kind = getKind(start, finish, now);
     if (kind == null) {
       return BeeConst.STRING_EMPTY;
     }
 
-    long minutes = getMinutes(kind, start, finish);
+    long minutes = getMinutes(kind, start, finish, now);
     if (minutes == 0L) {
       return BeeConst.STRING_EMPTY;
     }

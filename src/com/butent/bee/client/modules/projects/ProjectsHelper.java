@@ -271,7 +271,7 @@ public final class ProjectsHelper {
       JustDate date = TimeUtils.toDateOrNull(value);
 
       result = date == null ? result : date.toString();
-    } else if (!BeeUtils.isEmpty(col.getEnumKey())) {
+    } else if (col != null ? !BeeUtils.isEmpty(col.getEnumKey()) : false) {
       return EnumUtils.getCaption(col.getEnumKey(), BeeUtils.toInt(value));
     }
 
