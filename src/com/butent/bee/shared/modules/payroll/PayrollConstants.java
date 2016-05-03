@@ -42,6 +42,11 @@ public final class PayrollConstants {
       public String getTccColumnName() {
         return COL_TC_WS_PLANNED;
       }
+
+      @Override
+      public boolean isSubstitutionEnabled() {
+        return false;
+      }
     },
 
     ACTUAL {
@@ -64,6 +69,11 @@ public final class PayrollConstants {
       public String getTccColumnName() {
         return COL_TC_WS_ACTUAL;
       }
+
+      @Override
+      public boolean isSubstitutionEnabled() {
+        return true;
+      }
     };
 
     public abstract String getClearDataQuestion(Dictionary dictionary);
@@ -75,6 +85,8 @@ public final class PayrollConstants {
     }
 
     public abstract String getTccColumnName();
+
+    public abstract boolean isSubstitutionEnabled();
   }
 
   public static final String SVC_GET_SCHEDULE_OVERLAP = "getScheduleOverlap";

@@ -170,6 +170,11 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
   private static final String STYLE_TODAY = STYLE_PREFIX + "today";
 
   private static final String STYLE_CONTROL_PANEL = STYLE_PREFIX + "control-panel";
+  private static final String STYLE_MODE_PANEL = STYLE_PREFIX + "mode-panel";
+
+  private static final String STYLE_COMMAND = STYLE_PREFIX + "command";
+  private static final String STYLE_COMMAND_SUBSTITUTION = STYLE_PREFIX + "command-substitution";
+  private static final String STYLE_COMMAND_FETCH = STYLE_PREFIX + "command-fetch";
 
   private static final String STYLE_INPUT_MODE_PANEL = STYLE_PREFIX + "input-mode-panel";
   private static final String STYLE_INPUT_MODE_SIMPLE = STYLE_PREFIX + "input-mode-simple";
@@ -535,7 +540,11 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
   }
 
   protected Filter getWorkScheduleFilter() {
-    return Filter.and(Filter.equals(COL_WORK_SCHEDULE_KIND, kind), getWorkScheduleRelationFilter());
+    return Filter.and(getWorkScheduleKindFilter(), getWorkScheduleRelationFilter());
+  }
+
+  protected Filter getWorkScheduleKindFilter() {
+    return Filter.equals(COL_WORK_SCHEDULE_KIND, kind);
   }
 
   protected abstract Filter getWorkScheduleRelationFilter();
@@ -887,8 +896,8 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
     final int dateIndex = dataInfo.getColumnIndex(COL_WORK_SCHEDULE_DATE);
     row.setValue(dateIndex, date);
 
-    Filter filter = Filter.and(
-        Filter.or(getWorkScheduleFilter(),
+    Filter filter = Filter.and(getWorkScheduleKindFilter(),
+        Filter.or(getWorkScheduleRelationFilter(),
             Filter.equals(scheduleParent.getWorkSchedulePartitionColumn(), partId)),
         Filter.equals(COL_WORK_SCHEDULE_DATE, date));
     GridFactory.registerImmutableFilter(GRID_WORK_SCHEDULE_DAY, filter);
@@ -1216,6 +1225,12 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
     }
   }
 
+  private void onFetch() {
+  }
+
+  private void onSubstitution() {
+  }
+
   private boolean readBoolean(String name) {
     String key = storageKey(name);
     if (BeeKeeper.getStorage().hasItem(key)) {
@@ -1319,8 +1334,32 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
     table.setWidgetAndStyle(r, CALENDAR_PARTITION_COL, appender, STYLE_APPEND_PANEL);
 
     Flow controlPanel = new Flow();
-    controlPanel.add(renderInputMode());
-    controlPanel.add(renderDndMode());
+
+    if (!BeeUtils.isEmpty(partIds)) {
+      if (kind.isSubstitutionEnabled()) {
+        Button substitutionCommand = new Button(Localized.dictionary().employeeSubstitution());
+        substitutionCommand.addStyleName(STYLE_COMMAND);
+        substitutionCommand.addStyleName(STYLE_COMMAND_SUBSTITUTION);
+
+        substitutionCommand.addClickHandler(event -> onSubstitution());
+        controlPanel.add(substitutionCommand);
+      }
+
+      if (kind == WorkScheduleKind.ACTUAL) {
+        Button fetchCommand = new Button(Localized.dictionary().fetchWorkSchedule());
+        fetchCommand.addStyleName(STYLE_COMMAND);
+        fetchCommand.addStyleName(STYLE_COMMAND_FETCH);
+
+        fetchCommand.addClickHandler(event -> onFetch());
+        controlPanel.add(fetchCommand);
+      }
+
+      Flow modePanel = new Flow(STYLE_MODE_PANEL);
+      modePanel.add(renderInputMode());
+      modePanel.add(renderDndMode());
+
+      controlPanel.add(modePanel);
+    }
 
     table.setWidgetAndStyle(r, DAY_START_COL, controlPanel, STYLE_CONTROL_PANEL);
     table.getCellFormatter().setColSpan(r, DAY_START_COL, activeMonth.getLength());
