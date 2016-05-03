@@ -68,6 +68,7 @@ import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -606,7 +607,17 @@ public class RequestEditor extends ProductSupportInterceptor {
             data.put(BeeUtils.toString(TaskEvent.CREATE.ordinal()), result.getString(0));
 
             insertEventNote(reqRow.getId(), null, Codec.beeSerialize(data), TaskEvent.CREATE, null);
-            form.refresh();
+
+            int idxFinished = form.getDataIndex(TaskConstants.COL_REQUEST_FINISHED);
+
+            List<BeeColumn> columns =
+                Lists.newArrayList(Data.getColumn(VIEW_REQUESTS, COL_REQUEST_FINISHED));
+            List<String> oldValues = Arrays.asList(reqRow.getString(idxFinished));
+            List<String> newValues = Arrays.asList(BeeUtils.toString(new DateTime().getTime()));
+
+            Queries.update(form.getViewName(), reqRow.getId(), reqRow.getVersion(),
+                columns, oldValues, newValues, form.getChildrenForUpdate(),
+                new FinishSaveCallback(form));
           }
         });
   }
