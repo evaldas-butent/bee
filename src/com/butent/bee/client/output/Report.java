@@ -1,8 +1,13 @@
 package com.butent.bee.client.output;
 
+import com.google.gwt.user.client.ui.Widget;
+
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.COL_RS_REPORT;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.data.Data;
+import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.modules.classifiers.CompanyTypeReport;
 import com.butent.bee.client.modules.classifiers.CompanyUsageReport;
 import com.butent.bee.client.modules.trade.acts.TradeActItemsByCompanyReport;
@@ -11,6 +16,7 @@ import com.butent.bee.client.modules.trade.acts.TradeActStockReport;
 import com.butent.bee.client.modules.trade.acts.TradeActTransferReport;
 import com.butent.bee.client.modules.transport.AssessmentQuantityReport;
 import com.butent.bee.client.modules.transport.AssessmentTurnoverReport;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.view.ViewCallback;
 import com.butent.bee.client.view.ViewFactory;
@@ -18,6 +24,7 @@ import com.butent.bee.client.view.form.interceptor.ExtendedReportInterceptor;
 import com.butent.bee.client.view.form.interceptor.ReportInterceptor;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.css.CssUnit;
 import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -195,7 +202,9 @@ public enum Report implements HasWidgetSupplier {
       report.addColItem(constantCosts);
 
       report.addColItem(new ReportFormulaItem(Localized.dictionary().profit())
-          .plus(income).minus(costs).minus(constantCosts).setPrecision(2));
+          .plus(new ReportResultItem(income))
+          .minus(new ReportResultItem(costs))
+          .minus(new ReportResultItem(constantCosts)).setPrecision(2));
 
       report.getFilterItems().add(items.get(COL_TRIP_STATUS)
           .setFilter(BeeUtils.toString(TripStatus.COMPLETED.ordinal())));
@@ -358,35 +367,6 @@ public enum Report implements HasWidgetSupplier {
 
   private static BeeLogger logger = LogUtils.getLogger(Report.class);
 
-  public static void open(String reportName) {
-    Report report = parse(reportName);
-    if (report != null) {
-      report.open();
-    }
-  }
-
-  public static void open(String reportName, final ViewCallback callback) {
-    Assert.notNull(callback);
-
-    final Report report = parse(reportName);
-    if (report != null) {
-      FormFactory.getFormDescription(report.getFormName(),
-          result -> FormFactory.openForm(result, report.getInterceptor(),
-              ViewFactory.getPresenterCallback(callback)));
-    }
-  }
-
-  public static Report parse(String input) {
-    for (Report report : values()) {
-      if (BeeUtils.same(report.reportName, input)) {
-        return report;
-      }
-    }
-
-    logger.severe("report not recognized:", input);
-    return null;
-  }
-
   private final ModuleAndSub moduleAndSub;
   private final String reportName;
   private final String formName;
@@ -439,6 +419,53 @@ public enum Report implements HasWidgetSupplier {
     interceptor.setInitialParameters(parameters);
 
     FormFactory.openForm(formName, interceptor);
+  }
+
+  public static void open(String reportName) {
+    Report report = parse(reportName);
+
+    if (report != null) {
+      report.open();
+    }
+  }
+
+  public static void open(String reportName, final ViewCallback callback) {
+    Assert.notNull(callback);
+
+    Report report = parse(reportName);
+
+    if (report != null) {
+      FormFactory.getFormDescription(report.getFormName(),
+          result -> FormFactory.openForm(result, report.getInterceptor(),
+              ViewFactory.getPresenterCallback(callback)));
+    }
+  }
+
+  public static Report parse(String input) {
+    for (Report report : values()) {
+      if (BeeUtils.same(report.reportName, input)) {
+        return report;
+      }
+    }
+    logger.severe("report not recognized:", input);
+    return null;
+  }
+
+  public void showModal(ReportInfo reportInfo) {
+    ReportInterceptor interceptor = getInterceptor();
+    interceptor.setInitialParameters(new ReportParameters(Collections.singletonMap(COL_RS_REPORT,
+        reportInfo.serialize())));
+
+    FormFactory.getFormDescription(getFormName(),
+        description -> FormFactory.openForm(description, interceptor, presenter -> {
+          Widget form = presenter.getMainView().asWidget();
+          StyleUtils.setWidth(form, BeeKeeper.getScreen().getWidth() * 0.7, CssUnit.PX);
+          StyleUtils.setHeight(form, BeeKeeper.getScreen().getHeight() * 0.9, CssUnit.PX);
+
+          Popup popup = new Popup(Popup.OutsideClick.CLOSE);
+          popup.setWidget(form);
+          popup.center();
+        }));
   }
 
   protected ReportInterceptor getInterceptor() {

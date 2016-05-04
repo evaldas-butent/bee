@@ -19,7 +19,6 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
-import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.modules.transport.TransportHandler.Profit;
 import com.butent.bee.client.ui.IdentifiableWidget;
@@ -162,7 +161,7 @@ class TransportationOrderForm extends AbstractFormInterceptor implements ClickHa
 
       hdr.addCommandItem(button);
     }
-    hdr.addCommandItem(new Profit(COL_ORDER, row.getId()));
+    hdr.addCommandItem(new Profit(COL_ORDER_NO, row.getString(form.getDataIndex(COL_ORDER_NO))));
     hdr.addCommandItem(getCopyAction());
 
     return true;
@@ -207,12 +206,7 @@ class TransportationOrderForm extends AbstractFormInterceptor implements ClickHa
             msgs.add(BeeUtils.join(": ", Localized.dictionary().trOrders(), income));
           }
           Global.confirm(cap, null, msgs, Localized.dictionary().ok(),
-              Localized.dictionary().cancel(), new ConfirmationCallback() {
-                @Override
-                public void onConfirm() {
-                  listener.fireEvent(event);
-                }
-              });
+              Localized.dictionary().cancel(), () -> listener.fireEvent(event));
         } else {
           listener.fireEvent(event);
         }
@@ -225,87 +219,84 @@ class TransportationOrderForm extends AbstractFormInterceptor implements ClickHa
       copyAction = new FaLabel(FontAwesome.COPY);
       copyAction.setTitle(Localized.dictionary().actionCopy());
 
-      copyAction.addClickHandler(new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent clickEvent) {
-          DataInfo info = Data.getDataInfo(getViewName());
-          BeeRow order = RowFactory.createEmptyRow(info, true);
-          final Long orderId = getActiveRowId();
+      copyAction.addClickHandler(clickEvent -> {
+        DataInfo info = Data.getDataInfo(getViewName());
+        BeeRow order = RowFactory.createEmptyRow(info, true);
+        final Long orderId = getActiveRowId();
 
-          for (String col : new String[] {
-              COL_CUSTOMER, COL_CUSTOMER_NAME, COL_PAYER, COL_PAYER_NAME,
-              "CustomerPerson", "PersonFirstName", "PersonLastName"}) {
+        for (String col : new String[] {
+            COL_CUSTOMER, COL_CUSTOMER_NAME, COL_PAYER, COL_PAYER_NAME,
+            "CustomerPerson", "PersonFirstName", "PersonLastName"}) {
 
-            int idx = info.getColumnIndex(col);
+          int idx = info.getColumnIndex(col);
 
-            if (!BeeConst.isUndef(idx)) {
-              order.setValue(idx, getStringValue(col));
-            }
+          if (!BeeConst.isUndef(idx)) {
+            order.setValue(idx, getStringValue(col));
           }
-          RowFactory.createRow(info, order, Modality.ENABLED, new RowCallback() {
-            @Override
-            public void onSuccess(final BeeRow newOrder) {
-              Filter orderFilter = Filter.equals(COL_ORDER, orderId);
+        }
+        RowFactory.createRow(info, order, Modality.ENABLED, new RowCallback() {
+          @Override
+          public void onSuccess(final BeeRow newOrder) {
+            Filter orderFilter = Filter.equals(COL_ORDER, orderId);
 
-              Queries.getData(Arrays.asList(TBL_ORDER_CARGO, TBL_CARGO_HANDLING),
-                  ImmutableMap.of(TBL_ORDER_CARGO, orderFilter, TBL_CARGO_HANDLING,
-                      Filter.in(COL_CARGO, TBL_ORDER_CARGO, COL_CARGO_ID, orderFilter)), null,
-                  new Queries.DataCallback() {
-                    @Override
-                    public void onSuccess(Collection<BeeRowSet> data) {
-                      BeeRowSet cargos = null;
-                      BeeRowSet handling = null;
+            Queries.getData(Arrays.asList(TBL_ORDER_CARGO, TBL_CARGO_HANDLING),
+                ImmutableMap.of(TBL_ORDER_CARGO, orderFilter, TBL_CARGO_HANDLING,
+                    Filter.in(COL_CARGO, TBL_ORDER_CARGO, COL_CARGO_ID, orderFilter)), null,
+                new Queries.DataCallback() {
+                  @Override
+                  public void onSuccess(Collection<BeeRowSet> data) {
+                    BeeRowSet cargos = null;
+                    BeeRowSet handling = null;
 
-                      for (BeeRowSet rowSet : data) {
-                        List<BeeColumn> cols = new ArrayList<>(rowSet.getColumns());
+                    for (BeeRowSet rowSet : data) {
+                      List<BeeColumn> cols = new ArrayList<>(rowSet.getColumns());
 
-                        for (BeeColumn column : cols) {
-                          if (!column.isEditable() || BeeUtils.inList(column.getId(),
-                              ALS_LOADING_DATE, ALS_UNLOADING_DATE)) {
-                            rowSet.removeColumn(rowSet.getColumnIndex(column.getId()));
-                          }
-                        }
-                        if (Objects.equals(rowSet.getViewName(), TBL_ORDER_CARGO)) {
-                          cargos = rowSet;
-                        } else {
-                          handling = rowSet;
+                      for (BeeColumn column : cols) {
+                        if (!column.isEditable() || BeeUtils.inList(column.getId(),
+                            ALS_LOADING_DATE, ALS_UNLOADING_DATE)) {
+                          rowSet.removeColumn(rowSet.getColumnIndex(column.getId()));
                         }
                       }
-                      final BeeRowSet h = handling;
-                      final Holder<Integer> counter = Holder.of(cargos.getNumberOfRows());
-
-                      for (final BeeRow cargo : cargos) {
-                        BeeRowSet newCargo = DataUtils.createRowSetForInsert(cargos.getViewName(),
-                            cargos.getColumns(), cargo);
-                        newCargo.setValue(0, newCargo.getColumnIndex(COL_ORDER), newOrder.getId());
-
-                        Queries.insertRow(newCargo, new RpcCallback<RowInfo>() {
-                          @Override
-                          public void onSuccess(RowInfo cargoInfo) {
-                            BeeRowSet newHandling = new BeeRowSet(h.getViewName(), h.getColumns());
-
-                            for (BeeRow row : DataUtils.filterRows(h, COL_CARGO, cargo.getId())) {
-                              BeeRow newRow = newHandling.addEmptyRow();
-                              newRow.setValues(row.getValues());
-                              newRow.setValue(h.getColumnIndex(COL_CARGO), cargoInfo.getId());
-                            }
-                            if (!newHandling.isEmpty()) {
-                              Queries.insertRows(newHandling);
-                            }
-                            counter.set(counter.get() - 1);
-
-                            if (!BeeUtils.isPositive(counter.get())) {
-                              RowEditor.open(getViewName(), newOrder.getId(), Opener.MODAL);
-                            }
-                          }
-                        });
+                      if (Objects.equals(rowSet.getViewName(), TBL_ORDER_CARGO)) {
+                        cargos = rowSet;
+                      } else {
+                        handling = rowSet;
                       }
                     }
+                    final BeeRowSet h = handling;
+                    final Holder<Integer> counter = Holder.of(cargos.getNumberOfRows());
+
+                    for (final BeeRow cargo : cargos) {
+                      BeeRowSet newCargo = DataUtils.createRowSetForInsert(cargos.getViewName(),
+                          cargos.getColumns(), cargo);
+                      newCargo.setValue(0, newCargo.getColumnIndex(COL_ORDER), newOrder.getId());
+
+                      Queries.insertRow(newCargo, new RpcCallback<RowInfo>() {
+                        @Override
+                        public void onSuccess(RowInfo cargoInfo) {
+                          BeeRowSet newHandling = new BeeRowSet(h.getViewName(), h.getColumns());
+
+                          for (BeeRow row : DataUtils.filterRows(h, COL_CARGO, cargo.getId())) {
+                            BeeRow newRow = newHandling.addEmptyRow();
+                            newRow.setValues(row.getValues());
+                            newRow.setValue(h.getColumnIndex(COL_CARGO), cargoInfo.getId());
+                          }
+                          if (!newHandling.isEmpty()) {
+                            Queries.insertRows(newHandling);
+                          }
+                          counter.set(counter.get() - 1);
+
+                          if (!BeeUtils.isPositive(counter.get())) {
+                            RowEditor.open(getViewName(), newOrder.getId(), Opener.MODAL);
+                          }
+                        }
+                      });
+                    }
                   }
-              );
-            }
-          });
-        }
+                }
+            );
+          }
+        });
       });
     }
     return copyAction;

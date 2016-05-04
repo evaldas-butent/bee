@@ -7,6 +7,7 @@ import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.widget.Toggle;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
@@ -136,7 +137,9 @@ public class ReportTextItem extends ReportItem {
     String value = row.getValue(getExpression());
 
     for (String opt : filter) {
-      if (BeeUtils.containsSame(value, opt)) {
+      if (BeeUtils.isPrefix(opt, BeeConst.STRING_EQ)
+          ? Objects.equals(value, BeeUtils.removePrefix(opt, BeeConst.STRING_EQ))
+          : BeeUtils.containsSame(value, opt)) {
         return !isNegationFilter();
       }
     }

@@ -15,7 +15,6 @@ import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
-import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dialog.StringCallback;
@@ -28,6 +27,7 @@ import com.butent.bee.client.output.ReportItem;
 import com.butent.bee.client.output.ReportNumericItem;
 import com.butent.bee.client.output.ReportParameters;
 import com.butent.bee.client.output.ReportResultItem;
+import com.butent.bee.client.output.ReportUtils;
 import com.butent.bee.client.output.ReportValue;
 import com.butent.bee.client.output.ResultHolder;
 import com.butent.bee.client.presenter.Presenter;
@@ -43,11 +43,9 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
-import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
-import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.NumberValue;
 import com.butent.bee.shared.data.value.TextValue;
 import com.butent.bee.shared.data.value.Value;
@@ -502,45 +500,32 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
     }
   }
 
-  private void getReports(final ReportInfo initialReport) {
+  private void getReports(ReportInfo initialReport) {
     reports.clear();
 
-    Queries.getRowSet(VIEW_REPORT_SETTINGS, Collections.singletonList(COL_RS_PARAMETERS),
-        Filter.and(Filter.equals(COL_RS_USER, BeeKeeper.getUser().getUserId()),
-            Filter.equals(COL_RS_REPORT, getReport().getReportName()),
-            Filter.isNull(COL_RS_CAPTION)), new RowSetCallback() {
-          @Override
-          public void onSuccess(BeeRowSet result) {
-            for (ReportInfo rep : getReport().getReports()) {
-              reports.add(ReportInfo.restore(rep.serialize()));
-            }
-            for (int i = 0; i < result.getNumberOfRows(); i++) {
-              ReportInfo rep = ReportInfo.restore(result.getString(i, COL_RS_PARAMETERS));
-              rep.setId(result.getRow(i).getId());
-              reports.remove(rep);
-              reports.add(rep);
-            }
-            if (initialReport != null) {
-              ReportInfo rep = initialReport;
+    ReportUtils.getReports(getReport(), reps -> {
+      reports.addAll(reps);
 
-              if (reports.contains(rep)) {
-                for (ReportInfo reportInfo : reports) {
-                  if (Objects.equals(reportInfo, rep)) {
-                    reportInfo.deserialize(rep.serialize());
-                    rep = reportInfo;
-                    break;
-                  }
-                }
-              } else {
-                reports.add(rep);
-              }
-              activateReport(rep);
-              doReport();
-            } else {
-              activateReport(BeeUtils.peek(reports));
+      if (initialReport != null) {
+        ReportInfo rep = initialReport;
+
+        if (reports.contains(rep)) {
+          for (ReportInfo reportInfo : reports) {
+            if (Objects.equals(reportInfo, rep)) {
+              reportInfo.deserialize(rep.serialize());
+              rep = reportInfo;
+              break;
             }
           }
-        });
+        } else {
+          reports.add(rep);
+        }
+        activateReport(rep);
+        doReport();
+      } else {
+        activateReport(BeeUtils.peek(reports));
+      }
+    });
   }
 
   private static XSheet getSheet(HtmlTable table) {
@@ -1024,7 +1009,7 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
 
         if (item instanceof ReportNumericItem && !item.isResultItem()
             && !Objects.equals(info.getFunction(), ReportFunction.LIST)) {
-          calcItems.add(new ReportResultItem(item.getName(), BeeUtils.embrace(item.getCaption())));
+          calcItems.add(new ReportResultItem(item));
         }
       }
       for (ReportInfoItem infoItem : activeReport.getColItems()) {

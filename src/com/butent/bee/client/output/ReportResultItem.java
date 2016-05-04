@@ -27,6 +27,10 @@ public class ReportResultItem extends ReportNumericItem {
     super(expression, caption);
   }
 
+  public ReportResultItem(ReportItem item) {
+    super(item.getName(), BeeUtils.embrace(item.getCaption()));
+  }
+
   @Override
   public void deserialize(String data) {
     Map<String, String> map = Codec.deserializeMap(data);
