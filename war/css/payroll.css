@@ -113,6 +113,14 @@
   text-decoration: underline;
 }
 
+.bee-payroll-ws-partition-subst {
+  cursor: pointer;
+  font-weight: bolder;
+}
+.bee-payroll-ws-partition-subst:hover {
+  text-decoration: underline;
+}
+
 .bee-payroll-ws-partition-clear {
   font-size: large;
   padding: 5px;
