@@ -157,7 +157,7 @@ public enum Report implements HasWidgetSupplier {
       Map<String, ReportItem> items = new HashMap<>();
 
       for (ReportItem item : getItems()) {
-        items.put(item.getName(), item);
+        items.put(item.getExpression(), item);
       }
       ReportInfo report = new ReportInfo(getReportCaption());
 
@@ -243,7 +243,7 @@ public enum Report implements HasWidgetSupplier {
       Map<String, ReportItem> items = new HashMap<>();
 
       for (ReportItem item : getItems()) {
-        items.put(item.getName(), item);
+        items.put(item.getExpression(), item);
       }
       ReportInfo report = new ReportInfo(getReportCaption());
 
@@ -328,7 +328,7 @@ public enum Report implements HasWidgetSupplier {
       Map<String, ReportItem> items = new HashMap<>();
 
       for (ReportItem item : getItems()) {
-        items.put(item.getName(), item);
+        items.put(item.getExpression(), item);
       }
       ReportInfo report = new ReportInfo(getReportCaption());
 

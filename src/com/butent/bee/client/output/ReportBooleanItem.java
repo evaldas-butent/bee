@@ -17,8 +17,8 @@ public class ReportBooleanItem extends ReportItem {
   private TabBar filterWidget;
   private Boolean filter;
 
-  public ReportBooleanItem(String name, String caption) {
-    super(name, caption);
+  public ReportBooleanItem(String expression, String caption) {
+    super(expression, caption);
   }
 
   @Override
@@ -40,7 +40,7 @@ public class ReportBooleanItem extends ReportItem {
   @Override
   public ReportValue evaluate(SimpleRow row) {
     String display;
-    boolean on = BeeUtils.unbox(row.getBoolean(getName()));
+    boolean on = BeeUtils.unbox(row.getBoolean(getExpression()));
 
     if (on) {
       display = Localized.dictionary().yes();
@@ -94,9 +94,9 @@ public class ReportBooleanItem extends ReportItem {
 
   @Override
   public boolean validate(SimpleRow row) {
-    if (filter == null || !row.getRowSet().hasColumn(getName())) {
+    if (filter == null || !row.getRowSet().hasColumn(getExpression())) {
       return true;
     }
-    return BeeUtils.unbox(row.getBoolean(getName())) == filter;
+    return BeeUtils.unbox(row.getBoolean(getExpression())) == filter;
   }
 }

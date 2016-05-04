@@ -1,5 +1,6 @@
 package com.butent.bee.client.output;
 
+import com.google.common.base.Function;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.Global;
@@ -9,7 +10,7 @@ import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
-import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
+import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -53,47 +54,14 @@ public class ReportFormulaItem extends ReportNumericItem {
   }
 
   @Override
-  public ReportValue evaluate(SimpleRow row) {
-    List<BigDecimal> values = new ArrayList<>();
-    BigDecimal previous = null;
+  public ReportValue evaluate(SimpleRowSet.SimpleRow row) {
+    return evaluate(item -> item.evaluate(row));
+  }
 
-    for (Pair<String, ReportItem> pair : expression) {
-      BigDecimal value = BeeUtils.nvl(BeeUtils.toDecimalOrNull(pair.getB().evaluate(row)
-          .getValue()), BigDecimal.ZERO);
-
-      if (previous == null) {
-        previous = value;
-      } else {
-        switch (pair.getA()) {
-          case BeeConst.STRING_PLUS:
-            values.add(previous);
-            previous = value;
-            break;
-          case BeeConst.STRING_MINUS:
-            values.add(previous);
-            previous = value.negate();
-            break;
-          case BeeConst.STRING_ASTERISK:
-            previous = previous.multiply(value, new MathContext(5));
-            break;
-          case BeeConst.STRING_SLASH:
-            if (BeeUtils.isZero(value.doubleValue())) {
-              return ReportValue.empty();
-            }
-            previous = previous.divide(value, new MathContext(5));
-            break;
-        }
-      }
-    }
-    if (previous != null) {
-      values.add(previous);
-    }
-    BigDecimal result = BigDecimal.ZERO;
-
-    for (BigDecimal value : values) {
-      result = result.add(value);
-    }
-    return ReportValue.of(result.setScale(getPrecision(), RoundingMode.HALF_UP).toPlainString());
+  @Override
+  public ReportValue evaluate(ReportValue rowGroup, ReportValue[] rowValues, ReportValue colGroup,
+      ResultHolder resultHolder) {
+    return evaluate(item -> item.evaluate(rowGroup, rowValues, colGroup, resultHolder));
   }
 
   @Override
@@ -112,11 +80,11 @@ public class ReportFormulaItem extends ReportNumericItem {
   }
 
   @Override
-  public Widget getExpressionWidget(Report report) {
+  public Widget getExpressionWidget(List<ReportItem> reportItems) {
     Flow container = new Flow(getStyle() + "-expression");
     temporaryExpression.clear();
     temporaryExpression.addAll(expression);
-    render(container, report);
+    render(container, reportItems);
     return container;
   }
 
@@ -146,6 +114,16 @@ public class ReportFormulaItem extends ReportNumericItem {
       members.addAll(pair.getB().getMembers());
     }
     return members;
+  }
+
+  @Override
+  public boolean isResultItem() {
+    for (Pair<String, ReportItem> pair : expression) {
+      if (pair.getB().isResultItem()) {
+        return true;
+      }
+    }
+    return super.isResultItem();
   }
 
   public ReportFormulaItem minus(ReportItem item) {
@@ -181,17 +159,83 @@ public class ReportFormulaItem extends ReportNumericItem {
   private ReportFormulaItem addItem(List<Pair<String, ReportItem>> list, String op,
       ReportItem item) {
     if (item != null) {
-      list.add(Pair.of(BeeUtils.notEmpty(op, BeeConst.STRING_PLUS), item));
+      list.add(Pair.of(BeeUtils.notEmpty(op, BeeConst.STRING_PLUS),
+          ReportItem.restore(item.serialize())));
     }
     return this;
   }
 
-  private void render(final Flow container, final Report report) {
-    final Runnable refresh = () -> render(container, report);
-    container.clear();
+  private ReportValue evaluate(Function<ReportItem, ReportValue> evaluator) {
+    List<BigDecimal> values = new ArrayList<>();
+    BigDecimal previous = null;
 
+    for (Pair<String, ReportItem> pair : expression) {
+      BigDecimal value = BeeUtils.nvl(BeeUtils.toDecimalOrNull(evaluator.apply(pair.getB())
+          .getValue()), BigDecimal.ZERO);
+
+      if (previous == null) {
+        previous = value;
+      } else {
+        switch (pair.getA()) {
+          case BeeConst.STRING_PLUS:
+            values.add(previous);
+            previous = value;
+            break;
+          case BeeConst.STRING_MINUS:
+            values.add(previous);
+            previous = value.negate();
+            break;
+          case BeeConst.STRING_ASTERISK:
+            previous = previous.multiply(value, new MathContext(5));
+            break;
+          case BeeConst.STRING_SLASH:
+            if (BeeUtils.isZero(value.doubleValue())) {
+              return ReportValue.empty();
+            }
+            previous = previous.divide(value, new MathContext(5));
+            break;
+        }
+      }
+    }
+    if (previous != null) {
+      values.add(previous);
+    }
+    BigDecimal result = BigDecimal.ZERO;
+
+    for (BigDecimal value : values) {
+      result = result.add(value);
+    }
+    if (BeeUtils.isZero(result.doubleValue())) {
+      return ReportValue.empty();
+    }
+    return ReportValue.of(result.setScale(getPrecision(), RoundingMode.HALF_UP).toPlainString());
+  }
+
+  private void render(Flow container, List<ReportItem> reportItems) {
+    Runnable refresh = () -> render(container, reportItems);
+    container.clear();
+    boolean hasResultItems = false;
+
+    for (Pair<String, ReportItem> pair : temporaryExpression) {
+      if (pair.getB().isResultItem()) {
+        hasResultItems = true;
+        break;
+      }
+    }
+    List<ReportItem> choiceItems = new ArrayList<>();
+
+    for (ReportItem item : reportItems) {
+      if (item instanceof ReportDateItem && !hasResultItems) {
+        choiceItems.add(item);
+      }
+      if (item instanceof ReportNumericItem) {
+        if (temporaryExpression.isEmpty() || Objects.equals(hasResultItems, item.isResultItem())) {
+          choiceItems.add(item);
+        }
+      }
+    }
     for (int i = 0; i < temporaryExpression.size(); i++) {
-      final Pair<String, ReportItem> pair = temporaryExpression.get(i);
+      Pair<String, ReportItem> pair = temporaryExpression.get(i);
 
       if (i > 0) {
         Label sep = new Label(pair.getA());
@@ -202,15 +246,16 @@ public class ReportFormulaItem extends ReportNumericItem {
 
           Global.choice(Localized.dictionary().operator(), null, options, value -> {
             pair.setA(options.get(value));
-            render(container, report);
+            refresh.run();
           });
         });
         container.add(sep);
       }
-      container.add(ReportItem.renderDnd(pair.getB(), temporaryExpression, i, report, refresh));
+      container.add(ReportItem.renderDnd(pair.getB(), temporaryExpression, i, choiceItems,
+          refresh));
     }
     CustomSpan add = new CustomSpan(STYLE_ADD);
-    add.addClickHandler(event -> chooseItem(report, true, item -> {
+    add.addClickHandler(event -> chooseItem(choiceItems, true, item -> {
       addItem(temporaryExpression, null, item);
       refresh.run();
     }));

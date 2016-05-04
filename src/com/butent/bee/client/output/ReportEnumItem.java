@@ -41,8 +41,8 @@ public class ReportEnumItem extends ReportItem implements ClickHandler {
     enumKey = NameUtils.getClassName(en);
   }
 
-  protected ReportEnumItem(String name, String caption) {
-    super(name, caption);
+  protected ReportEnumItem(String expression, String caption) {
+    super(expression, caption);
   }
 
   @Override
@@ -72,7 +72,7 @@ public class ReportEnumItem extends ReportItem implements ClickHandler {
 
   @Override
   public ReportValue evaluate(SimpleRow row) {
-    Integer value = row.getInt(getName());
+    Integer value = row.getInt(getExpression());
     return value == null ? ReportValue.empty()
         : ReportValue.of(TimeUtils.padTwo(value)).setDisplay(EnumUtils.getCaption(enumKey, value));
   }
@@ -145,10 +145,10 @@ public class ReportEnumItem extends ReportItem implements ClickHandler {
 
   @Override
   public boolean validate(SimpleRow row) {
-    if (BeeUtils.isEmpty(filter) || !row.getRowSet().hasColumn(getName())) {
+    if (BeeUtils.isEmpty(filter) || !row.getRowSet().hasColumn(getExpression())) {
       return true;
     }
-    return filter.contains(row.getInt(getName()));
+    return filter.contains(row.getInt(getExpression()));
   }
 
   private void renderFilter() {
