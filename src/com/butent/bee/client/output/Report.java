@@ -330,11 +330,10 @@ public enum Report implements HasWidgetSupplier {
       report.addRowItem(items.get(COL_SERVICE_NAME));
       report.addRowItem(items.get(COL_ORDER_MANAGER));
 
-      ReportExpressionItem invoice = new ReportExpressionItem("Sąskaita");
-      invoice.addExpressionItem(null, items.get(TradeConstants.COL_TRADE_INVOICE_PREFIX));
-      invoice.addExpressionItem(" ", items.get(TradeConstants.COL_TRADE_INVOICE_NO));
+      report.addRowItem(new ReportExpressionItem("Sąskaita")
+          .append(null, items.get(TradeConstants.COL_TRADE_INVOICE_PREFIX))
+          .append(" ", items.get(TradeConstants.COL_TRADE_INVOICE_NO)));
 
-      report.addRowItem(invoice);
       report.addRowItem(items.get(TradeConstants.COL_TRADE_CUSTOMER));
       report.addRowItem(items.get(TradeConstants.COL_SALE + COL_ORDER_MANAGER));
 
@@ -343,12 +342,10 @@ public enum Report implements HasWidgetSupplier {
       report.addColItem(items.get(VAR_EXPENSE + COL_SERVICE_NAME));
       report.addColItem(items.get(VAR_EXPENSE + TradeConstants.COL_TRADE_DATE));
 
-      invoice = new ReportExpressionItem("Sąnaudų sąskaita");
-      invoice.addExpressionItem(null,
-          items.get(VAR_EXPENSE + TradeConstants.COL_TRADE_INVOICE_PREFIX));
-      invoice.addExpressionItem(" ", items.get(VAR_EXPENSE + TradeConstants.COL_TRADE_INVOICE_NO));
+      report.addColItem(new ReportExpressionItem("Sąnaudų sąskaita")
+          .append(null, items.get(VAR_EXPENSE + TradeConstants.COL_TRADE_INVOICE_PREFIX))
+          .append(" ", items.get(VAR_EXPENSE + TradeConstants.COL_TRADE_INVOICE_NO)));
 
-      report.addColItem(invoice);
       report.addColItem(items.get(VAR_INCOME));
       report.addColItem(items.get(VAR_EXPENSE));
 
