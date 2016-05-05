@@ -109,8 +109,13 @@ public class GridContainerImpl extends Split implements GridContainerView,
     super(-1);
 
     addStyleName(STYLE_NAME);
+
     if (!BeeUtils.isEmpty(gridName)) {
       addStyleName(BeeConst.CSS_CLASS_PREFIX + "grid-" + gridName.trim());
+    }
+    if (!BeeUtils.isEmpty(supplierKey) && !BeeUtils.same(gridName, supplierKey)
+        && !BeeUtils.same(ViewFactory.SupplierKind.GRID.getKey(gridName), supplierKey)) {
+      addStyleName(BeeConst.CSS_CLASS_PREFIX + "grid-" + supplierKey.trim());
     }
 
     this.supplierKey = supplierKey;
