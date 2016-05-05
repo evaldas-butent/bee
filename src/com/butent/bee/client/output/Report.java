@@ -289,6 +289,7 @@ public enum Report implements HasWidgetSupplier {
     public List<ReportItem> getItems() {
       Dictionary loc = Localized.dictionary();
       return Arrays.asList(
+          new ReportTextItem("IncomeID", "Pajamų ID"),
           new ReportTextItem(COL_ASSESSMENT, "Užsakymo Nr."),
           new ReportDateTimeItem(COL_ORDER + COL_DATE, "Užsakymo data"),
           new ReportTextItem(AdministrationConstants.COL_DEPARTMENT_NAME,
@@ -308,6 +309,7 @@ public enum Report implements HasWidgetSupplier {
           new ReportTextItem(VAR_EXPENSE + TradeConstants.COL_TRADE_INVOICE_PREFIX,
               "Sąnaudų sąsk.Ser."),
           new ReportTextItem(VAR_EXPENSE + TradeConstants.COL_TRADE_INVOICE_NO, "Sąnaudų sąsk.Nr."),
+          new ReportTextItem(VAR_EXPENSE + TradeConstants.COL_TRADE_OPERATION, "Sąnaudų operacija"),
           new ReportNumericItem(VAR_INCOME, loc.income()).setPrecision(2),
           new ReportNumericItem(VAR_EXPENSE, "Sąnaudos").setPrecision(2));
     }
@@ -322,12 +324,16 @@ public enum Report implements HasWidgetSupplier {
       Map<String, ReportItem> items = new HashMap<>();
 
       for (ReportItem item : getItems()) {
-        items.put(item.getName(), item);
+        items.put(item.getExpression(), item);
       }
       ReportInfo report = new ReportInfo(getReportCaption());
 
       report.addRowItem(items.get(COL_ASSESSMENT));
-      report.addRowItem(items.get(COL_SERVICE_NAME));
+
+      report.addRowItem(new ReportExpressionItem(items.get(COL_SERVICE_NAME).getCaption())
+          .append(null, items.get(COL_SERVICE_NAME))
+          .append("-", items.get("IncomeID")));
+
       report.addRowItem(items.get(COL_ORDER_MANAGER));
 
       report.addRowItem(new ReportExpressionItem("Sąskaita")
@@ -345,6 +351,8 @@ public enum Report implements HasWidgetSupplier {
       report.addColItem(new ReportExpressionItem("Sąnaudų sąskaita")
           .append(null, items.get(VAR_EXPENSE + TradeConstants.COL_TRADE_INVOICE_PREFIX))
           .append(" ", items.get(VAR_EXPENSE + TradeConstants.COL_TRADE_INVOICE_NO)));
+
+      report.addColItem(items.get(VAR_EXPENSE + TradeConstants.COL_TRADE_OPERATION));
 
       report.addColItem(items.get(VAR_INCOME));
       report.addColItem(items.get(VAR_EXPENSE));

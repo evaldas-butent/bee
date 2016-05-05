@@ -330,8 +330,15 @@ public class TransportReportsBean {
 
     ReportInfo report = ReportInfo.restore(reqInfo.getParameter(Service.VAR_DATA));
 
+    String id = sys.getIdName(TBL_CARGO_INCOMES);
+    String saleUsers = SqlUtils.uniqueName();
+    String saleCompanyPersons = SqlUtils.uniqueName();
+    String salePersons = SqlUtils.uniqueName();
+
     HasConditions clause = SqlUtils.and();
 
+    clause.add(report.getCondition(SqlUtils.cast(SqlUtils.field(TBL_CARGO_INCOMES, id),
+        SqlConstants.SqlDataType.STRING, 20, 0), id));
     clause.add(report.getCondition(SqlUtils.cast(SqlUtils.field(TBL_ASSESSMENTS,
         sys.getIdName(TBL_ASSESSMENTS)), SqlConstants.SqlDataType.STRING, 20, 0), COL_ASSESSMENT));
     clause.add(report.getCondition(SqlUtils.field(TBL_ORDERS, COL_ORDER_DATE),
@@ -342,13 +349,8 @@ public class TransportReportsBean {
     clause.add(report.getCondition(SqlUtils.field(TBL_COMPANIES, COL_COMPANY_NAME),
         COL_TRADE_CUSTOMER));
 
-    String id = SqlUtils.uniqueName();
-    String saleUsers = SqlUtils.uniqueName();
-    String saleCompanyPersons = SqlUtils.uniqueName();
-    String salePersons = SqlUtils.uniqueName();
-
     SqlSelect query = new SqlSelect()
-        .addField(TBL_CARGO_INCOMES, sys.getIdName(TBL_CARGO_INCOMES), id)
+        .addFields(TBL_CARGO_INCOMES, id)
         .addField(TBL_ASSESSMENTS, sys.getIdName(TBL_ASSESSMENTS), COL_ASSESSMENT)
         .addField(TBL_ORDERS, COL_ORDER_DATE, COL_ORDER + COL_DATE)
         .addFields(TBL_DEPARTMENTS, COL_DEPARTMENT_NAME)
@@ -419,6 +421,7 @@ public class TransportReportsBean {
         .addField(TBL_PURCHASES, COL_TRADE_DATE, VAR_EXPENSE + COL_TRADE_DATE)
         .addField(TBL_PURCHASES, COL_TRADE_INVOICE_PREFIX, VAR_EXPENSE + COL_TRADE_INVOICE_PREFIX)
         .addField(TBL_PURCHASES, COL_TRADE_INVOICE_NO, VAR_EXPENSE + COL_TRADE_INVOICE_NO)
+        .addField(TBL_TRADE_OPERATIONS, COL_OPERATION_NAME, VAR_EXPENSE + COL_TRADE_OPERATION)
         .addFrom(TBL_CARGO_EXPENSES)
         .addFromInner(tmpIncomes, SqlUtils.join(TBL_CARGO_EXPENSES, VAR_INCOME, tmpIncomes, id))
         .addFromInner(TBL_ORDER_CARGO,
@@ -426,7 +429,9 @@ public class TransportReportsBean {
         .addFromInner(TBL_ORDERS, sys.joinTables(TBL_ORDERS, TBL_ORDER_CARGO, COL_ORDER))
         .addFromInner(TBL_SERVICES, sys.joinTables(TBL_SERVICES, TBL_CARGO_EXPENSES, COL_SERVICE))
         .addFromLeft(TBL_PURCHASES,
-            sys.joinTables(TBL_PURCHASES, TBL_CARGO_EXPENSES, COL_PURCHASE));
+            sys.joinTables(TBL_PURCHASES, TBL_CARGO_EXPENSES, COL_PURCHASE))
+        .addFromLeft(TBL_TRADE_OPERATIONS,
+            sys.joinTables(TBL_TRADE_OPERATIONS, TBL_PURCHASES, COL_TRADE_OPERATION));
 
     dateExpr = SqlUtils.nvl(SqlUtils.field(TBL_CARGO_EXPENSES, COL_DATE),
         SqlUtils.field(TBL_ORDERS, COL_ORDER_DATE));
@@ -461,11 +466,12 @@ public class TransportReportsBean {
                 SqlUtils.notEqual("subq", fldTotalExpense, 0))));
 
     String tmp = qs.sqlCreateTemp(new SqlSelect()
-        .addFields(tmpIncomes, COL_ASSESSMENT, COL_ORDER + COL_DATE, COL_DEPARTMENT_NAME,
+        .addFields(tmpIncomes, id, COL_ASSESSMENT, COL_ORDER + COL_DATE, COL_DEPARTMENT_NAME,
             COL_ORDER_MANAGER, COL_SERVICE_NAME, COL_TRADE_DATE, COL_TRADE_INVOICE_PREFIX,
             COL_TRADE_INVOICE_NO, COL_TRADE_CUSTOMER, COL_SALE + COL_ORDER_MANAGER)
         .addFields(tmpExpenses, VAR_EXPENSE + COL_SERVICE_NAME, VAR_EXPENSE + COL_TRADE_DATE,
-            VAR_EXPENSE + COL_TRADE_INVOICE_PREFIX, VAR_EXPENSE + COL_TRADE_INVOICE_NO, VAR_EXPENSE)
+            VAR_EXPENSE + COL_TRADE_INVOICE_PREFIX, VAR_EXPENSE + COL_TRADE_INVOICE_NO,
+            VAR_EXPENSE + COL_TRADE_OPERATION, VAR_EXPENSE)
         .addExpr(SqlUtils.sqlIf(SqlUtils.isNull(tmpExpenses, fldTotalExpense),
             SqlUtils.field(tmpIncomes, VAR_INCOME),
             SqlUtils.multiply(SqlUtils.field(tmpIncomes, VAR_INCOME),
@@ -487,6 +493,7 @@ public class TransportReportsBean {
     clause.add(report.getCondition(tmp, VAR_EXPENSE + COL_TRADE_DATE));
     clause.add(report.getCondition(tmp, VAR_EXPENSE + COL_TRADE_INVOICE_PREFIX));
     clause.add(report.getCondition(tmp, VAR_EXPENSE + COL_TRADE_INVOICE_NO));
+    clause.add(report.getCondition(tmp, VAR_EXPENSE + COL_TRADE_OPERATION));
 
     query = new SqlSelect()
         .addFrom(tmp)
