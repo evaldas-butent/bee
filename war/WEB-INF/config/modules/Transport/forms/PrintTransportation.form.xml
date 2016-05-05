@@ -34,7 +34,14 @@
     <TextLabel source="TripNo" style="text-align:center; &bold;">
       <renderToken source="TripNo" prefix="Krovinio pervežimo sutartis - užsakymas Nr. " />
     </TextLabel>
-    <FlowPanel name="FirstParagraph" />
+    <TextLabel>
+      <renderToken source="CompanyName" />
+      <renderToken source="CompanyTypeName" />
+      <renderToken source="ManagerFirstName" prefix=", atstovaujama " />
+      <renderToken source="ManagerLastName"/>
+      <renderToken source="ForwarderName" prefix=", toliau vadinamas &quot;Užsakovu&quot; ir " />
+      <renderToken source="ForwarderTypeName" suffix=", atstovaujama ________________________________ , toliau vadinamas &quot;Vežėju&quot; sudarė šią krovinio vežimo sutartį." />
+    </TextLabel>
     <Label html="1. Transporto duomenys" style="&section;"/>
     <FlowPanel class="&form;" >
       <Table kind="output" style="border-spacing: 1px; border 1px solid black;">

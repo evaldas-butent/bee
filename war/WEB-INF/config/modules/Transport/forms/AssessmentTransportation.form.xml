@@ -33,6 +33,11 @@
       <DataSelector source="Expedition" required="true" style="&inline; width:150px;"  />
     </FlowPanel>
     <FlowPanel style="&section;">
+      <Label text="=manager" style="&labelLeft;" />
+      <DataSelector source="Manager" style="&inline; width:200px;" 
+          renderColumns="ManagerFirstName ManagerLastName" choiceColumns="FirstName LastName"/>
+    </FlowPanel>
+    <FlowPanel style="&section;">
       <Label text="=transport" style="&labelLeft;" />
       <InputText source="ForwarderVehicle" style="&inline; width:200px;"  />
     </FlowPanel>
