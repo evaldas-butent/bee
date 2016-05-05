@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
+      xmlns:x="http://www.butent.com/expression"
 
       name="TripPurchaseInvoices" source="Purchases" caption="=trTripPurchaseInvoices"
       editForm="TripPurchaseInvoice"
       newRowForm="NewPurchase" newRowCaption="=trNewCargoPurchaseInvoice"
-    >
+>
   <Columns>
     <SimpleColumn name="Date" />
     <SimpleColumn name="Number" />
@@ -26,6 +27,18 @@
     <SimpleJoin name="Currency" joinType="INNER">
       <SimpleColumn name="Name" alias="CurrencyName" />
     </SimpleJoin>
+
+    <SimpleColumn name="PaymentTime" />
+    <SimpleColumn name="Paid" />
+    <SimpleColumn name="Debt" label="=trdDebt">
+      <x:minus>
+        <x:number>"Amount"</x:number>
+        <x:nvl type="DECIMAL">
+          <x:number>"Paid"</x:number>
+          <x:number>0</x:number>
+        </x:nvl>
+      </x:minus>
+    </SimpleColumn>
 
     <SimpleColumn name="Supplier" />
     <SimpleJoin name="Supplier" joinType="LEFT">
