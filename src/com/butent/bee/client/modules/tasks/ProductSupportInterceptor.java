@@ -43,6 +43,11 @@ abstract class ProductSupportInterceptor extends AbstractFormInterceptor {
   }
 
   private boolean isProductRequired(IsRow row) {
+    int index = getDataIndex(COL_PRODUCT_REQUIRED);
+
+    if (row == null || row.getNumberOfCells() <= index) {
+      return false;
+    }
     return BeeUtils.unbox(row.getBoolean(getDataIndex(COL_PRODUCT_REQUIRED)));
   }
 

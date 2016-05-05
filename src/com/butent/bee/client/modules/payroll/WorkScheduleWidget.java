@@ -7,12 +7,7 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.TableCellElement;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.dom.client.DropEvent;
 import com.google.gwt.event.dom.client.KeyCodes;
-import com.google.gwt.event.dom.client.KeyDownEvent;
-import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.Widget;
@@ -22,6 +17,7 @@ import static com.butent.bee.shared.modules.payroll.PayrollConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
+import com.butent.bee.client.Storage;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
@@ -29,9 +25,7 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
-import com.butent.bee.client.dialog.ChoiceCallback;
 import com.butent.bee.client.dialog.CloseButton;
-import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dialog.Modality;
@@ -60,13 +54,13 @@ import com.butent.bee.client.widget.InputText;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.Toggle;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.BiConsumer;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.IdPair;
 import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.IntegerValue;
@@ -76,6 +70,7 @@ import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.html.builder.elements.Span;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
+import com.butent.bee.shared.modules.payroll.PayrollConstants.WorkScheduleKind;
 import com.butent.bee.shared.time.DateRange;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeRange;
@@ -132,6 +127,41 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
     }
   }
 
+  static final class Partition {
+
+    private final BeeRow row;
+    private final Long substituteFor;
+
+    Partition(BeeRow row) {
+      this(row, null);
+    }
+
+    Partition(BeeRow row, Long substituteFor) {
+      this.row = row;
+      this.substituteFor = substituteFor;
+    }
+
+    long getId() {
+      return getRow().getId();
+    }
+
+    BeeRow getRow() {
+      return row;
+    }
+
+    private IdPair getIds() {
+      return IdPair.of(row.getId(), substituteFor);
+    }
+
+    private Long getSubstituteFor() {
+      return substituteFor;
+    }
+
+    private boolean hasSubstituteFor() {
+      return DataUtils.isId(substituteFor);
+    }
+  }
+
   private static final String STYLE_PREFIX = PayrollKeeper.STYLE_PREFIX + "ws-";
 
   private static final String STYLE_CONTAINER = STYLE_PREFIX + "container";
@@ -152,9 +182,10 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
 
   private static final String STYLE_PARTITION_PANEL = STYLE_PREFIX + "partition-panel";
   private static final String STYLE_PARTITION_CONTAINER = STYLE_PREFIX + "partition-container";
-  private static final String STYLE_PARTITION_CONTACT = STYLE_PREFIX + "partition-contact";
   private static final String STYLE_PARTITION_NAME = STYLE_PREFIX + "partition-name";
+  private static final String STYLE_PARTITION_CONTACT = STYLE_PREFIX + "partition-contact";
   private static final String STYLE_PARTITION_INFO = STYLE_PREFIX + "partition-info";
+  private static final String STYLE_PARTITION_SUBST = STYLE_PREFIX + "partition-subst";
   private static final String STYLE_PARTITION_CLEAR = STYLE_PREFIX + "partition-clear";
 
   private static final String STYLE_APPEND_PANEL = STYLE_PREFIX + "append-panel";
@@ -176,6 +207,11 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
   private static final String STYLE_TODAY = STYLE_PREFIX + "today";
 
   private static final String STYLE_CONTROL_PANEL = STYLE_PREFIX + "control-panel";
+  private static final String STYLE_MODE_PANEL = STYLE_PREFIX + "mode-panel";
+
+  private static final String STYLE_COMMAND = STYLE_PREFIX + "command";
+  private static final String STYLE_COMMAND_SUBSTITUTION = STYLE_PREFIX + "command-substitution";
+  private static final String STYLE_COMMAND_FETCH = STYLE_PREFIX + "command-fetch";
 
   private static final String STYLE_INPUT_MODE_PANEL = STYLE_PREFIX + "input-mode-panel";
   private static final String STYLE_INPUT_MODE_SIMPLE = STYLE_PREFIX + "input-mode-simple";
@@ -215,6 +251,9 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
 
   private static final String KEY_YM = "ym";
   private static final String KEY_DAY = "day";
+
+  private static final String KEY_PART = "part";
+  private static final String KEY_SUBST = "subst";
 
   private static final String DATA_TYPE_WS_ITEM = "WorkScheduleItem";
 
@@ -280,20 +319,20 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
     return BeeUtils.parenthesize(duration);
   }
 
-  private static boolean readBoolean(String name) {
-    String key = storageKey(name);
-    if (BeeKeeper.getStorage().hasItem(key)) {
-      return BeeKeeper.getStorage().getBoolean(key);
+  private static IdPair getPartitionIds(Element elem) {
+    return IdPair.of(DomUtils.getDataPropertyLong(elem, KEY_PART),
+        DomUtils.getDataPropertyLong(elem, KEY_SUBST));
+  }
+
+  private static Filter getSubstituteForFilter(Long value) {
+    if (DataUtils.isId(value)) {
+      return Filter.equals(COL_SUBSTITUTE_FOR, value);
     } else {
-      return false;
+      return Filter.isNull(COL_SUBSTITUTE_FOR);
     }
   }
 
-  private static String storageKey(String name) {
-    Long userId = BeeKeeper.getUser().getUserId();
-    return BeeUtils.join(BeeConst.STRING_MINUS, "WorkSchedule", userId, name);
-  }
-
+  private final WorkScheduleKind kind;
   private final ScheduleParent scheduleParent;
 
   private BeeRowSet emData;
@@ -317,10 +356,13 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
 
   private boolean summarize = true;
 
-  WorkScheduleWidget(ScheduleParent scheduleParent) {
+  WorkScheduleWidget(WorkScheduleKind kind, ScheduleParent scheduleParent) {
     super(STYLE_CONTAINER);
 
+    this.kind = kind;
     this.scheduleParent = scheduleParent;
+
+    addStyleName(STYLE_PREFIX + kind.getStyleSuffix());
     addStyleName(STYLE_PREFIX + scheduleParent.getStyleSuffix());
 
     this.table = new HtmlTable(STYLE_TABLE);
@@ -329,69 +371,55 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
     this.inputMode = new Toggle(FontAwesome.TOGGLE_OFF, FontAwesome.TOGGLE_ON,
         STYLE_INPUT_MODE_TOGGLE, readBoolean(NAME_INPUT_MODE));
 
-    inputMode.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        activateInputMode(inputMode.isChecked());
-      }
-    });
+    inputMode.addClickHandler(event -> activateInputMode(inputMode.isChecked()));
 
     this.dndMode = new Toggle(FontAwesome.ARROW_RIGHT, FontAwesome.RETWEET,
         STYLE_DND_MODE_TOGGLE, readBoolean(NAME_DND_MODE));
 
-    dndMode.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        activateDndMode(dndMode.isChecked());
-      }
-    });
+    dndMode.addClickHandler(event -> activateDndMode(dndMode.isChecked()));
 
-    table.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        Element targetElement = EventUtils.getEventTargetElement(event);
-        TableCellElement cell = DomUtils.getParentCell(targetElement, true);
+    table.addClickHandler(event -> {
+      Element targetElement = EventUtils.getEventTargetElement(event);
+      TableCellElement cell = DomUtils.getParentCell(targetElement, true);
 
-        if (cell != null) {
-          long partId = DomUtils.getDataIndexLong(DomUtils.getParentRow(cell, false));
-          Integer day = DomUtils.getDataPropertyInt(cell, KEY_DAY);
+      if (cell != null) {
+        IdPair partIds = getPartitionIds(DomUtils.getParentRow(cell, false));
+        Integer day = DomUtils.getDataPropertyInt(cell, KEY_DAY);
 
-          if (DataUtils.isId(partId) && BeeUtils.isPositive(day)) {
-            Widget content = table.getWidgetByElement(cell.getFirstChildElement());
-            Flow panel = (content instanceof Flow) ? (Flow) content : null;
+        if (partIds != null && partIds.hasA() && BeeUtils.isPositive(day)) {
+          Widget content = table.getWidgetByElement(cell.getFirstChildElement());
+          Flow panel = (content instanceof Flow) ? (Flow) content : null;
 
-            if (EventUtils.hasModifierKey(event.getNativeEvent()) ^ inputMode.isChecked()) {
-              editSchedule(partId, day, panel);
-            } else {
-              inputTimeRangeCode(partId, day, panel);
-            }
+          if (EventUtils.hasModifierKey(event.getNativeEvent()) ^ inputMode.isChecked()) {
+            editSchedule(partIds, day, panel);
+          } else {
+            inputTimeRangeCode(partIds, day, panel);
           }
         }
       }
     });
 
     DndHelper.makeTarget(this, Collections.singleton(DATA_TYPE_WS_ITEM), null,
-        DndHelper.ALWAYS_TARGET, new BiConsumer<DropEvent, Object>() {
-          @Override
-          public void accept(DropEvent event, Object u) {
-            Element targetElement = EventUtils.getEventTargetElement(event);
-            TableCellElement cell = DomUtils.getParentCell(targetElement, true);
+        DndHelper.ALWAYS_TARGET, (event, u) -> {
+          Element targetElement = EventUtils.getEventTargetElement(event);
+          TableCellElement cell = DomUtils.getParentCell(targetElement, true);
 
-            if (cell != null && u instanceof Long) {
-              long partId = DomUtils.getDataIndexLong(DomUtils.getParentRow(cell, false));
-              Integer day = DomUtils.getDataPropertyInt(cell, KEY_DAY);
+          if (cell != null && u instanceof Long) {
+            IdPair partIds = getPartitionIds(DomUtils.getParentRow(cell, false));
+            Integer day = DomUtils.getDataPropertyInt(cell, KEY_DAY);
 
-              long wsId = (long) u;
-              boolean copy = EventUtils.hasModifierKey(event.getNativeEvent())
-                  ^ dndMode.isChecked();
+            long wsId = (long) u;
+            boolean copy = EventUtils.hasModifierKey(event.getNativeEvent())
+                ^ dndMode.isChecked();
 
-              if (DataUtils.isId(partId) && BeeUtils.isPositive(day) && activeMonth != null) {
-                JustDate date = new JustDate(activeMonth.getYear(), activeMonth.getMonth(), day);
-                onDrop(wsId, partId, date, copy);
+            if (partIds != null && partIds.hasA()
+                && BeeUtils.isPositive(day) && activeMonth != null) {
 
-              } else if (!copy) {
-                removeFromSchedule(wsId);
-              }
+              JustDate date = new JustDate(activeMonth.getYear(), activeMonth.getMonth(), day);
+              onDrop(wsId, partIds, date, copy);
+
+            } else if (!copy) {
+              removeFromSchedule(wsId);
             }
           }
         });
@@ -477,7 +505,7 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
     }
   }
 
-  protected abstract List<BeeRow> filterPartitions(DateRange filterRange);
+  protected abstract List<Partition> filterPartitions(DateRange filterRange);
 
   protected String getEmployeeFullName(long id) {
     BeeRow row = findEmployee(id);
@@ -562,7 +590,19 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
     return result;
   }
 
-  protected abstract Filter getWorkScheduleFilter();
+  protected Filter getTimeCardChangesFilter() {
+    return Filter.notNull(kind.getTccColumnName());
+  }
+
+  protected Filter getWorkScheduleFilter() {
+    return Filter.and(getWorkScheduleKindFilter(), getWorkScheduleRelationFilter());
+  }
+
+  protected Filter getWorkScheduleKindFilter() {
+    return Filter.equals(COL_WORK_SCHEDULE_KIND, kind);
+  }
+
+  protected abstract Filter getWorkScheduleRelationFilter();
 
   protected BeeRowSet getWsData() {
     return wsData;
@@ -588,7 +628,8 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
 
     int r = CALENDAR_START_ROW;
 
-    List<BeeRow> partitions = filterPartitions(activeMonth.getRange());
+    List<Partition> partitions = filterPartitions(activeMonth.getRange());
+    List<Long> ids = new ArrayList<>();
 
     if (!partitions.isEmpty()) {
       List<Integer> nameIndexes = getPartitionNameIndexes();
@@ -598,21 +639,27 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
       CalendarInfo calendarInfo = new CalendarInfo();
       initCalendarInfo(activeMonth, calendarInfo);
 
-      for (BeeRow partition : partitions) {
+      for (Partition partition : partitions) {
         Widget ew = renderPartition(partition, nameIndexes, contactIndexes, infoIndexes);
         table.setWidgetAndStyle(r, CALENDAR_PARTITION_COL, ew, STYLE_PARTITION_PANEL);
 
         updateCalendarInfo(activeMonth, partition, calendarInfo);
-        renderSchedule(partition.getId(), calendarInfo, r);
+        renderSchedule(partition.getIds(), calendarInfo, r);
 
-        DomUtils.setDataIndex(table.getRowFormatter().getElement(r), partition.getId());
+        Element rowElement = table.getRowFormatter().getElement(r);
+        DomUtils.setDataProperty(rowElement, KEY_PART, partition.getRow().getId());
+        if (partition.hasSubstituteFor()) {
+          DomUtils.setDataProperty(rowElement, KEY_SUBST, partition.getSubstituteFor());
+        }
+
+        ids.add(partition.getRow().getId());
         r++;
       }
 
       checkOverlap();
     }
 
-    renderFooters(DataUtils.getRowIds(partitions), r);
+    renderFooters(ids, r);
 
     SummaryChangeEvent.maybeFire(this);
   }
@@ -652,7 +699,7 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
     this.wsData = wsData;
   }
 
-  protected abstract void updateCalendarInfo(YearMonth ym, BeeRow partition,
+  protected abstract void updateCalendarInfo(YearMonth ym, Partition partition,
       CalendarInfo calendarInfo);
 
   abstract void refresh();
@@ -737,15 +784,17 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
     }
   }
 
-  private boolean allowDrop(BeeRow source, long partId, JustDate date) {
+  private boolean allowDrop(BeeRow source, IdPair partIds, JustDate date) {
     if (source == null) {
       return false;
     }
 
     int partIndex = wsData.getColumnIndex(scheduleParent.getWorkSchedulePartitionColumn());
+    int substIndex = wsData.getColumnIndex(COL_SUBSTITUTE_FOR);
+
     int dateIndex = wsData.getColumnIndex(COL_WORK_SCHEDULE_DATE);
 
-    if (Objects.equals(source.getLong(partIndex), partId)
+    if (Objects.equals(IdPair.get(source, partIndex, substIndex), partIds)
         && Objects.equals(source.getDate(dateIndex), date)) {
       return false;
 
@@ -768,7 +817,7 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
           ? null : TimeRange.of(srcFrom, srcUntil, srcDur);
 
       for (BeeRow row : wsData) {
-        if (Objects.equals(row.getLong(partIndex), partId)
+        if (Objects.equals(IdPair.get(row, partIndex, substIndex), partIds)
             && Objects.equals(row.getDate(dateIndex), date)) {
 
           Long dstTr = row.getLong(trIndex);
@@ -821,6 +870,8 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
       params.addQueryItem(Service.VAR_FROM, startDay);
       params.addQueryItem(Service.VAR_TO, lastDay);
 
+      params.addQueryItem(COL_WORK_SCHEDULE_KIND, kind.ordinal());
+
       BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
         @Override
         public void onResponse(ResponseObject response) {
@@ -840,13 +891,13 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
               if (DataUtils.isId(partId) && !BeeUtils.isEmpty(days)) {
                 for (int day : days) {
                   if (BeeUtils.betweenInclusive(Math.abs(day), startDay, lastDay)) {
-                    Element cell = findCell(partId, Math.abs(day) - startDay + 1);
+                    List<Element> cells = findCells(partId, Math.abs(day) - startDay + 1);
 
-                    if (cell != null) {
+                    if (!cells.isEmpty()) {
                       if (day > 0) {
-                        warnings.add(cell);
+                        warnings.addAll(cells);
                       } else {
-                        errors.add(cell);
+                        errors.addAll(cells);
                       }
                     }
                   }
@@ -862,34 +913,32 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
     }
   }
 
-  private void clearSchedule(final long partId) {
+  private void clearSchedule(final IdPair partIds) {
     if (activeMonth == null) {
       return;
     }
 
     final DateRange range = activeMonth.getRange();
 
-    if (hasSchedule(partId, range)) {
-      String caption = getPartitionCaption(partId);
+    if (hasSchedule(partIds, range)) {
+      String caption = getPartitionCaption(partIds);
       List<String> messages = Lists.newArrayList(PayrollHelper.format(activeMonth),
-          Localized.dictionary().clearWorkScheduleQuestion());
+          kind.getClearDataQuestion(Localized.dictionary()));
 
-      Global.confirmDelete(caption, Icon.WARNING, messages, new ConfirmationCallback() {
-        @Override
-        public void onConfirm() {
-          Filter filter = Filter.and(getWorkScheduleFilter(),
-              Filter.equals(scheduleParent.getWorkSchedulePartitionColumn(), partId),
-              range.getFilter(COL_WORK_SCHEDULE_DATE));
+      Global.confirmDelete(caption, Icon.WARNING, messages, () -> {
+        Filter filter = Filter.and(getWorkScheduleFilter(),
+            Filter.equals(scheduleParent.getWorkSchedulePartitionColumn(), partIds.getA()),
+            getSubstituteForFilter(partIds.getB()),
+            range.getFilter(COL_WORK_SCHEDULE_DATE));
 
-          Queries.delete(VIEW_WORK_SCHEDULE, filter, new Queries.IntCallback() {
-            @Override
-            public void onSuccess(Integer result) {
-              if (BeeUtils.isPositive(result)) {
-                refresh();
-              }
+        Queries.delete(VIEW_WORK_SCHEDULE, filter, new Queries.IntCallback() {
+          @Override
+          public void onSuccess(Integer result) {
+            if (BeeUtils.isPositive(result)) {
+              refresh();
             }
-          });
-        }
+          }
+        });
       });
 
     } else {
@@ -897,40 +946,43 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
     }
   }
 
-  private void editSchedule(final long partId, int day, final Flow contentPanel) {
+  private void editSchedule(final IdPair partIds, int day, final Flow contentPanel) {
     final JustDate date = new JustDate(activeMonth.getYear(), activeMonth.getMonth(), day);
 
     DataInfo dataInfo = Data.getDataInfo(VIEW_WORK_SCHEDULE);
     BeeRow row = RowFactory.createEmptyRow(dataInfo, true);
 
+    row.setValue(dataInfo.getColumnIndex(COL_WORK_SCHEDULE_KIND), kind.ordinal());
+
     row.setValue(dataInfo.getColumnIndex(scheduleParent.getWorkScheduleRelationColumn()),
         getRelationId());
-    row.setValue(dataInfo.getColumnIndex(scheduleParent.getWorkSchedulePartitionColumn()), partId);
+    row.setValue(dataInfo.getColumnIndex(scheduleParent.getWorkSchedulePartitionColumn()),
+        partIds.getA());
+
+    if (partIds.hasB()) {
+      row.setValue(dataInfo.getColumnIndex(COL_SUBSTITUTE_FOR), partIds.getB());
+    }
 
     final int dateIndex = dataInfo.getColumnIndex(COL_WORK_SCHEDULE_DATE);
     row.setValue(dateIndex, date);
 
-    Filter filter = Filter.and(
-        Filter.or(getWorkScheduleFilter(),
-            Filter.equals(scheduleParent.getWorkSchedulePartitionColumn(), partId)),
+    Filter filter = Filter.and(getWorkScheduleKindFilter(),
+        Filter.or(getWorkScheduleRelationFilter(),
+            Filter.equals(scheduleParent.getWorkSchedulePartitionColumn(), partIds.getA())),
         Filter.equals(COL_WORK_SCHEDULE_DATE, date));
     GridFactory.registerImmutableFilter(GRID_WORK_SCHEDULE_DAY, filter);
 
-    WorkScheduleEditor wsEditor = new WorkScheduleEditor(date, holidays, new Runnable() {
-      @Override
-      public void run() {
-        updateSchedule(partId, date);
-      }
-    });
+    WorkScheduleEditor wsEditor = new WorkScheduleEditor(date, holidays,
+        () -> updateSchedule(partIds, date));
 
-    String caption = getPartitionCaption(partId);
+    String caption = getPartitionCaption(partIds);
 
     RowFactory.createRow(FORM_WORK_SCHEDULE_EDITOR, caption, dataInfo, row, Modality.ENABLED,
         contentPanel, wsEditor, null, new RowCallback() {
           @Override
           public void onSuccess(BeeRow result) {
             if (result != null) {
-              updateSchedule(partId, result.getDate(dateIndex));
+              updateSchedule(partIds, result.getDate(dateIndex));
             } else {
               updateSchedule();
             }
@@ -938,15 +990,18 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
         });
   }
 
-  private List<BeeRow> filterSchedule(long partId, JustDate date) {
+  private List<BeeRow> filterSchedule(IdPair partIds, JustDate date) {
     List<BeeRow> result = new ArrayList<>();
 
     if (!DataUtils.isEmpty(wsData)) {
       int partIndex = wsData.getColumnIndex(scheduleParent.getWorkSchedulePartitionColumn());
+      int substIndex = wsData.getColumnIndex(COL_SUBSTITUTE_FOR);
+
       int dateIndex = wsData.getColumnIndex(COL_WORK_SCHEDULE_DATE);
 
       for (BeeRow row : wsData) {
-        if (Objects.equals(row.getLong(partIndex), partId)
+        if (partIds.aEquals(row.getLong(partIndex))
+            && partIds.bEquals(row.getLong(substIndex))
             && Objects.equals(row.getDate(dateIndex), date)) {
 
           result.add(DataUtils.cloneRow(row));
@@ -957,9 +1012,9 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
     return result;
   }
 
-  private Element findCell(long partId, int day) {
+  private Element findCell(IdPair partIds, int day) {
     for (int r = CALENDAR_START_ROW; r < table.getRowCount(); r++) {
-      if (DomUtils.getDataIndexLong(table.getRow(r)) == partId) {
+      if (Objects.equals(getPartitionIds(table.getRow(r)), partIds)) {
         int c = DAY_START_COL + day - 1;
 
         if (c < table.getCellCount(r)) {
@@ -970,8 +1025,27 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
     return null;
   }
 
-  private Flow getDayContentPanel(long partId, int day) {
-    Element cell = findCell(partId, day);
+  private List<Element> findCells(long partId, int day) {
+    List<Element> result = new ArrayList<>();
+
+    for (int r = CALENDAR_START_ROW; r < table.getRowCount(); r++) {
+      if (Objects.equals(DomUtils.getDataPropertyLong(table.getRow(r), KEY_PART), partId)) {
+        int c = DAY_START_COL + day - 1;
+
+        if (c < table.getCellCount(r)) {
+          TableCellElement cell = table.getCellFormatter().getElement(r, c);
+          if (cell != null) {
+            result.add(cell);
+          }
+        }
+      }
+    }
+
+    return result;
+  }
+
+  private Flow getDayContentPanel(IdPair partIds, int day) {
+    Element cell = findCell(partIds, day);
     if (cell == null) {
       return null;
     }
@@ -1007,6 +1081,11 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
     return result;
   }
 
+  private String getPartitionCaption(IdPair partIds) {
+    return BeeUtils.joinWords(getPartitionCaption(partIds.getA()),
+        getSubstituteForLabel(partIds.getB()));
+  }
+
   private Set<YearMonth> getScheduledMonths() {
     Set<YearMonth> result = new HashSet<>();
 
@@ -1024,13 +1103,23 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
     return result;
   }
 
-  private boolean hasSchedule(long partId, DateRange range) {
+  private String getSubstituteForLabel(Long id) {
+    if (DataUtils.isId(id)) {
+      return BeeUtils.bracket(getEmployeeFullName(id));
+    } else {
+      return null;
+    }
+  }
+
+  private boolean hasSchedule(IdPair partIds, DateRange range) {
     if (!DataUtils.isEmpty(wsData)) {
       int partIndex = wsData.getColumnIndex(scheduleParent.getWorkSchedulePartitionColumn());
+      int substIndex = wsData.getColumnIndex(COL_SUBSTITUTE_FOR);
+
       int dateIndex = wsData.getColumnIndex(COL_WORK_SCHEDULE_DATE);
 
       for (BeeRow row : wsData) {
-        if (Objects.equals(row.getLong(partIndex), partId)
+        if (Objects.equals(IdPair.get(row, partIndex, substIndex), partIds)
             && range.contains(row.getDate(dateIndex))) {
           return true;
         }
@@ -1040,7 +1129,7 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
     return false;
   }
 
-  private void inputTimeRangeCode(final long partId, int day, Flow contentPanel) {
+  private void inputTimeRangeCode(final IdPair partIds, int day, Flow contentPanel) {
     if (DataUtils.isEmpty(timeRanges)) {
       return;
     }
@@ -1049,7 +1138,7 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
 
     Set<Long> usedCodes = new HashSet<>();
 
-    List<BeeRow> schedule = filterSchedule(partId, date);
+    List<BeeRow> schedule = filterSchedule(partIds, date);
 
     if (!schedule.isEmpty()) {
       int index = wsData.getColumnIndex(COL_TIME_RANGE_CODE);
@@ -1082,7 +1171,7 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
     }
 
     if (!ids.isEmpty()) {
-      String caption = getPartitionCaption(partId);
+      String caption = getPartitionCaption(partIds);
       final DialogBox dialog = DialogBox.create(caption, STYLE_TRC_DIALOG);
 
       Flow panel = new Flow(STYLE_TRC_PANEL);
@@ -1103,27 +1192,24 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
       inputWidget.setMaxLength(Data.getColumnPrecision(VIEW_TIME_RANGES, COL_TR_CODE));
       inputWidget.setUpperCase(true);
 
-      inputWidget.addKeyDownHandler(new KeyDownHandler() {
-        @Override
-        public void onKeyDown(KeyDownEvent event) {
-          if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER) {
-            String value = inputWidget.getValue();
+      inputWidget.addKeyDownHandler(event -> {
+        if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER) {
+          String value = inputWidget.getValue();
 
-            if (!BeeUtils.isEmpty(value)) {
-              long trId = BeeConst.LONG_UNDEF;
+          if (!BeeUtils.isEmpty(value)) {
+            long trId = BeeConst.LONG_UNDEF;
 
-              for (int i = 0; i < codes.size(); i++) {
-                if (BeeUtils.same(codes.get(i), value)) {
-                  trId = ids.get(i);
-                  break;
-                }
+            for (int i = 0; i < codes.size(); i++) {
+              if (BeeUtils.same(codes.get(i), value)) {
+                trId = ids.get(i);
+                break;
               }
+            }
 
-              if (DataUtils.isId(trId)) {
-                event.preventDefault();
-                dialog.close();
-                scheduleTimeRange(partId, date, trId);
-              }
+            if (DataUtils.isId(trId)) {
+              event.preventDefault();
+              dialog.close();
+              scheduleTimeRange(partIds, date, trId);
             }
           }
         }
@@ -1151,15 +1237,12 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
         Button option = new Button(html);
         DomUtils.setDataIndex(option.getElement(), ids.get(i));
 
-        option.addClickHandler(new ClickHandler() {
-          @Override
-          public void onClick(ClickEvent event) {
-            long trId = DomUtils.getDataIndexLong(EventUtils.getSourceElement(event));
+        option.addClickHandler(event -> {
+          long trId = DomUtils.getDataIndexLong(EventUtils.getSourceElement(event));
 
-            if (DataUtils.isId(trId)) {
-              dialog.close();
-              scheduleTimeRange(partId, date, trId);
-            }
+          if (DataUtils.isId(trId)) {
+            dialog.close();
+            scheduleTimeRange(partIds, date, trId);
           }
         });
 
@@ -1194,18 +1277,22 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
     }
   }
 
-  private void onDrop(final long wsId, final long partId, final JustDate date, boolean copy) {
+  private void onDrop(final long wsId, final IdPair partIds, final JustDate date, boolean copy) {
     BeeRow source = (wsData == null) ? null : wsData.getRowById(wsId);
 
-    if (allowDrop(source, partId, date)) {
+    if (allowDrop(source, partIds, date)) {
       String viewName = VIEW_WORK_SCHEDULE;
 
       int partIndex = wsData.getColumnIndex(scheduleParent.getWorkSchedulePartitionColumn());
+      int substIndex = wsData.getColumnIndex(COL_SUBSTITUTE_FOR);
+
       int dateIndex = wsData.getColumnIndex(COL_WORK_SCHEDULE_DATE);
 
       if (copy) {
         BeeRow target = DataUtils.cloneRow(source);
-        target.setValue(partIndex, partId);
+        target.setValue(partIndex, partIds.getA());
+        target.setValue(substIndex, partIds.getB());
+
         target.setValue(dateIndex, date);
 
         BeeRowSet rowSet = DataUtils.createRowSetForInsert(viewName, wsData.getColumns(), target);
@@ -1214,7 +1301,7 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
           @Override
           public void onSuccess(BeeRow result) {
             wsData.addRow(result);
-            updateDayContent(partId, date);
+            updateDayContent(partIds, date);
             checkOverlap();
 
             SummaryChangeEvent.maybeFire(WorkScheduleWidget.this);
@@ -1223,14 +1310,16 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
 
       } else {
         final Long srcPart = source.getLong(partIndex);
+        final Long srcSubst = source.getLong(substIndex);
+
         final JustDate srcDate = source.getDate(dateIndex);
 
         List<BeeColumn> columns = DataUtils.getColumns(wsData.getColumns(),
             Lists.newArrayList(scheduleParent.getWorkSchedulePartitionColumn(),
-                COL_WORK_SCHEDULE_DATE));
+                COL_SUBSTITUTE_FOR, COL_WORK_SCHEDULE_DATE));
 
-        List<String> oldValues = Queries.asList(srcPart, srcDate);
-        List<String> newValues = Queries.asList(partId, date);
+        List<String> oldValues = Queries.asList(srcPart, srcSubst, srcDate);
+        List<String> newValues = Queries.asList(partIds.getA(), partIds.getB(), date);
 
         Queries.update(viewName, source.getId(), source.getVersion(),
             columns, oldValues, newValues, null, new RowCallback() {
@@ -1239,13 +1328,28 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
                 wsData.removeRowById(wsId);
                 wsData.addRow(result);
 
-                updateDayContent(srcPart, srcDate);
-                updateDayContent(partId, date);
+                updateDayContent(IdPair.of(srcPart, srcSubst), srcDate);
+                updateDayContent(partIds, date);
 
                 checkOverlap();
               }
             });
       }
+    }
+  }
+
+  private void onFetch() {
+  }
+
+  private void onSubstitution() {
+  }
+
+  private boolean readBoolean(String name) {
+    String key = storageKey(name);
+    if (BeeKeeper.getStorage().hasItem(key)) {
+      return BeeKeeper.getStorage().getBoolean(key);
+    } else {
+      return false;
     }
   }
 
@@ -1257,13 +1361,15 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
           BeeRow row = (wsData == null) ? null : wsData.getRowById(wsId);
 
           if (row != null) {
-            Long partId = DataUtils.getLong(wsData, row,
-                scheduleParent.getWorkSchedulePartitionColumn());
+            int partIndex = wsData.getColumnIndex(scheduleParent.getWorkSchedulePartitionColumn());
+            int substIndex = wsData.getColumnIndex(COL_SUBSTITUTE_FOR);
+            IdPair partIds = IdPair.get(row, partIndex, substIndex);
+
             JustDate date = DataUtils.getDate(wsData, row, COL_WORK_SCHEDULE_DATE);
 
             wsData.removeRowById(wsId);
 
-            updateDayContent(partId, date);
+            updateDayContent(partIds, date);
             checkOverlap();
 
             SummaryChangeEvent.maybeFire(WorkScheduleWidget.this);
@@ -1273,7 +1379,7 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
     });
   }
 
-  private void renderDayContent(Flow panel, long partId, JustDate date,
+  private void renderDayContent(Flow panel, IdPair partIds, JustDate date,
       Multimap<Integer, Long> tcChanges) {
 
     if (!panel.isEmpty()) {
@@ -1282,7 +1388,7 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
 
     int day = date.getDom();
 
-    List<BeeRow> schedule = filterSchedule(partId, date);
+    List<BeeRow> schedule = filterSchedule(partIds, date);
 
     if (tcChanges.containsKey(day)) {
       for (Long codeId : tcChanges.get(day)) {
@@ -1310,24 +1416,18 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
     Label modeMove = new Label(Localized.dictionary().actionMove());
     modeMove.addStyleName(STYLE_DND_MODE_MOVE);
 
-    modeMove.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        if (dndMode.isChecked()) {
-          activateDndMode(false);
-        }
+    modeMove.addClickHandler(event -> {
+      if (dndMode.isChecked()) {
+        activateDndMode(false);
       }
     });
 
     Label modeCopy = new Label(Localized.dictionary().actionCopy());
     modeCopy.addStyleName(STYLE_DND_MODE_COPY);
 
-    modeCopy.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        if (!dndMode.isChecked()) {
-          activateDndMode(true);
-        }
+    modeCopy.addClickHandler(event -> {
+      if (!dndMode.isChecked()) {
+        activateDndMode(true);
       }
     });
 
@@ -1349,8 +1449,32 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
     table.setWidgetAndStyle(r, CALENDAR_PARTITION_COL, appender, STYLE_APPEND_PANEL);
 
     Flow controlPanel = new Flow();
-    controlPanel.add(renderInputMode());
-    controlPanel.add(renderDndMode());
+
+    if (!BeeUtils.isEmpty(partIds)) {
+      if (kind.isSubstitutionEnabled()) {
+        Button substitutionCommand = new Button(Localized.dictionary().employeeSubstitution());
+        substitutionCommand.addStyleName(STYLE_COMMAND);
+        substitutionCommand.addStyleName(STYLE_COMMAND_SUBSTITUTION);
+
+        substitutionCommand.addClickHandler(event -> onSubstitution());
+        controlPanel.add(substitutionCommand);
+      }
+
+      if (kind == WorkScheduleKind.ACTUAL) {
+        Button fetchCommand = new Button(Localized.dictionary().fetchWorkSchedule());
+        fetchCommand.addStyleName(STYLE_COMMAND);
+        fetchCommand.addStyleName(STYLE_COMMAND_FETCH);
+
+        fetchCommand.addClickHandler(event -> onFetch());
+        controlPanel.add(fetchCommand);
+      }
+
+      Flow modePanel = new Flow(STYLE_MODE_PANEL);
+      modePanel.add(renderInputMode());
+      modePanel.add(renderDndMode());
+
+      controlPanel.add(modePanel);
+    }
 
     table.setWidgetAndStyle(r, DAY_START_COL, controlPanel, STYLE_CONTROL_PANEL);
     table.getCellFormatter().setColSpan(r, DAY_START_COL, activeMonth.getLength());
@@ -1369,24 +1493,14 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
     refresh.addStyleName(STYLE_PREFIX + Action.REFRESH.getStyleSuffix());
     refresh.setTitle(Action.REFRESH.getCaption());
 
-    refresh.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        refresh();
-      }
-    });
+    refresh.addClickHandler(event -> refresh());
     headerPanel.add(refresh);
 
     FaLabel print = new FaLabel(Action.PRINT.getIcon(), STYLE_ACTION);
     print.addStyleName(STYLE_PREFIX + Action.PRINT.getStyleSuffix());
     print.setTitle(Action.PRINT.getCaption());
 
-    print.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        Printer.print(WorkScheduleWidget.this);
-      }
-    });
+    print.addClickHandler(event -> Printer.print(WorkScheduleWidget.this));
     headerPanel.add(print);
 
     table.setWidgetAndStyle(HEADER_ROW, 0, headerPanel, STYLE_HEADER_PANEL);
@@ -1424,24 +1538,18 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
     Label modeSimple = new Label(Localized.dictionary().inputSimple());
     modeSimple.addStyleName(STYLE_INPUT_MODE_SIMPLE);
 
-    modeSimple.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        if (inputMode.isChecked()) {
-          activateInputMode(false);
-        }
+    modeSimple.addClickHandler(event -> {
+      if (inputMode.isChecked()) {
+        activateInputMode(false);
       }
     });
 
     Label modeFull = new Label(Localized.dictionary().inputFull());
     modeFull.addStyleName(STYLE_INPUT_MODE_FULL);
 
-    modeFull.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        if (!inputMode.isChecked()) {
-          activateInputMode(true);
-        }
+    modeFull.addClickHandler(event -> {
+      if (!inputMode.isChecked()) {
+        activateInputMode(true);
       }
     });
 
@@ -1474,14 +1582,10 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
 
       DomUtils.setDataProperty(widget.getElement(), KEY_YM, ym.serialize());
 
-      widget.addClickHandler(new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent event) {
-          String s = DomUtils.getDataProperty(EventUtils.getEventTargetElement(event), KEY_YM);
-
-          if (!BeeUtils.isEmpty(s) && activateMonth(YearMonth.parse(s))) {
-            render();
-          }
+      widget.addClickHandler(event -> {
+        String s = DomUtils.getDataProperty(EventUtils.getEventTargetElement(event), KEY_YM);
+        if (!BeeUtils.isEmpty(s) && activateMonth(YearMonth.parse(s))) {
+          render();
         }
       });
 
@@ -1497,80 +1601,87 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
       selector.setText(PayrollHelper.format(activeMonth));
     }
 
-    selector.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        final List<YearMonth> months = getMonths();
+    selector.addClickHandler(event -> {
+      final List<YearMonth> months = getMonths();
 
-        List<String> labels = new ArrayList<>();
-        for (YearMonth ym : months) {
-          labels.add(PayrollHelper.format(ym));
-        }
-
-        Global.choiceWithCancel(Localized.dictionary().yearMonth(), null, labels,
-            new ChoiceCallback() {
-              @Override
-              public void onSuccess(int value) {
-                if (BeeUtils.isIndex(months, value) && activateMonth(months.get(value))) {
-                  render();
-                }
-              }
-            });
+      List<String> labels = new ArrayList<>();
+      for (YearMonth ym : months) {
+        labels.add(PayrollHelper.format(ym));
       }
+
+      Global.choiceWithCancel(Localized.dictionary().yearMonth(), null, labels,
+          value -> {
+            if (BeeUtils.isIndex(months, value) && activateMonth(months.get(value))) {
+              render();
+            }
+          });
     });
 
     return selector;
   }
 
-  private Widget renderPartition(BeeRow row, List<Integer> nameIndexes,
+  private Widget renderPartition(Partition partition, List<Integer> nameIndexes,
       List<Integer> contactIndexes, List<Integer> infoIndexes) {
 
     Flow panel = new Flow();
 
     Flow container = new Flow(STYLE_PARTITION_CONTAINER);
 
-    Label nameWidget = new Label(DataUtils.join(getPartitionDataColumns(), row, nameIndexes,
-        BeeConst.STRING_SPACE));
+    Label nameWidget = new Label(DataUtils.join(getPartitionDataColumns(), partition.getRow(),
+        nameIndexes, BeeConst.STRING_SPACE));
     nameWidget.addStyleName(STYLE_PARTITION_NAME);
 
-    nameWidget.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        Element targetElement = EventUtils.getEventTargetElement(event);
-        long id = DomUtils.getDataIndexLong(DomUtils.getParentRow(targetElement, false));
+    nameWidget.addClickHandler(event -> {
+      Element targetElement = EventUtils.getEventTargetElement(event);
+      Long id = DomUtils.getDataPropertyLong(DomUtils.getParentRow(targetElement, false),
+          KEY_PART);
 
-        if (DataUtils.isId(id)) {
-          RowEditor.open(scheduleParent.getPartitionViewName(), id, Opener.MODAL);
-        }
+      if (DataUtils.isId(id)) {
+        RowEditor.open(scheduleParent.getPartitionViewName(), id, Opener.MODAL);
       }
     });
 
     container.add(nameWidget);
 
-    Label contactWidget = new Label(DataUtils.join(getPartitionDataColumns(), row, contactIndexes,
-        BeeConst.DEFAULT_LIST_SEPARATOR));
+    Label contactWidget = new Label(DataUtils.join(getPartitionDataColumns(), partition.getRow(),
+        contactIndexes, BeeConst.DEFAULT_LIST_SEPARATOR));
     contactWidget.addStyleName(STYLE_PARTITION_CONTACT);
 
     container.add(contactWidget);
 
-    Label infoWidget = new Label(DataUtils.join(getPartitionDataColumns(), row, infoIndexes,
-        BeeConst.DEFAULT_LIST_SEPARATOR));
+    Label infoWidget = new Label(DataUtils.join(getPartitionDataColumns(), partition.getRow(),
+        infoIndexes, BeeConst.DEFAULT_LIST_SEPARATOR));
     infoWidget.addStyleName(STYLE_PARTITION_INFO);
 
     container.add(infoWidget);
+
+    if (partition.hasSubstituteFor()) {
+      Label substWidget = new Label(getSubstituteForLabel(partition.getSubstituteFor()));
+      substWidget.addStyleName(STYLE_PARTITION_SUBST);
+
+      substWidget.addClickHandler(event -> {
+        Element targetElement = EventUtils.getEventTargetElement(event);
+        Long id = DomUtils.getDataPropertyLong(DomUtils.getParentRow(targetElement, false),
+            KEY_SUBST);
+
+        if (DataUtils.isId(id)) {
+          RowEditor.open(VIEW_EMPLOYEES, id, Opener.MODAL);
+        }
+      });
+
+      container.add(substWidget);
+    }
+
     panel.add(container);
 
     FaLabel clear = new FaLabel(FontAwesome.TRASH, STYLE_PARTITION_CLEAR);
 
-    clear.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        Element targetElement = EventUtils.getEventTargetElement(event);
-        long id = DomUtils.getDataIndexLong(DomUtils.getParentRow(targetElement, false));
+    clear.addClickHandler(event -> {
+      Element targetElement = EventUtils.getEventTargetElement(event);
+      IdPair partIds = getPartitionIds(DomUtils.getParentRow(targetElement, false));
 
-        if (DataUtils.isId(id)) {
-          clearSchedule(id);
-        }
+      if (partIds != null && partIds.hasA()) {
+        clearSchedule(partIds);
       }
     });
 
@@ -1579,21 +1690,21 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
     return panel;
   }
 
-  private void renderSchedule(long partId, CalendarInfo calendarInfo, int r) {
+  private void renderSchedule(IdPair partIds, CalendarInfo calendarInfo, int r) {
     JustDate date = activeMonth.getDate();
     int days = activeMonth.getLength();
 
     JustDate today = TimeUtils.today();
     int td = TimeUtils.sameMonth(date, today) ? today.getDom() : BeeConst.UNDEF;
 
-    String partName = getPartitionCaption(partId);
+    String partName = getPartitionCaption(partIds.getA());
 
     for (int i = 0; i < days; i++) {
       int day = i + 1;
       date.setDom(day);
 
       Flow panel = new Flow();
-      renderDayContent(panel, partId, date, calendarInfo.getTcChanges());
+      renderDayContent(panel, partIds, date, calendarInfo.getTcChanges());
 
       int c = DAY_START_COL + i;
       table.setWidgetAndStyle(r, c, panel, STYLE_DAY_CONTENT);
@@ -1744,24 +1855,31 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
     return widget;
   }
 
-  private void scheduleTimeRange(final long partId, final JustDate date, long trId) {
-    List<BeeColumn> columns = Data.getColumns(VIEW_WORK_SCHEDULE,
-        Lists.newArrayList(
-            scheduleParent.getWorkScheduleRelationColumn(),
-            scheduleParent.getWorkSchedulePartitionColumn(),
-            COL_WORK_SCHEDULE_DATE,
-            COL_TIME_RANGE_CODE));
+  private void scheduleTimeRange(final IdPair partIds, final JustDate date, long trId) {
+    List<String> colNames = Lists.newArrayList(COL_WORK_SCHEDULE_KIND,
+        scheduleParent.getWorkScheduleRelationColumn(),
+        scheduleParent.getWorkSchedulePartitionColumn(),
+        COL_WORK_SCHEDULE_DATE,
+        COL_TIME_RANGE_CODE);
 
-    List<String> values = Queries.asList(getRelationId(), partId, date, trId);
+    List<String> values = Queries.asList(kind.ordinal(), getRelationId(), partIds.getA(), date,
+        trId);
+
+    if (partIds.hasB()) {
+      colNames.add(COL_SUBSTITUTE_FOR);
+      values.add(BeeUtils.toString(partIds.getB()));
+    }
+
+    List<BeeColumn> columns = Data.getColumns(VIEW_WORK_SCHEDULE, colNames);
 
     Queries.insert(VIEW_WORK_SCHEDULE, columns, values, null, new RowCallback() {
       @Override
       public void onSuccess(BeeRow result) {
         if (wsData == null) {
-          updateSchedule(partId, date);
+          updateSchedule(partIds, date);
         } else {
           wsData.addRow(result);
-          updateDayContent(partId, date);
+          updateDayContent(partIds, date);
           checkOverlap();
 
           SummaryChangeEvent.maybeFire(WorkScheduleWidget.this);
@@ -1774,15 +1892,20 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
     this.activeMonth = activeMonth;
   }
 
-  private boolean updateDayContent(long partId, JustDate date) {
-    Flow contentPanel = getDayContentPanel(partId, date.getDom());
+  private String storageKey(String name) {
+    return Storage.getUserKey(kind.getStorageKeyPrefix(), name);
+  }
+
+  private boolean updateDayContent(IdPair partIds, JustDate date) {
+    Flow contentPanel = getDayContentPanel(partIds, date.getDom());
 
     if (contentPanel == null) {
       return false;
 
     } else {
-      Multimap<Integer, Long> tcc = getTimeCardChanges(getEmployeeId(partId), YearMonth.of(date));
-      renderDayContent(contentPanel, partId, date, tcc);
+      Multimap<Integer, Long> tcc = getTimeCardChanges(getEmployeeId(partIds.getA()),
+          YearMonth.of(date));
+      renderDayContent(contentPanel, partIds, date, tcc);
 
       return true;
     }
@@ -1799,14 +1922,14 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
         });
   }
 
-  private void updateSchedule(final long partId, final JustDate date) {
+  private void updateSchedule(final IdPair partIds, final JustDate date) {
     Queries.getRowSet(VIEW_WORK_SCHEDULE, null, getWorkScheduleFilter(),
         new Queries.RowSetCallback() {
           @Override
           public void onSuccess(BeeRowSet result) {
             setWsData(result);
 
-            if (updateDayContent(partId, date)) {
+            if (updateDayContent(partIds, date)) {
               checkOverlap();
               SummaryChangeEvent.maybeFire(WorkScheduleWidget.this);
             } else {

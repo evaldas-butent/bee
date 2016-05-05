@@ -518,6 +518,7 @@ public final class TaskConstants {
       + "users_hours";
 
   public static final String SVC_GET_REQUEST_FILES = "get_request_files";
+  public static final String SVC_FINISH_REQUEST_WITH_TASK = "finish_request_with_task";
 
   public static final String SVC_RT_GET_SCHEDULING_DATA = "rt_get_scheduling_data";
   public static final String SVC_RT_SPAWN = "rt_spawn";
@@ -593,9 +594,11 @@ public final class TaskConstants {
   public static final String VIEW_DURATION_TYPES = "DurationTypes";
 
   public static final String VIEW_RECURRING_TASKS = "RecurringTasks";
+  public static final String VIEW_REQUEST_EVENTS = "RequestEvents";
   public static final String VIEW_RT_DATES = "RTDates";
   public static final String VIEW_RT_FILES = "RTFiles";
 
+  public static final String VIEW_REQUEST_DURATION_TYPES = "RequestDurationTypes";
   public static final String VIEW_REQUEST_FILES = "RequestFiles";
 
   public static final String VIEW_RELATED_TASKS = "RelatedTasks";
@@ -659,6 +662,7 @@ public final class TaskConstants {
   public static final String COL_DURATION_TYPE_NAME = "Name";
 
   public static final String COL_EVENT = "Event";
+  public static final String COL_EVENT_PROPERTIES = "Properties";
   public static final String COL_EVENT_NOTE = "EventNote";
   public static final String COL_EVENT_DATA = "EventData";
   public static final String COL_EVENT_DURATION = "EventDuration";
@@ -679,6 +683,7 @@ public final class TaskConstants {
   public static final String COL_REQUEST_CUSTOMER_NAME = "CustomerName";
   public static final String COL_REQUEST_CUSTOMER_PERSON = "CustomerPerson";
   public static final String COL_REQUEST_DATE = "Date";
+  public static final String COL_REQUEST_EVENT = "RequestEvent";
   public static final String COL_REQUEST_MANAGER = "Manager";
   public static final String COL_REQUEST_RESULT = "Result";
   public static final String COL_REQUEST_RESULT_PROPERTIES = "ResultProperties";
@@ -766,6 +771,7 @@ public final class TaskConstants {
   public static final String PROP_PROJECTS = "Projects";
   public static final String PROP_PROJECT_STAGES = "ProjectStages";
   public static final String PROP_TASKS = "Tasks";
+  public static final String PROP_REQUESTS = "Requests";
 
   public static final String PROP_FILES = "Files";
   public static final String PROP_EVENTS = "Events";
@@ -801,6 +807,7 @@ public final class TaskConstants {
   public static final String GRID_TASK_TEMPLATES = "TaskTemplates";
   public static final String GRID_TASK_PRODUCTS = "TaskProducts";
 
+  public static final String FORM_NEW_REQUEST_COMMENT = "NewRequestComment";
   public static final String FORM_NEW_TASK = "NewTask";
   public static final String FORM_TASK = "Task";
   public static final String FORM_TASK_PREVIEW = "TaskPreview";
@@ -819,6 +826,8 @@ public final class TaskConstants {
 
   public static final String PRM_END_OF_WORK_DAY = "EndOfWorkDay";
   public static final String PRM_START_OF_WORK_DAY = "StartOfWorkDay";
+  public static final String PRM_DEFAULT_DBA_TEMPLATE = "DefaultDBATemplate";
+  public static final String PRM_DEFAULT_DBA_DOCUMENT_TYPE = "DefaultDBADocumentType";
 
   private TaskConstants() {
   }

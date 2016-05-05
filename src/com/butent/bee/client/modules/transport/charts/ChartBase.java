@@ -2,6 +2,7 @@ package com.butent.bee.client.modules.transport.charts;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.BoundType;
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Range;
@@ -13,49 +14,59 @@ import static com.butent.bee.shared.modules.administration.AdministrationConstan
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Callback;
+import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
+import com.butent.bee.client.dialog.Icon;
+import com.butent.bee.client.dialog.Popup;
+import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.modules.transport.TransportHandler;
 import com.butent.bee.client.modules.transport.charts.CargoEvent.Type;
+import com.butent.bee.client.modules.transport.charts.ChartFilter.FilterValue;
 import com.butent.bee.client.modules.transport.charts.Filterable.FilterType;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.timeboard.TimeBoard;
 import com.butent.bee.client.timeboard.TimeBoardHelper;
 import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.ui.UiHelper;
-import com.butent.bee.client.view.View;
 import com.butent.bee.client.view.ViewCallback;
 import com.butent.bee.client.view.ViewFactory;
-import com.butent.bee.client.view.ViewSupplier;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.Size;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.css.CssUnit;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.event.ModificationEvent;
-import com.butent.bee.shared.menu.MenuHandler;
+import com.butent.bee.shared.data.value.Value;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.menu.MenuService;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
+import com.butent.bee.shared.modules.transport.TransportUtils;
 import com.butent.bee.shared.time.HasDateRange;
 import com.butent.bee.shared.time.JustDate;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.Color;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
@@ -77,82 +88,22 @@ public abstract class ChartBase extends TimeBoard {
   public static void registerBoards() {
     ensureStyleSheet();
 
-    final ViewCallback showCallback = new ViewCallback() {
-      @Override
-      public void onSuccess(View result) {
-        BeeKeeper.getScreen().show(result);
-      }
-    };
+    final ViewCallback showCallback = result -> BeeKeeper.getScreen().show(result);
 
-    MenuService.FREIGHT_EXCHANGE.setHandler(new MenuHandler() {
-      @Override
-      public void onSelection(String parameters) {
-        FreightExchange.open(showCallback);
-      }
-    });
+    MenuService.FREIGHT_EXCHANGE.setHandler(parameters -> FreightExchange.open(showCallback));
+    ViewFactory.registerSupplier(FreightExchange.SUPPLIER_KEY, cb -> FreightExchange.open(cb));
 
-    ViewFactory.registerSupplier(FreightExchange.SUPPLIER_KEY, new ViewSupplier() {
-      @Override
-      public void create(ViewCallback callback) {
-        FreightExchange.open(callback);
-      }
-    });
+    MenuService.SHIPPING_SCHEDULE.setHandler(parameters -> ShippingSchedule.open(showCallback));
+    ViewFactory.registerSupplier(ShippingSchedule.SUPPLIER_KEY, cb -> ShippingSchedule.open(cb));
 
-    MenuService.SHIPPING_SCHEDULE.setHandler(new MenuHandler() {
-      @Override
-      public void onSelection(String parameters) {
-        ShippingSchedule.open(showCallback);
-      }
-    });
+    MenuService.DRIVER_TIME_BOARD.setHandler(parameters -> DriverTimeBoard.open(showCallback));
+    ViewFactory.registerSupplier(DriverTimeBoard.SUPPLIER_KEY, cb -> DriverTimeBoard.open(cb));
 
-    ViewFactory.registerSupplier(ShippingSchedule.SUPPLIER_KEY, new ViewSupplier() {
-      @Override
-      public void create(ViewCallback callback) {
-        ShippingSchedule.open(callback);
-      }
-    });
+    MenuService.TRUCK_TIME_BOARD.setHandler(parameters -> TruckTimeBoard.open(showCallback));
+    ViewFactory.registerSupplier(TruckTimeBoard.SUPPLIER_KEY, cb -> TruckTimeBoard.open(cb));
 
-    MenuService.DRIVER_TIME_BOARD.setHandler(new MenuHandler() {
-      @Override
-      public void onSelection(String parameters) {
-        DriverTimeBoard.open(showCallback);
-      }
-    });
-
-    ViewFactory.registerSupplier(DriverTimeBoard.SUPPLIER_KEY, new ViewSupplier() {
-      @Override
-      public void create(ViewCallback callback) {
-        DriverTimeBoard.open(callback);
-      }
-    });
-
-    MenuService.TRUCK_TIME_BOARD.setHandler(new MenuHandler() {
-      @Override
-      public void onSelection(String parameters) {
-        TruckTimeBoard.open(showCallback);
-      }
-    });
-
-    ViewFactory.registerSupplier(TruckTimeBoard.SUPPLIER_KEY, new ViewSupplier() {
-      @Override
-      public void create(ViewCallback callback) {
-        TruckTimeBoard.open(callback);
-      }
-    });
-
-    MenuService.TRAILER_TIME_BOARD.setHandler(new MenuHandler() {
-      @Override
-      public void onSelection(String parameters) {
-        TrailerTimeBoard.open(showCallback);
-      }
-    });
-
-    ViewFactory.registerSupplier(TrailerTimeBoard.SUPPLIER_KEY, new ViewSupplier() {
-      @Override
-      public void create(ViewCallback callback) {
-        TrailerTimeBoard.open(callback);
-      }
-    });
+    MenuService.TRAILER_TIME_BOARD.setHandler(parameters -> TrailerTimeBoard.open(showCallback));
+    ViewFactory.registerSupplier(TrailerTimeBoard.SUPPLIER_KEY, cb -> TrailerTimeBoard.open(cb));
   }
 
   private final Map<Long, String> transportGroups = new HashMap<>();
@@ -185,34 +136,55 @@ public abstract class ChartBase extends TimeBoard {
   public void handleAction(Action action) {
     switch (action) {
       case FILTER:
-        FilterHelper.enableDataTypes(filterData, getEnabledFilterDataTypes());
+        FilterHelper.enableDataTypes(getFilterData(), getEnabledFilterDataTypes());
 
-        FilterHelper.openDialog(filterData, new FilterHelper.DialogCallback() {
-          @Override
-          public void onClear() {
-            resetFilter(FilterType.TENTATIVE);
-          }
+        FilterHelper.openDialog(getFilterData(), getSavedFilters(),
+            new FilterHelper.DialogCallback() {
+              @Override
+              public void applySavedFilter(int index, Popup popup) {
+                onApplyFilter(index, popup);
+              }
 
-          @Override
-          public void onDataTypesChange(Set<ChartData.Type> types) {
-            updateEnabledFilterDataTypes(types);
-            handleAction(Action.FILTER);
-          }
+              @Override
+              public void onClear() {
+                resetFilter(FilterType.TENTATIVE);
+              }
 
-          @Override
-          public void onFilter() {
-            setFiltered(persistFilter());
-            refreshFilterInfo();
-            render(false);
-          }
+              @Override
+              public void onDataTypesChange(Set<ChartData.Type> types) {
+                updateEnabledFilterDataTypes(types);
+                handleAction(Action.FILTER);
+              }
 
-          @Override
-          public void onSelectionChange(HasWidgets dataContainer) {
-            filter(FilterType.TENTATIVE);
-            FilterHelper.enableData(getFilterData(), prepareFilterData(FilterType.TENTATIVE),
-                dataContainer);
-          }
-        });
+              @Override
+              public void onFilter() {
+                setFiltered(persistFilter());
+                refreshFilterInfo();
+                render(false);
+              }
+
+              @Override
+              public void onSave(Callback<List<ChartFilter>> callback) {
+                onSaveFilter(callback);
+              }
+
+              @Override
+              public void onSelectionChange(HasWidgets dataContainer) {
+                filter(FilterType.TENTATIVE);
+                FilterHelper.enableData(getFilterData(), prepareFilterData(FilterType.TENTATIVE),
+                    dataContainer);
+              }
+
+              @Override
+              public void removeSavedFilter(int index, Callback<List<ChartFilter>> callback) {
+                onRemoveFilter(index, callback);
+              }
+
+              @Override
+              public void setInitial(int index, boolean initial, Runnable callback) {
+                onSetInitialFilter(index, initial, callback);
+              }
+            });
         break;
 
       case REMOVE_FILTER:
@@ -235,13 +207,34 @@ public abstract class ChartBase extends TimeBoard {
     }
   }
 
+  protected void clampMaxRange(String minDateColumn, String maxDateColumn) {
+    JustDate from = TimeBoardHelper.getDate(getSettings(), minDateColumn);
+    JustDate to = TimeBoardHelper.getDate(getSettings(), maxDateColumn);
+
+    Range<Value> period = TransportUtils.getChartPeriod(from, to);
+
+    if (period != null) {
+      JustDate min = period.hasLowerBound() ? period.lowerEndpoint().getDate() : null;
+      if (min != null && period.lowerBoundType() == BoundType.OPEN) {
+        min = TimeUtils.nextDay(min);
+      }
+
+      JustDate max = period.hasUpperBound() ? period.upperEndpoint().getDate() : null;
+      if (max != null && period.upperBoundType() == BoundType.OPEN) {
+        max = TimeUtils.previousDay(max);
+      }
+
+      clampMaxRange(min, max);
+    }
+  }
+
   protected void clearFilter() {
     resetFilter(FilterType.TENTATIVE);
     resetFilter(FilterType.PERSISTENT);
 
     setFiltered(false);
 
-    for (ChartData data : filterData) {
+    for (ChartData data : getFilterData()) {
       if (data != null) {
         data.enableAll();
         data.deselectAll();
@@ -280,6 +273,8 @@ public abstract class ChartBase extends TimeBoard {
     }
 
     BeeRow oldSettings = getSettings().getRow(0);
+
+    final BeeRow oldRow = DataUtils.cloneRow(oldSettings);
     final Long oldTheme = getColorTheme(oldSettings);
 
     RowEditor.openForm(getSettingsFormName(), getSettings().getViewName(), oldSettings,
@@ -290,8 +285,24 @@ public abstract class ChartBase extends TimeBoard {
               getSettings().clearRows();
               getSettings().addRow(DataUtils.cloneRow(result));
 
-              if (BeeUtils.isEmpty(getThemeColumnName())) {
-                render(false);
+              boolean refresh = oldRow == null;
+              Collection<String> colNames = getSettingsColumnsTriggeringRefresh();
+
+              if (!refresh && !BeeUtils.isEmpty(colNames)) {
+                for (String colName : colNames) {
+                  int index = getSettings().getColumnIndex(colName);
+                  if (!BeeConst.isUndef(index)
+                      && !BeeUtils.equalsTrimRight(oldRow.getString(index),
+                          result.getString(index))) {
+
+                    refresh = true;
+                    break;
+                  }
+                }
+              }
+
+              if (refresh) {
+                refresh();
 
               } else {
                 Long newTheme = getColorTheme(result);
@@ -346,6 +357,10 @@ public abstract class ChartBase extends TimeBoard {
   }
 
   protected abstract String getFilterDataTypesColumnName();
+
+  protected abstract String getFiltersColumnName();
+
+  protected abstract Collection<String> getSettingsColumnsTriggeringRefresh();
 
   protected abstract String getSettingsFormName();
 
@@ -406,7 +421,7 @@ public abstract class ChartBase extends TimeBoard {
         new ResponseCallback() {
           @Override
           public void onResponse(ResponseObject response) {
-            if (setData(response)) {
+            if (setData(response, false)) {
               render(false);
             }
           }
@@ -491,7 +506,7 @@ public abstract class ChartBase extends TimeBoard {
   protected abstract void resetFilter(FilterType filterType);
 
   @Override
-  protected boolean setData(ResponseObject response) {
+  protected boolean setData(ResponseObject response, boolean init) {
     if (!Queries.checkResponse(getCaption(), null, response, BeeRowSet.class)) {
       return false;
     }
@@ -568,7 +583,11 @@ public abstract class ChartBase extends TimeBoard {
     initData(rowSet.getTableProperties());
     updateMaxRange();
 
-    updateFilterData();
+    if (init) {
+      initFilterData();
+    } else {
+      updateFilterData();
+    }
 
     return true;
   }
@@ -631,6 +650,25 @@ public abstract class ChartBase extends TimeBoard {
     }
 
     return result;
+  }
+
+  private void applyFilterData() {
+    setFiltered(filter(FilterType.TENTATIVE));
+
+    if (isFiltered()) {
+      FilterHelper.enableData(getFilterData(), prepareFilterData(FilterType.TENTATIVE), null);
+
+      if (FilterHelper.hasSelection(getFilterData())) {
+        persistFilter();
+        refreshFilterInfo();
+
+      } else {
+        clearFilter();
+      }
+
+    } else {
+      clearFilter();
+    }
   }
 
   private Widget createShipmentDayWidget(Long countryId, Collection<CargoEvent> events,
@@ -800,25 +838,138 @@ public abstract class ChartBase extends TimeBoard {
     return types;
   }
 
-  private void refreshFilterInfo() {
+  private List<ChartFilter> getSavedFilters() {
+    List<ChartFilter> filters = new ArrayList<>();
+
+    String s = TimeBoardHelper.getString(getSettings(), getFiltersColumnName());
+    if (!BeeUtils.isEmpty(s)) {
+      filters.addAll(ChartFilter.restoreList(s));
+    }
+
+    return filters;
+  }
+
+  private void initFilterData() {
+    if (!getFilterData().isEmpty()) {
+      getFilterData().clear();
+    }
     if (isFiltered()) {
-      List<String> selection = new ArrayList<>();
-      for (ChartData data : filterData) {
-        Collection<String> selectedNames = data.getSelectedNames();
-        if (!selectedNames.isEmpty()) {
-          selection.addAll(selectedNames);
+      clearFilter();
+    }
+
+    List<ChartData> data = FilterHelper.notEmptyData(prepareFilterData(null));
+
+    if (!BeeUtils.isEmpty(data)) {
+      for (ChartData cd : data) {
+        cd.prepare();
+      }
+
+      List<ChartFilter> savedFilters = getSavedFilters();
+      boolean filter = false;
+
+      for (ChartFilter cf : savedFilters) {
+        if (cf.isInitial()) {
+          filter |= cf.applyTo(data);
         }
       }
 
-      if (!selection.isEmpty()) {
-        getFilterLabel().getElement().setInnerText(BeeUtils.join(BeeConst.STRING_COMMA, selection));
-        getRemoveFilter().setVisible(true);
-        return;
+      getFilterData().addAll(data);
+
+      if (filter) {
+        applyFilterData();
       }
     }
+  }
 
-    getFilterLabel().getElement().setInnerText(BeeConst.STRING_EMPTY);
-    getRemoveFilter().setVisible(false);
+  private void onApplyFilter(int index, Popup popup) {
+    List<ChartFilter> filters = getSavedFilters();
+
+    if (BeeUtils.isIndex(filters, index)) {
+      ChartFilter cf = filters.get(index);
+
+      if (cf.matches(getFilterData())) {
+        if (popup != null) {
+          popup.close();
+        }
+
+        clearFilter();
+
+        if (cf.applyTo(getFilterData())) {
+          applyFilterData();
+        }
+        render(false);
+
+      } else {
+        BeeKeeper.getScreen().notifyWarning(cf.getLabel(), Localized.dictionary().nothingFound());
+      }
+    }
+  }
+
+  private void onRemoveFilter(final int index, final Callback<List<ChartFilter>> callback) {
+    final List<ChartFilter> filters = getSavedFilters();
+
+    if (BeeUtils.isIndex(filters, index)) {
+      Global.confirmDelete(Localized.dictionary().removeFilter(), Icon.QUESTION,
+          Collections.singletonList(filters.get(index).getLabel()), () -> {
+            filters.remove(index);
+            String serialized = filters.isEmpty() ? null : Codec.beeSerialize(filters);
+
+            TimeBoardHelper.updateSettings(getSettings(), getFiltersColumnName(), serialized,
+                () -> callback.onSuccess(filters));
+          });
+    }
+  }
+
+  private void onSaveFilter(final Callback<List<ChartFilter>> callback) {
+    final List<FilterValue> filterValues = FilterHelper.getSelectedValues(getFilterData());
+
+    if (BeeUtils.isEmpty(filterValues)) {
+      BeeKeeper.getScreen().notifyWarning(Localized.dictionary().noData());
+
+    } else {
+      String label = BeeUtils.left(FilterHelper.getSelectionLabel(getFilterData()),
+          ChartFilter.MAX_LABEL_LENGTH);
+
+      Global.inputString(Localized.dictionary().saveFilter(), Localized.dictionary().name(),
+          new StringCallback() {
+            @Override
+            public void onSuccess(String value) {
+              ChartFilter filter = new ChartFilter(BeeUtils.trim(value), filterValues);
+              List<ChartFilter> filters = getSavedFilters();
+              FilterHelper.addFilter(filters, filter);
+
+              TimeBoardHelper.updateSettings(getSettings(), getFiltersColumnName(),
+                  Codec.beeSerialize(filters), () -> callback.onSuccess(filters));
+            }
+          }, null, label, ChartFilter.MAX_LABEL_LENGTH, null, 40, CssUnit.EM);
+    }
+  }
+
+  private void onSetInitialFilter(int index, boolean initial, final Runnable callback) {
+    List<ChartFilter> filters = getSavedFilters();
+
+    if (BeeUtils.isIndex(filters, index) && filters.get(index).isInitial() != initial) {
+      filters.get(index).setInitial(initial);
+      TimeBoardHelper.updateSettings(getSettings(), getFiltersColumnName(),
+          Codec.beeSerialize(filters), callback);
+    }
+  }
+
+  private void refreshFilterInfo() {
+    String label;
+    if (isFiltered()) {
+      label = FilterHelper.getSelectionLabel(getFilterData());
+    } else {
+      label = null;
+    }
+
+    if (BeeUtils.isEmpty(label)) {
+      getFilterLabel().getElement().setInnerText(BeeConst.STRING_EMPTY);
+      getRemoveFilter().setVisible(false);
+    } else {
+      getFilterLabel().getElement().setInnerText(label);
+      getRemoveFilter().setVisible(true);
+    }
   }
 
   private void setShowAdditionalInfo(boolean showAdditionalInfo) {
@@ -882,7 +1033,7 @@ public abstract class ChartBase extends TimeBoard {
         && !BeeUtils.sameElements(types, getEnabledFilterDataTypes())) {
 
       return TimeBoardHelper.updateSettings(getSettings(), getFilterDataTypesColumnName(),
-          Strings.emptyToNull(EnumUtils.joinNames(types)));
+          Strings.emptyToNull(EnumUtils.joinNames(types)), null);
 
     } else {
       return false;
@@ -900,17 +1051,17 @@ public abstract class ChartBase extends TimeBoard {
     boolean wasFiltered = isFiltered();
 
     if (BeeUtils.isEmpty(newData)) {
-      filterData.clear();
+      getFilterData().clear();
       if (wasFiltered) {
         clearFilter();
       }
 
-    } else if (filterData.isEmpty()) {
-      filterData.addAll(newData);
+    } else if (getFilterData().isEmpty()) {
+      getFilterData().addAll(newData);
 
     } else {
       if (wasFiltered) {
-        for (ChartData ocd : filterData) {
+        for (ChartData ocd : getFilterData()) {
           ChartData ncd = FilterHelper.getDataByType(newData, ocd.getType());
 
           if (ncd != null) {
@@ -922,21 +1073,11 @@ public abstract class ChartBase extends TimeBoard {
         }
       }
 
-      filterData.clear();
-      filterData.addAll(newData);
+      getFilterData().clear();
+      getFilterData().addAll(newData);
 
       if (wasFiltered) {
-        setFiltered(filter(FilterType.TENTATIVE));
-
-        if (isFiltered()) {
-          FilterHelper.enableData(getFilterData(), prepareFilterData(FilterType.TENTATIVE), null);
-
-          persistFilter();
-          refreshFilterInfo();
-
-        } else {
-          clearFilter();
-        }
+        applyFilterData();
       }
     }
   }

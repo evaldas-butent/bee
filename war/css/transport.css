@@ -286,6 +286,49 @@
   -webkit-filter: grayscale(50%);
 }
 
+.bee-tr-chart-filter-savedContainer {
+  margin-top: 2px;
+  height: 30px;
+  overflow: auto;
+}
+.bee-tr-chart-filter-savedItem {
+  display: inline-block;
+  margin-left: 2em;
+}
+
+.bee-tr-chart-filter-savedInitial {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border: 2px solid gray;
+  border-radius: 50%;
+  cursor: pointer;
+}
+.bee-tr-chart-filter-savedInitial-checked {
+  background-color: #1eb2d8;
+  border-color: #1eb2d8;
+}
+
+.bee-tr-chart-filter-savedLabel {
+  display: inline-block;
+  margin-left: 5px;
+  cursor: pointer;
+}
+.bee-tr-chart-filter-savedLabel:hover {
+  color: #00e;
+  text-decoration: underline;
+}
+
+.bee-tr-chart-filter-savedRemove {
+  display: inline-block;
+  margin-left: 5px;
+  font-size: larger;
+  cursor: pointer;
+}
+.bee-tr-chart-filter-savedRemove:hover {
+  color: red;
+}
+
 .bee-tr-chart-filter-commandGroup {
   margin-top: 2px;
   display: flex;
@@ -295,8 +338,7 @@
   -webkit-justify-content: center;
   -ms-flex-pack: center;
 }
-.bee-tr-chart-filter-commandClear,
-.bee-tr-chart-filter-commandConfigure {
+.bee-tr-chart-filter-commandGroup > button:not(:first-child) {
   margin-left: 2em;
 }
 

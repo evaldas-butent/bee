@@ -9,16 +9,84 @@ public final class PayrollConstants {
   public enum ObjectStatus implements HasLocalizedCaption {
     INACTIVE {
       @Override
-      public String getCaption(Dictionary constants) {
-        return constants.objectStatusInactive();
+      public String getCaption(Dictionary dictionary) {
+        return dictionary.objectStatusInactive();
       }
     },
     ACTIVE {
       @Override
-      public String getCaption(Dictionary constants) {
-        return constants.objectStatusActive();
+      public String getCaption(Dictionary dictionary) {
+        return dictionary.objectStatusActive();
       }
     };
+  }
+
+  public enum WorkScheduleKind implements HasLocalizedCaption {
+    PLANNED {
+      @Override
+      public String getCaption(Dictionary dictionary) {
+        return dictionary.workSchedulePlanned();
+      }
+
+      @Override
+      public String getClearDataQuestion(Dictionary dictionary) {
+        return dictionary.clearWorkScheduleQuestion();
+      }
+
+      @Override
+      public String getStorageKeyPrefix() {
+        return "WorkSchedule";
+      }
+
+      @Override
+      public String getTccColumnName() {
+        return COL_TC_WS_PLANNED;
+      }
+
+      @Override
+      public boolean isSubstitutionEnabled() {
+        return false;
+      }
+    },
+
+    ACTUAL {
+      @Override
+      public String getCaption(Dictionary dictionary) {
+        return dictionary.workScheduleActual();
+      }
+
+      @Override
+      public String getClearDataQuestion(Dictionary dictionary) {
+        return dictionary.clearTimeSheetQuestion();
+      }
+
+      @Override
+      public String getStorageKeyPrefix() {
+        return "TimeSheet";
+      }
+
+      @Override
+      public String getTccColumnName() {
+        return COL_TC_WS_ACTUAL;
+      }
+
+      @Override
+      public boolean isSubstitutionEnabled() {
+        return true;
+      }
+    };
+
+    public abstract String getClearDataQuestion(Dictionary dictionary);
+
+    public abstract String getStorageKeyPrefix();
+
+    public String getStyleSuffix() {
+      return name().toLowerCase();
+    }
+
+    public abstract String getTccColumnName();
+
+    public abstract boolean isSubstitutionEnabled();
   }
 
   public static final String SVC_GET_SCHEDULE_OVERLAP = "getScheduleOverlap";
@@ -66,8 +134,10 @@ public final class PayrollConstants {
 
   public static final String COL_EMPLOYEE_OBJECT_FROM = "DateFrom";
   public static final String COL_EMPLOYEE_OBJECT_UNTIL = "DateUntil";
+  public static final String COL_EMPLOYEE_OBJECT_FUND = "Fund";
   public static final String COL_EMPLOYEE_OBJECT_NOTE = "Note";
 
+  public static final String COL_SUBSTITUTE_FOR = "SubstituteFor";
   public static final String COL_WAGE = "Wage";
 
   public static final String COL_TIME_CARD_CHANGES_FROM = "DateFrom";
@@ -76,6 +146,7 @@ public final class PayrollConstants {
   public static final String COL_DATE_OF_EMPLOYMENT = "DateOfEmployment";
   public static final String COL_DATE_OF_DISMISSAL = "DateOfDismissal";
 
+  public static final String COL_WORK_SCHEDULE_KIND = "Kind";
   public static final String COL_WORK_SCHEDULE_DATE = "Date";
   public static final String COL_WORK_SCHEDULE_FROM = "TimeFrom";
   public static final String COL_WORK_SCHEDULE_UNTIL = "TimeUntil";
@@ -87,6 +158,8 @@ public final class PayrollConstants {
 
   public static final String COL_TC_CODE = "TcCode";
   public static final String COL_TC_NAME = "TcName";
+  public static final String COL_TC_WS_PLANNED = "WsPlanned";
+  public static final String COL_TC_WS_ACTUAL = "WsActual";
   public static final String COL_TC_DESCRIPTION = "Description";
 
   public static final String COL_TR_CODE = "TrCode";
@@ -146,6 +219,7 @@ public final class PayrollConstants {
   public static final String FORM_LOCATION = "Location";
   public static final String FORM_EMPLOYEE = "Employee";
   public static final String FORM_WORK_SCHEDULE = "WorkSchedule";
+  public static final String FORM_TIME_SHEET = "TimeSheet";
   public static final String FORM_WORK_SCHEDULE_EDITOR = "WorkScheduleEditor";
   public static final String FORM_EARNINGS = "Earnings";
   public static final String FORM_OBJECT_EARNINGS = "ObjectEarnings";
@@ -160,6 +234,7 @@ public final class PayrollConstants {
 
   public static void register() {
     EnumUtils.register(ObjectStatus.class);
+    EnumUtils.register(WorkScheduleKind.class);
   }
 
   private PayrollConstants() {

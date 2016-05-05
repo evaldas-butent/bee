@@ -68,6 +68,8 @@ public interface Dictionary {
 
   default String actionRefresh() {return g("actionRefresh");}
 
+  default String actionRefreshComments() {return g("actionRefreshComments");}
+
   default String actionRemove() {return g("actionRemove");}
 
   default String actionRemoveFilter() {return g("actionRemoveFilter");}
@@ -674,6 +676,8 @@ public interface Dictionary {
   default String clearFilter() {return g("clearFilter");}
 
   default String clearNews() {return g("clearNews");}
+
+  default String clearTimeSheetQuestion() {return g("clearTimeSheetQuestion");}
 
   default String clearWorkScheduleQuestion() {return g("clearWorkScheduleQuestion");}
 
@@ -2374,6 +2378,10 @@ public interface Dictionary {
 
   default String employee() {return g("employee");}
 
+  default String employeeSubstituteFor() {return g("employeeSubstituteFor");}
+
+  default String employeeSubstitution() {return g("employeeSubstitution");}
+
   default String employees() {return g("employees");}
 
   default String employeesAndObjects() {return g("employeesAndObjects");}
@@ -2534,6 +2542,8 @@ public interface Dictionary {
   default String feedTrVehicles() {return g("feedTrVehicles");}
 
   default String feeds() {return g("feeds");}
+
+  default String fetchWorkSchedule() {return g("fetchWorkSchedule");}
 
   default String fields() {return g("fields");}
 
@@ -2778,6 +2788,8 @@ public interface Dictionary {
   default String kilometers() {return g("kilometers");}
 
   default String kilometersShort() {return g("kilometersShort");}
+
+  default String kind() {return g("kind");}
 
   default String language() {return g("language");}
 
@@ -3802,9 +3814,13 @@ public interface Dictionary {
 
   default String prjFilterAll() {return g("prjFilterAll");}
 
+  default String prjFilterNotLate() {return g("prjFilterNotLate");}
+
   default String prjIncomePlan() {return g("prjIncomePlan");}
 
   default String prjInitialStage() {return g("prjInitialStage");}
+
+  default String prjLabelNotLate() {return g("prjLabelNotLate");}
 
   default String prjManager() {return g("prjManager");}
 
@@ -3827,6 +3843,8 @@ public interface Dictionary {
   default String prjOtherExpenses() {return g("prjOtherExpenses");}
 
   default String prjOverdue() {return g("prjOverdue");}
+
+  default String prjOverduePercent() {return g("prjOverduePercent");}
 
   default String prjParticipant() {return g("prjParticipant");}
 
@@ -3998,6 +4016,8 @@ public interface Dictionary {
 
   default String removeCargoFromTripQuestion() {return g("removeCargoFromTripQuestion");}
 
+  default String removeFilter() {return g("removeFilter");}
+
   default String removeQuestion(Object p0) {
     Map<String, Object> _m = new HashMap<>();
     _m.put("{0}", p0);
@@ -4095,6 +4115,8 @@ public interface Dictionary {
   }
 
   default String salary() {return g("salary");}
+
+  default String salaryFund() {return g("salaryFund");}
 
   default String salePrice() {return g("salePrice");}
 
@@ -4436,6 +4458,8 @@ public interface Dictionary {
   default String timeRangeCode() {return g("timeRangeCode");}
 
   default String timeRanges() {return g("timeRanges");}
+
+  default String timeSheet() {return g("timeSheet");}
 
   default String timeZone() {return g("timeZone");}
 
@@ -5834,6 +5858,10 @@ public interface Dictionary {
   default String winter() {return g("winter");}
 
   default String workSchedule() {return g("workSchedule");}
+
+  default String workScheduleActual() {return g("workScheduleActual");}
+
+  default String workSchedulePlanned() {return g("workSchedulePlanned");}
 
   default String workdayTransitionBackward() {return g("workdayTransitionBackward");}
 

@@ -5,7 +5,6 @@
  caption="=announcements" enabledActions="refresh add" disabledActions="delete">
 
  <FlowPanel>
-  <FlowPanel name="MainFlow" />
   <Table name="AdsContent" kind="controls" class="bee-discuss-adsFormContent"
    style="background-color: white; margin-left: 1em; word-wrap: normal; margin: 4ex; width: 95%; border-spacing: 0px;">
    <row>
@@ -39,8 +38,8 @@
    <!-- Content generating via form interceptor -->
   </Table>
 
-  <FlowPanel name="Flowing">
-  </FlowPanel>
+  <FlowPanel name="Flowing" />
+
  </FlowPanel>
 
 </f:Form>  

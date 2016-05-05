@@ -44,7 +44,7 @@
           
                 <row for="Description">
                   <Label for="Description" />
-                  <InputArea source="Description" style="&inp2x; height: 60px;" name="InputArea" />
+                  <InputArea source="Description" style="&inp2x; height: 60px;" />
                 </row>
               </Table>
           
@@ -53,6 +53,12 @@
               <Table kind="controls" style="&tbl;" cellStyle="&cell;">
                 <col index="0" cellStyle="&col1;" />
           
+                <row>
+                  <Label for="Owner" />
+                  <DataSelector source="Owner" editSource="OwnerPerson" style="&inp2x;" 
+                    readOnly="true" />
+                </row>
+                
                 <row>
                   <Label for="Executor" />
                   <DataSelector source="Executor" editSource="ExecutorPerson" style="&inp2x;" 
@@ -66,7 +72,7 @@
                     label="=crmTaskObservers" />
                 </row>
                 <row>
-                  <Label text="=project" style="&top1;">
+                  <Label text="=project">
                     &forProject;
                   </Label>
                   <DataSelector source="Project" renderColumns="ProjectName"
@@ -75,7 +81,7 @@
                   </DataSelector>
                 </row>
                 <row>
-                  <Label text="=prjStage" style="&top1;">
+                  <Label text="=prjStage">
                     &forProject;
                   </Label>
                   <DataSelector source="ProjectStage" renderColumns="StageName" 
@@ -235,6 +241,13 @@
                   choiceColumns="Id Summary ExecutorFirstName ExecutorLastName StartTime FinishTime"
                   newRowEnabled="true" style="&inp2x;" disablable="true" summarize="true"/>
               </FlowPanel>
+              <FlowPanel style="&section;" data="Relations" for="Request" module="Tasks">
+                <Label text="=crmRequests" style="&top1;" />
+                <MultiSelector viewName="Requests" property="Requests"
+                  renderColumns="Id Summary FirstName LastName" 
+                  choiceColumns="Id Summary FirstName LastName"
+                  newRowEnabled="false" style="&inp2x;" disablable="true" summarize="true"/>
+              </FlowPanel>
             </FlowPanel>
           </FlowPanel>
         </page>
@@ -246,6 +259,6 @@
     </center>
   </SplitPanel>
   <f:rowMessage>
-    <ui:function>return "&lt;span style&#61;\"font-weight:bold; font-size:23px;\"&gt;" + row.Summary + "&lt;&#47;span&gt;";</ui:function>
+    <ui:function>return "&lt;span style&#61;\"font-size:23px; color: #484849; font-weight: lighter;\"&gt;" + row.Summary + "&lt;&#47;span&gt;";</ui:function>
   </f:rowMessage>
 </f:Form>

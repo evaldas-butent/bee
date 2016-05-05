@@ -1,10 +1,14 @@
 package com.butent.bee.shared.modules.transport;
 
+import com.google.common.collect.Lists;
+
 import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.ui.HasLocalizedCaption;
 import com.butent.bee.shared.utils.EnumUtils;
+
+import java.util.List;
 
 public final class TransportConstants {
 
@@ -294,7 +298,6 @@ public final class TransportConstants {
 
   public static final String SVC_GET_BEFORE = "GetBeforeData";
   public static final String SVC_GET_UNASSIGNED_CARGOS = "GetUnassignedCargos";
-  public static final String SVC_GET_PROFIT = "GetProfit";
   public static final String SVC_GET_ROUTE = "GetTripRoute";
   public static final String SVC_GENERATE_ROUTE = "GenerateTripRoute";
   public static final String SVC_GENERATE_DAILY_COSTS = "GenerateDailyCosts";
@@ -983,6 +986,9 @@ public final class TransportConstants {
   public static final String AR_EXPENSE = "Expense";
   public static final String AR_SECONDARY_INCOME = "SecondaryIncome";
   public static final String AR_SECONDARY_EXPENSE = "SecondaryExpense";
+
+  public static final List<String> TRIP_DATE_COLUMNS = Lists.newArrayList(COL_TRIP_DATE,
+      COL_TRIP_DATE_FROM, COL_TRIP_DATE_TO, COL_TRIP_PLANNED_END_DATE);
 
   public static String defaultLoadingColumnAlias(String colName) {
     return "DefLoad" + colName;

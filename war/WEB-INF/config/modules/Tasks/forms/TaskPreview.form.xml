@@ -71,7 +71,7 @@
 
             <FlowPanel style="&section;" for="Description">
               <Label for="Description" style="&top1; &lbl1;" />
-              <InputArea source="Description" style="width: 478px; height: 60px;" readOnly="true" name="InputArea" />
+              <InputArea source="Description" style="width: 478px; height: 60px;" readOnly="true" />
             </FlowPanel>
 
             <FileGroup name="Files" data="TaskFiles" visibleColumns="icon name size createdoc" />
@@ -193,6 +193,14 @@
                 choiceColumns="Id Summary ExecutorFirstName ExecutorLastName StartTime FinishTime"
                 newRowEnabled="false" style="&inp2x;" disablable="true" summarize="true"/>
             </FlowPanel>
+            
+            <FlowPanel style="&section;" data="Relations" for="Request" module="Tasks">
+              <Label text="=crmRequests" style="&top1;" />
+              <MultiSelector viewName="Requests" property="Requests"
+                renderColumns="Id Summary FirstName LastName" 
+                choiceColumns="Id Summary FirstName LastName"
+                newRowEnabled="false" style="&inp2x;" disablable="true" summarize="true"/>
+            </FlowPanel>
           </FlowPanel>
         </FlowPanel>
       </page>
@@ -254,4 +262,7 @@
         style="overflow: auto; height: calc(100% - 5px);" />
     </center>
   </SplitPanel>
+  <f:rowMessage>
+    <ui:function>return "&lt;span style&#61;\"font-size:23px; color: #484849; font-weight: lighter;\"&gt;" + row.Summary + "&lt;&#47;span&gt;";</ui:function>
+  </f:rowMessage>
 </f:Form>

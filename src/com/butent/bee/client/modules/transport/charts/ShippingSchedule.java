@@ -1,5 +1,6 @@
 package com.butent.bee.client.modules.transport.charts;
 
+import com.google.common.collect.Sets;
 import com.google.gwt.user.client.ui.ComplexPanel;
 import com.google.gwt.user.client.ui.HasWidgets;
 
@@ -27,9 +28,11 @@ import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 final class ShippingSchedule extends VehicleTimeBoard {
 
@@ -45,6 +48,10 @@ final class ShippingSchedule extends VehicleTimeBoard {
   private static final String STYLE_TRIP_GROUP_TRAILER = STYLE_TRIP_GROUP_PREFIX + "trailer";
   private static final String STYLE_TRIP_GROUP_OVERLAP = STYLE_TRIP_GROUP_PREFIX + "overlap";
   private static final String STYLE_TRIP_GROUP_DRAG_OVER = STYLE_TRIP_GROUP_PREFIX + "dragOver";
+
+  private static final Set<String> SETTINGS_COLUMNS_TRIGGERING_REFRESH =
+      Sets.newHashSet(COL_SS_MIN_DATE, COL_SS_MAX_DATE,
+          COL_SS_TRANSPORT_GROUPS, COL_SS_COMPLETED_TRIPS);
 
   static void open(final ViewCallback callback) {
     BeeKeeper.getRpc().makePostRequest(TransportHandler.createArgs(DATA_SERVICE),
@@ -133,6 +140,11 @@ final class ShippingSchedule extends VehicleTimeBoard {
   }
 
   @Override
+  protected String getFiltersColumnName() {
+    return COL_SS_FILTERS;
+  }
+
+  @Override
   protected String getFooterHeightColumnName() {
     return COL_SS_FOOTER_HEIGHT;
   }
@@ -175,6 +187,11 @@ final class ShippingSchedule extends VehicleTimeBoard {
   @Override
   protected String getSeparateCargoColumnName() {
     return COL_SS_SEPARATE_CARGO;
+  }
+
+  @Override
+  protected Collection<String> getSettingsColumnsTriggeringRefresh() {
+    return SETTINGS_COLUMNS_TRIGGERING_REFRESH;
   }
 
   @Override
@@ -270,6 +287,12 @@ final class ShippingSchedule extends VehicleTimeBoard {
         lastTrip = currentTrip;
       }
     }
+  }
+
+  @Override
+  protected void updateMaxRange() {
+    super.updateMaxRange();
+    clampMaxRange(COL_SS_MIN_DATE, COL_SS_MAX_DATE);
   }
 
   private void addTripGroupWidget(HasWidgets panel, IdentifiableWidget widget, Long tripId,

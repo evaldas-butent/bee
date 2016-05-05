@@ -348,7 +348,7 @@ public class TasksReportsInterceptor extends AbstractFormInterceptor {
         reportCaption = Localized.dictionary().hoursByCompanies();
         break;
       case USERS_HOURS:
-        reportCaption = Localized.dictionary().hoursByUsers();
+        reportCaption = Localized.dictionary().hoursByExecutors();
         break;
       default:
         reportCaption = Localized.dictionary().hoursByTypes();

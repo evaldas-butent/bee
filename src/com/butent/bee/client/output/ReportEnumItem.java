@@ -4,7 +4,6 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 
 import com.butent.bee.client.Global;
-import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.shared.Assert;
@@ -42,8 +41,8 @@ public class ReportEnumItem extends ReportItem implements ClickHandler {
     enumKey = NameUtils.getClassName(en);
   }
 
-  protected ReportEnumItem(String name, String caption) {
-    super(name, caption);
+  protected ReportEnumItem(String expression, String caption) {
+    super(expression, caption);
   }
 
   @Override
@@ -73,7 +72,7 @@ public class ReportEnumItem extends ReportItem implements ClickHandler {
 
   @Override
   public ReportValue evaluate(SimpleRow row) {
-    Integer value = row.getInt(getName());
+    Integer value = row.getInt(getExpression());
     return value == null ? ReportValue.empty()
         : ReportValue.of(TimeUtils.padTwo(value)).setDisplay(EnumUtils.getCaption(enumKey, value));
   }
@@ -111,18 +110,15 @@ public class ReportEnumItem extends ReportItem implements ClickHandler {
     }
     list.setAllVisible();
 
-    Global.inputWidget(Localized.dictionary().values(), list, new InputCallback() {
-      @Override
-      public void onSuccess() {
-        filter = new HashSet<>();
+    Global.inputWidget(Localized.dictionary().values(), list, () -> {
+      filter = new HashSet<>();
 
-        for (int i = 0; i < list.getItemCount(); i++) {
-          if (list.getOptionElement(i).isSelected()) {
-            filter.add(i);
-          }
+      for (int i = 0; i < list.getItemCount(); i++) {
+        if (list.getOptionElement(i).isSelected()) {
+          filter.add(i);
         }
-        renderFilter();
       }
+      renderFilter();
     });
   }
 
@@ -149,10 +145,10 @@ public class ReportEnumItem extends ReportItem implements ClickHandler {
 
   @Override
   public boolean validate(SimpleRow row) {
-    if (BeeUtils.isEmpty(filter) || !row.getRowSet().hasColumn(getName())) {
+    if (BeeUtils.isEmpty(filter) || !row.getRowSet().hasColumn(getExpression())) {
       return true;
     }
-    return filter.contains(row.getInt(getName()));
+    return filter.contains(row.getInt(getExpression()));
   }
 
   private void renderFilter() {

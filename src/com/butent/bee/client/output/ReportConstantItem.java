@@ -9,6 +9,7 @@ import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.List;
 import java.util.Objects;
 
 public class ReportConstantItem extends ReportNumericItem {
@@ -30,6 +31,12 @@ public class ReportConstantItem extends ReportNumericItem {
   }
 
   @Override
+  public ReportValue evaluate(ReportValue rowGroup, ReportValue[] rowValues, ReportValue colGroup,
+      ResultHolder resultHolder) {
+    return evaluate(null);
+  }
+
+  @Override
   public String getCaption() {
     String cap = super.getCaption();
 
@@ -40,7 +47,12 @@ public class ReportConstantItem extends ReportNumericItem {
   }
 
   @Override
-  public Widget getExpressionWidget(Report report) {
+  public String getExpressionCaption() {
+    return Localized.dictionary().constant();
+  }
+
+  @Override
+  public Widget getExpressionWidget(List<ReportItem> reportItems) {
     if (expressionWidget == null) {
       expressionWidget = new InputNumber();
     }
@@ -51,11 +63,6 @@ public class ReportConstantItem extends ReportNumericItem {
   @Override
   public String getFormatedCaption() {
     return BeeUtils.notEmpty(getCaption(), getExpression());
-  }
-
-  @Override
-  public String getOptionsCaption() {
-    return null;
   }
 
   @Override

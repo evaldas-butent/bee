@@ -1,11 +1,13 @@
 package com.butent.bee.client.output;
 
 import static com.butent.bee.shared.Service.*;
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.widget.Frame;
@@ -13,13 +15,19 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.css.CssUnit;
+import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.FileInfo;
+import com.butent.bee.shared.report.ReportInfo;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 public final class ReportUtils {
@@ -40,6 +48,30 @@ public final class ReportUtils {
       Map<String, String> parameters, BeeRowSet... data) {
 
     makeRequest(report, "pdf", Assert.notNull(reportConsumer), parameters, data);
+  }
+
+  public static void getReports(Report report, Consumer<List<ReportInfo>> consumer) {
+    Queries.getRowSet(VIEW_REPORT_SETTINGS, Collections.singletonList(COL_RS_PARAMETERS),
+        Filter.and(Filter.equals(COL_RS_USER, BeeKeeper.getUser().getUserId()),
+            Filter.equals(COL_RS_REPORT, report.getReportName()), Filter.isNull(COL_RS_CAPTION)),
+        new Queries.RowSetCallback() {
+          @Override
+          public void onSuccess(BeeRowSet result) {
+            List<ReportInfo> reports = new ArrayList<>();
+            int idx = result.getColumnIndex(COL_RS_PARAMETERS);
+
+            for (ReportInfo rep : report.getReports()) {
+              reports.add(ReportInfo.restore(rep.serialize()));
+            }
+            for (BeeRow row : result) {
+              ReportInfo rep = ReportInfo.restore(row.getString(idx));
+              rep.setId(row.getId());
+              reports.remove(rep);
+              reports.add(rep);
+            }
+            consumer.accept(reports);
+          }
+        });
   }
 
   public static void preview(FileInfo repInfo) {

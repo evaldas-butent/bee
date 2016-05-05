@@ -8,6 +8,8 @@
   <FlowPanel>
     <FlowPanel class="flexBox-vertical-center">
       <Table kind="controls">
+        <col index="0" kind="label" />
+        
         <row>
           <Label for="Description" horizontalAlignment="right" />
           <InputText source="Description" style="width:200px" />
@@ -30,6 +32,9 @@
     <FlowPanel class="flexBox-horizontal">
       <FlowPanel class="flexBox-vertical-center flexible">
         <Table kind="controls" style="border-spacing:5px">
+          <col index="0" kind="label" />
+          <col index="2" kind="label" />
+          
           <row>
             <cell colSpan="2">
               <Label text="=mailServerSettings" style="font-weight:bold; text-align:center;" />

@@ -175,7 +175,6 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
 
   private static final String STYLE_PHOTO_PREFIX = STYLE_PREFIX + "photo-";
   private static final String STYLE_PHOTO_CONTAINER = STYLE_PHOTO_PREFIX + "container";
-  private static final String STYLE_PHOTO_EMPTY = STYLE_PHOTO_PREFIX + "empty";
 
   private static final String STYLE_POPUP_CONTENT = STYLE_PREFIX + "popup-content";
 
@@ -216,6 +215,8 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
   private static final String DATA_TYPE_DEPARTMENT = "OrgChartDepartment";
   private static final String DATA_TYPE_BOSS = "OrgChartBoss";
   private static final String DATA_TYPE_EMPLOYEE = "OrgChartEmployee";
+
+  private static final String DEFAULT_PHOTO_IMAGE = "images/defaultUser.png";
 
   private static final Set<String> DND_TYPES = ImmutableSet.of(DATA_TYPE_DEPARTMENT,
       DATA_TYPE_BOSS, DATA_TYPE_EMPLOYEE);
@@ -1466,32 +1467,34 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
 
     Long photo = DataUtils.getLong(employees, employee, COL_PHOTO);
     Flow photoContainer = new Flow();
+    String photoUrl;
+
+    if (!DataUtils.isId(photo)) {
+      photoUrl = DEFAULT_PHOTO_IMAGE;
+    } else {
+      photoUrl = PhotoRenderer.getUrl(photo);
+    }
 
     String styleName;
 
-    if (DataUtils.isId(photo)) {
-      Image image = new Image(PhotoRenderer.getUrl(photo));
-      image.setTitle(BeeUtils.buildLines(fullName, positionName, companyName));
+    Image image = new Image(photoUrl);
+    image.setTitle(BeeUtils.buildLines(fullName, positionName, companyName));
 
-      image.addClickHandler(new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent event) {
-          Long person = getEmployeeRelation(emplId, COL_PERSON);
-          RowEditor.open(VIEW_PERSONS, person, Opener.MODAL, new RowCallback() {
-            @Override
-            public void onSuccess(BeeRow result) {
-              refresh();
-            }
-          });
-        }
-      });
+    image.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        Long person = getEmployeeRelation(emplId, COL_PERSON);
+        RowEditor.open(VIEW_PERSONS, person, Opener.MODAL, new RowCallback() {
+          @Override
+          public void onSuccess(BeeRow result) {
+            refresh();
+          }
+        });
+      }
+    });
 
-      photoContainer.add(image);
-      styleName = STYLE_PHOTO_CONTAINER;
-
-    } else {
-      styleName = STYLE_PHOTO_EMPTY;
-    }
+    photoContainer.add(image);
+    styleName = STYLE_PHOTO_CONTAINER;
 
     table.setWidgetAndStyle(row, 0, photoContainer, styleName);
 

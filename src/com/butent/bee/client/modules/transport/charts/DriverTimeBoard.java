@@ -4,6 +4,7 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Range;
+import com.google.common.collect.Sets;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.ComplexPanel;
 import com.google.gwt.user.client.ui.HasWidgets;
@@ -164,6 +165,10 @@ final class DriverTimeBoard extends ChartBase {
 
   private static final String STYLE_INACTIVE = STYLE_PREFIX + "Inactive";
   private static final String STYLE_OVERLAP = STYLE_PREFIX + "Overlap";
+
+  private static final Set<String> SETTINGS_COLUMNS_TRIGGERING_REFRESH =
+      Sets.newHashSet(COL_DTB_MIN_DATE, COL_DTB_MAX_DATE,
+          COL_DTB_TRANSPORT_GROUPS, COL_DTB_COMPLETED_TRIPS);
 
   static void open(final ViewCallback callback) {
     BeeKeeper.getRpc().makePostRequest(TransportHandler.createArgs(DATA_SERVICE),
@@ -365,6 +370,11 @@ final class DriverTimeBoard extends ChartBase {
   }
 
   @Override
+  protected String getFiltersColumnName() {
+    return COL_DTB_FILTERS;
+  }
+
+  @Override
   protected String getFooterHeightColumnName() {
     return COL_DTB_FOOTER_HEIGHT;
   }
@@ -377,6 +387,11 @@ final class DriverTimeBoard extends ChartBase {
   @Override
   protected String getRowHeightColumnName() {
     return COL_DTB_PIXELS_PER_ROW;
+  }
+
+  @Override
+  protected Collection<String> getSettingsColumnsTriggeringRefresh() {
+    return SETTINGS_COLUMNS_TRIGGERING_REFRESH;
   }
 
   @Override
@@ -885,6 +900,8 @@ final class DriverTimeBoard extends ChartBase {
         extendMaxRange(absenceSpan.lowerEndpoint(), absenceSpan.upperEndpoint());
       }
     }
+
+    clampMaxRange(COL_DTB_MIN_DATE, COL_DTB_MAX_DATE);
   }
 
   private void addDriverWidget(HasWidgets panel, Widget widget, int firstRow, int lastRow) {

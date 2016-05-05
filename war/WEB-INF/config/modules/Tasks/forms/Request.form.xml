@@ -1,80 +1,124 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Form [
-  <!ENTITY section "margin-top: 4px;">
-  <!ENTITY separator "<hr/>">
-  <!ENTITY inline "display:inline-block;">
-  <!ENTITY labelLeft "&inline; width:100px; padding-top:1px;">
-  <!ENTITY labelRight "&inline; width:60px; padding-top:1px; text-align:right; margin-right:10px;">
+  <!ENTITY inline "display: inline-block;">
+  <!ENTITY tbl "border-collapse: collapse;">
+  <!ENTITY cell "padding-bottom: 2px;">
+  <!ENTITY col1 "text-align: right; padding-right: 8px; width: 128px;">
+  <!ENTITY col3 "text-align: right; padding-left: 8px; padding-right: 8px; width: 128px;">
+  <!ENTITY dateStyle "&inline; width: 130px;">
+  <!ENTITY inp2x "width: 500px;">
 ]>
-<f:Form xmlns="http://www.butent.com/widget"
-  xmlns:f="http://www.butent.com/form"
-  
-  name="Request" viewName="Requests" caption="=crmRequest"
-  width="600"
-  >
-  <FlowPanel style="padding: 10px 2px 2px 10px;">
-    <FlowPanel style="&section;">
-      <Label text="=date" class="bee-required" style="&inline; text-align:right; width:80px; padding-top:1px; margin-right: 5px" />
-      <InputDateTime source="Date" style="&inline; width:130px;" />
-      <Label text="=client" class="bee-required" style="&inline; width:130px; padding-top:1px; text-align:right; margin-right: 4px" />
-      <DataSelector source="Customer" style="&inline; width:200px;" choiceColumns="Name TypeName" renderColumns="CustomerName TypeName" />
-      <Label text="=crmRequestForm" style="&inline; width:125px; padding-top:1px; text-align:right; margin-right: 10px" />
-      <DataSelector source="RequestForm" style="&inline; width:200px;" /> 
-    </FlowPanel>
-    <FlowPanel style="&section;">
-      <Label text="=contacts" style="&inline; width:75px; padding-top:1px; text-align:right; padding-right: 10px" />
-      <InputText source="Contacts" style="&inline; width:130px;" />
-      <Label text="=personContact" style="&inline; width:125px; padding-top:1px; text-align:right; margin-right: 10px" />
-      <DataSelector source="CustomerPerson" style="&inline; width:200px;"
-        choiceColumns="FirstName LastName CompanyName" options="Customer" />
-      <Label text="=responsiblePerson" style="&inline; width:125px; padding-top:1px; text-align:right; margin-right: 10px" />
-      <DataSelector name="Manager" source="Manager" style="&inline; width:200px;" />
-    </FlowPanel>
+<f:Form xmlns="http://www.butent.com/widget" 
+        xmlns:f="http://www.butent.com/form"
 
-     <FlowPanel style="&section;">
-      <Label text="=crmRequestType" class="bee-required" style="&inline; width:75px; padding-top:1px; text-align:right; margin-right: 10px" />
-      <DataSelector source="RequestType" name="RequestType" renderColumns="RequestTypeName" style="&inline; width:130px;" required="true" />
-      <Label for="Product" name="Product" style="&inline; width:125px; padding-top:1px; text-align:right; padding-right: 10px" />
-      <DataSelector source="Product" renderColumns="ProductName" newRowEnabled="true" style="&inline; width:200px;"
-        filter="Visible" />
-    </FlowPanel>
-    
-    &separator;
-    <FlowPanel style="&section;" class="flexBox-horizontal">
-      <Label text="=crmRequest" class="bee-required" style="&inline; width:75px; padding-top:1px; text-align:right; margin-right: 10px; vertical-align:top;" />
-      <InputArea source="Content" visibleLines="8" style="width:446px;" />
-    </FlowPanel>
+  name="Request" viewName="Requests" caption="=crmRequest" width="1024">
+  <SplitPanel splitterSize="1" style="margin:5px;" name="Split">
+    <west size="640">
+      <TabbedPages resizable="false" name="TabbedPages">
+        <page>
+          <text>=mainInformation</text>
+          <FlowPanel style="padding: 10px 2px 2px 10px;">
+            <Table kind="controls" style="&tbl;" cellStyle="&cell;">
+              <col index="0" cellStyle="&col1;" />
 
-    &separator;
-    <FlowPanel style="&section;" class="flexBox-horizontal">
-      <Label text="=author" style="&inline; width:78px; padding-top:1px; padding-right: 8px; text-align: right;" />
-      <TextLabel style="&inline;">
-        <renderToken source="CreatorFirstName"/>
-        <renderToken source="CreatorLastName"/>
-      </TextLabel>
-    </FlowPanel>
+              <row>
+                <Label for="Summary" />
+                <InputText source="Summary" style="&inp2x;" autocomplete="true" visible="true" 
+                  maxLength="70" />
+              </row>
+              <row for="Content">
+                <Label for="Content" />
+                <InputArea source="Content" style="&inp2x; height: 60px;" />
+              </row>
+            </Table>
 
-    <FlowPanel style="&section;" class="flexBox-horizontal">
-      <Label text="=createdOn" style="&inline; width:78px; padding-top:1px; padding-right: 8px; text-align: right;" />
-      <DateTimeLabel source="Created" style="&inline; width:110px;" />      
-    </FlowPanel>
-    <FlowPanel>
-      <Label text="=crmRequestCompleted" style="&inline; width:78px; padding-top:1px; padding-right: 8px; text-align: right;" />
-      <DateTimeLabel source="Finished" format="date_time_short" style="&inline; width:110px;" />
-    </FlowPanel>
-    <FlowPanel style="&section;" class="flexBox-horizontal">
-      <Label text="=result" style="&inline; width:78px; padding-top:1px; padding-right: 8px; text-align: right; vertical-align:top;" />
-      <TextLabel source="Result" />
-    </FlowPanel>
-    
-    <FlowPanel name="ResultProperties" data="Tasks" style="&section;" class="flexBox-horizontal">
-     
-    </FlowPanel>
+            <FileGroup name="Files" visibleColumns="icon name size"/>
+            
+            <Table kind="controls" style="&tbl;" cellStyle="&cell;">
+              <col index="0" cellStyle="&col1;" />
 
-    &separator;
-    <FlowPanel style="&section;" class="flexBox-horizontal">
-      <Label text="=files" style="&inline; width:78px; padding-top:1px; padding-right: 8px; text-align: right;" />
-      <FileGroup name="Files" style="&inline;" />
-    </FlowPanel>
-  </FlowPanel>
+              <row>
+                <Label for="Manager" />
+                <DataSelector name="Manager" source="Manager" style="&inp2x;" />
+              </row>
+
+              <row>
+                <Label for="Contacts" />
+                <InputText source="Contacts" style="&inp2x;" />
+              </row>
+
+              <row>
+                <Label for="RequestForm" />
+                <DataSelector source="RequestForm" style="&inp2x;" />
+              </row>
+            </Table>
+
+            <Table kind="controls" style="&tbl;" cellStyle="&cell;">
+              <col index="0" cellStyle="&col1;" />
+
+              <row>
+                <Label for="Priority" />
+                <Radio source="Priority" />
+              </row>
+
+              <row>
+                <Label for="RequestType" class="bee-required" />
+                <DataSelector source="RequestType" name="RequestType" renderColumns="RequestTypeName" 
+                  style="&inp2x;" required="true" />
+              </row>
+
+              <row>
+                <Label for="Product" name="Product" />
+                <DataSelector source="Product"
+                  renderColumns="ProductName" newRowEnabled="true" style="&inp2x;" 
+                  filter="Visible" />
+              </row>
+
+              <row>
+                <Label for="Customer" />
+                <DataSelector source="Customer" style="&inp2x;" choiceColumns="Name TypeName" 
+                  renderColumns="CustomerName TypeName" />
+              </row>
+
+              <row>
+                <Label for="CustomerPerson" />
+                <DataSelector source="CustomerPerson" style="&inp2x;" options="Customer"
+                  choiceColumns="FirstName LastName CompanyName" />
+              </row>
+            </Table>
+
+            <Table kind="controls" style="&tbl; margin-top: 20px;"
+              cellStyle="&cell;">
+              <col index="0" cellStyle="&col1;" />
+              <col index="2" cellStyle="&col3;" />
+
+              <row>
+                <Label for="Date" />
+                <InputDateTime source="Date" style="&dateStyle;" />
+                <Label for="Creator" />
+                <DataSelector source="Creator" renderColumns="CreatorFirstName CreatorLastName"
+                  style="width: 225px;" readOnly="true" />
+              </row>
+              <row>
+                <Label for="Created" />
+                <InputDateTime source="Created" style="&dateStyle;" readOnly="true" />
+                <Label for="Finished" />
+                <InputDateTime source="Finished" style="&dateStyle;" readOnly="true" />
+              </row>
+            </Table>
+          </FlowPanel>
+        </page>
+        <page>
+          <text>=relatedInformation</text>
+          <FlowPanel style="max-width: 97%;">
+            <Relations relColumn="Request" inline="true" defaultRelations="Companies Persons Tasks" 
+              style="margin-left: 15px; min-width:300px;" />
+          </FlowPanel>
+        </page>
+      </TabbedPages>
+    </west>
+    <center>
+      <FlowPanel name="RequestComments" />
+    </center>
+  </SplitPanel>
 </f:Form>

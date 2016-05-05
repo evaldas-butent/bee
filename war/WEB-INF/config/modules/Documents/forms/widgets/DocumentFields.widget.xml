@@ -67,4 +67,18 @@
       <InputArea source="Description" visibleLines="10" style="width: 100%;" />
     </cell>
   </row>
+
+  <row>
+    <Label for="Notes" style="&lbl;" />
+    <cell colSpan="3">
+      <InputArea source="Notes" for="Notes" style="width: 100%; height: 60px;" />
+    </cell>
+  </row>
+
+  <row>
+    <Label for="User" style="&lbl;" />
+    <cell colSpan="3">
+      <DataSelector source="User" viewName="Users" style="width: 100%;" />
+    </cell>
+  </row>
 </Table>

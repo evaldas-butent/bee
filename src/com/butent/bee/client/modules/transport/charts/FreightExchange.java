@@ -238,6 +238,11 @@ final class FreightExchange extends ChartBase {
   }
 
   @Override
+  protected String getFiltersColumnName() {
+    return COL_FX_FILTERS;
+  }
+
+  @Override
   protected String getFooterHeightColumnName() {
     return COL_FX_FOOTER_HEIGHT;
   }
@@ -250,6 +255,11 @@ final class FreightExchange extends ChartBase {
   @Override
   protected String getRowHeightColumnName() {
     return COL_FX_PIXELS_PER_ROW;
+  }
+
+  @Override
+  protected Collection<String> getSettingsColumnsTriggeringRefresh() {
+    return BeeConst.EMPTY_IMMUTABLE_STRING_SET;
   }
 
   @Override

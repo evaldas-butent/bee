@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
-  xmlns:w="http://www.butent.com/widget"
+<g:Grid xmlns="http://www.butent.com/column"
+        xmlns:g="http://www.butent.com/grid"
+        xmlns:w="http://www.butent.com/widget"
+        xmlns:ui="http://www.butent.com/ui"
 
   name="Requests" viewName="Requests" caption="=crmRequests"
   flexGrow="1" order="RequestID desc"
@@ -8,17 +10,31 @@
 
   <g:columns>
     <IdColumn name="ID" width="50" />
-    <DataColumn name="Date" caption="=date" width="100" visible="true" />
-    <DataColumn name="Finished" caption="=crmRequestFinish" width="100" format="DATE_TIME_SHORT" />
-    <RelColumn name="Customer" caption="=client" minWidth="100" visible="true" />
 
-    <DataColumn name="Content" caption="=crmRequest" minWidth="100" flexShrink="1" 
-      whiteSpace="nowrap" visible="true" />
+    <DataColumn name="Date" width="100" visible="true" />
+    <DataColumn name="Finished" width="100" format="DATE_TIME_SHORT" />
+    <RelColumn name="Customer" minWidth="100" visible="true" />
 
-    <RelColumn name="Manager" caption="=responsiblePerson" minWidth="100" />
+    <DataColumn name="Content" minWidth="100" flexShrink="1" whiteSpace="nowrap" visible="true" />
+
+    <RelColumn name="Manager" minWidth="100" />
+
     <DataColumn name="Result" visible="false" />
-    <RelColumn name="RequestType" renderColumns="RequestTypeName" visible="true" />
+    <RelColumn name="RequestType" renderColumns="RequestTypeName">
+      <dynStyle>
+        <ui:inline>color:[row.TypeForeground];
+          background-color:[row.TypeBackground];
+        </ui:inline>
+      </dynStyle>
+    </RelColumn>
     <RelColumn name="RequestForm" visible="true" />
+    <RelColumn name="Product" renderColumns="ProductName">
+      <dynStyle>
+        <ui:inline>color:[row.ProductForeground];
+          background-color:[row.ProductBackground];
+        </ui:inline>
+      </dynStyle>
+    </RelColumn>
   </g:columns>
   
   <g:predefinedFilter name="request_registred" label="=requestShowRegistered" initial="true" >
