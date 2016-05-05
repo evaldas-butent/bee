@@ -289,7 +289,8 @@ public class TransportReportsBean {
             .addFields(tmp, COL_TRIP)
             .addSum(tmp, normConsumption)
             .addFrom(tmp)
-            .addGroup(tmp, COL_TRIP), als, SqlUtils.joinUsing(tmp, als, COL_TRIP)));
+            .addGroup(tmp, COL_TRIP), als, SqlUtils.joinUsing(tmp, als, COL_TRIP))
+        .setWhere(SqlUtils.notEqual(als, normConsumption, 0)));
 
     // Average fuel price
     xpr = SqlUtils.divide(1.0,
