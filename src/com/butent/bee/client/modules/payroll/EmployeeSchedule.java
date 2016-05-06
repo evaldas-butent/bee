@@ -122,7 +122,9 @@ class EmployeeSchedule extends WorkScheduleWidget {
               Long subst = row.getLong(substIndex);
 
               if (DataUtils.isId(subst)) {
-                substEo.put(obj, subst);
+                if (isSubstitutionEnabled()) {
+                  substEo.put(obj, subst);
+                }
               } else {
                 mainEo.add(obj);
               }

@@ -183,7 +183,6 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
   private static final String STYLE_PARTITION_PANEL = STYLE_PREFIX + "partition-panel";
   private static final String STYLE_PARTITION_CONTAINER = STYLE_PREFIX + "partition-container";
   private static final String STYLE_PARTITION_NAME = STYLE_PREFIX + "partition-name";
-  private static final String STYLE_PARTITION_CONTACT = STYLE_PREFIX + "partition-contact";
   private static final String STYLE_PARTITION_INFO = STYLE_PREFIX + "partition-info";
   private static final String STYLE_PARTITION_SUBST = STYLE_PREFIX + "partition-subst";
   private static final String STYLE_PARTITION_CLEAR = STYLE_PREFIX + "partition-clear";
@@ -248,6 +247,8 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
 
   private static final String STYLE_TRC_CONTROLS = STYLE_PREFIX + "trc-controls";
   private static final String STYLE_TRC_CANCEL = STYLE_PREFIX + "trc-cancel";
+
+  private static final String STYLE_NEW_SUBSTITUTION_PREFIX = STYLE_PREFIX + "new-substitution-";
 
   private static final String KEY_YM = "ym";
   private static final String KEY_DAY = "day";
@@ -611,6 +612,10 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
   protected abstract void initCalendarInfo(YearMonth ym, CalendarInfo calendarInfo);
 
   protected abstract boolean isActive(YearMonth ym);
+
+  protected boolean isSubstitutionEnabled() {
+    return kind.isSubstitutionEnabled();
+  }
 
   protected void render() {
     if (!table.isEmpty()) {
@@ -1342,6 +1347,24 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
   }
 
   private void onSubstitution() {
+    DataInfo dataInfo = Data.getDataInfo(VIEW_EMPLOYEE_OBJECTS);
+    BeeRow row = RowFactory.createEmptyRow(dataInfo, true);
+
+    row.setValue(dataInfo.getColumnIndex(scheduleParent.getEmployeeObjectRelationColumn()),
+        getRelationId());
+
+    row.setValue(dataInfo.getColumnIndex(COL_EMPLOYEE_OBJECT_FROM), activeMonth.getDate());
+    row.setValue(dataInfo.getColumnIndex(COL_EMPLOYEE_OBJECT_UNTIL), activeMonth.getLast());
+
+    String styleName = STYLE_NEW_SUBSTITUTION_PREFIX + scheduleParent.getStyleSuffix();
+
+    RowFactory.createRow(FORM_NEW_SUBSTITUTION, null, dataInfo, row, Modality.ENABLED, null, null,
+        formView -> formView.addStyleName(styleName), new RowCallback() {
+          @Override
+          public void onSuccess(BeeRow result) {
+            refresh();
+          }
+        });
   }
 
   private boolean readBoolean(String name) {
@@ -1451,7 +1474,7 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
     Flow controlPanel = new Flow();
 
     if (!BeeUtils.isEmpty(partIds)) {
-      if (kind.isSubstitutionEnabled()) {
+      if (isSubstitutionEnabled()) {
         Button substitutionCommand = new Button(Localized.dictionary().employeeSubstitution());
         substitutionCommand.addStyleName(STYLE_COMMAND);
         substitutionCommand.addStyleName(STYLE_COMMAND_SUBSTITUTION);
@@ -1631,6 +1654,14 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
         nameIndexes, BeeConst.STRING_SPACE));
     nameWidget.addStyleName(STYLE_PARTITION_NAME);
 
+    if (!BeeUtils.isEmpty(contactIndexes)) {
+      String title = DataUtils.join(getPartitionDataColumns(), partition.getRow(),
+          contactIndexes, BeeConst.STRING_EOL);
+      if (!BeeUtils.isEmpty(title)) {
+        nameWidget.setTitle(title);
+      }
+    }
+
     nameWidget.addClickHandler(event -> {
       Element targetElement = EventUtils.getEventTargetElement(event);
       Long id = DomUtils.getDataPropertyLong(DomUtils.getParentRow(targetElement, false),
@@ -1643,17 +1674,13 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
 
     container.add(nameWidget);
 
-    Label contactWidget = new Label(DataUtils.join(getPartitionDataColumns(), partition.getRow(),
-        contactIndexes, BeeConst.DEFAULT_LIST_SEPARATOR));
-    contactWidget.addStyleName(STYLE_PARTITION_CONTACT);
+    if (!BeeUtils.isEmpty(infoIndexes)) {
+      Label infoWidget = new Label(DataUtils.join(getPartitionDataColumns(), partition.getRow(),
+          infoIndexes, BeeConst.DEFAULT_LIST_SEPARATOR));
+      infoWidget.addStyleName(STYLE_PARTITION_INFO);
 
-    container.add(contactWidget);
-
-    Label infoWidget = new Label(DataUtils.join(getPartitionDataColumns(), partition.getRow(),
-        infoIndexes, BeeConst.DEFAULT_LIST_SEPARATOR));
-    infoWidget.addStyleName(STYLE_PARTITION_INFO);
-
-    container.add(infoWidget);
+      container.add(infoWidget);
+    }
 
     if (partition.hasSubstituteFor()) {
       Label substWidget = new Label(getSubstituteForLabel(partition.getSubstituteFor()));
@@ -1698,6 +1725,7 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
     int td = TimeUtils.sameMonth(date, today) ? today.getDom() : BeeConst.UNDEF;
 
     String partName = getPartitionCaption(partIds.getA());
+    String substLabel = getSubstituteForLabel(partIds.getB());
 
     for (int i = 0; i < days; i++) {
       int day = i + 1;
@@ -1713,7 +1741,7 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
 
       TableCellElement cell = table.getCellFormatter().getElement(r, c);
       DomUtils.setDataProperty(cell, KEY_DAY, day);
-      cell.setTitle(BeeUtils.buildLines(partName, Format.renderDateLong(date),
+      cell.setTitle(BeeUtils.buildLines(partName, substLabel, Format.renderDateLong(date),
           Format.renderDayOfWeek(date), calendarInfo.getSubTitle()));
 
       if (calendarInfo.isInactive(day)) {

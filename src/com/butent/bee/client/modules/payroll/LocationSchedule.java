@@ -113,7 +113,7 @@ class LocationSchedule extends WorkScheduleWidget {
 
       if (!DataUtils.isEmpty(getEoData())) {
         int employeeIndex = getEoData().getColumnIndex(COL_EMPLOYEE);
-        int substIndex = getWsData().getColumnIndex(COL_SUBSTITUTE_FOR);
+        int substIndex = getEoData().getColumnIndex(COL_SUBSTITUTE_FOR);
 
         int fromIndex = getEoData().getColumnIndex(COL_EMPLOYEE_OBJECT_FROM);
         int untilIndex = getEoData().getColumnIndex(COL_EMPLOYEE_OBJECT_UNTIL);
@@ -127,7 +127,9 @@ class LocationSchedule extends WorkScheduleWidget {
               Long subst = row.getLong(substIndex);
 
               if (DataUtils.isId(subst)) {
-                substEo.put(empl, subst);
+                if (isSubstitutionEnabled()) {
+                  substEo.put(empl, subst);
+                }
               } else {
                 mainEo.add(empl);
               }
@@ -184,6 +186,7 @@ class LocationSchedule extends WorkScheduleWidget {
   @Override
   protected List<Integer> getPartitionContactIndexes() {
     List<Integer> contactIndexes = new ArrayList<>();
+    contactIndexes.add(getEmData().getColumnIndex(ALS_DEPARTMENT_NAME));
     contactIndexes.add(getEmData().getColumnIndex(COL_MOBILE));
     contactIndexes.add(getEmData().getColumnIndex(COL_PHONE));
     return contactIndexes;
@@ -198,7 +201,6 @@ class LocationSchedule extends WorkScheduleWidget {
   protected List<Integer> getPartitionInfoIndexes() {
     List<Integer> infoIndexes = new ArrayList<>();
     infoIndexes.add(getEmData().getColumnIndex(ALS_COMPANY_NAME));
-    infoIndexes.add(getEmData().getColumnIndex(ALS_DEPARTMENT_NAME));
     infoIndexes.add(getEmData().getColumnIndex(COL_TAB_NUMBER));
     return infoIndexes;
   }

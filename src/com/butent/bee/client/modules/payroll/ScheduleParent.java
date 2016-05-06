@@ -5,6 +5,11 @@ import static com.butent.bee.shared.modules.payroll.PayrollConstants.*;
 enum ScheduleParent {
   LOCATION {
     @Override
+    String getEmployeeObjectRelationColumn() {
+      return COL_PAYROLL_OBJECT;
+    }
+
+    @Override
     String getPartitionViewName() {
       return VIEW_EMPLOYEES;
     }
@@ -24,7 +29,13 @@ enum ScheduleParent {
       return COL_PAYROLL_OBJECT;
     }
   },
+
   EMPLOYEE {
+    @Override
+    String getEmployeeObjectRelationColumn() {
+      return COL_EMPLOYEE;
+    }
+
     @Override
     String getPartitionViewName() {
       return VIEW_LOCATIONS;
@@ -45,6 +56,8 @@ enum ScheduleParent {
       return COL_EMPLOYEE;
     }
   };
+
+  abstract String getEmployeeObjectRelationColumn();
 
   abstract String getPartitionViewName();
 

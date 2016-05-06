@@ -116,6 +116,7 @@
 .bee-payroll-ws-partition-subst {
   cursor: pointer;
   font-weight: bolder;
+  color: chocolate;
 }
 .bee-payroll-ws-partition-subst:hover {
   text-decoration: underline;
@@ -313,6 +314,11 @@
 .bee-payroll-ws-editor-day-selected:hover {
   outline: #80c4f9 solid 3px;
   outline-offset: -1px;
+}
+
+.bee-payroll-ws-new-substitution-employee .bee-new-substitution-employee,
+.bee-payroll-ws-new-substitution-object .bee-new-substitution-object {
+  display: none;
 }
 
 .bee-payroll-earn-month-widget {
