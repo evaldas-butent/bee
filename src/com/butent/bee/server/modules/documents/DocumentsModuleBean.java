@@ -21,11 +21,10 @@ import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.modules.administration.ExtensionIcons;
-import com.butent.bee.server.news.ExtendedUsageQueryProvider;
 import com.butent.bee.server.news.NewsBean;
 import com.butent.bee.server.news.NewsHelper;
+import com.butent.bee.server.news.UsageQueryProvider;
 import com.butent.bee.server.sql.HasConditions;
-import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.IsExpression;
 import com.butent.bee.server.sql.IsFrom;
 import com.butent.bee.server.sql.SqlInsert;
@@ -387,53 +386,31 @@ public class DocumentsModuleBean implements BeeModule {
       }
     });
 
-    news.registerUsageQueryProvider(Feed.DOCUMENTS, new ExtendedUsageQueryProvider() {
-      @Override
-      protected List<IsCondition> getConditions(long userId) {
-        return null;
-      }
-
-      @Override
-      protected List<Pair<String, IsCondition>> getJoins() {
-        UserServiceBean usrBean = Invocation.locateRemoteBean(UserServiceBean.class);
-
-        if (usrBean.isAdministrator()) {
-          return null;
-        }
-        SystemBean sysBean = Invocation.locateRemoteBean(SystemBean.class);
-
-        return NewsHelper.buildJoins(TBL_DOCUMENTS,
-            sysBean.joinTables(TBL_DOCUMENTS, Feed.DOCUMENTS.getUsageTable(), COL_DOCUMENT),
-            TBL_DOCUMENT_TREE,
-            sysBean.joinTables(TBL_DOCUMENT_TREE, TBL_DOCUMENTS, COL_DOCUMENT_CATEGORY));
-      }
-
+    news.registerUsageQueryProvider(Feed.DOCUMENTS, new UsageQueryProvider() {
       @Override
       public SqlSelect getQueryForAccess(Feed feed, String relationColumn, long userId,
           DateTime startDate) {
-
-        SqlSelect query = super.getQueryForAccess(feed, relationColumn, userId, startDate);
-
-        UserServiceBean usrBean = Invocation.locateRemoteBean(UserServiceBean.class);
-
-        if (!usrBean.isAdministrator()) {
-          Invocation.locateRemoteBean(SystemBean.class)
-              .filterVisibleState(query, TBL_DOCUMENT_TREE);
-        }
-        return query;
+        return visibility(NewsHelper.getAccessQuery(feed.getUsageTable(), relationColumn, null,
+            null, userId));
       }
 
       @Override
       public SqlSelect getQueryForUpdates(Feed feed, String relationColumn, long userId,
           DateTime startDate) {
+        return visibility(NewsHelper.getUpdatesQuery(feed.getUsageTable(), relationColumn, null,
+            null, userId, startDate));
+      }
 
-        SqlSelect query = super.getQueryForUpdates(feed, relationColumn, userId, startDate);
+      private SqlSelect visibility(SqlSelect query) {
+        if (!Invocation.locateRemoteBean(UserServiceBean.class).isAdministrator()) {
+          SystemBean sysBean = Invocation.locateRemoteBean(SystemBean.class);
 
-        UserServiceBean usrBean = Invocation.locateRemoteBean(UserServiceBean.class);
+          query.addFromInner(TBL_DOCUMENTS,
+              Invocation.locateRemoteBean(NewsBean.class).joinUsage(TBL_DOCUMENTS))
+              .addFromInner(TBL_DOCUMENT_TREE,
+                  sysBean.joinTables(TBL_DOCUMENT_TREE, TBL_DOCUMENTS, COL_DOCUMENT_CATEGORY));
 
-        if (!usrBean.isAdministrator()) {
-          Invocation.locateRemoteBean(SystemBean.class)
-              .filterVisibleState(query, TBL_DOCUMENT_TREE);
+          sysBean.filterVisibleState(query, TBL_DOCUMENT_TREE);
         }
         return query;
       }

@@ -17,6 +17,7 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.dialog.Icon;
+import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Flow;
@@ -33,6 +34,7 @@ import com.butent.bee.client.output.ResultHolder;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.CustomSpan;
@@ -137,8 +139,15 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
           filters.add(reportFilter);
         }
       }
-      getReport()
-          .open(new ReportParameters(Collections.singletonMap(COL_RS_REPORT, rep.serialize())));
+      Popup popup = UiHelper.getParentPopup(getFormView().asWidget());
+
+      if (popup != null) {
+        popup.close();
+        getReport().showModal(rep);
+      } else {
+        getReport().open(new ReportParameters(Collections.singletonMap(COL_RS_REPORT,
+            rep.serialize())));
+      }
     }
 
     private List<String> getValues(ReportValue value) {
