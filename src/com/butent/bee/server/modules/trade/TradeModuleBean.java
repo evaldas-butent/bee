@@ -56,7 +56,6 @@ import com.butent.bee.shared.menu.MenuItem;
 import com.butent.bee.shared.menu.MenuService;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.payroll.PayrollConstants;
-import com.butent.bee.shared.modules.trade.TradeConstants.*;
 import com.butent.bee.shared.modules.trade.TradeDocumentData;
 import com.butent.bee.shared.modules.trade.TradeDocumentPhase;
 import com.butent.bee.shared.rights.Module;

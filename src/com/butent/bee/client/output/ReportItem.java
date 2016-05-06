@@ -202,6 +202,12 @@ public abstract class ReportItem implements BeeSerializable {
 
   public abstract ReportValue evaluate(SimpleRow row);
 
+  /**
+   * @param rowGroup
+   * @param rowValues
+   * @param colGroup
+   * @param resultHolder
+   */
   public ReportValue evaluate(ReportValue rowGroup, ReportValue[] rowValues, ReportValue colGroup,
       ResultHolder resultHolder) {
     Assert.unsupported();

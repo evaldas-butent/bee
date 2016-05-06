@@ -135,8 +135,8 @@ public class ReportResultItem extends ReportNumericItem {
     return serialize(Codec.beeSerialize(Collections.singletonMap(LEVEL, getLevel())));
   }
 
-  public ReportResultItem setLevel(ResultHolder.ResultLevel level) {
-    this.level = Assert.notNull(level);
+  public ReportResultItem setLevel(ResultHolder.ResultLevel lvl) {
+    this.level = Assert.notNull(lvl);
     return this;
   }
 }
