@@ -677,6 +677,8 @@ public interface Dictionary {
 
   default String clearNews() {return g("clearNews");}
 
+  default String clearTimeSheetQuestion() {return g("clearTimeSheetQuestion");}
+
   default String clearWorkScheduleQuestion() {return g("clearWorkScheduleQuestion");}
 
   default String clickSensitivityDistance() {return g("clickSensitivityDistance");}
@@ -2541,6 +2543,8 @@ public interface Dictionary {
 
   default String feeds() {return g("feeds");}
 
+  default String fetchWorkSchedule() {return g("fetchWorkSchedule");}
+
   default String fields() {return g("fields");}
 
   default String file() {return g("file");}
@@ -3810,9 +3814,13 @@ public interface Dictionary {
 
   default String prjFilterAll() {return g("prjFilterAll");}
 
+  default String prjFilterNotLate() {return g("prjFilterNotLate");}
+
   default String prjIncomePlan() {return g("prjIncomePlan");}
 
   default String prjInitialStage() {return g("prjInitialStage");}
+
+  default String prjLabelNotLate() {return g("prjLabelNotLate");}
 
   default String prjManager() {return g("prjManager");}
 
@@ -3835,6 +3843,8 @@ public interface Dictionary {
   default String prjOtherExpenses() {return g("prjOtherExpenses");}
 
   default String prjOverdue() {return g("prjOverdue");}
+
+  default String prjOverduePercent() {return g("prjOverduePercent");}
 
   default String prjParticipant() {return g("prjParticipant");}
 

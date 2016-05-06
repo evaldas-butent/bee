@@ -71,12 +71,11 @@
   </Columns>
 
   <Order>
-    <OrderBy column="DateFrom" />
-    <OrderBy column="DateUntil" />
     <OrderBy column="LastName" />
     <OrderBy column="FirstName" />
     <OrderBy column="EmployeeCompanyName" />
     <OrderBy column="TabNumber" />
     <OrderBy column="LocationName" />
+    <OrderBy column="DateFrom" />
   </Order>
 </View>

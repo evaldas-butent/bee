@@ -5,6 +5,7 @@
   editForm="MailMessage"
   >
   <Columns>
+    <SimpleColumn name="Project" />
     <SimpleColumn name="Company" />
     <SimpleColumn name="ShipmentRequest" />
 

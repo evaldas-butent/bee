@@ -13,6 +13,7 @@ import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.IsExpression;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.time.JustDate;
@@ -184,7 +185,9 @@ public class ReportInfo implements BeeSerializable {
                 ? SqlUtils.and() : SqlUtils.or();
 
             for (String opt : ((ReportTextItem) filterItem).getFilter()) {
-              IsCondition condition = SqlUtils.contains(expr, opt);
+              IsCondition condition = BeeUtils.isPrefix(opt, BeeConst.STRING_EQ)
+                  ? SqlUtils.equals(expr, BeeUtils.removePrefix(opt, BeeConst.STRING_EQ))
+                  : SqlUtils.contains(expr, opt);
 
               if (((ReportTextItem) filterItem).isNegationFilter()) {
                 condition = SqlUtils.not(condition);
@@ -209,7 +212,7 @@ public class ReportInfo implements BeeSerializable {
           Long value = ((ReportDateItem) filterItem).getFilter();
 
           if (value != null) {
-            Long dt = null;
+            Long dt;
             Operator op = ((ReportDateItem) filterItem).getFilterOperator();
 
             switch (((ReportDateItem) filterItem).getFormat()) {

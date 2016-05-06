@@ -28,6 +28,7 @@ import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.eventsboard.EventsBoard.EventFilesFilter;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.presenter.Presenter;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.HeaderView;
@@ -35,6 +36,7 @@ import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.widget.FaLabel;
+import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
@@ -66,6 +68,7 @@ import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -116,6 +119,17 @@ public class RequestEditor extends ProductSupportInterceptor {
 
   @Override
   public void afterRefresh(final FormView form, final IsRow row) {
+    Widget area = form.getWidgetBySource(COL_REQUEST_CONTENT);
+
+    if (area != null && area instanceof InputArea) {
+      StyleUtils.setHeight(area, 60);
+      int scroll = area.getElement().getScrollHeight();
+
+      if (scroll > 60) {
+        StyleUtils.setHeight(area, scroll + 2);
+      }
+    }
+
     HeaderView header = form.getViewPresenter().getHeader();
     header.clearCommandPanel();
 
@@ -473,6 +487,9 @@ public class RequestEditor extends ProductSupportInterceptor {
 
     taskRow.setValue(taskDataInfo.getColumnIndex(COL_OWNER), user);
 
+    taskRow.setValue(taskDataInfo.getColumnIndex(COL_START_TIME), TimeUtils.nowMinutes());
+    taskRow.setValue(taskDataInfo.getColumnIndex(COL_FINISH_TIME), TimeUtils.nowMinutes());
+
     if (!BeeUtils.isEmpty(reqRow.getString(form.getDataIndex(COL_PRODUCT)))) {
       taskRow.setValue(taskDataInfo.getColumnIndex(COL_PRODUCT), reqRow
           .getString(form.getDataIndex(COL_PRODUCT)));
@@ -593,7 +610,17 @@ public class RequestEditor extends ProductSupportInterceptor {
             data.put(BeeUtils.toString(TaskEvent.CREATE.ordinal()), result.getString(0));
 
             insertEventNote(reqRow.getId(), null, Codec.beeSerialize(data), TaskEvent.CREATE, null);
-            form.refresh();
+
+            int idxFinished = form.getDataIndex(TaskConstants.COL_REQUEST_FINISHED);
+
+            List<BeeColumn> columns =
+                Lists.newArrayList(Data.getColumn(VIEW_REQUESTS, COL_REQUEST_FINISHED));
+            List<String> oldValues = Arrays.asList(reqRow.getString(idxFinished));
+            List<String> newValues = Arrays.asList(BeeUtils.toString(new DateTime().getTime()));
+
+            Queries.update(form.getViewName(), reqRow.getId(), reqRow.getVersion(),
+                columns, oldValues, newValues, form.getChildrenForUpdate(),
+                new FinishSaveCallback(form));
           }
         });
   }

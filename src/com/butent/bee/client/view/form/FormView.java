@@ -24,6 +24,7 @@ import com.butent.bee.client.view.edit.EditableWidget;
 import com.butent.bee.client.view.edit.HasReadyForUpdateHandlers;
 import com.butent.bee.client.view.edit.HasSaveChangesHandlers;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasState;
 import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.data.BeeColumn;
@@ -72,6 +73,10 @@ public interface FormView extends DataView, HasDataTable, ActiveWidgetChangeEven
   Collection<RowChildren> getChildrenForInsert();
 
   Collection<RowChildren> getChildrenForUpdate();
+
+  default String getContainerStyleName() {
+    return BeeConst.CSS_CLASS_PREFIX + "form-" + BeeUtils.trim(getFormName()) + "-container";
+  }
 
   DateTime getDateTimeValue(String source);
 

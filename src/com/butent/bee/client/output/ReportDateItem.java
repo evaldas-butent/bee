@@ -45,8 +45,8 @@ public class ReportDateItem extends ReportItem {
   private Long filter;
   private Editor filterWidget;
 
-  public ReportDateItem(String name, String caption) {
-    super(name, caption);
+  public ReportDateItem(String expression, String caption) {
+    super(expression, caption);
   }
 
   @Override
@@ -89,7 +89,7 @@ public class ReportDateItem extends ReportItem {
   @Override
   public ReportValue evaluate(SimpleRow row) {
     ReportValue value;
-    JustDate date = row.getDate(getName());
+    JustDate date = row.getDate(getExpression());
 
     if (date != null) {
       value = evaluate(date);
@@ -154,7 +154,7 @@ public class ReportDateItem extends ReportItem {
 
   @Override
   public int hashCode() {
-    return Objects.hash(getName(), getFormat());
+    return Objects.hash(getExpression(), getFormat());
   }
 
   @Override
@@ -201,10 +201,10 @@ public class ReportDateItem extends ReportItem {
 
   @Override
   public boolean validate(SimpleRow row) {
-    if (!row.getRowSet().hasColumn(getName())) {
+    if (!row.getRowSet().hasColumn(getExpression())) {
       return true;
     }
-    return validate(row.getDate(getName()));
+    return validate(row.getDate(getExpression()));
   }
 
   protected Editor createFilterEditor() {

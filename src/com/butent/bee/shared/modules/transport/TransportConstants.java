@@ -298,7 +298,6 @@ public final class TransportConstants {
 
   public static final String SVC_GET_BEFORE = "GetBeforeData";
   public static final String SVC_GET_UNASSIGNED_CARGOS = "GetUnassignedCargos";
-  public static final String SVC_GET_PROFIT = "GetProfit";
   public static final String SVC_GET_ROUTE = "GetTripRoute";
   public static final String SVC_GENERATE_ROUTE = "GenerateTripRoute";
   public static final String SVC_GENERATE_DAILY_COSTS = "GenerateDailyCosts";

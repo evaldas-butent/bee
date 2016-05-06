@@ -145,6 +145,11 @@
           </row>
         </Table>
       </page>
+      <page>
+      <text>=relatedInformation</text>
+      <Relations relColumn="Appointment" inline="true"
+                 defaultRelations="Companies Persons Requests Tasks" style="margin: 0px 15px 0px 15px; min-width:300px;" />
+      </page>
     </TabbedPages>
   </FlowPanel>
 </f:Form>  

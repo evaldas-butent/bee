@@ -192,7 +192,10 @@
         <text>=trdInvoices</text>
         <ChildGrid name="ProjectInvoices" relColumn="Project" />
       </page>
-
+      <page>
+          <text>=mails</text>
+          <ChildGrid name="RelatedMessages" relColumn="Project" paging="true" />
+      </page>
    </TabbedPages>
    </FlowPanel>
 </f:Form>

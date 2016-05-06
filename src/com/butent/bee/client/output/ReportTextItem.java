@@ -7,6 +7,7 @@ import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.widget.Toggle;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
@@ -33,8 +34,8 @@ public class ReportTextItem extends ReportItem {
   private MultiSelector filterWidget;
   private List<String> filter;
 
-  public ReportTextItem(String name, String caption) {
-    super(name, caption);
+  public ReportTextItem(String expression, String caption) {
+    super(expression, caption);
   }
 
   @Override
@@ -71,7 +72,7 @@ public class ReportTextItem extends ReportItem {
 
   @Override
   public ReportValue evaluate(SimpleRow row) {
-    return ReportValue.of(row.getValue(getName()));
+    return ReportValue.of(row.getValue(getExpression()));
   }
 
   @Override
@@ -93,7 +94,7 @@ public class ReportTextItem extends ReportItem {
 
   @Override
   public int hashCode() {
-    return Objects.hash(getName(), isNegationFilter());
+    return Objects.hash(getExpression(), isNegationFilter());
   }
 
   public boolean isNegationFilter() {
@@ -130,13 +131,15 @@ public class ReportTextItem extends ReportItem {
 
   @Override
   public boolean validate(SimpleRow row) {
-    if (BeeUtils.isEmpty(filter) || !row.getRowSet().hasColumn(getName())) {
+    if (BeeUtils.isEmpty(filter) || !row.getRowSet().hasColumn(getExpression())) {
       return true;
     }
-    String value = row.getValue(getName());
+    String value = row.getValue(getExpression());
 
     for (String opt : filter) {
-      if (BeeUtils.containsSame(value, opt)) {
+      if (BeeUtils.isPrefix(opt, BeeConst.STRING_EQ)
+          ? Objects.equals(value, BeeUtils.removePrefix(opt, BeeConst.STRING_EQ))
+          : BeeUtils.containsSame(value, opt)) {
         return !isNegationFilter();
       }
     }

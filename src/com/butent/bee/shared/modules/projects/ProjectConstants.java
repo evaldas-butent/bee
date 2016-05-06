@@ -121,6 +121,7 @@ public final class ProjectConstants {
   public static final String COL_PROJECT_TIME_UNIT = "TimeUnit";
   public static final String COL_DESCRIPTION = "Description";
 
+  public static final String COL_OVERDUE = "Overdue";
   public static final String COL_PROJECT_TEMPLATE = "ProjectTemplate";
 
   public static final String COL_PSC_FOOTER_HEIGHT = "PSCFooterHeight";
@@ -144,6 +145,8 @@ public final class ProjectConstants {
   public static final String COL_USER_TYPE = "UserType";
   public static final String COL_RATE = "Rate";
 
+  public static final String FILTER_OVERDUE_CREATION = "overdue_creation";
+
   public static final String FORM_PROJECT = "Project";
   public static final String FORM_PROJECT_STAGE = "ProjectStage";
   public static final String FORM_NEW_COMMENT = "NewProjectComment";
@@ -165,6 +168,7 @@ public final class ProjectConstants {
   public static final String GRID_PROJECT_TEMPLATE_STAGES = "ProjectTMLStages";
   public static final String GRID_PROJECT_TEMPLATES = "ProjectTemplates";
 
+  public static final String NAME_SLACK = "Slack";
   public static final String NAME_EXPECTED_TASKS_DURATION = "CalcExpectedTasksDuration";
   public static final String NAME_ACTUAL_TASKS_DURATION = "CalcActualTasksDuration";
 

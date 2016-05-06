@@ -56,7 +56,7 @@ import com.butent.bee.shared.menu.MenuItem;
 import com.butent.bee.shared.menu.MenuService;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.payroll.PayrollConstants;
-import com.butent.bee.shared.modules.trade.TradeConstants.*;
+import com.butent.bee.shared.modules.trade.TradeConstants.OperationType;
 import com.butent.bee.shared.modules.trade.TradeDocumentData;
 import com.butent.bee.shared.modules.trade.TradeDocumentPhase;
 import com.butent.bee.shared.rights.Module;
@@ -110,7 +110,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
   @Resource
   TimerService timerService;
 
-  public static String decodeId(String trade, Long id) {
+  public static Long decodeId(String trade, Long id) {
     Assert.notEmpty(trade);
     Long normalizedId;
 
@@ -126,7 +126,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
       default:
         throw new BeeRuntimeException("View source not supported: " + trade);
     }
-    return BeeUtils.toString(normalizedId);
+    return normalizedId;
   }
 
   @Override
@@ -148,7 +148,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
 
   @Override
   public ResponseObject doService(String svc, RequestInfo reqInfo) {
-    ResponseObject response = null;
+    ResponseObject response;
 
     SubModule subModule = reqInfo.getSubModule();
 
@@ -351,8 +351,8 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
       public void fillInvoiceNumber(ViewModifyEvent event) {
         if (event.isBefore()
             && Objects.equals(sys.getViewSource(event.getTargetName()), TBL_SALES)) {
-          List<BeeColumn> cols = null;
-          IsRow row = null;
+          List<BeeColumn> cols;
+          IsRow row;
           String prefix = null;
 
           if (event instanceof ViewInsertEvent) {
@@ -624,57 +624,57 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     long historyId = sys.eventStart(PRM_ERP_REFRESH_INTERVAL);
     int c = 0;
 
-    SimpleRowSet debts = qs.getData(new SqlSelect()
-        .addField(TBL_SALES, sys.getIdName(TBL_SALES), COL_SALE)
-        .addFields(TBL_SALES, COL_TRADE_PAID)
-        .addFrom(TBL_SALES)
-        .setWhere(SqlUtils.and(SqlUtils.isNull(TBL_SALES, COL_SALE_PROFORMA),
-            SqlUtils.or(SqlUtils.isNull(TBL_SALES, COL_TRADE_PAID),
-                SqlUtils.less(TBL_SALES, COL_TRADE_PAID,
-                    SqlUtils.field(TBL_SALES, COL_TRADE_AMOUNT))))));
+    for (String table : new String[] {TBL_SALES, TBL_PURCHASES}) {
+      String idName = sys.getIdName(table);
 
-    if (!debts.isEmpty()) {
-      StringBuilder ids = new StringBuilder();
+      SimpleRowSet debts = qs.getData(new SqlSelect()
+          .addFields(table, idName, COL_TRADE_PAID)
+          .addFrom(table)
+          .setWhere(SqlUtils.or(SqlUtils.isNull(table, COL_TRADE_PAID),
+              SqlUtils.less(table, COL_TRADE_PAID, SqlUtils.field(table, COL_TRADE_AMOUNT)))));
 
-      for (SimpleRow row : debts) {
-        if (ids.length() > 0) {
-          ids.append(",");
-        }
-        ids.append("'").append(TradeModuleBean.encodeId(TBL_SALES, row.getLong(COL_SALE)))
-            .append("'");
-      }
-      String remoteAddress = prm.getText(PRM_ERP_ADDRESS);
-      String remoteLogin = prm.getText(PRM_ERP_LOGIN);
-      String remotePassword = prm.getText(PRM_ERP_PASSWORD);
+      if (!debts.isEmpty()) {
+        StringBuilder ids = new StringBuilder();
 
-      try {
-        SimpleRowSet payments = ButentWS.connect(remoteAddress, remoteLogin, remotePassword)
-            .getSQLData("SELECT extern_id AS id,"
-                + " CASE WHEN oper_apm IS NULL THEN data ELSE apm_data END AS data,"
-                + " CASE WHEN oper_apm IS NULL THEN viso ELSE apm_suma END AS suma"
-                + " FROM apyvarta"
-                + " INNER JOIN operac ON apyvarta.operacija = operac.operacija"
-                + " WHERE pajamos=0 AND extern_id IN(" + ids.toString() + ")",
-                "id", "data", "suma");
-
-        for (SimpleRow payment : payments) {
-          String id = TradeModuleBean.decodeId(TBL_SALES, payment.getLong("id"));
-          Double paid = payment.getDouble("suma");
-
-          if (!Objects.equals(paid,
-              BeeUtils.toDoubleOrNull(debts.getValueByKey(COL_SALE, id, COL_TRADE_PAID)))) {
-
-            c += qs.updateData(new SqlUpdate(TBL_SALES)
-                .addConstant(COL_TRADE_PAID, paid)
-                .addConstant(COL_TRADE_PAYMENT_TIME,
-                    TimeUtils.parseDateTime(payment.getValue("data")))
-                .setWhere(sys.idEquals(TBL_SALES, BeeUtils.toLong(id))));
+        for (Long id : debts.getLongColumn(idName)) {
+          if (ids.length() > 0) {
+            ids.append(",");
           }
+          ids.append("'").append(TradeModuleBean.encodeId(table, id)).append("'");
         }
-      } catch (BeeException e) {
-        logger.error(e);
-        sys.eventError(historyId, e);
-        return;
+        String remoteAddress = prm.getText(PRM_ERP_ADDRESS);
+        String remoteLogin = prm.getText(PRM_ERP_LOGIN);
+        String remotePassword = prm.getText(PRM_ERP_PASSWORD);
+
+        try {
+          SimpleRowSet payments = ButentWS.connect(remoteAddress, remoteLogin, remotePassword)
+              .getSQLData("SELECT extern_id AS id,"
+                      + " CASE WHEN oper_apm IS NULL THEN data ELSE apm_data END AS data,"
+                      + " CASE WHEN oper_apm IS NULL THEN viso ELSE apm_suma END AS suma"
+                      + " FROM apyvarta"
+                      + " INNER JOIN operac ON apyvarta.operacija = operac.operacija"
+                      + " WHERE pajamos=0 AND extern_id IN(" + ids.toString() + ")",
+                  "id", "data", "suma");
+
+          for (SimpleRow payment : payments) {
+            Long id = TradeModuleBean.decodeId(table, payment.getLong("id"));
+            Double paid = payment.getDouble("suma");
+
+            if (!Objects.equals(paid, BeeUtils.toDoubleOrNull(debts.getValueByKey(idName,
+                BeeUtils.toString(id), COL_TRADE_PAID)))) {
+
+              c += qs.updateData(new SqlUpdate(table)
+                  .addConstant(COL_TRADE_PAID, paid)
+                  .addConstant(COL_TRADE_PAYMENT_TIME,
+                      TimeUtils.parseDateTime(payment.getValue("data")))
+                  .setWhere(SqlUtils.equals(table, idName, id)));
+            }
+          }
+        } catch (BeeException e) {
+          logger.error(e);
+          sys.eventError(historyId, e);
+          return;
+        }
       }
     }
     sys.eventEnd(historyId, "OK", BeeUtils.joinWords("Updated", c, "records"));

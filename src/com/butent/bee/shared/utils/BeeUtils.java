@@ -36,10 +36,22 @@ public final class BeeUtils {
 
   private static final MathContext DEFAULT_MATH_CONTEXT = new MathContext(15);
 
+  public static <T> void addAllNotNull(Collection<T> target, Collection<T> source) {
+    Assert.notNull(target);
+
+    if (source != null) {
+      for (T item : source) {
+        if (item != null) {
+          target.add(item);
+        }
+      }
+    }
+  }
+
   /**
    * Adds String {@code item} to collection {@code col} if {@code item} is not empty.
    *
-   * @param col  Collection where the {@code item} should be added to
+   * @param col Collection where the {@code item} should be added to
    * @param item String that will be added
    * @return true if addition is successful
    */
@@ -55,7 +67,7 @@ public final class BeeUtils {
   /**
    * Adds {@code item} to collection {@code col} if {@code item} is not null.
    *
-   * @param col  Collection where the {@code item} should be added to
+   * @param col Collection where the {@code item} should be added to
    * @param item T that will be added
    * @return true if addition is successful
    */
@@ -72,9 +84,9 @@ public final class BeeUtils {
    * Adds {@code item} to {@code list} at specified {@code index} or if index not valid appends
    * {@code item} to the end of {@code list}.
    *
-   * @param list  List to which the {@code item} should be added
+   * @param list List to which the {@code item} should be added
    * @param index at which position to add
-   * @param item  which should be added
+   * @param item which should be added
    */
   public static <T> void addQuietly(List<T> list, int index, T item) {
     if (isIndex(list, index)) {
@@ -87,9 +99,9 @@ public final class BeeUtils {
   /**
    * Checks whether all given Strings are empty or null.
    *
-   * @param first  String to check.
+   * @param first String to check.
    * @param second String to check.
-   * @param rest   Rest of the Strings to check.
+   * @param rest Rest of the Strings to check.
    * @return true if all given Strings are empty or null.
    */
   public static boolean allEmpty(String first, String second, String... rest) {
@@ -111,9 +123,9 @@ public final class BeeUtils {
   /**
    * Checks whether all given Strings are not empty and not null.
    *
-   * @param first  String to check.
+   * @param first String to check.
    * @param second String to check.
-   * @param rest   Rest of the Strings to check.
+   * @param rest Rest of the Strings to check.
    * @return true if all given Strings are not empty and not null.
    */
   public static boolean allNotEmpty(String first, String second, String... rest) {
@@ -135,9 +147,9 @@ public final class BeeUtils {
   /**
    * Checks whether all provided objects are not null.
    *
-   * @param first  object to check.
+   * @param first object to check.
    * @param second object to check.
-   * @param rest   objects to check.
+   * @param rest objects to check.
    * @return true if all provided objects are not null.
    */
   public static boolean allNotNull(Object first, Object second, Object... rest) {
@@ -159,9 +171,9 @@ public final class BeeUtils {
   /**
    * Checks if any of the provided Strings are empty or null.
    *
-   * @param first  String to check.
+   * @param first String to check.
    * @param second String to check.
-   * @param rest   Strings to check.
+   * @param rest Strings to check.
    * @return true if any of the provided Strings are empty or null.
    */
   public static boolean anyEmpty(String first, String second, String... rest) {
@@ -183,9 +195,9 @@ public final class BeeUtils {
   /**
    * Checks if any of provided Strings are not empty and not null.
    *
-   * @param first  String to check.
+   * @param first String to check.
    * @param second String to check.
-   * @param rest   Strings to check.
+   * @param rest Strings to check.
    * @return true if any of provided Strings are not empty and not null.
    */
   public static boolean anyNotEmpty(String first, String second, String... rest) {
@@ -207,9 +219,9 @@ public final class BeeUtils {
   /**
    * Checks if any of the provided Objects are not null.
    *
-   * @param first  object to check.
+   * @param first object to check.
    * @param second first object to check.
-   * @param rest   objects to check.
+   * @param rest objects to check.
    * @return true if any of the provided objects are not null.
    */
   public static boolean anyNotNull(Object first, Object second, Object... rest) {
@@ -248,9 +260,9 @@ public final class BeeUtils {
   /**
    * Checks whether any of the provided objects are null.
    *
-   * @param first  Object to check.
+   * @param first Object to check.
    * @param second Object to check.
-   * @param rest   Objects to check.
+   * @param rest Objects to check.
    * @return true if any of the provided objects are null.
    */
   public static boolean anyNull(Object first, Object second, Object... rest) {
@@ -273,11 +285,11 @@ public final class BeeUtils {
    * Checks if the specified value {@code x} is between values {@code min} and {@code max}. Note:
    * {@code min} value is inclusive, {@code max} value - exclusive.
    *
-   * @param x   value to check
+   * @param x value to check
    * @param min the minimum value
    * @param max the maximum value
    * @return true if x is between {@code min} (inclusively) and {@code max} (exclusively), else
-   * false.
+   *         false.
    */
   public static boolean betweenExclusive(int x, int min, int max) {
     return x >= min && x < max;
@@ -287,7 +299,7 @@ public final class BeeUtils {
    * Checks if the specified value {@code x} is between values {@code min} and {@code max}
    * inclusively.
    *
-   * @param x   value to check
+   * @param x value to check
    * @param min the minimum value
    * @param max the maximum value
    * @return true if {@code x} is between {@code min} and {@code max} inclusively, else false.
@@ -388,7 +400,7 @@ public final class BeeUtils {
    *
    * @param x double which value should be rounded to the bigger part.
    * @return the value rounded to the bigger part (closer to the positive infinity) of the value
-   * provided.
+   *         provided.
    */
   public static int ceil(double x) {
     return toInt(Math.ceil(x));
@@ -409,12 +421,12 @@ public final class BeeUtils {
   /**
    * Gets the value between {@code min} and {@code max}.
    *
-   * @param x   a value to return in the specified limits
+   * @param x a value to return in the specified limits
    * @param min the minimum possible value
    * @param max the maximum possible value
    * @return {@code x} if the value is between {@code min} and {@code max}, is the value is less
-   * than {@code min} it returns {@code min}, if greater than {@code max} it returns
-   * {@code max}.
+   *         than {@code min} it returns {@code min}, if greater than {@code max} it returns
+   *         {@code max}.
    */
   public static double clamp(double x, double min, double max) {
     if (!isDouble(x)) {
@@ -452,11 +464,11 @@ public final class BeeUtils {
   /**
    * Gets the value between {@code min} and {@code max}.
    *
-   * @param x   a value to return in the specified limits
+   * @param x a value to return in the specified limits
    * @param min the minimum possible value
    * @param max the maximum possible value
    * @return x if the value is between {@code min} and {@code max}, if the value is less than
-   * {@code min} it returns {@code min}, if greater than {@code max} it returns {@code max}.
+   *         {@code min} it returns {@code min}, if greater than {@code max} it returns {@code max}.
    */
   public static int clamp(int x, int min, int max) {
     int z = Math.min(min, max);
@@ -594,9 +606,9 @@ public final class BeeUtils {
    * Checks if the CharSequence {@code src} contains only of the specified characters.
    *
    * @param src source CharSequence to be checked
-   * @param ch  characters to check for
+   * @param ch characters to check for
    * @return true if the src contains only the specified characters, false if src contains any
-   * different characters.
+   *         different characters.
    */
   public static boolean containsOnly(CharSequence src, char ch) {
     if (src == null) {
@@ -634,7 +646,7 @@ public final class BeeUtils {
    * Returns true if and {@code src} string contains the specified sequence of {@code ctxt} string
    * value in case-insensitive.
    *
-   * @param src  source of search
+   * @param src source of search
    * @param ctxt the sequence to search for
    * @return true if {@code src} string contains {@code ctxt}, false otherwise
    */
@@ -662,7 +674,7 @@ public final class BeeUtils {
    * Counts the appearances of the specified character {@code ch} in a CharSequence.
    *
    * @param src source to count in
-   * @param ch  characters to count
+   * @param ch characters to count
    * @return a number of the specified character appearances in the CharSequence.
    */
   public static int count(CharSequence src, char ch) {
@@ -700,11 +712,11 @@ public final class BeeUtils {
   /**
    * Deletes a part of a String from specified {@code start} to {@code end}.
    *
-   * @param src   source String to delete from
+   * @param src source String to delete from
    * @param start position to start deleting from
-   * @param end   position to end deleting
+   * @param end position to end deleting
    * @return a String without the deleted part. empty String - if {@code src} is {@code null} or
-   * empty, {@code src} - if start and end is wrong to given String
+   *         empty, {@code src} - if start and end is wrong to given String
    */
   public static String delete(String src, int start, int end) {
     if (src == null) {
@@ -776,7 +788,7 @@ public final class BeeUtils {
    * @param s1 the String to compare
    * @param s2 the String to compare
    * @return true if trimmed Strings are equal, false if Strings differ or any of them are empty or
-   * {@code null}.
+   *         {@code null}.
    */
   public static boolean equalsTrim(String s1, String s2) {
     if (s1 == null) {
@@ -816,7 +828,7 @@ public final class BeeUtils {
    * element is added to the new Collection and returned after all elements from {@code src}
    * Collection are covered.
    *
-   * @param src  collection to search from
+   * @param src collection to search from
    * @param ctxt context to search for
    * @return a new list with elements that contain {@code ctxt} in {@code src} collection.
    */
@@ -838,8 +850,8 @@ public final class BeeUtils {
    * Looks for a fitting starting position.
    *
    * @param start the start index
-   * @param len   the length
-   * @param end   the end index
+   * @param len the length
+   * @param end the end index
    * @return the new starting position
    */
   public static int fitStart(int start, int len, int end) {
@@ -862,7 +874,7 @@ public final class BeeUtils {
    *
    * @param s the string to convert
    * @return returns a corresponding Hex symbol for the specified String input, {@code null} if the
-   * specified String format is wrong
+   *         specified String format is wrong
    */
   public static char[] fromHex(String s) {
     if (!isHexString(s)) {
@@ -1178,7 +1190,7 @@ public final class BeeUtils {
    *
    * @param src the string to be inserted to
    * @param pos position to insert to
-   * @param c   character to insert
+   * @param c character to insert
    * @return a String with the character inserted in the specified position
    */
   public static String insert(String src, int pos, char c) {
@@ -1228,7 +1240,7 @@ public final class BeeUtils {
    * @param c1 first Collection's elements to be compared
    * @param c2 second Collection's elements to be compared
    * @return true if one of the collections contain at least one equal element from the other
-   * collection, otherwise false.
+   *         collection, otherwise false.
    */
   public static <T> boolean intersects(Collection<T> c1, Collection<T> c2) {
     boolean ok = false;
@@ -1277,10 +1289,10 @@ public final class BeeUtils {
   /**
    * Checks whether {@code d} is between {@code min} and {@code max}.
    *
-   * @param d            Double to check
-   * @param min          minimum value
+   * @param d Double to check
+   * @param min minimum value
    * @param minInclusive true if minimum value should be included to check
-   * @param max          maximum value
+   * @param max maximum value
    * @param maxInclusive true if maximum value should be included to check
    * @return true if d is between min and max
    */
@@ -1355,7 +1367,7 @@ public final class BeeUtils {
    *
    * @param s CharSequence to check
    * @return true if all characters in the sequence are digits, false if sequence is {@code null} or
-   * empty or contains at least one non-digit character.
+   *         empty or contains at least one non-digit character.
    */
   public static boolean isDigit(CharSequence s) {
     if (s == null) {
@@ -1679,10 +1691,10 @@ public final class BeeUtils {
    * Checks if the specified character is a prefix or a suffix.
    *
    * @param src a sequence to check in
-   * @param ch  a suffix of prefix to search for
+   * @param ch a suffix of prefix to search for
    * @return true if the first or the last character equals {@code pfx}, false if the sequence
-   * contains only one symbol and is suffix or prefix, and if the sequence does not contain
-   * nor suffix nor prefix
+   *         contains only one symbol and is suffix or prefix, and if the sequence does not contain
+   *         nor suffix nor prefix
    */
   public static boolean isPrefixOrSuffix(CharSequence src, char ch) {
     return (isPrefix(src, ch) || isSuffix(src, ch)) && !containsOnly(src, ch);
@@ -1754,7 +1766,7 @@ public final class BeeUtils {
    * {@code separator}.
    *
    * @param separator separator used to transform. Uses a default separator if none are specified.
-   * @param col       a Collection to transform.
+   * @param col a Collection to transform.
    * @return a String representation of the Collection {@code col}.
    */
   public static String join(String separator, Collection<?> col) {
@@ -1782,7 +1794,7 @@ public final class BeeUtils {
    *
    * @param sep separator
    * @return returns a string containing the string representation of each of {@code obj}, using the
-   * separator {@code sep} between each.
+   *         separator {@code sep} between each.
    */
   public static String join(String sep, Object first, Object second, Object... rest) {
     return doJoin(true, sep, first, second, rest);
@@ -2159,7 +2171,7 @@ public final class BeeUtils {
    * E.g the separator is {@code '.'}: {@code "this.IS.a.string"} is formed to
    * {@code "This Is A String"}.
    *
-   * @param s         the String to form
+   * @param s the String to form
    * @param separator used for separating {@code s}
    * @return a new formed String
    */
@@ -2234,7 +2246,7 @@ public final class BeeUtils {
   /**
    * Generates a random String with a specified length from the given characters.
    *
-   * @param len        length to generate.
+   * @param len length to generate.
    * @param characters characters to use for generating a new string
    * @return a generated random String
    */
@@ -2257,8 +2269,8 @@ public final class BeeUtils {
   /**
    * Generates a random String with a specified length from the given characters.
    *
-   * @param minLen  the minimum length of the string
-   * @param maxLen  the maximum length of the string
+   * @param minLen the minimum length of the string
+   * @param maxLen the maximum length of the string
    * @param minChar the minimum character to use for generation
    * @param maxChar the maximum character to use for generation
    * @return a generated random String
@@ -2336,7 +2348,7 @@ public final class BeeUtils {
    * Removes specified prefix and suffix from a String.
    *
    * @param str a value to remove the prefix and suffix from
-   * @param ch  a prefix and suffix to remove
+   * @param ch a prefix and suffix to remove
    * @return a String value with prefix and suffix removed.
    */
   public static String removePrefixAndSuffix(String str, char ch) {
@@ -2410,10 +2422,10 @@ public final class BeeUtils {
   /**
    * Replaces the specified part of the {@code src} with a {@code c} value.
    *
-   * @param src   the source String to replace
+   * @param src the source String to replace
    * @param start the start position of the replacement
-   * @param end   the end position of the replacement
-   * @param c     a String to replace with
+   * @param end the end position of the replacement
+   * @param c a String to replace with
    * @return a new String after the replacement.
    */
   public static String replace(String src, int start, int end, char c) {
@@ -2423,10 +2435,10 @@ public final class BeeUtils {
   /**
    * Replaces the specified part of the {@code src} with a {@code str} value.
    *
-   * @param src   the source string to replace
+   * @param src the source string to replace
    * @param start the start position of the replacement
-   * @param end   the end position of the replacement
-   * @param str   a string to replace with
+   * @param end the end position of the replacement
+   * @param str a string to replace with
    * @return a new String after the replacement.
    */
   public static String replace(String src, int start, int end, String str) {
@@ -2441,8 +2453,8 @@ public final class BeeUtils {
   /**
    * Replaces all occurrences of {@code search} with {@code replacement}.
    *
-   * @param text        the source text
-   * @param search      search phrase to replace
+   * @param text the source text
+   * @param search search phrase to replace
    * @param replacement a replacement for the search phrase
    * @return a String with replaced phrases.
    */
@@ -2453,10 +2465,10 @@ public final class BeeUtils {
   /**
    * Replaces the specified number of occurrences of {@code search} with {@code replacement}.
    *
-   * @param text        the source text
-   * @param search      search phrase to replace
+   * @param text the source text
+   * @param search search phrase to replace
    * @param replacement a replacement for the search phrase
-   * @param max         the number of occurrences to replace
+   * @param max the number of occurrences to replace
    * @return a String with replaced phrases.
    */
   public static String replace(String text, String search, String replacement, int max) {
@@ -2555,7 +2567,7 @@ public final class BeeUtils {
   /**
    * Rounds {@code x} with a specified scale {@code dec}.
    *
-   * @param x   a value to round
+   * @param x a value to round
    * @param dec rounding scale
    * @return a rounded value.
    */
@@ -2723,7 +2735,7 @@ public final class BeeUtils {
   /**
    * Splits {@code str} with a specified separator {@code separator}.
    *
-   * @param str       a string to split
+   * @param str a string to split
    * @param separator a separator used for splitting
    * @return a String array splitted using the separator.
    */

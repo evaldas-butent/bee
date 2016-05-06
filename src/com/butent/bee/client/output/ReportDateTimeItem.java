@@ -15,15 +15,15 @@ import java.util.EnumSet;
 
 public class ReportDateTimeItem extends ReportDateItem {
 
-  public ReportDateTimeItem(String name, String caption) {
-    super(name, caption);
+  public ReportDateTimeItem(String expression, String caption) {
+    super(expression, caption);
     setFormat(DateTimeFunction.DATETIME);
   }
 
   @Override
   public ReportValue evaluate(SimpleRow row) {
     ReportValue value;
-    DateTime date = row.getDateTime(getName());
+    DateTime date = row.getDateTime(getExpression());
 
     if (date != null) {
       String val = BeeUtils.toString(getValue(date));
@@ -59,10 +59,10 @@ public class ReportDateTimeItem extends ReportDateItem {
 
   @Override
   public boolean validate(SimpleRow row) {
-    if (!row.getRowSet().hasColumn(getName())) {
+    if (!row.getRowSet().hasColumn(getExpression())) {
       return true;
     }
-    return validate(row.getDateTime(getName()));
+    return validate(row.getDateTime(getExpression()));
   }
 
   @Override

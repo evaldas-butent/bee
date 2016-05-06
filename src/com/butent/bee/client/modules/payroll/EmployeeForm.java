@@ -9,10 +9,30 @@ import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.modules.payroll.PayrollConstants.WorkScheduleKind;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.rights.ModuleAndSub;
 
 class EmployeeForm extends AbstractFormInterceptor {
+
+  private static void refreshSchedule(FormView form, IsRow row, String widgetName,
+      WorkScheduleKind kind) {
+
+    Widget container = form.getWidgetByName(widgetName, false);
+    if (container instanceof SummaryProxy) {
+      SummaryProxy panel = (SummaryProxy) container;
+
+      if (DataUtils.hasId(row)) {
+        EmployeeSchedule widget = new EmployeeSchedule(row.getId(), kind);
+        panel.setWidget(widget);
+
+        widget.refresh();
+
+      } else if (!panel.isEmpty()) {
+        panel.clear();
+      }
+    }
+  }
 
   EmployeeForm() {
   }
@@ -20,20 +40,8 @@ class EmployeeForm extends AbstractFormInterceptor {
   @Override
   public void afterRefresh(FormView form, IsRow row) {
     if (BeeKeeper.getUser().isModuleVisible(ModuleAndSub.of(Module.PAYROLL))) {
-      Widget container = form.getWidgetByName("WorkSchedule", false);
-      if (container instanceof SummaryProxy) {
-        SummaryProxy panel = (SummaryProxy) container;
-
-        if (DataUtils.hasId(row)) {
-          EmployeeSchedule widget = new EmployeeSchedule(row.getId());
-          panel.setWidget(widget);
-
-          widget.refresh();
-
-        } else if (!panel.isEmpty()) {
-          panel.clear();
-        }
-      }
+      refreshSchedule(form, row, "WorkSchedule", WorkScheduleKind.PLANNED);
+      refreshSchedule(form, row, "TimeSheet", WorkScheduleKind.ACTUAL);
     }
 
     super.afterRefresh(form, row);

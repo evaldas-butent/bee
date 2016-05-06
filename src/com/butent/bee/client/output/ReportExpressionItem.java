@@ -31,6 +31,10 @@ public class ReportExpressionItem extends ReportItem {
     super(BeeUtils.randomString(10), caption);
   }
 
+  public ReportExpressionItem append(String sep, ReportItem item) {
+    return addItem(expression, sep, item);
+  }
+
   @Override
   public void deserialize(String data) {
     Map<String, String> map = Codec.deserializeMap(data);
@@ -75,11 +79,11 @@ public class ReportExpressionItem extends ReportItem {
   }
 
   @Override
-  public Widget getExpressionWidget(Report report) {
+  public Widget getExpressionWidget(List<ReportItem> reportItems) {
     Flow container = new Flow(getStyle() + "-expression");
     temporaryExpression.clear();
     temporaryExpression.addAll(expression);
-    render(container, report);
+    render(container, reportItems);
     return container;
   }
 
@@ -137,22 +141,31 @@ public class ReportExpressionItem extends ReportItem {
     return serialize(Codec.beeSerialize(Collections.singletonMap(EXPRESSION, list)));
   }
 
-  private static void addItem(List<Pair<String, ReportItem>> list, String sep, ReportItem item) {
+  private ReportExpressionItem addItem(List<Pair<String, ReportItem>> list, String sep,
+      ReportItem item) {
     if (item != null) {
-      list.add(Pair.of(encodeSpaces(BeeUtils.nvl(sep, BeeConst.STRING_SPACE)), item));
+      list.add(Pair.of(encodeSpaces(BeeUtils.nvl(sep, BeeConst.STRING_SPACE)),
+          ReportItem.restore(item.serialize())));
     }
+    return this;
   }
 
   private static String encodeSpaces(String value) {
     return value.replace(BeeConst.CHAR_SPACE, BeeConst.CHAR_NBSP);
   }
 
-  private void render(final Flow container, final Report report) {
-    final Runnable refresh = () -> render(container, report);
+  private void render(Flow container, List<ReportItem> reportItems) {
+    Runnable refresh = () -> render(container, reportItems);
     container.clear();
+    List<ReportItem> choiceItems = new ArrayList<>();
 
+    for (ReportItem item : reportItems) {
+      if (!(item instanceof ReportNumericItem)) {
+        choiceItems.add(item);
+      }
+    }
     for (int i = 0; i < temporaryExpression.size(); i++) {
-      final Pair<String, ReportItem> pair = temporaryExpression.get(i);
+      Pair<String, ReportItem> pair = temporaryExpression.get(i);
 
       if (i > 0) {
         Label sep = new Label(pair.getA());
@@ -169,10 +182,11 @@ public class ReportExpressionItem extends ReportItem {
         });
         container.add(sep);
       }
-      container.add(ReportItem.renderDnd(pair.getB(), temporaryExpression, i, report, refresh));
+      container.add(ReportItem.renderDnd(pair.getB(), temporaryExpression, i, choiceItems,
+          refresh));
     }
     CustomSpan add = new CustomSpan(STYLE_ADD);
-    add.addClickHandler(event -> chooseItem(report, false, item -> {
+    add.addClickHandler(event -> chooseItem(choiceItems, false, item -> {
       addItem(temporaryExpression, null, item);
       refresh.run();
     }));

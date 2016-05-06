@@ -31,34 +31,40 @@
       <TabbedPages resizable="false" name="TabbedPages" >
         <page>
           <text>=mainInformation</text>
-    
+
           <FlowPanel class="flexBox-horizontal bee-crm-taskEdit-form">
             <FlowPanel style="margin-left: 5px; overflow:scroll; min-width:650px;">
               <Table kind="controls" style="&tbl;" cellStyle="&cell;">
                 <col index="0" cellStyle="&col1;" />
-          
+
                 <row>
                   <Label for="Summary" />
                   <InputText source="Summary" style="&inp2x;" autocomplete="true" visible="true" maxLength="70" />
                 </row>
-          
+
                 <row for="Description">
                   <Label for="Description" />
-                  <InputArea source="Description" style="&inp2x; height: 60px;" name="InputArea" />
+                  <InputArea source="Description" style="&inp2x; height: 60px;" />
                 </row>
               </Table>
-          
+
               <FileGroup name="Files" data="TaskFiles" visibleColumns="icon name size createdoc"/>
-          
+
               <Table kind="controls" style="&tbl;" cellStyle="&cell;">
                 <col index="0" cellStyle="&col1;" />
-          
+
+                <row>
+                  <Label for="Owner" />
+                  <DataSelector source="Owner" editSource="OwnerPerson" style="&inp2x;" 
+                    readOnly="true" />
+                </row>
+
                 <row>
                   <Label for="Executor" />
                   <DataSelector source="Executor" editSource="ExecutorPerson" style="&inp2x;" 
                     readOnly="true" />
                 </row>
-          
+
                 <row>
                   <Label text="=crmTaskObservers" />
                   <MultiSelector name="Observers" viewName="Users" property="Observers" renderColumns="FirstName LastName"
@@ -66,7 +72,7 @@
                     label="=crmTaskObservers" />
                 </row>
                 <row>
-                  <Label text="=project" style="&top1;">
+                  <Label text="=project">
                     &forProject;
                   </Label>
                   <DataSelector source="Project" renderColumns="ProjectName"
@@ -75,7 +81,7 @@
                   </DataSelector>
                 </row>
                 <row>
-                  <Label text="=prjStage" style="&top1;">
+                  <Label text="=prjStage">
                     &forProject;
                   </Label>
                   <DataSelector source="ProjectStage" renderColumns="StageName" 
@@ -84,37 +90,37 @@
                   </DataSelector>
                 </row>
               </Table>
-          
+
               <Table kind="controls" style="&tbl;" cellStyle="&cell;" >
                 <col index="0" cellStyle="&col1;" />
-                
+
                 <row>
                   <Label for="Priority" />
                   <Radio source="Priority" />
                 </row>
-                
+
                 <row>
                   <Label for="Status" />
                   <ListBox source="Status" style="&inp2;" readOnly="true" visible="true" />
                 </row>
-                
+
                 <row>
                   <Label for="Type" class="bee-required" />
                   <DataSelector source="Type" name="Type" renderColumns="TypeName" newRowEnabled="true" style="&inp2x;"
                     disablable="true" required="true" />
                 </row>
-                
+
                 <row>
                   <Label for="Product" name="Product" />
                   <DataSelector source="Product" renderColumns="ProductName" newRowEnabled="true" style="&inp2x;" filter="Visible" />
                 </row>
-                
+
                 <row>
                  <Label for="Company" class="bee-required" />
                   <DataSelector source="Company" editPopup="true" newRowEnabled="true" choiceColumns="Name TypeName"
                       renderColumns="CompanyName CompanyTypeName" style="&inp2x;" required="true" />
                 </row>
-                
+
                 <row>
                   <Label for="Contact" />
                   <DataSelector source="Contact" editPopup="true" newRowEnabled="true" style="&inp2x;"
@@ -122,26 +128,26 @@
                     choiceColumns="FirstName LastName CompanyName" options="Company" />
                 </row>
               </Table>
-                
+
               <Table kind="controls" style="&tbl; margin-top: 20px;" cellStyle="&cell;">
                 <col index="0" cellStyle="&col1;" />
                 <col index="2" cellStyle="&col3;" />
-          
+
                 <row>
                   <Label for="StartTime" />
                   <InputDateTime source="StartTime" style="&inp2;" readOnly="true" visible="true" />
-          
+
                   <Label for="FinishTime" />
                   <InputDateTime source="FinishTime" style="&inp2;" readOnly="true" />
                 </row>
-                
+
                 <row>
                    <br />
                    <br />
                    <br />
                   <FlowPanel name="TaskExtensions" style="&inp2;" />                  
                 </row>
-                
+
                 <row>
                   <Label for="ExpectedDuration" />
                   <InputTime name="ExpectedDuration" source="ExpectedDuration" step="&timeStep;" style="width: 90px;" />
@@ -152,7 +158,7 @@
                       style="&timeStyle;" readOnly="true" />
                   </FlowPanel>
                 </row>
-          
+
                 <row>
                   <Label for="Reminder" />
                   <DataSelector source="Reminder" renderColumns="ReminderName" newRowEnabled="false"
@@ -163,7 +169,7 @@
                     <InputTimeOfDay name="Reminder_Time" step="&timeStep;" style="&timeStyle;" />
                   </FlowPanel>
                 </row>
-          
+
                 <row>
                   <Label />
                   <CheckBox name="Mail" text="=mailNotify" />
@@ -171,16 +177,16 @@
                   <CheckBox source="PrivateTask" />
                 </row>
               </Table>
-              
+
               <FlowPanel name="TaskDurations" data="TaskDurations" 
                 style="overflow: auto; width: 524px; margin-top: 10px;" />
             </FlowPanel>
           </FlowPanel>
         </page>
-        
+
         <page>
           <text>=relatedInformation</text>
-    
+
           <FlowPanel class="flexBox-horizontal bee-crm-taskEdit-form">
             <FlowPanel style="margin-left: 5px;">
                <FlowPanel style="&section;" data="Relations" for="Company" module="Classifiers.Contacts">
@@ -188,39 +194,39 @@
                   <MultiSelector viewName="Companies" property="Companies" renderColumns="Name TypeName"
                           newRowEnabled="true" style="&inp2x;" disablable="true" summarize="true"/>
                 </FlowPanel>
-    
+
               <FlowPanel style="&section;" data="Relations" for="Person" module="Classifiers.Contacts">
                 <Label text="=persons" style="&top1;" />
                 <MultiSelector viewName="Persons" property="Persons" renderColumns="FirstName LastName"
                   newRowEnabled="true" style="&inp2x;" disablable="true" summarize="true"/>
               </FlowPanel>
-    
+
               <FlowPanel style="&section;" data="Relations" for="Document" module="Documents">
                 <Label text="=documents" style="&top1;" />
                 <MultiSelector viewName="Documents" property="Documents" renderColumns="Name Number RegistrationNumber DocumentDate"
                   newRowEnabled="true" style="&inp2x;" disablable="true" summarize="true"/>
               </FlowPanel>
-    
+
               <FlowPanel style="&section;" data="Relations" for="Appointment" module="Calendar">
                 <Label text="=calAppointments" style="&top1;" />
                 <MultiSelector viewName="Appointments" property="Appointments"
                   renderColumns="Summary" choiceColumns="Summary StartDateTime EndDateTime"
                   newRowEnabled="true" style="&inp2x;" disablable="true" summarize="true"/>
               </FlowPanel>
-    
+
               <FlowPanel style="&section;" data="Relations" for="Discussion" module="Discussions">
                 <Label text="=discussions" style="&top1;" />
                 <MultiSelector viewName="Discussions" property="Discussions"
                   renderColumns="Subject" newRowEnabled="true" style="&inp2x;" disablable="true" summarize="true"/>
               </FlowPanel>
-    
+
               <FlowPanel style="&section;" data="Relations" for="ServiceObject" module="Service">
                 <Label text="=svcObjects" style="&top1;" />
                 <MultiSelector viewName="ServiceObjects" property="ServiceObjects"
                   renderColumns="Address" choiceColumns="Address CustomerName"
                   newRowEnabled="false" style="&inp2x;" disablable="true" summarize="true"/>
               </FlowPanel>
-    
+
               <FlowPanel style="&section;" data="Relations" for="Project" module="Projects">
                 <Label text="=projects" style="&top1;" />
                 <DataSelector viewName="Projects" property="Projects"
@@ -235,12 +241,21 @@
                   choiceColumns="Id Summary ExecutorFirstName ExecutorLastName StartTime FinishTime"
                   newRowEnabled="true" style="&inp2x;" disablable="true" summarize="true"/>
               </FlowPanel>
+
               <FlowPanel style="&section;" data="Relations" for="Request" module="Tasks">
                 <Label text="=crmRequests" style="&top1;" />
                 <MultiSelector viewName="Requests" property="Requests"
                   renderColumns="Id Summary FirstName LastName" 
                   choiceColumns="Id Summary FirstName LastName"
                   newRowEnabled="false" style="&inp2x;" disablable="true" summarize="true"/>
+              </FlowPanel>
+
+              <FlowPanel style="&section;" data="Relations" module="Mail">
+                <Label text="=mails" style="&top1;" />
+                <ChildSelector viewName="Messages" childTable="Relations"
+                  targetRelColumn="Task" sourceRelColumn="Message"
+                  renderColumns="Date Subject"
+                  label="=mails" style="&inp2x;" readOnly="true" summarize="true" />
               </FlowPanel>
             </FlowPanel>
           </FlowPanel>
@@ -253,6 +268,6 @@
     </center>
   </SplitPanel>
   <f:rowMessage>
-    <ui:function>return "&lt;span style&#61;\"font-weight:bold; font-size:23px;\"&gt;" + row.Summary + "&lt;&#47;span&gt;";</ui:function>
+    <ui:function>return "&lt;span style&#61;\"font-size:23px; color: #484849; font-weight: lighter;\"&gt;" + row.Summary + "&lt;&#47;span&gt;";</ui:function>
   </f:rowMessage>
 </f:Form>

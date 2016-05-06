@@ -73,6 +73,16 @@ public final class DataUtils {
 
   private static int maxInitialRowSetSize = 50;
 
+  public static void addNotNullLongs(Set<Long> target, BeeRowSet rowSet, String columnId) {
+    Assert.notNull(target);
+    Assert.notNull(rowSet);
+
+    int index = rowSet.getColumnIndex(columnId);
+    if (!BeeConst.isUndef(index) && !rowSet.isEmpty()) {
+      BeeUtils.addAllNotNull(target, rowSet.getDistinctLongs(index));
+    }
+  }
+
   public static long assertId(Long id) {
     Assert.isTrue(isId(id), "invalid row id");
     return id;
