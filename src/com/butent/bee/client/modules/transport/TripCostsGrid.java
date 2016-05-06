@@ -43,6 +43,7 @@ import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.trade.Totalizer;
 import com.butent.bee.shared.modules.trade.TradeConstants;
+import com.butent.bee.shared.modules.transport.TransportUtils;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.ArrayUtils;
@@ -103,13 +104,7 @@ public class TripCostsGrid extends AbstractGridInterceptor
   public DeleteMode getDeleteMode(GridPresenter presenter,
       IsRow activeRow, Collection<RowInfo> selectedRows, DeleteMode defMode) {
 
-    if (activeRow.getDateTime(DataUtils.getColumnIndex("Exported",
-        presenter.getDataColumns())) != null && !BeeKeeper.getUser().isAdministrator()) {
-
-      presenter.getGridView().notifyWarning(Localized.dictionary().rowIsNotRemovable());
-      return DeleteMode.CANCEL;
-    }
-    return DeleteMode.SINGLE;
+    return TransportUtils.checkExported(presenter, activeRow);
   }
 
   @Override

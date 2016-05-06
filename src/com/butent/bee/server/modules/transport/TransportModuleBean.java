@@ -1091,7 +1091,7 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
     String remoteAddress = prm.getText(PRM_ERP_ADDRESS);
     String remoteLogin = prm.getText(PRM_ERP_LOGIN);
     String remotePassword = prm.getText(PRM_ERP_PASSWORD);
-    SimpleRowSet res = null;
+    SimpleRowSet res;
 
     try {
       res = ButentWS.connect(remoteAddress, remoteLogin, remotePassword).importFin(sb.toString());
@@ -1119,7 +1119,7 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
     }
     if (!exported.isEmpty()) {
       qs.updateData(new SqlUpdate(TBL_TRIP_COSTS)
-          .addConstant("Exported", TimeUtils.nowSeconds())
+          .addConstant(COL_TRADE_EXPORTED, TimeUtils.nowSeconds())
           .setWhere(sys.idInList(TBL_TRIP_COSTS, exported)));
     }
     return ResponseObject.response(answer);
@@ -3125,7 +3125,8 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
     sql.append(" FROM tr_remon")
         .append(" INNER JOIN prekes ON tr_remon.preke=prekes.preke")
         .append(" INNER JOIN tipai ON prekes.tipas=tipai.tipas AND tipai.tip_kod IS NOT NULL")
-        .append(" WHERE car_id=" + externalId);
+        .append(" WHERE car_id=")
+        .append(externalId);
 
     cols.put("artikulas", "apyv_gr.artikulas");
     cols.put("mato_vnt", "apyv_gr.mato_vien");
@@ -3158,7 +3159,7 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
     String remoteAddress = prm.getText(PRM_ERP_ADDRESS);
     String remoteLogin = prm.getText(PRM_ERP_LOGIN);
     String remotePassword = prm.getText(PRM_ERP_PASSWORD);
-    SimpleRowSet rs = null;
+    SimpleRowSet rs;
 
     try {
       rs = ButentWS.connect(remoteAddress, remoteLogin, remotePassword)
@@ -3340,7 +3341,7 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
 
   private void importEmployees() {
     long historyId = sys.eventStart(PRM_SYNC_ERP_EMPLOYEES);
-    SimpleRowSet rs = null;
+    SimpleRowSet rs;
 
     Long driverPosition = prm.getRelation(PRM_ERP_DRIVER_POSITION);
     Long company = prm.getRelation(PRM_COMPANY);
@@ -3388,7 +3389,7 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
     int posNew = 0;
     int deptNew = 0;
     String tabNr = null;
-    String cardsInfo = null;
+    String cardsInfo;
 
     try {
       for (SimpleRow row : rs) {
@@ -3634,7 +3635,7 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
 
   private void importVehicles() {
     long historyId = sys.eventStart(PRM_SYNC_ERP_VEHICLES);
-    SimpleRowSet rs = null;
+    SimpleRowSet rs;
 
     try {
       rs = ButentWS.connect(prm.getText(PRM_ERP_ADDRESS), prm.getText(PRM_ERP_LOGIN),

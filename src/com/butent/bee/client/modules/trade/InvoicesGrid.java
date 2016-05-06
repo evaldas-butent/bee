@@ -20,13 +20,16 @@ import com.butent.bee.client.widget.Image;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.trade.TradeConstants;
+import com.butent.bee.shared.modules.transport.TransportUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -47,6 +50,13 @@ public class InvoicesGrid extends AbstractGridInterceptor implements ClickHandle
         }
       }
     });
+  }
+
+  @Override
+  public DeleteMode getDeleteMode(GridPresenter presenter,
+      IsRow activeRow, Collection<RowInfo> selectedRows, DeleteMode defMode) {
+
+    return TransportUtils.checkExported(presenter, activeRow);
   }
 
   @Override
