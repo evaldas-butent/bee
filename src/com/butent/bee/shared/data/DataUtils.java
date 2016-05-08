@@ -225,6 +225,42 @@ public final class DataUtils {
     return rs;
   }
 
+  public static BeeRowSet createRowSetForInsert(BeeRowSet input) {
+    if (input == null) {
+      return null;
+    }
+
+    List<BeeColumn> newColumns = new ArrayList<>();
+    List<Integer> indexes = new ArrayList<>();
+
+    for (int i = 0; i < input.getNumberOfColumns(); i++) {
+      BeeColumn column = input.getColumn(i);
+
+      if (column.isEditable()) {
+        newColumns.add(column);
+        indexes.add(i);
+      }
+    }
+
+    if (newColumns.isEmpty()) {
+      return null;
+    }
+
+    BeeRowSet result = new BeeRowSet(input.getViewName(), newColumns);
+
+    for (BeeRow oldRow : input) {
+      List<String> values = new ArrayList<>();
+      for (int index : indexes) {
+        values.add(oldRow.getString(index));
+      }
+
+      BeeRow newRow = new BeeRow(DataUtils.NEW_ROW_ID, DataUtils.NEW_ROW_VERSION, values);
+      result.addRow(newRow);
+    }
+
+    return result;
+  }
+
   public static String defaultColumnId(int index) {
     if (BeeUtils.betweenExclusive(index, 0, 1000)) {
       return "col" + BeeUtils.toLeadingZeroes(index, 3);

@@ -19,6 +19,7 @@ import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.IdPair;
 import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.i18n.Localized;
@@ -38,6 +39,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 class EmployeeSchedule extends WorkScheduleWidget {
@@ -96,7 +98,7 @@ class EmployeeSchedule extends WorkScheduleWidget {
             if (DataUtils.isId(obj)) {
               Long subst = row.getLong(substIndex);
 
-              if (DataUtils.isId(subst)) {
+              if (DataUtils.isId(subst) && !Objects.equals(obj, subst)) {
                 substWs.put(obj, subst);
               } else {
                 mainWs.add(obj);
@@ -121,7 +123,7 @@ class EmployeeSchedule extends WorkScheduleWidget {
             if (DataUtils.isId(obj)) {
               Long subst = row.getLong(substIndex);
 
-              if (DataUtils.isId(subst)) {
+              if (DataUtils.isId(subst) && !Objects.equals(obj, subst)) {
                 if (isSubstitutionEnabled()) {
                   substEo.put(obj, subst);
                 }
@@ -231,7 +233,7 @@ class EmployeeSchedule extends WorkScheduleWidget {
   }
 
   @Override
-  protected Widget renderAppender(Collection<Long> partIds, YearMonth ym,
+  protected Widget renderAppender(Collection<IdPair> partIds, YearMonth ym,
       String selectorStyleName) {
 
     Flow panel = new Flow();
@@ -253,7 +255,14 @@ class EmployeeSchedule extends WorkScheduleWidget {
     DomUtils.setPlaceholder(selector, Localized.dictionary().newObject());
 
     if (!BeeUtils.isEmpty(partIds)) {
-      selector.getOracle().setExclusions(partIds);
+      Set<Long> ids = new HashSet<>();
+      for (IdPair pair : partIds) {
+        if (!pair.hasB()) {
+          ids.add(pair.getA());
+        }
+      }
+
+      selector.getOracle().setExclusions(ids);
     }
 
     selector.addSelectorHandler(event -> {

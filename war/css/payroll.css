@@ -321,6 +321,71 @@
   display: none;
 }
 
+.bee-payroll-ws-fetch-table-wrapper {
+  max-height: 75vh;
+  overflow: auto;
+}
+.bee-payroll-ws-fetch-table {
+  border-collapse: collapse;
+}
+.bee-payroll-ws-fetch-table td {
+  border: 1px solid #ccc;
+  padding: 2px;
+}
+
+.bee-payroll-ws-fetch-selection-panel {
+  display: flex;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  flex-direction: row;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  justify-content: space-between;
+  -webkit-justify-content: space-between;
+  -ms-flex-pack: justify;
+}
+.bee-payroll-ws-fetch-row-toggle,
+.bee-payroll-ws-fetch-col-toggle {
+  font-size: larger;
+  cursor: pointer;
+  display: inline-block;
+}
+.bee-payroll-ws-fetch-row-toggle {
+  margin-left: 1em;
+}
+.bee-payroll-ws-fetch-col-toggle {
+  margin-right: 1em;
+}
+
+.bee-payroll-ws-fetch-row-label,
+.bee-payroll-ws-fetch-col-label {
+  cursor: pointer;
+}
+
+.bee-payroll-ws-fetch-row-selected .bee-payroll-ws-fetch-row-label-cell,
+.bee-payroll-ws-fetch-col-selected,
+.bee-payroll-ws-fetch-row-selected .bee-payroll-ws-fetch-cell-selected.bee-payroll-ws-fetch-day-content-cell {
+  background-color: #80c4f9;
+}
+
+.bee-payroll-ws-fetch-command-panel {
+  display: flex;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  flex-direction: row;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  margin-top: 1vh;
+}
+.bee-payroll-ws-fetch-submit {
+  margin-left: auto;
+  margin-right: 2em;
+}
+.bee-payroll-ws-fetch-cancel {
+  margin-left: 2em;
+  margin-right: auto;
+}
+
 .bee-payroll-earn-month-widget {
   display: inline-block;
   margin-left: 1em;
