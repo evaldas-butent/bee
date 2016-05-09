@@ -1375,6 +1375,8 @@ public interface Dictionary {
 
   default String days() {return g("days");}
 
+  default String daysShort() {return g("daysShort");}
+
   default String debt() {return g("debt");}
 
   default String defaultBankAccount() {return g("defaultBankAccount");}
@@ -2671,6 +2673,8 @@ public interface Dictionary {
   default String holidays() {return g("holidays");}
 
   default String hour() {return g("hour");}
+
+  default String hours() {return g("hours");}
 
   default String hoursByCompanies() {return g("hoursByCompanies");}
 

@@ -240,6 +240,13 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
   private static final String STYLE_OVERLAP_WARNING = STYLE_PREFIX + "overlap-warn";
   private static final String STYLE_OVERLAP_ERROR = STYLE_PREFIX + "overlap-err";
 
+  private static final String STYLE_WD_LABEL = STYLE_PREFIX + "wd-label";
+  private static final String STYLE_WH_LABEL = STYLE_PREFIX + "wh-label";
+  private static final String STYLE_WD_SUM = STYLE_PREFIX + "wd-sum";
+  private static final String STYLE_WH_SUM = STYLE_PREFIX + "wh-sum";
+  private static final String STYLE_WD_TOTAL = STYLE_PREFIX + "wd-total";
+  private static final String STYLE_WH_TOTAL = STYLE_PREFIX + "wh-total";
+
   private static final String STYLE_TRC_DIALOG = STYLE_PREFIX + "trc-dialog";
   private static final String STYLE_TRC_PANEL = STYLE_PREFIX + "trc-panel";
   private static final String STYLE_TRC_HEADER = STYLE_PREFIX + "trc-header";
@@ -293,6 +300,8 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
 
   private static final String KEY_PART = "part";
   private static final String KEY_SUBST = "subst";
+
+  private static final String KEY_MILLIS = "millis";
 
   private static final String DATA_TYPE_WS_ITEM = "WorkScheduleItem";
 
@@ -703,6 +712,7 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
     }
 
     renderFooters(ids, r);
+    updateSums();
 
     SummaryChangeEvent.maybeFire(this);
   }
@@ -1168,6 +1178,33 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
     return (content instanceof Flow) ? (Flow) content : null;
   }
 
+  private Table<Integer, Integer, Long> getDurations() {
+    Table<Integer, Integer, Long> durations = HashBasedTable.create();
+
+    List<Element> sources = Selectors.getElementsWithDataProperty(table.getElement(), KEY_MILLIS);
+
+    for (Element source : sources) {
+      Long millis = DomUtils.getDataPropertyLong(source, KEY_MILLIS);
+
+      TableCellElement cell = DomUtils.getParentCell(source, true);
+      Integer day = (cell == null) ? null : DomUtils.getDataPropertyInt(cell, KEY_DAY);
+
+      TableRowElement rowElement = (cell == null) ? null : DomUtils.getParentRow(cell, false);
+      Integer r = (rowElement == null) ? null : rowElement.getRowIndex();
+
+      if (BeeUtils.isPositive(r) && BeeUtils.isPositive(day) && BeeUtils.isPositive(millis)) {
+        Long value = durations.get(r, day);
+        if (BeeUtils.isPositive(value)) {
+          millis += value;
+        }
+
+        durations.put(r, day, millis);
+      }
+    }
+
+    return durations;
+  }
+
   private Element getMonthElement(YearMonth ym) {
     return Selectors.getElementByDataProperty(this, KEY_YM, ym.serialize());
   }
@@ -1542,7 +1579,9 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
           public void onSuccess(BeeRow result) {
             wsData.addRow(result);
             updateDayContent(partIds, date);
+
             checkOverlap();
+            updateSums();
 
             SummaryChangeEvent.maybeFire(WorkScheduleWidget.this);
           }
@@ -1563,7 +1602,6 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
 
         Queries.update(viewName, source.getId(), source.getVersion(),
             columns, oldValues, newValues, null, new RowCallback() {
-
               @Override
               public void onSuccess(BeeRow result) {
                 wsData.removeRowById(wsId);
@@ -1573,8 +1611,8 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
                 updateDayContent(partIds, date);
 
                 checkOverlap();
+                updateSums();
               }
-
             });
       }
     }
@@ -1737,7 +1775,9 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
             wsData.removeRowById(wsId);
 
             updateDayContent(partIds, date);
+
             checkOverlap();
+            updateSums();
 
             SummaryChangeEvent.maybeFire(WorkScheduleWidget.this);
           }
@@ -2086,8 +2126,17 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
       controlPanel.add(modePanel);
     }
 
-    table.setWidgetAndStyle(r, DAY_START_COL, controlPanel, STYLE_CONTROL_PANEL);
-    table.getCellFormatter().setColSpan(r, DAY_START_COL, activeMonth.getLength());
+    int c = DAY_START_COL;
+    table.setWidgetAndStyle(r, c, controlPanel, STYLE_CONTROL_PANEL);
+    table.getCellFormatter().setColSpan(r, c, activeMonth.getLength());
+
+    c++;
+    CustomDiv wdTotal = new CustomDiv();
+    table.setWidgetAndStyle(r, c, wdTotal, STYLE_WD_TOTAL);
+
+    c++;
+    CustomDiv whTotal = new CustomDiv();
+    table.setWidgetAndStyle(r, c, whTotal, STYLE_WH_TOTAL);
   }
 
   private void renderHeaders(List<YearMonth> months) {
@@ -2114,14 +2163,14 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
     headerPanel.add(print);
 
     table.setWidgetAndStyle(HEADER_ROW, 0, headerPanel, STYLE_HEADER_PANEL);
-    table.getCellFormatter().setColSpan(HEADER_ROW, 0, DAY_START_COL + days);
+    table.getCellFormatter().setColSpan(HEADER_ROW, 0, DAY_START_COL + days + 2);
 
     Widget monthSelector = renderMonthSelector();
     table.setWidgetAndStyle(MONTH_ROW, MONTH_COL - 1, monthSelector, STYLE_MONTH_SELECTOR);
 
     Widget monthPanel = renderMonths(months);
     table.setWidgetAndStyle(MONTH_ROW, MONTH_COL, monthPanel, STYLE_MONTH_PANEL);
-    table.getCellFormatter().setColSpan(MONTH_ROW, MONTH_COL, days);
+    table.getCellFormatter().setColSpan(MONTH_ROW, MONTH_COL, days + 2);
 
     JustDate date = activeMonth.getDate();
 
@@ -2140,6 +2189,12 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
       addDateStyles(DAY_ROW, c, date, day == td);
       table.getCellFormatter().getElement(DAY_ROW, c).setTitle(Format.renderDateFull(date));
     }
+
+    Label wdLabel = new Label(Localized.dictionary().daysShort());
+    table.setWidgetAndStyle(DAY_ROW, DAY_START_COL + days, wdLabel, STYLE_WD_LABEL);
+
+    Label whLabel = new Label(Localized.dictionary().hours());
+    table.setWidgetAndStyle(DAY_ROW, DAY_START_COL + days + 1, whLabel, STYLE_WH_LABEL);
   }
 
   private Widget renderInputMode() {
@@ -2314,6 +2369,8 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
     String partName = getPartitionCaption(partIds.getA());
     String substLabel = getSubstituteForLabel(partIds.getB());
 
+    String partTitle = BeeUtils.buildLines(partName, substLabel);
+
     for (int i = 0; i < days; i++) {
       int day = i + 1;
       date.setDom(day);
@@ -2328,13 +2385,21 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
 
       TableCellElement cell = table.getCellFormatter().getElement(r, c);
       DomUtils.setDataProperty(cell, KEY_DAY, day);
-      cell.setTitle(BeeUtils.buildLines(partName, substLabel, Format.renderDateLong(date),
+      cell.setTitle(BeeUtils.buildLines(partTitle, Format.renderDateLong(date),
           Format.renderDayOfWeek(date), calendarInfo.getSubTitle()));
 
       if (calendarInfo.isInactive(day)) {
         cell.addClassName(STYLE_INACTIVE_DAY);
       }
     }
+
+    CustomDiv wdSum = new CustomDiv();
+    wdSum.setTitle(partTitle);
+    table.setWidgetAndStyle(r, DAY_START_COL + days, wdSum, STYLE_WD_SUM);
+
+    CustomDiv whSum = new CustomDiv();
+    whSum.setTitle(partTitle);
+    table.setWidgetAndStyle(r, DAY_START_COL + days + 1, whSum, STYLE_WH_SUM);
   }
 
   private DndSource renderSheduleItem(BeeRow item) {
@@ -2354,9 +2419,11 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
           widget.addStyleName(extendStyleName(STYLE_SCHEDULE_TR, trCode));
         }
 
+        String from = DataUtils.getString(timeRanges, trRow, COL_TR_FROM);
+        String until = DataUtils.getString(timeRanges, trRow, COL_TR_UNTIL);
+
         String title = BeeUtils.buildLines(DataUtils.getString(timeRanges, trRow, COL_TR_NAME),
-            TimeUtils.renderPeriod(DataUtils.getString(timeRanges, trRow, COL_TR_FROM),
-                DataUtils.getString(timeRanges, trRow, COL_TR_UNTIL)),
+            TimeUtils.renderPeriod(from, until),
             DataUtils.getString(timeRanges, trRow, COL_TR_DESCRIPTION), note);
         if (!BeeUtils.isEmpty(title)) {
           widget.setTitle(title);
@@ -2365,6 +2432,12 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
         UiHelper.setColor(widget,
             DataUtils.getString(timeRanges, trRow, AdministrationConstants.COL_BACKGROUND),
             DataUtils.getString(timeRanges, trRow, AdministrationConstants.COL_FOREGROUND));
+
+        long millis = PayrollUtils.getMillis(from, until,
+            DataUtils.getString(timeRanges, trRow, COL_TR_DURATION));
+        if (millis > 0) {
+          DomUtils.setDataProperty(widget.getElement(), KEY_MILLIS, millis);
+        }
 
         return widget;
       }
@@ -2426,6 +2499,11 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
         panel.add(widget);
       }
 
+      long millis = PayrollUtils.getMillis(from, until, duration);
+      if (millis > 0) {
+        DomUtils.setDataProperty(panel.getElement(), KEY_MILLIS, millis);
+      }
+
       return panel;
     }
 
@@ -2435,6 +2513,11 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
 
       if (!BeeUtils.isEmpty(note)) {
         widget.setTitle(note);
+      }
+
+      Long time = TimeUtils.parseTime(duration);
+      if (BeeUtils.isPositive(time)) {
+        DomUtils.setDataProperty(widget.getElement(), KEY_MILLIS, time);
       }
 
       return widget;
@@ -2492,10 +2575,13 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
       public void onSuccess(BeeRow result) {
         if (wsData == null) {
           updateSchedule(partIds, date);
+
         } else {
           wsData.addRow(result);
           updateDayContent(partIds, date);
+
           checkOverlap();
+          updateSums();
 
           SummaryChangeEvent.maybeFire(WorkScheduleWidget.this);
         }
@@ -2568,7 +2654,10 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
 
             if (updateDayContent(partIds, date)) {
               checkOverlap();
+              updateSums();
+
               SummaryChangeEvent.maybeFire(WorkScheduleWidget.this);
+
             } else {
               render();
             }
@@ -2598,6 +2687,61 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
         if (!oldElements.contains(el)) {
           el.addClassName(styleName);
         }
+      }
+    }
+  }
+
+  private void updateSums() {
+    Table<Integer, Integer, Long> durations = getDurations();
+
+    List<Element> wdSums = Selectors.getElementsByClassName(table.getElement(), STYLE_WD_SUM);
+    for (Element wdSum : wdSums) {
+      Integer r = DomUtils.getParentRowIndex(wdSum);
+
+      if (r != null && durations.containsRow(r)) {
+        wdSum.setInnerText(BeeUtils.toString(durations.row(r).size()));
+      } else {
+        wdSum.setInnerText(BeeConst.STRING_EMPTY);
+      }
+    }
+
+    List<Element> whSums = Selectors.getElementsByClassName(table.getElement(), STYLE_WH_SUM);
+    for (Element whSum : whSums) {
+      Integer r = DomUtils.getParentRowIndex(whSum);
+
+      if (r != null && durations.containsRow(r)) {
+        long millis = 0L;
+        for (Long value : durations.row(r).values()) {
+          millis += value;
+        }
+
+        whSum.setInnerText(TimeUtils.renderTime(millis, false));
+      } else {
+        whSum.setInnerText(BeeConst.STRING_EMPTY);
+      }
+    }
+
+    Element wdTot = Selectors.getElementByClassName(table.getElement(), STYLE_WD_TOTAL);
+    if (wdTot != null) {
+      if (durations.isEmpty()) {
+        wdTot.setInnerText(BeeConst.STRING_EMPTY);
+      } else {
+        wdTot.setInnerText(BeeUtils.toString(durations.columnKeySet().size()));
+      }
+    }
+
+    Element whTot = Selectors.getElementByClassName(table.getElement(), STYLE_WH_TOTAL);
+    if (whTot != null) {
+      if (durations.isEmpty()) {
+        whTot.setInnerText(BeeConst.STRING_EMPTY);
+
+      } else {
+        long millis = 0L;
+        for (Long value : durations.values()) {
+          millis += value;
+        }
+
+        whTot.setInnerText(TimeUtils.renderTime(millis, false));
       }
     }
   }
