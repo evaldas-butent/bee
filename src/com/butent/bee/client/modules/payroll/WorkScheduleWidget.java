@@ -1244,7 +1244,7 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
     Multimap<IdPair, Integer> result = HashMultimap.create();
 
     if (!DataUtils.isEmpty(data)) {
-      int partIndex = data.getColumnIndex(scheduleParent.getEmployeeObjectRelationColumn());
+      int partIndex = data.getColumnIndex(scheduleParent.getEmployeeObjectPartitionColumn());
       int substIndex = data.getColumnIndex(COL_SUBSTITUTE_FOR);
 
       int fromIndex = data.getColumnIndex(COL_EMPLOYEE_OBJECT_FROM);
@@ -1830,8 +1830,9 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
 
     Flow selectionPanel = new Flow();
 
-    Toggle rowSelection = new Toggle(FontAwesome.SQUARE_O, FontAwesome.CHECK_SQUARE_O,
-        STYLE_FETCH_ROW_TOGGLE, false);
+    final Toggle rowSelection = new Toggle(FontAwesome.SQUARE_O, FontAwesome.CHECK_SQUARE_O,
+        STYLE_FETCH_ROW_TOGGLE, true);
+    rowSelection.setTitle(scheduleParent.getPartitionTitle());
 
     rowSelection.addClickHandler(event -> {
       if (event.getSource() instanceof HasCheckedness) {
@@ -1856,8 +1857,9 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
 
     selectionPanel.add(rowSelection);
 
-    Toggle colSelection = new Toggle(FontAwesome.SQUARE_O, FontAwesome.CHECK_SQUARE_O,
-        STYLE_FETCH_COL_TOGGLE, false);
+    final Toggle colSelection = new Toggle(FontAwesome.SQUARE_O, FontAwesome.CHECK_SQUARE_O,
+        STYLE_FETCH_COL_TOGGLE, true);
+    colSelection.setTitle(Localized.dictionary().days());
 
     colSelection.addClickHandler(event -> {
       if (event.getSource() instanceof HasCheckedness) {
@@ -1894,7 +1896,11 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
       });
 
       schedule.setWidgetAndStyle(r, c, label, STYLE_FETCH_COL_LABEL);
+
       schedule.getCellFormatter().addStyleName(r, c, STYLE_FETCH_COL);
+      if (colSelection.isChecked()) {
+        schedule.getCellFormatter().addStyleName(r, c, STYLE_FETCH_COL_SELECTED);
+      }
     }
 
     r = calendarStartRow;
@@ -1928,6 +1934,9 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
 
       Element rowElement = schedule.getRowFormatter().getElement(r);
       rowElement.addClassName(STYLE_FETCH_ROW);
+      if (rowSelection.isChecked()) {
+        rowElement.addClassName(STYLE_FETCH_ROW_SELECTED);
+      }
 
       DomUtils.setDataProperty(rowElement, KEY_PART, pair.getA());
       if (pair.hasB()) {
@@ -1962,8 +1971,18 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
           int c = calendarStartCol + day - 1;
           schedule.setWidgetAndStyle(r, c, content, STYLE_FETCH_DAY_CONTENT);
 
+          if (colSelection.isChecked()) {
+            schedule.getCellFormatter().addStyleName(r, c, STYLE_FETCH_CELL_SELECTED);
+          }
+
           DomUtils.setDataProperty(schedule.getCellFormatter().getElement(r, c), KEY_DAY, day);
         }
+      }
+    }
+
+    for (int i = calendarStartRow; i < schedule.getRowCount(); i++) {
+      if (schedule.getCellCount(i) < calendarStartCol + dayCount) {
+        schedule.setText(i, calendarStartCol + dayCount - 1, null);
       }
     }
 

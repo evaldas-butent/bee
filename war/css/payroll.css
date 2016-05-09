@@ -361,11 +361,21 @@
 .bee-payroll-ws-fetch-col-label {
   cursor: pointer;
 }
+.bee-payroll-ws-fetch-col-label {
+  min-width: 20px;
+  text-align: center;
+}
+
+.bee-payroll-ws-fetch-day-content-cell {
+  text-align: center;
+}
 
 .bee-payroll-ws-fetch-row-selected .bee-payroll-ws-fetch-row-label-cell,
-.bee-payroll-ws-fetch-col-selected,
-.bee-payroll-ws-fetch-row-selected .bee-payroll-ws-fetch-cell-selected.bee-payroll-ws-fetch-day-content-cell {
+.bee-payroll-ws-fetch-col-selected {
   background-color: #80c4f9;
+}
+.bee-payroll-ws-fetch-row-selected .bee-payroll-ws-fetch-cell-selected.bee-payroll-ws-fetch-day-content-cell {
+  background-color: bisque;
 }
 
 .bee-payroll-ws-fetch-command-panel {
