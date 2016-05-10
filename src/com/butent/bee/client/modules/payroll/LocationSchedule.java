@@ -20,6 +20,7 @@ import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.IdPair;
 import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.DateValue;
@@ -39,6 +40,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 class LocationSchedule extends WorkScheduleWidget {
@@ -101,7 +103,7 @@ class LocationSchedule extends WorkScheduleWidget {
             if (DataUtils.isId(empl)) {
               Long subst = row.getLong(substIndex);
 
-              if (DataUtils.isId(subst)) {
+              if (DataUtils.isId(subst) && !Objects.equals(empl, subst)) {
                 substWs.put(empl, subst);
               } else {
                 mainWs.add(empl);
@@ -113,7 +115,7 @@ class LocationSchedule extends WorkScheduleWidget {
 
       if (!DataUtils.isEmpty(getEoData())) {
         int employeeIndex = getEoData().getColumnIndex(COL_EMPLOYEE);
-        int substIndex = getWsData().getColumnIndex(COL_SUBSTITUTE_FOR);
+        int substIndex = getEoData().getColumnIndex(COL_SUBSTITUTE_FOR);
 
         int fromIndex = getEoData().getColumnIndex(COL_EMPLOYEE_OBJECT_FROM);
         int untilIndex = getEoData().getColumnIndex(COL_EMPLOYEE_OBJECT_UNTIL);
@@ -126,8 +128,10 @@ class LocationSchedule extends WorkScheduleWidget {
             if (DataUtils.isId(empl)) {
               Long subst = row.getLong(substIndex);
 
-              if (DataUtils.isId(subst)) {
-                substEo.put(empl, subst);
+              if (DataUtils.isId(subst) && !Objects.equals(empl, subst)) {
+                if (isSubstitutionEnabled()) {
+                  substEo.put(empl, subst);
+                }
               } else {
                 mainEo.add(empl);
               }
@@ -184,6 +188,7 @@ class LocationSchedule extends WorkScheduleWidget {
   @Override
   protected List<Integer> getPartitionContactIndexes() {
     List<Integer> contactIndexes = new ArrayList<>();
+    contactIndexes.add(getEmData().getColumnIndex(ALS_DEPARTMENT_NAME));
     contactIndexes.add(getEmData().getColumnIndex(COL_MOBILE));
     contactIndexes.add(getEmData().getColumnIndex(COL_PHONE));
     return contactIndexes;
@@ -198,7 +203,6 @@ class LocationSchedule extends WorkScheduleWidget {
   protected List<Integer> getPartitionInfoIndexes() {
     List<Integer> infoIndexes = new ArrayList<>();
     infoIndexes.add(getEmData().getColumnIndex(ALS_COMPANY_NAME));
-    infoIndexes.add(getEmData().getColumnIndex(ALS_DEPARTMENT_NAME));
     infoIndexes.add(getEmData().getColumnIndex(COL_TAB_NUMBER));
     return infoIndexes;
   }
@@ -240,7 +244,7 @@ class LocationSchedule extends WorkScheduleWidget {
   }
 
   @Override
-  protected Widget renderAppender(Collection<Long> partIds, YearMonth ym,
+  protected Widget renderAppender(Collection<IdPair> partIds, YearMonth ym,
       String selectorStyleName) {
 
     Flow panel = new Flow();
@@ -269,7 +273,14 @@ class LocationSchedule extends WorkScheduleWidget {
     DomUtils.setPlaceholder(selector, Localized.dictionary().newEmployee());
 
     if (!BeeUtils.isEmpty(partIds)) {
-      selector.getOracle().setExclusions(partIds);
+      Set<Long> ids = new HashSet<>();
+      for (IdPair pair : partIds) {
+        if (!pair.hasB()) {
+          ids.add(pair.getA());
+        }
+      }
+
+      selector.getOracle().setExclusions(ids);
     }
 
     selector.addSelectorHandler(event -> {

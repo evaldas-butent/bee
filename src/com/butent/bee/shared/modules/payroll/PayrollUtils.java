@@ -1,8 +1,15 @@
 package com.butent.bee.shared.modules.payroll;
 
+import com.google.common.collect.Range;
+
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.value.DateValue;
+import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.time.TimeUtils;
+import com.butent.bee.shared.time.YearMonth;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.StringList;
 
 public final class PayrollUtils {
 
@@ -26,6 +33,18 @@ public final class PayrollUtils {
     }
 
     return result;
+  }
+
+  public static Filter getIntersectionFilter(YearMonth ym, String col1, String col2) {
+    if (ym == null || BeeUtils.anyEmpty(col1, col2) || BeeUtils.same(col1, col2)) {
+      return Filter.isFalse();
+
+    } else {
+      StringList columns = StringList.of(col1, col2);
+      Range<Value> range = Range.closed(new DateValue(ym.getDate()), new DateValue(ym.getLast()));
+
+      return Filter.anyIntersects(columns, range);
+    }
   }
 
   public static long getMillis(String from, String until, String duration) {

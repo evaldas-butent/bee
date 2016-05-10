@@ -132,6 +132,11 @@
               summarize="true" />
           </SimplePanel>
         </page>
+        <page>
+        <text>=relatedInformation</text>
+        <Relations relColumn="Person" inline="true"
+                   defaultRelations="Companies Requests Tasks" style="margin: 0px 15px 0px 15px; min-width:300px;" />
+        </page>
       </TabbedPages>
     </FlowPanel>
 </f:Form>

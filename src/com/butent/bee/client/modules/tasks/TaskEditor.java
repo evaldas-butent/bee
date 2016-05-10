@@ -144,6 +144,8 @@ class TaskEditor extends ProductSupportInterceptor {
   private static final String NAME_TASK_TREE = "TaskTree";
   private static final String NAME_ORDER = "TaskEventsOrder";
 
+  private static final String DEFAULT_PHOTO_IMAGE = "images/defaultUser.png";
+
   private static void addDurationCell(HtmlTable display, int row, int col, String value,
       String style) {
     Widget widget = new CustomDiv(STYLE_DURATION + style);
@@ -380,19 +382,26 @@ class TaskEditor extends ProductSupportInterceptor {
     Flow container = new Flow();
     container.addStyleName(STYLE_EVENT_ROW);
 
+    Flow colPhoto = new Flow();
+    colPhoto.addStyleName(STYLE_EVENT_COL + STYLE_PHOTO);
+    String photoUrl;
+
     if (renderPhoto) {
-      Flow colPhoto = new Flow();
-      colPhoto.addStyleName(STYLE_EVENT_COL + STYLE_PHOTO);
-
       Long photo = row.getLong(DataUtils.getColumnIndex(COL_PHOTO, columns));
-      if (DataUtils.isId(photo)) {
-        Image image = new Image(PhotoRenderer.getUrl(photo));
-        image.addStyleName(STYLE_EVENT + STYLE_PHOTO);
-        colPhoto.add(image);
+      if (!DataUtils.isId(photo)) {
+        photoUrl = DEFAULT_PHOTO_IMAGE;
+      } else {
+        photoUrl = PhotoRenderer.getUrl(photo);
       }
-
-      container.add(colPhoto);
+    } else {
+      photoUrl = DEFAULT_PHOTO_IMAGE;
     }
+
+    Image image = new Image(photoUrl);
+    image.addStyleName(STYLE_EVENT + STYLE_PHOTO);
+
+    colPhoto.add(image);
+    container.add(colPhoto);
 
     int c = 0;
     Flow col0 = new Flow();
@@ -1344,9 +1353,15 @@ class TaskEditor extends ProductSupportInterceptor {
 
         String comment = dialog.getComment(cid);
         String time = dialog.getTime(durIds.get(COL_DURATION));
+        Long type = dialog.getSelector(durIds.get(COL_DURATION_TYPE)).getRelatedId();
 
         if (BeeUtils.allEmpty(comment, time)) {
           showError(Localized.dictionary().crmEnterCommentOrDuration());
+          return;
+        }
+
+        if (!BeeUtils.isEmpty(time) && !DataUtils.isId(type)) {
+          showError(Localized.dictionary().crmEnterDurationType());
           return;
         }
 
@@ -1379,8 +1394,16 @@ class TaskEditor extends ProductSupportInterceptor {
       public void execute() {
 
         DateTime completed = dialog.getDateTime(dd);
+        String time = dialog.getTime(durIds.get(COL_DURATION));
+        Long type = dialog.getSelector(durIds.get(COL_DURATION_TYPE)).getRelatedId();
+
         if (completed == null) {
           showError(Localized.dictionary().crmEnterCompleteDate());
+          return;
+        }
+
+        if (!BeeUtils.isEmpty(time) && !DataUtils.isId(type)) {
+          showError(Localized.dictionary().crmEnterDurationType());
           return;
         }
 

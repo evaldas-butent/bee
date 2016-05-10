@@ -48,7 +48,7 @@
       </SimpleJoin>
     </SimpleJoin>
 
-    <ExternalJoin source="OrderCargo" name="Order" joinType="LEFT">
+    <ExternalJoin source="OrderCargo" name="Order" joinType="INNER">
       <IdColumn name="Cargo" />
 
       <SimpleJoin name="CargoHandling" joinType="LEFT">

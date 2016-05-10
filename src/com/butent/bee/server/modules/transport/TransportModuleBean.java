@@ -114,6 +114,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Function;
 
 import javax.ejb.EJB;
 import javax.ejb.LocalBean;
@@ -478,15 +479,32 @@ public class TransportModuleBean implements BeeModule {
       @Subscribe
       @AllowConcurrentEvents
       public void fillCargoIncomes(ViewQueryEvent event) {
-        if (event.isAfter(VIEW_ORDER_CARGO) && event.hasData()) {
-          SimpleRowSet rs = qs.getData(rep.getCargoIncomeQuery(event.getQuery()
-                  .resetFields().resetOrder().resetGroup()
-                  .addField(TBL_ORDER_CARGO, sys.getIdName(TBL_ORDER_CARGO), COL_CARGO)
-                  .addGroup(TBL_ORDER_CARGO, sys.getIdName(TBL_ORDER_CARGO)), null,
-              BeeUtils.unbox(prm.getBoolean(PRM_EXCLUDE_VAT))));
+        if (event.isAfter(VIEW_ORDER_CARGO, VIEW_ALL_CARGO) && event.hasData()) {
+          BeeRowSet rowSet = event.getRowset();
+          Collection<Long> cargoIds;
+          Function<BeeRow, Long> valueSupplier;
 
-          for (BeeRow row : event.getRowset().getRows()) {
-            String cargoId = BeeUtils.toString(row.getId());
+          switch (event.getTargetName()) {
+            case VIEW_ORDER_CARGO:
+              cargoIds = rowSet.getRowIds();
+              valueSupplier = BeeRow::getId;
+              break;
+            case VIEW_ALL_CARGO:
+              int idx = rowSet.getColumnIndex(COL_CARGO);
+              cargoIds = rowSet.getDistinctLongs(idx);
+              valueSupplier = row -> row.getLong(idx);
+              break;
+            default:
+              return;
+          }
+          SimpleRowSet rs = qs.getData(rep.getCargoIncomeQuery(new SqlSelect()
+                  .addField(TBL_ORDER_CARGO, sys.getIdName(TBL_ORDER_CARGO), COL_CARGO)
+                  .addFrom(TBL_ORDER_CARGO)
+                  .setWhere(sys.idInList(TBL_ORDER_CARGO, cargoIds)),
+              prm.getRelation(PRM_CURRENCY), BeeUtils.unbox(prm.getBoolean(PRM_EXCLUDE_VAT))));
+
+          for (BeeRow row : rowSet.getRows()) {
+            String cargoId = BeeUtils.toString(valueSupplier.apply(row));
             String cargoIncome = rs.getValueByKey(COL_CARGO, cargoId, "CargoIncome");
             String servicesIncome = rs.getValueByKey(COL_CARGO, cargoId, "ServicesIncome");
 

@@ -122,7 +122,7 @@ public class ReportTextItem extends ReportItem {
     filterNegation = false;
 
     if (!BeeUtils.isEmpty(value)) {
-      filter = Collections.singletonList(value);
+      filter = Collections.singletonList(BeeConst.STRING_EQ + value);
     } else {
       filter = null;
     }
