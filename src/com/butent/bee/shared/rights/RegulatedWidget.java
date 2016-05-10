@@ -30,6 +30,12 @@ public enum RegulatedWidget implements HasLocalizedCaption {
       return constants.actionAudit();
     }
   },
+  DROP_EXPORTED {
+    @Override
+    public String getCaption(Dictionary constants) {
+      return "Eksportuotų įrašų šalinimas";
+    }
+  },
   DOCUMENT_TREE {
     @Override
     public String getCaption(Dictionary constants) {
