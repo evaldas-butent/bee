@@ -12,6 +12,7 @@
     <IdColumn name="ID" width="50" />
 
     <DataColumn name="Date" width="100" visible="true" />
+    <DataColumn name="Summary" visible="true" minWidth="150" maxWidth="500" />
     <DataColumn name="Finished" width="100" format="DATE_TIME_SHORT" />
     <RelColumn name="Customer" minWidth="100" visible="true" />
 

@@ -5,7 +5,7 @@
   idName="RequestID"
   >
   <Fields>
-    <String name="Summary" notNull="true" precision="100" label="=crmTaskSubject" />
+    <String name="Summary" precision="100" label="=crmTaskSubject" />
     <Enum name="Priority" key="TaskPriority" defValue="1" label="=crmTaskPriority" />
     <DateTime name="Date" notNull="true" defExpr="CURRENT_TIME" label="=crmStartDate" />
     <Relation name="Customer" relation="Companies" notNull="true" label="=company" />
