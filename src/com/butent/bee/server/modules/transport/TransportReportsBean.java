@@ -575,11 +575,11 @@ public class TransportReportsBean {
     if (report.requiresField(plannedKilometers) || report.requiresField(plannedFuelCosts)
         || report.requiresField(plannedDailyCosts) || report.requiresField(plannedRoadCosts)) {
 
-      String tmpCargo = qs.sqlCreateTemp(new SqlSelect().setDistinctMode(true)
-          .addFields(TBL_CARGO_TRIPS, COL_CARGO)
+      // Revised CargoHandling
+      tmpTripCargo = qs.sqlCreateTemp(new SqlSelect()
+          .addFields(TBL_CARGO_TRIPS, COL_TRIP, COL_CARGO)
           .addFields(TBL_ORDER_CARGO, COL_CARGO_TYPE)
-          .addEmptyDouble(kilometers)
-          .addExpr(SqlUtils.plus(
+          .addSum(SqlUtils.plus(
               SqlUtils.nvl(SqlUtils.field(TBL_CARGO_HANDLING, COL_LOADED_KILOMETERS), 0),
               SqlUtils.nvl(SqlUtils.field(TBL_CARGO_HANDLING, COL_EMPTY_KILOMETERS), 0)),
               plannedKilometers)
@@ -588,53 +588,45 @@ public class TransportReportsBean {
           .addFromInner(TBL_ORDER_CARGO,
               sys.joinTables(TBL_ORDER_CARGO, TBL_CARGO_TRIPS, COL_CARGO))
           .addFromLeft(TBL_CARGO_HANDLING,
-              sys.joinTables(TBL_CARGO_HANDLING, TBL_ORDER_CARGO, COL_CARGO_HANDLING)));
+              sys.joinTables(TBL_CARGO_TRIPS, TBL_CARGO_HANDLING, COL_CARGO_TRIP))
+          .addGroup(TBL_CARGO_TRIPS, COL_TRIP, COL_CARGO)
+          .addGroup(TBL_ORDER_CARGO, COL_CARGO_TYPE));
+
+      // Planned main CargoHandling
+      String tmpCargo = qs.sqlCreateTemp(new SqlSelect().setDistinctMode(true)
+          .addFields(tmpTripCargo, COL_CARGO)
+          .addExpr(SqlUtils.plus(
+              SqlUtils.nvl(SqlUtils.field(TBL_CARGO_HANDLING, COL_LOADED_KILOMETERS), 0),
+              SqlUtils.nvl(SqlUtils.field(TBL_CARGO_HANDLING, COL_EMPTY_KILOMETERS), 0)),
+              plannedKilometers)
+          .addFrom(tmpTripCargo)
+          .addFromInner(TBL_ORDER_CARGO, sys.joinTables(TBL_ORDER_CARGO, tmpTripCargo, COL_CARGO))
+          .addFromLeft(TBL_CARGO_HANDLING,
+              sys.joinTables(TBL_CARGO_HANDLING, TBL_ORDER_CARGO, COL_CARGO_HANDLING))
+          .setWhere(SqlUtils.nonPositive(tmpTripCargo, plannedKilometers)));
+
+      // Planned additional CargoHandling
+      qs.updateData(new SqlUpdate(tmpCargo)
+          .addExpression(plannedKilometers,
+              SqlUtils.plus(SqlUtils.nvl(SqlUtils.field(tmpCargo, plannedKilometers), 0),
+                  SqlUtils.nvl(SqlUtils.field(TBL_CARGO_HANDLING, COL_LOADED_KILOMETERS), 0),
+                  SqlUtils.nvl(SqlUtils.field(TBL_CARGO_HANDLING, COL_EMPTY_KILOMETERS), 0)))
+          .setFrom(TBL_CARGO_HANDLING,
+              SqlUtils.joinUsing(tmpCargo, TBL_CARGO_HANDLING, COL_CARGO)));
 
       String als = SqlUtils.uniqueName();
 
-      qs.updateData(new SqlUpdate(tmpCargo)
-          .addExpression(plannedKilometers,
-              SqlUtils.plus(SqlUtils.field(tmpCargo, plannedKilometers),
-                  SqlUtils.nvl(SqlUtils.field(als, COL_LOADED_KILOMETERS), 0),
-                  SqlUtils.nvl(SqlUtils.field(als, COL_EMPTY_KILOMETERS), 0)))
-          .setFrom(new SqlSelect()
-                  .addFields(TBL_CARGO_HANDLING, COL_CARGO)
-                  .addSum(TBL_CARGO_HANDLING, COL_LOADED_KILOMETERS)
-                  .addSum(TBL_CARGO_HANDLING, COL_EMPTY_KILOMETERS)
-                  .addFrom(TBL_CARGO_HANDLING)
-                  .addFromInner(tmpCargo,
-                      SqlUtils.joinUsing(TBL_CARGO_HANDLING, tmpCargo, COL_CARGO))
-                  .addGroup(TBL_CARGO_HANDLING, COL_CARGO),
-              als, SqlUtils.joinUsing(tmpCargo, als, COL_CARGO)));
-
-      tmpTripCargo = qs.sqlCreateTemp(new SqlSelect()
-          .addFields(TBL_CARGO_TRIPS, COL_TRIP, COL_CARGO)
-          .addFields(tmpCargo, COL_CARGO_TYPE)
-          .addSum(TBL_TRIP_ROUTES, kilometers)
-          .addEmptyDouble(plannedKilometers)
-          .addFrom(TBL_TRIP_ROUTES)
-          .addFromInner(TBL_CARGO_TRIPS,
-              sys.joinTables(TBL_CARGO_TRIPS, TBL_TRIP_ROUTES, COL_ROUTE_CARGO))
-          .addFromInner(tmpCargo, SqlUtils.joinUsing(TBL_CARGO_TRIPS, tmpCargo, COL_CARGO))
-          .addGroup(TBL_CARGO_TRIPS, COL_TRIP, COL_CARGO)
-          .addGroup(tmpCargo, COL_CARGO_TYPE));
-
-      qs.updateData(new SqlUpdate(tmpCargo)
-          .addExpression(kilometers, SqlUtils.field(als, kilometers))
-          .setFrom(new SqlSelect()
-                  .addFields(tmpTripCargo, COL_CARGO)
-                  .addSum(tmpTripCargo, kilometers)
-                  .addFrom(tmpTripCargo)
-                  .addGroup(tmpTripCargo, COL_CARGO),
-              als, SqlUtils.joinUsing(tmpCargo, als, COL_CARGO)));
-
       qs.updateData(new SqlUpdate(tmpTripCargo)
           .addExpression(plannedKilometers,
-              SqlUtils.multiply(SqlUtils.nvl(SqlUtils.field(tmpCargo, plannedKilometers), 0),
-                  SqlUtils.divide(SqlUtils.nvl(SqlUtils.field(tmpTripCargo, kilometers), 0),
-                      SqlUtils.nvl(SqlUtils.field(tmpCargo, kilometers), 0))))
-          .setFrom(tmpCargo, SqlUtils.joinUsing(tmpTripCargo, tmpCargo, COL_CARGO))
-          .setWhere(SqlUtils.positive(SqlUtils.nvl(SqlUtils.field(tmpCargo, kilometers), 0))));
+              SqlUtils.divide(SqlUtils.field(als, plannedKilometers), SqlUtils.field(als, "cnt")))
+          .setFrom(new SqlSelect()
+                  .addFields(tmpCargo, COL_CARGO, plannedKilometers)
+                  .addCount("cnt")
+                  .addFrom(tmpCargo)
+                  .addFromInner(tmpTripCargo, SqlUtils.joinUsing(tmpCargo, tmpTripCargo, COL_CARGO))
+                  .addGroup(tmpCargo, COL_CARGO, plannedKilometers),
+              als, SqlUtils.joinUsing(tmpTripCargo, als, COL_CARGO))
+          .setWhere(SqlUtils.nonPositive(tmpTripCargo, plannedKilometers)));
 
       qs.sqlDropTemp(tmpCargo);
 
