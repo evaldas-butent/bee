@@ -32,7 +32,6 @@ import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.InputBoolean;
 import com.butent.bee.client.widget.IntegerLabel;
-import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
@@ -228,7 +227,7 @@ class OrderCargoForm extends AbstractFormInterceptor implements SelectorEvent.Ha
       header.addCommandItem(new InvoiceCreator(VIEW_CARGO_SALES,
           Filter.equals(COL_CARGO, row.getId())));
     }
-    header.addCommandItem(new Profit(COL_CARGO, BeeConst.STRING_EQ + row.getId()));
+    header.addCommandItem(new Profit(COL_CARGO, BeeUtils.toString(row.getId())));
 
     return true;
   }

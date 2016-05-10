@@ -221,6 +221,7 @@ public final class PayrollConstants {
   public static final String FORM_WORK_SCHEDULE = "WorkSchedule";
   public static final String FORM_TIME_SHEET = "TimeSheet";
   public static final String FORM_WORK_SCHEDULE_EDITOR = "WorkScheduleEditor";
+  public static final String FORM_NEW_SUBSTITUTION = "NewSubstitution";
   public static final String FORM_EARNINGS = "Earnings";
   public static final String FORM_OBJECT_EARNINGS = "ObjectEarnings";
 

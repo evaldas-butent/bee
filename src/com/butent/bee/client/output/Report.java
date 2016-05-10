@@ -463,6 +463,7 @@ public enum Report implements HasWidgetSupplier {
           StyleUtils.setHeight(form, BeeKeeper.getScreen().getHeight() * 0.9, CssUnit.PX);
 
           Popup popup = new Popup(Popup.OutsideClick.CLOSE);
+          popup.setHideOnEscape(true);
           popup.setWidget(form);
           popup.center();
         }));

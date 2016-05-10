@@ -973,6 +973,11 @@ public final class DomUtils {
     }
   }
 
+  public static Integer getParentRowIndex(Element child) {
+    TableRowElement rowElement = getParentRow(child, true);
+    return (rowElement == null) ? null : rowElement.getRowIndex();
+  }
+
   public static TableElement getParentTable(Element child, boolean incl) {
     Element parent = getParentElement(child, Tags.TABLE, incl);
     if (isTableElement(parent)) {

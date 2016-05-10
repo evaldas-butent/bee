@@ -1353,9 +1353,15 @@ class TaskEditor extends ProductSupportInterceptor {
 
         String comment = dialog.getComment(cid);
         String time = dialog.getTime(durIds.get(COL_DURATION));
+        Long type = dialog.getSelector(durIds.get(COL_DURATION_TYPE)).getRelatedId();
 
         if (BeeUtils.allEmpty(comment, time)) {
           showError(Localized.dictionary().crmEnterCommentOrDuration());
+          return;
+        }
+
+        if (!BeeUtils.isEmpty(time) && !DataUtils.isId(type)) {
+          showError(Localized.dictionary().crmEnterDurationType());
           return;
         }
 
@@ -1388,8 +1394,16 @@ class TaskEditor extends ProductSupportInterceptor {
       public void execute() {
 
         DateTime completed = dialog.getDateTime(dd);
+        String time = dialog.getTime(durIds.get(COL_DURATION));
+        Long type = dialog.getSelector(durIds.get(COL_DURATION_TYPE)).getRelatedId();
+
         if (completed == null) {
           showError(Localized.dictionary().crmEnterCompleteDate());
+          return;
+        }
+
+        if (!BeeUtils.isEmpty(time) && !DataUtils.isId(type)) {
+          showError(Localized.dictionary().crmEnterDurationType());
           return;
         }
 

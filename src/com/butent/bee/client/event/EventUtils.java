@@ -113,6 +113,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import elemental.js.dom.JsElement;
+
 public final class EventUtils {
 
   private static final BeeLogger logger = LogUtils.getLogger(EventUtils.class);
@@ -609,6 +611,16 @@ public final class EventUtils {
       }
       registry.clear();
     }
+  }
+
+  public static void click(Element element) {
+    Assert.notNull(element);
+    ((JsElement) element.cast()).click();
+  }
+
+  public static void click(UIObject obj) {
+    Assert.notNull(obj);
+    click(obj.getElement());
   }
 
   public static NativeEvent createKeyDown(int keyCode) {
