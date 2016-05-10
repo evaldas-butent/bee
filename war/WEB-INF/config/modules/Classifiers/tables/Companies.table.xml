@@ -44,6 +44,9 @@
 
     <Boolean name="Offshore" label="Ofšorinė" />
 
+    <DateTime name="Created" label="Registruota" defExpr="CURRENT_TIME" />
+    <Relation name="Creator" relation="Users" label="=creator" defExpr="CURRENT_USER" />
+
     <Text name="Notes" label="=notes" />
   </Fields>
 </Table>

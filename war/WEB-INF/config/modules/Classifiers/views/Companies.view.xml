@@ -116,6 +116,17 @@
 
     <SimpleColumn name="PriceName" />
 
+    <SimpleColumn name="Created" />
+    <SimpleColumn name="Creator" />
+    <SimpleJoin name="Creator" joinType="LEFT">
+      <SimpleJoin name="CompanyPerson" joinType="LEFT">
+        <SimpleJoin name="Person" joinType="LEFT">
+          <SimpleColumn name="FirstName" alias="CreatorFirstName" />
+          <SimpleColumn name="LastName" alias="CreatorLastName" />
+        </SimpleJoin>
+      </SimpleJoin>
+    </SimpleJoin>
+
     <SimpleColumn name="Notes" />
    </Columns>
   <Order>
