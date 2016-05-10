@@ -15,7 +15,7 @@
 
       <row for="Created">
         <Label for="Created" />
-        <InputDateTime source="Created" style="width: 200px;" />
+        <InputDateTime source="Created" style="width: 200px;" format="DATE_TIME_SHORT"/>
       </row>
 
       <row for="Creator">
