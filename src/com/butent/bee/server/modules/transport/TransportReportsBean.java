@@ -579,7 +579,7 @@ public class TransportReportsBean {
       tmpTripCargo = qs.sqlCreateTemp(new SqlSelect()
           .addFields(TBL_CARGO_TRIPS, COL_TRIP, COL_CARGO)
           .addFields(TBL_ORDER_CARGO, COL_CARGO_TYPE)
-          .addSum(SqlUtils.plus(
+          .addSum(SqlUtils.plus(0.0,
               SqlUtils.nvl(SqlUtils.field(TBL_CARGO_HANDLING, COL_LOADED_KILOMETERS), 0),
               SqlUtils.nvl(SqlUtils.field(TBL_CARGO_HANDLING, COL_EMPTY_KILOMETERS), 0)),
               plannedKilometers)
@@ -595,7 +595,7 @@ public class TransportReportsBean {
       // Planned main CargoHandling
       String tmpCargo = qs.sqlCreateTemp(new SqlSelect().setDistinctMode(true)
           .addFields(tmpTripCargo, COL_CARGO)
-          .addExpr(SqlUtils.plus(
+          .addExpr(SqlUtils.plus(0.0,
               SqlUtils.nvl(SqlUtils.field(TBL_CARGO_HANDLING, COL_LOADED_KILOMETERS), 0),
               SqlUtils.nvl(SqlUtils.field(TBL_CARGO_HANDLING, COL_EMPTY_KILOMETERS), 0)),
               plannedKilometers)
@@ -813,7 +813,7 @@ public class TransportReportsBean {
         if (BeeUtils.inList(column, kilometers, fuelCosts, dailyCosts, roadCosts, constantCosts,
             otherCosts, plannedKilometers, plannedFuelCosts, plannedDailyCosts, plannedRoadCosts)) {
 
-          query.addExpr(SqlUtils.multiply(SqlUtils.divide(SqlUtils.field(tmp, column), 100),
+          query.addExpr(SqlUtils.multiply(SqlUtils.divide(SqlUtils.field(tmp, column), 100.0),
               SqlUtils.nvl(SqlUtils.field(tmpTripCargo, COL_CARGO_PERCENT), 100)), column);
         } else {
           query.addFields(tmp, column);
@@ -1013,7 +1013,7 @@ public class TransportReportsBean {
     // Percent correction proportionaly for empty percents
     qs.updateData(new SqlUpdate(tmpCargoTrip)
         .addExpression(percent, SqlUtils.divide(
-            SqlUtils.minus(100, SqlUtils.nvl(SqlUtils.field(alias, percent), 0)),
+            SqlUtils.minus(100.0, SqlUtils.nvl(SqlUtils.field(alias, percent), 0)),
             SqlUtils.field(alias, cntEmpty)))
         .setFrom(new SqlSelect()
             .addFields(tmpCargoTrip, key)

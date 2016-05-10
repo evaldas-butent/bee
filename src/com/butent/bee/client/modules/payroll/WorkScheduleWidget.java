@@ -41,6 +41,7 @@ import com.butent.bee.client.event.DndSource;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.logical.HasSummaryChangeHandlers;
 import com.butent.bee.client.event.logical.SummaryChangeEvent;
+import com.butent.bee.client.event.logical.VisibilityChangeEvent;
 import com.butent.bee.client.event.logical.SummaryChangeEvent.Handler;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.HtmlTable;
@@ -98,7 +99,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandlers, Printable {
+abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandlers, Printable,
+    VisibilityChangeEvent.Handler {
 
   protected static final class CalendarInfo {
 
@@ -404,6 +406,9 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
 
   private boolean summarize = true;
 
+  private final List<com.google.web.bindery.event.shared.HandlerRegistration> registry =
+      new ArrayList<>();
+
   WorkScheduleWidget(WorkScheduleKind kind, ScheduleParent scheduleParent) {
     super(STYLE_CONTAINER);
 
@@ -491,6 +496,13 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
       return source.hasClassName(STYLE_MONTH_ACTIVE);
     } else {
       return true;
+    }
+  }
+
+  @Override
+  public void onVisibilityChange(VisibilityChangeEvent event) {
+    if (DomUtils.isOrHasAncestor(getElement(), event.getId())) {
+      refresh();
     }
   }
 
@@ -662,6 +674,21 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
 
   protected boolean isSubstitutionEnabled() {
     return kind.isSubstitutionEnabled();
+  }
+
+  @Override
+  protected void onLoad() {
+    super.onLoad();
+
+    EventUtils.clearRegistry(registry);
+    registry.add(VisibilityChangeEvent.register(this));
+  }
+
+  @Override
+  protected void onUnload() {
+    EventUtils.clearRegistry(registry);
+
+    super.onUnload();
   }
 
   protected void render() {

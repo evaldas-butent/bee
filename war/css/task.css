@@ -1,12 +1,26 @@
+.bee-crm-taskEvent {
+  margin-left: -104px;
+  overflow: auto;
+  margin-top: 45px;
+}
+
+.bee-crm-taskEvent-createTask {
+  color: #c5c5c5;
+  margin: 4px 10px;
+}
+.bee-crm-taskEvent-createTask:hover {
+  color: black;
+}
+
 .bee-crm-taskEvent-container {
-  background-color: #f5f5ed;
-  border-left: 1px solid #ccc;
+  border-left: 1px solid #E8E8E8;
+  z-index: 1;
 }
 .bee-crm-taskEvent-row {
   display: flex;
   display: -webkit-flex;
   display: -ms-flexbox;
-  border-bottom: 1px solid #ccc;
+  border-top: 1px solid #e8e8e8;
   padding: 2px 5px 2px;
 }
 
@@ -14,6 +28,15 @@
   border-left-width: 3px;
   border-left-color: #1ca5c7;
   border-left-style: solid; 
+}
+.bee-crm-taskEvent-col-row {
+  margin-left: 1ex;
+}
+
+.bee-crm-taskEvent-flex {
+  display: flex;
+  display: -webkit-flex;
+  display: -ms-flexbox;
 }
 
 .bee-crm-taskEvent-col-0,
@@ -37,6 +60,7 @@
 .bee-crm-taskEvent-col-1 > .bee-fa-label {
   margin: 4px 0;
   font-size: 3ex;
+  color:#e3e3e3;
 }
 
 .bee-crm-taskEvent-Event,
@@ -44,14 +68,38 @@
   font-weight: bolder;
 }
 
+.bee-crm-taskEvent-EventNote {
+  font-style: italic;
+  font-weight: bold;
+}
+
 .bee-crm-taskEvent-EventNote,
 .bee-crm-taskEvent-Comment {
   white-space: pre-wrap;
+  min-height: 35px;
+  width: 100%;
+  margin-top: 10px;
 }
 .bee-crm-taskEvent-EventNote > .bee-InternalLink {
   display: inline-block;
   padding: 0 2px;
 }
+
+.bee-crm-taskEvent-Publisher {
+  font-weight: bold;
+}
+
+.bee-crm-taskEvent-PublishTime {
+  color: #c5c5c5;
+}
+
+.bee-crm-taskEvent-Publisher,
+.bee-crm-taskEvent-PublishTime,
+.bee-crm-taskEvent-Duration,
+.bee-crm-taskEvent-DurationType {
+  padding-right: 10px;
+}
+
 
 .bee-crm-taskDialog-container td {
   padding: 6px;
