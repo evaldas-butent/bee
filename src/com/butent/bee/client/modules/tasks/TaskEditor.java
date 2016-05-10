@@ -130,6 +130,9 @@ class TaskEditor extends ProductSupportInterceptor {
   private static final String STYLE_EVENT_ROW = STYLE_EVENT + "row";
   private static final String STYLE_EVENT_ROW_NEW = STYLE_EVENT_ROW + "-new";
   private static final String STYLE_EVENT_COL = STYLE_EVENT + "col-";
+  private static final String STYLE_EVENT_COL_ROW = STYLE_EVENT_COL + "row";
+  private static final String STYLE_EVENT_FLEX = STYLE_EVENT + "flex";
+  private static final String STYLE_EVENT_CREATE_TASK = STYLE_EVENT + "createTask";
   private static final String STYLE_EVENT_FILES = STYLE_EVENT + "files";
 
   private static final String STYLE_DURATION = CRM_STYLE_PREFIX + "taskDuration-";
@@ -268,6 +271,7 @@ class TaskEditor extends ProductSupportInterceptor {
         } else {
           if (callback != null) {
             callback.onSuccess(response);
+            DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_TASKS);
           }
         }
       }
@@ -376,25 +380,23 @@ class TaskEditor extends ProductSupportInterceptor {
   }
 
   private void showEvent(Flow panel, final BeeRow row, List<BeeColumn> columns,
-      List<FileInfo> files, Table<String, String, Long> durations, boolean renderPhoto,
-      Long lastAccess, final IsRow taskRow) {
+      List<FileInfo> files, Table<String, String, Long> durations, Long lastAccess,
+      final IsRow taskRow) {
 
     Flow container = new Flow();
     container.addStyleName(STYLE_EVENT_ROW);
+
+    Flow body = new Flow();
 
     Flow colPhoto = new Flow();
     colPhoto.addStyleName(STYLE_EVENT_COL + STYLE_PHOTO);
     String photoUrl;
 
-    if (renderPhoto) {
-      Long photo = row.getLong(DataUtils.getColumnIndex(COL_PHOTO, columns));
-      if (!DataUtils.isId(photo)) {
-        photoUrl = DEFAULT_PHOTO_IMAGE;
-      } else {
-        photoUrl = PhotoRenderer.getUrl(photo);
-      }
-    } else {
+    Long photo = row.getLong(DataUtils.getColumnIndex(COL_PHOTO, columns));
+    if (!DataUtils.isId(photo)) {
       photoUrl = DEFAULT_PHOTO_IMAGE;
+    } else {
+      photoUrl = PhotoRenderer.getUrl(photo);
     }
 
     Image image = new Image(photoUrl);
@@ -403,19 +405,20 @@ class TaskEditor extends ProductSupportInterceptor {
     colPhoto.add(image);
     container.add(colPhoto);
 
-    int c = 0;
-    Flow col0 = new Flow();
-    col0.addStyleName(STYLE_EVENT_COL + BeeUtils.toString(c));
+    Flow row1 = new Flow();
+    row1.addStyleName(STYLE_EVENT_COL_ROW);
+    row1.addStyleName(STYLE_EVENT_FLEX);
 
-    Integer ev = row.getInteger(DataUtils.getColumnIndex(TaskConstants.COL_EVENT, columns));
-    TaskEvent event = EnumUtils.getEnumByIndex(TaskEvent.class, ev);
-    if (event != null) {
-      col0.add(createEventCell(TaskConstants.COL_EVENT, event.getCaption()));
+    String publisher = BeeUtils.joinWords(
+        row.getString(DataUtils.getColumnIndex(ALS_PUBLISHER_FIRST_NAME, columns)),
+        row.getString(DataUtils.getColumnIndex(ALS_PUBLISHER_LAST_NAME, columns)));
+    if (!BeeUtils.isEmpty(publisher)) {
+      row1.add(createEventCell(COL_PUBLISHER, publisher));
     }
 
     DateTime publishTime = row.getDateTime(DataUtils.getColumnIndex(COL_PUBLISH_TIME, columns));
     if (publishTime != null) {
-      col0.add(createEventCell(COL_PUBLISH_TIME,
+      row1.add(createEventCell(COL_PUBLISH_TIME,
           Format.getDefaultDateTimeFormat().format(publishTime)));
     }
 
@@ -429,39 +432,38 @@ class TaskEditor extends ProductSupportInterceptor {
       container.removeStyleName(STYLE_EVENT_ROW_NEW);
     }
 
-    String publisher = BeeUtils.joinWords(
-        row.getString(DataUtils.getColumnIndex(ALS_PUBLISHER_FIRST_NAME, columns)),
-        row.getString(DataUtils.getColumnIndex(ALS_PUBLISHER_LAST_NAME, columns)));
-    if (!BeeUtils.isEmpty(publisher)) {
-      col0.add(createEventCell(COL_PUBLISHER, publisher));
+    Integer ev = row.getInteger(DataUtils.getColumnIndex(TaskConstants.COL_EVENT, columns));
+    TaskEvent event = EnumUtils.getEnumByIndex(TaskEvent.class, ev);
+    if (event != null) {
+      row1.add(createEventCell(TaskConstants.COL_EVENT, event.getCaption()));
     }
 
-    container.add(col0);
+    body.add(row1);
 
-    c++;
-    Flow col1 = new Flow();
-    col1.addStyleName(STYLE_EVENT_COL + BeeUtils.toString(c));
+    Flow row2 = new Flow();
+    row2.addStyleName(STYLE_EVENT_COL_ROW);
 
     String note = row.getString(DataUtils.getColumnIndex(COL_EVENT_NOTE, columns));
     if (!BeeUtils.isEmpty(note)) {
-      col1.add(createEventCell(COL_EVENT_NOTE, note));
+      row2.add(createEventCell(COL_EVENT_NOTE, note));
     }
 
     String eventData = row.getString(DataUtils.getColumnIndex(COL_EVENT_DATA, columns));
 
     if (!BeeUtils.isEmpty(eventData)) {
-      col1.add(createEventCell(COL_EVENT_NOTE, eventData, true));
+      row2.add(createEventCell(COL_EVENT_NOTE, eventData, true));
     }
 
     String comment = row.getString(DataUtils.getColumnIndex(COL_COMMENT, columns));
     if (!BeeUtils.isEmpty(comment)) {
-      col1.add(createEventCell(COL_COMMENT, comment));
+      row2.add(createEventCell(COL_COMMENT, comment));
       int idxOwner = Data.getColumnIndex(VIEW_TASKS, COL_OWNER);
       int idxExecutor = Data.getColumnIndex(VIEW_TASKS, COL_EXECUTOR);
       if (event == TaskEvent.COMMENT
           && (Objects.equals(taskRow.getLong(idxOwner), userId) || Objects.equals(taskRow
               .getLong(idxExecutor), userId))) {
         FaLabel createTask = new FaLabel(TaskEvent.CREATE.getCommandIcon());
+        createTask.addStyleName(STYLE_EVENT_CREATE_TASK);
         createTask.setTitle(TaskEvent.CREATE.getCommandLabel());
         createTask.addClickHandler(new ClickHandler() {
 
@@ -471,44 +473,16 @@ class TaskEditor extends ProductSupportInterceptor {
           }
         });
 
-        col1.add(createTask);
+        row1.add(createTask);
       }
     }
 
-    container.add(col1);
-
-    String duration = row.getString(DataUtils.getColumnIndex(COL_DURATION, columns));
-    if (!BeeUtils.isEmpty(duration)) {
-      c++;
-      Flow col2 = new Flow();
-      col2.addStyleName(STYLE_EVENT_COL + BeeUtils.toString(c));
-
-      col2.add(createEventCell(COL_DURATION, Localized.dictionary().crmSpentTime() + " "
-          + duration));
-
-      String durType = row.getString(DataUtils.getColumnIndex(COL_DURATION_TYPE, columns));
-      if (!BeeUtils.isEmpty(durType)) {
-        col2.add(createEventCell(COL_DURATION_TYPE, durType));
-      }
-
-      DateTime durDate = row.getDateTime(DataUtils.getColumnIndex(COL_DURATION_DATE, columns));
-      if (durDate != null) {
-        col2.add(createEventCell(COL_DURATION_DATE, durDate.toCompactString()));
-      }
-
-      container.add(col2);
-
-      Long millis = TimeUtils.parseTime(duration);
-      if (BeeUtils.isPositive(millis) && !BeeUtils.isEmpty(publisher)
-          && !BeeUtils.isEmpty(durType)) {
-        Long value = durations.get(publisher, durType);
-        durations.put(publisher, durType, millis + BeeUtils.unbox(value));
-      }
-    }
-
-    panel.add(container);
+    body.add(row2);
 
     if (!files.isEmpty()) {
+      Flow row3 = new Flow();
+      row3.addStyleName(STYLE_EVENT_COL_ROW);
+
       Simple fileContainer = new Simple();
       fileContainer.addStyleName(STYLE_EVENT_FILES);
 
@@ -524,8 +498,43 @@ class TaskEditor extends ProductSupportInterceptor {
         }
       });
       fileContainer.setWidget(fileGroup);
-      panel.add(fileContainer);
+      row3.add(fileContainer);
+      body.add(row3);
     }
+
+    String duration = row.getString(DataUtils.getColumnIndex(COL_DURATION, columns));
+    if (!BeeUtils.isEmpty(duration)) {
+
+      Flow row4 = new Flow();
+      row4.addStyleName(STYLE_EVENT_COL_ROW);
+      row4.addStyleName(STYLE_EVENT_FLEX);
+
+      row4.add(createEventCell(COL_DURATION, BeeUtils.joinWords(Localized.dictionary()
+          .crmSpentTime(), duration)));
+
+      String durType = row.getString(DataUtils.getColumnIndex(COL_DURATION_TYPE, columns));
+      if (!BeeUtils.isEmpty(durType)) {
+        row4.add(createEventCell(COL_DURATION_TYPE, durType));
+      }
+
+      DateTime durDate = row.getDateTime(DataUtils.getColumnIndex(COL_DURATION_DATE, columns));
+      if (durDate != null) {
+        row4.add(createEventCell(COL_DURATION_DATE, durDate.toCompactString()));
+      }
+
+      body.add(row4);
+
+      Long millis = TimeUtils.parseTime(duration);
+      if (BeeUtils.isPositive(millis)
+          && !BeeUtils.isEmpty(publisher) && !BeeUtils.isEmpty(durType)) {
+        Long value =
+            durations.get(publisher, durType);
+        durations.put(publisher, durType, millis
+            + BeeUtils.unbox(value));
+      }
+    }
+    container.add(body);
+    panel.add(container);
   }
 
   private void showEventsAndDuration(FormView form, IsRow taskRow, BeeRowSet rowSet,
@@ -541,20 +550,9 @@ class TaskEditor extends ProductSupportInterceptor {
 
     Table<String, String, Long> durations = TreeBasedTable.create();
 
-    boolean hasPhoto = false;
-    int photoIndex = rowSet.getColumnIndex(COL_PHOTO);
-    if (photoIndex >= 0) {
-      for (BeeRow row : rowSet.getRows()) {
-        if (DataUtils.isId(row.getString(photoIndex))) {
-          hasPhoto = true;
-          break;
-        }
-      }
-    }
-
     for (BeeRow row : rowSet.getRows()) {
       showEvent(panel, row, rowSet.getColumns(), filterEventFiles(files, row.getId()), durations,
-          hasPhoto, lastAccess, taskRow);
+          lastAccess, taskRow);
     }
 
     showExtensions(form, rowSet);
