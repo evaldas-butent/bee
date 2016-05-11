@@ -307,6 +307,7 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
 
   private static final String DATA_TYPE_WS_ITEM = "WorkScheduleItem";
 
+  private static final String NAME_ACTIVE_MONTH = "ActiveMonth";
   private static final String NAME_INPUT_MODE = "InputMode";
   private static final String NAME_DND_MODE = "DndMode";
 
@@ -501,7 +502,7 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
 
   @Override
   public void onVisibilityChange(VisibilityChangeEvent event) {
-    if (DomUtils.isOrHasAncestor(getElement(), event.getId())) {
+    if (event.isVisible() && DomUtils.isOrHasAncestor(getElement(), event.getId())) {
       refresh();
     }
   }
@@ -697,8 +698,15 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
     }
 
     List<YearMonth> months = getMonths();
+
     if (activeMonth == null || !months.contains(activeMonth)) {
-      activateMonth(new YearMonth(TimeUtils.today()));
+      String s = BeeKeeper.getStorage().get(storageKey(NAME_ACTIVE_MONTH));
+      YearMonth ym = BeeUtils.isEmpty(s) ? null : YearMonth.parse(s);
+
+      if (ym == null || !months.contains(ym)) {
+        ym = new YearMonth(TimeUtils.today());
+      }
+      activateMonth(ym);
     }
 
     setStyleName(STYLE_INACTIVE_MONTH, !isActive(activeMonth));
@@ -2276,7 +2284,9 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
 
       widget.addClickHandler(event -> {
         String s = DomUtils.getDataProperty(EventUtils.getEventTargetElement(event), KEY_YM);
+
         if (!BeeUtils.isEmpty(s) && activateMonth(YearMonth.parse(s))) {
+          BeeKeeper.getStorage().set(storageKey(NAME_ACTIVE_MONTH), s);
           render();
         }
       });
@@ -2301,12 +2311,14 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
         labels.add(PayrollHelper.format(ym));
       }
 
-      Global.choiceWithCancel(Localized.dictionary().yearMonth(), null, labels,
-          value -> {
-            if (BeeUtils.isIndex(months, value) && activateMonth(months.get(value))) {
-              render();
-            }
-          });
+      Global.choiceWithCancel(Localized.dictionary().yearMonth(), null, labels, value -> {
+        YearMonth ym = BeeUtils.getQuietly(months, value);
+
+        if (activateMonth(ym)) {
+          BeeKeeper.getStorage().set(storageKey(NAME_ACTIVE_MONTH), ym.serialize());
+          render();
+        }
+      });
     });
 
     return selector;
