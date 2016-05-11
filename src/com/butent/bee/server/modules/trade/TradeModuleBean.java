@@ -652,7 +652,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
                       + " CASE WHEN oper_apm IS NULL THEN viso ELSE apm_suma END AS suma"
                       + " FROM apyvarta"
                       + " INNER JOIN operac ON apyvarta.operacija = operac.operacija"
-                      + " WHERE pajamos=0 AND extern_id IN(" + ids.toString() + ")",
+                      + " AND extern_id IN(" + ids.toString() + ")",
                   "id", "data", "suma");
 
           for (SimpleRow payment : payments) {
