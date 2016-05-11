@@ -4704,6 +4704,8 @@ public interface Dictionary {
 
   default String trDriverStartingDate() {return g("trDriverStartingDate");}
 
+  default String trEconomyBonus() {return g("trEconomyBonus");}
+
   default String trEmptyKilometers() {return g("trEmptyKilometers");}
 
   default String trEmptyKilometersTotal() {return g("trEmptyKilometersTotal");}

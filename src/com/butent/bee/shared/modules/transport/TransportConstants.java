@@ -252,6 +252,13 @@ public final class TransportConstants {
       public String getCaption(Dictionary constants) {
         return constants.trConstantCosts();
       }
+    },
+
+    ECONOMY_BONUS {
+      @Override
+      public String getCaption(Dictionary constants) {
+        return constants.trEconomyBonus();
+      }
     };
   }
 
