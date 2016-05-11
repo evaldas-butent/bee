@@ -227,6 +227,9 @@ public final class Service {
   public static final String VAR_TIME = RPC_VAR_PREFIX + "time";
   public static final String VAR_QTY = RPC_VAR_PREFIX + " qty";
 
+  public static final String VAR_YEAR = RPC_VAR_PREFIX + "year";
+  public static final String VAR_MONTH = RPC_VAR_PREFIX + "month";
+
   public static final String VIEW_COLUMN_SEPARATOR = " ";
 
   public static boolean isChatService(String svc) {

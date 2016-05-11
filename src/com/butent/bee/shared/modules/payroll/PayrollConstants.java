@@ -92,6 +92,7 @@ public final class PayrollConstants {
   public static final String SVC_GET_SCHEDULE_OVERLAP = "getScheduleOverlap";
   public static final String SVC_GET_SCHEDULED_MONTHS = "getScheduledMonths";
   public static final String SVC_INIT_EARNINGS = "initEarnings";
+  public static final String SVC_GET_EARNINGS = "getEarnings";
 
   public static final String TBL_EMPLOYEES = "Employees";
   public static final String TBL_LOCATIONS = "Locations";
