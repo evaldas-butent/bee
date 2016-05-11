@@ -61,6 +61,7 @@ import com.butent.bee.shared.modules.documents.DocumentConstants;
 import com.butent.bee.shared.modules.projects.ProjectConstants.ProjectEvent;
 import com.butent.bee.shared.modules.projects.ProjectStatus;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
+import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -645,9 +646,33 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
 
     newRow.setValue(idxColId, value);
 
-    List<BeeColumn> cols = Data.getColumns(form.getViewName(), Lists.newArrayList(column));
+    List<BeeColumn> cols;
+    if (column == COL_PROJECT_STATUS) {
+      cols =
+          Data.getColumns(form.getViewName(), Lists.newArrayList(column,
+              COL_PROJECT_APPROVED_DATE));
+    } else {
+      cols = Data.getColumns(form.getViewName(), Lists.newArrayList(column));
+    }
+
     List<String> newValues = Lists.newArrayList(value);
     List<String> oldValues = Lists.newArrayList(oldRow.getString(idxColId));
+
+    int idxColStatus = Data.getColumnIndex(VIEW_PROJECTS, COL_PROJECT_STATUS);
+
+    if (newRow.getInteger(idxColStatus) != oldRow.getInteger(idxColStatus)) {
+      int idxColFnshdt = Data.getColumnIndex(VIEW_PROJECTS, COL_PROJECT_APPROVED_DATE);
+      int colStatus = BeeUtils.unbox(newRow.getInteger(idxColStatus));
+      if (colStatus == ProjectStatus.APPROVED.ordinal()
+          || colStatus == ProjectStatus.SUSPENDED.ordinal()) {
+        newValues.add(BeeUtils.toString(new DateTime().getTime()));
+        oldValues.add(oldRow.getString(idxColFnshdt));
+      } else {
+        newValues.add(null);
+        oldValues.add(oldRow.getString(idxColFnshdt));
+      }
+    }
+
     Queries.update(form.getViewName(), oldRow.getId(), oldRow.getVersion(), cols, oldValues,
         newValues, null, new RowCallback() {
 
@@ -661,6 +686,7 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
 
           }
         });
+
   }
 
   private void drawChart(IsRow row) {
