@@ -630,8 +630,9 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
       SimpleRowSet debts = qs.getData(new SqlSelect()
           .addFields(table, idName, COL_TRADE_PAID)
           .addFrom(table)
-          .setWhere(SqlUtils.or(SqlUtils.isNull(table, COL_TRADE_PAID),
-              SqlUtils.less(table, COL_TRADE_PAID, SqlUtils.field(table, COL_TRADE_AMOUNT)))));
+          .setWhere(SqlUtils.and(SqlUtils.notNull(table, COL_TRADE_EXPORTED),
+              SqlUtils.or(SqlUtils.isNull(table, COL_TRADE_PAID),
+                  SqlUtils.less(table, COL_TRADE_PAID, SqlUtils.field(table, COL_TRADE_AMOUNT))))));
 
       if (!debts.isEmpty()) {
         StringBuilder ids = new StringBuilder();
@@ -653,7 +654,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
                       + " CASE WHEN oper_apm IS NULL THEN viso ELSE apm_suma END AS suma"
                       + " FROM apyvarta"
                       + " INNER JOIN operac ON apyvarta.operacija = operac.operacija"
-                      + " WHERE pajamos=0 AND extern_id IN(" + ids.toString() + ")",
+                      + " AND extern_id IN(" + ids.toString() + ")",
                   "id", "data", "suma");
 
           for (SimpleRow payment : payments) {

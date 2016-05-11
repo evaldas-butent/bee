@@ -42,6 +42,8 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.payroll.Earning;
+import com.butent.bee.shared.modules.payroll.Earnings;
+import com.butent.bee.shared.modules.payroll.PayrollConstants.WorkScheduleKind;
 import com.butent.bee.shared.modules.payroll.PayrollUtils;
 import com.butent.bee.shared.modules.payroll.WorkScheduleSummary;
 import com.butent.bee.shared.rights.Module;
@@ -57,10 +59,13 @@ import com.butent.bee.shared.utils.EnumUtils;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.ejb.EJB;
 import javax.ejb.LocalBean;
@@ -119,6 +124,10 @@ public class PayrollModuleBean implements BeeModule {
 
       case SVC_INIT_EARNINGS:
         response = initializeEarnings(reqInfo);
+        break;
+
+      case SVC_GET_EARNINGS:
+        response = getEarnings(reqInfo);
         break;
 
       default:
@@ -443,6 +452,73 @@ public class PayrollModuleBean implements BeeModule {
     }
   }
 
+  private ResponseObject getEarnings(RequestInfo reqInfo) {
+    Integer year = reqInfo.getParameterInt(Service.VAR_YEAR);
+    if (!TimeUtils.isYear(year)) {
+      return ResponseObject.parameterNotFound(reqInfo.getSubService(), Service.VAR_YEAR);
+    }
+
+    Integer month = reqInfo.getParameterInt(Service.VAR_MONTH);
+    if (!TimeUtils.isMonth(month)) {
+      return ResponseObject.parameterNotFound(reqInfo.getSubService(), Service.VAR_MONTH);
+    }
+
+    YearMonth ym = new YearMonth(year, month);
+    JustDate from = ym.getDate();
+    JustDate until = ym.getLast();
+
+    Long employeeId = reqInfo.getParameterLong(COL_EMPLOYEE);
+    Long objectId = reqInfo.getParameterLong(COL_PAYROLL_OBJECT);
+
+    IsCondition wsCondition = getScheduleEarningsCondition(from, until, employeeId, null, objectId);
+
+    SqlSelect query = new SqlSelect().setDistinctMode(true)
+        .addFields(TBL_WORK_SCHEDULE, COL_EMPLOYEE, COL_SUBSTITUTE_FOR, COL_PAYROLL_OBJECT)
+        .addFrom(TBL_WORK_SCHEDULE)
+        .setWhere(wsCondition);
+
+    SimpleRowSet data = qs.getData(query);
+    if (DataUtils.isEmpty(data)) {
+      return ResponseObject.emptyResponse();
+    }
+
+    Long currency = prm.getRelation(PRM_CURRENCY);
+    Set<JustDate> holidays = getHolidays(from, until);
+
+    List<Earnings> result = new ArrayList<>();
+
+    for (SimpleRow row : data) {
+      Long empl = row.getLong(COL_EMPLOYEE);
+      Long subst = row.getLong(COL_SUBSTITUTE_FOR);
+      Long obj = row.getLong(COL_PAYROLL_OBJECT);
+
+      Map<DateRange, Pair<Double, Double>> fundsAndWages = getFundsAndWages(from, until,
+          empl, subst, obj, currency);
+
+      fundsAndWages.forEach((range, pair) -> {
+        Earnings earnings = new Earnings(empl, subst, obj);
+
+        earnings.setDateFrom(range.getMinDate());
+        earnings.setDateUntil(range.getMaxDate());
+
+        if (pair != null) {
+          earnings.setSalaryFund(pair.getA());
+          earnings.setHourlyWage(pair.getB());
+        }
+
+        setScheduledTime(earnings, holidays);
+
+        result.add(earnings);
+      });
+    }
+
+    if (result.isEmpty()) {
+      return ResponseObject.emptyResponse();
+    } else {
+      return ResponseObject.responseWithSize(result);
+    }
+  }
+
   private ResponseObject getEmployeeCondition(String companyCode, Integer tabNumber) {
     SqlSelect companyQuery = new SqlSelect()
         .addFields(TBL_COMPANIES, sys.getIdName(TBL_COMPANIES))
@@ -471,6 +547,49 @@ public class PayrollModuleBean implements BeeModule {
         return ResponseObject.response(companyWhere);
       }
     }
+  }
+
+  @SuppressWarnings({"static-method", "unused"})
+  private Map<DateRange, Pair<Double, Double>> getFundsAndWages(JustDate from, JustDate until,
+      Long employeeId, Long substituteFor, Long objectId, Long currency) {
+
+    Map<DateRange, Pair<Double, Double>> fundsAndWages = new HashMap<>();
+
+    return fundsAndWages;
+  }
+
+  private Set<JustDate> getHolidays(JustDate from, JustDate until) {
+    Set<JustDate> holidays = new HashSet<>();
+
+    Long country = prm.getRelation(PRM_COUNTRY);
+
+    if (DataUtils.isId(country)) {
+      HasConditions where = SqlUtils.and();
+      where.add(SqlUtils.equals(TBL_HOLIDAYS, COL_HOLY_COUNTRY, country));
+
+      if (from != null) {
+        where.add(SqlUtils.moreEqual(TBL_HOLIDAYS, COL_HOLY_DAY, from.getDays()));
+      }
+      if (until != null) {
+        where.add(SqlUtils.lessEqual(TBL_HOLIDAYS, COL_HOLY_DAY, until.getDays()));
+      }
+
+      SqlSelect holidayQuery = new SqlSelect()
+          .addFields(TBL_HOLIDAYS, COL_HOLY_DAY)
+          .addFrom(TBL_HOLIDAYS)
+          .setWhere(where);
+
+      Integer[] days = qs.getIntColumn(holidayQuery);
+      if (days != null) {
+        for (Integer day : days) {
+          if (BeeUtils.isPositive(day)) {
+            holidays.add(new JustDate(day));
+          }
+        }
+      }
+    }
+
+    return holidays;
   }
 
   private Earning getObjectEarning(long object, int year, int month, Long currency) {
@@ -553,6 +672,55 @@ public class PayrollModuleBean implements BeeModule {
     }
 
     return ranges.get(new YearMonth(year, month));
+  }
+
+  private static IsCondition getScheduleEarningsCondition(JustDate from, JustDate until,
+      Long employeeId, Long substituteFor, Long objectId) {
+
+    HasConditions conditions = SqlUtils.and();
+
+    conditions.add(SqlUtils.moreEqual(TBL_WORK_SCHEDULE, COL_WORK_SCHEDULE_DATE, from));
+    conditions.add(SqlUtils.lessEqual(TBL_WORK_SCHEDULE, COL_WORK_SCHEDULE_DATE, until));
+
+    if (DataUtils.isId(employeeId)) {
+      IsCondition emplCondition = SqlUtils.equals(TBL_WORK_SCHEDULE, COL_EMPLOYEE, employeeId);
+
+      if (DataUtils.isId(substituteFor) && !Objects.equals(employeeId, substituteFor)) {
+        IsCondition substCondition = SqlUtils.equals(TBL_WORK_SCHEDULE, COL_SUBSTITUTE_FOR,
+            substituteFor);
+
+        if (WorkScheduleKind.PLANNED.isSubstitutionEnabled()) {
+          conditions.add(emplCondition);
+          conditions.add(substCondition);
+
+        } else {
+          conditions.add(
+              SqlUtils.or(
+                  SqlUtils.and(getScheduleKindCondition(WorkScheduleKind.PLANNED),
+                      SqlUtils.equals(TBL_WORK_SCHEDULE, COL_EMPLOYEE, substituteFor)),
+                  SqlUtils.and(getScheduleKindCondition(WorkScheduleKind.ACTUAL),
+                      emplCondition, substCondition)));
+        }
+
+      } else {
+        conditions.add(emplCondition);
+      }
+    }
+
+    if (DataUtils.isId(objectId)) {
+      conditions.add(SqlUtils.equals(TBL_WORK_SCHEDULE, COL_PAYROLL_OBJECT, objectId));
+    }
+
+    conditions.add(SqlUtils.or(
+        SqlUtils.notNull(TBL_WORK_SCHEDULE, COL_TIME_RANGE_CODE),
+        SqlUtils.notNull(TBL_WORK_SCHEDULE, COL_WORK_SCHEDULE_FROM, COL_WORK_SCHEDULE_UNTIL),
+        SqlUtils.notNull(TBL_WORK_SCHEDULE, COL_WORK_SCHEDULE_DURATION)));
+
+    return conditions;
+  }
+
+  private static IsCondition getScheduleKindCondition(WorkScheduleKind kind) {
+    return SqlUtils.equals(TBL_WORK_SCHEDULE, COL_WORK_SCHEDULE_KIND, kind);
   }
 
   private ResponseObject getScheduledMonths(RequestInfo reqInfo) {
@@ -1008,5 +1176,102 @@ public class PayrollModuleBean implements BeeModule {
     }
 
     return false;
+  }
+
+  private void setScheduledTime(Earnings earnings, Set<JustDate> holidays) {
+    SqlSelect query = new SqlSelect()
+        .addFields(TBL_WORK_SCHEDULE, COL_WORK_SCHEDULE_KIND, COL_EMPLOYEE, COL_SUBSTITUTE_FOR,
+            COL_WORK_SCHEDULE_DATE, COL_TIME_RANGE_CODE,
+            COL_WORK_SCHEDULE_FROM, COL_WORK_SCHEDULE_UNTIL, COL_WORK_SCHEDULE_DURATION)
+        .addField(TBL_TIME_RANGES, COL_TR_FROM, ALS_TR_FROM)
+        .addField(TBL_TIME_RANGES, COL_TR_UNTIL, ALS_TR_UNTIL)
+        .addField(TBL_TIME_RANGES, COL_TR_DURATION, ALS_TR_DURATION)
+        .addFrom(TBL_WORK_SCHEDULE)
+        .addFromLeft(TBL_TIME_RANGES,
+            sys.joinTables(TBL_TIME_RANGES, TBL_WORK_SCHEDULE, COL_TIME_RANGE_CODE))
+        .setWhere(getScheduleEarningsCondition(earnings.getDateFrom(), earnings.getDateUntil(),
+            earnings.getEmployeeId(), earnings.getSubstituteFor(), earnings.getObjectId()));
+
+    SimpleRowSet data = qs.getData(query);
+    if (!DataUtils.isEmpty(data)) {
+
+      Map<JustDate, Long> planned = new HashMap<>();
+      Map<JustDate, Long> actual = new HashMap<>();
+
+      boolean substitutePlanned = earnings.isSubstitution()
+          && !WorkScheduleKind.PLANNED.isSubstitutionEnabled();
+
+      Long millis;
+      Long value;
+      boolean ok;
+
+      for (SimpleRow row : data) {
+        WorkScheduleKind kind = EnumUtils.getEnumByIndex(WorkScheduleKind.class,
+            row.getInt(COL_WORK_SCHEDULE_KIND));
+
+        Long empl = row.getLong(COL_EMPLOYEE);
+        Long subst = row.getLong(COL_SUBSTITUTE_FOR);
+
+        if (substitutePlanned && kind == WorkScheduleKind.PLANNED) {
+          ok = subst == null && Objects.equals(empl, earnings.getSubstituteFor());
+        } else {
+          ok = Objects.equals(empl, earnings.getEmployeeId())
+              && Objects.equals(subst, earnings.getSubstituteFor());
+        }
+
+        if (ok) {
+          JustDate date = row.getDate(COL_WORK_SCHEDULE_DATE);
+
+          if (DataUtils.isId(row.getLong(COL_TIME_RANGE_CODE))) {
+            millis = PayrollUtils.getMillis(row.getValue(ALS_TR_FROM), row.getValue(ALS_TR_UNTIL),
+                row.getValue(ALS_TR_DURATION));
+          } else {
+            millis = PayrollUtils.getMillis(row.getValue(COL_WORK_SCHEDULE_FROM),
+                row.getValue(COL_WORK_SCHEDULE_UNTIL), row.getValue(COL_WORK_SCHEDULE_DURATION));
+          }
+
+          if (BeeUtils.isPositive(millis) && kind != null && date != null) {
+            switch (kind) {
+              case PLANNED:
+                value = planned.get(date);
+                if (value != null) {
+                  millis += value;
+                }
+
+                planned.put(date, millis);
+                break;
+
+              case ACTUAL:
+                value = actual.get(date);
+                if (value != null) {
+                  millis += value;
+                }
+
+                actual.put(date, millis);
+                break;
+            }
+          }
+        }
+      }
+
+      if (!planned.isEmpty()) {
+        earnings.setPlannedDays(planned.size());
+        earnings.setPlannedMillis(planned.values().stream().mapToLong(n -> n.longValue()).sum());
+      }
+
+      if (!actual.isEmpty()) {
+        earnings.setActualDays(actual.size());
+        earnings.setActualMillis(actual.values().stream().mapToLong(n -> n.longValue()).sum());
+
+        if (BeeUtils.intersects(actual.keySet(), holidays)) {
+          Map<JustDate, Long> holy = actual.entrySet().stream()
+              .filter(entry -> holidays.contains(entry.getKey()))
+              .collect(Collectors.toMap(entry -> entry.getKey(), entry -> entry.getValue()));
+
+          earnings.setHolyDays(holy.size());
+          earnings.setHolyMillis(holy.values().stream().mapToLong(n -> n.longValue()).sum());
+        }
+      }
+    }
   }
 }

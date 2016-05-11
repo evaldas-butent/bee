@@ -54,7 +54,8 @@
     </SimpleJoin>
     
     <SimpleColumn name="StartDate" />
-    <SimpleColumn name="EndDate" />    
+    <SimpleColumn name="EndDate" />
+    <SimpleColumn name="ApprovedDate" />
     <SimpleColumn name="ExpectedDuration" />
     <SimpleColumn name="TimeUnit" />
     <SimpleJoin name="TimeUnit" joinType="LEFT">
