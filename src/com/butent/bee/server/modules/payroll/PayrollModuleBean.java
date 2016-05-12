@@ -48,6 +48,7 @@ import com.butent.bee.shared.modules.payroll.PayrollUtils;
 import com.butent.bee.shared.modules.payroll.WorkScheduleSummary;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.time.DateRange;
+import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.MonthRange;
 import com.butent.bee.shared.time.TimeRange;
@@ -549,11 +550,140 @@ public class PayrollModuleBean implements BeeModule {
     }
   }
 
-  @SuppressWarnings({"static-method", "unused"})
   private Map<DateRange, Pair<Double, Double>> getFundsAndWages(JustDate from, JustDate until,
       Long employeeId, Long substituteFor, Long objectId, Long currency) {
 
+    RangeMap<JustDate, Double> funds = RangeMap.create();
+    RangeMap<JustDate, Double> wages = RangeMap.create();
+
+    SimpleRow emplRow = qs.getRow(TBL_EMPLOYEES, BeeUtils.nvl(substituteFor, employeeId));
+    if (emplRow != null) {
+      Double salary = emplRow.getDouble(COL_SALARY);
+      if (BeeUtils.isPositive(salary)) {
+        Double wage = adm.maybeExchange(emplRow.getLong(COL_CURRENCY), currency, salary, null);
+
+        if (BeeUtils.isPositive(wage)) {
+          wages.put(DateRange.all(), wage);
+        }
+      }
+    }
+
+    HasConditions where = SqlUtils.and();
+    where.add(SqlUtils.equals(TBL_EMPLOYEE_OBJECTS, COL_PAYROLL_OBJECT, objectId));
+
+    boolean substitution = DataUtils.isId(substituteFor)
+        && !Objects.equals(employeeId, substituteFor);
+
+    if (substitution) {
+      where.add(SqlUtils.or(
+          SqlUtils.equals(TBL_EMPLOYEE_OBJECTS, COL_EMPLOYEE, employeeId,
+              COL_SUBSTITUTE_FOR, substituteFor),
+          SqlUtils.and(SqlUtils.equals(TBL_EMPLOYEE_OBJECTS, COL_EMPLOYEE, substituteFor),
+              SqlUtils.or(SqlUtils.isNull(TBL_EMPLOYEE_OBJECTS, COL_SUBSTITUTE_FOR),
+                  SqlUtils.equals(TBL_EMPLOYEE_OBJECTS, COL_SUBSTITUTE_FOR, substituteFor)))));
+
+    } else {
+      where.add(SqlUtils.equals(TBL_EMPLOYEE_OBJECTS, COL_EMPLOYEE, employeeId));
+      where.add(SqlUtils.or(SqlUtils.isNull(TBL_EMPLOYEE_OBJECTS, COL_SUBSTITUTE_FOR),
+          SqlUtils.equals(TBL_EMPLOYEE_OBJECTS, COL_SUBSTITUTE_FOR, employeeId)));
+    }
+
+    where.add(SqlUtils.or(SqlUtils.positive(TBL_EMPLOYEE_OBJECTS, COL_EMPLOYEE_OBJECT_FUND),
+        SqlUtils.positive(TBL_EMPLOYEE_OBJECTS, COL_WAGE)));
+
+    SqlSelect query = new SqlSelect()
+        .addFields(TBL_EMPLOYEE_OBJECTS, COL_EMPLOYEE, COL_SUBSTITUTE_FOR,
+            COL_EMPLOYEE_OBJECT_FROM, COL_EMPLOYEE_OBJECT_UNTIL,
+            COL_EMPLOYEE_OBJECT_FUND, COL_WAGE, COL_CURRENCY)
+        .addFrom(TBL_EMPLOYEE_OBJECTS)
+        .setWhere(where);
+
+    SimpleRowSet data = qs.getData(query);
+
+    if (!DataUtils.isEmpty(data)) {
+      DateTime rateDt = TimeUtils.startOfDay(until);
+
+      boolean foundFund = false;
+      boolean foundWage = false;
+
+      for (int i = 0; i < 2; i++) {
+        for (SimpleRow row : data) {
+          JustDate min = BeeUtils.max(row.getDate(COL_EMPLOYEE_OBJECT_FROM), from);
+          JustDate max = BeeUtils.min(row.getDate(COL_EMPLOYEE_OBJECT_UNTIL), until);
+
+          if (DateRange.isValidClosedRange(min, max)) {
+            if (substitution) {
+              boolean match = Objects.equals(row.getLong(COL_EMPLOYEE), employeeId)
+                  && Objects.equals(row.getLong(COL_SUBSTITUTE_FOR), substituteFor);
+
+              if (match != (i == 0)) {
+                continue;
+              }
+            }
+
+            Long cFr = row.getLong(COL_CURRENCY);
+
+            if (i == 0 || !foundFund) {
+              Double fund = adm.maybeExchange(cFr, currency,
+                  row.getDouble(COL_EMPLOYEE_OBJECT_FUND), rateDt);
+
+              if (BeeUtils.isPositive(fund)) {
+                funds.put(DateRange.closed(min, max), fund);
+                foundFund = true;
+              }
+            }
+
+            if (i == 0 || !foundWage) {
+              Double wage = adm.maybeExchange(cFr, currency, row.getDouble(COL_WAGE), rateDt);
+              if (BeeUtils.isPositive(wage)) {
+                wages.put(DateRange.closed(min, max), wage);
+                foundWage = true;
+              }
+            }
+          }
+        }
+
+        if (!substitution || foundFund && foundWage) {
+          break;
+        }
+      }
+    }
+
     Map<DateRange, Pair<Double, Double>> fundsAndWages = new HashMap<>();
+
+    if (!funds.isEmpty() || !wages.isEmpty()) {
+      JustDate lower = JustDate.copyOf(from);
+      Double fund = funds.get(lower);
+      Double wage = wages.get(lower);
+
+      for (int d = from.getDays() + 1; d <= until.getDays(); d++) {
+        JustDate date = new JustDate(d);
+
+        Double f = funds.get(date);
+        Double w = wages.get(date);
+
+        if (!Objects.equals(fund, f) || !Objects.equals(wage, w)) {
+          if (BeeUtils.isPositive(fund) || BeeUtils.isPositive(wage)) {
+            fundsAndWages.put(DateRange.closed(lower, new JustDate(d - 1)), Pair.of(fund, wage));
+          }
+
+          lower = date;
+          fund = f;
+          wage = w;
+        }
+      }
+
+      if (BeeUtils.isPositive(fund) || BeeUtils.isPositive(wage)) {
+        fundsAndWages.put(DateRange.closed(lower, until), Pair.of(fund, wage));
+      }
+    }
+
+    if (fundsAndWages.isEmpty()) {
+      Double fund = null;
+      Double wage = null;
+
+      fundsAndWages.put(DateRange.closed(from, until), Pair.of(fund, wage));
+    }
 
     return fundsAndWages;
   }
