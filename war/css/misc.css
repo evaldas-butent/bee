@@ -305,14 +305,17 @@
   -webkit-align-items: center;
   -ms-flex-align: center;
 }
-.bee-rep-text-filter .bee-Toggle {
-  margin-right: 5px;
-}
 .bee-rep-text-filter .bee-Toggle-checked {
   color: red;
 }
 .bee-rep-text-filter .bee-Toggle-unchecked {
   color: green;
+}
+.bee-rep-text-filter .bee-CheckBox {
+  margin: 0 5px 0 5px;
+}
+.bee-rep-text-filter .bee-CheckBox:after {
+  content:",";
 }
 .bee-rep-text-filter .bee-MultiSelector-container {
   flex: 1;

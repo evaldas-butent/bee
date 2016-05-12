@@ -2390,6 +2390,8 @@ public interface Dictionary {
 
   default String employment() {return g("employment");}
 
+  default String empty() {return g("empty");}
+
   default String enabled() {return g("enabled");}
 
   default String enabledShort() {return g("enabledShort");}
