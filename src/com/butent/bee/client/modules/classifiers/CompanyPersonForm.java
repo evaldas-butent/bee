@@ -109,7 +109,7 @@ public class CompanyPersonForm extends AbstractFormInterceptor {
     FlowPanel qrFlowPanel = (FlowPanel) Assert.notNull(form.getWidgetByName(QR_FLOW_PANEL));
     qrFlowPanel.clear();
     FaLabel qrCodeLabel = new FaLabel(FontAwesome.QRCODE);
-    qrCodeLabel.setTitle(Localized.getConstants().qrCode());
+    qrCodeLabel.setTitle(Localized.dictionary().qrCode());
     qrCodeLabel.addStyleName("bee-FontSize-x-large");
     qrFlowPanel.add(qrCodeLabel);
     qrCodeLabel.addClickHandler(new ClickHandler() {

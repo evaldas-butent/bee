@@ -15,6 +15,15 @@ public class LogMessage extends Message {
     return log(LogLevel.DEBUG, text);
   }
 
+  public static LogMessage error(Throwable err) {
+    Throwable cause = err;
+
+    while (cause.getCause() != null) {
+      cause = cause.getCause();
+    }
+    return log(LogLevel.ERROR, cause.toString());
+  }
+
   public static LogMessage level(LogLevel level) {
     return new LogMessage(level);
   }

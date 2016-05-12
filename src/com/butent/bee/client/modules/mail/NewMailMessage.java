@@ -3,8 +3,6 @@ package com.butent.bee.client.modules.mail;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
-import com.google.gwt.event.dom.client.ChangeEvent;
-import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
@@ -28,29 +26,23 @@ import com.butent.bee.client.dialog.DialogConstants;
 import com.butent.bee.client.dialog.InputBoxes;
 import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.dialog.Popup;
-import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory;
-import com.butent.bee.client.ui.FormFactory.FormViewCallback;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.form.CloseCallback;
-import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BiConsumer;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
-import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.html.builder.elements.Div;
@@ -64,6 +56,7 @@ import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -75,7 +68,7 @@ import java.util.Set;
 public final class NewMailMessage extends AbstractFormInterceptor
     implements ClickHandler, SelectionHandler<FileInfo> {
 
-  private class DialogCallback extends InputCallback {
+  private class DialogCallback implements InputCallback {
     @Override
     public String getErrorMessage() {
       if (validate()) {
@@ -90,8 +83,8 @@ public final class NewMailMessage extends AbstractFormInterceptor
       Assert.notNull(closeCallback);
 
       if (hasChanges()) {
-        Global.decide(null, Lists.newArrayList(Localized.getConstants().mailMessageWasNotSent(),
-            Localized.getConstants().mailQuestionSaveToDraft()), new DecisionCallback() {
+        Global.decide(null, Lists.newArrayList(Localized.dictionary().mailMessageWasNotSent(),
+            Localized.dictionary().mailQuestionSaveToDraft()), new DecisionCallback() {
           @Override
           public void onCancel() {
             UiHelper.focus(getFormView().asWidget());
@@ -118,22 +111,23 @@ public final class NewMailMessage extends AbstractFormInterceptor
     }
   }
 
-  private static final String STYLE_WAITING_FOR_USER_EMAILS = BeeConst.CSS_CLASS_PREFIX
-      + "mail-WaitingForUserEmails";
+  public static void create(String to, String subject, String content,
+      Collection<FileInfo> attachments, BiConsumer<Long, Boolean> callback) {
+
+    create(Collections.singleton(to), null, null, subject, content, attachments, null, false,
+        callback);
+  }
 
   public static void create(final Set<String> to, final Set<String> cc, final Set<String> bcc,
       final String subject, final String content, final Collection<FileInfo> attachments,
-      final Long relatedId, final boolean isDraft) {
+      final Long relatedId, final boolean isDraft, BiConsumer<Long, Boolean> callback) {
 
-    MailKeeper.getAccounts(new BiConsumer<List<AccountInfo>, AccountInfo>() {
-      @Override
-      public void accept(List<AccountInfo> availableAccounts, AccountInfo defaultAccount) {
-        if (!BeeUtils.isEmpty(availableAccounts)) {
-          create(availableAccounts, defaultAccount, to, cc, bcc, subject, content, attachments,
-              relatedId, isDraft);
-        } else {
-          BeeKeeper.getScreen().notifyWarning(Localized.getConstants().mailNoAccountsFound());
-        }
+    MailKeeper.getAccounts((availableAccounts, defaultAccount) -> {
+      if (BeeUtils.isEmpty(availableAccounts)) {
+        BeeKeeper.getScreen().notifyWarning(Localized.dictionary().mailNoAccountsFound());
+      } else {
+        create(availableAccounts, defaultAccount, to, cc, bcc, subject, content, attachments,
+            relatedId, isDraft).setCallback(callback);
       }
     });
   }
@@ -146,31 +140,18 @@ public final class NewMailMessage extends AbstractFormInterceptor
         to, cc, bcc, subject, content, attachments, relatedId, isDraft);
 
     FormFactory.createFormView(FORM_NEW_MAIL_MESSAGE, null, null, false, newMessage,
-        new FormViewCallback() {
-          @Override
-          public void onSuccess(FormDescription formDescription, FormView formView) {
-            if (formView != null) {
-              formView.start(null);
+        (formDescription, formView) -> {
+          if (formView != null) {
+            formView.start(null);
+            boolean modal = Popup.hasEventPreview();
 
-              final boolean modal = Popup.hasEventPreview();
+            DialogBox dialog = Global.inputWidget(formView.getCaption(), formView,
+                newMessage.new DialogCallback(), RowFactory.DIALOG_STYLE);
 
-              final DialogBox dialog = Global.inputWidget(formView.getCaption(), formView,
-                  newMessage.new DialogCallback(), RowFactory.DIALOG_STYLE);
-              dialog.addStyleName(STYLE_WAITING_FOR_USER_EMAILS);
-
-              Queries.getRowSet(VIEW_USER_EMAILS, null, null, null, CachingPolicy.WRITE,
-                  new RowSetCallback() {
-                    @Override
-                    public void onSuccess(BeeRowSet result) {
-                      dialog.removeStyleName(STYLE_WAITING_FOR_USER_EMAILS);
-                      if (!modal) {
-                        dialog.setPreviewEnabled(false);
-                      }
-                    }
-                  });
-
-              newMessage.initHeader(dialog);
+            if (!modal) {
+              dialog.setPreviewEnabled(false);
             }
+            newMessage.initHeader(dialog);
           }
         });
     return newMessage;
@@ -194,7 +175,7 @@ public final class NewMailMessage extends AbstractFormInterceptor
   private final ListBox signaturesWidget = new ListBox();
   private FileCollector attachmentsWidget;
 
-  private Consumer<Boolean> actionCallback;
+  private BiConsumer<Long, Boolean> actionCallback;
 
   private NewMailMessage(List<AccountInfo> availableAccounts, AccountInfo defaultAccount,
       Set<String> to, Set<String> cc, Set<String> bcc, String subject, String content,
@@ -285,7 +266,7 @@ public final class NewMailMessage extends AbstractFormInterceptor
         @Override
         public void onFailure(String... reason) {
           attachmentsWidget.removeFile(file);
-          super.onFailure(reason);
+          Callback.super.onFailure(reason);
         }
 
         @Override
@@ -297,7 +278,7 @@ public final class NewMailMessage extends AbstractFormInterceptor
     }
   }
 
-  public void setCallback(Consumer<Boolean> callback) {
+  public void setCallback(BiConsumer<Long, Boolean> callback) {
     this.actionCallback = callback;
   }
 
@@ -314,8 +295,8 @@ public final class NewMailMessage extends AbstractFormInterceptor
       if (currentContent.contains(oldSignature)) {
         currentContent = currentContent.replace(oldSignature, newSignature);
       } else {
-        if (BeeUtils.startsWith(subject, Localized.getConstants().mailReplayPrefix())
-            || BeeUtils.startsWith(subject, Localized.getConstants().mailForwardedPrefix())) {
+        if (BeeUtils.startsWith(subject, Localized.dictionary().mailReplayPrefix())
+            || BeeUtils.startsWith(subject, Localized.dictionary().mailForwardedPrefix())) {
 
           currentContent = SIGNATURE_SEPARATOR + newSignature + currentContent;
         } else {
@@ -351,7 +332,7 @@ public final class NewMailMessage extends AbstractFormInterceptor
 
   private void initHeader(DialogBox dialog) {
     FaLabel send = new FaLabel(FontAwesome.PAPER_PLANE);
-    send.setTitle(Localized.getConstants().send());
+    send.setTitle(Localized.dictionary().send());
     send.addClickHandler(this);
 
     dialog.insertAction(1, send);
@@ -368,17 +349,13 @@ public final class NewMailMessage extends AbstractFormInterceptor
                   BeeUtils.toString(signatureId));
             }
             signaturesWidget.setEnabled(signaturesWidget.getItemCount() > 0);
-            signaturesWidget.addChangeHandler(new ChangeHandler() {
-              @Override
-              public void onChange(ChangeEvent event) {
-                applySignature(BeeUtils.toLongOrNull(signaturesWidget.getValue()));
-              }
-            });
+            signaturesWidget.addChangeHandler(
+                event -> applySignature(BeeUtils.toLongOrNull(signaturesWidget.getValue())));
             applySignature(isDraft ? null : account.getSignatureId());
           }
         });
     dialog.insertAction(1, signaturesWidget);
-    dialog.getHeader().insert(new Label(Localized.getConstants().mailSignature() + ":"), 1);
+    dialog.getHeader().insert(new Label(Localized.dictionary().mailSignature() + ":"), 1);
 
     final ListBox accountsWidget = new ListBox();
 
@@ -391,15 +368,12 @@ public final class NewMailMessage extends AbstractFormInterceptor
       }
     }
     accountsWidget.setEnabled(accountsWidget.getItemCount() > 1);
-    accountsWidget.addChangeHandler(new ChangeHandler() {
-      @Override
-      public void onChange(ChangeEvent event) {
-        AccountInfo selectedAccount = accounts.get(accountsWidget.getSelectedIndex());
+    accountsWidget.addChangeHandler(event -> {
+      AccountInfo selectedAccount = accounts.get(accountsWidget.getSelectedIndex());
 
-        if (!Objects.equals(selectedAccount, account)) {
-          account = selectedAccount;
-          applySignature(account.getSignatureId());
-        }
+      if (!Objects.equals(selectedAccount, account)) {
+        account = selectedAccount;
+        applySignature(account.getSignatureId());
       }
     });
     dialog.insertAction(1, accountsWidget);
@@ -440,7 +414,7 @@ public final class NewMailMessage extends AbstractFormInterceptor
         response.notify(BeeKeeper.getScreen());
 
         if (actionCallback != null && !response.hasErrors()) {
-          actionCallback.accept(saveMode);
+          actionCallback.accept(response.getResponseAsLong(), saveMode);
         }
       }
     });
@@ -457,18 +431,18 @@ public final class NewMailMessage extends AbstractFormInterceptor
       }
     }
     if (!hasRecipients) {
-      error = Localized.getConstants().mailSpecifyRecipient();
+      error = Localized.dictionary().mailSpecifyRecipient();
 
     } else if (subjectWidget == null || BeeUtils.isEmpty(subjectWidget.getValue())) {
-      error = Localized.getConstants().mailSpecifySubject();
+      error = Localized.dictionary().mailSpecifySubject();
 
     } else if (contentWidget == null || BeeUtils.isEmpty(contentWidget.getValue())) {
-      error = Localized.getConstants().mailMessageBodyIsEmpty();
+      error = Localized.dictionary().mailMessageBodyIsEmpty();
 
     } else {
       for (FileInfo file : attachmentsWidget.getFiles()) {
         if (!DataUtils.isId(file.getId())) {
-          error = Localized.getConstants().mailThereIsStackOfUnfinishedAttachments();
+          error = Localized.dictionary().mailThereIsStackOfUnfinishedAttachments();
           break;
         }
       }

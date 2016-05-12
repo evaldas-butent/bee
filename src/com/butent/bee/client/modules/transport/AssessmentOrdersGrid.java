@@ -43,7 +43,7 @@ import java.util.Set;
 
 public class AssessmentOrdersGrid extends AbstractGridInterceptor implements ClickHandler {
 
-  private final Button action = new Button(Localized.getConstants().trCreateTransportation(), this);
+  private final Button action = new Button(Localized.dictionary().trCreateTransportation(), this);
 
   @Override
   public void afterCreatePresenter(GridPresenter presenter) {
@@ -65,7 +65,7 @@ public class AssessmentOrdersGrid extends AbstractGridInterceptor implements Cli
       ids.add(row.getId());
     }
     if (ids.isEmpty()) {
-      presenter.getGridView().notifyWarning(Localized.getConstants().selectAtLeastOneRow());
+      presenter.getGridView().notifyWarning(Localized.dictionary().selectAtLeastOneRow());
       return;
     }
     Queries.getRowSet(TBL_ASSESSMENT_FORWARDERS,
@@ -91,14 +91,14 @@ public class AssessmentOrdersGrid extends AbstractGridInterceptor implements Cli
               vehicles.put(id, row.getString(vehicleCol));
             }
             if (forwarders.isEmpty()) {
-              presenter.getGridView().notifyWarning(Localized.getConstants().noData());
+              presenter.getGridView().notifyWarning(Localized.dictionary().noData());
             } else {
               List<String> fwd = new ArrayList<>();
 
               for (Pair<String, String> forwarder : forwarders.values()) {
                 fwd.add(forwarder.getA());
               }
-              Global.choice(Localized.getConstants().trChooseForwarder(), null, fwd,
+              Global.choice(Localized.dictionary().trChooseForwarder(), null, fwd,
                   new ChoiceCallback() {
                     @Override
                     public void onSuccess(int value) {

@@ -7,6 +7,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Multimap;
 
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.modules.mail.MailConstants;
 import com.butent.bee.shared.modules.mail.MailConstants.AddressType;
 import com.butent.bee.shared.modules.mail.MailConstants.MessageFlag;
 import com.butent.bee.shared.time.DateTime;
@@ -59,6 +60,7 @@ public class MailEnvelope {
   private final String subject;
   private final Multimap<AddressType, InternetAddress> recipients = HashMultimap.create();
   private final Integer flagMask;
+  private final String inReplyTo;
 
   private final String uniqueId;
 
@@ -93,6 +95,7 @@ public class MailEnvelope {
       }
     }
     flagMask = getFlagMask(message);
+    inReplyTo = msg.getHeader(MailConstants.COL_IN_REPLY_TO, null);
     uniqueId = Codec.md5(BeeUtils.joinWords(messageId, date, sender, subject));
   }
 
@@ -102,6 +105,10 @@ public class MailEnvelope {
 
   public Integer getFlagMask() {
     return flagMask;
+  }
+
+  public String getInReplyTo() {
+    return inReplyTo;
   }
 
   public Multimap<AddressType, InternetAddress> getRecipients() {

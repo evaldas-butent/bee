@@ -1,15 +1,13 @@
 package com.butent.bee.client.output;
 
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.composite.MultiSelector;
-import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.widget.Toggle;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
@@ -36,8 +34,8 @@ public class ReportTextItem extends ReportItem {
   private MultiSelector filterWidget;
   private List<String> filter;
 
-  public ReportTextItem(String name, String caption) {
-    super(name, caption);
+  public ReportTextItem(String expression, String caption) {
+    super(expression, caption);
   }
 
   @Override
@@ -74,7 +72,7 @@ public class ReportTextItem extends ReportItem {
 
   @Override
   public ReportValue evaluate(SimpleRow row) {
-    return ReportValue.of(row.getValue(getName()));
+    return ReportValue.of(row.getValue(getExpression()));
   }
 
   @Override
@@ -96,7 +94,7 @@ public class ReportTextItem extends ReportItem {
 
   @Override
   public int hashCode() {
-    return Objects.hash(getName(), isNegationFilter());
+    return Objects.hash(getExpression(), isNegationFilter());
   }
 
   public boolean isNegationFilter() {
@@ -124,7 +122,7 @@ public class ReportTextItem extends ReportItem {
     filterNegation = false;
 
     if (!BeeUtils.isEmpty(value)) {
-      filter = Arrays.asList(value);
+      filter = Collections.singletonList(value);
     } else {
       filter = null;
     }
@@ -133,13 +131,15 @@ public class ReportTextItem extends ReportItem {
 
   @Override
   public boolean validate(SimpleRow row) {
-    if (BeeUtils.isEmpty(filter) || !row.getRowSet().hasColumn(getName())) {
+    if (BeeUtils.isEmpty(filter) || !row.getRowSet().hasColumn(getExpression())) {
       return true;
     }
-    String value = row.getValue(getName());
+    String value = row.getValue(getExpression());
 
     for (String opt : filter) {
-      if (BeeUtils.containsSame(value, opt)) {
+      if (BeeUtils.isPrefix(opt, BeeConst.STRING_EQ)
+          ? Objects.equals(value, BeeUtils.removePrefix(opt, BeeConst.STRING_EQ))
+          : BeeUtils.containsSame(value, opt)) {
         return !isNegationFilter();
       }
     }
@@ -147,14 +147,9 @@ public class ReportTextItem extends ReportItem {
   }
 
   private void renderFilter(final Flow container) {
-    final Toggle toggle = new Toggle(Localized.getConstants().is(),
-        Localized.getConstants().isNot(), null, filterNegation);
-    toggle.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent clickEvent) {
-        filterNegation = toggle.isChecked();
-      }
-    });
+    final Toggle toggle = new Toggle(Localized.dictionary().is(),
+        Localized.dictionary().isNot(), null, filterNegation);
+    toggle.addClickHandler(clickEvent -> filterNegation = toggle.isChecked());
     container.add(toggle);
 
     if (filterWidget == null) {
@@ -169,12 +164,9 @@ public class ReportTextItem extends ReportItem {
       filterWidget = MultiSelector.autonomous(relation, (AbstractCellRenderer) null);
       filterWidget.addStyleName(StyleUtils.NAME_FLEX_BOX_CENTER);
 
-      filterWidget.addSelectorHandler(new SelectorEvent.Handler() {
-        @Override
-        public void onDataSelector(SelectorEvent event) {
-          if (EnumUtils.in(event.getState(), State.INSERTED, State.REMOVED)) {
-            filter = filterWidget.getValues();
-          }
+      filterWidget.addSelectorHandler(event -> {
+        if (EnumUtils.in(event.getState(), State.INSERTED, State.REMOVED)) {
+          filter = filterWidget.getValues();
         }
       });
       filterWidget.setValues(filter);

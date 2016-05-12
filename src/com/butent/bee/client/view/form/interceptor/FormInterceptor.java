@@ -22,8 +22,6 @@ import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.HasViewName;
 import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.time.DateTime;
-import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.ui.Action;
 
 import java.util.List;
@@ -31,8 +29,6 @@ import java.util.Set;
 
 public interface FormInterceptor extends WidgetInterceptor, HasGridView, HandlesStateChange,
     HasDomain, HasActiveRow, HasViewName, EditEndEvent.Handler {
-
-  void afterAction(Action action, Presenter presenter);
 
   void afterCreate(FormView form);
 
@@ -54,12 +50,6 @@ public interface FormInterceptor extends WidgetInterceptor, HasGridView, Handles
 
   boolean focusSource(String source);
 
-  long getActiveRowId();
-
-  int getDataIndex(String source);
-
-  DateTime getDateTimeValue(String source);
-
   Set<Action> getDisabledActions(Set<Action> defaultActions);
 
   Set<Action> getEnabledActions(Set<Action> defaultActions);
@@ -70,17 +60,9 @@ public interface FormInterceptor extends WidgetInterceptor, HasGridView, Handles
 
   FormInterceptor getInstance();
 
-  Integer getIntegerValue(String source);
-
-  JustDate getDateValue(String source);
-
-  Long getLongValue(String source);
-
   AbstractCellRenderer getRenderer(WidgetDescription widgetDescription);
 
   BeeRowSet getRowSet();
-
-  String getStringValue(String source);
 
   boolean hasFooter(int rowCount);
 
@@ -109,6 +91,8 @@ public interface FormInterceptor extends WidgetInterceptor, HasGridView, Handles
   void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow);
 
   void onUnload(FormView form);
+
+  boolean saveOnPrintNewRow();
 
   void setFormView(FormView form);
 }

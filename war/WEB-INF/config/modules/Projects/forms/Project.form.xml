@@ -11,9 +11,9 @@
 
 <f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form"
   name="Project" viewName="Projects"
-  caption="=project" width="950" widthUnit="px" height="95" heightUnit="%" >
+  caption="=project" width="950" widthUnit="px" height="95" heightUnit="%" favorite="Name" >
   <FlowPanel>
-    <Table class="bee-ProjectTable">
+    <Table kind="controls" class="bee-ProjectTable">
       <!--
       <row>
         <Label for="ProjectTemplate" style="&lbl;"/>
@@ -45,8 +45,8 @@
 
     <Disclosure open="true" name="RelatedInfo">
       <Label text="=relatedInformation" style="text-transform: uppercase; " />
-      <Table>
-        <Table>
+      <Table kind="custom">
+        <Table kind="controls">
           <row>
             <Label for="Owner" text="=prjManager" style=" &lbl;" class="bee-required" />
             <DataSelector source="Owner" name="Owner" style="&inp2;" />
@@ -74,7 +74,7 @@
           </row>
         </Table>
 
-        <Table>
+        <Table kind="controls">
           <row>
             <Label for="ExpectedDuration" text="=expectedDuration" style="&lbl;" />
             <InputDecimal source="ExpectedDuration" style="&inp3;" />
@@ -104,7 +104,7 @@
 
         </Table>
 
-        <Table>
+        <Table kind="controls">
           <row>
             <Label for="Description" text="=description" style="width: 115px; &lbl;" />
             <InputArea source="Description" placeholder="=prjDescriptionContent" style="&inp4;" />
@@ -127,14 +127,14 @@
         <text>=prjStages</text>
         <ChildGrid name="ProjectStages" relColumn="Project" />
       </page>
-      <page>
-        <text>=personContacts</text>
-        <ChildGrid name="ProjectContacts" relColumn="Project"  />
+      <page module="Tasks">
+        <text>=crmTasks</text>
+        <ChildGrid name="ChildTasks" relColumn="Project" disablable="false" />
       </page>
       <page module="Documents">
         <text>=documents</text>
         <FlowPanel>
-          <Table style="margin-bottom: 5px;">
+          <Table kind="controls" style="margin-bottom: 5px;">
             <row>
               <Label text="=personContact" style="margin-right: 1em; text-align: left;" />
               <DataSelector source="ContactPerson"
@@ -168,9 +168,13 @@
             class="flexible" style="height: 400px;"/>
         </FlowPanel>
       </page>
-      <page module="Tasks">
-        <text>=crmTasks</text>
-        <ChildGrid name="ChildTasks" relColumn="Project" />
+      <page>
+        <text>=prjSchedule</text>
+        <FlowPanel name="ChartData" />
+      </page>
+      <page>
+        <text>=personContacts</text>
+        <ChildGrid name="ProjectContacts" relColumn="Project"  />
       </page>
       <page module="Tasks">
         <text>=crmRecurringTasks</text>
@@ -189,8 +193,8 @@
         <ChildGrid name="ProjectInvoices" relColumn="Project" />
       </page>
       <page>
-        <text>=prjSchedule</text>
-        <FlowPanel name="ChartData" />
+          <text>=mails</text>
+          <ChildGrid name="RelatedMessages" relColumn="Project" paging="true" />
       </page>
    </TabbedPages>
    </FlowPanel>

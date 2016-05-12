@@ -2,26 +2,22 @@
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
 	xmlns:ui="http://www.butent.com/ui" name="CompanyContacts" viewName="CompanyContacts"
 	caption="=additionalContacts" flexGrow="1" flexShrink="1">
-
+  xmlns:ui="http://www.butent.com/ui"
 	<g:columns>
-		<DataColumn name="Notes" minWidth="250" visible="true" caption="=name" label="=name"/>
-		<DataColumn name="Address" minWidth="200" maxWidth="300"
-			visible="true" />
-		<DataColumn name="PostIndex" minWidth="50" maxWidth="200" />
-		<RelColumn name="City" minWidth="50" maxWidth="200"
-			renderColumns="CityName" visible="true" />
-		<RelColumn name="Country" minWidth="50" maxWidth="200"
-			renderColumns="CountryName" visible="true" />
-		<CalcColumn type="string" name="Flag" source="CountryCode"
-			cellType="html" width="30" caption="-" label="=countryFlag" sortable="false"
-			horizontalAlignment="center" filterOptions="-" visible="false">
-			<renderer type="flag" />
-		</CalcColumn>
-		<DataColumn name="Phone" minWidth="100" maxWidth="200" />
-		<DataColumn name="Fax" minWidth="50" maxWidth="200"
-			visible="false" />
-		<RelColumn name="EmailId" />
-		<DataColumn name="RemindEmail" maxWidth="30">
+  	<DataColumn name="Notes" minWidth="250" visible="true" caption="=name" label="=name"/>
+    <DataColumn name="Address" minWidth="200" maxWidth="300" visible="true" />
+    <DataColumn name="PostIndex" minWidth="50" maxWidth="200" />
+    <RelColumn name="City" minWidth="50" maxWidth="200" renderColumns="CityName" visible="true" />
+    <RelColumn name="Country" minWidth="50" maxWidth="200" renderColumns="CountryName" visible="true" />
+    <CalcColumn type="string" name="Flag" source="CountryCode" cellType="html" width="30"
+      caption="-" label="=countryFlag" sortable="false" horizontalAlignment="center"
+      filterOptions="-" visible="false">
+      <renderer type="flag" />
+    </CalcColumn>  
+    <DataColumn name="Phone" minWidth="100" maxWidth="200"/>
+    <DataColumn name="Fax" minWidth="50" maxWidth="200" visible="false" />
+    <RelColumn name="EmailId" />
+	<DataColumn name="RemindEmail" maxWidth="30">
       <validation>
         <ui:function>
             var emailId = row.EmailId;
@@ -55,9 +51,7 @@
           </ui:function>
       </validation>
     </DataColumn>
-		<DataColumn name="Website" minWidth="100" maxWidth="200"
-			visible="false" />
-		<DataColumn name="SocialContacts" minWidth="100" maxWidth="200"
-			visible="false" />
+    <DataColumn name="Website" minWidth="100" maxWidth="200" visible="false" />
+    <DataColumn name="SocialContacts" minWidth="100" maxWidth="200" visible="false" />
 	</g:columns>
 </g:Grid>

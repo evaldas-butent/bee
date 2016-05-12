@@ -2,15 +2,17 @@ package com.butent.bee.server;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 
-import com.butent.bee.server.communication.Rooms;
+import com.butent.bee.server.communication.ChatBean;
 import com.butent.bee.server.data.DataServiceBean;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
+import com.butent.bee.server.i18n.LocalizationBean;
 import com.butent.bee.server.i18n.Localizations;
 import com.butent.bee.server.modules.ModuleHolderBean;
 import com.butent.bee.server.modules.ParamHolderBean;
+import com.butent.bee.server.modules.mail.MailModuleBean;
 import com.butent.bee.server.news.NewsBean;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.ui.UiHolderBean;
@@ -25,6 +27,7 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.rights.RightsUtils;
 import com.butent.bee.shared.time.TimeUtils;
@@ -71,6 +74,12 @@ public class DispatcherBean {
   ParamHolderBean prm;
   @EJB
   QueryServiceBean qs;
+  @EJB
+  MailModuleBean mail;
+  @EJB
+  ChatBean chat;
+  @EJB
+  LocalizationBean loc;
 
   public void beforeLogout(RequestInfo reqInfo) {
     String workspace = reqInfo.getParameter(COL_LAST_WORKSPACE);
@@ -89,7 +98,9 @@ public class DispatcherBean {
     if (userData.hasErrors()) {
       return response;
     }
+
     data.put(Service.VAR_USER, userData.getResponse());
+
     data.put(Service.PROPERTY_MODULES, Module.getEnabledModulesAsString());
     data.put(Service.PROPERTY_VIEW_MODULES, RightsUtils.getViewModulesAsString());
 
@@ -106,6 +117,65 @@ public class DispatcherBean {
     if (DataUtils.isId(company)) {
       data.put(PRM_COMPANY, company);
     }
+
+    data.put(TBL_DICTIONARY, Localizations.getGlossary(userService.getSupportedLocale()));
+
+    return response.setResponse(data);
+  }
+
+  public void doLogout(long userId, long historyId) {
+    userService.logout(userId, historyId);
+  }
+
+  public ResponseObject doService(String svc, RequestInfo reqInfo) {
+    ResponseObject response;
+
+    if (moduleHolder.hasModule(svc)) {
+      response = moduleHolder.doModule(svc, reqInfo);
+
+    } else if (Service.isDataService(svc)) {
+      response = uiService.doService(reqInfo);
+
+    } else if (Service.isChatService(svc)) {
+      response = chat.doService(reqInfo);
+
+    } else if (Service.isDbService(svc)) {
+      response = dataService.doService(svc, reqInfo);
+
+    } else if (Service.isSysService(svc)) {
+      response = systemService.doService(svc, reqInfo);
+
+    } else if (Service.isL10nService(svc)) {
+      response = loc.doService(reqInfo);
+
+    } else if (BeeUtils.same(svc, Service.INIT)) {
+      response = doInit(reqInfo);
+
+    } else if (BeeUtils.same(svc, Service.GET_MENU)) {
+      response = uiHolder.getMenu(reqInfo.hasParameter(Service.VAR_RIGHTS),
+          reqInfo.hasParameter(Service.VAR_TRANSFORM));
+
+    } else if (BeeUtils.same(svc, Service.WHERE_AM_I)) {
+      response = ResponseObject.info(System.currentTimeMillis(), BeeConst.whereAmI());
+
+    } else if (BeeUtils.same(svc, Service.INVOKE)) {
+      response = Reflection.invoke(invocation, reqInfo.getSubService(), reqInfo);
+
+    } else if (BeeUtils.same(svc, Service.RESPECT_MY_AUTHORITAH)) {
+      response = userService.respectMyAuthoritah();
+
+    } else {
+      String msg = BeeUtils.joinWords(svc, "service not recognized");
+      logger.warning(msg);
+      response = ResponseObject.error(msg);
+    }
+
+    return response;
+  }
+
+  private ResponseObject doInit(RequestInfo reqInfo) {
+    ResponseObject response = new ResponseObject();
+    Map<String, Object> data = new HashMap<>();
 
     UserInterface userInterface = null;
 
@@ -147,13 +217,18 @@ public class DispatcherBean {
             }
             break;
 
-          case DATA_INFO:
-            data.put(component.key(), sys.getDataInfo());
+          case CHATS:
+            ResponseObject chats = chat.getChats();
+            if (chats != null) {
+              response.addMessagesFrom(chats);
+              if (!chats.hasErrors() && chats.hasResponse()) {
+                data.put(component.key(), chats.getResponse());
+              }
+            }
             break;
 
-          case DICTIONARY:
-            data.put(component.key(),
-                Localizations.getPreferredDictionary(userService.getLanguage()));
+          case DATA_INFO:
+            data.put(component.key(), sys.getDataInfo());
             break;
 
           case DECORATORS:
@@ -187,8 +262,15 @@ public class DispatcherBean {
             }
             break;
 
+          case MAIL:
+            int unread = mail.countUnread();
+            if (unread > 0) {
+              data.put(component.key(), unread);
+            }
+            break;
+
           case MENU:
-            ResponseObject menuData = uiHolder.getMenu(true);
+            ResponseObject menuData = uiHolder.getMenu(true, true);
             if (menuData != null) {
               response.addMessagesFrom(menuData);
               if (!menuData.hasErrors() && menuData.hasResponse()) {
@@ -205,7 +287,7 @@ public class DispatcherBean {
             break;
 
           case NEWS:
-            ResponseObject newsData = news.getNews();
+            ResponseObject newsData = news.getNews(Feed.ALL);
             if (newsData != null) {
               response.addMessagesFrom(newsData);
               if (!newsData.hasErrors() && newsData.hasResponse()) {
@@ -253,46 +335,9 @@ public class DispatcherBean {
       }
     }
 
-    return response.setResponse(data);
-  }
-
-  public void doLogout(long userId, long historyId) {
-    userService.logout(userId, historyId);
-  }
-
-  public ResponseObject doService(String svc, RequestInfo reqInfo) {
-    ResponseObject response;
-
-    if (moduleHolder.hasModule(svc)) {
-      response = moduleHolder.doModule(svc, reqInfo);
-
-    } else if (Service.isDataService(svc)) {
-      response = uiService.doService(reqInfo);
-
-    } else if (Service.isDbService(svc)) {
-      response = dataService.doService(svc, reqInfo);
-
-    } else if (Service.isSysService(svc)) {
-      response = systemService.doService(svc, reqInfo);
-
-    } else if (BeeUtils.same(svc, Service.GET_MENU)) {
-      response = uiHolder.getMenu(reqInfo.hasParameter(Service.VAR_RIGHTS));
-
-    } else if (BeeUtils.same(svc, Service.GET_ROOM)) {
-      response = Rooms.getRoom(reqInfo);
-
-    } else if (BeeUtils.same(svc, Service.WHERE_AM_I)) {
-      response = ResponseObject.info(System.currentTimeMillis(), BeeConst.whereAmI());
-
-    } else if (BeeUtils.same(svc, Service.INVOKE)) {
-      response = Reflection.invoke(invocation, reqInfo.getParameter(Service.VAR_METHOD), reqInfo);
-
-    } else {
-      String msg = BeeUtils.joinWords(svc, "service not recognized");
-      logger.warning(msg);
-      response = ResponseObject.error(msg);
+    if (!data.isEmpty()) {
+      response.setResponse(data);
     }
-
     return response;
   }
 }

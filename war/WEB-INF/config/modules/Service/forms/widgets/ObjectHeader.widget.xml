@@ -3,7 +3,7 @@
   <!ENTITY clbl "text-align: right; padding-left: 1em; padding-right: 1em;">
   <!ENTITY inp "width: 200px;">
 ]>
-<Table xmlns="http://www.butent.com/widget" 
+<Table xmlns="http://www.butent.com/widget" kind="controls"
     style="border-collapse: collapse;" cellStyle="padding-top: 8px;">
 
   <col index="0" cellStyle="&clbl;" />

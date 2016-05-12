@@ -60,6 +60,7 @@ import com.butent.bee.shared.html.builder.elements.Div;
 import com.butent.bee.shared.html.builder.elements.Span;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.classifiers.ItemPrice;
+import com.butent.bee.shared.modules.orders.OrdersConstants;
 import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -222,7 +223,6 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
   private BeeRowSet items;
 
   private final Map<Long, ItemPrice> selectedPrices = new HashMap<>();
-  private Map<Long, Double> remainders = new HashMap<>();
   private final Flow itemPanel = new Flow(STYLE_ITEM_PANEL);
   private final List<String> visibleTableCols = new ArrayList<>();
   private Notification notification = new Notification();
@@ -257,7 +257,7 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
   public void show(IsRow row, Element target) {
     lastRow = DataUtils.cloneRow(row);
 
-    isOrder = setIsOrder();
+    isOrder = setIsOrder(row);
 
     warehouseFrom = getWarehouseFrom(row);
     itemPrice = TradeActKeeper.getItemPrice(VIEW_TRADE_ACTS, row);
@@ -478,7 +478,7 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
 
     for (String column : SEARCH_COLUMNS) {
       if (COL_CATEGORY.equals(column)) {
-        label = Localized.getConstants().category();
+        label = Localized.dictionary().category();
       } else {
         label = Data.getColumnLabel(VIEW_ITEMS, column);
       }
@@ -486,7 +486,7 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
       searchBy.addItem(label, column);
       searchBy2.addItem(label, column);
     }
-    searchBy.addItem(Localized.getConstants().captionId(), COL_ITEM);
+    searchBy.addItem(Localized.dictionary().captionId(), COL_ITEM);
     searchBy2.addItem(Localized.getConstants().captionId(), COL_ITEM);
 
     panel.add(searchBy);
@@ -561,7 +561,7 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
 
       } else if (COL_ITEM.equals(by) && !DataUtils.isId(query)) {
         BeeKeeper.getScreen().notifyWarning(
-            BeeUtils.joinWords(Localized.getConstants().invalidIdValue(), query));
+            BeeUtils.joinWords(Localized.dictionary().invalidIdValue(), query));
         ok = false;
 
       } else {
@@ -773,11 +773,6 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
       public void onClick(ClickEvent event) {
         Map<Long, Double> quantities = getQuantities();
         if (!quantities.isEmpty()) {
-          if (isOrder) {
-            if (!checkQuantities(quantities)) {
-              return;
-            }
-          }
           selectItems(quantities);
         }
         dialog.close();
@@ -798,8 +793,8 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
           dialog.close();
 
         } else {
-          Global.decide(Localized.getConstants().goods(),
-              Lists.newArrayList(Localized.getConstants().taSaveSelectedItems()),
+          Global.decide(Localized.dictionary().goods(),
+              Lists.newArrayList(Localized.dictionary().taSaveSelectedItems()),
               new DecisionCallback() {
             @Override
             public void onConfirm() {
@@ -885,7 +880,7 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
     if (BeeUtils.isPositive(stock)) {
       div.addClass(STYLE_STOCK_POSITIVE);
       if (isFrom(warehouse)) {
-        div.title(Localized.getConstants().actionSelect());
+        div.title(Localized.dictionary().actionSelect());
       }
 
     } else if (BeeUtils.isNegative(stock)) {
@@ -919,18 +914,6 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
     SelectionEvent.fire(this, selection);
   }
 
-  private boolean checkQuantities(Map<Long, Double> quantities) {
-    boolean valid = true;
-    for (Long id : quantities.keySet()) {
-      if (quantities.get(id) > remainders.get(id)) {
-        notification.severe(Localized.getConstants().ordQtyIsTooBig());
-        valid = false;
-        break;
-      }
-    }
-    return valid;
-  }
-
   protected IsRow getLastRow() {
     return lastRow;
   }
@@ -943,5 +926,5 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
 
   public abstract Long getWarehouseFrom(IsRow row);
 
-  public abstract boolean setIsOrder();
+  public abstract boolean setIsOrder(IsRow row);
 }

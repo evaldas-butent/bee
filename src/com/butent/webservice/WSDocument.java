@@ -62,6 +62,7 @@ public class WSDocument {
   private String customer;
   private String payer;
   private String currency;
+  private String manager;
 
   private final List<WSDocumentItem> items = new ArrayList<>();
 
@@ -93,6 +94,7 @@ public class WSDocument {
           .append(XmlUtils.tag("tiekejas", supplier))
           .append(XmlUtils.tag("gavejas", customer))
           .append(XmlUtils.tag("moketojas", payer))
+          .append(XmlUtils.tag("manager", manager))
           .append(XmlUtils.tag("kitas_dok2", number))
           .append(XmlUtils.tag("dok_serija", invoicePrefix))
           .append(XmlUtils.tag("kitas_dok", invoiceNumber))
@@ -128,6 +130,10 @@ public class WSDocument {
   public void setInvoice(String prefix, String no) {
     this.invoicePrefix = prefix;
     this.invoiceNumber = no;
+  }
+
+  public void setManager(String manager) {
+    this.manager = manager;
   }
 
   public void setNumber(String number) {

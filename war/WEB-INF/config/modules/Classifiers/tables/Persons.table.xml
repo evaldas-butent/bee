@@ -9,8 +9,11 @@
     <String name="LastName" precision="30" label="=lastName" />
     <Date name="DateOfBirth" label="=dateOfBirth" />
     <Relation name="Contact" unique="true" relation="Contacts" editable="true" label="=contacts" />
-    <String name="Photo" precision="100" label="=photo" />
+    <Relation name="PhotoFile" relation="Files" label="=photo"/>
     <Text name="Notes" label="=notes" />
+    <!-- @DEPRECATED { -->
+    <String name="Photo" precision="100" label="=photo" />
+    <!-- } -->
     <Relation name="Activity" relation="CompanyActivities" label="=activity" />
   </Fields>
 </Table>

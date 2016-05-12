@@ -12,7 +12,7 @@
 
     <form>
       <FlowPanel>
-        <Table style="margin-bottom: 1em;">
+        <Table kind="controls" style="margin-bottom: 1em;">
           <col index="0" kind="label" />
       
           <row>
@@ -37,6 +37,11 @@
           <row data="CostCenters">
             <Label for="CostCenter" />
             <DataSelector source="CostCenter" />
+          </row>
+
+          <row data="Locations">
+            <Label for="Object" />
+            <DataSelector source="Object" />
           </row>
         </Table>
 

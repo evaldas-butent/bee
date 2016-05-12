@@ -1,6 +1,7 @@
 package com.butent.bee.shared.ui;
 
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.HasExtendedInfo;
 import com.butent.bee.shared.data.HasViewName;
@@ -34,14 +35,13 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
 
   private enum Serial {
     NAME, PARENT, CAPTION, VIEW, ID_NAME, VERSION_NAME, FILTER, CURRENT_USER_FILTER, ORDER,
-    HEADER_MODE, FOOTER_MODE, DATA_PROVIDER, INITIAL_ROW_SET_SIZE, READONLY,
+    HEADER_MODE, FOOTER_MODE, DATA_PROVIDER, INITIAL_ROW_SET_SIZE, PAGING, READONLY,
     NEW_ROW_FORM, NEW_ROW_COLUMNS, NEW_ROW_DEFAULTS, NEW_ROW_CAPTION, NEW_ROW_POPUP,
-    NEW_ROW_FORM_IMMEDIATE,
-    EDIT_FORM, EDIT_MODE, EDIT_SAVE, EDIT_MESSAGE, EDIT_SHOW_ID, EDIT_POPUP,
-    EDIT_FORM_IMMEDIATE, EDIT_IN_PLACE,
+    EDIT_FORM, EDIT_MODE, EDIT_SAVE, EDIT_MESSAGE, EDIT_SHOW_ID, EDIT_POPUP, EDIT_IN_PLACE,
     ENABLED_ACTIONS, DISABLED_ACTIONS, STYLE_SHEETS, HEADER, BODY, FOOTER,
     ROW_STYLES, ROW_MESSAGE, ROW_EDITABLE, ROW_VALIDATION, MIN_COLUMN_WIDTH, MAX_COLUMN_WIDTH,
-    COLUMNS, WIDGETS, AUTO_FIT, FLEXIBILITY, FAVORITE, ENABLE_COPY, CACHE_DATA, CACHE_DESCRIPTION,
+    COLUMNS, WIDGETS, AUTO_FIT, AUTO_FLEX, FLEXIBILITY,
+    FAVORITE, ENABLE_COPY, CACHE_DATA, CACHE_DESCRIPTION,
     MIN_NUMBER_OF_ROWS, MAX_NUMBER_OF_ROWS, RENDER_MODE, ROW_CHANGE_SENSITIVITY_MILLIS,
     PREDEFINED_FILTERS, OPTIONS, PROPERTIES
   }
@@ -58,6 +58,9 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   public static final String HEADER_MODE_NONE = "none";
 
   public static final String FOOTER_MODE_NONE = "none";
+
+  public static final char FORM_ITEM_SEPARATOR = BeeConst.CHAR_COMMA;
+  public static final char FORM_LABEL_SEPARATOR = BeeConst.CHAR_COLON;
 
   public static GridDescription restore(String s) {
     if (BeeUtils.isEmpty(s)) {
@@ -88,6 +91,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
 
   private ProviderType dataProvider;
   private Integer initialRowSetSize;
+  private Boolean paging;
 
   private Boolean readOnly;
 
@@ -96,7 +100,6 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   private String newRowDefaults;
   private String newRowCaption;
   private Boolean newRowPopup;
-  private Boolean newRowFormImmediate;
 
   private String editForm;
   private Boolean editMode;
@@ -104,7 +107,6 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   private Calculation editMessage;
   private Boolean editShowId;
   private Boolean editPopup;
-  private Boolean editFormImmediate;
   private Boolean editInPlace;
 
   private Map<String, String> styleSheets;
@@ -122,6 +124,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   private Integer minColumnWidth;
   private Integer maxColumnWidth;
   private String autoFit;
+  private Boolean autoFlex;
   private Flexibility flexibility;
 
   private final List<ColumnDescription> columns = new ArrayList<>();
@@ -289,6 +292,9 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         case INITIAL_ROW_SET_SIZE:
           setInitialRowSetSize(BeeUtils.toIntOrNull(value));
           break;
+        case PAGING:
+          setPaging(BeeUtils.toBooleanOrNull(value));
+          break;
         case FILTER:
           setFilter(Filter.restore(value));
           break;
@@ -369,6 +375,9 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         case AUTO_FIT:
           setAutoFit(value);
           break;
+        case AUTO_FLEX:
+          setAutoFlex(BeeUtils.toBooleanOrNull(value));
+          break;
         case FLEXIBILITY:
           setFlexibility(Flexibility.restore(value));
           break;
@@ -389,12 +398,6 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
           break;
         case ROW_CHANGE_SENSITIVITY_MILLIS:
           setRowChangeSensitivityMillis(BeeUtils.toIntOrNull(value));
-          break;
-        case NEW_ROW_FORM_IMMEDIATE:
-          setNewRowFormImmediate(BeeUtils.toBooleanOrNull(value));
-          break;
-        case EDIT_FORM_IMMEDIATE:
-          setEditFormImmediate(BeeUtils.toBooleanOrNull(value));
           break;
 
         case EDIT_IN_PLACE:
@@ -417,6 +420,10 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
 
   public String getAutoFit() {
     return autoFit;
+  }
+
+  public Boolean getAutoFlex() {
+    return autoFlex;
   }
 
   public GridComponentDescription getBody() {
@@ -448,6 +455,15 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
     return getColumns().size();
   }
 
+  public int getColumnIndex(String id) {
+    for (int i = 0; i < columns.size(); i++) {
+      if (columns.get(i).is(id)) {
+        return i;
+      }
+    }
+    return BeeConst.UNDEF;
+  }
+
   public List<ColumnDescription> getColumns() {
     return columns;
   }
@@ -466,10 +482,6 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
 
   public String getEditForm() {
     return editForm;
-  }
-
-  public Boolean getEditFormImmediate() {
-    return editFormImmediate;
   }
 
   public Boolean getEditInPlace() {
@@ -524,25 +536,25 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         "Cache Description", getCacheDescription(),
         "Data Provider", getDataProvider(),
         "Initial Row Set Size", getInitialRowSetSize(),
+        "Paging", getPaging(),
         "Read Only", isReadOnly(),
         "New Row Form", getNewRowForm(),
         "New Row Columns", getNewRowColumns(),
         "New Row Defaults", getNewRowDefaults(),
         "New Row Caption", getNewRowCaption(),
         "New Row Popup", getNewRowPopup(),
-        "New Row Form Immediate", getNewRowFormImmediate(),
         "Edit Form", getEditForm(),
         "Edit Mode", getEditMode(),
         "Edit Save", getEditSave(),
         "Edit Show Id", getEditShowId(),
         "Edit Popup", getEditPopup(),
-        "Edit Form Immediate", getEditFormImmediate(),
         "Edit In Place", getEditInPlace(),
         "Enabled Actions", getEnabledActions(),
         "Disabled Actions", getDisabledActions(),
         "Min Column Width", getMinColumnWidth(),
         "Max Column Width", getMaxColumnWidth(),
         "Auto Fit", getAutoFit(),
+        "Auto Flex", getAutoFlex(),
         "Favorite", getFavorite(),
         "Enable Copy", getEnableCopy(),
         "Min Number Of Rows", getMinNumberOfRows(),
@@ -714,10 +726,6 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
     return newRowForm;
   }
 
-  public Boolean getNewRowFormImmediate() {
-    return newRowFormImmediate;
-  }
-
   public Boolean getNewRowPopup() {
     return newRowPopup;
   }
@@ -728,6 +736,10 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
 
   public Order getOrder() {
     return order;
+  }
+
+  public Boolean getPaging() {
+    return paging;
   }
 
   public String getParent() {
@@ -907,6 +919,9 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         case INITIAL_ROW_SET_SIZE:
           arr[i++] = getInitialRowSetSize();
           break;
+        case PAGING:
+          arr[i++] = getPaging();
+          break;
         case FILTER:
           arr[i++] = getFilter();
           break;
@@ -952,6 +967,9 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         case AUTO_FIT:
           arr[i++] = getAutoFit();
           break;
+        case AUTO_FLEX:
+          arr[i++] = getAutoFlex();
+          break;
         case FLEXIBILITY:
           arr[i++] = getFlexibility();
           break;
@@ -973,12 +991,6 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         case ROW_CHANGE_SENSITIVITY_MILLIS:
           arr[i++] = getRowChangeSensitivityMillis();
           break;
-        case NEW_ROW_FORM_IMMEDIATE:
-          arr[i++] = getNewRowFormImmediate();
-          break;
-        case EDIT_FORM_IMMEDIATE:
-          arr[i++] = getEditFormImmediate();
-          break;
         case EDIT_IN_PLACE:
           arr[i++] = getEditInPlace();
           break;
@@ -998,6 +1010,10 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
 
   public void setAutoFit(String autoFit) {
     this.autoFit = autoFit;
+  }
+
+  public void setAutoFlex(Boolean autoFlex) {
+    this.autoFlex = autoFlex;
   }
 
   public void setBody(GridComponentDescription body) {
@@ -1035,10 +1051,6 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
 
   public void setEditForm(String editForm) {
     this.editForm = editForm;
-  }
-
-  public void setEditFormImmediate(Boolean editFormImmediate) {
-    this.editFormImmediate = editFormImmediate;
   }
 
   public void setEditInPlace(Boolean editInPlace) {
@@ -1137,10 +1149,6 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
     this.newRowForm = newRowForm;
   }
 
-  public void setNewRowFormImmediate(Boolean newRowFormImmediate) {
-    this.newRowFormImmediate = newRowFormImmediate;
-  }
-
   public void setNewRowPopup(Boolean newRowPopup) {
     this.newRowPopup = newRowPopup;
   }
@@ -1151,6 +1159,10 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
 
   public void setOrder(Order order) {
     this.order = order;
+  }
+
+  public void setPaging(Boolean paging) {
+    this.paging = paging;
   }
 
   public void setParent(String parent) {

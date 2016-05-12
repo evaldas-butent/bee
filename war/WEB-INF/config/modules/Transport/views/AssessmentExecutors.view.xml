@@ -4,13 +4,12 @@
   name="AssessmentExecutors" source="Users"
   >
   <Columns>
-    <IdColumn name="User"/>
     <SimpleJoin name="CompanyPerson" joinType="INNER">
       <SimpleJoin name="Person" joinType="INNER">
         <SimpleColumn name="FirstName" />
         <SimpleColumn name="LastName" />
       </SimpleJoin>
-      
+
       <ExternalJoin name="CompanyPerson" source="DepartmentEmployees" joinType="INNER">
         <SimpleColumn name="Department" />
         <SimpleJoin name="Department" joinType="INNER">

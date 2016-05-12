@@ -93,17 +93,17 @@ public class PrintServiceDefect extends AbstractFormInterceptor {
 
     int r = 0;
 
-    table.setText(r, COL_ORDINAL, Localized.getConstants().ordinal(),
+    table.setText(r, COL_ORDINAL, Localized.dictionary().ordinal(),
         STYLE_ITEMS_HEADER, STYLE_ITEM_ORDINAL);
-    table.setText(r, COL_NAME, Localized.getConstants().svcDefectPrintItemLabel(),
+    table.setText(r, COL_NAME, Localized.dictionary().svcDefectPrintItemLabel(),
         STYLE_ITEMS_HEADER, STYLE_ITEM_NAME);
-    table.setText(r, COL_ARTICLE, Localized.getConstants().article(),
+    table.setText(r, COL_ARTICLE, Localized.dictionary().article(),
         STYLE_ITEMS_HEADER, STYLE_ITEM_ARTICLE);
-    table.setText(r, COL_UNIT, Localized.getConstants().unit(),
+    table.setText(r, COL_UNIT, Localized.dictionary().unit(),
         STYLE_ITEMS_HEADER, STYLE_ITEM_UNIT);
-    table.setText(r, COL_QUANTITY, Localized.getConstants().quantity(),
+    table.setText(r, COL_QUANTITY, Localized.dictionary().quantity(),
         STYLE_ITEMS_HEADER, STYLE_ITEM_QUANTITY);
-    table.setText(r, COL_PRICE, BeeUtils.joinWords(Localized.getConstants().price(), currencyName),
+    table.setText(r, COL_PRICE, BeeUtils.joinWords(Localized.dictionary().price(), currencyName),
         STYLE_ITEMS_HEADER, STYLE_ITEM_PRICE);
 
     int nameIndex = Data.getColumnIndex(VIEW_SERVICE_DEFECT_ITEMS, ALS_DEFECT_ITEM_NAME);
@@ -142,7 +142,7 @@ public class PrintServiceDefect extends AbstractFormInterceptor {
 
     r++;
 
-    table.setText(r, COL_QUANTITY, Localized.getConstants().total(),
+    table.setText(r, COL_QUANTITY, Localized.dictionary().total(),
         STYLE_ITEMS_FOOTER, STYLE_ITEMS_TOTAL_LABEL);
 
     NumberFormat totalFormat = Format.getDefaultMoneyFormat();

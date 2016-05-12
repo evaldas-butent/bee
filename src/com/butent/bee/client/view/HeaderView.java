@@ -1,7 +1,9 @@
 package com.butent.bee.client.view;
 
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.event.dom.client.HasClickHandlers;
 import com.google.gwt.user.client.ui.IndexedPanel;
+import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.output.Printable;
 import com.butent.bee.client.ui.IdentifiableWidget;
@@ -15,7 +17,7 @@ import java.util.Set;
  * Contains requirements for data header implementing classes.
  */
 
-public interface HeaderView extends View, IndexedPanel, Printable {
+public interface HeaderView extends View, IndexedPanel, Printable, HasClickHandlers {
 
   void create(String caption, boolean hasData, boolean readOnly, String viewName,
       Collection<UiOption> options, Set<Action> enabledActions, Set<Action> disabledActions,
@@ -32,6 +34,8 @@ public interface HeaderView extends View, IndexedPanel, Printable {
   boolean hasAction(Action action);
 
   boolean hasCommands();
+
+  boolean insertControl(Widget w, int beforeIndex);
 
   boolean isActionEnabled(Action action);
 

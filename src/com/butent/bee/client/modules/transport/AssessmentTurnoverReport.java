@@ -437,9 +437,9 @@ public class AssessmentTurnoverReport extends ReportInterceptor {
       }
 
       if (DataUtils.parseIdSet(departments).size() > 1) {
-        label = Localized.getConstants().departments();
+        label = Localized.dictionary().departments();
       } else {
-        label = Localized.getConstants().department();
+        label = Localized.dictionary().department();
       }
       headers.add(BeeUtils.joinWords(label, getFilterLabel(NAME_DEPARTMENTS)));
     }
@@ -452,9 +452,9 @@ public class AssessmentTurnoverReport extends ReportInterceptor {
       }
 
       if (DataUtils.parseIdSet(managers).size() > 1) {
-        label = Localized.getConstants().managers();
+        label = Localized.dictionary().managers();
       } else {
-        label = Localized.getConstants().manager();
+        label = Localized.dictionary().manager();
       }
       headers.add(BeeUtils.joinWords(label, getFilterLabel(NAME_MANAGERS)));
     }
@@ -467,9 +467,9 @@ public class AssessmentTurnoverReport extends ReportInterceptor {
       }
 
       if (DataUtils.parseIdSet(customers).size() > 1) {
-        label = Localized.getConstants().clients();
+        label = Localized.dictionary().clients();
       } else {
-        label = Localized.getConstants().client();
+        label = Localized.dictionary().client();
       }
       headers.add(BeeUtils.joinWords(label, getFilterLabel(NAME_CUSTOMERS)));
     }
@@ -533,7 +533,7 @@ public class AssessmentTurnoverReport extends ReportInterceptor {
           }
 
         } else {
-          getFormView().notifyWarning(Localized.getConstants().nothingFound());
+          getFormView().notifyWarning(Localized.dictionary().nothingFound());
         }
       }
     });
@@ -756,7 +756,7 @@ public class AssessmentTurnoverReport extends ReportInterceptor {
         case BeeConst.YEAR:
           colYear = col;
 
-          text = Localized.getConstants().year();
+          text = Localized.dictionary().year();
           table.setText(row, c1, text, STYLE_HEADER, STYLE_YEAR);
           table.getCellFormatter().setRowSpan(row, c1, 2);
 
@@ -771,7 +771,7 @@ public class AssessmentTurnoverReport extends ReportInterceptor {
         case BeeConst.MONTH:
           colMonth = col;
 
-          text = Localized.getConstants().month();
+          text = Localized.dictionary().month();
           table.setText(row, c1, text, STYLE_HEADER, STYLE_MONTH);
           table.getCellFormatter().setRowSpan(row, c1, 2);
 
@@ -786,7 +786,7 @@ public class AssessmentTurnoverReport extends ReportInterceptor {
         case COL_DEPARTMENT:
           colDepartment = col;
 
-          text = Localized.getConstants().department();
+          text = Localized.dictionary().department();
           table.setText(row, c1, text, STYLE_HEADER, STYLE_DEPARTMENT);
           table.getCellFormatter().setRowSpan(row, c1, 2);
 
@@ -804,7 +804,7 @@ public class AssessmentTurnoverReport extends ReportInterceptor {
         case COL_COMPANY_PERSON:
           colManager = col;
 
-          text = Localized.getConstants().manager();
+          text = Localized.dictionary().manager();
           table.setText(row, c1, text, STYLE_HEADER, STYLE_MANAGER);
           table.getCellFormatter().setRowSpan(row, c1, 2);
 
@@ -823,7 +823,7 @@ public class AssessmentTurnoverReport extends ReportInterceptor {
         case COL_CUSTOMER:
           colCustomer = col;
 
-          text = Localized.getConstants().customer();
+          text = Localized.dictionary().customer();
           table.setText(row, c1, text, STYLE_HEADER, STYLE_CUSTOMER);
           table.getCellFormatter().setRowSpan(row, c1, 2);
 
@@ -843,11 +843,11 @@ public class AssessmentTurnoverReport extends ReportInterceptor {
           String partLabel;
           if (colName.equals(AR_RECEIVED)) {
             colQuantity = col;
-            partLabel = Localized.getConstants().trAssessmentReportAllOrders();
+            partLabel = Localized.dictionary().trAssessmentReportAllOrders();
             partStyle = STYLE_MAIN;
           } else {
             colSecondary = col;
-            partLabel = Localized.getConstants().trAssessmentReportSecondary();
+            partLabel = Localized.dictionary().trAssessmentReportSecondary();
             partStyle = STYLE_SECONDARY;
           }
 
@@ -861,7 +861,7 @@ public class AssessmentTurnoverReport extends ReportInterceptor {
 
           c1++;
 
-          text = Localized.getConstants().quantity();
+          text = Localized.dictionary().quantity();
           table.setText(row + 1, c2, text, STYLE_HEADER_2, STYLE_QUANTITY, partStyle);
           xr2.add(new XCell(col, text, styleRef));
 
@@ -869,7 +869,7 @@ public class AssessmentTurnoverReport extends ReportInterceptor {
           col++;
 
           if (hasGrowth) {
-            text = Localized.getConstants().trAssessmentReportGrowth();
+            text = Localized.dictionary().trAssessmentReportGrowth();
             table.setText(row + 1, c2, text, STYLE_HEADER_2, STYLE_GROWTH, partStyle);
             xr2.add(new XCell(col, text, styleRef));
 
@@ -888,7 +888,7 @@ public class AssessmentTurnoverReport extends ReportInterceptor {
             partStyle = STYLE_SECONDARY;
           }
 
-          text = Localized.getConstants().income();
+          text = Localized.dictionary().income();
           table.setText(row + 1, c2, text, STYLE_HEADER_2, STYLE_INCOME, partStyle);
           xr2.add(new XCell(col, text, styleRef));
 
@@ -896,7 +896,7 @@ public class AssessmentTurnoverReport extends ReportInterceptor {
           col++;
 
           if (hasGrowth) {
-            text = Localized.getConstants().trAssessmentReportGrowth();
+            text = Localized.dictionary().trAssessmentReportGrowth();
             table.setText(row + 1, c2, text, STYLE_HEADER_2, STYLE_GROWTH, partStyle);
             xr2.add(new XCell(col, text, styleRef));
 
@@ -919,7 +919,7 @@ public class AssessmentTurnoverReport extends ReportInterceptor {
             partStyle = STYLE_SECONDARY;
           }
 
-          text = Localized.getConstants().trExpenses();
+          text = Localized.dictionary().trExpenses();
           table.setText(row + 1, c2, text, STYLE_HEADER_2, STYLE_EXPENSE, partStyle);
           xr2.add(new XCell(col, text, styleRef));
 
@@ -927,7 +927,7 @@ public class AssessmentTurnoverReport extends ReportInterceptor {
           col++;
 
           if (hasGrowth) {
-            text = Localized.getConstants().trAssessmentReportGrowth();
+            text = Localized.dictionary().trAssessmentReportGrowth();
             table.setText(row + 1, c2, text, STYLE_HEADER_2, STYLE_GROWTH, partStyle);
             xr2.add(new XCell(col, text, styleRef));
 
@@ -935,7 +935,7 @@ public class AssessmentTurnoverReport extends ReportInterceptor {
             col++;
           }
 
-          text = Localized.getConstants().profit();
+          text = Localized.dictionary().profit();
           table.setText(row + 1, c2, text, STYLE_HEADER_2, STYLE_PROFIT, partStyle);
           xr2.add(new XCell(col, text, styleRef));
 
@@ -943,7 +943,7 @@ public class AssessmentTurnoverReport extends ReportInterceptor {
           col++;
 
           if (hasGrowth) {
-            text = Localized.getConstants().trAssessmentReportGrowth();
+            text = Localized.dictionary().trAssessmentReportGrowth();
             table.setText(row + 1, c2, text, STYLE_HEADER_2, STYLE_GROWTH, partStyle);
             xr2.add(new XCell(col, text, styleRef));
 
@@ -951,7 +951,7 @@ public class AssessmentTurnoverReport extends ReportInterceptor {
             col++;
           }
 
-          text = Localized.getConstants().marginPercent();
+          text = Localized.dictionary().marginPercent();
           table.setText(row + 1, c2, text, STYLE_HEADER_2, STYLE_MARGIN, partStyle);
           xr2.add(new XCell(col, text, styleRef));
 
@@ -1436,11 +1436,11 @@ public class AssessmentTurnoverReport extends ReportInterceptor {
     if (cellElement.hasClassName(STYLE_SECONDARY)
         && BeeUtils.isPositive(dataRow.getInt(AR_SECONDARY))) {
       filter.add(Filter.notNull(COL_ASSESSMENT));
-      captions.add(Localized.getConstants().trAssessmentReportSecondary());
+      captions.add(Localized.dictionary().trAssessmentReportSecondary());
     }
 
     String caption = BeeUtils.notEmpty(BeeUtils.joinItems(captions),
-        Localized.getConstants().trAssessmentRequests());
+        Localized.dictionary().trAssessmentRequests());
 
     drillDown(DRILL_DOWN_GRID_NAME, caption, filter);
   }

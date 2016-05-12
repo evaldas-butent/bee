@@ -2,13 +2,17 @@ package com.butent.bee.client;
 
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.StyleElement;
+import com.google.gwt.user.client.Timer;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.event.Previewer;
+import com.butent.bee.client.websocket.Endpoint;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasInfo;
+import com.butent.bee.shared.communication.Presence;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
@@ -21,9 +25,11 @@ import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.rights.ModuleAndSub;
 import com.butent.bee.shared.rights.RegulatedWidget;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
+import com.butent.bee.shared.websocket.messages.PresenceMessage;
 
 import java.util.List;
 
@@ -45,7 +51,13 @@ public class UserInfo implements HasInfo {
   private int clickSensitivityMillis;
   private int clickSensitivityDistance;
 
+  private int newsRefreshIntervalSeconds;
+  private int loadingStateDelayMillis;
+
   private String styleId;
+
+  private Presence presence = Presence.ONLINE;
+  private Timer presenceTimer;
 
   public boolean canCreateData(String object) {
     return isLoggedIn() && userData.canCreateData(object);
@@ -65,6 +77,20 @@ public class UserInfo implements HasInfo {
 
   public boolean canMergeData(String object) {
     return isLoggedIn() && userData.canMergeData(object);
+  }
+
+  public void checkPresence(Presence p) {
+    if (p == Presence.ONLINE && getPresence() == Presence.IDLE) {
+      maybeUpdatePresence(p);
+
+    } else if (p == Presence.IDLE && getPresence() == Presence.ONLINE) {
+      long minutes = Settings.getReducedInteractionStatusMinutes();
+      long idleMillis = Previewer.getIdleMillis();
+
+      if (minutes > 0 && idleMillis >= minutes * TimeUtils.MILLIS_PER_MINUTE) {
+        maybeUpdatePresence(p);
+      }
+    }
   }
 
   public int getClickSensitivityDistance() {
@@ -115,11 +141,23 @@ public class UserInfo implements HasInfo {
     return getSetting(COL_LAST_WORKSPACE);
   }
 
+  public int getLoadingStateDelayMillis() {
+    return loadingStateDelayMillis;
+  }
+
   public String getLogin() {
     if (!isLoggedIn()) {
       return null;
     }
     return userData.getLogin();
+  }
+
+  public int getNewsRefreshIntervalSeconds() {
+    return newsRefreshIntervalSeconds;
+  }
+
+  public Presence getPresence() {
+    return presence;
   }
 
   public String getProperty(String property) {
@@ -163,6 +201,14 @@ public class UserInfo implements HasInfo {
     return userData.getUserSign();
   }
 
+  public Long idOrNull(Boolean userMode) {
+    return BeeUtils.isTrue(userMode) ? getUserId() : null;
+  }
+
+  public boolean getCommentsLayout() {
+    return getBooleanSetting(COL_COMMENTS_LAYOUT);
+  }
+
   public boolean is(Long id) {
     return id != null && id.equals(getUserId());
   }
@@ -173,6 +219,10 @@ public class UserInfo implements HasInfo {
 
   public boolean isAnyModuleVisible(String input) {
     return isLoggedIn() && userData.isAnyModuleVisible(input);
+  }
+
+  public boolean isColumnRequired(String viewName, String column) {
+    return isLoggedIn() && userData.isColumnRequired(viewName, column);
   }
 
   public boolean isColumnVisible(DataInfo dataInfo, String column) {
@@ -233,8 +283,32 @@ public class UserInfo implements HasInfo {
     }
   }
 
+  public void maybeUpdatePresence(Presence p) {
+    if (p != null && isLoggedIn() && getPresence() != p && Endpoint.isOpen()) {
+      setPresence(p);
+      BeeKeeper.getScreen().updateUserPresence(p);
+
+      Endpoint.send(new PresenceMessage(Endpoint.getSessionId(), getUserId(), p));
+    }
+  }
+
   public boolean openInNewTab() {
     return openInNewTab;
+  }
+
+  public void setCommentsLayout(boolean isDefault) {
+    if (!DataUtils.isEmpty(settings)) {
+      int index = getSettingsIndex(COL_COMMENTS_LAYOUT);
+
+      if (!BeeConst.isUndef(index)) {
+
+        BeeRow row = getSettingsRow();
+        row.setValue(index, isDefault);
+
+        Queries.update(settings.getViewName(), row.getId(), COL_COMMENTS_LAYOUT, BooleanValue
+            .of(isDefault));
+      }
+    }
   }
 
   public void setSessionId(String sessionId) {
@@ -258,6 +332,17 @@ public class UserInfo implements HasInfo {
 
   public void setUserData(UserData userData) {
     this.userData = userData;
+
+    if (presenceTimer == null && userData != null) {
+      this.presenceTimer = new Timer() {
+        @Override
+        public void run() {
+          checkPresence(Presence.IDLE);
+        }
+      };
+
+      presenceTimer.scheduleRepeating(TimeUtils.MILLIS_PER_MINUTE / 3);
+    }
   }
 
   public void updateSettings(BeeRow row) {
@@ -313,18 +398,18 @@ public class UserInfo implements HasInfo {
     }
   }
 
-  private int getIntSetting(String colName) {
+  private int getIntSetting(String colName, int def) {
     if (DataUtils.isEmpty(settings)) {
-      return BeeConst.UNDEF;
+      return def;
 
     } else {
       int index = getSettingsIndex(colName);
 
       if (BeeConst.isUndef(index)) {
-        return BeeConst.UNDEF;
+        return def;
       } else {
         Integer value = settings.getInteger(0, index);
-        return BeeUtils.nvl(value, BeeConst.UNDEF);
+        return BeeUtils.nvl(value, def);
       }
     }
   }
@@ -364,8 +449,20 @@ public class UserInfo implements HasInfo {
     this.clickSensitivityMillis = clickSensitivityMillis;
   }
 
+  private void setLoadingStateDelayMillis(int loadingStateDelayMillis) {
+    this.loadingStateDelayMillis = loadingStateDelayMillis;
+  }
+
+  private void setNewsRefreshIntervalSeconds(int newsRefreshIntervalSeconds) {
+    this.newsRefreshIntervalSeconds = newsRefreshIntervalSeconds;
+  }
+
   private void setOpenInNewTab(boolean openInNewTab) {
     this.openInNewTab = openInNewTab;
+  }
+
+  private void setPresence(Presence presence) {
+    this.presence = presence;
   }
 
   private void setStyleId(String styleId) {
@@ -375,8 +472,11 @@ public class UserInfo implements HasInfo {
   private void updateFields() {
     setOpenInNewTab(getBooleanSetting(COL_OPEN_IN_NEW_TAB));
 
-    setClickSensitivityMillis(getIntSetting(COL_CLICK_SENSITIVITY_MILLIS));
-    setClickSensitivityDistance(getIntSetting(COL_CLICK_SENSITIVITY_DISTANCE));
+    setClickSensitivityMillis(getIntSetting(COL_CLICK_SENSITIVITY_MILLIS, BeeConst.UNDEF));
+    setClickSensitivityDistance(getIntSetting(COL_CLICK_SENSITIVITY_DISTANCE, BeeConst.UNDEF));
+
+    setNewsRefreshIntervalSeconds(getIntSetting(COL_NEWS_REFRESH_INTERVAL_SECONDS, BeeConst.UNDEF));
+    setLoadingStateDelayMillis(getIntSetting(COL_LOADING_STATE_DELAY_MILLIS, BeeConst.UNDEF));
   }
 
   private void updateStyle(String css) {

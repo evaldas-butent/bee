@@ -95,6 +95,9 @@ function onload(reqLng) {
       }
       translate(lng);
     }
+    
+    customizeStyle();
+    customizeBackground();
 
     document.body.className = "bee-ready";
 
@@ -105,6 +108,40 @@ function onload(reqLng) {
 
   } else {
     showSupport();
+  }
+}
+
+function customizeBackground() {
+  var bg = localStorage.getItem("login_bg");
+
+  if (bg) {
+    var img = document.getElementById("background");
+
+    if (bg.indexOf("/") >= 0) {
+      document.body.style.backgroundImage = "none";
+
+      if (img) {
+        img.src = bg;
+        img.classList.add("bee-SignIn-has-src");
+      }
+
+    } else {
+      document.body.style.backgroundImage = bg;
+
+      if (img) {
+        img.src = "";
+        img.classList.remove("bee-SignIn-has-src");
+      }
+    }
+  }
+}
+
+function customizeStyle() {
+  var css = localStorage.getItem("login_css");
+  if (css) {
+    var node = document.createElement("style");
+    node.innerHTML = css;
+    document.head.appendChild(node);    
   }
 }
 

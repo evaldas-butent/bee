@@ -1,7 +1,6 @@
 package com.butent.bee.shared.modules.orders;
 
-import com.butent.bee.shared.i18n.LocalizableConstants;
-import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.ui.HasLocalizedCaption;
 import com.butent.bee.shared.utils.EnumUtils;
 
@@ -9,39 +8,34 @@ public final class OrdersConstants {
   public enum OrdersStatus implements HasLocalizedCaption {
     APPROVED {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.ordApproved();
       }
     },
     CANCELED {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.ordCanceled();
       }
     },
     PREPARED {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.ordPrepared();
       }
     },
     SENT {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.ordSent();
       }
     },
     FINISH {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.prjStatusApproved();
       }
     };
-
-    @Override
-    public String getCaption() {
-      return getCaption(Localized.getConstants());
-    }
 
     public boolean is(Integer status) {
       return status != null && ordinal() == status;
@@ -55,6 +49,9 @@ public final class OrdersConstants {
   public static final String SVC_GET_TEMPLATE_ITEMS = "GetTemplateItems";
   public static final String SVC_CREATE_INVOICE_ITEMS = "CreateInvoiceItems";
   public static final String SVC_GET_NEXT_NUMBER = "GetNextNumber";
+  public static final String SVC_EXPORT_ITEM_REMAINDERS = "ExportItemReminder";
+  public static final String SVC_CREATE_PDF_FILE = "CreatePDFFile";
+  public static final String SVC_FILL_RESERVED_REMAINDERS = "FillReservedRemainders";
 
   public static final String TBL_ORDER_ITEMS = "OrderItems";
   public static final String TBL_ORDERS = "Orders";
@@ -78,7 +75,11 @@ public final class OrdersConstants {
 
   public static final String PRP_FREE_REMAINDER = "FreeRemainder";
 
-  public static final String PRM_CHECK_RESERVATION_TIME = "CheckReservationTime";
+  public static final String PRM_CLEAR_RESERVATIONS_TIME = "ClearReservationsTime";
+  public static final String PRM_IMPORT_ERP_ITEMS_TIME = "ImportERPItemsTime";
+  public static final String PRM_IMPORT_ERP_STOCKS_TIME = "ImportERPStocksTime";
+  public static final String PRM_EXPORT_ERP_RESERVATIONS_TIME = "ExportERPReservationsTime";
+  public static final String PRM_DEFAULT_SALE_OPERATION = "DefaultSaleOperation";
 
   private OrdersConstants() {
   }

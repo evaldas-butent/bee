@@ -10,11 +10,11 @@ import java.util.Map.Entry;
 class MapImpl<K, V> extends AbstractCache<K, V> {
 
   @SuppressWarnings("serial")
-  private class LimitedMap<L, U> extends LinkedHashMap<L, U> {
+  private final class LimitedMap<L, U> extends LinkedHashMap<L, U> {
     private static final int DEFAULT_INITIAL_CAPACITY = 16;
     private static final float DEFAULT_LOAD_FACTOR = 0.75f;
 
-    public LimitedMap(boolean accessOrder) {
+    private LimitedMap(boolean accessOrder) {
       super(DEFAULT_INITIAL_CAPACITY, DEFAULT_LOAD_FACTOR, accessOrder);
     }
 

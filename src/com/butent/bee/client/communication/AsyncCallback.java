@@ -21,6 +21,7 @@ import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.Collection;
@@ -76,12 +77,15 @@ public class AsyncCallback implements RequestCallback {
       logger.warning("Rpc service", BeeUtils.bracket(Service.RPC_VAR_SVC), "not available");
     }
 
+    String sub = (info == null) ? BeeConst.STRING_EMPTY : info.getSubService();
+    String summary = (info == null) ? BeeConst.STRING_EMPTY : info.getSummary();
+
     int statusCode = resp.getStatusCode();
     if (statusCode != Response.SC_OK) {
-      String msg = BeeUtils.joinWords(NameUtils.addName(Service.RPC_VAR_QID, id),
-          NameUtils.addName(Service.RPC_VAR_SVC, svc));
+      String msg = BeeUtils.joinOptions(Service.RPC_VAR_QID, id, Service.RPC_VAR_SVC, svc,
+          Service.RPC_VAR_SUB, sub);
       if (!BeeUtils.isEmpty(msg)) {
-        logger.severe(msg);
+        logger.severe(msg, summary);
       }
 
       msg = BeeUtils.joinWords(BeeUtils.bracket(statusCode), resp.getStatusText());
@@ -105,9 +109,9 @@ public class AsyncCallback implements RequestCallback {
     int len = BeeUtils.length(txt);
 
     if (Global.isDebug()) {
-      logger.info("response", NameUtils.addName(Service.RPC_VAR_QID, id),
-          NameUtils.addName(Service.RPC_VAR_SVC, svc));
-      logger.info(NameUtils.addName(Service.RPC_VAR_CTP, BeeUtils.toString(ctp)),
+      logger.info("response", BeeUtils.joinOptions(Service.RPC_VAR_QID, id,
+          Service.RPC_VAR_SVC, svc, Service.RPC_VAR_SUB, sub), summary);
+      logger.info(NameUtils.addName(Service.RPC_VAR_CTP, EnumUtils.toString(ctp)),
           NameUtils.addName("len", len));
 
       Header[] headers = resp.getHeaders();
@@ -126,7 +130,7 @@ public class AsyncCallback implements RequestCallback {
         info.endError(msg);
       }
 
-      logger.warning(svc, "msg");
+      logger.warning(svc, sub, summary, msg);
       finalizeResponse();
       return;
     }
@@ -152,7 +156,8 @@ public class AsyncCallback implements RequestCallback {
 
     duration.finish();
 
-    logger.info("<", id, len, (info == null) ? null : BeeUtils.bracket(info.getCompletedTime()),
+    logger.info("<", id, svc, sub, summary, "=", len,
+        (info == null) ? null : BeeUtils.bracket(info.getCompletedTime()),
         BeeUtils.bracket(duration.getCompletedTime()));
     finalizeResponse();
   }

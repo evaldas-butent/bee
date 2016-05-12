@@ -3,7 +3,6 @@ package com.butent.bee.client.modules.trade.acts;
 import com.google.common.base.Strings;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
-import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.dom.client.TableCellElement;
@@ -117,22 +116,22 @@ public class TradeActStockReport extends ReportInterceptor {
     String h2;
 
     if (start == null || end == null) {
-      h1 = Localized.getConstants().trdRemainders();
+      h1 = Localized.dictionary().trdRemainders();
       h2 = Format.renderDateLong(BeeUtils.nvl(start, end));
 
     } else {
-      h1 = Localized.getConstants().trdMovementOfGoods();
+      h1 = Localized.dictionary().trdMovementOfGoods();
       h2 = Format.renderPeriod(start, end);
     }
 
     if (weight) {
       String units;
       if (qty) {
-        units = BeeUtils.joinItems(Localized.getConstants().quantity(),
-            Localized.getConstants().weight());
+        units = BeeUtils.joinItems(Localized.dictionary().quantity(),
+            Localized.dictionary().weight());
 
       } else {
-        units = Localized.getConstants().weight();
+        units = Localized.dictionary().weight();
       }
 
       captions.add(BeeUtils.joinWords(h1, BeeUtils.parenthesize(units)));
@@ -351,18 +350,15 @@ public class TradeActStockReport extends ReportInterceptor {
         }
 
         if (response.hasResponse(SimpleRowSet.class)) {
-          TradeActKeeper.ensureChache(new Scheduler.ScheduledCommand() {
-            @Override
-            public void execute() {
-              renderData(SimpleRowSet.restore(response.getResponseAsString()), start, end);
+          TradeActKeeper.ensureChache(() -> {
+            renderData(SimpleRowSet.restore(response.getResponseAsString()), start, end);
 
-              sheet.addHeaders(headers);
-              sheet.autoSizeAll();
-            }
+            sheet.addHeaders(headers);
+            sheet.autoSizeAll();
           });
 
         } else {
-          getFormView().notifyWarning(Localized.getConstants().nothingFound());
+          getFormView().notifyWarning(Localized.dictionary().nothingFound());
         }
       }
     });
@@ -376,9 +372,9 @@ public class TradeActStockReport extends ReportInterceptor {
 
       String fileName;
       if (start == null || end == null) {
-        fileName = Localized.getConstants().trdRemainders();
+        fileName = Localized.dictionary().trdRemainders();
       } else {
-        fileName = Localized.getConstants().trdMovementOfGoods();
+        fileName = Localized.dictionary().trdMovementOfGoods();
       }
 
       Exporter.maybeExport(sheet, fileName);
@@ -516,7 +512,7 @@ public class TradeActStockReport extends ReportInterceptor {
       String colName = data.getColumnName(j);
 
       if (weightColumns.contains(j) && !quantityColumns.isEmpty()) {
-        text = Localized.getConstants().kilogramShort();
+        text = Localized.dictionary().kilogramShort();
 
       } else if (quantityColumns.contains(j) || weightColumns.contains(j)) {
         if (movementColumns.contains(j)) {
@@ -687,7 +683,7 @@ public class TradeActStockReport extends ReportInterceptor {
 
       Integer first = indexes.get(0);
       if (BeeUtils.isPositive(first)) {
-        text = Localized.getConstants().totalOf();
+        text = Localized.dictionary().totalOf();
 
         table.setText(r, first - 1, text);
 

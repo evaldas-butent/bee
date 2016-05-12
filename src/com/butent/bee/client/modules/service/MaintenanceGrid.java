@@ -50,7 +50,7 @@ public class MaintenanceGrid extends AbstractGridInterceptor implements HandlesD
   @Override
   public void afterCreatePresenter(GridPresenter presenter) {
     if (getInvoiceCommand() == null) {
-      setInvoiceCommand(new Button(Localized.getConstants().createInvoice()));
+      setInvoiceCommand(new Button(Localized.dictionary().createInvoice()));
       getInvoiceCommand().addStyleName(STYLE_COMMAND);
 
       getInvoiceCommand().addClickHandler(new ClickHandler() {
@@ -64,7 +64,7 @@ public class MaintenanceGrid extends AbstractGridInterceptor implements HandlesD
     }
 
     if (getDefectCommand() == null) {
-      setDefectCommand(new Button(Localized.getConstants().svcDefect()));
+      setDefectCommand(new Button(Localized.dictionary().svcDefect()));
       getDefectCommand().addStyleName(STYLE_COMMAND);
 
       getDefectCommand().addClickHandler(new ClickHandler() {

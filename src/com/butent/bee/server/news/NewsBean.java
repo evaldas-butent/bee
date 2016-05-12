@@ -1,11 +1,11 @@
 package com.butent.bee.server.news;
 
+import com.butent.bee.server.data.BeeTable.BeeField;
+import com.butent.bee.server.data.BeeTable.BeeRelation;
 import com.butent.bee.server.data.BeeView;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
-import com.butent.bee.server.data.BeeTable.BeeField;
-import com.butent.bee.server.data.BeeTable.BeeRelation;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.SqlInsert;
@@ -14,6 +14,7 @@ import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.server.websocket.Endpoint;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Locality;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -27,6 +28,7 @@ import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.event.FiresModificationEvents;
 import com.butent.bee.shared.data.event.ModificationEvent;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.news.Channel;
@@ -68,7 +70,11 @@ public class NewsBean {
   @EJB
   SystemBean sys;
 
-  public ResponseObject getNews() {
+  public ResponseObject getNews(Collection<Feed> feeds) {
+    if (BeeUtils.isEmpty(feeds)) {
+      return ResponseObject.error("feeds not specified");
+    }
+
     Long userId = usr.getCurrentUserId();
     if (!DataUtils.isId(userId)) {
       return ResponseObject.error("user id not available");
@@ -88,6 +94,11 @@ public class NewsBean {
       return ResponseObject.emptyResponse();
     }
 
+    String s = BeeUtils.sameElements(feeds, Feed.ALL) ? BeeConst.ALL : feeds.toString();
+    logger.info("user", userId, "feeds", s);
+
+    Dictionary constants = usr.getDictionary(userId);
+
     List<Subscription> subscriptions = new ArrayList<>();
     int countHeadlines = 0;
 
@@ -104,6 +115,10 @@ public class NewsBean {
         continue;
       }
 
+      if (!feeds.contains(feed)) {
+        continue;
+      }
+
       if (!usr.isModuleVisible(feed.getModuleAndSub())) {
         logger.warning("user", userId, "is subscribed to invisible feed", feed);
         continue;
@@ -114,7 +129,7 @@ public class NewsBean {
 
       Subscription subscription = new Subscription(rowId, feed, caption, date);
 
-      List<Headline> headlines = getHeadlines(feed, userId, date);
+      List<Headline> headlines = getHeadlines(feed, userId, date, constants);
       if (!headlines.isEmpty()) {
         subscription.getHeadlines().addAll(headlines);
         countHeadlines += headlines.size();
@@ -222,28 +237,22 @@ public class NewsBean {
     }
 
     Long userId = usr.getCurrentUserId();
-    if (!DataUtils.isId(userId)) {
-      return;
-    }
-
     long now = System.currentTimeMillis();
 
     IsCondition where = SqlUtils.equals(usageTable, relationColumn, rowId,
         NewsConstants.COL_USAGE_USER, userId);
 
-    if (qs.sqlExists(usageTable, where)) {
-      qs.updateData(new SqlUpdate(usageTable)
-          .addConstant(NewsConstants.COL_USAGE_ACCESS, now)
-          .addConstant(NewsConstants.COL_USAGE_UPDATE, now)
-          .setWhere(where));
+    int cnt = qs.updateData(new SqlUpdate(usageTable)
+        .addConstant(NewsConstants.COL_USAGE_ACCESS, now)
+        .addConstant(NewsConstants.COL_USAGE_UPDATE, now)
+        .setWhere(where));
 
-    } else {
+    if (!BeeUtils.isPositive(cnt)) {
       qs.insertData(new SqlInsert(usageTable)
           .addFields(relationColumn, NewsConstants.COL_USAGE_USER, NewsConstants.COL_USAGE_ACCESS,
               NewsConstants.COL_USAGE_UPDATE)
           .addValues(rowId, userId, now, now));
     }
-
     logger.debug("news on update", userId, table, rowId, usageTable);
   }
 
@@ -336,7 +345,9 @@ public class NewsBean {
     return access;
   }
 
-  private List<Headline> getHeadlines(Feed feed, long userId, DateTime startDate) {
+  private List<Headline> getHeadlines(Feed feed, long userId, DateTime startDate,
+      Dictionary constants) {
+
     List<Headline> result = new ArrayList<>();
 
     if (NewsHelper.hasChannel(feed)) {
@@ -376,7 +387,7 @@ public class NewsBean {
       }
     }
 
-    List<Headline> headlines = produceHeadlines(feed, userId, newIds, updIds);
+    List<Headline> headlines = produceHeadlines(feed, userId, newIds, updIds, constants);
     if (!headlines.isEmpty()) {
       result.addAll(headlines);
     }
@@ -438,7 +449,8 @@ public class NewsBean {
   }
 
   private List<Headline> produceHeadlines(Feed feed, long userId, Collection<Long> newIds,
-      Collection<Long> updIds) {
+      Collection<Long> updIds, Dictionary constants) {
+
     List<Headline> headlines = new ArrayList<>();
 
     boolean hasNew = !BeeUtils.isEmpty(newIds);
@@ -515,7 +527,7 @@ public class NewsBean {
         boolean isNew = hasNew && newIds.contains(row.getId());
 
         if (hasProducer) {
-          Headline headline = NewsHelper.getHeadline(feed, userId, rowSet, row, isNew);
+          Headline headline = NewsHelper.getHeadline(feed, userId, rowSet, row, isNew, constants);
           if (headline != null) {
             headlines.add(headline);
           }

@@ -6,7 +6,6 @@ import com.google.gwt.xml.client.Element;
 import com.butent.bee.client.layout.Direction;
 import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.ui.FormFactory;
-import com.butent.bee.client.ui.FormWidget;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.WidgetCreationCallback;
 import com.butent.bee.client.utils.XmlUtils;
@@ -14,6 +13,7 @@ import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.ui.UiConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 
@@ -32,6 +32,7 @@ public final class ExtWidget {
 
   public static ExtWidget create(String xml, String viewName, List<BeeColumn> dataColumns,
       WidgetCreationCallback creationCallback, GridInterceptor gridInterceptor) {
+
     Document doc = XmlUtils.parse(xml);
     if (doc == null) {
       return null;
@@ -53,7 +54,7 @@ public final class ExtWidget {
       return null;
     }
 
-    int size = BeeUtils.unbox(XmlUtils.getAttributeInteger(root, FormWidget.ATTR_SIZE));
+    int size = BeeUtils.unbox(XmlUtils.getAttributeInteger(root, UiConstants.ATTR_SIZE));
     if (size <= 0) {
       logger.severe("ext widget size must be positive integer");
       return null;
@@ -66,7 +67,7 @@ public final class ExtWidget {
       return null;
     }
 
-    Integer splSize = XmlUtils.getAttributeInteger(root, FormWidget.ATTR_SPLITTER_SIZE);
+    Integer splSize = XmlUtils.getAttributeInteger(root, UiConstants.ATTR_SPLITTER_SIZE);
 
     Component precedes = EnumUtils.getEnumByName(Component.class, root.getAttribute(ATTR_PRECEDES));
     boolean hidable = !BeeUtils.isFalse(XmlUtils.getAttributeBoolean(root, ATTR_HIDABLE));
@@ -77,15 +78,19 @@ public final class ExtWidget {
   private final IdentifiableWidget widget;
 
   private final Direction direction;
-  private final int size;
+  private int size;
   private final Integer splSize;
 
   private final Component precedes;
   private final boolean hidable;
 
+  private String storageKey;
+
   private ExtWidget(IdentifiableWidget widget, Direction direction, int size, Integer splSize,
       Component precedes, boolean hidable) {
+
     super();
+
     this.widget = widget;
     this.direction = direction;
     this.size = size;
@@ -106,6 +111,10 @@ public final class ExtWidget {
     return splSize;
   }
 
+  public String getStorageKey() {
+    return storageKey;
+  }
+
   public int getTotalSize() {
     return getSize() + BeeUtils.toNonNegativeInt(getSplSize());
   }
@@ -124,5 +133,13 @@ public final class ExtWidget {
 
   public boolean precedesHeader() {
     return Component.HEADER.equals(precedes);
+  }
+
+  public void setSize(int size) {
+    this.size = size;
+  }
+
+  public void setStorageKey(String storageKey) {
+    this.storageKey = storageKey;
   }
 }

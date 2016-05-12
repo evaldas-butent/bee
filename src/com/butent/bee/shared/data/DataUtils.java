@@ -12,6 +12,7 @@ import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.Order;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.time.DateTime;
@@ -25,6 +26,7 @@ import com.butent.bee.shared.utils.Wildcards.Pattern;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -70,6 +72,16 @@ public final class DataUtils {
       Splitter.on(ID_LIST_SEPARATOR).omitEmptyStrings().trimResults();
 
   private static int maxInitialRowSetSize = 50;
+
+  public static void addNotNullLongs(Set<Long> target, BeeRowSet rowSet, String columnId) {
+    Assert.notNull(target);
+    Assert.notNull(rowSet);
+
+    int index = rowSet.getColumnIndex(columnId);
+    if (!BeeConst.isUndef(index) && !rowSet.isEmpty()) {
+      BeeUtils.addAllNotNull(target, rowSet.getDistinctLongs(index));
+    }
+  }
 
   public static long assertId(Long id) {
     Assert.isTrue(isId(id), "invalid row id");
@@ -159,12 +171,29 @@ public final class DataUtils {
   }
 
   public static BeeRowSet createRowSetForInsert(String viewName, List<BeeColumn> columns,
+      List<String> values) {
+
+    if (BeeUtils.isEmpty(columns)) {
+      return null;
+    }
+    BeeRow row = createEmptyRow(columns.size());
+    row.setValues(Assert.notNull(values));
+
+    return createRowSetForInsert(viewName, columns, row, null, false);
+  }
+
+  public static BeeRowSet createRowSetForInsert(String viewName, List<BeeColumn> columns,
       IsRow row) {
     return createRowSetForInsert(viewName, columns, row, null, false);
   }
 
   public static BeeRowSet createRowSetForInsert(String viewName, List<BeeColumn> columns,
       IsRow row, Collection<String> alwaysInclude, boolean addProperties) {
+
+    if (BeeUtils.isEmpty(columns)) {
+      return null;
+    }
+    Assert.notNull(row);
 
     List<BeeColumn> newColumns = new ArrayList<>();
     List<String> values = new ArrayList<>();
@@ -290,10 +319,25 @@ public final class DataUtils {
     }
   }
 
+  /**
+   * Finds column place in the list.
+   * 
+   * @param columnId the name of target column
+   * @param columns a list of columns
+   * @return an index of target column in columns list
+   */
   public static int getColumnIndex(String columnId, List<? extends IsColumn> columns) {
     return getColumnIndex(columnId, columns, false);
   }
 
+  /**
+   * Finds column place in the list with the warning.
+   * 
+   * @param columnId the name of target column
+   * @param columns a list of columns
+   * @param warn value to show or not the warning
+   * @return an index of target column in columns list
+   */
   public static int getColumnIndex(String columnId, List<? extends IsColumn> columns,
       boolean warn) {
 
@@ -445,6 +489,10 @@ public final class DataUtils {
 
   public static Double getDouble(List<? extends IsColumn> columns, IsRow row, String columnId) {
     return row.getDouble(getColumnIndex(columnId, columns));
+  }
+
+  public static long getId(IsRow row) {
+    return (row == null) ? BeeConst.LONG_UNDEF : row.getId();
   }
 
   public static Set<Long> getIdSetDifference(String s1, String s2) {
@@ -627,6 +675,28 @@ public final class DataUtils {
     }
   }
 
+  public static String getTranslation(BeeRowSet rowSet, IsRow row, String columnId,
+      String language) {
+    return getTranslation(rowSet.getColumns(), row, columnId, language);
+  }
+
+  public static String getTranslation(List<? extends IsColumn> columns, IsRow row, String columnId,
+      String language) {
+
+    if (!BeeUtils.isEmpty(language)) {
+      int index = getColumnIndex(Localized.column(columnId, language), columns);
+
+      if (!BeeConst.isUndef(index)) {
+        String value = row.getString(index);
+        if (!BeeUtils.isEmpty(value)) {
+          return value;
+        }
+      }
+    }
+
+    return getString(columns, row, columnId);
+  }
+
   public static BeeRowSet getUpdated(String viewName, List<BeeColumn> columns, IsRow oldRow,
       IsRow newRow, Collection<RowChildren> children) {
 
@@ -644,6 +714,15 @@ public final class DataUtils {
     }
     return getUpdated(viewName, oldRow.getId(), oldRow.getVersion(),
         columns, oldValues, newValues, children);
+  }
+
+  public static BeeRowSet getUpdated(String viewName, long rowId, long rowVersion,
+      BeeColumn column, String oldValue, String newValue) {
+
+    Assert.notNull(column);
+
+    return getUpdated(viewName, rowId, rowVersion, Collections.singletonList(column),
+        Collections.singletonList(oldValue), Collections.singletonList(newValue), null);
   }
 
   public static BeeRowSet getUpdated(String viewName, long rowId, long rowVersion,
@@ -696,34 +775,85 @@ public final class DataUtils {
     return rowSet;
   }
 
+  /**
+   * Checks if row has id.
+   * 
+   * @param row data entry
+   * @return true if a row has id value, otherwise false.
+   */
   public static boolean hasId(IsRow row) {
     return row != null && isId(row.getId());
   }
 
+  /**
+   * Checks if the id of the row and specific id are equal.
+   * 
+   * @param row data entry
+   * @param id specific id value
+   * @return true if both id are equal, otherwise false.
+   */
   public static boolean idEquals(IsRow row, Long id) {
     return row != null && id != null && id.equals(row.getId());
   }
 
+  /**
+   * Checks if the rowSet is empty or null.
+   * 
+   * @param rowSet data set (BeeRowSet object)
+   * @return True if rowSet is empty, otherwise false.
+   */
   public static boolean isEmpty(BeeRowSet rowSet) {
     return rowSet == null || rowSet.isEmpty();
   }
 
+  /**
+   * Checks if the rowSet is empty or null.
+   * 
+   * @param rowSet data set (SimpleRowSet object)
+   * @return True if rowSet is empty, otherwise false.
+   */
   public static boolean isEmpty(SimpleRowSet rowSet) {
     return rowSet == null || rowSet.isEmpty();
   }
 
+  /**
+   * Checks if the id is truly correct.
+   * 
+   * @param id target id value (Long object)
+   * @return True if the {@code id} is positive, otherwise false.
+   */
   public static boolean isId(Long id) {
     return id != null && id > 0;
   }
 
+  /**
+   * Checks if the id is truly correct.
+   * 
+   * @param s target String value
+   * @return True if the {@code s} is positive, otherwise false.
+   */
   public static boolean isId(String s) {
     return s != null && BeeUtils.isDigit(s.trim()) && isId(BeeUtils.toLongOrNull(s));
   }
 
+  /**
+   * Checks if the target row is a new row.
+   * 
+   * @param row data entry
+   * @return True if id of the {@code row} equals 0, otherwise false.
+   */
   public static boolean isNewRow(IsRow row) {
     return row != null && row.getId() == NEW_ROW_ID;
   }
 
+  /**
+   * Checks if the value at {@code row} {@code columnId} is {@code null}.
+   * 
+   * @param rowSet data set (BeeRowSet object)
+   * @param row data entry
+   * @param columnId the name of target column
+   * @return True if the cell at {@code row} {@code columnId} equals {@code null}, otherwise false.
+   */
   public static boolean isNull(BeeRowSet rowSet, IsRow row, String columnId) {
     return row.isNull(getColumnIndex(columnId, rowSet.getColumns()));
   }
@@ -1008,10 +1138,24 @@ public final class DataUtils {
     return result;
   }
 
+  /**
+   * Checks if the rows have same id.
+   * 
+   * @param r1 first row
+   * @param r2 second row
+   * @return true if the rows have the same id, otherwise false.
+   */
   public static boolean sameId(IsRow r1, IsRow r2) {
     return r1 != null && r2 != null && r1.getId() == r2.getId();
   }
 
+  /**
+   * Checks if the rows have same id and version.
+   * 
+   * @param r1 first row
+   * @param r2 second row
+   * @return true if the rows have the same id and same version, otherwise false.
+   */
   public static boolean sameIdAndVersion(IsRow r1, IsRow r2) {
     return r1 != null && r2 != null
         && r1.getId() == r2.getId() && r1.getVersion() == r2.getVersion();
@@ -1030,6 +1174,13 @@ public final class DataUtils {
     return sameIdSet(s1, parseIdSet(s2));
   }
 
+  /**
+   * Checks if the rows have same values.
+   * 
+   * @param r1 first row
+   * @param r2 second row
+   * @return true if the rows have same values, otherwise false.
+   */
   public static boolean sameValues(IsRow r1, IsRow r2) {
     if (r1 != null && r2 != null && r1.getNumberOfCells() == r2.getNumberOfCells()) {
       for (int i = 0; i < r1.getNumberOfCells(); i++) {
@@ -1074,6 +1225,14 @@ public final class DataUtils {
     return result;
   }
 
+  /**
+   * Sets a String value to the cell.
+   * 
+   * @param rowSet
+   * @param row target row
+   * @param columnId column ID
+   * @param value String value
+   */
   public static void setValue(BeeRowSet rowSet, IsRow row, String columnId, String value) {
     row.setValue(getColumnIndex(columnId, rowSet.getColumns()), value);
   }

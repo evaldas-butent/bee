@@ -3,11 +3,12 @@
   name="ActiveTrips"
   source="Trips"
   readOnly="true"
-  filter="!(DateTo)"
+  filter="!(DateTo) and (Status=0 or Status=1)"
   >
   <Columns>
     <SimpleColumn name="Date" />
     <SimpleColumn name="TripNo" />
+    <SimpleColumn name="Status" />
 
     <SimpleJoin name="Vehicle" joinType="LEFT">
       <SimpleColumn name="Number" alias="VehicleNumber" />
@@ -27,11 +28,12 @@
 
     <SimpleColumn name="ForwarderVehicle" />
     <SimpleColumn name="ForwarderDriver" />
+    <SimpleColumn name="PlannedEndDate" />
     <SimpleColumn name="DateFrom" />
     <SimpleColumn name="DateTo" />
     <SimpleColumn name="Notes" />
 
-    <ExternalJoin source="TripDrivers" name="Trip" joinType="LEFT">
+    <SimpleJoin name="MainDriver" joinType="LEFT">
       <SimpleJoin name="Driver" joinType="LEFT">
         <SimpleJoin name="CompanyPerson" joinType="LEFT">
           <SimpleJoin name="Person" joinType="LEFT">
@@ -40,7 +42,17 @@
           </SimpleJoin>
         </SimpleJoin>
       </SimpleJoin>
-    </ExternalJoin>
+    </SimpleJoin>
+
+    <SimpleColumn name="Manager" />
+    <SimpleJoin name="Manager" joinType="LEFT">
+      <SimpleJoin name="CompanyPerson" joinType="LEFT">
+        <SimpleJoin name="Person" joinType="LEFT">
+          <SimpleColumn name="FirstName" alias="ManagerFirstName" />
+          <SimpleColumn name="LastName" alias="ManagerLastName" />
+        </SimpleJoin>
+      </SimpleJoin>
+    </SimpleJoin>
   </Columns>
   <Order>
     <OrderBy column="Date" />

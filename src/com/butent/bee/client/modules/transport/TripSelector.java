@@ -14,9 +14,9 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.DialogBox;
+import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.view.edit.EditStopEvent;
-import com.butent.bee.client.view.edit.EditStopEvent.Handler;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.data.BeeColumn;
@@ -34,10 +34,18 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
 
-final class TripSelector implements Handler, ClickHandler {
+final class TripSelector implements EditStopEvent.Handler, ClickHandler {
+
+  public static void select(long cargoId, List<String> columns, Filter tripFilter, Element target) {
+    String[] cargos = new String[] {BeeUtils.toString(cargoId)};
+    TripSelector selector = new TripSelector(cargos, tripFilter, columns);
+    selector.dialog.showOnTop(target);
+  }
 
   public static void select(String[] cargos, Filter tripFilter, Element target) {
-    TripSelector selector = new TripSelector(cargos, tripFilter);
+    TripSelector selector = new TripSelector(cargos, tripFilter,
+        Lists.newArrayList(COL_TRIP_NO, "VehicleNumber", "DriverFirstName", "DriverLastName",
+            "ExpeditionType", "ForwarderName"));
     selector.dialog.showOnTop(target);
   }
 
@@ -47,19 +55,17 @@ final class TripSelector implements Handler, ClickHandler {
   final Button tripButton;
   final Button expeditionTripButton;
 
-  private TripSelector(String[] cargos, Filter tripFilter) {
+  private TripSelector(String[] cargos, Filter tripFilter, List<String> columns) {
     this.cargos = cargos;
-    this.dialog = DialogBox.create(Localized.getConstants().trAssignTrip());
+    this.dialog = DialogBox.create(Localized.dictionary().trAssignTrip());
     dialog.setHideOnEscape(true);
 
     HtmlTable container = new HtmlTable();
     container.setBorderSpacing(5);
 
-    container.setHtml(0, 0, Localized.getConstants().trCargoSelectTrip());
+    container.setHtml(0, 0, Localized.dictionary().trCargoSelectTrip());
 
-    Relation relation = Relation.create(VIEW_ACTIVE_TRIPS,
-        Lists.newArrayList(COL_TRIP_NO, "VehicleNumber", "DriverFirstName", "DriverLastName",
-            "ExpeditionType", "ForwarderName"));
+    Relation relation = Relation.create(VIEW_ACTIVE_TRIPS, columns);
     relation.disableNewRow();
     relation.setCaching(Relation.Caching.QUERY);
     relation.setFilter(tripFilter);
@@ -68,10 +74,10 @@ final class TripSelector implements Handler, ClickHandler {
     selector.addEditStopHandler(this);
     container.setWidget(0, 1, selector);
 
-    tripButton = new Button(Localized.getConstants().trNewTrip(), this);
+    tripButton = new Button(Localized.dictionary().trNewTrip(), this);
     container.setWidget(1, 0, tripButton);
 
-    expeditionTripButton = new Button(Localized.getConstants().trNewExpedition(), this);
+    expeditionTripButton = new Button(Localized.dictionary().trNewExpedition(), this);
     container.setWidget(1, 1, expeditionTripButton);
 
     dialog.setWidget(container);
@@ -122,7 +128,7 @@ final class TripSelector implements Handler, ClickHandler {
     DataInfo dataInfo = Data.getDataInfo(viewName);
 
     RowFactory.createRow(dataInfo.getEditForm(), dataInfo.getNewRowCaption(),
-        dataInfo, RowFactory.createEmptyRow(dataInfo, true), new RowCallback() {
+        dataInfo, RowFactory.createEmptyRow(dataInfo, true), Modality.ENABLED, new RowCallback() {
           @Override
           public void onSuccess(BeeRow row) {
             RowInsertEvent.fire(BeeKeeper.getBus(), viewName, row, null);

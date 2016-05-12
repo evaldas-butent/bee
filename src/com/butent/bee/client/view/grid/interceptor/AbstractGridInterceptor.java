@@ -32,6 +32,7 @@ import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.CellSource;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.RowInsertEvent;
@@ -41,6 +42,8 @@ import com.butent.bee.shared.data.filter.FilterComponent;
 import com.butent.bee.shared.data.filter.FilterDescription;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.GridDescription;
@@ -53,23 +56,19 @@ import java.util.Map;
 public abstract class AbstractGridInterceptor implements GridInterceptor {
 
   public static final List<String> DELETE_ROW_MESSAGE =
-      Lists.newArrayList(Localized.getConstants().deleteRowQuestion());
+      Lists.newArrayList(Localized.dictionary().deleteRowQuestion());
 
   public static Pair<String, String> deleteRowsMessage(int selectedRows) {
-    String m1 = Localized.getConstants().deleteActiveRow();
+    String m1 = Localized.dictionary().deleteActiveRow();
 
     String m2 = (selectedRows == 1)
-        ? Localized.getConstants().deleteSelectedRow()
-        : Localized.getMessages().deleteSelectedRows(selectedRows);
+        ? Localized.dictionary().deleteSelectedRow()
+        : Localized.dictionary().deleteSelectedRows(selectedRows);
 
     return Pair.of(m1, m2);
   }
 
   private GridPresenter gridPresenter;
-
-  @Override
-  public void afterAction(Action action, GridPresenter presenter) {
-  }
 
   @Override
   public void afterCreate(GridView gridView) {
@@ -189,6 +188,26 @@ public abstract class AbstractGridInterceptor implements GridInterceptor {
   }
 
   @Override
+  public IsRow getActiveRow() {
+    return (getGridView() == null) ? null : getGridView().getActiveRow();
+  }
+
+  @Override
+  public long getActiveRowId() {
+    return DataUtils.getId(getActiveRow());
+  }
+
+  @Override
+  public Boolean getBooleanValue(String source) {
+    int index = getDataIndex(source);
+    if (getActiveRow() != null && index >= 0) {
+      return getActiveRow().getBoolean(index);
+    } else {
+      return null;
+    }
+  }
+
+  @Override
   public String getCaption() {
     return null;
   }
@@ -206,6 +225,26 @@ public abstract class AbstractGridInterceptor implements GridInterceptor {
   @Override
   public int getDataIndex(String source) {
     return (getGridView() == null) ? BeeConst.UNDEF : getGridView().getDataIndex(source);
+  }
+
+  @Override
+  public DateTime getDateTimeValue(String source) {
+    int index = getDataIndex(source);
+    if (getActiveRow() != null && index >= 0) {
+      return getActiveRow().getDateTime(index);
+    } else {
+      return null;
+    }
+  }
+
+  @Override
+  public JustDate getDateValue(String source) {
+    int index = getDataIndex(source);
+    if (getActiveRow() != null && index >= 0) {
+      return getActiveRow().getDate(index);
+    } else {
+      return null;
+    }
   }
 
   @Override
@@ -271,6 +310,26 @@ public abstract class AbstractGridInterceptor implements GridInterceptor {
   }
 
   @Override
+  public Integer getIntegerValue(String source) {
+    int index = getDataIndex(source);
+    if (getActiveRow() != null && index >= 0) {
+      return getActiveRow().getInteger(index);
+    } else {
+      return null;
+    }
+  }
+
+  @Override
+  public Long getLongValue(String source) {
+    int index = getDataIndex(source);
+    if (getActiveRow() != null && index >= 0) {
+      return getActiveRow().getLong(index);
+    } else {
+      return null;
+    }
+  }
+
+  @Override
   public List<String> getParentLabels() {
     return null;
   }
@@ -287,13 +346,23 @@ public abstract class AbstractGridInterceptor implements GridInterceptor {
   }
 
   @Override
-  public String getRowCaption(IsRow row, boolean edit) {
+  public String getRowCaption(IsRow row) {
     return null;
   }
 
   @Override
   public StyleProvider getRowStyleProvider() {
     return null;
+  }
+
+  @Override
+  public String getStringValue(String source) {
+    int index = getDataIndex(source);
+    if (getActiveRow() != null && index >= 0) {
+      return getActiveRow().getString(index);
+    } else {
+      return null;
+    }
   }
 
   @Override

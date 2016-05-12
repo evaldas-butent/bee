@@ -71,7 +71,7 @@ public class Totalizer {
       amount -= discount;
     }
 
-    if (isTrue(COL_TRADE_VAT_PLUS, row)) {
+    if (!isVatInclusive(row)) {
       Double vat = getVat(row, amount);
       if (BeeUtils.isDouble(vat)) {
         amount += vat;
@@ -100,6 +100,30 @@ public class Totalizer {
         return getVat(row, base);
       }
     }
+  }
+
+  public Double getVat(IsRow row, Double base) {
+    if (base != null && functions.containsKey(COL_TRADE_VAT)) {
+      Double vat = getNumber(COL_TRADE_VAT, row);
+
+      if (vat != null && isTrue(COL_TRADE_VAT_PERC, row)) {
+        if (isVatInclusive(row)) {
+          return BeeUtils.percentInclusive(base, vat);
+        } else {
+          return BeeUtils.percent(base, vat);
+        }
+
+      } else {
+        return vat;
+      }
+
+    } else {
+      return null;
+    }
+  }
+
+  public boolean isVatInclusive(IsRow row) {
+    return isFalse(COL_TRADE_VAT_PLUS, row);
   }
 
   public void setAmountFunction(RowToDouble function) {
@@ -163,26 +187,6 @@ public class Totalizer {
   private Double getNumber(String key, IsRow row) {
     RowToDouble function = functions.get(key);
     return (function == null) ? null : function.apply(row);
-  }
-
-  private Double getVat(IsRow row, Double base) {
-    if (base != null && functions.containsKey(COL_TRADE_VAT)) {
-      Double vat = getNumber(COL_TRADE_VAT, row);
-
-      if (vat != null && isTrue(COL_TRADE_VAT_PERC, row)) {
-        if (isFalse(COL_TRADE_VAT_PLUS, row)) {
-          return BeeUtils.percentInclusive(base, vat);
-        } else {
-          return BeeUtils.percent(base, vat);
-        }
-
-      } else {
-        return vat;
-      }
-
-    } else {
-      return null;
-    }
   }
 
   private boolean isFalse(String key, IsRow row) {

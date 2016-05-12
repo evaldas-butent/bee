@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+       name="LossReasons" idName="ReasonID"
+    >
+  <Fields>
+    <String name="ReasonName" precision="30" notNull="true" unique="true" label="=reason" />
+    <Text name="Template" label="=template" />
+  </Fields>
+</Table>

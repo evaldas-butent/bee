@@ -76,7 +76,7 @@ public class RpcFactory {
     Assert.notEmpty(method);
 
     ParameterList params = createParameters(module.getName());
-    params.addQueryItem(Service.VAR_METHOD, method);
+    params.addQueryItem(Service.RPC_VAR_SUB, method);
 
     return params;
   }
@@ -139,9 +139,9 @@ public class RpcFactory {
     Assert.notEmpty(method);
 
     ParameterList params = createParameters(Service.INVOKE);
-    params.addQueryItem(Service.VAR_METHOD, method);
+    params.addQueryItem(Service.RPC_VAR_SUB, method);
 
-    if (data == null) {
+    if (BeeUtils.isEmpty(data)) {
       return makeGetRequest(params, callback);
     } else {
       return makePostRequest(params, ctp, data, callback);
@@ -247,16 +247,12 @@ public class RpcFactory {
     return makeRequest(meth, params, null, null, callback, BeeConst.UNDEF);
   }
 
+  public int makeRequest(String svc, ResponseCallback callback) {
+    return makeGetRequest(svc, callback);
+  }
+
   public int sendText(ParameterList params, String data, ResponseCallback callback) {
     return makePostRequest(params, ContentType.TEXT, data, callback);
-  }
-
-  public int sendText(String svc, String data) {
-    return makePostRequest(svc, ContentType.TEXT, data);
-  }
-
-  public int sendText(String svc, String data, ResponseCallback callback) {
-    return makePostRequest(svc, ContentType.TEXT, data, callback);
   }
 
   private int makeRequest(RequestBuilder.Method meth, ParameterList params,
@@ -323,7 +319,7 @@ public class RpcFactory {
     if (debug) {
       logger.info("request", id, meth.toString(), url);
     } else {
-      logger.info(">", id, svc);
+      logger.info(">", id, svc, params.getSubService(), params.getSummary());
     }
 
     String content = null;

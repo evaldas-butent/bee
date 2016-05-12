@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Table xmlns="http://www.butent.com/table"
+  
+  name="TradeTypeStatuses"
+  idName="TradeTypeStatusID"
+  >
+  <Fields>
+    <Relation name="DocumentType" notNull="true" relation="TradeDocumentTypes" cascade="DELETE"
+      label="=trdDocumentType" />
+    <Relation name="Status" notNull="true" relation="TradeStatuses" label="=status" />
+  </Fields>
+
+  <Constraints>
+    <Unique fields="DocumentType Status" />
+  </Constraints>
+</Table>

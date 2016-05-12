@@ -1,18 +1,20 @@
 package com.butent.bee.server.i18n;
 
-import com.google.gwt.i18n.client.Constants;
-import com.google.gwt.i18n.client.Messages;
-
-import com.butent.bee.shared.Assert;
+import com.butent.bee.server.Config;
+import com.butent.bee.server.io.FileUtils;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.i18n.SupportedLocale;
+import com.butent.bee.shared.io.FileNameUtils;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.ExtendedProperty;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
+import com.ibm.icu.text.RuleBasedNumberFormat;
 
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Proxy;
+import java.io.File;
 import java.text.BreakIterator;
 import java.text.Collator;
 import java.text.DateFormat;
@@ -22,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -29,18 +32,15 @@ import java.util.MissingResourceException;
 import java.util.Properties;
 import java.util.TreeMap;
 
-/**
- * Contains internationalization and localization related utility functions like
- * <code>getAvailableLocales</code> and <code>getIso3Language</code>.
- */
-
 public final class I18nUtils {
+
   public static final char LOCALE_SEPARATOR = '_';
+
+  private static BeeLogger logger = LogUtils.getLogger(I18nUtils.class);
 
   /**
    * Compares two locales and returns the result of the comparison.
    */
-
   public static class LocaleComparator implements Comparator<Locale> {
     @Override
     public int compare(Locale o1, Locale o2) {
@@ -57,20 +57,19 @@ public final class I18nUtils {
     }
   }
 
-  public static <T extends Constants> T createConstants(Class<T> itf, Properties properties) {
-    Assert.notNull(itf);
-    Assert.notNull(properties);
-
-    InvocationHandler ih = new GwtConstants(properties);
-    return createProxy(itf, ih);
+  public static File getDictionaryDir() {
+    return new File(Config.CONFIG_DIR, "dictionaries");
   }
 
-  public static <T extends Messages> T createMessages(Class<T> itf, Properties properties) {
-    Assert.notNull(itf);
-    Assert.notNull(properties);
-
-    InvocationHandler ih = new GwtMessages(properties);
-    return createProxy(itf, ih);
+  public static File getDictionaryFile(SupportedLocale supportedLocale) {
+    if (supportedLocale == null) {
+      logger.severe("getDictionaryFile: locale is null");
+      return null;
+    } else {
+      return new File(getDictionaryDir(),
+          FileNameUtils.defaultExtension(supportedLocale.getDictionaryFileName(),
+              FileUtils.EXT_PROPERTIES));
+    }
   }
 
   public static List<ExtendedProperty> getExtendedInfo() {
@@ -179,6 +178,37 @@ public final class I18nUtils {
     return lang;
   }
 
+  public static String getNumberInWords(Number number, Locale locale) {
+    return new RuleBasedNumberFormat(locale, RuleBasedNumberFormat.SPELLOUT).format(number);
+  }
+
+  public static String getTotalInWords(Double amount, String currencyName, String minorName,
+      String locale) {
+    if (!BeeUtils.isPositive(amount)) {
+      return null;
+    }
+    long number = BeeUtils.toLong(Math.floor(amount));
+    int fraction = BeeUtils.round((amount - number) * 100);
+
+    return BeeUtils.joinWords(getNumberInWords(number, toLocale(locale)), currencyName, fraction,
+        minorName);
+  }
+
+  public static Map<String, String> readProperties(SupportedLocale supportedLocale) {
+    Map<String, String> dictionary = new HashMap<>();
+
+    File file = getDictionaryFile(supportedLocale);
+    if (file != null) {
+      Properties properties = FileUtils.readProperties(file);
+
+      for (String name : properties.stringPropertyNames()) {
+        dictionary.put(name, properties.getProperty(name));
+      }
+    }
+
+    return dictionary;
+  }
+
   public static Locale toLocale(String s) {
     if (BeeUtils.isEmpty(s)) {
       return null;
@@ -189,7 +219,7 @@ public final class I18nUtils {
         return lc;
       }
     }
-    return null;
+    return Locale.getDefault();
   }
 
   public static String toString(Locale locale) {
@@ -200,11 +230,6 @@ public final class I18nUtils {
     } else {
       return locale.toString();
     }
-  }
-
-  @SuppressWarnings("unchecked")
-  private static <T> T createProxy(Class<T> itf, InvocationHandler ih) {
-    return (T) Proxy.newProxyInstance(itf.getClassLoader(), new Class[] {itf}, ih);
   }
 
   private I18nUtils() {

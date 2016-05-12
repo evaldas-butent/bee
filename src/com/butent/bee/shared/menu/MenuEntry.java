@@ -11,7 +11,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement(name = "Entry", namespace = DataUtils.MENU_NAMESPACE)
 public class MenuEntry extends Menu {
-  @XmlElementRef
+
   private List<Menu> items;
 
   @Override
@@ -47,5 +47,10 @@ public class MenuEntry extends Menu {
   @Override
   public String serialize() {
     return super.serialize(items);
+  }
+
+  @XmlElementRef
+  public void setItems(List<Menu> items) {
+    this.items = items;
   }
 }

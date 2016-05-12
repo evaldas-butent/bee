@@ -12,7 +12,7 @@
 
     <SimpleColumn name="Company" />
     <SimpleJoin joinType="LEFT" name="Company">
-      <SimpleColumn alias="CompanyName" name="Name" />
+      <SimpleColumn alias="CompanyName" name="Name" label="=company" />
       <SimpleJoin joinType="LEFT" name="CompanyType">
         <SimpleColumn name="Name" alias="CompanyTypeName" />
       </SimpleJoin>
@@ -47,6 +47,8 @@
 
     <SimpleColumn name="Received" />
     <SimpleColumn name="Sent" />
+    <SimpleColumn name="ReceivedNumber" />
+    <SimpleColumn name="SentNumber" />
 
     <SimpleColumn name="Description" />
 
@@ -54,6 +56,22 @@
     <SimpleJoin joinType="LEFT" name="Data">
       <SimpleColumn name="Content" />
     </SimpleJoin>
+
+    <SimpleColumn name="User" />
+    <SimpleJoin name="User" joinType="LEFT">
+      <SimpleColumn name="CompanyPerson" />
+      <SimpleJoin name="CompanyPerson" joinType="LEFT">
+        <SimpleJoin name="Person" joinType="LEFT">
+          <SimpleColumn name="FirstName" />
+          <SimpleColumn name="LastName" />
+        </SimpleJoin>
+        <SimpleJoin name="Position" joinType="LEFT">
+          <SimpleColumn name="Name" alias="PositionName" />
+        </SimpleJoin>
+      </SimpleJoin>
+    </SimpleJoin>
+
+    <SimpleColumn name="Notes" />
 
   </Columns>
 </View>

@@ -3,8 +3,6 @@ package com.butent.bee.client.websocket;
 import com.google.common.base.Function;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptException;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Timer;
 
 import com.butent.bee.client.BeeKeeper;
@@ -34,8 +32,6 @@ import java.util.Map;
 
 import elemental.client.Browser;
 import elemental.events.CloseEvent;
-import elemental.events.Event;
-import elemental.events.EventListener;
 import elemental.events.MessageEvent;
 import elemental.html.WebSocket;
 import elemental.js.events.JsEvent;
@@ -181,12 +177,7 @@ public final class Endpoint {
       progressId = BeeKeeper.getScreen().addProgress(th);
 
       if (progressId != null) {
-        close.addClickHandler(new ClickHandler() {
-          @Override
-          public void onClick(ClickEvent ev) {
-            cancelProgress(progressId);
-          }
-        });
+        close.addClickHandler(ev -> cancelProgress(progressId));
       }
     } else {
       progressId = null;
@@ -194,17 +185,14 @@ public final class Endpoint {
     if (progressId == null) {
       consumer.accept(null);
     } else {
-      enqueuePropgress(progressId, new Consumer<String>() {
-        @Override
-        public void accept(String input) {
-          String progress = progressId;
+      enqueuePropgress(progressId, input -> {
+        String progress = progressId;
 
-          if (BeeUtils.isEmpty(input)) {
-            cancelProgress(progress);
-            progress = null;
-          }
-          consumer.accept(progress);
+        if (BeeUtils.isEmpty(input)) {
+          cancelProgress(progress);
+          progress = null;
         }
+        consumer.accept(progress);
       });
     }
   }
@@ -229,52 +217,30 @@ public final class Endpoint {
       if (callback != null) {
         callback.accept(false);
       }
-
     } else if (socket == null || isClosed()) {
       try {
         socket = Browser.getWindow().newWebSocket(url(userId));
       } catch (JavaScriptException ex) {
         socket = null;
         logger.severe(ex, "cannot open websocket");
+
         if (callback != null) {
           callback.accept(false);
         }
       }
-
       if (socket != null) {
-        socket.setOnopen(new EventListener() {
-          @Override
-          public void handleEvent(Event evt) {
-            onlineCallback = callback;
-            onOpen();
-          }
+        socket.setOnopen(evt -> {
+          onlineCallback = callback;
+          onOpen();
         });
-
-        socket.setOnclose(new EventListener() {
-          @Override
-          public void handleEvent(Event evt) {
-            onClose((CloseEvent) evt);
-          }
-        });
-
-        socket.setOnerror(new EventListener() {
-          @Override
-          public void handleEvent(Event evt) {
-            onError((JsEvent) evt);
-          }
-        });
-
-        socket.setOnmessage(new EventListener() {
-          @Override
-          public void handleEvent(Event evt) {
-            onMessage((MessageEvent) evt);
-          }
-        });
+        socket.setOnclose(evt -> onClose((CloseEvent) evt));
+        socket.setOnerror(evt -> onError((JsEvent) evt));
+        socket.setOnmessage(evt -> onMessage((MessageEvent) evt));
       }
-
     } else if (callback != null) {
       callback.accept(isOpen());
     }
+    checkConnection();
   }
 
   public static void registerProgressHandler(String progressId,
@@ -341,6 +307,10 @@ public final class Endpoint {
     return false;
   }
 
+  private static void checkConnection() {
+    BeeKeeper.getScreen().showConnectionStatus(isOpen());
+  }
+
   private static String getReadyState() {
     if (socket == null) {
       return null;
@@ -359,13 +329,15 @@ public final class Endpoint {
 
       String eventInfo = (event == null) ? null
           : BeeUtils.joinOptions("code", Integer.toString(event.getCode()),
-              "reason", event.getReason());
+          "reason", event.getReason());
       logger.info("close", socket.getUrl(), getReadyState(), eventInfo);
     }
+    checkConnection();
   }
 
   private static void onError(JsEvent event) {
     logger.severe("ws error event", JsUtils.toString(event));
+    checkConnection();
   }
 
   private static void onMessage(MessageEvent event) {
@@ -392,6 +364,7 @@ public final class Endpoint {
     if (socket != null) {
       logger.info(socket.getUrl(), getReadyState());
     }
+    checkConnection();
   }
 
   private static String url(long userId) {

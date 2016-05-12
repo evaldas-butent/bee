@@ -5,8 +5,10 @@ import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.shared.EventHandler;
 import com.google.gwt.event.shared.GwtEvent;
 
+import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumable;
+import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.data.IsRow;
 
 /**
@@ -15,10 +17,7 @@ import com.butent.bee.shared.data.IsRow;
 
 public class EditStartEvent extends GwtEvent<EditStartEvent.Handler> implements Consumable {
 
-  /**
-   * Requires implementing methods to have a method to handle edit start.
-   */
-
+  @FunctionalInterface
   public interface Handler extends EventHandler {
     void onEditStart(EditStartEvent event);
   }
@@ -68,8 +67,15 @@ public class EditStartEvent extends GwtEvent<EditStartEvent.Handler> implements 
 
   private boolean consumed;
 
+  private Consumer<FormView> onFormFocus;
+
+  public EditStartEvent(IsRow rowValue, boolean readOnly) {
+    this(rowValue, null, null, CLICK, readOnly);
+  }
+
   public EditStartEvent(IsRow rowValue, String columnId, Element sourceElement, int charCode,
       boolean readOnly) {
+
     this.rowValue = rowValue;
     this.columnId = columnId;
     this.sourceElement = sourceElement;
@@ -93,6 +99,10 @@ public class EditStartEvent extends GwtEvent<EditStartEvent.Handler> implements 
 
   public String getColumnId() {
     return columnId;
+  }
+
+  public Consumer<FormView> getOnFormFocus() {
+    return onFormFocus;
   }
 
   public IsRow getRowValue() {
@@ -119,6 +129,10 @@ public class EditStartEvent extends GwtEvent<EditStartEvent.Handler> implements 
   @Override
   public void setConsumed(boolean consumed) {
     this.consumed = consumed;
+  }
+
+  public void setOnFormFocus(Consumer<FormView> onFormFocus) {
+    this.onFormFocus = onFormFocus;
   }
 
   @Override

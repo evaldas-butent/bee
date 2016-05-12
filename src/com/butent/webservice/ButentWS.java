@@ -286,6 +286,30 @@ public final class ButentWS {
     return answer;
   }
 
+  public String importItemReservation(String warehouse, Long itemId, Double remainder)
+      throws BeeException {
+
+    StringBuilder sb = new StringBuilder("<a>")
+        .append("<b>")
+        .append(XmlUtils.tag("sandelis", warehouse))
+        .append(XmlUtils.tag("preke", itemId))
+        .append(XmlUtils.tag("kiekis", remainder))
+        .append("</b>")
+        .append("</a>");
+
+    String answer;
+
+    try {
+      answer = process("Import_rezervations", sb.toString());
+    } catch (Exception e) {
+      throw BeeException.error(e);
+    }
+    LogUtils.getRootLogger().info(answer);
+    answer = getNode(answer).getTextContent();
+
+    return answer;
+  }
+
   private SOAPMessage createMessage(String action, Map<String, String> attributes)
       throws SOAPException {
     SOAPMessage message = MessageFactory.newInstance().createMessage();
@@ -356,16 +380,21 @@ public final class ButentWS {
         NodeList row = node.getChildNodes().item(i).getChildNodes();
         int c = row.getLength();
 
-        String[] cells = new String[data.getNumberOfColumns()];
+        String[] cells = null;
 
         for (int j = 0; j < c; j++) {
           String col = row.item(j).getLocalName();
 
           if (data.hasColumn(col)) {
+            if (cells == null) {
+              cells = new String[data.getNumberOfColumns()];
+            }
             cells[data.getColumnIndex(col)] = row.item(j).getTextContent();
           }
         }
-        data.addRow(cells);
+        if (cells != null) {
+          data.addRow(cells);
+        }
       }
     }
     return data;

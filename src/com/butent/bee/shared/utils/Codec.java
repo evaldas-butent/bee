@@ -128,6 +128,9 @@ public final class Codec {
       'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
       '|', '~'};
 
+  private static final String PROPERTY_VALUE_EOL = "\\n";
+  private static final String PROPERTY_VALUE_CR = "\\r";
+
   static {
     MessageDigest md;
     try {
@@ -498,6 +501,21 @@ public final class Codec {
     }
   }
 
+  public static String escapePropertyValue(String value) {
+    if (value == null) {
+      return null;
+
+    } else if (value.indexOf(BeeConst.CHAR_EOL) >= 0 || value.indexOf(BeeConst.CHAR_CR) >= 0) {
+      String v = BeeUtils.replace(value.trim(), BeeConst.STRING_CR + BeeConst.STRING_EOL,
+          PROPERTY_VALUE_EOL);
+      v = BeeUtils.replace(v, BeeConst.STRING_CR, PROPERTY_VALUE_EOL);
+      return BeeUtils.replace(v, BeeConst.STRING_EOL, PROPERTY_VALUE_EOL);
+
+    } else {
+      return value;
+    }
+  }
+
   /**
    * Escapes Unicode characters.
    * @param src a value to check
@@ -620,7 +638,7 @@ public final class Codec {
    * @param s a String to encode
    * @return encoded value
    */
-  public static String md5(String s) {
+  public static synchronized String md5(String s) {
     Assert.notNull(MD5);
     Assert.notEmpty(s);
 
@@ -849,6 +867,21 @@ public final class Codec {
         sb.append(toHex(arr[i]));
       }
       return sb.toString();
+    }
+  }
+
+  public static String unescapePropertyValue(String value) {
+    if (value == null) {
+      return null;
+
+    } else if (value.contains(PROPERTY_VALUE_EOL) || value.contains(PROPERTY_VALUE_CR)) {
+      String v = BeeUtils.replace(value.trim(), PROPERTY_VALUE_CR + PROPERTY_VALUE_EOL,
+          BeeConst.STRING_EOL);
+      v = BeeUtils.replace(v, PROPERTY_VALUE_CR, BeeConst.STRING_EOL);
+      return BeeUtils.replace(v, PROPERTY_VALUE_EOL, BeeConst.STRING_EOL);
+
+    } else {
+      return value;
     }
   }
 

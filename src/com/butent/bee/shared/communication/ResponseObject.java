@@ -97,7 +97,7 @@ public class ResponseObject implements BeeSerializable {
     while (cause.getCause() != null) {
       cause = cause.getCause();
     }
-    addError(cause.toString());
+    addError(BeeUtils.notEmpty(cause.getLocalizedMessage(), cause.toString()));
     return this;
   }
 
@@ -211,6 +211,16 @@ public class ResponseObject implements BeeSerializable {
     log(logger);
 
     return res;
+  }
+
+  public Integer getResponseAsInt() {
+    if (getResponse() instanceof Integer) {
+      return (Integer) getResponse();
+    } else if (getResponse() instanceof String) {
+      return BeeUtils.toIntOrNull(getResponseAsString());
+    } else {
+      return null;
+    }
   }
 
   public Long getResponseAsLong() {

@@ -10,9 +10,6 @@
     <String name="BankAccount" notNull="true" unique="true" precision="30" label="=bankAccount" />
     <Relation name="Currency" relation="Currencies" label="=currency" />
     <String name="IBANcode" precision="30" label="=ibanCode" />
-    <Text name="Notes" label="=notes" /> 
+    <Text name="Notes" label="=notes" />
   </Fields>
-  <Constraints>
-    <Unique fields="Company Currency" />
-  </Constraints>
 </Table>

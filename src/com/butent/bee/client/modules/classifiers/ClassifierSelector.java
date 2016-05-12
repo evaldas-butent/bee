@@ -41,74 +41,18 @@ import java.util.Set;
 
 public class ClassifierSelector implements SelectorEvent.Handler {
 
-  private final Map<String, Long> companyPersonSelectors = new HashMap<>();
-  private final Map<String, String> personSelectors = new HashMap<>();
-
-  ClassifierSelector() {
-    super();
-  }
-
-  @Override
-  public void onDataSelector(SelectorEvent event) {
-    if (BeeUtils.same(event.getRelatedViewName(), TBL_EMAILS)) {
-      handleEmails(event);
-
-    } else if (BeeUtils.same(event.getRelatedViewName(), VIEW_CITIES)) {
-      handleCities(event);
-
-    } else if (event.isNewRow()
-        && BeeUtils.inListSame(event.getRelatedViewName(), VIEW_PERSONS, VIEW_COMPANY_PERSONS,
-            TradeConstants.VIEW_TRADE_ACT_DRIVERS)) {
-      handleNewPersons(event);
-
-    } else if (BeeUtils.same(event.getRelatedViewName(), VIEW_COMPANY_PERSONS)) {
-      if (event.isOpened() || event.isDataLoaded() || event.isUnloading()) {
-        handleCompanyPersons(event);
-      }
-
-    } else if (BeeUtils.same(event.getRelatedViewName(), VIEW_PERSONS)) {
-      String options = event.getSelector().getOptions();
-
-      if (!BeeUtils.isEmpty(options)) {
-        if (event.isOpened() || event.isDataLoaded() || event.isUnloading()) {
-          handlePersons(event, options);
-        }
-
-      } else if (event.isOpened()) {
-        DataView dataView = ViewHelper.getDataView(event.getSelector());
-
-        if (dataView != null && VIEW_COMPANY_OBJECTS.equals(dataView.getViewName())) {
-          if (TimeUtils.year() < 0) { // never
-            filterPersonsByCompany(event, dataView);
-          }
-        }
-      }
-
-    } else if (event.isOpened() && event.hasRelatedView(VIEW_POSITIONS)) {
-      DataView dataView = ViewHelper.getDataView(event.getSelector());
-      if (dataView != null
-          && AdministrationConstants.VIEW_DEPARTMENT_EMPLOYEES.equals(dataView.getViewName())) {
-        filterDepartmentPositions(event, dataView);
-      }
-    } else if (BeeUtils.same(event.getRelatedViewName(), VIEW_ITEMS)) {
-      handleServices(event);
-    }
-  }
-
   private static void filterDepartmentPositions(SelectorEvent event, DataView dataView) {
-    Long department = ViewHelper.getParentRowId(dataView.asWidget(),
-        AdministrationConstants.VIEW_DEPARTMENTS);
+    Long department = ViewHelper.getParentRowId(dataView.asWidget(), AdministrationConstants.VIEW_DEPARTMENTS);
 
     Filter filter;
     if (DataUtils.isId(department)) {
-      filter = Filter.in(Data.getIdColumn(VIEW_POSITIONS),
-          AdministrationConstants.VIEW_DEPARTMENT_POSITIONS, COL_POSITION,
+      filter = Filter.in(Data.getIdColumn(VIEW_POSITIONS), AdministrationConstants.VIEW_DEPARTMENT_POSITIONS, COL_POSITION,
           Filter.equals(AdministrationConstants.COL_DEPARTMENT, department));
     } else {
       filter = null;
     }
 
-    event.getSelector().setAdditionalFilter(filter, true);
+    event.getSelector().setAdditionalFilter(filter, filter != null);
   }
 
   private static void filterPersonsByCompany(SelectorEvent event, DataView dataView) {
@@ -123,6 +67,30 @@ public class ClassifierSelector implements SelectorEvent.Handler {
     }
 
     event.getSelector().setAdditionalFilter(filter, true);
+  }
+  
+  private static Long getOptionsValue(SelectorEvent event) {
+    String columnName = event.getSelector().getOptions();
+    if (BeeUtils.isEmpty(columnName)) {
+      return null;
+    }
+
+    DataView dataView = ViewHelper.getDataView(event.getSelector());
+    if (dataView == null) {
+      return null;
+    }
+
+    IsRow row = dataView.getActiveRow();
+    if (row == null) {
+      return null;
+    }
+
+    int index = Data.getColumnIndex(dataView.getViewName(), columnName);
+    if (index < 0) {
+      return null;
+    }
+
+    return row.getLong(index);
   }
 
   private static void handleCities(SelectorEvent event) {
@@ -170,6 +138,289 @@ public class ClassifierSelector implements SelectorEvent.Handler {
 
     for (String colName : updatedColumns) {
       dataView.refreshBySource(colName);
+    }
+  }
+
+  private static void handleEmails(SelectorEvent event) {
+    if (event.isNewRow() && !BeeUtils.isEmpty(event.getDefValue())) {
+      Data.setValue(TBL_EMAILS, event.getNewRow(), COL_EMAIL_ADDRESS, event.getDefValue());
+      event.setDefValue(null);
+    }
+  }
+
+  private static void handleNewPersons(SelectorEvent event) {
+    if (event.isNewRow() && !BeeUtils.isEmpty(event.getDefValue())) {
+      String firstName = null;
+      String lastName = null;
+
+      for (String val : Splitter.on(BeeConst.CHAR_SPACE).trimResults().omitEmptyStrings().limit(2)
+          .split(event.getDefValue())) {
+        if (BeeUtils.isEmpty(firstName)) {
+          firstName = val;
+        } else {
+          lastName = val;
+        }
+      }
+
+      if (!BeeUtils.isEmpty(firstName)) {
+        Data.setValue(event.getRelatedViewName(), event.getNewRow(), COL_FIRST_NAME, firstName);
+      }
+      if (!BeeUtils.isEmpty(lastName)) {
+        Data.setValue(event.getRelatedViewName(), event.getNewRow(), COL_LAST_NAME, lastName);
+      }
+
+      event.setDefValue(null);
+    }
+  }
+  
+    private static void handleServices(SelectorEvent event) {
+    if (!event.isChanged()) {
+      return;
+    }
+    final DataInfo sourceInfo = Data.getDataInfo(event.getRelatedViewName());
+    final IsRow source = event.getRelatedRow();
+
+    if (source == null) {
+      return;
+    }
+    final DataView dataView = ViewHelper.getDataView(event.getSelector());
+
+    if (dataView == null || BeeUtils.isEmpty(dataView.getViewName()) || !dataView.isFlushable()) {
+      return;
+    }
+    final DataInfo targetInfo = Data.getDataInfo(dataView.getViewName());
+    final IsRow target = dataView.getActiveRow();
+
+    if (target == null) {
+      return;
+    }
+    Double vat = source.getDouble(sourceInfo.getColumnIndex(COL_ITEM_VAT_PERC));
+    boolean vatPerc = vat != null;
+
+    Map<String, Value> updatedColumns = ImmutableMap
+        .of(COL_ITEM_VAT, vatPerc ? Value.getValue(vat) : DecimalValue.getNullValue(),
+            COL_ITEM_VAT_PERC, vatPerc ? Value.getValue(vatPerc) : BooleanValue.getNullValue());
+
+    for (String targetColumn : updatedColumns.keySet()) {
+      int targetIndex = targetInfo.getColumnIndex(targetColumn);
+
+      if (BeeConst.isUndef(targetIndex)) {
+        continue;
+      }
+      target.setValue(targetIndex, updatedColumns.get(targetColumn));
+      dataView.refreshBySource(targetColumn);
+    }
+  }
+  
+  private static void onNewCompanyPerson(SelectorEvent event) {
+    Long company = getOptionsValue(event);
+
+    if (DataUtils.isId(company)) {
+      DataInfo targetInfo = Data.getDataInfo(event.getRelatedViewName());
+      IsRow targetRow = event.getNewRow();
+
+      DataView sourceView = ViewHelper.getDataView(event.getSelector());
+
+      if (targetInfo != null && targetRow != null && sourceView != null) {
+        DataInfo sourceInfo = Data.getDataInfo(sourceView.getViewName());
+        IsRow sourceRow = sourceView.getActiveRow();
+
+        Data.setValue(event.getRelatedViewName(), targetRow, COL_COMPANY, company);
+        RelationUtils.updateRow(targetInfo, COL_COMPANY, targetRow, sourceInfo, sourceRow, false);
+      }
+    }
+
+    final String defValue = event.getDefValue();
+
+    if (!BeeUtils.isEmpty(defValue)) {
+      event.setDefValue(null);
+
+      event.setOnOpenNewRow(formView -> {
+        Widget widget = formView.getWidgetBySource(COL_PERSON);
+
+        if (widget instanceof DataSelector) {
+          final DataSelector personSelector = (DataSelector) widget;
+
+          Scheduler.get().scheduleDeferred(() -> {
+            personSelector.setFocus(true);
+            personSelector.setDisplayValue(defValue);
+            personSelector.startEdit(null, DataSelector.ASK_ORACLE, null, null);
+          });
+        }
+      });
+    }
+  }
+  
+    private static void onNewPerson(SelectorEvent event) {
+    if (!BeeUtils.isEmpty(event.getDefValue())) {
+      String firstName = null;
+      String lastName = null;
+
+      for (String val : Splitter.on(BeeConst.CHAR_SPACE).trimResults().omitEmptyStrings().limit(2)
+          .split(event.getDefValue())) {
+        if (BeeUtils.isEmpty(firstName)) {
+          firstName = val;
+        } else {
+          lastName = val;
+        }
+      }
+
+      if (!BeeUtils.isEmpty(firstName)) {
+        Data.setValue(event.getRelatedViewName(), event.getNewRow(), COL_FIRST_NAME, firstName);
+      }
+      if (!BeeUtils.isEmpty(lastName)) {
+        Data.setValue(event.getRelatedViewName(), event.getNewRow(), COL_LAST_NAME, lastName);
+      }
+
+      event.setDefValue(null);
+    }
+  }
+
+  private static void onOpenCompanyPersons(SelectorEvent event) {
+    Long company = getOptionsValue(event);
+
+    Filter filter;
+    if (company == null) {
+      filter = null;
+    } else {
+      filter = Filter.equals(COL_COMPANY, company);
+    }
+
+    event.getSelector().setAdditionalFilter(filter, filter != null);
+  }
+
+  private static void onOpenPersons(SelectorEvent event) {
+    String companySelectorName = event.getSelector().getOptions();
+    if (BeeUtils.isEmpty(companySelectorName)) {
+      return;
+    }
+
+    FormView form = ViewHelper.getForm(event.getSelector());
+    if (form == null) {
+      return;
+    }
+
+    Widget companySelector = form.getWidgetByName(companySelectorName);
+    if (!(companySelector instanceof DataSelector)) {
+      return;
+    }
+
+    List<Long> companyIds;
+    if (companySelector instanceof MultiSelector) {
+      companyIds = ((MultiSelector) companySelector).getIds();
+    } else {
+      String companyValue = ((DataSelector) companySelector).getValue();
+      companyIds = DataUtils.parseIdList(companyValue);
+    }
+
+    Filter filter;
+    if (BeeUtils.isEmpty(companyIds)) {
+      filter = null;
+    } else {
+      filter = Filter.in(Data.getIdColumn(VIEW_PERSONS), VIEW_COMPANY_PERSONS, COL_PERSON,
+          Filter.any(COL_COMPANY, companyIds));
+    }
+
+    event.getSelector().setAdditionalFilter(filter, filter != null);
+  }
+  
+
+  private final Map<String, Long> companyPersonSelectors = new HashMap<>();
+  private final Map<String, String> personSelectors = new HashMap<>();
+  
+
+
+  ClassifierSelector() {
+    super();
+  }
+  
+ 
+ @Override
+  public void onDataSelector(SelectorEvent event) {
+    String viewName = event.getRelatedViewName();
+
+    if (viewName != null) {
+      switch (viewName) {
+        case TBL_EMAILS:
+          handleEmails(event);
+          break;
+
+        case VIEW_CITIES:
+          handleCities(event);
+          break;
+
+        case VIEW_PERSONS:
+          if (event.isOpened()) {
+            onOpenPersons(event);
+          } else if (event.isNewRow()) {
+            onNewPerson(event);
+          }
+          break;
+
+        case VIEW_COMPANY_PERSONS:
+          if (event.isOpened()) {
+            onOpenCompanyPersons(event);
+          } else if (event.isNewRow()) {
+            onNewCompanyPerson(event);
+          }
+          break;
+
+        case VIEW_POSITIONS:
+          if (event.isOpened()) {
+            DataView dataView = ViewHelper.getDataView(event.getSelector());
+            if (dataView != null && VIEW_DEPARTMENT_EMPLOYEES.equals(dataView.getViewName())) {
+              filterDepartmentPositions(event, dataView);
+            }
+          }
+          break;
+      }
+    }
+  }
+
+  @Override
+  public void onDataSelector(SelectorEvent event) {
+    if (BeeUtils.same(event.getRelatedViewName(), TBL_EMAILS)) {
+      handleEmails(event);
+
+    } else if (BeeUtils.same(event.getRelatedViewName(), VIEW_CITIES)) {
+      handleCities(event);
+
+    } else if (event.isNewRow()
+        && BeeUtils.inListSame(event.getRelatedViewName(), VIEW_PERSONS, VIEW_COMPANY_PERSONS,
+            TradeConstants.VIEW_TRADE_ACT_DRIVERS)) {
+      handleNewPersons(event);
+
+    } else if (BeeUtils.same(event.getRelatedViewName(), VIEW_COMPANY_PERSONS)) {
+      if (event.isOpened() || event.isDataLoaded() || event.isUnloading()) {
+        handleCompanyPersons(event);
+      }
+
+    } else if (BeeUtils.same(event.getRelatedViewName(), VIEW_PERSONS)) {
+      String options = event.getSelector().getOptions();
+
+      if (!BeeUtils.isEmpty(options)) {
+        if (event.isOpened() || event.isDataLoaded() || event.isUnloading()) {
+          handlePersons(event, options);
+        }
+
+      } else if (event.isOpened()) {
+        DataView dataView = ViewHelper.getDataView(event.getSelector());
+
+        if (dataView != null && VIEW_COMPANY_OBJECTS.equals(dataView.getViewName())) {
+          if (TimeUtils.year() < 0) { // never
+            filterPersonsByCompany(event, dataView);
+          }
+        }
+      }
+
+    } else if (event.isOpened() && event.hasRelatedView(VIEW_POSITIONS)) {
+      DataView dataView = ViewHelper.getDataView(event.getSelector());
+      if (dataView != null
+          && AdministrationConstants.VIEW_DEPARTMENT_EMPLOYEES.equals(dataView.getViewName())) {
+        filterDepartmentPositions(event, dataView);
+      }
+    } else if (BeeUtils.same(event.getRelatedViewName(), VIEW_ITEMS)) {
+      handleServices(event);
     }
   }
 
@@ -257,37 +508,6 @@ public class ClassifierSelector implements SelectorEvent.Handler {
     }
   }
 
-  private static void handleEmails(SelectorEvent event) {
-    if (event.isNewRow() && !BeeUtils.isEmpty(event.getDefValue())) {
-      Data.setValue(TBL_EMAILS, event.getNewRow(), COL_EMAIL_ADDRESS, event.getDefValue());
-      event.setDefValue(null);
-    }
-  }
-
-  private static void handleNewPersons(SelectorEvent event) {
-    if (event.isNewRow() && !BeeUtils.isEmpty(event.getDefValue())) {
-      String firstName = null;
-      String lastName = null;
-
-      for (String val : Splitter.on(BeeConst.CHAR_SPACE).trimResults().omitEmptyStrings().limit(2)
-          .split(event.getDefValue())) {
-        if (BeeUtils.isEmpty(firstName)) {
-          firstName = val;
-        } else {
-          lastName = val;
-        }
-      }
-
-      if (!BeeUtils.isEmpty(firstName)) {
-        Data.setValue(event.getRelatedViewName(), event.getNewRow(), COL_FIRST_NAME, firstName);
-      }
-      if (!BeeUtils.isEmpty(lastName)) {
-        Data.setValue(event.getRelatedViewName(), event.getNewRow(), COL_LAST_NAME, lastName);
-      }
-
-      event.setDefValue(null);
-    }
-  }
 
   private void handlePersons(SelectorEvent event, String companySelectorName) {
     String selectorId = event.getSelector().getId();
@@ -371,45 +591,6 @@ public class ClassifierSelector implements SelectorEvent.Handler {
           rowSet.setRows(rows);
         }
       }
-    }
-  }
-
-  private static void handleServices(SelectorEvent event) {
-    if (!event.isChanged()) {
-      return;
-    }
-    final DataInfo sourceInfo = Data.getDataInfo(event.getRelatedViewName());
-    final IsRow source = event.getRelatedRow();
-
-    if (source == null) {
-      return;
-    }
-    final DataView dataView = ViewHelper.getDataView(event.getSelector());
-
-    if (dataView == null || BeeUtils.isEmpty(dataView.getViewName()) || !dataView.isFlushable()) {
-      return;
-    }
-    final DataInfo targetInfo = Data.getDataInfo(dataView.getViewName());
-    final IsRow target = dataView.getActiveRow();
-
-    if (target == null) {
-      return;
-    }
-    Double vat = source.getDouble(sourceInfo.getColumnIndex(COL_ITEM_VAT_PERC));
-    boolean vatPerc = vat != null;
-
-    Map<String, Value> updatedColumns = ImmutableMap
-        .of(COL_ITEM_VAT, vatPerc ? Value.getValue(vat) : DecimalValue.getNullValue(),
-            COL_ITEM_VAT_PERC, vatPerc ? Value.getValue(vatPerc) : BooleanValue.getNullValue());
-
-    for (String targetColumn : updatedColumns.keySet()) {
-      int targetIndex = targetInfo.getColumnIndex(targetColumn);
-
-      if (BeeConst.isUndef(targetIndex)) {
-        continue;
-      }
-      target.setValue(targetIndex, updatedColumns.get(targetColumn));
-      dataView.refreshBySource(targetColumn);
     }
   }
 

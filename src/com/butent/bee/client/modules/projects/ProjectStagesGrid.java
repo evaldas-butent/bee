@@ -20,7 +20,7 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.view.RowInfo;
-import com.butent.bee.shared.i18n.LocalizableConstants;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.projects.ProjectConstants;
@@ -34,7 +34,7 @@ import java.util.List;
 
 class ProjectStagesGrid extends AbstractGridInterceptor {
 
-  private static final LocalizableConstants LC = Localized.getConstants();
+  private static final Dictionary LC = Localized.dictionary();
 
   @Override
   public DeleteMode getDeleteMode(GridPresenter presenter, IsRow activeRow,
@@ -42,18 +42,12 @@ class ProjectStagesGrid extends AbstractGridInterceptor {
 
     Provider provider = presenter.getDataProvider();
 
-    int idxStagesCount = provider.getColumnIndex(ProjectConstants.ALS_STAGES_COUNT);
     int idxTaskCount = provider.getColumnIndex(ALS_TASK_COUNT);
     int idxOwner = provider.getColumnIndex(ProjectConstants.ALS_PROJECT_OWNER);
     int idxStatus = provider.getColumnIndex(ProjectConstants.ALS_PROJECT_STATUS);
 
-    if (BeeUtils.unbox(activeRow.getLong(idxOwner)) == BeeKeeper.getUser().getUserId()
-        && ProjectStatus.SCHEDULED.ordinal() == BeeUtils
-            .unbox(activeRow.getInteger(idxStatus))) {
-      if (BeeUtils.unbox(activeRow.getLong(idxStagesCount)) == 1) {
-        presenter.getGridView().notifySevere(LC.prjMustBeOneStage());
-        return GridInterceptor.DeleteMode.CANCEL;
-      } else if (BeeUtils.unbox(activeRow.getLong(idxTaskCount)) > 0) {
+    if (BeeUtils.unbox(activeRow.getLong(idxOwner)) == BeeKeeper.getUser().getUserId()) {
+      if (BeeUtils.unbox(activeRow.getLong(idxTaskCount)) > 0) {
         presenter.getGridView().notifySevere(LC.prjStageHasTasks());
         return GridInterceptor.DeleteMode.CANCEL;
       } else {
@@ -108,13 +102,9 @@ class ProjectStagesGrid extends AbstractGridInterceptor {
           return BeeConst.STRING_EMPTY;
         }
 
-        if (!BeeUtils.isEmpty(row.getProperty(PROP_TIME_UNTIS))) {
-          String prop = row.getProperty(PROP_TIME_UNTIS);
+        if (!BeeUtils.isEmpty(row.getProperty(PROP_TIME_UNITS))) {
+          String prop = row.getProperty(PROP_TIME_UNITS);
           unitsRows = BeeRowSet.maybeRestore(prop);
-        }
-
-        if (unitsRows == null) {
-          return BeeConst.STRING_EMPTY;
         }
 
         String colName = null;
@@ -140,7 +130,7 @@ class ProjectStagesGrid extends AbstractGridInterceptor {
 
         if (!BeeConst.isUndef(idxUnit)) {
           long idValue = BeeUtils.unbox(row.getLong(idxUnit));
-          BeeRow unitRow = unitsRows.getRowById(idValue);
+          BeeRow unitRow = unitsRows != null ? unitsRows.getRowById(idValue) : null;
 
           if (unitRow != null) {
             String prop = unitRow.getProperty(PROP_REAL_FACTOR);

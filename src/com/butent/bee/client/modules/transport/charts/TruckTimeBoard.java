@@ -1,5 +1,7 @@
 package com.butent.bee.client.modules.transport.charts;
 
+import com.google.common.collect.Sets;
+
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
@@ -10,18 +12,25 @@ import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.Collection;
+import java.util.Set;
+
 final class TruckTimeBoard extends VehicleTimeBoard {
 
   static final String SUPPLIER_KEY = "truck_time_board";
   private static final String DATA_SERVICE = SVC_GET_TRUCK_TB_DATA;
+
+  private static final Set<String> SETTINGS_COLUMNS_TRIGGERING_REFRESH =
+      Sets.newHashSet(COL_TRUCK_MIN_DATE, COL_TRUCK_MAX_DATE,
+          COL_TRUCK_TRANSPORT_GROUPS, COL_TRUCK_COMPLETED_TRIPS);
 
   static void open(final ViewCallback callback) {
     BeeKeeper.getRpc().makePostRequest(TransportHandler.createArgs(DATA_SERVICE),
         new ResponseCallback() {
           @Override
           public void onResponse(ResponseObject response) {
-            TruckTimeBoard ss = new TruckTimeBoard();
-            ss.onCreate(response, callback);
+            TruckTimeBoard ttb = new TruckTimeBoard();
+            ttb.onCreate(response, callback);
           }
         });
   }
@@ -32,7 +41,7 @@ final class TruckTimeBoard extends VehicleTimeBoard {
 
   @Override
   public String getCaption() {
-    return Localized.getConstants().truckTimeBoard();
+    return Localized.dictionary().truckTimeBoard();
   }
 
   @Override
@@ -64,6 +73,16 @@ final class TruckTimeBoard extends VehicleTimeBoard {
   @Override
   protected String getDayWidthColumnName() {
     return COL_TRUCK_PIXELS_PER_DAY;
+  }
+
+  @Override
+  protected String getFilterDataTypesColumnName() {
+    return COL_TRUCK_FILTER_DATA_TYPES;
+  }
+
+  @Override
+  protected String getFiltersColumnName() {
+    return COL_TRUCK_FILTERS;
   }
 
   @Override
@@ -99,6 +118,11 @@ final class TruckTimeBoard extends VehicleTimeBoard {
   @Override
   protected String getSeparateCargoColumnName() {
     return COL_TRUCK_SEPARATE_CARGO;
+  }
+
+  @Override
+  protected Collection<String> getSettingsColumnsTriggeringRefresh() {
+    return SETTINGS_COLUMNS_TRIGGERING_REFRESH;
   }
 
   @Override
@@ -139,5 +163,11 @@ final class TruckTimeBoard extends VehicleTimeBoard {
   @Override
   protected String getThemeColumnName() {
     return COL_TRUCK_THEME;
+  }
+
+  @Override
+  protected void updateMaxRange() {
+    super.updateMaxRange();
+    clampMaxRange(COL_TRUCK_MIN_DATE, COL_TRUCK_MAX_DATE);
   }
 }

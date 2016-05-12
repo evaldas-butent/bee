@@ -6,6 +6,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
+import com.google.common.eventbus.AllowConcurrentEvents;
 import com.google.common.eventbus.Subscribe;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
@@ -249,6 +250,7 @@ public class TradeActBean implements HasTimerService {
     sys.registerDataEventHandler(new DataEventHandler() {
 
       @Subscribe
+      @AllowConcurrentEvents
       public void setRowProperties(ViewQueryEvent event) {
         if (event.isBefore()) {
           return;
@@ -260,6 +262,7 @@ public class TradeActBean implements HasTimerService {
       }
 
       @Subscribe
+      @AllowConcurrentEvents
       public void fillActNumber(ViewInsertEvent event) {
         if (event.isBefore()
             && event.isTarget(VIEW_TRADE_ACTS)
@@ -292,8 +295,9 @@ public class TradeActBean implements HasTimerService {
       }
 
       @Subscribe
+      @AllowConcurrentEvents
       public void maybeSetReturnedQty(ViewQueryEvent event) {
-        if (event.isAfter() && event.isTarget(VIEW_TRADE_ACT_ITEMS) && event.hasData()
+        if (event.isAfter(VIEW_TRADE_ACT_ITEMS) && event.hasData()
             && event.getColumnCount() >= sys.getView(event.getTargetName()).getColumnCount()) {
 
           BeeRowSet rowSet = event.getRowset();

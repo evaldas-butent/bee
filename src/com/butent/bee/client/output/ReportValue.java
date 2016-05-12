@@ -77,14 +77,12 @@ public final class ReportValue implements Comparable<ReportValue> {
   }
 
   public static ReportValue of(String value) {
-    ReportValue reportValue = new ReportValue(value);
-    return reportValue;
+    return new ReportValue(value);
   }
 
   public static ReportValue of(ReportValue... values) {
     Assert.noNulls((Object[]) values);
-    ReportValue reportValue = new ReportValue(values);
-    return reportValue;
+    return new ReportValue(values);
   }
 
   public ReportValue setDisplay(String displ) {

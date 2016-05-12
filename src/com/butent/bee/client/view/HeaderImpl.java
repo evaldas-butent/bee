@@ -54,8 +54,7 @@ public class HeaderImpl extends Flow implements HeaderView {
 
   private static final String STYLE_CONTROL = STYLE_PREFIX + "control";
   private static final String STYLE_CONTROL_HIDDEN = STYLE_CONTROL + "-hidden";
-
-  private static final String STYLE_DISABLED = STYLE_PREFIX + "disabled";
+  private static final String STYLE_CONTROL_DISABLED = STYLE_CONTROL + "-disabled";
 
   private static boolean hasAction(Action action, boolean def,
       Set<Action> enabledActions, Set<Action> disabledActions) {
@@ -153,7 +152,7 @@ public class HeaderImpl extends Flow implements HeaderView {
       }
 
       if (createNew) {
-        Label control = new Label("+ " + Localized.getConstants().createNew());
+        Label control = new Label("+ " + Localized.dictionary().createNew());
         control.addStyleName(BeeConst.CSS_CLASS_PREFIX + "CreateNew");
 
         initControl(control, Action.ADD, hiddenActions);
@@ -222,6 +221,13 @@ public class HeaderImpl extends Flow implements HeaderView {
       add(createFa(Action.MENU, hiddenActions));
     }
 
+    if (hasAction(Action.MINIMIZE, false, enabledActions, disabledActions)) {
+      add(createFa(Action.MINIMIZE, hiddenActions));
+    }
+    if (hasAction(Action.MAXIMIZE, false, enabledActions, disabledActions)) {
+      add(createFa(Action.MAXIMIZE, hiddenActions));
+    }
+
     if (hasAction(Action.CLOSE, UiOption.isClosable(options), enabledActions, disabledActions)) {
       add(createFa(Action.CLOSE, hiddenActions));
     }
@@ -267,8 +273,21 @@ public class HeaderImpl extends Flow implements HeaderView {
   }
 
   @Override
+  public boolean insertControl(Widget w, int beforeIndex) {
+    if (w != null && beforeIndex >= 0 && beforeIndex <= getWidgetCount()) {
+      w.addStyleName(STYLE_CONTROL);
+      insert(w, beforeIndex);
+
+      return true;
+
+    } else {
+      return false;
+    }
+  }
+
+  @Override
   public boolean isActionEnabled(Action action) {
-    if (action == null || !isEnabled()) {
+    if (action == null || !isEnabled() && action.isDisablable()) {
       return false;
     }
 
@@ -347,14 +366,16 @@ public class HeaderImpl extends Flow implements HeaderView {
     }
     this.enabled = enabled;
 
-    setStyleName(STYLE_DISABLED, !enabled);
+    for (Map.Entry<Action, String> entry : getActionControls().entrySet()) {
+      if (entry.getKey().isDisablable()) {
+        Widget widget = DomUtils.getChildQuietly(this, entry.getValue());
 
-    for (int i = 0; i < getWidgetCount(); i++) {
-      Widget child = getWidget(i);
-      String id = DomUtils.getId(child);
-
-      if (BeeUtils.containsSame(getActionControls().values(), id) && child instanceof HasEnabled) {
-        ((HasEnabled) child).setEnabled(enabled);
+        if (widget instanceof HasEnabled) {
+          ((HasEnabled) widget).setEnabled(enabled);
+        }
+        if (widget != null) {
+          widget.setStyleName(STYLE_CONTROL_DISABLED, !enabled);
+        }
       }
     }
   }

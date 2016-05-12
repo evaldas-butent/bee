@@ -761,27 +761,27 @@ public class SearchByCar extends EcView implements HasBeforeSelectionHandlers<Ec
     boolean hasManufacturer = !BeeUtils.isEmpty(getManufacturer());
 
     manufacturerWidget.setHtml(hasManufacturer
-        ? getManufacturer() : Localized.getConstants().ecCarManufacturer());
+        ? getManufacturer() : Localized.dictionary().ecCarManufacturer());
     manufacturerWidget.setHasValue(hasManufacturer);
 
     boolean modelEnabled = hasManufacturer;
     boolean hasModel = modelEnabled && getModelIndex() != null;
 
-    modelWidget.setHtml(hasModel ? renderModel(getModel()) : Localized.getConstants().ecCarModel());
+    modelWidget.setHtml(hasModel ? renderModel(getModel()) : Localized.dictionary().ecCarModel());
     modelWidget.setHasValue(hasModel);
     modelWidget.setEnabled(modelEnabled);
 
     boolean yearEnabled = hasModel && !types.isEmpty();
     boolean hasYear = yearEnabled && getYear() != null;
 
-    yearWidget.setHtml(hasYear ? getYear().toString() : Localized.getConstants().ecCarYear());
+    yearWidget.setHtml(hasYear ? getYear().toString() : Localized.dictionary().ecCarYear());
     yearWidget.setHasValue(hasYear);
     yearWidget.setEnabled(yearEnabled);
 
     boolean engineEnabled = hasModel && !types.isEmpty();
     boolean hasEngine = engineEnabled && !BeeUtils.isEmpty(getEngine());
 
-    engineWidget.setHtml(hasEngine ? getEngine() : Localized.getConstants().ecCarEngine());
+    engineWidget.setHtml(hasEngine ? getEngine() : Localized.dictionary().ecCarEngine());
     engineWidget.setHasValue(hasEngine);
     engineWidget.setEnabled(engineEnabled);
   }
@@ -824,7 +824,7 @@ public class SearchByCar extends EcView implements HasBeforeSelectionHandlers<Ec
       historyPanel.clear();
     }
 
-    Label caption = new Label(Localized.getConstants().ecCarTypeHistory());
+    Label caption = new Label(Localized.dictionary().ecCarTypeHistory());
     caption.addStyleName(STYLE_HISTORY_CAPTION);
     historyPanel.add(caption);
 
@@ -857,10 +857,10 @@ public class SearchByCar extends EcView implements HasBeforeSelectionHandlers<Ec
     int row = 0;
     int col = 0;
 
-    table.setHtml(row, col++, Localized.getConstants().ecCarProduced());
-    table.setHtml(row, col++, Localized.getConstants().ecCarEngine());
+    table.setHtml(row, col++, Localized.dictionary().ecCarProduced());
+    table.setHtml(row, col++, Localized.dictionary().ecCarEngine());
 
-    table.setHtml(row, col++, Localized.getConstants().ecCarPower());
+    table.setHtml(row, col++, Localized.dictionary().ecCarPower());
 
     table.setHtml(row, col++, COL_TCD_CCM);
     table.setHtml(row, col++, COL_TCD_CYLINDERS);

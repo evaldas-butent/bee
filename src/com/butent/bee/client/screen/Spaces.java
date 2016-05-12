@@ -98,7 +98,7 @@ public class Spaces {
 
       Toggle startup = new Toggle(FontAwesome.SQUARE_O, FontAwesome.HOME, STYLE_STARTUP,
           item.isStartup());
-      startup.setTitle(Localized.getConstants().workspaceStartup());
+      startup.setTitle(Localized.dictionary().workspaceStartup());
 
       startup.addClickHandler(new ClickHandler() {
         @Override
@@ -133,14 +133,14 @@ public class Spaces {
       add(label);
 
       FaLabel edit = new FaLabel(FontAwesome.EDIT, STYLE_EDIT);
-      edit.setTitle(Localized.getConstants().actionRename());
+      edit.setTitle(Localized.dictionary().actionRename());
 
       edit.addClickHandler(new ClickHandler() {
         @Override
         public void onClick(ClickEvent event) {
           int maxLength = Data.getColumnPrecision(VIEW_WORKSPACES, COL_LABEL);
 
-          Global.inputString(Localized.getConstants().bookmarkName(), null, new StringCallback() {
+          Global.inputString(Localized.dictionary().bookmarkName(), null, new StringCallback() {
             @Override
             public void onSuccess(String value) {
               setLabel(value);
@@ -153,7 +153,7 @@ public class Spaces {
       add(edit);
 
       FaLabel delete = new FaLabel(FontAwesome.TRASH_O, STYLE_DELETE);
-      delete.setTitle(Localized.getConstants().actionRemove());
+      delete.setTitle(Localized.dictionary().actionRemove());
 
       delete.addClickHandler(new ClickHandler() {
         @Override
@@ -226,7 +226,7 @@ public class Spaces {
     String defValue = (itemWidget == null) ? label : itemWidget.getItem().getLabel();
     int maxLength = Data.getColumnPrecision(VIEW_WORKSPACES, COL_LABEL);
 
-    Global.inputString(Localized.getConstants().bookmarkName(), null, new StringCallback() {
+    Global.inputString(Localized.dictionary().bookmarkName(), null, new StringCallback() {
       @Override
       public void onSuccess(String value) {
         if (itemWidget == null) {

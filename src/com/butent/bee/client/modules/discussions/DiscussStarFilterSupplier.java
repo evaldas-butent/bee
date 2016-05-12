@@ -24,7 +24,7 @@ final class DiscussStarFilterSupplier extends AbstractFilterSupplier {
 
   private boolean starred;
 
-  public DiscussStarFilterSupplier(String options) {
+  DiscussStarFilterSupplier(String options) {
     super(VIEW_DISCUSSIONS, null, null, options);
   }
 
@@ -35,7 +35,7 @@ final class DiscussStarFilterSupplier extends AbstractFilterSupplier {
 
   @Override
   public String getLabel() {
-    return isStarred() ? Localized.getConstants().discussFilterStarred() : null;
+    return isStarred() ? Localized.dictionary().discussFilterStarred() : null;
   }
 
   @Override
@@ -68,7 +68,7 @@ final class DiscussStarFilterSupplier extends AbstractFilterSupplier {
     Flow container = new Flow();
     container.addStyleName(getStylePrefix() + "container");
 
-    Button star = new Button(Localized.getConstants().crmTaskFilterStarred());
+    Button star = new Button(Localized.dictionary().crmTaskFilterStarred());
     star.addStyleName(getStylePrefix() + "starred");
 
     star.addClickHandler(new ClickHandler() {
@@ -82,7 +82,7 @@ final class DiscussStarFilterSupplier extends AbstractFilterSupplier {
 
     container.add(star);
 
-    Button all = new Button(Localized.getConstants().crmTaskFilterAll());
+    Button all = new Button(Localized.dictionary().crmTaskFilterAll());
     all.addStyleName(getStylePrefix() + "all");
 
     all.addClickHandler(new ClickHandler() {
@@ -96,7 +96,7 @@ final class DiscussStarFilterSupplier extends AbstractFilterSupplier {
 
     container.add(all);
 
-    Button cancel = new Button(Localized.getConstants().cancel());
+    Button cancel = new Button(Localized.dictionary().cancel());
     cancel.addStyleName(getStylePrefix() + "cancel");
 
     cancel.addClickHandler(new ClickHandler() {

@@ -41,6 +41,7 @@
       <xs:enumeration value="task_list" />
       <xs:enumeration value="task_reports" />
       <xs:enumeration value="discuss_list" />
+      <xs:enumeration value="documents" />
       <xs:enumeration value="open_mail" />
       <xs:enumeration value="ensure_categories_and_open_grid" />
       <xs:enumeration value="edit_terms_of_delivery" />
@@ -54,6 +55,7 @@
       <xs:enumeration value="service_calendar" />
       <xs:enumeration value="trade_act_new" />
       <xs:enumeration value="trade_act_list" />
+      <xs:enumeration value="trade_documents" />
     </xs:restriction>
   </xs:simpleType>
 

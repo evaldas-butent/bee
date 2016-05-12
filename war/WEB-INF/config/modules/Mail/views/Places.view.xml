@@ -9,10 +9,9 @@
     <SimpleJoin name="Folder" joinType="INNER">
       <HiddenColumn name="Account" />
     </SimpleJoin>
-    
+
     <SimpleColumn name="Flags" />
     <SimpleColumn name="Message" />
-    <SimpleColumn name="Replied" />
 
     <SimpleJoin name="Message" joinType="INNER">
       <SimpleColumn name="Date" />
@@ -33,4 +32,3 @@
     <OrderBy column="Date" descending="true" />
   </Order>
 </View>
- 

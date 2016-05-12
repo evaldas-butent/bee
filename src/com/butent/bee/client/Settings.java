@@ -51,6 +51,43 @@ public final class Settings {
     return getInt("clickSensitivityMillis");
   }
 
+  public static List<Integer> getDataSelectorInputDelayMillis() {
+    List<Integer> result = new ArrayList<>();
+
+    String key = "dataSelectorInputDelayMillis";
+
+    String s = getString(key);
+
+    if (BeeUtils.isEmpty(s)) {
+      Integer millis = getInteger(key);
+      if (BeeUtils.isPositive(millis)) {
+        result.add(millis);
+      }
+
+    } else {
+      List<Integer> ints = BeeUtils.toInts(s);
+      for (Integer millis : ints) {
+        if (BeeUtils.isPositive(millis)) {
+          result.add(millis);
+        }
+      }
+    }
+
+    return result;
+  }
+
+  public static Integer getDataSelectorCachingMaxRows() {
+    return getInteger("dataSelectorCachingMaxRows");
+  }
+
+  public static Integer getDataSelectorInstantSearchMaxRows() {
+    return getInteger("dataSelectorInstantSearchMaxRows");
+  }
+
+  public static int getDialogResizerWidth() {
+    return getInt("dialogResizerWidth");
+  }
+
   public static Double getDouble(String key) {
     JSONValue value = getValue(key);
     if (value != null) {
@@ -59,6 +96,26 @@ public final class Settings {
     } else {
       return null;
     }
+  }
+
+  public static int getExporterInputStepRows() {
+    return getInt("exporterInputStepRows");
+  }
+
+  public static int getExporterOutputStepRows() {
+    return getInt("exporterOutputStepRows");
+  }
+
+  public static int getExporterSplitRowsThreshold() {
+    return getInt("exporterSplitRowsThreshold");
+  }
+
+  public static String getIncomingChatMessageSound() {
+    return getString("incomingChatMessageSound");
+  }
+
+  public static Double getIncomingChatMessageVolume() {
+    return getDouble("incomingChatMessageVolume");
   }
 
   public static List<Property> getInfo() {
@@ -74,6 +131,15 @@ public final class Settings {
   public static int getInt(String key) {
     Double d = getDouble(key);
     return (d == null) ? BeeConst.UNDEF : BeeUtils.toInt(d);
+  }
+
+  public static Integer getInteger(String key) {
+    Double d = getDouble(key);
+    return BeeUtils.isDouble(d) ? BeeUtils.round(d) : null;
+  }
+
+  public static int getLoadingStateDelayMillis() {
+    return getInt("loadingStateDelayMillis");
   }
 
   public static int getLogCapacity() {
@@ -102,6 +168,10 @@ public final class Settings {
     return (d == null) ? BeeConst.UNDEF : BeeUtils.toLong(d);
   }
 
+  public static int getNewsRefreshIntervalSeconds() {
+    return getInt("newsRefreshIntervalSeconds");
+  }
+
   public static JSONObject getOnEmptyWorkspace() {
     return getObject("onEmptyWorkspace");
   }
@@ -126,6 +196,10 @@ public final class Settings {
     return getInt("providerSensitivityMillis");
   }
 
+  public static int getReducedInteractionStatusMinutes() {
+    return getInt("reducedInteractionStatusMinutes");
+  }
+
   public static List<String> getScripts() {
     return getList("scripts");
   }
@@ -148,6 +222,18 @@ public final class Settings {
 
   public static boolean minimizeNumberOfConcurrentRequests() {
     return getBoolean("minimizeNumberOfConcurrentRequests");
+  }
+
+  public static boolean showCommand(String command) {
+    return BeeUtils.containsSame(getList("showCommands"), command);
+  }
+
+  public static boolean showLogout() {
+    return getBoolean("showLogout");
+  }
+
+  public static boolean showUserPresence() {
+    return getBoolean("showUserPresence");
   }
 
   public static boolean showUserPhoto() {

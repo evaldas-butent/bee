@@ -24,6 +24,7 @@ public final class DiscussionsKeeper {
   public static void register() {
     /* Form interceptors */
     FormFactory.registerFormInterceptor(FORM_NEW_DISCUSSION, new CreateDiscussionInterceptor());
+    FormFactory.registerFormInterceptor(FORM_NEW_ANNOUNCEMENT, new CreateDiscussionInterceptor());
     FormFactory.registerFormInterceptor(FORM_DISCUSSION, new DiscussionInterceptor());
     FormFactory.registerFormInterceptor(FORM_ANNOUNCEMENTS_BOARD,
         new AnnouncementsBoardInterceptor());
@@ -53,7 +54,7 @@ public final class DiscussionsKeeper {
     });
 
     /* Row handlers */
-    BeeKeeper.getBus().registerRowTransformHandler(new RowTransformHandler(), false);
+    BeeKeeper.getBus().registerRowTransformHandler(new RowTransformHandler());
 
     Global.getNewsAggregator().registerFilterHandler(Feed.ANNOUNCEMENTS,
         getAnnouncementsFilterHandler());

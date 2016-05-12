@@ -13,7 +13,6 @@ import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.DataUtils;
@@ -38,33 +37,12 @@ public final class ClassifierUtils {
       COL_COMPANY_NAME, COL_COMPANY_CODE, COL_COMPANY_VAT_CODE,
       COL_ADDRESS, COL_PHONE, COL_MOBILE, COL_FAX, COL_EMAIL_ADDRESS, COL_BANK_ACCOUNT};
 
-  public static void createCompany(final Map<String, String> parameters,
-      final NotificationListener notificationListener, final IdCallback callback) {
+  public static void createCompany(Map<String, String> parameters, IdCallback callback) {
+    create(SVC_CREATE_COMPANY, VIEW_COMPANIES, parameters, callback);
+  }
 
-    Assert.notEmpty(parameters);
-
-    ParameterList args = ClassifierKeeper.createArgs(SVC_CREATE_COMPANY);
-    for (Map.Entry<String, String> entry : parameters.entrySet()) {
-      if (!BeeUtils.anyEmpty(entry.getKey(), entry.getValue())) {
-        args.addDataItem(entry.getKey(), entry.getValue());
-      }
-    }
-
-    BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
-      @Override
-      public void onResponse(ResponseObject response) {
-        if (notificationListener != null) {
-          response.notify(notificationListener);
-        }
-
-        if (response.hasResponse(Long.class)) {
-          DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_COMPANIES);
-          if (callback != null) {
-            callback.onSuccess(response.getResponseAsLong());
-          }
-        }
-      }
-    });
+  public static void createCompanyPerson(Map<String, String> parameters, IdCallback callback) {
+    create(SVC_CREATE_COMPANY_PERSON, VIEW_COMPANY_PERSONS, parameters, callback);
   }
 
   public static void getCompanyInfo(Long companyId, final Widget target) {
@@ -77,7 +55,7 @@ public final class ClassifierUtils {
     String locale = DomUtils.getDataProperty(target.getElement(), KEY_LOCALE);
 
     if (BeeUtils.isEmpty(locale)) {
-      locale = Localized.getConstants().languageTag();
+      locale = Localized.dictionary().languageTag();
     }
     if (!BeeUtils.isEmpty(locale)) {
       args.addDataItem(AdministrationConstants.VAR_LOCALE, locale);
@@ -187,5 +165,35 @@ public final class ClassifierUtils {
   }
 
   private ClassifierUtils() {
+  }
+
+  public static void create(String svc, String viewName, Map<String, String> parameters,
+      IdCallback callback) {
+
+    Assert.notEmpty(parameters);
+    ParameterList args = ClassifierKeeper.createArgs(svc);
+
+    for (Map.Entry<String, String> entry : parameters.entrySet()) {
+      if (!BeeUtils.anyEmpty(entry.getKey(), entry.getValue())) {
+        args.addDataItem(entry.getKey(), entry.getValue());
+      }
+    }
+
+    BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+        if (response.hasErrors()) {
+          if (callback != null) {
+            callback.onFailure(response.getErrors());
+          }
+          return;
+        }
+        DataChangeEvent.fireRefresh(BeeKeeper.getBus(), viewName);
+
+        if (callback != null) {
+          callback.onSuccess(response.getResponseAsLong());
+        }
+      }
+    });
   }
 }

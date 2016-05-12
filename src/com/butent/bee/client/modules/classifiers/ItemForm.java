@@ -40,11 +40,11 @@ class ItemForm extends AbstractFormInterceptor {
       }
 
       caption = isService
-          ? Localized.getConstants().newService() : Localized.getConstants().newItem();
+          ? Localized.dictionary().newService() : Localized.dictionary().newItem();
 
     } else {
       caption = isService
-          ? Localized.getConstants().service() : Localized.getConstants().item();
+          ? Localized.dictionary().service() : Localized.dictionary().item();
 
     }
 

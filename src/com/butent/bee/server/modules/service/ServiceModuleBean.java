@@ -4,6 +4,7 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
+import com.google.common.eventbus.AllowConcurrentEvents;
 import com.google.common.eventbus.Subscribe;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
@@ -129,17 +130,12 @@ public class ServiceModuleBean implements BeeModule {
   public void init() {
     sys.registerDataEventHandler(new DataEventHandler() {
       @Subscribe
+      @AllowConcurrentEvents
       public void setRowProperties(ViewQueryEvent event) {
-        if (event.isBefore()) {
-          return;
-        }
-
-        if (BeeUtils.same(event.getTargetName(), VIEW_SERVICE_FILES)) {
+        if (event.isAfter(VIEW_SERVICE_FILES)) {
           ExtensionIcons.setIcons(event.getRowset(), ALS_FILE_NAME, PROP_ICON);
 
-        } else if (BeeUtils.same(event.getTargetName(), VIEW_SERVICE_OBJECTS)
-            && !DataUtils.isEmpty(event.getRowset())) {
-
+        } else if (event.isAfter(VIEW_SERVICE_OBJECTS) && event.hasData()) {
           BeeRowSet rowSet = event.getRowset();
           List<Long> rowIds = rowSet.getRowIds();
 
@@ -158,7 +154,7 @@ public class ServiceModuleBean implements BeeModule {
 
               if (r != null) {
                 r.setProperty(COL_SERVICE_CRITERION_NAME
-                    + row.getValue(COL_SERVICE_CRITERION_NAME),
+                        + row.getValue(COL_SERVICE_CRITERION_NAME),
                     row.getValue(COL_SERVICE_CRITERION_VALUE));
               }
             }

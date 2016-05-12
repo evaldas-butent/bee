@@ -8,9 +8,8 @@
     <String name="Name" precision="60" notNull="true" label="=name" />
     <Relation name="Parent" relation="CategoryTree" label="=category" />
 
-    <Relation name="Department" relation="Departments" label="=department" />
-    <Relation name="ActivityType" relation="ActivityTypes" label="=activityType" />
-    <Relation name="CostCenter" relation="CostCenters" label="=costCenter" />
+    <Relation name="Dimensions" unique="true" relation="Dimensions" editable="true"
+      label="=dimensions" />
   </Fields>
 
   <Constraints>

@@ -332,18 +332,18 @@ public class Appointment extends CalendarItem {
       }
     }
 
-    result.put(wrap(KEY_RESOURCES), build(Localized.getConstants().calAttendees(),
+    result.put(wrap(KEY_RESOURCES), build(Localized.dictionary().calAttendees(),
         joinChildren(attNames), addLabels));
-    result.put(wrap(KEY_OWNERS), build(Localized.getConstants().responsiblePersons(),
+    result.put(wrap(KEY_OWNERS), build(Localized.dictionary().responsiblePersons(),
         joinChildren(ownerNames), addLabels));
-    result.put(wrap(KEY_PROPERTIES), build(Localized.getConstants().calParameters(),
+    result.put(wrap(KEY_PROPERTIES), build(Localized.dictionary().calParameters(),
         joinChildren(propNames), addLabels));
     result.put(wrap(KEY_REMINDERS), joinChildren(remindNames));
 
-    result.put(wrap(KEY_PERIOD), build(Localized.getConstants().period(),
+    result.put(wrap(KEY_PERIOD), build(Localized.dictionary().period(),
         TimeUtils.renderPeriod(getStart(), getEnd(), !addLabels), addLabels));
 
-    result.put(wrap(KEY_CREATOR_NAME), build(Localized.getConstants().creator(), getCreatorName(),
+    result.put(wrap(KEY_CREATOR_NAME), build(Localized.dictionary().creator(), getCreatorName(),
         addLabels));
 
     return result;

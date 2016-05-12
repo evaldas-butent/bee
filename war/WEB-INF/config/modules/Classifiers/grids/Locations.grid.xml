@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+
+  name="Locations" viewName="Locations" caption="=objects"
+  newRowForm="Location" editForm="Location" favorite="LocationName"
+  flexGrow="1"
+  >
+
+  <g:columns>
+    <DataColumn name="LocationName" visible="true" />
+    <DataColumn name="Address" visible="false" />
+
+    <DataColumn name="CompanyName" label="=company" />
+    <RelColumn name="CompanyPerson" renderColumns="ContactFirstName ContactLastName"
+      choiceColumns="FirstName LastName CompanyName" />
+
+    <RelColumn name="Manager" renderColumns="ManagerFirstName ManagerLastName" />
+
+    <DataColumn name="Status" flexGrow="0" />
+    <DataColumn name="Notes" />
+  </g:columns>
+</g:Grid>

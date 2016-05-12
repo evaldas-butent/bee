@@ -16,6 +16,7 @@ import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.Icon;
+import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.event.logical.RowActionEvent;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.ui.Opener;
@@ -47,10 +48,10 @@ class RelatedRecurringTasksGrid extends AbstractGridInterceptor {
   public boolean beforeAddRow(final GridPresenter presenter, boolean copy) {
     if (copy) {
       String caption = presenter.getActiveRow().getString(getDataIndex(COL_SUMMARY));
-      List<String> messages = Lists.newArrayList(Localized.getConstants().crmRTCopyQuestion());
+      List<String> messages = Lists.newArrayList(Localized.dictionary().crmRTCopyQuestion());
 
-      Global.confirm(caption, Icon.QUESTION, messages, Localized.getConstants().actionCopy(),
-          Localized.getConstants().actionCancel(), new ConfirmationCallback() {
+      Global.confirm(caption, Icon.QUESTION, messages, Localized.dictionary().actionCopy(),
+          Localized.dictionary().actionCancel(), new ConfirmationCallback() {
             @Override
             public void onConfirm() {
               if (presenter.getActiveRow() == null) {
@@ -92,7 +93,7 @@ class RelatedRecurringTasksGrid extends AbstractGridInterceptor {
             row.setProperty(property, relId.toString());
           }
 
-          RowFactory.createRow(dataInfo, row, new RowCallback() {
+          RowFactory.createRow(dataInfo, row, Modality.ENABLED, new RowCallback() {
             @Override
             public void onSuccess(BeeRow result) {
               presenter.handleAction(Action.REFRESH);
@@ -130,9 +131,9 @@ class RelatedRecurringTasksGrid extends AbstractGridInterceptor {
 
   @Override
   public List<String> getDeleteRowMessage(IsRow row) {
-    String m1 = BeeUtils.joinWords(Localized.getConstants().crmRecurringTask(),
+    String m1 = BeeUtils.joinWords(Localized.dictionary().crmRecurringTask(),
         getRecurringTaskId(row));
-    String m2 = Localized.getConstants().crmTaskDeleteQuestion();
+    String m2 = Localized.dictionary().crmTaskDeleteQuestion();
 
     return Lists.newArrayList(m1, m2);
   }

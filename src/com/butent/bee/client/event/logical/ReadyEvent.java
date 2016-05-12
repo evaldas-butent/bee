@@ -22,6 +22,7 @@ import java.util.Map;
 
 public final class ReadyEvent extends GwtEvent<ReadyEvent.Handler> {
 
+  @FunctionalInterface
   public interface Handler extends EventHandler {
     void onReady(ReadyEvent event);
   }

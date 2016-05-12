@@ -5,17 +5,17 @@
   xmlns:xi="http://www.w3.org/2001/XInclude"
     
   name="CompanyPerson" viewName="CompanyPersons" caption="=companyPerson"
-  height="350" width="800"
+  height="350" width="800" favorite="FirstName LastName"
   >
   <FlowPanel>
-    <Table style="margin-top: 1ex;">
+    <Table kind="controls" style="margin-top: 1ex;">
       <col index="0" kind="label" />
       <col index="2" kind="label" />
 
       <row>
         <Label name="CompanyLabel" for="Company" />
         <DataSelector name="Company" source="Company" style="width: 200px"
-           choiceColumns="Name TypeName " renderColumns="CompanyName CompanyTypeName"/>
+           choiceColumns="Name TypeName" renderColumns="CompanyName TypeName"/>
         <Label name="PersonLabel" for="Person" />
         <DataSelector name="Person" source="Person" style="width: 200px" />
         <FlowPanel name="qrFlowPanel" style="margin-left: 10px" />

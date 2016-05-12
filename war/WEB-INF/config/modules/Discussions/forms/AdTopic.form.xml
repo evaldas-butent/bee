@@ -6,7 +6,7 @@
   
   name="AdTopic" caption="=adTopic" height="130" width="510">
   
-  <Table>
+  <Table kind="controls">
     <row>
       <Label text="=caption" class="bee-required" horizontalAlignment="right"  />
       <cell colSpan="2">

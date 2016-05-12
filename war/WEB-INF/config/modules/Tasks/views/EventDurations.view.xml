@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="EventDurations" source="EventDurations"
+  >
+  <Columns>
+  <SimpleColumn name="DurationType" />
+    <SimpleColumn name="DurationDate" />
+    <SimpleColumn name="Duration" />
+  </Columns>
+</View>
+ 

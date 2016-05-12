@@ -99,6 +99,8 @@
     <InputArea source="CargoNotes" style="width:400px;" />
   </FlowPanel>
 
+  <ChildGrid name="CargoHandling" relColumn="Cargo" source="Cargo"
+             caption="=trAdditionalHandlingPlaces" style="margin-top:10px; height:200px;" />
   &separator;
   <FlowPanel style="&section;">
     <Label text="=cargo" class="bee-hasDefaults bee-required" style="&labelLeft; vertical-align:top;" />
@@ -109,7 +111,7 @@
       <CheckBox source="Dangerous" text="=dangerous" />
     </VerticalPanel>
   </FlowPanel>
-    
+
   <FlowPanel style="&section;">
     <Label text="=quantity" style="&labelLeft;" />
     <InputDecimal source="Quantity" format="#.00" style="&input;" />
@@ -124,7 +126,7 @@
     <InputDecimal source="Volume" format="#.000" style="&input;" />
     <DataSelector source="VolumeUnit" style="&inline; width:5em; margin-left:5px;" editEnabled="false" />
     <Label text="=valuation" style="&labelRight;" />
-    <InputMoney source="Value" style="&input;" />
+    <InputMoney source="Value" style="&input;" currencySource="ValueCurrency" />
     <DataSelector source="ValueCurrency" style="&inline; width:5em; margin-left:5px;" editEnabled="false" />
   </FlowPanel>
 </FlowPanel>

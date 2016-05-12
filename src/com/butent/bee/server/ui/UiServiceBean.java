@@ -25,10 +25,10 @@ import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.io.ExtensionFilter;
 import com.butent.bee.server.io.FileUtils;
-import com.butent.bee.server.modules.ModuleHolderBean;
+import com.butent.bee.server.modules.administration.FileStorageBean;
 import com.butent.bee.server.modules.ec.TecDocBean;
-import com.butent.bee.server.modules.mail.MailModuleBean;
 import com.butent.bee.server.news.NewsBean;
+import com.butent.bee.server.sql.HasConditions;
 import com.butent.bee.server.sql.IsExpression;
 import com.butent.bee.server.sql.SqlDelete;
 import com.butent.bee.server.sql.SqlInsert;
@@ -53,7 +53,10 @@ import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.data.view.RowInfoList;
 import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogLevel;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.modules.transport.TransportConstants;
+import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.rights.RightsObjectType;
 import com.butent.bee.shared.rights.RightsState;
 import com.butent.bee.shared.rights.RightsUtils;
@@ -111,13 +114,7 @@ public class UiServiceBean {
   @EJB
   UserServiceBean usr;
   @EJB
-  GridLoaderBean grd;
-  @EJB
   DataSourceBean dsb;
-  @EJB
-  ModuleHolderBean mod;
-  @EJB
-  MailModuleBean mail;
   @EJB
   SearchBean search;
   @EJB
@@ -126,6 +123,8 @@ public class UiServiceBean {
   TecDocBean tcd;
   @EJB
   NewsBean news;
+  @EJB
+  FileStorageBean fs;
 
   public ResponseObject doService(RequestInfo reqInfo) {
     ResponseObject response;
@@ -220,6 +219,9 @@ public class UiServiceBean {
       case HISTOGRAM:
         response = getHistogram(reqInfo);
         break;
+      case GET_DISTINCT_LONGS:
+        response = getDistinctLongs(reqInfo);
+        break;
 
       case GET_RELATED_VALUES:
         response = getRelatedValues(reqInfo);
@@ -240,7 +242,7 @@ public class UiServiceBean {
         break;
 
       case GET_NEWS:
-        response = news.getNews();
+        response = news.getNews(Feed.split(reqInfo.getParameter(VAR_FEED)));
         break;
       case SUBSCRIBE_TO_FEEDS:
         response = news.subscribe(reqInfo);
@@ -499,7 +501,7 @@ public class UiServiceBean {
     if (res instanceof BeeRowSet) {
       ResponseObject resp = ResponseObject.response(res);
       int rc = ((BeeRowSet) res).getNumberOfRows();
-      resp.addWarning(usr.getLocalizableMesssages().rowsRetrieved(rc));
+      resp.addWarning(usr.getDictionary().rowsRetrieved(rc));
       return resp;
     } else if (res instanceof Number) {
       return ResponseObject.warning("Affected rows:", res);
@@ -596,6 +598,30 @@ public class UiServiceBean {
     } else {
       DataInfo dataInfo = sys.getDataInfo(viewName);
       return ResponseObject.response(dataInfo);
+    }
+  }
+
+  private ResponseObject getDistinctLongs(RequestInfo reqInfo) {
+    String viewName = reqInfo.getParameter(VAR_VIEW_NAME);
+    if (BeeUtils.isEmpty(viewName)) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), VAR_VIEW_NAME);
+    }
+
+    String column = reqInfo.getParameter(VAR_COLUMN);
+    if (BeeUtils.isEmpty(column)) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), VAR_COLUMN);
+    }
+
+    String where = reqInfo.getParameter(VAR_VIEW_WHERE);
+    Filter filter = BeeUtils.isEmpty(where) ? null : Filter.restore(where);
+
+    Set<Long> values = qs.getDistinctLongs(viewName, column, filter);
+    String s = BeeUtils.joinLongs(values);
+
+    if (BeeUtils.isEmpty(s)) {
+      return ResponseObject.emptyResponse();
+    } else {
+      return ResponseObject.response(s);
     }
   }
 
@@ -845,7 +871,9 @@ public class UiServiceBean {
     }
 
     SimpleRowSet rs = existingStates.isEmpty() ? null : qs.getData(query);
+
     boolean value;
+    Long userId = usr.getCurrentUserId();
 
     for (BeeRow row : rowSet) {
       String rowKey = BeeUtils.toString(row.getId());
@@ -860,7 +888,7 @@ public class UiServiceBean {
             value = state.isChecked();
           }
 
-          row.setProperty(alias, Codec.pack(value));
+          row.setProperty(alias, userId, Codec.pack(value));
         }
       }
     }
@@ -972,6 +1000,29 @@ public class UiServiceBean {
       ui.initMenu();
       response.addInfo("Menu OK");
 
+    } else if (BeeUtils.same(cmd, "reports")) {
+      ui.initReports();
+      response.addInfo("Reports OK");
+
+    } else if (BeeUtils.same(cmd, "cacheinfo")) {
+      response.addInfo(fs.getCacheStats());
+
+    } else if (BeeUtils.startsSame(cmd, "logger")) {
+      List<String> args = NameUtils.NAME_SPLITTER.splitToList(cmd);
+      String name = BeeUtils.getQuietly(args, 1);
+      BeeLogger currentLogger = BeeUtils.isEmpty(name)
+          ? LogUtils.getLogger(QueryServiceBean.class) : LogUtils.getLogger(name);
+      LogLevel level = EnumUtils.getEnumByName(LogLevel.class, BeeUtils.getQuietly(args, 2));
+
+      if (Objects.nonNull(level)) {
+        currentLogger.setLevel(level);
+      }
+      response.addInfo(currentLogger.getName(), currentLogger.getLevel());
+
+    } else if (BeeUtils.same(cmd, "system")) {
+      ib.init();
+      response.addInfo("System OK");
+
     } else if (BeeUtils.startsSame(cmd, "check")) {
       String err = null;
       List<String> tbls = new ArrayList<>();
@@ -1014,6 +1065,46 @@ public class UiServiceBean {
     } else if (BeeUtils.same(cmd, "butent")) {
       tcd.suckButent(true);
       response = ResponseObject.info("Butent...");
+
+    } else if (BeeUtils.same(cmd, "handling")) { // TODO: remove in future
+      int c = qs.updateData(new SqlUpdate(TransportConstants.TBL_CARGO_HANDLING)
+          .addExpression(TransportConstants.COL_CARGO_TRIP,
+              SqlUtils.field(TransportConstants.TBL_ASSESSMENT_FORWARDERS,
+                  TransportConstants.COL_CARGO_TRIP))
+          .addExpression(TransportConstants.COL_CARGO, SqlUtils.constant(null))
+          .setFrom(TransportConstants.TBL_ASSESSMENT_FORWARDERS,
+              sys.joinTables(TransportConstants.TBL_ASSESSMENT_FORWARDERS,
+                  TransportConstants.TBL_CARGO_HANDLING, TransportConstants.COL_FORWARDER)));
+
+      String[] fields = new String[] {
+          TransportConstants.COL_LOADING_PLACE, TransportConstants.COL_UNLOADING_PLACE,
+          TransportConstants.COL_EMPTY_KILOMETERS, TransportConstants.COL_LOADED_KILOMETERS,
+          TransportConstants.COL_CARGO_WEIGHT};
+
+      HasConditions clause = SqlUtils.or();
+
+      for (String field : fields) {
+        clause.add(SqlUtils.notNull(TransportConstants.TBL_ORDER_CARGO, field));
+      }
+      SimpleRowSet rs = qs.getData(new SqlSelect()
+          .addField(TransportConstants.TBL_ORDER_CARGO,
+              sys.getIdName(TransportConstants.TBL_ORDER_CARGO), TransportConstants.COL_CARGO)
+          .addFields(TransportConstants.TBL_ORDER_CARGO, fields)
+          .addFrom(TransportConstants.TBL_ORDER_CARGO)
+          .setWhere(clause));
+
+      for (SimpleRow row : rs) {
+        SqlInsert insert = new SqlInsert(TransportConstants.TBL_CARGO_HANDLING);
+
+        for (String field : fields) {
+          insert.addNotNull(field, row.getValue(field));
+        }
+        qs.updateData(new SqlUpdate(TransportConstants.TBL_ORDER_CARGO)
+            .addConstant(TransportConstants.COL_CARGO_HANDLING, qs.insertData(insert))
+            .setWhere(sys.idEquals(TransportConstants.TBL_ORDER_CARGO,
+                row.getLong(TransportConstants.COL_CARGO))));
+      }
+      response = ResponseObject.info("Forwarders", c, "Cargo", rs.getNumberOfRows());
 
     } else if (!BeeUtils.isEmpty(cmd)) {
       String tbl = NameUtils.getWord(cmd, 0);

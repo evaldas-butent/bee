@@ -37,10 +37,10 @@
   border-collapse: collapse;
 }
 
-.bee-Form .bee-orgChart-boss-table td,
-.bee-Form .bee-orgChart-employee-table td,
-.bee-Form .bee-orgChart-position-table td,
-.bee-Form .bee-orgChart-pos-and-empl td {
+.bee-orgChart-boss-table td,
+.bee-orgChart-employee-table td,
+.bee-orgChart-position-table td,
+.bee-orgChart-pos-and-empl td {
   padding: 5px;
 }
 
@@ -48,8 +48,7 @@
   line-height: 60px;
 }
 
-.bee-orgChart-photo-container,
-.bee-orgChart-photo-empty {
+.bee-orgChart-photo-container {
   width: 40px;
 }
 .bee-orgChart-photo-container {
@@ -383,7 +382,7 @@
 
 .bee-EventsBoard-content-col-PublisherPhoto {
   width: 2.5em;
-  height: 2.5em;
+  height: 3.5em;
   max-width: 2.5em;
   min-width: 2.5em;
   align-self: center;
@@ -395,6 +394,7 @@
   text-align: center;
   max-width: 100%;
   max-height: 100%;
+  border-radius: 50%;
   cursor: default;
 }
 
@@ -412,4 +412,10 @@
 
 .bee-EventsBoard-content-col.bee-EventsBoard-content-col-EventFiles.bee-prj-Events-content-col-EventFiles {
   width: calc(100% - 10px);
+}
+
+.bee-rtc-local,
+.bee-rtc-remote {
+  margin-left: 10px;
+  width: calc(50% - 10px);
 }

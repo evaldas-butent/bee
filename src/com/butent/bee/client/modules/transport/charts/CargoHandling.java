@@ -14,7 +14,7 @@ import com.butent.bee.shared.time.JustDate;
 class CargoHandling implements HasDateRange, HasShipmentInfo {
 
   private static final String notesLabel =
-      Data.getColumnLabel(VIEW_CARGO_HANDLING, COL_CARGO_HANDLING_NOTES);
+      Data.getColumnLabel(VIEW_CARGO_HANDLING, ALS_CARGO_HANDLING_NOTES);
 
   private final JustDate loadingDate;
   private final Long loadingCountry;
@@ -120,8 +120,8 @@ class CargoHandling implements HasDateRange, HasShipmentInfo {
   }
 
   String getTitle(String loadInfo, String unloadInfo) {
-    return TimeBoardHelper.buildTitle(Localized.getConstants().intermediateLoading(), loadInfo,
-        Localized.getConstants().intermediateUnloading(), unloadInfo,
+    return TimeBoardHelper.buildTitle(Localized.dictionary().intermediateLoading(), loadInfo,
+        Localized.dictionary().intermediateUnloading(), unloadInfo,
         notesLabel, notes);
   }
 }

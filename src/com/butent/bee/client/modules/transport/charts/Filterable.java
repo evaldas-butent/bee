@@ -6,8 +6,7 @@ import java.util.EnumMap;
 
 abstract class Filterable {
 
-  private final EnumMap<Filterable.FilterType, Boolean> filterResults =
-      new EnumMap<>(Filterable.FilterType.class);
+  private final EnumMap<FilterType, Boolean> filterResults = new EnumMap<>(FilterType.class);
 
   enum FilterType {
     TENTATIVE, PERSISTENT

@@ -117,23 +117,23 @@ final class TradeActItemReturn {
     int r = 0;
     int c = 0;
 
-    table.setText(r, c++, Localized.getConstants().captionId(),
+    table.setText(r, c++, Localized.dictionary().captionId(),
         STYLE_ID_PREFIX + STYLE_HEADER_CELL_SUFFIX);
 
-    table.setText(r, c++, Localized.getConstants().name(),
+    table.setText(r, c++, Localized.dictionary().name(),
         STYLE_NAME_PREFIX + STYLE_HEADER_CELL_SUFFIX);
-    table.setText(r, c++, Localized.getConstants().article(),
+    table.setText(r, c++, Localized.dictionary().article(),
         STYLE_ARTICLE_PREFIX + STYLE_HEADER_CELL_SUFFIX);
 
-    table.setText(r, c++, Localized.getConstants().price(),
+    table.setText(r, c++, Localized.dictionary().price(),
         STYLE_PRICE_PREFIX + STYLE_HEADER_CELL_SUFFIX);
-    table.setText(r, c++, Localized.getConstants().quantity(),
+    table.setText(r, c++, Localized.dictionary().quantity(),
         STYLE_QTY_PREFIX + STYLE_HEADER_CELL_SUFFIX);
 
     table.setText(r, c++, Localized.getConstants().taOverallQuantity(),
         STYLE_QTY_PREFIX + STYLE_HEADER_CELL_SUFFIX);
 
-    table.setText(r, c++, Localized.getConstants().taQuantityReturn(),
+    table.setText(r, c++, Localized.dictionary().taQuantityReturn(),
         STYLE_INPUT_PREFIX + STYLE_HEADER_CELL_SUFFIX);
 
     if (showActInfo) {
@@ -216,7 +216,7 @@ final class TradeActItemReturn {
 
     final DialogBox dialog = DialogBox.withoutCloseBox(caption, STYLE_DIALOG);
 
-    Button all = new Button(Localized.getConstants().selectAll());
+    Button all = new Button(Localized.dictionary().selectAll());
     all.addStyleName(STYLE_ALL);
 
     all.addClickHandler(new ClickHandler() {
@@ -228,7 +228,7 @@ final class TradeActItemReturn {
 
     dialog.addCommand(all);
 
-    Button clear = new Button(Localized.getConstants().clear());
+    Button clear = new Button(Localized.dictionary().clear());
     clear.addStyleName(STYLE_CLEAR);
 
     clear.addClickHandler(new ClickHandler() {
@@ -270,7 +270,7 @@ final class TradeActItemReturn {
 
         } else {
           Global.decide(TradeActKind.RETURN.getCaption(),
-              Collections.singletonList(Localized.getConstants().taSaveSelectedItems()),
+              Collections.singletonList(Localized.dictionary().taSaveSelectedItems()),
               new DecisionCallback() {
                 @Override
                 public void onConfirm() {

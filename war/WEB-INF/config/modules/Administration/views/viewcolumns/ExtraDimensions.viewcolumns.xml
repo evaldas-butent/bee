@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Columns xmlns="http://www.butent.com/view">
+  <SimpleColumn name="Department" />
+  <SimpleJoin joinType="LEFT" name="Department">
+    <SimpleColumn name="DepartmentName" />
+  </SimpleJoin>
+
+  <SimpleColumn name="ActivityType" />
+  <SimpleJoin joinType="LEFT" name="ActivityType">
+    <SimpleColumn name="ActivityTypeName" />
+  </SimpleJoin>
+
+  <SimpleColumn name="CostCenter" />
+  <SimpleJoin joinType="LEFT" name="CostCenter">
+    <SimpleColumn name="CostCenterName" />
+  </SimpleJoin>
+
+  <SimpleColumn name="Object" />
+  <SimpleJoin name="Object" joinType="LEFT">
+    <SimpleColumn name="LocationName" />
+  </SimpleJoin>
+</Columns>

@@ -73,7 +73,7 @@
         <ui:expression>row.Season</ui:expression>
       </carry>
     </DataColumn>
-    <DataColumn name="Temperature" caption="=trTemperatureShort" updateMode="row" />
+    <DataColumn name="Temperature" caption="=trTemperatureShort" updateMode="row" visible="false" />
     <DataColumn name="Consumption" caption="=liters" updateMode="row">
       <style>
         <headerStyle>

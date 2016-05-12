@@ -16,6 +16,7 @@ import java.util.List;
 
 public enum UserInterface implements HasCaption {
   DESKTOP { /* ordinal 0 */
+
     @Override
     public String getCaption() {
       return "Desktop";
@@ -48,6 +49,7 @@ public enum UserInterface implements HasCaption {
   },
 
   TABLET { /* ordinal 1 */
+
     @Override
     public String getCaption() {
       return "Tablet";
@@ -56,7 +58,7 @@ public enum UserInterface implements HasCaption {
     @Override
     public Collection<Component> getComponents() {
       return EnumSet.of(Component.AUTOCOMPLETE, Component.DATA_INFO, Component.DECORATORS,
-          Component.DICTIONARY, Component.FILTERS, Component.GRIDS, Component.MENU,
+          Component.FILTERS, Component.GRIDS, Component.MENU,
           Component.MONEY, Component.SETTINGS, Component.USERS);
     }
 
@@ -85,6 +87,7 @@ public enum UserInterface implements HasCaption {
   },
 
   MOBILE { /* ordinal 2 */
+
     @Override
     public String getCaption() {
       return "Mobile";
@@ -93,7 +96,7 @@ public enum UserInterface implements HasCaption {
     @Override
     public Collection<Component> getComponents() {
       return EnumSet.of(Component.AUTOCOMPLETE, Component.DATA_INFO, Component.DECORATORS,
-          Component.DICTIONARY, Component.FILTERS, Component.GRIDS, Component.MENU,
+          Component.FILTERS, Component.GRIDS, Component.MENU,
           Component.MONEY, Component.SETTINGS, Component.USERS);
     }
 
@@ -122,6 +125,7 @@ public enum UserInterface implements HasCaption {
   },
 
   E_COMMERCE { /* ordinal 3 */
+
     @Override
     public String getCaption() {
       return "E-Commerce";
@@ -149,7 +153,9 @@ public enum UserInterface implements HasCaption {
 
     @Override
     public List<String> getStyleSheets() {
-      return Lists.newArrayList(MAIN_STYLE_SHEET, EcConstants.CLIENT_STYLE_SHEET);
+      List<String> sheets = getMainStyleSheets();
+      sheets.add(EcConstants.CLIENT_STYLE_SHEET);
+      return sheets;
     }
 
     @Override
@@ -159,6 +165,7 @@ public enum UserInterface implements HasCaption {
   },
 
   SELF_SERVICE { /* ordinal 4 */
+
     @Override
     public String getCaption() {
       return "Self-service";
@@ -167,8 +174,7 @@ public enum UserInterface implements HasCaption {
     @Override
     public Collection<Component> getComponents() {
       return EnumSet.of(Component.AUTOCOMPLETE, Component.DATA_INFO, Component.DECORATORS,
-          Component.DICTIONARY, Component.FILTERS, Component.GRIDS, Component.SETTINGS,
-          Component.USERS);
+          Component.FILTERS, Component.GRIDS, Component.SETTINGS, Component.USERS);
     }
 
     @Override
@@ -178,7 +184,7 @@ public enum UserInterface implements HasCaption {
 
     @Override
     public List<String> getScripts() {
-      return Lists.newArrayList("settings");
+      return Lists.newArrayList("trsettings");
     }
 
     @Override
@@ -188,7 +194,9 @@ public enum UserInterface implements HasCaption {
 
     @Override
     public List<String> getStyleSheets() {
-      return Lists.newArrayList(MAIN_STYLE_SHEET, Module.TRANSPORT.getStyleSheet(null));
+      List<String> sheets = getMainStyleSheets();
+      sheets.add(Module.TRANSPORT.getStyleSheet(null));
+      return sheets;
     }
 
     @Override
@@ -198,6 +206,7 @@ public enum UserInterface implements HasCaption {
   },
 
   TRADE_ACTS { /* ordinal 5 */
+
     @Override
     public String getCaption() {
       return "Trade Acts";
@@ -206,8 +215,7 @@ public enum UserInterface implements HasCaption {
     @Override
     public Collection<Component> getComponents() {
       return EnumSet.of(Component.AUTOCOMPLETE, Component.DATA_INFO, Component.DECORATORS,
-          Component.DICTIONARY, Component.FILTERS, Component.GRIDS, Component.SETTINGS,
-          Component.USERS);
+          Component.FILTERS, Component.GRIDS, Component.SETTINGS, Component.USERS);
     }
 
     @Override
@@ -227,46 +235,9 @@ public enum UserInterface implements HasCaption {
 
     @Override
     public List<String> getStyleSheets() {
-      return Lists.newArrayList(MAIN_STYLE_SHEET, Module.TRADE.getStyleSheet(SubModule.ACTS));
-    }
-
-    @Override
-    public String getTitle() {
-      return TITLE;
-    }
-  },
-
-  SELF_SERVICE_LOG { /* ordinal 6 */
-    @Override
-    public String getCaption() {
-      return "Self-service logistics";
-    }
-
-    @Override
-    public Collection<Component> getComponents() {
-      return EnumSet.of(Component.AUTOCOMPLETE, Component.DATA_INFO, Component.DECORATORS,
-          Component.DICTIONARY, Component.FILTERS, Component.GRIDS, Component.SETTINGS,
-          Component.USERS);
-    }
-
-    @Override
-    public List<Meta> getMeta() {
-      return Lists.newArrayList(new Meta().name("gwt:property").content("screen=logss"));
-    }
-
-    @Override
-    public List<String> getScripts() {
-      return Lists.newArrayList("logssvcsettings");
-    }
-
-    @Override
-    public String getShortName() {
-      return "logss";
-    }
-
-    @Override
-    public List<String> getStyleSheets() {
-      return Lists.newArrayList(MAIN_STYLE_SHEET, Module.TRANSPORT.getStyleSheet(null));
+      List<String> sheets = getMainStyleSheets();
+      sheets.add(Module.TRADE.getStyleSheet(SubModule.ACTS));
+      return sheets;
     }
 
     @Override
@@ -277,12 +248,13 @@ public enum UserInterface implements HasCaption {
 
   public enum Component {
     AUTOCOMPLETE(false),
+    CHATS(false),
     DATA_INFO(false),
     DECORATORS(false),
-    DICTIONARY(false),
     FAVORITES(false),
     FILTERS(false),
     GRIDS(false),
+    MAIL(false),
     MENU(false),
     MONEY(false),
     NEWS(false),
@@ -352,12 +324,14 @@ public enum UserInterface implements HasCaption {
 
   public abstract String getShortName();
 
+  public List<String> getExternalScripts() {
+    return Lists.newArrayList("rtcadapter", "micromarkdown");
+  }
+
   public List<String> getStyleSheets() {
-    List<String> sheets = new ArrayList<>();
+    List<String> sheets = getMainStyleSheets();
 
-    sheets.add(MAIN_STYLE_SHEET);
     sheets.add("misc");
-
     sheets.addAll(Module.getEnabledStyleSheets());
 
     return sheets;
@@ -371,5 +345,22 @@ public enum UserInterface implements HasCaption {
 
   public boolean hasMenu() {
     return getComponents().contains(Component.MENU);
+  }
+
+  protected List<String> getMainStyleSheets() {
+    List<String> sheets = new ArrayList<>();
+
+    sheets.add(MAIN_STYLE_SHEET);
+    sheets.addAll(getComponentStyleSheets());
+
+    return sheets;
+  }
+
+  private List<String> getComponentStyleSheets() {
+    List<String> sheets = new ArrayList<>();
+    if (getComponents().contains(Component.CHATS)) {
+      sheets.add("chat");
+    }
+    return sheets;
   }
 }
