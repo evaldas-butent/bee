@@ -87,7 +87,7 @@ class TradeActItemPicker extends ItemsPicker {
 
   @Override
   protected String getCaption() {
-    return Localized.getConstants().goods();
+    return Localized.dictionary().goods();
   }
 
   @Override

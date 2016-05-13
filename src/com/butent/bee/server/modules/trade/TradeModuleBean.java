@@ -14,7 +14,9 @@ import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
 
+import com.butent.bee.server.concurrency.ConcurrencyBean;
 import com.butent.bee.server.data.BeeView;
+import com.butent.bee.server.data.DataEditorBean;
 import com.butent.bee.server.data.DataEvent.ViewInsertEvent;
 import com.butent.bee.server.data.DataEvent.ViewModifyEvent;
 import com.butent.bee.server.data.DataEvent.ViewQueryEvent;
@@ -31,6 +33,8 @@ import com.butent.bee.server.modules.classifiers.ClassifiersModuleBean;
 import com.butent.bee.server.modules.mail.MailAccount;
 import com.butent.bee.server.modules.mail.MailModuleBean;
 import com.butent.bee.server.modules.mail.MailStorageBean;
+import com.butent.bee.server.sql.HasConditions;
+import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.IsExpression;
 import com.butent.bee.server.sql.SqlDelete;
 import com.butent.bee.server.sql.SqlInsert;
@@ -71,7 +75,7 @@ import com.butent.bee.shared.html.builder.elements.Table;
 import com.butent.bee.shared.html.builder.elements.Td;
 import com.butent.bee.shared.html.builder.elements.Th;
 import com.butent.bee.shared.html.builder.elements.Tr;
-import com.butent.bee.shared.i18n.LocalizableConstants;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -80,6 +84,8 @@ import com.butent.bee.shared.menu.MenuItem;
 import com.butent.bee.shared.menu.MenuService;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.ec.EcConstants;
+import com.butent.bee.shared.modules.payroll.PayrollConstants;
+import com.butent.bee.shared.modules.trade.TradeConstants.OperationType;
 import com.butent.bee.shared.modules.trade.TradeDocumentData;
 import com.butent.bee.shared.modules.trade.TradeDocumentPhase;
 import com.butent.bee.shared.rights.Module;
@@ -109,6 +115,8 @@ import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
+import javax.ejb.Timer;
+import javax.ejb.TimerService;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 
@@ -202,6 +210,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     } else if (BeeUtils.same(svc, SVC_SEND_TO_ERP)) {
       response = sendToERP(reqInfo.getParameter(VAR_VIEW_NAME),
           DataUtils.parseIdSet(reqInfo.getParameter(VAR_ID_LIST)));
+
     } else if (BeeUtils.same(svc, SVC_GET_DOCUMENT_TYPE_CAPTION_AND_FILTER)) {
       response = getDocumentTypeCaptionAndFilter(reqInfo);
 
@@ -429,6 +438,47 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
       }
 
       @Subscribe
+      @AllowConcurrentEvents
+      public void modifyTradeStock(ViewModifyEvent event) {
+        if (event.isTarget(VIEW_TRADE_DOCUMENT_ITEMS)) {
+          List<BeeColumn> columns;
+          BeeRow row;
+
+          if (event instanceof ViewInsertEvent) {
+            columns = ((ViewInsertEvent) event).getColumns();
+            row = ((ViewInsertEvent) event).getRow();
+
+            // if (event.isBefore()) {
+            // }
+
+          } else if (event.isBefore() && event instanceof ViewUpdateEvent) {
+            columns = ((ViewUpdateEvent) event).getColumns();
+            row = ((ViewUpdateEvent) event).getRow();
+
+            if (row != null) {
+              int index = DataUtils.getColumnIndex(COL_TRADE_ITEM_QUANTITY, columns);
+              if (!BeeConst.isUndef(index)) {
+                event.addErrors(onTradeItemQuantityUpdate(row.getId(), row.getDouble(index)));
+              }
+
+              if (!event.hasErrors()) {
+                index = DataUtils.getColumnIndex(COL_TRADE_ITEM_WAREHOUSE, columns);
+                if (!BeeConst.isUndef(index)) {
+                  event.addErrors(onTradeItemWarehouseUpdate(row.getId(), row.getLong(index)));
+                }
+              }
+            }
+
+            // } else if (event.isBefore() && event instanceof ViewDeleteEvent) {
+
+          }
+
+          // } else if (event.isTarget(VIEW_TRADE_DOCUMENTS)) {
+
+        }
+      }
+
+      @Subscribe
       public void fillOverdueAverageProp(ViewQueryEvent event) {
         if (event.isBefore()) {
           return;
@@ -500,7 +550,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
             Long oSumDays =
                 overdueRow != null
                     ? BeeUtils.toLong(overdueRow[idxOverdueSum])
-                        / 86400000L : 0L;
+                    / 86400000L : 0L;
 
             String[] salesRow = salesCountData.get(gridRow.getLong(
                 gridRowset.getColumnIndex(COL_TRADE_CUSTOMER)));
@@ -516,7 +566,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
             Long sSumDays =
                 salesRow != null
                     ? BeeUtils.toLong(salesRow[salesSumResult.getColumnIndex(ALS_SALES_SUM)])
-                        / 86400000L : 0L;
+                    / 86400000L : 0L;
 
             Long sum = oCount + sCount;
 
@@ -572,6 +622,33 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
 
         }
       }
+    });
+
+    MenuService.TRADE_DOCUMENTS.setTransformer(input -> {
+      List<Menu> result = new ArrayList<>();
+
+      if (input instanceof MenuItem) {
+        BeeRowSet data = qs.getViewData(VIEW_TRADE_DOCUMENT_TYPES);
+
+        if (!DataUtils.isEmpty(data)) {
+          String language = usr.getLanguage();
+
+          for (BeeRow row : data) {
+            long id = row.getId();
+
+            MenuItem item = (MenuItem) input.copy();
+
+            item.setName(BeeUtils.join(BeeConst.STRING_UNDER, input.getName(), id));
+            item.setLabel(DataUtils.getTranslation(data, row, COL_DOCUMENT_TYPE_NAME, language));
+
+            item.setParameters(BeeUtils.toString(id));
+
+            result.add(item);
+          }
+        }
+      }
+
+      return result;
     });
 
     act.init();
@@ -895,7 +972,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
 
     SimpleRowSet rs = qs.getData(query);
 
-    LocalizableConstants loc = usr.getLocalizableConstants();
+    Dictionary loc = usr.getDictionary();
     return ResponseObject.info(BeeUtils.joinWords(loc.trdAmount(),
         BeeUtils.round(rs.getValue(0, VAR_AMOUNT), 2),
         loc.trdPaid(),
@@ -952,8 +1029,8 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     TradeDocumentData tdd = new TradeDocumentData(companies, bankAccounts, items, null, null);
     return ResponseObject.response(tdd);
   }
-  
-    private void importERPPayments() {
+
+  private void importERPPayments() {
     long historyId = sys.eventStart(PRM_ERP_REFRESH_INTERVAL);
     int c = 0;
 
@@ -1012,7 +1089,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     }
     sys.eventEnd(historyId, "OK", BeeUtils.joinWords("Updated", c, "records"));
   }
-  
+
   private Document renderCompanyDebtMail(String subject, String p1,
       String p2, Long companyId) {
     Document doc = new Document();
@@ -1066,14 +1143,14 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     Tr trHead = tr();
 
     for (int i = 0; i < rs.getNumberOfColumns() - ignoreLast; i++) {
-      String label = Localized.maybeTranslate(rs.getColumnLabel(i), usr.getLocalizableDictionary());
+      String label = Localized.maybeTranslate(rs.getColumnLabel(i), usr.getGlossary());
 
       if (BeeUtils.same(rs.getColumnId(i), COL_TRADE_INVOICE_NO)) {
-        label = usr.getLocalizableConstants().trdInvoice();
+        label = usr.getDictionary().trdInvoice();
       }
 
       if (BeeUtils.same(rs.getColumnId(i), COL_TRADE_AMOUNT)) {
-        label = usr.getLocalizableConstants().trdAmount();
+        label = usr.getDictionary().trdAmount();
       }
       Th th = th().text(label);
       th.setBorderWidth("1px");
@@ -1082,7 +1159,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
       trHead.append(th);
     }
 
-    Th th = th().text(usr.getLocalizableConstants().trdOverdueInDays());
+    Th th = th().text(usr.getDictionary().trdOverdueInDays());
     th.setBorderWidth("1px");
     th.setBorderStyle(BorderStyle.SOLID);
     th.setBorderColor("black");
@@ -1160,7 +1237,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     }
     footer.append(td());
 
-    footer.append(td().append(b().text(usr.getLocalizableConstants().total())));
+    footer.append(td().append(b().text(usr.getDictionary().total())));
     footer.append(td().text(BeeUtils.notEmpty(BeeUtils.toString(debt), BeeConst.STRING_EMPTY)));
     table.append(footer);
     footer.append(td());
@@ -1227,7 +1304,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     ResponseObject resp = ResponseObject.emptyResponse();
 
     if (!DataUtils.isId(senderMailAccountId)) {
-      return ResponseObject.error(usr.getLocalizableConstants().mailAccountNotFound());
+      return ResponseObject.error(usr.getDictionary().mailAccountNotFound());
     }
 
     String subject = req.getParameter(VAR_SUBJECT);
@@ -1241,14 +1318,14 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
 
     for (Long companyId : emails.keySet()) {
       if (BeeUtils.isEmpty(emails.get(companyId).values())) {
-        errorMails.put(companyId, usr.getLocalizableConstants().mailRecipientAddressNotFound());
+        errorMails.put(companyId, usr.getDictionary().mailRecipientAddressNotFound());
         continue;
       }
 
       Document mailDocument = renderCompanyDebtMail(subject, p1, p2, companyId);
 
       if (mailDocument == null) {
-        errorMails.put(companyId, usr.getLocalizableConstants().noData());
+        errorMails.put(companyId, usr.getDictionary().noData());
         continue;
       }
 
@@ -1260,9 +1337,9 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
                 Lists.newArrayList(emails.get(companyId).values())), null, null, subject,
             mailDocument
                 .buildLines(),
-            null);
+            null, null);
 
-        mail.storeMessage(account, message, account.getSentFolder(), null);
+        mail.storeMessage(account, message, account.getSentFolder());
         sentEmailCompanyIds.add(companyId);
       } catch (MessagingException | BeeRuntimeException ex) {
         logger.error(ex);
@@ -1270,11 +1347,11 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
       }
     }
 
-    String message = BeeUtils.joinWords(usr.getLocalizableConstants().mailMessageSentCount(),
+    String message = BeeUtils.joinWords(usr.getDictionary().mailMessageSentCount(),
         sentEmailCompanyIds.size(), br().build());
 
     if (!BeeUtils.isEmpty(errorMails.keySet())) {
-      message = BeeUtils.joinWords(message, usr.getLocalizableConstants().errors(), br().build());
+      message = BeeUtils.joinWords(message, usr.getDictionary().errors(), br().build());
 
       Filter filter = Filter.idIn(errorMails.keySet());
       BeeRowSet rs =

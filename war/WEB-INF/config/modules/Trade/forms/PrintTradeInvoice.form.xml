@@ -32,7 +32,7 @@
 			horizontalAlignment="right" />
 
 		<FlowPanel style="&section;">
-			<Table style="width:100%;">
+			<Table style="width:100%;" kind="output">
 				<row>
 					<cell style="vertical-align:top;">
 						<Label html="Tiekėjas:" />
@@ -52,7 +52,7 @@
 			</Table>
 		</FlowPanel>
 
-		<Table name="InvoiceDetails" style="&section; width:100%">
+		<Table name="InvoiceDetails" style="&section; width:100%" kind="output">
 		<properties content="Items" />
 			<row>
 				<Label text="Materialinės vertybės pavadinimas">
@@ -119,14 +119,14 @@
 			<renderToken source="Term" prefix="Sąskaitą apmokėti iki: " />
 		</TextLabel>
 
-		<Table>
+		<Table kind="output">
 			<row style="vertical-align: text-top;">
 				<Label text="Papildoma informacija:   " />
 				<TextLabel source="Notes" style="white-space:pre-wrap;" />
 			</row>
 		</Table>
 
-		<Table style="width:100%; margin-top:10px;">
+		<Table style="width:100%; margin-top:10px;" kind="output">
 			<row style="&bold;">
 				<Label html="Išdavė" />
 				<Label html="Priėmė" />

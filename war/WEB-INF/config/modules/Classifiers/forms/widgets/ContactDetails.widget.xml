@@ -15,7 +15,7 @@
   <row>
     <Label for="EmailId" style="&lbl;" />
     <cell colSpan="2" for="EmailId" >
-      <Table>
+      <Table kind="controls">
         <row>
           <DataSelector name="EmailId" source="EmailId" style="width: 100%;" maxLength="50" editEnabled="true" />
           <CheckBox html="-" name="RemindEmail" source="RemindEmail" title="=sendReminder" />

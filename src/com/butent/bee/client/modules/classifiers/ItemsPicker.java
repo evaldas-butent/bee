@@ -60,7 +60,6 @@ import com.butent.bee.shared.html.builder.elements.Div;
 import com.butent.bee.shared.html.builder.elements.Span;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.classifiers.ItemPrice;
-import com.butent.bee.shared.modules.orders.OrdersConstants;
 import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -223,6 +222,7 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
   private BeeRowSet items;
 
   private final Map<Long, ItemPrice> selectedPrices = new HashMap<>();
+  private Map<Long, Double> remainders = new HashMap<>();
   private final Flow itemPanel = new Flow(STYLE_ITEM_PANEL);
   private final List<String> visibleTableCols = new ArrayList<>();
   private Notification notification = new Notification();
@@ -276,7 +276,7 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
   }
 
   protected String getCaption() {
-    return Localized.getConstants().goods();
+    return Localized.dictionary().goods();
   }
 
   public List<String> getVisibleTableCols() {
@@ -301,23 +301,23 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
     String pfx;
 
     visibleTableCols.add(DataUtils.ID_TAG);
-    table.setText(r, c++, Localized.getConstants().captionId(),
+    table.setText(r, c++, Localized.dictionary().captionId(),
         STYLE_ID_PREFIX + STYLE_HEADER_CELL_SUFFIX);
 
     visibleTableCols.add(ALS_ITEM_TYPE_NAME);
-    table.setText(r, c++, Localized.getConstants().type(),
+    table.setText(r, c++, Localized.dictionary().type(),
         STYLE_TYPE_PREFIX + STYLE_HEADER_CELL_SUFFIX);
 
     visibleTableCols.add(ALS_ITEM_GROUP_NAME);
-    table.setText(r, c++, Localized.getConstants().group(),
+    table.setText(r, c++, Localized.dictionary().group(),
         STYLE_GROUP_PREFIX + STYLE_HEADER_CELL_SUFFIX);
 
     visibleTableCols.add(ALS_ITEM_NAME);
-    table.setText(r, c++, Localized.getConstants().name(),
+    table.setText(r, c++, Localized.dictionary().name(),
         STYLE_NAME_PREFIX + STYLE_HEADER_CELL_SUFFIX);
 
     visibleTableCols.add(COL_ITEM_ARTICLE);
-    table.setText(r, c++, Localized.getConstants().article(),
+    table.setText(r, c++, Localized.dictionary().article(),
         STYLE_ARTICLE_PREFIX + STYLE_HEADER_CELL_SUFFIX);
 
     for (ItemPrice ip : ItemPrice.values()) {
@@ -342,16 +342,16 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
           STYLE_FROM_PREFIX + STYLE_HEADER_CELL_SUFFIX);
 
       visibleTableCols.add(COL_WAREHOUSE_REMAINDER);
-      table.setText(r, c++, Localized.getConstants().ordFreeRemainder(),
+      table.setText(r, c++, Localized.dictionary().ordFreeRemainder(),
           STYLE_FREE_PREFIX + STYLE_HEADER_CELL_SUFFIX);
 
       visibleTableCols.add(COL_WAREHOUSE_REMAINDER + "1");
-      table.setText(r, c++, Localized.getConstants().ordResRemainder(),
+      table.setText(r, c++, Localized.dictionary().ordResRemainder(),
           STYLE_RESERVED_PREFIX + STYLE_HEADER_CELL_SUFFIX);
     }
 
     visibleTableCols.add("QTY");
-    table.setText(r, c++, Localized.getConstants().quantity(),
+    table.setText(r, c++, Localized.dictionary().quantity(),
         STYLE_QTY_PREFIX + STYLE_HEADER_CELL_SUFFIX);
 
     table.getRowFormatter().addStyleName(r, STYLE_HEADER_ROW);
@@ -487,7 +487,7 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
       searchBy2.addItem(label, column);
     }
     searchBy.addItem(Localized.dictionary().captionId(), COL_ITEM);
-    searchBy2.addItem(Localized.getConstants().captionId(), COL_ITEM);
+    searchBy2.addItem(Localized.dictionary().captionId(), COL_ITEM);
 
     panel.add(searchBy);
 
@@ -796,22 +796,22 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
           Global.decide(Localized.dictionary().goods(),
               Lists.newArrayList(Localized.dictionary().taSaveSelectedItems()),
               new DecisionCallback() {
-            @Override
-            public void onConfirm() {
-              if (isOrder) {
-                if (!checkQuantities(quantities)) {
-                  return;
+                @Override
+                public void onConfirm() {
+                  if (isOrder) {
+                    if (!checkQuantities(quantities)) {
+                      return;
+                    }
+                  }
+                  selectItems(quantities);
+                  dialog.close();
                 }
-              }
-              selectItems(quantities);
-              dialog.close();
-            }
 
-            @Override
-            public void onDeny() {
-              dialog.close();
-            }
-          }, DialogConstants.DECISION_YES);
+                @Override
+                public void onDeny() {
+                  dialog.close();
+                }
+              }, DialogConstants.DECISION_YES);
         }
       }
     });
@@ -927,4 +927,16 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
   public abstract Long getWarehouseFrom(IsRow row);
 
   public abstract boolean setIsOrder(IsRow row);
+
+  private boolean checkQuantities(Map<Long, Double> quantities) {
+    boolean valid = true;
+    for (Long id : quantities.keySet()) {
+      if (quantities.get(id) > remainders.get(id)) {
+        notification.severe(Localized.dictionary().ordQtyIsTooBig());
+        valid = false;
+        break;
+      }
+    }
+    return valid;
+  }
 }

@@ -72,15 +72,15 @@ class TradeActServicePicker extends TradeActItemPicker {
     int c = table.getCellCount(r);
 
     getVisibleTableCols().add(TradeActConstants.COL_TA_SERVICE_FROM);
-    table.setText(r, c++, Localized.getConstants().dateFrom());
+    table.setText(r, c++, Localized.dictionary().dateFrom());
 
     getVisibleTableCols().add(TradeActConstants.COL_TA_SERVICE_TO);
-    table.setText(r, c++, Localized.getConstants().dateTo());
+    table.setText(r, c++, Localized.dictionary().dateTo());
     getVisibleTableCols().add(TradeActConstants.COL_TA_SERVICE_TARIFF);
-    table.setText(r, c++, Localized.getConstants().taTariff());
+    table.setText(r, c++, Localized.dictionary().taTariff());
 
     getVisibleTableCols().add(TradeConstants.COL_TRADE_DISCOUNT);
-    table.setText(r, c++, Localized.getConstants().discount());
+    table.setText(r, c++, Localized.dictionary().discount());
 
     StyleUtils.setDisplay(table.getCellFormatter().getElement(r, getVisibleTableCols().indexOf(
         ClassifierConstants.COL_EXTERNAL_STOCK)), Display.NONE);
@@ -116,7 +116,7 @@ class TradeActServicePicker extends TradeActItemPicker {
 
   @Override
   protected String getCaption() {
-    return Localized.getConstants().services();
+    return Localized.dictionary().services();
   }
 
   @Override
@@ -125,7 +125,7 @@ class TradeActServicePicker extends TradeActItemPicker {
   }
 
   @Override
-  public boolean setIsOrder() {
+  public boolean setIsOrder(IsRow row) {
     return false;
   }
 

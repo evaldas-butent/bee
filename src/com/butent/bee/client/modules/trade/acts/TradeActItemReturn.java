@@ -1,9 +1,5 @@
 package com.butent.bee.client.modules.trade.acts;
 
-import com.butent.bee.client.layout.Flow;
-import com.butent.bee.client.style.StyleUtils;
-import com.butent.bee.client.widget.CustomDiv;
-import com.butent.bee.shared.css.values.Display;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.InputElement;
 import com.google.gwt.dom.client.TableCellElement;
@@ -29,14 +25,18 @@ import com.butent.bee.client.dom.Selectors;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.i18n.Format;
+import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.widget.Button;
+import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.InputNumber;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
+import com.butent.bee.shared.css.values.Display;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -130,7 +130,7 @@ final class TradeActItemReturn {
     table.setText(r, c++, Localized.dictionary().quantity(),
         STYLE_QTY_PREFIX + STYLE_HEADER_CELL_SUFFIX);
 
-    table.setText(r, c++, Localized.getConstants().taOverallQuantity(),
+    table.setText(r, c++, Localized.dictionary().taOverallQuantity(),
         STYLE_QTY_PREFIX + STYLE_HEADER_CELL_SUFFIX);
 
     table.setText(r, c++, Localized.dictionary().taQuantityReturn(),
@@ -472,7 +472,6 @@ final class TradeActItemReturn {
           Selectors.classSelector(STYLE_QTY_PREFIX + PROP_LAST_INPUT));
       lastInput.setInnerText(text);
       StyleUtils.setDisplay(lastInput, Display.BLOCK);
-
 
       while (qty > 0 && currentRow != null) {
         Element source = Selectors.getElement(currentRow,

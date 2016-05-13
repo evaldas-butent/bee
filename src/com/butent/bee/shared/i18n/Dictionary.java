@@ -5649,6 +5649,8 @@ public interface Dictionary {
 
   default String trdOverdue() {return g("trdOverdue");}
 
+  default String trdOverdueInDays() {return g("trdOverdueInDays");}
+
   default String trdPaid() {return g("trdPaid");}
 
   default String trdParameters() {return g("trdParameters");}

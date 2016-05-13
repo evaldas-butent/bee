@@ -141,7 +141,7 @@ public final class ClassifierUtils {
                 record.add(widget);
               }
               break;
-              
+
             default:
               Pair<String, String> pair = info.get(col);
 

@@ -147,7 +147,7 @@
 
             <row for="FinancialState">
               <Label text="=financialState" style="&lbl;" />
-              <Table>
+              <Table kind="controls">
                 <row>
                   <DataSelector source="FinancialState" renderColumns="FinancialStateName" 
                   choiceColumns="Name" summarize="true" />

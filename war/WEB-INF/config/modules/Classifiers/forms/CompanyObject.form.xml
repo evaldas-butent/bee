@@ -8,7 +8,7 @@
   width="310" height="310">
 
   <FlowPanel class="flexBox-vertical">
-    <Table>
+    <Table kind="controls">
       <row>
         <Label for="ObjectName" text="=name" class="bee-required" />
         <InputText source="ObjectName" style="&inpw;" />

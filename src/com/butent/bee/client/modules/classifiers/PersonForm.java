@@ -42,7 +42,6 @@ import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.InputBoolean;
-import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeRow;
@@ -61,8 +60,10 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import elemental.client.Browser;
 import elemental.events.Event;
@@ -335,7 +336,7 @@ class PersonForm extends AbstractFormInterceptor {
       BeeKeeper.getScreen().updateUserData(userData);
     }
   }
-    
+
   private static void ensureUpload(FormView form, IsRow oldRow, IsRow row,
       Map<Long, NewFileInfo> queue, NewFileInfo photoFile) {
 
@@ -396,7 +397,7 @@ class PersonForm extends AbstractFormInterceptor {
   private Map<Long, NewFileInfo> getUploadQueue() {
     return uploadQueue;
   }
-  
+
   private static void copyContactData(GridPresenter presenter, String viewName, BeeRow newRow) {
 
     FormView parentForm = ViewHelper.getForm(presenter.getMainView().asWidget());

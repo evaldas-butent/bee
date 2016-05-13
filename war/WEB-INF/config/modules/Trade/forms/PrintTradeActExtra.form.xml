@@ -30,7 +30,7 @@ sąlygų bei įkainių.
       </span>
     </HtmlPanel>
 
-    <Table name="InvoiceDetails1" style="&section; width:100%; padding-top: 0;">
+    <Table name="InvoiceDetails1" style="&section; width:100%; padding-top: 0;" kind="output">
       <properties content="TradeActItems" />
       <row>
         <Label text="Artikulas">
@@ -80,7 +80,7 @@ sąlygų bei įkainių.
 
     <Label text="Teikiamos Paslaugos" style="text-align: center; font-weight: bold;" />
 
-    <Table name="InvoiceDetails2" style="&section; width:100%">
+    <Table name="InvoiceDetails2" style="&section; width:100%" kind="output">
       <properties content="TradeActServices" />
       <row>
         <Label text="Artikulas">
@@ -120,7 +120,7 @@ sukrauta taip, kad būtų galima iškrauti šakiniais krautuvais. Už iškrovim�
      </span>
     </HtmlPanel>
     
-      <Table style="width:100%; border-collapse: collapse;">
+      <Table style="width:100%; border-collapse: collapse;" kind="output">
         <row style="&border;">
           <Label text=" " />
           <Label text="Vardas" />
@@ -158,7 +158,7 @@ sukrauta taip, kad būtų galima iškrauti šakiniais krautuvais. Už iškrovim�
         </row>
       </Table>
      
-      <Table style="width:100%;">
+      <Table style="width:100%;" kind="output">
         <row>
           <cell style="vertical-align:top;">
             <Label html="Nuomotojas" style="font-weight: bold;" />

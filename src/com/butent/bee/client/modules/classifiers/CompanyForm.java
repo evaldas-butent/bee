@@ -5,6 +5,7 @@ import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.HasClickHandlers;
+import com.google.gwt.event.shared.HasHandlers;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.Widget;
@@ -26,6 +27,7 @@ import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.ModalGrid;
+import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.grid.ChildGrid;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.HtmlTable;
@@ -37,6 +39,8 @@ import com.butent.bee.client.presenter.RowPresenter;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.client.ui.Opener;
+import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.validation.CellValidateEvent;
 import com.butent.bee.client.validation.CellValidateEvent.Handler;
 import com.butent.bee.client.view.HeaderView;
@@ -53,6 +57,7 @@ import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.InputBoolean;
+import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.css.values.FontSize;
 import com.butent.bee.shared.data.BeeRow;
@@ -68,6 +73,7 @@ import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.rights.RegulatedWidget;
+import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -258,21 +264,21 @@ class CompanyForm extends AbstractFormInterceptor {
       button.addClickHandler(getFinancialStateAuditClickHandler());
 
       if (widget instanceof UIObject) {
-        ((UIObject) widget).setTitle(Localized.getConstants().actionAudit());
+        ((UIObject) widget).setTitle(Localized.dictionary().actionAudit());
       }
     }
 
     if (widget instanceof InputBoolean && BeeUtils.same(name, COL_REMIND_EMAIL)) {
 
       if (widget instanceof UIObject) {
-        ((UIObject) widget).setTitle(Localized.getConstants().sendReminder());
+        ((UIObject) widget).setTitle(Localized.dictionary().sendReminder());
       }
     }
 
     if (widget instanceof InputBoolean && BeeUtils.same(name, COL_EMAIL_INVOICES)) {
 
       if (widget instanceof UIObject) {
-        ((UIObject) widget).setTitle(Localized.getConstants().trdInvoiceShort());
+        ((UIObject) widget).setTitle(Localized.dictionary().trdInvoiceShort());
       }
     }
   }
@@ -427,7 +433,7 @@ class CompanyForm extends AbstractFormInterceptor {
         if (DataUtils.isId(form.getActiveRow().getLong(form.getDataIndex(COL_EMAIL_ID)))) {
           return Boolean.TRUE;
         } else {
-          form.notifySevere(Localized.getConstants().email(), Localized.getConstants()
+          form.notifySevere(Localized.dictionary().email(), Localized.dictionary()
               .valueRequired());
           return Boolean.FALSE;
         }
@@ -490,14 +496,14 @@ class CompanyForm extends AbstractFormInterceptor {
       return toErp;
     }
 
-    toErp = new Button(Localized.getConstants().trSendToERP(), new ClickHandler() {
+    toErp = new Button(Localized.dictionary().trSendToERP(), new ClickHandler() {
 
       @Override
       public void onClick(ClickEvent arg0) {
         if (DataUtils.isNewRow(getActiveRow())) {
           return;
         }
-        Global.confirm(Localized.getConstants().trSendToERP() + "?", new ConfirmationCallback() {
+        Global.confirm(Localized.dictionary().trSendToERP() + "?", new ConfirmationCallback() {
           @Override
           public void onConfirm() {
             final HeaderView header = getHeaderView();
@@ -515,7 +521,7 @@ class CompanyForm extends AbstractFormInterceptor {
                 response.notify(getFormView());
 
                 if (!response.hasErrors()) {
-                  getFormView().notifyInfo(Localized.getConstants().ok() + ":",
+                  getFormView().notifyInfo(Localized.dictionary().ok() + ":",
                       response.getResponseAsString());
                 }
               }

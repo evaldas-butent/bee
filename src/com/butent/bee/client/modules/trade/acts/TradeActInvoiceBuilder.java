@@ -752,7 +752,7 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
     Long seriesId = getSeriesId();
     if (!DataUtils.isId(seriesId)) {
       getFormView().notifySevere(
-          Localized.getConstants().trdSeries() + " " + Localized.getConstants().valueRequired());
+          Localized.dictionary().trdSeries() + " " + Localized.dictionary().valueRequired());
       return;
     }
     Long currency = getCurrency();
@@ -1354,7 +1354,7 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
 
         if (cell != null
             && (cell.hasClassName(STYLE_ACT_ID_PREFIX + STYLE_CELL_SUFFIX)
-                || cell.hasClassName(STYLE_ACT_NUMBER_PREFIX + STYLE_CELL_SUFFIX))) {
+            || cell.hasClassName(STYLE_ACT_NUMBER_PREFIX + STYLE_CELL_SUFFIX))) {
 
           long id = DomUtils.getDataIndexLong(DomUtils.getParentRow(cell, false));
           if (DataUtils.isId(id)) {
@@ -1585,7 +1585,7 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
 
         if (cell != null
             && (cell.hasClassName(STYLE_SVC_ACT_PREFIX + STYLE_CELL_SUFFIX)
-                || cell.hasClassName(STYLE_SVC_ITEM_PREFIX + STYLE_CELL_SUFFIX))) {
+            || cell.hasClassName(STYLE_SVC_ITEM_PREFIX + STYLE_CELL_SUFFIX))) {
 
           Service svc = findService(cell);
 

@@ -381,7 +381,7 @@ public class PrintActForm extends AbstractFormInterceptor {
           }
           c++;
         }
-        table.setText(table.getRowCount() - 1, 0, Localized.getConstants().totalOf());
+        table.setText(table.getRowCount() - 1, 0, Localized.dictionary().totalOf());
 
         for (int i = 0; i < table.getRowCount(); i++) {
           table.getRowFormatter().addStyleName(i, i == 0 ? TradeUtils.STYLE_ITEMS_HEADER

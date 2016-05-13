@@ -14,7 +14,7 @@
     </FlowPanel>
 
     <FlowPanel>
-      <Table>
+      <Table kind="output">
         <row>
           <Label text="Įrenginių perdavimo aktas prie sutarties:" />
           <TextLabel source="Contract" style="margin-left:15px;">
@@ -33,7 +33,7 @@
     </FlowPanel>
 
     <FlowPanel>
-      <Table style="width:100%;">
+      <Table style="width:100%;" kind="output">
         <row>
           <cell style="vertical-align:top;">
             <Label html="Nuomininkas:" style="font-weight: bold;" />
@@ -53,7 +53,7 @@
       </Table>
     </FlowPanel>
 
-    <Table name="InvoiceDetails1" style="&section; width:100%; padding-top: 0;">
+    <Table name="InvoiceDetails1" style="&section; width:100%; padding-top: 0;" kind="output">
       <properties content="TradeActItems" />
       <row>
         <Label text="Artikulas">
@@ -104,7 +104,7 @@
 
     <Label text="Teikiamos Paslaugos" style="text-align: center; font-weight: bold;" />
 
-    <Table name="InvoiceDetails2" style="&section; width:100%">
+    <Table name="InvoiceDetails2" style="&section; width:100%" kind="output">
       <properties content="TradeActServices" />
       <row>
         <Label text="Artikulas">
@@ -140,7 +140,7 @@ Grąžinama įranga turi būti nuvalyta ir išardyta taip, kaip buvo išduota. �
 sukrauta taip, kad būtų galima iškrauti šakiniais krautuvais. Už iškrovimą rankomis apmokama papildomai.</span>
     </HtmlPanel>
 
-    <Table style="width:100%; margin-top:10px;">
+    <Table style="width:100%; margin-top:10px;" kind="output">
       <row>
         <TextLabel source="Object">
           <renderToken source="ObjectName" prefix="Objektas: " />

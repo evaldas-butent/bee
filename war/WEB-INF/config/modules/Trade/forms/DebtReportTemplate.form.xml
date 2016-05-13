@@ -7,7 +7,7 @@
   >
   <FlowPanel class="flexBox-vertical">
     <br/>
-    <Table>
+    <Table kind="controls">
       <col index="0" kind="label" />
       <row>
         <Label text="=template"/>

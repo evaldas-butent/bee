@@ -9,7 +9,7 @@
   height="150" width="400">
 
   <FlowPanel style="padding: 15px 1em;">
-    <Table style="border-spacing: 5px;">
+    <Table style="border-spacing: 5px;" kind="controls">
       <row for="Name">
         <Label text="=name" class="bee-required" horizontalAlignment="right"
           style="&lbl1;" />

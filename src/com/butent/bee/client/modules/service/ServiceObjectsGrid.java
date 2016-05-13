@@ -1,23 +1,17 @@
 package com.butent.bee.client.modules.service;
 
-import com.google.gwt.event.logical.shared.SelectionEvent;
-import com.google.gwt.event.logical.shared.SelectionHandler;
-
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
-import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.IdCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.presenter.GridPresenter;
-import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
-import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.Opener;
-import com.butent.bee.client.view.TreeView;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
-import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.client.view.grid.interceptor.TreeGridInterceptor;
+import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.modules.service.ServiceConstants;
@@ -72,6 +66,15 @@ public class ServiceObjectsGrid extends TreeGridInterceptor {
       }
     }
     return true;
+  }
+
+  @Override
+  protected Filter getFilter(Long treeItemId) {
+    if (treeItemId != null) {
+      return Filter.equals(ServiceConstants.COL_SERVICE_CATEGORY, treeItemId);
+    } else {
+      return Filter.isFalse();
+    }
   }
 
   private static void copyServiceObjectData(Long dataId, final IdCallback callback) {

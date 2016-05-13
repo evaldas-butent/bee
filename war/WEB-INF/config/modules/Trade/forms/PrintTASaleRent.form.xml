@@ -26,7 +26,7 @@
 
     <FlowPanel style="margin-top:12px;">
       <Label html="1. Sutarties šalys" style="font-weight: bold"/>
-      <Table style="width:100%; border:1px solid black;">
+      <Table style="width:100%; border:1px solid black;" kind="output">
         <row>
           <cell style="vertical-align:top;">
             <Label html="Nuomotojas" style="font-weight: bold; margin-left:10px;" />
@@ -94,7 +94,7 @@ nuosavybės teise priklausančiu turtu (toliau - ĮRANGA), o NUOMININKAS priima 
       </TextLabel>
     </FlowPanel>
 
-    <Table style="width:100%; margin-top:10px;">
+    <Table style="width:100%; margin-top:10px;" kind="output">
       <row>
         <TextLabel source="Manager">
           <renderToken source="ManagerFirstName" prefix="Perdavė: " />

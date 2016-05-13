@@ -115,6 +115,27 @@ public final class ButentWS {
     }
   }
 
+  public SimpleRowSet getClients()
+      throws BeeException {
+
+    String answer;
+
+    try {
+      answer = process("GetClients", BeeConst.STRING_EMPTY);
+      // logger.info("GetClients", answer);
+    } catch (Exception e) {
+      throw BeeException.error(e);
+    }
+
+    SimpleRowSet resp =
+        xmlToSimpleRowSet(answer, "id", "klientas", "kodas", "pvm", "type",
+            "nuol_proc",
+            "postcode",
+            "adresas", "miestas", "salis", "telefonai", "email");
+    return resp;
+  }
+
+
   public SimpleRowSet getDebts(JustDate fromDate, JustDate toDate, String companyName)
       throws BeeException {
     logger.debug("GetDebts: ", companyName, fromDate, toDate);
@@ -145,6 +166,52 @@ public final class ButentWS {
             "manager",
             "terminas", "viso", "viso_val", "apm_suma", "apm_val", "apm_data", "skola_w");
     return resp;
+  }
+
+  public SimpleRowSet getGoods(String filter) throws BeeException {
+    logger.debug("GetGoods");
+    String answer;
+
+    try {
+      answer = process("GetGoods", XmlUtils.tag("filter", filter));
+    } catch (Exception e) {
+      throw BeeException.error(e);
+    }
+    SimpleRowSet data =
+        xmlToSimpleRowSet(answer, "PAVAD", "PREKE", "MATO_VIEN", "ARTIKULAS",
+            "PARD_KAINA", "SAVIKAINA", "KAINA_1", "KAINA_2", "KAINA_3", "TIPAS", "GRUPE",
+            "PARD_VAL", "SAV_VAL", "VAL_1", "VAL_2", "VAL_3");
+    logger.debug("GetGoods cols:", data.getNumberOfColumns(), "rows:", data.getNumberOfRows());
+    return data;
+  }
+
+  public SimpleRowSet getStocks() throws BeeException {
+    logger.debug("GetStocks");
+    String answer;
+
+    try {
+      answer = process("GetStocks", "");
+    } catch (Exception e) {
+      throw BeeException.error(e);
+    }
+    SimpleRowSet data =
+        xmlToSimpleRowSet(answer, "PREKE", "SANDELIS", "LIKUTIS");
+    logger.debug("GetStocks cols:", data.getNumberOfColumns(), "rows:", data.getNumberOfRows());
+    return data;
+  }
+
+  public SimpleRowSet getSQLData(String query, String... columns) throws BeeException {
+    logger.debug("GetSQLData:", query);
+    String answer;
+
+    try {
+      answer = process("GetSQLData", "<query>" + query + "</query>");
+    } catch (Exception e) {
+      throw BeeException.error(e);
+    }
+    SimpleRowSet data = xmlToSimpleRowSet(answer, columns);
+    logger.debug("GetSQLData cols:", data.getNumberOfColumns(), "rows:", data.getNumberOfRows());
+    return data;
   }
 
   public SimpleRowSet getTurnovers(JustDate fromDate, JustDate toDate, String companyName)
@@ -179,39 +246,6 @@ public final class ButentWS {
     return resp;
   }
 
-  public SimpleRowSet getClients()
-      throws BeeException {
-
-    String answer;
-
-    try {
-      answer = process("GetClients", BeeConst.STRING_EMPTY);
-      // logger.info("GetClients", answer);
-    } catch (Exception e) {
-      throw BeeException.error(e);
-    }
-
-    SimpleRowSet resp =
-        xmlToSimpleRowSet(answer, "id", "klientas", "kodas", "pvm", "type",
-            "nuol_proc",
-            "postcode",
-            "adresas", "miestas", "salis", "telefonai", "email");
-    return resp;
-  }
-
-  public SimpleRowSet getSQLData(String query, String... columns) throws BeeException {
-    logger.debug("GetSQLData:", query);
-    String answer;
-
-    try {
-      answer = process("GetSQLData", "<query>" + query + "</query>");
-    } catch (Exception e) {
-      throw BeeException.error(e);
-    }
-    SimpleRowSet data = xmlToSimpleRowSet(answer, columns);
-    logger.debug("GetSQLData cols:", data.getNumberOfColumns(), "rows:", data.getNumberOfRows());
-    return data;
-  }
 
   public String importClient(String companyName, String companyCode, String companyVATCode,
       String companyAddress, String companyPostIndex, String companyCity, String companyCountry)
