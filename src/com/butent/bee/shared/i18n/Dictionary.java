@@ -2676,6 +2676,8 @@ public interface Dictionary {
 
   default String hour() {return g("hour");}
 
+  default String hourlyWage() {return g("hourlyWage");}
+
   default String hours() {return g("hours");}
 
   default String hoursByCompanies() {return g("hoursByCompanies");}
@@ -3502,6 +3504,14 @@ public interface Dictionary {
   default String paymentTypes() {return g("paymentTypes");}
 
   default String payroll() {return g("payroll");}
+
+  default String payrollEarnings() {return g("payrollEarnings");}
+
+  default String payrollEarningsForHolidays() {return g("payrollEarningsForHolidays");}
+  
+  default String payrollEarningsTotal() {return g("payrollEarningsTotal");}
+  
+  default String payrollEarningsWithoutHolidays() {return g("payrollEarningsWithoutHolidays");}
 
   default String period() {return g("period");}
 
@@ -5869,7 +5879,15 @@ public interface Dictionary {
 
   default String workScheduleActual() {return g("workScheduleActual");}
 
+  default String workScheduleActualShort() {return g("workScheduleActualShort");}
+
+  default String workScheduleHolihoursInclusiveShort() {return g("workScheduleHolihoursInclusiveShort");}
+
+  default String workScheduleHolidaysInclusiveShort() {return g("workScheduleHolidaysInclusiveShort");}
+
   default String workSchedulePlanned() {return g("workSchedulePlanned");}
+
+  default String workSchedulePlannedShort() {return g("workSchedulePlannedShort");}
 
   default String workdayTransitionBackward() {return g("workdayTransitionBackward");}
 

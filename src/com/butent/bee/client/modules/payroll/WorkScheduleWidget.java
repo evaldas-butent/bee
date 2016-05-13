@@ -1744,9 +1744,7 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
       public void onSuccess(final BeeRowSet wsPlanned) {
         if (DataUtils.isEmpty(wsPlanned)) {
           notifyWarning(PayrollHelper.format(activeMonth),
-              BeeUtils.joinWords(Localized.dictionary().workSchedulePlanned(),
-                  Localized.dictionary().workSchedule()),
-              Localized.dictionary().nothingFound());
+              Localized.dictionary().workSchedulePlanned(), Localized.dictionary().nothingFound());
 
         } else if (eoFilter == null) {
           renderFetch(partIds, wsPlanned, null);

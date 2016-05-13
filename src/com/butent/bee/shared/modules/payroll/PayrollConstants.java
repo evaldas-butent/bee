@@ -25,7 +25,7 @@ public final class PayrollConstants {
     PLANNED {
       @Override
       public String getCaption(Dictionary dictionary) {
-        return dictionary.workSchedulePlanned();
+        return dictionary.workSchedulePlannedShort();
       }
 
       @Override
@@ -52,7 +52,7 @@ public final class PayrollConstants {
     ACTUAL {
       @Override
       public String getCaption(Dictionary dictionary) {
-        return dictionary.workScheduleActual();
+        return dictionary.workScheduleActualShort();
       }
 
       @Override
