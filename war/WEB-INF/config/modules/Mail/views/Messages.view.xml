@@ -1,19 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<View xmlns="http://www.butent.com/view"
+<View xmlns="http://www.butent.com/view" xmlns:xi="http://www.w3.org/2001/XInclude"
 
   name="Messages" source="Messages" caption="=mails"
   editForm="MailMessage"
   >
   <Relation renderColumns="Date Subject" newRowEnabled="false" />
   <Columns>
-    <IdColumn name="Message" />
-    <SimpleColumn name="Date" />
-    <SimpleColumn name="Subject" />
-    <SimpleColumn name="AttachmentCount" />
 
-    <SimpleJoin name="Sender" joinType="LEFT">
-      <SimpleColumn name="Email" alias="SenderEmail" label="=mailSender" />
-    </SimpleJoin>
+    <xi:include href="viewcolumns/Messages.viewcolumns.xml" />
 
     <ExternalJoin name="Message" source="Recipients" joinType="LEFT">
       <AggregateColumn name="Address" alias="RecipientCnt" aggregate="COUNT_DISTINCT" />

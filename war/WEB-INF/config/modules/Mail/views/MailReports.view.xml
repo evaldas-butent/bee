@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view" xmlns:xi="http://www.w3.org/2001/XInclude"
+
+  name="MailReports" source="Messages" readOnly="true">
+
+  <Columns>
+
+    <xi:include href="viewcolumns/Messages.viewcolumns.xml" />
+
+    <ExternalJoin name="Message" source="Recipients"
+      joinType="LEFT">
+      <SimpleJoin name="Address" joinType="LEFT">
+        <SimpleColumn name="Email" alias="RecipientEmail" />
+      </SimpleJoin>
+    </ExternalJoin>
+
+  </Columns>
+  <Order>
+    <OrderBy column="Date" descending="true" />
+  </Order>
+</View>
+ 

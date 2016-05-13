@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+
+  name="MailReport" viewName="MailReports" flexGrow="1" disabledActions="close add delete">
+  <g:columns>
+    <DataColumn name="Date" caption="=date" />
+    <DataColumn name="SenderEmail" caption="=mailSender" />
+    <DataColumn name="RecipientEmail" caption="=recipient" />
+    <DataColumn name="Subject" caption="=mailSubject" />
+    <DataColumn name="AttachmentCount" caption="=mailAttachments"
+      horizontalAlignment="center" />
+  </g:columns>
+</g:Grid>

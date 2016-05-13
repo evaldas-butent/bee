@@ -10,6 +10,7 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.modules.classifiers.CompanyTypeReport;
 import com.butent.bee.client.modules.classifiers.CompanyUsageReport;
+import com.butent.bee.client.modules.mail.MailReport;
 import com.butent.bee.client.modules.trade.acts.TradeActItemsByCompanyReport;
 import com.butent.bee.client.modules.trade.acts.TradeActServicesReport;
 import com.butent.bee.client.modules.trade.acts.TradeActStockReport;
@@ -35,6 +36,7 @@ import com.butent.bee.shared.modules.projects.ProjectPriority;
 import com.butent.bee.shared.modules.projects.ProjectStatus;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
+import com.butent.bee.shared.modules.transport.TransportConstants.TripStatus;
 import com.butent.bee.shared.report.ReportInfo;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.rights.ModuleAndSub;
@@ -362,6 +364,13 @@ public enum Report implements HasWidgetSupplier {
       }
       report.setColGrouping(items.get(ProjectConstants.ALS_TASK_STATUS));
       return Collections.singletonList(report);
+    }
+  },
+  MAIL_REPORT(ModuleAndSub.of(Module.MAIL), "MailReport",
+      "MailReport") {
+    @Override
+    protected ReportInterceptor getInterceptor() {
+      return new MailReport();
     }
   };
 

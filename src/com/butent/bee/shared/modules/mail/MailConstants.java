@@ -1,7 +1,7 @@
 package com.butent.bee.shared.modules.mail;
 
-import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.i18n.Dictionary;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.HasLocalizedCaption;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
@@ -180,6 +180,8 @@ public final class MailConstants {
   public static final String TBL_RECIPIENTS = "Recipients";
   public static final String TBL_PLACES = "Places";
 
+  public static final String VIEW_MAIL_REPORTS = "MailReports";
+
   public static final String VIEW_NEWSLETTER_CONTACTS = "NewsletterContacts";
   public static final String VIEW_NEWSLETTER_FILES = "NewsletterFiles";
   public static final String VIEW_NEWSLETTERS = "Newsletters";
@@ -262,6 +264,11 @@ public final class MailConstants {
   public static final String COL_GROUP_NAME = "GroupName";
   public static final String COL_RECIPIENTS_GROUP = "RecipientsGroup";
 
+  public static final String COL_SENDER_EMAIL = "SenderEmail";
+  public static final String COL_RECIPIENT_EMAIL = "RecipientEmail";
+
+  public static final String GRID_MAIL_REPORT = "MailReport";
+
   public static final String FORM_ACCOUNT = "Account";
   public static final String FORM_NEW_ACCOUNT = "NewAccount";
   public static final String FORM_RULE = "Rule";
@@ -278,6 +285,8 @@ public final class MailConstants {
   public static final String PRM_MAIL_CHECK_INTERVAL = "MailCheckIntervalInMinutes";
   public static final String PRM_SEND_NEWSLETTERS_COUNT = "SendNewslettersCount";
   public static final String PRM_SEND_NEWSLETTERS_INTERVAL = "SendNewslettersInterval";
+
+  public static final String FILTER_MAIL_REPORT = "filter_mail_report";
 
   public static void register() {
     EnumUtils.register(RuleCondition.class);
