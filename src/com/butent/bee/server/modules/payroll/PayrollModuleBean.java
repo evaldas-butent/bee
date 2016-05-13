@@ -809,8 +809,12 @@ public class PayrollModuleBean implements BeeModule {
 
     HasConditions conditions = SqlUtils.and();
 
-    conditions.add(SqlUtils.moreEqual(TBL_WORK_SCHEDULE, COL_WORK_SCHEDULE_DATE, from));
-    conditions.add(SqlUtils.lessEqual(TBL_WORK_SCHEDULE, COL_WORK_SCHEDULE_DATE, until));
+    if (from != null) {
+      conditions.add(SqlUtils.moreEqual(TBL_WORK_SCHEDULE, COL_WORK_SCHEDULE_DATE, from));
+    }
+    if (until != null) {
+      conditions.add(SqlUtils.lessEqual(TBL_WORK_SCHEDULE, COL_WORK_SCHEDULE_DATE, until));
+    }
 
     if (DataUtils.isId(employeeId)) {
       IsCondition emplCondition = SqlUtils.equals(TBL_WORK_SCHEDULE, COL_EMPLOYEE, employeeId);
@@ -854,45 +858,34 @@ public class PayrollModuleBean implements BeeModule {
   }
 
   private ResponseObject getScheduledMonths(RequestInfo reqInfo) {
-    Long manager = reqInfo.getParameterLong(COL_LOCATION_MANAGER);
+    Long employeeId = reqInfo.getParameterLong(COL_EMPLOYEE);
+    Long objectId = reqInfo.getParameterLong(COL_PAYROLL_OBJECT);
+
+    IsCondition where = getScheduleEarningsCondition(null, null, employeeId, null, objectId);
 
     SqlSelect query = new SqlSelect().setDistinctMode(true)
-        .addFields(TBL_WORK_SCHEDULE, COL_WORK_SCHEDULE_DATE, COL_PAYROLL_OBJECT)
-        .addFrom(TBL_WORK_SCHEDULE);
-
-    HasConditions where = SqlUtils.and();
-    where.add(SqlUtils.equals(TBL_WORK_SCHEDULE, COL_WORK_SCHEDULE_KIND, WorkScheduleKind.ACTUAL));
-
-    if (DataUtils.isId(manager)) {
-      query.addFromInner(TBL_LOCATIONS,
-          sys.joinTables(TBL_LOCATIONS, TBL_WORK_SCHEDULE, COL_PAYROLL_OBJECT));
-
-      where.add(SqlUtils.equals(TBL_LOCATIONS, COL_LOCATION_MANAGER, manager));
-    }
-
-    query.setWhere(where);
+        .addFields(TBL_WORK_SCHEDULE, COL_WORK_SCHEDULE_DATE)
+        .addFrom(TBL_WORK_SCHEDULE)
+        .setWhere(where);
 
     SimpleRowSet data = qs.getData(query);
     if (DataUtils.isEmpty(data)) {
       return ResponseObject.emptyResponse();
     }
 
-    HashMultimap<YearMonth, Long> map = HashMultimap.create();
+    List<YearMonth> months = new ArrayList<>();
 
     for (SimpleRow row : data) {
       JustDate date = row.getDate(COL_WORK_SCHEDULE_DATE);
-      Long objId = row.getLong(COL_PAYROLL_OBJECT);
 
-      if (date != null && DataUtils.isId(objId)) {
-        map.put(new YearMonth(date), objId);
+      if (date != null) {
+        YearMonth ym = new YearMonth(date);
+        if (!months.contains(ym)) {
+          months.add(ym);
+        }
       }
     }
 
-    if (map.isEmpty()) {
-      return ResponseObject.emptyResponse();
-    }
-
-    List<YearMonth> months = new ArrayList<>(map.keySet());
     if (months.size() > 1) {
       Collections.sort(months);
     }
@@ -903,10 +896,10 @@ public class PayrollModuleBean implements BeeModule {
       if (sb.length() > 0) {
         sb.append(BeeConst.CHAR_COMMA);
       }
-      sb.append(ym.serialize()).append(BeeConst.CHAR_EQ).append(map.get(ym).size());
+      sb.append(ym.serialize());
     }
 
-    return ResponseObject.response(sb.toString());
+    return ResponseObject.response(sb.toString()).setSize(months.size());
   }
 
   private ResponseObject getScheduleOverlap(RequestInfo reqInfo) {

@@ -140,41 +140,6 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
     }
   }
 
-  static final class Partition {
-
-    private final BeeRow row;
-    private final Long substituteFor;
-
-    Partition(BeeRow row) {
-      this(row, null);
-    }
-
-    Partition(BeeRow row, Long substituteFor) {
-      this.row = row;
-      this.substituteFor = substituteFor;
-    }
-
-    long getId() {
-      return getRow().getId();
-    }
-
-    BeeRow getRow() {
-      return row;
-    }
-
-    private IdPair getIds() {
-      return IdPair.of(row.getId(), substituteFor);
-    }
-
-    private Long getSubstituteFor() {
-      return substituteFor;
-    }
-
-    private boolean hasSubstituteFor() {
-      return DataUtils.isId(substituteFor);
-    }
-  }
-
   private static final String STYLE_PREFIX = PayrollKeeper.STYLE_PREFIX + "ws-";
 
   private static final String STYLE_CONTAINER = STYLE_PREFIX + "container";

@@ -23,10 +23,16 @@ class EmployeeForm extends AbstractFormInterceptor {
       SummaryProxy panel = (SummaryProxy) container;
 
       if (DataUtils.hasId(row)) {
-        EmployeeSchedule widget = new EmployeeSchedule(row.getId(), kind);
-        panel.setWidget(widget);
+        if (kind == null) {
+          EarningsWidget earn = new EmployeeEarnings(row.getId());
+          panel.setWidget(earn);
+          earn.refresh();
 
-        widget.refresh();
+        } else {
+          WorkScheduleWidget ws = new EmployeeSchedule(row.getId(), kind);
+          panel.setWidget(ws);
+          ws.refresh();
+        }
 
       } else if (!panel.isEmpty()) {
         panel.clear();
@@ -42,6 +48,8 @@ class EmployeeForm extends AbstractFormInterceptor {
     if (BeeKeeper.getUser().isModuleVisible(ModuleAndSub.of(Module.PAYROLL))) {
       refreshSchedule(form, row, "WorkSchedule", WorkScheduleKind.PLANNED);
       refreshSchedule(form, row, "TimeSheet", WorkScheduleKind.ACTUAL);
+
+      refreshSchedule(form, row, "Earnings", null);
     }
 
     super.afterRefresh(form, row);
