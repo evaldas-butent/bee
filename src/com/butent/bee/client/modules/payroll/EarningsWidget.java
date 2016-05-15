@@ -4,6 +4,7 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.Sets;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.shared.HandlerRegistration;
+import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
@@ -24,6 +25,7 @@ import com.butent.bee.client.event.logical.SummaryChangeEvent;
 import com.butent.bee.client.event.logical.SummaryChangeEvent.Handler;
 import com.butent.bee.client.event.logical.VisibilityChangeEvent;
 import com.butent.bee.client.grid.HtmlTable;
+import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.output.Printable;
 import com.butent.bee.client.output.Printer;
@@ -45,6 +47,7 @@ import com.butent.bee.shared.data.value.IntegerValue;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.payroll.Earnings;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.time.YearMonth;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.ArrayUtils;
@@ -81,13 +84,26 @@ abstract class EarningsWidget extends Flow implements HasSummaryChangeHandlers, 
   private static final String STYLE_PARTITION_TITLE = STYLE_PREFIX + "partition-title";
   private static final String STYLE_COL_GROUP_LABEL = STYLE_PREFIX + "col-group-label";
   private static final String STYLE_COL_LABEL = STYLE_PREFIX + "col-label";
-  private static final String STYLE_COL_TOTAL_LABEL = STYLE_PREFIX + "col-total";
+  private static final String STYLE_COL_TOTAL_LABEL = STYLE_PREFIX + "col-total-label";
 
   private static final String STYLE_PARTITION_PANEL = STYLE_PREFIX + "partition-panel";
-  private static final String STYLE_PARTITION_CONTAINER = STYLE_PREFIX + "partition-container";
   private static final String STYLE_PARTITION_NAME = STYLE_PREFIX + "partition-name";
   private static final String STYLE_PARTITION_INFO = STYLE_PREFIX + "partition-info";
   private static final String STYLE_PARTITION_SUBST = STYLE_PREFIX + "partition-subst";
+
+  private static final String STYLE_FUND = STYLE_PREFIX + "fund";
+  private static final String STYLE_WAGE = STYLE_PREFIX + "wage";
+  private static final String STYLE_DAYS = STYLE_PREFIX + "days";
+  private static final String STYLE_HOURS = STYLE_PREFIX + "hours";
+  private static final String STYLE_AMOUNT = STYLE_PREFIX + "amount";
+  private static final String STYLE_TOTAL = STYLE_PREFIX + "total";
+
+  private static final String STYLE_PLANNED = STYLE_PREFIX + "planned";
+  private static final String STYLE_ACTUAL = STYLE_PREFIX + "actual";
+  private static final String STYLE_HOLY = STYLE_PREFIX + "holy";
+
+  private static final String STYLE_TOTAL_LABEL = STYLE_PREFIX + "total-label";
+  private static final String STYLE_TOTAL_ROW = STYLE_PREFIX + "total-row";
 
   private static final String KEY_YM = "ym";
 
@@ -110,14 +126,14 @@ abstract class EarningsWidget extends Flow implements HasSummaryChangeHandlers, 
   private static final int ROW_LABEL_COL = 0;
 
   private static final int GROUP_PLANNED_START_COL = ROW_LABEL_COL + 1;
-  private static final int FUND_COL = GROUP_PLANNED_START_COL + 1;
+  private static final int FUND_COL = GROUP_PLANNED_START_COL;
   private static final int PLANNED_DAYS_COL = FUND_COL + 1;
   private static final int PLANNED_HOURS_COL = PLANNED_DAYS_COL + 1;
   private static final int WAGE_COL = PLANNED_HOURS_COL + 1;
   private static final int GROUP_PLANNED_END_COL = WAGE_COL;
 
   private static final int GROUP_ACTUAL_START_COL = GROUP_PLANNED_END_COL + 1;
-  private static final int ACTUAL_DAYS_COL = GROUP_ACTUAL_START_COL + 1;
+  private static final int ACTUAL_DAYS_COL = GROUP_ACTUAL_START_COL;
   private static final int ACTUAL_HOURS_COL = ACTUAL_DAYS_COL + 1;
   private static final int HOLY_DAYS_COL = ACTUAL_HOURS_COL + 1;
   private static final int HOLY_HOURS_COL = HOLY_DAYS_COL + 1;
@@ -128,8 +144,17 @@ abstract class EarningsWidget extends Flow implements HasSummaryChangeHandlers, 
 
   private static final int LAST_COL = TOTAL_EARNINGS_COL;
 
+  private static final NumberFormat FUND_FORMAT = Format.getDecimalFormat(Earnings.FUND_PRECISION);
+  private static final NumberFormat WAGE_FORMAT = Format.getDecimalFormat(Earnings.WAGE_PRECISION);
+  private static final NumberFormat AMOUNT_FORMAT =
+      Format.getDecimalFormat(Earnings.AMOUNT_PRECISION);
+
   private static final Set<String> NON_PRINTABLE = Sets.newHashSet(STYLE_ACTION,
       STYLE_MONTH_SELECTOR);
+
+  private static String formatMillis(Long millis) {
+    return TimeUtils.renderTime(millis, false);
+  }
 
   private static String storageKey(String name) {
     return Storage.getUserKey(STORAGE_KEY_PREFIX, name);
@@ -453,6 +478,8 @@ abstract class EarningsWidget extends Flow implements HasSummaryChangeHandlers, 
         Widget rowLabel = renderRowLabel(item, nameIndexes, contactIndexes, infoIndexes);
         table.setWidgetAndStyle(r, ROW_LABEL_COL, rowLabel, STYLE_PARTITION_PANEL);
 
+        renderEarnings(item, r);
+
         Element rowElement = table.getRowFormatter().getElement(r);
         DomUtils.setDataProperty(rowElement, KEY_PART, getPartitionId(item));
         if (item.isSubstitution()) {
@@ -461,12 +488,132 @@ abstract class EarningsWidget extends Flow implements HasSummaryChangeHandlers, 
 
         r++;
       }
-    }
 
-    renderFooters(r);
+      if (earnings.size() > 1) {
+        renderFooters(earnings, r);
+      }
+    }
   }
 
-  private void renderFooters(int r) {
+  private void renderEarnings(Earnings item, int r) {
+    if (BeeUtils.isPositive(item.getSalaryFund())) {
+      table.setText(r, FUND_COL, FUND_FORMAT.format(item.getSalaryFund()), STYLE_FUND);
+    }
+
+    if (BeeUtils.isPositive(item.getPlannedDays())) {
+      table.setValue(r, PLANNED_DAYS_COL, item.getPlannedDays(), STYLE_DAYS, STYLE_PLANNED);
+    }
+    if (BeeUtils.isPositive(item.getPlannedMillis())) {
+      table.setText(r, PLANNED_HOURS_COL, formatMillis(item.getPlannedMillis()),
+          STYLE_HOURS, STYLE_PLANNED);
+    }
+
+    if (BeeUtils.isPositive(item.computeWage())) {
+      table.setText(r, WAGE_COL, WAGE_FORMAT.format(item.computeWage()), STYLE_WAGE);
+    }
+
+    if (BeeUtils.isPositive(item.getActualDays())) {
+      table.setValue(r, ACTUAL_DAYS_COL, item.getActualDays(), STYLE_DAYS, STYLE_ACTUAL);
+    }
+    if (BeeUtils.isPositive(item.getActualMillis())) {
+      table.setText(r, ACTUAL_HOURS_COL, formatMillis(item.getActualMillis()),
+          STYLE_HOURS, STYLE_ACTUAL);
+    }
+
+    if (BeeUtils.isPositive(item.getHolyDays())) {
+      table.setValue(r, HOLY_DAYS_COL, item.getHolyDays(), STYLE_DAYS, STYLE_HOLY);
+    }
+    if (BeeUtils.isPositive(item.getHolyMillis())) {
+      table.setText(r, HOLY_HOURS_COL, formatMillis(item.getHolyMillis()),
+          STYLE_HOURS, STYLE_HOLY);
+    }
+
+    Double withoutHolidays = item.amountWithoutHolidays();
+    if (BeeUtils.isPositive(withoutHolidays)) {
+      table.setText(r, EARNINGS_WITHOUT_HOLIDAYS_COL, AMOUNT_FORMAT.format(withoutHolidays),
+          STYLE_AMOUNT);
+    }
+    Double forHolidays = item.amountForHolidays();
+    if (BeeUtils.isPositive(forHolidays)) {
+      table.setText(r, EARNINGS_FOR_HOLIDAYS_COL, AMOUNT_FORMAT.format(forHolidays),
+          STYLE_AMOUNT, STYLE_HOLY);
+    }
+
+    Double total = item.total();
+    String text = BeeUtils.isPositive(total) ? AMOUNT_FORMAT.format(total) : BeeConst.STRING_EMPTY;
+    table.setText(r, TOTAL_EARNINGS_COL, text, STYLE_AMOUNT, STYLE_TOTAL);
+  }
+
+  private void renderFooters(List<Earnings> earnings, int r) {
+    table.setWidgetAndStyle(r, ROW_LABEL_COL,
+        new Label(Localized.dictionary().totalOf()), STYLE_TOTAL_LABEL);
+
+    double fund = BeeConst.DOUBLE_ZERO;
+
+    long plannedMillis = 0L;
+    long actualMillis = 0L;
+    long holyMillis = 0L;
+
+    double withoutHolidays = BeeConst.DOUBLE_ZERO;
+    double forHolidays = BeeConst.DOUBLE_ZERO;
+    double total = BeeConst.DOUBLE_ZERO;
+
+    for (Earnings item : earnings) {
+      if (BeeUtils.isPositive(item.getSalaryFund())) {
+        fund += item.getSalaryFund();
+      }
+
+      if (BeeUtils.isPositive(item.getPlannedMillis())) {
+        plannedMillis += item.getPlannedMillis();
+      }
+      if (BeeUtils.isPositive(item.getActualMillis())) {
+        actualMillis += item.getActualMillis();
+      }
+      if (BeeUtils.isPositive(item.getHolyMillis())) {
+        holyMillis += item.getHolyMillis();
+      }
+
+      Double amount = item.amountWithoutHolidays();
+      if (BeeUtils.isPositive(amount)) {
+        withoutHolidays += amount;
+      }
+      amount = item.amountForHolidays();
+      if (BeeUtils.isPositive(amount)) {
+        forHolidays += amount;
+      }
+      amount = item.total();
+      if (BeeUtils.isPositive(amount)) {
+        total += amount;
+      }
+    }
+
+    if (BeeUtils.isPositive(fund)) {
+      table.setText(r, FUND_COL, FUND_FORMAT.format(fund), STYLE_FUND);
+    }
+
+    if (BeeUtils.isPositive(plannedMillis)) {
+      table.setText(r, PLANNED_HOURS_COL, formatMillis(plannedMillis), STYLE_HOURS, STYLE_PLANNED);
+    }
+    if (BeeUtils.isPositive(actualMillis)) {
+      table.setText(r, ACTUAL_HOURS_COL, formatMillis(actualMillis), STYLE_HOURS, STYLE_ACTUAL);
+    }
+    if (BeeUtils.isPositive(holyMillis)) {
+      table.setText(r, HOLY_HOURS_COL, formatMillis(holyMillis), STYLE_HOURS, STYLE_HOLY);
+    }
+
+    if (BeeUtils.isPositive(withoutHolidays)) {
+      table.setText(r, EARNINGS_WITHOUT_HOLIDAYS_COL, AMOUNT_FORMAT.format(withoutHolidays),
+          STYLE_AMOUNT);
+    }
+    if (BeeUtils.isPositive(forHolidays)) {
+      table.setText(r, EARNINGS_FOR_HOLIDAYS_COL, AMOUNT_FORMAT.format(forHolidays),
+          STYLE_AMOUNT, STYLE_HOLY);
+    }
+
+    String text = BeeUtils.isPositive(total) ? AMOUNT_FORMAT.format(total) : BeeConst.STRING_EMPTY;
+    table.setText(r, TOTAL_EARNINGS_COL, text, STYLE_AMOUNT, STYLE_TOTAL);
+
+    table.getRowFormatter().addStyleName(r, STYLE_TOTAL_ROW);
   }
 
   private void renderHeaders(List<YearMonth> months) {
@@ -501,14 +648,7 @@ abstract class EarningsWidget extends Flow implements HasSummaryChangeHandlers, 
     table.getCellFormatter().setColSpan(MONTH_ROW, MONTH_PANEL_START_COL,
         LAST_COL - MONTH_PANEL_START_COL + 1);
 
-    int c = ROW_LABEL_COL;
-
-    Label partitionTitle = new Label(scheduleParent.getPartitionTitle());
-    table.setWidgetAndStyle(COL_GROUP_LABEL_ROW, c, partitionTitle, STYLE_PARTITION_TITLE);
-    table.getCellFormatter().setRowSpan(COL_GROUP_LABEL_ROW, c,
-        COL_LABEL_ROW - COL_GROUP_LABEL_ROW + 1);
-
-    c++;
+    int c = GROUP_PLANNED_START_COL;
     Label plannedGroup = new Label(Localized.dictionary().workSchedulePlanned());
     table.setWidgetAndStyle(COL_GROUP_LABEL_ROW, c, plannedGroup, STYLE_COL_GROUP_LABEL);
     table.getCellFormatter().setColSpan(COL_GROUP_LABEL_ROW, c,
@@ -519,6 +659,9 @@ abstract class EarningsWidget extends Flow implements HasSummaryChangeHandlers, 
     table.setWidgetAndStyle(COL_GROUP_LABEL_ROW, c, actualGroup, STYLE_COL_GROUP_LABEL);
     table.getCellFormatter().setColSpan(COL_GROUP_LABEL_ROW, c,
         GROUP_ACTUAL_END_COL - GROUP_ACTUAL_START_COL + 1);
+
+    table.setWidgetAndStyle(COL_LABEL_ROW, ROW_LABEL_COL,
+        new Label(scheduleParent.getPartitionTitle()), STYLE_PARTITION_TITLE);
 
     table.setWidgetAndStyle(COL_LABEL_ROW, FUND_COL,
         new Label(Localized.dictionary().salaryFund()), STYLE_COL_LABEL);
@@ -605,11 +748,9 @@ abstract class EarningsWidget extends Flow implements HasSummaryChangeHandlers, 
   private Widget renderRowLabel(Earnings item, List<Integer> nameIndexes,
       List<Integer> contactIndexes, List<Integer> infoIndexes) {
 
-    BeeRow row = getPartitionRow(item);
-
     Flow panel = new Flow();
 
-    Flow container = new Flow(STYLE_PARTITION_CONTAINER);
+    BeeRow row = getPartitionRow(item);
 
     String text = (row == null)
         ? DataUtils.buildIdList(getPartitionId(item))
@@ -635,14 +776,14 @@ abstract class EarningsWidget extends Flow implements HasSummaryChangeHandlers, 
       }
     });
 
-    container.add(nameWidget);
+    panel.add(nameWidget);
 
     if (!BeeUtils.isEmpty(infoIndexes) && row != null) {
       Label infoWidget = new Label(DataUtils.join(getPartitionDataColumns(), row, infoIndexes,
           BeeConst.DEFAULT_LIST_SEPARATOR));
       infoWidget.addStyleName(STYLE_PARTITION_INFO);
 
-      container.add(infoWidget);
+      panel.add(infoWidget);
     }
 
     if (item.isSubstitution()) {
@@ -658,10 +799,8 @@ abstract class EarningsWidget extends Flow implements HasSummaryChangeHandlers, 
         }
       });
 
-      container.add(substWidget);
+      panel.add(substWidget);
     }
-
-    panel.add(container);
 
     return panel;
   }
