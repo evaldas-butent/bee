@@ -53,6 +53,7 @@ import com.butent.bee.shared.utils.Codec;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -76,6 +77,11 @@ abstract class EarningsWidget extends Flow implements HasSummaryChangeHandlers, 
   private static final String STYLE_MONTH_PANEL = STYLE_PREFIX + "month-panel";
   private static final String STYLE_MONTH_LABEL = STYLE_PREFIX + "month-label";
   private static final String STYLE_MONTH_ACTIVE = STYLE_PREFIX + "month-active";
+
+  private static final String STYLE_PARTITION_TITLE = STYLE_PREFIX + "partition-title";
+  private static final String STYLE_COL_GROUP_LABEL = STYLE_PREFIX + "col-group-label";
+  private static final String STYLE_COL_LABEL = STYLE_PREFIX + "col-label";
+  private static final String STYLE_COL_TOTAL_LABEL = STYLE_PREFIX + "col-total";
 
   private static final String STYLE_PARTITION_PANEL = STYLE_PREFIX + "partition-panel";
   private static final String STYLE_PARTITION_CONTAINER = STYLE_PREFIX + "partition-container";
@@ -251,13 +257,14 @@ abstract class EarningsWidget extends Flow implements HasSummaryChangeHandlers, 
   }
 
   void refresh() {
-    clearUi();
-
     getMonths(months -> {
       setSummary(new IntegerValue(BeeUtils.size(months)));
       SummaryChangeEvent.maybeFire(this);
 
-      if (!BeeUtils.isEmpty(months)) {
+      if (BeeUtils.isEmpty(months)) {
+        clearUi();
+
+      } else {
         if (activeMonth == null || !months.contains(activeMonth)) {
           String s = BeeKeeper.getStorage().get(storageKey(NAME_ACTIVE_MONTH));
           YearMonth ym = BeeUtils.isEmpty(s) ? null : YearMonth.parse(s);
@@ -270,12 +277,16 @@ abstract class EarningsWidget extends Flow implements HasSummaryChangeHandlers, 
 
         getEarnings(activeMonth, earnings -> {
           if (BeeUtils.isEmpty(earnings)) {
-            loadRelatedData(earnings, () -> {
-              render(months, earnings);
-            });
+            render(months, earnings);
 
           } else {
-            render(months, earnings);
+            loadRelatedData(earnings, () -> {
+              if (earnings.size() > 1) {
+                sortEarnings(earnings);
+              }
+
+              render(months, earnings);
+            });
           }
         });
       }
@@ -480,14 +491,59 @@ abstract class EarningsWidget extends Flow implements HasSummaryChangeHandlers, 
     headerPanel.add(print);
 
     table.setWidgetAndStyle(HEADER_ROW, 0, headerPanel, STYLE_HEADER_PANEL);
-    // table.getCellFormatter().setColSpan(HEADER_ROW, 0, DAY_START_COL + days + 2);
+    table.getCellFormatter().setColSpan(HEADER_ROW, 0, LAST_COL + 1);
 
     Widget monthSelector = renderMonthSelector(months);
     table.setWidgetAndStyle(MONTH_ROW, MONTH_SELECTOR_COL, monthSelector, STYLE_MONTH_SELECTOR);
 
     Widget monthPanel = renderMonths(months);
     table.setWidgetAndStyle(MONTH_ROW, MONTH_PANEL_START_COL, monthPanel, STYLE_MONTH_PANEL);
-    // table.getCellFormatter().setColSpan(MONTH_ROW, MONTH_COL, days + 2);
+    table.getCellFormatter().setColSpan(MONTH_ROW, MONTH_PANEL_START_COL,
+        LAST_COL - MONTH_PANEL_START_COL + 1);
+
+    int c = ROW_LABEL_COL;
+
+    Label partitionTitle = new Label(scheduleParent.getPartitionTitle());
+    table.setWidgetAndStyle(COL_GROUP_LABEL_ROW, c, partitionTitle, STYLE_PARTITION_TITLE);
+    table.getCellFormatter().setRowSpan(COL_GROUP_LABEL_ROW, c,
+        COL_LABEL_ROW - COL_GROUP_LABEL_ROW + 1);
+
+    c++;
+    Label plannedGroup = new Label(Localized.dictionary().workSchedulePlanned());
+    table.setWidgetAndStyle(COL_GROUP_LABEL_ROW, c, plannedGroup, STYLE_COL_GROUP_LABEL);
+    table.getCellFormatter().setColSpan(COL_GROUP_LABEL_ROW, c,
+        GROUP_PLANNED_END_COL - GROUP_PLANNED_START_COL + 1);
+
+    c++;
+    Label actualGroup = new Label(Localized.dictionary().workScheduleActual());
+    table.setWidgetAndStyle(COL_GROUP_LABEL_ROW, c, actualGroup, STYLE_COL_GROUP_LABEL);
+    table.getCellFormatter().setColSpan(COL_GROUP_LABEL_ROW, c,
+        GROUP_ACTUAL_END_COL - GROUP_ACTUAL_START_COL + 1);
+
+    table.setWidgetAndStyle(COL_LABEL_ROW, FUND_COL,
+        new Label(Localized.dictionary().salaryFund()), STYLE_COL_LABEL);
+    table.setWidgetAndStyle(COL_LABEL_ROW, PLANNED_DAYS_COL,
+        new Label(Localized.dictionary().days()), STYLE_COL_LABEL);
+    table.setWidgetAndStyle(COL_LABEL_ROW, PLANNED_HOURS_COL,
+        new Label(Localized.dictionary().hours()), STYLE_COL_LABEL);
+    table.setWidgetAndStyle(COL_LABEL_ROW, WAGE_COL,
+        new Label(Localized.dictionary().hourlyWage()), STYLE_COL_LABEL);
+
+    table.setWidgetAndStyle(COL_LABEL_ROW, ACTUAL_DAYS_COL,
+        new Label(Localized.dictionary().days()), STYLE_COL_LABEL);
+    table.setWidgetAndStyle(COL_LABEL_ROW, ACTUAL_HOURS_COL,
+        new Label(Localized.dictionary().hours()), STYLE_COL_LABEL);
+    table.setWidgetAndStyle(COL_LABEL_ROW, HOLY_DAYS_COL,
+        new Label(Localized.dictionary().workScheduleHolidaysInclusiveShort()), STYLE_COL_LABEL);
+    table.setWidgetAndStyle(COL_LABEL_ROW, HOLY_HOURS_COL,
+        new Label(Localized.dictionary().workScheduleHolihoursInclusiveShort()), STYLE_COL_LABEL);
+
+    table.setWidgetAndStyle(COL_LABEL_ROW, EARNINGS_WITHOUT_HOLIDAYS_COL,
+        new Label(Localized.dictionary().payrollEarningsWithoutHolidays()), STYLE_COL_LABEL);
+    table.setWidgetAndStyle(COL_LABEL_ROW, EARNINGS_FOR_HOLIDAYS_COL,
+        new Label(Localized.dictionary().payrollEarningsForHolidays()), STYLE_COL_LABEL);
+    table.setWidgetAndStyle(COL_LABEL_ROW, TOTAL_EARNINGS_COL,
+        new Label(Localized.dictionary().payrollEarningsTotal()), STYLE_COL_TOTAL_LABEL);
   }
 
   private Widget renderMonths(List<YearMonth> months) {
@@ -624,5 +680,63 @@ abstract class EarningsWidget extends Flow implements HasSummaryChangeHandlers, 
 
   private void setSummary(Value summary) {
     this.summary = summary;
+  }
+
+  private void sortEarnings(List<Earnings> earnings) {
+    final Map<Long, Integer> partitionIndexes = new HashMap<>();
+    final Map<Long, Integer> substitutionIndexes = new HashMap<>();
+
+    for (Earnings item : earnings) {
+      Long id = getPartitionId(item);
+
+      if (id != null) {
+        int index = BeeConst.UNDEF;
+
+        switch (scheduleParent) {
+          case LOCATION:
+            if (getEmData() != null) {
+              index = getEmData().getRowIndex(id);
+            }
+            break;
+
+          case EMPLOYEE:
+            if (getObData() != null) {
+              index = getObData().getRowIndex(id);
+            }
+            break;
+        }
+
+        if (!BeeConst.isUndef(index)) {
+          partitionIndexes.put(id, index);
+        }
+      }
+
+      if (item.isSubstitution() && getEmData() != null) {
+        int index = getEmData().getRowIndex(item.getSubstituteFor());
+
+        if (!BeeConst.isUndef(index)) {
+          substitutionIndexes.put(item.getSubstituteFor(), index);
+        }
+      }
+    }
+
+    Collections.sort(earnings, (Earnings e1, Earnings e2) -> {
+      int result = BeeUtils.compareNullsLast(partitionIndexes.get(getPartitionId(e1)),
+          partitionIndexes.get(getPartitionId(e2)));
+
+      if (result == BeeConst.COMPARE_EQUAL) {
+        result = Boolean.compare(e1.isSubstitution(), e2.isSubstitution());
+      }
+      if (result == BeeConst.COMPARE_EQUAL && e1.isSubstitution()) {
+        result = BeeUtils.compareNullsLast(substitutionIndexes.get(e1.getSubstituteFor()),
+            substitutionIndexes.get(e2.getSubstituteFor()));
+      }
+
+      if (result == BeeConst.COMPARE_EQUAL) {
+        result = BeeUtils.compareNullsFirst(e1.getDateFrom(), e2.getDateFrom());
+      }
+
+      return result;
+    });
   }
 }

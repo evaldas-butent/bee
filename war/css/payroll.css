@@ -12,18 +12,22 @@
   cursor: auto;
 }
 
-.bee-payroll-ws-table {
+.bee-payroll-ws-table,
+.bee-payroll-earn-table {
   border-collapse: collapse;
 }
-.bee-payroll-ws-table td {
+.bee-payroll-ws-table td,
+.bee-payroll-earn-table td {
   border: 1px solid #ccc;
   padding: 2px;
 }
 
-.bee-payroll-ws-header-panel-cell {
+.bee-payroll-ws-header-panel-cell,
+.bee-payroll-earn-header-panel-cell {
   background-color: #f5f5f5;
 }
-.bee-payroll-ws-header-panel {
+.bee-payroll-ws-header-panel,
+.bee-payroll-earn-header-panel {
   display: flex;
   display: -webkit-flex;
   display: -ms-flexbox;
@@ -31,7 +35,8 @@
   -webkit-align-items: center;
   -ms-flex-align: center;
 }
-.bee-payroll-ws-caption {
+.bee-payroll-ws-caption,
+.bee-payroll-earn-caption {
   font-weight: bolder;
   font-size: larger;
   flex: 1;
@@ -40,15 +45,18 @@
   text-align: center;
   visibility: hidden;
 }
-.bee-Print .bee-payroll-ws-caption {
+.bee-Print .bee-payroll-ws-caption,
+.bee-Print .bee-payroll-earn-caption {
   visibility: visible;
 }
-.bee-payroll-ws-action {
+.bee-payroll-ws-action,
+.bee-payroll-earn-action {
   margin-right: 10px;
   font-size: large;
   color: #414142;
 }
-.bee-payroll-ws-action:hover {
+.bee-payroll-ws-action:hover,
+.bee-payroll-earn-action:hover {
   color: black;
 }
 
@@ -56,11 +64,13 @@
   text-align: center;
   border-bottom-color: transparent;
 }
-.bee-payroll-ws-month-selector {
+.bee-payroll-ws-month-selector,
+.bee-payroll-earn-month-selector {
   font-weight: bolder;
 }
 
-.bee-payroll-ws-month-panel {
+.bee-payroll-ws-month-panel,
+.bee-payroll-earn-month-panel {
   display: flex;
   display: -webkit-flex;
   display: -ms-flexbox;
@@ -74,14 +84,17 @@
   -webkit-align-items: center;
   -ms-flex-align: center;
 }
-.bee-payroll-ws-month-label {
+.bee-payroll-ws-month-label,
+.bee-payroll-earn-month-label {
   padding: 2px 10px;
   cursor: pointer;
 }
-.bee-payroll-ws-month-label:hover:not(.bee-payroll-ws-month-active) {
+.bee-payroll-ws-month-label:hover:not(.bee-payroll-ws-month-active),
+.bee-payroll-earn-month-label:hover:not(.bee-payroll-earn-month-active) {
   text-decoration: underline;
 }
-.bee-payroll-ws-month-active {
+.bee-payroll-ws-month-active,
+.bee-payroll-earn-month-active {
   background-color: #80c4f9;
   cursor: auto;
 }
@@ -105,20 +118,24 @@
   -ms-flex-align: center;
 }
 
-.bee-payroll-ws-partition-name {
+.bee-payroll-ws-partition-name,
+.bee-payroll-earn-partition-name {
   cursor: pointer;
   font-weight: bolder;
 }
-.bee-payroll-ws-partition-name:hover {
+.bee-payroll-ws-partition-name:hover,
+.bee-payroll-earn-partition-name:hover {
   text-decoration: underline;
 }
 
-.bee-payroll-ws-partition-subst {
+.bee-payroll-ws-partition-subst,
+.bee-payroll-earn-partition-subst {
   cursor: pointer;
   font-weight: bolder;
   color: chocolate;
 }
-.bee-payroll-ws-partition-subst:hover {
+.bee-payroll-ws-partition-subst:hover,
+.bee-payroll-earn-partition-subst:hover {
   text-decoration: underline;
 }
 
@@ -415,23 +432,9 @@
   margin-right: auto;
 }
 
-.bee-payroll-earn-month-widget {
-  display: inline-block;
-  margin-left: 1em;
+.bee-payroll-earn-col-group-label {
+  font-weight: bolder;
 }
-.bee-payroll-earn-month-label {
-  display: inline-block;
-  font-size: larger;
-  padding: 2px 4px;
-  cursor: pointer;
-}
-.bee-payroll-earn-month-active .bee-payroll-earn-month-label {
-  background-color: #80c4f9;
-  cursor: auto;
-}
-.bee-payroll-earn-month-badge {
-  display: inline-block;
-  vertical-align: top;
-  color: white;
-  background-color: #bbb;
+.bee-payroll-earn-col-label {
+  white-space: pre-line;
 }
