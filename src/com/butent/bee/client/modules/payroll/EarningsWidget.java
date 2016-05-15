@@ -47,6 +47,7 @@ import com.butent.bee.shared.data.value.IntegerValue;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.payroll.Earnings;
+import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.time.YearMonth;
 import com.butent.bee.shared.ui.Action;
@@ -89,6 +90,7 @@ abstract class EarningsWidget extends Flow implements HasSummaryChangeHandlers, 
   private static final String STYLE_PARTITION_PANEL = STYLE_PREFIX + "partition-panel";
   private static final String STYLE_PARTITION_NAME = STYLE_PREFIX + "partition-name";
   private static final String STYLE_PARTITION_INFO = STYLE_PREFIX + "partition-info";
+  private static final String STYLE_PARTITION_PERIOD = STYLE_PREFIX + "partition-period";
   private static final String STYLE_PARTITION_SUBST = STYLE_PREFIX + "partition-subst";
 
   private static final String STYLE_FUND = STYLE_PREFIX + "fund";
@@ -784,6 +786,19 @@ abstract class EarningsWidget extends Flow implements HasSummaryChangeHandlers, 
       infoWidget.addStyleName(STYLE_PARTITION_INFO);
 
       panel.add(infoWidget);
+    }
+
+    JustDate from = item.getDateFrom();
+    JustDate until = item.getDateUntil();
+
+    if (activeMonth != null
+        && (from != null && !Objects.equals(from, activeMonth.getDate())
+            || until != null && !Objects.equals(until, activeMonth.getLast()))) {
+
+      Label periodWidget = new Label(TimeUtils.renderPeriod(from, until));
+      periodWidget.addStyleName(STYLE_PARTITION_PERIOD);
+
+      panel.add(periodWidget);
     }
 
     if (item.isSubstitution()) {

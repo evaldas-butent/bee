@@ -16,10 +16,13 @@
 .bee-payroll-earn-table {
   border-collapse: collapse;
 }
-.bee-payroll-ws-table td,
-.bee-payroll-earn-table td {
+.bee-payroll-ws-table td {
   border: 1px solid #ccc;
   padding: 2px;
+}
+.bee-payroll-earn-table td {
+  border: 1px solid #ccc;
+  padding: 2px 5px;
 }
 
 .bee-payroll-ws-header-panel-cell,
@@ -449,17 +452,11 @@
   font-weight: bolder;
 }
 
-.bee-payroll-earn-table .bee-payroll-earn-col-label,
-.bee-payroll-earn-table .bee-payroll-earn-col-total-label {
-  padding: 5px;
-}
-
-.bee-payroll-earn-table .bee-payroll-earn-fund,
-.bee-payroll-earn-table .bee-payroll-earn-wage,
-.bee-payroll-earn-table .bee-payroll-earn-days,
-.bee-payroll-earn-table .bee-payroll-earn-hours,
-.bee-payroll-earn-table .bee-payroll-earn-amount {
-  padding-right: 5px;
+.bee-payroll-earn-fund,
+.bee-payroll-earn-wage,
+.bee-payroll-earn-days,
+.bee-payroll-earn-hours,
+.bee-payroll-earn-amount {
   text-align: right;
 }
 .bee-payroll-earn-total {
@@ -467,7 +464,6 @@
 }
 
 .bee-payroll-earn-table .bee-payroll-earn-total-label {
-  padding-right: 5px;
   text-align: right;
   text-transform: uppercase;
 }
