@@ -266,6 +266,11 @@ public class Chat implements BeeSerializable, HasInfo, Comparable<Chat> {
         && (userId.equals(getCreator()) || users.size() <= 2 && users.contains(userId));
   }
 
+  public boolean isCreator(Long userId) {
+    return userId != null
+        && (userId.equals(getCreator()));
+  }
+
   public boolean removeUser(Long userId) {
     return getUsers().remove(userId);
   }
@@ -401,4 +406,5 @@ public class Chat implements BeeSerializable, HasInfo, Comparable<Chat> {
   private void setId(long id) {
     this.id = id;
   }
+
 }
