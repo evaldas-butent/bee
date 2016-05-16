@@ -14,7 +14,7 @@
     <RelColumn name="User" minWidth="200" renderColumns="FirstName LastName"
       sortBy="LastName FirstName" editSource="CompanyPerson" editPopup="true" visible="true" />
 
-    <DataColumn name="Registered" />
-    <DataColumn name="LastAccess" />
+    <DataColumn name="Registered" format="DATE_TIME_SHORT" />
+    <DataColumn name="LastAccess" format="DATE_TIME_SHORT" />
   </g:columns>
 </g:Grid>
