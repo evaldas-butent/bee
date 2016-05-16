@@ -5,6 +5,7 @@ import com.google.common.collect.Multimap;
 import com.google.gwt.dom.client.AudioElement;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.user.client.Timer;
+import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -32,6 +33,7 @@ import com.butent.bee.client.screen.BodyPanel;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiHelper;
+import com.butent.bee.client.view.View;
 import com.butent.bee.client.view.ViewCallback;
 import com.butent.bee.client.websocket.Endpoint;
 import com.butent.bee.client.widget.Button;
@@ -60,6 +62,7 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.time.TimeUtils;
+import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -71,8 +74,11 @@ import com.butent.bee.shared.websocket.messages.ChatStateMessage;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 public class ChatManager implements HasInfo, HasEnabled {
 
@@ -192,8 +198,14 @@ public class ChatManager implements HasInfo, HasEnabled {
     }
 
     private Widget createPicture(List<Long> users) {
-      if (users.size() == 1 && Global.getUsers().hasPhoto(users.get(0))) {
-        Image photo = Global.getUsers().getPhoto(users.get(0));
+      if (users.size() == 1) {
+        Image photo;
+        if (Global.getUsers().hasPhoto(users.get(0))) {
+          photo = Global.getUsers().getPhoto(users.get(0));
+        } else {
+          photo = new Image(DEFAULT_PHOTO_IMAGE);
+        }
+
         if (photo != null) {
           photo.addStyleName(STYLE_CHATS_ITEM_PREFIX + "photo");
           return photo;
@@ -332,6 +344,8 @@ public class ChatManager implements HasInfo, HasEnabled {
 
   private static final int TIMER_PERIOD = 10_000;
 
+  private static final String DEFAULT_PHOTO_IMAGE = "images/defaultUser.png";
+
   private static ChatView findChatView(long chatId) {
     for (IdentifiableWidget widget : BeeKeeper.getScreen().getOpenWidgets()) {
       if (isChatView(widget.asWidget(), chatId)) {
@@ -342,6 +356,12 @@ public class ChatManager implements HasInfo, HasEnabled {
     for (Popup popup : Popup.getVisiblePopups()) {
       if (isChatView(popup.getWidget(), chatId)) {
         return (ChatView) popup.getWidget();
+      }
+    }
+
+    for (ChatView widget : Global.getChatManager().chatViewInFlowPanelSet) {
+      if (isChatView(widget, chatId)) {
+        return widget;
       }
     }
 
@@ -364,6 +384,8 @@ public class ChatManager implements HasInfo, HasEnabled {
   private Timer timer;
 
   private boolean enabled;
+
+  private Set<ChatView> chatViewInFlowPanelSet = new HashSet<>();
 
   ChatManager() {
   }
@@ -443,7 +465,7 @@ public class ChatManager implements HasInfo, HasEnabled {
     Chat chat = findChat(chatId);
 
     if (chat != null) {
-      if (chat.isOwner(BeeKeeper.getUser().getUserId())) {
+      if (chat.isCreator(BeeKeeper.getUser().getUserId())) {
         editSettings(chat);
       } else {
         showInfo(chat);
@@ -499,8 +521,8 @@ public class ChatManager implements HasInfo, HasEnabled {
       ChatView chatView = findChatView(chatId);
 
       if (chatView != null) {
-        ChatPopup popup = chatView.getPopup();
 
+        ChatPopup popup = chatView.getPopup();
         if (popup != null) {
           popup.setMinimized(false);
 
@@ -508,7 +530,11 @@ public class ChatManager implements HasInfo, HasEnabled {
           chatView.getInputArea().setFocus(true);
 
         } else {
-          BeeKeeper.getScreen().activateWidget(chatView);
+          if (chatView.getPopup() != null) {
+            BeeKeeper.getScreen().activateWidget(chatView);
+          } else {
+            open(chatId, view -> ChatPopup.openNormal(view), true);
+          }
         }
 
       } else {
@@ -518,6 +544,27 @@ public class ChatManager implements HasInfo, HasEnabled {
 
     } else {
       return false;
+    }
+  }
+
+  public void enterChat(long chatId, FlowPanel chatsFlowWidget) {
+    if (contains(chatId)) {
+      if (chatsFlowWidget != null) {
+        ViewCallback view = new ViewCallback() {
+
+          @Override
+          public void onSuccess(View result) {
+            ChatView chatViewInFlowPanel =
+                new ChatView(findChat(chatId), Action.NO_ACTIONS, EnumSet.of(Action.CLOSE), false);
+
+            chatsFlowWidget.add(chatViewInFlowPanel);
+            chatViewInFlowPanelSet.add(chatViewInFlowPanel);
+          }
+        };
+        open(chatId, view);
+      } else {
+        open(chatId, view -> ChatPopup.openNormal(view), true);
+      }
     }
   }
 
@@ -1105,7 +1152,7 @@ public class ChatManager implements HasInfo, HasEnabled {
     table.setText(row, 1, BeeUtils.bracket(chat.getMessageCount()));
     if (chat.getMaxTime() > 0) {
       table.setText(row, 2, BeeUtils.joinWords(ChatUtils.elapsed(chat.getMaxTime()),
-          TimeUtils.renderDateTime(chat.getMaxTime(), true)));
+          TimeUtils.renderDateTime(chat.getMaxTime(), false)));
     }
 
     Global.showModalWidget(Localized.dictionary().chat(), table);
@@ -1142,4 +1189,5 @@ public class ChatManager implements HasInfo, HasEnabled {
       maybeRefreshChatWidget(target);
     }
   }
+
 }
