@@ -207,7 +207,7 @@ class OrderCargoForm extends AbstractFormInterceptor implements SelectorEvent.Ha
 
   @Override
   public void onEditEnd(EditEndEvent event, Object source) {
-    String colId = event.getColumn().getId();
+    String colId = event.getColumnId();
     if ((COL_EMPTY_KILOMETERS.equals(colId) || COL_LOADED_KILOMETERS.equals(colId))
         && event.valueChanged()) {
       refreshKilometers(getActiveRow(), colId, BeeUtils.toIntOrNull(event.getNewValue()));
