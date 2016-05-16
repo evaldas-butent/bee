@@ -12,7 +12,6 @@ import com.butent.bee.client.ui.AutocompleteProvider;
 import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.Opener;
-import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.ViewFactory;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.CloseCallback;
@@ -332,7 +331,7 @@ public final class RowEditor {
     });
 
     final ScheduledCommand focusCommand = () -> {
-      UiHelper.focus(formView.asWidget());
+      formView.focus();
 
       if (opener.getOnOpen() != null) {
         opener.getOnOpen().accept(formView);

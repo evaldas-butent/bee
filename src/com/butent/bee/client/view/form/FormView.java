@@ -64,6 +64,20 @@ public interface FormView extends DataView, HasDataTable, ActiveWidgetChangeEven
 
   void editRow(IsRow rowValue, Scheduler.ScheduledCommand focusCommand);
 
+  /**
+   * Focus the first widget on this form view. If there some widgets where handling keyboard events,
+   * the first widget usually is first element of DOM or having lower tab index.
+   * 
+   * 
+   */
+  void focus();
+
+  /**
+   * Focus the widget on this form view.
+   * 
+   * @param source name of source where related focusable widget.
+   * @return
+   */
   boolean focus(String source);
 
   int flush();

@@ -658,6 +658,15 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   }
 
   @Override
+  public void focus() {
+    if (BeeUtils.isEmpty(getTabOrder())) {
+      UiHelper.focus(asWidget());
+    } else {
+      UiHelper.focus(getWidgetById(getTabOrder().get(0).getWidgetId()));
+    }
+  }
+
+  @Override
   public boolean focus(String source) {
     if (BeeUtils.isEmpty(source)) {
       return false;
