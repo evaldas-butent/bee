@@ -242,12 +242,22 @@ public class ProjectsModuleBean implements BeeModule {
           BeeRowSet viewRows = event.getRowset();
 
           for (BeeRow row : viewRows) {
-            long startDate =
-                row.getDate(DataUtils.getColumnIndex(COL_DATES_START_DATE, viewRows.getColumns()))
-                    .getDateTime().getTime();
-            long finishDate =
-                row.getDate(DataUtils.getColumnIndex(COL_DATES_END_DATE, viewRows.getColumns()))
-                    .getDateTime().getTime();
+            long startTime = 0;
+            JustDate time =
+                row.getDate(
+                    DataUtils.getColumnIndex(COL_PROJECT_START_DATE, viewRows.getColumns()));
+
+            if (time != null) {
+              startTime = time.getDateTime().getTime();
+            }
+            long finishTime = 0;
+            time =
+                row.getDate(DataUtils.getColumnIndex(COL_PROJECT_END_DATE, viewRows.getColumns()));
+
+            if (time != null) {
+              finishTime = time.getDateTime().getTime();
+            }
+
             int projectStatus =
                 BeeUtils.unbox(row.getInteger(DataUtils
                     .getColumnIndex(COL_PROJECT_STATUS, viewRows.getColumns())));
@@ -262,9 +272,11 @@ public class ProjectsModuleBean implements BeeModule {
                             .getColumns())).getTime();
               }
             }
+            long timeDiff =
+                (finishTime - startTime) == 0L ? TimeUtils.MILLIS_PER_DAY : finishTime - startTime;
 
             double overdue =
-                BeeUtils.round((100.0 * (nowDate - startDate) / (finishDate - startDate)) - 100.0,
+                BeeUtils.round((100.0 * (nowDate - startTime) / timeDiff) - 100.0,
                     2);
             if (overdue < 0) {
               overdue = 0.0;
