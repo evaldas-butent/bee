@@ -262,9 +262,15 @@ public class ProjectsModuleBean implements BeeModule {
                             .getColumns())).getTime();
               }
             }
+            long timeDiff;
+            if (finishDate - startDate == 0) {
+              timeDiff = 1440000L;
+            } else {
+              timeDiff = finishDate - startDate;
+            }
 
             double overdue =
-                BeeUtils.round((100.0 * (nowDate - startDate) / (finishDate - startDate)) - 100.0,
+                BeeUtils.round((100.0 * (nowDate - startDate) / (timeDiff)) - 100.0,
                     2);
             if (overdue < 0) {
               overdue = 0.0;
