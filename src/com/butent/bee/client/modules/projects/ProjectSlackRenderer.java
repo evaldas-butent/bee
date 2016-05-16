@@ -11,6 +11,7 @@ import com.butent.bee.shared.export.XCell;
 import com.butent.bee.shared.export.XSheet;
 import com.butent.bee.shared.modules.projects.ProjectStatus;
 import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.List;
@@ -23,12 +24,14 @@ public class ProjectSlackRenderer extends AbstractSlackRenderer {
 
   @Override
   public DateTime getStartDateTime(List<? extends IsColumn> columns, IsRow row) {
-    return row.getDate(DataUtils.getColumnIndex(COL_DATES_START_DATE, columns)).getDateTime();
+    return TimeUtils.toDateTimeOrNull(row.getDate(DataUtils.getColumnIndex(COL_PROJECT_START_DATE,
+        columns)));
   }
 
   @Override
   public DateTime getFinishDateTime(List<? extends IsColumn> columns, IsRow row) {
-    return row.getDate(DataUtils.getColumnIndex(COL_DATES_END_DATE, columns)).getDateTime();
+    return TimeUtils.toDateTimeOrNull(row.getDate(DataUtils.getColumnIndex(COL_PROJECT_END_DATE,
+        columns)));
   }
 
   @Override
@@ -54,5 +57,4 @@ public class ProjectSlackRenderer extends AbstractSlackRenderer {
       return super.render(row);
     }
   }
-
 }
