@@ -1763,32 +1763,6 @@ public interface Dictionary {
 
   default String duration() {return g("duration");}
 
-  default String earningsApprovedAmount() {return g("earningsApprovedAmount");}
-
-  default String earningsApprovedBy() {return g("earningsApprovedBy");}
-
-  default String earningsApprovedCurrency() {return g("earningsApprovedCurrency");}
-
-  default String earningsApprovedDate() {return g("earningsApprovedDate");}
-
-  default String earningsBonus1() {return g("earningsBonus1");}
-
-  default String earningsBonus2() {return g("earningsBonus2");}
-
-  default String earningsBonusPercent() {return g("earningsBonusPercent");}
-
-  default String earningsExportedAmount() {return g("earningsExportedAmount");}
-
-  default String earningsExportedBy() {return g("earningsExportedBy");}
-
-  default String earningsExportedCurrency() {return g("earningsExportedCurrency");}
-
-  default String earningsExportedDate() {return g("earningsExportedDate");}
-
-  default String earningsOfEmployees() {return g("earningsOfEmployees");}
-
-  default String earningsOfObjects() {return g("earningsOfObjects");}
-
   default String ecAdministration() {return g("ecAdministration");}
 
   default String ecAnalogBinding() {return g("ecAnalogBinding");}
@@ -3372,8 +3346,6 @@ public interface Dictionary {
   default String object() {return g("object");}
 
   default String objectData() {return g("objectData");}
-
-  default String objectEarnings() {return g("objectEarnings");}
 
   default String objectField() {return g("objectField");}
 

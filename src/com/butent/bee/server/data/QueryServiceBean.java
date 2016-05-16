@@ -687,6 +687,15 @@ public class QueryServiceBean {
     return getSingleValue(query).getValue(0, 0);
   }
 
+  public String getValueById(String tableName, long id, String fieldName) {
+    SqlSelect query = new SqlSelect()
+        .addFields(tableName, fieldName)
+        .addFrom(tableName)
+        .setWhere(sys.idEquals(tableName, id));
+
+    return getValue(query);
+  }
+
   public Set<String> getValueSet(IsQuery query) {
     Set<String> result = new HashSet<>();
 
