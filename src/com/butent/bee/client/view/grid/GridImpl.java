@@ -2687,7 +2687,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
           }
 
           if (widget == null || !UiHelper.focus(widget)) {
-            UiHelper.focus(form.asWidget());
+            form.focus();
           }
 
           if (event.getOnFormFocus() != null) {
@@ -2833,7 +2833,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
 
     setOnFormOpen(() -> {
       form.updateRow(newRow, true);
-      UiHelper.focus(form.asWidget());
+      form.focus();
     });
 
     showForm(GridFormKind.NEW_ROW, true);
