@@ -520,7 +520,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
       if (event != null) {
         event.cancel();
       }
-      return checkForUpdate(false);
+      return checkForUpdate(true);
     }
   }
 
@@ -532,7 +532,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
       if (event != null) {
         event.cancel();
       }
-      return checkForUpdate(false);
+      return checkForUpdate(true);
     }
   }
 
