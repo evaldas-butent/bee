@@ -22,16 +22,14 @@ import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.view.RowInfo;
-import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.trade.TradeConstants;
 
 import java.util.Set;
 
 public class SvcProjectInvoicesGrid extends AbstractGridInterceptor implements ClickHandler {
-  private static final LocalizableConstants localizableConstants = Localized.getConstants();
 
-  private final Button action = new Button(localizableConstants.trSendToERP(), this);
+  private final Button action = new Button(Localized.dictionary().trSendToERP(), this);
 
   public SvcProjectInvoicesGrid() {
   }
@@ -57,11 +55,11 @@ public class SvcProjectInvoicesGrid extends AbstractGridInterceptor implements C
       ids.add(row.getId());
     }
     if (ids.isEmpty()) {
-      presenter.getGridView().notifyWarning(Localized.getConstants().selectAtLeastOneRow());
+      presenter.getGridView().notifyWarning(Localized.dictionary().selectAtLeastOneRow());
       return;
     }
 
-    Global.confirm(Localized.getConstants().trSendToERPConfirm(), new ConfirmationCallback() {
+    Global.confirm(Localized.dictionary().trSendToERPConfirm(), new ConfirmationCallback() {
       @Override
       public void onConfirm() {
         final HeaderView header = presenter.getHeader();

@@ -97,8 +97,8 @@ public enum MenuService {
   TRADE_ACT_LIST(RightsState.VIEW, TradeActConstants.VIEW_TRADE_ACTS),
 
   @XmlEnumValue("trade_documents")
-  TRADE_DOCUMENTS(RightsState.VIEW, TradeConstants.VIEW_TRADE_DOCUMENTS);
-  TRADE_ACT_LIST(RightsState.VIEW, TradeActConstants.VIEW_TRADE_ACTS),
+  TRADE_DOCUMENTS(RightsState.VIEW, TradeConstants.VIEW_TRADE_DOCUMENTS),
+
   @XmlEnumValue("svc_projects_calendar")
   SERVICE_PROJECTS_CALENDAR(RightsState.VIEW,
       Sets.newHashSet(ServiceConstants.VIEW_SERVICE_OBJECTS, TaskConstants.VIEW_TASKS)),

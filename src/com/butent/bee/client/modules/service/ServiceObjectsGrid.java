@@ -1,8 +1,5 @@
 package com.butent.bee.client.modules.service;
 
-import com.google.gwt.event.logical.shared.SelectionEvent;
-import com.google.gwt.event.logical.shared.SelectionHandler;
-
 import static com.butent.bee.shared.modules.service.ServiceConstants.*;
 
 import com.butent.bee.client.data.Data;
@@ -12,17 +9,17 @@ import com.butent.bee.client.view.TreeView;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.TreeGridInterceptor;
+import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.service.ServiceConstants;
 import com.butent.bee.shared.modules.service.ServiceConstants.SvcObjectStatus;
+import com.butent.bee.shared.ui.GridDescription;
 
-public class ServiceObjectsGrid extends TreeGridInterceptor implements
-    SelectionHandler<IsRow> {
+public class ServiceObjectsGrid extends TreeGridInterceptor {
 
-  private static final String FILTER_KEY = "f1";
   private static final String STYLE_TREE_PREFIX = "bee-svc-tree-";
 
   private TreeView categoryTree;
@@ -71,7 +68,7 @@ public class ServiceObjectsGrid extends TreeGridInterceptor implements
   @Override
   public String getCaption() {
     if (status == null) {
-      return Localized.getConstants().svcAllObjects();
+      return Localized.dictionary().svcAllObjects();
     }
     return status.getListCaption();
   }

@@ -208,8 +208,9 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
     }
 
     if (!DataUtils.isNewRow(row)) {
-      form.setEnabled(ProjectsHelper.isProjectOwner(form, row) && !isProjectApproved(form, row) && !isProjectSuspended(
-          form, row));
+      form.setEnabled(ProjectsHelper.isProjectOwner(form, row) && !isProjectApproved(form, row)
+          && !isProjectSuspended(
+              form, row));
 
       if (status != null) {
         status.setEnabled(ProjectsHelper.isProjectOwner(form, row));
@@ -234,8 +235,8 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
       owner.setEnabled(true);
     }
 
-    if ((isProjectUser(form, row) || isOwner(form, row)) && tasks != null && !(isProjectApproved(
-        form, row) || isProjectSuspended(form, row))) {
+    if ((ProjectsHelper.isProjectUser(form, row) || ProjectsHelper.isProjectOwner(form, row))
+        && tasks != null && !(isProjectApproved(form, row) || isProjectSuspended(form, row))) {
       tasks.setEnabled(true);
     }
 

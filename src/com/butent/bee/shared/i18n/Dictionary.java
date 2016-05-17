@@ -821,6 +821,10 @@ public interface Dictionary {
 
   default String contractNo() {return g("contractNo");}
 
+  default String contractNotSign() {return g("contractNotSign");}
+
+  default String contractSign() {return g("contractSign");}
+
   default String cost() {return g("cost");}
 
   default String costCenter() {return g("costCenter");}
@@ -1262,6 +1266,10 @@ public interface Dictionary {
   default String crmTaskSubject() {return g("crmTaskSubject");}
 
   default String crmTaskSuspension() {return g("crmTaskSuspension");}
+
+  default String crmTaskTMLFiles() {return g("crmTaskTMLFiles");}
+
+  default String crmTaskTMLUsers() {return g("crmTaskTMLUsers");}
 
   default String crmTaskTemplate() {return g("crmTaskTemplate");}
 
@@ -3892,6 +3900,10 @@ public interface Dictionary {
 
   default String prjUserHasSameTasks() {return g("prjUserHasSameTasks");}
 
+  default String prjWillBeCanceled() {return g("prjWillBeCanceled");}
+
+  default String prjWorkPlace() {return g("prjWorkPlace");}
+
   default String prmAllowDeleteOwnComments() {return g("prmAllowDeleteOwnComments");}
 
   default String prmDiscussBirthdays() {return g("prmDiscussBirthdays");}
@@ -3908,9 +3920,13 @@ public interface Dictionary {
 
   default String prmMaxUploadFileSize() {return g("prmMaxUploadFileSize");}
 
+  default String prmPotentialObjectDocumentCat() {return g("prmPotentialObjectDocumentCat");}
+
   default String prmProjectCommonRate() {return g("prmProjectCommonRate");}
 
   default String prmProjectHourUnit() {return g("prmProjectHourUnit");}
+
+  default String prmProjectObjectDocumentCat() {return g("prmProjectObjectDocumentCat");}
 
   default String prmSQLMessagesGENERIC() {return g("prmSQLMessagesGENERIC");}
 
@@ -3919,6 +3935,8 @@ public interface Dictionary {
   default String prmSQLMessagesORACLE() {return g("prmSQLMessagesORACLE");}
 
   default String prmSQLMessagesPOSTGRESQL() {return g("prmSQLMessagesPOSTGRESQL");}
+
+  default String prmServiceObjectDocumentCat() {return g("prmServiceObjectDocumentCat");}
 
   default String prmStartOfWorkDay() {return g("prmStartOfWorkDay");}
 
@@ -4164,6 +4182,8 @@ public interface Dictionary {
 
   default String selectAtLeastOneRow() {return g("selectAtLeastOneRow");}
 
+  default String selectContractState() {return g("selectContractState");}
+
   default String selectDocumentTemplate() {return g("selectDocumentTemplate");}
 
   default String selectImport() {return g("selectImport");}
@@ -4197,6 +4217,8 @@ public interface Dictionary {
   default String signDate() {return g("signDate");}
 
   default String signOut() {return g("signOut");}
+
+  default String signatureAgreement() {return g("signatureAgreement");}
 
   default String socialContacts() {return g("socialContacts");}
 
@@ -4234,6 +4256,20 @@ public interface Dictionary {
 
   default String supplierCreditDays() {return g("supplierCreditDays");}
 
+  default String svcActionCreateFromTemplate() {return g("svcActionCreateFromTemplate");}
+
+  default String svcActionShowFromProjects() {return g("svcActionShowFromProjects");}
+
+  default String svcActionToLostObjects() {return g("svcActionToLostObjects");}
+
+  default String svcActionToProjectObjects() {return g("svcActionToProjectObjects");}
+
+  default String svcActionToServiceObjects() {return g("svcActionToServiceObjects");}
+
+  default String svcAdvanceReturned() {return g("svcAdvanceReturned");}
+
+  default String svcAllObjects() {return g("svcAllObjects");}
+
   default String svcCalendar() {return g("svcCalendar");}
 
   default String svcCalendarPixelsPerCompany() {return g("svcCalendarPixelsPerCompany");}
@@ -4260,6 +4296,8 @@ public interface Dictionary {
 
   default String svcDefects() {return g("svcDefects");}
 
+  default String svcFinalPaymentReturned() {return g("svcFinalPaymentReturned");}
+
   default String svcInvoices() {return g("svcInvoices");}
 
   default String svcMaintenance() {return g("svcMaintenance");}
@@ -4278,9 +4316,47 @@ public interface Dictionary {
 
   default String svcNewObject() {return g("svcNewObject");}
 
+  default String svcNewProjectObject() {return g("svcNewProjectObject");}
+
   default String svcObject() {return g("svcObject");}
 
+  default String svcObjectCalendar() {return g("svcObjectCalendar");}
+
+  default String svcObjectLost() {return g("svcObjectLost");}
+
+  default String svcObjectName() {return g("svcObjectName");}
+
+  default String svcObjectNumber() {return g("svcObjectNumber");}
+
+  default String svcObjectPotential() {return g("svcObjectPotential");}
+
+  default String svcObjectStatus() {return g("svcObjectStatus");}
+
   default String svcObjects() {return g("svcObjects");}
+
+  default String svcObjectsLost() {return g("svcObjectsLost");}
+
+  default String svcObjectsPotential() {return g("svcObjectsPotential");}
+
+  default String svcObjectsTemplate() {return g("svcObjectsTemplate");}
+
+  default String svcProjectObject() {return g("svcProjectObject");}
+
+  default String svcProjectObjects() {return g("svcProjectObjects");}
+
+  default String svcProjects() {return g("svcProjects");}
+
+  default String svcProjectsMenu() {return g("svcProjectsMenu");}
+
+  default String svcSecondPaymentReturned() {return g("svcSecondPaymentReturned");}
+
+  default String svcSelectTemplate() {return g("svcSelectTemplate");}
+
+  default String svcSendToLostObjectQuestion() {return g("svcSendToLostObjectQuestion");}
+
+  default String svcSendToProjectObjectQuestion() {return g("svcSendToProjectObjectQuestion");}
+
+  default String svcSendToServiceObjectQuestion() {return g("svcSendToServiceObjectQuestion");}
 
   default String svcSpecification() {return g("svcSpecification");}
 

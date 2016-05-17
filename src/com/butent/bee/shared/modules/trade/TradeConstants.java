@@ -107,6 +107,7 @@ public final class TradeConstants {
   public static final String VIEW_TRADE_DOCUMENT_TAGS = "TradeDocumentTags";
 
   public static final String COL_PURCHASE = "Purchase";
+  public static final String COL_PURCHASE_WAREHOUSE_TO = "WarehouseTo";
 
   public static final String COL_SALE = "Sale";
   public static final String COL_SALE_PROFORMA = "Proforma";

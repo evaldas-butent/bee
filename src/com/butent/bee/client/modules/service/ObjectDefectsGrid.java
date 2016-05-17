@@ -21,7 +21,6 @@ import com.butent.bee.shared.css.values.Display;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.view.DataInfo;
-import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.service.ServiceConstants.SvcObjectStatus;
 import com.butent.bee.shared.ui.Action;
@@ -29,7 +28,6 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 public class ObjectDefectsGrid extends AbstractGridInterceptor {
 
-  private static final LocalizableConstants localizableConstants = Localized.getConstants();
   private boolean checked;
   private CheckBox showAllCheckBox;
 
@@ -42,7 +40,7 @@ public class ObjectDefectsGrid extends AbstractGridInterceptor {
     HeaderView header = presenter.getHeader();
     header.clearCommandPanel();
 
-    showAllCheckBox = new CheckBox(localizableConstants.svcActionShowFromProjects());
+    showAllCheckBox = new CheckBox(Localized.dictionary().svcActionShowFromProjects());
 
     header.addCommandItem(showAllCheckBox);
     showAllCheckBox.setChecked(isChecked());

@@ -35,6 +35,7 @@ import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.Orientation;
+import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
@@ -239,8 +240,8 @@ class TaskDialog extends DialogBox {
 
     styleName = STYLE_DIALOG + "-contractRadio";
     RadioGroup group = new RadioGroup(Orientation.HORIZONTAL);
-    group.addOption(Localized.getConstants().contractSign());
-    group.addOption(Localized.getConstants().contractNotSign());
+    group.addOption(Localized.dictionary().contractSign());
+    group.addOption(Localized.dictionary().contractNotSign());
 
     table.setWidget(row, col, group);
     table.getCellFormatter().addStyleName(row, col, styleName + STYLE_CELL);

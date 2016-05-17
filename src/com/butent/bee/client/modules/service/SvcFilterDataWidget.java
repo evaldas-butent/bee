@@ -26,7 +26,6 @@ import com.butent.bee.client.widget.CustomWidget;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.InputText;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.service.ServiceConstants;
 import com.butent.bee.shared.modules.service.ServiceConstants.ServiceFilterDataType;
@@ -70,8 +69,6 @@ public class SvcFilterDataWidget extends Flow implements
 
   private final InputText searchBox;
 
-  private final LocalizableConstants localizableConstants = Localized.getConstants();
-
   private String searchQuery;
   private int numberOfHiddenItems;
 
@@ -107,7 +104,7 @@ public class SvcFilterDataWidget extends Flow implements
 
     this.selectAllWidget = new Image(Global.getImages().arrowDownDouble());
     selectAllWidget.addStyleName(STYLE_DATA_COMMAND_ALL);
-    selectAllWidget.setTitle(localizableConstants.selectAll());
+    selectAllWidget.setTitle(Localized.dictionary().selectAll());
     selectAllWidget.addClickHandler(getSelectAllClickHandler());
 
     unselectedControls.add(selectAllWidget);
@@ -134,7 +131,7 @@ public class SvcFilterDataWidget extends Flow implements
 
     this.deselectAllWidget = new Image(Global.getImages().arrowUpDouble());
     deselectAllWidget.addStyleName(STYLE_DATA_COMMAND_ALL);
-    deselectAllWidget.setTitle(localizableConstants.deselectAll());
+    deselectAllWidget.setTitle(Localized.dictionary().deselectAll());
 
     deselectAllWidget.addClickHandler(getDeselectAllClickHandler());
 
@@ -221,11 +218,11 @@ public class SvcFilterDataWidget extends Flow implements
 
     int hideCount = 0;
 
-    for (Element itemElement = unselectedContainer.getFirstChildElement(); itemElement != null;
-        itemElement = itemElement.getNextSiblingElement()) {
-      if (StyleUtils.hasClassName(itemElement, STYLE_DATA_ITEM)) {
-        boolean match = matches(itemElement, newQuery);
-        StyleUtils.setVisible(itemElement, match);
+    for (Element itemEl = unselectedContainer.getFirstChildElement(); itemEl != null; itemEl =
+        itemEl.getNextSiblingElement()) {
+      if (StyleUtils.hasClassName(itemEl, STYLE_DATA_ITEM)) {
+        boolean match = matches(itemEl, newQuery);
+        StyleUtils.setVisible(itemEl, match);
 
         if (!match) {
           hideCount++;

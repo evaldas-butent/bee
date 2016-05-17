@@ -1,6 +1,5 @@
 package com.butent.bee.client.modules.service;
 
-import com.butent.bee.client.ui.UiOption;
 import com.google.common.collect.Maps;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
@@ -8,6 +7,7 @@ import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import static com.butent.bee.shared.modules.service.ServiceConstants.*;
 
 import com.butent.bee.client.presenter.GridPresenter;
+import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
@@ -15,8 +15,8 @@ import com.butent.bee.client.widget.CheckBox;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.Value;
-import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.modules.service.ServiceConstants.SvcObjectStatus;
 import com.butent.bee.shared.ui.Action;
 
 import java.util.Collection;
@@ -24,7 +24,6 @@ import java.util.Map;
 
 public class ServiceDefectsGrid extends AbstractGridInterceptor {
 
-  private static final LocalizableConstants localizableConstants = Localized.getConstants();
   private Filter defaultFilter;
   private Filter customFilter = Filter.isTrue();
 
@@ -37,7 +36,7 @@ public class ServiceDefectsGrid extends AbstractGridInterceptor {
   @Override
   public void afterCreatePresenter(final GridPresenter presenter) {
     HeaderView header = presenter.getHeader();
-    CheckBox showAll = new CheckBox(localizableConstants.svcActionShowFromProjects());
+    CheckBox showAll = new CheckBox(Localized.dictionary().svcActionShowFromProjects());
 
     header.clearCommandPanel();
     header.addCommandItem(showAll);

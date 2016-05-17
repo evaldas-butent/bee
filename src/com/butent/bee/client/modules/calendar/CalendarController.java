@@ -29,11 +29,11 @@ import com.butent.bee.client.screen.HandlesStateChange;
 import com.butent.bee.client.screen.HasDomain;
 import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.widget.CheckBox;
+import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Image;
-import com.butent.bee.client.widget.Label;
-import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.InputColor;
+import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.SimpleCheckBox;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -510,7 +510,7 @@ class CalendarController extends Flow implements HandlesStateChange, HasCaption,
     checkTable.addStyleName(STYLE_CHECK_ALL_ATTENDEES);
     add(checkTable);
 
-    checkAllAttendees.setTitle(Localized.getConstants().filterAll());
+    checkAllAttendees.setTitle(Localized.dictionary().filterAll());
     checkAllAttendees.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
@@ -532,7 +532,7 @@ class CalendarController extends Flow implements HandlesStateChange, HasCaption,
     });
 
     checkTable
-        .setWidgetAndStyle(0, 0, new Label(Localized.getConstants().calAttendees()),
+        .setWidgetAndStyle(0, 0, new Label(Localized.dictionary().calAttendees()),
             STYLE_PREFIX + UcaColumn.CAPTION.getLabel());
     checkTable.setWidgetAndStyle(0, 1, checkAllAttendees,
         STYLE_PREFIX + UcaColumn.ENABLE.getLabel());

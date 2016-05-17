@@ -1,6 +1,3 @@
-#KONFLIKTAS {
-
-
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Form [
   <!ENTITY inline "display: inline-block;">
@@ -16,27 +13,76 @@
   name="NewRequest" viewName="Requests" caption="=crmNewRequest" width="700"
   height="600">
   <FlowPanel style="padding: 10px 2px 2px 10px;">
-    <FlowPanel style="&section;">
-      <Label text="=date" class="bee-required" style="&inline; text-align:right; width:80px; padding-top:1px; margin-right: 5px" />
-      <InputDateTime source="Date" style="&inline; width:130px;" />
-      <Label text="=client" class="bee-required" style="&inline; width:131px; padding-top:1px; text-align:right; margin-right: 4px" />
-      <DataSelector source="Customer" style="&inline; width:200px;" choiceColumns="Name TypeName" renderColumns="CustomerName TypeName" />
-      <Label text="=crmRequestForm" style="&inline; width:125px; padding-top:1px; text-align:right; margin-right: 10px" />
-      <DataSelector source="RequestForm" style="&inline; width:130px;" />
+    <Table kind="controls" style="&tbl;" cellStyle="&cell;">
+      <col index="0" cellStyle="&col1;" />
+
+      <row>
+        <Label for="Summary" />
+        <InputText source="Summary" style="&inp2x;"
+          autocomplete="true" visible="true" maxLength="70" tabIndex="40" />
+      </row>
+      <row for="Content">
+        <Label for="Content" />
+        <InputArea source="Content" style="&inp2x; height: 60px;"
+          name="InputArea" />
+      </row>
+    </Table>
+
+    <FlowPanel class="flexBox-horizontal-top">
+      <Label text="=files" style="&col1; margin-top: 4px;" />
+      <FileCollector name="Files" editableColumns="name" />
     </FlowPanel>
 
-    <FlowPanel style="&section;">
-      <Label text="=crmRequestType" style="&inline; width:75px; padding-top:1px; text-align:right; margin-right: 10px" />
-      <DataSelector source="RequestType" style="&inline; width:130px;" />
-      <Label class="bee-required" text="=responsiblePerson"
-        style="&inline; width:125px; padding-top:1px; text-align:right; padding-right: 10px" />
-      <DataSelector source="Manager" style="&inline; width:200px;" required="true" />
-    </FlowPanel>
+    <Table kind="controls" style="&tbl;" cellStyle="&cell;">
+      <col index="0" cellStyle="&col1;" />
 
-    &separator;
-    <FlowPanel style="&section;">
-      <Label text="=crmRequest" class="bee-required" style="&inline; width:75px; padding-top:1px; text-align:right; margin-right: 10px; vertical-align:top;" />      <InputArea source="Content" visibleLines="8" style="width:490px;" />
-    </FlowPanel>
+      <row>
+        <Label for="Manager" />
+        <DataSelector source="Manager" style="&inp2x;"  tabIndex="50"/>
+      </row>
+
+      <row>
+        <Label for="Contacts" />
+        <InputText source="Contacts" style="&inp2x;" tabIndex="60"/>
+      </row>
+
+      <row>
+        <Label for="RequestForm" />
+        <DataSelector source="RequestForm" style="&inp2x;" tabIndex="70" />
+      </row>
+    </Table>
+
+    <Table kind="controls" style="&tbl;" cellStyle="&cell;">
+      <col index="0" cellStyle="&col1;" />
+
+      <row>
+        <Label for="Priority" />
+        <Radio source="Priority" tabIndex="80"/>
+      </row>
+
+      <row>
+        <Label for="RequestType" class="bee-required" />
+        <DataSelector source="RequestType" name="RequestType"
+          renderColumns="RequestTypeName" style="&inp2x;" required="true" tabIndex="10" />
+      </row>
+
+      <row>
+        <Label for="Product" name="Product" />
+        <DataSelector source="Product" renderColumns="ProductName"
+          newRowEnabled="true" style="&inp2x;" filter="Visible" tabIndex="90" />
+      </row>
+
+      <row>
+        <Label for="Customer" />
+        <DataSelector source="Customer" style="&inp2x;"
+          choiceColumns="Name TypeName" renderColumns="CustomerName TypeName" tabIndex="20" />
+      </row>
+
+      <row>
+        <Label for="CustomerPerson" />
+        <DataSelector source="CustomerPerson" style="&inp2x;"
+          options="Customer" choiceColumns="FirstName LastName CompanyName"  tabIndex="30"/>
+      </row>
 
       <row>
         <Label for="Date" />
@@ -45,5 +91,3 @@
     </Table>
   </FlowPanel>
 </f:Form>
-
-#}

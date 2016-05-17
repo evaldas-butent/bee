@@ -272,7 +272,7 @@ class TasksGrid extends AbstractGridInterceptor {
     if (Objects.equals(owner, userId)) {
       if (BeeUtils.unbox(activeRow.getBoolean(getDataIndex(COL_SIGN_CONTRACT)))
           && DataUtils.isId(activeRow.getLong(getDataIndex(ProjectConstants.COL_PROJECT)))) {
-        presenter.getGridView().notifyWarning(Localized.getConstants().rowIsNotRemovable());
+        presenter.getGridView().notifyWarning(Localized.dictionary().rowIsNotRemovable());
         return GridInterceptor.DeleteMode.CANCEL;
       }
       return GridInterceptor.DeleteMode.SINGLE;
@@ -538,13 +538,13 @@ class TasksGrid extends AbstractGridInterceptor {
         Queries.update(VIEW_TASKS, selectedRow.getId(), selectedRow.getVersion(), columns,
             oldValues, newValues, null, new RowCallback() {
 
-          @Override
-          public void onSuccess(BeeRow result) {
-            RowUpdateEvent.fire(BeeKeeper.getBus(), VIEW_TASKS, result);
-            RowEditor.open(ProjectConstants.VIEW_PROJECTS, projectRow, Opener.NEW_TAB);
-          }
+              @Override
+              public void onSuccess(BeeRow result) {
+                RowUpdateEvent.fire(BeeKeeper.getBus(), VIEW_TASKS, result);
+                RowEditor.open(ProjectConstants.VIEW_PROJECTS, projectRow, Opener.NEW_TAB);
+              }
 
-        });
+            });
         updateProjectRelations(selectedRow.getId(), projectRow.getId());
       }
     });
@@ -553,8 +553,9 @@ class TasksGrid extends AbstractGridInterceptor {
   private static void updateProjectRelations(final long taskId, final long projectRow) {
     final DataInfo relatedDocuments = Data.getDataInfo(AdministrationConstants.VIEW_RELATIONS);
 
-    Queries.getRowSet(relatedDocuments.getViewName(), relatedDocuments.getColumnNames(false), Filter
-        .equals(COL_TASK, taskId), new RowSetCallback() {
+    Queries.getRowSet(relatedDocuments.getViewName(), relatedDocuments.getColumnNames(false),
+        Filter
+            .equals(COL_TASK, taskId), new RowSetCallback() {
 
           @Override
           public void onSuccess(BeeRowSet relTaskDocuments) {
@@ -607,16 +608,16 @@ class TasksGrid extends AbstractGridInterceptor {
         Queries.update(VIEW_TASKS, selectedRow.getId(), selectedRow.getVersion(),
             Data.getColumns(VIEW_TASKS, Lists.newArrayList(ProjectConstants.COL_PROJECT)), Lists
                 .newArrayList((String) null), Lists.newArrayList(BeeUtils.toString(projectRow
-                    .getId())), null,
+                .getId())), null,
             new RowCallback() {
 
-          @Override
-          public void onSuccess(BeeRow updatedTaskRow) {
-            RowUpdateEvent.fire(BeeKeeper.getBus(), VIEW_TASKS, updatedTaskRow);
-            RowEditor.openForm(ProjectConstants.FORM_PROJECT, Data.getDataInfo(
-                ProjectConstants.VIEW_PROJECTS), projectRow.getId(), Opener.NEW_TAB);
-          }
-        });
+              @Override
+              public void onSuccess(BeeRow updatedTaskRow) {
+                RowUpdateEvent.fire(BeeKeeper.getBus(), VIEW_TASKS, updatedTaskRow);
+                RowEditor.openForm(ProjectConstants.FORM_PROJECT, Data.getDataInfo(
+                    ProjectConstants.VIEW_PROJECTS), projectRow.getId(), Opener.NEW_TAB);
+              }
+            });
         updateProjectRelations(selectedRow.getId(), projectRow.getId());
       }
     });

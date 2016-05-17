@@ -42,6 +42,9 @@ import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dialog.Popup.OutsideClick;
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.event.EventUtils;
+import com.butent.bee.client.event.logical.MutationEvent;
+import com.butent.bee.client.event.logical.MutationEvent.Handler;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.i18n.Format;
@@ -144,15 +147,11 @@ class TaskEditor extends ProductSupportInterceptor {
   private static final String NAME_SERVICE_OBJECT = "ServiceObjects";
   private static final String NAME_PRIVATE_TASK = "PrivateTask";
   private Map<String, Pair<Long, String>> dbaParameters = Maps.newConcurrentMap();
+
   private static final String NAME_TASK_TREE = "TaskTree";
   private static final String NAME_ORDER = "TaskEventsOrder";
 
   private static final String DEFAULT_PHOTO_IMAGE = "images/defaultUser.png";
-  
-
-#Konfliktas {  private static final List<String> relations = Lists.newArrayList(PROP_COMPANIES, PROP_PERSONS,
-      PROP_DOCUMENTS, PROP_APPOINTMENTS, PROP_DISCUSSIONS, PROP_SERVICE_OBJECTS, PROP_TASKS,
-      PROP_PROJECTS); }
 
   private static void addDurationCell(HtmlTable display, int row, int col, String value,
       String style) {
@@ -768,7 +767,7 @@ class TaskEditor extends ProductSupportInterceptor {
 
     /** Allow executor edit relations */
     if (isExecutor()) {
-      for (String prop : relations) {
+      for (String prop : TaskUtils.TASK_RELATIONS) {
         MultiSelector sel = getMultiSelector(form, prop);
         if (sel != null) {
           sel.setEnabled(true);
@@ -778,7 +777,7 @@ class TaskEditor extends ProductSupportInterceptor {
 
     setProjectStagesFilter(form, row);
     setProjectUsersFilter(form, row);
-     
+
     if (isExecutor()) {
       setEnabledRelations();
     }
@@ -1010,10 +1009,11 @@ class TaskEditor extends ProductSupportInterceptor {
 
     Widget wProjectStage = form.getWidgetBySource(ProjectConstants.COL_PROJECT_STAGE);
 
-    /*
-     * if (wProjectStage instanceof DataSelector) { ((DataSelector)
-     * wProjectStage).setEnabled(false); } else { return; }
-     */
+    if (wProjectStage instanceof DataSelector) {
+      ((DataSelector) wProjectStage).setEnabled(false);
+    } else {
+      return;
+    }
 
     /*
      * if (BeeConst.isUndef(idxTaskState)) { return; }
@@ -1023,20 +1023,15 @@ class TaskEditor extends ProductSupportInterceptor {
       return;
     }
 
-    /*
-     * long currentUser = BeeUtils.unbox(BeeKeeper.getUser().getUserId()); long projectOwner =
-     * BeeUtils.unbox(row.getLong(idxProjectOwner));
-     */
+    long currentUser = BeeUtils.unbox(BeeKeeper.getUser().getUserId());
+    long projectOwner = BeeUtils.unbox(row.getLong(idxProjectOwner));
     long projectId = BeeUtils.unbox(row.getLong(idxProject));
     /* int state = BeeUtils.unbox(row.getInteger(idxTaskState)); */
     int projectStatus = BeeUtils.unbox(row.getInteger(idxProjectStatus));
 
-    /*
-     * @Deprecated if (DataUtils.isId(projectId)) { setVisibleProjectData(form, true); } else {
-     * setVisibleProjectData(form, false); }
-     * 
-     * if (currentUser != projectOwner) { return; }
-     */
+    if (currentUser != projectOwner) {
+      return;
+    }
 
     /*
      * if (TaskStatus.SCHEDULED.ordinal() != state) { return; }
@@ -1048,16 +1043,16 @@ class TaskEditor extends ProductSupportInterceptor {
 
     ((DataSelector) wProjectStage).getOracle().setAdditionalFilter(
         Filter.equals(ProjectConstants.COL_PROJECT, projectId), true);
-    /* ((DataSelector) wProjectStage).setEnabled(true); */
+    ((DataSelector) wProjectStage).setEnabled(true);
 
   }
 
-  @SuppressWarnings("unused")
   public void createDocument(final FileInfo fileInfo, final IsRow row) {
     createDocument(fileInfo, row, false);
   }
 
-  public void createDocument(final FileInfo fileInfo, final IsRow row) {
+  public void createDocument(final FileInfo fileInfo, final IsRow row,
+      final boolean enableTemplates) {
 
     final DataInfo dataInfo = Data.getDataInfo(DocumentConstants.VIEW_DOCUMENTS);
     final BeeRow docRow = RowFactory.createEmptyRow(dataInfo, true);
@@ -1065,7 +1060,6 @@ class TaskEditor extends ProductSupportInterceptor {
 
     if (docRow != null) {
 
-      final int idxProject = Data.getColumnIndex(VIEW_TASKS, ProjectConstants.COL_PROJECT);
       int idxCompanyName = Data.getColumnIndex(VIEW_TASKS, ALS_COMPANY_NAME);
       int idxCompany = Data.getColumnIndex(VIEW_TASKS, COL_TASK_COMPANY);
 
@@ -1119,42 +1113,48 @@ class TaskEditor extends ProductSupportInterceptor {
 
             newRow.setProperty(PROP_DOCUMENTS, DataUtils.buildIdList(idList));
 
-                Queries.insert(VIEW_RELATIONS, Data.getColumns(VIEW_RELATIONS,
-                    Lists.newArrayList(DocumentConstants.COL_DOCUMENT,
-                        ProjectConstants.COL_PROJECT)),
-                    Lists.newArrayList(String.valueOf(br.getId()),
-                        String.valueOf(row.getString(idxProject))));
+            /**
+             * @since Paradis
+             */
+            buildRelations(br, row, newRow, sel);
 
-                List<Long> list1 = DataUtils.parseIdList(row.getProperty(PROP_DOCUMENTS));
-                list1.add(br.getId());
-                BeeRow newRow = getNewRow();
-                newRow.setProperty(PROP_DOCUMENTS, DataUtils.buildIdList(list1));
-                RowInsertEvent.fire(BeeKeeper.getBus(), DocumentConstants.VIEW_DOCUMENTS, br, null);
-                MultiSelector sel = getMultiSelector(getFormView(), PROP_DOCUMENTS);
-                if (sel != null) {
-                  List<MultiSelector.Choice> val = sel.getChoices();
-                  val.add(new MultiSelector.Choice(br.getId()));
-                  sel.setChoices(val);
-
-                }
-
-                ParameterList params = createParams(TaskEvent.EDIT, newRow,
-                    TaskUtils.getInsertNote(Localized.getConstants().document(),
-                        BeeUtils.joinWords(
-                            br.getString(Data.getColumnIndex(DocumentConstants.VIEW_DOCUMENTS,
-                                DocumentConstants.COL_DOCUMENT_NAME)),
-                            br.getString(Data.getColumnIndex(DocumentConstants.VIEW_DOCUMENTS,
-                                DocumentConstants.COL_REGISTRATION_NUMBER)),
-                            br.getDateTime(Data.getColumnIndex(DocumentConstants.VIEW_DOCUMENTS,
-                                DocumentConstants.COL_DOCUMENT_DATE)))));
-
-                sendRequest(params, TaskEvent.EDIT);
-
-              }
-            });
+            ParameterList prm = createParams(TaskEvent.EDIT, newRow,
+                TaskUtils.getInsertNote(Localized.dictionary().document(),
+                    BeeUtils.joinWords(
+                        br.getString(Data.getColumnIndex(DocumentConstants.VIEW_DOCUMENTS,
+                            DocumentConstants.COL_DOCUMENT_NAME)),
+                        br.getString(Data.getColumnIndex(DocumentConstants.VIEW_DOCUMENTS,
+                            DocumentConstants.COL_REGISTRATION_NUMBER)),
+                        br.getDateTime(Data.getColumnIndex(DocumentConstants.VIEW_DOCUMENTS,
+                            DocumentConstants.COL_DOCUMENT_DATE))
+                        )));
+            sendRequest(prm, TaskEvent.EDIT);
           }
         });
       }
+    }
+  }
+
+  /**
+   * @since Paradis
+   */
+  private static void buildRelations(BeeRow br, IsRow row, BeeRow newRow, MultiSelector sel) {
+    final int idxProject = Data.getColumnIndex(VIEW_TASKS, ProjectConstants.COL_PROJECT);
+    Queries.insert(VIEW_RELATIONS, Data.getColumns(VIEW_RELATIONS,
+        Lists.newArrayList(DocumentConstants.COL_DOCUMENT,
+            ProjectConstants.COL_PROJECT)),
+        Lists.newArrayList(String.valueOf(br.getId()),
+            String.valueOf(row.getString(idxProject))));
+
+    List<Long> list1 = DataUtils.parseIdList(row.getProperty(PROP_DOCUMENTS));
+    list1.add(br.getId());
+    newRow.setProperty(PROP_DOCUMENTS, DataUtils.buildIdList(list1));
+    RowInsertEvent.fire(BeeKeeper.getBus(), DocumentConstants.VIEW_DOCUMENTS, br, null);
+    if (sel != null) {
+      List<MultiSelector.Choice> val = sel.getChoices();
+      val.add(new MultiSelector.Choice(br.getId()));
+      sel.setChoices(val);
+
     }
   }
 
@@ -1409,7 +1409,7 @@ class TaskEditor extends ProductSupportInterceptor {
 
     if (BeeUtils.unbox(getBoolean(COL_SIGN_CONTRACT))
         && DataUtils.isId(getLong(ProjectConstants.COL_PROJECT)) && isProjectActive) {
-      dialog.addWarning(Localized.getConstants().prjWilBeCanceled());
+      dialog.addWarning(Localized.dictionary().prjWillBeCanceled());
     }
 
     dialog.addAction(Localized.dictionary().crmTaskCancel(), new ScheduledCommand() {
@@ -1544,7 +1544,7 @@ class TaskEditor extends ProductSupportInterceptor {
                   BeeUtils.toString(ProjectStatus.SUSPENDED.ordinal()));
               break;
             default:
-              showError(Localized.getConstants().selectContractState());
+              showError(Localized.dictionary().selectContractState());
               return;
           }
         }
@@ -1940,7 +1940,7 @@ class TaskEditor extends ProductSupportInterceptor {
 
     if (BeeUtils.unbox(getBoolean(COL_SIGN_CONTRACT))
         && DataUtils.isId(getLong(ProjectConstants.COL_PROJECT)) && isProjectActive) {
-      dialog.addWarning(Localized.getConstants().prjWilBeCanceled());
+      dialog.addWarning(Localized.dictionary().prjWillBeCanceled());
     }
 
     dialog.addAction(Localized.dictionary().crmActionSuspend(), new ScheduledCommand() {
@@ -2206,13 +2206,13 @@ class TaskEditor extends ProductSupportInterceptor {
           if (DataUtils.isId(prjId)) {
             Queries.getRow(ProjectConstants.VIEW_PROJECTS, prjId,
                 new RowCallback() {
-              @Override
-              public void onSuccess(BeeRow projectRow) {
-                RowUpdateEvent.fire(BeeKeeper.getBus(), ProjectConstants.VIEW_PROJECTS,
-                    projectRow);
+                  @Override
+                  public void onSuccess(BeeRow projectRow) {
+                    RowUpdateEvent.fire(BeeKeeper.getBus(), ProjectConstants.VIEW_PROJECTS,
+                        projectRow);
 
-              }
-            });
+                  }
+                });
           }
 
           if (!BeeUtils.isEmpty(files)) {
@@ -2321,6 +2321,7 @@ class TaskEditor extends ProductSupportInterceptor {
 
     return menu;
   }
+
   private void setObjectFilter(final FormView form, IsRow row) {
     int idxProject = form.getDataIndex(ProjectConstants.COL_PROJECT);
 
@@ -2342,20 +2343,20 @@ class TaskEditor extends ProductSupportInterceptor {
         Lists.newArrayList(ServiceConstants.COL_SERVICE_ADDRESS),
         Filter.isEqual(
             ProjectConstants.COL_PROJECT, Value.getValue(projectId)), new RowSetCallback() {
-              @Override
-              public void onSuccess(BeeRowSet result) {
-                if (result.isEmpty()) {
-                  return;
-                }
+          @Override
+          public void onSuccess(BeeRowSet result) {
+            if (result.isEmpty()) {
+              return;
+            }
 
-                if (serviceObjects == null) {
-                  return;
-                }
+            if (serviceObjects == null) {
+              return;
+            }
 
-                serviceObjects.getOracle().setAdditionalFilter(Filter.idIn(result.getRowIds()),
-                    true);
-              }
-            });
+            serviceObjects.getOracle().setAdditionalFilter(Filter.idIn(result.getRowIds()),
+                true);
+          }
+        });
   }
 
   private void setProjectUsers(List<Long> projectUsers) {
@@ -2380,7 +2381,6 @@ class TaskEditor extends ProductSupportInterceptor {
     long projectId = BeeUtils.unbox(row.getLong(idxProject));
 
     if (!DataUtils.isId(projectId)) {
-      observers.getOracle().setAdditionalFilter(null, true);
       return;
     }
 

@@ -1,40 +1,42 @@
 package com.butent.bee.client.modules.projects;
 
-import com.butent.bee.client.Global;
-import com.butent.bee.client.composite.UnboundSelector;
-import com.butent.bee.client.data.RowCallback;
-import com.butent.bee.client.data.RowFactory;
-import com.butent.bee.client.dialog.Popup;
-import com.butent.bee.client.ui.FormDescription;
-import com.butent.bee.client.ui.FormFactory;
-import com.butent.bee.client.view.form.FormView;
-import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
-import com.butent.bee.client.view.form.interceptor.FormInterceptor;
-import com.butent.bee.client.widget.Button;
-import com.butent.bee.shared.data.BeeRow;
-import com.butent.bee.shared.modules.projects.ProjectConstants;
-import com.butent.bee.shared.ui.Action;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+
 import static com.butent.bee.shared.modules.projects.ProjectConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Global;
+import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.data.Provider;
+import com.butent.bee.client.data.RowCallback;
+import com.butent.bee.client.data.RowFactory;
+import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.ColumnHeader;
 import com.butent.bee.client.grid.column.AbstractColumn;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.render.HasCellRenderer;
+import com.butent.bee.client.ui.FormDescription;
+import com.butent.bee.client.ui.FormFactory;
+import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.edit.EditableColumn;
+import com.butent.bee.client.view.form.FormView;
+import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
+import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.TreeGridInterceptor;
 import com.butent.bee.client.view.search.AbstractFilterSupplier;
+import com.butent.bee.client.widget.Button;
+import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.modules.projects.ProjectConstants;
 import com.butent.bee.shared.modules.projects.ProjectStatus;
+import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
@@ -88,7 +90,6 @@ class AllProjectsGrid extends TreeGridInterceptor {
 
     return true;
   }
-
 
   @Override
   public DeleteMode getDeleteMode(GridPresenter presenter, IsRow activeRow,
@@ -221,7 +222,7 @@ class AllProjectsGrid extends TreeGridInterceptor {
       public void onSuccess(final BeeRow projectRow) {
 
         if (getGridView() != null) {
-          getGridView().notifyInfo(Localized.getMessages()
+          getGridView().notifyInfo(Localized.dictionary()
               .newProjectCreated(projectRow.getId()));
         }
 

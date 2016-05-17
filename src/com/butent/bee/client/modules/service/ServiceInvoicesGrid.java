@@ -1,6 +1,5 @@
 package com.butent.bee.client.modules.service;
 
-import com.butent.bee.client.ui.UiOption;
 import com.google.common.collect.Maps;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -15,6 +14,7 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.modules.trade.TradeKeeper;
 import com.butent.bee.client.presenter.GridPresenter;
+import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.grid.GridView.SelectedRows;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
@@ -29,7 +29,6 @@ import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.view.RowInfo;
-import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.ui.Action;
@@ -40,9 +39,8 @@ import java.util.Map;
 import java.util.Set;
 
 public class ServiceInvoicesGrid extends AbstractGridInterceptor implements ClickHandler {
-  private static final LocalizableConstants localizableConstants = Localized.getConstants();
 
-  private final Button action = new Button(localizableConstants.trSendToERP(), this);
+  private final Button action = new Button(Localized.dictionary().trSendToERP(), this);
   private Filter defaultFilter;
   private Filter customFilter = Filter.isTrue();
 
@@ -54,7 +52,7 @@ public class ServiceInvoicesGrid extends AbstractGridInterceptor implements Clic
   @Override
   public void afterCreatePresenter(final GridPresenter presenter) {
     HeaderView header = presenter.getHeader();
-    CheckBox showAll = new CheckBox(localizableConstants.svcActionShowFromProjects());
+    CheckBox showAll = new CheckBox(Localized.dictionary().svcActionShowFromProjects());
     header.clearCommandPanel();
     header.addCommandItem(action);
     header.addCommandItem(showAll);
@@ -110,11 +108,11 @@ public class ServiceInvoicesGrid extends AbstractGridInterceptor implements Clic
       ids.add(row.getId());
     }
     if (ids.isEmpty()) {
-      presenter.getGridView().notifyWarning(Localized.getConstants().selectAtLeastOneRow());
+      presenter.getGridView().notifyWarning(Localized.dictionary().selectAtLeastOneRow());
       return;
     }
 
-    Global.confirm(Localized.getConstants().trSendToERPConfirm(), new ConfirmationCallback() {
+    Global.confirm(Localized.dictionary().trSendToERPConfirm(), new ConfirmationCallback() {
       @Override
       public void onConfirm() {
         final HeaderView header = presenter.getHeader();

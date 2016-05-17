@@ -37,7 +37,6 @@
     sortBy="ExecutorLastName ExecutorFirstName" minWidth="100" />
 
   <RelColumn name="Project" visible="true" renderColumns="ProjectName" />
-  <RelColumn name="ProjectStage" visible="false" renderColumns="StageName" />
 
   <DataColumn name="StartTime" visible="true" readOnly="true"
     width="120" />

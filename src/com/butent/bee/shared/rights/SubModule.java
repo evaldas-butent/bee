@@ -54,7 +54,7 @@ public enum SubModule implements HasLocalizedCaption {
   },
   PROJECTS {
     @Override
-    public String getCaption(LocalizableConstants constants) {
+    public String getCaption(Dictionary constants) {
       return constants.svcProjects();
     }
   };

@@ -2,6 +2,7 @@ package com.butent.bee.shared.modules.service;
 
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.i18n.Dictionary;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.ui.HasLocalizedCaption;
 import com.butent.bee.shared.utils.EnumUtils;
@@ -26,10 +27,10 @@ public final class ServiceConstants {
   }
 
   public enum ServiceFilterDataType implements HasCaption {
-      CATEGORY(Localized.getConstants().category()),
-      ADDRESS(Localized.getConstants().address()),
-      CUSTOMER(Localized.getConstants().customer()),
-      CONTRACTOR(Localized.getConstants().svcContractor());
+    CATEGORY(Localized.dictionary().category()),
+    ADDRESS(Localized.dictionary().address()),
+    CUSTOMER(Localized.dictionary().customer()),
+    CONTRACTOR(Localized.dictionary().svcContractor());
 
     private final String caption;
 
@@ -45,55 +46,55 @@ public final class ServiceConstants {
   }
 
   public enum SvcObjectStatus implements HasLocalizedCaption {
-      /* 0 */
-      SERVICE_OBJECT(Localized.getConstants().svcObjects(),
-        Localized.getConstants().svcActionToServiceObjects(),
-        Localized.getConstants().svcCalendar()) {
-        @Override
-        public String getCaption(LocalizableConstants constants) {
-          return constants.svcObject();
-        }
-      },
+    /* 0 */
+    SERVICE_OBJECT(Localized.dictionary().svcObjects(),
+        Localized.dictionary().svcActionToServiceObjects(),
+        Localized.dictionary().svcCalendar()) {
+      @Override
+      public String getCaption(Dictionary constants) {
+        return constants.svcObject();
+      }
+    },
 
-      /* 1 */
-      PROJECT_OBJECT(Localized.getConstants().svcProjectObjects(),
-        Localized.getConstants().svcActionToProjectObjects(),
-        Localized.getConstants().svcObjectCalendar()) {
-        @Override
-        public String getCaption(LocalizableConstants constants) {
-          return constants.svcProjectObject();
-        }
-      },
+    /* 1 */
+    PROJECT_OBJECT(Localized.dictionary().svcProjectObjects(),
+        Localized.dictionary().svcActionToProjectObjects(),
+        Localized.dictionary().svcObjectCalendar()) {
+      @Override
+      public String getCaption(Dictionary constants) {
+        return constants.svcProjectObject();
+      }
+    },
 
-      /* 2 */
-      POTENTIAL_OBJECT(Localized.getConstants().svcObjectsPotential(),
+    /* 2 */
+    POTENTIAL_OBJECT(Localized.dictionary().svcObjectsPotential(),
         null,
-        Localized.getConstants().svcObjectCalendar()) {
-        @Override
-        public String getCaption(LocalizableConstants constants) {
-          return constants.svcObjectPotential();
-        }
-      },
+        Localized.dictionary().svcObjectCalendar()) {
+      @Override
+      public String getCaption(Dictionary constants) {
+        return constants.svcObjectPotential();
+      }
+    },
 
-      /* 3 */
-      LOST_OBJECT(Localized.getConstants().svcObjectsLost(),
-        Localized.getConstants().svcActionToLostObjects(),
-        Localized.getConstants().svcObjectCalendar()) {
-        @Override
-        public String getCaption(LocalizableConstants constants) {
-          return constants.svcObjectLost();
-        }
-      },
+    /* 3 */
+    LOST_OBJECT(Localized.dictionary().svcObjectsLost(),
+        Localized.dictionary().svcActionToLostObjects(),
+        Localized.dictionary().svcObjectCalendar()) {
+      @Override
+      public String getCaption(Dictionary constants) {
+        return constants.svcObjectLost();
+      }
+    },
 
-      /* 4 */
-      TEMPLATE_OBJECT(Localized.getConstants().svcObjectsTemplate(),
-        Localized.getConstants().svcActionToLostObjects(),
-        Localized.getConstants().svcObjectCalendar()) {
-        @Override
-        public String getCaption(LocalizableConstants constants) {
-          return constants.svcObjectsTemplate();
-        }
-      };
+    /* 4 */
+    TEMPLATE_OBJECT(Localized.dictionary().svcObjectsTemplate(),
+        Localized.dictionary().svcActionToLostObjects(),
+        Localized.dictionary().svcObjectCalendar()) {
+      @Override
+      public String getCaption(Dictionary constants) {
+        return constants.svcObjectsTemplate();
+      }
+    };
 
     private final String listCaption;
     private final String commandCaption;
@@ -107,7 +108,7 @@ public final class ServiceConstants {
 
     @Override
     public String getCaption() {
-      return getCaption(Localized.getConstants());
+      return getCaption(Localized.dictionary());
     }
 
     public String getCalendarCaption() {

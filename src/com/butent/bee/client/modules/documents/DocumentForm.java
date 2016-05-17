@@ -19,6 +19,7 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.UserInfo;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.composite.ChildSelector;
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.IdCallback;
@@ -28,6 +29,7 @@ import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
+import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.ChildGrid;
@@ -158,6 +160,7 @@ public class DocumentForm extends DocumentDataForm {
   });
   private ChildGrid itemsGrid;
   private Relations rel;
+  private final Map<String, ChildSelector> childSelectors = new HashMap<>();
 
   @Override
   public void afterCreateWidget(String name, IdentifiableWidget widget,
@@ -558,10 +561,13 @@ public class DocumentForm extends DocumentDataForm {
     }
   }
 
+  /**
+   * @since Paradis
+   */
   private void createDocument() {
-    LocalizableConstants loc = Localized.getConstants();
 
-    Global.inputString(Localized.maybeTranslate("=documentNew"), loc.documentName(),
+    Global.inputString(Localized.maybeTranslate("=documentNew"), Localized.dictionary()
+        .documentName(),
         new StringCallback() {
           @Override
           public void onSuccess(String name) {

@@ -1132,77 +1132,13 @@ public class TasksModuleBean implements BeeModule {
       case RENEW:
       case ACTIVATE:
       case OUT_OF_OBSERVERS:
-#Konfliktas {
-        response = registerTaskEvent(taskId, currentUser, event, reqInfo, eventNote, finishTime,
-            now);
-        if (response.hasResponse(Long.class)) {
-          eventId = (Long) response.getResponse();
-        }
 
-        if (!response.hasErrors()
-            && !BeeUtils.isEmpty(taskRow.getProperty(ProjectConstants.ALS_PROJECT_STATUS))
-            && DataUtils.isId(taskRow.getLong(
-                taskData.getColumnIndex(ProjectConstants.COL_PROJECT)))) {
-
-          Integer status =
-              BeeUtils.toIntOrNull(taskRow.getProperty(ProjectConstants.ALS_PROJECT_STATUS));
-
-          if (status != null) {
-
-            if (status == ProjectStatus.SUSPENDED.ordinal()) {
-              SqlUpdate update =
-                  new SqlUpdate(TBL_TASKS)
-                      .addConstant(COL_STATUS, TaskStatus.CANCELED.ordinal())
-                      .setWhere(
-                          SqlUtils.and(
-                              SqlUtils.notEqual(TBL_TASKS, sys.getIdName(TBL_TASKS), taskRow
-                                  .getId()),
-                              SqlUtils.or(SqlUtils.equals(TBL_TASKS, COL_STATUS, TaskStatus.ACTIVE
-                                  .ordinal()),
-                                  SqlUtils.equals(TBL_TASKS, COL_STATUS, TaskStatus.SCHEDULED
-                                      .ordinal()),
-                                  SqlUtils.equals(TBL_TASKS, COL_STATUS, TaskStatus.NOT_VISITED
-                                      .ordinal())),
-                              SqlUtils.equals(TBL_TASKS, ProjectConstants.COL_PROJECT, taskRow
-                                  .getLong(
-                                      taskData.getColumnIndex(ProjectConstants.COL_PROJECT)))));
-
-              response = qs.updateDataWithResponse(update);
-            }
-
-            if (!response.hasErrors()) {
-
-              response = projects.setProjectStatus(
-                  taskRow.getLong(taskData.getColumnIndex(ProjectConstants.COL_PROJECT)),
-                  BeeUtils.toInt(taskRow.getProperty(ProjectConstants.ALS_PROJECT_STATUS)));
-            }
-
-            if (!response.hasErrors() && status == ProjectStatus.SUSPENDED.ordinal()) {
-              response = serviceObjects
-                  .setProjectServiceLostStatus(taskRow.getLong(
-                      taskData.getColumnIndex(ProjectConstants.COL_PROJECT)));
-
-            }
-          }
-        }
-
-        if (!response.hasErrors()) {
-          response = registerTaskVisit(taskId, currentUser, now);
-        }
-
-        if (!response.hasErrors()) {
-          response = commitTaskData(taskData, oldUsers, true, updatedRelations, eventId);
-        }
-
-        if (!response.hasErrors() && event == TaskEvent.FORWARD
-            && !Objects.equals(currentUser, DataUtils.getLong(taskData, taskRow, COL_EXECUTOR))) {
-          Long senderAccountId = mail.getSenderAccountId("forward task:");
-
-          if (senderAccountId != null) {
-            ResponseObject mailResponse = mailNewTask(senderAccountId, taskId, true, false);
-            response.addMessagesFrom(mailResponse);
-          }
-#}
+        if (TaskEvent.EDIT.equals(event) && TaskStatus.NOT_SCHEDULED.equals(status)) {
+          response = ResponseObject.emptyResponse();
+        } else {
+          response =
+              updateTaskData(reqInfo, taskData, taskRow, event, updatedRelations, currentUser,
+                  eventNote, now);
         }
         break;
     }
@@ -1423,7 +1359,7 @@ public class TasksModuleBean implements BeeModule {
           .setWhere(
               SqlUtils.equals(TBL_COMPANIES, sys
                   .getIdName(TBL_COMPANIES), companiesListSet.getValue(i, sys
-                      .getIdName(TBL_COMPANIES))));
+                  .getIdName(TBL_COMPANIES))));
 
       if (reqInfo.hasParameter(VAR_TASK_DURATION_DATE_FROM)) {
         if (!BeeUtils.isEmpty(reqInfo.getParameter(VAR_TASK_DURATION_DATE_FROM))) {
@@ -1969,7 +1905,7 @@ public class TasksModuleBean implements BeeModule {
           .setWhere(
               SqlUtils.equals(TBL_USERS, sys
                   .getIdName(TBL_USERS), usersListSet.getValue(i, sys
-                      .getIdName(TBL_USERS))));
+                  .getIdName(TBL_USERS))));
 
       if (reqInfo.hasParameter(VAR_TASK_DURATION_DATE_FROM)) {
         if (!BeeUtils.isEmpty(reqInfo.getParameter(VAR_TASK_DURATION_DATE_FROM))) {
@@ -2851,6 +2787,10 @@ public class TasksModuleBean implements BeeModule {
     if (response.hasResponse(Long.class)) {
       eventId = (Long) response.getResponse();
     }
+
+    /** @since Paradis **/
+    response = updateProjectStatus(response, taskData, taskRow);
+
     if (!response.hasErrors()) {
       response = registerTaskVisit(taskId, currentUser, now);
     }
@@ -2871,6 +2811,63 @@ public class TasksModuleBean implements BeeModule {
     }
 
     return response;
+  }
+
+  /**
+   * @since Paradis
+   * @return
+   */
+  private ResponseObject updateProjectStatus(ResponseObject response, BeeRowSet taskData,
+      BeeRow taskRow) {
+    ResponseObject newResponse = response;
+    if (!response.hasErrors()
+        && !BeeUtils.isEmpty(taskRow.getProperty(ProjectConstants.ALS_PROJECT_STATUS))
+        && DataUtils.isId(taskRow.getLong(
+            taskData.getColumnIndex(ProjectConstants.COL_PROJECT)))) {
+
+      Integer status =
+          BeeUtils.toIntOrNull(taskRow.getProperty(ProjectConstants.ALS_PROJECT_STATUS));
+
+      if (status != null) {
+
+        if (status == ProjectStatus.SUSPENDED.ordinal()) {
+          SqlUpdate update =
+              new SqlUpdate(TBL_TASKS)
+                  .addConstant(COL_STATUS, TaskStatus.CANCELED.ordinal())
+                  .setWhere(
+                      SqlUtils.and(
+                          SqlUtils.notEqual(TBL_TASKS, sys.getIdName(TBL_TASKS), taskRow
+                              .getId()),
+                          SqlUtils.or(SqlUtils.equals(TBL_TASKS, COL_STATUS, TaskStatus.ACTIVE
+                              .ordinal()),
+                              SqlUtils.equals(TBL_TASKS, COL_STATUS, TaskStatus.SCHEDULED
+                                  .ordinal()),
+                              SqlUtils.equals(TBL_TASKS, COL_STATUS, TaskStatus.NOT_VISITED
+                                  .ordinal())),
+                          SqlUtils.equals(TBL_TASKS, ProjectConstants.COL_PROJECT, taskRow
+                              .getLong(
+                              taskData.getColumnIndex(ProjectConstants.COL_PROJECT)))));
+
+          newResponse = qs.updateDataWithResponse(update);
+        }
+
+        if (!newResponse.hasErrors()) {
+
+          newResponse = projects.setProjectStatus(
+              taskRow.getLong(taskData.getColumnIndex(ProjectConstants.COL_PROJECT)),
+              BeeUtils.toInt(taskRow.getProperty(ProjectConstants.ALS_PROJECT_STATUS)));
+        }
+
+        if (!newResponse.hasErrors() && status == ProjectStatus.SUSPENDED.ordinal()) {
+          newResponse = serviceObjects
+              .setProjectServiceLostStatus(taskRow.getLong(
+                  taskData.getColumnIndex(ProjectConstants.COL_PROJECT)));
+
+        }
+      }
+    }
+
+    return newResponse;
   }
 
   private ResponseObject updateTaskRelations(long taskId, Set<String> updatedRelations,
@@ -2932,9 +2929,9 @@ public class TasksModuleBean implements BeeModule {
     if (!BeeUtils.isEmpty(assignPrjSvcObj)) {
       qs.updateData(new SqlUpdate(ServiceConstants.TBL_SERVICE_OBJECTS).addConstant(
           ProjectConstants.COL_PROJECT, projectId).setWhere(SqlUtils.and(SqlUtils.inList(
-              ServiceConstants.TBL_SERVICE_OBJECTS, sys.getIdName(
-                  ServiceConstants.TBL_SERVICE_OBJECTS), assignPrjSvcObj), SqlUtils.isNull(
-                      ServiceConstants.TBL_SERVICE_OBJECTS, ProjectConstants.COL_PROJECT))));
+          ServiceConstants.TBL_SERVICE_OBJECTS, sys.getIdName(
+              ServiceConstants.TBL_SERVICE_OBJECTS), assignPrjSvcObj), SqlUtils.isNull(
+          ServiceConstants.TBL_SERVICE_OBJECTS, ProjectConstants.COL_PROJECT))));
     }
 
     if (!BeeUtils.isEmpty(children)) {
