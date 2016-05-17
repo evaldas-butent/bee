@@ -411,3 +411,10 @@ td.bee-crm-taskDialog-filesLabelCell{
   margin-left: 1ex;
   font-weight: bolder;
 }
+
+.bee-form-Task-container .bee-Header-row-message,
+.bee-form-TaskPreview-container .bee-Header-row-message {
+  font-size: 23px;
+  color: #484849;
+  font-weight: lighter;
+}
