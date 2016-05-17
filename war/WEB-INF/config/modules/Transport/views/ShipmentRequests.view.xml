@@ -60,6 +60,11 @@
       <SimpleColumn name="Logistics" />
     </SimpleJoin>
 
+    <SimpleColumn name="ShippingTerm" />
+    <SimpleJoin joinType="LEFT" name="ShippingTerm">
+      <SimpleColumn name="Name" alias="ShippingTermName" />
+    </SimpleJoin>
+
     <SimpleColumn name="CustomsBrokerage" />
     <SimpleColumn name="FreightInsurance" />
 

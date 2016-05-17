@@ -27,11 +27,12 @@ import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.FormView;
-import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
+import com.butent.bee.client.view.form.interceptor.PrintFormInterceptor;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
@@ -40,6 +41,7 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.font.FontAwesome;
@@ -54,17 +56,92 @@ import com.butent.bee.shared.utils.Codec;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-class TransportationOrderForm extends AbstractFormInterceptor implements ClickHandler {
+class TransportationOrderForm extends PrintFormInterceptor implements ClickHandler {
 
   private FaLabel copyAction;
 
   @Override
   public FormInterceptor getInstance() {
     return new TransportationOrderForm();
+  }
+
+  @Override
+  protected void getReportData(Consumer<BeeRowSet[]> dataConsumer) {
+    Queries.getRowSet(VIEW_ORDER_CARGO, null, Filter.equals(COL_ORDER, getActiveRowId()),
+        new Queries.RowSetCallback() {
+          @Override
+          public void onSuccess(BeeRowSet cargo) {
+            List<Long> cargoIds = cargo.getRowIds();
+            int handlingIdx = cargo.getColumnIndex(COL_CARGO_HANDLING);
+
+            Queries.getRowSet(VIEW_CARGO_HANDLING, null, Filter.or(Filter.any(COL_CARGO, cargoIds),
+                Filter.idIn(cargo.getDistinctLongs(handlingIdx))),
+                new Queries.RowSetCallback() {
+                  @Override
+                  public void onSuccess(BeeRowSet handling) {
+                    cargo.addColumn(ValueType.TEXT, null, TBL_CARGO_PLACES);
+                    int placesIdx = cargo.getColumnIndex(TBL_CARGO_PLACES);
+                    int cargoIdx = handling.getColumnIndex(COL_CARGO);
+
+                    for (BeeRow cargoRow : cargo) {
+                      BeeRowSet currentHandling = new BeeRowSet(handling.getViewName(),
+                          handling.getColumns());
+
+                      for (BeeRow handlingRow : handling) {
+                        if (Objects.equals(handlingRow.getId(), cargoRow.getLong(handlingIdx))
+                            || Objects.equals(handlingRow.getLong(cargoIdx), cargoRow.getId())) {
+
+                          currentHandling.addRow(DataUtils.cloneRow(handlingRow));
+                        }
+                      }
+                      cargoRow.setValue(placesIdx, currentHandling.serialize());
+                    }
+                    dataConsumer.accept(new BeeRowSet[] {cargo});
+                  }
+                });
+          }
+        });
+  }
+
+  @Override
+  protected void getReportParameters(Consumer<Map<String, String>> parametersConsumer) {
+    Map<String, Long> companies = new HashMap<>();
+
+    for (String col : Arrays.asList(COL_CUSTOMER, COL_PAYER)) {
+      Long id = getLongValue(col);
+
+      if (DataUtils.isId(id)) {
+        companies.put(col, id);
+      }
+    }
+    companies.put(ClassifierConstants.COL_COMPANY, BeeKeeper.getUser().getCompany());
+
+    super.getReportParameters(defaultParameters ->
+        Queries.getRowSet(ClassifierConstants.VIEW_COMPANIES, null, Filter.idIn(companies.values()),
+            new Queries.RowSetCallback() {
+              @Override
+              public void onSuccess(BeeRowSet result) {
+                for (BeeRow row : result) {
+                  for (Map.Entry<String, Long> entry : companies.entrySet()) {
+                    if (Objects.equals(row.getId(), entry.getValue())) {
+                      for (BeeColumn column : result.getColumns()) {
+                        String value = DataUtils.getString(result, row, column.getId());
+
+                        if (!BeeUtils.isEmpty(value)) {
+                          defaultParameters.put(entry.getKey() + column.getId(), value);
+                        }
+                      }
+                    }
+                  }
+                }
+                parametersConsumer.accept(defaultParameters);
+              }
+            }));
   }
 
   @Override

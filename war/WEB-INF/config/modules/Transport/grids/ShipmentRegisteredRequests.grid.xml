@@ -3,7 +3,7 @@
 
         name="ShipmentRegisteredRequests" viewName="ShipmentRequests"
         caption="=trRequests"
-        enableCopy="- *Date, *Time, Status, Cargo, Order*"
+        enableCopy="- *Date, Status, LossReason, Cargo, Assessment, Order"
         filter="CompanyPerson"
     >
   <g:columns>

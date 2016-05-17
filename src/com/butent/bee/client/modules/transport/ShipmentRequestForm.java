@@ -398,7 +398,7 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
     Map<String, Filter> data = new HashMap<>();
     Multimap<Pair<String, Long>, Pair<String, Object>> updates = HashMultimap.create();
 
-    checkOrphans(relations, views, data, (col) -> {
+    checkOrphans(relations, views, data, col -> {
       UnboundSelector widget = getUnboundWidget(col);
       String value = null;
 
@@ -415,17 +415,21 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
 
     if (grid != null && grid instanceof ChildGrid) {
       for (IsRow row : ((ChildGrid) grid).getGridView().getRowData()) {
-        JSONObject json = JsonUtils.parseObject(
-            row.getString(Data.getColumnIndex(TBL_CARGO_HANDLING, ALS_CARGO_HANDLING_NOTES)));
+        String jsonString = row.getString(Data.getColumnIndex(TBL_CARGO_HANDLING,
+            ALS_CARGO_HANDLING_NOTES));
 
-        checkOrphans(relations, views, data, (col) -> {
-          String value = JsonUtils.getString(json, col);
+        if (!BeeUtils.isEmpty(jsonString)) {
+          JSONObject json = JsonUtils.parseObject(jsonString);
 
-          if (!BeeUtils.isEmpty(value)) {
-            updates.put(Pair.of(TBL_CARGO_HANDLING, row.getId()), Pair.of(col, value));
-          }
-          return value;
-        });
+          checkOrphans(relations, views, data, col -> {
+            String value = JsonUtils.getString(json, col);
+
+            if (!BeeUtils.isEmpty(value)) {
+              updates.put(Pair.of(TBL_CARGO_HANDLING, row.getId()), Pair.of(col, value));
+            }
+            return value;
+          });
+        }
       }
     }
     List<String> messages = new ArrayList<>();
@@ -688,10 +692,8 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
 
   private void sendContract() {
     Map<String, String> params = new HashMap<>();
+    getReportParameters(params::putAll);
 
-    for (BeeColumn column : getFormView().getDataColumns()) {
-      params.put(column.getId(), getStringValue(column.getId()));
-    }
     ReportUtils.showReport(REP_CONTRACT, fileInfo ->
         Queries.getRowSet(VIEW_TEXT_CONSTANTS, null, Filter.equals(COL_TEXT_CONSTANT,
             TextConstant.CONTRACT_MAIL_CONTENT), new Queries.RowSetCallback() {

@@ -48,6 +48,16 @@
       </SimpleJoin>
     </SimpleJoin>
 
+    <SimpleColumn name="Expedition" />
+    <SimpleJoin joinType="LEFT" name="Expedition">
+      <SimpleColumn name="Name" alias="ExpeditionType" />
+    </SimpleJoin>
+
+    <SimpleColumn name="ShippingTerm" />
+    <SimpleJoin joinType="LEFT" name="ShippingTerm">
+      <SimpleColumn name="Name" alias="ShippingTermName" />
+    </SimpleJoin>
+
     <ExternalJoin source="OrderCargo" name="Order" joinType="INNER">
       <IdColumn name="Cargo" />
 
@@ -62,10 +72,6 @@
       <SimpleJoin name="Cmr" joinType="LEFT">
         <SimpleColumn name="Name" alias="CmrName" />
         <SimpleColumn name="Number" alias="CmrNumber" />
-      </SimpleJoin>
-
-      <SimpleJoin joinType="LEFT" name="ShippingTerm">
-        <SimpleColumn name="Name" alias="ShippingTermName" />
       </SimpleJoin>
 
       <SimpleColumn name="Partial" />
@@ -89,9 +95,6 @@
             <SimpleColumn name="Number" alias="TrailerNumber" />
           </SimpleJoin>
 
-          <SimpleJoin joinType="LEFT" name="Expedition">
-            <SimpleColumn name="Name" alias="ExpeditionType" />
-          </SimpleJoin>
           <SimpleJoin joinType="LEFT" name="Forwarder">
             <SimpleColumn name="Name" alias="ForwarderName" />
           </SimpleJoin>

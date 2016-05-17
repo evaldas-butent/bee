@@ -258,6 +258,10 @@
         <text>=mails</text>
         <ChildGrid name="RelatedMessages" relColumn="ShipmentRequest" paging="true" />
       </page>
+      <page>
+        <text>=trOrderCargoServices</text>
+        <ChildGrid name="CargoIncomes" relColumn="Cargo" source="Cargo" />
+      </page>
     </TabbedPages>
   </FlowPanel>
 </f:Form>

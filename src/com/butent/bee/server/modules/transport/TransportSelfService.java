@@ -7,7 +7,6 @@ import static com.butent.bee.shared.modules.administration.AdministrationConstan
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.server.LoginServlet;
-import com.butent.bee.server.ProxyBean;
 import com.butent.bee.server.data.BeeView;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
@@ -66,8 +65,6 @@ public class TransportSelfService extends LoginServlet {
 
   private static BeeLogger logger = LogUtils.getLogger(TransportSelfService.class);
 
-  @EJB
-  ProxyBean proxy;
   @EJB
   QueryServiceBean qs;
   @EJB
@@ -181,7 +178,7 @@ public class TransportSelfService extends LoginServlet {
 
     for (Map<String, String> map : handling.values()) {
       JsonObjectBuilder obj = Json.createObjectBuilder();
-      map.forEach((name, value) -> obj.add(name, value));
+      map.forEach(obj::add);
       places.add(obj);
     }
     RestResponse result = worker.request(json.add(TBL_CARGO_HANDLING, places)
@@ -232,7 +229,7 @@ public class TransportSelfService extends LoginServlet {
             List<String> columns = new ArrayList<>();
             columns.add(fld);
             Filter filter = null;
-            Order order = null;
+            Order order;
 
             String fldLoc = Localized.column(fld, locale);
 

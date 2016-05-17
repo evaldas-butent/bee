@@ -148,7 +148,7 @@ public abstract class PrintFormInterceptor extends AbstractFormInterceptor {
   }
 
   protected void print(BiConsumer<Map<String, String>, BeeRowSet[]> consumer) {
-    getReportParameters((parameters) -> getReportData((data) -> consumer.accept(parameters, data)));
+    getReportParameters(parameters -> getReportData(data -> consumer.accept(parameters, data)));
   }
 
   private boolean printJasperReport() {
