@@ -486,7 +486,7 @@ public class ChatView extends Flow implements Presenter, View,
 
   public void updateUnreadCount(int unreadCount) {
     String text = (unreadCount > 0) ? BeeUtils.toString(unreadCount) : BeeConst.STRING_EMPTY;
-    headerView.setMessage(text);
+    headerView.setMessage(0, text, null);
 
     setStyleName(STYLE_HAS_UNREAD, unreadCount > 0);
   }

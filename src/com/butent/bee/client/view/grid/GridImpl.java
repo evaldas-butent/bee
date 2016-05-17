@@ -3202,20 +3202,13 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
   }
 
   private void updateEditFormMessage(GridFormPresenter presenter, IsRow row) {
-    if (getEditMessage() == null && !getEditShowId()) {
-      return;
+    if (getEditShowId()) {
+      presenter.getHeader().showRowId(row);
     }
 
-    String message = null;
     if (getEditMessage() != null) {
-      getEditMessage().update(row);
-      message = getEditMessage().evaluate();
+      presenter.getHeader().showRowMessage(getEditMessage(), row);
     }
-    if (getEditShowId() && row != null) {
-      message = BeeUtils.joinWords(message, BeeUtils.bracket(row.getId()));
-    }
-
-    presenter.setMessage(message);
   }
 
   private FormView useFormForEdit(String columnId) {

@@ -426,13 +426,8 @@ public class GridContainerImpl extends Split implements GridContainerView,
       return;
     }
 
-    if (getRowMessage() != null) {
-      getRowMessage().update(event.getRowValue());
-      String message = getRowMessage().evaluate();
-
-      if (hasHeader()) {
-        getHeader().setMessage(message);
-      }
+    if (getRowMessage() != null && hasHeader()) {
+      getHeader().showRowMessage(getRowMessage(), rowValue);
     }
 
     if (gridView.getGridInterceptor() != null) {

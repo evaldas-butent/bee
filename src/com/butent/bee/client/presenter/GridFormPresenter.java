@@ -241,10 +241,6 @@ public class GridFormPresenter extends AbstractPresenter implements HasGridView,
     header.setCaption(caption);
   }
 
-  public void setMessage(String message) {
-    header.setMessage(message);
-  }
-
   public void showAction(Action action) {
     header.showAction(action, true);
   }
