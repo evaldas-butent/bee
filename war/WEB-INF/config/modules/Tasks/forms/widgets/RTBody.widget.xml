@@ -15,7 +15,7 @@
 ]>
 <FlowPanel xmlns="http://www.butent.com/widget">
 
-  <Table style="&tbl;" cellStyle="&cell;">
+  <Table kind="controls" style="&tbl;" cellStyle="&cell;">
     <col index="0" cellStyle="&col1;" />
     <col index="2" cellStyle="&clbl;" />
   
@@ -50,7 +50,7 @@
   </Table>
   
   <br/>
-  <Table style="&tbl;" cellStyle="&cell;">
+  <Table kind="controls" style="&tbl;" cellStyle="&cell;">
     <col index="0" cellStyle="&col1;" />
 
     <row>
@@ -97,7 +97,7 @@
   </Table>
   
   <br/>
-  <Table style="&tbl;" cellStyle="&cell;">
+  <Table kind="controls" style="&tbl;" cellStyle="&cell;">
     <col index="0" cellStyle="&col1;" />
     <col index="2" cellStyle="&clbl;" />
     <col index="4" cellStyle="&clbl;" />

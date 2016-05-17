@@ -24,21 +24,25 @@
 
     <String name="Number" precision="20" label="=number" />
     <Relation name="Cmr" relation="Documents" />
-    <Integer name="LoadedKilometers" label="=trLoadedKilometers" />
-    <Integer name="EmptyKilometers" label="=trEmptyKilometers" />
     <Boolean name="Partial" label="=partial" />
     <Boolean name="Outsized" label="=outsized" />
     <Boolean name="Dangerous" label="=dangerous" />
     <Numeric name="ExchangeOfPalettes" precision="2" label="=cargoChangeOfPallets" />
 
+    <Relation name="CargoHandling" unique="true" relation="CargoHandling" cascade="SET_NULL" editable="true" label="=cargoHandlingPlaces" />
+
+    <!--TODO: drop LoadingPlace, UnloadingPlace, EmptyKilometers, LoadedKilometers-->
     <Relation name="LoadingPlace" unique="true" relation="CargoPlaces" editable="true" label="=loading" />
     <Relation name="UnloadingPlace" unique="true" relation="CargoPlaces" editable="true" label="=unloading" />
+    <Integer name="EmptyKilometers" label="=trEmptyKilometers" />
+    <Integer name="LoadedKilometers" label="=trLoadedKilometers" />
+
     <Relation name="ShippingTerm"  relation="ShippingTerms" label="=cargoTermsOfService" />
     <Text name="Notes" label="=notes" />
     <Text name="Directions" label="=trDirections" />
     <Relation name="Currency" relation="Currencies" label="=currency" defExpr="MAIN_CURRENCY" />
 
-    <Relation name="CargoType" relation="CargoTypes" label="=type" />
+    <Relation name="CargoType" relation="CargoTypes" label="=trCargoType" />
     <Relation name="CargoGroup" relation="CargoGroups" label="=group" />
   </Fields>
 </Table>

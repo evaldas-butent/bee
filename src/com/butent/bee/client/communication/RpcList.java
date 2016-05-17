@@ -5,14 +5,20 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
+import com.butent.bee.shared.utils.EnumUtils;
+import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 /**
  * Enables to see all processed requests and their information in one object.
@@ -103,7 +109,7 @@ public class RpcList extends LinkedHashMap<Integer, RpcInfo> {
         } else if (BeeUtils.same(cols[i], RpcInfo.COL_REQ_PARAMS)) {
           s = Codec.escapeUnicode(el.getReqParams().toString());
         } else if (BeeUtils.same(cols[i], RpcInfo.COL_REQ_TYPE)) {
-          s = BeeUtils.toString(el.getReqType());
+          s = EnumUtils.toString(el.getReqType());
         } else if (BeeUtils.same(cols[i], RpcInfo.COL_REQ_DATA)) {
           s = Codec.escapeUnicode(Codec.escapeHtml(el.getReqData()));
 
@@ -115,7 +121,7 @@ public class RpcList extends LinkedHashMap<Integer, RpcInfo> {
           s = el.getSizeString(el.getReqSize());
 
         } else if (BeeUtils.same(cols[i], RpcInfo.COL_RESP_TYPE)) {
-          s = BeeUtils.toString(el.getRespType());
+          s = EnumUtils.toString(el.getRespType());
         } else if (BeeUtils.same(cols[i], RpcInfo.COL_RESP_DATA)) {
           s = Codec.escapeUnicode(Codec.escapeHtml(el.getRespData()));
 
@@ -158,6 +164,34 @@ public class RpcList extends LinkedHashMap<Integer, RpcInfo> {
     this.maxSize = maxSize;
   }
 
+  public void tryCompress() {
+    if (size() > 1) {
+      int sizeToRemove;
+      if (getMaxSize() > 0 && getMaxSize() < size()) {
+        sizeToRemove = size() - getMaxSize();
+      } else {
+        sizeToRemove = size() / 2;
+      }
+
+      Set<Integer> closedKeys = new HashSet<>();
+
+      for (Map.Entry<Integer, RpcInfo> entry : entrySet()) {
+        if (entry.getValue() == null || !entry.getValue().isPending()) {
+          closedKeys.add(entry.getKey());
+          if (closedKeys.size() > sizeToRemove) {
+            break;
+          }
+        }
+      }
+
+      if (!closedKeys.isEmpty()) {
+        keySet().removeAll(closedKeys);
+        logger.debug(NameUtils.getName(this), size() + closedKeys.size(), BeeConst.STRING_MINUS,
+            closedKeys.size(), BeeConst.STRING_EQ, size());
+      }
+    }
+  }
+
   public boolean updateRequestInfo(int id, int rows, int cols, int size) {
     RpcInfo el = get(id);
 
@@ -179,6 +213,21 @@ public class RpcList extends LinkedHashMap<Integer, RpcInfo> {
 
   @Override
   protected boolean removeEldestEntry(Entry<Integer, RpcInfo> eldest) {
-    return getMaxSize() > 0 && size() > getMaxSize();
+    if (getMaxSize() > 0 && size() > getMaxSize()) {
+      if (eldest == null || eldest.getValue() == null) {
+        return true;
+      }
+
+      RpcInfo rpcInfo = eldest.getValue();
+      if (!rpcInfo.isPending()) {
+        return true;
+      }
+
+      if (System.currentTimeMillis() - rpcInfo.getStartMillis() > TimeUtils.MILLIS_PER_HOUR) {
+        return true;
+      }
+    }
+
+    return false;
   }
 }

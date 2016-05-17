@@ -47,7 +47,7 @@ class SearchByBrand extends EcView {
   SearchByBrand() {
     super();
 
-    this.brandWidget = new Button(Localized.getConstants().ecItemBrand());
+    this.brandWidget = new Button(Localized.dictionary().ecItemBrand());
     brandWidget.addStyleName(STYLE_BRAND + "widget");
 
     this.brandSelector = new IndexSelector(STYLE_BRAND + "selector");

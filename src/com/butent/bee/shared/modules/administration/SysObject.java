@@ -37,6 +37,22 @@ public enum SysObject {
     public String getPath() {
       return "forms";
     }
+  },
+  REPORT {
+    @Override
+    public String getPath() {
+      return "reports";
+    }
+
+    @Override
+    public String getFileExtension() {
+      return BeeUtils.join(".", getName(), "jrxml");
+    }
+
+    @Override
+    public String getSchemaName() {
+      return "jasperreport.xsd";
+    }
   };
 
   public String getFileExtension() {

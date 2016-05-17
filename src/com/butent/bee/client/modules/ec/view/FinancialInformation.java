@@ -63,7 +63,7 @@ class FinancialInformation extends EcView {
 
     @Override
     public String getCaption() {
-      return Localized.getConstants().ecOrder();
+      return Localized.dictionary().ecOrder();
     }
 
     @Override
@@ -178,14 +178,14 @@ class FinancialInformation extends EcView {
     int col = 0;
 
     String stylePrefix = STYLE_PREFIX_ORDER_DETAILS + "date-";
-    Widget label = renderOrderDetailLabel(Localized.getConstants().ecOrderSubmissionDate());
+    Widget label = renderOrderDetailLabel(Localized.dictionary().ecOrderSubmissionDate());
     orderTable.setWidgetAndStyle(row, col++, label, stylePrefix + STYLE_SUFFIX_LABEL);
 
     Widget value = renderOrderDetailValue(TimeUtils.renderCompact(order.getDate()));
     orderTable.setWidgetAndStyle(row, col++, value, stylePrefix + STYLE_SUFFIX_VALUE);
 
     stylePrefix = STYLE_PREFIX_ORDER_DETAILS + "number-";
-    label = renderOrderDetailLabel(Localized.getConstants().ecOrderNumber());
+    label = renderOrderDetailLabel(Localized.dictionary().ecOrderNumber());
     orderTable.setWidgetAndStyle(row, col++, label, stylePrefix + STYLE_SUFFIX_LABEL);
 
     value = renderOrderDetailValue(BeeUtils.toString(order.getOrderId()));
@@ -195,7 +195,7 @@ class FinancialInformation extends EcView {
     col = 0;
 
     stylePrefix = STYLE_PREFIX_ORDER_DETAILS + "status-";
-    label = renderOrderDetailLabel(Localized.getConstants().ecOrderStatus());
+    label = renderOrderDetailLabel(Localized.dictionary().ecOrderStatus());
     orderTable.setWidgetAndStyle(row, col++, label, stylePrefix + STYLE_SUFFIX_LABEL);
 
     EcOrderStatus status = EcOrderStatus.get(order.getStatus());
@@ -204,7 +204,7 @@ class FinancialInformation extends EcView {
 
     if (EcOrderStatus.REJECTED == status) {
       stylePrefix = STYLE_PREFIX_ORDER_DETAILS + "rr-";
-      label = renderOrderDetailLabel(Localized.getConstants().ecRejectionReason());
+      label = renderOrderDetailLabel(Localized.dictionary().ecRejectionReason());
       orderTable.setWidgetAndStyle(row, col++, label, stylePrefix + STYLE_SUFFIX_LABEL);
 
       value = renderOrderDetailValue(order.getRejectionReason());
@@ -234,14 +234,14 @@ class FinancialInformation extends EcView {
     col = 0;
 
     stylePrefix = STYLE_PREFIX_ORDER_DETAILS + "dm-";
-    label = renderOrderDetailLabel(Localized.getConstants().ecDeliveryMethod());
+    label = renderOrderDetailLabel(Localized.dictionary().ecDeliveryMethod());
     orderTable.setWidgetAndStyle(row, col++, label, stylePrefix + STYLE_SUFFIX_LABEL);
 
     value = renderOrderDetailValue(order.getDeliveryMethod());
     orderTable.setWidgetAndStyle(row, col++, value, stylePrefix + STYLE_SUFFIX_VALUE);
 
     stylePrefix = STYLE_PREFIX_ORDER_DETAILS + "da-";
-    label = renderOrderDetailLabel(Localized.getConstants().ecDeliveryAddress());
+    label = renderOrderDetailLabel(Localized.dictionary().ecDeliveryAddress());
     orderTable.setWidgetAndStyle(row, col++, label, stylePrefix + STYLE_SUFFIX_LABEL);
 
     value = renderOrderDetailValue(order.getDeliveryAddress());
@@ -251,14 +251,14 @@ class FinancialInformation extends EcView {
     col = 0;
 
     stylePrefix = STYLE_PREFIX_ORDER_DETAILS + "manager-";
-    label = renderOrderDetailLabel(Localized.getConstants().ecManager());
+    label = renderOrderDetailLabel(Localized.dictionary().ecManager());
     orderTable.setWidgetAndStyle(row, col++, label, stylePrefix + STYLE_SUFFIX_LABEL);
 
     value = renderOrderDetailValue(order.getManager());
     orderTable.setWidgetAndStyle(row, col++, value, stylePrefix + STYLE_SUFFIX_VALUE);
 
     stylePrefix = STYLE_PREFIX_ORDER_DETAILS + "comment-";
-    label = renderOrderDetailLabel(Localized.getConstants().comment());
+    label = renderOrderDetailLabel(Localized.dictionary().comment());
     orderTable.setWidgetAndStyle(row, col++, label, stylePrefix + STYLE_SUFFIX_LABEL);
 
     value = renderOrderDetailValue(order.getComment());
@@ -268,7 +268,7 @@ class FinancialInformation extends EcView {
     col = 0;
 
     stylePrefix = STYLE_PREFIX_ORDER_DETAILS + "amount-";
-    label = renderOrderDetailLabel(BeeUtils.joinWords(Localized.getConstants().ecOrderAmount(),
+    label = renderOrderDetailLabel(BeeUtils.joinWords(Localized.dictionary().ecOrderAmount(),
         CURRENCY));
     orderTable.setWidgetAndStyle(row, col++, label, stylePrefix + STYLE_SUFFIX_LABEL);
 
@@ -276,7 +276,7 @@ class FinancialInformation extends EcView {
     orderTable.setWidgetAndStyle(row, col++, value, stylePrefix + STYLE_SUFFIX_VALUE);
 
     stylePrefix = STYLE_PREFIX_ORDER_DETAILS + "weight-";
-    label = renderOrderDetailLabel(BeeUtils.joinWords(Localized.getConstants().weight(),
+    label = renderOrderDetailLabel(BeeUtils.joinWords(Localized.dictionary().weight(),
         WEIGHT_UNIT));
     orderTable.setWidgetAndStyle(row, col++, label, stylePrefix + STYLE_SUFFIX_LABEL);
 
@@ -285,7 +285,7 @@ class FinancialInformation extends EcView {
 
     panel.add(orderTable);
 
-    Label itemCaption = new Label(BeeUtils.joinWords(Localized.getConstants().ecOrderItems(),
+    Label itemCaption = new Label(BeeUtils.joinWords(Localized.dictionary().ecOrderItems(),
         BeeUtils.bracket(order.getItems().size())));
     itemCaption.addStyleName(STYLE_PREFIX_ORDER_ITEM + STYLE_SUFFIX_CAPTION);
     panel.add(itemCaption);
@@ -294,21 +294,21 @@ class FinancialInformation extends EcView {
     row = 0;
 
     itemTable.setWidgetAndStyle(row, ORDER_ITEM_NAME_COL,
-        renderOrderItemHeader(Localized.getConstants().ecItemName()),
+        renderOrderItemHeader(Localized.dictionary().ecItemName()),
         STYLE_ORDER_ITEM_NAME + BeeConst.STRING_MINUS + STYLE_SUFFIX_LABEL);
     itemTable.setWidgetAndStyle(row, ORDER_ITEM_CODE_COL,
-        renderOrderItemHeader(Localized.getConstants().ecItemCode()),
+        renderOrderItemHeader(Localized.dictionary().ecItemCode()),
         STYLE_ORDER_ITEM_CODE + BeeConst.STRING_MINUS + STYLE_SUFFIX_LABEL);
 
     itemTable.setWidgetAndStyle(row, ORDER_ITEM_ORDERER_COL,
-        renderOrderItemHeader(Localized.getConstants().ecItemQuantityOrdered()),
+        renderOrderItemHeader(Localized.dictionary().ecItemQuantityOrdered()),
         STYLE_ORDER_ITEM_ORDERED + BeeConst.STRING_MINUS + STYLE_SUFFIX_LABEL);
     itemTable.setWidgetAndStyle(row, ORDER_ITEM_QUANTITY_COL,
-        renderOrderItemHeader(Localized.getConstants().ecItemQuantity()),
+        renderOrderItemHeader(Localized.dictionary().ecItemQuantity()),
         STYLE_ORDER_ITEM_QUANTITY + BeeConst.STRING_MINUS + STYLE_SUFFIX_LABEL);
 
     itemTable.setWidgetAndStyle(row, ORDER_ITEM_PRICE_COL,
-        renderOrderItemHeader(Localized.getConstants().ecItemPrice()),
+        renderOrderItemHeader(Localized.dictionary().ecItemPrice()),
         STYLE_ORDER_ITEM_PRICE + BeeConst.STRING_MINUS + STYLE_SUFFIX_LABEL);
 
     itemTable.getRowFormatter().addStyleName(row, STYLE_PREFIX_ORDER_ITEM + STYLE_SUFFIX_HEADER);
@@ -361,7 +361,7 @@ class FinancialInformation extends EcView {
 
     panel.add(itemTable);
 
-    DialogBox dialog = DialogBox.withoutCloseBox(Localized.getConstants().ecOrder(),
+    DialogBox dialog = DialogBox.withoutCloseBox(Localized.dictionary().ecOrder(),
         STYLE_PREFIX_ORDER_DETAILS + "dialog");
     dialog.setWidget(panel);
 
@@ -391,14 +391,14 @@ class FinancialInformation extends EcView {
     int col = 0;
 
     String stylePrefix = STYLE_PREFIX_FIN + "limit";
-    Widget label = renderFinLabel(Localized.getConstants().ecCreditLimit());
+    Widget label = renderFinLabel(Localized.dictionary().ecCreditLimit());
     table.setWidgetAndStyle(row, col++, label, stylePrefix + STYLE_SUFFIX_LABEL);
 
     Widget value = renderFinAmount(finInfo.getCreditLimit());
     table.setWidgetAndStyle(row, col++, value, stylePrefix + STYLE_SUFFIX_VALUE);
 
     stylePrefix = STYLE_PREFIX_FIN + "days";
-    label = renderFinLabel(Localized.getConstants().ecDaysForPayment());
+    label = renderFinLabel(Localized.dictionary().ecDaysForPayment());
     table.setWidgetAndStyle(row, col++, label, stylePrefix + STYLE_SUFFIX_LABEL);
 
     value = new CustomDiv(STYLE_PREFIX_FIN + STYLE_SUFFIX_VALUE);
@@ -409,7 +409,7 @@ class FinancialInformation extends EcView {
     col = 0;
 
     stylePrefix = STYLE_PREFIX_FIN + "orders";
-    label = renderFinLabel(Localized.getConstants().ecTotalOrdered());
+    label = renderFinLabel(Localized.dictionary().ecTotalOrdered());
     table.setWidgetAndStyle(row, col++, label, stylePrefix + STYLE_SUFFIX_LABEL);
 
     double total = 0;
@@ -423,7 +423,7 @@ class FinancialInformation extends EcView {
     table.setWidgetAndStyle(row, col++, value, stylePrefix + STYLE_SUFFIX_VALUE);
 
     stylePrefix = STYLE_PREFIX_FIN + "taken";
-    label = renderFinLabel(Localized.getConstants().ecTotalTaken());
+    label = renderFinLabel(Localized.dictionary().ecTotalTaken());
     table.setWidgetAndStyle(row, col++, label, stylePrefix + STYLE_SUFFIX_LABEL);
 
     value = renderFinAmount(finInfo.getTotalTaken());
@@ -433,14 +433,14 @@ class FinancialInformation extends EcView {
     col = 0;
 
     stylePrefix = STYLE_PREFIX_FIN + "debt";
-    label = renderFinLabel(Localized.getConstants().ecDebt());
+    label = renderFinLabel(Localized.dictionary().ecDebt());
     table.setWidgetAndStyle(row, col++, label, stylePrefix + STYLE_SUFFIX_LABEL);
 
     value = renderFinAmount(finInfo.getDebt());
     table.setWidgetAndStyle(row, col++, value, stylePrefix + STYLE_SUFFIX_VALUE);
 
     stylePrefix = STYLE_PREFIX_FIN + "maxed";
-    label = renderFinLabel(Localized.getConstants().ecMaxedOut());
+    label = renderFinLabel(Localized.dictionary().ecMaxedOut());
     table.setWidgetAndStyle(row, col++, label, stylePrefix + STYLE_SUFFIX_LABEL);
 
     value = renderFinAmount(finInfo.getMaxedOut());
@@ -479,7 +479,7 @@ class FinancialInformation extends EcView {
 
     Flow panel = new Flow(STYLE_PREFIX_INVOICE + STYLE_SUFFIX_PANEL);
 
-    Label caption = new Label(Localized.getConstants().ecInvoices());
+    Label caption = new Label(Localized.dictionary().ecInvoices());
     caption.addStyleName(STYLE_PREFIX_INVOICE + STYLE_SUFFIX_CAPTION);
     panel.add(caption);
 
@@ -487,28 +487,28 @@ class FinancialInformation extends EcView {
     int row = 0;
 
     table.setWidgetAndStyle(row, INVOICE_NUMBER_COL,
-        renderInvoiceHeader(Localized.getConstants().ecInvoiceNumber()),
+        renderInvoiceHeader(Localized.dictionary().ecInvoiceNumber()),
         STYLE_INVOICE_NUMBER + BeeConst.STRING_MINUS + STYLE_SUFFIX_LABEL);
     table.setWidgetAndStyle(row, INVOICE_DATE_COL,
-        renderInvoiceHeader(Localized.getConstants().ecInvoiceDate()),
+        renderInvoiceHeader(Localized.dictionary().ecInvoiceDate()),
         STYLE_INVOICE_DATE + BeeConst.STRING_MINUS + STYLE_SUFFIX_LABEL);
 
     table.setWidgetAndStyle(row, INVOICE_TERM_COL,
-        renderInvoiceHeader(Localized.getConstants().ecInvoiceTerm()),
+        renderInvoiceHeader(Localized.dictionary().ecInvoiceTerm()),
         STYLE_INVOICE_TERM + BeeConst.STRING_MINUS + STYLE_SUFFIX_LABEL);
     table.setWidgetAndStyle(row, INVOICE_INDULGENCE_COL,
-        renderInvoiceHeader(Localized.getConstants().ecInvoiceIndulgence()),
+        renderInvoiceHeader(Localized.dictionary().ecInvoiceIndulgence()),
         STYLE_INVOICE_INDULGENCE + BeeConst.STRING_MINUS + STYLE_SUFFIX_LABEL);
     table.setWidgetAndStyle(row, INVOICE_OVERDUE_COL,
-        renderInvoiceHeader(Localized.getConstants().ecInvoiceOverdue()),
+        renderInvoiceHeader(Localized.dictionary().ecInvoiceOverdue()),
         STYLE_INVOICE_OVERDUE + BeeConst.STRING_MINUS + STYLE_SUFFIX_LABEL);
 
     table.setWidgetAndStyle(row, INVOICE_AMOUNT_COL,
-        renderInvoiceHeader(BeeUtils.joinWords(Localized.getConstants().ecInvoiceAmount(),
+        renderInvoiceHeader(BeeUtils.joinWords(Localized.dictionary().ecInvoiceAmount(),
             CURRENCY)),
         STYLE_INVOICE_AMOUNT + BeeConst.STRING_MINUS + STYLE_SUFFIX_LABEL);
     table.setWidgetAndStyle(row, INVOICE_DEBT_COL,
-        renderInvoiceHeader(BeeUtils.joinWords(Localized.getConstants().ecInvoiceDebt(),
+        renderInvoiceHeader(BeeUtils.joinWords(Localized.dictionary().ecInvoiceDebt(),
             CURRENCY)),
         STYLE_INVOICE_DEBT + BeeConst.STRING_MINUS + STYLE_SUFFIX_LABEL);
 
@@ -603,7 +603,7 @@ class FinancialInformation extends EcView {
 
     Flow panel = new Flow(STYLE_PREFIX_ORDER + STYLE_SUFFIX_PANEL);
 
-    Label caption = new Label(Localized.getConstants().ecOrdersSubmitted());
+    Label caption = new Label(Localized.dictionary().ecOrdersSubmitted());
     caption.addStyleName(STYLE_PREFIX_ORDER + STYLE_SUFFIX_CAPTION);
     panel.add(caption);
 
@@ -611,33 +611,33 @@ class FinancialInformation extends EcView {
     int row = 0;
 
     table.setWidgetAndStyle(row, ORDER_DATE_COL,
-        renderOrderHeader(Localized.getConstants().ecOrderDate()),
+        renderOrderHeader(Localized.dictionary().ecOrderDate()),
         STYLE_ORDER_DATE + BeeConst.STRING_MINUS + STYLE_SUFFIX_LABEL);
     table.setWidgetAndStyle(row, ORDER_NUMBER_COL,
-        renderOrderHeader(Localized.getConstants().ecOrderNumber()),
+        renderOrderHeader(Localized.dictionary().ecOrderNumber()),
         STYLE_ORDER_NUMBER + BeeConst.STRING_MINUS + STYLE_SUFFIX_LABEL);
 
     table.setWidgetAndStyle(row, ORDER_AMOUNT_COL,
-        renderOrderHeader(BeeUtils.joinWords(Localized.getConstants().ecOrderAmount(),
+        renderOrderHeader(BeeUtils.joinWords(Localized.dictionary().ecOrderAmount(),
             CURRENCY)),
         STYLE_ORDER_AMOUNT + BeeConst.STRING_MINUS + STYLE_SUFFIX_LABEL);
 
     table.setWidgetAndStyle(row, ORDER_COMMENT_COL,
-        renderOrderHeader(Localized.getConstants().comment()),
+        renderOrderHeader(Localized.dictionary().comment()),
         STYLE_ORDER_COMMENT + BeeConst.STRING_MINUS + STYLE_SUFFIX_LABEL);
 
     table.setWidgetAndStyle(row, ORDER_DELIVERY_METHOD_COL,
-        renderOrderHeader(Localized.getConstants().ecDeliveryMethod()),
+        renderOrderHeader(Localized.dictionary().ecDeliveryMethod()),
         STYLE_ORDER_DELIVERY_METHOD + BeeConst.STRING_MINUS + STYLE_SUFFIX_LABEL);
     table.setWidgetAndStyle(row, ORDER_DELIVERY_ADDRESS_COL,
-        renderOrderHeader(Localized.getConstants().ecDeliveryAddress()),
+        renderOrderHeader(Localized.dictionary().ecDeliveryAddress()),
         STYLE_ORDER_DELIVERY_ADDRESS + BeeConst.STRING_MINUS + STYLE_SUFFIX_LABEL);
 
     table.setWidgetAndStyle(row, ORDER_STATUS_COL,
-        renderOrderHeader(Localized.getConstants().ecOrderStatus()),
+        renderOrderHeader(Localized.dictionary().ecOrderStatus()),
         STYLE_ORDER_STATUS + BeeConst.STRING_MINUS + STYLE_SUFFIX_LABEL);
     table.setWidgetAndStyle(row, ORDER_MANAGER_COL,
-        renderOrderHeader(Localized.getConstants().ecManager()),
+        renderOrderHeader(Localized.dictionary().ecManager()),
         STYLE_ORDER_MANAGER + BeeConst.STRING_MINUS + STYLE_SUFFIX_LABEL);
 
     table.getRowFormatter().addStyleName(row, STYLE_PREFIX_ORDER + STYLE_SUFFIX_HEADER);
@@ -710,7 +710,7 @@ class FinancialInformation extends EcView {
 
     Flow panel = new Flow(STYLE_PREFIX_UNSUPPLIED + STYLE_SUFFIX_PANEL);
 
-    Label caption = new Label(Localized.getConstants().ecUnsuppliedItems());
+    Label caption = new Label(Localized.dictionary().ecUnsuppliedItems());
     caption.addStyleName(STYLE_PREFIX_UNSUPPLIED + STYLE_SUFFIX_CAPTION);
     panel.add(caption);
 
@@ -718,31 +718,31 @@ class FinancialInformation extends EcView {
     int row = 0;
 
     table.setWidgetAndStyle(row, UNSUPPLIED_DATE_COL,
-        renderUnsuppliedItemsHeader(Localized.getConstants().ecOrderDate()),
+        renderUnsuppliedItemsHeader(Localized.dictionary().ecOrderDate()),
         STYLE_UNSUPPLIED_DATE + BeeConst.STRING_MINUS + STYLE_SUFFIX_LABEL);
     table.setWidgetAndStyle(row, UNSUPPLIED_ORDER_COL,
-        renderUnsuppliedItemsHeader(Localized.getConstants().ecUnsuppliedItemOrder()),
+        renderUnsuppliedItemsHeader(Localized.dictionary().ecUnsuppliedItemOrder()),
         STYLE_UNSUPPLIED_ORDER + BeeConst.STRING_MINUS + STYLE_SUFFIX_LABEL);
 
     table.setWidgetAndStyle(row, UNSUPPLIED_NAME_COL,
-        renderUnsuppliedItemsHeader(Localized.getConstants().ecItemName()),
+        renderUnsuppliedItemsHeader(Localized.dictionary().ecItemName()),
         STYLE_UNSUPPLIED_NAME + BeeConst.STRING_MINUS + STYLE_SUFFIX_LABEL);
     table.setWidgetAndStyle(row, UNSUPPLIED_BRAND_COL,
-        renderUnsuppliedItemsHeader(Localized.getConstants().ecItemBrand()),
+        renderUnsuppliedItemsHeader(Localized.dictionary().ecItemBrand()),
         STYLE_UNSUPPLIED_BRAND + BeeConst.STRING_MINUS + STYLE_SUFFIX_LABEL);
     table.setWidgetAndStyle(row, UNSUPPLIED_CODE_COL,
-        renderUnsuppliedItemsHeader(Localized.getConstants().ecItemCode()),
+        renderUnsuppliedItemsHeader(Localized.dictionary().ecItemCode()),
         STYLE_UNSUPPLIED_CODE + BeeConst.STRING_MINUS + STYLE_SUFFIX_LABEL);
 
     table.setWidgetAndStyle(row, UNSUPPLIED_QUANTITY_COL,
-        renderUnsuppliedItemsHeader(Localized.getConstants().ecItemQuantity()),
+        renderUnsuppliedItemsHeader(Localized.dictionary().ecItemQuantity()),
         STYLE_UNSUPPLIED_QUANTITY + BeeConst.STRING_MINUS + STYLE_SUFFIX_LABEL);
     table.setWidgetAndStyle(row, UNSUPPLIED_PRICE_COL,
-        renderUnsuppliedItemsHeader(Localized.getConstants().ecItemPrice()),
+        renderUnsuppliedItemsHeader(Localized.dictionary().ecItemPrice()),
         STYLE_UNSUPPLIED_PRICE + BeeConst.STRING_MINUS + STYLE_SUFFIX_LABEL);
 
     table.setWidgetAndStyle(row, UNSUPPLIED_REMOVE_COL,
-        renderUnsuppliedItemsHeader(Localized.getConstants().ecUnsuppliedItemsRemove()),
+        renderUnsuppliedItemsHeader(Localized.dictionary().ecUnsuppliedItemsRemove()),
         STYLE_UNSUPPLIED_REMOVE + BeeConst.STRING_MINUS + STYLE_SUFFIX_LABEL);
 
     table.getRowFormatter().addStyleName(row, STYLE_PREFIX_UNSUPPLIED + STYLE_SUFFIX_HEADER);
@@ -789,9 +789,9 @@ class FinancialInformation extends EcView {
         public void onClick(ClickEvent event) {
           List<String> messages = Lists.newArrayList(dataRow.getString(nameIndex),
               BeeUtils.joinWords(dataRow.getString(brandIndex), dataRow.getString(codeIndex)),
-              Localized.getConstants().ecUnsuppliedItemsRemove() + " ?");
+              Localized.dictionary().ecUnsuppliedItemsRemove() + " ?");
 
-          Global.confirmDelete(Localized.getConstants().ecUnsuppliedItems(), Icon.WARNING,
+          Global.confirmDelete(Localized.dictionary().ecUnsuppliedItems(), Icon.WARNING,
               messages, new ConfirmationCallback() {
                 @Override
                 public void onConfirm() {

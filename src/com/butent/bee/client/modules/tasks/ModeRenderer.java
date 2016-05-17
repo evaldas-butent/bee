@@ -2,6 +2,7 @@ package com.butent.bee.client.modules.tasks;
 
 import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
 
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -10,7 +11,6 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.export.XCell;
 import com.butent.bee.shared.export.XSheet;
 import com.butent.bee.shared.export.XStyle;
-import com.butent.bee.shared.utils.BeeUtils;
 
 class ModeRenderer extends AbstractCellRenderer {
 
@@ -25,16 +25,18 @@ class ModeRenderer extends AbstractCellRenderer {
     if (row == null) {
       return null;
     }
-    if (row.getProperty(PROP_USER) == null) {
+
+    Long userId = BeeKeeper.getUser().getUserId();
+    if (!row.hasPropertyValue(PROP_USER, userId)) {
       return null;
     }
 
-    Long access = BeeUtils.toLongOrNull(row.getProperty(PROP_LAST_ACCESS));
+    Long access = row.getPropertyLong(PROP_LAST_ACCESS, userId);
     if (access == null) {
       return Mode.NEW;
     }
 
-    Long publish = BeeUtils.toLongOrNull(row.getProperty(PROP_LAST_PUBLISH));
+    Long publish = row.getPropertyLong(PROP_LAST_PUBLISH);
     if (publish != null && access < publish) {
       return Mode.UPD;
     } else {

@@ -2,6 +2,7 @@ package com.butent.bee.client.view.grid.interceptor;
 
 import com.google.gwt.xml.client.Element;
 
+import com.butent.bee.client.data.HasActiveRow;
 import com.butent.bee.client.data.IdCallback;
 import com.butent.bee.client.event.logical.ActiveRowChangeEvent;
 import com.butent.bee.client.event.logical.ParentRowEvent;
@@ -48,13 +49,11 @@ import java.util.Map;
 public interface GridInterceptor extends WidgetInterceptor, ActiveRowChangeEvent.Handler,
     ParentRowEvent.Handler, EditStartEvent.Handler, EditEndEvent.Handler,
     ProvidesGridColumnRenderer, DynamicColumnEnumerator, HasViewName, EditorConsumer,
-    RowUpdateEvent.Handler {
+    RowUpdateEvent.Handler, HasActiveRow {
 
   enum DeleteMode {
     CANCEL, DEFAULT, SILENT, CONFIRM, SINGLE, MULTI;
   }
-
-  void afterAction(Action action, GridPresenter presenter);
 
   void afterCreate(GridView gridView);
 
@@ -108,8 +107,6 @@ public interface GridInterceptor extends WidgetInterceptor, ActiveRowChangeEvent
 
   List<BeeColumn> getDataColumns();
 
-  int getDataIndex(String source);
-
   DeleteMode getDeleteMode(GridPresenter presenter, IsRow activeRow,
       Collection<RowInfo> selectedRows, DeleteMode defMode);
 
@@ -139,7 +136,7 @@ public interface GridInterceptor extends WidgetInterceptor, ActiveRowChangeEvent
 
   List<FilterDescription> getPredefinedFilters(List<FilterDescription> defaultFilters);
 
-  String getRowCaption(IsRow row, boolean edit);
+  String getRowCaption(IsRow row);
 
   /**
    * Enables conditional styles for rows.

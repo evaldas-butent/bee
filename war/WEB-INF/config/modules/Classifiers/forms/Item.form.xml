@@ -10,12 +10,13 @@
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
   xmlns:ui="http://www.butent.com/ui"
+  xmlns:xi="http://www.w3.org/2001/XInclude"
   
   name="Item" viewName="Items" caption="=item"
   width="700" height="720"
   >
   <FlowPanel class="flexBox-vertical">
-    <Table style="margin-top: 1ex;">
+    <Table kind="controls" style="margin-top: 1ex;">
       <col index="0" kind="label" />
       <col index="2" kind="label" />
       
@@ -77,7 +78,7 @@
       <page>
         <text>=prices</text>
         <FlowPanel class="flexBox-vertical">
-          <Table style="margin-top: 1ex; margin-bottom: 1em;">
+          <Table kind="controls" style="margin-top: 1ex; margin-bottom: 1em;">
             <col index="0" kind="label" />
             <col index="2" cellStyle="padding-left: 6px;" />
             <col index="3" kind="label" />
@@ -126,7 +127,7 @@
 
       <page>
         <text>=additionalInfo</text>
-        <Table style="margin-top: 1ex;">
+        <Table kind="controls" style="margin-top: 1ex;">
           <col index="0" kind="label" />
           <col index="2" kind="label" />
       
@@ -163,23 +164,8 @@
           </row>
 
           <row>
-            <Label for="Department" data="Departments" />
-            <DataSelector source="Department" data="Departments" renderColumns="DepartmentName"
-              choiceColumns="FullName" searchableColumns="DepartmentName" visibleLines="7"
-              selectorClass="bee-BranchSelector" newRowEnabled="false" summarize="true">
-              <ui:rowRenderer type="branch" />
-            </DataSelector>
-
             <Label for="ExternalCode" />
             <InputText source="ExternalCode" summarize="true" />
-          </row>
-
-          <row>
-            <Label for="ActivityType" data="ActivityTypes" />
-            <DataSelector source="ActivityType" data="ActivityTypes" summarize="true" />
-
-            <Label for="CostCenter" data="CostCenters" />
-            <DataSelector source="CostCenter" data="CostCenters" summarize="true" />
           </row>
 
           <row>
@@ -218,10 +204,15 @@
         </Table>
       </page>
 
+      <page data="Dimensions">
+        <text>=dimensions</text>
+        <xi:include href="../../Administration/forms/widgets/ExtraDimensions.widget.xml" />
+      </page>
+
       <page>
         <text>=pictures</text>
         <Gallery viewName="ItemGraphics" relColumn="Item" pictureColumn="Picture"
-          orderColumn="Ordinal" />
+          orderColumn="Ordinal" summarize="true" />
       </page>
 
       <page for="Description">

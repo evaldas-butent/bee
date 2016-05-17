@@ -624,6 +624,12 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable,
     DomUtils.setId(this, id);
   }
 
+  public void setKind(TableKind kind) {
+    if (kind != null && !BeeUtils.isEmpty(kind.getStyleSuffix())) {
+      addStyleName(StyleUtils.joinName(STYLE_NAME, kind.getStyleSuffix()));
+    }
+  }
+
   public void setText(int row, int column, String text) {
     prepareCell(row, column);
     Element td = cleanCell(row, column, text == null);

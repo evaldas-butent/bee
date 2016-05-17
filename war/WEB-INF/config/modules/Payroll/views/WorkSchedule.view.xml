@@ -5,6 +5,8 @@
   caption="=workSchedule"
   >
   <Columns>
+    <SimpleColumn name="Kind" />
+
     <SimpleColumn name="Employee" />
     <SimpleJoin name="Employee" joinType="LEFT">
       <SimpleColumn name="CompanyPerson" />
@@ -35,6 +37,18 @@
       </SimpleJoin>
   
       <SimpleColumn name="TabNumber" />
+    </SimpleJoin>
+
+    <SimpleColumn name="SubstituteFor" />
+    <SimpleJoin name="SubstituteFor" joinType="LEFT">
+      <SimpleJoin name="CompanyPerson" joinType="LEFT">
+        <SimpleJoin name="Person" joinType="LEFT">
+          <SimpleColumn name="FirstName" alias="ForFirstName" />
+          <SimpleColumn name="LastName" alias="ForLastName" />
+        </SimpleJoin>
+      </SimpleJoin>
+  
+      <SimpleColumn name="TabNumber" alias="ForTabNumber" />
     </SimpleJoin>
     
     <SimpleColumn name="Object" />
@@ -78,6 +92,8 @@
       <SimpleColumn name="TimeFrom" alias="TrTimeFrom" />
       <SimpleColumn name="TimeUntil" alias="TrTimeUntil" />
 
+      <SimpleColumn name="Duration" alias="TrDuration" />
+
       <SimpleColumn name="Background" alias="TrBackground" />
       <SimpleColumn name="Foreground" alias="TrForeground" />
     </SimpleJoin>
@@ -103,6 +119,7 @@
     <OrderBy column="LastName" />
     <OrderBy column="FirstName" />
     <OrderBy column="EmployeeCompanyName" />
+    <OrderBy column="TabNumber" />
     <OrderBy column="LocationName" />
     <OrderBy column="Date" />
     <OrderBy column="TrTimeFrom" />

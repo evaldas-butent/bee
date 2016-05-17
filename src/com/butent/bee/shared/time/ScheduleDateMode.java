@@ -4,10 +4,10 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.HasCaption;
 
 public enum ScheduleDateMode implements HasCaption {
-  INCLUDE(Localized.getConstants().scheduleDateInclude()),
-  EXCLUDE(Localized.getConstants().scheduleDateExclude()),
-  WORK(Localized.getConstants().scheduleDateWork()),
-  NON_WORK(Localized.getConstants().scheduleDateNonWork());
+  INCLUDE(Localized.dictionary().scheduleDateInclude()),
+  EXCLUDE(Localized.dictionary().scheduleDateExclude()),
+  WORK(Localized.dictionary().scheduleDateWork()),
+  NON_WORK(Localized.dictionary().scheduleDateNonWork());
 
   private final String caption;
 

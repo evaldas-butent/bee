@@ -10,6 +10,7 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Event.NativePreviewEvent;
 import com.google.gwt.user.client.Event.NativePreviewHandler;
 
+import com.butent.bee.client.Bee;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Settings;
 import com.butent.bee.client.dom.DomUtils;
@@ -19,8 +20,10 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.HasInfo;
+import com.butent.bee.shared.communication.Presence;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
@@ -32,6 +35,7 @@ import java.util.List;
 
 public final class Previewer implements NativePreviewHandler, HasInfo {
 
+  @FunctionalInterface
   public interface PreviewConsumer extends Consumer<NativePreviewEvent> {
   }
 
@@ -101,6 +105,19 @@ public final class Previewer implements NativePreviewHandler, HasInfo {
     if (INSTANCE.contains(handler)) {
       INSTANCE.remove(handler);
     }
+  }
+
+  public static long getIdleMillis() {
+    long last = INSTANCE.lastKeyPress;
+    if (INSTANCE.lastClick != null && INSTANCE.lastClick.time > last) {
+      last = INSTANCE.lastClick.time;
+    }
+
+    if (last <= 0) {
+      last = Math.max(Bee.getEntryTime(), Bee.getReadyTime());
+    }
+
+    return System.currentTimeMillis() - last;
   }
 
   public static Previewer getInstance() {
@@ -174,6 +191,10 @@ public final class Previewer implements NativePreviewHandler, HasInfo {
     return false;
   }
 
+  private static void onInteraction() {
+    BeeKeeper.getUser().checkPresence(Presence.ONLINE);
+  }
+
   private final List<PreviewHandler> handlers = new ArrayList<>();
 
   private final List<PreviewHandler> mouseDownPriorHandlers = new ArrayList<>();
@@ -183,6 +204,7 @@ public final class Previewer implements NativePreviewHandler, HasInfo {
   private Node targetNode;
 
   private EventInfo lastClick;
+  private long lastKeyPress;
 
   private Previewer() {
     Event.addNativePreviewHandler(this);
@@ -202,6 +224,16 @@ public final class Previewer implements NativePreviewHandler, HasInfo {
     for (PreviewHandler handler : mouseDownPriorHandlers) {
       info.add(new Property(handler.getId(), NameUtils.getName(handler)));
     }
+
+    if (lastClick != null) {
+      info.add(new Property("Last Click", TimeUtils.renderDateTime(lastClick.time, true)));
+      info.add(new Property("Last Click X", BeeUtils.toString(lastClick.x, 3)));
+      info.add(new Property("Last Click Y", BeeUtils.toString(lastClick.y, 3)));
+    }
+    if (lastKeyPress > 0) {
+      info.add(new Property("Last Key Press", TimeUtils.renderDateTime(lastKeyPress, true)));
+    }
+
     return info;
   }
 
@@ -238,8 +270,13 @@ public final class Previewer implements NativePreviewHandler, HasInfo {
         return;
       }
 
+    } else if (EventUtils.EVENT_TYPE_KEY_PRESS.equals(type)) {
+      lastKeyPress = System.currentTimeMillis();
+      onInteraction();
+
     } else if (EventUtils.EVENT_TYPE_CLICK.equals(type)) {
       previewClick(event);
+      onInteraction();
 
       if (event.isCanceled() || event.isConsumed()) {
         return;
@@ -327,13 +364,6 @@ public final class Previewer implements NativePreviewHandler, HasInfo {
     }
   }
 
-  private void remove(PreviewHandler handler) {
-    handlers.remove(indexOf(handler));
-    if (handler.isModal()) {
-      modalCount--;
-    }
-  }
-
   private void previewClick(NativePreviewEvent event) {
     EventInfo eventInfo = new EventInfo(event);
 
@@ -375,6 +405,13 @@ public final class Previewer implements NativePreviewHandler, HasInfo {
 
     if (!event.isCanceled()) {
       lastClick = eventInfo;
+    }
+  }
+
+  private void remove(PreviewHandler handler) {
+    handlers.remove(indexOf(handler));
+    if (handler.isModal()) {
+      modalCount--;
     }
   }
 

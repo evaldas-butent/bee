@@ -18,6 +18,7 @@
 
     <Date name="StartDate"  label="=crmStartDate" />
     <Date name="EndDate" label="=crmFinishDate" />
+    <DateTime name="ApprovedDate" label="=crmFinishDate" />
     <Numeric name="ExpectedDuration" precision="10" label="=expectedDuration" />
     <Relation name="TimeUnit" relation="Units" label="=taTimeUnit" />
     <Numeric name="Progress" precision="3" label="=progress" />

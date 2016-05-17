@@ -204,7 +204,7 @@ public class InputNumber extends InputText implements HasBounds, HasIntStep,
     String v = BeeUtils.trim(getValue());
     if (BeeUtils.isEmpty(v)) {
       if (checkForNull && !isNullable()) {
-        messages.add(Localized.getConstants().valueRequired());
+        messages.add(Localized.dictionary().valueRequired());
       }
       return messages;
     }
@@ -213,7 +213,7 @@ public class InputNumber extends InputText implements HasBounds, HasIntStep,
       String s = sanitize(v);
       Double d = Format.parseQuietly(getNumberFormat(), s);
       if (d == null) {
-        messages.add(Localized.getConstants().invalidNumberFormat());
+        messages.add(Localized.dictionary().invalidNumberFormat());
         messages.add(BeeUtils.joinWords(v, BeeUtils.bracket(getNumberFormat().getPattern())));
         return messages;
       }
@@ -222,7 +222,7 @@ public class InputNumber extends InputText implements HasBounds, HasIntStep,
     }
 
     if (!checkType(sanitize(v))) {
-      messages.add(BeeUtils.joinWords(Localized.getConstants().invalidNumber(), v));
+      messages.add(BeeUtils.joinWords(Localized.dictionary().invalidNumber(), v));
       return messages;
     }
 
@@ -242,7 +242,7 @@ public class InputNumber extends InputText implements HasBounds, HasIntStep,
 
     if (BeeUtils.isEmpty(normalizedValue)) {
       if (checkForNull && !isNullable()) {
-        messages.add(Localized.getConstants().valueRequired());
+        messages.add(Localized.dictionary().valueRequired());
       }
       return messages;
     }

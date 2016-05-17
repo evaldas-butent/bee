@@ -76,7 +76,7 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.TextValue;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.view.DataInfo;
-import com.butent.bee.shared.i18n.LocalizableConstants;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.projects.ProjectConstants;
@@ -259,7 +259,7 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
 
   @Override
   public void onClick(ClickEvent event) {
-    LocalizableConstants loc = Localized.getConstants();
+    Dictionary loc = Localized.dictionary();
 
     Global.inputCollection(loc.mainCriteria(), loc.name(), true, criteriaEditors.keySet(),
         new Consumer<Collection<String>>() {
@@ -296,13 +296,13 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
 
     if (save(null)) {
       if (messages.size() == 1) {
-        String msg = BeeUtils.joinItems(messages.get(0), Localized.getConstants().mainCriteria());
+        String msg = BeeUtils.joinItems(messages.get(0), Localized.dictionary().mainCriteria());
         messages.clear();
         messages.add(msg);
 
       } else {
-        messages.add(BeeUtils.joinWords(Localized.getConstants().changedValues(),
-            Localized.getConstants().mainCriteria()));
+        messages.add(BeeUtils.joinWords(Localized.dictionary().changedValues(),
+            Localized.dictionary().mainCriteria()));
       }
     }
   }
@@ -310,7 +310,7 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
   @Override
   public void onLoad(FormView form) {
     EventUtils.clearRegistry(registry);
-    registry.add(BeeKeeper.getBus().registerRowActionHandler(this, false));
+    registry.add(BeeKeeper.getBus().registerRowActionHandler(this));
   }
 
   @Override

@@ -13,9 +13,10 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.layout.Flow;
+import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.presenter.Presenter;
-import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
+import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
@@ -28,6 +29,7 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
+import com.butent.bee.shared.modules.payroll.PayrollConstants.ObjectStatus;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
@@ -41,11 +43,14 @@ class WorkScheduleForm extends AbstractFormInterceptor implements SelectorEvent.
   private static final String STYLE_OBJECT_WIDGET = STYLE_PREFIX + "object-widget";
   private static final String STYLE_OBJECT_ACTIVE = STYLE_PREFIX + "object-active";
 
+  private final WorkScheduleKind kind;
+
   private UnboundSelector objectSelector;
   private Flow objectPanel;
   private Flow schedulePanel;
 
-  WorkScheduleForm() {
+  WorkScheduleForm(WorkScheduleKind kind) {
+    this.kind = kind;
   }
 
   @Override
@@ -66,22 +71,35 @@ class WorkScheduleForm extends AbstractFormInterceptor implements SelectorEvent.
 
   @Override
   public boolean beforeAction(Action action, Presenter presenter) {
-    if (action == Action.REFRESH) {
-      WorkScheduleWidget widget = UiHelper.getChild(schedulePanel, WorkScheduleWidget.class);
-      if (widget != null) {
-        widget.refresh();
-      }
+    switch (action) {
+      case REFRESH:
+        getObjects();
 
-      return false;
+        if (schedulePanel != null && !schedulePanel.isEmpty()) {
+          schedulePanel.clear();
+        }
+        if (objectSelector != null) {
+          objectSelector.clearValue();
+        }
+        return false;
 
-    } else {
-      return super.beforeAction(action, presenter);
+      case PRINT:
+        WorkScheduleWidget widget = UiHelper.getChild(schedulePanel, LocationSchedule.class);
+        if (widget == null) {
+          return true;
+        } else {
+          Printer.print(widget);
+          return false;
+        }
+
+      default:
+        return super.beforeAction(action, presenter);
     }
   }
 
   @Override
   public FormInterceptor getInstance() {
-    return new WorkScheduleForm();
+    return new WorkScheduleForm(kind);
   }
 
   @Override
@@ -174,7 +192,7 @@ class WorkScheduleForm extends AbstractFormInterceptor implements SelectorEvent.
         schedulePanel.clear();
       }
 
-      WorkScheduleWidget widget = new WorkScheduleWidget(objectId);
+      WorkScheduleWidget widget = new LocationSchedule(objectId, kind);
       schedulePanel.add(widget);
 
       widget.refresh();

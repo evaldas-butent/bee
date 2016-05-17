@@ -28,7 +28,7 @@
 
     <br />
 
-    <Table class="&form;-table">
+    <Table kind="output" class="&form;-table">
       <col index="0" cellStyle="width:30%; text-align:left; font-weight:bold;" />
       <row>
         <Label text="Kelionės lapo išdavimo data" />
@@ -39,8 +39,14 @@
         </TextLabel>
       </row>
       <row>
-        <Label text="Vairuotojas" />
-        <TextLabel source="Driver" />
+        <Label text="Vairuotojai" />
+        <FlowPanel>
+          <TextLabel source="DriverName" inline="true" />
+          <FlowPanel name="TripDrivers1Container" style="display:inline;">
+            <InlineLabel text=", " />
+            <InlineLabel name="TripDrivers1" />
+          </FlowPanel>
+        </FlowPanel>
       </row>
       <row>
         <Label text="Vilkiko valstybinis numeris" />
@@ -58,7 +64,7 @@
 
     <br />
 
-    <Table class="&form;-table" style="text-align:center;">
+    <Table kind="output" class="&form;-table" style="text-align:center;">
       <col index="0" cellStyle="width:30%; text-align:left; font-weight:bold;" />
       <row style="font-weight:bold;">
         <text />
@@ -84,7 +90,7 @@
 
     <br />
 
-    <Table class="&form;-table">
+    <Table kind="output" class="&form;-table">
       <row>
         <Label text="Komandiruotės maršrutas" style="text-align:center; font-weight:bold;" />
       </row>
@@ -105,7 +111,7 @@
     <br />
     <Label text="Maršruto detalizavimas:" style="font-weight:bold;" />
 
-    <Table class="&form;-table" style="font-weight:bold; text-align:center;">
+    <Table kind="output" class="&form;-table" style="font-weight:bold; text-align:center;">
       <row>
         <cell colSpan="2" style="width:35%;">
           <Label text="Išvyko iš" />
@@ -149,11 +155,11 @@
     <br />
     <br />
 
-    <Table style="white-space:nowrap; width:100%;">
+    <Table kind="output" style="white-space:nowrap; width:100%;">
       <col index="0" cellStyle="text-align:left;" />
       <row>
         <Label text="Vairuotojas" style="margin-right:1em;" />
-        <TextLabel source="Driver" />
+        <TextLabel source="DriverName" />
       </row>
       <row>
         <text />
@@ -165,7 +171,23 @@
 
     <br />
 
-    <Table style="white-space:nowrap; width:100%;">
+    <Table kind="output" name="TripDrivers2Container" style="white-space:nowrap; width:100%;">
+      <col index="0" cellStyle="text-align:left;" />
+      <row>
+        <Label text="Antras vairuotojas" style="margin-right:1em;" />
+        <Label name="TripDrivers2" />
+      </row>
+      <row>
+        <text />
+        <cell style="border-top:1px solid black; font-size:x-small; text-align:center; width:100%;">
+          <Label text="(vardas, pavardė, parašas)" />
+        </cell>
+      </row>
+    </Table>
+
+    <br />
+
+    <Table kind="output" style="white-space:nowrap; width:100%;">
       <col index="0" cellStyle="text-align:left;" />
       <row>
         <Label text="Į reisą išleido" style="margin-right:1em;" />

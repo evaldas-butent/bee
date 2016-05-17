@@ -6,8 +6,6 @@ import com.google.common.collect.Lists;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.data.IsColumn;
-import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -111,12 +109,6 @@ public class CustomFilter extends Filter {
 
   @Override
   public boolean involvesColumn(String colName) {
-    return false;
-  }
-
-  @Override
-  public boolean isMatch(List<? extends IsColumn> columns, IsRow row) {
-    Assert.unsupported();
     return false;
   }
 

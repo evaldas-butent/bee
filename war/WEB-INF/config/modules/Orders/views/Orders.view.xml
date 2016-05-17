@@ -69,5 +69,9 @@
 
     <SimpleColumn name="Notes" />
 
+    <ExternalJoin name="Order" source="OrderItems" joinType="LEFT" >
+      <AggregateColumn aggregate="MAX" name="Sale" alias="OrderSale" />
+    </ExternalJoin>
+
   </Columns>
 </View>

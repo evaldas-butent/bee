@@ -102,7 +102,7 @@ public class FileGroup extends HtmlTable implements HasOptions {
       }
     },
 
-    VERSION("version", Localized.getConstants().fileVersion(), false, false) {
+    VERSION("version", Localized.dictionary().fileVersion(), false, false) {
       @Override
       Widget createDisplay() {
         return new Label();
@@ -135,7 +135,7 @@ public class FileGroup extends HtmlTable implements HasOptions {
       }
     },
 
-    NAME("name", Localized.getConstants().fileName(), true, false) {
+    NAME("name", Localized.dictionary().fileName(), true, false) {
       @Override
       Widget createDisplay() {
         return new Simple();
@@ -152,6 +152,7 @@ public class FileGroup extends HtmlTable implements HasOptions {
       void refresh(Widget widget, FileInfo sf) {
         if (widget instanceof Simple) {
           ((Simple) widget).setWidget(FileUtils.getLink(sf));
+          ((Simple) widget).setTitle(BeeUtils.notEmpty(sf.getCaption(), sf.getName()));
         }
       }
 
@@ -173,7 +174,7 @@ public class FileGroup extends HtmlTable implements HasOptions {
       }
     },
 
-    DESCRIPTION("description", Localized.getConstants().fileDescription(), false, false) {
+    DESCRIPTION("description", Localized.dictionary().fileDescription(), false, false) {
       @Override
       Widget createDisplay() {
         return new Label();
@@ -206,7 +207,7 @@ public class FileGroup extends HtmlTable implements HasOptions {
       }
     },
 
-    SIZE("size", Localized.getConstants().fileSize(), false, true) {
+    SIZE("size", Localized.dictionary().fileSize(), false, true) {
       @Override
       Widget createDisplay() {
         return new Label();
@@ -230,7 +231,7 @@ public class FileGroup extends HtmlTable implements HasOptions {
       }
     },
 
-    TYPE("type", Localized.getConstants().fileType(), false, false) {
+    TYPE("type", Localized.dictionary().fileType(), false, false) {
       @Override
       Widget createDisplay() {
         return new Label();
@@ -263,7 +264,7 @@ public class FileGroup extends HtmlTable implements HasOptions {
       }
     },
 
-    EDIT("edit", Localized.getConstants().actionEdit(), false, true) {
+    EDIT("edit", Localized.dictionary().actionEdit(), false, true) {
       @Override
       Widget createDisplay() {
         FaLabel widget = new FaLabel(FontAwesome.EDIT);
@@ -286,7 +287,7 @@ public class FileGroup extends HtmlTable implements HasOptions {
       }
     },
 
-    DELETE("delete", Localized.getConstants().actionRemove(), false, true) {
+    DELETE("delete", Localized.dictionary().actionRemove(), false, true) {
       @Override
       Widget createDisplay() {
         FaLabel widget = new FaLabel(FontAwesome.MINUS);
@@ -308,7 +309,7 @@ public class FileGroup extends HtmlTable implements HasOptions {
         return false;
       }
     },
-    CREATEDOC("createdoc", Localized.getConstants().documentNew(), false, true) {
+    CREATEDOC("createdoc", Localized.dictionary().documentNew(), false, true) {
       @Override
       Widget createDisplay() {
         FaLabel widget = new FaLabel(FontAwesome.FILE_O);
@@ -388,7 +389,7 @@ public class FileGroup extends HtmlTable implements HasOptions {
   private static final List<Column> DEFAULT_EDITABLE_COLUMNS = new ArrayList<>();
 
   public static Widget getDefaultFace() {
-    return new Button(Localized.getConstants().chooseFiles());
+    return new Button(Localized.dictionary().chooseFiles());
   }
 
   public static List<Column> parseColumns(String input) {
@@ -589,7 +590,7 @@ public class FileGroup extends HtmlTable implements HasOptions {
       row++;
     }
 
-    Global.inputWidget(Localized.getConstants().fileDataCorrection(), panel, new InputCallback() {
+    Global.inputWidget(Localized.dictionary().fileDataCorrection(), panel, new InputCallback() {
       @Override
       public void onCancel() {
         getRowFormatter().removeStyleName(index, STYLE_PREFIX + STYLE_EDITING);

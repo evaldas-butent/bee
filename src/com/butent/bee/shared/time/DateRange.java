@@ -5,6 +5,8 @@ import com.google.common.collect.Range;
 
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeSerializable;
+import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.value.DateValue;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
@@ -14,6 +16,10 @@ public final class DateRange implements HasDateRange, BeeSerializable {
 
   private static final JustDate DEFAULT_MIN_DATE = new JustDate(1800, 1, 1);
   private static final JustDate DEFAULT_MAX_DATE = new JustDate(2999, 12, 31);
+
+  public static DateRange all() {
+    return new DateRange(Range.closed(DEFAULT_MIN_DATE, DEFAULT_MAX_DATE));
+  }
 
   public static DateRange closed(JustDate min, JustDate max) {
     JustDate lower = (min == null) ? DEFAULT_MIN_DATE : min;
@@ -27,7 +33,11 @@ public final class DateRange implements HasDateRange, BeeSerializable {
   }
 
   public static DateRange day(JustDate date) {
-    return closed(date, date);
+    if (date == null) {
+      return null;
+    } else {
+      return closed(date, date);
+    }
   }
 
   public static boolean isValidClosedRange(JustDate min, JustDate max) {
@@ -72,6 +82,14 @@ public final class DateRange implements HasDateRange, BeeSerializable {
   @Override
   public boolean equals(Object obj) {
     return obj instanceof DateRange && range.equals(((DateRange) obj).range);
+  }
+
+  public Filter getFilter(String colName) {
+    JustDate minDate = getMinDate();
+    JustDate maxDate = new JustDate(getMaxDays() + 1);
+
+    return Filter.and(Filter.isMoreEqual(colName, new DateValue(minDate)),
+        Filter.isLess(colName, new DateValue(maxDate)));
   }
 
   public JustDate getMaxDate() {
@@ -146,6 +164,46 @@ public final class DateRange implements HasDateRange, BeeSerializable {
 
   public int size() {
     return getMaxDays() - getMinDays() + 1;
+  }
+
+  public String toCompactString() {
+    return toCompactString(false);
+  }
+
+  public String toCompactString(boolean dropCurrentCentury) {
+    StringBuilder sb = new StringBuilder();
+
+    sb.append((range.lowerBoundType() == BoundType.OPEN)
+        ? BeeConst.STRING_LEFT_PARENTHESIS : BeeConst.STRING_LEFT_BRACKET);
+
+    boolean dropCentury;
+    if (dropCurrentCentury) {
+      int century = TimeUtils.today().getCentury();
+      dropCentury = range.lowerEndpoint().getCentury() == century
+          && range.upperEndpoint().getCentury() == century;
+    } else {
+      dropCentury = false;
+    }
+
+    sb.append(TimeUtils.dateToString(range.lowerEndpoint(), dropCentury))
+        .append(TimeUtils.PERIOD_SEPARATOR);
+
+    if (range.lowerEndpoint().getYear() == range.upperEndpoint().getYear()) {
+      if (range.lowerEndpoint().getMonth() == range.upperEndpoint().getMonth()) {
+        sb.append(TimeUtils.dayOfMonthToString(range.upperEndpoint().getDom()));
+      } else {
+        sb.append(TimeUtils.monthToString(range.upperEndpoint().getMonth()))
+            .append(TimeUtils.DATE_FIELD_SEPARATOR)
+            .append(TimeUtils.dayOfMonthToString(range.upperEndpoint().getDom()));
+      }
+    } else {
+      sb.append(TimeUtils.dateToString(range.upperEndpoint(), dropCentury));
+    }
+
+    sb.append((range.upperBoundType() == BoundType.OPEN)
+        ? BeeConst.STRING_RIGHT_PARENTHESIS : BeeConst.STRING_RIGHT_BRACKET);
+
+    return sb.toString();
   }
 
   @Override

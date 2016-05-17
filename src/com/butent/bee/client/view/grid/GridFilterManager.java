@@ -190,7 +190,7 @@ public class GridFilterManager {
     externalFilter = queryFilter;
     retainValues();
 
-    DialogBox dialog = DialogBox.create(Localized.getConstants().filter(), STYLE_DIALOG);
+    DialogBox dialog = DialogBox.create(Localized.dictionary().filter(), STYLE_DIALOG);
 
     buildContentPanel();
     dialog.setWidget(contentPanel);
@@ -319,7 +319,7 @@ public class GridFilterManager {
     panel.add(icon);
 
     CustomDiv message = new CustomDiv(STYLE_SAVE_MESSAGE);
-    message.setHtml(Localized.getConstants().saveFilter());
+    message.setHtml(Localized.dictionary().saveFilter());
     message.addClickHandler(clickHandler);
     panel.add(message);
 
@@ -448,7 +448,7 @@ public class GridFilterManager {
           }
 
         } else {
-          BeeKeeper.getScreen().notifyWarning(Localized.getConstants().nothingFound());
+          BeeKeeper.getScreen().notifyWarning(Localized.dictionary().nothingFound());
           if (columnInfo == null) {
             updateFilterValues(valuesByColumn, false);
           } else {

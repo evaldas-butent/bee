@@ -18,31 +18,23 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 enum DiscussionsListType implements HasCaption, HasWidgetSupplier {
 
-  ALL(Localized.getConstants().discussAllShort()) {
+  ALL(Localized.dictionary().discussAllShort()) {
     @Override
     Filter getFilter(LongValue userId) {
       return null;
     }
   },
-  ACTIVE(Localized.getConstants().discussPublic1()) {
+  ACTIVE(Localized.dictionary().discussPublic1()) {
     @Override
     Filter getFilter(LongValue userId) {
-      Filter isMemberFilter = Filter.isEqual(COL_MEMBER, BooleanValue.TRUE);
-      Filter isOwner = Filter.isEqual(COL_OWNER, userId);
       Filter isPublic = Filter.notNull(COL_ACCESSIBILITY);
-      Filter isUserFilter = Filter.isEqual(COL_USER, userId);
       Filter isActive = Filter.isEqual(COL_STATUS, IntegerValue.of(DiscussionStatus.ACTIVE));
       Filter hasTopic = Filter.isNull(COL_TOPIC);
 
-      Filter discussUsersFilter = Filter.in(Data.getIdColumn(VIEW_DISCUSSIONS),
-          VIEW_DISCUSSIONS_USERS, COL_DISCUSSION,
-          Filter.and(isUserFilter, isMemberFilter));
-      return Filter.and(Filter.or(
-          Filter.or(discussUsersFilter, isOwner), isPublic),
-          isActive, hasTopic);
+      return Filter.and(isPublic, isActive, hasTopic);
     }
   },
-  CLOSED(Localized.getConstants().discussClosed()) {
+  CLOSED(Localized.dictionary().discussClosed()) {
     @Override
     Filter getFilter(LongValue userId) {
       Filter isMemberFilter = Filter.isEqual(COL_MEMBER, BooleanValue.TRUE);
@@ -60,24 +52,26 @@ enum DiscussionsListType implements HasCaption, HasWidgetSupplier {
           isActive, hasTopic);
     }
   },
-  OBSERVED(Localized.getConstants().discussPrivateShort()) {
+  OBSERVED(Localized.dictionary().discussPrivateShort()) {
     @Override
     Filter getFilter(LongValue userId) {
       Filter activeStatusFilter = Filter.isEqual(COL_STATUS,
           IntegerValue.of(DiscussionStatus.ACTIVE));
-      Filter notOwnerFilter = Filter.isNotEqual(COL_OWNER, userId);
+      Filter isOwnerFilter = Filter.isEqual(COL_OWNER, userId);
       Filter isMemberFilter = Filter.isEqual(COL_MEMBER, BooleanValue.TRUE);
       Filter isUserFilter = Filter.isEqual(COL_USER, userId);
       Filter hasTopic = Filter.isNull(COL_TOPIC);
+      Filter notPublic = Filter.isNull(COL_ACCESSIBILITY);
 
       Filter discussUsersFilter = Filter.in(Data.getIdColumn(VIEW_DISCUSSIONS),
           VIEW_DISCUSSIONS_USERS, COL_DISCUSSION,
           Filter.and(isUserFilter, isMemberFilter));
 
-      return Filter.and(activeStatusFilter, notOwnerFilter, discussUsersFilter, hasTopic);
+      return Filter.and(Filter.or(isOwnerFilter, discussUsersFilter), hasTopic, activeStatusFilter,
+          notPublic);
     }
   },
-  STARRED(Localized.getConstants().discussStarred()) {
+  STARRED(Localized.dictionary().discussStarred()) {
     @Override
     Filter getFilter(LongValue userId) {
       Filter isPublic = Filter.notNull(COL_ACCESSIBILITY);
@@ -102,7 +96,7 @@ enum DiscussionsListType implements HasCaption, HasWidgetSupplier {
     }
   },
 
-  ANNOUNCEMENTSBOARDLIST(Localized.getConstants().announcements()) {
+  ANNOUNCEMENTSBOARDLIST(Localized.dictionary().announcements()) {
     @Override
     Filter getFilter(LongValue userId) {
       Filter isMemberFilter = Filter.isEqual(COL_MEMBER, BooleanValue.TRUE);

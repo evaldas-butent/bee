@@ -10,34 +10,27 @@
   <xi:include href="columns/TaskMode.column.xml" />
   <xi:include href="columns/TaskStar.column.xml" />
   <g:columns>
-    <IdColumn name="Id" />
-    <!-- RelColumn name="ProjectStage" label="=prjStage"  -->
+    <IdColumn name="Id" >
+      <footer text="=totalOf" horizontalAlignment="right" />
+    </IdColumn>
+    <RelColumn name="ProjectStage" label="=prjStage" />
   </g:columns>
 
   <xi:include href="columns/Task.columns.xml" />
 
   <g:columns>
-    <DataColumn name="ExpectedExpenses" scale="2" />
-    <CalcColumn type="string" name="ActualDuration" label="=prjActualTaskDuration"
-      caption="=prjActualTaskDuration" filterOptions="ActualDuration">
-      <render>
-        <ui:function>
-          var diff = row.ActualDuration,
-          seconds = 0,
-          minutes = 0,
-          hours = 0,
-          days = 0,
+    <DataColumn name="ExpectedExpenses" scale="2">
+      <footer aggregate="sum" />
+    </DataColumn>
 
-          seconds = parseInt(diff / 1000 % 60, 10);
-          minutes = parseInt(diff / 1000 / 60 % 60, 10);
-          hours = parseInt(diff / 1000 / 60 / 60, 10);
-          text = (hours > 9 ? hours : ('0' + hours)) + ':'
-          + (minutes > 9 ? minutes : ('0' + minutes));
-          return text;
-        </ui:function>
-      </render>
-    </CalcColumn>
-    <DataColumn name="ActualExpenses" scale="2" />
+    <DataColumn name="ActualDuration" label="=prjActualTaskDuration" horizontalAlignment="right">
+      <renderer type="time" />
+      <footer aggregate="sum" />
+    </DataColumn>
+
+    <DataColumn name="ActualExpenses" scale="2">
+      <footer aggregate="sum" />
+    </DataColumn>
     <RelColumn name="Currency" />
   </g:columns>
 

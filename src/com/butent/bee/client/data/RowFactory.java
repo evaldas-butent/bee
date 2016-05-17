@@ -1,8 +1,5 @@
 package com.butent.bee.client.data;
 
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.user.client.Event.NativePreviewEvent;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.Widget;
@@ -13,11 +10,11 @@ import com.google.gwt.xml.client.XMLParser;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.composite.DataSelector;
+import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dialog.ModalForm;
+import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dialog.Popup.OutsideClick;
-import com.butent.bee.client.event.Previewer.PreviewConsumer;
-import com.butent.bee.client.event.logical.OpenEvent;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.layout.Vertical;
 import com.butent.bee.client.presenter.NewRowPresenter;
@@ -26,6 +23,7 @@ import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.FormWidget;
 import com.butent.bee.client.ui.HasDimensions;
+import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.form.CloseCallback;
 import com.butent.bee.client.view.form.FormView;
@@ -33,6 +31,7 @@ import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
@@ -55,7 +54,10 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 
 public final class RowFactory {
 
@@ -80,7 +82,8 @@ public final class RowFactory {
 
   private static final int GENERATED_AREA_HEIGHT = 60;
 
-  private static final String DEFAULT_CAPTION = Localized.getConstants().actionNew();
+  private static final String DEFAULT_CAPTION = Localized.dictionary().actionNew();
+  private static final Modality DEFAULT_MODALITY = Modality.ENABLED;
 
   private static final BeeLogger logger = LogUtils.getLogger(RowFactory.class);
 
@@ -133,11 +136,13 @@ public final class RowFactory {
         }
       }
 
-      createRelatedRow(formName, row, selector);
+      createRelatedRow(formName, row, selector, event.getOnOpenNewRow());
     }
   }
 
-  public static void createRelatedRow(String formName, BeeRow row, final DataSelector selector) {
+  public static void createRelatedRow(String formName, BeeRow row, final DataSelector selector,
+      final Consumer<FormView> onOpen) {
+
     Assert.notEmpty(formName);
     Assert.notNull(row);
     Assert.notNull(selector);
@@ -145,7 +150,7 @@ public final class RowFactory {
     selector.setAdding(true);
 
     createRow(formName, selector.getNewRowCaption(), selector.getOracle().getDataInfo(), row,
-        selector, null, new RowCallback() {
+        Modality.ENABLED, selector, null, onOpen, new RowCallback() {
           @Override
           public void onCancel() {
             selector.setAdding(false);
@@ -163,14 +168,20 @@ public final class RowFactory {
   }
 
   public static void createRow(String viewName) {
-    createRow(viewName, null, null);
+    createRow(viewName, DEFAULT_MODALITY);
   }
 
-  public static void createRow(String viewName, RowCallback rowCallback) {
-    createRow(viewName, null, rowCallback);
+  public static void createRow(String viewName, Modality modality) {
+    createRow(viewName, null, modality, null);
   }
 
-  public static void createRow(String viewName, String caption, RowCallback rowCallback) {
+  public static void createRow(String viewName, Modality modality, RowCallback rowCallback) {
+    createRow(viewName, null, modality, rowCallback);
+  }
+
+  public static void createRow(String viewName, String caption, Modality modality,
+      RowCallback rowCallback) {
+
     Assert.notEmpty(viewName);
 
     DataInfo dataInfo = Data.getDataInfo(viewName);
@@ -180,32 +191,38 @@ public final class RowFactory {
 
     BeeRow row = createEmptyRow(dataInfo, true);
     createRow(dataInfo.getNewRowForm(), BeeUtils.notEmpty(caption, dataInfo.getNewRowCaption()),
-        dataInfo, row, null, null, rowCallback);
+        dataInfo, row, modality, null, null, null, rowCallback);
   }
 
-  public static void createRow(DataInfo dataInfo, BeeRow row) {
-    createRow(dataInfo, row, null);
+  public static void createRow(DataInfo dataInfo, BeeRow row, Modality modality) {
+    createRow(dataInfo, row, modality, null);
   }
 
-  public static void createRow(DataInfo dataInfo, BeeRow row, RowCallback rowCallback) {
+  public static void createRow(DataInfo dataInfo, BeeRow row, Modality modality,
+      RowCallback rowCallback) {
+
     Assert.notNull(dataInfo);
-    createRow(dataInfo.getNewRowForm(), dataInfo.getNewRowCaption(), dataInfo, row, null, null,
-        rowCallback);
+    createRow(dataInfo.getNewRowForm(), dataInfo.getNewRowCaption(), dataInfo, row, modality,
+        null, null, null, rowCallback);
   }
 
   public static void createRow(String formName, String caption, DataInfo dataInfo, BeeRow row,
-      UIObject target, FormInterceptor formInterceptor, RowCallback rowCallback) {
+      Modality modality, UIObject target, FormInterceptor formInterceptor,
+      Consumer<FormView> onOpen, RowCallback rowCallback) {
+
     Assert.notEmpty(formName);
 
     Assert.notNull(dataInfo);
     Assert.notNull(row);
 
-    getForm(formName, caption, formInterceptor, dataInfo, row, target, rowCallback);
+    getForm(formName, caption, formInterceptor, dataInfo, row, modality, target, onOpen,
+        rowCallback);
   }
 
   public static void createRow(String formName, String caption, DataInfo dataInfo, BeeRow row,
-      RowCallback rowCallback) {
-    createRow(formName, caption, dataInfo, row, null, null, rowCallback);
+      Modality modality, RowCallback rowCallback) {
+
+    createRow(formName, caption, dataInfo, row, modality, null, null, null, rowCallback);
   }
 
   public static void showMenu(Widget target) {
@@ -213,35 +230,27 @@ public final class RowFactory {
     panel.addStyleName(STYLE_MENU_PANEL);
 
     addMenuItem(panel, Module.TASKS, TaskConstants.VIEW_TASKS,
-        Localized.getConstants().crmNewTask());
+        Localized.dictionary().crmNewTask());
 
     addMenuItem(panel, Module.CLASSIFIERS, ClassifierConstants.VIEW_COMPANIES,
-        Localized.getConstants().newClient());
+        Localized.dictionary().newClient());
 
     addMenuItem(panel, Module.DOCUMENTS, DocumentConstants.VIEW_DOCUMENTS,
-        Localized.getConstants().documentNew());
+        Localized.dictionary().documentNew());
 
     addMenuItem(panel, Module.TASKS, TaskConstants.VIEW_TODO_LIST,
-        Localized.getConstants().crmNewTodoItem());
+        Localized.dictionary().crmNewTodoItem());
 
     addMenuItem(panel, Module.TASKS, TaskConstants.TBL_REQUESTS,
-        Localized.getConstants().crmNewRequest());
+        Localized.dictionary().crmNewRequest());
 
     addMenuItem(panel, Module.DISCUSSIONS, DiscussionsConstants.VIEW_DISCUSSIONS,
-        Localized.getConstants().announcementNew(), new Runnable() {
-          @Override
-          public void run() {
-            DataInfo dataInfo = Data.getDataInfo(DiscussionsConstants.VIEW_DISCUSSIONS);
-            BeeRow row = createEmptyRow(dataInfo, true);
+        Localized.dictionary().announcementNew(), () -> {
+          DataInfo dataInfo = Data.getDataInfo(DiscussionsConstants.VIEW_DISCUSSIONS);
+          BeeRow row = createEmptyRow(dataInfo, true);
 
-            BeeColumn column = dataInfo.getColumn(DiscussionsConstants.COL_TOPIC);
-            if (column != null) {
-              column.setNullable(false);
-            }
-
-            RowFactory.createRow(DiscussionsConstants.FORM_NEW_DISCUSSION,
-                Localized.getConstants().announcementNew(), dataInfo, row, null);
-          }
+          RowFactory.createRow(DiscussionsConstants.FORM_NEW_ANNOUNCEMENT,
+              Localized.dictionary().announcementNew(), dataInfo, row, DEFAULT_MODALITY, null);
         });
 
     if (!panel.isEmpty()) {
@@ -258,15 +267,8 @@ public final class RowFactory {
     }
   }
 
-  private static void addMenuItem(HasWidgets panel, Module module, final String viewName,
-      String text) {
-
-    addMenuItem(panel, module, viewName, text, new Runnable() {
-      @Override
-      public void run() {
-        createRow(viewName);
-      }
-    });
+  private static void addMenuItem(HasWidgets panel, Module module, String viewName, String text) {
+    addMenuItem(panel, module, viewName, text, () -> createRow(viewName, DEFAULT_MODALITY));
   }
 
   private static void addMenuItem(HasWidgets panel, Module module, String viewName, String text,
@@ -278,12 +280,9 @@ public final class RowFactory {
       Label label = new Label(text);
       label.addStyleName(STYLE_MENU_ITEM);
 
-      label.addClickHandler(new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent event) {
-          UiHelper.closeDialog((Widget) event.getSource());
-          command.run();
-        }
+      label.addClickHandler(event -> {
+        UiHelper.closeDialog((Widget) event.getSource());
+        command.run();
       });
 
       panel.add(label);
@@ -312,6 +311,7 @@ public final class RowFactory {
 
   private static FormDescription createFormDescription(String formName, DataInfo dataInfo,
       List<BeeColumn> columns) {
+
     Document doc = XMLParser.createDocument();
     Element form = doc.createElement(FormFactory.TAG_FORM);
 
@@ -422,31 +422,47 @@ public final class RowFactory {
 
   private static void getForm(String formName, final String caption,
       FormInterceptor formInterceptor, final DataInfo dataInfo, final BeeRow row,
-      final UIObject target, final RowCallback rowCallback) {
+      Modality modality, final UIObject target, final Consumer<FormView> onOpen,
+      final RowCallback rowCallback) {
 
     FormInterceptor fcb =
         (formInterceptor == null) ? FormFactory.getFormInterceptor(formName) : formInterceptor;
 
     FormFactory.createFormView(formName, dataInfo.getViewName(), dataInfo.getColumns(), true, fcb,
-        new FormFactory.FormViewCallback() {
-          @Override
-          public void onSuccess(FormDescription formDescription, FormView result) {
-            if (result != null) {
-              result.setEditing(true);
-              result.start(null);
+        (formDescription, result) -> {
+          if (result != null) {
+            result.setAdding(true);
+            result.setEditing(true);
+            result.start(null);
 
-              openForm(result, caption, dataInfo, row, target, rowCallback);
-            }
+            openForm(result, caption, dataInfo, row, modality, target, onOpen, rowCallback);
           }
         });
   }
 
   private static void openForm(final FormView formView, String caption, final DataInfo dataInfo,
-      final BeeRow row, UIObject target, final RowCallback callback) {
+      final BeeRow row, Modality modality, UIObject target,
+      final Consumer<FormView> onOpen, final RowCallback callback) {
 
-    String cap = BeeUtils.notEmpty(caption, formView.getCaption(), DEFAULT_CAPTION);
+    final String cap = BeeUtils.notEmpty(caption, formView.getCaption(), DEFAULT_CAPTION);
 
-    final NewRowPresenter presenter = new NewRowPresenter(formView, dataInfo, cap);
+    boolean modal;
+    if (Popup.hasEventPreview()) {
+      modal = true;
+    } else if (modality == null) {
+      modal = DEFAULT_MODALITY == Modality.ENABLED;
+    } else {
+      modal = modality == Modality.ENABLED;
+    }
+
+    final FormInterceptor interceptor = formView.getFormInterceptor();
+
+    Set<Action> enabledActions = EnumSet.noneOf(Action.class);
+    if (interceptor != null && interceptor.saveOnPrintNewRow()) {
+      enabledActions.add(Action.PRINT);
+    }
+
+    final NewRowPresenter presenter = new NewRowPresenter(formView, dataInfo, cap, enabledActions);
     final ModalForm dialog = new ModalForm(presenter, formView, false);
 
     final RowCallback closer = new RowCallback() {
@@ -470,7 +486,6 @@ public final class RowFactory {
     presenter.setActionDelegate(new HandlesActions() {
       @Override
       public void handleAction(Action action) {
-        FormInterceptor interceptor = formView.getFormInterceptor();
         if (interceptor != null && !interceptor.beforeAction(action, presenter)) {
           return;
         }
@@ -494,6 +509,32 @@ public final class RowFactory {
             });
             break;
 
+          case PRINT:
+            Global.confirm(cap, Icon.QUESTION,
+                Collections.singletonList(Localized.dictionary().saveAndPrintQuestion()),
+                Localized.dictionary().saveAndPrintAction(), Localized.dictionary().cancel(),
+                () -> {
+                  if (interceptor != null && !interceptor.beforeAction(Action.SAVE, presenter)) {
+                    return;
+                  }
+
+                  presenter.save(new RowCallback() {
+                    @Override
+                    public void onCancel() {
+                      closer.onCancel();
+                    }
+
+                    @Override
+                    public void onSuccess(BeeRow result) {
+                      closer.onSuccess(result);
+
+                      RowEditor.open(dataInfo.getViewName(), result,
+                          Opener.modal(fv -> fv.getViewPresenter().handleAction(Action.PRINT)));
+                    }
+                  });
+                });
+            break;
+
           case SAVE:
             presenter.save(closer);
             break;
@@ -501,42 +542,35 @@ public final class RowFactory {
           default:
             logger.warning(NameUtils.getName(this), action, "not implemented");
         }
-
-        if (interceptor != null) {
-          interceptor.afterAction(action, presenter);
-        }
       }
     });
 
-    dialog.setOnSave(new PreviewConsumer() {
-      @Override
-      public void accept(NativePreviewEvent input) {
-        if (formView.checkOnSave(input)) {
-          presenter.handleAction(Action.SAVE);
-        }
+    dialog.setOnSave(input -> {
+      if (formView.checkOnSave(input)) {
+        presenter.handleAction(Action.SAVE);
       }
     });
 
-    dialog.setOnEscape(new PreviewConsumer() {
-      @Override
-      public void accept(NativePreviewEvent input) {
-        if (formView.checkOnClose(input)) {
-          presenter.handleAction(Action.CLOSE);
-        }
+    dialog.setOnEscape(input -> {
+      if (formView.checkOnClose(input)) {
+        presenter.handleAction(Action.CLOSE);
       }
     });
 
-    dialog.addOpenHandler(new OpenEvent.Handler() {
-      @Override
-      public void onOpen(OpenEvent event) {
-        if (formView.getFormInterceptor() != null) {
-          formView.getFormInterceptor().onStartNewRow(formView, null, row);
-        }
-        formView.updateRow(row, true);
+    dialog.addOpenHandler(event -> {
+      if (formView.getFormInterceptor() != null) {
+        formView.getFormInterceptor().onStartNewRow(formView, null, row);
+      }
+      formView.updateRow(row, true);
 
-        UiHelper.focus(formView.getRootWidget().asWidget());
+      formView.focus();
+
+      if (onOpen != null) {
+        onOpen.accept(formView);
       }
     });
+
+    dialog.setPreviewEnabled(modal);
 
     if (target == null) {
       dialog.center();

@@ -18,7 +18,8 @@ public class AssessmentForwarderPrintForm extends AssessmentPrintForm {
 
   @Override
   public void beforeRefresh(final FormView form, IsRow row) {
-    Queries.getRowSet(TBL_CARGO_HANDLING, null, Filter.equals(COL_FORWARDER, row.getId()),
+    Queries.getRowSet(TBL_CARGO_HANDLING, null,
+        Filter.equals(COL_CARGO_TRIP, row.getLong(form.getDataIndex(COL_CARGO_TRIP))),
         new RowSetCallback() {
           @Override
           public void onSuccess(BeeRowSet result) {

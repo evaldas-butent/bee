@@ -5,6 +5,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
+import com.google.common.eventbus.AllowConcurrentEvents;
 import com.google.common.eventbus.Subscribe;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
@@ -193,8 +194,9 @@ public class TradeActBean {
   public void init() {
     sys.registerDataEventHandler(new DataEventHandler() {
       @Subscribe
+      @AllowConcurrentEvents
       public void fillActNumber(ViewInsertEvent event) {
-        if (event.isBefore() && event.isTarget(VIEW_TRADE_ACTS)
+        if (event.isBefore(VIEW_TRADE_ACTS)
             && !DataUtils.contains(event.getColumns(), COL_TA_NUMBER)) {
 
           TradeActKind kind = null;
@@ -223,8 +225,9 @@ public class TradeActBean {
       }
 
       @Subscribe
+      @AllowConcurrentEvents
       public void maybeSetReturnedQty(ViewQueryEvent event) {
-        if (event.isAfter() && event.isTarget(VIEW_TRADE_ACT_ITEMS) && event.hasData()
+        if (event.isAfter(VIEW_TRADE_ACT_ITEMS) && event.hasData()
             && event.getColumnCount() >= sys.getView(event.getTargetName()).getColumnCount()) {
 
           BeeRowSet rowSet = event.getRowset();
@@ -2621,7 +2624,7 @@ public class TradeActBean {
     }
 
     if (qs.sqlExists(TBL_TRADE_ACT_TEMPLATES, COL_TA_TEMPLATE_NAME, name)) {
-      return ResponseObject.error(usr.getLocalizableMesssages().valueExists(name));
+      return ResponseObject.error(usr.getDictionary().valueExists(name));
     }
 
     SimpleRow actRow = qs.getRow(TBL_TRADE_ACTS, actId);

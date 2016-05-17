@@ -6,6 +6,7 @@
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui"
   xmlns:w="http://www.butent.com/widget"
+  xmlns:xi="http://www.w3.org/2001/XInclude"
   
   name="Items" viewName="Items"
   newRowForm="Item" editForm="Item" editShowId="true"
@@ -58,11 +59,11 @@
 
     <DataColumn name="Vat" carry="true" />
     <DataColumn name="VatPercent" carry="true" />
+  </g:columns>
 
-    <RelColumn name="Department" visible="false" />
-    <RelColumn name="ActivityType" visible="false" />
-    <RelColumn name="CostCenter" visible="false" />
+  <xi:include href="../../Administration/grids/columns/HiddenDimensions.columns.xml" />
 
+  <g:columns>
     <DataColumn name="ExternalCode" visible="false" />
 
     <DataColumn name="Description" visible="false" />

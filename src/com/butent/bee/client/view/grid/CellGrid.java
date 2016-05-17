@@ -1120,16 +1120,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
   }
 
   public void autoFit(boolean fitHeader) {
-    if (getRowData().isEmpty()) {
-      return;
-    }
-    boolean changed = false;
-
-    for (int i = 0; i < getColumnCount(); i++) {
-      changed |= autoFitColumn(i, fitHeader);
-    }
-
-    if (changed) {
+    if (autoFitColumns(fitHeader)) {
       maybeUpdatePageSize();
     }
   }
@@ -1169,10 +1160,18 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     }
   }
 
-  public void autoFitColumn(String columnId, boolean fitHeader) {
-    int col = getColumnIndex(columnId);
-    if (isColumnWithinBounds(col)) {
-      autoFitColumn(col, fitHeader);
+  public boolean autoFitColumns(boolean fitHeader) {
+    if (getRowData().isEmpty()) {
+      return false;
+
+    } else {
+      boolean changed = false;
+
+      for (int i = 0; i < getColumnCount(); i++) {
+        changed |= autoFitColumn(i, fitHeader);
+      }
+
+      return changed;
     }
   }
 
@@ -1241,14 +1240,16 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     return changed;
   }
 
-  public void estimateColumnWidths() {
-    estimateColumnWidths(getRowData(), 0, getDataSize());
+  public void estimateColumnWidths(boolean ensure) {
+    estimateColumnWidths(getRowData(), 0, getDataSize(), ensure);
   }
 
-  public <T extends IsRow> void estimateColumnWidths(List<T> rows, int start, int end) {
+  public <T extends IsRow> void estimateColumnWidths(List<T> rows, int start, int end,
+      boolean ensure) {
+
     if (!rows.isEmpty()) {
       for (int i = 0; i < getColumnCount(); i++) {
-        estimateColumnWidth(i, rows, start, end, true);
+        estimateColumnWidth(i, rows, start, end, ensure);
       }
       areColumnWidthsEstimated = true;
     }
@@ -1318,6 +1319,11 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     } else {
       return null;
     }
+  }
+
+  @Override
+  public long getActiveRowId() {
+    return DataUtils.getId(getActiveRow());
   }
 
   public int getBodyCellHeight() {
@@ -1625,14 +1631,16 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     setRowCount(rc + 1, true);
 
     if (rc <= ps || ps <= 0) {
-      estimateColumnWidths(getRowData(), nr, nr + 1);
+      estimateColumnWidths(getRowData(), nr, nr + 1, true);
     }
     doFlexLayout();
 
+    onActivateCell(false);
     this.activeRowIndex = nr;
     if (getActiveColumnIndex() < 0) {
       this.activeColumnIndex = 0;
     }
+
     render(focus);
   }
 
@@ -2389,7 +2397,11 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
   @Override
   public void setRowCount(int count, boolean fireScopeChange) {
     Assert.nonNegative(count);
+
     if (count == getRowCount()) {
+      if (fireScopeChange) {
+        fireScopeChange(NavigationOrigin.SYSTEM);
+      }
       return;
     }
 
@@ -2426,7 +2438,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
       getRowData().addAll(rows);
 
       if (!areColumnWidthsEstimated) {
-        estimateColumnWidths();
+        estimateColumnWidths(true);
       }
     }
 
@@ -2803,6 +2815,10 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
       width = Math.max(width, estimateBodyCellWidth(col, rowValue, column, font));
     }
 
+    if (width <= 0) {
+      width = columnInfo.getHeaderWidth();
+    }
+
     if (width > 0) {
       width += LINE_WIDTH_RESERVE;
       if (ensure) {
@@ -3048,17 +3064,6 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
   private NodeList<Element> getColumnElements(int col) {
     return Selectors.getNodes(getElement(),
         Selectors.attributeEquals(DomUtils.ATTRIBUTE_DATA_COLUMN, col));
-  }
-
-  private int getColumnIndex(String columnId) {
-    Assert.notEmpty(columnId);
-    for (int i = 0; i < getColumnCount(); i++) {
-      if (getColumnInfo(i).is(columnId)) {
-        return i;
-      }
-    }
-    logger.warning("columnId", columnId, "not found");
-    return BeeConst.UNDEF;
   }
 
   private List<Integer> getColumnIndexBySourceName(String name) {

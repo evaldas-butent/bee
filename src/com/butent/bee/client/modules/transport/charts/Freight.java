@@ -196,9 +196,9 @@ final class Freight extends OrderCargo {
   }
 
   void maybeRemoveFromTrip(final Queries.IntCallback callback) {
-    Global.confirm(Localized.getConstants().removeCargoFromTripCaption(), Icon.QUESTION,
+    Global.confirm(Localized.dictionary().removeCargoFromTripCaption(), Icon.QUESTION,
         Lists.newArrayList(getCargoAndTripTitle(),
-            Localized.getConstants().removeCargoFromTripQuestion()),
+            Localized.dictionary().removeCargoFromTripQuestion()),
         new ConfirmationCallback() {
           @Override
           public void onConfirm() {

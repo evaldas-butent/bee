@@ -1,7 +1,6 @@
 package com.butent.bee.client.rights;
 
 import com.google.common.collect.ComparisonChain;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Ordering;
 
 import com.butent.bee.client.data.Data;
@@ -14,7 +13,6 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.rights.ModuleAndSub;
 import com.butent.bee.shared.rights.RightsObjectType;
-import com.butent.bee.shared.rights.RightsState;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
@@ -37,9 +35,6 @@ final class FieldRightsHandler extends MultiStateForm {
     }
   };
 
-  FieldRightsHandler() {
-  }
-
   @Override
   public FormInterceptor getInstance() {
     return new FieldRightsHandler();
@@ -48,11 +43,6 @@ final class FieldRightsHandler extends MultiStateForm {
   @Override
   protected RightsObjectType getObjectType() {
     return RightsObjectType.FIELD;
-  }
-
-  @Override
-  protected List<RightsState> getRightsStates() {
-    return Lists.newArrayList(RightsState.VIEW, RightsState.EDIT);
   }
 
   @Override

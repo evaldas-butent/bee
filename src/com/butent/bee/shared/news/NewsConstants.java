@@ -97,15 +97,18 @@ public final class NewsConstants {
         TransportConstants.loadingColumnAlias(TransportConstants.COL_PLACE_DATE));
 
     observedColumns.put(TransportConstants.TBL_ORDERS, TransportConstants.COL_STATUS);
-    observedColumns.put(TransportConstants.TBL_TRIPS, TransportConstants.COL_TRIP_STATUS);
-    observedColumns.put(TransportConstants.TBL_TRIPS, TransportConstants.COL_TRIP_NO);
 
-    observedColumns.put(TransportConstants.TBL_CARGO_REQUESTS,
-        TransportConstants.COL_CARGO_REQUEST_STATUS);
+    observedColumns.put(TransportConstants.TBL_TRIPS, TransportConstants.COL_TRIP_NO);
+    observedColumns.put(TransportConstants.TBL_TRIPS, TransportConstants.COL_TRIP_DATE);
+    observedColumns.put(TransportConstants.TBL_TRIPS, TransportConstants.COL_TRIP_DATE_FROM);
+    observedColumns.put(TransportConstants.TBL_TRIPS, TransportConstants.COL_TRIP_DATE_TO);
+    observedColumns.put(TransportConstants.TBL_TRIPS, TransportConstants.COL_TRIP_STATUS);
+    observedColumns.put(TransportConstants.TBL_TRIPS, TransportConstants.COL_TRIP_MANAGER);
+    observedColumns.put(TransportConstants.TBL_TRIPS, TransportConstants.COL_VEHICLE);
+    observedColumns.put(TransportConstants.TBL_TRIPS, TransportConstants.COL_TRAILER);
+
     observedColumns.put(TransportConstants.TBL_SHIPMENT_REQUESTS,
         TransportConstants.COL_QUERY_STATUS);
-    observedColumns.put(TransportConstants.TBL_REGISTRATIONS,
-        TransportConstants.COL_REGISTRATION_STATUS);
 
     observedColumns.put(TransportConstants.TBL_VEHICLES, TransportConstants.COL_VEHICLE_NUMBER);
 
@@ -153,9 +156,7 @@ public final class NewsConstants {
     usageTables.put(TransportConstants.TBL_ORDERS, "TranspOrderUsage");
     usageTables.put(TransportConstants.TBL_TRIPS, TransportConstants.TBL_TRIP_USAGE);
 
-    usageTables.put(TransportConstants.TBL_CARGO_REQUESTS, "CargoRequestUsage");
     usageTables.put(TransportConstants.TBL_SHIPMENT_REQUESTS, "ShipmentReqUsage");
-    usageTables.put(TransportConstants.TBL_REGISTRATIONS, "TranspRegUsage");
 
     usageTables.put(TransportConstants.TBL_VEHICLES, "VehicleUsage");
     usageTables.put(TransportConstants.TBL_DRIVERS, "DriverUsage");

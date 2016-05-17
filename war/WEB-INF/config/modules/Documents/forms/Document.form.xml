@@ -5,13 +5,13 @@
   ]>
 <f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form"
   xmlns:xi="http://www.w3.org/2001/XInclude" name="Document" caption="=document"
-  width="900" height="500">
+  width="900" height="500" favorite="Name">
 
   <TabbedPages resizable="false">
     <page>
       <text>=mainInformation</text>
       <FlowPanel>
-        <FlowPanel class="flexBox-horizontal">
+        <FlowPanel class="flexBox-horizontal" style="overflow:auto;">
           <xi:include href="widgets/DocumentFields.widget.xml" />
           <FlowPanel style="max-width: 40%;">
             <Relations relColumn="Document" inline="true"

@@ -1,296 +1,183 @@
 package com.butent.bee.server.i18n;
 
-import com.butent.bee.server.io.ExtensionFilter;
-import com.butent.bee.server.io.FileUtils;
-import com.butent.bee.server.io.WildcardFilter;
-import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.i18n.LocalizableConstants;
-import com.butent.bee.shared.i18n.LocalizableMessages;
-import com.butent.bee.shared.io.FileNameUtils;
-import com.butent.bee.shared.io.FileNameUtils.Component;
+import com.butent.bee.shared.i18n.Dictionary;
+import com.butent.bee.shared.i18n.SupportedLocale;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.Wildcards;
+import com.butent.bee.shared.utils.Property;
 
-import java.io.File;
-import java.util.Collection;
+import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
-import java.util.Properties;
-
-/**
- * Initializes or makes available particular localizations.
- */
 
 public final class Localizations {
-  /**
-   * Contains a list of types, that can be translated into a local language.
-   */
-  private enum LocalizableType {
-    CONSTANTS, MESSAGES
-  }
 
   private static BeeLogger logger = LogUtils.getLogger(Localizations.class);
 
-  private static final Locale defaultLocale = Locale.getDefault();
-  private static final Locale rootLocale = Locale.ROOT;
+  private static final EnumMap<SupportedLocale, Map<String, String>> defaultGlossaries =
+      new EnumMap<>(SupportedLocale.class);
+  private static final EnumMap<SupportedLocale, Map<String, String>> customGlossaries =
+      new EnumMap<>(SupportedLocale.class);
 
-  private static Map<Locale, File> availableConstants;
-  private static Map<Locale, File> availableMessages;
+  private static final EnumMap<SupportedLocale, Dictionary> dictionaries =
+      new EnumMap<>(SupportedLocale.class);
 
-  private static final Map<Locale, LocalizableConstants> localizedConstants = new HashMap<>();
-  private static final Map<Locale, LocalizableMessages> localizedMessages = new HashMap<>();
-
-  private static final Map<Locale, Map<String, String>> dictionaries = new HashMap<>();
-
-  public static Map<Locale, File> getAvailableConstants() {
-    return availableConstants;
+  public static Dictionary getDictionary(SupportedLocale supportedLocale) {
+    return dictionaries.get(supportedLocale);
   }
 
-  public static Map<Locale, File> getAvailableMessages() {
-    return availableMessages;
+  public static Dictionary getDictionary(String language) {
+    return getDictionary(SupportedLocale.parse(language));
   }
 
-  public static Collection<Locale> getCachedConstantLocales() {
-    return localizedConstants.keySet();
-  }
+  public static Map<String, String> getGlossary(SupportedLocale supportedLocale) {
+    Map<String, String> result = new HashMap<>();
 
-  public static Collection<Locale> getCachedMessageLocales() {
-    return localizedMessages.keySet();
-  }
+    if (supportedLocale == null) {
+      logger.severe("Localizations getGlossary: supportedLocale is null");
 
-  public static LocalizableConstants getConstants(Locale locale) {
-    Assert.notNull(locale);
-    return ensureConstants(locale);
-  }
-
-  public static Locale getDefaultLocale() {
-    return defaultLocale;
-  }
-
-  public static Map<String, String> getDictionary(Locale locale) {
-    if (availableConstants == null) {
-      init(LocalizableType.CONSTANTS);
-    }
-
-    Locale z = normalize(locale, availableConstants.keySet());
-    if (z == null) {
-      logger.severe(LocalizableType.CONSTANTS, I18nUtils.toString(locale), "not available");
-      return null;
-    }
-
-    if (dictionaries.containsKey(z)) {
-      return dictionaries.get(z);
-    }
-
-    Properties properties = FileUtils.readProperties(availableConstants.get(z));
-
-    Map<String, String> dictionary = new HashMap<>();
-    for (String name : properties.stringPropertyNames()) {
-      dictionary.put(name, properties.getProperty(name));
-    }
-
-    dictionaries.put(z, dictionary);
-    logger.debug("loaded", I18nUtils.toString(z), "dictionary",
-        BeeUtils.bracket(dictionary.size()));
-
-    return dictionary;
-  }
-
-  public static LocalizableMessages getMessages(Locale locale) {
-    Assert.notNull(locale);
-    return ensureMessages(locale);
-  }
-
-  public static LocalizableConstants getPreferredConstants(String language) {
-    if (availableConstants == null) {
-      init(LocalizableType.CONSTANTS);
-    }
-
-    Locale locale = normalize(BeeUtils.nvl(I18nUtils.toLocale(language), getDefaultLocale()),
-        getAvailableConstants().keySet());
-    if (locale == null) {
-      logger.severe(LocalizableType.CONSTANTS, language, "not available");
-      return null;
     } else {
-      return getConstants(locale);
+      Map<String, String> glossary = defaultGlossaries.get(supportedLocale);
+      if (BeeUtils.isEmpty(glossary)) {
+        logger.severe("Localizations getGlossary:", supportedLocale, "default glossary not found");
+      } else {
+        result.putAll(glossary);
+      }
+
+      glossary = customGlossaries.get(supportedLocale);
+      if (!BeeUtils.isEmpty(glossary)) {
+        result.putAll(glossary);
+      }
     }
+
+    if (supportedLocale != SupportedLocale.DICTIONARY_DEFAULT) {
+      Map<String, String> glossary = getGlossary(SupportedLocale.DICTIONARY_DEFAULT);
+
+      if (!BeeUtils.isEmpty(glossary)) {
+        if (result.isEmpty()) {
+          result.putAll(glossary);
+
+        } else {
+          glossary.forEach((key, value) -> result.putIfAbsent(key, value));
+        }
+      }
+    }
+
+    return result;
   }
 
-  public static Map<String, String> getPreferredDictionary(String language) {
-    if (availableConstants == null) {
-      init(LocalizableType.CONSTANTS);
-    }
+  public static Map<String, String> getGlossary(String language) {
+    return getGlossary(SupportedLocale.parse(language));
+  }
 
-    Locale locale = normalize(BeeUtils.nvl(I18nUtils.toLocale(language), getDefaultLocale()),
-        getAvailableConstants().keySet());
-    if (locale == null) {
-      logger.severe(LocalizableType.CONSTANTS, language, "not available");
-      return null;
+  public static List<Property> getInfo() {
+    List<Property> result = new ArrayList<>();
+
+    result.add(new Property("Default Glossaries", defaultGlossaries.size()));
+    defaultGlossaries.forEach((supportedLocale, glossary) ->
+        result.add(new Property(supportedLocale.name(), BeeUtils.size(glossary))));
+
+    result.add(new Property("Custom Glossaries", customGlossaries.size()));
+    customGlossaries.forEach((supportedLocale, glossary) ->
+        result.add(new Property(supportedLocale.name(), BeeUtils.size(glossary))));
+
+    result.add(new Property("Dictionaries", dictionaries.keySet().toString()));
+
+    return result;
+  }
+
+  public static void init() {
+    loadDefaultGlossaries();
+  }
+
+  static Map<SupportedLocale, Map<String, String>> getDefaultGlossaries() {
+    return defaultGlossaries;
+  }
+
+  static void setCustomGlossary(SupportedLocale supportedLocale, Map<String, String> glossary) {
+    if (supportedLocale == null) {
+      logger.warning("Localizations setCustomGlossary: supportedLocale is null");
+
+    } else if (BeeUtils.isEmpty(glossary)) {
+      if (customGlossaries.containsKey(supportedLocale)) {
+        customGlossaries.remove(supportedLocale);
+        logger.info("removed custom glossary", supportedLocale);
+      }
+
     } else {
-      return getDictionary(locale);
+      customGlossaries.put(supportedLocale, glossary);
+      putDictionaryIfAbsent(supportedLocale);
+
+      logger.info("Localizations:", glossary.size(), "entries put into custom glossary",
+          supportedLocale);
     }
   }
 
-  public static LocalizableMessages getPreferredMessages(String language) {
-    if (availableMessages == null) {
-      init(LocalizableType.MESSAGES);
-    }
+  private static Dictionary createDictionary(SupportedLocale supportedLocale) {
+    if (supportedLocale == SupportedLocale.DICTIONARY_DEFAULT) {
+      return key -> BeeUtils.nvl(getValue(supportedLocale, key), key);
 
-    Locale locale = normalize(BeeUtils.nvl(I18nUtils.toLocale(language), getDefaultLocale()),
-        getAvailableMessages().keySet());
-    if (locale == null) {
-      logger.severe(LocalizableType.MESSAGES, language, "not available");
-      return null;
     } else {
-      return getMessages(locale);
+      return key -> {
+        String value = getValue(supportedLocale, key);
+        if (value == null) {
+          value = getValue(SupportedLocale.DICTIONARY_DEFAULT, key);
+        }
+
+        return BeeUtils.nvl(value, key);
+      };
     }
   }
 
-  public static Locale normalize(Locale locale, Collection<Locale> available) {
-    if (locale == null || available == null) {
+  private static String getCustomValue(SupportedLocale supportedLocale, String key) {
+    if (customGlossaries.containsKey(supportedLocale)) {
+      return customGlossaries.get(supportedLocale).get(key);
+    } else {
       return null;
     }
-    if (available.contains(locale)) {
-      return locale;
-    }
-    Locale z;
-
-    if (!BeeUtils.isEmpty(locale.getVariant())) {
-      z = new Locale(locale.getLanguage(), locale.getCountry());
-      if (available.contains(z)) {
-        return z;
-      }
-    }
-    if (!BeeUtils.isEmpty(locale.getCountry())) {
-      z = new Locale(locale.getLanguage());
-      if (available.contains(z)) {
-        return z;
-      }
-    }
-
-    if (available.contains(rootLocale)) {
-      return rootLocale;
-    }
-    return null;
   }
 
-  private static LocalizableConstants ensureConstants(Locale locale) {
-    if (availableConstants == null) {
-      Assert.isTrue(init(LocalizableType.CONSTANTS));
+  private static String getDefaultValue(SupportedLocale supportedLocale, String key) {
+    if (defaultGlossaries.containsKey(supportedLocale)) {
+      return defaultGlossaries.get(supportedLocale).get(key);
+    } else {
+      return null;
     }
-
-    Locale z = normalize(locale, availableConstants.keySet());
-    Assert.notNull(z, BeeUtils.joinWords(LocalizableType.CONSTANTS, I18nUtils.toString(locale),
-        "not available"));
-
-    LocalizableConstants constants = localizedConstants.get(z);
-    if (constants == null) {
-      constants = I18nUtils.createConstants(LocalizableConstants.class,
-          FileUtils.readProperties(availableConstants.get(z)));
-      Assert.notNull(constants);
-      localizedConstants.put(z, constants);
-      logger.debug(LocalizableType.CONSTANTS, I18nUtils.toString(z), "loaded");
-    }
-    return constants;
   }
 
-  private static LocalizableMessages ensureMessages(Locale locale) {
-    if (availableMessages == null) {
-      Assert.isTrue(init(LocalizableType.MESSAGES));
+  private static String getValue(SupportedLocale supportedLocale, String key) {
+    String value = getCustomValue(supportedLocale, key);
+    if (value == null) {
+      value = getDefaultValue(supportedLocale, key);
     }
 
-    Locale z = normalize(locale, availableMessages.keySet());
-    Assert.notNull(z, BeeUtils.joinWords(LocalizableType.MESSAGES, I18nUtils.toString(locale),
-        "not available"));
-
-    LocalizableMessages messages = localizedMessages.get(z);
-    if (messages == null) {
-      messages = I18nUtils.createMessages(LocalizableMessages.class,
-          FileUtils.readProperties(availableMessages.get(z)));
-      Assert.notNull(messages);
-      localizedMessages.put(z, messages);
-      logger.debug(LocalizableType.MESSAGES, I18nUtils.toString(z), "loaded");
-    }
-    return messages;
+    return value;
   }
 
-  private static boolean init(LocalizableType type) {
-    Class<?> itf;
-
-    switch (type) {
-      case CONSTANTS:
-        availableConstants = new HashMap<>();
-        itf = LocalizableConstants.class;
-        break;
-      case MESSAGES:
-        availableMessages = new HashMap<>();
-        itf = LocalizableMessages.class;
-        break;
-      default:
-        Assert.untouchable();
-        itf = null;
+  private static void loadDefaultGlossaries() {
+    if (!defaultGlossaries.isEmpty()) {
+      defaultGlossaries.clear();
     }
 
-    String baseName = itf.getSimpleName();
-    int baseLen = baseName.length();
-    char sep = I18nUtils.LOCALE_SEPARATOR;
-
-    File dir = FileUtils.toFile(itf).getParentFile();
-    List<File> files = FileUtils.findFiles(dir,
-        new WildcardFilter(baseName + Wildcards.getFsAny(), Component.BASE_NAME),
-        new ExtensionFilter(FileUtils.EXT_PROPERTIES));
-
-    String name;
-    String sfx;
-    Locale locale;
-    int cnt = 0;
-
-    for (File file : files) {
-      name = FileNameUtils.getBaseName(file.getName());
-      if (BeeUtils.same(name, baseName)) {
-        makeAvailable(type, rootLocale, file);
-        cnt++;
-        continue;
+    for (SupportedLocale supportedLocale : SupportedLocale.values()) {
+      Map<String, String> glossary = I18nUtils.readProperties(supportedLocale);
+      if (BeeUtils.isEmpty(glossary)) {
+        logger.severe(supportedLocale, "glossary properties not found");
+      } else {
+        defaultGlossaries.put(supportedLocale, glossary);
       }
 
-      if (name.charAt(baseLen) != sep) {
-        logger.severe(type, "unrecognized localization", file.getPath());
-        continue;
-      }
-
-      sfx = name.substring(baseLen + 1);
-      locale = I18nUtils.toLocale(sfx);
-      if (locale == null) {
-        logger.severe(type, sfx, "locale not available", file.getPath());
-        continue;
-      }
-
-      makeAvailable(type, locale, file);
-      cnt++;
+      putDictionaryIfAbsent(supportedLocale);
     }
-
-    if (cnt <= 0) {
-      logger.severe(type, dir.getPath(), baseName, "not found");
-    }
-    return cnt > 0;
   }
 
-  private static void makeAvailable(LocalizableType type, Locale locale, File file) {
-    switch (type) {
-      case CONSTANTS:
-        availableConstants.put(locale, file);
-        break;
-      case MESSAGES:
-        availableMessages.put(locale, file);
-        break;
-      default:
-        Assert.untouchable();
+  private static void putDictionaryIfAbsent(SupportedLocale supportedLocale) {
+    if (!dictionaries.containsKey(supportedLocale)) {
+      dictionaries.put(supportedLocale, createDictionary(supportedLocale));
     }
-    logger.debug(type, "found localization", I18nUtils.toString(locale), file.getPath());
   }
 
   private Localizations() {

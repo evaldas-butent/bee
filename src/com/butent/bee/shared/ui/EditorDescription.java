@@ -6,6 +6,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.HasInfo;
 import com.butent.bee.shared.HasOptions;
+import com.butent.bee.shared.data.HasRelatedCurrency;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -19,7 +20,7 @@ import java.util.Map;
  * Handles xml descriptions of editor type user interface components.
  */
 
-public class EditorDescription implements BeeSerializable, HasInfo, HasOptions {
+public class EditorDescription implements BeeSerializable, HasInfo, HasOptions, HasRelatedCurrency {
 
   /**
    * Contains serializable members of a editor type user interface components.
@@ -27,7 +28,7 @@ public class EditorDescription implements BeeSerializable, HasInfo, HasOptions {
 
   private enum Serial {
     TYPE, VALUE_START_INDEX, STEP_VALUE, CHARACTER_WIDTH, VISIBLE_LINES, FORMAT, UPPER_CASE,
-    WIDTH, HEIGHT, MIN_WIDTH, MIN_HEIGHT, ON_ENTRY, OPTIONS, ITEMS
+    WIDTH, HEIGHT, MIN_WIDTH, MIN_HEIGHT, ON_ENTRY, CURRENCY_SOURCE, OPTIONS, ITEMS
   }
 
   private static final String ATTR_STEP_VALUE = "stepValue";
@@ -67,6 +68,8 @@ public class EditorDescription implements BeeSerializable, HasInfo, HasOptions {
   private Integer minHeight;
 
   private EditorAction onEntry;
+
+  private String currencySource;
 
   private String options;
 
@@ -129,6 +132,9 @@ public class EditorDescription implements BeeSerializable, HasInfo, HasOptions {
         case ON_ENTRY:
           setOnEntry(EditorAction.getByCode(value));
           break;
+        case CURRENCY_SOURCE:
+          setCurrencySource(value.trim());
+          break;
         case OPTIONS:
           setOptions(value.trim());
           break;
@@ -147,6 +153,11 @@ public class EditorDescription implements BeeSerializable, HasInfo, HasOptions {
 
   public Integer getCharacterWidth() {
     return characterWidth;
+  }
+
+  @Override
+  public String getCurrencySource() {
+    return currencySource;
   }
 
   public String getFormat() {
@@ -172,6 +183,7 @@ public class EditorDescription implements BeeSerializable, HasInfo, HasOptions {
         "Min Width", getMinWidth(),
         "Min Height", getMinHeight(),
         "On Entry", getOnEntry(),
+        "Currency Source", getCurrencySource(),
         "Options", getOptions());
 
     if (getItems() != null) {
@@ -276,6 +288,9 @@ public class EditorDescription implements BeeSerializable, HasInfo, HasOptions {
         case ON_ENTRY:
           arr[i] = (getOnEntry() == null) ? null : getOnEntry().getCode();
           break;
+        case CURRENCY_SOURCE:
+          arr[i] = getCurrencySource();
+          break;
         case OPTIONS:
           arr[i] = getOptions();
           break;
@@ -321,10 +336,17 @@ public class EditorDescription implements BeeSerializable, HasInfo, HasOptions {
         setMinHeight(BeeUtils.toIntOrNull(value));
       } else if (BeeUtils.same(key, ATTR_ON_ENTRY)) {
         setOnEntry(EditorAction.getByCode(value));
+      } else if (BeeUtils.same(key, ATTR_CURRENCY_SOURCE)) {
+        setCurrencySource(value.trim());
       } else if (BeeUtils.same(key, ATTR_OPTIONS)) {
         setOptions(value.trim());
       }
     }
+  }
+
+  @Override
+  public void setCurrencySource(String currencySource) {
+    this.currencySource = currencySource;
   }
 
   public void setItems(List<String> items) {

@@ -2,11 +2,11 @@ package com.butent.bee.client.grid;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
-import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
+import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
@@ -41,11 +41,11 @@ import com.butent.bee.client.view.grid.ColumnInfo;
 import com.butent.bee.client.view.grid.GridFilterManager;
 import com.butent.bee.client.view.grid.GridImpl;
 import com.butent.bee.client.view.grid.GridSettings;
+import com.butent.bee.client.view.grid.GridUtils;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
@@ -71,6 +71,7 @@ import com.butent.bee.shared.ui.CellType;
 import com.butent.bee.shared.ui.Flexibility;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.ui.HasCaption;
+import com.butent.bee.shared.ui.Preloader;
 import com.butent.bee.shared.ui.UiConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Property;
@@ -89,38 +90,45 @@ public final class GridFactory {
 
     public static GridOptions forCaptionAndFilter(String cap, Filter flt) {
       return (BeeUtils.isEmpty(cap) && flt == null)
-          ? null : new GridOptions(cap, null, flt, null, null);
+          ? null : new GridOptions(cap, null, flt, null, null, null);
     }
 
     public static GridOptions forCurrentUserFilter(String column) {
-      return BeeUtils.isEmpty(column) ? null : new GridOptions(null, null, null, column, null);
+      return BeeUtils.isEmpty(column)
+          ? null : new GridOptions(null, null, null, column, null, null);
     }
 
     public static GridOptions forFeed(Feed feed, String cap, Filter flt) {
       return (feed == null)
-          ? forCaptionAndFilter(cap, flt) : new GridOptions(cap, null, flt, null, feed);
+          ? forCaptionAndFilter(cap, flt) : new GridOptions(cap, null, flt, null, feed, null);
     }
 
     public static GridOptions forFilter(Filter flt) {
-      return (flt == null) ? null : new GridOptions(null, null, flt, null, null);
+      return (flt == null) ? null : new GridOptions(null, null, flt, null, null, null);
     }
 
     private final String caption;
 
     private final String filterDescription;
     private final Filter filter;
-
     private final String currentUserFilter;
 
     private final Feed feed;
 
+    private final Boolean paging;
+
     private GridOptions(String caption, String filterDescription, Filter filter,
-        String currentUserFilter, Feed feed) {
+        String currentUserFilter, Feed feed, Boolean paging) {
+
       this.caption = caption;
+
       this.filterDescription = filterDescription;
       this.filter = filter;
       this.currentUserFilter = currentUserFilter;
+
       this.feed = feed;
+
+      this.paging = paging;
     }
 
     @Override
@@ -130,6 +138,10 @@ public final class GridFactory {
 
     public Feed getFeed() {
       return feed;
+    }
+
+    public Boolean getPaging() {
+      return paging;
     }
 
     private Filter buildFilter(String viewName) {
@@ -159,7 +171,7 @@ public final class GridFactory {
   private static final Map<String, GridDescription> descriptionCache = new HashMap<>();
   private static final Map<String, GridInterceptor> gridInterceptors = new HashMap<>();
 
-  private static final Map<String, Consumer<ScheduledCommand>> gridPreloaders = new HashMap<>();
+  private static final Map<String, Preloader> gridPreloaders = new HashMap<>();
   private static final Map<String, Filter> immutableFilters = new HashMap<>();
 
   private static final Multimap<String, String> hiddenColumns = HashMultimap.create();
@@ -267,10 +279,10 @@ public final class GridFactory {
 
   public static GridView createGridView(GridDescription gridDescription, String supplierKey,
       List<BeeColumn> dataColumns, String relColumn, Collection<UiOption> uiOptions,
-      GridInterceptor gridInterceptor, Order order) {
+      GridInterceptor gridInterceptor, Order order, GridOptions gridOptions) {
 
     GridView gridView = new GridImpl(gridDescription, supplierKey, dataColumns, relColumn,
-        uiOptions, gridInterceptor);
+        uiOptions, gridInterceptor, gridOptions);
     gridView.create(order);
 
     return gridView;
@@ -288,20 +300,17 @@ public final class GridFactory {
     Assert.notEmpty(name);
     Assert.notNull(callback);
 
-    Consumer<ScheduledCommand> preloader = gridPreloaders.get(name);
+    Preloader preloader = gridPreloaders.get(name);
 
     if (preloader == null) {
       loadDescription(name, callback);
 
     } else {
-      preloader.accept(new ScheduledCommand() {
-        @Override
-        public void execute() {
-          loadDescription(name, callback);
-        }
-      });
+      preloader.accept(() -> loadDescription(name, callback));
 
-      gridPreloaders.remove(name);
+      if (preloader.disposable()) {
+        gridPreloaders.remove(name);
+      }
     }
   }
 
@@ -317,14 +326,17 @@ public final class GridFactory {
     }
 
     String caption = attributes.get(UiConstants.ATTR_CAPTION);
+
     String filterDescription = attributes.get(UiConstants.ATTR_FILTER);
     String currentUserFilter = attributes.get(UiConstants.ATTR_CURRENT_USER_FILTER);
 
-    if (BeeUtils.allEmpty(caption, filterDescription, currentUserFilter)) {
+    Boolean paging = BeeUtils.toBooleanOrNull(attributes.get(UiConstants.ATTR_PAGING));
+
+    if (BeeUtils.allEmpty(caption, filterDescription, currentUserFilter) && paging == null) {
       return null;
     } else {
       return new GridOptions(Localized.maybeTranslate(caption), filterDescription, null,
-          currentUserFilter, null);
+          currentUserFilter, null, paging);
     }
   }
 
@@ -401,7 +413,16 @@ public final class GridFactory {
   }
 
   public static void openGrid(String gridName) {
-    openGrid(gridName, getGridInterceptor(gridName), null, ViewHelper.getPresenterCallback());
+    openGrid(gridName, getGridInterceptor(gridName));
+  }
+
+  public static void openGrid(String gridName, GridInterceptor gridInterceptor) {
+    openGrid(gridName, gridInterceptor, null);
+  }
+
+  public static void openGrid(String gridName, GridInterceptor gridInterceptor,
+      GridOptions gridOptions) {
+    openGrid(gridName, gridInterceptor, gridOptions, ViewHelper.getPresenterCallback());
   }
 
   public static void openGrid(String gridName, GridInterceptor gridInterceptor,
@@ -475,9 +496,10 @@ public final class GridFactory {
     return supplier;
   }
 
-  public static void registerPreloader(String gridName, Consumer<ScheduledCommand> preloader) {
+  public static void registerPreloader(String gridName, Preloader preloader) {
     Assert.notEmpty(gridName);
     Assert.notNull(preloader);
+
     gridPreloaders.put(gridName, preloader);
   }
 
@@ -544,7 +566,7 @@ public final class GridFactory {
     grid.setReadOnly(true);
 
     grid.estimateHeaderWidths();
-    grid.estimateColumnWidths(table.getRows(), 0, Math.min(r, 50));
+    grid.estimateColumnWidths(table.getRows(), 0, Math.min(r, 50), true);
 
     grid.setDefaultFlexibility(new Flexibility(1, -1, true));
     int distrWidth = containerWidth;
@@ -594,6 +616,8 @@ public final class GridFactory {
       return;
     }
 
+    boolean hasPaging = GridUtils.hasPaging(gridDescription, uiOptions, gridOptions);
+
     final ProviderType providerType;
     final CachingPolicy cachingPolicy;
 
@@ -601,14 +625,15 @@ public final class GridFactory {
       providerType = ProviderType.LOCAL;
       cachingPolicy = CachingPolicy.NONE;
     } else {
-      providerType = BeeUtils.nvl(gridDescription.getDataProvider(), ProviderType.DEFAULT);
-      cachingPolicy = BeeUtils.isFalse(gridDescription.getCacheData())
-          ? CachingPolicy.NONE : CachingPolicy.FULL;
+      providerType = BeeUtils.nvl(gridDescription.getDataProvider(),
+          hasPaging ? ProviderType.ASYNC : ProviderType.CACHED);
+      cachingPolicy = BeeUtils.nvl(gridDescription.getCacheData(), hasPaging)
+          ? CachingPolicy.FULL : CachingPolicy.NONE;
     }
 
     if (brs != null) {
       GridView gridView = createGridView(gridDescription, supplierKey, brs.getColumns(),
-          uiOptions, gridInterceptor, order);
+          uiOptions, gridInterceptor, order, gridOptions);
       gridView.initData(brs.getNumberOfRows(), brs);
 
       Filter filter = GridFilterManager.parseFilter(gridView.getGrid(), initialUserFilterValues);
@@ -620,7 +645,7 @@ public final class GridFactory {
     }
 
     int limit;
-    if (providerType == ProviderType.CACHED) {
+    if (providerType == ProviderType.CACHED || !hasPaging) {
       limit = BeeConst.UNDEF;
     } else if (gridDescription.getInitialRowSetSize() != null) {
       limit = gridDescription.getInitialRowSetSize();
@@ -637,7 +662,7 @@ public final class GridFactory {
     }
 
     final GridView gridView = createGridView(gridDescription, supplierKey,
-        Data.getColumns(viewName), uiOptions, gridInterceptor, order);
+        Data.getColumns(viewName), uiOptions, gridInterceptor, order, gridOptions);
 
     final Filter initialUserFilter = GridFilterManager.parseFilter(gridView.getGrid(),
         initialUserFilterValues);
@@ -666,10 +691,10 @@ public final class GridFactory {
 
   private static GridView createGridView(GridDescription gridDescription, String supplierKey,
       List<BeeColumn> dataColumns, Collection<UiOption> uiOptions, GridInterceptor gridInterceptor,
-      Order order) {
+      Order order, GridOptions gridOptions) {
 
     return createGridView(gridDescription, supplierKey, dataColumns, null, uiOptions,
-        gridInterceptor, order);
+        gridInterceptor, order, gridOptions);
   }
 
   private static void createPresenter(GridDescription gridDescription, GridView gridView,
@@ -707,7 +732,10 @@ public final class GridFactory {
       return;
     }
 
-    BeeKeeper.getRpc().sendText(Service.GET_GRID, name, new ResponseCallback() {
+    ParameterList params = new ParameterList(Service.GET_GRID);
+    params.setSummary(name);
+
+    BeeKeeper.getRpc().sendText(params, name, new ResponseCallback() {
       @Override
       public void onResponse(ResponseObject response) {
         Assert.notNull(response);

@@ -12,9 +12,9 @@
 
 <f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form"
   name="Project" viewName="Projects"
-  caption="=project" width="950" widthUnit="px" height="95" heightUnit="%">
+  caption="=project" width="950" widthUnit="px" height="95" heightUnit="%" favorite="Name" >
   <FlowPanel>
-    <Table class="bee-ProjectTable">
+    <Table kind="controls" class="bee-ProjectTable">
       <!--
       <row>
         <Label for="ProjectTemplate" style="&lbl;"/>
@@ -33,21 +33,21 @@
 
       <row>
         <Label for="StartDate" text="=crmStartDate" style="&lbl;" class="bee-required" />
-        <FlowPanel class="flexBox-horizontal">
-          <InputDate source="StartDate" required="true" style="&inp3;" />
-          <Label for="EndDate" text="=prjTerm" style="&lbl2;" class="bee-required" />
-          <InputDate source="EndDate" required="true" style="&inp3;" />
+        <FlowPanel class="flexBox-horizontal" >
+        <InputDate source="StartDate" required="true" style="&inp3;" />
+        <Label for="EndDate" text="=prjTerm" style="&lbl2;" class="bee-required" />
+        <InputDate source="EndDate" required="true" style="&inp3;" />
         </FlowPanel>
         <Label for="Company" text="=client" style="&lbl;" class="bee-required" />
         <DataSelector source="Company" style="&inp2;" required="true" choiceColumns="Name TypeName"
-          renderColumns="CompanyName CompanyTypeName" />
+          renderColumns="CompanyName CompanyTypeName"/>
       </row>
     </Table>
 
     <Disclosure open="true" name="RelatedInfo">
       <Label text="=relatedInformation" style="text-transform: uppercase; " />
-      <Table>
-        <Table>
+      <Table kind="custom">
+        <Table kind="controls">
           <row>
             <Label for="Owner" text="=prjManager" style=" &lbl;" class="bee-required" />
             <DataSelector source="Owner" name="Owner" style="&inp2;" />
@@ -60,13 +60,12 @@
               style="&lbl;" />
             <DataSelector source="ContactPerson"
               style="&inp2;"
-              renderColumns="ContactFirstName ContactLastName"
-              choiceColumns="FirstName LastName CompanyName"
-              options="Company" module="Classifiers.Contacts" />
+                renderColumns="ContactFirstName ContactLastName" choiceColumns="FirstName LastName CompanyName"
+                  options="Company" module="Classifiers.Contacts" />
             <Label for="ContractNumber" text="=contractNo" style="&lbl;" />
             <InputText source="ContractNumber" style="&inp2;"
               readOnly="true" />
-          </row>
+         </row>
 
           <row>
             <Label for="Category" text="=category" style="&lbl;" class="bee-required" />
@@ -76,15 +75,13 @@
           </row>
         </Table>
 
-        <Table>
+        <Table kind="controls">
           <row>
             <Label for="ExpectedDuration" text="=expectedDuration" style="&lbl;" />
             <InputDecimal source="ExpectedDuration" style="&inp3;" />
-            <DataSelector name="TimeUnit" source="TimeUnit" renderColumns="UnitName"
-              style="width: 5em;" />
-            <Label for="ExpectedTasksDuration" text="=prjExpectedTaskDuration"
-              style="width: 250px; &lbl;" />
-            <InputText name="ExpectedTasksDuration" readOnly="true" style="&inp3;" />
+            <DataSelector name="TimeUnit" source="TimeUnit" renderColumns="UnitName" style="width: 5em;" />
+            <Label for="ExpectedTasksDuration" text="=prjExpectedTaskDuration" style="width: 250px; &lbl;" />
+            <InputText name="ExpectedTasksDuration"  readOnly="true" style="&inp3;" />
           </row>
 
           <row>
@@ -100,8 +97,7 @@
 
             <Label for="ContractPrice" text="=salePrice" style="&lbl;" />
             <InputDecimal source="ContractPrice" scale="2" style="&inp3;" />
-            <DataSelector source="Currency" for="ContractPrice" newRowEnabled="false"
-              editEnabled="false"
+            <DataSelector source="Currency" for="ContractPrice" newRowEnabled="false" editEnabled="false"
               style="width: 5em;" readOnly="true" />
             <Label for="Progress" text="=progress" style="&lbl;" />
             <InputDecimal source="Progress" style="&inp3;" minValue="0" maxValue="100" />
@@ -109,7 +105,7 @@
 
         </Table>
 
-        <Table>
+        <Table kind="controls">
           <row>
             <Label for="WorkPlace" style="&lbl;" />
             <InputText source="WorkPlace" style="&inp5;" disablable="false" />
@@ -137,10 +133,10 @@
       </Table>
     </Disclosure>
 
-    <TabbedPages name="ChildTabs" style="height: 580px;">
+     <TabbedPages name="ChildTabs" style="height: 580px;">
       <page>
         <text>=prjComments</text>
-        <FlowPanel name="ProjectComments" class="flex-horizontal" />
+        <FlowPanel name="ProjectComments" class="flex-horizontal"/>
       </page>
       <page>
         <text>=prjTeam</text>
@@ -150,6 +146,9 @@
         <text>=prjStages</text>
         <ChildGrid name="ProjectStages" relColumn="Project" />
       </page>
+      <page module="Tasks">
+        <text>=crmTasks</text>
+        <ChildGrid name="ChildTasks" relColumn="Project" disablable="false" />
       <page>
         <text>=personContacts</text>
         <ChildGrid name="ProjectContacts" relColumn="Project" />
@@ -157,13 +156,12 @@
       <page module="Documents">
         <text>=documents</text>
         <FlowPanel>
-          <Table style="margin-bottom: 5px;">
+          <Table kind="controls" style="margin-bottom: 5px;">
             <row>
               <Label text="=personContact" style="margin-right: 1em; text-align: left;" />
               <DataSelector source="ContactPerson"
                 style="display: inline-block; width: 200px;"
-                renderColumns="ContactFirstName ContactLastName"
-                choiceColumns="FirstName LastName CompanyName"
+                renderColumns="ContactFirstName ContactLastName" choiceColumns="FirstName LastName CompanyName"
                 options="Company" module="Classifiers.Contacts" />
               <Label text="=signDate" style="&lbl;" />
               <InputDate source="ContractSigned" style="&inp3;" />
@@ -180,23 +178,25 @@
                 newRowEnabled="false" style="&inp2;" />
               <Label text="=salePrice" style="&lbl;" />
               <InputText source="ContractPrice" style="&inp3;" />
-              <DataSelector source="Currency" for="ContractPrice" newRowEnabled="false"
-                editEnabled="false"
+              <DataSelector source="Currency" for="ContractPrice" newRowEnabled="false" editEnabled="false"
                 style="width: 50px;" readOnly="true" />
               <Label for="OtherExpenses" text="=prjOtherExpenses" style="&lbl;" />
               <InputText source="OtherExpenses" style="&inp3;" />
-              <DataSelector source="Currency" for="OtherExpenses" newRowEnabled="false"
-                editEnabled="false"
+              <DataSelector source="Currency" for="OtherExpenses" newRowEnabled="false" editEnabled="false"
                 style="width: 50px;" readOnly="true" />
             </row>
           </Table>
           <ChildGrid name="RelatedDocuments" relColumn="Project"
-            class="flexible" style="height: 400px;" />
+            class="flexible" style="height: 400px;"/>
         </FlowPanel>
       </page>
-      <page module="Tasks">
-        <text>=crmTasks</text>
-        <ChildGrid name="ChildTasks" relColumn="Project" />
+      <page>
+        <text>=prjSchedule</text>
+        <FlowPanel name="ChartData" />
+      </page>
+      <page>
+        <text>=personContacts</text>
+        <ChildGrid name="ProjectContacts" relColumn="Project"  />
       </page>
       <page module="Tasks">
         <text>=crmRecurringTasks</text>
@@ -219,9 +219,9 @@
         <ChildGrid name="ChildServiceObjects" relColumn="Project" />
       </page>
       <page>
-        <text>=prjSchedule</text>
-        <FlowPanel name="ChartData" />
+          <text>=mails</text>
+          <ChildGrid name="RelatedMessages" relColumn="Project" paging="true" />
       </page>
-    </TabbedPages>
-  </FlowPanel>
+   </TabbedPages>
+   </FlowPanel>
 </f:Form>

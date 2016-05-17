@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="Chats" source="Chats" module="*"
+  caption="=chats"
+  >
+  <Columns>
+    <SimpleColumn name="ChatName" />
+
+    <SimpleColumn name="Created" />
+
+    <SimpleColumn name="Creator" />
+    <SimpleJoin name="Creator" joinType="LEFT">
+      <SimpleColumn name="CompanyPerson" alias="CreatorCompanyPerson" />
+
+      <SimpleJoin name="CompanyPerson" joinType="LEFT">
+        <SimpleColumn name="Person" alias="CreatorPerson" />
+      
+        <SimpleJoin name="Person" joinType="LEFT">
+          <SimpleColumn name="FirstName" alias="CreatorFirstName" />
+          <SimpleColumn name="LastName" alias="CreatorLastName" />
+        </SimpleJoin>
+        <SimpleJoin name="Position" joinType="LEFT">
+          <SimpleColumn name="Name" alias="CreatorPositionName" />
+        </SimpleJoin>
+        <SimpleJoin name="Company" joinType="LEFT">
+          <SimpleColumn name="Name" alias="CreatorCompanyName" />
+        </SimpleJoin>
+      </SimpleJoin>
+    </SimpleJoin>
+  </Columns>
+</View>
+ 

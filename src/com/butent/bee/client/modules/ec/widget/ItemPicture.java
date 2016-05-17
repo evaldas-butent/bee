@@ -63,12 +63,12 @@ public class ItemPicture extends Flow {
     if (item != null) {
       if (item.isFeatured()) {
         CustomDiv banner = new CustomDiv(STYLE_FEATURED);
-        banner.setText(Localized.getConstants().ecFeaturedBanner());
+        banner.setText(Localized.dictionary().ecFeaturedBanner());
         add(banner);
 
       } else if (item.isNovelty()) {
         CustomDiv banner = new CustomDiv(STYLE_NOVELTY);
-        banner.setText(Localized.getConstants().ecNoveltyBanner());
+        banner.setText(Localized.dictionary().ecNoveltyBanner());
         add(banner);
       }
     }

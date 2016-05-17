@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+      name="RestCompanies" source="Companies"
+    >
+  <Columns>
+    <SimpleColumn name="CompanyType" alias="TypeID" />
+    <SimpleJoin joinType="LEFT" name="CompanyType">
+      <SimpleColumn name="Name" alias="Type" />
+    </SimpleJoin>
+
+    <SimpleColumn name="Name" />
+    <SimpleColumn name="Code" />
+
+    <SimpleJoin name="Contact" joinType="LEFT">
+      <VersionColumn name="ContactVersion" hidden="true" />
+      <SimpleColumn name="Phone" />
+      <SimpleColumn name="Mobile" />
+      <SimpleColumn name="Fax" />
+
+      <SimpleJoin name="Email" joinType="LEFT">
+        <SimpleColumn name="Email" />
+      </SimpleJoin>
+
+      <SimpleColumn name="Address" />
+      <SimpleColumn name="PostIndex" />
+
+      <SimpleColumn name="City" alias="CityID" />
+      <SimpleJoin name="City" joinType="LEFT">
+        <SimpleColumn name="Name" alias="City" />
+      </SimpleJoin>
+
+      <SimpleColumn name="Country" alias="CountryID" />
+      <SimpleJoin name="Country" joinType="LEFT">
+        <SimpleColumn name="Name" alias="Country" />
+      </SimpleJoin>
+    </SimpleJoin>
+  </Columns>
+  <Order>
+    <OrderBy column="Name" />
+  </Order>
+</View>

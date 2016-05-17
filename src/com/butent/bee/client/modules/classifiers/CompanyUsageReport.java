@@ -305,7 +305,7 @@ public class CompanyUsageReport extends ReportInterceptor {
     }
 
     if (args.isEmpty()) {
-      getFormView().notifyWarning(Localized.getConstants().specifyCondition());
+      getFormView().notifyWarning(Localized.dictionary().specifyCondition());
       return;
     }
 
@@ -317,7 +317,7 @@ public class CompanyUsageReport extends ReportInterceptor {
         if (BeeUtils.isPositive(result)) {
           openGrid(filter, labels);
         } else {
-          getFormView().notifyWarning(Localized.getConstants().nothingFound());
+          getFormView().notifyWarning(Localized.dictionary().nothingFound());
         }
       }
     });
@@ -389,7 +389,7 @@ public class CompanyUsageReport extends ReportInterceptor {
     if (BeeUtils.isPositive(relationIndex) && parameters.containsKey(NAME_OPERATOR)) {
       return true;
     } else {
-      getFormView().notifyWarning(Localized.getConstants().specifyCondition());
+      getFormView().notifyWarning(Localized.dictionary().specifyCondition());
       return false;
     }
   }

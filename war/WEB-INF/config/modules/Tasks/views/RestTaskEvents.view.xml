@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+      xmlns:x="http://www.butent.com/expression"
+
+      name="RestTaskEvents" source="TaskEvents"
+    >
+  <Columns>
+    <SimpleColumn name="Task" alias="TaskID" />
+    <SimpleColumn name="Publisher" alias="PublisherID" />
+    <SimpleColumn name="PublishTime" />
+    <SimpleColumn name="Comment" />
+    <SimpleColumn name="Event" />
+    <SimpleColumn name="EventNote" />
+
+    <SimpleJoin name="EventDuration" joinType="LEFT">
+      <SimpleColumn name="DurationType" alias="DurationTypeID" />
+      <SimpleJoin name="DurationType" joinType="LEFT">
+        <SimpleColumn name="Name" alias="DurationType" />
+      </SimpleJoin>
+
+      <SimpleColumn name="DurationDate" />
+      <SimpleColumn name="Duration" />
+    </SimpleJoin>
+
+    <ExternalJoin name="TaskEvent" joinType="LEFT" source="TaskFiles">
+      <HiddenColumn name="Caption" />
+
+      <SimpleColumn name="File" />
+      <SimpleJoin name="File" joinType="LEFT">
+        <HiddenColumn name="Name" />
+      </SimpleJoin>
+
+      <SimpleColumn name="FileName">
+        <x:nvl type="STRING">
+          <x:number>"Caption"</x:number>
+          <x:number>"Name"</x:number>
+        </x:nvl>
+      </SimpleColumn>
+    </ExternalJoin>
+  </Columns>
+</View>

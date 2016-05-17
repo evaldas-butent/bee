@@ -11,10 +11,10 @@ import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.calendar.CalendarConstants.ItemType;
-import com.butent.bee.shared.modules.tasks.TaskType;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants.TaskPriority;
 import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
+import com.butent.bee.shared.modules.tasks.TaskType;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -330,30 +330,30 @@ public class CalendarTask extends CalendarItem implements BeeSerializable {
 
     Map<String, String> result = new HashMap<>();
 
-    result.put(wrap(TaskConstants.COL_TASK_ID), build(Localized.getConstants().captionId(),
+    result.put(wrap(TaskConstants.COL_TASK_ID), build(Localized.dictionary().captionId(),
         BeeUtils.toString(getId()), addLabels));
 
-    result.put(wrap(COL_START_DATE_TIME), build(Localized.getConstants().crmStartDate(),
+    result.put(wrap(COL_START_DATE_TIME), build(Localized.dictionary().crmStartDate(),
         TimeUtils.renderCompact(getStart()), addLabels));
-    result.put(wrap(COL_END_DATE_TIME), build(Localized.getConstants().crmFinishDate(),
+    result.put(wrap(COL_END_DATE_TIME), build(Localized.dictionary().crmFinishDate(),
         TimeUtils.renderCompact(getEnd()), addLabels));
 
-    result.put(wrap(COL_SUMMARY), build(Localized.getConstants().crmTaskSubject(), getSummary(),
+    result.put(wrap(COL_SUMMARY), build(Localized.dictionary().crmTaskSubject(), getSummary(),
         addLabels));
-    result.put(wrap(COL_DESCRIPTION), build(Localized.getConstants().crmTaskDescription(),
+    result.put(wrap(COL_DESCRIPTION), build(Localized.dictionary().crmTaskDescription(),
         getDescription(), addLabels));
 
-    result.put(wrap(ALS_COMPANY_NAME), build(Localized.getConstants().company(), getCompanyName(),
+    result.put(wrap(ALS_COMPANY_NAME), build(Localized.dictionary().company(), getCompanyName(),
         addLabels));
 
-    result.put(wrap(TaskConstants.COL_PRIORITY), build(Localized.getConstants().crmTaskPriority(),
+    result.put(wrap(TaskConstants.COL_PRIORITY), build(Localized.dictionary().crmTaskPriority(),
         (getPriority() == null) ? BeeConst.STRING_EMPTY : getPriority().getCaption(), addLabels));
-    result.put(wrap(COL_STATUS), build(Localized.getConstants().crmTaskStatus(),
+    result.put(wrap(COL_STATUS), build(Localized.dictionary().crmTaskStatus(),
         (getStatus() == null) ? BeeConst.STRING_EMPTY : getStatus().getCaption(), addLabels));
 
-    result.put(wrap(TaskConstants.COL_OWNER), build(Localized.getConstants().crmTaskManager(),
+    result.put(wrap(TaskConstants.COL_OWNER), build(Localized.dictionary().crmTaskManager(),
         formatUser(getOwner(), users), addLabels));
-    result.put(wrap(TaskConstants.COL_EXECUTOR), build(Localized.getConstants().crmTaskExecutor(),
+    result.put(wrap(TaskConstants.COL_EXECUTOR), build(Localized.dictionary().crmTaskExecutor(),
         formatUser(getExecutor(), users), addLabels));
 
     if (BeeUtils.isEmpty(getObservers())) {
@@ -364,10 +364,10 @@ public class CalendarTask extends CalendarItem implements BeeSerializable {
         names.add(formatUser(observer, users));
       }
       result.put(wrap(TaskConstants.PROP_OBSERVERS),
-          build(Localized.getConstants().crmTaskObservers(), joinChildren(names), addLabels));
+          build(Localized.dictionary().crmTaskObservers(), joinChildren(names), addLabels));
     }
 
-    result.put(wrap(KEY_PERIOD), build(Localized.getConstants().period(),
+    result.put(wrap(KEY_PERIOD), build(Localized.dictionary().period(),
         TimeUtils.renderPeriod(getStart(), getEnd(), !addLabels), addLabels));
 
     return result;
@@ -394,7 +394,7 @@ public class CalendarTask extends CalendarItem implements BeeSerializable {
 
   @Override
   public boolean isMovable(Long userId) {
-    return isWhole() && isOwner(userId) && getStatus() == TaskStatus.SCHEDULED;
+    return isWhole() && isOwner(userId);
   }
 
   @Override
@@ -405,8 +405,8 @@ public class CalendarTask extends CalendarItem implements BeeSerializable {
   @Override
   public boolean isResizable(Long userId) {
     return isWhole() && isOwner(userId) && getStatus() != null
-        && TaskStatus.in(getStatus().ordinal(), TaskStatus.NOT_VISITED, TaskStatus.ACTIVE,
-            TaskStatus.SCHEDULED);
+        && TaskStatus.in(getStatus().ordinal(), TaskStatus.NOT_VISITED, TaskStatus.VISITED,
+            TaskStatus.ACTIVE);
   }
 
   @Override

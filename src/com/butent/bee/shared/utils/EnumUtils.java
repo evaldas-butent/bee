@@ -8,7 +8,8 @@ import com.google.common.collect.HashBiMap;
 import com.google.common.collect.Iterables;
 
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.i18n.LocalizableConstants;
+import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -31,7 +32,7 @@ import com.butent.bee.shared.ui.HasLocalizedCaption;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 
@@ -56,6 +57,13 @@ public final class EnumUtils {
     }
   };
 
+  private static final Function<Enum<?>, String> nameFunction = new Function<Enum<?>, String>() {
+    @Override
+    public String apply(Enum<?> input) {
+      return (input == null) ? null : input.name();
+    }
+  };
+
   static {
     AdministrationConstants.register();
     ClassifierConstants.register();
@@ -73,28 +81,28 @@ public final class EnumUtils {
     PayrollConstants.register();
   }
 
-  public static String buildIndexList(Collection<? extends Enum<?>> values) {
-    if (values == null) {
-      return null;
+  public static String getCaption(Enum<?> e) {
+    if (e instanceof HasCaption) {
+      return ((HasCaption) e).getCaption();
     } else {
-      return joiner.join(Iterables.transform(values, indexFunction));
+      return proper(e);
     }
   }
 
   public static String getCaption(Class<? extends Enum<?>> clazz, Integer index) {
-    return getLocalizedCaption(clazz, index, Localized.getConstants());
+    return getLocalizedCaption(clazz, index, Localized.dictionary());
   }
 
   public static String getCaption(String key, Integer index) {
-    return getLocalizedCaption(key, index, Localized.getConstants());
+    return getLocalizedCaption(key, index, Localized.dictionary());
   }
 
   public static List<String> getCaptions(Class<? extends Enum<?>> clazz) {
-    return getLocalizedCaptions(clazz, Localized.getConstants());
+    return getLocalizedCaptions(clazz, Localized.dictionary());
   }
 
   public static List<String> getCaptions(String key) {
-    return getLocalizedCaptions(key, Localized.getConstants());
+    return getLocalizedCaptions(key, Localized.dictionary());
   }
 
   public static <E extends Enum<?>> E getEnumByIndex(Class<E> clazz, Integer idx) {
@@ -166,7 +174,7 @@ public final class EnumUtils {
   }
 
   public static String getLocalizedCaption(Class<? extends Enum<?>> clazz, Integer index,
-      LocalizableConstants constants) {
+      Dictionary constants) {
 
     if (index == null) {
       return null;
@@ -182,8 +190,7 @@ public final class EnumUtils {
     }
   }
 
-  public static String getLocalizedCaption(String key, Integer index,
-      LocalizableConstants constants) {
+  public static String getLocalizedCaption(String key, Integer index, Dictionary constants) {
 
     if (BeeUtils.isEmpty(key)) {
       logger.severe("Caption key not specified");
@@ -204,7 +211,8 @@ public final class EnumUtils {
   }
 
   public static List<String> getLocalizedCaptions(Class<? extends Enum<?>> clazz,
-      LocalizableConstants constants) {
+      Dictionary constants) {
+
     Assert.notNull(clazz);
     Assert.notNull(constants);
 
@@ -216,13 +224,13 @@ public final class EnumUtils {
       } else if (constant instanceof HasCaption) {
         result.add(((HasCaption) constant).getCaption());
       } else {
-        result.add(BeeUtils.proper(constant));
+        result.add(proper(constant));
       }
     }
     return result;
   }
 
-  public static List<String> getLocalizedCaptions(String key, LocalizableConstants constants) {
+  public static List<String> getLocalizedCaptions(String key, Dictionary constants) {
     Assert.notEmpty(key);
     Class<? extends Enum<?>> clazz = CLASSES.get(BeeUtils.normalize(key));
 
@@ -284,9 +292,45 @@ public final class EnumUtils {
     return CLASSES.containsKey(BeeUtils.normalize(key));
   }
 
+  public static String joinIndexes(Collection<? extends Enum<?>> values) {
+    if (values == null) {
+      return null;
+    } else {
+      return joiner.join(Iterables.transform(values, indexFunction));
+    }
+  }
+
+  public static String joinNames(Collection<? extends Enum<?>> values) {
+    if (values == null) {
+      return null;
+    } else {
+      return joiner.join(Iterables.transform(values, nameFunction));
+    }
+  }
+
   public static <E extends Enum<?>> List<E> parseIndexList(Class<E> clazz, String input) {
+    Assert.notNull(clazz);
+
     List<E> result = new ArrayList<>();
-    if (clazz == null || BeeUtils.isEmpty(input)) {
+    if (BeeUtils.isEmpty(input)) {
+      return result;
+    }
+
+    for (String s : splitter.split(input)) {
+      E e = getEnumByIndex(clazz, s);
+      if (e != null) {
+        result.add(e);
+      }
+    }
+
+    return result;
+  }
+
+  public static <E extends Enum<E>> Set<E> parseIndexSet(Class<E> clazz, String input) {
+    Assert.notNull(clazz);
+
+    Set<E> result = EnumSet.noneOf(clazz);
+    if (BeeUtils.isEmpty(input)) {
       return result;
     }
 
@@ -301,8 +345,10 @@ public final class EnumUtils {
   }
 
   public static <E extends Enum<?>> List<E> parseNameList(Class<E> clazz, String input) {
+    Assert.notNull(clazz);
+
     List<E> result = new ArrayList<>();
-    if (clazz == null || BeeUtils.isEmpty(input)) {
+    if (BeeUtils.isEmpty(input)) {
       return result;
     }
 
@@ -316,20 +362,26 @@ public final class EnumUtils {
     return result;
   }
 
-  public static <E extends Enum<?>> Set<E> parseIndexSet(Class<E> clazz, String input) {
-    Set<E> result = new HashSet<>();
-    if (clazz == null || BeeUtils.isEmpty(input)) {
+  public static <E extends Enum<E>> Set<E> parseNameSet(Class<E> clazz, String input) {
+    Assert.notNull(clazz);
+
+    Set<E> result = EnumSet.noneOf(clazz);
+    if (BeeUtils.isEmpty(input)) {
       return result;
     }
 
     for (String s : splitter.split(input)) {
-      E e = getEnumByIndex(clazz, s);
+      E e = getEnumByName(clazz, s);
       if (e != null) {
         result.add(e);
       }
     }
 
     return result;
+  }
+
+  public static String proper(Enum<?> e) {
+    return (e == null) ? BeeConst.STRING_EMPTY : BeeUtils.proper(e.name(), BeeConst.CHAR_UNDER);
   }
 
   public static <E extends Enum<?>> String register(Class<E> clazz) {
@@ -346,6 +398,18 @@ public final class EnumUtils {
 
     CLASSES.put(normalized, clazz);
     return normalized;
+  }
+
+  public static String toLowerCase(Enum<?> e) {
+    if (e == null) {
+      return null;
+    } else {
+      return e.name().toLowerCase();
+    }
+  }
+
+  public static String toString(Enum<?> e) {
+    return (e == null) ? BeeConst.STRING_EMPTY : e.name();
   }
 
   private EnumUtils() {

@@ -9,7 +9,7 @@
   <br/>
   <FlowPanel name="DomValues" class="bee-crm-rt-cron-values" />
 
-  <Table style="&tbl;">
+  <Table kind="controls" style="&tbl;">
     <col index="0" cellStyle="&col0;" />
     <col index="2" cellStyle="&col2;" />
 
@@ -27,7 +27,7 @@
   <br/>
   <FlowPanel name="MonthValues" class="bee-crm-rt-cron-values" />
 
-  <Table style="&tbl;">
+  <Table kind="controls" style="&tbl;">
     <col index="0" cellStyle="&col0;" />
     <col index="2" cellStyle="&col2;" />
 
@@ -45,7 +45,7 @@
   <br/>
   <FlowPanel name="DowValues" class="bee-crm-rt-cron-values" />
 
-  <Table style="&tbl;">
+  <Table kind="controls" style="&tbl;">
     <col index="0" cellStyle="&col0;" />
     <col index="2" cellStyle="&col2;" />
 

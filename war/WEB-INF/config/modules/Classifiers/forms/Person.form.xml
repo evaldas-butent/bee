@@ -7,10 +7,12 @@
   xmlns:ui="http://www.butent.com/ui"
   xmlns:xi="http://www.w3.org/2001/XInclude"
 
-  name="Person" viewName="Persons" caption="=person" width="800" height="600">
+  name="Person" viewName="Persons" caption="=person" width="800" height="600"
+  favorite="FirstName LastName"
+  >
   <FlowPanel class="flexBox-vertical">
     <FlowPanel style="overflow:scroll;">
-      <Table style="margin: 0 0 25px 30px;">
+      <Table kind="controls" style="margin: 0 0 25px 30px;">
         <row>
           <cell rowSpan="4">
             <Image name="PhotoImg"
@@ -23,15 +25,13 @@
           <FlowPanel name="qrFlowPanel" style="margin-left: 10px" />
         </row>
         <row>
-          <Table>
-            <row>
-              <Label text="=photo" horizontalAlignment="right" />
-              <FileCollector name="PhotoFile"
-                editableColumns="none" accept="image/*">
-                <face resource="attachment" />
-              </FileCollector>
-            </row>
-          </Table>
+          <HorizontalPanel>
+            <Label text="=photo" horizontalAlignment="right" />
+            <FileCollector name="PhotoFile"
+              editableColumns="none" accept="image/*">
+              <face resource="attachment" />
+            </FileCollector>
+          </HorizontalPanel>
           <FlowPanel class="flexBox-horizontal"
             style="font-style:italic; font-size: smaller;">
             <Image name="unsetPhoto" resource="silverMinus" />
@@ -45,7 +45,7 @@
       <Disclosure open="false">
         <Label text="=otherInfo" style="text-transform: uppercase; " />
         <FlowPanel style="padding-bottom: 40px;">
-          <Table>
+          <Table kind="controls">
             <row>
               <Label text="=phone" style="&lbl;" for="Phone" />
               <InputText style="width: 205px" source="Phone" />
@@ -54,6 +54,15 @@
               <Label for="EmailId" style="&lbl;" />
               <DataSelector style="width: 220px" source="EmailId"
                 maxLength="50" />
+            </row>
+            <row>
+              <Label text="=mailRecipientsGroups" style="&lbl;" />
+              <cell colSpan="6">
+                <ChildSelector viewName="RecipientsGroups" childTable="RcpsGroupsContacts"
+                  targetRelColumn="Person" sourceRelColumn="RecipientsGroup" renderColumns="GroupName"
+                  choiceColumns="GroupName" label="=mailRecipientsGroups" style="width: 100%;" summarize="true"
+                  filter="Creator {u} or Visibility = 0" />
+              </cell>
             </row>
             <row for="Address">
               <Label text="=address" style="&lbl;" />
@@ -123,6 +132,11 @@
             <InputArea source="Notes" class="occupy-1"
               summarize="true" />
           </SimplePanel>
+        </page>
+        <page>
+        <text>=relatedInformation</text>
+        <Relations relColumn="Person" inline="true"
+                   defaultRelations="Companies Requests Tasks" style="margin: 0px 15px 0px 15px; min-width:300px;" />
         </page>
       </TabbedPages>
     </FlowPanel>

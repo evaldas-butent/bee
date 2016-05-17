@@ -1,10 +1,14 @@
+#Konfliktas {
+
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Form [
-  <!ENTITY section "margin-top: 4px;">
-  <!ENTITY separator "<hr/>">
-  <!ENTITY inline "display:inline-block;">
-  <!ENTITY labelLeft "&inline; width:100px; padding-top:1px;">
-  <!ENTITY labelRight "&inline; width:60px; padding-top:1px; text-align:right; margin-right:10px;">
+  <!ENTITY inline "display: inline-block;">
+  <!ENTITY tbl "border-collapse: collapse;">
+  <!ENTITY cell "padding-bottom: 2px;">
+  <!ENTITY col1 "text-align: right; padding-right: 8px; width: 128px;">
+  <!ENTITY col3 "text-align: right; padding-left: 8px; padding-right: 8px; width: 128px;">
+  <!ENTITY dateStyle "&inline; width: 130px;">
+  <!ENTITY inp2x "width: 500px;">
 ]>
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
@@ -43,14 +47,12 @@
       <InputArea source="Content" visibleLines="8" style="width:446px;" />
     </FlowPanel>
 
-    &separator;
-    <FlowPanel style="&section;" class="flexBox-horizontal">
-      <Label text="=author" style="&inline; width:78px; padding-top:1px; padding-right: 8px; text-align: right;" />
-      <TextLabel style="&inline;">
-        <renderToken source="CreatorFirstName"/>
-        <renderToken source="CreatorLastName"/>
-      </TextLabel>
-    </FlowPanel>
+              <row>
+                <Label for="CustomerPerson" />
+                <DataSelector source="CustomerPerson" style="&inp2x;" options="Customer"
+                  choiceColumns="FirstName LastName CompanyName" />
+              </row>
+            </Table>
 
     <FlowPanel style="&section;" class="flexBox-horizontal">
       <Label text="=createdOn" style="&inline; width:78px; padding-top:1px; padding-right: 8px; text-align: right;" />
@@ -69,10 +71,34 @@
 
     </FlowPanel>
 
-    &separator;
-    <FlowPanel style="&section;" class="flexBox-horizontal">
-      <Label text="=files" style="&inline; width:78px; padding-top:1px; padding-right: 8px; text-align: right;" />
-      <FileGroup name="Files" style="&inline;" />
-    </FlowPanel>
-  </FlowPanel>
+              <row>
+                <Label for="Date" />
+                <InputDateTime source="Date" style="&dateStyle;" />
+                <Label for="Creator" />
+                <DataSelector source="Creator" renderColumns="CreatorFirstName CreatorLastName"
+                  style="width: 225px;" readOnly="true" />
+              </row>
+              <row>
+                <Label for="Created" />
+                <InputDateTime source="Created" style="&dateStyle;" readOnly="true" />
+                <Label for="Finished" />
+                <InputDateTime source="Finished" style="&dateStyle;" readOnly="true" />
+              </row>
+            </Table>
+          </FlowPanel>
+        </page>
+        <page>
+          <text>=relatedInformation</text>
+          <FlowPanel style="max-width: 97%;">
+            <Relations relColumn="Request" inline="true" defaultRelations="Companies Persons Tasks" 
+              style="margin-left: 15px; min-width:300px;" />
+          </FlowPanel>
+        </page>
+      </TabbedPages>
+    </west>
+    <center>
+      <FlowPanel name="RequestComments" />
+    </center>
+  </SplitPanel>
 </f:Form>
+#}

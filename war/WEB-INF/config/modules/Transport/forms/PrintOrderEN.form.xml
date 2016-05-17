@@ -20,7 +20,7 @@
       .&form;-forwarder .bee-co-companyInfo-name .bee-co-companyInfo-item:before {content: "Forwarder: "; font-weight:normal;}
     </css>
     <HorizontalPanel>
-      <Table>
+      <Table kind="output">
         <row>
           <Label html="Order No.:" style="text-align:right; &bold;" />
           <TextLabel>
@@ -51,7 +51,7 @@
 
         <cell style="vertical-align:top;">
           <FlowPanel>
-            <FlowPanel name="Forwarder">
+            <FlowPanel name="Forwarder" class="&form;-forwarder">
               <properties locale="en" />
             </FlowPanel>
             <br />
@@ -101,7 +101,7 @@
       <InlineLabel html="Transportation:" style="&bold;" />
     </FlowPanel>
 
-    <Table class="&form;-table" style="&section;">
+    <Table kind="output" class="&form;-table" style="&section;">
       <row style="font-weight:bold; text-align:center;">
         <Label html="Commodity name" />
         <Label html="Quantity" />
@@ -180,7 +180,7 @@ This booking sent to the Freight Forwarder and confirmed by both parties by fax 
       </span>
     </HtmlPanel>
 
-    <Table style="width:100%; margin-top:10px;">
+    <Table kind="output" style="width:100%; margin-top:10px;">
       <row style="&bold;">
         <Label html="Representative of the Customer" />
         <Label html="Representative of the Freight Forwarder" />

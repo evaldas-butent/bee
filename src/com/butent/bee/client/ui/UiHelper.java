@@ -13,6 +13,8 @@ import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.Widget;
 
+import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Settings;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Rulers;
@@ -312,6 +314,42 @@ public final class UiHelper {
     return result;
   }
 
+  public static int getLayoutColumns(int size, int minCols, int maxCols) {
+    Assert.isPositive(size);
+    Assert.isTrue(minCols > 1);
+    Assert.isTrue(minCols < maxCols);
+
+    if (size <= minCols) {
+      return size;
+    }
+
+    int cols = minCols;
+    int rows = (size - 1) / cols + 1;
+    int rem = (cols - size % cols) % cols;
+
+    for (int c = minCols + 1; c <= Math.min(maxCols, size); c++) {
+      int r = (size - 1) / c + 1;
+      int x = (c - size % c) % c;
+
+      if (x < rem || x == rem && Math.abs(r - c) <= Math.abs(cols - rows)) {
+        cols = c;
+        rows = r;
+        rem = x;
+      }
+    }
+
+    return cols;
+  }
+
+  public static int getLoadingStateDelayMillis() {
+    int millis = BeeKeeper.getUser().getLoadingStateDelayMillis();
+    if (BeeConst.isUndef(millis)) {
+      millis = Settings.getLoadingStateDelayMillis();
+    }
+
+    return millis;
+  }
+
   public static int getMaxLength(IsColumn column) {
     if (column == null) {
       return BeeConst.UNDEF;
@@ -482,6 +520,13 @@ public final class UiHelper {
     }
     return EventUtils.isKeyDown(event.getType()) && event.getKeyCode() == KeyCodes.KEY_ENTER
         && EventUtils.hasModifierKey(event);
+  }
+
+  public static void makePotentiallyBold(Element element, String text) {
+    if (element != null && !BeeUtils.isEmpty(text)) {
+      DomUtils.setDataText(element, text);
+      element.addClassName(StyleUtils.NAME_POTENTIALLY_BOLD);
+    }
   }
 
   public static boolean maybeResize(Widget root, String id) {

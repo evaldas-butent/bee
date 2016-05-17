@@ -27,6 +27,7 @@ import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.DialogBox;
+import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.DndHelper;
 import com.butent.bee.client.event.EventUtils;
@@ -174,7 +175,6 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
 
   private static final String STYLE_PHOTO_PREFIX = STYLE_PREFIX + "photo-";
   private static final String STYLE_PHOTO_CONTAINER = STYLE_PHOTO_PREFIX + "container";
-  private static final String STYLE_PHOTO_EMPTY = STYLE_PHOTO_PREFIX + "empty";
 
   private static final String STYLE_POPUP_CONTENT = STYLE_PREFIX + "popup-content";
 
@@ -215,6 +215,8 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
   private static final String DATA_TYPE_DEPARTMENT = "OrgChartDepartment";
   private static final String DATA_TYPE_BOSS = "OrgChartBoss";
   private static final String DATA_TYPE_EMPLOYEE = "OrgChartEmployee";
+
+  private static final String DEFAULT_PHOTO_IMAGE = "images/defaultUser.png";
 
   private static final Set<String> DND_TYPES = ImmutableSet.of(DATA_TYPE_DEPARTMENT,
       DATA_TYPE_BOSS, DATA_TYPE_EMPLOYEE);
@@ -300,7 +302,7 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
   public boolean beforeAction(Action action, Presenter presenter) {
     switch (action) {
       case ADD:
-        RowFactory.createRow(VIEW_DEPARTMENTS, new RowCallback() {
+        RowFactory.createRow(VIEW_DEPARTMENTS, Modality.ENABLED, new RowCallback() {
           @Override
           public void onSuccess(BeeRow result) {
             refresh();
@@ -411,7 +413,7 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
   }
 
   private void editSettings() {
-    final DialogBox dialog = DialogBox.create(Localized.getConstants().settings(),
+    final DialogBox dialog = DialogBox.create(Localized.dictionary().settings(),
         STYLE_SETTINGS_DIALOG);
 
     HtmlTable table = new HtmlTable(STYLE_SETTINGS_TABLE);
@@ -526,7 +528,7 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
     row++;
     Flow commands = new Flow();
 
-    Button save = new Button(Localized.getConstants().actionSave());
+    Button save = new Button(Localized.dictionary().actionSave());
     save.addStyleName(STYLE_SETTINGS_SAVE);
 
     save.addClickHandler(new ClickHandler() {
@@ -617,7 +619,7 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
 
     commands.add(save);
 
-    Button cancel = new Button(Localized.getConstants().actionCancel());
+    Button cancel = new Button(Localized.dictionary().actionCancel());
     cancel.addStyleName(STYLE_SETTINGS_CANCEL);
 
     cancel.addClickHandler(new ClickHandler() {
@@ -639,7 +641,7 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
   }
 
   private void addCommands(HeaderView header) {
-    CheckBox positionToggle = new CheckBox(Localized.getConstants().personPositions());
+    CheckBox positionToggle = new CheckBox(Localized.dictionary().personPositions());
     positionToggle.addStyleName(STYLE_TOGGLE_POSITIONS);
 
     positionToggle.setValue(showPositions);
@@ -656,7 +658,7 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
 
     header.addCommandItem(positionToggle);
 
-    CheckBox employeeToggle = new CheckBox(Localized.getConstants().employees());
+    CheckBox employeeToggle = new CheckBox(Localized.dictionary().employees());
     employeeToggle.addStyleName(STYLE_TOGGLE_EMPLOYEES);
 
     employeeToggle.setValue(showEmployees);
@@ -1463,34 +1465,36 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
 
     String companyName = DataUtils.getString(employees, employee, ALS_COMPANY_NAME);
 
-    String photo = DataUtils.getString(employees, employee, COL_PHOTO);
+    Long photo = DataUtils.getLong(employees, employee, COL_PHOTO);
     Flow photoContainer = new Flow();
+    String photoUrl;
+
+    if (!DataUtils.isId(photo)) {
+      photoUrl = DEFAULT_PHOTO_IMAGE;
+    } else {
+      photoUrl = PhotoRenderer.getUrl(photo);
+    }
 
     String styleName;
 
-    if (!BeeUtils.isEmpty(photo)) {
-      Image image = new Image(PhotoRenderer.getUrl(photo));
-      image.setTitle(BeeUtils.buildLines(fullName, positionName, companyName));
+    Image image = new Image(photoUrl);
+    image.setTitle(BeeUtils.buildLines(fullName, positionName, companyName));
 
-      image.addClickHandler(new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent event) {
-          Long person = getEmployeeRelation(emplId, COL_PERSON);
-          RowEditor.open(VIEW_PERSONS, person, Opener.MODAL, new RowCallback() {
-            @Override
-            public void onSuccess(BeeRow result) {
-              refresh();
-            }
-          });
-        }
-      });
+    image.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        Long person = getEmployeeRelation(emplId, COL_PERSON);
+        RowEditor.open(VIEW_PERSONS, person, Opener.MODAL, new RowCallback() {
+          @Override
+          public void onSuccess(BeeRow result) {
+            refresh();
+          }
+        });
+      }
+    });
 
-      photoContainer.add(image);
-      styleName = STYLE_PHOTO_CONTAINER;
-
-    } else {
-      styleName = STYLE_PHOTO_EMPTY;
-    }
+    photoContainer.add(image);
+    styleName = STYLE_PHOTO_CONTAINER;
 
     table.setWidgetAndStyle(row, 0, photoContainer, styleName);
 
@@ -1518,13 +1522,13 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
     }
 
     if (boss) {
-      if (!BeeUtils.isEmpty(photo)) {
+      if (DataUtils.isId(photo)) {
         DndHelper.makeSource(photoContainer, DATA_TYPE_BOSS, emplId, null);
       }
       DndHelper.makeSource(label, DATA_TYPE_BOSS, emplId, STYLE_BOSS_DRAG);
 
     } else {
-      if (!BeeUtils.isEmpty(photo)) {
+      if (DataUtils.isId(photo)) {
         DndHelper.makeSource(photoContainer, DATA_TYPE_EMPLOYEE, emplId, null);
       }
       DndHelper.makeSource(label, DATA_TYPE_EMPLOYEE, emplId, STYLE_EMPLOYEE_DRAG);
@@ -1650,7 +1654,7 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
     } else {
       table.addStyleName(STYLE_EMPLOYEE_SUMMARY);
 
-      Label label = new Label(Localized.getConstants().employees());
+      Label label = new Label(Localized.dictionary().employees());
 
       label.addClickHandler(new ClickHandler() {
         @Override

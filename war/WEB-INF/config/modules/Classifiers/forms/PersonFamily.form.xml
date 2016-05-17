@@ -10,7 +10,7 @@
   name="PersonFamily" viewName="PersonFamily" caption="=contactFamily" width="800" height="250"
   >
   <FlowPanel class="flexBox-vertical">
-    <Table>
+    <Table kind="controls">
         <row>
           <Label text="=firstName" style="&lbl1;" class="bee-required" />
           <InputText style="&inp1;" source="FirstName" />

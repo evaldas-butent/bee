@@ -105,8 +105,16 @@ public final class ElementSize {
     StyleUtils.setSize(element, getSize());
   }
 
+  public int getHeight() {
+    return height;
+  }
+
   public Size getSize() {
     return new Size(width, height);
+  }
+
+  public int getWidth() {
+    return width;
   }
 
   public boolean sameHeight(Element element) {

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+      name="TextConstants" source="TextConstants"
+      caption="=textConstants" newRowCaption="=newRow" newRowForm="TextConstant"
+    >
+  <Columns>
+    <SimpleColumn name="Constant" />
+    <SimpleColumn name="Content" />
+  </Columns>
+</View>

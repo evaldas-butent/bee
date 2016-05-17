@@ -1,23 +1,31 @@
+#Konfliktas {
+
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Form [
   <!ENTITY inline "display: inline-block;">
-
   <!ENTITY section "margin-top: 2px;">
-  <!ENTITY header "font-style: italic;">
-  <!ENTITY separator "<br/>">
+  <!ENTITY tbl "border-collapse: collapse;">
+  <!ENTITY cell "padding-bottom: 2px;">
+  <!ENTITY col1 "text-align: right; padding-right: 8px; width: 128px;">
+  <!ENTITY col3 "text-align: right; padding-left: 8px; padding-right: 8px; width: 128px;">
 
-  <!ENTITY lbl1 "&inline; width: 100px; padding-top: 1px;">
   <!ENTITY top1 "float: left; width: 100px; padding-top: 1px;">
-  <!ENTITY inp2 "&inline; width: 180px;">
-  <!ENTITY inp2x "&inline; width: 424px;">
-  <!ENTITY lbl3 "&inline; width: 128px; padding-top: 1px; margin-left: 16px;">
-  <!ENTITY inp4 "&inline; width: 140px;">
+  
+  <!ENTITY inp2 "width: 160px;">
+  <!ENTITY inp2x "&inline; width: 500px;">
+  <!ENTITY inp3 "width: 70px;margin-left: -75px">
+
+  <!ENTITY dateStyle "&inline; min-width: 90px; max-width: 90px;">
+  <!ENTITY timeStyle "&inline; min-width: 60px; max-width: 60px; width: 60px; margin-left: 10px;">
+  <!ENTITY timeStep "30">
+  <!ENTITY forProject "<dynStyle><ui:inline>display: none;</ui:inline><ui:expression>!row.Project</ui:expression></dynStyle>">
   ]>
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
+  xmlns:ui="http://www.butent.com/ui"
 
   name="Task" viewName="Tasks" caption="=crmTask" showRowId="true" printHeader="true"
-  width="1024" height="768"
+  width="1024" height="768" favorite="Summary"
   >
 
   <TabbedPages resizable="false">
@@ -149,8 +157,13 @@
       </FlowPanel>
     </page>
 
-    <page>
-      <text>=relatedInformation</text>
+                <row>
+                  <Label />
+                  <CheckBox name="Mail" text="=mailNotify" />
+                  <Label />
+                  <CheckBox source="PrivateTask" />
+                </row>
+              </Table>
 
       <FlowPanel class="flexBox-horizontal bee-crm-taskEdit-form">
         <FlowPanel style="margin-left: 5px;">
@@ -159,6 +172,8 @@
             <MultiSelector viewName="Companies" property="Companies" renderColumns="Name TypeName"
               newRowEnabled="true" style="&inp2x;" disablable="true" summarize="true" />
           </FlowPanel>
+          </FlowPanel>
+        </page>
 
           <FlowPanel style="&section;" data="Relations" for="Person" module="Classifiers.Contacts">
             <Label text="=persons" style="&top1;" />
@@ -208,8 +223,16 @@
               choiceColumns="Id Summary ExecutorFirstName ExecutorLastName StartTime FinishTime"
               newRowEnabled="false" style="&inp2x;" disablable="true" summarize="true" />
           </FlowPanel>
-        </FlowPanel>
-      </FlowPanel>
-    </page>
-  </TabbedPages>
+        </page>
+      </TabbedPages>
+    </west>
+    <center>
+      <FlowPanel name="TaskEvents" data="TaskEvents" class="flexible bee-crm-taskEvent-container"
+        style="overflow: auto; height: calc(100% - 5px);" />
+    </center>
+  </SplitPanel>
+  <f:rowMessage>
+    <ui:function>return "&lt;span style&#61;\"font-size:23px; color: #484849; font-weight: lighter;\"&gt;" + row.Summary + "&lt;&#47;span&gt;";</ui:function>
+  </f:rowMessage>
 </f:Form>
+# }

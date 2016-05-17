@@ -11,6 +11,7 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
+import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.event.logical.RowActionEvent;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.ui.Opener;
@@ -72,7 +73,7 @@ class RelatedTasksGrid extends TasksGrid {
           fillFormData(parentForm, dataInfo, row);
         }
 
-        RowFactory.createRow(dataInfo, row, new RowCallback() {
+        RowFactory.createRow(dataInfo, row, Modality.ENABLED, new RowCallback() {
           @Override
           public void onSuccess(BeeRow result) {
             presenter.handleAction(Action.REFRESH);

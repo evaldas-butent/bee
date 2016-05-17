@@ -12,6 +12,8 @@ import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Widget;
 
+import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.datepicker.DatePicker;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dialog.Popup.OutsideClick;
@@ -30,6 +32,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Size;
+import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -472,6 +475,51 @@ public final class TimeBoardHelper {
     }
 
     return new Size(x, y);
+  }
+
+  public static boolean updateSettings(final BeeRowSet settings, String colName, String newValue,
+      final Runnable callback) {
+
+    if (DataUtils.isEmpty(settings)) {
+      return false;
+    }
+
+    final int index = settings.getColumnIndex(colName);
+    if (BeeConst.isUndef(index)) {
+      logger.severe(settings.getViewName(), colName, "column not found");
+      return false;
+    }
+
+    BeeRow oldRow = settings.getRow(0);
+    final String oldValue = oldRow.getString(index);
+
+    BeeRowSet updated = DataUtils.getUpdated(settings.getViewName(),
+        oldRow.getId(), oldRow.getVersion(), settings.getColumn(index), oldValue, newValue);
+    if (DataUtils.isEmpty(updated)) {
+      return false;
+    }
+
+    oldRow.setValue(index, newValue);
+
+    Queries.updateRow(updated, new RowCallback() {
+      @Override
+      public void onFailure(String... reason) {
+        settings.setValue(0, index, oldValue);
+        super.onFailure(reason);
+      }
+
+      @Override
+      public void onSuccess(BeeRow result) {
+        settings.clearRows();
+        settings.addRow(result);
+
+        if (callback != null) {
+          callback.run();
+        }
+      }
+    });
+
+    return true;
   }
 
   static void addColumnSeparator(HasWidgets panel, String styleName, int left, int height) {

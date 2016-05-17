@@ -7,6 +7,7 @@ import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import static com.butent.bee.shared.modules.service.ServiceConstants.*;
 
 import com.butent.bee.client.data.Data;
+import com.butent.bee.client.data.Provider;
 import com.butent.bee.client.event.logical.ParentRowEvent;
 import com.butent.bee.client.event.logical.RenderingEvent;
 import com.butent.bee.client.presenter.GridPresenter;
@@ -38,7 +39,7 @@ import java.util.Map;
 public class ObjectInvoicesGrid extends AbstractGridInterceptor {
 
   private static final String FILTER_KEY = "f1";
-  private static final LocalizableConstants localizableConstants = Localized.getConstants();
+  private static final LocalizableConstants localizableConstants = Localized.dictionary();
 
   private final String idColumnName;
 
@@ -104,7 +105,7 @@ public class ObjectInvoicesGrid extends AbstractGridInterceptor {
 
   @Override
   public Map<String, Filter> getInitialParentFilters(Collection<UiOption> uiOptions) {
-    return ImmutableMap.of(FILTER_KEY, getFilter(getPendingId()));
+    return Provider.createDefaultParentFilters(getFilter(getPendingId()));
   }
 
   @Override
@@ -165,7 +166,7 @@ public class ObjectInvoicesGrid extends AbstractGridInterceptor {
   private void maybeRefresh(GridPresenter presenter, Long parentId) {
     if (presenter != null) {
       Filter filter = getFilter(parentId);
-      boolean changed = presenter.getDataProvider().setParentFilter(FILTER_KEY, filter);
+      boolean changed = presenter.getDataProvider().setDefaultParentFilter(filter);
 
       if (changed) {
         presenter.handleAction(Action.REFRESH);

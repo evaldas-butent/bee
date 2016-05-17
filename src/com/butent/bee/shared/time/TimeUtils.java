@@ -221,10 +221,20 @@ public final class TimeUtils {
   }
 
   public static String dateToString(HasDateValue date) {
+    return dateToString(date, false);
+  }
+
+  public static String dateToString(HasDateValue date, boolean dropCentury) {
     if (date == null) {
       return BeeConst.STRING_EMPTY;
+
     } else {
-      return dateToString(date.getYear(), date.getMonth(), date.getDom());
+      int year = date.getYear();
+      if (dropCentury) {
+        year %= 100;
+      }
+
+      return dateToString(year, date.getMonth(), date.getDom());
     }
   }
 
@@ -727,6 +737,23 @@ public final class TimeUtils {
     return result;
   }
 
+  public static Integer parseMonth(String input) {
+    if (BeeUtils.isEmpty(input)) {
+      return null;
+
+    } else if (BeeUtils.isDigit(input.trim())) {
+      int month = BeeUtils.toInt(input.trim());
+      if (isMonth(month)) {
+        return month;
+      } else {
+        return null;
+      }
+
+    } else {
+      return null;
+    }
+  }
+
   public static Long parseTime(String input) {
     if (BeeUtils.isEmpty(input)) {
       return null;
@@ -771,6 +798,23 @@ public final class TimeUtils {
 
   public static JustDate previousDay(HasDateValue ref) {
     return nextDay(ref, -1);
+  }
+
+  public static Integer parseYear(String input) {
+    if (BeeUtils.isEmpty(input)) {
+      return null;
+
+    } else if (BeeUtils.isDigit(input.trim())) {
+      int year = normalizeYear(BeeUtils.toInt(input.trim()));
+      if (isYear(year)) {
+        return year;
+      } else {
+        return null;
+      }
+
+    } else {
+      return null;
+    }
   }
 
   /**
@@ -847,10 +891,67 @@ public final class TimeUtils {
     return new DateTime(showMillis ? time : (time - time % MILLIS_PER_SECOND)).toString();
   }
 
+  public static String renderMillis(long millis) {
+    if (millis < 0) {
+      return BeeConst.STRING_EMPTY;
+    } else if (millis == 0) {
+      return BeeConst.STRING_ZERO;
+    }
+
+    int hours = (int) (millis / MILLIS_PER_HOUR);
+    int remaining = (int) (millis % MILLIS_PER_HOUR);
+
+    int minutes = remaining / MILLIS_PER_MINUTE;
+    remaining %= MILLIS_PER_MINUTE;
+
+    int seconds = remaining / MILLIS_PER_SECOND;
+    remaining %= MILLIS_PER_SECOND;
+
+    StringBuilder sb = new StringBuilder();
+
+    if (hours > 0) {
+      sb.append(hours).append(TIME_FIELD_SEPARATOR);
+    }
+
+    if (hours > 0) {
+      sb.append(padTwo(minutes)).append(TIME_FIELD_SEPARATOR);
+    } else if (minutes > 0) {
+      sb.append(minutes).append(TIME_FIELD_SEPARATOR);
+    }
+
+    if (hours > 0 || minutes > 0) {
+      sb.append(padTwo(seconds)).append(MILLIS_SEPARATOR);
+    } else {
+      sb.append(seconds).append(MILLIS_SEPARATOR);
+    }
+
+    String ms = millisToString(remaining);
+
+    if (ms.length() == 3 && ms.charAt(2) == BeeConst.CHAR_ZERO) {
+      if (ms.charAt(1) == BeeConst.CHAR_ZERO) {
+        sb.append(ms.charAt(0));
+      } else {
+        sb.append(ms.substring(0, 2));
+      }
+    } else {
+      sb.append(ms);
+    }
+
+    return sb.toString();
+  }
+
   public static String renderMinutes(int minutes, boolean leadingZero) {
     int hours = minutes / MINUTES_PER_HOUR;
     return (leadingZero ? padTwo(hours) : BeeUtils.toString(hours)) + TIME_FIELD_SEPARATOR
         + padTwo(minutes % MINUTES_PER_HOUR);
+  }
+
+  public static String renderMinutes(long time, boolean leadingZero) {
+    if (time < 0) {
+      return BeeConst.STRING_EMPTY;
+    } else {
+      return renderMinutes(BeeUtils.toInt(time % MILLIS_PER_DAY / MILLIS_PER_MINUTE), leadingZero);
+    }
   }
 
   public static String renderMonthDay(HasDateValue date) {
@@ -925,11 +1026,15 @@ public final class TimeUtils {
     }
   }
 
-  public static String renderTime(int hour, int minute, int second, int millis,
-      boolean leadingZero) {
+  public static String renderTime(int days, String dayLabel, int hour, int minute, int second,
+      int millis, boolean leadingZero) {
 
     StringBuilder sb = new StringBuilder();
-    sb.append(leadingZero ? padTwo(hour) : BeeUtils.toString(hour));
+    if (days > 0) {
+      sb.append(days).append(BeeUtils.trim(dayLabel)).append(DATE_TIME_SEPARATOR);
+    }
+
+    sb.append((days > 0 || leadingZero) ? padTwo(hour) : BeeUtils.toString(hour));
     sb.append(TIME_FIELD_SEPARATOR).append(padTwo(minute));
 
     if (second > 0 || millis > 0) {
@@ -955,7 +1060,40 @@ public final class TimeUtils {
     int second = remaining / MILLIS_PER_SECOND;
     remaining %= MILLIS_PER_SECOND;
 
-    return renderTime(hour, minute, second, remaining, leadingZero);
+    return renderTime(0, null, hour, minute, second, remaining, leadingZero);
+  }
+
+  public static String renderTime(long time, String dayLabel, boolean showSeconds,
+      boolean showMillis) {
+
+    if (time < 0) {
+      return BeeConst.STRING_EMPTY;
+    }
+
+    int days;
+    int remaining;
+
+    if (time >= MILLIS_PER_DAY && !BeeUtils.isEmpty(dayLabel)) {
+      days = (int) (time / MILLIS_PER_DAY);
+      remaining = (int) (time % MILLIS_PER_DAY);
+    } else {
+      days = 0;
+      remaining = (int) time;
+    }
+
+    int hour = (int) (remaining / MILLIS_PER_HOUR);
+    remaining %= MILLIS_PER_HOUR;
+
+    int minute = remaining / MILLIS_PER_MINUTE;
+    remaining %= MILLIS_PER_MINUTE;
+
+    int second = remaining / MILLIS_PER_SECOND;
+    remaining %= MILLIS_PER_SECOND;
+
+    int millis = remaining;
+
+    return renderTime(days, dayLabel, hour, minute,
+        (showSeconds || showMillis) ? second : 0, showMillis ? millis : 0, true);
   }
 
   public static boolean sameDate(HasDateValue x, HasDateValue y) {

@@ -3,11 +3,13 @@ package com.butent.bee.server.data;
 import com.butent.bee.server.sql.IsQuery;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.value.Value;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
@@ -155,8 +157,7 @@ public abstract class DataEvent {
   private Object userObject;
 
   private DataEvent(String targetName) {
-    Assert.notEmpty(targetName);
-    this.targetName = targetName;
+    this.targetName = Assert.notEmpty(targetName);
   }
 
   public void addErrorMessage(String message) {
@@ -166,6 +167,14 @@ public abstract class DataEvent {
       errors = new ArrayList<>();
     }
     errors.add(message);
+  }
+
+  public void addErrors(ResponseObject response) {
+    if (response != null && response.hasErrors()) {
+      for (String message : response.getErrors()) {
+        addErrorMessage(message);
+      }
+    }
   }
 
   public String getTargetName() {
@@ -180,16 +189,16 @@ public abstract class DataEvent {
     return !BeeUtils.isEmpty(errors);
   }
 
-  public boolean isAfter() {
-    return afterStage;
+  public boolean isAfter(String... targets) {
+    return afterStage && isTarget(targets);
   }
 
-  public boolean isBefore() {
-    return !isAfter();
+  public boolean isBefore(String... targets) {
+    return !isAfter() && isTarget(targets);
   }
 
-  public boolean isTarget(String target) {
-    return BeeUtils.same(getTargetName(), target);
+  public boolean isTarget(String... targets) {
+    return ArrayUtils.isEmpty(targets) || ArrayUtils.contains(targets, getTargetName());
   }
 
   public void setUserObject(Object userObject) {

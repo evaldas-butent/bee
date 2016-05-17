@@ -5,7 +5,7 @@
         name="Rule" caption="=mailRule" width="400" height="320"
     >
   <FlowPanel>
-    <Table style="margin:5px 10px 5px 10px">
+    <Table kind="controls" style="margin:5px 10px 5px 10px">
       <row>
         <cell rowSpan="2" verticalAlignment="top" style="font-weight:bold;">
           <text>=mailRuleCondition</text>

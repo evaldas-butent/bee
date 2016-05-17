@@ -176,7 +176,10 @@ public abstract class AbstractTable<R extends IsRow, C extends IsColumn> impleme
     cell.clearProperties();
   }
 
-  public boolean containsAllColumnIds(Collection<String> colIds) {
+  public boolean containsColumns(String... colIds) {
+    if (colIds == null) {
+      return false;
+    }
     for (String id : colIds) {
       if (!containsColumn(id)) {
         return false;
@@ -243,16 +246,6 @@ public abstract class AbstractTable<R extends IsRow, C extends IsColumn> impleme
   @Override
   public String getColumnPattern(int colIndex) {
     return getColumn(colIndex).getPattern();
-  }
-
-  @Override
-  public CustomProperties getColumnProperties(int colIndex) {
-    return getColumn(colIndex).getProperties();
-  }
-
-  @Override
-  public String getColumnProperty(int colIndex, String name) {
-    return getColumn(colIndex).getProperty(name);
   }
 
   @Override
@@ -380,16 +373,6 @@ public abstract class AbstractTable<R extends IsRow, C extends IsColumn> impleme
   }
 
   @Override
-  public CustomProperties getProperties(int rowIndex, int colIndex) {
-    return getCell(rowIndex, colIndex).getProperties();
-  }
-
-  @Override
-  public String getProperty(int rowIndex, int colIndex, String name) {
-    return getCell(rowIndex, colIndex).getProperty(name);
-  }
-
-  @Override
   public R getRowById(long rowId) {
     for (R row : this) {
       if (row.getId() == rowId) {
@@ -416,16 +399,6 @@ public abstract class AbstractTable<R extends IsRow, C extends IsColumn> impleme
       }
     }
     return BeeConst.UNDEF;
-  }
-
-  @Override
-  public CustomProperties getRowProperties(int rowIndex) {
-    return getRow(rowIndex).getProperties();
-  }
-
-  @Override
-  public String getRowProperty(int rowIndex, String name) {
-    return getRow(rowIndex).getProperty(name);
   }
 
   @Override
@@ -588,24 +561,8 @@ public abstract class AbstractTable<R extends IsRow, C extends IsColumn> impleme
   }
 
   @Override
-  public void setCell(int rowIndex, int colIndex, Value value, String formattedValue,
-      CustomProperties prp) {
-    setCell(rowIndex, colIndex, new TableCell(value, formattedValue, prp));
-  }
-
-  @Override
   public void setColumnLabel(int colIndex, String label) {
     getColumn(colIndex).setLabel(label);
-  }
-
-  @Override
-  public void setColumnProperties(int colIndex, CustomProperties prp) {
-    getColumn(colIndex).setProperties(prp);
-  }
-
-  @Override
-  public void setColumnProperty(int colIndex, String name, String value) {
-    getColumn(colIndex).setProperty(name, value);
   }
 
   @Override
@@ -616,26 +573,6 @@ public abstract class AbstractTable<R extends IsRow, C extends IsColumn> impleme
   @Override
   public void setFormattedValue(int rowIndex, int colIndex, String formattedValue) {
     getCell(rowIndex, colIndex).setFormattedValue(formattedValue);
-  }
-
-  @Override
-  public void setProperties(int rowIndex, int colIndex, CustomProperties prp) {
-    getCell(rowIndex, colIndex).setProperties(prp);
-  }
-
-  @Override
-  public void setProperty(int rowIndex, int colIndex, String name, String value) {
-    getCell(rowIndex, colIndex).setProperty(name, value);
-  }
-
-  @Override
-  public void setRowProperties(int rowIndex, CustomProperties prp) {
-    getRow(rowIndex).setProperties(prp);
-  }
-
-  @Override
-  public void setRowProperty(int rowIndex, String name, String value) {
-    getRow(rowIndex).setProperty(name, value);
   }
 
   @Override

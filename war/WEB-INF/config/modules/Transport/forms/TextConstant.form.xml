@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<f:Form xmlns="http://www.butent.com/widget"
+        xmlns:f="http://www.butent.com/form"
+
+        name="TextConstant" caption="=constant" width="520" height="270"
+    >
+  <Table kind="controls">
+    <col index="0" kind="label" />
+    <row>
+      <Label for="Constant" />
+      <ListBox source="Constant" />
+    </row>
+    <row>
+      <Label for="Content" />
+      <RichTextEditor source="Content" style="height:200px;" />
+    </row>
+  </Table>
+</f:Form>

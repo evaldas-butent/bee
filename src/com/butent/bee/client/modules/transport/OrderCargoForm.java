@@ -1,8 +1,6 @@
 package com.butent.bee.client.modules.transport;
 
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
-import com.google.gwt.event.logical.shared.ValueChangeEvent;
-import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.COL_CURRENCY;
@@ -17,8 +15,6 @@ import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
-import com.butent.bee.client.event.logical.MutationEvent;
-import com.butent.bee.client.event.logical.ReadyEvent;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.ChildGrid;
 import com.butent.bee.client.modules.transport.TransportHandler.Profit;
@@ -27,7 +23,6 @@ import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.edit.EditEndEvent;
-import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
@@ -37,6 +32,7 @@ import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.InputBoolean;
 import com.butent.bee.client.widget.IntegerLabel;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
@@ -91,28 +87,25 @@ class OrderCargoForm extends AbstractFormInterceptor implements SelectorEvent.Ha
     if (BeeUtils.same(name, COL_CURRENCY) && widget instanceof DataSelector) {
       final DataSelector selector = (DataSelector) widget;
 
-      selector.addEditStopHandler(new EditStopEvent.Handler() {
-        @Override
-        public void onEditStop(EditStopEvent event) {
-          if (event.isChanged()) {
-            refresh(BeeUtils.toLongOrNull(selector.getNormalizedValue()));
-          }
+      selector.addEditStopHandler(event -> {
+        if (event.isChanged()) {
+          refresh(BeeUtils.toLongOrNull(selector.getNormalizedValue()));
         }
       });
     } else if (widget instanceof ChildGrid) {
       switch (name) {
         case TBL_CARGO_INCOMES:
-          final String viewName = getViewName();
+          final FormView form = getFormView();
 
           ((ChildGrid) widget).setGridInterceptor(new AbstractGridInterceptor() {
             @Override
             public void afterDeleteRow(long rowId) {
-              refresh(Data.getLong(viewName, getActiveRow(), COL_CURRENCY));
+              refresh(form.getLongValue(COL_CURRENCY));
             }
 
             @Override
             public void afterInsertRow(IsRow result) {
-              refresh(Data.getLong(viewName, getActiveRow(), COL_CURRENCY));
+              refresh(form.getLongValue(COL_CURRENCY));
             }
 
             @Override
@@ -120,7 +113,7 @@ class OrderCargoForm extends AbstractFormInterceptor implements SelectorEvent.Ha
                 IsRow result, boolean rowMode) {
               if (BeeUtils.inListSame(column.getId(), COL_DATE, COL_AMOUNT, COL_CURRENCY,
                   COL_TRADE_VAT_PLUS, COL_TRADE_VAT, COL_TRADE_VAT_PERC)) {
-                refresh(Data.getLong(viewName, getActiveRow(), COL_CURRENCY));
+                refresh(form.getLongValue(COL_CURRENCY));
               }
             }
 
@@ -159,19 +152,12 @@ class OrderCargoForm extends AbstractFormInterceptor implements SelectorEvent.Ha
           break;
 
         case VIEW_CARGO_HANDLING:
-          ((ChildGrid) widget).addReadyHandler(new ReadyEvent.Handler() {
-            @Override
-            public void onReady(ReadyEvent re) {
-              GridView gridView = ViewHelper.getChildGrid(getFormView(), VIEW_CARGO_HANDLING);
+          ((ChildGrid) widget).addReadyHandler(re -> {
+            GridView gridView = ViewHelper.getChildGrid(getFormView(), VIEW_CARGO_HANDLING);
 
-              if (gridView != null) {
-                gridView.getGrid().addMutationHandler(new MutationEvent.Handler() {
-                  @Override
-                  public void onMutation(MutationEvent mu) {
-                    refreshKilometers(getActiveRow(), null, null);
-                  }
-                });
-              }
+            if (gridView != null) {
+              gridView.getGrid().addMutationHandler(mu ->
+                  refreshKilometers(getActiveRow(), null, null));
             }
           });
           break;
@@ -182,12 +168,7 @@ class OrderCargoForm extends AbstractFormInterceptor implements SelectorEvent.Ha
       }
     } else if (widget instanceof InputBoolean
         && (BeeUtils.inListSame(name, "Partial", "Outsized"))) {
-      ((InputBoolean) widget).addValueChangeHandler(new ValueChangeHandler<String>() {
-        @Override
-        public void onValueChange(ValueChangeEvent<String> event) {
-          refreshMetrics();
-        }
-      });
+      ((InputBoolean) widget).addValueChangeHandler(event -> refreshMetrics());
     }
   }
 
@@ -243,7 +224,7 @@ class OrderCargoForm extends AbstractFormInterceptor implements SelectorEvent.Ha
       header.addCommandItem(new InvoiceCreator(VIEW_CARGO_SALES,
           Filter.equals(COL_CARGO, row.getId())));
     }
-    header.addCommandItem(new Profit(COL_CARGO, row.getId()));
+    header.addCommandItem(new Profit(COL_CARGO, BeeConst.STRING_EQ + row.getId()));
 
     return true;
   }

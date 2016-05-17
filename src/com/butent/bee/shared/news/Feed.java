@@ -7,8 +7,7 @@ import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.DataUtils;
-import com.butent.bee.shared.i18n.LocalizableConstants;
-import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.modules.calendar.CalendarConstants;
 import com.butent.bee.shared.modules.discussions.DiscussionsConstants;
 import com.butent.bee.shared.modules.documents.DocumentConstants;
@@ -26,6 +25,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashSet;
@@ -36,7 +36,7 @@ public enum Feed implements HasLocalizedCaption {
   TASKS_ASSIGNED(ModuleAndSub.of(Module.TASKS), TaskConstants.TBL_TASKS,
       TaskConstants.VIEW_TASKS) {
     @Override
-    public String getCaption(LocalizableConstants constants) {
+    public String getCaption(Dictionary constants) {
       return constants.feedTasksAssigned();
     }
   },
@@ -44,7 +44,7 @@ public enum Feed implements HasLocalizedCaption {
   TASKS_DELEGATED(ModuleAndSub.of(Module.TASKS), TaskConstants.TBL_TASKS,
       TaskConstants.VIEW_TASKS) {
     @Override
-    public String getCaption(LocalizableConstants constants) {
+    public String getCaption(Dictionary constants) {
       return constants.feedTasksDelegated();
     }
   },
@@ -52,14 +52,14 @@ public enum Feed implements HasLocalizedCaption {
   TASKS_OBSERVED(ModuleAndSub.of(Module.TASKS), TaskConstants.TBL_TASKS,
       TaskConstants.VIEW_TASKS) {
     @Override
-    public String getCaption(LocalizableConstants constants) {
+    public String getCaption(Dictionary constants) {
       return constants.feedTasksObserved();
     }
   },
 
   TASKS_ALL(ModuleAndSub.of(Module.TASKS), TaskConstants.TBL_TASKS, TaskConstants.VIEW_TASKS) {
     @Override
-    public String getCaption(LocalizableConstants constants) {
+    public String getCaption(Dictionary constants) {
       return constants.feedTasksAll();
     }
   },
@@ -70,7 +70,7 @@ public enum Feed implements HasLocalizedCaption {
       TaskConstants.VIEW_REQUESTS,
       Lists.newArrayList(TaskConstants.COL_REQUEST_CUSTOMER_NAME)) {
     @Override
-    public String getCaption(LocalizableConstants constants) {
+    public String getCaption(Dictionary constants) {
       return constants.feedRequestsAssigned();
     }
   },
@@ -81,7 +81,7 @@ public enum Feed implements HasLocalizedCaption {
       TaskConstants.VIEW_REQUESTS,
       Lists.newArrayList(TaskConstants.COL_REQUEST_CUSTOMER_NAME)) {
     @Override
-    public String getCaption(LocalizableConstants constants) {
+    public String getCaption(Dictionary constants) {
       return constants.feedRequestsAll();
     }
   },
@@ -90,7 +90,7 @@ public enum Feed implements HasLocalizedCaption {
       TBL_COMPANY_USERS, VIEW_COMPANIES,
       COL_COMPANY_NAME) {
     @Override
-    public String getCaption(LocalizableConstants constants) {
+    public String getCaption(Dictionary constants) {
       return constants.feedCompaniesMy();
     }
   },
@@ -99,7 +99,7 @@ public enum Feed implements HasLocalizedCaption {
       TBL_COMPANIES, VIEW_COMPANIES,
       COL_COMPANY_NAME) {
     @Override
-    public String getCaption(LocalizableConstants constants) {
+    public String getCaption(Dictionary constants) {
       return constants.feedCompaniesAll();
     }
   },
@@ -108,7 +108,7 @@ public enum Feed implements HasLocalizedCaption {
       VIEW_PERSONS,
       Lists.newArrayList(COL_FIRST_NAME, COL_LAST_NAME)) {
     @Override
-    public String getCaption(LocalizableConstants constants) {
+    public String getCaption(Dictionary constants) {
       return constants.feedPersons();
     }
   },
@@ -117,7 +117,7 @@ public enum Feed implements HasLocalizedCaption {
       Lists.newArrayList(COL_ITEM_NAME),
       Lists.newArrayList(COL_ITEM_ARTICLE)) {
     @Override
-    public String getCaption(LocalizableConstants constants) {
+    public String getCaption(Dictionary constants) {
       return constants.feedGoods();
     }
   },
@@ -125,7 +125,7 @@ public enum Feed implements HasLocalizedCaption {
   DOCUMENTS(ModuleAndSub.of(Module.DOCUMENTS), DocumentConstants.TBL_DOCUMENTS,
       DocumentConstants.VIEW_DOCUMENTS, DocumentConstants.COL_DOCUMENT_NAME) {
     @Override
-    public String getCaption(LocalizableConstants constants) {
+    public String getCaption(Dictionary constants) {
       return constants.feedDocuments();
     }
   },
@@ -133,7 +133,7 @@ public enum Feed implements HasLocalizedCaption {
   APPOINTMENTS_MY(ModuleAndSub.of(Module.CALENDAR), CalendarConstants.TBL_APPOINTMENT_ATTENDEES,
       CalendarConstants.VIEW_APPOINTMENTS) {
     @Override
-    public String getCaption(LocalizableConstants constants) {
+    public String getCaption(Dictionary constants) {
       return constants.feedAppointmentsMy();
     }
   },
@@ -141,7 +141,7 @@ public enum Feed implements HasLocalizedCaption {
   APPOINTMENTS_ALL(ModuleAndSub.of(Module.CALENDAR), CalendarConstants.TBL_APPOINTMENTS,
       CalendarConstants.VIEW_APPOINTMENTS) {
     @Override
-    public String getCaption(LocalizableConstants constants) {
+    public String getCaption(Dictionary constants) {
       return constants.feedAppointmentsAll();
     }
   },
@@ -150,7 +150,7 @@ public enum Feed implements HasLocalizedCaption {
       EcConstants.VIEW_CLIENTS, Lists.newArrayList(ALS_COMPANY_NAME),
       Lists.newArrayList(COL_FIRST_NAME, COL_LAST_NAME)) {
     @Override
-    public String getCaption(LocalizableConstants constants) {
+    public String getCaption(Dictionary constants) {
       return constants.feedEcClientsMy();
     }
   },
@@ -159,7 +159,7 @@ public enum Feed implements HasLocalizedCaption {
       EcConstants.VIEW_CLIENTS, Lists.newArrayList(ALS_COMPANY_NAME),
       Lists.newArrayList(COL_FIRST_NAME, COL_LAST_NAME)) {
     @Override
-    public String getCaption(LocalizableConstants constants) {
+    public String getCaption(Dictionary constants) {
       return constants.feedEcClientsAll();
     }
   },
@@ -168,7 +168,7 @@ public enum Feed implements HasLocalizedCaption {
       Lists.newArrayList(EcConstants.ALS_ORDER_CLIENT_COMPANY_NAME),
       Lists.newArrayList(EcConstants.COL_ORDER_DATE, EcConstants.COL_ORDER_STATUS)) {
     @Override
-    public String getCaption(LocalizableConstants constants) {
+    public String getCaption(Dictionary constants) {
       return constants.feedEcOrdersMy();
     }
   },
@@ -177,17 +177,17 @@ public enum Feed implements HasLocalizedCaption {
       Lists.newArrayList(EcConstants.ALS_ORDER_CLIENT_COMPANY_NAME),
       Lists.newArrayList(EcConstants.COL_ORDER_DATE, EcConstants.COL_ORDER_STATUS)) {
     @Override
-    public String getCaption(LocalizableConstants constants) {
+    public String getCaption(Dictionary constants) {
       return constants.feedEcOrdersAll();
     }
   },
 
   EC_REGISTRATIONS(ModuleAndSub.of(Module.ECOMMERCE), EcConstants.TBL_REGISTRATIONS,
       EcConstants.VIEW_REGISTRATIONS, Lists.newArrayList(EcConstants.COL_REGISTRATION_FIRST_NAME,
-          EcConstants.COL_REGISTRATION_LAST_NAME),
+      EcConstants.COL_REGISTRATION_LAST_NAME),
       Lists.newArrayList(EcConstants.COL_REGISTRATION_COMPANY_NAME)) {
     @Override
-    public String getCaption(LocalizableConstants constants) {
+    public String getCaption(Dictionary constants) {
       return constants.feedEcRegistrations();
     }
   },
@@ -202,7 +202,7 @@ public enum Feed implements HasLocalizedCaption {
           TransportConstants.unloadingColumnAlias(ALS_CITY_NAME),
           TransportConstants.unloadingColumnAlias(ALS_COUNTRY_NAME))) {
     @Override
-    public String getCaption(LocalizableConstants constants) {
+    public String getCaption(Dictionary constants) {
       return constants.feedTrCargo();
     }
   },
@@ -212,7 +212,7 @@ public enum Feed implements HasLocalizedCaption {
       Lists.newArrayList(TransportConstants.COL_ORDER_DATE, TransportConstants.COL_ORDER_NO),
       Lists.newArrayList(TransportConstants.COL_CUSTOMER_NAME)) {
     @Override
-    public String getCaption(LocalizableConstants constants) {
+    public String getCaption(Dictionary constants) {
       return constants.feedTrOrdersMy();
     }
   },
@@ -222,8 +222,18 @@ public enum Feed implements HasLocalizedCaption {
       Lists.newArrayList(TransportConstants.COL_ORDER_DATE, TransportConstants.COL_ORDER_NO),
       Lists.newArrayList(TransportConstants.COL_CUSTOMER_NAME)) {
     @Override
-    public String getCaption(LocalizableConstants constants) {
+    public String getCaption(Dictionary constants) {
       return constants.feedTrOrdersAll();
+    }
+  },
+
+  TRIPS_MY(ModuleAndSub.of(Module.TRANSPORT), TransportConstants.TBL_TRIPS,
+      TransportConstants.VIEW_TRIPS,
+      Lists.newArrayList(TransportConstants.COL_TRIP_DATE, TransportConstants.COL_TRIP_NO,
+          TransportConstants.ALS_VEHICLE_NUMBER)) {
+    @Override
+    public String getCaption(Dictionary constants) {
+      return constants.feedTrTripsMy();
     }
   },
 
@@ -232,53 +242,48 @@ public enum Feed implements HasLocalizedCaption {
       Lists.newArrayList(TransportConstants.COL_TRIP_DATE, TransportConstants.COL_TRIP_NO,
           TransportConstants.ALS_VEHICLE_NUMBER)) {
     @Override
-    public String getCaption(LocalizableConstants constants) {
-      return constants.feedTrTrips();
+    public String getCaption(Dictionary constants) {
+      return constants.feedTrTripsAll();
     }
   },
 
-  CARGO_REQUESTS_MY(ModuleAndSub.of(Module.TRANSPORT), TransportConstants.TBL_CARGO_REQUESTS,
-      TransportConstants.VIEW_CARGO_REQUESTS,
-      Lists.newArrayList(TransportConstants.ALS_REQUEST_CUSTOMER_FIRST_NAME,
-          TransportConstants.ALS_REQUEST_CUSTOMER_LAST_NAME)) {
+  SHIPMENT_REQUESTS_UNREGISTERED_MY(ModuleAndSub.of(Module.TRANSPORT, SubModule.SELFSERVICE),
+      TransportConstants.TBL_SHIPMENT_REQUESTS, TransportConstants.VIEW_SHIPMENT_REQUESTS,
+      Arrays.asList(TransportConstants.COL_QUERY_STATUS, TransportConstants.COL_QUERY_DATE,
+          TransportConstants.COL_QUERY_CUSTOMER_NAME)) {
     @Override
-    public String getCaption(LocalizableConstants constants) {
-      return constants.feedTrRequestsMy();
-    }
-  },
-
-  CARGO_REQUESTS_ALL(ModuleAndSub.of(Module.TRANSPORT), TransportConstants.TBL_CARGO_REQUESTS,
-      TransportConstants.VIEW_CARGO_REQUESTS,
-      Lists.newArrayList(TransportConstants.ALS_REQUEST_CUSTOMER_FIRST_NAME,
-          TransportConstants.ALS_REQUEST_CUSTOMER_LAST_NAME)) {
-    @Override
-    public String getCaption(LocalizableConstants constants) {
-      return constants.feedTrRequestsAll();
-    }
-  },
-
-  SHIPMENT_REQUESTS_MY(ModuleAndSub.of(Module.TRANSPORT), TransportConstants.TBL_SHIPMENT_REQUESTS,
-      TransportConstants.VIEW_SHIPMENT_REQUESTS, TransportConstants.COL_QUERY_CUSTOMER_NAME) {
-    @Override
-    public String getCaption(LocalizableConstants constants) {
+    public String getCaption(Dictionary constants) {
       return constants.feedTrRequestsUnregisteredMy();
     }
   },
 
-  SHIPMENT_REQUESTS_ALL(ModuleAndSub.of(Module.TRANSPORT),
-      TransportConstants.TBL_SHIPMENT_REQUESTS,
-      TransportConstants.VIEW_SHIPMENT_REQUESTS, TransportConstants.COL_QUERY_CUSTOMER_NAME) {
+  SHIPMENT_REQUESTS_UNREGISTERED_ALL(ModuleAndSub.of(Module.TRANSPORT, SubModule.SELFSERVICE),
+      TransportConstants.TBL_SHIPMENT_REQUESTS, TransportConstants.VIEW_SHIPMENT_REQUESTS,
+      Arrays.asList(TransportConstants.COL_QUERY_STATUS, TransportConstants.COL_QUERY_DATE,
+          TransportConstants.COL_QUERY_CUSTOMER_NAME)) {
     @Override
-    public String getCaption(LocalizableConstants constants) {
+    public String getCaption(Dictionary constants) {
       return constants.feedTrRequestsUnregisteredAll();
     }
   },
 
-  TRANSPORT_REGISTRATIONS(ModuleAndSub.of(Module.TRANSPORT), TransportConstants.TBL_REGISTRATIONS,
-      TransportConstants.VIEW_REGISTRATIONS, TransportConstants.COL_REGISTRATION_COMPANY_NAME) {
+  SHIPMENT_REQUESTS_MY(ModuleAndSub.of(Module.TRANSPORT, SubModule.SELFSERVICE),
+      TransportConstants.TBL_SHIPMENT_REQUESTS, TransportConstants.VIEW_SHIPMENT_REQUESTS,
+      Arrays.asList(TransportConstants.COL_QUERY_STATUS, TransportConstants.COL_QUERY_DATE,
+          ALS_COMPANY_NAME)) {
     @Override
-    public String getCaption(LocalizableConstants constants) {
-      return constants.feedTrRegistrations();
+    public String getCaption(Dictionary constants) {
+      return constants.feedTrRequestsMy();
+    }
+  },
+
+  SHIPMENT_REQUESTS_ALL(ModuleAndSub.of(Module.TRANSPORT, SubModule.SELFSERVICE),
+      TransportConstants.TBL_SHIPMENT_REQUESTS, TransportConstants.VIEW_SHIPMENT_REQUESTS,
+      Arrays.asList(TransportConstants.COL_QUERY_STATUS, TransportConstants.COL_QUERY_DATE,
+          ALS_COMPANY_NAME)) {
+    @Override
+    public String getCaption(Dictionary constants) {
+      return constants.feedTrRequestsAll();
     }
   },
 
@@ -288,7 +293,7 @@ public enum Feed implements HasLocalizedCaption {
       Lists.newArrayList(TransportConstants.COL_PARENT_MODEL_NAME,
           TransportConstants.COL_MODEL_NAME)) {
     @Override
-    public String getCaption(LocalizableConstants constants) {
+    public String getCaption(Dictionary constants) {
       return constants.feedTrVehicles();
     }
   },
@@ -297,7 +302,7 @@ public enum Feed implements HasLocalizedCaption {
       TransportConstants.VIEW_DRIVERS,
       Lists.newArrayList(COL_FIRST_NAME, COL_LAST_NAME)) {
     @Override
-    public String getCaption(LocalizableConstants constants) {
+    public String getCaption(Dictionary constants) {
       return constants.feedTrDrivers();
     }
   },
@@ -307,9 +312,8 @@ public enum Feed implements HasLocalizedCaption {
       Lists.newArrayList(TransportConstants.COL_ASSESSMENT, DataUtils.ID_TAG,
           TransportConstants.COL_STATUS,
           TransportConstants.ALS_ORDER_NOTES, TransportConstants.ALS_CUSTOMER_NAME)) {
-
     @Override
-    public String getCaption(LocalizableConstants constants) {
+    public String getCaption(Dictionary constants) {
       return constants.feedTrAssessmentAllRequests();
     }
 
@@ -320,9 +324,8 @@ public enum Feed implements HasLocalizedCaption {
       Lists.newArrayList(TransportConstants.COL_ASSESSMENT, DataUtils.ID_TAG,
           TransportConstants.COL_STATUS,
           TransportConstants.ALS_ORDER_NOTES, TransportConstants.ALS_CUSTOMER_NAME)) {
-
     @Override
-    public String getCaption(LocalizableConstants constants) {
+    public String getCaption(Dictionary constants) {
       return constants.feedTrAssessmentMyRequests();
     }
 
@@ -333,9 +336,8 @@ public enum Feed implements HasLocalizedCaption {
       Lists.newArrayList(TransportConstants.COL_ASSESSMENT, DataUtils.ID_TAG,
           TransportConstants.ALS_ORDER_NOTES,
           TransportConstants.COL_STATUS, TransportConstants.ALS_CUSTOMER_NAME)) {
-
     @Override
-    public String getCaption(LocalizableConstants constants) {
+    public String getCaption(Dictionary constants) {
       return constants.feedTrAssessmentAllOrders();
     }
 
@@ -346,9 +348,8 @@ public enum Feed implements HasLocalizedCaption {
       Lists.newArrayList(TransportConstants.COL_ASSESSMENT, DataUtils.ID_TAG,
           TransportConstants.ALS_ORDER_NOTES, TransportConstants.ALS_CUSTOMER_NAME,
           TransportConstants.COL_STATUS)) {
-
     @Override
-    public String getCaption(LocalizableConstants constants) {
+    public String getCaption(Dictionary constants) {
       return constants.feedTrAssessmentMyOrders();
     }
 
@@ -359,9 +360,8 @@ public enum Feed implements HasLocalizedCaption {
       TransportConstants.VIEW_ASSESSMENT_TRANSPORTATIONS,
       Lists.newArrayList(DataUtils.ID_TAG, TransportConstants.COL_TRIP_DATE,
           TransportConstants.ALS_FORWARDER_NAME, TransportConstants.ALS_EXPEDITION_TYPE)) {
-
     @Override
-    public String getCaption(LocalizableConstants constants) {
+    public String getCaption(Dictionary constants) {
       return constants.feedTrAssessmentTransportations();
     }
 
@@ -369,10 +369,9 @@ public enum Feed implements HasLocalizedCaption {
 
   CARGO_SALES(ModuleAndSub.of(Module.TRANSPORT), TransportConstants.TBL_CARGO_INCOMES,
       TransportConstants.VIEW_CARGO_SALES, Lists.newArrayList(TransportConstants.ALS_ORDER_DATE,
-          TransportConstants.COL_ORDER_NO, TransportConstants.ALS_PAYER_NAME)) {
-
+      TransportConstants.COL_ORDER_NO, TransportConstants.ALS_PAYER_NAME)) {
     @Override
-    public String getCaption(LocalizableConstants constants) {
+    public String getCaption(Dictionary constants) {
       return constants.feedTrOrderCargoSales();
     }
 
@@ -380,11 +379,10 @@ public enum Feed implements HasLocalizedCaption {
 
   CARGO_CREDIT_SALES(ModuleAndSub.of(Module.TRANSPORT), TransportConstants.TBL_CARGO_INCOMES,
       TransportConstants.VIEW_CARGO_CREDIT_SALES, Lists.newArrayList(
-          TransportConstants.ALS_ORDER_DATE, TransportConstants.COL_ORDER_NO,
-          TransportConstants.ALS_PAYER_NAME)) {
-
+      TransportConstants.ALS_ORDER_DATE, TransportConstants.COL_ORDER_NO,
+      TransportConstants.ALS_PAYER_NAME)) {
     @Override
-    public String getCaption(LocalizableConstants constants) {
+    public String getCaption(Dictionary constants) {
       return constants.feedTrOrderCargoCreditSales();
     }
 
@@ -392,10 +390,10 @@ public enum Feed implements HasLocalizedCaption {
 
   CARGO_PURCHASES(ModuleAndSub.of(Module.TRANSPORT), TransportConstants.TBL_CARGO_EXPENSES,
       TransportConstants.VIEW_CARGO_PURCHASES, Lists.newArrayList(
-          TransportConstants.ALS_ORDER_DATE, TransportConstants.COL_ORDER_NO,
-          TransportConstants.ALS_SERVICE_NAME)) {
+      TransportConstants.ALS_ORDER_DATE, TransportConstants.COL_ORDER_NO,
+      TransportConstants.ALS_SERVICE_NAME)) {
     @Override
-    public String getCaption(LocalizableConstants constants) {
+    public String getCaption(Dictionary constants) {
 
       return constants.feedTrTripCosts();
     }
@@ -403,38 +401,38 @@ public enum Feed implements HasLocalizedCaption {
 
   CARGO_INVOICES(ModuleAndSub.of(Module.TRANSPORT), TradeConstants.TBL_SALES,
       TransportConstants.VIEW_CARGO_INVOICES, Lists.newArrayList(TransportConstants.COL_DATE,
-          TransportConstants.COL_NUMBER, TransportConstants.ALS_PAYER_NAME)) {
+      TransportConstants.COL_NUMBER, TransportConstants.ALS_PAYER_NAME)) {
     @Override
-    public String getCaption(LocalizableConstants constants) {
+    public String getCaption(Dictionary constants) {
       return constants.feedTrOrderCargoInvoices();
     }
   },
 
   CARGO_PROFORMA_INVOICES(ModuleAndSub.of(Module.TRANSPORT), TradeConstants.TBL_SALES,
       TransportConstants.VIEW_CARGO_INVOICES, Lists.newArrayList(TransportConstants.COL_DATE,
-          TransportConstants.COL_NUMBER, TransportConstants.ALS_PAYER_NAME)) {
+      TransportConstants.COL_NUMBER, TransportConstants.ALS_PAYER_NAME)) {
     @Override
-    public String getCaption(LocalizableConstants constants) {
+    public String getCaption(Dictionary constants) {
       return constants.feedTrCargoProformaInvoices();
     }
   },
 
   CARGO_CREDIT_INVOICES(ModuleAndSub.of(Module.TRANSPORT), TradeConstants.TBL_PURCHASES,
       TransportConstants.VIEW_CARGO_PURCHASE_INVOICES, Lists.newArrayList(
-          TransportConstants.COL_DATE, TransportConstants.COL_NUMBER,
-          TradeConstants.ALS_SUPPLIER_NAME)) {
+      TransportConstants.COL_DATE, TransportConstants.COL_NUMBER,
+      TradeConstants.ALS_SUPPLIER_NAME)) {
     @Override
-    public String getCaption(LocalizableConstants constants) {
+    public String getCaption(Dictionary constants) {
       return constants.feedTrCargoCreditInvoices();
     }
   },
 
   CARGO_PURCHASE_INVOICES(ModuleAndSub.of(Module.TRANSPORT), TradeConstants.TBL_PURCHASES,
       TransportConstants.VIEW_CARGO_PURCHASE_INVOICES, Lists.newArrayList(
-          TransportConstants.COL_DATE, TransportConstants.COL_NUMBER,
-          TradeConstants.ALS_SUPPLIER_NAME)) {
+      TransportConstants.COL_DATE, TransportConstants.COL_NUMBER,
+      TradeConstants.ALS_SUPPLIER_NAME)) {
     @Override
-    public String getCaption(LocalizableConstants constants) {
+    public String getCaption(Dictionary constants) {
       return constants.feedTrCargoPurchaseInvoices();
     }
   },
@@ -442,25 +440,23 @@ public enum Feed implements HasLocalizedCaption {
   DISCUSSIONS(ModuleAndSub.of(Module.DISCUSSIONS), DiscussionsConstants.TBL_DISCUSSIONS,
       DiscussionsConstants.VIEW_DISCUSSIONS, Lists.newArrayList(DiscussionsConstants.COL_SUBJECT)) {
     @Override
-    public String getCaption(LocalizableConstants constants) {
+    public String getCaption(Dictionary constants) {
       return constants.discussions();
     }
   },
 
   ANNOUNCEMENTS(ModuleAndSub.of(Module.DISCUSSIONS), DiscussionsConstants.TBL_DISCUSSIONS,
       DiscussionsConstants.VIEW_DISCUSSIONS, Lists.newArrayList(DiscussionsConstants.COL_SUBJECT)) {
-
     @Override
-    public String getCaption(LocalizableConstants constants) {
+    public String getCaption(Dictionary constants) {
       return constants.announcements();
     }
   },
 
   MAIL(ModuleAndSub.of(Module.MAIL), MailConstants.TBL_PLACES, MailConstants.TBL_PLACES,
       Lists.newArrayList(MailConstants.COL_DATE, "SenderEmail", MailConstants.COL_SUBJECT)) {
-
     @Override
-    public String getCaption(LocalizableConstants constants) {
+    public String getCaption(Dictionary constants) {
       return constants.mail();
     }
   },
@@ -468,9 +464,8 @@ public enum Feed implements HasLocalizedCaption {
   PROJECT(ModuleAndSub.of(Module.PROJECTS), ProjectConstants.TBL_PROJECTS,
       ProjectConstants.VIEW_PROJECTS,
       Lists.newArrayList(ProjectConstants.COL_PROJECT_NAME)) {
-
     @Override
-    public String getCaption(LocalizableConstants constants) {
+    public String getCaption(Dictionary constants) {
       return constants.projects();
     }
 
@@ -543,11 +538,6 @@ public enum Feed implements HasLocalizedCaption {
 
     this.labelColumns = labelColumns;
     this.titleColumns = titleColumns;
-  }
-
-  @Override
-  public String getCaption() {
-    return getCaption(Localized.getConstants());
   }
 
   public String getHeadlineView() {

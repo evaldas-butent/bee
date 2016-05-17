@@ -127,7 +127,7 @@ class CalendarController extends Flow implements HandlesStateChange, HasCaption,
         if (Data.isViewEditable(VIEW_USER_CAL_ATTENDEES)
             && BeeKeeper.getUser().canDeleteData(VIEW_USER_CAL_ATTENDEES)) {
           FaLabel widget = new FaLabel(FontAwesome.TRASH_O);
-          widget.setTitle(Localized.getConstants().actionRemove());
+          widget.setTitle(Localized.dictionary().actionRemove());
           return widget;
 
         } else {
@@ -427,7 +427,7 @@ class CalendarController extends Flow implements HandlesStateChange, HasCaption,
   private void changeCaption(final long rowId) {
     final BeeRow row = getRow(rowId);
 
-    Global.inputString(Localized.getConstants().calName(), null, new StringCallback(false) {
+    Global.inputString(Localized.dictionary().calName(), null, new StringCallback(false) {
       @Override
       public void onSuccess(String value) {
         String name = row.getString(nameIndex);
@@ -468,7 +468,7 @@ class CalendarController extends Flow implements HandlesStateChange, HasCaption,
 
       DataSelector dataSelector = new DataSelector(relation, true);
       dataSelector.setEditing(true);
-      DomUtils.setPlaceholder(dataSelector, Localized.getConstants().actionAppend());
+      DomUtils.setPlaceholder(dataSelector, Localized.dictionary().actionAppend());
 
       return dataSelector;
 

@@ -2,6 +2,7 @@
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui"
   xmlns:w="http://www.butent.com/widget"
+  xmlns:xi="http://www.w3.org/2001/XInclude"
 
   name="Documents" viewName="Documents" caption="=documents"
   newRowForm="NewDocument" editForm="Document" parent="Tree" favorite="Name"
@@ -17,23 +18,7 @@
     </w:DataTree>
   </g:west>
 
-  <g:columns>
-    <DataColumn name="Name" visible="true" />
-    <RelColumn name="Company" filterSupplier="value" />
-    <RelColumn name="Category" />
-    <DataColumn name="DocumentDate" />
-    <DataColumn name="Expires" />
-    <DataColumn name="Number" />
-    <RelColumn name="Type" carry="true" />
-    <RelColumn name="Place" carry="true" />
-    <DataColumn name="StatusName" />
-
-    <IdColumn name="Id" visible="false" />
-    <DataColumn name="RegistrationNumber" visible="false" />
-    <DataColumn name="Received" visible="false" />
-    <DataColumn name="Sent" visible="false" />
-    <DataColumn name="Description" visible="false" />
-  </g:columns>
+  <xi:include href="columns/Documents.columns.xml" />
 
   <g:predefinedFilter name="received" label="=documentFilterReceived">
     <g:column name="Received" emptyValues="false" />

@@ -5,10 +5,11 @@
   idName="TaskTypeID"
   >
   <Fields>
-    <String name="Name" notNull="true" precision="100" label="=crmTaskTypeName" />
-
+    <Integer name="Ordinal" label="=ordinal" />
+    <String name="Name" notNull="true" unique="true" precision="100" label="=crmTaskTypeName" />
     <String name="Background" precision="100" label="=backgroundColor" />
     <String name="Foreground" precision="100" label="=foregroundColor" />
+    <Boolean name="ProductRequired" label="=crmTaskProductRequired" />
     <Boolean name="SignContract" defValue="null" label="=signatureAgreement" />
   </Fields>
 </Table>

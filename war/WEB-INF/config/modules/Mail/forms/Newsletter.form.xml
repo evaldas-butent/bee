@@ -7,7 +7,7 @@
   <FlowPanel class="flexBox-vertical">
     <FlowPanel class="flexBox-vertical" style="margin:5px; height:350px;">
       <FlowPanel class="flexBox-horizontal">
-        <Table>
+        <Table kind="controls">
           <row>
             <Label for="Subject" class="bee-required" style="&lbl;" />
             <InputText source="Subject" style="width:300px" autocomplete="true" required="true" />

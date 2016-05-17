@@ -6,7 +6,7 @@
   name="Data" caption="Data Binding, Events, Rendering" viewName="DataTypes"
   >
   <FlowPanel style="margin: 1ex 1em;">
-    <Table style="border-collapse: collapse;" cellStyle="padding: 5px; border: 1px solid #aaa;">
+    <Table kind="custom" style="border-collapse: collapse;" cellStyle="padding: 5px; border: 1px solid #aaa;">
       <row>
         <CheckBox source="Boolean" html="-" />
         <CheckBox source="Boolean" />

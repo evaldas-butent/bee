@@ -14,6 +14,7 @@
 
   <Item name="ExpeditionTypes" label="=trExpeditionTypes" service="grid"
         parameters="ExpeditionTypes" separator="true" />
+  <Item name="LossReasons" label="=trLossReasons" service="grid" parameters="LossReasons" />
 
   <Item name="VehicleTypes" label="=trVehicleTypes" service="grid" parameters="VehicleTypes"
         separator="true" />
@@ -25,6 +26,7 @@
   <Item name="CountryNorms" label="=trCountryNorms" service="grid" parameters="CountryNorms"
         separator="true" />
   <Item name="TripConstants" label="=trTripConstants" service="grid" parameters="TripConstants" />
+  <Item name="TextConstants" label="=textConstants" service="grid" parameters="TextConstants" />
 
   <Item name="Parameters" label="=trParameters" service="parameters" parameters="Transport"
         separator="true" module="Transport.Administration" />
