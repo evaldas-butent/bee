@@ -1,3 +1,41 @@
+.bee-misc-Slack-bar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+}
+.bee-misc-Slack-late {
+  color: red;
+}
+.bee-misc-Slack-opening {
+  color: green;
+}
+.bee-misc-Slack-endgame {
+  color: orange;
+}
+.bee-misc-Slack-scheduled {
+  color: yellow;
+}
+
+.bee-misc-Slack-label {
+  position: absolute;
+  top: 3px;
+  font-weight: bold;
+}
+.bee-misc-Slack-late .bee-misc-Slack-label {
+  left: 3px;
+}
+.bee-misc-Slack-opening .bee-misc-Slack-label {
+  left: 30%;
+}
+.bee-misc-Slack-endgame .bee-misc-Slack-label {
+  right: 30%;
+}
+.bee-misc-Slack-scheduled .bee-misc-Slack-label {
+  right: 3px;
+}
+
 .bee-orgChart-panel {
   background-color: white;
 }
