@@ -3417,7 +3417,8 @@ textarea,
   background-color: white;
   border: 1px solid #b4b4b4;
   max-height: 70vh;
-  overflow: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 .bee-PopupUsersContent {
@@ -3432,6 +3433,9 @@ textarea,
 }
 .bee-PopupUsersContent tr td {
   padding: 5px 10px;
+}
+.bee-PopupUsersContent tr td:last-of-type {
+  padding-right: 20px;
 }
 
 .bee-PopupUsersPhoto {
