@@ -7,6 +7,11 @@
   <Columns>
     <SimpleColumn name="Constant" />
 
+    <SimpleColumn name="CargoType" />
+    <SimpleJoin joinType="LEFT" name="CargoType">
+      <SimpleColumn name="CargoTypeName" />
+    </SimpleJoin>
+
     <SimpleColumn name="DateFrom" />
     <SimpleColumn name="DateTo" />
 

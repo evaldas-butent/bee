@@ -124,6 +124,10 @@
     </xs:union>
   </xs:simpleType>
 
+  <xs:simpleType name="nameList">
+    <xs:list itemType="nameType" />
+  </xs:simpleType>
+
   <xs:simpleType name="fieldNames">
     <xs:list itemType="fieldNameType" />
   </xs:simpleType>
@@ -294,6 +298,7 @@
       <xs:enumeration value="CriteriaGroups" />
       <xs:enumeration value="Currencies" />
       <xs:enumeration value="CurrencyRates" />
+      <xs:enumeration value="CustomConfig" />
       <xs:enumeration value="DataCriteria" />
       <xs:enumeration value="DeliveryMethods" />
       <xs:enumeration value="Departments" />
@@ -342,7 +347,6 @@
       <xs:enumeration value="EcRegistrations" />
       <xs:enumeration value="EditorTemplates" />
       <xs:enumeration value="Emails" />
-      <xs:enumeration value="EmployeeEarnings" />
       <xs:enumeration value="EmployeeObjects" />
       <xs:enumeration value="Employees" />
       <xs:enumeration value="EventDurations" />
@@ -386,7 +390,6 @@
       <xs:enumeration value="NewsPersons" />
       <xs:enumeration value="NewsletterFiles" />
       <xs:enumeration value="Objects" />
-      <xs:enumeration value="ObjectEarnings" />
       <xs:enumeration value="ObjectSalaryFund" />
       <xs:enumeration value="Orders" />
       <xs:enumeration value="OrdersInvoices" />
@@ -441,6 +444,8 @@
       <xs:enumeration value="Repairs" />
       <xs:enumeration value="ReportOptions" />
       <xs:enumeration value="ReportSettings" />
+      <xs:enumeration value="RequestDurationTypes" />
+      <xs:enumeration value="RequestEvents" />
       <xs:enumeration value="RequestFiles" />
       <xs:enumeration value="Requests" />
       <xs:enumeration value="RequestTypes" />
@@ -493,6 +498,8 @@
       <xs:enumeration value="TaskEvents" />
       <xs:enumeration value="TaskFiles" />
       <xs:enumeration value="Tasks" />
+      <xs:enumeration value="TaskDurationTypes" />
+      <xs:enumeration value="TaskProducts" />
       <xs:enumeration value="TaskTemplates" />
       <xs:enumeration value="TaskTypes" />
       <xs:enumeration value="TaskUsers" />
@@ -541,6 +548,7 @@
       <xs:enumeration value="TradeOperations" />
       <xs:enumeration value="TradeSeries" />
       <xs:enumeration value="TradeStatuses" />
+      <xs:enumeration value="TradeStock" />
       <xs:enumeration value="TradeTags" />
       <xs:enumeration value="TransportationOrders" />
       <xs:enumeration value="TransportGroups" />

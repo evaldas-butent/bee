@@ -11,6 +11,7 @@ import com.butent.bee.server.io.Filter;
 import com.butent.bee.server.modules.administration.FileStorageBean;
 import com.butent.bee.server.ui.UiHolderBean;
 import com.butent.bee.server.utils.ClassUtils;
+import com.butent.bee.server.utils.HtmlUtils;
 import com.butent.bee.server.utils.JvmUtils;
 import com.butent.bee.server.utils.XmlUtils;
 import com.butent.bee.shared.Assert;
@@ -35,6 +36,7 @@ import com.butent.bee.shared.utils.ExtendedProperty;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
 
+import net.sf.jasperreports.engine.DefaultJasperReportsContext;
 import net.sf.jasperreports.engine.JREmptyDataSource;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JasperCompileManager;
@@ -42,8 +44,10 @@ import net.sf.jasperreports.engine.JasperExportManager;
 import net.sf.jasperreports.engine.JasperFillManager;
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.JasperReport;
+import net.sf.jasperreports.engine.util.LocalJasperReportsContext;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -235,7 +239,11 @@ public class SystemServiceBean {
     ResponseObject response;
 
     try {
-      JasperReport report = JasperCompileManager.compileReport(reportFile);
+      if (FileUtils.isInputFile(reportFile)) {
+        reportFile = FileUtils.fileToString(reportFile);
+      }
+      JasperReport report = JasperCompileManager
+          .compileReport(new ByteArrayInputStream(reportFile.getBytes(BeeConst.CHARSET_UTF8)));
       Map<String, Object> params = new HashMap<>();
 
       if (!BeeUtils.isEmpty(parameters)) {
@@ -256,10 +264,25 @@ public class SystemServiceBean {
       if (BeeUtils.same(format, "html")) {
         params.put("IS_IGNORE_PAGINATION", true);
       }
-      JasperPrint print = JasperFillManager.fillReport(report, params,
+      LocalJasperReportsContext context = new LocalJasperReportsContext(DefaultJasperReportsContext
+          .getInstance());
+      context.setFileResolver(ref -> {
+        Long fileId = BeeUtils.peek(HtmlUtils.getFileReferences("src=\"" + ref + "\"").keySet());
+
+        if (DataUtils.isId(fileId)) {
+          try {
+            return fs.getFile(fileId).getFile();
+          } catch (IOException e) {
+            logger.error(e);
+          }
+        }
+        return null;
+      });
+      JasperFillManager fillManager = JasperFillManager.getInstance(context);
+      JasperPrint print = fillManager.fill(report, params,
           Objects.isNull(mainDataSet) ? new JREmptyDataSource() : new RsDataSource(mainDataSet));
 
-      File tmp = File.createTempFile("bee_", "." + BeeUtils.nvl(format, "pdf"));
+      File tmp = File.createTempFile("bee_", "." + BeeUtils.notEmpty(format, "pdf"));
       tmp.deleteOnExit();
       String path = tmp.getAbsolutePath();
 
@@ -300,7 +323,7 @@ public class SystemServiceBean {
           CommUtils.rpcParamName(1), ") not specified");
     }
 
-    File resFile = null;
+    File resFile;
     if (FileUtils.isFile(search)) {
       resFile = new File(search);
 
@@ -384,7 +407,7 @@ public class SystemServiceBean {
 
         List<String> totals = Lists.newArrayList(null, mode, search, String.valueOf(totSize),
             String.valueOf(lastMod));
-        rowSet.addRow(rc++, 0, totals);
+        rowSet.addRow(rc, 0, totals);
 
         ResponseObject response = ResponseObject.response(rowSet);
         response.addInfo(mode, search, "found", files.size(), "files");

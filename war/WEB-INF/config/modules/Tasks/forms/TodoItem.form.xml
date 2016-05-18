@@ -12,28 +12,38 @@
   <FlowPanel>
     <Table kind="controls" style="margin-top: 2ex; margin-left: 1em;">
 
-      <col index="0" kind="label" />
-      <col index="2" kind="label" />
+      <col index="0" kind="label" cellStyle="padding-top:16px" />
+      <col index="2" kind="label" cellStyle="padding-top:16px" />
 
       <row>
         <Label for="Summary" visible="true" />
-        <cell verticalAlignment="top">
-          <InputText source="Summary" style="&inp;"
+        <cell colSpan="3">
+          <InputText source="Summary" style="width: 500px;"
             visible="true" />
         </cell>
-
+      </row>
+      <row>
         <Label for="Description" />
-        <InputArea source="Description" style="&inp; height: 60px;" />
+        <cell verticalAlignment="top" colSpan="3">
+          <InputArea source="Description" style="width: 500px; height: 60px;" />
+        </cell>
       </row>
 
       <row module="Classifiers.Contacts">
         <Label for="Company" />
-        <DataSelector source="Company" renderColumns="CompanyName CompanyTypeName" choiceColumns="Name TypeName" style="&inp;" />
-
+        <cell colSpan="3">
+          <DataSelector source="Company" renderColumns="CompanyName CompanyTypeName" choiceColumns="Name TypeName" style="width: 500px;" />
+        </cell>
+        
+      </row>
+      
+      <row module="Classifiers.Contacts">
         <Label for="Contact" />
-        <DataSelector source="Contact" newRowEnabled="false" style="&inp;"
+        <cell colSpan="3">
+          <DataSelector source="Contact" newRowEnabled="false" style="width: 500px;"
           renderColumns="ContactFirstName ContactLastName"
           choiceColumns="FirstName LastName CompanyName" options="Company" />
+        </cell>
       </row>
 
       <row>
@@ -54,12 +64,11 @@
       </row>
 
       <row>
-        <Label for="Created" />
-        <InputDateTime source="Created" />
-
-        <Label for="Creator" />
-        <DataSelector source="Creator" editSource="CreatorCompanyPerson"
-          renderColumns="CreatorFirstName CreatorLastName" style="&inp;"/>
+        <DateTimeLabel source="Created" style="color: #ababab; margin-bottom: 3px;" />
+        <TextLabel style="color: #ababab;">
+          <renderToken source="CreatorFirstName"/>
+          <renderToken source="CreatorLastName"/>
+      </TextLabel>
       </row>
     </Table>
   </FlowPanel>

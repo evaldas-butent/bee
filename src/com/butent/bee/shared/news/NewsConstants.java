@@ -97,8 +97,15 @@ public final class NewsConstants {
         TransportConstants.loadingColumnAlias(TransportConstants.COL_PLACE_DATE));
 
     observedColumns.put(TransportConstants.TBL_ORDERS, TransportConstants.COL_STATUS);
-    observedColumns.put(TransportConstants.TBL_TRIPS, TransportConstants.COL_TRIP_STATUS);
+
     observedColumns.put(TransportConstants.TBL_TRIPS, TransportConstants.COL_TRIP_NO);
+    observedColumns.put(TransportConstants.TBL_TRIPS, TransportConstants.COL_TRIP_DATE);
+    observedColumns.put(TransportConstants.TBL_TRIPS, TransportConstants.COL_TRIP_DATE_FROM);
+    observedColumns.put(TransportConstants.TBL_TRIPS, TransportConstants.COL_TRIP_DATE_TO);
+    observedColumns.put(TransportConstants.TBL_TRIPS, TransportConstants.COL_TRIP_STATUS);
+    observedColumns.put(TransportConstants.TBL_TRIPS, TransportConstants.COL_TRIP_MANAGER);
+    observedColumns.put(TransportConstants.TBL_TRIPS, TransportConstants.COL_VEHICLE);
+    observedColumns.put(TransportConstants.TBL_TRIPS, TransportConstants.COL_TRAILER);
 
     observedColumns.put(TransportConstants.TBL_SHIPMENT_REQUESTS,
         TransportConstants.COL_QUERY_STATUS);

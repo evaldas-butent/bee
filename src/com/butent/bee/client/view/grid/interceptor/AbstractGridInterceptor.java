@@ -71,10 +71,6 @@ public abstract class AbstractGridInterceptor implements GridInterceptor {
   private GridPresenter gridPresenter;
 
   @Override
-  public void afterAction(Action action, GridPresenter presenter) {
-  }
-
-  @Override
   public void afterCreate(GridView gridView) {
   }
 
@@ -350,7 +346,7 @@ public abstract class AbstractGridInterceptor implements GridInterceptor {
   }
 
   @Override
-  public String getRowCaption(IsRow row, boolean edit) {
+  public String getRowCaption(IsRow row) {
     return null;
   }
 

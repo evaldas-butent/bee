@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+  name="RequestEvents"
+  idName="RequestEventID"
+  >
+  <Fields>
+    <Relation name="Request" notNull="true" relation="Requests" cascade="DELETE" label="=crmRequest" />
+    <Relation name="Publisher" notNull="true" relation="Users" label="=user" />
+    <DateTime name="PublishTime" notNull="true" label="=prjPublishTime" />
+    <Text name="Comment" label="=comment" />
+    <Text name="Properties" label="=properties" />
+    <Enum name="Event" key="TaskEvent" precision="2" label="=prjEvent" />
+  </Fields>
+</Table>

@@ -116,7 +116,7 @@ public class MailMessage extends AbstractFormInterceptor {
                   if (!BeeUtils.same(viewName, TransportConstants.TBL_ASSESSMENTS)) {
                     FileCollector.pushFiles(attachments);
                   }
-                  RowFactory.createRelatedRow(formName, row, selector);
+                  RowFactory.createRelatedRow(formName, row, selector, null);
                 }
               }
             };

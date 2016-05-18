@@ -1,180 +1,139 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Form [
   <!ENTITY inline "display: inline-block;">
-    
-  <!ENTITY lblRight "&inline; width: 90px; vertical-align: top; text-align: right; margin: 3px 4px 3px 4px;" >
-  <!ENTITY lblLeft "&inline; width: 90px; vertical-align: top; text-align: left; margin: 3px 4px 3px 4px;" >
-  <!ENTITY inpLeft "&inline; text-align: left; margin: 3px 7px 3px 4px;" >
-  <!ENTITY inpRight "&inline; text-align: rght; margin: 3px 7px 3px 4px;" >
+
+  <!ENTITY lblRight "&inline; width: 86px; vertical-align: middle; text-align: right; padding-right: 1em;" >
+  <!ENTITY inpLeft "&inline; text-align: left; margin: 0 1em 0 0;" >
   <!ENTITY discussDataPanel "min-width: 550px;" >
-  <!ENTITY relDataPanel "overflow: auto;" >
-  <!ENTITY discussionHeadPanel "max-height:150px">
- 
-  <!ENTITY subjectLbl "&lblRight;">
-  <!ENTITY subjectInp "&inpLeft;  min-width: 380px;">
-  
-  <!ENTITY ownerLbl "&lblRight;">
+  <!ENTITY inpLeft400p "&inpLeft; width: 400px;">
+  <!ENTITY inlineInp540p "&inline; width: 540px;">
+
   <!ENTITY ownerInp "&inpLeft; width: 180px;">
-  
-  <!ENTITY createdLbl "&lblRight;">
-  <!ENTITY createdInp "&inpLeft; width: 11em;"> 
-  
-  <!ENTITY statusLbl "&lblRight;">
-  <!ENTITY statusInp "&inpLeft; width: 9em;">
-    
-  <!ENTITY membersLbl "&lblRight;">
-  <!ENTITY membersInp "&inpLeft; width: 400px;">
-  
-  <!ENTITY descriptionLbl "&lblRight;">
-  <!ENTITY descriptionInp "&inpLeft; /*width: calc(100&#37; - 10em);*/ min-height: 1.5em;
-  max-height: 9em; overflow: auto;">
-  
-  <!ENTITY FilesInp "&inpLeft;">
-  
-  <!-- relations --> 
-  <!ENTITY relCompaniesLbl "&lblRight;">
-  <!ENTITY relCompaniesInp "&inpLeft;  width: 400px;">
-  
-  <!ENTITY relPersonsLbl "&lblRight;">
-  <!ENTITY relPersonsInp "&inpLeft; width: 400px;">
-  
-  <!ENTITY relAppoitmentsLbl "&lblRight;">
-  <!ENTITY relAppoitmentsInp "&inpLeft; width: 400px;">
-  
-  <!ENTITY relTasksLbl "&lblRight;">
-  <!ENTITY relTasksInp "&inpLeft; width: 400px;">
-  
-  <!ENTITY relDocumentsLbl "&lblRight;">
-  <!ENTITY relDocumentsInp "&inpLeft; width: 400px;">
-  <!ENTITY separator "<hr/>">
+  <!ENTITY descriptionInp "&inpLeft;  min-height: 1.5em; max-height: 9em; overflow: auto;">
+
   <!ENTITY header "font-size: 20px;">
-  <!ENTITY lbl1 "&inline; max-width: 128px; min-width: 110px; text-align: right; padding-right: 18px; min-height: 20px; max-height: 20px; padding-top: 1px;">
-  <!ENTITY inp2x "&inline; width: 540px;">
+  <!ENTITY lbl1 "&inline; max-width: 128px; min-width: 110px; text-align: right; padding-right: 18px; min-height: 20px; max-height: 20px; padding-top: 1px;"> 
   <!ENTITY top1 "text-align: right; padding-right: 18px; max-width: 128px; padding-top: 1px;">
-  
+
 ]>
-<f:Form 
-  xmlns="http://www.butent.com/widget"
-  xmlns:f="http://www.butent.com/form"
-  xmlns:ui="http://www.butent.com/ui"
-   
-  name="Discussion" viewName="Discussions" caption="=discussion" favorite="Subject">
+<f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form"
+ xmlns:ui="http://www.butent.com/ui" name="Discussion" viewName="Discussions"
+ caption="=discussion" favorite="Subject">
 
-  <FlowPanel>
-    <FlowPanel class="flexBox-vertical">
-      <FlowPanel class="flexBox-horizontal">
-        <FlowPanel>
-          <Label for="Subject" text="=discussSubject" class="bee-required"
-            style="&subjectLbl;" />
-          <InputText source="Subject" style="&subjectInp;" />
-          <Label for="Created" text="=discussCreated" style="&createdLbl;" />
-          <InputDateTime source="Created" style="&createdInp;"
-            readOnly="true" />
-          <Label for="Status" text="=discussStatus" style="&statusLbl;" />
-          <ListBox source="Status" style="&statusInp; margin-right: 14px"
-            readOnly="true" />
-        </FlowPanel>
-      </FlowPanel>
+ <FlowPanel class="flexBox-vertical">
 
-      <FlowPanel data="DiscussMarkTypes" name="DiscussMarkTypes"
-        class="flexBox-horizontal bee-discuss-markTypes-container" />
-    </FlowPanel>
-    
-    <Disclosure open="true">
-      <Label text="=discussDescription" style="text-transform: uppercase;" />
+  <FlowPanel name="DiscussionTop" class="bee-disscuss-top"
+   style="float: right; min-height: 7ex;">
 
-      <FlowPanel>
-        <Label class="bee-InputArea bee-discuss-Description" name="Description"
-          style="&descriptionInp; width:80%; min-width: 640px; min-height: 390px" />
+   <Image name="OwnerPhoto"
+    style="max-height: 45px; max-width: 45px; cursor: default; float: left; 
+        margin-top: 17px; margin-left: 30px; border-radius: 50%;" />
 
-        <RichTextEditor class="bee-discuss-DescriptionEditor"
-          name="DescriptionEditor" source="Description"
-          style="&descriptionInp; width:80%; min-width: 640px; min-height: 390px" />
-      </FlowPanel>
+   <TextLabel renderColumns="OwnerFirstName OwnerLastName"
+    style="font-size: small; font-weight: bold; float: left;
+        margin-top: 2ex; margin-left: 5px; margin-right: 20px;" />
 
-    </Disclosure>
+   <FlowPanel data="DiscussMarkTypes" name="DiscussMarkTypes"
+    class="flexBox-horizontal bee-discuss-markTypes-container" style="margin-top: 1ex; text-align: left;" />
 
-    <Disclosure xmlns="http://www.butent.com/widget"
-      xmlns:xi="http://www.w3.org/2001/XInclude" open="false">
-      <Label data="Relations" text="=discussRelatedInformation"
-        style="text-transform: uppercase;" />
+   <FlowPanel style="float:right; margin-right:50px; margin-top:20px;">
+    <Label text="=status" style="font-size: 11px; color: #C0C0C0; float: left;" />
+    <TextLabel source="Status"
+     style="font-size: 11px; color: #C0C0C0; float: right; padding: 1px 5px;" />
+   </FlowPanel>
 
-      <FlowPanel class="flexBox-vertical" style="&discussDataPanel;">
-        <FlowPanel>
-          <Label for="Owner" text="=discussOwner" style="&ownerLbl;" />
-          <DataSelector source="Owner" editSource="OwnerPerson"
-            style="&ownerInp;" readOnly="true" />
-          <CheckBox for="Accessibility" data="Users" name="Accessibility"
-            source="Accessibility" text="=discussPublic" disablable="false" />
-        </FlowPanel>
-        <FlowPanel data="Users">
-          <Label name="membersLabel" text="=discussMembers" style="&membersLbl;" />
-          <MultiSelector viewName="Users" property="Members"
-            renderColumns="FirstName LastName" editSource="CompanyPerson"
-            style="&membersInp;" label="=discussMembers" disablable="false" />
-        </FlowPanel>
+   <FlowPanel style="float:right; margin-right:50px; margin-top:20px;">
+    <Label for="Created" text="=discussCommentPublished"
+     style="font-size: 11px; color: #C0C0C0; float: left;" />
+    <InputDateTime source="Created"
+     style="font-size: 11px; color: #C0C0C0; float: right; border: 0px solid; background-color: transparent; width: 110px; line-height:0px; padding: 1px 5px;" />
+   </FlowPanel>
 
-        <FlowPanel data="Relations" for="Company" module="Classifiers.Contacts">
-          <Label text="=companies" style="&relCompaniesLbl;" />
-          <MultiSelector viewName="Companies" property="Companies"
-            choiceColumns="Name TypeName" renderColumns="Name TypeName"
-            style="&relCompaniesInp;" />
-        </FlowPanel>
-
-        <FlowPanel data="Relations" for="Person" module="Classifiers.Contacts">
-          <Label text="=persons" style="&relPersonsLbl;" />
-          <MultiSelector viewName="Persons" property="Persons"
-            renderColumns="FirstName LastName" style="&relPersonsInp;" />
-        </FlowPanel>
-
-        <FlowPanel data="Relations" for="Person" module="Classifiers.Contacts">
-          <Label text="=calAppointments" style="&relAppoitmentsLbl;" />
-          <MultiSelector viewName="Appointments" property="Appointments"
-            renderColumns="Summary" choiceColumns="Summary StartDateTime EndDateTime"
-            newRowEnabled="false" style="&relAppoitmentsInp;" />
-        </FlowPanel>
-
-        <FlowPanel data="Relations" for="Task" module="Tasks">
-          <Label text="=crmTasks" style="&relTasksLbl;" />
-          <MultiSelector viewName="Tasks" property="Tasks"
-            renderColumns="Id Summary ExecutorFirstName ExecutorLastName"
-            choiceColumns="Id Summary ExecutorFirstName ExecutorLastName StartTime FinishTime"
-            newRowEnabled="false" style="&relTasksInp;" />
-        </FlowPanel>
-
-        <FlowPanel data="Relations" for="Document" module="Documents">
-          <Label text="=documents" style="&relDocumentsLbl;" />
-          <MultiSelector viewName="Documents" property="Documents"
-            renderColumns="Name DocumentDate Number" choiceColumns="Name Number RegistrationNumber DocumentDate"
-            newRowEnabled="false" style="&relDocumentsInp;" />
-        </FlowPanel>
-
-        <FileGroup data="DiscussionsFiles" name="Files" />
-           &separator;
-        <FlowPanel for="Topic" class="flexBox-horizontal">
-          <Label text="=announcement" style="&header;" />
-        </FlowPanel>
-
-        <FlowPanel for="Topic" class="flexBox-horizontal">
-          <Label text="=adTopic" style="&lbl1; min-width:150px;" />
-          <DataSelector name="Topic" source="Topic"
-            style="&inp2x; width: 250px" choiceColumns="Name" filter="Visible" />
-        </FlowPanel>
-
-        <FlowPanel for="Topic" class="flexBox-horizontal">
-          <Label for="Topic" name="DisplayInBoard" text="=displayInBoard" style="&lbl1; min-width:150px;" />
-          <InputDateTime source="VisibleFrom" style="&inp2x; width: 120px; margin-right:10px" placeholder="=dateFromShort" />
-          <InputDateTime source="VisibleTo" style="&inp2x; width: 120px" placeholder="=dateToShort" />
-        </FlowPanel>
-
-        <FlowPanel style="margin-top:20px;" class="flexBox-horizontal">
-          <CheckBox name="Important" source="Important" text="=important"
-            style="&top1; min-width:70px; padding-right:40px; margin-left: 160px;" />
-          <CheckBox name="PermitComment" text="=prohibitComment" style="min-width: 135px;" />
-        </FlowPanel>
-      </FlowPanel>
-    </Disclosure>
-
-    <FlowPanel data="DiscussionsComments" name="DiscussionsComments" class="flexible bee-discuss-comment-container" />
   </FlowPanel>
+
+  <TextLabel source="Subject"
+   style="font-size: 18px; margin-left: 60px; margin-bottom: 20px; margin-top: 20px;" />
+
+  <FlowPanel style="float: right;">
+
+   <TextLabel source="Summary"
+    style="font-size: 12px; margin-left: 60px; margin-bottom: 30px; width: 730px; float:left;" />
+
+   <FaLabel name="replyFa" disablable="false" char="reply"
+    style="float: right; margin-right: 40px; color:#c5c5c5; font-size:50px;" />
+
+  </FlowPanel>
+
+  <FileGroup style="margin-left: 60px; margin-bottom: 30px;"
+   data="DiscussionsFiles" name="Files" />
+
+  <Disclosure open="false" name="DescriptionDisclosure">
+   <Label text="=discussDescription" style="text-transform: uppercase;" />
+
+   <FlowPanel>
+    <TextLabel name="Description" class="bee-InputArea bee-discuss-Description" source="Description"
+     style="&descriptionInp; width:80%; min-width: 640px; min-height: 390px" />
+   </FlowPanel>
+
+  </Disclosure>
+
+  <Disclosure xmlns="http://www.butent.com/widget" xmlns:xi="http://www.w3.org/2001/XInclude"
+   open="false" name="RelDisclosure">
+   <Label data="Relations" text="=discussRelatedInformation"
+    style="text-transform: uppercase;" />
+
+   <FlowPanel class="flexBox-vertical" style="&discussDataPanel;">
+    <FlowPanel data="Users">
+     <Label name="membersLabel" text="=discussMembers" style="&lblRight;" />
+     <MultiSelector viewName="Users" property="Members" newRowEnabled="false"
+      renderColumns="FirstName LastName" editSource="CompanyPerson"
+      style="&inpLeft400p;" label="=discussMembers" disablable="false" />
+     <CheckBox for="Accessibility" data="Users" name="Accessibility"
+      source="Accessibility" text="=discussPublic" disablable="false" />
+    </FlowPanel>
+
+    <FlowPanel data="Relations">
+     <Relations name="Relations" relColumn="Discussion" inline="true"
+      disablable="false" defaultRelations="Documents Discussions"
+      style="&inpLeft; width: 500px;"  />
+    </FlowPanel>
+
+    <FlowPanel for="Topic" class="flexBox-horizontal">
+     <Label text="=announcement" style="&header;" />
+    </FlowPanel>
+
+    <FlowPanel for="Topic" style="margin-top: 4px;" class="flexBox-horizontal">
+     <Label for="Topic" text="=adTopic" style="&lbl1; min-width:150px;" />
+     <DataSelector name="Topic" source="Topic" disablable="false"
+      style="&inlineInp540p; width: 250px" choiceColumns="Name" filter="Visible" />
+    </FlowPanel>
+
+    <FlowPanel for="Topic" style="margin-top: 4px;" class="flexBox-horizontal">
+     <Label for="Topic" name="DisplayInBoard" text="=displayInBoard"
+      style="&lbl1; min-width:150px;" />
+     <InputDateTime source="VisibleFrom"
+      style="&inlineInp540p; width: 120px; margin-right:10px"
+      placeholder="=dateFromShort" disablable="false" />
+     <InputDateTime source="VisibleTo" style="&inlineInp540p; width: 120px"
+      placeholder="=dateToShort" disablable="false" />
+    </FlowPanel>
+
+    <FlowPanel style="margin-top:20px; margin-bottom: 20px;"
+     class="flexBox-horizontal">
+     <CheckBox name="Important" source="Important" text="=important"
+      style="&top1; min-width:70px; padding-right:40px; margin-left: 160px;"
+      disablable="false" />
+     <CheckBox name="PermitComment" text="=prohibitComment"
+      style="min-width: 135px;" disablable="false" />
+    </FlowPanel>
+   </FlowPanel>
+  </Disclosure>
+  <FlowPanel style="background-color:#E3E3E3; min-height: 5px; max-height: 5px" />
+  <FlowPanel data="DiscussionsComments" name="DiscussionsComments"
+   class="flexible bee-discuss-comment-container" />
+
+ </FlowPanel>
+  <f:rowMessage>
+    <ui:function>return "&lt;span style&#61;\"font-size:23px; color: #484849; font-weight: lighter;\"&gt;" + row.Subject + "&lt;&#47;span&gt;";</ui:function>
+  </f:rowMessage>
 </f:Form>

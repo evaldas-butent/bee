@@ -61,7 +61,7 @@
     </xs:complexContent>
   </xs:complexType>
 
-  <xs:element name="widget" type="widgetBase" abstract="true" />
+  <xs:element name="widget" type="widgetBase" abstract="false" />
 
   <xs:element name="decorator">
     <xs:complexType>

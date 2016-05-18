@@ -338,6 +338,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   private Evaluator rowValidation;
 
   private final Notification notification = new Notification();
+  private Evaluator rowMessage;
 
   private boolean enabled = true;
 
@@ -519,7 +520,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
       if (event != null) {
         event.cancel();
       }
-      return checkForUpdate(false);
+      return checkForUpdate(true);
     }
   }
 
@@ -531,7 +532,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
       if (event != null) {
         event.cancel();
       }
-      return checkForUpdate(false);
+      return checkForUpdate(true);
     }
   }
 
@@ -566,6 +567,11 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
       calc = formDescription.getRowValidation();
       if (calc != null) {
         setRowValidation(Evaluator.create(calc, null, dataCols));
+      }
+
+      Calculation rmc = formDescription.getRowMessage();
+      if (rmc != null) {
+        setRowMessage(Evaluator.create(rmc, null, dataCols));
       }
     }
 
@@ -649,6 +655,15 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
     }
 
     setAdding(false);
+  }
+
+  @Override
+  public void focus() {
+    if (BeeUtils.isEmpty(getTabOrder())) {
+      UiHelper.focus(asWidget());
+    } else {
+      UiHelper.focus(getWidgetById(getTabOrder().get(0).getWidgetId()));
+    }
   }
 
   @Override
@@ -1009,6 +1024,11 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   @Override
   public boolean hasNotifications() {
     return getNotification() != null && getNotification().isActive();
+  }
+
+  @Override
+  public boolean isAdding() {
+    return adding;
   }
 
   @Override
@@ -1529,6 +1549,11 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   }
 
   @Override
+  public void setAdding(boolean adding) {
+    this.adding = adding;
+  }
+
+  @Override
   public void setCaption(String caption) {
     this.caption = caption;
   }
@@ -1571,6 +1596,11 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
     if (getDimensions() != null) {
       getDimensions().setHeightValue(heightValue);
     }
+  }
+
+  @Override
+  public void setOldRow(IsRow oldRow) {
+    this.oldRow = oldRow;
   }
 
   @Override
@@ -1959,6 +1989,10 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
     return rowEditable;
   }
 
+  private Evaluator getRowMessage() {
+    return rowMessage;
+  }
+
   private Evaluator getRowValidation() {
     return rowValidation;
   }
@@ -1977,10 +2011,6 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
 
   private boolean hasReadyDelegates() {
     return hasReadyDelegates;
-  }
-
-  private boolean isAdding() {
-    return adding;
   }
 
   private boolean isChildEditing() {
@@ -2178,11 +2208,14 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
       getFormInterceptor().afterRefresh(this, getActiveRow());
     }
 
-    if (showRowId() && getViewPresenter() != null) {
-      long rowId = (getActiveRow() == null) ? BeeConst.UNDEF : getActiveRow().getId();
-      String message = DataUtils.isId(rowId) ? BeeUtils.bracket(rowId) : BeeConst.STRING_EMPTY;
+    if (getViewPresenter() != null && getViewPresenter().getHeader() != null) {
+      if (showRowId()) {
+        getViewPresenter().getHeader().showRowId(getActiveRow());
+      }
 
-      getViewPresenter().getHeader().setMessage(message);
+      if (getRowMessage() != null) {
+        getViewPresenter().getHeader().showRowMessage(getRowMessage(), getActiveRow());
+      }
     }
   }
 
@@ -2196,10 +2229,6 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
     }
     setOldRow((activeRow == null) ? null : DataUtils.cloneRow(activeRow));
     this.activeRow = activeRow;
-  }
-
-  private void setAdding(boolean adding) {
-    this.adding = adding;
   }
 
   private void setDataColumns(List<BeeColumn> dataColumns) {
@@ -2228,10 +2257,6 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
 
   private void setHasReadyDelegates(boolean hasReadyDelegates) {
     this.hasReadyDelegates = hasReadyDelegates;
-  }
-
-  private void setOldRow(IsRow oldRow) {
-    this.oldRow = oldRow;
   }
 
   private void setOptions(String options) {
@@ -2272,6 +2297,10 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
 
   private void setRowJso(JavaScriptObject rowJso) {
     this.rowJso = rowJso;
+  }
+
+  private void setRowMessage(Evaluator rowMessage) {
+    this.rowMessage = rowMessage;
   }
 
   private void setRowValidation(Evaluator rowValidation) {

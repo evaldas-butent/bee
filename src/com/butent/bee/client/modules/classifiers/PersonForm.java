@@ -152,25 +152,25 @@ class PersonForm extends AbstractFormInterceptor {
               RowFactory.createRow(dataInfo.getNewRowForm(),
                   Localized.dictionary().newPersonCompany(), dataInfo, newRow, Modality.ENABLED,
                   null, new AbstractFormInterceptor() {
-                @Override
-                public boolean beforeCreateWidget(String widgetName, Element description) {
-                  if (BeeUtils.startsWith(widgetName, COL_PERSON)) {
-                    return false;
-                  }
-                  return super.beforeCreateWidget(widgetName, description);
-                }
+                    @Override
+                    public boolean beforeCreateWidget(String widgetName, Element description) {
+                      if (BeeUtils.startsWith(widgetName, COL_PERSON)) {
+                        return false;
+                      }
+                      return super.beforeCreateWidget(widgetName, description);
+                    }
 
-                @Override
-                public FormInterceptor getInstance() {
-                  return null;
-                }
-              },
+                    @Override
+                    public FormInterceptor getInstance() {
+                      return null;
+                    }
+                  }, null,
                   new RowCallback() {
-                @Override
-                public void onSuccess(BeeRow result) {
-                  Data.onViewChange(viewName, DataChangeEvent.RESET_REFRESH);
-                }
-              });
+                    @Override
+                    public void onSuccess(BeeRow result) {
+                      Data.onViewChange(viewName, DataChangeEvent.RESET_REFRESH);
+                    }
+                  });
             }
           });
           return false;
@@ -351,19 +351,19 @@ class PersonForm extends AbstractFormInterceptor {
         Queries.update(VIEW_PERSONS, rowId, COL_PHOTO, Value.getValue(fileId),
             new IntCallback() {
 
-          @Override
-          public void onSuccess(Integer result) {
-            DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_PERSONS);
-            UserData userData = BeeKeeper.getUser().getUserData();
+              @Override
+              public void onSuccess(Integer result) {
+                DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_PERSONS);
+                UserData userData = BeeKeeper.getUser().getUserData();
 
-            if (Objects.equals(userData.getPerson(), rowId)) {
-              userData.setPhotoFile(fileId);
-              BeeKeeper.getScreen().updateUserData(userData);
-            }
+                if (Objects.equals(userData.getPerson(), rowId)) {
+                  userData.setPhotoFile(fileId);
+                  BeeKeeper.getScreen().updateUserData(userData);
+                }
 
-            getUploadQueue().remove(rowId);
-          }
-        });
+                getUploadQueue().remove(rowId);
+              }
+            });
 
       }
     });

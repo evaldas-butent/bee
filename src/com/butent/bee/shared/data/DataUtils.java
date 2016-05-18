@@ -73,6 +73,16 @@ public final class DataUtils {
 
   private static int maxInitialRowSetSize = 50;
 
+  public static void addNotNullLongs(Set<Long> target, BeeRowSet rowSet, String columnId) {
+    Assert.notNull(target);
+    Assert.notNull(rowSet);
+
+    int index = rowSet.getColumnIndex(columnId);
+    if (!BeeConst.isUndef(index) && !rowSet.isEmpty()) {
+      BeeUtils.addAllNotNull(target, rowSet.getDistinctLongs(index));
+    }
+  }
+
   public static long assertId(Long id) {
     Assert.isTrue(isId(id), "invalid row id");
     return id;
@@ -213,6 +223,42 @@ public final class DataUtils {
     BeeRowSet rs = new BeeRowSet(viewName, newColumns);
     rs.addRow(newRow);
     return rs;
+  }
+
+  public static BeeRowSet createRowSetForInsert(BeeRowSet input) {
+    if (input == null) {
+      return null;
+    }
+
+    List<BeeColumn> newColumns = new ArrayList<>();
+    List<Integer> indexes = new ArrayList<>();
+
+    for (int i = 0; i < input.getNumberOfColumns(); i++) {
+      BeeColumn column = input.getColumn(i);
+
+      if (column.isEditable()) {
+        newColumns.add(column);
+        indexes.add(i);
+      }
+    }
+
+    if (newColumns.isEmpty()) {
+      return null;
+    }
+
+    BeeRowSet result = new BeeRowSet(input.getViewName(), newColumns);
+
+    for (BeeRow oldRow : input) {
+      List<String> values = new ArrayList<>();
+      for (int index : indexes) {
+        values.add(oldRow.getString(index));
+      }
+
+      BeeRow newRow = new BeeRow(DataUtils.NEW_ROW_ID, DataUtils.NEW_ROW_VERSION, values);
+      result.addRow(newRow);
+    }
+
+    return result;
   }
 
   public static String defaultColumnId(int index) {

@@ -127,8 +127,12 @@ public enum SupportedLocale implements HasCaption {
     return BeeUtils.nvl(getByLanguage(language), USER_DEFAULT);
   }
 
-  public String getDictionaryColumnName() {
-    return getLanguage().toUpperCase();
+  public String getDictionaryCustomColumnName() {
+    return "Custom" + getLanguage().toUpperCase();
+  }
+
+  public String getDictionaryDefaultColumnName() {
+    return "Default" + getLanguage().toUpperCase();
   }
 
   public String getDictionaryFileName() {

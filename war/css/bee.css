@@ -14,6 +14,10 @@
   to {-webkit-transform: rotate(360deg);}
 }
 
+@keyframes blinker {
+  50% { opacity: 0.0; }
+}
+
 .bee-Body {
   font-family: "Open Sans", sans-serif;
   font-size: small;
@@ -109,6 +113,12 @@
   -ms-flex-align: center;
 }
 
+.flexBox-vertical > hr,
+.flexBox-vertical-center > hr {
+  margin-left: 0;
+  margin-right: 0;
+}
+
 .flexible,
 .bee-TreeView-tree,
 .bee-TabbedPages-contentPanel,
@@ -181,6 +191,19 @@
   display: flex;
   display: -webkit-flex;
   display: -ms-flexbox;
+}
+
+.bee-MainCommandPanel-disconnected:after {
+  font-family: FontAwesome;
+  content: "\00F127";
+  font-size: 17px;
+  color: red;
+  animation: blinker 0.5s linear infinite;
+}
+
+.bee-Relations-newRel {
+  font-size: 16px;
+  color: #63a140;
 }
 
 .bee-UserContainer {
@@ -419,11 +442,25 @@
 }
 
 .bee-Header-caption {
-  color: #414142;
+  color: black;
   margin-left: 30px;
 }
 .bee-Header-message {
-  padding-left: 8px;
+  margin-left: 8px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.bee-Header-row-id {
+  padding-bottom: 2px;
+  align-self: flex-end;
+  -webkit-align-self: flex-end;
+  -ms-flex-item-align: end;
+}
+.bee-Header-row-message {
+  flex: 1;
+  -webkit-flex: 1;
+  -ms-flex: 1;
 }
 
 .bee-Header-commandPanel {
@@ -923,7 +960,7 @@
 }
 
 .bee-InputCommand {
-  width: 80px;
+  min-width: 80px;
 }
 
 .bee-InputCancel {
@@ -1496,8 +1533,9 @@
 .bee-MultiSelector-close {
   position: absolute;
   right: 3px;
-  top: -3px;
+  top: 2px;
   font-size: 15px;
+  line-height: 15px;
 }
 .bee-MultiSelector-close:hover {
   color: red;
@@ -1941,7 +1979,7 @@
   cursor: pointer;
 }
 .bee-Filters-initial-checked {
-  background-color: #1EB2D8;
+  background-color: #1eb2d8;
 }
 
 .bee-Filters-label {
@@ -2983,8 +3021,19 @@
   background-color: #f2f2f2;
   cursor: pointer;
 }
+.bee-GridMenu-table .bee-GridMenu-section-header:hover {
+  cursor: auto;
+}
+.bee-GridMenu-table .bee-GridMenu-separator-cell:hover {
+  background-color: white;
+  cursor: auto;
+}
 .bee-GridMenu-table td {
   padding: 4px 10px;
+}
+.bee-GridMenu-table .bee-GridMenu-separator-cell {
+  padding-left: 0;
+  padding-right: 0;
 }
 .bee-GridMenu-popup .bee-fa-label {
   font-size: large;
@@ -2995,6 +3044,13 @@
 }
 .bee-GridMenu-label-cell:hover {
   font-weight: bold;
+}
+.bee-GridMenu-section-header .bee-GridMenu-label-cell:hover {
+  font-weight: normal;
+}
+.bee-GridMenu-separator {
+  height: 1px;
+  background-color: #ccc;
 }
 
 .bee-CellGridColumn-rights {
@@ -3654,7 +3710,8 @@ textarea,
 }
 
 .bee-MenuRoot .bee-potentially-bold::after,
-.bee-TabbedPages-tab .bee-potentially-bold::after {
+.bee-TabbedPages-tab .bee-potentially-bold::after,
+.bee-GridMenu-table .bee-potentially-bold::after {
   content: attr(data-text);
   font-weight: bold;
   display: block;
@@ -3701,4 +3758,42 @@ textarea,
 }
 .bee-PresenceChangeIcon {
   font-size: large;
+}
+
+.bee-ExportController-panel {
+  border-collapse: collapse;
+}
+.bee-ExportController-panel > tbody > tr > td {
+  padding: 5px 1em;
+}
+
+.bee-ExportController-clock-cell {
+  text-align: right;
+}
+.bee-ExportController-label {
+  text-align: center;
+  font-size: larger;
+}
+.bee-ExportController-panel .bee-Thermometer-label {
+  display: inline-block;
+  min-width: 10em;
+}
+.bee-ExportController-cancel-cell {
+  text-align: right;
+}
+.bee-ExportController-cancel {
+  margin-top: 1em;
+}
+.bee-ExportController-link-label {
+  padding-right: 1em;
+}
+
+.bee-ExportController-thermometer-disabled {
+  display: none;
+}
+.bee-ExportController-completed .bee-ExportController-label,
+.bee-ExportController-completed .bee-Thermometer-container,
+.bee-ExportController-submitting .bee-ExportController-cancel,
+.bee-ExportController-completed .bee-ExportController-cancel {
+  display: none;
 }

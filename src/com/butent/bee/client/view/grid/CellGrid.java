@@ -1635,10 +1635,12 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     }
     doFlexLayout();
 
+    onActivateCell(false);
     this.activeRowIndex = nr;
     if (getActiveColumnIndex() < 0) {
       this.activeColumnIndex = 0;
     }
+
     render(focus);
   }
 

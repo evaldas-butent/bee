@@ -11,11 +11,11 @@
     <SimpleColumn name="Ordinal" />
     <SimpleColumn name="Description" />
 
-    <SimpleColumn name="StatusOrder" />
-    <SimpleColumn name="StatusPending" />
-    <SimpleColumn name="StatusActive" />
-    <SimpleColumn name="StatusCompleted" />
-    <SimpleColumn name="StatusApproved" />
+    <SimpleColumn name="PhaseOrder" />
+    <SimpleColumn name="PhasePending" />
+    <SimpleColumn name="PhaseActive" />
+    <SimpleColumn name="PhaseCompleted" />
+    <SimpleColumn name="PhaseApproved" />
   </Columns>
 
   <Order>

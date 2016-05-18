@@ -13,10 +13,10 @@
 
     <DataColumn name="Description" minWidth="150" />
 
-    <DataColumn name="StatusOrder" visible="false" />
-    <DataColumn name="StatusPending" visible="false" />
-    <DataColumn name="StatusActive" visible="false" />
-    <DataColumn name="StatusCompleted" visible="false" />
-    <DataColumn name="StatusApproved" visible="false" />
+    <DataColumn name="PhaseOrder" visible="false" />
+    <DataColumn name="PhasePending" visible="false" />
+    <DataColumn name="PhaseActive" visible="false" />
+    <DataColumn name="PhaseCompleted" visible="false" />
+    <DataColumn name="PhaseApproved" visible="false" />
   </g:columns>
 </g:Grid>

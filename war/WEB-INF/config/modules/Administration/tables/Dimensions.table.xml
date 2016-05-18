@@ -8,5 +8,6 @@
     <Relation name="Department" relation="Departments" label="=department" />
     <Relation name="ActivityType" relation="ActivityTypes" label="=activityType" />
     <Relation name="CostCenter" relation="CostCenters" label="=costCenter" />
+    <Relation name="Object" relation="Locations" label="=object" />
   </Fields>
 </Table>

@@ -1,27 +1,30 @@
 package com.butent.bee.client.modules.payroll;
 
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Multimap;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.payroll.PayrollConstants.*;
 
 import com.butent.bee.client.composite.UnboundSelector;
+import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.dom.DomUtils;
-import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.modules.classifiers.ClassifierKeeper;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.IdPair;
 import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.payroll.PayrollConstants.ObjectStatus;
+import com.butent.bee.shared.modules.payroll.PayrollConstants.WorkScheduleKind;
 import com.butent.bee.shared.time.DateRange;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.YearMonth;
@@ -36,14 +39,15 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 class EmployeeSchedule extends WorkScheduleWidget {
 
   private final long employeeId;
 
-  EmployeeSchedule(long employeeId) {
-    super(ScheduleParent.EMPLOYEE);
+  EmployeeSchedule(long employeeId, WorkScheduleKind kind) {
+    super(kind, ScheduleParent.EMPLOYEE);
 
     this.employeeId = employeeId;
   }
@@ -71,53 +75,96 @@ class EmployeeSchedule extends WorkScheduleWidget {
   }
 
   @Override
-  protected List<BeeRow> filterPartitions(DateRange filterRange) {
-    List<BeeRow> result = new ArrayList<>();
+  protected List<Partition> filterPartitions(DateRange filterRange) {
+    List<Partition> result = new ArrayList<>();
 
     if (!DataUtils.isEmpty(getObData())) {
-      Set<Long> haveWs = new HashSet<>();
-      Set<Long> haveEmpl = new HashSet<>();
+      Set<Long> mainWs = new HashSet<>();
+      Set<Long> mainEo = new HashSet<>();
+
+      Multimap<Long, Long> substWs = HashMultimap.create();
+      Multimap<Long, Long> substEo = HashMultimap.create();
 
       if (!DataUtils.isEmpty(getWsData())) {
         int objectIndex = getWsData().getColumnIndex(COL_PAYROLL_OBJECT);
+        int substIndex = getWsData().getColumnIndex(COL_SUBSTITUTE_FOR);
+
         int dateIndex = getWsData().getColumnIndex(COL_WORK_SCHEDULE_DATE);
 
         for (BeeRow row : getWsData()) {
           if (filterRange.contains(row.getDate(dateIndex))) {
-            haveWs.add(row.getLong(objectIndex));
+            Long obj = row.getLong(objectIndex);
+
+            if (DataUtils.isId(obj)) {
+              Long subst = row.getLong(substIndex);
+
+              if (DataUtils.isId(subst) && !Objects.equals(obj, subst)) {
+                substWs.put(obj, subst);
+              } else {
+                mainWs.add(obj);
+              }
+            }
           }
         }
       }
 
       if (!DataUtils.isEmpty(getEoData())) {
         int objectIndex = getEoData().getColumnIndex(COL_PAYROLL_OBJECT);
+        int substIndex = getEoData().getColumnIndex(COL_SUBSTITUTE_FOR);
+
         int fromIndex = getEoData().getColumnIndex(COL_EMPLOYEE_OBJECT_FROM);
         int untilIndex = getEoData().getColumnIndex(COL_EMPLOYEE_OBJECT_UNTIL);
 
         for (BeeRow row : getEoData()) {
           DateRange range = DateRange.closed(row.getDate(fromIndex), row.getDate(untilIndex));
           if (filterRange.intersects(range)) {
-            haveEmpl.add(row.getLong(objectIndex));
+            Long obj = row.getLong(objectIndex);
+
+            if (DataUtils.isId(obj)) {
+              Long subst = row.getLong(substIndex);
+
+              if (DataUtils.isId(subst) && !Objects.equals(obj, subst)) {
+                if (isSubstitutionEnabled()) {
+                  substEo.put(obj, subst);
+                }
+              } else {
+                mainEo.add(obj);
+              }
+            }
           }
         }
       }
 
-      if (!haveWs.isEmpty() || !haveEmpl.isEmpty()) {
+      if (!mainWs.isEmpty() || !mainEo.isEmpty() || !substWs.isEmpty() || !substEo.isEmpty()) {
         int statusIndex = getObData().getColumnIndex(COL_LOCATION_STATUS);
 
         DateRange employeeRange = getEmployeeRange();
+        boolean intersects = employeeRange == null || filterRange.intersects(employeeRange);
 
         for (BeeRow row : getObData()) {
-          if (haveWs.contains(row.getId())) {
-            result.add(row);
+          long id = row.getId();
 
-          } else if (haveEmpl.contains(row.getId())) {
-            ObjectStatus status = EnumUtils.getEnumByIndex(ObjectStatus.class,
-                row.getInteger(statusIndex));
+          ObjectStatus status = EnumUtils.getEnumByIndex(ObjectStatus.class,
+              row.getInteger(statusIndex));
 
-            if (status == ObjectStatus.ACTIVE
-                && (employeeRange == null || filterRange.intersects(employeeRange))) {
-              result.add(row);
+          if (mainWs.contains(id)) {
+            result.add(new Partition(row));
+
+          } else if (intersects && status == ObjectStatus.ACTIVE && mainEo.contains(id)) {
+            result.add(new Partition(row));
+          }
+
+          if (substWs.containsKey(id)) {
+            for (Long subst : substWs.get(id)) {
+              result.add(new Partition(row, subst));
+            }
+          }
+
+          if (intersects && status == ObjectStatus.ACTIVE && substEo.containsKey(id)) {
+            for (Long subst : substEo.get(id)) {
+              if (!substWs.containsEntry(id, subst)) {
+                result.add(new Partition(row, subst));
+              }
             }
           }
         }
@@ -163,7 +210,7 @@ class EmployeeSchedule extends WorkScheduleWidget {
   }
 
   @Override
-  protected Filter getWorkScheduleFilter() {
+  protected Filter getWorkScheduleRelationFilter() {
     return Filter.equals(COL_EMPLOYEE, employeeId);
   }
 
@@ -186,7 +233,7 @@ class EmployeeSchedule extends WorkScheduleWidget {
   }
 
   @Override
-  protected Widget renderAppender(Collection<Long> partIds, YearMonth ym,
+  protected Widget renderAppender(Collection<IdPair> partIds, YearMonth ym,
       String selectorStyleName) {
 
     Flow panel = new Flow();
@@ -208,15 +255,19 @@ class EmployeeSchedule extends WorkScheduleWidget {
     DomUtils.setPlaceholder(selector, Localized.dictionary().newObject());
 
     if (!BeeUtils.isEmpty(partIds)) {
-      selector.getOracle().setExclusions(partIds);
+      Set<Long> ids = new HashSet<>();
+      for (IdPair pair : partIds) {
+        if (!pair.hasB()) {
+          ids.add(pair.getA());
+        }
+      }
+
+      selector.getOracle().setExclusions(ids);
     }
 
-    selector.addSelectorHandler(new SelectorEvent.Handler() {
-      @Override
-      public void onDataSelector(SelectorEvent event) {
-        if (event.isChanged() && DataUtils.hasId(event.getRelatedRow())) {
-          addEmployeeObject(employeeId, event.getRelatedRow().getId(), true);
-        }
+    selector.addSelectorHandler(event -> {
+      if (event.isChanged() && DataUtils.hasId(event.getRelatedRow())) {
+        addEmployeeObject(employeeId, event.getRelatedRow().getId(), true);
       }
     });
 
@@ -225,7 +276,7 @@ class EmployeeSchedule extends WorkScheduleWidget {
   }
 
   @Override
-  protected void updateCalendarInfo(YearMonth ym, BeeRow partition, CalendarInfo calendarInfo) {
+  protected void updateCalendarInfo(YearMonth ym, Partition partition, CalendarInfo calendarInfo) {
   }
 
   @Override
@@ -233,17 +284,26 @@ class EmployeeSchedule extends WorkScheduleWidget {
     Set<String> viewNames = new HashSet<>();
     Map<String, Filter> filters = new HashMap<>();
 
+    String employeeIdColumn = Data.getIdColumn(VIEW_EMPLOYEES);
+
+    Filter wsFilter = getWorkScheduleFilter();
+    Filter eoFilter = Filter.equals(COL_EMPLOYEE, employeeId);
+
     viewNames.add(VIEW_EMPLOYEES);
-    filters.put(VIEW_EMPLOYEES, Filter.compareId(employeeId));
+    filters.put(VIEW_EMPLOYEES,
+        Filter.or(Filter.compareId(employeeId),
+            Filter.in(employeeIdColumn, VIEW_WORK_SCHEDULE, COL_SUBSTITUTE_FOR, wsFilter),
+            Filter.in(employeeIdColumn, VIEW_EMPLOYEE_OBJECTS, COL_SUBSTITUTE_FOR, eoFilter)));
 
     viewNames.add(VIEW_WORK_SCHEDULE);
-    filters.put(VIEW_WORK_SCHEDULE, Filter.equals(COL_EMPLOYEE, employeeId));
+    filters.put(VIEW_WORK_SCHEDULE, wsFilter);
 
     viewNames.add(VIEW_EMPLOYEE_OBJECTS);
-    filters.put(VIEW_EMPLOYEE_OBJECTS, Filter.equals(COL_EMPLOYEE, employeeId));
+    filters.put(VIEW_EMPLOYEE_OBJECTS, eoFilter);
 
     viewNames.add(VIEW_TIME_CARD_CHANGES);
-    filters.put(VIEW_TIME_CARD_CHANGES, Filter.equals(COL_EMPLOYEE, employeeId));
+    filters.put(VIEW_TIME_CARD_CHANGES, Filter.and(Filter.equals(COL_EMPLOYEE, employeeId),
+        getTimeCardChangesFilter()));
 
     viewNames.add(VIEW_TIME_CARD_CODES);
     viewNames.add(VIEW_TIME_RANGES);
@@ -281,18 +341,9 @@ class EmployeeSchedule extends WorkScheduleWidget {
           }
         }
 
-        ClassifierKeeper.getHolidays(new Consumer<Set<Integer>>() {
-          @Override
-          public void accept(Set<Integer> input) {
-            setHolidays(input);
-
-            getObjects(new Runnable() {
-              @Override
-              public void run() {
-                render();
-              }
-            });
-          }
+        ClassifierKeeper.getHolidays(input -> {
+          setHolidays(input);
+          getObjects(() -> render());
         });
       }
     });

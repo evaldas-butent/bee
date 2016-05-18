@@ -24,6 +24,7 @@ import com.butent.bee.client.view.edit.EditableWidget;
 import com.butent.bee.client.view.edit.HasReadyForUpdateHandlers;
 import com.butent.bee.client.view.edit.HasSaveChangesHandlers;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasState;
 import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.data.BeeColumn;
@@ -63,6 +64,20 @@ public interface FormView extends DataView, HasDataTable, ActiveWidgetChangeEven
 
   void editRow(IsRow rowValue, Scheduler.ScheduledCommand focusCommand);
 
+  /**
+   * Focus the first widget on this form view. If there some widgets where handling keyboard events,
+   * the first widget usually is first element of DOM or having lower tab index.
+   * 
+   * 
+   */
+  void focus();
+
+  /**
+   * Focus the widget on this form view.
+   * 
+   * @param source name of source where related focusable widget.
+   * @return
+   */
   boolean focus(String source);
 
   int flush();
@@ -72,6 +87,10 @@ public interface FormView extends DataView, HasDataTable, ActiveWidgetChangeEven
   Collection<RowChildren> getChildrenForInsert();
 
   Collection<RowChildren> getChildrenForUpdate();
+
+  default String getContainerStyleName() {
+    return BeeConst.CSS_CLASS_PREFIX + "form-" + BeeUtils.trim(getFormName()) + "-container";
+  }
 
   DateTime getDateTimeValue(String source);
 
@@ -123,6 +142,8 @@ public interface FormView extends DataView, HasDataTable, ActiveWidgetChangeEven
 
   Widget getWidgetBySource(String source);
 
+  boolean isAdding();
+
   boolean isInteractive();
 
   boolean isRowEditable(IsRow rowValue, boolean warn);
@@ -143,7 +164,11 @@ public interface FormView extends DataView, HasDataTable, ActiveWidgetChangeEven
 
   void refreshChildWidgets(IsRow row);
 
+  void setAdding(boolean adding);
+
   void setCaption(String caption);
+
+  void setOldRow(IsRow oldRow);
 
   void start(Integer rowCount);
 

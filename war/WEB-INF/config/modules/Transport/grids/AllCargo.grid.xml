@@ -21,6 +21,13 @@
   <xi:include href="columns/Handling.columns.xml" />
 
   <g:columns>
+    <PropColumn name="Income" type="decimal" caption="=income" format="0.00">
+      <style>
+        <bodyStyle>
+          <ui:font>bold</ui:font>
+        </bodyStyle>
+      </style>
+    </PropColumn>
     <DataColumn name="Partial" caption="=partialShort" width="15" sortable="false" />
     <DataColumn name="Outsized" caption="=dangerousShort" width="15" sortable="false" />
     <DataColumn name="Number" caption="=cargoNumber" />

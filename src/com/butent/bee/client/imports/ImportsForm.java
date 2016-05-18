@@ -188,7 +188,7 @@ public class ImportsForm extends AbstractFormInterceptor implements ClickHandler
           } else {
             cap = type.getCaption();
           }
-          upload(new Callback<String>() {
+          upload(new Callback<Long>() {
             @Override
             public void onFailure(String... reason) {
               setImporting(false);
@@ -196,18 +196,15 @@ public class ImportsForm extends AbstractFormInterceptor implements ClickHandler
             }
 
             @Override
-            public void onSuccess(String fileName) {
+            public void onSuccess(Long fileId) {
               setImporting(true);
-              args.addDataItem(VAR_IMPORT_FILE, fileName);
+              args.addDataItem(VAR_IMPORT_FILE, fileId);
 
-              Endpoint.initProgress(cap, new Consumer<String>() {
-                @Override
-                public void accept(String progress) {
-                  if (!BeeUtils.isEmpty(progress)) {
-                    args.addDataItem(Service.VAR_PROGRESS, progress);
-                  }
-                  BeeKeeper.getRpc().makePostRequest(args, new ImportCallback(progress));
+              Endpoint.initProgress(cap, (progress) -> {
+                if (!BeeUtils.isEmpty(progress)) {
+                  args.addDataItem(Service.VAR_PROGRESS, progress);
                 }
+                BeeKeeper.getRpc().makePostRequest(args, new ImportCallback(progress));
               });
             }
           });
@@ -306,7 +303,7 @@ public class ImportsForm extends AbstractFormInterceptor implements ClickHandler
     }
   }
 
-  private static void upload(final Callback<String> fileCallback) {
+  private static void upload(final Callback<Long> fileCallback) {
     final Popup popup = new Popup(Popup.OutsideClick.CLOSE);
     final InputFile widget = new InputFile(false);
 
@@ -314,7 +311,7 @@ public class ImportsForm extends AbstractFormInterceptor implements ClickHandler
       @Override
       public void onChange(ChangeEvent event) {
         popup.close();
-        FileUtils.uploadTempFile(BeeUtils.peek(FileUtils.getNewFileInfos(widget.getFiles())),
+        FileUtils.uploadFile(BeeUtils.peek(FileUtils.getNewFileInfos(widget.getFiles())),
             fileCallback);
       }
     });

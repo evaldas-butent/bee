@@ -8,6 +8,7 @@ import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
+import com.butent.bee.server.i18n.LocalizationBean;
 import com.butent.bee.server.i18n.Localizations;
 import com.butent.bee.server.modules.ModuleHolderBean;
 import com.butent.bee.server.modules.ParamHolderBean;
@@ -77,6 +78,8 @@ public class DispatcherBean {
   MailModuleBean mail;
   @EJB
   ChatBean chat;
+  @EJB
+  LocalizationBean loc;
 
   public void beforeLogout(RequestInfo reqInfo) {
     String workspace = reqInfo.getParameter(COL_LAST_WORKSPACE);
@@ -141,6 +144,9 @@ public class DispatcherBean {
 
     } else if (Service.isSysService(svc)) {
       response = systemService.doService(svc, reqInfo);
+
+    } else if (Service.isL10nService(svc)) {
+      response = loc.doService(reqInfo);
 
     } else if (BeeUtils.same(svc, Service.INIT)) {
       response = doInit(reqInfo);

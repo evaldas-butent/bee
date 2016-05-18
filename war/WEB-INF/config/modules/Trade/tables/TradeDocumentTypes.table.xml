@@ -11,10 +11,10 @@
     <Integer name="Ordinal" label="=ordinal" />
     <Text name="Description" label="=description" />
     
-    <Boolean name="StatusOrder" label="=trdDocumentStatusOrder" />
-    <Boolean name="StatusPending" label="=trdDocumentStatusPending" />
-    <Boolean name="StatusActive" label="=trdDocumentStatusActive" />
-    <Boolean name="StatusCompleted" label="=trdDocumentStatusCompleted" />
-    <Boolean name="StatusApproved" label="=trdDocumentStatusApproved" />
+    <Boolean name="PhaseOrder" label="=trdDocumentPhaseOrder" />
+    <Boolean name="PhasePending" label="=trdDocumentPhasePending" />
+    <Boolean name="PhaseActive" label="=trdDocumentPhaseActive" />
+    <Boolean name="PhaseCompleted" label="=trdDocumentPhaseCompleted" />
+    <Boolean name="PhaseApproved" label="=trdDocumentPhaseApproved" />
   </Fields>
 </Table>

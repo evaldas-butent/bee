@@ -159,7 +159,7 @@ final class InvoiceBuilder {
         final InvoiceInterceptor interceptor = new InvoiceInterceptor();
 
         RowFactory.createRow("NewServiceInvoice", null, invInfo, invRow, Modality.ENABLED, null,
-            interceptor, new RowCallback() {
+            interceptor, null, new RowCallback() {
               @Override
               public void onSuccess(BeeRow result) {
                 ParameterList params = ServiceKeeper.createArgs(SVC_CREATE_INVOICE_ITEMS);

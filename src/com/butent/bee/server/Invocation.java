@@ -76,31 +76,27 @@ public class Invocation {
     String mode = reqInfo.getContent();
 
     if (BeeUtils.length(mode) >= 2) {
-      List<Property> lst = new ArrayList<>();
-
-      for (SupportedLocale supportedLocale : SupportedLocale.values()) {
-        PropertyUtils.addProperty(lst, supportedLocale.name(),
-            BeeUtils.size(Localizations.getGlossary(supportedLocale)));
-      }
+      List<ExtendedProperty> lst = new ArrayList<>();
 
       for (String key : BeeUtils.split(mode, BeeConst.CHAR_SPACE)) {
         for (SupportedLocale supportedLocale : SupportedLocale.values()) {
           Map<String, String> glossary = Localizations.getGlossary(supportedLocale);
 
-          if (glossary != null && glossary.containsKey(key)) {
-            String value = glossary.get(key);
-            PropertyUtils.addProperty(lst, BeeUtils.joinWords(key, supportedLocale), value);
-          }
+          String value = BeeUtils.getQuietly(glossary, key);
+          lst.add(new ExtendedProperty(key, supportedLocale.name(), value));
         }
       }
 
-      return ResponseObject.collection(lst, Property.class);
+      return ResponseObject.collection(lst, ExtendedProperty.class);
+
+    } else if (BeeUtils.containsSame(mode, "i")) {
+      return ResponseObject.collection(I18nUtils.getInfo(), Property.class);
 
     } else if (BeeUtils.containsSame(mode, "x")) {
       return ResponseObject.collection(I18nUtils.getExtendedInfo(), ExtendedProperty.class);
 
     } else {
-      return ResponseObject.collection(I18nUtils.getInfo(), Property.class);
+      return ResponseObject.collection(Localizations.getInfo(), Property.class);
     }
   }
 

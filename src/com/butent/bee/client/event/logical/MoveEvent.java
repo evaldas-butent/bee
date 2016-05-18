@@ -10,6 +10,7 @@ import com.butent.bee.shared.Assert;
 
 public final class MoveEvent extends GwtEvent<MoveEvent.Handler> {
 
+  @FunctionalInterface
   public interface Handler extends EventHandler {
     void onMove(MoveEvent event);
   }

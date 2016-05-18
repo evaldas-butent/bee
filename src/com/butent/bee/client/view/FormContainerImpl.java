@@ -154,6 +154,8 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
       footer = null;
     }
 
+    addStyleName(content.getContainerStyleName());
+
     addNorth(header, header.getHeight());
     setHeaderId(header.getWidgetId());
 
@@ -320,14 +322,12 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
 
   @Override
   public void onActiveRowChange(ActiveRowChangeEvent event) {
-    if (event == null || event.getRowValue() == null || getRowMessage() == null) {
-      return;
-    }
-    getRowMessage().update(event.getRowValue());
-    String message = getRowMessage().evaluate();
+    if (getRowMessage() != null && event != null) {
+      HeaderView header = getHeader();
 
-    if (!BeeUtils.isEmpty(message)) {
-      getHeader().setMessage(message);
+      if (header != null) {
+        header.showRowMessage(getRowMessage(), event.getRowValue());
+      }
     }
   }
 

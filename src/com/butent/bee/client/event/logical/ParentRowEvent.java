@@ -11,6 +11,7 @@ import com.butent.bee.shared.data.IsRow;
 
 public class ParentRowEvent extends Event<ParentRowEvent.Handler> implements HasViewName {
 
+  @FunctionalInterface
   public interface Handler extends EventHandler {
     void onParentRow(ParentRowEvent event);
   }

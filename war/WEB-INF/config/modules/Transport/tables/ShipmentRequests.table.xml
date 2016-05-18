@@ -3,7 +3,7 @@
 
        name="ShipmentRequests"
        idName="ShipmentRequestID"
-    >
+>
   <Fields>
     <DateTime name="Date" notNull="true" defExpr="CURRENT_TIME" label="=trRequestDate" />
     <Enum name="Status" key="ShipmentRequestStatus" notNull="true" defValue="0"
@@ -19,6 +19,7 @@
 
     <Relation name="Expedition" relation="ExpeditionTypes" notNull="true"
               label="=trRequestExpeditionType" />
+    <Relation name="ShippingTerm" relation="ShippingTerms" label="=cargoTermsOfService" />
 
     <Relation name="Cargo" relation="OrderCargo" unique="true" editable="true" label="=cargo" />
 

@@ -8,6 +8,7 @@ import com.butent.bee.server.io.Filter;
 import com.butent.bee.server.io.WildcardFilter;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Service;
 import com.butent.bee.shared.io.FileNameUtils;
 import com.butent.bee.shared.io.FileNameUtils.Component;
 import com.butent.bee.shared.io.Paths;
@@ -108,6 +109,10 @@ public final class Config {
 
   public static List<File> getDefaultSearchDirectories() {
     return Lists.newArrayList(LOCAL_DIR, CONFIG_DIR, SCHEMA_DIR, WAR_DIR, SOURCE_DIR);
+  }
+
+  public static int getDefaultSessionTimeout() {
+    return BeeUtils.positive(BeeUtils.toInt(getProperty(Service.PROPERTY_IDLE_TIMEOUT)), 60);
   }
 
   public static List<File> getDirectories(String pfx) {

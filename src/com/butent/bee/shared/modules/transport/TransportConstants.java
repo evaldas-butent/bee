@@ -1,10 +1,14 @@
 package com.butent.bee.shared.modules.transport;
 
+import com.google.common.collect.Lists;
+
 import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.ui.HasLocalizedCaption;
 import com.butent.bee.shared.utils.EnumUtils;
+
+import java.util.List;
 
 public final class TransportConstants {
 
@@ -248,6 +252,13 @@ public final class TransportConstants {
       public String getCaption(Dictionary constants) {
         return constants.trConstantCosts();
       }
+    },
+
+    ECONOMY_BONUS {
+      @Override
+      public String getCaption(Dictionary constants) {
+        return constants.trEconomyBonus();
+      }
     };
   }
 
@@ -294,7 +305,6 @@ public final class TransportConstants {
 
   public static final String SVC_GET_BEFORE = "GetBeforeData";
   public static final String SVC_GET_UNASSIGNED_CARGOS = "GetUnassignedCargos";
-  public static final String SVC_GET_PROFIT = "GetProfit";
   public static final String SVC_GET_ROUTE = "GetTripRoute";
   public static final String SVC_GENERATE_ROUTE = "GenerateTripRoute";
   public static final String SVC_GENERATE_DAILY_COSTS = "GenerateDailyCosts";
@@ -318,6 +328,7 @@ public final class TransportConstants {
   public static final String SVC_SEND_MESSAGE = "SendMessage";
 
   public static final String SVC_TRIP_PROFIT_REPORT = "TripProfitReport";
+  public static final String SVC_FUEL_USAGE_REPORT = "FuelUsageReport";
 
   public static final String PRM_MESSAGE_TEMPLATE = "MessageTemplate";
   public static final String PRM_TRIP_PREFIX = "DefaultTripPrefix";
@@ -563,6 +574,7 @@ public final class TransportConstants {
   public static final String COL_ROUTE_KILOMETERS = "Kilometers";
   public static final String COL_ROUTE_WEIGHT = "CargoWeight";
   public static final String COL_ROUTE_SEASON = "Season";
+  public static final String COL_ROUTE_CONSUMPTION = "Consumption";
 
   public static final String COL_LOADED_KILOMETERS = "LoadedKilometers";
   public static final String COL_EMPTY_KILOMETERS = "EmptyKilometers";
@@ -645,6 +657,13 @@ public final class TransportConstants {
   public static final String COL_FX_STRIP_OPACITY = "FxStripOpacity";
 
   public static final String COL_FX_FILTER_DATA_TYPES = "FxFilterDataTypes";
+  public static final String COL_FX_FILTERS = "FxFilters";
+
+  public static final String COL_SS_MIN_DATE = "SsMinDate";
+  public static final String COL_SS_MAX_DATE = "SsMaxDate";
+
+  public static final String COL_SS_TRANSPORT_GROUPS = "SsTransportGroups";
+  public static final String COL_SS_COMPLETED_TRIPS = "SsCompletedTrips";
 
   public static final String COL_SS_PIXELS_PER_TRUCK = "SsPixelsPerTruck";
   public static final String COL_SS_PIXELS_PER_TRIP = "SsPixelsPerTrip";
@@ -671,6 +690,13 @@ public final class TransportConstants {
   public static final String COL_SS_STRIP_OPACITY = "SsStripOpacity";
 
   public static final String COL_SS_FILTER_DATA_TYPES = "SsFilterDataTypes";
+  public static final String COL_SS_FILTERS = "SsFilters";
+
+  public static final String COL_DTB_MIN_DATE = "DtbMinDate";
+  public static final String COL_DTB_MAX_DATE = "DtbMaxDate";
+
+  public static final String COL_DTB_TRANSPORT_GROUPS = "DtbTransportGroups";
+  public static final String COL_DTB_COMPLETED_TRIPS = "DtbCompletedTrips";
 
   public static final String COL_DTB_PIXELS_PER_DRIVER = "DtbPixelsPerDriver";
 
@@ -694,6 +720,13 @@ public final class TransportConstants {
   public static final String COL_DTB_STRIP_OPACITY = "DtbStripOpacity";
 
   public static final String COL_DTB_FILTER_DATA_TYPES = "DtbFilterDataTypes";
+  public static final String COL_DTB_FILTERS = "DtbFilters";
+
+  public static final String COL_TRUCK_MIN_DATE = "TruckMinDate";
+  public static final String COL_TRUCK_MAX_DATE = "TruckMaxDate";
+
+  public static final String COL_TRUCK_TRANSPORT_GROUPS = "TruckTransportGroups";
+  public static final String COL_TRUCK_COMPLETED_TRIPS = "TruckCompletedTrips";
 
   public static final String COL_TRUCK_PIXELS_PER_NUMBER = "TruckPixelsPerNumber";
   public static final String COL_TRUCK_PIXELS_PER_INFO = "TruckPixelsPerInfo";
@@ -719,6 +752,13 @@ public final class TransportConstants {
   public static final String COL_TRUCK_STRIP_OPACITY = "TruckStripOpacity";
 
   public static final String COL_TRUCK_FILTER_DATA_TYPES = "TruckFilterDataTypes";
+  public static final String COL_TRUCK_FILTERS = "TruckFilters";
+
+  public static final String COL_TRAILER_MIN_DATE = "TrailerMinDate";
+  public static final String COL_TRAILER_MAX_DATE = "TrailerMaxDate";
+
+  public static final String COL_TRAILER_TRANSPORT_GROUPS = "TrailerTransportGroups";
+  public static final String COL_TRAILER_COMPLETED_TRIPS = "TrailerCompletedTrips";
 
   public static final String COL_TRAILER_PIXELS_PER_NUMBER = "TrailerPixelsPerNumber";
   public static final String COL_TRAILER_PIXELS_PER_INFO = "TrailerPixelsPerInfo";
@@ -743,6 +783,7 @@ public final class TransportConstants {
   public static final String COL_TRAILER_STRIP_OPACITY = "TrailerStripOpacity";
 
   public static final String COL_TRAILER_FILTER_DATA_TYPES = "TrailerFilterDataTypes";
+  public static final String COL_TRAILER_FILTERS = "TrailerFilters";
 
   public static final String COL_REGISTRATION_DATE = "Date";
   public static final String COL_REGISTRATION_STATUS = "Status";
@@ -939,6 +980,9 @@ public final class TransportConstants {
   public static final String AR_EXPENSE = "Expense";
   public static final String AR_SECONDARY_INCOME = "SecondaryIncome";
   public static final String AR_SECONDARY_EXPENSE = "SecondaryExpense";
+
+  public static final List<String> TRIP_DATE_COLUMNS = Lists.newArrayList(COL_TRIP_DATE,
+      COL_TRIP_DATE_FROM, COL_TRIP_DATE_TO, COL_TRIP_PLANNED_END_DATE);
 
   public static String defaultLoadingColumnAlias(String colName) {
     return "DefLoad" + colName;

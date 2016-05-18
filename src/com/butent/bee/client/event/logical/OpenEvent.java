@@ -15,6 +15,7 @@ public final class OpenEvent extends GwtEvent<OpenEvent.Handler> {
     HandlerRegistration addOpenHandler(Handler handler);
   }
 
+  @FunctionalInterface
   public interface Handler extends EventHandler {
     void onOpen(OpenEvent event);
   }

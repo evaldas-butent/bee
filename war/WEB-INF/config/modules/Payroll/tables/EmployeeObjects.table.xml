@@ -7,12 +7,15 @@
   <Fields>
     <Relation name="Employee" notNull="true" relation="Employees" cascade="DELETE"
       label="=employee" />
+    <Relation name="SubstituteFor" relation="Employees" label="=employeeSubstituteFor" />
+
     <Relation name="Object" notNull="true" relation="Locations" cascade="DELETE"
       label="=object" />
 
     <Date name="DateFrom" label="=startingDate" />
     <Date name="DateUntil" label="=endingDate" />
 
+    <Numeric name="Fund" precision="12" scale="2" label="=salaryFund" />
     <Numeric name="Wage" precision="12" scale="2" label="=wage" />
     <Relation name="Currency" relation="Currencies" label="=currency" />
 

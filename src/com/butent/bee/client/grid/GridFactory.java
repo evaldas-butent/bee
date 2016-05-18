@@ -2,7 +2,6 @@ package com.butent.bee.client.grid;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
-import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
@@ -47,7 +46,6 @@ import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
@@ -73,6 +71,7 @@ import com.butent.bee.shared.ui.CellType;
 import com.butent.bee.shared.ui.Flexibility;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.ui.HasCaption;
+import com.butent.bee.shared.ui.Preloader;
 import com.butent.bee.shared.ui.UiConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Property;
@@ -172,7 +171,7 @@ public final class GridFactory {
   private static final Map<String, GridDescription> descriptionCache = new HashMap<>();
   private static final Map<String, GridInterceptor> gridInterceptors = new HashMap<>();
 
-  private static final Map<String, Consumer<ScheduledCommand>> gridPreloaders = new HashMap<>();
+  private static final Map<String, Preloader> gridPreloaders = new HashMap<>();
   private static final Map<String, Filter> immutableFilters = new HashMap<>();
 
   private static final Multimap<String, String> hiddenColumns = HashMultimap.create();
@@ -301,20 +300,17 @@ public final class GridFactory {
     Assert.notEmpty(name);
     Assert.notNull(callback);
 
-    Consumer<ScheduledCommand> preloader = gridPreloaders.get(name);
+    Preloader preloader = gridPreloaders.get(name);
 
     if (preloader == null) {
       loadDescription(name, callback);
 
     } else {
-      preloader.accept(new ScheduledCommand() {
-        @Override
-        public void execute() {
-          loadDescription(name, callback);
-        }
-      });
+      preloader.accept(() -> loadDescription(name, callback));
 
-      gridPreloaders.remove(name);
+      if (preloader.disposable()) {
+        gridPreloaders.remove(name);
+      }
     }
   }
 
@@ -500,9 +496,10 @@ public final class GridFactory {
     return supplier;
   }
 
-  public static void registerPreloader(String gridName, Consumer<ScheduledCommand> preloader) {
+  public static void registerPreloader(String gridName, Preloader preloader) {
     Assert.notEmpty(gridName);
     Assert.notNull(preloader);
+
     gridPreloaders.put(gridName, preloader);
   }
 

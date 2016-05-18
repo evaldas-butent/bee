@@ -83,6 +83,8 @@ public interface Screen extends NotificationListener, HasExtendedInfo {
 
   void show(IdentifiableWidget widget);
 
+  void showConnectionStatus(boolean isOpen);
+
   void showInNewPlace(IdentifiableWidget widget);
 
   void start(UserData userData);

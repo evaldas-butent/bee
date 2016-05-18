@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE SimplePanel [
+  <!ENTITY inpw "width: 20em;">
+]>
+<SimplePanel xmlns="http://www.butent.com/widget" xmlns:ui="http://www.butent.com/ui">
+  <Table kind="controls">
+    <col index="0" kind="label" />
+
+    <row data="Departments">
+      <Label for="Department" />
+      <DataSelector source="Department" renderColumns="DepartmentName" choiceColumns="FullName"
+        searchableColumns="DepartmentName" visibleLines="7" selectorClass="bee-BranchSelector"
+        style="&inpw;" newRowEnabled="false" summarize="true">
+        <ui:rowRenderer type="branch" />
+      </DataSelector>
+    </row>
+
+    <row data="ActivityTypes">
+      <Label for="ActivityType" />
+      <DataSelector source="ActivityType" style="&inpw;" summarize="true" />
+    </row>
+
+    <row data="CostCenters">
+      <Label for="CostCenter" />
+      <DataSelector source="CostCenter" style="&inpw;" summarize="true" />
+    </row>
+
+    <row data="Locations">
+      <Label for="Object" />
+      <DataSelector source="Object" style="&inpw;" summarize="true" />
+    </row>
+  </Table>
+</SimplePanel>

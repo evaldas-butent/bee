@@ -203,7 +203,7 @@ public class ProjectIncomesGrid extends AbstractGridInterceptor {
               public FormInterceptor getInstance() {
                 return this;
               }
-            }, new RowCallback() {
+            }, null, new RowCallback() {
 
               @Override
               public void onSuccess(final BeeRow row) {

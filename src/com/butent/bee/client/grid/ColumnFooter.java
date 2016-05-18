@@ -1,5 +1,6 @@
 package com.butent.bee.client.grid;
 
+import com.google.common.base.Function;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 
@@ -43,13 +44,15 @@ import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.ui.Calculation;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.FooterDescription;
+import com.butent.bee.shared.ui.HasValueFormatter;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.List;
 
 public class ColumnFooter extends Header<String> implements HasTextAlign, HasVerticalAlign,
-    HasWhiteSpace, HasDateTimeFormat, HasNumberFormat, HasScale, HasOptions, HasValueType {
+    HasWhiteSpace, HasDateTimeFormat, HasNumberFormat, HasScale, HasOptions, HasValueType,
+    HasValueFormatter {
 
   public enum Aggregate {
     SUM, COUNT, MIN, MAX, AVG
@@ -95,6 +98,8 @@ public class ColumnFooter extends Header<String> implements HasTextAlign, HasVer
   private DateTimeFormat dateTimeFormat;
   private NumberFormat numberFormat;
 
+  private Function<Value, String> valueFormatter;
+
   private int scale = BeeConst.UNDEF;
 
   private String options;
@@ -103,6 +108,7 @@ public class ColumnFooter extends Header<String> implements HasTextAlign, HasVer
 
   public ColumnFooter(CellSource cellSource, AbstractColumn<?> column,
       ColumnDescription columnDescription, List<? extends IsColumn> dataColumns) {
+
     this(cellSource);
     init(column, columnDescription, dataColumns);
   }
@@ -173,6 +179,11 @@ public class ColumnFooter extends Header<String> implements HasTextAlign, HasVer
   }
 
   @Override
+  public Function<Value, String> getValueFormatter() {
+    return valueFormatter;
+  }
+
+  @Override
   public ValueType getValueType() {
     return valueType;
   }
@@ -195,8 +206,12 @@ public class ColumnFooter extends Header<String> implements HasTextAlign, HasVer
       }
 
       if (value != null) {
-        return Format.render(value.getString(), getValueType(),
-            getDateTimeFormat(), getNumberFormat(), getScale());
+        if (getValueFormatter() != null) {
+          return getValueFormatter().apply(value);
+        } else {
+          return Format.render(value.getString(), getValueType(),
+              getDateTimeFormat(), getNumberFormat(), getScale());
+        }
       }
     }
 
@@ -251,6 +266,10 @@ public class ColumnFooter extends Header<String> implements HasTextAlign, HasVer
   @Override
   public void setTextAlign(TextAlign textAlign) {
     this.textAlign = textAlign;
+  }
+
+  public void setValueFormatter(Function<Value, String> valueFormatter) {
+    this.valueFormatter = valueFormatter;
   }
 
   public void setValueType(ValueType valueType) {
@@ -346,6 +365,7 @@ public class ColumnFooter extends Header<String> implements HasTextAlign, HasVer
 
   protected void init(AbstractColumn<?> column, ColumnDescription columnDescription,
       List<? extends IsColumn> dataColumns) {
+
     Assert.notNull(column);
     Assert.notNull(columnDescription);
 
@@ -483,6 +503,13 @@ public class ColumnFooter extends Header<String> implements HasTextAlign, HasVer
       if (getNumberFormat() == null && column instanceof HasNumberFormat
           && (footerDescription == null || footerDescription.getScale() == null)) {
         setNumberFormat(((HasNumberFormat) column).getNumberFormat());
+      }
+    }
+
+    if (column instanceof HasCellRenderer) {
+      AbstractCellRenderer renderer = ((HasCellRenderer) column).getRenderer();
+      if (renderer instanceof HasValueFormatter) {
+        setValueFormatter(((HasValueFormatter) renderer).getValueFormatter());
       }
     }
   }
