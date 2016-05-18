@@ -1981,6 +1981,9 @@
 .bee-Filters-initial-checked {
   background-color: #1eb2d8;
 }
+.bee-GridFilter-child .bee-Filters-initial {
+  display: none;
+}
 
 .bee-Filters-label {
   min-width: 120px;
