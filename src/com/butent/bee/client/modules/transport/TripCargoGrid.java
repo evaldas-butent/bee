@@ -8,7 +8,6 @@ import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.composite.UnboundSelector;
-import com.butent.bee.client.data.IdCallback;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
@@ -17,7 +16,6 @@ import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.presenter.GridPresenter;
-import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.view.grid.CellGrid;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
@@ -78,12 +76,9 @@ class TripCargoGrid extends AbstractGridInterceptor {
       final UnboundSelector selector = UnboundSelector.create(relation,
           Lists.newArrayList("OrderNo", "Description"));
 
-      selector.addEditStopHandler(new EditStopEvent.Handler() {
-        @Override
-        public void onEditStop(EditStopEvent event) {
-          if (event.isChanged()) {
-            addCargo(BeeUtils.toLong(selector.getValue()));
-          }
+      selector.addEditStopHandler(event -> {
+        if (event.isChanged()) {
+          addCargo(BeeUtils.toLong(selector.getValue()));
         }
       });
       container.setWidget(0, 1, selector);
@@ -111,12 +106,9 @@ class TripCargoGrid extends AbstractGridInterceptor {
                     gridView.notifyWarning(Localized.dictionary().noData());
                     return;
                   }
-                  gridView.ensureRelId(new IdCallback() {
-                    @Override
-                    public void onSuccess(Long tripId) {
-                      for (BeeRow row : res) {
-                        insertCargo(tripId, row.getId());
-                      }
+                  gridView.ensureRelId(tripId -> {
+                    for (BeeRow row : res) {
+                      insertCargo(tripId, row.getId());
                     }
                   });
                   dialog.close();
@@ -132,12 +124,7 @@ class TripCargoGrid extends AbstractGridInterceptor {
       }
       dialog.close();
 
-      gridView.ensureRelId(new IdCallback() {
-        @Override
-        public void onSuccess(Long result) {
-          insertCargo(result, cargoId);
-        }
-      });
+      gridView.ensureRelId(result -> insertCargo(result, cargoId));
     }
 
     private void insertCargo(long tripId, long cargoId) {

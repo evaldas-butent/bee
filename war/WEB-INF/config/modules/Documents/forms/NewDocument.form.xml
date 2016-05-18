@@ -10,6 +10,17 @@
     <page>
       <text>=mainInformation</text>
       <FlowPanel>
+        <Table kind="controls">
+
+        <col index="0" kind="label" />
+        <row module="Documents.Templates">
+          <TextLabel caption="=template" style="padding-left: 110px;" />
+          <cell>
+            <UnboundSelector name="DocumentTemplate" viewName="DocumentTemplates"
+                             style="width: 100%" />
+          </cell>
+        </row>
+        </Table>
         <xi:include href="widgets/DocumentFields.widget.xml" />
         <FileCollector style="margin: 1ex 10px;" visibleColumns="all" editableColumns="all" />
       </FlowPanel>

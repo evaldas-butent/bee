@@ -5,9 +5,12 @@
   idName="RequestTypeID"
   >
   <Fields>
-    <String name="Name" notNull="true" precision="100" label="=name" />
+    <Integer name="Ordinal" label="=ordinal" />
+    <String name="Name" unique="true" notNull="true" precision="100" label="=name" />
 
     <String name="Background" precision="100" label="=backgroundColor" />
     <String name="Foreground" precision="100" label="=foregroundColor" />
+    <Boolean name="ProductRequired" label="=crmTaskProductRequired" />
+    <Relation name="TaskType" notNull="true" relation="TaskTypes" label="=crmTaskType" />
   </Fields>
 </Table>

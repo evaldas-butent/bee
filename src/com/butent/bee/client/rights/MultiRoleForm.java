@@ -213,7 +213,9 @@ abstract class MultiRoleForm extends RightsForm {
     return STYLE_PREFIX + "multi-role";
   }
 
-  protected abstract RightsState getRightsState();
+  protected RightsState getRightsState() {
+    return BeeUtils.peek(getObjectType().getRegisteredStates());
+  }
 
   @Override
   protected int getValueStartCol() {

@@ -55,8 +55,6 @@ public interface GridInterceptor extends WidgetInterceptor, ActiveRowChangeEvent
     CANCEL, DEFAULT, SILENT, CONFIRM, SINGLE, MULTI;
   }
 
-  void afterAction(Action action, GridPresenter presenter);
-
   void afterCreate(GridView gridView);
 
   boolean afterCreateColumn(String columnName, List<? extends IsColumn> dataColumns,
@@ -138,7 +136,7 @@ public interface GridInterceptor extends WidgetInterceptor, ActiveRowChangeEvent
 
   List<FilterDescription> getPredefinedFilters(List<FilterDescription> defaultFilters);
 
-  String getRowCaption(IsRow row, boolean edit);
+  String getRowCaption(IsRow row);
 
   /**
    * Enables conditional styles for rows.

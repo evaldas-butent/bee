@@ -449,6 +449,13 @@ public class ScreenImpl implements Screen {
   }
 
   @Override
+  public void showConnectionStatus(boolean isOpen) {
+    if (getCommandPanel() instanceof Widget) {
+      ((Widget) getCommandPanel()).setStyleDependentName("disconnected", !isOpen);
+    }
+  }
+
+  @Override
   public void showInNewPlace(IdentifiableWidget widget) {
     getWorkspace().openInNewPlace(widget);
   }
@@ -1375,7 +1382,7 @@ public class ScreenImpl implements Screen {
   public void updateUserPresence(Presence presence) {
     if (getUserPresenceContainer() != null && presence != null
         && DomUtils.getDataIndexInt(getUserPresenceContainer().getElement())
-          != presence.ordinal()) {
+        != presence.ordinal()) {
 
       getUserPresenceContainer().clear();
       DomUtils.setDataIndex(getUserPresenceContainer().getElement(), presence.ordinal());

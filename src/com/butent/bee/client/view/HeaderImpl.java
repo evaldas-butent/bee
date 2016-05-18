@@ -9,6 +9,7 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.dom.Selectors;
 import com.butent.bee.client.event.logical.ReadyEvent;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Horizontal;
@@ -17,10 +18,13 @@ import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.Theme;
 import com.butent.bee.client.ui.UiOption;
+import com.butent.bee.client.utils.Evaluator;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -30,6 +34,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -48,7 +53,10 @@ public class HeaderImpl extends Flow implements HeaderView {
   private static final String STYLE_CONTAINER = STYLE_PREFIX + "container";
 
   private static final String STYLE_CAPTION = STYLE_PREFIX + "caption";
+
   private static final String STYLE_MESSAGE = STYLE_PREFIX + "message";
+  private static final String STYLE_ROW_ID = STYLE_PREFIX + "row-id";
+  private static final String STYLE_ROW_MESSAGE = STYLE_PREFIX + "row-message";
 
   private static final String STYLE_COMMAND_PANEL = STYLE_PREFIX + "commandPanel";
 
@@ -68,7 +76,6 @@ public class HeaderImpl extends Flow implements HeaderView {
   private Presenter viewPresenter;
 
   private final Label captionWidget = new Label();
-  private final Label messageWidget = new Label();
 
   private boolean enabled = true;
 
@@ -130,9 +137,6 @@ public class HeaderImpl extends Flow implements HeaderView {
       setCaption(caption);
     }
     add(captionWidget);
-
-    messageWidget.addStyleName(STYLE_MESSAGE);
-    add(messageWidget);
 
     commandPanel.addStyleName(STYLE_COMMAND_PANEL);
     add(commandPanel);
@@ -386,13 +390,57 @@ public class HeaderImpl extends Flow implements HeaderView {
   }
 
   @Override
-  public void setMessage(String message) {
-    messageWidget.setHtml(BeeUtils.trim(message));
-  }
+  public void setMessage(int index, String message, String styleName) {
+    if (index < 0) {
+      logger.warning("invalid message index", index);
+      return;
+    }
 
-  @Override
-  public void setMessageTitle(String title) {
-    messageWidget.setTitle(title);
+    List<Element> elements = Selectors.getElementsByClassName(getElement(), STYLE_MESSAGE);
+
+    if (BeeUtils.isIndex(elements, index)) {
+      Element target = elements.get(index);
+      target.setInnerHTML(BeeUtils.trim(message));
+
+      if (!BeeUtils.isEmpty(styleName) && !target.hasClassName(styleName)) {
+        target.addClassName(styleName);
+      }
+
+    } else if (!BeeUtils.isEmpty(message)) {
+      int afterIndex;
+
+      if (BeeUtils.isEmpty(elements)) {
+        afterIndex = getWidgetIndex(captionWidget);
+      } else {
+        afterIndex = DomUtils.getElementIndex(BeeUtils.getLast(elements));
+      }
+
+      if (afterIndex >= 0 && afterIndex < getWidgetCount()) {
+        int beforeIndex = afterIndex + 1;
+
+        for (int i = BeeUtils.size(elements); i < index; i++) {
+          Label emptyWidget = new Label();
+          emptyWidget.addStyleName(STYLE_MESSAGE);
+          emptyWidget.addStyleName(STYLE_MESSAGE + BeeConst.STRING_MINUS + i);
+
+          insert(emptyWidget, beforeIndex);
+          beforeIndex++;
+        }
+
+        Label messageWidget = new Label(message.trim());
+        messageWidget.addStyleName(STYLE_MESSAGE);
+        messageWidget.addStyleName(STYLE_MESSAGE + BeeConst.STRING_MINUS + index);
+
+        if (!BeeUtils.isEmpty(styleName)) {
+          messageWidget.addStyleName(styleName);
+        }
+
+        insert(messageWidget, beforeIndex);
+
+      } else {
+        logger.warning("cannot insert message with index", index);
+      }
+    }
   }
 
   @Override
@@ -417,6 +465,26 @@ public class HeaderImpl extends Flow implements HeaderView {
     } else {
       widget.setStyleName(STYLE_CONTROL_HIDDEN, !visible);
     }
+  }
+
+  @Override
+  public void showRowId(IsRow row) {
+    String message = DataUtils.hasId(row) ? BeeUtils.bracket(row.getId()) : null;
+    setMessage(0, message, STYLE_ROW_ID);
+  }
+
+  @Override
+  public void showRowMessage(Evaluator evaluator, IsRow row) {
+    String message;
+
+    if (evaluator != null && row != null) {
+      evaluator.update(row);
+      message = evaluator.evaluate();
+    } else {
+      message = null;
+    }
+
+    setMessage(1, message, STYLE_ROW_MESSAGE);
   }
 
   @Override

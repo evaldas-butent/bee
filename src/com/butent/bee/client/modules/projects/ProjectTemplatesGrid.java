@@ -225,7 +225,7 @@ public class ProjectTemplatesGrid extends AbstractGridInterceptor {
         templateRow.getString(idxTMLDefaultStage));
 
     RowFactory.createRow(ProjectConstants.FORM_NEW_PROJECT_FROM_TEMPLATE,
-        prjDataInfo.getNewRowCaption(), prjDataInfo, prjRow, Modality.ENABLED, null, null,
+        prjDataInfo.getNewRowCaption(), prjDataInfo, prjRow, Modality.ENABLED, null, null, null,
         new RowCallback() {
           @Override
           public void onSuccess(BeeRow result) {

@@ -10,6 +10,7 @@
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
   xmlns:ui="http://www.butent.com/ui"
+  xmlns:xi="http://www.w3.org/2001/XInclude"
   
   name="Item" viewName="Items" caption="=item"
   width="700" height="720"
@@ -163,23 +164,8 @@
           </row>
 
           <row>
-            <Label for="Department" data="Departments" />
-            <DataSelector source="Department" data="Departments" renderColumns="DepartmentName"
-              choiceColumns="FullName" searchableColumns="DepartmentName" visibleLines="7"
-              selectorClass="bee-BranchSelector" newRowEnabled="false" summarize="true">
-              <ui:rowRenderer type="branch" />
-            </DataSelector>
-
             <Label for="ExternalCode" />
             <InputText source="ExternalCode" summarize="true" />
-          </row>
-
-          <row>
-            <Label for="ActivityType" data="ActivityTypes" />
-            <DataSelector source="ActivityType" data="ActivityTypes" summarize="true" />
-
-            <Label for="CostCenter" data="CostCenters" />
-            <DataSelector source="CostCenter" data="CostCenters" summarize="true" />
           </row>
 
           <row>
@@ -216,6 +202,11 @@
             </InputInteger>
           </row>
         </Table>
+      </page>
+
+      <page data="Dimensions">
+        <text>=dimensions</text>
+        <xi:include href="../../Administration/forms/widgets/ExtraDimensions.widget.xml" />
       </page>
 
       <page>

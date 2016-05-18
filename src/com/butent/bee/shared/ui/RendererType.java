@@ -21,6 +21,7 @@ public enum RendererType {
   TOTAL("total", false),
   VAT("vat", false),
   DISCOUNT("discount", false),
+  TIME("time", true),
   BRANCH("branch", true);
 
   public static RendererType getByTypeCode(String code) {

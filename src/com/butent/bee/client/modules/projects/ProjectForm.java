@@ -46,7 +46,6 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
 import com.butent.bee.shared.data.event.DataChangeEvent;
-import com.butent.bee.shared.data.event.HandlesUpdateEvents;
 import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.Filter;
@@ -62,6 +61,7 @@ import com.butent.bee.shared.modules.documents.DocumentConstants;
 import com.butent.bee.shared.modules.projects.ProjectConstants.ProjectEvent;
 import com.butent.bee.shared.modules.projects.ProjectStatus;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
+import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -74,7 +74,7 @@ import java.util.Map;
 import java.util.Set;
 
 class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Handler,
-    RowInsertEvent.Handler, HandlesUpdateEvents {
+    RowInsertEvent.Handler, RowUpdateEvent.Handler {
 
   private static final String WIDGET_CONTRACT = "Contract";
   private static final String WIDGET_CHART_DATA = "ChartData";
@@ -265,25 +265,6 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
   }
 
   @Override
-  public void onCellUpdate(CellUpdateEvent event) {
-
-    if (getFormView() == null) {
-      return;
-    }
-
-    if (getActiveRow() == null) {
-      return;
-    }
-
-    if (event.hasView(TaskConstants.VIEW_TASKS)
-        || event.hasView(TaskConstants.VIEW_TASK_EVENTS)
-        || event.hasView(TaskConstants.VIEW_RELATED_TASKS)) {
-
-      showComputedTimes(getFormView(), getActiveRow(), true);
-    }
-  }
-
-  @Override
   public void onDataChange(DataChangeEvent event) {
     if (getFormView() == null) {
       return;
@@ -308,7 +289,7 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
   public void onLoad(FormView form) {
     registry.add(BeeKeeper.getBus().registerRowInsertHandler(this, false));
     registry.add(BeeKeeper.getBus().registerDataChangeHandler(this, false));
-    registry.addAll(BeeKeeper.getBus().registerUpdateHandler(this, false));
+    registry.add(BeeKeeper.getBus().registerRowUpdateHandler(this, false));
   }
 
   @Override
@@ -329,6 +310,7 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
               CellSource.forColumn(Data.getColumn(VIEW_PROJECTS, ALS_FILTERED_OWNER_USER), form
                   .getDataIndex(ALS_FILTERED_OWNER_USER)),
               row.getString(form.getDataIndex(COL_PROJECT_OWNER)));
+          DataChangeEvent.fireLocalRefresh(BeeKeeper.getBus(), VIEW_PROJECT_USERS);
         }
       });
     }
@@ -352,6 +334,8 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
               CellSource.forColumn(Data.getColumn(VIEW_PROJECTS, ALS_STAGES_COUNT), form
                   .getDataIndex(ALS_STAGES_COUNT)),
               BeeUtils.toString(BeeConst.INT_TRUE));
+          DataChangeEvent.fireLocalRefresh(BeeKeeper.getBus(), VIEW_PROJECT_STAGES);
+          showComputedTimes(form, row, true);
         }
       });
     }
@@ -662,9 +646,33 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
 
     newRow.setValue(idxColId, value);
 
-    List<BeeColumn> cols = Data.getColumns(form.getViewName(), Lists.newArrayList(column));
+    List<BeeColumn> cols;
+    if (column == COL_PROJECT_STATUS) {
+      cols =
+          Data.getColumns(form.getViewName(), Lists.newArrayList(column,
+              COL_PROJECT_APPROVED_DATE));
+    } else {
+      cols = Data.getColumns(form.getViewName(), Lists.newArrayList(column));
+    }
+
     List<String> newValues = Lists.newArrayList(value);
     List<String> oldValues = Lists.newArrayList(oldRow.getString(idxColId));
+
+    int idxColStatus = Data.getColumnIndex(VIEW_PROJECTS, COL_PROJECT_STATUS);
+
+    if (newRow.getInteger(idxColStatus) != oldRow.getInteger(idxColStatus)) {
+      int idxColFnshdt = Data.getColumnIndex(VIEW_PROJECTS, COL_PROJECT_APPROVED_DATE);
+      int colStatus = BeeUtils.unbox(newRow.getInteger(idxColStatus));
+      if (colStatus == ProjectStatus.APPROVED.ordinal()
+          || colStatus == ProjectStatus.SUSPENDED.ordinal()) {
+        newValues.add(BeeUtils.toString(new DateTime().getTime()));
+        oldValues.add(oldRow.getString(idxColFnshdt));
+      } else {
+        newValues.add(null);
+        oldValues.add(oldRow.getString(idxColFnshdt));
+      }
+    }
+
     Queries.update(form.getViewName(), oldRow.getId(), oldRow.getVersion(), cols, oldValues,
         newValues, null, new RowCallback() {
 
@@ -675,10 +683,10 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
 
             form.refreshBySource(column);
             unlockValidationEvent(column);
-            form.refresh();
 
           }
         });
+
   }
 
   private void drawChart(IsRow row) {
@@ -865,7 +873,7 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
     double factor = BeeConst.DOUBLE_ONE;
     String unitName = BeeConst.STRING_EMPTY;
 
-    if (requery) {
+    if (requery && DataUtils.isId(row.getId())) {
 
       Queries.getRow(form.getViewName(), row.getId(), new RowCallback() {
         @Override

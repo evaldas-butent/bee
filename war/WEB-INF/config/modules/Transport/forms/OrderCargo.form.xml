@@ -81,24 +81,21 @@
                 </row>
               </Table>
               <Table name="Metrics" kind="custom">
+                <col index="0" kind="label" />
                 <row>
-                  <Label text="=length" horizontalAlignment="right" style="&lbl1;" />
+                  <Label for="Length" />
                   <InputDecimal source="Length" format="0.00" style="width:70px" />
                 </row>
                 <row>
-                  <Label text="=width" horizontalAlignment="right" style="&lbl1;" />
+                  <Label for="Width" />
                   <InputDecimal source="Width" format="0.00" style="width:70px" />
                 </row>
                 <row>
-                  <Label text="=height" horizontalAlignment="right" style="&lbl1;" />
+                  <Label for="Height" />
                   <InputDecimal source="Height" format="0.00" style="width:70px" />
                 </row>
                 <row>
-                  <Label text="=volume" horizontalAlignment="right" style="&lbl1;" />
-                  <InputDecimal source="Volume" format="0.000" style="width:70px" />
-                </row>
-                <row>
-                  <Label html="LDM" horizontalAlignment="right" style="&lbl1;" />
+                  <Label for="LDM" />
                   <InputDecimal source="LDM" format="0.00" style="width:70px" />
                 </row>
               </Table>
@@ -114,35 +111,47 @@
           &separator;
 
           <Table kind="controls">
+            <col index="0" kind="label" />
+            <col index="2" kind="label" />
             <row>
-              <Label html="CMR" horizontalAlignment="right" style="&lbl1;" module="Documents" />
+              <Label for="Cmr" module="Documents" />
               <DataSelector source="Cmr" caching="none" newRowEnabled="false" module="Documents" />
-              <Label text="=cargoValue" horizontalAlignment="right" style="&lbl1;" />
+              <Label for="Weight" />
+              <FlowPanel>
+                <InputDecimal source="Weight" format="0.000" style="width:70px" />
+                <DataSelector source="WeightUnit"
+                              style="display:inline-block; width:5em; margin-left:5px;" />
+              </FlowPanel>
+              <cell rowSpan="3">
+                <FlowPanel>
+                  <Label for="Notes" style="text-align:right;" />
+                  <InputArea source="Notes" visibleLines="6" style="width:300px;" />
+                </FlowPanel>
+              </cell>
+            </row>
+            <row>
+              <Label for="Number" />
+              <InputText source="Number" />
+              <Label for="Volume" />
+              <FlowPanel>
+                <InputDecimal source="Volume" format="0.000" style="width:70px" />
+                <DataSelector source="VolumeUnit"
+                              style="display:inline-block; width:5em; margin-left:5px;" />
+              </FlowPanel>
+            </row>
+            <row>
+              <Label for="Value" />
               <FlowPanel>
                 <InputMoney source="Value" style="width:70px" />
                 <DataSelector source="ValueCurrency" editEnabled="false"
                               style="width:5em; display:inline-block; margin-left:5px;" />
               </FlowPanel>
-              <cell rowSpan="2">
-                <FlowPanel style="margin-left:1em;">
-                  <Label for="Notes" style="text-align:right;" />
-                  <InputArea source="Notes" visibleLines="3" style="width:200px;" />
-                </FlowPanel>
-              </cell>
-            </row>
-            <row>
-              <Label text="=number" horizontalAlignment="right" style="&lbl1;" />
-              <InputText source="Number" />
-              <Label text="=quantity" horizontalAlignment="right" style="&lbl1;" />
+              <Label for="Quantity" />
               <FlowPanel>
                 <InputDecimal source="Quantity" format="0.00" style="width:70px" />
                 <DataSelector source="QuantityUnit"
                               style="display:inline-block; width:5em; margin-left:5px;" />
               </FlowPanel>
-            </row>
-            <row>
-              <Label text="=cargoTermsOfService" horizontalAlignment="right" style="&lbl1;" />
-              <DataSelector source="ShippingTerm" />
             </row>
           </Table>
         </FlowPanel>
@@ -170,6 +179,11 @@
       <page>
         <text>=trTripDocuments</text>
         <GridPanel name="TripDocuments" parent="{form}" child="true" />
+      </page>
+      <page>
+      <text>=relatedInformation</text>
+      <Relations relColumn="Cargo" inline="true"
+                 defaultRelations="Companies Persons Requests Tasks" style="margin: 0px 15px 0px 15px; min-width:300px;" />
       </page>
     </TabbedPages>
   </FlowPanel>

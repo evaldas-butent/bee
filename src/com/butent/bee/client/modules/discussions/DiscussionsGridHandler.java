@@ -10,7 +10,6 @@ import com.butent.bee.client.UserInfo;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.Queries.RowSetCallback;
-import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.event.logical.RenderingEvent;
@@ -29,7 +28,6 @@ import com.butent.bee.client.view.search.AbstractFilterSupplier;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
-import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.CellSource;
@@ -84,32 +82,13 @@ class DiscussionsGridHandler extends AbstractGridInterceptor {
     if (type == DiscussionsListType.ANNOUNCEMENTSBOARDLIST) {
       DataInfo data = Data.getDataInfo(VIEW_DISCUSSIONS);
       BeeRow emptyRow = RowFactory.createEmptyRow(data, true);
-      final BeeColumn beeCol = data.getColumn(COL_TOPIC);
-      if (beeCol != null) {
-        beeCol.setNullable(false);
-      }
-      RowFactory.createRow(FORM_NEW_DISCUSSION, Localized.dictionary().announcementNew(),
+
+      RowFactory.createRow(FORM_NEW_ANNOUNCEMENT, Localized.dictionary().announcementNew(),
           data, emptyRow, Modality.ENABLED, null,
-          new CreateDiscussionInterceptor(), new RowCallback() {
-
-            @Override
-            public void onCancel() {
-              if (beeCol != null) {
-                beeCol.setNullable(true);
-              }
-            }
-
-            @Override
-            public void onSuccess(BeeRow result) {
-              if (beeCol != null) {
-                beeCol.setNullable(true);
-              }
-            }
-          });
-    } else {
-      return super.beforeAddRow(presenter, copy);
+          new CreateDiscussionInterceptor(), null, null);
+      return false;
     }
-    return false;
+    return super.beforeAddRow(presenter, copy);
   }
 
   @Override

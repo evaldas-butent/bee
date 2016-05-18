@@ -42,18 +42,12 @@ class ProjectStagesGrid extends AbstractGridInterceptor {
 
     Provider provider = presenter.getDataProvider();
 
-    int idxStagesCount = provider.getColumnIndex(ProjectConstants.ALS_STAGES_COUNT);
     int idxTaskCount = provider.getColumnIndex(ALS_TASK_COUNT);
     int idxOwner = provider.getColumnIndex(ProjectConstants.ALS_PROJECT_OWNER);
     int idxStatus = provider.getColumnIndex(ProjectConstants.ALS_PROJECT_STATUS);
 
-    if (BeeUtils.unbox(activeRow.getLong(idxOwner)) == BeeKeeper.getUser().getUserId()
-        && ProjectStatus.SCHEDULED.ordinal() == BeeUtils
-            .unbox(activeRow.getInteger(idxStatus))) {
-      if (BeeUtils.unbox(activeRow.getLong(idxStagesCount)) == 1) {
-        presenter.getGridView().notifySevere(LC.prjMustBeOneStage());
-        return GridInterceptor.DeleteMode.CANCEL;
-      } else if (BeeUtils.unbox(activeRow.getLong(idxTaskCount)) > 0) {
+    if (BeeUtils.unbox(activeRow.getLong(idxOwner)) == BeeKeeper.getUser().getUserId()) {
+      if (BeeUtils.unbox(activeRow.getLong(idxTaskCount)) > 0) {
         presenter.getGridView().notifySevere(LC.prjStageHasTasks());
         return GridInterceptor.DeleteMode.CANCEL;
       } else {
@@ -113,10 +107,6 @@ class ProjectStagesGrid extends AbstractGridInterceptor {
           unitsRows = BeeRowSet.maybeRestore(prop);
         }
 
-        if (unitsRows == null) {
-          return BeeConst.STRING_EMPTY;
-        }
-
         String colName = null;
         switch (calcColName) {
           case NAME_ACTUAL_TASKS_DURATION:
@@ -140,7 +130,7 @@ class ProjectStagesGrid extends AbstractGridInterceptor {
 
         if (!BeeConst.isUndef(idxUnit)) {
           long idValue = BeeUtils.unbox(row.getLong(idxUnit));
-          BeeRow unitRow = unitsRows.getRowById(idValue);
+          BeeRow unitRow = unitsRows != null ? unitsRows.getRowById(idValue) : null;
 
           if (unitRow != null) {
             String prop = unitRow.getProperty(PROP_REAL_FACTOR);

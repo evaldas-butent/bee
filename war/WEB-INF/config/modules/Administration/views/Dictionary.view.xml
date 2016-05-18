@@ -7,12 +7,19 @@
   <Columns>
     <SimpleColumn name="Key" />
 
-    <SimpleColumn name="EN" />
-    <SimpleColumn name="LT" />
-    <SimpleColumn name="RU" />
-    <SimpleColumn name="FI" />
-    <SimpleColumn name="LV" />
-    <SimpleColumn name="DE" />
+    <SimpleColumn name="DefaultEN" />
+    <SimpleColumn name="DefaultLT" />
+    <SimpleColumn name="DefaultRU" />
+    <SimpleColumn name="DefaultFI" />
+    <SimpleColumn name="DefaultLV" />
+    <SimpleColumn name="DefaultDE" />
+
+    <SimpleColumn name="CustomEN" />
+    <SimpleColumn name="CustomLT" />
+    <SimpleColumn name="CustomRU" />
+    <SimpleColumn name="CustomFI" />
+    <SimpleColumn name="CustomLV" />
+    <SimpleColumn name="CustomDE" />
   </Columns>
 
   <Order>

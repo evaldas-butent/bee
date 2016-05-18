@@ -49,6 +49,7 @@ import com.butent.bee.shared.utils.PropertyUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -115,6 +116,15 @@ public final class DomUtils {
     while (nd.getFirstChild() != null) {
       nd.removeChild(nd.getFirstChild());
     }
+  }
+
+  public static int countDescendants(Element parent) {
+    return getChildren(parent).getLength();
+  }
+
+  public static int countDescendants(UIObject obj) {
+    Assert.notNull(obj);
+    return countDescendants(obj.getElement());
   }
 
   public static Element createButton(String html) {
@@ -567,6 +577,20 @@ public final class DomUtils {
     return el;
   }
 
+  public static int getElementIndex(Element el) {
+    Assert.notNull(el);
+
+    int index = 0;
+
+    Element previous = el.getPreviousSiblingElement();
+    while (previous != null) {
+      index++;
+      previous = previous.getPreviousSiblingElement();
+    }
+
+    return index;
+  }
+
   public static List<Property> getElementInfo(Element el) {
     Assert.notNull(el);
     List<Property> lst = new ArrayList<>();
@@ -625,6 +649,7 @@ public final class DomUtils {
 
   public static List<Element> getElementsByAttributeValueUsingCollectionFilters(Element root,
       String name, String value, Collection<Element> exclude, Collection<Element> cutoff) {
+
     List<Element> result = new ArrayList<>();
     if (root == null || BeeUtils.isEmpty(name)) {
       return result;
@@ -846,6 +871,26 @@ public final class DomUtils {
         + ComputedStyles.getPixels(elem, StyleUtils.STYLE_MARGIN_RIGHT);
   }
 
+  public static Element getParentByClassName(Element child, String className, boolean incl) {
+    if (BeeUtils.isEmpty(className)) {
+      return null;
+    } else {
+      return getParentByClassName(child, Collections.singleton(className), incl);
+    }
+  }
+
+  public static Element getParentByClassName(Element child, Collection<String> classNames,
+      boolean incl) {
+
+    if (child == null || BeeUtils.isEmpty(classNames)) {
+      return null;
+    } else if (incl && StyleUtils.hasAnyClass(child, classNames)) {
+      return child;
+    } else {
+      return getParentByClassName(child.getParentElement(), classNames, true);
+    }
+  }
+
   public static TableCellElement getParentCell(Element child, boolean incl) {
     Element parent = getParentElement(child, TABLE_CELL_TAGS, incl);
     if (isTableCellElement(parent)) {
@@ -926,6 +971,11 @@ public final class DomUtils {
     } else {
       return null;
     }
+  }
+
+  public static Integer getParentRowIndex(Element child) {
+    TableRowElement rowElement = getParentRow(child, true);
+    return (rowElement == null) ? null : rowElement.getRowIndex();
   }
 
   public static TableElement getParentTable(Element child, boolean incl) {

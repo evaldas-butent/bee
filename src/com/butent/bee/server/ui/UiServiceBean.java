@@ -25,10 +25,8 @@ import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.io.ExtensionFilter;
 import com.butent.bee.server.io.FileUtils;
-import com.butent.bee.server.modules.ModuleHolderBean;
 import com.butent.bee.server.modules.administration.FileStorageBean;
 import com.butent.bee.server.modules.ec.TecDocBean;
-import com.butent.bee.server.modules.mail.MailModuleBean;
 import com.butent.bee.server.news.NewsBean;
 import com.butent.bee.server.sql.HasConditions;
 import com.butent.bee.server.sql.IsExpression;
@@ -116,13 +114,7 @@ public class UiServiceBean {
   @EJB
   UserServiceBean usr;
   @EJB
-  GridLoaderBean grd;
-  @EJB
   DataSourceBean dsb;
-  @EJB
-  ModuleHolderBean mod;
-  @EJB
-  MailModuleBean mail;
   @EJB
   SearchBean search;
   @EJB

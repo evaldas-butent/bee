@@ -41,7 +41,12 @@ public final class Localized {
   }
 
   public static String getLabel(IsColumn column) {
-    return maybeTranslate(column.getLabel());
+    if (column == null) {
+      logger.severe(NameUtils.getClassName(Localized.class), "getLabel: column is null");
+      return null;
+    } else {
+      return maybeTranslate(column.getLabel());
+    }
   }
 
   public static List<String> getLabels(List<? extends IsColumn> columns) {
@@ -110,7 +115,8 @@ public final class Localized {
       }
 
       Localized.glossary.putAll(glossary);
-      logger.info(NameUtils.getClassName(Localized.class), "glossary", glossary.size());
+      logger.info(NameUtils.getClassName(Localized.class), "glossary",
+          dictionary().languageTag(), glossary.size());
     }
   }
 

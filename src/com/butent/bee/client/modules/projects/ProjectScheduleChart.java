@@ -230,7 +230,7 @@ final class ProjectScheduleChart extends TimeBoard {
 
       @Override
       public void onResponse(ResponseObject response) {
-        if (setData(response)) {
+        if (setData(response, false)) {
           render(true);
         }
       }
@@ -383,7 +383,7 @@ final class ProjectScheduleChart extends TimeBoard {
   }
 
   @Override
-  protected boolean setData(ResponseObject response) {
+  protected boolean setData(ResponseObject response, boolean init) {
     getCanvas().clear();
     chartItems.clear();
     if (response.isEmpty()) {

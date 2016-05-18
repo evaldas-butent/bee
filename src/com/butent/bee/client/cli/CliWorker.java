@@ -100,6 +100,7 @@ import com.butent.bee.client.menu.MenuCommand;
 import com.butent.bee.client.modules.administration.AdministrationKeeper;
 import com.butent.bee.client.modules.ec.EcKeeper;
 import com.butent.bee.client.modules.tasks.TasksKeeper;
+import com.butent.bee.client.output.Exporter;
 import com.butent.bee.client.output.Printable;
 import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.style.Axis;
@@ -847,6 +848,13 @@ public final class CliWorker {
     } else if (BeeUtils.startsSame(args, "widget")) {
       ViewFactory.clear();
       debugWithSeparator("widget factory cleared");
+
+    } else if (BeeUtils.startsSame(args, "export")) {
+      Exporter.clearServerCache(null);
+
+    } else if (BeeUtils.startsSame(args, "size")) {
+      Data.clearApproximateSizes();
+      debugWithSeparator("approximate sizes cleared");
     }
   }
 
@@ -1205,9 +1213,6 @@ public final class CliWorker {
     if (BeeUtils.startsSame(args, "get", "load")) {
       service = SVC_GET_DICTIONARY;
 
-    } else if (BeeUtils.startsSame(args, "p2d", "p2b")) {
-      service = SVC_DICTIONARY_PROPERTIES_TO_DATABASE;
-
     } else if (BeeUtils.startsSame(args, "d2p", "b2p")) {
       service = SVC_DICTIONARY_DATABASE_TO_PROPERTIES;
 
@@ -1411,12 +1416,12 @@ public final class CliWorker {
   }
 
   private static void doLocale(String[] arr, String args) {
-    if (BeeUtils.isEmpty(args)) {
-      showExtData("Locale info", LocaleUtils.getInfo());
-
-    } else if (BeeUtils.contains(arr[0], 's')) {
+    if (BeeUtils.contains(arr[0], 's')) {
       BeeKeeper.getRpc().invoke("localeInfo", args,
           ResponseHandler.callback(ArrayUtils.joinWords(arr)));
+
+    } else if (BeeUtils.isEmpty(args)) {
+      showExtData("Locale info", LocaleUtils.getInfo());
 
     } else {
       List<Property> info = new ArrayList<>();
@@ -2561,6 +2566,15 @@ public final class CliWorker {
   private static void showDataInfo(String viewName, boolean errorPopup) {
     if (BeeUtils.inListSame(viewName, "load", "refresh", "+", "x")) {
       Data.getDataInfoProvider().load();
+
+    } else if (BeeUtils.inListSame(viewName, "size", "s", "c", "r", "rc")) {
+      Map<String, Integer> sizes = new TreeMap<>(Data.getApproximateSizes());
+
+      if (sizes.isEmpty()) {
+        logger.debug("data sizes are empty");
+      } else {
+        showPropData("approximate sizes", PropertyUtils.createProperties(sizes));
+      }
 
     } else {
       if (!BeeUtils.isEmpty(viewName)) {
@@ -3742,7 +3756,10 @@ public final class CliWorker {
     if (BeeKeeper.getRpc().getRpcList().isEmpty()) {
       inform("RpcList empty");
 
-    } else if (BeeUtils.contains(args, 'p')) {
+    } else if (BeeUtils.startsWith(args, 'c')) {
+      BeeKeeper.getRpc().getRpcList().tryCompress();
+
+    } else if (BeeUtils.startsWith(args, 'p')) {
       List<RpcInfo> requests = BeeKeeper.getRpc().getPendingRequests();
 
       if (requests.isEmpty()) {

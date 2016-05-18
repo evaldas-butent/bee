@@ -3,7 +3,6 @@ package com.butent.bee.client.modules.trade.acts;
 import com.google.common.base.Strings;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
-import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.dom.client.TableCellElement;
@@ -351,14 +350,11 @@ public class TradeActStockReport extends ReportInterceptor {
         }
 
         if (response.hasResponse(SimpleRowSet.class)) {
-          TradeActKeeper.ensureChache(new Scheduler.ScheduledCommand() {
-            @Override
-            public void execute() {
-              renderData(SimpleRowSet.restore(response.getResponseAsString()), start, end);
+          TradeActKeeper.ensureChache(() -> {
+            renderData(SimpleRowSet.restore(response.getResponseAsString()), start, end);
 
-              sheet.addHeaders(headers);
-              sheet.autoSizeAll();
-            }
+            sheet.addHeaders(headers);
+            sheet.autoSizeAll();
           });
 
         } else {

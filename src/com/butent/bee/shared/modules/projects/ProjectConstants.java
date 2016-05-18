@@ -86,6 +86,7 @@ public final class ProjectConstants {
   public static final String COL_PROJECT_ID = "ProjectID";
   public static final String COL_PROJECT_NAME = "Name";
   public static final String COL_PROJECT_END_DATE = "EndDate";
+  public static final String COL_PROJECT_APPROVED_DATE = "ApprovedDate";
   public static final String COL_PROJECT_STAGE = "ProjectStage";
   public static final String COL_PROJECT_START_DATE = "StartDate";
   public static final String COL_PROJECT_STATUS = "Status";
@@ -121,6 +122,7 @@ public final class ProjectConstants {
   public static final String COL_PROJECT_TIME_UNIT = "TimeUnit";
   public static final String COL_DESCRIPTION = "Description";
 
+  public static final String COL_OVERDUE = "Overdue";
   public static final String COL_PROJECT_TEMPLATE = "ProjectTemplate";
 
   public static final String COL_PSC_FOOTER_HEIGHT = "PSCFooterHeight";
@@ -144,6 +146,9 @@ public final class ProjectConstants {
   public static final String COL_USER_TYPE = "UserType";
   public static final String COL_RATE = "Rate";
 
+  public static final String FILTER_OVERDUE_CREATION = "overdue_creation";
+  public static final String FILTERSUPPLIER_SLACK_PREFIX = "prj-FilterSupplier-Slack-";
+
   public static final String FORM_PROJECT = "Project";
   public static final String FORM_PROJECT_STAGE = "ProjectStage";
   public static final String FORM_NEW_COMMENT = "NewProjectComment";
@@ -165,6 +170,7 @@ public final class ProjectConstants {
   public static final String GRID_PROJECT_TEMPLATE_STAGES = "ProjectTMLStages";
   public static final String GRID_PROJECT_TEMPLATES = "ProjectTemplates";
 
+  public static final String NAME_SLACK = "Slack";
   public static final String NAME_EXPECTED_TASKS_DURATION = "CalcExpectedTasksDuration";
   public static final String NAME_ACTUAL_TASKS_DURATION = "CalcActualTasksDuration";
 
@@ -189,6 +195,14 @@ public final class ProjectConstants {
   public static final String SVC_PROJECT_REPORT = "ProjectReport";
   public static final String SVC_CREATE_INVOICE_ITEMS = "CreateInvoiceItems";
 
+  public static final String STYLE_CONTAINER = "container";
+  public static final String STYLE_LATE = "late";
+  public static final String STYLE_NOT_LATE = "notLate";
+  public static final String STYLE_ALL = "all";
+  public static final String STYLE_CANCEL = "cancel";
+
+  public static final String VALUE_LATE = "late";
+  public static final String VALUE_SCHEDULED = "scheduled";
   public static final String VAR_PROJECT = "Project";
 
   public static final String VIEW_PROJECTS = "Projects";

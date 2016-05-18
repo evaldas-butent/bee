@@ -26,7 +26,6 @@ import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.ViewColumn;
-import com.butent.bee.shared.exceptions.BeeRuntimeException;
 import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.projects.ProjectConstants.ProjectEvent;
@@ -173,7 +172,7 @@ public final class ProjectsHelper {
 
     RowFactory.createRow(FORM_NEW_PROJECT_REASON_COMMENT, caption, data, emptyRow,
         Modality.ENABLED, null,
-        new NewReasonCommentForm(form, row, event), new RowCallback() {
+        new NewReasonCommentForm(form, row, event), null, new RowCallback() {
 
           @Override
           public void onSuccess(BeeRow result) {
@@ -272,7 +271,7 @@ public final class ProjectsHelper {
       JustDate date = TimeUtils.toDateOrNull(value);
 
       result = date == null ? result : date.toString();
-    } else if (!BeeUtils.isEmpty(col.getEnumKey())) {
+    } else if (col != null ? !BeeUtils.isEmpty(col.getEnumKey()) : false) {
       return EnumUtils.getCaption(col.getEnumKey(), BeeUtils.toInt(value));
     }
 

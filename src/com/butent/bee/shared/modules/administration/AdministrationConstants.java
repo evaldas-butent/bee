@@ -10,6 +10,7 @@ import com.butent.bee.shared.i18n.SupportedLocale;
 import com.butent.bee.shared.imports.ImportType;
 import com.butent.bee.shared.modules.ParameterType;
 import com.butent.bee.shared.news.Feed;
+import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.rights.RightsObjectType;
 import com.butent.bee.shared.rights.RightsState;
 import com.butent.bee.shared.time.ScheduleDateMode;
@@ -72,6 +73,7 @@ public final class AdministrationConstants {
     EnumUtils.register(WorkdayTransition.class);
 
     EnumUtils.register(ImportType.class);
+    EnumUtils.register(Module.class);
     EnumUtils.register(SysObject.class);
   }
 
@@ -85,11 +87,13 @@ public final class AdministrationConstants {
 
   public static final String SVC_DO_IMPORT = "DoImport";
 
+  public static final String SVC_GET_CONFIG_DIFF = "GetConfigDiff";
+  public static final String SVC_GET_CONFIG_OBJECT = "GetConfigObject";
+  public static final String SVC_GET_CONFIG_OBJECTS = "GetConfigObjects";
+
   public static final String SVC_TOTAL_TO_WORDS = "GetTotalInWords";
 
   public static final String SVC_GET_DICTIONARY = "get_dictionary";
-  public static final String SVC_DICTIONARY_PROPERTIES_TO_DATABASE =
-      "dictionary_properties_to_database";
   public static final String SVC_DICTIONARY_DATABASE_TO_PROPERTIES =
       "dictionary_database_to_properties";
 
@@ -223,6 +227,8 @@ public final class AdministrationConstants {
   public static final String GRID_COLORS = "Colors";
   public static final String GRID_THEMES = "Themes";
   public static final String GRID_THEME_COLORS = "ThemeColors";
+
+  public static final String GRID_DICTIONARY = "Dictionary";
 
   public static final String COL_PARAMETER = "Parameter";
   public static final String COL_PARAMETER_NAME = "Name";

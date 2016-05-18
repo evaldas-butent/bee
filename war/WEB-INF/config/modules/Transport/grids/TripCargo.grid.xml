@@ -5,12 +5,14 @@
         name="TripCargo" viewName="TripCargo"
         editForm="CargoHandling"
         caption="=cargos" flexGrow="1"
-    >
+>
   <g:body height="50" />
 
   <g:columns>
     <RelColumn name="OrderNo" caption="=orderNumber" minWidth="100" editEnabled="true"
                editPopup="false" editSource="Order" readOnly="true" />
+    <RelColumn name="Customer" renderColumns="CustomerName" minWidth="100" editEnabled="true"
+               editSource="Customer" readOnly="true" />
     <RelColumn name="Cargo" renderColumns="Cargo Description" editEnabled="true" maxWidth="300"
                editPopup="false" editSource="Cargo" readOnly="true" />
     <DataColumn name="Weight" caption="=trWeightInTons" />
@@ -25,8 +27,12 @@
 
     <DataColumn name="CargoPercent" minValue="0" editInPlace="true">
       <style>
-        <headerStyle><ui:inline>font-weight:bold;</ui:inline></headerStyle>
-        <bodyStyle><ui:inline>font-weight:bold;</ui:inline></bodyStyle>
+        <headerStyle>
+          <ui:inline>font-weight:bold;</ui:inline>
+        </headerStyle>
+        <bodyStyle>
+          <ui:inline>font-weight:bold;</ui:inline>
+        </bodyStyle>
       </style>
     </DataColumn>
   </g:columns>
@@ -37,8 +43,12 @@
     <RelColumn name="Trailer" viewName="UserVehicles" filter="IsTrailer" newRowEnabled="false"
                caching="local" editInPlace="true">
       <style>
-        <headerStyle><ui:inline>font-weight:bold;</ui:inline></headerStyle>
-        <bodyStyle><ui:inline>font-weight:bold;</ui:inline></bodyStyle>
+        <headerStyle>
+          <ui:inline>font-weight:bold;</ui:inline>
+        </headerStyle>
+        <bodyStyle>
+          <ui:inline>font-weight:bold;</ui:inline>
+        </bodyStyle>
       </style>
     </RelColumn>
     <DataColumn name="Message" readOnly="true" />

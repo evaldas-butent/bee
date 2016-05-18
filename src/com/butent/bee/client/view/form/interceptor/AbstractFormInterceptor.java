@@ -39,10 +39,6 @@ public abstract class AbstractFormInterceptor implements FormInterceptor {
   private FormView formView;
 
   @Override
-  public void afterAction(Action action, Presenter presenter) {
-  }
-
-  @Override
   public void afterCreate(FormView form) {
   }
 
@@ -282,6 +278,11 @@ public abstract class AbstractFormInterceptor implements FormInterceptor {
 
   @Override
   public void onUnload(FormView form) {
+  }
+
+  @Override
+  public boolean saveOnPrintNewRow() {
+    return false;
   }
 
   @Override

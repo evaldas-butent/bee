@@ -12,7 +12,7 @@ public class RsDataSource implements JRRewindableDataSource {
   private BeeRowSet rs;
   private int index;
 
-  RsDataSource(BeeRowSet rowSet) {
+  public RsDataSource(BeeRowSet rowSet) {
     rs = Assert.notNull(rowSet);
     moveFirst();
   }

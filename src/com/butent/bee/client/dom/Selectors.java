@@ -213,6 +213,12 @@ public final class Selectors {
     return DomUtils.asList(nodes);
   }
 
+  public static List<Element> getElementsWithDataProperty(Element root, String key) {
+    Assert.notNull(root);
+    Assert.notEmpty(key);
+    return DomUtils.asList(getNodes(root, attributePresence(Attributes.DATA_PREFIX + key.trim())));
+  }
+
   public static NodeList<Element> getNodes(Collection<String> selectors) {
     return getNodes(buildSelectors(selectors));
   }

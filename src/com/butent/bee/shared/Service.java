@@ -12,6 +12,7 @@ public final class Service {
   public static final String PROPERTY_MODULES = "Modules";
   public static final String PROPERTY_VIEW_MODULES = "ViewModules";
   public static final String PROPERTY_ACTIVE_LOCALES = "ActiveLocales";
+  public static final String PROPERTY_IDLE_TIMEOUT = "IdleSessionTimeoutInMinutes";
 
   public static final String RPC_SERVICE_PREFIX = "rpc_";
   public static final String COMPOSITE_SERVICE_PREFIX = "comp_";
@@ -105,12 +106,9 @@ public final class Service {
   public static final String ENSURE_GRID_SETTINGS = DATA_SERVICE_PREFIX + "ensure_grid_settings";
   public static final String COPY_GRID_SETTINGS = DATA_SERVICE_PREFIX + "copy_grid_settings";
 
-  public static final String UPLOAD_FILE = UPLOAD_SERVICE_PREFIX + "file";
-  public static final String UPLOAD_TEMP_FILE = UPLOAD_SERVICE_PREFIX + "temp_file";
-  public static final String UPLOAD_PHOTO = UPLOAD_SERVICE_PREFIX + "photo";
-  public static final String DELETE_PHOTO = UPLOAD_SERVICE_PREFIX + "delete_photo";
-
   public static final String EXPORT_WORKBOOK = EXPORT_SERVICE_PREFIX + "workbook";
+  public static final String EXPORT_ROWS = EXPORT_SERVICE_PREFIX + "rows";
+  public static final String EXPORT_CLEAR = EXPORT_SERVICE_PREFIX + "clear";
 
   public static final String CHAT_SERVICE_PREFIX = RPC_SERVICE_PREFIX + "chat_";
 
@@ -121,6 +119,10 @@ public final class Service {
   public static final String UPDATE_CHAT = CHAT_SERVICE_PREFIX + "update";
   public static final String GET_CHAT_MESSAGES = CHAT_SERVICE_PREFIX + "get_messages";
   public static final String SEND_CHAT_MESSAGE = CHAT_SERVICE_PREFIX + "send_message";
+
+  public static final String L10N_SERVICE_PREFIX = RPC_SERVICE_PREFIX + "l10n_";
+
+  public static final String PREPARE_DICTIONARY = L10N_SERVICE_PREFIX + "prepare_dictionary";
 
   public static final String RPC_VAR_PREFIX = "bee_";
   public static final String RPC_VAR_SYS_PREFIX = RPC_VAR_PREFIX + "sys_";
@@ -195,8 +197,6 @@ public final class Service {
   public static final String VAR_FILE_ID = RPC_VAR_PREFIX + "file_id";
   public static final String VAR_FILES = RPC_VAR_PREFIX + "files";
   public static final String VAR_FILE_NAME = RPC_VAR_PREFIX + "file_name";
-  public static final String VAR_FILE_TYPE = RPC_VAR_PREFIX + "file_type";
-  public static final String VAR_FILE_SIZE = RPC_VAR_PREFIX + "file_size";
 
   public static final String VAR_OLD_VALUE = RPC_VAR_PREFIX + "old_value";
   public static final String VAR_OPTIONS = RPC_VAR_PREFIX + "options";
@@ -227,11 +227,13 @@ public final class Service {
   public static final String VAR_TIME = RPC_VAR_PREFIX + "time";
   public static final String VAR_QTY = RPC_VAR_PREFIX + " qty";
 
+  public static final String VAR_YEAR = RPC_VAR_PREFIX + "year";
+  public static final String VAR_MONTH = RPC_VAR_PREFIX + "month";
+
   public static final String VIEW_COLUMN_SEPARATOR = " ";
 
   public static boolean isChatService(String svc) {
-    Assert.notEmpty(svc);
-    return svc.startsWith(CHAT_SERVICE_PREFIX);
+    return svc != null && svc.startsWith(CHAT_SERVICE_PREFIX);
   }
 
   /**
@@ -241,8 +243,7 @@ public final class Service {
    * @return true if name of service starts with {@link #DATA_SERVICE_PREFIX}
    */
   public static boolean isDataService(String svc) {
-    Assert.notEmpty(svc);
-    return svc.startsWith(DATA_SERVICE_PREFIX);
+    return svc != null && svc.startsWith(DATA_SERVICE_PREFIX);
   }
 
   /**
@@ -252,8 +253,7 @@ public final class Service {
    * @return true if name of service starts with {@link #DB_META_SERVICE_PREFIX}
    */
   public static boolean isDbMetaService(String svc) {
-    Assert.notEmpty(svc);
-    return svc.startsWith(DB_META_SERVICE_PREFIX);
+    return svc != null && svc.startsWith(DB_META_SERVICE_PREFIX);
   }
 
   /**
@@ -263,8 +263,7 @@ public final class Service {
    * @return true if name of service starts with {@link #DB_SERVICE_PREFIX}
    */
   public static boolean isDbService(String svc) {
-    Assert.notEmpty(svc);
-    return svc.startsWith(DB_SERVICE_PREFIX);
+    return svc != null && svc.startsWith(DB_SERVICE_PREFIX);
   }
 
   /**
@@ -277,6 +276,10 @@ public final class Service {
     return BeeUtils.same(svc, INVOKE);
   }
 
+  public static boolean isL10nService(String svc) {
+    return svc != null && svc.startsWith(L10N_SERVICE_PREFIX);
+  }
+
   /**
    * Returns true if {@code svc} value starts with {@link #SYS_SERVICE_PREFIX}.
    *
@@ -284,8 +287,7 @@ public final class Service {
    * @return true if name of service starts with {@link #SYS_SERVICE_PREFIX};
    */
   public static boolean isSysService(String svc) {
-    Assert.notEmpty(svc);
-    return svc.startsWith(SYS_SERVICE_PREFIX);
+    return svc != null && svc.startsWith(SYS_SERVICE_PREFIX);
   }
 
   private Service() {

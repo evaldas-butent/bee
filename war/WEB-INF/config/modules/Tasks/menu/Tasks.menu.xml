@@ -10,6 +10,7 @@ name="Tasks" label="=crmTasks" order="20" module="Tasks"
   <Item name="DelegatedTasks" label="=crmTasksDelegatedTasks" service="task_list"
     parameters="Delegated" />
   <Item name="ObservedTasks" label="=crmTasksObservedTasks" service="task_list" parameters="Observed" />
+  <Item name="NotScheduledTasks" label="=crmTasksNotScheduledTasks" service="task_list" parameters="Not_Scheduled" />
   <Item name="RecurringTasks" label="=crmRecurringTasks" service="grid" 
     parameters="RecurringTasks" />
   <Item name="AllTasks" label="=crmTasksAll" service="task_list" parameters="All"

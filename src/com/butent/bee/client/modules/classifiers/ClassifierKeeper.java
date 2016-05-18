@@ -274,15 +274,16 @@ public final class ClassifierKeeper {
     });
 
     GridFactory.registerGridInterceptor(VIEW_VEHICLES, new VehiclesGridHandler());
-    GridFactory.registerGridInterceptor(VIEW_COMPANIES, new CompaniesGrid());
 
     FormFactory.registerFormInterceptor("Item", new ItemForm());
+
     FormFactory.registerFormInterceptor(FORM_PERSON, new PersonForm());
     FormFactory.registerFormInterceptor(FORM_COMPANY, new CompanyForm());
-    FormFactory.registerFormInterceptor("Holidays", new HolidaysForm());
-    FormFactory.registerFormInterceptor(FORM_COMPANY_ACTION, new CompanyActionForm());
     FormFactory.registerFormInterceptor(FORM_NEW_COMPANY, new CompanyForm());
+    FormFactory.registerFormInterceptor(FORM_COMPANY_ACTION, new CompanyActionForm());
     FormFactory.registerFormInterceptor(FORM_COMPANY_PERSON, new CompanyPersonForm());
+
+    FormFactory.registerFormInterceptor("Holidays", new HolidaysForm());
 
     SelectorEvent.register(new ClassifierSelector());
 

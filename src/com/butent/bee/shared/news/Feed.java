@@ -227,13 +227,23 @@ public enum Feed implements HasLocalizedCaption {
     }
   },
 
+  TRIPS_MY(ModuleAndSub.of(Module.TRANSPORT), TransportConstants.TBL_TRIPS,
+      TransportConstants.VIEW_TRIPS,
+      Lists.newArrayList(TransportConstants.COL_TRIP_DATE, TransportConstants.COL_TRIP_NO,
+          TransportConstants.ALS_VEHICLE_NUMBER)) {
+    @Override
+    public String getCaption(Dictionary constants) {
+      return constants.feedTrTripsMy();
+    }
+  },
+
   TRIPS(ModuleAndSub.of(Module.TRANSPORT), TransportConstants.TBL_TRIPS,
       TransportConstants.VIEW_TRIPS,
       Lists.newArrayList(TransportConstants.COL_TRIP_DATE, TransportConstants.COL_TRIP_NO,
           TransportConstants.ALS_VEHICLE_NUMBER)) {
     @Override
     public String getCaption(Dictionary constants) {
-      return constants.feedTrTrips();
+      return constants.feedTrTripsAll();
     }
   },
 

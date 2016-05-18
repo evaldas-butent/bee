@@ -661,6 +661,11 @@ public class UserServiceBean {
     return (userInfo == null) ? null : userInfo.isBlocked(System.currentTimeMillis());
   }
 
+  public boolean isColumnRequired(BeeView viewName, String column) {
+    UserInfo info = getCurrentUserInfo();
+    return (info == null) ? false : info.getUserData().isColumnRequired(viewName.getName(), column);
+  }
+
   public boolean isColumnVisible(BeeView view, String column) {
     UserInfo info = getCurrentUserInfo();
 

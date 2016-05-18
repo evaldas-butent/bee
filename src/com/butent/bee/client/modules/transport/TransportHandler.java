@@ -1,7 +1,6 @@
 package com.butent.bee.client.modules.transport;
 
 import com.google.common.collect.Lists;
-import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 
@@ -13,7 +12,6 @@ import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
-import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.Queries.RowSetCallback;
@@ -24,6 +22,9 @@ import com.butent.bee.client.modules.trade.InvoiceForm;
 import com.butent.bee.client.modules.trade.InvoicesGrid;
 import com.butent.bee.client.modules.trade.TradeUtils;
 import com.butent.bee.client.modules.transport.charts.ChartBase;
+import com.butent.bee.client.output.Report;
+import com.butent.bee.client.output.ReportItem;
+import com.butent.bee.client.output.ReportUtils;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.presenter.PresenterCallback;
 import com.butent.bee.client.render.ProvidesGridColumnRenderer;
@@ -31,20 +32,16 @@ import com.butent.bee.client.render.RendererFactory;
 import com.butent.bee.client.style.ColorStyleProvider;
 import com.butent.bee.client.style.ConditionalStyle;
 import com.butent.bee.client.ui.FormFactory;
-import com.butent.bee.client.view.ViewCallback;
 import com.butent.bee.client.view.ViewFactory;
 import com.butent.bee.client.view.ViewHelper;
-import com.butent.bee.client.view.ViewSupplier;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.FileGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.TreeGridInterceptor;
 import com.butent.bee.client.widget.Image;
-import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
-import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -54,18 +51,19 @@ import com.butent.bee.shared.data.event.RowTransformEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.menu.MenuHandler;
 import com.butent.bee.shared.menu.MenuService;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.news.Feed;
+import com.butent.bee.shared.report.ReportInfo;
 import com.butent.bee.shared.rights.Module;
+import com.butent.bee.shared.ui.Preloader;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.Codec;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 public final class TransportHandler {
@@ -85,45 +83,43 @@ public final class TransportHandler {
   }
 
   static final class Profit extends Image implements ClickHandler {
-    private final String idName;
-    private final long id;
+    private final String column;
+    private final String value;
 
-    Profit(String idName, long id) {
+    Profit(String column, String value) {
       super(Global.getImages().silverProfit());
       setTitle(Localized.dictionary().profit());
       addClickHandler(this);
-      this.idName = idName;
-      this.id = id;
+      this.column = column;
+      this.value = value;
     }
 
     @Override
     public void onClick(ClickEvent event) {
-      ParameterList args = TransportHandler.createArgs(SVC_GET_PROFIT);
-      args.addDataItem(idName, id);
+      Report report = Report.TRANSPORT_TRIP_PROFIT;
 
-      BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
-        @Override
-        public void onResponse(ResponseObject response) {
-          Assert.notNull(response);
-
-          if (response.hasErrors()) {
-            Global.showError(Lists.newArrayList(response.getErrors()));
-
-          } else if (response.hasArrayResponse(String.class)) {
-            String[] arr = Codec.beeDeserializeCollection(response.getResponseAsString());
-            List<String> messages = new ArrayList<>();
-
-            if (arr != null && arr.length % 2 == 0) {
-              for (int i = 0; i < arr.length; i += 2) {
-                messages.add(BeeUtils.joinWords(arr[i],
-                    BeeUtils.isDouble(arr[i + 1]) ? BeeUtils.round(arr[i + 1], 2) : arr[i + 1]));
-              }
+      ReportUtils.getReports(report, reports -> {
+        Consumer<ReportInfo> processor = reportInfo -> {
+          for (ReportItem item : report.getItems()) {
+            if (Objects.equals(item.getExpression(), column)) {
+              reportInfo.getFilterItems().clear();
+              reportInfo.getFilterItems().add(item.setFilter(value));
+              break;
             }
-            Global.showInfo(messages);
-
-          } else {
-            Global.showError("Unknown response");
           }
+          report.showModal(reportInfo);
+        };
+
+        if (reports.size() > 1) {
+          List<String> caps = new ArrayList<>();
+
+          for (ReportInfo rep : reports) {
+            caps.add(rep.getCaption());
+          }
+          Global.choice(Localized.dictionary().report(), null, caps,
+              idx -> processor.accept(reports.get(idx)));
+        } else {
+          processor.accept(BeeUtils.peek(reports));
         }
       });
     }
@@ -193,27 +189,15 @@ public final class TransportHandler {
   }
 
   public static void register() {
-    MenuService.ASSESSMENTS_GRID.setHandler(new MenuHandler() {
-      @Override
-      public void onSelection(String parameters) {
-        openAssessment(parameters, ViewHelper.getPresenterCallback());
-      }
-    });
+    MenuService.ASSESSMENTS_GRID.setHandler(
+        parameters -> openAssessment(parameters, ViewHelper.getPresenterCallback()));
 
     ViewFactory.registerSupplier(GridFactory.getSupplierKey(GRID_ASSESSMENT_REQUESTS, null),
-        new ViewSupplier() {
-          @Override
-          public void create(ViewCallback callback) {
-            openAssessment(GRID_ASSESSMENT_REQUESTS, ViewFactory.getPresenterCallback(callback));
-          }
-        });
+        callback -> openAssessment(GRID_ASSESSMENT_REQUESTS,
+            ViewFactory.getPresenterCallback(callback)));
     ViewFactory.registerSupplier(GridFactory.getSupplierKey(GRID_ASSESSMENT_ORDERS, null),
-        new ViewSupplier() {
-          @Override
-          public void create(ViewCallback callback) {
-            openAssessment(GRID_ASSESSMENT_ORDERS, ViewFactory.getPresenterCallback(callback));
-          }
-        });
+        callback -> openAssessment(GRID_ASSESSMENT_ORDERS,
+            ViewFactory.getPresenterCallback(callback)));
 
     SelectorEvent.register(new TransportSelectorHandler());
 
@@ -307,29 +291,13 @@ public final class TransportHandler {
 
     FormFactory.registerFormInterceptor(FORM_CARGO, new OrderCargoForm());
 
-    final Consumer<ScheduledCommand> assessmentConsumer = new Consumer<ScheduledCommand>() {
-      @Override
-      public void accept(final ScheduledCommand command) {
-        Global.getParameter(PRM_BIND_EXPENSES_TO_INCOMES, new Consumer<String>() {
-          @Override
-          public void accept(String prm) {
-            bindExpensesToIncomes = BeeUtils.unbox(BeeUtils.toBoolean(prm));
-            command.execute();
-          }
+    final Preloader assessmentConsumer = command ->
+        Global.getParameter(PRM_BIND_EXPENSES_TO_INCOMES, prm -> {
+          bindExpensesToIncomes = BeeUtils.unbox(BeeUtils.toBoolean(prm));
+          command.run();
         });
-      }
-    };
-    FormFactory.registerPreloader(FORM_CARGO, new Consumer<ScheduledCommand>() {
-      @Override
-      public void accept(final ScheduledCommand command) {
-        OrderCargoForm.preload(new ScheduledCommand() {
-          @Override
-          public void execute() {
-            assessmentConsumer.accept(command);
-          }
-        });
-      }
-    });
+    FormFactory.registerPreloader(FORM_CARGO,
+        command -> OrderCargoForm.preload(() -> assessmentConsumer.accept(command)));
     FormFactory.registerPreloader(FORM_ASSESSMENT, assessmentConsumer);
     FormFactory.registerPreloader(FORM_ASSESSMENT_FORWARDER, assessmentConsumer);
 
