@@ -13,7 +13,6 @@ import static com.butent.bee.shared.modules.payroll.PayrollConstants.*;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.http.RequestInfo;
-import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.modules.administration.AdministrationModuleBean;
 import com.butent.bee.server.sql.HasConditions;
@@ -67,7 +66,7 @@ import javax.ejb.Stateless;
 
 @Stateless
 @LocalBean
-public class PayrollModuleBean implements BeeModule {
+public class PayrollModuleBean extends CustomERPIntegration {
 
   private static BeeLogger logger = LogUtils.getLogger(PayrollModuleBean.class);
 
@@ -131,7 +130,7 @@ public class PayrollModuleBean implements BeeModule {
 
   @Override
   public Collection<BeeParameter> getDefaultParameters() {
-    return null;
+    return super.getDefaultParameters();
   }
 
   public ResponseObject getEmployeeEarnings(String companyCode, Integer tabNumber,
@@ -337,6 +336,7 @@ public class PayrollModuleBean implements BeeModule {
 
   @Override
   public void init() {
+    super.init();
   }
 
   private ResponseObject getEarnings(RequestInfo reqInfo) {
