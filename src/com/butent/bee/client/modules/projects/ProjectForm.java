@@ -5,6 +5,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.event.shared.HasHandlers;
+import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 
 import static com.butent.bee.shared.modules.projects.ProjectConstants.*;
@@ -60,6 +61,7 @@ import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.documents.DocumentConstants;
 import com.butent.bee.shared.modules.projects.ProjectConstants.ProjectEvent;
 import com.butent.bee.shared.modules.projects.ProjectStatus;
+import com.butent.bee.shared.modules.service.ServiceConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
@@ -112,6 +114,7 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
   private DataSelector owner;
   private ChildGrid tasks;
   private ChildGrid dates;
+  private ChildGrid serviceObjects;
 
   private BeeRowSet timeUnits;
 
@@ -133,7 +136,7 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
 
     if (widget instanceof DataSelector && BeeUtils.same(name, WIDGET_TIME_UNIT)) {
       unitSelector = (DataSelector) widget;
-      unitSelector.setEnabled(false);
+      setEnabled(unitSelector, false);
     }
 
     if (widget instanceof InputText && BeeUtils.same(name, WIDGET_EXPECTED_TASKS_DURATION)) {
@@ -166,6 +169,11 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
 
     if (widget instanceof ChildGrid && BeeUtils.same(name, GRID_PROJECT_DATES)) {
       dates = (ChildGrid) widget;
+    }
+
+    if (widget instanceof ChildGrid
+        && BeeUtils.same(name, ServiceConstants.GRID_CHILD_SERVICE_OBJECTS)) {
+      serviceObjects = (ChildGrid) widget;
     }
   }
 
@@ -208,36 +216,31 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
     }
 
     if (!DataUtils.isNewRow(row)) {
-      form.setEnabled(ProjectsHelper.isProjectOwner(form, row) && !isProjectApproved(form, row)
+      setEnabled(form, ProjectsHelper.isProjectOwner(form, row) && !isProjectApproved(form, row)
           && !isProjectSuspended(
               form, row));
 
-      if (status != null) {
-        status.setEnabled(ProjectsHelper.isProjectOwner(form, row));
-      }
+      setEnabled(status, ProjectsHelper.isProjectOwner(form, row));
 
     } else {
-      form.setEnabled(true);
-
-      if (status != null) {
-        status.setEnabled(true);
-      }
-
+      setEnabled(form, true);
+      setEnabled(status, true);
     }
 
     if (ProjectsHelper.isProjectUser(form, row) || BeeKeeper.getUser().isMenuVisible(
         "Projects.AllProjects")
         || BeeKeeper.getUser().isAdministrator()) {
-      documents.setEnabled(true);
+      setEnabled(documents, true);
     }
 
     if (BeeKeeper.getUser().isAdministrator()) {
-      owner.setEnabled(true);
+      setEnabled(owner, true);
     }
 
     if ((ProjectsHelper.isProjectUser(form, row) || ProjectsHelper.isProjectOwner(form, row))
         && tasks != null && !(isProjectApproved(form, row) || isProjectSuspended(form, row))) {
-      tasks.setEnabled(true);
+      setEnabled(tasks, true);
+      setEnabled(serviceObjects, true);
     }
 
     lockedValidations.clear();
@@ -613,6 +616,12 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
     }
   }
 
+  private static void setEnabled(HasEnabled widget, boolean enabled) {
+    if (widget != null) {
+      widget.setEnabled(enabled);
+    }
+  }
+
   private void commitData(final FormView form, final String column, final String value) {
     IsRow oldRow = form.getOldRow();
     IsRow newRow = form.getActiveRow();
@@ -890,9 +899,9 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
     if (unitSelector != null) {
       if (timeUnits != null) {
         unitSelector.getOracle().setAdditionalFilter(Filter.idIn(getTimeUnits().getRowIds()), true);
-        unitSelector.setEnabled(true);
+        setEnabled(unitSelector, true);
       } else {
-        unitSelector.setEnabled(false);
+        setEnabled(unitSelector, false);
       }
     }
   }
