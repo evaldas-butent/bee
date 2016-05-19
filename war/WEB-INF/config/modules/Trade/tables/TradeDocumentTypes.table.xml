@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+  name="TradeDocumentTypes"
+  idName="TradeDocumentTypeID"
+  >
+  <Fields>
+    <String name="DocumentTypeName" precision="60" notNull="true" unique="true" translatable="true"
+      label="=trdDocumentType" />
+
+    <Integer name="Ordinal" label="=ordinal" />
+    <Text name="Description" label="=description" />
+    
+    <Boolean name="PhaseOrder" label="=trdDocumentPhaseOrder" />
+    <Boolean name="PhasePending" label="=trdDocumentPhasePending" />
+    <Boolean name="PhaseActive" label="=trdDocumentPhaseActive" />
+    <Boolean name="PhaseCompleted" label="=trdDocumentPhaseCompleted" />
+    <Boolean name="PhaseApproved" label="=trdDocumentPhaseApproved" />
+  </Fields>
+</Table>

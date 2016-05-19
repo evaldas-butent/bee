@@ -152,14 +152,14 @@ public class TradeActTransferReport extends ReportInterceptor {
     DateTime end = getDateTime(NAME_END_DATE);
 
     if (start == null) {
-      getFormView().notifyWarning(Localized.getConstants().dateFrom(),
-          Localized.getConstants().valueRequired());
+      getFormView().notifyWarning(Localized.dictionary().dateFrom(),
+          Localized.dictionary().valueRequired());
       getFormView().focus(NAME_START_DATE);
       return;
     }
     if (end == null) {
-      getFormView().notifyWarning(Localized.getConstants().dateTo(),
-          Localized.getConstants().valueRequired());
+      getFormView().notifyWarning(Localized.dictionary().dateTo(),
+          Localized.dictionary().valueRequired());
       getFormView().focus(NAME_END_DATE);
       return;
     }
@@ -221,7 +221,7 @@ public class TradeActTransferReport extends ReportInterceptor {
           sheet.autoSizeAll();
 
         } else {
-          getFormView().notifyWarning(Localized.getConstants().nothingFound());
+          getFormView().notifyWarning(Localized.dictionary().nothingFound());
         }
       }
     });
@@ -315,7 +315,7 @@ public class TradeActTransferReport extends ReportInterceptor {
       String colName = data.getColumnName(j);
 
       if (COL_TA_ITEM.equals(colName)) {
-        text = Localized.getConstants().service();
+        text = Localized.dictionary().service();
       } else if (MONEY_COLUMNS.contains(colName)) {
         text = BeeUtils.joinWords(TradeActHelper.getLabel(colName), currencyName);
       } else {
@@ -430,7 +430,7 @@ public class TradeActTransferReport extends ReportInterceptor {
 
       Integer first = indexes.get(0);
       if (BeeUtils.isPositive(first)) {
-        text = Localized.getConstants().totalOf();
+        text = Localized.dictionary().totalOf();
 
         table.setText(r, first - 1, text);
 

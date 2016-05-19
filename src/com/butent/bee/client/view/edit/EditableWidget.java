@@ -10,6 +10,7 @@ import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.ui.Widget;
 
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.HasRelatedRow;
 import com.butent.bee.client.dom.DomUtils;
@@ -248,6 +249,10 @@ public class EditableWidget implements EditChangeHandler, FocusHandler, BlurHand
     return widgetDescription.getRowProperty();
   }
 
+  public Boolean getUserMode() {
+    return widgetDescription.getUserMode();
+  }
+
   public HasCellValidationHandlers getValidationDelegate() {
     return validationDelegate;
   }
@@ -282,7 +287,7 @@ public class EditableWidget implements EditChangeHandler, FocusHandler, BlurHand
   }
 
   public boolean hasRowProperty() {
-    return !BeeUtils.isEmpty(widgetDescription.getRowProperty());
+    return !BeeUtils.isEmpty(getRowPropertyName());
   }
 
   public boolean hasSource(String source) {
@@ -291,7 +296,7 @@ public class EditableWidget implements EditChangeHandler, FocusHandler, BlurHand
     } else if (hasColumn()) {
       return BeeUtils.same(source, getColumnId());
     } else {
-      return BeeUtils.same(source, widgetDescription.getRowProperty());
+      return BeeUtils.same(source, getRowPropertyName());
     }
   }
 
@@ -352,7 +357,7 @@ public class EditableWidget implements EditChangeHandler, FocusHandler, BlurHand
 
         if (!BeeUtils.isEmpty(currencySource)) {
           return RelationUtils.maybeUpdateCurrency(Data.getDataInfo(viewName), row, currencySource,
-              !BeeUtils.isEmpty(getEditor().getNormalizedValue()));
+              getEditor().getNormalizedValue() != null);
         }
       }
     }
@@ -479,7 +484,7 @@ public class EditableWidget implements EditChangeHandler, FocusHandler, BlurHand
   }
 
   public boolean validate(ValidationOrigin origin) {
-    if (isReadOnly()) {
+    if (isReadOnly() || !getEditor().isEnabled()) {
       return true;
 
     } else {
@@ -519,10 +524,14 @@ public class EditableWidget implements EditChangeHandler, FocusHandler, BlurHand
   private String getOldValue() {
     if (getRowValue() == null) {
       return null;
+
     } else if (hasColumn()) {
       return getRowValue().getString(getDataIndex());
+
     } else if (hasRowProperty()) {
-      return getRowValue().getProperty(widgetDescription.getRowProperty());
+      Long userId = BeeKeeper.getUser().idOrNull(getUserMode());
+      return getRowValue().getProperty(getRowPropertyName(), userId);
+
     } else {
       return null;
     }

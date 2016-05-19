@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+      name="TreePrefixes" source="TreePrefixes" caption="=documentNumberPrefixes"
+    >
+  <Columns>
+    <SimpleColumn name="Category" />
+    <SimpleColumn name="NumberPrefix" />
+
+    <SimpleColumn name="Type" />
+    <SimpleJoin joinType="LEFT" name="Type">
+      <SimpleColumn alias="TypeName" name="Name" />
+    </SimpleJoin>
+  </Columns>
+</View>

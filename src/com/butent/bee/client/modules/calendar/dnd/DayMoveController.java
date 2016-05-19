@@ -160,7 +160,7 @@ public class DayMoveController implements MoveEvent.Handler {
           break;
 
         case TASK:
-          TasksKeeper.extendTask(item.getId(), range.lowerEndpoint(), range.upperEndpoint());
+          TasksKeeper.extendTask(item.getId(), range.upperEndpoint());
           break;
       }
 
@@ -480,7 +480,7 @@ public class DayMoveController implements MoveEvent.Handler {
 
       } else if (column == SELECTED_TODO) {
         if (getPositioner() != null) {
-          getPositioner().setInnerText(Localized.getConstants().crmTodoItem());
+          getPositioner().setInnerText(Localized.dictionary().crmTodoItem());
         }
 
         targetTodo(true);

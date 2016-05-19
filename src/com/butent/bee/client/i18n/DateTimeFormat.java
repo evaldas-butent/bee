@@ -59,12 +59,12 @@ public class DateTimeFormat {
     YEAR_QUARTER_ABBR,
   }
 
-  private static class PatternPart {
+  private static final class PatternPart {
     private String text;
     private int count;
     private boolean abutStart;
 
-    public PatternPart(String txt, int cnt) {
+    private PatternPart(String txt, int cnt) {
       text = txt;
       count = cnt;
       abutStart = false;

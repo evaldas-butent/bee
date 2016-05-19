@@ -1,10 +1,9 @@
 package com.butent.bee.client.modules.transport;
 
-import com.google.common.collect.ImmutableMap;
-
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.data.Data;
+import com.butent.bee.client.data.Provider;
 import com.butent.bee.client.event.logical.ParentRowEvent;
 import com.butent.bee.client.modules.documents.RelatedDocumentsHandler;
 import com.butent.bee.client.presenter.GridPresenter;
@@ -22,8 +21,6 @@ import java.util.Collection;
 import java.util.Map;
 
 class TransportDocumentsGrid extends RelatedDocumentsHandler {
-
-  private static final String FILTER_KEY = "f1";
 
   private static final BeeLogger logger = LogUtils.getLogger(TransportDocumentsGrid.class);
 
@@ -45,7 +42,7 @@ class TransportDocumentsGrid extends RelatedDocumentsHandler {
 
   @Override
   public Map<String, Filter> getInitialParentFilters(Collection<UiOption> uiOptions) {
-    return ImmutableMap.of(FILTER_KEY, getFilter(getPendingId()));
+    return Provider.createDefaultParentFilters(getFilter(getPendingId()));
   }
 
   @Override
@@ -135,7 +132,7 @@ class TransportDocumentsGrid extends RelatedDocumentsHandler {
   private void maybeRefresh(GridPresenter presenter, Long parentId) {
     if (presenter != null) {
       Filter filter = getFilter(parentId);
-      boolean changed = presenter.getDataProvider().setParentFilter(FILTER_KEY, filter);
+      boolean changed = presenter.getDataProvider().setDefaultParentFilter(filter);
 
       if (changed) {
         presenter.handleAction(Action.REFRESH);

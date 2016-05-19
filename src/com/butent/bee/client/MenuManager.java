@@ -127,6 +127,29 @@ public class MenuManager {
     return w;
   }
 
+  private static List<MenuItem> filterItems(Menu menu, MenuService service) {
+    List<MenuItem> result = new ArrayList<>();
+
+    if (menu instanceof MenuItem) {
+      if (hasService(menu, service)) {
+        result.add((MenuItem) menu);
+      }
+
+    } else if (menu instanceof MenuEntry) {
+      for (Menu child : ((MenuEntry) menu).getItems()) {
+        if (child instanceof MenuItem) {
+          if (hasService(child, service)) {
+            result.add((MenuItem) child);
+          }
+        } else {
+          result.addAll(filterItems(child, service));
+        }
+      }
+    }
+
+    return result;
+  }
+
   private static MenuItem findItem(Menu menu, String name) {
     if (menu instanceof MenuItem) {
       if (BeeUtils.same(menu.getName(), name)) {
@@ -151,6 +174,11 @@ public class MenuManager {
 
   private static BarType getBarType(boolean table) {
     return table ? BarType.TABLE : BarType.FLOW;
+  }
+
+  private static boolean hasService(Menu item, MenuService service) {
+    return item instanceof MenuItem && service != null
+        && ((MenuItem) item).getService() == service;
   }
 
   /**
@@ -235,6 +263,18 @@ public class MenuManager {
     }
   }
 
+  public List<MenuItem> filter(MenuService service) {
+    List<MenuItem> result = new ArrayList<>();
+
+    if (service != null) {
+      for (Menu menu : roots) {
+        result.addAll(filterItems(menu, service));
+      }
+    }
+
+    return result;
+  }
+
   public List<MenuCommand> getCommands() {
     List<MenuCommand> commands = new ArrayList<>();
 
@@ -261,19 +301,27 @@ public class MenuManager {
     return roots.isEmpty();
   }
 
-  public boolean loadMenu() {
+  public void loadMenu() {
+    loadMenu(null);
+  }
+
+  public void loadMenu(final Runnable callback) {
     ParameterList params = BeeKeeper.getRpc().createParameters(Service.GET_MENU);
     params.addQueryItem(Service.VAR_RIGHTS, 1);
+    params.addQueryItem(Service.VAR_TRANSFORM, 1);
 
     BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
       @Override
       public void onResponse(ResponseObject response) {
         if (response.hasResponse()) {
-          restore((String) response.getResponse());
+          restore(response.getResponseAsString());
+
+          if (callback != null) {
+            callback.run();
+          }
         }
       }
     });
-    return true;
   }
 
   public void restore(String data) {

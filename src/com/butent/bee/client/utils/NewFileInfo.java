@@ -12,6 +12,7 @@ public class NewFileInfo extends FileInfo {
 
   public NewFileInfo(File file) {
     super(null, file.getName(), BeeUtils.toLong(file.getSize()), file.getType());
+    setCaption(file.getName());
     this.file = file;
 
     double millis = FileUtils.getLastModifiedMillis(file);

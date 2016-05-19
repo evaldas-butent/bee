@@ -10,17 +10,17 @@ public enum ProjectPriority implements HasCaption {
   /**
    * Low priority type of project.
    */
-  LOW(Localized.getConstants().lowPriority()),
+  LOW(Localized.dictionary().lowPriority()),
 
   /**
    * Medium priority type of project.
    */
-  MEDIUM(Localized.getConstants().mediumPriority()),
+  MEDIUM(Localized.dictionary().mediumPriority()),
 
   /**
    * High priority type of project.
    */
-  HIGH(Localized.getConstants().highPriority());
+  HIGH(Localized.dictionary().highPriority());
 
   private String caption;
 

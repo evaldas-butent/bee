@@ -12,5 +12,6 @@
     <Numeric name="Winter" precision="6" scale="2" notNull="true" label="=trFuelConsumptionsWinter"/>
     <Numeric name="TonneKilometer" precision="6" scale="4" label="=trTonneKilometer" />
     <Numeric name="MotoHour" precision="6" scale="2" label="=trMotoHour" />
+    <Numeric name="Average" precision="6" scale="2" label="=trFuelConsumptionsAverage"/>
   </Fields>
 </Table>

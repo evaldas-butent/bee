@@ -3,6 +3,7 @@ package com.butent.bee.client.render;
 import com.butent.bee.shared.HasItems;
 import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.HasValueStartIndex;
 
 import java.util.ArrayList;
@@ -59,13 +60,15 @@ public class ListRenderer extends AbstractCellRenderer implements HasItems, HasV
 
   @Override
   public void addItem(String item) {
-    getItems().add(item);
+    getItems().add(Localized.maybeTranslate(item));
   }
 
   @Override
   public void addItems(Collection<String> items) {
     if (items != null) {
-      getItems().addAll(items);
+      for (String item : items) {
+        addItem(item);
+      }
     }
   }
 

@@ -199,11 +199,11 @@ final class TradeActItemImporter {
     int r = 0;
     int c = 1;
 
-    table.setText(r, c++, Localized.getConstants().article(),
+    table.setText(r, c++, Localized.dictionary().article(),
         STYLE_ARTICLE_PREFIX + STYLE_HEADER_CELL_SUFFIX);
-    table.setText(r, c++, Localized.getConstants().name(),
+    table.setText(r, c++, Localized.dictionary().name(),
         STYLE_NAME_PREFIX + STYLE_HEADER_CELL_SUFFIX);
-    table.setText(r, c++, Localized.getConstants().quantity(),
+    table.setText(r, c++, Localized.dictionary().quantity(),
         STYLE_QTY_PREFIX + STYLE_HEADER_CELL_SUFFIX);
 
     for (Long w : warehouseIds) {
@@ -213,7 +213,7 @@ final class TradeActItemImporter {
 
     table.setText(r, c++, Localized.getLabel(Data.getColumn(VIEW_ITEMS, COL_ITEM_NAME)),
         STYLE_ID_PREFIX + STYLE_HEADER_CELL_SUFFIX);
-    table.setText(r, c++, Localized.getConstants().captionId(),
+    table.setText(r, c++, Localized.dictionary().captionId(),
         STYLE_ID_PREFIX + STYLE_HEADER_CELL_SUFFIX);
 
     table.getRowFormatter().addStyleName(r, STYLE_HEADER_ROW);
@@ -300,7 +300,7 @@ final class TradeActItemImporter {
 
       if (duplicate) {
         table.getRowFormatter().addStyleName(r, STYLE_DUPLICATE_ROW);
-        table.getRow(r).setTitle(Localized.getMessages().valueExists(entry.article));
+        table.getRow(r).setTitle(Localized.dictionary().valueExists(entry.article));
 
       } else if (entry.item != null) {
         table.getRowFormatter().addStyleName(r, STYLE_SELECTED_ROW);

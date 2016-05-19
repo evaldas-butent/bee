@@ -47,16 +47,16 @@ public class TecDocRemote {
     private final List<String[]> baseIndexes = new ArrayList<>();
     private final List<IsSql> preparations = new ArrayList<>();
 
-    public TcdData(SqlCreate base, SqlSelect baseSource) {
+    TcdData(SqlCreate base, SqlSelect baseSource) {
       this.base = base;
       this.baseSource = baseSource;
     }
 
-    public void addPreparation(IsSql preparation) {
+    void addPreparation(IsSql preparation) {
       this.preparations.add(preparation);
     }
 
-    public void addBaseIndexes(String... fldList) {
+    void addBaseIndexes(String... fldList) {
       this.baseIndexes.add(fldList);
     }
   }
@@ -128,7 +128,7 @@ public class TecDocRemote {
         }
         List<StringBuilder> inserts = getRemoteData(query, insert);
 
-        boolean isDebugEnabled = qs.debugOff();
+        boolean isDebugEnabled = QueryServiceBean.debugOff();
 
         for (StringBuilder sql : inserts) {
           Holder<Integer> cnt = Holder.of(0);
@@ -147,7 +147,7 @@ public class TecDocRemote {
           chunkTotal += cnt.get();
           logger.debug(target, "inserted rows:", total);
         }
-        qs.debugOn(isDebugEnabled);
+        QueryServiceBean.debugOn(isDebugEnabled);
 
         if (chunk > 0) {
           offset += chunk;
@@ -168,7 +168,7 @@ public class TecDocRemote {
 
   public void init(List<IsSql> init) {
     DataSource ds = getDataSource();
-    SqlBuilder builder = SqlBuilderFactory.getBuilder(qs.dbEngine(ds));
+    SqlBuilder builder = SqlBuilderFactory.getBuilder(QueryServiceBean.dbEngine(ds));
 
     for (IsSql query : init) {
       if (query instanceof SqlCreate) {
@@ -181,7 +181,7 @@ public class TecDocRemote {
   public BeeRowSet getCrossai(SimpleRowSet orphans) {
     String tmp = SqlUtils.uniqueName();
     DataSource ds = getCrossaiDs();
-    SqlBuilder builder = SqlBuilderFactory.getBuilder(qs.dbEngine(ds));
+    SqlBuilder builder = SqlBuilderFactory.getBuilder(QueryServiceBean.dbEngine(ds));
 
     processSql(ds, new SqlCreate(tmp)
         .setDataSource(new SqlSelect()

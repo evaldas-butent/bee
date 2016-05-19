@@ -69,6 +69,7 @@ public final class Features {
 
   private static Boolean fileApi;
   private static Boolean geolocation;
+  private static Boolean getUserMedia;
   private static Boolean highResolutionTime;
   private static Boolean indexedDB;
 
@@ -113,6 +114,7 @@ public final class Features {
   private static Boolean videoPoster;
 
   private static Boolean webGl;
+  private static Boolean webRtc;
   private static Boolean webSockets;
   private static Boolean webWorkers;
 
@@ -201,6 +203,7 @@ public final class Features {
 
         "File Api", supportsFileApi(),
         "Geolocation", supportsGeolocation(),
+        "Get User Media", supportsGetUserMedia(),
         "High Resolution Time", supportsHighResolutionTime(),
         "Indexed DB", supportsIndexedDB(),
 
@@ -245,6 +248,7 @@ public final class Features {
         "Video Poster", supportsVideoPoster(),
 
         "Web Gl", supportsWebGl(),
+        "Web RTC", supportsWebRtc(),
         "Web Sockets", supportsWebSockets(),
         "Web Workers", supportsWebWorkers(),
 
@@ -504,6 +508,13 @@ public final class Features {
     return geolocation;
   }
 
+  public static boolean supportsGetUserMedia() {
+    if (getUserMedia == null) {
+      getUserMedia = testGetUserMedia();
+    }
+    return getUserMedia;
+  }
+
   public static boolean supportsHighResolutionTime() {
     if (highResolutionTime == null) {
       highResolutionTime = testHighResolutionTime();
@@ -758,6 +769,13 @@ public final class Features {
       webGl = testWebGl();
     }
     return webGl;
+  }
+
+  public static boolean supportsWebRtc() {
+    if (webRtc == null) {
+      webRtc = testWebRtc();
+    }
+    return webRtc;
   }
 
   public static boolean supportsWebSockets() {
@@ -1052,6 +1070,10 @@ public final class Features {
     return isNavigatorProperty("geolocation");
   }
 
+  private static boolean testGetUserMedia() {
+    return isWindowFunction("getUserMedia");
+  }
+
   private static boolean testHighResolutionTime() {
     JavaScriptObject performance = getWindowProperty("performance");
     return performance != null && JsUtils.isFunction(performance, "now");
@@ -1289,6 +1311,10 @@ public final class Features {
     return ok;
   }-*/;
 //@formatter:on
+
+  private static boolean testWebRtc() {
+    return isWindowFunction("RTCPeerConnection");
+  }
 
   private static boolean testWebSockets() {
     return isInWindow("WebSocket");

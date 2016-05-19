@@ -173,7 +173,7 @@ class DebtReportsGrid extends AbstractGridInterceptor implements ClickHandler {
 
   }
 
-  private final Button action = new Button(Localized.getConstants().sendReminder(), this);
+  private final Button action = new Button(Localized.dictionary().sendReminder(), this);
 
   @Override
   public void afterCreatePresenter(final GridPresenter presenter) {
@@ -293,12 +293,12 @@ class DebtReportsGrid extends AbstractGridInterceptor implements ClickHandler {
         @Override
         public String getLabel() {
           return BeeUtils.join(BeeConst.DEFAULT_LIST_SEPARATOR, isTermOverdue() ? Localized
-              .getConstants().trdTermInOverdue()
-              : null, isTermNotExpired() ? Localized.getConstants().trdTermNotExpired() : null,
-              getTermPayFrom() != null ? BeeUtils.joinWords(Localized.getConstants().trdTerm(),
-                  Localized.getConstants().dateFromShort(), getTermPayFrom().toString()) : null,
-              getTermPayTo() != null ? BeeUtils.joinWords(Localized.getConstants().trdTerm(),
-                  Localized.getConstants().dateToShort(), getTermPayTo().toString()) : null);
+              .dictionary().trdTermInOverdue()
+              : null, isTermNotExpired() ? Localized.dictionary().trdTermNotExpired() : null,
+              getTermPayFrom() != null ? BeeUtils.joinWords(Localized.dictionary().trdTerm(),
+                  Localized.dictionary().dateFromShort(), getTermPayFrom().toString()) : null,
+              getTermPayTo() != null ? BeeUtils.joinWords(Localized.dictionary().trdTerm(),
+                  Localized.dictionary().dateToShort(), getTermPayTo().toString()) : null);
         }
 
         @Override
@@ -322,8 +322,8 @@ class DebtReportsGrid extends AbstractGridInterceptor implements ClickHandler {
         private Widget getWidget() {
           Flow conatainer = new Flow();
           HtmlTable tbl = new HtmlTable();
-          final CheckBox ovt = new CheckBox(Localized.getConstants().trdTermInOverdue());
-          final CheckBox net = new CheckBox(Localized.getConstants().trdTermNotExpired());
+          final CheckBox ovt = new CheckBox(Localized.dictionary().trdTermInOverdue());
+          final CheckBox net = new CheckBox(Localized.dictionary().trdTermNotExpired());
           final InputDate pfd = new InputDate();
           final InputDate ptd = new InputDate();
 
@@ -340,13 +340,13 @@ class DebtReportsGrid extends AbstractGridInterceptor implements ClickHandler {
           conatainer.add(tbl);
 
           // Flow dateContainer = new Flow(StyleUtils.NAME_FLEX_BOX_HORIZONTAL);
-          tbl.setWidget(1, 0, new Label(Localized.getConstants().trdTerm()));
+          tbl.setWidget(1, 0, new Label(Localized.dictionary().trdTerm()));
           tbl.setWidget(1, 1, pfd);
           tbl.setWidget(1, 2, new Label(BeeConst.STRING_MINUS));
           tbl.setWidget(1, 3, ptd);
           // conatainer.add(dateContainer);
 
-          Button filter = new Button(Localized.getConstants().doFilter());
+          Button filter = new Button(Localized.dictionary().doFilter());
           filter.addClickHandler(new ClickHandler() {
 
             @Override
@@ -359,7 +359,7 @@ class DebtReportsGrid extends AbstractGridInterceptor implements ClickHandler {
             }
           });
 
-          Button cancel = new Button(Localized.getConstants().cancel());
+          Button cancel = new Button(Localized.dictionary().cancel());
           cancel.addClickHandler(new ClickHandler() {
             @Override
             public void onClick(ClickEvent event) {
@@ -428,7 +428,7 @@ class DebtReportsGrid extends AbstractGridInterceptor implements ClickHandler {
     }
 
     if (ids.isEmpty()) {
-      presenter.getGridView().notifyWarning(Localized.getConstants().selectAtLeastOneRow());
+      presenter.getGridView().notifyWarning(Localized.dictionary().selectAtLeastOneRow());
       return;
     }
 

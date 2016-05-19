@@ -3,14 +3,12 @@ package com.butent.bee.client.render;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.ImageElement;
 
+import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.CellSource;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.export.XCell;
-import com.butent.bee.shared.export.XPicture;
-import com.butent.bee.shared.export.XSheet;
-import com.butent.bee.shared.io.Paths;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.HashMap;
@@ -38,43 +36,16 @@ public class PhotoRenderer extends AbstractCellRenderer {
     urlCache.put(fileName, url);
   }
 
-  public static String getUrl(String fileName) {
-    if (BeeUtils.isEmpty(fileName)) {
+  public static String getUrl(Long fileId) {
+    if (!DataUtils.isId(fileId)) {
       return null;
-    } else if (urlCache.containsKey(fileName)) {
-      return urlCache.get(fileName);
     } else {
-      return getPath(fileName);
+      return FileUtils.getUrl(fileId);
     }
-  }
-
-  private static String getPath(String fileName) {
-    return Paths.buildPath(Paths.IMAGE_DIR, Paths.PHOTO_DIR, fileName);
   }
 
   public PhotoRenderer(CellSource cellSource) {
     super(cellSource);
-  }
-
-  @Override
-  public XCell export(IsRow row, int cellIndex, Integer styleRef, XSheet sheet) {
-    String src = getSrc(row);
-    if (BeeUtils.isEmpty(src) || sheet == null) {
-      return null;
-    }
-
-    XPicture picture = XPicture.create(src);
-
-    if (picture == null) {
-      return null;
-
-    } else {
-      int ref = sheet.registerPicture(picture);
-      XCell cell = XCell.forPicture(cellIndex, ref);
-      cell.setPictureLayout(XPicture.Layout.RESIZE);
-
-      return cell;
-    }
   }
 
   @Override
@@ -91,12 +62,12 @@ public class PhotoRenderer extends AbstractCellRenderer {
   }
 
   private String getSrc(IsRow row) {
-    String fileName = getString(row);
+    Long fileId = getLong(row);
 
-    if (BeeUtils.isEmpty(fileName)) {
+    if (!DataUtils.isId(fileId)) {
       return null;
     } else {
-      return getUrl(fileName);
+      return getUrl(fileId);
     }
   }
 }

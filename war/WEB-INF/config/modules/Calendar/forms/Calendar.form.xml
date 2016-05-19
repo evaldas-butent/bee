@@ -9,10 +9,10 @@
   xmlns:f="http://www.butent.com/form"
   xmlns:xi="http://www.w3.org/2001/XInclude"
 
-  name="Calendar" viewName="Calendars" caption="=calendar">
+  name="Calendar" viewName="Calendars" caption="=calendar" favorite="Name">
 
   <FlowPanel class="flexBox-vertical">
-    <Table style="&tbl;" cellStyle="&cell;">
+    <Table kind="controls" style="&tbl;" cellStyle="&cell;">
       <row>
         <Label for="Name" />
         <InputText source="Name" style="width: 200px;" visible="true" />
@@ -30,7 +30,7 @@
     <TabbedPages class="flexible">
       <page>
         <text>=filters</text>
-        <Table style="&tbl;" cellStyle="&cell;">
+        <Table kind="controls" style="&tbl;" cellStyle="&cell;">
           <row data="CalAttendeeTypes">
             <Label text="=calAttendeeTypes" />
             <ChildSelector childTable="CalAttendeeTypes" viewName="AttendeeTypes"
@@ -56,7 +56,7 @@
 
       <page>
         <text>=crmTasks</text>
-        <Table style="&tbl;" cellStyle="&cell;">
+        <Table kind="controls" style="&tbl;" cellStyle="&cell;">
           <row>
             <cell><text/></cell>
             <Label text="=background" horizontalAlignment="center" />

@@ -6,10 +6,19 @@
     >
   <g:columns>
     <DataColumn name="Constant">
+      <style>
+        <headerStyle>
+          <ui:font>bold</ui:font>
+        </headerStyle>
+        <bodyStyle>
+          <ui:font>bold</ui:font>
+        </bodyStyle>
+      </style>
       <carry>
         <ui:expression>row.Constant</ui:expression>
       </carry>
     </DataColumn>
+    <RelColumn name="CargoType" />
     <DataColumn name="DateFrom">
       <carry>
         <ui:expression>row.DateTo</ui:expression>

@@ -12,6 +12,7 @@
   xmlns:xi="http://www.w3.org/2001/XInclude"
 
   name="Assessment" viewName="Assessments" showRowId="true"
+        width="70" widthUnit="%" height="80" heightUnit="%"
   >
   <f:properties reports="PrintOrderLT, PrintOrderEN, PrintOrderRU" />
 
@@ -117,6 +118,11 @@
       <page data="ChildAssessments">
         <text>=assessments</text>
         <ChildGrid name="ChildAssessments" relColumn="Assessment" />
+      </page>
+      <page>
+      <text>=relatedInformation</text>
+      <Relations relColumn="Assessment" inline="true"
+                 defaultRelations="Companies Persons Requests Tasks" style="margin: 0px 15px 0px 15px; min-width:300px;" />
       </page>
     </TabbedPages>
   </FlowPanel>

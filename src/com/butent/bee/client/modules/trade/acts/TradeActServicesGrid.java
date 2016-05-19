@@ -76,7 +76,7 @@ public class TradeActServicesGrid extends AbstractGridInterceptor implements
     GridView gridView = presenter.getGridView();
 
     if (gridView != null && !gridView.isReadOnly()) {
-      Button command = new Button(Localized.getConstants().taRecalculatePrices());
+      Button command = new Button(Localized.dictionary().taRecalculatePrices());
       command.addStyleName(STYLE_COMMAND_RECALCULATE_PRICES);
 
       command.addClickHandler(new ClickHandler() {
@@ -286,7 +286,7 @@ public class TradeActServicesGrid extends AbstractGridInterceptor implements
 
     if (!BeeUtils.isPositive(total)) {
       gridView.notifyWarning(Data.getViewCaption(VIEW_TRADE_ACT_ITEMS),
-          Localized.getConstants().noData());
+          Localized.dictionary().noData());
       return;
     }
 
@@ -314,10 +314,10 @@ public class TradeActServicesGrid extends AbstractGridInterceptor implements
     }
 
     if (count > 0) {
-      gridView.notifyInfo(Localized.getMessages().taRecalculatedPrices(count));
+      gridView.notifyInfo(Localized.dictionary().taRecalculatedPrices(count));
     } else {
       gridView.notifyWarning(Data.getColumnLabel(getViewName(), COL_TA_SERVICE_TARIFF),
-          Localized.getConstants().noData());
+          Localized.dictionary().noData());
     }
   }
 

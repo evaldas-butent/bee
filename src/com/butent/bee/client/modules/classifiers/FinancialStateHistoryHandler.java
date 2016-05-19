@@ -14,7 +14,7 @@ import com.butent.bee.client.modules.administration.HistoryHandler;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.render.HasCellRenderer;
-import com.butent.bee.client.ui.*;
+import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.view.edit.EditableColumn;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
@@ -41,7 +41,7 @@ class FinancialStateHistoryHandler extends HistoryHandler {
 
   private final Map<Long, String> finacialStateValues = Maps.newHashMap();
 
-  public FinancialStateHistoryHandler(String viewName, Collection<Long> ids) {
+  FinancialStateHistoryHandler(String viewName, Collection<Long> ids) {
     super(viewName, ids);
   }
 
@@ -90,7 +90,7 @@ class FinancialStateHistoryHandler extends HistoryHandler {
 
     if (!gridDescription.hasColumn(AUDIT_FLD_PARSED_VALUE)) {
       ColumnDescription newCol = new ColumnDescription(ColType.CALCULATED, AUDIT_FLD_PARSED_VALUE);
-      newCol.setCaption(Localized.getConstants().value());
+      newCol.setCaption(Localized.dictionary().value());
       gridDescription.addColumn(newCol);
 
       gridDescription.getColumn(AdministrationConstants.AUDIT_FLD_VALUE).setVisible(false);
@@ -109,7 +109,6 @@ class FinancialStateHistoryHandler extends HistoryHandler {
     gridDescription.setFilter(getFilter());
     return true;
   }
-
 
   @Override
   public boolean onClose(GridPresenter presenter) {

@@ -7,6 +7,17 @@
   >
   <Columns>
     <SimpleColumn name="Date" />
+    
+    <SimpleColumn name="Operation" />
+    <SimpleJoin name="Operation" joinType="LEFT">
+      <SimpleColumn name="OperationName" />
+    </SimpleJoin>
+    
+    <SimpleColumn name="WarehouseFrom" />
+    <SimpleJoin joinType="LEFT" name="WarehouseFrom">
+      <SimpleColumn alias="WarehouseFromCode" name="Code" />
+    </SimpleJoin>
+      
     <SimpleColumn name="SaleSeries" />
     <SimpleJoin name="SaleSeries" joinType="LEFT">
       <SimpleColumn name="SeriesName" alias="InvoicePrefix" />

@@ -136,7 +136,8 @@ public class RowInfo implements BeeSerializable, Comparable<RowInfo> {
   @Override
   public String toString() {
     return BeeUtils.joinWords("id:", getId(), "version:", getVersion(),
-        "editable:", isEditable(), "removable:", isRemovable());
+        isEditable() ? null : "not editable",
+        isRemovable() ? null : "not removable");
   }
 
   private void setId(long id) {

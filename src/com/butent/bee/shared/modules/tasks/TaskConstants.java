@@ -1,50 +1,303 @@
 package com.butent.bee.shared.modules.tasks;
 
+import com.google.common.collect.Lists;
+
+import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.font.FontAwesome;
-import com.butent.bee.shared.i18n.LocalizableConstants;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.modules.tasks.TaskConstants.TaskWorkflowAction.WorkflowOperation;
 import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.ui.HasLocalizedCaption;
+import com.butent.bee.shared.utils.ArrayUtils;
+import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public final class TaskConstants {
 
+  protected static final class TaskWorkflowAction {
+    public enum WorkflowOperation {
+      OR,
+      AND;
+    }
+
+    private enum WorkflowRole {
+      HIDDEN {
+        @Override
+        boolean isValid(boolean isExecutor, boolean isOwner, boolean isObserver, boolean isUser,
+            boolean hasValidStatus) {
+          return false;
+        }
+      },
+      OWNER {
+        @Override
+        boolean isValid(boolean isExecutor, boolean isOwner, boolean isObserver, boolean isUser,
+            boolean hasValidStatus) {
+          return isOwner;
+        }
+      },
+      EXECUTOR {
+        @Override
+        boolean isValid(boolean isExecutor, boolean isOwner, boolean isObserver, boolean isUser,
+            boolean hasValidStatus) {
+          return isExecutor;
+        }
+      },
+      OBSERVER {
+        @Override
+        boolean isValid(boolean isExecutor, boolean isOwner, boolean isObserver, boolean isUser,
+            boolean hasValidStatus) {
+          return isObserver;
+        }
+      },
+      USER {
+        @Override
+        boolean isValid(boolean isExecutor, boolean isOwner, boolean isObserver, boolean isUser,
+            boolean hasValidStatus) {
+          return isUser;
+        }
+      },
+      TASK_STATUS {
+
+        @Override
+        boolean isValid(boolean isExecutor, boolean isOwner, boolean isObserver, boolean isUser,
+            boolean hasValidStatus) {
+          return hasValidStatus;
+        }
+      };
+
+      WorkflowRole() {
+      }
+
+      abstract boolean isValid(boolean isExecutor, boolean isOwner, boolean isObserver,
+          boolean isUser, boolean hasValidStatus);
+    }
+
+    private WorkflowRole role;
+    private List<TaskWorkflowAction> subWorkflow = new ArrayList<>();
+    private WorkflowOperation operation;
+    private TaskStatus checkStatus;
+
+    public static TaskWorkflowAction hidden() {
+      return new TaskWorkflowAction(WorkflowRole.HIDDEN);
+    }
+
+    public static TaskWorkflowAction canOwner() {
+      return new TaskWorkflowAction(WorkflowRole.OWNER);
+    }
+
+    public static TaskWorkflowAction canExecutor() {
+      return new TaskWorkflowAction(WorkflowRole.EXECUTOR);
+    }
+
+    public static TaskWorkflowAction canObserver() {
+      return new TaskWorkflowAction(WorkflowRole.OBSERVER);
+    }
+
+    public static TaskWorkflowAction canUser() {
+      return new TaskWorkflowAction(WorkflowRole.USER);
+    }
+
+    public static TaskWorkflowAction hasStatus(TaskStatus status) {
+      return new TaskWorkflowAction(status);
+    }
+
+    public static TaskWorkflowAction grouped(WorkflowOperation op,
+        TaskWorkflowAction... groups) {
+      Assert.isFalse(ArrayUtils.isEmpty(groups), "TaskWorkflowAction groups required");
+      return new TaskWorkflowAction(op, groups);
+    }
+
+    public boolean canExecute(boolean isExecutor, boolean isOwner, boolean isObserver,
+        boolean isUser, TaskStatus status) {
+      if (this.operation != null && !BeeUtils.isEmpty(subWorkflow)) {
+        switch (this.operation) {
+          case OR:
+            for (TaskWorkflowAction workflowRole : subWorkflow) {
+              if (workflowRole.canExecute(isExecutor, isOwner, isObserver, isUser, status)) {
+                return true;
+              }
+            }
+
+            return false;
+          case AND:
+            for (TaskWorkflowAction workflowRole : subWorkflow) {
+              if (!workflowRole.canExecute(isExecutor, isOwner, isObserver, isUser,
+                  status)) {
+                return false;
+              }
+            }
+
+            return true;
+        }
+
+        Assert.unsupported("Task workflow error. Operation required");
+        return false;
+      } else if (role != null) {
+        return role.isValid(isExecutor, isOwner, isObserver, isUser, status == checkStatus);
+      } else {
+        Assert.unsupported("Task workflow error. Role or group of role required");
+        return false;
+      }
+    }
+
+    private TaskWorkflowAction(WorkflowRole role) {
+      this.role = role;
+    }
+
+    private TaskWorkflowAction(TaskStatus checkStatus) {
+      this(WorkflowRole.TASK_STATUS);
+      this.checkStatus = checkStatus;
+    }
+
+    private TaskWorkflowAction(WorkflowOperation op,
+        TaskWorkflowAction... eventWorkflowRoles) {
+      this.operation = op;
+      this.subWorkflow = Lists.newArrayList(eventWorkflowRoles);
+    }
+
+  }
+
   public enum TaskEvent implements HasCaption {
-    CREATE(Localized.getConstants().crmTaskEventCreated(), Localized.getConstants().crmNewTask(),
-        FontAwesome.CODE_FORK),
-    VISIT(Localized.getConstants().crmTaskEventVisited(), null, null),
-    ACTIVATE(Localized.getConstants().crmTaskForwardedForExecution(),
-        Localized.getConstants().crmTaskForwardForExecution(), FontAwesome.ARROW_CIRCLE_RIGHT),
-    COMMENT(Localized.getConstants().crmTaskComment(), Localized.getConstants().crmActionComment(),
-        FontAwesome.COMMENT_O),
-    EXTEND(Localized.getConstants().crmTaskEventExtended(),
-        Localized.getConstants().crmTaskChangeTerm(), FontAwesome.CLOCK_O),
-    SUSPEND(Localized.getConstants().crmTaskStatusSuspended(),
-        Localized.getConstants().crmActionSuspend(), FontAwesome.MINUS_CIRCLE),
-    RENEW(Localized.getConstants().crmTaskEventRenewed(),
-        Localized.getConstants().crmTaskReturnExecution(), FontAwesome.ARROW_CIRCLE_RIGHT),
-    FORWARD(Localized.getConstants().crmTaskEventForwarded(),
-        Localized.getConstants().crmActionForward(), FontAwesome.ARROW_CIRCLE_O_RIGHT),
-    CANCEL(Localized.getConstants().crmTaskStatusCanceled(),
-        Localized.getConstants().crmTaskCancel(), FontAwesome.BAN),
-    COMPLETE(Localized.getConstants().crmTaskStatusCompleted(),
-        Localized.getConstants().crmActionFinish(), FontAwesome.CHECK_CIRCLE_O),
-    APPROVE(Localized.getConstants().crmTaskEventApproved(),
-        Localized.getConstants().crmTaskConfirm(), FontAwesome.CHECK_SQUARE_O),
-    EDIT(Localized.getConstants().crmTaskEventEdited(), null, null),
-    OUT_OF_OBSERVERS(Localized.getConstants().crmTaskOutOfObservers(),
-        Localized.getConstants().crmTaskOutOfObservers(), FontAwesome.USER_TIMES);
+    CREATE(Localized.dictionary().crmTaskEventCreated(),
+        Localized.dictionary().crmNewTask(),
+        FontAwesome.CODE_FORK,
+        TaskWorkflowAction.grouped(
+            WorkflowOperation.OR,
+            TaskWorkflowAction.canOwner(),
+            TaskWorkflowAction.grouped(WorkflowOperation.AND,
+                TaskWorkflowAction.canExecutor(),
+                TaskWorkflowAction.grouped(WorkflowOperation.OR,
+                    TaskWorkflowAction.hasStatus(TaskStatus.NOT_VISITED),
+                    TaskWorkflowAction.hasStatus(TaskStatus.VISITED),
+                    TaskWorkflowAction.hasStatus(TaskStatus.ACTIVE))))),
+    VISIT(Localized.dictionary().crmTaskEventVisited(),
+        Localized.dictionary().crmTaskStopExecute(),
+        FontAwesome.STOP_CIRCLE_O,
+        TaskWorkflowAction.canExecutor(),
+        TaskWorkflowAction.hasStatus(TaskStatus.ACTIVE)),
+    ACTIVATE(Localized.dictionary().crmTaskEventExecuted(),
+        Localized.dictionary().crmTaskDoExecute(),
+        FontAwesome.PLAY_CIRCLE_O,
+        TaskWorkflowAction.canExecutor(),
+        TaskWorkflowAction.hasStatus(TaskStatus.VISITED)),
+    COMMENT(Localized.dictionary().crmTaskComment(),
+        Localized.dictionary().crmActionComment(),
+        FontAwesome.COMMENT_O,
+        TaskWorkflowAction.grouped(WorkflowOperation.OR,
+            TaskWorkflowAction.canExecutor(),
+            TaskWorkflowAction.canObserver(),
+            TaskWorkflowAction.canOwner(),
+            TaskWorkflowAction.canUser())),
+    EXTEND(Localized.dictionary().crmTaskEventExtended(),
+        Localized.dictionary().crmTaskChangeTerm(),
+        FontAwesome.CLOCK_O,
+        TaskWorkflowAction.grouped(WorkflowOperation.AND,
+            TaskWorkflowAction.canOwner(),
+            TaskWorkflowAction.grouped(WorkflowOperation.OR,
+                TaskWorkflowAction.hasStatus(TaskStatus.VISITED),
+                TaskWorkflowAction.hasStatus(TaskStatus.NOT_VISITED),
+                TaskWorkflowAction.hasStatus(TaskStatus.ACTIVE)))),
+    SUSPEND(Localized.dictionary().crmTaskStatusSuspended(),
+        Localized.dictionary().crmActionSuspend(),
+        FontAwesome.MINUS_CIRCLE,
+        TaskWorkflowAction.grouped(WorkflowOperation.AND,
+            TaskWorkflowAction.canOwner(),
+            TaskWorkflowAction.grouped(WorkflowOperation.OR,
+                TaskWorkflowAction.hasStatus(TaskStatus.VISITED),
+                TaskWorkflowAction.hasStatus(TaskStatus.NOT_VISITED),
+                TaskWorkflowAction.hasStatus(TaskStatus.ACTIVE)))),
+    RENEW(Localized.dictionary().crmTaskEventRenewed(),
+        Localized.dictionary().crmTaskReturnExecution(),
+        FontAwesome.ARROW_CIRCLE_RIGHT,
+        TaskWorkflowAction.grouped(WorkflowOperation.AND,
+            TaskWorkflowAction.canOwner(),
+            TaskWorkflowAction.grouped(WorkflowOperation.OR,
+                TaskWorkflowAction.hasStatus(TaskStatus.SUSPENDED),
+                TaskWorkflowAction.hasStatus(TaskStatus.CANCELED),
+                TaskWorkflowAction.hasStatus(TaskStatus.COMPLETED),
+                TaskWorkflowAction.hasStatus(TaskStatus.APPROVED)))),
+    FORWARD(Localized.dictionary().crmTaskEventForwarded(),
+        Localized.dictionary().crmActionForward(),
+        FontAwesome.ARROW_CIRCLE_O_RIGHT,
+        TaskWorkflowAction.grouped(WorkflowOperation.AND,
+            TaskWorkflowAction.grouped(WorkflowOperation.OR,
+                TaskWorkflowAction.canOwner(),
+                TaskWorkflowAction.canExecutor()),
+            TaskWorkflowAction.grouped(WorkflowOperation.OR,
+                TaskWorkflowAction.hasStatus(TaskStatus.VISITED),
+                TaskWorkflowAction.hasStatus(TaskStatus.NOT_VISITED),
+                TaskWorkflowAction.hasStatus(TaskStatus.ACTIVE)))),
+    CANCEL(Localized.dictionary().crmTaskStatusCanceled(),
+        Localized.dictionary().crmTaskCancel(),
+        FontAwesome.BAN,
+        TaskWorkflowAction.grouped(WorkflowOperation.AND,
+            TaskWorkflowAction.canOwner(),
+            TaskWorkflowAction.grouped(WorkflowOperation.OR,
+                TaskWorkflowAction.hasStatus(TaskStatus.VISITED),
+                TaskWorkflowAction.hasStatus(TaskStatus.NOT_VISITED),
+                TaskWorkflowAction.hasStatus(TaskStatus.ACTIVE)))),
+    COMPLETE(Localized.dictionary().crmTaskStatusCompleted(),
+        Localized.dictionary().crmActionFinish(),
+        FontAwesome.CHECK_CIRCLE_O,
+        TaskWorkflowAction.grouped(WorkflowOperation.AND,
+            TaskWorkflowAction.canExecutor(),
+            TaskWorkflowAction.grouped(WorkflowOperation.OR,
+                TaskWorkflowAction.hasStatus(TaskStatus.VISITED),
+                TaskWorkflowAction.hasStatus(TaskStatus.NOT_VISITED),
+                TaskWorkflowAction.hasStatus(TaskStatus.ACTIVE)))),
+    APPROVE(Localized.dictionary().crmTaskEventApproved(),
+        Localized.dictionary().crmTaskConfirm(),
+        FontAwesome.CHECK_SQUARE_O,
+        TaskWorkflowAction.canOwner(),
+        TaskWorkflowAction.hasStatus(TaskStatus.COMPLETED)),
+    EDIT(Localized.dictionary().crmTaskEventEdited(),
+        null,
+        null,
+        TaskWorkflowAction.hidden()),
+    OUT_OF_OBSERVERS(Localized.dictionary().crmTaskEventOutOfObservers(),
+        Localized.dictionary().crmTaskOutOfObservers(),
+        FontAwesome.USER_TIMES,
+        TaskWorkflowAction.grouped(WorkflowOperation.AND,
+            TaskWorkflowAction.canObserver(),
+            TaskWorkflowAction.grouped(WorkflowOperation.OR,
+                TaskWorkflowAction.hasStatus(TaskStatus.VISITED),
+                TaskWorkflowAction.hasStatus(TaskStatus.NOT_VISITED),
+                TaskWorkflowAction.hasStatus(TaskStatus.ACTIVE)))),
+    REFRESH(Localized.dictionary().actionRefresh(),
+        Localized.dictionary().actionRefresh(),
+        FontAwesome.REFRESH,
+        TaskWorkflowAction.grouped(WorkflowOperation.OR,
+            TaskWorkflowAction.canExecutor(),
+            TaskWorkflowAction.canObserver(),
+            TaskWorkflowAction.canOwner(),
+            TaskWorkflowAction.canUser())),
+    CREATE_NOT_SCHEDULED(Localized.dictionary().crmTaskEventCreated(),
+        Localized.dictionary().crmTasksNotScheduledTasks(),
+        null,
+        TaskWorkflowAction.hidden());
 
     private final String caption;
     private final String commandLabel;
     private final FontAwesome commandIcon;
+    private final List<TaskWorkflowAction> roles;
 
-    TaskEvent(String caption, String commandLabel, FontAwesome commandIcon) {
+    TaskEvent(String caption, String commandLabel, FontAwesome commandIcon,
+        TaskWorkflowAction requiredRole, TaskWorkflowAction... otherRoles) {
+      Assert.notNull(requiredRole);
       this.caption = caption;
       this.commandLabel = commandLabel;
       this.commandIcon = commandIcon;
+      this.roles = Lists.newArrayList(requiredRole);
+      if (!ArrayUtils.isEmpty(otherRoles)) {
+        this.roles.addAll(Lists.newArrayList(otherRoles));
+      }
     }
 
     @Override
@@ -59,12 +312,26 @@ public final class TaskConstants {
     public FontAwesome getCommandIcon() {
       return commandIcon;
     }
+
+    public boolean canExecute(Long executor, Long owner, List<Long> observers, TaskStatus status) {
+      Long userId = BeeKeeper.getUser().getUserId();
+      boolean result = true;
+      for (TaskWorkflowAction role : roles) {
+        result = result && role.canExecute(BeeUtils.unbox(executor) == userId, BeeUtils.unbox(
+            owner) == userId, BeeUtils.contains(observers, userId), userId != BeeUtils.unbox(
+            executor)
+            && userId != BeeUtils.unbox(owner) && !BeeUtils.contains(observers, userId),
+            status);
+      }
+
+      return result;
+    }
   }
 
   public enum TaskPriority implements HasCaption {
-    LOW(Localized.getConstants().crmTaskPriorityLow()),
-    MEDIUM(Localized.getConstants().crmTaskPriorityMedium()),
-    HIGH(Localized.getConstants().crmTaskPriorityHigh());
+    LOW(Localized.dictionary().crmTaskPriorityLow()),
+    MEDIUM(Localized.dictionary().crmTaskPriorityMedium()),
+    HIGH(Localized.dictionary().crmTaskPriorityHigh());
 
     private final String caption;
 
@@ -79,46 +346,121 @@ public final class TaskConstants {
   }
 
   public enum TaskStatus implements HasLocalizedCaption {
+    /**
+     * Task status when Task is created for executor and executor is not Task owner.
+     *
+     * DataStore ID 0.
+     */
     NOT_VISITED {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.crmTaskStatusNotVisited();
       }
     },
+
+    /**
+     * Task status when Task executor initiates ACTIVATE Task Event. The initial task state before
+     * the event can be VISITED.
+     * 
+     * DataStore ID 1.
+     */
     ACTIVE {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.crmTaskStatusActive();
       }
     },
+
+    /**
+     * Task status when Task is created with later start date than today's date.
+     * 
+     * DataStore ID 2.
+     * 
+     * @deprecated Obsolete status. Use NOT_VISITED or VISITED states.
+     */
+    @Deprecated
     SCHEDULED {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.crmTaskStatusScheduled();
       }
     },
+
+    /**
+     * Task status when Task owner initiates SUSPEND event. The initial task state before the event
+     * can be NOT_VISITED, VISITED or ACTIVE.
+     * 
+     * DataStore ID 3.
+     */
     SUSPENDED {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.crmTaskStatusSuspended();
       }
     },
+
+    /**
+     * Task status when Task executor (not Task owner) initiates COMPLETE Task event. The initial
+     * task state before the event can be, NOT_VISITED, VISITED or ACTIVE.
+     * 
+     * DataStore ID 4.
+     */
     COMPLETED {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.crmTaskStatusCompleted();
       }
     },
+
+    /**
+     * Task status when Task owner (or owner can be as executor) initiates APROVE event. The initial
+     * task state before the event can be, NOT_VISITED, VISITED or ACTIVE if executor is task owner
+     * otherwise COMPLETED only.
+     * 
+     * DataStore ID 5.
+     */
     APPROVED {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.crmTaskStatusApproved();
       }
     },
+
+    /**
+     * Task status when Task owner (or owner can be as executor) initiates CANCEL event. The initial
+     * task state before the event can be, NOT_VISITED, VISITED or ACTIVE.
+     * 
+     * DataStore ID 6.
+     */
     CANCELED {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.crmTaskStatusCanceled();
+      }
+    },
+
+    /**
+     * Task status when Task executor opens NOT_VISITED Task form and initiates VISIT Event.
+     * 
+     * DataStore ID 7.
+     */
+    VISITED {
+      @Override
+      public String getCaption(Dictionary constants) {
+        return constants.crmTaskStatusVisited();
+      }
+    },
+
+    /**
+     * Task status when Task is created without executor and start/end dates.
+     * 
+     * DataStore ID 8.
+     */
+    NOT_SCHEDULED {
+
+      @Override
+      public String getCaption(Dictionary constants) {
+        return constants.crmTaskStatusNotScheduled();
       }
     };
 
@@ -131,19 +473,14 @@ public final class TaskConstants {
       return false;
     }
 
-    @Override
-    public String getCaption() {
-      return getCaption(Localized.getConstants());
-    }
-
     public boolean is(Integer status) {
       return status != null && ordinal() == status;
     }
   }
 
   public enum ToDoVisibility implements HasCaption {
-    PUBLIC(Localized.getConstants().calPublic()),
-    PRIVATE(Localized.getConstants().calPrivate());
+    PUBLIC(Localized.dictionary().calPublic()),
+    PRIVATE(Localized.dictionary().calPrivate());
 
     private final String caption;
 
@@ -181,6 +518,7 @@ public final class TaskConstants {
       + "users_hours";
 
   public static final String SVC_GET_REQUEST_FILES = "get_request_files";
+  public static final String SVC_FINISH_REQUEST_WITH_TASK = "finish_request_with_task";
 
   public static final String SVC_RT_GET_SCHEDULING_DATA = "rt_get_scheduling_data";
   public static final String SVC_RT_SPAWN = "rt_spawn";
@@ -212,8 +550,10 @@ public final class TaskConstants {
   public static final String VAR_TASK_RELATIONS = Service.RPC_VAR_PREFIX + "task_relations";
   public static final String VAR_TASK_USERS = Service.RPC_VAR_PREFIX + "task_users";
   public static final String VAR_TASK_PROPERTIES = Service.RPC_VAR_PREFIX + "task_properties";
+  public static final String VAR_TASK_PROJECT = Service.RPC_VAR_PREFIX + "task_project";
 
   public static final String VAR_TASK_VISITED = Service.RPC_VAR_PREFIX + "task_visited";
+  public static final String VAR_TASK_VISITED_STATE = Service.RPC_VAR_PREFIX + "task_visited_state";
 
   public static final String VAR_RT_ID = Service.RPC_VAR_PREFIX + "rt_id";
   public static final String VAR_RT_DAY = Service.RPC_VAR_PREFIX + "rt_day";
@@ -245,6 +585,8 @@ public final class TaskConstants {
   public static final String VIEW_TASK_USERS = "TaskUsers";
   public static final String VIEW_TASK_EVENTS = "TaskEvents";
   public static final String VIEW_TASK_DURATIONS = "TaskDurations";
+  public static final String VIEW_TASK_DURATION_TYPES = "TaskDurationTypes";
+  public static final String VIEW_TASK_PRODUCTS = "TaskProducts";
 
   public static final String VIEW_TASK_TEMPLATES = "TaskTemplates";
   public static final String VIEW_TASK_TYPES = "TaskTypes";
@@ -252,9 +594,11 @@ public final class TaskConstants {
   public static final String VIEW_DURATION_TYPES = "DurationTypes";
 
   public static final String VIEW_RECURRING_TASKS = "RecurringTasks";
+  public static final String VIEW_REQUEST_EVENTS = "RequestEvents";
   public static final String VIEW_RT_DATES = "RTDates";
   public static final String VIEW_RT_FILES = "RTFiles";
 
+  public static final String VIEW_REQUEST_DURATION_TYPES = "RequestDurationTypes";
   public static final String VIEW_REQUEST_FILES = "RequestFiles";
 
   public static final String VIEW_RELATED_TASKS = "RelatedTasks";
@@ -274,6 +618,7 @@ public final class TaskConstants {
   public static final String COL_EXECUTOR = "Executor";
 
   public static final String COL_TASK_ID = "TaskID";
+  public static final String COL_ID = "Id";
 
   public static final String COL_TASK = "Task";
 
@@ -284,6 +629,7 @@ public final class TaskConstants {
   public static final String COL_DESCRIPTION = "Description";
   public static final String COL_CAPTION = "Caption";
   public static final String COL_TASK_COMPANY = "Company";
+  public static final String COL_PRIVATE_TASK = "PrivateTask";
 
   public static final String COL_PARENT = "Parent";
   public static final String COL_ORDER = "Order";
@@ -304,6 +650,9 @@ public final class TaskConstants {
 
   public static final String COL_COMMENT = "Comment";
 
+  public static final String COL_PRODUCT = "Product";
+  public static final String COL_PRODUCT_REQUIRED = "ProductRequired";
+
   public static final String COL_TASK_EVENT = "TaskEvent";
 
   public static final String COL_DURATION_DATE = "DurationDate";
@@ -313,6 +662,7 @@ public final class TaskConstants {
   public static final String COL_DURATION_TYPE_NAME = "Name";
 
   public static final String COL_EVENT = "Event";
+  public static final String COL_EVENT_PROPERTIES = "Properties";
   public static final String COL_EVENT_NOTE = "EventNote";
   public static final String COL_EVENT_DATA = "EventData";
   public static final String COL_EVENT_DURATION = "EventDuration";
@@ -333,10 +683,12 @@ public final class TaskConstants {
   public static final String COL_REQUEST_CUSTOMER_NAME = "CustomerName";
   public static final String COL_REQUEST_CUSTOMER_PERSON = "CustomerPerson";
   public static final String COL_REQUEST_DATE = "Date";
+  public static final String COL_REQUEST_EVENT = "RequestEvent";
   public static final String COL_REQUEST_MANAGER = "Manager";
   public static final String COL_REQUEST_RESULT = "Result";
   public static final String COL_REQUEST_RESULT_PROPERTIES = "ResultProperties";
   public static final String COL_REQUEST_FINISHED = "Finished";
+  public static final String COL_REQUEST_TYPE = "RequestType";
 
   public static final String COL_RECURRING_TASK = "RecurringTask";
 
@@ -378,6 +730,8 @@ public final class TaskConstants {
   public static final String ALS_CONTACT_FIRST_NAME = "ContactFirstName";
   public static final String ALS_CONTACT_LAST_NAME = "ContactLastName";
 
+  public static final String ALS_DURATION_TYPE_NAME = "DurationTypeName";
+
   public static final String ALS_EXECUTOR_FIRST_NAME = "ExecutorFirstName";
   public static final String ALS_EXECUTOR_LAST_NAME = "ExecutorLastName";
 
@@ -401,6 +755,8 @@ public final class TaskConstants {
 
   public static final String ALS_LAST_SPAWN = "LastSpawn";
 
+  public static final String MENU_TASKS = "Tasks";
+
   public static final String PROP_EXECUTORS = "Executors";
   public static final String PROP_EXECUTOR_GROUPS = "ExecutorGroups";
   public static final String PROP_OBSERVERS = "Observers";
@@ -415,9 +771,11 @@ public final class TaskConstants {
   public static final String PROP_PROJECTS = "Projects";
   public static final String PROP_PROJECT_STAGES = "ProjectStages";
   public static final String PROP_TASKS = "Tasks";
+  public static final String PROP_REQUESTS = "Requests";
 
   public static final String PROP_FILES = "Files";
   public static final String PROP_EVENTS = "Events";
+  public static final String PROP_DESCENDING = "Descending";
 
   public static final String PROP_USER = "User";
   public static final String PROP_STAR = "Star";
@@ -447,9 +805,12 @@ public final class TaskConstants {
 
   public static final String GRID_TASK_TYPES = "TaskTypes";
   public static final String GRID_TASK_TEMPLATES = "TaskTemplates";
+  public static final String GRID_TASK_PRODUCTS = "TaskProducts";
 
+  public static final String FORM_NEW_REQUEST_COMMENT = "NewRequestComment";
   public static final String FORM_NEW_TASK = "NewTask";
   public static final String FORM_TASK = "Task";
+  public static final String FORM_TASK_PREVIEW = "TaskPreview";
 
   public static final String FORM_RECURRING_TASK = "RecurringTask";
 
@@ -464,6 +825,9 @@ public final class TaskConstants {
   public static final String FILTER_TASKS_UPDATED = "tasks_updated";
 
   public static final String PRM_END_OF_WORK_DAY = "EndOfWorkDay";
+  public static final String PRM_START_OF_WORK_DAY = "StartOfWorkDay";
+  public static final String PRM_DEFAULT_DBA_TEMPLATE = "DefaultDBATemplate";
+  public static final String PRM_DEFAULT_DBA_DOCUMENT_TYPE = "DefaultDBADocumentType";
 
   private TaskConstants() {
   }

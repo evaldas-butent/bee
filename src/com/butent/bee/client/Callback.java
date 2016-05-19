@@ -1,10 +1,11 @@
 package com.butent.bee.client;
 
-public abstract class Callback<T> {
+@FunctionalInterface
+public interface Callback<T> {
 
-  public void onFailure(String... reason) {
+  default void onFailure(String... reason) {
     BeeKeeper.getScreen().notifySevere(reason);
   }
 
-  public abstract void onSuccess(T result);
+  void onSuccess(T result);
 }

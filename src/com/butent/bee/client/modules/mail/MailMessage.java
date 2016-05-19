@@ -53,7 +53,7 @@ import com.butent.bee.client.widget.DateTimeLabel;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.InlineLabel;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Consumer;
+import com.butent.bee.shared.BiConsumer;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
@@ -65,12 +65,13 @@ import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.font.FontAwesome;
-import com.butent.bee.shared.i18n.LocalizableConstants;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.documents.DocumentConstants;
 import com.butent.bee.shared.modules.transport.TransportConstants;
+import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.Orientation;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -79,6 +80,7 @@ import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -114,7 +116,7 @@ public class MailMessage extends AbstractFormInterceptor {
                   if (!BeeUtils.same(viewName, TransportConstants.TBL_ASSESSMENTS)) {
                     FileCollector.pushFiles(attachments);
                   }
-                  RowFactory.createRelatedRow(formName, row, selector);
+                  RowFactory.createRelatedRow(formName, row, selector, null);
                 }
               }
             };
@@ -218,7 +220,7 @@ public class MailMessage extends AbstractFormInterceptor {
     }
   }
 
-  private static enum NewMailMode {
+  private enum NewMailMode {
     REPLY, REPLY_ALL, FORWARD
   }
 
@@ -261,13 +263,13 @@ public class MailMessage extends AbstractFormInterceptor {
   private Integer rpcId;
   private Long placeId;
   private Long folderId;
-  private Long repliedFrom;
   private boolean isSent;
   private boolean isDraft;
   private Long rawId;
   private Pair<String, String> sender;
   private final Multimap<String, Pair<String, String>> recipients = LinkedHashMultimap.create();
   private final List<FileInfo> attachments = new ArrayList<>();
+  private final Map<Long, Pair<DateTime, String>> related = new LinkedHashMap<>();
   private final Map<String, Widget> widgets = new HashMap<>();
 
   private Relations relations;
@@ -313,18 +315,22 @@ public class MailMessage extends AbstractFormInterceptor {
 
             if (DataUtils.isId(rawId)) {
               ft.setWidget(r, 0, new FaLabel(FontAwesome.FILE_TEXT_O));
-              ft.setText(r, 1, Localized.getConstants().mailShowOriginal());
+              ft.setText(r, 1, Localized.dictionary().mailShowOriginal());
               DomUtils.setDataProperty(ft.getRow(r++), CONTAINER, COL_RAW_CONTENT);
             }
             if (!BeeUtils.isEmpty(attachments)) {
               ft.setWidget(r, 0, new FaLabel(FontAwesome.FILE_ZIP_O));
-              ft.setText(r, 1, Localized.getConstants().mailGetAllAttachments());
+              ft.setText(r, 1, Localized.dictionary().mailGetAllAttachments());
               DomUtils.setDataProperty(ft.getRow(r++), CONTAINER, ATTACHMENTS);
             }
-            if (DataUtils.isId(repliedFrom)) {
-              ft.setWidget(r, 0, new FaLabel(FontAwesome.REPLY));
-              ft.setText(r, 1, Localized.getConstants().mailShowAnswer());
-              DomUtils.setDataProperty(ft.getRow(r++), CONTAINER, COL_REPLIED);
+            if (!BeeUtils.isEmpty(related)) {
+              for (Long place : related.keySet()) {
+                ft.setWidget(r, 0, new FaLabel(BeeUtils.isPositive(place)
+                    ? FontAwesome.LONG_ARROW_RIGHT : FontAwesome.LONG_ARROW_LEFT));
+                ft.setText(r, 1, related.get(place).toString());
+                DomUtils.setDataProperty(ft.getRow(r++), CONTAINER,
+                    BeeUtils.toString(Math.abs(place)));
+              }
             }
             if (r > 0) {
               ft.addClickHandler(new ClickHandler() {
@@ -344,14 +350,15 @@ public class MailMessage extends AbstractFormInterceptor {
                       Map<Long, String> files = new HashMap<>();
 
                       for (FileInfo fileInfo : attachments) {
-                        files.put(fileInfo.getId(), fileInfo.getName());
+                        files.put(fileInfo.getId(),
+                            BeeUtils.notEmpty(fileInfo.getCaption(), fileInfo.getName()));
                       }
                       BrowsingContext.open(FileUtils
-                          .getUrl(Localized.getConstants().mailAttachments() + ".zip", files));
+                          .getUrl(Localized.dictionary().mailAttachments() + ".zip", files));
                       break;
 
-                    case COL_REPLIED:
-                      RowEditor.open(TBL_PLACES, repliedFrom, Opener.MODAL);
+                    default:
+                      RowEditor.open(TBL_PLACES, BeeUtils.toLong(index), Opener.MODAL);
                       break;
                   }
                 }
@@ -373,7 +380,7 @@ public class MailMessage extends AbstractFormInterceptor {
                 new Popup(OutsideClick.CLOSE, BeeConst.CSS_CLASS_PREFIX + "mail-RecipientsPopup");
             HtmlTable ft = new HtmlTable();
             ft.setBorderSpacing(5);
-            LocalizableConstants loc = Localized.getConstants();
+            Dictionary loc = Localized.dictionary();
 
             for (Entry<AddressType, String> entry : ImmutableMap.of(AddressType.TO, loc.mailTo(),
                 AddressType.CC, loc.mailCc(), AddressType.BCC, loc.mailBcc()).entrySet()) {
@@ -482,12 +489,12 @@ public class MailMessage extends AbstractFormInterceptor {
     sender = Pair.of(null, null);
     placeId = null;
     folderId = null;
-    repliedFrom = null;
     isSent = false;
     isDraft = false;
     rawId = null;
     recipients.clear();
     attachments.clear();
+    related.clear();
 
     if (relations != null) {
       relations.reset();
@@ -539,6 +546,9 @@ public class MailMessage extends AbstractFormInterceptor {
         response.notify(getFormView());
 
         if (response.hasErrors()) {
+          if (mailPanel != null) {
+            mailPanel.refreshMessages(true);
+          }
           return;
         }
         String[] data = Codec.beeDeserializeCollection((String) response.getResponse());
@@ -558,7 +568,6 @@ public class MailMessage extends AbstractFormInterceptor {
         }
         placeId = row.getLong(COL_PLACE);
         folderId = row.getLong(COL_FOLDER);
-        repliedFrom = row.getLong(COL_REPLIED);
         isSent = BeeUtils.unbox(row.getBoolean(SystemFolder.Sent.name()));
         isDraft = BeeUtils.unbox(row.getBoolean(SystemFolder.Drafts.name()));
         rawId = row.getLong(COL_RAW_CONTENT);
@@ -580,7 +589,7 @@ public class MailMessage extends AbstractFormInterceptor {
           recipients.put(address.getValue(COL_ADDRESS_TYPE), Pair.of(email, label));
           txt = BeeUtils.joinItems(txt, BeeUtils.notEmpty(label, email));
         }
-        setWidgetText(RECIPIENTS, BeeUtils.joinWords(Localized.getConstants().mailTo() + ":", txt));
+        setWidgetText(RECIPIENTS, BeeUtils.joinWords(Localized.dictionary().mailTo() + ":", txt));
 
         int cnt = 0;
         long size = 0;
@@ -616,6 +625,13 @@ public class MailMessage extends AbstractFormInterceptor {
                   BeeUtils.parenthesize(FileUtils.sizeToText(file.getSize())));
             }
             ((HasWidgets) widget).add(label);
+          }
+        }
+        if (packet.containsKey(COL_IN_REPLY_TO)) {
+          for (SimpleRow place : packet.get(COL_IN_REPLY_TO)) {
+            related.put(place.getLong(COL_PLACE) * (BeeUtils.same(place.getValue(COL_IN_REPLY_TO),
+                    row.getValue(COL_UNIQUE_ID)) ? 1 : -1),
+                Pair.of(place.getDateTime(COL_DATE), place.getValue(COL_SUBJECT)));
           }
         }
         String content = null;
@@ -725,7 +741,7 @@ public class MailMessage extends AbstractFormInterceptor {
         List<FileInfo> attach = null;
         Long relatedId = null;
 
-        LocalizableConstants loc = Localized.getConstants();
+        Dictionary loc = Localized.dictionary();
 
         switch (mode) {
           case REPLY:
@@ -745,6 +761,8 @@ public class MailMessage extends AbstractFormInterceptor {
                 cc = getTo();
                 cc.addAll(getCc());
               }
+            }
+            if (!isDraft) {
               relatedId = placeId;
             }
             Element bq = Document.get().createBlockQuoteElement();
@@ -752,7 +770,7 @@ public class MailMessage extends AbstractFormInterceptor {
                 "border-left:1px solid #039; margin:0; padding:10px; color:#039;");
             bq.setInnerHTML(getContent());
             content = BeeUtils.join("<br>", "<br>", getDate() + ", "
-                + Codec.escapeHtml(getSender() + " " + loc.mailTextWrote().toLowerCase() + ":"),
+                    + Codec.escapeHtml(getSender() + " " + loc.mailTextWrote().toLowerCase() + ":"),
                 bq.getString());
 
             if (!BeeUtils.isPrefix(subject, loc.mailReplayPrefix())) {
@@ -770,7 +788,7 @@ public class MailMessage extends AbstractFormInterceptor {
               content = getContent();
             } else {
               content = BeeUtils.join("<br>", "<br>", "---------- "
-                  + loc.mailForwardedMessage() + " ----------",
+                      + loc.mailForwardedMessage() + " ----------",
                   loc.mailFrom() + ": " + Codec.escapeHtml(getSender()),
                   loc.date() + ": " + getDate(),
                   loc.mailSubject() + ": " + Codec.escapeHtml(getSubject()),
@@ -791,9 +809,9 @@ public class MailMessage extends AbstractFormInterceptor {
 
           if (mode == NewMailMode.FORWARD && !isDraft && DataUtils.isId(placeId)) {
             final Long place = placeId;
-            newMessage.setCallback(new Consumer<Boolean>() {
+            newMessage.setCallback(new BiConsumer<Long, Boolean>() {
               @Override
-              public void accept(Boolean save) {
+              public void accept(Long messageId, Boolean save) {
                 if (!save) {
                   ParameterList params = MailKeeper.createArgs(SVC_FLAG_MESSAGE);
                   params.addDataItem(COL_PLACE, place);
@@ -806,7 +824,7 @@ public class MailMessage extends AbstractFormInterceptor {
             });
           }
         } else {
-          NewMailMessage.create(to, cc, bcc, subject, content, attach, relatedId, isDraft);
+          NewMailMessage.create(to, cc, bcc, subject, content, attach, relatedId, isDraft, null);
         }
       }
     });

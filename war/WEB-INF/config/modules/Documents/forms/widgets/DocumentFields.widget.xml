@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Table xmlns="http://www.butent.com/widget">
-
-   <col index="0" kind="label" />
-   <col index="2" kind="label" />
+<!DOCTYPE Form[
+  <!ENTITY lbl "margin-right: 1em; text-align: right; padding-left: 30px">
+]>
+<Table xmlns="http://www.butent.com/widget" kind="controls">
 
   <row>
-    <Label for="Name" visible="true" />
+    <Label for="Name" visible="true" style="&lbl;" />
     <cell colSpan="3">
       <InputText source="Name" style="width: 100%;" autocomplete="true" visible="true" />
     </cell>
   </row>
 
   <row>
-    <Label for="Company" visible="true" />
+    <Label for="Company" visible="true" style="&lbl;" />
     <cell colSpan="3">
       <DataSelector source="Company" style="width: 100%;" choiceColumns="Name TypeName"
             renderColumns="CompanyName CompanyTypeName" />
@@ -20,44 +20,65 @@
   </row>
 
   <row>
-    <Label for="DocumentDate" />
+    <Label for="DocumentDate" style="&lbl;" />
     <InputDateTime source="DocumentDate" />
-    <Label for="Expires" />
+    <Label for="Expires" style="&lbl;" />
     <InputDateTime source="Expires" />
   </row>
 
   <row>
-    <Label for="Number" />
+    <Label for="Number" style="&lbl;" />
     <InputText source="Number" />
-    <Label text="=documentRegistrationNumberShort" for="RegistrationNumber" />
+    <Label text="=documentRegistrationNumberShort" for="RegistrationNumber" style="&lbl;" />
     <InputText source="RegistrationNumber" />
   </row>
 
   <row>
-    <Label for="Category" />
+    <Label for="Category" style="&lbl;" />
     <DataSelector source="Category" caching="local" choiceColumns="ParentName CategoryName" />
-    <Label for="Type" />
+    <Label for="Type" style="&lbl;" />
     <DataSelector source="Type" />
   </row>
 
   <row>
-    <Label for="Place" />
+    <Label for="Place" style="&lbl;" />
     <DataSelector source="Place" />
-    <Label for="Status" />
+    <Label for="Status" style="&lbl;" />
     <DataSelector source="Status" renderColumns="StatusName" choiceColumns="Name" />
   </row>
 
   <row>
-    <Label for="Received" />
+    <Label for="Received" style="&lbl;" />
     <InputDateTime source="Received" />
-    <Label for="Sent" />
+    <Label for="Sent" style="&lbl;" />
     <InputDateTime source="Sent" />
   </row>
 
   <row>
-    <Label for="Description" />
+    <Label for="ReceivedNumber" class="bee-hasDefaults" style="&lbl;" />
+    <InputText source="ReceivedNumber" />
+    <Label for="SentNumber" class="bee-hasDefaults" style="&lbl;"/>
+    <InputText source="SentNumber" />
+  </row>
+
+  <row>
+    <Label for="Description" style="&lbl;" />
     <cell colSpan="3">
       <InputArea source="Description" style="width: 100%; height: 60px;" />
+    </cell>
+  </row>
+
+  <row>
+    <Label for="Notes" style="&lbl;" />
+    <cell colSpan="3">
+      <InputArea source="Notes" for="Notes" style="width: 100%; height: 60px;" />
+    </cell>
+  </row>
+
+  <row>
+    <Label for="User" style="&lbl;" />
+    <cell colSpan="3">
+      <DataSelector source="User" viewName="Users" style="width: 100%;" />
     </cell>
   </row>
 </Table>

@@ -6,6 +6,7 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.IdCallback;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
+import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.event.logical.RenderingEvent;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.view.ViewHelper;
@@ -106,7 +107,7 @@ class ProjectDatesGrid extends AbstractGridInterceptor {
               }
             }
 
-            RowFactory.createRow(viewProjectDates, row, new RowCallback() {
+            RowFactory.createRow(viewProjectDates, row, Modality.ENABLED, new RowCallback() {
               @Override
               public void onSuccess(BeeRow createdDate) {
                 getGridPresenter().handleAction(Action.REFRESH);

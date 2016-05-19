@@ -36,7 +36,7 @@ public class OrderTmplItemsPicker extends ItemsPicker {
         if (response.hasResponse(BeeRowSet.class)) {
           callback.onSuccess(BeeRowSet.restore(response.getResponseAsString()));
         } else {
-          BeeKeeper.getScreen().notifyWarning(Localized.getConstants().nothingFound());
+          BeeKeeper.getScreen().notifyWarning(Localized.dictionary().nothingFound());
         }
       }
     });
@@ -48,7 +48,7 @@ public class OrderTmplItemsPicker extends ItemsPicker {
   }
 
   @Override
-  public boolean setIsOrder() {
+  public boolean setIsOrder(IsRow row) {
     return false;
   }
 

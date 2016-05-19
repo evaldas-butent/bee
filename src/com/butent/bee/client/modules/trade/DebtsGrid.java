@@ -14,7 +14,7 @@ import com.butent.bee.client.view.search.AbstractFilterSupplier;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
-import com.butent.bee.shared.i18n.LocalizableConstants;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.calendar.CalendarConstants;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
@@ -24,7 +24,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 class DebtsGrid extends AbstractGridInterceptor {
 
-  private static final LocalizableConstants localizedConstants = Localized.getConstants();
+  private static final Dictionary dictionary = Localized.dictionary();
 
   @Override
   public void afterCreatePresenter(final GridPresenter presenter) {
@@ -50,7 +50,7 @@ class DebtsGrid extends AbstractGridInterceptor {
       BeeColumn filterColumn = Data.getColumn(TradeConstants.VIEW_DEBTS, columnName);
 
       return new NoPaymentPeriodFilterSuppler(getViewName(), filterColumn,
-          localizedConstants.trdNoPaymentPeriod(), columnDescription.getFilterOptions());
+          dictionary.trdNoPaymentPeriod(), columnDescription.getFilterOptions());
     } else {
       return super.getFilterSupplier(columnName, columnDescription);
     }

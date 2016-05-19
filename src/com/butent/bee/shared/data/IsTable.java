@@ -78,10 +78,6 @@ public interface IsTable<R extends IsRow, C extends IsColumn> extends Iterable<R
 
   String getColumnPattern(int colIndex);
 
-  CustomProperties getColumnProperties(int colIndex);
-
-  String getColumnProperty(int colIndex, String name);
-
   List<C> getColumns();
 
   ValueType getColumnType(int colIndex);
@@ -108,10 +104,6 @@ public interface IsTable<R extends IsRow, C extends IsColumn> extends Iterable<R
 
   int getNumberOfRows();
 
-  CustomProperties getProperties(int rowIndex, int colIndex);
-
-  String getProperty(int rowIndex, int colIndex, String name);
-
   R getRow(int rowIndex);
 
   R getRowById(long rowId);
@@ -119,10 +111,6 @@ public interface IsTable<R extends IsRow, C extends IsColumn> extends Iterable<R
   List<Long> getRowIds();
 
   int getRowIndex(long rowId);
-
-  CustomProperties getRowProperties(int rowIndex);
-
-  String getRowProperty(int rowIndex, String name);
 
   List<R> getRows();
 
@@ -166,26 +154,11 @@ public interface IsTable<R extends IsRow, C extends IsColumn> extends Iterable<R
 
   void setCell(int rowIndex, int colIndex, Value value, String formattedValue);
 
-  void setCell(int rowIndex, int colIndex, Value value, String formattedValue,
-      CustomProperties properties);
-
   void setColumnLabel(int colIndex, String label);
-
-  void setColumnProperties(int colIndex, CustomProperties properties);
-
-  void setColumnProperty(int colIndex, String name, String value);
 
   void setColumns(List<C> columns);
 
   void setFormattedValue(int rowIndex, int colIndex, String formattedValue);
-
-  void setProperties(int rowIndex, int colIndex, CustomProperties properties);
-
-  void setProperty(int rowIndex, int colIndex, String name, String value);
-
-  void setRowProperties(int rowIndex, CustomProperties properties);
-
-  void setRowProperty(int rowIndex, String name, String value);
 
   void setRows(Collection<R> rows);
 

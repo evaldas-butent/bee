@@ -257,7 +257,7 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
   public void show(IsRow row, Element target) {
     lastRow = DataUtils.cloneRow(row);
 
-    isOrder = setIsOrder();
+    isOrder = setIsOrder(row);
 
     warehouseFrom = getWarehouseFrom(row);
     itemPrice = TradeActKeeper.getItemPrice(VIEW_TRADE_ACTS, row);
@@ -276,7 +276,7 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
   }
 
   protected String getCaption() {
-    return Localized.getConstants().goods();
+    return Localized.dictionary().goods();
   }
 
   public List<String> getVisibleTableCols() {
@@ -301,23 +301,23 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
     String pfx;
 
     visibleTableCols.add(DataUtils.ID_TAG);
-    table.setText(r, c++, Localized.getConstants().captionId(),
+    table.setText(r, c++, Localized.dictionary().captionId(),
         STYLE_ID_PREFIX + STYLE_HEADER_CELL_SUFFIX);
 
     visibleTableCols.add(ALS_ITEM_TYPE_NAME);
-    table.setText(r, c++, Localized.getConstants().type(),
+    table.setText(r, c++, Localized.dictionary().type(),
         STYLE_TYPE_PREFIX + STYLE_HEADER_CELL_SUFFIX);
 
     visibleTableCols.add(ALS_ITEM_GROUP_NAME);
-    table.setText(r, c++, Localized.getConstants().group(),
+    table.setText(r, c++, Localized.dictionary().group(),
         STYLE_GROUP_PREFIX + STYLE_HEADER_CELL_SUFFIX);
 
     visibleTableCols.add(ALS_ITEM_NAME);
-    table.setText(r, c++, Localized.getConstants().name(),
+    table.setText(r, c++, Localized.dictionary().name(),
         STYLE_NAME_PREFIX + STYLE_HEADER_CELL_SUFFIX);
 
     visibleTableCols.add(COL_ITEM_ARTICLE);
-    table.setText(r, c++, Localized.getConstants().article(),
+    table.setText(r, c++, Localized.dictionary().article(),
         STYLE_ARTICLE_PREFIX + STYLE_HEADER_CELL_SUFFIX);
 
     for (ItemPrice ip : ItemPrice.values()) {
@@ -342,16 +342,16 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
           STYLE_FROM_PREFIX + STYLE_HEADER_CELL_SUFFIX);
 
       visibleTableCols.add(COL_WAREHOUSE_REMAINDER);
-      table.setText(r, c++, Localized.getConstants().ordFreeRemainder(),
+      table.setText(r, c++, Localized.dictionary().ordFreeRemainder(),
           STYLE_FREE_PREFIX + STYLE_HEADER_CELL_SUFFIX);
 
       visibleTableCols.add(COL_WAREHOUSE_REMAINDER + "1");
-      table.setText(r, c++, Localized.getConstants().ordResRemainder(),
+      table.setText(r, c++, Localized.dictionary().ordResRemainder(),
           STYLE_RESERVED_PREFIX + STYLE_HEADER_CELL_SUFFIX);
     }
 
     visibleTableCols.add("QTY");
-    table.setText(r, c++, Localized.getConstants().quantity(),
+    table.setText(r, c++, Localized.dictionary().quantity(),
         STYLE_QTY_PREFIX + STYLE_HEADER_CELL_SUFFIX);
 
     table.getRowFormatter().addStyleName(r, STYLE_HEADER_ROW);
@@ -478,7 +478,7 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
 
     for (String column : SEARCH_COLUMNS) {
       if (COL_CATEGORY.equals(column)) {
-        label = Localized.getConstants().category();
+        label = Localized.dictionary().category();
       } else {
         label = Data.getColumnLabel(VIEW_ITEMS, column);
       }
@@ -486,8 +486,8 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
       searchBy.addItem(label, column);
       searchBy2.addItem(label, column);
     }
-    searchBy.addItem(Localized.getConstants().captionId(), COL_ITEM);
-    searchBy2.addItem(Localized.getConstants().captionId(), COL_ITEM);
+    searchBy.addItem(Localized.dictionary().captionId(), COL_ITEM);
+    searchBy2.addItem(Localized.dictionary().captionId(), COL_ITEM);
 
     panel.add(searchBy);
 
@@ -561,7 +561,7 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
 
       } else if (COL_ITEM.equals(by) && !DataUtils.isId(query)) {
         BeeKeeper.getScreen().notifyWarning(
-            BeeUtils.joinWords(Localized.getConstants().invalidIdValue(), query));
+            BeeUtils.joinWords(Localized.dictionary().invalidIdValue(), query));
         ok = false;
 
       } else {
@@ -773,11 +773,6 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
       public void onClick(ClickEvent event) {
         Map<Long, Double> quantities = getQuantities();
         if (!quantities.isEmpty()) {
-          if (isOrder) {
-            if (!checkQuantities(quantities)) {
-              return;
-            }
-          }
           selectItems(quantities);
         }
         dialog.close();
@@ -798,25 +793,25 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
           dialog.close();
 
         } else {
-          Global.decide(Localized.getConstants().goods(),
-              Lists.newArrayList(Localized.getConstants().taSaveSelectedItems()),
+          Global.decide(Localized.dictionary().goods(),
+              Lists.newArrayList(Localized.dictionary().taSaveSelectedItems()),
               new DecisionCallback() {
-            @Override
-            public void onConfirm() {
-              if (isOrder) {
-                if (!checkQuantities(quantities)) {
-                  return;
+                @Override
+                public void onConfirm() {
+                  if (isOrder) {
+                    if (!checkQuantities(quantities)) {
+                      return;
+                    }
+                  }
+                  selectItems(quantities);
+                  dialog.close();
                 }
-              }
-              selectItems(quantities);
-              dialog.close();
-            }
 
-            @Override
-            public void onDeny() {
-              dialog.close();
-            }
-          }, DialogConstants.DECISION_YES);
+                @Override
+                public void onDeny() {
+                  dialog.close();
+                }
+              }, DialogConstants.DECISION_YES);
         }
       }
     });
@@ -885,7 +880,7 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
     if (BeeUtils.isPositive(stock)) {
       div.addClass(STYLE_STOCK_POSITIVE);
       if (isFrom(warehouse)) {
-        div.title(Localized.getConstants().actionSelect());
+        div.title(Localized.dictionary().actionSelect());
       }
 
     } else if (BeeUtils.isNegative(stock)) {
@@ -919,18 +914,6 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
     SelectionEvent.fire(this, selection);
   }
 
-  private boolean checkQuantities(Map<Long, Double> quantities) {
-    boolean valid = true;
-    for (Long id : quantities.keySet()) {
-      if (quantities.get(id) > remainders.get(id)) {
-        notification.severe(Localized.getConstants().ordQtyIsTooBig());
-        valid = false;
-        break;
-      }
-    }
-    return valid;
-  }
-
   protected IsRow getLastRow() {
     return lastRow;
   }
@@ -943,5 +926,17 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
 
   public abstract Long getWarehouseFrom(IsRow row);
 
-  public abstract boolean setIsOrder();
+  public abstract boolean setIsOrder(IsRow row);
+
+  private boolean checkQuantities(Map<Long, Double> quantities) {
+    boolean valid = true;
+    for (Long id : quantities.keySet()) {
+      if (quantities.get(id) > remainders.get(id)) {
+        notification.severe(Localized.dictionary().ordQtyIsTooBig());
+        valid = false;
+        break;
+      }
+    }
+    return valid;
+  }
 }

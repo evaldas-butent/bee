@@ -6,6 +6,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
+import com.google.common.eventbus.AllowConcurrentEvents;
 import com.google.common.eventbus.Subscribe;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
@@ -93,7 +94,6 @@ import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
-import javax.ejb.Timeout;
 import javax.ejb.Timer;
 import javax.ejb.TimerService;
 
@@ -186,7 +186,7 @@ public class TradeActBean implements HasTimerService {
 
       case SVC_SYNCHRONIZE_ERP_DATA:
         syncERPData();
-        response = ResponseObject.info(usr.getLocalizableConstants().imported());
+        response = ResponseObject.info(usr.getDictionary().imported());
         break;
 
       case SVC_ALTER_ACT_KIND:
@@ -238,6 +238,11 @@ public class TradeActBean implements HasTimerService {
   }
 
   @Override
+  public void ejbTimeout(Timer timer) {
+    syncERP(timer);
+  }
+
+  @Override
   public TimerService getTimerService() {
     return timerService;
   }
@@ -249,6 +254,7 @@ public class TradeActBean implements HasTimerService {
     sys.registerDataEventHandler(new DataEventHandler() {
 
       @Subscribe
+      @AllowConcurrentEvents
       public void setRowProperties(ViewQueryEvent event) {
         if (event.isBefore()) {
           return;
@@ -260,6 +266,7 @@ public class TradeActBean implements HasTimerService {
       }
 
       @Subscribe
+      @AllowConcurrentEvents
       public void fillActNumber(ViewInsertEvent event) {
         if (event.isBefore()
             && event.isTarget(VIEW_TRADE_ACTS)
@@ -292,8 +299,9 @@ public class TradeActBean implements HasTimerService {
       }
 
       @Subscribe
+      @AllowConcurrentEvents
       public void maybeSetReturnedQty(ViewQueryEvent event) {
-        if (event.isAfter() && event.isTarget(VIEW_TRADE_ACT_ITEMS) && event.hasData()
+        if (event.isAfter(VIEW_TRADE_ACT_ITEMS) && event.hasData()
             && event.getColumnCount() >= sys.getView(event.getTargetName()).getColumnCount()) {
 
           BeeRowSet rowSet = event.getRowset();
@@ -2818,7 +2826,8 @@ public class TradeActBean implements HasTimerService {
 
         List<Range<DateTime>> invoicesRanges = new ArrayList<>();
 
-        List<Integer> periods = BeeUtils.toInts(services.getRowProperty(i, PRP_INVOICE_PERIODS));
+        List<Integer> periods =
+            BeeUtils.toInts(services.getRow(i).getProperty(PRP_INVOICE_PERIODS));
         if (periods.size() >= 2) {
           for (int j = 0; j < periods.size() - 1; j += 2) {
             JustDate from = new JustDate(periods.get(j));
@@ -3208,7 +3217,7 @@ public class TradeActBean implements HasTimerService {
     }
 
     if (qs.sqlExists(TBL_TRADE_ACT_TEMPLATES, COL_TA_TEMPLATE_NAME, name)) {
-      return ResponseObject.error(usr.getLocalizableMesssages().valueExists(name));
+      return ResponseObject.error(usr.getDictionary().valueExists(name));
     }
 
     SimpleRow actRow = qs.getRow(TBL_TRADE_ACTS, actId);
@@ -3365,7 +3374,6 @@ public class TradeActBean implements HasTimerService {
     return ResponseObject.response(result);
   }
 
-  @Timeout
   private void syncERP(Timer timer) {
     if (cb.isParameterTimer(timer, PRM_SYNC_ERP_DATA)) {
       logger.info("Starting: syncERPData");

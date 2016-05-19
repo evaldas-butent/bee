@@ -1,5 +1,8 @@
 package com.butent.bee.client.data;
 
-public interface HasDataProvider {
+import com.butent.bee.client.screen.HandlesStateChange;
+import com.butent.bee.shared.ui.HandlesActions;
+
+public interface HasDataProvider extends HandlesActions, HandlesStateChange {
   Provider getDataProvider();
 }

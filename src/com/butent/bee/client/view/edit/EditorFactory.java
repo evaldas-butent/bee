@@ -30,7 +30,9 @@ import com.butent.bee.shared.HasPrecision;
 import com.butent.bee.shared.HasScale;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.data.HasRelatedCurrency;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.EditorDescription;
 import com.butent.bee.shared.ui.EditorType;
 import com.butent.bee.shared.ui.HasCapsLock;
@@ -156,8 +158,9 @@ public final class EditorFactory {
     return editor;
   }
 
-  public static Editor createEditor(EditorDescription description, String enumKey,
-      ValueType valueType, Relation relation, boolean embedded) {
+  public static Editor createEditor(EditorDescription description, BeeColumn column,
+      String enumKey, ValueType valueType, Relation relation, boolean embedded) {
+
     Assert.notNull(description);
     EditorType editorType = description.getType();
     Assert.notNull(editorType);
@@ -250,7 +253,7 @@ public final class EditorFactory {
     }
 
     if (editor instanceof HasItems && description.getItems() != null) {
-      ((HasItems) editor).setItems(description.getItems());
+      ((HasItems) editor).setItems(Localized.maybeTranslate(description.getItems()));
     }
     if (editor instanceof AcceptsCaptions && !BeeUtils.isEmpty(enumKey)) {
       ((AcceptsCaptions) editor).setCaptions(enumKey);
@@ -266,10 +269,30 @@ public final class EditorFactory {
       } else if (editor instanceof HasMaxLength) {
         ((HasMaxLength) editor).setMaxLength(description.getCharacterWidth());
       }
+
+    } else if (editor instanceof HasMaxLength && column != null) {
+      int maxLength = UiHelper.getMaxLength(column);
+      if (maxLength > 0) {
+        ((HasMaxLength) editor).setMaxLength(maxLength);
+      }
     }
 
     if (editor instanceof HasCapsLock && description.isUpperCase()) {
       ((HasCapsLock) editor).setUpperCase(true);
+    }
+
+    if (editor instanceof HasRelatedCurrency
+        && !BeeUtils.isEmpty(description.getCurrencySource())) {
+      ((HasRelatedCurrency) editor).setCurrencySource(description.getCurrencySource());
+    }
+
+    if (column != null) {
+      if (editor instanceof HasPrecision) {
+        ((HasPrecision) editor).setPrecision(column.getPrecision());
+      }
+      if (editor instanceof HasScale) {
+        ((HasScale) editor).setScale(column.getScale());
+      }
     }
 
     return editor;

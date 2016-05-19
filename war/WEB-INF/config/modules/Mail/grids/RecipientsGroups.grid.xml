@@ -4,6 +4,5 @@
   <g:columns>
     <DataColumn name="GroupName" />
     <RelColumn name="Creator" />
-    
   </g:columns>
 </g:Grid>

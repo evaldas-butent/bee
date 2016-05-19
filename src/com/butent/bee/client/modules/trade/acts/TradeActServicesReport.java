@@ -208,7 +208,7 @@ public class TradeActServicesReport extends ReportInterceptor {
           sheet.autoSizeAll();
 
         } else {
-          getFormView().notifyWarning(Localized.getConstants().nothingFound());
+          getFormView().notifyWarning(Localized.dictionary().nothingFound());
         }
       }
     });
@@ -303,7 +303,7 @@ public class TradeActServicesReport extends ReportInterceptor {
       if (MONEY_COLUMNS.contains(colName)) {
         text = BeeUtils.joinWords(TradeActHelper.getLabel(colName), currencyName);
       } else if (COL_TRADE_DATE.equals(colName)) {
-        text = Localized.getConstants().date();
+        text = Localized.dictionary().date();
       } else {
         text = TradeActHelper.getLabel(colName);
       }
@@ -405,7 +405,7 @@ public class TradeActServicesReport extends ReportInterceptor {
 
       Integer first = indexes.get(0);
       if (BeeUtils.isPositive(first)) {
-        text = Localized.getConstants().totalOf();
+        text = Localized.dictionary().totalOf();
 
         table.setText(r, first - 1, text);
 

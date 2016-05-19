@@ -42,8 +42,11 @@
       <SimpleColumn name="SocialContacts" />
     </SimpleJoin>
 
-    <SimpleColumn name="Photo" />
+    <SimpleColumn name="PhotoFile" />
     <SimpleColumn name="Notes" />
+    <!-- @DEPRECATED -->
+    <SimpleColumn name="Photo" />
+    <!-- } -->
  
     <SimpleColumn name="Activity" />
     <SimpleJoin name="Activity" joinType="LEFT">

@@ -1,5 +1,6 @@
 package com.butent.bee.server.ui;
 
+import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
@@ -111,18 +112,17 @@ public class GridLoaderBean {
 
   private static final String ATTR_NEW_ROW_DEFAULTS = "newRowDefaults";
   private static final String ATTR_NEW_ROW_POPUP = "newRowPopup";
-  private static final String ATTR_NEW_ROW_FORM_IMMEDIATE = "newRowFormImmediate";
 
   private static final String ATTR_EDIT_MODE = "editMode";
   private static final String ATTR_EDIT_SAVE = "editSave";
   private static final String ATTR_EDIT_SHOW_ID = "editShowId";
   private static final String ATTR_EDIT_IN_PLACE = "editInPlace";
-  private static final String ATTR_EDIT_FORM_IMMEDIATE = "editFormImmediate";
 
   private static final String ATTR_WIDTH = "width";
   private static final String ATTR_MIN_WIDTH = "minWidth";
   private static final String ATTR_MAX_WIDTH = "maxWidth";
   private static final String ATTR_AUTO_FIT = "autoFit";
+  private static final String ATTR_AUTO_FLEX = "autoFlex";
 
   private static final String ATTR_SORTABLE = "sortable";
 
@@ -378,6 +378,8 @@ public class GridLoaderBean {
           dst.setSource(value.trim());
         } else if (BeeUtils.same(key, UiConstants.ATTR_PROPERTY)) {
           dst.setProperty(value.trim());
+        } else if (BeeUtils.same(key, UiConstants.ATTR_USER_MODE)) {
+          dst.setUserMode(BeeUtils.toBooleanOrNull(value));
 
         } else if (BeeUtils.same(key, ATTR_REQUIRED)) {
           dst.setRequired(BeeUtils.toBooleanOrNull(value));
@@ -620,6 +622,41 @@ public class GridLoaderBean {
       logger.warning("grid", gridName, "has no columns");
       return null;
     }
+
+    if (view != null) {
+      ListMultimap<String, String> translationColumns = view.getTranslationColumns();
+
+      for (String original : translationColumns.keySet()) {
+        int index = grid.getColumnIndex(original);
+
+        if (!BeeConst.isUndef(index)) {
+          for (String translation : translationColumns.get(original)) {
+
+            if (!grid.hasColumn(translation) && usr.isColumnVisible(view, translation)) {
+              ColumnDescription column = grid.getColumn(original).copy();
+
+              column.setId(translation);
+              column.replaceSource(original, translation);
+
+              String label = view.getColumnLabel(translation);
+              if (!BeeUtils.isEmpty(label) && !BeeUtils.equalsTrim(label, column.getLabel())) {
+                column.setLabel(label);
+              } else {
+                column.setLabel(null);
+              }
+              column.setCaption(null);
+
+              column.setVisible(false);
+              column.setEditInPlace(true);
+
+              index++;
+              grid.getColumns().add(index, column);
+            }
+          }
+        }
+      }
+    }
+
     return grid;
   }
 
@@ -766,6 +803,10 @@ public class GridLoaderBean {
     if (!BeeUtils.isEmpty(autoFit)) {
       dst.setAutoFit(autoFit);
     }
+    Boolean autoFlex = XmlUtils.getAttributeBoolean(src, ATTR_AUTO_FLEX);
+    if (autoFlex != null) {
+      dst.setAutoFlex(autoFlex);
+    }
 
     String flexGrow = src.getAttribute(Flexibility.ATTR_GROW);
     String flexShrink = src.getAttribute(Flexibility.ATTR_SHRINK);
@@ -811,6 +852,10 @@ public class GridLoaderBean {
     Integer initialRowSetSize = XmlUtils.getAttributeInteger(src, ATTR_INITIAL_ROW_SET_SIZE);
     if (initialRowSetSize != null) {
       dst.setInitialRowSetSize(initialRowSetSize);
+    }
+    Boolean paging = XmlUtils.getAttributeBoolean(src, UiConstants.ATTR_PAGING);
+    if (paging != null) {
+      dst.setPaging(paging);
     }
 
     Boolean readOnly = XmlUtils.getAttributeBoolean(src, UiConstants.ATTR_READ_ONLY);
@@ -877,10 +922,6 @@ public class GridLoaderBean {
     if (newRowPopup != null) {
       dst.setNewRowPopup(newRowPopup);
     }
-    Boolean newRowFormImmediate = XmlUtils.getAttributeBoolean(src, ATTR_NEW_ROW_FORM_IMMEDIATE);
-    if (newRowFormImmediate != null) {
-      dst.setNewRowFormImmediate(newRowFormImmediate);
-    }
 
     String editForm = src.getAttribute(UiConstants.ATTR_EDIT_FORM);
     if (!BeeUtils.isEmpty(editForm)) {
@@ -905,10 +946,6 @@ public class GridLoaderBean {
     Boolean editPopup = XmlUtils.getAttributeBoolean(src, UiConstants.ATTR_EDIT_POPUP);
     if (editPopup != null) {
       dst.setEditPopup(editPopup);
-    }
-    Boolean editFormImmediate = XmlUtils.getAttributeBoolean(src, ATTR_EDIT_FORM_IMMEDIATE);
-    if (editFormImmediate != null) {
-      dst.setEditFormImmediate(editFormImmediate);
     }
 
     Boolean editInPlace = XmlUtils.getAttributeBoolean(src, ATTR_EDIT_IN_PLACE);

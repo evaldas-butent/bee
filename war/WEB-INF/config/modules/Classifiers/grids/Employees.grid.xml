@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+
+  name="Employees" viewName="Employees" caption="=employees"
+  newRowForm="Employee" editForm="Employee"
+  flexGrow="1"
+  >
+
+  <g:columns>
+    <DataColumn name="FirstName" />
+    <DataColumn name="LastName" visible="true" />
+    <DataColumn name="CompanyName" label="=company" />
+
+    <DataColumn name="TabNumber" />
+
+    <DataColumn name="DepartmentName" />
+    <DataColumn name="PositionName" />
+
+    <DataColumn name="Phone" visible="false" />
+    <DataColumn name="Mobile" />
+
+    <DataColumn name="Email" />
+    <DataColumn name="Address" visible="false" />
+
+    <DataColumn name="DateOfEmployment" />
+    <DataColumn name="DateOfDismissal" />
+
+    <DataColumn name="Salary" module="Payroll" visible="false" />
+    <DataColumn name="CurrencyName" module="Payroll" visible="false" />
+
+    <DataColumn name="PartTime" module="Payroll" visible="false" />
+
+    <DataColumn name="Notes" />
+  </g:columns>
+</g:Grid>

@@ -16,7 +16,11 @@ name="References" label="=references" order="900" module="Classifiers"
   <Item name="UpdateExchangeRates" label="=updateExchangeRatesMenu"
     service="update_exchange_rates" />
 
+
   <Item label="=makers" name="Makers" parameters="Makers" service="grid" separator="true" />
+
+  <Item name="TradeOperations" label="=trdOperations" service="grid" parameters="TradeOperations"
+    separator="true" module="Orders" />
 
   <Item name="Warehouses" label="=warehouses" service="grid" parameters="Warehouses"
     separator="true" module="Trade Ec" />
@@ -24,6 +28,8 @@ name="References" label="=references" order="900" module="Classifiers"
   <Item name="Cities" label="=cities" service="grid" parameters="Cities" separator="true" />
   <Item name="Countries" label="=countries" service="grid" parameters="Countries" />
 
+  <Item name="Employees" label="=employees" service="grid" parameters="Employees" 
+    separator="true" />
   <Item name="Holidays" label="=holidays" service="form" parameters="Holidays" separator="true"
     module="Trade.Acts" />
 

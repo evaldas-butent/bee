@@ -3,7 +3,8 @@
   
   name="CalendarTodo" viewName="TodoList" caption="=crmTodoList"
   newRowPopup="true" editPopup="true" headerMode="grid"
-  disabledActions="delete filter export auto_fit"
+  disabledActions="delete filter export auto_fit" 
+  filter="Creator={u} or Visibility = 0"
   >
   <g:columns>
     <DataColumn name="Summary" visible="true" flexGrow="1" draggable="true" />

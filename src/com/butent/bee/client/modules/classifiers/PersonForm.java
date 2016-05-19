@@ -16,8 +16,11 @@ import com.butent.bee.client.Callback;
 import com.butent.bee.client.composite.FileCollector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.IdCallback;
+import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.data.Queries.IntCallback;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
+import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.dom.Features;
 import com.butent.bee.client.event.Binder;
 import com.butent.bee.client.grid.ChildGrid;
@@ -29,7 +32,6 @@ import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.utils.NewFileInfo;
 import com.butent.bee.client.view.ViewHelper;
-import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
@@ -40,13 +42,14 @@ import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.InputBoolean;
-import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.data.event.DataChangeEvent;
+import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
@@ -57,8 +60,10 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import elemental.client.Browser;
 import elemental.events.Event;
@@ -76,6 +81,7 @@ class PersonForm extends AbstractFormInterceptor {
 
   private Image photoImageWidget;
   private NewFileInfo photoImageAttachment;
+  private final Map<Long, NewFileInfo> uploadQueue = new ConcurrentHashMap<>();
 
   PersonForm() {
     super();
@@ -96,23 +102,22 @@ class PersonForm extends AbstractFormInterceptor {
           NewFileInfo fileInfo = (NewFileInfo) event.getSelectedItem();
           fc.clear();
 
-          if (photoImageWidget != null && fileInfo != null) {
+          if (getPhotoImageWidget() != null && fileInfo != null) {
             String type = fileInfo.getType();
             long size = fileInfo.getSize();
 
             if (!BeeUtils.containsSame(type, "image")) {
               BeeKeeper.getScreen().notifyWarning(
-                  Localized.getMessages().invalidImageFileType(fileInfo.getName(), type));
+                  Localized.dictionary().invalidImageFileType(fileInfo.getName(), type));
 
             } else if (size > Images.MAX_SIZE_FOR_DATA_URL) {
               BeeKeeper.getScreen().notifyWarning(
-                  Localized.getMessages().fileSizeExceeded(size, Images.MAX_SIZE_FOR_DATA_URL));
+                  Localized.dictionary().fileSizeExceeded(size, Images.MAX_SIZE_FOR_DATA_URL));
 
             } else {
-              photoImageAttachment = fileInfo;
-              setPhotoFileName(fileInfo);
-
-              showImageInFormBeforeUpload(photoImageWidget, fileInfo.getNewFile());
+              setPhotoImageAttachment(fileInfo);
+              setPhotoModified(getFormView(), false);
+              showImageInFormBeforeUpload(getPhotoImageWidget(), fileInfo.getNewFile());
             }
           }
         }
@@ -125,11 +130,8 @@ class PersonForm extends AbstractFormInterceptor {
       Binder.addClickHandler(widget.asWidget(), new ClickHandler() {
         @Override
         public void onClick(ClickEvent event) {
-          FormView form = getFormView();
-          IsRow row = form.getActiveRow();
-
-          row.clearCell(form.getDataIndex(COL_PHOTO));
-          photoImageAttachment = null;
+          setPhotoImageAttachment(null);
+          setPhotoModified(getFormView(), true);
           clearPhoto();
         }
       });
@@ -156,8 +158,8 @@ class PersonForm extends AbstractFormInterceptor {
               copyContactData(presenter, viewName, newRow);
 
               RowFactory.createRow(dataInfo.getNewRowForm(),
-                  Localized.getConstants().newPersonCompany(), dataInfo, newRow, null,
-                  new AbstractFormInterceptor() {
+                  Localized.dictionary().newPersonCompany(), dataInfo, newRow, Modality.ENABLED,
+                  null, new AbstractFormInterceptor() {
                     @Override
                     public boolean beforeCreateWidget(String widgetName, Element description) {
                       if (BeeUtils.startsWith(widgetName, COL_PERSON)) {
@@ -170,7 +172,7 @@ class PersonForm extends AbstractFormInterceptor {
                     public FormInterceptor getInstance() {
                       return null;
                     }
-                  },
+                  }, null,
                   new RowCallback() {
                     @Override
                     public void onSuccess(BeeRow result) {
@@ -184,7 +186,7 @@ class PersonForm extends AbstractFormInterceptor {
 
         @Override
         public String getCaption() {
-          return Localized.getConstants().personCompanies();
+          return Localized.dictionary().personCompanies();
         }
 
         @Override
@@ -200,71 +202,34 @@ class PersonForm extends AbstractFormInterceptor {
   }
 
   @Override
+  public void afterInsertRow(IsRow result, boolean forced) {
+
+    if (getPhotoImageAttachment() != null) {
+      uploadPhoto(result.getId(), getPhotoImageAttachment());
+    }
+  }
+
+  @Override
+  public void afterUpdateRow(IsRow result) {
+    if (!getUploadQueue().containsKey(result.getId())) {
+      return;
+    }
+
+    uploadPhoto(result.getId(), getUploadQueue().get(result.getId()));
+  }
+
+  @Override
   public FormInterceptor getInstance() {
     return new PersonForm();
   }
 
   @Override
-  public void onReadyForInsert(HasHandlers listener, ReadyForInsertEvent event) {
-    FormView form = getFormView();
-    IsRow row = form.getActiveRow();
-
-    final String photoFileName = getPhotoFileName(form, row);
-
-    if (!BeeUtils.isEmpty(photoFileName) && photoImageAttachment != null) {
-      if (photoImageWidget != null) {
-        PhotoRenderer.addToCache(photoFileName, photoImageWidget.getUrl());
-      }
-
-      FileUtils.uploadPhoto(photoImageAttachment, photoFileName, null, new Callback<String>() {
-        @Override
-        public void onFailure(String... reason) {
-          BeeKeeper.getScreen().notifySevere(Localized.getConstants().imageUploadFailed());
-        }
-
-        @Override
-        public void onSuccess(String result) {
-        }
-      });
-    }
-  }
-
-  @Override
   public void onSaveChanges(HasHandlers listener, SaveChangesEvent event) {
     final FormView form = getFormView();
-    final IsRow row = form.getActiveRow();
+    final IsRow row = event.getNewRow();
 
-    final String photoFileName = getPhotoFileName(form, row);
-    final String oldPhoto = getPhotoFileName(form, form.getOldRow());
-
-    if (BeeUtils.equalsTrim(oldPhoto, photoFileName)) {
-      updateUserData(form, row);
-
-    } else if (BeeUtils.isEmpty(photoFileName)) {
-      updateUserData(form, row);
-      FileUtils.deletePhoto(oldPhoto, null);
-
-    } else if (photoImageAttachment != null) {
-      if (photoImageWidget != null) {
-        PhotoRenderer.addToCache(photoFileName, photoImageWidget.getUrl());
-      }
-
-      updateUserData(form, row);
-
-      FileUtils.uploadPhoto(photoImageAttachment, photoFileName, oldPhoto, new Callback<String>() {
-        @Override
-        public void onFailure(String... reason) {
-          setPhotoFileName(form, row, oldPhoto);
-          updateUserData(form, row);
-
-          BeeKeeper.getScreen().notifySevere(Localized.getConstants().imageUploadFailed());
-        }
-
-        @Override
-        public void onSuccess(String result) {
-        }
-      });
-    }
+    ensureUpload(form, event.getOldRow(), row, getUploadQueue(), getPhotoImageAttachment());
+    updateUserData(form, row);
   }
 
   @Override
@@ -283,8 +248,8 @@ class PersonForm extends AbstractFormInterceptor {
   }
 
   private void clearPhoto() {
-    if (photoImageWidget != null) {
-      photoImageWidget.setUrl(DEFAULT_PHOTO_IMAGE);
+    if (getPhotoImageWidget() != null) {
+      getPhotoImageWidget().setUrl(DEFAULT_PHOTO_IMAGE);
     }
   }
 
@@ -292,7 +257,7 @@ class PersonForm extends AbstractFormInterceptor {
     FlowPanel qrFlowPanel = (FlowPanel) Assert.notNull(form.getWidgetByName(QR_FLOW_PANEL));
     qrFlowPanel.clear();
     FaLabel qrCodeLabel = new FaLabel(FontAwesome.QRCODE);
-    qrCodeLabel.setTitle(Localized.getConstants().qrCode());
+    qrCodeLabel.setTitle(Localized.dictionary().qrCode());
     qrCodeLabel.addStyleName("bee-FontSize-x-large");
     qrFlowPanel.add(qrCodeLabel);
 
@@ -306,33 +271,31 @@ class PersonForm extends AbstractFormInterceptor {
 
   }
 
-  private static String getPhotoFileName(FormView form, IsRow row) {
-    if (form == null || row == null) {
-      return null;
-    } else {
-      return row.getString(form.getDataIndex(COL_PHOTO));
-    }
-  }
+  private static void setPhotoModified(FormView form, boolean remove) {
+    Assert.notNull(form);
 
-  private static void setPhotoFileName(FormView form, IsRow row, String value) {
-    if (form != null && row != null) {
-      row.setValue(form.getDataIndex(COL_PHOTO), value);
-    }
-  }
-
-  private boolean setPhotoFileName(NewFileInfo fileInfo) {
-    FormView form = getFormView();
     IsRow row = form.getActiveRow();
+    IsRow oldRow = form.getOldRow();
+    int idxPhoto = form.getDataIndex(COL_PHOTO);
 
-    if (fileInfo == null || row == null) {
-      return false;
-    } else {
-      setPhotoFileName(form, row, FileUtils.generatePhotoFileName(fileInfo.getName()));
-      return true;
+    if (BeeConst.isUndef(idxPhoto)) {
+      return;
+    }
+
+    if (row != null) {
+      row.setValue(idxPhoto, (Long) null);
+    }
+
+    if (!remove && oldRow.isNull(idxPhoto)) {
+      oldRow.setValue(idxPhoto, BeeConst.UNDEF);
     }
   }
 
   private static void showImageInFormBeforeUpload(final Image image, File file) {
+    if (image == null || file == null) {
+      return;
+    }
+
     if (Features.supportsFileApi()) {
       final FileReader reader = Browser.getWindow().newFileReader();
 
@@ -348,12 +311,12 @@ class PersonForm extends AbstractFormInterceptor {
   }
 
   private void showPhoto(FormView form, IsRow row) {
-    photoImageAttachment = null;
+    setPhotoImageAttachment(null);
 
-    if (photoImageWidget != null) {
-      String photoFileName = row.getString(form.getDataIndex(COL_PHOTO));
-      if (!BeeUtils.isEmpty(photoFileName)) {
-        photoImageWidget.setUrl(PhotoRenderer.getUrl(photoFileName));
+    if (getPhotoImageWidget() != null) {
+      Long photoFile = row.getLong(form.getDataIndex(COL_PHOTO));
+      if (DataUtils.isId(photoFile)) {
+        photoImageWidget.setUrl(PhotoRenderer.getUrl(photoFile));
       } else {
         clearPhoto();
       }
@@ -368,10 +331,71 @@ class PersonForm extends AbstractFormInterceptor {
 
       userData.setFirstName(row.getString(form.getDataIndex(COL_FIRST_NAME)));
       userData.setLastName(row.getString(form.getDataIndex(COL_LAST_NAME)));
-      userData.setPhotoFileName(getPhotoFileName(form, row));
+      userData.setPhotoFile(row.getLong(form.getDataIndex(COL_PHOTO)));
 
       BeeKeeper.getScreen().updateUserData(userData);
     }
+  }
+
+  private static void ensureUpload(FormView form, IsRow oldRow, IsRow row,
+      Map<Long, NewFileInfo> queue, NewFileInfo photoFile) {
+
+    int idxPhoto = form.getDataIndex(COL_PHOTO);
+    long oldPhoto = BeeUtils.unbox(oldRow.getLong(idxPhoto));
+    long newPhoto = BeeUtils.unbox(row.getLong(idxPhoto));
+
+    if (oldPhoto == newPhoto || DataUtils.isNewRow(row)) {
+      return;
+    }
+
+    if (photoFile != null) {
+      queue.put(row.getId(), photoFile);
+    }
+
+  }
+
+  private void uploadPhoto(final long rowId, NewFileInfo file) {
+    Assert.notNull(file);
+    FileUtils.uploadFile(file, new Callback<Long>() {
+
+      @Override
+      public void onSuccess(Long fileId) {
+        Queries.update(VIEW_PERSONS, rowId, COL_PHOTO, Value.getValue(fileId),
+            new IntCallback() {
+
+              @Override
+              public void onSuccess(Integer result) {
+                DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_PERSONS);
+                UserData userData = BeeKeeper.getUser().getUserData();
+
+                if (Objects.equals(userData.getPerson(), rowId)) {
+                  userData.setPhotoFile(fileId);
+                  BeeKeeper.getScreen().updateUserData(userData);
+                }
+
+                getUploadQueue().remove(rowId);
+              }
+            });
+
+      }
+    });
+  }
+
+  private Image getPhotoImageWidget() {
+    return photoImageWidget;
+  }
+
+  private NewFileInfo getPhotoImageAttachment() {
+    return photoImageAttachment;
+  }
+
+  private void setPhotoImageAttachment(NewFileInfo photoImageAttachment) {
+    this.photoImageAttachment = photoImageAttachment;
+
+  }
+
+  private Map<Long, NewFileInfo> getUploadQueue() {
+    return uploadQueue;
   }
 
   private static void copyContactData(GridPresenter presenter, String viewName, BeeRow newRow) {

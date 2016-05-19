@@ -209,7 +209,7 @@ public class CalendarPanel extends Split implements AppointmentEvent.Handler, Pr
     header.setViewPresenter(this);
 
     if (BeeKeeper.getUser().isDataVisible(TaskConstants.VIEW_TODO_LIST)) {
-      Button todoListCommand = new Button(Localized.getConstants().crmTodoList());
+      Button todoListCommand = new Button(Localized.dictionary().crmTodoList());
       todoListCommand.addClickHandler(new ClickHandler() {
         @Override
         public void onClick(ClickEvent event) {
@@ -252,7 +252,7 @@ public class CalendarPanel extends Split implements AppointmentEvent.Handler, Pr
 
     addNorth(header, header.getHeight());
 
-    Label today = new Label(Localized.getConstants().calToday());
+    Label today = new Label(Localized.dictionary().calToday());
     today.addStyleName(STYLE_TODAY);
 
     today.addClickHandler(new ClickHandler() {
@@ -381,6 +381,11 @@ public class CalendarPanel extends Split implements AppointmentEvent.Handler, Pr
 
   public Flow getTodoContainer() {
     return todoContainer;
+  }
+
+  @Override
+  public String getViewKey() {
+    return getSupplierKey();
   }
 
   @Override

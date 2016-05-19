@@ -1,6 +1,7 @@
 package com.butent.bee.client.utils;
 
 import com.google.gwt.json.client.JSONBoolean;
+import com.google.gwt.json.client.JSONException;
 import com.google.gwt.json.client.JSONNumber;
 import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONParser;
@@ -10,6 +11,8 @@ import com.google.gwt.json.client.JSONValue;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
@@ -20,6 +23,8 @@ import java.util.List;
  */
 
 public final class JsonUtils {
+
+  private static final BeeLogger logger = LogUtils.getLogger(JsonUtils.class);
 
   public static Boolean getBoolean(JSONObject obj, String key) {
     if (obj == null || BeeUtils.isEmpty(key) || !obj.containsKey(key)) {
@@ -82,14 +87,37 @@ public final class JsonUtils {
         && BeeUtils.isSuffix(s, BeeConst.STRING_RIGHT_BRACE);
   }
 
-  public static JSONObject parse(String s) {
-    if (isJson(s)) {
-      JSONValue value = JSONParser.parseStrict(s);
-      return (value == null) ? null : value.isObject();
-
-    } else {
+  public static JSONObject parseObject(String s) {
+    JSONValue value = parseValue(s);
+    if (value == null) {
       return null;
     }
+
+    JSONObject object = value.isObject();
+    if (object == null) {
+      logger.severe("not a json object", s);
+    }
+
+    return object;
+  }
+
+  public static JSONValue parseValue(String s) {
+    if (BeeUtils.isEmpty(s)) {
+      logger.severe("json parse empty argument");
+      return null;
+    }
+
+    JSONValue value;
+
+    try {
+      value = JSONParser.parseStrict(s);
+    } catch (JSONException ex) {
+      logger.severe(s);
+      logger.error(ex);
+      value = null;
+    }
+
+    return value;
   }
 
   public static JSONObject toJson(List<? extends IsColumn> columns, IsRow row) {

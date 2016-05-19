@@ -153,7 +153,7 @@ abstract class MultiStateForm extends RightsForm {
         roleCommand.setHtml(getRoleName());
         roleCommand.addStyleName(STYLE_ROLE_NOT_EMPTY);
       } else {
-        roleCommand.setHtml(Localized.getConstants().selectRole());
+        roleCommand.setHtml(Localized.dictionary().selectRole());
         roleCommand.addStyleName(STYLE_ROLE_EMPTY);
       }
 
@@ -264,7 +264,9 @@ abstract class MultiStateForm extends RightsForm {
     return STYLE_PREFIX + "multi-state";
   }
 
-  protected abstract List<RightsState> getRightsStates();
+  protected List<RightsState> getRightsStates() {
+    return new ArrayList<>(getObjectType().getRegisteredStates());
+  }
 
   protected abstract boolean hasValue(RightsObject object);
 
@@ -343,7 +345,7 @@ abstract class MultiStateForm extends RightsForm {
 
       Map<String, String> diff = new HashMap<>();
       for (String objectName : changes.keySet()) {
-        diff.put(objectName, EnumUtils.buildIndexList(changes.get(objectName)));
+        diff.put(objectName, EnumUtils.joinIndexes(changes.get(objectName)));
       }
       params.addDataItem(COL_OBJECT, Codec.beeSerialize(diff));
 

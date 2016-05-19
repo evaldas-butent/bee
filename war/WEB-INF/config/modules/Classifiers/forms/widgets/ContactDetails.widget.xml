@@ -2,7 +2,7 @@
 <!DOCTYPE Table [
   <!ENTITY lbl "margin-left: 1em; margin-right: 1em; text-align: right">
 ]>
-<Table xmlns="http://www.butent.com/widget" xmlns:ui="http://www.butent.com/ui">
+<Table xmlns="http://www.butent.com/widget" xmlns:ui="http://www.butent.com/ui" kind="controls">
   <row>
     <Label text="=phones" style="&lbl;" for="Phone" />
     <InputText source="Phone" summarize="true" />
@@ -15,7 +15,7 @@
   <row>
     <Label for="EmailId" style="&lbl;" />
     <cell colSpan="2" for="EmailId" >
-      <Table>
+      <Table kind="controls">
         <row>
           <DataSelector name="EmailId" source="EmailId" style="width: 100%;" maxLength="50" editEnabled="true" />
           <CheckBox html="-" name="RemindEmail" source="RemindEmail" title="=sendReminder" />
@@ -30,6 +30,15 @@
     </cell>
   </row>
 
+  <row>
+    <Label text="=mailRecipientsGroups" style="&lbl;" />
+    <cell colSpan="5">
+      <ChildSelector viewName="RecipientsGroups" childTable="RcpsGroupsContacts"
+        targetRelColumn="CompanyPerson" sourceRelColumn="RecipientsGroup" renderColumns="GroupName"
+        choiceColumns="GroupName" label="=mailRecipientsGroups" style="width: 100%;" summarize="true" 
+        filter="Creator {u} or Visibility = 0" />
+    </cell>
+  </row>
   <row for="Address">
     <Label text="=address" style="&lbl;" />
     <cell colSpan="5">
@@ -48,19 +57,17 @@
     </DataSelector>
 
     <Label text="=country" style="&lbl;" for="Country" />
-    <Table for="Country">
-      <row>
-        <DataSelector source="Country" style="width: 120px;" summarize="true">
-          <renderToken source="CountryName" />
-          <renderToken source="CountryCode" prefix=" (" suffix=")" />
-          <selectorColumn source="Name" />
-          <selectorColumn source="Code">
-            <ui:renderer type="flag" />
-          </selectorColumn>
-        </DataSelector>
-        <Flag source="CountryCode" style="width: 22px;" />
-      </row>
-    </Table>
+    <HorizontalPanel for="Country">
+      <DataSelector source="Country" style="width: 120px;" summarize="true">
+        <renderToken source="CountryName" />
+        <renderToken source="CountryCode" prefix=" (" suffix=")" />
+        <selectorColumn source="Name" />
+        <selectorColumn source="Code">
+          <ui:renderer type="flag" />
+        </selectorColumn>
+      </DataSelector>
+      <Flag source="CountryCode" style="width: 22px;" />
+    </HorizontalPanel>
 
     <Label text="=postIndex" style="&lbl;" for="PostIndex" />
     <InputText source="PostIndex" summarize="true" />

@@ -10,7 +10,7 @@
     <Relation name="Operation" relation="TradeOperations" label="=trdOperation" />
 
     <Relation name="SaleSeries" relation="SaleSeries" label="=trdInvoicePrefix"/>
-    <String name="InvoicePrefix" precision="10" label="=trdInvoicePrefix" />
+    <String name="InvoicePrefix" precision="10" label="=trdInvoicePrefix" /> <!--TODO: remove-->
     <String name="InvoiceNo" precision="20" label="=trdInvoiceNo" />
 
     <Relation name="Supplier" relation="Companies" label="=trdSupplier" />

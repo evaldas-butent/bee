@@ -121,6 +121,16 @@ public class ReadyForInsertEvent extends GwtEvent<ReadyForInsertEvent.Handler> i
     this.forced = forced;
   }
 
+  public boolean update(String colName, String value) {
+    for (int i = 0; i < columns.size(); i++) {
+      if (BeeUtils.same(columns.get(i).getId(), colName)) {
+        values.set(i, value);
+        return true;
+      }
+    }
+    return false;
+  }
+
   @Override
   protected void dispatch(Handler handler) {
     handler.onReadyForInsert(this);

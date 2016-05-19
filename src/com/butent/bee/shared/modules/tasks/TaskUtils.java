@@ -3,12 +3,14 @@ package com.butent.bee.shared.modules.tasks;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
 
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
@@ -17,6 +19,7 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.modules.calendar.CalendarConstants;
 import com.butent.bee.shared.modules.discussions.DiscussionsConstants;
 import com.butent.bee.shared.modules.documents.DocumentConstants;
@@ -33,6 +36,7 @@ import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 public final class TaskUtils {
@@ -40,6 +44,10 @@ public final class TaskUtils {
   private static final String NOTE_LABEL_SEPARATOR = ": ";
 
   private static final BiMap<String, String> taskPropertyToRelation = HashBiMap.create();
+
+  public static final List<String> TASK_RELATIONS = Lists.newArrayList(PROP_COMPANIES,
+      PROP_PERSONS, PROP_DOCUMENTS, PROP_APPOINTMENTS, PROP_DISCUSSIONS, PROP_SERVICE_OBJECTS,
+      PROP_TASKS, PROP_REQUESTS);
 
   public static boolean canConfirmTasks(final DataInfo info, final List<BeeRow> rows,
       long userId, ResponseObject resp) {
@@ -50,8 +58,8 @@ public final class TaskUtils {
       if (BeeUtils.unbox(row.getLong(info.getColumnIndex(COL_OWNER))) != userId) {
         if (resp != null) {
           resp.addWarning(
-              BeeUtils.joinWords(Localized.getConstants().crmTask(), row.getId()),
-              Localized.getConstants().crmTaskConfirmCanManager());
+              BeeUtils.joinWords(Localized.dictionary().crmTask(), row.getId()),
+              Localized.dictionary().crmTaskConfirmCanManager());
         }
         return false;
       }
@@ -60,8 +68,8 @@ public final class TaskUtils {
         != TaskStatus.COMPLETED.ordinal()) {
         if (resp != null) {
           resp.addWarning(
-              BeeUtils.joinWords(Localized.getConstants().crmTask(), row.getId()),
-              Localized.getConstants().crmTaskMustBePerformed());
+              BeeUtils.joinWords(Localized.dictionary().crmTask(), row.getId()),
+              Localized.dictionary().crmTaskMustBePerformed());
         }
         return false;
       }
@@ -76,12 +84,20 @@ public final class TaskUtils {
 
   public static String getDeleteNote(String label, String value) {
     return BeeUtils.join(NOTE_LABEL_SEPARATOR, label,
-        BeeUtils.joinWords(Localized.getConstants().crmDeleted().toLowerCase(), value));
+        BeeUtils.joinWords(Localized.dictionary().crmDeleted().toLowerCase(), value));
+  }
+
+  public static List<FileInfo> getFiles(IsRow row) {
+    if (BeeUtils.isEmpty(row.getProperty(PROP_FILES))) {
+      return Lists.newArrayList();
+    }
+
+    return FileInfo.restoreCollection(row.getProperty(PROP_FILES));
   }
 
   public static String getInsertNote(String label, String value) {
     return BeeUtils.join(NOTE_LABEL_SEPARATOR, label, BeeUtils
-        .joinWords(Localized.getConstants().crmAdded().toLowerCase(), value));
+        .joinWords(Localized.dictionary().crmAdded().toLowerCase(), value));
   }
 
   public static Set<String> getRelationPropertyNames() {
@@ -174,8 +190,86 @@ public final class TaskUtils {
     return BeeUtils.join(NOTE_LABEL_SEPARATOR, label, BeeUtils.join(" -> ", oldValue, newValue));
   }
 
+  public static List<String> getUpdateNotes(DataInfo dataInfo, IsRow oldRow, IsRow newRow) {
+    List<String> notes = new ArrayList<>();
+
+    if (dataInfo == null || oldRow == null || newRow == null) {
+      return notes;
+    }
+    List<BeeColumn> columns = dataInfo.getColumns();
+    for (int i = 0; i < columns.size(); i++) {
+      BeeColumn column = columns.get(i);
+
+      String oldValue = oldRow.getString(i);
+      String newValue = newRow.getString(i);
+
+      if (!BeeUtils.equalsTrimRight(oldValue, newValue) && column.isEditable()) {
+        String label = Localized.getLabel(column);
+        String note;
+
+        if (BeeUtils.isEmpty(oldValue)) {
+          if (Objects.equals(oldRow.getBoolean(i), Boolean.TRUE)) {
+            note = getInsertNote(label, "");
+          } else {
+            note = getInsertNote(label, renderColumn(dataInfo, oldRow, column, i));
+          }
+        } else if (BeeUtils.isEmpty(newValue)) {
+          if (Objects.equals(oldRow.getBoolean(i), Boolean.TRUE)) {
+            note = getDeleteNote(label, "");
+          } else {
+            note = getDeleteNote(label, renderColumn(dataInfo, oldRow, column, i));
+          }
+        } else {
+          note = getUpdateNote(label, renderColumn(dataInfo, oldRow, column, i),
+              renderColumn(dataInfo, newRow, column, i));
+        }
+        notes.add(note);
+      }
+    }
+    return notes;
+  }
+
+  public static List<String> getUpdatedRelations(IsRow oldRow, IsRow newRow) {
+    List<String> updatedRelations = new ArrayList<>();
+    if (oldRow == null || newRow == null) {
+      return updatedRelations;
+    }
+
+    for (String relation : TASK_RELATIONS) {
+      if (!DataUtils.sameIdSet(oldRow.getProperty(relation), newRow.getProperty(relation))) {
+        updatedRelations.add(relation);
+      }
+    }
+    return updatedRelations;
+  }
+
+  public static boolean hasRelations(IsRow row) {
+    if (row == null) {
+      return false;
+    }
+
+    for (String relation : TaskUtils.TASK_RELATIONS) {
+      if (!BeeUtils.isEmpty(row.getProperty(relation))) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  @Deprecated
   public static boolean isScheduled(DateTime start) {
     return start != null && TimeUtils.dayDiff(TimeUtils.today(), start) > 0;
+  }
+
+  public static String renderColumn(DataInfo dataInfo, IsRow row, BeeColumn column, int index) {
+    if (COL_TASK_TYPE.equals(column.getId())) {
+      int nameIndex = dataInfo.getColumnIndex(ALS_TASK_TYPE_NAME);
+
+      if (!BeeConst.isUndef(nameIndex)) {
+        return row.getString(nameIndex);
+      }
+    }
+    return DataUtils.render(dataInfo, row, column, index);
   }
 
   public static boolean sameObservers(IsRow oldRow, IsRow newRow) {
@@ -205,6 +299,7 @@ public final class TaskUtils {
       taskPropertyToRelation.put(PROP_SERVICE_OBJECTS, ServiceConstants.COL_SERVICE_OBJECT);
       taskPropertyToRelation.put(PROP_PROJECTS, ProjectConstants.COL_PROJECT);
       taskPropertyToRelation.put(PROP_TASKS, COL_TASK);
+      taskPropertyToRelation.put(PROP_REQUESTS, COL_REQUEST);
     }
     return taskPropertyToRelation;
   }

@@ -13,6 +13,7 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
+import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.ui.Opener;
@@ -71,7 +72,7 @@ public abstract class InvoiceBuilder extends AbstractGridInterceptor
       mainItem = null;
     }
     RowFactory.createRow(dataInfo.getNewRowForm(), dataInfo.getNewRowCaption(), dataInfo,
-        newRow, null, new InvoiceForm(mainItem), new RowCallback() {
+        newRow, Modality.ENABLED, null, new InvoiceForm(mainItem), null, new RowCallback() {
           @Override
           public void onSuccess(final BeeRow row) {
             ParameterList args = getRequestArgs();
@@ -117,7 +118,7 @@ public abstract class InvoiceBuilder extends AbstractGridInterceptor
   @Override
   public void afterCreatePresenter(GridPresenter presenter) {
     if (!isChild) {
-      presenter.getHeader().addCommandItem(new Button(Localized.getConstants().createInvoice(),
+      presenter.getHeader().addCommandItem(new Button(Localized.dictionary().createInvoice(),
           this));
     }
   }
@@ -144,7 +145,7 @@ public abstract class InvoiceBuilder extends AbstractGridInterceptor
       ids.add(row.getId());
     }
     if (ids.isEmpty()) {
-      getGridView().notifyWarning(Localized.getConstants().selectAtLeastOneRow());
+      getGridView().notifyWarning(Localized.dictionary().selectAtLeastOneRow());
       return;
     }
     Queries.getRowSet(getViewName(), null, Filter.idIn(ids), new Queries.RowSetCallback() {

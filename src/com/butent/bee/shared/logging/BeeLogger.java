@@ -10,6 +10,8 @@ public interface BeeLogger {
 
   LogLevel getLevel();
 
+  String getName();
+
   void info(Object... messages);
 
   boolean isDebugEnabled();

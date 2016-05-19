@@ -10,11 +10,11 @@ import java.util.Objects;
 
 /**
  * Defines pairs of objects.
- * 
+ *
  * @param <A> type of first object to pair
  * @param <B> type of second object to pair
  */
-public final class Pair<A, B> implements BeeSerializable {
+public class Pair<A, B> implements BeeSerializable {
 
   private enum Serial {
     A, B
@@ -29,7 +29,7 @@ public final class Pair<A, B> implements BeeSerializable {
 
   /**
    * Creates the new {@code Pair} object passing the pair of objects.
-   * 
+   *
    * @param a object to pair the object {@code b}
    * @param b object to pair the object {@code a}
    */
@@ -85,9 +85,17 @@ public final class Pair<A, B> implements BeeSerializable {
   private Pair() {
   }
 
-  private Pair(A a, B b) {
+  protected Pair(A a, B b) {
     this.a = a;
     this.b = b;
+  }
+
+  public boolean aEquals(A value) {
+    return Objects.equals(getA(), value);
+  }
+
+  public boolean bEquals(B value) {
+    return Objects.equals(getB(), value);
   }
 
   @Override
@@ -109,7 +117,7 @@ public final class Pair<A, B> implements BeeSerializable {
 
   /**
    * Returns the first object or value of object.
-   * 
+   *
    * @return the first object or value of object.
    */
   public A getA() {
@@ -118,7 +126,7 @@ public final class Pair<A, B> implements BeeSerializable {
 
   /**
    * Returns the second object or value of object.
-   * 
+   *
    * @return the second object or value of object.
    */
   public B getB() {
@@ -168,11 +176,11 @@ public final class Pair<A, B> implements BeeSerializable {
 
   /**
    * Converts pair of objects to {@code String}.
-   * 
+   *
    * @return {@code String} of objects pair
    */
   @Override
   public String toString() {
-    return BeeUtils.join(BeeConst.STRING_COLON, a, b);
+    return BeeUtils.join(BeeConst.STRING_SPACE, a, b);
   }
 }

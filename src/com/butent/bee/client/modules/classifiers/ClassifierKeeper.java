@@ -1,8 +1,6 @@
 package com.butent.bee.client.modules.classifiers;
 
 import com.google.common.collect.Lists;
-import com.google.gwt.event.logical.shared.SelectionEvent;
-import com.google.gwt.event.logical.shared.SelectionHandler;
 
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
@@ -15,17 +13,13 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.GridFactory;
-import com.butent.bee.client.presenter.TreePresenter;
 import com.butent.bee.client.style.ColorStyleProvider;
 import com.butent.bee.client.style.ConditionalStyle;
 import com.butent.bee.client.ui.FormFactory;
-import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
-import com.butent.bee.client.ui.IdentifiableWidget;
-import com.butent.bee.client.view.TreeView;
 import com.butent.bee.client.view.ViewFactory;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.GridView;
-import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
+import com.butent.bee.client.view.grid.interceptor.TreeGridInterceptor;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -84,21 +78,7 @@ public final class ClassifierKeeper {
     return BeeKeeper.getRpc().createParameters(Module.CLASSIFIERS, method);
   }
 
-  private static class VehiclesGridHandler extends AbstractGridInterceptor
-      implements SelectionHandler<IsRow> {
-
-    private static final String FILTER_KEY = "f1";
-    private IsRow selectedModel;
-    private TreePresenter modelTree;
-
-    @Override
-    public void afterCreateWidget(String name, IdentifiableWidget widget,
-        WidgetDescriptionCallback callback) {
-      if (widget instanceof TreeView && BeeUtils.same(name, "VehicleModels")) {
-        ((TreeView) widget).addSelectionHandler(this);
-        modelTree = ((TreeView) widget).getTreePresenter();
-      }
-    }
+  private static class VehiclesGridHandler extends TreeGridInterceptor {
 
     @Override
     public VehiclesGridHandler getInstance() {
@@ -106,25 +86,8 @@ public final class ClassifierKeeper {
     }
 
     @Override
-    public void onSelection(SelectionEvent<IsRow> event) {
-      if (event == null) {
-        return;
-      }
-      if (getGridPresenter() != null) {
-        Long model = null;
-        setSelectedModel(event.getSelectedItem());
-
-        if (getSelectedModel() != null) {
-          model = getSelectedModel().getId();
-        }
-        getGridPresenter().getDataProvider().setParentFilter(FILTER_KEY, getFilter(model));
-        getGridPresenter().refresh(true, true);
-      }
-    }
-
-    @Override
     public boolean onStartNewRow(GridView gridView, IsRow oldRow, IsRow newRow) {
-      IsRow model = getSelectedModel();
+      IsRow model = getSelectedTreeItem();
 
       if (model != null) {
         List<BeeColumn> cols = getGridPresenter().getDataColumns();
@@ -137,7 +100,8 @@ public final class ClassifierKeeper {
       return true;
     }
 
-    private static Filter getFilter(Long model) {
+    @Override
+    protected Filter getFilter(Long model) {
       if (model == null) {
         return null;
       } else {
@@ -149,18 +113,10 @@ public final class ClassifierKeeper {
     }
 
     private String getModelValue(IsRow model, String colName) {
-      if (BeeUtils.allNotNull(model, modelTree, modelTree.getDataColumns())) {
-        return model.getString(DataUtils.getColumnIndex(colName, modelTree.getDataColumns()));
+      if (BeeUtils.allNotNull(model, getTreeDataColumns())) {
+        return model.getString(getTreeColumnIndex(colName));
       }
       return null;
-    }
-
-    private IsRow getSelectedModel() {
-      return selectedModel;
-    }
-
-    private void setSelectedModel(IsRow selectedModel) {
-      this.selectedModel = selectedModel;
     }
   }
 
@@ -299,7 +255,7 @@ public final class ClassifierKeeper {
       public void onResponse(ResponseObject response) {
         String qrBase64 = response.getResponseAsString();
         qrCodeImage.setUrl("data:image/png;base64," + qrBase64);
-        Global.showModalWidget(Localized.getConstants().qrCode(), qrCodeImage);
+        Global.showModalWidget(Localized.dictionary().qrCode(), qrCodeImage);
       }
     });
 
@@ -328,17 +284,19 @@ public final class ClassifierKeeper {
     GridFactory.registerGridInterceptor(VIEW_VEHICLES, new VehiclesGridHandler());
 
     FormFactory.registerFormInterceptor("Item", new ItemForm());
+
     FormFactory.registerFormInterceptor(FORM_PERSON, new PersonForm());
     FormFactory.registerFormInterceptor(FORM_COMPANY, new CompanyForm());
     FormFactory.registerFormInterceptor(FORM_COMPANY_PERSON, new CompanyPersonForm());
-    FormFactory.registerFormInterceptor("Holidays", new HolidaysForm());
-    FormFactory.registerFormInterceptor(FORM_COMPANY_ACTION, new CompanyActionForm());
     FormFactory.registerFormInterceptor(FORM_NEW_COMPANY, new CompanyForm());
+    FormFactory.registerFormInterceptor(FORM_COMPANY_ACTION, new CompanyActionForm());
     FormFactory.registerFormInterceptor(FORM_COMPANY_PERSON, new CompanyPersonForm());
+
+    FormFactory.registerFormInterceptor("Holidays", new HolidaysForm());
 
     SelectorEvent.register(new ClassifierSelector());
 
-    BeeKeeper.getBus().registerRowTransformHandler(new RowTransformHandler(), false);
+    BeeKeeper.getBus().registerRowTransformHandler(new RowTransformHandler());
   }
 
   private ClassifierKeeper() {

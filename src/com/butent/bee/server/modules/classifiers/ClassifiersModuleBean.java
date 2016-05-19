@@ -8,6 +8,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
+import com.google.common.eventbus.AllowConcurrentEvents;
 import com.google.common.eventbus.Subscribe;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.EncodeHintType;
@@ -27,10 +28,10 @@ import com.butent.bee.server.data.DataEvent.TableModifyEvent;
 import com.butent.bee.server.data.DataEvent.ViewQueryEvent;
 import com.butent.bee.server.data.DataEventHandler;
 import com.butent.bee.server.data.QueryServiceBean;
+import com.butent.bee.server.data.SearchBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
-import com.butent.bee.server.i18n.I18nUtils;
 import com.butent.bee.server.i18n.Localizations;
 import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.modules.ParamHolderBean;
@@ -68,13 +69,15 @@ import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.Order;
+import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.html.builder.Document;
 import com.butent.bee.shared.html.builder.elements.Table;
 import com.butent.bee.shared.html.builder.elements.Td;
 import com.butent.bee.shared.html.builder.elements.Th;
 import com.butent.bee.shared.html.builder.elements.Tr;
-import com.butent.bee.shared.i18n.LocalizableConstants;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.i18n.SupportedLocale;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
@@ -109,6 +112,7 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -117,7 +121,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -127,6 +130,7 @@ import java.util.Set;
 import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.ejb.LocalBean;
+import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
 import javax.ejb.Timeout;
 import javax.ejb.Timer;
@@ -159,6 +163,11 @@ public class ClassifiersModuleBean implements BeeModule {
   @EJB
   ParamHolderBean prm;
 
+  @EJB
+  SearchBean src;
+
+  @Resource
+  SessionContext ctx;
   @Resource
   TimerService timerService;
 
@@ -167,21 +176,21 @@ public class ClassifiersModuleBean implements BeeModule {
     List<SearchResult> search = new ArrayList<>();
 
     if (usr.isModuleVisible(ModuleAndSub.of(getModule(), SubModule.CONTACTS))) {
-      List<SearchResult> companiesSr = qs.getSearchResults(VIEW_COMPANIES,
-          Filter.anyContains(Sets.newHashSet(COL_COMPANY_NAME, COL_COMPANY_CODE, COL_PHONE,
+      List<SearchResult> companiesSr = qs.getSearchResults(VIEW_COMPANIES, src.buildSearchFilter(
+          VIEW_COMPANIES, Sets.newHashSet(COL_COMPANY_NAME, COL_COMPANY_CODE, COL_PHONE,
               COL_EMAIL_ADDRESS, COL_ADDRESS, ALS_CITY_NAME, ALS_COUNTRY_NAME), query));
       search.addAll(companiesSr);
 
       List<SearchResult> personsSr = qs.getSearchResults(VIEW_PERSONS,
-          Filter.anyContains(Sets.newHashSet(COL_FIRST_NAME, COL_LAST_NAME, COL_PHONE,
-              COL_EMAIL_ADDRESS, COL_ADDRESS, ALS_CITY_NAME, ALS_COUNTRY_NAME), query));
+          src.buildSearchFilter(VIEW_PERSONS, Sets.newHashSet(COL_FIRST_NAME, COL_LAST_NAME,
+              COL_PHONE, COL_EMAIL_ADDRESS, COL_ADDRESS, ALS_CITY_NAME, ALS_COUNTRY_NAME), query));
       search.addAll(personsSr);
 
-      List<SearchResult> companiesAndPersons =
-          qs.getSearchResults(VIEW_COMPANY_PERSONS, Filter.anyContains(Sets.newHashSet(
-              ALS_COMPANY_NAME, ALS_COMPANY_TYPE_NAME, COL_FIRST_NAME, COL_LAST_NAME,
-              COL_DEPARTMENT_NAME, ALS_POSITION_NAME, COL_PHONE, COL_MOBILE, COL_FAX, COL_EMAIL,
-              COL_ADDRESS, COL_POST_INDEX, COL_WEBSITE, ALS_CITY_NAME, ALS_COUNTRY_NAME), query));
+      List<SearchResult> companiesAndPersons = qs.getSearchResults(VIEW_COMPANY_PERSONS,
+          src.buildSearchFilter(VIEW_COMPANY_PERSONS, Sets.newHashSet(ALS_COMPANY_NAME,
+              ALS_COMPANY_TYPE_NAME, COL_FIRST_NAME, COL_LAST_NAME, COL_DEPARTMENT_NAME,
+              ALS_POSITION_NAME, COL_PHONE, COL_MOBILE, COL_FAX, COL_EMAIL, COL_ADDRESS,
+              COL_POST_INDEX, COL_WEBSITE, ALS_CITY_NAME, ALS_COUNTRY_NAME), query));
       search.addAll(companiesAndPersons);
     }
 
@@ -203,7 +212,28 @@ public class ClassifiersModuleBean implements BeeModule {
           reqInfo.getParameter(VAR_LOCALE));
 
     } else if (BeeUtils.same(svc, SVC_CREATE_COMPANY)) {
-      response = createCompany(reqInfo);
+      Map<String, String> info = new HashMap<>();
+
+      for (Map<String, String> map : Arrays.asList(reqInfo.getParams(), reqInfo.getHeaders(),
+          reqInfo.getVars())) {
+
+        if (!BeeUtils.isEmpty(map)) {
+          info.putAll(map);
+        }
+      }
+      response = createCompany(info);
+
+    } else if (BeeUtils.same(svc, SVC_CREATE_COMPANY_PERSON)) {
+      Map<String, String> info = new HashMap<>();
+
+      for (Map<String, String> map : Arrays.asList(reqInfo.getParams(), reqInfo.getHeaders(),
+          reqInfo.getVars())) {
+
+        if (!BeeUtils.isEmpty(map)) {
+          info.putAll(map);
+        }
+      }
+      response = createCompanyPerson(info);
 
     } else if (BeeUtils.same(svc, SVC_GET_COMPANY_TYPE_REPORT)) {
       response = getCompanyTypeReport(reqInfo);
@@ -226,6 +256,9 @@ public class ClassifiersModuleBean implements BeeModule {
       String msg = BeeUtils.joinWords("Commons service not recognized:", svc);
       logger.warning(msg);
       response = ResponseObject.error(msg);
+    }
+    if (Objects.isNull(response) || response.hasErrors()) {
+      ctx.setRollbackOnly();
     }
     return response;
   }
@@ -251,10 +284,9 @@ public class ClassifiersModuleBean implements BeeModule {
 
     sys.registerDataEventHandler(new DataEventHandler() {
       @Subscribe
+      @AllowConcurrentEvents
       public void setPersonCompanies(ViewQueryEvent event) {
-        if (event.isAfter() && event.isTarget(VIEW_PERSONS)
-            && !DataUtils.isEmpty(event.getRowset())) {
-
+        if (event.isAfter(VIEW_PERSONS) && event.hasData()) {
           SqlSelect query = new SqlSelect()
               .addFields(TBL_COMPANY_PERSONS, COL_PERSON, COL_COMPANY)
               .addFields(TBL_COMPANIES, COL_COMPANY_NAME)
@@ -294,8 +326,9 @@ public class ClassifiersModuleBean implements BeeModule {
       }
 
       @Subscribe
+      @AllowConcurrentEvents
       public void storeEmail(TableModifyEvent event) {
-        if (BeeUtils.same(event.getTargetName(), TBL_EMAILS) && event.isBefore()
+        if (event.isBefore(TBL_EMAILS)
             && (event.getQuery() instanceof SqlInsert || event.getQuery() instanceof SqlUpdate)) {
 
           IsQuery query = event.getQuery();
@@ -768,7 +801,7 @@ public class ClassifiersModuleBean implements BeeModule {
 
     SimpleRowSet companiesOtherEmails = qs.getData(select);
 
-    for (String [] row : companiesEmails.getRows()) {
+    for (String[] row : companiesEmails.getRows()) {
       Long companyId = BeeUtils.toLong(row[companiesEmails.getColumnIndex(COL_COMPANY)]);
       Long emailId = BeeUtils.toLong(row[companiesEmails.getColumnIndex(COL_EMAIL_ID)]);
 
@@ -817,8 +850,8 @@ public class ClassifiersModuleBean implements BeeModule {
       return;
     }
 
-    String subject = usr.getLocalizableConstants().calMailPlannedActionSubject();
-    String reminderText = usr.getLocalizableConstants().calMailPlannedActionText();
+    String subject = usr.getDictionary().calMailPlannedActionSubject();
+    String reminderText = usr.getDictionary().calMailPlannedActionText();
 
     Document doc = new Document();
     doc.getHead().append(meta().encodingDeclarationUtf8(), title().text(subject));
@@ -830,12 +863,11 @@ public class ClassifiersModuleBean implements BeeModule {
       String label = BeeConst.STRING_EMPTY;
 
       if (BeeUtils.same(appointments.getColumnId(i), CalendarConstants.ALS_ATTENDEE_TYPE_NAME)) {
-        label = usr.getLocalizableConstants().type();
+        label = usr.getDictionary().type();
       } else if (BeeUtils.same(appointments.getColumnId(i), ClassifierConstants.ALS_COMPANY_NAME)) {
-        label = usr.getLocalizableConstants().customer();
+        label = usr.getDictionary().customer();
       } else {
-        label = Localized.maybeTranslate(appointments.getColumnLabel(i),
-            usr.getLocalizableDictionary());
+        label = Localized.maybeTranslate(appointments.getColumnLabel(i), usr.getGlossary());
       }
 
       Th th = th().text(label);
@@ -871,7 +903,7 @@ public class ClassifiersModuleBean implements BeeModule {
           }
         } else if (!BeeUtils.isEmpty(appointments.getColumn(i).getEnumKey())) {
           value = EnumUtils.getLocalizedCaption(appointments.getColumn(i).getEnumKey(),
-              row.getInteger(i), usr.getLocalizableConstants(userId));
+              row.getInteger(i), usr.getDictionary(userId));
         }
 
         Td td = td();
@@ -899,156 +931,173 @@ public class ClassifiersModuleBean implements BeeModule {
         ", company action count", appointments.getRows().size());
   }
 
-  private ResponseObject createCompany(RequestInfo reqInfo) {
-    String companyName = reqInfo.getParameter(COL_COMPANY_NAME);
-    if (BeeUtils.isEmpty(companyName)) {
+  private ResponseObject createCompany(Map<String, String> companyInfo) {
+    String companyName = companyInfo.get(COL_COMPANY_NAME);
+    String companyCode = companyInfo.get(COL_COMPANY_CODE);
+    HasConditions clause = SqlUtils.or();
+
+    if (!BeeUtils.isEmpty(companyCode)) {
+      clause.add(SqlUtils.equals(TBL_COMPANIES, COL_COMPANY_CODE, companyCode));
+    }
+    if (!BeeUtils.isEmpty(companyName)) {
+      clause.add(SqlUtils.same(TBL_COMPANIES, COL_COMPANY_NAME, companyName));
+    }
+    if (clause.isEmpty()) {
       return ResponseObject.parameterNotFound(SVC_CREATE_COMPANY, COL_COMPANY_NAME);
     }
+    Long company = qs.getLong(new SqlSelect()
+        .addFields(TBL_COMPANIES, sys.getIdName(TBL_COMPANIES))
+        .addFrom(TBL_COMPANIES)
+        .setWhere(clause));
 
-    Long company = qs.getId(TBL_COMPANIES, COL_COMPANY_NAME, companyName);
-    if (company != null) {
+    if (DataUtils.isId(company)) {
       return ResponseObject.response(company);
     }
+    return createEntity(VIEW_COMPANIES, companyInfo);
+  }
 
-    String companyCode = reqInfo.getParameter(COL_COMPANY_CODE);
-    if (!BeeUtils.isEmpty(companyCode)) {
-      company = qs.getId(TBL_COMPANIES, COL_COMPANY_CODE, companyCode);
-      if (company != null) {
-        logger.warning(SVC_CREATE_COMPANY, COL_COMPANY_NAME, companyName, "not found",
-            COL_COMPANY_CODE, companyCode, "found id", company);
-        return ResponseObject.response(company);
-      }
-    }
+  private ResponseObject createCompanyPerson(Map<String, String> personInfo) {
+    String company = personInfo.get(COL_COMPANY);
 
-    String vatCode = reqInfo.getParameter(COL_COMPANY_VAT_CODE);
-    String exchangeCode = reqInfo.getParameter(COL_COMPANY_EXCHANGE_CODE);
-
-    String email = reqInfo.getParameter(COL_EMAIL);
-    if (!BeeUtils.isEmpty(email) && qs.sqlExists(TBL_EMAILS, COL_EMAIL_ADDRESS, email)) {
-      logger.warning(usr.getLocalizableMesssages()
-          .valueExists(BeeUtils.joinWords(usr.getLocalizableConstants().email(), email)),
-          "ignored");
-      email = null;
-    }
-
-    String address = reqInfo.getParameter(COL_ADDRESS);
-    String cityName = reqInfo.getParameter(COL_CITY);
-    String countryName = reqInfo.getParameter(COL_COUNTRY);
-
-    String phone = reqInfo.getParameter(COL_PHONE);
-    String mobile = reqInfo.getParameter(COL_MOBILE);
-    String fax = reqInfo.getParameter(COL_FAX);
-
-    List<BeeColumn> columns = sys.getView(VIEW_COMPANIES).getRowSetColumns();
-    BeeRow row = DataUtils.createEmptyRow(columns.size());
-
-    row.setValue(DataUtils.getColumnIndex(COL_COMPANY_NAME, columns), companyName);
-
-    if (!BeeUtils.isEmpty(companyCode)) {
-      row.setValue(DataUtils.getColumnIndex(COL_COMPANY_CODE, columns), companyCode);
-    }
-    if (!BeeUtils.isEmpty(vatCode)) {
-      row.setValue(DataUtils.getColumnIndex(COL_COMPANY_VAT_CODE, columns), vatCode);
-    }
-    if (!BeeUtils.isEmpty(exchangeCode)) {
-      row.setValue(DataUtils.getColumnIndex(COL_COMPANY_EXCHANGE_CODE, columns), exchangeCode);
-    }
-
-    ResponseObject response;
-
-    if (!BeeUtils.isEmpty(email)) {
-      response = qs.insertDataWithResponse(new SqlInsert(TBL_EMAILS)
-          .addConstant(COL_EMAIL_ADDRESS, email));
+    if (!DataUtils.isId(company)) {
+      ResponseObject response = createCompany(Collections.singletonMap(COL_COMPANY_NAME, company));
 
       if (response.hasErrors()) {
         return response;
       }
-      row.setValue(DataUtils.getColumnIndex(ALS_EMAIL_ID, columns),
-          response.getResponseAsLong());
+      personInfo.put(COL_COMPANY, BeeUtils.toString(response.getResponseAsLong()));
     }
-    Long country = null;
+    String firstName = personInfo.get(COL_FIRST_NAME);
+    String lastName = personInfo.get(COL_LAST_NAME);
+    HasConditions clause = SqlUtils.and();
 
-    if (!BeeUtils.isEmpty(countryName)) {
-      country = qs.getId(TBL_COUNTRIES, COL_COUNTRY_NAME, countryName);
+    if (!BeeUtils.isEmpty(firstName)) {
+      clause.add(SqlUtils.same(TBL_PERSONS, COL_FIRST_NAME, firstName));
 
-      if (!DataUtils.isId(country)) {
-        country = qs.insertData(new SqlInsert(TBL_COUNTRIES)
-            .addConstant(COL_COUNTRY_NAME, countryName));
-      }
-      row.setValue(DataUtils.getColumnIndex(COL_COUNTRY, columns), country);
-    }
-
-    if (!BeeUtils.isEmpty(cityName)) {
-      Long city;
-
-      if (DataUtils.isId(country)) {
-        city = qs.getId(TBL_CITIES, COL_CITY_NAME, cityName, COL_COUNTRY, country);
-
-        if (!DataUtils.isId(city)) {
-          city = qs.insertData(new SqlInsert(TBL_CITIES)
-              .addConstant(COL_CITY_NAME, cityName)
-              .addConstant(COL_COUNTRY, country));
-        }
+      if (!BeeUtils.isEmpty(lastName)) {
+        clause.add(SqlUtils.same(TBL_PERSONS, COL_LAST_NAME, lastName));
       } else {
-        city = qs.getId(TBL_CITIES, COL_CITY_NAME, cityName);
-      }
-      if (DataUtils.isId(city)) {
-        row.setValue(DataUtils.getColumnIndex(COL_CITY, columns), city);
+        clause.add(SqlUtils.isNull(TBL_PERSONS, COL_LAST_NAME));
       }
     }
+    if (clause.isEmpty()) {
+      return ResponseObject.parameterNotFound(SVC_CREATE_COMPANY_PERSON, COL_FIRST_NAME);
+    }
+    Long person = qs.getLong(new SqlSelect()
+        .addFields(TBL_COMPANY_PERSONS, sys.getIdName(TBL_COMPANY_PERSONS))
+        .addFrom(TBL_COMPANY_PERSONS)
+        .addFromInner(TBL_PERSONS, sys.joinTables(TBL_PERSONS, TBL_COMPANY_PERSONS, COL_PERSON))
+        .setWhere(clause.add(SqlUtils.equals(TBL_COMPANY_PERSONS, COL_COMPANY, company))));
 
-    if (!BeeUtils.isEmpty(address)) {
-      row.setValue(DataUtils.getColumnIndex(COL_ADDRESS, columns), address);
+    if (DataUtils.isId(person)) {
+      return ResponseObject.response(person);
     }
+    personInfo.put(COL_PERSON, BeeUtils.toString(qs.insertData(new SqlInsert(TBL_PERSONS)
+        .addConstant(COL_FIRST_NAME, firstName)
+        .addNotEmpty(COL_LAST_NAME, lastName))));
 
-    if (!BeeUtils.isEmpty(phone)) {
-      row.setValue(DataUtils.getColumnIndex(COL_PHONE, columns), phone);
-    }
-    if (!BeeUtils.isEmpty(mobile)) {
-      row.setValue(DataUtils.getColumnIndex(COL_MOBILE, columns), mobile);
-    }
-    if (!BeeUtils.isEmpty(fax)) {
-      row.setValue(DataUtils.getColumnIndex(COL_FAX, columns), fax);
-    }
+    return createEntity(VIEW_COMPANY_PERSONS, personInfo);
+  }
 
-    BeeRowSet rowSet = DataUtils.createRowSetForInsert(VIEW_COMPANIES, columns, row);
-    response = deb.commitRow(rowSet);
+  private ResponseObject createEntity(String viewName, Map<String, String> viewInfo) {
+    BeeView view = sys.getView(viewName);
+    List<BeeColumn> columns = view.getRowSetColumns();
+    List<String> values = new ArrayList<>();
+
+    Long country = null;
+    Pair<String, String> city = null;
+
+    for (BeeColumn column : columns) {
+      String name = column.getId();
+      String value = column.isEditable() ? viewInfo.get(name) : null;
+
+      if (Objects.nonNull(value)) {
+        String relation = view.getColumnRelation(name);
+
+        if (!BeeUtils.isEmpty(relation) && !DataUtils.isId(value)) {
+          if (Objects.equals(relation, TBL_CITIES)) {
+            city = Pair.of(name, value);
+          } else {
+            String relCol = sys.getTable(relation).getFields().stream()
+                .filter(BeeTable.BeeField::isUnique)
+                .filter(BeeTable.BeeField::isNotNull)
+                .map(BeeTable.BeeField::getName)
+                .findFirst().orElse(null);
+
+            if (BeeUtils.isEmpty(relCol)) {
+              return ResponseObject.error("Unknown relation", relation, "field for column", name,
+                  "and value", value);
+            } else {
+              Long id = qs.getLong(new SqlSelect()
+                  .addFields(relation, sys.getIdName(relation))
+                  .addFrom(relation)
+                  .setWhere(SqlUtils.same(relation, relCol, value)));
+
+              if (!DataUtils.isId(id)) {
+                id = qs.insertData(new SqlInsert(relation)
+                    .addConstant(relCol, value));
+              }
+              value = BeeUtils.toString(id);
+            }
+          }
+        }
+        if (Objects.equals(relation, TBL_COUNTRIES)) {
+          country = BeeUtils.toLongOrNull(value);
+        }
+      }
+      values.add(value);
+    }
+    if (Objects.nonNull(city)) {
+      Long id = qs.getLong(new SqlSelect()
+          .addFields(TBL_CITIES, sys.getIdName(TBL_CITIES))
+          .addFrom(TBL_CITIES)
+          .setWhere(SqlUtils.and(SqlUtils.same(TBL_CITIES, COL_CITY_NAME, city.getB()),
+              SqlUtils.equals(TBL_CITIES, COL_COUNTRY, country))));
+
+      if (!DataUtils.isId(id)) {
+        id = qs.insertData(new SqlInsert(TBL_CITIES)
+            .addConstant(COL_CITY_NAME, city.getB())
+            .addNotNull(COL_COUNTRY, country));
+      }
+      values.set(DataUtils.getColumnIndex(city.getA(), columns), BeeUtils.toString(id));
+    }
+    BeeRowSet rowSet = DataUtils.createRowSetForInsert(view.getName(), columns, values);
+    ResponseObject response = deb.commitRow(rowSet, RowInfo.class);
+
     if (response.hasErrors()) {
       return response;
     }
-
-    company = ((BeeRow) response.getResponse()).getId();
-    return ResponseObject.response(company);
+    return ResponseObject.response(((RowInfo) response.getResponse()).getId());
   }
 
   private ResponseObject getCompanyInfo(Long companyId, String locale) {
     if (!DataUtils.isId(companyId)) {
       return ResponseObject.error("Wrong company ID");
     }
-    SimpleRow row = qs.getRow(new SqlSelect()
-        .addFields(TBL_COMPANIES, COL_COMPANY_NAME, COL_COMPANY_CODE, COL_COMPANY_VAT_CODE)
-        .addField(TBL_COMPANY_TYPES, COL_COMPANY_TYPE_NAME, ALS_COMPANY_TYPE)
-        .addFields(TBL_CONTACTS, COL_ADDRESS, COL_POST_INDEX, COL_PHONE, COL_MOBILE, COL_FAX)
-        .addFields(TBL_EMAILS, COL_EMAIL_ADDRESS)
-        .addField(TBL_CITIES, COL_CITY_NAME, COL_CITY)
-        .addField(TBL_COUNTRIES, COL_COUNTRY_NAME, COL_COUNTRY)
-        .addFields(TBL_COMPANY_BANK_ACCOUNTS, COL_BANK_ACCOUNT)
-        .addField(TBL_BANKS, COL_BANK_NAME, COL_BANK)
-        .addFields(TBL_BANKS, COL_BANK_CODE, COL_SWIFT_CODE)
-        .addFrom(TBL_COMPANIES)
-        .addFromLeft(TBL_CONTACTS, sys.joinTables(TBL_CONTACTS, TBL_COMPANIES, COL_CONTACT))
-        .addFromLeft(TBL_COMPANY_TYPES, sys.joinTables(TBL_COMPANY_TYPES, TBL_COMPANIES, COL_COMPANY_TYPE))
-        .addFromLeft(TBL_EMAILS, sys.joinTables(TBL_EMAILS, TBL_CONTACTS, COL_EMAIL))
-        .addFromLeft(TBL_CITIES, sys.joinTables(TBL_CITIES, TBL_CONTACTS, COL_CITY))
-        .addFromLeft(TBL_COUNTRIES, sys.joinTables(TBL_COUNTRIES, TBL_CONTACTS, COL_COUNTRY))
-        .addFromLeft(TBL_COMPANY_BANK_ACCOUNTS,
-            sys.joinTables(TBL_COMPANY_BANK_ACCOUNTS, TBL_COMPANIES, COL_DEFAULT_BANK_ACCOUNT))
-        .addFromLeft(TBL_BANKS, sys.joinTables(TBL_BANKS, TBL_COMPANY_BANK_ACCOUNTS, COL_BANK))
-        .setWhere(sys.idEquals(TBL_COMPANIES, companyId)));
+    SimpleRow row =
+        qs.getRow(new SqlSelect()
+            .addFields(TBL_COMPANIES, COL_COMPANY_NAME, COL_COMPANY_CODE, COL_COMPANY_VAT_CODE)
+            .addField(TBL_COMPANY_TYPES, COL_COMPANY_TYPE_NAME, ALS_COMPANY_TYPE)
+            .addFields(TBL_CONTACTS, COL_ADDRESS, COL_POST_INDEX, COL_PHONE, COL_MOBILE, COL_FAX)
+            .addFields(TBL_EMAILS, COL_EMAIL_ADDRESS)
+            .addField(TBL_CITIES, COL_CITY_NAME, COL_CITY)
+            .addField(TBL_COUNTRIES, COL_COUNTRY_NAME, COL_COUNTRY)
+            .addFields(TBL_COMPANY_BANK_ACCOUNTS, COL_BANK_ACCOUNT)
+            .addField(TBL_BANKS, COL_BANK_NAME, COL_BANK)
+            .addFields(TBL_BANKS, COL_BANK_CODE, COL_SWIFT_CODE)
+            .addFrom(TBL_COMPANIES)
+            .addFromLeft(TBL_CONTACTS, sys.joinTables(TBL_CONTACTS, TBL_COMPANIES, COL_CONTACT))
+            .addFromLeft(TBL_COMPANY_TYPES,
+                sys.joinTables(TBL_COMPANY_TYPES, TBL_COMPANIES, COL_COMPANY_TYPE))
+            .addFromLeft(TBL_EMAILS, sys.joinTables(TBL_EMAILS, TBL_CONTACTS, COL_EMAIL))
+            .addFromLeft(TBL_CITIES, sys.joinTables(TBL_CITIES, TBL_CONTACTS, COL_CITY))
+            .addFromLeft(TBL_COUNTRIES, sys.joinTables(TBL_COUNTRIES, TBL_CONTACTS, COL_COUNTRY))
+            .addFromLeft(TBL_COMPANY_BANK_ACCOUNTS,
+                sys.joinTables(TBL_COMPANY_BANK_ACCOUNTS, TBL_COMPANIES, COL_DEFAULT_BANK_ACCOUNT))
+            .addFromLeft(TBL_BANKS, sys.joinTables(TBL_BANKS, TBL_COMPANY_BANK_ACCOUNTS, COL_BANK))
+            .setWhere(sys.idEquals(TBL_COMPANIES, companyId)));
 
-    Locale loc = I18nUtils.toLocale(locale);
-    LocalizableConstants constants = (loc == null)
-        ? Localized.getConstants() : Localizations.getConstants(loc);
+    Dictionary constants = Localizations.getDictionary(SupportedLocale.parse(locale));
 
     Map<String, String> translations = new HashMap<>();
     translations.put(COL_COMPANY_NAME, constants.company());
@@ -1598,7 +1647,7 @@ public class ClassifiersModuleBean implements BeeModule {
           Collections.sort(branch, new Comparator<Long>() {
             @Override
             public int compare(Long o1, Long o2) {
-              return BeeUtils.compareNullsLast(categoryLevels.get(o1), categoryLevels.get(o2));
+              return BeeUtils.compareNullsLast(categoryLevels.get(o2), categoryLevels.get(o1));
             }
           });
         }

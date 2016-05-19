@@ -462,6 +462,14 @@ public final class Format {
     }
   }
 
+  public static String renderDateTimeFull(DateTime dateTime) {
+    if (dateTime == null) {
+      return null;
+    } else {
+      return DateTimeFormat.getFormat(PredefinedFormat.DATE_TIME_FULL).format(dateTime);
+    }
+  }
+
   public static String renderDayOfWeek(HasDateValue date) {
     return (date == null) ? null : renderDayOfWeek(date.getDow());
   }

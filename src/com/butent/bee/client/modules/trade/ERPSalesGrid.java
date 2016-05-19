@@ -30,7 +30,7 @@ class ERPSalesGrid extends AbstractGridInterceptor {
     header.clearCommandPanel();
 
     final FaLabel action = new FaLabel(FontAwesome.EXCHANGE);
-    action.setTitle(Localized.getConstants().trdSynchronizeWithERP());
+    action.setTitle(Localized.dictionary().trdSynchronizeWithERP());
     action.addClickHandler(new ClickHandler() {
 
       @Override

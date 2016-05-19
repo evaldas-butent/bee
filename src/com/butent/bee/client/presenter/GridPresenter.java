@@ -2,6 +2,7 @@ package com.butent.bee.client.presenter;
 
 import com.google.common.collect.Lists;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
@@ -20,11 +21,13 @@ import com.butent.bee.client.dialog.ChoiceCallback;
 import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.DialogConstants;
 import com.butent.bee.client.dialog.Icon;
+import com.butent.bee.client.event.logical.ReadyEvent;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.modules.administration.HistoryHandler;
 import com.butent.bee.client.output.Exporter;
 import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.style.StyleUtils;
+import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.ui.WidgetInitializer;
 import com.butent.bee.client.view.GridContainerImpl;
@@ -53,6 +56,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.Pair;
+import com.butent.bee.shared.State;
 import com.butent.bee.shared.css.values.FontSize;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
@@ -99,9 +103,9 @@ import java.util.Set;
 
 public class GridPresenter extends AbstractPresenter implements ReadyForInsertEvent.Handler,
     ReadyForUpdateEvent.Handler, SaveChangesEvent.Handler, HasDataProvider, HasActiveRow,
-    HasGridView, HasViewName, FilterConsumer {
+    HasGridView, HasViewName, FilterConsumer, ReadyEvent.Handler {
 
-  private final class DeleteCallback extends ConfirmationCallback {
+  private final class DeleteCallback implements ConfirmationCallback {
     private final IsRow activeRow;
     private final Collection<RowInfo> rows;
 
@@ -174,7 +178,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
             public void onSuccess(Integer result) {
               MultiDeleteEvent.fire(BeeKeeper.getBus(), getViewName(), rows);
               afterMulti(rowIds);
-              showInfo(Localized.getMessages().deletedRows(result));
+              showInfo(Localized.dictionary().deletedRows(result));
             }
           });
         }
@@ -218,9 +222,16 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
 
   private Map<Long, String> roles;
 
+  private Pair<Boolean, Boolean> pendingRefresh;
+  private boolean ready;
+
+  private final int loadingStateDelay;
+  private final Timer loadingStateTimer;
+
   public GridPresenter(GridDescription gridDescription, GridView gridView, int rowCount,
       BeeRowSet rowSet, ProviderType providerType, CachingPolicy cachingPolicy,
       Collection<UiOption> uiOptions) {
+
     this(gridDescription, gridView, rowCount, rowSet, providerType, cachingPolicy, uiOptions,
         null, null, null, null, null, null, null);
   }
@@ -256,6 +267,19 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
 
     if (!BeeUtils.isEmpty(gridDescription.getFavorite())) {
       favorite.addAll(NameUtils.toList(gridDescription.getFavorite()));
+    }
+
+    this.loadingStateDelay = UiHelper.getLoadingStateDelayMillis();
+
+    if (loadingStateDelay > 0) {
+      this.loadingStateTimer = new Timer() {
+        @Override
+        public void run() {
+          setLoading(true);
+        }
+      };
+    } else {
+      this.loadingStateTimer = null;
     }
 
     bind();
@@ -299,10 +323,10 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
       deleteCallback.onConfirm();
 
     } else {
-      options.add(Localized.getConstants().cancel());
+      options.add(Localized.dictionary().cancel());
 
       Global.getMsgBoxen().display(getCaption(), Icon.ALARM,
-          Collections.singletonList(Localized.getConstants().deleteQuestion()), options, 2,
+          Collections.singletonList(Localized.dictionary().deleteQuestion()), options, 2,
           new ChoiceCallback() {
             @Override
             public void onSuccess(int value) {
@@ -322,6 +346,11 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
   @Override
   public IsRow getActiveRow() {
     return getGridView().getActiveRow();
+  }
+
+  @Override
+  public long getActiveRowId() {
+    return DataUtils.getId(getActiveRow());
   }
 
   @Override
@@ -401,6 +430,11 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
   }
 
   @Override
+  public String getViewKey() {
+    return gridContainer.getSupplierKey();
+  }
+
+  @Override
   public String getViewName() {
     return getDataProvider().getViewName();
   }
@@ -434,7 +468,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
         }
         if (ids.isEmpty()) {
           if (BeeUtils.isPositive(getGridView().getGrid().getDataSize())) {
-            getGridView().notifyWarning(Localized.getConstants().selectAtLeastOneRow());
+            getGridView().notifyWarning(Localized.dictionary().selectAtLeastOneRow());
           }
           return;
         }
@@ -465,7 +499,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
           IsRow row = getActiveRow();
 
           if (!row.isRemovable()) {
-            getGridView().notifyWarning(Localized.getConstants().rowIsNotRemovable());
+            getGridView().notifyWarning(Localized.dictionary().rowIsNotRemovable());
 
           } else if (getGridView().isRowEditable(row, getGridView())) {
             Collection<RowInfo> selectedRows =
@@ -495,7 +529,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
         break;
 
       case MENU:
-        menu.open(this);
+        menu.open(this, getMainView().isEnabled());
         break;
 
       case MERGE:
@@ -539,10 +573,6 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
       default:
         logger.warning(NameUtils.getName(this), action, "not implemented");
     }
-
-    if (getGridInterceptor() != null) {
-      getGridInterceptor().afterAction(action, this);
-    }
   }
 
   public void handleRights(RightsState rightsState) {
@@ -556,10 +586,6 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
       getDataProvider().toggleRightsState(rightsState);
       refresh(true, false);
     }
-
-    if (getGridInterceptor() != null) {
-      getGridInterceptor().afterAction(Action.RIGHTS, this);
-    }
   }
 
   public boolean hasFilter() {
@@ -569,11 +595,30 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
   public boolean isActionEnabled(Action action) {
     if (action == null) {
       return false;
+
+    } else if (action.isDisablable() && !getMainView().isEnabled()) {
+      return false;
+
     } else if (menu.isActionVisible(this, action)) {
       return true;
+
     } else {
       HeaderView header = getHeader();
       return header != null && header.isActionEnabled(action);
+    }
+  }
+
+  public boolean isReady() {
+    return ready;
+  }
+
+  @Override
+  public void onReady(ReadyEvent event) {
+    setReady(true);
+
+    if (pendingRefresh != null) {
+      refresh(pendingRefresh.getA(), pendingRefresh.getB());
+      pendingRefresh = null;
     }
   }
 
@@ -676,6 +721,24 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
   }
 
   @Override
+  public void onStateChange(State state) {
+    if (state == State.LOADING || state == State.PENDING) {
+      if (loadingStateTimer == null) {
+        setLoading(true);
+      } else if (!loadingStateTimer.isRunning()) {
+        loadingStateTimer.schedule(loadingStateDelay);
+      }
+
+    } else {
+      if (loadingStateTimer != null && loadingStateTimer.isRunning()) {
+        loadingStateTimer.cancel();
+      }
+
+      setLoading(false);
+    }
+  }
+
+  @Override
   public void onViewUnload() {
     getMainView().setViewPresenter(null);
 
@@ -685,20 +748,25 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
   }
 
   public void refresh(boolean preserveActiveRow, boolean goTop) {
-    if (getGridInterceptor() != null) {
-      getGridInterceptor().beforeRefresh(this);
-    }
+    if (isReady()) {
+      if (getGridInterceptor() != null) {
+        getGridInterceptor().beforeRefresh(this);
+      }
 
-    if (getGridView().likeAMotherlessChild()) {
-      if (getGridView().getGrid().getRowCount() > 0) {
-        getDataProvider().clear();
+      if (getGridView().likeAMotherlessChild()) {
+        if (getGridView().getGrid().getRowCount() > 0) {
+          getDataProvider().clear();
+        }
+
+      } else {
+        if (goTop && getGridView().getGrid().getPageStart() > 0) {
+          getGridView().getGrid().setPageStart(0, false, false, NavigationOrigin.SYSTEM);
+        }
+        getDataProvider().refresh(preserveActiveRow);
       }
 
     } else {
-      if (goTop && getGridView().getGrid().getPageStart() > 0) {
-        getGridView().getGrid().setPageStart(0, false, false, NavigationOrigin.SYSTEM);
-      }
-      getDataProvider().refresh(preserveActiveRow);
+      pendingRefresh = Pair.of(preserveActiveRow, goTop);
     }
   }
 
@@ -775,7 +843,10 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
   private void bind() {
     GridContainerView view = gridContainer;
     view.setViewPresenter(this);
+
     view.bind();
+
+    view.getGridView().addReadyHandler(this);
 
     view.getGridView().addReadyForUpdateHandler(this);
     view.getGridView().addReadyForInsertHandler(this);
@@ -902,20 +973,20 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
       return;
     }
 
-    Global.choiceWithCancel(getCaption(), Localized.getConstants().mergeInto(), labels,
+    Global.choiceWithCancel(getCaption(), Localized.dictionary().mergeInto(), labels,
         new ChoiceCallback() {
           @Override
           public void onSuccess(final int index) {
             if (BeeUtils.isIndex(rows, index)) {
               List<String> messages = new ArrayList<>(labels);
               messages.add(BeeConst.STRING_EMPTY);
-              messages.add(Localized.getConstants().mergeInto());
+              messages.add(Localized.dictionary().mergeInto());
               messages.add(BeeConst.STRING_EMPTY);
               messages.add(labels.get(index));
 
               List<String> options = new ArrayList<>();
-              options.add(Localized.getConstants().actionMerge());
-              options.add(Localized.getConstants().cancel());
+              options.add(Localized.dictionary().actionMerge());
+              options.add(Localized.dictionary().cancel());
 
               Global.getMsgBoxen().display(getCaption(), Icon.ALARM, messages, options, 1,
                   new ChoiceCallback() {
@@ -1006,7 +1077,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
       result.clear();
 
       for (IsRow row : rows) {
-        String idLabel = BeeUtils.joinWords(Localized.getConstants().captionId(), row.getId());
+        String idLabel = BeeUtils.joinWords(Localized.dictionary().captionId(), row.getId());
 
         if (indexes.isEmpty()) {
           result.add(idLabel);
@@ -1037,6 +1108,14 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
         }
       }
     });
+  }
+
+  private void setLoading(boolean loading) {
+    getMainView().setStyleName(StyleUtils.NAME_LOADING, loading);
+  }
+
+  private void setReady(boolean ready) {
+    this.ready = ready;
   }
 
   private void showFailure(String activity, String... reasons) {

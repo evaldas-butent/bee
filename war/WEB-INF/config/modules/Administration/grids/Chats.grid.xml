@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+
+  name="Chats" viewName="Chats" caption="=chats"
+  order="Created desc" editForm="Chat"
+  >
+  <g:body height="40" />
+
+  <g:columns>
+    <IdColumn name="Id" visible="false" />
+
+    <PropColumn name="UserPhoto" type="string" caption="-" cellType="html"
+      width="40" horizontalAlignment="center" autoFit="false" exportable="false">
+      <renderer type="photo" />
+    </PropColumn>
+    <PropColumn name="UserNames" type="string" caption="=chatUsers"
+      verticalAlignment="top" flexGrow="1" />
+
+    <DataColumn name="ChatName" visible="true" />
+
+    <DataColumn name="Created" />
+    <RelColumn name="Creator" renderColumns="CreatorFirstName CreatorLastName"
+      sortBy="CreatorLastName CreatorFirstName" />
+  </g:columns>
+</g:Grid>

@@ -13,7 +13,7 @@
     >
   <FlowPanel class="flexBox-vertical" style="padding: 5px 1em 45px 1em; min-width: 1000px;">
     <FlowPanel style="margin-top: 1ex;">
-      <Table style="border-spacing: 5px;">
+      <Table kind="controls" style="border-spacing: 5px;">
         <row>
           <Label text="=trDriverName" class="bee-required" style="&lbl;" />
           <DataSelector source="CompanyPerson" style="&w2;"
@@ -86,6 +86,11 @@
         <SimplePanel>
           <InputArea source="Notes" class="occupy-1" summarize="true" />
         </SimplePanel>
+      </page>
+      <page>
+        <text>=relatedInformation</text>
+        <Relations relColumn="Driver" inline="true"
+                   defaultRelations="Companies Persons Requests Tasks" style="margin: 0px 15px 0px 15px; min-width:300px;" />
       </page>
     </TabbedPages>
   </FlowPanel>

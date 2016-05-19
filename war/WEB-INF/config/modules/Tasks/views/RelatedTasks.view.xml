@@ -1,29 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
-  xmlns:x="http://www.butent.com/expression"
 
   name="RelatedTasks" source="Relations" caption="=crmTasksRelated"
-  newRowForm="NewTask" editForm="Task" rowCaption="Summary" 
+  newRowForm="NewTask" editForm="Task" rowCaption="Summary"
   >
   <Columns>
-    <SimpleColumn name="Request" />
-    <SimpleColumn name="Cargo" />
-    <SimpleColumn name="Company" alias="RelatedCompany" />
-    <SimpleColumn name="Person" alias="RelatedPerson" />
-    <SimpleColumn name="Appointment" />
-    <SimpleColumn name="Task" />
-    <SimpleColumn name="RecurringTask" alias="RelatedRecurringTask" />
-    <SimpleColumn name="Document" />
-    <SimpleColumn name="Vehicle" />
-    <SimpleColumn name="Driver" />
-    <SimpleColumn name="TransportationOrder" />
-    <SimpleColumn name="Trip" />
-    <SimpleColumn name="CargoRequest" />
-    <SimpleColumn name="Discussion" />
     <SimpleColumn name="ServiceObject" />
-    <SimpleColumn name="Message" />
-    <SimpleColumn name="Project" />
-  
+
+    <SimpleColumn name="Task" />
     <SimpleJoin name="Task" joinType="INNER">
       <IdColumn name="Id"/>
       <SimpleColumn name="Summary" editable="true" />
@@ -97,10 +81,9 @@
       <SimpleColumn name="ReminderSent" editable="true" />
     </SimpleJoin>
   </Columns>
-  
+
   <Order>
     <OrderBy column="Status" />
     <OrderBy column="FinishTime" />
   </Order>
 </View>
- 

@@ -10,7 +10,7 @@ class ConstantExpression implements IsExpression {
 
   private final Value constant;
 
-  public ConstantExpression(Value value) {
+  ConstantExpression(Value value) {
     this.constant = value;
   }
 

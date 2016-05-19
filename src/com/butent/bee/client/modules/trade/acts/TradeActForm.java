@@ -120,14 +120,14 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
       form.removeStyleName(STYLE_EDIT);
       form.addStyleName(STYLE_CREATE);
 
-      caption = BeeUtils.join(" - ", Localized.getConstants().tradeActNew(),
+      caption = BeeUtils.join(" - ", Localized.dictionary().tradeActNew(),
           (kind == null) ? null : kind.getCaption());
 
     } else {
       form.removeStyleName(STYLE_CREATE);
       form.addStyleName(STYLE_EDIT);
 
-      caption = (kind == null) ? Localized.getConstants().tradeAct() : kind.getCaption();
+      caption = (kind == null) ? Localized.dictionary().tradeAct() : kind.getCaption();
     }
 
     if (lastKind != kind) {
@@ -172,7 +172,7 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
 
     if (!DataUtils.isNewRow(row)) {
       commandCompose = new Button(
-          Localized.getConstants().taInvoiceCompose(), new ClickHandler() {
+          Localized.dictionary().taInvoiceCompose(), new ClickHandler() {
 
             @Override
             public void onClick(ClickEvent arg0) {
@@ -219,8 +219,8 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
         Long contact = row.getLong(form.getDataIndex(COL_TA_CONTACT));
 
         if (!value && contact == null) {
-          form.notifySevere(Localized.getConstants().contact() + " "
-              + Localized.getConstants().valueRequired());
+          form.notifySevere(Localized.dictionary().contact() + " "
+              + Localized.dictionary().valueRequired());
           valid = false;
         } else {
           valid = true;
@@ -231,8 +231,8 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
         if (!BeeUtils.isEmpty(regNo)) {
           valid = true;
         } else {
-          form.notifySevere(Localized.getConstants().taRegistrationNo() + " "
-              + Localized.getConstants().valueRequired());
+          form.notifySevere(Localized.dictionary().taRegistrationNo() + " "
+              + Localized.dictionary().valueRequired());
           valid = false;
         }
       }
@@ -289,8 +289,9 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
       return;
     }
 
-    if (event.hasView(ClassifierConstants.VIEW_COMPANIES) && event.getRowId() == BeeUtils.unbox(form
-        .getLongValue(COL_TA_COMPANY))) {
+    if (event.hasView(ClassifierConstants.VIEW_COMPANIES)
+        && event.getRowId() == BeeUtils.unbox(form
+            .getLongValue(COL_TA_COMPANY))) {
 
       String[][] cols = new String[][] {
           {ClassifierConstants.ALS_COMPANY_NAME, ClassifierConstants.COL_COMPANY_NAME},
@@ -456,7 +457,7 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
 
           if (!valid) {
             form.notifySevere(Data.getColumnLabel(VIEW_TRADE_ACTS, field) + " "
-                + Localized.getConstants().valueRequired());
+                + Localized.dictionary().valueRequired());
 
             return valid;
           }
@@ -466,7 +467,7 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
           valid = !BeeUtils.isEmpty(value);
           if (!valid) {
             form.notifySevere(Data.getColumnLabel(VIEW_TRADE_ACTS, field) + " "
-                + Localized.getConstants().valueRequired());
+                + Localized.dictionary().valueRequired());
             return valid;
           }
         }

@@ -113,4 +113,7 @@ public abstract class ModificationEvent<H> extends Event<H> implements DataEvent
   public void setLocality(Locality locality) {
     this.locality = locality;
   }
+
+  @Override
+  public abstract String toString();
 }

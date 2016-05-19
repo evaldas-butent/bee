@@ -124,6 +124,12 @@ public class RowInsertEvent extends ModificationEvent<RowInsertEvent.Handler> im
   }
 
   @Override
+  public String toString() {
+    return BeeUtils.joinWords(getKind(), getViewName(),
+        (getRow() == null) ? null : getRow().getValues());
+  }
+
+  @Override
   protected void dispatch(Handler handler) {
     handler.onRowInsert(this);
   }

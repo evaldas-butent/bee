@@ -1,5 +1,6 @@
 package com.butent.bee.client.modules.transport;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -12,21 +13,36 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.communication.RpcCallback;
 import com.butent.bee.client.data.Data;
-import com.butent.bee.client.dialog.ConfirmationCallback;
+import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.data.RowCallback;
+import com.butent.bee.client.data.RowEditor;
+import com.butent.bee.client.data.RowFactory;
+import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.modules.transport.TransportHandler.Profit;
+import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
+import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Image;
+import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.data.BeeRow;
+import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.view.DataInfo;
+import com.butent.bee.shared.data.view.RowInfo;
+import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
@@ -36,10 +52,15 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 class TransportationOrderForm extends AbstractFormInterceptor implements ClickHandler {
+
+  private FaLabel copyAction;
 
   @Override
   public FormInterceptor getInstance() {
@@ -67,8 +88,8 @@ class TransportationOrderForm extends AbstractFormInterceptor implements ClickHa
         String[] cargos = Codec.beeDeserializeCollection(response.getResponseAsString());
 
         if (ArrayUtils.isEmpty(cargos)) {
-          form.notifyWarning(Localized.getMessages()
-              .dataNotAvailable(Localized.getConstants().cargos()));
+          form.notifyWarning(Localized.dictionary()
+              .dataNotAvailable(Localized.dictionary().cargos()));
           return;
         }
         TripSelector.select(cargos, null, form.getElement());
@@ -134,13 +155,14 @@ class TransportationOrderForm extends AbstractFormInterceptor implements ClickHa
     }
     if (Data.isViewEditable(VIEW_CARGO_TRIPS)) {
       Image button = new Image(Global.getImages().silverTruck());
-      button.setTitle(Localized.getConstants().trAssignTrip());
+      button.setTitle(Localized.dictionary().trAssignTrip());
       button.setAlt(button.getTitle());
       button.addClickHandler(this);
 
       hdr.addCommandItem(button);
     }
-    hdr.addCommandItem(new Profit(COL_ORDER, row.getId()));
+    hdr.addCommandItem(new Profit(COL_ORDER_NO, row.getString(form.getDataIndex(COL_ORDER_NO))));
+    hdr.addCommandItem(getCopyAction());
 
     return true;
   }
@@ -173,27 +195,110 @@ class TransportationOrderForm extends AbstractFormInterceptor implements ClickHa
           String cap = result.get(ClassifierConstants.COL_COMPANY_NAME);
           List<String> msgs = new ArrayList<>();
 
-          msgs.add(BeeUtils.join(": ", Localized.getConstants().creditLimit(),
+          msgs.add(BeeUtils.join(": ", Localized.dictionary().creditLimit(),
               BeeUtils.joinWords(limit, result.get(AdministrationConstants.COL_CURRENCY))));
-          msgs.add(BeeUtils.join(": ", Localized.getConstants().trdDebt(), debt));
+          msgs.add(BeeUtils.join(": ", Localized.dictionary().trdDebt(), debt));
 
           if (overdue > 0) {
-            msgs.add(BeeUtils.join(": ", Localized.getConstants().trdOverdue(), overdue));
+            msgs.add(BeeUtils.join(": ", Localized.dictionary().trdOverdue(), overdue));
           }
           if (income > 0) {
-            msgs.add(BeeUtils.join(": ", Localized.getConstants().trOrders(), income));
+            msgs.add(BeeUtils.join(": ", Localized.dictionary().trOrders(), income));
           }
-          Global.confirm(cap, null, msgs, Localized.getConstants().ok(),
-              Localized.getConstants().cancel(), new ConfirmationCallback() {
-                @Override
-                public void onConfirm() {
-                  listener.fireEvent(event);
-                }
-              });
+          Global.confirm(cap, null, msgs, Localized.dictionary().ok(),
+              Localized.dictionary().cancel(), () -> listener.fireEvent(event));
         } else {
           listener.fireEvent(event);
         }
       }
     });
+  }
+
+  private IdentifiableWidget getCopyAction() {
+    if (copyAction == null) {
+      copyAction = new FaLabel(FontAwesome.COPY);
+      copyAction.setTitle(Localized.dictionary().actionCopy());
+
+      copyAction.addClickHandler(clickEvent -> {
+        DataInfo info = Data.getDataInfo(getViewName());
+        BeeRow order = RowFactory.createEmptyRow(info, true);
+        final Long orderId = getActiveRowId();
+
+        for (String col : new String[] {
+            COL_CUSTOMER, COL_CUSTOMER_NAME, COL_PAYER, COL_PAYER_NAME,
+            "CustomerPerson", "PersonFirstName", "PersonLastName"}) {
+
+          int idx = info.getColumnIndex(col);
+
+          if (!BeeConst.isUndef(idx)) {
+            order.setValue(idx, getStringValue(col));
+          }
+        }
+        RowFactory.createRow(info, order, Modality.ENABLED, new RowCallback() {
+          @Override
+          public void onSuccess(final BeeRow newOrder) {
+            Filter orderFilter = Filter.equals(COL_ORDER, orderId);
+
+            Queries.getData(Arrays.asList(TBL_ORDER_CARGO, TBL_CARGO_HANDLING),
+                ImmutableMap.of(TBL_ORDER_CARGO, orderFilter, TBL_CARGO_HANDLING,
+                    Filter.in(COL_CARGO, TBL_ORDER_CARGO, COL_CARGO_ID, orderFilter)), null,
+                new Queries.DataCallback() {
+                  @Override
+                  public void onSuccess(Collection<BeeRowSet> data) {
+                    BeeRowSet cargos = null;
+                    BeeRowSet handling = null;
+
+                    for (BeeRowSet rowSet : data) {
+                      List<BeeColumn> cols = new ArrayList<>(rowSet.getColumns());
+
+                      for (BeeColumn column : cols) {
+                        if (!column.isEditable() || BeeUtils.inList(column.getId(),
+                            ALS_LOADING_DATE, ALS_UNLOADING_DATE)) {
+                          rowSet.removeColumn(rowSet.getColumnIndex(column.getId()));
+                        }
+                      }
+                      if (Objects.equals(rowSet.getViewName(), TBL_ORDER_CARGO)) {
+                        cargos = rowSet;
+                      } else {
+                        handling = rowSet;
+                      }
+                    }
+                    final BeeRowSet h = handling;
+                    final Holder<Integer> counter = Holder.of(cargos.getNumberOfRows());
+
+                    for (final BeeRow cargo : cargos) {
+                      BeeRowSet newCargo = DataUtils.createRowSetForInsert(cargos.getViewName(),
+                          cargos.getColumns(), cargo);
+                      newCargo.setValue(0, newCargo.getColumnIndex(COL_ORDER), newOrder.getId());
+
+                      Queries.insertRow(newCargo, new RpcCallback<RowInfo>() {
+                        @Override
+                        public void onSuccess(RowInfo cargoInfo) {
+                          BeeRowSet newHandling = new BeeRowSet(h.getViewName(), h.getColumns());
+
+                          for (BeeRow row : DataUtils.filterRows(h, COL_CARGO, cargo.getId())) {
+                            BeeRow newRow = newHandling.addEmptyRow();
+                            newRow.setValues(row.getValues());
+                            newRow.setValue(h.getColumnIndex(COL_CARGO), cargoInfo.getId());
+                          }
+                          if (!newHandling.isEmpty()) {
+                            Queries.insertRows(newHandling);
+                          }
+                          counter.set(counter.get() - 1);
+
+                          if (!BeeUtils.isPositive(counter.get())) {
+                            RowEditor.open(getViewName(), newOrder.getId(), Opener.MODAL);
+                          }
+                        }
+                      });
+                    }
+                  }
+                }
+            );
+          }
+        });
+      });
+    }
+    return copyAction;
   }
 }

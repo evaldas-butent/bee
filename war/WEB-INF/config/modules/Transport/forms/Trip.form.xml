@@ -10,7 +10,7 @@
     >
   <f:properties reports="PrintTripRoute, PrintTripOrder, PrintTripOrder2, PrintTripSummary" />
   <FlowPanel class="flexBox-vertical">
-    <Table>
+    <Table kind="controls">
       <row>
         <Label for="Date" class="bee-hasDefaults bee-required" />
         <InputDateTime source="Date" style="width:11em;" />
@@ -34,6 +34,14 @@
       <row>
         <Label for="Manager" class="bee-required bee-hasDefaults" />
         <DataSelector source="Manager" editSource="ManagerPerson" newRowEnabled="false" />
+        <text />
+        <cell colSpan="2">
+          <FlowPanel style="display:none;">
+            <InlineLabel text="=vehicleDriver" class="bee-required" />
+            <UnboundSelector name="Driver" viewName="UserDrivers" required="true"
+                             newRowEnabled="false" disablable="false" />
+          </FlowPanel>
+        </cell>
       </row>
       <row>
         <FlowPanel class="flexBox-horizontal-center">
@@ -126,6 +134,11 @@
       <page>
         <text>=trOrderDocuments</text>
         <GridPanel name="TranspOrderDocuments" parent="{form}" child="true" />
+      </page>
+      <page>
+        <text>=relatedInformation</text>
+        <Relations relColumn="Trip" inline="true"
+                   defaultRelations="Companies Persons Requests Tasks" style="margin: 0px 15px 0px 15px; min-width:300px;" />
       </page>
     </TabbedPages>
   </FlowPanel>

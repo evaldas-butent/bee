@@ -29,6 +29,7 @@
       </HorizontalPanel>
     </FlowPanel>
 
-    <FlowPanel name="Parts" class="bee-mail-Content flexible" style="overflow: auto;" />
+    <FlowPanel name="Parts" class="bee-mail-Content flexible"
+               style="overflow:auto; position:relative;" />
   </FlowPanel>
 </FlowPanel>

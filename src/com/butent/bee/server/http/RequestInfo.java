@@ -35,7 +35,7 @@ public class RequestInfo implements HasExtendedInfo, HasOptions {
 
   private final HttpServletRequest request;
 
-  private final String method;
+  private final String httpMethod;
   private final String query;
 
   private final Map<String, String> headers;
@@ -52,6 +52,7 @@ public class RequestInfo implements HasExtendedInfo, HasOptions {
   private String id;
 
   private String service;
+  private String subService;
 
   private String options;
 
@@ -63,7 +64,7 @@ public class RequestInfo implements HasExtendedInfo, HasOptions {
 
     this.request = req;
 
-    this.method = req.getMethod();
+    this.httpMethod = req.getMethod();
     this.query = req.getQueryString();
 
     this.headers = HttpUtils.getHeaders(req, false);
@@ -202,12 +203,12 @@ public class RequestInfo implements HasExtendedInfo, HasOptions {
     return headers;
   }
 
-  public String getId() {
-    return id;
+  public String getHttpMethod() {
+    return httpMethod;
   }
 
-  public String getMethod() {
-    return method;
+  public String getId() {
+    return id;
   }
 
   @Override
@@ -291,6 +292,10 @@ public class RequestInfo implements HasExtendedInfo, HasOptions {
     } else {
       return SubModule.parse(value);
     }
+  }
+
+  public String getSubService() {
+    return subService;
   }
 
   public String getUserAgent() {
@@ -384,32 +389,21 @@ public class RequestInfo implements HasExtendedInfo, HasOptions {
     return BeeUtils.same(getParameter(name), value);
   }
 
-  public void setContent(String content) {
-    this.content = content;
-  }
-
-  public void setContentTypeHeader(String contentTypeHeader) {
-    this.contentTypeHeader = contentTypeHeader;
-  }
-
-  public void setId(String id) {
-    this.id = id;
-  }
-
   @Override
   public void setOptions(String options) {
     this.options = options;
   }
 
-  public void setService(String svc) {
-    this.service = svc;
-  }
-
   @Override
   public String toString() {
     return BeeUtils.join(BeeConst.DEFAULT_ROW_SEPARATOR,
-        BeeUtils.joinOptions("counter", BeeUtils.toString(counter), "method", method, "id", id,
-            "service", service, "opt", options), headers, params);
+        BeeUtils.joinOptions("counter", BeeUtils.toString(counter),
+            "http method", httpMethod,
+            "id", id,
+            "service", service,
+            "sub service", subService,
+            "options", options),
+        headers, params);
   }
 
   private void setRpcInfo(String nm, String v) {
@@ -417,14 +411,26 @@ public class RequestInfo implements HasExtendedInfo, HasOptions {
       return;
     }
 
-    if (BeeUtils.same(nm, Service.RPC_VAR_QID)) {
-      id = v;
-    } else if (BeeUtils.same(nm, Service.RPC_VAR_SVC)) {
-      service = v;
-    } else if (BeeUtils.same(nm, Service.RPC_VAR_OPT)) {
-      options = v;
-    } else if (BeeUtils.same(nm, Service.RPC_VAR_CTP)) {
-      contentType = CommUtils.getContentType(v);
+    switch (nm) {
+      case Service.RPC_VAR_QID:
+        id = v;
+        break;
+
+      case Service.RPC_VAR_SVC:
+        service = v;
+        break;
+
+      case Service.RPC_VAR_SUB:
+        subService = v;
+        break;
+
+      case Service.RPC_VAR_OPT:
+        options = v;
+        break;
+
+      case Service.RPC_VAR_CTP:
+        contentType = CommUtils.getContentType(v);
+        break;
     }
   }
 }

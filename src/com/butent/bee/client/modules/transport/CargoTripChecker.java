@@ -50,8 +50,8 @@ public class CargoTripChecker extends AbstractGridInterceptor {
         if (!response.hasErrors()) {
           if (BeeUtils.isPositiveInt((String) response.getResponse())) {
             Global.confirmDelete(Settings.getAppName(), Icon.ALARM,
-                Lists.newArrayList(Localized.getConstants()
-                    .trCargoTripThereCargosAssignedInTripsAlarm(), Localized.getConstants()
+                Lists.newArrayList(Localized.dictionary()
+                    .trCargoTripThereCargosAssignedInTripsAlarm(), Localized.dictionary()
                     .continueQuestion()),
                 new ConfirmationCallback() {
                   @Override

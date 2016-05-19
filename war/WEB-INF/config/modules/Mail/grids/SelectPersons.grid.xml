@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<g:Grid 
+  xmlns="http://www.butent.com/column"
+  xmlns:g="http://www.butent.com/grid"
+  
+  name="SelectPersons" viewName="SelectPersons" 
+  caption="=persons" readOnly="true" filter="EmailId"
+  >
+  <g:columns>
+    <SelectionColumn name="Select" width="20" />
+    <DataColumn name="FirstName" />
+    <DataColumn name="LastName" />
+    <DataColumn name="Email" />
+  </g:columns>
+</g:Grid>

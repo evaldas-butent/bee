@@ -8,5 +8,7 @@
     <Integer name="Ordinal" label="=ordinal"/>
     <String name="Name" precision="250" unique="true" label="=caption"/>
     <Boolean name="Visible" defValue="true" label="=stateVisible" />
+    <String name="BackgroundColor" precision="250" label="=backgroundColor"/>
+    <String name="Color" precision="250" label="=foregroundColor"/>
   </Fields>
 </Table>

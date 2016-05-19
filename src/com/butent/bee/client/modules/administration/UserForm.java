@@ -26,7 +26,7 @@ class UserForm extends AbstractFormInterceptor implements ClickHandler {
 
     if (DataUtils.isNewRow(row) || Objects.equals(BeeKeeper.getUser().getUserId(), row.getId())
         || BeeKeeper.getUser().isAdministrator()) {
-      getHeaderView().addCommandItem(new Button(Localized.getConstants().changePassword(), this));
+      getHeaderView().addCommandItem(new Button(Localized.dictionary().changePassword(), this));
     }
   }
 

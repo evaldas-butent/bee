@@ -24,6 +24,7 @@ import com.butent.bee.client.data.Queries.IntCallback;
 import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
+import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.event.logical.RenderingEvent;
 import com.butent.bee.client.grid.ColumnFooter;
@@ -190,7 +191,7 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
     if (gridView != null && !gridView.isReadOnly()
         && BeeKeeper.getUser().canCreateData(gridView.getViewName())) {
 
-      Button command = new Button(Localized.getConstants().actionImport());
+      Button command = new Button(Localized.dictionary().actionImport());
       command.addStyleName(STYLE_COMMAND_IMPORT);
 
       command.addClickHandler(new ClickHandler() {
@@ -285,7 +286,7 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
                   });
 
             } else {
-              getGridView().notifyWarning(Localized.getConstants().noData());
+              getGridView().notifyWarning(Localized.dictionary().noData());
             }
           }
         });
@@ -366,7 +367,7 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
       commandSale.removeFromParent();
     }
 
-    commandSale = new Button(Localized.getConstants().trdTypeSale());
+    commandSale = new Button(Localized.dictionary().trdTypeSale());
 
     commandSale.addClickHandler(new ClickHandler() {
 
@@ -623,7 +624,7 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
       ids.add(row.getId());
     }
     if (ids.isEmpty()) {
-      presenter.getGridView().notifyWarning(Localized.getConstants().selectAtLeastOneRow());
+      presenter.getGridView().notifyWarning(Localized.dictionary().selectAtLeastOneRow());
       return;
     }
 
@@ -633,7 +634,7 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
       @Override
       public void onSuccess(final BeeRowSet result) {
         if (result.isEmpty()) {
-          presenter.getGridView().notifyWarning(Localized.getConstants().rowIsReadOnly());
+          presenter.getGridView().notifyWarning(Localized.dictionary().rowIsReadOnly());
           return;
         }
 
@@ -668,14 +669,14 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
               .getDataIndex("CurrencyMinorName")));
         }
 
-        RowFactory.createRow(FORM_NEW_TA_INVOICE, null, salesInfo, newSalesRow, null,
-            new AbstractFormInterceptor() {
+        RowFactory.createRow(FORM_NEW_TA_INVOICE, null, salesInfo, newSalesRow, Modality.ENABLED,
+            null, new AbstractFormInterceptor() {
 
               @Override
               public FormInterceptor getInstance() {
                 return this;
               }
-            }, new RowCallback() {
+            }, null, new RowCallback() {
 
               @Override
               public void onSuccess(BeeRow row) {
@@ -718,7 +719,8 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
       collector = FileCollector.headless(new Consumer<Collection<? extends FileInfo>>() {
         @Override
         public void accept(Collection<? extends FileInfo> input) {
-          List<FileInfo> fileInfos = FileUtils.validateFileSize(input, 100_000L, getGridView());
+          List<? extends FileInfo> fileInfos =
+              FileUtils.validateFileSize(input, 100_000L, getGridView());
 
           if (!BeeUtils.isEmpty(fileInfos)) {
             List<String> fileNames = new ArrayList<>();
@@ -732,7 +734,7 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
               @Override
               public void accept(final List<String> lines) {
                 if (lines.isEmpty()) {
-                  getGridView().notifyWarning(importCaption, Localized.getConstants().noData());
+                  getGridView().notifyWarning(importCaption, Localized.dictionary().noData());
 
                 } else {
                   Global.getParameter(PRM_IMPORT_TA_ITEM_RX, new Consumer<String>() {
@@ -743,7 +745,7 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
 
                       if (importEntries.isEmpty()) {
                         getGridView().notifyWarning(importCaption,
-                            Localized.getConstants().nothingFound());
+                            Localized.dictionary().nothingFound());
 
                       } else {
                         IsRow parentRow = getParentRow(getGridView());
@@ -795,7 +797,7 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
     }
 
     if (files.isEmpty()) {
-      getGridView().notifyWarning(Localized.getConstants().noData());
+      getGridView().notifyWarning(Localized.dictionary().noData());
 
     } else {
       final List<String> lines = new ArrayList<>();

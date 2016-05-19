@@ -176,6 +176,12 @@ public class CellUpdateEvent extends ModificationEvent<CellUpdateEvent.Handler>
   }
 
   @Override
+  public String toString() {
+    return BeeUtils.joinWords(getKind(), getViewName(), getRowId(), getVersion(), getSourceName(),
+        getValue());
+  }
+
+  @Override
   protected void dispatch(Handler handler) {
     handler.onCellUpdate(this);
   }

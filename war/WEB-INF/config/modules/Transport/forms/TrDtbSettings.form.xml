@@ -10,18 +10,40 @@
 
   <!ENTITY lbl "&inline; width: 300px; padding: 2px 10px 0 10px; text-align: right;">
   <!ENTITY spin "&inline; width: 70px;">
+  <!ENTITY dt_inp "&inline; width: 100px;">
   <!ENTITY slider_inp "position: absolute; left: 320px; top: 0; width: 100px;">
   <!ENTITY cb_inp "position: absolute; left: 320px; top: 3px; margin: 0;">
 ]>
 <f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form"
  
   name="TrDtbSettings" viewName="TransportSettings" caption="=settings"
-  width="480" height="50" heightUnit="%"
+  width="600" height="75" heightUnit="%"
   >
 
   <FlowPanel style="background-color: WhiteSmoke;">
 
     <FlowPanel style="&row; margin-top: 2ex;">
+      <Label text="=dateFrom" style="&lbl;" />
+      <InputDate source="DtbMinDate" style="&dt_inp;" />
+    </FlowPanel>
+    <FlowPanel style="&row;">
+      <Label text="=dateTo" style="&lbl;" />
+      <InputDate source="DtbMaxDate" style="&dt_inp;" />
+    </FlowPanel>
+
+    &separator;
+    <FlowPanel style="&row;">
+      <Label text="=trTransportGroups" style="&lbl;" />
+      <MultiSelector source="DtbTransportGroups" viewName="TransportGroups"
+        renderColumns="Name" newRowEnabled="false" style="&inline; width: 250px;" />
+    </FlowPanel>
+    <FlowPanel style="&cb_row;">
+      <Label text="=trTbSettingsCompletedTrips" style="&lbl;" />
+      <CheckBox source="DtbCompletedTrips" html="-" style="&cb_inp;" />
+    </FlowPanel>
+
+    &separator;
+    <FlowPanel style="&row;">
       <Label text="=trTbSettingsPixelsPerDriver" style="&lbl;" />
       <InputSpinner source="DtbPixelsPerDriver" minValue="4" maxValue="300" style="&spin;" />
     </FlowPanel>
@@ -73,7 +95,7 @@
     &separator;
     <FlowPanel style="&row;">
       <Label text="=transportTripColor" style="&lbl;" />
-      <DataSelector source="DtbColor" renderColumns="DtbColorName" style="&inline; width: 100px;" />
+      <DataSelector source="DtbColor" renderColumns="DtbColorName" style="&inline;" />
     </FlowPanel>
 
     &separator;

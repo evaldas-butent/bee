@@ -5,8 +5,11 @@
   idName="TimeCardCodeID"
   >
   <Fields>
-    <Char name="TcCode" precision="2" notNull="true" unique="true" label="=code" />
+    <String name="TcCode" precision="2" notNull="true" unique="true" label="=code" />
     <String name="TcName" precision="100" label="=name" />
+    
+    <Boolean name="WsPlanned" label="=workSchedulePlanned" />
+    <Boolean name="WsActual" defValue="true" label="=workScheduleActual" />
 
     <String name="Background" precision="100" label="=backgroundColor" />
     <String name="Foreground" precision="100" label="=foregroundColor" />

@@ -8,7 +8,7 @@
 
   <g:columns>
     <DataColumn name="Name" visible="true" />
-    <RelColumn name="Series" />
+    <RelColumn name="Series" module="Trade.Acts" />
 
     <DataColumn name="Notes" whiteSpace="pre-line" visible="true" flexGrow="1" />
   </g:columns>

@@ -51,6 +51,7 @@
     <DataColumn name="FooterMargin" />
 
     <DataColumn name="AutoFit" />
+    <DataColumn name="AutoFlex" />
 
     <DataColumn name="MinColumnWidth" />
     <DataColumn name="MaxColumnWidth" />

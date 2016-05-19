@@ -9,7 +9,6 @@ import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.Global;
 import com.butent.bee.client.cli.Shell;
 import com.butent.bee.client.event.logical.ActiveWidgetChangeEvent;
 import com.butent.bee.client.layout.Flow;
@@ -17,7 +16,6 @@ import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.layout.Stack;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.Theme;
-import com.butent.bee.client.websocket.Endpoint;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Label;
@@ -228,12 +226,6 @@ class CentralScrutinizer extends Stack implements CloseHandler<IdentifiableWidge
   }
 
   void start() {
-    if (Endpoint.isEnabled()) {
-      if (BeeKeeper.getUser().isWidgetVisible(RegulatedWidget.ROOMS)) {
-        add(Domain.ROOMS, Global.getRooms().getRoomsPanel());
-      }
-    }
-
     if (BeeKeeper.getUser().isWidgetVisible(RegulatedWidget.ADMIN)) {
       addShell();
     }
