@@ -30,10 +30,6 @@
         <DataSelector source="CustomerPerson" renderColumns="PersonFirstName PersonLastName"
                       choiceColumns="FirstName LastName CompanyName" options="Customer"
                       style="&inp;" />
-        <Label for="Notes" />
-        <cell rowSpan="2">
-          <InputArea source="Notes" visibleLines="3" />
-        </cell>
       </row>
       <row>
         <Label for="Payer" horizontalAlignment="right" />
@@ -41,12 +37,22 @@
         <Label for="Manager" />
         <DataSelector source="Manager" renderColumns="ManagerFirstName ManagerLastName"
                       editSource="ManagerPerson" newRowEnabled="false" style="&inp;" />
+        <Label for="Notes" />
+        <cell rowSpan="2">
+          <InputArea source="Notes" visibleLines="4" />
+        </cell>
       </row>
       <row>
         <Label for="Expedition" />
         <DataSelector source="Expedition" style="&inp;" />
         <Label for="ShippingTerm" />
         <DataSelector source="ShippingTerm" style="&inp;" />
+      </row>
+      <row>
+        <Label for="Vehicle" />
+        <InputText source="Vehicle" style="&inp;" />
+        <Label for="Driver" />
+        <InputText source="Driver" style="&inp;" />
       </row>
     </Table>
 

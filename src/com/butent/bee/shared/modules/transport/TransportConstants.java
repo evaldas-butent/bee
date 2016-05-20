@@ -497,7 +497,7 @@ public final class TransportConstants {
   public static final String COL_CARGO_TRIP_ID = "CargoTripID";
   public static final String COL_CARGO_CMR = "Cmr";
   public static final String COL_CARGO_NOTES = "Notes";
-  public static final String COL_CARGO_SHIPPING_TERM = "ShippingTerm";
+  public static final String COL_SHIPPING_TERM = "ShippingTerm";
   public static final String COL_CARGO_QUANTITY = "Quantity";
   public static final String COL_CARGO_WEIGHT = "Weight";
   public static final String COL_CARGO_VOLUME = "Volume";
@@ -963,7 +963,7 @@ public final class TransportConstants {
   public static final String DATA_TYPE_TRAILER = "Trailer";
   public static final String DATA_TYPE_DRIVER = "Driver";
 
-  public static final String REP_CONTRACT = "Contract";
+  public static final String REP_CONTRACT = "OrderContract";
 
   public static final String AR_DEPARTMENT = "Department";
   public static final String AR_MANAGER = "Manager";

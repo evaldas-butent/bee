@@ -180,7 +180,7 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
 
     SelfServiceUtils.setDefaultPerson(form, newRow, COL_COMPANY_PERSON);
     SelfServiceUtils.setDefaultExpeditionType(form, newRow, COL_QUERY_EXPEDITION);
-    SelfServiceUtils.setDefaultShippingTerm(form, newRow, COL_CARGO_SHIPPING_TERM);
+    SelfServiceUtils.setDefaultShippingTerm(form, newRow, COL_SHIPPING_TERM);
 
     newRow.setValue(form.getDataIndex(COL_USER_LOCALE),
         SupportedLocale.getByLanguage(SupportedLocale.normalizeLanguage(loc.languageTag()))
@@ -246,9 +246,15 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
         onConfirm.run();
       }
       Queries.insert(VIEW_ORDERS, Data.getColumns(VIEW_ORDERS,
-          Arrays.asList(COL_CUSTOMER, COL_CUSTOMER + COL_PERSON, COL_ORDER_MANAGER)),
+          Arrays.asList(COL_CUSTOMER, COL_CUSTOMER + COL_PERSON, COL_ORDER_MANAGER,
+              COL_EXPEDITION, COL_SHIPPING_TERM, COL_ORDER_NOTES, COL_VEHICLE, COL_DRIVER)),
           Arrays.asList(row.getString(form.getDataIndex(COL_COMPANY)),
-              row.getString(form.getDataIndex(COL_COMPANY_PERSON)), BeeUtils.toString(manager)),
+              row.getString(form.getDataIndex(COL_COMPANY_PERSON)), BeeUtils.toString(manager),
+              row.getString(form.getDataIndex(COL_EXPEDITION)),
+              row.getString(form.getDataIndex(COL_SHIPPING_TERM)),
+              row.getString(form.getDataIndex("Request" + COL_ORDER_NOTES)),
+              row.getString(form.getDataIndex(COL_VEHICLE)),
+              row.getString(form.getDataIndex(COL_DRIVER))),
           null, new RowInsertCallback(VIEW_ORDERS) {
             @Override
             public void onSuccess(BeeRow order) {
@@ -691,33 +697,44 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
   }
 
   private void sendContract() {
-    Map<String, String> params = new HashMap<>();
-    getReportParameters(params::putAll);
+    Map<String, Long> companies = new HashMap<>();
+    companies.put(COL_CUSTOMER, getLongValue(COL_COMPANY));
+    companies.put(COL_COMPANY, BeeKeeper.getUser().getCompany());
 
-    ReportUtils.showReport(REP_CONTRACT, fileInfo ->
-        Queries.getRowSet(VIEW_TEXT_CONSTANTS, null, Filter.equals(COL_TEXT_CONSTANT,
-            TextConstant.CONTRACT_MAIL_CONTENT), new Queries.RowSetCallback() {
-          @Override
-          public void onSuccess(BeeRowSet result) {
-            String text;
-            String localizedContent = Localized.column(COL_TEXT_CONTENT,
-                EnumUtils.getEnumByIndex(SupportedLocale.class, getIntegerValue(COL_USER_LOCALE))
-                    .getLanguage());
+    getReportParameters(defaultParameters ->
+        ClassifierUtils.getCompaniesInfo(companies, companiesInfo -> {
+          defaultParameters.putAll(companiesInfo);
+          defaultParameters.put(COL_ORDER_NOTES, defaultParameters.get("RequestNotes"));
 
-            if (DataUtils.isEmpty(result)) {
-              text = TextConstant.CONTRACT_MAIL_CONTENT.getDefaultContent();
-            } else if (BeeConst.isUndef(DataUtils.getColumnIndex(localizedContent,
-                result.getColumns()))) {
-              text = result.getString(0, COL_TEXT_CONTENT);
-            } else {
-              text = BeeUtils.notEmpty(result.getString(0, localizedContent),
-                  result.getString(0, COL_TEXT_CONTENT));
-            }
-            sendMail(ShipmentRequestStatus.CONTRACT_SENT, null, BeeUtils.isEmpty(text)
-                ? null : text.replace("{contract_path}",
-                "rest/transport/confirm/" + getActiveRowId()), Collections.singleton(fileInfo));
-          }
-        }), params);
+          SelfServiceUtils.getCargos(Filter.compareId(getLongValue(COL_CARGO)),
+              cargoInfo -> ReportUtils.showReport(REP_CONTRACT, fileInfo ->
+                  Queries.getRowSet(VIEW_TEXT_CONSTANTS, null, Filter.equals(COL_TEXT_CONSTANT,
+                      TextConstant.CONTRACT_MAIL_CONTENT), new Queries.RowSetCallback() {
+                    @Override
+                    public void onSuccess(BeeRowSet result) {
+                      String text;
+                      String localizedContent = Localized.column(COL_TEXT_CONTENT,
+                          EnumUtils.getEnumByIndex(SupportedLocale.class,
+                              getIntegerValue(COL_USER_LOCALE))
+                              .getLanguage());
+
+                      if (DataUtils.isEmpty(result)) {
+                        text = TextConstant.CONTRACT_MAIL_CONTENT.getDefaultContent();
+                      } else if (BeeConst.isUndef(DataUtils.getColumnIndex(localizedContent,
+                          result.getColumns()))) {
+                        text = result.getString(0, COL_TEXT_CONTENT);
+                      } else {
+                        text = BeeUtils.notEmpty(result.getString(0, localizedContent),
+                            result.getString(0, COL_TEXT_CONTENT));
+                      }
+                      sendMail(ShipmentRequestStatus.CONTRACT_SENT, null, BeeUtils.isEmpty(text)
+                              ? null : text.replace("{contract_path}",
+                          "rest/transport/confirm/" + getActiveRowId()),
+                          Collections.singleton(fileInfo));
+                    }
+                  }), defaultParameters, cargoInfo)
+          );
+        }));
   }
 
   private void sendMail(ShipmentRequestStatus status, String subject, String content,

@@ -17,6 +17,9 @@
     <Relation name="Expedition" relation="ExpeditionTypes" label="=trExpeditionType" />
     <Relation name="ShippingTerm" relation="ShippingTerms" label="=cargoTermsOfService" />
 
+    <String name="Vehicle" precision="50" label="=trTruck" />
+    <String name="Driver" precision="50" label="=vehicleDriver" />
+
     <Text name="Notes" label="=notes" />
   </Fields>
 </Table>

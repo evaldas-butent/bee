@@ -139,7 +139,6 @@ public abstract class PrintFormInterceptor extends AbstractFormInterceptor {
         params.put(column.getId(), value);
       }
     }
-    params.put("ID", BeeUtils.toString(getActiveRowId()));
     parametersConsumer.accept(params);
   }
 

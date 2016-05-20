@@ -8,22 +8,30 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.IdCallback;
+import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.data.BeeRow;
+import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.event.DataChangeEvent;
+import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
+import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 public final class ClassifierUtils {
 
@@ -43,6 +51,33 @@ public final class ClassifierUtils {
 
   public static void createCompanyPerson(Map<String, String> parameters, IdCallback callback) {
     create(SVC_CREATE_COMPANY_PERSON, VIEW_COMPANY_PERSONS, parameters, callback);
+  }
+
+  public static void getCompaniesInfo(Map<String, Long> companies,
+      Consumer<Map<String, String>> infoConsumer) {
+
+    Queries.getRowSet(ClassifierConstants.VIEW_COMPANIES, null, Filter.idIn(companies.values()),
+        new Queries.RowSetCallback() {
+          @Override
+          public void onSuccess(BeeRowSet result) {
+            Map<String, String> params = new HashMap<>();
+
+            for (BeeRow row : result) {
+              for (Map.Entry<String, Long> entry : companies.entrySet()) {
+                if (Objects.equals(row.getId(), entry.getValue())) {
+                  for (BeeColumn column : result.getColumns()) {
+                    String value = DataUtils.getString(result, row, column.getId());
+
+                    if (!BeeUtils.isEmpty(value)) {
+                      params.put(entry.getKey() + column.getId(), value);
+                    }
+                  }
+                }
+              }
+            }
+            infoConsumer.accept(params);
+          }
+        });
   }
 
   public static void getCompanyInfo(Long companyId, final Widget target) {

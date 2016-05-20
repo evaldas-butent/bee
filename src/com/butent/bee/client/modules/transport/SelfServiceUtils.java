@@ -7,6 +7,7 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowUpdateCallback;
 import com.butent.bee.client.view.form.FormView;
+import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
@@ -14,10 +15,13 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RelationUtils;
 import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 
 import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
 
 final class SelfServiceUtils {
 
@@ -51,6 +55,42 @@ final class SelfServiceUtils {
     private void setRefresh(boolean refresh) {
       this.refresh = refresh;
     }
+  }
+
+  static void getCargos(Filter cargoFilter, Consumer<BeeRowSet> cargoConsumer) {
+    Queries.getRowSet(VIEW_ORDER_CARGO, null, cargoFilter, new Queries.RowSetCallback() {
+      @Override
+      public void onSuccess(BeeRowSet cargo) {
+        List<Long> cargoIds = cargo.getRowIds();
+        int handlingIdx = cargo.getColumnIndex(COL_CARGO_HANDLING);
+
+        Queries.getRowSet(VIEW_CARGO_HANDLING, null, Filter.or(Filter.any(COL_CARGO, cargoIds),
+            Filter.idIn(cargo.getDistinctLongs(handlingIdx))),
+            new Queries.RowSetCallback() {
+              @Override
+              public void onSuccess(BeeRowSet handling) {
+                cargo.addColumn(ValueType.TEXT, null, TBL_CARGO_PLACES);
+                int placesIdx = cargo.getColumnIndex(TBL_CARGO_PLACES);
+                int cargoIdx = handling.getColumnIndex(COL_CARGO);
+
+                for (BeeRow cargoRow : cargo) {
+                  BeeRowSet currentHandling = new BeeRowSet(handling.getViewName(),
+                      handling.getColumns());
+
+                  for (BeeRow handlingRow : handling) {
+                    if (Objects.equals(handlingRow.getId(), cargoRow.getLong(handlingIdx))
+                        || Objects.equals(handlingRow.getLong(cargoIdx), cargoRow.getId())) {
+
+                      currentHandling.addRow(DataUtils.cloneRow(handlingRow));
+                    }
+                  }
+                  cargoRow.setValue(placesIdx, currentHandling.serialize());
+                }
+                cargoConsumer.accept(cargo);
+              }
+            });
+      }
+    });
   }
 
   static void setDefaultExpeditionType(FormView form, IsRow newRow, String targetColumn) {

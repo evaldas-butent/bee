@@ -47,5 +47,8 @@
   <SimpleColumn name="Dangerous" />
   <SimpleColumn name="ExchangeOfPalettes" />
 
+  <SimpleColumn name="CustomsBrokerage" />
+  <SimpleColumn name="FreightInsurance" />
+
   <SimpleColumn name="Notes" />
 </Columns>

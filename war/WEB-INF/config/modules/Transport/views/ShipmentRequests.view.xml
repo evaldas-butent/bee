@@ -65,9 +65,6 @@
       <SimpleColumn name="Name" alias="ShippingTermName" />
     </SimpleJoin>
 
-    <SimpleColumn name="CustomsBrokerage" />
-    <SimpleColumn name="FreightInsurance" />
-
     <SimpleColumn name="Cargo" />
     <SimpleJoin name="Cargo" joinType="LEFT">
       <ExternalJoin name="Cargo" source="Assessments" joinType="LEFT">
@@ -81,13 +78,32 @@
     <SimpleColumn name="Manager" />
     <SimpleJoin name="Manager" joinType="LEFT">
       <SimpleColumn name="CompanyPerson" alias="ManagerPerson" />
+
       <SimpleJoin name="CompanyPerson" joinType="LEFT">
         <SimpleJoin name="Person" joinType="LEFT">
           <SimpleColumn name="FirstName" alias="ManagerFirstName" />
           <SimpleColumn name="LastName" alias="ManagerLastName" />
         </SimpleJoin>
+
+        <SimpleJoin name="Position" joinType="LEFT">
+          <SimpleColumn name="Name" alias="ManagerPosition" />
+        </SimpleJoin>
+
+        <SimpleJoin name="Contact" joinType="LEFT">
+          <SimpleColumn name="Phone" alias="ManagerPhone" />
+          <SimpleColumn name="Mobile" alias="ManagerMobile" />
+          <SimpleColumn name="Fax" alias="ManagerFax" />
+
+          <SimpleJoin name="Email" joinType="LEFT">
+            <SimpleColumn name="Email" alias="ManagerEmail" />
+          </SimpleJoin>
+        </SimpleJoin>
       </SimpleJoin>
     </SimpleJoin>
+
+    <SimpleColumn name="Notes" alias="RequestNotes" />
+    <SimpleColumn name="Vehicle" />
+    <SimpleColumn name="Driver" />
 
     <SimpleColumn name="LossReason" />
 
