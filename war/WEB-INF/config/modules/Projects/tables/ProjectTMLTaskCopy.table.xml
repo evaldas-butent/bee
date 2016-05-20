@@ -19,7 +19,11 @@
     <Relation name="Reminder" relation="ReminderTypes" cascade="SET_NULL" label="=crmReminder" />
     <Relation name="Project" relation="Projects" notNull="true" cascade="DELETE" label="=prjTemplate" />
     <Relation name="ProjectStage" relation="ProjectStages" cascade="SET_NULL" label="=prjStage" />
+    
+    <!-- @paradis { -->
+    <!-- copy task users from templates -->
     <Text name="Executors" />
     <Text name="Observers" />
+    <!-- } -->
   </Fields>
 </Table>

@@ -151,6 +151,15 @@ class ChildTasksGrid extends TasksGrid {
 
       row.setProperty(ProjectConstants.PROP_TEMPLATE, BeeUtils.toString(templRow.getId()));
 
+      /**
+       * @since Paradis Copy task template executors and observers
+       */
+      row.setProperty(TaskConstants.PROP_EXECUTORS, templRow.getString(templates
+          .getColumnIndex(TaskConstants.PROP_EXECUTORS)));
+
+      row.setProperty(TaskConstants.PROP_OBSERVERS, templRow.getString(templates
+          .getColumnIndex(TaskConstants.PROP_OBSERVERS)));
+
       gridView.getGrid().getRowData().add(0, row);
     }
   }
@@ -175,6 +184,15 @@ class ChildTasksGrid extends TasksGrid {
         row.setValue(viewTasks.getColumnIndex(col),
             templRow.getValue(viewTasks.getColumnIndex(col)));
       }
+
+      /**
+       * @since Paradis Copy task template users
+       */
+      row.setProperty(TaskConstants.PROP_EXECUTORS,
+          templRow.getProperty(TaskConstants.PROP_EXECUTORS));
+
+      row.setProperty(TaskConstants.PROP_OBSERVERS,
+          templRow.getProperty(TaskConstants.PROP_OBSERVERS));
 
       if (getGridView() != null) {
 
