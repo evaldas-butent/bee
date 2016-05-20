@@ -1,12 +1,16 @@
 package com.butent.bee.client.modules.transport;
 
+import com.google.gwt.json.client.JSONObject;
+
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowUpdateCallback;
+import com.butent.bee.client.utils.JsonUtils;
 import com.butent.bee.client.view.form.FormView;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -18,6 +22,7 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
+import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
 import java.util.List;
@@ -81,7 +86,23 @@ final class SelfServiceUtils {
                     if (Objects.equals(handlingRow.getId(), cargoRow.getLong(handlingIdx))
                         || Objects.equals(handlingRow.getLong(cargoIdx), cargoRow.getId())) {
 
-                      currentHandling.addRow(DataUtils.cloneRow(handlingRow));
+                      BeeRow cloned = DataUtils.cloneRow(handlingRow);
+
+                      String jsonString = handlingRow
+                          .getString(handling.getColumnIndex(ALS_CARGO_HANDLING_NOTES));
+
+                      if (JsonUtils.isJson(jsonString)) {
+                        JSONObject json = JsonUtils.parseObject(jsonString);
+
+                        for (String key : json.keySet()) {
+                          int idx = handling.getColumnIndex(key + "Name");
+
+                          if (!BeeConst.isUndef(idx) && BeeUtils.isEmpty(cloned.getString(idx))) {
+                            cloned.setValue(idx, JsonUtils.getString(json, key));
+                          }
+                        }
+                      }
+                      currentHandling.addRow(cloned);
                     }
                   }
                   cargoRow.setValue(placesIdx, currentHandling.serialize());

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2016-05-19T18:39:09 -->
+<!-- 2016-05-20T16:18:22 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="OrderContract" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="30" bottomMargin="30" isSummaryWithPageHeaderAndFooter="true" uuid="b0daefcc-9db0-4ed1-b9d6-49143492176f">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<import value="com.butent.bee.server.Invocation"/>
@@ -12,7 +12,7 @@
 	<import value="com.butent.bee.server.RsDataSource"/>
 	<import value="com.ibm.icu.text.DateFormat"/>
 	<style name="Font" isDefault="true" isBlankWhenNull="true" fontName="DejaVu Sans"/>
-	<subDataset name="Dataset1" uuid="9f8814a6-b092-4537-b8fb-cac4ca1e4590">
+	<subDataset name="CargoHandling" uuid="9f8814a6-b092-4537-b8fb-cac4ca1e4590">
 		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 		<queryString>
 			<![CDATA[]]>
@@ -35,6 +35,18 @@
 		<field name="UnloadingNumber" class="java.lang.String"/>
 		<sortField name="LoadingDate"/>
 	</subDataset>
+	<subDataset name="CompanyBankAccounts" uuid="0f613db9-d6f0-43a0-92da-3000963bfbbb">
+		<queryString>
+			<![CDATA[]]>
+		</queryString>
+		<field name="BankName" class="java.lang.String"/>
+		<field name="BankCode" class="java.lang.String"/>
+		<field name="SWIFTCode" class="java.lang.String"/>
+		<field name="CurrencyName" class="java.lang.String"/>
+		<field name="BankAccount" class="java.lang.String"/>
+		<field name="DefaultBankAccount" class="java.lang.Long"/>
+		<sortField name="DefaultBankAccount" order="Descending"/>
+	</subDataset>
 	<parameter name="ID" class="java.lang.String" isForPrompting="false"/>
 	<parameter name="OrderNo" class="java.lang.String" isForPrompting="false"/>
 	<parameter name="Date" class="java.lang.String" isForPrompting="false"/>
@@ -54,6 +66,7 @@
 	<parameter name="CompanyMobile" class="java.lang.String" isForPrompting="false"/>
 	<parameter name="CompanyFax" class="java.lang.String" isForPrompting="false"/>
 	<parameter name="CompanyEmail" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="CompanyCompanyBankAccounts" class="java.lang.String" isForPrompting="false"/>
 	<parameter name="ManagerFirstName" class="java.lang.String" isForPrompting="false"/>
 	<parameter name="ManagerLastName" class="java.lang.String" isForPrompting="false"/>
 	<parameter name="ManagerPosition" class="java.lang.String" isForPrompting="false"/>
@@ -99,9 +112,9 @@
 	<group name="Group1">
 		<groupExpression><![CDATA[$V{grp}]]></groupExpression>
 		<groupHeader>
-			<band height="215">
+			<band height="250">
 				<frame>
-					<reportElement positionType="Float" x="0" y="30" width="275" height="150" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" uuid="5522bea6-8373-4154-9141-3f03f694dcaf">
+					<reportElement positionType="Float" x="0" y="30" width="275" height="180" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" uuid="5522bea6-8373-4154-9141-3f03f694dcaf">
 						<property name="ShowOutOfBoundContent" value="true"/>
 					</reportElement>
 					<textField isStretchWithOverflow="true" isBlankWhenNull="true">
@@ -214,15 +227,48 @@
 						</textElement>
 						<text><![CDATA[Vežėjo rekvizitai]]></text>
 					</staticText>
+					<componentElement>
+						<reportElement positionType="Float" x="0" y="95" width="275" height="30" isRemoveLineWhenBlank="true" uuid="39dd02ed-064e-4032-94f5-731382a3d58a">
+							<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.VerticalRowLayout"/>
+						</reportElement>
+						<jr:list xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" printOrder="Vertical">
+							<datasetRun subDataset="CompanyBankAccounts" uuid="6c09c4b7-2512-41d8-9c40-3800c1b98e12">
+								<dataSourceExpression><![CDATA[new RsDataSource(BeeRowSet.restore($P{CompanyCompanyBankAccounts}))]]></dataSourceExpression>
+							</datasetRun>
+							<jr:listContents height="30" width="275">
+								<textField isStretchWithOverflow="true">
+									<reportElement positionType="Float" x="0" y="0" width="275" height="10" isRemoveLineWhenBlank="true" uuid="dcb3c11d-ba88-4042-857a-380b531398ab"/>
+									<textElement markup="html">
+										<font size="8" isBold="false"/>
+									</textElement>
+									<textFieldExpression><![CDATA[BeeUtils.joinWords("<b>Bankas", BeeUtils.isEmpty($F{CurrencyName}) ? "korespondentas</b>" : "gavėjas</b>", $F{BankName})]]></textFieldExpression>
+								</textField>
+								<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+									<reportElement positionType="Float" x="0" y="10" width="275" height="10" isRemoveLineWhenBlank="true" uuid="799d52f7-1d26-42b5-a514-39e4ab1058c2"/>
+									<textElement markup="html">
+										<font size="8"/>
+									</textElement>
+									<textFieldExpression><![CDATA[BeeUtils.joinItems(BeeUtils.isEmpty($F{BankCode}) ? "" : BeeUtils.joinWords("<b>Kodas</b>", $F{BankCode}), BeeUtils.isEmpty($F{SWIFTCode}) ? "" : BeeUtils.joinWords("<b>SWIFT</b>", $F{SWIFTCode}))]]></textFieldExpression>
+								</textField>
+								<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+									<reportElement positionType="Float" x="0" y="20" width="275" height="10" isRemoveLineWhenBlank="true" uuid="0d64b58e-02d4-4182-91f5-e1ac64926036"/>
+									<textElement markup="html">
+										<font size="8" isBold="false"/>
+									</textElement>
+									<textFieldExpression><![CDATA[BeeUtils.joinWords("<b>" + BeeUtils.nvl($F{CurrencyName}, ""), "Sąskaitos Nr.</b>", $F{BankAccount})]]></textFieldExpression>
+								</textField>
+							</jr:listContents>
+						</jr:list>
+					</componentElement>
 					<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-						<reportElement positionType="Float" x="50" y="140" width="225" height="10" isRemoveLineWhenBlank="true" uuid="1309c003-7ee4-44b3-bbd9-0cf6c9fbf138"/>
+						<reportElement positionType="Float" x="50" y="170" width="225" height="10" isRemoveLineWhenBlank="true" uuid="1309c003-7ee4-44b3-bbd9-0cf6c9fbf138"/>
 						<textElement>
 							<font size="8" isBold="false"/>
 						</textElement>
 						<textFieldExpression><![CDATA[$P{ManagerEmail}]]></textFieldExpression>
 					</textField>
 					<staticText>
-						<reportElement positionType="Float" x="0" y="140" width="50" height="10" isRemoveLineWhenBlank="true" uuid="fcb39f1d-6b69-45d3-b938-82a383ab0673">
+						<reportElement positionType="Float" x="0" y="170" width="50" height="10" isRemoveLineWhenBlank="true" uuid="fcb39f1d-6b69-45d3-b938-82a383ab0673">
 							<printWhenExpression><![CDATA[!BeeUtils.isEmpty($P{ManagerEmail})]]></printWhenExpression>
 						</reportElement>
 						<textElement>
@@ -231,14 +277,14 @@
 						<text><![CDATA[El. paštas]]></text>
 					</staticText>
 					<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-						<reportElement positionType="Float" x="25" y="130" width="250" height="10" isRemoveLineWhenBlank="true" uuid="ab9e0e68-0336-4377-a3b8-239b4b684434"/>
+						<reportElement positionType="Float" x="25" y="160" width="250" height="10" isRemoveLineWhenBlank="true" uuid="ab9e0e68-0336-4377-a3b8-239b4b684434"/>
 						<textElement>
 							<font size="8" isBold="false"/>
 						</textElement>
 						<textFieldExpression><![CDATA[$P{ManagerFax}]]></textFieldExpression>
 					</textField>
 					<staticText>
-						<reportElement positionType="Float" x="0" y="130" width="25" height="10" isRemoveLineWhenBlank="true" uuid="7189fdc5-7613-4ded-86a1-9801495fa06e">
+						<reportElement positionType="Float" x="0" y="160" width="25" height="10" isRemoveLineWhenBlank="true" uuid="7189fdc5-7613-4ded-86a1-9801495fa06e">
 							<printWhenExpression><![CDATA[!BeeUtils.isEmpty($P{ManagerFax})]]></printWhenExpression>
 						</reportElement>
 						<textElement>
@@ -247,14 +293,14 @@
 						<text><![CDATA[Faks.]]></text>
 					</staticText>
 					<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-						<reportElement positionType="Float" x="135" y="110" width="140" height="10" isRemoveLineWhenBlank="true" uuid="d29138ad-42ad-4119-9a08-916288aebdf8"/>
+						<reportElement positionType="Float" x="135" y="140" width="140" height="10" isRemoveLineWhenBlank="true" uuid="d29138ad-42ad-4119-9a08-916288aebdf8"/>
 						<textElement>
 							<font size="8" isBold="false"/>
 						</textElement>
 						<textFieldExpression><![CDATA[$P{ManagerPosition}]]></textFieldExpression>
 					</textField>
 					<staticText>
-						<reportElement positionType="Float" x="0" y="110" width="135" height="10" isRemoveLineWhenBlank="true" uuid="ee5fca73-1e66-4379-a22a-dd5136536866">
+						<reportElement positionType="Float" x="0" y="140" width="135" height="10" isRemoveLineWhenBlank="true" uuid="ee5fca73-1e66-4379-a22a-dd5136536866">
 							<printWhenExpression><![CDATA[!BeeUtils.isEmpty($P{ManagerPosition})]]></printWhenExpression>
 						</reportElement>
 						<textElement>
@@ -263,14 +309,14 @@
 						<text><![CDATA[Kontaktinio asmens pareigos]]></text>
 					</staticText>
 					<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-						<reportElement positionType="Float" x="90" y="100" width="185" height="10" isRemoveLineWhenBlank="true" uuid="9bd2da69-8a44-4e13-9381-f3b276107b4b"/>
+						<reportElement positionType="Float" x="90" y="130" width="185" height="10" isRemoveLineWhenBlank="true" uuid="9bd2da69-8a44-4e13-9381-f3b276107b4b"/>
 						<textElement>
 							<font size="8" isBold="false"/>
 						</textElement>
 						<textFieldExpression><![CDATA[BeeUtils.joinWords($P{ManagerFirstName}, $P{ManagerLastName})]]></textFieldExpression>
 					</textField>
 					<staticText>
-						<reportElement positionType="Float" x="0" y="100" width="90" height="10" isRemoveLineWhenBlank="true" uuid="915273ed-9e04-4878-b11a-1600796c9ed1">
+						<reportElement positionType="Float" x="0" y="130" width="90" height="10" isRemoveLineWhenBlank="true" uuid="915273ed-9e04-4878-b11a-1600796c9ed1">
 							<printWhenExpression><![CDATA[BeeUtils.anyNotEmpty($P{ManagerFirstName}, $P{ManagerLastName})]]></printWhenExpression>
 						</reportElement>
 						<textElement>
@@ -279,7 +325,7 @@
 						<text><![CDATA[Kontaktinis asmuo]]></text>
 					</staticText>
 					<frame>
-						<reportElement positionType="Float" x="0" y="120" width="275" height="10" isRemoveLineWhenBlank="true" uuid="94da56a9-eb05-4d90-aa6f-4d90c6c6c5a4"/>
+						<reportElement positionType="Float" x="0" y="150" width="275" height="10" isRemoveLineWhenBlank="true" uuid="94da56a9-eb05-4d90-aa6f-4d90c6c6c5a4"/>
 						<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 							<reportElement positionType="Float" x="20" y="0" width="255" height="10" isRemoveLineWhenBlank="true" uuid="1be5eeda-ab29-4b90-a547-fa85789defe4"/>
 							<textElement>
@@ -305,38 +351,6 @@
 					</textElement>
 					<text><![CDATA[Krovinių transportavimo (pervežimo) užsakymas nr.]]></text>
 				</staticText>
-				<staticText>
-					<reportElement positionType="Float" x="220" y="195" width="110" height="10" isRemoveLineWhenBlank="true" uuid="a4d206cd-7e6b-4dcf-96a4-d5c1f09fdace">
-						<printWhenExpression><![CDATA[!BeeUtils.isEmpty($P{ShippingTermName})]]></printWhenExpression>
-					</reportElement>
-					<textElement>
-						<font size="8" isBold="true"/>
-					</textElement>
-					<text><![CDATA[Transportavimo sąlygos]]></text>
-				</staticText>
-				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement positionType="Float" x="330" y="195" width="120" height="10" isRemoveLineWhenBlank="true" uuid="f5bd289a-a801-40eb-baa4-fb1fa01b15ed"/>
-					<textElement>
-						<font size="8" isBold="false"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$P{ShippingTermName}]]></textFieldExpression>
-				</textField>
-				<staticText>
-					<reportElement positionType="Float" x="0" y="195" width="100" height="10" isRemoveLineWhenBlank="true" uuid="96e9405f-bfcc-470c-ae4c-a146c19255f3">
-						<printWhenExpression><![CDATA[!BeeUtils.isEmpty($P{ExpeditionType})]]></printWhenExpression>
-					</reportElement>
-					<textElement>
-						<font size="8" isBold="true"/>
-					</textElement>
-					<text><![CDATA[Transportavimo rūšis]]></text>
-				</staticText>
-				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement positionType="Float" x="100" y="195" width="120" height="10" isRemoveLineWhenBlank="true" uuid="dee83763-462e-460b-8714-a703ba61cc45"/>
-					<textElement>
-						<font size="8" isBold="false"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$P{ExpeditionType}]]></textFieldExpression>
-				</textField>
 				<textField isBlankWhenNull="true">
 					<reportElement x="300" y="0" width="100" height="13" uuid="7f40badc-4956-4cf7-a39d-ba95ed549afd"/>
 					<textFieldExpression><![CDATA[BeeUtils.notEmpty($P{OrderNo}, $P{ID})]]></textFieldExpression>
@@ -486,68 +500,103 @@
 						</textField>
 					</frame>
 				</frame>
-				<staticText>
-					<reportElement positionType="Float" x="220" y="185" width="145" height="10" isRemoveLineWhenBlank="true" uuid="df4e6fd4-def9-4331-9e75-eb39fdd97269">
-						<printWhenExpression><![CDATA[BeeUtils.anyNotEmpty($P{PayerCreditDays}, $P{CustomerCreditDays})]]></printWhenExpression>
-					</reportElement>
-					<textElement>
-						<font size="8" isBold="true"/>
-					</textElement>
-					<text><![CDATA[Atsiskaitymo terminas (dienos)]]></text>
-				</staticText>
-				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement positionType="Float" x="365" y="185" width="35" height="10" isRemoveLineWhenBlank="true" uuid="799215e0-7946-4090-9d3b-5c275cd1f59a"/>
-					<textElement>
-						<font size="8" isBold="false"/>
-					</textElement>
-					<textFieldExpression><![CDATA[BeeUtils.notEmpty($P{PayerCreditDays}, $P{CustomerCreditDays})]]></textFieldExpression>
-				</textField>
-				<staticText>
-					<reportElement positionType="Float" x="0" y="185" width="120" height="10" isRemoveLineWhenBlank="true" uuid="af55a726-5751-4366-9d7e-c418f4dac4fa"/>
-					<textElement>
-						<font size="8" isBold="true"/>
-					</textElement>
-					<text><![CDATA[Teikiamų paslaugų kaina]]></text>
-				</staticText>
-				<textField isStretchWithOverflow="true" evaluationTime="Report" isBlankWhenNull="true">
-					<reportElement positionType="Float" x="120" y="185" width="100" height="10" isRemoveLineWhenBlank="true" uuid="9f1f3150-298e-4b9d-9f65-b728a89d112a"/>
-					<textElement>
-						<font size="8" isBold="false"/>
-					</textElement>
-					<textFieldExpression><![CDATA[BeeUtils.joinWords($V{Amount}, $V{Currency})]]></textFieldExpression>
-				</textField>
-				<staticText>
-					<reportElement positionType="Float" x="220" y="205" width="100" height="10" isRemoveLineWhenBlank="true" uuid="9cc973cf-c891-4858-ac3c-a9da6b5dfd71">
-						<printWhenExpression><![CDATA[!BeeUtils.isEmpty($P{Vehicle})]]></printWhenExpression>
-					</reportElement>
-					<textElement>
-						<font size="8" isBold="true"/>
-					</textElement>
-					<text><![CDATA[Transporto priemonė]]></text>
-				</staticText>
-				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement positionType="Float" x="320" y="205" width="130" height="10" isRemoveLineWhenBlank="true" uuid="84af4651-3759-4cde-a7c1-d8ee604aa2cd"/>
-					<textElement>
-						<font size="8" isBold="false"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$P{Vehicle}]]></textFieldExpression>
-				</textField>
-				<staticText>
-					<reportElement positionType="Float" x="0" y="205" width="55" height="10" isRemoveLineWhenBlank="true" uuid="86ca8f0e-22f6-4cb2-a484-5ab65516c926">
-						<printWhenExpression><![CDATA[!BeeUtils.isEmpty($P{Driver})]]></printWhenExpression>
-					</reportElement>
-					<textElement>
-						<font size="8" isBold="true"/>
-					</textElement>
-					<text><![CDATA[Vairuotojas]]></text>
-				</staticText>
-				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement positionType="Float" x="55" y="205" width="165" height="10" isRemoveLineWhenBlank="true" uuid="bfc9045a-620f-4b87-be37-502ea55a4893"/>
-					<textElement>
-						<font size="8" isBold="false"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$P{Driver}]]></textFieldExpression>
-				</textField>
+				<frame>
+					<reportElement positionType="Float" x="0" y="220" width="450" height="30" isRemoveLineWhenBlank="true" uuid="e784d251-4da0-49cd-8916-b63b64e5d48b"/>
+					<staticText>
+						<reportElement positionType="Float" x="220" y="10" width="110" height="10" isRemoveLineWhenBlank="true" uuid="a4d206cd-7e6b-4dcf-96a4-d5c1f09fdace">
+							<printWhenExpression><![CDATA[!BeeUtils.isEmpty($P{ShippingTermName})]]></printWhenExpression>
+						</reportElement>
+						<textElement>
+							<font size="8" isBold="true"/>
+						</textElement>
+						<text><![CDATA[Transportavimo sąlygos]]></text>
+					</staticText>
+					<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+						<reportElement positionType="Float" x="330" y="10" width="120" height="10" isRemoveLineWhenBlank="true" uuid="f5bd289a-a801-40eb-baa4-fb1fa01b15ed"/>
+						<textElement>
+							<font size="8" isBold="false"/>
+						</textElement>
+						<textFieldExpression><![CDATA[$P{ShippingTermName}]]></textFieldExpression>
+					</textField>
+					<staticText>
+						<reportElement positionType="Float" x="0" y="10" width="100" height="10" isRemoveLineWhenBlank="true" uuid="96e9405f-bfcc-470c-ae4c-a146c19255f3">
+							<printWhenExpression><![CDATA[!BeeUtils.isEmpty($P{ExpeditionType})]]></printWhenExpression>
+						</reportElement>
+						<textElement>
+							<font size="8" isBold="true"/>
+						</textElement>
+						<text><![CDATA[Transportavimo rūšis]]></text>
+					</staticText>
+					<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+						<reportElement positionType="Float" x="100" y="10" width="120" height="10" isRemoveLineWhenBlank="true" uuid="dee83763-462e-460b-8714-a703ba61cc45"/>
+						<textElement>
+							<font size="8" isBold="false"/>
+						</textElement>
+						<textFieldExpression><![CDATA[$P{ExpeditionType}]]></textFieldExpression>
+					</textField>
+					<staticText>
+						<reportElement positionType="Float" x="220" y="0" width="145" height="10" isRemoveLineWhenBlank="true" uuid="df4e6fd4-def9-4331-9e75-eb39fdd97269">
+							<printWhenExpression><![CDATA[BeeUtils.anyNotEmpty($P{PayerCreditDays}, $P{CustomerCreditDays})]]></printWhenExpression>
+						</reportElement>
+						<textElement>
+							<font size="8" isBold="true"/>
+						</textElement>
+						<text><![CDATA[Atsiskaitymo terminas (dienos)]]></text>
+					</staticText>
+					<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+						<reportElement positionType="Float" x="365" y="0" width="35" height="10" isRemoveLineWhenBlank="true" uuid="799215e0-7946-4090-9d3b-5c275cd1f59a"/>
+						<textElement>
+							<font size="8" isBold="false"/>
+						</textElement>
+						<textFieldExpression><![CDATA[BeeUtils.notEmpty($P{PayerCreditDays}, $P{CustomerCreditDays})]]></textFieldExpression>
+					</textField>
+					<staticText>
+						<reportElement positionType="Float" x="0" y="0" width="120" height="10" isRemoveLineWhenBlank="true" uuid="af55a726-5751-4366-9d7e-c418f4dac4fa"/>
+						<textElement>
+							<font size="8" isBold="true"/>
+						</textElement>
+						<text><![CDATA[Teikiamų paslaugų kaina]]></text>
+					</staticText>
+					<textField isStretchWithOverflow="true" evaluationTime="Report" isBlankWhenNull="true">
+						<reportElement positionType="Float" x="120" y="0" width="100" height="10" isRemoveLineWhenBlank="true" uuid="9f1f3150-298e-4b9d-9f65-b728a89d112a"/>
+						<textElement>
+							<font size="8" isBold="false"/>
+						</textElement>
+						<textFieldExpression><![CDATA[BeeUtils.joinWords($V{Amount}, $V{Currency})]]></textFieldExpression>
+					</textField>
+					<staticText>
+						<reportElement positionType="Float" x="220" y="20" width="100" height="10" isRemoveLineWhenBlank="true" uuid="9cc973cf-c891-4858-ac3c-a9da6b5dfd71">
+							<printWhenExpression><![CDATA[!BeeUtils.isEmpty($P{Vehicle})]]></printWhenExpression>
+						</reportElement>
+						<textElement>
+							<font size="8" isBold="true"/>
+						</textElement>
+						<text><![CDATA[Transporto priemonė]]></text>
+					</staticText>
+					<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+						<reportElement positionType="Float" x="320" y="20" width="130" height="10" isRemoveLineWhenBlank="true" uuid="84af4651-3759-4cde-a7c1-d8ee604aa2cd"/>
+						<textElement>
+							<font size="8" isBold="false"/>
+						</textElement>
+						<textFieldExpression><![CDATA[$P{Vehicle}]]></textFieldExpression>
+					</textField>
+					<staticText>
+						<reportElement positionType="Float" x="0" y="20" width="55" height="10" isRemoveLineWhenBlank="true" uuid="86ca8f0e-22f6-4cb2-a484-5ab65516c926">
+							<printWhenExpression><![CDATA[!BeeUtils.isEmpty($P{Driver})]]></printWhenExpression>
+						</reportElement>
+						<textElement>
+							<font size="8" isBold="true"/>
+						</textElement>
+						<text><![CDATA[Vairuotojas]]></text>
+					</staticText>
+					<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+						<reportElement positionType="Float" x="55" y="20" width="165" height="10" isRemoveLineWhenBlank="true" uuid="bfc9045a-620f-4b87-be37-502ea55a4893"/>
+						<textElement>
+							<font size="8" isBold="false"/>
+						</textElement>
+						<textFieldExpression><![CDATA[$P{Driver}]]></textFieldExpression>
+					</textField>
+				</frame>
 			</band>
 		</groupHeader>
 	</group>
@@ -613,7 +662,7 @@
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<jr:list xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" printOrder="Vertical">
-					<datasetRun subDataset="Dataset1" uuid="5a8e4bcf-70a6-4435-b8fb-02a7a4a1aca1">
+					<datasetRun subDataset="CargoHandling" uuid="5a8e4bcf-70a6-4435-b8fb-02a7a4a1aca1">
 						<dataSourceExpression><![CDATA[new RsDataSource(BeeRowSet.restore($F{CargoPlaces}))]]></dataSourceExpression>
 					</datasetRun>
 					<jr:listContents height="45" width="395">

@@ -1,5 +1,6 @@
 package com.butent.bee.client.modules.classifiers;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
@@ -25,10 +26,10 @@ import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
-import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -56,28 +57,55 @@ public final class ClassifierUtils {
   public static void getCompaniesInfo(Map<String, Long> companies,
       Consumer<Map<String, String>> infoConsumer) {
 
-    Queries.getRowSet(ClassifierConstants.VIEW_COMPANIES, null, Filter.idIn(companies.values()),
-        new Queries.RowSetCallback() {
-          @Override
-          public void onSuccess(BeeRowSet result) {
-            Map<String, String> params = new HashMap<>();
+    Map<String, Filter> views = ImmutableMap.of(VIEW_COMPANIES, Filter.idIn(companies.values()),
+        VIEW_COMPANY_BANK_ACCOUNTS, Filter.any(COL_COMPANY, companies.values()));
 
-            for (BeeRow row : result) {
-              for (Map.Entry<String, Long> entry : companies.entrySet()) {
-                if (Objects.equals(row.getId(), entry.getValue())) {
-                  for (BeeColumn column : result.getColumns()) {
-                    String value = DataUtils.getString(result, row, column.getId());
+    Queries.getData(views.keySet(), views, null, new Queries.DataCallback() {
+      @Override
+      public void onSuccess(Collection<BeeRowSet> result) {
+        Map<String, String> params = new HashMap<>();
+        Map<Long, BeeRowSet> accounts = new HashMap<>();
 
-                    if (!BeeUtils.isEmpty(value)) {
-                      params.put(entry.getKey() + column.getId(), value);
+        for (BeeRowSet rowSet : result) {
+          switch (rowSet.getViewName()) {
+            case VIEW_COMPANIES:
+              for (BeeRow row : rowSet) {
+                for (Map.Entry<String, Long> entry : companies.entrySet()) {
+                  if (Objects.equals(row.getId(), entry.getValue())) {
+                    for (BeeColumn column : rowSet.getColumns()) {
+                      String value = DataUtils.getString(rowSet, row, column.getId());
+
+                      if (!BeeUtils.isEmpty(value)) {
+                        params.put(entry.getKey() + column.getId(), value);
+                      }
                     }
                   }
                 }
               }
-            }
-            infoConsumer.accept(params);
+              break;
+            case VIEW_COMPANY_BANK_ACCOUNTS:
+              for (BeeRow accountRow : rowSet) {
+                Long companyId = accountRow.getLong(rowSet.getColumnIndex(COL_COMPANY));
+
+                if (!accounts.containsKey(companyId)) {
+                  accounts.put(companyId, new BeeRowSet(rowSet.getViewName(), rowSet.getColumns()));
+                }
+                accounts.get(companyId).addRow(DataUtils.cloneRow(accountRow));
+              }
+              break;
           }
-        });
+        }
+        for (Map.Entry<String, Long> entry : companies.entrySet()) {
+          BeeRowSet rs = accounts.get(entry.getValue());
+
+          if (rs == null) {
+            rs = new BeeRowSet();
+          }
+          params.put(entry.getKey() + VIEW_COMPANY_BANK_ACCOUNTS, rs.serialize());
+        }
+        infoConsumer.accept(params);
+      }
+    });
   }
 
   public static void getCompanyInfo(Long companyId, final Widget target) {
