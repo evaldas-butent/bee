@@ -35,8 +35,10 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.DataChangeEvent;
+import com.butent.bee.shared.data.event.ModificationEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.font.FontAwesome;
@@ -101,6 +103,17 @@ public class TripCostsGrid extends AbstractGridInterceptor
   }
 
   @Override
+  public void afterUpdateCell(IsColumn column, String oldValue, String newValue, IsRow result,
+      boolean rowMode) {
+
+    if (Objects.equals(column.getId(), COL_TRIP)) {
+      Queries.updateAndFire(getViewName(), result.getId(), result.getVersion(), COL_DRIVER,
+          result.getString(getDataIndex(COL_DRIVER)), null, ModificationEvent.Kind.UPDATE_ROW);
+    }
+    super.afterUpdateCell(column, oldValue, newValue, result, rowMode);
+  }
+
+  @Override
   public DeleteMode getDeleteMode(GridPresenter presenter,
       IsRow activeRow, Collection<RowInfo> selectedRows, DeleteMode defMode) {
 
@@ -135,7 +148,8 @@ public class TripCostsGrid extends AbstractGridInterceptor
   @Override
   public void onDataSelector(SelectorEvent event) {
     if (BeeUtils.same(event.getRelatedViewName(), TBL_TRIP_DRIVERS) && event.isOpened()) {
-      event.getSelector().setAdditionalFilter(Filter.equals(COL_TRIP, trip));
+      event.getSelector()
+          .setAdditionalFilter(Filter.equals(COL_TRIP, BeeUtils.nvl(trip, getLongValue(COL_TRIP))));
 
     } else if (BeeUtils.same(event.getRelatedViewName(), VIEW_TRIPS) && event.isOpened()) {
       event.getSelector().setAdditionalFilter(Filter.in(COL_TRIP_ID, VIEW_CARGO_TRIPS, COL_TRIP,

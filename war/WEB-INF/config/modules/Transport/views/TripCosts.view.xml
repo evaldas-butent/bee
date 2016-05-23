@@ -7,6 +7,9 @@
     >
   <Columns>
     <SimpleColumn name="Trip" />
+    <SimpleJoin name="Trip" joinType="LEFT">
+      <SimpleColumn name="TripNo" />
+    </SimpleJoin>
     <SimpleColumn name="Cargo" />
     <SimpleColumn name="Date" />
 
