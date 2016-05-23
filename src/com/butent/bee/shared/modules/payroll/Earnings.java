@@ -1,6 +1,7 @@
 package com.butent.bee.shared.modules.payroll;
 
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.time.JustDate;
@@ -13,8 +14,7 @@ import java.util.Objects;
 public class Earnings implements BeeSerializable {
 
   private enum Serial {
-    EMPLOYEE_ID, SUBSTITUTE_FOR, OBJECT_ID,
-    DATE_FROM, DATE_UNTIL, FUND, WAGE,
+    EMPLOYEE_ID, SUBSTITUTE_FOR, OBJECT_ID, DATE_FROM, DATE_UNTIL, FUND, WAGE,
     PLANNED_DAYS, PLANNED_MILLIS, ACTUAL_DAYS, ACTUAL_MILLIS, HOLY_DAYS, HOLY_MILLIS
   }
 
@@ -24,11 +24,17 @@ public class Earnings implements BeeSerializable {
     return earnings;
   }
 
+  private static double amount(double hourly, long millis) {
+    return BeeUtils.round(hourly * millis / TimeUtils.MILLIS_PER_HOUR, AMOUNT_PRECISION);
+  }
+
   public static final int FUND_PRECISION = 2;
   private static final double FUND_FACTOR = Math.pow(10, FUND_PRECISION);
 
   public static final int WAGE_PRECISION = 2;
   private static final double WAGE_FACTOR = Math.pow(10, WAGE_PRECISION);
+
+  public static final int AMOUNT_PRECISION = 2;
 
   private Long employeeId;
   private Long substituteFor;
@@ -56,6 +62,50 @@ public class Earnings implements BeeSerializable {
     this.employeeId = employeeId;
     this.substituteFor = substituteFor;
     this.objectId = objectId;
+  }
+
+  public Double amountForHolidays() {
+    if (BeeUtils.isPositive(getHolyMillis())) {
+      Double w = computeWage();
+
+      if (BeeUtils.isPositive(w)) {
+        return amount(w, getHolyMillis());
+      }
+    }
+    return null;
+  }
+
+  public Double amountWithoutHolidays() {
+    if (BeeUtils.isPositive(getActualMillis())) {
+      if (BeeUtils.isPositive(getWage())) {
+        return amount(getHourlyWage(), getActualMillis());
+
+      } else if (BeeUtils.isPositive(getFund())) {
+        if (Objects.equals(getActualMillis(), getPlannedMillis())) {
+          return BeeUtils.round(getSalaryFund(), AMOUNT_PRECISION);
+
+        } else {
+          Double w = computeWage();
+          if (BeeUtils.isPositive(w)) {
+            return amount(w, getActualMillis());
+          }
+        }
+      }
+    }
+    return null;
+  }
+
+  public Double computeWage() {
+    if (BeeUtils.isPositive(getWage())) {
+      return getHourlyWage();
+
+    } else if (BeeUtils.isPositive(getFund()) && BeeUtils.isPositive(getPlannedMillis())) {
+      return BeeUtils.round(getSalaryFund() * TimeUtils.MILLIS_PER_HOUR / getPlannedMillis(),
+          WAGE_PRECISION);
+
+    } else {
+      return null;
+    }
   }
 
   @Override
@@ -313,5 +363,18 @@ public class Earnings implements BeeSerializable {
 
   public void setHolyMillis(Long holyMillis) {
     this.holyMillis = holyMillis;
+  }
+
+  public Double total() {
+    Double x = amountWithoutHolidays();
+    Double y = amountForHolidays();
+
+    if (BeeUtils.isPositive(x) || BeeUtils.isPositive(y)) {
+      return BeeUtils.positive(x, BeeConst.DOUBLE_ZERO)
+          + BeeUtils.positive(y, BeeConst.DOUBLE_ZERO);
+
+    } else {
+      return null;
+    }
   }
 }

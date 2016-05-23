@@ -563,7 +563,7 @@ public final class RowFactory {
       }
       formView.updateRow(row, true);
 
-      UiHelper.focus(formView.getRootWidget().asWidget());
+      formView.focus();
 
       if (onOpen != null) {
         onOpen.accept(formView);

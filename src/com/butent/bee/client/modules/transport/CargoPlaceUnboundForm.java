@@ -15,8 +15,8 @@ import com.butent.bee.client.utils.JsonUtils;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.FormView;
-import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
+import com.butent.bee.client.view.form.interceptor.PrintFormInterceptor;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
@@ -28,7 +28,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-public class CargoPlaceUnboundForm extends AbstractFormInterceptor {
+public class CargoPlaceUnboundForm extends PrintFormInterceptor {
 
   private Map<String, UnboundSelector> unboundWidgets = new HashMap<>();
 
@@ -58,7 +58,7 @@ public class CargoPlaceUnboundForm extends AbstractFormInterceptor {
       return;
     }
     event.getColumns().add(Data.getColumn(getViewName(), ALS_CARGO_HANDLING_NOTES));
-    event.getValues().add(prepareJson());
+    event.getValues().add(toJson());
     super.onReadyForInsert(listener, event);
   }
 
@@ -69,7 +69,7 @@ public class CargoPlaceUnboundForm extends AbstractFormInterceptor {
       return;
     }
     String oldValue = getStringValue(ALS_CARGO_HANDLING_NOTES);
-    String newValue = prepareJson();
+    String newValue = toJson();
 
     if (!Objects.equals(oldValue, newValue)) {
       event.getColumns().add(Data.getColumn(getViewName(), ALS_CARGO_HANDLING_NOTES));
@@ -81,20 +81,13 @@ public class CargoPlaceUnboundForm extends AbstractFormInterceptor {
 
   @Override
   public boolean onStartEdit(FormView form, IsRow row, Scheduler.ScheduledCommand focusCommand) {
-    JSONObject json = JsonUtils
-        .parseObject(row.getString(form.getDataIndex(ALS_CARGO_HANDLING_NOTES)));
-
-    for (String key : unboundWidgets.keySet()) {
-      unboundWidgets.get(key).setValue(JsonUtils.getString(json, key));
-    }
+    fromJson(row.getString(form.getDataIndex(ALS_CARGO_HANDLING_NOTES)));
     return super.onStartEdit(form, row, focusCommand);
   }
 
   @Override
   public void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow) {
-    for (String key : unboundWidgets.keySet()) {
-      unboundWidgets.get(key).clearValue();
-    }
+    fromJson(newRow.getString(form.getDataIndex(ALS_CARGO_HANDLING_NOTES)));
     super.onStartNewRow(form, oldRow, newRow);
   }
 
@@ -114,7 +107,21 @@ public class CargoPlaceUnboundForm extends AbstractFormInterceptor {
     return true;
   }
 
-  private String prepareJson() {
+  private void fromJson(String jsonString) {
+    if (BeeUtils.isEmpty(jsonString)) {
+      for (UnboundSelector widget : unboundWidgets.values()) {
+        widget.clearValue();
+      }
+    } else {
+      JSONObject json = JsonUtils.parseObject(jsonString);
+
+      for (String key : unboundWidgets.keySet()) {
+        unboundWidgets.get(key).setValue(JsonUtils.getString(json, key));
+      }
+    }
+  }
+
+  private String toJson() {
     JSONObject json = new JSONObject();
 
     for (String key : unboundWidgets.keySet()) {

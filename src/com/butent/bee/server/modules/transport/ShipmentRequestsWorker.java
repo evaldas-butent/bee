@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableMap;
 
 import static com.butent.bee.shared.html.builder.Factory.*;
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.server.data.BeeView;
@@ -182,7 +183,7 @@ public class ShipmentRequestsWorker {
         handlingRs.getColumns().add(view.getBeeColumn(COL_CARGO));
         handlingRs.getRow(0).getValues().add(cargo);
 
-        response = deb.commitRow(handlingRs);
+        deb.commitRow(handlingRs);
       }
       view = sys.getView(VIEW_SHIPMENT_REQUEST_FILES);
 
@@ -191,7 +192,7 @@ public class ShipmentRequestsWorker {
         filesRs.getColumns().add(view.getBeeColumn(COL_SHIPMENT_REQUEST));
         filesRs.getRow(0).getValues().add(BeeUtils.toString(row.getId()));
 
-        response = deb.commitRow(filesRs);
+        deb.commitRow(filesRs);
       }
     } catch (BeeException e) {
       return RestResponse.error(e);
@@ -205,8 +206,12 @@ public class ShipmentRequestsWorker {
 
   private BeeRowSet buildRowSet(BeeView view, JsonObject json) throws BeeException {
     Map<String, Pair<String, String>> relations = new HashMap<>();
+
+    for (String name : new String[] {COL_CARGO_QUANTITY, COL_CARGO_WEIGHT, COL_CARGO_VOLUME}) {
+      relations.put(name + COL_UNIT, Pair.of(TBL_UNITS, COL_UNIT_NAME));
+    }
     relations.put(COL_EXPEDITION, Pair.of(TBL_EXPEDITION_TYPES, COL_EXPEDITION_TYPE_NAME));
-    relations.put(COL_CARGO_SHIPPING_TERM, Pair.of(TBL_SHIPPING_TERMS, COL_SHIPPING_TERM_NAME));
+    relations.put(COL_SHIPPING_TERM, Pair.of(TBL_SHIPPING_TERMS, COL_SHIPPING_TERM_NAME));
     relations.put(COL_CARGO_VALUE_CURRENCY, Pair.of(TBL_CURRENCIES, COL_CURRENCY_NAME));
 
     List<BeeColumn> columns = new ArrayList<>();
@@ -223,7 +228,8 @@ public class ShipmentRequestsWorker {
         }
         Object val = null;
 
-        if (BeeUtils.isSuffix(col, COL_PLACE_COUNTRY) || BeeUtils.isSuffix(col, COL_PLACE_CITY)) {
+        if (BeeUtils.inList(col, VAR_LOADING + COL_PLACE_COUNTRY, VAR_LOADING + COL_PLACE_CITY,
+            VAR_UNLOADING + COL_PLACE_COUNTRY, VAR_UNLOADING + COL_PLACE_CITY)) {
           if (Objects.isNull(handling)) {
             handling = Json.createObjectBuilder();
           }

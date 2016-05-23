@@ -5,7 +5,7 @@
         xmlns:xi="http://www.w3.org/2001/XInclude"
 
         name="CargoPlaceUnbound" caption="=cargoHandlingPlaces"
-        width="600" height="500"
+        width="600" height="550"
     >
   <SimplePanel style="margin:10px;">
     <xi:include href="widgets/CargoPlacesUnbound.widget.xml" />

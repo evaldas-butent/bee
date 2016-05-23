@@ -4,22 +4,31 @@ import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
 
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.render.AbstractSlackRenderer;
+import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.css.Colors;
+import com.butent.bee.shared.css.values.TextAlign;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.export.XCell;
+import com.butent.bee.shared.export.XFont;
 import com.butent.bee.shared.export.XSheet;
+import com.butent.bee.shared.export.XStyle;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
 import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.List;
 
 public class TaskSlackRenderer extends AbstractSlackRenderer {
 
+  private final List<? extends IsColumn> isColumns;
+
   TaskSlackRenderer(List<? extends IsColumn> columns) {
-    super(columns);
+    super();
+    this.isColumns = columns;
   }
 
   @Override
@@ -40,7 +49,59 @@ public class TaskSlackRenderer extends AbstractSlackRenderer {
         || status == TaskStatus.APPROVED) {
       return null;
     } else {
-      return super.export(row, cellIndex, styleRef, sheet);
+      if (row == null || sheet == null) {
+        return null;
+      }
+      DateTime now = TimeUtils.nowMinutes();
+
+      DateTime start = getStartDateTime(isColumns, row);
+      DateTime finish = getFinishDateTime(isColumns, row);
+
+      SlackKind kind = getKind(start, finish, now);
+      if (kind == null) {
+        return null;
+      }
+
+      long minutes = getMinutes(kind, start, finish, now);
+      String text = (minutes == 0L) ? BeeConst.STRING_EMPTY : getLabel(minutes);
+
+      XStyle style = new XStyle();
+      XFont font;
+
+      switch (kind) {
+        case LATE:
+          style.setColor(Colors.RED);
+
+          font = XFont.bold();
+          font.setColor(Colors.WHITE);
+          style.setFontRef(sheet.registerFont(font));
+          break;
+
+        case OPENING:
+          style.setColor(Colors.GREEN);
+          style.setTextAlign(TextAlign.CENTER);
+
+          font = XFont.bold();
+          font.setColor(Colors.WHITE);
+          style.setFontRef(sheet.registerFont(font));
+          break;
+
+        case ENDGAME:
+          style.setColor(Colors.ORANGE);
+          style.setTextAlign(TextAlign.CENTER);
+
+          font = XFont.bold();
+          font.setColor(Colors.WHITE);
+          style.setFontRef(sheet.registerFont(font));
+          break;
+
+        case SCHEDULED:
+          style.setColor(Colors.YELLOW);
+          style.setTextAlign(TextAlign.RIGHT);
+          break;
+      }
+
+      return new XCell(cellIndex, text, sheet.registerStyle(style));
     }
   }
 
@@ -52,7 +113,26 @@ public class TaskSlackRenderer extends AbstractSlackRenderer {
         || status == TaskStatus.APPROVED) {
       return null;
     } else {
-      return super.render(row);
+      if (row == null) {
+        return null;
+      }
+      DateTime now = TimeUtils.nowMinutes();
+
+      DateTime start = getStartDateTime(isColumns, row);
+      DateTime finish = getFinishDateTime(isColumns, row);
+
+      SlackKind kind = getKind(start, finish, now);
+      if (kind == null) {
+        return BeeConst.STRING_EMPTY;
+      }
+
+      long minutes = getMinutes(kind, start, finish, now);
+      if (minutes == 0L) {
+        return BeeConst.STRING_EMPTY;
+      }
+
+      String label = getLabel(minutes);
+      return format(kind, label);
     }
   }
 

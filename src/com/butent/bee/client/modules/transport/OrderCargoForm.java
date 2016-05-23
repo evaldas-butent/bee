@@ -30,7 +30,6 @@ import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
-import com.butent.bee.client.widget.InputBoolean;
 import com.butent.bee.client.widget.IntegerLabel;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -169,16 +168,12 @@ class OrderCargoForm extends AbstractFormInterceptor implements SelectorEvent.Ha
           ((ChildGrid) widget).setGridInterceptor(new TripCostsGrid());
           break;
       }
-    } else if (widget instanceof InputBoolean
-        && (BeeUtils.inListSame(name, "Partial", "Outsized"))) {
-      ((InputBoolean) widget).addValueChangeHandler(event -> refreshMetrics());
     }
   }
 
   @Override
   public void afterRefresh(FormView form, IsRow row) {
     refresh(row.getLong(form.getDataIndex(COL_CURRENCY)));
-    refreshMetrics();
     refreshKilometers(row, null, null);
 
     Widget cmrWidget = form.getWidgetBySource(COL_CARGO_CMR);
@@ -211,7 +206,7 @@ class OrderCargoForm extends AbstractFormInterceptor implements SelectorEvent.Ha
 
   @Override
   public void onEditEnd(EditEndEvent event, Object source) {
-    String colId = event.getColumn().getId();
+    String colId = event.getColumnId();
     if ((COL_EMPTY_KILOMETERS.equals(colId) || COL_LOADED_KILOMETERS.equals(colId))
         && event.valueChanged()) {
       refreshKilometers(getActiveRow(), colId, BeeUtils.toIntOrNull(event.getNewValue()));
@@ -320,26 +315,6 @@ class OrderCargoForm extends AbstractFormInterceptor implements SelectorEvent.Ha
     widget = getFormView().getWidgetByName("TotalLoaded");
     if (widget instanceof IntegerLabel) {
       ((IntegerLabel) widget).setValue(loadedKm);
-    }
-  }
-
-  private void refreshMetrics() {
-    Widget widget = getFormView().getWidgetByName("Metrics");
-
-    if (widget != null) {
-      int checkBoxObserved = 0;
-
-      InputBoolean ib1 = (InputBoolean) getFormView().getWidgetByName("Partial");
-      InputBoolean ib2 = (InputBoolean) getFormView().getWidgetByName("Outsized");
-
-      if (ib1 != null && BeeUtils.toBoolean(ib1.getValue())) {
-        checkBoxObserved += 1;
-      }
-
-      if (ib2 != null && BeeUtils.toBoolean(ib2.getValue())) {
-        checkBoxObserved += 1;
-      }
-      widget.setVisible(checkBoxObserved > 0);
     }
   }
 }
