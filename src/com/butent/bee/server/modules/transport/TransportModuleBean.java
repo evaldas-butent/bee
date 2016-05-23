@@ -345,6 +345,9 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
     } else if (BeeUtils.same(svc, SVC_GET_REPAIRS)) {
       response = getVehicleRepairs(reqInfo.getParameter(COL_ITEM_EXTERNAL_CODE));
 
+    } else if (BeeUtils.same(svc, SVC_CHECK_CARGO_HANDLING)) {
+      response = checkCargoHandling(reqInfo.getParameter("column"), reqInfo.getParameter("value"));
+
     } else if (BeeUtils.same(svc, SVC_COSTS_TO_ERP)) {
       response = costsToERP(DataUtils.parseIdSet(reqInfo.getParameter(VAR_ID_LIST)));
 
@@ -371,6 +374,33 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
       response = ResponseObject.error(msg);
     }
     return response;
+  }
+
+  private ResponseObject checkCargoHandling(String column, String value) {
+    SqlSelect query = new SqlSelect().setDistinctMode(true)
+        .addFields(TBL_CARGO_TRIPS, COL_CARGO)
+        .addFrom(TBL_CARGO_TRIPS)
+        .addFromInner(TBL_TRIPS, sys.joinTables(TBL_TRIPS, TBL_CARGO_TRIPS, COL_TRIP))
+        .addFromInner(TBL_ORDER_CARGO, sys.joinTables(TBL_ORDER_CARGO, TBL_CARGO_TRIPS, COL_CARGO))
+        .addFromInner(TBL_ORDERS, sys.joinTables(TBL_ORDERS, TBL_ORDER_CARGO, COL_ORDER))
+        .setWhere(SqlUtils.equals(SqlUtils.name(column), value));
+
+    SimpleRowSet rs = qs.getData(new SqlSelect().setDistinctMode(true)
+        .addFields(TBL_CARGO_TRIPS, COL_CARGO)
+        .addFrom(TBL_CARGO_TRIPS)
+        .addFromInner(new SqlSelect()
+                .addFields(TBL_CARGO_TRIPS, COL_CARGO)
+                .addFrom(TBL_CARGO_TRIPS)
+                .addFromInner(query, "qq", SqlUtils.joinUsing(TBL_CARGO_TRIPS, "qq", COL_CARGO))
+                .addGroup(TBL_CARGO_TRIPS, COL_CARGO)
+                .setHaving(SqlUtils.more(SqlUtils.aggregate(SqlFunction.COUNT,
+                    SqlUtils.field(TBL_CARGO_TRIPS, COL_TRIP)), 1)), "subq",
+            SqlUtils.joinUsing(TBL_CARGO_TRIPS, "subq", COL_CARGO))
+        .addFromLeft(TBL_CARGO_HANDLING,
+            sys.joinTables(TBL_CARGO_TRIPS, TBL_CARGO_HANDLING, COL_CARGO_TRIP))
+        .setWhere(SqlUtils.isNull(TBL_CARGO_HANDLING, COL_CARGO_TRIP)));
+
+    return ResponseObject.response(rs.getColumn(COL_CARGO));
   }
 
   @Override

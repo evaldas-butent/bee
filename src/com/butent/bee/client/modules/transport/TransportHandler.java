@@ -12,9 +12,11 @@ import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
+import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.Queries.RowSetCallback;
+import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.GridFactory.GridOptions;
@@ -42,6 +44,7 @@ import com.butent.bee.client.view.grid.interceptor.TreeGridInterceptor;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
+import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -57,9 +60,12 @@ import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.report.ReportInfo;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.ui.Preloader;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -98,7 +104,7 @@ public final class TransportHandler {
     public void onClick(ClickEvent event) {
       Report report = Report.TRANSPORT_TRIP_PROFIT;
 
-      ReportUtils.getReports(report, reports -> {
+      Runnable runnable = () -> ReportUtils.getReports(report, reports -> {
         Consumer<ReportInfo> processor = reportInfo -> {
           for (ReportItem item : report.getItems()) {
             if (Objects.equals(item.getExpression(), column)) {
@@ -120,6 +126,24 @@ public final class TransportHandler {
               idx -> processor.accept(reports.get(idx)));
         } else {
           processor.accept(BeeUtils.peek(reports));
+        }
+      });
+
+      ParameterList args = createArgs(SVC_CHECK_CARGO_HANDLING);
+      args.addDataItem("column", column);
+      args.addDataItem("value", value);
+
+      BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
+        @Override
+        public void onResponse(ResponseObject response) {
+          String[] cargos = Codec.beeDeserializeCollection(response.getResponseAsString());
+
+          if (ArrayUtils.isEmpty(cargos)) {
+            runnable.run();
+          } else {
+            Global.confirm("Kroviniai, kuriems nėra pilnai suvestos tikslinės atkarpos",
+                Icon.ALARM, Arrays.asList(cargos), runnable::run);
+          }
         }
       });
     }

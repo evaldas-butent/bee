@@ -322,6 +322,7 @@ public final class TransportConstants {
   public static final String SVC_CREATE_INVOICE_ITEMS = "CreateInvoiceItems";
   public static final String SVC_GET_CREDIT_INFO = "GetCreditInfo";
   public static final String SVC_GET_REPAIRS = "GetRepairs";
+  public static final String SVC_CHECK_CARGO_HANDLING = "CheckCargoHandling";
   public static final String SVC_COSTS_TO_ERP = "CostsToERP";
   public static final String SVC_GET_TRIP_INFO = "GetTripInfo";
   public static final String SVC_GET_VEHICLE_BUSY_DATES = "GetVehicleBusyDates";
