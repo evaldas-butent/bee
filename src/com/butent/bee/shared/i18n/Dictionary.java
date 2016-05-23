@@ -3515,6 +3515,8 @@ public interface Dictionary {
 
   default String personTabNo() {return g("personTabNo");}
 
+  default String personTabNoShort() {return g("personTabNoShort");}
+
   default String personUnemployment() {return g("personUnemployment");}
 
   default String persons() {return g("persons");}
