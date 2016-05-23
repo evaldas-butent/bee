@@ -823,6 +823,9 @@ class TaskEditor extends ProductSupportInterceptor {
         DataChangeEvent.fireRefresh(BeeKeeper.getBus(), ProjectConstants.VIEW_PROJECT_STAGES);
         if (data != null) {
           RowUpdateEvent.fire(BeeKeeper.getBus(), VIEW_TASKS, data);
+          if (DataUtils.isId(Data.getLong(VIEW_TASKS, data, ProjectConstants.COL_PROJECT))) {
+            DataChangeEvent.fireRefresh(BeeKeeper.getBus(), ProjectConstants.VIEW_PROJECTS);
+          }
 
           if (TaskUtils.hasRelations(oldRow) || TaskUtils.hasRelations(data)) {
             DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_RELATED_TASKS);
