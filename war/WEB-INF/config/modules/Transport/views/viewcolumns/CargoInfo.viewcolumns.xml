@@ -2,6 +2,7 @@
 <Columns xmlns="http://www.butent.com/view" xmlns:xi="http://www.w3.org/2001/XInclude">
   <SimpleColumn name="Description" />
 
+  <SimpleColumn name="CargoHandling" />
   <SimpleJoin name="CargoHandling" joinType="LEFT">
     <SimpleColumn name="Notes" alias="HandlingNotes" />
     <SimpleColumn name="EmptyKilometers" />
@@ -41,15 +42,13 @@
     <SimpleColumn name="Name" alias="ValueCurrencyName" />
   </SimpleJoin>
 
-  <SimpleColumn name="ShippingTerm" />
-  <SimpleJoin joinType="LEFT" name="ShippingTerm">
-    <SimpleColumn name="Name" alias="ShippingTermName" />
-  </SimpleJoin>
-
   <SimpleColumn name="Partial" />
   <SimpleColumn name="Outsized" />
   <SimpleColumn name="Dangerous" />
   <SimpleColumn name="ExchangeOfPalettes" />
 
-  <SimpleColumn name="Notes" />
+  <SimpleColumn name="CustomsBrokerage" />
+  <SimpleColumn name="FreightInsurance" />
+
+  <SimpleColumn name="Notes" alias="CargoNotes" />
 </Columns>

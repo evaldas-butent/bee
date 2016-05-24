@@ -57,6 +57,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 
 public class ChatView extends Flow implements Presenter, View,
     VisibilityChangeEvent.Handler, HasWidgetSupplier {
@@ -82,14 +83,14 @@ public class ChatView extends Flow implements Presenter, View,
         Image photo = Global.getUsers().getPhoto(message.getUserId());
 
         if (photo == null) {
+          photo = new Image(DEFAULT_PHOTO_IMAGE);
           CustomDiv signature = new CustomDiv(STYLE_MESSAGE_SIGNATURE);
           signature.setText(Global.getUsers().getSignature(message.getUserId()));
           add(signature);
 
-        } else {
-          photo.addStyleName(STYLE_MESSAGE_PHOTO);
-          body.add(photo);
         }
+        photo.addStyleName(STYLE_MESSAGE_PHOTO);
+        body.add(photo);
       }
 
       if (message.hasText()) {
@@ -167,12 +168,12 @@ public class ChatView extends Flow implements Presenter, View,
   private static final String STYLE_AUTO_SCROLL_LABEL = STYLE_AUTO_SCROLL_PREFIX + "label";
   private static final String STYLE_AUTO_SCROLL_TOGGLE = STYLE_AUTO_SCROLL_PREFIX + "toggle";
 
-  private static final String STYLE_STYLE_CONTROL = STYLE_PREFIX + "style-control";
-
   private static final String AUTO_SCROLL_LABEL = "Auto Scroll";
 
   private static final int TIMER_PERIOD = 5_000;
   private static final long FAST_INTERVAL = 30_000;
+
+  private static final String DEFAULT_PHOTO_IMAGE = "images/defaultUser.png";
 
   private static final EnumSet<UiOption> uiOptions = EnumSet.of(UiOption.VIEW);
 
@@ -194,7 +195,8 @@ public class ChatView extends Flow implements Presenter, View,
 
   private final List<HandlerRegistration> registry = new ArrayList<>();
 
-  public ChatView(Chat chat) {
+  public ChatView(Chat chat, Set<Action> enabledActions, Set<Action> hiddenActions,
+      boolean showAutoScroll) {
     super(STYLE_VIEW);
     addStyleName(UiOption.getStyleName(uiOptions));
 
@@ -205,8 +207,9 @@ public class ChatView extends Flow implements Presenter, View,
 
     this.headerView = new HeaderImpl();
     headerView.create(caption, false, true, null, uiOptions,
-        EnumSet.of(Action.CONFIGURE, Action.MINIMIZE, Action.MAXIMIZE, Action.CLOSE),
-        Action.NO_ACTIONS, Action.NO_ACTIONS);
+        enabledActions,
+        Action.NO_ACTIONS, hiddenActions);
+
     headerView.setViewPresenter(this);
 
     Flow autoScrollContainer = new Flow(STYLE_AUTO_SCROLL_CONTAINER);
@@ -221,17 +224,9 @@ public class ChatView extends Flow implements Presenter, View,
     autoScrollToggle.addClickHandler(event -> maybeScroll(false));
     autoScrollContainer.add(autoScrollToggle);
 
-    headerView.addCommandItem(autoScrollContainer);
-
-    FaLabel styleControl = new FaLabel(FontAwesome.MOBILE, STYLE_STYLE_CONTROL);
-    styleControl.setTitle(Localized.dictionary().mobile());
-    styleControl.addClickHandler(event -> {
-      ChatPopup popup = getPopup();
-      if (popup != null) {
-        popup.handleStyle(EventUtils.hasModifierKey(event));
-      }
-    });
-    headerView.insertControl(styleControl, headerView.getWidgetCount() - 1);
+    if (showAutoScroll) {
+      headerView.addCommandItem(autoScrollContainer);
+    }
 
     add(headerView);
 
@@ -305,10 +300,15 @@ public class ChatView extends Flow implements Presenter, View,
     };
   }
 
+  public ChatView(Chat chat) {
+    this(chat, EnumSet.of(Action.CONFIGURE, Action.MINIMIZE, Action.MAXIMIZE, Action.CLOSE),
+        Action.NO_ACTIONS, true);
+  }
+
   public void addMessage(ChatItem message, boolean update) {
     if (message != null && message.isValid()) {
       boolean incoming = !BeeKeeper.getUser().is(message.getUserId());
-      boolean addPhoto = incoming && otherUsers.size() > 1;
+      boolean addPhoto = incoming;
 
       MessageWidget messageWidget = new MessageWidget(message, addPhoto);
 
@@ -486,7 +486,7 @@ public class ChatView extends Flow implements Presenter, View,
 
   public void updateUnreadCount(int unreadCount) {
     String text = (unreadCount > 0) ? BeeUtils.toString(unreadCount) : BeeConst.STRING_EMPTY;
-    headerView.setMessage(text);
+    headerView.setMessage(0, text, null);
 
     setStyleName(STYLE_HAS_UNREAD, unreadCount > 0);
   }

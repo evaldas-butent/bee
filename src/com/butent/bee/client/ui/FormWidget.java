@@ -1766,7 +1766,7 @@ public enum FormWidget {
         if (BeeUtils.allEmpty(upFace, downFace)) {
           widget = new Toggle();
         } else {
-          widget = new Toggle(upFace, downFace);
+          widget = new Toggle(Localized.maybeTranslate(upFace), Localized.maybeTranslate(downFace));
         }
         break;
 

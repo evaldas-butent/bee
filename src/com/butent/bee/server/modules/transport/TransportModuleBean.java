@@ -618,13 +618,11 @@ public class TransportModuleBean implements BeeModule {
             }
 
             BeeRowSet data = qs.getViewData(VIEW_TEXT_CONSTANTS,
-                Filter.equals(COL_TEXT_CONSTANT, status));
+                Filter.equals(COL_TEXT_CONSTANT, constant));
 
-            String localizedContent =
-                Localized.column(COL_TEXT_CONTENT,
-                    EnumUtils.getEnumByIndex(SupportedLocale.class,
-                        info.getInteger(0, COL_USER_LOCALE))
-                        .getLanguage());
+            String localizedContent = Localized.column(COL_TEXT_CONTENT,
+                EnumUtils.getEnumByIndex(SupportedLocale.class, info.getInteger(0, COL_USER_LOCALE))
+                    .getLanguage());
             String text;
 
             if (DataUtils.isEmpty(data)) {

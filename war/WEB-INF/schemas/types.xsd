@@ -351,7 +351,6 @@
       <xs:enumeration value="EcRegistrations" />
       <xs:enumeration value="EditorTemplates" />
       <xs:enumeration value="Emails" />
-      <xs:enumeration value="EmployeeEarnings" />
       <xs:enumeration value="EmployeeObjects" />
       <xs:enumeration value="Employees" />
       <xs:enumeration value="EventDurations" />
@@ -395,7 +394,6 @@
       <xs:enumeration value="NewsPersons" />
       <xs:enumeration value="NewsletterFiles" />
       <xs:enumeration value="Objects" />
-      <xs:enumeration value="ObjectEarnings" />
       <xs:enumeration value="ObjectSalaryFund" />
       <xs:enumeration value="Orders" />
       <xs:enumeration value="OrdersInvoices" />

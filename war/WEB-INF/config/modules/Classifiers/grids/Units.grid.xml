@@ -1,13 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
-  
-  name="Units" viewName="Units" caption="=units"
-  newRowPopup="true" editPopup="true"
-  >
+
+        name="Units" viewName="Units" caption="=units"
+        newRowPopup="true" editPopup="true"
+>
   <g:columns>
-    <DataColumn name="Unit" source="Name" visible="true" />
+    <DataColumn name="Name" visible="true" />
     <DataColumn name="Factor" />
-    <RelColumn  name="BaseUnit" newRowEnabled="false" />
+    <RelColumn name="BaseUnit" newRowEnabled="false" />
     <DataColumn name="Caption" />
+
+    <DataColumn name="SelfService" module="Transport.SelfService" editInPlace="true" />
   </g:columns>
 </g:Grid>

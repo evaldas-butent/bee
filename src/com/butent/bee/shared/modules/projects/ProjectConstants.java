@@ -50,6 +50,7 @@ public final class ProjectConstants {
   public static final String ALS_TASK_STATUS = "TaskStatus";
   public static final String ALS_OWNER_FIRST_NAME = "OwnerFirstName";
   public static final String ALS_OWNER_LAST_NAME = "OwnerLastName";
+  public static final String ALS_OWNER_PERSON = "OwnerPerson";
   public static final String ALS_TERM = "Term";
   public static final String ALS_PROFIT = "Profit";
   public static final String ALS_STAGES_COUNT = "StagesCount";
@@ -86,6 +87,7 @@ public final class ProjectConstants {
   public static final String COL_PROJECT_ID = "ProjectID";
   public static final String COL_PROJECT_NAME = "Name";
   public static final String COL_PROJECT_END_DATE = "EndDate";
+  public static final String COL_PROJECT_APPROVED_DATE = "ApprovedDate";
   public static final String COL_PROJECT_STAGE = "ProjectStage";
   public static final String COL_PROJECT_START_DATE = "StartDate";
   public static final String COL_PROJECT_STATUS = "Status";
@@ -146,6 +148,7 @@ public final class ProjectConstants {
   public static final String COL_RATE = "Rate";
 
   public static final String FILTER_OVERDUE_CREATION = "overdue_creation";
+  public static final String FILTERSUPPLIER_SLACK_PREFIX = "prj-FilterSupplier-Slack-";
 
   public static final String FORM_PROJECT = "Project";
   public static final String FORM_PROJECT_STAGE = "ProjectStage";
@@ -193,6 +196,14 @@ public final class ProjectConstants {
   public static final String SVC_PROJECT_REPORT = "ProjectReport";
   public static final String SVC_CREATE_INVOICE_ITEMS = "CreateInvoiceItems";
 
+  public static final String STYLE_CONTAINER = "container";
+  public static final String STYLE_LATE = "late";
+  public static final String STYLE_NOT_LATE = "notLate";
+  public static final String STYLE_ALL = "all";
+  public static final String STYLE_CANCEL = "cancel";
+
+  public static final String VALUE_LATE = "late";
+  public static final String VALUE_SCHEDULED = "scheduled";
   public static final String VAR_PROJECT = "Project";
 
   public static final String VIEW_PROJECTS = "Projects";

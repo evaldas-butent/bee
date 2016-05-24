@@ -107,8 +107,12 @@
     <InputArea source="Documents" style="width:400px;" />
   </FlowPanel>
 
-  <ChildGrid name="CargoHandling" relColumn="Cargo" source="Cargo"
-             caption="=trAdditionalHandlingPlaces" style="margin-top:10px; height:200px;" />
+  <Disclosure>
+    <Summary text="=trAdditionalHandlingPlaces" />
+    <ChildGrid name="CargoHandling" relColumn="Cargo" source="Cargo" summarize="true"
+               caption="-" style="height:200px;" />
+  </Disclosure>
+
   &separator;
   <FlowPanel style="&section;">
     <Label text="=cargo" class="bee-hasDefaults bee-required" style="&labelLeft; vertical-align:top;" />

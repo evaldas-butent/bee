@@ -1763,32 +1763,6 @@ public interface Dictionary {
 
   default String duration() {return g("duration");}
 
-  default String earningsApprovedAmount() {return g("earningsApprovedAmount");}
-
-  default String earningsApprovedBy() {return g("earningsApprovedBy");}
-
-  default String earningsApprovedCurrency() {return g("earningsApprovedCurrency");}
-
-  default String earningsApprovedDate() {return g("earningsApprovedDate");}
-
-  default String earningsBonus1() {return g("earningsBonus1");}
-
-  default String earningsBonus2() {return g("earningsBonus2");}
-
-  default String earningsBonusPercent() {return g("earningsBonusPercent");}
-
-  default String earningsExportedAmount() {return g("earningsExportedAmount");}
-
-  default String earningsExportedBy() {return g("earningsExportedBy");}
-
-  default String earningsExportedCurrency() {return g("earningsExportedCurrency");}
-
-  default String earningsExportedDate() {return g("earningsExportedDate");}
-
-  default String earningsOfEmployees() {return g("earningsOfEmployees");}
-
-  default String earningsOfObjects() {return g("earningsOfObjects");}
-
   default String ecAdministration() {return g("ecAdministration");}
 
   default String ecAnalogBinding() {return g("ecAnalogBinding");}
@@ -2390,6 +2364,8 @@ public interface Dictionary {
 
   default String employment() {return g("employment");}
 
+  default String empty() {return g("empty");}
+
   default String enabled() {return g("enabled");}
 
   default String enabledShort() {return g("enabledShort");}
@@ -2673,6 +2649,8 @@ public interface Dictionary {
   default String holidays() {return g("holidays");}
 
   default String hour() {return g("hour");}
+
+  default String hourlyWage() {return g("hourlyWage");}
 
   default String hours() {return g("hours");}
 
@@ -3369,8 +3347,6 @@ public interface Dictionary {
 
   default String objectData() {return g("objectData");}
 
-  default String objectEarnings() {return g("objectEarnings");}
-
   default String objectField() {return g("objectField");}
 
   default String objectMenu() {return g("objectMenu");}
@@ -3501,6 +3477,14 @@ public interface Dictionary {
 
   default String payroll() {return g("payroll");}
 
+  default String payrollEarnings() {return g("payrollEarnings");}
+
+  default String payrollEarningsForHolidays() {return g("payrollEarningsForHolidays");}
+  
+  default String payrollEarningsTotal() {return g("payrollEarningsTotal");}
+  
+  default String payrollEarningsWithoutHolidays() {return g("payrollEarningsWithoutHolidays");}
+
   default String period() {return g("period");}
 
   default String person() {return g("person");}
@@ -3530,6 +3514,8 @@ public interface Dictionary {
   default String personPositions() {return g("personPositions");}
 
   default String personTabNo() {return g("personTabNo");}
+
+  default String personTabNoShort() {return g("personTabNoShort");}
 
   default String personUnemployment() {return g("personUnemployment");}
 
@@ -4704,6 +4690,8 @@ public interface Dictionary {
 
   default String trDriverStartingDate() {return g("trDriverStartingDate");}
 
+  default String trEconomyBonus() {return g("trEconomyBonus");}
+
   default String trEmptyKilometers() {return g("trEmptyKilometers");}
 
   default String trEmptyKilometersTotal() {return g("trEmptyKilometersTotal");}
@@ -5865,7 +5853,15 @@ public interface Dictionary {
 
   default String workScheduleActual() {return g("workScheduleActual");}
 
+  default String workScheduleActualShort() {return g("workScheduleActualShort");}
+
+  default String workScheduleHolihoursInclusiveShort() {return g("workScheduleHolihoursInclusiveShort");}
+
+  default String workScheduleHolidaysInclusiveShort() {return g("workScheduleHolidaysInclusiveShort");}
+
   default String workSchedulePlanned() {return g("workSchedulePlanned");}
+
+  default String workSchedulePlannedShort() {return g("workSchedulePlannedShort");}
 
   default String workdayTransitionBackward() {return g("workdayTransitionBackward");}
 

@@ -139,7 +139,6 @@ public abstract class PrintFormInterceptor extends AbstractFormInterceptor {
         params.put(column.getId(), value);
       }
     }
-    params.put("ID", BeeUtils.toString(getActiveRowId()));
     parametersConsumer.accept(params);
   }
 
@@ -148,7 +147,7 @@ public abstract class PrintFormInterceptor extends AbstractFormInterceptor {
   }
 
   protected void print(BiConsumer<Map<String, String>, BeeRowSet[]> consumer) {
-    getReportParameters((parameters) -> getReportData((data) -> consumer.accept(parameters, data)));
+    getReportParameters(parameters -> getReportData(data -> consumer.accept(parameters, data)));
   }
 
   private boolean printJasperReport() {

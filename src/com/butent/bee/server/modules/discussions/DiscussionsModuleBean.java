@@ -876,9 +876,9 @@ public class DiscussionsModuleBean implements BeeModule {
                     usr.getCurrentUserId()), SqlUtils.notNull(TBL_DISCUSSIONS_USERS, COL_MEMBER)),
                     SqlUtils.equals(TBL_DISCUSSIONS, COL_OWNER, usr.getCurrentUserId())),
                     SqlUtils.notNull(TBL_DISCUSSIONS, COL_ACCESSIBILITY))))
-            .addOrder(TBL_ADS_TOPICS, COL_ORDINAL)
             .addOrder(TBL_DISCUSSIONS, COL_IMPORTANT)
             .addOrderDesc(TBL_DISCUSSIONS, COL_CREATED)
+            .addOrder(TBL_ADS_TOPICS, COL_ORDINAL)
             .addGroup(TBL_DISCUSSIONS, sys.getIdName(TBL_DISCUSSIONS))
             .addGroup(TBL_ADS_TOPICS, COL_NAME, COL_ORDINAL, COL_BACKGROUND_COLOR, COL_TEXT_COLOR)
             .addGroup(TBL_DISCUSSIONS_COMMENTS, COL_DISCUSSION)
@@ -896,8 +896,6 @@ public class DiscussionsModuleBean implements BeeModule {
 
       if (!topicRows.isEmpty() && birthResp.hasResponse(SimpleRowSet.class)) {
         BeeRow tRow = topicRows.getRow(topicRows.getNumberOfRows() - 1);
-        Integer ordinal =
-            tRow.getInteger(topicRows.getColumnIndex(COL_ORDINAL));
 
         String[] topicData = new String[rs.getNumberOfColumns()];
 
@@ -911,22 +909,9 @@ public class DiscussionsModuleBean implements BeeModule {
             tRow.getString(topicRows.getColumnIndex(COL_ORDINAL));
         topicData[rs.getColumnIndex(ALS_BIRTHDAY)] = Codec.beeSerialize(birthResp.getResponse());
 
-        int placeId = rs.getNumberOfRows() - 1;
-        for (int i = 0; i < rs.getNumberOfRows(); i++) {
-          Integer ord = BeeUtils.toIntOrNull(rs.getValue(i, rs.getColumnIndex(COL_ORDINAL)));
+        int placeId = 0;
+        rs.getRows().add(placeId, topicData);
 
-          if (BeeUtils.compareNullsLast(ord, ordinal) >= 0) {
-            if (placeId > i) {
-              placeId = i;
-            }
-          }
-        }
-
-        if (placeId >= 0) {
-          rs.getRows().add(placeId, topicData);
-        } else {
-          rs.getRows().add(topicData);
-        }
       }
     }
 

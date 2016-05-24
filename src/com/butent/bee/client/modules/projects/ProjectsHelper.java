@@ -226,6 +226,9 @@ public final class ProjectsHelper {
     } else if (info.hasRelation(column) && row != null) {
       result = BeeConst.STRING_EMPTY;
       for (ViewColumn vCol : info.getDescendants(column, false)) {
+        if (BeeUtils.same(ALS_OWNER_PERSON, vCol.getName())) {
+          continue;
+        }
         result =
             BeeUtils.joinWords(result, getDisplayValue(viewName, vCol.getName(), row.getString(info
                 .getColumnIndex(vCol.getName())), null));
@@ -271,7 +274,7 @@ public final class ProjectsHelper {
       JustDate date = TimeUtils.toDateOrNull(value);
 
       result = date == null ? result : date.toString();
-    } else if (!BeeUtils.isEmpty(col.getEnumKey())) {
+    } else if (col != null ? !BeeUtils.isEmpty(col.getEnumKey()) : false) {
       return EnumUtils.getCaption(col.getEnumKey(), BeeUtils.toInt(value));
     }
 

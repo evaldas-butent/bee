@@ -29,10 +29,21 @@
 .bee-Chats-popup {
   background-color: white;
   border: 1px solid #ccc;
+  margin-top: 10px
 }
 
 .bee-Chats-panel {
   width: 360px;
+}
+.bee-Chats-panel:after {
+    bottom: 100%;
+    border: solid transparent;
+    content: " ";
+    position: absolute;
+    pointer-events: none;border-color: rgba(255, 255, 255, 0);
+    border-bottom-color: #ffffff;
+    border-width: 8px;
+    right: 25px;
 }
 
 .bee-Chats-wrapper {
@@ -65,7 +76,7 @@
 }
 
 .bee-ChatsItem-photo {
-  margin-top: 5px;
+  margin-top: 10px;
   max-width: 40px;
   max-height: 40px;
   border-radius: 50%;
@@ -73,8 +84,8 @@
 
 .bee-ChatsItem-usersBadge {
   display: inline-block;
-  margin-top: 5px;
-  padding: 8px 13px;
+  margin-top: 15px;
+  padding: 9px 15px;
   background-color: #aaa;
   color: white;
   font-weight: bold;
@@ -142,8 +153,11 @@
 
 .bee-ChatsItem-user {
   display: inline-block;
-  font-size: 10pt;
   margin-right: 4px;
+  font-size: 14pt;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
 }
 
 .bee-ChatsItem-maxTime {
@@ -241,12 +255,13 @@
 }
 
 .bee-ChatNormal {
-  width: 400px;
+  width: 265px;
   height: 50vh;
   border: 1px solid #ccc;
+  min-height: 123px;
 }
 .bee-ChatMinimized {
-  width: 250px;
+  width: 165px;
 }
 
 .bee-Chat-view {
@@ -259,6 +274,7 @@
 .bee-ChatModal .bee-Header-container {
   background-color: #414142;
   color: white;
+  height: 40px;
 }
 .bee-ChatModal .bee-Header-container:hover {
   background-color: #2c2c2c;
@@ -325,6 +341,7 @@
   right: 0;
   overflow-x: hidden;
   overflow-y: auto;
+  background-color: #f5f5f5;
 }
 
 .bee-Chat-footer {
@@ -390,7 +407,7 @@
 .bee-Chat-message-files {
   font-size: 12pt;
   white-space: pre-line;
-  border-radius: 20px;
+  border-radius: 8px;
   margin: 0 10px;
   padding: 10px 15px;
   position: relative;
@@ -406,40 +423,40 @@
   border-radius: 50%;
   border-style: solid;
   border-width: 0 20px;
-  clip: rect(20px, 35px, 42px, 0px);
+  clip: rect(-20px, 35px, 18px, 0px);
   z-index: -1;
 }
 
 .bee-Chat-message-incoming .bee-Chat-message-text:before,
 .bee-Chat-message-incoming .bee-Chat-message-files:before {
-  border-color: #e5e4e9;
+  border-color: white;
   left: -50px;
   transform: rotateY(180deg);
 }
 .bee-Chat-message-outgoing .bee-Chat-message-text:before,
 .bee-Chat-message-outgoing .bee-Chat-message-files:before {
-  border-color: #2095fe;
+  border-color: #e3e3e3;
   right: -50px;
 }
 
 .bee-Chat-message-incoming .bee-Chat-message-text,
 .bee-Chat-message-incoming .bee-Chat-message-files {
   margin-right: 20%;
-  background-color: #e5e4e9;
+  background-color: white;
 }
 .bee-Chat-message-incoming .bee-Chat-message-text,
 .bee-Chat-message-incoming .bee-Chat-message-files a {
-  color: #363636;
+  color: black;
 }
 
 .bee-Chat-message-outgoing .bee-Chat-message-text,
 .bee-Chat-message-outgoing .bee-Chat-message-files {
   margin-left: 20%;
-  background-color: #2095fe;
+  background-color: #e3e3e3;
 }
 .bee-Chat-message-outgoing .bee-Chat-message-text,
 .bee-Chat-message-outgoing .bee-Chat-message-files a {
-  color: white;
+  color: black;
 }
 
 .bee-Chat-inputPanel {

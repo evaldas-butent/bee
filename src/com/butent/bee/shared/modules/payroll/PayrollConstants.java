@@ -25,7 +25,7 @@ public final class PayrollConstants {
     PLANNED {
       @Override
       public String getCaption(Dictionary dictionary) {
-        return dictionary.workSchedulePlanned();
+        return dictionary.workSchedulePlannedShort();
       }
 
       @Override
@@ -52,7 +52,7 @@ public final class PayrollConstants {
     ACTUAL {
       @Override
       public String getCaption(Dictionary dictionary) {
-        return dictionary.workScheduleActual();
+        return dictionary.workScheduleActualShort();
       }
 
       @Override
@@ -91,16 +91,13 @@ public final class PayrollConstants {
 
   public static final String SVC_GET_SCHEDULE_OVERLAP = "getScheduleOverlap";
   public static final String SVC_GET_SCHEDULED_MONTHS = "getScheduledMonths";
-  public static final String SVC_INIT_EARNINGS = "initEarnings";
+  public static final String SVC_GET_EARNINGS = "getEarnings";
 
   public static final String TBL_EMPLOYEES = "Employees";
   public static final String TBL_LOCATIONS = "Locations";
   public static final String TBL_EMPLOYEE_OBJECTS = "EmployeeObjects";
 
   public static final String TBL_WORK_SCHEDULE = "WorkSchedule";
-
-  public static final String TBL_OBJECT_EARNINGS = "ObjectEarnings";
-  public static final String TBL_EMPLOYEE_EARNINGS = "EmployeeEarnings";
 
   public static final String TBL_OBJECT_SALARY_FUND = "ObjectSalaryFund";
 
@@ -112,9 +109,6 @@ public final class PayrollConstants {
   public static final String VIEW_EMPLOYEE_OBJECTS = "EmployeeObjects";
 
   public static final String VIEW_WORK_SCHEDULE = "WorkSchedule";
-
-  public static final String VIEW_OBJECT_EARNINGS = "ObjectEarnings";
-  public static final String VIEW_EMPLOYEE_EARNINGS = "EmployeeEarnings";
 
   public static final String VIEW_TIME_CARD_CHANGES = "TimeCardChanges";
 
@@ -169,23 +163,6 @@ public final class PayrollConstants {
   public static final String COL_TR_DURATION = "Duration";
   public static final String COL_TR_DESCRIPTION = "Description";
 
-  public static final String COL_EARNINGS_YEAR = "Year";
-  public static final String COL_EARNINGS_MONTH = "Month";
-
-  public static final String COL_EARNINGS_APPROVED = "Approved";
-  public static final String COL_EARNINGS_APPROVED_BY = "ApprovedBy";
-  public static final String COL_EARNINGS_APPROVED_AMOUNT = "ApprovedAmount";
-  public static final String COL_EARNINGS_APPROVED_CURRENCY = "ApprovedCurrency";
-
-  public static final String COL_EARNINGS_EXPORTED = "Exported";
-  public static final String COL_EARNINGS_EXPORTED_BY = "ExportedBy";
-  public static final String COL_EARNINGS_EXPORTED_AMOUNT = "ExportedAmount";
-  public static final String COL_EARNINGS_EXPORTED_CURRENCY = "ExportedCurrency";
-
-  public static final String COL_EARNINGS_BONUS_PERCENT = "BonusPercent";
-  public static final String COL_EARNINGS_BONUS_1 = "Bonus1";
-  public static final String COL_EARNINGS_BONUS_2 = "Bonus2";
-
   public static final String COL_OSF_YEAR_FROM = "YearFrom";
   public static final String COL_OSF_MONTH_FROM = "MonthFrom";
   public static final String COL_OSF_YEAR_UNTIL = "YearUntil";
@@ -213,8 +190,6 @@ public final class PayrollConstants {
   public static final String GRID_TIME_CARD_CODES = "TimeCardCodes";
   public static final String GRID_TIME_RANGES = "TimeRanges";
   public static final String GRID_WORK_SCHEDULE_DAY = "WorkScheduleDay";
-  public static final String GRID_OBJECT_EARNINGS = "ObjectEarnings";
-  public static final String GRID_EMPLOYEE_EARNINGS = "EmployeeEarnings";
 
   public static final String FORM_LOCATION = "Location";
   public static final String FORM_EMPLOYEE = "Employee";
@@ -222,16 +197,6 @@ public final class PayrollConstants {
   public static final String FORM_TIME_SHEET = "TimeSheet";
   public static final String FORM_WORK_SCHEDULE_EDITOR = "WorkScheduleEditor";
   public static final String FORM_NEW_SUBSTITUTION = "NewSubstitution";
-  public static final String FORM_EARNINGS = "Earnings";
-  public static final String FORM_OBJECT_EARNINGS = "ObjectEarnings";
-
-  public static final String PRP_EARNINGS_NUMBER_OF_DAYS = "Earnings_day_count";
-  public static final String PRP_EARNINGS_MILLIS = "Earnings_millis";
-  public static final String PRP_EARNINGS_DURATION = "Earnings_duration";
-  public static final String PRP_EARNINGS_AMOUNT = "Earnings_amount";
-  public static final String PRP_EARNINGS_HOURLY_WAGE = "Earnings_hourly_wage";
-
-  public static final String PRP_SALARY_FUND = "Salary_fund";
 
   public static void register() {
     EnumUtils.register(ObjectStatus.class);

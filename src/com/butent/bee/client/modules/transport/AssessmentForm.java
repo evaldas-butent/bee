@@ -52,6 +52,7 @@ import com.butent.bee.client.grid.cell.AbstractCell;
 import com.butent.bee.client.grid.column.AbstractColumn;
 import com.butent.bee.client.layout.TabbedPages;
 import com.butent.bee.client.layout.TabbedPages.SelectionOrigin;
+import com.butent.bee.client.modules.classifiers.ClassifierUtils;
 import com.butent.bee.client.modules.mail.NewMailMessage;
 import com.butent.bee.client.modules.trade.TotalRenderer;
 import com.butent.bee.client.presenter.GridPresenter;
@@ -79,6 +80,7 @@ import com.butent.bee.client.widget.InlineLabel;
 import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.client.widget.InputBoolean;
 import com.butent.bee.client.widget.ListBox;
+import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -284,7 +286,7 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
                       String oldLog = Data.getString(view, row, COL_ASSESSMENT_LOG);
 
                       Queries.update(view, row.getId(), row.getVersion(), Data.getColumns(view,
-                              Lists.newArrayList(COL_ASSESSMENT_STATUS, COL_ASSESSMENT_LOG)),
+                          Lists.newArrayList(COL_ASSESSMENT_STATUS, COL_ASSESSMENT_LOG)),
                           Lists.newArrayList(BeeUtils.toString(status.ordinal()), oldLog),
                           Lists.newArrayList(BeeUtils.toString(AssessmentStatus.NEW.ordinal()),
                               buildLog(loc.trAssessmentRejection(), value, oldLog)), null,
@@ -1128,6 +1130,25 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
     }
   }
 
+  @Override
+  protected void getReportData(Consumer<BeeRowSet[]> dataConsumer) {
+    SelfServiceUtils.getCargos(Filter.compareId(getLongValue(COL_CARGO)),
+        cargoInfo -> dataConsumer.accept(new BeeRowSet[] {cargoInfo}));
+  }
+
+  @Override
+  protected void getReportParameters(Consumer<Map<String, String>> parametersConsumer) {
+    Map<String, Long> companies = new HashMap<>();
+    companies.put(COL_CUSTOMER, getLongValue(COL_CUSTOMER));
+    companies.put(COL_COMPANY, BeeKeeper.getUser().getCompany());
+
+    super.getReportParameters(defaultParameters ->
+        ClassifierUtils.getCompaniesInfo(companies, companiesInfo -> {
+          defaultParameters.putAll(companiesInfo);
+          parametersConsumer.accept(defaultParameters);
+        }));
+  }
+
   private static String buildLog(String caption, String value, String oldLog) {
     return BeeUtils.join("\n\n",
         TimeUtils.nowMinutes().toCompactString() + " " + caption + "\n" + value, oldLog);
@@ -1318,7 +1339,7 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
                       }
                     }
                     NewMailMessage.create(BeeUtils.notEmpty(form.getStringValue("PersonEmail"),
-                            form.getStringValue("CustomerEmail")), null,
+                        form.getStringValue("CustomerEmail")), null,
                         Document.get().createBRElement().getString() + table.toString(),
                         null, null);
                   }

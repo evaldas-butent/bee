@@ -8,8 +8,8 @@
     <String name="TcCode" precision="2" notNull="true" unique="true" label="=code" />
     <String name="TcName" precision="100" label="=name" />
     
-    <Boolean name="WsPlanned" label="=workSchedulePlanned" />
-    <Boolean name="WsActual" defValue="true" label="=workScheduleActual" />
+    <Boolean name="WsPlanned" label="=workSchedulePlannedShort" />
+    <Boolean name="WsActual" defValue="true" label="=workScheduleActualShort" />
 
     <String name="Background" precision="100" label="=backgroundColor" />
     <String name="Foreground" precision="100" label="=foregroundColor" />

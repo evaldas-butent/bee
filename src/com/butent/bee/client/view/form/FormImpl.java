@@ -520,7 +520,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
       if (event != null) {
         event.cancel();
       }
-      return checkForUpdate(false);
+      return checkForUpdate(true);
     }
   }
 
@@ -532,7 +532,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
       if (event != null) {
         event.cancel();
       }
-      return checkForUpdate(false);
+      return checkForUpdate(true);
     }
   }
 
@@ -655,6 +655,15 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
     }
 
     setAdding(false);
+  }
+
+  @Override
+  public void focus() {
+    if (BeeUtils.isEmpty(getTabOrder())) {
+      UiHelper.focus(asWidget());
+    } else {
+      UiHelper.focus(getWidgetById(getTabOrder().get(0).getWidgetId()));
+    }
   }
 
   @Override
@@ -2199,19 +2208,14 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
       getFormInterceptor().afterRefresh(this, getActiveRow());
     }
 
-    String message = BeeConst.STRING_EMPTY;
-    if (showRowId() && getViewPresenter() != null) {
-      long rowId = (getActiveRow() == null) ? BeeConst.UNDEF : getActiveRow().getId();
-      message = DataUtils.isId(rowId) ? BeeUtils.bracket(rowId) : BeeConst.STRING_EMPTY;
-    }
+    if (getViewPresenter() != null && getViewPresenter().getHeader() != null) {
+      if (showRowId()) {
+        getViewPresenter().getHeader().showRowId(getActiveRow());
+      }
 
-    if (getActiveRow() != null && getRowMessage() != null) {
-      getRowMessage().update(getActiveRow());
-      message = BeeUtils.joinWords(message, getRowMessage().evaluate());
-    }
-
-    if (!BeeUtils.isEmpty(message) && getViewPresenter() != null) {
-      getViewPresenter().getHeader().setMessage(message);
+      if (getRowMessage() != null) {
+        getViewPresenter().getHeader().showRowMessage(getRowMessage(), getActiveRow());
+      }
     }
   }
 

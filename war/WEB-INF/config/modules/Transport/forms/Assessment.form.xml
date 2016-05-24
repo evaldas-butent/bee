@@ -14,7 +14,7 @@
   name="Assessment" viewName="Assessments" showRowId="true"
         width="70" widthUnit="%" height="80" heightUnit="%"
   >
-  <f:properties reports="PrintOrderLT, PrintOrderEN, PrintOrderRU" />
+  <f:properties jasperReports="OrderContract" reports="PrintOrderLT, PrintOrderEN, PrintOrderRU" />
 
   <FlowPanel style="padding: 10px 2px 2px 10px; height:calc(100% - 15px);"
              class="flexBox-vertical bee-tr-assessment-form">
@@ -50,7 +50,8 @@
         <Label for="Manager" class="bee-required" style="&labelLeft;" />
         <DataSelector name="Manager" source="Manager" style="&input; width:200px;" caching="local"
           viewName="AssessmentExecutors" choiceColumns="LastName FirstName DepartmentName"
-          editSource="CompanyPerson" newRowEnabled="false" required="true" />
+          editSource="CompanyPerson" renderColumns="ManagerFirstName ManagerLastName"
+                      newRowEnabled="false" required="true" />
         <Label for="DepartmentName" style="&inline; margin:0 10px 0 10px; padding-top:1px;" />
         <TextLabel source="DepartmentName" style="&inline; padding-top:1px; font-weight:bold;" />
       </FlowPanel>

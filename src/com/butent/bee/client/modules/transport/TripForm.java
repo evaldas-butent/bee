@@ -95,6 +95,10 @@ public class TripForm extends PrintFormInterceptor {
         case TBL_TRIP_ROUTES:
           ((ChildGrid) widget).setGridInterceptor(new TripRoutesGrid());
           break;
+
+        case TBL_TRIP_FUEL_COSTS:
+          ((ChildGrid) widget).setGridInterceptor(new TripFuelCostsGrid());
+          break;
       }
     } else if (BeeUtils.same(name, COL_TRIP_ROUTE) && widget instanceof HasClickHandlers) {
       ((HasClickHandlers) widget).addClickHandler(clickEvent -> {
