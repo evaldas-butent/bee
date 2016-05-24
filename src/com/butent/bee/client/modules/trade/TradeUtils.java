@@ -14,21 +14,33 @@ import static com.butent.bee.shared.modules.administration.AdministrationConstan
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.ClientDefaults;
+import com.butent.bee.client.data.Data;
+import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.data.RowUpdateCallback;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.modules.administration.AdministrationKeeper;
 import com.butent.bee.client.render.ProvidesGridColumnRenderer;
 import com.butent.bee.client.render.RendererFactory;
 import com.butent.bee.client.utils.XmlUtils;
+import com.butent.bee.client.widget.InputNumber;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
+import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.modules.trade.Totalizer;
 import com.butent.bee.shared.utils.BeeUtils;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public final class TradeUtils {
 
@@ -47,6 +59,53 @@ public final class TradeUtils {
   private static final String COL_RATE_CURRENCY = COL_CURRENCY_RATE + COL_CURRENCY;
 
   private static ProvidesGridColumnRenderer totalRenderer;
+
+  public static void amountEntry(IsRow row, String viewName) {
+    Totalizer totalizer = new Totalizer(Data.getColumns(viewName));
+
+    InputNumber input = new InputNumber();
+    Double total = totalizer.getTotal(row);
+
+    if (BeeUtils.isDouble(total)) {
+      input.setValue(BeeUtils.round(total, 2));
+    }
+    Global.inputWidget(Localized.dictionary().amount(), input, () -> {
+      Double amount = input.getNumber();
+      String price = null;
+
+      if (BeeUtils.isDouble(amount)) {
+        if (!totalizer.isVatInclusive(row)) {
+          row.clearCell(Data.getColumnIndex(viewName, COL_TRADE_VAT_PLUS));
+          amount -= BeeUtils.unbox(totalizer.getVat(row, amount));
+          row.setValue(Data.getColumnIndex(viewName, COL_TRADE_VAT_PLUS), 1);
+        }
+        Double qty = row.getDouble(Data.getColumnIndex(viewName, COL_TRADE_ITEM_QUANTITY));
+        price = BeeUtils.toString(amount / (BeeUtils.isZero(qty) ? 1 : qty), 5);
+      }
+      List<BeeColumn> columns = new ArrayList<>();
+      List<String> oldValues = new ArrayList<>();
+      List<String> newValues = new ArrayList<>();
+
+      columns.add(DataUtils.getColumn(COL_TRADE_ITEM_PRICE, Data.getColumns(viewName)));
+      oldValues.add(row.getString(Data.getColumnIndex(viewName, COL_TRADE_ITEM_PRICE)));
+      newValues.add(price);
+
+      String oldCurrency = row.getString(Data.getColumnIndex(viewName, COL_TRADE_CURRENCY));
+      String newCurrency = null;
+
+      if (!BeeUtils.isEmpty(price)) {
+        newCurrency = BeeUtils.notEmpty(oldCurrency,
+            DataUtils.isId(ClientDefaults.getCurrency())
+                ? BeeUtils.toString(ClientDefaults.getCurrency()) : null);
+      }
+      columns.add(DataUtils.getColumn(COL_TRADE_CURRENCY, Data.getColumns(viewName)));
+      oldValues.add(oldCurrency);
+      newValues.add(newCurrency);
+
+      Queries.update(viewName, row.getId(), row.getVersion(), columns, oldValues, newValues,
+          null, new RowUpdateCallback(viewName));
+    });
+  }
 
   public static void getDocumentItems(String viewName, long tradeId, String currencyName,
       final HtmlTable table) {
