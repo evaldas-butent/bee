@@ -45,6 +45,8 @@
     <DataColumn name="Logistics" />
     <RelColumn name="ShippingTerm" />
 
+    <DataColumn name="CargoNotes" />
+
     <DataColumn name="CustomsBrokerage" />
     <DataColumn name="FreightInsurance" />
 
@@ -62,8 +64,6 @@
     <RelColumn name="ValueCurrency" />
 
     <RelColumn name="Manager" renderColumns="ManagerFirstName ManagerLastName" />
-
-    <DataColumn name="Notes" />
     <DataColumn name="LossReason" />
     <DataColumn name="Host" />
     <DataColumn name="Agent" />

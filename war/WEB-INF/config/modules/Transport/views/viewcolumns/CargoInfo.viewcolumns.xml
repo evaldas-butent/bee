@@ -50,5 +50,5 @@
   <SimpleColumn name="CustomsBrokerage" />
   <SimpleColumn name="FreightInsurance" />
 
-  <SimpleColumn name="Notes" />
+  <SimpleColumn name="Notes" alias="CargoNotes" />
 </Columns>

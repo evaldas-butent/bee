@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2016-05-23T11:04:01 -->
+<!-- 2016-05-24T15:32:04 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="OrderContract" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="30" bottomMargin="30" isSummaryWithPageHeaderAndFooter="true" uuid="b0daefcc-9db0-4ed1-b9d6-49143492176f">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<import value="com.butent.bee.server.Invocation"/>
@@ -51,8 +51,6 @@
 	<parameter name="OrderNo" class="java.lang.String" isForPrompting="false"/>
 	<parameter name="Date" class="java.lang.String" isForPrompting="false"/>
 	<parameter name="Notes" class="java.lang.String" isForPrompting="false"/>
-	<parameter name="Amount" class="java.lang.String" isForPrompting="false"/>
-	<parameter name="Currency" class="java.lang.String" isForPrompting="false"/>
 	<parameter name="ExpeditionType" class="java.lang.String" isForPrompting="false"/>
 	<parameter name="ShippingTermName" class="java.lang.String" isForPrompting="false"/>
 	<parameter name="Driver" class="java.lang.String" isForPrompting="false"/>
@@ -95,7 +93,7 @@
 	<field name="QuantityUnitName" class="java.lang.String"/>
 	<field name="Volume" class="java.lang.Number"/>
 	<field name="VolumeUnitName" class="java.lang.String"/>
-	<field name="Notes" class="java.lang.String"/>
+	<field name="CargoNotes" class="java.lang.String"/>
 	<field name="FreightInsurance" class="java.lang.Boolean"/>
 	<field name="CustomsBrokerage" class="java.lang.Boolean"/>
 	<field name="Value" class="java.lang.Number"/>
@@ -749,11 +747,11 @@
 					<textElement>
 						<font size="7" isBold="false"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{Notes}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{CargoNotes}]]></textFieldExpression>
 				</textField>
 				<staticText>
 					<reportElement positionType="Float" x="0" y="50" width="110" height="10" isRemoveLineWhenBlank="true" uuid="adb0181a-5c9e-4b44-8029-a7de5d871831">
-						<printWhenExpression><![CDATA[!BeeUtils.isEmpty($F{Notes})]]></printWhenExpression>
+						<printWhenExpression><![CDATA[!BeeUtils.isEmpty($F{CargoNotes})]]></printWhenExpression>
 					</reportElement>
 					<textElement>
 						<font size="7" isBold="false"/>

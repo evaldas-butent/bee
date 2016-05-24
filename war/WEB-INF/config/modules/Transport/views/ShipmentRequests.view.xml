@@ -101,7 +101,7 @@
       </SimpleJoin>
     </SimpleJoin>
 
-    <SimpleColumn name="Notes" alias="RequestNotes" />
+    <SimpleColumn name="Notes" />
     <SimpleColumn name="Vehicle" />
     <SimpleColumn name="Driver" />
 

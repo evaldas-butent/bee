@@ -75,22 +75,22 @@ public final class TradeUtils {
 
       if (BeeUtils.isDouble(amount)) {
         if (!totalizer.isVatInclusive(row)) {
-          row.clearCell(Data.getColumnIndex(viewName, COL_TRADE_VAT_PLUS));
+          Data.clearCell(viewName, row, COL_TRADE_VAT_PLUS);
           amount -= BeeUtils.unbox(totalizer.getVat(row, amount));
-          row.setValue(Data.getColumnIndex(viewName, COL_TRADE_VAT_PLUS), 1);
+          Data.setValue(viewName, row, COL_TRADE_VAT_PLUS, 1);
         }
-        Double qty = row.getDouble(Data.getColumnIndex(viewName, COL_TRADE_ITEM_QUANTITY));
+        Double qty = Data.getDouble(viewName, row, COL_TRADE_ITEM_QUANTITY);
         price = BeeUtils.toString(amount / (BeeUtils.isZero(qty) ? 1 : qty), 5);
       }
       List<BeeColumn> columns = new ArrayList<>();
       List<String> oldValues = new ArrayList<>();
       List<String> newValues = new ArrayList<>();
 
-      columns.add(DataUtils.getColumn(COL_TRADE_ITEM_PRICE, Data.getColumns(viewName)));
-      oldValues.add(row.getString(Data.getColumnIndex(viewName, COL_TRADE_ITEM_PRICE)));
+      columns.add(Data.getColumn(viewName, COL_TRADE_ITEM_PRICE));
+      oldValues.add(Data.getString(viewName, row, COL_TRADE_ITEM_PRICE));
       newValues.add(price);
 
-      String oldCurrency = row.getString(Data.getColumnIndex(viewName, COL_TRADE_CURRENCY));
+      String oldCurrency = Data.getString(viewName, row, COL_TRADE_CURRENCY);
       String newCurrency = null;
 
       if (!BeeUtils.isEmpty(price)) {
@@ -98,7 +98,7 @@ public final class TradeUtils {
             DataUtils.isId(ClientDefaults.getCurrency())
                 ? BeeUtils.toString(ClientDefaults.getCurrency()) : null);
       }
-      columns.add(DataUtils.getColumn(COL_TRADE_CURRENCY, Data.getColumns(viewName)));
+      columns.add(Data.getColumn(viewName, COL_TRADE_CURRENCY));
       oldValues.add(oldCurrency);
       newValues.add(newCurrency);
 
