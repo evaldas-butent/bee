@@ -113,7 +113,12 @@ public class MailReport extends ReportInterceptor {
       args.add(BooleanValue.S_TRUE);
     }
 
-    final Filter filter = Filter.custom(MailConstants.FILTER_MAIL_REPORT, args);
+    Filter flt = Filter.custom(MailConstants.FILTER_MAIL_REPORT, args);
+    if (!BeeUtils.isEmpty(mailTo)) {
+      flt = Filter.and(Filter.contains(MailConstants.COL_RECIPIENT_EMAIL, mailTo), flt);
+    }
+
+    final Filter filter = flt;
 
     Queries.getRowCount(MailConstants.VIEW_MAIL_REPORTS, filter, new Queries.IntCallback() {
       @Override
