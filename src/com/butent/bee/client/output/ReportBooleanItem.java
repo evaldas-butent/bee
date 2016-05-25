@@ -1,12 +1,9 @@
 package com.butent.bee.client.output;
 
-import com.google.gwt.event.logical.shared.SelectionEvent;
-import com.google.gwt.event.logical.shared.SelectionHandler;
-
 import com.butent.bee.client.composite.TabBar;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
-import com.butent.bee.shared.i18n.LocalizableConstants;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.Orientation;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -20,8 +17,8 @@ public class ReportBooleanItem extends ReportItem {
   private TabBar filterWidget;
   private Boolean filter;
 
-  public ReportBooleanItem(String name, String caption) {
-    super(name, caption);
+  public ReportBooleanItem(String expression, String caption) {
+    super(expression, caption);
   }
 
   @Override
@@ -43,12 +40,12 @@ public class ReportBooleanItem extends ReportItem {
   @Override
   public ReportValue evaluate(SimpleRow row) {
     String display;
-    boolean on = BeeUtils.unbox(row.getBoolean(getName()));
+    boolean on = BeeUtils.unbox(row.getBoolean(getExpression()));
 
     if (on) {
-      display = Localized.getConstants().yes();
+      display = Localized.dictionary().yes();
     } else {
-      display = Localized.getConstants().no();
+      display = Localized.dictionary().no();
     }
     return ReportValue.of(Boolean.toString(on)).setDisplay(display);
   }
@@ -61,19 +58,14 @@ public class ReportBooleanItem extends ReportItem {
   @Override
   public TabBar getFilterWidget() {
     if (filterWidget == null) {
-      LocalizableConstants loc = Localized.getConstants();
+      Dictionary loc = Localized.dictionary();
       filterWidget = new TabBar(Orientation.HORIZONTAL);
       filterWidget.addStyleName(getStyle() + "-filter");
 
       filterWidget.addItems(Arrays.asList(loc.noMatter(), loc.yes(), loc.no()));
 
-      filterWidget.addSelectionHandler(new SelectionHandler<Integer>() {
-        @Override
-        public void onSelection(SelectionEvent<Integer> event) {
-          filter = event.getSelectedItem() == 0
-              ? null : BeeUtils.toBoolean(event.getSelectedItem());
-        }
-      });
+      filterWidget.addSelectionHandler(event -> filter = event.getSelectedItem() == 0
+          ? null : BeeUtils.toBoolean(event.getSelectedItem()));
       filterWidget.selectTab(filter == null ? 0 : (filter ? 1 : 2));
     }
     return filterWidget;
@@ -102,9 +94,9 @@ public class ReportBooleanItem extends ReportItem {
 
   @Override
   public boolean validate(SimpleRow row) {
-    if (filter == null || !row.getRowSet().hasColumn(getName())) {
+    if (filter == null || !row.getRowSet().hasColumn(getExpression())) {
       return true;
     }
-    return BeeUtils.unbox(row.getBoolean(getName())) == filter;
+    return BeeUtils.unbox(row.getBoolean(getExpression())) == filter;
   }
 }

@@ -1,10 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-  name="Folders" source="Folders"
-  >
+      name="Folders" source="Folders" filter="ID != InboxFolder"
+    >
   <Columns>
+    <IdColumn name="ID" />
     <SimpleColumn name="Account" />
+    <SimpleJoin name="Account" joinType="INNER">
+      <HiddenColumn name="InboxFolder" />
+    </SimpleJoin>
     <SimpleColumn name="Name" />
 
     <SimpleJoin name="Parent" joinType="LEFT">
@@ -16,4 +20,3 @@
     <OrderBy column="Name" />
   </Order>
 </View>
- 

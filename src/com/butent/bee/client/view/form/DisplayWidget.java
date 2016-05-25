@@ -5,6 +5,7 @@ import com.google.gwt.media.client.Video;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.ui.Widget;
 
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.composite.FileGroup;
 import com.butent.bee.client.composite.TabBar;
@@ -65,7 +66,8 @@ public class DisplayWidget {
         return row.getString(dataIndex);
       }
       if (hasRowProperty()) {
-        return row.getProperty(widgetDescription.getRowProperty());
+        Long userId = BeeKeeper.getUser().idOrNull(widgetDescription.getUserMode());
+        return row.getProperty(widgetDescription.getRowProperty(), userId);
       }
     }
 

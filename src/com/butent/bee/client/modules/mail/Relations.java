@@ -30,7 +30,9 @@ import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.event.logical.ParentRowEvent;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.event.logical.SummaryChangeEvent;
+import com.butent.bee.client.grid.CellKind;
 import com.butent.bee.client.grid.HtmlTable;
+import com.butent.bee.client.grid.TableKind;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.render.RendererFactory;
 import com.butent.bee.client.ui.FormWidget;
@@ -46,6 +48,7 @@ import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.css.values.TextAlign;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
@@ -101,6 +104,8 @@ public class Relations extends Flow implements Editor, ClickHandler, SelectorEve
   private final Map<MultiSelector, HandlerRegistration> registry = new HashMap<>();
   private final Set<String> blockedRelations = new HashSet<>();
 
+  private static final String RELATIONS_PLUS_ADD_RELATION = "bee-Relations-newRel";
+
   private Long id;
   private SelectorEvent.Handler handler;
 
@@ -113,8 +118,10 @@ public class Relations extends Flow implements Editor, ClickHandler, SelectorEve
     this.view = Assert.notEmpty(info.getRelation(column));
     this.inline = inline;
 
+    table.setKind(TableKind.CONTROLS);
+
     if (inline) {
-      FaLabel add = new FaLabel(FontAwesome.PLUS);
+      FaLabel add = new FaLabel(FontAwesome.PLUS_CIRCLE, RELATIONS_PLUS_ADD_RELATION);
 
       add.addClickHandler(new ClickHandler() {
         @Override
@@ -123,16 +130,19 @@ public class Relations extends Flow implements Editor, ClickHandler, SelectorEve
         }
       });
       table.setWidget(0, 0, add);
+      table.getCellFormatter().setHorizontalAlignment(0, 0, TextAlign.CENTER);
       add(table);
 
     } else {
       FaLabel face = new FaLabel(FontAwesome.CHAIN);
-      face.setTitle(Localized.getConstants().relations());
+      face.setTitle(Localized.dictionary().relations());
       face.addClickHandler(this);
       add(face);
       table.setWidth("600px");
     }
-    table.setColumnCellStyles(0, "text-align:right; white-space:nowrap;");
+
+    table.setColumnCellKind(0, CellKind.LABEL);
+    table.setColumnCellStyles(0, "white-space:nowrap; vertical-align:middle; padding-right:1em;");
     table.setColumnCellStyles(1, "width:100%");
 
     Map<String, String> viewMap = new HashMap<>();
@@ -209,7 +219,7 @@ public class Relations extends Flow implements Editor, ClickHandler, SelectorEve
   @Override
   public Collection<RowChildren> getChildrenForInsert() {
     if (inline) {
-      return getRowChildren(true);
+      return getRowChildren(false);
     }
     return null;
   }
@@ -259,7 +269,7 @@ public class Relations extends Flow implements Editor, ClickHandler, SelectorEve
     for (Entry<String, MultiSelector> entry : widgetMap.entrySet()) {
       MultiSelector multi = entry.getValue();
 
-      if ((multi != null && multi.isValueChanged()) || (!all && multi != null)) {
+      if (multi != null && (all || multi.isValueChanged())) {
         relations.add(RowChildren.create(STORAGE, column, id, entry.getKey(),
             DataUtils.buildIdList(multi.getIds())));
       }
@@ -348,7 +358,7 @@ public class Relations extends Flow implements Editor, ClickHandler, SelectorEve
     }
     refresh();
 
-    Global.inputWidget(Localized.getConstants().relations(), table, new InputCallback() {
+    Global.inputWidget(Localized.dictionary().relations(), table, new InputCallback() {
       @Override
       public void onAdd() {
         addRelations();
@@ -357,9 +367,9 @@ public class Relations extends Flow implements Editor, ClickHandler, SelectorEve
       @Override
       public void onClose(final CloseCallback closeCallback) {
         if (isValueChanged()) {
-          Global.decide(Localized.getConstants().relations(),
-              Lists.newArrayList(Localized.getConstants().changedValues() + BeeConst.CHAR_SPACE
-                  + getLabel(), Localized.getConstants().saveChanges()),
+          Global.decide(Localized.dictionary().relations(),
+              Lists.newArrayList(Localized.dictionary().changedValues() + BeeConst.CHAR_SPACE
+                  + getLabel(), Localized.dictionary().saveChanges()),
               new DecisionCallback() {
                 @Override
                 public void onConfirm() {
@@ -372,13 +382,13 @@ public class Relations extends Flow implements Editor, ClickHandler, SelectorEve
                 }
               }, DialogConstants.DECISION_YES);
         } else {
-          super.onClose(closeCallback);
+          InputCallback.super.onClose(closeCallback);
         }
       }
 
       @Override
       public void onSuccess() {
-        Collection<RowChildren> relations = getRowChildren(true);
+        Collection<RowChildren> relations = getRowChildren(false);
 
         if (!BeeUtils.isEmpty(relations)) {
           Queries.updateChildren(view, id, relations, new RowCallback() {
@@ -613,14 +623,14 @@ public class Relations extends Flow implements Editor, ClickHandler, SelectorEve
       }
     }
     if (listBox.isEmpty()) {
-      Global.showInfo(Localized.getConstants().noData());
+      Global.showInfo(Localized.dictionary().noData());
       return;
     } else if (listBox.getItemCount() > 30) {
       listBox.setVisibleItemCount(30);
     } else {
       listBox.setAllVisible();
     }
-    Global.inputWidget(Localized.getConstants().newRelation(), listBox, new InputCallback() {
+    Global.inputWidget(Localized.dictionary().newRelation(), listBox, new InputCallback() {
       @Override
       public void onSuccess() {
         for (int i = 0; i < listBox.getItemCount(); i++) {

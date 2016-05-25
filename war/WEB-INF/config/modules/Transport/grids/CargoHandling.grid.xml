@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
-        xmlns:ui="http://www.butent.com/ui"
+        xmlns:xi="http://www.w3.org/2001/XInclude"
 
         name="CargoHandling" viewName="CargoHandling" caption="=cargoHandlingPlaces"
         newRowForm="CargoPlace" newRowCaption="=trNewCargoPlace"
@@ -9,23 +9,9 @@
     >
   <g:body height="50" />
 
+  <xi:include href="columns/Handling.columns.xml" />
+
   <g:columns>
-    <CalcColumn name="Loading" type="string" cellType="html"
-                caption="=loading" minWidth="140" flexBasis="120">
-      <style>
-        <bodyStyle>
-          <ui:inline>overflow-y:auto;</ui:inline>
-        </bodyStyle>
-      </style>
-    </CalcColumn>
-    <CalcColumn name="Unloading" type="string" cellType="html"
-                caption="=unloading" minWidth="140" flexBasis="120">
-      <style>
-        <bodyStyle>
-          <ui:inline>overflow-y:auto;</ui:inline>
-        </bodyStyle>
-      </style>
-    </CalcColumn>
-    <DataColumn name="Notes" editInPlace="true" visible="false" />
+    <DataColumn name="HandlingNotes" editInPlace="true" visible="false" />
   </g:columns>
 </g:Grid>

@@ -39,6 +39,9 @@ public final class BeeConst {
   public static final String NO = "no";
   public static final String YES = "yes";
 
+  public static final String OFF = "off";
+  public static final String ON = "on";
+
   public static final String UNKNOWN = "unknown";
   public static final String EMPTY = "empty";
   public static final String DEFAULT = "default";
@@ -55,6 +58,7 @@ public final class BeeConst {
   public static final String DEFAULT_PROGRESS_SEPARATOR = "/";
 
   public static final String ELLIPSIS = "...";
+  public static final String DIGITS = "0123456789";
 
   public static final String STRING_EMPTY = "";
   public static final String STRING_SPACE = " ";
@@ -70,6 +74,7 @@ public final class BeeConst {
   public static final String STRING_EQ = "=";
   public static final String STRING_LT = "<";
   public static final String STRING_GT = ">";
+  public static final String STRING_CR = "\r";
   public static final String STRING_EOL = "\n";
   public static final String STRING_MINUS = "-";
   public static final String STRING_PLUS = "+";
@@ -266,7 +271,8 @@ public final class BeeConst {
       return isTrue(s.trim().charAt(0));
     } else {
       return s.trim().toLowerCase().equals(STRING_TRUE.toLowerCase())
-          || s.trim().toLowerCase().equals(YES.toLowerCase());
+          || s.trim().toLowerCase().equals(YES.toLowerCase())
+          || s.trim().toLowerCase().equals(ON.toLowerCase());
     }
   }
 

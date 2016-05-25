@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
- 
+
   name="ShippingTerms" viewName="ShippingTerms" caption="=trShippingTerms"
   >
   <g:columns>
     <DataColumn name="Name" minWidth="50" visible="true" />
     <DataColumn name="Description" minWidth="200" />
-    <DataColumn name="SelfService" />
+    <DataColumn name="SelfService" module="Transport.SelfService" />
   </g:columns>
 </g:Grid>

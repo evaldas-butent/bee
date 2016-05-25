@@ -21,7 +21,6 @@ import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.DataUtils;
-import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.service.ServiceConstants;
 import com.butent.bee.shared.modules.service.ServiceConstants.ServiceFilterDataType;
@@ -43,7 +42,6 @@ final class SvcCalendarFilterHelper {
   static final String STYLE_PREFIX = "bee-svc-calendar-filter-";
   static final String STYLE_DATA_PREFIX = STYLE_PREFIX + "data-";
 
-  private static final LocalizableConstants localizedConstants = Localized.getConstants();
   private static final String STYLE_DIALOG = STYLE_PREFIX + "dialog";
   private static final String STYLE_CONTENT = STYLE_PREFIX + "content";
   private static final String STYLE_ACTIONS_GROUP = STYLE_PREFIX + "actionsGroup";
@@ -67,19 +65,19 @@ final class SvcCalendarFilterHelper {
       final DialogCallback callback) {
 
     if (objects == null) {
-      BeeKeeper.getScreen().notifyWarning(localizedConstants.tooLittleData());
+      BeeKeeper.getScreen().notifyWarning(Localized.dictionary().tooLittleData());
       return;
     }
     if (BeeUtils.isEmpty(objects.values())) {
-      BeeKeeper.getScreen().notifyWarning(localizedConstants.tooLittleData());
+      BeeKeeper.getScreen().notifyWarning(Localized.dictionary().tooLittleData());
       return;
     }
 
-    DialogBox filterDialog = DialogBox.create(Localized.getConstants().filter(), STYLE_DIALOG);
+    DialogBox filterDialog = DialogBox.create(Localized.dictionary().filter(), STYLE_DIALOG);
     Flow filterContent = new Flow();
     Flow actions = new Flow();
-    Button filterButton = new Button(localizedConstants.doFilter());
-    Button clearButton = new Button(localizedConstants.clear());
+    Button filterButton = new Button(Localized.dictionary().doFilter());
+    Button clearButton = new Button(Localized.dictionary().clear());
     final Split dataContainer = new Split(DATA_SPLITTER_WIDTH);
     Simple dataWrapper = new Simple(dataContainer);
 
@@ -104,8 +102,6 @@ final class SvcCalendarFilterHelper {
     int contentWidth = dataWrapperWidth;
     int contentHeight = dataWrapperHeigh + COMAND_GROUP_HEIGHT;
 
-
-
     filterDialog.setHideOnEscape(true);
     filterDialog.setAnimationEnabled(true);
 
@@ -126,7 +122,6 @@ final class SvcCalendarFilterHelper {
       for (ServiceObjectWrapper obj : objects.values()) {
         obj.saveState(type);
       }
-
 
       Map<Long, ServiceObjectWrapper> typedObjects;
 

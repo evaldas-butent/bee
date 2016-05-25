@@ -1,12 +1,8 @@
 package com.butent.bee.shared.data.filter;
 
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.data.IsColumn;
-import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
-
-import java.util.List;
 
 public class ColumnInFilter extends Filter {
 
@@ -85,12 +81,6 @@ public class ColumnInFilter extends Filter {
   @Override
   public boolean involvesColumn(String colName) {
     return BeeUtils.same(colName, column);
-  }
-
-  @Override
-  public boolean isMatch(List<? extends IsColumn> columns, IsRow row) {
-    Assert.unsupported();
-    return false;
   }
 
   @Override

@@ -1,17 +1,17 @@
 package com.butent.bee.client.modules.service;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 
 import static com.butent.bee.shared.modules.service.ServiceConstants.*;
 
 import com.butent.bee.client.data.Data;
+import com.butent.bee.client.data.Provider;
 import com.butent.bee.client.event.logical.ParentRowEvent;
 import com.butent.bee.client.event.logical.RenderingEvent;
 import com.butent.bee.client.presenter.GridPresenter;
-import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.style.StyleUtils;
+import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.form.FormView;
@@ -25,7 +25,6 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.view.DataInfo;
-import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.service.ServiceConstants.SvcObjectStatus;
 import com.butent.bee.shared.modules.trade.TradeConstants;
@@ -36,10 +35,6 @@ import java.util.Collection;
 import java.util.Map;
 
 public class ObjectInvoicesGrid extends AbstractGridInterceptor {
-
-  private static final String FILTER_KEY = "f1";
-  private static final LocalizableConstants localizableConstants = Localized.getConstants();
-
   private final String idColumnName;
 
   private boolean checked;
@@ -104,7 +99,7 @@ public class ObjectInvoicesGrid extends AbstractGridInterceptor {
 
   @Override
   public Map<String, Filter> getInitialParentFilters(Collection<UiOption> uiOptions) {
-    return ImmutableMap.of(FILTER_KEY, getFilter(getPendingId()));
+    return Provider.createDefaultParentFilters(getFilter(getPendingId()));
   }
 
   @Override
@@ -165,7 +160,7 @@ public class ObjectInvoicesGrid extends AbstractGridInterceptor {
   private void maybeRefresh(GridPresenter presenter, Long parentId) {
     if (presenter != null) {
       Filter filter = getFilter(parentId);
-      boolean changed = presenter.getDataProvider().setParentFilter(FILTER_KEY, filter);
+      boolean changed = presenter.getDataProvider().setDefaultParentFilter(filter);
 
       if (changed) {
         presenter.handleAction(Action.REFRESH);
@@ -181,7 +176,7 @@ public class ObjectInvoicesGrid extends AbstractGridInterceptor {
     HeaderView header = presenter.getHeader();
     header.clearCommandPanel();
 
-    showAllCheckBox = new CheckBox(localizableConstants.svcActionShowFromProjects());
+    showAllCheckBox = new CheckBox(Localized.dictionary().svcActionShowFromProjects());
 
     header.addCommandItem(showAllCheckBox);
     showAllCheckBox.setChecked(isChecked());

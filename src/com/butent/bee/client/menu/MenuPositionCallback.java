@@ -45,7 +45,10 @@ public class MenuPositionCallback implements PositionCallback {
       if (x <= 0) {
         x = parent.getAbsoluteLeft();
       }
-      y = parent.getAbsoluteTop() + parent.getOffsetHeight() + 2;
+      y = item.getAbsoluteBottom() + 5;
+      if (y <= 0) {
+        y = parent.getAbsoluteBottom();
+      }
     }
 
     x = BeeUtils.fitStart(x, offsetWidth, DomUtils.getClientWidth());

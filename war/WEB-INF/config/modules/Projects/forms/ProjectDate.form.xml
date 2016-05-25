@@ -8,7 +8,7 @@
   name="ProjectDate" viewName="ProjectDates"
   caption="=prjDates" width="460" widthUnit="px" height="300" heightUnit="px" >
   <FlowPanel>
-    <Table>
+    <Table kind="controls">
 
       <row>
         <Label for="Note" style="&lbl;"  />

@@ -248,7 +248,7 @@ class NewReasonCommentForm extends AbstractFormInterceptor {
         String value = projectForm.getOldRow().getString(idx);
 
         if (BeeUtils.isEmpty(value)) {
-          value = Localized.getConstants().filterNullLabel();
+          value = Localized.dictionary().filterNullLabel();
         } else {
           value = ProjectsHelper.getDisplayValue(projectForm.getViewName(),
               projectValidator.getColumnId(), value, projectForm.getOldRow());
@@ -262,7 +262,7 @@ class NewReasonCommentForm extends AbstractFormInterceptor {
       String value = projectValidator.getNewValue();
 
       if (BeeUtils.isEmpty(value)) {
-        value = Localized.getConstants().filterNullLabel();
+        value = Localized.dictionary().filterNullLabel();
       } else {
         value = ProjectsHelper.getDisplayValue(projectForm.getViewName(),
             projectValidator.getColumnId(), value, null, new Callback<String>() {
@@ -288,8 +288,7 @@ class NewReasonCommentForm extends AbstractFormInterceptor {
     }
   }
 
-  public NewReasonCommentForm(FormView projectForm, IsRow projectRow,
-      CellValidateEvent projectValidator) {
+  NewReasonCommentForm(FormView projectForm, IsRow projectRow, CellValidateEvent projectValidator) {
     this.projectForm = projectForm;
     this.projectRow = projectRow;
     this.projectValidator = projectValidator;

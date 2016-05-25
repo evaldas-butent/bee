@@ -9,10 +9,19 @@
     <RelColumn name="Object" renderColumns="LocationName" flexGrow="1" visible="true" />
     <DataColumn name="ObjectCompanyName" label="=company" flexGrow="1" />
 
+    <RelColumn name="SubstituteFor" renderColumns="ForFirstName ForLastName"
+      choiceColumns="FirstName LastName CompanyName"
+      flexGrow="1" visible="true" />
+
     <DataColumn name="DateFrom" />
     <DataColumn name="DateUntil" />
 
-    <DataColumn name="Wage" visible="true" />
+    <DataColumn name="Fund" visible="true">
+      <editor type="number" currencySource="Currency" />
+    </DataColumn>
+    <DataColumn name="Wage" visible="true">
+      <editor type="number" currencySource="Currency" />
+    </DataColumn>
     <RelColumn name="Currency" />
 
     <DataColumn name="Note" flexGrow="1" />

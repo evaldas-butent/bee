@@ -7,6 +7,7 @@ import com.butent.bee.shared.HasItems;
 import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.value.Value;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -49,7 +50,7 @@ public class MapRenderer extends AbstractCellRenderer implements HasItems {
           key = parse(s, true);
           break;
         case 1:
-          value = s;
+          value = Localized.maybeTranslate(s);
           break;
       }
       index++;

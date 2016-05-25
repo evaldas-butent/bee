@@ -9,7 +9,7 @@
   name="Appointment" viewName="Appointments" caption="=calAppointment" showRowId="true">
 
   <FlowPanel class="flexBox-vertical">
-    <Table style="margin-top: 1ex; margin-bottom: 2ex;">
+    <Table kind="controls" style="margin-top: 1ex; margin-bottom: 2ex;">
        
       <col index="0" kind="label" />
       <col index="2" kind="label" />
@@ -95,7 +95,7 @@
 
       <page for="Vehicle">
         <text>=transport</text>
-        <Table style="border-collapse: collapse; margin-top: 2ex;"
+        <Table kind="controls" style="border-collapse: collapse; margin-top: 2ex;"
           cellStyle="padding: 3px; border: 1px solid #ccc;" >
           <row>
             <DataSelector source="VehicleNumber" caption="=vehicleNumber" summarize="true" />
@@ -144,6 +144,11 @@
             </cell>  
           </row>
         </Table>
+      </page>
+      <page>
+      <text>=relatedInformation</text>
+      <Relations relColumn="Appointment" inline="true"
+                 defaultRelations="Companies Persons Requests Tasks" style="margin: 0px 15px 0px 15px; min-width:300px;" />
       </page>
     </TabbedPages>
   </FlowPanel>

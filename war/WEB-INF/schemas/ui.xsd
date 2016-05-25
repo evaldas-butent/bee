@@ -140,6 +140,14 @@
     </xs:restriction>
   </xs:simpleType>
 
+  <xs:simpleType name="tableKind">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="controls" />
+      <xs:enumeration value="output" />
+      <xs:enumeration value="custom" />
+    </xs:restriction>
+  </xs:simpleType>
+
   <xs:complexType name="editor">
     <xs:sequence>
       <xs:element name="item" type="xs:normalizedString" minOccurs="0" maxOccurs="unbounded" />
@@ -155,6 +163,7 @@
     <xs:attribute name="minWidth" type="xs:positiveInteger" />
     <xs:attribute name="minHeight" type="xs:positiveInteger" />
     <xs:attribute name="onEntry" type="editorAction" />
+    <xs:attribute name="currencySource" type="tp:fieldNameType" />
     <xs:attribute name="options" type="xs:normalizedString" />
   </xs:complexType>
 
@@ -406,6 +415,7 @@
       <xs:enumeration value="vat" />
       <xs:enumeration value="discount" />
       <xs:enumeration value="branch" />
+      <xs:enumeration value="time" />
     </xs:restriction>
   </xs:simpleType>
 

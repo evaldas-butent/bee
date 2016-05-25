@@ -208,7 +208,7 @@ final class CompanyActionForm extends AbstractFormInterceptor {
   }
 
   private void createRegisterResultAction(HeaderView header, FormView form, IsRow row) {
-    Button action = new Button(Localized.getConstants().calActionRegisterResult());
+    Button action = new Button(Localized.dictionary().calActionRegisterResult());
     action.addClickHandler(getShowAndHideResultClickHandler(form, row));
     hideActionResultInput(form, row);
     header.addCommandItem(action);
@@ -442,14 +442,14 @@ final class CompanyActionForm extends AbstractFormInterceptor {
       int idxActionResult = form.getDataIndex(CalendarConstants.COL_ACTION_RESULT);
 
       if (idxActionResult < 0) {
-        form.notifySevere(Localized.getConstants().calActionResult(),
-            Localized.getConstants().valueRequired());
+        form.notifySevere(Localized.dictionary().calActionResult(),
+            Localized.dictionary().valueRequired());
 
         form.focus(CalendarConstants.COL_ACTION_RESULT);
         return false;
       } else if (BeeUtils.isEmpty(row.getString(idxActionResult))) {
-        form.notifySevere(Localized.getConstants().calActionResult(),
-            Localized.getConstants().valueRequired());
+        form.notifySevere(Localized.dictionary().calActionResult(),
+            Localized.dictionary().valueRequired());
 
         form.focus(CalendarConstants.COL_ACTION_RESULT);
         return false;
@@ -473,14 +473,14 @@ final class CompanyActionForm extends AbstractFormInterceptor {
       if (currStatus == AppointmentStatus.COMPLETED.ordinal()) {
         int idxActionResult = form.getDataIndex(CalendarConstants.COL_ACTION_RESULT);
         if (idxActionResult < 0) {
-          form.notifySevere(Localized.getConstants().calActionResult(),
-              Localized.getConstants().valueRequired());
+          form.notifySevere(Localized.dictionary().calActionResult(),
+              Localized.dictionary().valueRequired());
 
           form.focus(CalendarConstants.COL_ACTION_RESULT);
           return false;
         } else if (BeeUtils.isEmpty(row.getString(idxActionResult))) {
-          form.notifySevere(Localized.getConstants().calActionResult(),
-              Localized.getConstants().valueRequired());
+          form.notifySevere(Localized.dictionary().calActionResult(),
+              Localized.dictionary().valueRequired());
 
           form.focus(CalendarConstants.COL_ACTION_RESULT);
           return false;
@@ -546,7 +546,7 @@ final class CompanyActionForm extends AbstractFormInterceptor {
     if (from == null && to == null) {
 
       if (form != null) {
-        form.notifySevere(Localized.getConstants().calEnterPlannedStartTime());
+        form.notifySevere(Localized.dictionary().calEnterPlannedStartTime());
       }
       return false;
     }
@@ -569,7 +569,7 @@ final class CompanyActionForm extends AbstractFormInterceptor {
       } else {
         if (form != null) {
           form.notifySevere(
-              Localized.getConstants().crmFinishDateMustBeGreaterThanStart());
+              Localized.dictionary().crmFinishDateMustBeGreaterThanStart());
 
         }
         return false;

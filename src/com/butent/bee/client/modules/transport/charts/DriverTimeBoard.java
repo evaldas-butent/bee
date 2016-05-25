@@ -4,6 +4,7 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Range;
+import com.google.common.collect.Sets;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.ComplexPanel;
 import com.google.gwt.user.client.ui.HasWidgets;
@@ -15,6 +16,7 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.RowFactory;
+import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.dom.Edges;
 import com.butent.bee.client.dom.Rectangle;
 import com.butent.bee.client.dom.Rulers;
@@ -164,6 +166,10 @@ final class DriverTimeBoard extends ChartBase {
   private static final String STYLE_INACTIVE = STYLE_PREFIX + "Inactive";
   private static final String STYLE_OVERLAP = STYLE_PREFIX + "Overlap";
 
+  private static final Set<String> SETTINGS_COLUMNS_TRIGGERING_REFRESH =
+      Sets.newHashSet(COL_DTB_MIN_DATE, COL_DTB_MAX_DATE,
+          COL_DTB_TRANSPORT_GROUPS, COL_DTB_COMPLETED_TRIPS);
+
   static void open(final ViewCallback callback) {
     BeeKeeper.getRpc().makePostRequest(TransportHandler.createArgs(DATA_SERVICE),
         new ResponseCallback() {
@@ -196,7 +202,7 @@ final class DriverTimeBoard extends ChartBase {
 
   @Override
   public String getCaption() {
-    return Localized.getConstants().driverTimeBoard();
+    return Localized.dictionary().driverTimeBoard();
   }
 
   @Override
@@ -212,7 +218,7 @@ final class DriverTimeBoard extends ChartBase {
   @Override
   public void handleAction(Action action) {
     if (Action.ADD.equals(action)) {
-      RowFactory.createRow(VIEW_DRIVERS);
+      RowFactory.createRow(VIEW_DRIVERS, Modality.DISABLED);
     } else {
       super.handleAction(action);
     }
@@ -229,20 +235,28 @@ final class DriverTimeBoard extends ChartBase {
     }
 
     ChartData driverData = FilterHelper.getDataByType(selectedData, ChartData.Type.DRIVER);
+    ChartData groupData = FilterHelper.getDataByType(selectedData, ChartData.Type.DRIVER_GROUP);
 
     ChartData truckData = FilterHelper.getDataByType(selectedData, ChartData.Type.TRUCK);
     ChartData trailerData = FilterHelper.getDataByType(selectedData, ChartData.Type.TRAILER);
+
     ChartData tripData = FilterHelper.getDataByType(selectedData, ChartData.Type.TRIP);
+    ChartData tripStatusData = FilterHelper.getDataByType(selectedData, ChartData.Type.TRIP_STATUS);
+    ChartData departureData = FilterHelper.getDataByType(selectedData,
+        ChartData.Type.TRIP_DEPARTURE);
+    ChartData arrivalData = FilterHelper.getDataByType(selectedData, ChartData.Type.TRIP_ARRIVAL);
 
     CargoMatcher cargoMatcher = CargoMatcher.maybeCreate(selectedData);
     PlaceMatcher placeMatcher = PlaceMatcher.maybeCreate(selectedData);
 
     boolean freightRequired = cargoMatcher != null || placeMatcher != null;
     boolean tripRequired = freightRequired || truckData != null || trailerData != null
-        || tripData != null;
+        || tripData != null || tripStatusData != null
+        || departureData != null || arrivalData != null;
 
     for (Driver driver : drivers) {
-      boolean driverMatch = FilterHelper.matches(driverData, driver.getItemName());
+      boolean driverMatch = FilterHelper.matches(driverData, driver.getItemName())
+          && FilterHelper.matchesAny(groupData, driver.getGroups());
 
       boolean hasTrips = driverMatch && driverTrips.containsKey(driver.getId());
       if (driverMatch && !hasTrips && tripRequired) {
@@ -260,6 +274,9 @@ final class DriverTimeBoard extends ChartBase {
           }
 
           boolean tripMatch = FilterHelper.matches(tripData, tripId)
+              && FilterHelper.matches(tripStatusData, trip.getStatus())
+              && FilterHelper.matches(departureData, trip.getTripDeparture())
+              && FilterHelper.matches(arrivalData, trip.getTripArrival())
               && FilterHelper.matches(truckData, trip.getTruckId())
               && FilterHelper.matches(trailerData, trip.getTrailerId());
 
@@ -348,6 +365,16 @@ final class DriverTimeBoard extends ChartBase {
   }
 
   @Override
+  protected String getFilterDataTypesColumnName() {
+    return COL_DTB_FILTER_DATA_TYPES;
+  }
+
+  @Override
+  protected String getFiltersColumnName() {
+    return COL_DTB_FILTERS;
+  }
+
+  @Override
   protected String getFooterHeightColumnName() {
     return COL_DTB_FOOTER_HEIGHT;
   }
@@ -360,6 +387,11 @@ final class DriverTimeBoard extends ChartBase {
   @Override
   protected String getRowHeightColumnName() {
     return COL_DTB_PIXELS_PER_ROW;
+  }
+
+  @Override
+  protected Collection<String> getSettingsColumnsTriggeringRefresh() {
+    return SETTINGS_COLUMNS_TRIGGERING_REFRESH;
   }
 
   @Override
@@ -430,7 +462,8 @@ final class DriverTimeBoard extends ChartBase {
         drivers.add(new Driver(row.getId(),
             row.getString(firstNameIndex), row.getString(lastNameIndex),
             row.getDate(startDateIndex), row.getDate(endDateIndex),
-            row.getDate(experienceIndex), row.getString(notesIndex)));
+            row.getDate(experienceIndex), row.getString(notesIndex),
+            DataUtils.parseIdSet(row.getProperty(PROP_DRIVER_GROUPS))));
       }
     }
 
@@ -585,18 +618,24 @@ final class DriverTimeBoard extends ChartBase {
     }
 
     ChartData driverData = new ChartData(ChartData.Type.DRIVER);
+    ChartData groupData = new ChartData(ChartData.Type.DRIVER_GROUP);
 
     ChartData truckData = new ChartData(ChartData.Type.TRUCK);
     ChartData trailerData = new ChartData(ChartData.Type.TRAILER);
+
     ChartData tripData = new ChartData(ChartData.Type.TRIP);
+    ChartData tripStatusData = new ChartData(ChartData.Type.TRIP_STATUS);
+    ChartData departureData = new ChartData(ChartData.Type.TRIP_DEPARTURE);
+    ChartData arrivalData = new ChartData(ChartData.Type.TRIP_ARRIVAL);
 
     ChartData customerData = new ChartData(ChartData.Type.CUSTOMER);
     ChartData managerData = new ChartData(ChartData.Type.MANAGER);
 
     ChartData orderData = new ChartData(ChartData.Type.ORDER);
-    ChartData statusData = new ChartData(ChartData.Type.ORDER_STATUS);
+    ChartData orderStatusData = new ChartData(ChartData.Type.ORDER_STATUS);
 
     ChartData cargoData = new ChartData(ChartData.Type.CARGO);
+    ChartData cargoTypeData = new ChartData(ChartData.Type.CARGO_TYPE);
 
     ChartData loadData = new ChartData(ChartData.Type.LOADING);
     ChartData unloadData = new ChartData(ChartData.Type.UNLOADING);
@@ -610,6 +649,12 @@ final class DriverTimeBoard extends ChartBase {
       }
 
       driverData.add(driver.getItemName());
+
+      if (!BeeUtils.isEmpty(driver.getGroups())) {
+        for (Long group : driver.getGroups()) {
+          groupData.add(getTransportGroupName(group), group);
+        }
+      }
 
       if (!driverTrips.containsKey(driver.getId())) {
         continue;
@@ -637,7 +682,10 @@ final class DriverTimeBoard extends ChartBase {
           trailerData.add(trip.getTrailerNumber(), trip.getTrailerId());
         }
 
-        tripData.add(trip.getItemName(), tripId);
+        tripData.add(trip.getTripNo(), tripId);
+        tripStatusData.addNotNull(trip.getStatus());
+        departureData.addNotNull(trip.getTripDeparture());
+        arrivalData.addNotNull(trip.getTripArrival());
 
         if (!freights.containsKey(tripId)) {
           continue;
@@ -652,9 +700,12 @@ final class DriverTimeBoard extends ChartBase {
           managerData.addUser(freight.getManager());
 
           orderData.add(freight.getOrderName(), freight.getOrderId());
-          statusData.addNotNull(freight.getOrderStatus());
+          orderStatusData.addNotNull(freight.getOrderStatus());
 
           cargoData.add(freight.getCargoDescription(), freight.getCargoId());
+          if (DataUtils.isId(freight.getCargoType())) {
+            cargoTypeData.add(getCargoTypeName(freight.getCargoType()), freight.getCargoType());
+          }
 
           String loading = Places.getLoadingPlaceInfo(freight);
           if (!BeeUtils.isEmpty(loading)) {
@@ -688,18 +739,24 @@ final class DriverTimeBoard extends ChartBase {
     }
 
     data.add(driverData);
+    data.add(groupData);
 
     data.add(truckData);
     data.add(trailerData);
+
     data.add(tripData);
+    data.add(tripStatusData);
+    data.add(departureData);
+    data.add(arrivalData);
 
     data.add(customerData);
     data.add(managerData);
 
     data.add(orderData);
-    data.add(statusData);
+    data.add(orderStatusData);
 
     data.add(cargoData);
+    data.add(cargoTypeData);
 
     data.add(loadData);
     data.add(unloadData);
@@ -843,6 +900,8 @@ final class DriverTimeBoard extends ChartBase {
         extendMaxRange(absenceSpan.lowerEndpoint(), absenceSpan.upperEndpoint());
       }
     }
+
+    clampMaxRange(COL_DTB_MIN_DATE, COL_DTB_MAX_DATE);
   }
 
   private void addDriverWidget(HasWidgets panel, Widget widget, int firstRow, int lastRow) {

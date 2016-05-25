@@ -6,6 +6,7 @@
     >
   <Fields>
     <Enum name="Constant" key="TripConstant" notNull="true" label="=trTripConstant" />
+    <Relation name="CargoType" relation="CargoTypes" label="=trCargoType" />
     <Date name="DateFrom" label="=dateFrom" />
     <Date name="DateTo" label="=dateTo" />
     <Numeric name="Value" precision="12" scale="2" notNull="true" label="=value" />

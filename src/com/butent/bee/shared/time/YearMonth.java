@@ -27,6 +27,14 @@ public class YearMonth implements Comparable<YearMonth>, BeeSerializable, HasYea
     }
   }
 
+  public static YearMonth of(Integer year, Integer month) {
+    if (TimeUtils.isYear(year) && TimeUtils.isMonth(month)) {
+      return new YearMonth(year, month);
+    } else {
+      return null;
+    }
+  }
+
   public static YearMonth parse(String s) {
     if (BeeUtils.isEmpty(s)) {
       return null;
@@ -38,6 +46,17 @@ public class YearMonth implements Comparable<YearMonth>, BeeSerializable, HasYea
     } else {
       return new YearMonth(TimeUtils.normalizeYear(TimeUtils.getField(fields, 0)),
           TimeUtils.getField(fields, 1));
+    }
+  }
+
+  public static YearMonth parse(String ys, String ms) {
+    Integer y = TimeUtils.parseYear(ys);
+    Integer m = TimeUtils.parseMonth(ms);
+
+    if (TimeUtils.isYear(y) && TimeUtils.isMonth(m)) {
+      return new YearMonth(y, m);
+    } else {
+      return null;
     }
   }
 

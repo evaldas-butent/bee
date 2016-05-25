@@ -9,7 +9,7 @@
   width="760" height="500"
   >
   <FlowPanel>
-    <Table>
+    <Table kind="controls">
       <row>
         <Label text="=trdDate" class="bee-required" style="&lbl;" />
         <InputDateTime source="Date" style="width:110px;" />

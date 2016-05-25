@@ -73,7 +73,7 @@ public class HistoryHandler extends AbstractGridInterceptor implements ClickHand
 
   @Override
   public String getCaption() {
-    return BeeUtils.joinWords(Localized.getConstants().actionAudit(),
+    return BeeUtils.joinWords(Localized.dictionary().actionAudit(),
         BeeUtils.parenthesize(Data.getViewCaption(viewName)));
   }
 

@@ -24,6 +24,7 @@ import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.maps.MapUtils;
 import com.butent.bee.client.modules.mail.MailKeeper;
 import com.butent.bee.client.render.PhotoRenderer;
+import com.butent.bee.client.webrtc.RtcUtils;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.InputText;
@@ -32,8 +33,8 @@ import com.butent.bee.client.widget.Paragraph;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Locality;
-import com.butent.bee.shared.communication.ChatRoom;
 import com.butent.bee.shared.communication.TextMessage;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.PropertiesData;
 import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.data.event.ModificationEvent;
@@ -50,6 +51,7 @@ import com.butent.bee.shared.websocket.SessionUser;
 import com.butent.bee.shared.websocket.WsUtils;
 import com.butent.bee.shared.websocket.messages.AdminMessage;
 import com.butent.bee.shared.websocket.messages.ChatMessage;
+import com.butent.bee.shared.websocket.messages.ChatStateMessage;
 import com.butent.bee.shared.websocket.messages.ConfigMessage;
 import com.butent.bee.shared.websocket.messages.EchoMessage;
 import com.butent.bee.shared.websocket.messages.InfoMessage;
@@ -60,13 +62,11 @@ import com.butent.bee.shared.websocket.messages.Message;
 import com.butent.bee.shared.websocket.messages.ModificationMessage;
 import com.butent.bee.shared.websocket.messages.NotificationMessage;
 import com.butent.bee.shared.websocket.messages.OnlineMessage;
+import com.butent.bee.shared.websocket.messages.PresenceMessage;
 import com.butent.bee.shared.websocket.messages.ProgressMessage;
-import com.butent.bee.shared.websocket.messages.RoomStateMessage;
-import com.butent.bee.shared.websocket.messages.RoomUserMessage;
-import com.butent.bee.shared.websocket.messages.RoomsMessage;
-import com.butent.bee.shared.websocket.messages.SessionMessage;
 import com.butent.bee.shared.websocket.messages.ShowMessage;
 import com.butent.bee.shared.websocket.messages.ShowMessage.Subject;
+import com.butent.bee.shared.websocket.messages.SignalingMessage;
 import com.butent.bee.shared.websocket.messages.UsersMessage;
 
 import java.util.Collections;
@@ -211,8 +211,8 @@ class MessageDispatcher {
 
         if (icon != null) {
           options.setIcon(icon.getImageResource().getSafeUri().asString());
-        } else if (userData != null && !BeeUtils.isEmpty(userData.getPhotoFileName())) {
-          options.setIcon(PhotoRenderer.getUrl(userData.getPhotoFileName()));
+        } else if (userData != null && DataUtils.isId(userData.getPhotoFile())) {
+          options.setIcon(PhotoRenderer.getUrl(userData.getPhotoFile()));
         }
 
         WebNotification.create(title, options, null);
@@ -287,13 +287,23 @@ class MessageDispatcher {
         }
         break;
 
-      case CHAT:
+      case CHAT_MESSAGE:
         ChatMessage chatMessage = (ChatMessage) message;
 
         if (chatMessage.isValid()) {
-          Global.getRooms().addMessage(chatMessage);
+          Global.getChatManager().addMessage(chatMessage);
         } else {
           WsUtils.onEmptyMessage(message);
+        }
+        break;
+
+      case CHAT_STATE:
+        ChatStateMessage rsm = (ChatStateMessage) message;
+
+        if (rsm.isValid()) {
+          Global.getChatManager().onChatState(rsm);
+        } else {
+          WsUtils.onInvalidState(message);
         }
         break;
 
@@ -420,24 +430,31 @@ class MessageDispatcher {
         OnlineMessage om = (OnlineMessage) message;
 
         List<SessionUser> sessionUsers = om.getSessionUsers();
-        if (sessionUsers.size() > 1) {
-          for (int i = 0; i < sessionUsers.size() - 1; i++) {
-            SessionUser sessionUser = sessionUsers.get(i);
-            Global.getUsers().addSession(sessionUser.getSessionId(), sessionUser.getUserId(), true);
-          }
-        }
 
         if (sessionUsers.isEmpty()) {
           WsUtils.onEmptyMessage(message);
 
         } else {
-          Endpoint.setSessionId(sessionUsers.get(sessionUsers.size() - 1).getSessionId());
-
-          if (!om.getChatRooms().isEmpty()) {
-            Global.getRooms().setRoomData(om.getChatRooms());
+          if (sessionUsers.size() > 1) {
+            for (int i = 0; i < sessionUsers.size() - 1; i++) {
+              SessionUser su = sessionUsers.get(i);
+              Global.getUsers().addSession(su.getSessionId(), su.getUserId(), su.getPresence());
+            }
           }
 
+          Endpoint.setSessionId(sessionUsers.get(sessionUsers.size() - 1).getSessionId());
           Endpoint.online();
+        }
+        break;
+
+      case PRESENCE:
+        SessionUser su = ((PresenceMessage) message).getSessionUser();
+
+        if (su != null) {
+          Global.getUsers().updateSession(su.getSessionId(), su.getUserId(), su.getPresence());
+          Global.getChatManager().onUserPresenceChange(su.getUserId());
+        } else {
+          WsUtils.onInvalidState(message);
         }
         break;
 
@@ -468,43 +485,6 @@ class MessageDispatcher {
         }
         break;
 
-      case ROOM_STATE:
-        RoomStateMessage rsm = (RoomStateMessage) message;
-
-        if (rsm.isValid()) {
-          Global.getRooms().onRoomState(rsm);
-        } else {
-          WsUtils.onInvalidState(message);
-        }
-        break;
-
-      case ROOM_USER:
-        Global.getRooms().onRoomUser((RoomUserMessage) message);
-        break;
-
-      case ROOMS:
-        List<ChatRoom> rooms = ((RoomsMessage) message).getData();
-
-        if (BeeUtils.isEmpty(rooms)) {
-          WsUtils.onEmptyMessage(message);
-        } else {
-          Global.getRooms().setRoomData(rooms);
-        }
-        break;
-
-      case SESSION:
-        SessionMessage sm = (SessionMessage) message;
-        SessionUser su = sm.getSessionUser();
-
-        if (sm.isOpen()) {
-          Global.getUsers().addSession(su.getSessionId(), su.getUserId(), false);
-        } else if (sm.isClosed()) {
-          Global.getUsers().removeSession(su.getSessionId());
-        } else {
-          WsUtils.onInvalidState(message);
-        }
-        break;
-
       case SHOW:
         Subject subject = ((ShowMessage) message).getSubject();
         if (subject == Subject.SESSION) {
@@ -512,6 +492,10 @@ class MessageDispatcher {
         } else {
           WsUtils.onInvalidState(message);
         }
+        break;
+
+      case SIGNALING:
+        RtcUtils.onMessage((SignalingMessage) message);
         break;
 
       case USERS:

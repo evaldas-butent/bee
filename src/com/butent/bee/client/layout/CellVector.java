@@ -12,15 +12,19 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.style.HasTextAlign;
 import com.butent.bee.client.style.HasVerticalAlign;
 import com.butent.bee.client.style.StyleUtils;
-import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.HasIndexedWidgets;
+import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.css.CssUnit;
 import com.butent.bee.shared.css.values.TextAlign;
 import com.butent.bee.shared.css.values.VerticalAlign;
+import com.butent.bee.shared.utils.BeeUtils;
 
 public abstract class CellVector extends ComplexPanel implements IdentifiableWidget,
     HasIndexedWidgets, HasTextAlign, HasVerticalAlign, IsHtmlTable {
+
+  private static final String STYLE_SUFFIX_CELL = "-cell";
 
   private final Element table;
   private final Element body;
@@ -50,9 +54,18 @@ public abstract class CellVector extends ComplexPanel implements IdentifiableWid
     return addDomHandler(handler, ClickEvent.getType());
   }
 
+  public void addWidgetAndStyle(Widget w, String styleName) {
+    Assert.notNull(w);
+
+    w.addStyleName(styleName);
+    add(w);
+
+    addStyleToCell(w, styleName + STYLE_SUFFIX_CELL);
+  }
+
   public void addStyleToCell(Widget w, String styleName) {
     Element td = getWidgetTd(w);
-    if (td != null) {
+    if (td != null && !BeeUtils.isEmpty(styleName)) {
       td.addClassName(styleName);
     }
   }

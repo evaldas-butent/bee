@@ -37,11 +37,11 @@ public class OrderInvoiceForm extends AbstractFormInterceptor implements ClickHa
     boolean proforma = !BeeConst.isUndef(idx) && row != null && BeeUtils.unbox(row.getBoolean(idx));
 
     form.getViewPresenter().getHeader().setCaption(proforma
-        ? Localized.getConstants().trProformaInvoice()
-        : Localized.getConstants().trdInvoice());
+        ? Localized.dictionary().trProformaInvoice()
+        : Localized.dictionary().trdInvoice());
 
     if (confirmAction == null) {
-      confirmAction = new Button(Localized.getConstants().trdInvoice(), this);
+      confirmAction = new Button(Localized.dictionary().trdInvoice(), this);
       form.getViewPresenter().getHeader().addCommandItem(confirmAction);
     }
     confirmAction.setVisible(proforma && form.isEnabled());
@@ -49,7 +49,7 @@ public class OrderInvoiceForm extends AbstractFormInterceptor implements ClickHa
 
   @Override
   public void onClick(ClickEvent event) {
-    Global.confirm(Localized.getConstants().trConfirmProforma(), new ConfirmationCallback() {
+    Global.confirm(Localized.dictionary().trConfirmProforma(), new ConfirmationCallback() {
       @Override
       public void onConfirm() {
         Queries.update(getViewName(), IdFilter.compareId(getActiveRowId()),

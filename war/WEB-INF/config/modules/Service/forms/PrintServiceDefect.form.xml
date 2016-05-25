@@ -32,7 +32,7 @@
     </HorizontalPanel>
     
     <br/>
-    <Table name="ServiceDefectItems" class="bee-svc-print-defect-items-table" />
+    <Table kind="output" name="ServiceDefectItems" class="bee-svc-print-defect-items-table" />
     
     <br/> <br/>
     <HorizontalPanel verticalAlignment="top" style="min-height: 2em">

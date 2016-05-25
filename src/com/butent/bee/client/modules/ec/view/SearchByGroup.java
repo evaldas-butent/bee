@@ -53,7 +53,7 @@ class SearchByGroup extends EcView implements HasCaption {
   private static final String STYLE_VALUE_SELECTED = EcStyles.name(STYLE_NAME, "valueSelected");
 
   private static Widget renderBrands(List<EcBrand> brands) {
-    Legend legend = new Legend(Localized.getConstants().ecItemBrand());
+    Legend legend = new Legend(Localized.dictionary().ecItemBrand());
     EcStyles.add(legend, STYLE_NAME, "brandsLagend");
 
     FieldSet panel = new FieldSet(EcStyles.name(STYLE_NAME, "brands"), legend);
@@ -143,7 +143,7 @@ class SearchByGroup extends EcView implements HasCaption {
 
   @Override
   public String getCaption() {
-    return moto ? Localized.getConstants().ecBikeItems() : Localized.getConstants().ecGroups();
+    return moto ? Localized.dictionary().ecBikeItems() : Localized.dictionary().ecGroups();
   }
 
   @Override
@@ -230,7 +230,7 @@ class SearchByGroup extends EcView implements HasCaption {
 
     Flow actionPanel = new Flow(EcStyles.name(STYLE_NAME, "actions"));
 
-    Button doFilter = new Button(Localized.getConstants().doFilter());
+    Button doFilter = new Button(Localized.dictionary().doFilter());
     EcStyles.add(doFilter, STYLE_NAME, "doFilter");
 
     doFilter.addClickHandler(new ClickHandler() {
@@ -242,7 +242,7 @@ class SearchByGroup extends EcView implements HasCaption {
 
     actionPanel.add(doFilter);
 
-    Button clearSelection = new Button(Localized.getConstants().actionRemoveFilter());
+    Button clearSelection = new Button(Localized.dictionary().actionRemoveFilter());
     EcStyles.add(clearSelection, STYLE_NAME, "clearSelection");
 
     clearSelection.addClickHandler(new ClickHandler() {
@@ -275,7 +275,7 @@ class SearchByGroup extends EcView implements HasCaption {
       groupPanel.clear();
     }
 
-    Legend legend = new Legend(Localized.getConstants().ecSelectGroup());
+    Legend legend = new Legend(Localized.dictionary().ecSelectGroup());
     EcStyles.add(legend, STYLE_NAME, "groupsLegend");
     groupPanel.add(legend);
 

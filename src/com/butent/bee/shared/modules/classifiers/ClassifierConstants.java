@@ -6,6 +6,7 @@ import com.butent.bee.shared.utils.EnumUtils;
 public final class ClassifierConstants {
 
   public static final String SVC_CREATE_COMPANY = "create_company";
+  public static final String SVC_CREATE_COMPANY_PERSON = "create_company_person";
   public static final String SVC_COMPANY_INFO = "GetCompanyInfo";
   public static final String SVC_GENERATE_QR_CODE = "GenerateQrCode";
   public static final String SVC_GENERATE_QR_CODE_PERSON = "GenerateQrCodePerson";
@@ -104,6 +105,7 @@ public final class ClassifierConstants {
   public static final String COL_COMPANY = "Company";
   public static final String COL_COMPANY_NAME = "Name";
   public static final String COL_COMPANY_CODE = "Code";
+  public static final String COL_COMPANY_CONTACT = "CompanyContact";
   public static final String COL_COMPANY_VAT_CODE = "VATCode";
   public static final String COL_COMPANY_PERSON = "CompanyPerson";
   public static final String COL_COMPANY_TYPE = "CompanyType";
@@ -124,7 +126,9 @@ public final class ClassifierConstants {
   public static final String COL_PERSON = "Person";
   public static final String COL_FIRST_NAME = "FirstName";
   public static final String COL_LAST_NAME = "LastName";
-  public static final String COL_PHOTO = "Photo";
+
+  public static final String COL_PHOTO = "PhotoFile";
+
   public static final String COL_DATE_OF_BIRTH = "DateOfBirth";
 
   public static final String COL_CATEGORY = "Category";
@@ -154,6 +158,7 @@ public final class ClassifierConstants {
   public static final String COL_ITEM_ORDINAL = "Ordinal";
   public static final String COL_ITEM_DPW = "DaysPerWeek";
   public static final String COL_ITEM_MIN_TERM = "MinTerm";
+  public static final String COL_ITEM_LINK = "Link";
 
   public static final String COL_UNIT = "Unit";
   public static final String COL_UNIT_NAME = "Name";

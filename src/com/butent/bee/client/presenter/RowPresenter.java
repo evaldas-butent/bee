@@ -3,6 +3,7 @@ package com.butent.bee.client.presenter;
 import com.google.gwt.dom.client.Element;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Global;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
@@ -28,6 +29,7 @@ import com.butent.bee.shared.ui.HasWidgetSupplier;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.Set;
 
 public class RowPresenter extends AbstractPresenter implements Printable, SaveChangesEvent.Handler {
@@ -99,7 +101,17 @@ public class RowPresenter extends AbstractPresenter implements Printable, SaveCh
     this.formView = formView;
     this.dataInfo = dataInfo;
 
-    HeaderView headerView = createHeader(formView.getCaption(), enabledActions, disabledActions);
+    Set<Action> ea = new HashSet<>();
+    if (!BeeUtils.isEmpty(enabledActions)) {
+      ea.addAll(enabledActions);
+    }
+
+    if (!BeeUtils.isEmpty(formView.getFavorite())
+        && !Global.getFavorites().isBookmarked(formView.getViewName(), rowId)) {
+      ea.add(Action.BOOKMARK);
+    }
+
+    HeaderView headerView = createHeader(formView.getCaption(), ea, disabledActions);
 
     this.container = new Container(dataInfo, rowId, initialCaption);
     container.addStyleName(STYLE_CONTAINER);
@@ -131,6 +143,11 @@ public class RowPresenter extends AbstractPresenter implements Printable, SaveCh
   @Override
   public Element getPrintElement() {
     return getMainView().getElement();
+  }
+
+  @Override
+  public String getViewKey() {
+    return formView.getSupplierKey();
   }
 
   @Override

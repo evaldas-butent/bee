@@ -8,7 +8,7 @@
   <TabbedPages resizable="false">
     <page>
       <text>=mainInformation</text>
-      <Table>
+      <Table kind="controls">
         <row>
           <Label for="Ordinal" />
           <InputInteger source="Ordinal" />

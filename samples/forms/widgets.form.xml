@@ -89,7 +89,7 @@
           </SpanPanel>
 
           <ScrollPanel> 
-            <Table style="border-collapse: collapse;" cellStyle="padding: 3px; border: 1px solid black;">
+            <Table kind="custom" style="border-collapse: collapse;" cellStyle="padding: 3px; border: 1px solid black;">
               <col index="0" width="20" widthUnit="%" />
 
               <row>

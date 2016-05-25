@@ -6,7 +6,7 @@
   width="500" height="300"
   >
   <FlowPanel>
-    <Table>
+    <Table kind="controls">
       <row>
         <Label for="SeriesName" />
         <InputText source="SeriesName" upperCase="true" style="width: 100px;" visible="true" />

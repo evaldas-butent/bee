@@ -47,14 +47,6 @@ public abstract class AbstractRow implements IsRow {
   }
 
   @Override
-  public void clearProperty(String key) {
-    Assert.notEmpty(key);
-    if (properties != null) {
-      properties.remove(key);
-    }
-  }
-
-  @Override
   public boolean equals(Object obj) {
     return (obj instanceof IsRow) && id == ((IsRow) obj).getId();
   }
@@ -211,6 +203,14 @@ public abstract class AbstractRow implements IsRow {
   }
 
   @Override
+  public void removeProperty(String key) {
+    Assert.notEmpty(key);
+    if (properties != null) {
+      properties.remove(key);
+    }
+  }
+
+  @Override
   public void reset() {
     setShadow(null);
   }
@@ -239,14 +239,10 @@ public abstract class AbstractRow implements IsRow {
   public void setProperty(String propertyKey, String propertyValue) {
     Assert.notEmpty(propertyKey);
 
-    if (BeeUtils.isEmpty(propertyValue)) {
-      clearProperty(propertyKey);
-    } else {
-      if (properties == null) {
-        properties = CustomProperties.create();
-      }
-      properties.put(propertyKey, propertyValue);
+    if (properties == null) {
+      properties = CustomProperties.create();
     }
+    properties.put(propertyKey, propertyValue);
   }
 
   @Override

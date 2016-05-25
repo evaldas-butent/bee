@@ -1,7 +1,6 @@
 package com.butent.bee.server;
 
-import com.google.common.net.HttpHeaders;
-
+import com.butent.bee.server.http.HttpUtils;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
@@ -50,13 +49,14 @@ public class BeeServlet extends LoginServlet {
 
     RequestInfo reqInfo = new RequestInfo(req, true);
 
-    String meth = reqInfo.getMethod();
+    String meth = reqInfo.getHttpMethod();
     String rid = reqInfo.getId();
     String svc = reqInfo.getService();
+    String sub = reqInfo.getSubService();
 
     boolean debug = reqInfo.isDebug();
 
-    logger.info("<", rid, meth, svc);
+    logger.info("<", rid, meth, svc, sub);
     if (debug) {
       reqInfo.logParams(logger);
       reqInfo.logVars(logger);
@@ -105,6 +105,9 @@ public class BeeServlet extends LoginServlet {
         logout(req, session);
 
       } else {
+        session.setMaxInactiveInterval(Config.getDefaultSessionTimeout()
+            * TimeUtils.SECONDS_PER_MINUTE);
+
         Object userData = ((Map<?, ?>) response.getResponse()).get(Service.VAR_USER);
 
         if (userData instanceof UserData) {
@@ -139,14 +142,9 @@ public class BeeServlet extends LoginServlet {
       resp.setHeader(Service.RPC_VAR_QID, rid);
     }
 
-    resp.setHeader(HttpHeaders.CACHE_CONTROL, "no-cache");
-    resp.setHeader(HttpHeaders.PRAGMA, "no-cache");
-    resp.setHeader(HttpHeaders.EXPIRES, "Thu, 01 Dec 1994 16:00:00 GMT");
-
     ContentType ctp = CommUtils.DEFAULT_RESPONSE_CONTENT_TYPE;
 
-    resp.setContentType(CommUtils.getMediaType(ctp));
-    resp.setCharacterEncoding(CommUtils.getCharacterEncoding(ctp));
+    HttpUtils.setDefaultHeaders(resp, ctp);
     resp.setHeader(Service.RPC_VAR_CTP, ctp.name());
 
     String s;
@@ -156,7 +154,7 @@ public class BeeServlet extends LoginServlet {
       s = BeeConst.STRING_EMPTY;
     }
 
-    logger.info(">", rid, TimeUtils.elapsedSeconds(start), ctp, s.length());
+    logger.info(">", rid, svc, sub, TimeUtils.elapsedSeconds(start), ctp, s.length());
 
     try {
       PrintWriter out = resp.getWriter();

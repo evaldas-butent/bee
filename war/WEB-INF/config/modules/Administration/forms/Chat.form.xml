@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<f:Form xmlns="http://www.butent.com/widget"
+  xmlns:f="http://www.butent.com/form"
+  
+  name="Chat" viewName="Chats" caption="=chat" showRowId="true" readOnly="true"
+  >
+  <FlowPanel class="flexBox-vertical">
+    <Table kind="controls" style="margin-top: 1vh; margin-bottom: 2vh;">
+      <col index="0" kind="label" />
+
+      <row>
+        <Label for="ChatName" visible="true" />
+        <InputText source="ChatName" style="width: 300px;" visible="true" />
+      </row>
+
+      <row for="Created">
+        <Label for="Created" />
+        <InputDateTime source="Created" style="width: 200px;" format="DATE_TIME_SHORT"/>
+      </row>
+
+      <row for="Creator">
+        <Label for="Creator" />
+        <DataSelector source="Creator" renderColumns="CreatorFirstName CreatorLastName" 
+          style="width: 300px;" editSource="CreatorCompanyPerson" editPopup="true" >
+        </DataSelector>
+      </row>
+    </Table>
+    
+    <TabbedPages class="flexible">
+      <page>
+        <text>=chatUsers</text>
+        <ChildGrid name="ChatUsers" relColumn="Chat" />
+      </page>
+      <page>
+        <text>=chatMessages</text>
+        <ChildGrid name="ChatMessages" relColumn="Chat" paging="true" />
+      </page>
+    </TabbedPages>
+  </FlowPanel>
+</f:Form>  

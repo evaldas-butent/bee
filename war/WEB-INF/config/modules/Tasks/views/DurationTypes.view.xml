@@ -5,10 +5,11 @@
   caption="=crmTaskDurationTypes" newRowCaption="=crmNewDurationType"
   >
   <Columns>
+    <SimpleColumn name="Ordinal" />
     <SimpleColumn name="Name" />
   </Columns>
   <Order>
-    <OrderBy column="Name" />
+    <OrderBy column="Ordinal" />
   </Order>
 </View>
  

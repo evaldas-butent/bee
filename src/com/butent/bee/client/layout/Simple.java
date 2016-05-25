@@ -24,6 +24,7 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.DndWidget;
 import com.butent.bee.shared.State;
+import com.butent.bee.shared.utils.BeeUtils;
 
 /**
  * Contains a class for panels that contain only one widget.
@@ -36,6 +37,13 @@ public class Simple extends SimplePanel implements DndWidget, RequiresResize, Pr
   public Simple() {
     super();
     init();
+  }
+
+  public Simple(String styleName) {
+    this();
+    if (!BeeUtils.isEmpty(styleName)) {
+      addStyleName(styleName);
+    }
   }
 
   public Simple(Widget child) {
@@ -99,6 +107,10 @@ public class Simple extends SimplePanel implements DndWidget, RequiresResize, Pr
   @Override
   public State getTargetState() {
     return targetState;
+  }
+
+  public boolean isEmpty() {
+    return getWidget() == null;
   }
 
   @Override

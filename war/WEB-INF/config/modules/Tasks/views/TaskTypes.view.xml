@@ -3,16 +3,20 @@
 
   name="TaskTypes" source="TaskTypes"
   caption="=crmTaskTypes" newRowCaption="=crmNewTaskType"
+  editForm="TaskType" newRowForm="TaskType"
   >
   <Columns>
+    <SimpleColumn name="Ordinal" />
     <SimpleColumn name="Name" />
 
     <SimpleColumn name="Background" />
     <SimpleColumn name="Foreground" />
+    
+    <SimpleColumn name="ProductRequired" />
     <SimpleColumn name="SignContract" />
   </Columns>
 
   <Order>
-    <OrderBy column="Name" />
+    <OrderBy column="Ordinal" />
   </Order>
 </View>

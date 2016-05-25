@@ -10,7 +10,7 @@
       <ui:expression>row.CategoryName + (row.MarginPercent ? ' (' + row.MarginPercent + '%)' : '')</ui:expression>
     </calc>
     <form>
-      <Table>
+      <Table kind="controls">
         <col index="0" kind="label" />
 
         <row>

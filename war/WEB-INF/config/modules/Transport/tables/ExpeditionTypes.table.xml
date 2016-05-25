@@ -5,6 +5,7 @@
   >
   <Fields>
     <String name="Name" precision="30" notNull="true" unique="true" label="=trExpeditionTypeName" />
-    <Integer name="SelfService" label="=trExpeditionTypeSelfService" />
+    <Integer name="SelfService" label="=trSelfService" />
+    <Boolean name="Logistics" label="=trLogistics" />
   </Fields>
 </Table>

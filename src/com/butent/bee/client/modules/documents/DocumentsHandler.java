@@ -4,13 +4,15 @@ import com.google.common.collect.Lists;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 
 import static com.butent.bee.shared.modules.documents.DocumentConstants.*;
-import static com.butent.bee.shared.modules.trade.TradeConstants.VAR_TOTAL;
+import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
+import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.FileCollector;
+import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.IdCallback;
 import com.butent.bee.client.data.Queries;
@@ -18,15 +20,17 @@ import com.butent.bee.client.data.Queries.IntCallback;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
+import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.grid.GridFactory;
+import com.butent.bee.client.grid.GridFactory.GridOptions;
 import com.butent.bee.client.modules.trade.TradeUtils;
 import com.butent.bee.client.presenter.GridPresenter;
-import com.butent.bee.client.render.AbstractCellRenderer;
-import com.butent.bee.client.render.FileLinkRenderer;
+import com.butent.bee.client.presenter.PresenterCallback;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.Opener;
+import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.edit.EditStartEvent;
@@ -39,52 +43,43 @@ import com.butent.bee.client.view.grid.interceptor.FileGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Consumer;
+import com.butent.bee.shared.BiConsumer;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
-import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.DataUtils;
-import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.event.DataChangeEvent;
+import com.butent.bee.shared.data.event.RowTransformEvent;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.FileInfo;
+import com.butent.bee.shared.menu.MenuHandler;
+import com.butent.bee.shared.menu.MenuService;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
+import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.projects.ProjectConstants;
+import com.butent.bee.shared.modules.tasks.TaskConstants;
+import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.time.DateTime;
-import com.butent.bee.shared.time.TimeUtils;
+import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.ui.Action;
-import com.butent.bee.shared.ui.ColumnDescription;
-import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.EnumSet;
 import java.util.List;
-import java.util.Set;
 
 public final class DocumentsHandler {
 
   private static final class DocumentBuilder extends AbstractFormInterceptor {
 
     private FileCollector collector;
-
-    @Override
-    public void afterInsertRow(IsRow result, boolean forced) {
-      if (collector != null && !collector.isEmpty()) {
-        sendFiles(result.getId(), collector.getFiles(), null);
-        collector.clear();
-      }
-
-      if (result.getString(Data.getColumnIndex(VIEW_DOCUMENTS, COL_DOCUMENT_COMPANY)) != null) {
-        insertCompanyInfo(result, null);
-      }
-    }
+    private UnboundSelector templSelector;
 
     @Override
     public void afterCreateWidget(String name, IdentifiableWidget widget,
@@ -94,132 +89,60 @@ public final class DocumentsHandler {
         this.collector = (FileCollector) widget;
         this.collector.bindDnd(getFormView());
       }
+
+      if (widget instanceof UnboundSelector) {
+        templSelector = (UnboundSelector) widget;
+      }
+    }
+
+    @Override
+    public void afterInsertRow(final IsRow result, boolean forced) {
+      if (collector != null && !collector.isEmpty()) {
+        sendFiles(result.getId(), collector.getFiles(), null);
+        collector.clear();
+      }
+
+      if (result.getString(Data.getColumnIndex(VIEW_DOCUMENTS, COL_DOCUMENT_COMPANY)) != null) {
+        insertCompanyInfo(result, null);
+      }
+
+      if (templSelector != null) {
+        Long selId = BeeUtils.toLong(templSelector.getValue());
+        if (DataUtils.isId(selId)) {
+
+          Queries.getRow(VIEW_DOCUMENT_TEMPLATES, selId, new RowCallback() {
+            @Override
+            public void onSuccess(BeeRow templateRow) {
+              insertTemplateContent(result, Data.getString(VIEW_DOCUMENT_TEMPLATES, templateRow,
+                  COL_DOCUMENT_CONTENT));
+            }
+          });
+
+        }
+
+      }
+    }
+
+    @Override
+    public void beforeRefresh(FormView form, IsRow row) {
+      if (templSelector != null
+          && DataUtils.isId(row.getProperty(TaskConstants.PRM_DEFAULT_DBA_TEMPLATE))) {
+        templSelector.setValue(BeeUtils.toLong(row.getProperty(
+            TaskConstants.PRM_DEFAULT_DBA_TEMPLATE)), true);
+      }
+
+      DateTime t1 = row.getDateTime(form.getDataIndex(COL_DOCUMENT_DATE));
+      /* resetting document date without current time */
+      if (t1 != null && DataUtils.isNewRow(row)) {
+        t1.setLocalTime(new JustDate(t1).getTime());
+        row.setValue(form.getDataIndex(COL_DOCUMENT_DATE), t1);
+        form.refreshBySource(COL_DOCUMENT_DATE);
+      }
     }
 
     @Override
     public FormInterceptor getInstance() {
       return new DocumentBuilder();
-    }
-  }
-
-  private static final class FileGridHandler extends AbstractGridInterceptor {
-
-    private static Collection<FileInfo> sanitize(GridView gridView,
-        Collection<? extends FileInfo> input) {
-
-      Collection<FileInfo> result = new ArrayList<>();
-      if (BeeUtils.isEmpty(input)) {
-        return result;
-      }
-
-      List<? extends IsRow> data = gridView.getRowData();
-      if (BeeUtils.isEmpty(data)) {
-        result.addAll(input);
-        return result;
-      }
-
-      int fileIndex = gridView.getDataIndex(AdministrationConstants.COL_FILE);
-      int nameIndex = gridView.getDataIndex(AdministrationConstants.ALS_FILE_NAME);
-      int sizeIndex = gridView.getDataIndex(AdministrationConstants.ALS_FILE_SIZE);
-      int typeIndex = gridView.getDataIndex(AdministrationConstants.ALS_FILE_TYPE);
-
-      Set<FileInfo> oldFiles = new HashSet<>();
-      for (IsRow row : data) {
-        oldFiles.add(new FileInfo(row.getLong(fileIndex), row.getString(nameIndex),
-            row.getLong(sizeIndex), row.getString(typeIndex)));
-      }
-
-      List<String> messages = new ArrayList<>();
-
-      for (FileInfo fi : input) {
-        if (oldFiles.contains(fi)) {
-          messages.add(BeeUtils.join(BeeConst.DEFAULT_LIST_SEPARATOR, fi.getName(),
-              FileUtils.sizeToText(fi.getSize()),
-              TimeUtils.renderCompact(fi.getFileDate())));
-        } else {
-          result.add(fi);
-        }
-      }
-
-      if (!messages.isEmpty()) {
-        result.clear();
-
-        messages.add(0, Localized.getConstants().documentFileExists());
-        gridView.notifyWarning(ArrayUtils.toArray(messages));
-      }
-
-      return result;
-    }
-
-    private FileCollector collector;
-
-    private FileGridHandler() {
-    }
-
-    @Override
-    public boolean beforeAction(Action action, final GridPresenter presenter) {
-      if (Action.ADD.equals(action)) {
-        if (collector != null) {
-          collector.clickInput();
-        }
-        return false;
-
-      } else {
-        return super.beforeAction(action, presenter);
-      }
-    }
-
-    @Override
-    public GridInterceptor getInstance() {
-      return new FileGridHandler();
-    }
-
-    @Override
-    public AbstractCellRenderer getRenderer(String columnName,
-        List<? extends IsColumn> dataColumns, ColumnDescription columnDescription,
-        CellSource cellSource) {
-
-      if (BeeUtils.same(columnName, AdministrationConstants.COL_FILE)) {
-        return new FileLinkRenderer(DataUtils.getColumnIndex(columnName, dataColumns),
-            DataUtils.getColumnIndex(COL_FILE_CAPTION, dataColumns),
-            DataUtils.getColumnIndex(AdministrationConstants.ALS_FILE_NAME, dataColumns));
-
-      } else {
-        return super.getRenderer(columnName, dataColumns, columnDescription, cellSource);
-      }
-    }
-
-    @Override
-    public void onLoad(final GridView gridView) {
-      if (collector == null) {
-        collector = FileCollector.headless(new Consumer<Collection<? extends FileInfo>>() {
-          @Override
-          public void accept(Collection<? extends FileInfo> input) {
-            final Collection<FileInfo> files = sanitize(gridView, input);
-
-            if (!files.isEmpty()) {
-              gridView.ensureRelId(new IdCallback() {
-                @Override
-                public void onSuccess(Long result) {
-                  sendFiles(result, files, new ScheduledCommand() {
-                    @Override
-                    public void execute() {
-                      gridView.getViewPresenter().handleAction(Action.REFRESH);
-                    }
-                  });
-                }
-              });
-            }
-          }
-        });
-
-        gridView.add(collector);
-
-        FormView form = ViewHelper.getForm(gridView.asWidget());
-        if (form != null) {
-          collector.bindDnd(form);
-        }
-      }
     }
   }
 
@@ -267,7 +190,7 @@ public final class DocumentsHandler {
         }
 
       }
-      RowFactory.createRow(info, docRow, new RowCallback() {
+      RowFactory.createRow(info, docRow, Modality.ENABLED, new RowCallback() {
         @Override
         public void onSuccess(final BeeRow result) {
           final long docId = result.getId();
@@ -316,6 +239,24 @@ public final class DocumentsHandler {
     }
   }
 
+  private static class RowTransformHandler implements RowTransformEvent.Handler {
+
+    @Override
+    public void onRowTransform(RowTransformEvent event) {
+      if (event.hasView(VIEW_DOCUMENTS)) {
+        event.setResult(DataUtils.join(Data.getDataInfo(VIEW_DOCUMENTS), event.getRow(),
+            Lists.newArrayList(COL_DOCUMENT_NAME, ALS_DOCUMENT_COMPANY_NAME, "CompanyTypeName",
+                COL_DOCUMENT_DATE, "Expires", COL_DOCUMENT_NUMBER, COL_REGISTRATION_NUMBER,
+                ALS_CATEGORY_NAME, ALS_TYPE_NAME, ALS_PLACE_NAME, ALS_STATUS_NAME,
+                COL_DOCUMENT_RECEIVED, COL_DOCUMENT_SENT, COL_DOCUMENT_RECEIVED_NUMBER,
+                COL_DOCUMENT_SENT_NUMBER, COL_DESCRIPTION, ClassifierConstants.COL_FIRST_NAME,
+                ClassifierConstants.COL_LAST_NAME, ClassifierConstants.ALS_POSITION_NAME, "Notes"),
+            BeeConst.STRING_SPACE));
+      }
+    }
+
+  }
+
   public static void register() {
     GridFactory.registerGridInterceptor(VIEW_DOCUMENT_TEMPLATES, new DocumentTemplatesGrid());
 
@@ -335,6 +276,54 @@ public final class DocumentsHandler {
     FormFactory.registerFormInterceptor("NewDocument", new DocumentBuilder());
 
     TradeUtils.registerTotalRenderer(VIEW_DOCUMENT_ITEMS, VAR_TOTAL);
+    BeeKeeper.getBus().registerRowTransformHandler(new RowTransformHandler());
+
+    MenuService.DOCUMENTS.setHandler(new MenuHandler() {
+
+      @Override
+      public void onSelection(String parameters) {
+        GridOptions options = null;
+        GridInterceptor interceptor = GridFactory.getGridInterceptor(VIEW_DOCUMENTS);
+        String key = GridFactory.getSupplierKey(VIEW_DOCUMENTS, interceptor);
+
+        if (!BeeUtils.isEmpty(parameters)) {
+          options = GridOptions.forCaptionAndFilter(getCaption(parameters), getFilter(parameters));
+          key = BeeUtils.join(BeeConst.STRING_UNDER, key, parameters);
+        }
+
+        GridFactory.createGrid(VIEW_DOCUMENTS, key, interceptor, EnumSet.of(UiOption.GRID),
+            options, ViewHelper.getPresenterCallback());
+      }
+
+      private String getCaption(String parameters) {
+        switch (parameters) {
+          case COL_DOCUMENT_SENT:
+            return Localized.dictionary().documentFilterSent();
+          case COL_DOCUMENT_RECEIVED:
+            return Localized.dictionary().documentFilterReceived();
+
+          default:
+            return Data.getViewCaption(VIEW_DOCUMENTS);
+        }
+      }
+
+      private Filter getFilter(String parameters) {
+
+        if (Data.containsColumn(VIEW_DOCUMENTS, parameters)) {
+          return Filter.notNull(parameters);
+        }
+
+        return Filter.isTrue();
+      }
+    });
+
+    Global.getNewsAggregator().registerFilterHandler(Feed.DOCUMENTS,
+        new BiConsumer<GridFactory.GridOptions, PresenterCallback>() {
+          @Override
+          public void accept(GridOptions gridOptions, PresenterCallback callback) {
+            GridFactory.openGrid("NewsDocuments", null, gridOptions, callback);
+          }
+        });
   }
 
   static void copyDocumentData(Long dataId, final IdCallback callback) {
@@ -436,5 +425,31 @@ public final class DocumentsHandler {
             }
           });
     }
+  }
+
+  public static void insertTemplateContent(final IsRow row, String value) {
+
+    if (row == null) {
+      return;
+    }
+
+    List<BeeColumn> cols = Data.getColumns(VIEW_DOCUMENT_DATA,
+        Lists.newArrayList(COL_DOCUMENT_CONTENT));
+    List<String> values = Lists.newArrayList(value);
+
+    Queries.insert(VIEW_DOCUMENT_DATA, cols, values, null, new RowCallback() {
+
+      @Override
+      public void onSuccess(BeeRow result) {
+        Queries.update(VIEW_DOCUMENTS, row.getId(), COL_DOCUMENT_DATA,
+            Value.getValue(result.getId()), new IntCallback() {
+              @Override
+              public void onSuccess(Integer updResult) {
+                DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_DOCUMENTS);
+              }
+            });
+      }
+    });
+
   }
 }

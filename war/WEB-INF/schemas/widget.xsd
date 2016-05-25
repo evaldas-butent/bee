@@ -61,7 +61,7 @@
     </xs:complexContent>
   </xs:complexType>
 
-  <xs:element name="widget" type="widgetBase" abstract="true" />
+  <xs:element name="widget" type="widgetBase" abstract="false" />
 
   <xs:element name="decorator">
     <xs:complexType>
@@ -105,6 +105,7 @@
         </xs:choice>
         <xs:attribute name="source" type="tp:fieldNameType" />
         <xs:attribute name="property" type="tp:nameType" />
+        <xs:attribute name="userMode" type="xs:boolean" />
         <xs:attribute name="format" type="xs:normalizedString" />
         <xs:attribute name="enumKey" type="xs:normalizedString" />
         <xs:attribute name="renderColumns" type="tp:fieldNames" />
@@ -130,6 +131,7 @@
         </xs:sequence>
         <xs:attribute name="source" type="tp:fieldNameType" />
         <xs:attribute name="property" type="tp:nameType" />
+        <xs:attribute name="userMode" type="xs:boolean" />
         <xs:attribute name="caption" type="xs:string" />
         <xs:attribute name="readOnly" type="xs:boolean" />
         <xs:attribute name="format" type="xs:normalizedString" />
@@ -523,6 +525,7 @@
             <xs:group ref="wdht" />
           </xs:choice>
 
+          <xs:attribute name="kind" type="ui:tableKind" use="required"  />
           <xs:attributeGroup ref="ui:cellAppearance" />
         </xs:extension>
       </xs:complexContent>
@@ -537,6 +540,7 @@
         <xs:attribute name="filter" type="xs:normalizedString" />
         <xs:attribute name="currentUserFilter" type="tp:fieldNameType" />
         <xs:attribute name="summarize" type="xs:boolean" />
+        <xs:attribute name="paging" type="xs:boolean" />
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
@@ -903,6 +907,7 @@
       <xs:complexContent>
         <xs:extension base="fileList">
           <xs:attribute name="property" type="tp:nameType" />
+          <xs:attribute name="userMode" type="xs:boolean" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
@@ -1057,6 +1062,7 @@
           <xs:attribute name="parentRelColumn" type="tp:fieldNameType" />
           <xs:attribute name="readOnly" type="xs:boolean" />
           <xs:attribute name="cache" type="xs:boolean" />
+          <xs:attribute name="summarize" type="xs:boolean" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
@@ -1070,6 +1076,16 @@
           <xs:attribute name="y1" type="xs:int" use="required" />
           <xs:attribute name="x2" type="xs:int" use="required" />
           <xs:attribute name="y2" type="xs:int" use="required" />
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="SummaryProxy" substitutionGroup="widget">
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="widgetType">
+          <xs:attribute name="summarize" type="xs:boolean" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>

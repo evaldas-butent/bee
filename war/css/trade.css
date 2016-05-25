@@ -6,12 +6,13 @@
   padding: 2px 5px 2px 5px;
 }
 
-.bee-trade-itemsInfo-header {
+.bee-trade-itemsInfo-header td {
   font-weight: bold;
-  border: 1px solid black;
+  border-top: 1px solid black;
+  border-bottom: 1px solid black;
 }
 
-.bee-trade-itemsInfo-data {
+.bee-trade-itemsInfo-data td {
   border-bottom: 1px solid silver;
 }
 
@@ -167,4 +168,11 @@
   text-align: center;
   font-size: 8pt;
   margin-top: -5px;
+}
+
+.bee-trade-document-phase {
+  margin-right: 1em;
+  align-self: flex-end;
+  -webkit-align-self: flex-end;
+  -ms-flex-item-align: end;
 }

@@ -3,7 +3,6 @@ package com.butent.bee.shared.data;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.value.ValueType;
-import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Comparator;
 
@@ -66,14 +65,6 @@ public class TableCell implements IsCell {
   }
 
   @Override
-  public void clearProperty(String key) {
-    Assert.notEmpty(key);
-    if (properties != null) {
-      properties.remove(key);
-    }
-  }
-
-  @Override
   public void clearValue() {
     setValue(Value.getNullValueFromValueType(getType()));
   }
@@ -122,6 +113,14 @@ public class TableCell implements IsCell {
   }
 
   @Override
+  public void removeProperty(String key) {
+    Assert.notEmpty(key);
+    if (properties != null) {
+      properties.remove(key);
+    }
+  }
+
+  @Override
   public void setFormattedValue(String formattedValue) {
     this.formattedValue = formattedValue;
   }
@@ -135,14 +134,10 @@ public class TableCell implements IsCell {
   public void setProperty(String propertyKey, String propertyValue) {
     Assert.notEmpty(propertyKey);
 
-    if (BeeUtils.isEmpty(propertyValue)) {
-      clearProperty(propertyKey);
-    } else {
-      if (properties == null) {
-        properties = CustomProperties.create();
-      }
-      properties.put(propertyKey, propertyValue);
+    if (properties == null) {
+      properties = CustomProperties.create();
     }
+    properties.put(propertyKey, propertyValue);
   }
 
   @Override

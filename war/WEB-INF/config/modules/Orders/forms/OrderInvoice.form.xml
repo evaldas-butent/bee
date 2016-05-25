@@ -12,7 +12,7 @@
   <f:properties reports="PrintSalesInvoice" />
   <FlowPanel class="flexBox-vertical">
     <br/>
-    <Table>
+    <Table kind="controls">
       <col index="0" kind="label" />
       <col index="2" kind="label" />
       <col index="4" kind="label" />
@@ -39,6 +39,14 @@
           style="width: 50px;" editEnabled="false" newRowEnabled="false" />
       </row>
 
+      <row>
+        <Label for="Operation" />
+        <DataSelector source="Operation" style="&inp;" />
+
+        <Label for="WarehouseFrom" />
+        <DataSelector source="WarehouseFrom" style="&inp;" readOnly="true" />
+      </row>
+      
       <row>
         <Label for="Supplier" />
         <DataSelector source="Supplier" style="&inp;" />

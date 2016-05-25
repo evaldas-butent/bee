@@ -14,7 +14,7 @@
   >
   <FlowPanel>
     <br/>
-    <Table>
+    <Table kind="controls">
       <col index="0" kind="label" />
       <col index="2" kind="label" />
 
@@ -46,7 +46,7 @@
 
       <row>
         <Label for="Series" />
-        <DataSelector source="Series" newRowEnabled="false" style="width: &inpdt;" />
+        <DataSelector source="Series" newRowEnabled="false" style="&inpdt;" />
 
         <Label for="Number" visible="true" />
         <InputText source="Number" style="&inpw;" visible="true" />

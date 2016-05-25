@@ -5,8 +5,12 @@
   idName="WorkScheduleID"
   >
   <Fields>
+    <Enum name="Kind" notNull="true" key="WorkScheduleKind" label="=kind" />
+
     <Relation name="Employee" notNull="true" relation="Employees" cascade="DELETE"
       label="=employee" />
+    <Relation name="SubstituteFor" relation="Employees" label="=employeeSubstituteFor" />
+
     <Relation name="Object" notNull="true" relation="Locations" cascade="DELETE"
       label="=object" />
 

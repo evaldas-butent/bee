@@ -9,6 +9,9 @@
     </DataColumn>
     <DataColumn name="TcName" flexGrow="1" />
 
+    <DataColumn name="WsPlanned" />
+    <DataColumn name="WsActual" />
+
     <DataColumn name="Background" updateMode="row">
       <editor type="color" />
     </DataColumn>

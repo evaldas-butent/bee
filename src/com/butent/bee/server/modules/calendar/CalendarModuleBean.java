@@ -8,6 +8,7 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
+import com.google.common.eventbus.AllowConcurrentEvents;
 import com.google.common.eventbus.Subscribe;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
@@ -57,7 +58,7 @@ import com.butent.bee.shared.data.value.IntegerValue;
 import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.Order;
-import com.butent.bee.shared.i18n.LocalizableConstants;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
@@ -474,59 +475,58 @@ public class CalendarModuleBean implements BeeModule {
 
     sys.registerDataEventHandler(new DataEventHandler() {
       @Subscribe
+      @AllowConcurrentEvents
       public void setRowProperties(ViewQueryEvent event) {
-        if (event.isAfter() && BeeUtils.same(event.getTargetName(), VIEW_APPOINTMENTS)
-            && !DataUtils.isEmpty(event.getRowset())) {
+        if (event.isAfter(VIEW_APPOINTMENTS) && event.hasData()) {
           setAppopintmentProperties(event.getRowset());
         }
       }
 
       @Subscribe
+      @AllowConcurrentEvents
       public void updateTimers(ViewModifyEvent event) {
-        if (event.isAfter()) {
-          if (BeeUtils.same(event.getTargetName(), TBL_REMINDER_TYPES)) {
-            if (event instanceof ViewDeleteEvent
-                || event instanceof ViewUpdateEvent
-                && (DataUtils.contains(((ViewUpdateEvent) event).getColumns(), COL_HOURS)
-                || DataUtils.contains(((ViewUpdateEvent) event).getColumns(), COL_MINUTES))) {
+        if (event.isAfter(TBL_REMINDER_TYPES)) {
+          if (event instanceof ViewDeleteEvent
+              || event instanceof ViewUpdateEvent
+              && (DataUtils.contains(((ViewUpdateEvent) event).getColumns(), COL_HOURS)
+              || DataUtils.contains(((ViewUpdateEvent) event).getColumns(), COL_MINUTES))) {
 
-              createNotificationTimers(null);
+            createNotificationTimers(null);
+          }
+
+        } else if (event.isAfter(TBL_APPOINTMENTS)) {
+          if (event instanceof ViewDeleteEvent) {
+            for (long id : ((ViewDeleteEvent) event).getIds()) {
+              createNotificationTimers(Pair.of(TBL_APPOINTMENTS, id));
             }
+          } else if (event instanceof ViewUpdateEvent) {
+            ViewUpdateEvent ev = (ViewUpdateEvent) event;
 
-          } else if (BeeUtils.same(event.getTargetName(), TBL_APPOINTMENTS)) {
-            if (event instanceof ViewDeleteEvent) {
-              for (long id : ((ViewDeleteEvent) event).getIds()) {
-                createNotificationTimers(Pair.of(TBL_APPOINTMENTS, id));
-              }
-            } else if (event instanceof ViewUpdateEvent) {
-              ViewUpdateEvent ev = (ViewUpdateEvent) event;
+            if (DataUtils.contains(ev.getColumns(), COL_STATUS)
+                || DataUtils.contains(ev.getColumns(), COL_START_DATE_TIME)) {
 
-              if (DataUtils.contains(ev.getColumns(), COL_STATUS)
-                  || DataUtils.contains(ev.getColumns(), COL_START_DATE_TIME)) {
-
-                createNotificationTimers(Pair.of(TBL_APPOINTMENTS, ev.getRow().getId()));
-              }
+              createNotificationTimers(Pair.of(TBL_APPOINTMENTS, ev.getRow().getId()));
             }
+          }
 
-          } else if (BeeUtils.same(event.getTargetName(), TBL_APPOINTMENT_REMINDERS)) {
-            if (event instanceof ViewDeleteEvent) {
-              for (long id : ((ViewDeleteEvent) event).getIds()) {
-                createNotificationTimers(Pair.of(TBL_APPOINTMENT_REMINDERS, id));
-              }
-            } else if (event instanceof ViewUpdateEvent) {
-              ViewUpdateEvent ev = (ViewUpdateEvent) event;
-
-              if (DataUtils.contains(ev.getColumns(), COL_REMINDER_TYPE)
-                  || DataUtils.contains(ev.getColumns(), COL_HOURS)
-                  || DataUtils.contains(ev.getColumns(), COL_MINUTES)
-                  || DataUtils.contains(ev.getColumns(), COL_SCHEDULED)) {
-
-                createNotificationTimers(Pair.of(TBL_APPOINTMENT_REMINDERS, ev.getRow().getId()));
-              }
-            } else if (event instanceof ViewInsertEvent) {
-              createNotificationTimers(Pair.of(TBL_APPOINTMENT_REMINDERS,
-                  ((ViewInsertEvent) event).getRow().getId()));
+        } else if (event.isAfter(TBL_APPOINTMENT_REMINDERS)) {
+          if (event instanceof ViewDeleteEvent) {
+            for (long id : ((ViewDeleteEvent) event).getIds()) {
+              createNotificationTimers(Pair.of(TBL_APPOINTMENT_REMINDERS, id));
             }
+          } else if (event instanceof ViewUpdateEvent) {
+            ViewUpdateEvent ev = (ViewUpdateEvent) event;
+
+            if (DataUtils.contains(ev.getColumns(), COL_REMINDER_TYPE)
+                || DataUtils.contains(ev.getColumns(), COL_HOURS)
+                || DataUtils.contains(ev.getColumns(), COL_MINUTES)
+                || DataUtils.contains(ev.getColumns(), COL_SCHEDULED)) {
+
+              createNotificationTimers(Pair.of(TBL_APPOINTMENT_REMINDERS, ev.getRow().getId()));
+            }
+          } else if (event instanceof ViewInsertEvent) {
+            createNotificationTimers(Pair.of(TBL_APPOINTMENT_REMINDERS,
+                ((ViewInsertEvent) event).getRow().getId()));
           }
         }
       }
@@ -618,7 +618,7 @@ public class CalendarModuleBean implements BeeModule {
     HeadlineProducer headlineProducer = new HeadlineProducer() {
       @Override
       public Headline produce(Feed feed, long userId, BeeRowSet rowSet, IsRow row, boolean isNew,
-          LocalizableConstants constants) {
+          Dictionary constants) {
 
         String caption = DataUtils.getString(rowSet, row, COL_SUMMARY);
         if (BeeUtils.isEmpty(caption)) {
@@ -890,7 +890,7 @@ public class CalendarModuleBean implements BeeModule {
     }
 
     if (hours.size() > 1) {
-      result.addColumn(ValueType.TEXT, usr.getLocalizableConstants().calTotal());
+      result.addColumn(ValueType.TEXT, usr.getDictionary().calTotal());
     }
     int columnCount = result.getNumberOfColumns();
 
@@ -915,7 +915,7 @@ public class CalendarModuleBean implements BeeModule {
       totalColumns(result, 2, columnCount - 2, columnCount - 1);
     }
     if (result.getNumberOfRows() > 1) {
-      totalRows(result, 2, columnCount - 1, 0, usr.getLocalizableConstants().totalOf() + ":", 0);
+      totalRows(result, 2, columnCount - 1, 0, usr.getDictionary().totalOf() + ":", 0);
     }
     formatTimeColumns(result, 2, columnCount - 1);
 
@@ -977,7 +977,7 @@ public class CalendarModuleBean implements BeeModule {
     }
 
     if (months.size() > 1) {
-      result.addColumn(ValueType.TEXT, usr.getLocalizableConstants().calTotal());
+      result.addColumn(ValueType.TEXT, usr.getDictionary().calTotal());
     }
     int columnCount = result.getNumberOfColumns();
 
@@ -1002,7 +1002,7 @@ public class CalendarModuleBean implements BeeModule {
       totalColumns(result, 2, columnCount - 2, columnCount - 1);
     }
     if (result.getNumberOfRows() > 1) {
-      totalRows(result, 2, columnCount - 1, 0, usr.getLocalizableConstants().totalOf() + ":", 0);
+      totalRows(result, 2, columnCount - 1, 0, usr.getDictionary().totalOf() + ":", 0);
     }
     formatTimeColumns(result, 2, columnCount - 1);
 

@@ -76,7 +76,7 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.TextValue;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.view.DataInfo;
-import com.butent.bee.shared.i18n.LocalizableConstants;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.projects.ProjectConstants;
@@ -259,7 +259,7 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
 
   @Override
   public void onClick(ClickEvent event) {
-    LocalizableConstants loc = Localized.getConstants();
+    Dictionary loc = Localized.dictionary();
 
     Global.inputCollection(loc.mainCriteria(), loc.name(), true, criteriaEditors.keySet(),
         new Consumer<Collection<String>>() {
@@ -296,13 +296,13 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
 
     if (save(null)) {
       if (messages.size() == 1) {
-        String msg = BeeUtils.joinItems(messages.get(0), Localized.getConstants().mainCriteria());
+        String msg = BeeUtils.joinItems(messages.get(0), Localized.dictionary().mainCriteria());
         messages.clear();
         messages.add(msg);
 
       } else {
-        messages.add(BeeUtils.joinWords(Localized.getConstants().changedValues(),
-            Localized.getConstants().mainCriteria()));
+        messages.add(BeeUtils.joinWords(Localized.dictionary().changedValues(),
+            Localized.dictionary().mainCriteria()));
       }
     }
   }
@@ -310,7 +310,7 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
   @Override
   public void onLoad(FormView form) {
     EventUtils.clearRegistry(registry);
-    registry.add(BeeKeeper.getBus().registerRowActionHandler(this, false));
+    registry.add(BeeKeeper.getBus().registerRowActionHandler(this));
   }
 
   @Override
@@ -457,17 +457,17 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
       public void onConfirm() {
         Queries.update(formView.getViewName(), Filter.compareId(row.getId()), COL_OBJECT_STATUS,
             Value.getValue(status.ordinal()), new IntCallback() {
-          @Override
-          public void onSuccess(Integer result) {
-            DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_SERVICE_OBJECTS);
-            CellUpdateEvent.fire(BeeKeeper.getBus(), formView.getViewName(),
-                row.getId(), row.getVersion(),
-                CellSource.forColumn(formView.getDataColumns().get(
-                    formView.getDataIndex(COL_OBJECT_STATUS)), formView
+              @Override
+              public void onSuccess(Integer result) {
+                DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_SERVICE_OBJECTS);
+                CellUpdateEvent.fire(BeeKeeper.getBus(), formView.getViewName(),
+                    row.getId(), row.getVersion(),
+                    CellSource.forColumn(formView.getDataColumns().get(
+                        formView.getDataIndex(COL_OBJECT_STATUS)), formView
                         .getDataIndex(COL_OBJECT_STATUS)), BeeUtils.toString(status.ordinal()));
-            formView.getViewPresenter().handleAction(Action.REFRESH);
-          }
-        });
+                formView.getViewPresenter().handleAction(Action.REFRESH);
+              }
+            });
       }
     };
 
@@ -478,8 +478,8 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
     DecisionCallback decisionCallback = getObjectStatusDecisionCallback(formView, row,
         SvcObjectStatus.LOST_OBJECT);
 
-    Global.getMsgBoxen().decide(Localized.getConstants().svcActionToLostObjects(),
-        Lists.newArrayList(Localized.getConstants().svcSendToLostObjectQuestion()),
+    Global.getMsgBoxen().decide(Localized.dictionary().svcActionToLostObjects(),
+        Lists.newArrayList(Localized.dictionary().svcSendToLostObjectQuestion()),
         decisionCallback, 0, null, null, null, null);
   }
 
@@ -488,8 +488,8 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
     DecisionCallback decisionCallback = getObjectStatusDecisionCallback(formView, row,
         SvcObjectStatus.PROJECT_OBJECT);
 
-    Global.getMsgBoxen().decide(Localized.getConstants().svcActionToProjectObjects(),
-        Lists.newArrayList(Localized.getConstants().svcSendToProjectObjectQuestion()),
+    Global.getMsgBoxen().decide(Localized.dictionary().svcActionToProjectObjects(),
+        Lists.newArrayList(Localized.dictionary().svcSendToProjectObjectQuestion()),
         decisionCallback, 0, null, null, null, null);
   }
 
@@ -497,14 +497,14 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
     DecisionCallback decisionCallback = getObjectStatusDecisionCallback(formView, row,
         SvcObjectStatus.SERVICE_OBJECT);
 
-    Global.getMsgBoxen().decide(Localized.getConstants().svcActionToServiceObjects(),
-        Lists.newArrayList(Localized.getConstants().svcSendToServiceObjectQuestion()),
+    Global.getMsgBoxen().decide(Localized.dictionary().svcActionToServiceObjects(),
+        Lists.newArrayList(Localized.dictionary().svcSendToServiceObjectQuestion()),
         decisionCallback, 0, null, null, null, null);
   }
 
   private Button getSelectTemplateButton() {
     final Set<String> restrictedCols = Sets.newHashSet(COL_OBJECT_STATUS);
-    Button btn = new Button(Localized.getConstants().svcSelectTemplate(), new ScheduledCommand() {
+    Button btn = new Button(Localized.dictionary().svcSelectTemplate(), new ScheduledCommand() {
 
       @Override
       public void execute() {
@@ -531,15 +531,15 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
         relation.setCaching(Caching.QUERY);
         final UnboundSelector selector = UnboundSelector.create(relation);
 
-        Global.inputWidget(Localized.getConstants().template(), selector, new InputCallback() {
+        Global.inputWidget(Localized.dictionary().template(), selector, new InputCallback() {
 
           @Override
           public String getErrorMessage() {
             if (selector.getRelatedRow() == null) {
               UiHelper.focus(selector);
-              return Localized.getConstants().valueRequired();
+              return Localized.dictionary().valueRequired();
             }
-            return super.getErrorMessage();
+            return InputCallback.super.getErrorMessage();
           }
 
           @Override
@@ -552,11 +552,11 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
             if (form.getViewPresenter() instanceof ParentRowCreator) {
               ((ParentRowCreator) form.getViewPresenter()).createParentRow(form,
                   new Callback<IsRow>() {
-                @Override
-                public void onSuccess(final IsRow commitedRow) {
-                  fillServiceObjectData(commitedRow);
-                }
-              });
+                    @Override
+                    public void onSuccess(final IsRow commitedRow) {
+                      fillServiceObjectData(commitedRow);
+                    }
+                  });
             }
           }
 

@@ -13,5 +13,6 @@
     <Numeric name="Expenses" precision="15" scale="5" label="=prjExpenses" />
     <Relation name="Currency" relation="Currencies" label="=currency" defExpr="MAIN_CURRENCY" />
     <Relation name="StageTemplate" relation="ProjectTMLStages" cascade="SET_NULL" />
+    <Text name="Description" label="=description" />
   </Fields>
 </Table>

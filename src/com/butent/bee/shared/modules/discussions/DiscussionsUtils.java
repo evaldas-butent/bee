@@ -1,10 +1,8 @@
 package com.butent.bee.shared.modules.discussions;
 
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
-
 import static com.butent.bee.shared.modules.discussions.DiscussionsConstants.*;
 
+import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -13,10 +11,7 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
-import com.butent.bee.shared.modules.calendar.CalendarConstants;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
-import com.butent.bee.shared.modules.documents.DocumentConstants;
-import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -24,11 +19,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 public final class DiscussionsUtils {
 
-  private static final BiMap<String, String> discussionPropertyToRelation = HashBiMap.create();
   private static final long MEGABYTE_IN_BYTES = 1024 * 1024;
 
   public static List<Long> getDiscussionMarksIds(IsRow row) {
@@ -155,8 +148,8 @@ public final class DiscussionsUtils {
     return BeeRowSet.restore(formRow.getProperty(PROP_MARK_TYPES));
   }
 
-  public static Set<String> getRelations() {
-    return ensureDiscussionPropertyToRelation().inverse().keySet();
+  public static boolean isAnnouncement(FormView form, IsRow row) {
+    return !BeeUtils.isEmpty(row.getString(form.getDataIndex(COL_TOPIC)));
   }
 
   public static boolean isFileSizeLimitExceeded(long uploadFileSize, Long checkParam) {
@@ -194,8 +187,7 @@ public final class DiscussionsUtils {
                   .getColumnIndex(COL_MARK)]))
                   && (userId == BeeUtils.unbox(BeeUtils.toLongOrNull(row[marksStats
                       .getColumnIndex(AdministrationConstants.COL_USER)])))
-                  && (BeeUtils.unbox(commentId)
-                == BeeUtils.unbox(BeeUtils
+                  && (BeeUtils.unbox(commentId) == BeeUtils.unbox(BeeUtils
                   .toLongOrNull(row[marksStats.getColumnIndex(COL_COMMENT)]))));
     }
 
@@ -212,11 +204,11 @@ public final class DiscussionsUtils {
     for (String[] row : marksStats.getRows()) {
       result =
           result
-              || ((BeeUtils.unbox(userId)
-                == BeeUtils.unbox(BeeUtils.toLongOrNull(row[marksStats
+              || ((BeeUtils.unbox(userId) == BeeUtils.unbox(BeeUtils.toLongOrNull(row[marksStats
                   .getColumnIndex(AdministrationConstants.COL_USER)])))
-              && (BeeUtils.unbox(commentId) == BeeUtils.unbox(BeeUtils.toLongOrNull(row[marksStats
-                  .getColumnIndex(COL_COMMENT)]))));
+              && (BeeUtils.unbox(commentId) == BeeUtils.unbox(BeeUtils.toLongOrNull(
+                  row[marksStats
+                      .getColumnIndex(COL_COMMENT)]))));
     }
 
     return result;
@@ -229,26 +221,6 @@ public final class DiscussionsUtils {
       return DataUtils
           .sameIdSet(oldRow.getProperty(PROP_MEMBERS), newRow.getProperty(PROP_MEMBERS));
     }
-  }
-
-  public static String translateDiscussionPropertyToRelation(String propertyName) {
-    return ensureDiscussionPropertyToRelation().get(propertyName);
-  }
-
-  public static String translateRelationToDiscussionProperty(String relation) {
-    return ensureDiscussionPropertyToRelation().inverse().get(relation);
-  }
-
-  private static BiMap<String, String> ensureDiscussionPropertyToRelation() {
-    if (discussionPropertyToRelation.isEmpty()) {
-      discussionPropertyToRelation.put(PROP_COMPANIES, ClassifierConstants.COL_COMPANY);
-      discussionPropertyToRelation.put(PROP_PERSONS, ClassifierConstants.COL_PERSON);
-      discussionPropertyToRelation.put(PROP_APPOINTMENTS, CalendarConstants.COL_APPOINTMENT);
-      discussionPropertyToRelation.put(PROP_TASKS, TaskConstants.COL_TASK);
-      discussionPropertyToRelation.put(PROP_DOCUMENTS, DocumentConstants.COL_DOCUMENT);
-    }
-
-    return discussionPropertyToRelation;
   }
 
   private DiscussionsUtils() {

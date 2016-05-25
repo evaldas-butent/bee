@@ -218,7 +218,7 @@ public class InputDate extends InputText implements HasDateTimeFormat, HasIntSte
 
     if (isEmpty()) {
       if (checkForNull && !isNullable()) {
-        messages.add(Localized.getConstants().enterDate());
+        messages.add(Localized.dictionary().enterDate());
       }
       return messages;
     }
@@ -226,11 +226,11 @@ public class InputDate extends InputText implements HasDateTimeFormat, HasIntSte
     String v = BeeUtils.trim(getValue());
     if (getDateTimeFormat() == null) {
       if (!willParse(v)) {
-        messages.add(BeeUtils.joinWords(Localized.getConstants().invalidDate(), v));
+        messages.add(BeeUtils.joinWords(Localized.dictionary().invalidDate(), v));
       }
     } else {
       if (getDateTimeFormat().parseQuietly(v) == null) {
-        messages.add(Localized.getConstants().invalidDateFormat());
+        messages.add(Localized.dictionary().invalidDateFormat());
         messages.add(BeeUtils.joinWords(v, BeeUtils.bracket(getDateTimeFormat().getPattern())));
       }
     }
@@ -251,7 +251,7 @@ public class InputDate extends InputText implements HasDateTimeFormat, HasIntSte
 
     if (BeeUtils.isEmpty(normalizedValue)) {
       if (checkForNull && !isNullable()) {
-        messages.add(Localized.getConstants().enterDate());
+        messages.add(Localized.dictionary().enterDate());
       }
       return messages;
     }

@@ -704,17 +704,8 @@ public class TestBeeUtilsTransform extends TestCase implements ILogger {
   public void testToString() {
     assertEquals("true", BeeUtils.toString(true));
     assertEquals("false", BeeUtils.toString(false));
-    assertEquals("1.2", BeeUtils.toString(1.2));
     assertEquals("5", BeeUtils.toString(5));
-    assertEquals("Infinity", BeeUtils.toString(Double.POSITIVE_INFINITY));
     assertEquals("9", BeeUtils.toString((long) 9));
-
-    assertEquals("0", BeeUtils.toString(0.0));
-    assertEquals("0.123", BeeUtils.toString(0.123));
-    assertEquals("1000000", BeeUtils.toString(1e6));
-    assertEquals("1.0E-6", BeeUtils.toString(0.000001));
-    assertEquals("-1.0E-6", BeeUtils.toString(-1e-6));
-    assertEquals("1.000001", BeeUtils.toString(1.000001));
 
     assertEquals("0", BeeUtils.toString(0.0, 10));
     assertEquals("0", BeeUtils.toString(0.0, -1));

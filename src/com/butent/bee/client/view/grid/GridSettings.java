@@ -164,7 +164,7 @@ public final class GridSettings implements HandlesAllDataEvents {
           }
         });
 
-    Global.inputWidget(Localized.getConstants().settings(), wrapper, new InputCallback() {
+    Global.inputWidget(Localized.dictionary().columns(), wrapper, new InputCallback() {
       @Override
       public void onSuccess() {
         List<Integer> selectedColumns = getSelectedColumns(table, predefinedColumns);
@@ -325,7 +325,7 @@ public final class GridSettings implements HandlesAllDataEvents {
 
   private static boolean canEditInPlace(GridView gridView) {
     return gridView != null && !gridView.isReadOnly()
-        && !BeeUtils.isEmpty(gridView.getEditFormName())
+        && gridView.getFormCount(GridFormKind.EDIT) > 0
         && gridView.getGridDescription() != null
         && BeeUtils.isTrue(gridView.getGridDescription().getEditInPlace());
   }
@@ -337,7 +337,7 @@ public final class GridSettings implements HandlesAllDataEvents {
 
   private static Widget createEditInPlaceToggle(boolean value) {
     Toggle toggle = new Toggle(FontAwesome.SQUARE_O, FontAwesome.EDIT, STYLE_EDIT_IN_PLACE, value);
-    toggle.setTitle(Localized.getConstants().rightStateEdit());
+    toggle.setTitle(Localized.dictionary().rightStateEdit());
     return toggle;
   }
 
@@ -354,7 +354,7 @@ public final class GridSettings implements HandlesAllDataEvents {
 
   private static Widget createVisibilityToggle(boolean value) {
     Toggle toggle = new Toggle(FontAwesome.CIRCLE_THIN, FontAwesome.EYE, STYLE_VISIBILITY, value);
-    toggle.setTitle(Localized.getConstants().rightStateView());
+    toggle.setTitle(Localized.dictionary().rightStateView());
     return toggle;
   }
 

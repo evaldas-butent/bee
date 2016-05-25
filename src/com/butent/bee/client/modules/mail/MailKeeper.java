@@ -30,7 +30,7 @@ import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
-import com.butent.bee.shared.i18n.LocalizableMessages;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.menu.MenuHandler;
 import com.butent.bee.shared.menu.MenuService;
@@ -44,7 +44,6 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -94,10 +93,14 @@ public final class MailKeeper {
       }
     });
 
+    GridFactory.registerGridInterceptor(TBL_ACCOUNTS, new AccountsGrid());
+
     FormFactory.registerFormInterceptor(FORM_ACCOUNT, new AccountEditor());
     FormFactory.registerFormInterceptor(FORM_NEW_ACCOUNT, new AccountEditor());
     FormFactory.registerFormInterceptor(FORM_MAIL_MESSAGE, new MailMessage());
     FormFactory.registerFormInterceptor(FORM_RULE, new RuleForm());
+    FormFactory.registerFormInterceptor(FORM_RECIPIENTS_GROUP, new RecipientsGroupForm());
+    FormFactory.registerFormInterceptor(COL_NEWSLETTER, new NewsletterForm());
 
     GridFactory.registerGridInterceptor(VIEW_NEWSLETTER_FILES,
         new FileGridInterceptor(COL_NEWSLETTER, AdministrationConstants.COL_FILE,
@@ -132,20 +135,18 @@ public final class MailKeeper {
         if (event.hasView(ClassifierConstants.TBL_EMAILS) && event.isEditRow()) {
           event.consume();
 
-          NewMailMessage.create(Collections
-              .singleton(Data.getString(ClassifierConstants.TBL_EMAILS,
-                  event.getRow(), ClassifierConstants.COL_EMAIL_ADDRESS)),
-              null, null, null, null, null, null, false);
+          NewMailMessage.create(Data.getString(ClassifierConstants.TBL_EMAILS, event.getRow(),
+              ClassifierConstants.COL_EMAIL_ADDRESS), null, null, null, null);
         }
       }
-    }, false);
+    });
   }
 
   static void activateController(MailPanel mailPanel) {
     if (controller == null) {
       controller = new MailController();
       BeeKeeper.getScreen().addDomainEntry(Domain.MAIL, controller, null,
-          Localized.getConstants().mails());
+          Localized.dictionary().mails());
     }
     activePanel = mailPanel;
     rebuildController();
@@ -158,7 +159,15 @@ public final class MailKeeper {
   }
 
   static void clickFolder(Long folderId) {
-    activePanel.refreshFolder(folderId);
+    clickFolder(folderId, false);
+  }
+
+  static void clickFolder(Long folderId, boolean syncAll) {
+    if (DataUtils.isId(folderId) && Objects.equals(folderId, activePanel.getCurrentFolder())) {
+      activePanel.checkFolder(folderId, syncAll);
+    } else {
+      activePanel.refreshFolder(folderId);
+    }
   }
 
   static void copyMessage(String places, final Long folderTo, final boolean move) {
@@ -175,7 +184,7 @@ public final class MailKeeper {
         response.notify(panel.getFormView());
 
         if (!response.hasErrors()) {
-          LocalizableMessages loc = Localized.getMessages();
+          Dictionary loc = Localized.dictionary();
 
           panel.getFormView().notifyInfo(move
               ? loc.mailMovedMessagesToFolder(response.getResponseAsString())
@@ -201,7 +210,7 @@ public final class MailKeeper {
     String caption = null;
 
     if (isParent) {
-      caption = Localized.getConstants().mailInFolder() + " "
+      caption = Localized.dictionary().mailInFolder() + " "
           + BeeUtils.bracket(account.findFolder(parentId).getName());
     }
     Global.inputString(title, caption, new StringCallback() {
@@ -349,7 +358,7 @@ public final class MailKeeper {
           panel.requeryFolders(new ScheduledCommand() {
             @Override
             public void execute() {
-              panel.checkFolder(folderId);
+              panel.checkFolder(folderId, false);
             }
           });
         }

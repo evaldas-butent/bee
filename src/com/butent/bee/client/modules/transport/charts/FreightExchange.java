@@ -17,6 +17,7 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.ChoiceCallback;
+import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Edges;
 import com.butent.bee.client.dom.Rectangle;
@@ -138,7 +139,7 @@ final class FreightExchange extends ChartBase {
 
   @Override
   public String getCaption() {
-    return Localized.getConstants().freightExchange();
+    return Localized.dictionary().freightExchange();
   }
 
   @Override
@@ -154,22 +155,23 @@ final class FreightExchange extends ChartBase {
   @Override
   public void handleAction(Action action) {
     if (Action.ADD.equals(action)) {
-      Global.choiceWithCancel(Localized.getConstants().newTransportationOrder(), null,
-          Lists.newArrayList(Localized.getConstants().inputFull(),
-              Localized.getConstants().inputSimple()), new ChoiceCallback() {
+      Global.choiceWithCancel(Localized.dictionary().newTransportationOrder(), null,
+          Lists.newArrayList(Localized.dictionary().inputFull(),
+              Localized.dictionary().inputSimple()), new ChoiceCallback() {
 
             @Override
             public void onSuccess(int value) {
               switch (value) {
                 case 0:
-                  RowFactory.createRow(VIEW_ORDERS);
+                  RowFactory.createRow(VIEW_ORDERS, Modality.DISABLED);
                   break;
 
                 case 1:
                   DataInfo dataInfo = Data.getDataInfo(VIEW_ORDER_CARGO);
                   BeeRow row = RowFactory.createEmptyRow(dataInfo, true);
                   RowFactory.createRow(FORM_NEW_SIMPLE_ORDER,
-                      Localized.getConstants().newTransportationOrder(), dataInfo, row, null);
+                      Localized.dictionary().newTransportationOrder(), dataInfo, row,
+                      Modality.DISABLED, null);
                   break;
               }
             }
@@ -231,6 +233,16 @@ final class FreightExchange extends ChartBase {
   }
 
   @Override
+  protected String getFilterDataTypesColumnName() {
+    return COL_FX_FILTER_DATA_TYPES;
+  }
+
+  @Override
+  protected String getFiltersColumnName() {
+    return COL_FX_FILTERS;
+  }
+
+  @Override
   protected String getFooterHeightColumnName() {
     return COL_FX_FOOTER_HEIGHT;
   }
@@ -243,6 +255,11 @@ final class FreightExchange extends ChartBase {
   @Override
   protected String getRowHeightColumnName() {
     return COL_FX_PIXELS_PER_ROW;
+  }
+
+  @Override
+  protected Collection<String> getSettingsColumnsTriggeringRefresh() {
+    return BeeConst.EMPTY_IMMUTABLE_STRING_SET;
   }
 
   @Override
@@ -313,7 +330,7 @@ final class FreightExchange extends ChartBase {
       newRow.setValue(dataInfo.getColumnIndex(COL_CUSTOMER), customerId);
       newRow.setValue(dataInfo.getColumnIndex(COL_CUSTOMER_NAME), findCustomerName(customerId));
 
-      RowFactory.createRow(dataInfo, newRow);
+      RowFactory.createRow(dataInfo, newRow, Modality.DISABLED);
     }
   }
 
@@ -350,6 +367,7 @@ final class FreightExchange extends ChartBase {
     ChartData statusData = new ChartData(ChartData.Type.ORDER_STATUS);
 
     ChartData cargoData = new ChartData(ChartData.Type.CARGO);
+    ChartData cargoTypeData = new ChartData(ChartData.Type.CARGO_TYPE);
 
     ChartData loadData = new ChartData(ChartData.Type.LOADING);
     ChartData unloadData = new ChartData(ChartData.Type.UNLOADING);
@@ -367,6 +385,9 @@ final class FreightExchange extends ChartBase {
       statusData.addNotNull(item.getOrderStatus());
 
       cargoData.add(item.getCargoDescription(), item.getCargoId());
+      if (DataUtils.isId(item.getCargoType())) {
+        cargoTypeData.add(getCargoTypeName(item.getCargoType()), item.getCargoType());
+      }
 
       String loading = Places.getLoadingPlaceInfo(item);
       if (!BeeUtils.isEmpty(loading)) {
@@ -404,6 +425,7 @@ final class FreightExchange extends ChartBase {
     data.add(statusData);
 
     data.add(cargoData);
+    data.add(cargoTypeData);
 
     data.add(loadData);
     data.add(unloadData);

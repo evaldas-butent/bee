@@ -5,8 +5,10 @@ import com.google.gwt.core.client.JavaScriptException;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsDate;
 
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.data.HasCustomProperties;
 import com.butent.bee.shared.data.HasRowValue;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
@@ -179,6 +181,15 @@ public final class Evaluator extends Calculation implements HasRowValue {
         for (Map.Entry<String, String> entry : row.getProperties().entrySet()) {
           String name = entry.getKey();
           String value = entry.getValue();
+
+          if (HasCustomProperties.isUserPropertyName(name)) {
+            if (BeeKeeper.getUser().is(
+                HasCustomProperties.extractUserIdFromUserPropertyName(name))) {
+              name = HasCustomProperties.extractPropertyNameFromUserPropertyName(name);
+            } else {
+              name = null;
+            }
+          }
 
           if (NameUtils.isIdentifier(name) && !BeeUtils.isEmpty(value)) {
             JsUtils.setProperty(rowValues, name, value);

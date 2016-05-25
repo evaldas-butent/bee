@@ -19,7 +19,7 @@ class ComparisonCondition implements IsCondition {
   private final IsExpression expression;
   private final IsSql[] values;
 
-  public ComparisonCondition(Operator operator, IsExpression expression, IsSql... values) {
+  ComparisonCondition(Operator operator, IsExpression expression, IsSql... values) {
     Assert.noNulls(operator, expression);
 
     this.operator = operator;

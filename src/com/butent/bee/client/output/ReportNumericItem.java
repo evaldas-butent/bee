@@ -1,5 +1,7 @@
 package com.butent.bee.client.output;
 
+import com.google.gwt.user.client.ui.Widget;
+
 import com.butent.bee.client.widget.InputSpinner;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
@@ -20,8 +22,8 @@ public class ReportNumericItem extends ReportItem {
   private int precision;
   private InputSpinner precisionWidget;
 
-  public ReportNumericItem(String name, String caption) {
-    super(name, caption);
+  public ReportNumericItem(String expression, String caption) {
+    super(expression, caption);
   }
 
   @Override
@@ -63,7 +65,7 @@ public class ReportNumericItem extends ReportItem {
 
   @Override
   public ReportValue evaluate(SimpleRow row) {
-    return ReportValue.of(BeeUtils.round(row.getValue(getName()), getPrecision()));
+    return ReportValue.of(BeeUtils.round(row.getValue(getExpression()), getPrecision()));
   }
 
   @Override
@@ -75,11 +77,11 @@ public class ReportNumericItem extends ReportItem {
 
   @Override
   public String getOptionsCaption() {
-    return Localized.getConstants().precision();
+    return Localized.dictionary().precision();
   }
 
   @Override
-  public InputSpinner getOptionsWidget() {
+  public Widget getOptionsWidget() {
     if (precisionWidget == null) {
       precisionWidget = new InputSpinner(0, 5);
     }
@@ -106,7 +108,7 @@ public class ReportNumericItem extends ReportItem {
 
   @Override
   public String serialize() {
-    return serialize(Codec.beeSerialize(Collections.singletonMap(PRECISION, precision)));
+    return serialize(Codec.beeSerialize(Collections.singletonMap(PRECISION, getPrecision())));
   }
 
   public ReportNumericItem setPrecision(int prec) {

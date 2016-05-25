@@ -16,23 +16,24 @@ name="References" label="=references" order="900" module="Classifiers"
   <Item name="UpdateExchangeRates" label="=updateExchangeRatesMenu"
     service="update_exchange_rates" />
 
+  <Item name="TradeOperations" label="=trdOperations" service="grid" parameters="TradeOperations"
+    separator="true" module="Orders" />
+    
   <Item name="Warehouses" label="=warehouses" service="grid" parameters="Warehouses"
-    separator="true" module="Trade Ec" />
+    separator="true" module="Trade Ec Orders" />
 
   <Item name="Cities" label="=cities" service="grid" parameters="Cities" separator="true" />
   <Item name="Countries" label="=countries" service="grid" parameters="Countries" />
 
-  <Item name="Holidays" label="=holidays" service="form" parameters="Holidays" separator="true"
+  <Item name="Employees" label="=employees" service="grid" parameters="Employees" 
+    separator="true" />
+  <Item name="Holidays" label="=holidays" service="form" parameters="Holidays" 
     module="Trade.Acts" />
 
   <Item name="Banks" label="=banks" service="grid" parameters="Banks" separator="true" />
 
   <Item name="PaymentTypes" label="=paymentTypes" service="grid" parameters="PaymentTypes"
     separator="true" />
-
-  <Item name="ActivityTypes" label="=activityTypes" service="grid" parameters="ActivityTypes"
-    separator="true" />
-  <Item name="CostCenters" label="=costCenters" service="grid" parameters="CostCenters" />
 
   <Item name="RefVehicles" label="=vehicles" service="grid" parameters="Vehicles" 
     separator="true" />

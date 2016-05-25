@@ -14,6 +14,7 @@ import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.DataCache;
 import com.butent.bee.client.data.RowFactory;
+import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.GridFactory.GridOptions;
@@ -45,6 +46,7 @@ import com.butent.bee.shared.modules.trade.acts.TradeActKind;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.rights.SubModule;
 import com.butent.bee.shared.time.TimeUtils;
+import com.butent.bee.shared.ui.Preloader;
 import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
@@ -97,16 +99,13 @@ public final class TradeActKeeper {
           logger.severe(MenuService.TRADE_ACT_NEW.name(), "kind not recognized", parameters);
 
         } else {
-          ensureChache(new ScheduledCommand() {
-            @Override
-            public void execute() {
-              DataInfo dataInfo = Data.getDataInfo(VIEW_TRADE_ACTS);
-              BeeRow row = RowFactory.createEmptyRow(dataInfo, true);
+          ensureChache(() -> {
+            DataInfo dataInfo = Data.getDataInfo(VIEW_TRADE_ACTS);
+            BeeRow row = RowFactory.createEmptyRow(dataInfo, true);
 
-              prepareNewTradeAct(row, kind);
+            prepareNewTradeAct(row, kind);
 
-              RowFactory.createRow(dataInfo, row);
-            }
+            RowFactory.createRow(dataInfo, row, Modality.ENABLED);
           });
         }
       }
@@ -152,12 +151,7 @@ public final class TradeActKeeper {
 
     SelectorEvent.register(new TradeActSelectorHandler());
 
-    Consumer<ScheduledCommand> cacheLoader = new Consumer<ScheduledCommand>() {
-      @Override
-      public void accept(ScheduledCommand input) {
-        ensureChache(input);
-      }
-    };
+    Preloader cacheLoader = input -> ensureChache(input);
 
     FormFactory.registerPreloader(FORM_TRADE_ACT, cacheLoader);
     FormFactory.registerPreloader(FORM_INVOICE_BUILDER, cacheLoader);
@@ -178,9 +172,9 @@ public final class TradeActKeeper {
     return BeeKeeper.getRpc().createParameters(Module.TRADE, SubModule.ACTS, method);
   }
 
-  static void ensureChache(final ScheduledCommand command) {
+  static void ensureChache(final Runnable command) {
     if (cacheLoaded) {
-      command.execute();
+      command.run();
 
     } else {
       List<String> viewNames = Lists.newArrayList(VIEW_TRADE_OPERATIONS, VIEW_TRADE_SERIES,
@@ -193,7 +187,7 @@ public final class TradeActKeeper {
           cacheLoaded = true;
           logger.debug("trade act cache loaded", result, TimeUtils.elapsedMillis(start));
 
-          command.execute();
+          command.run();
         }
       });
     }
@@ -529,36 +523,33 @@ public final class TradeActKeeper {
     ensureParameters(new ScheduledCommand() {
       @Override
       public void execute() {
-        ensureChache(new ScheduledCommand() {
-          @Override
-          public void execute() {
-            String supplierKey;
-            String caption;
-            Filter filter;
+        ensureChache(() -> {
+          String supplierKey;
+          String caption;
+          Filter filter;
 
-            if (kind == null) {
-              supplierKey = GRID_ALL_ACTS_KEY;
+          if (kind == null) {
+            supplierKey = GRID_ALL_ACTS_KEY;
 
-              if (isClientArea()) {
-                caption = BeeUtils.join(" - ", Localized.getConstants().tradeActs(),
-                    BeeKeeper.getUser().getCompanyName());
-                filter = Filter.equals(COL_TA_COMPANY, BeeKeeper.getUser().getCompany());
-              } else {
-                caption = Localized.getConstants().tradeActsAll();
-                filter = null;
-              }
-
+            if (isClientArea()) {
+              caption = BeeUtils.join(" - ", Localized.dictionary().tradeActs(),
+                  BeeKeeper.getUser().getCompanyName());
+              filter = Filter.equals(COL_TA_COMPANY, BeeKeeper.getUser().getCompany());
             } else {
-              supplierKey = kind.getGridSupplierKey();
-
-              caption = Localized.getConstants().tradeActs() + " - " + kind.getCaption();
-              filter = kind.getFilter();
+              caption = Localized.dictionary().tradeActsAll();
+              filter = null;
             }
 
-            GridFactory.createGrid(GRID_TRADE_ACTS, supplierKey, new TradeActGrid(kind),
-                EnumSet.of(UiOption.GRID), GridOptions.forCaptionAndFilter(caption, filter),
-                callback);
+          } else {
+            supplierKey = kind.getGridSupplierKey();
+
+            caption = Localized.dictionary().tradeActs() + " - " + kind.getCaption();
+            filter = kind.getFilter();
           }
+
+          GridFactory.createGrid(GRID_TRADE_ACTS, supplierKey, new TradeActGrid(kind),
+              EnumSet.of(UiOption.GRID), GridOptions.forCaptionAndFilter(caption, filter),
+              callback);
         });
       }
     });

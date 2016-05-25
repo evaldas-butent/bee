@@ -12,12 +12,11 @@ import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
-import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 
-public class RequestBuilder extends AbstractFormInterceptor {
+public class RequestBuilder extends ProductSupportInterceptor {
 
   @Override
   public void afterCreateWidget(String name, IdentifiableWidget widget,
@@ -38,15 +37,17 @@ public class RequestBuilder extends AbstractFormInterceptor {
     event.consume();
     String viewName = getFormView().getViewName();
 
-    Queries.insert(viewName, event.getColumns(), event.getValues(), event.getChildren(),
-        new RowInsertCallback(viewName, event.getSourceId()) {
-          @Override
-          public void onSuccess(BeeRow result) {
-            super.onSuccess(result);
-            event.getCallback().onSuccess(result);
-            createFiles(result.getId());
-          }
-        });
+    if (!maybeNotifyEmptyProduct(msg -> event.getCallback().onFailure(msg))) {
+      Queries.insert(viewName, event.getColumns(), event.getValues(), event.getChildren(),
+          new RowInsertCallback(viewName, event.getSourceId()) {
+            @Override
+            public void onSuccess(BeeRow result) {
+              super.onSuccess(result);
+              event.getCallback().onSuccess(result);
+              createFiles(result.getId());
+            }
+          });
+    }
   }
 
   private void createFiles(Long requestId) {

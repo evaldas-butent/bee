@@ -11,9 +11,6 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.mail.AccountInfo;
-import com.butent.bee.shared.modules.mail.MailConstants.MessageFlag;
-import com.butent.bee.shared.modules.mail.MailConstants.Protocol;
-import com.butent.bee.shared.modules.mail.MailConstants.SystemFolder;
 import com.butent.bee.shared.modules.mail.MailFolder;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.ArrayUtils;
@@ -21,7 +18,9 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
 
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -43,33 +42,36 @@ import javax.mail.internet.MimeMessage;
 
 public class MailAccount {
 
-  private static class MailStore {
+  private static final long CONNECTION_TIMEOUT = TimeUtils.MILLIS_PER_MINUTE;
+  private static final long TIMEOUT = TimeUtils.MILLIS_PER_MINUTE * 10L;
+
+  private static final class MailStore {
     final Store store;
     final long start;
     int cnt;
 
-    public MailStore(Store store) {
+    private MailStore(Store store) {
       this.store = Assert.notNull(store);
       this.start = System.currentTimeMillis();
     }
 
-    public void enter() {
+    private void enter() {
       cnt++;
     }
 
-    public boolean expired() {
-      return BeeUtils.isMore(System.currentTimeMillis() - start, TimeUtils.MILLIS_PER_MINUTE * 10L);
+    private boolean expired() {
+      return BeeUtils.isMore(System.currentTimeMillis() - start, TIMEOUT);
     }
 
-    public Store getStore() {
+    private Store getStore() {
       return store;
     }
 
-    public boolean idle() {
+    private boolean idle() {
       return cnt <= 0;
     }
 
-    public void leave() {
+    private void leave() {
       cnt--;
     }
   }
@@ -146,6 +148,7 @@ public class MailAccount {
   private final Map<String, String> transportProperties;
 
   private final AccountInfo accountInfo;
+  private Collection<Long> accountUsers = new HashSet<>();
 
   MailAccount(SimpleRow data) {
     Assert.notNull(data);
@@ -267,6 +270,10 @@ public class MailAccount {
     return accountInfo.getUserId();
   }
 
+  public Collection<Long> getUsers() {
+    return accountUsers;
+  }
+
   public boolean isStoredRemotedly(MailFolder folder) {
     Assert.notNull(folder);
     return (getStoreProtocol() == Protocol.IMAP) && folder.isConnected();
@@ -343,6 +350,9 @@ public class MailAccount {
       Properties props = new Properties();
       String pfx = "mail." + protocol + ".";
 
+      props.put(pfx + "connectiontimeout", BeeUtils.toString(CONNECTION_TIMEOUT));
+      props.put(pfx + "timeout", BeeUtils.toString(TIMEOUT));
+
       if (isStoreSSL()) {
         props.put(pfx + "ssl.enable", "true");
       }
@@ -379,6 +389,9 @@ public class MailAccount {
     String protocol = getTransportProtocol().name().toLowerCase();
     Properties props = new Properties();
     String pfx = "mail." + protocol + ".";
+
+    props.put(pfx + "connectiontimeout", BeeUtils.toString(CONNECTION_TIMEOUT));
+    props.put(pfx + "timeout", BeeUtils.toString(TIMEOUT));
 
     if (!BeeUtils.isEmpty(getTransportPassword())) {
       props.put(pfx + "auth", "true");
@@ -443,16 +456,19 @@ public class MailAccount {
         }
       }
       if (disconnect) {
-        try {
-          logger.debug("Disconnecting from store...");
-          store.close();
-        } catch (MessagingException e) {
-          logger.warning(e);
-        }
+        logger.debug("Disconnecting from store...");
       } else {
         logger.debug("Leaving connected store...");
       }
       storesLock.unlock();
+
+      if (disconnect) {
+        try {
+          store.close();
+        } catch (MessagingException e) {
+          logger.warning(e);
+        }
+      }
     }
   }
 
@@ -526,11 +542,11 @@ public class MailAccount {
     return accountInfo.getRootFolder();
   }
 
-  boolean holdsFolders(Folder remoteFolder) throws MessagingException {
+  static boolean holdsFolders(Folder remoteFolder) throws MessagingException {
     return (remoteFolder.getType() & Folder.HOLDS_FOLDERS) != 0;
   }
 
-  boolean holdsMessages(Folder remoteFolder) throws MessagingException {
+  static boolean holdsMessages(Folder remoteFolder) throws MessagingException {
     return (remoteFolder.getType() & Folder.HOLDS_MESSAGES) != 0;
   }
 
@@ -572,7 +588,7 @@ public class MailAccount {
         remoteSource.copyMessages(messages.toArray(new Message[0]), remoteTarget);
       }
       if (move) {
-        for (Iterator<Message> iterator = messages.iterator(); iterator.hasNext();) {
+        for (Iterator<Message> iterator = messages.iterator(); iterator.hasNext(); ) {
           Message message = iterator.next();
 
           if (message.isExpunged()) {
@@ -672,5 +688,16 @@ public class MailAccount {
   void setFolders(Multimap<Long, SimpleRow> folders) {
     getRootFolder().getSubFolders().clear();
     fillTree(getRootFolder(), folders);
+  }
+
+  void setUsers(Long... users) {
+    accountUsers.clear();
+    accountUsers.add(getUserId());
+
+    if (!ArrayUtils.isEmpty(users)) {
+      for (Long user : users) {
+        accountUsers.add(user);
+      }
+    }
   }
 }

@@ -124,7 +124,7 @@ final class ServiceHelper {
         }
 
         if (selectedRows.isEmpty()) {
-          BeeKeeper.getScreen().notifyWarning(Localized.getConstants().selectAtLeastOneRow());
+          BeeKeeper.getScreen().notifyWarning(Localized.dictionary().selectAtLeastOneRow());
 
         } else {
           dialog.close();
@@ -135,7 +135,7 @@ final class ServiceHelper {
       }
     });
 
-    Button cancel = new Button(Localized.getConstants().cancel());
+    Button cancel = new Button(Localized.dictionary().cancel());
     cancel.addStyleName(stylePrefix + "cancel");
     cancel.addClickHandler(new ClickHandler() {
       @Override

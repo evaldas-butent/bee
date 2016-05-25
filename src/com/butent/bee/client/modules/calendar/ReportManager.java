@@ -89,7 +89,7 @@ class ReportManager {
 
         if (rs == null || rs.isEmpty()) {
           BeeKeeper.getScreen().notifyWarning(report.getCaption(),
-              Localized.getConstants().noData());
+              Localized.dictionary().noData());
         } else {
           showReport(report, getReportCaption(report, row), rs);
         }
@@ -108,13 +108,13 @@ class ReportManager {
 
     JustDate lower = Data.getDate(VIEW_REPORT_OPTIONS, row, COL_LOWER_DATE);
     if (lower != null) {
-      sb.append(separator).append(Localized.getConstants().dateFromShort().toLowerCase()).append(
+      sb.append(separator).append(Localized.dictionary().dateFromShort().toLowerCase()).append(
           separator).append(lower.toString());
     }
 
     JustDate upper = Data.getDate(VIEW_REPORT_OPTIONS, row, COL_UPPER_DATE);
     if (upper != null) {
-      sb.append(separator).append(Localized.getConstants().dateToShort().toLowerCase()).append(
+      sb.append(separator).append(Localized.dictionary().dateToShort().toLowerCase()).append(
           separator).append(upper.toString());
     }
 
@@ -134,10 +134,10 @@ class ReportManager {
 
       switch (i) {
         case 0:
-          columnDescription.setCaption(Localized.getConstants().calReportLowerHour());
+          columnDescription.setCaption(Localized.dictionary().calReportLowerHour());
           break;
         case 1:
-          columnDescription.setCaption(Localized.getConstants().calAttendee());
+          columnDescription.setCaption(Localized.dictionary().calAttendee());
           break;
         default:
           columnDescription.setHorAlign(TextAlign.RIGHT.getCssName());
@@ -156,7 +156,7 @@ class ReportManager {
 
     GridView gridView = GridFactory.createGridView(gridDescription,
         GridFactory.getSupplierKey(gridName, gridInterceptor), rowSet.getColumns(), null,
-        uiOptions, gridInterceptor, null);
+        uiOptions, gridInterceptor, null, null);
 
     gridView.initData(rowSet.getNumberOfRows(), rowSet);
 
@@ -194,7 +194,7 @@ class ReportManager {
 
         if (row == null) {
           BeeKeeper.getScreen().notifyWarning(report.getCaption(),
-              Localized.getConstants().noData());
+              Localized.dictionary().noData());
         } else {
           reportOptions.put(report, row);
           openDialog(report, row);
@@ -209,7 +209,7 @@ class ReportManager {
     final Flow container = new Flow();
     addStyle(container, "container");
 
-    Label capLabel = new Label(Localized.getConstants().calName());
+    Label capLabel = new Label(Localized.dictionary().calName());
     addStyle(capLabel, "capLabel");
 
     container.add(capLabel);
@@ -225,7 +225,7 @@ class ReportManager {
 
     container.add(caption);
 
-    Label ldLabel = new Label(Localized.getConstants().calReportLowerDate());
+    Label ldLabel = new Label(Localized.dictionary().calReportLowerDate());
     addStyle(ldLabel, "ldLabel");
 
     container.add(ldLabel);
@@ -236,7 +236,7 @@ class ReportManager {
 
     container.add(lowerDate);
 
-    Label udLabel = new Label(Localized.getConstants().calReportUpperDate());
+    Label udLabel = new Label(Localized.dictionary().calReportUpperDate());
     addStyle(udLabel, "udLabel");
 
     container.add(udLabel);
@@ -251,7 +251,7 @@ class ReportManager {
     final InputSpinner upperHour;
 
     if (EnumSet.of(Report.BUSY_HOURS, Report.CANCEL_HOURS).contains(report)) {
-      Label lhLabel = new Label(Localized.getConstants().calReportLowerHour());
+      Label lhLabel = new Label(Localized.dictionary().calReportLowerHour());
       addStyle(lhLabel, "lhLabel");
 
       container.add(lhLabel);
@@ -262,7 +262,7 @@ class ReportManager {
 
       container.add(lowerHour);
 
-      Label uhLabel = new Label(Localized.getConstants().calReportUpperHour());
+      Label uhLabel = new Label(Localized.dictionary().calReportUpperHour());
       addStyle(uhLabel, "uhLabel");
 
       container.add(uhLabel);
@@ -280,7 +280,7 @@ class ReportManager {
       upperHour = null;
     }
 
-    Label atpLabel = new Label(Localized.getConstants().calAttendeeTypes());
+    Label atpLabel = new Label(Localized.dictionary().calAttendeeTypes());
     addStyle(atpLabel, "atpLabel");
 
     container.add(atpLabel);
@@ -297,7 +297,7 @@ class ReportManager {
 
     container.add(atpSelector);
 
-    Label attLabel = new Label(Localized.getConstants().calAttendees());
+    Label attLabel = new Label(Localized.dictionary().calAttendees());
     addStyle(attLabel, "attLabel");
 
     container.add(attLabel);
@@ -314,7 +314,7 @@ class ReportManager {
 
     container.add(attSelector);
 
-    final Button tableCommand = new Button(Localized.getConstants().calTable(), new Command() {
+    final Button tableCommand = new Button(Localized.dictionary().calTable(), new Command() {
       @Override
       public void execute() {
         String vCap = caption.getValue();
@@ -326,14 +326,14 @@ class ReportManager {
         JustDate vUd = TimeUtils.parseDate(upperDate.getValue());
 
         if (vLd != null && vUd != null && TimeUtils.isMeq(vLd, vUd)) {
-          Global.showError(Localized.getConstants().calInvalidDateInterval());
+          Global.showError(Localized.dictionary().calInvalidDateInterval());
           return;
         }
 
         int vLh = (lowerHour == null) ? 0 : lowerHour.getIntValue();
         int vUh = (upperHour == null) ? 0 : upperHour.getIntValue();
         if (vUh > 0 && vUh <= vLh) {
-          Global.showError(Localized.getConstants().calInvalidHoursInterval());
+          Global.showError(Localized.dictionary().calInvalidHoursInterval());
           return;
         }
 

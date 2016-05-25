@@ -48,7 +48,7 @@
         <text>=trips</text>
         <AbsolutePanel>
           <layer left="0" right="0" top="0" height="50" heightUnit="%">
-            <ChildGrid name="Trips" relColumn="Vehicle" />
+            <ChildGrid name="Trips" relColumn="Vehicle" paging="true" />
           </layer>
           <layer left="0" right="0" top="51" topUnit="%" bottom="0">
              <ChildGrid name="VehicleTracking" relColumn="Vehicle" />
@@ -62,6 +62,11 @@
       <page module="Transport">
         <text>=trVehiclePartUsage</text>
         <ChildGrid name="VehiclePartUsage" relColumn="Vehicle" />
+      </page>
+      <page>
+      <text>=relatedInformation</text>
+      <Relations relColumn="Vehicle" inline="true"
+                 defaultRelations="Companies Persons Requests Tasks" style="margin: 0px 15px 0px 15px; min-width:300px;" />
       </page>
     </TabbedPages>
   </FlowPanel>

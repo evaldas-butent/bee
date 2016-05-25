@@ -7,6 +7,7 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.IdCallback;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
+import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.form.FormView;
@@ -97,12 +98,11 @@ class ChildServiceObjectsGrid extends AbstractGridInterceptor {
   }
 
   private static void commitData(final DataInfo svcObjectView, BeeRow row) {
-    RowFactory.createRow(svcObjectView, row, new RowCallback() {
+    RowFactory.createRow(svcObjectView, row, Modality.ENABLED, new RowCallback() {
       @Override
       public void onSuccess(BeeRow result) {
         DataChangeEvent.fireRefresh(BeeKeeper.getBus(), svcObjectView.getViewName());
       }
     });
   }
-
 }

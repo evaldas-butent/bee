@@ -2,13 +2,13 @@ package com.butent.bee.client.ui;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
-import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.xml.client.Document;
 import com.google.gwt.xml.client.Element;
 import com.google.gwt.xml.client.XMLParser;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
+import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.presenter.FormPresenter;
@@ -21,7 +21,6 @@ import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -32,6 +31,7 @@ import com.butent.bee.shared.data.ProviderType;
 import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.ui.Preloader;
 import com.butent.bee.shared.ui.UiConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Property;
@@ -49,12 +49,13 @@ import java.util.Map;
 
 public final class FormFactory {
 
-  public abstract static class FormViewCallback {
-    public void onFailure(String... reason) {
+  @FunctionalInterface
+  public interface FormViewCallback {
+    default void onFailure(String... reason) {
       BeeKeeper.getScreen().notifyWarning(reason);
     }
 
-    public abstract void onSuccess(FormDescription formDescription, FormView result);
+    void onSuccess(FormDescription formDescription, FormView result);
   }
 
   public interface WidgetDescriptionCallback {
@@ -73,7 +74,7 @@ public final class FormFactory {
   private static final Map<String, Pair<FormInterceptor, Integer>> formInterceptors =
       new HashMap<>();
 
-  private static final Map<String, Consumer<ScheduledCommand>> formPreloaders = new HashMap<>();
+  private static final Map<String, Preloader> formPreloaders = new HashMap<>();
 
   private static final Multimap<String, String> hiddenWidgets = HashMultimap.create();
 
@@ -186,20 +187,17 @@ public final class FormFactory {
     Assert.notEmpty(name);
     Assert.notNull(callback);
 
-    Consumer<ScheduledCommand> preloader = formPreloaders.get(name);
+    Preloader preloader = formPreloaders.get(name);
 
     if (preloader == null) {
       loadDescription(name, callback);
 
     } else {
-      preloader.accept(new ScheduledCommand() {
-        @Override
-        public void execute() {
-          loadDescription(name, callback);
-        }
-      });
+      preloader.accept(() -> loadDescription(name, callback));
 
-      formPreloaders.remove(name);
+      if (preloader.disposable()) {
+        formPreloaders.remove(name);
+      }
     }
   }
 
@@ -356,9 +354,10 @@ public final class FormFactory {
     formInterceptors.put(getFormKey(formName), Pair.of(interceptor, 0));
   }
 
-  public static void registerPreloader(String formName, Consumer<ScheduledCommand> preloader) {
+  public static void registerPreloader(String formName, Preloader preloader) {
     Assert.notEmpty(formName);
     Assert.notNull(preloader);
+
     formPreloaders.put(formName, preloader);
   }
 
@@ -394,7 +393,10 @@ public final class FormFactory {
       return;
     }
 
-    BeeKeeper.getRpc().sendText(Service.GET_FORM, BeeUtils.trim(name), new ResponseCallback() {
+    ParameterList params = new ParameterList(Service.GET_FORM);
+    params.setSummary(name);
+
+    BeeKeeper.getRpc().sendText(params, BeeUtils.trim(name), new ResponseCallback() {
       @Override
       public void onResponse(ResponseObject response) {
         if (response.hasResponse(String.class)) {

@@ -8,7 +8,7 @@
 
   name="OrdersTemplate" viewName="OrdersTemplates" caption="=template" width="800" height="600">
   <FlowPanel>
-    <Table>
+    <Table kind="controls">
       <row>
         <Label for="Template" visible="true" style="&lbl;" />
         <InputText source="Template" visible="true" style="&inpw;" />

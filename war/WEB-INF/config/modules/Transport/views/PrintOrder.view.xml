@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<View xmlns="http://www.butent.com/view"
-  xmlns:x="http://www.butent.com/expression"
+<View xmlns="http://www.butent.com/view" xmlns:xi="http://www.w3.org/2001/XInclude"
 
-  name="PrintOrder"
-  source="Assessments"
-  >
+      name="PrintOrder"
+      source="Assessments"
+    >
   <Columns>
     <SimpleColumn name="Assessment" />
 
@@ -41,11 +40,8 @@
         </SimpleJoin>
       </SimpleJoin>
 
-      <SimpleJoin name="LoadingPlace" joinType="LEFT">
-        <SimpleColumn name="Date" alias="LoadingDate" />
-      </SimpleJoin>
-      <SimpleJoin name="UnloadingPlace" joinType="LEFT">
-        <SimpleColumn name="Date" alias="UnloadingDate" />
+      <SimpleJoin name="CargoHandling" joinType="LEFT">
+        <xi:include href="viewcolumns/Handling.viewcolumns.xml" />
       </SimpleJoin>
 
       <SimpleColumn name="Description" />

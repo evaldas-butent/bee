@@ -17,7 +17,7 @@
     <Relation name="Driver" relation="Drivers" label="=vehicleDriver" cascade="DELETE" />
     <Relation name="TransportationOrder" relation="TransportationOrders" label="=transportOrder" cascade="DELETE" />
     <Relation name="Trip" relation="Trips" label="=trip" cascade="DELETE" />
-    <Relation name="CargoRequest" relation="CargoRequests" label="=trRequest" cascade="DELETE" />
+    <Relation name="ShipmentRequest" relation="ShipmentRequests" label="=trRequest" cascade="DELETE" />
     <Relation name="Discussion" relation="Discussions" label="=discussion" cascade="DELETE" />
     <Relation name="ServiceObject" relation="ServiceObjects" label="=svcObject" cascade="DELETE" />
     <Relation name="Message" relation="Messages" label="=mailMessage" editable="true" />

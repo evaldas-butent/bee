@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+  xmlns:ui="http://www.butent.com/ui"
+  xmlns:w="http://www.butent.com/widget"
+  xmlns:xi="http://www.w3.org/2001/XInclude"
+
+  name="NewsDocuments" viewName="Documents" caption="=documents"
+  newRowForm="NewDocument" editForm="Document" parent="Tree" favorite="Name"
+  flexGrow="1" order="DocumentID desc"
+  >
+  <xi:include href="columns/Documents.columns.xml" />
+
+  <g:predefinedFilter name="received" label="=documentFilterReceived">
+    <g:column name="Received" emptyValues="false" />
+  </g:predefinedFilter>
+  <g:predefinedFilter name="sent" label="=documentFilterSent">
+    <g:column name="Sent" emptyValues="false" />
+  </g:predefinedFilter>
+</g:Grid>

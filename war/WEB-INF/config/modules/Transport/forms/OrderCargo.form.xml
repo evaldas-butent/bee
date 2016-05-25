@@ -11,7 +11,7 @@
         width="900" height="870"
     >
   <FlowPanel class="flexBox-vertical">
-    <Table cellStyle="padding-top: 3px; padding-bottom: 3px;">
+    <Table kind="controls" cellStyle="padding-top: 3px; padding-bottom: 3px;">
       <row>
         <cell kind="label">
           <Label for="Description" />
@@ -59,7 +59,7 @@
             <xi:include href="widgets/CargoPlaces.widget.xml" />
 
             <FlowPanel>
-              <Table>
+              <Table kind="custom">
                 <row>
                   <Label text="=cargoChangeOfPallets" style="&lbl1;" />
                   <InputInteger source="ExchangeOfPalettes" style="width:70px" />
@@ -69,7 +69,7 @@
                   <InputInteger source="Palettes" style="width:70px" />
                 </row>
               </Table>
-              <Table>
+              <Table kind="controls">
                 <row>
                   <CheckBox source="Dangerous" text="=dangerous" />
                 </row>
@@ -80,7 +80,7 @@
                   <CheckBox name="Partial" source="Partial" text="=partial" />
                 </row>
               </Table>
-              <Table name="Metrics">
+              <Table name="Metrics" kind="custom">
                 <row>
                   <Label text="=length" horizontalAlignment="right" style="&lbl1;" />
                   <InputDecimal source="Length" format="0.00" style="width:70px" />
@@ -102,12 +102,18 @@
                   <InputDecimal source="LDM" format="0.00" style="width:70px" />
                 </row>
               </Table>
+              <FlowPanel>
+                <Label for="Directions" style="text-align:right;" />
+                <InputArea source="Directions" visibleLines="3" style="width:200px;" />
+              </FlowPanel>
             </FlowPanel>
           </FlowPanel>
 
+          <ChildGrid name="CargoHandling" relColumn="Cargo" style="height:200px;" />
+
           &separator;
 
-          <Table>
+          <Table kind="controls">
             <row>
               <Label html="CMR" horizontalAlignment="right" style="&lbl1;" module="Documents" />
               <DataSelector source="Cmr" caching="none" newRowEnabled="false" module="Documents" />
@@ -117,8 +123,12 @@
                 <DataSelector source="ValueCurrency" editEnabled="false"
                               style="width:5em; display:inline-block; margin-left:5px;" />
               </FlowPanel>
-              <Label text="=notes" />
-              <Label text="=trDirections" />
+              <cell rowSpan="2">
+                <FlowPanel style="margin-left:1em;">
+                  <Label for="Notes" style="text-align:right;" />
+                  <InputArea source="Notes" visibleLines="3" style="width:200px;" />
+                </FlowPanel>
+              </cell>
             </row>
             <row>
               <Label text="=number" horizontalAlignment="right" style="&lbl1;" />
@@ -129,14 +139,6 @@
                 <DataSelector source="QuantityUnit"
                               style="display:inline-block; width:5em; margin-left:5px;" />
               </FlowPanel>
-              <cell rowSpan="2">
-                <InputArea source="Notes" characterWidth="30" visibleLines="3"
-                           style="width: 150px" />
-              </cell>
-              <cell rowSpan="2">
-                <InputArea source="Directions" characterWidth="30" visibleLines="3"
-                           style="width: 150px" />
-              </cell>
             </row>
             <row>
               <Label text="=cargoTermsOfService" horizontalAlignment="right" style="&lbl1;" />
@@ -158,10 +160,6 @@
         <ChildGrid name="CargoExpenses" relColumn="Cargo" />
       </page>
       <page>
-        <text>=trAdditionalHandlingPlaces</text>
-        <ChildGrid name="CargoHandling" relColumn="Cargo" />
-      </page>
-      <page>
         <text>=trCargoDocuments</text>
         <ChildGrid name="RelatedDocuments" relColumn="Cargo" />
       </page>
@@ -172,6 +170,11 @@
       <page>
         <text>=trTripDocuments</text>
         <GridPanel name="TripDocuments" parent="{form}" child="true" />
+      </page>
+      <page>
+      <text>=relatedInformation</text>
+      <Relations relColumn="Cargo" inline="true"
+                 defaultRelations="Companies Persons Requests Tasks" style="margin: 0px 15px 0px 15px; min-width:300px;" />
       </page>
     </TabbedPages>
   </FlowPanel>

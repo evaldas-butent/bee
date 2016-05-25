@@ -6,16 +6,23 @@ import com.google.web.bindery.event.shared.HandlerRegistration;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.composite.DataSelector;
+import com.butent.bee.client.data.SelectionOracle.Callback;
+import com.butent.bee.client.data.SelectionOracle.Request;
+import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumable;
+import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.BeeRow;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.Collection;
 
 public final class SelectorEvent extends GwtEvent<SelectorEvent.Handler> implements Consumable {
 
+  @FunctionalInterface
   public interface Handler extends EventHandler {
     void onDataSelector(SelectorEvent event);
   }
@@ -36,8 +43,20 @@ public final class SelectorEvent extends GwtEvent<SelectorEvent.Handler> impleme
 
   public static SelectorEvent fireNewRow(DataSelector selector, BeeRow row, String newRowFormName,
       String defValue) {
+
     SelectorEvent event = new SelectorEvent(State.NEW, row, newRowFormName);
     event.setDefValue(defValue);
+
+    fireEvent(selector, event);
+    return event;
+  }
+
+  public static SelectorEvent fireRequest(DataSelector selector, Request request,
+      Callback callback) {
+
+    SelectorEvent event = new SelectorEvent(State.PENDING);
+    event.setRequest(request);
+    event.setCallback(callback);
 
     fireEvent(selector, event);
     return event;
@@ -73,10 +92,13 @@ public final class SelectorEvent extends GwtEvent<SelectorEvent.Handler> impleme
   private String newRowFormName;
 
   private Collection<Long> exclusions;
+  private Request request;
+  private Callback callback;
 
   private boolean consumed;
 
   private String defValue;
+  private Consumer<FormView> onOpenNewRow;
 
   private SelectorEvent(State state) {
     this(state, null, null);
@@ -103,6 +125,10 @@ public final class SelectorEvent extends GwtEvent<SelectorEvent.Handler> impleme
     return TYPE;
   }
 
+  public Callback getCallback() {
+    return callback;
+  }
+
   public String getDefValue() {
     return defValue;
   }
@@ -119,6 +145,10 @@ public final class SelectorEvent extends GwtEvent<SelectorEvent.Handler> impleme
     return newRowFormName;
   }
 
+  public Consumer<FormView> getOnOpenNewRow() {
+    return onOpenNewRow;
+  }
+
   public BeeRow getRelatedRow() {
     return (getSelector() == null) ? null : getSelector().getRelatedRow();
   }
@@ -127,8 +157,15 @@ public final class SelectorEvent extends GwtEvent<SelectorEvent.Handler> impleme
     return (getSelector() == null) ? null : getSelector().getOracle().getViewName();
   }
 
+  public Request getRequest() {
+    return request;
+  }
+
   public DataSelector getSelector() {
-    if (getSource() instanceof DataSelector) {
+    if (!isLive()) {
+      LogUtils.getRootLogger().warning(NameUtils.getName(this), "is dead");
+      return null;
+    } else if (getSource() instanceof DataSelector) {
       return (DataSelector) getSource();
     } else {
       return null;
@@ -184,12 +221,25 @@ public final class SelectorEvent extends GwtEvent<SelectorEvent.Handler> impleme
     return State.OPEN.equals(getState());
   }
 
+  public boolean isRequest() {
+    return State.PENDING.equals(getState());
+  }
+
   public boolean isRowCreated() {
     return State.CREATED.equals(getState());
   }
 
   public boolean isUnloading() {
     return State.UNLOADING.equals(getState());
+  }
+
+  public boolean resumeRequest(DataSelector selector) {
+    if (selector != null && getRequest() != null && getCallback() != null) {
+      selector.getOracle().requestSuggestions(getRequest(), getCallback());
+      return true;
+    } else {
+      return false;
+    }
   }
 
   @Override
@@ -205,12 +255,24 @@ public final class SelectorEvent extends GwtEvent<SelectorEvent.Handler> impleme
     this.newRowFormName = newRowFormName;
   }
 
+  public void setOnOpenNewRow(Consumer<FormView> onOpenNewRow) {
+    this.onOpenNewRow = onOpenNewRow;
+  }
+
   @Override
   protected void dispatch(Handler handler) {
     handler.onDataSelector(this);
   }
 
+  private void setCallback(Callback callback) {
+    this.callback = callback;
+  }
+
   private void setExclusions(Collection<Long> exclusions) {
     this.exclusions = exclusions;
+  }
+
+  private void setRequest(Request request) {
+    this.request = request;
   }
 }

@@ -15,13 +15,13 @@ import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
-import elemental.js.dom.JsNode;
+import elemental.client.Browser;
 import elemental.events.Event;
 import elemental.events.EventListener;
-import elemental.js.dom.JsElement;
-import elemental.js.html.JsIFrameElement;
 import elemental.html.IFrameElement;
-import elemental.client.Browser;
+import elemental.js.dom.JsElement;
+import elemental.js.dom.JsNode;
+import elemental.js.html.JsIFrameElement;
 
 class RichTextAreaImpl implements RichTextArea.Formatter, HasHtml {
 
@@ -308,7 +308,10 @@ class RichTextAreaImpl implements RichTextArea.Formatter, HasHtml {
   }
 
   void uninitElement() {
-    isReady = false;
+    if (isReady) {
+      textOrHtml = getBody().getInnerHTML();
+      isReady = false;
+    }
 
     if (initializing) {
       initializing = false;

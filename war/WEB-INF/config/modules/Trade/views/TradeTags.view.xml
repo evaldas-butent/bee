@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="TradeTags" source="TradeTags"
+  caption="=tags" newRowCaption="=newTag"
+  >
+  <Columns>
+    <SimpleColumn name="TagName" />
+
+    <SimpleColumn name="Background" />
+    <SimpleColumn name="Foreground" />
+  </Columns>
+  
+  <Order>
+    <OrderBy column="TagName" />
+  </Order>
+</View>
+ 

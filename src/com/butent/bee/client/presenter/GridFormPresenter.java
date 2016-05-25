@@ -4,8 +4,10 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.Callback;
-import com.butent.bee.client.data.IdCallback;
+import com.butent.bee.client.Global;
 import com.butent.bee.client.data.ParentRowCreator;
+import com.butent.bee.client.dialog.Icon;
+import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.ElementSize;
 import com.butent.bee.client.output.Printable;
 import com.butent.bee.client.output.Printer;
@@ -14,18 +16,26 @@ import com.butent.bee.client.view.HasGridView;
 import com.butent.bee.client.view.HeaderImpl;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.View;
+import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.form.CloseCallback;
 import com.butent.bee.client.view.form.FormAndHeader;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
+import com.butent.bee.client.view.grid.GridFormKind;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.NotificationListener;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.Action;
+import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.Set;
 
 public class GridFormPresenter extends AbstractPresenter implements HasGridView, Printable,
@@ -57,7 +67,16 @@ public class GridFormPresenter extends AbstractPresenter implements HasGridView,
 
     this.gridView = gridView;
 
-    this.header = createHeader(caption, actions, edit);
+    Set<Action> enabledActions = new HashSet<>();
+    if (!BeeUtils.isEmpty(actions)) {
+      enabledActions.addAll(actions);
+    }
+
+    if (edit && !BeeUtils.isEmpty(formView.getFavorite())) {
+      enabledActions.add(Action.BOOKMARK);
+    }
+
+    this.header = createHeader(caption, enabledActions, edit);
     this.container = createContainer(this.header, formView, edit);
 
     this.container.setViewPresenter(this);
@@ -70,13 +89,7 @@ public class GridFormPresenter extends AbstractPresenter implements HasGridView,
       final Callback<IsRow> callback) {
 
     if (gridView.isAdding() && gridView.likeAMotherlessChild()) {
-      gridView.ensureRelId(new IdCallback() {
-        @Override
-        public void onSuccess(Long result) {
-          gridView.createParentRow(notificationListener, callback);
-        }
-      });
-
+      gridView.ensureRelId(result -> gridView.createParentRow(notificationListener, callback));
     } else {
       gridView.createParentRow(notificationListener, callback);
     }
@@ -121,6 +134,11 @@ public class GridFormPresenter extends AbstractPresenter implements HasGridView,
   }
 
   @Override
+  public String getViewKey() {
+    return getForm().getSupplierKey();
+  }
+
+  @Override
   public void handleAction(Action action) {
     if (action == null) {
       return;
@@ -151,7 +169,7 @@ public class GridFormPresenter extends AbstractPresenter implements HasGridView,
         break;
 
       case EDIT:
-        gridView.getForm(true).setEnabled(true);
+        gridView.getForm(GridFormKind.EDIT).setEnabled(true);
         hideAction(action);
         if (editSave) {
           showAction(Action.SAVE);
@@ -159,21 +177,22 @@ public class GridFormPresenter extends AbstractPresenter implements HasGridView,
         break;
 
       case SAVE:
-        save();
+        save(null);
         break;
 
       case PRINT:
-        if (getForm().printHeader()) {
-          Printer.print(this);
+        if (gridView.isAdding() && interceptor != null && interceptor.saveOnPrintNewRow()) {
+          maybeSaveAndPrint();
         } else {
-          Printer.print(getForm());
+          print();
         }
         break;
 
+      case BOOKMARK:
+        getForm().bookmark();
+        break;
+
       default:
-    }
-    if (interceptor != null) {
-      interceptor.afterAction(action, this);
     }
   }
 
@@ -203,6 +222,19 @@ public class GridFormPresenter extends AbstractPresenter implements HasGridView,
     }
 
     return ok;
+  }
+
+  public void save(Consumer<IsRow> consumer) {
+    final FormView form = getForm();
+    if (!form.validate(form, true)) {
+      return;
+    }
+
+    if (gridView.isAdding() && gridView.likeAMotherlessChild()) {
+      gridView.ensureRelId(result -> gridView.formConfirm(consumer));
+    } else {
+      gridView.formConfirm(consumer);
+    }
   }
 
   public void setCaption(String caption) {
@@ -256,22 +288,36 @@ public class GridFormPresenter extends AbstractPresenter implements HasGridView,
     return formHeader;
   }
 
-  private void save() {
-    final FormView form = getForm();
-    if (!form.validate(form, true)) {
+  private void maybeSaveAndPrint() {
+    Global.confirm(getCaption(), Icon.QUESTION,
+        Collections.singletonList(Localized.dictionary().saveAndPrintQuestion()),
+        Localized.dictionary().saveAndPrintAction(), Localized.dictionary().cancel(),
+        () -> saveAndPrint());
+  }
+
+  private void print() {
+    if (getForm().printHeader()) {
+      Printer.print(this);
+    } else {
+      Printer.print(getForm());
+    }
+  }
+
+  private void saveAndPrint() {
+    FormInterceptor interceptor = getForm().getFormInterceptor();
+    if (interceptor != null && !interceptor.beforeAction(Action.SAVE, this)) {
       return;
     }
 
-    if (gridView.isAdding() && gridView.likeAMotherlessChild()) {
-      gridView.ensureRelId(new IdCallback() {
-        @Override
-        public void onSuccess(Long result) {
-          gridView.formConfirm();
-        }
-      });
+    save(row -> {
+      if (DomUtils.isVisible(gridView.getGrid())
+          && DataUtils.sameId(row, gridView.getActiveRow())) {
 
-    } else {
-      gridView.formConfirm();
-    }
+        EditStartEvent event = new EditStartEvent(row, gridView.isReadOnly());
+        event.setOnFormFocus(form -> form.getViewPresenter().handleAction(Action.PRINT));
+
+        gridView.onEditStart(event);
+      }
+    });
   }
 }

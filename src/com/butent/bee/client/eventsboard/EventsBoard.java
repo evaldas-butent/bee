@@ -141,6 +141,8 @@ public abstract class EventsBoard extends Flow implements Presenter, RowInsertEv
   private static final String CONTENT_COL_EVENT_NOTE = "EventNote";
   private static final String CONTENT_COL_EVENT_FILES = "EventFiles";
 
+  private static final String DEFAULT_PHOTO_IMAGE = "images/defaultUser.png";
+
   private static final int MAX_PADDING_LEFT = 5;
 
   private final BeeLogger logger = LogUtils.getLogger(EventsBoard.class);
@@ -247,8 +249,8 @@ public abstract class EventsBoard extends Flow implements Presenter, RowInsertEv
     DataInfo data = Data.getDataInfo(getEventsDataViewName());
 
     BeeRow row = RowFactory.createEmptyRow(data, true);
-    RowFactory.createRow(data.getNewRowForm(), data.getCaption(), data, row, null,
-        getNewEventFormInterceptor(), null);
+    RowFactory.createRow(data.getNewRowForm(), data.getCaption(), data, row, null, null,
+        getNewEventFormInterceptor(), null, null);
   }
 
   public void create(HasWidgets widget, long relId) {
@@ -524,7 +526,7 @@ public abstract class EventsBoard extends Flow implements Presenter, RowInsertEv
     afterCreateEventNoteCell(rs, row, widget, cell);
   }
 
-  private void createHeaderView() {
+  public void createHeaderView() {
     headerView = new HeaderImpl();
     headerView.setViewPresenter(this);
     IdentifiableWidget add = null;
@@ -570,13 +572,17 @@ public abstract class EventsBoard extends Flow implements Presenter, RowInsertEv
       return;
     }
 
-    String photo = row.getString(idxPhoto);
+    Long photo = row.getLong(idxPhoto);
 
-    if (BeeUtils.isEmpty(photo)) {
-      return;
+    String photoUrl;
+
+    if (!DataUtils.isId(photo)) {
+      photoUrl = DEFAULT_PHOTO_IMAGE;
+    } else {
+      photoUrl = PhotoRenderer.getUrl(photo);
     }
 
-    Image image = new Image(PhotoRenderer.getUrl(photo));
+    Image image = new Image(photoUrl);
     image.addStyleName(STYLE_PREFIX + STYLE_CONTENT_PHOTO);
 
     if (BeeUtils.isEmpty(getStylePrefix())) {
@@ -648,8 +654,8 @@ public abstract class EventsBoard extends Flow implements Presenter, RowInsertEv
         logger.debug("parse event data from", getEventsDataViewName());
         if (!clearCache && getOldData() != null && result != null) {
           if (getOldData().getNumberOfRows() == result.getNumberOfRows()
-              && getOldData().getRow(getOldData().getNumberOfRows() - 1).getId()
-                == result.getRow(result.getNumberOfRows() - 1).getId()) {
+              && getOldData().getRow(getOldData().getNumberOfRows() - 1).getId() == result.getRow(
+                  result.getNumberOfRows() - 1).getId()) {
             // TODO: create some methods validate that data is same;
             return;
           }

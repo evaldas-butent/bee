@@ -40,8 +40,7 @@ public class ModificationMessage extends Message {
     if (getEvent() == null) {
       return BeeConst.NULL;
     } else {
-      return BeeUtils.joinOptions("kind", string(getEvent().getKind()),
-          "view names", BeeUtils.joinItems(getEvent().getViewNames()));
+      return getEvent().toString();
     }
   }
 

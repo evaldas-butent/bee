@@ -10,7 +10,7 @@
   width="720" height="285"
   >
   
-  <Table style="border-collapse: collapse; margin-top: 1ex;" 
+  <Table kind="controls" style="border-collapse: collapse; margin-top: 1ex;" 
       cellStyle="padding: 5px 1em; vertical-align: top;">
     <col index="0" cellStyle="&clbl;" />
     <col index="2" cellStyle="&clbl;" />

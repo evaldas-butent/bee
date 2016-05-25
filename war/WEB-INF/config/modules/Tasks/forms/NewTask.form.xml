@@ -2,10 +2,8 @@
 <!DOCTYPE Form [
   <!ENTITY inline "display: inline-block;">
 
-  <!ENTITY separator "<hr/>">
-
   <!ENTITY tbl "border-collapse: collapse;">
-  <!ENTITY cell "vertical-align: top; padding-bottom: 2px;">
+  <!ENTITY cell "padding-bottom: 2px;">
   <!ENTITY col1 "text-align: right; padding-right: 8px; width: 128px;">
   <!ENTITY col3 "text-align: right; padding-left: 8px; padding-right: 8px; width: 128px;">
 
@@ -19,150 +17,162 @@
   <!ENTITY timeStep "30">
 ]>
 <f:Form xmlns="http://www.butent.com/widget"
-  xmlns:f="http://www.butent.com/form"
-  xmlns:xi="http://www.w3.org/2001/XInclude"
+        xmlns:f="http://www.butent.com/form"
 
-  name="NewTask" viewName="Tasks" caption="=crmNewTask" width="725" height="700">
+        name="NewTask" viewName="Tasks" caption="=crmNewTask" width="700" height="700">
 
   <FlowPanel style="padding: 10px 2px 2px 10px;">
 
-    <Table style="&tbl;" cellStyle="&cell;">
-      <col index="0" cellStyle="&col1;" />
-      <col index="2" cellStyle="&col3;" />
-
-      <row>
-        <Label text="=crmTaskTemplate" data="TaskTemplates" />
-        <DataSelector viewName="TaskTemplates" choiceColumns="Name" property="Template"
-          newRowEnabled="false" style="&inp2;" data="TaskTemplates" />
-      </row>
-
-      <row>
-        <Label for="Type" class="bee-required"/>
-        <DataSelector source="Type" renderColumns="TypeName" newRowEnabled="true" style="&inp2;"
-          disablable="true" required="true"/>
-        <Label for="Priority" />
-        <Radio source="Priority" />
-      </row>
-
-      <row>
-        <Label for="StartTime" />
-        <FlowPanel>
-          <InputDate name="Start_Date" style="&dateStyle;" required="true" />
-          <InputTimeOfDay name="Start_Time" step="&timeStep;" style="&timeStyle;" />
-        </FlowPanel>
-        <Label for="ExpectedDuration" />
-        <InputTime name="ExpectedDuration" source="ExpectedDuration" step="&timeStep;" style="width: 60px;" />
-        <Label for="ExpectedExpenses" text="=prjExpenses" style="margin-left:-140px;" />
-        <InputDecimal source="ExpectedExpenses" style="&inp3;" disablable="true" scale="2"/>
-        <DataSelector source="Currency" for="ExpectedExpenses" newRowEnabled="false" editEnabled="false"
-              style="width: 50px;" readOnly="true" />
-      </row>
-
-      <row>
-        <Label name="EndDateLabel" text="=endingDate" class="bee-required" />
-        <FlowPanel>
-          <InputDate name="End_Date" style="&dateStyle;" />
-          <InputTimeOfDay name="End_Time" step="&timeStep;" style="&timeStyle;" />
-        </FlowPanel>
-        <Label for="Company" />
-        <DataSelector source="Company" editPopup="true" newRowEnabled="true" choiceColumns="Name TypeName"
-            renderColumns="CompanyName CompanyTypeName" style="width: 200px;" />
-      </row>
-
-      <row>
-        <Label for="Reminder" />
-        <DataSelector source="Reminder" renderColumns="ReminderName" newRowEnabled="false"
-          style="&inp2;" />
-        <Label for="Contact" />
-        <DataSelector source="Contact" editPopup="true" newRowEnabled="true" style="width: 200px;"
-          renderColumns="ContactFirstName ContactLastName"
-          choiceColumns="FirstName LastName CompanyName" options="Company" />
-      </row>
-
-      <row>
-        <Label for="ReminderTime" />
-        <FlowPanel for="ReminderTime">
-          <InputDate name="Reminder_Date" style="&dateStyle;" />
-          <InputTimeOfDay name="Reminder_Time" step="&timeStep;" style="&timeStyle;" />
-        </FlowPanel>
-        <cell colSpan="2" horizontalAlignment="left" style="padding-left: 2em;" module="Mail">
-          <CheckBox name="Mail" text="=mailNotify" />
-        </cell>
-      </row>
-    </Table>
-
-    &separator;
-    <Table style="&tbl;" cellStyle="&cell;">
+    <Table kind="controls" style="&tbl;" cellStyle="&cell;">
       <col index="0" cellStyle="&col1;" />
 
       <row>
         <Label for="Summary" />
-        <InputText source="Summary" style="&inp2x;" autocomplete="true" visible="true" />
+        <InputText source="Summary" style="&inp2x;" autocomplete="true" visible="true" maxLength="70" />
       </row>
 
       <row for="Description">
         <Label for="Description" />
-        <InputArea source="Description" style="&inp2x; height: 60px;" />
+        <InputArea source="Description" style="&inp2x; height: 60px;" name="InputArea" />
       </row>
     </Table>
 
-    &separator;
     <FlowPanel class="flexBox-horizontal-top" data="TaskFiles">
       <Label text="=files" style="&col1; margin-top: 4px;" />
-      <FileCollector name="Files" editableColumns="name">
-        <face resource="attachment" />
-      </FileCollector>
+      <FileCollector name="Files" editableColumns="name" />
     </FlowPanel>
 
-    &separator;
-    <Table style="&tbl;" cellStyle="&cell;">
+    <Table kind="controls" style="&tbl;" cellStyle="&cell;">
       <col index="0" cellStyle="&col1;" />
 
       <row>
-        <Label name="ExecutorsLabel" class="bee-required" text="=crmTaskExecutors" />
-        <MultiSelector name="Executors"
-          viewName="Users" property="Executors" renderColumns="FirstName LastName"
-          editPopup="true" newRowEnabled="false" editSource="CompanyPerson" style="&inp2x;"
-          label="=crmTaskExecutors" />
+        <Label name="ExecutorsLabel" text="=crmTaskExecutors" />
+        <MultiSelector name="Executors" viewName="Users" property="Executors" renderColumns="FirstName LastName"
+          editPopup="true" newRowEnabled="false" editSource="CompanyPerson" style="&inp2x;" label="=crmTaskExecutors" />
       </row>
 
-      <row data="UserGroupSettings">
+      <row>
         <Label text="=crmTaskExecutorGroups" />
-        <MultiSelector name="UserGroupSettings" viewName="UserGroupSettings"
-          property="ExecutorGroups" renderColumns="Name" editPopup="true" newRowEnabled="false"
-          style="&inp2y;" label="=crmTaskExecutorGroups" filter="Owner {u} or Visibility 1">
+        <MultiSelector name="UserGroupSettings" viewName="UserGroupSettings" property="ExecutorGroups"
+          renderColumns="Name" editPopup="true" newRowEnabled="false" style="&inp2y;" label="=crmTaskExecutorGroups"
+          filter="Owner {u} or Visibility 1">
         </MultiSelector>
       </row>
 
       <row>
         <Label text="=crmTaskObservers" />
         <MultiSelector name="Observers" viewName="Users" property="Observers" renderColumns="FirstName LastName"
-          editPopup="true" newRowEnabled="false" editSource="CompanyPerson" style="&inp2x;"
-          label="=crmTaskObservers" />
+          editPopup="true" newRowEnabled="false" editSource="CompanyPerson" style="&inp2x;" label="=crmTaskObservers" />
       </row>
 
-      <row data="UserGroupSettings">
+      <row>
         <Label text="=crmTaskObserverGroups" />
-        <MultiSelector name="ObserverGroups" viewName="UserGroupSettings" property="ObserverGroups" renderColumns="Name"
-          editPopup="true" newRowEnabled="false" style="&inp2y;" label="=crmTaskObserverGroups"
+        <MultiSelector name="ObserverGroups" viewName="UserGroupSettings" property="ObserverGroups"
+          renderColumns="Name" editPopup="true" newRowEnabled="false" style="&inp2y;" label="=crmTaskObserverGroups"
           filter="Owner {u} or Visibility 1" />
       </row>
 
-      <row module="Projects" data="Projects" >
-        <Label text="=project" name="ProjectLabel"/>
-        <DataSelector source="Project" renderColumns="ProjectName" style="&inp2x;" disablable="true" readOnly="true"
-        editPopup="false" />
+      <row module="Projects" data="Projects">
+        <Label text="=project" name="ProjectLabel" />
+        <DataSelector source="Project" renderColumns="ProjectName" style="&inp2x;" disablable="true"
+          readOnly="true" editPopup="false" />
       </row>
-      <row  module="Projects" data="ProjectStages">
-        <Label text="=prjStage" name="ProjectStageLabel"/>
+      <row module="Projects" data="ProjectStages">
+        <Label text="=prjStage" name="ProjectStageLabel" />
         <DataSelector source="ProjectStage" renderColumns="StageName" style="&inp2x;" />
       </row>
     </Table>
 
-    &separator;
-    <Label text="=relatedTo" style="font-style: italic; margin-bottom: 2px;" data="Relations" />
+    <Table kind="controls" style="&tbl;" cellStyle="&cell;" >
+      <col index="0" cellStyle="&col1;" />
+      
+      <row>
+        <Label for="Priority" />
+        <Radio source="Priority" />
+      </row>
 
-    <Table style="&tbl;" cellStyle="&cell;" data="Relations" for="Task">
+      <row>
+        <Label text="=crmTaskTemplate" data="TaskTemplates" />
+        <DataSelector viewName="TaskTemplates" choiceColumns="Name" property="Template"
+          newRowEnabled="false" style="&inp2x;" data="TaskTemplates" />
+      </row>
+      
+      <row>
+        <Label for="Type" />
+        <DataSelector source="Type" name="Type" renderColumns="TypeName" newRowEnabled="true" style="&inp2x;"
+          disablable="true" />
+      </row>
+      
+      <row>
+        <Label for="Product" name="Product" />
+        <DataSelector source="Product" renderColumns="ProductName" newRowEnabled="true" style="&inp2x;" filter="Visible" />
+      </row>
+      
+      <row>
+       <Label for="Company" />
+        <DataSelector source="Company" editPopup="true" newRowEnabled="true" choiceColumns="Name TypeName"
+            renderColumns="CompanyName CompanyTypeName" style="&inp2x;" />
+      </row>
+      
+      <row>
+        <Label for="Contact" />
+        <DataSelector source="Contact" editPopup="true" newRowEnabled="true" style="&inp2x;"
+          renderColumns="ContactFirstName ContactLastName"
+          choiceColumns="FirstName LastName CompanyName" options="Company" />
+      </row>
+    </Table>
+      
+    <Table kind="controls" style="&tbl; margin-top: 20px;" cellStyle="&cell;">
+      <col index="0" cellStyle="&col1;" />
+      <col index="2" cellStyle="&col3;" />
+
+      <row>
+        <Label for="StartTime" />
+        <FlowPanel>
+          <InputDate name="Start_Date" style="&dateStyle;" />
+          <InputTimeOfDay name="Start_Time" step="&timeStep;" style="&timeStyle;" />
+        </FlowPanel>
+
+        <Label name="EndDateLabel" text="=endingDate" />
+        <FlowPanel>
+          <InputDate name="End_Date" style="&dateStyle;" />
+          <InputTimeOfDay name="End_Time" step="&timeStep;" style="&timeStyle;" />
+        </FlowPanel>
+      </row>
+
+      <row data="UserGroupSettings">
+        <Label for="ExpectedDuration" />
+        <InputTime name="ExpectedDuration" source="ExpectedDuration" step="&timeStep;" style="width: 90px;" />
+        <Label for="ExpectedExpenses" />
+        <FlowPanel>
+          <InputDecimal source="ExpectedExpenses" style="&dateStyle;" disablable="true" scale="2"/>
+          <DataSelector source="Currency" for="ExpectedExpenses" newRowEnabled="false" editEnabled="false"
+            style="&timeStyle;" readOnly="true" />
+        </FlowPanel>
+      </row>
+
+      <row>
+        <Label for="Reminder" />
+        <DataSelector source="Reminder" renderColumns="ReminderName" newRowEnabled="false"
+          style="&inp2;" />
+        <Label for="ReminderTime" />
+        <FlowPanel for="ReminderTime">
+          <InputDate name="Reminder_Date" style="&dateStyle;" />
+          <InputTimeOfDay name="Reminder_Time" step="&timeStep;" style="&timeStyle;" />
+        </FlowPanel>
+      </row>
+
+      <row data="UserGroupSettings">
+        <Label />
+        <CheckBox name="Mail" text="=mailNotify" />
+        <Label />
+        <CheckBox source="PrivateTask" />
+      </row>
+    </Table>
+
+    <Label text="=relatedTo" style="font-style: italic; margin-top: 20px; margin-bottom: 2px;" data="Relations" />
+
+    <Table kind="controls" style="&tbl;" cellStyle="&cell;" data="Relations" for="Task">
       <col index="0" cellStyle="&col1;" />
 
       <row data="Relations" for="Company" module="Classifiers.Contacts">

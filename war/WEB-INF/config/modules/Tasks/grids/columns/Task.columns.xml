@@ -15,7 +15,8 @@
     </dynStyle>
   </DataColumn>
 
-  <DataColumn name="Summary" visible="true" minWidth="150" maxWidth="500" />
+  <DataColumn name="Summary" visible="true" minWidth="150"
+    maxWidth="500" />
   <DataColumn name="Description" visible="false" />
 
   <RelColumn name="Company" />
@@ -27,8 +28,8 @@
       <ui:expression>row.Status == 4</ui:expression>
     </dynStyle>
   </DataColumn>
-  <CalcColumn name="Slack" type="string" cellType="html" width="60"
-    caption="=crmTaskDelayPlannedShort" />
+  <CalcColumn name="Slack" type="string" cellType="html"
+    width="60" caption="=crmTaskDelayPlannedShort" />
 
   <RelColumn name="Owner" renderColumns="OwnerFirstName OwnerLastName"
     sortBy="OwnerLastName OwnerFirstName" minWidth="100" />
@@ -36,9 +37,9 @@
     sortBy="ExecutorLastName ExecutorFirstName" minWidth="100" />
 
   <RelColumn name="Project" visible="true" renderColumns="ProjectName" />
-  <RelColumn name="ProjectStage" visible="false" renderColumns="StageName" />
 
-  <DataColumn name="StartTime" visible="true" readOnly="true" width="120" />
+  <DataColumn name="StartTime" visible="true" readOnly="true"
+    width="120" />
   <DataColumn name="FinishTime" width="120" />
 
   <DataColumn name="ExpectedDuration" visible="false" />
@@ -50,4 +51,12 @@
   <RelColumn name="Reminder" visible="false" />
   <DataColumn name="ReminderTime" visible="false" />
   <DataColumn name="ReminderSent" visible="false" />
+
+  <RelColumn name="Product" renderColumns="ProductName" visible="false">
+    <dynStyle>
+      <ui:inline>color:[row.ProductForeground];
+        background-color:[row.ProductBackground];
+      </ui:inline>
+    </dynStyle>
+  </RelColumn>
 </g:columns>

@@ -10,6 +10,7 @@ import com.butent.bee.shared.i18n.SupportedLocale;
 import com.butent.bee.shared.imports.ImportType;
 import com.butent.bee.shared.modules.ParameterType;
 import com.butent.bee.shared.news.Feed;
+import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.rights.RightsObjectType;
 import com.butent.bee.shared.rights.RightsState;
 import com.butent.bee.shared.time.ScheduleDateMode;
@@ -43,8 +44,8 @@ public final class AdministrationConstants {
   }
 
   public enum UserGroupVisibility implements HasCaption {
-    PRIVATE(Localized.getConstants().userGroupPrivate()),
-    PUBLIC(Localized.getConstants().userGroupPublic());
+    PRIVATE(Localized.dictionary().userGroupPrivate()),
+    PUBLIC(Localized.dictionary().userGroupPublic());
 
     private final String caption;
 
@@ -72,6 +73,7 @@ public final class AdministrationConstants {
     EnumUtils.register(WorkdayTransition.class);
 
     EnumUtils.register(ImportType.class);
+    EnumUtils.register(Module.class);
     EnumUtils.register(SysObject.class);
   }
 
@@ -81,19 +83,25 @@ public final class AdministrationConstants {
 
   public static final String SVC_GET_PARAMETER = PARAMETERS_PREFIX + "parameter";
   public static final String SVC_GET_RELATION_PARAMETER = PARAMETERS_PREFIX + "relation_parameter";
-  public static final String SVC_GET_PARAMETERS = PARAMETERS_PREFIX + "get";
   public static final String SVC_SET_PARAMETER = PARAMETERS_PREFIX + "set";
 
   public static final String SVC_DO_IMPORT = "DoImport";
 
-  public static final String SVC_NUMBER_TO_WORDS = "GetNumberInWords";
+  public static final String SVC_GET_CONFIG_DIFF = "GetConfigDiff";
+  public static final String SVC_GET_CONFIG_OBJECT = "GetConfigObject";
+  public static final String SVC_GET_CONFIG_OBJECTS = "GetConfigObjects";
+
+  public static final String SVC_TOTAL_TO_WORDS = "GetTotalInWords";
+
+  public static final String SVC_GET_DICTIONARY = "get_dictionary";
+  public static final String SVC_DICTIONARY_DATABASE_TO_PROPERTIES =
+      "dictionary_database_to_properties";
 
   public static final String VAR_AMOUNT = Service.RPC_VAR_PREFIX + "amount";
   public static final String VAR_LOCALE = Service.RPC_VAR_PREFIX + "locale";
 
   public static final String VAR_PARAMETERS_MODULE = Service.RPC_VAR_PREFIX + "module";
-  public static final String VAR_PARAMETER = Service.RPC_VAR_PREFIX + "parameters";
-  public static final String VAR_PARAMETER_VALUE = Service.RPC_VAR_PREFIX + "value";
+  public static final String VAR_PARAMETER_DEFAULT = "DefaultMode";
 
   public static final String SVC_GET_HISTORY = "get_history";
   public static final String VAR_HISTORY_VIEW = Service.RPC_VAR_PREFIX + "history_view";
@@ -117,8 +125,6 @@ public final class AdministrationConstants {
   public static final String SVC_COPY_RIGHTS = "copy_rights";
 
   public static final String VAR_IMPORT_TEST = "Test";
-  public static final String VAR_MAPPING_TABLE = "MappingTable";
-  public static final String VAR_MAPPING_FIELD = "MappingField";
   public static final String VAR_IMPORT_FILE = "File";
   public static final String VAR_IMPORT_SHEET = "Sheet";
   public static final String VAR_IMPORT_START_ROW = "Row";
@@ -136,6 +142,9 @@ public final class AdministrationConstants {
   public static final String AUDIT_FLD_ID = "RecordId";
   public static final String AUDIT_FLD_FIELD = "Field";
   public static final String AUDIT_FLD_VALUE = "Value";
+
+  public static final String TBL_PARAMETERS = "Parameters";
+  public static final String TBL_USER_PARAMETERS = "UserParameters";
 
   public static final String TBL_USERS = "Users";
   public static final String TBL_USER_SETTINGS = "UserSettings";
@@ -171,6 +180,8 @@ public final class AdministrationConstants {
   public static final String TBL_CUSTOM_CONFIG = "CustomConfig";
 
   public static final String TBL_EVENT_HISTORY = "EventHistory";
+
+  public static final String TBL_DICTIONARY = "Dictionary";
 
   public static final String VIEW_USERS = "Users";
   public static final String VIEW_USER_SETTINGS = "UserSettings";
@@ -217,14 +228,20 @@ public final class AdministrationConstants {
   public static final String GRID_THEMES = "Themes";
   public static final String GRID_THEME_COLORS = "ThemeColors";
 
+  public static final String GRID_DICTIONARY = "Dictionary";
+
+  public static final String COL_PARAMETER = "Parameter";
+  public static final String COL_PARAMETER_NAME = "Name";
+  public static final String COL_PARAMETER_VALUE = "Value";
+
   public static final String COL_RELATION = "Relation";
 
   public static final String COL_LOGIN = "Login";
   public static final String COL_PASSWORD = "Password";
   public static final String COL_USER_LOCALE = "Locale";
   public static final String COL_USER_INTERFACE = "Interface";
-  public static final String COL_USER_BLOCK_AFTER = "BlockAfter";
-  public static final String COL_USER_BLOCK_BEFORE = "BlockBefore";
+  public static final String COL_USER_BLOCK_FROM = "BlockAfter";
+  public static final String COL_USER_BLOCK_UNTIL = "BlockBefore";
   public static final String COL_REMOTE_HOST = "Host";
   public static final String COL_USER_AGENT = "Agent";
   public static final String COL_LOGGED_IN = "LoggedIn";
@@ -280,7 +297,7 @@ public final class AdministrationConstants {
   public static final String COL_CURRENCY_RATE_QUANTITY = "Quantity";
   public static final String COL_CURRENCY_RATE = "Rate";
 
-  public static final String COL_IP_FILTER_HOST = "Host";
+  public static final String COL_IP_FILTER_HOST = "BlockHost";
   public static final String COL_IP_FILTER_BLOCK_AFTER = "BlockAfter";
   public static final String COL_IP_FILTER_BLOCK_BEFORE = "BlockBefore";
 
@@ -314,6 +331,7 @@ public final class AdministrationConstants {
   public static final String COL_CLICK_SENSITIVITY_DISTANCE = "ClickSensitivityDistance";
 
   public static final String COL_NEWS_REFRESH_INTERVAL_SECONDS = "NewsRefreshIntervalSeconds";
+  public static final String COL_LOADING_STATE_DELAY_MILLIS = "LoadingStateDelayMillis";
 
   public static final String COL_UI_THEME = "UiTheme";
   public static final String COL_USER_STYLE = "Style";
@@ -333,11 +351,14 @@ public final class AdministrationConstants {
   public static final String COL_CONFIG_DATA = "ObjectData";
 
   public static final String COL_MENU_HIDE = "MenuHide";
+  public static final String COL_COMMENTS_LAYOUT = "CommentsLayout";
 
   public static final String COL_EVENT = "Event";
   public static final String COL_EVENT_STARTED = "Started";
   public static final String COL_EVENT_ENDED = "Ended";
   public static final String COL_EVENT_RESULT = "Result";
+
+  public static final String COL_DICTIONARY_KEY = "Key";
 
   public static final String ALS_FILE_NAME = "FileName";
   public static final String ALS_FILE_SIZE = "FileSize";
@@ -368,6 +389,7 @@ public final class AdministrationConstants {
 
   public static final String PRM_SQL_MESSAGES = "SQLMessages";
 
+  public static final String PRM_SERVER_PROPERTIES = "ServerProperties";
   public static final String PRM_COMPANY = "CompanyName";
   public static final String PRM_COUNTRY = "Country";
   public static final String PRM_CURRENCY = "MainCurrency";

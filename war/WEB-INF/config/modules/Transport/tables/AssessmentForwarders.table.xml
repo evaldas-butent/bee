@@ -1,13 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Table xmlns="http://www.butent.com/table"
 
-  name="AssessmentForwarders"
-  idName="ForwarderID"
-  >
+       name="AssessmentForwarders"
+       idName="ForwarderID"
+    >
   <Fields>
-    <Relation name="Assessment" notNull="true" relation="Assessments" cascade="DELETE" label="=trAssessment" />
-    <Relation name="CargoTrip" unique="true" notNull="true" relation="CargoTrips" />
-    <Relation name="CargoExpense" unique="true" notNull="true" relation="CargoExpenses" cascade="DELETE" editable="true" />
+    <Relation name="Assessment" notNull="true" relation="Assessments" cascade="DELETE"
+              label="=trAssessment" />
+    <Relation name="CargoTrip" unique="true" notNull="true" relation="CargoTrips" editable="true" />
+    <Relation name="CargoExpense" unique="true" notNull="true" relation="CargoExpenses"
+              cascade="DELETE" editable="true" />
     <Relation name="Trip" unique="true" relation="Trips" editable="true" />
   </Fields>
 </Table>

@@ -103,6 +103,11 @@ public class MapContainer extends Flow implements Presenter, View, HasWidgetSupp
   }
 
   @Override
+  public String getViewKey() {
+    return getSupplierKey();
+  }
+
+  @Override
   public Presenter getViewPresenter() {
     return this;
   }
