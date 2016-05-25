@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2016-05-25T11:56:46 -->
+<!-- 2016-05-25T12:00:48 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="OrderContract" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="30" bottomMargin="30" isSummaryWithPageHeaderAndFooter="true" uuid="b0daefcc-9db0-4ed1-b9d6-49143492176f">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<import value="com.butent.bee.server.Invocation"/>
@@ -547,7 +547,7 @@
 								<textElement>
 									<font size="7"/>
 								</textElement>
-								<textFieldExpression><![CDATA["Pakrovimo vieta: " + BeeUtils.joinWords($F{LoadingAddress}, $F{LoadingPostIndex}, $F{LoadingCityName}, $F{LoadingCountryName})]]></textFieldExpression>
+								<textFieldExpression><![CDATA["Pakrovimo vieta: " + BeeUtils.joinItems($F{LoadingAddress}, $F{LoadingPostIndex}, $F{LoadingCityName}, $F{LoadingCountryName})]]></textFieldExpression>
 							</textField>
 							<textField isStretchWithOverflow="true">
 								<reportElement positionType="Float" x="0" y="18" width="230" height="9" isRemoveLineWhenBlank="true" uuid="6a5619fe-4101-445d-849f-e7b084fa8f15">
@@ -601,7 +601,7 @@
 								<textElement>
 									<font size="7"/>
 								</textElement>
-								<textFieldExpression><![CDATA["Iškrovimo vieta: " + BeeUtils.joinWords($F{UnloadingAddress}, $F{UnloadingPostIndex}, $F{UnloadingCityName}, $F{UnloadingCountryName})]]></textFieldExpression>
+								<textFieldExpression><![CDATA["Iškrovimo vieta: " + BeeUtils.joinItems($F{UnloadingAddress}, $F{UnloadingPostIndex}, $F{UnloadingCityName}, $F{UnloadingCountryName})]]></textFieldExpression>
 							</textField>
 							<textField isStretchWithOverflow="true">
 								<reportElement positionType="Float" x="0" y="18" width="230" height="9" isRemoveLineWhenBlank="true" uuid="a01bda99-a941-409f-86ce-954575063992">
