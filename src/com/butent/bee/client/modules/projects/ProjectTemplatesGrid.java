@@ -1,7 +1,9 @@
 package com.butent.bee.client.modules.projects;
 
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Multimap;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 
@@ -9,6 +11,7 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.RpcCallback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
@@ -90,11 +93,14 @@ public class ProjectTemplatesGrid extends AbstractGridInterceptor {
     final DataInfo stagesView = Data.getDataInfo(ProjectConstants.VIEW_PROJECT_STAGES);
     final DataInfo taskTemplatesView = Data.getDataInfo(TaskConstants.VIEW_TASK_TEMPLATES);
 
-    final List<String> copyCols = Lists.newArrayList(TaskConstants.COL_SUMMARY,
-        TaskConstants.COL_DESCRIPTION, TaskConstants.COL_PRIORITY, TaskConstants.COL_TASK_TYPE,
-        TaskConstants.COL_EXPECTED_DURATION, ClassifierConstants.COL_COMPANY,
-        ClassifierConstants.COL_CONTACT, TaskConstants.COL_REMINDER, ProjectConstants.COL_PROJECT,
-        ProjectConstants.COL_PROJECT_STAGE);
+    final List<String> copyCols =
+        Lists.newArrayList(TaskConstants.COL_SUMMARY,
+            TaskConstants.COL_DESCRIPTION, TaskConstants.COL_PRIORITY, TaskConstants.COL_TASK_TYPE,
+            TaskConstants.COL_EXPECTED_DURATION, ClassifierConstants.COL_COMPANY,
+            ClassifierConstants.COL_CONTACT, TaskConstants.COL_REMINDER,
+            ProjectConstants.COL_PROJECT,
+            ProjectConstants.COL_PROJECT_STAGE, TaskConstants.PROP_EXECUTORS,
+            TaskConstants.PROP_OBSERVERS);
 
     final List<BeeColumn> tascCopyCols =
         Lists.newArrayList(Data.getColumns(ProjectConstants.VIEW_PROJECT_TEMPLATE_TASK_COPY,
@@ -113,58 +119,99 @@ public class ProjectTemplatesGrid extends AbstractGridInterceptor {
                 taskTemplatesView.getColumnNames(false),
                 Filter.equals(ProjectConstants.COL_PROJECT_TEMPLATE, tmlRow.getId()),
                 new Queries.RowSetCallback() {
-              @Override
-              public void onSuccess(BeeRowSet taskTemplates) {
-                if (taskTemplates.isEmpty()) {
-                  createProjectUsers(prjRow, tmlRow, callback);
-                  return;
-                }
-
-                Map<Long, Long> stageCache = Maps.newConcurrentMap();
-
-                for (int i = 0; i < stages.getNumberOfRows(); i++) {
-                  Long tmlId = stages.getLong(i, stagesView.getColumnIndex(
-                      ProjectConstants.COL_STAGE_TEMPLATE));
-                  if (DataUtils.isId(tmlId)) {
-                    stageCache.put(tmlId, stages.getRow(i).getId());
-                  }
-                }
-
-                for (int i = 0; i < taskTemplates.getNumberOfRows(); i++) {
-                  BeeRow row = taskCopy.addEmptyRow();
-                  for (String col : copyCols) {
-                    switch (col) {
-                      case ProjectConstants.COL_PROJECT_STAGE:
-                        Long id = taskTemplates.getLong(i, taskTemplatesView.getColumnIndex(
-                            ProjectConstants.COL_STAGE_TEMPLATE));
-
-                        if (DataUtils.isId(id)) {
-                          row.setValue(taskCopy.getColumnIndex(col),
-                              stageCache.get(id));
-                        }
-                        break;
-                      case ProjectConstants.COL_PROJECT:
-                        row.setValue(taskCopy.getColumnIndex(col), prjRow.getId());
-                        break;
-                      default:
-                        row.setValue(taskCopy.getColumnIndex(col),
-                            taskTemplates.getString(i, col));
-                        break;
-                    }
-                  }
-                }
-
-                Queries.insertRows(taskCopy, new RpcCallback<RowInfoList>() {
                   @Override
-                  public void onSuccess(RowInfoList result) {
-                    DataChangeEvent.fireRefresh(BeeKeeper.getBus(), TaskConstants.VIEW_TASKS);
-                    DataChangeEvent.fireRefresh(BeeKeeper.getBus(),
-                        TaskConstants.VIEW_RELATED_TASKS);
-                    createProjectUsers(prjRow, tmlRow, callback);
+                  public void onSuccess(final BeeRowSet taskTemplates) {
+                    if (taskTemplates.isEmpty()) {
+                      createProjectUsers(prjRow, tmlRow, callback);
+                      return;
+                    }
+
+                    Map<Long, Long> stageCache = Maps.newConcurrentMap();
+
+                    for (int i = 0; i < stages.getNumberOfRows(); i++) {
+                      Long tmlId = stages.getLong(i, stagesView.getColumnIndex(
+                          ProjectConstants.COL_STAGE_TEMPLATE));
+                      if (DataUtils.isId(tmlId)) {
+                        stageCache.put(tmlId, stages.getRow(i).getId());
+                      }
+                    }
+
+                    /**
+                     * @since Paradis Copy task template users
+                     */
+                    DataInfo taskTmlUsersView = Data.getDataInfo(TaskConstants.VIEW_TASK_TML_USERS);
+                    Queries.getRowSet(TaskConstants.VIEW_TASK_TML_USERS, taskTmlUsersView
+                        .getColumnNames(false), Filter.any(TaskConstants.COL_TASK_TEMPLATE,
+                        taskTemplates.getRowIds()), new RowSetCallback() {
+
+                      @Override
+                      public void onSuccess(BeeRowSet tmlUsers) {
+                        Multimap<Long, Long> executors = ArrayListMultimap.create();
+                        Multimap<Long, Long> observers = ArrayListMultimap.create();
+
+                        for (int i = 0; i < tmlUsers.getNumberOfRows(); i++) {
+                          boolean executor =
+                              !BeeUtils.isEmpty(tmlUsers.getString(i, TaskConstants.COL_EXECUTOR));
+                          Long tmlId = tmlUsers.getLong(i, TaskConstants.COL_TASK_TEMPLATE);
+                          Long userId = tmlUsers.getLong(i, AdministrationConstants.COL_USER);
+
+                          if (executor) {
+                            executors.put(tmlId, userId);
+                          } else {
+                            observers.put(tmlId, userId);
+                          }
+                        }
+
+                        for (int i = 0; i < taskTemplates.getNumberOfRows(); i++) {
+                          BeeRow row = taskCopy.addEmptyRow();
+                          long tmlId = taskTemplates.getRow(i).getId();
+                          for (String col : copyCols) {
+                            switch (col) {
+                              case ProjectConstants.COL_PROJECT_STAGE:
+                                Long id =
+                                    taskTemplates.getLong(i, taskTemplatesView.getColumnIndex(
+                                        ProjectConstants.COL_STAGE_TEMPLATE));
+
+                                if (DataUtils.isId(id)) {
+                                  row.setValue(taskCopy.getColumnIndex(col),
+                                      stageCache.get(id));
+                                }
+                                break;
+                              case ProjectConstants.COL_PROJECT:
+                                row.setValue(taskCopy.getColumnIndex(col), prjRow.getId());
+                                break;
+                              case TaskConstants.PROP_EXECUTORS:
+                                row.setValue(taskCopy.getColumnIndex(col),
+                                    DataUtils.buildIdList(executors.get(tmlId)));
+                                break;
+                              case TaskConstants.PROP_OBSERVERS:
+                                row.setValue(taskCopy.getColumnIndex(col),
+                                    DataUtils.buildIdList(observers.get(tmlId)));
+                                break;
+                              default:
+                                row.setValue(taskCopy.getColumnIndex(col),
+                                    taskTemplates.getString(i, col));
+                                break;
+                            }
+                          }
+                        }
+
+                        Queries.insertRows(taskCopy, new RpcCallback<RowInfoList>() {
+                          @Override
+                          public void onSuccess(RowInfoList result) {
+                            DataChangeEvent.fireRefresh(BeeKeeper.getBus(),
+                                TaskConstants.VIEW_TASKS);
+                            DataChangeEvent.fireRefresh(BeeKeeper.getBus(),
+                                TaskConstants.VIEW_RELATED_TASKS);
+
+                            createProjectUsers(prjRow, tmlRow, callback);
+                          }
+                        });
+
+                      }
+                    });
                   }
                 });
-              }
-            });
 
           }
         });

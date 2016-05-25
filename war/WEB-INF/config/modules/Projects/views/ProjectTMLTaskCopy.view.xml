@@ -51,6 +51,12 @@
     <SimpleJoin name="ProjectStage" joinType="LEFT">
       <SimpleColumn name="Name" alias="StageName" />
     </SimpleJoin>
+
+    <!-- @paradis { -->
+    <!-- copy task users from templates -->
+    <SimpleColumn name="Executors" />
+    <SimpleColumn name="Observers" />
+    <!-- } -->
   </Columns>
 
   <Order>
