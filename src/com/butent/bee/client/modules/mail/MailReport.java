@@ -44,6 +44,7 @@ public class MailReport extends ReportInterceptor {
   public Set<Action> getEnabledActions(Set<Action> defaultActions) {
     Set<Action> actions = super.getEnabledActions(defaultActions);
     actions.remove(Action.EXPORT);
+    actions.remove(Action.BOOKMARK);
     return actions;
   }
 
@@ -116,6 +117,11 @@ public class MailReport extends ReportInterceptor {
     Filter flt = Filter.custom(MailConstants.FILTER_MAIL_REPORT, args);
     if (!BeeUtils.isEmpty(mailTo)) {
       flt = Filter.and(Filter.contains(MailConstants.COL_RECIPIENT_EMAIL, mailTo), flt);
+    }
+
+    if (BeeUtils.isEmpty(args)) {
+      getFormView().notifySevere(Localized.dictionary().enterFilterCriteria());
+      return;
     }
 
     final Filter filter = flt;

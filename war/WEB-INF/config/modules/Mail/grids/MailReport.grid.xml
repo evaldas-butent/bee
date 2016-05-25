@@ -7,7 +7,7 @@
     <DataColumn name="SenderEmail" caption="=mailSender" />
     <DataColumn name="RecipientEmail" caption="=recipient" />
     <DataColumn name="Subject" caption="=mailSubject" />
-    <DataColumn name="AttachmentCount" caption="=mailAttachments"
+    <DataColumn name="AttachmentCount" label="=mailAttachments" caption="=mailAttachments"
       horizontalAlignment="center" />
   </g:columns>
 </g:Grid>

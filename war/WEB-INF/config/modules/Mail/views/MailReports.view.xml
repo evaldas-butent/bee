@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view" xmlns:xi="http://www.w3.org/2001/XInclude"
 
-  name="MailReports" source="Messages" readOnly="true">
-
+  name="MailReports" source="Messages" readOnly="true"
+  editForm="MailMessage"
+  >
   <Columns>
 
     <xi:include href="viewcolumns/Messages.viewcolumns.xml" />
