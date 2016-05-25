@@ -16,6 +16,8 @@
         name="ShipmentRequest" viewName="ShipmentRequests"
         showRowId="true" width="70" widthUnit="%" height="80" heightUnit="%"
 >
+  <f:properties jasperReports="OrderContract" />
+
   <FlowPanel>
     <Table kind="custom" style="&table; margin-top:10px;" cellStyle="&cells;">
       &cols;
@@ -153,10 +155,10 @@
                         renderColumns="ExpeditionType" order="SelfService, Name"
                         newRowEnabled="false" />
           <cell rowSpan="2">
-            <Label for="Notes" />
+            <Label for="CargoNotes" />
           </cell>
           <cell rowSpan="2">
-            <InputArea source="Notes" visibleLines="4" style="width:200px;" />
+            <InputArea source="CargoNotes" visibleLines="4" style="width:200px;" />
           </cell>
         </row>
 
@@ -260,10 +262,10 @@
           <Label for="Vehicle" />
           <InputText source="Vehicle" />
           <cell rowSpan="2">
-            <Label for="RequestNotes" />
+            <Label for="Notes" />
           </cell>
           <cell rowSpan="2">
-            <InputArea source="RequestNotes" visibleLines="4" style="width:200px;" />
+            <InputArea source="Notes" visibleLines="4" style="width:200px;" />
           </cell>
         </row>
 

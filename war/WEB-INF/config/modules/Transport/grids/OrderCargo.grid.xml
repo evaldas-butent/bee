@@ -28,7 +28,7 @@
 
     <DataColumn name="Number" caption="=cargoNumber" />
     <RelColumn name="Cmr" caption="CMR" />
-    <DataColumn name="Notes" caption="=notes" whiteSpace="pre-wrap" />
+    <DataColumn name="CargoNotes" caption="=notes" whiteSpace="pre-wrap" />
     <PropColumn name="Income" type="decimal" caption="=income" format="0.00">
       <style>
         <bodyStyle>

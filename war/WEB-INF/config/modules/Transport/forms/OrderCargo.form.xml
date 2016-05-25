@@ -128,10 +128,10 @@
                 <DataSelector source="WeightUnit" style="&unit;" />
               </FlowPanel>
               <cell rowSpan="2">
-                <Label for="Notes" />
+                <Label for="CargoNotes" />
               </cell>
               <cell rowSpan="2">
-                <InputArea source="Notes" visibleLines="4" style="width:300px;" />
+                <InputArea source="CargoNotes" visibleLines="4" style="width:300px;" />
               </cell>
             </row>
             <row>

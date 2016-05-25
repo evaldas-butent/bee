@@ -30,7 +30,7 @@ import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.modules.administration.AdministrationUtils;
 import com.butent.bee.client.modules.classifiers.ClassifierUtils;
 import com.butent.bee.client.modules.mail.NewMailMessage;
-import com.butent.bee.client.output.ReportUtils;
+import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.utils.JsonUtils;
 import com.butent.bee.client.view.HeaderView;
@@ -41,6 +41,7 @@ import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -61,6 +62,7 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.i18n.SupportedLocale;
 import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.modules.mail.MailConstants;
+import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -83,8 +85,6 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
 
   private Button registerCommand = new Button(loc.register(), clickEvent -> onRegister());
 
-  private Button contractCommand = new Button(loc.trContract(), clickEvent -> sendContract());
-
   private Button confirmCommand = new Button(loc.trRequestStatusConfirmed(),
       clickEvent -> onConfirm());
 
@@ -103,23 +103,21 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
 
     renderOrderId();
 
-    boolean registered = DataUtils.isId(row.getLong(form.getDataIndex(COL_COMPANY_PERSON)));
-
     Widget widget = form.getWidgetByName(COL_REGISTRATION_REGISTER);
 
     if (widget != null) {
-      widget.setVisible(!registered);
+      widget.setVisible(!isRegistered());
 
     }
     widget = form.getWidgetByName(COL_COMPANY_PERSON);
 
     if (widget != null) {
-      widget.setVisible(registered);
+      widget.setVisible(isRegistered());
     }
     if (DataUtils.isNewRow(row)) {
       return;
     }
-    header.setCaption(registered ? loc.trRequest() : loc.trRequestUnregistered());
+    header.setCaption(isRegistered() ? loc.trRequest() : loc.trRequestUnregistered());
 
     Integer status = row.getInteger(form.getDataIndex(COL_QUERY_STATUS));
 
@@ -127,10 +125,9 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
       header.addCommandItem(mailCommand);
 
       if (!ShipmentRequestStatus.CONFIRMED.is(status)) {
-        if (!registered) {
+        if (!isRegistered()) {
           header.addCommandItem(registerCommand);
         } else {
-          header.addCommandItem(contractCommand);
           header.addCommandItem(confirmCommand);
         }
         header.addCommandItem(lostCommand);
@@ -142,6 +139,17 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
         }
       }
     }
+  }
+
+  @Override
+  public boolean beforeAction(Action action, Presenter presenter) {
+    if (action == Action.PRINT) {
+      if (!isRegistered() || isSelfService()
+          || ShipmentRequestStatus.LOST.is(getIntegerValue(COL_QUERY_STATUS))) {
+        return false;
+      }
+    }
+    return super.beforeAction(action, presenter);
   }
 
   @Override
@@ -187,6 +195,70 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
             .ordinal());
 
     super.onStartNewRow(form, oldRow, newRow);
+  }
+
+  @Override
+  protected Consumer<FileInfo> getReportCallback() {
+    Consumer<FileInfo> callback = null;
+
+    if (!ShipmentRequestStatus.CONFIRMED.is(getIntegerValue(COL_QUERY_STATUS))) {
+      callback = fileInfo -> Queries.getRowSet(VIEW_TEXT_CONSTANTS, null,
+          Filter.equals(COL_TEXT_CONSTANT, TextConstant.CONTRACT_MAIL_CONTENT),
+          new Queries.RowSetCallback() {
+            @Override
+            public void onSuccess(BeeRowSet result) {
+              String text;
+              String localizedContent = Localized.column(COL_TEXT_CONTENT,
+                  EnumUtils.getEnumByIndex(SupportedLocale.class, getIntegerValue(COL_USER_LOCALE))
+                      .getLanguage());
+
+              if (DataUtils.isEmpty(result)) {
+                text = TextConstant.CONTRACT_MAIL_CONTENT.getDefaultContent();
+              } else if (BeeConst.isUndef(DataUtils.getColumnIndex(localizedContent,
+                  result.getColumns()))) {
+                text = result.getString(0, COL_TEXT_CONTENT);
+              } else {
+                text = BeeUtils.notEmpty(result.getString(0, localizedContent),
+                    result.getString(0, COL_TEXT_CONTENT));
+              }
+              sendMail(ShipmentRequestStatus.CONTRACT_SENT, null, BeeUtils.isEmpty(text)
+                  ? null : text.replace("{contract_path}",
+                  "rest/transport/confirm/" + getActiveRowId()), Collections.singleton(fileInfo));
+            }
+          });
+    }
+    return callback;
+  }
+
+  @Override
+  protected void getReportData(Consumer<BeeRowSet[]> dataConsumer) {
+    SelfServiceUtils.getCargos(Filter.compareId(getLongValue(COL_CARGO)),
+        cargoInfo -> dataConsumer.accept(new BeeRowSet[] {cargoInfo}));
+  }
+
+  @Override
+  protected void getReportParameters(Consumer<Map<String, String>> parametersConsumer) {
+    Map<String, Long> companies = new HashMap<>();
+    companies.put(COL_CUSTOMER, getLongValue(COL_COMPANY));
+    companies.put(COL_COMPANY, BeeKeeper.getUser().getCompany());
+
+    super.getReportParameters(defaultParameters ->
+        ClassifierUtils.getCompaniesInfo(companies, companiesInfo -> {
+          defaultParameters.putAll(companiesInfo);
+          parametersConsumer.accept(defaultParameters);
+        }));
+  }
+
+  @Override
+  protected String[] getReports() {
+    String[] reports = super.getReports();
+
+    if (!ArrayUtils.isEmpty(reports) && BeeUtils.unbox(getBooleanValue(COL_EXPEDITION_LOGISTICS))) {
+      for (int i = 0; i < reports.length; i++) {
+        reports[i] = COL_EXPEDITION_LOGISTICS + reports[i];
+      }
+    }
+    return reports;
   }
 
   private static void checkOrphans(Map<String, String> relations, Map<String, String> views,
@@ -247,14 +319,16 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
       }
       Queries.insert(VIEW_ORDERS, Data.getColumns(VIEW_ORDERS,
           Arrays.asList(COL_CUSTOMER, COL_CUSTOMER + COL_PERSON, COL_ORDER_MANAGER,
-              COL_EXPEDITION, COL_SHIPPING_TERM, COL_ORDER_NOTES, COL_VEHICLE, COL_DRIVER)),
+              COL_EXPEDITION, COL_SHIPPING_TERM, COL_ORDER_NOTES, COL_VEHICLE, COL_DRIVER,
+              COL_ORDER_NO)),
           Arrays.asList(row.getString(form.getDataIndex(COL_COMPANY)),
               row.getString(form.getDataIndex(COL_COMPANY_PERSON)), BeeUtils.toString(manager),
               row.getString(form.getDataIndex(COL_EXPEDITION)),
               row.getString(form.getDataIndex(COL_SHIPPING_TERM)),
-              row.getString(form.getDataIndex("Request" + COL_ORDER_NOTES)),
+              row.getString(form.getDataIndex(COL_ORDER_NOTES)),
               row.getString(form.getDataIndex(COL_VEHICLE)),
-              row.getString(form.getDataIndex(COL_DRIVER))),
+              row.getString(form.getDataIndex(COL_DRIVER)),
+              "SLF-" + row.getId()),
           null, new RowInsertCallback(VIEW_ORDERS) {
             @Override
             public void onSuccess(BeeRow order) {
@@ -374,6 +448,10 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
             });
           });
         });
+  }
+
+  private boolean isRegistered() {
+    return DataUtils.isId(getLongValue(COL_COMPANY_PERSON));
   }
 
   private static boolean isSelfService() {
@@ -694,47 +772,6 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
         ((HasWidgets) widget).add(label);
       }
     }
-  }
-
-  private void sendContract() {
-    Map<String, Long> companies = new HashMap<>();
-    companies.put(COL_CUSTOMER, getLongValue(COL_COMPANY));
-    companies.put(COL_COMPANY, BeeKeeper.getUser().getCompany());
-
-    getReportParameters(defaultParameters ->
-        ClassifierUtils.getCompaniesInfo(companies, companiesInfo -> {
-          defaultParameters.putAll(companiesInfo);
-          defaultParameters.put(COL_ORDER_NOTES, defaultParameters.get("RequestNotes"));
-
-          SelfServiceUtils.getCargos(Filter.compareId(getLongValue(COL_CARGO)),
-              cargoInfo -> ReportUtils.showReport(REP_CONTRACT, fileInfo ->
-                  Queries.getRowSet(VIEW_TEXT_CONSTANTS, null, Filter.equals(COL_TEXT_CONSTANT,
-                      TextConstant.CONTRACT_MAIL_CONTENT), new Queries.RowSetCallback() {
-                    @Override
-                    public void onSuccess(BeeRowSet result) {
-                      String text;
-                      String localizedContent = Localized.column(COL_TEXT_CONTENT,
-                          EnumUtils.getEnumByIndex(SupportedLocale.class,
-                              getIntegerValue(COL_USER_LOCALE))
-                              .getLanguage());
-
-                      if (DataUtils.isEmpty(result)) {
-                        text = TextConstant.CONTRACT_MAIL_CONTENT.getDefaultContent();
-                      } else if (BeeConst.isUndef(DataUtils.getColumnIndex(localizedContent,
-                          result.getColumns()))) {
-                        text = result.getString(0, COL_TEXT_CONTENT);
-                      } else {
-                        text = BeeUtils.notEmpty(result.getString(0, localizedContent),
-                            result.getString(0, COL_TEXT_CONTENT));
-                      }
-                      sendMail(ShipmentRequestStatus.CONTRACT_SENT, null, BeeUtils.isEmpty(text)
-                              ? null : text.replace("{contract_path}",
-                          "rest/transport/confirm/" + getActiveRowId()),
-                          Collections.singleton(fileInfo));
-                    }
-                  }), defaultParameters, cargoInfo)
-          );
-        }));
   }
 
   private void sendMail(ShipmentRequestStatus status, String subject, String content,

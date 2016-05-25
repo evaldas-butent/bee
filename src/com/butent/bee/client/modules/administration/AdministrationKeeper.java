@@ -34,6 +34,8 @@ import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Preloader;
 
+import java.util.List;
+
 public final class AdministrationKeeper {
 
   private static class RowTransformHandler implements RowTransformEvent.Handler {
@@ -78,12 +80,15 @@ public final class AdministrationKeeper {
         new UserFeedsInterceptor(BeeKeeper.getUser().getUserId()),
         GridOptions.forCurrentUserFilter(NewsConstants.COL_UF_USER));
 
+    List<String> userChoiceColumns = Lists.newArrayList(COL_LOGIN, COL_FIRST_NAME, COL_LAST_NAME,
+        ALS_COMPANY_NAME, ALS_POSITION_NAME);
+
     GridFactory.registerGridInterceptor(GRID_USER_GROUP_MEMBERS,
         UniqueChildInterceptor.forUsers(Localized.dictionary().userGroupAddMembers(),
-            COL_UG_GROUP, COL_UG_USER));
+            COL_UG_GROUP, COL_UG_USER, null, userChoiceColumns));
     GridFactory.registerGridInterceptor(GRID_ROLE_USERS,
         UniqueChildInterceptor.forUsers(Localized.dictionary().roleAddUsers(),
-            COL_ROLE, COL_USER));
+            COL_ROLE, COL_USER, null, userChoiceColumns));
 
     GridFactory.registerGridInterceptor(GRID_THEME_COLORS,
         new UniqueChildInterceptor(Localized.dictionary().newThemeColors(),
@@ -129,7 +134,7 @@ public final class AdministrationKeeper {
 
     RightsForm.register();
 
-    SelectorEvent.register(event -> onDataSelector(event));
+    SelectorEvent.register(AdministrationKeeper::onDataSelector);
   }
 
   public static void setCompany(Long company) {

@@ -10,7 +10,6 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.DataSelector;
-import com.butent.bee.client.data.ClientDefaults;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowUpdateCallback;
@@ -20,6 +19,7 @@ import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.GridPanel;
 import com.butent.bee.client.layout.Flow;
+import com.butent.bee.client.modules.trade.TradeUtils;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.view.ViewHelper;
@@ -33,7 +33,6 @@ import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.InputNumber;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
-import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
@@ -43,7 +42,6 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.modules.trade.Totalizer;
 import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.modules.transport.TransportUtils;
 import com.butent.bee.shared.time.JustDate;
@@ -161,7 +159,7 @@ public class TripCostsGrid extends AbstractGridInterceptor
   public void onEditStart(EditStartEvent event) {
     if (Objects.equals(event.getColumnId(), TradeConstants.VAR_TOTAL)) {
       event.consume();
-      amountEntry(event.getRowValue());
+      TradeUtils.amountEntry(event.getRowValue(), getViewName());
       return;
     }
     if (DataUtils.isId(trip) && Objects.equals(event.getColumnId(), COL_TRIP)) {
@@ -224,52 +222,5 @@ public class TripCostsGrid extends AbstractGridInterceptor
             }
           }
         });
-  }
-
-  private void amountEntry(IsRow row) {
-    Totalizer totalizer = new Totalizer(getDataColumns());
-
-    InputNumber input = new InputNumber();
-    Double total = totalizer.getTotal(row);
-
-    if (BeeUtils.isDouble(total)) {
-      input.setValue(BeeUtils.round(total, 2));
-    }
-    Global.inputWidget(Localized.dictionary().amount(), input, () -> {
-      Double amount = input.getNumber();
-      String price = null;
-
-      if (BeeUtils.isDouble(amount)) {
-        if (!totalizer.isVatInclusive(row)) {
-          row.clearCell(getDataIndex(TradeConstants.COL_TRADE_VAT_PLUS));
-          amount -= BeeUtils.unbox(totalizer.getVat(row, amount));
-          row.setValue(getDataIndex(TradeConstants.COL_TRADE_VAT_PLUS), 1);
-        }
-        Double qty = row.getDouble(getDataIndex(COL_COSTS_QUANTITY));
-        price = BeeUtils.toString(amount / (BeeUtils.isZero(qty) ? 1 : qty), 5);
-      }
-      List<BeeColumn> columns = new ArrayList<>();
-      List<String> oldValues = new ArrayList<>();
-      List<String> newValues = new ArrayList<>();
-
-      columns.add(DataUtils.getColumn(COL_COSTS_PRICE, getDataColumns()));
-      oldValues.add(row.getString(getDataIndex(COL_COSTS_PRICE)));
-      newValues.add(price);
-
-      String oldCurrency = row.getString(getDataIndex(COL_COSTS_CURRENCY));
-      String newCurrency = null;
-
-      if (!BeeUtils.isEmpty(price)) {
-        newCurrency = BeeUtils.notEmpty(oldCurrency,
-            DataUtils.isId(ClientDefaults.getCurrency())
-                ? BeeUtils.toString(ClientDefaults.getCurrency()) : null);
-      }
-      columns.add(DataUtils.getColumn(COL_COSTS_CURRENCY, getDataColumns()));
-      oldValues.add(oldCurrency);
-      newValues.add(newCurrency);
-
-      Queries.update(getViewName(), row.getId(), row.getVersion(), columns, oldValues, newValues,
-          null, new RowUpdateCallback(getViewName()));
-    });
   }
 }

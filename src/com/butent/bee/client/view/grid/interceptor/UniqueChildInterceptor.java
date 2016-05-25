@@ -5,9 +5,7 @@ import com.google.common.collect.Lists;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.composite.MultiSelector;
-import com.butent.bee.client.data.IdCallback;
 import com.butent.bee.client.data.Queries;
-import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.shared.data.BeeColumn;
@@ -24,6 +22,7 @@ import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -33,11 +32,32 @@ public class UniqueChildInterceptor extends AbstractGridInterceptor {
 
   public static UniqueChildInterceptor forUsers(String dialogCaption, String parentColumn,
       String childColumn) {
+    return forUsers(dialogCaption, parentColumn, childColumn, null, null);
+  }
+
+  public static UniqueChildInterceptor forUsers(String dialogCaption, String parentColumn,
+      String childColumn, List<String> renderColumns, List<String> choiceColumns) {
+
+    List<String> rc = new ArrayList<>();
+    if (BeeUtils.isEmpty(renderColumns)) {
+      rc.add(ClassifierConstants.COL_FIRST_NAME);
+      rc.add(ClassifierConstants.COL_LAST_NAME);
+    } else {
+      rc.addAll(renderColumns);
+    }
+
+    List<String> cc = new ArrayList<>();
+    if (BeeUtils.isEmpty(choiceColumns)) {
+      cc.add(ClassifierConstants.COL_FIRST_NAME);
+      cc.add(ClassifierConstants.COL_LAST_NAME);
+      cc.add(ClassifierConstants.ALS_COMPANY_CODE);
+      cc.add(ClassifierConstants.ALS_POSITION_NAME);
+    } else {
+      cc.addAll(choiceColumns);
+    }
+
     return new UniqueChildInterceptor(dialogCaption, parentColumn, childColumn,
-        AdministrationConstants.VIEW_USERS,
-        Lists.newArrayList(ClassifierConstants.COL_FIRST_NAME, ClassifierConstants.COL_LAST_NAME),
-        Lists.newArrayList(ClassifierConstants.COL_FIRST_NAME, ClassifierConstants.COL_LAST_NAME,
-            ClassifierConstants.ALS_COMPANY_NAME, ClassifierConstants.ALS_POSITION_NAME));
+        AdministrationConstants.VIEW_USERS, rc, cc);
   }
 
   public static UniqueChildInterceptor forUserGroups(String dialogCaption, String parentColumn,
@@ -139,13 +159,10 @@ public class UniqueChildInterceptor extends AbstractGridInterceptor {
       }
     }
 
-    Global.inputWidget(dialogCaption, selector, new InputCallback() {
-      @Override
-      public void onSuccess() {
-        List<Long> input = DataUtils.parseIdList(selector.getValue());
-        if (!input.isEmpty()) {
-          addChildren(input);
-        }
+    Global.inputWidget(dialogCaption, selector, () -> {
+      List<Long> input = DataUtils.parseIdList(selector.getValue());
+      if (!input.isEmpty()) {
+        addChildren(input);
       }
     }, null, presenter.getHeader().getElement());
 
@@ -171,20 +188,17 @@ public class UniqueChildInterceptor extends AbstractGridInterceptor {
   }
 
   private void addChildren(final List<Long> children) {
-    getGridView().ensureRelId(new IdCallback() {
-      @Override
-      public void onSuccess(final Long parent) {
-        if (DataUtils.isId(parent)) {
-          List<BeeColumn> columns = DataUtils.getColumns(getDataColumns(),
-              Lists.newArrayList(parentColumn, childColumn));
-          BeeRowSet rowSet = new BeeRowSet(getViewName(), columns);
+    getGridView().ensureRelId(parent -> {
+      if (DataUtils.isId(parent)) {
+        List<BeeColumn> columns = DataUtils.getColumns(getDataColumns(),
+            Lists.newArrayList(parentColumn, childColumn));
+        BeeRowSet rowSet = new BeeRowSet(getViewName(), columns);
 
-          for (Long child : children) {
-            rowSet.addRow(DataUtils.NEW_ROW_ID, DataUtils.NEW_ROW_VERSION,
-                Queries.asList(parent, child));
-          }
-          Queries.insertRows(rowSet);
+        for (Long child : children) {
+          rowSet.addRow(DataUtils.NEW_ROW_ID, DataUtils.NEW_ROW_VERSION,
+              Queries.asList(parent, child));
         }
+        Queries.insertRows(rowSet);
       }
     });
   }
