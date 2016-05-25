@@ -319,14 +319,16 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
       }
       Queries.insert(VIEW_ORDERS, Data.getColumns(VIEW_ORDERS,
           Arrays.asList(COL_CUSTOMER, COL_CUSTOMER + COL_PERSON, COL_ORDER_MANAGER,
-              COL_EXPEDITION, COL_SHIPPING_TERM, COL_ORDER_NOTES, COL_VEHICLE, COL_DRIVER)),
+              COL_EXPEDITION, COL_SHIPPING_TERM, COL_ORDER_NOTES, COL_VEHICLE, COL_DRIVER,
+              COL_ORDER_NO)),
           Arrays.asList(row.getString(form.getDataIndex(COL_COMPANY)),
               row.getString(form.getDataIndex(COL_COMPANY_PERSON)), BeeUtils.toString(manager),
               row.getString(form.getDataIndex(COL_EXPEDITION)),
               row.getString(form.getDataIndex(COL_SHIPPING_TERM)),
               row.getString(form.getDataIndex(COL_ORDER_NOTES)),
               row.getString(form.getDataIndex(COL_VEHICLE)),
-              row.getString(form.getDataIndex(COL_DRIVER))),
+              row.getString(form.getDataIndex(COL_DRIVER)),
+              "SLF-" + row.getId()),
           null, new RowInsertCallback(VIEW_ORDERS) {
             @Override
             public void onSuccess(BeeRow order) {

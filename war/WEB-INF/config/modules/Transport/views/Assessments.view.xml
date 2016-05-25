@@ -27,6 +27,7 @@
       <SimpleJoin name="Order" joinType="LEFT">
         <SimpleColumn name="Date" editable="true" />
         <SimpleColumn name="Status" alias="OrderStatus" editable="true" />
+        <SimpleColumn name="OrderNo" editable="true" />
         <SimpleColumn name="Notes" alias="OrderNotes" label="=route" editable="true" />
 
         <SimpleColumn name="Customer" editable="true" />
@@ -81,6 +82,16 @@
               </SimpleJoin>
             </SimpleJoin>
           </SimpleJoin>
+        </SimpleJoin>
+
+        <SimpleColumn name="Expedition" editable="true" />
+        <SimpleJoin joinType="LEFT" name="Expedition">
+          <SimpleColumn name="Name" alias="ExpeditionType" />
+        </SimpleJoin>
+
+        <SimpleColumn name="ShippingTerm" editable="true" />
+        <SimpleJoin joinType="LEFT" name="ShippingTerm">
+          <SimpleColumn name="Name" alias="ShippingTermName" />
         </SimpleJoin>
       </SimpleJoin>
 

@@ -133,4 +133,9 @@
     <InputMoney source="Value" style="&input;" currencySource="ValueCurrency" />
     <DataSelector source="ValueCurrency" style="&inline; width:5em; margin-left:5px;" editEnabled="false" />
   </FlowPanel>
+
+  <FlowPanel style="&section;">
+    <CheckBox source="CustomsBrokerage" />
+    <CheckBox source="FreightInsurance" style="padding-left:130px;" />
+  </FlowPanel>
 </FlowPanel>

@@ -10,8 +10,6 @@ import com.google.gwt.dom.client.Style.Cursor;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.logical.shared.SelectionEvent;
-import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HasHandlers;
@@ -38,7 +36,6 @@ import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowUpdateCallback;
-import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.event.logical.SelectorEvent;
@@ -50,7 +47,6 @@ import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.grid.cell.AbstractCell;
 import com.butent.bee.client.grid.column.AbstractColumn;
 import com.butent.bee.client.layout.TabbedPages;
-import com.butent.bee.client.layout.TabbedPages.SelectionOrigin;
 import com.butent.bee.client.modules.classifiers.ClassifierUtils;
 import com.butent.bee.client.modules.mail.NewMailMessage;
 import com.butent.bee.client.modules.trade.TotalRenderer;
@@ -78,7 +74,6 @@ import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.client.widget.InputBoolean;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Holder;
-import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.css.values.TextAlign;
 import com.butent.bee.shared.data.BeeColumn;
@@ -147,13 +142,10 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
 
       final UnboundSelector user = UnboundSelector.create(relation,
           Lists.newArrayList(COL_FIRST_NAME, COL_LAST_NAME));
-      user.addSelectorHandler(new SelectorEvent.Handler() {
-        @Override
-        public void onDataSelector(SelectorEvent event) {
-          if (event.isChanged()) {
-            department.set(Data.getLong(event.getRelatedViewName(), event.getRelatedRow(),
-                COL_DEPARTMENT));
-          }
+      user.addSelectorHandler(event -> {
+        if (event.isChanged()) {
+          department.set(Data.getLong(event.getRelatedViewName(), event.getRelatedRow(),
+              COL_DEPARTMENT));
         }
       });
       container.setText(0, 0, loc.manager(), StyleUtils.NAME_REQUIRED);
@@ -462,22 +454,13 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
           }
         }, null);
       } else {
-        Global.confirm(confirmationQuestion, new ConfirmationCallback() {
-          @Override
-          public void onConfirm() {
-            save(null);
-          }
-        });
+        Global.confirm(confirmationQuestion, () -> save(null));
       }
     }
 
-    public void save(final String notes) {
-      ScheduledCommand command = new ScheduledCommand() {
-        @Override
-        public void execute() {
-          update(notes);
-        }
-      };
+    public void save(String notes) {
+      ScheduledCommand command = () -> update(notes);
+
       if (!handleSaveAction(command)) {
         command.execute();
       }
@@ -617,13 +600,7 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
       expensesRegistered.addValueChangeHandler(this);
 
     } else if (widget instanceof TabbedPages) {
-      ((TabbedPages) widget)
-          .addSelectionHandler(new SelectionHandler<Pair<Integer, SelectionOrigin>>() {
-            @Override
-            public void onSelection(SelectionEvent<Pair<Integer, SelectionOrigin>> event) {
-              onValueChange(null);
-            }
-          });
+      ((TabbedPages) widget).addSelectionHandler(event -> onValueChange(null));
     }
   }
 
@@ -661,22 +638,13 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
         FaLabel lbl = new FaLabel(FontAwesome.COMMENT_O, true);
         lbl.getElement().getStyle().setMarginLeft(5, Unit.PX);
         lbl.getElement().getStyle().setCursor(Cursor.POINTER);
-        lbl.addClickHandler(new ClickHandler() {
-          @Override
-          public void onClick(ClickEvent event) {
-            Global.showInfo(log);
-          }
-        });
+        lbl.addClickHandler(event -> Global.showInfo(log));
         statusLabel.add(lbl);
       }
     }
     if (executor && !newRecord) {
-      header.addCommandItem(new Button(loc.trWriteEmail(), new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent event) {
-          sendMail();
-        }
-      }));
+      header.addCommandItem(new Button(loc.trWriteEmail(), event -> sendMail()));
+
       if (request) {
         if (AssessmentStatus.NEW.is(status)) {
           header.addCommandItem(reqAnswered);
@@ -725,13 +693,9 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
   }
 
   @Override
-  public boolean beforeAction(final Action action, final Presenter presenter) {
-    if (action == Action.SAVE && !isNewRow() && handleSaveAction(new ScheduledCommand() {
-      @Override
-      public void execute() {
-        presenter.handleAction(action);
-      }
-    })) {
+  public boolean beforeAction(Action action, final Presenter presenter) {
+    if (action == Action.SAVE && !isNewRow()
+        && handleSaveAction(() -> presenter.handleAction(action))) {
       return false;
     }
     return super.beforeAction(action, presenter);
@@ -874,7 +838,7 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
         TimeUtils.nowMinutes().toCompactString() + " " + caption + "\n" + value, oldLog);
   }
 
-  private boolean handleSaveAction(final ScheduledCommand action) {
+  private boolean handleSaveAction(ScheduledCommand action) {
     final int logIdx = form.getDataIndex(COL_ASSESSMENT_LOG);
     final String oldLog = form.getOldRow().getString(logIdx);
     String newLog = form.getActiveRow().getString(logIdx);
@@ -981,7 +945,6 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
     String total = form.getWidgetByName(VAR_INCOME + VAR_TOTAL).getElement().getInnerText();
     table.setText(c, 0, Localized.maybeTranslate("=customerPrice"));
     table.setText(c, 1, BeeUtils.joinWords(total, form.getStringValue("CurrencyName")));
-    c++;
 
     Queries.getRowSet(VIEW_ASSESSMENTS, Lists.newArrayList(COL_CARGO),
         Filter.equals(COL_ASSESSMENT, getActiveRowId()), new RowSetCallback() {
