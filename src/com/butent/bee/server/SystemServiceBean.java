@@ -267,6 +267,9 @@ public class SystemServiceBean {
       LocalJasperReportsContext context = new LocalJasperReportsContext(DefaultJasperReportsContext
           .getInstance());
       context.setFileResolver(ref -> {
+        if (BeeUtils.startsWith(ref, Paths.IMAGE_DIR + "/")) {
+          return new File(Config.IMAGE_DIR, BeeUtils.removePrefix(ref, Paths.IMAGE_DIR + "/"));
+        }
         Long fileId = BeeUtils.peek(HtmlUtils.getFileReferences("src=\"" + ref + "\"").keySet());
 
         if (DataUtils.isId(fileId)) {
