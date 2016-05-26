@@ -63,7 +63,7 @@ import com.butent.bee.shared.utils.Codec;
 
 import java.util.Map;
 
-class CompanyForm extends AbstractFormInterceptor {
+class CompanyForm extends CustomCompanyForm {
 
   CompanyForm() {
   }
@@ -234,6 +234,7 @@ class CompanyForm extends AbstractFormInterceptor {
         }
       });
     }
+    super.afterCreateWidget(name, widget, callback);
   }
 
   @Override

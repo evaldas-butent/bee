@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+      name="CompanyPayAccounts" source="CompanyPayAccounts"
+      caption="=bankAccounts"
+>
+  <Columns>
+    <SimpleColumn name="Company" />
+
+    <SimpleColumn name="Account" />
+    <SimpleJoin joinType="INNER" name="Account">
+      <SimpleJoin joinType="INNER" name="Bank">
+        <SimpleColumn name="Name" alias="BankName" label="=bank" />
+        <SimpleColumn name="BankCode" />
+        <SimpleColumn name="SWIFTCode" />
+      </SimpleJoin>
+
+      <SimpleColumn name="BankAccount" />
+      <SimpleJoin joinType="LEFT" name="Currency">
+        <SimpleColumn name="Name" alias="CurrencyName" />
+      </SimpleJoin>
+      <SimpleColumn name="IBANcode" />
+      <SimpleColumn name="Notes" />
+    </SimpleJoin>
+  </Columns>
+</View>

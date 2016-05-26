@@ -261,6 +261,11 @@
         <ChildGrid name="ChildRequests" relColumn="Customer" paging="true" />
       </page>
 
+      <page for="CompanyPayAccounts">
+        <text>Sąskaitos apmokėjimui</text>
+        <ChildGrid name="CompanyPayAccounts" relColumn="Company" />
+      </page>
+
       <page data="Projects">
         <text>=projects</text>
         <ChildGrid name="CompanyProjects" relColumn="Company" paging="true" />

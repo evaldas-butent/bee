@@ -26,13 +26,16 @@ import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
+import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 public final class ClassifierUtils {
 
@@ -58,14 +61,24 @@ public final class ClassifierUtils {
       Consumer<Map<String, String>> infoConsumer) {
 
     Map<String, Filter> views = ImmutableMap.of(VIEW_COMPANIES, Filter.idIn(companies.values()),
-        VIEW_COMPANY_BANK_ACCOUNTS, Filter.any(COL_COMPANY, companies.values()));
+        VIEW_COMPANY_BANK_ACCOUNTS, Filter.any(COL_COMPANY, companies.values()),
+        "CompanyPayAccounts", Filter.equals(COL_COMPANY,
+            BeeUtils.nvl(companies.get(TransportConstants.COL_PAYER),
+                companies.get(TransportConstants.COL_CUSTOMER))));
 
     Queries.getData(views.keySet(), views, null, new Queries.DataCallback() {
       @Override
       public void onSuccess(Collection<BeeRowSet> result) {
         Map<String, String> params = new HashMap<>();
         Map<Long, BeeRowSet> accounts = new HashMap<>();
+        Set<Long> payAccounts = new HashSet<>();
 
+        for (BeeRowSet rowSet : result) {
+          if (Objects.equals(rowSet.getViewName(), "CompanyPayAccounts")) {
+            payAccounts.addAll(rowSet.getDistinctLongs(rowSet.getColumnIndex("Account")));
+            break;
+          }
+        }
         for (BeeRowSet rowSet : result) {
           switch (rowSet.getViewName()) {
             case VIEW_COMPANIES:
@@ -90,7 +103,9 @@ public final class ClassifierUtils {
                 if (!accounts.containsKey(companyId)) {
                   accounts.put(companyId, new BeeRowSet(rowSet.getViewName(), rowSet.getColumns()));
                 }
-                accounts.get(companyId).addRow(DataUtils.cloneRow(accountRow));
+                if (payAccounts.isEmpty() || payAccounts.contains(accountRow.getId())) {
+                  accounts.get(companyId).addRow(DataUtils.cloneRow(accountRow));
+                }
               }
               break;
           }

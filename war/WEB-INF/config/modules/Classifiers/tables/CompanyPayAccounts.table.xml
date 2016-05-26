@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+       name="CompanyPayAccounts"
+       idName="PayAccountID"
+>
+  <Fields>
+    <Relation name="Company" notNull="true" relation="Companies" cascade="DELETE"
+              label="=company" />
+    <Relation name="Account" notNull="true" relation="CompanyBankAccounts" cascade="DELETE"
+              label="=bankAccount" />
+  </Fields>
+  <Constraints>
+    <Unique fields="Company Account" />
+  </Constraints>
+</Table>
