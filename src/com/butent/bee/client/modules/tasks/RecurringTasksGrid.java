@@ -62,8 +62,7 @@ class RecurringTasksGrid extends AbstractGridInterceptor {
                         gridView.getGrid().insertRow(row, false);
 
                         if (DomUtils.isVisible(gridView.getGrid())) {
-                          gridView.onEditStart(new EditStartEvent(row, null, null,
-                              EditStartEvent.CLICK, gridView.isReadOnly()));
+                          gridView.onEditStart(new EditStartEvent(row, gridView.isReadOnly()));
                         }
                       }
 
