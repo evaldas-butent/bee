@@ -25,6 +25,7 @@ import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
+import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.ChildGrid;
 import com.butent.bee.client.modules.mail.Relations;
@@ -50,7 +51,7 @@ import com.butent.bee.shared.data.RowChildren;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.view.DataInfo;
-import com.butent.bee.shared.i18n.LocalizableConstants;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.service.ServiceConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
@@ -114,11 +115,11 @@ public class DocumentForm extends DocumentDataForm {
     }
   }
 
-  private final Button newTemplateButton = new Button(Localized.getConstants()
+  private final Button newTemplateButton = new Button(Localized.dictionary()
       .newDocumentTemplate(), new ClickHandler() {
     @Override
     public void onClick(ClickEvent event) {
-      RowFactory.createRow(VIEW_DOCUMENT_TEMPLATES, new RowCallback() {
+      RowFactory.createRow(VIEW_DOCUMENT_TEMPLATES, Modality.ENABLED, new RowCallback() {
         @Override
         public void onSuccess(final BeeRow row) {
           DocumentsHandler.copyDocumentData(getLongValue(COL_DOCUMENT_DATA), new IdCallback() {
@@ -228,7 +229,7 @@ public class DocumentForm extends DocumentDataForm {
     } else {
       templates = new LinkedHashMap<>();
     }
-    LocalizableConstants loc = Localized.getConstants();
+    Dictionary loc = Localized.dictionary();
 
     StringBuilder sb = new StringBuilder("<table style=\"border-collapse:collapse;")
         .append(" border:1px solid black; text-align:right;\">")
@@ -330,7 +331,7 @@ public class DocumentForm extends DocumentDataForm {
               switch (column.getType()) {
                 case BOOLEAN:
                   val = BeeUtils.unbox(Data.getBoolean(viewName, row, column.getId()))
-                      ? Localized.getConstants().yes() : Localized.getConstants().no();
+                      ? Localized.dictionary().yes() : Localized.dictionary().no();
                   break;
 
                 case DATE:
@@ -355,7 +356,7 @@ public class DocumentForm extends DocumentDataForm {
                   if (!BeeUtils.isEmpty(enumKey)) {
                     val = EnumUtils.getLocalizedCaption(enumKey,
                         Data.getInteger(viewName, row, column.getId()),
-                        Localized.getConstants());
+                        Localized.dictionary());
                   } else {
                     val = Data.getString(viewName, row, column.getId());
                   }
@@ -418,7 +419,7 @@ public class DocumentForm extends DocumentDataForm {
               ServiceConstants.COL_SERVICE_CUSTOMER, row,
               Data.getDataInfo(TBL_COMPANIES), result, true);
 
-          RowFactory.createRelatedRow(formName, row, selector);
+          RowFactory.createRelatedRow(formName, row, selector, null);
         }
       });
     }
@@ -481,7 +482,7 @@ public class DocumentForm extends DocumentDataForm {
 
             latch.set(latch.get() - 1);
             if (latch.get() <= 0) {
-              RowFactory.createRelatedRow(formName, row, selector);
+              RowFactory.createRelatedRow(formName, row, selector, null);
             }
           }
         });
@@ -524,7 +525,7 @@ public class DocumentForm extends DocumentDataForm {
 
                 latch.set(latch.get() - 1);
                 if (latch.get() <= 0) {
-                  RowFactory.createRelatedRow(formName, row, selector);
+                  RowFactory.createRelatedRow(formName, row, selector, null);
                 }
               }
             });

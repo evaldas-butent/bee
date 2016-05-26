@@ -58,14 +58,14 @@ class EcCategoriesForm extends AbstractFormInterceptor implements CatchHandler<I
       event.consume();
     }
     String prompt;
-    List<String> actions = Lists.newArrayList(Localized.getConstants().ecCategoryMove());
+    List<String> actions = Lists.newArrayList(Localized.dictionary().ecCategoryMove());
 
     if (destination != null) {
-      actions.add(Localized.getConstants().ecCategoryMerge());
-      prompt = Localized.getMessages().ecCategoryMigrate(presenter.evaluate(source),
+      actions.add(Localized.dictionary().ecCategoryMerge());
+      prompt = Localized.dictionary().ecCategoryMigrate(presenter.evaluate(source),
           presenter.evaluate(destination));
     } else {
-      prompt = Localized.getMessages().ecCategoryMigrate(presenter.evaluate(source),
+      prompt = Localized.dictionary().ecCategoryMigrate(presenter.evaluate(source),
           Localized.maybeTranslate(presenter.getCaption()));
     }
     Global.choice(presenter.getCaption(), prompt, actions, new ChoiceCallback() {

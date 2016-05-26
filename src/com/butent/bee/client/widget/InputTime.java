@@ -220,14 +220,14 @@ public class InputTime extends InputText implements HasBounds, HasIntStep {
 
     if (isEmpty()) {
       if (checkForNull && !isNullable()) {
-        messages.add(Localized.getConstants().enterTime());
+        messages.add(Localized.dictionary().enterTime());
       }
       return messages;
     }
 
     String v = BeeUtils.trim(getValue());
     if (getCharMatcher() != null && !getCharMatcher().matchesAllOf(v)) {
-      messages.add(BeeUtils.joinWords(Localized.getConstants().invalidTime(), v));
+      messages.add(BeeUtils.joinWords(Localized.dictionary().invalidTime(), v));
       return messages;
     }
 
@@ -245,7 +245,7 @@ public class InputTime extends InputText implements HasBounds, HasIntStep {
 
     if (BeeUtils.isEmpty(normalizedValue)) {
       if (checkForNull && !isNullable()) {
-        messages.add(Localized.getConstants().enterTime());
+        messages.add(Localized.dictionary().enterTime());
       }
       return messages;
     }

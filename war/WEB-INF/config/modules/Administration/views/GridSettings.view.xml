@@ -45,6 +45,7 @@
     <SimpleColumn name="FooterMargin" />
 
     <SimpleColumn name="AutoFit" />
+    <SimpleColumn name="AutoFlex" />
 
     <SimpleColumn name="MinColumnWidth" />
     <SimpleColumn name="MaxColumnWidth" />

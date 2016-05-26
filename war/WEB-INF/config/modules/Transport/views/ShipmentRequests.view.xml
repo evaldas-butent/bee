@@ -1,129 +1,117 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<View xmlns="http://www.butent.com/view"
-  xmlns:x="http://www.butent.com/expression"
+<View xmlns="http://www.butent.com/view" xmlns:xi="http://www.w3.org/2001/XInclude"
 
-  name="ShipmentRequests" source="ShipmentRequests" module="Transport.SelfService"
-  caption="=trRequestsUnregistered" newRowCaption="=trRequestUnregisteredNew"
-  newRowForm="ShipmentRequest" editForm="ShipmentRequest"
-  >
+      name="ShipmentRequests" source="ShipmentRequests" module="Transport.SelfService"
+      caption="=trRequests" newRowCaption="=trRequestNew"
+      newRowForm="ShipmentRequest" editForm="ShipmentRequest"
+    >
+  <Relation renderColumns="ID Date" />
   <Columns>
+    <IdColumn name="ID" />
     <SimpleColumn name="Date" />
     <SimpleColumn name="Status" />
 
-    <SimpleColumn name="CustomerName" />
-    <SimpleColumn name="CustomerCode" />
-    <SimpleColumn name="CustomerVatCode" />
+    <SimpleJoin name="Registration" joinType="LEFT">
+      <SimpleColumn name="Type" alias="CustomerCompanyType" />
+      <SimpleColumn name="Name" alias="CustomerName" />
+      <SimpleColumn name="Code" alias="CustomerCode" />
+      <SimpleColumn name="VatCode" alias="CustomerVatCode" />
 
-    <SimpleColumn name="CustomerAddress" />
-    <SimpleColumn name="CustomerPhone" />
-    <SimpleColumn name="CustomerEmail" />
+      <SimpleColumn name="Phone" alias="CustomerPhone" />
+      <SimpleColumn name="Fax" alias="CustomerFax" />
+      <SimpleColumn name="Email" alias="CustomerEmail" />
 
-    <SimpleColumn name="CustomerContact" />
-    <SimpleColumn name="CustomerContactPosition" />
+      <SimpleColumn name="ContactPerson" alias="CustomerContactPerson" />
+      <SimpleColumn name="ContactPersonPosition" alias="CustomerPersonPosition" />
 
-    <SimpleColumn name="CustomerExchangeCode" />
+      <SimpleColumn name="Country" alias="CustomerCountry" />
+      <SimpleColumn name="City" alias="CustomerCity" />
+      <SimpleColumn name="Address" alias="CustomerAddress" />
+      <SimpleColumn name="PostIndex" alias="CustomerPostIndex" />
 
-    <SimpleColumn name="LoadingEmail" />
-    <SimpleColumn name="LoadingCity" />
+      <SimpleColumn name="Notes" alias="CustomerNotes" />
+      <SimpleColumn name="Register" alias="CustomerRegister" />
+    </SimpleJoin>
 
-    <SimpleColumn name="UnloadingEmail" />
-    <SimpleColumn name="UnloadingCity" />
+    <SimpleColumn name="CompanyPerson" />
+    <SimpleJoin name="CompanyPerson" joinType="LEFT">
+      <SimpleColumn name="Company" />
+      <SimpleJoin name="Company" joinType="LEFT">
+        <SimpleColumn name="Name" alias="CompanyName" label="=company" />
+      </SimpleJoin>
+
+      <SimpleJoin name="Person" joinType="LEFT">
+        <SimpleColumn name="FirstName" alias="PersonFirstName" />
+        <SimpleColumn name="LastName" alias="PersonLastName" />
+      </SimpleJoin>
+
+      <SimpleJoin name="Contact" joinType="LEFT">
+        <SimpleColumn name="Phone" alias="PersonPhone" />
+
+        <SimpleJoin name="Email" joinType="LEFT">
+          <SimpleColumn name="Email" alias="PersonEmail" />
+        </SimpleJoin>
+      </SimpleJoin>
+    </SimpleJoin>
 
     <SimpleColumn name="Expedition" />
     <SimpleJoin name="Expedition" joinType="LEFT">
       <SimpleColumn name="Name" alias="ExpeditionType" />
+      <SimpleColumn name="Logistics" />
     </SimpleJoin>
 
-    <SimpleColumn name="DeliveryDate" />
-    <SimpleColumn name="DeliveryTime" />
-    <SimpleColumn name="TermsOfDelivery" />
-
-    <SimpleColumn name="CustomsBrokerage" />
-    <SimpleColumn name="FreightInsurance" />
+    <SimpleColumn name="ShippingTerm" />
+    <SimpleJoin joinType="LEFT" name="ShippingTerm">
+      <SimpleColumn name="Name" alias="ShippingTermName" />
+    </SimpleJoin>
 
     <SimpleColumn name="Cargo" />
     <SimpleJoin name="Cargo" joinType="LEFT">
-      <SimpleColumn name="Order" editable="true" />
-      <SimpleJoin name="Order" joinType="LEFT">
-        <SimpleColumn name="OrderNo" />
-      </SimpleJoin>
+      <ExternalJoin name="Cargo" source="Assessments" joinType="LEFT">
+        <IdColumn name="Assessment" />
+      </ExternalJoin>
 
-      <SimpleJoin name="LoadingPlace" joinType="LEFT">
-        <SimpleColumn name="Date" alias="LoadingDate" label="=trLoadingDate" editable="true" />
-
-        <SimpleColumn name="Company" alias="LoadingCompany" label="=trLoadingCompany"
-          editable="true" />
-        <SimpleColumn name="Contact" alias="LoadingContact" label="=trLoadingContact"
-          editable="true" />
-        <SimpleColumn name="Address" alias="LoadingAddress" label="=trLoadingAddress" 
-          editable="true" />
-
-        <SimpleColumn name="Phone" alias="LoadingPhone" editable="true" label="=trLoadingPhone" />
-        <SimpleColumn name="Fax" alias="LoadingFax" editable="true" label="=trLoadingFax" />
-        <SimpleColumn name="Number" alias="LoadingNumber" editable="true" 
-          label="=trLoadingNumber" />
-      </SimpleJoin>
-
-      <SimpleJoin name="UnloadingPlace" joinType="LEFT">
-        <SimpleColumn name="Date" alias="UnloadingDate" label="=trUnloadingDate" editable="true" />
-
-        <SimpleColumn name="Company" alias="UnloadingCompany" label="=trUnloadingCompany"
-          editable="true" />
-        <SimpleColumn name="Contact" alias="UnloadingContact" label="=trUnloadingContact"
-          editable="true" />
-        <SimpleColumn name="Address" alias="UnloadingAddress" label="=trUnloadingAddress" 
-          editable="true" />
-
-        <SimpleColumn name="Phone" alias="UnloadingPhone" editable="true" 
-          label="=trUnloadingPhone" />
-        <SimpleColumn name="Fax" alias="UnloadingFax" editable="true" label="=trUnloadingFax" />
-        <SimpleColumn name="Number" alias="UnloadingNumber" editable="true" 
-          label="=trUnloadingNumber" />
-      </SimpleJoin>
-
-      <SimpleColumn name="Description" alias="CargoDescription" editable="true" 
-        label="=trRequestCargoDescription"/>
-      <SimpleColumn name="Quantity" editable="true" label="=trRequestCargoQuantity" />
-
-      <SimpleColumn name="Weight" editable="true" label="=trRequestCargoWeight" />
-      <SimpleColumn name="Volume" editable="true" label="=trRequestCargoVolume" />
-      <SimpleColumn name="LDM" editable="true" label="=trRequestCargoLdm" />
-      <SimpleColumn name="Length" editable="true" label="=trRequestCargoLength" />
-      <SimpleColumn name="Width" editable="true" label="=trRequestCargoWidth" /> 
-      <SimpleColumn name="Height" editable="true" label="=trRequestCargoHeight" />
-
-      <SimpleColumn name="Palettes" editable="true" label="=trRequestCargoPalettes" />
-
-      <SimpleColumn name="Value" editable="true" label="=trRequestCargoValue" />
-      <SimpleColumn name="ValueCurrency" editable="true" label="=trRequestCargoCurrency" />
-      <SimpleJoin joinType="LEFT" name="ValueCurrency">
-        <SimpleColumn name="Name" alias="ValueCurrencyName" />
-      </SimpleJoin>
-
-      <SimpleColumn name="ShippingTerm" editable="true" label="=trRequestShippingTerms" />
-      <SimpleJoin joinType="LEFT" name="ShippingTerm">
-        <SimpleColumn name="Name" alias="ShippingTermName" />
-        <SimpleColumn name="Description" alias="ShippingTermDescription" />
-      </SimpleJoin>
+      <SimpleColumn name="Order" />
+      <xi:include href="viewcolumns/CargoInfo.viewcolumns.xml" />
     </SimpleJoin>
 
     <SimpleColumn name="Manager" />
     <SimpleJoin name="Manager" joinType="LEFT">
       <SimpleColumn name="CompanyPerson" alias="ManagerPerson" />
+
       <SimpleJoin name="CompanyPerson" joinType="LEFT">
         <SimpleJoin name="Person" joinType="LEFT">
           <SimpleColumn name="FirstName" alias="ManagerFirstName" />
           <SimpleColumn name="LastName" alias="ManagerLastName" />
         </SimpleJoin>
+
+        <SimpleJoin name="Position" joinType="LEFT">
+          <SimpleColumn name="Name" alias="ManagerPosition" />
+        </SimpleJoin>
+
+        <SimpleJoin name="Contact" joinType="LEFT">
+          <SimpleColumn name="Phone" alias="ManagerPhone" />
+          <SimpleColumn name="Mobile" alias="ManagerMobile" />
+          <SimpleColumn name="Fax" alias="ManagerFax" />
+
+          <SimpleJoin name="Email" joinType="LEFT">
+            <SimpleColumn name="Email" alias="ManagerEmail" />
+          </SimpleJoin>
+        </SimpleJoin>
       </SimpleJoin>
     </SimpleJoin>
 
     <SimpleColumn name="Notes" />
+    <SimpleColumn name="Vehicle" />
+    <SimpleColumn name="Driver" />
+
+    <SimpleColumn name="LossReason" />
+
+    <SimpleColumn name="Locale" />
     <SimpleColumn name="Host" />
     <SimpleColumn name="Agent" />
-    <SimpleColumn name="Interface" />
   </Columns>
-  
+
   <Order>
     <OrderBy column="LoadingDate" />
   </Order>

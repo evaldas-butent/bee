@@ -65,11 +65,11 @@ class ArticleCarsGridInterceptor extends AbstractGridInterceptor implements
     IsRow itemRow = (form == null) ? null : form.getActiveRow();
 
     if (itemRow == null) {
-      return Localized.getConstants().ecItemDetailsCarTypes();
+      return Localized.dictionary().ecItemDetailsCarTypes();
     } else {
       return BeeUtils.joinWords(form.getStringValue(COL_TCD_ARTICLE_NAME),
           form.getStringValue(COL_TCD_ARTICLE_NR),
-          Localized.getConstants().ecItemDetailsCarTypes());
+          Localized.dictionary().ecItemDetailsCarTypes());
     }
   }
 
@@ -132,8 +132,8 @@ class ArticleCarsGridInterceptor extends AbstractGridInterceptor implements
           dialog.close();
 
         } else {
-          Global.decide(Localized.getConstants().tcdTypes(),
-              Lists.newArrayList(Localized.getConstants().saveChanges()), new DecisionCallback() {
+          Global.decide(Localized.dictionary().tcdTypes(),
+              Lists.newArrayList(Localized.dictionary().saveChanges()), new DecisionCallback() {
                 @Override
                 public void onConfirm() {
                   saveSelectedCars();
@@ -206,7 +206,7 @@ class ArticleCarsGridInterceptor extends AbstractGridInterceptor implements
     table.setText(row, col++, carType.getAxle());
 
     FaLabel remove = new FaLabel(FontAwesome.TRASH_O, STYLE_SELECTION_REMOVE);
-    remove.setTitle(Localized.getConstants().actionRemove());
+    remove.setTitle(Localized.dictionary().actionRemove());
 
     remove.addClickHandler(new ClickHandler() {
       @Override

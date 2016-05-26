@@ -50,7 +50,7 @@ public class ContactsCreator extends AbstractGridInterceptor implements ClickHan
 
   @Override
   public void afterCreatePresenter(GridPresenter presenter) {
-    presenter.getHeader().addCommandItem(new Button(Localized.getConstants().mailAddContacts(),
+    presenter.getHeader().addCommandItem(new Button(Localized.dictionary().mailAddContacts(),
         this));
   }
 
@@ -62,7 +62,7 @@ public class ContactsCreator extends AbstractGridInterceptor implements ClickHan
       ids.add(row.getId());
     }
     if (ids.isEmpty()) {
-      getGridView().notifyWarning(Localized.getConstants().selectAtLeastOneRow());
+      getGridView().notifyWarning(Localized.dictionary().selectAtLeastOneRow());
       return;
     }
 

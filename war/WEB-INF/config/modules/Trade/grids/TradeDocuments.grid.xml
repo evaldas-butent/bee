@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+  xmlns:xi="http://www.w3.org/2001/XInclude"
+  
+  name="TradeDocuments" viewName="TradeDocuments"
+  caption="=trdDocuments" editShowId="true"
+  >
+  <g:columns>
+    <IdColumn name="Id" />
+
+    <DataColumn name="Date" visible="true" />
+
+    <DataColumn name="Series" />
+    <DataColumn name="Number" />
+
+    <DataColumn name="Number1" />
+    <DataColumn name="Number2" />
+
+    <RelColumn name="Operation" renderColumns="OperationName" visible="true" />
+    <DataColumn name="Phase" visible="true" />
+    <RelColumn name="Status" renderColumns="StatusName" />
+
+    <RelColumn name="Supplier" renderColumns="SupplierName" />
+    <RelColumn name="Customer" renderColumns="CustomerName" />
+
+    <RelColumn name="WarehouseFrom" renderColumns="WarehouseFromCode" />
+    <RelColumn name="WarehouseTo" renderColumns="WarehouseToCode" />
+
+    <RelColumn name="Currency" renderColumns="CurrencyName" />
+
+    <RelColumn name="Payer" renderColumns="PayerName" />
+    <DataColumn name="Term" />
+
+    <RelColumn name="Manager" renderColumns="ManagerFirstName ManagerLastName"
+      sortBy="ManagerLastName ManagerFirstName" />
+
+    <DataColumn name="Discount" />
+    <DataColumn name="PriceName" />
+  </g:columns>
+
+  <xi:include href="../../Administration/grids/columns/ExtraDimensions.columns.xml" />
+
+  <g:columns>
+    <DataColumn name="Notes" />
+  </g:columns>
+</g:Grid>

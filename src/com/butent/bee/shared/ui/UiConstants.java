@@ -51,6 +51,7 @@ public final class UiConstants {
   public static final String ATTR_EDIT_VIEW_NAME = "editViewName";
 
   public static final String ATTR_PROPERTY = "property";
+  public static final String ATTR_USER_MODE = "userMode";
 
   public static final String ATTR_VISIBLE = "visible";
   public static final String ATTR_MODULE = "module";
@@ -60,6 +61,9 @@ public final class UiConstants {
   public static final String ATTR_GRID_NAME = "gridName";
   public static final String ATTR_REL_COLUMN = "relColumn";
   public static final String ATTR_PAGING = "paging";
+
+  public static final String ATTR_SPLITTER_SIZE = "splitterSize";
+  public static final String ATTR_SIZE = "size";
 
   public static final String TAG_ROW = "row";
   public static final String TAG_COL = "col";
@@ -89,7 +93,7 @@ public final class UiConstants {
   }
 
   public static String wtfplUrl() {
-    return "http://www.butent.com";
+    return "http://www.b-novo.lt";
   }
 
   public static String helpURL() {

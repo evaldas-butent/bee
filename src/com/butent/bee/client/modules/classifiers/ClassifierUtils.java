@@ -1,5 +1,6 @@
 package com.butent.bee.client.modules.classifiers;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
@@ -8,24 +9,31 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.IdCallback;
+import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.NotificationListener;
+import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.data.BeeRow;
+import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.event.DataChangeEvent;
+import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 public final class ClassifierUtils {
 
@@ -39,31 +47,64 @@ public final class ClassifierUtils {
       COL_COMPANY_NAME, COL_COMPANY_CODE, COL_COMPANY_VAT_CODE,
       COL_ADDRESS, COL_PHONE, COL_MOBILE, COL_FAX, COL_EMAIL_ADDRESS, COL_BANK_ACCOUNT};
 
-  public static void createCompany(final Map<String, String> parameters,
-      final NotificationListener notificationListener, final IdCallback callback) {
+  public static void createCompany(Map<String, String> parameters, IdCallback callback) {
+    create(SVC_CREATE_COMPANY, VIEW_COMPANIES, parameters, callback);
+  }
 
-    Assert.notEmpty(parameters);
+  public static void createCompanyPerson(Map<String, String> parameters, IdCallback callback) {
+    create(SVC_CREATE_COMPANY_PERSON, VIEW_COMPANY_PERSONS, parameters, callback);
+  }
 
-    ParameterList args = ClassifierKeeper.createArgs(SVC_CREATE_COMPANY);
-    for (Map.Entry<String, String> entry : parameters.entrySet()) {
-      if (!BeeUtils.anyEmpty(entry.getKey(), entry.getValue())) {
-        args.addDataItem(entry.getKey(), entry.getValue());
-      }
-    }
+  public static void getCompaniesInfo(Map<String, Long> companies,
+      Consumer<Map<String, String>> infoConsumer) {
 
-    BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
+    Map<String, Filter> views = ImmutableMap.of(VIEW_COMPANIES, Filter.idIn(companies.values()),
+        VIEW_COMPANY_BANK_ACCOUNTS, Filter.any(COL_COMPANY, companies.values()));
+
+    Queries.getData(views.keySet(), views, null, new Queries.DataCallback() {
       @Override
-      public void onResponse(ResponseObject response) {
-        if (notificationListener != null) {
-          response.notify(notificationListener);
-        }
+      public void onSuccess(Collection<BeeRowSet> result) {
+        Map<String, String> params = new HashMap<>();
+        Map<Long, BeeRowSet> accounts = new HashMap<>();
 
-        if (response.hasResponse(Long.class)) {
-          DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_COMPANIES);
-          if (callback != null) {
-            callback.onSuccess(response.getResponseAsLong());
+        for (BeeRowSet rowSet : result) {
+          switch (rowSet.getViewName()) {
+            case VIEW_COMPANIES:
+              for (BeeRow row : rowSet) {
+                for (Map.Entry<String, Long> entry : companies.entrySet()) {
+                  if (Objects.equals(row.getId(), entry.getValue())) {
+                    for (BeeColumn column : rowSet.getColumns()) {
+                      String value = DataUtils.getString(rowSet, row, column.getId());
+
+                      if (!BeeUtils.isEmpty(value)) {
+                        params.put(entry.getKey() + column.getId(), value);
+                      }
+                    }
+                  }
+                }
+              }
+              break;
+            case VIEW_COMPANY_BANK_ACCOUNTS:
+              for (BeeRow accountRow : rowSet) {
+                Long companyId = accountRow.getLong(rowSet.getColumnIndex(COL_COMPANY));
+
+                if (!accounts.containsKey(companyId)) {
+                  accounts.put(companyId, new BeeRowSet(rowSet.getViewName(), rowSet.getColumns()));
+                }
+                accounts.get(companyId).addRow(DataUtils.cloneRow(accountRow));
+              }
+              break;
           }
         }
+        for (Map.Entry<String, Long> entry : companies.entrySet()) {
+          BeeRowSet rs = accounts.get(entry.getValue());
+
+          if (rs == null) {
+            rs = new BeeRowSet();
+          }
+          params.put(entry.getKey() + VIEW_COMPANY_BANK_ACCOUNTS, rs.serialize());
+        }
+        infoConsumer.accept(params);
       }
     });
   }
@@ -78,7 +119,7 @@ public final class ClassifierUtils {
     String locale = DomUtils.getDataProperty(target.getElement(), KEY_LOCALE);
 
     if (BeeUtils.isEmpty(locale)) {
-      locale = Localized.getConstants().languageTag();
+      locale = Localized.dictionary().languageTag();
     }
     if (!BeeUtils.isEmpty(locale)) {
       args.addDataItem(AdministrationConstants.VAR_LOCALE, locale);
@@ -201,5 +242,35 @@ public final class ClassifierUtils {
   }
 
   private ClassifierUtils() {
+  }
+
+  public static void create(String svc, String viewName, Map<String, String> parameters,
+      IdCallback callback) {
+
+    Assert.notEmpty(parameters);
+    ParameterList args = ClassifierKeeper.createArgs(svc);
+
+    for (Map.Entry<String, String> entry : parameters.entrySet()) {
+      if (!BeeUtils.anyEmpty(entry.getKey(), entry.getValue())) {
+        args.addDataItem(entry.getKey(), entry.getValue());
+      }
+    }
+
+    BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+        if (response.hasErrors()) {
+          if (callback != null) {
+            callback.onFailure(response.getErrors());
+          }
+          return;
+        }
+        DataChangeEvent.fireRefresh(BeeKeeper.getBus(), viewName);
+
+        if (callback != null) {
+          callback.onSuccess(response.getResponseAsLong());
+        }
+      }
+    });
   }
 }

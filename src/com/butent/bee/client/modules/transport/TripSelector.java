@@ -14,6 +14,7 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.DialogBox;
+import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.widget.Button;
@@ -56,13 +57,13 @@ final class TripSelector implements EditStopEvent.Handler, ClickHandler {
 
   private TripSelector(String[] cargos, Filter tripFilter, List<String> columns) {
     this.cargos = cargos;
-    this.dialog = DialogBox.create(Localized.getConstants().trAssignTrip());
+    this.dialog = DialogBox.create(Localized.dictionary().trAssignTrip());
     dialog.setHideOnEscape(true);
 
     HtmlTable container = new HtmlTable();
     container.setBorderSpacing(5);
 
-    container.setHtml(0, 0, Localized.getConstants().trCargoSelectTrip());
+    container.setHtml(0, 0, Localized.dictionary().trCargoSelectTrip());
 
     Relation relation = Relation.create(VIEW_ACTIVE_TRIPS, columns);
     relation.disableNewRow();
@@ -73,10 +74,10 @@ final class TripSelector implements EditStopEvent.Handler, ClickHandler {
     selector.addEditStopHandler(this);
     container.setWidget(0, 1, selector);
 
-    tripButton = new Button(Localized.getConstants().trNewTrip(), this);
+    tripButton = new Button(Localized.dictionary().trNewTrip(), this);
     container.setWidget(1, 0, tripButton);
 
-    expeditionTripButton = new Button(Localized.getConstants().trNewExpedition(), this);
+    expeditionTripButton = new Button(Localized.dictionary().trNewExpedition(), this);
     container.setWidget(1, 1, expeditionTripButton);
 
     dialog.setWidget(container);
@@ -127,7 +128,7 @@ final class TripSelector implements EditStopEvent.Handler, ClickHandler {
     DataInfo dataInfo = Data.getDataInfo(viewName);
 
     RowFactory.createRow(dataInfo.getEditForm(), dataInfo.getNewRowCaption(),
-        dataInfo, RowFactory.createEmptyRow(dataInfo, true), new RowCallback() {
+        dataInfo, RowFactory.createEmptyRow(dataInfo, true), Modality.ENABLED, new RowCallback() {
           @Override
           public void onSuccess(BeeRow row) {
             RowInsertEvent.fire(BeeKeeper.getBus(), viewName, row, null);

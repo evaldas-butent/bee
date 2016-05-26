@@ -14,7 +14,7 @@ import java.util.Objects;
  * @param <A> type of first object to pair
  * @param <B> type of second object to pair
  */
-public final class Pair<A, B> implements BeeSerializable {
+public class Pair<A, B> implements BeeSerializable {
 
   private enum Serial {
     A, B
@@ -85,9 +85,17 @@ public final class Pair<A, B> implements BeeSerializable {
   private Pair() {
   }
 
-  private Pair(A a, B b) {
+  protected Pair(A a, B b) {
     this.a = a;
     this.b = b;
+  }
+
+  public boolean aEquals(A value) {
+    return Objects.equals(getA(), value);
+  }
+
+  public boolean bEquals(B value) {
+    return Objects.equals(getB(), value);
   }
 
   @Override

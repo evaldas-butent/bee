@@ -85,8 +85,18 @@ public final class ChildSelector extends MultiSelector implements HasFosterParen
       return null;
     }
 
+    CellSource cellSource;
+
     String rowProperty = attributes.get(UiConstants.ATTR_PROPERTY);
-    return new ChildSelector(relation, table, targetColumn, sourceColumn, rowProperty);
+    if (BeeUtils.isEmpty(rowProperty)) {
+      cellSource = null;
+    } else {
+      boolean userMode = BeeUtils.toBoolean(attributes.get(UiConstants.ATTR_USER_MODE));
+      cellSource = CellSource.forProperty(rowProperty, BeeKeeper.getUser().idOrNull(userMode),
+          ValueType.TEXT);
+    }
+
+    return new ChildSelector(relation, table, targetColumn, sourceColumn, cellSource);
   }
 
   private final String childTable;
@@ -99,9 +109,9 @@ public final class ChildSelector extends MultiSelector implements HasFosterParen
   private HandlerRegistration parentRowReg;
 
   private ChildSelector(Relation relation, String childTable, String targetRelColumn,
-      String sourceRelColumn, String rowProperty) {
-    super(relation, true,
-        (rowProperty == null) ? null : CellSource.forProperty(rowProperty, ValueType.TEXT));
+      String sourceRelColumn, CellSource cellSource) {
+
+    super(relation, true, cellSource);
 
     this.childTable = childTable;
     this.targetRelColumn = targetRelColumn;

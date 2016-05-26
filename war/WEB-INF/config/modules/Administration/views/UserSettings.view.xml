@@ -46,6 +46,8 @@
     <SimpleColumn name="NewsRefreshIntervalSeconds" />
     <SimpleColumn name="LoadingStateDelayMillis" />
 
+    <SimpleColumn name="CommentsLayout" />
+    
     <SimpleColumn name="UiTheme" />
     <SimpleJoin name="UiTheme" joinType="LEFT">
       <SimpleColumn name="Name" alias="UiThemeName" />

@@ -8,6 +8,8 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.ui.FormWidget;
 import com.butent.bee.client.utils.XmlUtils;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.IsRow;
@@ -28,6 +30,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -35,6 +38,8 @@ import java.util.Objects;
 import java.util.Set;
 
 public final class Data {
+
+  private static final BeeLogger logger = LogUtils.getLogger(Data.class);
 
   private static final DataInfoProvider DATA_INFO_PROVIDER = new DataInfoProvider();
 
@@ -48,7 +53,8 @@ public final class Data {
 
   private static final Multimap<String, String> readOnlyColumns = HashMultimap.create();
 
-  private static BeeLogger logger = LogUtils.getLogger(Data.class);
+  private static final Map<String, Integer> approximateSizes = new HashMap<>();
+  private static final Multimap<String, Consumer<Integer>> sizeConsumers = HashMultimap.create();
 
   public static String clamp(String viewName, String colName, String value) {
     if (BeeUtils.isEmpty(value)) {
@@ -61,6 +67,10 @@ public final class Data {
         return value;
       }
     }
+  }
+
+  public static void clearApproximateSizes() {
+    approximateSizes.clear();
   }
 
   public static void clearCell(String viewName, IsRow row, String colName) {
@@ -78,6 +88,51 @@ public final class Data {
 
   public static boolean equals(String viewName, IsRow row, String colName, Long value) {
     return Objects.equals(getLong(viewName, row, colName), value);
+  }
+
+  public static void estimateSize(final String viewName, Consumer<Integer> consumer) {
+    Assert.notEmpty(viewName);
+    Assert.notNull(consumer);
+
+    Integer size = approximateSizes.get(viewName);
+
+    if (size == null) {
+      boolean pending = sizeConsumers.containsKey(viewName);
+      sizeConsumers.put(viewName, consumer);
+
+      if (!pending) {
+        Queries.getRowCount(viewName, null, new Queries.IntCallback() {
+          @Override
+          public void onFailure(String... reason) {
+            consumeSize(BeeConst.UNDEF);
+            super.onFailure(reason);
+          }
+
+          @Override
+          public void onSuccess(Integer result) {
+            approximateSizes.put(viewName, result);
+            consumeSize(result);
+          }
+
+          private void consumeSize(Integer result) {
+            Collection<Consumer<Integer>> consumers = sizeConsumers.removeAll(viewName);
+
+            if (!BeeUtils.isEmpty(consumers)) {
+              for (Consumer<Integer> c : consumers) {
+                c.accept(result);
+              }
+            }
+          }
+        });
+      }
+
+    } else {
+      consumer.accept(size);
+    }
+  }
+
+  public static Map<String, Integer> getApproximateSizes() {
+    return approximateSizes;
   }
 
   public static Boolean getBoolean(String viewName, IsRow row, String colName) {

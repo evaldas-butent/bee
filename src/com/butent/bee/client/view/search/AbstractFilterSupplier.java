@@ -53,10 +53,10 @@ public abstract class AbstractFilterSupplier implements HasViewName, HasOptions,
     NotificationListener {
 
   protected enum SupplierAction implements HasCaption {
-    ALL(Localized.getConstants().filterAll()),
-    CLEAR(Localized.getConstants().clear()),
-    COMMIT(Localized.getConstants().doFilter()),
-    CANCEL(Localized.getConstants().cancel());
+    ALL(Localized.dictionary().filterAll()),
+    CLEAR(Localized.dictionary().clear()),
+    COMMIT(Localized.dictionary().doFilter()),
+    CANCEL(Localized.dictionary().cancel());
 
     private final String caption;
 
@@ -74,9 +74,9 @@ public abstract class AbstractFilterSupplier implements HasViewName, HasOptions,
     }
   }
 
-  protected static final String NULL_VALUE_LABEL = Localized.getConstants().filterNullLabel();
+  protected static final String NULL_VALUE_LABEL = Localized.dictionary().filterNullLabel();
   protected static final String NOT_NULL_VALUE_LABEL =
-      Localized.getConstants().filterNotNullLabel();
+      Localized.dictionary().filterNotNullLabel();
 
   protected static final String DEFAULT_STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX
       + "FilterSupplier-";
@@ -485,11 +485,11 @@ public abstract class AbstractFilterSupplier implements HasViewName, HasOptions,
   }
 
   protected String messageAllEmpty(String count) {
-    return Localized.getMessages().allValuesEmpty(getColumnLabel(), count);
+    return Localized.dictionary().allValuesEmpty(getColumnLabel(), count);
   }
 
   protected String messageOneValue(String value, String count) {
-    return Localized.getMessages().allValuesIdentical(getColumnLabel(), value, count);
+    return Localized.dictionary().allValuesIdentical(getColumnLabel(), value, count);
   }
 
   protected void onDialogCancel() {

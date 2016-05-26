@@ -99,6 +99,12 @@
     <InputArea source="CargoNotes" style="width:400px;" />
   </FlowPanel>
 
+  <Disclosure>
+    <Summary text="=trAdditionalHandlingPlaces" />
+    <ChildGrid name="CargoHandling" relColumn="Cargo" source="Cargo" summarize="true"
+               caption="-" style="height:200px;" />
+  </Disclosure>
+
   &separator;
   <FlowPanel style="&section;">
     <Label text="=cargo" class="bee-hasDefaults bee-required" style="&labelLeft; vertical-align:top;" />
@@ -126,5 +132,10 @@
     <Label text="=valuation" style="&labelRight;" />
     <InputMoney source="Value" style="&input;" currencySource="ValueCurrency" />
     <DataSelector source="ValueCurrency" style="&inline; width:5em; margin-left:5px;" editEnabled="false" />
+  </FlowPanel>
+
+  <FlowPanel style="&section;">
+    <CheckBox source="CustomsBrokerage" />
+    <CheckBox source="FreightInsurance" style="padding-left:130px;" />
   </FlowPanel>
 </FlowPanel>

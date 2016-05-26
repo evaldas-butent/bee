@@ -8,10 +8,10 @@ import com.google.gwt.xml.client.Element;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.screen.Domain;
+import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.WidgetDescription;
-import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.view.HasGridView;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
@@ -37,10 +37,6 @@ import java.util.Set;
 public abstract class AbstractFormInterceptor implements FormInterceptor {
 
   private FormView formView;
-
-  @Override
-  public void afterAction(Action action, Presenter presenter) {
-  }
 
   @Override
   public void afterCreate(FormView form) {
@@ -116,6 +112,11 @@ public abstract class AbstractFormInterceptor implements FormInterceptor {
   @Override
   public long getActiveRowId() {
     return DataUtils.getId(getActiveRow());
+  }
+
+  @Override
+  public Boolean getBooleanValue(String source) {
+    return (getFormView() == null) ? null : getFormView().getBooleanValue(source);
   }
 
   @Override
@@ -226,7 +227,7 @@ public abstract class AbstractFormInterceptor implements FormInterceptor {
   @Override
   public void notifyRequired(String message) {
     if (getFormView() != null) {
-      getFormView().notifyWarning(message, Localized.getConstants().valueRequired());
+      getFormView().notifyWarning(message, Localized.dictionary().valueRequired());
     }
   }
 
@@ -277,6 +278,11 @@ public abstract class AbstractFormInterceptor implements FormInterceptor {
 
   @Override
   public void onUnload(FormView form) {
+  }
+
+  @Override
+  public boolean saveOnPrintNewRow() {
+    return false;
   }
 
   @Override

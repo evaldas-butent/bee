@@ -1,6 +1,7 @@
 package com.butent.bee.server.rest;
 
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.HashMap;
@@ -11,7 +12,7 @@ import javax.xml.bind.annotation.XmlAttribute;
 
 public final class RestResponse {
 
-  static final String JSON_TYPE = "application/json;charset=UTF-8";
+  public static final String JSON_TYPE = "application/json;charset=UTF-8";
 
   static final String LAST_SYNC_TIME = "LastSyncTime";
   private static final String SUCCESS = "Success";
@@ -30,15 +31,15 @@ public final class RestResponse {
   }
 
   public static RestResponse forbidden() {
-    return error(Localized.getConstants().actionNotAllowed());
+    return error(Localized.dictionary().actionNotAllowed());
   }
 
   public static RestResponse error(Throwable ex) {
     return error(BeeUtils.notEmpty(ex.getLocalizedMessage(), ex.toString()));
   }
 
-  public static RestResponse error(String errorMessage) {
-    return new RestResponse().setError(errorMessage);
+  public static RestResponse error(String... errorMessages) {
+    return new RestResponse().setError(ArrayUtils.joinWords(errorMessages));
   }
 
   public static RestResponse ok(Object result) {
@@ -65,6 +66,10 @@ public final class RestResponse {
       status.put(LAST_SYNC_TIME, lastSync);
     }
     return status;
+  }
+
+  public boolean hasError() {
+    return !BeeUtils.toBoolean(getStatus().get(SUCCESS).toString());
   }
 
   public RestResponse setError(String errorMessage) {

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="TradeStock" source="TradeStock" caption="=trdStock"
+  >
+  <Columns>
+    <SimpleColumn name="PrimaryDocumentItem" />
+    <SimpleJoin joinType="LEFT" name="PrimaryDocumentItem">
+      <SimpleColumn name="TradeDocument" alias="PrimaryDocument" label="=trdPrimaryDocument" />
+      <SimpleJoin joinType="LEFT" name="TradeDocument">
+        <SimpleColumn name="Date" alias="PrimaryDate" label="=trdPrimaryDate" />
+
+        <SimpleJoin joinType="LEFT" name="Supplier">
+          <SimpleColumn name="Name" alias="SupplierName" label="=trdSupplier" />
+        </SimpleJoin>
+      </SimpleJoin>
+    </SimpleJoin>
+
+    <SimpleColumn name="TradeDocumentItem" />
+    <SimpleJoin joinType="LEFT" name="TradeDocumentItem">
+      <SimpleColumn name="TradeDocument" />
+      <SimpleJoin joinType="LEFT" name="TradeDocument">
+        <SimpleColumn name="Date" />
+      </SimpleJoin>
+
+      <SimpleColumn name="Item" />
+      <SimpleJoin joinType="LEFT" name="Item">
+        <SimpleColumn name="Name" alias="ItemName" />
+        <SimpleJoin joinType="LEFT" name="Unit">
+          <SimpleColumn name="Name" alias="UnitName" />
+        </SimpleJoin>
+      </SimpleJoin>
+
+      <SimpleColumn name="Article" />
+    </SimpleJoin>
+
+    <SimpleColumn name="Warehouse" />
+    <SimpleJoin joinType="LEFT" name="Warehouse">
+      <SimpleColumn name="Code" alias="WarehouseCode" />
+      <SimpleColumn name="Name" alias="WarehouseName" />
+    </SimpleJoin>
+
+    <SimpleColumn name="Quantity" />
+  </Columns>
+  
+  <Order>
+    <OrderBy column="ItemName" />
+    <OrderBy column="Article" />
+    <OrderBy column="Item" />
+    <OrderBy column="WarehouseCode" />
+    <OrderBy column="PrimaryDate" />
+  </Order>
+</View>

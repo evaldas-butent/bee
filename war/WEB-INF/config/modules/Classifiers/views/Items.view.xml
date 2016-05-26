@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<View xmlns="http://www.butent.com/view" name="Items" caption="=goods"
-  source="Items" module="Classifiers" newRowForm="Item" newRowCaption="=newItem"
-  editForm="Item">
-  <Relation renderColumns="Name" choiceColumns="Name UnitName Article" />
+<View xmlns="http://www.butent.com/view" xmlns:xi="http://www.w3.org/2001/XInclude"
+
+  name="Items" caption="=goods" source="Items" module="Classifiers"
+  newRowForm="Item" newRowCaption="=newItem" editForm="Item"
+  >
+  <Relation renderColumns="Name" choiceColumns="Name UnitName" />
   <Columns>
     <SimpleColumn name="Name" />
     <SimpleColumn name="Name2" />
@@ -10,10 +12,7 @@
 
     <SimpleColumn name="Article" />
     <SimpleColumn name="Article2" />
-    <SimpleColumn name="Article3" />
-    <SimpleColumn name="Article4" />
     <SimpleColumn name="Barcode" />
-    <SimpleColumn name="KPNCode" />
 
     <SimpleColumn name="Unit" />
     <SimpleJoin joinType="LEFT" name="Unit">
@@ -21,13 +20,9 @@
     </SimpleJoin>
 
     <SimpleColumn name="TimeUnit" />
-    <SimpleColumn name="PackageUnits" />
 
     <SimpleColumn name="Weight" />
     <SimpleColumn name="Area" />
-    <SimpleColumn name="Height" />
-    <SimpleColumn name="Width" />
-    <SimpleColumn name="Length" />
 
     <SimpleColumn name="Price" />
     <SimpleColumn name="Currency" />
@@ -56,48 +51,11 @@
     <SimpleJoin joinType="LEFT" name="Currency3">
       <SimpleColumn name="Name" alias="Currency3Name" />
     </SimpleJoin>
-    <SimpleColumn name="Price4" />
-    <SimpleColumn name="Currency4" />
-    <SimpleJoin joinType="LEFT" name="Currency4">
-      <SimpleColumn name="Name" alias="Currency4Name" />
-    </SimpleJoin>
-    <SimpleColumn name="Price5" />
-    <SimpleColumn name="Currency5" />
-    <SimpleJoin joinType="LEFT" name="Currency5">
-      <SimpleColumn name="Name" alias="Currency5Name" />
-    </SimpleJoin>
-    <SimpleColumn name="Price6" />
-    <SimpleColumn name="Currency6" />
-    <SimpleJoin joinType="LEFT" name="Currency6">
-      <SimpleColumn name="Name" alias="Currency6Name" />
-    </SimpleJoin>
-    <SimpleColumn name="Price7" />
-    <SimpleColumn name="Currency7" />
-    <SimpleJoin joinType="LEFT" name="Currency7">
-      <SimpleColumn name="Name" alias="Currency7Name" />
-    </SimpleJoin>
-    <SimpleColumn name="Price8" />
-    <SimpleColumn name="Currency8" />
-    <SimpleJoin joinType="LEFT" name="Currency8">
-      <SimpleColumn name="Name" alias="Currency8Name" />
-    </SimpleJoin>
-    <SimpleColumn name="Price9" />
-    <SimpleColumn name="Currency9" />
-    <SimpleJoin joinType="LEFT" name="Currency9">
-      <SimpleColumn name="Name" alias="Currency9Name" />
-    </SimpleJoin>
-    <SimpleColumn name="Price10" />
-    <SimpleColumn name="Currency10" />
-    <SimpleJoin joinType="LEFT" name="Currency10">
-      <SimpleColumn name="Name" alias="Currency10Name" />
-    </SimpleJoin>
 
     <SimpleColumn name="Vat" />
     <SimpleColumn name="VatPercent" />
 
-    <SimpleColumn name="IsService" />
-    <SimpleColumn name="NotManufactured" />
-    <SimpleColumn name="Attribute" />
+    <SimpleColumn name="IsService"/>
 
     <SimpleColumn name="Type" />
     <SimpleJoin joinType="LEFT" name="Type">
@@ -117,17 +75,8 @@
       <SimpleColumn name="Name" alias="ItemGroupName" />
     </SimpleJoin>
 
-    <SimpleColumn name="Department" />
-    <SimpleJoin joinType="LEFT" name="Department">
-      <SimpleColumn name="DepartmentName" />
-    </SimpleJoin>
-    <SimpleColumn name="ActivityType" />
-    <SimpleJoin joinType="LEFT" name="ActivityType">
-      <SimpleColumn name="ActivityTypeName" />
-    </SimpleJoin>
-    <SimpleColumn name="CostCenter" />
-    <SimpleJoin joinType="LEFT" name="CostCenter">
-      <SimpleColumn name="CostCenterName" />
+    <SimpleJoin name="Dimensions" joinType="LEFT">
+      <xi:include href="../../Administration/views/viewcolumns/ExtraDimensions.viewcolumns.xml" />
     </SimpleJoin>
 
     <SimpleColumn name="DaysPerWeek" />

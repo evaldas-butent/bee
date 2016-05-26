@@ -10,14 +10,10 @@ import com.butent.bee.client.grid.ChildGrid;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.ViewHelper;
-import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.form.interceptor.PrintFormInterceptor;
 import com.butent.bee.client.view.grid.GridView;
-import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
-import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
-import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.modules.transport.TransportConstants;
@@ -37,27 +33,15 @@ public class AssessmentForwarderForm extends PrintFormInterceptor {
             FormView form = ViewHelper.getForm(getGridView());
 
             if (form != null) {
-              event.getSelector()
-                  .setAdditionalFilter(Filter.equals(COL_CARGO, form.getLongValue(COL_CARGO)));
+              event.getSelector().setAdditionalFilter(Filter.equals(COL_CARGO,
+                  form.getLongValue(COL_CARGO)));
             }
           }
         }
       });
     }
     if (BeeUtils.same(name, TransportConstants.TBL_CARGO_HANDLING)) {
-      ((ChildGrid) widget).setGridInterceptor(new AbstractGridInterceptor() {
-
-        @Override
-        public GridInterceptor getInstance() {
-          return null;
-        }
-
-        @Override
-        public void onReadyForInsert(GridView gridView, ReadyForInsertEvent event) {
-          event.getColumns().add(DataUtils.getColumn(COL_CARGO, gridView.getDataColumns()));
-          event.getValues().add(AssessmentForwarderForm.this.getStringValue(COL_CARGO));
-          super.onReadyForInsert(gridView, event);
-        }
+      ((ChildGrid) widget).setGridInterceptor(new CargoHandlingGrid() {
 
         @Override
         public boolean onStartNewRow(GridView gridView, IsRow oldRow, IsRow newRow) {

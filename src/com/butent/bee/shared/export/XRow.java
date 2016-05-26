@@ -9,7 +9,7 @@ import com.butent.bee.shared.utils.Codec;
 import java.util.ArrayList;
 import java.util.List;
 
-public class XRow implements BeeSerializable {
+public class XRow implements BeeSerializable, Comparable<XRow> {
 
   private enum Serial {
     INDEX, STYLE, HEIGHT_FACTOR, CELLS
@@ -41,6 +41,11 @@ public class XRow implements BeeSerializable {
   public void add(XCell cell) {
     Assert.notNull(cell);
     cells.add(cell);
+  }
+
+  @Override
+  public int compareTo(XRow o) {
+    return Integer.compare(index, o.index);
   }
 
   @Override

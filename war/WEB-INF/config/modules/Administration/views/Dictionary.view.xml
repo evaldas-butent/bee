@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="Dictionary" source="Dictionary"
+  caption="=dictionary" newRowCaption="=newKey"
+  >
+  <Columns>
+    <SimpleColumn name="Key" />
+
+    <SimpleColumn name="DefaultEN" />
+    <SimpleColumn name="DefaultLT" />
+    <SimpleColumn name="DefaultRU" />
+    <SimpleColumn name="DefaultFI" />
+    <SimpleColumn name="DefaultLV" />
+    <SimpleColumn name="DefaultDE" />
+
+    <SimpleColumn name="CustomEN" />
+    <SimpleColumn name="CustomLT" />
+    <SimpleColumn name="CustomRU" />
+    <SimpleColumn name="CustomFI" />
+    <SimpleColumn name="CustomLV" />
+    <SimpleColumn name="CustomDE" />
+  </Columns>
+
+  <Order>
+    <OrderBy column="Key" />
+  </Order>
+</View>
+ 

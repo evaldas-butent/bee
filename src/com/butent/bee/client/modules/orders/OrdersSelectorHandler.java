@@ -21,7 +21,7 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.i18n.LocalizableConstants;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -197,7 +197,7 @@ public class OrdersSelectorHandler implements SelectorEvent.Handler {
     switch (relatedViewName) {
       case VIEW_ORDERS_TEMPLATES:
         if (event.isChanged()) {
-          LocalizableConstants lc = Localized.getConstants();
+          Dictionary lc = Localized.dictionary();
           IsRow relatedRow = event.getRelatedRow();
           FormView form = ViewHelper.getForm(event.getSelector());
 

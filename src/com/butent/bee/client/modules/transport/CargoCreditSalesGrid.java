@@ -20,6 +20,7 @@ import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
+import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.Opener;
@@ -64,7 +65,7 @@ public class CargoCreditSalesGrid extends AbstractGridInterceptor implements Cli
   public void afterCreatePresenter(GridPresenter presenter) {
     presenter.getHeader().clearCommandPanel();
     presenter.getHeader()
-        .addCommandItem(new Button(Localized.getConstants().createCreditInvoice(), this));
+        .addCommandItem(new Button(Localized.dictionary().createCreditInvoice(), this));
   }
 
   @Override
@@ -87,7 +88,7 @@ public class CargoCreditSalesGrid extends AbstractGridInterceptor implements Cli
       ids.add(row.getId());
     }
     if (ids.isEmpty()) {
-      presenter.getGridView().notifyWarning(Localized.getConstants().selectAtLeastOneRow());
+      presenter.getGridView().notifyWarning(Localized.dictionary().selectAtLeastOneRow());
       return;
     }
     Queries.getRowSet(VIEW_CARGO_CREDIT_SALES, null, Filter.idIn(ids), new RowSetCallback() {
@@ -144,7 +145,8 @@ public class CargoCreditSalesGrid extends AbstractGridInterceptor implements Cli
                 entry.getValue());
           }
         }
-        RowFactory.createRow(FORM_NEW_CARGO_CREDIT_INVOICE, null, purchaseInfo, newRow, null,
+        RowFactory.createRow(FORM_NEW_CARGO_CREDIT_INVOICE, null, purchaseInfo, newRow,
+            Modality.ENABLED, null,
             new AbstractFormInterceptor() {
               @Override
               public FormInterceptor getInstance() {
@@ -197,7 +199,7 @@ public class CargoCreditSalesGrid extends AbstractGridInterceptor implements Cli
                   creditAmount = (InputNumber) w;
                 }
               }
-            },
+            }, null,
             new RowCallback() {
               @Override
               public void onCancel() {

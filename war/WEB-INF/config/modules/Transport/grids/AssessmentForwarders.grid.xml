@@ -1,15 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
-  xmlns:ui="http://www.butent.com/ui"
+        xmlns:xi="http://www.w3.org/2001/XInclude"
 
-  name="AssessmentForwarders" viewName="AssessmentForwarders"
-  newRowForm="AssessmentForwarder" newRowCaption="=trNewCarrier" newRowPopup="true"
-  editForm="AssessmentForwarder"
-  flexGrow="1"
-  >
+        name="AssessmentForwarders" viewName="AssessmentForwarders"
+        newRowForm="AssessmentForwarder" newRowCaption="=trNewCarrier" newRowPopup="true"
+        editForm="AssessmentForwarder"
+        flexGrow="1"
+    >
+  <g:body height="50" />
+
   <g:columns>
     <DataColumn name="ForwarderName" />
     <DataColumn name="ForwarderVehicle" />
     <RelColumn name="Expedition" />
   </g:columns>
+
+  <xi:include href="columns/Handling.columns.xml" />
 </g:Grid>

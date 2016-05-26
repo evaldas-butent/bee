@@ -64,6 +64,10 @@ public class ResponseObject implements BeeSerializable {
     return new ResponseObject().setResponse(response).setType(clazz);
   }
 
+  public static ResponseObject responseWithSize(Collection<?> response) {
+    return new ResponseObject().setResponse(response).setSize(BeeUtils.size(response));
+  }
+
   public static ResponseObject restore(String s) {
     ResponseObject response = new ResponseObject();
     response.deserialize(s);

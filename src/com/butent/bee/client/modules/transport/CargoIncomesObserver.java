@@ -89,15 +89,15 @@ public final class CargoIncomesObserver implements RowInsertEvent.Handler, Handl
           String cap = result.get(ClassifierConstants.COL_COMPANY_NAME);
           List<String> msgs = new ArrayList<>();
 
-          msgs.add(BeeUtils.join(": ", Localized.getConstants().creditLimit(),
+          msgs.add(BeeUtils.join(": ", Localized.dictionary().creditLimit(),
               BeeUtils.joinWords(limit, result.get(COL_CURRENCY))));
-          msgs.add(BeeUtils.join(": ", Localized.getConstants().trdDebt(), debt));
+          msgs.add(BeeUtils.join(": ", Localized.dictionary().trdDebt(), debt));
 
           if (overdue > 0) {
-            msgs.add(BeeUtils.join(": ", Localized.getConstants().trdOverdue(), overdue));
+            msgs.add(BeeUtils.join(": ", Localized.dictionary().trdOverdue(), overdue));
           }
           if (income > 0) {
-            msgs.add(BeeUtils.join(": ", Localized.getConstants().trOrders(), income));
+            msgs.add(BeeUtils.join(": ", Localized.dictionary().trOrders(), income));
           }
           Global.showError(cap, msgs);
         }

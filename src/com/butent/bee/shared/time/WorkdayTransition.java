@@ -4,10 +4,10 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.HasCaption;
 
 public enum WorkdayTransition implements HasCaption {
-  NONE(Localized.getConstants().workdayTransitionNone()),
-  NEAREST(Localized.getConstants().workdayTransitionNearest()),
-  FORWARD(Localized.getConstants().workdayTransitionForward()),
-  BACKWARD(Localized.getConstants().workdayTransitionBackward());
+  NONE(Localized.dictionary().workdayTransitionNone()),
+  NEAREST(Localized.dictionary().workdayTransitionNearest()),
+  FORWARD(Localized.dictionary().workdayTransitionForward()),
+  BACKWARD(Localized.dictionary().workdayTransitionBackward());
 
   public static final WorkdayTransition DEFAULT = NEAREST;
 

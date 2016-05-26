@@ -28,8 +28,6 @@ public abstract class AbstractPager extends Composite implements PagerView {
 
   private Presenter viewPresenter;
 
-  private boolean enabled = true;
-
   @Override
   public String getCaption() {
     return null;
@@ -78,7 +76,7 @@ public abstract class AbstractPager extends Composite implements PagerView {
 
   @Override
   public boolean isEnabled() {
-    return enabled;
+    return true;
   }
 
   @Override
@@ -102,7 +100,6 @@ public abstract class AbstractPager extends Composite implements PagerView {
 
   @Override
   public void setEnabled(boolean enabled) {
-    this.enabled = enabled;
   }
 
   @Override

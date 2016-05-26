@@ -9,6 +9,7 @@ import com.google.common.eventbus.Subscribe;
 import static com.butent.bee.shared.modules.projects.ProjectConstants.*;
 import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
 
+import com.butent.bee.server.data.BeeView;
 import com.butent.bee.server.data.DataEvent.ViewQueryEvent;
 import com.butent.bee.server.data.DataEventHandler;
 import com.butent.bee.server.data.QueryServiceBean;
@@ -20,6 +21,7 @@ import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.modules.administration.ExchangeUtils;
 import com.butent.bee.server.modules.tasks.TasksModuleBean;
 import com.butent.bee.server.news.NewsBean;
+import com.butent.bee.server.sql.HasConditions;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.IsExpression;
 import com.butent.bee.server.sql.SqlInsert;
@@ -43,7 +45,9 @@ import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.projects.ProjectConstants;
+import com.butent.bee.shared.modules.projects.ProjectStatus;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
+import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
 import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.rights.Module;
@@ -140,8 +144,7 @@ public class ProjectsModuleBean implements BeeModule {
         BeeParameter.createNumber(module, PRM_PROJECT_COMMON_RATE, false,
             BeeConst.DOUBLE_ZERO),
         BeeParameter.createRelation(module, PRM_PROJECT_HOUR_UNIT,
-            ClassifierConstants.TBL_UNITS, ClassifierConstants.COL_UNIT_NAME)
-        );
+            ClassifierConstants.TBL_UNITS, ClassifierConstants.COL_UNIT_NAME));
     return params;
   }
 
@@ -227,13 +230,106 @@ public class ProjectsModuleBean implements BeeModule {
           BeeRowSet unitsRs = (BeeRowSet) units.getResponse();
 
           for (BeeRow row : viewRows) {
-            row.setProperty(PROP_TIME_UNTIS, unitsRs.serialize());
+            row.setProperty(PROP_TIME_UNITS, unitsRs.serialize());
+          }
+        }
+      }
+
+      @Subscribe
+      @AllowConcurrentEvents
+      public void fillProjectsOverdue(ViewQueryEvent event) {
+        if (event.isAfter(VIEW_PROJECTS, VIEW_PROJECT_STAGES) && event.hasData()) {
+          BeeRowSet viewRows = event.getRowset();
+
+          for (BeeRow row : viewRows) {
+            long startTime = 0;
+            JustDate time =
+                row.getDate(
+                    DataUtils.getColumnIndex(COL_PROJECT_START_DATE, viewRows.getColumns()));
+
+            if (time != null) {
+              startTime = time.getDateTime().getTime();
+            }
+            long finishTime = 0;
+            time =
+                row.getDate(DataUtils.getColumnIndex(COL_PROJECT_END_DATE, viewRows.getColumns()));
+
+            if (time != null) {
+              finishTime = time.getDateTime().getTime();
+            }
+
+            int projectStatus =
+                BeeUtils.unbox(row.getInteger(DataUtils
+                    .getColumnIndex(COL_PROJECT_STATUS, viewRows.getColumns())));
+            long nowDate = new DateTime().getDateTime().getTime();
+            if (projectStatus == ProjectStatus.APPROVED.ordinal()
+                || projectStatus == ProjectStatus.SUSPENDED.ordinal()) {
+              if (row.getDateTime(DataUtils.getColumnIndex(COL_PROJECT_APPROVED_DATE, viewRows
+                  .getColumns())) != null) {
+                nowDate =
+                    row.getDateTime(
+                        DataUtils.getColumnIndex(COL_PROJECT_APPROVED_DATE, viewRows
+                            .getColumns())).getTime();
+              }
+            }
+            long timeDiff =
+                (finishTime - startTime) == 0L ? TimeUtils.MILLIS_PER_DAY : finishTime - startTime;
+
+            double overdue =
+                BeeUtils.round((100.0 * (nowDate - startTime) / timeDiff) - 100.0,
+                    2);
+            if (overdue < 0) {
+              overdue = 0.0;
+            }
+            row.setValue(viewRows.getColumnIndex(COL_OVERDUE), Double.valueOf(overdue));
           }
         }
       }
     });
 
     news.registerUsageQueryProvider(Feed.PROJECT, new ProjectsUsageQueryProvider());
+
+    BeeView.registerConditionProvider(FILTER_OVERDUE_CREATION,
+        new BeeView.ConditionProvider() {
+
+          @Override
+          public IsCondition getCondition(BeeView view, List<String> args) {
+            Double lower = BeeUtils.toDoubleOrNull(BeeUtils.getQuietly(args, 0));
+            Double upper = BeeUtils.toDoubleOrNull(BeeUtils.getQuietly(args, 1));
+
+            HasConditions conditions = SqlUtils.and();
+
+            long nowDate = new JustDate().getTime();
+            IsCondition cond =
+                SqlUtils.isNull(SqlUtils.field(TBL_PROJECTS,
+                    COL_PROJECT_APPROVED_DATE));
+            IsExpression nowExpression =
+                SqlUtils.sqlIf(cond, nowDate, SqlUtils.field(TBL_PROJECTS,
+                    COL_PROJECT_APPROVED_DATE));
+
+            IsExpression isExpression =
+                SqlUtils.minus(SqlUtils.divide(SqlUtils.multiply(SqlUtils.constant(100.0), SqlUtils
+                    .minus(nowExpression, SqlUtils.field(TBL_PROJECTS, COL_DATES_START_DATE))),
+                    SqlUtils
+                        .minus(SqlUtils.field(TBL_PROJECTS, COL_DATES_END_DATE), SqlUtils.field(
+                            TBL_PROJECTS, COL_DATES_START_DATE))), SqlUtils.constant(100.0));
+
+            IsExpression expression =
+                SqlUtils.sqlIf(SqlUtils.lessEqual(isExpression, 0.0), 0.0, isExpression);
+
+            if (lower != null) {
+              IsCondition conditionLower = SqlUtils.moreEqual(expression, lower);
+              conditions.add(conditionLower);
+            }
+
+            if (upper != null) {
+              IsCondition conditionUpper = SqlUtils.less(expression, upper);
+              conditions.add(conditionUpper);
+            }
+
+            return conditions;
+          }
+        });
   }
 
   private static void fillUnitProperties(BeeRowSet units, long defUnit) {
@@ -503,8 +599,6 @@ public class ProjectsModuleBean implements BeeModule {
 
       } else if (rsRow.getInteger(indTaskStatus) == TaskStatus.COMPLETED.ordinal()) {
         taskStatus = TaskConstants.VAR_TASK_COMPLETED;
-      } else if (rsRow.getInteger(indTaskStatus) == TaskStatus.SCHEDULED.ordinal()) {
-        taskStatus = TaskConstants.VAR_TASK_SHEDULED;
       }
 
       BeeRowSet newRow = new BeeRowSet(VIEW_TASKS, rs.getColumns());
@@ -714,8 +808,7 @@ public class ProjectsModuleBean implements BeeModule {
         ProjectConstants.COL_PROJECT_TYPE,
         ProjectConstants.COL_PROJECT_PRIORITY,
         ProjectConstants.COL_PROJECT_START_DATE,
-        ProjectConstants.COL_PROJECT_END_DATE
-        );
+        ProjectConstants.COL_PROJECT_END_DATE);
     select.addField(TBL_PROJECT_STAGES, COL_STAGE_NAME, ALS_STAGE_NAME);
 
     select.addExpr(SqlUtils.concat(SqlUtils.nvl(SqlUtils.field(ClassifierConstants.TBL_PERSONS,

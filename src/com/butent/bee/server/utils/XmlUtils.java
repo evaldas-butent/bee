@@ -916,15 +916,17 @@ public final class XmlUtils {
     builderFactory.setXIncludeAware(true);
 
     try {
-      Schema schema = schemaFactory.newSchema(new StreamSource(resourceSchema));
-      builderFactory.setSchema(schema);
+      if (!BeeUtils.isEmpty(resourceSchema)) {
+        Schema schema = schemaFactory.newSchema(new StreamSource(resourceSchema));
+        builderFactory.setSchema(schema);
+      }
       DocumentBuilder builder = builderFactory.newDocumentBuilder();
       builder.setErrorHandler(new SAXErrorHandler());
 
-      if (FileUtils.isFile(resource)) {
+      if (FileUtils.isInputFile(resource)) {
         ret = builder.parse(new InputSource(resource));
       } else {
-        ret = builder.parse(new ByteArrayInputStream(resource.getBytes()));
+        ret = builder.parse(new ByteArrayInputStream(resource.getBytes(BeeConst.CHARSET_UTF8)));
       }
     } catch (SAXException e) {
       error = e.getException() == null ? e.getMessage() : e.getException().getMessage();
@@ -1068,29 +1070,20 @@ public final class XmlUtils {
         Unmarshaller unmarshaller = JAXBContext.newInstance(clazz).createUnmarshaller();
         InputStream source;
 
-        if (FileUtils.isFile(resource)) {
+        if (FileUtils.isInputFile(resource)) {
           source = new FileInputStream(resource);
         } else {
-          source = new ByteArrayInputStream(resource.getBytes());
+          source = new ByteArrayInputStream(resource.getBytes(BeeConst.CHARSET_UTF8));
         }
         if (BeeUtils.isEmpty(schemaPath)) {
           result = (T) unmarshaller.unmarshal(source);
         } else {
-          DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
-          builderFactory.setNamespaceAware(true);
-          builderFactory.setXIncludeAware(true);
-          builderFactory.setSchema(schemaFactory.newSchema(new File(schemaPath)));
-          DocumentBuilder builder = builderFactory.newDocumentBuilder();
-          builder.setErrorHandler(new SAXErrorHandler());
-          result = (T) unmarshaller.unmarshal(builder.parse(source));
+          result = (T) unmarshaller.unmarshal(getXmlResource(resource, schemaPath));
         }
       } catch (JAXBException e) {
         throw new BeeRuntimeException(e.getLinkedException() == null ? e : e.getLinkedException());
 
-      } catch (SAXException e) {
-        throw new BeeRuntimeException(e.getException() == null ? e : e.getException());
-
-      } catch (ParserConfigurationException | IOException e) {
+      } catch (IOException e) {
         throw new BeeRuntimeException(e);
       }
     }

@@ -192,7 +192,7 @@ public abstract class ReportInterceptor extends AbstractFormInterceptor implemen
     HeaderView header = form.getViewPresenter().getHeader();
     if (header != null && !header.hasAction(Action.REMOVE_FILTER)) {
 
-      Button clearFilter = new Button(Localized.getConstants().clearFilter());
+      Button clearFilter = new Button(Localized.dictionary().clearFilter());
       clearFilter.addClickHandler(new ClickHandler() {
         @Override
         public void onClick(ClickEvent event) {
@@ -253,7 +253,7 @@ public abstract class ReportInterceptor extends AbstractFormInterceptor implemen
 
   protected boolean checkRange(DateTime start, DateTime end) {
     if (start != null && end != null && TimeUtils.isMeq(start, end)) {
-      getFormView().notifyWarning(Localized.getConstants().invalidRange(),
+      getFormView().notifyWarning(Localized.dictionary().invalidRange(),
           TimeUtils.renderPeriod(start, end));
       return false;
     } else {

@@ -5,6 +5,7 @@ import com.google.gwt.user.client.ui.UIObject;
 
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -33,6 +34,39 @@ public final class Stacking {
     return addContext(obj.getElement());
   }
 
+  public static int bringToFront(Element el) {
+    Assert.notNull(el, "Stacking bringToFront: element is null");
+
+    int level = BeeConst.UNDEF;
+    String id = el.getId();
+
+    if (BeeUtils.isEmpty(id)) {
+      logger.warning("Stacking bringToFront: element has no id");
+
+    } else if (!widgetLevels.containsKey(id)) {
+      logger.warning("Stacking bringToFront: id " + id + " not in widgetLevels");
+
+    } else {
+      level = widgetLevels.get(id);
+      int max = getMaxLevel();
+
+      if (max > level) {
+        level = max + 1;
+        widgetLevels.put(id, level);
+
+        el.getStyle().setZIndex(level);
+        logger.debug("bringToFront", id, level);
+      }
+    }
+
+    return level;
+  }
+
+  public static int bringToFront(UIObject obj) {
+    Assert.notNull(obj, "Stacking bringToFront: ui object is null");
+    return bringToFront(obj.getElement());
+  }
+
   public static void ensureParentContext(Element el) {
     Assert.notNull(el);
     Element parent = el.getParentElement();
@@ -59,6 +93,19 @@ public final class Stacking {
     return lst;
   }
 
+  public static String peek() {
+    if (!widgetLevels.isEmpty()) {
+      int max = getMaxLevel();
+
+      for (Map.Entry<String, Integer> entry : widgetLevels.entrySet()) {
+        if (entry.getValue().equals(max)) {
+          return entry.getKey();
+        }
+      }
+    }
+    return null;
+  }
+
   public static void removeContext(Element el) {
     Assert.notNull(el, "Stacking remove: element is null");
     pop(el.getId());
@@ -67,6 +114,24 @@ public final class Stacking {
   public static void removeContext(UIObject obj) {
     Assert.notNull(obj, "Stacking remove: ui object is null");
     removeContext(obj.getElement());
+  }
+
+  public static int size() {
+    return widgetLevels.size();
+  }
+
+  private static int getMaxLevel() {
+    int max = 0;
+
+    if (!widgetLevels.isEmpty()) {
+      for (int level : widgetLevels.values()) {
+        if (level > max) {
+          max = level;
+        }
+      }
+    }
+
+    return max;
   }
 
   private static void pop(String id) {
@@ -85,17 +150,9 @@ public final class Stacking {
   private static int push(String id) {
     Assert.notEmpty(id, "Stacking push: id is empty");
 
-    int max = 0;
-
-    if (!widgetLevels.isEmpty()) {
-      for (int level : widgetLevels.values()) {
-        if (level > max) {
-          max = level;
-        }
-      }
-    }
-
+    int max = getMaxLevel();
     max++;
+
     widgetLevels.put(id, max);
 
     return max;

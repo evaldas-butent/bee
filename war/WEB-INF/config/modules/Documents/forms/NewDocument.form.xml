@@ -3,13 +3,24 @@
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
   xmlns:xi="http://www.w3.org/2001/XInclude"
-  
+
   name="NewDocument" width="700" height="700"
   >
   <TabbedPages resizable="false">
     <page>
       <text>=mainInformation</text>
       <FlowPanel>
+        <Table kind="controls">
+
+        <col index="0" kind="label" />
+        <row module="Documents.Templates">
+          <TextLabel caption="=template" style="padding-left: 110px;" />
+          <cell>
+            <UnboundSelector name="DocumentTemplate" viewName="DocumentTemplates"
+                             style="width: 100%" />
+          </cell>
+        </row>
+        </Table>
         <xi:include href="widgets/DocumentFields.widget.xml" />
         <FileCollector style="margin: 1ex 10px;" visibleColumns="all" editableColumns="all" />
       </FlowPanel>
@@ -17,7 +28,9 @@
 
     <page data="Relations" for="Document">
       <text>=relations</text>
-       <xi:include href="widgets/DocumentRelations.widget.xml" />
+      <Relations relColumn="Document" inline="true"
+                 defaultRelations="Companies Persons Requests Tasks"
+                 style="margin-left: 15px; min-width:300px;" />
     </page>
   </TabbedPages>
 </f:Form>

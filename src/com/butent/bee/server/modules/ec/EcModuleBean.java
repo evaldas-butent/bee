@@ -74,8 +74,7 @@ import com.butent.bee.shared.html.builder.elements.Div;
 import com.butent.bee.shared.html.builder.elements.Tbody;
 import com.butent.bee.shared.html.builder.elements.Td;
 import com.butent.bee.shared.html.builder.elements.Tr;
-import com.butent.bee.shared.i18n.LocalizableConstants;
-import com.butent.bee.shared.i18n.LocalizableMessages;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.i18n.SupportedLocale;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -950,7 +949,7 @@ public class EcModuleBean implements BeeModule {
         reqInfo.getParameter(COL_TCD_ARTICLE_NR), reqInfo.getParameterLong(COL_TCD_BRAND));
 
     if (!DataUtils.isId(newArt)) {
-      return ResponseObject.error(Localized.getMessages()
+      return ResponseObject.error(Localized.dictionary()
           .dataNotAvailable(COL_TCD_ARTICLE + "=" + reqInfo.getParameterLong(COL_TCD_ARTICLE)));
     }
     qs.insertData(new SqlInsert(TBL_TCD_ARTICLE_SUPPLIERS)
@@ -968,7 +967,7 @@ public class EcModuleBean implements BeeModule {
   }
 
   private ResponseObject didNotMatch(String query) {
-    return ResponseObject.warning(usr.getLocalizableMesssages().ecSearchDidNotMatch(query));
+    return ResponseObject.warning(usr.getDictionary().ecSearchDidNotMatch(query));
   }
 
   private ResponseObject doGlobalSearch(String query) {
@@ -1755,8 +1754,8 @@ public class EcModuleBean implements BeeModule {
 
     SimpleRowSet rowSet = qs.getData(query);
     if (DataUtils.isEmpty(rowSet)) {
-      return ResponseObject.warning(usr.getLocalizableMesssages().dataNotAvailable(
-          usr.getLocalizableConstants().ecDeliveryMethods()));
+      return ResponseObject.warning(usr.getDictionary().dataNotAvailable(
+          usr.getDictionary().ecDeliveryMethods()));
     }
 
     List<DeliveryMethod> deliveryMethods = new ArrayList<>();
@@ -2191,7 +2190,7 @@ public class EcModuleBean implements BeeModule {
         .addOrder(TBL_TCD_BRANDS, COL_TCD_BRAND_NAME, colBrandId));
 
     if (DataUtils.isEmpty(data)) {
-      return ResponseObject.warning(usr.getLocalizableMesssages().dataNotAvailable(TBL_TCD_BRANDS));
+      return ResponseObject.warning(usr.getDictionary().dataNotAvailable(TBL_TCD_BRANDS));
     }
 
     List<EcBrand> brands = new ArrayList<>();
@@ -2663,7 +2662,7 @@ public class EcModuleBean implements BeeModule {
       if (BeeUtils.isNegative(totalDept)) {
         String comment = orderRow.getValue(COL_ORDER_MANAGER_COMMENT);
         if (BeeUtils.isEmpty(comment) && !DataUtils.isId(orderRow.getLong(COL_ORDER_MANAGER))) {
-          return ResponseObject.error(usr.getLocalizableConstants().ecExceededCreditLimit());
+          return ResponseObject.error(usr.getDictionary().ecExceededCreditLimit());
         } else {
           return ResponseObject.info(comment);
         }
@@ -2672,7 +2671,7 @@ public class EcModuleBean implements BeeModule {
         return ResponseObject.emptyResponse();
       }
     }
-    return ResponseObject.error(usr.getLocalizableConstants().actionCanNotBeExecuted());
+    return ResponseObject.error(usr.getDictionary().actionCanNotBeExecuted());
   }
 
   private void logHistory(String service, String query, Long article, int count, long duration) {
@@ -2729,7 +2728,7 @@ public class EcModuleBean implements BeeModule {
       if (!BeeUtils.isEmpty(clientEmail)) {
         recipients.add(clientEmail);
       } else {
-        response.addWarning(usr.getLocalizableConstants().ecMailClientAddressNotFound());
+        response.addWarning(usr.getDictionary().ecMailClientAddressNotFound());
       }
     }
 
@@ -2751,10 +2750,10 @@ public class EcModuleBean implements BeeModule {
 
     Long account = getSenderAccountId(manager);
     if (!DataUtils.isId(account)) {
-      return ResponseObject.warning(usr.getLocalizableConstants().ecMailAccountNotFound());
+      return ResponseObject.warning(usr.getDictionary().ecMailAccountNotFound());
     }
 
-    LocalizableConstants constants = usr.getLocalizableConstants(clientUser);
+    Dictionary constants = usr.getDictionary(clientUser);
     Assert.notNull(constants);
 
     Document document = orderToHtml(orderData.getColumns(), orderRow, constants);
@@ -2764,7 +2763,7 @@ public class EcModuleBean implements BeeModule {
         status.getSubject(constants), content);
     if (mailResponse.hasErrors()) {
       if (isClient) {
-        return ResponseObject.warning(usr.getLocalizableConstants().ecMailFailed());
+        return ResponseObject.warning(usr.getDictionary().ecMailFailed());
       } else {
         return mailResponse;
       }
@@ -2776,7 +2775,7 @@ public class EcModuleBean implements BeeModule {
       return response;
     }
 
-    response.addInfo(usr.getLocalizableConstants().ecMailSent());
+    response.addInfo(usr.getDictionary().ecMailSent());
     if (!BeeUtils.isEmpty(clientEmail)) {
       response.addInfo(clientEmail);
     }
@@ -2793,7 +2792,7 @@ public class EcModuleBean implements BeeModule {
     String companyName = BeeUtils.trim(prm.getText(PRM_COMPANY));
     String url = BeeUtils.trim(prm.getText(PRM_URL));
 
-    LocalizableMessages messages = Localizations.getPreferredMessages(locale.getLanguage());
+    Dictionary messages = Localizations.getDictionary(locale);
 
     String subject = BeeUtils.trim(messages.ecRegistrationMailSubject(companyName));
     String content = BeeUtils.trim(messages.ecRegistrationMailContent(login, password, url));
@@ -2803,7 +2802,7 @@ public class EcModuleBean implements BeeModule {
       return response;
     }
 
-    response.addInfo(usr.getLocalizableConstants().ecMailSent());
+    response.addInfo(usr.getDictionary().ecMailSent());
     response.addInfo(recipient);
 
     return response;
@@ -2838,7 +2837,7 @@ public class EcModuleBean implements BeeModule {
   }
 
   private Document orderToHtml(List<BeeColumn> orderColumns, BeeRow orderRow,
-      LocalizableConstants constants) {
+      Dictionary constants) {
 
     String clientFirstName = orderRow.getString(DataUtils.getColumnIndex(
         ALS_ORDER_CLIENT_FIRST_NAME, orderColumns));
@@ -3121,7 +3120,7 @@ public class EcModuleBean implements BeeModule {
     IsCondition codeCondition = getCodeCondition(code, defOperator);
     if (codeCondition == null) {
       return ResponseObject.error(EcUtils.normalizeCode(code),
-          usr.getLocalizableMesssages().searchQueryRestriction(MIN_SEARCH_QUERY_LENGTH));
+          usr.getDictionary().searchQueryRestriction(MIN_SEARCH_QUERY_LENGTH));
     }
 
     SqlSelect articleIdQuery = new SqlSelect().setDistinctMode(true)
@@ -3168,7 +3167,7 @@ public class EcModuleBean implements BeeModule {
 
     List<EcItem> items = getItems(query, null);
     if (items.isEmpty()) {
-      return ResponseObject.error(usr.getLocalizableConstants().ecNothingToOrder());
+      return ResponseObject.error(usr.getDictionary().ecNothingToOrder());
     }
     String remoteAddress = prm.getText(PRM_ERP_ADDRESS);
     String remoteLogin = prm.getText(PRM_ERP_LOGIN);
@@ -3279,7 +3278,7 @@ public class EcModuleBean implements BeeModule {
       response.log(logger);
     } else {
       if (finResp.hasNotifications()) {
-        response.addInfo(usr.getLocalizableConstants().ecExceededCreditLimitSend());
+        response.addInfo(usr.getDictionary().ecExceededCreditLimitSend());
         response.addMessagesFrom(finResp);
       }
       qs.updateData(new SqlUpdate(TBL_ORDERS)
@@ -3539,7 +3538,7 @@ public class EcModuleBean implements BeeModule {
           .setWhere(SqlUtils.inList(TBL_TCD_ARTICLE_SUPPLIERS,
               sys.getIdName(TBL_TCD_ARTICLE_SUPPLIERS), ids)));
     }
-    return ResponseObject.info(usr.getLocalizableMesssages().rowsUpdated(c));
+    return ResponseObject.info(usr.getDictionary().rowsUpdated(c));
   }
 
   private ResponseObject updateShoppingCart(RequestInfo reqInfo) {

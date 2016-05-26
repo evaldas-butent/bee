@@ -45,7 +45,7 @@ class ProjectTemplateForm extends AbstractFormInterceptor {
           header.clearCommandPanel();
 
           FaLabel setDefault = new FaLabel(FontAwesome.CHECK);
-          setDefault.setTitle(Localized.getConstants().setAsPrimary());
+          setDefault.setTitle(Localized.dictionary().setAsPrimary());
           setDefault.addClickHandler(new ClickHandler() {
 
             @Override
@@ -54,7 +54,7 @@ class ProjectTemplateForm extends AbstractFormInterceptor {
 
               IsRow selectedRow = gridView.getActiveRow();
               if (selectedRow == null) {
-                gridView.notifyWarning(Localized.getConstants().selectAtLeastOneRow());
+                gridView.notifyWarning(Localized.dictionary().selectAtLeastOneRow());
                 return;
               } else {
                 setAsPrimary(selectedRow.getId(), false);

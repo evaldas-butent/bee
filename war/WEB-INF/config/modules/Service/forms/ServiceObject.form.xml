@@ -16,7 +16,6 @@
         <text>=svcSpecification</text>
         <xi:include href="widgets/ObjectCriteria.widget.xml" />
       </page>
-
       <page>
         <text>=svcMaintenance</text>
         <ChildGrid name="Maintenance" relColumn="ServiceObject" />
@@ -29,7 +28,6 @@
         <text>=svcDefects</text>
         <ChildGrid name="ObjectDefects" relColumn="ServiceObject" />
       </page>
-
       <page module="Documents">
         <text>=documents</text>
         <ChildGrid name="RelatedDocuments" relColumn="ServiceObject" />
@@ -38,7 +36,6 @@
         <text>=files</text>
         <ChildGrid name="ServiceFiles" relColumn="ServiceObject" />
       </page>
-
       <page module="Tasks">
         <text>=crmTasks</text>
         <ChildGrid name="RelatedTasks" relColumn="ServiceObject" />
@@ -47,10 +44,14 @@
         <text>=crmRecurringTasks</text>
         <ChildGrid name="RelatedRecurringTasks" relColumn="ServiceObject" />
       </page>
-
       <page>
         <text>=svcDates</text>
         <ChildGrid name="ServiceDates" relColumn="ServiceObject" />
+      </page>
+      <page>
+      <text>=relatedInformation</text>
+      <Relations relColumn="ServiceObject" inline="true"
+                 defaultRelations="Companies Persons Requests Tasks" style="margin: 0px 15px 0px 15px; min-width:300px;" />
       </page>
     </TabbedPages>
   </FlowPanel>

@@ -18,9 +18,14 @@ final class CargoMatcher {
     ChartData statusData = FilterHelper.getDataByType(data, ChartData.Type.ORDER_STATUS);
 
     ChartData cargoData = FilterHelper.getDataByType(data, ChartData.Type.CARGO);
+    ChartData cargoTypeData = FilterHelper.getDataByType(data, ChartData.Type.CARGO_TYPE);
 
-    if (BeeUtils.anyNotNull(customerData, managerData, orderData, statusData, cargoData)) {
-      return new CargoMatcher(customerData, managerData, orderData, statusData, cargoData);
+    if (BeeUtils.anyNotNull(customerData, managerData, orderData, statusData,
+        cargoData, cargoTypeData)) {
+
+      return new CargoMatcher(customerData, managerData, orderData, statusData,
+          cargoData, cargoTypeData);
+
     } else {
       return null;
     }
@@ -33,9 +38,10 @@ final class CargoMatcher {
   private final ChartData statusData;
 
   private final ChartData cargoData;
+  private final ChartData cargoTypeData;
 
   private CargoMatcher(ChartData customerData, ChartData managerData, ChartData orderData,
-      ChartData statusData, ChartData cargoData) {
+      ChartData statusData, ChartData cargoData, ChartData cargoTypeData) {
 
     this.customerData = customerData;
     this.managerData = managerData;
@@ -44,6 +50,7 @@ final class CargoMatcher {
     this.statusData = statusData;
 
     this.cargoData = cargoData;
+    this.cargoTypeData = cargoTypeData;
   }
 
   boolean matches(OrderCargo cargo) {
@@ -67,6 +74,10 @@ final class CargoMatcher {
     if (cargoData != null && !cargoData.contains(cargo.getCargoDescription())) {
       return false;
     }
+    if (cargoTypeData != null && !cargoTypeData.contains(cargo.getCargoType())) {
+      return false;
+    }
+
     return true;
   }
 }

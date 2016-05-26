@@ -8,12 +8,14 @@ import com.butent.bee.server.utils.XmlUtils;
 import com.butent.bee.shared.communication.ResponseMessage;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.logging.LogLevel;
+import com.butent.bee.shared.modules.payroll.PayrollConstants.WorkScheduleKind;
 import com.butent.bee.shared.modules.payroll.WorkScheduleSummary;
 import com.butent.bee.shared.time.DateRange;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.time.YearMonth;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.EnumUtils;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -33,6 +35,7 @@ public class PayrollWorker {
   private static final String PARAM_YEAR = "year";
   private static final String PARAM_MONTH = "month";
   private static final String PARAM_EMPLOYEE = "employee";
+  private static final String PARAM_KIND = "kind";
 
   private static final String TAG_EARNINGS = "earnings";
   private static final String TAG_SCHEDULE = "schedule";
@@ -67,7 +70,7 @@ public class PayrollWorker {
 
     document.appendChild(root);
 
-    if (!validateParameters(document, root, company, year, month, employee)) {
+    if (!validateParameters(document, root, company, year, month, employee, null)) {
       return toString(document);
     }
 
@@ -113,7 +116,7 @@ public class PayrollWorker {
   @Trusted
   public String getWorkSchedule(@QueryParam(PARAM_COMPANY) String company,
       @QueryParam(PARAM_YEAR) String year, @QueryParam(PARAM_MONTH) String month,
-      @QueryParam(PARAM_EMPLOYEE) String employee) {
+      @QueryParam(PARAM_EMPLOYEE) String employee, @QueryParam(PARAM_KIND) String kind) {
 
     Document document = XmlUtils.createDocument();
     Element root = document.createElement(TAG_SCHEDULE);
@@ -122,10 +125,11 @@ public class PayrollWorker {
     XmlUtils.setNotEmptyAttribute(root, PARAM_YEAR, year);
     XmlUtils.setNotEmptyAttribute(root, PARAM_MONTH, month);
     XmlUtils.setNotEmptyAttribute(root, PARAM_EMPLOYEE, employee);
+    XmlUtils.setNotEmptyAttribute(root, PARAM_KIND, kind);
 
     document.appendChild(root);
 
-    if (!validateParameters(document, root, company, year, month, employee)) {
+    if (!validateParameters(document, root, company, year, month, employee, kind)) {
       return toString(document);
     }
 
@@ -134,7 +138,12 @@ public class PayrollWorker {
     YearMonth ym = YearMonth.parse(year, month);
     DateRange range = ym.getRange();
 
-    ResponseObject response = pmb.getWorkSchedule(company, tabNumber, range);
+    WorkScheduleKind wsKind = EnumUtils.getEnumByIndex(WorkScheduleKind.class, kind);
+    if (wsKind == null) {
+      wsKind = WorkScheduleKind.ACTUAL;
+    }
+
+    ResponseObject response = pmb.getWorkSchedule(company, tabNumber, range, wsKind);
     addMessages(document, root, response);
 
     Table<Integer, JustDate, WorkScheduleSummary> table = getScheduleTable(response);
@@ -245,7 +254,7 @@ public class PayrollWorker {
   }
 
   private static boolean validateParameters(Document document, Element parent,
-      String company, String year, String month, String employee) {
+      String company, String year, String month, String employee, String kind) {
 
     boolean ok = true;
 
@@ -278,6 +287,11 @@ public class PayrollWorker {
 
     if (!BeeUtils.isEmpty(employee) && !BeeUtils.isPositiveInt(employee)) {
       parameterNotValid(document, parent, PARAM_EMPLOYEE, employee);
+      ok = false;
+    }
+
+    if (!BeeUtils.isEmpty(kind) && EnumUtils.getEnumByIndex(WorkScheduleKind.class, kind) == null) {
+      parameterNotValid(document, parent, PARAM_KIND, kind);
       ok = false;
     }
 

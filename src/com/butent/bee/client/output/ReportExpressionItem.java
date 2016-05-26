@@ -1,17 +1,13 @@
 package com.butent.bee.client.output;
 
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.Global;
-import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.widget.CustomSpan;
 import com.butent.bee.client.widget.InputText;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.i18n.Localized;
@@ -35,8 +31,8 @@ public class ReportExpressionItem extends ReportItem {
     super(BeeUtils.randomString(10), caption);
   }
 
-  public void addExpressionItem(String sep, ReportItem item) {
-    addItem(expression, sep, item);
+  public ReportExpressionItem append(String sep, ReportItem item) {
+    return addItem(expression, sep, item);
   }
 
   @Override
@@ -83,11 +79,11 @@ public class ReportExpressionItem extends ReportItem {
   }
 
   @Override
-  public Widget getExpressionWidget(Report report) {
+  public Widget getExpressionWidget(List<ReportItem> reportItems) {
     Flow container = new Flow(getStyle() + "-expression");
     temporaryExpression.clear();
     temporaryExpression.addAll(expression);
-    render(container, report);
+    render(container, reportItems);
     return container;
   }
 
@@ -127,7 +123,7 @@ public class ReportExpressionItem extends ReportItem {
   @Override
   public String saveOptions() {
     if (BeeUtils.isEmpty(temporaryExpression)) {
-      return Localized.getMessages().dataNotAvailable(Localized.getConstants().expression());
+      return Localized.dictionary().dataNotAvailable(Localized.dictionary().expression());
     }
     expression.clear();
     expression.addAll(temporaryExpression);
@@ -145,64 +141,55 @@ public class ReportExpressionItem extends ReportItem {
     return serialize(Codec.beeSerialize(Collections.singletonMap(EXPRESSION, list)));
   }
 
-  private static void addItem(List<Pair<String, ReportItem>> list, String sep, ReportItem item) {
+  private ReportExpressionItem addItem(List<Pair<String, ReportItem>> list, String sep,
+      ReportItem item) {
     if (item != null) {
-      list.add(Pair.of(encodeSpaces(BeeUtils.nvl(sep, BeeConst.STRING_SPACE)), item));
+      list.add(Pair.of(encodeSpaces(BeeUtils.nvl(sep, BeeConst.STRING_SPACE)),
+          ReportItem.restore(item.serialize())));
     }
+    return this;
   }
 
   private static String encodeSpaces(String value) {
     return value.replace(BeeConst.CHAR_SPACE, BeeConst.CHAR_NBSP);
   }
 
-  private void render(final Flow container, final Report report) {
-    final Runnable refresh = new Runnable() {
-      @Override
-      public void run() {
-        render(container, report);
-      }
-    };
+  private void render(Flow container, List<ReportItem> reportItems) {
+    Runnable refresh = () -> render(container, reportItems);
     container.clear();
+    List<ReportItem> choiceItems = new ArrayList<>();
 
+    for (ReportItem item : reportItems) {
+      if (!(item instanceof ReportNumericItem)) {
+        choiceItems.add(item);
+      }
+    }
     for (int i = 0; i < temporaryExpression.size(); i++) {
-      final Pair<String, ReportItem> pair = temporaryExpression.get(i);
+      Pair<String, ReportItem> pair = temporaryExpression.get(i);
 
       if (i > 0) {
         Label sep = new Label(pair.getA());
         sep.addStyleName(getStyle() + "-separator");
-        sep.addClickHandler(new ClickHandler() {
-          @Override
-          public void onClick(ClickEvent event) {
-            final InputText input = new InputText();
-            input.setValue(pair.getA());
+        sep.addClickHandler(event -> {
+          final InputText input = new InputText();
+          input.setValue(pair.getA());
 
-            Global.inputWidget(Localized.getConstants().separator(), input, new InputCallback() {
-              @Override
-              public void onSuccess() {
-                pair.setA(encodeSpaces(input.getValue()));
-                refresh.run();
-              }
-            });
-            input.setFocus(true);
-          }
+          Global.inputWidget(Localized.dictionary().separator(), input, () -> {
+            pair.setA(encodeSpaces(input.getValue()));
+            refresh.run();
+          });
+          input.setFocus(true);
         });
         container.add(sep);
       }
-      container.add(ReportItem.renderDnd(pair.getB(), temporaryExpression, i, report, refresh));
+      container.add(ReportItem.renderDnd(pair.getB(), temporaryExpression, i, choiceItems,
+          refresh));
     }
     CustomSpan add = new CustomSpan(STYLE_ADD);
-    add.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        chooseItem(report, false, new Consumer<ReportItem>() {
-          @Override
-          public void accept(ReportItem item) {
-            addItem(temporaryExpression, null, item);
-            refresh.run();
-          }
-        });
-      }
-    });
+    add.addClickHandler(event -> chooseItem(choiceItems, false, item -> {
+      addItem(temporaryExpression, null, item);
+      refresh.run();
+    }));
     container.add(add);
   }
 }

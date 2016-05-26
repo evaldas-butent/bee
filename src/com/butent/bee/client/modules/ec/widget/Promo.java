@@ -111,14 +111,14 @@ public class Promo extends Flow {
 
     int price = item.getPrice();
     if (price > 0) {
-      String priceInfo = BeeUtils.joinWords(Localized.getConstants().ecItemPrice()
+      String priceInfo = BeeUtils.joinWords(Localized.dictionary().ecItemPrice()
           + BeeConst.STRING_COLON, EcUtils.formatCents(price), EcConstants.CURRENCY);
       Label itemPrice = new Label(priceInfo);
       EcStyles.add(itemPrice, primaryStyle, STYLE_SUFFIX_PRICE);
       panel.add(itemPrice);
     }
 
-    Button details = new Button(Localized.getConstants().ecShowDetails());
+    Button details = new Button(Localized.dictionary().ecShowDetails());
     EcStyles.add(details, primaryStyle, STYLE_SUFFIX_DRILL);
     details.addClickHandler(new ClickHandler() {
       @Override
@@ -163,7 +163,7 @@ public class Promo extends Flow {
 
       if (item.isFeatured()) {
         if (featuredTable == null) {
-          Label featuredLabel = new Label(Localized.getConstants().ecFeaturedItems());
+          Label featuredLabel = new Label(Localized.dictionary().ecFeaturedItems());
           EcStyles.add(featuredLabel, STYLE_FEATURED, STYLE_SUFFIX_LABEL);
           add(featuredLabel);
 
@@ -178,11 +178,11 @@ public class Promo extends Flow {
         }
 
         featuredTable.add(renderItem(item, STYLE_FEATURED,
-            Localized.getConstants().ecFeaturedBanner(), pictureWidget));
+            Localized.dictionary().ecFeaturedBanner(), pictureWidget));
 
       } else {
         if (noveltyTable == null) {
-          Label noveltyLabel = new Label(Localized.getConstants().ecNoveltyItems());
+          Label noveltyLabel = new Label(Localized.dictionary().ecNoveltyItems());
           EcStyles.add(noveltyLabel, STYLE_NOVELTY, STYLE_SUFFIX_LABEL);
           add(noveltyLabel);
 
@@ -197,7 +197,7 @@ public class Promo extends Flow {
         }
 
         noveltyTable.add(renderItem(item, STYLE_NOVELTY,
-            Localized.getConstants().ecNoveltyBanner(), pictureWidget));
+            Localized.dictionary().ecNoveltyBanner(), pictureWidget));
       }
     }
 

@@ -924,7 +924,7 @@ class TilePanel extends Split implements HasCaption, SelectionHandler<String> {
     }
 
     if (labels.isEmpty()) {
-      return Localized.getConstants().newTab();
+      return Localized.dictionary().newTab();
     } else {
       return BeeUtils.joinItems(labels);
     }

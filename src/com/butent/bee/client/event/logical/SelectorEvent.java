@@ -8,8 +8,10 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.data.SelectionOracle.Callback;
 import com.butent.bee.client.data.SelectionOracle.Request;
+import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumable;
+import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.logging.LogUtils;
@@ -96,6 +98,7 @@ public final class SelectorEvent extends GwtEvent<SelectorEvent.Handler> impleme
   private boolean consumed;
 
   private String defValue;
+  private Consumer<FormView> onOpenNewRow;
 
   private SelectorEvent(State state) {
     this(state, null, null);
@@ -140,6 +143,10 @@ public final class SelectorEvent extends GwtEvent<SelectorEvent.Handler> impleme
 
   public String getNewRowFormName() {
     return newRowFormName;
+  }
+
+  public Consumer<FormView> getOnOpenNewRow() {
+    return onOpenNewRow;
   }
 
   public BeeRow getRelatedRow() {
@@ -246,6 +253,10 @@ public final class SelectorEvent extends GwtEvent<SelectorEvent.Handler> impleme
 
   public void setNewRowFormName(String newRowFormName) {
     this.newRowFormName = newRowFormName;
+  }
+
+  public void setOnOpenNewRow(Consumer<FormView> onOpenNewRow) {
+    this.onOpenNewRow = onOpenNewRow;
   }
 
   @Override

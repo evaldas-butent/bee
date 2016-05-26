@@ -114,7 +114,7 @@ public class Search {
           EnumSet.of(Action.PRINT, Action.CLOSE), Action.NO_ACTIONS, Action.NO_ACTIONS);
 
       header.setViewPresenter(this);
-      header.setMessage(getMessage());
+      header.setMessage(0, getMessage(), null);
 
       this.add(header);
 
@@ -185,6 +185,11 @@ public class Search {
     @Override
     public String getSupplierKey() {
       return ViewFactory.SupplierKind.SEARCH.getKey(query);
+    }
+
+    @Override
+    public String getViewKey() {
+      return getSupplierKey();
     }
 
     @Override
@@ -355,7 +360,7 @@ public class Search {
     }
 
     private void updateMessage() {
-      header.setMessage(getMessage());
+      header.setMessage(0, getMessage(), null);
     }
   }
 
@@ -490,7 +495,7 @@ public class Search {
         }
 
         if (results.isEmpty() && callback == null) {
-          BeeKeeper.getScreen().notifyWarning(value, Localized.getConstants().nothingFound());
+          BeeKeeper.getScreen().notifyWarning(value, Localized.dictionary().nothingFound());
 
         } else {
           if (inputWidget != null) {
@@ -557,9 +562,9 @@ public class Search {
     DomUtils.setSearch(getInput());
     AutocompleteProvider.enableAutocomplete(getInput(), KEY_INPUT);
 
-    getInput().getElement().setAttribute(Attributes.PLACEHOLDER, Localized.getConstants().search());
+    getInput().getElement().setAttribute(Attributes.PLACEHOLDER, Localized.dictionary().search());
     getInput().addStyleName(STYLE_INPUT);
-    getInput().setTitle(Localized.getConstants().searchTips());
+    getInput().setTitle(Localized.dictionary().searchTips());
 
     getInput().addKeyDownHandler(new KeyDownHandler() {
       @Override
@@ -608,7 +613,7 @@ public class Search {
     if (!BeeUtils.isEmpty(value)) {
       if (value.length() < MIN_SEARCH_PHRASE_LENGTH && !BeeUtils.isDigit(value)) {
         BeeKeeper.getScreen().notifyWarning(
-            Localized.getMessages().searchQueryRestriction(MIN_SEARCH_PHRASE_LENGTH));
+            Localized.dictionary().searchQueryRestriction(MIN_SEARCH_PHRASE_LENGTH));
 
       } else {
         doSearch(getInput(), value, null);

@@ -3,7 +3,7 @@
    xmlns:x="http://www.butent.com/expression"
 
   name="Tasks" source="Tasks" caption="=crmTasks"
-  newRowForm="NewTask" editForm="Task" rowCaption="Summary"
+  editForm="Task" newRowForm="NewTask" rowCaption="Summary"
   >
   <Relation renderColumns="Id Summary ExecutorFirstName ExecutorLastName"
     choiceColumns="Id Summary ExecutorFirstName ExecutorLastName StartTime FinishTime" />
@@ -19,6 +19,7 @@
       <SimpleColumn name="Name" alias="TypeName" />
       <SimpleColumn name="Background" alias="TypeBackground" />
       <SimpleColumn name="Foreground" alias="TypeForeground" />
+      <SimpleColumn name="ProductRequired" />
     </SimpleJoin>
 
     <SimpleColumn name="Created" />
@@ -92,6 +93,9 @@
       <SimpleColumn name="Owner" alias="ProjectOwner" />
       <SimpleColumn name="Status" alias="ProjectStatus" />
       <SimpleColumn name="ProjectTemplate"  />
+      <ExternalJoin name="Project" source="ProjectUsers" joinType="LEFT" filter="FilteredProjectUser = {u}">
+        <SimpleColumn name="User" alias="FilteredProjectUser" />
+      </ExternalJoin>
     </SimpleJoin>
 
     <SimpleColumn name="ProjectStage" />
@@ -124,6 +128,16 @@
     <SimpleJoin name="Currency" joinType="LEFT">
       <SimpleColumn name="Name" alias="CurrencyName" />
     </SimpleJoin>
+    
+    <SimpleColumn name="PrivateTask" />
+    
+    <SimpleColumn name="Product" />
+    <SimpleJoin name="Product" joinType="LEFT">
+      <SimpleColumn name="Name" alias="ProductName"/>
+      <SimpleColumn name="Background" alias="ProductBackground"/>
+      <SimpleColumn name="Foreground" alias="ProductForeground"/>
+    </SimpleJoin>
+    
   </Columns>
 
   <Order>

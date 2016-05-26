@@ -237,9 +237,6 @@ public final class OrdersKeeper {
                 } else if (BeeUtils.same(fld, COL_TRADE_AMAOUNT_WITH_VAT)) {
                   value = formater.format(sum + vat);
 
-                } else if (BeeUtils.same(fld, COL_TRADE_PRICE_WITH_VAT_LTL)) {
-                  value = formater.format((sum + vat) / qty * 3.4528);
-
                 } else if (BeeUtils.same(fld, COL_RESERVED_REMAINDER)) {
                   value = formater.format(reserved);
 

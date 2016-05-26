@@ -51,7 +51,7 @@ class FilterDataWidget extends Flow implements HasSelectionHandlers<ChartData.Ty
   private static final String STYLE_DATA_COMMAND_ALL = STYLE_PREFIX + "commandAll";
 
   private static final int MIN_SIZE_FOR_COMMAND_ALL = 2;
-  private static final int MIN_SIZE_FOR_SEARCH = 5;
+  private static final int MIN_SIZE_FOR_SEARCH = 1;
 
   private final ChartData data;
 
@@ -105,7 +105,7 @@ class FilterDataWidget extends Flow implements HasSelectionHandlers<ChartData.Ty
 
     this.selectAllWidget = new Image(Global.getImages().arrowDownDouble());
     selectAllWidget.addStyleName(STYLE_DATA_COMMAND_ALL);
-    selectAllWidget.setTitle(Localized.getConstants().selectAll());
+    selectAllWidget.setTitle(Localized.dictionary().selectAll());
 
     selectAllWidget.addClickHandler(new ClickHandler() {
       @Override
@@ -158,7 +158,7 @@ class FilterDataWidget extends Flow implements HasSelectionHandlers<ChartData.Ty
 
     this.deselectAllWidget = new Image(Global.getImages().arrowUpDouble());
     deselectAllWidget.addStyleName(STYLE_DATA_COMMAND_ALL);
-    deselectAllWidget.setTitle(Localized.getConstants().deselectAll());
+    deselectAllWidget.setTitle(Localized.dictionary().deselectAll());
 
     deselectAllWidget.addClickHandler(new ClickHandler() {
       @Override

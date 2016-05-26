@@ -10,16 +10,12 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.menu.Menu;
 import com.butent.bee.shared.menu.MenuEntry;
 import com.butent.bee.shared.rights.RightsObjectType;
-import com.butent.bee.shared.rights.RightsState;
 import com.butent.bee.shared.utils.Codec;
 
 import java.util.ArrayList;
 import java.util.List;
 
 final class MenuRightsHandler extends MultiRoleForm {
-
-  MenuRightsHandler() {
-  }
 
   @Override
   public FormInterceptor getInstance() {
@@ -29,11 +25,6 @@ final class MenuRightsHandler extends MultiRoleForm {
   @Override
   protected RightsObjectType getObjectType() {
     return RightsObjectType.MENU;
-  }
-
-  @Override
-  protected RightsState getRightsState() {
-    return RightsState.VIEW;
   }
 
   @Override
@@ -63,7 +54,8 @@ final class MenuRightsHandler extends MultiRoleForm {
     });
   }
 
-  private boolean addMenuObject(List<RightsObject> result, int level, String parent, Menu menu) {
+  private static boolean addMenuObject(List<RightsObject> result, int level, String parent,
+      Menu menu) {
     if (!BeeKeeper.getUser().isAnyModuleVisible(menu.getModule())) {
       return false;
     }

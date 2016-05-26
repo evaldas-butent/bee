@@ -32,7 +32,7 @@ import java.util.Set;
 
 public class InvoicesGrid extends AbstractGridInterceptor implements ClickHandler {
 
-  private final Button action = new Button(Localized.getConstants().trSendToERP(), this);
+  private final Button action = new Button(Localized.dictionary().trSendToERP(), this);
   private final Image loading = new Image(Global.getImages().loading());
   private final Simple panel = new Simple();
 
@@ -63,11 +63,11 @@ public class InvoicesGrid extends AbstractGridInterceptor implements ClickHandle
       ids.add(row.getId());
     }
     if (ids.isEmpty()) {
-      view.notifyWarning(Localized.getConstants().selectAtLeastOneRow());
+      view.notifyWarning(Localized.dictionary().selectAtLeastOneRow());
       return;
     }
 
-    Global.confirm(Localized.getConstants().trSendToERPConfirm(), new ConfirmationCallback() {
+    Global.confirm(Localized.dictionary().trSendToERPConfirm(), new ConfirmationCallback() {
       @Override
       public void onConfirm() {
         setWaiting(true);

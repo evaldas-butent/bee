@@ -69,7 +69,7 @@ import java.util.Set;
 public class FormPresenter extends AbstractPresenter implements ReadyForInsertEvent.Handler,
     ReadyForUpdateEvent.Handler, HasViewName, HasSearch, HasDataProvider, HasActiveRow {
 
-  private final class DeleteCallback extends ConfirmationCallback {
+  private final class DeleteCallback implements ConfirmationCallback {
     private final long rowId;
     private final long version;
 
@@ -166,6 +166,11 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
   }
 
   @Override
+  public String getViewKey() {
+    return formContainer.getSupplierKey();
+  }
+
+  @Override
   public String getViewName() {
     if (getDataProvider() == null) {
       return null;
@@ -230,10 +235,6 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
 
       default:
         logger.warning(NameUtils.getName(this), action, "not implemented");
-    }
-
-    if (getFormInterceptor() != null) {
-      getFormInterceptor().afterAction(action, this);
     }
   }
 
@@ -395,7 +396,7 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
 
   private void deleteRow(long rowId, long version) {
     Global.confirmDelete(getCaption(), Icon.WARNING,
-        Collections.singletonList(Localized.getConstants().deleteRecordQuestion()),
+        Collections.singletonList(Localized.dictionary().deleteRecordQuestion()),
         new DeleteCallback(rowId, version));
   }
 

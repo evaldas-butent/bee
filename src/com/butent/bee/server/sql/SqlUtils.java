@@ -1,6 +1,8 @@
 package com.butent.bee.server.sql;
 
+import com.google.common.collect.BoundType;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Range;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.SqlConstants.SqlDataType;
@@ -38,6 +40,60 @@ public final class SqlUtils {
 
   public static HasConditions and(IsCondition... conditions) {
     return CompoundCondition.and(conditions);
+  }
+
+  public static IsCondition anyIntersects(String source, Collection<String> fields,
+      Range<?> range) {
+
+    Assert.notEmpty(source);
+    Assert.notEmpty(fields);
+
+    HasConditions lowerCondition;
+    HasConditions upperCondition;
+
+    IsCondition condition;
+
+    if (range != null && range.hasLowerBound()) {
+      lowerCondition = or();
+
+      for (String field : fields) {
+        if (!BeeUtils.isEmpty(field)) {
+          if (range.lowerBoundType() == BoundType.OPEN) {
+            condition = more(source, field, range.lowerEndpoint());
+          } else {
+            condition = moreEqual(source, field, range.lowerEndpoint());
+          }
+
+          lowerCondition.add(condition);
+        }
+      }
+    } else {
+      lowerCondition = null;
+    }
+
+    if (range != null && range.hasUpperBound()) {
+      upperCondition = or();
+
+      for (String field : fields) {
+        if (!BeeUtils.isEmpty(field)) {
+          if (range.upperBoundType() == BoundType.OPEN) {
+            condition = less(source, field, range.upperEndpoint());
+          } else {
+            condition = lessEqual(source, field, range.upperEndpoint());
+          }
+
+          upperCondition.add(condition);
+        }
+      }
+    } else {
+      upperCondition = null;
+    }
+
+    if (lowerCondition == null && upperCondition == null) {
+      return null;
+    } else {
+      return and(lowerCondition, upperCondition);
+    }
   }
 
   public static IsExpression bitAnd(IsExpression expr, Object value) {
@@ -88,6 +144,18 @@ public final class SqlUtils {
 
   public static IsCondition contains(String source, String field, String value) {
     return contains(field(source, field), value);
+  }
+
+  public static IsCondition containsAny(String value, IsExpression... expressions) {
+    if (ArrayUtils.isEmpty(expressions)) {
+      return null;
+    }
+    HasConditions clause = or();
+
+    for (IsExpression expr : expressions) {
+      clause.add(contains(expr, value));
+    }
+    return clause;
   }
 
   public static IsQuery createCheck(String table, String name, String expression) {
@@ -571,6 +639,10 @@ public final class SqlUtils {
     return notNull(field(src, fld));
   }
 
+  public static IsCondition notNull(String src, String fld1, String fld2) {
+    return and(notNull(src, fld1), notNull(src, fld2));
+  }
+
   public static IsExpression nvl(Object... members) {
     Assert.minLength(ArrayUtils.length(members), 2);
     Assert.noNulls(members);
@@ -615,6 +687,14 @@ public final class SqlUtils {
 
   public static IsExpression round(String source, String field, int precision) {
     return round(field(source, field), precision);
+  }
+
+  public static IsCondition same(IsExpression expr, String value) {
+    return and(startsWith(expr, value), endsWith(expr, value));
+  }
+
+  public static IsCondition same(String source, String field, String value) {
+    return same(field(source, field), value);
   }
 
   public static IsQuery setSqlParameter(String prmName, Object value) {

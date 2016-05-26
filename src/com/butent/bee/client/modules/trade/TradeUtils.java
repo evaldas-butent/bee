@@ -14,26 +14,33 @@ import static com.butent.bee.shared.modules.administration.AdministrationConstan
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.ClientDefaults;
+import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
-import com.butent.bee.client.data.RowCallback;
+import com.butent.bee.client.data.RowUpdateCallback;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.modules.administration.AdministrationKeeper;
 import com.butent.bee.client.render.ProvidesGridColumnRenderer;
 import com.butent.bee.client.render.RendererFactory;
 import com.butent.bee.client.utils.XmlUtils;
+import com.butent.bee.client.widget.InputNumber;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.communication.ResponseObject;
-import com.butent.bee.shared.data.BeeRow;
+import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
+import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.modules.trade.Totalizer;
 import com.butent.bee.shared.utils.BeeUtils;
 
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
 
 public final class TradeUtils {
 
@@ -52,6 +59,53 @@ public final class TradeUtils {
   private static final String COL_RATE_CURRENCY = COL_CURRENCY_RATE + COL_CURRENCY;
 
   private static ProvidesGridColumnRenderer totalRenderer;
+
+  public static void amountEntry(IsRow row, String viewName) {
+    Totalizer totalizer = new Totalizer(Data.getColumns(viewName));
+
+    InputNumber input = new InputNumber();
+    Double total = totalizer.getTotal(row);
+
+    if (BeeUtils.isDouble(total)) {
+      input.setValue(BeeUtils.round(total, 2));
+    }
+    Global.inputWidget(Localized.dictionary().amount(), input, () -> {
+      Double amount = input.getNumber();
+      String price = null;
+
+      if (BeeUtils.isDouble(amount)) {
+        if (!totalizer.isVatInclusive(row)) {
+          Data.clearCell(viewName, row, COL_TRADE_VAT_PLUS);
+          amount -= BeeUtils.unbox(totalizer.getVat(row, amount));
+          Data.setValue(viewName, row, COL_TRADE_VAT_PLUS, 1);
+        }
+        Double qty = Data.getDouble(viewName, row, COL_TRADE_ITEM_QUANTITY);
+        price = BeeUtils.toString(amount / (BeeUtils.isZero(qty) ? 1 : qty), 5);
+      }
+      List<BeeColumn> columns = new ArrayList<>();
+      List<String> oldValues = new ArrayList<>();
+      List<String> newValues = new ArrayList<>();
+
+      columns.add(Data.getColumn(viewName, COL_TRADE_ITEM_PRICE));
+      oldValues.add(Data.getString(viewName, row, COL_TRADE_ITEM_PRICE));
+      newValues.add(price);
+
+      String oldCurrency = Data.getString(viewName, row, COL_TRADE_CURRENCY);
+      String newCurrency = null;
+
+      if (!BeeUtils.isEmpty(price)) {
+        newCurrency = BeeUtils.notEmpty(oldCurrency,
+            DataUtils.isId(ClientDefaults.getCurrency())
+                ? BeeUtils.toString(ClientDefaults.getCurrency()) : null);
+      }
+      columns.add(Data.getColumn(viewName, COL_TRADE_CURRENCY));
+      oldValues.add(oldCurrency);
+      newValues.add(newCurrency);
+
+      Queries.update(viewName, row.getId(), row.getVersion(), columns, oldValues, newValues,
+          null, new RowUpdateCallback(viewName));
+    });
+  }
 
   public static void getDocumentItems(String viewName, long tradeId, String currencyName,
       final HtmlTable table) {
@@ -281,41 +335,28 @@ public final class TradeUtils {
 
   public static void getTotalInWords(Double amount, final Long currency, final Widget total) {
     Assert.notNull(total);
-    String locale = DomUtils.getDataProperty(total.getElement(), VAR_LOCALE);
 
     if (amount == null || amount <= 0) {
       return;
     }
-    long number = BeeUtils.toLong(Math.floor(amount));
-    final int fraction = BeeUtils.round((amount - number) * 100);
+    ParameterList args = AdministrationKeeper.createArgs(SVC_TOTAL_TO_WORDS);
+    args.addDataItem(VAR_AMOUNT, amount);
+    args.addDataItem(COL_CURRENCY, currency);
 
-    ParameterList args = AdministrationKeeper.createArgs(SVC_NUMBER_TO_WORDS);
-    args.addDataItem(VAR_AMOUNT, number);
+    String locale = DomUtils.getDataProperty(total.getElement(), VAR_LOCALE);
 
     if (!BeeUtils.isEmpty(locale)) {
       args.addDataItem(VAR_LOCALE, locale);
     }
     BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
       @Override
-      public void onResponse(final ResponseObject response) {
+      public void onResponse(ResponseObject response) {
         response.notify(BeeKeeper.getScreen());
 
         if (response.hasErrors()) {
           return;
         }
-        Queries.getRow(TBL_CURRENCIES, currency,
-            Arrays.asList(COL_CURRENCY_NAME, COL_CURRENCY_MINOR_NAME), new RowCallback() {
-              @Override
-              public void onSuccess(BeeRow result) {
-                String text = response.getResponseAsString();
-
-                if (result != null) {
-                  text = BeeUtils.joinWords(text, result.getString(0), fraction,
-                      result.getString(1));
-                }
-                total.getElement().setInnerText(text);
-              }
-            });
+        total.getElement().setInnerText(response.getResponseAsString());
       }
     });
   }

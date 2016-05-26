@@ -5,7 +5,6 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
-import static com.butent.bee.shared.modules.orders.OrdersConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
@@ -17,17 +16,16 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Span;
 import com.butent.bee.client.modules.classifiers.ClassifierUtils;
-import com.butent.bee.client.modules.mail.MailKeeper;
-import com.butent.bee.client.modules.mail.NewMailMessage;
 import com.butent.bee.client.modules.trade.PrintInvoiceInterceptor;
 import com.butent.bee.client.modules.trade.TradeUtils;
+import com.butent.bee.client.output.ReportUtils;
+import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.BiConsumer;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -40,18 +38,12 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.documents.DocumentConstants;
-import com.butent.bee.shared.modules.mail.AccountInfo;
 import com.butent.bee.shared.modules.mail.MailConstants;
 import com.butent.bee.shared.modules.orders.OrdersConstants;
-import com.butent.bee.shared.modules.orders.OrdersConstants.OrdersStatus;
+import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
 
 public class PrintOrdersInterceptor extends PrintInvoiceInterceptor {
 
@@ -72,29 +64,55 @@ public class PrintOrdersInterceptor extends PrintInvoiceInterceptor {
       HeaderView header = form.getViewPresenter().getHeader();
       header.clearCommandPanel();
 
-      header.addCommandItem(new Button(Localized.getConstants().send(), new ClickHandler() {
+      header.addCommandItem(new Button(Localized.dictionary().send(), new ClickHandler() {
 
         @Override
         public void onClick(ClickEvent event) {
 
-          ParameterList params = getParams(form, row);
+          ParameterList params = getParams(form);
 
           BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
 
             @Override
             public void onResponse(ResponseObject response) {
               if (!response.hasErrors()) {
-                if (orderForm != null) {
-                  orderForm.sendMail(FileInfo.restore(response.getResponseAsString()));
-                } else {
-                  sendInvoice(form, FileInfo.restore(response.getResponseAsString()));
-                }
+                FileInfo fileInfo = FileInfo.restore(response.getResponseAsString());
+                fileInfo.setCaption(getFileName());
+                ReportUtils.preview(fileInfo, new Consumer<FileInfo>() {
+
+                  @Override
+                  public void accept(FileInfo input) {
+                    if (orderForm != null) {
+                      orderForm.sendMail(fileInfo);
+                    }
+                  }
+                });
+                getFormView().getViewPresenter().handleAction(Action.CLOSE);
               }
             }
           });
         }
       }));
     }
+  }
+
+  @Override
+  public boolean beforeAction(Action action, Presenter presenter) {
+    if (action.equals(Action.PRINT)) {
+      BeeKeeper.getRpc().makePostRequest(getParams(getFormView()),
+          new ResponseCallback() {
+
+            @Override
+            public void onResponse(ResponseObject response) {
+              FileInfo fileInfo = FileInfo.restore(response.getResponseAsString());
+              fileInfo.setCaption(getFileName());
+              ReportUtils.preview(fileInfo);
+              getFormView().getViewPresenter().handleAction(Action.CLOSE);
+            }
+          });
+      return false;
+    }
+    return true;
   }
 
   @Override
@@ -156,24 +174,14 @@ public class PrintOrdersInterceptor extends PrintInvoiceInterceptor {
     return this;
   }
 
-  private ParameterList getParams(FormView form, IsRow row) {
-    ParameterList params = OrdersKeeper.createSvcArgs(OrdersConstants.SVC_CREATE_PDF_FILE);
-
+  private String getFileName() {
     String series;
     String number;
-    String printLandscape = " ";
+    IsRow row = getActiveRow();
 
     if (orderForm != null) {
       series = row.getString(Data.getColumnIndex(OrdersConstants.VIEW_ORDERS, COL_SERIES_NAME));
       number = row.getString(Data.getColumnIndex(OrdersConstants.VIEW_ORDERS, COL_TRADE_NUMBER));
-      Integer status =
-          row.getInteger(Data.getColumnIndex(OrdersConstants.VIEW_ORDERS,
-              OrdersConstants.COL_ORDERS_STATUS));
-
-      if (Objects.equals(status, OrdersStatus.APPROVED.ordinal())
-          || Objects.equals(status, OrdersStatus.FINISH.ordinal())) {
-        printLandscape = "A4 landscape";
-      }
     } else {
       series =
           row.getString(Data.getColumnIndex(OrdersConstants.VIEW_ORDERS_INVOICES,
@@ -190,9 +198,23 @@ public class PrintOrdersInterceptor extends PrintInvoiceInterceptor {
       name = "bee_order";
     }
 
-    params.addDataItem(MailConstants.COL_CONTENT, form.getElement().getInnerHTML());
-    params.addDataItem(COL_SERIES_NAME, name);
-    params.addDataItem(DocumentConstants.PRM_PRINT_SIZE, printLandscape);
+    return name + ".pdf";
+  }
+
+  private static ParameterList getParams(FormView form) {
+    ParameterList params = OrdersKeeper.createSvcArgs(OrdersConstants.SVC_CREATE_PDF_FILE);
+
+    String printLandscape = null;
+
+    if ("PrintOrder".equals(form.getFormName())) {
+      printLandscape = "A4 landscape";
+    }
+
+    params.addDataItem(MailConstants.COL_CONTENT, form.getPrintElement().getString());
+
+    if (!BeeUtils.isEmpty(printLandscape)) {
+      params.addDataItem(DocumentConstants.PRM_PRINT_SIZE, printLandscape);
+    }
 
     return params;
   }
@@ -226,35 +248,5 @@ public class PrintOrdersInterceptor extends PrintInvoiceInterceptor {
             widget.getElement().setInnerHTML(flow.getElement().getString());
           }
         });
-  }
-
-  private static void sendInvoice(FormView form, FileInfo fileInfo) {
-    String addr = form.getStringValue(ALS_PAYER_EMAIL);
-
-    if (addr == null) {
-      addr = form.getStringValue(ALS_CUSTOMER_EMAIL);
-    }
-    final Set<String> to = new HashSet<>();
-
-    if (addr != null) {
-      to.add(addr);
-    }
-
-    MailKeeper.getAccounts(new BiConsumer<List<AccountInfo>, AccountInfo>() {
-
-      @Override
-      public void accept(List<AccountInfo> availableAccounts, AccountInfo defaultAccount) {
-        if (!BeeUtils.isEmpty(availableAccounts)) {
-
-          List<FileInfo> attach = new ArrayList<>();
-          attach.add(fileInfo);
-
-          NewMailMessage.create(availableAccounts, defaultAccount, to, null, null, null, null,
-              attach, null, false);
-        } else {
-          BeeKeeper.getScreen().notifyWarning(Localized.getConstants().mailNoAccountsFound());
-        }
-      }
-    });
   }
 }

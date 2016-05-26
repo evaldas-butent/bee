@@ -84,8 +84,8 @@ public class OrderItemsGrid extends AbstractGridInterceptor implements Selection
     int status = parentRow.getInteger(statusIdx);
 
     if (BeeUtils.isEmpty(warehouse) && status == OrdersStatus.APPROVED.ordinal()) {
-      presenter.getGridView().notifySevere(Localized.getConstants().warehouse() + " "
-          + Localized.getConstants().valueRequired());
+      presenter.getGridView().notifySevere(Localized.dictionary().warehouse() + " "
+          + Localized.dictionary().valueRequired());
     } else {
       ensurePicker().show(parentRow, presenter.getMainView().getElement());
     }
@@ -190,18 +190,18 @@ public class OrderItemsGrid extends AbstractGridInterceptor implements Selection
                 if (freeRem == 0) {
                   if (newValue > oldValue) {
                     getGridPresenter().getGridView().notifySevere(
-                        Localized.getConstants().ordResNotIncrease());
+                        Localized.dictionary().ordResNotIncrease());
                     return false;
                   }
 
                 } else if (newValue < 0) {
                   getGridPresenter().getGridView().notifySevere(
-                      Localized.getConstants().minValue() + " 0");
+                      Localized.dictionary().minValue() + " 0");
                   return false;
 
                 } else if (newValue > qty || newValue > freeRem) {
                   getGridPresenter().getGridView().notifySevere(
-                      Localized.getConstants().ordResQtyIsTooBig());
+                      Localized.dictionary().ordResQtyIsTooBig());
                   return false;
                 }
 
@@ -215,7 +215,7 @@ public class OrderItemsGrid extends AbstractGridInterceptor implements Selection
 
                 if (newValue < 1) {
                   getGridPresenter().getGridView().notifySevere(
-                      Localized.getConstants().minValue() + " 1");
+                      Localized.dictionary().minValue() + " 1");
                   return false;
                 }
 

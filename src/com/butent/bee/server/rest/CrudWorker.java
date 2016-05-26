@@ -1,5 +1,8 @@
 package com.butent.bee.server.rest;
 
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
+
 import com.butent.bee.server.data.BeeView;
 import com.butent.bee.server.data.DataEditorBean;
 import com.butent.bee.server.data.QueryServiceBean;
@@ -10,6 +13,7 @@ import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
@@ -24,11 +28,13 @@ import com.butent.bee.shared.data.view.ViewColumn;
 import com.butent.bee.shared.exceptions.BeeException;
 import com.butent.bee.shared.exceptions.BeeRuntimeException;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -109,6 +115,12 @@ public abstract class CrudWorker {
     return get(Filter.compareId(id));
   }
 
+  public RestResponse get(Filter filter) {
+    long time = System.currentTimeMillis();
+    BeeRowSet rowSet = qs.getViewData(getViewName(), filter);
+    return RestResponse.ok(getData(rowSet, null)).setLastSync(time);
+  }
+
   @GET
   public RestResponse getAll(@HeaderParam(RestResponse.LAST_SYNC_TIME) Long lastSynced) {
     long sync = BeeUtils.unbox(lastSynced);
@@ -178,6 +190,40 @@ public abstract class CrudWorker {
     return response;
   }
 
+  public static String getValue(JsonObject data, String field) {
+    String value = null;
+    JsonValue object = data.get(field);
+
+    if (Objects.nonNull(object) && object != JsonValue.NULL) {
+      value = object instanceof JsonString ? ((JsonString) object).getString() : object.toString();
+    }
+    return value;
+  }
+
+  public static Object getValue(BeeRowSet rowSet, int row, int col) {
+    Object value = null;
+
+    switch (rowSet.getColumnType(col)) {
+      case BOOLEAN:
+        value = rowSet.getBoolean(row, col);
+        break;
+      case DATE:
+      case DATE_TIME:
+      case INTEGER:
+      case LONG:
+        value = rowSet.getLong(row, col);
+        break;
+      case DECIMAL:
+      case NUMBER:
+        value = rowSet.getDecimal(row, col);
+        break;
+      default:
+        value = rowSet.getString(row, col);
+        break;
+    }
+    return value;
+  }
+
   void commit(Runnable executor) throws BeeException {
     try {
       utx.begin();
@@ -192,56 +238,57 @@ public abstract class CrudWorker {
     }
   }
 
-  RestResponse get(Filter filter) {
-    long time = System.currentTimeMillis();
+  static Collection<Map<String, Object>> getData(BeeRowSet rs, Multimap<String, String> children) {
+    Map<Long, Map<String, Object>> data = new LinkedHashMap<>();
+    boolean hasChildren = Objects.nonNull(children);
+    Multimap<String, Map<String, Object>> childData = HashMultimap.create();
 
-    BeeRowSet rowSet = qs.getViewData(getViewName(), filter);
+    for (int i = 0; i < rs.getNumberOfRows(); i++) {
+      BeeRow beeRow = rs.getRow(i);
 
-    List<Map<String, Object>> data = new ArrayList<>();
+      if (!data.containsKey(beeRow.getId())) {
+        Map<String, Object> row = new LinkedHashMap<>();
+        row.put(ID, beeRow.getId());
+        row.put(VERSION, beeRow.getVersion());
 
-    for (int i = 0; i < rowSet.getNumberOfRows(); i++) {
-      Map<String, Object> row = new LinkedHashMap<>(rowSet.getNumberOfColumns());
-      BeeRow beeRow = rowSet.getRow(i);
-      row.put(ID, beeRow.getId());
-      row.put(VERSION, beeRow.getVersion());
+        for (int j = 0; j < rs.getNumberOfColumns(); j++) {
+          String col = rs.getColumnId(j);
 
-      for (int j = 0; j < rowSet.getNumberOfColumns(); j++) {
-        BeeColumn column = rowSet.getColumn(j);
-        Object value = null;
-
-        switch (column.getType()) {
-          case BOOLEAN:
-            value = rowSet.getBoolean(i, j);
-            break;
-          case DATE:
-          case DATE_TIME:
-          case INTEGER:
-          case LONG:
-            value = rowSet.getLong(i, j);
-            break;
-          case DECIMAL:
-          case NUMBER:
-            value = rowSet.getDecimal(i, j);
-            break;
-          default:
-            value = rowSet.getString(i, j);
-            break;
+          if (!hasChildren || !children.containsValue(col)) {
+            row.put(col, getValue(rs, i, j));
+          }
         }
-        row.put(column.getId(), value);
+        data.put(beeRow.getId(), row);
       }
-      data.add(row);
-    }
-    return RestResponse.ok(data).setLastSync(time);
-  }
+      if (hasChildren) {
+        for (String child : children.keySet()) {
+          Map<String, Object> row = new LinkedHashMap<>();
 
-  static String getValue(JsonObject data, String field) {
-    String value = null;
-    JsonValue object = data.get(field);
+          for (String col : children.get(child)) {
+            int j = rs.getColumnIndex(col);
 
-    if (Objects.nonNull(object) && object != JsonValue.NULL) {
-      value = object instanceof JsonString ? ((JsonString) object).getString() : object.toString();
+            if (!BeeConst.isUndef(j)) {
+              row.put(col, getValue(rs, i, j));
+            }
+          }
+          if (BeeUtils.anyNotNull(row.values())) {
+            String key = BeeUtils.joinWords(beeRow.getId(), child);
+
+            if (!childData.containsEntry(key, row)) {
+              childData.put(key, row);
+            }
+          }
+        }
+      }
     }
-    return value;
+    if (hasChildren) {
+      for (Long id : data.keySet()) {
+        for (String child : children.keySet()) {
+          data.get(id).put(child, childData.get(BeeUtils.joinWords(id, child)));
+        }
+      }
+    }
+    return data.values();
   }
 
   abstract String getViewName();
@@ -310,8 +357,7 @@ public abstract class CrudWorker {
 
     for (Map.Entry<String, Object> entry : fields.entrySet()) {
       if (entry.getValue() instanceof String) {
-        clause.add(SqlUtils.startsWith(table, entry.getKey(), (String) entry.getValue()))
-            .add(SqlUtils.endsWith(table, entry.getKey(), (String) entry.getValue()));
+        clause.add(SqlUtils.same(table, entry.getKey(), (String) entry.getValue()));
       } else {
         clause.add(SqlUtils.equals(table, entry.getKey(), entry.getValue()));
       }
@@ -340,6 +386,8 @@ public abstract class CrudWorker {
   }
 
   private Long insert(String viewName, JsonObject data) {
+    LogUtils.getRootLogger().debug(viewName, data);
+
     BeeView view = sys.getView(viewName);
     Map<String, BeeColumn> columns = new LinkedHashMap<>();
     List<String> values = new ArrayList<>();
@@ -371,7 +419,7 @@ public abstract class CrudWorker {
         values);
 
     if (Objects.isNull(rs)) {
-      throw new BeeRuntimeException(Localized.getConstants().noData());
+      throw new BeeRuntimeException(Localized.dictionary().noData());
     }
     ResponseObject response = deb.commitRow(rs, RowInfo.class);
 
@@ -386,6 +434,8 @@ public abstract class CrudWorker {
   }
 
   private BeeRowSet update(String viewName, Long id, Long version, JsonObject data) {
+    LogUtils.getRootLogger().debug(data);
+
     if (data.containsKey(OLD_VALUES) && data.get(OLD_VALUES) instanceof JsonObject) {
       JsonObject oldData = data.getJsonObject(OLD_VALUES);
       BeeView view = sys.getView(viewName);

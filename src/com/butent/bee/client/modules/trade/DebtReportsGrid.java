@@ -156,7 +156,7 @@ class DebtReportsGrid extends AbstractGridInterceptor implements ClickHandler {
 
   }
 
-  private final Button action = new Button(Localized.getConstants().sendReminderMail(), this);
+  private final Button action = new Button(Localized.dictionary().sendReminderMail(), this);
 
   @Override
   public void afterCreatePresenter(final GridPresenter presenter) {
@@ -189,7 +189,7 @@ class DebtReportsGrid extends AbstractGridInterceptor implements ClickHandler {
     }
 
     if (ids.isEmpty()) {
-      presenter.getGridView().notifyWarning(Localized.getConstants().selectAtLeastOneRow());
+      presenter.getGridView().notifyWarning(Localized.dictionary().selectAtLeastOneRow());
       return;
     }
 

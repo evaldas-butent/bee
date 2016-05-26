@@ -5,7 +5,7 @@ import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.i18n.LocalizableConstants;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.ui.HasLocalizedCaption;
@@ -18,13 +18,13 @@ import java.util.List;
 public enum ImportType implements HasLocalizedCaption {
   COSTS {
     @Override
-    public String getCaption(LocalizableConstants constants) {
+    public String getCaption(Dictionary constants) {
       return constants.trImportCosts();
     }
 
     @Override
     protected void init() {
-      LocalizableConstants locale = Localized.getConstants();
+      Dictionary locale = Localized.dictionary();
 
       addSimpleProperty(VAR_IMPORT_SHEET, locale.sheetName());
       addSimpleProperty(VAR_IMPORT_START_ROW, locale.startRow());
@@ -48,13 +48,13 @@ public enum ImportType implements HasLocalizedCaption {
   },
   TRACKING {
     @Override
-    public String getCaption(LocalizableConstants constants) {
+    public String getCaption(Dictionary constants) {
       return constants.trImportTracking();
     }
 
     @Override
     protected void init() {
-      LocalizableConstants locale = Localized.getConstants();
+      Dictionary locale = Localized.dictionary();
 
       addSimpleProperty(VAR_IMPORT_LOGIN, locale.loginUserName());
       addSimpleProperty(VAR_IMPORT_PASSWORD, locale.loginPassword());
@@ -62,14 +62,14 @@ public enum ImportType implements HasLocalizedCaption {
   },
   DATA {
     @Override
-    public String getCaption(LocalizableConstants constants) {
+    public String getCaption(Dictionary constants) {
       return constants.data();
     }
 
     @Override
     protected void init() {
-      addSimpleProperty(VAR_IMPORT_SHEET, Localized.getConstants().sheetName());
-      addSimpleProperty(VAR_IMPORT_START_ROW, Localized.getConstants().startRow());
+      addSimpleProperty(VAR_IMPORT_SHEET, Localized.dictionary().sheetName());
+      addSimpleProperty(VAR_IMPORT_START_ROW, Localized.dictionary().startRow());
     }
   };
 
@@ -92,11 +92,6 @@ public enum ImportType implements HasLocalizedCaption {
 
   protected void addSimpleProperty(String name, String caption) {
     properties.add(new ImportProperty(name, caption, false));
-  }
-
-  @Override
-  public String getCaption() {
-    return getCaption(Localized.getConstants());
   }
 
   public Collection<ImportProperty> getProperties() {

@@ -50,6 +50,7 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
+import com.butent.bee.shared.modules.documents.DocumentConstants;
 import com.butent.bee.shared.modules.mail.MailConstants;
 import com.butent.bee.shared.modules.orders.OrdersConstants;
 import com.butent.bee.shared.modules.orders.OrdersConstants.OrdersStatus;
@@ -61,8 +62,6 @@ import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.webservice.ButentWS;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -459,17 +458,15 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
   private ResponseObject createPdf(RequestInfo reqInfo) {
 
     String content = reqInfo.getParameter(MailConstants.COL_CONTENT);
+    String printSize = reqInfo.getParameter(DocumentConstants.PRM_PRINT_SIZE);
 
-    String path = fs.createPdf(content, "bee", "trade", "commons");
-    File tmp = new File(path);
+    Long fileId = fs.createPdf(printSize, content, "bee", "trade", "commons");
 
-    Long fileId;
     try {
-      fileId = fs.storeFile(new FileInputStream(tmp), tmp.getName(), "");
-      tmp.delete();
       return ResponseObject.response(fs.getFile(fileId));
     } catch (IOException e) {
-      return ResponseObject.error(e);
+      e.printStackTrace();
+      return ResponseObject.emptyResponse();
     }
   }
 

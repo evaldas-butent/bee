@@ -2,7 +2,7 @@ package com.butent.bee.client.communication;
 
 import com.butent.bee.client.Callback;
 
-public abstract class RpcCallback<T> extends Callback<T> {
+public abstract class RpcCallback<T> implements Callback<T> {
 
   private int rpcId;
 

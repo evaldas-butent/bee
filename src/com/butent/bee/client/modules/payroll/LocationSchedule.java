@@ -1,6 +1,8 @@
 package com.butent.bee.client.modules.payroll;
 
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Multimap;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
@@ -10,7 +12,6 @@ import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.dom.DomUtils;
-import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.modules.classifiers.ClassifierKeeper;
 import com.butent.bee.shared.BeeConst;
@@ -19,11 +20,13 @@ import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.IdPair;
 import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.DateValue;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.payroll.PayrollConstants.ObjectStatus;
+import com.butent.bee.shared.modules.payroll.PayrollConstants.WorkScheduleKind;
 import com.butent.bee.shared.time.DateRange;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.YearMonth;
@@ -37,6 +40,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 class LocationSchedule extends WorkScheduleWidget {
@@ -50,8 +54,8 @@ class LocationSchedule extends WorkScheduleWidget {
 
   private final long objectId;
 
-  LocationSchedule(long objectId) {
-    super(ScheduleParent.LOCATION);
+  LocationSchedule(long objectId, WorkScheduleKind kind) {
+    super(kind, ScheduleParent.LOCATION);
 
     this.objectId = objectId;
   }
@@ -76,49 +80,92 @@ class LocationSchedule extends WorkScheduleWidget {
   }
 
   @Override
-  protected List<BeeRow> filterPartitions(DateRange filterRange) {
-    List<BeeRow> result = new ArrayList<>();
+  protected List<Partition> filterPartitions(DateRange filterRange) {
+    List<Partition> result = new ArrayList<>();
 
     if (!DataUtils.isEmpty(getEmData())) {
-      Set<Long> haveWs = new HashSet<>();
-      Set<Long> haveObj = new HashSet<>();
+      Set<Long> mainWs = new HashSet<>();
+      Set<Long> mainEo = new HashSet<>();
+
+      Multimap<Long, Long> substWs = HashMultimap.create();
+      Multimap<Long, Long> substEo = HashMultimap.create();
 
       if (!DataUtils.isEmpty(getWsData())) {
         int employeeIndex = getWsData().getColumnIndex(COL_EMPLOYEE);
+        int substIndex = getWsData().getColumnIndex(COL_SUBSTITUTE_FOR);
+
         int dateIndex = getWsData().getColumnIndex(COL_WORK_SCHEDULE_DATE);
 
         for (BeeRow row : getWsData()) {
           if (filterRange.contains(row.getDate(dateIndex))) {
-            haveWs.add(row.getLong(employeeIndex));
+            Long empl = row.getLong(employeeIndex);
+
+            if (DataUtils.isId(empl)) {
+              Long subst = row.getLong(substIndex);
+
+              if (DataUtils.isId(subst) && !Objects.equals(empl, subst)) {
+                substWs.put(empl, subst);
+              } else {
+                mainWs.add(empl);
+              }
+            }
           }
         }
       }
 
       if (!DataUtils.isEmpty(getEoData())) {
         int employeeIndex = getEoData().getColumnIndex(COL_EMPLOYEE);
+        int substIndex = getEoData().getColumnIndex(COL_SUBSTITUTE_FOR);
+
         int fromIndex = getEoData().getColumnIndex(COL_EMPLOYEE_OBJECT_FROM);
         int untilIndex = getEoData().getColumnIndex(COL_EMPLOYEE_OBJECT_UNTIL);
 
         for (BeeRow row : getEoData()) {
           DateRange range = DateRange.closed(row.getDate(fromIndex), row.getDate(untilIndex));
           if (filterRange.intersects(range)) {
-            haveObj.add(row.getLong(employeeIndex));
+            Long empl = row.getLong(employeeIndex);
+
+            if (DataUtils.isId(empl)) {
+              Long subst = row.getLong(substIndex);
+
+              if (DataUtils.isId(subst) && !Objects.equals(empl, subst)) {
+                if (isSubstitutionEnabled()) {
+                  substEo.put(empl, subst);
+                }
+              } else {
+                mainEo.add(empl);
+              }
+            }
           }
         }
       }
 
-      if (!haveWs.isEmpty() || !haveObj.isEmpty()) {
+      if (!mainWs.isEmpty() || !mainEo.isEmpty() || !substWs.isEmpty() || !substEo.isEmpty()) {
         int fromIndex = getEmData().getColumnIndex(COL_DATE_OF_EMPLOYMENT);
         int untilIndex = getEmData().getColumnIndex(COL_DATE_OF_DISMISSAL);
 
         for (BeeRow row : getEmData()) {
-          if (haveWs.contains(row.getId())) {
-            result.add(row);
+          long id = row.getId();
+          DateRange range = DateRange.closed(row.getDate(fromIndex), row.getDate(untilIndex));
 
-          } else if (haveObj.contains(row.getId())) {
-            DateRange range = DateRange.closed(row.getDate(fromIndex), row.getDate(untilIndex));
-            if (filterRange.intersects(range)) {
-              result.add(row);
+          if (mainWs.contains(id)) {
+            result.add(new Partition(row));
+
+          } else if (mainEo.contains(id) && filterRange.intersects(range)) {
+            result.add(new Partition(row));
+          }
+
+          if (substWs.containsKey(id)) {
+            for (Long subst : substWs.get(id)) {
+              result.add(new Partition(row, subst));
+            }
+          }
+
+          if (substEo.containsKey(id) && filterRange.intersects(range)) {
+            for (Long subst : substEo.get(id)) {
+              if (!substWs.containsEntry(id, subst)) {
+                result.add(new Partition(row, subst));
+              }
             }
           }
         }
@@ -141,6 +188,7 @@ class LocationSchedule extends WorkScheduleWidget {
   @Override
   protected List<Integer> getPartitionContactIndexes() {
     List<Integer> contactIndexes = new ArrayList<>();
+    contactIndexes.add(getEmData().getColumnIndex(ALS_DEPARTMENT_NAME));
     contactIndexes.add(getEmData().getColumnIndex(COL_MOBILE));
     contactIndexes.add(getEmData().getColumnIndex(COL_PHONE));
     return contactIndexes;
@@ -155,7 +203,6 @@ class LocationSchedule extends WorkScheduleWidget {
   protected List<Integer> getPartitionInfoIndexes() {
     List<Integer> infoIndexes = new ArrayList<>();
     infoIndexes.add(getEmData().getColumnIndex(ALS_COMPANY_NAME));
-    infoIndexes.add(getEmData().getColumnIndex(ALS_DEPARTMENT_NAME));
     infoIndexes.add(getEmData().getColumnIndex(COL_TAB_NUMBER));
     return infoIndexes;
   }
@@ -174,7 +221,7 @@ class LocationSchedule extends WorkScheduleWidget {
   }
 
   @Override
-  protected Filter getWorkScheduleFilter() {
+  protected Filter getWorkScheduleRelationFilter() {
     return Filter.equals(COL_PAYROLL_OBJECT, objectId);
   }
 
@@ -197,7 +244,7 @@ class LocationSchedule extends WorkScheduleWidget {
   }
 
   @Override
-  protected Widget renderAppender(Collection<Long> partIds, YearMonth ym,
+  protected Widget renderAppender(Collection<IdPair> partIds, YearMonth ym,
       String selectorStyleName) {
 
     Flow panel = new Flow();
@@ -223,18 +270,22 @@ class LocationSchedule extends WorkScheduleWidget {
         Lists.newArrayList(COL_FIRST_NAME, COL_LAST_NAME));
 
     selector.addStyleName(selectorStyleName);
-    DomUtils.setPlaceholder(selector, Localized.getConstants().newEmployee());
+    DomUtils.setPlaceholder(selector, Localized.dictionary().newEmployee());
 
     if (!BeeUtils.isEmpty(partIds)) {
-      selector.getOracle().setExclusions(partIds);
+      Set<Long> ids = new HashSet<>();
+      for (IdPair pair : partIds) {
+        if (!pair.hasB()) {
+          ids.add(pair.getA());
+        }
+      }
+
+      selector.getOracle().setExclusions(ids);
     }
 
-    selector.addSelectorHandler(new SelectorEvent.Handler() {
-      @Override
-      public void onDataSelector(SelectorEvent event) {
-        if (event.isChanged() && DataUtils.hasId(event.getRelatedRow())) {
-          addEmployeeObject(event.getRelatedRow().getId(), objectId, false);
-        }
+    selector.addSelectorHandler(event -> {
+      if (event.isChanged() && DataUtils.hasId(event.getRelatedRow())) {
+        addEmployeeObject(event.getRelatedRow().getId(), objectId, false);
       }
     });
 
@@ -243,11 +294,14 @@ class LocationSchedule extends WorkScheduleWidget {
   }
 
   @Override
-  protected void updateCalendarInfo(YearMonth ym, BeeRow partition, CalendarInfo calendarInfo) {
-    calendarInfo.setTcChanges(getTimeCardChanges(partition.getId(), ym));
+  protected void updateCalendarInfo(YearMonth ym, Partition partition, CalendarInfo calendarInfo) {
+    long employeeId = partition.getId();
+    calendarInfo.setTcChanges(getTimeCardChanges(employeeId, ym));
 
-    JustDate activeFrom = DataUtils.getDate(getEmData(), partition, COL_DATE_OF_EMPLOYMENT);
-    JustDate activeUntil = DataUtils.getDate(getEmData(), partition, COL_DATE_OF_DISMISSAL);
+    JustDate activeFrom = DataUtils.getDate(getEmData(), partition.getRow(),
+        COL_DATE_OF_EMPLOYMENT);
+    JustDate activeUntil = DataUtils.getDate(getEmData(), partition.getRow(),
+        COL_DATE_OF_DISMISSAL);
 
     calendarInfo.setInactiveDays(getInactiveDays(ym, activeFrom, activeUntil));
 
@@ -273,7 +327,7 @@ class LocationSchedule extends WorkScheduleWidget {
     filters.put(VIEW_LOCATIONS, Filter.compareId(objectId));
 
     viewNames.add(VIEW_WORK_SCHEDULE);
-    filters.put(VIEW_WORK_SCHEDULE, Filter.equals(COL_PAYROLL_OBJECT, objectId));
+    filters.put(VIEW_WORK_SCHEDULE, getWorkScheduleFilter());
 
     viewNames.add(VIEW_EMPLOYEE_OBJECTS);
     filters.put(VIEW_EMPLOYEE_OBJECTS, Filter.equals(COL_PAYROLL_OBJECT, objectId));
@@ -310,31 +364,28 @@ class LocationSchedule extends WorkScheduleWidget {
           }
         }
 
-        ClassifierKeeper.getHolidays(new Consumer<Set<Integer>>() {
-          @Override
-          public void accept(Set<Integer> input) {
-            setHolidays(input);
+        ClassifierKeeper.getHolidays(input -> {
+          setHolidays(input);
 
-            getEmployees(new Consumer<Set<Long>>() {
-              @Override
-              public void accept(Set<Long> employees) {
-                if (employees.isEmpty()) {
-                  setTcData(null);
-                  render();
+          getEmployees(employees -> {
+            if (employees.isEmpty()) {
+              setTcData(null);
+              render();
 
-                } else {
-                  Queries.getRowSet(VIEW_TIME_CARD_CHANGES, null,
-                      Filter.any(COL_EMPLOYEE, employees), new Queries.RowSetCallback() {
-                        @Override
-                        public void onSuccess(BeeRowSet tcRowSet) {
-                          setTcData(tcRowSet);
-                          render();
-                        }
-                      });
-                }
-              }
-            });
-          }
+            } else {
+              Filter tccFilter = Filter.and(Filter.any(COL_EMPLOYEE, employees),
+                  getTimeCardChangesFilter());
+
+              Queries.getRowSet(VIEW_TIME_CARD_CHANGES, null, tccFilter,
+                  new Queries.RowSetCallback() {
+                    @Override
+                    public void onSuccess(BeeRowSet tcRowSet) {
+                      setTcData(tcRowSet);
+                      render();
+                    }
+                  });
+            }
+          });
         });
       }
     });
@@ -344,10 +395,12 @@ class LocationSchedule extends WorkScheduleWidget {
     final Set<Long> employees = new HashSet<>();
 
     if (!DataUtils.isEmpty(getWsData())) {
-      employees.addAll(getWsData().getDistinctLongs(getWsData().getColumnIndex(COL_EMPLOYEE)));
+      DataUtils.addNotNullLongs(employees, getWsData(), COL_EMPLOYEE);
+      DataUtils.addNotNullLongs(employees, getWsData(), COL_SUBSTITUTE_FOR);
     }
     if (!DataUtils.isEmpty(getEoData())) {
-      employees.addAll(getEoData().getDistinctLongs(getEoData().getColumnIndex(COL_EMPLOYEE)));
+      DataUtils.addNotNullLongs(employees, getEoData(), COL_EMPLOYEE);
+      DataUtils.addNotNullLongs(employees, getEoData(), COL_SUBSTITUTE_FOR);
     }
 
     if (employees.isEmpty()) {

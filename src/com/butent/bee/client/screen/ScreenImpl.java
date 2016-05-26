@@ -16,7 +16,6 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.Screen;
 import com.butent.bee.client.Settings;
-import com.butent.bee.client.Users;
 import com.butent.bee.client.cli.Shell;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
@@ -28,6 +27,7 @@ import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dialog.Popup.Animation;
 import com.butent.bee.client.dialog.Popup.OutsideClick;
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.dom.Selectors;
 import com.butent.bee.client.event.Binder;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.Previewer;
@@ -61,9 +61,11 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasHtml;
 import com.butent.bee.shared.Pair;
+import com.butent.bee.shared.communication.Presence;
 import com.butent.bee.shared.css.CssUnit;
 import com.butent.bee.shared.css.values.FontSize;
 import com.butent.bee.shared.data.BeeRow;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.html.Tags;
@@ -78,7 +80,9 @@ import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.UiConstants;
 import com.butent.bee.shared.ui.UserInterface;
+import com.butent.bee.shared.ui.UserInterface.Component;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.ExtendedProperty;
 import com.butent.bee.shared.utils.NameUtils;
 
@@ -99,18 +103,23 @@ public class ScreenImpl implements Screen {
   private static final Set<Direction> hidableDirections = EnumSet.of(Direction.WEST,
       Direction.NORTH, Direction.EAST);
 
-  private static final String CONTAINER = "Container";
-  private static final String PHOTO_URL = "images/photo/";
-  private static FaLabel userLabel = new FaLabel(FontAwesome.USER);
   private static FaLabel emailLabel = new FaLabel(FontAwesome.ENVELOPE_O);
-  private static Flow flowUserContainer = new Flow();
+
   private static Flow flowEmailContainer = new Flow();
-  private static Flow flowOnlineUserSize = new Flow();
   private static Flow flowOnlineEmailSize = new Flow();
 
   private static final String DEFAULT_PHOTO_IMAGE = "images/defaultUser.png";
+
   public static final HtmlTable NOTIFICATION_CONTENT = new HtmlTable(BeeConst.CSS_CLASS_PREFIX
       + "NotificationBar-Content");
+
+  private static final String STYLE_COMMAND = BeeConst.CSS_CLASS_PREFIX + "MainCommandPanelItem";
+
+  private static final String STYLE_USERS_COUNT = BeeConst.CSS_CLASS_PREFIX + "OnlineUsersCount";
+  private static final String STYLE_USERS_ICON = BeeConst.CSS_CLASS_PREFIX + "OnlineUsersIcon";
+
+  private static final String STYLE_POPUP_USERS = BeeConst.CSS_CLASS_PREFIX + "PopupUsers";
+  private static final String STYLE_POPUP_PRESENCE = BeeConst.CSS_CLASS_PREFIX + "PresenceChange";
 
   private static final int NORTH_HEIGHT = 112;
   private static final int MENU_HEIGHT = 50;
@@ -124,6 +133,7 @@ public class ScreenImpl implements Screen {
   private HasWidgets menuPanel;
 
   private HasWidgets userPhotoContainer;
+  private Panel userPresenceContainer;
   private HasHtml userSignature;
 
   private Notification notification;
@@ -163,7 +173,7 @@ public class ScreenImpl implements Screen {
     if (getCommandPanel() == null) {
       logger.severe(NameUtils.getName(this), "command panel not available");
     } else {
-      widget.asWidget().addStyleName(BeeConst.CSS_CLASS_PREFIX + "MainCommandPanelItem");
+      widget.addStyleName(STYLE_COMMAND);
       getCommandPanel().add(widget.asWidget());
     }
   }
@@ -206,13 +216,19 @@ public class ScreenImpl implements Screen {
   }
 
   @Override
-  public void closeWidget(IdentifiableWidget widget) {
-    Assert.notNull(widget, "closeWidget: widget is null");
+  public boolean closeWidget(IdentifiableWidget widget) {
+    if (widget == null) {
+      logger.warning("closeWidget: widget is null");
+      return false;
 
-    if (UiHelper.isModal(widget.asWidget())) {
-      UiHelper.closeDialog(widget.asWidget());
+    } else if (UiHelper.isModal(widget.asWidget())) {
+      return UiHelper.closeDialog(widget.asWidget());
+
+    } else if (getWorkspace() != null) {
+      return getWorkspace().closeWidget(widget);
+
     } else {
-      getWorkspace().closeWidget(widget);
+      return false;
     }
   }
 
@@ -433,6 +449,13 @@ public class ScreenImpl implements Screen {
   }
 
   @Override
+  public void showConnectionStatus(boolean isOpen) {
+    if (getCommandPanel() instanceof Widget) {
+      ((Widget) getCommandPanel()).setStyleDependentName("disconnected", !isOpen);
+    }
+  }
+
+  @Override
   public void showInNewPlace(IdentifiableWidget widget) {
     getWorkspace().openInNewPlace(widget);
   }
@@ -449,6 +472,7 @@ public class ScreenImpl implements Screen {
   @Override
   public void start(UserData userData) {
     updateUserData(userData);
+    updateUserPresence(BeeKeeper.getUser().getPresence());
 
     if (!BeeKeeper.getUser().isMenuVisible()) {
       getScreenPanel().setDirectionSize(Direction.NORTH, getNorthHeight(NORTH_HEIGHT), true);
@@ -497,13 +521,18 @@ public class ScreenImpl implements Screen {
 
   @Override
   public void updateUserData(UserData userData) {
-    if (userData != null && getUserPhotoContainer() != null) {
+    if (userData == null) {
+      logger.warning("user data is null");
+      return;
+    }
+
+    if (getUserPhotoContainer() != null) {
       getUserPhotoContainer().clear();
       final Image image;
 
-      String photoFileName = userData.getPhotoFileName();
-      if (!BeeUtils.isEmpty(photoFileName)) {
-        image = new Image(PhotoRenderer.getUrl(photoFileName));
+      Long photoFile = userData.getPhotoFile();
+      if (DataUtils.isId(photoFile)) {
+        image = new Image(PhotoRenderer.getUrl(photoFile));
       } else {
         image = new Image(DEFAULT_PHOTO_IMAGE);
       }
@@ -815,20 +844,26 @@ public class ScreenImpl implements Screen {
       setUserPhotoContainer(photoContainer);
     }
 
+    if (Settings.showUserPresence()) {
+      Flow presenceContainer = new Flow(BeeConst.CSS_CLASS_PREFIX + "UserPresenceContainer");
+      userContainer.add(presenceContainer);
+      setUserPresenceContainer(presenceContainer);
+    }
+
     if (Settings.showLogout()) {
       Simple exitContainer = new Simple();
       exitContainer.addStyleName(BeeConst.CSS_CLASS_PREFIX + "LogoutContainer");
 
       FaLabel exit = new FaLabel(FontAwesome.SIGN_OUT);
       exit.addStyleName(BeeConst.CSS_CLASS_PREFIX + "Logout");
-      exit.setTitle(Localized.getConstants().signOut());
+      exit.setTitle(Localized.dictionary().signOut());
 
       exit.addClickHandler(new ClickHandler() {
         @Override
         public void onClick(ClickEvent event) {
-          Global.getMsgBoxen().confirm(Localized.getMessages().endSession(Settings.getAppName()),
-              Icon.QUESTION, Lists.newArrayList(Localized.getConstants().questionLogout()),
-              Localized.getConstants().yes(), Localized.getConstants().no(),
+          Global.getMsgBoxen().confirm(Localized.dictionary().endSession(Settings.getAppName()),
+              Icon.QUESTION, Lists.newArrayList(Localized.dictionary().questionLogout()),
+              Localized.dictionary().yes(), Localized.dictionary().no(),
               new ConfirmationCallback() {
                 @Override
                 public void onConfirm() {
@@ -937,7 +972,7 @@ public class ScreenImpl implements Screen {
   protected Pair<? extends IdentifiableWidget, Integer> initWest() {
     setCentralScrutinizer(new CentralScrutinizer());
 
-    final Label createButton = new Label("+ " + Localized.getConstants().create());
+    final Label createButton = new Label("+ " + Localized.dictionary().create());
     createButton.addStyleName(BeeConst.CSS_CLASS_PREFIX + "CreateButton");
 
     createButton.addClickHandler(new ClickHandler() {
@@ -949,7 +984,7 @@ public class ScreenImpl implements Screen {
 
     Flow myEnv = new Flow(BeeConst.CSS_CLASS_PREFIX + "MyEnvironment");
     myEnv.add(new FaLabel(FontAwesome.BOOKMARK));
-    myEnv.add(new Label(Localized.getConstants().myEnvironment()));
+    myEnv.add(new Label(Localized.dictionary().myEnvironment()));
 
     Flow panel = new Flow(BeeConst.CSS_CLASS_PREFIX + "WestContainer");
 
@@ -993,6 +1028,10 @@ public class ScreenImpl implements Screen {
 
   protected void setUserPhotoContainer(HasWidgets userPhotoContainer) {
     this.userPhotoContainer = userPhotoContainer;
+  }
+
+  protected void setUserPresenceContainer(Panel userPresenceContainer) {
+    this.userPresenceContainer = userPresenceContainer;
   }
 
   protected void setUserSignature(HasHtml userSignature) {
@@ -1077,6 +1116,10 @@ public class ScreenImpl implements Screen {
     return userPhotoContainer;
   }
 
+  private Panel getUserPresenceContainer() {
+    return userPresenceContainer;
+  }
+
   private HasHtml getUserSignature() {
     return userSignature;
   }
@@ -1092,8 +1135,8 @@ public class ScreenImpl implements Screen {
           || hiddenDirections.contains(Direction.WEST);
 
       title = checked
-          ? Localized.getConstants().actionWorkspaceRestoreSize()
-          : Localized.getConstants().actionWorkspaceEnlargeToLeft();
+          ? Localized.dictionary().actionWorkspaceRestoreSize()
+          : Localized.dictionary().actionWorkspaceEnlargeToLeft();
       getEastWestToggle().setTitle(title);
 
       if (getEastWestToggle().isChecked() != checked) {
@@ -1105,8 +1148,8 @@ public class ScreenImpl implements Screen {
       checked = hiddenDirections.contains(Direction.NORTH);
 
       title = checked
-          ? Localized.getConstants().actionWorkspaceRestoreSize()
-          : Localized.getConstants().actionWorkspaceEnlargeUp();
+          ? Localized.dictionary().actionWorkspaceRestoreSize()
+          : Localized.dictionary().actionWorkspaceEnlargeUp();
       getNorthToggle().setTitle(title);
 
       if (getNorthToggle().isChecked() != checked) {
@@ -1124,8 +1167,8 @@ public class ScreenImpl implements Screen {
       }
 
       title = checked
-          ? Localized.getConstants().actionWorkspaceRestoreSize()
-          : Localized.getConstants().actionWorkspaceMaxSize();
+          ? Localized.dictionary().actionWorkspaceRestoreSize()
+          : Localized.dictionary().actionWorkspaceMaxSize();
       getMaximizer().setTitle(title);
 
       if (getMaximizer().isChecked() != checked) {
@@ -1173,84 +1216,110 @@ public class ScreenImpl implements Screen {
   }
 
   private static Flow onlineUsers() {
+    Flow container = new Flow(STYLE_COMMAND);
 
-    final Set<String> sessions = Global.getUsers().getAllSessions();
+    CustomDiv countWidget = new CustomDiv(STYLE_USERS_COUNT);
+    StyleUtils.setEmptiness(countWidget, true);
+    container.add(countWidget);
 
-    flowUserContainer.addStyleName(BeeConst.CSS_CLASS_PREFIX + "HeaderIcon-Container");
-    flowUserContainer.add(flowOnlineUserSize);
-    userLabel.setStyleName(BeeConst.CSS_CLASS_PREFIX + "OnlineUsers");
-    flowOnlineUserSize.setStyleName(BeeConst.CSS_CLASS_PREFIX + "OnlineUserSize-None");
+    FaLabel iconWidget = new FaLabel(FontAwesome.USER, STYLE_USERS_ICON);
+    StyleUtils.setEmptiness(iconWidget, true);
+    container.add(iconWidget);
 
-    userLabel.addClickHandler(new ClickHandler() {
+    iconWidget.addClickHandler(ev -> {
+      Set<String> sessions = Global.getUsers().getAllSessions();
 
-      @Override
-      public void onClick(ClickEvent ev) {
-        final HtmlTable table = new HtmlTable(BeeConst.CSS_CLASS_PREFIX + "PopupUsersContent");
+      if (sessions.size() > 0) {
+        HtmlTable table = new HtmlTable(STYLE_POPUP_USERS + "Content");
         int r = 0;
 
-        Users users = Global.getUsers();
+        for (String session : sessions) {
+          UserData user =
+              Global.getUsers().getUserData(Global.getUsers().getUserIdBySession(session));
 
-        if (sessions.size() > 0) {
-          for (String session : sessions) {
-            UserData user = users.getUserData(users.getUserIdBySession(session));
-            Image img;
-            if (user.getPhotoFileName() != null) {
-              img = new Image(PHOTO_URL + user.getPhotoFileName());
-            } else {
-              img = new Image(DEFAULT_PHOTO_IMAGE);
-            }
-            img.setStyleName(BeeConst.CSS_CLASS_PREFIX + "OnlineUsersPhoto");
-            table.setWidget(r, 0, img);
-            table.setText(r, 1, user.getFirstName() + " " + user.getLastName());
-            DomUtils.setDataProperty(table.getRow(r++), CONTAINER, user.getPerson());
+          Image img;
+          if (user.hasPhoto()) {
+            img = new Image(PhotoRenderer.getUrl(user.getPhotoFile()));
+          } else {
+            img = new Image(DEFAULT_PHOTO_IMAGE);
           }
 
-          if (r > 0) {
-            table.addClickHandler(new ClickHandler() {
-              @Override
-              public void onClick(ClickEvent arg) {
-                Element targetElement = EventUtils.getEventTargetElement(arg);
-                TableRowElement rowElement = DomUtils.getParentRow(targetElement, true);
-                String index = DomUtils.getDataProperty(rowElement, CONTAINER);
-                UiHelper.closeDialog(table);
+          img.addStyleName(STYLE_POPUP_USERS + "Photo");
 
-                RowEditor.open(ClassifierConstants.VIEW_PERSONS, Long.valueOf(index),
-                    Opener.NEW_TAB);
-              }
+          int c = 0;
+          table.setWidget(r, c++, img);
+
+          Label label = new Label(user.getUserSign());
+          label.addStyleName(STYLE_POPUP_USERS + "Label");
+
+          table.setWidget(r, c++, label);
+
+          Presence presence = Global.getUsers().getPresenceBySession(session);
+          if (presence != null) {
+            FaLabel presenceWidget = new FaLabel(presence.getIcon(), presence.getStyleName());
+            presenceWidget.addStyleName(STYLE_POPUP_USERS + "Presence");
+            presenceWidget.setTitle(presence.getCaption());
+
+            table.setWidget(r, c, presenceWidget);
+          }
+          c++;
+
+          if (Global.getChatManager().isEnabled()) {
+            FaLabel chat = new FaLabel(FontAwesome.COMMENT_O, STYLE_POPUP_USERS + "Chat");
+            chat.setTitle(Localized.dictionary().chat());
+
+            chat.addClickHandler(event -> {
+              UiHelper.closeDialog(table);
+              Global.getChatManager().chatWithUser(user.getUserId());
             });
-            Popup popup = new Popup(OutsideClick.CLOSE);
-            popup.setStyleName(BeeConst.CSS_CLASS_PREFIX + "PopupUsers");
-            popup.setWidget(table);
-            popup.setHideOnEscape(true);
-            popup.showRelativeTo(userLabel.getElement());
+
+            table.setWidget(r, c, chat);
           }
+          c++;
+
+          DomUtils.setDataIndex(table.getRow(r), user.getPerson());
+          r++;
+        }
+
+        if (r > 0) {
+          table.addClickHandler(arg -> {
+            Element targetElement = EventUtils.getEventTargetElement(arg);
+            TableRowElement rowElement = DomUtils.getParentRow(targetElement, true);
+            Long id = DomUtils.getDataIndexLong(rowElement);
+
+            if (DataUtils.isId(id)) {
+              UiHelper.closeDialog(table);
+              RowEditor.open(ClassifierConstants.VIEW_PERSONS, id, Opener.NEW_TAB);
+            }
+          });
+
+          Popup popup = new Popup(OutsideClick.CLOSE, STYLE_POPUP_USERS);
+
+          popup.setWidget(table);
+          popup.setHideOnEscape(true);
+
+          popup.showRelativeTo(iconWidget.getElement());
         }
       }
     });
 
-    flowUserContainer.add(userLabel);
-    return flowUserContainer;
+    return container;
   }
 
-  public static void updateOnlineUsers() {
+  @Override
+  public void updateUserCount(int count) {
+    Element countElement = Selectors.getElementByClassName(getScreenPanel(), STYLE_USERS_COUNT);
 
-    FaLabel label = BeeKeeper.getScreen().getOnlineUserLabel();
-    Flow userSize = BeeKeeper.getScreen().getOnlineUserSize();
+    if (countElement != null) {
+      String text = (count > 0) ? BeeUtils.toString(count) : BeeConst.STRING_EMPTY;
+      countElement.setInnerText(text);
 
-    if (label == null || userSize == null) {
-      return;
+      StyleUtils.setEmptiness(countElement, count <= 0);
     }
 
-    int size = Global.getUsers().getAllSessions().size();
-
-    if (size > 0) {
-      userSize.setStyleName(BeeConst.CSS_CLASS_PREFIX + "OnlineUserSize");
-      label.setStyleName(BeeConst.CSS_CLASS_PREFIX + "OnlineUsers" + "-Selected");
-      userSize.getElement().setInnerText(String.valueOf(size));
-
-    } else {
-      label.setStyleName(BeeConst.CSS_CLASS_PREFIX + "OnlineUsers");
-      userSize.setStyleName(BeeConst.CSS_CLASS_PREFIX + "OnlineUserSize-None");
+    Element iconElement = Selectors.getElementByClassName(getScreenPanel(), STYLE_USERS_ICON);
+    if (iconElement != null) {
+      StyleUtils.setEmptiness(iconElement, count <= 0);
     }
   }
 
@@ -1280,7 +1349,6 @@ public class ScreenImpl implements Screen {
   }
 
   public static void updateOnlineEmails(int size) {
-
     FaLabel label = BeeKeeper.getScreen().getOnlineEmailLabel();
     Flow emailSize = BeeKeeper.getScreen().getOnlineEmailSize();
 
@@ -1311,13 +1379,55 @@ public class ScreenImpl implements Screen {
   }
 
   @Override
-  public FaLabel getOnlineUserLabel() {
-    return userLabel;
-  }
+  public void updateUserPresence(Presence presence) {
+    if (getUserPresenceContainer() != null && presence != null
+        && DomUtils.getDataIndexInt(getUserPresenceContainer().getElement())
+        != presence.ordinal()) {
 
-  @Override
-  public Flow getOnlineUserSize() {
-    return flowOnlineUserSize;
+      getUserPresenceContainer().clear();
+      DomUtils.setDataIndex(getUserPresenceContainer().getElement(), presence.ordinal());
+
+      FaLabel presenceWidget = new FaLabel(presence.getIcon(), presence.getStyleName());
+      presenceWidget.addStyleName(BeeConst.CSS_CLASS_PREFIX + "UserPresenceIcon");
+      presenceWidget.setTitle(Localized.dictionary().presenceChangeTooltip());
+
+      if (presence != Presence.IDLE) {
+        presenceWidget.addClickHandler(event -> {
+          HtmlTable table = new HtmlTable(STYLE_POPUP_PRESENCE + "Table");
+          int r = 0;
+
+          for (Presence p : Presence.values()) {
+            table.setWidgetAndStyle(r, 0, new FaLabel(p.getIcon(), p.getStyleName()),
+                STYLE_POPUP_PRESENCE + "Icon");
+            table.setWidgetAndStyle(r, 1, new Label(p.getCaption()),
+                STYLE_POPUP_PRESENCE + "Label");
+
+            DomUtils.setDataIndex(table.getRow(r), p.ordinal());
+            r++;
+          }
+
+          table.addClickHandler(te -> {
+            Element targetElement = EventUtils.getEventTargetElement(te);
+            TableRowElement rowElement = DomUtils.getParentRow(targetElement, true);
+
+            int index = DomUtils.getDataIndexInt(rowElement);
+            Presence newPresence = EnumUtils.getEnumByIndex(Presence.class, index);
+
+            UiHelper.closeDialog(table);
+            BeeKeeper.getUser().maybeUpdatePresence(newPresence);
+          });
+
+          Popup popup = new Popup(OutsideClick.CLOSE, STYLE_POPUP_PRESENCE);
+
+          popup.setWidget(table);
+          popup.setHideOnEscape(true);
+
+          popup.showRelativeTo(presenceWidget.getElement());
+        });
+      }
+
+      getUserPresenceContainer().add(presenceWidget);
+    }
   }
 
   @Override
@@ -1347,9 +1457,9 @@ public class ScreenImpl implements Screen {
     sett.addStyleName(BeeConst.CSS_CLASS_PREFIX + "UserControlIcon");
     help.addStyleName(BeeConst.CSS_CLASS_PREFIX + "UserControlIcon");
 
-    sett.setTitle(Localized.getConstants().settings());
-    help.setTitle(Localized.getConstants().help());
-    menuHide.setTitle(Localized.getConstants().hideOrShowMenu());
+    sett.setTitle(Localized.dictionary().settings());
+    help.setTitle(Localized.dictionary().help());
+    menuHide.setTitle(Localized.dictionary().hideOrShowMenu());
 
     styleMenuToggle(menuHide, BeeKeeper.getUser().isMenuVisible());
 
@@ -1389,9 +1499,9 @@ public class ScreenImpl implements Screen {
     Flow exitContainer = new Flow();
     exitContainer.addStyleName(BeeConst.CSS_CLASS_PREFIX + "UserExitContainer");
 
-    Label exit = new Label(Localized.getConstants().signOut());
+    Label exit = new Label(Localized.dictionary().signOut());
     exit.addStyleName(BeeConst.CSS_CLASS_PREFIX + "UserExit");
-    exit.setTitle(Localized.getConstants().signOut());
+    exit.setTitle(Localized.dictionary().signOut());
 
     exit.addClickHandler(new ClickHandler() {
       @Override
@@ -1404,8 +1514,8 @@ public class ScreenImpl implements Screen {
     exitContainer.add(exit);
 
     Image image;
-    String photoFileName = BeeKeeper.getUser().getUserData().getPhotoFileName();
-    if (!BeeUtils.isEmpty(photoFileName)) {
+    Long photoFileName = BeeKeeper.getUser().getUserData().getPhotoFile();
+    if (DataUtils.isId(photoFileName)) {
       image = new Image(PhotoRenderer.getUrl(photoFileName));
     } else {
       image = new Image(DEFAULT_PHOTO_IMAGE);
@@ -1469,13 +1579,22 @@ public class ScreenImpl implements Screen {
   }
 
   protected void extendCommandPanel() {
+    if (getUserInterface().hasComponent(Component.CHATS) && Settings.showCommand("chat")) {
+      Widget command = Global.getChatManager().createCommand();
+
+      if (command != null) {
+        command.addStyleName(STYLE_COMMAND);
+        getCommandPanel().add(command);
+      }
+    }
+
     if (Settings.showCommand("company_structure")
         && BeeKeeper.getUser().isWidgetVisible(RegulatedWidget.COMPANY_STRUCTURE)
         && BeeKeeper.getUser().isDataVisible(AdministrationConstants.VIEW_DEPARTMENTS)) {
 
       FaLabel command = new FaLabel(FontAwesome.SITEMAP,
           BeeConst.CSS_CLASS_PREFIX + "CompanyStructure-command");
-      command.setTitle(Localized.getConstants().companyStructure());
+      command.setTitle(Localized.dictionary().companyStructure());
 
       command.addClickHandler(new ClickHandler() {
         @Override
