@@ -148,7 +148,7 @@ final class ProjectScheduleChart extends TimeBoard {
 
   @Override
   public String getCaption() {
-    return Localized.getConstants().prjSchedule();
+    return Localized.dictionary().prjSchedule();
   }
 
   @Override
@@ -230,7 +230,7 @@ final class ProjectScheduleChart extends TimeBoard {
 
       @Override
       public void onResponse(ResponseObject response) {
-        if (setData(response)) {
+        if (setData(response, false)) {
           render(true);
         }
       }
@@ -383,7 +383,7 @@ final class ProjectScheduleChart extends TimeBoard {
   }
 
   @Override
-  protected boolean setData(ResponseObject response) {
+  protected boolean setData(ResponseObject response, boolean init) {
     getCanvas().clear();
     chartItems.clear();
     if (response.isEmpty()) {
@@ -480,7 +480,7 @@ final class ProjectScheduleChart extends TimeBoard {
     if (firstLevel && BeeUtils.same(VIEW_PROJECT_STAGES, item.getViewName())) {
       label.setText(item.getCaption());
     } else if (firstLevel) {
-      label.setText(Localized.getConstants().project());
+      label.setText(Localized.dictionary().project());
     } else if (!firstLevel && !BeeUtils.same(VIEW_PROJECT_STAGES, item.getViewName())) {
       label.setText(item.getCaption());
     } else {

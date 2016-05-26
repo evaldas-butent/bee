@@ -8,19 +8,22 @@ import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.HttpConst;
 import com.butent.bee.server.http.HttpUtils;
 import com.butent.bee.server.i18n.Localizations;
+import com.butent.bee.server.io.FileUtils;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.CommUtils;
 import com.butent.bee.shared.html.builder.Document;
 import com.butent.bee.shared.html.builder.Node;
 import com.butent.bee.shared.html.builder.elements.Div;
 import com.butent.bee.shared.html.builder.elements.Form;
+import com.butent.bee.shared.html.builder.elements.Img;
 import com.butent.bee.shared.html.builder.elements.Input;
 import com.butent.bee.shared.html.builder.elements.Input.Type;
 import com.butent.bee.shared.html.builder.elements.Link.Rel;
 import com.butent.bee.shared.html.builder.elements.Meta;
 import com.butent.bee.shared.html.builder.elements.Script;
-import com.butent.bee.shared.i18n.LocalizableConstants;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.SupportedLocale;
+import com.butent.bee.shared.io.FileNameUtils;
 import com.butent.bee.shared.io.Paths;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -34,6 +37,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
+import java.nio.file.Path;
 import java.util.List;
 
 import javax.ejb.EJB;
@@ -64,8 +68,10 @@ public class LoginServlet extends HttpServlet {
   protected static final String FORM_NAME = "login";
 
   protected static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "SignIn-";
+
   private static final String FAV_ICON = "favicon.ico";
   private static final String LOGO = "bs-logo.png";
+
   private static final String USER_NAME_LABEL_ID = "user-name-label";
   private static final String PASSWORD_LABEL_ID = "password-label";
   private static final String ERROR_MESSAGE_ID = "error";
@@ -74,7 +80,9 @@ public class LoginServlet extends HttpServlet {
   private static final String INFO_HELP_ID = "info-help";
   private static final String USER_NAME_INPUT_ID = "user";
   private static final String PASSWORD_INPUT_ID = "pswd";
+
   private static BeeLogger logger = LogUtils.getLogger(LoginServlet.class);
+
   @EJB
   UserServiceBean usr;
 
@@ -115,9 +123,57 @@ public class LoginServlet extends HttpServlet {
     return requestPath;
   }
 
+  private static String customBackground(String dir) {
+    File customDir = new File(Config.WAR_DIR, Paths.CUSTOM_DIR);
+    if (!FileUtils.isDirectory(customDir)) {
+      return null;
+    }
+
+    File bgDir = new File(customDir, dir);
+    if (!FileUtils.isDirectory(bgDir)) {
+      return null;
+    }
+
+    List<File> files = FileUtils.findFiles(bgDir, FileUtils.FILE_FILTER);
+    if (BeeUtils.isEmpty(files)) {
+      return null;
+    }
+
+    File file;
+    if (files.size() > 1) {
+      file = files.get(BeeUtils.randomInt(0, files.size()));
+    } else {
+      file = files.get(0);
+    }
+
+    Path path = Config.WAR_DIR.toPath().relativize(file.toPath());
+    return FileNameUtils.separatorsToUnix(path.toString());
+  }
+
+  private static String customResource(String contextPath, String fileName) {
+    File customDir = new File(Config.WAR_DIR, Paths.CUSTOM_DIR);
+    if (!FileUtils.isDirectory(customDir)) {
+      return null;
+    }
+
+    File file = new File(customDir, fileName);
+    if (!file.exists()) {
+      return null;
+    }
+
+    Path path = Config.WAR_DIR.toPath().relativize(file.toPath());
+    String requestPath = Paths.buildPath(contextPath,
+        FileNameUtils.separatorsToUnix(path.toString()));
+
+    long time = file.lastModified();
+    if (time > 0) {
+      requestPath = CommUtils.addTimeStamp(requestPath, new DateTime(time));
+    }
+    return requestPath;
+  }
+
   private static String generateDictionary(SupportedLocale locale) {
-    String language = locale.getLanguage();
-    LocalizableConstants constants = Localizations.getPreferredConstants(language);
+    Dictionary constants = Localizations.getDictionary(locale);
 
     JsonObject dictionary = Json.createObjectBuilder()
         .add(USER_NAME_LABEL_ID, constants.loginUserName())
@@ -140,6 +196,10 @@ public class LoginServlet extends HttpServlet {
     return strWriter.toString();
   }
 
+  private static boolean isUrl(String s) {
+    return s != null && s.contains("://");
+  }
+
   private static String render(String contextPath, UserInterface ui, SupportedLocale locale) {
     Document doc = new Document();
 
@@ -157,9 +217,9 @@ public class LoginServlet extends HttpServlet {
         title().text(ui.getTitle()),
         link().rel(Rel.SHORTCUT_ICON)
             .href(resource(contextPath, Paths.getImagePath(LoginServlet.FAV_ICON))),
-        link().rel(Rel.STYLE_SHEET).href(
-            "//fonts.googleapis.com/css?family=Open+Sans:700,300,800,400"),
-        base().targetBlank());
+        base().targetBlank(),
+        link().rel(Rel.STYLE_SHEET)
+            .href("//fonts.googleapis.com/css?family=Open+Sans:700,300,800,400"));
 
     for (String styleSheet : ui.getStyleSheets()) {
       doc.getHead().append(link()
@@ -167,8 +227,14 @@ public class LoginServlet extends HttpServlet {
     }
 
     for (String script : ui.getScripts()) {
-      String src = script.contains("://") ? script
+      String src = isUrl(script) ? script
           : resource(contextPath, Paths.getScriptPath(script));
+      doc.getHead().append(script().src(src));
+    }
+
+    for (String script : ui.getExternalScripts()) {
+      String src = isUrl(script) ? script
+          : resource(contextPath, Paths.getExternalScriptPath(script));
       doc.getHead().append(script().src(src));
     }
 
@@ -193,9 +259,6 @@ public class LoginServlet extends HttpServlet {
   }
 
   public String getLoginForm(HttpServletRequest request, String userName) {
-
-    Input user = new Input();
-    Input pass = new Input();
     String contextPath = request.getServletContext().getContextPath();
     String requestLanguage = SupportedLocale.normalizeLanguage(HttpUtils.getLanguage(request));
 
@@ -205,16 +268,36 @@ public class LoginServlet extends HttpServlet {
         meta().encodingDeclarationUtf8(),
         title().text(UserInterface.TITLE),
         link().rel(Rel.SHORTCUT_ICON).href(resource(contextPath, Paths.getImagePath(FAV_ICON))),
-        link().styleSheet(resource(contextPath, Paths.getStyleSheetPath("login"))),
-        script().src(resource(contextPath, Paths.getScriptPath("login"))));
+        link().styleSheet(resource(contextPath, Paths.getStyleSheetPath("login"))));
+
+    String customStyleSheet = customResource(contextPath, "login_plus.css");
+    if (!BeeUtils.isEmpty(customStyleSheet)) {
+      doc.getHead().append(link().styleSheet(customStyleSheet));
+    }
+
+    doc.getHead().append(script().src(resource(contextPath, Paths.getScriptPath("login"))));
 
     String scriptName = getLoginScriptName();
     if (!BeeUtils.isEmpty(scriptName)) {
       doc.getHead().append(script().src(resource(contextPath, Paths.getScriptPath(scriptName))));
     }
 
+    doc.getBody().onLoad(event("onload", requestLanguage));
+
+    Img background = img()
+        .addClass(STYLE_PREFIX + "Background")
+        .id("background");
+
+    String bg = customBackground("loginbg");
+    if (!BeeUtils.isEmpty(bg)) {
+      doc.getBody().setBackgroundImage(BeeConst.NONE);
+      background.addClass(STYLE_PREFIX + "has-src").src(Paths.buildPath(contextPath, bg));
+    }
+
+    doc.getBody().append(background);
+
     Div panel = div().addClass(STYLE_PREFIX + "Panel").id("login-panel");
-    doc.getBody().onLoad(event("onload", requestLanguage)).append(panel);
+    doc.getBody().append(panel);
 
     Form form = form().addClass(STYLE_PREFIX + "Form").name(FORM_NAME).acceptCharsetUtf8()
         .methodPost();
@@ -242,20 +325,22 @@ public class LoginServlet extends HttpServlet {
 
     panel.append(label().addClass(STYLE_PREFIX + "infoLabel").id(INFO_LABEL_ID));
 
-    form.append(
-        user.addClass(
-            STYLE_PREFIX + "Input").addClass(STYLE_PREFIX + "Input-user")
-            .name(HttpConst.PARAM_USER).id("user").value(Strings.emptyToNull(userName))
-            .maxLength(100).onKeyDown("return goPswd(event)").autofocus().required(),
-        pass.addClass(STYLE_PREFIX + "Input").addClass(STYLE_PREFIX + "Input-password")
-            .type(Type.PASSWORD).name(HttpConst.PARAM_PASSWORD).id("pswd")
-            .maxLength(UiConstants.MAX_PASSWORD_LENGTH).required()
-        );
+    Input user = new Input()
+        .addClass(STYLE_PREFIX + "Input").addClass(STYLE_PREFIX + "Input-user")
+        .name(HttpConst.PARAM_USER).id("user").value(Strings.emptyToNull(userName))
+        .maxLength(100).onKeyDown("return goPswd(event)").autofocus().required();
+
+    Input pass = new Input()
+        .addClass(STYLE_PREFIX + "Input").addClass(STYLE_PREFIX + "Input-password")
+        .type(Type.PASSWORD).name(HttpConst.PARAM_PASSWORD).id("pswd")
+        .maxLength(UiConstants.MAX_PASSWORD_LENGTH).required();
 
     if (!BeeUtils.isEmpty(userName)) {
       user.addClass(STYLE_PREFIX + "Input-user" + "-Invalid");
       pass.addClass(STYLE_PREFIX + "Input-password" + "-Invalid");
     }
+
+    form.append(user, pass);
     form.append(button().typeSubmit().addClass(STYLE_PREFIX + "Button").id(SUBMIT_BUTTON_ID));
 
     form.append(localeContainer);
@@ -382,7 +467,7 @@ public class LoginServlet extends HttpServlet {
           }
         }
         if (ok) {
-          if (!usr.validateHost(req) || !usr.authenticateUser(userName, password)) {
+          if (!usr.validateHost(req.getRemoteAddr()) || !usr.authenticateUser(userName, password)) {
             try {
               req.logout();
               session.invalidate();
@@ -402,7 +487,7 @@ public class LoginServlet extends HttpServlet {
   }
 
   private SupportedLocale getUserLocale(String userName) {
-    return usr.isUser(userName) ? usr.getUserLocale(userName) : null;
+    return usr.isUser(userName) ? usr.getSupportedLocale(userName) : null;
   }
 
   private boolean isBlocked(String userName) {

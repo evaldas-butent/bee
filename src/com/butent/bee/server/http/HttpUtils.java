@@ -1,11 +1,14 @@
 package com.butent.bee.server.http;
 
+import com.google.common.net.HttpHeaders;
 import com.google.common.net.MediaType;
 
 import com.butent.bee.server.concurrency.Counter;
 import com.butent.bee.server.io.FileUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.communication.CommUtils;
+import com.butent.bee.shared.communication.ContentType;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.ArrayUtils;
@@ -535,6 +538,15 @@ public final class HttpUtils {
     } catch (IOException ex) {
       logger.error(ex);
     }
+  }
+
+  public static void setDefaultHeaders(HttpServletResponse resp, ContentType ctp) {
+    resp.setHeader(HttpHeaders.CACHE_CONTROL, "no-cache");
+    resp.setHeader(HttpHeaders.PRAGMA, "no-cache");
+    resp.setHeader(HttpHeaders.EXPIRES, "Thu, 01 Dec 1994 16:00:00 GMT");
+
+    resp.setContentType(CommUtils.getMediaType(ctp));
+    resp.setCharacterEncoding(CommUtils.getCharacterEncoding(ctp));
   }
 
   private static String[] splitValue(String s) {

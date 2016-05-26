@@ -36,7 +36,7 @@ class UserSettingsForm extends AbstractFormInterceptor {
 
       if (BeeKeeper.getUser().is(userId)) {
         if (!getHeaderView().hasCommands()) {
-          getHeaderView().addCommandItem(new Button(Localized.getConstants().changePassword(),
+          getHeaderView().addCommandItem(new Button(Localized.dictionary().changePassword(),
               new ClickHandler() {
                 @Override
                 public void onClick(ClickEvent event) {

@@ -1,15 +1,19 @@
 package com.butent.bee.server;
 
-import com.google.common.net.HttpHeaders;
-import com.google.common.net.MediaType;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ListMultimap;
+import com.google.common.collect.Multimaps;
 
 import com.butent.bee.server.http.HttpUtils;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.io.FileUtils;
+import com.butent.bee.server.modules.administration.FileStorageBean;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
+import com.butent.bee.shared.communication.ContentType;
 import com.butent.bee.shared.css.values.BorderStyle;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.export.XCell;
@@ -45,12 +49,16 @@ import org.apache.poi.xssf.usermodel.XSSFFont;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.ejb.EJB;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -61,7 +69,16 @@ public class ExportServlet extends LoginServlet {
 
   private static BeeLogger logger = LogUtils.getLogger(ExportServlet.class);
 
-  private static final String EXT_WORKBOOK = "xlsx";
+  private static ListMultimap<String, XRow> exportedRows =
+      Multimaps.synchronizedListMultimap(ArrayListMultimap.create());
+
+  private static void closeWorkbook(Workbook workbook) {
+    try {
+      workbook.close();
+    } catch (IOException ex) {
+      logger.warning("exception closing workbook");
+    }
+  }
 
   private static short convertBorderStyle(BorderStyle input) {
     if (input == null) {
@@ -249,9 +266,7 @@ public class ExportServlet extends LoginServlet {
       return null;
 
     } else {
-      XSSFColor color = new XSSFColor();
-      color.setRgb(rgb);
-      return color;
+      return new XSSFColor(rgb);
     }
   }
 
@@ -263,7 +278,7 @@ public class ExportServlet extends LoginServlet {
     anchor.setCol1(colIndex);
     anchor.setRow2(rowIndex);
     anchor.setCol2(colIndex);
-    anchor.setAnchorType(ClientAnchor.MOVE_DONT_RESIZE);
+    anchor.setAnchorType(ClientAnchor.AnchorType.MOVE_DONT_RESIZE);
 
     Picture picture = drawing.createPicture(anchor, pictureIndex);
     picture.resize();
@@ -272,6 +287,8 @@ public class ExportServlet extends LoginServlet {
   }
 
   private static Workbook createWorkbook(XWorkbook inputBook) {
+    long start = System.currentTimeMillis();
+
     XSSFWorkbook wb = new XSSFWorkbook();
 
     CreationHelper creationHelper = null;
@@ -481,7 +498,13 @@ public class ExportServlet extends LoginServlet {
       }
     }
 
+    logger.info("create workbook in", TimeUtils.elapsedMillis(start), "ms");
     return wb;
+  }
+
+  private static String getExportedRowsInfo() {
+    return BeeUtils.joinWords("exported rows:", exportedRows.keySet().size(), "keys",
+        exportedRows.size(), "values");
   }
 
   private static int getPictureFormat(XPicture input) {
@@ -528,53 +551,182 @@ public class ExportServlet extends LoginServlet {
     return result;
   }
 
+  private static synchronized int pushRows(String id, String serialized, String message) {
+    long start = System.currentTimeMillis();
+
+    int count = 0;
+    String[] arr = Codec.beeDeserializeCollection(serialized);
+
+    if (arr != null) {
+      for (String s : arr) {
+        exportedRows.put(id, XRow.restore(s));
+        count++;
+      }
+
+      logger.info("export", id, message, "push", count, "rows in", TimeUtils.elapsedMillis(start),
+          "ms,", getExportedRowsInfo());
+    }
+
+    return count;
+  }
+
+  private static synchronized int maybePopRows(String id, XWorkbook workbook) {
+    long start = System.currentTimeMillis();
+    int count = 0;
+
+    if (exportedRows.containsKey(id) && workbook.getSheetCount() == 1) {
+      List<XRow> rows = new ArrayList<>(exportedRows.get(id));
+      rows.sort(null);
+
+      workbook.getSheets().get(0).addRows(rows);
+      exportedRows.removeAll(id);
+
+      count = rows.size();
+      logger.info("export", id, "pop", count, "rows in", TimeUtils.elapsedMillis(start), "ms,",
+          getExportedRowsInfo());
+    }
+
+    return count;
+  }
+
+  private static synchronized String maybeClearRows(String id) {
+    String message;
+
+    if (BeeUtils.isEmpty(id)) {
+      if (!exportedRows.isEmpty()) {
+        exportedRows.clear();
+        message = "exported rows cleared";
+      } else {
+        message = "exported rows already empty";
+      }
+
+    } else if (exportedRows.containsKey(id)) {
+      exportedRows.removeAll(id);
+      message = BeeUtils.joinWords("export", id, "removed from row cache,", getExportedRowsInfo());
+
+    } else {
+      message = BeeUtils.joinWords("exported rows do not contain", id, getExportedRowsInfo());
+    }
+
+    return message;
+  }
+
+  @EJB
+  FileStorageBean fs;
+
   @Override
   protected void doService(HttpServletRequest req, HttpServletResponse resp) {
     long start = System.currentTimeMillis();
 
     RequestInfo reqInfo = new RequestInfo(req, false);
-    String svc = reqInfo.getService();
 
-    if (Service.EXPORT_WORKBOOK.equals(svc)) {
-      String fileName = reqInfo.getParameter(Service.VAR_FILE_NAME);
-      if (BeeUtils.isEmpty(fileName)) {
-        HttpUtils.badRequest(resp, svc, "parameter not found:", Service.VAR_FILE_NAME);
+    String svc = BeeUtils.trim(reqInfo.getService());
+    String id = reqInfo.getParameter(Service.VAR_ID);
+
+    logger.info(">", svc, id, reqInfo.getContentLen());
+
+    String result = null;
+
+    switch (svc) {
+      case Service.EXPORT_WORKBOOK:
+        String fileName = reqInfo.getParameter(Service.VAR_FILE_NAME);
+        if (BeeUtils.isEmpty(fileName)) {
+          HttpUtils.badRequest(resp, svc, "parameter not found:", Service.VAR_FILE_NAME);
+          return;
+        }
+
+        String data = reqInfo.getContent();
+        if (BeeUtils.isEmpty(data)) {
+          HttpUtils.badRequest(resp, svc, "content not available");
+          return;
+        }
+
+        XWorkbook input = XWorkbook.restore(data);
+        if (input == null || input.isEmpty()) {
+          HttpUtils.badRequest(resp, svc, "workbook is empty");
+          return;
+        }
+
+        maybePopRows(id, input);
+        Workbook workbook = createWorkbook(input);
+
+        Long fileId = storeWorkbook(workbook, fileName);
+        closeWorkbook(workbook);
+
+        if (DataUtils.isId(fileId)) {
+          result = BeeUtils.toString(fileId);
+        } else {
+          String message = BeeUtils.joinWords(svc, fileName, "store workbook failed");
+          HttpUtils.sendError(resp, HttpServletResponse.SC_EXPECTATION_FAILED, message);
+          return;
+        }
+        break;
+
+      case Service.EXPORT_ROWS:
+        if (BeeUtils.isEmpty(id)) {
+          HttpUtils.badRequest(resp, svc, "parameter not found:", Service.VAR_ID);
+          return;
+        }
+
+        String content = reqInfo.getContent();
+        if (BeeUtils.isEmpty(content)) {
+          HttpUtils.badRequest(resp, svc, "content not available");
+          return;
+        }
+
+        String from = reqInfo.getParameter(Service.VAR_FROM);
+        int count = pushRows(id, content, from);
+
+        result = BeeUtils.toString(count);
+        break;
+
+      case Service.EXPORT_CLEAR:
+        result = maybeClearRows(id);
         return;
-      }
 
-      String data = reqInfo.getParameter(Service.VAR_DATA);
-      if (BeeUtils.isEmpty(data)) {
-        HttpUtils.badRequest(resp, svc, "parameter not found:", Service.VAR_DATA);
+      default:
+        HttpUtils.badRequest(resp, NameUtils.getName(this), "service not recognized", svc);
         return;
-      }
-
-      XWorkbook input = XWorkbook.restore(data);
-      if (input == null || input.isEmpty()) {
-        HttpUtils.badRequest(resp, svc, "workbook is empty");
-        return;
-      }
-
-      Workbook workbook = createWorkbook(input);
-
-      resp.reset();
-      resp.setContentType(MediaType.MICROSOFT_EXCEL.toString());
-
-      String name = Codec.rfc5987(FileNameUtils.defaultExtension(fileName, EXT_WORKBOOK));
-      resp.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename*=" + name);
-
-      logger.info(">", svc, fileName, TimeUtils.elapsedSeconds(start));
-
-      try {
-        OutputStream output = resp.getOutputStream();
-        workbook.write(output);
-        output.flush();
-
-      } catch (IOException ex) {
-        logger.error(ex);
-      }
-
-    } else {
-      HttpUtils.badRequest(resp, NameUtils.getName(this), "service not recognized", svc);
     }
+
+    HttpUtils.setDefaultHeaders(resp, ContentType.TEXT);
+
+    logger.info("<", svc, id, result, TimeUtils.elapsedSeconds(start));
+
+    try {
+      PrintWriter output = resp.getWriter();
+      output.print(BeeUtils.nvl(result, BeeConst.STRING_EMPTY));
+      output.flush();
+
+    } catch (IOException ex) {
+      logger.error(ex);
+    }
+  }
+
+  private Long storeWorkbook(Workbook workbook, String fileName) {
+    long start = System.currentTimeMillis();
+    Long fileId = null;
+
+    try {
+      File tmp = File.createTempFile("bee_", null);
+      tmp.deleteOnExit();
+
+      FileOutputStream fos = new FileOutputStream(tmp);
+      workbook.write(fos);
+      fos.close();
+
+      FileInputStream fis = new FileInputStream(tmp);
+      String name = FileNameUtils.defaultExtension(fileName, XWorkbook.FILE_EXTENSION);
+
+      fileId = fs.storeFile(fis, name, null);
+      tmp.delete();
+
+      logger.info("store workbook", name, "in", TimeUtils.elapsedMillis(start), "ms");
+
+    } catch (IOException ex) {
+      logger.error(ex);
+    }
+
+    return fileId;
   }
 }

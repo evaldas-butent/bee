@@ -1,8 +1,6 @@
 package com.butent.bee.server.modules.discussions;
 
-import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import com.google.common.eventbus.AllowConcurrentEvents;
 import com.google.common.eventbus.Subscribe;
@@ -23,6 +21,7 @@ import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.modules.ParamHolderBean;
+import com.butent.bee.server.modules.administration.AdministrationModuleBean;
 import com.butent.bee.server.modules.administration.ExtensionIcons;
 import com.butent.bee.server.modules.mail.MailModuleBean;
 import com.butent.bee.server.news.NewsBean;
@@ -42,11 +41,9 @@ import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
-import com.butent.bee.shared.data.RowChildren;
 import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
-import com.butent.bee.shared.data.SqlConstants.SqlDataType;
 import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.html.Tags;
@@ -55,7 +52,7 @@ import com.butent.bee.shared.html.builder.Element;
 import com.butent.bee.shared.html.builder.elements.Div;
 import com.butent.bee.shared.html.builder.elements.H2;
 import com.butent.bee.shared.html.builder.elements.Tbody;
-import com.butent.bee.shared.i18n.LocalizableConstants;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -71,10 +68,10 @@ import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
-import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -130,6 +127,8 @@ public class DiscussionsModuleBean implements BeeModule {
   MailModuleBean mail;
   @EJB
   ConcurrencyBean cb;
+  @EJB
+  AdministrationModuleBean adm;
 
   @Resource
   EJBContext ctx;
@@ -208,13 +207,14 @@ public class DiscussionsModuleBean implements BeeModule {
             }
           }
 
+          Long userId = usr.getCurrentUserId();
+
           SqlSelect discussUsers = new SqlSelect()
               .addFields(TBL_DISCUSSIONS_USERS, COL_DISCUSSION, COL_LAST_ACCESS, COL_STAR)
               .addFrom(TBL_DISCUSSIONS_USERS);
 
           IsCondition usersWhere =
-              SqlUtils.equals(TBL_DISCUSSIONS_USERS, AdministrationConstants.COL_USER, usr
-                  .getCurrentUserId());
+              SqlUtils.equals(TBL_DISCUSSIONS_USERS, AdministrationConstants.COL_USER, userId);
 
           discussUsers.setWhere(usersWhere);
 
@@ -237,14 +237,10 @@ public class DiscussionsModuleBean implements BeeModule {
               continue;
             }
 
-            row.setProperty(PROP_USER, BeeConst.STRING_PLUS);
+            row.setProperty(PROP_USER, userId, BeeConst.STRING_PLUS);
 
-            if (discussUserRow.getValue(accessIndex) != null) {
-              row.setProperty(PROP_LAST_ACCESS, discussUserRow.getValue(starIndex));
-            }
-            if (discussUserRow.getValue(starIndex) != null) {
-              row.setProperty(PROP_STAR, discussUserRow.getValue(starIndex));
-            }
+            row.setProperty(PROP_LAST_ACCESS, userId, discussUserRow.getValue(accessIndex));
+            row.setProperty(PROP_STAR, userId, discussUserRow.getValue(starIndex));
           }
 
           SqlSelect discussionsEvents = new SqlSelect()
@@ -305,8 +301,8 @@ public class DiscussionsModuleBean implements BeeModule {
 
             row.setProperty(PROP_RELATIONS_COUNT, relValue);
 
-            if (BeeUtils.isEmpty(row.getProperty(PROP_USER))) {
-              row.setProperty(PROP_USER, BeeConst.STRING_PLUS);
+            if (BeeUtils.isEmpty(row.getProperty(PROP_USER, userId))) {
+              row.setProperty(PROP_USER, userId, BeeConst.STRING_PLUS);
               createDiscussionUser(row.getId(), usr.getCurrentUserId(), null, false);
             }
           }
@@ -352,11 +348,6 @@ public class DiscussionsModuleBean implements BeeModule {
     SimpleRowSet markData = getDiscussionMarksData((List<Long>) discussionMarks);
     row.setProperty(PROP_MARK_DATA, markData.serialize());
 
-    Multimap<String, Long> discussionRelations = getDiscussionRelations(discussionId);
-    for (String property : discussionRelations.keySet()) {
-      row.setProperty(property, DataUtils.buildIdList(discussionRelations.get(property)));
-    }
-
     List<FileInfo> files = getDiscussionFiles(discussionId);
     if (!files.isEmpty()) {
       row.setProperty(PROP_FILES, Codec.beeSerialize(files));
@@ -387,34 +378,6 @@ public class DiscussionsModuleBean implements BeeModule {
 
       row.setProperty(PROP_PARAMETERS, Codec.beeSerialize(paramsMap));
     }
-  }
-
-  private ResponseObject createDiscussionRelations(long discussionId,
-      Map<String, String> properties) {
-    int count = 0;
-
-    if (BeeUtils.isEmpty(properties)) {
-      return ResponseObject.response(count);
-    }
-
-    ResponseObject response = new ResponseObject();
-    List<RowChildren> children = new ArrayList<>();
-
-    for (Map.Entry<String, String> entry : properties.entrySet()) {
-      String relation = DiscussionsUtils.translateDiscussionPropertyToRelation(entry.getKey());
-
-      if (BeeUtils.allNotEmpty(relation, entry.getValue())) {
-        children.add(RowChildren.create(AdministrationConstants.TBL_RELATIONS, COL_DISCUSSION,
-            null,
-            relation, entry.getValue()));
-      }
-    }
-
-    if (!BeeUtils.isEmpty(children)) {
-      count = deb.commitChildren(discussionId, children, response);
-    }
-
-    return response.setResponse(count);
   }
 
   private ResponseObject createDiscussionUser(long discussionId, long userId, Long time,
@@ -464,7 +427,7 @@ public class DiscussionsModuleBean implements BeeModule {
   }
 
   private ResponseObject commitDiscussionData(BeeRowSet data, Collection<Long> oldUsers,
-      boolean checkUsers, Set<String> updatedRelations, Long commentId) {
+      boolean checkUsers, Long commentId) {
 
     ResponseObject response;
     BeeRow row = data.getRow(0);
@@ -479,10 +442,6 @@ public class DiscussionsModuleBean implements BeeModule {
       }
     } else {
       newUsers = new ArrayList<>(oldUsers);
-    }
-
-    if (!BeeUtils.isEmpty(updatedRelations)) {
-      updateDiscussionRelations(row.getId(), updatedRelations, row);
     }
 
     Map<Integer, String> shadow = row.getShadow();
@@ -521,7 +480,7 @@ public class DiscussionsModuleBean implements BeeModule {
   private ResponseObject deleteDiscussionComment(long discussionId, long commentId) {
 
     String reasonText = BeeUtils.joinWords("<i style=\"font-size: smaller; color:red\">(", usr
-        .getLocalizableConstants().discussEventCommentDeleted()
+        .getDictionary().discussEventCommentDeleted()
         + " )</i>:", new DateTime().toString() + ",", usr.getCurrentUserSign());
 
     SqlUpdate update =
@@ -573,9 +532,9 @@ public class DiscussionsModuleBean implements BeeModule {
     Long markedComment = BeeUtils.toLongOrNull(reqInfo.getParameter(VAR_DISCUSSION_MARKED_COMMENT));
 
     Set<Long> oldMembers = DataUtils.parseIdSet(reqInfo.getParameter(VAR_DISCUSSION_USERS));
-    Set<String> updatedRelations = NameUtils.toSet(reqInfo.getParameter(VAR_DISCUSSION_USERS));
     switch (event) {
       case CREATE:
+        discussionId = BeeConst.UNDEF;
         Map<String, String> properties = discussRow.getProperties();
 
         if (properties == null) {
@@ -583,7 +542,16 @@ public class DiscussionsModuleBean implements BeeModule {
         }
 
         List<Long> members = DataUtils.parseIdList(properties.get(PROP_MEMBERS));
-        List<Long> discussions = new ArrayList<>();
+        Long[] groupMembers =
+            adm.getUserGroupMembers(properties.get(PROP_MEMBER_GROUP)).getLongColumn(COL_UG_USER);
+
+        if (!ArrayUtils.isEmpty(groupMembers)) {
+          for (Long member : groupMembers) {
+            if (!members.contains(member)) {
+              members.add(member);
+            }
+          }
+        }
 
         BeeRow newRow = DataUtils.cloneRow(discussRow);
         DiscussionStatus status = DiscussionStatus.ACTIVE;
@@ -620,23 +588,15 @@ public class DiscussionsModuleBean implements BeeModule {
           }
         }
 
-        if (!response.hasErrors()) {
-          response = createDiscussionRelations(discussionId, properties);
-        }
-
-        if (!response.hasErrors()) {
-          discussions.add(discussionId);
-        }
-
         if (response.hasErrors()) {
           break;
         }
 
         if (!response.hasErrors()) {
-          if (discussions.isEmpty()) {
-            response = ResponseObject.error(usr.getLocalizableConstants().discussNotCreated());
+          if (!DataUtils.isId(discussionId)) {
+            response = ResponseObject.error(usr.getDictionary().discussNotCreated());
           } else {
-            response = ResponseObject.response(DataUtils.buildIdList(discussions));
+            response = ResponseObject.response(discussionId);
           }
         }
         break;
@@ -685,7 +645,7 @@ public class DiscussionsModuleBean implements BeeModule {
 
         if (response == null || !response.hasErrors()) {
           response =
-              commitDiscussionData(discussData, oldMembers, false, updatedRelations, commentId);
+              commitDiscussionData(discussData, oldMembers, false, commentId);
         }
 
         break;
@@ -717,7 +677,7 @@ public class DiscussionsModuleBean implements BeeModule {
 
         if (response == null || !response.hasErrors()) {
           response =
-              commitDiscussionData(discussData, oldMembers, true, updatedRelations, commentId);
+              commitDiscussionData(discussData, oldMembers, true, commentId);
         }
 
         break;
@@ -816,93 +776,115 @@ public class DiscussionsModuleBean implements BeeModule {
     nowFinish.setSecond(59);
     nowFinish.setMillis(999);
 
-    SqlSelect select = new SqlSelect()
-        .addField(TBL_DISCUSSIONS, sys.getIdName(TBL_DISCUSSIONS), COL_DISCUSSION)
-        .addField(TBL_ADS_TOPICS, COL_NAME, ALS_TOPIC_NAME)
-        .addField(TBL_ADS_TOPICS, COL_ORDINAL, COL_ORDINAL)
-        .addField(TBL_DISCUSSIONS, COL_CREATED, COL_CREATED)
-        .addField(TBL_DISCUSSIONS, COL_SUBJECT, COL_SUBJECT)
-        .addField(TBL_DISCUSSIONS, COL_IMPORTANT, COL_IMPORTANT)
-        .addField(TBL_DISCUSSIONS, COL_DESCRIPTION, COL_DESCRIPTION)
-        .addField(TBL_PERSONS, COL_FIRST_NAME,
-            COL_FIRST_NAME)
-        .addField(TBL_PERSONS, COL_LAST_NAME,
-            COL_LAST_NAME)
-        .addField(TBL_PERSONS, COL_PHOTO,
-            COL_PHOTO)
-        .addCount(TBL_DISCUSSIONS_FILES, AdministrationConstants.COL_FILE,
-            AdministrationConstants.COL_FILE)
-        .addCount(TBL_DISCUSSIONS_COMMENTS, COL_DISCUSSION,
-            COL_DISCUSSION_COMMENTS)
-        .addExpr(
-            SqlUtils.sqlIf(
-                SqlUtils.isNull(TBL_DISCUSSIONS_USAGE, NewsConstants.COL_USAGE_ACCESS),
-                true, null), ALS_NEW_ANNOUCEMENT)
-        .addEmptyField(ALS_BIRTHDAY, SqlDataType.BOOLEAN, 1, 0, false)
-        .addFrom(TBL_DISCUSSIONS)
-        .addFromInner(TBL_ADS_TOPICS, sys.joinTables(TBL_ADS_TOPICS, TBL_DISCUSSIONS, COL_TOPIC))
-        .addFromLeft(TBL_DISCUSSIONS_USAGE, SqlUtils.and(SqlUtils.equals(TBL_DISCUSSIONS_USAGE,
-            COL_DISCUSSION, SqlUtils.field(TBL_DISCUSSIONS, sys
-                .getIdName(TBL_DISCUSSIONS))),
-            SqlUtils.equals(TBL_DISCUSSIONS_USAGE, AdministrationConstants.COL_USER, usr
-                .getCurrentUserId())))
-        .addFromLeft(AdministrationConstants.TBL_USERS,
-            sys.joinTables(AdministrationConstants.TBL_USERS, TBL_DISCUSSIONS, COL_OWNER))
-        .addFromLeft(
-            TBL_COMPANY_PERSONS,
-            sys.joinTables(TBL_COMPANY_PERSONS, AdministrationConstants.TBL_USERS,
-                COL_COMPANY_PERSON))
-        .addFromLeft(
-            TBL_PERSONS,
-            sys.joinTables(TBL_PERSONS, TBL_COMPANY_PERSONS,
-                COL_PERSON))
-        .addFromLeft(TBL_DISCUSSIONS_FILES,
-            sys.joinTables(TBL_DISCUSSIONS, TBL_DISCUSSIONS_FILES, COL_DISCUSSION))
-        .addFromLeft(TBL_DISCUSSIONS_COMMENTS,
-            sys.joinTables(TBL_DISCUSSIONS, TBL_DISCUSSIONS_COMMENTS, COL_DISCUSSION))
-        .addFromLeft(TBL_DISCUSSIONS_USERS,
-            sys.joinTables(TBL_DISCUSSIONS, TBL_DISCUSSIONS_USERS, COL_DISCUSSION))
-        .setWhere(SqlUtils.and(
-            SqlUtils.notNull(TBL_ADS_TOPICS, COL_VISIBLE),
-            SqlUtils.notNull(TBL_DISCUSSIONS, sys.getIdName(TBL_DISCUSSIONS)),
-            SqlUtils.or(
-                SqlUtils.and(
-                    SqlUtils.moreEqual(TBL_DISCUSSIONS, COL_VISIBLE_TO, System
-                        .currentTimeMillis()),
-                    SqlUtils.lessEqual(TBL_DISCUSSIONS, COL_VISIBLE_FROM, System
-                        .currentTimeMillis())
-                    ),
+    String colMaxPublishTime = SqlUtils.uniqueName();
+    String colMaxCommentId = SqlUtils.uniqueName();
+    String tblMaxComments = SqlUtils.uniqueName();
+    String alsDiscussComments = SqlUtils.uniqueName();
+
+    SqlSelect maxCommentQuery = new SqlSelect()
+        .addField(TBL_DISCUSSIONS_COMMENTS, COL_DISCUSSION, COL_DISCUSSION)
+        .addMax(TBL_DISCUSSIONS_COMMENTS, COL_PUBLISH_TIME, colMaxPublishTime)
+        .addMax(TBL_DISCUSSIONS_COMMENTS, COL_DISCUSSION_COMMENT_ID, colMaxCommentId)
+        .addFrom(TBL_DISCUSSIONS_COMMENTS)
+        .setWhere(SqlUtils.notEqual(TBL_DISCUSSIONS_COMMENTS, DiscussionsConstants.COL_PUBLISHER,
+            usr.getCurrentUserId()))
+        .addGroup(TBL_DISCUSSIONS_COMMENTS, COL_DISCUSSION, COL_PUBLISHER);
+
+    SqlSelect select =
+        new SqlSelect()
+            .addField(TBL_DISCUSSIONS, sys.getIdName(TBL_DISCUSSIONS), COL_DISCUSSION)
+            .addField(TBL_DISCUSSIONS, COL_DISCUSSION_ID, COL_DISCUSSION_ID)
+            .addField(TBL_ADS_TOPICS, COL_NAME, ALS_TOPIC_NAME)
+            .addField(TBL_ADS_TOPICS, COL_ORDINAL, COL_ORDINAL)
+            .addFields(TBL_ADS_TOPICS, COL_BACKGROUND_COLOR)
+            .addFields(TBL_ADS_TOPICS, COL_TEXT_COLOR)
+            .addField(TBL_DISCUSSIONS, COL_CREATED, COL_CREATED)
+            .addField(TBL_DISCUSSIONS, COL_SUBJECT, COL_SUBJECT)
+            .addField(TBL_DISCUSSIONS, COL_SUMMARY, COL_SUMMARY)
+            .addField(TBL_DISCUSSIONS, COL_STATUS, COL_STATUS)
+            .addField(TBL_DISCUSSIONS, COL_IMPORTANT, COL_IMPORTANT)
+            .addField(TBL_DISCUSSIONS, COL_DESCRIPTION, COL_DESCRIPTION)
+            .addFields(TBL_DISCUSSIONS_USAGE, NewsConstants.COL_USAGE_ACCESS)
+            .addField(TBL_PERSONS, COL_FIRST_NAME, COL_FIRST_NAME)
+            .addField(TBL_PERSONS, COL_LAST_NAME, COL_LAST_NAME)
+            .addField(TBL_PERSONS, COL_PHOTO, COL_PHOTO)
+            .addMax(TBL_DISCUSSIONS_COMMENTS, COL_PUBLISH_TIME, COL_PUBLISH_TIME)
+            .addMax(tblMaxComments, colMaxPublishTime, ALS_MAX_PUBLISH_TIME)
+            .addCount(TBL_DISCUSSIONS_FILES, AdministrationConstants.COL_FILE,
+                AdministrationConstants.COL_FILE)
+            .addCountDistinct(TBL_DISCUSSIONS_COMMENTS, COL_DISCUSSION_COMMENT_ID,
+                COL_DISCUSSION_COMMENT_ID)
+            .addExpr(
+                SqlUtils.sqlIf(
+                    SqlUtils.isNull(TBL_DISCUSSIONS_USAGE, NewsConstants.COL_USAGE_ACCESS),
+                    true, null), ALS_NEW_ANNOUCEMENT)
+            .addEmptyText(ALS_BIRTHDAY)
+            .addFrom(TBL_DISCUSSIONS)
+            .addFromInner(TBL_ADS_TOPICS,
+                sys.joinTables(TBL_ADS_TOPICS, TBL_DISCUSSIONS, COL_TOPIC))
+            .addFromLeft(maxCommentQuery, tblMaxComments,
+                SqlUtils.join(TBL_DISCUSSIONS, COL_DISCUSSION_ID,
+                    tblMaxComments, COL_DISCUSSION))
+            .addFromLeft(TBL_DISCUSSIONS_COMMENTS, alsDiscussComments,
+                SqlUtils.join(tblMaxComments,
+                    colMaxCommentId,
+                    alsDiscussComments, COL_DISCUSSION_COMMENT_ID))
+            .addFromLeft(TBL_DISCUSSIONS_USAGE, SqlUtils.and(SqlUtils.equals(TBL_DISCUSSIONS_USAGE,
+                COL_DISCUSSION, SqlUtils.field(TBL_DISCUSSIONS, sys
+                    .getIdName(TBL_DISCUSSIONS))),
+                SqlUtils.equals(TBL_DISCUSSIONS_USAGE, AdministrationConstants.COL_USER, usr
+                    .getCurrentUserId())))
+            .addFromLeft(AdministrationConstants.TBL_USERS,
+                sys.joinTables(AdministrationConstants.TBL_USERS, TBL_DISCUSSIONS, COL_OWNER))
+            .addFromLeft(
+                TBL_COMPANY_PERSONS,
+                sys.joinTables(TBL_COMPANY_PERSONS, AdministrationConstants.TBL_USERS,
+                    COL_COMPANY_PERSON))
+            .addFromLeft(
+                TBL_PERSONS,
+                sys.joinTables(TBL_PERSONS, TBL_COMPANY_PERSONS,
+                    COL_PERSON))
+            .addFromLeft(TBL_DISCUSSIONS_FILES,
+                sys.joinTables(TBL_DISCUSSIONS, TBL_DISCUSSIONS_FILES, COL_DISCUSSION))
+            .addFromLeft(TBL_DISCUSSIONS_COMMENTS,
+                sys.joinTables(TBL_DISCUSSIONS, TBL_DISCUSSIONS_COMMENTS, COL_DISCUSSION))
+            .addFromLeft(TBL_DISCUSSIONS_USERS,
+                sys.joinTables(TBL_DISCUSSIONS, TBL_DISCUSSIONS_USERS, COL_DISCUSSION))
+            .setWhere(SqlUtils.and(
+                SqlUtils.notNull(TBL_ADS_TOPICS, COL_VISIBLE),
+                SqlUtils.notNull(TBL_DISCUSSIONS, sys.getIdName(TBL_DISCUSSIONS)),
                 SqlUtils.or(
-                    SqlUtils.equals(TBL_DISCUSSIONS, COL_VISIBLE_TO, nowStart),
-                    SqlUtils.equals(TBL_DISCUSSIONS, COL_VISIBLE_FROM, nowStart)
+                    SqlUtils.and(
+                        SqlUtils.moreEqual(TBL_DISCUSSIONS, COL_VISIBLE_TO, System
+                            .currentTimeMillis()),
+                        SqlUtils.lessEqual(TBL_DISCUSSIONS, COL_VISIBLE_FROM, System
+                            .currentTimeMillis())),
+                    SqlUtils.or(
+                        SqlUtils.equals(TBL_DISCUSSIONS, COL_VISIBLE_TO, nowStart),
+                        SqlUtils.equals(TBL_DISCUSSIONS, COL_VISIBLE_FROM, nowStart)),
+                    SqlUtils.and(
+                        SqlUtils.lessEqual(TBL_DISCUSSIONS, COL_VISIBLE_FROM, System
+                            .currentTimeMillis()),
+                        SqlUtils.isNull(TBL_DISCUSSIONS, COL_VISIBLE_TO)),
+                    SqlUtils.and(
+                        SqlUtils.isNull(TBL_DISCUSSIONS, COL_VISIBLE_FROM),
+                        SqlUtils.moreEqual(TBL_DISCUSSIONS, COL_VISIBLE_TO, nowFinish)
+                        )
                     ),
-                SqlUtils.and(
-                    SqlUtils.lessEqual(TBL_DISCUSSIONS, COL_VISIBLE_FROM, System
-                        .currentTimeMillis()),
-                    SqlUtils.isNull(TBL_DISCUSSIONS, COL_VISIBLE_TO)
-                    ),
-                SqlUtils.and(
-                    SqlUtils.isNull(TBL_DISCUSSIONS, COL_VISIBLE_FROM),
-                    SqlUtils.moreEqual(TBL_DISCUSSIONS, COL_VISIBLE_TO, nowFinish)
-                    )
-                ),
-            SqlUtils.or(SqlUtils.or(SqlUtils.and(SqlUtils.equals(TBL_DISCUSSIONS_USERS,
-                AdministrationConstants.COL_USER,
-                usr.getCurrentUserId()),
-                SqlUtils.notNull(TBL_DISCUSSIONS_USERS, COL_MEMBER)),
-                SqlUtils.equals(TBL_DISCUSSIONS, COL_OWNER, usr.getCurrentUserId())
-                ),
-                SqlUtils.notNull(TBL_DISCUSSIONS, COL_ACCESSIBILITY)
-                ))
-        )
-        .addOrder(TBL_ADS_TOPICS, COL_ORDINAL)
-        .addOrderDesc(TBL_DISCUSSIONS, COL_CREATED)
-        .addGroup(TBL_DISCUSSIONS, sys.getIdName(TBL_DISCUSSIONS))
-        .addGroup(TBL_ADS_TOPICS, COL_NAME, COL_ORDINAL)
-        .addGroup(TBL_DISCUSSIONS_USAGE, NewsConstants.COL_USAGE_ACCESS)
-        .addGroup(TBL_PERSONS, COL_FIRST_NAME,
-            COL_LAST_NAME, COL_PHOTO);
-    // logger.info(select.getQuery());
+                SqlUtils.or(SqlUtils.or(SqlUtils.and(SqlUtils.equals(TBL_DISCUSSIONS_USERS,
+                    AdministrationConstants.COL_USER,
+                    usr.getCurrentUserId()), SqlUtils.notNull(TBL_DISCUSSIONS_USERS, COL_MEMBER)),
+                    SqlUtils.equals(TBL_DISCUSSIONS, COL_OWNER, usr.getCurrentUserId())),
+                    SqlUtils.notNull(TBL_DISCUSSIONS, COL_ACCESSIBILITY))))
+            .addOrder(TBL_DISCUSSIONS, COL_IMPORTANT)
+            .addOrderDesc(TBL_DISCUSSIONS, COL_CREATED)
+            .addOrder(TBL_ADS_TOPICS, COL_ORDINAL)
+            .addGroup(TBL_DISCUSSIONS, sys.getIdName(TBL_DISCUSSIONS))
+            .addGroup(TBL_ADS_TOPICS, COL_NAME, COL_ORDINAL, COL_BACKGROUND_COLOR, COL_TEXT_COLOR)
+            .addGroup(TBL_DISCUSSIONS_COMMENTS, COL_DISCUSSION)
+            .addGroup(TBL_DISCUSSIONS_USAGE, NewsConstants.COL_USAGE_ACCESS)
+            .addGroup(TBL_PERSONS, COL_FIRST_NAME, COL_LAST_NAME, COL_PHOTO);
+
     SimpleRowSet rs = qs.getData(select);
 
     if (DataUtils.isId(birthTopic)) {
@@ -910,35 +892,26 @@ public class DiscussionsModuleBean implements BeeModule {
           qs.getViewData(VIEW_ADS_TOPICS, Filter.and(Filter.compareId(birthTopic), Filter
               .isNot(Filter.isNull(COL_VISIBLE))));
 
-      if (!topicRows.isEmpty()) {
+      ResponseObject birthResp = getBirthdays();
+
+      if (!topicRows.isEmpty() && birthResp.hasResponse(SimpleRowSet.class)) {
         BeeRow tRow = topicRows.getRow(topicRows.getNumberOfRows() - 1);
-        Integer ordinal =
-            tRow.getInteger(topicRows.getColumnIndex(COL_ORDINAL));
 
         String[] topicData = new String[rs.getNumberOfColumns()];
 
         topicData[rs.getColumnIndex(ALS_TOPIC_NAME)] =
             tRow.getString(topicRows.getColumnIndex(COL_NAME));
+        topicData[rs.getColumnIndex(COL_BACKGROUND_COLOR)] =
+            tRow.getString(topicRows.getColumnIndex(COL_BACKGROUND_COLOR));
+        topicData[rs.getColumnIndex(COL_TEXT_COLOR)] =
+            tRow.getString(topicRows.getColumnIndex(COL_TEXT_COLOR));
         topicData[rs.getColumnIndex(COL_ORDINAL)] =
             tRow.getString(topicRows.getColumnIndex(COL_ORDINAL));
-        topicData[rs.getColumnIndex(ALS_BIRTHDAY)] = BeeUtils.toString(true);
+        topicData[rs.getColumnIndex(ALS_BIRTHDAY)] = Codec.beeSerialize(birthResp.getResponse());
 
-        int placeId = rs.getNumberOfRows() - 1;
-        for (int i = 0; i < rs.getNumberOfRows(); i++) {
-          Integer ord = BeeUtils.toIntOrNull(rs.getValue(i, rs.getColumnIndex(COL_ORDINAL)));
+        int placeId = 0;
+        rs.getRows().add(placeId, topicData);
 
-          if (BeeUtils.compareNullsLast(ord, ordinal) >= 0) {
-            if (placeId > i) {
-              placeId = i;
-            }
-          }
-        }
-
-        if (placeId >= 0) {
-          rs.getRows().add(placeId, topicData);
-        } else {
-          rs.getRows().add(topicData);
-        }
       }
     }
 
@@ -963,9 +936,8 @@ public class DiscussionsModuleBean implements BeeModule {
     }
 
     List<Long> activeUsers = new ArrayList<>();
-
     for (UserData userData : usr.getAllUserData()) {
-      if (!usr.isBlocked(userData.getLogin())) {
+      if (usr.isActive(userData.getUserId())) {
         activeUsers.add(userData.getPerson());
       }
     }
@@ -975,6 +947,8 @@ public class DiscussionsModuleBean implements BeeModule {
             COL_FIRST_NAME)
         .addField(TBL_PERSONS, COL_LAST_NAME,
             COL_LAST_NAME)
+        .addField(TBL_PERSONS, COL_PHOTO,
+            COL_PHOTO)
         .addField(TBL_PERSONS, COL_DATE_OF_BIRTH,
             COL_DATE_OF_BIRTH)
         .addFrom(TBL_PERSONS)
@@ -986,7 +960,7 @@ public class DiscussionsModuleBean implements BeeModule {
 
     SimpleRowSet up = qs.getData(select);
     SimpleRowSet birthdays =
-        new SimpleRowSet(new String[] {COL_NAME, COL_DATE_OF_BIRTH, COL_ORDINAL});
+        new SimpleRowSet(new String[] {COL_NAME, COL_PHOTO, COL_DATE_OF_BIRTH, COL_ORDINAL});
 
     for (String[] upRow : up.getRows()) {
       if (!BeeUtils.isLong(upRow[up.getColumnIndex(COL_DATE_OF_BIRTH)])) {
@@ -999,8 +973,9 @@ public class DiscussionsModuleBean implements BeeModule {
 
       if (availableDays.contains(Integer.valueOf(date.getDoy()))) {
         String[] birthdaysRow = new String[] {
-            BeeUtils.joinWords(upRow[up.getColumnIndex(COL_FIRST_NAME)],
-                upRow[up.getColumnIndex(COL_LAST_NAME)]),
+            BeeUtils.joinWords(upRow[up.getColumnIndex(COL_FIRST_NAME)], upRow[up.getColumnIndex(
+                COL_LAST_NAME)]),
+            upRow[up.getColumnIndex(COL_PHOTO)],
             upRow[up.getColumnIndex(COL_DATE_OF_BIRTH)],
             BeeUtils.toString(date.getDoy())
         };
@@ -1245,28 +1220,8 @@ public class DiscussionsModuleBean implements BeeModule {
     return Lists.newArrayList(qs.getLongColumn(query));
   }
 
-  private Multimap<String, Long> getDiscussionRelations(long discussionId) {
-    Multimap<String, Long> res = HashMultimap.create();
-
-    for (String relation : DiscussionsUtils.getRelations()) {
-      Long[] ids =
-          qs.getRelatedValues(AdministrationConstants.TBL_RELATIONS, COL_DISCUSSION, discussionId,
-              relation);
-
-      if (ids != null) {
-        String property = DiscussionsUtils.translateRelationToDiscussionProperty(relation);
-
-        for (Long id : ids) {
-          res.put(property, id);
-        }
-      }
-    }
-
-    return res;
-  }
-
   private Document renderDiscussionDocument(long discussionId, boolean typeAnnoucement,
-      String anouncmentTopic, SimpleRow discussMailRow, LocalizableConstants constants,
+      String anouncmentTopic, SimpleRow discussMailRow, Dictionary constants,
       boolean isPublic) {
 
     String discussSubject = BeeUtils.joinWords(
@@ -1480,7 +1435,7 @@ public class DiscussionsModuleBean implements BeeModule {
         continue;
       }
 
-      LocalizableConstants constants = usr.getLocalizableConstants(member);
+      Dictionary constants = usr.getDictionary(member);
 
       if (constants == null) {
         logger.warning(label, discussionId, "member", member, "localization not available");
@@ -1508,29 +1463,6 @@ public class DiscussionsModuleBean implements BeeModule {
     }
 
     return response;
-  }
-
-  private ResponseObject updateDiscussionRelations(long discussionId, Set<String> updatedRelations,
-      BeeRow row) {
-    ResponseObject response = new ResponseObject();
-    List<RowChildren> children = new ArrayList<>();
-
-    for (String property : updatedRelations) {
-      String relation = DiscussionsUtils.translateDiscussionPropertyToRelation(property);
-
-      if (!BeeUtils.isEmpty(relation)) {
-        children.add(RowChildren.create(AdministrationConstants.TBL_RELATIONS, COL_DISCUSSION,
-            discussionId, relation, row.getProperty(property)));
-      }
-    }
-
-    int count = 0;
-
-    if (!BeeUtils.isEmpty(children)) {
-      count = deb.commitChildren(discussionId, children, response);
-    }
-
-    return response.setResponse(count);
   }
 
   private void updateDiscussionUsers(long discussionId, Collection<Long> oldUsers,

@@ -104,6 +104,8 @@ public class Relations extends Flow implements Editor, ClickHandler, SelectorEve
   private final Map<MultiSelector, HandlerRegistration> registry = new HashMap<>();
   private final Set<String> blockedRelations = new HashSet<>();
 
+  private static final String RELATIONS_PLUS_ADD_RELATION = "bee-Relations-newRel";
+
   private Long id;
   private SelectorEvent.Handler handler;
 
@@ -119,7 +121,7 @@ public class Relations extends Flow implements Editor, ClickHandler, SelectorEve
     table.setKind(TableKind.CONTROLS);
 
     if (inline) {
-      FaLabel add = new FaLabel(FontAwesome.PLUS);
+      FaLabel add = new FaLabel(FontAwesome.PLUS_CIRCLE, RELATIONS_PLUS_ADD_RELATION);
 
       add.addClickHandler(new ClickHandler() {
         @Override
@@ -133,7 +135,7 @@ public class Relations extends Flow implements Editor, ClickHandler, SelectorEve
 
     } else {
       FaLabel face = new FaLabel(FontAwesome.CHAIN);
-      face.setTitle(Localized.getConstants().relations());
+      face.setTitle(Localized.dictionary().relations());
       face.addClickHandler(this);
       add(face);
       table.setWidth("600px");
@@ -356,7 +358,7 @@ public class Relations extends Flow implements Editor, ClickHandler, SelectorEve
     }
     refresh();
 
-    Global.inputWidget(Localized.getConstants().relations(), table, new InputCallback() {
+    Global.inputWidget(Localized.dictionary().relations(), table, new InputCallback() {
       @Override
       public void onAdd() {
         addRelations();
@@ -365,9 +367,9 @@ public class Relations extends Flow implements Editor, ClickHandler, SelectorEve
       @Override
       public void onClose(final CloseCallback closeCallback) {
         if (isValueChanged()) {
-          Global.decide(Localized.getConstants().relations(),
-              Lists.newArrayList(Localized.getConstants().changedValues() + BeeConst.CHAR_SPACE
-                  + getLabel(), Localized.getConstants().saveChanges()),
+          Global.decide(Localized.dictionary().relations(),
+              Lists.newArrayList(Localized.dictionary().changedValues() + BeeConst.CHAR_SPACE
+                  + getLabel(), Localized.dictionary().saveChanges()),
               new DecisionCallback() {
                 @Override
                 public void onConfirm() {
@@ -380,7 +382,7 @@ public class Relations extends Flow implements Editor, ClickHandler, SelectorEve
                 }
               }, DialogConstants.DECISION_YES);
         } else {
-          super.onClose(closeCallback);
+          InputCallback.super.onClose(closeCallback);
         }
       }
 
@@ -621,14 +623,14 @@ public class Relations extends Flow implements Editor, ClickHandler, SelectorEve
       }
     }
     if (listBox.isEmpty()) {
-      Global.showInfo(Localized.getConstants().noData());
+      Global.showInfo(Localized.dictionary().noData());
       return;
     } else if (listBox.getItemCount() > 30) {
       listBox.setVisibleItemCount(30);
     } else {
       listBox.setAllVisible();
     }
-    Global.inputWidget(Localized.getConstants().newRelation(), listBox, new InputCallback() {
+    Global.inputWidget(Localized.dictionary().newRelation(), listBox, new InputCallback() {
       @Override
       public void onSuccess() {
         for (int i = 0; i < listBox.getItemCount(); i++) {

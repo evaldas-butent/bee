@@ -1,13 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Table xmlns="http://www.butent.com/table"
 
-  name="Units"
-  idName="UnitID"
-  >
+       name="Units"
+       idName="UnitID"
+>
   <Fields>
-    <String name="Name" precision="10" notNull="true" unique="true" label="=unit" />
+    <String name="Name" precision="10" notNull="true" unique="true" label="=unit"
+            translatable="true" />
     <String name="Caption" precision="30" label="=caption" />
     <Relation name="BaseUnit" relation="Units" label="=baseUnit" />
     <Double name="Factor" label="=unitFactor" />
+    <Integer name="SelfService" label="=trSelfService" />
   </Fields>
 </Table>

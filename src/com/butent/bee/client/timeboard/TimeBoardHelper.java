@@ -477,6 +477,51 @@ public final class TimeBoardHelper {
     return new Size(x, y);
   }
 
+  public static boolean updateSettings(final BeeRowSet settings, String colName, String newValue,
+      final Runnable callback) {
+
+    if (DataUtils.isEmpty(settings)) {
+      return false;
+    }
+
+    final int index = settings.getColumnIndex(colName);
+    if (BeeConst.isUndef(index)) {
+      logger.severe(settings.getViewName(), colName, "column not found");
+      return false;
+    }
+
+    BeeRow oldRow = settings.getRow(0);
+    final String oldValue = oldRow.getString(index);
+
+    BeeRowSet updated = DataUtils.getUpdated(settings.getViewName(),
+        oldRow.getId(), oldRow.getVersion(), settings.getColumn(index), oldValue, newValue);
+    if (DataUtils.isEmpty(updated)) {
+      return false;
+    }
+
+    oldRow.setValue(index, newValue);
+
+    Queries.updateRow(updated, new RowCallback() {
+      @Override
+      public void onFailure(String... reason) {
+        settings.setValue(0, index, oldValue);
+        super.onFailure(reason);
+      }
+
+      @Override
+      public void onSuccess(BeeRow result) {
+        settings.clearRows();
+        settings.addRow(result);
+
+        if (callback != null) {
+          callback.run();
+        }
+      }
+    });
+
+    return true;
+  }
+
   static void addColumnSeparator(HasWidgets panel, String styleName, int left, int height) {
     CustomDiv separator = new CustomDiv(styleName);
 
@@ -1164,45 +1209,6 @@ public final class TimeBoardHelper {
 
       return Pair.of(startWidget, endWidget);
     }
-  }
-
-  public static boolean updateSettings(final BeeRowSet settings, String colName, String newValue) {
-    if (DataUtils.isEmpty(settings)) {
-      return false;
-    }
-
-    final int index = settings.getColumnIndex(colName);
-    if (BeeConst.isUndef(index)) {
-      logger.severe(settings.getViewName(), colName, "column not found");
-      return false;
-    }
-
-    BeeRow oldRow = settings.getRow(0);
-    final String oldValue = oldRow.getString(index);
-
-    BeeRowSet updated = DataUtils.getUpdated(settings.getViewName(),
-        oldRow.getId(), oldRow.getVersion(), settings.getColumn(index), oldValue, newValue);
-    if (DataUtils.isEmpty(updated)) {
-      return false;
-    }
-
-    oldRow.setValue(index, newValue);
-
-    Queries.updateRow(updated, new RowCallback() {
-      @Override
-      public void onFailure(String... reason) {
-        settings.setValue(0, index, oldValue);
-        super.onFailure(reason);
-      }
-
-      @Override
-      public void onSuccess(BeeRow result) {
-        settings.clearRows();
-        settings.addRow(result);
-      }
-    });
-
-    return true;
   }
 
   private TimeBoardHelper() {

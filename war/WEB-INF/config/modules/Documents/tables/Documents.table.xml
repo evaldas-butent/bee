@@ -26,7 +26,9 @@
     <String name="SentNumber" precision="30" label="=documentSentNumber" />
 
     <Text name="Description" label="=documentDescription" />
+    <Relation name="User" relation="Users" label="=creator" defExpr="CURRENT_USER" />
 
     <Relation name="Data" relation="DocumentData" unique="true" label="=documentData" editable="true" />
+    <Text name="Notes" label="=notes" />
   </Fields>
 </Table>

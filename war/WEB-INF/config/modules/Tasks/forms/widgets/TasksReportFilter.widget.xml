@@ -7,8 +7,11 @@
       <Label html="—" style="margin-left:8px; margin-right:8px" />
       <InputDate name="dateTill" style="width:100px;" />
     </HorizontalPanel>
-    <Label text="=user" horizontalAlignment="right" />
+    <Label text="=crmTaskExecutor" horizontalAlignment="right" />
     <MultiSelector name="User" viewName="Users" choiceColumns="FirstName LastName"
+      newRowEnabled="false" style="width:200px;" />
+    <Label text="=project" horizontalAlignment="right" />
+    <MultiSelector name="Project" viewName="Projects" choiceColumns="Name"
       newRowEnabled="false" style="width:200px;" />
   </row>
   <row>

@@ -44,6 +44,7 @@ import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.Orientation;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -242,8 +243,8 @@ public class MessageBoxes {
     Assert.notEmpty(messages);
     Assert.notNull(callback);
 
-    List<String> options = Lists.newArrayList(Localized.getConstants().yes(),
-        Localized.getConstants().no(), Localized.getConstants().cancel());
+    List<String> options = Lists.newArrayList(Localized.dictionary().yes(),
+        Localized.dictionary().no(), Localized.dictionary().cancel());
 
     ChoiceCallback choice = new ChoiceCallback() {
       @Override
@@ -421,6 +422,7 @@ public class MessageBoxes {
 
   public void pickStar(int starCount, Integer defaultValue, Element target,
       final ChoiceCallback callback) {
+
     Assert.notNull(callback);
 
     final Popup popup = new Popup(OutsideClick.CLOSE, STYLE_STAR_PICKER);
@@ -438,39 +440,24 @@ public class MessageBoxes {
 
     final Holder<Integer> selectedIndex = Holder.absent();
 
-    cluster.addSelectionHandler(new SelectionHandler<Integer>() {
-      @Override
-      public void onSelection(SelectionEvent<Integer> event) {
-        selectedIndex.set(event.getSelectedItem());
-        popup.close();
-      }
+    cluster.addSelectionHandler(event -> {
+      selectedIndex.set(event.getSelectedItem());
+      popup.close();
     });
 
     popup.setHideOnEscape(true);
 
-    popup.addCloseHandler(new CloseEvent.Handler() {
-      @Override
-      public void onClose(CloseEvent event) {
-        if (selectedIndex.isNotNull()) {
-          callback.onSuccess(selectedIndex.get());
-        } else {
-          callback.onCancel();
-        }
+    popup.addCloseHandler(event -> {
+      if (selectedIndex.isNotNull()) {
+        callback.onSuccess(selectedIndex.get());
+      } else {
+        callback.onCancel();
       }
     });
 
     popup.setWidget(cluster);
 
-    popup.setAnimationEnabled(true);
-
-    if (target == null) {
-      popup.center();
-    } else {
-      popup.showRelativeTo(target);
-    }
-
     int focusIndex;
-
     if (defaultValue != null && cluster.isIndex(defaultValue + 1)) {
       cluster.selectTab(defaultValue + 1, false);
       focusIndex = defaultValue + 1;
@@ -478,14 +465,20 @@ public class MessageBoxes {
       focusIndex = 0;
     }
 
-    cluster.focusTab(focusIndex);
+    popup.addOpenHandler(event -> cluster.focusTab(focusIndex));
+
+    if (target == null) {
+      popup.center();
+    } else {
+      popup.showRelativeTo(target);
+    }
   }
 
   public void showError(String caption, List<String> messages, String dialogStyle,
       String closeHtml) {
 
     List<String> options = Lists.newArrayList(BeeUtils.notEmpty(closeHtml,
-        Localized.getConstants().ok()));
+        Localized.dictionary().ok()));
 
     display(caption, Icon.ERROR, messages, options, 0, null, BeeConst.UNDEF, dialogStyle, null,
         null, null, null);
@@ -495,13 +488,13 @@ public class MessageBoxes {
       String closeHtml) {
 
     List<String> options = Lists.newArrayList(BeeUtils.notEmpty(closeHtml,
-        Localized.getConstants().ok()));
+        Localized.dictionary().ok()));
 
     display(caption, Icon.INFORMATION, messages, options, 0, null, BeeConst.UNDEF, dialogStyle,
         null, null, null, null);
   }
 
-  public void showTable(String caption, IsTable<?, ?> table) {
+  public void showTable(String caption, IsTable<?, ?> table, String... styles) {
     Assert.notNull(table);
 
     int c = table.getNumberOfColumns();
@@ -513,7 +506,7 @@ public class MessageBoxes {
       return;
     }
 
-    HtmlTable grid = new HtmlTable();
+    HtmlTable grid = new HtmlTable(BeeUtils.joinWords(Arrays.asList(styles)));
     grid.addStyleName(STYLE_TABLE);
     int index = 0;
 
@@ -547,7 +540,7 @@ public class MessageBoxes {
       index++;
     }
 
-    CloseButton close = new CloseButton(Localized.getConstants().ok());
+    CloseButton close = new CloseButton(Localized.dictionary().ok());
     grid.setWidget(index, 0, close);
     grid.alignCenter(index, 0);
     if (c > 1) {

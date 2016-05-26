@@ -5,22 +5,24 @@ import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.LongValue;
+import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
+import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
 import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.ui.HasWidgetSupplier;
 import com.butent.bee.shared.utils.BeeUtils;
 
 public enum TaskType implements HasCaption, HasWidgetSupplier {
-  ASSIGNED(Localized.getConstants().crmTasksAssignedTasks(), Feed.TASKS_ASSIGNED) {
+  ASSIGNED(Localized.dictionary().crmTasksAssignedTasks(), Feed.TASKS_ASSIGNED) {
     @Override
     public Filter getFilter(LongValue userValue) {
       return Filter.isEqual(COL_EXECUTOR, userValue);
     }
   },
 
-  DELEGATED(Localized.getConstants().crmTasksDelegatedTasks(), Feed.TASKS_DELEGATED) {
+  DELEGATED(Localized.dictionary().crmTasksDelegatedTasks(), Feed.TASKS_DELEGATED) {
     @Override
     public Filter getFilter(LongValue userValue) {
       return Filter.and(Filter.isEqual(COL_OWNER, userValue),
@@ -28,7 +30,7 @@ public enum TaskType implements HasCaption, HasWidgetSupplier {
     }
   },
 
-  OBSERVED(Localized.getConstants().crmTasksObservedTasks(), Feed.TASKS_OBSERVED) {
+  OBSERVED(Localized.dictionary().crmTasksObservedTasks(), Feed.TASKS_OBSERVED) {
     @Override
     public Filter getFilter(LongValue userValue) {
       return Filter.and(Filter.isNotEqual(COL_OWNER, userValue),
@@ -38,19 +40,29 @@ public enum TaskType implements HasCaption, HasWidgetSupplier {
     }
   },
 
-  RELATED(Localized.getConstants().crmTasksRelated(), null) {
+  RELATED(Localized.dictionary().crmTasksRelated(), null) {
     @Override
     public Filter getFilter(LongValue userValue) {
       return null;
     }
   },
 
-  ALL(Localized.getConstants().crmTasksAll(), Feed.TASKS_ALL) {
+  ALL(Localized.dictionary().crmTasksAll(), Feed.TASKS_ALL) {
     @Override
     public Filter getFilter(LongValue userValue) {
       return null;
     }
-  };
+  },
+
+    NOT_SCHEDULED(Localized.dictionary().crmTasksNotScheduledTasks(), null) {
+
+      @Override
+      public Filter getFilter(LongValue userValue) {
+        return Filter.and(Filter.isEqual(COL_OWNER, userValue),
+            Filter.isEqual(COL_STATUS, Value.getValue(TaskStatus.NOT_SCHEDULED.ordinal())));
+      }
+
+    };
 
   public static TaskType getByFeed(Feed input) {
     if (input == null) {

@@ -9,7 +9,7 @@
       horizontalAlignment="center" width="20" maxWidth="20" caption="-"
       label="=discussColumnMode" />
 
-    <PropColumn name="Star" type="integer" cellType="html"
+    <PropColumn name="Star" type="integer" userMode="true" cellType="html"
       horizontalAlignment="center" width="20" maxWidth="20"
       label="=discussColumnStar">
       <renderer type="star" />

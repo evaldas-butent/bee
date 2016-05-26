@@ -5,7 +5,9 @@ import com.google.gwt.user.client.ui.UIObject;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.presenter.PresenterCallback;
+import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.Consumer;
 
 public final class Opener {
 
@@ -14,11 +16,27 @@ public final class Opener {
   public static final Opener NEW_TAB = new Opener(PresenterCallback.SHOW_IN_NEW_TAB);
   private static final Opener UPDATE = new Opener(PresenterCallback.SHOW_IN_ACTIVE_PANEL);
 
+  public static Opener modal(Consumer<FormView> onOpen) {
+    if (onOpen == null) {
+      return MODAL;
+    } else {
+      return new Opener(true, null, null, onOpen);
+    }
+  }
+
   public static Opener modeless() {
     if (BeeKeeper.getUser().openInNewTab()) {
       return NEW_TAB;
     } else {
       return UPDATE;
+    }
+  }
+
+  public static Opener newTab(Consumer<FormView> onOpen) {
+    if (onOpen == null) {
+      return NEW_TAB;
+    } else {
+      return new Opener(false, null, NEW_TAB.getPresenterCallback(), onOpen);
     }
   }
 
@@ -43,19 +61,27 @@ public final class Opener {
   private final Element target;
 
   private final PresenterCallback presenterCallback;
+  private final Consumer<FormView> onOpen;
 
   private Opener(boolean modal, Element target) {
-    this(modal, target, null);
+    this(modal, target, null, null);
   }
 
-  private Opener(boolean modal, Element target, PresenterCallback presenterCallback) {
+  private Opener(boolean modal, Element target, PresenterCallback presenterCallback,
+      Consumer<FormView> onOpen) {
+
     this.modal = modal;
     this.target = target;
     this.presenterCallback = presenterCallback;
+    this.onOpen = onOpen;
   }
 
   private Opener(PresenterCallback presenterCallback) {
-    this(false, null, presenterCallback);
+    this(false, null, presenterCallback, null);
+  }
+
+  public Consumer<FormView> getOnOpen() {
+    return onOpen;
   }
 
   public PresenterCallback getPresenterCallback() {

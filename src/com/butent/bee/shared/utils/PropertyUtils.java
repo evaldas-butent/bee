@@ -370,13 +370,13 @@ public final class PropertyUtils {
     return lst;
   }
 
-  public static List<Property> createProperties(Map<String, String> properties) {
+  public static List<Property> createProperties(Map<String, ?> properties) {
     List<Property> lst = new ArrayList<>();
     if (BeeUtils.isEmpty(properties)) {
       return lst;
     }
 
-    for (Map.Entry<String, String> entry : properties.entrySet()) {
+    for (Map.Entry<String, ?> entry : properties.entrySet()) {
       addProperty(lst, entry.getKey(), entry.getValue());
     }
     return lst;

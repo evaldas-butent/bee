@@ -1,7 +1,7 @@
 package com.butent.bee.shared.modules.mail;
 
-import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.ui.HasLocalizedCaption;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
@@ -9,7 +9,7 @@ import com.butent.bee.shared.utils.EnumUtils;
 public final class MailConstants {
 
   public enum SystemFolder {
-    Inbox("INBOX"), Sent("Sent Messages"), Drafts("Drafts"), Trash("Deleted Messages");
+    Inbox("INBOX"), Sent("Sent"), Drafts("Drafts"), Trash("Trash");
 
     private final String name;
 
@@ -59,103 +59,93 @@ public final class MailConstants {
   public enum RecipientsGroupsVisibility implements HasLocalizedCaption {
     PUBLIC {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.mailPublic();
       }
     },
     PRIVATE {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.mailPrivate();
       }
     };
 
     @Override
     public String getCaption() {
-      return getCaption(Localized.getConstants());
+      return getCaption(Localized.dictionary());
     }
   }
 
   public enum RuleCondition implements HasLocalizedCaption {
     SENDER {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.mailRuleConditionSender();
       }
     },
     RECIPIENTS {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.mailRuleConditionRecipients();
       }
     },
     SUBJECT {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.mailRuleConditionSubject();
       }
     },
     ALL {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.mailRuleConditionAll();
       }
     };
-
-    @Override
-    public String getCaption() {
-      return getCaption(Localized.getConstants());
-    }
   }
 
   public enum RuleAction implements HasLocalizedCaption {
     MOVE {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.mailRuleActionMove();
       }
     },
     COPY {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.mailRuleActionCopy();
       }
     },
     DELETE {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.mailRuleActionDelete();
       }
     },
     READ {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.mailRuleActionRead();
       }
     },
     FLAG {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.mailRuleActionFlag();
       }
     },
     REPLY {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.mailRuleActionReply();
       }
     },
     FORWARD {
       @Override
-      public String getCaption(LocalizableConstants constants) {
+      public String getCaption(Dictionary constants) {
         return constants.mailRuleActionForward();
       }
     };
-
-    @Override
-    public String getCaption() {
-      return getCaption(Localized.getConstants());
-    }
   }
 
   public static final String SIGNATURE_SEPARATOR = "<br><br><br>";
@@ -181,6 +171,7 @@ public final class MailConstants {
   public static final String TBL_ADDRESSBOOK = "Addressbook";
   public static final String TBL_FOLDERS = "Folders";
   public static final String TBL_RULES = "Rules";
+  public static final String TBL_ACCOUNT_USERS = "AccountUsers";
 
   public static final String TBL_MESSAGES = "Messages";
   public static final String TBL_PARTS = "Parts";

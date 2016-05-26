@@ -47,14 +47,6 @@ public abstract class AbstractRow implements IsRow {
   }
 
   @Override
-  public void clearProperty(String key) {
-    Assert.notEmpty(key);
-    if (properties != null) {
-      properties.remove(key);
-    }
-  }
-
-  @Override
   public boolean equals(Object obj) {
     return (obj instanceof IsRow) && id == ((IsRow) obj).getId();
   }
@@ -111,21 +103,6 @@ public abstract class AbstractRow implements IsRow {
       return null;
     }
     return properties.get(key);
-  }
-
-  @Override
-  public Double getPropertyDouble(String key) {
-    return BeeUtils.toDoubleOrNull(getProperty(key));
-  }
-
-  @Override
-  public Integer getPropertyInteger(String key) {
-    return BeeUtils.toIntOrNull(getProperty(key));
-  }
-
-  @Override
-  public Long getPropertyLong(String key) {
-    return BeeUtils.toLongOrNull(getProperty(key));
   }
 
   @Override
@@ -226,6 +203,14 @@ public abstract class AbstractRow implements IsRow {
   }
 
   @Override
+  public void removeProperty(String key) {
+    Assert.notEmpty(key);
+    if (properties != null) {
+      properties.remove(key);
+    }
+  }
+
+  @Override
   public void reset() {
     setShadow(null);
   }
@@ -251,44 +236,13 @@ public abstract class AbstractRow implements IsRow {
   }
 
   @Override
-  public void setProperty(String key, Double value) {
-    if (BeeUtils.isDouble(value)) {
-      setProperty(key, BeeUtils.toString(value));
-    } else {
-      clearProperty(key);
-    }
-  }
-
-  @Override
-  public void setProperty(String key, Integer value) {
-    if (value == null) {
-      clearProperty(key);
-    } else {
-      setProperty(key, BeeUtils.toString(value));
-    }
-  }
-
-  @Override
-  public void setProperty(String key, Long value) {
-    if (value == null) {
-      clearProperty(key);
-    } else {
-      setProperty(key, BeeUtils.toString(value));
-    }
-  }
-
-  @Override
   public void setProperty(String propertyKey, String propertyValue) {
     Assert.notEmpty(propertyKey);
 
-    if (BeeUtils.isEmpty(propertyValue)) {
-      clearProperty(propertyKey);
-    } else {
-      if (properties == null) {
-        properties = CustomProperties.create();
-      }
-      properties.put(propertyKey, propertyValue);
+    if (properties == null) {
+      properties = CustomProperties.create();
     }
+    properties.put(propertyKey, propertyValue);
   }
 
   @Override

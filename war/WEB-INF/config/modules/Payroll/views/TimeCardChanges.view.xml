@@ -11,6 +11,9 @@
     <SimpleJoin name="TimeCardCode" joinType="LEFT">
       <SimpleColumn name="TcCode" />
       <SimpleColumn name="TcName" />
+
+      <SimpleColumn name="WsPlanned" />
+      <SimpleColumn name="WsActual" />
     
       <SimpleColumn name="Background" />
       <SimpleColumn name="Foreground" />

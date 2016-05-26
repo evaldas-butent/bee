@@ -1,8 +1,6 @@
 package com.butent.bee.client.modules.transport;
 
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.HasClickHandlers;
 import com.google.gwt.event.shared.GwtEvent;
 import com.google.gwt.event.shared.HasHandlers;
@@ -20,13 +18,12 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.data.RowUpdateCallback;
-import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.Icon;
+import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.grid.ChildGrid;
 import com.butent.bee.client.modules.transport.TransportHandler.Profit;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
-import com.butent.bee.client.validation.CellValidateEvent;
 import com.butent.bee.client.validation.CellValidation;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
@@ -67,15 +64,12 @@ public class TripForm extends PrintFormInterceptor {
       IdentifiableWidget widget) {
 
     if (BeeUtils.same(editableWidget.getColumnId(), COL_VEHICLE)) {
-      editableWidget.addCellValidationHandler(new CellValidateEvent.Handler() {
-        @Override
-        public Boolean validateCell(CellValidateEvent event) {
-          if (event.isCellValidation() && event.isPostValidation()) {
-            CellValidation cellValidation = event.getCellValidation();
-            getBeforeInfo(cellValidation.getNewValue(), cellValidation.getRow());
-          }
-          return true;
+      editableWidget.addCellValidationHandler(event -> {
+        if (event.isCellValidation() && event.isPostValidation()) {
+          CellValidation cellValidation = event.getCellValidation();
+          getBeforeInfo(cellValidation.getNewValue(), cellValidation.getRow());
         }
+        return true;
       });
     }
   }
@@ -101,39 +95,40 @@ public class TripForm extends PrintFormInterceptor {
         case TBL_TRIP_ROUTES:
           ((ChildGrid) widget).setGridInterceptor(new TripRoutesGrid());
           break;
+
+        case TBL_TRIP_FUEL_COSTS:
+          ((ChildGrid) widget).setGridInterceptor(new TripFuelCostsGrid());
+          break;
       }
     } else if (BeeUtils.same(name, COL_TRIP_ROUTE) && widget instanceof HasClickHandlers) {
-      ((HasClickHandlers) widget).addClickHandler(new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent clickEvent) {
-          final Long tripId = getActiveRowId();
+      ((HasClickHandlers) widget).addClickHandler(clickEvent -> {
+        final Long tripId = getActiveRowId();
 
-          if (DataUtils.isId(tripId)) {
-            ParameterList args = TransportHandler.createArgs(SVC_GET_ROUTE);
-            args.addDataItem(COL_TRIP, tripId);
+        if (DataUtils.isId(tripId)) {
+          ParameterList args = TransportHandler.createArgs(SVC_GET_ROUTE);
+          args.addDataItem(COL_TRIP, tripId);
 
-            BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
-              @Override
-              public void onResponse(ResponseObject response) {
-                if (response.hasErrors()) {
-                  response.notify(getFormView());
+          BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
+            @Override
+            public void onResponse(ResponseObject response) {
+              if (response.hasErrors()) {
+                response.notify(getFormView());
+                return;
+              }
+              IsRow row = getActiveRow();
+
+              if (row != null && Objects.equals(row.getId(), tripId)) {
+                String route = response.getResponseAsString();
+
+                if (BeeUtils.isEmpty(route)) {
+                  getFormView().notifyWarning(Localized.dictionary().noData());
                   return;
                 }
-                IsRow row = getActiveRow();
-
-                if (row != null && Objects.equals(row.getId(), tripId)) {
-                  String route = response.getResponseAsString();
-
-                  if (BeeUtils.isEmpty(route)) {
-                    getFormView().notifyWarning(Localized.getConstants().noData());
-                    return;
-                  }
-                  Data.setValue(getViewName(), row, COL_TRIP_ROUTE, route);
-                  getFormView().refreshBySource(COL_TRIP_ROUTE);
-                }
+                Data.setValue(getViewName(), row, COL_TRIP_ROUTE, route);
+                getFormView().refreshBySource(COL_TRIP_ROUTE);
               }
-            });
-          }
+            }
+          });
         }
       });
     } else if (BeeUtils.same(name, COL_DRIVER) && widget instanceof UnboundSelector) {
@@ -189,7 +184,7 @@ public class TripForm extends PrintFormInterceptor {
   public boolean onStartEdit(FormView form, IsRow row, ScheduledCommand focusCommand) {
     HeaderView header = form.getViewPresenter().getHeader();
     header.clearCommandPanel();
-    header.addCommandItem(new Profit(COL_TRIP, row.getId()));
+    header.addCommandItem(new Profit(COL_TRIP_NO, row.getString(form.getDataIndex(COL_TRIP_NO))));
     header.addCommandItem(getCopyAction());
 
     showDriver(false);
@@ -201,6 +196,11 @@ public class TripForm extends PrintFormInterceptor {
     form.getViewPresenter().getHeader().clearCommandPanel();
     showDriver(true);
     getBeforeInfo(DataUtils.getStringQuietly(newRow, form.getDataIndex(COL_VEHICLE)), newRow);
+  }
+
+  @Override
+  public boolean saveOnPrintNewRow() {
+    return true;
   }
 
   void checkDriver(final HasHandlers listener, final GwtEvent<?> event, final Long driverId) {
@@ -237,14 +237,9 @@ public class TripForm extends PrintFormInterceptor {
               ClassifierConstants.COL_LAST_NAME), new RowCallback() {
             @Override
             public void onSuccess(BeeRow result) {
-              Global.confirm(Localized.getConstants().employment()
+              Global.confirm(Localized.dictionary().employment()
                       + " (" + BeeUtils.joinWords(result.getValues()) + ")", Icon.WARNING, messages,
-                  new ConfirmationCallback() {
-                    @Override
-                    public void onConfirm() {
-                      listener.fireEvent(event);
-                    }
-                  });
+                  () -> listener.fireEvent(event));
             }
           });
         }
@@ -314,13 +309,8 @@ public class TripForm extends PrintFormInterceptor {
           if (BeeUtils.isEmpty(messages)) {
             checkDriver(listener, event, driverId);
           } else {
-            Global.confirm(Localized.getConstants().employment(), Icon.WARNING, messages,
-                new ConfirmationCallback() {
-                  @Override
-                  public void onConfirm() {
-                    checkDriver(listener, event, driverId);
-                  }
-                });
+            Global.confirm(Localized.dictionary().employment(), Icon.WARNING, messages,
+                () -> checkDriver(listener, event, driverId));
           }
         }
       });
@@ -358,30 +348,27 @@ public class TripForm extends PrintFormInterceptor {
   private IdentifiableWidget getCopyAction() {
     if (copyAction == null) {
       copyAction = new FaLabel(FontAwesome.COPY);
-      copyAction.setTitle(Localized.getConstants().actionCopy());
+      copyAction.setTitle(Localized.dictionary().actionCopy());
 
-      copyAction.addClickHandler(new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent clickEvent) {
-          DataInfo info = Data.getDataInfo(getViewName());
-          BeeRow newRow = RowFactory.createEmptyRow(info, true);
+      copyAction.addClickHandler(clickEvent -> {
+        DataInfo info = Data.getDataInfo(getViewName());
+        BeeRow newRow = RowFactory.createEmptyRow(info, true);
 
-          for (String col : new String[] {
-              COL_VEHICLE, "VehicleNumber", COL_EXPEDITION, "ExpeditionType",
-              COL_FORWARDER, "ForwarderName", COL_FORWARDER_VEHICLE, COL_FORWARDER_DRIVER}) {
+        for (String col : new String[] {
+            COL_VEHICLE, "VehicleNumber", COL_EXPEDITION, "ExpeditionType",
+            COL_FORWARDER, "ForwarderName", COL_FORWARDER_VEHICLE, COL_FORWARDER_DRIVER}) {
 
-            int idx = info.getColumnIndex(col);
+          int idx = info.getColumnIndex(col);
 
-            if (!BeeConst.isUndef(idx)) {
-              newRow.setValue(idx, getStringValue(col));
-            }
+          if (!BeeConst.isUndef(idx)) {
+            newRow.setValue(idx, getStringValue(col));
           }
-          TripForm interceptor = getInstance();
-          interceptor.defaultDriver = getLongValue(COL_DRIVER);
-
-          RowFactory.createRow(info.getNewRowForm(), info.getNewRowCaption(), info, newRow, null,
-              interceptor, null);
         }
+        TripForm interceptor = getInstance();
+        interceptor.defaultDriver = getLongValue(COL_DRIVER);
+
+        RowFactory.createRow(info.getNewRowForm(), info.getNewRowCaption(), info, newRow,
+            Modality.ENABLED, null, interceptor, null, null);
       });
     }
     return copyAction;

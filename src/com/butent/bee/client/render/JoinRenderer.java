@@ -49,7 +49,7 @@ public class JoinRenderer extends AbstractCellRenderer implements HasItems {
 
     int index = DataUtils.getColumnIndex(item, dataColumns);
     if (BeeConst.isUndef(index)) {
-      source = CellSource.forProperty(item, ValueType.TEXT);
+      source = CellSource.forProperty(item, null, ValueType.TEXT);
     } else {
       source = CellSource.forColumn(dataColumns.get(index), index);
     }

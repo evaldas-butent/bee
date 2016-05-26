@@ -5,7 +5,7 @@
   idName="TodoItemID"
   >
   <Fields>
-    <String name="Summary" notNull="true" precision="100" label="=summary" />
+    <String name="Summary" notNull="true" precision="100" label="=crmTaskSubject" />
     <Text name="Description" label="=description" />
 
     <DateTime name="Created" defExpr="CURRENT_TIME" label="=registered" />

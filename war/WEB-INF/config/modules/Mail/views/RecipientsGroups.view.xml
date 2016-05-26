@@ -3,7 +3,7 @@
   xmlns="http://www.butent.com/view" 
   name="RecipientsGroups" source="RecipientsGroups" 
   caption="=mailRecipientsGroups" newRowCaption="=mailNewRecipientsGroup"
-  editForm="RecipientsGroup" newRowForm="RecipientsGroup">
+  editForm="RecipientsGroup" newRowForm="RecipientsGroup" filter="Creator {u} or Visibility = 0" >
   <Columns>
     <SimpleColumn name="GroupName" />
 

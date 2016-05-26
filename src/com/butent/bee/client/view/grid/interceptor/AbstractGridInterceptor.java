@@ -56,23 +56,19 @@ import java.util.Map;
 public abstract class AbstractGridInterceptor implements GridInterceptor {
 
   public static final List<String> DELETE_ROW_MESSAGE =
-      Lists.newArrayList(Localized.getConstants().deleteRowQuestion());
+      Lists.newArrayList(Localized.dictionary().deleteRowQuestion());
 
   public static Pair<String, String> deleteRowsMessage(int selectedRows) {
-    String m1 = Localized.getConstants().deleteActiveRow();
+    String m1 = Localized.dictionary().deleteActiveRow();
 
     String m2 = (selectedRows == 1)
-        ? Localized.getConstants().deleteSelectedRow()
-        : Localized.getMessages().deleteSelectedRows(selectedRows);
+        ? Localized.dictionary().deleteSelectedRow()
+        : Localized.dictionary().deleteSelectedRows(selectedRows);
 
     return Pair.of(m1, m2);
   }
 
   private GridPresenter gridPresenter;
-
-  @Override
-  public void afterAction(Action action, GridPresenter presenter) {
-  }
 
   @Override
   public void afterCreate(GridView gridView) {
@@ -199,6 +195,16 @@ public abstract class AbstractGridInterceptor implements GridInterceptor {
   @Override
   public long getActiveRowId() {
     return DataUtils.getId(getActiveRow());
+  }
+
+  @Override
+  public Boolean getBooleanValue(String source) {
+    int index = getDataIndex(source);
+    if (getActiveRow() != null && index >= 0) {
+      return getActiveRow().getBoolean(index);
+    } else {
+      return null;
+    }
   }
 
   @Override
@@ -340,7 +346,7 @@ public abstract class AbstractGridInterceptor implements GridInterceptor {
   }
 
   @Override
-  public String getRowCaption(IsRow row, boolean edit) {
+  public String getRowCaption(IsRow row) {
     return null;
   }
 

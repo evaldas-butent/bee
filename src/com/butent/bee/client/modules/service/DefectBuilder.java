@@ -10,6 +10,7 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
+import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.ViewHelper;
@@ -57,11 +58,11 @@ final class DefectBuilder {
       @Override
       public void onSuccess(BeeRowSet result) {
         if (DataUtils.isEmpty(result)) {
-          form.notifyInfo(Localized.getConstants().noData());
+          form.notifyInfo(Localized.dictionary().noData());
 
         } else {
           ServiceHelper.selectMaintenanceItems(objId, result,
-              Localized.getConstants().svcNewDefect(), Localized.getConstants().actionCreate(),
+              Localized.dictionary().svcNewDefect(), Localized.dictionary().actionCreate(),
               STYLE_PREFIX, new BiConsumer<Long, BeeRowSet>() {
                 @Override
                 public void accept(Long t, BeeRowSet u) {
@@ -110,7 +111,8 @@ final class DefectBuilder {
           }
         }
 
-        RowFactory.createRow("NewServiceDefect", null, dfInfo, dfRow, new RowCallback() {
+        RowFactory.createRow("NewServiceDefect", null, dfInfo, dfRow, Modality.ENABLED,
+            new RowCallback() {
           @Override
           public void onSuccess(BeeRow result) {
             ParameterList params = ServiceKeeper.createArgs(SVC_CREATE_DEFECT_ITEMS);

@@ -48,7 +48,7 @@ class DepartmentForm extends AbstractFormInterceptor implements SelectorEvent.Ha
 
     } else if (widget instanceof ChildGrid && BeeUtils.same(name, VIEW_DEPARTMENT_EMPLOYEES)) {
       ((ChildGrid) widget).setGridInterceptor(
-          new UniqueChildInterceptor(Localized.getConstants().newDepartmentEmployees(),
+          new UniqueChildInterceptor(Localized.dictionary().newDepartmentEmployees(),
               COL_DEPARTMENT, COL_COMPANY_PERSON, VIEW_COMPANY_PERSONS,
               Lists.newArrayList(COL_FIRST_NAME, COL_LAST_NAME),
               Lists.newArrayList(COL_FIRST_NAME, COL_LAST_NAME, ALS_COMPANY_NAME,
@@ -56,7 +56,7 @@ class DepartmentForm extends AbstractFormInterceptor implements SelectorEvent.Ha
 
     } else if (widget instanceof ChildGrid && BeeUtils.same(name, VIEW_DEPARTMENT_POSITIONS)) {
       ((ChildGrid) widget).setGridInterceptor(
-          new UniqueChildInterceptor(Localized.getConstants().newDepartmentPositions(),
+          new UniqueChildInterceptor(Localized.dictionary().newDepartmentPositions(),
               COL_DEPARTMENT, COL_POSITION, VIEW_POSITIONS,
               Lists.newArrayList(COL_POSITION_NAME), Lists.newArrayList(COL_POSITION_NAME)));
     }

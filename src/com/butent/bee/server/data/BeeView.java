@@ -1,11 +1,15 @@
 package com.butent.bee.server.data;
 
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
+import com.butent.bee.server.Config;
 import com.butent.bee.server.Invocation;
 import com.butent.bee.server.data.BeeTable.BeeField;
 import com.butent.bee.server.data.BeeTable.BeeRelation;
+import com.butent.bee.server.i18n.Localizations;
 import com.butent.bee.server.sql.HasConditions;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.IsExpression;
@@ -18,6 +22,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeConst.SqlEngine;
 import com.butent.bee.shared.HasExtendedInfo;
 import com.butent.bee.shared.Pair;
+import com.butent.bee.shared.Service;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeObject;
 import com.butent.bee.shared.data.Defaults.DefaultExpression;
@@ -41,6 +46,7 @@ import com.butent.bee.shared.data.XmlExpression.XmlSwitch;
 import com.butent.bee.shared.data.XmlView;
 import com.butent.bee.shared.data.XmlView.XmlAggregateColumn;
 import com.butent.bee.shared.data.XmlView.XmlColumn;
+import com.butent.bee.shared.data.XmlView.XmlColumns;
 import com.butent.bee.shared.data.XmlView.XmlExternalJoin;
 import com.butent.bee.shared.data.XmlView.XmlHiddenColumn;
 import com.butent.bee.shared.data.XmlView.XmlIdColumn;
@@ -54,6 +60,7 @@ import com.butent.bee.shared.data.filter.ColumnIsNullFilter;
 import com.butent.bee.shared.data.filter.ColumnNotNullFilter;
 import com.butent.bee.shared.data.filter.ColumnValueFilter;
 import com.butent.bee.shared.data.filter.CompoundFilter;
+import com.butent.bee.shared.data.filter.CompoundType;
 import com.butent.bee.shared.data.filter.CustomFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.FilterParser;
@@ -65,6 +72,7 @@ import com.butent.bee.shared.data.filter.VersionFilter;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.ViewColumn;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
@@ -86,6 +94,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -265,7 +274,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
     }
 
     public boolean isNullable() {
-      return field == null || !field.isNotNull();
+      return field == null || !field.isNotNull() || !BeeUtils.isEmpty(locale);
     }
 
     public boolean isReadOnly() {
@@ -382,12 +391,13 @@ public class BeeView implements BeeObject, HasExtendedInfo {
     conditionProviders.put(key, provider);
   }
 
-  private static void initColumn(ColumnInfo info, BeeColumn column) {
+  private static void initColumn(ColumnInfo info, BeeColumn column, boolean required) {
     column.setId(info.getName());
     column.setLabel(BeeUtils.notEmpty(info.getLabel(), info.getName()));
 
     column.setType(info.getType().toValueType());
-    column.setNullable(info.isNullable());
+
+    column.setNullable(info.isNullable() ? !required : false);
 
     column.setPrecision(info.getPrecision());
     column.setScale(info.getScale());
@@ -496,7 +506,9 @@ public class BeeView implements BeeObject, HasExtendedInfo {
 
   public BeeColumn getBeeColumn(String colName) {
     BeeColumn column = new BeeColumn();
-    initColumn(colName, column);
+    UserServiceBean usr = Invocation.locateRemoteBean(UserServiceBean.class);
+
+    initColumn(colName, column, usr.isColumnRequired(this, colName));
     return column;
   }
 
@@ -518,10 +530,6 @@ public class BeeView implements BeeObject, HasExtendedInfo {
 
   public int getColumnCount() {
     return getColumnNames().size();
-  }
-
-  public Pair<DefaultExpression, Object> getColumnDefaults(String colName) {
-    return getColumnInfo(colName).getDefaults();
   }
 
   public String getColumnEnumKey(String colName) {
@@ -674,7 +682,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
           "Aggregate Function", getColumnAggregate(col), "Hidden", isColHidden(col),
           "Read Only", isColReadOnly(col), "Editable", isColEditable(col),
           "Level", getColumnLevel(col),
-          "Expression", isColCalculated(col) ? getColumnExpression(col)
+          "Expression", Objects.nonNull(getColumnExpression(col)) ? getColumnExpression(col)
               .getSqlString(SqlBuilderFactory.getBuilder(SqlEngine.GENERIC)) : null,
           "Parent Column", getColumnParent(col), "Owner Alias", getColumnOwner(col),
           "Label", getColumnLabel(col), "Enum key", getColumnEnumKey(col));
@@ -760,7 +768,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
       for (Order.Column ordCol : o.getColumns()) {
         for (String col : ordCol.getSources()) {
           if (hasColumn(col)) {
-            if (isColAggregate(col) || isColCalculated(col)) {
+            if (isColAggregate(col) || Objects.nonNull(getColumnExpression(col))) {
               alias = null;
               colName = getColumnName(col);
 
@@ -834,11 +842,12 @@ public class BeeView implements BeeObject, HasExtendedInfo {
 
   public List<BeeColumn> getRowSetColumns() {
     List<BeeColumn> result = new ArrayList<>();
+    UserServiceBean usr = Invocation.locateRemoteBean(UserServiceBean.class);
 
     for (ColumnInfo info : columns.values()) {
       if (!info.isHidden()) {
         BeeColumn column = new BeeColumn();
-        initColumn(info, column);
+        initColumn(info, column, usr.isColumnRequired(this, info.getName()));
         result.add(column);
       }
     }
@@ -859,6 +868,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
       }
     }
 
+    logger.warning("view", getName(), "column", colName, "not found");
     return BeeConst.UNDEF;
   }
 
@@ -878,6 +888,18 @@ public class BeeView implements BeeObject, HasExtendedInfo {
     return source.getVersionName();
   }
 
+  public ListMultimap<String, String> getTranslationColumns() {
+    ListMultimap<String, String> result = ArrayListMultimap.create();
+
+    columns.forEach((colName, columnInfo) -> {
+      if (!BeeUtils.isEmpty(columnInfo.getLocale()) && columnInfo.field.isTranslatable()) {
+        result.put(columnInfo.getField(), colName);
+      }
+    });
+
+    return result;
+  }
+
   public List<ViewColumn> getViewColumns() {
     List<ViewColumn> result = new ArrayList<>();
 
@@ -893,8 +915,8 @@ public class BeeView implements BeeObject, HasExtendedInfo {
     return !BeeUtils.isEmpty(colName) && columns.containsKey(BeeUtils.normalize(colName));
   }
 
-  public void initColumn(String colName, BeeColumn column) {
-    initColumn(getColumnInfo(colName), column);
+  public void initColumn(String colName, BeeColumn column, boolean required) {
+    initColumn(getColumnInfo(colName), column, required);
   }
 
   public boolean isColAggregate(String colName) {
@@ -902,7 +924,8 @@ public class BeeView implements BeeObject, HasExtendedInfo {
   }
 
   public boolean isColCalculated(String colName) {
-    return getColumnExpression(colName) != null;
+    return Objects.nonNull(getColumnExpression(colName))
+        && Objects.isNull(getColumnSource(colName));
   }
 
   public Boolean isColEditable(String colName) {
@@ -991,13 +1014,13 @@ public class BeeView implements BeeObject, HasExtendedInfo {
             expression, label, editable));
   }
 
-  private void addColumns(BeeTable table, String alias, Collection<XmlColumn> cols, String parent,
+  private void addColumns(BeeTable table, String alias, XmlColumns cols, String parent,
       Map<String, BeeTable> tables) {
     Assert.notNull(table);
     Assert.notEmpty(alias);
-    Assert.notEmpty(cols);
+    Assert.notNull(cols);
 
-    for (XmlColumn column : cols) {
+    for (XmlColumn column : cols.columns) {
       if (column instanceof XmlSimpleJoin) {
         XmlSimpleJoin col = (XmlSimpleJoin) column;
         BeeTable relTable;
@@ -1034,8 +1057,15 @@ public class BeeView implements BeeObject, HasExtendedInfo {
         }
         if (!BeeUtils.isEmpty(col.filter)) {
           HasConditions compound = SqlUtils.and();
-          joinFilters.put(compound, col.filter);
-          join = SqlUtils.and(join, compound);
+          String flt = col.filter;
+
+          if (BeeUtils.isPrefix(flt, CompoundType.OR.name())) {
+            flt = BeeUtils.removePrefix(flt, CompoundType.OR.name());
+            join = SqlUtils.or(join, compound);
+          } else {
+            join = SqlUtils.and(join, compound);
+          }
+          joinFilters.put(compound, flt);
         }
         String relTbl = relTable.getName();
 
@@ -1055,7 +1085,10 @@ public class BeeView implements BeeObject, HasExtendedInfo {
         }
         String colName = SqlUtils.uniqueName();
         addColumn(als, field, colName, null, null, true, parent, null, null, null);
-        addColumns(relTable, relAls, col.columns, colName, tables);
+        addColumns(relTable, relAls, col, colName, tables);
+
+      } else if (column instanceof XmlColumns) {
+        addColumns(table, alias, (XmlColumns) column, parent, tables);
 
       } else if (column instanceof XmlIdColumn) {
         XmlExpression xpr = new XmlName();
@@ -1087,8 +1120,19 @@ public class BeeView implements BeeObject, HasExtendedInfo {
         } else {
           Assert.state(table.hasField(col.name), BeeUtils.joinWords("View:", getName(),
               "Unknown field name:", table.getName(), col.name));
-          addColumn(alias, table.getField(col.name), colName, col.locale, aggregate, hidden,
-              parent, null, col.label, col.editable);
+
+          BeeField field = table.getField(col.name);
+          addColumn(alias, field, colName, col.locale, aggregate, hidden, parent, null, col.label,
+              col.editable);
+
+          if (field.isTranslatable() && BeeUtils.allEmpty(parent, col.locale)) {
+            for (String locale : Config.getList(Service.PROPERTY_ACTIVE_LOCALES)) {
+              addColumn(alias, field, Localized.column(colName, locale), locale, aggregate, hidden,
+                  parent, null, Localized.maybeTranslate(BeeUtils.notEmpty(col.label,
+                      field.getLabel()), Localizations.getGlossary(locale)),
+                  col.editable);
+            }
+          }
         }
       }
     }

@@ -11,11 +11,12 @@ import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.data.Data;
-import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.event.logical.ParentRowEvent;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.layout.Flow;
+import com.butent.bee.client.modules.trade.TradeUtils;
 import com.butent.bee.client.presenter.GridPresenter;
+import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
@@ -25,7 +26,10 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.utils.BeeUtils;
+
+import java.util.Objects;
 
 public class TripCostsGrid extends AbstractGridInterceptor
     implements ClickHandler, SelectorEvent.Handler {
@@ -47,7 +51,7 @@ public class TripCostsGrid extends AbstractGridInterceptor
   public void afterCreatePresenter(GridPresenter presenter) {
     presenter.getHeader().addCommandItem(invoice);
 
-    dailyCosts.setTitle(Localized.getConstants().trGenerateDailyCosts());
+    dailyCosts.setTitle(Localized.dictionary().trGenerateDailyCosts());
     dailyCosts.addClickHandler(this);
     presenter.getHeader().addCommandItem(dailyCosts);
 
@@ -61,24 +65,21 @@ public class TripCostsGrid extends AbstractGridInterceptor
 
   @Override
   public void onClick(ClickEvent clickEvent) {
-    Global.confirm(Localized.getConstants().trGenerateDailyCosts(), new ConfirmationCallback() {
-      @Override
-      public void onConfirm() {
-        ParameterList args = TransportHandler.createArgs(SVC_GENERATE_DAILY_COSTS);
-        args.addDataItem(COL_TRIP, trip);
+    Global.confirm(Localized.dictionary().trGenerateDailyCosts(), () -> {
+      ParameterList args = TransportHandler.createArgs(SVC_GENERATE_DAILY_COSTS);
+      args.addDataItem(COL_TRIP, trip);
 
-        BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
-          @Override
-          public void onResponse(ResponseObject response) {
-            response.notify(getGridView());
+      BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
+        @Override
+        public void onResponse(ResponseObject response) {
+          response.notify(getGridView());
 
-            if (response.hasErrors()) {
-              return;
-            }
-            getGridPresenter().refresh(false, false);
+          if (response.hasErrors()) {
+            return;
           }
-        });
-      }
+          getGridPresenter().refresh(false, false);
+        }
+      });
     });
   }
 
@@ -101,5 +102,15 @@ public class TripCostsGrid extends AbstractGridInterceptor
     dailyCosts.setVisible(DataUtils.isId(trip));
 
     super.onParentRow(event);
+  }
+
+  @Override
+  public void onEditStart(EditStartEvent event) {
+    if (Objects.equals(event.getColumnId(), TradeConstants.VAR_TOTAL)) {
+      event.consume();
+      TradeUtils.amountEntry(event.getRowValue(), getViewName());
+      return;
+    }
+    super.onEditStart(event);
   }
 }

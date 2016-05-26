@@ -2,9 +2,9 @@ package com.butent.bee.server.rest;
 
 import com.google.common.net.UrlEscapers;
 
-import com.butent.bee.server.io.FileUtils;
 import com.butent.bee.server.modules.administration.FileStorageBean;
 import com.butent.bee.server.rest.annotations.Authorized;
+import com.butent.bee.server.rest.annotations.Trusted;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.io.FileInfo;
@@ -18,7 +18,7 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
+import java.io.InputStream;
 import java.net.URLConnection;
 import java.nio.file.Files;
 import java.util.HashSet;
@@ -31,14 +31,15 @@ import javax.ejb.EJB;
 import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.GET;
+import javax.ws.rs.HeaderParam;
 import javax.ws.rs.InternalServerErrorException;
-import javax.ws.rs.NotFoundException;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Application;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
@@ -77,30 +78,11 @@ public class FileServiceApplication extends Application {
 
     try {
       fileInfo = fs.getFile(fileId);
-      fileInfo.setCaption(fileName);
     } catch (IOException e) {
       logger.error(e);
       throw new InternalServerErrorException(e);
     }
-    return response(fileInfo);
-  }
-
-  @GET
-  @Path("{name}/{path}")
-  public Response getFile(@PathParam("name") String fileName,
-      @PathParam("path") String filePath) {
-
-    String path = Codec.decodeBase64(filePath);
-
-    if (!FileUtils.isInputFile(path)) {
-      throw new NotFoundException(path);
-    }
-    FileInfo fileInfo = new FileInfo(null, fileName, new File(path).length(),
-        URLConnection.guessContentTypeFromName(fileName));
-    fileInfo.setPath(path);
-    fileInfo.setTemporary(true);
-
-    return response(fileInfo);
+    return response(fileInfo, fileName, false);
   }
 
   @GET
@@ -146,11 +128,8 @@ public class FileServiceApplication extends Application {
           }
           ZipEntry ze = new ZipEntry(name);
           zos.putNextEntry(ze);
-
           Files.copy(fileInfo.getFile().toPath(), zos);
-
           zos.closeEntry();
-          fileInfo.close();
         }
       }
     } catch (IOException e) {
@@ -162,25 +141,36 @@ public class FileServiceApplication extends Application {
     fileInfo.setPath(tmp.getAbsolutePath());
     fileInfo.setTemporary(true);
 
-    return response(fileInfo);
+    return response(fileInfo, null, true);
   }
 
-  private static Response response(FileInfo fileInfo) {
-    StreamingOutput so = new StreamingOutput() {
-      @Override
-      public void write(OutputStream outputStream) throws WebApplicationException {
-        try (
-            FileInfo file = fileInfo;
-            BufferedOutputStream bus = new BufferedOutputStream(outputStream)
-        ) {
-          Files.copy(file.getFile().toPath(), bus);
-          bus.flush();
-        } catch (IOException e) {
-          logger.error(e);
-        }
+  @POST
+  @Path("{name}")
+  @Produces(RestResponse.JSON_TYPE)
+  @Trusted(secret = "B-NOVO File Upload")
+  public RestResponse upload(@PathParam("name") String fileName,
+      @HeaderParam(HttpHeaders.CONTENT_TYPE) String fileType, InputStream is) {
+
+    try {
+      return RestResponse.ok(fs.storeFile(is, fileName, fileType));
+    } catch (IOException e) {
+      return RestResponse.error(e);
+    }
+  }
+
+  private static Response response(FileInfo fileInfo, String fileName, boolean close) {
+    StreamingOutput so = outputStream -> {
+      try (BufferedOutputStream bus = new BufferedOutputStream(outputStream)) {
+        Files.copy(fileInfo.getFile().toPath(), bus);
+        bus.flush();
+      } catch (IOException e) {
+        logger.error(e);
+      }
+      if (close) {
+        fileInfo.close();
       }
     };
-    String name = BeeUtils.notEmpty(fileInfo.getCaption(), fileInfo.getName());
+    String name = BeeUtils.notEmpty(fileName, fileInfo.getCaption(), fileInfo.getName());
 
     if (!BeeUtils.isEmpty(name)) {
       name = UrlEscapers.urlFragmentEscaper()
@@ -188,8 +178,8 @@ public class FileServiceApplication extends Application {
     }
     return Response.ok(so,
         BeeUtils.notEmpty(fileInfo.getType(), MediaType.APPLICATION_OCTET_STREAM))
-        .header("Content-Length", fileInfo.getSize())
-        .header("Content-Disposition", "inline; filename*=" + name)
+        .header(HttpHeaders.CONTENT_LENGTH, fileInfo.getSize())
+        .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename*=" + name)
         .build();
   }
 }

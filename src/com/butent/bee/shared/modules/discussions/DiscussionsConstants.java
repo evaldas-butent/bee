@@ -10,24 +10,27 @@ import com.butent.bee.shared.utils.EnumUtils;
 public final class DiscussionsConstants {
 
   public enum DiscussionEvent implements HasCaption {
-    CREATE(Localized.getConstants().discussEventCreated(), null, null),
-    CREATE_MAIL(Localized.getConstants().mailNotify(), null, null),
-    VISIT(Localized.getConstants().discussEventVisited(), null, null),
-    ACTIVATE(Localized.getConstants().discussEventActivated(), Localized.getConstants()
+    CREATE(Localized.dictionary().discussEventCreated(), null, null),
+    CREATE_MAIL(Localized.dictionary().mailNotify(), null, null),
+    VISIT(Localized.dictionary().discussEventVisited(), null, null),
+    ACTIVATE(Localized.dictionary().discussEventActivated(), Localized.dictionary()
         .discussActionActivate(), FontAwesome.ARROW_CIRCLE_RIGHT),
-    DEACTIVATE(Localized.getConstants().discussEventDeactivated(), Localized.getConstants()
+    DEACTIVATE(Localized.dictionary().discussEventDeactivated(), Localized.dictionary()
         .discussActionDeactivate(), null),
-    CLOSE(Localized.getConstants().discussEventClosed(), Localized.getConstants()
+    CLOSE(Localized.dictionary().discussEventClosed(), Localized.dictionary()
         .discussActionClose(), FontAwesome.CHECK_CIRCLE_O),
-    COMMENT(Localized.getConstants().discussEventCommented(), Localized.getConstants()
+    COMMENT(Localized.dictionary().discussEventCommented(), Localized.dictionary()
         .discussActionComment(), FontAwesome.COMMENT_O),
-    COMMENT_DELETE(Localized.getConstants().discussEventCommentDeleted(), Localized.getConstants()
+    COMMENT_DELETE(Localized.dictionary().discussEventCommentDeleted(), Localized.dictionary()
         .actionDelete(), FontAwesome.TRASH),
-    REPLY(Localized.getConstants().discussEventReplied(), Localized.getConstants()
+    REPLY(Localized.dictionary().discussEventReplied(), Localized.dictionary()
         .discussActionReply(), FontAwesome.REPLY),
-    MARK(Localized.getConstants().discussEventMarked(), Localized.getConstants()
+    MARK(Localized.dictionary().discussEventMarked(), Localized.dictionary()
         .discussActionMark(), FontAwesome.TAG),
-    MODIFY(Localized.getConstants().discussEventModified(), null, null);
+    MODIFY(Localized.dictionary().discussEventModified(), Localized.dictionary().actionEdit(),
+        FontAwesome.PENCIL),
+    REFRESH(Localized.dictionary().actionRefresh(), Localized.dictionary().actionRefresh(),
+        FontAwesome.REFRESH);
 
     private final String caption;
     private final String commandLabel;
@@ -63,9 +66,9 @@ public final class DiscussionsConstants {
   }
 
   public enum DiscussionStatus implements HasCaption {
-    ACTIVE(Localized.getConstants().discussStatusActive()),
-    CLOSED(Localized.getConstants().discussStatusClosed()),
-    INACTIVE(Localized.getConstants().discussStatusInactive());
+    ACTIVE(Localized.dictionary().discussStatusActive()),
+    CLOSED(Localized.dictionary().discussStatusClosed()),
+    INACTIVE(Localized.dictionary().discussStatusInactive());
 
     private final String caption;
 
@@ -103,6 +106,7 @@ public final class DiscussionsConstants {
   public static final String ALS_BIRTHDAY_VALID = "BirthdayValid";
   public static final String ALS_OWNER_FIRST_NAME = "OwnerFirstName";
   public static final String ALS_OWNER_LAST_NAME = "OwnerLastName";
+  public static final String ALS_OWNER_PHOTO = "OwnerPhoto";
   public static final String ALS_LAST_COMMET = "LastComment";
   public static final String ALS_FILES_COUNT = "FilesCount";
   public static final String ALS_RELATIONS_COUNT = "RelCount";
@@ -112,11 +116,14 @@ public final class DiscussionsConstants {
   public static final String COL_ACCESSIBILITY = "Accessibility";
   public static final String COL_CAPTION = "Caption";
   public static final String COL_COMMENT = "Comment";
+  public static final String COL_COMMENT_COUNT = "CommentCount";
   public static final String COL_COMMENT_TEXT = "CommentText";
   public static final String COL_CREATED = "Created";
   public static final String COL_DISCUSSION = "Discussion";
+  public static final String COL_DISCUSSION_COMMENT_ID = "DiscussionCommentID";
   public static final String COL_DISCUSSION_ID = "DiscussionID";
   public static final String COL_DESCRIPTION = "Description";
+  public static final String COL_SUMMARY = "Summary";
   public static final String COL_DELETED = "Deleted";
   public static final String COL_IMAGE_RESOURCE_NAME = "ImageResourceName";
   public static final String COL_IMPORTANT = "Important";
@@ -132,12 +139,15 @@ public final class DiscussionsConstants {
   public static final String COL_MEMBER = "Member";
   public static final String COL_NAME = "Name";
   public static final String COL_ORDINAL = "Ordinal";
+  public static final String COL_BACKGROUND_COLOR = "BackgroundColor";
+  public static final String COL_TEXT_COLOR = "Color";
   public static final String COL_OWNER = "Owner";
   public static final String COL_PERMIT_COMMENT = "PermitComment";
   public static final String COL_PUBLISHER = "Publisher";
   public static final String COL_PUBLISHER_FIRST_NAME = "PublisherFirstName";
   public static final String COL_PUBLISHER_LAST_NAME = "PublisherLastName";
   public static final String COL_PUBLISH_TIME = "PublishTime";
+  public static final String ALS_MAX_PUBLISH_TIME = "MaxPublishTime";
   public static final String COL_PARENT_COMMENT = "Parent";
   public static final String COL_REASON = "Reason";
   public static final String COL_STAR = "Star";
@@ -152,6 +162,7 @@ public final class DiscussionsConstants {
   public static final String FORM_NEW_DISCUSSION = "NewDiscussion";
   public static final String FORM_DISCUSSION = "Discussion";
   public static final String FORM_ANNOUNCEMENTS_BOARD = "AnnouncementsBoard";
+  public static final String FORM_NEW_ANNOUNCEMENT = "NewAnnouncement";
 
   public static final String GRID_DISCUSSIONS = "Discussions";
   public static final String GRID_DISCUSSION_FILES = "DiscussionFiles";
@@ -164,17 +175,12 @@ public final class DiscussionsConstants {
   public static final String PROP_LAST_COMMENT = "LastComment";
   public static final String PROP_LAST_COMMENT_DATA = "LastCommentData";
   public static final String PROP_MEMBERS = "Members";
+  public static final String PROP_MEMBER_GROUP = "MemeberGroup";
   public static final String PROP_STAR = "Star";
   public static final String PROP_USER = "User";
   public static final String PROP_ATTACHMENT = "Attachment";
   public static final String PROP_MARKS = "Marks";
   public static final String PROP_MAIL = "Mail";
-
-  public static final String PROP_COMPANIES = "Companies";
-  public static final String PROP_PERSONS = "Persons";
-  public static final String PROP_APPOINTMENTS = "Appointments";
-  public static final String PROP_TASKS = "Tasks";
-  public static final String PROP_DOCUMENTS = "Documents";
 
   public static final String PROP_ANNOUNCMENT = "Announcement";
   public static final String PROP_MARK_COUNT = "MarkCount";

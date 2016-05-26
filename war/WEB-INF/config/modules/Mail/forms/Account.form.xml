@@ -3,26 +3,37 @@
         xmlns:f="http://www.butent.com/form"
         xmlns:ui="http://www.butent.com/ui"
 
-        name="Account" viewName="Accounts" caption="=mailAccount" width="650" height="700"
+        name="Account" viewName="Accounts" caption="=mailAccount" width="700" height="700"
     >
   <FlowPanel class="flexBox-vertical">
     <FlowPanel class="flexBox-vertical-center">
       <Table kind="controls">
+        <col index="0" kind="label" />
         <row>
-          <Label for="Description" horizontalAlignment="right" />
+          <Label for="Description" />
           <InputText source="Description" style="width:200px" />
-          <CheckBox source="Main" text="=mailDefault" />
+          <CheckBox source="Main" />
         </row>
         <row>
-          <Label for="Address" horizontalAlignment="right" />
+          <Label for="Address" />
           <DataSelector source="Address" style="width:200px" />
-          <CheckBox source="Private" text="=mailPrivate" module="Administration" />
+          <CheckBox source="Private" module="Administration" />
         </row>
         <row>
-          <Label for="Signature" horizontalAlignment="right" />
+          <Label for="Signature" />
           <DataSelector source="Signature" choiceColumns="Description Content" style="width:200px"
                         currentUserFilter="User" />
-          <CheckBox source="SynchronizeAll" text="=mailSynchronizeAll" />
+          <CheckBox source="SynchronizeAll" />
+        </row>
+        <row>
+          <Label text="=users" />
+          <cell colSpan="2">
+            <ChildSelector name="AccountUsers" childTable="AccountUsers" viewName="Users"
+                           targetRelColumn="Account" sourceRelColumn="User"
+                           editEnabled="false" newRowEnabled="false" caching="local"
+                           choiceColumns="FirstName LastName"
+                           style="width:400px;" label="=users" />
+          </cell>
         </row>
       </Table>
     </FlowPanel>
@@ -33,6 +44,8 @@
         <FlowPanel class="flexBox-horizontal">
           <FlowPanel class="flexBox-vertical-center flexible">
             <Table kind="controls">
+              <col index="0" kind="label" />
+              
               <row>
                 <cell colSpan="2">
                   <TextLabel style="font-weight:bold; text-align:center;">
@@ -99,6 +112,8 @@
 
           <FlowPanel class="flexBox-vertical-center flexible">
             <Table kind="controls">
+              <col index="0" kind="label" />
+              
               <row>
                 <cell colSpan="2">
                   <Label text="=mailSMTPServerSettings"

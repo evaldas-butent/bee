@@ -174,6 +174,11 @@ public class DataChangeEvent extends ModificationEvent<DataChangeEvent.Handler> 
   }
 
   @Override
+  public String toString() {
+    return BeeUtils.joinWords(getKind(), getViewNames(), effects);
+  }
+
+  @Override
   protected void dispatch(Handler handler) {
     handler.onDataChange(this);
   }

@@ -83,7 +83,7 @@ public final class ViewFactory {
       void create(String item, ViewCallback callback) {
         Long id = BeeUtils.toLongOrNull(item);
         if (id != null) {
-          Global.getRooms().open(id, callback);
+          Global.getChatManager().open(id, callback);
         }
       }
     },

@@ -97,7 +97,7 @@ public final class Global {
   private static final Filters filters = new Filters();
 
   private static final Users users = new Users();
-  private static final Rooms rooms = new Rooms();
+  private static final ChatManager chatManager = new ChatManager();
 
   private static final NewsAggregator newsAggregator = new NewsAggregator();
 
@@ -145,7 +145,7 @@ public final class Global {
   public static void choiceWithCancel(String caption, String prompt, List<String> options,
       ChoiceCallback callback) {
     msgBoxen.choice(caption, prompt, options, callback, BeeConst.UNDEF, BeeConst.UNDEF,
-        Localized.getConstants().cancel(), null);
+        Localized.dictionary().cancel(), null);
   }
 
   public static void confirm(String message, ConfirmationCallback callback) {
@@ -154,7 +154,7 @@ public final class Global {
 
   public static void confirm(String caption, Icon icon, List<String> messages,
       ConfirmationCallback callback) {
-    confirm(caption, icon, messages, Localized.getConstants().yes(), Localized.getConstants().no(),
+    confirm(caption, icon, messages, Localized.dictionary().yes(), Localized.dictionary().no(),
         callback);
   }
 
@@ -176,8 +176,8 @@ public final class Global {
 
   public static void confirmDelete(String caption, Icon icon, List<String> messages,
       ConfirmationCallback callback, Element target) {
-    msgBoxen.confirm(caption, icon, messages, Localized.getConstants().delete(),
-        Localized.getConstants().cancel(), callback, null,
+    msgBoxen.confirm(caption, icon, messages, Localized.dictionary().delete(),
+        Localized.dictionary().cancel(), callback, null,
         StyleUtils.className(FontSize.LARGE), StyleUtils.className(FontSize.MEDIUM), target);
   }
 
@@ -187,9 +187,9 @@ public final class Global {
 
   public static void confirmRemove(String caption, String item, ConfirmationCallback callback,
       Element target) {
-    List<String> messages = Lists.newArrayList(Localized.getMessages().removeQuestion(item));
-    msgBoxen.confirm(caption, Icon.WARNING, messages, Localized.getConstants().actionRemove(),
-        Localized.getConstants().cancel(), callback, null,
+    List<String> messages = Lists.newArrayList(Localized.dictionary().removeQuestion(item));
+    msgBoxen.confirm(caption, Icon.WARNING, messages, Localized.dictionary().actionRemove(),
+        Localized.dictionary().cancel(), callback, null,
         StyleUtils.className(FontSize.MEDIUM), StyleUtils.className(FontSize.MEDIUM), target);
   }
 
@@ -204,6 +204,10 @@ public final class Global {
 
   public static CacheManager getCache() {
     return cache;
+  }
+
+  public static ChatManager getChatManager() {
+    return chatManager;
   }
 
   public static Defaults getDefaults() {
@@ -277,10 +281,6 @@ public final class Global {
     return reportSettings;
   }
 
-  public static Rooms getRooms() {
-    return rooms;
-  }
-
   public static Search getSearch() {
     return search;
   }
@@ -339,7 +339,7 @@ public final class Global {
       CssUnit widthUnit) {
     inputString(caption, prompt, callback, styleName, defaultValue, maxLength, target, width,
         widthUnit,
-        BeeConst.UNDEF, Localized.getConstants().ok(), Localized.getConstants().cancel(), null);
+        BeeConst.UNDEF, Localized.dictionary().ok(), Localized.dictionary().cancel(), null);
   }
 
   public static void inputString(String caption, String prompt, StringCallback callback,
@@ -392,7 +392,7 @@ public final class Global {
 
   public static void messageBox(String caption, Icon icon, String message) {
     messageBox(caption, icon, Lists.newArrayList(message),
-        Lists.newArrayList(Localized.getConstants().ok()), 0, null);
+        Lists.newArrayList(Localized.dictionary().ok()), 0, null);
   }
 
   public static boolean nativeConfirm(String... lines) {
@@ -498,7 +498,7 @@ public final class Global {
   }
 
   public static void showError(List<String> messages) {
-    showError(Localized.getConstants().error(), messages, null, null);
+    showError(Localized.dictionary().error(), messages, null, null);
   }
 
   public static void showError(String message) {
@@ -507,7 +507,7 @@ public final class Global {
       messages.add(message);
     }
 
-    showError(Localized.getConstants().error(), messages);
+    showError(Localized.dictionary().error(), messages);
   }
 
   public static void showError(String caption, List<String> messages) {
@@ -549,8 +549,8 @@ public final class Global {
     msgBoxen.showInfo(caption, messages, dialogStyle, closeHtml);
   }
 
-  public static void showModalGrid(String caption, IsTable<?, ?> table) {
-    msgBoxen.showTable(caption, table);
+  public static void showModalGrid(String caption, IsTable<?, ?> table, String... styles) {
+    msgBoxen.showTable(caption, table, styles);
   }
 
   public static void showModalWidget(String caption, Widget widget) {

@@ -8,15 +8,19 @@ import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
-import com.butent.bee.server.modules.administration.FileStorageBean;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
+import com.butent.bee.shared.data.BeeRow;
+import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.SimpleRowSet;
+import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.ui.HasCaption;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -24,12 +28,15 @@ import java.util.Map;
 import java.util.Objects;
 
 import javax.ejb.EJB;
+import javax.ejb.Stateless;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 
 @Path("/")
+@Produces(RestResponse.JSON_TYPE)
+@Stateless
 public class Worker {
 
   @EJB
@@ -38,40 +45,89 @@ public class Worker {
   SystemBean sys;
   @EJB
   UserServiceBean usr;
-  @EJB
-  FileStorageBean fs;
+
+  @GET
+  @Path("companytypes")
+  public RestResponse getCompanyTypes(@HeaderParam(RestResponse.LAST_SYNC_TIME) Long lastSynced) {
+    long time = System.currentTimeMillis();
+
+    return RestResponse.ok(rsToMap(getRowSet(TBL_COMPANY_TYPES, COL_COMPANY_TYPE_NAME, lastSynced)))
+        .setLastSync(time);
+  }
+
+  @GET
+  @Path("cities")
+  public RestResponse getCities(@HeaderParam(RestResponse.LAST_SYNC_TIME) Long lastSynced) {
+    long time = System.currentTimeMillis();
+
+    return RestResponse.ok(rsToMap(getRowSet(TBL_CITIES, COL_CITY_NAME, lastSynced, COL_COUNTRY)))
+        .setLastSync(time);
+  }
+
+  @GET
+  @Path("countries")
+  public RestResponse getCountries(@HeaderParam(RestResponse.LAST_SYNC_TIME) Long lastSynced) {
+    long time = System.currentTimeMillis();
+
+    return RestResponse.ok(rsToMap(getRowSet(TBL_COUNTRIES, COL_COUNTRY_NAME, lastSynced)))
+        .setLastSync(time);
+  }
+
+  @GET
+  @Path("durationtypes")
+  public RestResponse getDurationTypes(@HeaderParam(RestResponse.LAST_SYNC_TIME) Long lastSynced) {
+    long time = System.currentTimeMillis();
+
+    return RestResponse.ok(rsToMap(getRowSet(TBL_DURATION_TYPES, COL_DURATION_TYPE_NAME,
+        lastSynced))).setLastSync(time);
+  }
+
+  @GET
+  @Path("tasktypes")
+  public RestResponse getTaskTypes(@HeaderParam(RestResponse.LAST_SYNC_TIME) Long lastSynced) {
+    long time = System.currentTimeMillis();
+
+    return RestResponse.ok(rsToMap(getRowSet(TBL_TASK_TYPES, COL_TASK_TYPE_NAME, lastSynced)))
+        .setLastSync(time);
+  }
 
   @GET
   @Path("users")
-  @Produces(RestResponse.JSON_TYPE)
   public RestResponse getUsers(@HeaderParam(RestResponse.LAST_SYNC_TIME) Long lastSynced) {
     long time = System.currentTimeMillis();
 
-    SimpleRowSet rowSet = qs.getData(new SqlSelect()
+    BeeRowSet users = (BeeRowSet) qs.doSql(new SqlSelect()
         .addField(TBL_USERS, sys.getIdName(TBL_USERS), ID)
         .addField(TBL_USERS, sys.getVersionName(TBL_USERS), VERSION)
         .addField(TBL_USERS, COL_COMPANY_PERSON, COL_COMPANY_PERSON + ID)
         .addFields(TBL_USERS, COL_USER_BLOCK_FROM, COL_USER_BLOCK_UNTIL)
         .addFrom(TBL_USERS)
         .setWhere(Objects.nonNull(lastSynced)
-            ? SqlUtils.more(TBL_USERS, sys.getVersionName(TBL_USERS), lastSynced) : null));
+            ? SqlUtils.more(TBL_USERS, sys.getVersionName(TBL_USERS), lastSynced) : null)
+        .getQuery());
 
-    List<Map<String, Long>> data = new ArrayList<>();
+    BeeRowSet persons = qs.getViewData(new CompanyPersonsWorker().getViewName(),
+        Filter.idIn(users.getDistinctLongs(users.getColumnIndex(COL_COMPANY_PERSON + ID))));
 
-    for (int i = 0; i < rowSet.getNumberOfRows(); i++) {
-      Map<String, Long> row = new LinkedHashMap<>(rowSet.getNumberOfColumns());
+    Collection<Map<String, Object>> data = rsToMap(users);
 
-      for (int j = 0; j < rowSet.getNumberOfColumns(); j++) {
-        row.put(rowSet.getColumnName(j), rowSet.getLong(i, j));
+    for (Map<String, Object> user : data) {
+      int r = persons.getRowIndex((Long) user.get(COL_COMPANY_PERSON + ID));
+      BeeRow row = persons.getRow(r);
+      Map<String, Object> person = new LinkedHashMap<>();
+      person.put(ID, row.getId());
+      person.put(VERSION, row.getVersion());
+
+      for (int c = 0; c < persons.getNumberOfColumns(); c++) {
+        person.put(persons.getColumnId(c), CrudWorker.getValue(persons, r, c));
       }
-      data.add(row);
+      user.put(COL_COMPANY_PERSON, person);
     }
     return RestResponse.ok(data).setLastSync(time);
   }
 
   @GET
   @Path("login")
-  @Produces(RestResponse.JSON_TYPE)
   public RestResponse login() {
     Map<String, Object> resp = new HashMap<>();
 
@@ -114,5 +170,35 @@ public class Worker {
     resp.put(COL_USER, map);
 
     return RestResponse.ok(resp);
+  }
+
+  private BeeRowSet getRowSet(String table, String field, Long lastSynced, String... fields) {
+    SqlSelect select = new SqlSelect()
+        .addField(table, sys.getIdName(table), ID)
+        .addField(table, sys.getVersionName(table), VERSION)
+        .addField(table, field, "Name")
+        .addFrom(table)
+        .setWhere(Objects.nonNull(lastSynced)
+            ? SqlUtils.more(table, sys.getVersionName(table), lastSynced)
+            : null);
+
+    if (!ArrayUtils.isEmpty(fields)) {
+      select.addFields(table, fields);
+    }
+    return (BeeRowSet) qs.doSql(select.getQuery());
+  }
+
+  private static Collection<Map<String, Object>> rsToMap(BeeRowSet rowSet) {
+    List<Map<String, Object>> data = new ArrayList<>();
+
+    for (int i = 0; i < rowSet.getNumberOfRows(); i++) {
+      Map<String, Object> row = new LinkedHashMap<>(rowSet.getNumberOfColumns());
+
+      for (int j = 0; j < rowSet.getNumberOfColumns(); j++) {
+        row.put(rowSet.getColumnId(j), CrudWorker.getValue(rowSet, i, j));
+      }
+      data.add(row);
+    }
+    return data;
   }
 }

@@ -11,6 +11,7 @@ import com.butent.bee.server.utils.XmlUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.i18n.SupportedLocale;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -19,12 +20,9 @@ import com.butent.bee.shared.utils.ExtendedProperty;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
 
-import java.io.File;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 import javax.ejb.Stateless;
@@ -78,57 +76,27 @@ public class Invocation {
     String mode = reqInfo.getContent();
 
     if (BeeUtils.length(mode) >= 2) {
-      List<Property> lst = new ArrayList<>();
+      List<ExtendedProperty> lst = new ArrayList<>();
 
-      Map<String, String> constants = Localizations.getDictionary(Localizations.getDefaultLocale());
       for (String key : BeeUtils.split(mode, BeeConst.CHAR_SPACE)) {
-        String value = constants.get(key);
-        PropertyUtils.addProperty(lst, key, BeeUtils.notEmpty(value, BeeConst.NULL));
-      }
+        for (SupportedLocale supportedLocale : SupportedLocale.values()) {
+          Map<String, String> glossary = Localizations.getGlossary(supportedLocale);
 
-      Map<Locale, File> avail = Localizations.getAvailableConstants();
-      int idx = 0;
-      if (avail != null) {
-        PropertyUtils.addProperty(lst, "Available Constants", avail.size());
-        for (Map.Entry<Locale, File> entry : avail.entrySet()) {
-          PropertyUtils.addProperty(lst,
-              BeeUtils.joinWords(++idx, I18nUtils.toString(entry.getKey())), entry.getValue());
+          String value = BeeUtils.getQuietly(glossary, key);
+          lst.add(new ExtendedProperty(key, supportedLocale.name(), value));
         }
       }
 
-      avail = Localizations.getAvailableMessages();
-      idx = 0;
-      if (avail != null) {
-        PropertyUtils.addProperty(lst, "Available Messages", avail.size());
-        for (Map.Entry<Locale, File> entry : avail.entrySet()) {
-          PropertyUtils.addProperty(lst,
-              BeeUtils.joinWords(++idx, I18nUtils.toString(entry.getKey())), entry.getValue());
-        }
-      }
+      return ResponseObject.collection(lst, ExtendedProperty.class);
 
-      Collection<Locale> locales = Localizations.getCachedConstantLocales();
-      PropertyUtils.addProperty(lst, "Loaded Constants", locales.size());
-      idx = 0;
-      for (Locale z : locales) {
-        PropertyUtils.addProperty(lst,
-            BeeUtils.progress(++idx, locales.size()), I18nUtils.toString(z));
-      }
-
-      locales = Localizations.getCachedMessageLocales();
-      PropertyUtils.addProperty(lst, "Loaded Messages", locales.size());
-      idx = 0;
-      for (Locale z : locales) {
-        PropertyUtils.addProperty(lst,
-            BeeUtils.progress(++idx, locales.size()), I18nUtils.toString(z));
-      }
-
-      return ResponseObject.collection(lst, Property.class);
+    } else if (BeeUtils.containsSame(mode, "i")) {
+      return ResponseObject.collection(I18nUtils.getInfo(), Property.class);
 
     } else if (BeeUtils.containsSame(mode, "x")) {
       return ResponseObject.collection(I18nUtils.getExtendedInfo(), ExtendedProperty.class);
 
     } else {
-      return ResponseObject.collection(I18nUtils.getInfo(), Property.class);
+      return ResponseObject.collection(Localizations.getInfo(), Property.class);
     }
   }
 

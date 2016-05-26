@@ -8,6 +8,7 @@ import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.http.client.RequestBuilder;
 import com.google.gwt.http.client.Response;
 import com.google.gwt.http.client.URL;
+import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
@@ -27,14 +28,12 @@ import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.CommUtils;
-import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.FileInfo;
-import com.butent.bee.shared.io.FileNameUtils;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
@@ -47,7 +46,6 @@ import com.butent.bee.shared.utils.NameUtils;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -64,8 +62,6 @@ import elemental.xml.XMLHttpRequest;
 public final class FileUtils {
 
   private static final BeeLogger logger = LogUtils.getLogger(FileUtils.class);
-
-  public static final String UPLOAD_URL = "upload";
 
   private static final long MIN_FILE_SIZE_FOR_PROGRESS = 100000;
 
@@ -117,60 +113,6 @@ public final class FileUtils {
     }
   }
 
-  public static void deletePhoto(final String photoFileName, final Callback<String> callback) {
-    Assert.notEmpty(photoFileName);
-
-    Map<String, String> parameters = createParameters(Service.DELETE_PHOTO, photoFileName);
-
-    final XMLHttpRequest xhr = RpcUtils.createXhr();
-    xhr.open(RequestBuilder.POST.toString(), getUploadUrl(parameters), true);
-
-    RpcUtils.addSessionId(xhr);
-
-    xhr.setOnload(new EventListener() {
-      @Override
-      public void handleEvent(Event evt) {
-        if (xhr.getStatus() == Response.SC_OK) {
-          String response = ResponseObject.restore(xhr.getResponseText()).getResponseAsString();
-
-          if (BeeUtils.same(response, photoFileName)) {
-            logger.info("deleted photo", photoFileName);
-            logger.addSeparator();
-
-            if (callback != null) {
-              callback.onSuccess(photoFileName);
-            }
-
-          } else {
-            String msg = BeeUtils.joinWords("delete", photoFileName, "response:", response);
-            logger.warning(msg);
-            if (callback != null) {
-              callback.onFailure(msg);
-            }
-          }
-
-        } else {
-          String msg = BeeUtils.joinWords("delete", photoFileName, "response status:",
-              BeeUtils.bracket(xhr.getStatus()), xhr.getStatusText());
-          logger.severe(msg);
-          if (callback != null) {
-            callback.onFailure(msg);
-          }
-        }
-      }
-    });
-
-    xhr.send();
-  }
-
-  public static String generatePhotoFileName(String originalFileName) {
-    String name = BeeUtils.join(BeeConst.STRING_UNDER, BeeUtils.randomString(6),
-        System.currentTimeMillis());
-    String ext = FileNameUtils.getExtension(originalFileName);
-
-    return BeeUtils.isEmpty(ext) ? name : FileNameUtils.addExtension(name, ext);
-  }
-
   public static FileList getFiles(NativeEvent event) {
     Assert.notNull(event);
 
@@ -190,7 +132,7 @@ public final class FileUtils {
     String name = BeeUtils.notEmpty(fileInfo.getCaption(), fileInfo.getName());
 
     simple.setWidget(new Link(BeeUtils.notEmpty(ArrayUtils.joinWords(caption), name),
-        getUrl(name, fileInfo.getId())));
+        getUrl(fileInfo.getId(), name)));
 
     DndHelper.makeSource(simple, NameUtils.getClassName(FileInfo.class), fileInfo, null);
 
@@ -214,21 +156,14 @@ public final class FileUtils {
         + (DataUtils.isId(fileId) ? "/" + BeeUtils.toString(fileId) : "");
   }
 
-  public static String getUrl(String fileName, Long fileId) {
-    Assert.notEmpty(fileName);
-    return getUrl(fileId) + "/" + URL.encodePathSegment(fileName);
-  }
-
-  public static String getUrl(String fileName, String filePath) {
-    Assert.notEmpty(filePath);
-    return getUrl(fileName, (Long) null) + "/"
-        + URL.encodePathSegment(Codec.encodeBase64(filePath));
+  public static String getUrl(Long fileId, String fileName) {
+    return getUrl(fileId) + "/" + URL.encodePathSegment(Assert.notEmpty(fileName));
   }
 
   public static String getUrl(String fileName, Map<Long, String> files) {
-    Assert.notEmpty(files);
-    return CommUtils.getPath(getUrl(fileName, (Long) null),
-        Collections.singletonMap(Service.VAR_FILES, Codec.beeSerialize(files)), true);
+    return CommUtils.getPath(getUrl(null, fileName),
+        Collections.singletonMap(Service.VAR_FILES, Codec.beeSerialize(Assert.notEmpty(files))),
+        true);
   }
 
   public static void readAsDataURL(File file, final Consumer<String> consumer) {
@@ -311,7 +246,7 @@ public final class FileUtils {
 
       final long start = System.currentTimeMillis();
 
-      upload(Service.UPLOAD_FILE, (NewFileInfo) fileInfo, new Callback<String>() {
+      upload((NewFileInfo) fileInfo, new Callback<String>() {
         @Override
         public void onSuccess(String response) {
           if (BeeUtils.isLong(response)) {
@@ -338,90 +273,33 @@ public final class FileUtils {
     }
   }
 
-  public static void uploadPhoto(NewFileInfo fileInfo, final String photoFileName, String oldPhoto,
-      final Callback<String> callback) {
+  public static <T extends FileInfo> List<T> validateFileSize(Collection<T> input,
+      long maxSize, NotificationListener notificationListener) {
 
-    Assert.notNull(fileInfo);
-    Assert.notEmpty(photoFileName);
-    Assert.notNull(callback);
-
-    final String originalFileName = fileInfo.getName();
-    final long fileSize = fileInfo.getSize();
-
-    Map<String, String> parameters = createParameters(Service.UPLOAD_PHOTO, photoFileName);
-
-    parameters.put(Service.VAR_FILE_SIZE, BeeUtils.toString(fileSize));
-    if (!BeeUtils.isEmpty(oldPhoto)) {
-      parameters.put(Service.VAR_OLD_VALUE, oldPhoto.trim());
+    List<T> result = new ArrayList<>();
+    if (BeeUtils.isEmpty(input)) {
+      return result;
     }
 
-    final String progressId = maybeCreateProgress(originalFileName, fileSize);
+    List<String> errors = new ArrayList<>();
 
-    final XMLHttpRequest xhr = RpcUtils.createXhr();
-    xhr.open(RequestBuilder.POST.toString(), getUploadUrl(parameters), true);
+    for (T fileInfo : input) {
+      long size = fileInfo.getSize();
 
-    RpcUtils.addSessionId(xhr);
-
-    final long start = System.currentTimeMillis();
-
-    xhr.setOnload(new EventListener() {
-      @Override
-      public void handleEvent(Event evt) {
-        if (progressId != null) {
-          BeeKeeper.getScreen().removeProgress(progressId);
-        }
-
-        if (xhr.getStatus() == Response.SC_OK) {
-          String response = ResponseObject.restore(xhr.getResponseText()).getResponseAsString();
-
-          if (BeeUtils.same(response, photoFileName)) {
-            logger.info(TimeUtils.elapsedSeconds(start), originalFileName, "size:", fileSize);
-            logger.info("uploaded as:", photoFileName);
-            logger.addSeparator();
-
-            callback.onSuccess(photoFileName);
-
-          } else {
-            String msg = BeeUtils.joinWords("upload", originalFileName, "response:", response);
-            logger.warning(msg);
-            callback.onFailure(msg);
-          }
-
-        } else {
-          String msg = BeeUtils.joinWords("upload", originalFileName, "response status:",
-              BeeUtils.bracket(xhr.getStatus()), xhr.getStatusText());
-          logger.severe(msg);
-          callback.onFailure(msg);
-        }
+      if (size > maxSize) {
+        errors.add(BeeUtils.join(BeeConst.STRING_COLON + BeeConst.STRING_SPACE, fileInfo.getName(),
+            Localized.dictionary().fileSizeExceeded(size, maxSize)));
+      } else {
+        result.add(fileInfo);
       }
-    });
+    }
 
-    addProgressListener(xhr, progressId);
-    xhr.send(fileInfo.getNewFile());
-  }
+    if (!errors.isEmpty() && notificationListener != null) {
+      result.clear();
+      notificationListener.notifyWarning(ArrayUtils.toArray(errors));
+    }
 
-  public static void uploadTempFile(NewFileInfo fileInfo, final Callback<String> callback) {
-    final String fileName = BeeUtils.notEmpty(fileInfo.getCaption(), fileInfo.getName());
-    final String fileType = fileInfo.getType();
-    final long fileSize = fileInfo.getSize();
-
-    final long start = System.currentTimeMillis();
-
-    upload(Service.UPLOAD_TEMP_FILE, fileInfo, new Callback<String>() {
-      @Override
-      public void onSuccess(String response) {
-        logger.info(TimeUtils.elapsedSeconds(start), "uploaded", fileName);
-        logger.info("type:", fileType, "size:", fileSize, "file:", response);
-        logger.addSeparator();
-
-        callback.onSuccess(response);
-      }
-
-      @Override
-      public void onFailure(String... reason) {
-        callback.onFailure(reason);
-      }
-    });
+    return result;
   }
 
   //@formatter:off
@@ -441,20 +319,6 @@ public final class FileUtils {
     }
   }
 
-  private static Map<String, String> createParameters(String service, String fileName) {
-    Map<String, String> parameters = new HashMap<>();
-
-    parameters.put(Service.RPC_VAR_SVC, service);
-    parameters.put(Service.VAR_FILE_NAME, fileName);
-
-    return parameters;
-  }
-
-  private static String getUploadUrl(Map<String, String> parameters) {
-    return CommUtils.addQueryString(GWT.getHostPageBaseURL() + UPLOAD_URL,
-        CommUtils.buildQueryString(parameters, true));
-  }
-
   private static String maybeCreateProgress(String caption, long size) {
     if (size < MIN_FILE_SIZE_FOR_PROGRESS) {
       return null;
@@ -464,24 +328,14 @@ public final class FileUtils {
     }
   }
 
-  private static void upload(String srv, NewFileInfo fileInfo, final Callback<String> callback) {
-    Assert.notEmpty(srv);
-    Assert.notNull(fileInfo);
-    Assert.notNull(callback);
+  private static void upload(NewFileInfo fileInfo, Callback<String> callback) {
+    Assert.noNulls(fileInfo, callback);
 
-    final String fileName = BeeUtils.notEmpty(fileInfo.getCaption(), fileInfo.getName());
-    final String fileType = fileInfo.getType();
-    final long fileSize = fileInfo.getSize();
+    String fileName = BeeUtils.notEmpty(fileInfo.getCaption(), fileInfo.getName());
+    String progressId = maybeCreateProgress(fileName, fileInfo.getSize());
 
-    Map<String, String> parameters = createParameters(srv, fileName);
-
-    parameters.put(Service.VAR_FILE_TYPE, fileType);
-    parameters.put(Service.VAR_FILE_SIZE, BeeUtils.toString(fileSize));
-
-    final String progressId = maybeCreateProgress(fileName, fileSize);
-
-    final XMLHttpRequest xhr = RpcUtils.createXhr();
-    xhr.open(RequestBuilder.POST.toString(), getUploadUrl(parameters), true);
+    XMLHttpRequest xhr = RpcUtils.createXhr();
+    xhr.open(RequestBuilder.POST.toString(), getUrl(null, fileName), true);
 
     RpcUtils.addSessionId(xhr);
 
@@ -494,13 +348,20 @@ public final class FileUtils {
         String msg = BeeUtils.joinWords("upload", fileName, "response status:");
 
         if (xhr.getStatus() == Response.SC_OK) {
-          ResponseObject resp = ResponseObject.restore(xhr.getResponseText());
+          String response = xhr.getResponseText();
 
-          if (!resp.hasErrors()) {
-            callback.onSuccess(resp.getResponseAsString());
-            return;
+          if (JsonUtils.isJson(response)) {
+            JSONObject json = JsonUtils.parseObject(response);
+            JSONObject status = (JSONObject) json.get("Status");
+
+            if (BeeUtils.toBoolean(JsonUtils.toString(status.get("Success")))) {
+              callback.onSuccess(JsonUtils.toString(json.get("Result")));
+              return;
+            }
+            msg = BeeUtils.joinWords(msg, status.toString());
+          } else {
+            msg = BeeUtils.joinWords("Not a json response:", response);
           }
-          msg = BeeUtils.joinWords(msg, resp.getErrors());
         } else {
           msg = BeeUtils.joinWords(msg, BeeUtils.bracket(xhr.getStatus()), xhr.getStatusText());
         }
@@ -510,35 +371,6 @@ public final class FileUtils {
     });
     addProgressListener(xhr, progressId);
     xhr.send(fileInfo.getNewFile());
-  }
-
-  public static List<FileInfo> validateFileSize(Collection<? extends FileInfo> input,
-      long maxSize, NotificationListener notificationListener) {
-
-    List<FileInfo> result = new ArrayList<>();
-    if (BeeUtils.isEmpty(input)) {
-      return result;
-    }
-
-    List<String> errors = new ArrayList<>();
-
-    for (FileInfo fileInfo : input) {
-      long size = fileInfo.getSize();
-
-      if (size > maxSize) {
-        errors.add(BeeUtils.join(BeeConst.STRING_COLON + BeeConst.STRING_SPACE, fileInfo.getName(),
-            Localized.getMessages().fileSizeExceeded(size, maxSize)));
-      } else {
-        result.add(fileInfo);
-      }
-    }
-
-    if (!errors.isEmpty() && notificationListener != null) {
-      result.clear();
-      notificationListener.notifyWarning(ArrayUtils.toArray(errors));
-    }
-
-    return result;
   }
 
   private FileUtils() {

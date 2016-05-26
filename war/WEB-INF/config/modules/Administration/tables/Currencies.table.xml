@@ -10,5 +10,6 @@
     <String name="MinorName" precision="5" label="=minorName" />
     <String name="MinorCaption" precision="60" label="=minorCaption" />
     <Boolean name="UpdateTag" label="=currencyUpdateTag" />
+    <Integer name="SelfService" label="=trSelfService" />
   </Fields>
 </Table>

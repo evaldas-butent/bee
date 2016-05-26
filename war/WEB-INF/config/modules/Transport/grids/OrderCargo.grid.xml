@@ -1,32 +1,39 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
-  xmlns:ui="http://www.butent.com/ui"
+        xmlns:ui="http://www.butent.com/ui" xmlns:xi="http://www.w3.org/2001/XInclude"
 
-  name="OrderCargo" viewName="OrderCargo" caption="=cargos"
-  newRowForm="OrderCargo" newRowCaption="=newCargo"
-  editForm="OrderCargo" flexGrow="1"
-  >
+        name="OrderCargo" viewName="OrderCargo" caption="=cargos"
+        newRowForm="OrderCargo" newRowCaption="=newCargo"
+        editForm="OrderCargo" flexGrow="1"
+    >
   <g:body height="50" />
 
   <g:columns>
     <IdColumn name="ID" width="50" />
     <DataColumn name="Description" maxWidth="300" caption="=cargo" />
-    <CalcColumn name="Loading" type="string" cellType="html" caption="=loading" />
-    <CalcColumn name="Unloading" type="string" cellType="html" caption="=unloading" />
+  </g:columns>
 
+  <xi:include href="columns/Handling.columns.xml" />
+
+  <g:columns>
     <DataColumn name="Partial" caption="=partialShort" width="15" sortable="false" />
     <DataColumn name="Outsized" caption="=outsizedShort" width="15" sortable="false" />
     <DataColumn name="Dangerous" caption="=dangerousShort" width="15" sortable="false" />
-    <CalcColumn name="Expedition" type="boolean" caption="=expeditionShort" width="15" sortable="false">
-      <render><ui:expression>row.Expedition ? true : false</ui:expression></render>
+    <CalcColumn name="Expedition" type="boolean" caption="=expeditionShort" width="15"
+                sortable="false">
+      <render>
+        <ui:expression>row.Expedition ? true : false</ui:expression>
+      </render>
     </CalcColumn>
 
     <DataColumn name="Number" caption="=cargoNumber" />
     <RelColumn name="Cmr" caption="CMR" />
-    <DataColumn name="Notes" caption="=notes" whiteSpace="pre-wrap" />
+    <DataColumn name="CargoNotes" caption="=notes" whiteSpace="pre-wrap" />
     <PropColumn name="Income" type="decimal" caption="=income" format="0.00">
       <style>
-        <bodyStyle><ui:font>bold</ui:font></bodyStyle>
+        <bodyStyle>
+          <ui:font>bold</ui:font>
+        </bodyStyle>
       </style>
     </PropColumn>
   </g:columns>

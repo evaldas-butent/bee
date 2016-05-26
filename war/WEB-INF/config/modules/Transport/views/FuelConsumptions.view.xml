@@ -12,6 +12,7 @@
     <SimpleColumn name="Winter" />
     <SimpleColumn name="TonneKilometer" />
     <SimpleColumn name="MotoHour" />
+    <SimpleColumn name="Average" />
   </Columns>
   <Order>
     <OrderBy column="DateFrom" descending="true"/>

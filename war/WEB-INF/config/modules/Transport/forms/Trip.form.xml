@@ -135,6 +135,11 @@
         <text>=trOrderDocuments</text>
         <GridPanel name="TranspOrderDocuments" parent="{form}" child="true" />
       </page>
+      <page>
+        <text>=relatedInformation</text>
+        <Relations relColumn="Trip" inline="true"
+                   defaultRelations="Companies Persons Requests Tasks" style="margin: 0px 15px 0px 15px; min-width:300px;" />
+      </page>
     </TabbedPages>
   </FlowPanel>
 

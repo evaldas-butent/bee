@@ -19,7 +19,7 @@
         <cell colSpan="3">
           <InputText source="Name" style="width: 425px;" visible="true" />
         </cell>
-        <DataSelector source="CompanyType" style="width: 80px;"/>
+        <DataSelector source="CompanyType" style="width: 80px;" required="true"/>
         <Label style="&lbl;" for="CompanyPriority" />
         <DataSelector source="CompanyPriority" style="width: 180px" />
         <FlowPanel name="qrFlowPanel" style="margin-left: 10px" />
@@ -174,6 +174,15 @@
               </cell>
             </row>
             <row>
+              <Label text="=mailRecipientsGroups" style="&lbl;" />
+              <cell colSpan="3">
+                <ChildSelector name="RecipientsGroup" viewName="RecipientsGroups" childTable="RcpsGroupsContacts"
+                  targetRelColumn="Company" sourceRelColumn="RecipientsGroup" renderColumns="GroupName"
+                  choiceColumns="GroupName" label="=mailRecipientsGroups" style="width: 100%;" summarize="true" 
+                  filter="Creator {u} or Visibility = 0" />
+              </cell>
+            </row>
+            <row>
               <Label text="=trdTurnover" style="&lbl;"/>
               <DataSelector source="Turnover" summarize="true" />
               <DataSelector source="TurnoverCurrency" editEnabled="false"
@@ -232,7 +241,7 @@
         <ChildGrid name="RelatedMessages" relColumn="Company" paging="true" />
       </page>
       <page for="CompActionList" module="Calendar">
-        <text>=calListOfActions</text>
+        <text>=calAppointments</text>
         <ChildGrid name="CompActionList" relColumn="Company" paging="true" />
       </page>
       <page for="Tasks">

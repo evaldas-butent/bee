@@ -7,6 +7,7 @@ import com.google.common.eventbus.Subscribe;
 
 import static com.butent.bee.shared.modules.documents.DocumentConstants.*;
 
+import com.butent.bee.server.Invocation;
 import com.butent.bee.server.data.BeeTable;
 import com.butent.bee.server.data.BeeView;
 import com.butent.bee.server.data.DataEditorBean;
@@ -19,9 +20,10 @@ import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.BeeModule;
-import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.modules.administration.ExtensionIcons;
-import com.butent.bee.server.modules.administration.FileStorageBean;
+import com.butent.bee.server.news.NewsBean;
+import com.butent.bee.server.news.NewsHelper;
+import com.butent.bee.server.news.UsageQueryProvider;
 import com.butent.bee.server.sql.HasConditions;
 import com.butent.bee.server.sql.IsExpression;
 import com.butent.bee.server.sql.IsFrom;
@@ -47,9 +49,11 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
+import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.rights.RegulatedWidget;
 import com.butent.bee.shared.rights.RightsState;
+import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -84,29 +88,22 @@ public class DocumentsModuleBean implements BeeModule {
   @EJB
   DataEditorBean deb;
   @EJB
-  FileStorageBean fs;
-  @EJB
-  ParamHolderBean prm;
+  NewsBean news;
 
   @Override
   public List<SearchResult> doSearch(String query) {
-    List<SearchResult> docsSr = qs.getSearchResults(VIEW_DOCUMENTS,
+    return qs.getSearchResults(VIEW_DOCUMENTS,
         Filter.anyContains(Sets.newHashSet(COL_DOCUMENT_NUMBER, COL_REGISTRATION_NUMBER,
             COL_DOCUMENT_NAME, ALS_CATEGORY_NAME, ALS_TYPE_NAME,
             ALS_PLACE_NAME, ALS_STATUS_NAME, ALS_DOCUMENT_COMPANY_NAME), query));
-
-    return docsSr;
   }
 
   @Override
   public ResponseObject doService(String svc, RequestInfo reqInfo) {
-    ResponseObject response = null;
+    ResponseObject response;
 
     if (BeeUtils.same(svc, SVC_COPY_DOCUMENT_DATA)) {
       response = copyDocumentData(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_DOCUMENT_DATA)));
-
-    } else if (BeeUtils.same(svc, SVC_CREATE_PDF_DOCUMENT)) {
-      response = createPdf(reqInfo.getParameter(COL_DOCUMENT_CONTENT));
 
     } else if (BeeUtils.same(svc, SVC_SET_CATEGORY_STATE)) {
       response = setCategoryState(BeeUtils.toLongOrNull(reqInfo.getParameter("id")),
@@ -211,7 +208,7 @@ public class DocumentsModuleBean implements BeeModule {
                   row.getLong(DataUtils.getColumnIndex(COL_DOCUMENT_CATEGORY, cols))), or))
               .addOrder(TBL_TREE_PREFIXES, COL_DOCUMENT_TYPE);
 
-          Long type = null;
+          Long type;
           int typeIdx = DataUtils.getColumnIndex(COL_DOCUMENT_TYPE, cols);
 
           if (!BeeConst.isUndef(typeIdx)) {
@@ -388,13 +385,36 @@ public class DocumentsModuleBean implements BeeModule {
         }
       }
     });
-  }
 
-  private ResponseObject createPdf(String content, String... styleSheets) {
-    if (!BeeUtils.unbox(prm.getBoolean(PRM_PRINT_AS_PDF))) {
-      return ResponseObject.emptyResponse();
-    }
-    return ResponseObject.response(fs.createPdf(content, styleSheets));
+    news.registerUsageQueryProvider(Feed.DOCUMENTS, new UsageQueryProvider() {
+      @Override
+      public SqlSelect getQueryForAccess(Feed feed, String relationColumn, long userId,
+          DateTime startDate) {
+        return visibility(NewsHelper.getAccessQuery(feed.getUsageTable(), relationColumn, null,
+            null, userId));
+      }
+
+      @Override
+      public SqlSelect getQueryForUpdates(Feed feed, String relationColumn, long userId,
+          DateTime startDate) {
+        return visibility(NewsHelper.getUpdatesQuery(feed.getUsageTable(), relationColumn, null,
+            null, userId, startDate));
+      }
+
+      private SqlSelect visibility(SqlSelect query) {
+        if (!Invocation.locateRemoteBean(UserServiceBean.class).isAdministrator()) {
+          SystemBean sysBean = Invocation.locateRemoteBean(SystemBean.class);
+
+          query.addFromInner(TBL_DOCUMENTS,
+              Invocation.locateRemoteBean(NewsBean.class).joinUsage(TBL_DOCUMENTS))
+              .addFromInner(TBL_DOCUMENT_TREE,
+                  sysBean.joinTables(TBL_DOCUMENT_TREE, TBL_DOCUMENTS, COL_DOCUMENT_CATEGORY));
+
+          sysBean.filterVisibleState(query, TBL_DOCUMENT_TREE);
+        }
+        return query;
+      }
+    });
   }
 
   private ResponseObject copyDocumentData(Long data) {

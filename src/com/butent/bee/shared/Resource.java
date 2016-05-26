@@ -4,6 +4,7 @@ import com.butent.bee.shared.communication.CommUtils;
 import com.butent.bee.shared.communication.ContentType;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
+import com.butent.bee.shared.utils.EnumUtils;
 
 public class Resource implements BeeSerializable {
 
@@ -114,7 +115,7 @@ public class Resource implements BeeSerializable {
   public String serialize() {
     int[] arr = new int[] {
         BeeUtils.length(uri),
-        BeeUtils.length(BeeUtils.toString(type)),
+        BeeUtils.length(EnumUtils.toString(type)),
         BeeUtils.length(BeeUtils.toString(readOnly)),
         BeeUtils.length(content)};
 
@@ -131,7 +132,7 @@ public class Resource implements BeeSerializable {
           sb.append(uri);
           break;
         case 1:
-          sb.append(BeeUtils.toString(type));
+          sb.append(EnumUtils.toString(type));
           break;
         case 2:
           sb.append(BeeUtils.toString(readOnly));

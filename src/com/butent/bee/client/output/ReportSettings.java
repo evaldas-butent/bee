@@ -110,14 +110,14 @@ public class ReportSettings {
       add(label);
 
       FaLabel edit = new FaLabel(FontAwesome.EDIT, STYLE_EDIT);
-      edit.setTitle(Localized.getConstants().actionRename());
+      edit.setTitle(Localized.dictionary().actionRename());
 
       edit.addClickHandler(new ClickHandler() {
         @Override
         public void onClick(ClickEvent event) {
           int maxLength = Data.getColumnPrecision(VIEW_REPORT_SETTINGS, COL_RS_CAPTION);
 
-          Global.inputString(Localized.getConstants().bookmarkName(), null, new StringCallback() {
+          Global.inputString(Localized.dictionary().bookmarkName(), null, new StringCallback() {
             @Override
             public void onSuccess(String value) {
               setCaption(value);
@@ -130,7 +130,7 @@ public class ReportSettings {
       add(edit);
 
       FaLabel delete = new FaLabel(FontAwesome.TRASH_O, STYLE_DELETE);
-      delete.setTitle(Localized.getConstants().actionRemove());
+      delete.setTitle(Localized.dictionary().actionRemove());
 
       delete.addClickHandler(new ClickHandler() {
         @Override
@@ -198,7 +198,7 @@ public class ReportSettings {
     String defValue = (settingsWidget == null) ? caption : settingsWidget.getItem().getCaption();
     int maxLength = Data.getColumnPrecision(VIEW_REPORT_SETTINGS, COL_RS_CAPTION);
 
-    Global.inputString(Localized.getConstants().bookmarkName(), null, new StringCallback() {
+    Global.inputString(Localized.dictionary().bookmarkName(), null, new StringCallback() {
       @Override
       public void onSuccess(String value) {
         if (settingsWidget == null) {

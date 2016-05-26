@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<View xmlns="http://www.butent.com/view"
+<View xmlns="http://www.butent.com/view" xmlns:xi="http://www.w3.org/2001/XInclude"
 
-  name="TripCargo"
-  source="CargoTrips"
-  >
+      name="TripCargo"
+      source="CargoTrips"
+>
   <Columns>
-    <SimpleColumn name="Trip"/>
+    <SimpleColumn name="Trip" />
     <SimpleColumn name="Ordinal" />
     <SimpleColumn name="CargoPercent" />
+    <SimpleColumn name="TripPercent" />
     <SimpleColumn name="Message" />
 
     <SimpleColumn name="Cargo" />
@@ -15,6 +16,11 @@
       <SimpleColumn name="Order" />
       <SimpleJoin name="Order" joinType="LEFT">
         <SimpleColumn name="OrderNo" />
+
+        <SimpleColumn name="Customer" />
+        <SimpleJoin name="Customer" joinType="LEFT">
+          <SimpleColumn name="Name" alias="CustomerName" />
+        </SimpleJoin>
       </SimpleJoin>
 
       <SimpleColumn name="Description" />
@@ -25,45 +31,30 @@
 
       <SimpleColumn name="Cmr" />
       <SimpleJoin name="Cmr" joinType="LEFT">
-        <SimpleColumn name="Name" alias="CmrName"/>
-        <SimpleColumn name="Number" alias="CmrNumber"/>
+        <SimpleColumn name="Name" alias="CmrName" />
+        <SimpleColumn name="Number" alias="CmrNumber" />
       </SimpleJoin>
 
       <SimpleColumn name="Notes" />
+      <HiddenColumn name="CargoHandling" alias="DefaultHandling" />
+    </SimpleJoin>
 
-      <SimpleJoin name="LoadingPlace" joinType="LEFT">
-        <SimpleColumn name="Date" alias="LoadingDate" label="=trLoadingDate" />
-        <SimpleColumn name="Number" alias="LoadingNumber" label="=trLoadingNumber" />
-        <SimpleColumn name="Contact" alias="LoadingContact" label="=trLoadingContact" />
-        <SimpleColumn name="Company" alias="LoadingCompany" label="=trLoadingCompany" />
-        <SimpleColumn name="Address" alias="LoadingAddress" label="=trLoadingAddress" />
-        <SimpleColumn name="PostIndex" alias="LoadingPostIndex" label="=trLoadingPostIndex" />
+    <SimpleColumn name="CargoHandling" />
+    <SimpleJoin name="CargoHandling" joinType="LEFT"
+                filter="OR !(CargoHandling) AND Handling=DefaultHandling">
 
-        <SimpleJoin joinType="LEFT" name="City">
-          <SimpleColumn name="Name" alias="LoadingCityName" />
-        </SimpleJoin>
-        <SimpleJoin joinType="LEFT" name="Country">
-          <SimpleColumn name="Name" alias="LoadingCountryName" />
-          <SimpleColumn name="Code" alias="LoadingCountryCode" />
-        </SimpleJoin>
-      </SimpleJoin>
+      <IdColumn name="Handling" hidden="true" />
 
-      <SimpleJoin name="UnloadingPlace" joinType="LEFT">
-        <SimpleColumn name="Date" alias="UnloadingDate" label="=trUnloadingDate" />
-        <SimpleColumn name="Number" alias="UnloadingNumber" label="=trUnloadingNumber" />
-        <SimpleColumn name="Contact" alias="UnloadingContact" label="=trUnloadingContact" />
-        <SimpleColumn name="Company" alias="UnloadingCompany" label="=trUnloadingCompany" />
-        <SimpleColumn name="Address" alias="UnloadingAddress" label="=trUnloadingAddress" />
-        <SimpleColumn name="PostIndex" alias="UnloadingPostIndex" label="=trUnloadingPostIndex" />
+      <xi:include href="viewcolumns/Handling.viewcolumns.xml" />
+      
+      <SimpleColumn name="EmptyKilometers" />
+      <SimpleColumn name="LoadedKilometers" />
+      <SimpleColumn name="Weight" alias="CargoWeight" />
+    </SimpleJoin>
 
-        <SimpleJoin joinType="LEFT" name="City">
-          <SimpleColumn name="Name" alias="UnloadingCityName" />
-        </SimpleJoin>
-        <SimpleJoin joinType="LEFT" name="Country">
-          <SimpleColumn name="Name" alias="UnloadingCountryName" />
-          <SimpleColumn name="Code" alias="UnloadingCountryCode" />
-        </SimpleJoin>
-      </SimpleJoin>
+    <SimpleColumn name="Trailer" />
+    <SimpleJoin name="Trailer" joinType="LEFT">
+      <SimpleColumn name="Number" alias="TrailerNumber" />
     </SimpleJoin>
   </Columns>
   <Order>

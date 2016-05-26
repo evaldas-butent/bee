@@ -141,7 +141,7 @@ public class RpcFactory {
     ParameterList params = createParameters(Service.INVOKE);
     params.addQueryItem(Service.RPC_VAR_SUB, method);
 
-    if (data == null) {
+    if (BeeUtils.isEmpty(data)) {
       return makeGetRequest(params, callback);
     } else {
       return makePostRequest(params, ctp, data, callback);
@@ -245,6 +245,10 @@ public class RpcFactory {
   public int makeRequest(ParameterList params, ResponseCallback callback) {
     RequestBuilder.Method meth = params.hasData() ? RequestBuilder.POST : RequestBuilder.GET;
     return makeRequest(meth, params, null, null, callback, BeeConst.UNDEF);
+  }
+
+  public int makeRequest(String svc, ResponseCallback callback) {
+    return makeGetRequest(svc, callback);
   }
 
   public int sendText(ParameterList params, String data, ResponseCallback callback) {

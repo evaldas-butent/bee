@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
+      xmlns:x="http://www.butent.com/expression"
 
       name="RestTasks" source="Tasks"
     >
@@ -17,6 +18,9 @@
 
     <SimpleColumn name="StartTime" />
     <SimpleColumn name="FinishTime" />
+
+    <SimpleColumn name="Completed" />
+    <SimpleColumn name="Approved" />
 
     <SimpleColumn name="Owner" />
     <SimpleJoin name="Owner" joinType="LEFT">
@@ -38,8 +42,8 @@
       </SimpleJoin>
     </SimpleJoin>
 
-    <ExternalJoin source="TaskUsers" name="Task" joinType="INNER" filter="User={u}">
-      <HiddenColumn name="User" />
+    <ExternalJoin source="TaskUsers" name="Task" joinType="INNER" filter="UserID={u}">
+      <HiddenColumn name="User" alias="UserID" />
       <SimpleColumn name="LastAccess" />
     </ExternalJoin>
 
@@ -60,5 +64,29 @@
         <SimpleColumn name="LastName" alias="PersonLastName" />
       </SimpleJoin>
     </SimpleJoin>
+
+    <ExternalJoin source="TaskUsers" name="Task" joinType="LEFT"
+                  filter="User!=Owner AND User!=Executor">
+      <SimpleColumn name="User" />
+      <SimpleColumn name="Task" />
+      <IdColumn name="ID" />
+    </ExternalJoin>
+
+    <ExternalJoin name="Task" joinType="LEFT" source="TaskFiles" filter="!(TaskEvent)">
+      <HiddenColumn name="TaskEvent" />
+      <HiddenColumn name="Caption" />
+
+      <SimpleColumn name="File" />
+      <SimpleJoin name="File" joinType="LEFT">
+        <HiddenColumn name="Name" />
+      </SimpleJoin>
+
+      <AggregateColumn name="FileName" aggregate="MAX">
+        <x:nvl type="STRING">
+          <x:number>"Caption"</x:number>
+          <x:number>"Name"</x:number>
+        </x:nvl>
+      </AggregateColumn>
+    </ExternalJoin>
   </Columns>
 </View>

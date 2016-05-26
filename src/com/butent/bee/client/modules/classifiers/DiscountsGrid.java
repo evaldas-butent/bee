@@ -37,13 +37,13 @@ public class DiscountsGrid extends AbstractGridInterceptor {
     header.clearCommandPanel();
 
     Button clearAll = new Button();
-    clearAll.setText(Localized.getConstants().clear());
+    clearAll.setText(Localized.dictionary().clear());
     clearAll.addClickHandler(new ClickHandler() {
 
       @Override
       public void onClick(ClickEvent event) {
         if (!getGridView().isEmpty()) {
-          Global.confirm(Localized.getConstants().askDeleteAll(), new ConfirmationCallback() {
+          Global.confirm(Localized.dictionary().askDeleteAll(), new ConfirmationCallback() {
 
             @Override
             public void onConfirm() {

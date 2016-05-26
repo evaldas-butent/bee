@@ -3,8 +3,8 @@
   <!ENTITY section "margin-top: 4px;">
   <!ENTITY separator "<hr/>">
   <!ENTITY inline "display:inline-block;">
-  <!ENTITY labelLeft "&inline; width:100px; padding-top:1px;">
-  <!ENTITY labelRight "&inline; width:60px; padding-top:1px; text-align:right; margin-right:10px;">
+  <!ENTITY labelLeft "&inline; width:120px; padding-top:1px; white-space:nowrap;">
+  <!ENTITY labelRight "&labelLeft; width:60px; text-align:right; margin-right:10px;">
   <!ENTITY input "&inline; width:10em;">
 ]>
 <f:Form xmlns="http://www.butent.com/widget"
@@ -12,8 +12,9 @@
   xmlns:xi="http://www.w3.org/2001/XInclude"
 
   name="Assessment" viewName="Assessments" showRowId="true"
+        width="70" widthUnit="%" height="80" heightUnit="%"
   >
-  <f:properties reports="PrintOrderLT, PrintOrderEN, PrintOrderRU" />
+  <f:properties jasperReports="LogisticsOrderContract" />
 
   <FlowPanel style="padding: 10px 2px 2px 10px; height:calc(100% - 15px);"
              class="flexBox-vertical bee-tr-assessment-form">
@@ -21,17 +22,28 @@
       <FlowPanel style="&section;">
         <Label for="Status" style="&labelLeft;" />
         <FlowPanel name="Status" style="&input; font-weight:bold;" />
+        <Label for="OrderNo" style="&labelRight; width:120px;" />
+        <InputText source="OrderNo" style="&input;" />
+      </FlowPanel>
+      <FlowPanel style="&section;">
+        <Label for="Date" style="&labelLeft;" />
+        <InputDateTime source="Date" style="&input;" />
         <Label for="Customer" style="&labelRight; width:120px;" />
         <DataSelector source="Customer" renderColumns="CustomerName CustomerTypeName"
             choiceColumns="Name TypeName" style="&input; width:200px;" />
       </FlowPanel>
       <FlowPanel style="&section;">
-        <Label for="Date" style="&labelLeft;" />
-        <InputDateTime source="Date" style="&input;" />
-        <Label for="CustomerPerson" style="&labelRight; width:120px;" />
+        <Label for="CustomerPerson" style="&labelRight; width:120px; margin-left:10em; padding-left:120px;" />
         <DataSelector source="CustomerPerson" style="&input; width:200px;"
           choiceColumns="FirstName LastName CompanyName" renderColumns="PersonFirstName PersonLastName"
           options="Customer" />
+      </FlowPanel>
+
+      <FlowPanel style="&section;">
+        <Label for="ShippingTerm" style="&labelLeft;" />
+        <DataSelector source="ShippingTerm" style="&input;" />
+        <Label for="Expedition" style="&labelRight; width:120px;" />
+        <DataSelector source="Expedition" filter="Logistics" style="&input; width:200px;" />
       </FlowPanel>
 
       <FlowPanel style="&section;">
@@ -49,7 +61,8 @@
         <Label for="Manager" class="bee-required" style="&labelLeft;" />
         <DataSelector name="Manager" source="Manager" style="&input; width:200px;" caching="local"
           viewName="AssessmentExecutors" choiceColumns="LastName FirstName DepartmentName"
-          editSource="CompanyPerson" newRowEnabled="false" required="true" />
+          editSource="CompanyPerson" renderColumns="ManagerFirstName ManagerLastName"
+                      newRowEnabled="false" required="true" />
         <Label for="DepartmentName" style="&inline; margin:0 10px 0 10px; padding-top:1px;" />
         <TextLabel source="DepartmentName" style="&inline; padding-top:1px; font-weight:bold;" />
       </FlowPanel>
@@ -117,6 +130,11 @@
       <page data="ChildAssessments">
         <text>=assessments</text>
         <ChildGrid name="ChildAssessments" relColumn="Assessment" />
+      </page>
+      <page>
+      <text>=relatedInformation</text>
+      <Relations relColumn="Assessment" inline="true"
+                 defaultRelations="Companies Persons Requests Tasks" style="margin: 0px 15px 0px 15px; min-width:300px;" />
       </page>
     </TabbedPages>
   </FlowPanel>

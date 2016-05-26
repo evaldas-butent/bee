@@ -4,6 +4,7 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.IdCallback;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
+import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.form.FormView;
@@ -56,7 +57,8 @@ class ChildTaskTemplatesGrid extends AbstractGridInterceptor {
           }
         }
 
-        RowFactory.createRow(childTaskDataInfo, childTemplateTask, new RowCallback() {
+        RowFactory.createRow(childTaskDataInfo, childTemplateTask, Modality.ENABLED,
+            new RowCallback() {
           @Override
           public void onSuccess(BeeRow result) {
             presenter.handleAction(Action.REFRESH);

@@ -26,7 +26,6 @@ import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.style.StyleUtils;
-import com.butent.bee.client.ui.FormWidget;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.ui.WidgetCreationCallback;
@@ -37,6 +36,7 @@ import com.butent.bee.client.view.edit.EditFormEvent;
 import com.butent.bee.client.view.edit.HasEditState;
 import com.butent.bee.client.view.grid.CellGrid;
 import com.butent.bee.client.view.grid.ExtWidget;
+import com.butent.bee.client.view.grid.GridUtils;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.view.navigation.PagerView;
@@ -50,6 +50,7 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.ui.NavigationOrigin;
+import com.butent.bee.shared.ui.UiConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
@@ -108,8 +109,13 @@ public class GridContainerImpl extends Split implements GridContainerView,
     super(-1);
 
     addStyleName(STYLE_NAME);
+
     if (!BeeUtils.isEmpty(gridName)) {
       addStyleName(BeeConst.CSS_CLASS_PREFIX + "grid-" + gridName.trim());
+    }
+    if (!BeeUtils.isEmpty(supplierKey) && !BeeUtils.same(gridName, supplierKey)
+        && !BeeUtils.same(ViewFactory.SupplierKind.GRID.getKey(gridName), supplierKey)) {
+      addStyleName(BeeConst.CSS_CLASS_PREFIX + "grid-" + supplierKey.trim());
     }
 
     this.supplierKey = supplierKey;
@@ -145,16 +151,7 @@ public class GridContainerImpl extends Split implements GridContainerView,
       addStyleName(UiOption.getStyleName(uiOptions));
     }
 
-    Boolean paging = gridDescription.getPaging();
-    if (gridOptions != null && gridOptions.getPaging() != null) {
-      paging = gridOptions.getPaging();
-    }
-
-    if (UiOption.hasPaging(uiOptions)) {
-      setHasPaging(!BeeUtils.isFalse(paging));
-    } else {
-      setHasPaging(BeeUtils.isTrue(paging));
-    }
+    setHasPaging(GridUtils.hasPaging(gridDescription, uiOptions, gridOptions));
 
     setHasSearch(UiOption.hasSearch(uiOptions)
         && !gridDescription.getDisabledActions().contains(Action.FILTER));
@@ -263,7 +260,7 @@ public class GridContainerImpl extends Split implements GridContainerView,
             if (!BeeUtils.isEmpty(widgetName)) {
               String key = BeeUtils.join(BeeConst.STRING_MINUS,
                   BeeUtils.notEmpty(getSupplierKey(), gridDescription.getName()),
-                  BeeKeeper.getUser().getUserId(), widgetName, FormWidget.ATTR_SIZE);
+                  BeeKeeper.getUser().getUserId(), widgetName, UiConstants.ATTR_SIZE);
               extWidget.setStorageKey(key);
 
               Integer size = BeeKeeper.getStorage().getInteger(key);
@@ -429,13 +426,8 @@ public class GridContainerImpl extends Split implements GridContainerView,
       return;
     }
 
-    if (getRowMessage() != null) {
-      getRowMessage().update(event.getRowValue());
-      String message = getRowMessage().evaluate();
-
-      if (hasHeader()) {
-        getHeader().setMessage(message);
-      }
+    if (getRowMessage() != null && hasHeader()) {
+      getHeader().showRowMessage(getRowMessage(), rowValue);
     }
 
     if (gridView.getGridInterceptor() != null) {

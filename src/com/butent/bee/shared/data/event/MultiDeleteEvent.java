@@ -131,6 +131,11 @@ public class MultiDeleteEvent extends ModificationEvent<MultiDeleteEvent.Handler
   }
 
   @Override
+  public String toString() {
+    return BeeUtils.joinWords(getKind(), getViewName(), getRows());
+  }
+
+  @Override
   protected void dispatch(Handler handler) {
     handler.onMultiDelete(this);
   }

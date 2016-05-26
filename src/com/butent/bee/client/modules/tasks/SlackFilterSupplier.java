@@ -33,7 +33,7 @@ class SlackFilterSupplier extends AbstractFilterSupplier {
 
       @Override
       String getLabel() {
-        return Localized.getConstants().crmTaskLabelLate();
+        return Localized.dictionary().crmTaskLabelLate();
       }
 
       @Override
@@ -52,7 +52,7 @@ class SlackFilterSupplier extends AbstractFilterSupplier {
 
       @Override
       String getLabel() {
-        return Localized.getConstants().crmTaskLabelScheduled();
+        return Localized.dictionary().crmTaskLabelScheduled();
       }
 
       @Override
@@ -123,7 +123,7 @@ class SlackFilterSupplier extends AbstractFilterSupplier {
     Flow container = new Flow();
     container.addStyleName(getStylePrefix() + "container");
 
-    Button late = new Button(Localized.getConstants().crmTaskFilterLate());
+    Button late = new Button(Localized.dictionary().crmTaskFilterLate());
     late.addStyleName(getStylePrefix() + "late");
 
     late.addClickHandler(new ClickHandler() {
@@ -137,7 +137,7 @@ class SlackFilterSupplier extends AbstractFilterSupplier {
 
     container.add(late);
 
-    Button scheduled = new Button(Localized.getConstants().crmTaskFilterScheduled());
+    Button scheduled = new Button(Localized.dictionary().crmTaskFilterScheduled());
     scheduled.addStyleName(getStylePrefix() + "scheduled");
 
     scheduled.addClickHandler(new ClickHandler() {
@@ -151,7 +151,7 @@ class SlackFilterSupplier extends AbstractFilterSupplier {
 
     container.add(scheduled);
 
-    Button all = new Button(Localized.getConstants().crmTaskFilterAll());
+    Button all = new Button(Localized.dictionary().crmTaskFilterAll());
     all.addStyleName(getStylePrefix() + "all");
 
     all.addClickHandler(new ClickHandler() {
@@ -165,7 +165,7 @@ class SlackFilterSupplier extends AbstractFilterSupplier {
 
     container.add(all);
 
-    Button cancel = new Button(Localized.getConstants().cancel());
+    Button cancel = new Button(Localized.dictionary().cancel());
     cancel.addStyleName(getStylePrefix() + "cancel");
 
     cancel.addClickHandler(new ClickHandler() {

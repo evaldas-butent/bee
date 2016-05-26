@@ -30,8 +30,6 @@ import java.util.Set;
 public interface FormInterceptor extends WidgetInterceptor, HasGridView, HandlesStateChange,
     HasDomain, HasActiveRow, HasViewName, EditEndEvent.Handler {
 
-  void afterAction(Action action, Presenter presenter);
-
   void afterCreate(FormView form);
 
   void afterCreateEditableWidget(EditableWidget editableWidget, IdentifiableWidget widget);
@@ -93,6 +91,8 @@ public interface FormInterceptor extends WidgetInterceptor, HasGridView, Handles
   void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow);
 
   void onUnload(FormView form);
+
+  boolean saveOnPrintNewRow();
 
   void setFormView(FormView form);
 }

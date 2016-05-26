@@ -8,7 +8,8 @@ import com.google.common.collect.HashBiMap;
 import com.google.common.collect.Iterables;
 
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.i18n.LocalizableConstants;
+import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -80,20 +81,28 @@ public final class EnumUtils {
     PayrollConstants.register();
   }
 
+  public static String getCaption(Enum<?> e) {
+    if (e instanceof HasCaption) {
+      return ((HasCaption) e).getCaption();
+    } else {
+      return proper(e);
+    }
+  }
+
   public static String getCaption(Class<? extends Enum<?>> clazz, Integer index) {
-    return getLocalizedCaption(clazz, index, Localized.getConstants());
+    return getLocalizedCaption(clazz, index, Localized.dictionary());
   }
 
   public static String getCaption(String key, Integer index) {
-    return getLocalizedCaption(key, index, Localized.getConstants());
+    return getLocalizedCaption(key, index, Localized.dictionary());
   }
 
   public static List<String> getCaptions(Class<? extends Enum<?>> clazz) {
-    return getLocalizedCaptions(clazz, Localized.getConstants());
+    return getLocalizedCaptions(clazz, Localized.dictionary());
   }
 
   public static List<String> getCaptions(String key) {
-    return getLocalizedCaptions(key, Localized.getConstants());
+    return getLocalizedCaptions(key, Localized.dictionary());
   }
 
   public static <E extends Enum<?>> E getEnumByIndex(Class<E> clazz, Integer idx) {
@@ -165,7 +174,7 @@ public final class EnumUtils {
   }
 
   public static String getLocalizedCaption(Class<? extends Enum<?>> clazz, Integer index,
-      LocalizableConstants constants) {
+      Dictionary constants) {
 
     if (index == null) {
       return null;
@@ -181,8 +190,7 @@ public final class EnumUtils {
     }
   }
 
-  public static String getLocalizedCaption(String key, Integer index,
-      LocalizableConstants constants) {
+  public static String getLocalizedCaption(String key, Integer index, Dictionary constants) {
 
     if (BeeUtils.isEmpty(key)) {
       logger.severe("Caption key not specified");
@@ -203,7 +211,8 @@ public final class EnumUtils {
   }
 
   public static List<String> getLocalizedCaptions(Class<? extends Enum<?>> clazz,
-      LocalizableConstants constants) {
+      Dictionary constants) {
+
     Assert.notNull(clazz);
     Assert.notNull(constants);
 
@@ -215,13 +224,13 @@ public final class EnumUtils {
       } else if (constant instanceof HasCaption) {
         result.add(((HasCaption) constant).getCaption());
       } else {
-        result.add(BeeUtils.proper(constant));
+        result.add(proper(constant));
       }
     }
     return result;
   }
 
-  public static List<String> getLocalizedCaptions(String key, LocalizableConstants constants) {
+  public static List<String> getLocalizedCaptions(String key, Dictionary constants) {
     Assert.notEmpty(key);
     Class<? extends Enum<?>> clazz = CLASSES.get(BeeUtils.normalize(key));
 
@@ -371,6 +380,10 @@ public final class EnumUtils {
     return result;
   }
 
+  public static String proper(Enum<?> e) {
+    return (e == null) ? BeeConst.STRING_EMPTY : BeeUtils.proper(e.name(), BeeConst.CHAR_UNDER);
+  }
+
   public static <E extends Enum<?>> String register(Class<E> clazz) {
     Assert.notNull(clazz);
     return register(NameUtils.getClassName(clazz), clazz);
@@ -385,6 +398,18 @@ public final class EnumUtils {
 
     CLASSES.put(normalized, clazz);
     return normalized;
+  }
+
+  public static String toLowerCase(Enum<?> e) {
+    if (e == null) {
+      return null;
+    } else {
+      return e.name().toLowerCase();
+    }
+  }
+
+  public static String toString(Enum<?> e) {
+    return (e == null) ? BeeConst.STRING_EMPTY : e.name();
   }
 
   private EnumUtils() {

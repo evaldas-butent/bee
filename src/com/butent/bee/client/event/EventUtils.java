@@ -113,6 +113,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import elemental.js.dom.JsElement;
+
 public final class EventUtils {
 
   private static final BeeLogger logger = LogUtils.getLogger(EventUtils.class);
@@ -611,6 +613,16 @@ public final class EventUtils {
     }
   }
 
+  public static void click(Element element) {
+    Assert.notNull(element);
+    ((JsElement) element.cast()).click();
+  }
+
+  public static void click(UIObject obj) {
+    Assert.notNull(obj);
+    click(obj.getElement());
+  }
+
   public static NativeEvent createKeyDown(int keyCode) {
     return Document.get().createKeyDownEvent(false, false, false, false, keyCode);
   }
@@ -768,6 +780,10 @@ public final class EventUtils {
       return ((Event) ev).getTypeInt();
     }
     return Event.getTypeInt(ev.getType());
+  }
+
+  public static boolean hasModifierKey(HasNativeEvent ev) {
+    return ev != null && hasModifierKey(ev.getNativeEvent());
   }
 
   public static boolean hasModifierKey(NativeEvent ev) {

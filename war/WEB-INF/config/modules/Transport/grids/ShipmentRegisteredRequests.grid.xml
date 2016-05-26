@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+
+        name="ShipmentRegisteredRequests" viewName="ShipmentRequests"
+        caption="=trRequests"
+        enableCopy="- *Date, Status, Customer*, Notes, Vehicle, Driver, Host, Agent, LossReason, Cargo, Assessment, Order"
+        filter="CompanyPerson"
+>
+  <g:columns>
+    <IdColumn name="ID" width="40" />
+    <DataColumn name="Date" />
+    <DataColumn name="Status" />
+
+    <RelColumn name="CompanyPerson" renderColumns="PersonFirstName PersonLastName" />
+    <DataColumn name="CompanyName" />
+
+    <DataColumn name="LoadingDate" />
+    <DataColumn name="LoadingCompany" />
+    <DataColumn name="LoadingContact" />
+    <DataColumn name="LoadingCity" />
+    <DataColumn name="LoadingAddress" />
+    <DataColumn name="LoadingNumber" />
+
+    <DataColumn name="UnloadingDate" />
+    <DataColumn name="UnloadingCompany" />
+    <DataColumn name="UnloadingContact" />
+    <DataColumn name="UnloadingCity" />
+    <DataColumn name="UnloadingAddress" />
+    <DataColumn name="UnloadingNumber" />
+
+    <RelColumn name="Expedition" renderColumns="ExpeditionType" />
+    <DataColumn name="Logistics" />
+    <RelColumn name="ShippingTerm" />
+
+    <DataColumn name="CargoNotes" />
+
+    <DataColumn name="CustomsBrokerage" />
+    <DataColumn name="FreightInsurance" />
+
+    <DataColumn name="Description" />
+    <DataColumn name="Quantity" />
+
+    <DataColumn name="Weight" />
+    <DataColumn name="Volume" />
+    <DataColumn name="LDM" />
+    <DataColumn name="Length" />
+    <DataColumn name="Width" />
+    <DataColumn name="Height" />
+
+    <DataColumn name="Value" />
+    <RelColumn name="ValueCurrency" />
+
+    <RelColumn name="Manager" renderColumns="ManagerFirstName ManagerLastName" />
+
+    <DataColumn name="LossReason" />
+    <DataColumn name="Host" />
+    <DataColumn name="Agent" />
+  </g:columns>
+</g:Grid>

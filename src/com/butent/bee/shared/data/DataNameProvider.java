@@ -4,5 +4,6 @@ import com.google.common.base.Function;
 
 import java.util.Set;
 
+@FunctionalInterface
 public interface DataNameProvider extends Function<String, Set<String>> {
 }

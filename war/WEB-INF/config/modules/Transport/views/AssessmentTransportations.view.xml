@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-  name="AssessmentTransportations" source="Trips" filter="!(AssessmentForwarder) AND Assessment"
+  name="AssessmentTransportations" source="Trips" caption="=trAssessmentTransportations"
+      filter="!(AssessmentForwarder) AND Assessment"
   >
   <Columns>
     <IdColumn name="ID" />
@@ -16,6 +17,23 @@
       <SimpleColumn name="Name" alias="ExpeditionType" />
     </SimpleJoin>
 
+    <SimpleColumn name="Manager" />
+    <SimpleJoin name="Manager" joinType="LEFT">
+      <SimpleColumn name="CompanyPerson" alias="ManagerPerson" />
+      <SimpleJoin name="CompanyPerson" joinType="LEFT">
+        <SimpleJoin name="Person" joinType="LEFT">
+          <SimpleColumn name="FirstName" alias="ManagerFirstName" />
+          <SimpleColumn name="LastName" alias="ManagerLastName" />
+        </SimpleJoin>
+        <SimpleJoin name="Company" joinType="LEFT">
+        <SimpleColumn alias="CompanyName" name="Name" />
+        <SimpleJoin joinType="LEFT" name="CompanyType">
+          <SimpleColumn name="Name" alias="CompanyTypeName" />
+        </SimpleJoin>
+      </SimpleJoin>
+      </SimpleJoin>
+    </SimpleJoin>
+    
     <SimpleColumn name="Forwarder" />
     <SimpleJoin joinType="LEFT" name="Forwarder">
       <SimpleColumn name="Name" alias="ForwarderName" />
@@ -27,7 +45,7 @@
     <ExternalJoin name="Trip" source="AssessmentForwarders" joinType="LEFT">
       <HiddenColumn name="Trip" alias="AssessmentForwarder" />
     </ExternalJoin>
-    
+
     <ExternalJoin name="Trip" source="CargoTrips" joinType="LEFT">
       <SimpleJoin name="Cargo" joinType="LEFT">
         <ExternalJoin name="Cargo" source="Assessments" joinType="LEFT">

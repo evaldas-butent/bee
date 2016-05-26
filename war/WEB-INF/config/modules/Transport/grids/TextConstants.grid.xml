@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+        xmlns:ui="http://www.butent.com/ui"
+
+        name="TextConstants" viewName="TextConstants" caption="=textConstants"
+    >
+  <g:body height="100" />
+  <g:columns>
+    <DataColumn name="Constant" readOnly="true" />
+    <DataColumn name="Content" cellType="html">
+      <style>
+        <bodyStyle>
+          <ui:inline>overflow:auto;</ui:inline>
+        </bodyStyle>
+      </style>
+      <editor type="rich" />
+    </DataColumn>
+  </g:columns>
+</g:Grid>

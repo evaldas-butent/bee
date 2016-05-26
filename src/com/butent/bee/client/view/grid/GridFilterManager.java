@@ -49,6 +49,7 @@ public class GridFilterManager {
 
   private static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "GridFilter-";
   private static final String STYLE_DIALOG = STYLE_PREFIX + "dialog";
+  private static final String STYLE_CHILD = STYLE_PREFIX + "child";
 
   private static final String STYLE_CONTENT = STYLE_PREFIX + "content";
 
@@ -129,8 +130,8 @@ public class GridFilterManager {
   }
 
   private final String gridKey;
-
   private final CellGrid grid;
+  private final boolean isChild;
 
   private final FilterConsumer filterConsumer;
 
@@ -145,6 +146,8 @@ public class GridFilterManager {
 
     this.gridKey = gridView.getGridKey();
     this.grid = gridView.getGrid();
+    this.isChild = gridView.isChild();
+
     this.filterConsumer = filterConsumer;
   }
 
@@ -190,7 +193,10 @@ public class GridFilterManager {
     externalFilter = queryFilter;
     retainValues();
 
-    DialogBox dialog = DialogBox.create(Localized.getConstants().filter(), STYLE_DIALOG);
+    DialogBox dialog = DialogBox.create(Localized.dictionary().filter(), STYLE_DIALOG);
+    if (isChild) {
+      dialog.addStyleName(STYLE_CHILD);
+    }
 
     buildContentPanel();
     dialog.setWidget(contentPanel);
@@ -319,7 +325,7 @@ public class GridFilterManager {
     panel.add(icon);
 
     CustomDiv message = new CustomDiv(STYLE_SAVE_MESSAGE);
-    message.setHtml(Localized.getConstants().saveFilter());
+    message.setHtml(Localized.dictionary().saveFilter());
     message.addClickHandler(clickHandler);
     panel.add(message);
 
@@ -448,7 +454,7 @@ public class GridFilterManager {
           }
 
         } else {
-          BeeKeeper.getScreen().notifyWarning(Localized.getConstants().nothingFound());
+          BeeKeeper.getScreen().notifyWarning(Localized.dictionary().nothingFound());
           if (columnInfo == null) {
             updateFilterValues(valuesByColumn, false);
           } else {

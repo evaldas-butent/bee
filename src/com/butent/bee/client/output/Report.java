@@ -1,9 +1,13 @@
 package com.butent.bee.client.output;
 
+import com.google.gwt.user.client.ui.Widget;
+
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.COL_RS_REPORT;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
-import com.butent.bee.client.Callback;
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.data.Data;
+import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.modules.classifiers.CompanyTypeReport;
 import com.butent.bee.client.modules.classifiers.CompanyUsageReport;
 import com.butent.bee.client.modules.trade.acts.TradeActItemsByCompanyReport;
@@ -12,7 +16,7 @@ import com.butent.bee.client.modules.trade.acts.TradeActStockReport;
 import com.butent.bee.client.modules.trade.acts.TradeActTransferReport;
 import com.butent.bee.client.modules.transport.AssessmentQuantityReport;
 import com.butent.bee.client.modules.transport.AssessmentTurnoverReport;
-import com.butent.bee.client.ui.FormDescription;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.view.ViewCallback;
 import com.butent.bee.client.view.ViewFactory;
@@ -20,7 +24,8 @@ import com.butent.bee.client.view.form.interceptor.ExtendedReportInterceptor;
 import com.butent.bee.client.view.form.interceptor.ReportInterceptor;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.i18n.LocalizableConstants;
+import com.butent.bee.shared.css.CssUnit;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -109,7 +114,7 @@ public enum Report implements HasWidgetSupplier {
   TRANSPORT_TRIP_PROFIT(ModuleAndSub.of(Module.TRANSPORT), SVC_TRIP_PROFIT_REPORT) {
     @Override
     public List<ReportItem> getItems() {
-      LocalizableConstants loc = Localized.getConstants();
+      Dictionary loc = Localized.dictionary();
       String plan = BeeUtils.parenthesize(loc.plan());
 
       return Arrays.asList(
@@ -151,7 +156,7 @@ public enum Report implements HasWidgetSupplier {
 
     @Override
     public String getReportCaption() {
-      return Localized.maybeTranslate("=trReportTripProfit");
+      return Localized.dictionary().trReportTripProfit();
     }
 
     @Override
@@ -159,7 +164,7 @@ public enum Report implements HasWidgetSupplier {
       Map<String, ReportItem> items = new HashMap<>();
 
       for (ReportItem item : getItems()) {
-        items.put(item.getName(), item);
+        items.put(item.getExpression(), item);
       }
       ReportInfo report = new ReportInfo(getReportCaption());
 
@@ -175,7 +180,7 @@ public enum Report implements HasWidgetSupplier {
       ReportItem income = items.get("TripIncome");
       report.addColItem(income);
 
-      ReportFormulaItem costs = new ReportFormulaItem(Localized.getConstants().expenses());
+      ReportFormulaItem costs = new ReportFormulaItem(Localized.dictionary().expenses());
       costs.setPrecision(2);
 
       for (String item : new String[] {"FuelCosts", "DailyCosts", "RoadCosts", "OtherCosts"}) {
@@ -184,8 +189,8 @@ public enum Report implements HasWidgetSupplier {
       report.addColItem(costs);
 
       ReportFormulaItem plannedCosts = new ReportFormulaItem(
-          BeeUtils.joinWords(Localized.getConstants().expenses(),
-              BeeUtils.parenthesize(Localized.getConstants().plan())));
+          BeeUtils.joinWords(Localized.dictionary().expenses(),
+              BeeUtils.parenthesize(Localized.dictionary().plan())));
       plannedCosts.setPrecision(2);
 
       for (String item : new String[] {"FuelCosts", "DailyCosts", "RoadCosts", "OtherCosts"}) {
@@ -196,8 +201,10 @@ public enum Report implements HasWidgetSupplier {
       ReportItem constantCosts = items.get("ConstantCosts");
       report.addColItem(constantCosts);
 
-      report.addColItem(new ReportFormulaItem(Localized.getConstants().profit())
-          .plus(income).minus(costs).minus(constantCosts).setPrecision(2));
+      report.addColItem(new ReportFormulaItem(Localized.dictionary().profit())
+          .plus(new ReportResultItem(income))
+          .minus(new ReportResultItem(costs))
+          .minus(new ReportResultItem(constantCosts)).setPrecision(2));
 
       report.getFilterItems().add(items.get(COL_TRIP_STATUS)
           .setFilter(BeeUtils.toString(TripStatus.COMPLETED.ordinal())));
@@ -206,10 +213,79 @@ public enum Report implements HasWidgetSupplier {
     }
   },
 
+  TRANSPORT_FUEL_USAGE(ModuleAndSub.of(Module.TRANSPORT), SVC_FUEL_USAGE_REPORT) {
+    @Override
+    public List<ReportItem> getItems() {
+      Dictionary loc = Localized.dictionary();
+
+      return Arrays.asList(
+          new ReportTextItem(COL_TRIP, Data.getColumnLabel(TBL_TRIP_COSTS, COL_TRIP)),
+          new ReportTextItem(COL_TRIP_NO, Data.getColumnLabel(TBL_TRIPS, COL_TRIP_NO)),
+          new ReportDateTimeItem(COL_TRIP_DATE, loc.date()),
+          new ReportDateItem(COL_TRIP_DATE_FROM, loc.dateFrom()),
+          new ReportDateItem(COL_TRIP_DATE_TO, loc.dateTo()),
+          new ReportTextItem(COL_VEHICLE, Data.getColumnLabel(TBL_TRIPS, COL_VEHICLE)),
+          new ReportTextItem(COL_TRAILER, Data.getColumnLabel(TBL_TRIPS, COL_TRAILER)),
+          new ReportTextItem(COL_DRIVER, loc.vehicleDriver()),
+          new ReportEnumItem(COL_TRIP_STATUS, Data.getColumnLabel(TBL_TRIPS, COL_TRIP_STATUS),
+              TripStatus.class),
+          new ReportTextItem(COL_CARGO, loc.cargo()),
+          new ReportTextItem(COL_TRIP_ROUTE, loc.route()),
+
+          new ReportNumericItem(COL_ROUTE_KILOMETERS, loc.kilometers()).setPrecision(1),
+          new ReportNumericItem(COL_EMPTY_KILOMETERS, loc.trEmptyKilometers()),
+          new ReportNumericItem(COL_ROUTE_WEIGHT, loc.trWeightInTons()).setPrecision(2),
+          new ReportNumericItem(COL_ROUTE_CONSUMPTION, loc.trFuelConsumptions()).setPrecision(2),
+          new ReportNumericItem("Norm" + COL_ROUTE_CONSUMPTION,
+              BeeUtils.joinWords(loc.trFuelConsumptions(), BeeUtils.parenthesize(loc.plan())))
+              .setPrecision(2),
+          new ReportNumericItem(COL_COSTS_PRICE, loc.price()).setPrecision(2));
+    }
+
+    @Override
+    public String getReportCaption() {
+      return Localized.dictionary().trReportFuelUsage();
+    }
+
+    @Override
+    public Collection<ReportInfo> getReports() {
+      Map<String, ReportItem> items = new HashMap<>();
+
+      for (ReportItem item : getItems()) {
+        items.put(item.getExpression(), item);
+      }
+      ReportInfo report = new ReportInfo(getReportCaption());
+
+      report.setRowGrouping(items.get(COL_DRIVER));
+
+      for (String item : new String[] {
+          COL_TRIP_NO, COL_TRIP_DATE_FROM, COL_TRIP_DATE_TO, COL_VEHICLE}) {
+        report.addRowItem(items.get(item));
+      }
+      for (String item : new String[] {
+          COL_ROUTE_KILOMETERS, COL_ROUTE_WEIGHT, COL_ROUTE_CONSUMPTION,
+          "Norm" + COL_ROUTE_CONSUMPTION}) {
+        report.addColItem(items.get(item));
+      }
+      for (int i = 0; i < report.getColItems().size(); i++) {
+        report.setGroupSummary(i, false);
+        report.setColSummary(i, false);
+      }
+      report.addColItem(new ReportFormulaItem(Localized.dictionary().debt() + " / -"
+          + Localized.dictionary().overpayment())
+          .plus(new ReportFormulaItem(null)
+              .plus(items.get("Norm" + COL_ROUTE_CONSUMPTION))
+              .minus(items.get(COL_ROUTE_CONSUMPTION)).setPrecision(2))
+          .multiply(items.get(COL_COSTS_PRICE)).setPrecision(2));
+
+      return Collections.singletonList(report);
+    }
+  },
+
   PROJECT_REPORT(ModuleAndSub.of(Module.PROJECTS), ProjectConstants.SVC_PROJECT_REPORT) {
     @Override
     public List<ReportItem> getItems() {
-      LocalizableConstants loc = Localized.getConstants();
+      Dictionary loc = Localized.dictionary();
 
       return Arrays.asList(
           new ReportTextItem(ProjectConstants.COL_PROJECT_NAME, Data.getColumnLabel(
@@ -249,10 +325,11 @@ public enum Report implements HasWidgetSupplier {
           new ReportNumericItem(TaskConstants.COL_TASK, loc.crmTask()),
           new ReportNumericItem(ProjectConstants.ALS_PROFIT, loc.profit()).setPrecision(2),
 
-          new ReportEnumItem(ProjectConstants.ALS_TASK_STATUS, BeeUtils.joinWords(Data
-              .getColumnLabel(TaskConstants.VIEW_TASKS, TaskConstants.COL_STATUS),
-              BeeUtils.parenthesize(loc.crmTasks())), TaskStatus.class)
-          );
+          new ReportEnumItem(ProjectConstants.ALS_TASK_STATUS,
+              BeeUtils.joinWords(Data.getColumnLabel(TaskConstants.VIEW_TASKS,
+                  TaskConstants.COL_STATUS), BeeUtils.parenthesize(loc.crmTasks())),
+              TaskStatus.class)
+      );
     }
 
     @Override
@@ -260,7 +337,7 @@ public enum Report implements HasWidgetSupplier {
       Map<String, ReportItem> items = new HashMap<>();
 
       for (ReportItem item : getItems()) {
-        items.put(item.getName(), item);
+        items.put(item.getExpression(), item);
       }
       ReportInfo report = new ReportInfo(getReportCaption());
 
@@ -284,44 +361,11 @@ public enum Report implements HasWidgetSupplier {
         report.addColItem(items.get(item));
       }
       report.setColGrouping(items.get(ProjectConstants.ALS_TASK_STATUS));
-      return Arrays.asList(report);
+      return Collections.singletonList(report);
     }
   };
 
   private static BeeLogger logger = LogUtils.getLogger(Report.class);
-
-  public static void open(String reportName) {
-    Report report = parse(reportName);
-    if (report != null) {
-      report.open();
-    }
-  }
-
-  public static void open(String reportName, final ViewCallback callback) {
-    Assert.notNull(callback);
-
-    final Report report = parse(reportName);
-    if (report != null) {
-      FormFactory.getFormDescription(report.getFormName(), new Callback<FormDescription>() {
-        @Override
-        public void onSuccess(FormDescription result) {
-          FormFactory.openForm(result, report.getInterceptor(),
-              ViewFactory.getPresenterCallback(callback));
-        }
-      });
-    }
-  }
-
-  public static Report parse(String input) {
-    for (Report report : values()) {
-      if (BeeUtils.same(report.reportName, input)) {
-        return report;
-      }
-    }
-
-    logger.severe("report not recognized:", input);
-    return null;
-  }
 
   private final ModuleAndSub moduleAndSub;
   private final String reportName;
@@ -375,6 +419,54 @@ public enum Report implements HasWidgetSupplier {
     interceptor.setInitialParameters(parameters);
 
     FormFactory.openForm(formName, interceptor);
+  }
+
+  public static void open(String reportName) {
+    Report report = parse(reportName);
+
+    if (report != null) {
+      report.open();
+    }
+  }
+
+  public static void open(String reportName, final ViewCallback callback) {
+    Assert.notNull(callback);
+
+    Report report = parse(reportName);
+
+    if (report != null) {
+      FormFactory.getFormDescription(report.getFormName(),
+          result -> FormFactory.openForm(result, report.getInterceptor(),
+              ViewFactory.getPresenterCallback(callback)));
+    }
+  }
+
+  public static Report parse(String input) {
+    for (Report report : values()) {
+      if (BeeUtils.same(report.reportName, input)) {
+        return report;
+      }
+    }
+    logger.severe("report not recognized:", input);
+    return null;
+  }
+
+  public void showModal(ReportInfo reportInfo) {
+    ReportInterceptor interceptor = getInterceptor();
+    interceptor.setInitialParameters(new ReportParameters(Collections.singletonMap(COL_RS_REPORT,
+        reportInfo.serialize())));
+
+    FormFactory.getFormDescription(getFormName(),
+        description -> FormFactory.openForm(description, interceptor, presenter -> {
+          Widget form = presenter.getMainView().asWidget();
+          StyleUtils.setWidth(form, BeeKeeper.getScreen().getWidth() * 0.7, CssUnit.PX);
+          StyleUtils.setHeight(form, BeeKeeper.getScreen().getHeight() * 0.9, CssUnit.PX);
+
+          Popup popup = new Popup(Popup.OutsideClick.CLOSE);
+          popup.setHideOnEscape(true);
+          popup.setWidget(form);
+          popup.center();
+        }));
   }
 
   protected ReportInterceptor getInterceptor() {

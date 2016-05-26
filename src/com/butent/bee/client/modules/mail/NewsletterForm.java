@@ -27,7 +27,7 @@ import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.css.CssUnit;
 import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.filter.Filter;
-import com.butent.bee.shared.i18n.LocalizableConstants;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.calendar.CalendarConstants;
 import com.butent.bee.shared.modules.mail.MailConstants.RecipientsGroupsVisibility;
@@ -58,13 +58,13 @@ public class NewsletterForm extends AbstractFormInterceptor {
             @Override
             public void onSuccess(final Long result) {
 
-              LocalizableConstants lc = Localized.getConstants();
+              Dictionary lc = Localized.dictionary();
               List<String> captions =
                   Arrays.asList(lc.mailRecipientsGroups(), lc.companies(), lc.persons(), lc
                       .companyPersons(), lc.additionalContacts());
 
               Global.choice(null,
-                  Localized.getConstants().chooseContactSource(), captions, new ChoiceCallback() {
+                  Localized.dictionary().chooseContactSource(), captions, new ChoiceCallback() {
 
                     @Override
                     public void onSuccess(int value) {
@@ -82,7 +82,7 @@ public class NewsletterForm extends AbstractFormInterceptor {
 
                           multi.getOracle().setAdditionalFilter(filter, true);
 
-                          Global.inputWidget(Localized.getConstants().mailRecipientsGroups(),
+                          Global.inputWidget(Localized.dictionary().mailRecipientsGroups(),
                               multi, new InputCallback() {
 
                                 @Override
@@ -106,9 +106,9 @@ public class NewsletterForm extends AbstractFormInterceptor {
                                 @Override
                                 public String getErrorMessage() {
                                   if (BeeUtils.isEmpty(multi.getIds())) {
-                                    return Localized.getConstants().valueRequired();
+                                    return Localized.dictionary().valueRequired();
                                   }
-                                  return super.getErrorMessage();
+                                  return InputCallback.super.getErrorMessage();
                                 }
                               });
 

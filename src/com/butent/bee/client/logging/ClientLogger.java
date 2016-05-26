@@ -58,6 +58,11 @@ public class ClientLogger implements BeeLogger {
     }
   }
 
+  @Override
+  public String getName() {
+    return logger.getName();
+  }
+
   public PanelHandler getPanelHandler() {
     for (Handler handler : logger.getHandlers()) {
       if (handler instanceof PanelHandler) {

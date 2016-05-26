@@ -43,11 +43,14 @@ class WorkScheduleForm extends AbstractFormInterceptor implements SelectorEvent.
   private static final String STYLE_OBJECT_WIDGET = STYLE_PREFIX + "object-widget";
   private static final String STYLE_OBJECT_ACTIVE = STYLE_PREFIX + "object-active";
 
+  private final WorkScheduleKind kind;
+
   private UnboundSelector objectSelector;
   private Flow objectPanel;
   private Flow schedulePanel;
 
-  WorkScheduleForm() {
+  WorkScheduleForm(WorkScheduleKind kind) {
+    this.kind = kind;
   }
 
   @Override
@@ -96,7 +99,7 @@ class WorkScheduleForm extends AbstractFormInterceptor implements SelectorEvent.
 
   @Override
   public FormInterceptor getInstance() {
-    return new WorkScheduleForm();
+    return new WorkScheduleForm(kind);
   }
 
   @Override
@@ -189,7 +192,7 @@ class WorkScheduleForm extends AbstractFormInterceptor implements SelectorEvent.
         schedulePanel.clear();
       }
 
-      WorkScheduleWidget widget = new LocationSchedule(objectId);
+      WorkScheduleWidget widget = new LocationSchedule(objectId, kind);
       schedulePanel.add(widget);
 
       widget.refresh();

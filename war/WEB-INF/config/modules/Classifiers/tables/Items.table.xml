@@ -63,9 +63,8 @@
     <Relation name="Type" relation="CategoryTree" label="=type" />
     <Relation name="Group" relation="CategoryTree" label="=group" />
 
-    <Relation name="Department" relation="Departments" label="=department" />
-    <Relation name="ActivityType" relation="ActivityTypes" label="=activityType" />
-    <Relation name="CostCenter" relation="CostCenters" label="=costCenter" />
+    <Relation name="Dimensions" unique="true" relation="Dimensions" editable="true"
+      label="=dimensions" />
 
     <Numeric name="DaysPerWeek" precision="1" label="=taDaysPerWeek" />
     <Numeric name="MinTerm" precision="3" label="=taMinTerm" />

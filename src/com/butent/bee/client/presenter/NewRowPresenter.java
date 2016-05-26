@@ -30,11 +30,13 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.HandlesActions;
 import com.butent.bee.shared.ui.HasCaption;
+import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 
 public class NewRowPresenter extends AbstractPresenter implements ParentRowCreator,
     ReadyForInsertEvent.Handler {
@@ -45,12 +47,17 @@ public class NewRowPresenter extends AbstractPresenter implements ParentRowCreat
 
   private static final EnumSet<UiOption> uiOptions = EnumSet.of(UiOption.EDITOR);
 
-  private static HeaderView createHeader(String caption) {
+  private static HeaderView createHeader(String caption, Set<Action> enabledActions) {
     HeaderView formHeader = new HeaderImpl();
     formHeader.asWidget().addStyleName(STYLE_HEADER);
 
+    Set<Action> actions = EnumSet.of(Action.SAVE, Action.CLOSE);
+    if (!BeeUtils.isEmpty(enabledActions)) {
+      actions.addAll(enabledActions);
+    }
+
     formHeader.create(caption, false, false, null, uiOptions,
-        EnumSet.of(Action.SAVE, Action.CLOSE), Action.NO_ACTIONS, Action.NO_ACTIONS);
+        actions, Action.NO_ACTIONS, Action.NO_ACTIONS);
     formHeader.addCaptionStyle(STYLE_CAPTION);
 
     return formHeader;
@@ -63,11 +70,13 @@ public class NewRowPresenter extends AbstractPresenter implements ParentRowCreat
 
   private HandlesActions actionDelegate;
 
-  public NewRowPresenter(FormView formView, DataInfo dataInfo, String caption) {
+  public NewRowPresenter(FormView formView, DataInfo dataInfo, String caption,
+      Set<Action> enabledActions) {
+
     this.formView = formView;
     this.dataInfo = dataInfo;
 
-    HeaderView header = createHeader(caption);
+    HeaderView header = createHeader(caption, enabledActions);
     this.container = createContainer(header);
 
     container.setViewPresenter(this);
@@ -126,6 +135,11 @@ public class NewRowPresenter extends AbstractPresenter implements ParentRowCreat
   @Override
   public View getMainView() {
     return container;
+  }
+
+  @Override
+  public String getViewKey() {
+    return formView.getSupplierKey();
   }
 
   @Override
@@ -216,6 +230,7 @@ public class NewRowPresenter extends AbstractPresenter implements ParentRowCreat
     FormAndHeader formContainer = new FormAndHeader();
     formContainer.addStyleName(STYLE_CONTAINER);
     formContainer.addStyleName(UiOption.getStyleName(uiOptions));
+    formContainer.addStyleName(formView.getContainerStyleName());
 
     formContainer.addTopHeightFillHorizontal(headerView.asWidget(), 0, headerView.getHeight());
     formContainer.addTopBottomFillHorizontal(formView.asWidget(), headerView.getHeight(), 0);
@@ -242,8 +257,8 @@ public class NewRowPresenter extends AbstractPresenter implements ParentRowCreat
     }
 
     if (columns.isEmpty()) {
-      callback.onFailure(Localized.getConstants().newRow(),
-          Localized.getConstants().allValuesCannotBeEmpty());
+      callback.onFailure(Localized.dictionary().newRow(),
+          Localized.dictionary().allValuesCannotBeEmpty());
       return;
     }
 

@@ -7,16 +7,22 @@
   >
 
   <g:columns>
-    <DataColumn name="DurationDate" flexShrink="0" visible="true" />
+    <DataColumn name="DurationDate" format="DATE_SHORT" flexShrink="0" visible="true" />
     <DataColumn name="DurationType" visible="true" />
     <DataColumn name="Duration" visible="true" />
 
     <DataColumn name="Comment" flexGrow="1" flexShrink="2" flexBasis="30" flexBasisUnit="%" />
 
-    <DataColumn name="CompanyName" caption="=client" />
+    <RelColumn name="Company" caption="=client" renderColumns="CompanyName CompanyTypeName" />
 
     <RelColumn name="Task" editEnabled="true" renderColumns="Summary" flexGrow="1" />
 
     <RelColumn name="Publisher" renderColumns="PublisherFirstName PublisherLastName" />
+    
+    <RelColumn name="Type" renderColumns="TypeName" />
+    
+    <RelColumn name="Project" renderColumns="ProjectName" />
+    
+    <RelColumn name="Product" renderColumns="ProductName"/>
   </g:columns>
 </g:Grid>

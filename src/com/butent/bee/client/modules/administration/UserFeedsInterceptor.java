@@ -121,7 +121,7 @@ public class UserFeedsInterceptor extends AbstractGridInterceptor {
       listBox.setVisibleItemCount(MAX_VISIBLE_ITEM_COUNT);
     }
 
-    Global.inputWidget(Localized.getConstants().feedNew(), listBox, new InputCallback() {
+    Global.inputWidget(Localized.dictionary().feedNew(), listBox, new InputCallback() {
       @Override
       public void onSuccess() {
         List<Feed> selection = new ArrayList<>();

@@ -1,122 +1,68 @@
 package com.butent.bee.client.modules.classifiers;
 
 import com.google.common.base.Splitter;
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.Multimap;
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.user.client.ui.Widget;
 
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 
 import com.butent.bee.client.composite.DataSelector;
+import com.butent.bee.client.composite.MultiSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.view.DataView;
 import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.data.BeeRow;
-import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RelationUtils;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.DataInfo;
-import com.butent.bee.shared.modules.administration.AdministrationConstants;
-import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
 
 public class ClassifierSelector implements SelectorEvent.Handler {
 
-  private final Map<String, Long> companyPersonSelectors = new HashMap<>();
-  private final Map<String, String> personSelectors = new HashMap<>();
-
-  ClassifierSelector() {
-    super();
-  }
-
-  @Override
-  public void onDataSelector(SelectorEvent event) {
-    if (BeeUtils.same(event.getRelatedViewName(), TBL_EMAILS)) {
-      handleEmails(event);
-
-    } else if (BeeUtils.same(event.getRelatedViewName(), VIEW_CITIES)) {
-      handleCities(event);
-
-    } else if (event.isNewRow()
-        && BeeUtils.inListSame(event.getRelatedViewName(), VIEW_PERSONS, VIEW_COMPANY_PERSONS)) {
-      handleNewPersons(event);
-
-    } else if (BeeUtils.same(event.getRelatedViewName(), VIEW_COMPANY_PERSONS)) {
-      if (event.isOpened() || event.isDataLoaded() || event.isUnloading()) {
-        handleCompanyPersons(event);
-      }
-
-    } else if (BeeUtils.same(event.getRelatedViewName(), VIEW_PERSONS)) {
-      String options = event.getSelector().getOptions();
-
-      if (!BeeUtils.isEmpty(options)) {
-        if (event.isOpened() || event.isDataLoaded() || event.isUnloading()) {
-          handlePersons(event, options);
-        }
-
-      } else if (event.isOpened()) {
-        DataView dataView = ViewHelper.getDataView(event.getSelector());
-
-        if (dataView != null && VIEW_COMPANY_OBJECTS.equals(dataView.getViewName())) {
-          if (TimeUtils.year() < 0) { // never
-            filterPersonsByCompany(event, dataView);
-          }
-        }
-      }
-
-    } else if (event.isOpened() && event.hasRelatedView(VIEW_POSITIONS)) {
-      DataView dataView = ViewHelper.getDataView(event.getSelector());
-      if (dataView != null
-          && AdministrationConstants.VIEW_DEPARTMENT_EMPLOYEES.equals(dataView.getViewName())) {
-        filterDepartmentPositions(event, dataView);
-      }
-    } else if (BeeUtils.same(event.getRelatedViewName(), VIEW_COMPANIES)) {
-      handleCities(event);
-    }
-  }
-
   private static void filterDepartmentPositions(SelectorEvent event, DataView dataView) {
-    Long department = ViewHelper.getParentRowId(dataView.asWidget(),
-        AdministrationConstants.VIEW_DEPARTMENTS);
+    Long department = ViewHelper.getParentRowId(dataView.asWidget(), VIEW_DEPARTMENTS);
 
     Filter filter;
     if (DataUtils.isId(department)) {
-      filter = Filter.in(Data.getIdColumn(VIEW_POSITIONS),
-          AdministrationConstants.VIEW_DEPARTMENT_POSITIONS, COL_POSITION,
-          Filter.equals(AdministrationConstants.COL_DEPARTMENT, department));
+      filter = Filter.in(Data.getIdColumn(VIEW_POSITIONS), VIEW_DEPARTMENT_POSITIONS, COL_POSITION,
+          Filter.equals(COL_DEPARTMENT, department));
     } else {
       filter = null;
     }
 
-    event.getSelector().setAdditionalFilter(filter, true);
+    event.getSelector().setAdditionalFilter(filter, filter != null);
   }
 
-  private static void filterPersonsByCompany(SelectorEvent event, DataView dataView) {
-    Long company = ViewHelper.getParentRowId(dataView.asWidget(), VIEW_COMPANIES);
-
-    Filter filter;
-    if (DataUtils.isId(company)) {
-      filter = Filter.in(Data.getIdColumn(VIEW_PERSONS), VIEW_COMPANY_PERSONS, COL_PERSON,
-          Filter.equals(COL_COMPANY, company));
-    } else {
-      filter = Filter.isFalse();
+  private static Long getOptionsValue(SelectorEvent event) {
+    String columnName = event.getSelector().getOptions();
+    if (BeeUtils.isEmpty(columnName)) {
+      return null;
     }
 
-    event.getSelector().setAdditionalFilter(filter, true);
+    DataView dataView = ViewHelper.getDataView(event.getSelector());
+    if (dataView == null) {
+      return null;
+    }
+
+    IsRow row = dataView.getActiveRow();
+    if (row == null) {
+      return null;
+    }
+
+    int index = Data.getColumnIndex(dataView.getViewName(), columnName);
+    if (index < 0) {
+      return null;
+    }
+
+    return row.getLong(index);
   }
 
   private static void handleCities(SelectorEvent event) {
@@ -167,90 +113,6 @@ public class ClassifierSelector implements SelectorEvent.Handler {
     }
   }
 
-  private void handleCompanyPersons(SelectorEvent event) {
-    String targetCompanyColumnName = event.getSelector().getOptions();
-    if (BeeUtils.isEmpty(targetCompanyColumnName)) {
-      return;
-    }
-
-    String selectorId = event.getSelector().getId();
-    if (BeeUtils.isEmpty(selectorId)) {
-      return;
-    }
-
-    if (event.isUnloading()) {
-      removeCompanyPersonSelector(selectorId);
-      return;
-    }
-
-    DataView dataView = ViewHelper.getDataView(event.getSelector());
-    if (dataView == null) {
-      removeCompanyPersonSelector(selectorId);
-      return;
-    }
-
-    IsRow targetRow = dataView.getActiveRow();
-    if (targetRow == null) {
-      removeCompanyPersonSelector(selectorId);
-      return;
-    }
-
-    int targetCompanyIndex = Data.getColumnIndex(dataView.getViewName(), targetCompanyColumnName);
-    if (targetCompanyIndex < 0) {
-      removeCompanyPersonSelector(selectorId);
-      return;
-    }
-
-    Long company = targetRow.getLong(targetCompanyIndex);
-    if (Objects.equals(company, companyPersonSelectors.get(selectorId))) {
-      return;
-    }
-
-    if (event.isOpened()) {
-      event.getSelector().getOracle().clearData();
-      return;
-    }
-
-    if (event.isDataLoaded()) {
-      if (company == null) {
-        removeCompanyPersonSelector(selectorId);
-        return;
-      }
-
-      companyPersonSelectors.put(selectorId, company);
-
-      BeeRowSet rowSet = event.getSelector().getOracle().getViewData();
-      if (rowSet == null || rowSet.getNumberOfRows() <= 1) {
-        return;
-      }
-
-      int sourceCompanyIndex = Data.getColumnIndex(rowSet.getViewName(), COL_COMPANY);
-      if (targetCompanyIndex < 0) {
-        return;
-      }
-
-      List<BeeRow> companyRows = new ArrayList<>();
-
-      for (Iterator<BeeRow> it = rowSet.getRows().iterator(); it.hasNext();) {
-        BeeRow row = it.next();
-
-        if (company.equals(row.getLong(sourceCompanyIndex))) {
-          companyRows.add(row);
-          it.remove();
-        }
-      }
-
-      if (!companyRows.isEmpty()) {
-        if (rowSet.isEmpty()) {
-          rowSet.addRows(companyRows);
-        } else {
-          companyRows.addAll(rowSet.getRows());
-          rowSet.setRows(companyRows);
-        }
-      }
-    }
-  }
-
   private static void handleEmails(SelectorEvent event) {
     if (event.isNewRow() && !BeeUtils.isEmpty(event.getDefValue())) {
       Data.setValue(TBL_EMAILS, event.getNewRow(), COL_EMAIL_ADDRESS, event.getDefValue());
@@ -258,8 +120,47 @@ public class ClassifierSelector implements SelectorEvent.Handler {
     }
   }
 
-  private static void handleNewPersons(SelectorEvent event) {
-    if (event.isNewRow() && !BeeUtils.isEmpty(event.getDefValue())) {
+  private static void onNewCompanyPerson(SelectorEvent event) {
+    Long company = getOptionsValue(event);
+
+    if (DataUtils.isId(company)) {
+      DataInfo targetInfo = Data.getDataInfo(event.getRelatedViewName());
+      IsRow targetRow = event.getNewRow();
+
+      DataView sourceView = ViewHelper.getDataView(event.getSelector());
+
+      if (targetInfo != null && targetRow != null && sourceView != null) {
+        DataInfo sourceInfo = Data.getDataInfo(sourceView.getViewName());
+        IsRow sourceRow = sourceView.getActiveRow();
+
+        Data.setValue(event.getRelatedViewName(), targetRow, COL_COMPANY, company);
+        RelationUtils.updateRow(targetInfo, COL_COMPANY, targetRow, sourceInfo, sourceRow, false);
+      }
+    }
+
+    final String defValue = event.getDefValue();
+
+    if (!BeeUtils.isEmpty(defValue)) {
+      event.setDefValue(null);
+
+      event.setOnOpenNewRow(formView -> {
+        Widget widget = formView.getWidgetBySource(COL_PERSON);
+
+        if (widget instanceof DataSelector) {
+          final DataSelector personSelector = (DataSelector) widget;
+
+          Scheduler.get().scheduleDeferred(() -> {
+            personSelector.setFocus(true);
+            personSelector.setDisplayValue(defValue);
+            personSelector.startEdit(null, DataSelector.ASK_ORACLE, null, null);
+          });
+        }
+      });
+    }
+  }
+
+  private static void onNewPerson(SelectorEvent event) {
+    if (!BeeUtils.isEmpty(event.getDefValue())) {
       String firstName = null;
       String lastName = null;
 
@@ -283,100 +184,97 @@ public class ClassifierSelector implements SelectorEvent.Handler {
     }
   }
 
-  private void handlePersons(SelectorEvent event, String companySelectorName) {
-    String selectorId = event.getSelector().getId();
-    if (BeeUtils.isEmpty(selectorId)) {
-      return;
+  private static void onOpenCompanyPersons(SelectorEvent event) {
+    Long company = getOptionsValue(event);
+
+    Filter filter;
+    if (company == null) {
+      filter = null;
+    } else {
+      filter = Filter.equals(COL_COMPANY, company);
     }
 
-    if (event.isUnloading()) {
-      removePersonSelector(selectorId);
+    event.getSelector().setAdditionalFilter(filter, filter != null);
+  }
+
+  private static void onOpenPersons(SelectorEvent event) {
+    String companySelectorName = event.getSelector().getOptions();
+    if (BeeUtils.isEmpty(companySelectorName)) {
       return;
     }
 
     FormView form = ViewHelper.getForm(event.getSelector());
     if (form == null) {
-      removePersonSelector(selectorId);
       return;
     }
 
     Widget companySelector = form.getWidgetByName(companySelectorName);
     if (!(companySelector instanceof DataSelector)) {
-      removePersonSelector(selectorId);
       return;
     }
 
-    String companyValue = ((DataSelector) companySelector).getValue();
-
-    if (Objects.equals(companyValue, personSelectors.get(selectorId))) {
-      return;
+    List<Long> companyIds;
+    if (companySelector instanceof MultiSelector) {
+      companyIds = ((MultiSelector) companySelector).getIds();
+    } else {
+      String companyValue = ((DataSelector) companySelector).getValue();
+      companyIds = DataUtils.parseIdList(companyValue);
     }
 
-    if (event.isOpened()) {
-      event.getSelector().getOracle().clearData();
-      return;
+    Filter filter;
+    if (BeeUtils.isEmpty(companyIds)) {
+      filter = null;
+    } else {
+      filter = Filter.in(Data.getIdColumn(VIEW_PERSONS), VIEW_COMPANY_PERSONS, COL_PERSON,
+          Filter.any(COL_COMPANY, companyIds));
     }
 
-    if (event.isDataLoaded()) {
-      List<Long> companyIds = DataUtils.parseIdList(companyValue);
-      if (companyIds.isEmpty()) {
-        removePersonSelector(selectorId);
-        return;
-      }
+    event.getSelector().setAdditionalFilter(filter, filter != null);
+  }
 
-      personSelectors.put(selectorId, companyValue);
+  ClassifierSelector() {
+    super();
+  }
 
-      BeeRowSet rowSet = event.getSelector().getOracle().getViewData();
-      if (rowSet == null || rowSet.getNumberOfRows() <= 1) {
-        return;
-      }
+  @Override
+  public void onDataSelector(SelectorEvent event) {
+    String viewName = event.getRelatedViewName();
 
-      Multimap<Long, BeeRow> filteredRows = ArrayListMultimap.create();
+    if (viewName != null) {
+      switch (viewName) {
+        case TBL_EMAILS:
+          handleEmails(event);
+          break;
 
-      for (Iterator<BeeRow> it = rowSet.iterator(); it.hasNext();) {
-        BeeRow row = it.next();
+        case VIEW_CITIES:
+          handleCities(event);
+          break;
 
-        String value = row.getProperty(PROP_COMPANY_IDS);
-        if (!BeeUtils.isEmpty(value)) {
-          Set<Long> values = DataUtils.parseIdSet(value);
+        case VIEW_PERSONS:
+          if (event.isOpened()) {
+            onOpenPersons(event);
+          } else if (event.isNewRow()) {
+            onNewPerson(event);
+          }
+          break;
 
-          for (Long id : companyIds) {
-            if (values.contains(id)) {
-              filteredRows.put(id, row);
-              it.remove();
-              break;
+        case VIEW_COMPANY_PERSONS:
+          if (event.isOpened()) {
+            onOpenCompanyPersons(event);
+          } else if (event.isNewRow()) {
+            onNewCompanyPerson(event);
+          }
+          break;
+
+        case VIEW_POSITIONS:
+          if (event.isOpened()) {
+            DataView dataView = ViewHelper.getDataView(event.getSelector());
+            if (dataView != null && VIEW_DEPARTMENT_EMPLOYEES.equals(dataView.getViewName())) {
+              filterDepartmentPositions(event, dataView);
             }
           }
-        }
+          break;
       }
-
-      if (!filteredRows.isEmpty()) {
-        List<BeeRow> rows = new ArrayList<>();
-        for (Long id : companyIds) {
-          if (filteredRows.containsKey(id)) {
-            rows.addAll(filteredRows.get(id));
-          }
-        }
-
-        if (rowSet.isEmpty()) {
-          rowSet.addRows(rows);
-        } else {
-          rows.addAll(rowSet.getRows());
-          rowSet.setRows(rows);
-        }
-      }
-    }
-  }
-
-  private void removeCompanyPersonSelector(String id) {
-    if (companyPersonSelectors.containsKey(id)) {
-      companyPersonSelectors.remove(id);
-    }
-  }
-
-  private void removePersonSelector(String id) {
-    if (personSelectors.containsKey(id)) {
-      personSelectors.remove(id);
     }
   }
 }
