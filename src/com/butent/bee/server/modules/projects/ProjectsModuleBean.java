@@ -238,7 +238,7 @@ public class ProjectsModuleBean implements BeeModule {
       @Subscribe
       @AllowConcurrentEvents
       public void fillProjectsOverdue(ViewQueryEvent event) {
-        if (event.isAfter(VIEW_PROJECTS, VIEW_PROJECT_STAGES) && event.hasData()) {
+        if (event.isAfter(VIEW_PROJECTS) && event.hasData()) {
           BeeRowSet viewRows = event.getRowset();
 
           for (BeeRow row : viewRows) {
