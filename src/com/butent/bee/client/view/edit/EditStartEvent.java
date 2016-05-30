@@ -12,6 +12,8 @@ import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.IsRow;
 
+import java.util.Objects;
+
 /**
  * Manages edit start event, gets column id, type, row value and other necessary parameters.
  */
@@ -119,6 +121,26 @@ public class EditStartEvent extends GwtEvent<EditStartEvent.Handler> implements 
 
   public Element getSourceElement() {
     return sourceElement;
+  }
+
+  public boolean hasAnySource(String first, String second, String... rest) {
+    if (hasSource(first) || hasSource(second)) {
+      return true;
+    }
+
+    if (rest != null) {
+      for (String name : rest) {
+        if (hasSource(name)) {
+          return true;
+        }
+      }
+    }
+
+    return false;
+  }
+
+  public boolean hasSource(String name) {
+    return getCellSource() != null && Objects.equals(getCellSource().getName(), name);
   }
 
   @Override
