@@ -3,10 +3,8 @@ package com.butent.bee.client.presenter;
 import com.google.common.collect.Lists;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Timer;
-import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.data.AsyncProvider;
 import com.butent.bee.client.data.CachedProvider;
@@ -17,7 +15,6 @@ import com.butent.bee.client.data.LocalProvider;
 import com.butent.bee.client.data.Provider;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
-import com.butent.bee.client.dialog.ChoiceCallback;
 import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.DialogConstants;
 import com.butent.bee.client.dialog.Icon;
@@ -29,7 +26,6 @@ import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.UiOption;
-import com.butent.bee.client.ui.WidgetInitializer;
 import com.butent.bee.client.view.GridContainerImpl;
 import com.butent.bee.client.view.GridContainerView;
 import com.butent.bee.client.view.HasGridView;
@@ -327,16 +323,13 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
 
       Global.getMsgBoxen().display(getCaption(), Icon.ALARM,
           Collections.singletonList(Localized.dictionary().deleteQuestion()), options, 2,
-          new ChoiceCallback() {
-            @Override
-            public void onSuccess(int value) {
-              if (value == 0) {
-                deleteRow(activeRow, false);
+          value -> {
+            if (value == 0) {
+              deleteRow(activeRow, false);
 
-              } else if (value == 1) {
-                DeleteCallback deleteCallback = new DeleteCallback(activeRow, selectedRows);
-                deleteCallback.onConfirm();
-              }
+            } else if (value == 1) {
+              DeleteCallback deleteCallback = new DeleteCallback(activeRow, selectedRows);
+              deleteCallback.onConfirm();
             }
           }, BeeConst.UNDEF, null, StyleUtils.className(FontSize.XX_LARGE),
           StyleUtils.className(FontSize.MEDIUM), null, null);
@@ -511,6 +504,8 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
               deleteRow(row, true);
             } else if (GridInterceptor.DeleteMode.MULTI.equals(mode)) {
               deleteRows(row, selectedRows);
+            } else if (GridInterceptor.DeleteMode.DENY.equals(mode)) {
+              getGridView().notifyWarning(Localized.dictionary().rowIsNotRemovable());
             }
           }
         }
@@ -787,19 +782,16 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
       return;
     }
 
-    getDataProvider().tryFilter(filter, new Consumer<Boolean>() {
-      @Override
-      public void accept(Boolean input) {
-        if (BeeUtils.isTrue(input)) {
-          HeaderView header = getHeader();
-          if (header != null && header.hasAction(Action.REMOVE_FILTER)) {
-            header.showAction(Action.REMOVE_FILTER, filter != null);
-          }
+    getDataProvider().tryFilter(filter, input -> {
+      if (BeeUtils.isTrue(input)) {
+        HeaderView header = getHeader();
+        if (header != null && header.hasAction(Action.REMOVE_FILTER)) {
+          header.showAction(Action.REMOVE_FILTER, filter != null);
         }
+      }
 
-        if (callback != null) {
-          callback.accept(input);
-        }
+      if (callback != null) {
+        callback.accept(input);
       }
     }, notify);
   }
@@ -974,47 +966,38 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
     }
 
     Global.choiceWithCancel(getCaption(), Localized.dictionary().mergeInto(), labels,
-        new ChoiceCallback() {
-          @Override
-          public void onSuccess(final int index) {
-            if (BeeUtils.isIndex(rows, index)) {
-              List<String> messages = new ArrayList<>(labels);
-              messages.add(BeeConst.STRING_EMPTY);
-              messages.add(Localized.dictionary().mergeInto());
-              messages.add(BeeConst.STRING_EMPTY);
-              messages.add(labels.get(index));
+        index -> {
+          if (BeeUtils.isIndex(rows, index)) {
+            List<String> messages = new ArrayList<>(labels);
+            messages.add(BeeConst.STRING_EMPTY);
+            messages.add(Localized.dictionary().mergeInto());
+            messages.add(BeeConst.STRING_EMPTY);
+            messages.add(labels.get(index));
 
-              List<String> options = new ArrayList<>();
-              options.add(Localized.dictionary().actionMerge());
-              options.add(Localized.dictionary().cancel());
+            List<String> options = new ArrayList<>();
+            options.add(Localized.dictionary().actionMerge());
+            options.add(Localized.dictionary().cancel());
 
-              Global.getMsgBoxen().display(getCaption(), Icon.ALARM, messages, options, 1,
-                  new ChoiceCallback() {
-                    @Override
-                    public void onSuccess(int value) {
-                      if (value == 0) {
-                        long from = rows.get(1 - index).getId();
-                        long into = rows.get(index).getId();
+            Global.getMsgBoxen().display(getCaption(), Icon.ALARM, messages, options, 1,
+                value -> {
+                  if (value == 0) {
+                    long from = rows.get(1 - index).getId();
+                    long into = rows.get(index).getId();
 
-                        Queries.mergeRows(getViewName(), from, into, new Queries.IntCallback() {
-                          @Override
-                          public void onSuccess(Integer result) {
-                            getGridView().getGrid().clearSelection();
-                          }
-                        });
+                    Queries.mergeRows(getViewName(), from, into, new Queries.IntCallback() {
+                      @Override
+                      public void onSuccess(Integer result) {
+                        getGridView().getGrid().clearSelection();
                       }
-                    }
-                  }, BeeConst.UNDEF, null, null, null, null,
-                  new WidgetInitializer() {
-                    @Override
-                    public Widget initialize(Widget widget, String name) {
-                      if (DialogConstants.WIDGET_DIALOG.equals(name)) {
-                        widget.addStyleName(BeeConst.CSS_CLASS_PREFIX + "MergeConfirm");
-                      }
-                      return widget;
-                    }
-                  });
-            }
+                    });
+                  }
+                }, BeeConst.UNDEF, null, null, null, null,
+                (widget, name) -> {
+                  if (DialogConstants.WIDGET_DIALOG.equals(name)) {
+                    widget.addStyleName(BeeConst.CSS_CLASS_PREFIX + "MergeConfirm");
+                  }
+                  return widget;
+                });
           }
         });
   }
@@ -1092,19 +1075,16 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
   }
 
   private void reset() {
-    GridFactory.getGridDescription(getGridView().getGridName(), new Callback<GridDescription>() {
-      @Override
-      public void onSuccess(GridDescription result) {
-        getGridView().reset(result);
+    GridFactory.getGridDescription(getGridView().getGridName(), result -> {
+      getGridView().reset(result);
 
-        CellGrid display = getGridView().getGrid();
-        getDataProvider().setDisplay(display);
+      CellGrid display = getGridView().getGrid();
+      getDataProvider().setDisplay(display);
 
-        Collection<PagerView> pagers = gridContainer.getPagers();
-        if (pagers != null) {
-          for (PagerView pager : pagers) {
-            pager.setDisplay(display);
-          }
+      Collection<PagerView> pagers = gridContainer.getPagers();
+      if (pagers != null) {
+        for (PagerView pager : pagers) {
+          pager.setDisplay(display);
         }
       }
     });
