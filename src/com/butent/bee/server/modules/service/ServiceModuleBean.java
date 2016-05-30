@@ -166,7 +166,7 @@ public class ServiceModuleBean implements BeeModule {
 
               if (r != null) {
                 r.setProperty(COL_SERVICE_CRITERION_NAME
-                        + row.getValue(COL_SERVICE_CRITERION_NAME),
+                    + row.getValue(COL_SERVICE_CRITERION_NAME),
                     row.getValue(COL_SERVICE_CRITERION_VALUE));
               }
             }
@@ -270,6 +270,10 @@ public class ServiceModuleBean implements BeeModule {
     return ResponseObject.response(rs.getNumberOfRows());
   }
 
+  /** 
+   * @since Paradis
+   * 01 Leave criterion ordinal
+   */
   private ResponseObject copyServiceObject(RequestInfo reqInfo) {
     Long dataId = reqInfo.getParameterLong(VAR_SERVICE_TEMPLATE);
 
@@ -287,7 +291,7 @@ public class ServiceModuleBean implements BeeModule {
     }
 
     String aliasGroupOrdinal = COL_CRITERIA_GROUP + COL_CRITERIA_ORDINAL;
-
+/**  01 Leave criterion ordinal*/
     SimpleRowSet rs = qs.getData(new SqlSelect()
         .addField(TBL_SERVICE_CRITERIA_GROUPS, COL_CRITERIA_ORDINAL, aliasGroupOrdinal)
         .addFields(TBL_SERVICE_CRITERIA_GROUPS, COL_CRITERIA_GROUP_NAME)
@@ -297,7 +301,12 @@ public class ServiceModuleBean implements BeeModule {
         .addFrom(TBL_SERVICE_CRITERIA_GROUPS)
         .addFromLeft(TBL_SERVICE_CRITERIA,
             sys.joinTables(TBL_SERVICE_CRITERIA_GROUPS, TBL_SERVICE_CRITERIA, COL_CRITERIA_GROUP))
-        .setWhere(SqlUtils.equals(TBL_SERVICE_CRITERIA_GROUPS, COL_SERVICE_OBJECT, dataId)));
+        .setWhere(SqlUtils.equals(TBL_SERVICE_CRITERIA_GROUPS, COL_SERVICE_OBJECT, dataId))
+        .addOrder(TBL_SERVICE_CRITERIA_GROUPS, COL_CRITERIA_ORDINAL)
+        .addOrder(TBL_SERVICE_CRITERIA, COL_CRITERIA_ORDINAL)
+        .addOrder(TBL_SERVICE_CRITERIA_GROUPS,sys.getIdName(TBL_SERVICE_CRITERIA_GROUPS))
+        .addOrder(TBL_SERVICE_CRITERIA, sys.getIdName(TBL_SERVICE_CRITERIA))
+    );
 
     if (DataUtils.isEmpty(rs)) {
       return ResponseObject.emptyResponse();
@@ -309,7 +318,8 @@ public class ServiceModuleBean implements BeeModule {
     for (SimpleRow row : rs) {
       Long docGroupId = row.getLong(COL_CRITERIA_GROUP);
 
-      if (groups.containsKey(docGroupId)) {
+      /**  01 Leave criterion ordinal*/
+      if (DataUtils.isId(docGroupId) && groups.containsKey(docGroupId)) {
         svcGroupId = groups.get(docGroupId);
 
       } else {
