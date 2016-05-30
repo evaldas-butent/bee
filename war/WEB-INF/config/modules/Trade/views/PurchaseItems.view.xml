@@ -16,7 +16,6 @@
     <SimpleColumn name="Article" />
     <SimpleColumn name="Quantity" />
     <SimpleColumn name="Price" />
-    <SimpleColumn name="OldPrice" />
     <SimpleColumn name="VatPlus" />
     <SimpleColumn name="Vat" />
     <SimpleColumn name="VatPercent" />

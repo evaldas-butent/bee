@@ -46,6 +46,8 @@
     <RelColumn name="Manager" renderColumns="ManagerFirstName ManagerLastName" filterSupplier="list" />
 
     <DataColumn name="Exported" />
+
+    <DataColumn name="NewNumber" />
   </g:columns>
 
   <g:rowStyle>

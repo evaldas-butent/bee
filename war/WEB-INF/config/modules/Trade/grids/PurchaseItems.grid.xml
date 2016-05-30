@@ -14,12 +14,9 @@
     <DataColumn name="Quantity" />
     <DataColumn name="UnitName" flexGrow="0" caption="=unitShort" />
     <DataColumn name="Price" />
-    <DataColumn name="OldPrice" readOnly="true" visible="false" />
 
     <DataColumn name="VatPlus" width="20" sortable="false" horizontalAlignment="center" caption="+">
-      <render>
-        <ui:expression>row.VatPlus ? '+' : ''</ui:expression>
-      </render>
+      <render><ui:expression>row.VatPlus ? '+' : ''</ui:expression></render>
       <carry>
         <ui:expression>cell.value</ui:expression>
       </carry>
@@ -29,11 +26,8 @@
         <ui:expression>cell.value</ui:expression>
       </carry>
     </DataColumn>
-    <DataColumn name="VatPercent" width="20" sortable="false" horizontalAlignment="center"
-                caption="%">
-      <render>
-        <ui:expression>row.VatPercent ? '%' : ''</ui:expression>
-      </render>
+    <DataColumn name="VatPercent" width="20" sortable="false" horizontalAlignment="center" caption="%">
+      <render><ui:expression>row.VatPercent ? '%' : ''</ui:expression></render>
       <carry>
         <ui:expression>cell.value</ui:expression>
       </carry>
@@ -41,9 +35,7 @@
 
     <CalcColumn name="Total" type="decimal" caption="=trdAmount" format="0.00">
       <style>
-        <bodyStyle>
-          <ui:font>bold</ui:font>
-        </bodyStyle>
+        <bodyStyle><ui:font>bold</ui:font></bodyStyle>
       </style>
       <renderer type="total" />
     </CalcColumn>

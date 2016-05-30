@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+        xmlns:ui="http://www.butent.com/ui"
+
+        name="Accumulations" viewName="Accumulations" caption="Sukauptos sąnaudos"
+        disabledActions="add delete"
+>
+  <g:columns>
+    <RelColumn name="Assessment" label="ID" editEnabled="true" readOnly="true"
+               editViewName="Assessments" editSource="Assessment" module="Transport.Logistics"/>
+    <DataColumn name="OrderDate" />
+    <DataColumn name="Status" />
+    <RelColumn name="Manager" filterSupplier="list" renderColumns="FirstName LastName" />
+
+    <RelColumn name="LoadingCountry" visible="false" readOnly="true"/>
+    <CalcColumn type="string" name="From" source="LoadingCountryCode" cellType="html" width="20"
+                horizontalAlignment="center" searchBy="LoadingCountryName LoadingCountryCode">
+      <renderer type="flag" />
+    </CalcColumn>
+    <DataColumn name="LoadingDate" />
+
+    <RelColumn name="UnloadingCountry" visible="false" readOnly="true"/>
+    <CalcColumn type="string" name="To" source="UnloadingCountryCode" cellType="html" width="20"
+                horizontalAlignment="center" searchBy="UnloadingCountryName UnloadingCountryCode">
+      <renderer type="flag" />
+    </CalcColumn>
+    <DataColumn name="UnloadingDate" />
+
+    <DataColumn name="ItemName" />
+    <DataColumn name="Article" readOnly="true" />
+    <DataColumn name="Quantity" readOnly="true" />
+    <DataColumn name="UnitName" flexGrow="0" caption="=unitShort" />
+    <DataColumn name="Price" required="true" updateMode="row" />
+
+    <DataColumn name="VatPlus" width="20" sortable="false" horizontalAlignment="center" caption="+"
+                updateMode="row">
+      <render><ui:expression>row.VatPlus ? '+' : ''</ui:expression></render>
+    </DataColumn>
+    <DataColumn name="Vat" updateMode="row" />
+    <DataColumn name="VatPercent" width="20" sortable="false" horizontalAlignment="center"
+                caption="%" updateMode="row">
+      <render><ui:expression>row.VatPercent ? '%' : ''</ui:expression></render>
+    </DataColumn>
+
+    <CalcColumn name="Total" type="decimal" caption="=trdAmount" format="0.00">
+      <style>
+        <bodyStyle><ui:font>bold</ui:font></bodyStyle>
+      </style>
+      <renderer type="total" />
+    </CalcColumn>
+
+    <DataColumn name="Number" />
+  </g:columns>
+</g:Grid>

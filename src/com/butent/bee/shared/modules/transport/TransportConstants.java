@@ -455,6 +455,8 @@ public final class TransportConstants {
   public static final String VIEW_ASSESSMENT_TRANSPORTATIONS = "AssessmentTransportations";
   public static final String VIEW_ASSESSMENT_EXECUTORS = "AssessmentExecutors";
 
+  public static final String VIEW_ACCUMULATIONS = "Accumulations";
+
   public static final String VIEW_SHIPMENT_REQUESTS = "ShipmentRequests";
   public static final String VIEW_SHIPMENT_REQUEST_FILES = "ShipmentRequestFiles";
 

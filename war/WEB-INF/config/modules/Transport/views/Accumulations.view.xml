@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view" xmlns:xi="http://www.w3.org/2001/XInclude"
+
+      name="Accumulations" source="PurchaseItems" caption="Sukauptos sąnaudos"
+>
+  <Columns>
+    <SimpleJoin name="Purchase" joinType="INNER">
+      <SimpleColumn name="Operation" />
+    </SimpleJoin>
+    <SimpleJoin joinType="INNER" name="Item">
+      <SimpleColumn name="Name" alias="ItemName" />
+
+      <SimpleJoin joinType="INNER" name="Unit">
+        <SimpleColumn name="Name" alias="UnitName" />
+      </SimpleJoin>
+    </SimpleJoin>
+    <SimpleColumn name="Article" />
+    <SimpleColumn name="Quantity" />
+    <SimpleColumn name="Price" />
+    <SimpleColumn name="VatPlus" />
+    <SimpleColumn name="Vat" />
+    <SimpleColumn name="VatPercent" />
+    <SimpleColumn name="Note" />
+    <SimpleColumn name="Number" />
+
+    <SimpleColumn name="CargoExpense" />
+    <SimpleJoin name="CargoExpense" joinType="INNER">
+      <SimpleJoin name="Cargo" joinType="INNER">
+        <ExternalJoin name="Cargo" source="Assessments" joinType="LEFT">
+          <IdColumn name="Assessment" />
+        </ExternalJoin>
+
+        <SimpleJoin name="Order" joinType="INNER">
+          <SimpleColumn name="Status" />
+          <SimpleColumn name="Date" alias="OrderDate" label="=orderDate" />
+
+          <SimpleColumn name="Manager" />
+          <SimpleJoin name="Manager" joinType="INNER">
+            <SimpleJoin name="CompanyPerson" joinType="LEFT">
+              <SimpleJoin name="Person" joinType="LEFT">
+                <SimpleColumn name="FirstName" />
+                <SimpleColumn name="LastName" />
+              </SimpleJoin>
+            </SimpleJoin>
+          </SimpleJoin>
+        </SimpleJoin>
+
+        <SimpleJoin name="CargoHandling" joinType="LEFT">
+          <xi:include href="viewcolumns/Handling.viewcolumns.xml" />
+        </SimpleJoin>
+      </SimpleJoin>
+    </SimpleJoin>
+  </Columns>
+</View>

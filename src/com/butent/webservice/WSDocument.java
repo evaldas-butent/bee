@@ -19,6 +19,7 @@ public class WSDocument {
     private String vatPercent;
     private String article;
     private String note;
+    private String expenseId;
 
     private WSDocumentItem(String itemId, String quantity) {
       this.itemId = itemId;
@@ -27,6 +28,10 @@ public class WSDocument {
 
     public void setArticle(String article) {
       this.article = article;
+    }
+
+    public void setExpenseId(String expenseId) {
+      this.expenseId = expenseId;
     }
 
     public void setNote(String note) {
@@ -103,6 +108,7 @@ public class WSDocument {
           .append(XmlUtils.tag("preke", item.itemId))
           .append(XmlUtils.tag("kiekis", item.quantity))
           .append(XmlUtils.tag("artikulas", item.article))
+          .append(XmlUtils.tag("expenseId", item.expenseId))
           .append(XmlUtils.tag("pastaba", item.note));
 
       if (!BeeUtils.isEmpty(item.price)) {

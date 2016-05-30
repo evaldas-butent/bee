@@ -1360,7 +1360,7 @@ public class TransportModuleBean implements BeeModule {
 
     SqlSelect ss = new SqlSelect()
         .addFields(TBL_CARGO_EXPENSES, COL_TRADE_VAT_PLUS, COL_TRADE_VAT, COL_TRADE_VAT_PERC,
-            VAR_INCOME)
+            VAR_INCOME, sys.getIdName(TBL_CARGO_EXPENSES))
         .addField(TBL_ASSESSMENTS, sys.getIdName(TBL_ASSESSMENTS), COL_ASSESSMENT)
         .addFrom(TBL_CARGO_EXPENSES)
         .addFromInner(TBL_SERVICES,
@@ -1369,16 +1369,12 @@ public class TransportModuleBean implements BeeModule {
             sys.joinTables(TBL_ORDER_CARGO, TBL_CARGO_EXPENSES, COL_CARGO))
         .addFromInner(TBL_ORDERS, sys.joinTables(TBL_ORDERS, TBL_ORDER_CARGO, COL_ORDER))
         .addFromLeft(TBL_ASSESSMENTS, sys.joinTables(TBL_ORDER_CARGO, TBL_ASSESSMENTS, COL_CARGO))
-        .setWhere(wh)
-        .addGroup(TBL_CARGO_EXPENSES, COL_TRADE_VAT_PLUS, COL_TRADE_VAT, COL_TRADE_VAT_PERC,
-            VAR_INCOME)
-        .addGroup(TBL_ASSESSMENTS, sys.getIdName(TBL_ASSESSMENTS));
+        .setWhere(wh);
 
     if (DataUtils.isId(mainItem)) {
       ss.addConstant(mainItem, COL_ITEM);
     } else {
-      ss.addFields(TBL_SERVICES, COL_ITEM)
-          .addGroup(TBL_SERVICES, COL_ITEM);
+      ss.addFields(TBL_SERVICES, COL_ITEM);
     }
     IsExpression xpr = ExchangeUtils.exchangeFieldTo(ss,
         SqlUtils.field(TBL_CARGO_EXPENSES, COL_AMOUNT),
@@ -1386,14 +1382,15 @@ public class TransportModuleBean implements BeeModule {
         SqlUtils.nvl(SqlUtils.field(TBL_CARGO_EXPENSES, COL_DATE),
             SqlUtils.field(TBL_ORDERS, COL_ORDER_DATE)), SqlUtils.constant(currency));
 
-    SimpleRowSet rs = qs.getData(ss.addSum(xpr, COL_AMOUNT));
+    SimpleRowSet rs = qs.getData(ss.addExpr(xpr, COL_AMOUNT));
 
     for (SimpleRow row : rs) {
       SqlInsert insert = new SqlInsert(TBL_PURCHASE_ITEMS)
           .addConstant(COL_PURCHASE, purchaseId)
           .addConstant(COL_ITEM, row.getLong(COL_ITEM))
+          .addConstant("CargoExpense", row.getLong(sys.getIdName(TBL_CARGO_EXPENSES)))
           .addConstant(COL_TRADE_ITEM_ARTICLE,
-              row.getValue(COL_ASSESSMENT) + "_" + row.getValue(VAR_INCOME))
+              row.getValue(COL_ASSESSMENT) + "_" + BeeUtils.nvl(row.getValue(VAR_INCOME), ""))
           .addConstant(COL_TRADE_ITEM_QUANTITY, 1)
           .addConstant(COL_TRADE_ITEM_PRICE, BeeUtils.round(row.getDouble(COL_AMOUNT), 2))
           .addConstant(COL_TRADE_VAT_PLUS, row.getBoolean(COL_TRADE_VAT_PLUS))

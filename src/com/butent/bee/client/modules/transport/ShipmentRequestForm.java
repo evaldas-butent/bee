@@ -384,7 +384,7 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
     if (BeeUtils.unbox(row.getBoolean(form.getDataIndex("Customer" + COL_REGISTRATION_REGISTER)))
         && !BeeUtils.isEmpty(email)) {
 
-      login = "Log" + email;
+      login = "Log-" + email;
       password = BeeUtils.randomString(6);
 
       messages.add("Login: " + login);

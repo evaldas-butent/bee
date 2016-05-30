@@ -267,7 +267,8 @@ public final class TransportHandler {
 
     GridFactory.registerGridInterceptor(VIEW_CARGO_INVOICES, new InvoicesGrid());
     GridFactory.registerGridInterceptor(VIEW_CARGO_CREDIT_INVOICES, new InvoicesGrid());
-    GridFactory.registerGridInterceptor(VIEW_CARGO_PURCHASE_INVOICES, new InvoicesGrid());
+    GridFactory.registerGridInterceptor(VIEW_CARGO_PURCHASE_INVOICES,
+        new CargoPurchaseInvoicesGrid());
     GridFactory.registerGridInterceptor(VIEW_TRIP_PURCHASE_INVOICES, new InvoicesGrid());
 
     GridFactory.registerGridInterceptor(VIEW_SHIPMENT_REQUEST_FILES,
@@ -281,6 +282,19 @@ public final class TransportHandler {
       GridFactory.registerImmutableFilter(VIEW_ORDERS, mngFilter);
       GridFactory.registerImmutableFilter(VIEW_ALL_CARGO, mngFilter);
     }
+
+    GridFactory.registerGridInterceptor(VIEW_ACCUMULATIONS, new AccumulationsGrid());
+    GridFactory.registerPreloader(VIEW_ACCUMULATIONS, new Preloader() {
+      @Override
+      public void accept(Runnable command) {
+        AccumulationsGrid.preload(command);
+      }
+
+      @Override
+      public boolean disposable() {
+        return false;
+      }
+    });
 
     FormFactory.registerFormInterceptor(FORM_ORDER, new TransportationOrderForm());
     FormFactory.registerFormInterceptor(FORM_NEW_SIMPLE_ORDER, new NewSimpleTransportationOrder());

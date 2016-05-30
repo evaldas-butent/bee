@@ -7,6 +7,7 @@ name="TransportInvoices" label="=trInvoices" parent="Transport" order="3" separa
   <Item name="CargoCreditSales" label="=trCreditSales" service="grid" parameters="CargoCreditSales" />
   <Item name="CargoPurchases" label="=transportTripCosts" service="grid" parameters="CargoPurchases" />
   <Item name="TripPurchases" label="=trTripCosts" service="grid" parameters="TripPurchases" />
+  <Item name="Accumulations" label="Sukauptos sąnaudos" service="grid" parameters="Accumulations" />
 
   <Item name="CargoProformaInvoices" label="=trProformaInvoices" service="grid" parameters="CargoProformaInvoices" separator="true" />
   <Item name="CargoInvoices" label="=trIncomeInvoices" service="grid" parameters="CargoInvoices" />

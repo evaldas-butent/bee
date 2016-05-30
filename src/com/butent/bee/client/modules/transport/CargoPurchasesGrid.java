@@ -34,9 +34,9 @@ import java.util.TreeSet;
 public class CargoPurchasesGrid extends InvoiceBuilder {
 
   @Override
-  protected void createInvoice(final BeeRowSet data, final BiConsumer<BeeRowSet, BeeRow> consumer) {
-    final DataInfo targetInfo = Data.getDataInfo(getTargetView());
-    final BeeRow newRow = RowFactory.createEmptyRow(targetInfo, true);
+  protected void createInvoice(BeeRowSet data, BiConsumer<BeeRowSet, BeeRow> consumer) {
+    DataInfo targetInfo = Data.getDataInfo(getTargetView());
+    BeeRow newRow = RowFactory.createEmptyRow(targetInfo, true);
 
     Set<String> orders = new TreeSet<>();
     Map<Long, String> suppliers = new HashMap<>();
@@ -122,30 +122,27 @@ public class CargoPurchasesGrid extends InvoiceBuilder {
       consumer.accept(data, newRow);
       return;
     }
-    Global.getRelationParameter(operation, new BiConsumer<Long, String>() {
-      @Override
-      public void accept(Long opId, String op) {
-        if (DataUtils.isId(opId)) {
-          newRow.setValue(targetInfo.getColumnIndex(COL_TRADE_OPERATION), opId);
-          newRow.setValue(targetInfo.getColumnIndex(COL_OPERATION_NAME), op);
+    Global.getRelationParameter(operation, (opId, op) -> {
+      if (DataUtils.isId(opId)) {
+        newRow.setValue(targetInfo.getColumnIndex(COL_TRADE_OPERATION), opId);
+        newRow.setValue(targetInfo.getColumnIndex(COL_OPERATION_NAME), op);
 
-          Queries.getRow(TBL_TRADE_OPERATIONS, opId,
-              Arrays.asList(COL_OPERATION_WAREHOUSE_TO, COL_OPERATION_WAREHOUSE_TO + "Code"),
-              new RowCallback() {
-                @Override
-                public void onSuccess(BeeRow result) {
-                  if (result != null) {
-                    newRow.setValue(targetInfo.getColumnIndex(COL_TRADE_WAREHOUSE_TO),
-                        result.getLong(0));
-                    newRow.setValue(targetInfo.getColumnIndex(COL_TRADE_WAREHOUSE_TO + "Code"),
-                        result.getString(1));
-                  }
-                  consumer.accept(data, newRow);
+        Queries.getRow(TBL_TRADE_OPERATIONS, opId,
+            Arrays.asList(COL_OPERATION_WAREHOUSE_TO, COL_OPERATION_WAREHOUSE_TO + "Code"),
+            new RowCallback() {
+              @Override
+              public void onSuccess(BeeRow result) {
+                if (result != null) {
+                  newRow.setValue(targetInfo.getColumnIndex(COL_TRADE_WAREHOUSE_TO),
+                      result.getLong(0));
+                  newRow.setValue(targetInfo.getColumnIndex(COL_TRADE_WAREHOUSE_TO + "Code"),
+                      result.getString(1));
                 }
-              });
-        } else {
-          consumer.accept(data, newRow);
-        }
+                consumer.accept(data, newRow);
+              }
+            });
+      } else {
+        consumer.accept(data, newRow);
       }
     });
   }

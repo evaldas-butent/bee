@@ -856,13 +856,18 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
       doc.setCurrency(invoice.getValue(COL_CURRENCY));
       doc.setManager(invoice.getValue(PayrollConstants.COL_TAB_NUMBER));
 
-      SimpleRowSet items = qs.getData(new SqlSelect()
+      query = new SqlSelect()
           .addFields(TBL_ITEMS, COL_ITEM_NAME, COL_ITEM_EXTERNAL_CODE)
           .addFields(tradeItems, COL_TRADE_ITEM_QUANTITY, COL_TRADE_ITEM_PRICE, COL_TRADE_VAT_PLUS,
               COL_TRADE_VAT, COL_TRADE_VAT_PERC, COL_TRADE_ITEM_ARTICLE, COL_TRADE_ITEM_NOTE)
           .addFrom(tradeItems)
           .addFromInner(TBL_ITEMS, sys.joinTables(TBL_ITEMS, tradeItems, COL_ITEM))
-          .setWhere(SqlUtils.equals(tradeItems, itemsRelation, invoice.getLong(itemsRelation))));
+          .setWhere(SqlUtils.equals(tradeItems, itemsRelation, invoice.getLong(itemsRelation)));
+
+      if (Objects.equals(tradeItems, TBL_PURCHASE_ITEMS)) {
+        query.addFields(tradeItems, "CargoExpense");
+      }
+      SimpleRowSet items = qs.getData(query);
 
       for (SimpleRow item : items) {
         if (BeeUtils.isEmpty(item.getValue(COL_ITEM_EXTERNAL_CODE))) {
@@ -877,6 +882,9 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
         wsItem.setVat(item.getValue(COL_TRADE_VAT), item.getBoolean(COL_TRADE_VAT_PERC),
             item.getBoolean(COL_TRADE_VAT_PLUS));
 
+        if (Objects.equals(tradeItems, TBL_PURCHASE_ITEMS)) {
+          wsItem.setExpenseId(item.getValue("CargoExpense"));
+        }
         String article = item.getValue(COL_TRADE_ITEM_ARTICLE);
         String[] split = BeeUtils.split(article, '_');
         String note = null;
