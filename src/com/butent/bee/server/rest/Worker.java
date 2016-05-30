@@ -6,6 +6,7 @@ import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.documents.DocumentConstants.*;
 import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
 
+import com.butent.bee.server.Invocation;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
@@ -17,9 +18,7 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.filter.Filter;
-import com.butent.bee.shared.modules.tasks.TaskConstants.TaskEvent;
-import com.butent.bee.shared.modules.tasks.TaskConstants.TaskPriority;
-import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
+import com.butent.bee.shared.modules.tasks.TaskConstants.*;
 import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -101,7 +100,8 @@ public class Worker {
     if (BeeUtils.isEmpty(content)) {
       throw new NotFoundException();
     }
-    return new FileServiceApplication().getFile(fs.createPdf(content), name + ".pdf");
+    return Invocation.locateRemoteBean(FileServiceApplication.class)
+        .getFile(fs.createPdf(content), name + ".pdf");
   }
 
   @GET
