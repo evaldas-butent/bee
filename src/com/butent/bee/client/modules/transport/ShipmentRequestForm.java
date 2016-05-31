@@ -5,6 +5,8 @@ import com.google.common.base.Strings;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Widget;
@@ -32,6 +34,7 @@ import com.butent.bee.client.modules.classifiers.ClassifierUtils;
 import com.butent.bee.client.modules.mail.NewMailMessage;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.style.StyleUtils;
+import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.utils.JsonUtils;
@@ -43,6 +46,8 @@ import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.widget.Button;
+import com.butent.bee.client.widget.FaLabel;
+import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.BeeConst;
@@ -50,6 +55,7 @@ import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.css.CssUnit;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -66,6 +72,7 @@ import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.i18n.SupportedLocale;
 import com.butent.bee.shared.io.FileInfo;
+import com.butent.bee.shared.io.Paths;
 import com.butent.bee.shared.modules.mail.MailConstants;
 import com.butent.bee.shared.modules.transport.TransportConstants.ShipmentRequestStatus;
 import com.butent.bee.shared.modules.transport.TransportConstants.TextConstant;
@@ -100,6 +107,7 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
   private Button lostCommand = new Button(loc.trRequestStatusLost(), clickEvent -> onLoss(true));
 
   private static final String NAME_VALUE_LABEL = "ValueLabel";
+  private static final String NAME_INCOTERMS = "Incoterms";
 
   @Override
   public void afterCreateEditableWidget(EditableWidget editableWidget, IdentifiableWidget widget) {
@@ -116,6 +124,43 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
       });
     }
     super.afterCreateEditableWidget(editableWidget, widget);
+  }
+
+  @Override
+  public void afterCreateWidget(String name, IdentifiableWidget widget,
+      WidgetDescriptionCallback callback) {
+    if (BeeUtils.same(name, NAME_INCOTERMS) && widget instanceof FaLabel) {
+      ((FaLabel) widget).addClickHandler(new ClickHandler() {
+
+        @Override
+        public void onClick(ClickEvent event) {
+
+          String locale = Localized.dictionary().languageTag();
+          String suffix;
+
+          switch (locale) {
+            case "ru":
+              suffix = "_ru.png";
+              break;
+
+            case "lt":
+              suffix = "_lt.png";
+              break;
+
+            default:
+              suffix = "_en.png";
+          }
+
+          Image image = new Image(Paths.buildPath(Paths.IMAGE_DIR, NAME_INCOTERMS + suffix));
+          StyleUtils.setWidth(image, BeeKeeper.getScreen().getWidth() * 0.8, CssUnit.PX);
+          StyleUtils.setHeight(image, BeeKeeper.getScreen().getHeight() * 0.5, CssUnit.PX);
+
+          Global.showModalWidget(image);
+        }
+      });
+    }
+
+    super.afterCreateWidget(name, widget, callback);
   }
 
   @Override
