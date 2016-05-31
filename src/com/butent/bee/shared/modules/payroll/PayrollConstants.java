@@ -18,7 +18,7 @@ public final class PayrollConstants {
       public String getCaption(Dictionary dictionary) {
         return dictionary.objectStatusActive();
       }
-    };
+    }
   }
 
   public enum WorkScheduleKind implements HasLocalizedCaption {
@@ -184,6 +184,8 @@ public final class PayrollConstants {
   public static final String ALS_TR_FROM = "TrTimeFrom";
   public static final String ALS_TR_UNTIL = "TrTimeUntil";
   public static final String ALS_TR_DURATION = "TrDuration";
+
+  public static final String ALS_TR_USAGE = "TrUsage";
 
   public static final String GRID_TIME_CARD_CHANGES = "TimeCardChanges";
 

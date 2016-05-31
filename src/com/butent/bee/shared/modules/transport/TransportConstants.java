@@ -953,6 +953,7 @@ public final class TransportConstants {
   public static final String ALS_CARGO_HANDLING_NOTES = "HandlingNotes";
 
   public static final String ALS_CARGO_CMR_NUMBER = "CmrNumber";
+  public static final String ALS_CARGO_NOTES = "CargoNotes";
 
   public static final String ALS_SERVICE_NAME = "ServiceName";
 

@@ -23,6 +23,7 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.RowInsertEvent;
+import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.ViewColumn;
@@ -246,7 +247,7 @@ public final class ProjectsHelper {
         return result;
       }
 
-      Queries.getRow(relView, BeeUtils.toLong(value), cols, new RowCallback() {
+      Queries.getRow(relView, Filter.compareId(BeeUtils.toLong(value)), cols, new RowCallback() {
 
         @Override
         public void onSuccess(BeeRow wResult) {

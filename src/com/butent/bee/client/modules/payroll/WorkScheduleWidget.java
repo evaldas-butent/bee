@@ -69,6 +69,7 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IdPair;
+import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
@@ -988,6 +989,7 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
           @Override
           public void onSuccess(Integer result) {
             if (BeeUtils.isPositive(result)) {
+              onScheduleModified();
               refresh();
             }
           }
@@ -1064,6 +1066,7 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
       Queries.insertRows(DataUtils.createRowSetForInsert(rowSet), new RpcCallback<RowInfoList>() {
         @Override
         public void onSuccess(RowInfoList result) {
+          onScheduleModified();
           refresh();
         }
       });
@@ -1097,7 +1100,10 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
     GridFactory.registerImmutableFilter(GRID_WORK_SCHEDULE_DAY, filter);
 
     WorkScheduleEditor wsEditor = new WorkScheduleEditor(date, holidays,
-        () -> updateSchedule(partIds, date));
+        () -> {
+          updateSchedule(partIds, date);
+          onScheduleModified();
+        });
 
     String caption = getPartitionCaption(partIds);
 
@@ -1110,6 +1116,8 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
             } else {
               updateSchedule();
             }
+
+            onScheduleModified();
           }
         });
   }
@@ -1584,6 +1592,7 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
             updateSums();
 
             SummaryChangeEvent.maybeFire(WorkScheduleWidget.this);
+            onScheduleModified();
           }
         });
 
@@ -1726,6 +1735,10 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
     });
   }
 
+  private static void onScheduleModified() {
+    DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_TIME_RANGES);
+  }
+
   private void onSubstitution() {
     DataInfo dataInfo = Data.getDataInfo(VIEW_EMPLOYEE_OBJECTS);
     BeeRow row = RowFactory.createEmptyRow(dataInfo, true);
@@ -1778,6 +1791,7 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
             updateSums();
 
             SummaryChangeEvent.maybeFire(WorkScheduleWidget.this);
+            onScheduleModified();
           }
         }
       }
@@ -1802,7 +1816,7 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
     }
 
     for (BeeRow wsRow : schedule) {
-      DndSource widget = renderSheduleItem(wsRow);
+      DndSource widget = renderScheduleItem(wsRow);
 
       if (widget != null) {
         widget.addStyleName(STYLE_SCHEDULE_ITEM);
@@ -1999,7 +2013,7 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
         Flow content = new Flow();
 
         for (BeeRow wsRow : layout.get(pair, day)) {
-          DndSource widget = renderSheduleItem(wsRow);
+          DndSource widget = renderScheduleItem(wsRow);
           if (widget != null) {
             content.add(widget);
           }
@@ -2404,7 +2418,7 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
     table.setWidgetAndStyle(r, DAY_START_COL + days + 1, whSum, STYLE_WH_SUM);
   }
 
-  private DndSource renderSheduleItem(BeeRow item) {
+  private DndSource renderScheduleItem(BeeRow item) {
     String note = DataUtils.getString(wsData, item, COL_WORK_SCHEDULE_NOTE);
 
     Long trId = DataUtils.getLong(wsData, item, COL_TIME_RANGE_CODE);
@@ -2586,6 +2600,7 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
           updateSums();
 
           SummaryChangeEvent.maybeFire(WorkScheduleWidget.this);
+          onScheduleModified();
         }
       }
     });

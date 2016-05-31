@@ -173,7 +173,7 @@
           <cell horizontalAlignment="right">
             <CheckBox source="FreightInsurance" />
           </cell>
-          <Label for="Value" />
+          <Label for="Value" name="ValueLabel" />
           <FlowPanel>
             <InputMoney source="Value" style="&decimal;" />
             <DataSelector source="ValueCurrency" newRowEnabled="false" editEnabled="false"

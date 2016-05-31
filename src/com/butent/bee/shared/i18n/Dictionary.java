@@ -4577,6 +4577,8 @@ public interface Dictionary {
 
   default String timeRangeCode() {return g("timeRangeCode");}
 
+  default String timeRangeUsage() {return g("timeRangeUsage");}
+
   default String timeRanges() {return g("timeRanges");}
 
   default String timeSheet() {return g("timeSheet");}

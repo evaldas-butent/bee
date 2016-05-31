@@ -6,19 +6,22 @@
   >
   <g:columns>
     <DataColumn name="PrimaryDocumentItem" visible="false" />
-    <DataColumn name="PrimaryDocument" visible="false" />
+    <DataColumn name="PrimaryDocument" editSource="PrimaryDocument" editViewName="TradeDocuments"
+                visible="false" />
 
     <DataColumn name="PrimaryDate" />
     <DataColumn name="SupplierName" flexGrow="1" />
 
     <DataColumn name="TradeDocumentItem" visible="false" />
-    <DataColumn name="TradeDocument" visible="false" />
+    <DataColumn name="TradeDocument" editSource="TradeDocument" editViewName="TradeDocuments"
+                visible="false" />
     <DataColumn name="Date" />
 
-    <DataColumn name="ItemName" flexGrow="2" visible="true" />
+    <DataColumn name="ItemName" flexGrow="2" editSource="Item" editViewName="Items"
+                editPopup="true" visible="true" />
     <DataColumn name="Article" flexGrow="1" />
 
-    <DataColumn name="WarehouseCode" label="=warehouse" />
+    <DataColumn name="WarehouseCode" label="=warehouse" editPopup="true" />
 
     <DataColumn name="Quantity" scale="0" visible="true" />
     <DataColumn name="UnitName" label="=unitShort" />
