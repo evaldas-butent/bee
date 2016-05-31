@@ -32,9 +32,16 @@ public class AccumulationsGrid extends AbstractGridInterceptor {
         Global.showError(Arrays.asList("Nenurodyta sukaupimų operacija",
             PRM_ACCUMULATION_OPERATION));
       } else {
-        GridFactory.registerImmutableFilter(VIEW_ACCUMULATIONS,
-            Filter.equals(TradeConstants.COL_TRADE_OPERATION, BeeUtils.toLong(id)));
-        command.run();
+        Global.getParameter(PRM_ACCUMULATION2_OPERATION, id2 -> {
+          Filter flt = Filter.equals(TradeConstants.COL_TRADE_OPERATION, BeeUtils.toLong(id));
+
+          if (DataUtils.isId(id2)) {
+            flt = Filter.or(flt,
+                Filter.equals(TradeConstants.COL_TRADE_OPERATION, BeeUtils.toLong(id2)));
+          }
+          GridFactory.registerImmutableFilter(VIEW_ACCUMULATIONS, flt);
+          command.run();
+        });
       }
     });
   }

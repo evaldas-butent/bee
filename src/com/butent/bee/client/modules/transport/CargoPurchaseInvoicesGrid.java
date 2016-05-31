@@ -39,12 +39,20 @@ public class CargoPurchaseInvoicesGrid extends InvoicesGrid {
 
   private Long operationId;
   private String operation;
+  private Long operation2Id;
+  private String operation2;
   private Button joinAction = new Button("Apjungti", this);
 
   @Override
   public void afterCreatePresenter(GridPresenter presenter) {
     Global.getRelationParameter(PRM_ACCUMULATION_OPERATION, (opId, opName) -> {
       if (DataUtils.isId(opId)) {
+        Global.getRelationParameter(PRM_ACCUMULATION2_OPERATION, (op2Id, op2Name) -> {
+          if (DataUtils.isId(op2Id)) {
+            operation2Id = op2Id;
+            operation2 = op2Name;
+          }
+        });
         operationId = opId;
         operation = opName;
         presenter.getHeader().addCommandItem(joinAction);
@@ -81,8 +89,7 @@ public class CargoPurchaseInvoicesGrid extends InvoicesGrid {
         public void onSuccess(BeeRowSet result) {
           joinAction.setVisible(true);
 
-          for (String col : new String[] {
-              COL_TRADE_OPERATION, COL_TRADE_SUPPLIER, COL_TRADE_CURRENCY}) {
+          for (String col : new String[] {COL_TRADE_SUPPLIER, COL_TRADE_CURRENCY}) {
             int idx = result.getColumnIndex(col);
 
             if (result.getDistinctStrings(idx).size() > 1) {
@@ -91,10 +98,12 @@ public class CargoPurchaseInvoicesGrid extends InvoicesGrid {
               return;
             }
           }
-          if (!Objects.equals(BeeUtils.peek(result.getDistinctLongs(result
-              .getColumnIndex(COL_TRADE_OPERATION))), operationId)) {
-            view.notifyWarning("Apjungti leidžiama tik dokumentus su operacija:", operation);
-            return;
+          for (Long op : result.getDistinctLongs(result.getColumnIndex(COL_TRADE_OPERATION))) {
+            if (!BeeUtils.in(op, operationId, operation2Id)) {
+              view.notifyWarning("Apjungti leidžiama tik dokumentus su operacijomis", operation,
+                  operation2);
+              return;
+            }
           }
           DataInfo dataInfo = Data.getDataInfo(getViewName());
           BeeRow newRow = RowFactory.createEmptyRow(dataInfo, true);
