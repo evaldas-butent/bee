@@ -15,9 +15,9 @@
     </row>
     <row>
       <Label text="=date" style="&lbl1;" class="bee-required" />
-      <InputDateTime source="LoadingDate" style="width: 11em;" required="true" />
+      <InputDateTime source="LoadingDate" style="width: 11em;" required="true" minValue="d" />
       <Label text="=date" style="&lbl1;" class="bee-required" />
-      <InputDateTime source="UnloadingDate" style="width: 11em;" required="true" />
+      <InputDateTime source="UnloadingDate" style="width: 11em;" required="true" minValue="d" />
     </row>
     <row>
       <Label text="=company" style="&lbl1;" />
