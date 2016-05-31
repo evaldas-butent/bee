@@ -131,7 +131,7 @@ public class AssessmentOrdersGrid extends AbstractGridInterceptor implements Cli
 
                                           RowEditor.openForm(FORM_ASSESSMENT_TRANSPORTATION,
                                               Data.getDataInfo(VIEW_ASSESSMENT_TRANSPORTATIONS),
-                                              tripId, Opener.MODAL);
+                                              Filter.compareId(tripId), Opener.MODAL);
                                         }
                                       }
                                     });

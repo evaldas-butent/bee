@@ -20,6 +20,7 @@ import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.ui.Action;
@@ -65,8 +66,8 @@ public abstract class PrintFormInterceptor extends AbstractFormInterceptor {
             RowEditor.openForm(form.getName(), Data.getDataInfo(getFormView().getViewName()),
                 row, Opener.MODAL, null, getPrintFormInterceptor());
           } else {
-            RowEditor.openForm(form.getName(), Data.getDataInfo(viewName), row.getId(),
-                Opener.MODAL, null, getPrintFormInterceptor());
+            RowEditor.openForm(form.getName(), Data.getDataInfo(viewName),
+                Filter.compareId(row.getId()), Opener.MODAL, null, getPrintFormInterceptor());
           }
         };
         final Holder<Integer> counter = Holder.of(0);

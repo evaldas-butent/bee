@@ -31,9 +31,14 @@ import com.butent.bee.client.modules.administration.AdministrationUtils;
 import com.butent.bee.client.modules.classifiers.ClassifierUtils;
 import com.butent.bee.client.modules.mail.NewMailMessage;
 import com.butent.bee.client.presenter.Presenter;
+import com.butent.bee.client.style.StyleUtils;
+import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.utils.JsonUtils;
+import com.butent.bee.client.validation.CellValidateEvent;
+import com.butent.bee.client.validation.CellValidateEvent.Handler;
 import com.butent.bee.client.view.HeaderView;
+import com.butent.bee.client.view.edit.EditableWidget;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
@@ -62,6 +67,8 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.i18n.SupportedLocale;
 import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.modules.mail.MailConstants;
+import com.butent.bee.shared.modules.transport.TransportConstants.ShipmentRequestStatus;
+import com.butent.bee.shared.modules.transport.TransportConstants.TextConstant;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.utils.ArrayUtils;
@@ -91,6 +98,26 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
   private Button blockCommand = new Button(loc.ipBlockCommand(), event -> onBlock());
 
   private Button lostCommand = new Button(loc.trRequestStatusLost(), clickEvent -> onLoss(true));
+
+  private final static String NAME_VALUE_LABEL = "ValueLabel";
+
+  @Override
+  public void afterCreateEditableWidget(EditableWidget editableWidget, IdentifiableWidget widget) {
+    if (BeeUtils.same(editableWidget.getColumnId(), COL_QUERY_FREIGHT_INSURANCE)) {
+
+      editableWidget.addCellValidationHandler(new Handler() {
+
+        @Override
+        public Boolean validateCell(CellValidateEvent event) {
+          getFormView().getWidgetByName(NAME_VALUE_LABEL).setStyleName(StyleUtils.NAME_REQUIRED,
+              !BeeUtils.isEmpty(event.getNewValue()));
+
+          return true;
+        }
+      });
+    }
+    super.afterCreateEditableWidget(editableWidget, widget);
+  }
 
   @Override
   public void afterRefresh(FormView form, IsRow row) {
@@ -147,6 +174,24 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
       if (!isRegistered() || isSelfService()
           || ShipmentRequestStatus.LOST.is(getIntegerValue(COL_QUERY_STATUS))) {
         return false;
+      }
+    } else if (action == Action.SAVE) {
+      IsRow row = getActiveRow();
+
+      if (BeeUtils.unbox(row.getBoolean(getDataIndex(COL_QUERY_FREIGHT_INSURANCE)))) {
+        String value = row.getString(getDataIndex(COL_CARGO_VALUE));
+        if (BeeUtils.isEmpty(value)) {
+          getFormView().notifySevere(BeeUtils.join(" ", Localized.dictionary().valuation(),
+              Localized.dictionary().valueRequired()));
+          return false;
+        }
+
+        Long currency = row.getLong(getDataIndex(COL_CARGO_VALUE_CURRENCY));
+        if (!DataUtils.isId(currency)) {
+          getFormView().notifySevere(BeeUtils.join(" ", Localized.dictionary().currency(),
+              Localized.dictionary().valueRequired()));
+          return false;
+        }
       }
     }
     return super.beforeAction(action, presenter);

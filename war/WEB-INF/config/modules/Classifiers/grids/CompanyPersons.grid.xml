@@ -21,7 +21,9 @@
       <style><bodyStyle><ui:inline>color:red</ui:inline></bodyStyle></style>
     </DataColumn>
 
-    <DataColumn name="TabNumber" label="=personTabNoShort" module="Payroll" />
-    <DataColumn name="Login" label="=user" module="Administration" />
+    <DataColumn name="TabNumber" label="=personTabNoShort" module="Payroll"
+      editSource="CompanyPersonID" editTarget="CompanyPerson" editViewName="Employees" />
+    <DataColumn name="Login" label="=user" module="Administration" editViewName="Users"
+      editSource="CompanyPersonID" editTarget="CompanyPerson" editPopup="true" />
   </g:columns>
 </g:Grid>
