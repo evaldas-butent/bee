@@ -177,7 +177,7 @@
           <FlowPanel>
             <InputMoney source="Value" style="&decimal;" />
             <DataSelector source="ValueCurrency" newRowEnabled="false" editEnabled="false"
-                          placeholder="=currencyShort" style="&unit;" />
+                          placeholder="=currencyShort" style="&unit;" filter="SelfService" />
           </FlowPanel>
         </row>
       </Table>
