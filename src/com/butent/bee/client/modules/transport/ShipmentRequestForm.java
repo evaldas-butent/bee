@@ -99,7 +99,7 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
 
   private Button lostCommand = new Button(loc.trRequestStatusLost(), clickEvent -> onLoss(true));
 
-  private final static String NAME_VALUE_LABEL = "ValueLabel";
+  private static final String NAME_VALUE_LABEL = "ValueLabel";
 
   @Override
   public void afterCreateEditableWidget(EditableWidget editableWidget, IdentifiableWidget widget) {
