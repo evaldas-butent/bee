@@ -41,6 +41,11 @@ public final class PayrollUtils {
     return 0L;
   }
 
+  public static boolean validTimeOfDay(String input) {
+    Long millis = TimeUtils.parseTime(input);
+    return BeeUtils.isNonNegative(millis) && BeeUtils.isLeq(millis, TimeUtils.MILLIS_PER_DAY);
+  }
+
   private PayrollUtils() {
   }
 }
