@@ -111,6 +111,33 @@ public class TestTimeUtils {
   }
 
   @Test
+  public final void testGoMonth() {
+    JustDate date = new JustDate(2016, 5, 31);
+
+    assertEquals(TimeUtils.goMonth(date, 0), date);
+
+    assertEquals(TimeUtils.goMonth(date, -1), new JustDate(2016, 4, 30));
+    assertEquals(TimeUtils.goMonth(date, -2), new JustDate(2016, 3, 31));
+    assertEquals(TimeUtils.goMonth(date, -3), new JustDate(2016, 2, 29));
+    assertEquals(TimeUtils.goMonth(date, -5), new JustDate(2015, 12, 31));
+
+    assertEquals(TimeUtils.goMonth(date, 1), new JustDate(2016, 6, 30));
+    assertEquals(TimeUtils.goMonth(date, 2), new JustDate(2016, 7, 31));
+
+    date = new JustDate(2016, 5, 30);
+    assertEquals(TimeUtils.goMonth(date, -1), new JustDate(2016, 4, 30));
+    assertEquals(TimeUtils.goMonth(date, -2), new JustDate(2016, 3, 30));
+    assertEquals(TimeUtils.goMonth(date, -3), new JustDate(2016, 2, 29));
+    assertEquals(TimeUtils.goMonth(date, -5), new JustDate(2015, 12, 30));
+
+    assertEquals(TimeUtils.goMonth(date, 1), new JustDate(2016, 6, 30));
+    assertEquals(TimeUtils.goMonth(date, 2), new JustDate(2016, 7, 30));
+
+    date = new JustDate(2016, 6, 1);
+    assertEquals(TimeUtils.goMonth(date, - 100 * 12), new JustDate(1916, 6, 1));
+  }
+
+  @Test
   public final void testIsDateOrDateTime() {
     assertTrue(TimeUtils.isDateOrDateTime(new DateTime(2011)));
     assertTrue(TimeUtils.isDateOrDateTime(new JustDate()));

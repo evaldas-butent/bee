@@ -341,7 +341,7 @@ public final class TimeUtils {
     int min = 0;
     int max = 1;
 
-    for (; ; ) {
+    while (true) {
       long ms = startMs + getDelta(start, field, max);
       if (ms == endMs) {
         return max;
@@ -397,7 +397,7 @@ public final class TimeUtils {
       return ref;
     } else {
       YearMonth ym = YearMonth.of(ref).shiftMonth(increment);
-      return new JustDate(ym.getYear(), ym.getMonth(), ref.getDom());
+      return new JustDate(ym.getYear(), ym.getMonth(), Math.min(ref.getDom(), ym.getLength()));
     }
   }
 
