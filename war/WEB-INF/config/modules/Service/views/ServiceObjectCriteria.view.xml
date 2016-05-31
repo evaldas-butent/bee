@@ -4,6 +4,7 @@
   name="ServiceObjectCriteria" source="ServiceCritGroups"
   >
   <Columns>
+    <IdColumn name="CritGroupID" />
     <SimpleColumn name="ServiceObject" />
     <SimpleColumn name="Name" />
     <HiddenColumn name="Ordinal" alias="GroupOrdinal" />
@@ -18,5 +19,7 @@
   <Order>
     <OrderBy column="GroupOrdinal" />
     <OrderBy column="Ordinal" />
+    <OrderBy column="CritGroupID" />
+    <OrderBy column="ID" />
   </Order>
 </View>

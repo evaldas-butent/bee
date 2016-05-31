@@ -244,7 +244,6 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
       taskGrid.setEnabled(true);
     }
     showElements(form, row);
-    requery(row);
   }
 
   @Override
@@ -339,6 +338,16 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
     if (event.isEmpty()) {
       save(getActiveRow());
     }
+  }
+
+  public boolean onStartEdit(FormView form, IsRow row, ScheduledCommand focusCommand) {
+    requery(row);
+    return true;
+  }
+
+  @Override
+  public void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow) {
+    requery(newRow);
   }
 
   @Override
@@ -582,7 +591,6 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
                   Data.getString(VIEW_SERVICE_OBJECTS, selector.getRelatedRow(), col));
               form.refreshBySource(col);
             }
-            form.refresh();
           }
 
           void fillServiceObjectData(final IsRow commitedRow) {
@@ -803,25 +811,34 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
       }
     };
 
+    /**
+     * @since Paradis
+     * Leave criterion ordinal
+     */
     if (!BeeUtils.isEmpty(newValues)) {
       final Consumer<Long> consumer = new Consumer<Long>() {
         @Override
-        public void accept(Long id) {
+        public void accept(final Long id) {
+          if (newValues.isEmpty()) {
+            return;
+          }
+
           List<BeeColumn> columns = Data.getColumns(VIEW_SERVICE_CRITERIA,
               Lists.newArrayList(COL_SERVICE_CRITERIA_GROUP,
                   COL_SERVICE_CRITERION_NAME, COL_SERVICE_CRITERION_VALUE));
 
-          for (Entry<String, String> entry : newValues.entrySet()) {
-            List<String> values = Lists.newArrayList(BeeUtils.toString(id),
-                entry.getKey(), entry.getValue());
+          final Entry<String, String> entry = newValues.entrySet().iterator().next();
+          List<String> values = Lists.newArrayList(BeeUtils.toString(id),
+              entry.getKey(), entry.getValue());
 
-            Queries.insert(VIEW_SERVICE_CRITERIA, columns, values, null, new RowCallback() {
-              @Override
-              public void onSuccess(BeeRow result) {
-                scheduler.execute();
-              }
-            });
-          }
+          Queries.insert(VIEW_SERVICE_CRITERIA, columns, values, null, new RowCallback() {
+            @Override
+            public void onSuccess(BeeRow result) {
+              scheduler.execute();
+              newValues.remove(entry.getKey());
+              accept(id);
+            }
+          });
         }
       };
 
