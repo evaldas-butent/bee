@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2016-05-30T09:53:10 -->
+<!-- 2016-05-31T14:55:11 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="OrderContract" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="30" bottomMargin="30" isSummaryWithPageHeaderAndFooter="true" uuid="b0daefcc-9db0-4ed1-b9d6-49143492176f">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<import value="com.butent.bee.server.Invocation"/>
@@ -136,7 +136,7 @@
 						<textElement markup="html">
 							<font size="8" isBold="false"/>
 						</textElement>
-						<textFieldExpression><![CDATA[BeeUtils.joinItems(BeeUtils.anyNotEmpty($P{CompanyPhone}, $P{CompanyMobile}) ? BeeUtils.joinItems("<b>Tel.</b>", $P{CompanyPhone}, $P{CompanyMobile}) : "", BeeUtils.isEmpty($P{CompanyFax}) ? "" : BeeUtils.joinItems("<b>Faks.</b>", $P{CompanyFax}))]]></textFieldExpression>
+						<textFieldExpression><![CDATA[BeeUtils.joinWords(BeeUtils.anyNotEmpty($P{CompanyPhone}, $P{CompanyMobile}) ? "<b>Tel.</b> " + BeeUtils.joinItems($P{CompanyPhone}, $P{CompanyMobile}) : "", BeeUtils.isEmpty($P{CompanyFax}) ? "" : BeeUtils.joinWords("<b>Faks.</b>", $P{CompanyFax}))]]></textFieldExpression>
 					</textField>
 					<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 						<reportElement positionType="Float" x="0" y="55" width="275" height="10" isRemoveLineWhenBlank="true" uuid="04915370-b38a-4898-acf8-0e42cc7741d4"/>
@@ -332,7 +332,7 @@
 						<textElement markup="html">
 							<font size="8" isBold="false"/>
 						</textElement>
-						<textFieldExpression><![CDATA[BeeUtils.joinItems(BeeUtils.anyNotEmpty($P{CustomerPhone}, $P{CustomerMobile}) ? BeeUtils.joinItems("<b>Tel.</b>", $P{CustomerPhone}, $P{CustomerMobile}) : "", BeeUtils.isEmpty($P{CustomerFax}) ? "" : BeeUtils.joinItems("<b>Faks.</b>", $P{CustomerFax}))]]></textFieldExpression>
+						<textFieldExpression><![CDATA[BeeUtils.joinWords(BeeUtils.anyNotEmpty($P{CustomerPhone}, $P{CustomerMobile}) ? "<b>Tel.</b> " + BeeUtils.joinItems($P{CustomerPhone}, $P{CustomerMobile}) : "", BeeUtils.isEmpty($P{CustomerFax}) ? "" : BeeUtils.joinWords("<b>Faks.</b>", $P{CustomerFax}))]]></textFieldExpression>
 					</textField>
 					<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 						<reportElement positionType="Float" x="65" y="25" width="210" height="10" isRemoveLineWhenBlank="true" uuid="b5d98fde-1e33-42b5-90d6-4a80975597a8"/>
@@ -398,23 +398,7 @@
 					</textField>
 				</frame>
 				<frame>
-					<reportElement positionType="Float" x="0" y="195" width="450" height="30" isRemoveLineWhenBlank="true" uuid="e784d251-4da0-49cd-8916-b63b64e5d48b"/>
-					<staticText>
-						<reportElement positionType="Float" x="220" y="10" width="110" height="10" isRemoveLineWhenBlank="true" uuid="a4d206cd-7e6b-4dcf-96a4-d5c1f09fdace">
-							<printWhenExpression><![CDATA[!BeeUtils.isEmpty($P{ShippingTermName})]]></printWhenExpression>
-						</reportElement>
-						<textElement>
-							<font size="8" isBold="true"/>
-						</textElement>
-						<text><![CDATA[Transportavimo sąlygos]]></text>
-					</staticText>
-					<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-						<reportElement positionType="Float" x="330" y="10" width="120" height="10" isRemoveLineWhenBlank="true" uuid="f5bd289a-a801-40eb-baa4-fb1fa01b15ed"/>
-						<textElement>
-							<font size="8" isBold="false"/>
-						</textElement>
-						<textFieldExpression><![CDATA[$P{ShippingTermName}]]></textFieldExpression>
-					</textField>
+					<reportElement positionType="Float" x="0" y="195" width="220" height="30" isRemoveLineWhenBlank="true" uuid="e784d251-4da0-49cd-8916-b63b64e5d48b"/>
 					<staticText>
 						<reportElement positionType="Float" x="0" y="10" width="100" height="10" isRemoveLineWhenBlank="true" uuid="96e9405f-bfcc-470c-ae4c-a146c19255f3">
 							<printWhenExpression><![CDATA[!BeeUtils.isEmpty($P{ExpeditionType})]]></printWhenExpression>
@@ -432,22 +416,6 @@
 						<textFieldExpression><![CDATA[$P{ExpeditionType}]]></textFieldExpression>
 					</textField>
 					<staticText>
-						<reportElement positionType="Float" x="220" y="0" width="145" height="10" isRemoveLineWhenBlank="true" uuid="df4e6fd4-def9-4331-9e75-eb39fdd97269">
-							<printWhenExpression><![CDATA[BeeUtils.anyNotEmpty($P{PayerCreditDays}, $P{CustomerCreditDays})]]></printWhenExpression>
-						</reportElement>
-						<textElement>
-							<font size="8" isBold="true"/>
-						</textElement>
-						<text><![CDATA[Atsiskaitymo terminas (dienos)]]></text>
-					</staticText>
-					<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-						<reportElement positionType="Float" x="365" y="0" width="35" height="10" isRemoveLineWhenBlank="true" uuid="799215e0-7946-4090-9d3b-5c275cd1f59a"/>
-						<textElement>
-							<font size="8" isBold="false"/>
-						</textElement>
-						<textFieldExpression><![CDATA[BeeUtils.notEmpty($P{PayerCreditDays}, $P{CustomerCreditDays})]]></textFieldExpression>
-					</textField>
-					<staticText>
 						<reportElement positionType="Float" x="0" y="0" width="120" height="10" isRemoveLineWhenBlank="true" uuid="af55a726-5751-4366-9d7e-c418f4dac4fa"/>
 						<textElement>
 							<font size="8" isBold="true"/>
@@ -460,22 +428,6 @@
 							<font size="8" isBold="false"/>
 						</textElement>
 						<textFieldExpression><![CDATA[BeeUtils.joinWords($V{Amount}, $V{Currency})]]></textFieldExpression>
-					</textField>
-					<staticText>
-						<reportElement positionType="Float" x="220" y="20" width="100" height="10" isRemoveLineWhenBlank="true" uuid="9cc973cf-c891-4858-ac3c-a9da6b5dfd71">
-							<printWhenExpression><![CDATA[!BeeUtils.isEmpty($P{Vehicle})]]></printWhenExpression>
-						</reportElement>
-						<textElement>
-							<font size="8" isBold="true"/>
-						</textElement>
-						<text><![CDATA[Transporto priemonė]]></text>
-					</staticText>
-					<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-						<reportElement positionType="Float" x="320" y="20" width="130" height="10" isRemoveLineWhenBlank="true" uuid="84af4651-3759-4cde-a7c1-d8ee604aa2cd"/>
-						<textElement>
-							<font size="8" isBold="false"/>
-						</textElement>
-						<textFieldExpression><![CDATA[$P{Vehicle}]]></textFieldExpression>
 					</textField>
 					<staticText>
 						<reportElement positionType="Float" x="0" y="20" width="55" height="10" isRemoveLineWhenBlank="true" uuid="86ca8f0e-22f6-4cb2-a484-5ab65516c926">
@@ -501,6 +453,58 @@
 					</textElement>
 					<textFieldExpression><![CDATA["<b>Krovinių transportavimo (pervežimo) užsakymas nr. </b>" + BeeUtils.notEmpty($P{OrderNo}, "SLF-" + $P{ID})]]></textFieldExpression>
 				</textField>
+				<frame>
+					<reportElement positionType="Float" x="220" y="195" width="230" height="30" isRemoveLineWhenBlank="true" uuid="6043a675-f5fd-456a-a253-ccca0e26d072"/>
+					<staticText>
+						<reportElement positionType="Float" x="0" y="20" width="100" height="10" isRemoveLineWhenBlank="true" uuid="9cc973cf-c891-4858-ac3c-a9da6b5dfd71">
+							<printWhenExpression><![CDATA[!BeeUtils.isEmpty($P{Vehicle})]]></printWhenExpression>
+						</reportElement>
+						<textElement>
+							<font size="8" isBold="true"/>
+						</textElement>
+						<text><![CDATA[Transporto priemonė]]></text>
+					</staticText>
+					<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+						<reportElement positionType="Float" x="100" y="20" width="130" height="10" isRemoveLineWhenBlank="true" uuid="84af4651-3759-4cde-a7c1-d8ee604aa2cd"/>
+						<textElement>
+							<font size="8" isBold="false"/>
+						</textElement>
+						<textFieldExpression><![CDATA[$P{Vehicle}]]></textFieldExpression>
+					</textField>
+					<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+						<reportElement positionType="Float" x="115" y="10" width="115" height="10" isRemoveLineWhenBlank="true" uuid="f5bd289a-a801-40eb-baa4-fb1fa01b15ed"/>
+						<textElement>
+							<font size="8" isBold="false"/>
+						</textElement>
+						<textFieldExpression><![CDATA[$P{ShippingTermName}]]></textFieldExpression>
+					</textField>
+					<staticText>
+						<reportElement positionType="Float" x="0" y="10" width="115" height="10" isRemoveLineWhenBlank="true" uuid="a4d206cd-7e6b-4dcf-96a4-d5c1f09fdace">
+							<printWhenExpression><![CDATA[!BeeUtils.isEmpty($P{ShippingTermName})]]></printWhenExpression>
+						</reportElement>
+						<textElement>
+							<font size="8" isBold="true"/>
+						</textElement>
+						<text><![CDATA[Transportavimo sąlygos]]></text>
+					</staticText>
+					<staticText>
+						<reportElement positionType="Float" x="0" y="0" width="145" height="10" isRemoveLineWhenBlank="true" uuid="df4e6fd4-def9-4331-9e75-eb39fdd97269">
+							<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+							<printWhenExpression><![CDATA[BeeUtils.anyNotEmpty($P{PayerCreditDays}, $P{CustomerCreditDays})]]></printWhenExpression>
+						</reportElement>
+						<textElement>
+							<font size="8" isBold="true"/>
+						</textElement>
+						<text><![CDATA[Atsiskaitymo terminas (dienos)]]></text>
+					</staticText>
+					<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+						<reportElement positionType="Float" x="145" y="0" width="35" height="10" isRemoveLineWhenBlank="true" uuid="799215e0-7946-4090-9d3b-5c275cd1f59a"/>
+						<textElement>
+							<font size="8" isBold="false"/>
+						</textElement>
+						<textFieldExpression><![CDATA[BeeUtils.notEmpty($P{PayerCreditDays}, $P{CustomerCreditDays})]]></textFieldExpression>
+					</textField>
+				</frame>
 			</band>
 		</groupHeader>
 	</group>
@@ -824,9 +828,9 @@
 				<textElement textAlignment="Justified">
 					<font size="6"/>
 				</textElement>
-				<textFieldExpression><![CDATA["1.1.1.  nuvežti jam patikėtą krovinį į šiame užsakyme nurodytą paskirties punktą ir išduoti jį Gavėjui kartu su krovinio dokumentais pagal visus nustatytus norminius teisės aktus;\n" +
-"1.1.2. saugoti ir neatskleisti informacijos susijusios su šiuo pervežimu (išskyrus įstatymuose numatytus atvejus).\n" +
-"1.1.3. laikytis kitų su krovinio pervežimu susijusių įsipareigojimų, kurie reglamentuoti nacionaliniuose teisės aktuose bei tarptautiniuose teisės dokumentuose."]]></textFieldExpression>
+				<textFieldExpression><![CDATA["1.1.1. Nuvežti jam patikėtą krovinį į šiame užsakyme nurodytą paskirties punktą ir išduoti jį Gavėjui kartu su krovinio dokumentais pagal visus nustatytus norminius teisės aktus;\n" +
+"1.1.2. Saugoti ir neatskleisti informacijos susijusios su šiuo pervežimu (išskyrus įstatymuose numatytus atvejus).\n" +
+"1.1.3. Laikytis kitų su krovinio pervežimu susijusių įsipareigojimų, kurie reglamentuoti nacionaliniuose teisės aktuose bei tarptautiniuose teisės dokumentuose."]]></textFieldExpression>
 			</textField>
 			<staticText>
 				<reportElement positionType="Float" x="0" y="40" width="170" height="10" uuid="9ddf69a3-1dc0-4a7a-b5b8-c83c63ae7a8e"/>
@@ -841,11 +845,11 @@
 					<font size="6"/>
 				</textElement>
 				<textFieldExpression><![CDATA["1.2.1. 8 darbo valandų laikotarpyje (skaičiuojant nuo užsakymo gavimo momento) patvirtinti Kliento siųstą užsakymą arba jį grąžinti/atsisakyti, nurodant objektyvias priežastis tokiam veiksmui, neprisiimant atsakomybės už Kliento galimus ar jau patirtus nuostolius;\n" +
-"1.2.2. apie tai informavus Klientą neteikti paslaugų pagal šį užsakymą, jei Klientas nepateikė pilnos informacijos, būtinos tinkamam užsakymo įvykdymui iki bus pateikta trūkstama informacija;\n" +
-"1.2.3. pasitelkti trečią šalį visapusiškam bei savalaikiam paslaugų atlikimui (Kliento sutikimas nėra būtinas);\n" +
-"1.2.4. esant raštiškam Kliento pageidavimui/nurodymui, Kliento sąskaita papildomai apdrausti pervežamą krovinį;\n" +
-"1.2.5. reikalauti atlyginti papildomas paslaugų atlikimo išlaidas, dėl kurių nebuvo tartasi užsakyme, ar kurių atlikimas buvo būtinas siekiant tinkamai įvykdyti užsakymu prisiimtus įsipareigojimus;\n" +
-"1.2.6. sustabdyti paslaugų pagal užsakymą teikimą ir sulaikyti Vežėjo dispozicijoje pagal vykdomą užsakymą esantį krovinį/-ius, jei Klientas neįvykdo ar netinkamai vykdo užsakymo sąlygas ir tai yra esminis užsakymo pažeidimas, iki tol, kol Klientas ištaisys esminius užsakymo pažeidimus ar pateiks tinkamą savo prievolių įvykdymo užtikrinimą. Išlaidos, kurias Klientas galimai patirs dėl šiame punkte minimų Vežėjo veiksmų, Klientui nėra atlyginamos.\n" +
+"1.2.2. Apie tai informavus Klientą neteikti paslaugų pagal šį užsakymą, jei Klientas nepateikė pilnos informacijos, būtinos tinkamam užsakymo įvykdymui iki bus pateikta trūkstama informacija;\n" +
+"1.2.3. Pasitelkti trečią šalį visapusiškam bei savalaikiam paslaugų atlikimui (Kliento sutikimas nėra būtinas);\n" +
+"1.2.4. Esant raštiškam Kliento pageidavimui/nurodymui, Kliento sąskaita papildomai apdrausti pervežamą krovinį;\n" +
+"1.2.5. Reikalauti atlyginti papildomas paslaugų atlikimo išlaidas, dėl kurių nebuvo tartasi užsakyme, ar kurių atlikimas buvo būtinas siekiant tinkamai įvykdyti užsakymu prisiimtus įsipareigojimus;\n" +
+"1.2.6. Sustabdyti paslaugų pagal užsakymą teikimą ir sulaikyti Vežėjo dispozicijoje pagal vykdomą užsakymą esantį krovinį/-ius, jei Klientas neįvykdo ar netinkamai vykdo užsakymo sąlygas ir tai yra esminis užsakymo pažeidimas, iki tol, kol Klientas ištaisys esminius užsakymo pažeidimus ar pateiks tinkamą savo prievolių įvykdymo užtikrinimą. Išlaidos, kurias Klientas galimai patirs dėl šiame punkte minimų Vežėjo veiksmų, Klientui nėra atlyginamos.\n" +
 "1.2.7. Atsisakyti organizuoti pavojingų, negabaritinių ir karinių krovinių vežimą. Dėl tokių krovinių vežimo turi būti sudaromas atskiras rašytinis šalių susitarimas, nustatantis papildomas šalių teises ir pareigas;"]]></textFieldExpression>
 			</textField>
 			<staticText>
@@ -860,18 +864,18 @@
 				<textElement textAlignment="Justified">
 					<font size="6"/>
 				</textElement>
-				<textFieldExpression><![CDATA["1.3.1. pateikti Vežėjui atitinkamą užsakymą vienu iš jam priimtiniausių komunikacijos būdų (faksas, el. paštas, internetas) ne vėliau kaip prieš 48 valandas iki konkretaus krovinio numatomo pervežimo pradžios;\n" +
-"1.3.2. laiku (ne vėliau kaip prieš 48 valandas iki konkretaus krovinio numatomo pervežimo pradžios) pateikti Vežėjui krovinio dokumentus ir informaciją, būtiną tinkamam krovinio pervežimui, tiksliai nurodant pasikrovimo adresą, siuntėją (atsakingo asmens kontaktinius duomenis), išsikrovimo adresą, gavėją (atsakingo asmens kontaktinius duomenis), krovinio duomenis, vežimo sąlygas, taip pat kitą būtiną informaciją apie krovinį ar ypatingas vežimo sąlygas, kad Vežėjas galėtų tinkamai įvykdyti savo įsipareigojimus;\n" +
-"1.3.3. užsakyme nurodytu laiku būti pasiruošusiam (o tais atvejais, kai Klientas nėra siuntėjas, užtikrinti, kad siuntėjas būtų pasiruošęs) perduoti ir pakrauti į Vežėjo peteiktą transporto priemonę tinkamai paruoštą krovinį su visais vežimui atlikti reikalingais dokumentais. Krovinio pakrovimas/iškrovimas privalo būti įvykdytas ne vėliau kaip per 4 (keturias) valandas nuo transporto priemonės atvykimo momento, jei šalys nesusitaria kitaip. Bet koks vėlavimas pakrauti/iškrauti krovinį yra laikomas užsakymo pažeidimu, todėl Klientas yra baudžiamas 25,00 Eur už vieną valandą dydžio bauda, bet nedaugiau kaip 250 EUR per parą.  Klientas (krovinio siuntėjas) atsako už krovinio pakrovimo/iškrovimo procedūras – tinkamą ir saugų krovinio išdėstymą, sutvirtinimą transporto priemonėje, užsakyme nurodyto krovinio gabaritų, skaičiaus atitikimą, kitokį paruošimą gabenimui, įskaitant ir transportavimo dokumentų paruošimą, jeigu to pagal atskirą rašytinį susitarimą neatlieka Vežėjas;\n" +
+				<textFieldExpression><![CDATA["1.3.1. Pateikti Vežėjui atitinkamą užsakymą vienu iš jam priimtiniausių komunikacijos būdų (faksas, el. paštas, internetas) ne vėliau kaip prieš 48 valandas iki konkretaus krovinio numatomo pervežimo pradžios;\n" +
+"1.3.2. Laiku (ne vėliau kaip prieš 48 valandas iki konkretaus krovinio numatomo pervežimo pradžios) pateikti Vežėjui krovinio dokumentus ir informaciją, būtiną tinkamam krovinio pervežimui, tiksliai nurodant pasikrovimo adresą, siuntėją (atsakingo asmens kontaktinius duomenis), išsikrovimo adresą, gavėją (atsakingo asmens kontaktinius duomenis), krovinio duomenis, vežimo sąlygas, taip pat kitą būtiną informaciją apie krovinį ar ypatingas vežimo sąlygas, kad Vežėjas galėtų tinkamai įvykdyti savo įsipareigojimus;\n" +
+"1.3.3. Užsakyme nurodytu laiku būti pasiruošusiam (o tais atvejais, kai Klientas nėra siuntėjas, užtikrinti, kad siuntėjas būtų pasiruošęs) perduoti ir pakrauti į Vežėjo pateiktą transporto priemonę tinkamai paruoštą krovinį su visais vežimui atlikti reikalingais dokumentais. Krovinio pakrovimas/iškrovimas privalo būti įvykdytas ne vėliau kaip per 4 (keturias) valandas nuo transporto priemonės atvykimo momento, jei šalys nesusitaria kitaip. Bet koks vėlavimas pakrauti/iškrauti krovinį yra laikomas užsakymo pažeidimu, todėl Klientas yra baudžiamas 25,00 Eur už vieną valandą dydžio bauda, bet nedaugiau kaip 250 EUR per parą.  Klientas (krovinio siuntėjas) atsako už krovinio pakrovimo/iškrovimo procedūras – tinkamą ir saugų krovinio išdėstymą, sutvirtinimą transporto priemonėje, užsakyme nurodyto krovinio gabaritų, skaičiaus atitikimą, kitokį paruošimą gabenimui, įskaitant ir transportavimo dokumentų paruošimą, jeigu to pagal atskirą rašytinį susitarimą neatlieka Vežėjas;\n" +
 "1.3.4. Jei raštiškai nėra sutarta kitaip, Klientas įsipareigoja organizuoti krovinio muitinės forminimo procedūras, kurios privalo būti įvykdytos per 24 val. ES teritorijoje ir/arba 48 val. NVS teritorijoje, nuo transporto priemonės atvykimo į pakrovimo/iškrovimo vietą momento, įskaitant plombavimo darbus.\n" +
-"1.3.5. vadovaujantis specifinėmis krovinio techninėmis charakteristikomis, transportavimo standartais, užtikrinti tinkamą krovinio paruošimą, įpakavimą, ženklinimą, jei toks krovinys gali sąlygoti kitų prekių sugedimą, sugadinimą ar kitokią žalą kitiems kroviniams, žmonėms ar aplinkai, taip pat pristatyti/pateikti instrukcijas tokių krovinių perkrovimui bei sandėliavimui;\n" +
-"1.3.6. atlyginti Vežėjui pastarojo patirtus nuostolius, atsiradusius dėl to, kad Klientas nepateikė, pateikė ne visus  arba netikslius duomenis ar dokumentus, reikalingus tinkamai atlikti atitinamas paslaugas, išskyrus atvejus, kai už tai atsako pats Vežėjas;\n" +
+"1.3.5. Vadovaujantis specifinėmis krovinio techninėmis charakteristikomis, transportavimo standartais, užtikrinti tinkamą krovinio paruošimą, įpakavimą, ženklinimą, jei toks krovinys gali sąlygoti kitų prekių sugedimą, sugadinimą ar kitokią žalą kitiems kroviniams, žmonėms ar aplinkai, taip pat pristatyti/pateikti instrukcijas tokių krovinių perkrovimui bei sandėliavimui;\n" +
+"1.3.6. Atlyginti Vežėjui pastarojo patirtus nuostolius, atsiradusius dėl to, kad Klientas nepateikė, pateikė ne visus  arba netikslius duomenis ar dokumentus, reikalingus tinkamai atlikti atitinkamas paslaugas, išskyrus atvejus, kai už tai atsako pats Vežėjas;\n" +
 "1.3.7. Informuoti Vežėją apie bet kokius užsakymo pasikeitimus bei tam tikras sąlygas ne vėliau kaip prieš 24 valandas iki paslaugų suteikimo pradžios;\n" +
-"1.3.8. nesant galimybės pateikti krovinį nustatytais terminais, nedelsiant informuoti apie tai Vežėją, bei imtis visų priemonių galimiems Vežėjo nuostoliams išvengti. Vežėjui dėl nesavalaikio krovinio pateikimo patyrus nuostolių, Vežėjo reikalavimu, kompensuoti šiuos nuostolius;\n" +
-"1.3.9. atlyginti visas pagrįstas Vežėjo išlaidas ir nuostolius, patirtus vykdant papildomas Kliento instrukcijas, taip pat atlyginti išlaidas ir nuostolius, kai papildomos Vežėjo išlaidos kyla dėl Kliento netinkamai užsakyme nurodytų duomenų (kitas maršrutas, didesni krovinio gabaritai, svoris, kita krovinio pakrovimo ar iškrovimo vieta ir pan.). Esant Vežėjo prašymui Klientas įsipareigoja iš anksto avansiniu mokėjimu kompensuoti Vežėjo galimas išlaidas ir nuostolius, susijusius su papildomų instrukcijų bei nurodymų vykdymu arba pateikti nurodytų išlaidų ir nuostolių apmokėjimo garantiją. Šiame punkte aptartų įsipareigojimų nevykdymas ar netinkamas vykdymas laikomas esminiu užsakymo pažeidimu;\n" +
-"1.3.10. esant būtinybei ir Vežėjui pareikalavus, išduoti Vežėjui įgaliojimą Kliento vardu atlikti krovinių transportavimo paslaugas ir su tuo susijusius veiksmus;\n" +
-"1.3.11. atsiskaityti su Vežėju už suteiktas paslaugas šiame užsakyme nustatyta tvarka;\n" +
-"1.3.12. neatskleisti Vežėjo komercinių paslapčių."]]></textFieldExpression>
+"1.3.8. Nesant galimybės pateikti krovinį nustatytais terminais, nedelsiant informuoti apie tai Vežėją, bei imtis visų priemonių galimiems Vežėjo nuostoliams išvengti. Vežėjui dėl nesavalaikio krovinio pateikimo patyrus nuostolių, Vežėjo reikalavimu, kompensuoti šiuos nuostolius;\n" +
+"1.3.9. Atlyginti visas pagrįstas Vežėjo išlaidas ir nuostolius, patirtus vykdant papildomas Kliento instrukcijas, taip pat atlyginti išlaidas ir nuostolius, kai papildomos Vežėjo išlaidos kyla dėl Kliento netinkamai užsakyme nurodytų duomenų (kitas maršrutas, didesni krovinio gabaritai, svoris, kita krovinio pakrovimo ar iškrovimo vieta ir pan.). Esant Vežėjo prašymui Klientas įsipareigoja iš anksto avansiniu mokėjimu kompensuoti Vežėjo galimas išlaidas ir nuostolius, susijusius su papildomų instrukcijų bei nurodymų vykdymu arba pateikti nurodytų išlaidų ir nuostolių apmokėjimo garantiją. Šiame punkte aptartų įsipareigojimų nevykdymas ar netinkamas vykdymas laikomas esminiu užsakymo pažeidimu;\n" +
+"1.3.10. Esant būtinybei ir Vežėjui pareikalavus, išduoti Vežėjui įgaliojimą Kliento vardu atlikti krovinių transportavimo paslaugas ir su tuo susijusius veiksmus;\n" +
+"1.3.11. Atsiskaityti su Vežėju už suteiktas paslaugas šiame užsakyme nustatyta tvarka;\n" +
+"1.3.12. Neatskleisti Vežėjo komercinių paslapčių."]]></textFieldExpression>
 			</textField>
 			<staticText>
 				<reportElement positionType="Float" x="0" y="90" width="170" height="10" uuid="6de733a7-318e-4024-8b24-86f0720a2512"/>
@@ -927,7 +931,7 @@
 				<textElement textAlignment="Justified">
 					<font size="6"/>
 				</textElement>
-				<textFieldExpression><![CDATA["1.6.1. už suteiktas paslaugas Klientas moka Vežėjui užsakyme nurodytą kainą pagal jam pateiktą sąskaitą-faktūrą, šiame užsakyme numatytais terminais. Užsakyme paslaugų kaina yra be pridėtinės vertės mokesčio (PVM). Jei vadovaujantis Lietuvos Respublikos įstatymais suteiktos paslaugos yra PVM objektas, šį mokestį įsipareigoja sumokėti Klientas.\n" +
+				<textFieldExpression><![CDATA["1.6.1. Už suteiktas paslaugas Klientas moka Vežėjui užsakyme nurodytą kainą pagal jam pateiktą sąskaitą-faktūrą, šiame užsakyme numatytais terminais. Užsakyme paslaugų kaina yra be pridėtinės vertės mokesčio (PVM). Jei vadovaujantis Lietuvos Respublikos įstatymais suteiktos paslaugos yra PVM objektas, šį mokestį įsipareigoja sumokėti Klientas.\n" +
 "1.6.2. Klientas, pavėlavęs laiku atsiskaityti su Vežėju, moka pastarajam delspinigius po 0,2 proc. (dvi dešimtąsias procento) nuo neapmokėtos sumos už kiekvieną uždelstą sumokėti dieną.\n" +
 "1.6.3. Tuo atveju, jei vykdant užsakymą Vežėjas patiria išlaidų dėl papildomų Kliento nurodymų, tai šias išlaidas Klientas įsipareigoja atlyginti per Vežėjo sąskaitoje-faktūroje nurodytą terminą."]]></textFieldExpression>
 			</textField>
