@@ -5058,6 +5058,8 @@ public interface Dictionary {
 
   default String trRequestCustomsBrokerage() {return g("trRequestCustomsBrokerage");}
 
+  default String trRequestCustomsBrokeragePlaceholder() {return g("trRequestCustomsBrokeragePlaceholder");}
+
   default String trRequestDate() {return g("trRequestDate");}
 
   default String trRequestDeliveryDate() {return g("trRequestDeliveryDate");}
@@ -5069,6 +5071,8 @@ public interface Dictionary {
   default String trRequestExpeditionType() {return g("trRequestExpeditionType");}
 
   default String trRequestFreightInsurance() {return g("trRequestFreightInsurance");}
+
+  default String trRequestFreightInsurancePlaceholder() {return g("trRequestFreightInsurancePlaceholder");}
 
   default String trRequestLostMailContent() {return g("trRequestLostMailContent");}
 
