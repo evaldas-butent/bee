@@ -109,8 +109,7 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
 
         @Override
         public Boolean validateCell(CellValidateEvent event) {
-          getFormView().getWidgetByName(NAME_VALUE_LABEL).setStyleName(StyleUtils.NAME_REQUIRED,
-              !BeeUtils.isEmpty(event.getNewValue()));
+          styleRequiredField(event.getNewValue());
 
           return true;
         }
@@ -206,6 +205,8 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
           && !ShipmentRequestStatus.CONFIRMED.is(status)
           && (!isSelfService() || ShipmentRequestStatus.NEW.is(status)));
     }
+    styleRequiredField(row.getString(getDataIndex(COL_QUERY_FREIGHT_INSURANCE)));
+
     super.beforeRefresh(form, row);
   }
 
@@ -501,6 +502,11 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
 
   private static boolean isSelfService() {
     return Objects.equals(BeeKeeper.getScreen().getUserInterface(), UserInterface.SELF_SERVICE);
+  }
+
+  private void styleRequiredField(String value) {
+    getFormView().getWidgetByName(NAME_VALUE_LABEL).setStyleName(StyleUtils.NAME_REQUIRED,
+        !BeeUtils.isEmpty(value));
   }
 
   private void onAnswer() {
