@@ -167,7 +167,7 @@
           <FlowPanel>
             <DataSelector source="ShippingTerm" required="true" filter="SelfService"
               order="SelfService, Name" newRowEnabled="false" />
-            <FaLabel name="Incoterms" char="question_circle" 
+            <FaLabel name="Incoterms" char="question_circle" disablable="false"
               style="display: inline-block; margin-left: 5px;"/>
           </FlowPanel>
         </row>

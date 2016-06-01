@@ -313,7 +313,7 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
                     result.getString(0, COL_TEXT_CONTENT));
               }
               sendMail(ShipmentRequestStatus.CONTRACT_SENT, null, BeeUtils.isEmpty(text)
-                  ? null : text.replace("{contract_path}",
+                  ? null : text.replace("{CONTRACT_PATH}",
                   "rest/transport/confirm/" + getActiveRowId()), Collections.singleton(fileInfo));
             }
           });

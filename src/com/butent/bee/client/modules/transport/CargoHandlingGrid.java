@@ -73,7 +73,6 @@ public class CargoHandlingGrid extends AbstractGridInterceptor {
 
   @Override
   public boolean onStartNewRow(GridView gridView, IsRow oldRow, IsRow newRow) {
-
     if (parentRow != null && gridView.isEmpty()) {
       for (String prefix : new String[] {VAR_LOADING, VAR_UNLOADING}) {
         for (String col : new String[] {
@@ -85,9 +84,9 @@ public class CargoHandlingGrid extends AbstractGridInterceptor {
               parentRow.getString(Data.getColumnIndex(parentView, prefix + col)));
         }
       }
+      for (String col : new String[] {
+          COL_LOADED_KILOMETERS, COL_EMPTY_KILOMETERS, COL_ROUTE_WEIGHT}) {
 
-      for (String col : new String[] {COL_LOADED_KILOMETERS, COL_EMPTY_KILOMETERS,
-          COL_ROUTE_WEIGHT}) {
         newRow.setValue(gridView.getDataIndex(col),
             parentRow.getString(Data.getColumnIndex(parentView, col)));
       }
