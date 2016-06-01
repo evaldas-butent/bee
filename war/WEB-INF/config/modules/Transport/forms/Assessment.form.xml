@@ -23,7 +23,7 @@
         <Label for="Status" style="&labelLeft;" />
         <FlowPanel name="Status" style="&input; font-weight:bold;" />
         <Label for="OrderNo" style="&labelRight; width:120px;" />
-        <InputText source="OrderNo" style="&input;" />
+        <InputText source="OrderNo" style="&input;" readOnly="true" />
       </FlowPanel>
       <FlowPanel style="&section;">
         <Label for="Date" style="&labelLeft;" />

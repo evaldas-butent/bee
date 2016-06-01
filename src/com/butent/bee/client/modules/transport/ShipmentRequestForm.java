@@ -5,8 +5,6 @@ import com.google.common.base.Strings;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.gwt.core.client.Scheduler;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Widget;
@@ -38,8 +36,6 @@ import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.utils.JsonUtils;
-import com.butent.bee.client.validation.CellValidateEvent;
-import com.butent.bee.client.validation.CellValidateEvent.Handler;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.edit.EditableWidget;
 import com.butent.bee.client.view.edit.Editor;
@@ -74,8 +70,7 @@ import com.butent.bee.shared.i18n.SupportedLocale;
 import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.io.Paths;
 import com.butent.bee.shared.modules.mail.MailConstants;
-import com.butent.bee.shared.modules.transport.TransportConstants.ShipmentRequestStatus;
-import com.butent.bee.shared.modules.transport.TransportConstants.TextConstant;
+import com.butent.bee.shared.modules.transport.TransportConstants.*;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.utils.ArrayUtils;
@@ -113,14 +108,9 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
   public void afterCreateEditableWidget(EditableWidget editableWidget, IdentifiableWidget widget) {
     if (BeeUtils.same(editableWidget.getColumnId(), COL_QUERY_FREIGHT_INSURANCE)) {
 
-      editableWidget.addCellValidationHandler(new Handler() {
-
-        @Override
-        public Boolean validateCell(CellValidateEvent event) {
-          styleRequiredField(event.getNewValue());
-
-          return true;
-        }
+      editableWidget.addCellValidationHandler(event -> {
+        styleRequiredField(event.getNewValue());
+        return true;
       });
     }
     super.afterCreateEditableWidget(editableWidget, widget);
@@ -130,33 +120,21 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
   public void afterCreateWidget(String name, IdentifiableWidget widget,
       WidgetDescriptionCallback callback) {
     if (BeeUtils.same(name, NAME_INCOTERMS) && widget instanceof FaLabel) {
-      ((FaLabel) widget).addClickHandler(new ClickHandler() {
+      ((FaLabel) widget).addClickHandler(event -> {
+        String suffix = Localized.dictionary().languageTag();
 
-        @Override
-        public void onClick(ClickEvent event) {
-
-          String locale = Localized.dictionary().languageTag();
-          String suffix;
-
-          switch (locale) {
-            case "ru":
-              suffix = "_ru.png";
-              break;
-
-            case "lt":
-              suffix = "_lt.png";
-              break;
-
-            default:
-              suffix = "_en.png";
-          }
-
-          Image image = new Image(Paths.buildPath(Paths.IMAGE_DIR, NAME_INCOTERMS + suffix));
-          StyleUtils.setWidth(image, BeeKeeper.getScreen().getWidth() * 0.8, CssUnit.PX);
-          StyleUtils.setHeight(image, BeeKeeper.getScreen().getHeight() * 0.5, CssUnit.PX);
-
-          Global.showModalWidget(image);
+        switch (suffix) {
+          case "lt":
+          case "ru":
+            break;
+          default:
+            suffix = "en";
         }
+        Image image = new Image(Paths.buildPath(Paths.IMAGE_DIR, name + "_" + suffix + ".png"));
+        StyleUtils.setWidth(image, BeeKeeper.getScreen().getWidth() * 0.8, CssUnit.PX);
+        StyleUtils.setHeight(image, BeeKeeper.getScreen().getHeight() * 0.5, CssUnit.PX);
+
+        Global.showModalWidget(image);
       });
     }
 
@@ -333,8 +311,11 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
     companies.put(COL_CUSTOMER, getLongValue(COL_COMPANY));
     companies.put(COL_COMPANY, BeeKeeper.getUser().getCompany());
 
+    String orderNo = getOrderNo(getActiveRow());
+
     super.getReportParameters(defaultParameters ->
         ClassifierUtils.getCompaniesInfo(companies, companiesInfo -> {
+          defaultParameters.put(COL_ORDER_NO, orderNo);
           defaultParameters.putAll(companiesInfo);
           parametersConsumer.accept(defaultParameters);
         }));
@@ -419,7 +400,7 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
               row.getString(form.getDataIndex(COL_ORDER_NOTES)),
               row.getString(form.getDataIndex(COL_VEHICLE)),
               row.getString(form.getDataIndex(COL_DRIVER)),
-              "SLF-" + row.getId()),
+              getOrderNo(row)),
           null, new RowInsertCallback(VIEW_ORDERS) {
             @Override
             public void onSuccess(BeeRow order) {
@@ -539,6 +520,16 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
             });
           });
         });
+  }
+
+  private static String getOrderNo(IsRow row) {
+    String orderNo = BeeUtils.toString(row.getId());
+    BeeColumn column = Data.getColumn(TBL_ORDERS, COL_ORDER_NO);
+
+    if (column.hasDefaults()) {
+      orderNo = BeeUtils.join("-", column.getDefaults().getB(), orderNo);
+    }
+    return orderNo;
   }
 
   private boolean isRegistered() {

@@ -5,9 +5,9 @@
       caption="=trRequests" newRowCaption="=trRequestNew"
       newRowForm="ShipmentRequest" editForm="ShipmentRequest"
     >
-  <Relation renderColumns="ID Date" />
+  <Relation renderColumns="OrderNo Date CompanyName" />
   <Columns>
-    <IdColumn name="ID" />
+    <IdColumn name="OrderNo" label="ID" />
     <SimpleColumn name="Date" />
     <SimpleColumn name="Status" />
 

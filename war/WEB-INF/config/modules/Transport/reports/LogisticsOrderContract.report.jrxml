@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2016-05-31T15:01:53 -->
+<!-- 2016-06-01T17:07:18 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="OrderContract" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="30" bottomMargin="30" isSummaryWithPageHeaderAndFooter="true" uuid="b0daefcc-9db0-4ed1-b9d6-49143492176f">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<import value="com.butent.bee.server.Invocation"/>
@@ -47,7 +47,6 @@
 		<field name="DefaultBankAccount" class="java.lang.Long"/>
 		<sortField name="DefaultBankAccount" order="Descending"/>
 	</subDataset>
-	<parameter name="ID" class="java.lang.String" isForPrompting="false"/>
 	<parameter name="OrderNo" class="java.lang.String" isForPrompting="false"/>
 	<parameter name="Date" class="java.lang.String" isForPrompting="false"/>
 	<parameter name="OrderNotes" class="java.lang.String" isForPrompting="false"/>
@@ -434,7 +433,7 @@
 					<textElement markup="html">
 						<font isBold="false"/>
 					</textElement>
-					<textFieldExpression><![CDATA["<b>Krovinių ekspedijavimo užsakymas nr. </b>" + BeeUtils.notEmpty($P{OrderNo}, "SLF-" + $P{ID})]]></textFieldExpression>
+					<textFieldExpression><![CDATA["<b>Krovinių ekspedijavimo užsakymas nr. </b>" + $P{OrderNo}]]></textFieldExpression>
 				</textField>
 				<frame>
 					<reportElement positionType="Float" x="220" y="195" width="230" height="20" isRemoveLineWhenBlank="true" uuid="f295db50-e1cf-463d-bfcc-3a12806bee23"/>
