@@ -190,6 +190,7 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
   private static final String STYLE_COMMAND = STYLE_PREFIX + "command";
   private static final String STYLE_COMMAND_SUBSTITUTION = STYLE_PREFIX + "command-substitution";
   private static final String STYLE_COMMAND_FETCH = STYLE_PREFIX + "command-fetch";
+  private static final String STYLE_COMMAND_EXTEND = STYLE_PREFIX + "command-extend";
 
   private static final String STYLE_INPUT_MODE_PANEL = STYLE_PREFIX + "input-mode-panel";
   private static final String STYLE_INPUT_MODE_SIMPLE = STYLE_PREFIX + "input-mode-simple";
@@ -712,7 +713,7 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
       checkOverlap();
     }
 
-    renderFooters(ids, r);
+    renderFooters(months, ids, r);
     updateSums();
 
     SummaryChangeEvent.maybeFire(this);
@@ -1627,6 +1628,9 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
     }
   }
 
+  private void onExtend() {
+  }
+
   private void onFetch() {
     final List<IdPair> partIds = getPartitionIds();
 
@@ -1956,9 +1960,7 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
     }
 
     r = calendarStartRow;
-    for (int i = 0; i < partIds.size(); i++) {
-      IdPair pair = partIds.get(i);
-
+    for (IdPair pair : partIds) {
       Flow rowLabel = new Flow();
 
       Label nameWidget = new Label(getPartitionCaption(pair.getA()));
@@ -2106,7 +2108,7 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
     dialog.center();
   }
 
-  private void renderFooters(Collection<IdPair> partIds, int r) {
+  private void renderFooters(List<YearMonth> months, Collection<IdPair> partIds, int r) {
     Widget appender = renderAppender(partIds, activeMonth, STYLE_APPEND_SELECTOR);
     table.setWidgetAndStyle(r, CALENDAR_PARTITION_COL, appender, STYLE_APPEND_PANEL);
 
@@ -2129,6 +2131,20 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
 
         fetchCommand.addClickHandler(event -> onFetch());
         controlPanel.add(fetchCommand);
+      }
+
+      if (kind.isExtensionEnabled() && activeMonth != null) {
+        YearMonth ym = activeMonth.previousMonth();
+
+        if (BeeUtils.contains(months, ym)) {
+          Button extendCommand = new Button(Localized.dictionary().extendWorkSchedule(ym.getYear(),
+              Format.renderMonthFull(ym)));
+          extendCommand.addStyleName(STYLE_COMMAND);
+          extendCommand.addStyleName(STYLE_COMMAND_EXTEND);
+
+          extendCommand.addClickHandler(event -> onExtend());
+          controlPanel.add(extendCommand);
+        }
       }
 
       Flow modePanel = new Flow(STYLE_MODE_PANEL);
