@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form [
+  <!ENTITY cell "padding-left:10px; padding-right:10px;">
+]>
 <Table xmlns="http://www.butent.com/widget" kind="controls" style="border-spacing: 4px 3px;">
+  <col index="0" cellStyle="&cell;" />
+  <col index="2" cellStyle="&cell;" />
+  <col index="4" cellStyle="&cell;" />
   <row>
     <Label text="=period" horizontalAlignment="right" />
     <HorizontalPanel style="border-collapse: collapse;" cellStyle="padding: 0;">
