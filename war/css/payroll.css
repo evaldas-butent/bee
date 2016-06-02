@@ -1,3 +1,53 @@
+.bee-payroll-wsf-footer {
+  font-size: small;
+}
+
+.bee-payroll-wsf-prepare {
+  font-weight: bold;
+}
+
+.bee-payroll-wsf-date {
+  position: absolute;
+  bottom: 0;
+  right: 40px;
+  font-weight: bold;
+  margin-top: -20px;
+}
+
+.bee-payroll-wsf-logo {
+  height: 50px;
+  position: absolute;
+  right: 60px;
+  top: 35px;
+}
+
+.bee-payroll-wsf-manager {
+  font-weight: bold;
+  text-align: center;
+  margin-top: -15px;
+}
+
+.bee-payroll-wsf-object {
+  position: absolute;
+  left: 25%;
+}
+
+.bee-payroll-wsf-info {
+  position: absolute;
+  left: 60%;
+  font-size: small;
+}
+
+.bee-payroll-wsf-time {
+  display: inline-block;
+  vertical-align:top;
+}
+
+.bee-payroll-wsf-timeContainer {
+  margin-left: 100px;
+  margin-top: -36px;"
+}
+
 .bee-payroll-wsf-object-widget {
   display: inline-block;
   padding: 2px 10px;
@@ -52,6 +102,17 @@
 .bee-Print .bee-payroll-earn-caption {
   visibility: visible;
 }
+
+.bee-ws-Print .bee-payroll-ws-control-panel-cell,
+.bee-ws-Print .bee-payroll-ws-wh-total-cell,
+.bee-ws-Print .bee-payroll-ws-append-panel-cell,
+.bee-ws-Print .bee-payroll-ws-partition-info,
+.bee-ws-Print .bee-payroll-ws-partition-clear,
+.bee-ws-Print .bee-payroll-ws-wd-total-cell,
+.bee-ws-Print .bee-payroll-ws-month-panel-cell {
+  display: none;
+}
+
 .bee-payroll-ws-action,
 .bee-payroll-earn-action {
   margin-right: 10px;

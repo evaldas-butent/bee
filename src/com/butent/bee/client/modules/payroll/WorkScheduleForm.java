@@ -13,7 +13,6 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.layout.Flow;
-import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
@@ -30,6 +29,7 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.payroll.PayrollConstants.ObjectStatus;
+import com.butent.bee.shared.modules.payroll.PayrollConstants.WorkScheduleKind;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
@@ -85,12 +85,10 @@ class WorkScheduleForm extends AbstractFormInterceptor implements SelectorEvent.
 
       case PRINT:
         WorkScheduleWidget widget = UiHelper.getChild(schedulePanel, LocationSchedule.class);
-        if (widget == null) {
-          return true;
-        } else {
-          Printer.print(widget);
-          return false;
-        }
+
+        PayrollHelper.print(widget, objectSelector.getRelatedRow(), getFormView().getFormName());
+
+        return false;
 
       default:
         return super.beforeAction(action, presenter);

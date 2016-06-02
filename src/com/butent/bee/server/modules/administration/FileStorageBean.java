@@ -245,6 +245,8 @@ public class FileStorageBean {
       styles.add("print");
       styles.add("commons");
       styles.add("trade");
+      styles.add("payroll");
+      styles.add("bee");
 
       if (!ArrayUtils.isEmpty(styleSheets)) {
         styles.addAll(Arrays.asList(styleSheets));
