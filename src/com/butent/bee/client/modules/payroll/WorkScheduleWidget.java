@@ -62,6 +62,7 @@ import com.butent.bee.client.widget.InputText;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.Toggle;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
@@ -97,6 +98,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
@@ -331,6 +333,15 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
   private static String extendStyleName(String styleName, String extension) {
     return BeeUtils.join(BeeConst.STRING_MINUS, styleName,
         BeeUtils.removeWhiteSpace(extension.toLowerCase()));
+  }
+
+  private static String extendWorkScheduleMessage(YearMonth ym) {
+    if (ym == null) {
+      return Localized.dictionary().extendWorkSchedule(BeeConst.STRING_EMPTY,
+          BeeConst.STRING_EMPTY);
+    } else {
+      return Localized.dictionary().extendWorkSchedule(ym.getYear(), Format.renderMonthFull(ym));
+    }
   }
 
   private static String formatDuration(String duration) {
@@ -1629,6 +1640,72 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
   }
 
   private void onExtend() {
+    final List<IdPair> partIds = getPartitionIds();
+
+    if (BeeUtils.isEmpty(partIds) || activeMonth == null) {
+      noData();
+      return;
+    }
+
+    CompoundFilter partFilter = Filter.or();
+
+    for (IdPair pair : partIds) {
+      if (pair.hasB()) {
+        partFilter.add(Filter.and(
+            Filter.equals(scheduleParent.getEmployeeObjectPartitionColumn(), pair.getA()),
+            Filter.equals(COL_SUBSTITUTE_FOR, pair.getB())));
+
+      } else {
+        partFilter.add(Filter.and(
+            Filter.equals(scheduleParent.getEmployeeObjectPartitionColumn(), pair.getA()),
+            Filter.isNull(COL_SUBSTITUTE_FOR)));
+      }
+    }
+
+    if (partFilter.isEmpty()) {
+      noData();
+      return;
+    }
+
+    final YearMonth previousMonth = activeMonth.previousMonth();
+
+    Filter filter = Filter.and(Filter.equals(COL_WORK_SCHEDULE_KIND, kind),
+        Filter.equals(scheduleParent.getEmployeeObjectRelationColumn(), getRelationId()),
+        previousMonth.getRange().getFilter(COL_WORK_SCHEDULE_DATE),
+        partFilter);
+
+    Queries.getRowSet(VIEW_WORK_SCHEDULE, null, filter, new Queries.RowSetCallback() {
+      @Override
+      public void onSuccess(final BeeRowSet rowSet) {
+        if (DataUtils.isEmpty(rowSet)) {
+          notifyWarning(PayrollHelper.format(previousMonth),
+              BeeUtils.joinWords(Localized.dictionary().workSchedule(), kind.getCaption()),
+              Localized.dictionary().nothingFound());
+
+        } else if (Objects.equals(previousMonth.nextMonth(), activeMonth)) {
+          Table<IdPair, Integer, List<BeeRow>> extension =
+              tryExtend(previousMonth, partIds, rowSet);
+
+          List<IdPair> keys = new ArrayList<>(partIds);
+          keys.retainAll(extension.rowKeySet());
+
+          if (keys.isEmpty()) {
+            notifyWarning(extendWorkScheduleMessage(previousMonth),
+                Localized.dictionary().noData());
+
+          } else {
+            String caption = Localized.dictionary().workScheduleExtension(
+                previousMonth.getYear(),
+                Format.renderMonthFullStandalone(previousMonth).toLowerCase(),
+                activeMonth.getYear(),
+                Format.renderMonthFullStandalone(activeMonth).toLowerCase());
+
+            renderFetch(caption, keys, extension, extendWorkScheduleMessage(null),
+                WorkScheduleWidget.this::doFetch);
+          }
+        }
+      }
+    });
   }
 
   private void onFetch() {
@@ -1712,7 +1789,7 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
     } else {
       eoFilter = Filter.and(substFilter,
           Filter.or(Filter.notNull(COL_EMPLOYEE_OBJECT_FROM),
-              Filter.notNull(COL_EMPLOYEE_OBJECT_FROM)),
+              Filter.notNull(COL_EMPLOYEE_OBJECT_UNTIL)),
           PayrollUtils.getIntersectionFilter(activeMonth,
               COL_EMPLOYEE_OBJECT_FROM, COL_EMPLOYEE_OBJECT_UNTIL));
     }
@@ -1720,18 +1797,24 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
     Queries.getRowSet(VIEW_WORK_SCHEDULE, null, wsFilter, new Queries.RowSetCallback() {
       @Override
       public void onSuccess(final BeeRowSet wsPlanned) {
+        final String caption = Localized.dictionary().workSchedule()
+            + BeeUtils.space(10) + PayrollHelper.format(activeMonth);
+
         if (DataUtils.isEmpty(wsPlanned)) {
           notifyWarning(PayrollHelper.format(activeMonth),
               Localized.dictionary().workSchedulePlanned(), Localized.dictionary().nothingFound());
 
         } else if (eoFilter == null) {
-          renderFetch(partIds, wsPlanned, null);
+          renderFetch(caption, partIds, layoutPlannedSchedule(partIds, wsPlanned, null),
+              Localized.dictionary().fetchWorkSchedule(), WorkScheduleWidget.this::doFetch);
 
         } else {
           Queries.getRowSet(VIEW_EMPLOYEE_OBJECTS, null, eoFilter, new Queries.RowSetCallback() {
             @Override
             public void onSuccess(BeeRowSet substData) {
-              renderFetch(partIds, wsPlanned, getSubstitutionDays(substData));
+              renderFetch(caption, partIds,
+                  layoutPlannedSchedule(partIds, wsPlanned, getSubstitutionDays(substData)),
+                  Localized.dictionary().fetchWorkSchedule(), WorkScheduleWidget.this::doFetch);
             }
           });
         }
@@ -1867,11 +1950,87 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
     return panel;
   }
 
-  private void renderFetch(List<IdPair> partIds, BeeRowSet wsPlanned,
-      Multimap<IdPair, Integer> substitutionDays) {
+  private Table<IdPair, Integer, List<BeeRow>> tryExtend(YearMonth previousMonth,
+      List<IdPair> partIds, BeeRowSet rowSet) {
 
-    String caption = Localized.dictionary().workSchedule()
-        + BeeUtils.space(10) + PayrollHelper.format(activeMonth);
+    Table<IdPair, Integer, List<BeeRow>> result = HashBasedTable.create();
+
+    Multimap<IdPair, Integer> exceptionalDays = HashMultimap.create();
+    Table<IdPair, Integer, List<BeeRow>> input = HashBasedTable.create();
+
+    int partIndex = rowSet.getColumnIndex(scheduleParent.getWorkSchedulePartitionColumn());
+    int substIndex = rowSet.getColumnIndex(COL_SUBSTITUTE_FOR);
+
+    int dateIndex = rowSet.getColumnIndex(COL_WORK_SCHEDULE_DATE);
+
+    int trIndex = rowSet.getColumnIndex(COL_TIME_RANGE_CODE);
+
+    int fromIndex = rowSet.getColumnIndex(COL_WORK_SCHEDULE_FROM);
+    int untilIndex = rowSet.getColumnIndex(COL_WORK_SCHEDULE_UNTIL);
+    int durationIndex = rowSet.getColumnIndex(COL_WORK_SCHEDULE_DURATION);
+
+    for (BeeRow row : rowSet) {
+      IdPair part = IdPair.get(row, partIndex, substIndex);
+
+      if (partIds.contains(part)) {
+        int day = row.getDate(dateIndex).getDom();
+
+        Long timeRange = row.getLong(trIndex);
+
+        String from = row.getString(fromIndex);
+        String until = row.getString(untilIndex);
+        String duration = row.getString(durationIndex);
+
+        if (DataUtils.isId(timeRange) || PayrollUtils.getMillis(from, until, duration) > 0) {
+          if (input.contains(part, day)) {
+            input.get(part, day).add(row);
+
+          } else {
+            List<BeeRow> values = new ArrayList<>();
+            values.add(row);
+
+            input.put(part, day, values);
+          }
+
+        } else {
+          exceptionalDays.put(part, day);
+        }
+      }
+    }
+
+    int prevDays = previousMonth.getLength();
+    int days = activeMonth.getLength();
+
+    for (IdPair part : input.rowKeySet()) {
+      for (Map.Entry<Integer, List<BeeRow>> entry : input.row(part).entrySet()) {
+        int day = entry.getKey();
+
+        if (day <= days) {
+          JustDate date = new JustDate(activeMonth.getYear(), activeMonth.getMonth(), day);
+          List<BeeRow> values = new ArrayList<>();
+
+          for (BeeRow inputRow : entry.getValue()) {
+            BeeRow resultRow = DataUtils.cloneRow(inputRow);
+
+            resultRow.setId(DataUtils.NEW_ROW_ID);
+            resultRow.setVersion(DataUtils.NEW_ROW_VERSION);
+            resultRow.setValue(dateIndex, date);
+
+            values.add(resultRow);
+          }
+
+          result.put(part, day, values);
+        }
+      }
+    }
+
+    return result;
+  }
+
+  private void renderFetch(String caption, List<IdPair> partIds,
+      final Table<IdPair, Integer, List<BeeRow>> layout, String submissionLabel,
+      final Consumer<Multimap<IdPair, BeeRow>> consumer) {
+
     final DialogBox dialog = DialogBox.create(caption, STYLE_FETCH_DIALOG);
 
     Flow panel = new Flow(STYLE_FETCH_PANEL);
@@ -2000,9 +2159,6 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
       r++;
     }
 
-    final Table<IdPair, Integer, List<BeeRow>> layout = layoutPlannedSchedule(partIds, wsPlanned,
-        substitutionDays);
-
     for (IdPair pair : layout.rowKeySet()) {
       r = calendarStartRow + partIds.indexOf(pair);
 
@@ -2047,7 +2203,7 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
 
     Flow commandPanel = new Flow(STYLE_FETCH_COMMAND_PANEL);
 
-    Button submit = new Button(Localized.dictionary().fetchWorkSchedule());
+    Button submit = new Button(submissionLabel);
     submit.addStyleName(STYLE_FETCH_SUBMIT);
 
     submit.addClickHandler(event -> {
@@ -2087,7 +2243,7 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
 
       } else {
         dialog.close();
-        doFetch(selection);
+        consumer.accept(selection);
       }
     });
     commandPanel.add(submit);
@@ -2137,8 +2293,7 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
         YearMonth ym = activeMonth.previousMonth();
 
         if (BeeUtils.contains(months, ym)) {
-          Button extendCommand = new Button(Localized.dictionary().extendWorkSchedule(ym.getYear(),
-              Format.renderMonthFull(ym)));
+          Button extendCommand = new Button(extendWorkScheduleMessage(ym));
           extendCommand.addStyleName(STYLE_COMMAND);
           extendCommand.addStyleName(STYLE_COMMAND_EXTEND);
 

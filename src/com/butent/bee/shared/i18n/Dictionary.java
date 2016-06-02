@@ -5868,6 +5868,15 @@ public interface Dictionary {
 
   default String workScheduleActualShort() {return g("workScheduleActualShort");}
 
+  default String workScheduleExtension(Object fromyear, Object frommonth, Object toyear, Object tomonth) {
+    Map<String, Object> _m = new HashMap<>();
+    _m.put("{fromyear}", fromyear);
+    _m.put("{frommonth}", frommonth);
+    _m.put("{toyear}", toyear);
+    _m.put("{tomonth}", tomonth);
+    return Localized.format(g("workScheduleExtension"), _m);
+  }
+
   default String workScheduleHolidaysInclusiveShort() {return g("workScheduleHolidaysInclusiveShort");}
 
   default String workScheduleHolihoursInclusiveShort() {return g("workScheduleHolihoursInclusiveShort");}
