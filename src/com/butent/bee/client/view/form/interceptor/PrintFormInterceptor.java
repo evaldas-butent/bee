@@ -177,7 +177,7 @@ public abstract class PrintFormInterceptor extends AbstractFormInterceptor {
         ReportUtils.showReport(report, getReportCallback(), parameters, data));
 
     if (reps.size() > 1) {
-      Global.choice(null, Localized.dictionary().choosePrintingForm(), caps,
+      Global.choice(Localized.dictionary().choosePrintingForm(), null, caps,
           idx -> consumer.accept(reps.get(idx)));
     } else {
       consumer.accept(reps.get(0));

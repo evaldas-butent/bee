@@ -5,6 +5,7 @@ import com.google.common.collect.Lists;
 
 import static com.butent.bee.shared.Service.*;
 
+import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.io.FileUtils;
 import com.butent.bee.server.io.Filter;
@@ -39,6 +40,7 @@ import com.butent.bee.shared.utils.PropertyUtils;
 import net.sf.jasperreports.engine.DefaultJasperReportsContext;
 import net.sf.jasperreports.engine.JREmptyDataSource;
 import net.sf.jasperreports.engine.JRException;
+import net.sf.jasperreports.engine.JRParameter;
 import net.sf.jasperreports.engine.JasperCompileManager;
 import net.sf.jasperreports.engine.JasperExportManager;
 import net.sf.jasperreports.engine.JasperFillManager;
@@ -59,8 +61,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.PropertyResourceBundle;
+import java.util.ResourceBundle;
 import java.util.Set;
 
 import javax.ejb.EJB;
@@ -80,6 +85,8 @@ public class SystemServiceBean {
   UiHolderBean ui;
   @EJB
   FileStorageBean fs;
+  @EJB
+  UserServiceBean usr;
 
   public ResponseObject doService(String svc, RequestInfo reqInfo) {
     Assert.notEmpty(svc);
@@ -231,15 +238,39 @@ public class SystemServiceBean {
   private ResponseObject getReport(String reportName, String format, Map<String, String> parameters,
       BeeRowSet... dataSets) {
 
-    String reportFile = ui.getReport(reportName);
+    String loc = BeeUtils.right(reportName, 3);
+    Locale locale;
+    String repName;
+
+    if (BeeUtils.isPrefix(loc, "_")) {
+      repName = BeeUtils.removeSuffix(reportName, loc);
+      locale = new Locale(BeeUtils.removePrefix(loc, "_"));
+    } else {
+      repName = reportName;
+      locale = usr.getLocale();
+    }
+    String reportFile = ui.getReport(repName);
 
     if (BeeUtils.isEmpty(reportFile)) {
-      return ResponseObject.error(Localized.dictionary().keyNotFound(reportName));
+      return ResponseObject.error(Localized.dictionary().keyNotFound(repName));
     }
     ResponseObject response;
+    ResourceBundle bundle = null;
 
     try {
       if (FileUtils.isInputFile(reportFile)) {
+        String bundlePath = new File(new File(reportFile).getParent(), repName).getPath();
+
+        if (FileUtils.isInputFile(bundlePath + "_" + locale.getLanguage() + ".properties")) {
+          bundlePath = bundlePath + "_" + locale.getLanguage() + ".properties";
+        } else if (FileUtils.isInputFile(bundlePath + ".properties")) {
+          bundlePath = bundlePath + ".properties";
+        } else {
+          bundlePath = null;
+        }
+        if (!BeeUtils.isEmpty(bundlePath)) {
+          bundle = new PropertyResourceBundle(FileUtils.getFileReader(bundlePath));
+        }
         reportFile = FileUtils.fileToString(reportFile);
       }
       JasperReport report = JasperCompileManager
@@ -261,8 +292,11 @@ public class SystemServiceBean {
           }
         }
       }
+      params.put(JRParameter.REPORT_LOCALE, locale);
+      params.put(JRParameter.REPORT_RESOURCE_BUNDLE, bundle);
+
       if (BeeUtils.same(format, "html")) {
-        params.put("IS_IGNORE_PAGINATION", true);
+        params.put(JRParameter.IS_IGNORE_PAGINATION, true);
       }
       LocalJasperReportsContext context = new LocalJasperReportsContext(DefaultJasperReportsContext
           .getInstance());
