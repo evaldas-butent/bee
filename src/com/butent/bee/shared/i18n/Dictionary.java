@@ -4211,6 +4211,8 @@ public interface Dictionary {
 
   default String shippingSchedule() {return g("shippingSchedule");}
 
+  default String showAvailableEmployees() {return g("showAvailableEmployees");}
+
   default String showNewMessagesNotifier() {return g("showNewMessagesNotifier");}
 
   default String signDate() {return g("signDate");}

@@ -20,6 +20,9 @@
       <SimpleJoin name="Person" joinType="LEFT">
         <SimpleColumn name="FirstName" />
         <SimpleColumn name="LastName" />
+        <SimpleJoin name="Contact" joinType="LEFT">
+          <SimpleColumn name="Address"  alias="PersonAddress"  />
+        </SimpleJoin>
       </SimpleJoin>
 
       <SimpleColumn name="Department" />

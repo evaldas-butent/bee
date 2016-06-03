@@ -151,6 +151,7 @@ public final class PayrollConstants {
 
   public static final String COL_DATE_OF_EMPLOYMENT = "DateOfEmployment";
   public static final String COL_DATE_OF_DISMISSAL = "DateOfDismissal";
+  public static final String COL_DEPARTMENT = "Department";
 
   public static final String COL_WORK_SCHEDULE_KIND = "Kind";
   public static final String COL_WORK_SCHEDULE_DATE = "Date";
