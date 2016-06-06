@@ -734,7 +734,10 @@ public class TransportReportsBean {
     if (report.requiresField(constantCosts)) {
       String als = SqlUtils.uniqueName();
 
-      query = getConstantsQuery(tmp, TBL_TRIP_CONSTANTS, null, constantCosts, currency);
+      query = getConstantsQuery(tmp, TBL_TRIP_CONSTANTS,
+          SqlUtils.plus(SqlUtils.divide(SqlUtils.minus(SqlUtils.field(tmp, COL_TRIP_DATE_TO),
+              SqlUtils.field(tmp, COL_TRIP_DATE_FROM)), TimeUtils.MILLIS_PER_DAY), 1),
+          constantCosts, currency);
 
       query.addFields(tmp, COL_TRIP)
           .setWhere(SqlUtils.equals(TBL_TRIP_CONSTANTS, COL_TRIP_CONSTANT,
