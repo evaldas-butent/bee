@@ -2846,7 +2846,7 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
         }
       }
 
-      if (prevDays - minDay > TimeUtils.DAYS_PER_WEEK - 2 && maxDay > 0) {
+      if (prevDays - minDay > 1 && maxDay > 0) {
         List<List<BeeRow>> sequel = PayrollUtils.getSequel(input.row(part), rowSet.getColumns(),
             minDay, prevDays);
 

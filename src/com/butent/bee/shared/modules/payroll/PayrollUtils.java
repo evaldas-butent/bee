@@ -4,13 +4,13 @@ import com.google.common.collect.Range;
 
 import static com.butent.bee.shared.modules.payroll.PayrollConstants.*;
 
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.DateValue;
 import com.butent.bee.shared.data.value.Value;
-import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.time.YearMonth;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -123,13 +123,14 @@ public final class PayrollUtils {
     List<Set<WSEntry>> entrySets = new ArrayList<>();
     Map<Set<WSEntry>, List<BeeRow>> entryValues = new HashMap<>();
 
-    List<Integer> sequence = new ArrayList<>();
+    List<Character> sequence = new ArrayList<>();
 
-    int emptyValue = -1;
+    char empty = BeeConst.CHAR_ASTERISK;
+    char base = BeeConst.CHAR_ZERO;
 
     for (int day = lower; day <= upper; day++) {
       List<BeeRow> value = input.get(day);
-      int index = emptyValue;
+      int index = BeeConst.UNDEF;
 
       if (!BeeUtils.isEmpty(value)) {
         Set<WSEntry> entries = new HashSet<>();
@@ -152,19 +153,69 @@ public final class PayrollUtils {
         }
       }
 
-      sequence.add(index);
+      sequence.add((index >= 0) ? BeeUtils.toChar(base + index) : empty);
     }
 
     if (entrySets.isEmpty()) {
       return sequel;
     }
 
-    if (entrySets.size() == 1 && !sequence.contains(emptyValue)) {
-      sequel.add(entryValues.get(entrySets.get(0)));
-      return sequel;
+    int len = sequence.size();
+
+    char[] arr = new char[len];
+    for (int i = 0; i < len; i++) {
+      arr[i] = sequence.get(i);
     }
 
-    LogUtils.getRootLogger().debug(sequence);
+    String s = new String(arr);
+
+    String sub = null;
+    int pos = 0;
+
+    if (entrySets.size() == 1 && !BeeUtils.contains(s, empty)) {
+      sub = s;
+
+    } else if (len >= 2) {
+      int lastIndex = BeeConst.UNDEF;
+      int prevIndex = BeeConst.UNDEF;
+
+      for (int i = (len - 1) / 2 + 1; i < len; i++) {
+        int index = s.substring(0, i).lastIndexOf(s.substring(i));
+
+        if (index >= 0) {
+          lastIndex = i;
+          prevIndex = index;
+          break;
+        }
+      }
+
+      if (prevIndex >= 0 && lastIndex > prevIndex) {
+        sub = s.substring(prevIndex, lastIndex);
+        if (len - lastIndex < sub.length()) {
+          pos = len - lastIndex;
+        }
+
+      } else {
+        sub = s;
+      }
+    }
+
+    if (!BeeUtils.isEmpty(sub)) {
+      for (int i = 0; i < sub.length(); i++) {
+        char c = sub.charAt(pos);
+
+        if (c == empty) {
+          sequel.add(null);
+        } else {
+          sequel.add(entryValues.get(entrySets.get(c - base)));
+        }
+
+        pos++;
+        if (pos >= sub.length()) {
+          pos = 0;
+        }
+      }
+    }
 
     return sequel;
   }
