@@ -6,9 +6,11 @@
   flexGrow="1"
   >
   <g:columns>
-    <RelColumn name="Company" editPopup="true" />
+    <RelColumn name="Company" editPopup="true" renderColumns="CompanyName"/>
+    <RelColumn name="CompanyCode" readOnly="true" visible="true" />
     <RelColumn name="Category" choiceColumns="ParentName Name" />
     <RelColumn name="Item" editPopup="true" />
+    <RelColumn name="Article" readOnly="true" visible="true" />
   </g:columns>
 
   <xi:include href="columns/Discount.columns.xml" />

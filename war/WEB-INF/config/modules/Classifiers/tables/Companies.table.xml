@@ -30,6 +30,7 @@
     <Integer name="CreditTolerance" label="=creditTolerance" />
     <Numeric name="CreditDays" precision="3" label="=creditDays" />
     <Numeric name="SupplierCreditDays" precision="3" label="=supplierCreditDays" />
+    <Integer name="ToleratedDays" label="=companyToleratedDays" />
 
     <Relation name="FinancialState" relation="FinancialStates" label="=financialState" />
     <Relation name="DefaultBankAccount" relation="CompanyBankAccounts" unique="true"
@@ -41,6 +42,8 @@
     <Relation name="DiscountParent" relation="Companies" label="=discountParent" />
     <Enum name="PriceName" key="ItemPrice" label="=priceName" />
 
+    <Relation name="Raport" relation="Raports" editable="true" />
+    
     <Text name="Notes" label="=notes" />
   </Fields>
 </Table>
