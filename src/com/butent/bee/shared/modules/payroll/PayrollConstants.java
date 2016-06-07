@@ -119,6 +119,7 @@ public final class PayrollConstants {
   public static final String COL_SALARY = "Salary";
   public static final String COL_PART_TIME = "PartTime";
 
+  public static final String COL_LOCATION_ADDRESS = "Address";
   public static final String COL_LOCATION_NAME = "LocationName";
   public static final String COL_LOCATION_MANAGER = "Manager";
   public static final String COL_LOCATION_STATUS = "Status";
@@ -172,8 +173,10 @@ public final class PayrollConstants {
 
   public static final String ALS_DEPARTMENT_NAME = "DepartmentName";
 
+  public static final String ALS_LOCATION_CITY_NAME = "CityName";
   public static final String ALS_LOCATION_MANAGER_FIRST_NAME = "ManagerFirstName";
   public static final String ALS_LOCATION_MANAGER_LAST_NAME = "ManagerLastName";
+  public static final String ALS_LOCATION_MANAGER_MOBILE = "ManagerMobile";
 
   public static final String ALS_TC_BACKGROUND = "TcBackground";
   public static final String ALS_TC_FOREGROUND = "TcForeground";

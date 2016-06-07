@@ -41,14 +41,13 @@ import com.butent.bee.client.event.DndSource;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.logical.HasSummaryChangeHandlers;
 import com.butent.bee.client.event.logical.SummaryChangeEvent;
-import com.butent.bee.client.event.logical.VisibilityChangeEvent;
 import com.butent.bee.client.event.logical.SummaryChangeEvent.Handler;
+import com.butent.bee.client.event.logical.VisibilityChangeEvent;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.output.Printable;
-import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.ui.UiHelper;
@@ -80,8 +79,8 @@ import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.html.builder.elements.Span;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
-import com.butent.bee.shared.modules.payroll.PayrollUtils;
 import com.butent.bee.shared.modules.payroll.PayrollConstants.WorkScheduleKind;
+import com.butent.bee.shared.modules.payroll.PayrollUtils;
 import com.butent.bee.shared.time.DateRange;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeRange;
@@ -487,6 +486,10 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
     return summarize;
   }
 
+  public BeeRowSet getTimeRange() {
+    return timeRanges;
+  }
+
   protected void addEmployeeObject(long employeeId, long objectId, final boolean fire) {
     if (activeMonth != null) {
       List<BeeColumn> columns = Data.getColumns(VIEW_EMPLOYEE_OBJECTS,
@@ -532,6 +535,10 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
   }
 
   protected abstract List<Partition> filterPartitions(DateRange filterRange);
+
+  protected YearMonth getActiveMonth() {
+    return activeMonth;
+  }
 
   protected String getEmployeeFullName(long id) {
     BeeRow row = findEmployee(id);
@@ -2157,7 +2164,9 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
     print.addStyleName(STYLE_PREFIX + Action.PRINT.getStyleSuffix());
     print.setTitle(Action.PRINT.getCaption());
 
-    print.addClickHandler(event -> Printer.print(WorkScheduleWidget.this));
+    print.addClickHandler(event -> PayrollHelper.print(WorkScheduleWidget.this, obData.getRow(0),
+        kind == WorkScheduleKind.ACTUAL ? FORM_TIME_SHEET : FORM_WORK_SCHEDULE));
+
     headerPanel.add(print);
 
     table.setWidgetAndStyle(HEADER_ROW, 0, headerPanel, STYLE_HEADER_PANEL);

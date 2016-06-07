@@ -93,7 +93,8 @@
       <SimpleColumn name="TimeUntil" alias="TrTimeUntil" />
 
       <SimpleColumn name="Duration" alias="TrDuration" />
-
+      <SimpleColumn name="Description" />
+      
       <SimpleColumn name="Background" alias="TrBackground" />
       <SimpleColumn name="Foreground" alias="TrForeground" />
     </SimpleJoin>
