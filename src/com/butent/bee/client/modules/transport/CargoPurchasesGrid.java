@@ -19,6 +19,7 @@ import com.butent.bee.shared.BiConsumer;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
@@ -127,7 +128,7 @@ public class CargoPurchasesGrid extends InvoiceBuilder {
         newRow.setValue(targetInfo.getColumnIndex(COL_TRADE_OPERATION), opId);
         newRow.setValue(targetInfo.getColumnIndex(COL_OPERATION_NAME), op);
 
-        Queries.getRow(TBL_TRADE_OPERATIONS, opId,
+        Queries.getRow(TBL_TRADE_OPERATIONS, Filter.compareId(opId),
             Arrays.asList(COL_OPERATION_WAREHOUSE_TO, COL_OPERATION_WAREHOUSE_TO + "Code"),
             new RowCallback() {
               @Override

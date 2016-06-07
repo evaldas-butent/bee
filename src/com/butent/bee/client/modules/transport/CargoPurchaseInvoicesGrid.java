@@ -75,8 +75,8 @@ public class CargoPurchaseInvoicesGrid extends InvoicesGrid {
       for (RowInfo row : view.getSelectedRows(GridView.SelectedRows.ALL)) {
         ids.add(row.getId());
       }
-      if (ids.size() < 2) {
-        view.notifyWarning("Pažymėkite bent dvi sąskaitas");
+      if (ids.isEmpty()) {
+        view.notifyWarning(Localized.dictionary().selectAtLeastOneRow());
         return;
       }
       joinAction.setVisible(false);

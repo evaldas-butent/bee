@@ -18,6 +18,7 @@ import com.butent.bee.shared.BiConsumer;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -111,38 +112,33 @@ public class CargoSalesGrid extends InvoiceBuilder {
       newRow.setValue(targetInfo.getColumnIndex(COL_CURRENCY), entry.getKey());
       newRow.setValue(targetInfo.getColumnIndex(ALS_CURRENCY_NAME), entry.getValue());
     }
-    Global.getRelationParameter(PRM_INVOICE_PREFIX, new BiConsumer<Long, String>() {
-      @Override
-      public void accept(Long prefixId, String prefix) {
-        newRow.setValue(targetInfo.getColumnIndex(COL_TRADE_SALE_SERIES), prefixId);
-        newRow.setValue(targetInfo.getColumnIndex(COL_TRADE_INVOICE_PREFIX), prefix);
+    Global.getRelationParameter(PRM_INVOICE_PREFIX, (prefixId, prefix) -> {
+      newRow.setValue(targetInfo.getColumnIndex(COL_TRADE_SALE_SERIES), prefixId);
+      newRow.setValue(targetInfo.getColumnIndex(COL_TRADE_INVOICE_PREFIX), prefix);
 
-        Global.getRelationParameter(PRM_SALE_OPERATION, new BiConsumer<Long, String>() {
-          @Override
-          public void accept(Long opId, String op) {
-            if (DataUtils.isId(opId)) {
-              newRow.setValue(targetInfo.getColumnIndex(COL_TRADE_OPERATION), opId);
-              newRow.setValue(targetInfo.getColumnIndex(COL_OPERATION_NAME), op);
+      Global.getRelationParameter(PRM_SALE_OPERATION, (opId, op) -> {
+        if (DataUtils.isId(opId)) {
+          newRow.setValue(targetInfo.getColumnIndex(COL_TRADE_OPERATION), opId);
+          newRow.setValue(targetInfo.getColumnIndex(COL_OPERATION_NAME), op);
 
-              Queries.getRow(TBL_TRADE_OPERATIONS, opId, Arrays.asList(COL_OPERATION_WAREHOUSE_FROM,
-                  COL_OPERATION_WAREHOUSE_FROM + "Code"), new RowCallback() {
+          String code = COL_OPERATION_WAREHOUSE_FROM + "Code";
+
+          Queries.getRow(TBL_TRADE_OPERATIONS, Filter.compareId(opId),
+              Arrays.asList(COL_OPERATION_WAREHOUSE_FROM, code), new RowCallback() {
                 @Override
                 public void onSuccess(BeeRow result) {
                   if (result != null) {
                     newRow.setValue(targetInfo.getColumnIndex(COL_TRADE_WAREHOUSE_FROM),
                         result.getLong(0));
-                    newRow.setValue(targetInfo.getColumnIndex(COL_TRADE_WAREHOUSE_FROM + "Code"),
-                        result.getString(1));
+                    newRow.setValue(targetInfo.getColumnIndex(code), result.getString(1));
                   }
                   consumer.accept(data, newRow);
                 }
               });
-            } else {
-              consumer.accept(data, newRow);
-            }
-          }
-        });
-      }
+        } else {
+          consumer.accept(data, newRow);
+        }
+      });
     });
   }
 

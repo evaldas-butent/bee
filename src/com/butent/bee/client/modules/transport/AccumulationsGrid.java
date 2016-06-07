@@ -66,7 +66,8 @@ public class AccumulationsGrid extends AbstractGridInterceptor {
         break;
     }
     if (!BeeUtils.isEmpty(col) && rowMode) {
-      Queries.getRow(TBL_CARGO_EXPENSES, result.getLong(getDataIndex("CargoExpense")),
+      Queries.getRow(TBL_CARGO_EXPENSES,
+          Filter.compareId(result.getLong(getDataIndex("CargoExpense"))),
           Collections.singletonList(col), new RowCallback() {
             @Override
             public void onSuccess(BeeRow row) {

@@ -134,7 +134,7 @@
       <row>
         <TextLabel source="Description" style="white-space:pre-wrap;" />
         <TextLabel source="Quantity" style="text-align:right;">
-          <renderToken source="Quantity" suffix=" " />
+          <renderToken source="Quantity" suffix=" " format="0.00" />
           <renderToken source="QuantityUnitName" />
         </TextLabel>
         <TextLabel source="Weight" style="text-align:right;">
