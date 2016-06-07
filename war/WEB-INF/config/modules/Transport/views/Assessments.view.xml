@@ -8,7 +8,7 @@
       newRowForm="Assessment"
       editForm="Assessment"
 >
-  <Relation renderColumns="ID Date CustomerName" />
+  <Relation renderColumns="OrderNo Date CustomerName" />
   <Columns>
     <IdColumn name="ID" />
     <SimpleColumn name="Assessment" label="=captionPid" />

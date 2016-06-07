@@ -376,7 +376,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
   }
 
   private enum JoinType {
-    INNER, RIGHT, LEFT, FULL;
+    INNER, RIGHT, LEFT, FULL
   }
 
   private static BeeLogger logger = LogUtils.getLogger(BeeView.class);
@@ -397,7 +397,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
 
     column.setType(info.getType().toValueType());
 
-    column.setNullable(info.isNullable() ? !required : false);
+    column.setNullable(info.isNullable() && !required);
 
     column.setPrecision(info.getPrecision());
     column.setScale(info.getScale());
@@ -1095,14 +1095,15 @@ public class BeeView implements BeeObject, HasExtendedInfo {
         xpr.type = SqlDataType.LONG.name();
         xpr.content = BeeUtils.join(".", alias, table.getIdName());
         addColumn(alias, null, column.name, null, ((XmlIdColumn) column).aggregate,
-            ((XmlIdColumn) column).hidden, parent, xpr, null, null);
+            ((XmlIdColumn) column).hidden, parent, xpr, ((XmlIdColumn) column).label, null);
 
       } else if (column instanceof XmlVersionColumn) {
         XmlExpression xpr = new XmlName();
         xpr.type = SqlDataType.LONG.name();
         xpr.content = BeeUtils.join(".", alias, table.getVersionName());
         addColumn(alias, null, column.name, null, ((XmlVersionColumn) column).aggregate,
-            ((XmlVersionColumn) column).hidden, parent, xpr, null, null);
+            ((XmlVersionColumn) column).hidden, parent, xpr, ((XmlVersionColumn) column).label,
+            null);
 
       } else if (column instanceof XmlSimpleColumn) {
         XmlSimpleColumn col = (XmlSimpleColumn) column;

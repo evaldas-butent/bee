@@ -16,7 +16,7 @@
         name="ShipmentRequest" viewName="ShipmentRequests"
         showRowId="true" width="70" widthUnit="%" height="80" heightUnit="%"
 >
-  <f:properties jasperReports="OrderContract" />
+  <f:properties jasperReports="OrderContract_lt:LT, OrderContract_en:EN, OrderContract_ru:RU" />
 
   <FlowPanel>
     <Table kind="custom" style="&table; margin-top:10px;" cellStyle="&cells;">
@@ -164,20 +164,24 @@
 
         <row>
           <Label for="ShippingTerm" class="bee-required" />
-          <DataSelector source="ShippingTerm" required="true" filter="SelfService"
-                        order="SelfService, Name" newRowEnabled="false" />
+          <FlowPanel>
+            <DataSelector source="ShippingTerm" required="true" filter="SelfService"
+              order="SelfService, Name" newRowEnabled="false" />
+            <FaLabel name="Incoterms" char="question_circle" disablable="false"
+              style="display: inline-block; margin-left: 5px;"/>
+          </FlowPanel>
         </row>
 
         <row>
-          <CheckBox source="CustomsBrokerage" />
+          <CheckBox source="CustomsBrokerage" title="=trRequestCustomsBrokeragePlaceholder" />
           <cell horizontalAlignment="right">
-            <CheckBox source="FreightInsurance" />
+            <CheckBox source="FreightInsurance" title="=trRequestFreightInsurancePlaceholder" />
           </cell>
-          <Label for="Value" />
+          <Label for="Value" name="ValueLabel" />
           <FlowPanel>
             <InputMoney source="Value" style="&decimal;" />
             <DataSelector source="ValueCurrency" newRowEnabled="false" editEnabled="false"
-                          placeholder="=currencyShort" style="&unit;" />
+                          placeholder="=currencyShort" style="&unit;" filter="SelfService" />
           </FlowPanel>
         </row>
       </Table>

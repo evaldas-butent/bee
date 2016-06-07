@@ -2423,6 +2423,13 @@ public interface Dictionary {
 
   default String expression() {return g("expression");}
 
+  default String extendWorkSchedule(Object year, Object month) {
+    Map<String, Object> _m = new HashMap<>();
+    _m.put("{year}", year);
+    _m.put("{month}", month);
+    return Localized.format(g("extendWorkSchedule"), _m);
+  }
+
   default String externalCode() {return g("externalCode");}
 
   default String externalId() {return g("externalId");}
@@ -3480,9 +3487,9 @@ public interface Dictionary {
   default String payrollEarnings() {return g("payrollEarnings");}
 
   default String payrollEarningsForHolidays() {return g("payrollEarningsForHolidays");}
-  
+
   default String payrollEarningsTotal() {return g("payrollEarningsTotal");}
-  
+
   default String payrollEarningsWithoutHolidays() {return g("payrollEarningsWithoutHolidays");}
 
   default String period() {return g("period");}
@@ -4447,6 +4454,8 @@ public interface Dictionary {
 
   default String timeRangeCode() {return g("timeRangeCode");}
 
+  default String timeRangeUsage() {return g("timeRangeUsage");}
+
   default String timeRanges() {return g("timeRanges");}
 
   default String timeSheet() {return g("timeSheet");}
@@ -5056,6 +5065,8 @@ public interface Dictionary {
 
   default String trRequestCustomsBrokerage() {return g("trRequestCustomsBrokerage");}
 
+  default String trRequestCustomsBrokeragePlaceholder() {return g("trRequestCustomsBrokeragePlaceholder");}
+
   default String trRequestDate() {return g("trRequestDate");}
 
   default String trRequestDeliveryDate() {return g("trRequestDeliveryDate");}
@@ -5067,6 +5078,8 @@ public interface Dictionary {
   default String trRequestExpeditionType() {return g("trRequestExpeditionType");}
 
   default String trRequestFreightInsurance() {return g("trRequestFreightInsurance");}
+
+  default String trRequestFreightInsurancePlaceholder() {return g("trRequestFreightInsurancePlaceholder");}
 
   default String trRequestLostMailContent() {return g("trRequestLostMailContent");}
 
@@ -5855,9 +5868,18 @@ public interface Dictionary {
 
   default String workScheduleActualShort() {return g("workScheduleActualShort");}
 
-  default String workScheduleHolihoursInclusiveShort() {return g("workScheduleHolihoursInclusiveShort");}
+  default String workScheduleExtension(Object fromyear, Object frommonth, Object toyear, Object tomonth) {
+    Map<String, Object> _m = new HashMap<>();
+    _m.put("{fromyear}", fromyear);
+    _m.put("{frommonth}", frommonth);
+    _m.put("{toyear}", toyear);
+    _m.put("{tomonth}", tomonth);
+    return Localized.format(g("workScheduleExtension"), _m);
+  }
 
   default String workScheduleHolidaysInclusiveShort() {return g("workScheduleHolidaysInclusiveShort");}
+
+  default String workScheduleHolihoursInclusiveShort() {return g("workScheduleHolihoursInclusiveShort");}
 
   default String workSchedulePlanned() {return g("workSchedulePlanned");}
 

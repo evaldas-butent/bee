@@ -67,7 +67,9 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
@@ -538,6 +540,19 @@ public class QueryServiceBean {
 
   public Integer[] getIntColumn(IsQuery query) {
     return getSingleColumn(query).getIntColumn(0);
+  }
+
+  public String getLocalizedValue(String tblName, String fldName, String fldValue, Locale locale) {
+    if (BeeUtils.isEmpty(fldValue) || Objects.isNull(locale)) {
+      return null;
+    }
+    SqlSelect query = new SqlSelect()
+        .addFrom(tblName)
+        .setWhere(SqlUtils.equals(tblName, fldName, fldValue));
+
+    String als = sys.joinTranslationField(query, tblName, null, fldName, locale.getLanguage());
+
+    return ArrayUtils.getQuietly(getColumn(query.addFields(als, fldName)), 0);
   }
 
   public Long getLong(IsQuery query) {

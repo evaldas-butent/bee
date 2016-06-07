@@ -201,6 +201,14 @@
                 choiceColumns="Id Summary FirstName LastName"
                 newRowEnabled="false" style="&inp2x;" disablable="true" summarize="true"/>
             </FlowPanel>
+
+            <FlowPanel style="&section;" data="Relations" module="Mail">
+              <Label text="=mails" style="&top1;" />
+              <ChildSelector viewName="Messages" childTable="Relations"
+                targetRelColumn="Task" sourceRelColumn="Message"
+                renderColumns="Date Subject"
+                label="=mails" style="&inp2x;" readOnly="true" summarize="true" />
+            </FlowPanel>
           </FlowPanel>
         </FlowPanel>
       </page>

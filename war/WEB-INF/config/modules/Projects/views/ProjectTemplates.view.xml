@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-  name="ProjectTemplates" source="ProjectTemplates" caption="=projects"
+  name="ProjectTemplates" source="ProjectTemplates" caption="=prjTemplates"
   editForm="ProjectTemplate" newRowForm="ProjectTemplate" newRowCaption="=prjNewTemplate"
   >
   <Relation renderColumns="Name" />
