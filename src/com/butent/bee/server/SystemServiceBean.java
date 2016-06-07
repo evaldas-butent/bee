@@ -238,6 +238,8 @@ public class SystemServiceBean {
   private ResponseObject getReport(String reportName, String format, Map<String, String> parameters,
       BeeRowSet... dataSets) {
 
+    long start = System.currentTimeMillis();
+
     String loc = BeeUtils.right(reportName, 3);
     Locale locale;
     String repName;
@@ -273,8 +275,13 @@ public class SystemServiceBean {
         }
         reportFile = FileUtils.fileToString(reportFile);
       }
+      start = LogUtils.profile(logger, "Report GET", start);
+
       JasperReport report = JasperCompileManager
           .compileReport(new ByteArrayInputStream(reportFile.getBytes(BeeConst.CHARSET_UTF8)));
+
+      start = LogUtils.profile(logger, "Report COMPILE", start);
+
       Map<String, Object> params = new HashMap<>();
 
       if (!BeeUtils.isEmpty(parameters)) {
@@ -319,6 +326,8 @@ public class SystemServiceBean {
       JasperPrint print = fillManager.fill(report, params,
           Objects.isNull(mainDataSet) ? new JREmptyDataSource() : new RsDataSource(mainDataSet));
 
+      start = LogUtils.profile(logger, "Report FILL", start);
+
       File tmp = File.createTempFile("bee_", "." + BeeUtils.notEmpty(format, "pdf"));
       tmp.deleteOnExit();
       String path = tmp.getAbsolutePath();
@@ -328,9 +337,13 @@ public class SystemServiceBean {
       } else {
         JasperExportManager.exportReportToPdfFile(print, path);
       }
+      start = LogUtils.profile(logger, "Report EXPORT", start);
+
       Long fileId = fs.storeFile(new FileInputStream(tmp), tmp.getName(), null);
       tmp.delete();
       response = ResponseObject.response(fs.getFile(fileId));
+
+      LogUtils.profile(logger, "Report STORE", start);
 
     } catch (JRException | IOException e) {
       logger.error(e);
