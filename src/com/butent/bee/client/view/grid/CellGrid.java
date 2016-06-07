@@ -4941,8 +4941,10 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
   }
 
   private void startEditing(IsRow rowValue, int col, Element cellElement, int charCode) {
-    fireEvent(new EditStartEvent(rowValue, getColumnId(col), cellElement, charCode,
-        isReadOnly() || getColumnInfo(col).isColReadOnly()));
+    ColumnInfo columnInfo = getColumnInfo(col);
+
+    fireEvent(new EditStartEvent(rowValue, columnInfo.getColumnId(), columnInfo.getSource(),
+        cellElement, charCode, isReadOnly() || columnInfo.isColReadOnly()));
   }
 
   private void startResizing(Event event) {

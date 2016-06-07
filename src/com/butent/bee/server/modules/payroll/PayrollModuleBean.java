@@ -1034,20 +1034,20 @@ public class PayrollModuleBean implements BeeModule {
 
       if (!planned.isEmpty()) {
         earnings.setPlannedDays(planned.size());
-        earnings.setPlannedMillis(planned.values().stream().mapToLong(n -> n.longValue()).sum());
+        earnings.setPlannedMillis(planned.values().stream().mapToLong(Long::longValue).sum());
       }
 
       if (!actual.isEmpty()) {
         earnings.setActualDays(actual.size());
-        earnings.setActualMillis(actual.values().stream().mapToLong(n -> n.longValue()).sum());
+        earnings.setActualMillis(actual.values().stream().mapToLong(Long::longValue).sum());
 
         if (BeeUtils.intersects(actual.keySet(), holidays)) {
           Map<JustDate, Long> holy = actual.entrySet().stream()
               .filter(entry -> holidays.contains(entry.getKey()))
-              .collect(Collectors.toMap(entry -> entry.getKey(), entry -> entry.getValue()));
+              .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
           earnings.setHolyDays(holy.size());
-          earnings.setHolyMillis(holy.values().stream().mapToLong(n -> n.longValue()).sum());
+          earnings.setHolyMillis(holy.values().stream().mapToLong(Long::longValue).sum());
         }
       }
     }

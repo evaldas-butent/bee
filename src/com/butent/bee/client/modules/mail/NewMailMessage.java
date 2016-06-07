@@ -295,13 +295,7 @@ public final class NewMailMessage extends AbstractFormInterceptor
       if (currentContent.contains(oldSignature)) {
         currentContent = currentContent.replace(oldSignature, newSignature);
       } else {
-        if (BeeUtils.startsWith(subject, Localized.dictionary().mailReplayPrefix())
-            || BeeUtils.startsWith(subject, Localized.dictionary().mailForwardedPrefix())) {
-
-          currentContent = SIGNATURE_SEPARATOR + newSignature + currentContent;
-        } else {
-          currentContent = currentContent + SIGNATURE_SEPARATOR + newSignature;
-        }
+        currentContent = currentContent + SIGNATURE_SEPARATOR + newSignature;
       }
       contentWidget.setValue(currentContent);
 

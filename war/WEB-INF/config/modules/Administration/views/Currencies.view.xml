@@ -14,6 +14,7 @@
     <SimpleColumn name="SelfService" />
   </Columns>
   <Order>
+    <OrderBy column="SelfService" />
     <OrderBy column="Name" />
   </Order>
 </View>

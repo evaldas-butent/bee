@@ -60,17 +60,22 @@ public final class ClassifierUtils {
   public static void getCompaniesInfo(Map<String, Long> companies,
       Consumer<Map<String, String>> infoConsumer) {
 
-    Map<String, Filter> views = ImmutableMap.of(VIEW_COMPANIES, Filter.idIn(companies.values()),
+    Map<String, Filter> childs = ImmutableMap.of(
         VIEW_COMPANY_BANK_ACCOUNTS, Filter.any(COL_COMPANY, companies.values()),
-        "CompanyPayAccounts", Filter.equals(COL_COMPANY,
-            BeeUtils.nvl(companies.get(TransportConstants.COL_PAYER),
-                companies.get(TransportConstants.COL_CUSTOMER))));
+        VIEW_COMPANY_CONTACTS, Filter.any(COL_COMPANY, companies.values()));
+
+    Map<String, Filter> views = new HashMap<>();
+    views.put(VIEW_COMPANIES, Filter.idIn(companies.values()));
+    views.put("CompanyPayAccounts", Filter.equals(COL_COMPANY,
+        BeeUtils.nvl(companies.get(TransportConstants.COL_PAYER),
+            companies.get(TransportConstants.COL_CUSTOMER))));
+    views.putAll(childs);
 
     Queries.getData(views.keySet(), views, null, new Queries.DataCallback() {
       @Override
       public void onSuccess(Collection<BeeRowSet> result) {
         Map<String, String> params = new HashMap<>();
-        Map<Long, BeeRowSet> accounts = new HashMap<>();
+        Map<String, BeeRowSet> childInfo = new HashMap<>();
         Set<Long> payAccounts = new HashSet<>();
 
         for (BeeRowSet rowSet : result) {
@@ -96,27 +101,32 @@ public final class ClassifierUtils {
                 }
               }
               break;
-            case VIEW_COMPANY_BANK_ACCOUNTS:
-              for (BeeRow accountRow : rowSet) {
-                Long companyId = accountRow.getLong(rowSet.getColumnIndex(COL_COMPANY));
+            default:
+              for (BeeRow row : rowSet) {
+                String key = rowSet.getViewName() + row.getLong(rowSet.getColumnIndex(COL_COMPANY));
 
-                if (!accounts.containsKey(companyId)) {
-                  accounts.put(companyId, new BeeRowSet(rowSet.getViewName(), rowSet.getColumns()));
+                if (!childInfo.containsKey(key)) {
+                  childInfo.put(key, new BeeRowSet(rowSet.getViewName(), rowSet.getColumns()));
                 }
-                if (payAccounts.isEmpty() || payAccounts.contains(accountRow.getId())) {
-                  accounts.get(companyId).addRow(DataUtils.cloneRow(accountRow));
+                if (Objects.equals(rowSet.getViewName(), VIEW_COMPANY_BANK_ACCOUNTS)
+                    && !payAccounts.isEmpty() && !payAccounts.contains(row.getId())) {
+                  continue;
                 }
+                childInfo.get(key).addRow(DataUtils.cloneRow(row));
               }
               break;
           }
         }
         for (Map.Entry<String, Long> entry : companies.entrySet()) {
-          BeeRowSet rs = accounts.get(entry.getValue());
+          for (String child : childs.keySet()) {
+            String key = child + entry.getValue();
+            BeeRowSet rs = childInfo.get(key);
 
-          if (rs == null) {
-            rs = new BeeRowSet();
+            if (rs == null) {
+              rs = new BeeRowSet();
+            }
+            params.put(entry.getKey() + child, rs.serialize());
           }
-          params.put(entry.getKey() + VIEW_COMPANY_BANK_ACCOUNTS, rs.serialize());
         }
         infoConsumer.accept(params);
       }

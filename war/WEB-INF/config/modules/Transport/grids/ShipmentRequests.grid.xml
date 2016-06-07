@@ -7,7 +7,7 @@
         disabledActions="add"
 >
   <g:columns>
-    <IdColumn name="ID" width="40" />
+    <DataColumn name="OrderNo" />
     <DataColumn name="Date" />
     <DataColumn name="Status" />
 

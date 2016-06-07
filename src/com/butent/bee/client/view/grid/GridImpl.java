@@ -1,6 +1,5 @@
 package com.butent.bee.client.view.grid;
 
-import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
@@ -118,6 +117,7 @@ import com.butent.bee.shared.data.RelationUtils;
 import com.butent.bee.shared.data.RowChildren;
 import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
+import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.value.IntegerValue;
 import com.butent.bee.shared.data.value.Value;
@@ -136,6 +136,7 @@ import com.butent.bee.shared.ui.Captions;
 import com.butent.bee.shared.ui.CellType;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.ColumnDescription.ColType;
+import com.butent.bee.shared.ui.ColumnRelation;
 import com.butent.bee.shared.ui.FilterSupplierType;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.ui.HandlesFormat;
@@ -247,8 +248,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
   private static final String STYLE_SPINNER = BeeConst.CSS_CLASS_PREFIX + "Grid-Spinner";
 
   private static Widget createSpinner() {
-    FaLabel widget = new FaLabel(FontAwesome.SPINNER, STYLE_SPINNER);
-    return widget;
+    return new FaLabel(FontAwesome.SPINNER, STYLE_SPINNER);
   }
 
   private static boolean isColumnReadOnly(String viewName, String source,
@@ -305,6 +305,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
   private Evaluator rowEditable;
 
   private final Map<String, EditableColumn> editableColumns = new LinkedHashMap<>();
+  private final Map<String, ColumnRelation> columnRelations = new HashMap<>();
 
   private final Notification notification = new Notification();
 
@@ -458,7 +459,10 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
 
     } else {
       originalSource = null;
-      relationEditable = false;
+
+      ColumnRelation columnRelation = cd.getColumnRelation();
+      relationEditable = columnRelation != null && columnRelation.isEditEnabled()
+          && Data.isViewVisible(columnRelation.getViewName(getDataInfo(), source));
     }
 
     int dataIndex = BeeConst.UNDEF;
@@ -584,11 +588,6 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
       case AUTO:
         if (dataIndex >= 0) {
           column = GridFactory.createColumn(cellSource, cellType, renderer);
-
-          if (relationEditable) {
-            column.addClass(RowEditor.EDITABLE_RELATION_STYLE);
-            column.setInstantKarma(true);
-          }
         }
         break;
 
@@ -634,6 +633,11 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     if (column == null) {
       logger.warning("cannot create column:", columnId, colType);
       return false;
+    }
+
+    if (relationEditable) {
+      column.addClass(RowEditor.EDITABLE_RELATION_STYLE);
+      column.setInstantKarma(true);
     }
 
     if (!BeeUtils.isEmpty(cd.getSortBy())) {
@@ -752,6 +756,10 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
       if (BeeUtils.isTrue(cd.getEditInPlace())) {
         getEditInPlace().add(columnId);
       }
+    }
+
+    if (cd.getColumnRelation() != null && relationEditable) {
+      columnRelations.put(columnId, cd.getColumnRelation());
     }
 
     AbstractFilterSupplier filterSupplier = null;
@@ -2394,12 +2402,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
       getGrid().setRowStyles(rowStyles);
     }
 
-    getGrid().setRowEditable(new Predicate<IsRow>() {
-      @Override
-      public boolean apply(IsRow input) {
-        return isRowEditable(input, null);
-      }
-    });
+    getGrid().setRowEditable(input -> isRowEditable(input, null));
 
     List<ColumnDescription> columnDescriptions = gridDescription.getColumns();
     if (gridInterceptor != null) {
@@ -2497,19 +2500,37 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     return newRowFormGenerated;
   }
 
-  private boolean maybeOpenRelatedData(final EditableColumn editableColumn, final IsRow row,
-      int charCode, boolean readOnly) {
+  private boolean maybeOpenRelatedData(final String columnId, EditableColumn editableColumn,
+      IsRow row, CellSource cellSource, int charCode, boolean readOnly) {
 
-    if (row == null || editableColumn == null || !editableColumn.hasRelation()
-        || !editableColumn.getRelation().isEditEnabled(false)) {
+    if (row == null) {
+      return false;
+    }
+
+    Relation relation = (editableColumn == null) ? null : editableColumn.getRelation();
+    ColumnRelation columnRelation = (relation == null) ? columnRelations.get(columnId) : null;
+
+    if (relation == null && columnRelation == null) {
+      return false;
+    }
+    if (relation != null && !relation.isEditEnabled(false)) {
       return false;
     }
 
     boolean ok;
     if (charCode == EditStartEvent.CLICK) {
       ok = true;
+
     } else {
-      Integer editKey = editableColumn.getRelation().getEditKey();
+      Integer editKey;
+      if (relation != null) {
+        editKey = relation.getEditKey();
+      } else if (columnRelation != null) {
+        editKey = columnRelation.getEditKey();
+      } else {
+        editKey = null;
+      }
+
       if (editKey == null) {
         ok = (!isEnabled() || readOnly) && EditStartEvent.isEnter(charCode);
       } else if (EditStartEvent.isEnter(editKey)) {
@@ -2522,23 +2543,38 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
       return false;
     }
 
+    String defSource = (cellSource == null) ? null : cellSource.getName();
+
+    String editViewName;
     final String editSource;
-    String editViewName = editableColumn.getRelation().getEditViewName();
 
-    String es = editableColumn.getRelation().getEditSource();
+    if (relation != null) {
+      editViewName = relation.getEditViewName();
 
-    if (BeeUtils.isEmpty(es)) {
-      editSource = editableColumn.getColumnId();
-      if (BeeUtils.isEmpty(editViewName)) {
-        editViewName = editableColumn.getRelation().getViewName();
+      String es = relation.getEditSource();
+
+      if (BeeUtils.isEmpty(es)) {
+        editSource = editableColumn.getColumnId();
+        if (BeeUtils.isEmpty(editViewName)) {
+          editViewName = relation.getViewName();
+        }
+      } else {
+        editSource = es;
+        if (BeeUtils.isEmpty(editViewName)) {
+          editViewName = getDataInfo().getRelation(editSource);
+        }
       }
+
+    } else if (columnRelation != null) {
+      editViewName = columnRelation.getViewName(getDataInfo(), defSource);
+      editSource = columnRelation.getSourceColumn(getDataInfo(), defSource);
+
     } else {
-      editSource = es;
-      if (BeeUtils.isEmpty(editViewName)) {
-        editViewName = getDataInfo().getRelation(editSource);
-      }
+      editViewName = null;
+      editSource = null;
     }
-    if (BeeUtils.isEmpty(editViewName)) {
+
+    if (BeeUtils.anyEmpty(editViewName, editSource)) {
       return false;
     }
 
@@ -2546,8 +2582,18 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
       return false;
     }
 
-    Long id = row.getLong(getDataInfo().getColumnIndex(editSource));
-    if (!DataUtils.isId(id)) {
+    final int sourceIndex = getDataInfo().getColumnIndex(editSource);
+    final Long sourceValue;
+
+    if (sourceIndex == DataUtils.ID_INDEX) {
+      sourceValue = row.getId();
+    } else if (sourceIndex >= 0) {
+      sourceValue = row.getLong(sourceIndex);
+    } else {
+      sourceValue = null;
+    }
+
+    if (!DataUtils.isId(sourceValue)) {
       return false;
     }
 
@@ -2556,16 +2602,47 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
       return false;
     }
 
-    String formName = RowEditor.getFormName(editableColumn.getRelation().getEditForm(),
-        editDataInfo);
+    final String editTarget;
+    if (columnRelation != null) {
+      editTarget = columnRelation.getEditTarget();
+    } else {
+      editTarget = null;
+    }
+
+    String formName;
+    if (relation != null) {
+      formName = relation.getEditForm();
+    } else if (columnRelation != null) {
+      formName = columnRelation.getEditForm();
+    } else {
+      formName = null;
+    }
+
+    if (BeeUtils.isEmpty(formName)) {
+      formName = RowEditor.getFormName(null, editDataInfo);
+    }
     if (BeeUtils.isEmpty(formName)) {
       return false;
     }
 
-    boolean modal = BeeUtils.nvl(editableColumn.getRelation().isEditModal(),
-        charCode != EditStartEvent.CLICK) || UiHelper.isModal(this);
-    RowCallback rowCallback;
+    boolean modal;
+    if (UiHelper.isModal(this)) {
+      modal = true;
 
+    } else {
+      Boolean editModal;
+      if (relation != null) {
+        editModal = relation.isEditModal();
+      } else if (columnRelation != null) {
+        editModal = columnRelation.isEditModal();
+      } else {
+        editModal = null;
+      }
+
+      modal = BeeUtils.nvl(editModal, charCode != EditStartEvent.CLICK);
+    }
+
+    RowCallback rowCallback;
     if (modal) {
       rowCallback = new RowCallback() {
         @Override
@@ -2575,9 +2652,22 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
 
         @Override
         public void onSuccess(BeeRow result) {
-          if (!RelationUtils.updateRow(getDataInfo(), editSource, row, editDataInfo, result,
-              false).isEmpty()) {
-            getGrid().refreshCell(row.getId(), editableColumn.getColumnId());
+          if (BeeUtils.isEmpty(editTarget) || editDataInfo.getIdColumn().equals(editTarget)) {
+            if (!RelationUtils.updateRow(getDataInfo(), editSource, row, editDataInfo, result,
+                false).isEmpty()) {
+              getGrid().refreshCell(row.getId(), columnId);
+            }
+
+          } else if (sourceIndex >= 0) {
+            int targetIndex = editDataInfo.getColumnIndex(editTarget);
+            if (targetIndex >= 0) {
+              Long targetValue = row.getLong(targetIndex);
+
+              if (DataUtils.isId(targetValue) && !Objects.equals(sourceValue, targetValue)) {
+                row.setValue(sourceIndex, targetValue);
+                getGrid().refreshCell(row.getId(), columnId);
+              }
+            }
           }
 
           getGrid().refocus();
@@ -2588,8 +2678,12 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
       rowCallback = null;
     }
 
+    Filter filter = BeeUtils.isEmpty(editTarget)
+        ? Filter.compareId(sourceValue) : Filter.equals(editTarget, sourceValue);
+
     Opener opener = modal ? Opener.MODAL : Opener.NEW_TAB;
-    RowEditor.openForm(formName, editDataInfo, id, opener, rowCallback);
+    RowEditor.openForm(formName, editDataInfo, filter, opener, rowCallback);
+
     return true;
   }
 
@@ -2611,7 +2705,8 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     String columnId = event.getColumnId();
     final EditableColumn editableColumn = getEditableColumn(columnId, false);
 
-    if (maybeOpenRelatedData(editableColumn, rowValue, event.getCharCode(), event.isReadOnly())) {
+    if (maybeOpenRelatedData(columnId, editableColumn, rowValue, event.getCellSource(),
+        event.getCharCode(), event.isReadOnly())) {
       return;
     }
 
