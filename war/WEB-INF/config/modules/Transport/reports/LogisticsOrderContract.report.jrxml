@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2016-06-03T16:19:31 -->
+<!-- 2016-06-07T09:00:32 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="OrderContract" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="30" bottomMargin="30" isSummaryWithPageHeaderAndFooter="true" whenResourceMissingType="Error" uuid="b0daefcc-9db0-4ed1-b9d6-49143492176f">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<import value="com.butent.bee.server.Invocation"/>
@@ -15,7 +15,7 @@
 	<import value="com.butent.bee.server.RsDataSource"/>
 	<import value="com.ibm.icu.text.DateFormat"/>
 	<style name="Font" isDefault="true" isBlankWhenNull="true" fontName="DejaVu Sans"/>
-	<subDataset name="CargoHandling" uuid="9f8814a6-b092-4537-b8fb-cac4ca1e4590">
+	<subDataset name="CargoHandling" whenResourceMissingType="Error" uuid="9f8814a6-b092-4537-b8fb-cac4ca1e4590">
 		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 		<parameter name="d" class="com.butent.bee.shared.i18n.Dictionary"/>
 		<queryString>
@@ -39,7 +39,7 @@
 		<field name="UnloadingNumber" class="java.lang.String"/>
 		<sortField name="LoadingDate"/>
 	</subDataset>
-	<subDataset name="CompanyBankAccounts" uuid="0f613db9-d6f0-43a0-92da-3000963bfbbb">
+	<subDataset name="CompanyBankAccounts" whenResourceMissingType="Error" uuid="0f613db9-d6f0-43a0-92da-3000963bfbbb">
 		<parameter name="d" class="com.butent.bee.shared.i18n.Dictionary"/>
 		<queryString>
 			<![CDATA[]]>
@@ -51,6 +51,17 @@
 		<field name="BankAccount" class="java.lang.String"/>
 		<field name="DefaultBankAccount" class="java.lang.Long"/>
 		<sortField name="DefaultBankAccount" order="Descending"/>
+	</subDataset>
+	<subDataset name="CompanyContacts" whenResourceMissingType="Error" uuid="74f496fd-b1c5-4919-8f26-1275905e21c6">
+		<queryString>
+			<![CDATA[]]>
+		</queryString>
+		<field name="Notes" class="java.lang.String"/>
+		<field name="Address" class="java.lang.String"/>
+		<field name="PostIndex" class="java.lang.String"/>
+		<field name="CityName" class="java.lang.String"/>
+		<field name="CountryName" class="java.lang.String"/>
+		<filterExpression><![CDATA[BeeUtils.allNotEmpty($F{Notes}, $F{Address})]]></filterExpression>
 	</subDataset>
 	<parameter name="OrderNo" class="java.lang.String" isForPrompting="false"/>
 	<parameter name="Date" class="java.lang.String" isForPrompting="false"/>
@@ -91,6 +102,7 @@
 	<parameter name="CustomerFax" class="java.lang.String" isForPrompting="false"/>
 	<parameter name="CustomerEmail" class="java.lang.String" isForPrompting="false"/>
 	<parameter name="CustomerCreditDays" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="CustomerCompanyContacts" class="java.lang.String" isForPrompting="false"/>
 	<parameter name="PayerName" class="java.lang.String" isForPrompting="false"/>
 	<parameter name="PayerTypeName" class="java.lang.String" isForPrompting="false"/>
 	<parameter name="PayerCreditDays" class="java.lang.String" isForPrompting="false"/>
@@ -283,7 +295,7 @@
 					<textFieldExpression><![CDATA[msg($R{orderDate}, DateFormat.getDateInstance(DateFormat.LONG, $P{REPORT_LOCALE}).format(new java.util.Date(BeeUtils.toLong($P{Date}))))]]></textFieldExpression>
 				</textField>
 				<frame>
-					<reportElement positionType="Float" x="280" y="30" width="275" height="100" isRemoveLineWhenBlank="true" uuid="cb7e7d6c-533d-4ae7-9704-73208213dac2"/>
+					<reportElement positionType="Float" x="280" y="30" width="275" height="110" isRemoveLineWhenBlank="true" uuid="cb7e7d6c-533d-4ae7-9704-73208213dac2"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -324,14 +336,14 @@
 						<textFieldExpression><![CDATA[BeeUtils.joinItems($P{CustomerAddress}, $P{CustomerPostIndex}, BeeUtils.notEmpty($V{qs}.getLocalizedValue("Cities", "Name", $P{CustomerCityName}, $P{REPORT_LOCALE}), $P{CustomerCityName}), BeeUtils.notEmpty($V{qs}.getLocalizedValue("Countries", "Name", $P{CustomerCountryName}, $P{REPORT_LOCALE}), $P{CustomerCountryName}))]]></textFieldExpression>
 					</textField>
 					<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-						<reportElement positionType="Float" x="0" y="65" width="275" height="10" isRemoveLineWhenBlank="true" uuid="22dafb7a-b8c6-4a4e-866d-65b650efdeba"/>
+						<reportElement positionType="Float" x="0" y="75" width="275" height="10" isRemoveLineWhenBlank="true" uuid="22dafb7a-b8c6-4a4e-866d-65b650efdeba"/>
 						<textElement markup="html">
 							<font size="8" isBold="false"/>
 						</textElement>
 						<textFieldExpression><![CDATA[BeeUtils.joinWords(BeeUtils.anyNotEmpty($P{CustomerPhone}, $P{CustomerMobile}) ? "<b>" + $V{d}.phone() + "</b> " + BeeUtils.joinItems($P{CustomerPhone}, $P{CustomerMobile}) : "", BeeUtils.isEmpty($P{CustomerFax}) ? "" : BeeUtils.joinWords("<b>" + $V{d}.fax() + "</b>", $P{CustomerFax}))]]></textFieldExpression>
 					</textField>
 					<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-						<reportElement positionType="Float" x="0" y="75" width="275" height="10" isRemoveLineWhenBlank="true" uuid="1eeed75b-4308-4a1d-943d-4b43840e4b24">
+						<reportElement positionType="Float" x="0" y="85" width="275" height="10" isRemoveLineWhenBlank="true" uuid="1eeed75b-4308-4a1d-943d-4b43840e4b24">
 							<printWhenExpression><![CDATA[!BeeUtils.isEmpty($P{CustomerEmail})]]></printWhenExpression>
 						</reportElement>
 						<textElement markup="html">
@@ -340,7 +352,7 @@
 						<textFieldExpression><![CDATA["<b>" + $V{d}.email() + "</b> " + $P{CustomerEmail}]]></textFieldExpression>
 					</textField>
 					<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-						<reportElement positionType="Float" x="0" y="90" width="275" height="10" isRemoveLineWhenBlank="true" uuid="e0fdb2a9-aead-44f2-9976-7085e452c0fa">
+						<reportElement positionType="Float" x="0" y="100" width="275" height="10" isRemoveLineWhenBlank="true" uuid="e0fdb2a9-aead-44f2-9976-7085e452c0fa">
 							<printWhenExpression><![CDATA[!BeeUtils.isEmpty($P{PayerName})]]></printWhenExpression>
 						</reportElement>
 						<textElement markup="html">
@@ -364,6 +376,26 @@
 						</textElement>
 						<textFieldExpression><![CDATA[$R{address}]]></textFieldExpression>
 					</textField>
+					<componentElement>
+						<reportElement positionType="Float" x="0" y="65" width="275" height="10" isRemoveLineWhenBlank="true" uuid="04d17eaf-b5a6-41be-9819-b838657948c3">
+							<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.VerticalRowLayout"/>
+							<property name="net.sf.jasperreports.export.headertoolbar.table.name" value=""/>
+						</reportElement>
+						<jr:list xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" printOrder="Vertical">
+							<datasetRun subDataset="CompanyContacts" uuid="76e5bf24-4c0f-469b-a907-45f27a7b6681">
+								<dataSourceExpression><![CDATA[new RsDataSource(BeeRowSet.restore($P{CustomerCompanyContacts}))]]></dataSourceExpression>
+							</datasetRun>
+							<jr:listContents height="10" width="275">
+								<textField isStretchWithOverflow="true">
+									<reportElement positionType="Float" x="0" y="0" width="275" height="10" isRemoveLineWhenBlank="true" uuid="ae6825b6-f570-41d8-8d15-dd45e8c10536"/>
+									<textElement markup="html">
+										<font size="8" isBold="false"/>
+									</textElement>
+									<textFieldExpression><![CDATA["<b>" + $F{Notes} + ":</b> " + BeeUtils.joinItems($F{Address}, $F{PostIndex}, $F{CityName}, $F{CountryName})]]></textFieldExpression>
+								</textField>
+							</jr:listContents>
+						</jr:list>
+					</componentElement>
 				</frame>
 				<frame>
 					<reportElement positionType="Float" x="0" y="195" width="220" height="20" isRemoveLineWhenBlank="true" uuid="e784d251-4da0-49cd-8916-b63b64e5d48b"/>
