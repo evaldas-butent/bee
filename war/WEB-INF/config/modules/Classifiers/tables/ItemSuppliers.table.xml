@@ -14,4 +14,8 @@
     <Numeric name="Unpacking" precision="15" scale="3" label="=unpacking" />
     <Text name="Notes" label="=notes" />
   </Fields>
+  
+  <Constraints>
+    <Unique fields="Item Supplier DateFrom DateTo" />
+  </Constraints>
 </Table>

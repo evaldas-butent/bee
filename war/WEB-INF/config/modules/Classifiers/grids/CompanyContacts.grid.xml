@@ -20,7 +20,7 @@
     <RelColumn name="EmailId" />
     <DataColumn name="Website" minWidth="100" maxWidth="200" visible="false" />
     <DataColumn name="SocialContacts" minWidth="100" maxWidth="200" visible="false" />
-    <DataColumn name="RemindEmail" maxWidth="30">
+    <DataColumn name="RemindEmail" maxWidth="30" editInPlace="true" >
       <validation>
         <ui:function>
             var emailId = row.EmailId;

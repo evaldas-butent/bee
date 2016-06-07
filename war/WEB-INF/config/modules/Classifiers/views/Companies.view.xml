@@ -86,12 +86,21 @@
     </SimpleJoin>
     <SimpleColumn name="CreditDays" />
     <SimpleColumn name="SupplierCreditDays" />
+    <SimpleColumn name="ToleratedDays" />
 
     <SimpleColumn name="FinancialState" />
     <SimpleJoin joinType="LEFT" name="FinancialState">
       <SimpleColumn alias="FinancialStateName" name="Name" />
     </SimpleJoin>
     <SimpleColumn name="DefaultBankAccount" />
+    <SimpleJoin name="DefaultBankAccount" joinType="LEFT" >
+      <SimpleColumn name="BankAccount" />
+      <SimpleJoin name="Bank" joinType="LEFT" >
+        <SimpleColumn name="Name" alias="BankName" />
+        <SimpleColumn name="BankCode" />
+        <SimpleColumn name="SWIFTCode" />
+      </SimpleJoin>
+    </SimpleJoin>
     <SimpleColumn name="DefaultCompanyUser" />
     <SimpleJoin name="DefaultCompanyUser" joinType="LEFT" >
      <SimpleJoin name="User" joinType="LEFT">
@@ -113,6 +122,22 @@
     
     <SimpleColumn name="PriceName" />
 
+    <SimpleJoin name="Raport" joinType="LEFT">
+      <SimpleColumn name="HingeType" />
+      <SimpleColumn name="HingeQuantity" />
+      <SimpleColumn name="HingeSupply" />
+
+      <SimpleColumn name="DrawerType" />
+      <SimpleColumn name="DrawerQuantity" />
+      <SimpleColumn name="DrawerSupply" />
+      
+      <SimpleColumn name="RunnerType" />
+      <SimpleColumn name="RunnerQuantity" />
+      <SimpleColumn name="RunnerSupply" />
+      
+      <SimpleColumn name="Catalog" />
+    </SimpleJoin>
+    
     <SimpleColumn name="Notes" />
    </Columns>
   <Order>

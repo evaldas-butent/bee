@@ -19,7 +19,8 @@
         <row>
           <DataSelector source="EmailId" style="width: 100%;" maxLength="50" editEnabled="true"
             summarize="true" />
-          <CheckBox html="-" name="RemindEmail" source="RemindEmail" title="=sendReminder" />
+          <CheckBox html="-" name="RemindEmail" class="bee-RemindEmail" source="RemindEmail" 
+            title="=sendReminder" style="display: none;"/>
         </row>
       </Table>
     </cell>
@@ -30,15 +31,6 @@
     </cell>
   </row>
   
-  <row>
-    <Label text="=mailRecipientsGroups" style="&lbl;" />
-    <cell colSpan="5">
-      <ChildSelector viewName="RecipientsGroups" childTable="RcpsGroupsContacts"
-        targetRelColumn="CompanyPerson" sourceRelColumn="RecipientsGroup" renderColumns="GroupName"
-        choiceColumns="GroupName" label="=mailRecipientsGroups" style="width: 100%;" summarize="true" 
-        filter="Creator {u} or Visibility = 0" />
-    </cell>
-  </row>
   <row for="Address">
     <Label text="=address" style="&lbl;" />
     <cell colSpan="5">
