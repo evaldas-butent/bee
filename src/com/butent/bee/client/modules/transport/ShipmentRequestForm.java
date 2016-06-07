@@ -70,7 +70,6 @@ import com.butent.bee.shared.i18n.SupportedLocale;
 import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.io.Paths;
 import com.butent.bee.shared.modules.mail.MailConstants;
-import com.butent.bee.shared.modules.transport.TransportConstants.*;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.utils.ArrayUtils;
